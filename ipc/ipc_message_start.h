@@ -107,6 +107,7 @@ enum IPCMessageStart {
   ChromeUtilityExtensionsMsgStart,
   PlatformNotificationMsgStart,
   CredentialManagerMsgStart,
+  PDFMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

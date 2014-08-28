@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/pdf/pdf_tab_helper.h"
-
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
@@ -15,6 +13,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/pdf/browser/pdf_web_contents_helper_client.h"
 #include "ui/base/l10n/l10n_util.h"
 
 @class PDFPasswordDialogMac;
@@ -39,7 +38,7 @@ class PDFPasswordDialogMacBridge : public ConstrainedWindowMacDelegate {
  @private
   content::WebContents* webContents_;
   base::string16 prompt_;
-  PasswordDialogClosedCallback callback_;
+  pdf::PasswordDialogClosedCallback callback_;
 
   base::scoped_nsobject<NSSecureTextField> passwordField_;
 
@@ -49,7 +48,7 @@ class PDFPasswordDialogMacBridge : public ConstrainedWindowMacDelegate {
 }
 - (id)initWithWebContents:(content::WebContents*)webContents
                    prompt:(base::string16)prompt
-                 callback:(PasswordDialogClosedCallback)callback;
+                 callback:(pdf::PasswordDialogClosedCallback)callback;
 - (void)onOKButton:(id)sender;
 - (void)onCancelButton:(id)sender;
 @end
@@ -74,7 +73,7 @@ void PDFPasswordDialogMacBridge::OnConstrainedWindowClosed(
 
 - (id)initWithWebContents:(content::WebContents*)webContents
                    prompt:(base::string16)prompt
-                 callback:(PasswordDialogClosedCallback)callback {
+                 callback:(pdf::PasswordDialogClosedCallback)callback {
   if ((self = [super init])) {
     webContents_ = webContents;
     prompt_ = prompt;
@@ -135,7 +134,7 @@ void PDFPasswordDialogMacBridge::OnConstrainedWindowClosed(
 
 void ShowPDFPasswordDialog(content::WebContents* web_contents,
                            const base::string16& prompt,
-                           const PasswordDialogClosedCallback& callback) {
+                           const pdf::PasswordDialogClosedCallback& callback) {
   [[PDFPasswordDialogMac alloc] initWithWebContents:web_contents
                                              prompt:prompt
                                            callback:callback];

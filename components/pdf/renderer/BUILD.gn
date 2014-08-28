@@ -1,0 +1,28 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+
+static_library("renderer") {
+  sources = [
+    "ppb_pdf_impl.cc",
+    "ppb_pdf_impl.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/pdf/common",
+    "//content/public/renderer",
+    "//ppapi:ppapi_shared",
+    "//third_party/icu",
+    "//v8",
+    "//third_party/WebKit/public:blink_minimal",
+  ]
+
+  if (is_win) {
+    cflags += [
+      "/wd4267"  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    ]
+  }
+}

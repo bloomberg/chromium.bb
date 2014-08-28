@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PDF_OPEN_PDF_IN_READER_PROMPT_DELEGATE_H_
-#define CHROME_BROWSER_UI_PDF_OPEN_PDF_IN_READER_PROMPT_DELEGATE_H_
+#ifndef COMPONENTS_PDF_BROWSER_OPEN_PDF_IN_READER_PROMPT_CLIENT_H_
+#define COMPONENTS_PDF_BROWSER_OPEN_PDF_IN_READER_PROMPT_CLIENT_H_
 
 #include "base/strings/string16.h"
 
@@ -11,9 +11,11 @@ namespace content {
 struct LoadCommittedDetails;
 }
 
-class OpenPDFInReaderPromptDelegate {
+namespace pdf {
+
+class OpenPDFInReaderPromptClient {
  public:
-  virtual ~OpenPDFInReaderPromptDelegate() {}
+  virtual ~OpenPDFInReaderPromptClient() {}
 
   virtual base::string16 GetMessageText() const = 0;
 
@@ -29,4 +31,6 @@ class OpenPDFInReaderPromptDelegate {
   virtual void Cancel() = 0;
 };
 
-#endif  // CHROME_BROWSER_UI_PDF_OPEN_PDF_IN_READER_PROMPT_DELEGATE_H_
+}  // namespace pdf
+
+#endif  // COMPONENTS_PDF_BROWSER_OPEN_PDF_IN_READER_PROMPT_CLIENT_H_

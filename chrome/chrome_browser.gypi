@@ -3089,6 +3089,7 @@
         }],
         ['enable_plugins==1', {
           'dependencies': [
+            '../components/components.gyp:pdf_browser',
             '../ppapi/ppapi_internal.gyp:ppapi_ipc',
             '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
           ],

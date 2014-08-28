@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/views/location_bar/open_pdf_in_reader_view.h"
 
-#include "chrome/browser/ui/pdf/pdf_tab_helper.h"
 #include "chrome/browser/ui/views/open_pdf_in_reader_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/pdf/browser/open_pdf_in_reader_prompt_client.h"
+#include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -28,7 +29,8 @@ OpenPDFInReaderView::~OpenPDFInReaderView() {
 void OpenPDFInReaderView::Update(content::WebContents* web_contents) {
   model_ = NULL;
   if (web_contents) {
-    PDFTabHelper* pdf_tab_helper = PDFTabHelper::FromWebContents(web_contents);
+    pdf::PDFWebContentsHelper* pdf_tab_helper =
+        pdf::PDFWebContentsHelper::FromWebContents(web_contents);
     model_ = pdf_tab_helper->open_in_reader_prompt();
   }
 

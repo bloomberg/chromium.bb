@@ -5,8 +5,8 @@
 #include "chrome/renderer/pepper/pepper_pdf_host.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/renderer/printing/print_web_view_helper.h"
+#include "components/pdf/common/pdf_messages.h"
 #include "content/app/resources/grit/content_resources.h"
 #include "content/app/strings/grit/content_strings.h"
 #include "content/public/common/referrer.h"
@@ -184,9 +184,8 @@ int32_t PepperPDFHost::OnHostMsgSetContentRestriction(
       host_->GetPluginInstance(pp_instance());
   if (!instance)
     return PP_ERROR_FAILED;
-  instance->GetRenderView()->Send(
-      new ChromeViewHostMsg_PDFUpdateContentRestrictions(
-          instance->GetRenderView()->GetRoutingID(), restrictions));
+  instance->GetRenderView()->Send(new PDFHostMsg_PDFUpdateContentRestrictions(
+      instance->GetRenderView()->GetRoutingID(), restrictions));
   return PP_OK;
 }
 
@@ -209,8 +208,8 @@ int32_t PepperPDFHost::OnHostMsgHasUnsupportedFeature(
   blink::WebView* view =
       instance->GetContainer()->element().document().frame()->view();
   content::RenderView* render_view = content::RenderView::FromWebView(view);
-  render_view->Send(new ChromeViewHostMsg_PDFHasUnsupportedFeature(
-      render_view->GetRoutingID()));
+  render_view->Send(
+      new PDFHostMsg_PDFHasUnsupportedFeature(render_view->GetRoutingID()));
   return PP_OK;
 }
 
@@ -248,8 +247,8 @@ int32_t PepperPDFHost::OnHostMsgSaveAs(
       render_view->GetWebView()->mainFrame()->toWebLocalFrame();
   content::Referrer referrer(frame->document().url(),
                              frame->document().referrerPolicy());
-  render_view->Send(new ChromeViewHostMsg_PDFSaveURLAs(
-      render_view->GetRoutingID(), url, referrer));
+  render_view->Send(
+      new PDFHostMsg_PDFSaveURLAs(render_view->GetRoutingID(), url, referrer));
   return PP_OK;
 }
 

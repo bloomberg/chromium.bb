@@ -9,9 +9,10 @@
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
-#include "chrome/browser/ui/pdf/pdf_tab_helper.h"
+#include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_version_info.h"
+#include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/renderer_context_menu/context_menu_delegate.h"
 #include "content/public/common/page_zoom.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
@@ -120,7 +121,10 @@ void ChromeWebViewGuestDelegate::OnAttachWebViewHelpers(
   printing::PrintViewManagerBasic::CreateForWebContents(contents);
 #endif  // defined(ENABLE_FULL_PRINTING)
 #endif  // defined(ENABLE_PRINTING)
-  PDFTabHelper::CreateForWebContents(contents);
+  pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
+      contents,
+      scoped_ptr<pdf::PDFWebContentsHelperClient>(
+          new ChromePDFWebContentsHelperClient()));
 }
 
 void ChromeWebViewGuestDelegate::OnEmbedderDestroyed() {

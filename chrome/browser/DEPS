@@ -47,6 +47,7 @@ include_rules = [
   "+components/omnibox",
   "+components/os_crypt",
   "+components/password_manager",
+  "+components/pdf/browser",
   "+components/policy",
   "+components/power",
   "+components/precache",

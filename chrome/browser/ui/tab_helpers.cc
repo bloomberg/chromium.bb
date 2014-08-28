@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/navigation_correction_tab_observer.h"
+#include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
@@ -43,12 +44,12 @@
 #include "chrome/browser/thumbnails/thumbnail_tab_helper.h"
 #include "chrome/browser/ui/hung_plugin_tab_helper.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
-#include "chrome/browser/ui/pdf/pdf_tab_helper.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
+#include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #endif  // defined(OS_ANDROID)
 
@@ -164,7 +165,10 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   ExternalProtocolObserver::CreateForWebContents(web_contents);
   HungPluginTabHelper::CreateForWebContents(web_contents);
   ManagePasswordsUIController::CreateForWebContents(web_contents);
-  PDFTabHelper::CreateForWebContents(web_contents);
+  pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
+      web_contents,
+      scoped_ptr<pdf::PDFWebContentsHelperClient>(
+          new ChromePDFWebContentsHelperClient()));
   PermissionBubbleManager::CreateForWebContents(web_contents);
   PluginObserver::CreateForWebContents(web_contents);
   SadTabHelper::CreateForWebContents(web_contents);

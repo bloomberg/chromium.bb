@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/pepper/ppb_pdf_impl.h"
+#include "components/pdf/renderer/ppb_pdf_impl.h"
 
 #include "base/files/scoped_file.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/renderer/printing/print_web_view_helper.h"
+#include "components/pdf/common/pdf_messages.h"
 #include "content/app/resources/grit/content_resources.h"
 #include "content/app/strings/grit/content_strings.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
@@ -35,7 +34,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+namespace pdf {
 namespace {
+
+PPB_PDF_Impl::PrintClient* g_print_client = NULL;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 class PrivateFontFile : public ppapi::Resource {
@@ -45,9 +47,11 @@ class PrivateFontFile : public ppapi::Resource {
 
   bool GetFontTable(uint32_t table, void* output, uint32_t* output_length) {
     size_t temp_size = static_cast<size_t>(*output_length);
-    bool rv = content::GetFontTable(
-        fd_.get(), table, 0 /* offset */, static_cast<uint8_t*>(output),
-        &temp_size);
+    bool rv = content::GetFontTable(fd_.get(),
+                                    table,
+                                    0 /* offset */,
+                                    static_cast<uint8_t*>(output),
+                                    &temp_size);
     *output_length = base::checked_cast<uint32_t>(temp_size);
     return rv;
   }
@@ -117,38 +121,8 @@ static const ResourceImageInfo kResourceImageMap[] = {
     {PP_RESOURCEIMAGE_PDF_PAGE_INDICATOR_BACKGROUND,
      IDR_PDF_PAGE_INDICATOR_BACKGROUND},
     {PP_RESOURCEIMAGE_PDF_PAGE_DROPSHADOW, IDR_PDF_PAGE_DROPSHADOW},
-    {PP_RESOURCEIMAGE_PDF_PAN_SCROLL_ICON, IDR_PAN_SCROLL_ICON}, };
-
-#if defined(ENABLE_FULL_PRINTING)
-
-blink::WebElement GetWebElement(PP_Instance instance_id) {
-  content::PepperPluginInstance* instance =
-      content::PepperPluginInstance::Get(instance_id);
-  if (!instance)
-    return blink::WebElement();
-  return instance->GetContainer()->element();
-}
-
-printing::PrintWebViewHelper* GetPrintWebViewHelper(
-    const blink::WebElement& element) {
-  if (element.isNull())
-    return NULL;
-  blink::WebView* view = element.document().frame()->view();
-  content::RenderView* render_view = content::RenderView::FromWebView(view);
-  return printing::PrintWebViewHelper::Get(render_view);
-}
-
-bool IsPrintingEnabled(PP_Instance instance_id) {
-  blink::WebElement element = GetWebElement(instance_id);
-  printing::PrintWebViewHelper* helper = GetPrintWebViewHelper(element);
-  return helper && helper->IsPrintingEnabled();
-}
-
-#else  // ENABLE_FULL_PRINTING
-
-bool IsPrintingEnabled(PP_Instance instance_id) { return false; }
-
-#endif  // ENABLE_FULL_PRINTING
+    {PP_RESOURCEIMAGE_PDF_PAN_SCROLL_ICON, IDR_PAN_SCROLL_ICON},
+};
 
 PP_Var GetLocalizedString(PP_Instance instance_id,
                           PP_ResourceString string_id) {
@@ -300,9 +274,8 @@ void SetContentRestriction(PP_Instance instance_id, int restrictions) {
       content::PepperPluginInstance::Get(instance_id);
   if (!instance)
     return;
-  instance->GetRenderView()->Send(
-      new ChromeViewHostMsg_PDFUpdateContentRestrictions(
-          instance->GetRenderView()->GetRoutingID(), restrictions));
+  instance->GetRenderView()->Send(new PDFHostMsg_PDFUpdateContentRestrictions(
+      instance->GetRenderView()->GetRoutingID(), restrictions));
 }
 
 void HistogramPDFPageCount(PP_Instance instance, int count) {
@@ -329,8 +302,8 @@ void HasUnsupportedFeature(PP_Instance instance_id) {
   blink::WebView* view =
       instance->GetContainer()->element().document().frame()->view();
   content::RenderView* render_view = content::RenderView::FromWebView(view);
-  render_view->Send(new ChromeViewHostMsg_PDFHasUnsupportedFeature(
-      render_view->GetRoutingID()));
+  render_view->Send(
+      new PDFHostMsg_PDFHasUnsupportedFeature(render_view->GetRoutingID()));
 }
 
 void SaveAs(PP_Instance instance_id) {
@@ -345,8 +318,8 @@ void SaveAs(PP_Instance instance_id) {
       render_view->GetWebView()->mainFrame()->toWebLocalFrame();
   content::Referrer referrer(frame->document().url(),
                              frame->document().referrerPolicy());
-  render_view->Send(new ChromeViewHostMsg_PDFSaveURLAs(
-      render_view->GetRoutingID(), url, referrer));
+  render_view->Send(
+      new PDFHostMsg_PDFSaveURLAs(render_view->GetRoutingID(), url, referrer));
 }
 
 PP_Bool IsFeatureEnabled(PP_Instance instance, PP_PDFFeature feature) {
@@ -354,7 +327,9 @@ PP_Bool IsFeatureEnabled(PP_Instance instance, PP_PDFFeature feature) {
     case PP_PDFFEATURE_HIDPI:
       return PP_TRUE;
     case PP_PDFFEATURE_PRINTING:
-      return IsPrintingEnabled(instance) ? PP_TRUE : PP_FALSE;
+      return (g_print_client && g_print_client->IsPrintingEnabled(instance))
+                 ? PP_TRUE
+                 : PP_FALSE;
   }
   return PP_FALSE;
 }
@@ -402,7 +377,7 @@ PP_Var ModalPromptForPassword(PP_Instance instance_id, PP_Var message) {
   scoped_refptr<ppapi::StringVar> message_string(
       ppapi::StringVar::FromPPVar(message));
 
-  IPC::SyncMessage* msg = new ChromeViewHostMsg_PDFModalPromptForPassword(
+  IPC::SyncMessage* msg = new PDFHostMsg_PDFModalPromptForPassword(
       instance->GetRenderView()->GetRoutingID(),
       message_string->value(),
       &actual_value);
@@ -412,7 +387,9 @@ PP_Var ModalPromptForPassword(PP_Instance instance_id, PP_Var message) {
   return ppapi::StringVar::StringToPPVar(actual_value);
 }
 
-PP_Bool IsOutOfProcess(PP_Instance instance_id) { return PP_FALSE; }
+PP_Bool IsOutOfProcess(PP_Instance instance_id) {
+  return PP_FALSE;
+}
 
 void SetSelectedText(PP_Instance instance_id, const char* selected_text) {
   // This function is intended for out of process PDF plugin.
@@ -451,14 +428,19 @@ const PPB_PDF ppb_pdf = {                      //
 }  // namespace
 
 // static
-const PPB_PDF* PPB_PDF_Impl::GetInterface() { return &ppb_pdf; }
+const PPB_PDF* PPB_PDF_Impl::GetInterface() {
+  return &ppb_pdf;
+}
 
 // static
 void PPB_PDF_Impl::InvokePrintingForInstance(PP_Instance instance_id) {
-#if defined(ENABLE_FULL_PRINTING)
-  blink::WebElement element = GetWebElement(instance_id);
-  printing::PrintWebViewHelper* helper = GetPrintWebViewHelper(element);
-  if (helper)
-    helper->PrintNode(element);
-#endif  // ENABLE_FULL_PRINTING
+  if (g_print_client)
+    g_print_client->Print(instance_id);
 }
+
+void PPB_PDF_Impl::SetPrintClient(PPB_PDF_Impl::PrintClient* client) {
+  CHECK(!g_print_client) << "There should only be a single PrintClient.";
+  g_print_client = client;
+}
+
+}  // namespace pdf

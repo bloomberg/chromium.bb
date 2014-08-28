@@ -110,5 +110,10 @@
         'invalidation.gypi',
       ],
     }],
+    ['enable_plugins==1', {
+      'includes': [
+        'pdf.gypi',
+      ],
+    }],
   ],
 }

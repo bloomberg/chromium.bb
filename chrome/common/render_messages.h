@@ -572,23 +572,6 @@ IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_DidRetrieveMetaTagContent,
                     GURL /* expected_url */)
 #endif  // defined(OS_ANDROID)
 
-// The currently displayed PDF has an unsupported feature.
-IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_PDFHasUnsupportedFeature)
-
-// Brings up SaveAs... dialog to save specified URL.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_PDFSaveURLAs,
-                    GURL /* url */,
-                    content::Referrer /* referrer */)
-
-// Updates the content restrictions, i.e. to disable print/copy.
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_PDFUpdateContentRestrictions,
-                    int /* restrictions */)
-
-// Brings up a Password... dialog for protected documents.
-IPC_SYNC_MESSAGE_ROUTED1_1(ChromeViewHostMsg_PDFModalPromptForPassword,
-                           std::string /* prompt */,
-                           std::string /* actual_value */)
-
 // This message indicates the error appeared in the frame.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_FrameLoadingError,
                     int /* error */)

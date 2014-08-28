@@ -14,10 +14,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/pdf/open_pdf_in_reader_prompt_delegate.h"
-#include "chrome/browser/ui/pdf/pdf_tab_helper.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/pdf/browser/open_pdf_in_reader_prompt_client.h"
+#include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_details.h"
@@ -52,13 +52,13 @@ const char kAdobeReaderUpdateUrl[] = "http://www.adobe.com/go/getreader_chrome";
 
 // The prompt delegate used to ask the user if they want to use Adobe Reader
 // by default.
-class PDFEnableAdobeReaderPromptDelegate
-    : public OpenPDFInReaderPromptDelegate {
+class PDFEnableAdobeReaderPromptClient
+    : public pdf::OpenPDFInReaderPromptClient {
  public:
-  explicit PDFEnableAdobeReaderPromptDelegate(Profile* profile);
-  virtual ~PDFEnableAdobeReaderPromptDelegate();
+  explicit PDFEnableAdobeReaderPromptClient(Profile* profile);
+  virtual ~PDFEnableAdobeReaderPromptClient();
 
-  // OpenPDFInReaderPromptDelegate
+  // pdf::OpenPDFInReaderPromptClient
   virtual base::string16 GetMessageText() const OVERRIDE;
   virtual base::string16 GetAcceptButtonText() const OVERRIDE;
   virtual base::string16 GetCancelButtonText() const OVERRIDE;
@@ -73,19 +73,19 @@ class PDFEnableAdobeReaderPromptDelegate
 
   Profile* profile_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(PDFEnableAdobeReaderPromptDelegate);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(PDFEnableAdobeReaderPromptClient);
 };
 
-PDFEnableAdobeReaderPromptDelegate::PDFEnableAdobeReaderPromptDelegate(
+PDFEnableAdobeReaderPromptClient::PDFEnableAdobeReaderPromptClient(
     Profile* profile)
     : profile_(profile) {
   content::RecordAction(UserMetricsAction("PDF_EnableReaderInfoBarShown"));
 }
 
-PDFEnableAdobeReaderPromptDelegate::~PDFEnableAdobeReaderPromptDelegate() {
+PDFEnableAdobeReaderPromptClient::~PDFEnableAdobeReaderPromptClient() {
 }
 
-bool PDFEnableAdobeReaderPromptDelegate::ShouldExpire(
+bool PDFEnableAdobeReaderPromptClient::ShouldExpire(
     const content::LoadCommittedDetails& details) const {
   content::PageTransition transition =
       content::PageTransitionStripQualifier(details.entry->GetTransitionType());
@@ -94,7 +94,7 @@ bool PDFEnableAdobeReaderPromptDelegate::ShouldExpire(
   return !details.is_in_page && transition != content::PAGE_TRANSITION_RELOAD;
 }
 
-void PDFEnableAdobeReaderPromptDelegate::Accept() {
+void PDFEnableAdobeReaderPromptClient::Accept() {
   content::RecordAction(UserMetricsAction("PDF_EnableReaderInfoBarOK"));
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile_).get();
   plugin_prefs->EnablePluginGroup(
@@ -103,19 +103,19 @@ void PDFEnableAdobeReaderPromptDelegate::Accept() {
       false, base::ASCIIToUTF16(ChromeContentClient::kPDFPluginName));
 }
 
-void PDFEnableAdobeReaderPromptDelegate::Cancel() {
+void PDFEnableAdobeReaderPromptClient::Cancel() {
   content::RecordAction(UserMetricsAction("PDF_EnableReaderInfoBarCancel"));
 }
 
-base::string16 PDFEnableAdobeReaderPromptDelegate::GetAcceptButtonText() const {
+base::string16 PDFEnableAdobeReaderPromptClient::GetAcceptButtonText() const {
   return l10n_util::GetStringUTF16(IDS_PDF_INFOBAR_ALWAYS_USE_READER_BUTTON);
 }
 
-base::string16 PDFEnableAdobeReaderPromptDelegate::GetCancelButtonText() const {
+base::string16 PDFEnableAdobeReaderPromptClient::GetCancelButtonText() const {
   return l10n_util::GetStringUTF16(IDS_DONE);
 }
 
-base::string16 PDFEnableAdobeReaderPromptDelegate::GetMessageText() const {
+base::string16 PDFEnableAdobeReaderPromptClient::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_PDF_INFOBAR_QUESTION_ALWAYS_USE_READER);
 }
 
@@ -130,7 +130,7 @@ void OpenReaderUpdateURL(WebContents* web_contents) {
 // Opens the PDF using Adobe Reader.
 void OpenUsingReader(WebContents* web_contents,
                      const WebPluginInfo& reader_plugin,
-                     OpenPDFInReaderPromptDelegate* delegate) {
+                     pdf::OpenPDFInReaderPromptClient* client) {
   ChromePluginServiceFilter::GetInstance()->OverridePluginForFrame(
       web_contents->GetRenderProcessHost()->GetID(),
       web_contents->GetMainFrame()->GetRoutingID(),
@@ -138,9 +138,10 @@ void OpenUsingReader(WebContents* web_contents,
       reader_plugin);
   web_contents->ReloadFocusedFrame(false);
 
-  PDFTabHelper* pdf_tab_helper = PDFTabHelper::FromWebContents(web_contents);
-  if (delegate)
-    pdf_tab_helper->ShowOpenInReaderPrompt(make_scoped_ptr(delegate));
+  pdf::PDFWebContentsHelper* pdf_tab_helper =
+      pdf::PDFWebContentsHelper::FromWebContents(web_contents);
+  if (client)
+    pdf_tab_helper->ShowOpenInReaderPrompt(make_scoped_ptr(client));
 }
 
 // An interstitial to be used when the user chooses to open a PDF using Adobe
@@ -230,15 +231,14 @@ class PDFUnsupportedFeatureInterstitial
 
 // The delegate for the bubble used to inform the user that we don't support a
 // feature in the PDF.
-class PDFUnsupportedFeaturePromptDelegate
-    : public OpenPDFInReaderPromptDelegate {
+class PDFUnsupportedFeaturePromptClient
+    : public pdf::OpenPDFInReaderPromptClient {
  public:
-  PDFUnsupportedFeaturePromptDelegate(
-      WebContents* web_contents,
-      const AdobeReaderPluginInfo& reader_info);
-  virtual ~PDFUnsupportedFeaturePromptDelegate();
+  PDFUnsupportedFeaturePromptClient(WebContents* web_contents,
+                                    const AdobeReaderPluginInfo& reader_info);
+  virtual ~PDFUnsupportedFeaturePromptClient();
 
-  // OpenPDFInReaderPromptDelegate:
+  // pdf::OpenPDFInReaderPromptClient:
   virtual base::string16 GetMessageText() const OVERRIDE;
   virtual base::string16 GetAcceptButtonText() const OVERRIDE;
   virtual base::string16 GetCancelButtonText() const OVERRIDE;
@@ -251,28 +251,26 @@ class PDFUnsupportedFeaturePromptDelegate
   WebContents* web_contents_;
   const AdobeReaderPluginInfo reader_info_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(PDFUnsupportedFeaturePromptDelegate);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(PDFUnsupportedFeaturePromptClient);
 };
 
-PDFUnsupportedFeaturePromptDelegate::PDFUnsupportedFeaturePromptDelegate(
+PDFUnsupportedFeaturePromptClient::PDFUnsupportedFeaturePromptClient(
     WebContents* web_contents,
     const AdobeReaderPluginInfo& reader_info)
-    : web_contents_(web_contents),
-      reader_info_(reader_info) {
+    : web_contents_(web_contents), reader_info_(reader_info) {
   content::RecordAction(reader_info_.is_installed ?
                         UserMetricsAction("PDF_UseReaderInfoBarShown") :
                         UserMetricsAction("PDF_InstallReaderInfoBarShown"));
 }
 
-PDFUnsupportedFeaturePromptDelegate::~PDFUnsupportedFeaturePromptDelegate() {
+PDFUnsupportedFeaturePromptClient::~PDFUnsupportedFeaturePromptClient() {
 }
 
-base::string16 PDFUnsupportedFeaturePromptDelegate::GetMessageText() const {
+base::string16 PDFUnsupportedFeaturePromptClient::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_PDF_BUBBLE_MESSAGE);
 }
 
-base::string16 PDFUnsupportedFeaturePromptDelegate::GetAcceptButtonText()
-    const {
+base::string16 PDFUnsupportedFeaturePromptClient::GetAcceptButtonText() const {
   if (base::win::IsMetroProcess())
     return l10n_util::GetStringUTF16(IDS_PDF_BUBBLE_METRO_MODE_LINK);
 
@@ -281,17 +279,16 @@ base::string16 PDFUnsupportedFeaturePromptDelegate::GetAcceptButtonText()
                                 : IDS_PDF_BUBBLE_INSTALL_READER_LINK);
 }
 
-base::string16 PDFUnsupportedFeaturePromptDelegate::GetCancelButtonText()
-    const {
+base::string16 PDFUnsupportedFeaturePromptClient::GetCancelButtonText() const {
   return l10n_util::GetStringUTF16(IDS_DONE);
 }
 
-bool PDFUnsupportedFeaturePromptDelegate::ShouldExpire(
+bool PDFUnsupportedFeaturePromptClient::ShouldExpire(
     const content::LoadCommittedDetails& details) const {
   return !details.is_in_page;
 }
 
-void PDFUnsupportedFeaturePromptDelegate::Accept() {
+void PDFUnsupportedFeaturePromptClient::Accept() {
   if (base::win::IsMetroProcess()) {
     chrome::AttemptRestartWithModeSwitch();
     return;
@@ -313,13 +310,13 @@ void PDFUnsupportedFeaturePromptDelegate::Accept() {
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  OpenPDFInReaderPromptDelegate* delegate =
-      new PDFEnableAdobeReaderPromptDelegate(profile);
+  pdf::OpenPDFInReaderPromptClient* client =
+      new PDFEnableAdobeReaderPromptClient(profile);
 
-  OpenUsingReader(web_contents_, reader_info_.plugin_info, delegate);
+  OpenUsingReader(web_contents_, reader_info_.plugin_info, client);
 }
 
-void PDFUnsupportedFeaturePromptDelegate::Cancel() {
+void PDFUnsupportedFeaturePromptClient::Cancel() {
   content::RecordAction(reader_info_.is_installed ?
                         UserMetricsAction("PDF_UseReaderInfoBarCancel") :
                         UserMetricsAction("PDF_InstallReaderInfoBarCancel"));
@@ -331,9 +328,10 @@ void MaybeShowOpenPDFInReaderPrompt(WebContents* web_contents,
   if (!reader_info.is_installed || !reader_info.is_enabled)
     return;
 
-  scoped_ptr<OpenPDFInReaderPromptDelegate> prompt(
-      new PDFUnsupportedFeaturePromptDelegate(web_contents, reader_info));
-  PDFTabHelper* pdf_tab_helper = PDFTabHelper::FromWebContents(web_contents);
+  scoped_ptr<pdf::OpenPDFInReaderPromptClient> prompt(
+      new PDFUnsupportedFeaturePromptClient(web_contents, reader_info));
+  pdf::PDFWebContentsHelper* pdf_tab_helper =
+      pdf::PDFWebContentsHelper::FromWebContents(web_contents);
   pdf_tab_helper->ShowOpenInReaderPrompt(prompt.Pass());
 }
 

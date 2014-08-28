@@ -2,6 +2,7 @@ include_rules = [
   "+chrome/common",
   "+components/autofill/content/common",
   "+components/nacl/common",
+  "+components/pdf/common",
   "+components/tracing",
   "+components/translate",
   "+components/visitedlink/common",

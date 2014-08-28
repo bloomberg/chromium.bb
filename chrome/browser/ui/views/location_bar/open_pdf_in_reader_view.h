@@ -9,10 +9,13 @@
 #include "ui/views/widget/widget_observer.h"
 
 class OpenPDFInReaderBubbleView;
-class OpenPDFInReaderPromptDelegate;
 
 namespace content {
 class WebContents;
+}
+
+namespace pdf {
+class OpenPDFInReaderPromptClient;
 }
 
 // A Page Action image view for the "Open PDF in Reader" bubble.
@@ -38,8 +41,9 @@ class OpenPDFInReaderView : public views::ImageView,
 
   OpenPDFInReaderBubbleView* bubble_;
 
-  // Weak pointer; owned by the PDFTabHelper of the currently active tab.
-  OpenPDFInReaderPromptDelegate* model_;
+  // Weak pointer; owned by the PDFWebContentsHelper of the currently active
+  // tab.
+  pdf::OpenPDFInReaderPromptClient* model_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenPDFInReaderView);
 };

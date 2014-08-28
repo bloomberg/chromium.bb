@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PDF_PDF_TAB_HELPER_H_
-#define CHROME_BROWSER_UI_PDF_PDF_TAB_HELPER_H_
+#ifndef COMPONENTS_PDF_BROWSER_PDF_WEB_CONTENTS_HELPER_H_
+#define COMPONENTS_PDF_BROWSER_PDF_WEB_CONTENTS_HELPER_H_
 
 #include <string>
 
@@ -13,27 +13,35 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "ipc/ipc_message.h"
 
-class OpenPDFInReaderPromptDelegate;
-
 namespace content {
 class WebContents;
 }
 
-// Per-tab class to handle PDF messages.
-class PDFTabHelper : public content::WebContentsObserver,
-                     public content::WebContentsUserData<PDFTabHelper>  {
+namespace pdf {
+
+class OpenPDFInReaderPromptClient;
+class PDFWebContentsHelperClient;
+
+// Per-WebContents class to handle PDF messages.
+class PDFWebContentsHelper
+    : public content::WebContentsObserver,
+      public content::WebContentsUserData<PDFWebContentsHelper> {
  public:
+  static void CreateForWebContentsWithClient(
+      content::WebContents* contents,
+      scoped_ptr<PDFWebContentsHelperClient> client);
 
-  explicit PDFTabHelper(content::WebContents* web_contents);
-  virtual ~PDFTabHelper();
-
-  OpenPDFInReaderPromptDelegate* open_in_reader_prompt() const {
+  OpenPDFInReaderPromptClient* open_in_reader_prompt() const {
     return open_in_reader_prompt_.get();
   }
 
-  void ShowOpenInReaderPrompt(scoped_ptr<OpenPDFInReaderPromptDelegate> prompt);
+  void ShowOpenInReaderPrompt(scoped_ptr<OpenPDFInReaderPromptClient> prompt);
 
  private:
+  PDFWebContentsHelper(content::WebContents* web_contents,
+                       scoped_ptr<PDFWebContentsHelperClient> client);
+  virtual ~PDFWebContentsHelper();
+
   // content::WebContentsObserver overrides:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidNavigateMainFrame(
@@ -49,25 +57,18 @@ class PDFTabHelper : public content::WebContentsObserver,
 
   // Message handlers.
   void OnHasUnsupportedFeature();
-  void OnSaveURLAs(const GURL& url,
-                   const content::Referrer& referrer);
+  void OnSaveURLAs(const GURL& url, const content::Referrer& referrer);
   void OnUpdateContentRestrictions(int content_restrictions);
   void OnModalPromptForPassword(const std::string& prompt,
                                 IPC::Message* reply_message);
 
   // The model for the confirmation prompt to open a PDF in Adobe Reader.
-  scoped_ptr<OpenPDFInReaderPromptDelegate> open_in_reader_prompt_;
+  scoped_ptr<OpenPDFInReaderPromptClient> open_in_reader_prompt_;
+  scoped_ptr<PDFWebContentsHelperClient> client_;
 
-  DISALLOW_COPY_AND_ASSIGN(PDFTabHelper);
+  DISALLOW_COPY_AND_ASSIGN(PDFWebContentsHelper);
 };
 
-typedef base::Callback<void(bool /* success */,
-                            const base::string16& /* password */)>
-                                PasswordDialogClosedCallback;
+}  // namespace pdf
 
-// Shows a tab-modal dialog to get a password for a PDF document.
-void ShowPDFPasswordDialog(content::WebContents* web_contents,
-                           const base::string16& prompt,
-                           const PasswordDialogClosedCallback& callback);
-
-#endif  // CHROME_BROWSER_UI_PDF_PDF_TAB_HELPER_H_
+#endif  // COMPONENTS_PDF_BROWSER_PDF_WEB_CONTENTS_HELPER_H_

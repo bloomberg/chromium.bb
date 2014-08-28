@@ -17,6 +17,9 @@
 
 class ChromeExtensionsDispatcherDelegate;
 class ChromeRenderProcessObserver;
+#if defined(ENABLE_FULL_PRINTING)
+class ChromePDFPrintClient;
+#endif
 class PrescientNetworkingDispatcher;
 class RendererNetPredictor;
 class SearchBouncer;
@@ -207,6 +210,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   scoped_refptr<WebRtcLoggingMessageFilter> webrtc_logging_message_filter_;
 #endif
   scoped_ptr<SearchBouncer> search_bouncer_;
+#if defined(ENABLE_FULL_PRINTING)
+  scoped_ptr<ChromePDFPrintClient> pdf_print_client_;
+#endif
 #if defined(ENABLE_PLUGINS)
   std::set<std::string> allowed_compositor_origins_;
   std::set<std::string> allowed_video_decode_origins_;

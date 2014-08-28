@@ -124,8 +124,10 @@ static_library("renderer") {
 
   if (printing_mode > 0) {
     deps += [ "//printing" ]
+    sources += rebase_path(gypi_values.chrome_renderer_printing_sources,
+                           ".", "..")
     if (printing_mode == 1) {
-      sources += rebase_path(gypi_values.chrome_renderer_printing_sources,
+      sources += rebase_path(gypi_values.chrome_renderer_full_printing_sources,
                              ".", "..")
     }
   }

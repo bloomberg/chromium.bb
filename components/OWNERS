@@ -122,6 +122,11 @@ per-file password_manager*=stuartmorgan@chromium.org
 per-file password_manager*=tim@chromium.org
 per-file password_manager*=vabr@chromium.org
 
+per-file pdf.gypi=gene@chromium.org
+per-file pdf.gypi=jam@chromium.org
+per-file pdf.gypi=raymes@chromium.org
+per-file pdf.gypi=thestig@chromium.org
+
 per-file precache*=bengr@chromium.org
 per-file precache*=sclittle@chromium.org
 

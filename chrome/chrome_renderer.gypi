@@ -208,8 +208,6 @@
       'renderer/pepper/pepper_shared_memory_message_filter.h',
       'renderer/pepper/pepper_uma_host.cc',
       'renderer/pepper/pepper_uma_host.h',
-      'renderer/pepper/ppb_pdf_impl.cc',
-      'renderer/pepper/ppb_pdf_impl.h',
     ],
     # For safe_browsing==1 or safe_browsing==2.
     'chrome_renderer_basic_safe_browsing_sources': [
@@ -260,6 +258,10 @@
       'renderer/printing/print_web_view_helper_android.cc',
       'renderer/printing/print_web_view_helper_linux.cc',
       'renderer/printing/print_web_view_helper_mac.mm',
+    ],
+    'chrome_renderer_full_printing_sources': [
+      'renderer/pepper/chrome_pdf_print_client.cc',
+      'renderer/pepper/chrome_pdf_print_client.h',
     ],
   },
   'targets': [
@@ -320,6 +322,7 @@
             '<@(chrome_renderer_plugin_sources)',
           ],
           'dependencies': [
+            '../components/components.gyp:pdf_renderer',
             '../ppapi/ppapi_internal.gyp:ppapi_host',
             '../ppapi/ppapi_internal.gyp:ppapi_proxy',
             '../ppapi/ppapi_internal.gyp:ppapi_ipc',
@@ -382,7 +385,12 @@
           ],
           'sources': [
             '<@(chrome_renderer_printing_sources)',
-          ]
+          ],
+        }],
+        ['enable_printing==1', {
+          'sources': [
+            '<@(chrome_renderer_full_printing_sources)',
+          ],
         }],
         ['win_pdf_metafile_for_printing==1', {
           'sources': [

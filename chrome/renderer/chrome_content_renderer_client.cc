@@ -51,7 +51,6 @@
 #include "chrome/renderer/net_benchmarking_extension.h"
 #include "chrome/renderer/page_load_histograms.h"
 #include "chrome/renderer/pepper/pepper_helper.h"
-#include "chrome/renderer/pepper/ppb_pdf_impl.h"
 #include "chrome/renderer/playback_extension.h"
 #include "chrome/renderer/plugins/chrome_plugin_placeholder.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
@@ -75,6 +74,7 @@
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/nacl/renderer/ppb_nacl_private_impl.h"
 #include "components/password_manager/content/renderer/credential_manager_client.h"
+#include "components/pdf/renderer/ppb_pdf_impl.h"
 #include "components/plugins/renderer/mobile_youtube_plugin.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
@@ -121,6 +121,10 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "extensions/renderer/extensions_render_frame_observer.h"
+#endif
+
+#if defined(ENABLE_FULL_PRINTING)
+#include "chrome/renderer/pepper/chrome_pdf_print_client.h"
 #endif
 
 #if defined(ENABLE_SPELLCHECK)
@@ -420,6 +424,10 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   // patched this way.
   if (blacklist::IsBlacklistInitialized())
     UMA_HISTOGRAM_BOOLEAN("Blacklist.PatchedInRenderer", true);
+#endif
+#if defined(ENABLE_FULL_PRINTING)
+  pdf_print_client_.reset(new ChromePDFPrintClient());
+  pdf::PPB_PDF_Impl::SetPrintClient(pdf_print_client_.get());
 #endif
 }
 
@@ -1394,7 +1402,7 @@ const void* ChromeContentRendererClient::CreatePPAPIInterface(
     return nacl::GetNaClPrivateInterface();
 #endif  // DISABLE_NACL
   if (interface_name == PPB_PDF_INTERFACE)
-    return PPB_PDF_Impl::GetInterface();
+    return pdf::PPB_PDF_Impl::GetInterface();
 #endif
   return NULL;
 }

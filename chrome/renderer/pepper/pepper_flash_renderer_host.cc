@@ -10,7 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
-#include "chrome/renderer/pepper/ppb_pdf_impl.h"
+#include "components/pdf/renderer/ppb_pdf_impl.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
@@ -377,6 +377,6 @@ int32_t PepperFlashRendererHost::OnIsRectTopmost(
 
 int32_t PepperFlashRendererHost::OnInvokePrinting(
     ppapi::host::HostMessageContext* host_context) {
-  PPB_PDF_Impl::InvokePrintingForInstance(pp_instance());
+  pdf::PPB_PDF_Impl::InvokePrintingForInstance(pp_instance());
   return PP_OK;
 }

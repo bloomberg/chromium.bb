@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/features.gni")
+
 # Collection of all components. You wouldn't link to this, but this is rather
 # to reference the files so they can be compiled by the build system.
 group("all_components") {
@@ -56,6 +58,9 @@ group("all_components") {
     "//components/password_manager/content/browser",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
+    "//components/pdf/browser",
+    "//components/pdf/common",
+    "//components/pdf/renderer",
     "//components/plugins/renderer",
     "//components/policy",
     "//components/power",
@@ -103,6 +108,14 @@ group("all_components") {
 
   if (is_ios) {
     deps -= [ "//components/keyed_service/content" ]
+  }
+
+  if (!enable_plugins) {
+    deps -= [
+      "//components/pdf/browser",
+      "//components/pdf/common",
+      "//components/pdf/renderer",
+    ]
   }
 
   if (is_android) {
