@@ -4,8 +4,6 @@
 
 #include "content/public/browser/browser_plugin_guest_manager.h"
 
-#include "base/values.h"
-
 namespace content {
 
 WebContents* BrowserPluginGuestManager::GetGuestByInstanceID(

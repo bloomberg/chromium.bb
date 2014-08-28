@@ -5,20 +5,11 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_PLUGIN_GUEST_MANAGER_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_PLUGIN_GUEST_MANAGER_H_
 
-#include <string>
-
 #include "base/callback.h"
 #include "content/common/content_export.h"
 
-class GURL;
-
-namespace base {
-class DictionaryValue;
-}  // namespace base
-
 namespace content {
 
-class SiteInstance;
 class WebContents;
 
 // A BrowserPluginGuestManager offloads guest management and routing
@@ -27,7 +18,6 @@ class CONTENT_EXPORT BrowserPluginGuestManager {
  public:
   virtual ~BrowserPluginGuestManager() {}
 
-  typedef base::Callback<void(WebContents*)> GuestByInstanceIDCallback;
   // Requests a guest WebContents associated with the provided
   // |browser_plugin_instance_id|.
   // Returns the guest associated with the provided ID if one exists.
