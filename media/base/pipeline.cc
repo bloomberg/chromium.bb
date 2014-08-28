@@ -530,6 +530,10 @@ void Pipeline::StopTask(const base::Closure& stop_cb) {
   if (state_ == kStopping)
     return;
 
+  PipelineStatistics stats = GetStatistics();
+  if (renderer_ && renderer_->HasVideo() && stats.video_frames_decoded > 0)
+    UMA_HISTOGRAM_COUNTS("Media.DroppedFrameCount", stats.video_frames_dropped);
+
   SetState(kStopping);
   pending_callbacks_.reset();
   DoStop(base::Bind(&Pipeline::OnStopCompleted, weak_factory_.GetWeakPtr()));

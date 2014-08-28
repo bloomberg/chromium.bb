@@ -11085,6 +11085,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Media.DroppedFrameCount">
+  <owner>prabhur@chromium.org</owner>
+  <summary>
+    Count of dropped frames between pipeline start and stop. Media pipeline
+    starts/stops when an HTML5 video is loaded/unloaded respectively in the
+    browser.
+  </summary>
+</histogram>
+
 <histogram name="Media.Duration" units="ms">
   <owner>scherkus@chromium.org</owner>
   <summary>Duration in milliseconds of HTML5 media (when known).</summary>
