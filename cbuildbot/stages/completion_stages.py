@@ -424,7 +424,8 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
       inflight: Names of the builders that timed out.
       no_stat: Set of builder names of slave builders that had status None.
     """
-    self.SendCanaryFailureAlert(failing, inflight, no_stat)
+    if self._run.manifest_branch == 'master':
+      self.SendCanaryFailureAlert(failing, inflight, no_stat)
 
 
 class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
