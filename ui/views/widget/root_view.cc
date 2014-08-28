@@ -20,7 +20,7 @@
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view_targeter.h"
-#include "ui/views/views_switches.h"
+#include "ui/views/widget/root_view_targeter.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -159,6 +159,7 @@ RootView::RootView(Widget* widget)
       last_mouse_event_x_(-1),
       last_mouse_event_y_(-1),
       gesture_handler_(NULL),
+      allow_gesture_event_retargeting_(true),
       pre_dispatch_handler_(new internal::PreEventDispatchHandler(this)),
       post_dispatch_handler_(new internal::PostEventDispatchHandler),
       focus_search_(this, false, false),
@@ -168,7 +169,7 @@ RootView::RootView(Widget* widget)
       old_dispatch_target_(NULL) {
   AddPreTargetHandler(pre_dispatch_handler_.get());
   AddPostTargetHandler(post_dispatch_handler_.get());
-  SetEventTargeter(scoped_ptr<ViewTargeter>(new ViewTargeter(this)));
+  SetEventTargeter(scoped_ptr<ViewTargeter>(new RootViewTargeter(this, this)));
 }
 
 RootView::~RootView() {
@@ -283,6 +284,11 @@ ui::EventDispatchDetails RootView::OnEventFromSource(ui::Event* event) {
          gesture_event->type() == ui::ET_SCROLL_FLING_START)) {
       return DispatchDetails();
     }
+
+    // If |gesture_handler_| is non-null (as a result of dispatching a previous
+    // gesture event), then |gesture_event| should be dispatched only to
+    // |gesture_handler_|.
+    allow_gesture_event_retargeting_ = gesture_handler_ ? false : true;
 
     DispatchGestureEvent(gesture_event);
     return DispatchDetails();
@@ -679,9 +685,9 @@ void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
       // process scroll-gesture events. In such case, we allow the event to
       // bubble up. |gesture_handler_| is changed to its nearest ancestor
       // that handles scroll-gesture events.
-      for (gesture_handler_ = gesture_handler_->parent();
-           gesture_handler_ && gesture_handler_ != this;
-           gesture_handler_ = gesture_handler_->parent()) {
+      gesture_handler_ = static_cast<View*>(
+          targeter()->FindNextBestTarget(gesture_handler_, event));
+      while (gesture_handler_ && gesture_handler_ != this) {
         ui::GestureEvent gesture_event(*event,
                                        static_cast<View*>(this),
                                        gesture_handler_);
@@ -697,6 +703,8 @@ void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
                    dispatch_details.target_destroyed) {
           return;
         }
+        gesture_handler_ = static_cast<View*>(
+            targeter()->FindNextBestTarget(gesture_handler_, event));
       }
       gesture_handler_ = NULL;
     }
@@ -704,23 +712,10 @@ void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
     return;
   }
 
-  View* gesture_handler = NULL;
-  if (views::switches::IsRectBasedTargetingEnabled() &&
-      !event->details().bounding_box().IsEmpty()) {
-    // TODO(tdanderson): Pass in the bounding box to GetEventHandlerForRect()
-    // once crbug.com/313392 is resolved.
-    gfx::Rect touch_rect(event->details().bounding_box());
-    touch_rect.set_origin(event->location());
-    touch_rect.Offset(-touch_rect.width() / 2, -touch_rect.height() / 2);
-    gesture_handler = GetEventHandlerForRect(touch_rect);
-  } else {
-    gesture_handler = GetEventHandlerForPoint(event->location());
-  }
-
   // Walk up the tree until we find a view that wants the gesture event.
-  for (gesture_handler_ = gesture_handler;
-       gesture_handler_ && (gesture_handler_ != this);
-       gesture_handler_ = gesture_handler_->parent()) {
+  gesture_handler_ =
+      static_cast<View*>(targeter()->FindTargetForEvent(this, event));
+  while (gesture_handler_ && gesture_handler_ != this) {
     // Disabled views are permitted to be targets of gesture events, but
     // gesture events should never actually be dispatched to them.
     if (!gesture_handler_->enabled()) {
@@ -765,6 +760,8 @@ void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
 
     // The gesture event wasn't processed. Go up the view hierarchy and
     // dispatch the gesture event.
+    gesture_handler_ = static_cast<View*>(
+        targeter()->FindNextBestTarget(gesture_handler_, event));
   }
 
   gesture_handler_ = NULL;

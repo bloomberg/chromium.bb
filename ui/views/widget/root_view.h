@@ -17,9 +17,11 @@
 namespace views {
 
 namespace test {
+class ViewTargeterTest;
 class WidgetTest;
 }
 
+class RootViewTargeter;
 class Widget;
 
 // This is a views-internal API and should not be used externally.
@@ -122,8 +124,10 @@ class VIEWS_EXPORT RootView : public View,
   virtual View::DragInfo* GetDragInfo() OVERRIDE;
 
  private:
+  friend class ::views::RootViewTargeter;
   friend class ::views::View;
   friend class ::views::Widget;
+  friend class ::views::test::ViewTargeterTest;
   friend class ::views::test::WidgetTest;
 
   // Input ---------------------------------------------------------------------
@@ -168,6 +172,9 @@ class VIEWS_EXPORT RootView : public View,
 
   // Input ---------------------------------------------------------------------
 
+  // TODO(tdanderson): Consider moving the input-related members into
+  //                   ViewTargeter / RootViewTargeter.
+
   // The view currently handing down - drag - up
   View* mouse_pressed_handler_;
 
@@ -187,9 +194,12 @@ class VIEWS_EXPORT RootView : public View,
   int last_mouse_event_x_;
   int last_mouse_event_y_;
 
-  // The view currently handling gesture events. When set, this handler receives
-  // all gesture events.
+  // The View currently handling gesture events.
   View* gesture_handler_;
+
+  // If true, then gesture events received from Widget are permitted to be
+  // re-targeted and re-dispatched while they remain unhandled.
+  bool allow_gesture_event_retargeting_;
 
   scoped_ptr<internal::PreEventDispatchHandler> pre_dispatch_handler_;
   scoped_ptr<internal::PostEventDispatchHandler> post_dispatch_handler_;

@@ -292,6 +292,8 @@
       'widget/drop_helper.h',
       'widget/root_view.cc',
       'widget/root_view.h',
+      'widget/root_view_targeter.cc',
+      'widget/root_view_targeter.h',
       'widget/monitor_win.cc',
       'widget/monitor_win.h',
       'widget/native_widget.h',

@@ -10,6 +10,10 @@
 
 namespace views {
 
+namespace internal {
+class RootView;
+}  // namespace internal
+
 class View;
 class ViewTargeterDelegate;
 
@@ -40,8 +44,18 @@ class VIEWS_EXPORT ViewTargeter : public ui::EventTargeter {
       const ui::LocatedEvent& event) const OVERRIDE;
 
  private:
+  // TODO(tdanderson): Un-friend RootView once RootView::DispatchGestureEvent()
+  //                   has been removed.
+  friend class internal::RootView;
+
   View* FindTargetForKeyEvent(View* root, const ui::KeyEvent& key);
   View* FindTargetForScrollEvent(View* root, const ui::ScrollEvent& scroll);
+
+  virtual View* FindTargetForGestureEvent(View* root,
+                                          const ui::GestureEvent& gesture);
+  virtual ui::EventTarget* FindNextBestTargetForGestureEvent(
+      ui::EventTarget* previous_target,
+      const ui::GestureEvent& gesture);
 
   // ViewTargeter does not own the |delegate_|, but |delegate_| must
   // outlive the targeter.

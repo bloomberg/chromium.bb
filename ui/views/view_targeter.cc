@@ -39,6 +39,9 @@ ui::EventTarget* ViewTargeter::FindTargetForEvent(ui::EventTarget* root,
                                     *static_cast<ui::ScrollEvent*>(event));
   }
 
+  if (event->IsGestureEvent())
+    return FindTargetForGestureEvent(view, *(event->AsGestureEvent()));
+
   NOTREACHED() << "ViewTargeter does not yet support this event type.";
   return NULL;
 }
@@ -46,6 +49,14 @@ ui::EventTarget* ViewTargeter::FindTargetForEvent(ui::EventTarget* root,
 ui::EventTarget* ViewTargeter::FindNextBestTarget(
     ui::EventTarget* previous_target,
     ui::Event* event) {
+  if (!previous_target)
+    return NULL;
+
+  if (event->IsGestureEvent()) {
+    return FindNextBestTargetForGestureEvent(previous_target,
+                                             *(event->AsGestureEvent()));
+  }
+
   return previous_target->GetParentTarget();
 }
 
@@ -73,6 +84,24 @@ View* ViewTargeter::FindTargetForScrollEvent(View* root,
                                              const ui::ScrollEvent& scroll) {
   gfx::Rect rect(scroll.location(), gfx::Size(1, 1));
   return root->GetEffectiveViewTargeter()->TargetForRect(root, rect);
+}
+
+View* ViewTargeter::FindTargetForGestureEvent(View* root,
+                                              const ui::GestureEvent& gesture) {
+  // TODO(tdanderson): The only code path that performs targeting for gestures
+  //                   uses the ViewTargeter installed on the RootView (i.e.,
+  //                   a RootViewTargeter). Provide a default implementation
+  //                   here if we need to be able to perform gesture targeting
+  //                   starting at an arbitrary node in a Views tree.
+  NOTREACHED();
+  return NULL;
+}
+
+ui::EventTarget* ViewTargeter::FindNextBestTargetForGestureEvent(
+    ui::EventTarget* previous_target,
+    const ui::GestureEvent& gesture) {
+  NOTREACHED();
+  return NULL;
 }
 
 }  // namespace views

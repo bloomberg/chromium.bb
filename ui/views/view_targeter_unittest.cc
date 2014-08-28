@@ -76,7 +76,26 @@ class TestMaskedView : public View, public MaskedTargeterDelegate {
 
 namespace test {
 
-typedef ViewsTestBase ViewTargeterTest;
+// TODO(tdanderson): Clean up this test suite by moving common code/state into
+//                   ViewTargeterTest and overriding SetUp(), TearDown(), etc.
+//                   See crbug.com/355680.
+class ViewTargeterTest : public ViewsTestBase {
+ public:
+  ViewTargeterTest() {}
+  virtual ~ViewTargeterTest() {}
+
+  void SetGestureHandler(internal::RootView* root_view, View* handler) {
+    root_view->gesture_handler_ = handler;
+  }
+
+  void SetAllowGestureEventRetargeting(internal::RootView* root_view,
+                                       bool allow) {
+    root_view->allow_gesture_event_retargeting_ = allow;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ViewTargeterTest);
+};
 
 namespace {
 
@@ -117,9 +136,7 @@ TEST_F(ViewTargeterTest, ViewTargeterForKeyEvents) {
 
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
-  ViewTargeter* view_targeter = new ViewTargeter(root_view);
-  ui::EventTargeter* targeter = view_targeter;
-  root_view->SetEventTargeter(make_scoped_ptr(view_targeter));
+  ui::EventTargeter* targeter = root_view->targeter();
 
   ui::KeyEvent key_event('a', ui::VKEY_A, ui::EF_NONE);
 
@@ -166,9 +183,7 @@ TEST_F(ViewTargeterTest, ViewTargeterForScrollEvents) {
 
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
-  ViewTargeter* view_targeter = new ViewTargeter(root_view);
-  ui::EventTargeter* targeter = view_targeter;
-  root_view->SetEventTargeter(make_scoped_ptr(view_targeter));
+  ui::EventTargeter* targeter = root_view->targeter();
 
   // The event falls within the bounds of |child| and |content| but not
   // |grandchild|, so |child| should be the initial target for the event.
@@ -208,6 +223,94 @@ TEST_F(ViewTargeterTest, ViewTargeterForScrollEvents) {
   EXPECT_EQ(content, static_cast<View*>(current_target));
 }
 
+// Convenience to make constructing a GestureEvent simpler.
+class GestureEventForTest : public ui::GestureEvent {
+ public:
+  GestureEventForTest(ui::EventType type, int x, int y)
+      : GestureEvent(x,
+                     y,
+                     0,
+                     base::TimeDelta(),
+                     ui::GestureEventDetails(type, 0.0f, 0.0f)) {}
+
+  GestureEventForTest(ui::GestureEventDetails details, int x, int y)
+      : GestureEvent(x, y, 0, base::TimeDelta(), details) {}
+};
+
+// Verifies that the the functions ViewTargeter::FindTargetForEvent()
+// and ViewTargeter::FindNextBestTarget() are implemented correctly
+// for gesture events.
+TEST_F(ViewTargeterTest, ViewTargeterForGestureEvents) {
+  Widget widget;
+  Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.bounds = gfx::Rect(0, 0, 200, 200);
+  widget.Init(init_params);
+
+  // The coordinates used for SetBounds() are in the parent coordinate space.
+  View* content = new View;
+  content->SetBounds(0, 0, 100, 100);
+  View* child = new View;
+  child->SetBounds(50, 50, 20, 20);
+  View* grandchild = new View;
+  grandchild->SetBounds(0, 0, 5, 5);
+
+  widget.SetContentsView(content);
+  content->AddChildView(child);
+  child->AddChildView(grandchild);
+
+  internal::RootView* root_view =
+      static_cast<internal::RootView*>(widget.GetRootView());
+  ui::EventTargeter* targeter = root_view->targeter();
+
+  // Define a GESTURE_TAP and a GESTURE_SCROLL_BEGIN.
+  gfx::Rect bounding_box(gfx::Point(46, 46), gfx::Size(8, 8));
+  gfx::Point center_point(bounding_box.CenterPoint());
+  ui::GestureEventDetails details(ui::ET_GESTURE_TAP, 0.0f, 0.0f);
+  details.set_bounding_box(bounding_box);
+  GestureEventForTest tap(details, center_point.x(), center_point.y());
+  details = ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0.0f, 0.0f);
+  details.set_bounding_box(bounding_box);
+  GestureEventForTest scroll_begin(details, center_point.x(), center_point.y());
+
+  // Assume that the view currently handling gestures has been set as
+  // |grandchild| by a previous gesture event. Thus subsequent gesture events
+  // should be initially targeted to |grandchild|, and re-targeting should
+  // be prohibited for all gesture event types except for GESTURE_SCROLL_BEGIN
+  // (which should be re-targeted to the parent of |grandchild|).
+  SetAllowGestureEventRetargeting(root_view, false);
+  SetGestureHandler(root_view, grandchild);
+  EXPECT_EQ(grandchild, targeter->FindTargetForEvent(root_view, &tap));
+  EXPECT_EQ(NULL, targeter->FindNextBestTarget(grandchild, &tap));
+  EXPECT_EQ(grandchild, targeter->FindTargetForEvent(root_view, &scroll_begin));
+  EXPECT_EQ(child, targeter->FindNextBestTarget(grandchild, &scroll_begin));
+
+  // Assume that the view currently handling gestures is still set as
+  // |grandchild|, but this was not done by a previous gesture. Thus we are
+  // in the process of finding the View to which subsequent gestures will be
+  // dispatched, so all gesture events should be re-targeted up the ancestor
+  // chain.
+  SetAllowGestureEventRetargeting(root_view, true);
+  EXPECT_EQ(child, targeter->FindNextBestTarget(grandchild, &tap));
+  EXPECT_EQ(child, targeter->FindNextBestTarget(grandchild, &scroll_begin));
+
+  // Assume that the default gesture handler was set by the previous gesture,
+  // but that this handler is currently NULL. No gesture events should be
+  // re-targeted in this case (regardless of the view that is passed in to
+  // FindNextBestTarget() as the previous target).
+  SetGestureHandler(root_view, NULL);
+  SetAllowGestureEventRetargeting(root_view, false);
+  EXPECT_EQ(NULL, targeter->FindNextBestTarget(child, &tap));
+  EXPECT_EQ(NULL, targeter->FindNextBestTarget(NULL, &tap));
+  EXPECT_EQ(NULL, targeter->FindNextBestTarget(content, &scroll_begin));
+
+  // If no default gesture handler is currently set, targeting should be
+  // performed using the location of the gesture event.
+  SetAllowGestureEventRetargeting(root_view, true);
+  EXPECT_EQ(grandchild, targeter->FindTargetForEvent(root_view, &tap));
+  EXPECT_EQ(grandchild, targeter->FindTargetForEvent(root_view, &scroll_begin));
+}
+
 // Tests that the functions ViewTargeterDelegate::DoesIntersectRect()
 // and MaskedTargeterDelegate::DoesIntersectRect() work as intended when
 // called on views which are derived from ViewTargeterDelegate.
@@ -222,8 +325,7 @@ TEST_F(ViewTargeterTest, DoesIntersectRect) {
 
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
-  ViewTargeter* view_targeter = new ViewTargeter(root_view);
-  root_view->SetEventTargeter(make_scoped_ptr(view_targeter));
+  ViewTargeter* view_targeter = root_view->targeter();
 
   // The coordinates used for SetBounds() are in the parent coordinate space.
   TestingView v2;
