@@ -362,7 +362,7 @@ scoped_ptr<TileManager> TileManager::Create(
 
 TileManager::TileManager(
     TileManagerClient* client,
-    base::SequencedTaskRunner* task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     ResourcePool* resource_pool,
     Rasterizer* rasterizer,
     RenderingStatsInstrumentation* rendering_stats_instrumentation)

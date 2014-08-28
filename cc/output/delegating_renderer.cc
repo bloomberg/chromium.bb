@@ -113,8 +113,7 @@ void DelegatingRenderer::ReceiveSwapBuffersAck(
 }
 
 void DelegatingRenderer::DidChangeVisibility() {
-  scoped_refptr<ContextProvider> context_provider =
-      output_surface_->context_provider();
+  ContextProvider* context_provider = output_surface_->context_provider();
   if (!visible()) {
     TRACE_EVENT0("cc", "DelegatingRenderer::SetVisible dropping resources");
     resource_provider_->ReleaseCachedData();

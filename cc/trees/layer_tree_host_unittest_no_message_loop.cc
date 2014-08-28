@@ -84,9 +84,9 @@ class LayerTreeHostNoMessageLoopTest
 
   // base::DelegateSimpleThread::Delegate override.
   virtual void Run() OVERRIDE {
-    ASSERT_FALSE(base::MessageLoopProxy::current());
+    ASSERT_FALSE(base::MessageLoopProxy::current().get());
     RunTestWithoutMessageLoop();
-    EXPECT_FALSE(base::MessageLoopProxy::current());
+    EXPECT_FALSE(base::MessageLoopProxy::current().get());
   }
 
  protected:

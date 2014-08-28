@@ -659,10 +659,14 @@ void Layer::SendDamagedRects() {
 }
 
 void Layer::CompleteAllAnimations() {
-  std::vector<scoped_refptr<LayerAnimator> > animators;
+  typedef std::vector<scoped_refptr<LayerAnimator> > LayerAnimatorVector;
+  LayerAnimatorVector animators;
   CollectAnimators(&animators);
-  std::for_each(animators.begin(), animators.end(),
-                std::mem_fun(&LayerAnimator::StopAnimating));
+  for (LayerAnimatorVector::const_iterator it = animators.begin();
+       it != animators.end();
+       ++it) {
+    (*it)->StopAnimating();
+  }
 }
 
 void Layer::SuppressPaint() {

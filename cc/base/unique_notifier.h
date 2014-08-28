@@ -32,6 +32,7 @@ class CC_EXPORT UniqueNotifier {
  private:
   void Notify();
 
+  // TODO(dcheng): How come this doesn't need to hold a ref to the task runner?
   base::SequencedTaskRunner* task_runner_;
   base::Closure closure_;
   bool notification_pending_;

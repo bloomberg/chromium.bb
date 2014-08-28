@@ -153,7 +153,7 @@ TEST_F(OutputSurfaceTestInitializeNewContext3d, Success) {
 
   EXPECT_TRUE(output_surface_.InitializeNewContext3d(context_provider_));
   EXPECT_TRUE(client_.deferred_initialize_called());
-  EXPECT_EQ(context_provider_, output_surface_.context_provider());
+  EXPECT_EQ(context_provider_.get(), output_surface_.context_provider());
 
   EXPECT_FALSE(client_.did_lose_output_surface_called());
   context_provider_->ContextGL()->LoseContextCHROMIUM(
