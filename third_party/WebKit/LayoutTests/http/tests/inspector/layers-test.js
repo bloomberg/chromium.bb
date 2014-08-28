@@ -6,7 +6,7 @@ function initialize_LayerTreeTests()
         if (extension.module().name() === "layers")
             WebInspector.inspectorView.addPanel(new WebInspector.RuntimeExtensionPanelDescriptor(extension));
     });
-    InspectorTest.layerTreeModel = WebInspector.inspectorView.panel("layers")._model;
+    InspectorTest.layerTreeModel = WebInspector.targetManager.mainTarget().layerTreeModel;
     InspectorTest.layers3DView = WebInspector.inspectorView.panel("layers")._layers3DView;
 
     InspectorTest.labelForLayer = function(layer)
