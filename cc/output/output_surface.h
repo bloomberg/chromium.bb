@@ -102,9 +102,6 @@ class CC_EXPORT OutputSurface {
   // deferred_gl_initialization capability.
   void ReleaseContextProvider();
 
-  // Enable or disable vsync.
-  void SetThrottleFrameProduction(bool enable);
-
   virtual void EnsureBackbuffer();
   virtual void DiscardBackbuffer();
 
