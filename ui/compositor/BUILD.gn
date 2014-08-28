@@ -58,6 +58,7 @@ component("compositor") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//cc",
+    "//cc/surfaces",
     "//gpu/command_buffer/common",
     "//skia",
     "//ui/gfx",

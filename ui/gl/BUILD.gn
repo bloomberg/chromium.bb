@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 if (is_android) {
+  import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
 }
 
@@ -246,15 +247,14 @@ component("gl") {
       "gl_surface_ozone.cc",
     ]
     deps += [
-      #"//ui/gfx/ozone",
       "//ui/ozone",
+      "//ui/ozone:ozone_base",
     ]
   }
 
-  # TODO(GYP) enable this dependency once its written.
-  #if (is_android && !android_webview_build) {
-  #  deps += [ "//ui/android:ui_java" ]
-  #}
+  if (is_android && !is_android_webview_build) {
+    deps += [ "//ui/android:ui_java" ]
+  }
 }
 
 action("generate_gl_bindings") {

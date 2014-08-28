@@ -6,6 +6,9 @@ import("//build/config/ui.gni")
 
 component("platform") {
   sources = [
+    # Allow this target to include events_export.h without depending on the
+    # events target (which would be circular).
+    "../events_export.h",
     "platform_event_dispatcher.h",
     "platform_event_observer.h",
     "platform_event_source.cc",
@@ -21,7 +24,7 @@ component("platform") {
   ]
 
   deps = [
-    "//base"
+    "//base",
   ]
 
   if (use_x11) {

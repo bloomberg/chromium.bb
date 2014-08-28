@@ -16,6 +16,7 @@ source_set("webui") {
   visibility = "//ui/keyboard"
 
   sources = [
+    "../keyboard_export.h",
     "vk_mojo_handler.cc",
     "vk_mojo_handler.h",
     "vk_webui_controller.cc",
@@ -26,6 +27,7 @@ source_set("webui") {
     ":mojo_bindings",
     "//base",
     "//content/public/browser",
+    "//content/public/common",
     "//ui/aura",
     "//ui/base",
     "//ui/keyboard:resources",

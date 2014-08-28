@@ -96,17 +96,15 @@ static_library("test_support") {
   ]
 
   deps = [
+    ":wm",
     "//skia",
     "//ui/aura",
+    "//ui/aura:test_support",
     "//ui/base",
     "//ui/events",
     "//ui/events:events_base",
   ]
 }
-
-# TODO(GYP) enable the wm_unittests target when all dependencies have been
-# resolved. Some transitive deps aren't converted yet.
-if (false) {
 
 test("wm_unittests") {
   sources = [
@@ -141,7 +139,6 @@ test("wm_unittests") {
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gl",
   ]
-}
-
 }

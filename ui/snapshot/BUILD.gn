@@ -69,6 +69,7 @@ test("snapshot_unittests") {
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gl",
   ]
 
   if (use_aura) {

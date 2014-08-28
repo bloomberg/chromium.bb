@@ -19,7 +19,9 @@ component("web_dialogs") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//content/public/browser",
+    "//content/public/common",
     "//skia",
+    "//ui/base",
   ]
 }
 

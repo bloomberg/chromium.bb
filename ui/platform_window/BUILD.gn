@@ -10,4 +10,10 @@ component("platform_window") {
     "platform_window_delegate.h",
     "platform_window_export.h",
   ] 
+
+  deps = [
+    "//base",
+    "//ui/base",
+    "//ui/gfx",
+  ]
 }

@@ -72,18 +72,6 @@ component("events_base") {
 }
 
 component("events") {
-  deps = [
-    ":dom4_keycode_converter",
-    ":events_base",
-    ":gesture_detection",
-    "//base/third_party/dynamic_annotations",
-    "//skia",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-  ]
-
-  defines = [ "EVENTS_IMPLEMENTATION" ]
-
   sources = [
     "cocoa/cocoa_event_utils.h",
     "cocoa/cocoa_event_utils.mm",
@@ -113,6 +101,20 @@ component("events") {
     "win/events_win.cc",
     "x/events_x.cc",
   ]
+
+  defines = [ "EVENTS_IMPLEMENTATION" ]
+
+  deps = [
+    ":dom4_keycode_converter",
+    ":events_base",
+    ":gesture_detection",
+    "//base/third_party/dynamic_annotations",
+    "//skia",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+  ]
+
+  forward_dependent_configs_from = [ ":events_base" ]
 
   if (use_x11) {
     configs += [
@@ -231,13 +233,13 @@ source_set("test_support") {
   ]
 
   deps = [
+    ":events",
+    ":events_base",
+    ":gesture_detection",
     "//base",
     "//skia",
     "//ui/events/platform",
     "//ui/gfx/geometry",
-    ":events",
-    ":events_base",
-    ":gesture_detection",
   ]
 
   if (is_ios) {

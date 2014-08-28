@@ -48,6 +48,7 @@ component("app_list") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//skia",
+    "//ui/accessibility",
     "//ui/base",
     "//ui/compositor",
     "//ui/events:events_base",
@@ -195,6 +196,8 @@ test("app_list_unittests") {
     "//testing/gtest",
     "//ui/base",
     "//ui/compositor",
+    "//ui/events",
+    "//ui/gl",
     "//ui/resources",
     "//ui/resources:ui_test_pak",
   ]

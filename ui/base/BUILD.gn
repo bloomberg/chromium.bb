@@ -558,6 +558,7 @@ source_set("test_support") {
   ]
 
   deps = [
+    ":base",
     "//base",
     "//skia",
     "//testing/gtest",

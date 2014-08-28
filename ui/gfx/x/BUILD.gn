@@ -7,6 +7,7 @@ component("x") {
   output_name = "gfx_x11"
 
   sources = [
+    "../gfx_export.h",
     "x11_atom_cache.cc",
     "x11_atom_cache.h",
     "x11_connection.cc",

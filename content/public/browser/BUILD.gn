@@ -15,8 +15,6 @@ group("browser") {
 }
 
 source_set("sources") {
-  visibility = [ "//content", ":browser" ]
-
   if (is_ios) {
     # iOS doesn't get the normal file list and only takes these whitelisted
     # files.

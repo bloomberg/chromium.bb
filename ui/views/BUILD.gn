@@ -117,6 +117,7 @@ static_library("test_support") {
     "//ui/compositor",
     "//ui/compositor:test_support",
     "//ui/events",
+    "//ui/events:events_base",
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -134,8 +135,6 @@ static_library("test_support") {
     deps += [ "//ui/aura:test_support" ]
   }
 }
-
-if (false) {  # TODO(GYP) enable once this links
 
 test("views_unittests") {
   sources = gypi_values.views_unittests_sources
@@ -160,6 +159,7 @@ test("views_unittests") {
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gl",
     "//ui/wm",
     "//url",
   ]
@@ -201,14 +201,9 @@ test("views_unittests") {
     ]
   }
 
-  if (use_ozone) {
-    sources -= [
-      "corewm/capture_controller_unittest.cc",
-    ]
-  }
   if (use_aura) {
     sources += gypi_values.views_unittests_aura_sources
-    deps = [ "//ui/aura:test_support" ]
+    deps += [ "//ui/aura:test_support" ]
     if (!is_chromeos) {
       sources += gypi_values.views_unittests_desktop_aura_sources
     }
@@ -255,5 +250,3 @@ if (is_mac) {
     ]
   }
 }
-
-}  # if false

@@ -13,6 +13,9 @@ component("ipc") {
 
   defines = [ "EVENTS_IMPLEMENTATION" ]
 
-  deps = [ "//ipc" ]
+  deps = [
+    "//ipc",
+    "//ui/events",
+  ]
 }
 

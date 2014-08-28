@@ -23,8 +23,10 @@ component("webview") {
     "//base/third_party/dynamic_annotations",
     "//content/public/browser",
     "//skia",
+    "//ui/accessibility",
     "//ui/base",
     "//ui/events",
+    "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/web_dialogs",
@@ -47,6 +49,7 @@ source_set("test_support") {
     ":webview",
     "//base",
     "//content",
+    "//content/test:test_support",
     "//ipc:test_support",
     "//skia",
     "//testing/gtest",
@@ -57,6 +60,5 @@ source_set("test_support") {
     "//ui/gfx/geometry",
     "//ui/views",
     "//ui/views:test_support",
-    #'../../../../content/content_shell_and_tests.gyp:test_support_content',  TODO(GYP)
   ]
 }
