@@ -332,7 +332,7 @@ QuicTime::Delta TcpCubicSender::PrrTimeUntilSend(
     QuicByteCount bytes_in_flight) const {
   DCHECK(InRecovery());
   // Return QuicTime::Zero In order to ensure limited transmit always works.
-  if (prr_out_ == 0) {
+  if (prr_out_ == 0 || bytes_in_flight < kMaxSegmentSize) {
     return QuicTime::Delta::Zero();
   }
   if (SendWindow() > bytes_in_flight) {

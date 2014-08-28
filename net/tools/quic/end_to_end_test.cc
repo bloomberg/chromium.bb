@@ -672,9 +672,7 @@ TEST_P(EndToEndTest, LargePostNoPacketLossWithDelayAndReordering) {
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
 }
 
-// TODO(rtenneti): This is flaky on ChromiumOS bots.
-// http://crbug.com/407756
-TEST_P(EndToEndTest, DISABLED_LargePostZeroRTTFailure) {
+TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
   // Have the server accept 0-RTT without waiting a startup period.
   strike_register_no_startup_period_ = true;
 
