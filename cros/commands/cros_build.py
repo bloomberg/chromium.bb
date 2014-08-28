@@ -170,8 +170,7 @@ To just build a single package:
   def _SetupBoardIfNeeded(self):
     """Create the board if it's missing."""
     board = self.options.board
-    if not self.options.host and not os.path.isdir(
-        cros_build_lib.GetSysroot(board=board)):
+    if not self.options.host:
       self._UpdateChroot()
       cmd = [os.path.join(constants.CROSUTILS_DIR, 'setup_board'),
              '--skip_toolchain_update', '--skip_chroot_upgrade']
