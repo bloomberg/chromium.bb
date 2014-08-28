@@ -32,7 +32,6 @@ from chromite.lib.paygen import dryrun_lib
 from chromite.lib.paygen import gslib
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gspaths
-from chromite.lib.paygen import logging_config
 from chromite.lib.paygen import paygen_access_lib
 from chromite.lib.paygen import paygen_payload_lib
 from chromite.lib.paygen import urilib
@@ -123,6 +122,32 @@ class PayloadTestError(Error):
 
 class ArchiveError(Error):
   """Raised when there was a failure to map a build to the images archive."""
+
+
+def _LogList(title, obj_list):
+  """Helper for logging a list of objects.
+
+  Generates:
+    1: ObjA
+    2: ObjB
+    3: ObjC
+    ...
+
+  Args:
+    title: Title string for the list.
+    obj_list: List of objects to convert to string and log, one per line.
+  """
+  logging.info('%s:', title)
+
+  if not obj_list:
+    logging.info(' (no objects listed)')
+    return
+
+  index = 0
+
+  for obj in obj_list:
+    index += 1
+    logging.info(' %2d: %s', index, obj)
 
 
 def _FilterForImages(artifacts):
@@ -659,13 +684,12 @@ class _PaygenBuild(object):
       logging.info(e)
       raise BuildNotReady()
 
-    logging_config.ListLogger('Images found').LogAll(images)
+    _LogList('Images found', images)
 
     # Discover the previous builds we need deltas from.
     previous_builds = self._DiscoverNmoBuild()
     if previous_builds:
-      logging_config.ListLogger('Previous builds considered').LogAll(
-          previous_builds)
+      _LogList('Previous builds considered', previous_builds)
     else:
       logging.info('No previous builds found')
 
@@ -674,7 +698,7 @@ class _PaygenBuild(object):
     fsi_builds = [b for b in self._DiscoverFsiBuilds()
                   if b not in previous_builds]
     if fsi_builds:
-      logging_config.ListLogger('FSI builds considered').LogAll(fsi_builds)
+      _LogList('FSI builds considered', fsi_builds)
     else:
       logging.info('No FSI builds found')
 
@@ -1103,15 +1127,16 @@ class _PaygenBuild(object):
 
         # Display payload generation list, including payload name and whether
         # or not it already exists or will be skipped.
-        with logging_config.ListLogger('All payloads for the build') as logger:
-          for payload, skip, exists in payloads_attrs:
-            desc = str(payload)
-            if exists:
-              desc += ' (exists)'
-            elif skip:
-              desc += ' (skipped)'
+        log_items = []
+        for payload, skip, exists in payloads_attrs:
+          desc = str(payload)
+          if exists:
+            desc += ' (exists)'
+          elif skip:
+            desc += ' (skipped)'
+          log_items.append(desc)
 
-            logger.LogItem(desc)
+        _LogList('All payloads for the build', log_items)
 
         # Generate new payloads.
         new_payloads = [payload for payload, skip, exists in payloads_attrs
