@@ -1154,8 +1154,8 @@ li[renaming=''] .filename-label {
 
 #list-container li.table-row,
 #default-actions-list li {
-  height: 29px;
-  line-height: 29px;
+  height: 32px;
+  line-height: 32px;
 }
 
 /* The icon in the name column. See file_types.css for specific icons. */
