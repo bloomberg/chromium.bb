@@ -50800,6 +50800,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="43" label="kErrorCodePostinstallFirmwareRONotUpdatable"/>
   <int value="44" label="kErrorCodeUnsupportedMajorPayloadVersion"/>
   <int value="45" label="kErrorCodeUnsupportedMinorPayloadVersion"/>
+  <int value="46" label="kErrorCodeOmahaRequestXMLHasEntityDecl"/>
 </enum>
 
 <enum name="UpdateEngineInstallDateProvisioningSource" type="int">
