@@ -40,6 +40,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/url_constants.h"
 #include "ipc/ipc_sender.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
@@ -142,6 +143,11 @@ RendererOverridesHandler::RendererOverridesHandler()
       devtools::Page::setTouchEmulationEnabled::kName,
       base::Bind(
           &RendererOverridesHandler::PageSetTouchEmulationEnabled,
+          base::Unretained(this)));
+  RegisterCommandHandler(
+      devtools::Page::canEmulate::kName,
+      base::Bind(
+          &RendererOverridesHandler::PageCanEmulate,
           base::Unretained(this)));
   RegisterCommandHandler(
       devtools::Page::canScreencast::kName,
@@ -562,6 +568,24 @@ RendererOverridesHandler::PageSetTouchEmulationEnabled(
 
   // Pass to renderer.
   return NULL;
+}
+
+scoped_refptr<DevToolsProtocol::Response>
+RendererOverridesHandler::PageCanEmulate(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  base::DictionaryValue* result = new base::DictionaryValue();
+#if defined(OS_ANDROID)
+  result->SetBoolean(devtools::kResult, false);
+#else
+  if (WebContents* web_contents = WebContents::FromRenderViewHost(host_)) {
+    result->SetBoolean(
+        devtools::kResult,
+        !web_contents->GetVisibleURL().SchemeIs(kChromeDevToolsScheme));
+  } else {
+    result->SetBoolean(devtools::kResult, true);
+  }
+#endif  // defined(OS_ANDROID)
+  return command->SuccessResponse(result);
 }
 
 scoped_refptr<DevToolsProtocol::Response>
