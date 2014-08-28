@@ -231,7 +231,7 @@ def GetDataFromURL(url, retries=10, sleep_time=0.1, timeout=5):
     # Retrieves data from URL.
     try:
       status_code, data = utils.GetHttpClient().Get(url, timeout=timeout)
-    except IOError:
+    except IOError as e:
       status_code = -1
       data = None
 
@@ -370,7 +370,7 @@ def PrettifyFrameInfo(frame_indices, functions):
   """Return a string to represent the frames with functions."""
   frames = []
   for frame_index, function in zip(frame_indices, functions):
-    frames.append('frame #%s, function "%s"' % (frame_index, function))
+    frames.append('frame #%s, "%s"' % (frame_index, function.split('(')[0]))
   return '; '.join(frames)
 
 

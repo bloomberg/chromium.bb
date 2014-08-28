@@ -124,6 +124,9 @@ class BlameList(object):
     file_path = stack_frame.file_path
     crashed_line_number = stack_frame.crashed_line_range[0]
 
+    if file_path.startswith(component_path):
+      file_path = file_path[len(component_path):]
+
     # Parse blame information.
     parsed_blame_info = repository_parser.ParseBlameInfo(
         component_path, file_path, crashed_line_number, crash_revision)

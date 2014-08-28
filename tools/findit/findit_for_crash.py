@@ -477,8 +477,8 @@ def GenerateReasonForMatches(matches):
         pretty_file_names = crash_utils.PrettifyList(file_names)
 
         # Add the reason, break because we took care of the rest of the files.
-        file_string += '(%s)' % crash_utils.PrettifyFrameInfo(
-            stack_frame_indices, function_list)
+        file_string += ('(and is part of stack %s)' %
+            crash_utils.PrettifyFrameInfo(stack_frame_indices, function_list))
         reason.append(file_string % pretty_file_names)
         break
 
@@ -522,8 +522,8 @@ def CombineMatches(matches):
     if match.min_distance_info:
       file_name, min_crashed_line, min_changed_line = match.min_distance_info
       match.reason += \
-          ('Minimum distance from crashed line to changed line: %d. '
-           '(File: %s, Crashed on: %d, Changed: %d).\n' %
+          ('\nMinimum distance from crash line to modified line: %d. '
+           '(file: %s, crashed on: %d, modified: %d).\n' %
            (match.min_distance, file_name, min_crashed_line, min_changed_line))
 
   return combined_matches
@@ -668,8 +668,8 @@ def FindItForCrash(stacktrace_list,
 
   if result:
     return_message = (
-        'No CL in the regression changes the crashed files. The result is '
-        'the blame information.')
+        'No CL in the regression range changes the crashed files. '
+        'The result is the blame information.')
 
   # When findit could not find any CL that changes file in stacktrace or if
   # if cannot get any blame information, return a message saying that no

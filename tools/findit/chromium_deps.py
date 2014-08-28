@@ -5,6 +5,7 @@
 import base64
 import json
 import os
+import re
 import time
 import urllib2
 
@@ -14,6 +15,7 @@ from common import utils
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 CONFIG = json.loads(open(os.path.join(_THIS_DIR,
                                       'deps_config.json'), 'r').read())
+OLD_GIT_URL_PATTERN = re.compile(r'https?://git.chromium.org/(.*)')
 
 
 class _VarImpl(object):
@@ -147,6 +149,9 @@ def GetChromiumComponents(chromium_revision,
 
     name = _GetComponentName(component_path, host_dirs)
     repository, revision = component_repo_url.split('@')
+    match = OLD_GIT_URL_PATTERN.match(repository)
+    if match:
+      repository = 'https://chromium.googlesource.com/%s' % match.group(1)
     is_git_hash = utils.IsGitHash(revision)
     if is_git_hash:
       repository_type = 'git'

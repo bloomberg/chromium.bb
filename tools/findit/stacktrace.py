@@ -294,6 +294,13 @@ class Stacktrace(object):
 
     # Return a new stack frame object with the parsed information.
     file_name = file_path.split('/')[-1]
+
+    # If we have the common stack frame index pattern, then use it
+    # since it is more reliable.
+    index_match = re.match('\s*#(\d+)\s.*', line)
+    if index_match:
+      stack_frame_index = int(index_match.group(1))
+
     return StackFrame(stack_frame_index, component_path, component_name,
                       file_name, function, file_path, crashed_line_range)
 
