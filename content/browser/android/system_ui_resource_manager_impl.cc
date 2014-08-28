@@ -45,6 +45,7 @@ SkBitmap CreateOverscrollGlowLBitmap(const gfx::Size& screen_size) {
     LOG(FATAL) << " Failed to allocate bitmap of size " << bounds.width() << "x"
                << bounds.height();
   }
+  glow_bitmap.eraseColor(SK_ColorTRANSPARENT);
 
   SkCanvas canvas(glow_bitmap);
   canvas.clipRect(SkRect::MakeXYWH(0, 0, bounds.width(), bounds.height()));
