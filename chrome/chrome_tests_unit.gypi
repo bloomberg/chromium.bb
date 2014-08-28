@@ -1331,6 +1331,7 @@
         'browser/sync/glue/ui_model_worker_unittest.cc',
         'browser/sync/profile_sync_auth_provider_unittest.cc',
         'browser/sync/profile_sync_components_factory_impl_unittest.cc',
+        'browser/sync/profile_sync_service_android_unittest.cc',
         'browser/sync/profile_sync_service_autofill_unittest.cc',
         'browser/sync/profile_sync_service_bookmark_unittest.cc',
         'browser/sync/profile_sync_service_startup_unittest.cc',

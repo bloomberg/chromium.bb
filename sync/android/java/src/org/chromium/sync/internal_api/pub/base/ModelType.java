@@ -73,7 +73,12 @@ public enum ModelType {
     /**
      * A favicon tracking object.
      */
-    FAVICON_TRACKING("FAVICON_TRACKING");
+    FAVICON_TRACKING("FAVICON_TRACKING"),
+    /**
+     * A supervised user setting object. The old name "managed user" is used for backwards
+     * compatibility.
+     */
+    MANAGED_USER_SETTING("MANAGED_USER_SETTING");
 
     /** Special type representing all possible types. */
     public static final String ALL_TYPES_TYPE = "ALL_TYPES";
@@ -85,6 +90,7 @@ public enum ModelType {
     private final boolean mNonInvalidationType;
 
     ModelType(String modelType, boolean nonInvalidationType) {
+        assert nonInvalidationType || modelType == toString();
         mModelType = modelType;
         mNonInvalidationType = nonInvalidationType;
     }
@@ -165,21 +171,33 @@ public enum ModelType {
      * This strips out any {@link ModelType} that is not an invalidation type.
      */
     public static Set<ObjectId> modelTypesToObjectIds(Set<ModelType> modelTypes) {
-        Set<ObjectId> objectIds = new HashSet<ObjectId>(modelTypes.size());
-        for (ModelType modelType : modelTypes) {
-            if (!modelType.isNonInvalidationType()) {
-                objectIds.add(modelType.toObjectId());
-            }
+        Set<ModelType> filteredModelTypes = filterOutNonInvalidationTypes(modelTypes);
+        Set<ObjectId> objectIds = new HashSet<ObjectId>(filteredModelTypes.size());
+        for (ModelType modelType : filteredModelTypes) {
+            objectIds.add(modelType.toObjectId());
         }
         return objectIds;
     }
 
     /** Converts a set of {@link ModelType} to a set of string names. */
-    public static Set<String> modelTypesToSyncTypes(Set<ModelType> modelTypes) {
+    public static Set<String> modelTypesToSyncTypesForTest(Set<ModelType> modelTypes) {
         Set<String> objectIds = new HashSet<String>(modelTypes.size());
         for (ModelType modelType : modelTypes) {
             objectIds.add(modelType.toString());
         }
         return objectIds;
     }
+
+    /** Filters out non-invalidation types from a set of {@link ModelType}. */
+    @VisibleForTesting
+    public static Set<ModelType> filterOutNonInvalidationTypes(Set<ModelType> modelTypes) {
+        Set<ModelType> filteredTypes = new HashSet<ModelType>(modelTypes.size());
+        for (ModelType modelType : modelTypes) {
+            if (!modelType.isNonInvalidationType()) {
+                filteredTypes.add(modelType);
+            }
+        }
+        return filteredTypes;
+    }
+
 }

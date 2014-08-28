@@ -204,6 +204,14 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
                                        jobject obj,
                                        jlong network_resources);
 
+  // Public for tests.
+  static jlong ModelTypeSetToSelection(syncer::ModelTypeSet model_types);
+
+  // Converts a bitmap of model types to a set of Java ModelTypes, and returns
+  // their string descriptions separated by commas.
+  static std::string ModelTypeSelectionToStringForTest(
+      jlong model_type_selection);
+
   static ProfileSyncServiceAndroid* GetProfileSyncServiceAndroid();
 
   // Registers the ProfileSyncServiceAndroid's native methods through JNI.

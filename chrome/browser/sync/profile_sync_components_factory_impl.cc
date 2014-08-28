@@ -279,16 +279,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
           syncer::SUPERVISED_USER_SETTINGS,
           this,
           profile_));
-  pss->RegisterDataTypeController(
-      new SupervisedUserSyncDataTypeController(
-          syncer::SUPERVISED_USERS,
-          this,
-          profile_));
-  pss->RegisterDataTypeController(
-      new SupervisedUserSyncDataTypeController(
-          syncer::SUPERVISED_USER_SHARED_SETTINGS,
-          this,
-          profile_));
 #endif
 }
 
@@ -399,6 +389,19 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
             syncer::DICTIONARY,
             this));
   }
+#endif
+
+#if defined(ENABLE_MANAGED_USERS)
+  pss->RegisterDataTypeController(
+      new SupervisedUserSyncDataTypeController(
+          syncer::SUPERVISED_USERS,
+          this,
+          profile_));
+  pss->RegisterDataTypeController(
+      new SupervisedUserSyncDataTypeController(
+          syncer::SUPERVISED_USER_SHARED_SETTINGS,
+          this,
+          profile_));
 #endif
 }
 

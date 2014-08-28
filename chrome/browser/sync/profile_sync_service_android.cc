@@ -347,49 +347,9 @@ jboolean ProfileSyncServiceAndroid::IsSyncKeystoreMigrationDone(
 
 jlong ProfileSyncServiceAndroid::GetEnabledDataTypes(JNIEnv* env,
                                                      jobject obj) {
-  jlong model_type_selection = 0;
   syncer::ModelTypeSet types = sync_service_->GetActiveDataTypes();
   types.PutAll(syncer::ControlTypes());
-  if (types.Has(syncer::BOOKMARKS)) {
-    model_type_selection |= BOOKMARK;
-  }
-  if (types.Has(syncer::AUTOFILL)) {
-    model_type_selection |= AUTOFILL;
-  }
-  if (types.Has(syncer::AUTOFILL_PROFILE)) {
-    model_type_selection |= AUTOFILL_PROFILE;
-  }
-  if (types.Has(syncer::PASSWORDS)) {
-    model_type_selection |= PASSWORD;
-  }
-  if (types.Has(syncer::TYPED_URLS)) {
-    model_type_selection |= TYPED_URL;
-  }
-  if (types.Has(syncer::SESSIONS)) {
-    model_type_selection |= SESSION;
-  }
-  if (types.Has(syncer::HISTORY_DELETE_DIRECTIVES)) {
-    model_type_selection |= HISTORY_DELETE_DIRECTIVE;
-  }
-  if (types.Has(syncer::PROXY_TABS)) {
-    model_type_selection |= PROXY_TABS;
-  }
-  if (types.Has(syncer::FAVICON_IMAGES)) {
-    model_type_selection |= FAVICON_IMAGE;
-  }
-  if (types.Has(syncer::FAVICON_TRACKING)) {
-    model_type_selection |= FAVICON_TRACKING;
-  }
-  if (types.Has(syncer::DEVICE_INFO)) {
-    model_type_selection |= DEVICE_INFO;
-  }
-  if (types.Has(syncer::NIGORI)) {
-    model_type_selection |= NIGORI;
-  }
-  if (types.Has(syncer::EXPERIMENTS)) {
-    model_type_selection |= EXPERIMENTS;
-  }
-  return model_type_selection;
+  return ModelTypeSetToSelection(types);
 }
 
 void ProfileSyncServiceAndroid::SetPreferredDataTypes(
@@ -484,6 +444,64 @@ void ProfileSyncServiceAndroid::OverrideNetworkResourcesForTest(
       reinterpret_cast<syncer::NetworkResources*>(network_resources);
   sync_service_->OverrideNetworkResourcesForTest(
       make_scoped_ptr<syncer::NetworkResources>(resources));
+}
+
+// static
+jlong ProfileSyncServiceAndroid::ModelTypeSetToSelection(
+    syncer::ModelTypeSet types) {
+  jlong model_type_selection = 0;
+  if (types.Has(syncer::BOOKMARKS)) {
+    model_type_selection |= BOOKMARK;
+  }
+  if (types.Has(syncer::AUTOFILL)) {
+    model_type_selection |= AUTOFILL;
+  }
+  if (types.Has(syncer::AUTOFILL_PROFILE)) {
+    model_type_selection |= AUTOFILL_PROFILE;
+  }
+  if (types.Has(syncer::PASSWORDS)) {
+    model_type_selection |= PASSWORD;
+  }
+  if (types.Has(syncer::TYPED_URLS)) {
+    model_type_selection |= TYPED_URL;
+  }
+  if (types.Has(syncer::SESSIONS)) {
+    model_type_selection |= SESSION;
+  }
+  if (types.Has(syncer::HISTORY_DELETE_DIRECTIVES)) {
+    model_type_selection |= HISTORY_DELETE_DIRECTIVE;
+  }
+  if (types.Has(syncer::PROXY_TABS)) {
+    model_type_selection |= PROXY_TABS;
+  }
+  if (types.Has(syncer::FAVICON_IMAGES)) {
+    model_type_selection |= FAVICON_IMAGE;
+  }
+  if (types.Has(syncer::FAVICON_TRACKING)) {
+    model_type_selection |= FAVICON_TRACKING;
+  }
+  if (types.Has(syncer::DEVICE_INFO)) {
+    model_type_selection |= DEVICE_INFO;
+  }
+  if (types.Has(syncer::NIGORI)) {
+    model_type_selection |= NIGORI;
+  }
+  if (types.Has(syncer::EXPERIMENTS)) {
+    model_type_selection |= EXPERIMENTS;
+  }
+  if (types.Has(syncer::SUPERVISED_USER_SETTINGS)) {
+    model_type_selection |= SUPERVISED_USER_SETTING;
+  }
+  return model_type_selection;
+}
+
+// static
+std::string ProfileSyncServiceAndroid::ModelTypeSelectionToStringForTest(
+    jlong model_type_selection) {
+  ScopedJavaLocalRef<jstring> string =
+      Java_ProfileSyncService_modelTypeSelectionToStringForTest(
+          AttachCurrentThread(), model_type_selection);
+  return ConvertJavaStringToUTF8(string);
 }
 
 void ProfileSyncServiceAndroid::NudgeSyncer(JNIEnv* env,

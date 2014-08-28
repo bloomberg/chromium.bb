@@ -529,7 +529,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         assertTrue(InvalidationService.getIsClientStartedForTest());
         InvalidationPreferences invPrefs = new InvalidationPreferences(getContext());
         assertEquals(account, invPrefs.getSavedSyncedAccount());
-        assertEquals(ModelType.modelTypesToSyncTypes(desiredRegistrations),
+        assertEquals(ModelType.modelTypesToSyncTypesForTest(desiredRegistrations),
                 invPrefs.getSavedSyncedTypes());
         assertNull(invPrefs.getSavedObjectIds());
         assertEquals(1, mStartServiceIntents.size());
@@ -566,7 +566,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
     private boolean expectedObjectIdsRegistered(Set<ModelType> expectedTypes,
             Set<ObjectId> expectedObjectIds, boolean isReady) {
         // Get synced types saved to preferences.
-        Set<String> expectedSyncTypes = ModelType.modelTypesToSyncTypes(expectedTypes);
+        Set<String> expectedSyncTypes = ModelType.modelTypesToSyncTypesForTest(expectedTypes);
         InvalidationPreferences invPrefs = new InvalidationPreferences(getContext());
         Set<String> actualSyncTypes = invPrefs.getSavedSyncedTypes();
         if (actualSyncTypes == null) {
@@ -749,7 +749,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         assertFalse(InvalidationService.getIsClientStartedForTest());
         InvalidationPreferences invPrefs = new InvalidationPreferences(getContext());
         assertEquals(account, invPrefs.getSavedSyncedAccount());
-        assertEquals(ModelType.modelTypesToSyncTypes(desiredRegistrations),
+        assertEquals(ModelType.modelTypesToSyncTypesForTest(desiredRegistrations),
                 invPrefs.getSavedSyncedTypes());
         assertEquals(0, mStartServiceIntents.size());
     }
@@ -777,7 +777,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         assertEquals(1, mStartServiceIntents.size());
         assertTrue(isAndroidListenerStartIntent(mStartServiceIntents.get(0)));
         InvalidationPreferences invPrefs = new InvalidationPreferences(getContext());
-        assertEquals(ModelType.modelTypesToSyncTypes(desiredRegistrations),
+        assertEquals(ModelType.modelTypesToSyncTypesForTest(desiredRegistrations),
                 invPrefs.getSavedSyncedTypes());
         assertEquals(desiredObjectIds, getService().readRegistrationsFromPrefs());
 
