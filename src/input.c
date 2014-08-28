@@ -1062,6 +1062,58 @@ notify_axis(struct weston_seat *seat, uint32_t time, uint32_t axis,
 				     value);
 }
 
+WL_EXPORT int
+weston_keyboard_set_locks(struct weston_keyboard *keyboard,
+			  uint32_t mask, uint32_t value)
+{
+#ifdef ENABLE_XKBCOMMON
+	uint32_t serial;
+	xkb_mod_mask_t mods_depressed, mods_latched, mods_locked, group;
+	xkb_mod_mask_t num, caps;
+
+	/* We don't want the leds to go out of sync with the actual state
+	 * so if the backend has no way to change the leds don't try to
+	 * change the state */
+	if (!keyboard->seat->led_update)
+		return -1;
+
+	mods_depressed = xkb_state_serialize_mods(keyboard->xkb_state.state,
+						XKB_STATE_DEPRESSED);
+	mods_latched = xkb_state_serialize_mods(keyboard->xkb_state.state,
+						XKB_STATE_LATCHED);
+	mods_locked = xkb_state_serialize_mods(keyboard->xkb_state.state,
+						XKB_STATE_LOCKED);
+	group = xkb_state_serialize_group(keyboard->xkb_state.state,
+                                      XKB_STATE_EFFECTIVE);
+
+	num = (1 << keyboard->xkb_info->mod2_mod);
+	caps = (1 << keyboard->xkb_info->caps_mod);
+	if (mask & WESTON_NUM_LOCK) {
+		if (value & WESTON_NUM_LOCK)
+			mods_locked |= num;
+		else
+			mods_locked &= ~num;
+	}
+	if (mask & WESTON_CAPS_LOCK) {
+		if (value & WESTON_CAPS_LOCK)
+			mods_locked |= caps;
+		else
+			mods_locked &= ~caps;
+	}
+
+	xkb_state_update_mask(keyboard->xkb_state.state, mods_depressed,
+			      mods_latched, mods_locked, 0, 0, group);
+
+	serial = wl_display_next_serial(
+				keyboard->seat->compositor->wl_display);
+	notify_modifiers(keyboard->seat, serial);
+
+	return 0;
+#else
+	return -1;
+#endif
+}
+
 #ifdef ENABLE_XKBCOMMON
 WL_EXPORT void
 notify_modifiers(struct weston_seat *seat, uint32_t serial)

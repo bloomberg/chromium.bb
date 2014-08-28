@@ -68,6 +68,11 @@ enum weston_keyboard_modifier {
 	MODIFIER_SHIFT = (1 << 3),
 };
 
+enum weston_keyboard_locks {
+	WESTON_NUM_LOCK = (1 << 0),
+	WESTON_CAPS_LOCK = (1 << 1),
+};
+
 enum weston_led {
 	LED_NUM_LOCK = (1 << 0),
 	LED_CAPS_LOCK = (1 << 1),
@@ -393,6 +398,13 @@ weston_keyboard_start_grab(struct weston_keyboard *device,
 			   struct weston_keyboard_grab *grab);
 void
 weston_keyboard_end_grab(struct weston_keyboard *keyboard);
+int
+/*
+ * 'mask' and 'value' should be a bitwise mask of one or more
+ * valued of the weston_keyboard_locks enum.
+ */
+weston_keyboard_set_locks(struct weston_keyboard *keyboard,
+			  uint32_t mask, uint32_t value);
 
 struct weston_touch *
 weston_touch_create(void);
