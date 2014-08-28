@@ -5616,7 +5616,7 @@ bool CSSPropertyParser::parseFlex(CSSParserValueList* args, bool important)
     if (flexShrink == unsetValue)
         flexShrink = 1;
     if (!flexBasis)
-        flexBasis = cssValuePool().createValue(0, CSSPrimitiveValue::CSS_PX);
+        flexBasis = cssValuePool().createValue(0, CSSPrimitiveValue::CSS_PERCENTAGE);
 
     addProperty(CSSPropertyFlexGrow, cssValuePool().createValue(clampToFloat(flexGrow), CSSPrimitiveValue::CSS_NUMBER), important);
     addProperty(CSSPropertyFlexShrink, cssValuePool().createValue(clampToFloat(flexShrink), CSSPrimitiveValue::CSS_NUMBER), important);

@@ -601,7 +601,7 @@ LayoutUnit RenderFlexibleBox::mainAxisBorderAndPaddingExtentForChild(RenderBox* 
 
 static inline bool preferredMainAxisExtentDependsOnLayout(const Length& flexBasis, bool hasInfiniteLineLength)
 {
-    return flexBasis.isAuto() || (flexBasis.isFixed() && !flexBasis.value() && hasInfiniteLineLength);
+    return flexBasis.isAuto() || (flexBasis.isPercent() && hasInfiniteLineLength);
 }
 
 bool RenderFlexibleBox::childPreferredMainAxisContentExtentRequiresLayout(RenderBox* child, bool hasInfiniteLineLength) const
