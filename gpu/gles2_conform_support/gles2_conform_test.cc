@@ -64,7 +64,7 @@ bool RunGLES2ConformTest(const char* path) {
       "gles2_conform_test_windowless")));
 
   CommandLine cmdline(program);
-  cmdline.AppendSwitch(std::string("-run=") + path);
+  cmdline.AppendArg(std::string("-run=") + path);
 
   std::string output;
   bool success = base::GetAppOutput(cmdline, &output);
