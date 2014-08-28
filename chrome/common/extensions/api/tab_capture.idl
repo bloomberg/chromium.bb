@@ -47,12 +47,15 @@ namespace tabCapture {
   callback GetCapturedTabsCallback = void (CaptureInfo[] result);
 
   interface Functions {
-    // Captures the visible area of the currently active tab.
-    // This method can only be used on the currently active page after the
-    // extension has been <em>invoked</em>, similar to the way that
-    // <a href="activeTab.html">activeTab</a> works.
+    // Captures the visible area of the currently active tab.  Capture can
+    // only be started on the currently active tab after the extension has been
+    // <em>invoked</em>.  Capture is maintained across page navigations within
+    // the tab, and stops when the tab is closed, or the media stream is closed
+    // by the extension.
+    //
     // |options| : Configures the returned media stream.
-    // |callback| : Callback with either the stream returned or null.
+    // |callback| : Callback with either the tab capture stream or
+    //   <code>null</code>.
     static void capture(CaptureOptions options,
                         GetTabMediaCallback callback);
 
@@ -61,6 +64,7 @@ namespace tabCapture {
     // This allows extensions to inform the user that there is an existing
     // tab capture that would prevent a new tab capture from succeeding (or
     // to prevent redundant requests for the same tab).
+    // |callback| : Callback invoked with CaptureInfo[] for captured tabs.
     static void getCapturedTabs(GetCapturedTabsCallback callback);
   };
 
@@ -68,6 +72,7 @@ namespace tabCapture {
     // Event fired when the capture status of a tab changes.
     // This allows extension authors to keep track of the capture status of
     // tabs to keep UI elements like page actions and infobars in sync.
+    // |info| : CaptureInfo with new capture status for the tab.
     static void onStatusChanged(CaptureInfo info);
   };
 
