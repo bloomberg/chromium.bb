@@ -55,7 +55,7 @@ int32_t NaClSysMprotect(struct NaClAppThread  *natp,
 
 int32_t NaClSysMunmap(struct NaClAppThread  *natp,
                       void                  *start,
-                      size_t                length);
+                      uint32_t              length);
 
 EXTERN_C_END
 

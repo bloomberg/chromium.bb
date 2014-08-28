@@ -112,7 +112,7 @@ SYSCALL_LIST = [
      ['uint32_t start', 'size_t length', 'int prot']),
     ('NACL_sys_list_mappings', 'NaClSysListMappings',
      ['uint32_t regions', 'uint32_t count']),
-    ('NACL_sys_munmap', 'NaClSysMunmap', ['void *start', 'size_t length']),
+    ('NACL_sys_munmap', 'NaClSysMunmap', ['void *start', 'uint32_t length']),
     ('NACL_sys_exit', 'NaClSysExit', ['int status']),
     ('NACL_sys_getpid', 'NaClSysGetpid', []),
     ('NACL_sys_thread_exit', 'NaClSysThreadExit',

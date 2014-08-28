@@ -138,7 +138,7 @@ void MapFileFd(struct NaClApp *nap, uintptr_t addr, size_t file_size) {
   ASSERT_EQ(mapping_addr, addr);
 }
 
-void UnmapMemory(struct NaClApp *nap, uintptr_t addr, size_t size) {
+void UnmapMemory(struct NaClApp *nap, uintptr_t addr, uint32_t size) {
   // Create dummy NaClAppThread.
   // TODO(mseaborn): Clean up so that this is not necessary.
   struct NaClAppThread thread;
@@ -189,7 +189,7 @@ TEST_F(MmapTest, TestUnmapShmMapping) {
   MapShmFd(&app, 0x400000, 0x10000);
 
   uintptr_t addr = 0x200000;
-  size_t size = 0x100000;
+  uint32_t size = 0x100000;
   MapShmFd(&app, addr, size);
 
   uintptr_t sysaddr = NaClUserToSys(&app, addr);
@@ -221,7 +221,7 @@ TEST_F(MmapTest, TestUnmapFileMapping) {
   MapShmFd(&app, 0x400000, 0x10000);
 
   uintptr_t addr = 0x200000;
-  size_t size = 0x100000;
+  uint32_t size = 0x100000;
   MapFileFd(&app, addr, size);
 
   uintptr_t sysaddr = NaClUserToSys(&app, addr);
@@ -254,7 +254,7 @@ TEST_F(MmapTest, TestUnmapAnonymousMemoryMapping) {
 
   // Create an anonymous memory mapping.
   uintptr_t addr = 0x200000;
-  size_t size = 0x100000;
+  uint32_t size = 0x100000;
   uintptr_t mapping_addr = (uint32_t) NaClSysMmapIntern(
       &app, (void *) addr, size,
       NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,

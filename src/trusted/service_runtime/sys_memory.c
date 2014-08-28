@@ -1069,7 +1069,7 @@ static int32_t MunmapInternal(struct NaClApp *nap,
 
 int32_t NaClSysMunmap(struct NaClAppThread  *natp,
                       void                  *start,
-                      size_t                length) {
+                      uint32_t              length) {
   struct NaClApp *nap = natp->nap;
   int32_t   retval = -NACL_ABI_EINVAL;
   uintptr_t sysaddr;
@@ -1077,13 +1077,26 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
   size_t    alloc_rounded_length;
 
   NaClLog(3, "Entered NaClSysMunmap(0x%08"NACL_PRIxPTR", "
-          "0x%08"NACL_PRIxPTR", 0x%"NACL_PRIxS")\n",
+          "0x%08"NACL_PRIxPTR", 0x%"NACL_PRIx32")\n",
           (uintptr_t) natp, (uintptr_t) start, length);
 
   if (!NaClIsAllocPageMultiple((uintptr_t) start)) {
     NaClLog(4, "start addr not allocation multiple\n");
     retval = -NACL_ABI_EINVAL;
     goto cleanup;
+  }
+  /*
+   * Round up to a page size multiple.
+   *
+   * Note that if length > 0xffff0000 (i.e. -NACL_MAP_PAGESIZE), rounding
+   * up the length will wrap around to 0.  We check for length == 0 *after*
+   * rounding up the length to simultaneously check for the length
+   * originally being 0 and check for the wraparound.
+   */
+  alloc_rounded_length = NaClRoundAllocPage(length);
+  if (alloc_rounded_length != length) {
+    length = (uint32_t) alloc_rounded_length;
+    NaClLog(2, "munmap: rounded length to 0x%"NACL_PRIx32"\n", length);
   }
   if (0 == length) {
     /*
@@ -1098,11 +1111,6 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
      */
     retval = -NACL_ABI_EINVAL;
     goto cleanup;
-  }
-  alloc_rounded_length = NaClRoundAllocPage(length);
-  if (alloc_rounded_length != length) {
-    length = alloc_rounded_length;
-    NaClLog(2, "munmap: rounded length to 0x%"NACL_PRIxS"\n", length);
   }
   sysaddr = NaClUserToSysAddrRange(nap, (uintptr_t) start, length);
   if (kNaClBadAddress == sysaddr) {
