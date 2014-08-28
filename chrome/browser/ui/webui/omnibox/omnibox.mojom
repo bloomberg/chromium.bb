@@ -49,10 +49,7 @@ struct OmniboxResultMojo {
 
 [Client=OmniboxPage]
 interface OmniboxUIHandlerMojo {
-  // TODO(yzshen): Conceptually |input_string| could be non-nullable. However,
-  // crbug.com/407258 (JavaScript encoder encodes empty string as null) prevents
-  // us from doing so. Change it into non-nullable once the bug is resolved.
-  StartOmniboxQuery(string? input_string,
+  StartOmniboxQuery(string input_string,
                     int32 cursor_position,
                     bool prevent_inline_autocomplete,
                     bool prefer_keyword,
