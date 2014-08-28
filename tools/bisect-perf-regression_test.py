@@ -265,7 +265,7 @@ class BisectPerfRegressionTest(unittest.TestCase):
         bisect_options)
 
     cp_git_rev = '7017a81991de983e12ab50dfc071c70e06979531'
-    self.assertEqual(291915, source_control.SVNFindRev(cp_git_rev))
+    self.assertEqual(291765, source_control.SVNFindRev(cp_git_rev))
 
     svn_git_rev = 'e6db23a037cad47299a94b155b95eebd1ee61a58'
     self.assertEqual(291467, source_control.SVNFindRev(svn_git_rev))

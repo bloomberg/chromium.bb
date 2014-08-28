@@ -230,7 +230,7 @@ class GitSourceControl(SourceControl):
     # TODO(prasadv): Use an appropriate command to find commit position instead
     # of parsing the log. Resolve this once 407316 is fixed.
     commit_position_pattern = 'Cr-Commit-Position: .*@\{#(?P<commit>[0-9]+)\}'
-    cmd = ['log', '--format=%b', '-1', 'origin/master', git_revision]
+    cmd = ['log', '--format=%b', '-1', git_revision]
     output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
     if output:
       version_re = re.compile(commit_position_pattern)
