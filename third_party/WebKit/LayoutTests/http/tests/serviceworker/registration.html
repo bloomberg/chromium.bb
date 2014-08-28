@@ -79,4 +79,22 @@
     });
 }());
 
+(function() {
+    var t = async_test('Registering script without correct MIME type');
+    t.step(function() {
+        navigator.serviceWorker.register(
+            'resources/plain-text-worker.php'
+        ).then(
+            t.step_func(function(registration) {
+                assert_unreached('Registration of plain text script should fail.');
+            }),
+            t.step_func(function(reason) {
+                assert_equals(reason.name, 'AbortError',
+                             'Registration of plain text script should fail.');
+                t.done();
+            })
+        );
+    });
+}());
+
 </script>
