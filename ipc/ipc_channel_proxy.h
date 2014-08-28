@@ -69,12 +69,12 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
       const IPC::ChannelHandle& channel_handle,
       Channel::Mode mode,
       Listener* listener,
-      base::SingleThreadTaskRunner* ipc_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
 
   static scoped_ptr<ChannelProxy> Create(
       scoped_ptr<ChannelFactory> factory,
       Listener* listener,
-      base::SingleThreadTaskRunner* ipc_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
 
   virtual ~ChannelProxy();
 
@@ -131,14 +131,16 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   // to the internal state.
   ChannelProxy(Context* context);
 
-  ChannelProxy(Listener* listener,
-               base::SingleThreadTaskRunner* ipc_task_runner);
+  ChannelProxy(
+      Listener* listener,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
 
   // Used internally to hold state that is referenced on the IPC thread.
   class Context : public base::RefCountedThreadSafe<Context>,
                   public Listener {
    public:
-    Context(Listener* listener, base::SingleThreadTaskRunner* ipc_thread);
+    Context(Listener* listener,
+            const scoped_refptr<base::SingleThreadTaskRunner>& ipc_thread);
     void ClearIPCTaskRunner();
     base::SingleThreadTaskRunner* ipc_task_runner() const {
       return ipc_task_runner_.get();

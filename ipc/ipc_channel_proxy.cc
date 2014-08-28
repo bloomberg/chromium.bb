@@ -22,8 +22,9 @@ namespace IPC {
 
 //------------------------------------------------------------------------------
 
-ChannelProxy::Context::Context(Listener* listener,
-                               base::SingleThreadTaskRunner* ipc_task_runner)
+ChannelProxy::Context::Context(
+    Listener* listener,
+    const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner)
     : listener_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       listener_(listener),
       ipc_task_runner_(ipc_task_runner),
@@ -309,7 +310,7 @@ scoped_ptr<ChannelProxy> ChannelProxy::Create(
     const IPC::ChannelHandle& channel_handle,
     Channel::Mode mode,
     Listener* listener,
-    base::SingleThreadTaskRunner* ipc_task_runner) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner) {
   scoped_ptr<ChannelProxy> channel(new ChannelProxy(listener, ipc_task_runner));
   channel->Init(channel_handle, mode, true);
   return channel.Pass();
@@ -319,7 +320,7 @@ scoped_ptr<ChannelProxy> ChannelProxy::Create(
 scoped_ptr<ChannelProxy> ChannelProxy::Create(
     scoped_ptr<ChannelFactory> factory,
     Listener* listener,
-    base::SingleThreadTaskRunner* ipc_task_runner) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner) {
   scoped_ptr<ChannelProxy> channel(new ChannelProxy(listener, ipc_task_runner));
   channel->Init(factory.Pass(), true);
   return channel.Pass();
@@ -330,8 +331,9 @@ ChannelProxy::ChannelProxy(Context* context)
       did_init_(false) {
 }
 
-ChannelProxy::ChannelProxy(Listener* listener,
-                           base::SingleThreadTaskRunner* ipc_task_runner)
+ChannelProxy::ChannelProxy(
+    Listener* listener,
+    const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner)
     : context_(new Context(listener, ipc_task_runner)), did_init_(false) {
 }
 
