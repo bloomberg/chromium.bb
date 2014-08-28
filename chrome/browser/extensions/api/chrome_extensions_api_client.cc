@@ -43,27 +43,6 @@ void ChromeExtensionsAPIClient::AddAdditionalValueStoreCaches(
 #endif
 }
 
-bool ChromeExtensionsAPIClient::AppViewInternalAttachFrame(
-    content::BrowserContext* browser_context,
-    const GURL& url,
-    int guest_instance_id,
-    const std::string& guest_extension_id) {
-  return AppViewGuest::CompletePendingRequest(browser_context,
-                                              url,
-                                              guest_instance_id,
-                                              guest_extension_id);
-}
-
-bool ChromeExtensionsAPIClient::AppViewInternalDenyRequest(
-    content::BrowserContext* browser_context,
-    int guest_instance_id,
-    const std::string& guest_extension_id) {
-  return AppViewGuest::CompletePendingRequest(browser_context,
-                                              GURL(),
-                                              guest_instance_id,
-                                              guest_extension_id);
-}
-
 AppViewGuestDelegate* ChromeExtensionsAPIClient::CreateAppViewGuestDelegate()
     const {
   return new ChromeAppViewGuestDelegate();

@@ -24,15 +24,6 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
       const scoped_refptr<ObserverListThreadSafe<SettingsObserver> >& observers,
       std::map<settings_namespace::Namespace, ValueStoreCache*>* caches)
       OVERRIDE;
-  virtual bool AppViewInternalAttachFrame(
-      content::BrowserContext* browser_context,
-      const GURL& url,
-      int guest_instance_id,
-      const std::string& guest_extension_id) OVERRIDE;
-  virtual bool AppViewInternalDenyRequest(
-      content::BrowserContext* browser_context,
-      int guest_instance_id,
-      const std::string& guest_extension_id) OVERRIDE;
   virtual AppViewGuestDelegate* CreateAppViewGuestDelegate() const OVERRIDE;
   virtual WebViewGuestDelegate* CreateWebViewGuestDelegate(
       WebViewGuest* web_view_guest) const OVERRIDE;

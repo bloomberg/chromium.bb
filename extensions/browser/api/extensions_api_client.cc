@@ -26,21 +26,6 @@ void ExtensionsAPIClient::AddAdditionalValueStoreCaches(
     const scoped_refptr<ObserverListThreadSafe<SettingsObserver> >& observers,
     std::map<settings_namespace::Namespace, ValueStoreCache*>* caches) {}
 
-bool ExtensionsAPIClient::AppViewInternalAttachFrame(
-    content::BrowserContext* browser_context,
-    const GURL& url,
-    int guest_instance_id,
-    const std::string& guest_extension_id) {
-  return false;
-}
-
-bool ExtensionsAPIClient::AppViewInternalDenyRequest(
-    content::BrowserContext* browser_context,
-    int guest_instance_id,
-    const std::string& guest_extension_id) {
-  return false;
-}
-
 AppViewGuestDelegate* ExtensionsAPIClient::CreateAppViewGuestDelegate() const {
   return NULL;
 }

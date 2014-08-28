@@ -4,7 +4,7 @@
 
 #include "extensions/browser/api/app_view/app_view_internal_api.h"
 
-#include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/guest_view/app_view/app_view_guest.h"
 #include "extensions/common/api/app_view_internal.h"
 
 
@@ -24,12 +24,10 @@ bool AppViewInternalAttachFrameFunction::RunAsync() {
   GURL url = extension()->GetResourceURL(params->url);
   EXTENSION_FUNCTION_VALIDATE(url.is_valid());
 
-  ExtensionsAPIClient* extensions_client = ExtensionsAPIClient::Get();
-  return extensions_client->AppViewInternalAttachFrame(
-      browser_context(),
-      url,
-      params->guest_instance_id,
-      extension_id());
+  return AppViewGuest::CompletePendingRequest(browser_context(),
+                                              url,
+                                              params->guest_instance_id,
+                                              extension_id());
 }
 
 AppViewInternalDenyRequestFunction::
@@ -41,13 +39,12 @@ bool AppViewInternalDenyRequestFunction::RunAsync() {
       appview::DenyRequest::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  ExtensionsAPIClient* extensions_client = ExtensionsAPIClient::Get();
   // Since the URL passed into AppViewGuest:::CompletePendingRequest is invalid,
   // a new <appview> WebContents will not be created.
-  return extensions_client->AppViewInternalDenyRequest(
-      browser_context(),
-      params->guest_instance_id,
-      extension_id());
+  return AppViewGuest::CompletePendingRequest(browser_context(),
+                                              GURL(),
+                                              params->guest_instance_id,
+                                              extension_id());
 }
 
 }  // namespace extensions
