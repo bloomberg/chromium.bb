@@ -97,6 +97,8 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
 
   void OnDispatchOnInspectorFrontend(const std::string& message);
   void OnSaveAgentRuntimeState(const std::string& state);
+  void OnEnableTracing(const std::string& category_filter);
+  void OnDisableTracing();
 
   void ClientDetachedFromRenderer();
 
