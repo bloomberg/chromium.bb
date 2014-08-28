@@ -10,11 +10,6 @@ group("python") {
   ]
 }
 
-group("tests") {
-  deps = [
-    "//mojo/python/tests",
-  ]
-}
 python_binary_module("embedder") {
   python_base_module = "mojo"
   sources = [

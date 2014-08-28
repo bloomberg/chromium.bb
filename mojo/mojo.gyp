@@ -596,29 +596,6 @@
           ],
           'includes': [ '../third_party/cython/python_module.gypi' ],
         },
-        {
-          'target_name': 'mojo_python_unittests',
-          'type': 'none',
-          'actions': [
-            {
-              'action_name': 'run_mojo_python_unittests',
-              'inputs': [
-                'python/tests/test_core.py',
-                '<(SHARED_INTERMEDIATE_DIR)/mojo_python_py_module.stamp',
-                '<(PRODUCT_DIR)/python/mojo/__init__.py',
-              ],
-              'outputs': [
-                'none',
-              ],
-              'action': [
-                'python', '<@(_inputs)', '<(PRODUCT_DIR)/python',
-              ],
-            },
-          ],
-          'dependency': [
-            'mojo_python',
-          ],
-        },
       ],
     }],
   ],

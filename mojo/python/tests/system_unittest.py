@@ -7,10 +7,6 @@ import sys
 import time
 import unittest
 
-# Setup sys path
-for path in sys.argv[1:]:
-  sys.path.append(path)
-
 # pylint: disable=F0401
 from mojo.embedder import init as init_embedder
 from mojo import system
