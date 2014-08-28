@@ -172,15 +172,16 @@ void Scheduler::tickSharedTimer()
     TRACE_EVENT0("blink", "Scheduler::tickSharedTimer");
 
     // Run any high priority tasks that are queued up, otherwise the blink timers will yield immediately.
-    swapQueuesAndRunPendingTasks();
+    bool workDone = swapQueuesAndRunPendingTasks();
     m_sharedTimerFunction();
 
     // The blink timers may have just yielded, so run any high priority tasks that where queued up
     // while the blink timers were executing.
-    swapQueuesAndRunPendingTasks();
+    if (!workDone)
+        swapQueuesAndRunPendingTasks();
 }
 
-void Scheduler::swapQueuesAndRunPendingTasks()
+bool Scheduler::swapQueuesAndRunPendingTasks()
 {
     ASSERT(isMainThread());
 
@@ -189,7 +190,7 @@ void Scheduler::swapQueuesAndRunPendingTasks()
     m_pendingTasksMutex.lock();
     Deque<TracedTask>& highPriorityTasks = m_pendingHighPriorityTasks.swapBuffers();
     m_pendingTasksMutex.unlock();
-    executeHighPriorityTasks(highPriorityTasks);
+    return executeHighPriorityTasks(highPriorityTasks);
 }
 
 void Scheduler::swapQueuesRunPendingTasksAndAllowHighPriorityTaskRunnerPosting()
@@ -205,7 +206,7 @@ void Scheduler::swapQueuesRunPendingTasksAndAllowHighPriorityTaskRunnerPosting()
     executeHighPriorityTasks(highPriorityTasks);
 }
 
-void Scheduler::executeHighPriorityTasks(Deque<TracedTask>& highPriorityTasks)
+bool Scheduler::executeHighPriorityTasks(Deque<TracedTask>& highPriorityTasks)
 {
     TRACE_EVENT0("blink", "Scheduler::executeHighPriorityTasks");
     int highPriorityTasksExecuted = 0;
@@ -216,6 +217,7 @@ void Scheduler::executeHighPriorityTasks(Deque<TracedTask>& highPriorityTasks)
 
     int highPriorityTaskCount = atomicSubtract(&m_highPriorityTaskCount, highPriorityTasksExecuted);
     ASSERT_UNUSED(highPriorityTaskCount, highPriorityTaskCount >= 0);
+    return highPriorityTasksExecuted > 0;
 }
 
 void Scheduler::sharedTimerAdapter()

@@ -338,8 +338,10 @@ TEST_F(SchedulerTest, TestRentrantCompositorTaskDoesNotStarveOutLowPriorityTask)
     runPendingTasks();
 }
 
+int s_dummyTaskCount;
 void dummyTask()
 {
+    s_dummyTaskCount++;
 }
 
 TEST_F(SchedulerTest, TestMultipleCallsToPostInputOrCompositorTaskResultsInOnlyOneMainThreadTask)
@@ -369,6 +371,27 @@ TEST_F(SchedulerTest, TestMainThreadTaskLifeCycle)
 
     runPendingTasks();
     EXPECT_EQ(0U, m_platformSupport.numPendingMainThreadTasks());
+}
+
+void postDummyInputTask()
+{
+    Scheduler::shared()->postInputTask(FROM_HERE, WTF::bind(&dummyTask));
+}
+
+TEST_F(SchedulerTest, HighPriorityTasksOnlyRunOncePerSharedTimerFiring)
+{
+    s_dummyTaskCount = 0;
+    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&dummyTask));
+    // Trigger the posting of an input task during execution of the shared timer function.
+    m_scheduler->setSharedTimerFiredFunction(&postDummyInputTask);
+    m_scheduler->setSharedTimerFireInterval(0);
+    m_platformSupport.triggerSharedTimer();
+
+    EXPECT_EQ(1, s_dummyTaskCount);
+
+    // Clean up.
+    m_scheduler->stopSharedTimer();
+    m_scheduler->setSharedTimerFiredFunction(nullptr);
 }
 
 } // namespace

@@ -78,9 +78,11 @@ private:
     void tickSharedTimer();
 
     bool hasPendingHighPriorityWork() const;
-    void swapQueuesAndRunPendingTasks();
+    bool swapQueuesAndRunPendingTasks();
     void swapQueuesRunPendingTasksAndAllowHighPriorityTaskRunnerPosting();
-    void executeHighPriorityTasks(Deque<TracedTask>&);
+
+    // Returns true if any work was done.
+    bool executeHighPriorityTasks(Deque<TracedTask>&);
 
     // Must be called while m_pendingTasksMutex is locked.
     void maybePostMainThreadPendingHighPriorityTaskRunner();
