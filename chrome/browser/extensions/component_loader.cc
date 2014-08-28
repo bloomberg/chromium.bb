@@ -301,6 +301,14 @@ void ComponentLoader::AddHangoutServicesExtension() {
 #endif
 }
 
+void ComponentLoader::AddHotwordAudioVerificationApp() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableExperimentalHotwording)) {
+    Add(IDR_HOTWORD_AUDIO_VERIFICATION_MANIFEST,
+        base::FilePath(FILE_PATH_LITERAL("hotword_audio_verification")));
+  }
+}
+
 void ComponentLoader::AddHotwordHelperExtension() {
   if (HotwordServiceFactory::IsHotwordAllowed(browser_context_)) {
     CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -510,6 +518,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     AddGalleryExtension();
 
     AddHangoutServicesExtension();
+    AddHotwordAudioVerificationApp();
     AddHotwordHelperExtension();
     AddImageLoaderExtension();
 

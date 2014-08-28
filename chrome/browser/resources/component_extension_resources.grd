@@ -13,6 +13,7 @@
   <release seq="1">
     <structures>
       <structure name="IDR_BOOKMARK_MANAGER_MAIN" file="bookmark_manager/main.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
+      <structure name="IDR_HOTWORD_AUDIO_VERIFICATION_MAIN" file="hotword_audio_verification/main.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
       <if expr="chromeos">
         <structure name="IDR_WALLPAPER_MANAGER_MAIN" file="chromeos/wallpaper_manager/main.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
         <if expr="not _google_chrome">
@@ -59,6 +60,9 @@
         <include name="IDR_HANGOUT_SERVICES_THUNK_JS" file="hangout_services/thunk.js" type="BINDATA" />
       </if>
       <if expr="enable_extensions">
+        <!-- Hotword Audio Verification extension -->
+        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_BACKGROUND_JS" file="hotword_audio_verification/event_page.js" type="BINDATA" />
+
         <!-- Hotword Helper extension -->
         <include name="IDR_HOTWORD_HELPER_AUDIO_CLIENT_JS" file="hotword_helper/audio_client.js" type="BINDATA" />
         <include name="IDR_HOTWORD_HELPER_MANAGER_JS" file="hotword_helper/manager.js" type="BINDATA" />

@@ -1,0 +1,13 @@
+{
+  // chrome-extension://abjokfonkihficiokmkfboogholifghn/
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtfVZc80kw93gaZwHGhOLpxGKil8n/x1IQ2L/Oj76YeICJk5w4YKw+0N2IYA0gJnwqJdTu3ijrWqO2oQTWoZ3lHmAv9NHsUXHdrWuoGRuVqo0dakLnS+AB3rLGPSerZZNExpdK0Yd3wR6GMOJAoAQM9H6Zpo7LNYjPebx31QJZ6OgdYZA+Eu4fGIJkWIPY1LMsVO1jzFJ4JSPyNWmhxL4fHfQXVM5p1cgJSVxTXsB1ZGaRc4HF2kwSYMOimIiWqfU0VInTXVU7IS3hJaKzm/LExW/ABTGejf2sGIa725EQTavGFsQ07jFZdVzKGAjHCU/0Jy8PxDIg2B+ixlM2QXP/wIDAQAB",
+  "name": "Hotword Audio Verification",
+  "version": "0.1",
+  "manifest_version": 2,
+  "app": {
+    "background": {
+      "scripts": ["event_page.js"],
+      "persistent": false
+    }
+  }
+}

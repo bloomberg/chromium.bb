@@ -143,6 +143,7 @@ class ComponentLoader {
                                  int name_string_id,
                                  int description_string_id);
   void AddChromeApp();
+  void AddHotwordAudioVerificationApp();
   void AddKeyboardApp();
   void AddWebStoreApp();
 

@@ -20,6 +20,7 @@
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service_factory.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -212,6 +213,11 @@ HotwordService::HotwordService(Profile* profile)
   pref_registrar_.Add(
       prefs::kHotwordSearchEnabled,
       base::Bind(&HotwordService::OnHotwordSearchEnabledChanged,
+                 base::Unretained(this)));
+
+  pref_registrar_.Add(
+      prefs::kHotwordAlwaysOnSearchEnabled,
+      base::Bind(&HotwordService::OnHotwordAlwaysOnSearchEnabledChanged,
                  base::Unretained(this)));
 
   registrar_.Add(this,
@@ -441,6 +447,25 @@ void HotwordService::DisableHotwordExtension(
     extension_service->DisableExtension(
         extension_misc::kHotwordExtensionId,
         extensions::Extension::DISABLE_USER_ACTION);
+  }
+}
+
+void HotwordService::OnHotwordAlwaysOnSearchEnabledChanged(
+    const std::string& pref_name) {
+  DCHECK_EQ(pref_name, std::string(prefs::kHotwordAlwaysOnSearchEnabled));
+
+  ExtensionService* extension_service = GetExtensionService(profile_);
+  if (!extension_service)
+    return;
+
+  const extensions::Extension* extension = extension_service->GetExtensionById(
+      extension_misc::kHotwordAudioVerificationAppId, true);
+  if (!extension)
+    return;
+
+  if (profile_->GetPrefs()->GetBoolean(prefs::kHotwordAlwaysOnSearchEnabled)) {
+    OpenApplication(AppLaunchParams(
+        profile_, extension, extensions::LAUNCH_CONTAINER_WINDOW, NEW_WINDOW));
   }
 }
 
