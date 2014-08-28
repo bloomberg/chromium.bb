@@ -419,8 +419,8 @@ bool DevToolsWindow::IsDevToolsWindow(content::WebContents* web_contents) {
 // static
 DevToolsWindow* DevToolsWindow::OpenDevToolsWindowForWorker(
     Profile* profile,
-    DevToolsAgentHost* worker_agent) {
-  DevToolsWindow* window = FindDevToolsWindow(worker_agent);
+    const scoped_refptr<DevToolsAgentHost>& worker_agent) {
+  DevToolsWindow* window = FindDevToolsWindow(worker_agent.get());
   if (!window) {
     window = DevToolsWindow::CreateDevToolsWindowForWorker(profile);
     window->bindings_->AttachTo(worker_agent);
@@ -470,9 +470,9 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
 void DevToolsWindow::OpenExternalFrontend(
     Profile* profile,
     const std::string& frontend_url,
-    content::DevToolsAgentHost* agent_host,
+    const scoped_refptr<content::DevToolsAgentHost>& agent_host,
     bool isWorker) {
-  DevToolsWindow* window = FindDevToolsWindow(agent_host);
+  DevToolsWindow* window = FindDevToolsWindow(agent_host.get());
   if (!window) {
     window = Create(profile, DevToolsUI::GetProxyURL(frontend_url), NULL,
                     isWorker, true, false, "");

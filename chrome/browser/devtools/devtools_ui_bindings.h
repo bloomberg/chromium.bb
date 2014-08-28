@@ -73,7 +73,7 @@ class DevToolsUIBindings : public content::NotificationObserver,
                           const base::Value* arg1,
                           const base::Value* arg2,
                           const base::Value* arg3);
-  void AttachTo(content::DevToolsAgentHost* agent_host);
+  void AttachTo(const scoped_refptr<content::DevToolsAgentHost>& agent_host);
   void Reattach();
   void Detach();
   bool IsAttachedTo(content::DevToolsAgentHost* agent_host);

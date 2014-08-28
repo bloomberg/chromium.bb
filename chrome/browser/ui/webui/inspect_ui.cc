@@ -343,7 +343,7 @@ void InspectUI::InspectBrowserWithCustomFrontend(
   // Install devtools bindings.
   DevToolsUIBindingsEnabler* bindings_enabler =
       new DevToolsUIBindingsEnabler(front_end, frontend_url);
-  bindings_enabler->GetBindings()->AttachTo(agent_host.get());
+  bindings_enabler->GetBindings()->AttachTo(agent_host);
 }
 
 void InspectUI::InspectDevices(Browser* browser) {

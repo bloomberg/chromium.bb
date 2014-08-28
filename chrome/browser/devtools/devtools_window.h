@@ -82,13 +82,13 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   static void OpenExternalFrontend(
       Profile* profile,
       const std::string& frontend_uri,
-      content::DevToolsAgentHost* agent_host,
+      const scoped_refptr<content::DevToolsAgentHost>& agent_host,
       bool isWorker);
 
   // Worker frontend is always undocked.
   static DevToolsWindow* OpenDevToolsWindowForWorker(
       Profile* profile,
-      content::DevToolsAgentHost* worker_agent);
+      const scoped_refptr<content::DevToolsAgentHost>& worker_agent);
 
   static void InspectElement(content::WebContents* inspected_web_contents,
                              int x,
