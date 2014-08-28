@@ -113,7 +113,6 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, BasicTest) {
   manager_->SharedWorkerCreated(1, 1, instance1);
   CheckWorkerState(1, 1, WorkerState::WORKER_UNINSPECTED);
   manager_->WorkerReadyForInspection(1, 1);
-  CheckWorkerState(1, 1, WorkerState::WORKER_UNINSPECTED);
   manager_->WorkerContextStarted(1, 1);
   CheckWorkerState(1, 1, WorkerState::WORKER_UNINSPECTED);
   manager_->WorkerDestroyed(1, 1);
@@ -128,7 +127,6 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, BasicTest) {
   CheckWorkerState(1, 2, WorkerState::WORKER_UNINSPECTED);
   EXPECT_EQ(agent_host.get(), manager_->GetDevToolsAgentHostForWorker(1, 2));
   manager_->WorkerReadyForInspection(1, 2);
-  CheckWorkerState(1, 2, WorkerState::WORKER_UNINSPECTED);
   manager_->WorkerContextStarted(1, 2);
   CheckWorkerState(1, 2, WorkerState::WORKER_UNINSPECTED);
   manager_->WorkerDestroyed(1, 2);
@@ -141,7 +139,6 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, BasicTest) {
   manager_->SharedWorkerCreated(1, 3, instance1);
   CheckWorkerState(1, 3, WorkerState::WORKER_UNINSPECTED);
   manager_->WorkerReadyForInspection(1, 3);
-  CheckWorkerState(1, 3, WorkerState::WORKER_UNINSPECTED);
   manager_->WorkerContextStarted(1, 3);
   CheckWorkerState(1, 3, WorkerState::WORKER_UNINSPECTED);
   agent_host = manager_->GetDevToolsAgentHostForWorker(1, 3);
@@ -212,7 +209,6 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, AttachTest) {
   client_host1->InspectAgentHost(agent_host1.get());
   CheckWorkerState(2, 1, WorkerState::WORKER_INSPECTED);
   manager_->WorkerReadyForInspection(2, 1);
-  CheckWorkerState(2, 1, WorkerState::WORKER_INSPECTED);
   manager_->WorkerContextStarted(2, 1);
   CheckWorkerState(2, 1, WorkerState::WORKER_INSPECTED);
   manager_->WorkerDestroyed(2, 1);
@@ -224,7 +220,6 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, AttachTest) {
   manager_->SharedWorkerCreated(2, 2, instance2);
   CheckWorkerState(2, 2, WorkerState::WORKER_UNINSPECTED);
   manager_->WorkerReadyForInspection(2, 2);
-  CheckWorkerState(2, 2, WorkerState::WORKER_UNINSPECTED);
   manager_->WorkerContextStarted(2, 2);
   CheckWorkerState(2, 2, WorkerState::WORKER_UNINSPECTED);
   agent_host2 = manager_->GetDevToolsAgentHostForWorker(2, 2);
@@ -245,7 +240,6 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, AttachTest) {
   CheckWorkerState(2, 3, WorkerState::WORKER_PAUSED_FOR_REATTACH);
   EXPECT_EQ(agent_host1.get(), manager_->GetDevToolsAgentHostForWorker(2, 3));
   manager_->WorkerReadyForInspection(2, 3);
-  CheckWorkerState(2, 3, WorkerState::WORKER_PAUSED_FOR_REATTACH);
   manager_->WorkerContextStarted(2, 3);
   CheckWorkerState(2, 3, WorkerState::WORKER_INSPECTED);
   client_host1->InspectAgentHost(NULL);

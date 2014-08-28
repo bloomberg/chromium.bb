@@ -143,13 +143,6 @@ bool EmbeddedWorkerDevToolsAgentHost::OnMessageReceived(
 }
 
 void EmbeddedWorkerDevToolsAgentHost::WorkerReadyForInspection() {
-  // TODO(vsevik): This method will be implemented once we support connecting
-  // devtools to the main thread of embedded worker.
-}
-
-void EmbeddedWorkerDevToolsAgentHost::WorkerContextStarted() {
-  // TODO(vsevik): This code should be moved to WorkerReadyForInspection()
-  // once we support connecting devtools to the main thread of embedded worker.
   if (state_ == WORKER_PAUSED_FOR_DEBUG_ON_START) {
     RenderProcessHost* rph = RenderProcessHost::FromID(worker_id_.first);
     Inspect(rph->GetBrowserContext());
@@ -159,6 +152,9 @@ void EmbeddedWorkerDevToolsAgentHost::WorkerContextStarted() {
     AttachToWorker();
     Reattach(saved_agent_state_);
   }
+}
+
+void EmbeddedWorkerDevToolsAgentHost::WorkerContextStarted() {
 }
 
 void EmbeddedWorkerDevToolsAgentHost::WorkerRestarted(WorkerId worker_id) {
