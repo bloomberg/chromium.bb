@@ -17,8 +17,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "platform/Geometry/IntRect.h"
 #include "platform/PlatformExport.h"
+#include "platform/geometry/IntRect.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "wtf/Noncopyable.h"
 
