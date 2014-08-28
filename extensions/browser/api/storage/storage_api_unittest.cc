@@ -6,16 +6,19 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/extensions/extension_api_unittest.h"
-#include "chrome/browser/extensions/test_extension_system.h"
+#include "content/public/test/test_browser_context.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/storage/leveldb_settings_storage_factory.h"
 #include "extensions/browser/api/storage/settings_storage_quota_enforcer.h"
 #include "extensions/browser/api/storage/settings_test_util.h"
 #include "extensions/browser/api/storage/storage_api.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
+#include "extensions/browser/api_unittest.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/mock_extension_system.h"
+#include "extensions/browser/test_extensions_browser_client.h"
 #include "extensions/browser/value_store/leveldb_value_store.h"
 #include "extensions/browser/value_store/value_store.h"
 #include "extensions/common/manifest.h"
@@ -36,15 +39,14 @@ KeyedService* CreateStorageFrontendForTesting(
 
 }  // namespace
 
-class StorageApiUnittest : public ExtensionApiUnittest {
+class StorageApiUnittest : public ApiUnitTest {
  public:
+  StorageApiUnittest() {}
+
   virtual void SetUp() OVERRIDE {
-    ExtensionApiUnittest::SetUp();
-    TestExtensionSystem* extension_system =
-        static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile()));
-    // StorageFrontend requires an EventRouter.
-    extension_system->SetEventRouter(scoped_ptr<EventRouter>(
-        new EventRouter(profile(), ExtensionPrefs::Get(profile()))));
+    ApiUnitTest::SetUp();
+    extensions_browser_client()->set_extension_system_factory(
+        &extension_system_factory_);
   }
 
  protected:
@@ -74,13 +76,18 @@ class StorageApiUnittest : public ExtensionApiUnittest {
     }
     return testing::AssertionSuccess();
   }
+
+  MockExtensionSystemFactory<
+      settings_test_util::MockExtensionSystemWithEventRouter>
+      extension_system_factory_;
+  ExtensionsAPIClient extensions_api_client_;
 };
 
 TEST_F(StorageApiUnittest, RestoreCorruptedStorage) {
   // Ensure a StorageFrontend can be created on demand. The StorageFrontend
   // will be owned by the KeyedService system.
   StorageFrontend::GetFactoryInstance()->SetTestingFactory(
-      profile(), &CreateStorageFrontendForTesting);
+      browser_context(), &CreateStorageFrontendForTesting);
 
   const char kKey[] = "key";
   const char kValue[] = "value";
@@ -97,7 +104,7 @@ TEST_F(StorageApiUnittest, RestoreCorruptedStorage) {
   ValueStore* store =
       settings_test_util::GetStorage(extension_ref(),
                                      settings_namespace::LOCAL,
-                                     StorageFrontend::Get(profile()));
+                                     StorageFrontend::Get(browser_context()));
   ASSERT_TRUE(store);
   SettingsStorageQuotaEnforcer* quota_store =
       static_cast<SettingsStorageQuotaEnforcer*>(store);

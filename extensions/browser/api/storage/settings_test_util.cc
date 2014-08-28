@@ -16,6 +16,24 @@ namespace extensions {
 
 namespace settings_test_util {
 
+// Creates a kilobyte of data.
+scoped_ptr<base::Value> CreateKilobyte() {
+  std::string kilobyte_string;
+  for (int i = 0; i < 1024; ++i) {
+    kilobyte_string += "a";
+  }
+  return scoped_ptr<base::Value>(new base::StringValue(kilobyte_string));
+}
+
+// Creates a megabyte of data.
+scoped_ptr<base::Value> CreateMegabyte() {
+  base::ListValue* megabyte = new base::ListValue();
+  for (int i = 0; i < 1000; ++i) {
+    megabyte->Append(CreateKilobyte().release());
+  }
+  return scoped_ptr<base::Value>(megabyte);
+}
+
 // Intended as a StorageCallback from GetStorage.
 static void AssignStorage(ValueStore** dst, ValueStore* src) {
   *dst = src;
@@ -36,15 +54,16 @@ ValueStore* GetStorage(scoped_refptr<const Extension> extension,
   return GetStorage(extension, settings_namespace::SYNC, frontend);
 }
 
-scoped_refptr<const Extension> AddExtensionWithId(Profile* profile,
-                                                  const std::string& id,
-                                                  Manifest::Type type) {
+scoped_refptr<const Extension> AddExtensionWithId(
+    content::BrowserContext* context,
+    const std::string& id,
+    Manifest::Type type) {
   return AddExtensionWithIdAndPermissions(
-      profile, id, type, std::set<std::string>());
+      context, id, type, std::set<std::string>());
 }
 
 scoped_refptr<const Extension> AddExtensionWithIdAndPermissions(
-    Profile* profile,
+    content::BrowserContext* context,
     const std::string& id,
     Manifest::Type type,
     const std::set<std::string>& permissions_set) {
@@ -89,7 +108,7 @@ scoped_refptr<const Extension> AddExtensionWithIdAndPermissions(
 
   // Ensure lookups via ExtensionRegistry (and ExtensionService) work even if
   // the test discards the referenced to the returned extension.
-  ExtensionRegistry::Get(profile)->AddEnabled(extension);
+  ExtensionRegistry::Get(context)->AddEnabled(extension);
 
   for (std::set<std::string>::const_iterator it = permissions_set.begin();
       it != permissions_set.end(); ++it) {
@@ -99,32 +118,26 @@ scoped_refptr<const Extension> AddExtensionWithIdAndPermissions(
   return extension;
 }
 
-// MockExtensionSystem
+// MockExtensionSystemWithEventRouter
 
-MockExtensionSystem::MockExtensionSystem(Profile* profile)
-      : TestExtensionSystem(profile) {}
-MockExtensionSystem::~MockExtensionSystem() {}
+MockExtensionSystemWithEventRouter::MockExtensionSystemWithEventRouter(
+    content::BrowserContext* context)
+    : MockExtensionSystem(context) {
+}
 
-EventRouter* MockExtensionSystem::event_router() {
+MockExtensionSystemWithEventRouter::~MockExtensionSystemWithEventRouter() {
+}
+
+KeyedService* MockExtensionSystemWithEventRouter::Build(
+    content::BrowserContext* context) {
+  return new MockExtensionSystemWithEventRouter(context);
+}
+
+EventRouter* MockExtensionSystemWithEventRouter::event_router() {
   if (!event_router_.get())
-    event_router_.reset(new EventRouter(profile_, NULL));
+    event_router_.reset(new EventRouter(browser_context(), NULL));
   return event_router_.get();
 }
-
-KeyedService* BuildMockExtensionSystem(content::BrowserContext* profile) {
-  return new MockExtensionSystem(static_cast<Profile*>(profile));
-}
-
-// MockProfile
-
-MockProfile::MockProfile(const base::FilePath& file_path)
-    : TestingProfile(file_path) {
-  ExtensionsBrowserClient::Get()
-      ->GetExtensionSystemFactory()
-      ->SetTestingFactoryAndUse(this, &BuildMockExtensionSystem);
-}
-
-MockProfile::~MockProfile() {}
 
 // ScopedSettingsFactory
 

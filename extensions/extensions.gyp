@@ -789,6 +789,8 @@
       'sources': [
         'browser/api/dns/mock_host_resolver_creator.cc',
         'browser/api/dns/mock_host_resolver_creator.h',
+        'browser/api/storage/settings_test_util.cc',
+        'browser/api/storage/settings_test_util.h',
         'browser/api_test_utils.cc',
         'browser/api_test_utils.h',
         'browser/extensions_test.cc',
@@ -908,6 +910,9 @@
         'browser/api/api_resource_manager_unittest.cc',
         'browser/api/declarative/deduping_factory_unittest.cc',
         'browser/api/sockets_tcp/sockets_tcp_api_unittest.cc',
+        'browser/api/storage/settings_quota_unittest.cc',
+        'browser/api/storage/storage_api_unittest.cc',
+        'browser/api/storage/storage_frontend_unittest.cc',
         'browser/computed_hashes_unittest.cc',
         'browser/content_hash_tree_unittest.cc',
         'browser/event_listener_map_unittest.cc',

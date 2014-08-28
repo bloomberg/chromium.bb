@@ -8,11 +8,15 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/storage/leveldb_settings_storage_factory.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 #include "extensions/browser/api/storage/settings_test_util.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
+#include "extensions/browser/extensions_test.h"
 #include "extensions/browser/value_store/value_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,30 +32,12 @@ namespace {
 // To save typing ValueStore::DEFAULTS everywhere.
 const ValueStore::WriteOptions DEFAULTS = ValueStore::DEFAULTS;
 
-// Creates a kilobyte of data.
-scoped_ptr<base::Value> CreateKilobyte() {
-  std::string kilobyte_string;
-  for (int i = 0; i < 1024; ++i) {
-    kilobyte_string += "a";
-  }
-  return scoped_ptr<base::Value>(new base::StringValue(kilobyte_string));
-}
-
-// Creates a megabyte of data.
-scoped_ptr<base::Value> CreateMegabyte() {
-  base::ListValue* megabyte = new base::ListValue();
-  for (int i = 0; i < 1000; ++i) {
-    megabyte->Append(CreateKilobyte().release());
-  }
-  return scoped_ptr<base::Value>(megabyte);
-}
-
 }  // namespace
 
 // A better name for this would be StorageFrontendTest, but the historical name
 // has been ExtensionSettingsFrontendTest. In order to preserve crash/failure
 // history, the test names are unchanged.
-class ExtensionSettingsFrontendTest : public testing::Test {
+class ExtensionSettingsFrontendTest : public ExtensionsTest {
  public:
   ExtensionSettingsFrontendTest()
       : storage_factory_(new util::ScopedSettingsStorageFactory()),
@@ -59,29 +45,26 @@ class ExtensionSettingsFrontendTest : public testing::Test {
         file_thread_(BrowserThread::FILE, base::MessageLoop::current()) {}
 
   virtual void SetUp() OVERRIDE {
+    ExtensionsTest::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    profile_.reset(new util::MockProfile(temp_dir_.path()));
     ResetFrontend();
   }
 
   virtual void TearDown() OVERRIDE {
     frontend_.reset();
-    profile_.reset();
     // Execute any pending deletion tasks.
     message_loop_.RunUntilIdle();
+    ExtensionsTest::TearDown();
   }
 
  protected:
-  Profile* profile() { return profile_.get(); }
-
   void ResetFrontend() {
     storage_factory_->Reset(new LeveldbSettingsStorageFactory());
     frontend_.reset(
-        StorageFrontend::CreateForTesting(storage_factory_, profile_.get()));
+        StorageFrontend::CreateForTesting(storage_factory_, browser_context()));
   }
 
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<util::MockProfile> profile_;
   scoped_ptr<StorageFrontend> frontend_;
   scoped_refptr<util::ScopedSettingsStorageFactory> storage_factory_;
 
@@ -89,6 +72,7 @@ class ExtensionSettingsFrontendTest : public testing::Test {
   base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
+  ExtensionsAPIClient extensions_api_client_;
 };
 
 // Get a semblance of coverage for both extension and app settings by
@@ -109,9 +93,10 @@ TEST_F(ExtensionSettingsFrontendTest, Basics) {
 TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   const std::string id = "ext";
   scoped_refptr<const Extension> extension =
-      util::AddExtensionWithId(profile(), id, Manifest::TYPE_EXTENSION);
+      util::AddExtensionWithId(browser_context(), id, Manifest::TYPE_EXTENSION);
 
-  ValueStore* storage = util::GetStorage(extension, frontend_.get());
+  ValueStore* storage =
+      util::GetStorage(extension, settings::LOCAL, frontend_.get());
 
   // The correctness of Get/Set/Remove/Clear is tested elsewhere so no need to
   // be too rigorous.
@@ -128,7 +113,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   }
 
   ResetFrontend();
-  storage = util::GetStorage(extension, frontend_.get());
+  storage = util::GetStorage(extension, settings::LOCAL, frontend_.get());
 
   {
     ValueStore::ReadResult result = storage->Get();
@@ -140,9 +125,10 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
 TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
   const std::string id = "ext";
   scoped_refptr<const Extension> extension = util::AddExtensionWithId(
-      profile(), id, Manifest::TYPE_LEGACY_PACKAGED_APP);
+      browser_context(), id, Manifest::TYPE_LEGACY_PACKAGED_APP);
 
-  ValueStore* storage = util::GetStorage(extension, frontend_.get());
+  ValueStore* storage =
+      util::GetStorage(extension, settings::LOCAL, frontend_.get());
 
   {
     base::StringValue bar("bar");
@@ -155,7 +141,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // The storage area may no longer be valid post-uninstall, so re-request.
-  storage = util::GetStorage(extension, frontend_.get());
+  storage = util::GetStorage(extension, settings::LOCAL, frontend_.get());
   {
     ValueStore::ReadResult result = storage->Get();
     ASSERT_FALSE(result->HasError());
@@ -166,9 +152,10 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
 TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   const std::string id = "ext";
   scoped_refptr<const Extension> extension =
-      util::AddExtensionWithId(profile(), id, Manifest::TYPE_EXTENSION);
+      util::AddExtensionWithId(browser_context(), id, Manifest::TYPE_EXTENSION);
 
-  ValueStore* storage = util::GetStorage(extension, frontend_.get());
+  ValueStore* storage =
+      util::GetStorage(extension, settings::LOCAL, frontend_.get());
 
   {
     base::StringValue bar("bar");
@@ -198,7 +185,7 @@ TEST_F(ExtensionSettingsFrontendTest,
        DISABLED_QuotaLimitsEnforcedCorrectlyForSyncAndLocal) {
   const std::string id = "ext";
   scoped_refptr<const Extension> extension =
-      util::AddExtensionWithId(profile(), id, Manifest::TYPE_EXTENSION);
+      util::AddExtensionWithId(browser_context(), id, Manifest::TYPE_EXTENSION);
 
   ValueStore* sync_storage =
       util::GetStorage(extension, settings::SYNC, frontend_.get());
@@ -206,90 +193,28 @@ TEST_F(ExtensionSettingsFrontendTest,
       util::GetStorage(extension, settings::LOCAL, frontend_.get());
 
   // Sync storage should run out after ~100K.
-  scoped_ptr<base::Value> kilobyte = CreateKilobyte();
+  scoped_ptr<base::Value> kilobyte = util::CreateKilobyte();
   for (int i = 0; i < 100; ++i) {
-    sync_storage->Set(
-        ValueStore::DEFAULTS, base::StringPrintf("%d", i), *kilobyte);
+    sync_storage->Set(DEFAULTS, base::StringPrintf("%d", i), *kilobyte);
   }
 
-  EXPECT_TRUE(sync_storage->Set(
-      ValueStore::DEFAULTS, "WillError", *kilobyte)->HasError());
+  EXPECT_TRUE(sync_storage->Set(DEFAULTS, "WillError", *kilobyte)->HasError());
 
   // Local storage shouldn't run out after ~100K.
   for (int i = 0; i < 100; ++i) {
-    local_storage->Set(
-        ValueStore::DEFAULTS, base::StringPrintf("%d", i), *kilobyte);
+    local_storage->Set(DEFAULTS, base::StringPrintf("%d", i), *kilobyte);
   }
 
-  EXPECT_FALSE(local_storage->Set(
-      ValueStore::DEFAULTS, "WontError", *kilobyte)->HasError());
+  EXPECT_FALSE(
+      local_storage->Set(DEFAULTS, "WontError", *kilobyte)->HasError());
 
   // Local storage should run out after ~5MB.
-  scoped_ptr<base::Value> megabyte = CreateMegabyte();
+  scoped_ptr<base::Value> megabyte = util::CreateMegabyte();
   for (int i = 0; i < 5; ++i) {
-    local_storage->Set(
-        ValueStore::DEFAULTS, base::StringPrintf("%d", i), *megabyte);
+    local_storage->Set(DEFAULTS, base::StringPrintf("%d", i), *megabyte);
   }
 
-  EXPECT_TRUE(local_storage->Set(
-      ValueStore::DEFAULTS, "WillError", *megabyte)->HasError());
-}
-
-// In other tests, we assume that the result of GetStorage is a pointer to the
-// a Storage owned by a Frontend object, but for the unlimitedStorage case, this
-// might not be true. So, write the tests in a "callback" style.
-// We should really rewrite all tests to be asynchronous in this way.
-
-static void UnlimitedSyncStorageTestCallback(ValueStore* sync_storage) {
-  // Sync storage should still run out after ~100K; the unlimitedStorage
-  // permission can't apply to sync.
-  scoped_ptr<base::Value> kilobyte = CreateKilobyte();
-  for (int i = 0; i < 100; ++i) {
-    sync_storage->Set(
-        ValueStore::DEFAULTS, base::StringPrintf("%d", i), *kilobyte);
-  }
-
-  EXPECT_TRUE(sync_storage->Set(
-      ValueStore::DEFAULTS, "WillError", *kilobyte)->HasError());
-}
-
-static void UnlimitedLocalStorageTestCallback(ValueStore* local_storage) {
-  // Local storage should never run out.
-  scoped_ptr<base::Value> megabyte = CreateMegabyte();
-  for (int i = 0; i < 7; ++i) {
-    local_storage->Set(
-        ValueStore::DEFAULTS, base::StringPrintf("%d", i), *megabyte);
-  }
-
-  EXPECT_FALSE(local_storage->Set(
-      ValueStore::DEFAULTS, "WontError", *megabyte)->HasError());
-}
-
-#if defined(OS_WIN)
-// See: http://crbug.com/227296
-#define MAYBE_UnlimitedStorageForLocalButNotSync \
-    DISABLED_UnlimitedStorageForLocalButNotSync
-#else
-#define MAYBE_UnlimitedStorageForLocalButNotSync \
-    UnlimitedStorageForLocalButNotSync
-#endif
-
-TEST_F(ExtensionSettingsFrontendTest,
-       MAYBE_UnlimitedStorageForLocalButNotSync) {
-  const std::string id = "ext";
-  std::set<std::string> permissions;
-  permissions.insert("unlimitedStorage");
-  scoped_refptr<const Extension> extension =
-      util::AddExtensionWithIdAndPermissions(
-          profile(), id, Manifest::TYPE_EXTENSION, permissions);
-
-  frontend_->RunWithStorage(
-      extension, settings::SYNC, base::Bind(&UnlimitedSyncStorageTestCallback));
-  frontend_->RunWithStorage(extension,
-                            settings::LOCAL,
-                            base::Bind(&UnlimitedLocalStorageTestCallback));
-
-  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_TRUE(local_storage->Set(DEFAULTS, "WillError", *megabyte)->HasError());
 }
 
 }  // namespace extensions

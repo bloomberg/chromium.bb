@@ -8,15 +8,18 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "chrome/browser/extensions/api/storage/syncable_settings_storage.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/api/storage/leveldb_settings_storage_factory.h"
 #include "extensions/browser/api/storage/settings_storage_factory.h"
 #include "extensions/browser/api/storage/settings_test_util.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/mock_extension_system.h"
 #include "extensions/browser/value_store/testing_value_store.h"
 #include "extensions/common/manifest.h"
 #include "sync/api/sync_change_processor.h"
@@ -205,10 +208,15 @@ class ExtensionSettingsSyncTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    profile_.reset(new util::MockProfile(temp_dir_.path()));
+    profile_.reset(new TestingProfile(temp_dir_.path()));
     storage_factory_->Reset(new LeveldbSettingsStorageFactory());
     frontend_.reset(
         StorageFrontend::CreateForTesting(storage_factory_, profile_.get()));
+
+    ExtensionsBrowserClient::Get()
+        ->GetExtensionSystemFactory()
+        ->SetTestingFactoryAndUse(
+            profile_.get(), &util::MockExtensionSystemWithEventRouter::Build);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -257,7 +265,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
   content::TestBrowserThread file_thread_;
 
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<util::MockProfile> profile_;
+  scoped_ptr<TestingProfile> profile_;
   scoped_ptr<StorageFrontend> frontend_;
   scoped_refptr<util::ScopedSettingsStorageFactory> storage_factory_;
   scoped_ptr<MockSyncChangeProcessor> sync_processor_;
@@ -1421,6 +1429,67 @@ TEST_F(ExtensionSettingsSyncTest, Dots) {
     EXPECT_EQ("key.with.spot", sync_data.key());
     EXPECT_TRUE(sync_data.value().Equals(string_value.get()));
   }
+}
+
+// In other (frontend) tests, we assume that the result of GetStorage
+// is a pointer to the a Storage owned by a Frontend object, but for
+// the unlimitedStorage case, this might not be true. So, write the
+// tests in a "callback" style.  We should really rewrite all tests to
+// be asynchronous in this way.
+
+namespace {
+
+static void UnlimitedSyncStorageTestCallback(ValueStore* sync_storage) {
+  // Sync storage should still run out after ~100K; the unlimitedStorage
+  // permission can't apply to sync.
+  scoped_ptr<base::Value> kilobyte = util::CreateKilobyte();
+  for (int i = 0; i < 100; ++i) {
+    sync_storage->Set(
+        ValueStore::DEFAULTS, base::StringPrintf("%d", i), *kilobyte);
+  }
+
+  EXPECT_TRUE(sync_storage->Set(ValueStore::DEFAULTS, "WillError", *kilobyte)
+                  ->HasError());
+}
+
+static void UnlimitedLocalStorageTestCallback(ValueStore* local_storage) {
+  // Local storage should never run out.
+  scoped_ptr<base::Value> megabyte = util::CreateMegabyte();
+  for (int i = 0; i < 7; ++i) {
+    local_storage->Set(
+        ValueStore::DEFAULTS, base::StringPrintf("%d", i), *megabyte);
+  }
+
+  EXPECT_FALSE(local_storage->Set(ValueStore::DEFAULTS, "WontError", *megabyte)
+                   ->HasError());
+}
+
+}  // namespace
+
+#if defined(OS_WIN)
+// See: http://crbug.com/227296
+#define MAYBE_UnlimitedStorageForLocalButNotSync \
+  DISABLED_UnlimitedStorageForLocalButNotSync
+#else
+#define MAYBE_UnlimitedStorageForLocalButNotSync \
+  UnlimitedStorageForLocalButNotSync
+#endif
+TEST_F(ExtensionSettingsSyncTest, MAYBE_UnlimitedStorageForLocalButNotSync) {
+  const std::string id = "ext";
+  std::set<std::string> permissions;
+  permissions.insert("unlimitedStorage");
+  scoped_refptr<const Extension> extension =
+      util::AddExtensionWithIdAndPermissions(
+          profile_.get(), id, Manifest::TYPE_EXTENSION, permissions);
+
+  frontend_->RunWithStorage(extension,
+                            settings_namespace::SYNC,
+                            base::Bind(&UnlimitedSyncStorageTestCallback));
+  frontend_->RunWithStorage(extension,
+                            settings_namespace::LOCAL,
+                            base::Bind(&UnlimitedLocalStorageTestCallback));
+
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 }  // namespace extensions
