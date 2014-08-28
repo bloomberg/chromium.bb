@@ -415,11 +415,13 @@ CL_ACTION_PICKED_UP = 'picked_up'         # CL picked up in CommitQueueSync
 CL_ACTION_SUBMITTED = 'submitted'         # CL submitted successfully
 CL_ACTION_KICKED_OUT = 'kicked_out'       # CL CQ-Ready value set to zero
 CL_ACTION_SUBMIT_FAILED = 'submit_failed' # CL submitted but submit failed
+CL_ACTION_VERIFIED = 'verified'           # CL was verified by the builder
 
 CL_ACTIONS = [CL_ACTION_PICKED_UP,
               CL_ACTION_SUBMITTED,
               CL_ACTION_KICKED_OUT,
-              CL_ACTION_SUBMIT_FAILED]
+              CL_ACTION_SUBMIT_FAILED,
+              CL_ACTION_VERIFIED]
 
 # CQ types.
 CQ = 'cq'

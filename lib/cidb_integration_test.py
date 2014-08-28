@@ -137,16 +137,16 @@ class DataSeries0Test(CIDBIntegrationTest):
   """Simulate a set of 630 master/slave CQ builds."""
 
   # TODO(akeshet): Once our prod and debug databases are migrated
-  # to schema 9, this test of the migration can be removed.
+  # to schema 10, this test of the migration can be removed.
   def testCQWithSchema8(self):
-    """Run the CQ test with schema version 8, then migrate to 9."""
+    """Run the CQ test with schema version 8, then migrate to 10."""
     # Run the CQ test at schema version 8
     self._PrepareFreshDatabase(8)
     self._runCQTest()
 
-    # Now migrate to schema version 9, and run sanity checks.
+    # Now migrate to schema version 10, and run sanity checks.
     root_db = cidb.CIDBConnection(TEST_DB_CRED_ROOT)
-    root_db.ApplySchemaMigrations(9)
+    root_db.ApplySchemaMigrations(10)
 
     readonly_db = cidb.CIDBConnection(TEST_DB_CRED_READONLY)
 
@@ -157,6 +157,7 @@ class DataSeries0Test(CIDBIntegrationTest):
     self.assertEqual(num_0_last_updated, 630)
 
     self._start_and_finish_time_checks(readonly_db)
+    self._cl_action_checks(readonly_db)
 
   def testCQWithSchema9(self):
     """Run the CQ test with schema version 9."""
@@ -214,17 +215,21 @@ class DataSeries0Test(CIDBIntegrationTest):
         'select build_type from buildTable').fetchall()
     self.assertTrue(all(x == ('paladin',) for x in build_types))
 
+    self._cl_action_checks(readonly_db)
+
     build_config_count = readonly_db._GetEngine().execute(
         'select COUNT(distinct build_config) from buildTable').fetchall()[0][0]
     self.assertEqual(build_config_count, 30)
 
-    submitted_cl_count = readonly_db._GetEngine().execute(
+  def _cl_action_checks(self, db):
+    """Sanity checks that correct cl actions were recorded."""
+    submitted_cl_count = db._GetEngine().execute(
         'select count(*) from clActionTable where action="submitted"'
         ).fetchall()[0][0]
-    rejected_cl_count = readonly_db._GetEngine().execute(
+    rejected_cl_count = db._GetEngine().execute(
         'select count(*) from clActionTable where action="kicked_out"'
         ).fetchall()[0][0]
-    total_actions = readonly_db._GetEngine().execute(
+    total_actions = db._GetEngine().execute(
         'select count(*) from clActionTable').fetchall()[0][0]
     self.assertEqual(submitted_cl_count, 56)
     self.assertEqual(rejected_cl_count, 8)
