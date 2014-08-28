@@ -45,6 +45,7 @@ public class BrowserAccessibilityManager {
     private final RenderCoordinates mRenderCoordinates;
     private long mNativeObj;
     private int mAccessibilityFocusId;
+    private Rect mAccessibilityFocusRect;
     private boolean mIsHovering;
     private int mLastHoverId = View.NO_ID;
     private int mCurrentRootId;
@@ -178,6 +179,7 @@ public class BrowserAccessibilityManager {
                     sendAccessibilityEvent(mAccessibilityFocusId,
                             AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED);
                     mAccessibilityFocusId = View.NO_ID;
+                    mAccessibilityFocusRect = null;
                 }
                 return true;
             case AccessibilityNodeInfo.ACTION_CLICK:
@@ -283,6 +285,7 @@ public class BrowserAccessibilityManager {
             return false;
 
         mAccessibilityFocusId = newAccessibilityFocusId;
+        mAccessibilityFocusRect = null;
         sendAccessibilityEvent(mAccessibilityFocusId,
                 AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
         return true;
@@ -426,6 +429,7 @@ public class BrowserAccessibilityManager {
     @CalledByNative
     private void handleNavigate() {
         mAccessibilityFocusId = View.NO_ID;
+        mAccessibilityFocusRect = null;
         mUserHasTouchExplored = false;
         // Invalidate the host, since its child is now gone.
         mView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
@@ -526,6 +530,7 @@ public class BrowserAccessibilityManager {
 
     @CalledByNative
     private void setAccessibilityNodeInfoLocation(AccessibilityNodeInfo node,
+            final int virtualViewId,
             int absoluteLeft, int absoluteTop, int parentRelativeLeft, int parentRelativeTop,
             int width, int height, boolean isRootNode) {
         // First set the bounds in parent.
@@ -560,6 +565,20 @@ public class BrowserAccessibilityManager {
         rect.offset(viewLocation[0], viewLocation[1]);
 
         node.setBoundsInScreen(rect);
+
+        // Work around a bug in the Android framework where if the object with accessibility
+        // focus moves, the accessibility focus rect is not updated - both the visual highlight,
+        // and the location on the screen that's clicked if you double-tap. To work around this,
+        // when we know the object with accessibility focus moved, move focus away and then
+        // move focus right back to it, which tricks Android into updating its bounds.
+        if (virtualViewId == mAccessibilityFocusId && virtualViewId != mCurrentRootId) {
+            if (mAccessibilityFocusRect == null) {
+                mAccessibilityFocusRect = rect;
+            } else if (!mAccessibilityFocusRect.equals(rect)) {
+                mAccessibilityFocusRect = rect;
+                moveAccessibilityFocusToIdAndRefocusIfNeeded(virtualViewId);
+            }
+        }
     }
 
     @CalledByNative

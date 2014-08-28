@@ -247,6 +247,7 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
   bool is_root = node->GetParent() == NULL;
   Java_BrowserAccessibilityManager_setAccessibilityNodeInfoLocation(
       env, obj, info,
+      id,
       absolute_rect.x(), absolute_rect.y(),
       parent_relative_rect.x(), parent_relative_rect.y(),
       absolute_rect.width(), absolute_rect.height(),
