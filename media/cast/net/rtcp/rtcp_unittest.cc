@@ -59,7 +59,7 @@ class RtcpTestPacketSender : public PacketSender {
   bool drop_packets_;
   bool short_delay_;
   Rtcp* rtcp_receiver_;
-  base::SimpleTestTickClock* testing_clock_;
+  base::SimpleTestTickClock* testing_clock_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(RtcpTestPacketSender);
 };
@@ -110,7 +110,7 @@ class LocalRtcpTransport : public PacedPacketSender {
   bool drop_packets_;
   bool short_delay_;
   Rtcp* rtcp_;
-  base::SimpleTestTickClock* testing_clock_;
+  base::SimpleTestTickClock* testing_clock_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(LocalRtcpTransport);
 };
@@ -154,9 +154,10 @@ class RtcpTest : public ::testing::Test {
  protected:
   RtcpTest()
       : testing_clock_(new base::SimpleTestTickClock()),
-        task_runner_(new test::FakeSingleThreadTaskRunner(testing_clock_)),
-        sender_to_receiver_(testing_clock_),
-        receiver_to_sender_(testing_clock_) {
+        task_runner_(
+            new test::FakeSingleThreadTaskRunner(testing_clock_.get())),
+        sender_to_receiver_(testing_clock_.get()),
+        receiver_to_sender_(testing_clock_.get()) {
     testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
   }
 
@@ -176,7 +177,7 @@ class RtcpTest : public ::testing::Test {
     }
   }
 
-  base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
+  scoped_ptr<base::SimpleTestTickClock> testing_clock_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   LocalRtcpTransport sender_to_receiver_;
   LocalRtcpTransport receiver_to_sender_;
@@ -192,7 +193,7 @@ TEST_F(RtcpTest, BasicSenderReport) {
             base::Bind(&MockFrameSender::OnReceivedRtt,
                        base::Unretained(&mock_frame_sender_)),
             RtcpLogMessageCallback(),
-            testing_clock_,
+            testing_clock_.get(),
             &sender_to_receiver_,
             kSenderSsrc,
             kReceiverSsrc);
@@ -206,7 +207,7 @@ TEST_F(RtcpTest, BasicReceiverReport) {
             base::Bind(&MockFrameSender::OnReceivedRtt,
                        base::Unretained(&mock_frame_sender_)),
             RtcpLogMessageCallback(),
-            testing_clock_,
+            testing_clock_.get(),
             &receiver_to_sender_,
             kSenderSsrc,
             kReceiverSsrc);
@@ -223,7 +224,7 @@ TEST_F(RtcpTest, BasicCast) {
             base::Bind(&MockFrameSender::OnReceivedRtt,
                        base::Unretained(&mock_frame_sender_)),
             RtcpLogMessageCallback(),
-            testing_clock_,
+            testing_clock_.get(),
             &receiver_to_sender_,
             kSenderSsrc,
             kSenderSsrc);
@@ -246,7 +247,7 @@ TEST_F(RtcpTest, RttReducedSizeRtcp) {
   Rtcp rtcp_receiver(RtcpCastMessageCallback(),
                      RtcpRttCallback(),
                      RtcpLogMessageCallback(),
-                     testing_clock_,
+                     testing_clock_.get(),
                      &receiver_to_sender_,
                      kReceiverSsrc,
                      kSenderSsrc);
@@ -257,7 +258,7 @@ TEST_F(RtcpTest, RttReducedSizeRtcp) {
                    base::Bind(&MockFrameSender::OnReceivedRtt,
                               base::Unretained(&mock_frame_sender_)),
                    RtcpLogMessageCallback(),
-                   testing_clock_,
+                   testing_clock_.get(),
                    &sender_to_receiver_,
                    kSenderSsrc,
                    kReceiverSsrc);
@@ -284,7 +285,7 @@ TEST_F(RtcpTest, Rtt) {
   Rtcp rtcp_receiver(RtcpCastMessageCallback(),
                      RtcpRttCallback(),
                      RtcpLogMessageCallback(),
-                     testing_clock_,
+                     testing_clock_.get(),
                      &receiver_to_sender_,
                      kReceiverSsrc,
                      kSenderSsrc);
@@ -295,7 +296,7 @@ TEST_F(RtcpTest, Rtt) {
                    base::Bind(&MockFrameSender::OnReceivedRtt,
                               base::Unretained(&mock_frame_sender_)),
                    RtcpLogMessageCallback(),
-                   testing_clock_,
+                   testing_clock_.get(),
                    &sender_to_receiver_,
                    kSenderSsrc,
                    kReceiverSsrc);
@@ -357,7 +358,7 @@ TEST_F(RtcpTest, RttWithPacketLoss) {
   Rtcp rtcp_receiver(RtcpCastMessageCallback(),
                      RtcpRttCallback(),
                      RtcpLogMessageCallback(),
-                     testing_clock_,
+                     testing_clock_.get(),
                      &receiver_to_sender_,
                      kReceiverSsrc,
                      kSenderSsrc);
@@ -368,7 +369,7 @@ TEST_F(RtcpTest, RttWithPacketLoss) {
                    base::Bind(&MockFrameSender::OnReceivedRtt,
                               base::Unretained(&mock_frame_sender_)),
                    RtcpLogMessageCallback(),
-                   testing_clock_,
+                   testing_clock_.get(),
                    &sender_to_receiver_,
                    kSenderSsrc,
                    kReceiverSsrc);
