@@ -435,7 +435,7 @@ DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
                              crtc,
                              index);
 
-  VLOG(2) << "Found display " << cached_outputs_.size() << ":"
+  VLOG(1) << "Found display " << cached_outputs_.size() << ":"
           << " output=" << output << " crtc=" << crtc
           << " current_mode=" << current_mode_id;
 
