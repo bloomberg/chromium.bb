@@ -155,6 +155,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   virtual void ResizeRectChanged(const gfx::Rect& new_rect) OVERRIDE;
   virtual void RestartHangMonitorTimeout() OVERRIDE;
   virtual void SetIgnoreInputEvents(bool ignore_input_events) OVERRIDE;
+  virtual void Stop() OVERRIDE;
   virtual void WasResized() OVERRIDE;
   virtual void AddKeyPressEventCallback(
       const KeyPressEventCallback& callback) OVERRIDE;

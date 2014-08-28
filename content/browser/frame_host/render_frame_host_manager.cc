@@ -245,13 +245,13 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
 }
 
 void RenderFrameHostManager::Stop() {
-  render_frame_host_->Stop();
+  render_frame_host_->render_view_host()->Stop();
 
   // If we are cross-navigating, we should stop the pending renderers.  This
   // will lead to a DidFailProvisionalLoad, which will properly destroy them.
   if (cross_navigation_pending_) {
-    pending_render_frame_host_->Send(new FrameMsg_Stop(
-        pending_render_frame_host_->GetRoutingID()));
+    pending_render_frame_host_->render_view_host()->Send(new ViewMsg_Stop(
+        pending_render_frame_host_->render_view_host()->GetRoutingID()));
   }
 }
 
@@ -1491,8 +1491,9 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
       // Also make sure the old render view stops, in case a load is in
       // progress.  (We don't want to do this for transfers, since it will
       // interrupt the transfer with an unexpected DidStopLoading.)
-      render_frame_host_->Send(new FrameMsg_Stop(
-          render_frame_host_->GetRoutingID()));
+      render_frame_host_->render_view_host()->Send(new ViewMsg_Stop(
+          render_frame_host_->render_view_host()->GetRoutingID()));
+
       pending_render_frame_host_->SetNavigationsSuspended(true,
                                                           base::TimeTicks());
     }

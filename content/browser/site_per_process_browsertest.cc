@@ -192,14 +192,9 @@ class SitePerProcessBrowserTest : public ContentBrowserTest {
 };
 
 // Ensure that we can complete a cross-process subframe navigation.
-// It fails on ChromeOS and Android, so disabled while investigating.
-// http://crbug.com/399775
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-#define MAYBE_CrossSiteIframe DISABLED_CrossSiteIframe
-#else
-#define MAYBE_CrossSiteIframe CrossSiteIframe
-#endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CrossSiteIframe) {
+// Crashes ChromeOS bot, but the bug is probably present on other platforms
+// also. http://crbug.com/399775
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_CrossSiteIframe) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
   GURL main_url(test_server()->GetURL("files/site_per_process_main.html"));

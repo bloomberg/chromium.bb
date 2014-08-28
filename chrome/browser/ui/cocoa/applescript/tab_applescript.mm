@@ -208,7 +208,15 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
 }
 
 - (void)handlesStopScriptCommand:(NSScriptCommand*)command {
-  webContents_->Stop();
+  RenderViewHost* view = webContents_->GetRenderViewHost();
+  if (!view) {
+    // We tolerate Stop being called even before a view has been created.
+    // So just log a warning instead of a NOTREACHED().
+    DLOG(WARNING) << "Stop: no view for handle ";
+    return;
+  }
+
+  view->Stop();
 }
 
 - (void)handlesPrintScriptCommand:(NSScriptCommand*)command {
