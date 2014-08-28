@@ -203,7 +203,8 @@ class PrivetLocalPrintOperationImpl
   virtual ~PrivetLocalPrintOperationImpl();
   virtual void Start() OVERRIDE;
 
-  virtual void SetData(base::RefCountedBytes* data) OVERRIDE;
+  virtual void SetData(
+      const scoped_refptr<base::RefCountedBytes>& data) OVERRIDE;
 
   virtual void SetCapabilities(const std::string& capabilities) OVERRIDE;
 

@@ -782,7 +782,8 @@ void PrivetLocalPrintOperationImpl::OnNeedPrivetToken(
   privet_client_->RefreshPrivetToken(callback);
 }
 
-void PrivetLocalPrintOperationImpl::SetData(base::RefCountedBytes* data) {
+void PrivetLocalPrintOperationImpl::SetData(
+    const scoped_refptr<base::RefCountedBytes>& data) {
   DCHECK(!started_);
   data_ = data;
 }

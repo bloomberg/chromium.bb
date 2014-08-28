@@ -158,7 +158,7 @@ class PrivetLocalPrintOperation {
 
 
   // Required print data. MUST be called before calling |Start()|.
-  virtual void SetData(base::RefCountedBytes* data) = 0;
+  virtual void SetData(const scoped_refptr<base::RefCountedBytes>& data) = 0;
 
   // Optional attributes for /submitdoc. Call before calling |Start()|
   // |ticket| should be in CJT format.
