@@ -180,6 +180,7 @@ TEST_F(TouchEventConverterEvdevTest, TouchDown) {
   EXPECT_EQ(42, event->x());
   EXPECT_EQ(51, event->y());
   EXPECT_EQ(684, event->touch_id());
+  EXPECT_FLOAT_EQ(1.5f, event->radius_x());
   EXPECT_FLOAT_EQ(.5f, event->force());
   EXPECT_FLOAT_EQ(0.f, event->rotation_angle());
 }

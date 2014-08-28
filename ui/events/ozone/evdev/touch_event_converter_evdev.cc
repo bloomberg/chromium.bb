@@ -30,10 +30,6 @@
 
 namespace {
 
-// Number is determined empirically.
-// TODO(rjkroege): Configure this per device.
-const float kFingerWidth = 25.f;
-
 struct TouchCalibration {
   int bezel_left;
   int bezel_right;
@@ -66,6 +62,10 @@ float TuxelsToPixels(float val,
   // Map [min_tuxels, min_tuxels + num_tuxels) to
   //     [min_pixels, min_pixels + num_pixels).
   return min_pixels + (val - min_tuxels) * num_pixels / num_tuxels;
+}
+
+float TuxelToPixelSize(float val, float num_tuxels, float num_pixels) {
+  return val * num_pixels / num_tuxels;
 }
 
 }  // namespace
@@ -201,7 +201,16 @@ void TouchEventConverterEvdev::ProcessAbs(const input_event& input) {
   switch (input.code) {
     case ABS_MT_TOUCH_MAJOR:
       altered_slots_.set(current_slot_);
-      events_[current_slot_].major_ = input.value;
+      // TODO(spang): If we have all of major, minor, and orientation,
+      // we can scale the ellipse correctly. However on the Pixel we get
+      // neither minor nor orientation, so this is all we can do.
+      events_[current_slot_].radius_x_ =
+          TuxelToPixelSize(input.value, x_num_tuxels_, x_num_pixels_) / 2.0f;
+      break;
+    case ABS_MT_TOUCH_MINOR:
+      altered_slots_.set(current_slot_);
+      events_[current_slot_].radius_y_ =
+          TuxelToPixelSize(input.value, y_num_tuxels_, y_num_pixels_) / 2.0f;
       break;
     case ABS_MT_POSITION_X:
       altered_slots_.set(current_slot_);
@@ -285,8 +294,8 @@ void TouchEventConverterEvdev::ReportEvents(base::TimeDelta delta) {
                      /* flags */ 0,
                      /* touch_id */ events_[i].finger_,
                      delta,
-                     events_[i].pressure_ * kFingerWidth,
-                     events_[i].pressure_ * kFingerWidth,
+                     /* radius_x */ events_[i].radius_x_,
+                     /* radius_y */ events_[i].radius_y_,
                      /* angle */ 0.,
                      events_[i].pressure_);
       DispatchEventToCallback(&evt);

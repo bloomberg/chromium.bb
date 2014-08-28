@@ -100,7 +100,8 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
     int finger_;  // "Finger" id starting from 0; -1 means not active
 
     EventType type_;
-    int major_;
+    float radius_x_;
+    float radius_y_;
     float pressure_;
   };
 
