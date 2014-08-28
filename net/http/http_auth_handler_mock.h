@@ -108,7 +108,6 @@ class HttpAuthHandlerMock : public HttpAuthHandler {
 
   Resolve resolve_;
   CompletionCallback callback_;
-  base::WeakPtrFactory<HttpAuthHandlerMock> weak_factory_;
   bool generate_async_;
   int generate_rv_;
   std::string* auth_token_;
@@ -117,6 +116,7 @@ class HttpAuthHandlerMock : public HttpAuthHandler {
   bool allows_default_credentials_;
   bool allows_explicit_credentials_;
   GURL request_url_;
+  base::WeakPtrFactory<HttpAuthHandlerMock> weak_factory_;
 };
 
 }  // namespace net

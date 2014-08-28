@@ -11,9 +11,9 @@ namespace net {
 QuicPerConnectionPacketWriter::QuicPerConnectionPacketWriter(
     QuicServerPacketWriter* shared_writer,
     QuicConnection* connection)
-    : weak_factory_(this),
-      shared_writer_(shared_writer),
-      connection_(connection) {
+    : shared_writer_(shared_writer),
+      connection_(connection),
+      weak_factory_(this){
 }
 
 QuicPerConnectionPacketWriter::~QuicPerConnectionPacketWriter() {

@@ -338,7 +338,6 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
     const SSLClientSocketContext& context)
     : transport_send_busy_(false),
       transport_recv_busy_(false),
-      weak_factory_(this),
       pending_read_error_(kNoPendingReadResult),
       transport_read_error_(OK),
       transport_write_error_(OK),
@@ -361,7 +360,8 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       handshake_succeeded_(false),
       marked_session_as_good_(false),
       transport_security_state_(context.transport_security_state),
-      net_log_(transport_->socket()->NetLog()) {
+      net_log_(transport_->socket()->NetLog()),
+      weak_factory_(this) {
 }
 
 SSLClientSocketOpenSSL::~SSLClientSocketOpenSSL() {

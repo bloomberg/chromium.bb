@@ -329,15 +329,16 @@ HttpCache::Transaction::Transaction(
       read_offset_(0),
       effective_load_flags_(0),
       write_len_(0),
-      weak_factory_(this),
-      io_callback_(base::Bind(&Transaction::OnIOComplete,
-                              weak_factory_.GetWeakPtr())),
       transaction_pattern_(PATTERN_UNDEFINED),
       total_received_bytes_(0),
-      websocket_handshake_stream_base_create_helper_(NULL) {
+      websocket_handshake_stream_base_create_helper_(NULL),
+      weak_factory_(this) {
   COMPILE_ASSERT(HttpCache::Transaction::kNumValidationHeaders ==
                  arraysize(kValidationHeaders),
                  Invalid_number_of_validation_headers);
+
+  io_callback_ = base::Bind(&Transaction::OnIOComplete,
+                              weak_factory_.GetWeakPtr());
 }
 
 HttpCache::Transaction::~Transaction() {

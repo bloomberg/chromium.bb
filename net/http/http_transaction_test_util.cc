@@ -225,14 +225,14 @@ void TestTransactionConsumer::OnIOComplete(int result) {
 MockNetworkTransaction::MockNetworkTransaction(
     net::RequestPriority priority,
     MockNetworkLayer* factory)
-    : weak_factory_(this),
-      request_(NULL),
+    : request_(NULL),
       data_cursor_(0),
       priority_(priority),
       websocket_handshake_stream_create_helper_(NULL),
       transaction_factory_(factory->AsWeakPtr()),
       received_bytes_(0),
-      socket_log_id_(net::NetLog::Source::kInvalidId) {
+      socket_log_id_(net::NetLog::Source::kInvalidId),
+      weak_factory_(this) {
 }
 
 MockNetworkTransaction::~MockNetworkTransaction() {}

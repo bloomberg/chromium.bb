@@ -66,10 +66,6 @@ class NET_EXPORT SdchDictionaryFetcher
   // If this is null, then there is no outstanding request.
   scoped_ptr<URLFetcher> current_fetch_;
 
-  // Always spread out the dictionary fetches, so that they don't steal
-  // bandwidth from the actual page load.  Create delayed tasks to spread out
-  // the download.
-  base::WeakPtrFactory<SdchDictionaryFetcher> weak_factory_;
   bool task_is_pending_;
 
   // Althought the SDCH spec does not preclude a server from using a single URL
@@ -90,6 +86,11 @@ class NET_EXPORT SdchDictionaryFetcher
   // Store the system_url_request_context_getter to use it when we start
   // fetching.
   scoped_refptr<URLRequestContextGetter> context_;
+
+  // Always spread out the dictionary fetches, so that they don't steal
+  // bandwidth from the actual page load.  Create delayed tasks to spread out
+  // the download.
+  base::WeakPtrFactory<SdchDictionaryFetcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SdchDictionaryFetcher);
 };

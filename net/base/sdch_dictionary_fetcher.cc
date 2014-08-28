@@ -18,9 +18,9 @@ SdchDictionaryFetcher::SdchDictionaryFetcher(
     SdchManager* manager,
     scoped_refptr<URLRequestContextGetter> context)
     : manager_(manager),
-      weak_factory_(this),
       task_is_pending_(false),
-      context_(context) {
+      context_(context),
+      weak_factory_(this) {
   DCHECK(CalledOnValidThread());
   DCHECK(manager);
 }

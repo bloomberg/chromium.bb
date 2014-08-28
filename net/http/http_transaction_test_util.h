@@ -237,7 +237,6 @@ class MockNetworkTransaction
   void CallbackLater(const net::CompletionCallback& callback, int result);
   void RunCallback(const net::CompletionCallback& callback, int result);
 
-  base::WeakPtrFactory<MockNetworkTransaction> weak_factory_;
   const net::HttpRequestInfo* request_;
   net::HttpResponseInfo response_;
   std::string data_;
@@ -252,6 +251,9 @@ class MockNetworkTransaction
   // connection. Requires Start() be passed a BoundNetLog with a real NetLog to
   // be initialized.
   unsigned int socket_log_id_;
+
+  base::WeakPtrFactory<MockNetworkTransaction> weak_factory_;
+
 };
 
 class MockNetworkLayer : public net::HttpTransactionFactory,

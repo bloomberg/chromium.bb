@@ -223,10 +223,6 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
 
   const scoped_refptr<base::SequencedTaskRunner> pref_task_runner_;
 
-  // Used to get |weak_ptr_| to self on the pref thread.
-  scoped_ptr<base::WeakPtrFactory<HttpServerPropertiesManager> >
-      pref_weak_ptr_factory_;
-
   base::WeakPtr<HttpServerPropertiesManager> pref_weak_ptr_;
 
   // Used to post cache update tasks.
@@ -245,15 +241,19 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
 
   const scoped_refptr<base::SequencedTaskRunner> network_task_runner_;
 
-  // Used to get |weak_ptr_| to self on the network thread.
-  scoped_ptr<base::WeakPtrFactory<HttpServerPropertiesManager> >
-      network_weak_ptr_factory_;
-
   // Used to post |prefs::kHttpServerProperties| pref update tasks.
   scoped_ptr<base::OneShotTimer<HttpServerPropertiesManager> >
       network_prefs_update_timer_;
 
   scoped_ptr<HttpServerPropertiesImpl> http_server_properties_impl_;
+
+  // Used to get |weak_ptr_| to self on the pref thread.
+  scoped_ptr<base::WeakPtrFactory<HttpServerPropertiesManager> >
+      pref_weak_ptr_factory_;
+
+  // Used to get |weak_ptr_| to self on the network thread.
+  scoped_ptr<base::WeakPtrFactory<HttpServerPropertiesManager> >
+      network_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpServerPropertiesManager);
 };

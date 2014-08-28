@@ -16,9 +16,9 @@ QuicDefaultPacketWriter::QuicDefaultPacketWriter() : weak_factory_(this) {
 }
 
 QuicDefaultPacketWriter::QuicDefaultPacketWriter(DatagramClientSocket* socket)
-    : weak_factory_(this),
-      socket_(socket),
-      write_blocked_(false) {
+    : socket_(socket),
+      write_blocked_(false),
+      weak_factory_(this) {
 }
 
 QuicDefaultPacketWriter::~QuicDefaultPacketWriter() {}

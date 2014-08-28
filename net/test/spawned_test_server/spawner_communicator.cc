@@ -103,8 +103,8 @@ SpawnerCommunicator::SpawnerCommunicator(uint16 port)
       event_(false, false),
       port_(port),
       next_id_(0),
-      weak_factory_(this),
-      is_running_(false) {}
+      is_running_(false),
+      weak_factory_(this) {}
 
 SpawnerCommunicator::~SpawnerCommunicator() {
   DCHECK(!is_running_);

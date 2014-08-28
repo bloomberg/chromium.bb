@@ -47,19 +47,19 @@ DiskCacheBasedQuicServerInfo::DiskCacheBasedQuicServerInfo(
     const QuicServerId& server_id,
     HttpCache* http_cache)
     : QuicServerInfo(server_id),
-      weak_factory_(this),
       data_shim_(new CacheOperationDataShim()),
-      io_callback_(
-          base::Bind(&DiskCacheBasedQuicServerInfo::OnIOComplete,
-                     weak_factory_.GetWeakPtr(),
-                     base::Owned(data_shim_))),  // Ownership assigned.
       state_(GET_BACKEND),
       ready_(false),
       found_entry_(false),
       server_id_(server_id),
       http_cache_(http_cache),
       backend_(NULL),
-      entry_(NULL) {
+      entry_(NULL),
+      weak_factory_(this) {
+      io_callback_ =
+          base::Bind(&DiskCacheBasedQuicServerInfo::OnIOComplete,
+                     weak_factory_.GetWeakPtr(),
+                     base::Owned(data_shim_));  // Ownership assigned.
 }
 
 void DiskCacheBasedQuicServerInfo::Start() {

@@ -42,10 +42,10 @@ class NET_EXPORT_PRIVATE QuicConnectionHelper
   virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) OVERRIDE;
 
  private:
-  base::WeakPtrFactory<QuicConnectionHelper> weak_factory_;
   base::TaskRunner* task_runner_;
   const QuicClock* clock_;
   QuicRandom* random_generator_;
+  base::WeakPtrFactory<QuicConnectionHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionHelper);
 };

@@ -438,7 +438,6 @@ class HttpCache::Transaction : public HttpTransaction {
   int write_len_;
   scoped_ptr<PartialData> partial_;  // We are dealing with range requests.
   UploadProgress final_upload_progress_;
-  base::WeakPtrFactory<Transaction> weak_factory_;
   CompletionCallback io_callback_;
 
   // Members used to track data for histograms.
@@ -463,6 +462,8 @@ class HttpCache::Transaction : public HttpTransaction {
 
   BeforeNetworkStartCallback before_network_start_callback_;
   BeforeProxyHeadersSentCallback before_proxy_headers_sent_callback_;
+
+  base::WeakPtrFactory<Transaction> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Transaction);
 };

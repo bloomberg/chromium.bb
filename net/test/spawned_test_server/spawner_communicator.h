@@ -130,10 +130,6 @@ class SpawnerCommunicator : public net::URLRequest::Delegate {
   // The next ID to use for |cur_request_| (monotonically increasing).
   int next_id_;
 
-  // Factory for creating the time-out task. This takes care of revoking
-  // outstanding tasks when |this| is deleted.
-  base::WeakPtrFactory<SpawnerCommunicator> weak_factory_;
-
   // Request context used by |cur_request_|.
   scoped_ptr<URLRequestContext> context_;
 
@@ -142,6 +138,10 @@ class SpawnerCommunicator : public net::URLRequest::Delegate {
 
   // Only gets/sets |is_running_| on user's thread to avoid race-condition.
   bool is_running_;
+
+  // Factory for creating the time-out task. This takes care of revoking
+  // outstanding tasks when |this| is deleted.
+  base::WeakPtrFactory<SpawnerCommunicator> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SpawnerCommunicator);
 };

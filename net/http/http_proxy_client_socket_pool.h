@@ -152,7 +152,6 @@ class HttpProxyConnectJob : public ConnectJob {
   // a standard net error code will be returned.
   virtual int ConnectInternal() OVERRIDE;
 
-  base::WeakPtrFactory<HttpProxyConnectJob> weak_ptr_factory_;
   scoped_refptr<HttpProxySocketParams> params_;
   TransportClientSocketPool* const transport_pool_;
   SSLClientSocketPool* const ssl_pool_;
@@ -169,6 +168,8 @@ class HttpProxyConnectJob : public ConnectJob {
   HttpResponseInfo error_response_info_;
 
   SpdyStreamRequest spdy_stream_request_;
+
+  base::WeakPtrFactory<HttpProxyConnectJob> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpProxyConnectJob);
 };

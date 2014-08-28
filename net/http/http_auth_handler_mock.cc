@@ -16,14 +16,14 @@ namespace net {
 
 HttpAuthHandlerMock::HttpAuthHandlerMock()
   : resolve_(RESOLVE_INIT),
-    weak_factory_(this),
     generate_async_(false),
     generate_rv_(OK),
     auth_token_(NULL),
     first_round_(true),
     connection_based_(false),
     allows_default_credentials_(false),
-    allows_explicit_credentials_(true) {
+    allows_explicit_credentials_(true),
+    weak_factory_(this) {
 }
 
 HttpAuthHandlerMock::~HttpAuthHandlerMock() {

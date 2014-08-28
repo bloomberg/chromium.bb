@@ -40,9 +40,10 @@ class QuicPerConnectionPacketWriter : public QuicPacketWriter {
  private:
   void OnWriteComplete(WriteResult result);
 
-  base::WeakPtrFactory<QuicPerConnectionPacketWriter> weak_factory_;
   QuicServerPacketWriter* shared_writer_;  // Not owned.
   QuicConnection* connection_;  // Not owned.
+
+  base::WeakPtrFactory<QuicPerConnectionPacketWriter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicPerConnectionPacketWriter);
 };

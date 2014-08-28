@@ -79,10 +79,6 @@ class NET_EXPORT ProxyScriptFetcherImpl : public ProxyScriptFetcher,
   // Callback for time-out task of request with id |id|.
   void OnTimeout(int id);
 
-  // Factory for creating the time-out task. This takes care of revoking
-  // outstanding tasks when |this| is deleted.
-  base::WeakPtrFactory<ProxyScriptFetcherImpl> weak_factory_;
-
   // The context used for making network requests.
   URLRequestContext* const url_request_context_;
 
@@ -118,6 +114,10 @@ class NET_EXPORT ProxyScriptFetcherImpl : public ProxyScriptFetcher,
 
   // The maximum amount of time to wait for download to complete.
   base::TimeDelta max_duration_;
+
+  // Factory for creating the time-out task. This takes care of revoking
+  // outstanding tasks when |this| is deleted.
+  base::WeakPtrFactory<ProxyScriptFetcherImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyScriptFetcherImpl);
 };

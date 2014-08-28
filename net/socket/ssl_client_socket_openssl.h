@@ -183,8 +183,6 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   CompletionCallback user_read_callback_;
   CompletionCallback user_write_callback_;
 
-  base::WeakPtrFactory<SSLClientSocketOpenSSL> weak_factory_;
-
   // Used by Read function.
   scoped_refptr<IOBuffer> user_read_buf_;
   int user_read_buf_len_;
@@ -290,6 +288,7 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   std::string pinning_failure_log_;
 
   BoundNetLog net_log_;
+  base::WeakPtrFactory<SSLClientSocketOpenSSL> weak_factory_;
 };
 
 }  // namespace net

@@ -94,10 +94,10 @@ class QuicChromeAlarm : public QuicAlarm {
 QuicConnectionHelper::QuicConnectionHelper(base::TaskRunner* task_runner,
                                            const QuicClock* clock,
                                            QuicRandom* random_generator)
-    : weak_factory_(this),
-      task_runner_(task_runner),
+    : task_runner_(task_runner),
       clock_(clock),
-      random_generator_(random_generator) {
+      random_generator_(random_generator),
+      weak_factory_(this) {
 }
 
 QuicConnectionHelper::~QuicConnectionHelper() {

@@ -17,10 +17,10 @@ namespace net {
 QuicServerPacketWriter::QuicServerPacketWriter(
     UDPServerSocket* socket,
     QuicBlockedWriterInterface* blocked_writer)
-    : weak_factory_(this),
-      socket_(socket),
+    : socket_(socket),
       blocked_writer_(blocked_writer),
-      write_blocked_(false) {
+      write_blocked_(false),
+      weak_factory_(this) {
 }
 
 QuicServerPacketWriter::~QuicServerPacketWriter() {

@@ -52,7 +52,6 @@ class QuicServerPacketWriter : public QuicPacketWriter {
                                   const IPAddressNumber& self_address,
                                   const IPEndPoint& peer_address) OVERRIDE;
  private:
-  base::WeakPtrFactory<QuicServerPacketWriter> weak_factory_;
   UDPServerSocket* socket_;
 
   // To be notified after every successful asynchronous write.
@@ -63,6 +62,8 @@ class QuicServerPacketWriter : public QuicPacketWriter {
 
   // Whether a write is currently in flight.
   bool write_blocked_;
+
+  base::WeakPtrFactory<QuicServerPacketWriter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicServerPacketWriter);
 };

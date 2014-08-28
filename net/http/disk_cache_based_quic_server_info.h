@@ -84,7 +84,6 @@ class NET_EXPORT_PRIVATE DiskCacheBasedQuicServerInfo
   // DoSetDone is the terminal state of the write operation.
   int DoSetDone();
 
-  base::WeakPtrFactory<DiskCacheBasedQuicServerInfo> weak_factory_;
   CacheOperationDataShim* data_shim_;  // Owned by |io_callback_|.
   CompletionCallback io_callback_;
   State state_;
@@ -99,6 +98,8 @@ class NET_EXPORT_PRIVATE DiskCacheBasedQuicServerInfo
   scoped_refptr<IOBuffer> read_buffer_;
   scoped_refptr<IOBuffer> write_buffer_;
   std::string data_;
+
+  base::WeakPtrFactory<DiskCacheBasedQuicServerInfo> weak_factory_;
 };
 
 }  // namespace net

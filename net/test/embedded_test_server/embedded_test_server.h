@@ -186,11 +186,11 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
   // Vector of registered request handlers.
   std::vector<HandleRequestCallback> request_handlers_;
 
+  base::ThreadChecker thread_checker_;
+
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<EmbeddedTestServer> weak_factory_;
-
-  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedTestServer);
 };

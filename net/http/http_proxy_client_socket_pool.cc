@@ -87,15 +87,15 @@ HttpProxyConnectJob::HttpProxyConnectJob(
     NetLog* net_log)
     : ConnectJob(group_name, timeout_duration, priority, delegate,
                  BoundNetLog::Make(net_log, NetLog::SOURCE_CONNECT_JOB)),
-      weak_ptr_factory_(this),
       params_(params),
       transport_pool_(transport_pool),
       ssl_pool_(ssl_pool),
       resolver_(host_resolver),
-      callback_(base::Bind(&HttpProxyConnectJob::OnIOComplete,
-                           weak_ptr_factory_.GetWeakPtr())),
       using_spdy_(false),
-      protocol_negotiated_(kProtoUnknown) {
+      protocol_negotiated_(kProtoUnknown),
+      weak_ptr_factory_(this) {
+    callback_= base::Bind(&HttpProxyConnectJob::OnIOComplete,
+                           weak_ptr_factory_.GetWeakPtr());
 }
 
 HttpProxyConnectJob::~HttpProxyConnectJob() {}

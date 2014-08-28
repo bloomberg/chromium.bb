@@ -71,15 +71,15 @@ void ConvertResponseToUTF16(const std::string& charset,
 
 ProxyScriptFetcherImpl::ProxyScriptFetcherImpl(
     URLRequestContext* url_request_context)
-    : weak_factory_(this),
-      url_request_context_(url_request_context),
+    : url_request_context_(url_request_context),
       buf_(new IOBuffer(kBufSize)),
       next_id_(0),
       cur_request_id_(0),
       result_code_(OK),
       result_text_(NULL),
       max_response_bytes_(kDefaultMaxResponseBytes),
-      max_duration_(base::TimeDelta::FromMilliseconds(kDefaultMaxDurationMs)) {
+      max_duration_(base::TimeDelta::FromMilliseconds(kDefaultMaxDurationMs)),
+      weak_factory_(this) {
   DCHECK(url_request_context);
 }
 
