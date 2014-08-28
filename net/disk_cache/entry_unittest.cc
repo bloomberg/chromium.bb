@@ -3910,6 +3910,70 @@ TEST_F(DiskCacheEntryTest, SimpleCacheDoomOptimisticWritesRace) {
   }
 }
 
+// Tests for a regression in crbug.com/317138 , in which deleting an already
+// doomed entry was removing the active entry from the index.
+TEST_F(DiskCacheEntryTest, SimpleCachePreserveActiveEntries) {
+  SetSimpleCacheMode();
+  InitCache();
+
+  disk_cache::Entry* null = NULL;
+
+  const char key[] = "this is a key";
+
+  disk_cache::Entry* entry1 = NULL;
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry1));
+  ScopedEntryPtr entry1_closer(entry1);
+  EXPECT_NE(null, entry1);
+  entry1->Doom();
+
+  disk_cache::Entry* entry2 = NULL;
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry2));
+  ScopedEntryPtr entry2_closer(entry2);
+  EXPECT_NE(null, entry2);
+  entry2_closer.reset();
+
+  // Closing then reopening entry2 insures that entry2 is serialized, and so
+  // it can be opened from files without error.
+  entry2 = NULL;
+  ASSERT_EQ(net::OK, OpenEntry(key, &entry2));
+  EXPECT_NE(null, entry2);
+  entry2_closer.reset(entry2);
+
+  scoped_refptr<disk_cache::SimpleEntryImpl>
+      entry1_refptr = static_cast<disk_cache::SimpleEntryImpl*>(entry1);
+
+  // If crbug.com/317138 has regressed, this will remove |entry2| from
+  // the backend's |active_entries_| while |entry2| is still alive and its
+  // files are still on disk.
+  entry1_closer.reset();
+  entry1 = NULL;
+
+  // Close does not have a callback. However, we need to be sure the close is
+  // finished before we continue the test. We can take advantage of how the ref
+  // counting of a SimpleEntryImpl works to fake out a callback: When the
+  // last Close() call is made to an entry, an IO operation is sent to the
+  // synchronous entry to close the platform files. This IO operation holds a
+  // ref pointer to the entry, which expires when the operation is done. So,
+  // we take a refpointer, and watch the SimpleEntry object until it has only
+  // one ref; this indicates the IO operation is complete.
+  while (!entry1_refptr->HasOneRef()) {
+    base::PlatformThread::YieldCurrentThread();
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+  entry1_refptr = NULL;
+
+  // In the bug case, this new entry ends up being a duplicate object pointing
+  // at the same underlying files.
+  disk_cache::Entry* entry3 = NULL;
+  EXPECT_EQ(net::OK, OpenEntry(key, &entry3));
+  ScopedEntryPtr entry3_closer(entry3);
+  EXPECT_NE(null, entry3);
+
+  // The test passes if these two dooms do not crash.
+  entry2->Doom();
+  entry3->Doom();
+}
+
 TEST_F(DiskCacheEntryTest, SimpleCacheBasicSparseIO) {
   SetSimpleCacheMode();
   InitCache();
