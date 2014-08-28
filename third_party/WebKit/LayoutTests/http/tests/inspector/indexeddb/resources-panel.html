@@ -68,18 +68,13 @@ function test()
 
     InspectorTest.addResult("Expanded IndexedDB tree element.");
     WebInspector.panels.resources.indexedDBListTreeElement.expand();
-
-    InspectorTest.addSniffer(WebInspector.IndexedDBModel.prototype, "_updateOriginDatabaseNames", indexedDBTreeElementExpanded, false);
-    function indexedDBTreeElementExpanded()
-    {
-        InspectorTest.dumpIndexedDBTree();
-        InspectorTest.addResult("Created database.");
-        createDatabase(databaseCreated);
-    }
+    InspectorTest.dumpIndexedDBTree();
+    InspectorTest.addResult("Created database.");
+    createDatabase(databaseCreated);
 
     function databaseCreated()
     {
-        indexedDBModel = WebInspector.panels.resources.indexedDBListTreeElement._indexedDBModel;
+        indexedDBModel = WebInspector.targetManager.mainTarget().indexedDBModel;
         indexedDBModel.addEventListener(WebInspector.IndexedDBModel.EventTypes.DatabaseLoaded, databaseLoaded);
         WebInspector.panels.resources.indexedDBListTreeElement.refreshIndexedDB();
     }
