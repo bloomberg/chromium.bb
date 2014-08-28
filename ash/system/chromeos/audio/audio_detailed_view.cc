@@ -9,7 +9,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -19,7 +18,7 @@
 namespace {
 
 base::string16 GetAudioDeviceName(const chromeos::AudioDevice& device) {
-  switch(device.type) {
+  switch (device.type) {
     case chromeos::AUDIO_TYPE_HEADPHONE:
       return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO_HEADPHONE);
     case chromeos::AUDIO_TYPE_INTERNAL_SPEAKER:

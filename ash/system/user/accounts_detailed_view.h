@@ -14,7 +14,6 @@
 #include "ash/system/user/user_accounts_delegate.h"
 #include "ash/system/user/user_view.h"
 #include "base/macros.h"
-#include "grit/ash_strings.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 

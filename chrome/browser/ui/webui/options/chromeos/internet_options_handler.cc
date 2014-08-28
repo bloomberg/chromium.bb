@@ -51,7 +51,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/ash_resources.h"
 #include "grit/ui_chromeos_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/resource/resource_bundle.h"

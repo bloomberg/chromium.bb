@@ -11,7 +11,6 @@
 #include "ash/test/test_shelf_item_delegate.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "grit/ash_resources.h"
 #include "ui/aura/window.h"
 
 namespace ash {

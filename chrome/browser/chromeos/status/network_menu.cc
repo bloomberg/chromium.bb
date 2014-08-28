@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -75,8 +74,11 @@ class NetworkMenuModel : public ui::MenuModel {
           sub_menu_model(NULL),
           flags(0) {
     }
-    MenuItem(ui::MenuModel::ItemType type, base::string16 label, gfx::ImageSkia icon,
-             const std::string& service_path, int flags)
+    MenuItem(ui::MenuModel::ItemType type,
+             base::string16 label,
+             gfx::ImageSkia icon,
+             const std::string& service_path,
+             int flags)
         : type(type),
           label(label),
           icon(icon),
@@ -84,8 +86,11 @@ class NetworkMenuModel : public ui::MenuModel {
           sub_menu_model(NULL),
           flags(flags) {
     }
-    MenuItem(ui::MenuModel::ItemType type, base::string16 label, gfx::ImageSkia icon,
-             NetworkMenuModel* sub_menu_model, int flags)
+    MenuItem(ui::MenuModel::ItemType type,
+             base::string16 label,
+             gfx::ImageSkia icon,
+             NetworkMenuModel* sub_menu_model,
+             int flags)
         : type(type),
           label(label),
           icon(icon),

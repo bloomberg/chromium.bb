@@ -6,7 +6,6 @@
 
 #include "chromeos/audio/cras_audio_handler.h"
 #include "grit/ash_resources.h"
-#include "grit/ash_strings.h"
 
 using chromeos::CrasAudioHandler;
 

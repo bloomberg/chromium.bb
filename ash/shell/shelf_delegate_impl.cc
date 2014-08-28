@@ -9,7 +9,6 @@
 #include "ash/shell/window_watcher.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/string_util.h"
-#include "grit/ash_resources.h"
 
 namespace ash {
 namespace shell {

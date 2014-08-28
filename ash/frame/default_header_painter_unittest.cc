@@ -9,7 +9,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
 #include "base/memory/scoped_ptr.h"
-#include "grit/ash_resources.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/widget/widget.h"
