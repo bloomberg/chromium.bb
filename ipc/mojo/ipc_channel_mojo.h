@@ -108,7 +108,6 @@ class IPC_MOJO_EXPORT ChannelMojo : public Channel {
 
   void InitOnIOThread();
 
-  base::WeakPtrFactory<ChannelMojo> weak_factory_;
   scoped_ptr<Channel> bootstrap_;
   Mode mode_;
   Listener* listener_;
@@ -119,6 +118,8 @@ class IPC_MOJO_EXPORT ChannelMojo : public Channel {
   scoped_ptr<ControlReader, ReaderDeleter> control_reader_;
   scoped_ptr<MessageReader, ReaderDeleter> message_reader_;
   ScopedVector<Message> pending_messages_;
+
+  base::WeakPtrFactory<ChannelMojo> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelMojo);
 };

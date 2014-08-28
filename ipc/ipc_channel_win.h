@@ -106,10 +106,8 @@ class ChannelWin : public Channel,
   // compatability with existing clients that don't validate the channel.)
   int32 client_secret_;
 
-
-  base::WeakPtrFactory<ChannelWin> weak_factory_;
-
   scoped_ptr<base::ThreadChecker> thread_check_;
+  base::WeakPtrFactory<ChannelWin> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelWin);
 };

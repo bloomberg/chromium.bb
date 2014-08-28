@@ -484,10 +484,10 @@ scoped_ptr<ChannelFactory> ChannelMojo::CreateFactory(
 ChannelMojo::ChannelMojo(
     scoped_ptr<Channel> bootstrap, Mode mode, Listener* listener,
     scoped_refptr<base::TaskRunner> io_thread_task_runner)
-    : weak_factory_(this),
-      bootstrap_(bootstrap.Pass()),
+    : bootstrap_(bootstrap.Pass()),
       mode_(mode), listener_(listener),
-      peer_pid_(base::kNullProcessId) {
+      peer_pid_(base::kNullProcessId),
+      weak_factory_(this) {
   if (base::MessageLoopProxy::current() == io_thread_task_runner.get()) {
     InitOnIOThread();
   } else {
