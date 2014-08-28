@@ -72,6 +72,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/ProcessID.h"
 #include "wtf/text/WTFString.h"
 
 namespace OverlayZOrders {
@@ -80,6 +81,8 @@ static const int highlight = 99;
 }
 
 namespace blink {
+
+static int s_nextDebuggerId = 1;
 
 class ClientMessageLoopAdapter : public PageScriptDebugServer::ClientMessageLoop {
 public:
@@ -198,7 +201,7 @@ private:
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebViewImpl* webViewImpl,
     WebDevToolsAgentClient* client)
-    : m_debuggerId(client->debuggerId())
+    : m_debuggerId(s_nextDebuggerId++)
     , m_layerTreeId(0)
     , m_client(client)
     , m_webViewImpl(webViewImpl)
@@ -214,7 +217,9 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_pageScaleLimitsOverriden(false)
     , m_touchEventEmulationEnabled(false)
 {
-    long processId = client->processId();
+    ASSERT(isMainThread());
+
+    long processId = WTF::getCurrentProcessID();
     ASSERT(processId > 0);
     inspectorController()->setProcessId(processId);
 
