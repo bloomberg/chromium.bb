@@ -196,7 +196,7 @@ deps = {
     Var('chromium_git') + '/external/bidichecker/lib.git' + '@' + '97f2aa645b74c28c57eca56992235c79850fa9e0',
 
   'src/third_party/webgl/src':
-   Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'e44dae1d413514e3a632838449fe317713b6f0af',
+   Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'db4d3ef9b3eff59ba438569141031a59f703778c',
 
   'src/third_party/swig/Lib':
    Var('chromium_git') + '/chromium/deps/swig/Lib.git' + '@' + 'f2a695d52e61e6a8d967731434f165ed400f0d69',
