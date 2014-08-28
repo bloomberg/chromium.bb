@@ -62,8 +62,9 @@ class BASE_EXPORT ImportantFileWriter : public NonThreadSafe {
   // |task_runner| is the SequencedTaskRunner instance where on which we will
   // execute file I/O operations.
   // All non-const methods, ctor and dtor must be called on the same thread.
-  ImportantFileWriter(const FilePath& path,
-                      base::SequencedTaskRunner* task_runner);
+  ImportantFileWriter(
+      const FilePath& path,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   // You have to ensure that there are no pending writes at the moment
   // of destruction.

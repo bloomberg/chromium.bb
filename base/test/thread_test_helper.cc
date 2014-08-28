@@ -10,7 +10,8 @@
 
 namespace base {
 
-ThreadTestHelper::ThreadTestHelper(MessageLoopProxy* target_thread)
+ThreadTestHelper::ThreadTestHelper(
+    const scoped_refptr<MessageLoopProxy>& target_thread)
     : test_result_(false),
       target_thread_(target_thread),
       done_event_(false, false) {

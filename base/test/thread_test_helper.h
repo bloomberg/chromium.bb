@@ -18,7 +18,8 @@ namespace base {
 // until all pending tasks on a given thread have been executed.
 class ThreadTestHelper : public RefCountedThreadSafe<ThreadTestHelper> {
  public:
-  explicit ThreadTestHelper(MessageLoopProxy* target_thread);
+  explicit ThreadTestHelper(
+      const scoped_refptr<MessageLoopProxy>& target_thread);
 
   // True if RunTest() was successfully executed on the target thread.
   bool Run() WARN_UNUSED_RESULT;

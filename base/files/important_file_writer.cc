@@ -88,8 +88,9 @@ bool ImportantFileWriter::WriteFileAtomically(const FilePath& path,
   return true;
 }
 
-ImportantFileWriter::ImportantFileWriter(const FilePath& path,
-                                         base::SequencedTaskRunner* task_runner)
+ImportantFileWriter::ImportantFileWriter(
+    const FilePath& path,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : path_(path),
       task_runner_(task_runner),
       serializer_(NULL),

@@ -124,9 +124,10 @@ scoped_refptr<base::SequencedTaskRunner> JsonPrefStore::GetTaskRunnerForFile(
       base::SequencedWorkerPool::BLOCK_SHUTDOWN);
 }
 
-JsonPrefStore::JsonPrefStore(const base::FilePath& filename,
-                             base::SequencedTaskRunner* sequenced_task_runner,
-                             scoped_ptr<PrefFilter> pref_filter)
+JsonPrefStore::JsonPrefStore(
+    const base::FilePath& filename,
+    const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
+    scoped_ptr<PrefFilter> pref_filter)
     : path_(filename),
       sequenced_task_runner_(sequenced_task_runner),
       prefs_(new base::DictionaryValue()),
@@ -138,10 +139,11 @@ JsonPrefStore::JsonPrefStore(const base::FilePath& filename,
       read_error_(PREF_READ_ERROR_NONE) {
 }
 
-JsonPrefStore::JsonPrefStore(const base::FilePath& filename,
-                             const base::FilePath& alternate_filename,
-                             base::SequencedTaskRunner* sequenced_task_runner,
-                             scoped_ptr<PrefFilter> pref_filter)
+JsonPrefStore::JsonPrefStore(
+    const base::FilePath& filename,
+    const base::FilePath& alternate_filename,
+    const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
+    scoped_ptr<PrefFilter> pref_filter)
     : path_(filename),
       alternate_path_(alternate_filename),
       sequenced_task_runner_(sequenced_task_runner),

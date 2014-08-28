@@ -47,9 +47,10 @@ class BASE_PREFS_EXPORT JsonPrefStore
       base::SequencedWorkerPool* worker_pool);
 
   // Same as the constructor below with no alternate filename.
-  JsonPrefStore(const base::FilePath& pref_filename,
-                base::SequencedTaskRunner* sequenced_task_runner,
-                scoped_ptr<PrefFilter> pref_filter);
+  JsonPrefStore(
+      const base::FilePath& pref_filename,
+      const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
+      scoped_ptr<PrefFilter> pref_filter);
 
   // |sequenced_task_runner| must be a shutdown-blocking task runner, ideally
   // created by the GetTaskRunnerForFile() method above.
@@ -58,10 +59,11 @@ class BASE_PREFS_EXPORT JsonPrefStore
   // desired prefs may have previously been written to. If |pref_filename|
   // doesn't exist and |pref_alternate_filename| does, |pref_alternate_filename|
   // will be moved to |pref_filename| before the read occurs.
-  JsonPrefStore(const base::FilePath& pref_filename,
-                const base::FilePath& pref_alternate_filename,
-                base::SequencedTaskRunner* sequenced_task_runner,
-                scoped_ptr<PrefFilter> pref_filter);
+  JsonPrefStore(
+      const base::FilePath& pref_filename,
+      const base::FilePath& pref_alternate_filename,
+      const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
+      scoped_ptr<PrefFilter> pref_filter);
 
   // PrefStore overrides:
   virtual bool GetValue(const std::string& key,
