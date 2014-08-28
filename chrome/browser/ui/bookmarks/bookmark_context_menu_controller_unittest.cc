@@ -349,19 +349,19 @@ TEST_F(BookmarkContextMenuControllerTest,
 
   // By default, the pref is not managed and the command is enabled.
   TestingPrefServiceSyncable* prefs = profile_->GetTestingPrefService();
-  EXPECT_FALSE(
-      prefs->IsManagedPreference(prefs::kShowAppsShortcutInBookmarkBar));
+  EXPECT_FALSE(prefs->IsManagedPreference(
+      bookmarks::prefs::kShowAppsShortcutInBookmarkBar));
   EXPECT_TRUE(
       controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT));
 
   // Disabling the shorcut by policy disables the command.
-  prefs->SetManagedPref(prefs::kShowAppsShortcutInBookmarkBar,
+  prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
                         new base::FundamentalValue(false));
   EXPECT_FALSE(
       controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT));
 
   // And enabling the shortcut by policy disables the command too.
-  prefs->SetManagedPref(prefs::kShowAppsShortcutInBookmarkBar,
+  prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
                         new base::FundamentalValue(true));
   EXPECT_FALSE(
       controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT));

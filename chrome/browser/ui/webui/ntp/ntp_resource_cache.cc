@@ -172,7 +172,8 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
 
   // Watch for pref changes that cause us to need to invalidate the HTML cache.
   profile_pref_change_registrar_.Init(profile_->GetPrefs());
-  profile_pref_change_registrar_.Add(prefs::kShowBookmarkBar, callback);
+  profile_pref_change_registrar_.Add(bookmarks::prefs::kShowBookmarkBar,
+                                     callback);
   profile_pref_change_registrar_.Add(prefs::kNtpShownPage, callback);
   profile_pref_change_registrar_.Add(prefs::kSignInPromoShowNTPBubble,
                                      callback);
@@ -313,8 +314,8 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
       l10n_util::GetStringUTF16(new_tab_link_ids));
   localized_strings.SetString("learnMoreLink", new_tab_link);
 
-  bool bookmark_bar_attached = profile_->GetPrefs()->GetBoolean(
-      prefs::kShowBookmarkBar);
+  bool bookmark_bar_attached =
+      profile_->GetPrefs()->GetBoolean(bookmarks::prefs::kShowBookmarkBar);
   localized_strings.SetBoolean("bookmarkbarattached", bookmark_bar_attached);
 
   webui::SetFontAndTextDirection(&localized_strings);
@@ -390,7 +391,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   PrefService* prefs = profile_->GetPrefs();
   base::DictionaryValue load_time_data;
   load_time_data.SetBoolean("bookmarkbarattached",
-      prefs->GetBoolean(prefs::kShowBookmarkBar));
+      prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar));
   load_time_data.SetBoolean("hasattribution",
       ThemeServiceFactory::GetForProfile(profile_)->HasCustomImage(
           IDR_THEME_NTP_ATTRIBUTION));

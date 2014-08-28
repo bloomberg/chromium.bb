@@ -446,7 +446,8 @@ void BrowserWindowCocoa::FocusInfobars() {
 }
 
 bool BrowserWindowCocoa::IsBookmarkBarVisible() const {
-  return browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+  return browser_->profile()->GetPrefs()->GetBoolean(
+      bookmarks::prefs::kShowBookmarkBar);
 }
 
 bool BrowserWindowCocoa::IsBookmarkBarAnimating() const {

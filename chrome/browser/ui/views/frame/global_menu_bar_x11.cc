@@ -406,7 +406,7 @@ void GlobalMenuBarX11::InitServer(unsigned long xid) {
 
   pref_change_registrar_.Init(browser_->profile()->GetPrefs());
   pref_change_registrar_.Add(
-      prefs::kShowBookmarkBar,
+      bookmarks::prefs::kShowBookmarkBar,
       base::Bind(&GlobalMenuBarX11::OnBookmarkBarVisibilityChanged,
                  base::Unretained(this)));
   OnBookmarkBarVisibilityChanged();
@@ -580,8 +580,10 @@ void GlobalMenuBarX11::OnBookmarkBarVisibilityChanged() {
     PrefService* prefs = browser_->profile()->GetPrefs();
     // Note: Unlike the GTK version, we don't appear to need to do tricks where
     // we block activation while setting the toggle.
-    menuitem_property_set_int(it->second, kPropertyToggleState,
-                              prefs->GetBoolean(prefs::kShowBookmarkBar));
+    menuitem_property_set_int(
+        it->second,
+        kPropertyToggleState,
+        prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar));
   }
 }
 

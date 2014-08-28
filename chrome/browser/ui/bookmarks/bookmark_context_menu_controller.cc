@@ -246,16 +246,17 @@ void BookmarkContextMenuController::ExecuteCommand(int id, int event_flags) {
     case IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT: {
       PrefService* prefs = profile_->GetPrefs();
       prefs->SetBoolean(
-          prefs::kShowAppsShortcutInBookmarkBar,
-          !prefs->GetBoolean(prefs::kShowAppsShortcutInBookmarkBar));
+          bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
+          !prefs->GetBoolean(bookmarks::prefs::kShowAppsShortcutInBookmarkBar));
       break;
     }
 
     case IDC_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS: {
       PrefService* prefs = profile_->GetPrefs();
       prefs->SetBoolean(
-          prefs::kShowManagedBookmarksInBookmarkBar,
-          !prefs->GetBoolean(prefs::kShowManagedBookmarksInBookmarkBar));
+          bookmarks::prefs::kShowManagedBookmarksInBookmarkBar,
+          !prefs->GetBoolean(
+              bookmarks::prefs::kShowManagedBookmarksInBookmarkBar));
       break;
     }
 
@@ -330,12 +331,13 @@ base::string16 BookmarkContextMenuController::GetLabelForCommandId(
 bool BookmarkContextMenuController::IsCommandIdChecked(int command_id) const {
   PrefService* prefs = profile_->GetPrefs();
   if (command_id == IDC_BOOKMARK_BAR_ALWAYS_SHOW)
-    return prefs->GetBoolean(prefs::kShowBookmarkBar);
+    return prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar);
   if (command_id == IDC_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS)
-    return prefs->GetBoolean(prefs::kShowManagedBookmarksInBookmarkBar);
+    return prefs->GetBoolean(
+        bookmarks::prefs::kShowManagedBookmarksInBookmarkBar);
 
   DCHECK_EQ(IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT, command_id);
-  return prefs->GetBoolean(prefs::kShowAppsShortcutInBookmarkBar);
+  return prefs->GetBoolean(bookmarks::prefs::kShowAppsShortcutInBookmarkBar);
 }
 
 bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
@@ -343,7 +345,7 @@ bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
 
   bool is_root_node = selection_.size() == 1 &&
                       selection_[0]->parent() == model_->root_node();
-  bool can_edit = prefs->GetBoolean(prefs::kEditBookmarksEnabled) &&
+  bool can_edit = prefs->GetBoolean(bookmarks::prefs::kEditBookmarksEnabled) &&
                   bookmarks::CanAllBeEditedByUser(model_->client(), selection_);
   IncognitoModePrefs::Availability incognito_avail =
       IncognitoModePrefs::GetAvailability(prefs);
@@ -388,10 +390,11 @@ bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
              bookmarks::GetParentForNewNodes(parent_, selection_, NULL) != NULL;
 
     case IDC_BOOKMARK_BAR_ALWAYS_SHOW:
-      return !prefs->IsManagedPreference(prefs::kShowBookmarkBar);
+      return !prefs->IsManagedPreference(bookmarks::prefs::kShowBookmarkBar);
 
     case IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT:
-      return !prefs->IsManagedPreference(prefs::kShowAppsShortcutInBookmarkBar);
+      return !prefs->IsManagedPreference(
+          bookmarks::prefs::kShowAppsShortcutInBookmarkBar);
 
     case IDC_COPY:
     case IDC_CUT:

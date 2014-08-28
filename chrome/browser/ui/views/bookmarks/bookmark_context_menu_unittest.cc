@@ -372,7 +372,7 @@ TEST_F(BookmarkContextMenuTest, ShowManagedBookmarks) {
   base::ListValue list;
   list.Append(dict);
   EXPECT_TRUE(client->managed_node()->empty());
-  profile_->GetPrefs()->Set(prefs::kManagedBookmarks, list);
+  profile_->GetPrefs()->Set(bookmarks::prefs::kManagedBookmarks, list);
   EXPECT_FALSE(client->managed_node()->empty());
 
   // New context menus now show the "Show managed bookmarks" option.

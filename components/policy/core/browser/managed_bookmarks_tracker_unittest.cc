@@ -35,8 +35,9 @@ class ManagedBookmarksTrackerTest : public testing::Test {
   virtual ~ManagedBookmarksTrackerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    prefs_.registry()->RegisterListPref(prefs::kManagedBookmarks);
-    prefs_.registry()->RegisterListPref(prefs::kBookmarkEditorExpandedNodes);
+    prefs_.registry()->RegisterListPref(bookmarks::prefs::kManagedBookmarks);
+    prefs_.registry()->RegisterListPref(
+        bookmarks::prefs::kBookmarkEditorExpandedNodes);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -48,7 +49,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
     // Simulate the creation of the managed node by the BookmarkClient.
     BookmarkPermanentNode* managed_node = new BookmarkPermanentNode(100);
     policy::ManagedBookmarksTracker::LoadInitial(
-        managed_node, prefs_.GetList(prefs::kManagedBookmarks), 101);
+        managed_node, prefs_.GetList(bookmarks::prefs::kManagedBookmarks), 101);
     managed_node->set_visible(!managed_node->empty());
     managed_node->SetTitle(l10n_util::GetStringUTF16(
         IDS_BOOKMARK_BAR_MANAGED_FOLDER_DEFAULT_NAME));
@@ -178,7 +179,7 @@ TEST_F(ManagedBookmarksTrackerTest, Empty) {
 
 TEST_F(ManagedBookmarksTrackerTest, LoadInitial) {
   // Set a policy before loading the model.
-  prefs_.SetManagedPref(prefs::kManagedBookmarks, CreateTestTree());
+  prefs_.SetManagedPref(bookmarks::prefs::kManagedBookmarks, CreateTestTree());
   CreateModel();
   EXPECT_TRUE(model_->bookmark_bar_node()->empty());
   EXPECT_TRUE(model_->other_node()->empty());
@@ -190,7 +191,7 @@ TEST_F(ManagedBookmarksTrackerTest, LoadInitial) {
 }
 
 TEST_F(ManagedBookmarksTrackerTest, SwapNodes) {
-  prefs_.SetManagedPref(prefs::kManagedBookmarks, CreateTestTree());
+  prefs_.SetManagedPref(bookmarks::prefs::kManagedBookmarks, CreateTestTree());
   CreateModel();
 
   // Swap the Google bookmark with the Folder.
@@ -202,7 +203,8 @@ TEST_F(ManagedBookmarksTrackerTest, SwapNodes) {
   // These two nodes should just be swapped.
   const BookmarkNode* parent = managed_node();
   EXPECT_CALL(observer_, BookmarkNodeMoved(model_.get(), parent, 1, parent, 0));
-  prefs_.SetManagedPref(prefs::kManagedBookmarks, updated->DeepCopy());
+  prefs_.SetManagedPref(bookmarks::prefs::kManagedBookmarks,
+                        updated->DeepCopy());
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Verify the final tree.
@@ -212,7 +214,7 @@ TEST_F(ManagedBookmarksTrackerTest, SwapNodes) {
 }
 
 TEST_F(ManagedBookmarksTrackerTest, RemoveNode) {
-  prefs_.SetManagedPref(prefs::kManagedBookmarks, CreateTestTree());
+  prefs_.SetManagedPref(bookmarks::prefs::kManagedBookmarks, CreateTestTree());
   CreateModel();
 
   // Remove the Folder.
@@ -221,7 +223,8 @@ TEST_F(ManagedBookmarksTrackerTest, RemoveNode) {
 
   const BookmarkNode* parent = managed_node();
   EXPECT_CALL(observer_, BookmarkNodeRemoved(model_.get(), parent, 1, _, _));
-  prefs_.SetManagedPref(prefs::kManagedBookmarks, updated->DeepCopy());
+  prefs_.SetManagedPref(bookmarks::prefs::kManagedBookmarks,
+                        updated->DeepCopy());
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Verify the final tree.
@@ -231,7 +234,7 @@ TEST_F(ManagedBookmarksTrackerTest, RemoveNode) {
 }
 
 TEST_F(ManagedBookmarksTrackerTest, CreateNewNodes) {
-  prefs_.SetManagedPref(prefs::kManagedBookmarks, CreateTestTree());
+  prefs_.SetManagedPref(bookmarks::prefs::kManagedBookmarks, CreateTestTree());
   CreateModel();
 
   // Put all the nodes inside another folder.
@@ -244,7 +247,8 @@ TEST_F(ManagedBookmarksTrackerTest, CreateNewNodes) {
   const BookmarkNode* parent = managed_node();
   EXPECT_CALL(observer_, BookmarkNodeRemoved(model_.get(), parent, 1, _, _))
       .Times(2);
-  prefs_.SetManagedPref(prefs::kManagedBookmarks, updated->DeepCopy());
+  prefs_.SetManagedPref(bookmarks::prefs::kManagedBookmarks,
+                        updated->DeepCopy());
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Verify the final tree.
@@ -254,7 +258,7 @@ TEST_F(ManagedBookmarksTrackerTest, CreateNewNodes) {
 }
 
 TEST_F(ManagedBookmarksTrackerTest, RemoveAll) {
-  prefs_.SetManagedPref(prefs::kManagedBookmarks, CreateTestTree());
+  prefs_.SetManagedPref(bookmarks::prefs::kManagedBookmarks, CreateTestTree());
   CreateModel();
   EXPECT_TRUE(managed_node()->IsVisible());
 
@@ -262,7 +266,7 @@ TEST_F(ManagedBookmarksTrackerTest, RemoveAll) {
   const BookmarkNode* parent = managed_node();
   EXPECT_CALL(observer_, BookmarkNodeRemoved(model_.get(), parent, 0, _, _))
       .Times(2);
-  prefs_.RemoveManagedPref(prefs::kManagedBookmarks);
+  prefs_.RemoveManagedPref(bookmarks::prefs::kManagedBookmarks);
   Mock::VerifyAndClearExpectations(&observer_);
 
   EXPECT_TRUE(managed_node()->empty());
@@ -270,7 +274,7 @@ TEST_F(ManagedBookmarksTrackerTest, RemoveAll) {
 }
 
 TEST_F(ManagedBookmarksTrackerTest, IsManaged) {
-  prefs_.SetManagedPref(prefs::kManagedBookmarks, CreateTestTree());
+  prefs_.SetManagedPref(bookmarks::prefs::kManagedBookmarks, CreateTestTree());
   CreateModel();
 
   EXPECT_FALSE(IsManaged(model_->root_node()));
@@ -291,7 +295,7 @@ TEST_F(ManagedBookmarksTrackerTest, IsManaged) {
 }
 
 TEST_F(ManagedBookmarksTrackerTest, RemoveAllUserBookmarksDoesntRemoveManaged) {
-  prefs_.SetManagedPref(prefs::kManagedBookmarks, CreateTestTree());
+  prefs_.SetManagedPref(bookmarks::prefs::kManagedBookmarks, CreateTestTree());
   CreateModel();
   EXPECT_EQ(2, managed_node()->child_count());
 

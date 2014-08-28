@@ -64,7 +64,7 @@ int GetBookmarkDragOperation(content::BrowserContext* browser_context,
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
 
   int move = ui::DragDropTypes::DRAG_MOVE;
-  if (!prefs->GetBoolean(prefs::kEditBookmarksEnabled) ||
+  if (!prefs->GetBoolean(bookmarks::prefs::kEditBookmarksEnabled) ||
       !model->client()->CanBeEditedByUser(node)) {
     move = ui::DragDropTypes::DRAG_NONE;
   }

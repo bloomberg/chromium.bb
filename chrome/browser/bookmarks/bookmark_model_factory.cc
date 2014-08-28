@@ -88,11 +88,11 @@ void BookmarkModelFactory::RegisterProfilePrefs(
   // will cause a deadlock (see http://crbug.com/97955).  If we truly
   // want to sync the expanded state of folders, it should be part of
   // bookmark sync itself (i.e., a property of the sync folder nodes).
-  registry->RegisterListPref(prefs::kBookmarkEditorExpandedNodes,
+  registry->RegisterListPref(bookmarks::prefs::kBookmarkEditorExpandedNodes,
                              new base::ListValue,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(
-      prefs::kManagedBookmarks,
+      bookmarks::prefs::kManagedBookmarks,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 

@@ -39,7 +39,8 @@ ManagedBookmarksTracker::~ManagedBookmarksTracker() {}
 
 scoped_ptr<base::ListValue>
 ManagedBookmarksTracker::GetInitialManagedBookmarks() {
-  const base::ListValue* list = prefs_->GetList(prefs::kManagedBookmarks);
+  const base::ListValue* list =
+      prefs_->GetList(bookmarks::prefs::kManagedBookmarks);
   return make_scoped_ptr(list->DeepCopy());
 }
 
@@ -74,7 +75,7 @@ int64 ManagedBookmarksTracker::LoadInitial(BookmarkNode* folder,
 void ManagedBookmarksTracker::Init(BookmarkPermanentNode* managed_node) {
   managed_node_ = managed_node;
   registrar_.Init(prefs_);
-  registrar_.Add(prefs::kManagedBookmarks,
+  registrar_.Add(bookmarks::prefs::kManagedBookmarks,
                  base::Bind(&ManagedBookmarksTracker::ReloadManagedBookmarks,
                             base::Unretained(this)));
   // Reload now just in case something changed since the initial load started.
@@ -96,7 +97,8 @@ void ManagedBookmarksTracker::ReloadManagedBookmarks() {
   model_->SetTitle(managed_node_, title);
 
   // Recursively update all the managed bookmarks and folders.
-  const base::ListValue* list = prefs_->GetList(prefs::kManagedBookmarks);
+  const base::ListValue* list =
+      prefs_->GetList(bookmarks::prefs::kManagedBookmarks);
   UpdateBookmarks(managed_node_, list);
 
   // The managed bookmarks folder isn't visible when that policy isn't present.

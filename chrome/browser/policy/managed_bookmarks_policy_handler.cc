@@ -37,7 +37,7 @@ void ManagedBookmarksPolicyHandler::ApplyPolicySettings(
     return;
 
   FilterBookmarks(list);
-  prefs->SetValue(prefs::kManagedBookmarks, value.release());
+  prefs->SetValue(bookmarks::prefs::kManagedBookmarks, value.release());
 }
 
 void ManagedBookmarksPolicyHandler::FilterBookmarks(base::ListValue* list) {

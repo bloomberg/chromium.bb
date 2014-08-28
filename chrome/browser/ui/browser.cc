@@ -404,7 +404,7 @@ Browser::Browser(const CreateParams& params)
       prefs::kDevToolsDisabled,
       base::Bind(&Browser::OnDevToolsDisabledChanged, base::Unretained(this)));
   profile_pref_registrar_.Add(
-      prefs::kShowBookmarkBar,
+      bookmarks::prefs::kShowBookmarkBar,
       base::Bind(&Browser::UpdateBookmarkBarState, base::Unretained(this),
                  BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE));
 
@@ -2358,7 +2358,7 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
   if (profile_->IsGuestSession()) {
     state = BookmarkBar::HIDDEN;
   } else if (browser_defaults::bookmarks_enabled &&
-      profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) &&
+      profile_->GetPrefs()->GetBoolean(bookmarks::prefs::kShowBookmarkBar) &&
       !ShouldHideUIForFullscreen()) {
     state = BookmarkBar::SHOW;
   } else {

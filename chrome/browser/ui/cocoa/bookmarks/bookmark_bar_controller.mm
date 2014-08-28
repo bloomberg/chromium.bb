@@ -606,7 +606,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 - (BOOL)canEditBookmarks {
   PrefService* prefs = browser_->profile()->GetPrefs();
-  return prefs->GetBoolean(prefs::kEditBookmarksEnabled);
+  return prefs->GetBoolean(bookmarks::prefs::kEditBookmarksEnabled);
 }
 
 - (BOOL)canEditBookmark:(const BookmarkNode*)node {
@@ -1178,8 +1178,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     return NO;
 
   PrefService* prefs = browser_->profile()->GetPrefs();
-  BOOL visible = ![managedBookmarksButton_ bookmarkNode]->empty() &&
-                 prefs->GetBoolean(prefs::kShowManagedBookmarksInBookmarkBar);
+  BOOL visible =
+      ![managedBookmarksButton_ bookmarkNode]->empty() &&
+      prefs->GetBoolean(bookmarks::prefs::kShowManagedBookmarksInBookmarkBar);
   BOOL currentVisibility = ![managedBookmarksButton_ isHidden];
   if (currentVisibility != visible) {
     [managedBookmarksButton_ setHidden:!visible];

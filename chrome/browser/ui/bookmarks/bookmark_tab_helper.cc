@@ -69,8 +69,8 @@ bool BookmarkTabHelper::ShouldShowBookmarkBar() const {
 #endif
 
   PrefService* prefs = profile->GetPrefs();
-  if (prefs->IsManagedPreference(prefs::kShowBookmarkBar) &&
-      !prefs->GetBoolean(prefs::kShowBookmarkBar))
+  if (prefs->IsManagedPreference(bookmarks::prefs::kShowBookmarkBar) &&
+      !prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar))
     return false;
 
   return IsNTPWebUI(web_contents()) || IsInstantNTP(web_contents());

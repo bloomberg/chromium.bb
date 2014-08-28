@@ -68,7 +68,7 @@ base::string16 GenerateUniqueFolderName(BookmarkModel* model,
 
 // Shows the bookmarks toolbar.
 void ShowBookmarkBar(Profile* profile) {
-  profile->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
+  profile->GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar, true);
 }
 
 }  // namespace

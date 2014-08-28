@@ -805,8 +805,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
 
   // Test starts in about:blank.
   PrefService* prefs = browser()->profile()->GetPrefs();
-  EXPECT_FALSE(prefs->IsManagedPreference(prefs::kShowBookmarkBar));
-  EXPECT_FALSE(prefs->GetBoolean(prefs::kShowBookmarkBar));
+  EXPECT_FALSE(prefs->IsManagedPreference(bookmarks::prefs::kShowBookmarkBar));
+  EXPECT_FALSE(prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar));
   EXPECT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
 
   PolicyMap policies;
@@ -816,8 +816,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
                new base::FundamentalValue(true),
                NULL);
   UpdateProviderPolicy(policies);
-  EXPECT_TRUE(prefs->IsManagedPreference(prefs::kShowBookmarkBar));
-  EXPECT_TRUE(prefs->GetBoolean(prefs::kShowBookmarkBar));
+  EXPECT_TRUE(prefs->IsManagedPreference(bookmarks::prefs::kShowBookmarkBar));
+  EXPECT_TRUE(prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar));
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
 
   // The NTP has special handling of the bookmark bar.
@@ -830,15 +830,15 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
                new base::FundamentalValue(false),
                NULL);
   UpdateProviderPolicy(policies);
-  EXPECT_TRUE(prefs->IsManagedPreference(prefs::kShowBookmarkBar));
-  EXPECT_FALSE(prefs->GetBoolean(prefs::kShowBookmarkBar));
+  EXPECT_TRUE(prefs->IsManagedPreference(bookmarks::prefs::kShowBookmarkBar));
+  EXPECT_FALSE(prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar));
   // The bookmark bar is hidden in the NTP when disabled by policy.
   EXPECT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
 
   policies.Clear();
   UpdateProviderPolicy(policies);
-  EXPECT_FALSE(prefs->IsManagedPreference(prefs::kShowBookmarkBar));
-  EXPECT_FALSE(prefs->GetBoolean(prefs::kShowBookmarkBar));
+  EXPECT_FALSE(prefs->IsManagedPreference(bookmarks::prefs::kShowBookmarkBar));
+  EXPECT_FALSE(prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar));
   // The bookmark bar is shown detached in the NTP, when disabled by prefs only.
   EXPECT_EQ(BookmarkBar::DETACHED, browser()->bookmark_bar_state());
 }

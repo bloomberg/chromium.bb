@@ -183,7 +183,8 @@ bool BookmarkMenuDelegate::CanDrop(MenuItemView* menu,
   // bookmark bar and menus.
 
   if (!drop_data_.Read(data) || drop_data_.elements.size() != 1 ||
-      !profile_->GetPrefs()->GetBoolean(prefs::kEditBookmarksEnabled))
+      !profile_->GetPrefs()->GetBoolean(
+          bookmarks::prefs::kEditBookmarksEnabled))
     return false;
 
   if (drop_data_.has_single_url())

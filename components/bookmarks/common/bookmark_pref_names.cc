@@ -4,6 +4,7 @@
 
 #include "components/bookmarks/common/bookmark_pref_names.h"
 
+namespace bookmarks {
 namespace prefs {
 
 // Boolean which specifies the ids of the bookmark nodes that are expanded in
@@ -31,3 +32,4 @@ const char kShowManagedBookmarksInBookmarkBar[] =
 const char kShowBookmarkBar[] = "bookmark_bar.show_on_all_tabs";
 
 }  // namespace prefs
+}  // namespace bookmarks

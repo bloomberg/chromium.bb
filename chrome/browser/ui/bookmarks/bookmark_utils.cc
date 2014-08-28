@@ -297,10 +297,11 @@ void GetURLAndTitleToBookmark(content::WebContents* web_contents,
 
 void ToggleBookmarkBarWhenVisible(content::BrowserContext* browser_context) {
   PrefService* prefs = user_prefs::UserPrefs::Get(browser_context);
-  const bool always_show = !prefs->GetBoolean(prefs::kShowBookmarkBar);
+  const bool always_show =
+      !prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar);
 
   // The user changed when the bookmark bar is shown, update the preferences.
-  prefs->SetBoolean(prefs::kShowBookmarkBar, always_show);
+  prefs->SetBoolean(bookmarks::prefs::kShowBookmarkBar, always_show);
 }
 
 base::string16 FormatBookmarkURLForDisplay(const GURL& url,
@@ -337,7 +338,8 @@ bool ShouldShowAppsShortcutInBookmarkBar(
   Profile* profile,
   chrome::HostDesktopType host_desktop_type) {
   return IsAppsShortcutEnabled(profile, host_desktop_type) &&
-      profile->GetPrefs()->GetBoolean(prefs::kShowAppsShortcutInBookmarkBar);
+         profile->GetPrefs()->GetBoolean(
+             bookmarks::prefs::kShowAppsShortcutInBookmarkBar);
 }
 
 bool ShouldRemoveBookmarkThisPageUI(Profile* profile) {

@@ -24,7 +24,7 @@ class ManagedBookmarksPolicyHandlerTest
 };
 
 TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettings) {
-  EXPECT_FALSE(store_->GetValue(prefs::kManagedBookmarks, NULL));
+  EXPECT_FALSE(store_->GetValue(bookmarks::prefs::kManagedBookmarks, NULL));
 
   PolicyMap policy;
   policy.Set(key::kManagedBookmarks,
@@ -66,7 +66,8 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettings) {
              NULL);
   UpdateProviderPolicy(policy);
   const base::Value* pref_value = NULL;
-  EXPECT_TRUE(store_->GetValue(prefs::kManagedBookmarks, &pref_value));
+  EXPECT_TRUE(
+      store_->GetValue(bookmarks::prefs::kManagedBookmarks, &pref_value));
   ASSERT_TRUE(pref_value);
 
   scoped_ptr<base::Value> expected(
@@ -117,7 +118,7 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, WrongPolicyType) {
                  "]"),
              NULL);
   UpdateProviderPolicy(policy);
-  EXPECT_FALSE(store_->GetValue(prefs::kManagedBookmarks, NULL));
+  EXPECT_FALSE(store_->GetValue(bookmarks::prefs::kManagedBookmarks, NULL));
 }
 
 TEST_F(ManagedBookmarksPolicyHandlerTest, UnknownKeys) {
@@ -136,7 +137,8 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, UnknownKeys) {
              NULL);
   UpdateProviderPolicy(policy);
   const base::Value* pref_value = NULL;
-  EXPECT_TRUE(store_->GetValue(prefs::kManagedBookmarks, &pref_value));
+  EXPECT_TRUE(
+      store_->GetValue(bookmarks::prefs::kManagedBookmarks, &pref_value));
   ASSERT_TRUE(pref_value);
 
   scoped_ptr<base::Value> expected(
@@ -175,7 +177,8 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, BadBookmark) {
              NULL);
   UpdateProviderPolicy(policy);
   const base::Value* pref_value = NULL;
-  EXPECT_TRUE(store_->GetValue(prefs::kManagedBookmarks, &pref_value));
+  EXPECT_TRUE(
+      store_->GetValue(bookmarks::prefs::kManagedBookmarks, &pref_value));
   ASSERT_TRUE(pref_value);
 
   scoped_ptr<base::Value> expected(

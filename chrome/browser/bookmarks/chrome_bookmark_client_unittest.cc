@@ -34,9 +34,10 @@ class ChromeBookmarkClientTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     prefs_ = profile_.GetTestingPrefService();
-    ASSERT_FALSE(prefs_->HasPrefPath(prefs::kManagedBookmarks));
+    ASSERT_FALSE(prefs_->HasPrefPath(bookmarks::prefs::kManagedBookmarks));
 
-    prefs_->SetManagedPref(prefs::kManagedBookmarks, CreateTestTree());
+    prefs_->SetManagedPref(bookmarks::prefs::kManagedBookmarks,
+                           CreateTestTree());
     ResetModel();
 
     // The managed node always exists.
@@ -140,7 +141,7 @@ TEST_F(ChromeBookmarkClientTest, EmptyManagedNode) {
   // Verifies that the managed node is empty and invisible when the policy is
   // not set.
   model_->RemoveObserver(&observer_);
-  prefs_->RemoveManagedPref(prefs::kManagedBookmarks);
+  prefs_->RemoveManagedPref(bookmarks::prefs::kManagedBookmarks);
   ResetModel();
 
   ASSERT_TRUE(client_->managed_node());
@@ -169,7 +170,8 @@ TEST_F(ChromeBookmarkClientTest, SwapNodes) {
   // These two nodes should just be swapped.
   const BookmarkNode* parent = client_->managed_node();
   EXPECT_CALL(observer_, BookmarkNodeMoved(model_, parent, 1, parent, 0));
-  prefs_->SetManagedPref(prefs::kManagedBookmarks, updated->DeepCopy());
+  prefs_->SetManagedPref(bookmarks::prefs::kManagedBookmarks,
+                         updated->DeepCopy());
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Verify the final tree.
@@ -185,7 +187,8 @@ TEST_F(ChromeBookmarkClientTest, RemoveNode) {
 
   const BookmarkNode* parent = client_->managed_node();
   EXPECT_CALL(observer_, BookmarkNodeRemoved(model_, parent, 1, _, _));
-  prefs_->SetManagedPref(prefs::kManagedBookmarks, updated->DeepCopy());
+  prefs_->SetManagedPref(bookmarks::prefs::kManagedBookmarks,
+                         updated->DeepCopy());
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Verify the final tree.
@@ -205,7 +208,8 @@ TEST_F(ChromeBookmarkClientTest, CreateNewNodes) {
   const BookmarkNode* parent = client_->managed_node();
   EXPECT_CALL(observer_, BookmarkNodeRemoved(model_, parent, 1, _, _))
       .Times(2);
-  prefs_->SetManagedPref(prefs::kManagedBookmarks, updated->DeepCopy());
+  prefs_->SetManagedPref(bookmarks::prefs::kManagedBookmarks,
+                         updated->DeepCopy());
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Verify the final tree.
@@ -219,7 +223,7 @@ TEST_F(ChromeBookmarkClientTest, RemoveAllUserBookmarks) {
   const BookmarkNode* parent = client_->managed_node();
   EXPECT_CALL(observer_, BookmarkNodeRemoved(model_, parent, 0, _, _))
       .Times(2);
-  prefs_->RemoveManagedPref(prefs::kManagedBookmarks);
+  prefs_->RemoveManagedPref(bookmarks::prefs::kManagedBookmarks);
   Mock::VerifyAndClearExpectations(&observer_);
 
   EXPECT_TRUE(client_->managed_node()->empty());

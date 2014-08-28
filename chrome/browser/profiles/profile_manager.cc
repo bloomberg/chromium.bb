@@ -1176,8 +1176,8 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
 void ProfileManager::SetGuestProfilePrefs(Profile* profile) {
   PrefService* prefs = profile->GetPrefs();
   prefs->SetBoolean(prefs::kSigninAllowed, false);
-  prefs->SetBoolean(prefs::kEditBookmarksEnabled, false);
-  prefs->SetBoolean(prefs::kShowBookmarkBar, false);
+  prefs->SetBoolean(bookmarks::prefs::kEditBookmarksEnabled, false);
+  prefs->SetBoolean(bookmarks::prefs::kShowBookmarkBar, false);
   // This can be removed in the future but needs to be present through
   // a release (or two) so that any existing installs get switched to
   // the new state and away from the previous "forced" state.

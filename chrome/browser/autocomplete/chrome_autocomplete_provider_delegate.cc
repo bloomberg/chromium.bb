@@ -43,7 +43,7 @@ bool ChromeAutocompleteProviderDelegate::SearchSuggestEnabled() {
 }
 
 bool ChromeAutocompleteProviderDelegate::ShowBookmarkBar() {
-  return profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+  return profile_->GetPrefs()->GetBoolean(bookmarks::prefs::kShowBookmarkBar);
 }
 
 const AutocompleteSchemeClassifier&

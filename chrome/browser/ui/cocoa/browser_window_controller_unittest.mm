@@ -123,7 +123,7 @@ TEST_F(BrowserWindowControllerTest, TestFullScreenWindow) {
 
 TEST_F(BrowserWindowControllerTest, TestNormal) {
   // Force the bookmark bar to be shown.
-  profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
+  profile()->GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar, true);
   [controller_ browserWindow]->BookmarkBarStateChanged(
       BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 
@@ -210,7 +210,7 @@ TEST_F(BrowserWindowControllerTest, BookmarkBarControllerIndirection) {
 
   // Explicitly show the bar. Can't use chrome::ToggleBookmarkBarWhenVisible()
   // because of the notification issues.
-  profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
+  profile()->GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar, true);
 
   [controller_ browserWindow]->BookmarkBarStateChanged(
       BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
@@ -445,7 +445,7 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
 
 TEST_F(BrowserWindowControllerTest, TestResizeViewsWithBookmarkBar) {
   // Force a display of the bookmark bar.
-  profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
+  profile()->GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar, true);
   [controller_ browserWindow]->BookmarkBarStateChanged(
       BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 
@@ -491,7 +491,7 @@ TEST_F(BrowserWindowControllerTest, TestResizeViewsWithBookmarkBar) {
   CheckViewPositions(controller_);
 
   // Remove the bookmark bar and recheck
-  profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, false);
+  profile()->GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar, false);
   [controller_ resizeView:bookmark newHeight:0];
   CheckViewPositions(controller_);
 
@@ -505,7 +505,7 @@ TEST_F(BrowserWindowControllerTest, TestResizeViewsWithBookmarkBar) {
 TEST_F(BrowserWindowControllerTest, BookmarkBarIsSameWidth) {
   // Set the pref to the bookmark bar is visible when the toolbar is
   // first created.
-  profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
+  profile()->GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar, true);
 
   // Make sure the bookmark bar is the same width as the toolbar
   NSView* bookmarkBarView = [controller_ bookmarkView];
@@ -773,7 +773,7 @@ TEST_F(BrowserWindowControllerTest, TestSigninMenuItemWithNonSeparator) {
 // Verify that hit testing works correctly when the bookmark bar overlaps
 // web contents.
 TEST_F(BrowserWindowControllerTest, BookmarkBarHitTest) {
-  profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
+  profile()->GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar, true);
   [controller_ browserWindow]->BookmarkBarStateChanged(
       BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 

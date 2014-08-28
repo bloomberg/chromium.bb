@@ -120,7 +120,7 @@ bool CanBookmarkCurrentPageInternal(const Browser* browser,
       BookmarkModelFactory::GetForProfile(browser->profile());
   return browser_defaults::bookmarks_enabled &&
       browser->profile()->GetPrefs()->GetBoolean(
-          prefs::kEditBookmarksEnabled) &&
+          bookmarks::prefs::kEditBookmarksEnabled) &&
       model && model->loaded() && browser->is_type_tabbed() &&
       (!check_remove_bookmark_ui ||
            !chrome::ShouldRemoveBookmarkThisPageUI(browser->profile()));

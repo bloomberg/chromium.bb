@@ -421,7 +421,8 @@ void WrenchMenuModel::ExecuteCommand(int command_id, int event_flags) {
 
 bool WrenchMenuModel::IsCommandIdChecked(int command_id) const {
   if (command_id == IDC_SHOW_BOOKMARK_BAR) {
-    return browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+    return browser_->profile()->GetPrefs()->GetBoolean(
+        bookmarks::prefs::kShowBookmarkBar);
   } else if (command_id == IDC_PROFILING_ENABLED) {
     return Profiling::BeingProfiled();
   } else if (command_id == IDC_TOGGLE_REQUEST_TABLET_SITE) {

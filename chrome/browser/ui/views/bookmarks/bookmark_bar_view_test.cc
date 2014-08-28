@@ -265,7 +265,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     profile_->CreateBookmarkModel(true);
     model_ = BookmarkModelFactory::GetForProfile(profile_.get());
     test::WaitForBookmarkModelToLoad(model_);
-    profile_->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
+    profile_->GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar, true);
 
     Browser::CreateParams native_params(profile_.get(),
                                         chrome::GetActiveDesktop());

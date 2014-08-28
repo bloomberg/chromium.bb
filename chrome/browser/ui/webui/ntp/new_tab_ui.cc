@@ -137,7 +137,7 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
   content::URLDataSource::Add(profile, html_source.release());
 
   pref_change_registrar_.Init(profile->GetPrefs());
-  pref_change_registrar_.Add(prefs::kShowBookmarkBar,
+  pref_change_registrar_.Add(bookmarks::prefs::kShowBookmarkBar,
                              base::Bind(&NewTabUI::OnShowBookmarkBarChanged,
                                         base::Unretained(this)));
 }
@@ -216,7 +216,7 @@ void NewTabUI::EmitNtpStatistics() {
 
 void NewTabUI::OnShowBookmarkBarChanged() {
   base::StringValue attached(
-      GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) ?
+      GetProfile()->GetPrefs()->GetBoolean(bookmarks::prefs::kShowBookmarkBar) ?
           "true" : "false");
   web_ui()->CallJavascriptFunction("ntp.setBookmarkBarAttached", attached);
 }

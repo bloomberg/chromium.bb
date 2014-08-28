@@ -142,7 +142,7 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
   }
 
   edit_bookmarks_enabled_.Init(
-      prefs::kEditBookmarksEnabled, profile->GetPrefs(),
+      bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
       base::Bind(&LocationBarViewMac::OnEditBookmarksEnabledChanged,
                  base::Unretained(this)));
 

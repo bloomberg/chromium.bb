@@ -255,7 +255,7 @@ const BookmarkNode* BookmarksFunction::CreateBookmarkNode(
 
 bool BookmarksFunction::EditBookmarksEnabled() {
   PrefService* prefs = user_prefs::UserPrefs::Get(GetProfile());
-  if (prefs->GetBoolean(prefs::kEditBookmarksEnabled))
+  if (prefs->GetBoolean(::bookmarks::prefs::kEditBookmarksEnabled))
     return true;
   error_ = keys::kEditBookmarksDisabled;
   return false;

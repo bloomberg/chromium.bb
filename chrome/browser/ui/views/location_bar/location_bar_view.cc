@@ -231,7 +231,7 @@ LocationBarView::LocationBarView(Browser* browser,
       current_omnibox_width_(0),
       ending_omnibox_width_(0) {
   edit_bookmarks_enabled_.Init(
-      prefs::kEditBookmarksEnabled, profile->GetPrefs(),
+      bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
       base::Bind(&LocationBarView::Update, base::Unretained(this),
                  static_cast<content::WebContents*>(NULL)));
 

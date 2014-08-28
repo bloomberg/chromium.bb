@@ -852,7 +852,7 @@ bool BookmarkBarView::AreDropTypesRequired() {
 bool BookmarkBarView::CanDrop(const ui::OSExchangeData& data) {
   if (!model_ || !model_->loaded() ||
       !browser_->profile()->GetPrefs()->GetBoolean(
-          prefs::kEditBookmarksEnabled))
+          bookmarks::prefs::kEditBookmarksEnabled))
     return false;
 
   if (!drop_info_.get())
@@ -1352,11 +1352,11 @@ void BookmarkBarView::Init() {
   AddChildView(apps_page_shortcut_);
   profile_pref_registrar_.Init(browser_->profile()->GetPrefs());
   profile_pref_registrar_.Add(
-      prefs::kShowAppsShortcutInBookmarkBar,
+      bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
       base::Bind(&BookmarkBarView::OnAppsPageShortcutVisibilityPrefChanged,
                  base::Unretained(this)));
   profile_pref_registrar_.Add(
-      prefs::kShowManagedBookmarksInBookmarkBar,
+      bookmarks::prefs::kShowManagedBookmarksInBookmarkBar,
       base::Bind(&BookmarkBarView::UpdateButtonsVisibility,
                  base::Unretained(this)));
   apps_page_shortcut_->SetVisible(
@@ -1824,7 +1824,7 @@ void BookmarkBarView::UpdateButtonsVisibility() {
 
   bool show_managed = !client_->managed_node()->empty() &&
                       browser_->profile()->GetPrefs()->GetBoolean(
-                          prefs::kShowManagedBookmarksInBookmarkBar);
+                          bookmarks::prefs::kShowManagedBookmarksInBookmarkBar);
   bool update_managed = show_managed != managed_bookmarks_button_->visible();
   if (update_managed)
     managed_bookmarks_button_->SetVisible(show_managed);

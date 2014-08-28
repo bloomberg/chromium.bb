@@ -101,7 +101,7 @@ static jlong GetNativeBookmarkModel(JNIEnv* env,
 
 static bool IsEditBookmarksEnabled() {
   return ProfileManager::GetLastUsedProfile()->GetPrefs()->GetBoolean(
-      prefs::kEditBookmarksEnabled);
+      bookmarks::prefs::kEditBookmarksEnabled);
 }
 
 static jboolean IsEditBookmarksEnabled(JNIEnv* env, jclass clazz) {

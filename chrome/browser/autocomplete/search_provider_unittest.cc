@@ -2917,7 +2917,7 @@ TEST_F(SearchProviderTest, ParseDeletionUrl) {
 }
 
 TEST_F(SearchProviderTest, ReflectsBookmarkBarState) {
-  profile_.GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, false);
+  profile_.GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar, false);
   base::string16 term = term1_.substr(0, term1_.length() - 1);
   QueryForInput(term, true, false);
   ASSERT_FALSE(provider_->matches().empty());
@@ -2926,7 +2926,7 @@ TEST_F(SearchProviderTest, ReflectsBookmarkBarState) {
   ASSERT_TRUE(provider_->matches()[0].search_terms_args != NULL);
   EXPECT_FALSE(provider_->matches()[0].search_terms_args->bookmark_bar_pinned);
 
-  profile_.GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
+  profile_.GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar, true);
   term = term1_.substr(0, term1_.length() - 1);
   QueryForInput(term, true, false);
   ASSERT_FALSE(provider_->matches().empty());

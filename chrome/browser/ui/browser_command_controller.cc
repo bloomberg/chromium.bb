@@ -206,11 +206,11 @@ BrowserCommandController::BrowserCommandController(Browser* browser)
       base::Bind(&BrowserCommandController::UpdateCommandsForDevTools,
                  base::Unretained(this)));
   profile_pref_registrar_.Add(
-      prefs::kEditBookmarksEnabled,
+      bookmarks::prefs::kEditBookmarksEnabled,
       base::Bind(&BrowserCommandController::UpdateCommandsForBookmarkEditing,
                  base::Unretained(this)));
   profile_pref_registrar_.Add(
-      prefs::kShowBookmarkBar,
+      bookmarks::prefs::kShowBookmarkBar,
       base::Bind(&BrowserCommandController::UpdateCommandsForBookmarkBar,
                  base::Unretained(this)));
   profile_pref_registrar_.Add(
@@ -1178,11 +1178,12 @@ void BrowserCommandController::UpdateCommandsForBookmarkEditing() {
 }
 
 void BrowserCommandController::UpdateCommandsForBookmarkBar() {
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_BAR,
-      browser_defaults::bookmarks_enabled &&
-      !profile()->IsGuestSession() &&
-      !profile()->GetPrefs()->IsManagedPreference(prefs::kShowBookmarkBar) &&
-      IsShowingMainUI());
+  command_updater_.UpdateCommandEnabled(
+      IDC_SHOW_BOOKMARK_BAR,
+      browser_defaults::bookmarks_enabled && !profile()->IsGuestSession() &&
+          !profile()->GetPrefs()->IsManagedPreference(
+              bookmarks::prefs::kShowBookmarkBar) &&
+          IsShowingMainUI());
 }
 
 void BrowserCommandController::UpdateCommandsForFileSelectionDialogs() {
