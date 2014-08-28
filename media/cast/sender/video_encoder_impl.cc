@@ -12,13 +12,16 @@
 #include "media/base/video_frame.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/sender/fake_software_video_encoder.h"
+#if !defined(MEDIA_DISABLE_LIBVPX)
 #include "media/cast/sender/vp8_encoder.h"
+#endif  // !defined(MEDIA_DISABLE_LIBVPX)
 
 namespace media {
 namespace cast {
 
 namespace {
 
+#if !defined(MEDIA_DISABLE_LIBVPX)
 typedef base::Callback<void(Vp8Encoder*)> PassEncoderCallback;
 
 void InitializeEncoderOnEncoderThread(
@@ -27,6 +30,7 @@ void InitializeEncoderOnEncoderThread(
   DCHECK(environment->CurrentlyOn(CastEnvironment::VIDEO));
   encoder->Initialize();
 }
+#endif  // !defined(MEDIA_DISABLE_LIBVPX)
 
 void EncodeVideoFrameOnEncoderThread(
     scoped_refptr<CastEnvironment> environment,
@@ -70,12 +74,14 @@ VideoEncoderImpl::VideoEncoderImpl(
     int max_unacked_frames)
     : cast_environment_(cast_environment) {
   if (video_config.codec == CODEC_VIDEO_VP8) {
+#if !defined(MEDIA_DISABLE_LIBVPX)
     encoder_.reset(new Vp8Encoder(video_config, max_unacked_frames));
     cast_environment_->PostTask(CastEnvironment::VIDEO,
                                 FROM_HERE,
                                 base::Bind(&InitializeEncoderOnEncoderThread,
                                            cast_environment,
                                            encoder_.get()));
+#endif  // !defined(MEDIA_DISABLE_LIBVPX)
 #ifndef OFFICIAL_BUILD
   } else if (video_config.codec == CODEC_VIDEO_FAKE) {
     encoder_.reset(new FakeSoftwareVideoEncoder(video_config));

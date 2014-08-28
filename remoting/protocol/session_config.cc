@@ -192,10 +192,12 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
                     ChannelConfig::CODEC_UNDEFINED));
 
   // Video channel.
+#if !defined(MEDIA_DISABLE_LIBVPX)
   result->mutable_video_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                     kDefaultStreamVersion,
                     ChannelConfig::CODEC_VP8));
+#endif  // !defined(MEDIA_DISABLE_LIBVPX)
 
   // Audio channel.
   result->mutable_audio_configs()->push_back(

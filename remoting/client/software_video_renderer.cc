@@ -16,7 +16,9 @@
 #include "remoting/client/frame_consumer.h"
 #include "remoting/codec/video_decoder.h"
 #include "remoting/codec/video_decoder_verbatim.h"
+#if !defined(MEDIA_DISABLE_LIBVPX)
 #include "remoting/codec/video_decoder_vpx.h"
+#endif  // !defined(MEDIA_DISABLE_LIBVPX)
 #include "remoting/protocol/session_config.h"
 #include "third_party/libyuv/include/libyuv/convert_argb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
@@ -147,11 +149,13 @@ void SoftwareVideoRenderer::Core::Initialize(const SessionConfig& config) {
   ChannelConfig::Codec codec = config.video_config().codec;
   if (codec == ChannelConfig::CODEC_VERBATIM) {
     decoder_.reset(new VideoDecoderVerbatim());
+#if !defined(MEDIA_DISABLE_LIBVPX)
   } else if (codec == ChannelConfig::CODEC_VP8) {
     decoder_ = VideoDecoderVpx::CreateForVP8();
   } else if (codec == ChannelConfig::CODEC_VP9) {
     decoder_ = VideoDecoderVpx::CreateForVP9();
   } else {
+#endif  // !defined(MEDIA_DISABLE_LIBVPX)
     NOTREACHED() << "Invalid Encoding found: " << codec;
   }
 

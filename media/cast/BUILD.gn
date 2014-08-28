@@ -108,8 +108,7 @@ source_set("net") {
 source_set("sender") {
   sources = [
     "cast_sender.h",
-# TODO(hclam): libvpx support.
-#    "cast_sender_impl.cc",
+    "cast_sender_impl.cc",
     "cast_sender_impl.h",
     "sender/audio_encoder.h",
     "sender/audio_encoder.cc",
@@ -126,12 +125,11 @@ source_set("sender") {
     "sender/rtp_timestamp_helper.cc",
     "sender/rtp_timestamp_helper.h",
     "sender/software_video_encoder.h",
-# TODO(hclam): libvpx support.
-#    "sender/video_encoder.h",
-#    "sender/video_encoder_impl.h",
-#    "sender/video_encoder_impl.cc",
-#    "sender/video_sender.h",
-#    "sender/video_sender.cc",
+    "sender/video_encoder.h",
+    "sender/video_encoder_impl.h",
+    "sender/video_encoder_impl.cc",
+    "sender/video_sender.h",
+    "sender/video_sender.cc",
 #    "sender/vp8_encoder.cc",
 #    "sender/vp8_encoder.h",
   ]
