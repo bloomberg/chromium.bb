@@ -42,7 +42,6 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextRunConstructor.h"
 #include "core/svg/graphics/SVGImage.h"
@@ -252,7 +251,6 @@ void RenderImage::paintInvalidationOrMarkForLayout(bool imageSizeChangedToAccomo
     {
         // FIXME: We should not be allowing paint invalidations during layout. crbug.com/339584
         AllowPaintInvalidationScope scoper(frameView());
-        DisableCompositingQueryAsserts disabler;
         invalidatePaintRectangle(paintInvalidationRect);
     }
 
@@ -437,7 +435,7 @@ void RenderImage::areaElementFocusChanged(HTMLAreaElement* areaElement)
     paintInvalidationRect.moveBy(-absoluteContentBox().location());
     paintInvalidationRect.inflate(outlineWidth);
 
-    paintInvalidationOrMarkForLayout(false, &paintInvalidationRect);
+    invalidatePaintRectangle(paintInvalidationRect);
 }
 
 void RenderImage::paintIntoRect(GraphicsContext* context, const LayoutRect& rect)
