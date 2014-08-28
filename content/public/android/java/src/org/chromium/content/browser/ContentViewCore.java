@@ -448,6 +448,11 @@ public class ContentViewCore
             @SuppressWarnings("deprecation")  // AbsoluteLayout
             public void setAnchorViewPosition(
                     View view, float x, float y, float width, float height) {
+                if (view.getParent() == null) {
+                    // Ignore. setAnchorViewPosition has been called after the anchor view has
+                    // already been released.
+                    return;
+                }
                 assert view.getParent() == mContainerViewAtCreation;
 
                 float scale = (float) DeviceDisplayInfo.create(mContext).getDIPScale();
