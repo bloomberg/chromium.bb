@@ -6,6 +6,8 @@ package org.chromium.content.browser;
 
 import android.os.Handler;
 
+import org.chromium.base.UsedByReflection;
+
 /**
  * An interface to provide smart clip data when requested.
  *
@@ -13,15 +15,18 @@ import android.os.Handler;
  * Please make sure implementation of them is somewhere in the view
  * hierarchy.
  */
+@UsedByReflection("ExternalOemSupport")
 public interface SmartClipProvider {
     /**
      * Initiate extraction of text, HTML, and other information for clipping puposes (smart clip)
      * from the rectangle area defined by starting positions (x and y), and width and height.
      */
+    @UsedByReflection("ExternalOemSupport")
     void extractSmartClipData(int x, int y, int width, int height);
 
     /**
      * Register a handler to handle smart clip data once extraction is done.
      */
+    @UsedByReflection("ExternalOemSupport")
     void setSmartClipResultHandler(final Handler resultHandler);
 }
