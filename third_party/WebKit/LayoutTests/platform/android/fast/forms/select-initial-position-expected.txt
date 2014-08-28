@@ -25,7 +25,7 @@ layer at (0,0) size 800x600
       RenderText {#text} at (0,273) size 86x19
         text run at (0,273) width 86: "initial selected:"
       RenderBR {BR} at (86,288) size 0x0
-      RenderMenuList {SELECT} at (0,293) size 159x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+      RenderMenuList {SELECT} at (0,293) size 159x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
         RenderBlock (anonymous) at (1,1) size 157x18
           RenderText at (4,1) size 134x16
             text run at (4,1) width 134: "this should be selected"
@@ -35,7 +35,7 @@ layer at (0,0) size 800x600
       RenderText {#text} at (0,313) size 152x19
         text run at (0,313) width 152: "dynamic selected change:"
       RenderBR {BR} at (152,328) size 0x0
-      RenderMenuList {SELECT} at (0,333) size 159x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+      RenderMenuList {SELECT} at (0,333) size 159x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
         RenderBlock (anonymous) at (1,1) size 157x18
           RenderText at (4,1) size 134x16
             text run at (4,1) width 134: "this should be selected"
@@ -46,7 +46,7 @@ layer at (0,0) size 800x600
       RenderText {#text} at (0,353) size 200x19
         text run at (0,353) width 200: "dynamic insert of selected option:"
       RenderBR {BR} at (200,368) size 0x0
-      RenderMenuList {SELECT} at (0,373) size 159x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+      RenderMenuList {SELECT} at (0,373) size 159x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
         RenderBlock (anonymous) at (1,1) size 157x18
           RenderText at (4,1) size 134x16
             text run at (4,1) width 134: "this should be selected"
@@ -139,7 +139,7 @@ layer at (8,119) size 155x70 clip at (9,120) size 138x68 scrollY 120 scrollHeigh
     RenderBlock {OPTION} at (1,222) size 138x17
       RenderText {#text} at (2,0) size 18x16
         text run at (2,0) width 18: "opt"
-layer at (8,210) size 155x70 clip at (9,211) size 138x68 scrollY 51 scrollHeight 136
+layer at (8,210) size 155x70 clip at (9,211) size 138x68 scrollY 52 scrollHeight 136
   RenderListBox {SELECT} at (0,202) size 155x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTION} at (1,1) size 138x17
       RenderText {#text} at (2,0) size 18x16

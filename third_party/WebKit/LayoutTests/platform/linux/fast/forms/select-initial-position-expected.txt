@@ -139,7 +139,7 @@ layer at (8,119) size 155x70 clip at (9,120) size 138x68 scrollY 120 scrollHeigh
     RenderBlock {OPTION} at (1,222) size 138x17
       RenderText {#text} at (2,0) size 18x16
         text run at (2,0) width 18: "opt"
-layer at (8,210) size 155x70 clip at (9,211) size 138x68 scrollY 52 scrollHeight 136
+layer at (8,210) size 155x70 clip at (9,211) size 138x68 scrollY 51 scrollHeight 136
   RenderListBox {SELECT} at (0,202) size 155x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTION} at (1,1) size 138x17
       RenderText {#text} at (2,0) size 18x16
