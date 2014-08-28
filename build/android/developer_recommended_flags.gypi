@@ -13,10 +13,10 @@
 # and you'll get new settings automatically.
 # When using this method, you can override individual settings by setting them unconditionally (with
 # no %) in chrome/supplement.gypi.
-# I.e. to disable optimize_jni_generation but use everything else:
+# I.e. to disable gyp_managed_install but use everything else:
 #   {
 #     'variables': {
-#       'optimize_jni_generation': 0,
+#       'gyp_managed_install': 0,
 #     },
 #     'includes': [ '../build/android/developer_recommended_flags.gypi' ]
 #   }
@@ -30,10 +30,6 @@
       'component%': 'shared_library',
     },
     'component%': '<(component)',
-
-    # When set to 1, only write jni generated files if they've changed. This can prevent unnecessary
-    # compiling/linking of native libraries when editing java files.
-    'optimize_jni_generation%': 1,
 
     # When gyp_managed_install is set to 1, building an APK will install that APK on the connected
     # device(/emulator). To install on multiple devices (or onto a new device), build the APK once

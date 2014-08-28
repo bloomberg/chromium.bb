@@ -996,6 +996,13 @@
         }, {
           'sas_dll_path%': '<(DEPTH)/third_party/platformsdk_win7/files/redist/x86',
         }],
+
+        # Turn on JNI generation optimizations on non-WebView builds.
+        ['OS=="android" and android_webview_build==0', {
+          'optimize_jni_generation%': 1,
+        }, {
+          'optimize_jni_generation%': 0,
+        }],
       ],
 
       # Set this to 1 to enable use of concatenated impulse responses
@@ -1756,7 +1763,7 @@
         # breaking assumptions in the build system that when inputs have changed
         # the outputs should always change as well.  This is meant purely for
         # developer builds, to avoid spurious re-linking of native files.
-        'optimize_jni_generation%': 0,
+        'optimize_jni_generation%': '<(optimize_jni_generation)',
 
         # Always uses openssl.
         'use_openssl%': 1,
