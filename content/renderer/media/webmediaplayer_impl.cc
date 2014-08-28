@@ -148,7 +148,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     : frame_(frame),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
-      preload_(AUTO),
+      preload_(BufferedDataSource::AUTO),
       main_task_runner_(base::MessageLoopProxy::current()),
       media_task_runner_(
           RenderThreadImpl::current()->GetMediaThreadTaskRunner()),
@@ -380,7 +380,7 @@ void WebMediaPlayerImpl::setVolume(double volume) {
 
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, chromium_name) \
     COMPILE_ASSERT(static_cast<int>(WebMediaPlayer::webkit_name) == \
-                   static_cast<int>(content::chromium_name), \
+                   static_cast<int>(BufferedDataSource::chromium_name), \
                    mismatching_enums)
 COMPILE_ASSERT_MATCHING_ENUM(PreloadNone, NONE);
 COMPILE_ASSERT_MATCHING_ENUM(PreloadMetaData, METADATA);
@@ -391,7 +391,7 @@ void WebMediaPlayerImpl::setPreload(WebMediaPlayer::Preload preload) {
   DVLOG(1) << __FUNCTION__ << "(" << preload << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  preload_ = static_cast<content::Preload>(preload);
+  preload_ = static_cast<BufferedDataSource::Preload>(preload);
   if (data_source_)
     data_source_->SetPreload(preload_);
 }

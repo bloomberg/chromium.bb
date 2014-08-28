@@ -282,7 +282,6 @@
       'renderer/media/midi_dispatcher.h',
       'renderer/media/midi_message_filter.cc',
       'renderer/media/midi_message_filter.h',
-      'renderer/media/preload.h',
       'renderer/media/render_media_log.cc',
       'renderer/media/render_media_log.h',
       'renderer/media/renderer_gpu_video_accelerator_factories.cc',

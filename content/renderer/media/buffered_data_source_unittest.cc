@@ -112,7 +112,7 @@ class BufferedDataSourceTest : public testing::Test {
   BufferedDataSourceTest()
       : view_(WebView::create(NULL)),
         frame_(WebLocalFrame::create(&client_)),
-        preload_(AUTO) {
+        preload_(BufferedDataSource::AUTO) {
     view_->setMainFrame(frame_);
   }
 
@@ -225,8 +225,8 @@ class BufferedDataSourceTest : public testing::Test {
     return loader()->active_loader_->loader_.get();
   }
 
-  Preload preload() { return data_source_->preload_; }
-  void set_preload(Preload preload) { preload_ = preload; }
+  BufferedDataSource::Preload preload() { return data_source_->preload_; }
+  void set_preload(BufferedDataSource::Preload preload) { preload_ = preload; }
   BufferedResourceLoader::DeferStrategy defer_strategy() {
     return loader()->defer_strategy_;
   }
@@ -253,7 +253,7 @@ class BufferedDataSourceTest : public testing::Test {
   // Used for calling BufferedDataSource::Read().
   uint8 buffer_[kDataSize];
 
-  Preload preload_;
+  BufferedDataSource::Preload preload_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedDataSourceTest);
 };
@@ -525,7 +525,7 @@ TEST_F(BufferedDataSourceTest, DefaultValues) {
   InitializeWith206Response();
 
   // Ensure we have sane values for default loading scenario.
-  EXPECT_EQ(AUTO, preload());
+  EXPECT_EQ(BufferedDataSource::AUTO, preload());
   EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
 
   EXPECT_EQ(0, data_source_bitrate());
@@ -663,7 +663,7 @@ TEST_F(BufferedDataSourceTest, File_FinishLoading) {
 TEST_F(BufferedDataSourceTest, LocalResource_DeferStrategy) {
   InitializeWithFileResponse();
 
-  EXPECT_EQ(AUTO, preload());
+  EXPECT_EQ(BufferedDataSource::AUTO, preload());
   EXPECT_TRUE(is_local_source());
   EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
 
@@ -677,10 +677,10 @@ TEST_F(BufferedDataSourceTest, LocalResource_DeferStrategy) {
 }
 
 TEST_F(BufferedDataSourceTest, LocalResource_PreloadMetadata_DeferStrategy) {
-  set_preload(METADATA);
+  set_preload(BufferedDataSource::METADATA);
   InitializeWithFileResponse();
 
-  EXPECT_EQ(METADATA, preload());
+  EXPECT_EQ(BufferedDataSource::METADATA, preload());
   EXPECT_TRUE(is_local_source());
   EXPECT_EQ(BufferedResourceLoader::kReadThenDefer, defer_strategy());
 
@@ -696,7 +696,7 @@ TEST_F(BufferedDataSourceTest, LocalResource_PreloadMetadata_DeferStrategy) {
 TEST_F(BufferedDataSourceTest, ExternalResource_Reponse200_DeferStrategy) {
   InitializeWith200Response();
 
-  EXPECT_EQ(AUTO, preload());
+  EXPECT_EQ(BufferedDataSource::AUTO, preload());
   EXPECT_FALSE(is_local_source());
   EXPECT_FALSE(loader()->range_supported());
   EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
@@ -712,10 +712,10 @@ TEST_F(BufferedDataSourceTest, ExternalResource_Reponse200_DeferStrategy) {
 
 TEST_F(BufferedDataSourceTest,
        ExternalResource_Response200_PreloadMetadata_DeferStrategy) {
-  set_preload(METADATA);
+  set_preload(BufferedDataSource::METADATA);
   InitializeWith200Response();
 
-  EXPECT_EQ(METADATA, preload());
+  EXPECT_EQ(BufferedDataSource::METADATA, preload());
   EXPECT_FALSE(is_local_source());
   EXPECT_FALSE(loader()->range_supported());
   EXPECT_EQ(BufferedResourceLoader::kReadThenDefer, defer_strategy());
@@ -732,7 +732,7 @@ TEST_F(BufferedDataSourceTest,
 TEST_F(BufferedDataSourceTest, ExternalResource_Reponse206_DeferStrategy) {
   InitializeWith206Response();
 
-  EXPECT_EQ(AUTO, preload());
+  EXPECT_EQ(BufferedDataSource::AUTO, preload());
   EXPECT_FALSE(is_local_source());
   EXPECT_TRUE(loader()->range_supported());
   EXPECT_EQ(BufferedResourceLoader::kCapacityDefer, defer_strategy());
@@ -754,10 +754,10 @@ TEST_F(BufferedDataSourceTest, ExternalResource_Reponse206_DeferStrategy) {
 
 TEST_F(BufferedDataSourceTest,
        ExternalResource_Response206_PreloadMetadata_DeferStrategy) {
-  set_preload(METADATA);
+  set_preload(BufferedDataSource::METADATA);
   InitializeWith206Response();
 
-  EXPECT_EQ(METADATA, preload());
+  EXPECT_EQ(BufferedDataSource::METADATA, preload());
   EXPECT_FALSE(is_local_source());
   EXPECT_TRUE(loader()->range_supported());
   EXPECT_EQ(BufferedResourceLoader::kReadThenDefer, defer_strategy());

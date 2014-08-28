@@ -228,7 +228,7 @@ class WebMediaPlayerImpl
   blink::WebMediaPlayer::ReadyState ready_state_;
 
   // Preload state for when |data_source_| is created after setPreload().
-  content::Preload preload_;
+  BufferedDataSource::Preload preload_;
 
   // Task runner for posting tasks on Chrome's main thread. Also used
   // for DCHECKs so methods calls won't execute in the wrong thread.

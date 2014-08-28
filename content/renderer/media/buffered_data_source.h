@@ -12,7 +12,6 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/buffered_resource_loader.h"
-#include "content/renderer/media/preload.h"
 #include "media/base/data_source.h"
 #include "media/base/ranges.h"
 #include "url/gurl.h"
@@ -48,6 +47,18 @@ class CONTENT_EXPORT BufferedDataSourceHost {
 // before being passed to other threads. It may be deleted on any thread.
 class CONTENT_EXPORT BufferedDataSource : public media::DataSource {
  public:
+  // Used to specify video preload states. They are "hints" to the browser about
+  // how aggressively the browser should load and buffer data.
+  // Please see the HTML5 spec for the descriptions of these values:
+  // http://www.w3.org/TR/html5/video.html#attr-media-preload
+  //
+  // Enum values must match the values in blink::WebMediaPlayer::Preload and
+  // there will be assertions at compile time if they do not match.
+  enum Preload {
+    NONE,
+    METADATA,
+    AUTO,
+  };
   typedef base::Callback<void(bool)> DownloadingCB;
 
   // |url| and |cors_mode| are passed to the object. Buffered byte range changes
