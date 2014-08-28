@@ -28,7 +28,8 @@ ImageTransportSurfaceFBO::ImageTransportSurfaceFBO(
       context_(NULL),
       scale_factor_(1.f),
       made_current_(false),
-      is_swap_buffers_send_pending_(false) {
+      is_swap_buffers_pending_(false),
+      did_unschedule_(false) {
   if (ui::RemoteLayerAPISupported())
     storage_provider_.reset(new CALayerStorageProvider(this));
   else
@@ -61,9 +62,17 @@ void ImageTransportSurfaceFBO::Destroy() {
 }
 
 bool ImageTransportSurfaceFBO::DeferDraws() {
-  storage_provider_->WillWriteToBackbuffer();
-  // We should not have a pending send when we are drawing the next frame.
-  DCHECK(!is_swap_buffers_send_pending_);
+  // The command buffer hit a draw/clear command that could clobber the
+  // IOSurface in use by an earlier SwapBuffers. If a Swap is pending, abort
+  // processing of the command by returning true and unschedule until the Swap
+  // Ack arrives.
+  if(did_unschedule_)
+    return true;  // Still unscheduled, so just return true.
+  if (is_swap_buffers_pending_) {
+    did_unschedule_ = true;
+    helper_->SetScheduled(false);
+    return true;
+  }
   return false;
 }
 
@@ -92,8 +101,6 @@ bool ImageTransportSurfaceFBO::SetBackbufferAllocation(bool allocation) {
     return true;
   backbuffer_suggested_allocation_ = allocation;
   AdjustBufferAllocation();
-  if (!allocation)
-    storage_provider_->DiscardBackbuffer();
   return true;
 }
 
@@ -123,22 +130,18 @@ bool ImageTransportSurfaceFBO::SwapBuffers() {
     return true;
   glFlush();
 
-  // It is the responsibility of the storage provider to send the swap IPC.
-  is_swap_buffers_send_pending_ = true;
-  storage_provider_->SwapBuffers(size_, scale_factor_);
-  return true;
-}
-
-void ImageTransportSurfaceFBO::SendSwapBuffers(uint64 surface_handle,
-                                               const gfx::Size pixel_size,
-                                               float scale_factor) {
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
-  params.surface_handle = surface_handle;
-  params.size = pixel_size;
-  params.scale_factor = scale_factor;
+  params.surface_handle = storage_provider_->GetSurfaceHandle();
+  params.size = GetSize();
+  params.scale_factor = scale_factor_;
   params.latency_info.swap(latency_info_);
   helper_->SendAcceleratedSurfaceBuffersSwapped(params);
-  is_swap_buffers_send_pending_ = false;
+
+  DCHECK(!is_swap_buffers_pending_);
+  is_swap_buffers_pending_ = true;
+
+  storage_provider_->WillSwapBuffers();
+  return true;
 }
 
 bool ImageTransportSurfaceFBO::PostSubBuffer(
@@ -167,7 +170,16 @@ void* ImageTransportSurfaceFBO::GetDisplay() {
 void ImageTransportSurfaceFBO::OnBufferPresented(
     const AcceleratedSurfaceMsg_BufferPresented_Params& params) {
   context_->share_group()->SetRendererID(params.renderer_id);
-  storage_provider_->SwapBuffersAckedByBrowser();
+  storage_provider_->CanFreeSwappedBuffer();
+}
+
+void ImageTransportSurfaceFBO::UnblockContextAfterPendingSwap() {
+  DCHECK(is_swap_buffers_pending_);
+  is_swap_buffers_pending_ = false;
+  if (did_unschedule_) {
+    did_unschedule_ = false;
+    helper_->SetScheduled(true);
+  }
 }
 
 void ImageTransportSurfaceFBO::OnResize(gfx::Size size,

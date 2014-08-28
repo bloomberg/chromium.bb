@@ -105,26 +105,21 @@ void IOSurfaceStorageProvider::FreeColorBufferStorage() {
   io_surface_id_ = 0;
 }
 
-void IOSurfaceStorageProvider::SwapBuffers(
-    const gfx::Size& size, float scale_factor) {
+uint64 IOSurfaceStorageProvider::GetSurfaceHandle() const {
+  return SurfaceHandleFromIOSurfaceID(io_surface_id_);
+}
+
+void IOSurfaceStorageProvider::WillSwapBuffers() {
   // The browser compositor will throttle itself, so we are free to unblock the
   // context immediately. Make sure that the browser is doing its throttling
   // appropriately by ensuring that the previous swap was acknowledged before
   // we get another swap.
   DCHECK(pending_swapped_surfaces_.empty());
   pending_swapped_surfaces_.push_back(io_surface_);
-
-  transport_surface_->SendSwapBuffers(
-      SurfaceHandleFromIOSurfaceID(io_surface_id_), size, scale_factor);
+  transport_surface_->UnblockContextAfterPendingSwap();
 }
 
-void IOSurfaceStorageProvider::WillWriteToBackbuffer() {
-}
-
-void IOSurfaceStorageProvider::DiscardBackbuffer() {
-}
-
-void IOSurfaceStorageProvider::SwapBuffersAckedByBrowser() {
+void IOSurfaceStorageProvider::CanFreeSwappedBuffer() {
   DCHECK(!pending_swapped_surfaces_.empty());
   pending_swapped_surfaces_.pop_front();
 }

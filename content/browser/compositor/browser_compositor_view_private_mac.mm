@@ -61,7 +61,6 @@ BrowserCompositorViewMacInternal::BrowserCompositorViewMacInternal()
       native_widget_,
       content::GetContextFactory(),
       RenderWidgetResizeHelper::Get()->task_runner()));
-  compositor_->SetVisible(false);
 }
 
 BrowserCompositorViewMacInternal::~BrowserCompositorViewMacInternal() {
@@ -82,7 +81,6 @@ void BrowserCompositorViewMacInternal::SetClient(
   DCHECK(background_layer);
   [flipped_layer_ setBounds:[background_layer bounds]];
   [background_layer addSublayer:flipped_layer_];
-  compositor_->SetVisible(true);
 }
 
 void BrowserCompositorViewMacInternal::ResetClient() {
@@ -100,7 +98,6 @@ void BrowserCompositorViewMacInternal::ResetClient() {
   accelerated_output_surface_id_ = 0;
   last_swap_size_dip_ = gfx::Size();
 
-  compositor_->SetVisible(false);
   compositor_->SetScaleAndSize(1.0, gfx::Size(0, 0));
   compositor_->SetRootLayer(NULL);
   client_ = NULL;

@@ -186,9 +186,6 @@ class COMPOSITOR_EXPORT Compositor
   // the |root_layer|.
   void SetBackgroundColor(SkColor color);
 
-  // Set the visibility of the underlying compositor.
-  void SetVisible(bool visible);
-
   // Returns the widget for this compositor.
   gfx::AcceleratedWidget widget() const { return widget_; }
 
