@@ -134,8 +134,12 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
   MakeTypicalPeerConnectionCall(javascript);
 }
 
+#if defined(OS_ANDROID) && defined(ARCH_CPU_ARM64)
+// Failing on ARM64 Android bot: http://crbug.com/408179
+#define MAYBE_CanSetupVideoCallWith16To9AspectRatio \
+  DISABLED_CanSetupVideoCallWith16To9AspectRatio
 // Flaky on TSAN v2. http://crbug.com/408006
-#if defined(THREAD_SANITIZER)
+#elif defined(THREAD_SANITIZER)
 #define MAYBE_CanSetupVideoCallWith16To9AspectRatio \
   DISABLED_CanSetupVideoCallWith16To9AspectRatio
 #else
