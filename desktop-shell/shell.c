@@ -5298,6 +5298,32 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 	}
 }
 
+static bool
+check_desktop_shell_crash_too_early(struct desktop_shell *shell)
+{
+	struct timespec now;
+
+	if (clock_gettime(CLOCK_MONOTONIC, &now) < 0)
+		return false;
+
+	/*
+	 * If the shell helper client dies before the session has been
+	 * up for roughly 30 seconds, better just make Weston shut down,
+	 * because the user likely has no way to interact with the desktop
+	 * anyway.
+	 */
+	if (now.tv_sec - shell->startup_time.tv_sec < 30) {
+		weston_log("Error: %s apparently cannot run at all.\n",
+			   shell->client);
+		weston_log_continue(STAMP_SPACE "Quitting...");
+		wl_display_terminate(shell->compositor->wl_display);
+
+		return true;
+	}
+
+	return false;
+}
+
 static void launch_desktop_shell_process(void *data);
 
 static void
@@ -5340,7 +5366,9 @@ desktop_shell_client_destroy(struct wl_listener *listener, void *data)
 	 * returning.
 	 */
 
-	respawn_desktop_shell_process(shell);
+	if (!check_desktop_shell_crash_too_early(shell))
+		respawn_desktop_shell_process(shell);
+
 	shell_fade_startup(shell);
 }
 
@@ -6406,6 +6434,8 @@ module_init(struct weston_compositor *ec,
 	shell_add_bindings(ec, shell);
 
 	shell_fade_init(shell);
+
+	clock_gettime(CLOCK_MONOTONIC, &shell->startup_time);
 
 	return 0;
 }

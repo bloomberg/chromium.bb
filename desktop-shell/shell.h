@@ -23,6 +23,7 @@
  */
 
 #include <stdbool.h>
+#include <time.h>
 
 #include "compositor.h"
 
@@ -209,6 +210,8 @@ struct desktop_shell {
 	enum desktop_shell_panel_position panel_position;
 
 	char *client;
+
+	struct timespec startup_time;
 };
 
 struct weston_output *
