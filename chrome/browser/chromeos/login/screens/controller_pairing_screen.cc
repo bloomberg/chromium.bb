@@ -7,8 +7,7 @@
 #include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chromeos/chromeos_switches.h"
-#include "components/pairing/fake_controller_pairing_controller.h"
+#include "components/pairing/bluetooth_controller_pairing_controller.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 using namespace chromeos::controller_pairing;
@@ -28,10 +27,7 @@ ControllerPairingScreen::ControllerPairingScreen(
       current_stage_(ControllerPairingController::STAGE_NONE),
       device_preselected_(false) {
   actor_->SetDelegate(this);
-  std::string controller_config =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kShowControllerPairingDemo);
-  controller_.reset(new FakeControllerPairingController(controller_config));
+  controller_.reset(new BluetoothControllerPairingController());
   controller_->AddObserver(this);
 }
 

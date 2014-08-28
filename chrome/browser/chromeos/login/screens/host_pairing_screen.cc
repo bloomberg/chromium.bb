@@ -6,8 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chromeos/chromeos_switches.h"
-#include "components/pairing/fake_host_pairing_controller.h"
+#include "components/pairing/bluetooth_host_pairing_controller.h"
 
 namespace chromeos {
 
@@ -20,10 +19,7 @@ HostPairingScreen::HostPairingScreen(ScreenObserver* observer,
       actor_(actor),
       current_stage_(HostPairingController::STAGE_NONE) {
   actor_->SetDelegate(this);
-  std::string controller_config =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kShowHostPairingDemo);
-  controller_.reset(new FakeHostPairingController(controller_config));
+  controller_.reset(new BluetoothHostPairingController());
   controller_->AddObserver(this);
 }
 
