@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_CHROME_AUTOCOMPLETE_PROVIDER_DELEGATE_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_CHROME_AUTOCOMPLETE_PROVIDER_DELEGATE_H_
+#ifndef CHROME_BROWSER_AUTOCOMPLETE_CHROME_AUTOCOMPLETE_PROVIDER_CLIENT_H_
+#define CHROME_BROWSER_AUTOCOMPLETE_CHROME_AUTOCOMPLETE_PROVIDER_CLIENT_H_
 
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
-#include "components/omnibox/autocomplete_provider_delegate.h"
+#include "components/omnibox/autocomplete_provider_client.h"
 
 class Profile;
 
-class ChromeAutocompleteProviderDelegate : public AutocompleteProviderDelegate {
+class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
  public:
-  explicit ChromeAutocompleteProviderDelegate(Profile* profile);
-  virtual ~ChromeAutocompleteProviderDelegate();
+  explicit ChromeAutocompleteProviderClient(Profile* profile);
+  virtual ~ChromeAutocompleteProviderClient();
 
-  // AutocompleteProviderDelegate:
+  // AutocompleteProviderClient:
   virtual net::URLRequestContextGetter* RequestContext() OVERRIDE;
   virtual bool IsOffTheRecord() OVERRIDE;
   virtual std::string AcceptLanguages() OVERRIDE;
@@ -40,7 +40,7 @@ class ChromeAutocompleteProviderDelegate : public AutocompleteProviderDelegate {
   Profile* profile_;
   ChromeAutocompleteSchemeClassifier scheme_classifier_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeAutocompleteProviderDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ChromeAutocompleteProviderClient);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_CHROME_AUTOCOMPLETE_PROVIDER_DELEGATE_H_
+#endif  // CHROME_BROWSER_AUTOCOMPLETE_CHROME_AUTOCOMPLETE_PROVIDER_CLIENT_H_

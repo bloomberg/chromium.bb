@@ -22,7 +22,7 @@
 #include "components/omnibox/autocomplete_provider.h"
 #include "components/omnibox/search_suggestion_parser.h"
 
-class AutocompleteProviderDelegate;
+class AutocompleteProviderClient;
 class GURL;
 class SearchTermsData;
 class SuggestionDeletionHandler;
@@ -50,7 +50,7 @@ class BaseSearchProvider : public AutocompleteProvider {
   static const int kDeletionURLFetcherID;
 
   BaseSearchProvider(TemplateURLService* template_url_service,
-                     scoped_ptr<AutocompleteProviderDelegate> delegate,
+                     scoped_ptr<AutocompleteProviderClient> client,
                      AutocompleteProvider::Type type);
 
   // Returns whether |match| is flagged as a query that should be prefetched.
@@ -145,7 +145,7 @@ class BaseSearchProvider : public AutocompleteProvider {
      const TemplateURL* template_url,
      metrics::OmniboxEventProto::PageClassification page_classification,
      const SearchTermsData& search_terms_data,
-     AutocompleteProviderDelegate* delegate);
+     AutocompleteProviderClient* client);
 
   // Returns whether we can send the URL of the current page in any suggest
   // requests.  Doing this requires that all the following hold:
@@ -169,7 +169,7 @@ class BaseSearchProvider : public AutocompleteProvider {
       const TemplateURL* template_url,
       metrics::OmniboxEventProto::PageClassification page_classification,
       const SearchTermsData& search_terms_data,
-      AutocompleteProviderDelegate* delegate);
+      AutocompleteProviderClient* client);
 
   // If the |deletion_url| is valid, then set |match.deletable| to true and
   // save the |deletion_url| into the |match|'s additional info under
@@ -221,7 +221,7 @@ class BaseSearchProvider : public AutocompleteProvider {
   virtual void RecordDeletionResult(bool success) = 0;
 
   TemplateURLService* template_url_service_;
-  scoped_ptr<AutocompleteProviderDelegate> delegate_;
+  scoped_ptr<AutocompleteProviderClient> client_;
 
   // Whether a field trial, if any, has triggered in the most recent
   // autocomplete query. This field is set to true only if the suggestion

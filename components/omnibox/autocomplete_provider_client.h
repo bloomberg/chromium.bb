@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OMNIBOX_AUTOCOMPLETE_PROVIDER_DELEGATE_H_
-#define COMPONENTS_OMNIBOX_AUTOCOMPLETE_PROVIDER_DELEGATE_H_
+#ifndef COMPONENTS_OMNIBOX_AUTOCOMPLETE_PROVIDER_CLIENT_H_
+#define COMPONENTS_OMNIBOX_AUTOCOMPLETE_PROVIDER_CLIENT_H_
 
 #include "base/strings/string16.h"
 #include "components/history/core/browser/keyword_id.h"
@@ -21,9 +21,9 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-class AutocompleteProviderDelegate {
+class AutocompleteProviderClient {
  public:
-  virtual ~AutocompleteProviderDelegate() {}
+  virtual ~AutocompleteProviderClient() {}
 
   // Returns the request context.
   virtual net::URLRequestContextGetter* RequestContext() = 0;
@@ -70,4 +70,4 @@ class AutocompleteProviderDelegate {
   virtual void PrefetchImage(const GURL& url) = 0;
 };
 
-#endif  // COMPONENTS_OMNIBOX_AUTOCOMPLETE_PROVIDER_DELEGATE_H_
+#endif  // COMPONENTS_OMNIBOX_AUTOCOMPLETE_PROVIDER_CLIENT_H_

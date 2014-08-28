@@ -36,7 +36,7 @@
         'omnibox/autocomplete_match_type.h',
         'omnibox/autocomplete_provider.cc',
         'omnibox/autocomplete_provider.h',
-        'omnibox/autocomplete_provider_delegate.h',
+        'omnibox/autocomplete_provider_client.h',
         'omnibox/autocomplete_provider_listener.h',
         'omnibox/autocomplete_result.cc',
         'omnibox/autocomplete_result.h',

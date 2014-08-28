@@ -16,7 +16,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
-#include "chrome/browser/autocomplete/chrome_autocomplete_provider_delegate.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/history/history_types.h"
@@ -119,7 +119,7 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   // No need to send the current page URL in personalized suggest field trial.
   if (CanSendURL(input.current_url(), suggest_url, default_provider,
                  current_page_classification_,
-                 template_url_service_->search_terms_data(), delegate_.get()) &&
+                 template_url_service_->search_terms_data(), client_.get()) &&
       !OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial()) {
     // Update suggest_url to include the current_page_url.
     search_term_args.current_page_url = current_query_;
@@ -185,8 +185,8 @@ ZeroSuggestProvider::ZeroSuggestProvider(
   TemplateURLService* template_url_service,
   Profile* profile)
     : BaseSearchProvider(template_url_service,
-                         scoped_ptr<AutocompleteProviderDelegate>(
-                             new ChromeAutocompleteProviderDelegate(profile)),
+                         scoped_ptr<AutocompleteProviderClient>(
+                             new ChromeAutocompleteProviderClient(profile)),
                          AutocompleteProvider::TYPE_ZERO_SUGGEST),
       listener_(listener),
       profile_(profile),
@@ -431,7 +431,7 @@ bool ZeroSuggestProvider::CanShowZeroSuggestWithoutSendingURL(
                           template_url_service_->GetDefaultSearchProvider(),
                           current_page_classification_,
                           template_url_service_->search_terms_data(),
-                          delegate_.get()))
+                          client_.get()))
     return false;
 
   // If we cannot send URLs, then only the MostVisited and Personalized

@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
-#include "components/omnibox/autocomplete_provider_delegate.h"
+#include "components/omnibox/autocomplete_provider_client.h"
 #include "components/omnibox/autocomplete_provider_listener.h"
 #include "components/omnibox/omnibox_field_trial.h"
 #include "components/search_engines/template_url.h"
@@ -84,11 +84,11 @@ const int BaseSearchProvider::kDeletionURLFetcherID = 3;
 
 BaseSearchProvider::BaseSearchProvider(
     TemplateURLService* template_url_service,
-    scoped_ptr<AutocompleteProviderDelegate> delegate,
+    scoped_ptr<AutocompleteProviderClient> client,
     AutocompleteProvider::Type type)
     : AutocompleteProvider(type),
       template_url_service_(template_url_service),
-      delegate_(delegate.Pass()),
+      client_(client.Pass()),
       field_trial_triggered_(false),
       field_trial_triggered_in_session_(false) {
 }
@@ -121,7 +121,7 @@ void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
   if (!match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey).empty()) {
     deletion_handlers_.push_back(new SuggestionDeletionHandler(
         match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey),
-        delegate_->RequestContext(),
+        client_->RequestContext(),
         base::Bind(&BaseSearchProvider::OnDeletionComplete,
                    base::Unretained(this))));
   }
@@ -131,8 +131,8 @@ void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
   // This may be NULL if the template corresponding to the keyword has been
   // deleted or there is no keyword set.
   if (template_url != NULL) {
-    delegate_->DeleteMatchingURLsForKeywordFromHistory(template_url->id(),
-                                                       match.contents);
+    client_->DeleteMatchingURLsForKeywordFromHistory(template_url->id(),
+                                                     match.contents);
   }
 
   // Immediately update the list of matches to show the match was deleted,
@@ -273,7 +273,7 @@ bool BaseSearchProvider::ZeroSuggestEnabled(
     const TemplateURL* template_url,
     OmniboxEventProto::PageClassification page_classification,
     const SearchTermsData& search_terms_data,
-    AutocompleteProviderDelegate* delegate) {
+    AutocompleteProviderClient* client) {
   if (!OmniboxFieldTrial::InZeroSuggestFieldTrial())
     return false;
 
@@ -292,11 +292,11 @@ bool BaseSearchProvider::ZeroSuggestEnabled(
     return false;
 
   // Don't run if in incognito mode.
-  if (delegate->IsOffTheRecord())
+  if (client->IsOffTheRecord())
     return false;
 
   // Don't run if we can't get preferences or search suggest is not enabled.
-  if (!delegate->SearchSuggestEnabled())
+  if (!client->SearchSuggestEnabled())
     return false;
 
   // Only make the request if we know that the provider supports zero suggest
@@ -317,9 +317,9 @@ bool BaseSearchProvider::CanSendURL(
     const TemplateURL* template_url,
     OmniboxEventProto::PageClassification page_classification,
     const SearchTermsData& search_terms_data,
-    AutocompleteProviderDelegate* delegate) {
+    AutocompleteProviderClient* client) {
   if (!ZeroSuggestEnabled(suggest_url, template_url, page_classification,
-                          search_terms_data, delegate))
+                          search_terms_data, client))
     return false;
 
   if (!current_page_url.is_valid())
@@ -334,7 +334,7 @@ bool BaseSearchProvider::CanSendURL(
            net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES)))
     return false;
 
-  if (!delegate->TabSyncEnabledAndUnencrypted())
+  if (!client->TabSyncEnabledAndUnencrypted())
     return false;
 
   return true;
@@ -354,7 +354,7 @@ void BaseSearchProvider::AddMatchToMap(
       ShouldAppendExtraParams(result));
   if (!match.destination_url.is_valid())
     return;
-  match.search_terms_args->bookmark_bar_pinned = delegate_->ShowBookmarkBar();
+  match.search_terms_args->bookmark_bar_pinned = client_->ShowBookmarkBar();
   match.RecordAdditionalInfo(kRelevanceFromServerKey,
                              result.relevance_from_server() ? kTrue : kFalse);
   match.RecordAdditionalInfo(kShouldPrefetchKey,
@@ -424,14 +424,14 @@ bool BaseSearchProvider::ParseSuggestResults(
     SearchSuggestionParser::Results* results) {
   if (!SearchSuggestionParser::ParseSuggestResults(
       root_val, GetInput(is_keyword_result),
-      delegate_->SchemeClassifier(), default_result_relevance,
-      delegate_->AcceptLanguages(), is_keyword_result, results))
+      client_->SchemeClassifier(), default_result_relevance,
+      client_->AcceptLanguages(), is_keyword_result, results))
     return false;
 
   for (std::vector<GURL>::const_iterator it =
            results->answers_image_urls.begin();
        it != results->answers_image_urls.end(); ++it)
-    delegate_->PrefetchImage(*it);
+    client_->PrefetchImage(*it);
 
   field_trial_triggered_ |= results->field_trial_triggered;
   field_trial_triggered_in_session_ |= results->field_trial_triggered;
