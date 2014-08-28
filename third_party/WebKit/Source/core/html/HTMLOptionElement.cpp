@@ -336,11 +336,13 @@ Node::InsertionNotificationRequest HTMLOptionElement::insertedInto(ContainerNode
         select->setRecalcListItems();
         // Do not call selected() since calling updateListItemSelectedStates()
         // at this time won't do the right thing. (Why, exactly?)
-        // FIXME: Might be better to call this unconditionally, always passing m_isSelected,
-        // rather than only calling it if we are selected.
-        if (m_isSelected)
+        if (m_isSelected) {
+            // FIXME: Might be better to call this unconditionally, always
+            // passing m_isSelected, rather than only calling it if we are
+            // selected.
             select->optionSelectionStateChanged(this, true);
-        select->scrollToSelection();
+            select->scrollToSelection();
+        }
     }
 
     return HTMLElement::insertedInto(insertionPoint);

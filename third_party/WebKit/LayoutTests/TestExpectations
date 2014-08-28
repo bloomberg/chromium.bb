@@ -554,6 +554,8 @@ crbug.com/24182 crbug.com/318490 [ Win Linux Android ] virtual/implsidepainting/
 crbug.com/24182 crbug.com/318490 crbug.com/372213 [ Mac ] virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Crash Pass Timeout ]
 crbug.com/24182 crbug.com/318490 crbug.com/372213 [ Mac ] virtual/deferred/inspector/tracing/decode-resize.html [ Pass Failure Slow ]
 
+crbug.com/406577 fast/forms/select-initial-position.html [ NeedsRebaseline ]
+
 # Flaky on several platforms.
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
 
