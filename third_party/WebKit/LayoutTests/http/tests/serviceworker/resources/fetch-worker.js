@@ -15,12 +15,19 @@ var testTargets = [
 ];
 
 function doNextFetchTest(port) {
+
+    function runInfiniteFetchLoop() {
+      fetch('dummy.html')
+        .then(function() { runInfiniteFetchLoop(); });
+    }
+
     if (testTargets.length == 0) {
-        port.postMessage('quit');
-        // Destroying the execution context while fetch is happening should not cause a crash.
-        fetch('dummy.html').then(function() {}).catch(function() {});
-        self.close();
-        return;
+      // Destroying the execution context while fetch is happening
+      // should not cause a crash.
+      runInfiniteFetchLoop();
+
+      port.postMessage('quit');
+      return;
     }
     var target = testTargets.shift();
     fetch(target)
