@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_FAILED_DATA_TYPES_HANDLER_H_
-#define COMPONENTS_SYNC_DRIVER_FAILED_DATA_TYPES_HANDLER_H_
+#ifndef COMPONENTS_SYNC_DRIVER_DATA_TYPE_STATUS_TABLE_H_
+#define COMPONENTS_SYNC_DRIVER_DATA_TYPE_STATUS_TABLE_H_
 
 #include <string>
 
@@ -12,12 +12,14 @@
 namespace sync_driver {
 
 // Class to keep track of data types that have encountered an error during sync.
-class FailedDataTypesHandler {
+class DataTypeStatusTable {
  public:
   typedef std::map<syncer::ModelType, syncer::SyncError> TypeErrorMap;
 
-  explicit FailedDataTypesHandler();
-  ~FailedDataTypesHandler();
+  explicit DataTypeStatusTable();
+  ~DataTypeStatusTable();
+
+  // Copy and assign welcome.
 
   // Update the failed datatypes. Types will be added to their corresponding
   // error map based on their |error_type()|.
@@ -90,10 +92,8 @@ class FailedDataTypesHandler {
   // List of data types that could not start due to not being ready. These can
   // be marked as ready by calling ResetUnreadyErrorFor(..).
   TypeErrorMap unready_errors_;
-
-  DISALLOW_COPY_AND_ASSIGN(FailedDataTypesHandler);
 };
 
 }  // namespace sync_driver
 
-#endif  // COMPONENTS_SYNC_DRIVER_FAILED_DATA_TYPES_HANDLER_H_
+#endif  // COMPONENTS_SYNC_DRIVER_DATA_TYPE_STATUS_TABLE_H_

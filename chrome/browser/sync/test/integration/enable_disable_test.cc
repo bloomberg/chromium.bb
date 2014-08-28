@@ -32,9 +32,9 @@ bool DoesTopLevelNodeExist(syncer::UserShare* user_share,
     return node.InitTypeRoot(type) == syncer::BaseNode::INIT_OK;
 }
 
-bool IsUnready(const sync_driver::FailedDataTypesHandler& failed_handler,
+bool IsUnready(const sync_driver::DataTypeStatusTable& data_type_status_table,
                syncer::ModelType type) {
-  return failed_handler.GetUnreadyErrorTypes().Has(type);
+  return data_type_status_table.GetUnreadyErrorTypes().Has(type);
 }
 
 IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
@@ -46,8 +46,8 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
   const syncer::ModelTypeSet registered_types =
       GetSyncService(0)->GetRegisteredDataTypes();
   syncer::UserShare* user_share = GetSyncService(0)->GetUserShare();
-  const sync_driver::FailedDataTypesHandler& failed_handler =
-      GetSyncService(0)->failed_data_types_handler();
+  const sync_driver::DataTypeStatusTable& data_type_status_table =
+      GetSyncService(0)->data_type_status_table();
   for (syncer::ModelTypeSet::Iterator it = registered_types.First();
        it.Good(); it.Inc()) {
     ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(it.Get()));
@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
 
     if (!syncer::ProxyTypes().Has(it.Get())) {
       ASSERT_TRUE(DoesTopLevelNodeExist(user_share, it.Get()) ||
-                  IsUnready(failed_handler, it.Get()))
+                  IsUnready(data_type_status_table, it.Get()))
           << syncer::ModelTypeToString(it.Get());
     }
 
@@ -90,15 +90,15 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
 
   syncer::UserShare* user_share = GetSyncService(0)->GetUserShare();
 
-  const sync_driver::FailedDataTypesHandler& failed_handler =
-      GetSyncService(0)->failed_data_types_handler();
+  const sync_driver::DataTypeStatusTable& data_type_status_table =
+      GetSyncService(0)->data_type_status_table();
 
   // Make sure all top-level nodes exist first.
   for (syncer::ModelTypeSet::Iterator it = registered_types.First();
        it.Good(); it.Inc()) {
     if (!syncer::ProxyTypes().Has(it.Get())) {
       ASSERT_TRUE(DoesTopLevelNodeExist(user_share, it.Get()) ||
-                  IsUnready(failed_handler, it.Get()));
+                  IsUnready(data_type_status_table, it.Get()));
     }
   }
 

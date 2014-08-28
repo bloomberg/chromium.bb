@@ -10,7 +10,7 @@
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_encryption_handler.h"
 #include "components/sync_driver/data_type_manager_observer.h"
-#include "components/sync_driver/failed_data_types_handler.h"
+#include "components/sync_driver/data_type_status_table.h"
 #include "components/sync_driver/fake_data_type_controller.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/configure_reason.h"
@@ -152,14 +152,14 @@ class TestDataTypeManager : public DataTypeManagerImpl {
       const DataTypeController::TypeMap* controllers,
       const DataTypeEncryptionHandler* encryption_handler,
       DataTypeManagerObserver* observer,
-      FailedDataTypesHandler* failed_data_types_handler)
+      DataTypeStatusTable* data_type_status_table)
       : DataTypeManagerImpl(base::Closure(),
                             debug_info_listener,
                             controllers,
                             encryption_handler,
                             configurer,
                             observer,
-                            failed_data_types_handler),
+                            data_type_status_table),
         custom_priority_types_(syncer::ControlTypes()) {}
 
   void set_priority_types(const syncer::ModelTypeSet& priority_types) {
@@ -203,7 +203,7 @@ class SyncDataTypeManagerImplTest : public testing::Test {
            &controllers_,
            &encryption_handler_,
            &observer_,
-           &failed_data_types_handler_));
+           &data_type_status_table_));
   }
 
   void SetConfigureStartExpectation() {
@@ -262,7 +262,7 @@ class SyncDataTypeManagerImplTest : public testing::Test {
   FakeBackendDataTypeConfigurer configurer_;
   DataTypeManagerObserverMock observer_;
   scoped_ptr<TestDataTypeManager> dtm_;
-  FailedDataTypesHandler failed_data_types_handler_;
+  DataTypeStatusTable data_type_status_table_;
   FakeDataTypeEncryptionHandler encryption_handler_;
 };
 
@@ -1161,7 +1161,7 @@ TEST_F(SyncDataTypeManagerImplTest, ReenableAfterDataTypeError) {
                           syncer::BOOKMARKS);
   std::map<syncer::ModelType, syncer::SyncError> errors;
   errors[syncer::BOOKMARKS] = error;
-  failed_data_types_handler_.UpdateFailedDataTypes(errors);
+  data_type_status_table_.UpdateFailedDataTypes(errors);
 
   AddController(PREFERENCES);  // Will succeed.
   AddController(BOOKMARKS);    // Will be disabled due to datatype error.

@@ -412,14 +412,14 @@ DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
     const sync_driver::DataTypeEncryptionHandler* encryption_handler,
     SyncBackendHost* backend,
     DataTypeManagerObserver* observer,
-    sync_driver::FailedDataTypesHandler* failed_data_types_handler) {
+    sync_driver::DataTypeStatusTable* data_type_status_table) {
   return new DataTypeManagerImpl(base::Bind(ChromeReportUnrecoverableError),
                                  debug_info_listener,
                                  controllers,
                                  encryption_handler,
                                  backend,
                                  observer,
-                                 failed_data_types_handler);
+                                 data_type_status_table);
 }
 
 browser_sync::SyncBackendHost*

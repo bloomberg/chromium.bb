@@ -37,7 +37,7 @@
 #include "components/sync_driver/data_type_encryption_handler.h"
 #include "components/sync_driver/data_type_manager.h"
 #include "components/sync_driver/data_type_manager_observer.h"
-#include "components/sync_driver/failed_data_types_handler.h"
+#include "components/sync_driver/data_type_status_table.h"
 #include "components/sync_driver/non_blocking_data_type_manager.h"
 #include "components/sync_driver/sync_frontend.h"
 #include "components/sync_driver/sync_prefs.h"
@@ -724,7 +724,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   }
 
   // TODO(sync): This is only used in tests.  Can we remove it?
-  const sync_driver::FailedDataTypesHandler& failed_data_types_handler() const;
+  const sync_driver::DataTypeStatusTable& data_type_status_table() const;
 
   sync_driver::DataTypeManager::ConfigureStatus configure_status() {
     return configure_status_;
@@ -1084,7 +1084,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // Tracks the set of failed data types (those that encounter an error
   // or must delay loading for some reason).
-  sync_driver::FailedDataTypesHandler failed_data_types_handler_;
+  sync_driver::DataTypeStatusTable data_type_status_table_;
 
   sync_driver::DataTypeManager::ConfigureStatus configure_status_;
 

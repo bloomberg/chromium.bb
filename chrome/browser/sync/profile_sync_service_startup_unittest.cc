@@ -88,7 +88,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
                        content::TestBrowserThreadBundle::REAL_IO_THREAD),
         profile_manager_(TestingBrowserProcess::GetGlobal()),
         sync_(NULL),
-        failed_data_types_handler_(NULL) {}
+        data_type_status_table_(NULL) {}
 
   virtual ~ProfileSyncServiceStartupTest() {
   }
@@ -149,13 +149,13 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   }
 
   void SetError() {
-    sync_driver::FailedDataTypesHandler::TypeErrorMap errors;
+    sync_driver::DataTypeStatusTable::TypeErrorMap errors;
     errors[syncer::BOOKMARKS] =
         syncer::SyncError(FROM_HERE,
                           syncer::SyncError::UNRECOVERABLE_ERROR,
                           "Error",
                           syncer::BOOKMARKS);
-    failed_data_types_handler_->UpdateFailedDataTypes(errors);
+    data_type_status_table_->UpdateFailedDataTypes(errors);
   }
 
  protected:
@@ -174,7 +174,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     DataTypeManagerMock* data_type_manager = new DataTypeManagerMock();
     EXPECT_CALL(*components_factory_mock(),
                 CreateDataTypeManager(_, _, _, _, _, _)).
-        WillOnce(DoAll(SaveArg<5>(&failed_data_types_handler_),
+        WillOnce(DoAll(SaveArg<5>(&data_type_status_table_),
                        Return(data_type_manager)));
     return data_type_manager;
   }
@@ -193,7 +193,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   TestingProfile* profile_;
   ProfileSyncService* sync_;
   ProfileSyncServiceObserverMock observer_;
-  sync_driver::FailedDataTypesHandler* failed_data_types_handler_;
+  sync_driver::DataTypeStatusTable* data_type_status_table_;
 };
 
 class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {

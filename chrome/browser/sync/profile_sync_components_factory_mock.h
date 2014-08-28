@@ -16,7 +16,7 @@ namespace sync_driver {
 class AssociatorInterface;
 class ChangeProcessor;
 class DataTypeEncryptionHandler;
-class FailedDataTypesHandler;
+class DataTypeStatusTable;
 }
 
 class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
@@ -35,8 +35,8 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
                    const sync_driver::DataTypeEncryptionHandler*,
                    browser_sync::SyncBackendHost*,
                    sync_driver::DataTypeManagerObserver* observer,
-                   sync_driver::FailedDataTypesHandler*
-                       failed_datatypes_handler));
+                   sync_driver::DataTypeStatusTable*
+                       data_type_status_table));
   MOCK_METHOD5(CreateSyncBackendHost,
                browser_sync::SyncBackendHost*(
                    const std::string& name,

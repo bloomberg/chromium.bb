@@ -111,7 +111,7 @@ using browser_sync::SyncBackendHost;
 using sync_driver::ChangeProcessor;
 using sync_driver::DataTypeController;
 using sync_driver::DataTypeManager;
-using sync_driver::FailedDataTypesHandler;
+using sync_driver::DataTypeStatusTable;
 using syncer::ModelType;
 using syncer::ModelTypeSet;
 using syncer::JsBackend;
@@ -962,7 +962,7 @@ void ProfileSyncService::ClearStaleErrors() {
   ClearUnrecoverableError();
   last_actionable_error_ = SyncProtocolError();
   // Clear the data type errors as well.
-  failed_data_types_handler_.Reset();
+  data_type_status_table_.Reset();
 }
 
 void ProfileSyncService::ClearUnrecoverableError() {
@@ -1419,9 +1419,9 @@ void ProfileSyncService::OnEncryptedTypesChanged(
         syncer::SyncError::DATATYPE_POLICY_ERROR,
         "Delete directives not supported with encryption.",
         syncer::HISTORY_DELETE_DIRECTIVES);
-    FailedDataTypesHandler::TypeErrorMap error_map;
+    DataTypeStatusTable::TypeErrorMap error_map;
     error_map[error.model_type()] = error;
-    failed_data_types_handler_.UpdateFailedDataTypes(error_map);
+    data_type_status_table_.UpdateFailedDataTypes(error_map);
     ReconfigureDatatypeManager();
   }
 }
@@ -1577,14 +1577,14 @@ void ProfileSyncService::OnConfigureDone(
     // Something catastrophic had happened. We should only have one
     // error representing it.
     syncer::SyncError error =
-        failed_data_types_handler_.GetUnrecoverableError();
+        data_type_status_table_.GetUnrecoverableError();
     DCHECK(error.IsSet());
     std::string message =
         "Sync configuration failed with status " +
         DataTypeManager::ConfigureStatusToString(configure_status_) +
         " caused by " +
         syncer::ModelTypeSetToString(
-            failed_data_types_handler_.GetUnrecoverableErrorTypes()) +
+            data_type_status_table_.GetUnrecoverableErrorTypes()) +
         ": " + error.message();
     LOG(ERROR) << "ProfileSyncService error: " << message;
     OnInternalUnrecoverableError(error.location(),
@@ -1840,7 +1840,7 @@ void ProfileSyncService::OnUserChoseDatatypes(
   UpdateSelectedTypesHistogram(sync_everything, chosen_types);
   sync_prefs_.SetKeepEverythingSynced(sync_everything);
 
-  failed_data_types_handler_.Reset();
+  data_type_status_table_.Reset();
   if (GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES) &&
       encrypted_types_.Has(syncer::SESSIONS)) {
     syncer::SyncError error(
@@ -1848,9 +1848,9 @@ void ProfileSyncService::OnUserChoseDatatypes(
         syncer::SyncError::DATATYPE_POLICY_ERROR,
         "Delete directives not supported with encryption.",
         syncer::HISTORY_DELETE_DIRECTIVES);
-    FailedDataTypesHandler::TypeErrorMap error_map;
+    DataTypeStatusTable::TypeErrorMap error_map;
     error_map[error.model_type()] = error;
-    failed_data_types_handler_.UpdateFailedDataTypes(error_map);
+    data_type_status_table_.UpdateFailedDataTypes(error_map);
   }
   ChangePreferredDataTypes(chosen_types);
   AcknowledgeSyncedTypes();
@@ -1878,7 +1878,7 @@ void ProfileSyncService::ChangePreferredDataTypes(
 syncer::ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {
   const syncer::ModelTypeSet preferred_types = GetPreferredDataTypes();
   const syncer::ModelTypeSet failed_types =
-      failed_data_types_handler_.GetFailedTypes();
+      data_type_status_table_.GetFailedTypes();
   return Difference(preferred_types, failed_types);
 }
 
@@ -1987,7 +1987,7 @@ void ProfileSyncService::ConfigureDataTypeManager() {
                                         this,
                                         backend_.get(),
                                         this,
-                                        &failed_data_types_handler_));
+                                        &data_type_status_table_));
 
     // We create the migrator at the same time.
     migrator_.reset(
@@ -2068,9 +2068,8 @@ base::Value* ProfileSyncService::GetTypeStatusMap() const {
     return result.release();
   }
 
-  FailedDataTypesHandler::TypeErrorMap error_map =
-      failed_data_types_handler_.GetAllErrors();
-
+  DataTypeStatusTable::TypeErrorMap error_map =
+      data_type_status_table_.GetAllErrors();
   ModelTypeSet active_types;
   ModelTypeSet passive_types;
   ModelSafeRoutingInfo routing_info;
@@ -2582,9 +2581,9 @@ syncer::ModelTypeSet ProfileSyncService::GetDataTypesFromPreferenceProviders()
   return types;
 }
 
-const FailedDataTypesHandler& ProfileSyncService::failed_data_types_handler()
+const DataTypeStatusTable& ProfileSyncService::data_type_status_table()
     const {
-  return failed_data_types_handler_;
+  return data_type_status_table_;
 }
 
 void ProfileSyncService::OnInternalUnrecoverableError(

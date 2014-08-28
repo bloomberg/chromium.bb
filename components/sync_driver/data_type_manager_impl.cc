@@ -18,16 +18,16 @@
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_encryption_handler.h"
 #include "components/sync_driver/data_type_manager_observer.h"
-#include "components/sync_driver/failed_data_types_handler.h"
+#include "components/sync_driver/data_type_status_table.h"
 #include "sync/internal_api/public/data_type_debug_info_listener.h"
 
 namespace sync_driver {
 
 namespace {
 
-FailedDataTypesHandler::TypeErrorMap
+DataTypeStatusTable::TypeErrorMap
 GenerateCryptoErrorsForTypes(syncer::ModelTypeSet encrypted_types) {
-  FailedDataTypesHandler::TypeErrorMap crypto_errors;
+  DataTypeStatusTable::TypeErrorMap crypto_errors;
   for (syncer::ModelTypeSet::Iterator iter = encrypted_types.First();
          iter.Good(); iter.Inc()) {
     crypto_errors[iter.Get()] = syncer::SyncError(
@@ -52,7 +52,7 @@ DataTypeManagerImpl::DataTypeManagerImpl(
     const DataTypeEncryptionHandler* encryption_handler,
     BackendDataTypeConfigurer* configurer,
     DataTypeManagerObserver* observer,
-    FailedDataTypesHandler* failed_data_types_handler)
+    DataTypeStatusTable* data_type_status_table)
     : configurer_(configurer),
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
@@ -61,11 +61,11 @@ DataTypeManagerImpl::DataTypeManagerImpl(
       debug_info_listener_(debug_info_listener),
       model_association_manager_(controllers, this),
       observer_(observer),
-      failed_data_types_handler_(failed_data_types_handler),
+      data_type_status_table_(data_type_status_table),
       encryption_handler_(encryption_handler),
       unrecoverable_error_method_(unrecoverable_error_method),
       weak_ptr_factory_(this) {
-  DCHECK(failed_data_types_handler_);
+  DCHECK(data_type_status_table_);
   DCHECK(configurer_);
   DCHECK(observer_);
 }
@@ -89,7 +89,7 @@ void DataTypeManagerImpl::Configure(syncer::ModelTypeSet desired_types,
         iter != controllers_->end()) {
       if (iter != controllers_->end()) {
         if (!iter->second->ReadyForStart() &&
-            !failed_data_types_handler_->GetUnreadyErrorTypes().Has(
+            !data_type_status_table_->GetUnreadyErrorTypes().Has(
                 type.Get())) {
           // Add the type to the unready types set to prevent purging it. It's
           // up to the datatype controller to, if necessary, explicitly
@@ -100,9 +100,9 @@ void DataTypeManagerImpl::Configure(syncer::ModelTypeSet desired_types,
                                   type.Get());
           std::map<syncer::ModelType, syncer::SyncError> errors;
           errors[type.Get()] = error;
-          failed_data_types_handler_->UpdateFailedDataTypes(errors);
+          data_type_status_table_->UpdateFailedDataTypes(errors);
         } else if (iter->second->ReadyForStart()) {
-          failed_data_types_handler_->ResetUnreadyErrorFor(type.Get());
+          data_type_status_table_->ResetUnreadyErrorFor(type.Get());
         }
       }
       filtered_desired_types.Put(type.Get());
@@ -115,8 +115,8 @@ void DataTypeManagerImpl::ReenableType(syncer::ModelType type) {
   // TODO(zea): move the "should we reconfigure" logic into the datatype handler
   // itself.
   // Only reconfigure if the type actually had a data type or unready error.
-  if (!failed_data_types_handler_->ResetDataTypeErrorFor(type) &&
-      !failed_data_types_handler_->ResetUnreadyErrorFor(type)) {
+  if (!data_type_status_table_->ResetDataTypeErrorFor(type) &&
+      !data_type_status_table_->ResetUnreadyErrorFor(type)) {
     return;
   }
 
@@ -177,18 +177,18 @@ DataTypeManagerImpl::BuildDataTypeConfigStateMap(
   // 4. Set non-enabled user types as DISABLED.
   // 5. Set the fatal, crypto, and unready types to their respective states.
   syncer::ModelTypeSet error_types =
-      failed_data_types_handler_->GetFailedTypes();
+      data_type_status_table_->GetFailedTypes();
   syncer::ModelTypeSet fatal_types =
-      failed_data_types_handler_->GetFatalErrorTypes();
+      data_type_status_table_->GetFatalErrorTypes();
   syncer::ModelTypeSet crypto_types =
-      failed_data_types_handler_->GetCryptoErrorTypes();
+      data_type_status_table_->GetCryptoErrorTypes();
   syncer::ModelTypeSet unready_types=
-      failed_data_types_handler_->GetUnreadyErrorTypes();
+      data_type_status_table_->GetUnreadyErrorTypes();
 
   // Types with persistence errors are only purged/resynced when they're
   // actively being configured.
   syncer::ModelTypeSet persistence_types =
-      failed_data_types_handler_->GetPersistenceErrorTypes();
+      data_type_status_table_->GetPersistenceErrorTypes();
   persistence_types.RetainAll(types_being_configured);
 
   // Types with unready errors do not count as unready if they've been disabled.
@@ -240,16 +240,16 @@ void DataTypeManagerImpl::Restart(syncer::ConfigureReason reason) {
         encryption_handler_->GetEncryptedDataTypes();
     encrypted_types.RetainAll(last_requested_types_);
     encrypted_types.RemoveAll(
-        failed_data_types_handler_->GetCryptoErrorTypes());
-    FailedDataTypesHandler::TypeErrorMap crypto_errors =
+        data_type_status_table_->GetCryptoErrorTypes());
+    DataTypeStatusTable::TypeErrorMap crypto_errors =
         GenerateCryptoErrorsForTypes(encrypted_types);
-    failed_data_types_handler_->UpdateFailedDataTypes(crypto_errors);
+    data_type_status_table_->UpdateFailedDataTypes(crypto_errors);
   } else {
-    failed_data_types_handler_->ResetCryptoErrors();
+    data_type_status_table_->ResetCryptoErrors();
   }
 
   syncer::ModelTypeSet failed_types =
-      failed_data_types_handler_->GetFailedTypes();
+      data_type_status_table_->GetFailedTypes();
   syncer::ModelTypeSet enabled_types =
       syncer::Difference(last_requested_types_, failed_types);
 
@@ -353,7 +353,7 @@ void DataTypeManagerImpl::DownloadReady(
 
   // Persistence errors are reset after each backend configuration attempt
   // during which they would have been purged.
-  failed_data_types_handler_->ResetPersistenceErrorsFrom(types_to_download);
+  data_type_status_table_->ResetPersistenceErrorsFrom(types_to_download);
 
   // Ignore |failed_configuration_types| if we need to reconfigure
   // anyway.
@@ -366,7 +366,7 @@ void DataTypeManagerImpl::DownloadReady(
   if (!failed_configuration_types.Empty()) {
     if (!unrecoverable_error_method_.is_null())
       unrecoverable_error_method_.Run();
-    FailedDataTypesHandler::TypeErrorMap errors;
+    DataTypeStatusTable::TypeErrorMap errors;
     for (syncer::ModelTypeSet::Iterator iter =
              failed_configuration_types.First(); iter.Good(); iter.Inc()) {
       syncer::SyncError error(
@@ -376,7 +376,7 @@ void DataTypeManagerImpl::DownloadReady(
           iter.Get());
       errors[iter.Get()] = error;
     }
-    failed_data_types_handler_->UpdateFailedDataTypes(errors);
+    data_type_status_table_->UpdateFailedDataTypes(errors);
     Abort(UNRECOVERABLE_ERROR);
     return;
   }
@@ -429,9 +429,9 @@ void DataTypeManagerImpl::OnSingleDataTypeWillStop(
     const syncer::SyncError& error) {
   configurer_->DeactivateDataType(type);
   if (error.IsSet()) {
-    FailedDataTypesHandler::TypeErrorMap failed_types;
+    DataTypeStatusTable::TypeErrorMap failed_types;
     failed_types[type] = error;
-    failed_data_types_handler_->UpdateFailedDataTypes(
+    data_type_status_table_->UpdateFailedDataTypes(
             failed_types);
 
     // Unrecoverable errors will shut down the entire backend, so no need to
