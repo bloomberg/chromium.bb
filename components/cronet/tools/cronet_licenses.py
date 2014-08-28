@@ -41,7 +41,7 @@ def GenerateLicense():
     "ashmem",
     "zlib",
     "modp_b64",
-    "openssl"
+    "boringssl"
   ]
 
   # Start with Chromium's LICENSE file
