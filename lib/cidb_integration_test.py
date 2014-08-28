@@ -137,16 +137,16 @@ class DataSeries0Test(CIDBIntegrationTest):
   """Simulate a set of 630 master/slave CQ builds."""
 
   # TODO(akeshet): Once our prod and debug databases are migrated
-  # to schema 10, this test of the migration can be removed.
+  # to schema 11, this test of the migration can be removed.
   def testCQWithSchema8(self):
-    """Run the CQ test with schema version 8, then migrate to 10."""
+    """Run the CQ test with schema version 8, then migrate to 11."""
     # Run the CQ test at schema version 8
     self._PrepareFreshDatabase(8)
     self._runCQTest()
 
-    # Now migrate to schema version 10, and run sanity checks.
+    # Now migrate to schema version 11, and run sanity checks.
     root_db = cidb.CIDBConnection(TEST_DB_CRED_ROOT)
-    root_db.ApplySchemaMigrations(10)
+    root_db.ApplySchemaMigrations(11)
 
     readonly_db = cidb.CIDBConnection(TEST_DB_CRED_READONLY)
 
