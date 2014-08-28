@@ -2433,6 +2433,11 @@ public class ContentViewCore
         return mPastePopupMenu;
     }
 
+    @VisibleForTesting
+    public PastePopupMenu getPastePopupForTest() {
+        return getPastePopup();
+    }
+
     private boolean canPaste() {
         if (!mFocusedNodeEditable) return false;
         return ((ClipboardManager) mContext.getSystemService(

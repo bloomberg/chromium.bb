@@ -1544,7 +1544,7 @@ void RenderWidgetHostViewAndroid::OnShowingPastePopup(
   // TODO(jdduke): Remove this workaround when auxiliary paste popup
   // notifications are no longer required, crbug.com/398170.
   cc::ViewportSelectionBound insertion_bound;
-  insertion_bound.type = cc::SELECTION_BOUND_LEFT;
+  insertion_bound.type = cc::SELECTION_BOUND_CENTER;
   insertion_bound.visible = true;
   insertion_bound.edge_top = point;
   insertion_bound.edge_bottom = point;

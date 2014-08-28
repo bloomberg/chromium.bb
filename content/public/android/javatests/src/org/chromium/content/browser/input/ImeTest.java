@@ -573,6 +573,28 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals(KeyEvent.KEYCODE_H, mImeAdapter.mLastSyntheticKeyCode);
     }
 
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testPastePopupShowOnLongPress() throws Throwable {
+        commitText(mConnection, "hello", 1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hello", 5, 5, -1, -1);
+
+        selectAll(mImeAdapter);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 2, "hello", 0, 5, -1, -1);
+
+        cut(mImeAdapter);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+
+        DOMUtils.longPressNode(this, mContentViewCore, "input_text");
+        final PastePopupMenu pastePopup = mContentViewCore.getPastePopupForTest();
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return pastePopup.isShowing();
+            }
+        }));
+    }
+
     private void performGo(final AdapterInputConnection inputConnection,
             TestCallbackHelperContainer testCallbackHelperContainer) throws Throwable {
         handleBlockingCallbackAction(
