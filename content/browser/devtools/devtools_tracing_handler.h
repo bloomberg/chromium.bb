@@ -30,9 +30,6 @@ class DevToolsTracingHandler : public DevToolsProtocol::Handler {
 
   void OnClientDetached();
 
-  void EnableTracing(const std::string& category_filter);
-  void DisableTracing();
-
  private:
   void BeginReadingRecordingResult(const base::FilePath& path);
   void ReadRecordingResult(const scoped_refptr<base::RefCountedString>& result);
@@ -47,6 +44,12 @@ class DevToolsTracingHandler : public DevToolsProtocol::Handler {
 
   scoped_refptr<DevToolsProtocol::Response> OnGetCategories(
       scoped_refptr<DevToolsProtocol::Command> command);
+
+  void OnTracingStarted(
+      scoped_refptr<DevToolsProtocol::Notification> notification);
+
+  void OnTracingStopped(
+      scoped_refptr<DevToolsProtocol::Notification> notification);
 
   void OnCategoriesReceived(scoped_refptr<DevToolsProtocol::Command> command,
                             const std::set<std::string>& category_set);

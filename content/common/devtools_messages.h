@@ -114,13 +114,6 @@ IPC_MESSAGE_ROUTED1(DevToolsHostMsg_DispatchOnEmbedder,
 IPC_MESSAGE_ROUTED1(DevToolsHostMsg_SaveAgentRuntimeState,
                     std::string /* state */)
 
-// Tells the host to enable trace event recording.
-IPC_MESSAGE_ROUTED1(DevToolsHostMsg_EnableTracing,
-                    std::string /* category_filter */)
-
-// Tells the host to disable trace event recording.
-IPC_MESSAGE_ROUTED0(DevToolsHostMsg_DisableTracing)
-
 //-----------------------------------------------------------------------------
 // These are messages sent from the GPU process to the inspected renderer.
 

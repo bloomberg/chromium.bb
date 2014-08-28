@@ -127,11 +127,17 @@ class DevToolsProtocol {
    public:
     typedef base::Callback<scoped_refptr<DevToolsProtocol::Response>(
         scoped_refptr<DevToolsProtocol::Command> command)> CommandHandler;
+    typedef base::Callback<void(
+        scoped_refptr<DevToolsProtocol::Notification> notification)>
+            NotificationHandler;
 
     virtual ~Handler();
 
     virtual scoped_refptr<DevToolsProtocol::Response> HandleCommand(
         scoped_refptr<DevToolsProtocol::Command> command);
+
+    virtual void HandleNotification(
+        scoped_refptr<DevToolsProtocol::Notification> notification);
 
     void SetNotifier(const Notifier& notifier);
 
@@ -140,6 +146,9 @@ class DevToolsProtocol {
 
     void RegisterCommandHandler(const std::string& command,
                                 const CommandHandler& handler);
+
+    void RegisterNotificationHandler(const std::string& notification,
+                                     const NotificationHandler& handler);
 
     // Sends notification to the client. Takes ownership of |params|.
     void SendNotification(const std::string& method,
@@ -153,9 +162,11 @@ class DevToolsProtocol {
 
    private:
     typedef std::map<std::string, CommandHandler> CommandHandlers;
+    typedef std::map<std::string, NotificationHandler> NotificationHandlers;
 
     Notifier notifier_;
     CommandHandlers command_handlers_;
+    NotificationHandlers notification_handlers_;
 
     DISALLOW_COPY_AND_ASSIGN(Handler);
   };
