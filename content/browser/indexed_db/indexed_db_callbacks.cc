@@ -246,6 +246,7 @@ static std::string CreateBlobData(
 
   uuid = base::GenerateGUID();
   scoped_refptr<storage::BlobData> blob_data = new storage::BlobData(uuid);
+  blob_data->set_content_type(base::UTF16ToUTF8(blob_info.type()));
   blob_data->AppendFile(
       blob_info.file_path(), 0, blob_info.size(), blob_info.last_modified());
   scoped_ptr<storage::BlobDataHandle> blob_data_handle(
