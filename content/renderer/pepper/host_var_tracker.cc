@@ -6,15 +6,36 @@
 
 #include "base/logging.h"
 #include "content/renderer/pepper/host_array_buffer_var.h"
+#include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/host_resource_var.h"
-#include "content/renderer/pepper/npobject_var.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
+#include "content/renderer/pepper/v8object_var.h"
 #include "ppapi/c/pp_var.h"
 
 using ppapi::ArrayBufferVar;
-using ppapi::NPObjectVar;
+using ppapi::V8ObjectVar;
 
 namespace content {
+
+HostVarTracker::V8ObjectVarKey::V8ObjectVarKey(V8ObjectVar* object_var)
+    : instance(object_var->instance()->pp_instance()) {
+  v8::Local<v8::Object> object = object_var->GetHandle();
+  hash = object.IsEmpty() ? 0 : object->GetIdentityHash();
+}
+
+HostVarTracker::V8ObjectVarKey::V8ObjectVarKey(PP_Instance instance,
+                                               v8::Handle<v8::Object> object)
+    : instance(instance),
+      hash(object.IsEmpty() ? 0 : object->GetIdentityHash()) {}
+
+HostVarTracker::V8ObjectVarKey::~V8ObjectVarKey() {}
+
+bool HostVarTracker::V8ObjectVarKey::operator<(
+    const V8ObjectVarKey& other) const {
+  if (instance == other.instance)
+    return hash < other.hash;
+  return instance < other.instance;
+}
 
 HostVarTracker::HostVarTracker()
     : VarTracker(SINGLE_THREADED), last_shared_memory_map_id_(0) {}
@@ -31,74 +52,44 @@ ArrayBufferVar* HostVarTracker::CreateShmArrayBuffer(
   return new HostArrayBufferVar(size_in_bytes, handle);
 }
 
-void HostVarTracker::AddNPObjectVar(NPObjectVar* object_var) {
+void HostVarTracker::AddV8ObjectVar(V8ObjectVar* object_var) {
   CheckThreadingPreconditions();
-
-  InstanceMap::iterator found_instance =
-      instance_map_.find(object_var->pp_instance());
-  if (found_instance == instance_map_.end()) {
-    // Lazily create the instance map.
-    DCHECK(object_var->pp_instance() != 0);
-    found_instance =
-        instance_map_.insert(std::make_pair(
-                                 object_var->pp_instance(),
-                                 linked_ptr<NPObjectToNPObjectVarMap>(
-                                     new NPObjectToNPObjectVarMap))).first;
-  }
-  NPObjectToNPObjectVarMap* np_object_map = found_instance->second.get();
-
-  DCHECK(np_object_map->find(object_var->np_object()) == np_object_map->end())
-      << "NPObjectVar already in map";
-  np_object_map->insert(std::make_pair(object_var->np_object(), object_var));
+  v8::HandleScope handle_scope(object_var->instance()->GetIsolate());
+  DCHECK(GetForV8Object(object_var->instance()->pp_instance(),
+                        object_var->GetHandle()) == object_map_.end());
+  object_map_.insert(std::make_pair(V8ObjectVarKey(object_var), object_var));
 }
 
-void HostVarTracker::RemoveNPObjectVar(NPObjectVar* object_var) {
+void HostVarTracker::RemoveV8ObjectVar(V8ObjectVar* object_var) {
   CheckThreadingPreconditions();
-
-  InstanceMap::iterator found_instance =
-      instance_map_.find(object_var->pp_instance());
-  if (found_instance == instance_map_.end()) {
-    NOTREACHED() << "NPObjectVar has invalid instance.";
-    return;
-  }
-  NPObjectToNPObjectVarMap* np_object_map = found_instance->second.get();
-
-  NPObjectToNPObjectVarMap::iterator found_object =
-      np_object_map->find(object_var->np_object());
-  if (found_object == np_object_map->end()) {
-    NOTREACHED() << "NPObjectVar not registered.";
-    return;
-  }
-  if (found_object->second != object_var) {
-    NOTREACHED() << "NPObjectVar doesn't match.";
-    return;
-  }
-  np_object_map->erase(found_object);
+  v8::HandleScope handle_scope(object_var->instance()->GetIsolate());
+  ObjectMap::iterator it = GetForV8Object(
+      object_var->instance()->pp_instance(), object_var->GetHandle());
+  DCHECK(it != object_map_.end());
+  object_map_.erase(it);
 }
 
-NPObjectVar* HostVarTracker::NPObjectVarForNPObject(PP_Instance instance,
-                                                    NPObject* np_object) {
+PP_Var HostVarTracker::V8ObjectVarForV8Object(PP_Instance instance,
+                                              v8::Handle<v8::Object> object) {
   CheckThreadingPreconditions();
-
-  InstanceMap::iterator found_instance = instance_map_.find(instance);
-  if (found_instance == instance_map_.end())
-    return NULL;  // No such instance.
-  NPObjectToNPObjectVarMap* np_object_map = found_instance->second.get();
-
-  NPObjectToNPObjectVarMap::iterator found_object =
-      np_object_map->find(np_object);
-  if (found_object == np_object_map->end())
-    return NULL;  // No such object.
-  return found_object->second;
+  ObjectMap::const_iterator it = GetForV8Object(instance, object);
+  if (it == object_map_.end())
+    return (new V8ObjectVar(instance, object))->GetPPVar();
+  return it->second->GetPPVar();
 }
 
-int HostVarTracker::GetLiveNPObjectVarsForInstance(PP_Instance instance) const {
+int HostVarTracker::GetLiveV8ObjectVarsForTest(PP_Instance instance) {
   CheckThreadingPreconditions();
-
-  InstanceMap::const_iterator found = instance_map_.find(instance);
-  if (found == instance_map_.end())
-    return 0;
-  return static_cast<int>(found->second->size());
+  int count = 0;
+  // Use a key with an empty handle to find the v8 object var in the map with
+  // the given instance and the lowest hash.
+  V8ObjectVarKey key(instance, v8::Handle<v8::Object>());
+  ObjectMap::const_iterator it = object_map_.lower_bound(key);
+  while (it != object_map_.end() && it->first.instance == instance) {
+    ++count;
+    ++it;
+  }
+  return count;
 }
 
 PP_Var HostVarTracker::MakeResourcePPVarFromMessage(
@@ -116,27 +107,27 @@ ppapi::ResourceVar* HostVarTracker::MakeResourceVar(PP_Resource pp_resource) {
   return new HostResourceVar(pp_resource);
 }
 
-void HostVarTracker::DidDeleteInstance(PP_Instance instance) {
+void HostVarTracker::DidDeleteInstance(PP_Instance pp_instance) {
   CheckThreadingPreconditions();
 
-  InstanceMap::iterator found_instance = instance_map_.find(instance);
-  if (found_instance == instance_map_.end())
-    return;  // Nothing to do.
-  NPObjectToNPObjectVarMap* np_object_map = found_instance->second.get();
-
-  // Force delete all var references. ForceReleaseNPObject() will cause
+  PepperPluginInstanceImpl* instance =
+      HostGlobals::Get()->GetInstance(pp_instance);
+  v8::HandleScope handle_scope(instance->GetIsolate());
+  // Force delete all var references. ForceReleaseV8Object() will cause
   // this object, and potentially others it references, to be removed from
-  // |np_object_map|.
-  while (!np_object_map->empty()) {
-    ForceReleaseNPObject(np_object_map->begin()->second);
-  }
+  // |live_vars_|.
 
-  // Remove the record for this instance since it should be empty.
-  DCHECK(np_object_map->empty());
-  instance_map_.erase(found_instance);
+  // Use a key with an empty handle to find the v8 object var in the map with
+  // the given instance and the lowest hash.
+  V8ObjectVarKey key(pp_instance, v8::Handle<v8::Object>());
+  ObjectMap::iterator it = object_map_.lower_bound(key);
+  while (it != object_map_.end() && it->first.instance == pp_instance) {
+    ForceReleaseV8Object(it->second);
+    object_map_.erase(it++);
+  }
 }
 
-void HostVarTracker::ForceReleaseNPObject(ppapi::NPObjectVar* object_var) {
+void HostVarTracker::ForceReleaseV8Object(ppapi::V8ObjectVar* object_var) {
   object_var->InstanceDeleted();
   VarMap::iterator iter = live_vars_.find(object_var->GetExistingVarID());
   if (iter == live_vars_.end()) {
@@ -146,6 +137,19 @@ void HostVarTracker::ForceReleaseNPObject(ppapi::NPObjectVar* object_var) {
   iter->second.ref_count = 0;
   DCHECK(iter->second.track_with_no_reference_count == 0);
   DeleteObjectInfoIfNecessary(iter);
+}
+
+HostVarTracker::ObjectMap::iterator HostVarTracker::GetForV8Object(
+    PP_Instance instance,
+    v8::Handle<v8::Object> object) {
+  std::pair<ObjectMap::iterator, ObjectMap::iterator> range =
+      object_map_.equal_range(V8ObjectVarKey(instance, object));
+
+  for (ObjectMap::iterator it = range.first; it != range.second; ++it) {
+    if (object == it->second->GetHandle())
+      return it;
+  }
+  return object_map_.end();
 }
 
 int HostVarTracker::TrackSharedMemoryHandle(PP_Instance instance,
