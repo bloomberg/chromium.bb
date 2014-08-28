@@ -23,7 +23,7 @@ ApplicationLoader::SimpleLoadCallbacks::RegisterApplication() {
 
 void ApplicationLoader::SimpleLoadCallbacks::LoadWithContentHandler(
     const GURL& content_handle_url,
-    URLResponsePtr content) {
+    URLResponsePtr url_response) {
   NOTREACHED();
 }
 

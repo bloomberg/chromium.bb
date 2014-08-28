@@ -66,12 +66,12 @@ class ApplicationManager::LoadCallbacksImpl
   }
 
   virtual void LoadWithContentHandler(const GURL& content_handler_url,
-                                      URLResponsePtr content) OVERRIDE {
+                                      URLResponsePtr url_response) OVERRIDE {
     if (manager_) {
       manager_->LoadWithContentHandler(requested_url_,
                                        requestor_url_,
                                        content_handler_url,
-                                       content.Pass(),
+                                       url_response.Pass(),
                                        service_provider_.Pass());
     }
   }
@@ -232,7 +232,7 @@ void ApplicationManager::LoadWithContentHandler(
     const GURL& content_url,
     const GURL& requestor_url,
     const GURL& content_handler_url,
-    URLResponsePtr content,
+    URLResponsePtr url_response,
     ServiceProviderPtr service_provider) {
   ContentHandlerConnection* connection = NULL;
   URLToContentHandlerMap::iterator iter =
@@ -243,8 +243,11 @@ void ApplicationManager::LoadWithContentHandler(
     connection = new ContentHandlerConnection(this, content_handler_url);
     url_to_content_handler_[content_handler_url] = connection;
   }
+
+  InterfaceRequest<ServiceProvider> spir;
+  spir.Bind(service_provider.PassMessagePipe());
   connection->content_handler->OnConnect(
-      content_url.spec(), content.Pass(), service_provider.Pass());
+      content_url.spec(), url_response.Pass(), spir.Pass());
 }
 
 void ApplicationManager::SetLoaderForURL(scoped_ptr<ApplicationLoader> loader,

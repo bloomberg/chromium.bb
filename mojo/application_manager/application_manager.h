@@ -123,7 +123,7 @@ class MOJO_APPLICATION_MANAGER_EXPORT ApplicationManager {
   void LoadWithContentHandler(const GURL& content_url,
                               const GURL& requestor_url,
                               const GURL& content_handler_url,
-                              URLResponsePtr content,
+                              URLResponsePtr url_response,
                               ServiceProviderPtr service_provider);
 
   // Returns the Loader to use for a url (using default if not overridden.)

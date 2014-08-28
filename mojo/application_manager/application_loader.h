@@ -34,7 +34,7 @@ class MOJO_APPLICATION_MANAGER_EXPORT ApplicationLoader {
 
     // Load the requested application with a content handler.
     virtual void LoadWithContentHandler(const GURL& content_handler_url,
-                                        URLResponsePtr response) = 0;
+                                        URLResponsePtr url_response) = 0;
 
    protected:
     friend base::RefCounted<LoadCallbacks>;

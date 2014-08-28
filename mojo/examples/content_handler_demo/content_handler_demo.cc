@@ -23,8 +23,9 @@ class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
 
  private:
   virtual void OnConnect(const mojo::String& url,
-                         URLResponsePtr content,
-                         ServiceProviderPtr service_provider) MOJO_OVERRIDE;
+                         URLResponsePtr response,
+                         InterfaceRequest<ServiceProvider> service_provider)
+      MOJO_OVERRIDE;
 
   ContentHandlerApp* content_handler_app_;
 };
@@ -71,12 +72,13 @@ class ContentHandlerApp : public ApplicationDelegate {
                                   ContentHandlerApp> content_handler_factory_;
 };
 
-void ContentHandlerImpl::OnConnect(const mojo::String& url,
-                                   URLResponsePtr content,
-                                   ServiceProviderPtr service_provider) {
+void ContentHandlerImpl::OnConnect(
+    const mojo::String& url,
+    URLResponsePtr response,
+    InterfaceRequest<ServiceProvider> service_provider) {
   printf("ContentHandler::OnConnect - url:%s - body follows\n\n",
          url.To<std::string>().c_str());
-  content_handler_app_->PrintResponse(content->body.Pass());
+  content_handler_app_->PrintResponse(response->body.Pass());
 }
 
 }  // namespace examples

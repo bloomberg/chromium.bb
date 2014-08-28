@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
@@ -44,28 +45,21 @@ class DynamicApplicationLoader : public ApplicationLoader {
                                   const GURL& url) OVERRIDE;
 
  private:
-  typedef std::map<std::string, GURL> MimeTypeToURLMap;
+  class Loader;
+  class LocalLoader;
+  class NetworkLoader;
 
-  void LoadLocalService(const GURL& resolved_url,
-                        scoped_refptr<LoadCallbacks> callbacks);
-  void LoadNetworkService(const GURL& resolved_url,
-                          scoped_refptr<LoadCallbacks> callbacks);
-  void OnLoadNetworkServiceComplete(scoped_refptr<LoadCallbacks> callbacks,
-                                    URLResponsePtr url_response);
-  void RunLibrary(const base::FilePath& response_file,
-                  scoped_refptr<LoadCallbacks> callbacks,
-                  bool delete_file_after,
-                  bool response_path_exists);
-  void OnRunLibraryComplete(DynamicServiceRunner* runner,
-                            const base::FilePath& temp_file);
+  typedef std::map<std::string, GURL> MimeTypeToURLMap;
+  typedef base::Callback<void(Loader*)> LoaderCompleteCallback;
+
+  void LoaderComplete(Loader* loader);
 
   Context* const context_;
   scoped_ptr<DynamicServiceRunnerFactory> runner_factory_;
-  ScopedVector<DynamicServiceRunner> runners_;
   NetworkServicePtr network_service_;
-  URLLoaderPtr url_loader_;
   MimeTypeToURLMap mime_type_to_url_;
-  base::WeakPtrFactory<DynamicApplicationLoader> weak_ptr_factory_;
+  ScopedVector<Loader> loaders_;
+  LoaderCompleteCallback loader_complete_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DynamicApplicationLoader);
 };
