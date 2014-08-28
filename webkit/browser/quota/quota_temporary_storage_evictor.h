@@ -11,8 +11,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer/timer.h"
-#include "webkit/browser/storage_export.h"
 #include "webkit/common/quota/quota_types.h"
+#include "webkit/common/storage_export.h"
 
 class GURL;
 

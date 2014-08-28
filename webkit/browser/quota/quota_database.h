@@ -16,8 +16,8 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "url/gurl.h"
-#include "webkit/browser/storage_export.h"
 #include "webkit/common/quota/quota_types.h"
+#include "webkit/common/storage_export.h"
 
 namespace content {
 class QuotaDatabaseTest;

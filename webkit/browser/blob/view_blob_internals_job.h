@@ -9,7 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "net/url_request/url_request_simple_job.h"
-#include "webkit/browser/storage_export.h"
+#include "webkit/common/storage_export.h"
 
 namespace net {
 class URLRequest;

@@ -15,19 +15,19 @@
 #include "webkit/common/fileapi/file_system_info.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/quota/quota_types.h"
-#include "webkit/common/storage_common_export.h"
+#include "webkit/common/storage_export.h"
 
 class GURL;
 
 namespace storage {
 
-WEBKIT_STORAGE_COMMON_EXPORT extern const char kPersistentDir[];
-WEBKIT_STORAGE_COMMON_EXPORT extern const char kTemporaryDir[];
-WEBKIT_STORAGE_COMMON_EXPORT extern const char kExternalDir[];
-WEBKIT_STORAGE_COMMON_EXPORT extern const char kIsolatedDir[];
-WEBKIT_STORAGE_COMMON_EXPORT extern const char kTestDir[];
+STORAGE_EXPORT extern const char kPersistentDir[];
+STORAGE_EXPORT extern const char kTemporaryDir[];
+STORAGE_EXPORT extern const char kExternalDir[];
+STORAGE_EXPORT extern const char kIsolatedDir[];
+STORAGE_EXPORT extern const char kTestDir[];
 
-class WEBKIT_STORAGE_COMMON_EXPORT VirtualPath {
+class STORAGE_EXPORT VirtualPath {
  public:
   static const base::FilePath::CharType kRoot[];
   static const base::FilePath::CharType kSeparator;
@@ -69,7 +69,7 @@ class WEBKIT_STORAGE_COMMON_EXPORT VirtualPath {
 // Example: For a URL 'filesystem:http://foo.com/temporary/foo/bar',
 // |origin_url| is set to 'http://foo.com', |type| is set to
 // kFileSystemTypeTemporary, and |virtual_path| is set to 'foo/bar'.
-WEBKIT_STORAGE_COMMON_EXPORT bool ParseFileSystemSchemeURL(
+STORAGE_EXPORT bool ParseFileSystemSchemeURL(
     const GURL& url,
     GURL* origin_url,
     FileSystemType* type,
@@ -84,7 +84,7 @@ WEBKIT_STORAGE_COMMON_EXPORT bool ParseFileSystemSchemeURL(
 // returns URL without the filesystem ID.
 //
 // |type| needs to be public type as the returned URI is given to the renderer.
-WEBKIT_STORAGE_COMMON_EXPORT GURL GetFileSystemRootURI(const GURL& origin_url,
+STORAGE_EXPORT GURL GetFileSystemRootURI(const GURL& origin_url,
                                                        FileSystemType type);
 
 // Returns the name for the filesystem that is specified by a pair of
@@ -98,27 +98,27 @@ WEBKIT_STORAGE_COMMON_EXPORT GURL GetFileSystemRootURI(const GURL& origin_url,
 // Example:
 //   The name for a TEMPORARY filesystem of "http://www.example.com:80/"
 //   should look like: "http_www.example.host_80:temporary"
-WEBKIT_STORAGE_COMMON_EXPORT std::string
+STORAGE_EXPORT std::string
 GetFileSystemName(const GURL& origin_url, FileSystemType type);
 
 // Converts FileSystemType |type| to/from the StorageType |storage_type| that
 // is used for the unified quota system.
 // (Basically this naively maps TEMPORARY storage type to TEMPORARY filesystem
 // type, PERSISTENT storage type to PERSISTENT filesystem type and vice versa.)
-WEBKIT_STORAGE_COMMON_EXPORT FileSystemType
+STORAGE_EXPORT FileSystemType
     QuotaStorageTypeToFileSystemType(storage::StorageType storage_type);
 
-WEBKIT_STORAGE_COMMON_EXPORT storage::StorageType
+STORAGE_EXPORT storage::StorageType
     FileSystemTypeToQuotaStorageType(FileSystemType type);
 
 // Returns the string representation of the given filesystem |type|.
 // Returns an empty string if the |type| is invalid.
-WEBKIT_STORAGE_COMMON_EXPORT std::string
+STORAGE_EXPORT std::string
 GetFileSystemTypeString(FileSystemType type);
 
 // Sets type to FileSystemType enum that corresponds to the string name.
 // Returns false if the |type_string| is invalid.
-WEBKIT_STORAGE_COMMON_EXPORT bool GetFileSystemPublicType(
+STORAGE_EXPORT bool GetFileSystemPublicType(
     std::string type_string,
     blink::WebFileSystemType* type);
 
@@ -130,20 +130,20 @@ WEBKIT_STORAGE_COMMON_EXPORT bool GetFileSystemPublicType(
 //
 // TODO(tzik): Replace CreateFilePath and FilePathToString in
 // third_party/leveldatabase/env_chromium.cc with them.
-WEBKIT_STORAGE_COMMON_EXPORT std::string FilePathToString(
+STORAGE_EXPORT std::string FilePathToString(
     const base::FilePath& file_path);
 
 // Decode a file path from |file_path_string|.
-WEBKIT_STORAGE_COMMON_EXPORT base::FilePath StringToFilePath(
+STORAGE_EXPORT base::FilePath StringToFilePath(
     const std::string& file_path_string);
 
 // File error conversion
-WEBKIT_STORAGE_COMMON_EXPORT blink::WebFileError
+STORAGE_EXPORT blink::WebFileError
 FileErrorToWebFileError(base::File::Error error_code);
 
 // Generate a file system name for the given arguments. Should only be used by
 // platform apps.
-WEBKIT_STORAGE_COMMON_EXPORT std::string GetIsolatedFileSystemName(
+STORAGE_EXPORT std::string GetIsolatedFileSystemName(
     const GURL& origin_url,
     const std::string& filesystem_id);
 
@@ -151,30 +151,30 @@ WEBKIT_STORAGE_COMMON_EXPORT std::string GetIsolatedFileSystemName(
 // platform apps. This function will return false if the file system name is
 // not of the form {origin}:Isolated_{id}, and will also check that there is an
 // origin and id present. It will not check that the origin or id are valid.
-WEBKIT_STORAGE_COMMON_EXPORT bool CrackIsolatedFileSystemName(
+STORAGE_EXPORT bool CrackIsolatedFileSystemName(
     const std::string& filesystem_name,
     std::string* filesystem_id);
 
 // Validates the given isolated file system id.
-WEBKIT_STORAGE_COMMON_EXPORT bool ValidateIsolatedFileSystemId(
+STORAGE_EXPORT bool ValidateIsolatedFileSystemId(
     const std::string& filesystem_id);
 
 // Returns the root URI for an isolated filesystem for origin |origin_url|
 // and |filesystem_id|. If the |optional_root_name| is given the resulting
 // root URI will point to the subfolder within the isolated filesystem.
-WEBKIT_STORAGE_COMMON_EXPORT std::string GetIsolatedFileSystemRootURIString(
+STORAGE_EXPORT std::string GetIsolatedFileSystemRootURIString(
     const GURL& origin_url,
     const std::string& filesystem_id,
     const std::string& optional_root_name);
 
 // Returns the root URI for an external filesystem for origin |origin_url|
 // and |mount_name|.
-WEBKIT_STORAGE_COMMON_EXPORT std::string GetExternalFileSystemRootURIString(
+STORAGE_EXPORT std::string GetExternalFileSystemRootURIString(
     const GURL& origin_url,
     const std::string& mount_name);
 
 // Translates the net::Error to base::File::Error.
-WEBKIT_STORAGE_COMMON_EXPORT base::File::Error
+STORAGE_EXPORT base::File::Error
 NetErrorToFileError(int error);
 
 }  // namespace storage

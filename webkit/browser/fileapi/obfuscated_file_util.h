@@ -20,9 +20,9 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/sandbox_directory_database.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend_delegate.h"
-#include "webkit/browser/storage_export.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/fileapi/file_system_types.h"
+#include "webkit/common/storage_export.h"
 
 namespace base {
 class SequencedTaskRunner;

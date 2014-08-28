@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task_runner.h"
 #include "webkit/browser/fileapi/file_stream_writer.h"
-#include "webkit/browser/storage_export.h"
+#include "webkit/common/storage_export.h"
 
 namespace content {
 class LocalFileStreamWriterTest;

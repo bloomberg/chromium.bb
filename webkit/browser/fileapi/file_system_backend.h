@@ -14,8 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "webkit/browser/fileapi/file_permission_policy.h"
 #include "webkit/browser/fileapi/open_file_system_mode.h"
-#include "webkit/browser/storage_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
+#include "webkit/common/storage_export.h"
 
 class GURL;
 

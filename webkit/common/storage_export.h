@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_STORAGE_EXPORT_H_
-#define WEBKIT_BROWSER_STORAGE_EXPORT_H_
+#ifndef WEBKIT_COMMON_STORAGE_EXPORT_H_
+#define WEBKIT_COMMON_STORAGE_EXPORT_H_
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)
 
-#if defined(WEBKIT_STORAGE_BROWSER_IMPLEMENTATION)
+#if defined(STORAGE_IMPLEMENTATION)
 #define STORAGE_EXPORT __declspec(dllexport)
 #define STORAGE_EXPORT_PRIVATE __declspec(dllexport)
 #else
 #define STORAGE_EXPORT __declspec(dllimport)
 #define STORAGE_EXPORT_PRIVATE __declspec(dllimport)
-#endif  // defined(BROWSER_IMPLEMENTATION)
+#endif  // defined(STORAGE_IMPLEMENTATION)
 
 #else // defined(WIN32)
-#if defined(WEBKIT_STORAGE_BROWSER_IMPLEMENTATION)
+#if defined(STORAGE_IMPLEMENTATION)
 #define STORAGE_EXPORT __attribute__((visibility("default")))
 #define STORAGE_EXPORT_PRIVATE __attribute__((visibility("default")))
 #else
@@ -31,4 +31,4 @@
 #define STORAGE_EXPORT_PRIVATE
 #endif
 
-#endif  // WEBKIT_BROWSER_STORAGE_EXPORT_H_
+#endif  // WEBKIT_COMMON_STORAGE_EXPORT_H_

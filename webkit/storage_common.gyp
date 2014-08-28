@@ -19,9 +19,9 @@
         '<(DEPTH)/url/url.gyp:url_lib',
         '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
       ],
-      'defines': ['WEBKIT_STORAGE_COMMON_IMPLEMENTATION'],
+      'defines': ['STORAGE_IMPLEMENTATION'],
       'sources': [
-        'common/storage_common_export.h',
+        'common/storage_export.h',
         'common/blob/blob_data.cc',
         'common/blob/blob_data.h',
         'common/blob/scoped_file.cc',

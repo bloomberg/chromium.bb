@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "webkit/browser/quota/quota_client.h"
-#include "webkit/browser/storage_export.h"
 #include "webkit/common/quota/quota_types.h"
+#include "webkit/common/storage_export.h"
 
 namespace storage {
 

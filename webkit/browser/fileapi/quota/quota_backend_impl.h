@@ -9,8 +9,8 @@
 #include "base/memory/weak_ptr.h"
 #include "webkit/browser/fileapi/quota/quota_reservation_manager.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend_delegate.h"
-#include "webkit/browser/storage_export.h"
 #include "webkit/common/quota/quota_status_code.h"
+#include "webkit/common/storage_export.h"
 
 namespace base {
 class SequencedTaskRunner;

@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "webkit/browser/storage_export.h"
+#include "webkit/common/storage_export.h"
 
 namespace base {
 class FilePath;

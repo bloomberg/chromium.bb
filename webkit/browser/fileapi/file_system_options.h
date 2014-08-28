@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "webkit/browser/storage_export.h"
+#include "webkit/common/storage_export.h"
 
 namespace leveldb {
 class Env;

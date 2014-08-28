@@ -6,7 +6,7 @@
 #define WEBKIT_BROWSER_FILEAPI_FILE_OBSERVERS_H_
 
 #include "base/basictypes.h"
-#include "webkit/browser/storage_export.h"
+#include "webkit/common/storage_export.h"
 
 // TODO(kinuko): Split this file into per-observer multiple files.
 

@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "webkit/browser/fileapi/local_file_util.h"
-#include "webkit/browser/storage_export.h"
+#include "webkit/common/storage_export.h"
 
 namespace storage {
 

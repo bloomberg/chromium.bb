@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/files/file.h"
-#include "webkit/browser/storage_export.h"
+#include "webkit/common/storage_export.h"
 
 namespace base {
 class FilePath;

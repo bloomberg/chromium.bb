@@ -10,16 +10,16 @@
 #include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "url/gurl.h"
-#include "webkit/common/storage_common_export.h"
+#include "webkit/common/storage_export.h"
 
 namespace storage {
 
-WEBKIT_STORAGE_COMMON_EXPORT std::string GetIdentifierFromOrigin(
+STORAGE_EXPORT std::string GetIdentifierFromOrigin(
     const GURL& origin);
-WEBKIT_STORAGE_COMMON_EXPORT GURL GetOriginFromIdentifier(
+STORAGE_EXPORT GURL GetOriginFromIdentifier(
     const std::string& identifier);
 
-class WEBKIT_STORAGE_COMMON_EXPORT DatabaseIdentifier {
+class STORAGE_EXPORT DatabaseIdentifier {
  public:
   static const DatabaseIdentifier UniqueFileIdentifier();
   static DatabaseIdentifier CreateFromOrigin(const GURL& origin);

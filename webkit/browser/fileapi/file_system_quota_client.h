@@ -15,8 +15,8 @@
 #include "base/memory/ref_counted.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
 #include "webkit/browser/quota/quota_client.h"
-#include "webkit/browser/storage_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
+#include "webkit/common/storage_export.h"
 
 namespace base {
 class SequencedTaskRunner;

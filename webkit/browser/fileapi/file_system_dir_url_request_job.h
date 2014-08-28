@@ -14,7 +14,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "net/url_request/url_request_job.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/storage_export.h"
+#include "webkit/common/storage_export.h"
 
 namespace storage {
 

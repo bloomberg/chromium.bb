@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "webkit/browser/fileapi/quota/quota_reservation_manager.h"
-#include "webkit/browser/storage_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
+#include "webkit/common/storage_export.h"
 
 class GURL;
 

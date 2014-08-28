@@ -23,7 +23,7 @@ component("common") {
 component("storage") {
   output_name = "storage_common"
   sources = [
-    "storage_common_export.h",
+    "storage_export.h",
     "blob/blob_data.cc",
     "blob/blob_data.h",
     "blob/scoped_file.cc",

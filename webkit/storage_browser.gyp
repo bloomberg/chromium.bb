@@ -24,9 +24,8 @@
         '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
         '<(DEPTH)/webkit/storage_common.gyp:storage_common',
       ],
-      'defines': ['WEBKIT_STORAGE_BROWSER_IMPLEMENTATION'],
+      'defines': ['STORAGE_IMPLEMENTATION'],
       'sources': [
-        'browser/storage_export.h',
         'browser/blob/blob_data_handle.cc',
         'browser/blob/blob_data_handle.h',
         'browser/blob/blob_storage_context.cc',

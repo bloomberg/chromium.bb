@@ -9,8 +9,8 @@
 #include "base/supports_user_data.h"
 #include "base/threading/thread_checker.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
-#include "webkit/browser/storage_export.h"
 #include "webkit/common/quota/quota_types.h"
+#include "webkit/common/storage_export.h"
 
 namespace base {
 class SequencedTaskRunner;

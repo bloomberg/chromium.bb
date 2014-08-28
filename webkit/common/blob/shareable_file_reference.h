@@ -15,7 +15,7 @@ namespace storage {
 // same path if it already exists in its internal map.
 // This class is non-thread-safe and all methods must be called on a single
 // thread.
-class WEBKIT_STORAGE_COMMON_EXPORT ShareableFileReference
+class STORAGE_EXPORT ShareableFileReference
     : public base::RefCounted<ShareableFileReference> {
  public:
   typedef ScopedFile::ScopeOutCallback FinalReleaseCallback;

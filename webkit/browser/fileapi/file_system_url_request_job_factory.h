@@ -9,7 +9,7 @@
 
 #include "net/url_request/url_request_job_factory.h"
 
-#include "webkit/browser/storage_export.h"
+#include "webkit/common/storage_export.h"
 
 namespace base {
 class MessageLoopProxy;
