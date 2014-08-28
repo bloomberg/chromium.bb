@@ -30,8 +30,8 @@ def ModExp(n, e, p):
     n = (n*n) % p
   return r
 
-# PKCS1v15_SHA1_PREFIX is the ASN.1 prefix for a SHA1 signature.
-PKCS1v15_SHA1_PREFIX = '3021300906052b0e03021a05000414'.decode('hex')
+# PKCS1v15_SHA256_PREFIX is the ASN.1 prefix for a SHA256 signature.
+PKCS1v15_SHA256_PREFIX = '3031300d060960864801650304020105000420'.decode('hex')
 
 class RSA(object):
   def __init__(self, modulus, e, d):
@@ -46,8 +46,8 @@ class RSA(object):
       m >>= 8
 
   def Sign(self, message):
-    digest = hashlib.sha1(message).digest()
-    prefix = PKCS1v15_SHA1_PREFIX
+    digest = hashlib.sha256(message).digest()
+    prefix = PKCS1v15_SHA256_PREFIX
 
     em = ['\xff'] * (self.modlen - 1 - len(prefix) - len(digest))
     em[0] = '\x00'
@@ -165,7 +165,7 @@ HASH_SHA1 = asn1.OID([1, 3, 14, 3, 2, 26])
 OCSP_TYPE_BASIC = asn1.OID([1, 3, 6, 1, 5, 5, 7, 48, 1, 1])
 ORGANIZATION = asn1.OID([2, 5, 4, 10])
 PUBLIC_KEY_RSA = asn1.OID([1, 2, 840, 113549, 1, 1, 1])
-SHA1_WITH_RSA_ENCRYPTION = asn1.OID([1, 2, 840, 113549, 1, 1, 5])
+SHA256_WITH_RSA_ENCRYPTION = asn1.OID([1, 2, 840, 113549, 1, 1, 11])
 
 
 def MakeCertificate(
@@ -219,7 +219,7 @@ def MakeCertificate(
   tbsCert = asn1.ToDER(asn1.SEQUENCE([
       asn1.Explicit(0, 2), # Version
       serial,
-      asn1.SEQUENCE([SHA1_WITH_RSA_ENCRYPTION, None]), # SignatureAlgorithm
+      asn1.SEQUENCE([SHA256_WITH_RSA_ENCRYPTION, None]), # SignatureAlgorithm
       Name(cn = issuer_cn), # Issuer
       asn1.SEQUENCE([ # Validity
         asn1.UTCTime("100101060000Z"), # NotBefore
@@ -239,7 +239,7 @@ def MakeCertificate(
   return asn1.ToDER(asn1.SEQUENCE([
     asn1.Raw(tbsCert),
     asn1.SEQUENCE([
-      SHA1_WITH_RSA_ENCRYPTION,
+      SHA256_WITH_RSA_ENCRYPTION,
       None,
     ]),
     asn1.BitString(privkey.Sign(tbsCert)),
@@ -288,7 +288,7 @@ def MakeOCSPResponse(issuer_cn, issuer_key, serial, ocsp_state):
   basic_resp = asn1.SEQUENCE([
     asn1.Raw(basic_resp_data_der),
     asn1.SEQUENCE([
-      SHA1_WITH_RSA_ENCRYPTION,
+      SHA256_WITH_RSA_ENCRYPTION,
       None,
     ]),
     asn1.BitString(issuer_key.Sign(basic_resp_data_der)),
