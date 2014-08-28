@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -115,6 +116,15 @@ private:
 
   // The supported extensions being advertised for this virtual context.
   std::string extensions_;
+};
+
+class GL_EXPORT ScopedSetGLToRealGLApi {
+ public:
+  ScopedSetGLToRealGLApi();
+  ~ScopedSetGLToRealGLApi();
+
+ private:
+  GLApi* old_gl_api_;
 };
 
 }  // namespace gfx

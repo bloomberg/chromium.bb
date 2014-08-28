@@ -28,9 +28,10 @@ class IOSurfaceStorageProvider
       CGLContextObj context, GLuint texture,
       gfx::Size pixel_size, float scale_factor) OVERRIDE;
   virtual void FreeColorBufferStorage() OVERRIDE;
-  virtual uint64 GetSurfaceHandle() const OVERRIDE;
-  virtual void WillSwapBuffers() OVERRIDE;
-  virtual void CanFreeSwappedBuffer() OVERRIDE;
+  virtual void SwapBuffers(const gfx::Size& size, float scale_factor) OVERRIDE;
+  virtual void WillWriteToBackbuffer() OVERRIDE;
+  virtual void DiscardBackbuffer() OVERRIDE;
+  virtual void SwapBuffersAckedByBrowser() OVERRIDE;
 
  private:
   ImageTransportSurfaceFBO* transport_surface_;

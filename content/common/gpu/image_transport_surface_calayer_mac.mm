@@ -4,10 +4,13 @@
 
 #include "content/common/gpu/image_transport_surface_calayer_mac.h"
 
+#include "base/command_line.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "content/common/gpu/surface_handle_types_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gl/gl_gl_api_implementation.h"
+#include "ui/gl/gl_switches.h"
 
 @interface ImageTransportLayer : CAOpenGLLayer {
   content::CALayerStorageProvider* storageProvider_;
@@ -26,6 +29,8 @@
 }
 
 - (void)resetStorageProvider {
+  if (storageProvider_)
+    storageProvider_->LayerResetStorageProvider();
   storageProvider_ = NULL;
 }
 
@@ -60,6 +65,10 @@
              pixelFormat:(CGLPixelFormatObj)pixelFormat
             forLayerTime:(CFTimeInterval)timeInterval
              displayTime:(const CVTimeStamp*)timeStamp {
+  // While in this callback, CoreAnimation has set |glContext| to be current.
+  // Ensure that the GL calls that we make are made against the native GL API.
+  gfx::ScopedSetGLToRealGLApi scoped_set_gl_api;
+
   if (storageProvider_) {
     storageProvider_->LayerDoDraw();
   } else {
@@ -79,17 +88,13 @@ namespace content {
 CALayerStorageProvider::CALayerStorageProvider(
     ImageTransportSurfaceFBO* transport_surface)
         : transport_surface_(transport_surface),
+          gpu_vsync_disabled_(CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableGpuVsync)),
           has_pending_draw_(false),
           can_draw_returned_false_count_(0),
-          fbo_texture_(0) {
-  // Allocate a CAContext to use to transport the CALayer to the browser
-  // process.
-  base::scoped_nsobject<NSDictionary> dict([[NSDictionary alloc] init]);
-  CGSConnectionID connection_id = CGSMainConnectionID();
-  context_.reset([CAContext contextWithCGSConnection:connection_id
-                                             options:dict]);
-  [context_ retain];
-}
+          fbo_texture_(0),
+          fbo_scale_factor_(1),
+          weak_factory_(this) {}
 
 CALayerStorageProvider::~CALayerStorageProvider() {
 }
@@ -126,15 +131,12 @@ bool CALayerStorageProvider::AllocateColorBufferStorage(
   // Disable the fade-in animation as the layer is changed.
   ScopedCAActionDisabler disabler;
 
-  // Allocate a CALayer to draw texture into.
+  // Set the parameters that will be used to allocate the CALayer to draw the
+  // texture into.
   share_group_context_.reset(CGLRetainContext(context));
   fbo_texture_ = texture;
   fbo_pixel_size_ = pixel_size;
-  layer_.reset([[ImageTransportLayer alloc] initWithStorageProvider:this]);
-  gfx::Size dip_size(gfx::ToFlooredSize(gfx::ScaleSize(
-      fbo_pixel_size_, 1.0f / scale_factor)));
-  [layer_ setContentsScale:scale_factor];
-  [layer_ setFrame:CGRectMake(0, 0, dip_size.width(), dip_size.height())];
+  fbo_scale_factor_ = scale_factor;
   return true;
 }
 
@@ -155,25 +157,78 @@ void CALayerStorageProvider::FreeColorBufferStorage() {
   fbo_pixel_size_ = gfx::Size();
 }
 
-uint64 CALayerStorageProvider::GetSurfaceHandle() const {
-  return SurfaceHandleFromCAContextID([context_ contextId]);
-}
-
-void CALayerStorageProvider::WillSwapBuffers() {
+void CALayerStorageProvider::SwapBuffers(
+    const gfx::Size& size, float scale_factor) {
   DCHECK(!has_pending_draw_);
   has_pending_draw_ = true;
 
-  // Don't add the layer to the CAContext until a SwapBuffers is going to be
-  // called, because the texture does not have any content until the
-  // SwapBuffers call is about to be made.
-  if ([context_ layer] != layer_.get())
-    [context_ setLayer:layer_];
+  // Allocate a CAContext to use to transport the CALayer to the browser
+  // process.
+  if (!context_) {
+    base::scoped_nsobject<NSDictionary> dict([[NSDictionary alloc] init]);
+    CGSConnectionID connection_id = CGSMainConnectionID();
+    context_.reset([CAContext contextWithCGSConnection:connection_id
+                                               options:dict]);
+    [context_ retain];
+  }
 
-  if (![layer_ isAsynchronous])
-    [layer_ setAsynchronous:YES];
+  // Allocate a CALayer to use to draw the content.
+  if (!layer_) {
+    layer_.reset([[ImageTransportLayer alloc] initWithStorageProvider:this]);
+    gfx::Size dip_size(gfx::ToFlooredSize(gfx::ScaleSize(
+        fbo_pixel_size_, 1.0f / fbo_scale_factor_)));
+    [layer_ setContentsScale:fbo_scale_factor_];
+    [layer_ setFrame:CGRectMake(0, 0, dip_size.width(), dip_size.height())];
+
+    // Make the CALayer current to the CAContext and display its contents
+    // immediately.
+    [context_ setLayer:layer_];
+  }
+
+  // Tell CoreAnimation to draw our frame. We will send the IPC to the browser
+  // when CoreAnimation has drawn our frame.
+  if (gpu_vsync_disabled_) {
+    DrawWithVsyncDisabled();
+  } else {
+    if (![layer_ isAsynchronous])
+      [layer_ setAsynchronous:YES];
+  }
 }
 
-void CALayerStorageProvider::CanFreeSwappedBuffer() {
+void CALayerStorageProvider::DrawWithVsyncDisabled() {
+  DCHECK(has_pending_draw_);
+  [layer_ setNeedsDisplay];
+
+  // Sometimes, setNeedsDisplay calls are dropped on the floor. Make this not
+  // hang the renderer by re-issuing the call if the draw has not yet
+  // happened.
+  if (has_pending_draw_) {
+    // Delay sending another draw immediately to avoid starving the run loop.
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&CALayerStorageProvider::DrawWithVsyncDisabled,
+                   weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(5));
+  }
+}
+
+void CALayerStorageProvider::WillWriteToBackbuffer() {
+  // TODO(ccameron): The browser may need to continue issuing swaps even when
+  // they do not draw. In these cases it is necessary to either double-buffer
+  // the resulting texture, or to drop frames.
+}
+
+void CALayerStorageProvider::DiscardBackbuffer() {
+  // If this surface's backbuffer is discarded, it is because this surface has
+  // been made non-visible. Ensure that the previous contents are not briefly
+  // flashed when this is made visible by creating a new CALayer and CAContext
+  // at the next swap.
+  [layer_ resetStorageProvider];
+  layer_.reset();
+  context_.reset();
+}
+
+void CALayerStorageProvider::SwapBuffersAckedByBrowser() {
 }
 
 CGLContextObj CALayerStorageProvider::LayerShareGroupContext() {
@@ -185,20 +240,22 @@ bool CALayerStorageProvider::LayerCanDraw() {
     can_draw_returned_false_count_ = 0;
     return true;
   } else {
-    if (can_draw_returned_false_count_ == 30) {
-      if ([layer_ isAsynchronous])
+    if ([layer_ isAsynchronous]) {
+      DCHECK(!gpu_vsync_disabled_);
+      // If we are in asynchronous mode, we will be getting callbacks at every
+      // vsync, asking us if we have anything to draw. If we get 30 of these in
+      // a row, ask that we stop getting these callback for now, so that we
+      // don't waste CPU cycles.
+      if (can_draw_returned_false_count_ == 30)
         [layer_ setAsynchronous:NO];
-    } else {
-      can_draw_returned_false_count_ += 1;
+      else
+        can_draw_returned_false_count_ += 1;
     }
     return false;
   }
 }
 
 void CALayerStorageProvider::LayerDoDraw() {
-  DCHECK(has_pending_draw_);
-  has_pending_draw_ = false;
-
   GLint viewport[4] = {0, 0, 0, 0};
   glGetIntegerv(GL_VIEWPORT, viewport);
   gfx::Size viewport_size(viewport[2], viewport[3]);
@@ -233,7 +290,25 @@ void CALayerStorageProvider::LayerDoDraw() {
   glDisable(GL_TEXTURE_RECTANGLE_ARB);
 
   // Allow forward progress in the context now that the swap is complete.
-  transport_surface_->UnblockContextAfterPendingSwap();
+  DCHECK(has_pending_draw_);
+  SendPendingSwapToBrowserAfterFrameDrawn();
+}
+
+void CALayerStorageProvider::LayerResetStorageProvider() {
+  // If we are providing back-pressure by waiting for a draw, that draw will
+  // now never come, so release the pressure now.
+  SendPendingSwapToBrowserAfterFrameDrawn();
+}
+
+void CALayerStorageProvider::SendPendingSwapToBrowserAfterFrameDrawn() {
+  if (!has_pending_draw_)
+    return;
+  weak_factory_.InvalidateWeakPtrs();
+  has_pending_draw_ = false;
+  transport_surface_->SendSwapBuffers(
+      SurfaceHandleFromCAContextID([context_ contextId]),
+      fbo_pixel_size_,
+      fbo_scale_factor_);
 }
 
 }  //  namespace content
