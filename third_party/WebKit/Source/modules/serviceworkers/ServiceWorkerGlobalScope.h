@@ -67,6 +67,8 @@ public:
     ScriptPromise fetch(ScriptState*, const String&);
     ScriptPromise fetch(ScriptState*, const String&, const Dictionary&);
 
+    void close(ExceptionState&);
+
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
 

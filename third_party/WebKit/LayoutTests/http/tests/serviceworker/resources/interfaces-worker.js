@@ -9,6 +9,7 @@ test(function() {
                     {
                         scope: 'string',
                         clients: 'object',
+                        close: 'function',
 
                         onactivate: EVENT_HANDLER,
                         onfetch: EVENT_HANDLER,
