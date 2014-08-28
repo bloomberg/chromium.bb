@@ -354,7 +354,8 @@ def _SetupAndRunPerformanceTest(config, path_to_file, path_to_goma):
   try:
     with Goma(path_to_goma) as _:
       config['use_goma'] = bool(path_to_goma)
-      config['goma_dir'] = os.path.abspath(path_to_goma)
+      if config['use_goma']:
+        config['goma_dir'] = os.path.abspath(path_to_goma)
       _RunPerformanceTest(config, path_to_file)
     return 0
   except RuntimeError, e:
