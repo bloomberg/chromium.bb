@@ -292,12 +292,12 @@ if (current_toolchain == host_toolchain) {
     compiled_action(target_name) {
       tool = ":genmacro"
       # Output #included by source/patched-yasm/frontends/yasm/yasm.c.
-      sources = invoker.sources
+      inputs = invoker.sources
       outputs = invoker.outputs
       args = [
         rebase_path(outputs[0], root_build_dir),
         invoker.macro_varname,
-        rebase_path(sources[0], root_build_dir),
+        rebase_path(inputs[0], root_build_dir),
       ]
       if (defined(invoker.deps)) {
         deps = invoker.deps
@@ -354,35 +354,37 @@ if (current_toolchain == host_toolchain) {
   # This call doesn't fit into the re2c template above.
   compiled_action("compile_re2c_lc3b") {
     tool = ":re2c"
-    sources = [ "source/patched-yasm/modules/arch/lc3b/lc3bid.re" ]
+    inputs = [ "source/patched-yasm/modules/arch/lc3b/lc3bid.re" ]
     outputs = [ "$target_gen_dir/lc3bid.c" ]
     args = [
       "-s",
       "-o",
       rebase_path(outputs[0], root_build_dir),
-      rebase_path(sources[0], root_build_dir),
+      rebase_path(inputs[0], root_build_dir),
     ]
   }
 
   compiled_action("generate_license") {
     tool = ":genstring"
     # Output #included by source/patched-yasm/frontends/yasm/yasm.c.
-    sources = [ "source/patched-yasm/COPYING" ]
+    inputs = [ "source/patched-yasm/COPYING" ]
     outputs = [ "$yasm_gen_include_dir/license.c" ]
     args = [
       "license_msg",
       rebase_path(outputs[0], root_build_dir),
-      rebase_path(sources[0], root_build_dir),
+      rebase_path(inputs[0], root_build_dir),
     ]
   }
 
   compiled_action("generate_module") {
     tool = ":genmodule"
-    inputs = [ config_makefile ]
-    sources = [ "source/patched-yasm/libyasm/module.in" ]
+    inputs = [
+      "source/patched-yasm/libyasm/module.in",
+      config_makefile,
+    ]
     outputs = [ "$target_gen_dir/module.c" ]
     args = [
-      rebase_path(sources[0], root_build_dir),
+      rebase_path(inputs[0], root_build_dir),
       rebase_path(config_makefile, root_build_dir),
       rebase_path(outputs[0], root_build_dir),
     ]

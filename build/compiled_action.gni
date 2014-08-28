@@ -23,8 +23,12 @@
 #   args (required)
 #       [list of strings] Same meaning as action/action_foreach.
 #
+#   inputs (optional)
+#       Files the binary takes as input. The step will be re-run whenever any
+#       of these change. If inputs is empty, the step will run only when the
+#       binary itself changes.
+#
 #   visibility
-#   inputs
 #   deps
 #   args   (all optional)
 #       Same meaning as action/action_foreach.
@@ -67,6 +71,9 @@ template("compiled_action") {
   assert(defined(invoker.outputs), "outputs must be defined for $target_name")
   assert(defined(invoker.args), "args must be defined for $target_name")
 
+  assert(!defined(invoker.sources),
+         "compiled_action doesn't take a sources arg. Use inputs instead.")
+
   action(target_name) {
     if (defined(invoker.visibility)) {
       visibility = invoker.visibility
@@ -76,6 +83,8 @@ template("compiled_action") {
 
     if (defined(invoker.inputs)) {
       inputs = invoker.inputs
+    } else {
+      inputs = []
     }
     outputs = invoker.outputs
 
@@ -89,6 +98,9 @@ template("compiled_action") {
     # another file not processed yet).
     host_executable = get_label_info(host_tool, "root_out_dir") + "/" +
       get_label_info(host_tool, "name")
+
+    # Add the executable itself as an input.
+    inputs += [ host_executable ]
 
     deps = [ host_tool ]
     if (defined(invoker.deps)) {
@@ -120,6 +132,8 @@ template("compiled_action_foreach") {
 
     if (defined(invoker.inputs)) {
       inputs = invoker.inputs
+    } else {
+      inputs = []
     }
     outputs = invoker.outputs
 
@@ -133,6 +147,9 @@ template("compiled_action_foreach") {
     # another file not processed yet).
     host_executable = get_label_info(host_tool, "root_out_dir") + "/" +
       get_label_info(host_tool, "name")
+
+    # Add the executable itself as an input.
+    inputs += [ host_executable ]
 
     deps = [ host_tool ]
     if (defined(invoker.deps)) {
