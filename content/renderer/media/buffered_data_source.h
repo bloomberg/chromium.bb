@@ -18,7 +18,7 @@
 #include "url/gurl.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -53,13 +53,14 @@ class CONTENT_EXPORT BufferedDataSource : public media::DataSource {
   // |url| and |cors_mode| are passed to the object. Buffered byte range changes
   // will be reported to |host|. |downloading_cb| will be called whenever the
   // downloading/paused state of the source changes.
-  BufferedDataSource(const GURL& url,
-                     BufferedResourceLoader::CORSMode cors_mode,
-                     const scoped_refptr<base::MessageLoopProxy>& render_loop,
-                     blink::WebFrame* frame,
-                     media::MediaLog* media_log,
-                     BufferedDataSourceHost* host,
-                     const DownloadingCB& downloading_cb);
+  BufferedDataSource(
+      const GURL& url,
+      BufferedResourceLoader::CORSMode cors_mode,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      blink::WebFrame* frame,
+      media::MediaLog* media_log,
+      BufferedDataSourceHost* host,
+      const DownloadingCB& downloading_cb);
   virtual ~BufferedDataSource();
 
   // Executes |init_cb| with the result of initialization when it has completed.
@@ -190,8 +191,8 @@ class CONTENT_EXPORT BufferedDataSource : public media::DataSource {
   scoped_ptr<uint8[]> intermediate_read_buffer_;
   int intermediate_read_buffer_size_;
 
-  // The message loop of the render thread.
-  const scoped_refptr<base::MessageLoopProxy> render_loop_;
+  // The task runner of the render thread.
+  const scoped_refptr<base::SingleThreadTaskRunner> render_task_runner_;
 
   // Protects |stop_signal_received_| and |read_op_|.
   base::Lock lock_;

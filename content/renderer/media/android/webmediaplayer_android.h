@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "cc/layers/video_frame_provider.h"
 #include "content/common/media/media_player_messages_enums_android.h"
@@ -35,7 +36,7 @@
 #include "ui/gfx/rect_f.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace blink {
@@ -77,14 +78,15 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // player can enter fullscreen. This logic should probably be moved into
   // blink, so that enterFullscreen() will not be called if another video is
   // already in fullscreen.
-  WebMediaPlayerAndroid(blink::WebFrame* frame,
-                        blink::WebMediaPlayerClient* client,
-                        base::WeakPtr<WebMediaPlayerDelegate> delegate,
-                        RendererMediaPlayerManager* player_manager,
-                        RendererCdmManager* cdm_manager,
-                        scoped_refptr<StreamTextureFactory> factory,
-                        const scoped_refptr<base::MessageLoopProxy>& media_loop,
-                        media::MediaLog* media_log);
+  WebMediaPlayerAndroid(
+      blink::WebFrame* frame,
+      blink::WebMediaPlayerClient* client,
+      base::WeakPtr<WebMediaPlayerDelegate> delegate,
+      RendererMediaPlayerManager* player_manager,
+      RendererCdmManager* cdm_manager,
+      scoped_refptr<StreamTextureFactory> factory,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      media::MediaLog* media_log);
   virtual ~WebMediaPlayerAndroid();
 
   // blink::WebMediaPlayer implementation.
@@ -346,7 +348,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   base::ThreadChecker main_thread_checker_;
 
   // Message loop for media thread.
-  const scoped_refptr<base::MessageLoopProxy> media_loop_;
+  const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
 
   // URL of the media file to be fetched.
   GURL url_;

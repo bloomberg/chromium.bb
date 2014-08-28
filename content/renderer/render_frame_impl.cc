@@ -3802,7 +3802,7 @@ WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
       GetMediaPlayerManager(),
       GetCdmManager(),
       stream_texture_factory,
-      RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
+      RenderThreadImpl::current()->GetMediaThreadTaskRunner(),
       new RenderMediaLog());
 }
 

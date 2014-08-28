@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/single_thread_task_runner.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/pepper/pepper_video_decoder_host.h"
 #include "content/renderer/render_thread_impl.h"
@@ -294,15 +295,15 @@ void VideoDecoderShim::DecoderImpl::OnResetComplete() {
 VideoDecoderShim::VideoDecoderShim(PepperVideoDecoderHost* host)
     : state_(UNINITIALIZED),
       host_(host),
-      media_message_loop_(
-          RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy()),
+      media_task_runner_(
+          RenderThreadImpl::current()->GetMediaThreadTaskRunner()),
       context_provider_(
           RenderThreadImpl::current()->SharedMainThreadContextProvider()),
       texture_pool_size_(0),
       num_pending_decodes_(0),
       weak_ptr_factory_(this) {
   DCHECK(host_);
-  DCHECK(media_message_loop_.get());
+  DCHECK(media_task_runner_.get());
   DCHECK(context_provider_.get());
   decoder_impl_.reset(new DecoderImpl(weak_ptr_factory_.GetWeakPtr()));
 }
@@ -322,7 +323,7 @@ VideoDecoderShim::~VideoDecoderShim() {
 
   // The callback now holds the only reference to the DecoderImpl, which will be
   // deleted when Stop completes.
-  media_message_loop_->PostTask(
+  media_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VideoDecoderShim::DecoderImpl::Stop,
                  base::Owned(decoder_impl_.release())));
@@ -354,7 +355,7 @@ bool VideoDecoderShim::Initialize(
       0 /* extra_data_size */,
       false /* decryption */);
 
-  media_message_loop_->PostTask(
+  media_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VideoDecoderShim::DecoderImpl::Initialize,
                  base::Unretained(decoder_impl_.get()),
@@ -372,7 +373,7 @@ void VideoDecoderShim::Decode(const media::BitstreamBuffer& bitstream_buffer) {
   const uint8_t* buffer = host_->DecodeIdToAddress(bitstream_buffer.id());
   DCHECK(buffer);
 
-  media_message_loop_->PostTask(
+  media_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(
           &VideoDecoderShim::DecoderImpl::Decode,
@@ -429,7 +430,7 @@ void VideoDecoderShim::Reset() {
   DCHECK(RenderThreadImpl::current());
   DCHECK_EQ(state_, DECODING);
   state_ = RESETTING;
-  media_message_loop_->PostTask(
+  media_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VideoDecoderShim::DecoderImpl::Reset,
                  base::Unretained(decoder_impl_.get())));

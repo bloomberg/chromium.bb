@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer.h"
@@ -21,6 +20,10 @@
 #include "media/base/ranges.h"
 #include "media/base/text_track.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace media {
 class ChunkDemuxer;
@@ -53,10 +56,11 @@ class MediaSourceDelegate : public media::DemuxerHost {
     }
   };
 
-  MediaSourceDelegate(RendererDemuxerAndroid* demuxer_client,
-                      int demuxer_client_id,
-                      const scoped_refptr<base::MessageLoopProxy>& media_loop,
-                      const scoped_refptr<media::MediaLog> media_log);
+  MediaSourceDelegate(
+      RendererDemuxerAndroid* demuxer_client,
+      int demuxer_client_id,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      const scoped_refptr<media::MediaLog> media_log);
 
   // Initialize the MediaSourceDelegate. |media_source| will be owned by
   // this object after this call.
@@ -231,9 +235,9 @@ class MediaSourceDelegate : public media::DemuxerHost {
 
   size_t access_unit_size_;
 
-  // Message loop for main renderer and media threads.
-  const scoped_refptr<base::MessageLoopProxy> main_loop_;
-  const scoped_refptr<base::MessageLoopProxy> media_loop_;
+  // Task runner for main renderer and media threads.
+  const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaSourceDelegate> main_weak_factory_;

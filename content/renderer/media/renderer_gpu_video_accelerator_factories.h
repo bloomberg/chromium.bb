@@ -32,7 +32,7 @@ class WebGraphicsContext3DCommandBufferImpl;
 //
 // The RendererGpuVideoAcceleratorFactories can be constructed on any thread,
 // but subsequent calls to all public methods of the class must be called from
-// the |message_loop_proxy_|, as provided during construction.
+// the |task_runner_|, as provided during construction.
 class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
     : public media::GpuVideoAcceleratorFactories {
  public:
@@ -40,7 +40,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   // use.  Safe to call from any thread.
   static scoped_refptr<RendererGpuVideoAcceleratorFactories> Create(
       GpuChannelHost* gpu_channel_host,
-      const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider);
 
   // media::GpuVideoAcceleratorFactories implementation.
@@ -67,7 +67,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   friend class base::RefCountedThreadSafe<RendererGpuVideoAcceleratorFactories>;
   RendererGpuVideoAcceleratorFactories(
       GpuChannelHost* gpu_channel_host,
-      const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider);
   virtual ~RendererGpuVideoAcceleratorFactories();
 

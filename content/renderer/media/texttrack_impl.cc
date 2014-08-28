@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "content/renderer/media/webinbandtexttrack_impl.h"
 #include "media/base/bind_to_current_loop.h"
 #include "third_party/WebKit/public/platform/WebInbandTextTrackClient.h"
@@ -15,17 +15,17 @@
 namespace content {
 
 TextTrackImpl::TextTrackImpl(
-    const scoped_refptr<base::MessageLoopProxy>& message_loop,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     blink::WebMediaPlayerClient* client,
     scoped_ptr<WebInbandTextTrackImpl> text_track)
-    : message_loop_(message_loop),
+    : task_runner_(task_runner),
       client_(client),
       text_track_(text_track.Pass()) {
   client_->addTextTrack(text_track_.get());
 }
 
 TextTrackImpl::~TextTrackImpl() {
-  message_loop_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&TextTrackImpl::OnRemoveTrack,
                  client_,
@@ -37,7 +37,7 @@ void TextTrackImpl::addWebVTTCue(const base::TimeDelta& start,
                                  const std::string& id,
                                  const std::string& content,
                                  const std::string& settings) {
-  message_loop_->PostTask(
+  task_runner_->PostTask(
     FROM_HERE,
     base::Bind(&TextTrackImpl::OnAddCue,
                 text_track_.get(),

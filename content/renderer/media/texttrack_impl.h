@@ -12,7 +12,7 @@
 #include "media/base/text_track.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace blink {
@@ -27,7 +27,7 @@ class WebInbandTextTrackImpl;
 class TextTrackImpl : public media::TextTrack {
  public:
   // Constructor assumes ownership of the |text_track| object.
-  TextTrackImpl(const scoped_refptr<base::MessageLoopProxy>& message_loop,
+  TextTrackImpl(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
                 blink::WebMediaPlayerClient* client,
                 scoped_ptr<WebInbandTextTrackImpl> text_track);
 
@@ -50,7 +50,7 @@ class TextTrackImpl : public media::TextTrack {
   static void OnRemoveTrack(blink::WebMediaPlayerClient* client,
                             scoped_ptr<WebInbandTextTrackImpl> text_track);
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   blink::WebMediaPlayerClient* client_;
   scoped_ptr<WebInbandTextTrackImpl> text_track_;
   DISALLOW_COPY_AND_ASSIGN(TextTrackImpl);
@@ -59,4 +59,3 @@ class TextTrackImpl : public media::TextTrack {
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_TEXTTRACK_IMPL_H_
-

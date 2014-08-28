@@ -12,8 +12,8 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "cc/blink/web_layer_impl.h"
@@ -115,14 +115,14 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     RendererMediaPlayerManager* player_manager,
     RendererCdmManager* cdm_manager,
     scoped_refptr<StreamTextureFactory> factory,
-    const scoped_refptr<base::MessageLoopProxy>& media_loop,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     media::MediaLog* media_log)
     : RenderFrameObserver(RenderFrame::FromWebFrame(frame)),
       frame_(frame),
       client_(client),
       delegate_(delegate),
       buffered_(static_cast<size_t>(1)),
-      media_loop_(media_loop),
+      media_task_runner_(task_runner),
       ignore_metadata_duration_change_(false),
       pending_seek_(false),
       seeking_(false),
@@ -224,7 +224,7 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
     demuxer_client_id = demuxer->GetNextDemuxerClientID();
 
     media_source_delegate_.reset(new MediaSourceDelegate(
-        demuxer, demuxer_client_id, media_loop_, media_log_));
+        demuxer, demuxer_client_id, media_task_runner_, media_log_));
 
     if (player_type_ == MEDIA_PLAYER_TYPE_MEDIA_SOURCE) {
       media::SetDecryptorReadyCB set_decryptor_ready_cb =

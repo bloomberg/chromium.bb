@@ -1108,8 +1108,8 @@ RenderThreadImpl::GetGpuFactories() {
   scoped_refptr<GpuChannelHost> gpu_channel_host = GetGpuChannel();
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories;
-  scoped_refptr<base::MessageLoopProxy> media_loop_proxy =
-      GetMediaThreadMessageLoopProxy();
+  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner =
+      GetMediaThreadTaskRunner();
   if (!cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode)) {
     if (!gpu_va_context_provider_.get() ||
         gpu_va_context_provider_->DestroyedOnMainThread()) {
@@ -1133,7 +1133,7 @@ RenderThreadImpl::GetGpuFactories() {
   }
   if (gpu_va_context_provider_.get()) {
     gpu_factories = RendererGpuVideoAcceleratorFactories::Create(
-        gpu_channel_host.get(), media_loop_proxy, gpu_va_context_provider_);
+        gpu_channel_host.get(), media_task_runner, gpu_va_context_provider_);
   }
   return gpu_factories;
 }
@@ -1588,8 +1588,8 @@ RenderThreadImpl::GetFileThreadMessageLoopProxy() {
   return file_thread_->message_loop_proxy();
 }
 
-scoped_refptr<base::MessageLoopProxy>
-RenderThreadImpl::GetMediaThreadMessageLoopProxy() {
+scoped_refptr<base::SingleThreadTaskRunner>
+RenderThreadImpl::GetMediaThreadTaskRunner() {
   DCHECK(message_loop() == base::MessageLoop::current());
   if (!media_thread_) {
     media_thread_.reset(new base::Thread("Media"));

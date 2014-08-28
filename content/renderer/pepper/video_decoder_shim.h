@@ -13,12 +13,15 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/video_decoder_config.h"
 #include "media/video/video_decode_accelerator.h"
 
 #include "ppapi/c/pp_codecs.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace gpu {
 namespace gles2 {
@@ -89,7 +92,7 @@ class VideoDecoderShim : public media::VideoDecodeAccelerator {
   State state_;
 
   PepperVideoDecoderHost* host_;
-  scoped_refptr<base::MessageLoopProxy> media_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   scoped_refptr<webkit::gpu::ContextProviderWebContext> context_provider_;
 
   // The current decoded frame size.

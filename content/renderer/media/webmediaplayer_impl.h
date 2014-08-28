@@ -34,7 +34,7 @@ class WebLocalFrame;
 }
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace cc_blink {
@@ -230,11 +230,11 @@ class WebMediaPlayerImpl
   // Preload state for when |data_source_| is created after setPreload().
   content::Preload preload_;
 
-  // Message loops for posting tasks on Chrome's main thread. Also used
+  // Task runner for posting tasks on Chrome's main thread. Also used
   // for DCHECKs so methods calls won't execute in the wrong thread.
-  const scoped_refptr<base::MessageLoopProxy> main_loop_;
+  const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
-  scoped_refptr<base::MessageLoopProxy> media_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   scoped_refptr<media::MediaLog> media_log_;
   media::Pipeline pipeline_;
 

@@ -11,7 +11,7 @@
 #include "media/base/android/demuxer_stream_player_params.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace content {
@@ -75,7 +75,7 @@ class RendererDemuxerAndroid : public IPC::MessageFilter {
 
   IDMap<MediaSourceDelegate> delegates_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
-  scoped_refptr<base::MessageLoopProxy> media_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererDemuxerAndroid);
 };

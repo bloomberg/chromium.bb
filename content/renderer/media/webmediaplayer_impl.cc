@@ -18,6 +18,7 @@
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/video_layer.h"
@@ -127,11 +128,11 @@ COMPILE_ASSERT_MATCHING_ENUM(UseCredentials);
 #undef COMPILE_ASSERT_MATCHING_ENUM
 
 #define BIND_TO_RENDER_LOOP(function) \
-  (DCHECK(main_loop_->BelongsToCurrentThread()), \
+  (DCHECK(main_task_runner_->BelongsToCurrentThread()), \
   media::BindToCurrentLoop(base::Bind(function, AsWeakPtr())))
 
 #define BIND_TO_RENDER_LOOP1(function, arg1) \
-  (DCHECK(main_loop_->BelongsToCurrentThread()), \
+  (DCHECK(main_task_runner_->BelongsToCurrentThread()), \
   media::BindToCurrentLoop(base::Bind(function, AsWeakPtr(), arg1)))
 
 static void LogMediaSourceError(const scoped_refptr<media::MediaLog>& media_log,
@@ -148,11 +149,11 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       preload_(AUTO),
-      main_loop_(base::MessageLoopProxy::current()),
-      media_loop_(
-          RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy()),
+      main_task_runner_(base::MessageLoopProxy::current()),
+      media_task_runner_(
+          RenderThreadImpl::current()->GetMediaThreadTaskRunner()),
       media_log_(new RenderMediaLog()),
-      pipeline_(media_loop_, media_log_.get()),
+      pipeline_(media_task_runner_, media_log_.get()),
       load_type_(LoadTypeURL),
       opaque_(false),
       paused_(true),
@@ -186,19 +187,19 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   // |GetTaskRunner()|.  Since |pipeline_| will own decoders created from the
   // factories, require that their message loops are identical.
   DCHECK(!gpu_factories_.get() ||
-         (gpu_factories_->GetTaskRunner() == media_loop_.get()));
+         (gpu_factories_->GetTaskRunner() == media_task_runner_.get()));
 
   // Use the null sink if no sink was provided.
   audio_source_provider_ = new WebAudioSourceProviderImpl(
       params.audio_renderer_sink().get()
           ? params.audio_renderer_sink()
-          : new media::NullAudioSink(media_loop_));
+          : new media::NullAudioSink(media_task_runner_));
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   client_->setWebLayer(NULL);
 
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
 
@@ -240,7 +241,7 @@ void WebMediaPlayerImpl::load(LoadType load_type, const blink::WebURL& url,
 void WebMediaPlayerImpl::DoLoad(LoadType load_type,
                                 const blink::WebURL& url,
                                 CORSMode cors_mode) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   GURL gurl(url);
   ReportMediaSchemeUma(gurl);
@@ -265,7 +266,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   data_source_.reset(new BufferedDataSource(
       url,
       static_cast<BufferedResourceLoader::CORSMode>(cors_mode),
-      main_loop_,
+      main_task_runner_,
       frame_,
       media_log_.get(),
       &buffered_data_source_host_,
@@ -277,7 +278,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
 
 void WebMediaPlayerImpl::play() {
   DVLOG(1) << __FUNCTION__;
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   paused_ = false;
   pipeline_.SetPlaybackRate(playback_rate_);
@@ -292,7 +293,7 @@ void WebMediaPlayerImpl::play() {
 
 void WebMediaPlayerImpl::pause() {
   DVLOG(1) << __FUNCTION__;
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   paused_ = true;
   pipeline_.SetPlaybackRate(0.0f);
@@ -307,13 +308,13 @@ void WebMediaPlayerImpl::pause() {
 }
 
 bool WebMediaPlayerImpl::supportsSave() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   return supports_save_;
 }
 
 void WebMediaPlayerImpl::seek(double seconds) {
   DVLOG(1) << __FUNCTION__ << "(" << seconds << ")";
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   if (ready_state_ > WebMediaPlayer::ReadyStateHaveMetadata)
     SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
@@ -347,7 +348,7 @@ void WebMediaPlayerImpl::seek(double seconds) {
 
 void WebMediaPlayerImpl::setRate(double rate) {
   DVLOG(1) << __FUNCTION__ << "(" << rate << ")";
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // TODO(kylep): Remove when support for negatives is added. Also, modify the
   // following checks so rewind uses reasonable values also.
@@ -372,7 +373,7 @@ void WebMediaPlayerImpl::setRate(double rate) {
 
 void WebMediaPlayerImpl::setVolume(double volume) {
   DVLOG(1) << __FUNCTION__ << "(" << volume << ")";
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   pipeline_.SetVolume(volume);
 }
@@ -388,7 +389,7 @@ COMPILE_ASSERT_MATCHING_ENUM(PreloadAuto, AUTO);
 
 void WebMediaPlayerImpl::setPreload(WebMediaPlayer::Preload preload) {
   DVLOG(1) << __FUNCTION__ << "(" << preload << ")";
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   preload_ = static_cast<content::Preload>(preload);
   if (data_source_)
@@ -396,31 +397,31 @@ void WebMediaPlayerImpl::setPreload(WebMediaPlayer::Preload preload) {
 }
 
 bool WebMediaPlayerImpl::hasVideo() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   return pipeline_metadata_.has_video;
 }
 
 bool WebMediaPlayerImpl::hasAudio() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   return pipeline_metadata_.has_audio;
 }
 
 blink::WebSize WebMediaPlayerImpl::naturalSize() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   return blink::WebSize(pipeline_metadata_.natural_size);
 }
 
 bool WebMediaPlayerImpl::paused() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   return pipeline_.GetPlaybackRate() == 0.0f;
 }
 
 bool WebMediaPlayerImpl::seeking() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
     return false;
@@ -429,7 +430,7 @@ bool WebMediaPlayerImpl::seeking() const {
 }
 
 double WebMediaPlayerImpl::duration() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
     return std::numeric_limits<double>::quiet_NaN();
@@ -438,7 +439,7 @@ double WebMediaPlayerImpl::duration() const {
 }
 
 double WebMediaPlayerImpl::timelineOffset() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   if (pipeline_metadata_.timeline_offset.is_null())
     return std::numeric_limits<double>::quiet_NaN();
@@ -447,22 +448,22 @@ double WebMediaPlayerImpl::timelineOffset() const {
 }
 
 double WebMediaPlayerImpl::currentTime() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   return (paused_ ? paused_time_ : pipeline_.GetMediaTime()).InSecondsF();
 }
 
 WebMediaPlayer::NetworkState WebMediaPlayerImpl::networkState() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   return network_state_;
 }
 
 WebMediaPlayer::ReadyState WebMediaPlayerImpl::readyState() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   return ready_state_;
 }
 
 blink::WebTimeRanges WebMediaPlayerImpl::buffered() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   media::Ranges<base::TimeDelta> buffered_time_ranges =
       pipeline_.GetBufferedTimeRanges();
@@ -476,7 +477,7 @@ blink::WebTimeRanges WebMediaPlayerImpl::buffered() const {
 }
 
 double WebMediaPlayerImpl::maxTimeSeekable() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // If we haven't even gotten to ReadyStateHaveMetadata yet then just
   // return 0 so that the seekable range is empty.
@@ -490,7 +491,7 @@ double WebMediaPlayerImpl::maxTimeSeekable() const {
 }
 
 bool WebMediaPlayerImpl::didLoadingProgress() {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   bool pipeline_progress = pipeline_.DidLoadingProgress();
   bool data_progress = buffered_data_source_host_.DidLoadingProgress();
   return pipeline_progress || data_progress;
@@ -506,7 +507,7 @@ void WebMediaPlayerImpl::paint(blink::WebCanvas* canvas,
                                const blink::WebRect& rect,
                                unsigned char alpha,
                                SkXfermode::Mode mode) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("media", "WebMediaPlayerImpl:paint");
 
   // TODO(scherkus): Clarify paint() API contract to better understand when and
@@ -544,28 +545,28 @@ double WebMediaPlayerImpl::mediaTimeForTimeValue(double timeValue) const {
 }
 
 unsigned WebMediaPlayerImpl::decodedFrameCount() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   media::PipelineStatistics stats = pipeline_.GetStatistics();
   return stats.video_frames_decoded;
 }
 
 unsigned WebMediaPlayerImpl::droppedFrameCount() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   media::PipelineStatistics stats = pipeline_.GetStatistics();
   return stats.video_frames_dropped;
 }
 
 unsigned WebMediaPlayerImpl::audioDecodedByteCount() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   media::PipelineStatistics stats = pipeline_.GetStatistics();
   return stats.audio_bytes_decoded;
 }
 
 unsigned WebMediaPlayerImpl::videoDecodedByteCount() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   media::PipelineStatistics stats = pipeline_.GetStatistics();
   return stats.video_bytes_decoded;
@@ -628,7 +629,7 @@ WebMediaPlayer::MediaKeyException
 WebMediaPlayerImpl::generateKeyRequest(const WebString& key_system,
                                        const unsigned char* init_data,
                                        unsigned init_data_length) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   return encrypted_media_support_->GenerateKeyRequest(
       frame_, key_system, init_data, init_data_length);
@@ -641,7 +642,7 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
     const unsigned char* init_data,
     unsigned init_data_length,
     const WebString& session_id) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   return encrypted_media_support_->AddKey(
       key_system, key, key_length, init_data, init_data_length, session_id);
@@ -650,14 +651,14 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
 WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::cancelKeyRequest(
     const WebString& key_system,
     const WebString& session_id) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   return encrypted_media_support_->CancelKeyRequest(key_system, session_id);
 }
 
 void WebMediaPlayerImpl::setContentDecryptionModule(
     blink::WebContentDecryptionModule* cdm) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   encrypted_media_support_->SetContentDecryptionModule(cdm);
 }
@@ -665,14 +666,14 @@ void WebMediaPlayerImpl::setContentDecryptionModule(
 void WebMediaPlayerImpl::setContentDecryptionModule(
     blink::WebContentDecryptionModule* cdm,
     blink::WebContentDecryptionModuleResult result) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   encrypted_media_support_->SetContentDecryptionModule(cdm, result);
 }
 
 void WebMediaPlayerImpl::setContentDecryptionModuleSync(
     blink::WebContentDecryptionModule* cdm) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   encrypted_media_support_->SetContentDecryptionModuleSync(cdm);
 }
@@ -680,7 +681,7 @@ void WebMediaPlayerImpl::setContentDecryptionModuleSync(
 void WebMediaPlayerImpl::OnPipelineSeeked(bool time_changed,
                                           PipelineStatus status) {
   DVLOG(1) << __FUNCTION__ << "(" << time_changed << ", " << status << ")";
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   seeking_ = false;
   if (pending_seek_) {
     pending_seek_ = false;
@@ -702,12 +703,12 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_changed,
 
 void WebMediaPlayerImpl::OnPipelineEnded() {
   DVLOG(1) << __FUNCTION__;
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   client_->timeChanged();
 }
 
 void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(error, media::PIPELINE_OK);
 
   if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing) {
@@ -770,7 +771,7 @@ void WebMediaPlayerImpl::OnPipelineBufferingStateChanged(
 }
 
 void WebMediaPlayerImpl::OnDemuxerOpened() {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   client_->mediaSourceOpened(new WebMediaSourceImpl(
       chunk_demuxer_, base::Bind(&LogMediaSourceError, media_log_)));
 }
@@ -778,7 +779,7 @@ void WebMediaPlayerImpl::OnDemuxerOpened() {
 void WebMediaPlayerImpl::OnAddTextTrack(
     const media::TextTrackConfig& config,
     const media::AddTextTrackDoneCB& done_cb) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   const WebInbandTextTrackImpl::Kind web_kind =
       static_cast<WebInbandTextTrackImpl::Kind>(config.kind());
@@ -793,14 +794,14 @@ void WebMediaPlayerImpl::OnAddTextTrack(
       new WebInbandTextTrackImpl(web_kind, web_label, web_language, web_id,
                                  text_track_index_++));
 
-  scoped_ptr<media::TextTrack> text_track(
-      new TextTrackImpl(main_loop_, client_, web_inband_text_track.Pass()));
+  scoped_ptr<media::TextTrack> text_track(new TextTrackImpl(
+      main_task_runner_, client_, web_inband_text_track.Pass()));
 
   done_cb.Run(text_track.Pass());
 }
 
 void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   if (!success) {
     SetNetworkState(WebMediaPlayer::NetworkStateFormatError);
@@ -831,11 +832,12 @@ scoped_ptr<media::Renderer> WebMediaPlayerImpl::CreateRenderer() {
   ScopedVector<media::AudioDecoder> audio_decoders;
 
   media::LogCB log_cb = base::Bind(&LogMediaSourceError, media_log_);
-  audio_decoders.push_back(new media::FFmpegAudioDecoder(media_loop_, log_cb));
-  audio_decoders.push_back(new media::OpusAudioDecoder(media_loop_));
+  audio_decoders.push_back(new media::FFmpegAudioDecoder(media_task_runner_,
+                                                         log_cb));
+  audio_decoders.push_back(new media::OpusAudioDecoder(media_task_runner_));
 
   scoped_ptr<media::AudioRenderer> audio_renderer(new media::AudioRendererImpl(
-      media_loop_,
+      media_task_runner_,
       audio_source_provider_.get(),
       audio_decoders.Pass(),
       set_decryptor_ready_cb,
@@ -850,14 +852,14 @@ scoped_ptr<media::Renderer> WebMediaPlayerImpl::CreateRenderer() {
   }
 
 #if !defined(MEDIA_DISABLE_LIBVPX)
-  video_decoders.push_back(new media::VpxVideoDecoder(media_loop_));
+  video_decoders.push_back(new media::VpxVideoDecoder(media_task_runner_));
 #endif  // !defined(MEDIA_DISABLE_LIBVPX)
 
-  video_decoders.push_back(new media::FFmpegVideoDecoder(media_loop_));
+  video_decoders.push_back(new media::FFmpegVideoDecoder(media_task_runner_));
 
   scoped_ptr<media::VideoRenderer> video_renderer(
       new media::VideoRendererImpl(
-          media_loop_,
+          media_task_runner_,
           video_decoders.Pass(),
           set_decryptor_ready_cb,
           base::Bind(&WebMediaPlayerImpl::FrameReady, base::Unretained(this)),
@@ -865,14 +867,14 @@ scoped_ptr<media::Renderer> WebMediaPlayerImpl::CreateRenderer() {
 
   // Create renderer.
   return scoped_ptr<media::Renderer>(new media::RendererImpl(
-      media_loop_,
+      media_task_runner_,
       demuxer_.get(),
       audio_renderer.Pass(),
       video_renderer.Pass()));
 }
 
 void WebMediaPlayerImpl::StartPipeline() {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
   // Keep track if this is a MSE or non-MSE playback.
@@ -889,7 +891,7 @@ void WebMediaPlayerImpl::StartPipeline() {
     DCHECK(data_source_);
 
     demuxer_.reset(new media::FFmpegDemuxer(
-        media_loop_, data_source_.get(),
+        media_task_runner_, data_source_.get(),
         need_key_cb,
         media_log_));
   } else {
@@ -914,7 +916,7 @@ void WebMediaPlayerImpl::StartPipeline() {
   if (cmd_line->HasSwitch(switches::kEnableInbandTextTracks)) {
     scoped_ptr<media::TextRenderer> text_renderer(
         new media::TextRenderer(
-            media_loop_,
+            media_task_runner_,
             BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnAddTextTrack)));
 
     filter_collection->SetTextRenderer(text_renderer.Pass());
@@ -934,7 +936,7 @@ void WebMediaPlayerImpl::StartPipeline() {
 
 void WebMediaPlayerImpl::SetNetworkState(WebMediaPlayer::NetworkState state) {
   DVLOG(1) << __FUNCTION__ << "(" << state << ")";
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   network_state_ = state;
   // Always notify to ensure client has the latest value.
   client_->networkStateChanged();
@@ -942,7 +944,7 @@ void WebMediaPlayerImpl::SetNetworkState(WebMediaPlayer::NetworkState state) {
 
 void WebMediaPlayerImpl::SetReadyState(WebMediaPlayer::ReadyState state) {
   DVLOG(1) << __FUNCTION__ << "(" << state << ")";
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   if (state == WebMediaPlayer::ReadyStateHaveEnoughData && data_source_ &&
       data_source_->assume_fully_buffered() &&
@@ -977,7 +979,7 @@ void WebMediaPlayerImpl::OnDurationChanged() {
 }
 
 void WebMediaPlayerImpl::OnNaturalSizeChanged(gfx::Size size) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(ready_state_, WebMediaPlayer::ReadyStateHaveNothing);
   TRACE_EVENT0("media", "WebMediaPlayerImpl::OnNaturalSizeChanged");
 
@@ -989,7 +991,7 @@ void WebMediaPlayerImpl::OnNaturalSizeChanged(gfx::Size size) {
 }
 
 void WebMediaPlayerImpl::OnOpacityChanged(bool opaque) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(ready_state_, WebMediaPlayer::ReadyStateHaveNothing);
 
   opaque_ = opaque;

@@ -25,14 +25,14 @@ namespace content {
 scoped_refptr<RendererGpuVideoAcceleratorFactories>
 RendererGpuVideoAcceleratorFactories::Create(
     GpuChannelHost* gpu_channel_host,
-    const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider) {
   scoped_refptr<RendererGpuVideoAcceleratorFactories> factories =
       new RendererGpuVideoAcceleratorFactories(
-          gpu_channel_host, message_loop_proxy, context_provider);
+          gpu_channel_host, task_runner, context_provider);
   // Post task from outside constructor, since AddRef()/Release() is unsafe from
   // within.
-  message_loop_proxy->PostTask(
+  task_runner->PostTask(
       FROM_HERE,
       base::Bind(&RendererGpuVideoAcceleratorFactories::BindContext,
                  factories));
@@ -41,9 +41,9 @@ RendererGpuVideoAcceleratorFactories::Create(
 
 RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
     GpuChannelHost* gpu_channel_host,
-    const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider)
-    : task_runner_(message_loop_proxy),
+    : task_runner_(task_runner),
       gpu_channel_host_(gpu_channel_host),
       context_provider_(context_provider),
       thread_safe_sender_(ChildThread::current()->thread_safe_sender()) {}
