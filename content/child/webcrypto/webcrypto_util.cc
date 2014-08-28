@@ -4,9 +4,7 @@
 
 #include "content/child/webcrypto/webcrypto_util.h"
 
-#include "base/base64.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/child/webcrypto/status.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
@@ -41,36 +39,6 @@ bool BigIntegerToUint(const uint8_t* data,
 }
 
 }  // namespace
-
-// This function decodes unpadded 'base64url' encoded data, as described in
-// RFC4648 (http://www.ietf.org/rfc/rfc4648.txt) Section 5. To do this, first
-// change the incoming data to 'base64' encoding by applying the appropriate
-// transformation including adding padding if required, and then call a base64
-// decoder.
-bool Base64DecodeUrlSafe(const std::string& input, std::string* output) {
-  std::string base64EncodedText(input);
-  std::replace(base64EncodedText.begin(), base64EncodedText.end(), '-', '+');
-  std::replace(base64EncodedText.begin(), base64EncodedText.end(), '_', '/');
-  base64EncodedText.append((4 - base64EncodedText.size() % 4) % 4, '=');
-  return base::Base64Decode(base64EncodedText, output);
-}
-
-// Returns an unpadded 'base64url' encoding of the input data, using the
-// inverse of the process above.
-std::string Base64EncodeUrlSafe(const base::StringPiece& input) {
-  std::string output;
-  base::Base64Encode(input, &output);
-  std::replace(output.begin(), output.end(), '+', '-');
-  std::replace(output.begin(), output.end(), '/', '_');
-  output.erase(std::remove(output.begin(), output.end(), '='), output.end());
-  return output;
-}
-
-std::string Base64EncodeUrlSafe(const std::vector<uint8_t>& input) {
-  const base::StringPiece string_piece(
-      reinterpret_cast<const char*>(vector_as_array(&input)), input.size());
-  return Base64EncodeUrlSafe(string_piece);
-}
 
 struct JwkToWebCryptoUsage {
   const char* const jwk_key_op;

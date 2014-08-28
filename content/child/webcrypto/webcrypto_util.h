@@ -7,9 +7,7 @@
 
 #include <stdint.h>
 #include <string>
-#include <vector>
 
-#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
@@ -20,18 +18,6 @@ namespace content {
 namespace webcrypto {
 
 class Status;
-
-// This function decodes unpadded 'base64url' encoded data, as described in
-// RFC4648 (http://www.ietf.org/rfc/rfc4648.txt) Section 5.
-// In Web Crypto, this type of encoding is only used inside JWK.
-CONTENT_EXPORT bool Base64DecodeUrlSafe(const std::string& input,
-                                        std::string* output);
-
-// Returns an unpadded 'base64url' encoding of the input data, the opposite of
-// Base64DecodeUrlSafe() above.
-CONTENT_EXPORT std::string Base64EncodeUrlSafe(const base::StringPiece& input);
-CONTENT_EXPORT std::string Base64EncodeUrlSafe(
-    const std::vector<uint8_t>& input);
 
 // Composes a Web Crypto usage mask from an array of JWK key_ops values.
 CONTENT_EXPORT Status GetWebCryptoUsagesFromJwkKeyOps(

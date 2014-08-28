@@ -8,7 +8,9 @@
 #include <stdint.h>
 #include <vector>
 
+#include "base/strings/string_piece.h"
 #include "base/values.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
@@ -119,6 +121,17 @@ Status ReadRsaKeyJwk(const CryptoData& key_data,
                      JwkRsaInfo* result);
 
 const char* GetJwkHmacAlgorithmName(blink::WebCryptoAlgorithmId hash);
+
+// This function decodes unpadded 'base64url' encoded data, as described in
+// RFC4648 (http://www.ietf.org/rfc/rfc4648.txt) Section 5.
+CONTENT_EXPORT bool Base64DecodeUrlSafe(const std::string& input,
+                                        std::string* output);
+
+// Returns an unpadded 'base64url' encoding of the input data, the opposite of
+// Base64DecodeUrlSafe() above.
+CONTENT_EXPORT std::string Base64EncodeUrlSafe(const base::StringPiece& input);
+CONTENT_EXPORT std::string Base64EncodeUrlSafe(
+    const std::vector<uint8_t>& input);
 
 }  // namespace webcrypto
 

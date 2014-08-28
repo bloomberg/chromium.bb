@@ -8,8 +8,10 @@
 #include <functional>
 #include <map>
 
+#include "base/base64.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/status.h"
@@ -700,6 +702,32 @@ const char* GetJwkHmacAlgorithmName(blink::WebCryptoAlgorithmId hash) {
     default:
       return NULL;
   }
+}
+
+// TODO(eroman): This accepts invalid inputs. http://crbug.com/378034
+bool Base64DecodeUrlSafe(const std::string& input, std::string* output) {
+  std::string base64_encoded_text(input);
+  std::replace(
+      base64_encoded_text.begin(), base64_encoded_text.end(), '-', '+');
+  std::replace(
+      base64_encoded_text.begin(), base64_encoded_text.end(), '_', '/');
+  base64_encoded_text.append((4 - base64_encoded_text.size() % 4) % 4, '=');
+  return base::Base64Decode(base64_encoded_text, output);
+}
+
+std::string Base64EncodeUrlSafe(const base::StringPiece& input) {
+  std::string output;
+  base::Base64Encode(input, &output);
+  std::replace(output.begin(), output.end(), '+', '-');
+  std::replace(output.begin(), output.end(), '/', '_');
+  output.erase(std::remove(output.begin(), output.end(), '='), output.end());
+  return output;
+}
+
+std::string Base64EncodeUrlSafe(const std::vector<uint8_t>& input) {
+  const base::StringPiece string_piece(
+      reinterpret_cast<const char*>(vector_as_array(&input)), input.size());
+  return Base64EncodeUrlSafe(string_piece);
 }
 
 }  // namespace webcrypto

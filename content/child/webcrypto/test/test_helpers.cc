@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "content/child/webcrypto/algorithm_dispatch.h"
 #include "content/child/webcrypto/crypto_data.h"
+#include "content/child/webcrypto/jwk.h"
 #include "content/child/webcrypto/status.h"
 #include "content/child/webcrypto/webcrypto_util.h"
 #include "content/public/common/content_paths.h"
