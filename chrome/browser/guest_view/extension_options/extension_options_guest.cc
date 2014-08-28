@@ -26,6 +26,7 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/strings/grit/extensions_strings.h"
 #include "ipc/ipc_message_macros.h"
 
 using content::WebContents;
@@ -41,10 +42,6 @@ ExtensionOptionsGuest::ExtensionOptionsGuest(
 }
 
 ExtensionOptionsGuest::~ExtensionOptionsGuest() {
-}
-
-const char* ExtensionOptionsGuest::GetAPINamespace() {
-  return extensionoptions::kAPINamespace;
 }
 
 // static
@@ -126,6 +123,14 @@ void ExtensionOptionsGuest::DidStopLoading() {
   DispatchEventToEmbedder(new extensions::GuestViewBase::Event(
       extensions::api::extension_options_internal::OnLoad::kEventName,
       args.Pass()));
+}
+
+const char* ExtensionOptionsGuest::GetAPINamespace() const {
+  return extensionoptions::kAPINamespace;
+}
+
+int ExtensionOptionsGuest::GetTaskPrefix() const {
+ return IDS_EXTENSION_TASK_MANAGER_EXTENSIONOPTIONS_TAG_PREFIX;
 }
 
 content::WebContents* ExtensionOptionsGuest::GetAssociatedWebContents() const {

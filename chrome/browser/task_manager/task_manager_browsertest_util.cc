@@ -16,6 +16,7 @@
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/grit/generated_resources.h"
+#include "extensions/strings/grit/extensions_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -170,8 +171,9 @@ base::string16 MatchApp(const char* title) {
 base::string16 MatchAnyApp() { return MatchApp("*"); }
 
 base::string16 MatchWebView(const char* title) {
-  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_WEBVIEW_TAG_PREFIX,
-                                    base::ASCIIToUTF16(title));
+  return l10n_util::GetStringFUTF16(
+      IDS_EXTENSION_TASK_MANAGER_WEBVIEW_TAG_PREFIX,
+      base::ASCIIToUTF16(title));
 }
 
 base::string16 MatchAnyWebView() { return MatchWebView("*"); }

@@ -14,7 +14,7 @@ struct WebFindOptions;
 namespace content {
 class RenderViewHost;
 class WebContents;
-}
+}  // namespace content
 
 namespace extensions {
 
@@ -22,7 +22,8 @@ class WebViewGuest;
 class WebViewInternalFindFunction;
 
 namespace api {
-namespace web_view_internal{
+namespace web_view_internal {
+
 struct ContextMenuItem;
 }  // namespace web_view_internal
 }  // namespace api

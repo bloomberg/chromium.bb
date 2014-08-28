@@ -23,7 +23,6 @@ class ExtensionOptionsGuest
       content::BrowserContext* browser_context, int guest_instance_id);
 
   // GuestViewBase implementation.
-  virtual const char* GetAPINamespace() OVERRIDE;
   virtual void CreateWebContents(
       const std::string& embedder_extension_id,
       int embedder_render_process_id,
@@ -32,6 +31,8 @@ class ExtensionOptionsGuest
   virtual void DidAttachToEmbedder() OVERRIDE;
   virtual void DidInitialize() OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
+  virtual const char* GetAPINamespace() const OVERRIDE;
+  virtual int GetTaskPrefix() const OVERRIDE;
   virtual void GuestSizeChangedDueToAutoSize(
       const gfx::Size& old_size,
       const gfx::Size& new_size) OVERRIDE;

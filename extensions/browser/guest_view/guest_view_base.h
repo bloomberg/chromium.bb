@@ -145,7 +145,12 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   //
   // This should be the name of the API as it appears in the _api_features.json
   // file.
-  virtual const char* GetAPINamespace() = 0;
+  virtual const char* GetAPINamespace() const = 0;
+
+  // This method is to be implemented by the derived class. This method is the
+  // task prefix to show for a task produced by this GuestViewBase's derived
+  // type.
+  virtual int GetTaskPrefix() const = 0;
 
   // This method is to be implemented by the derived class. Given a set of
   // initialization parameters, a concrete subclass of GuestViewBase can

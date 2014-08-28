@@ -3710,9 +3710,6 @@ Make sure you do not expose any sensitive information.
         <message name="IDS_TASK_MANAGER_GPU_PREFIX" desc="Task Manager row for the GPU process, which is the process doing all accelerated graphics rendering">
           GPU Process
         </message>
-        <message name="IDS_TASK_MANAGER_WEBVIEW_TAG_PREFIX" desc="The prefix for a guest page loaded in webview tag in the Task Manager">
-          Webview: <ph name="WEBVIEW_TAG_NAME">$1<ex>Google</ex></ph>
-        </message>
         <message name="IDS_TASK_MANAGER_PRINT_PREFIX" desc="The prefix for a print preview process row in the Task Manager">
           Print: <ph name="PRINT_NAME">$1<ex>Google Maps</ex></ph>
         </message>

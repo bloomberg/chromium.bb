@@ -297,7 +297,15 @@
       <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_MISSING_VENDOR" desc="Permission string for access to a specific USB device when a vendor name cannot be established for a USB device.">
         Access the USB device
       </message>
-
+      <message name="IDS_EXTENSION_TASK_MANAGER_APPVIEW_TAG_PREFIX" desc="The prefix for a guest page loaded in an appview tag in the Task Manager">
+        Appview: <ph name="APPVIEW_TAG_NAME">$1<ex>Google Hangouts</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_TASK_MANAGER_EXTENSIONOPTIONS_TAG_PREFIX" desc="The prefix for a guest page loaded in an extensionoptions tag in the Task Manager">
+        Options: <ph name="EXTENSIONOPTIONS_TAG_NAME">$1<ex>Google Hangouts</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_TASK_MANAGER_WEBVIEW_TAG_PREFIX" desc="The prefix for a guest page loaded in a webview tag in the Task Manager">
+        Webview: <ph name="WEBVIEW_TAG_NAME">$1<ex>Google</ex></ph>
+      </message>
     </messages>
   </release>
 </grit>

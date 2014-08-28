@@ -39,6 +39,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/strings/grit/extensions_strings.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
@@ -172,8 +173,12 @@ int WebViewGuest::GetViewInstanceId(WebContents* contents) {
   return guest->view_instance_id();
 }
 
-const char* WebViewGuest::GetAPINamespace() {
+const char* WebViewGuest::GetAPINamespace() const {
   return webview::kAPINamespace;
+}
+
+int WebViewGuest::GetTaskPrefix() const {
+  return IDS_EXTENSION_TASK_MANAGER_WEBVIEW_TAG_PREFIX;
 }
 
 void WebViewGuest::CreateWebContents(

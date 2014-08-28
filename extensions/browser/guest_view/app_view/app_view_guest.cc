@@ -21,6 +21,7 @@
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/switches.h"
+#include "extensions/strings/grit/extensions_strings.h"
 #include "ipc/ipc_message_macros.h"
 
 namespace app_runtime = extensions::core_api::app_runtime;
@@ -132,8 +133,12 @@ bool AppViewGuest::HandleContextMenu(const content::ContextMenuParams& params) {
   return false;
 }
 
-const char* AppViewGuest::GetAPINamespace() {
+const char* AppViewGuest::GetAPINamespace() const {
   return appview::kEmbedderAPINamespace;
+}
+
+int AppViewGuest::GetTaskPrefix() const {
+  return IDS_EXTENSION_TASK_MANAGER_APPVIEW_TAG_PREFIX;
 }
 
 void AppViewGuest::CreateWebContents(
