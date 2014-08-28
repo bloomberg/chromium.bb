@@ -8,11 +8,11 @@
 import os
 import shutil
 import subprocess
-import unittest
 
 import fixup_path
 fixup_path.FixupPath()
 
+from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib.paygen import filelib
 from chromite.lib.paygen import unittest_lib
@@ -332,4 +332,4 @@ class TestFileLib(unittest_lib.MoxTestCase):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  cros_test_lib.main()

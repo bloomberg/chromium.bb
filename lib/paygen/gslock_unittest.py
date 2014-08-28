@@ -10,7 +10,6 @@ import mox
 import multiprocessing
 import os
 import socket
-import unittest
 
 import fixup_path
 fixup_path.FixupPath()
@@ -311,4 +310,4 @@ class GSLockTest(mox.MoxTestBase):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  cros_test_lib.main()

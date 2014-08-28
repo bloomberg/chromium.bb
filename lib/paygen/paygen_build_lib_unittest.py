@@ -19,6 +19,7 @@ from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import commands
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 
@@ -1349,4 +1350,4 @@ DOC = "Faux doc"
 
 
 if __name__ == '__main__':
-  unittest.main()
+  cros_test_lib.main()

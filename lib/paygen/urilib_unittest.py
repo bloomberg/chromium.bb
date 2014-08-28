@@ -6,7 +6,6 @@
 """Test the urilib module."""
 
 import os
-import unittest
 
 import fixup_path
 fixup_path.FixupPath()
@@ -543,4 +542,4 @@ index %s..%s 100644
 
 
 if __name__ == '__main__':
-  unittest.main()
+  cros_test_lib.main()

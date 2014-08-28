@@ -10,11 +10,11 @@ import multiprocessing
 import os
 import sys
 import time
-import unittest
 
 import fixup_path
 fixup_path.FixupPath()
 
+from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib.paygen import flock
 
@@ -279,4 +279,4 @@ class FLockTest(mox.MoxTestBase):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  cros_test_lib.main()

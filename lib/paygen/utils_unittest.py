@@ -8,12 +8,12 @@
 import datetime
 import operator
 import os
-import unittest
 import __builtin__
 
 import fixup_path
 fixup_path.FixupPath()
 
+from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib.paygen import unittest_lib
 from chromite.lib.paygen import utils
@@ -257,4 +257,4 @@ class InputTest(unittest_lib.MoxTestCase):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  cros_test_lib.main()

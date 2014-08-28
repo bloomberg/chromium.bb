@@ -6,11 +6,11 @@
 """Test Utils library."""
 
 import mox
-import unittest
 
 import fixup_path
 fixup_path.FixupPath()
 
+from chromite.lib import cros_test_lib
 from chromite.lib.paygen import gspaths
 
 
@@ -618,4 +618,4 @@ class GsPathsTest(mox.MoxTestBase):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  cros_test_lib.main()

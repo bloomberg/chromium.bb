@@ -9,7 +9,6 @@ import mox
 import os
 import shutil
 import tempfile
-import unittest
 
 import fixup_path
 fixup_path.FixupPath()
@@ -707,4 +706,4 @@ class PaygenPayloadLibEndToEndTest(PaygenPayloadLibTest):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  cros_test_lib.main()

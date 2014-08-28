@@ -10,7 +10,6 @@ import datetime
 import errno
 import mox
 import os
-import unittest
 
 import fixup_path
 fixup_path.FixupPath()
@@ -815,4 +814,4 @@ class TestGsLibAccess(unittest_lib.MoxTestCase):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  cros_test_lib.main()

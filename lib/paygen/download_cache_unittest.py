@@ -10,7 +10,6 @@ import multiprocessing
 import os
 import pickle
 import traceback
-import unittest
 
 import fixup_path
 fixup_path.FixupPath()
@@ -435,4 +434,4 @@ class DownloadCacheTest(mox.MoxTestBase):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  cros_test_lib.main()

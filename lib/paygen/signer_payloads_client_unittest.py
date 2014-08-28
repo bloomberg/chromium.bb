@@ -10,7 +10,6 @@ import os
 import shutil
 import socket
 import tempfile
-import unittest
 
 import fixup_path
 fixup_path.FixupPath()
@@ -440,4 +439,4 @@ class SignerPayloadsClientIntegrationTest(mox.MoxTestBase):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  cros_test_lib.main()
