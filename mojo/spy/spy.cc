@@ -224,12 +224,12 @@ class MessageProcessor :
 // In charge of intercepting access to the service manager.
 class SpyInterceptor : public mojo::ApplicationManager::Interceptor {
  public:
-  explicit SpyInterceptor(scoped_refptr<mojo::SpyServerImpl> spy_server,
-                          base::MessageLoopProxy* control_loop_proxy)
+  explicit SpyInterceptor(
+      scoped_refptr<mojo::SpyServerImpl> spy_server,
+      const scoped_refptr<base::MessageLoopProxy>& control_loop_proxy)
       : spy_server_(spy_server),
         proxy_(base::MessageLoopProxy::current()),
-        control_loop_proxy_(control_loop_proxy){
-  }
+        control_loop_proxy_(control_loop_proxy) {}
 
  private:
   virtual mojo::ServiceProviderPtr OnConnectToClient(

@@ -22,7 +22,8 @@ namespace shell {
 // process.
 class TaskRunners {
  public:
-  explicit TaskRunners(base::SingleThreadTaskRunner* shell_runner);
+  explicit TaskRunners(
+      const scoped_refptr<base::SingleThreadTaskRunner>& shell_runner);
   ~TaskRunners();
 
   base::SingleThreadTaskRunner* shell_runner() const {
@@ -30,7 +31,7 @@ class TaskRunners {
   }
 
   base::SingleThreadTaskRunner* io_runner() const {
-    return io_thread_->message_loop_proxy();
+    return io_thread_->message_loop_proxy().get();
   }
 
   base::SequencedWorkerPool* blocking_pool() const {

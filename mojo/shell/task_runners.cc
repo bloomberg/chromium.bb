@@ -23,7 +23,8 @@ scoped_ptr<base::Thread> CreateIOThread(const char* name) {
 
 }  // namespace
 
-TaskRunners::TaskRunners(base::SingleThreadTaskRunner* shell_runner)
+TaskRunners::TaskRunners(
+    const scoped_refptr<base::SingleThreadTaskRunner>& shell_runner)
     : shell_runner_(shell_runner),
       io_thread_(CreateIOThread("io_thread")),
       blocking_pool_(new base::SequencedWorkerPool(kMaxBlockingPoolThreads,
