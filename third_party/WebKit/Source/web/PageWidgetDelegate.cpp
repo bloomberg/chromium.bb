@@ -38,6 +38,7 @@
 #include "core/page/Page.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
+#include "platform/Logging.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "public/web/WebInputEvent.h"
 #include "web/PageOverlayList.h"
@@ -61,6 +62,7 @@ static inline FrameView* mainFrameView(Page* page)
 void PageWidgetDelegate::animate(Page* page, double monotonicFrameBeginTime)
 {
     RefPtr<FrameView> view = mainFrameView(page);
+    WTF_LOG(ScriptedAnimationController, "PageWidgetDelegate::animate: view = %d", !view ? 0 : 1);
     if (!view)
         return;
     page->autoscrollController().animate(monotonicFrameBeginTime);

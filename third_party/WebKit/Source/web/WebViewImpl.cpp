@@ -94,6 +94,7 @@
 #include "platform/ContextMenuItem.h"
 #include "platform/Cursor.h"
 #include "platform/KeyboardCodes.h"
+#include "platform/Logging.h"
 #include "platform/NotImplemented.h"
 #include "platform/OverscrollTheme.h"
 #include "platform/PlatformGestureEvent.h"
@@ -1757,6 +1758,7 @@ void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
         }
     }
 
+    WTF_LOG(ScriptedAnimationController, "WebViewImpl::beginFrame: page = %d", !m_page ? 0 : 1);
     if (!m_page)
         return;
 

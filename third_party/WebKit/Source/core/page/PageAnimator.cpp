@@ -12,6 +12,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/svg/SVGDocumentExtensions.h"
+#include "platform/Logging.h"
 
 namespace blink {
 
@@ -34,6 +35,8 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
             documents.append(toLocalFrame(frame)->document());
     }
 
+    WTF_LOG(ScriptedAnimationController, "PageAnimator::serviceScriptedAnimations: #documents = %d",
+        static_cast<int>(documents.size()));
     for (size_t i = 0; i < documents.size(); ++i) {
         if (documents[i]->frame()) {
             documents[i]->view()->serviceScrollAnimations(monotonicAnimationStartTime);

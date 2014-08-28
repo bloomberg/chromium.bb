@@ -37,6 +37,7 @@
 #include "core/page/WindowFeatures.h"
 #include "core/rendering/HitTestResult.h"
 #include "platform/FileChooser.h"
+#include "platform/Logging.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/network/DNS.h"
 #include "public/platform/WebScreenInfo.h"
@@ -365,6 +366,7 @@ void Chrome::setCursor(const Cursor& cursor)
 
 void Chrome::scheduleAnimation()
 {
+    WTF_LOG(ScriptedAnimationController, "Chrome::scheduleAnimation");
     m_page->animator().setAnimationFramePending();
     m_client->scheduleAnimation();
 }
