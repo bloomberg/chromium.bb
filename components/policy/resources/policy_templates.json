@@ -6418,6 +6418,8 @@
 
       The policy is a list of bookmarks, and each bookmark is a dictionary containing the bookmark "name" and target "url".
 
+      A bookmark can also be configured as a folder. In that case, define the folder "name" but don't define an "url"; instead, define the folder contents as another list of bookmarks under the "children" key.
+
       These bookmarks are placed in a Managed bookmarks folder inside the Mobile bookmarks. These bookmarks can't be modified by the user.
 
       When this policy is set then the Managed bookmarks are the default folder opened when the bookmarks view is opened in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
