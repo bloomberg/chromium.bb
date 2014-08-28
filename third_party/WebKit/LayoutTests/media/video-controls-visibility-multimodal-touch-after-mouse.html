@@ -20,26 +20,40 @@ function runTest()
     if (!window.testRunner)
         return;
 
-    // Tap the play button
+    if (!window.internals || !window.internals.setIsCursorVisible) {
+        debug("window.internals.setIsCursorVisible is required to run this test.");
+        return;
+    }
+
+    // Hover the control with the mouse.
     var coords = mediaControlsButtonCoordinates(video, "play-button");
+    eventSender.mouseMoveTo(coords[0], coords[1]);
+    
+    // And then tap (touch input) the play button.
     eventSender.gestureTapDown(coords[0], coords[1]);
     eventSender.gestureShowPress(coords[0], coords[1]);
     eventSender.gestureTap(coords[0], coords[1]);
     testExpected("video.paused", false);
 
+    // In the real world Chromium hides the cursor after a tap,
+    // so hide it manually here. This is required to hit the
+    // early out from EventHandler::fakeMouseMoveEventTimerFired when
+    // isCursorVisible is false.
+    internals.setIsCursorVisible(document, false);
+
+    // And the controls should hide after a timeout.
     runAfterHideMediaControlsTimerFired(function()
     {
         controls = mediaControlsButton(video, "panel");
         testExpected("getComputedStyle(controls).opacity", 0);
-
-        consoleWrite("");
         endTest();
     }, video);
+    
 }
 </script>
 <body>
-    <p>Test video element control visibility after touch on control. After a delay the
-       controls must be hidden.</p>
+    <p>Test video element control visibility with multimodal input. The controls
+       should hide after a timeout if the last input event was a tap.</p>
     <p>This test only runs in DRT!</p>
 
     <video id="no-video-media" controls loop oncanplaythrough="runTest()"></video>

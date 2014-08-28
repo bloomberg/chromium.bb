@@ -46,6 +46,9 @@ namespace blink {
         virtual int layerY() OVERRIDE FINAL;
         int offsetX();
         int offsetY();
+        // FIXME: rename isSimulated to fromKeyboard() and replace m_isSimulated with a new value
+        // in PlatformMouseEvent::SyntheticEventType. isSimulated() is only true for synthetic
+        // mouse events that derive from keyboard input, which do not have a position.
         bool isSimulated() const { return m_isSimulated; }
         virtual int pageX() const OVERRIDE FINAL;
         virtual int pageY() const OVERRIDE FINAL;
@@ -61,10 +64,10 @@ namespace blink {
 
     protected:
         MouseRelatedEvent();
-        MouseRelatedEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
-                          int detail, const IntPoint& screenLocation, const IntPoint& windowLocation,
-                          const IntPoint& movementDelta,
-                          bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool isSimulated = false);
+        MouseRelatedEvent(const AtomicString& type, bool canBubble, bool cancelable,
+            PassRefPtrWillBeRawPtr<AbstractView>, int detail, const IntPoint& screenLocation,
+            const IntPoint& windowLocation, const IntPoint& movementDelta, bool ctrlKey, bool altKey,
+            bool shiftKey, bool metaKey, bool isSimulated = false);
 
         void initCoordinates();
         void initCoordinates(const LayoutPoint& clientLocation);

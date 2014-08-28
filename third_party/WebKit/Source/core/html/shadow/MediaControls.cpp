@@ -45,11 +45,6 @@ static bool fullscreenIsSupported(const Document& document)
     return !document.settings() || document.settings()->fullscreenSupported();
 }
 
-static bool deviceSupportsMouse(const Document& document)
-{
-    return !document.settings() || document.settings()->deviceSupportsMouse();
-}
-
 MediaControls::MediaControls(HTMLMediaElement& mediaElement)
     : HTMLDivElement(mediaElement.document())
     , m_mediaElement(&mediaElement)
@@ -69,6 +64,7 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
     , m_hideMediaControlsTimer(this, &MediaControls::hideMediaControlsTimerFired)
     , m_isMouseOverControls(false)
     , m_isPausedForScrubbing(false)
+    , m_wasLastEventTouch(false)
 {
 }
 
@@ -372,6 +368,8 @@ void MediaControls::exitedFullscreen()
 void MediaControls::defaultEventHandler(Event* event)
 {
     HTMLDivElement::defaultEventHandler(event);
+    m_wasLastEventTouch = event->isTouchEvent() || event->isGestureEvent()
+        || (event->isMouseEvent() && toMouseEvent(event)->fromTouch());
 
     if (event->type() == EventTypeNames::mouseover) {
         if (!containsRelatedTarget(event)) {
@@ -409,8 +407,7 @@ void MediaControls::hideMediaControlsTimerFired(Timer<MediaControls>*)
         return;
 
     unsigned behaviorFlags = IgnoreFocus | IgnoreVideoHover;
-    // FIXME: improve this check, see http://www.crbug.com/401177.
-    if (!deviceSupportsMouse(document())) {
+    if (m_wasLastEventTouch) {
         behaviorFlags |= IgnoreControlsHover;
     }
     if (!shouldHideMediaControls(behaviorFlags))

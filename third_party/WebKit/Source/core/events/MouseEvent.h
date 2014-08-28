@@ -26,12 +26,12 @@
 
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/MouseRelatedEvent.h"
+#include "platform/PlatformMouseEvent.h"
 
 namespace blink {
 
 class DataTransfer;
 class EventDispatcher;
-class PlatformMouseEvent;
 
 struct MouseEventInit : public UIEventInit {
     MouseEventInit();
@@ -59,7 +59,8 @@ public:
         int detail, int screenX, int screenY, int pageX, int pageY,
         int movementX, int movementY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
-        PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<DataTransfer>, bool isSimulated = false);
+        PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<DataTransfer>,
+        bool isSimulated = false, PlatformMouseEvent::SyntheticEventType = PlatformMouseEvent::RealOrIndistinguishable);
 
     static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView>, const PlatformMouseEvent&, int detail, PassRefPtrWillBeRawPtr<Node> relatedTarget);
 
@@ -84,6 +85,8 @@ public:
 
     DataTransfer* dataTransfer() const { return isDragEvent() ? m_dataTransfer.get() : 0; }
 
+    bool fromTouch() const { return m_syntheticEventType == PlatformMouseEvent::FromTouch; }
+
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
     virtual bool isMouseEvent() const OVERRIDE;
@@ -97,7 +100,8 @@ protected:
         int detail, int screenX, int screenY, int pageX, int pageY,
         int movementX, int movementY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
-        PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<DataTransfer>, bool isSimulated);
+        PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<DataTransfer>,
+        bool isSimulated, PlatformMouseEvent::SyntheticEventType);
 
     MouseEvent(const AtomicString& type, const MouseEventInit&);
 
@@ -108,6 +112,7 @@ private:
     bool m_buttonDown;
     RefPtrWillBeMember<EventTarget> m_relatedTarget;
     RefPtrWillBeMember<DataTransfer> m_dataTransfer;
+    PlatformMouseEvent::SyntheticEventType m_syntheticEventType;
 };
 
 class SimulatedMouseEvent FINAL : public MouseEvent {

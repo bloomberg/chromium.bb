@@ -175,6 +175,7 @@ void InspectorInputAgent::dispatchMouseEvent(ErrorString* error, const String& t
         convertedModifiers & PlatformEvent::CtrlKey,
         convertedModifiers & PlatformEvent::AltKey,
         convertedModifiers & PlatformEvent::MetaKey,
+        PlatformMouseEvent::RealOrIndistinguishable,
         timestamp ? *timestamp : currentTime());
 
     m_client->dispatchMouseEvent(event);

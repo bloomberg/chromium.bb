@@ -37,7 +37,9 @@ enum MouseButton { NoButton = -1, LeftButton, MiddleButton, RightButton };
 class PlatformMouseEvent : public PlatformEvent {
 public:
     enum SyntheticEventType {
-        NotFromTouch,
+        // Real mouse input events or synthetic events that behave just like real events
+        RealOrIndistinguishable,
+        // Mouse events derived from touch input
         FromTouch,
     };
 
@@ -45,7 +47,7 @@ public:
         : PlatformEvent(PlatformEvent::MouseMoved)
         , m_button(NoButton)
         , m_clickCount(0)
-        , m_synthesized(NotFromTouch)
+        , m_synthesized(RealOrIndistinguishable)
         , m_modifierFlags(0)
     {
     }
@@ -56,7 +58,7 @@ public:
         , m_globalPosition(globalPosition)
         , m_button(button)
         , m_clickCount(clickCount)
-        , m_synthesized(NotFromTouch)
+        , m_synthesized(RealOrIndistinguishable)
         , m_modifierFlags(0)
     {
     }
@@ -72,13 +74,13 @@ public:
     {
     }
 
-    PlatformMouseEvent(const IntPoint& position, const IntPoint& globalPosition, MouseButton button, PlatformEvent::Type type, int clickCount, bool shiftKey, bool ctrlKey, bool altKey, bool metaKey, double timestamp)
+    PlatformMouseEvent(const IntPoint& position, const IntPoint& globalPosition, MouseButton button, PlatformEvent::Type type, int clickCount, bool shiftKey, bool ctrlKey, bool altKey, bool metaKey, SyntheticEventType synthesized, double timestamp)
         : PlatformEvent(type, shiftKey, ctrlKey, altKey, metaKey, timestamp)
         , m_position(position)
         , m_globalPosition(globalPosition)
         , m_button(button)
         , m_clickCount(clickCount)
-        , m_synthesized(NotFromTouch)
+        , m_synthesized(synthesized)
         , m_modifierFlags(0)
     {
     }
@@ -91,6 +93,7 @@ public:
     int clickCount() const { return m_clickCount; }
     unsigned modifierFlags() const { return m_modifierFlags; }
     bool fromTouch() const { return m_synthesized == FromTouch; }
+    SyntheticEventType syntheticEventType() const { return m_synthesized; }
 
 protected:
     IntPoint m_position;

@@ -117,8 +117,8 @@ static PlatformMouseEvent createMouseEvent(DragData* dragData)
     bool metaKey = static_cast<bool>(keyState & PlatformEvent::MetaKey);
 
     return PlatformMouseEvent(dragData->clientPosition(), dragData->globalPosition(),
-                              LeftButton, PlatformEvent::MouseMoved, 0, shiftKey, ctrlKey, altKey,
-                              metaKey, currentTime());
+        LeftButton, PlatformEvent::MouseMoved, 0, shiftKey, ctrlKey, altKey,
+        metaKey, PlatformMouseEvent::RealOrIndistinguishable, currentTime());
 }
 
 static PassRefPtrWillBeRawPtr<DataTransfer> createDraggingDataTransfer(DataTransferAccessPolicy policy, DragData* dragData)

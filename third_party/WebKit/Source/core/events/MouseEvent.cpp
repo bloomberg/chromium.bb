@@ -62,19 +62,19 @@ PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& eventT
         detail, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(),
         event.movementDelta().x(), event.movementDelta().y(),
         event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(), event.button(),
-        relatedTarget, nullptr, false);
+        relatedTarget, nullptr, false, event.syntheticEventType());
 }
 
 PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view,
     int detail, int screenX, int screenY, int pageX, int pageY,
     int movementX, int movementY,
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
-    PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<DataTransfer> dataTransfer, bool isSimulated)
+    PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<DataTransfer> dataTransfer, bool isSimulated, PlatformMouseEvent::SyntheticEventType syntheticEventType)
 {
     return adoptRefWillBeNoop(new MouseEvent(type, canBubble, cancelable, view,
         detail, screenX, screenY, pageX, pageY,
         movementX, movementY,
-        ctrlKey, altKey, shiftKey, metaKey, button, relatedTarget, dataTransfer, isSimulated));
+        ctrlKey, altKey, shiftKey, metaKey, button, relatedTarget, dataTransfer, isSimulated, syntheticEventType));
 }
 
 MouseEvent::MouseEvent()
@@ -89,7 +89,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cance
     int movementX, int movementY,
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
     unsigned short button, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget,
-    PassRefPtrWillBeRawPtr<DataTransfer> dataTransfer, bool isSimulated)
+    PassRefPtrWillBeRawPtr<DataTransfer> dataTransfer, bool isSimulated, PlatformMouseEvent::SyntheticEventType syntheticEventType)
     : MouseRelatedEvent(eventType, canBubble, cancelable, view, detail, IntPoint(screenX, screenY),
                         IntPoint(pageX, pageY),
                         IntPoint(movementX, movementY),
@@ -98,6 +98,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cance
     , m_buttonDown(button != (unsigned short)-1)
     , m_relatedTarget(relatedTarget)
     , m_dataTransfer(dataTransfer)
+    , m_syntheticEventType(syntheticEventType)
 {
     ScriptWrappable::init(this);
 }
@@ -207,9 +208,8 @@ SimulatedMouseEvent::~SimulatedMouseEvent()
 }
 
 SimulatedMouseEvent::SimulatedMouseEvent(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView> view, PassRefPtrWillBeRawPtr<Event> underlyingEvent)
-    : MouseEvent(eventType, true, true, view, 0, 0, 0, 0, 0,
-                 0, 0,
-                 false, false, false, false, 0, nullptr, nullptr, true)
+    : MouseEvent(eventType, true, true, view, 0, 0, 0, 0, 0, 0, 0, false, false, false, false, 0,
+        nullptr, nullptr, true, PlatformMouseEvent::RealOrIndistinguishable)
 {
     if (UIEventWithKeyState* keyStateEvent = findEventWithKeyState(underlyingEvent.get())) {
         m_ctrlKey = keyStateEvent->ctrlKey();

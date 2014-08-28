@@ -3311,10 +3311,8 @@ void WebViewImpl::dragSourceEndedAt(
     const WebPoint& screenPoint,
     WebDragOperation operation)
 {
-    PlatformMouseEvent pme(clientPoint,
-                           screenPoint,
-                           LeftButton, PlatformEvent::MouseMoved, 0, false, false, false,
-                           false, 0);
+    PlatformMouseEvent pme(clientPoint, screenPoint, LeftButton, PlatformEvent::MouseMoved,
+        0, false, false, false, false, PlatformMouseEvent::RealOrIndistinguishable, 0);
     m_page->deprecatedLocalMainFrame()->eventHandler().dragSourceEndedAt(pme,
         static_cast<DragOperation>(operation));
 }

@@ -240,13 +240,13 @@ protected:
     void simulateLeftMouseDownEvent(const IntPoint& point)
     {
         PlatformMouseEvent mouseEvent(point, point, LeftButton, PlatformEvent::MousePressed,
-            1, false, false, false, false, 0);
+            1, false, false, false, false, PlatformMouseEvent::RealOrIndistinguishable, 0);
         webView()->selectPopup()->handleMouseDownEvent(mouseEvent);
     }
     void simulateLeftMouseUpEvent(const IntPoint& point)
     {
         PlatformMouseEvent mouseEvent(point, point, LeftButton, PlatformEvent::MouseReleased,
-            1, false, false, false, false, 0);
+            1, false, false, false, false, PlatformMouseEvent::RealOrIndistinguishable, 0);
         webView()->selectPopup()->handleMouseReleaseEvent(mouseEvent);
     }
 
@@ -368,7 +368,7 @@ TEST_F(SelectPopupMenuTest, MouseOverItemClickOutside)
     IntPoint row1Point(2, menuItemHeight * 1.5);
     // Simulate the mouse moving over the first item.
     PlatformMouseEvent mouseEvent(row1Point, row1Point, NoButton, PlatformEvent::MouseMoved,
-        1, false, false, false, false, 0);
+        1, false, false, false, false, PlatformMouseEvent::RealOrIndistinguishable, 0);
     webView()->selectPopup()->handleMouseMoveEvent(mouseEvent);
 
     // Click outside the popup.

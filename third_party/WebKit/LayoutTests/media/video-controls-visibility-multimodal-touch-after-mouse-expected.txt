@@ -1,0 +1,9 @@
+Test video element control visibility with multimodal input. The controls should hide after a timeout if the last input event was a tap.
+
+This test only runs in DRT!
+
+EXPECTED (video.paused == 'true') OK
+EXPECTED (video.paused == 'false') OK
+EXPECTED (getComputedStyle(controls).opacity == '0') OK
+END OF TEST
+
