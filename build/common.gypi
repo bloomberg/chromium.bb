@@ -627,15 +627,11 @@
       # build only explicitly selected platforms.
       'ozone_auto_platforms%': 1,
 
+      # If this is set clang is used as host compiler, but not as target
+      # compiler. Always do this by default.
+      'host_clang%': 1,
+
       'conditions': [
-        ['android_webview_build==0', {
-          # If this is set clang is used as host compiler, but not as target
-          # compiler. Always do this by default, except when building for AOSP.
-          'host_clang%': 1,
-        }, {
-          # See http://crbug.com/377684
-          'host_clang%': 0,
-        }],
         # A flag for POSIX platforms
         ['OS=="win"', {
           'os_posix%': 0,
@@ -1547,15 +1543,8 @@
             'gcc_version%': '<!pymod_do_main(compiler_version target compiler)',
           }],
           ['android_webview_build==1', {
-            # Android WebView uses a hermetic toolchain even for host, so set it
-            # manually here.
-            'conditions': [
-              ['host_os=="mac"', {
-                'host_gcc_version%': 42,
-              }, { # linux
-                'host_gcc_version%': 46,
-              }],
-            ],
+            # Android WebView uses a hermetic clang toolchain for host builds.
+            'host_gcc_version%': 0,
           }, {  # android_webview_build!=1
             'host_gcc_version%': '<!pymod_do_main(compiler_version host compiler)',
           }],
