@@ -277,7 +277,6 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
         stream->audio_decoder_config().channel_layout(),
         ChannelLayoutToChannelCount(
             stream->audio_decoder_config().channel_layout()),
-        0,
         stream->audio_decoder_config().samples_per_second(),
         stream->audio_decoder_config().bits_per_channel(),
         buffer_size);
@@ -294,7 +293,6 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
         stream->audio_decoder_config().channel_layout(),
         ChannelLayoutToChannelCount(
             stream->audio_decoder_config().channel_layout()),
-        hw_params.input_channels(),
         hw_params.sample_rate(),
         hw_params.bits_per_sample(),
         hardware_config_->GetHighLatencyBufferSize());

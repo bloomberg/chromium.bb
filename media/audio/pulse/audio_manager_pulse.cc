@@ -176,12 +176,10 @@ AudioParameters AudioManagerPulse::GetPreferredOutputStreamParameters(
   ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
   int buffer_size = kMinimumOutputBufferSize;
   int bits_per_sample = 16;
-  int input_channels = 0;
   int sample_rate = GetNativeSampleRate();
   if (input_params.IsValid()) {
     bits_per_sample = input_params.bits_per_sample();
     channel_layout = input_params.channel_layout();
-    input_channels = input_params.input_channels();
     buffer_size =
         std::min(kMaximumOutputBufferSize,
                  std::max(buffer_size, input_params.frames_per_buffer()));
@@ -192,7 +190,7 @@ AudioParameters AudioManagerPulse::GetPreferredOutputStreamParameters(
     buffer_size = user_buffer_size;
 
   return AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, input_channels,
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
       sample_rate, bits_per_sample, buffer_size, AudioParameters::NO_EFFECTS);
 }
 

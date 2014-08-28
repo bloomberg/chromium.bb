@@ -70,13 +70,6 @@ class MEDIA_EXPORT CrasUnifiedStream : public AudioOutputStream {
                           const timespec* input_ts,
                           const timespec* output_ts);
 
-  // Receives input samples and write output samples for a unified I/O stream.
-  uint32 ReadWriteAudio(size_t frames,
-                        uint8* input_samples,
-                        uint8* output_samples,
-                        const timespec* input_ts,
-                        const timespec* output_ts);
-
   // Writes audio for a playback stream.
   uint32 WriteAudio(size_t frames, uint8* buffer, const timespec* sample_ts);
 
@@ -108,7 +101,6 @@ class MEDIA_EXPORT CrasUnifiedStream : public AudioOutputStream {
   AudioSourceCallback* source_callback_;
 
   // Container for exchanging data with AudioSourceCallback::OnMoreData().
-  scoped_ptr<AudioBus> input_bus_;
   scoped_ptr<AudioBus> output_bus_;
 
   // Direciton of the stream.

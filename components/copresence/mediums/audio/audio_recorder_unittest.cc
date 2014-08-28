@@ -97,7 +97,6 @@ class AudioRecorderTest : public testing::Test {
     params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                   kDefaultChannelLayout,
                   channels,
-                  2,
                   sample_rate,
                   bits_per_sample,
                   4096);

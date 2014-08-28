@@ -110,7 +110,6 @@ void AudioLogImpl::OnCreated(int component_id,
 
   dict.SetString(kAudioLogStatusKey, "created");
   dict.SetString("device_id", device_id);
-  dict.SetInteger("input_channels", params.input_channels());
   dict.SetInteger("frames_per_buffer", params.frames_per_buffer());
   dict.SetInteger("sample_rate", params.sample_rate());
   dict.SetInteger("channels", params.channels());

@@ -81,11 +81,8 @@ class MEDIA_EXPORT AudioOutputDevice
       scoped_ptr<AudioOutputIPC> ipc,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
 
-  // Initialize function for clients wishing to have unified input and
-  // output, |params| may specify |input_channels| > 0, representing a
-  // number of input channels which will be at the same sample-rate
-  // and buffer-size as the output as specified in |params|. |session_id| is
-  // used for the browser to select the correct input device.
+  // Initialize the stream using |session_id|, which is used for the browser
+  // to select the correct input device.
   void InitializeWithSessionId(const AudioParameters& params,
                                RenderCallback* callback,
                                int session_id);

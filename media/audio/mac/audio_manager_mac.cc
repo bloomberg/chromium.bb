@@ -674,20 +674,9 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
       channel_layout = CHANNEL_LAYOUT_DISCRETE;
   }
 
-  const int input_channels =
-      has_valid_input_params ? input_params.input_channels() : 0;
-  if (input_channels > 0) {
-    // TODO(xians): given the limitations of the AudioOutputStream
-    // back-ends used with synchronized I/O, we hard-code to stereo.
-    // Specifically, this is a limitation of AudioSynchronizedStream which
-    // can be removed as part of the work to consolidate these back-ends.
-    channel_layout = CHANNEL_LAYOUT_STEREO;
-  }
-
   return AudioParameters(
       AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, output_channels,
-      input_channels, hardware_sample_rate, 16, buffer_size,
-      AudioParameters::NO_EFFECTS);
+      hardware_sample_rate, 16, buffer_size, AudioParameters::NO_EFFECTS);
 }
 
 void AudioManagerMac::InitializeOnAudioThread() {

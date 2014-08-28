@@ -126,7 +126,7 @@ int AudioOutputDeviceTest::CalculateMemorySize() {
 AudioOutputDeviceTest::AudioOutputDeviceTest() {
   default_audio_parameters_.Reset(
       AudioParameters::AUDIO_PCM_LINEAR,
-      CHANNEL_LAYOUT_STEREO, 2, 0, 48000, 16, 1024);
+      CHANNEL_LAYOUT_STEREO, 2, 48000, 16, 1024);
 
   audio_output_ipc_ = new MockAudioOutputIPC();
   audio_device_ = new AudioOutputDevice(
