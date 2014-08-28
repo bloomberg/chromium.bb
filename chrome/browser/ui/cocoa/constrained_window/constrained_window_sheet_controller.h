@@ -59,6 +59,10 @@
 // Gets the number of sheets attached to the controller's window.
 - (int)sheetCount;
 
+// Update the sheet's position, for example when the bookmark bar was shown or
+// hidden.
+- (void)updateSheetPosition;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_CONSTRAINED_WINDOW_CONSTRAINED_WINDOW_SHEET_CONTROLLER_H_

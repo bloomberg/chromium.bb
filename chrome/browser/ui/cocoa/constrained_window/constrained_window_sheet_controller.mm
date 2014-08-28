@@ -192,6 +192,10 @@ NSValue* GetKeyForParentWindow(NSWindow* parent_window) {
   return [sheets_ count];
 }
 
+- (void)updateSheetPosition {
+  [self updateSheetPosition:activeView_];
+}
+
 - (ConstrainedWindowSheetInfo*)findSheetInfoForParentView:(NSView*)parentView {
   for (ConstrainedWindowSheetInfo* info in sheets_.get()) {
     if ([parentView isEqual:[info parentView]])
