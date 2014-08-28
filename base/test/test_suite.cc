@@ -135,6 +135,7 @@ void TestSuite::InitializeFromCommandLine(int argc, wchar_t** argv) {
 void TestSuite::PreInitialize(bool create_at_exit_manager) {
 #if defined(OS_WIN)
   testing::GTEST_FLAG(catch_exceptions) = false;
+  base::TimeTicks::SetNowIsHighResNowIfSupported();
 #endif
   base::EnableTerminationOnHeapCorruption();
 #if defined(OS_LINUX) && defined(USE_AURA)
