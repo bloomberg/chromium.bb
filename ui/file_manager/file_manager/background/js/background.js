@@ -614,7 +614,7 @@ var FILE_MANAGER_WINDOW_CREATE_OPTIONS = Object.freeze({
     height: Math.round(window.screen.availHeight * 0.8)
   }),
   minWidth: 480,
-  minHeight: 240,
+  minHeight: 300,
   hidden: true
 });
 
