@@ -350,6 +350,10 @@
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_HOVER" file="common/notification_settings_hover.png"/>
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_PRESSED" file="common/notification_settings_pressed.png"/>
       </if>
+      <!-- TODO(calamity): The 1x local ntp resources require a proper version.
+           See crbug.com/363519. -->
+      <structure type="chrome_scaled_image" name="IDR_LOCAL_NTP_IMAGES_LOGO_PNG" file="common/ntp_google_logo.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOCAL_NTP_IMAGES_WHITE_LOGO_PNG" file="common/ntp_white_google_logo.png" />
       <if expr="not is_android and not is_ios">
         <structure type="chrome_scaled_image" name="IDR_OOBE_ACTION_BOX_BUTTON_HOVER" file="cros/action_box_button_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_OOBE_ACTION_BOX_BUTTON_NORMAL" file="cros/action_box_button_normal.png" />

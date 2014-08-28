@@ -439,10 +439,6 @@
       <if expr="enable_service_discovery">
         <structure type="chrome_scaled_image" name="IDR_LOCAL_DISCOVERY_CLOUDPRINT_ICON" file="common/cloudprint.png" />
       </if>
-      <!-- TODO(calamity): The 1x local ntp resources require a proper version.
-           See crbug.com/363519. -->
-      <structure type="chrome_scaled_image" name="IDR_LOCAL_NTP_IMAGES_LOGO_PNG" file="common/ntp_google_logo.png" />
-      <structure type="chrome_scaled_image" name="IDR_LOCAL_NTP_IMAGES_WHITE_LOGO_PNG" file="common/ntp_white_google_logo.png" />
       <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_HTTP" file="common/location_bar_http.png" />
       <if expr="chromeos">
         <!-- TODO(nkostylev): This resource needs to be removed when cros login code is moved to ash. -->
