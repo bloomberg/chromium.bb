@@ -199,9 +199,6 @@ class WebMediaPlayerImpl
   void SetNetworkState(blink::WebMediaPlayer::NetworkState state);
   void SetReadyState(blink::WebMediaPlayer::ReadyState state);
 
-  // Lets V8 know that player uses extra resources not managed by V8.
-  void IncrementExternallyAllocatedMemory();
-
   // Gets the duration value reported by the pipeline.
   double GetPipelineDuration() const;
 
@@ -281,8 +278,6 @@ class WebMediaPlayerImpl
   base::WeakPtr<WebMediaPlayerDelegate> delegate_;
 
   base::Callback<void(const base::Closure&)> defer_load_cb_;
-
-  bool incremented_externally_allocated_memory_;
 
   // Factories for supporting video accelerators. May be null.
   scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories_;

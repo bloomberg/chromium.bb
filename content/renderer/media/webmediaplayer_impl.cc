@@ -65,7 +65,6 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "v8/include/v8.h"
 
 using blink::WebCanvas;
 using blink::WebMediaPlayer;
@@ -75,16 +74,6 @@ using blink::WebString;
 using media::PipelineStatus;
 
 namespace {
-
-// Amount of extra memory used by each player instance reported to V8.
-// It is not exact number -- first, it differs on different platforms,
-// and second, it is very hard to calculate. Instead, use some arbitrary
-// value that will cause garbage collection from time to time. We don't want
-// it to happen on every allocation, but don't want 5k players to sit in memory
-// either. Looks that chosen constant achieves both goals, at least for audio
-// objects. (Do not worry about video objects yet, JS programs do not create
-// thousands of them...)
-const int kPlayerExtraMemory = 1024 * 1024;
 
 // Limits the range of playback rate.
 //
@@ -175,7 +164,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       client_(client),
       delegate_(delegate),
       defer_load_cb_(params.defer_load_cb()),
-      incremented_externally_allocated_memory_(false),
       gpu_factories_(RenderThreadImpl::current()->GetGpuFactories()),
       supports_save_(true),
       chunk_demuxer_(NULL),
@@ -199,17 +187,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   // factories, require that their message loops are identical.
   DCHECK(!gpu_factories_.get() ||
          (gpu_factories_->GetTaskRunner() == media_loop_.get()));
-
-  // Let V8 know we started new thread if we did not do it yet.
-  // Made separate task to avoid deletion of player currently being created.
-  // Also, delaying GC until after player starts gets rid of starting lag --
-  // collection happens in parallel with playing.
-  //
-  // TODO(enal): remove when we get rid of per-audio-stream thread.
-  main_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&WebMediaPlayerImpl::IncrementExternallyAllocatedMemory,
-                 AsWeakPtr()));
 
   // Use the null sink if no sink was provided.
   audio_source_provider_ = new WebAudioSourceProviderImpl(
@@ -246,13 +223,6 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   waiter.Wait();
 
   compositor_task_runner_->DeleteSoon(FROM_HERE, compositor_);
-
-  // Let V8 know we are not using extra resources anymore.
-  if (incremented_externally_allocated_memory_) {
-    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
-        -kPlayerExtraMemory);
-    incremented_externally_allocated_memory_ = false;
-  }
 }
 
 void WebMediaPlayerImpl::load(LoadType load_type, const blink::WebURL& url,
@@ -986,13 +956,6 @@ void WebMediaPlayerImpl::SetReadyState(WebMediaPlayer::ReadyState state) {
 
 blink::WebAudioSourceProvider* WebMediaPlayerImpl::audioSourceProvider() {
   return audio_source_provider_.get();
-}
-
-void WebMediaPlayerImpl::IncrementExternallyAllocatedMemory() {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-  incremented_externally_allocated_memory_ = true;
-  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
-      kPlayerExtraMemory);
 }
 
 double WebMediaPlayerImpl::GetPipelineDuration() const {
