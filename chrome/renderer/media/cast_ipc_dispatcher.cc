@@ -14,7 +14,7 @@ CastIPCDispatcher::CastIPCDispatcher(
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
     : sender_(NULL),
       io_message_loop_(io_message_loop) {
-  DCHECK(io_message_loop_);
+  DCHECK(io_message_loop_.get());
   DCHECK(!global_instance_);
 }
 

@@ -33,7 +33,7 @@ CastSessionDelegate::CastSessionDelegate()
     : io_message_loop_proxy_(
           content::RenderThread::Get()->GetIOMessageLoopProxy()),
       weak_factory_(this) {
-  DCHECK(io_message_loop_proxy_);
+  DCHECK(io_message_loop_proxy_.get());
 }
 
 CastSessionDelegate::~CastSessionDelegate() {

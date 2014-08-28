@@ -16,7 +16,7 @@ WebRtcLoggingMessageFilter::WebRtcLoggingMessageFilter(
       log_message_delegate_(NULL),
       sender_(NULL) {
   // May be null in a browsertest using MockRenderThread.
-  if (io_message_loop_) {
+  if (io_message_loop_.get()) {
     io_message_loop_->PostTask(
         FROM_HERE, base::Bind(
             &WebRtcLoggingMessageFilter::CreateLoggingHandler,
@@ -40,18 +40,18 @@ bool WebRtcLoggingMessageFilter::OnMessageReceived(
 }
 
 void WebRtcLoggingMessageFilter::OnFilterAdded(IPC::Sender* sender) {
-  DCHECK(!io_message_loop_ || io_message_loop_->BelongsToCurrentThread());
+  DCHECK(!io_message_loop_.get() || io_message_loop_->BelongsToCurrentThread());
   sender_ = sender;
 }
 
 void WebRtcLoggingMessageFilter::OnFilterRemoved() {
-  DCHECK(!io_message_loop_ || io_message_loop_->BelongsToCurrentThread());
+  DCHECK(!io_message_loop_.get() || io_message_loop_->BelongsToCurrentThread());
   sender_ = NULL;
   log_message_delegate_->OnFilterRemoved();
 }
 
 void WebRtcLoggingMessageFilter::OnChannelClosing() {
-  DCHECK(!io_message_loop_ || io_message_loop_->BelongsToCurrentThread());
+  DCHECK(!io_message_loop_.get() || io_message_loop_->BelongsToCurrentThread());
   sender_ = NULL;
   log_message_delegate_->OnFilterRemoved();
 }
@@ -63,28 +63,28 @@ void WebRtcLoggingMessageFilter::AddLogMessages(
 }
 
 void WebRtcLoggingMessageFilter::LoggingStopped() {
-  DCHECK(!io_message_loop_ || io_message_loop_->BelongsToCurrentThread());
+  DCHECK(!io_message_loop_.get() || io_message_loop_->BelongsToCurrentThread());
   Send(new WebRtcLoggingMsg_LoggingStopped());
 }
 
 void WebRtcLoggingMessageFilter::CreateLoggingHandler() {
-  DCHECK(!io_message_loop_ || io_message_loop_->BelongsToCurrentThread());
+  DCHECK(!io_message_loop_.get() || io_message_loop_->BelongsToCurrentThread());
   log_message_delegate_ =
       new ChromeWebRtcLogMessageDelegate(io_message_loop_, this);
 }
 
 void WebRtcLoggingMessageFilter::OnStartLogging() {
-  DCHECK(!io_message_loop_ || io_message_loop_->BelongsToCurrentThread());
+  DCHECK(!io_message_loop_.get() || io_message_loop_->BelongsToCurrentThread());
   log_message_delegate_->OnStartLogging();
 }
 
 void WebRtcLoggingMessageFilter::OnStopLogging() {
-  DCHECK(!io_message_loop_ || io_message_loop_->BelongsToCurrentThread());
+  DCHECK(!io_message_loop_.get() || io_message_loop_->BelongsToCurrentThread());
   log_message_delegate_->OnStopLogging();
 }
 
 void WebRtcLoggingMessageFilter::Send(IPC::Message* message) {
-  DCHECK(!io_message_loop_ || io_message_loop_->BelongsToCurrentThread());
+  DCHECK(!io_message_loop_.get() || io_message_loop_->BelongsToCurrentThread());
   if (!sender_) {
     DLOG(ERROR) << "IPC sender not available.";
     delete message;
