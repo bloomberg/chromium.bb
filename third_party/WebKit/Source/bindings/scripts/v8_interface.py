@@ -128,6 +128,9 @@ def interface_context(interface):
     for set_wrapper_reference_to in set_wrapper_reference_to_list:
         set_wrapper_reference_to['idl_type'].add_includes_for_type()
 
+    # [NotScriptWrappable]
+    is_script_wrappable = 'NotScriptWrappable' not in extended_attributes
+
     # [SpecialWrapFor]
     if 'SpecialWrapFor' in extended_attributes:
         special_wrap_for = extended_attribute_value_as_list(interface, 'SpecialWrapFor')
@@ -166,6 +169,7 @@ def interface_context(interface):
         'is_event_target': inherits_interface(interface.name, 'EventTarget'),
         'is_exception': interface.is_exception,
         'is_node': inherits_interface(interface.name, 'Node'),
+        'is_script_wrappable': is_script_wrappable,
         'measure_as': v8_utilities.measure_as(interface),  # [MeasureAs]
         'parent_interface': parent_interface,
         'pass_cpp_type': cpp_template_type(

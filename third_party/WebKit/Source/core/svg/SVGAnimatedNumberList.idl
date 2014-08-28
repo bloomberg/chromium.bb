@@ -24,6 +24,7 @@
  */
 
 [
+    NotScriptWrappable,
     SetWrapperReferenceTo(SVGElement contextElement),
 ] interface SVGAnimatedNumberList {
     readonly attribute SVGNumberList baseVal;

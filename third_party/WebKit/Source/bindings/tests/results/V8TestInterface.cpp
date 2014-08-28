@@ -34,12 +34,9 @@
 
 namespace blink {
 
-static void initializeScriptWrappableForInterface(TestInterfaceImplementation* object)
+static void initializeScriptWrappableForInterface(TestInterfaceImplementation* impl)
 {
-    if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-        ScriptWrappable::fromObject(object)->setTypeInfo(&V8TestInterface::wrapperTypeInfo);
-    else
-        ASSERT_NOT_REACHED();
+    impl->setTypeInfo(&V8TestInterface::wrapperTypeInfo);
 }
 
 } // namespace blink
@@ -50,6 +47,7 @@ void webCoreInitializeScriptWrappableForInterface(blink::TestInterfaceImplementa
 }
 
 namespace blink {
+
 const WrapperTypeInfo V8TestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterface::domTemplate, V8TestInterface::refObject, V8TestInterface::derefObject, V8TestInterface::createPersistentHandle, V8TestInterface::toActiveDOMObject, 0, V8TestInterface::visitDOMWrapper, V8TestInterface::installConditionallyEnabledMethods, V8TestInterface::installConditionallyEnabledProperties, &V8TestInterfaceEmpty::wrapperTypeInfo, WrapperTypeObjectPrototype, RefCountedObject };
 
 namespace TestInterfaceImplementationV8Internal {

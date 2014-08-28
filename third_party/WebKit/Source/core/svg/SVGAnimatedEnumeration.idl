@@ -25,6 +25,7 @@
 
 [
     ImplementedAs=SVGAnimatedEnumerationBase,
+    NotScriptWrappable,
     SetWrapperReferenceTo(SVGElement contextElement),
     TypeChecking=Interface,
 ] interface SVGAnimatedEnumeration {

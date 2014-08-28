@@ -133,5 +133,5 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtrWil
 
 bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit&, const Dictionary&, ExceptionState&, const v8::FunctionCallbackInfo<v8::Value>& info, const String& = "");
 
-}
+} // namespace blink
 #endif // V8TestInterfaceEventConstructor_h

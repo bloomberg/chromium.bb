@@ -24,6 +24,7 @@
  */
 
 [
+    NotScriptWrappable,
     SetWrapperReferenceTo(SVGElement contextElement),
 ] interface SVGAnimatedLength {
     readonly attribute SVGLength baseVal;

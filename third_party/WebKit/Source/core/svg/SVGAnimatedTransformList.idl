@@ -24,6 +24,7 @@
  */
 
 [
+    NotScriptWrappable,
     SetWrapperReferenceTo(SVGElement contextElement),
 ] interface SVGAnimatedTransformList {
     readonly attribute SVGTransformList baseVal;

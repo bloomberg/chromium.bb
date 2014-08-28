@@ -6,6 +6,7 @@
     Constructor(unrestricted double x, unrestricted double y,
                 unrestricted double width, unrestricted double height),
     GarbageCollected,
+    NotScriptWrappable,
     RuntimeEnabled=GeometryInterfaces,
 ] interface DOMRectReadOnly {
     readonly attribute unrestricted double x;

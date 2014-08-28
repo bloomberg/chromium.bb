@@ -128,5 +128,5 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, RawPtr<TestIn
     v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }
 
-}
+} // namespace blink
 #endif // V8TestInterfaceGarbageCollected_h

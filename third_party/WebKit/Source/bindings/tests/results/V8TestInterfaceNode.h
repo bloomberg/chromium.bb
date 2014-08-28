@@ -130,5 +130,5 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtrWil
     v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }
 
-}
+} // namespace blink
 #endif // V8TestInterfaceNode_h

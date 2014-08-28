@@ -87,6 +87,7 @@ INHERITED_EXTENDED_ATTRIBUTES = set([
     'ActiveDOMObject',
     'DependentLifetime',
     'GarbageCollected',
+    'NotScriptWrappable',
     'WillBeGarbageCollected',
 ])
 

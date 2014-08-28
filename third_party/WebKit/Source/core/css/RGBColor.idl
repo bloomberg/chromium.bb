@@ -19,6 +19,7 @@
  */
 
 [
+    NotScriptWrappable,
     WillBeGarbageCollected
 ] interface RGBColor {
     readonly attribute CSSPrimitiveValue  red;

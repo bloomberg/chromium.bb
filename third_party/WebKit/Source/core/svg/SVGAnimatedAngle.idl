@@ -24,6 +24,7 @@
  */
 
 [
+    NotScriptWrappable,
     SetWrapperReferenceTo(SVGElement contextElement),
 ] interface SVGAnimatedAngle {
     readonly attribute SVGAngle baseVal;
