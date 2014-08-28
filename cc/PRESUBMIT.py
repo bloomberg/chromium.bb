@@ -141,7 +141,8 @@ def CheckTodos(input_api, output_api):
 
   if errors:
     return [output_api.PresubmitError(
-      'All TODO comments should be of the form TODO(name).',
+      'All TODO comments should be of the form TODO(name). ' +
+      'Use TODO instead of FIX' + 'ME',
       items=errors)]
   return []
 
