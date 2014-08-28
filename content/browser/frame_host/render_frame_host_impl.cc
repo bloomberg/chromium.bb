@@ -464,7 +464,7 @@ gfx::NativeViewAccessible
 }
 
 bool RenderFrameHostImpl::CreateRenderFrame(int parent_routing_id) {
-  TRACE_EVENT0("frame_host", "RenderFrameHostImpl::CreateRenderFrame");
+  TRACE_EVENT0("navigation", "RenderFrameHostImpl::CreateRenderFrame");
   DCHECK(!IsRenderFrameLive()) << "Creating frame twice";
 
   // The process may (if we're sharing a process with another host that already
@@ -529,6 +529,8 @@ void RenderFrameHostImpl::OnOpenURL(
   GURL validated_url(params.url);
   GetProcess()->FilterURL(false, &validated_url);
 
+  TRACE_EVENT1("navigation", "RenderFrameHostImpl::OnOpenURL",
+               "url", validated_url.possibly_invalid_spec());
   frame_tree_node_->navigator()->RequestOpenURL(
       this, validated_url, params.referrer, params.disposition,
       params.should_replace_current_entry, params.user_gesture);
@@ -587,6 +589,8 @@ void RenderFrameHostImpl::OnNavigate(const IPC::Message& msg) {
   if (!IPC::ParamTraits<FrameHostMsg_DidCommitProvisionalLoad_Params>::
       Read(&msg, &iter, &validated_params))
     return;
+  TRACE_EVENT1("navigation", "RenderFrameHostImpl::OnNavigate",
+               "url", validated_params.url.possibly_invalid_spec());
 
   // If we're waiting for a cross-site beforeunload ack from this renderer and
   // we receive a Navigate message from the main frame, then the renderer was
@@ -683,6 +687,12 @@ void RenderFrameHostImpl::OnDeferredAfterResponseStarted(
 }
 
 void RenderFrameHostImpl::SwapOut(RenderFrameProxyHost* proxy) {
+  // The end of this event is in OnSwapOutACK when the RenderFrame has completed
+  // the operation and sends back an IPC message.
+  // The trace event may not end properly if the ACK times out.  We expect this
+  // to be fixed when RenderViewHostImpl::OnSwapOut moves to RenderFrameHost.
+  TRACE_EVENT_ASYNC_BEGIN0("navigation", "RenderFrameHostImpl::SwapOut", this);
+
   // TODO(creis): Move swapped out state to RFH.  Until then, only update it
   // when swapping out the main frame.
   if (!GetParent()) {
@@ -713,6 +723,8 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
     bool proceed,
     const base::TimeTicks& renderer_before_unload_start_time,
     const base::TimeTicks& renderer_before_unload_end_time) {
+  TRACE_EVENT_ASYNC_END0(
+      "navigation", "RenderFrameHostImpl::BeforeUnload", this);
   // TODO(creis): Support properly beforeunload on subframes. For now just
   // pretend that the handler ran and allowed the navigation to proceed.
   if (GetParent()) {
@@ -785,6 +797,7 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
 
 void RenderFrameHostImpl::OnSwapOutACK() {
   OnSwappedOut(false);
+  TRACE_EVENT_ASYNC_END0("navigation", "RenderFrameHostImpl::SwapOut", this);
 }
 
 void RenderFrameHostImpl::OnSwappedOut(bool timed_out) {
@@ -1047,7 +1060,7 @@ bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {
 }
 
 void RenderFrameHostImpl::Navigate(const FrameMsg_Navigate_Params& params) {
-  TRACE_EVENT0("frame_host", "RenderFrameHostImpl::Navigate");
+  TRACE_EVENT0("navigation", "RenderFrameHostImpl::Navigate");
   // Browser plugin guests are not allowed to navigate outside web-safe schemes,
   // so do not grant them the ability to request additional URLs.
   if (!GetProcess()->IsIsolatedGuest()) {
@@ -1108,6 +1121,8 @@ void RenderFrameHostImpl::NavigateToURL(const GURL& url) {
 }
 
 void RenderFrameHostImpl::DispatchBeforeUnload(bool for_cross_site_transition) {
+  TRACE_EVENT_ASYNC_BEGIN0(
+      "navigation", "RenderFrameHostImpl::BeforeUnload", this);
   // TODO(creis): Support subframes.
   if (!render_view_host_->IsRenderViewLive() || GetParent()) {
     // We don't have a live renderer, so just skip running beforeunload.
@@ -1285,6 +1300,14 @@ void RenderFrameHostImpl::SetNavigationsSuspended(
   DCHECK(navigations_suspended_ != suspend);
 
   navigations_suspended_ = suspend;
+  if (navigations_suspended_) {
+    TRACE_EVENT_ASYNC_BEGIN0("navigation",
+                             "RenderFrameHostImpl navigation suspended", this);
+  } else {
+    TRACE_EVENT_ASYNC_END0("navigation",
+                           "RenderFrameHostImpl navigation suspended", this);
+  }
+
   if (!suspend && suspended_nav_params_) {
     // There's navigation message params waiting to be sent. Now that we're not
     // suspended anymore, resume navigation by sending them. If we were swapped
@@ -1302,6 +1325,9 @@ void RenderFrameHostImpl::CancelSuspendedNavigations() {
   // Clear any state if a pending navigation is canceled or preempted.
   if (suspended_nav_params_)
     suspended_nav_params_.reset();
+
+  TRACE_EVENT_ASYNC_END0("navigation",
+                         "RenderFrameHostImpl navigation suspended", this);
   navigations_suspended_ = false;
 }
 

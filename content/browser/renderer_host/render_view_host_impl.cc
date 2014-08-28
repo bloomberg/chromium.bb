@@ -254,7 +254,8 @@ bool RenderViewHostImpl::CreateRenderView(
     int proxy_route_id,
     int32 max_page_id,
     bool window_was_created_with_opener) {
-  TRACE_EVENT0("renderer_host", "RenderViewHostImpl::CreateRenderView");
+  TRACE_EVENT0("renderer_host,navigation",
+               "RenderViewHostImpl::CreateRenderView");
   DCHECK(!IsRenderViewLive()) << "Creating view twice";
 
   // The process may (if we're sharing a process with another host that already
@@ -480,7 +481,7 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
 }
 
 void RenderViewHostImpl::Navigate(const FrameMsg_Navigate_Params& params) {
-  TRACE_EVENT0("renderer_host", "RenderViewHostImpl::Navigate");
+  TRACE_EVENT0("renderer_host,navigation", "RenderViewHostImpl::Navigate");
   delegate_->GetFrameTree()->GetMainFrame()->Navigate(params);
 }
 
@@ -496,6 +497,8 @@ void RenderViewHostImpl::OnSwappedOut(bool timed_out) {
   // Ignore spurious swap out ack.
   if (!IsWaitingForUnloadACK())
     return;
+
+  TRACE_EVENT0("navigation", "RenderViewHostImpl::OnSwappedOut");
   unload_event_monitor_timeout_->Stop();
   if (timed_out) {
     base::ProcessHandle process_handle = GetProcess()->GetHandle();
@@ -532,6 +535,9 @@ void RenderViewHostImpl::OnSwappedOut(bool timed_out) {
             "BrowserRenderProcessHost.ChildKillsUnresponsive", 1);
       }
     }
+    // This is going to be incorrect for subframes and will only hit if
+    // --site-per-process is specified.
+    TRACE_EVENT_ASYNC_END0("navigation", "RenderFrameHostImpl::SwapOut", this);
   }
 
   switch (rvh_state_) {

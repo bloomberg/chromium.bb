@@ -3093,13 +3093,13 @@ void WebContentsImpl::SetIsLoading(RenderViewHost* render_view_host,
 
   std::string url = (details ? details->url.possibly_invalid_spec() : "NULL");
   if (is_loading) {
-    TRACE_EVENT_ASYNC_BEGIN1("browser", "WebContentsImpl Loading", this,
-                             "URL", url);
+    TRACE_EVENT_ASYNC_BEGIN1("browser,navigation", "WebContentsImpl Loading",
+                             this, "URL", url);
     FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                       DidStartLoading(render_view_host));
   } else {
-    TRACE_EVENT_ASYNC_END1("browser", "WebContentsImpl Loading", this,
-                           "URL", url);
+    TRACE_EVENT_ASYNC_END1("browser,navigation", "WebContentsImpl Loading",
+                           this, "URL", url);
     FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                       DidStopLoading(render_view_host));
   }
@@ -4027,7 +4027,8 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
     int opener_route_id,
     int proxy_routing_id,
     bool for_main_frame_navigation) {
-  TRACE_EVENT0("browser", "WebContentsImpl::CreateRenderViewForRenderManager");
+  TRACE_EVENT0("browser,navigation",
+               "WebContentsImpl::CreateRenderViewForRenderManager");
   // Can be NULL during tests.
   RenderWidgetHostViewBase* rwh_view;
   // TODO(kenrb): RenderWidgetHostViewChildFrame special casing is temporary
@@ -4075,7 +4076,8 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
 bool WebContentsImpl::CreateRenderFrameForRenderManager(
     RenderFrameHost* render_frame_host,
     int parent_routing_id) {
-  TRACE_EVENT0("browser", "WebContentsImpl::CreateRenderFrameForRenderManager");
+  TRACE_EVENT0("browser,navigation",
+               "WebContentsImpl::CreateRenderFrameForRenderManager");
 
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(render_frame_host);

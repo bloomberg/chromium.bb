@@ -798,6 +798,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
+  TRACE_EVENT2("navigation", "RenderFrameImpl::OnNavigate",
+               "id", routing_id_, "url", params.url.possibly_invalid_spec());
   MaybeHandleDebugURL(params.url);
   if (!render_view_->webview())
     return;
@@ -994,6 +996,8 @@ void RenderFrameImpl::BindServiceRegistry(
 }
 
 void RenderFrameImpl::OnBeforeUnload() {
+  TRACE_EVENT1("navigation", "RenderFrameImpl::OnBeforeUnload",
+               "id", routing_id_);
   // TODO(creis): Right now, this is only called on the main frame.  Make the
   // browser process send dispatchBeforeUnloadEvent to every frame that needs
   // it.
@@ -1008,6 +1012,7 @@ void RenderFrameImpl::OnBeforeUnload() {
 }
 
 void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
+  TRACE_EVENT1("navigation", "RenderFrameImpl::OnSwapOut", "id", routing_id_);
   RenderFrameProxy* proxy = NULL;
   bool is_site_per_process =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess);
@@ -1936,6 +1941,8 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
   if (!ds)
     return;
 
+  TRACE_EVENT2("navigation", "RenderFrameImpl::didStartProvisionalLoad",
+               "id", routing_id_, "url", ds->request().url().string().utf8());
   DocumentState* document_state = DocumentState::FromDataSource(ds);
 
   // We should only navigate to swappedout:// when is_swapped_out_ is true.
@@ -2001,6 +2008,8 @@ void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(
 
 void RenderFrameImpl::didFailProvisionalLoad(blink::WebLocalFrame* frame,
                                              const blink::WebURLError& error) {
+  TRACE_EVENT1("navigation", "RenderFrameImpl::didFailProvisionalLoad",
+               "id", routing_id_);
   DCHECK(!frame_ || frame_ == frame);
   WebDataSource* ds = frame->provisionalDataSource();
   DCHECK(ds);
@@ -2106,6 +2115,9 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     blink::WebLocalFrame* frame,
     const blink::WebHistoryItem& item,
     blink::WebHistoryCommitType commit_type) {
+  TRACE_EVENT2("navigation", "RenderFrameImpl::didCommitProvisionalLoad",
+               "id", routing_id_,
+               "url", GetLoadingUrl().possibly_invalid_spec());
   DCHECK(!frame_ || frame_ == frame);
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->dataSource());
@@ -2278,6 +2290,8 @@ void RenderFrameImpl::didChangeIcon(blink::WebLocalFrame* frame,
 }
 
 void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame) {
+  TRACE_EVENT1("navigation", "RenderFrameImpl::didFinishDocumentLoad",
+               "id", routing_id_);
   DCHECK(!frame_ || frame_ == frame);
   WebDataSource* ds = frame->dataSource();
   DocumentState* document_state = DocumentState::FromDataSource(ds);
@@ -2301,6 +2315,8 @@ void RenderFrameImpl::didHandleOnloadEvents(blink::WebLocalFrame* frame) {
 
 void RenderFrameImpl::didFailLoad(blink::WebLocalFrame* frame,
                                   const blink::WebURLError& error) {
+  TRACE_EVENT1("navigation", "RenderFrameImpl::didFailLoad",
+               "id", routing_id_);
   DCHECK(!frame_ || frame_ == frame);
   // TODO(nasko): Move implementation here. No state needed.
   WebDataSource* ds = frame->dataSource();
@@ -2325,6 +2341,8 @@ void RenderFrameImpl::didFailLoad(blink::WebLocalFrame* frame,
 }
 
 void RenderFrameImpl::didFinishLoad(blink::WebLocalFrame* frame) {
+  TRACE_EVENT1("navigation", "RenderFrameImpl::didFinishLoad",
+               "id", routing_id_);
   DCHECK(!frame_ || frame_ == frame);
   WebDataSource* ds = frame->dataSource();
   DocumentState* document_state = DocumentState::FromDataSource(ds);
@@ -2351,6 +2369,8 @@ void RenderFrameImpl::didFinishLoad(blink::WebLocalFrame* frame) {
 void RenderFrameImpl::didNavigateWithinPage(blink::WebLocalFrame* frame,
     const blink::WebHistoryItem& item,
     blink::WebHistoryCommitType commit_type) {
+  TRACE_EVENT1("navigation", "RenderFrameImpl::didNavigateWithinPage",
+               "id", routing_id_);
   DCHECK(!frame_ || frame_ == frame);
   // If this was a reference fragment navigation that we initiated, then we
   // could end up having a non-null pending navigation params.  We just need to
@@ -3353,11 +3373,15 @@ WebElement RenderFrameImpl::GetFocusedElement() {
 }
 
 void RenderFrameImpl::didStartLoading(bool to_different_document) {
+  TRACE_EVENT1("navigation", "RenderFrameImpl::didStartLoading",
+               "id", routing_id_);
   render_view_->FrameDidStartLoading(frame_);
   Send(new FrameHostMsg_DidStartLoading(routing_id_, to_different_document));
 }
 
 void RenderFrameImpl::didStopLoading() {
+  TRACE_EVENT1("navigation", "RenderFrameImpl::didStopLoading",
+               "id", routing_id_);
   render_view_->FrameDidStopLoading(frame_);
   Send(new FrameHostMsg_DidStopLoading(routing_id_));
 }

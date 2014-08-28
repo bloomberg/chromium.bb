@@ -293,6 +293,8 @@ void CrossSiteResourceHandler::OnResponseCompleted(
 // We can now send the response to the new renderer, which will cause
 // WebContentsImpl to swap in the new renderer and destroy the old one.
 void CrossSiteResourceHandler::ResumeResponse() {
+  TRACE_EVENT_ASYNC_END0(
+      "navigation", "CrossSiteResourceHandler transition", this);
   DCHECK(request());
   in_cross_site_transition_ = false;
   ResourceRequestInfoImpl* info = GetRequestInfo();
@@ -334,6 +336,8 @@ void CrossSiteResourceHandler::SetLeakRequestsForTesting(
 // Prepare to transfer the response to a new RenderFrameHost.
 void CrossSiteResourceHandler::StartCrossSiteTransition(
     ResourceResponse* response) {
+  TRACE_EVENT_ASYNC_BEGIN0(
+      "navigation", "CrossSiteResourceHandler transition", this);
   in_cross_site_transition_ = true;
   response_ = response;
 

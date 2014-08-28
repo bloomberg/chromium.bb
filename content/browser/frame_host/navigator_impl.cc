@@ -326,7 +326,7 @@ bool NavigatorImpl::NavigateToEntry(
     RenderFrameHostImpl* render_frame_host,
     const NavigationEntryImpl& entry,
     NavigationController::ReloadType reload_type) {
-  TRACE_EVENT0("browser", "NavigatorImpl::NavigateToEntry");
+  TRACE_EVENT0("browser,navigation", "NavigatorImpl::NavigateToEntry");
 
   // The renderer will reject IPC messages with URLs longer than
   // this limit, so don't attempt to navigate with a longer URL.

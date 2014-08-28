@@ -188,7 +188,8 @@ void RenderFrameHostManager::SetPendingWebUI(const NavigationEntryImpl& entry) {
 
 RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     const NavigationEntryImpl& entry) {
-  TRACE_EVENT0("browser", "RenderFrameHostManager:Navigate");
+  TRACE_EVENT1("navigation", "RenderFrameHostManager:Navigate",
+               "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
   // Create a pending RenderFrameHost to use for the navigation.
   RenderFrameHostImpl* dest_render_frame_host = UpdateStateForNavigate(entry);
   if (!dest_render_frame_host)
@@ -498,6 +499,8 @@ void RenderFrameHostManager::RendererProcessClosing(
 
 void RenderFrameHostManager::SwapOutOldPage(
     RenderFrameHostImpl* old_render_frame_host) {
+  TRACE_EVENT1("navigation", "RenderFrameHostManager::SwapOutOldPage",
+               "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
   // Should only see this while we have a pending renderer.
   CHECK(cross_navigation_pending_);
 
@@ -1221,6 +1224,8 @@ int RenderFrameHostManager::GetRoutingIdForSiteInstance(
 }
 
 void RenderFrameHostManager::CommitPending() {
+  TRACE_EVENT1("navigation", "RenderFrameHostManager::CommitPending",
+               "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
   // First check whether we're going to want to focus the location bar after
   // this commit.  We do this now because the navigation hasn't formally
   // committed yet, so if we've already cleared |pending_web_ui_| the call chain
@@ -1440,6 +1445,13 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
       delegate_->GetLastCommittedNavigationEntryForRenderManager();
 
   if (new_instance.get() != current_instance) {
+    TRACE_EVENT_INSTANT2(
+        "navigation",
+        "RenderFrameHostManager::UpdateStateForNavigate:New SiteInstance",
+        TRACE_EVENT_SCOPE_THREAD,
+        "current_instance id", current_instance->GetId(),
+        "new_instance id", new_instance->GetId());
+
     // New SiteInstance: create a pending RFH to navigate.
     DCHECK(!cross_navigation_pending_);
 
@@ -1554,6 +1566,8 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
 }
 
 void RenderFrameHostManager::CancelPending() {
+  TRACE_EVENT1("navigation", "RenderFrameHostManager::CancelPending",
+               "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
   scoped_ptr<RenderFrameHostImpl> pending_render_frame_host =
       pending_render_frame_host_.Pass();
 
