@@ -22,6 +22,7 @@ chrome/android/java/res
 chrome/app/theme
 chrome/browser/resources
 chrome/renderer/resources
+component/resources
 content/public/android/java/res
 content/app/resources
 content/renderer/resources
