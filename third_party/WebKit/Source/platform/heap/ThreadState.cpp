@@ -622,7 +622,7 @@ void ThreadState::snapshot()
         m_heaps[HeapType##Heap]->snapshot(json.get(), &info);             \
         json->endDictionary();                                            \
         json->beginDictionary();                                          \
-        json->setString("name", #HeapType##NonFinalized);                 \
+        json->setString("name", #HeapType"NonFinalized");                 \
         m_heaps[HeapType##HeapNonFinalized]->snapshot(json.get(), &info); \
         json->endDictionary();                                            \
     }
