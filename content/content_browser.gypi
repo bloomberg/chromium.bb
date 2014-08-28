@@ -218,6 +218,7 @@
       'public/browser/web_contents_observer.cc',
       'public/browser/web_contents_observer.h',
       'public/browser/web_contents_user_data.h',
+      'public/browser/web_contents_view_delegate.cc',
       'public/browser/web_contents_view_delegate.h',
       'public/browser/web_drag_dest_delegate.h',
       'public/browser/web_ui.h',

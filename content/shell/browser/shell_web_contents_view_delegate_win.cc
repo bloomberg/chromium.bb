@@ -232,24 +232,4 @@ void ShellWebContentsViewDelegate::MenuItemSelected(int selection) {
   }
 }
 
-WebDragDestDelegate* ShellWebContentsViewDelegate::GetDragDestDelegate() {
-  return NULL;
-}
-
-void ShellWebContentsViewDelegate::StoreFocus() {
-}
-
-void ShellWebContentsViewDelegate::RestoreFocus() {
-}
-
-bool ShellWebContentsViewDelegate::Focus() {
-  return false;
-}
-
-void ShellWebContentsViewDelegate::TakeFocus(bool reverse) {
-}
-
-void ShellWebContentsViewDelegate::SizeChanged(const gfx::Size& size) {
-}
-
 }  // namespace content

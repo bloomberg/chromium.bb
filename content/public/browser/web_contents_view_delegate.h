@@ -2,26 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_VIEW_WIN_DELEGATE_H_
-#define CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_VIEW_WIN_DELEGATE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_VIEW_DELEGATE_H_
+#define CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_VIEW_DELEGATE_H_
 
-#if defined(OS_MACOSX)
+#if defined(__OBJC__)
 #import <Cocoa/Cocoa.h>
 #endif
 
 #include "content/common/content_export.h"
-#include "ui/gfx/native_widget_types.h"
 
-#if defined(OS_MACOSX)
+#if defined(__OBJC__)
 @protocol RenderWidgetHostViewMacDelegate;
 #endif
 
 namespace gfx {
 class Size;
-}
-
-namespace ui {
-class FocusStoreGtk;
 }
 
 namespace content {
@@ -34,33 +29,36 @@ struct ContextMenuParams;
 // WebContentsView implementation.
 class CONTENT_EXPORT WebContentsViewDelegate {
  public:
-  virtual ~WebContentsViewDelegate() {}
+  virtual ~WebContentsViewDelegate();
 
   // Returns a delegate to process drags not handled by content.
-  virtual WebDragDestDelegate* GetDragDestDelegate() = 0;
+  virtual WebDragDestDelegate* GetDragDestDelegate();
 
   // Shows a context menu.
   virtual void ShowContextMenu(RenderFrameHost* render_frame_host,
-                               const ContextMenuParams& params) = 0;
+                               const ContextMenuParams& params);
 
-#if defined(USE_AURA)
-  // These methods allow the embedder to intercept WebContentsViewWin's
-  // implementation of these WebContentsView methods. See the WebContentsView
-  // interface documentation for more information about these methods.
-  virtual void StoreFocus() = 0;
-  virtual void RestoreFocus() = 0;
-  virtual bool Focus() = 0;
-  virtual void TakeFocus(bool reverse) = 0;
-  virtual void SizeChanged(const gfx::Size& size) = 0;
-#elif defined(OS_MACOSX)
+  // These methods allow the embedder to intercept a WebContentsView's
+  // implementation of these methods. See the WebContentsView interface
+  // documentation for more information about these methods.
+  virtual void StoreFocus();
+  virtual void RestoreFocus();
+  virtual bool Focus();
+  virtual void TakeFocus(bool reverse);
+  virtual void SizeChanged(const gfx::Size& size);
+
   // Returns a newly-created delegate for the RenderWidgetHostViewMac, to handle
   // events on the responder chain.
+#if defined(__OBJC__)
   virtual NSObject<RenderWidgetHostViewMacDelegate>*
       CreateRenderWidgetHostViewDelegate(
-          RenderWidgetHost* render_widget_host) = 0;
+          RenderWidgetHost* render_widget_host);
+#else
+  virtual void* CreateRenderWidgetHostViewDelegate(
+      RenderWidgetHost* render_widget_host);
 #endif
 };
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_VIEW_WIN_DELEGATE_H_
+#endif  // CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_VIEW_DELEGATE_H_

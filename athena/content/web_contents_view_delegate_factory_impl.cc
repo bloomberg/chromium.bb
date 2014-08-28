@@ -39,10 +39,6 @@ class WebContentsViewDelegateImpl : public content::WebContentsViewDelegate {
     return false;
   }
 
-  virtual void TakeFocus(bool reverse) OVERRIDE {}
-  virtual void StoreFocus() OVERRIDE {}
-  virtual void RestoreFocus() OVERRIDE {}
-
   virtual void ShowContextMenu(
       content::RenderFrameHost* render_frame_host,
       const content::ContextMenuParams& params) OVERRIDE {

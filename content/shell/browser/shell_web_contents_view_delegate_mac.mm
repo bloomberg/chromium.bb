@@ -265,14 +265,4 @@ void ShellWebContentsViewDelegate::ActionPerformed(int tag) {
   }
 }
 
-WebDragDestDelegate* ShellWebContentsViewDelegate::GetDragDestDelegate() {
-  return NULL;
-}
-
-NSObject<RenderWidgetHostViewMacDelegate>*
-ShellWebContentsViewDelegate::CreateRenderWidgetHostViewDelegate(
-    content::RenderWidgetHost* render_widget_host) {
-  return NULL;
-}
-
 }  // namespace content

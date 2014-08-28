@@ -19,19 +19,10 @@ class ShellWebContentsViewDelegate : public WebContentsViewDelegate {
   // Overridden from WebContentsViewDelegate:
   virtual void ShowContextMenu(RenderFrameHost* render_frame_host,
                                const ContextMenuParams& params) OVERRIDE;
-  virtual WebDragDestDelegate* GetDragDestDelegate() OVERRIDE;
 
 #if defined(OS_MACOSX)
-  virtual NSObject<RenderWidgetHostViewMacDelegate>*
-      CreateRenderWidgetHostViewDelegate(
-          RenderWidgetHost* render_widget_host) OVERRIDE;
   void ActionPerformed(int id);
 #elif defined(OS_WIN)
-  virtual void StoreFocus() OVERRIDE;
-  virtual void RestoreFocus() OVERRIDE;
-  virtual bool Focus() OVERRIDE;
-  virtual void TakeFocus(bool reverse) OVERRIDE;
-  virtual void SizeChanged(const gfx::Size& size) OVERRIDE;
   void MenuItemSelected(int selection);
 #endif
 

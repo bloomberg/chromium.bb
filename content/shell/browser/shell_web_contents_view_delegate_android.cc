@@ -39,8 +39,4 @@ void ShellWebContentsViewDelegate::ShowContextMenu(
   }
 }
 
-WebDragDestDelegate* ShellWebContentsViewDelegate::GetDragDestDelegate() {
-  return NULL;
-}
-
 }  // namespace content
