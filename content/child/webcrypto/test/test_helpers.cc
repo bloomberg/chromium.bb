@@ -4,6 +4,8 @@
 
 #include "content/child/webcrypto/test/test_helpers.h"
 
+#include <algorithm>
+
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -239,15 +241,31 @@ blink::WebCryptoAlgorithm GetDigestAlgorithm(base::DictionaryValue* dict,
   return blink::WebCryptoAlgorithm::createNull();
 }
 
-// Returns true if any of the vectors in the input list have identical content.
-// Dumb O(n^2) implementation but should be fast enough for the input sizes that
-// are used.
+// Creates a comparator for |bufs| which operates on indices rather than values.
+class CompareUsingIndex {
+ public:
+  explicit CompareUsingIndex(const std::vector<std::vector<uint8_t> >* bufs)
+      : bufs_(bufs) {}
+
+  bool operator()(size_t i1, size_t i2) { return (*bufs_)[i1] < (*bufs_)[i2]; }
+
+ private:
+  const std::vector<std::vector<uint8_t> >* bufs_;
+};
+
 bool CopiesExist(const std::vector<std::vector<uint8_t> >& bufs) {
-  for (size_t i = 0; i < bufs.size(); ++i) {
-    for (size_t j = i + 1; j < bufs.size(); ++j) {
-      if (CryptoData(bufs[i]) == CryptoData(bufs[j]))
-        return true;
-    }
+  // Sort the indices of |bufs| into a separate vector. This reduces the amount
+  // of data copied versus sorting |bufs| directly.
+  std::vector<size_t> sorted_indices(bufs.size());
+  for (size_t i = 0; i < sorted_indices.size(); ++i)
+    sorted_indices[i] = i;
+  std::sort(
+      sorted_indices.begin(), sorted_indices.end(), CompareUsingIndex(&bufs));
+
+  // Scan for adjacent duplicates.
+  for (size_t i = 1; i < sorted_indices.size(); ++i) {
+    if (bufs[sorted_indices[i]] == bufs[sorted_indices[i - 1]])
+      return true;
   }
   return false;
 }

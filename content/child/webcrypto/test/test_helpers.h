@@ -98,8 +98,6 @@ blink::WebCryptoAlgorithm GetDigestAlgorithm(base::DictionaryValue* dict,
                                              const char* property_name);
 
 // Returns true if any of the vectors in the input list have identical content.
-// Dumb O(n^2) implementation but should be fast enough for the input sizes that
-// are used.
 bool CopiesExist(const std::vector<std::vector<uint8_t> >& bufs);
 
 blink::WebCryptoAlgorithm CreateAesKeyGenAlgorithm(
