@@ -22,7 +22,6 @@
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/local_discovery/storage/privet_filesystem_constants.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -194,18 +193,6 @@ VolumeInfo CreateVolumeInfoFromMountPointInfo(
   return volume_info;
 }
 
-VolumeInfo CreatePrivetVolumeInfo(
-    const local_discovery::PrivetVolumeLister::VolumeInfo& privet_volume_info) {
-  VolumeInfo volume_info;
-  volume_info.type = VOLUME_TYPE_CLOUD_DEVICE;
-  volume_info.mount_path = privet_volume_info.volume_path;
-  volume_info.mount_condition = chromeos::disks::MOUNT_CONDITION_NONE;
-  volume_info.is_parent = true;
-  volume_info.is_read_only = true;
-  volume_info.volume_id = GenerateVolumeId(volume_info);
-  return volume_info;
-}
-
 VolumeInfo CreateProvidedFileSystemVolumeInfo(
     const chromeos::file_system_provider::ProvidedFileSystemInfo&
         file_system_info) {
@@ -329,15 +316,6 @@ void VolumeManager::Initialize() {
       prefs::kExternalStorageDisabled,
       base::Bind(&VolumeManager::OnExternalStorageDisabledChanged,
                  weak_ptr_factory_.GetWeakPtr()));
-
-  // Subscribe to Privet volume lister.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePrivetStorage)) {
-    privet_volume_lister_.reset(new local_discovery::PrivetVolumeLister(
-        base::Bind(&VolumeManager::OnPrivetVolumesAvailable,
-                   weak_ptr_factory_.GetWeakPtr())));
-    privet_volume_lister_->Start();
-  }
 
   // Subscribe to storage monitor for MTP notifications.
   const bool disable_mtp =
@@ -644,15 +622,6 @@ void VolumeManager::OnExternalStorageDisabledChanged() {
           chromeos::UNMOUNT_OPTIONS_NONE,
           chromeos::disks::DiskMountManager::UnmountPathCallback());
     }
-  }
-}
-
-void VolumeManager::OnPrivetVolumesAvailable(
-    const local_discovery::PrivetVolumeLister::VolumeList& volumes) {
-  for (local_discovery::PrivetVolumeLister::VolumeList::const_iterator i =
-           volumes.begin(); i != volumes.end(); i++) {
-    VolumeInfo volume_info = CreatePrivetVolumeInfo(*i);
-    DoMountEvent(chromeos::MOUNT_ERROR_NONE, volume_info);
   }
 }
 

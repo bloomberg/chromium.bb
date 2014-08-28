@@ -2197,8 +2197,6 @@
             'browser/local_discovery/privetv3_session_unittest.cc',
             'browser/local_discovery/privetv3_setup_flow_unittest.cc',
             'browser/local_discovery/service_discovery_client_mac_unittest.mm',
-            'browser/local_discovery/storage/path_util_unittest.cc',
-            'browser/local_discovery/storage/privet_filesystem_attribute_cache_unittest.cc',
           ],
         }],
         ['configuration_policy==0', {

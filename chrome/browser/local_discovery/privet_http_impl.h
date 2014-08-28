@@ -332,12 +332,6 @@ class PrivetV1HTTPClientImpl : public PrivetV1HTTPClient {
       const PrivetJSONOperation::ResultCallback& callback) OVERRIDE;
   virtual scoped_ptr<PrivetLocalPrintOperation> CreateLocalPrintOperation(
       PrivetLocalPrintOperation::Delegate* delegate) OVERRIDE;
-  virtual scoped_ptr<PrivetJSONOperation> CreateStorageListOperation(
-      const std::string& path,
-      const PrivetJSONOperation::ResultCallback& callback) OVERRIDE;
-  virtual scoped_ptr<PrivetDataReadOperation> CreateStorageReadOperation(
-      const std::string& path,
-      const PrivetDataReadOperation::ResultCallback& callback) OVERRIDE;
 
  private:
   PrivetHTTPClient* info_client() { return info_client_.get(); }

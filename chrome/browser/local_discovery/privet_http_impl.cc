@@ -45,10 +45,6 @@ const char kPrivetContentTypePDF[] = "application/pdf";
 const char kPrivetContentTypePWGRaster[] = "image/pwg-raster";
 const char kPrivetContentTypeAny[] = "*/*";
 
-const char kPrivetStorageListPath[] = "/privet/storage/list";
-const char kPrivetStorageContentPath[] = "/privet/storage/content";
-const char kPrivetStorageParamPathFormat[] = "path=%s";
-
 const char kPrivetKeyJobID[] = "job_id";
 
 const int kPrivetCancelationTimeoutSeconds = 3;
@@ -927,26 +923,6 @@ PrivetV1HTTPClientImpl::CreateLocalPrintOperation(
     PrivetLocalPrintOperation::Delegate* delegate) {
   return scoped_ptr<PrivetLocalPrintOperation>(
       new PrivetLocalPrintOperationImpl(info_client(), delegate));
-}
-
-scoped_ptr<PrivetJSONOperation>
-PrivetV1HTTPClientImpl::CreateStorageListOperation(
-    const std::string& path,
-    const PrivetJSONOperation::ResultCallback& callback) {
-  std::string url_param =
-      base::StringPrintf(kPrivetStorageParamPathFormat, path.c_str());
-  return scoped_ptr<PrivetJSONOperation>(new PrivetJSONOperationImpl(
-      info_client(), kPrivetStorageListPath, url_param, callback));
-}
-
-scoped_ptr<PrivetDataReadOperation>
-PrivetV1HTTPClientImpl::CreateStorageReadOperation(
-    const std::string& path,
-    const PrivetDataReadOperation::ResultCallback& callback) {
-  std::string url_param =
-      base::StringPrintf(kPrivetStorageParamPathFormat, path.c_str());
-  return scoped_ptr<PrivetDataReadOperation>(new PrivetDataReadOperationImpl(
-      info_client(), kPrivetStorageContentPath, url_param, callback));
 }
 
 }  // namespace local_discovery

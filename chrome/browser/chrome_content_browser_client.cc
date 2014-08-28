@@ -235,10 +235,6 @@
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #endif
 
-#if defined(ENABLE_SERVICE_DISCOVERY)
-#include "chrome/browser/local_discovery/storage/privet_filesystem_backend.h"
-#endif
-
 #if defined(ENABLE_WEBRTC)
 #include "chrome/browser/media/webrtc_logging_handler_host.h"
 #endif
@@ -2377,14 +2373,6 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
   backend->AddSystemMountPoints();
   DCHECK(backend->CanHandleType(storage::kFileSystemTypeExternal));
   additional_backends->push_back(backend);
-#endif
-
-#if defined(ENABLE_SERVICE_DISCOVERY)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePrivetStorage)) {
-    additional_backends->push_back(new local_discovery::PrivetFileSystemBackend(
-        storage::ExternalMountPoints::GetSystemInstance(), browser_context));
-  }
 #endif
 
   for (size_t i = 0; i < extra_parts_.size(); ++i) {

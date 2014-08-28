@@ -209,15 +209,6 @@ class PrivetV1HTTPClient {
   virtual scoped_ptr<PrivetLocalPrintOperation> CreateLocalPrintOperation(
       PrivetLocalPrintOperation::Delegate* delegate) = 0;
 
-  // Creates operation to list files on local Privet storage.
-  virtual scoped_ptr<PrivetJSONOperation> CreateStorageListOperation(
-      const std::string& path,
-      const PrivetJSONOperation::ResultCallback& callback) = 0;
-
-  // Creates operation to read data from local Privet storage.
-  virtual scoped_ptr<PrivetDataReadOperation> CreateStorageReadOperation(
-      const std::string& path,
-      const PrivetDataReadOperation::ResultCallback& callback) = 0;
 };
 
 }  // namespace local_discovery
