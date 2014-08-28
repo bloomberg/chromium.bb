@@ -1629,16 +1629,19 @@ _config.add_group(constants.PRE_CQ_BUILDER_NAME,
   # the slowest one.
   pre_cq.add_config('rambi-pre-cq', boards=['rambi']),
 
-  # daisy w/kernel 3.8. We set build_packages_in_background=False here, so
-  # that subsequent boards (lumpy, parrot, duck) don't get launched until
-  # after daisy finishes BuildPackages.
+  # daisy w/kernel 3.8.
   pre_cq.add_config('daisy_spring-pre-cq', non_testable_builder,
-                    boards=['daisy_spring'],
-                    build_packages_in_background=False),
+                    boards=['daisy_spring']),
+
+  # samus w/kernel 3.14. We set build_packages_in_background=False here, so
+  # that subsequent boards (lumpy, parrot, duck) don't get launched until
+  # after samus finishes BuildPackages.
+  compile_only_pre_cq.add_config('samus-pre-cq', boards=['samus'],
+                                 build_packages_in_background=False),
 
   # lumpy w/kernel 3.8.
-  compile_only_pre_cq.add_config('lumpy-pre-cq', non_testable_builder,
-                                 boards=['lumpy']),
+  compile_only_pre_cq.add_config('lumpy-pre-cq', boards=['lumpy']),
+
   # amd64 w/kernel 3.4.
   compile_only_pre_cq.add_config('parrot-pre-cq', boards=['parrot']),
 
