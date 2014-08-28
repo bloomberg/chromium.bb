@@ -200,8 +200,7 @@ ui::Layer* OverscrollNavigationOverlay::CreateSlideLayer(int offset) {
   gfx::Image image;
   if (entry && entry->screenshot().get()) {
     std::vector<gfx::ImagePNGRep> image_reps;
-    image_reps.push_back(gfx::ImagePNGRep(entry->screenshot(),
-        ui::GetScaleFactorForNativeView(window_.get())));
+    image_reps.push_back(gfx::ImagePNGRep(entry->screenshot(), 1.0f));
     image = gfx::Image(image_reps);
   }
   if (!layer_delegate_)
