@@ -24,9 +24,14 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
       rtt_available_(false),
       rtcp_interval_(rtcp_interval),
       max_frame_rate_(max_frame_rate),
+      num_aggressive_rtcp_reports_sent_(0),
+      last_sent_frame_id_(0),
+      latest_acked_frame_id_(0),
+      duplicate_ack_counter_(0),
       weak_factory_(this) {
   SetTargetPlayoutDelay(playout_delay);
   send_target_playout_delay_ = false;
+  memset(frame_id_to_rtp_timestamp_, 0, sizeof(frame_id_to_rtp_timestamp_));
 }
 
 FrameSender::~FrameSender() {
@@ -82,6 +87,46 @@ void FrameSender::SetTargetPlayoutDelay(
                                     max_frame_rate_ /
                                     base::TimeDelta::FromSeconds(1)));
   send_target_playout_delay_ = true;
+}
+
+void FrameSender::ResendCheck() {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  DCHECK(!last_send_time_.is_null());
+  const base::TimeDelta time_since_last_send =
+      cast_environment_->Clock()->NowTicks() - last_send_time_;
+  if (time_since_last_send > target_playout_delay_) {
+    if (latest_acked_frame_id_ == last_sent_frame_id_) {
+      // Last frame acked, no point in doing anything
+    } else {
+      VLOG(1) << "ACK timeout; last acked frame: " << latest_acked_frame_id_;
+      ResendForKickstart();
+    }
+  }
+  ScheduleNextResendCheck();
+}
+
+void FrameSender::ScheduleNextResendCheck() {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  DCHECK(!last_send_time_.is_null());
+  base::TimeDelta time_to_next =
+      last_send_time_ - cast_environment_->Clock()->NowTicks() +
+      target_playout_delay_;
+  time_to_next = std::max(
+      time_to_next, base::TimeDelta::FromMilliseconds(kMinSchedulingDelayMs));
+  cast_environment_->PostDelayedTask(
+      CastEnvironment::MAIN,
+      FROM_HERE,
+      base::Bind(&FrameSender::ResendCheck, weak_factory_.GetWeakPtr()),
+      time_to_next);
+}
+
+void FrameSender::ResendForKickstart() {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  DCHECK(!last_send_time_.is_null());
+  VLOG(1) << "Resending last packet of frame " << last_sent_frame_id_
+          << " to kick-start.";
+  last_send_time_ = cast_environment_->Clock()->NowTicks();
+  transport_sender_->ResendFrameForKickstart(ssrc_, last_sent_frame_id_);
 }
 
 }  // namespace cast

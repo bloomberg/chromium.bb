@@ -61,15 +61,6 @@ class VideoSender : public FrameSender,
   void OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback);
 
  private:
-  // Schedule and execute periodic checks for re-sending packets.  If no
-  // acknowledgements have been received for "too long," VideoSender will
-  // speculatively re-send certain packets of an unacked frame to kick-start
-  // re-transmission.  This is a last resort tactic to prevent the session from
-  // getting stuck after a long outage.
-  void ScheduleNextResendCheck();
-  void ResendCheck();
-  void ResendForKickstart();
-
   // Returns true if there are too many frames in flight, as defined by the
   // configured target playout delay plus simple logic.  When this is true,
   // InsertRawVideoFrame() will silenty drop frames instead of sending them to
@@ -89,46 +80,13 @@ class VideoSender : public FrameSender,
   // a hardware-based encoder.
   scoped_ptr<VideoEncoder> video_encoder_;
 
-  // Counts how many RTCP reports are being "aggressively" sent (i.e., one per
-  // frame) at the start of the session.  Once a threshold is reached, RTCP
-  // reports are instead sent at the configured interval + random drift.
-  int num_aggressive_rtcp_reports_sent_;
-
   // The number of frames currently being processed in |video_encoder_|.
   int frames_in_encoder_;
-
-  // This is "null" until the first frame is sent.  Thereafter, this tracks the
-  // last time any frame was sent or re-sent.
-  base::TimeTicks last_send_time_;
-
-  // The ID of the last frame sent.  Logic throughout VideoSender assumes this
-  // can safely wrap-around.  This member is invalid until
-  // |!last_send_time_.is_null()|.
-  uint32 last_sent_frame_id_;
-
-  // The ID of the latest (not necessarily the last) frame that has been
-  // acknowledged.  Logic throughout VideoSender assumes this can safely
-  // wrap-around.  This member is invalid until |!last_send_time_.is_null()|.
-  uint32 latest_acked_frame_id_;
-
-  // Counts the number of duplicate ACK that are being received.  When this
-  // number reaches a threshold, the sender will take this as a sign that the
-  // receiver hasn't yet received the first packet of the next frame.  In this
-  // case, VideoSender will trigger a re-send of the next frame.
-  int duplicate_ack_counter_;
 
   // When we get close to the max number of un-acked frames, we set lower
   // the bitrate drastically to ensure that we catch up. Without this we
   // risk getting stuck in a catch-up state forever.
   CongestionControl congestion_control_;
-
-  // If this sender is ready for use, this is STATUS_VIDEO_INITIALIZED.
-  CastInitializationStatus cast_initialization_status_;
-
-  // This is a "good enough" mapping for finding the RTP timestamp associated
-  // with a video frame. The key is the lowest 8 bits of frame id (which is
-  // what is sent via RTCP). This map is used for logging purposes.
-  RtpTimestamp frame_id_to_rtp_timestamp_[256];
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<VideoSender> weak_factory_;
