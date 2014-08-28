@@ -38,7 +38,7 @@ class STORAGE_EXPORT BlobURLRequestJob
  public:
   BlobURLRequestJob(net::URLRequest* request,
                     net::NetworkDelegate* network_delegate,
-                    BlobData* blob_data,
+                    const scoped_refptr<BlobData>& blob_data,
                     storage::FileSystemContext* file_system_context,
                     base::MessageLoopProxy* resolving_message_loop_proxy);
 

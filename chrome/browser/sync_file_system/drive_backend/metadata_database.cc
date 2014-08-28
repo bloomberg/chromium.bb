@@ -524,20 +524,21 @@ struct MetadataDatabase::CreateParam {
   base::FilePath database_path;
   leveldb::Env* env_override;
 
-  CreateParam(base::SequencedTaskRunner* worker_task_runner,
-              const base::FilePath& database_path,
-              leveldb::Env* env_override)
+  CreateParam(
+      const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
+      const base::FilePath& database_path,
+      leveldb::Env* env_override)
       : worker_task_runner(worker_task_runner),
         database_path(database_path),
-        env_override(env_override) {
-  }
+        env_override(env_override) {}
 };
 
 // static
-void MetadataDatabase::Create(base::SequencedTaskRunner* worker_task_runner,
-                              const base::FilePath& database_path,
-                              leveldb::Env* env_override,
-                              const CreateCallback& callback) {
+void MetadataDatabase::Create(
+    const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
+    const base::FilePath& database_path,
+    leveldb::Env* env_override,
+    const CreateCallback& callback) {
   worker_task_runner->PostTask(FROM_HERE, base::Bind(
       &MetadataDatabase::CreateOnWorkerTaskRunner,
       base::Passed(make_scoped_ptr(new CreateParam(
@@ -1402,7 +1403,7 @@ void MetadataDatabase::SweepDirtyTrackers(
 }
 
 MetadataDatabase::MetadataDatabase(
-    base::SequencedTaskRunner* worker_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
     const base::FilePath& database_path,
     leveldb::Env* env_override)
     : worker_task_runner_(worker_task_runner),
@@ -1410,7 +1411,7 @@ MetadataDatabase::MetadataDatabase(
       env_override_(env_override),
       largest_known_change_id_(0),
       weak_ptr_factory_(this) {
-  DCHECK(worker_task_runner);
+  DCHECK(worker_task_runner.get());
 }
 
 // static
@@ -1420,7 +1421,7 @@ void MetadataDatabase::CreateOnWorkerTaskRunner(
   DCHECK(create_param->worker_task_runner->RunsTasksOnCurrentThread());
 
   scoped_ptr<MetadataDatabase> metadata_database(
-      new MetadataDatabase(create_param->worker_task_runner.get(),
+      new MetadataDatabase(create_param->worker_task_runner,
                            create_param->database_path,
                            create_param->env_override));
   SyncStatusCode status = metadata_database->Initialize();

@@ -66,7 +66,7 @@ class SyncTaskToken {
 
  private:
   SyncTaskToken(const base::WeakPtr<SyncTaskManager>& manager,
-                base::SequencedTaskRunner* task_runner,
+                const scoped_refptr<base::SequencedTaskRunner>& task_runner,
                 int64 token_id,
                 scoped_ptr<BlockingFactor> blocking_factor,
                 const SyncStatusCallback& callback);

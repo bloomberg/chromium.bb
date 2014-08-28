@@ -49,7 +49,7 @@ class WEBKIT_STORAGE_COMMON_EXPORT ScopedFile {
   // is DELETE_ON_SCOPE_OUT.
   ScopedFile(const base::FilePath& path,
              ScopeOutPolicy policy,
-             base::TaskRunner* file_task_runner);
+             const scoped_refptr<base::TaskRunner>& file_task_runner);
 
   // Move constructor and operator. The data of r-value will be transfered
   // in a destructive way. (See base/move.h)

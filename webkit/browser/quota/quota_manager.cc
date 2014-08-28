@@ -797,26 +797,26 @@ class QuotaManager::DumpOriginInfoTableHelper {
 
 // QuotaManager ---------------------------------------------------------------
 
-QuotaManager::QuotaManager(bool is_incognito,
-                           const base::FilePath& profile_path,
-                           base::SingleThreadTaskRunner* io_thread,
-                           base::SequencedTaskRunner* db_thread,
-                           SpecialStoragePolicy* special_storage_policy)
-  : is_incognito_(is_incognito),
-    profile_path_(profile_path),
-    proxy_(new QuotaManagerProxy(
-        this, io_thread)),
-    db_disabled_(false),
-    eviction_disabled_(false),
-    io_thread_(io_thread),
-    db_thread_(db_thread),
-    temporary_quota_initialized_(false),
-    temporary_quota_override_(-1),
-    desired_available_space_(-1),
-    special_storage_policy_(special_storage_policy),
-    get_disk_space_fn_(&CallSystemGetAmountOfFreeDiskSpace),
-    storage_monitor_(new StorageMonitor(this)),
-    weak_factory_(this) {
+QuotaManager::QuotaManager(
+    bool is_incognito,
+    const base::FilePath& profile_path,
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_thread,
+    const scoped_refptr<base::SequencedTaskRunner>& db_thread,
+    const scoped_refptr<SpecialStoragePolicy>& special_storage_policy)
+    : is_incognito_(is_incognito),
+      profile_path_(profile_path),
+      proxy_(new QuotaManagerProxy(this, io_thread)),
+      db_disabled_(false),
+      eviction_disabled_(false),
+      io_thread_(io_thread),
+      db_thread_(db_thread),
+      temporary_quota_initialized_(false),
+      temporary_quota_override_(-1),
+      desired_available_space_(-1),
+      special_storage_policy_(special_storage_policy),
+      get_disk_space_fn_(&CallSystemGetAmountOfFreeDiskSpace),
+      storage_monitor_(new StorageMonitor(this)),
+      weak_factory_(this) {
 }
 
 void QuotaManager::GetUsageInfo(const GetUsageInfoCallback& callback) {

@@ -70,10 +70,11 @@ class CannedSyncableFileSystem
     QUOTA_DISABLED,
   };
 
-  CannedSyncableFileSystem(const GURL& origin,
-                           leveldb::Env* env_override,
-                           base::SingleThreadTaskRunner* io_task_runner,
-                           base::SingleThreadTaskRunner* file_task_runner);
+  CannedSyncableFileSystem(
+      const GURL& origin,
+      leveldb::Env* env_override,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner);
   virtual ~CannedSyncableFileSystem();
 
   // SetUp must be called before using this instance.

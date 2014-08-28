@@ -70,7 +70,7 @@ class SyncTaskManager : public base::SupportsWeakPtr<SyncTaskManager> {
   // If |maximum_background_tasks| is zero, all task runs as foreground task.
   SyncTaskManager(base::WeakPtr<Client> client,
                   size_t maximum_background_task,
-                  base::SequencedTaskRunner* task_runner);
+                  const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   virtual ~SyncTaskManager();
 
   // This needs to be called to start task scheduling.

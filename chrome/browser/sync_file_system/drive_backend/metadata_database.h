@@ -132,10 +132,11 @@ class MetadataDatabase {
   // If |env_override| is non-NULL, internal LevelDB uses |env_override| instead
   // of leveldb::Env::Default().  Use leveldb::MemEnv in test code for faster
   // testing.
-  static void Create(base::SequencedTaskRunner* worker_task_runner,
-                     const base::FilePath& database_path,
-                     leveldb::Env* env_override,
-                     const CreateCallback& callback);
+  static void Create(
+      const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
+      const base::FilePath& database_path,
+      leveldb::Env* env_override,
+      const CreateCallback& callback);
   static SyncStatusCode CreateForTesting(
       scoped_ptr<LevelDBWrapper> db,
       scoped_ptr<MetadataDatabase>* metadata_database_out);
@@ -354,9 +355,10 @@ class MetadataDatabase {
   friend class MetadataDatabaseTest;
   struct CreateParam;
 
-  MetadataDatabase(base::SequencedTaskRunner* worker_task_runner,
-                   const base::FilePath& database_path,
-                   leveldb::Env* env_override);
+  MetadataDatabase(
+      const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
+      const base::FilePath& database_path,
+      leveldb::Env* env_override);
   static void CreateOnWorkerTaskRunner(
       scoped_ptr<CreateParam> create_param,
       const CreateCallback& callback);

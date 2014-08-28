@@ -36,8 +36,8 @@ class SyncEngineContext {
       scoped_ptr<drive::DriveServiceInterface> drive_service,
       scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
       TaskLogger* task_logger,
-      base::SingleThreadTaskRunner* ui_task_runner,
-      base::SequencedTaskRunner* worker_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner);
   ~SyncEngineContext();
 
   void SetMetadataDatabase(scoped_ptr<MetadataDatabase> metadata_database);

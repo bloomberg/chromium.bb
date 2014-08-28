@@ -158,16 +158,16 @@ class SyncEngine : public RemoteFileSyncService,
   friend class DriveBackendSyncTest;
   friend class SyncEngineTest;
 
-  SyncEngine(base::SingleThreadTaskRunner* ui_task_runner,
-             base::SequencedTaskRunner* worker_task_runner,
-             base::SequencedTaskRunner* drive_task_runner,
+  SyncEngine(const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
+             const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
+             const scoped_refptr<base::SequencedTaskRunner>& drive_task_runner,
              const base::FilePath& sync_file_system_dir,
              TaskLogger* task_logger,
              drive::DriveNotificationManager* notification_manager,
              ExtensionServiceInterface* extension_service,
              SigninManagerBase* signin_manager,
              OAuth2TokenService* token_service,
-             net::URLRequestContextGetter* request_context,
+             const scoped_refptr<net::URLRequestContextGetter>& request_context,
              scoped_ptr<DriveServiceFactory> drive_service_factory,
              leveldb::Env* env_override);
 

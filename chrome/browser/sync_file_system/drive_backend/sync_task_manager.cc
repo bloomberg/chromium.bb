@@ -55,7 +55,7 @@ bool SyncTaskManager::PendingTaskComparator::operator()(
 SyncTaskManager::SyncTaskManager(
     base::WeakPtr<Client> client,
     size_t maximum_background_task,
-    base::SequencedTaskRunner* task_runner)
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : client_(client),
       maximum_background_task_(maximum_background_task),
       pending_task_seq_(0),

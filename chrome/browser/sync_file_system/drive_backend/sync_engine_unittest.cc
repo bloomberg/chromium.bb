@@ -17,6 +17,7 @@
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_file_system {

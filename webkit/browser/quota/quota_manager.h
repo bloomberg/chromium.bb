@@ -122,11 +122,12 @@ class STORAGE_EXPORT QuotaManager
   static const int64 kIncognitoDefaultQuotaLimit;
   static const int64 kNoLimit;
 
-  QuotaManager(bool is_incognito,
-               const base::FilePath& profile_path,
-               base::SingleThreadTaskRunner* io_thread,
-               base::SequencedTaskRunner* db_thread,
-               SpecialStoragePolicy* special_storage_policy);
+  QuotaManager(
+      bool is_incognito,
+      const base::FilePath& profile_path,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_thread,
+      const scoped_refptr<base::SequencedTaskRunner>& db_thread,
+      const scoped_refptr<SpecialStoragePolicy>& special_storage_policy);
 
   // Returns a proxy object that can be used on any thread.
   QuotaManagerProxy* proxy() { return proxy_.get(); }

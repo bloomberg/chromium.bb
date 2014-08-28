@@ -50,7 +50,7 @@ void BlobProtocolHandler::SetRequestedBlobDataHandle(
 BlobProtocolHandler::BlobProtocolHandler(
     BlobStorageContext* context,
     storage::FileSystemContext* file_system_context,
-    base::MessageLoopProxy* loop_proxy)
+    const scoped_refptr<base::MessageLoopProxy>& loop_proxy)
     : file_system_context_(file_system_context), file_loop_proxy_(loop_proxy) {
   if (context)
     context_ = context->AsWeakPtr();

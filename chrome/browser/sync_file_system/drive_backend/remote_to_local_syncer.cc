@@ -79,7 +79,8 @@ scoped_ptr<FileMetadata> GetFileMetadata(MetadataDatabase* database,
 
 // Creates a temporary file in |dir_path|.  This must be called on an
 // IO-allowed task runner, and the runner must be given as |file_task_runner|.
-storage::ScopedFile CreateTemporaryFile(base::TaskRunner* file_task_runner) {
+storage::ScopedFile CreateTemporaryFile(
+    const scoped_refptr<base::TaskRunner>& file_task_runner) {
   base::FilePath temp_file_path;
   if (!base::CreateTemporaryFile(&temp_file_path))
     return storage::ScopedFile();

@@ -672,7 +672,7 @@ void FileAPIMessageFilter::OnCloneStream(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Abort if there's no Stream instance for |src_url| (source Stream which
   // we're going to make |url| point to) in the registry.
-  if (!GetStreamForURL(src_url))
+  if (!GetStreamForURL(src_url).get())
     return;
 
   stream_context_->registry()->CloneStream(url, src_url);

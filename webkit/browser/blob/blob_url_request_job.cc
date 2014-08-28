@@ -49,7 +49,7 @@ bool IsFileType(BlobData::Item::Type type) {
 BlobURLRequestJob::BlobURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
-    BlobData* blob_data,
+    const scoped_refptr<BlobData>& blob_data,
     storage::FileSystemContext* file_system_context,
     base::MessageLoopProxy* file_thread_proxy)
     : net::URLRequestJob(request, network_delegate),

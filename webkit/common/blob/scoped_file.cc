@@ -17,15 +17,15 @@ ScopedFile::ScopedFile()
     : scope_out_policy_(DONT_DELETE_ON_SCOPE_OUT) {
 }
 
-ScopedFile::ScopedFile(
-    const base::FilePath& path, ScopeOutPolicy policy,
-    base::TaskRunner* file_task_runner)
+ScopedFile::ScopedFile(const base::FilePath& path,
+                       ScopeOutPolicy policy,
+                       const scoped_refptr<base::TaskRunner>& file_task_runner)
     : path_(path),
       scope_out_policy_(policy),
       file_task_runner_(file_task_runner) {
-  DCHECK(path.empty() || policy != DELETE_ON_SCOPE_OUT || file_task_runner)
-      << "path:" << path.value()
-      << " policy:" << policy
+  DCHECK(path.empty() || policy != DELETE_ON_SCOPE_OUT ||
+         file_task_runner.get())
+      << "path:" << path.value() << " policy:" << policy
       << " runner:" << file_task_runner;
 }
 

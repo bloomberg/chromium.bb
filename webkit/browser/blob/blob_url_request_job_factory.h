@@ -45,9 +45,10 @@ class STORAGE_EXPORT BlobProtocolHandler
       net::URLRequest* request,
       scoped_ptr<BlobDataHandle> blob_data_handle);
 
-  BlobProtocolHandler(BlobStorageContext* context,
-                      storage::FileSystemContext* file_system_context,
-                      base::MessageLoopProxy* file_loop_proxy);
+  BlobProtocolHandler(
+      BlobStorageContext* context,
+      storage::FileSystemContext* file_system_context,
+      const scoped_refptr<base::MessageLoopProxy>& file_loop_proxy);
   virtual ~BlobProtocolHandler();
 
   virtual net::URLRequestJob* MaybeCreateJob(

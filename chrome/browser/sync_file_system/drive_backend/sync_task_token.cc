@@ -138,11 +138,12 @@ scoped_ptr<TaskLogger::TaskLog> SyncTaskToken::PassTaskLog() {
   return task_log_.Pass();
 }
 
-SyncTaskToken::SyncTaskToken(const base::WeakPtr<SyncTaskManager>& manager,
-                             base::SequencedTaskRunner* task_runner,
-                             int64 token_id,
-                             scoped_ptr<BlockingFactor> blocking_factor,
-                             const SyncStatusCallback& callback)
+SyncTaskToken::SyncTaskToken(
+    const base::WeakPtr<SyncTaskManager>& manager,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    int64 token_id,
+    scoped_ptr<BlockingFactor> blocking_factor,
+    const SyncStatusCallback& callback)
     : manager_(manager),
       task_runner_(task_runner),
       token_id_(token_id),

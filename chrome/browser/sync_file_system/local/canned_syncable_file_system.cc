@@ -209,8 +209,8 @@ void EnsureLastTaskRuns(base::SingleThreadTaskRunner* runner) {
 CannedSyncableFileSystem::CannedSyncableFileSystem(
     const GURL& origin,
     leveldb::Env* env_override,
-    base::SingleThreadTaskRunner* io_task_runner,
-    base::SingleThreadTaskRunner* file_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner)
     : origin_(origin),
       type_(storage::kFileSystemTypeSyncable),
       result_(base::File::FILE_OK),
