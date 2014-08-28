@@ -76,6 +76,18 @@
 393677 CHROMEOS INTEL 0xa011 : GL2FixedTests_point_rasterization_input_run = FAIL
 393677 CHROMEOS INTEL 0xa011 : GL2FixedTests_scissor_input_run = FAIL
 
+408251 WIN : GL2FixedTests_blend_input_run = FAIL
+408251 WIN : GL2FixedTests_buffer_clear_input_run = FAIL
+408251 WIN : GL2FixedTests_buffer_color_input_run = FAIL
+408251 WIN : GL2FixedTests_copy_texture_input_run = FAIL
+408251 WIN : GL2FixedTests_depth_buffer_clear_input_run = FAIL
+408251 WIN : GL2FixedTests_mipmaps_interpolation_input_run = FAIL
+408251 WIN : GL2FixedTests_stencil_plane_clear_input_run = FAIL
+408251 WIN : GL2FixedTests_triangle_tiling_input_run = FAIL
+408251 WIN : GL2FixedTests_user_clip_planes_input_run = FAIL
+408251 WIN : GL2Tests_fixed_data_type_input_run = FAIL
+408251 WIN : GL_mat_input_run = FAIL
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 //  Temprory entries: they should be removed once the bugs are fixed.
