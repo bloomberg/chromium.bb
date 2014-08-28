@@ -85,6 +85,9 @@ public abstract class TabModelBase implements TabModel {
             nativeDestroy(mNativeTabModelImpl);
             mNativeTabModelImpl = 0;
         }
+
+        mTabs.clear();
+        mObservers.clear();
     }
 
     @Override
