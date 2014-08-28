@@ -874,14 +874,14 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         if (id == CSSValueAuto)
             validPrimitive = true;
         else
-            validPrimitive = (!id && validUnit(value, FPositiveInteger, HTMLQuirksMode));
+            validPrimitive = (!id && validUnit(value, FPositiveInteger));
         break;
 
     case CSSPropertyZIndex: // auto | <integer> | inherit
         if (id == CSSValueAuto)
             validPrimitive = true;
         else
-            validPrimitive = (!id && validUnit(value, FInteger, HTMLQuirksMode));
+            validPrimitive = (!id && validUnit(value, FInteger));
         break;
 
     case CSSPropertyLineHeight:
@@ -924,7 +924,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         if (id == CSSValueNormal || id == CSSValueReset || id == CSSValueDocument)
             validPrimitive = true;
         else
-            validPrimitive = (!id && validUnit(value, FNumber | FPercent | FNonNeg, HTMLStandardMode));
+            validPrimitive = (!id && validUnit(value, FNumber | FPercent | FNonNeg));
         break;
 
     case CSSPropertySrc: // Only used within @font-face and @-webkit-filter, so cannot use inherit | initial or be !important. This is a list of urls or local references.
@@ -1045,10 +1045,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         validPrimitive = validUnit(value, FNumber);
         break;
     case CSSPropertyWebkitBoxFlexGroup:
-        validPrimitive = validUnit(value, FInteger | FNonNeg, HTMLStandardMode);
+        validPrimitive = validUnit(value, FInteger | FNonNeg);
         break;
     case CSSPropertyWebkitBoxOrdinalGroup:
-        validPrimitive = validUnit(value, FInteger | FNonNeg, HTMLStandardMode) && value->fValue;
+        validPrimitive = validUnit(value, FInteger | FNonNeg) && value->fValue;
         break;
     case CSSPropertyWebkitFilter:
         if (id == CSSValueNone)
@@ -1084,7 +1084,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         validPrimitive = validUnit(value, FNumber | FNonNeg);
         break;
     case CSSPropertyOrder:
-        validPrimitive = validUnit(value, FInteger, HTMLStandardMode);
+        validPrimitive = validUnit(value, FInteger);
         break;
     case CSSPropertyInternalMarqueeIncrement:
         validPrimitive = validUnit(value, FLength | FPercent);
@@ -1310,7 +1310,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitLineClamp:
         // When specifying number of lines, don't allow 0 as a valid value
         // When specifying either type of unit, require non-negative integers
-        validPrimitive = (!id && (value->unit == CSSPrimitiveValue::CSS_PERCENTAGE || value->fValue) && validUnit(value, FInteger | FPercent | FNonNeg, HTMLQuirksMode));
+        validPrimitive = (!id && (value->unit == CSSPrimitiveValue::CSS_PERCENTAGE || value->fValue) && validUnit(value, FInteger | FPercent | FNonNeg));
         break;
 
     case CSSPropertyWebkitFontSizeDelta:           // <length>
@@ -1866,7 +1866,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseColumnCount()
 {
     CSSParserValue* value = m_valueList->current();
     if (value->id == CSSValueAuto
-        || (!value->id && validUnit(value, FPositiveInteger, HTMLQuirksMode))) {
+        || (!value->id && validUnit(value, FPositiveInteger))) {
         RefPtrWillBeRawPtr<CSSValue> parsedValue = parseValidPrimitive(value->id, value);
         m_valueList->next();
         return parsedValue;
@@ -5221,9 +5221,9 @@ bool CSSPropertyParser::parseColorParameters(CSSParserValue* value, int* colorAr
     CSSParserValue* v = args->current();
     Units unitType = FUnknown;
     // Get the first value and its type
-    if (validUnit(v, FInteger, HTMLStandardMode))
+    if (validUnit(v, FInteger))
         unitType = FInteger;
-    else if (validUnit(v, FPercent, HTMLStandardMode))
+    else if (validUnit(v, FPercent))
         unitType = FPercent;
     else
         return false;
@@ -5234,7 +5234,7 @@ bool CSSPropertyParser::parseColorParameters(CSSParserValue* value, int* colorAr
         if (!consumeComma(args))
             return false;
         v = args->current();
-        if (!validUnit(v, unitType, HTMLStandardMode))
+        if (!validUnit(v, unitType))
             return false;
         colorArray[i] = colorIntFromValue(v);
     }
@@ -5243,7 +5243,7 @@ bool CSSPropertyParser::parseColorParameters(CSSParserValue* value, int* colorAr
         if (!consumeComma(args))
             return false;
         v = args->current();
-        if (!validUnit(v, FNumber, HTMLStandardMode))
+        if (!validUnit(v, FNumber))
             return false;
         // Convert the floating pointer number of alpha to an integer in the range [0, 256),
         // with an equal distribution across all 256 values.
@@ -5262,7 +5262,7 @@ bool CSSPropertyParser::parseHSLParameters(CSSParserValue* value, double* colorA
     CSSParserValueList* args = value->function->args.get();
     CSSParserValue* v = args->current();
     // Get the first value
-    if (!validUnit(v, FNumber, HTMLStandardMode))
+    if (!validUnit(v, FNumber))
         return false;
     // normalize the Hue value and change it to be between 0 and 1.0
     colorArray[0] = (((static_cast<int>(v->fValue) % 360) + 360) % 360) / 360.0;
@@ -5271,7 +5271,7 @@ bool CSSPropertyParser::parseHSLParameters(CSSParserValue* value, double* colorA
         if (!consumeComma(args))
             return false;
         v = args->current();
-        if (!validUnit(v, FPercent, HTMLStandardMode))
+        if (!validUnit(v, FPercent))
             return false;
         double percentValue = m_parsedCalculation ? m_parsedCalculation.release()->doubleValue() : v->fValue;
         colorArray[i] = std::max(0.0, std::min(100.0, percentValue)) / 100.0; // needs to be value between 0 and 1.0
@@ -5281,7 +5281,7 @@ bool CSSPropertyParser::parseHSLParameters(CSSParserValue* value, double* colorA
         if (!consumeComma(args))
             return false;
         v = args->current();
-        if (!validUnit(v, FNumber, HTMLStandardMode))
+        if (!validUnit(v, FNumber))
             return false;
         colorArray[3] = std::max(0.0, std::min(1.0, v->fValue));
     }
@@ -5979,7 +5979,7 @@ bool CSSPropertyParser::parseBorderImageSlice(CSSPropertyID propId, RefPtrWillBe
     BorderImageSliceParseContext context(this);
     for (CSSParserValue* val = m_valueList->current(); val; val = m_valueList->next()) {
         // FIXME calc() http://webkit.org/b/16662 : calc is parsed but values are not created yet.
-        if (context.allowNumber() && !isCalculation(val) && validUnit(val, FInteger | FNonNeg | FPercent, HTMLStandardMode)) {
+        if (context.allowNumber() && !isCalculation(val) && validUnit(val, FInteger | FNonNeg | FPercent)) {
             context.commitNumber(val);
         } else if (context.allowFill() && val->id == CSSValueFill) {
             context.commitFill();
@@ -7184,7 +7184,7 @@ PassRefPtrWillBeRawPtr<CSSFilterValue> CSSPropertyParser::parseBuiltinFilterArgu
         if (args->size()) {
             CSSParserValue* value = args->current();
             // FIXME (crbug.com/397061): Support calc expressions like calc(10% + 0.5)
-            if (value->unit != CSSPrimitiveValue::CSS_PERCENTAGE && !validUnit(value, FNumber | FNonNeg, HTMLStandardMode))
+            if (value->unit != CSSPrimitiveValue::CSS_PERCENTAGE && !validUnit(value, FNumber | FNonNeg))
                 return nullptr;
 
             double amount = value->fValue;
@@ -7208,7 +7208,7 @@ PassRefPtrWillBeRawPtr<CSSFilterValue> CSSPropertyParser::parseBuiltinFilterArgu
         if (args->size()) {
             CSSParserValue* value = args->current();
             // FIXME (crbug.com/397061): Support calc expressions like calc(10% + 0.5)
-            if (value->unit != CSSPrimitiveValue::CSS_PERCENTAGE && !validUnit(value, FNumber, HTMLStandardMode))
+            if (value->unit != CSSPrimitiveValue::CSS_PERCENTAGE && !validUnit(value, FNumber))
                 return nullptr;
 
             filterValue->append(cssValuePool().createValue(value->fValue, static_cast<CSSPrimitiveValue::UnitType>(value->unit)));
