@@ -70,6 +70,12 @@ class GuestViewBase::EmbedderWebContentsObserver : public WebContentsObserver {
     Destroy();
   }
 
+  virtual void RenderViewHostChanged(
+      content::RenderViewHost* old_host,
+      content::RenderViewHost* new_host) OVERRIDE {
+    Destroy();
+  }
+
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE {
     Destroy();
   }
