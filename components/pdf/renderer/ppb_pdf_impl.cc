@@ -322,6 +322,10 @@ void SaveAs(PP_Instance instance_id) {
       new PDFHostMsg_PDFSaveURLAs(render_view->GetRoutingID(), url, referrer));
 }
 
+void Print(PP_Instance instance) {
+  PPB_PDF_Impl::InvokePrintingForInstance(instance);
+}
+
 PP_Bool IsFeatureEnabled(PP_Instance instance, PP_PDFFeature feature) {
   switch (feature) {
     case PP_PDFFEATURE_HIDPI:
@@ -416,7 +420,7 @@ const PPB_PDF ppb_pdf = {                      //
     &UserMetricsRecordAction,                  //
     &HasUnsupportedFeature,                    //
     &SaveAs,                                   //
-    &PPB_PDF_Impl::InvokePrintingForInstance,  //
+    &Print,                                    //
     &IsFeatureEnabled,                         //
     &GetResourceImageForScale,                 //
     &ModalPromptForPassword,                   //
@@ -433,9 +437,8 @@ const PPB_PDF* PPB_PDF_Impl::GetInterface() {
 }
 
 // static
-void PPB_PDF_Impl::InvokePrintingForInstance(PP_Instance instance_id) {
-  if (g_print_client)
-    g_print_client->Print(instance_id);
+bool PPB_PDF_Impl::InvokePrintingForInstance(PP_Instance instance_id) {
+  return g_print_client ? g_print_client->Print(instance_id) : false;
 }
 
 void PPB_PDF_Impl::SetPrintClient(PPB_PDF_Impl::PrintClient* client) {

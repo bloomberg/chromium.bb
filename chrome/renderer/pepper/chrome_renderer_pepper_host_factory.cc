@@ -10,13 +10,13 @@
 #include "chrome/renderer/pepper/pepper_flash_fullscreen_host.h"
 #include "chrome/renderer/pepper/pepper_flash_menu_host.h"
 #include "chrome/renderer/pepper/pepper_flash_renderer_host.h"
-#include "chrome/renderer/pepper/pepper_pdf_host.h"
 #include "chrome/renderer/pepper/pepper_uma_host.h"
+#include "components/pdf/renderer/pepper_pdf_host.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/host/resource_host.h"
-#include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppapi_message_utils.h"
+#include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
 using ppapi::host::ResourceHost;
@@ -90,7 +90,7 @@ scoped_ptr<ResourceHost> ChromeRendererPepperHostFactory::CreateResourceHost(
     switch (message.type()) {
       case PpapiHostMsg_PDF_Create::ID: {
         return scoped_ptr<ResourceHost>(
-            new PepperPDFHost(host_, instance, params.pp_resource()));
+            new pdf::PepperPDFHost(host_, instance, params.pp_resource()));
       }
     }
   }

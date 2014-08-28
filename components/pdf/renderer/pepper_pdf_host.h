@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_PEPPER_PEPPER_PDF_HOST_H_
-#define CHROME_RENDERER_PEPPER_PEPPER_PDF_HOST_H_
+#ifndef COMPONENTS_PDF_RENDERER_PEPPER_PDF_HOST_H_
+#define COMPONENTS_PDF_RENDERER_PEPPER_PDF_HOST_H_
 
 #include <string>
 
@@ -33,6 +33,8 @@ namespace host {
 struct HostMessageContext;
 }
 }
+
+namespace pdf {
 
 class PepperPDFHost : public ppapi::host::ResourceHost {
  public:
@@ -82,4 +84,6 @@ class PepperPDFHost : public ppapi::host::ResourceHost {
   DISALLOW_COPY_AND_ASSIGN(PepperPDFHost);
 };
 
-#endif  // CHROME_RENDERER_PEPPER_PEPPER_PDF_HOST_H_
+}  // namespace pdf
+
+#endif  // COMPONENTS_PDF_RENDERER_PEPPER_PDF_HOST_H_

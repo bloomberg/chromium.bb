@@ -44,9 +44,12 @@ bool ChromePDFPrintClient::IsPrintingEnabled(PP_Instance instance_id) {
   return helper && helper->IsPrintingEnabled();
 }
 
-void ChromePDFPrintClient::Print(PP_Instance instance_id) {
+bool ChromePDFPrintClient::Print(PP_Instance instance_id) {
   blink::WebElement element = GetWebElement(instance_id);
   printing::PrintWebViewHelper* helper = GetPrintWebViewHelper(element);
-  if (helper)
+  if (helper) {
     helper->PrintNode(element);
+    return true;
+  }
+  return false;
 }

@@ -22,8 +22,8 @@ class PPB_PDF_Impl {
     virtual bool IsPrintingEnabled(PP_Instance instance_id) = 0;
 
     // Invokes the "Print" command for the plugin instance identified by
-    // |instance_id|.
-    virtual void Print(PP_Instance instance_id) = 0;
+    // |instance_id|. Returns whether the "Print" command was issued or not.
+    virtual bool Print(PP_Instance instance_id) = 0;
   };
 
   // Returns a pointer to the interface implementing PPB_PDF that is exposed
@@ -31,8 +31,9 @@ class PPB_PDF_Impl {
   static const PPB_PDF* GetInterface();
 
   // Invokes the "Print" command for the given instance as if the user right
-  // clicked on it and selected "Print".
-  static void InvokePrintingForInstance(PP_Instance instance);
+  // clicked on it and selected "Print". Returns if the "Print" command was
+  // issued or not.
+  static bool InvokePrintingForInstance(PP_Instance instance);
 
   // The caller retains the ownership of |print_client|. The client is
   // allowed to be set only once, and when set, the client must outlive the

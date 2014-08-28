@@ -1,12 +1,12 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/pepper/pepper_pdf_host.h"
+#include "components/pdf/renderer/pepper_pdf_host.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/renderer/printing/print_web_view_helper.h"
 #include "components/pdf/common/pdf_messages.h"
+#include "components/pdf/renderer/ppb_pdf_impl.h"
 #include "content/app/resources/grit/content_resources.h"
 #include "content/app/strings/grit/content_strings.h"
 #include "content/public/common/referrer.h"
@@ -100,6 +100,8 @@ const ResourceImageInfo kResourceImageMap[] = {
     {PP_RESOURCEIMAGE_PDF_PAN_SCROLL_ICON, IDR_PAN_SCROLL_ICON}, };
 
 }  // namespace
+
+namespace pdf {
 
 PepperPDFHost::PepperPDFHost(content::RendererPpapiHost* host,
                              PP_Instance instance,
@@ -215,24 +217,8 @@ int32_t PepperPDFHost::OnHostMsgHasUnsupportedFeature(
 
 int32_t PepperPDFHost::OnHostMsgPrint(
     ppapi::host::HostMessageContext* context) {
-#if defined(ENABLE_FULL_PRINTING)
-  content::PepperPluginInstance* instance =
-      host_->GetPluginInstance(pp_instance());
-  if (!instance)
-    return PP_ERROR_FAILED;
-
-  blink::WebElement element = instance->GetContainer()->element();
-  blink::WebView* view = element.document().frame()->view();
-  content::RenderView* render_view = content::RenderView::FromWebView(view);
-
-  using printing::PrintWebViewHelper;
-  PrintWebViewHelper* print_view_helper = PrintWebViewHelper::Get(render_view);
-  if (print_view_helper) {
-    print_view_helper->PrintNode(element);
-    return PP_OK;
-  }
-#endif
-  return PP_ERROR_FAILED;
+  return PPB_PDF_Impl::InvokePrintingForInstance(pp_instance()) ? PP_OK :
+      PP_ERROR_FAILED;
 }
 
 int32_t PepperPDFHost::OnHostMsgSaveAs(
@@ -390,3 +376,5 @@ bool PepperPDFHost::CreateImageData(
 
   return true;
 }
+
+}  // namespace pdf
