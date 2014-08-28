@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/blacklist.h"
+#include "chrome/browser/extensions/declarative_user_script_master.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_verifier.h"
@@ -196,7 +197,22 @@ scoped_ptr<ExtensionSet> TestExtensionSystem::GetDependentExtensions(
 DeclarativeUserScriptMaster*
 TestExtensionSystem::GetDeclarativeUserScriptMasterByExtension(
     const ExtensionId& extension_id) {
-  return NULL;
+  DCHECK(ready().is_signaled());
+  DeclarativeUserScriptMaster* master = NULL;
+  for (ScopedVector<DeclarativeUserScriptMaster>::iterator it =
+           declarative_user_script_masters_.begin();
+       it != declarative_user_script_masters_.end();
+       ++it) {
+    if ((*it)->extension_id() == extension_id) {
+      master = *it;
+      break;
+    }
+  }
+  if (!master) {
+    master = new DeclarativeUserScriptMaster(profile_, extension_id);
+    declarative_user_script_masters_.push_back(master);
+  }
+  return master;
 }
 
 // static

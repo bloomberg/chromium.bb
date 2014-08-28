@@ -29,6 +29,10 @@ class Time;
 class Value;
 }
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
 
 // This class stores a set of conditions that may be part of a DeclarativeRule.
@@ -146,10 +150,12 @@ class DeclarativeActionSet {
   // Factory method that instantiates a DeclarativeActionSet for |extension|
   // according to |actions| which represents the array of actions received from
   // the extension API.
-  static scoped_ptr<DeclarativeActionSet> Create(const Extension* extension,
-                                                 const AnyVector& actions,
-                                                 std::string* error,
-                                                 bool* bad_message);
+  static scoped_ptr<DeclarativeActionSet> Create(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      const AnyVector& actions,
+      std::string* error,
+      bool* bad_message);
 
   // Rules call this method when their conditions are fulfilled.
   void Apply(const std::string& extension_id,
@@ -223,6 +229,7 @@ class DeclarativeRule {
   // the returned rule is internally consistent.
   static scoped_ptr<DeclarativeRule> Create(
       url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
+      content::BrowserContext* browser_context,
       const Extension* extension,
       base::Time extension_installation_time,
       linked_ptr<JsonRule> rule,
@@ -358,6 +365,7 @@ DeclarativeActionSet<ActionT>::DeclarativeActionSet(const Actions& actions)
 template<typename ActionT>
 scoped_ptr<DeclarativeActionSet<ActionT> >
 DeclarativeActionSet<ActionT>::Create(
+    content::BrowserContext* browser_context,
     const Extension* extension,
     const AnyVector& actions,
     std::string* error,
@@ -370,7 +378,7 @@ DeclarativeActionSet<ActionT>::Create(
        i != actions.end(); ++i) {
     CHECK(i->get());
     scoped_refptr<const ActionT> action =
-        ActionT::Create(extension, **i, error, bad_message);
+        ActionT::Create(browser_context, extension, **i, error, bad_message);
     if (!error->empty() || *bad_message)
       return scoped_ptr<DeclarativeActionSet>();
     result.push_back(action);
@@ -446,6 +454,7 @@ template<typename ConditionT, typename ActionT>
 scoped_ptr<DeclarativeRule<ConditionT, ActionT> >
 DeclarativeRule<ConditionT, ActionT>::Create(
     url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
+    content::BrowserContext* browser_context,
     const Extension* extension,
     base::Time extension_installation_time,
     linked_ptr<JsonRule> rule,
@@ -461,7 +470,8 @@ DeclarativeRule<ConditionT, ActionT>::Create(
 
   bool bad_message = false;
   scoped_ptr<ActionSet> actions =
-      ActionSet::Create(extension, rule->actions, error, &bad_message);
+      ActionSet::Create(
+          browser_context, extension, rule->actions, error, &bad_message);
   if (bad_message) {
     // TODO(battre) Export concept of bad_message to caller, the extension
     // should be killed in case it is true.

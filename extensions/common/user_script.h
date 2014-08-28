@@ -66,6 +66,8 @@ class UserScript {
                     // particular injection point is guaranteed.
     RUN_DEFERRED,  // The user script's injection was deferred for permissions
                    // reasons, and was executed at a later time.
+    BROWSER_DRIVEN,  // The user script will be injected when triggered by an
+                     // IPC in the browser process.
     RUN_LOCATION_LAST  // Leave this as the last item.
   };
 

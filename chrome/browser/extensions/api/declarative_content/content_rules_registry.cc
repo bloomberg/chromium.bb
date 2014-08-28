@@ -160,6 +160,7 @@ std::string ContentRulesRegistry::AddRulesImpl(
 
     scoped_ptr<ContentRule> content_rule(
         ContentRule::Create(url_matcher_.condition_factory(),
+                            profile(),
                             extension,
                             extension_installation_time,
                             *rule,

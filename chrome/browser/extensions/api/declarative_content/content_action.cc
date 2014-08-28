@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_content/content_constants.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
+#include "chrome/browser/extensions/declarative_user_script_master.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
@@ -48,10 +50,12 @@ class ShowPageAction : public ContentAction {
  public:
   ShowPageAction() {}
 
-  static scoped_refptr<ContentAction> Create(const Extension* extension,
-                                             const base::DictionaryValue* dict,
-                                             std::string* error,
-                                             bool* bad_message) {
+  static scoped_refptr<ContentAction> Create(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      const base::DictionaryValue* dict,
+      std::string* error,
+      bool* bad_message) {
     // We can't show a page action if the extension doesn't have one.
     if (ActionInfo::GetPageActionInfo(extension) == NULL) {
       *error = kNoPageAction;
@@ -103,19 +107,19 @@ class ShowPageAction : public ContentAction {
 // Action that injects a content script.
 class RequestContentScript : public ContentAction {
  public:
-  RequestContentScript(const std::vector<std::string>& css_file_names,
+  RequestContentScript(content::BrowserContext* browser_context,
+                       const Extension* extension,
+                       const std::vector<std::string>& css_file_names,
                        const std::vector<std::string>& js_file_names,
                        bool all_frames,
-                       bool match_about_blank)
-      : css_file_names_(css_file_names),
-        js_file_names_(js_file_names),
-        all_frames_(all_frames),
-        match_about_blank_(match_about_blank) {}
+                       bool match_about_blank);
 
-  static scoped_refptr<ContentAction> Create(const Extension* extension,
-                                             const base::DictionaryValue* dict,
-                                             std::string* error,
-                                             bool* bad_message);
+  static scoped_refptr<ContentAction> Create(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      const base::DictionaryValue* dict,
+      std::string* error,
+      bool* bad_message);
 
   // Implementation of ContentAction:
   virtual Type GetType() const OVERRIDE {
@@ -125,31 +129,31 @@ class RequestContentScript : public ContentAction {
   virtual void Apply(const std::string& extension_id,
                      const base::Time& extension_install_time,
                      ApplyInfo* apply_info) const OVERRIDE {
-    // TODO(markdittmer): Invoke UserScriptMaster declarative script loader:
-    // load new user script.
+    InstructRenderProcessToInject(apply_info->tab, extension_id);
   }
 
   virtual void Reapply(const std::string& extension_id,
                        const base::Time& extension_install_time,
                        ApplyInfo* apply_info) const OVERRIDE {
-    // TODO(markdittmer): Invoke UserScriptMaster declarative script loader:
-    // load new user script.
+    InstructRenderProcessToInject(apply_info->tab, extension_id);
   }
 
   virtual void Revert(const std::string& extension_id,
                       const base::Time& extension_install_time,
                       ApplyInfo* apply_info) const OVERRIDE {
-    // TODO(markdittmer): Invoke UserScriptMaster declarative script loader:
-    // do not load user script if Apply() runs again on the same page.
   }
 
  private:
-  virtual ~RequestContentScript() {}
+  virtual ~RequestContentScript() {
+    DCHECK(master_);
+    master_->RemoveScript(script_);
+  }
 
-  std::vector<std::string> css_file_names_;
-  std::vector<std::string> js_file_names_;
-  bool all_frames_;
-  bool match_about_blank_;
+  void InstructRenderProcessToInject(content::WebContents* contents,
+                                     const std::string& extension_id) const;
+
+  UserScript script_;
+  DeclarativeUserScriptMaster* master_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestContentScript);
 };
@@ -173,6 +177,7 @@ static bool AppendJSStringsToCPPStrings(const base::ListValue& append_strings,
 
 // static
 scoped_refptr<ContentAction> RequestContentScript::Create(
+    content::BrowserContext* browser_context,
     const Extension* extension,
     const base::DictionaryValue* dict,
     std::string* error,
@@ -206,7 +211,52 @@ scoped_refptr<ContentAction> RequestContentScript::Create(
   }
 
   return scoped_refptr<ContentAction>(new RequestContentScript(
-      css_file_names, js_file_names, all_frames, match_about_blank));
+      browser_context,
+      extension,
+      css_file_names,
+      js_file_names,
+      all_frames,
+      match_about_blank));
+}
+
+RequestContentScript::RequestContentScript(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    const std::vector<std::string>& css_file_names,
+    const std::vector<std::string>& js_file_names,
+    bool all_frames,
+    bool match_about_blank) {
+  script_.set_id(UserScript::GenerateUserScriptID());
+  script_.set_extension_id(extension->id());
+  script_.set_run_location(UserScript::BROWSER_DRIVEN);
+  script_.set_match_all_frames(all_frames);
+  script_.set_match_about_blank(match_about_blank);
+  for (std::vector<std::string>::const_iterator it = css_file_names.begin();
+       it != css_file_names.end(); ++it) {
+    GURL url = extension->GetResourceURL(*it);
+    ExtensionResource resource = extension->GetResource(*it);
+    script_.css_scripts().push_back(UserScript::File(
+        resource.extension_root(), resource.relative_path(), url));
+  }
+  for (std::vector<std::string>::const_iterator it = js_file_names.begin();
+       it != js_file_names.end(); ++it) {
+    GURL url = extension->GetResourceURL(*it);
+    ExtensionResource resource = extension->GetResource(*it);
+    script_.js_scripts().push_back(UserScript::File(
+        resource.extension_root(), resource.relative_path(), url));
+  }
+
+  master_ =
+      ExtensionSystem::Get(browser_context)->
+      GetDeclarativeUserScriptMasterByExtension(extension->id());
+  DCHECK(master_);
+  master_->AddScript(script_);
+}
+
+void RequestContentScript::InstructRenderProcessToInject(
+    content::WebContents* contents,
+    const std::string& extension_id) const {
+  // TODO(markdittmer): Send ExtensionMsg to renderer.
 }
 
 struct ContentActionFactory {
@@ -217,6 +267,7 @@ struct ContentActionFactory {
   // semantically incorrect. |bad_message| is set to true in case |dict| does
   // not confirm to the validated JSON specification.
   typedef scoped_refptr<ContentAction>(*FactoryMethod)(
+      content::BrowserContext* /* browser_context */,
       const Extension* /* extension */,
       const base::DictionaryValue* /* dict */,
       std::string* /* error */,
@@ -248,6 +299,7 @@ ContentAction::~ContentAction() {}
 
 // static
 scoped_refptr<ContentAction> ContentAction::Create(
+    content::BrowserContext* browser_context,
     const Extension* extension,
     const base::Value& json_action,
     std::string* error,
@@ -267,7 +319,7 @@ scoped_refptr<ContentAction> ContentAction::Create(
       factory_method_iter = factory.factory_methods.find(instance_type);
   if (factory_method_iter != factory.factory_methods.end())
     return (*factory_method_iter->second)(
-        extension, action_dict, error, bad_message);
+        browser_context, extension, action_dict, error, bad_message);
 
   *error = base::StringPrintf(kInvalidInstanceTypeError, instance_type.c_str());
   return scoped_refptr<ContentAction>();

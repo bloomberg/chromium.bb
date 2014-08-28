@@ -63,10 +63,12 @@ class ContentAction : public base::RefCounted<ContentAction> {
   // Sets |error| and returns NULL in case of a semantic error that cannot
   // be caught by schema validation. Sets |bad_message| and returns NULL
   // in case the input is syntactically unexpected.
-  static scoped_refptr<ContentAction> Create(const Extension* extension,
-                                             const base::Value& json_action,
-                                             std::string* error,
-                                             bool* bad_message);
+  static scoped_refptr<ContentAction> Create(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      const base::Value& json_action,
+      std::string* error,
+      bool* bad_message);
 
  protected:
   friend class base::RefCounted<ContentAction>;

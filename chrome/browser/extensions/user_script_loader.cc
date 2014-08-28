@@ -570,7 +570,7 @@ void UserScriptLoader::SendUpdate(
 
   if (base::SharedMemory::IsHandleValid(handle_for_process)) {
     process->Send(new ExtensionMsg_UpdateUserScripts(
-        handle_for_process, "" /* owner */, changed_extensions));
+        handle_for_process, owner_extension_id_, changed_extensions));
   }
 }
 

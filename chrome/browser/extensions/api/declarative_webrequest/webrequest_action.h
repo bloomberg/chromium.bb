@@ -134,6 +134,7 @@ class WebRequestAction : public base::RefCounted<WebRequestAction> {
   // be caught by schema validation. Sets |bad_message| and returns NULL
   // in case the input is syntactically unexpected.
   static scoped_refptr<const WebRequestAction> Create(
+      content::BrowserContext* browser_context,
       const Extension* extension,
       const base::Value& json_action,
       std::string* error,

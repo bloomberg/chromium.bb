@@ -4,13 +4,19 @@
 
 #include "chrome/browser/extensions/api/declarative_content/content_action.h"
 
+#include "base/run_loop.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
+#include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,6 +27,38 @@ namespace {
 using base::test::ParseJson;
 using testing::HasSubstr;
 
+
+scoped_ptr<base::DictionaryValue> SimpleManifest() {
+  return DictionaryBuilder()
+      .Set("name", "extension")
+      .Set("manifest_version", 2)
+      .Set("version", "1.0")
+      .Build();
+}
+
+class RequestContentScriptTest : public ExtensionServiceTestBase {
+ public:
+  RequestContentScriptTest()
+      : extension_(ExtensionBuilder().SetManifest(SimpleManifest()).Build()) {};
+
+  // TODO(rdevlin.cronin): This should be SetUp(), but an issues with invoking
+  // InitializeEmptyExtensionService() within SetUp() means that we have to
+  // call this manually within every test. This can be cleaned up once said
+  // issue is fixed.
+  virtual void Init() {
+    InitializeEmptyExtensionService();
+    static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile()))->
+        SetReady();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  Profile* profile() { return profile_.get(); }
+  Extension* extension() { return extension_.get(); }
+
+ private:
+  scoped_refptr<Extension> extension_;
+};
+
 TEST(DeclarativeContentActionTest, InvalidCreation) {
   TestExtensionEnvironment env;
   std::string error;
@@ -29,21 +67,23 @@ TEST(DeclarativeContentActionTest, InvalidCreation) {
 
   // Test wrong data type passed.
   error.clear();
-  result = ContentAction::Create(NULL, *ParseJson("[]"), &error, &bad_message);
+  result = ContentAction::Create(
+      NULL, NULL, *ParseJson("[]"), &error, &bad_message);
   EXPECT_TRUE(bad_message);
   EXPECT_EQ("", error);
   EXPECT_FALSE(result.get());
 
   // Test missing instanceType element.
   error.clear();
-  result = ContentAction::Create(NULL, *ParseJson("{}"), &error, &bad_message);
+  result = ContentAction::Create(
+      NULL, NULL, *ParseJson("{}"), &error, &bad_message);
   EXPECT_TRUE(bad_message);
   EXPECT_EQ("", error);
   EXPECT_FALSE(result.get());
 
   // Test wrong instanceType element.
   error.clear();
-  result = ContentAction::Create(NULL, *ParseJson(
+  result = ContentAction::Create(NULL, NULL, *ParseJson(
       "{\n"
       "  \"instanceType\": \"declarativeContent.UnknownType\",\n"
       "}"),
@@ -59,6 +99,7 @@ TEST(DeclarativeContentActionTest, ShowPageActionWithoutPageAction) {
   std::string error;
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
+      NULL,
       extension,
       *ParseJson(
            "{\n"
@@ -79,6 +120,7 @@ TEST(DeclarativeContentActionTest, ShowPageAction) {
   std::string error;
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
+      NULL,
       extension,
       *ParseJson(
            "{\n"
@@ -109,13 +151,13 @@ TEST(DeclarativeContentActionTest, ShowPageAction) {
   EXPECT_FALSE(page_action->GetIsVisible(tab_id));
 }
 
-TEST(DeclarativeContentActionTest, RequestContentScriptMissingScripts) {
-  TestExtensionEnvironment env;
-
+TEST_F(RequestContentScriptTest, MissingScripts) {
+  Init();
   std::string error;
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
-      NULL,
+      profile(),
+      extension(),
       *ParseJson(
           "{\n"
           "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
@@ -129,13 +171,13 @@ TEST(DeclarativeContentActionTest, RequestContentScriptMissingScripts) {
   ASSERT_FALSE(result.get());
 }
 
-TEST(DeclarativeContentActionTest, RequestContentScriptCSS) {
-  TestExtensionEnvironment env;
-
+TEST_F(RequestContentScriptTest, CSS) {
+  Init();
   std::string error;
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
-      NULL,
+      profile(),
+      extension(),
       *ParseJson(
           "{\n"
           "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
@@ -149,13 +191,13 @@ TEST(DeclarativeContentActionTest, RequestContentScriptCSS) {
   EXPECT_EQ(ContentAction::ACTION_REQUEST_CONTENT_SCRIPT, result->GetType());
 }
 
-TEST(DeclarativeContentActionTest, RequestContentScriptJS) {
-  TestExtensionEnvironment env;
-
+TEST_F(RequestContentScriptTest, JS) {
+  Init();
   std::string error;
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
-      NULL,
+      profile(),
+      extension(),
       *ParseJson(
           "{\n"
           "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
@@ -169,13 +211,13 @@ TEST(DeclarativeContentActionTest, RequestContentScriptJS) {
   EXPECT_EQ(ContentAction::ACTION_REQUEST_CONTENT_SCRIPT, result->GetType());
 }
 
-TEST(DeclarativeContentActionTest, RequestContentScriptCSSBadType) {
-  TestExtensionEnvironment env;
-
+TEST_F(RequestContentScriptTest, CSSBadType) {
+  Init();
   std::string error;
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
-      NULL,
+      profile(),
+      extension(),
       *ParseJson(
           "{\n"
           "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
@@ -187,13 +229,13 @@ TEST(DeclarativeContentActionTest, RequestContentScriptCSSBadType) {
   ASSERT_FALSE(result.get());
 }
 
-TEST(DeclarativeContentActionTest, RequestContentScriptJSBadType) {
-  TestExtensionEnvironment env;
-
+TEST_F(RequestContentScriptTest, JSBadType) {
+  Init();
   std::string error;
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
-      NULL,
+      profile(),
+      extension(),
       *ParseJson(
           "{\n"
           "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
@@ -205,13 +247,13 @@ TEST(DeclarativeContentActionTest, RequestContentScriptJSBadType) {
   ASSERT_FALSE(result.get());
 }
 
-TEST(DeclarativeContentActionTest, RequestContentScriptAllFrames) {
-  TestExtensionEnvironment env;
-
+TEST_F(RequestContentScriptTest, AllFrames) {
+  Init();
   std::string error;
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
-      NULL,
+      profile(),
+      extension(),
       *ParseJson(
           "{\n"
           "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
@@ -226,13 +268,13 @@ TEST(DeclarativeContentActionTest, RequestContentScriptAllFrames) {
   EXPECT_EQ(ContentAction::ACTION_REQUEST_CONTENT_SCRIPT, result->GetType());
 }
 
-TEST(DeclarativeContentActionTest, RequestContentScriptMatchAboutBlank) {
-  TestExtensionEnvironment env;
-
+TEST_F(RequestContentScriptTest, MatchAboutBlank) {
+  Init();
   std::string error;
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
-      NULL,
+      profile(),
+      extension(),
       *ParseJson(
           "{\n"
           "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
@@ -247,13 +289,13 @@ TEST(DeclarativeContentActionTest, RequestContentScriptMatchAboutBlank) {
   EXPECT_EQ(ContentAction::ACTION_REQUEST_CONTENT_SCRIPT, result->GetType());
 }
 
-TEST(DeclarativeContentActionTest, RequestContentScriptAllFramesBadType) {
-  TestExtensionEnvironment env;
-
+TEST_F(RequestContentScriptTest, AllFramesBadType) {
+  Init();
   std::string error;
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
-      NULL,
+      profile(),
+      extension(),
       *ParseJson(
           "{\n"
           "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
@@ -266,13 +308,13 @@ TEST(DeclarativeContentActionTest, RequestContentScriptAllFramesBadType) {
   ASSERT_FALSE(result.get());
 }
 
-TEST(DeclarativeContentActionTest, RequestContentScriptMatchAboutBlankBadType) {
-  TestExtensionEnvironment env;
-
+TEST_F(RequestContentScriptTest, MatchAboutBlankBadType) {
+  Init();
   std::string error;
   bool bad_message = false;
   scoped_refptr<const ContentAction> result = ContentAction::Create(
-      NULL,
+      profile(),
+      extension(),
       *ParseJson(
           "{\n"
           "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"

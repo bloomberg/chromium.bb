@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_SYSTEM_H_
 #define CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_SYSTEM_H_
 
+#include "base/memory/scoped_vector.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/one_shot_event.h"
 
@@ -100,6 +101,7 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_ptr<StateStore> state_store_;
   // A pointer to the TestingValueStore owned by |state_store_|.
   TestingValueStore* value_store_;
+  ScopedVector<DeclarativeUserScriptMaster> declarative_user_script_masters_;
   scoped_ptr<Blacklist> blacklist_;
   scoped_ptr<StandardManagementPolicyProvider>
       standard_management_policy_provider_;

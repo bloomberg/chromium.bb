@@ -706,7 +706,8 @@ TEST(WebRequestRulesRegistrySimpleTest, StageChecker) {
 
   bool bad_message = false;
   scoped_ptr<WebRequestActionSet> actions =
-      WebRequestActionSet::Create(NULL, rule.actions, &error, &bad_message);
+      WebRequestActionSet::Create(
+          NULL, NULL, rule.actions, &error, &bad_message);
   ASSERT_TRUE(error.empty()) << error;
   ASSERT_FALSE(bad_message);
   ASSERT_TRUE(actions);
@@ -733,7 +734,7 @@ TEST(WebRequestRulesRegistrySimpleTest, HostPermissionsChecker) {
   std::string error;
   bool bad_message = false;
   scoped_ptr<WebRequestActionSet> action_set(
-      WebRequestActionSet::Create(NULL, actions, &error, &bad_message));
+      WebRequestActionSet::Create(NULL, NULL, actions, &error, &bad_message));
   ASSERT_TRUE(error.empty()) << error;
   ASSERT_FALSE(bad_message);
   ASSERT_TRUE(action_set);

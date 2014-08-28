@@ -48,6 +48,7 @@ void ScriptsRunInfo::LogRun(blink::WebFrame* frame,
         UMA_HISTOGRAM_TIMES("Extensions.InjectIdle_Time", timer.Elapsed());
       break;
     case UserScript::RUN_DEFERRED:
+    case UserScript::BROWSER_DRIVEN:
       // TODO(rdevlin.cronin): Add histograms.
       break;
     case UserScript::UNDEFINED:
