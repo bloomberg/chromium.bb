@@ -18,9 +18,6 @@ namespace base {
 // Contains data about a pending task. Stored in TaskQueue and DelayedTaskQueue
 // for use by classes that queue and execute tasks.
 struct BASE_EXPORT PendingTask : public TrackingInfo {
-#if _MSC_VER >= 1700
-  PendingTask();
-#endif
   PendingTask(const tracked_objects::Location& posted_from,
               const Closure& task);
   PendingTask(const tracked_objects::Location& posted_from,
@@ -43,6 +40,9 @@ struct BASE_EXPORT PendingTask : public TrackingInfo {
 
   // OK to dispatch from a nested loop.
   bool nestable;
+
+  // Needs high resolution timers.
+  bool is_high_res;
 };
 
 // Wrapper around std::queue specialized for PendingTask which adds a Swap

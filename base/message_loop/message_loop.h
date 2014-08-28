@@ -371,10 +371,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   void AddTaskObserver(TaskObserver* task_observer);
   void RemoveTaskObserver(TaskObserver* task_observer);
 
-  // When we go into high resolution timer mode, we will stay in hi-res mode
-  // for at least 1s.
-  static const int kHighResolutionTimerModeLeaseTimeMs = 1000;
-
 #if defined(OS_WIN)
   void set_os_modal_loop(bool os_modal_loop) {
     os_modal_loop_ = os_modal_loop;
@@ -390,7 +386,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
 
   // Returns true if the message loop has high resolution timers enabled.
   // Provided for testing.
-  bool IsHighResolutionTimerEnabledForTesting();
+  bool HasHighResolutionTasks();
 
   // Returns true if the message loop is "idle". Provided for testing.
   bool IsIdleForTesting();
@@ -458,6 +454,14 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // A list of tasks that need to be processed by this instance.  Note that
   // this queue is only accessed (push/pop) by our current thread.
   TaskQueue work_queue_;
+
+  // How many high resolution tasks are in the pending task queue. This value
+  // increases by N every time we call ReloadWorkQueue() and decreases by 1
+  // every time we call RunTask() if the task needs a high resolution timer.
+  int pending_high_res_tasks_;
+  // Tracks if we have requested high resolution timers. Its only use is to
+  // turn off the high resolution timer upon loop destruction.
+  bool in_high_res_mode_;
 
   // Contains delayed tasks, sorted by their 'delayed_run_time' property.
   DelayedTaskQueue delayed_work_queue_;

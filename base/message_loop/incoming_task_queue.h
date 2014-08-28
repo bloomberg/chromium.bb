@@ -38,16 +38,17 @@ class BASE_EXPORT IncomingTaskQueue
                           TimeDelta delay,
                           bool nestable);
 
-  // Returns true if the message loop has high resolution timers enabled.
-  // Provided for testing.
-  bool IsHighResolutionTimerEnabledForTesting();
+  // Returns true if the queue contains tasks that require higher than default
+  // timer resolution. Currently only needed for Windows.
+  bool HasHighResolutionTasks();
 
   // Returns true if the message loop is "idle". Provided for testing.
   bool IsIdleForTesting();
 
   // Loads tasks from the |incoming_queue_| into |*work_queue|. Must be called
-  // from the thread that is running the loop.
-  void ReloadWorkQueue(TaskQueue* work_queue);
+  // from the thread that is running the loop. Returns the number of tasks that
+  // require high resolution timers.
+  int ReloadWorkQueue(TaskQueue* work_queue);
 
   // Disconnects |this| from the parent message loop.
   void WillDestroyCurrentMessageLoop();
@@ -65,12 +66,11 @@ class BASE_EXPORT IncomingTaskQueue
   // does not retain |pending_task->task| beyond this function call.
   bool PostPendingTask(PendingTask* pending_task);
 
-#if defined(OS_WIN)
-  TimeTicks high_resolution_timer_expiration_;
-#endif
+  // Number of tasks that require high resolution timing. This value is kept
+  // so that ReloadWorkQueue() completes in constant time.
+  int high_res_task_count_;
 
-  // The lock that protects access to |incoming_queue_|, |message_loop_| and
-  // |next_sequence_num_|.
+  // The lock that protects access to the members of this class.
   base::Lock incoming_queue_lock_;
 
   // An incoming queue of tasks that are acquired under a mutex for processing

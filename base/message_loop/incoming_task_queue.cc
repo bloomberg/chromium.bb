@@ -7,12 +7,14 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/time/time.h"
 
 namespace base {
 namespace internal {
 
 IncomingTaskQueue::IncomingTaskQueue(MessageLoop* message_loop)
-    : message_loop_(message_loop),
+    : high_res_task_count_(0),
+      message_loop_(message_loop),
       next_sequence_num_(0) {
 }
 
@@ -24,15 +26,23 @@ bool IncomingTaskQueue::AddToIncomingQueue(
   AutoLock locked(incoming_queue_lock_);
   PendingTask pending_task(
       from_here, task, CalculateDelayedRuntime(delay), nestable);
+#if defined(OS_WIN)
+  // We consider the task needs a high resolution timer if the delay is
+  // more than 0 and less than 32ms. This caps the relative error to
+  // less than 50% : a 33ms wait can wake at 48ms since the default
+  // resolution on Windows is between 10 and 15ms.
+  if (delay > TimeDelta() &&
+      delay.InMilliseconds() < (2 * Time::kMinLowResolutionThresholdMs)) {
+    ++high_res_task_count_;
+    pending_task.is_high_res = true;
+  }
+#endif
   return PostPendingTask(&pending_task);
 }
 
-bool IncomingTaskQueue::IsHighResolutionTimerEnabledForTesting() {
-#if defined(OS_WIN)
-  return !high_resolution_timer_expiration_.is_null();
-#else
-  return true;
-#endif
+bool IncomingTaskQueue::HasHighResolutionTasks() {
+  AutoLock lock(incoming_queue_lock_);
+  return high_res_task_count_ > 0;
 }
 
 bool IncomingTaskQueue::IsIdleForTesting() {
@@ -40,29 +50,22 @@ bool IncomingTaskQueue::IsIdleForTesting() {
   return incoming_queue_.empty();
 }
 
-void IncomingTaskQueue::ReloadWorkQueue(TaskQueue* work_queue) {
+int IncomingTaskQueue::ReloadWorkQueue(TaskQueue* work_queue) {
   // Make sure no tasks are lost.
   DCHECK(work_queue->empty());
 
   // Acquire all we can from the inter-thread queue with one lock acquisition.
   AutoLock lock(incoming_queue_lock_);
   if (!incoming_queue_.empty())
-    incoming_queue_.Swap(work_queue);  // Constant time
+    incoming_queue_.Swap(work_queue);
 
-  DCHECK(incoming_queue_.empty());
+  // Reset the count of high resolution tasks since our queue is now empty.
+  int high_res_tasks = high_res_task_count_;
+  high_res_task_count_ = 0;
+  return high_res_tasks;
 }
 
 void IncomingTaskQueue::WillDestroyCurrentMessageLoop() {
-#if defined(OS_WIN)
-  // If we left the high-resolution timer activated, deactivate it now.
-  // Doing this is not-critical, it is mainly to make sure we track
-  // the high resolution timer activations properly in our unit tests.
-  if (!high_resolution_timer_expiration_.is_null()) {
-    Time::ActivateHighResolutionTimer(false);
-    high_resolution_timer_expiration_ = TimeTicks();
-  }
-#endif
-
   AutoLock lock(incoming_queue_lock_);
   message_loop_ = NULL;
 }
@@ -74,40 +77,10 @@ IncomingTaskQueue::~IncomingTaskQueue() {
 
 TimeTicks IncomingTaskQueue::CalculateDelayedRuntime(TimeDelta delay) {
   TimeTicks delayed_run_time;
-  if (delay > TimeDelta()) {
+  if (delay > TimeDelta())
     delayed_run_time = TimeTicks::Now() + delay;
-
-#if defined(OS_WIN)
-    if (high_resolution_timer_expiration_.is_null()) {
-      // Windows timers are granular to 15.6ms.  If we only set high-res
-      // timers for those under 15.6ms, then a 18ms timer ticks at ~32ms,
-      // which as a percentage is pretty inaccurate.  So enable high
-      // res timers for any timer which is within 2x of the granularity.
-      // This is a tradeoff between accuracy and power management.
-      bool needs_high_res_timers = delay.InMilliseconds() <
-          (2 * Time::kMinLowResolutionThresholdMs);
-      if (needs_high_res_timers) {
-        if (Time::ActivateHighResolutionTimer(true)) {
-          high_resolution_timer_expiration_ = TimeTicks::Now() +
-              TimeDelta::FromMilliseconds(
-                  MessageLoop::kHighResolutionTimerModeLeaseTimeMs);
-        }
-      }
-    }
-#endif
-  } else {
+  else
     DCHECK_EQ(delay.InMilliseconds(), 0) << "delay should not be negative";
-  }
-
-#if defined(OS_WIN)
-  if (!high_resolution_timer_expiration_.is_null()) {
-    if (TimeTicks::Now() > high_resolution_timer_expiration_) {
-      Time::ActivateHighResolutionTimer(false);
-      high_resolution_timer_expiration_ = TimeTicks();
-    }
-  }
-#endif
-
   return delayed_run_time;
 }
 

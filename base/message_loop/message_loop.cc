@@ -127,6 +127,8 @@ MessageLoop::DestructionObserver::~DestructionObserver() {
 
 MessageLoop::MessageLoop(Type type)
     : type_(type),
+      pending_high_res_tasks_(0),
+      in_high_res_mode_(false),
       nestable_tasks_allowed_(true),
 #if defined(OS_WIN)
       os_modal_loop_(false),
@@ -141,6 +143,8 @@ MessageLoop::MessageLoop(Type type)
 MessageLoop::MessageLoop(scoped_ptr<MessagePump> pump)
     : pump_(pump.Pass()),
       type_(TYPE_CUSTOM),
+      pending_high_res_tasks_(0),
+      in_high_res_mode_(false),
       nestable_tasks_allowed_(true),
 #if defined(OS_WIN)
       os_modal_loop_(false),
@@ -155,7 +159,10 @@ MessageLoop::~MessageLoop() {
   DCHECK_EQ(this, current());
 
   DCHECK(!run_loop_);
-
+#if defined(OS_WIN)
+  if (in_high_res_mode_)
+    Time::ActivateHighResolutionTimer(false);
+#endif
   // Clean up any unprocessed tasks, but take care: deleting a task could
   // result in the addition of more tasks (e.g., via DeleteSoon).  We set a
   // limit on the number of times we will allow a deleted task to generate more
@@ -369,8 +376,8 @@ bool MessageLoop::is_running() const {
   return run_loop_ != NULL;
 }
 
-bool MessageLoop::IsHighResolutionTimerEnabledForTesting() {
-  return incoming_task_queue_->IsHighResolutionTimerEnabledForTesting();
+bool MessageLoop::HasHighResolutionTasks() {
+  return incoming_task_queue_->HasHighResolutionTasks();
 }
 
 bool MessageLoop::IsIdleForTesting() {
@@ -425,6 +432,10 @@ bool MessageLoop::ProcessNextDelayedNonNestableTask() {
 void MessageLoop::RunTask(const PendingTask& pending_task) {
   DCHECK(nestable_tasks_allowed_);
 
+  if (pending_task.is_high_res) {
+    pending_high_res_tasks_--;
+    CHECK(pending_high_res_tasks_ >= 0);
+  }
   // Execute the task and assume the worst: It is probably not reentrant.
   nestable_tasks_allowed_ = false;
 
@@ -493,8 +504,10 @@ void MessageLoop::ReloadWorkQueue() {
   // |*work_queue| by waiting until the last minute (|*work_queue| is empty) to
   // load. That reduces the number of locks-per-task significantly when our
   // queues get large.
-  if (work_queue_.empty())
-    incoming_task_queue_->ReloadWorkQueue(&work_queue_);
+  if (work_queue_.empty()) {
+    pending_high_res_tasks_ +=
+        incoming_task_queue_->ReloadWorkQueue(&work_queue_);
+  }
 }
 
 void MessageLoop::ScheduleWork(bool was_empty) {
@@ -597,6 +610,15 @@ bool MessageLoop::DoIdleWork() {
   if (run_loop_->quit_when_idle_received_)
     pump_->Quit();
 
+  // When we return we will do a kernel wait for more tasks.
+#if defined(OS_WIN)
+  // On Windows we activate the high resolution timer so that the wait
+  // _if_ triggered by the timer happens with good resolution. If we don't
+  // do this the default resolution is 15ms which might not be acceptable
+  // for some tasks.
+  in_high_res_mode_ = pending_high_res_tasks_ > 0;
+  Time::ActivateHighResolutionTimer(in_high_res_mode_);
+#endif
   return false;
 }
 
