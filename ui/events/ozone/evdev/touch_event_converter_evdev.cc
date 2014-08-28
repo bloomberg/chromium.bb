@@ -292,7 +292,7 @@ void TouchEventConverterEvdev::ReportEvents(base::TimeDelta delta) {
       TouchEvent evt(events_[i].type_,
                      gfx::PointF(events_[i].x_, events_[i].y_),
                      /* flags */ 0,
-                     /* touch_id */ events_[i].finger_,
+                     /* touch_id */ i,
                      delta,
                      /* radius_x */ events_[i].radius_x_,
                      /* radius_y */ events_[i].radius_y_,
