@@ -205,9 +205,17 @@ void FakeControllerPairingController::SetConfirmationCodeIsCorrect(
     ChangeStage(STAGE_DEVICES_DISCOVERY);
 }
 
+void FakeControllerPairingController::SetHostConfiguration(
+    bool accepted_eula,
+    const std::string& lang,
+    const std::string& timezone,
+    bool send_reports,
+    const std::string& keyboard_layout) {
+}
+
 void FakeControllerPairingController::OnAuthenticationDone(
-    const chromeos::UserContext& user_context,
-    content::BrowserContext* browser_context) {
+    const std::string& domain,
+    const std::string& auth_token) {
   CHECK(current_stage_ == STAGE_WAITING_FOR_CREDENTIALS);
   ChangeStage(STAGE_HOST_ENROLLMENT_IN_PROGRESS);
 }

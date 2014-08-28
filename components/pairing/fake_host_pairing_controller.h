@@ -41,15 +41,20 @@ class FakeHostPairingController
   virtual std::string GetDeviceName() OVERRIDE;
   virtual std::string GetConfirmationCode() OVERRIDE;
   virtual std::string GetEnrollmentDomain() OVERRIDE;
+  virtual void OnUpdateStatusChanged(UpdateStatus update_status) OVERRIDE;
 
  private:
   void ChangeStage(Stage new_stage);
   void ChangeStageLater(Stage new_stage);
-  void SetUpdateProgress(int step);
 
-  // Overridden from HostPairingFlow::Observer:
+  // HostPairingFlow::Observer:
   virtual void PairingStageChanged(Stage new_stage) OVERRIDE;
-  virtual void UpdateAdvanced(const UpdateProgress& progress) OVERRIDE;
+  virtual void ConfigureHost(bool accepted_eula,
+                             const std::string& lang,
+                             const std::string& timezone,
+                             bool send_reports,
+                             const std::string& keyboard_layout) OVERRIDE;
+  virtual void EnrollHost(const std::string& auth_token) OVERRIDE;
 
   ObserverList<Observer> observers_;
   Stage current_stage_;

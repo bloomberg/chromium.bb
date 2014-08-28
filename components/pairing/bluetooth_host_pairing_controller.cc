@@ -329,6 +329,11 @@ std::string BluetoothHostPairingController::GetEnrollmentDomain() {
   return enrollment_domain_;
 }
 
+void BluetoothHostPairingController::OnUpdateStatusChanged(
+    UpdateStatus update_status) {
+  // TODO(zork): Handling updating stages (http://crbug.com/405754).
+}
+
 void BluetoothHostPairingController::RequestPinCode(
     device::BluetoothDevice* device) {
   // Disallow unknown device.

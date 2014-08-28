@@ -114,9 +114,18 @@ void HostPairingScreen::PairingStageChanged(Stage new_stage) {
   CommitContextChanges();
 }
 
-void HostPairingScreen::UpdateAdvanced(const UpdateProgress& progress) {
-  context_.SetDouble(kContextKeyUpdateProgress, progress.progress);
-  CommitContextChanges();
+void HostPairingScreen::ConfigureHost(bool accepted_eula,
+                                      const std::string& lang,
+                                      const std::string& timezone,
+                                      bool send_reports,
+                                      const std::string& keyboard_layout) {
+  // TODO(zork): Get configuration from UI and send to Host.
+  // (http://crbug.com/405744)
+}
+
+void HostPairingScreen::EnrollHost(const std::string& auth_token) {
+  // TODO(zork,achuith): Enroll device, send error on error.
+  // (http://crbug.com/374990)
 }
 
 void HostPairingScreen::OnActorDestroyed(HostPairingScreenActor* actor) {

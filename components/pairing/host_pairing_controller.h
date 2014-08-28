@@ -15,6 +15,7 @@ class HostPairingController {
  public:
   enum Stage {
     STAGE_NONE,
+    STAGE_INITIALIZATION_ERROR,
     STAGE_WAITING_FOR_CONTROLLER,
     STAGE_WAITING_FOR_CODE_CONFIRMATION,
     STAGE_UPDATING,
@@ -26,9 +27,11 @@ class HostPairingController {
     STAGE_FINISHED
   };
 
-  struct UpdateProgress {
-    // Number in [0, 1].
-    double progress;
+  enum UpdateStatus {
+    UPDATE_STATUS_UNKNOWN,
+    UPDATE_STATUS_UPDATING,
+    UPDATE_STATUS_REBOOTING,
+    UPDATE_STATUS_UPDATED,
   };
 
   class Observer {
@@ -39,9 +42,15 @@ class HostPairingController {
     // Called when pairing has moved on from one stage to another.
     virtual void PairingStageChanged(Stage new_stage) = 0;
 
-    // Called periodically on |STAGE_UPDATING| stage. Current update progress
-    // is stored in |progress|.
-    virtual void UpdateAdvanced(const UpdateProgress& progress) = 0;
+    // Called when the controller has sent a configuration to apply.
+    virtual void ConfigureHost(bool accepted_eula,
+                               const std::string& lang,
+                               const std::string& timezone,
+                               bool send_reports,
+                               const std::string& keyboard_layout) = 0;
+
+    // Called when the controller has provided an |auth_token| for enrollment.
+    virtual void EnrollHost(const std::string& auth_token) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
@@ -49,9 +58,6 @@ class HostPairingController {
 
   HostPairingController();
   virtual ~HostPairingController();
-
-  virtual void AddObserver(Observer* observer) = 0;
-  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Returns current stage of pairing process.
   virtual Stage GetCurrentStage() = 0;
@@ -69,6 +75,13 @@ class HostPairingController {
   // Returns an enrollment domain name. Can be called on stage
   // |STAGE_ENROLLMENT| and later.
   virtual std::string GetEnrollmentDomain() = 0;
+
+  // Notify that the update status has changed.
+  // Can be called on stage |STAGE_UPDATING|.
+  virtual void OnUpdateStatusChanged(UpdateStatus update_status) = 0;
+
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostPairingController);

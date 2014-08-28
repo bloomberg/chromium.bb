@@ -23,8 +23,6 @@ class HostPairingScreen :
 
  private:
   typedef pairing_chromeos::HostPairingController::Stage Stage;
-  typedef pairing_chromeos::HostPairingController::UpdateProgress
-      UpdateProgress;
 
   void CommitContextChanges();
 
@@ -34,9 +32,14 @@ class HostPairingScreen :
   virtual void Hide() OVERRIDE;
   virtual std::string GetName() const OVERRIDE;
 
-  // Overridden from pairing_chromeos::HostPairingController::Observer:
+  // pairing_chromeos::HostPairingController::Observer:
   virtual void PairingStageChanged(Stage new_stage) OVERRIDE;
-  virtual void UpdateAdvanced(const UpdateProgress& progress) OVERRIDE;
+  virtual void ConfigureHost(bool accepted_eula,
+                             const std::string& lang,
+                             const std::string& timezone,
+                             bool send_reports,
+                             const std::string& keyboard_layout) OVERRIDE;
+  virtual void EnrollHost(const std::string& auth_token) OVERRIDE;
 
   // Overridden from ControllerPairingView::Delegate:
   virtual void OnActorDestroyed(HostPairingScreenActor* actor) OVERRIDE;

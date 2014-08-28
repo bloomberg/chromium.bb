@@ -73,9 +73,14 @@ class FakeControllerPairingController
   virtual void RepeatDiscovery() OVERRIDE;
   virtual std::string GetConfirmationCode() OVERRIDE;
   virtual void SetConfirmationCodeIsCorrect(bool correct) OVERRIDE;
-  virtual void OnAuthenticationDone(
-      const chromeos::UserContext& user_context,
-      content::BrowserContext* browser_context) OVERRIDE;
+  virtual void SetHostConfiguration(
+      bool accepted_eula,
+      const std::string& lang,
+      const std::string& timezone,
+      bool send_reports,
+      const std::string& keyboard_layout) OVERRIDE;
+  virtual void OnAuthenticationDone(const std::string& domain,
+                                    const std::string& auth_token) OVERRIDE;
   virtual void StartSession() OVERRIDE;
 
  private:

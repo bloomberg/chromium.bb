@@ -24,6 +24,7 @@ class ControllerPairingController {
  public:
   enum Stage {
     STAGE_NONE,
+    STAGE_INITIALIZATION_ERROR,
     STAGE_DEVICES_DISCOVERY,
     STAGE_DEVICE_NOT_FOUND,
     STAGE_ESTABLISHING_CONNECTION,
@@ -59,9 +60,6 @@ class ControllerPairingController {
   ControllerPairingController();
   virtual ~ControllerPairingController();
 
-  virtual void AddObserver(Observer* observer) = 0;
-  virtual void RemoveObserver(Observer* observer) = 0;
-
   // Returns current stage of pairing process.
   virtual Stage GetCurrentStage() = 0;
 
@@ -89,15 +87,25 @@ class ControllerPairingController {
   // |STAGE_WAITING_FOR_CODE_CONFIRMATION| stage.
   virtual void SetConfirmationCodeIsCorrect(bool correct) = 0;
 
+  // Set the values that will be sent to the host if it needs to be configured.
+  virtual void SetHostConfiguration(bool accepted_eula,
+                                    const std::string& lang,
+                                    const std::string& timezone,
+                                    bool send_reports,
+                                    const std::string& keyboard_layout) = 0;
+
   // Called when user successfully authenticated on GAIA page. Can be called
   // only on |STAGE_WAITING_FOR_CREDENTIALS| stage.
-  virtual void OnAuthenticationDone(
-      const chromeos::UserContext& user_context,
-      content::BrowserContext* browser_context) = 0;
+  // |auth_token| will be sent to the host to be used for enrollment.
+  virtual void OnAuthenticationDone(const std::string& domain,
+                                    const std::string& auth_token) = 0;
 
   // Installs app and starts session.
   // Can be called only on |STAGE_PAIRING_DONE| stage.
   virtual void StartSession() = 0;
+
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ControllerPairingController);

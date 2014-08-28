@@ -16,7 +16,6 @@
 #include "net/base/io_buffer.h"
 
 namespace {
-const char* kFakeEnrollmentDomain = "http://fake.com";
 const int kReceiveSize = 16384;
 }
 
@@ -304,20 +303,24 @@ void BluetoothControllerPairingController::SetConfirmationCodeIsCorrect(
   }
 }
 
-void BluetoothControllerPairingController::OnAuthenticationDone(
-    const chromeos::UserContext& user_context,
-    content::BrowserContext* browser_context) {
-  DCHECK_EQ(current_stage_, STAGE_WAITING_FOR_CREDENTIALS);
-
+void BluetoothControllerPairingController::SetHostConfiguration(
+    bool accepted_eula,
+    const std::string& lang,
+    const std::string& timezone,
+    bool send_reports,
+    const std::string& keyboard_layout) {
   // TODO(zork): Get configuration from UI and send to Host.
   // (http://crbug.com/405744)
+}
 
-  // TODO(zork): Get proper credentials. (http://crbug.com/405744)
-  // For now, send a fake domain.
+void BluetoothControllerPairingController::OnAuthenticationDone(
+    const std::string& domain,
+    const std::string& auth_token) {
+  DCHECK_EQ(current_stage_, STAGE_WAITING_FOR_CREDENTIALS);
+
   pairing_api::PairDevices pair_devices;
   pair_devices.set_api_version(kPairingAPIVersion);
-  pair_devices.mutable_parameters()->set_admin_access_token(
-      kFakeEnrollmentDomain);
+  pair_devices.mutable_parameters()->set_admin_access_token(auth_token);
 
   int size = 0;
   scoped_refptr<net::IOBuffer> io_buffer(
@@ -341,39 +344,29 @@ void BluetoothControllerPairingController::StartSession() {
 void BluetoothControllerPairingController::OnHostStatusMessage(
     const pairing_api::HostStatus& message) {
   if (got_initial_status_) {
-    if (message.parameters().has_domain()) {
-      // TODO(zork): Remove this if we don't actually need the domain for UI.
-      // (http://crbug.com/405761)
-      if (message.parameters().domain() == kFakeEnrollmentDomain) {
-        pairing_api::CompleteSetup complete_setup;
-        complete_setup.set_api_version(kPairingAPIVersion);
-        // TODO(zork): Get AddAnother from UI (http://crbug.com/405757)
-        complete_setup.mutable_parameters()->set_add_another(false);
+    // TODO(zork): Check that the domain matches. (http://crbug.com/405761)
+    // TODO(zork): Handling updating stages (http://crbug.com/405754).
+    pairing_api::CompleteSetup complete_setup;
+    complete_setup.set_api_version(kPairingAPIVersion);
+    // TODO(zork): Get AddAnother from UI (http://crbug.com/405757)
+    complete_setup.mutable_parameters()->set_add_another(false);
 
-        int size = 0;
-        scoped_refptr<net::IOBuffer> io_buffer(
-            ProtoDecoder::SendCompleteSetup(complete_setup, &size));
+    int size = 0;
+    scoped_refptr<net::IOBuffer> io_buffer(
+        ProtoDecoder::SendCompleteSetup(complete_setup, &size));
 
-        socket_->Send(
-            io_buffer, size,
-            base::Bind(&BluetoothControllerPairingController::OnSendComplete,
-                       ptr_factory_.GetWeakPtr()),
-            base::Bind(
-                &BluetoothControllerPairingController::OnErrorWithMessage,
-                ptr_factory_.GetWeakPtr()));
-        ChangeStage(STAGE_PAIRING_DONE);
-      } else {
-        ChangeStage(STAGE_HOST_ENROLLMENT_ERROR);
-      }
-    } else {
-      ChangeStage(STAGE_HOST_ENROLLMENT_ERROR);
-    }
+    socket_->Send(
+        io_buffer, size,
+        base::Bind(&BluetoothControllerPairingController::OnSendComplete,
+                   ptr_factory_.GetWeakPtr()),
+        base::Bind(
+            &BluetoothControllerPairingController::OnErrorWithMessage,
+            ptr_factory_.GetWeakPtr()));
+    ChangeStage(STAGE_PAIRING_DONE);
   } else {
     got_initial_status_ = true;
 
     // TODO(zork): Check domain. (http://crbug.com/405761)
-
-    // TODO(zork): Handling updating stages (http://crbug.com/405754).
     ChangeStage(STAGE_WAITING_FOR_CREDENTIALS);
   }
 }

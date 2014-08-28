@@ -8,12 +8,15 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/login/auth/user_context.h"
 #include "components/pairing/fake_controller_pairing_controller.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 using namespace chromeos::controller_pairing;
 using namespace pairing_chromeos;
+
+namespace {
+const char* kTestAuthToken = "TestAuthToken";
+};
 
 namespace chromeos {
 
@@ -197,13 +200,12 @@ void ControllerPairingScreen::OnUserActed(const std::string& action) {
     context_.SetString(kContextKeyPage, kPageAuthentication);
     disable_controls = false;
   } else if (action == kActionEnroll) {
-    std::string account_id =
+    const std::string account_id =
         gaia::SanitizeEmail(context_.GetString(kContextKeyAccountId));
-    context_.SetString(kContextKeyEnrollmentDomain,
-                       gaia::ExtractDomainName(account_id));
-    UserContext user_context(account_id);
-    controller_->OnAuthenticationDone(user_context,
-                                      actor_->GetBrowserContext());
+    const std::string domain(gaia::ExtractDomainName(account_id));
+    context_.SetString(kContextKeyEnrollmentDomain, domain);
+    // TODO(zork): Get proper credentials. (http://crbug.com/405744)
+    controller_->OnAuthenticationDone(domain, kTestAuthToken);
   } else if (action == kActionStartSession) {
     controller_->StartSession();
   }

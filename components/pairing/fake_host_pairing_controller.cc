@@ -16,7 +16,6 @@
 
 namespace {
 
-const int kUpdateStepsNumber = 10;
 const int kDefaultAsyncDurationMs = 3000;
 const size_t kCodeLength = 6;
 
@@ -91,24 +90,6 @@ void FakeHostPairingController::ChangeStageLater(Stage new_stage) {
       async_duration_);
 }
 
-void FakeHostPairingController::SetUpdateProgress(int step) {
-  UpdateProgress progress;
-  progress.progress = double(step) / kUpdateStepsNumber;
-  FOR_EACH_OBSERVER(Observer, observers_, UpdateAdvanced(progress));
-  base::Closure task;
-  if (step >= kUpdateStepsNumber) {
-    task = base::Bind(&FakeHostPairingController::ChangeStage,
-                      base::Unretained(this),
-                      STAGE_WAITING_FOR_CONTROLLER_AFTER_UPDATE);
-  } else {
-    task = base::Bind(&FakeHostPairingController::SetUpdateProgress,
-                      base::Unretained(this),
-                      step + 1);
-  }
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, task, async_duration_ / kUpdateStepsNumber);
-}
-
 void FakeHostPairingController::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -143,6 +124,10 @@ std::string FakeHostPairingController::GetEnrollmentDomain() {
   return enrollment_domain_;
 }
 
+void FakeHostPairingController::OnUpdateStatusChanged(
+    UpdateStatus update_status) {
+}
+
 void FakeHostPairingController::PairingStageChanged(Stage new_stage) {
   switch (new_stage) {
     case STAGE_WAITING_FOR_CONTROLLER: {
@@ -154,7 +139,7 @@ void FakeHostPairingController::PairingStageChanged(Stage new_stage) {
       break;
     }
     case STAGE_UPDATING: {
-      SetUpdateProgress(0);
+      ChangeStageLater(STAGE_WAITING_FOR_CONTROLLER_AFTER_UPDATE);
       break;
     }
     case STAGE_WAITING_FOR_CONTROLLER_AFTER_UPDATE: {
@@ -186,7 +171,15 @@ void FakeHostPairingController::PairingStageChanged(Stage new_stage) {
   }
 }
 
-void FakeHostPairingController::UpdateAdvanced(const UpdateProgress& progress) {
+void FakeHostPairingController::ConfigureHost(
+    bool accepted_eula,
+    const std::string& lang,
+    const std::string& timezone,
+    bool send_reports,
+    const std::string& keyboard_layout) {
+}
+
+void FakeHostPairingController::EnrollHost(const std::string& auth_token) {
 }
 
 }  // namespace pairing_chromeos
