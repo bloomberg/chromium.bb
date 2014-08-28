@@ -67,6 +67,9 @@ public:
     virtual void setContinuousPaintingEnabled(bool) OVERRIDE;
     virtual void setShowScrollBottleneckRects(bool) OVERRIDE;
     virtual void resetScrollAndPageScaleFactor() OVERRIDE;
+    virtual float minimumPageScaleFactor() OVERRIDE;
+    virtual float maximumPageScaleFactor() OVERRIDE;
+    virtual void setPageScaleFactor(float) OVERRIDE;
     virtual void showContextMenu(float x, float y, PassRefPtr<ContextMenuProvider>) OVERRIDE;
 
     virtual void dispatchKeyEvent(const PlatformKeyboardEvent&) OVERRIDE;

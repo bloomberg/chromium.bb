@@ -842,6 +842,11 @@ void InspectorPageAgent::resetScrollAndPageScaleFactor(ErrorString*)
     m_client->resetScrollAndPageScaleFactor();
 }
 
+void InspectorPageAgent::setPageScaleFactor(ErrorString*, double pageScaleFactor)
+{
+    m_client->setPageScaleFactor(static_cast<float>(pageScaleFactor));
+}
+
 bool InspectorPageAgent::deviceMetricsChanged(bool enabled, int width, int height, double deviceScaleFactor, bool mobile, bool fitWindow, double scale, double offsetX, double offsetY)
 {
     bool currentEnabled = m_state->getBoolean(PageAgentState::deviceMetricsOverrideEnabled);
@@ -1187,7 +1192,9 @@ void InspectorPageAgent::viewportChanged()
         .setScrollY(viewRect.y())
         .setContentsWidth(contentsSize.width())
         .setContentsHeight(contentsSize.height())
-        .setPageScaleFactor(m_page->pageScaleFactor());
+        .setPageScaleFactor(m_page->pageScaleFactor())
+        .setMinimumPageScaleFactor(m_client->minimumPageScaleFactor())
+        .setMaximumPageScaleFactor(m_client->maximumPageScaleFactor());
     m_frontend->viewportChanged(viewport);
 }
 

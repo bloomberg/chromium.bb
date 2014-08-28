@@ -140,6 +140,21 @@ void InspectorClientImpl::resetScrollAndPageScaleFactor()
     m_inspectedWebView->resetScrollAndScaleState();
 }
 
+float InspectorClientImpl::minimumPageScaleFactor()
+{
+    return m_inspectedWebView->minimumPageScaleFactor();
+}
+
+float InspectorClientImpl::maximumPageScaleFactor()
+{
+    return m_inspectedWebView->maximumPageScaleFactor();
+}
+
+void InspectorClientImpl::setPageScaleFactor(float pageScaleFactor)
+{
+    m_inspectedWebView->setPageScaleFactor(pageScaleFactor);
+}
+
 void InspectorClientImpl::showContextMenu(float x, float y, PassRefPtr<ContextMenuProvider> menuProvider)
 {
     m_inspectedWebView->showContextMenuAtPoint(x, y, menuProvider);
