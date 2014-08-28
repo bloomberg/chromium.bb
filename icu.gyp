@@ -331,6 +331,19 @@
                 'source/stubdata/stubdata.c',
               ],
             }],
+            [ 'OS == "win" and clang==1', {
+              # Note: General clang warnings should go in the
+              # clang_warning_flags block above.
+              'msvs_settings': {
+                'VCCLCompilerTool': {
+                  'AdditionalOptions': [
+                    # See http://bugs.icu-project.org/trac/ticket/11122
+                    '-Wno-inline-new-delete',
+                    '-Wno-implicit-exception-spec-mismatch',
+                  ],
+                },
+              },
+            }],
             ['OS == "android" and use_system_stlport == 1', {
               'target_conditions': [
                 ['_toolset == "target"', {
