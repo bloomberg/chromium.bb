@@ -978,7 +978,6 @@
         ['target_arch=="ia32" or target_arch=="x64"', {
           'dependencies': [
             'media_asm',
-            'media_mmx',
             'media_sse2',
           ],
           'sources': [
@@ -1414,7 +1413,6 @@
           'type': 'static_library',
           'sources': [
             'base/simd/convert_rgb_to_yuv_ssse3.asm',
-            'base/simd/convert_yuv_to_rgb_mmx.asm',
             'base/simd/convert_yuv_to_rgb_sse.asm',
             'base/simd/convert_yuva_to_argb_mmx.asm',
             'base/simd/empty_register_state_mmx.asm',
@@ -1493,22 +1491,6 @@
           'msvs_2010_disable_uldi_when_referenced': 1,
           'includes': [
             '../third_party/yasm/yasm_compile.gypi',
-          ],
-        },
-        {
-          'target_name': 'media_mmx',
-          'type': 'static_library',
-          'cflags': [
-            '-mmmx',
-          ],
-          'defines': [
-            'MEDIA_IMPLEMENTATION',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'base/simd/filter_yuv_mmx.cc',
           ],
         },
         {
