@@ -42,7 +42,7 @@ Activity::ActivityState AppActivityProxy::GetCurrentState() {
 }
 
 bool AppActivityProxy::IsVisible() {
-  return true;
+  return false;
 }
 
 Activity::ActivityMediaState AppActivityProxy::GetMediaState() {

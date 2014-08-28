@@ -8,6 +8,7 @@
 #include "athena/content/app_activity_registry.h"
 #include "athena/content/public/app_registry.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/aura/window.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 
@@ -81,7 +82,11 @@ Activity::ActivityState AppActivity::GetCurrentState() {
 }
 
 bool AppActivity::IsVisible() {
-  return web_view_ && web_view_->IsDrawn();
+  return web_view_ &&
+         web_view_->IsDrawn() &&
+         current_state_ != ACTIVITY_UNLOADED &&
+         GetWindow() &&
+         GetWindow()->IsVisible();
 }
 
 Activity::ActivityMediaState AppActivity::GetMediaState() {

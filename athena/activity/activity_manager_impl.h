@@ -7,8 +7,11 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 
 namespace athena {
+
+class ActivityManagerObserver;
 
 class ActivityManagerImpl : public ActivityManager {
  public:
@@ -21,9 +24,13 @@ class ActivityManagerImpl : public ActivityManager {
   virtual void AddActivity(Activity* activity) OVERRIDE;
   virtual void RemoveActivity(Activity* activity) OVERRIDE;
   virtual void UpdateActivity(Activity* activity) OVERRIDE;
+  virtual void AddObserver(ActivityManagerObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(ActivityManagerObserver* observer) OVERRIDE;
 
  private:
   std::vector<Activity*> activities_;
+
+  ObserverList<ActivityManagerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivityManagerImpl);
 };

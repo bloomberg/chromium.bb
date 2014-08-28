@@ -110,8 +110,7 @@ void AppActivityRegistry::RestartApplication(AppActivityProxy* proxy) {
   DCHECK_EQ(unloaded_activity_proxy_, proxy);
   // Restart the application.
   ExtensionsDelegate::Get(browser_context_)->LaunchApp(app_id_);
-  // Remove the activity from the Activity manager.
-  ActivityManager::Get()->RemoveActivity(unloaded_activity_proxy_);
+  // Delete the activity which will also remove the it from the ActivityManager.
   delete unloaded_activity_proxy_;  // Will call ProxyDestroyed.
   // After this call |this| might be gone if the app did not open a window yet.
 }

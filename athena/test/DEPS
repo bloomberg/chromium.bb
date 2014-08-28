@@ -6,6 +6,7 @@ include_rules = [
   "+athena/home/public",
   "+athena/screen/public",
   "+athena/main",
+  "+athena/resource_manager/public",
   "+chromeos/dbus",
   "+third_party/skia/include",
   "+ui/app_list",

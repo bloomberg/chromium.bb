@@ -12,6 +12,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "ui/aura/window.h"
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/focus_manager.h"
@@ -346,7 +347,11 @@ Activity::ActivityState WebActivity::GetCurrentState() {
 }
 
 bool WebActivity::IsVisible() {
-  return web_view_ && web_view_->IsDrawn();
+  return web_view_ &&
+         web_view_->IsDrawn() &&
+         current_state_ != ACTIVITY_UNLOADED &&
+         GetWindow() &&
+         GetWindow()->IsVisible();
 }
 
 Activity::ActivityMediaState WebActivity::GetMediaState() {

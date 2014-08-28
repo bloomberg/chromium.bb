@@ -7,8 +7,10 @@
 #include <algorithm>
 
 #include "athena/activity/public/activity.h"
+#include "athena/activity/public/activity_manager_observer.h"
 #include "athena/activity/public/activity_view_manager.h"
 #include "base/logging.h"
+#include "base/observer_list.h"
 
 namespace athena {
 
@@ -37,11 +39,17 @@ void ActivityManagerImpl::AddActivity(Activity* activity) {
   activities_.push_back(activity);
   ActivityViewManager* manager = ActivityViewManager::Get();
   manager->AddActivity(activity);
+  FOR_EACH_OBSERVER(ActivityManagerObserver,
+                    observers_,
+                    OnActivityStarted(activity));
 }
 
 void ActivityManagerImpl::RemoveActivity(Activity* activity) {
   std::vector<Activity*>::iterator find =
       std::find(activities_.begin(), activities_.end(), activity);
+  FOR_EACH_OBSERVER(ActivityManagerObserver,
+                    observers_,
+                    OnActivityEnding(activity));
   if (find != activities_.end()) {
     activities_.erase(find);
     ActivityViewManager* manager = ActivityViewManager::Get();
@@ -52,6 +60,14 @@ void ActivityManagerImpl::RemoveActivity(Activity* activity) {
 void ActivityManagerImpl::UpdateActivity(Activity* activity) {
   ActivityViewManager* manager = ActivityViewManager::Get();
   manager->UpdateActivity(activity);
+}
+
+void ActivityManagerImpl::AddObserver(ActivityManagerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ActivityManagerImpl::RemoveObserver(ActivityManagerObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 // static
@@ -72,5 +88,6 @@ void ActivityManager::Shutdown() {
   delete instance;
   ActivityViewManager::Shutdown();
 }
+
 
 }  // namespace athena

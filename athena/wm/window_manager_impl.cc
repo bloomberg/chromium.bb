@@ -241,6 +241,15 @@ void WindowManagerImpl::OnWindowDestroying(aura::Window* window) {
     container_.reset();
 }
 
+void WindowManagerImpl::OnWindowStackingChanged(aura::Window* window) {
+  // TODO(skuhne): Use |window_list_provider_->IsValidWindow(window)| instead.
+  if (window->type() == ui::wm::WINDOW_TYPE_NORMAL) {
+    FOR_EACH_OBSERVER(WindowManagerObserver,
+                      observers_,
+                      OnActivityOrderHasChanged());
+  }
+}
+
 bool WindowManagerImpl::IsCommandEnabled(int command_id) const {
   return true;
 }

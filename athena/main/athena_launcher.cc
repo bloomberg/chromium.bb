@@ -17,6 +17,7 @@
 #include "athena/main/placeholder.h"
 #include "athena/main/placeholder.h"
 #include "athena/main/url_search_provider.h"
+#include "athena/resource_manager/public/resource_manager.h"
 #include "athena/screen/public/screen_manager.h"
 #include "athena/screen/public/screen_manager.h"
 #include "athena/system/public/system_ui.h"
@@ -148,11 +149,13 @@ void StartAthenaSession(athena::ActivityFactory* activity_factory,
                         athena::AppModelBuilder* app_model_builder) {
   athena::HomeCard::Create(app_model_builder);
   athena::ActivityManager::Create();
+  athena::ResourceManager::Create();
   athena::ActivityFactory::RegisterActivityFactory(activity_factory);
 }
 
 void ShutdownAthena() {
   athena::ActivityFactory::Shutdown();
+  athena::ResourceManager::Shutdown();
   athena::ActivityManager::Shutdown();
   athena::HomeCard::Shutdown();
   athena::AppRegistry::ShutDown();

@@ -10,6 +10,7 @@
 namespace athena {
 
 class Activity;
+class ActivityManagerObserver;
 
 // Manages a set of activities.
 class ATHENA_EXPORT ActivityManager {
@@ -26,6 +27,9 @@ class ATHENA_EXPORT ActivityManager {
 
   // Updates the UI when the task color/title changes.
   virtual void UpdateActivity(Activity* activity) = 0;
+
+  virtual void AddObserver(ActivityManagerObserver* observer) = 0;
+  virtual void RemoveObserver(ActivityManagerObserver* observer) = 0;
 };
 
 }  // namespace athena

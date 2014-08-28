@@ -265,6 +265,7 @@ class HomeCardImpl : public HomeCard,
   // WindowManagerObserver:
   virtual void OnOverviewModeEnter() OVERRIDE;
   virtual void OnOverviewModeExit() OVERRIDE;
+  virtual void OnActivityOrderHasChanged() OVERRIDE;
 
   // aura::client::ActivationChangeObserver:
   virtual void OnWindowActivated(aura::Window* gained_active,
@@ -477,6 +478,9 @@ void HomeCardImpl::OnOverviewModeEnter() {
 
 void HomeCardImpl::OnOverviewModeExit() {
   SetState(VISIBLE_MINIMIZED);
+}
+
+void HomeCardImpl::OnActivityOrderHasChanged() {
 }
 
 void HomeCardImpl::OnWindowActivated(aura::Window* gained_active,
