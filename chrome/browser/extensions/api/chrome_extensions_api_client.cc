@@ -12,6 +12,7 @@
 #include "chrome/browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "device/hid/hid_service.h"
 #include "extensions/browser/guest_view/app_view/app_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
@@ -77,6 +78,15 @@ WebViewPermissionHelperDelegate* ChromeExtensionsAPIClient::
     CreateWebViewPermissionHelperDelegate(
         WebViewPermissionHelper* web_view_permission_helper) const {
   return new ChromeWebViewPermissionHelperDelegate(web_view_permission_helper);
+}
+
+device::HidService* ChromeExtensionsAPIClient::GetHidService() {
+  if (!hid_service_) {
+    hid_service_.reset(device::HidService::Create(
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::UI)));
+  }
+  return hid_service_.get();
 }
 
 void ChromeExtensionsAPIClient::RegisterGuestViewTypes() {

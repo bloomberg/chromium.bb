@@ -20,7 +20,7 @@ class HidConnection;
 
 class HidService {
  public:
-  static HidService* GetInstance(
+  static HidService* Create(
       scoped_refptr<base::MessageLoopProxy> ui_message_loop);
 
   virtual ~HidService();

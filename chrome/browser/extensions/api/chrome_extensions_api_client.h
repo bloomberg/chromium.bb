@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_CHROME_EXTENSIONS_API_CLIENT_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "extensions/browser/api/extensions_api_client.h"
 
 namespace extensions {
@@ -38,9 +39,12 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
   virtual WebViewPermissionHelperDelegate*
       CreateWebViewPermissionHelperDelegate(
           WebViewPermissionHelper* web_view_permission_helper) const OVERRIDE;
+  virtual device::HidService* GetHidService() OVERRIDE;
   virtual void RegisterGuestViewTypes() OVERRIDE;
 
  private:
+  scoped_ptr<device::HidService> hid_service_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsAPIClient);
 };
 

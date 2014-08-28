@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
-#include "content/public/browser/browser_thread.h"
 #include "device/hid/hid_service.h"
+#include "extensions/browser/api/extensions_api_client.h"
 
 using device::HidService;
 using device::HidUsageAndPage;
@@ -17,10 +17,7 @@ using device::HidUsageAndPage;
 namespace extensions {
 
 HidDeviceManager::HidDeviceManager(content::BrowserContext* context)
-    : next_resource_id_(0),
-      ui_message_loop_(content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::UI)) {
-}
+  : next_resource_id_(0) {}
 
 HidDeviceManager::~HidDeviceManager() {}
 
@@ -37,7 +34,7 @@ scoped_ptr<base::ListValue> HidDeviceManager::GetApiDevices(
     uint16_t product_id) {
   UpdateDevices();
 
-  HidService* hid_service = HidService::GetInstance(ui_message_loop_);
+  HidService* hid_service = ExtensionsAPIClient::Get()->GetHidService();
   DCHECK(hid_service);
   base::ListValue* api_devices = new base::ListValue();
   for (ResourceIdToDeviceIdMap::const_iterator device_iter =
@@ -100,7 +97,7 @@ scoped_ptr<base::ListValue> HidDeviceManager::GetApiDevices(
 bool HidDeviceManager::GetDeviceInfo(int resource_id,
                                      device::HidDeviceInfo* device_info) {
   UpdateDevices();
-  HidService* hid_service = HidService::GetInstance(ui_message_loop_);
+  HidService* hid_service = ExtensionsAPIClient::Get()->GetHidService();
   DCHECK(hid_service);
 
   ResourceIdToDeviceIdMap::const_iterator device_iter =
@@ -113,7 +110,7 @@ bool HidDeviceManager::GetDeviceInfo(int resource_id,
 
 void HidDeviceManager::UpdateDevices() {
   thread_checker_.CalledOnValidThread();
-  HidService* hid_service = HidService::GetInstance(ui_message_loop_);
+  HidService* hid_service = ExtensionsAPIClient::Get()->GetHidService();
   DCHECK(hid_service);
 
   std::vector<device::HidDeviceInfo> devices;

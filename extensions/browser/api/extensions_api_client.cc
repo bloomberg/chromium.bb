@@ -45,6 +45,12 @@ AppViewGuestDelegate* ExtensionsAPIClient::CreateAppViewGuestDelegate() const {
   return NULL;
 }
 
+device::HidService* ExtensionsAPIClient::GetHidService() {
+  // This should never be called by clients which don't support the HID API.
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 WebViewGuestDelegate* ExtensionsAPIClient::CreateWebViewGuestDelegate(
     WebViewGuest* web_view_guest) const {
   return NULL;

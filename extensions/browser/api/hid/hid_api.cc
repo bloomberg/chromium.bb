@@ -11,6 +11,7 @@
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_service.h"
 #include "extensions/browser/api/api_resource_manager.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/common/api/hid.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
@@ -126,9 +127,7 @@ void HidConnectFunction::AsyncWorkStart() {
     return;
   }
 
-  HidService* hid_service = HidService::GetInstance(
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::UI));
+  HidService* hid_service = ExtensionsAPIClient::Get()->GetHidService();
   DCHECK(hid_service);
   scoped_refptr<HidConnection> connection =
       hid_service->Connect(device_info.device_id);

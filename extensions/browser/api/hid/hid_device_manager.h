@@ -10,9 +10,7 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/thread_checker.h"
 #include "device/hid/hid_device_info.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -54,8 +52,6 @@ class HidDeviceManager : public BrowserContextKeyedAPI {
 
   ResourceIdToDeviceIdMap device_ids_;
   DeviceIdToResourceIdMap resource_ids_;
-
-  scoped_refptr<base::MessageLoopProxy> ui_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(HidDeviceManager);
 };
