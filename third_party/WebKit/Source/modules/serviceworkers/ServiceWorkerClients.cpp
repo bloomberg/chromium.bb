@@ -6,6 +6,7 @@
 #include "modules/serviceworkers/ServiceWorkerClients.h"
 
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
+#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "modules/serviceworkers/ServiceWorkerClient.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
@@ -54,11 +55,21 @@ ServiceWorkerClients::ServiceWorkerClients()
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ServiceWorkerClients);
 
-ScriptPromise ServiceWorkerClients::getServiced(ScriptState* scriptState)
+ScriptPromise ServiceWorkerClients::getAll(ScriptState* scriptState, const Dictionary& options)
 {
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+
+    bool includeUncontrolled = false;
+    DictionaryHelper::get(options, "includeUncontrolled", includeUncontrolled);
+    if (includeUncontrolled) {
+        // FIXME: Currently we don't support includeUncontrolled=true.
+        resolver->reject(DOMException::create(NotSupportedError, "includeUncontrolled parameter of getAll is not supported."));
+        return promise;
+    }
+
     ServiceWorkerGlobalScopeClient::from(scriptState->executionContext())->getClients(new CallbackPromiseAdapter<ClientArray, ServiceWorkerError>(resolver));
-    return resolver->promise();
+    return promise;
 }
 
 } // namespace blink

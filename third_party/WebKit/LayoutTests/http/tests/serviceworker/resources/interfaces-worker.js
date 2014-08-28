@@ -19,7 +19,7 @@ test(function() {
     verifyInterface('ServiceWorkerClients',
                     self.clients,
                     {
-                        getServiced: 'function'
+                        getAll: 'function'
                     });
 
     verifyInterface('ServiceWorkerClient');

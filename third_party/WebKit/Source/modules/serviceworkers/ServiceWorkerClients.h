@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class Dictionary;
 class ExecutionContext;
 class ScriptPromise;
 class ScriptState;
@@ -23,7 +24,7 @@ public:
     static PassRefPtrWillBeRawPtr<ServiceWorkerClients> create();
 
     // ServiceWorkerClients.idl
-    ScriptPromise getServiced(ScriptState*);
+    ScriptPromise getAll(ScriptState*, const Dictionary&);
 
     void trace(Visitor*) { }
 

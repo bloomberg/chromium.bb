@@ -1,5 +1,5 @@
 self.onmessage = function(e) {
-    self.clients.getServiced().then(function(clients) {
+    self.clients.getAll().then(function(clients) {
         clients.forEach(function(client) {
             var messageChannel = new MessageChannel();
             messageChannel.port1.onmessage = onMessageViaMessagePort.bind(null, client);
