@@ -158,7 +158,20 @@ public class ImeTest extends ContentShellTestBase {
         copy(mImeAdapter);
         assertWaitForKeyboardStatus(true);
         assertEquals(11, Selection.getSelectionEnd(mContentViewCore.getEditableForTest()));
-        assertEquals(11, Selection.getSelectionEnd(mContentViewCore.getEditableForTest()));
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testImeNotDismissedAfterCutSelection() throws Exception {
+        commitText(mConnection, "Sample Text", 1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1,
+                "Sample Text", 11, 11, -1, -1);
+        DOMUtils.longPressNode(this, mContentViewCore, "input_text");
+        assertWaitForSelectActionBarStatus(true);
+        assertWaitForKeyboardStatus(true);
+        cut(mImeAdapter);
+        assertWaitForKeyboardStatus(true);
+        assertWaitForSelectActionBarStatus(false);
     }
 
     @SmallTest
