@@ -3,6 +3,10 @@
  * found in the LICENSE file.
  */
 
+.window-body {
+  position: relative;
+}
+
 html.apps-v2,
 html.apps-v2 body {
   height: 100%;

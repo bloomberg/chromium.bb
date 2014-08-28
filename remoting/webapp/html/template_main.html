@@ -25,77 +25,81 @@ found in the LICENSE file.
 
     <meta-include src="webapp/html/window_frame.html"/>
 
-    <!-- loading-mode is initially visible, but becomes hidden as soon as an
-         AppMode is selected by remoting.init. All other divs are initially
-         hidden, but are shown appropriately when the mode changes. -->
-    <section id="loading-mode" data-ui-mode="">
-      <em>Loading&hellip;</em>
-    </section>
+    <div class="window-body">
 
-    <div id="daemon-plugin-container"></div>
-    <div id="host-plugin-container"></div>
+      <!-- loading-mode is initially visible, but becomes hidden as soon as an
+           AppMode is selected by remoting.init. All other divs are initially
+           hidden, but are shown appropriately when the mode changes. -->
+      <section id="loading-mode" data-ui-mode="">
+        <em>Loading&hellip;</em>
+      </section>
 
-    <iframe id="wcs-sandbox" src="wcs_sandbox.html" hidden></iframe>
+      <div id="daemon-plugin-container"></div>
+      <div id="host-plugin-container"></div>
 
-    <div class="dialog-screen"
-         data-ui-mode="home.host home.client home.history home.confirm-host-delete home.host-setup home.token-refresh-failed home.manage-pairings home.host-setup home.host-install"
-         hidden></div>
+      <iframe id="wcs-sandbox" src="wcs_sandbox.html" hidden></iframe>
 
-    <div id="scroller">
-      <div class="inset home-screen" data-ui-mode="home" hidden>
+      <div class="dialog-screen"
+           data-ui-mode="home.host home.client home.history home.confirm-host-delete home.host-setup home.token-refresh-failed home.manage-pairings home.host-setup home.host-install"
+           hidden></div>
 
-        <meta-include src="webapp/html/ui_header.html"/>
-        <meta-include src="webapp/html/butterbar.html"/>
-        <meta-include src="webapp/html/ui_it2me.html"/>
-        <meta-include src="webapp/html/ui_me2me.html"/>
+      <div id="scroller">
+        <div class="inset home-screen" data-ui-mode="home" hidden>
 
-      </div>  <!-- inset -->
+          <meta-include src="webapp/html/ui_header.html"/>
+          <meta-include src="webapp/html/butterbar.html"/>
+          <meta-include src="webapp/html/ui_it2me.html"/>
+          <meta-include src="webapp/html/ui_me2me.html"/>
 
-      <meta-include src="webapp/html/dialog_auth.html"/>
+        </div>  <!-- inset -->
 
-      <div class="dialog-container"
-           data-ui-mode="home.host home.client home.history home.confirm-host-delete home.host-install home.host-setup home.token-refresh-failed home.manage-pairings"
-           hidden>
+        <meta-include src="webapp/html/dialog_auth.html"/>
 
-        <meta-include src="webapp/html/dialog_token_refresh_failed.html"/>
-        <meta-include src="webapp/html/dialog_host_setup.html"/>
-        <meta-include src="webapp/html/dialog_host_install.html"/>
-        <meta-include src="webapp/html/dialog_host.html"/>
+        <div class="dialog-container"
+             data-ui-mode="home.host home.client home.history home.confirm-host-delete home.host-install home.host-setup home.token-refresh-failed home.manage-pairings"
+             hidden>
 
-        <div id="client-dialog"
-             class="kd-modaldialog"
-             data-ui-mode="home.client">
+          <meta-include src="webapp/html/dialog_token_refresh_failed.html"/>
+          <meta-include src="webapp/html/dialog_host_setup.html"/>
+          <meta-include src="webapp/html/dialog_host_install.html"/>
+          <meta-include src="webapp/html/dialog_host.html"/>
 
-          <meta-include src="webapp/html/dialog_client_unconnected.html"/>
-          <meta-include src="webapp/html/dialog_client_connecting.html"/>
-          <meta-include src="webapp/html/dialog_client_host_needs_upgrade.html"/>
-          <meta-include src="webapp/html/dialog_client_pin_prompt.html"/>
-          <meta-include src="webapp/html/dialog_client_third_party_auth.html"/>
-          <meta-include src="webapp/html/dialog_client_connect_failed.html"/>
-          <meta-include src="webapp/html/dialog_client_session_finished.html"/>
+          <div id="client-dialog"
+               class="kd-modaldialog"
+               data-ui-mode="home.client">
 
+            <meta-include src="webapp/html/dialog_client_unconnected.html"/>
+            <meta-include src="webapp/html/dialog_client_connecting.html"/>
+            <meta-include src="webapp/html/dialog_client_host_needs_upgrade.html"/>
+            <meta-include src="webapp/html/dialog_client_pin_prompt.html"/>
+            <meta-include src="webapp/html/dialog_client_third_party_auth.html"/>
+            <meta-include src="webapp/html/dialog_client_connect_failed.html"/>
+            <meta-include src="webapp/html/dialog_client_session_finished.html"/>
+
+          </div>
+
+          <meta-include src="webapp/html/dialog_connection_history.html"/>
+          <meta-include src="webapp/html/dialog_confirm_host_delete.html"/>
+          <meta-include src="webapp/html/dialog_manage_pairings.html"/>
+
+        </div>  <!-- dialog-container -->
+
+        <div id="session-mode"
+             data-ui-mode="in-session home.client"
+             class="full-height"
+             hidden>
+
+          <meta-include src="webapp/html/toolbar.html"/>
+          <meta-include src="webapp/html/client_plugin.html"/>
+
+        </div>  <!-- session-mode -->
+
+        <div id="statistics" dir="ltr" class="selectable" hidden>
         </div>
 
-        <meta-include src="webapp/html/dialog_connection_history.html"/>
-        <meta-include src="webapp/html/dialog_confirm_host_delete.html"/>
-        <meta-include src="webapp/html/dialog_manage_pairings.html"/>
+      </div>  <!-- scroller -->
 
-      </div>  <!-- dialog-container -->
-
-      <div id="session-mode"
-           data-ui-mode="in-session home.client"
-           class="full-height"
-           hidden>
-
-        <meta-include src="webapp/html/toolbar.html"/>
-        <meta-include src="webapp/html/client_plugin.html"/>
-
-      </div>  <!-- session-mode -->
-
-      <div id="statistics" dir="ltr" class="selectable" hidden>
-      </div>
-
-    </div>  <!-- scroller ->
+    </div>  <!-- window-body -->
 
   </body>
 </html>
