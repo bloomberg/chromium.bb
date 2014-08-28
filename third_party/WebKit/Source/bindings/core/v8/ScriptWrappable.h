@@ -95,6 +95,12 @@ public:
         ASSERT((reinterpret_cast<intptr_t>(this) & 0x3) == 0);
         return this;
     }
+
+    void assertWrapperSanity(v8::Local<v8::Object> object)
+    {
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(object.IsEmpty()
+            || object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == toInternalPointer());
+    }
 };
 
 /**
@@ -254,6 +260,8 @@ public:
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(value == 0
             || value->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toInternalPointer(objectAsT));
     }
+
+    using ScriptWrappableBase::assertWrapperSanity;
 
     inline bool containsWrapper() const { return (m_wrapperOrTypeInfo & 1); }
     inline bool containsTypeInfo() const { return m_wrapperOrTypeInfo && !(m_wrapperOrTypeInfo & 1); }
