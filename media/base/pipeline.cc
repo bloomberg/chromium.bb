@@ -153,9 +153,13 @@ void Pipeline::SetVolume(float volume) {
 }
 
 TimeDelta Pipeline::GetMediaTime() const {
+  if (!renderer_)
+    return TimeDelta();
+
+  TimeDelta media_time = renderer_->GetMediaTime();
+
   base::AutoLock auto_lock(lock_);
-  return renderer_ ? std::min(renderer_->GetMediaTime(), duration_)
-                   : TimeDelta();
+  return std::min(media_time, duration_);
 }
 
 Ranges<TimeDelta> Pipeline::GetBufferedTimeRanges() const {
@@ -439,7 +443,7 @@ void Pipeline::OnStopCompleted(PipelineStatus status) {
   DCHECK(!text_renderer_);
 
   {
-    base::AutoLock l(lock_);
+    base::AutoLock auto_lock(lock_);
     running_ = false;
   }
 

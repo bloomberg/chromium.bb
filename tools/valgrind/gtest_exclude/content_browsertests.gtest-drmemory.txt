@@ -4,8 +4,3 @@ WebRtcBrowserTest.NoCrashWhenConnectChromiumSinkToRemoteTrack
 # crbug.com/400490
 PluginTest.PluginSingleRangeRequest
 PluginTest.PluginThreadAsyncCall
-
-# crbug.com/407452
-*/MediaTest.*
-MediaSourceTest.*
-*/EncryptedMediaTest.*

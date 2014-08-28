@@ -18,9 +18,7 @@ const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
 
 // Supported media types.
 const char kWebMAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
-#if !defined(THREAD_SANITIZER)
 const char kWebMVideoOnly[] = "video/webm; codecs=\"vp8\"";
-#endif  // !defined(THREAD_SANITIZER)
 const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
 
 // EME-specific test results and errors.
@@ -148,8 +146,6 @@ INSTANTIATE_TEST_CASE_P(SRC_ClearKey, EncryptedMediaTest,
 INSTANTIATE_TEST_CASE_P(MSE_ClearKey, EncryptedMediaTest,
                         Combine(Values(kClearKeyKeySystem), Values(MSE)));
 
-// http://crbug.com/407452
-#if !defined(THREAD_SANITIZER)
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
   TestSimplePlayback("bear-a_enc-a.webm", kWebMAudioOnly);
 }
@@ -173,7 +169,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM) {
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo) {
   TestConfigChange();
 }
-#endif  // !defined(THREAD_SANITIZER)
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
   // Times out on Windows XP. http://crbug.com/171937

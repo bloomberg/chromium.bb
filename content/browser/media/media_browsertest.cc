@@ -110,8 +110,6 @@ class MediaTest : public testing::WithParamInterface<bool>,
   }
 };
 
-// http://crbug.com/407452
-#if !defined(THREAD_SANITIZER)
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearTheora) {
   PlayVideo("bear.ogv", GetParam());
 }
@@ -236,13 +234,10 @@ IN_PROC_BROWSER_TEST_F(MediaTest, Navigate) {
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
   EXPECT_FALSE(shell()->web_contents()->IsCrashed());
 }
-#endif  // !defined(THREAD_SANITIZER)
 
 INSTANTIATE_TEST_CASE_P(File, MediaTest, ::testing::Values(false));
 INSTANTIATE_TEST_CASE_P(Http, MediaTest, ::testing::Values(true));
 
-// http://crbug.com/407452
-#if !defined(THREAD_SANITIZER)
 IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv420pTheora)) {
   RunColorFormatTest("yuv420p.ogv", kEnded);
 }
@@ -262,8 +257,6 @@ IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv420pVp8)) {
 IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv444pVp9)) {
   RunColorFormatTest("yuv444p.webm", "ENDED");
 }
-
-#endif  // !defined(THREAD_SANITIZER)
 
 #if defined(USE_PROPRIETARY_CODECS)
 IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv420pH264)) {

@@ -456,9 +456,10 @@ void RendererImpl::StartPlayback() {
     interpolation_state_ = INTERPOLATION_WAITING_FOR_AUDIO_TIME_UPDATE;
     time_source_->StartTicking();
   } else {
+    base::TimeDelta duration = get_duration_cb_.Run();
     base::AutoLock auto_lock(interpolator_lock_);
     interpolation_state_ = INTERPOLATION_STARTED;
-    interpolator_->SetUpperBound(get_duration_cb_.Run());
+    interpolator_->SetUpperBound(duration);
     interpolator_->StartInterpolating();
   }
 }
@@ -505,8 +506,9 @@ void RendererImpl::OnAudioRendererEnded() {
 
   // Start clock since there is no more audio to trigger clock updates.
   {
+    base::TimeDelta duration = get_duration_cb_.Run();
     base::AutoLock auto_lock(interpolator_lock_);
-    interpolator_->SetUpperBound(get_duration_cb_.Run());
+    interpolator_->SetUpperBound(duration);
     StartClockIfWaitingForTimeUpdate_Locked();
   }
 
@@ -537,9 +539,9 @@ void RendererImpl::RunEndedCallbackIfNeeded() {
     return;
 
   {
+    base::TimeDelta duration = get_duration_cb_.Run();
     base::AutoLock auto_lock(interpolator_lock_);
     PauseClockAndStopTicking_Locked();
-    base::TimeDelta duration = get_duration_cb_.Run();
     interpolator_->SetBounds(duration, duration);
   }
 
