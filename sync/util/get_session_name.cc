@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/task_runner.h"
 
@@ -53,6 +54,7 @@ std::string GetSessionNameSynchronously() {
   if (session_name == "Unknown" || session_name.empty())
     session_name = base::SysInfo::OperatingSystemName();
 
+  DCHECK(base::IsStringUTF8(session_name));
   return session_name;
 }
 

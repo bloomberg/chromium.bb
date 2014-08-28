@@ -4,16 +4,24 @@
 
 #include "sync/util/get_session_name_win.h"
 
+#include "base/logging.h"
+#include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
+
 #include <windows.h>
 
 namespace syncer {
 namespace internal {
 
 std::string GetComputerName() {
-  char computer_name[MAX_COMPUTERNAME_LENGTH + 1];
-  DWORD size = sizeof(computer_name);
-  if (GetComputerNameA(computer_name, &size))
-    return computer_name;
+  wchar_t computer_name[MAX_COMPUTERNAME_LENGTH + 1] = {0};
+  DWORD size = arraysize(computer_name);
+  if (::GetComputerNameW(computer_name, &size)) {
+    std::string result;
+    bool conversion_successful = base::WideToUTF8(computer_name, size, &result);
+    DCHECK(conversion_successful);
+    return result;
+  }
   return std::string();
 }
 
