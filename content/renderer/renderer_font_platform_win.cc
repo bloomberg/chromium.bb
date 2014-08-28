@@ -11,12 +11,14 @@
 #include <wrl/wrappers/corewrappers.h>
 
 #include "base/debug/alias.h"
+#include "base/debug/crash_logging.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/registry.h"
@@ -26,6 +28,8 @@ namespace {
 
 namespace mswr = Microsoft::WRL;
 namespace mswrw = Microsoft::WRL::Wrappers;
+
+static const char kFontKeyName[] = "font_key_name";
 
 class FontCollectionLoader
     : public mswr::RuntimeClass<mswr::RuntimeClassFlags<mswr::ClassicCom>,
@@ -67,7 +71,9 @@ class FontFileStream
                    UINT64 file_offset,
                    UINT64 fragment_size,
                    void** context) {
-    if (!memory_.get() || !memory_->IsValid())
+    if (!memory_.get() || !memory_->IsValid() ||
+        file_offset >= memory_->length() ||
+        (file_offset + fragment_size) > memory_->length())
       return E_FAIL;
 
     *fragment_start = static_cast<BYTE const*>(memory_->data()) +
@@ -106,7 +112,8 @@ class FontFileStream
   HRESULT RuntimeClassInitialize(UINT32 font_key) {
     base::FilePath path;
     PathService::Get(base::DIR_WINDOWS_FONTS, &path);
-    path = path.Append(g_font_loader->GetFontNameFromKey(font_key).c_str());
+    std::wstring font_key_name(g_font_loader->GetFontNameFromKey(font_key));
+    path = path.Append(font_key_name.c_str());
     memory_.reset(new base::MemoryMappedFile());
 
     // Put some debug information on stack.
@@ -120,6 +127,9 @@ class FontFileStream
     }
 
     font_key_ = font_key;
+
+    base::debug::SetCrashKeyValue(kFontKeyName,
+                                  base::WideToUTF8(font_key_name));
     return S_OK;
   }
 
@@ -298,6 +308,8 @@ IDWriteFontCollection* GetCustomFontCollection(IDWriteFactory* factory) {
 
   CHECK(SUCCEEDED(hr));
   CHECK(g_font_collection.Get() != NULL);
+
+  base::debug::ClearCrashKey(kFontKeyName);
 
   return g_font_collection.Get();
 }

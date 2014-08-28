@@ -61,6 +61,8 @@ const char kChannel[] = "channel";
 
 const char kActiveURL[] = "url-chunk";
 
+const char kFontKeyName[] = "font_key_name";
+
 const char kSwitch[] = "switch-%" PRIuS;
 const char kNumSwitches[] = "num-switches";
 
@@ -144,6 +146,7 @@ size_t RegisterChromeCrashKeys() {
     // base/:
     { "dm-usage", kSmallSize },
     // content/:
+    { kFontKeyName, kSmallSize},
     { "ppapi_path", kMediumSize },
     { "subresource_url", kLargeSize },
 #if defined(OS_CHROMEOS)
