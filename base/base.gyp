@@ -593,6 +593,7 @@
         'test/expectations/expectation_unittest.cc',
         'test/expectations/parser_unittest.cc',
         'test/histogram_tester_unittest.cc',
+        'test/test_pending_task_unittest.cc',
         'test/test_reg_util_win_unittest.cc',
         'test/trace_event_analyzer_unittest.cc',
         'threading/non_thread_safe_unittest.cc',

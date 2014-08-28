@@ -5,7 +5,10 @@
 #ifndef BASE_TEST_TEST_PENDING_TASK_H_
 #define BASE_TEST_TEST_PENDING_TASK_H_
 
+#include <string>
+
 #include "base/callback.h"
+#include "base/debug/trace_event_argument.h"
 #include "base/location.h"
 #include "base/time/time.h"
 
@@ -51,8 +54,19 @@ struct TestPendingTask {
   TimeTicks post_time;
   TimeDelta delay;
   TestNestability nestability;
+
+  // Functions for using test pending task with tracing, useful in unit
+  // testing.
+  void AsValueInto(base::debug::TracedValue* state) const;
+  scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;
+  std::string ToString() const;
 };
+
+// gtest helpers which allow pretty printing of the tasks, very useful in unit
+// testing.
+std::ostream& operator<<(std::ostream& os, const TestPendingTask& task);
+void PrintTo(const TestPendingTask& task, std::ostream* os);
 
 }  // namespace base
 
-#endif  // BASE_TEST_TEST_TASK_RUNNER_H_
+#endif  // BASE_TEST_TEST_PENDING_TASK_H_
