@@ -62,6 +62,7 @@ class HistoryClient;
 class HistoryDatabase;
 class HistoryDBTask;
 class HistoryQueryTest;
+class HistoryTest;
 class InMemoryHistoryBackend;
 class InMemoryURLIndex;
 class InMemoryURLIndexTest;
@@ -110,17 +111,6 @@ class HistoryService : public content::NotificationObserver,
 
   // Returns true if the backend has finished loading.
   bool backend_loaded() const { return backend_loaded_; }
-
-  // Called on shutdown, this will tell the history backend to complete and
-  // will release pointers to it. No other functions should be called once
-  // cleanup has happened that may dispatch to the history thread (because it
-  // will be NULL).
-  //
-  // In practice, this will be called by the service manager (BrowserProcess)
-  // when it is being destroyed. Because that reference is being destroyed, it
-  // should be impossible for anybody else to call the service, even if it is
-  // still in memory (pending requests may be holding a reference to us).
-  void Cleanup();
 
   // Context ids are used to scope page IDs (see AddPage). These contexts
   // must tell us when they are being invalidated so that we can clear
@@ -533,6 +523,7 @@ class HistoryService : public content::NotificationObserver,
   friend class history::HistoryQueryTest;
   friend class HistoryOperation;
   friend class HistoryQuickProviderTest;
+  friend class history::HistoryTest;
   friend class HistoryURLProvider;
   friend class HistoryURLProviderTest;
   friend class history::InMemoryURLIndexTest;
@@ -540,6 +531,17 @@ class HistoryService : public content::NotificationObserver,
   friend class PageUsageRequest;
   friend class RedirectRequest;
   friend class TestingProfile;
+
+  // Called on shutdown, this will tell the history backend to complete and
+  // will release pointers to it. No other functions should be called once
+  // cleanup has happened that may dispatch to the history thread (because it
+  // will be NULL).
+  //
+  // In practice, this will be called by the service manager (BrowserProcess)
+  // when it is being destroyed. Because that reference is being destroyed, it
+  // should be impossible for anybody else to call the service, even if it is
+  // still in memory (pending requests may be holding a reference to us).
+  void Cleanup();
 
   // Implementation of content::NotificationObserver.
   virtual void Observe(int type,

@@ -231,63 +231,6 @@ bool HistoryService::BackendLoaded() {
   return backend_loaded_;
 }
 
-void HistoryService::Cleanup() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!thread_) {
-    // We've already cleaned up.
-    return;
-  }
-
-  weak_ptr_factory_.InvalidateWeakPtrs();
-
-  // Unload the backend.
-  if (history_backend_.get()) {
-    // Get rid of the in-memory backend.
-    in_memory_backend_.reset();
-
-    // Give the InMemoryURLIndex a chance to shutdown.
-    // NOTE: In tests, there may be no index.
-    if (in_memory_url_index_)
-      in_memory_url_index_->ShutDown();
-
-    // The backend's destructor must run on the history thread since it is not
-    // threadsafe. So this thread must not be the last thread holding a
-    // reference to the backend, or a crash could happen.
-    //
-    // We have a reference to the history backend. There is also an extra
-    // reference held by our delegate installed in the backend, which
-    // HistoryBackend::Closing will release. This means if we scheduled a call
-    // to HistoryBackend::Closing and *then* released our backend reference,
-    // there will be a race between us and the backend's Closing function to see
-    // who is the last holder of a reference. If the backend thread's Closing
-    // manages to run before we release our backend refptr, the last reference
-    // will be held by this thread and the destructor will be called from here.
-    //
-    // Therefore, we create a closure to run the Closing operation first. This
-    // holds a reference to the backend. Then we release our reference, then we
-    // schedule the task to run. After the task runs, it will delete its
-    // reference from the history thread, ensuring everything works properly.
-    //
-    // TODO(ajwong): Cleanup HistoryBackend lifetime issues.
-    //     See http://crbug.com/99767.
-    history_backend_->AddRef();
-    base::Closure closing_task =
-        base::Bind(&HistoryBackend::Closing, history_backend_.get());
-    ScheduleTask(PRIORITY_NORMAL, closing_task);
-    closing_task.Reset();
-    HistoryBackend* raw_ptr = history_backend_.get();
-    history_backend_ = NULL;
-    thread_->message_loop()->ReleaseSoon(FROM_HERE, raw_ptr);
-  }
-
-  // Delete the thread, which joins with the background thread. We defensively
-  // NULL the pointer before deleting it in case somebody tries to use it
-  // during shutdown, but this shouldn't happen.
-  base::Thread* thread = thread_;
-  thread_ = NULL;
-  delete thread;
-}
-
 void HistoryService::ClearCachedDataForContextID(
     history::ContextID context_id) {
   DCHECK(thread_) << "History service being called after cleanup";
@@ -901,6 +844,63 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryFilteredURLs(
                  extended_info,
                  base::Unretained(result)),
       base::Bind(callback, base::Owned(result)));
+}
+
+void HistoryService::Cleanup() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!thread_) {
+    // We've already cleaned up.
+    return;
+  }
+
+  weak_ptr_factory_.InvalidateWeakPtrs();
+
+  // Unload the backend.
+  if (history_backend_.get()) {
+    // Get rid of the in-memory backend.
+    in_memory_backend_.reset();
+
+    // Give the InMemoryURLIndex a chance to shutdown.
+    // NOTE: In tests, there may be no index.
+    if (in_memory_url_index_)
+      in_memory_url_index_->ShutDown();
+
+    // The backend's destructor must run on the history thread since it is not
+    // threadsafe. So this thread must not be the last thread holding a
+    // reference to the backend, or a crash could happen.
+    //
+    // We have a reference to the history backend. There is also an extra
+    // reference held by our delegate installed in the backend, which
+    // HistoryBackend::Closing will release. This means if we scheduled a call
+    // to HistoryBackend::Closing and *then* released our backend reference,
+    // there will be a race between us and the backend's Closing function to see
+    // who is the last holder of a reference. If the backend thread's Closing
+    // manages to run before we release our backend refptr, the last reference
+    // will be held by this thread and the destructor will be called from here.
+    //
+    // Therefore, we create a closure to run the Closing operation first. This
+    // holds a reference to the backend. Then we release our reference, then we
+    // schedule the task to run. After the task runs, it will delete its
+    // reference from the history thread, ensuring everything works properly.
+    //
+    // TODO(ajwong): Cleanup HistoryBackend lifetime issues.
+    //     See http://crbug.com/99767.
+    history_backend_->AddRef();
+    base::Closure closing_task =
+        base::Bind(&HistoryBackend::Closing, history_backend_.get());
+    ScheduleTask(PRIORITY_NORMAL, closing_task);
+    closing_task.Reset();
+    HistoryBackend* raw_ptr = history_backend_.get();
+    history_backend_ = NULL;
+    thread_->message_loop()->ReleaseSoon(FROM_HERE, raw_ptr);
+  }
+
+  // Delete the thread, which joins with the background thread. We defensively
+  // NULL the pointer before deleting it in case somebody tries to use it
+  // during shutdown, but this shouldn't happen.
+  base::Thread* thread = thread_;
+  thread_ = NULL;
+  delete thread;
 }
 
 void HistoryService::Observe(int type,

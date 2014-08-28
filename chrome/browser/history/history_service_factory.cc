@@ -69,12 +69,11 @@ HistoryServiceFactory::~HistoryServiceFactory() {
 KeyedService* HistoryServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
-  HistoryService* history_service = new HistoryService(
-      ChromeHistoryClientFactory::GetForProfile(profile), profile);
-  if (!history_service->Init(profile->GetPath())) {
+  scoped_ptr<HistoryService> history_service(new HistoryService(
+      ChromeHistoryClientFactory::GetForProfile(profile), profile));
+  if (!history_service->Init(profile->GetPath()))
     return NULL;
-  }
-  return history_service;
+  return history_service.release();
 }
 
 content::BrowserContext* HistoryServiceFactory::GetBrowserContextToUse(
