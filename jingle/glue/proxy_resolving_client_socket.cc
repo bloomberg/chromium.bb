@@ -12,7 +12,9 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_auth_controller.h"
 #include "net/http/http_network_session.h"
+#include "net/http/proxy_client_socket.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context.h"
@@ -270,6 +272,15 @@ int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
       // "address unreachable" error, and will report both of these failures as
       // ERR_ADDRESS_UNREACHABLE.
       return net::ERR_ADDRESS_UNREACHABLE;
+    case net::ERR_PROXY_AUTH_REQUESTED: {
+      net::ProxyClientSocket* proxy_socket =
+          static_cast<net::ProxyClientSocket*>(transport_->socket());
+
+      if (proxy_socket->GetAuthController()->HaveAuth())
+        return proxy_socket->RestartWithAuth(connect_callback_);
+
+      return error;
+    }
     default:
       return error;
   }
