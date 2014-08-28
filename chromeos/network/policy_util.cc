@@ -131,7 +131,7 @@ scoped_ptr<base::DictionaryValue> CreateShillConfiguration(
     const NetworkProfile& profile,
     const std::string& guid,
     const base::DictionaryValue* policy,
-    const base::DictionaryValue* settings) {
+    const base::DictionaryValue* user_settings) {
   scoped_ptr<base::DictionaryValue> effective;
   ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_NONE;
   if (policy) {
@@ -140,20 +140,20 @@ scoped_ptr<base::DictionaryValue> CreateShillConfiguration(
           NULL,  // no user policy
           policy,  // device policy
           NULL,  // no user settings
-          settings);  // shared settings
+          user_settings);  // shared settings
       onc_source = ::onc::ONC_SOURCE_DEVICE_POLICY;
     } else if (profile.type() == NetworkProfile::TYPE_USER) {
       effective = onc::MergeSettingsAndPoliciesToEffective(
           policy,  // user policy
           NULL,  // no device policy
-          settings,  // user settings
+          user_settings,  // user settings
           NULL);  // no shared settings
       onc_source = ::onc::ONC_SOURCE_USER_POLICY;
     } else {
       NOTREACHED();
     }
-  } else if (settings) {
-    effective.reset(settings->DeepCopy());
+  } else if (user_settings) {
+    effective.reset(user_settings->DeepCopy());
     // TODO(pneubeck): change to source ONC_SOURCE_USER
     onc_source = ::onc::ONC_SOURCE_NONE;
   } else {
@@ -180,7 +180,7 @@ scoped_ptr<base::DictionaryValue> CreateShillConfiguration(
 
   scoped_ptr<NetworkUIData> ui_data(NetworkUIData::CreateFromONC(onc_source));
 
-  if (settings) {
+  if (user_settings) {
     // Shill doesn't know that sensitive data is contained in the UIData
     // property and might write it into logs or other insecure places. Thus, we
     // have to remove or mask credentials.
@@ -188,11 +188,11 @@ scoped_ptr<base::DictionaryValue> CreateShillConfiguration(
     // Shill's GetProperties doesn't return credentials. Masking credentials
     // instead of just removing them, allows remembering if a credential is set
     // or not.
-    scoped_ptr<base::DictionaryValue> sanitized_settings(
+    scoped_ptr<base::DictionaryValue> sanitized_user_settings(
         onc::MaskCredentialsInOncObject(onc::kNetworkConfigurationSignature,
-                                        *settings,
+                                        *user_settings,
                                         kFakeCredential));
-    ui_data->set_user_settings(sanitized_settings.Pass());
+    ui_data->set_user_settings(sanitized_user_settings.Pass());
   }
 
   shill_property_util::SetUIData(*ui_data, shill_dictionary.get());

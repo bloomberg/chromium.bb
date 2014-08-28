@@ -338,7 +338,8 @@ void PolicyApplicator::ApplyRemainingPolicies() {
             << " in profile " << profile_.ToDebugString() << ".";
 
     scoped_ptr<base::DictionaryValue> shill_dictionary =
-        policy_util::CreateShillConfiguration(profile_, *it, policy, NULL);
+        policy_util::CreateShillConfiguration(
+            profile_, *it, policy, NULL /* no user settings */);
     WriteNewShillConfiguration(*shill_dictionary, *policy, false);
   }
 }
