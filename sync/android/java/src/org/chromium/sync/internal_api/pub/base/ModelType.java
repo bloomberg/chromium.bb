@@ -90,7 +90,7 @@ public enum ModelType {
     private final boolean mNonInvalidationType;
 
     ModelType(String modelType, boolean nonInvalidationType) {
-        assert nonInvalidationType || modelType == toString();
+        assert nonInvalidationType || modelType.equals(toString());
         mModelType = modelType;
         mNonInvalidationType = nonInvalidationType;
     }
