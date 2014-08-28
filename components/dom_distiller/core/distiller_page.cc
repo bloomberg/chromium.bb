@@ -8,8 +8,10 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "grit/component_resources.h"
 #include "third_party/dom_distiller_js/dom_distiller.pb.h"
 #include "third_party/dom_distiller_js/dom_distiller_json_converter.h"
@@ -136,6 +138,37 @@ void DistillerPage::OnDistillationDone(const GURL& page_url,
       dst_image.width = src_image.width();
       dst_image.height = src_image.height();
       dst_markup_info.images.push_back(dst_image);
+    }
+    if (distiller_result.has_timing_info()) {
+      const dom_distiller::proto::TimingInfo& timing =
+          distiller_result.timing_info();
+      if (timing.has_markup_parsing_time()) {
+        UMA_HISTOGRAM_TIMES(
+            "DomDistiller.Time.MarkupParsing",
+            base::TimeDelta::FromMillisecondsD(timing.markup_parsing_time()));
+      }
+      if (timing.has_document_construction_time()) {
+        UMA_HISTOGRAM_TIMES(
+            "DomDistiller.Time.DocumentConstruction",
+            base::TimeDelta::FromMillisecondsD(
+                timing.document_construction_time()));
+      }
+      if (timing.has_article_processing_time()) {
+        UMA_HISTOGRAM_TIMES(
+            "DomDistiller.Time.ArticleProcessing",
+            base::TimeDelta::FromMillisecondsD(
+                timing.article_processing_time()));
+      }
+      if (timing.has_formatting_time()) {
+        UMA_HISTOGRAM_TIMES(
+            "DomDistiller.Time.Formatting",
+            base::TimeDelta::FromMillisecondsD(timing.formatting_time()));
+      }
+      if (timing.has_total_time()) {
+        UMA_HISTOGRAM_TIMES(
+            "DomDistiller.Time.DistillationTotal",
+            base::TimeDelta::FromMillisecondsD(timing.total_time()));
+      }
     }
   }
 

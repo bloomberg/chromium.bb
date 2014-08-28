@@ -5005,6 +5005,48 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DomDistiller.PageDistillable" enum="BooleanDistillable">
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Records the number of times a page was loaded for which using DomDistiller
+    is possible.
+  </summary>
+</histogram>
+
+<histogram name="DomDistiller.Time.ArticleProcessing" units="milliseconds">
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Time spent in DomDistiller's identification of text content.
+  </summary>
+</histogram>
+
+<histogram name="DomDistiller.Time.DistillationTotal" units="milliseconds">
+  <owner>yfriedman@chromium.org</owner>
+  <summary>Complete time spent in DomDistiller's processing of a page.</summary>
+</histogram>
+
+<histogram name="DomDistiller.Time.DocumentConstruction" units="milliseconds">
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Time spent in creating DomDistiller's internal representation of the HTML
+    document.
+  </summary>
+</histogram>
+
+<histogram name="DomDistiller.Time.Formatting" units="milliseconds">
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Time spent in DomDistiller's final processing of article content/formatting.
+  </summary>
+</histogram>
+
+<histogram name="DomDistiller.Time.MarkupParsing" units="milliseconds">
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Time spent in DomDistiller's processing of article metadata.
+  </summary>
+</histogram>
+
 <histogram name="DOMStorage.clear" units="milliseconds">
   <owner>michaeln@chromium.org</owner>
   <summary>
@@ -37912,6 +37954,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanDidEvict" type="int">
   <int value="0" label="Did not evict"/>
   <int value="1" label="Did evict"/>
+</enum>
+
+<enum name="BooleanDistillable" type="int">
+  <int value="0" label="Not distillable"/>
+  <int value="1" label="Distillable"/>
 </enum>
 
 <enum name="BooleanDuplicate" type="int">
