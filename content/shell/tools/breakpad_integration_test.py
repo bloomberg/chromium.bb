@@ -58,7 +58,7 @@ def main():
     print "# Generate symbols."
     breakpad_tools_dir = os.path.join(
         os.path.dirname(__file__), '..', '..', '..',
-        'components', 'breakpad', 'tools')
+        'components', 'crash', 'tools')
     generate_symbols = os.path.join(
         breakpad_tools_dir, 'generate_breakpad_symbols.py')
     symbols_dir = os.path.join(crash_dir, 'symbols')
