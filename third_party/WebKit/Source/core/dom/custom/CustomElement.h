@@ -66,8 +66,8 @@ public:
     // API for Element to kick off changes
 
     static void attributeDidChange(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
-    static void didEnterDocument(Element*, const Document&);
-    static void didLeaveDocument(Element*, const Document&);
+    static void didAttach(Element*, const Document&);
+    static void didDetach(Element*, const Document&);
     static void wasDestroyed(Element*);
 
 private:

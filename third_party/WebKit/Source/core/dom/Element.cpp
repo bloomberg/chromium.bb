@@ -1250,7 +1250,7 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
         elementRareData()->clearClassListValueForQuirksMode();
 
     if (isUpgradedCustomElement() && inDocument())
-        CustomElement::didEnterDocument(this, document());
+        CustomElement::didAttach(this, document());
 
     TreeScope& scope = insertionPoint->treeScope();
     if (scope != treeScope())
@@ -1303,7 +1303,7 @@ void Element::removedFrom(ContainerNode* insertionPoint)
             document().accessSVGExtensions().removeElementFromPendingResources(this);
 
         if (isUpgradedCustomElement())
-            CustomElement::didLeaveDocument(this, insertionPoint->document());
+            CustomElement::didDetach(this, insertionPoint->document());
     }
 
     document().removeFromTopLayer(this);

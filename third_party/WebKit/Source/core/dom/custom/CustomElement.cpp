@@ -115,7 +115,7 @@ void CustomElement::attributeDidChange(Element* element, const AtomicString& nam
     CustomElementScheduler::scheduleAttributeChangedCallback(element->customElementDefinition()->callbacks(), element, name, oldValue, newValue);
 }
 
-void CustomElement::didEnterDocument(Element* element, const Document& document)
+void CustomElement::didAttach(Element* element, const Document& document)
 {
     ASSERT(element->customElementState() == Element::Upgraded);
     if (!document.domWindow())
@@ -123,7 +123,7 @@ void CustomElement::didEnterDocument(Element* element, const Document& document)
     CustomElementScheduler::scheduleCallback(element->customElementDefinition()->callbacks(), element, CustomElementLifecycleCallbacks::AttachedCallback);
 }
 
-void CustomElement::didLeaveDocument(Element* element, const Document& document)
+void CustomElement::didDetach(Element* element, const Document& document)
 {
     ASSERT(element->customElementState() == Element::Upgraded);
     if (!document.domWindow())
