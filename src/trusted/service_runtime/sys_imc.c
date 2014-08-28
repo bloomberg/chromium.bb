@@ -22,7 +22,7 @@
 static int const kKnownInvalidDescNumber = -1;
 
 int32_t NaClSysImcMakeBoundSock(struct NaClAppThread *natp,
-                                int32_t              *sap) {
+                                uint32_t             descs_addr) {
   /*
    * Create a bound socket descriptor and a socket address descriptor.
    */
@@ -38,8 +38,8 @@ int32_t NaClSysImcMakeBoundSock(struct NaClAppThread *natp,
 
   NaClLog(3,
           ("Entered NaClSysImcMakeBoundSock(0x%08"NACL_PRIxPTR","
-           " 0x%08"NACL_PRIxPTR")\n"),
-          (uintptr_t) natp, (uintptr_t) sap);
+           " 0x%08"NACL_PRIx32")\n"),
+          (uintptr_t) natp, descs_addr);
 
   retval = NaClCommonDescMakeBoundSock(pair);
   if (0 != retval) {
@@ -48,8 +48,7 @@ int32_t NaClSysImcMakeBoundSock(struct NaClAppThread *natp,
 
   usr_pair[0] = NaClAppSetDescAvail(nap, pair[0]);
   usr_pair[1] = NaClAppSetDescAvail(nap, pair[1]);
-  if (!NaClCopyOutToUser(nap, (uintptr_t) sap,
-                         usr_pair, sizeof usr_pair)) {
+  if (!NaClCopyOutToUser(nap, descs_addr, usr_pair, sizeof usr_pair)) {
     /*
      * NB: The descriptors were briefly observable to untrusted code
      * in this window, even though the syscall had not returned yet,
@@ -128,10 +127,10 @@ int32_t NaClSysImcConnect(struct NaClAppThread *natp,
  * addresses, copying into kernel space as needed to avoid TOCvTOU
  * races, then invokes the descriptor's SendMsg() method.
  */
-int32_t NaClSysImcSendmsg(struct NaClAppThread         *natp,
-                          int                          d,
-                          struct NaClAbiNaClImcMsgHdr *nanimhp,
-                          int                          flags) {
+int32_t NaClSysImcSendmsg(struct NaClAppThread *natp,
+                          int                  d,
+                          uint32_t             nanimhp,
+                          int                  flags) {
   struct NaClApp                *nap = natp->nap;
   int32_t                       retval = -NACL_ABI_EINVAL;
   ssize_t                       ssize_retval;
@@ -149,11 +148,10 @@ int32_t NaClSysImcSendmsg(struct NaClAppThread         *natp,
 
   NaClLog(3,
           ("Entered NaClSysImcSendmsg(0x%08"NACL_PRIxPTR", %d,"
-           " 0x%08"NACL_PRIxPTR", 0x%x)\n"),
-          (uintptr_t) natp, d, (uintptr_t) nanimhp, flags);
+           " 0x%08"NACL_PRIx32", 0x%x)\n"),
+          (uintptr_t) natp, d, nanimhp, flags);
 
-  if (!NaClCopyInFromUser(nap, &kern_nanimh, (uintptr_t) nanimhp,
-                          sizeof kern_nanimh)) {
+  if (!NaClCopyInFromUser(nap, &kern_nanimh, nanimhp, sizeof kern_nanimh)) {
     NaClLog(4, "NaClImcMsgHdr not in user address space\n");
     retval = -NACL_ABI_EFAULT;
     goto cleanup_leave;
@@ -300,10 +298,10 @@ cleanup_leave:
   return retval;
 }
 
-int32_t NaClSysImcRecvmsg(struct NaClAppThread         *natp,
-                          int                          d,
-                          struct NaClAbiNaClImcMsgHdr  *nanimhp,
-                          int                          flags) {
+int32_t NaClSysImcRecvmsg(struct NaClAppThread *natp,
+                          int                  d,
+                          uint32_t             nanimhp,
+                          int                  flags) {
   struct NaClApp                        *nap = natp->nap;
   int32_t                               retval = -NACL_ABI_EINVAL;
   ssize_t                               ssize_retval;
@@ -321,15 +319,14 @@ int32_t NaClSysImcRecvmsg(struct NaClAppThread         *natp,
 
   NaClLog(3,
           ("Entered NaClSysImcRecvMsg(0x%08"NACL_PRIxPTR", %d,"
-           " 0x%08"NACL_PRIxPTR")\n"),
-          (uintptr_t) natp, d, (uintptr_t) nanimhp);
+           " 0x%08"NACL_PRIx32")\n"),
+          (uintptr_t) natp, d, nanimhp);
 
   /*
    * First, we validate user-supplied message headers before
    * allocating a receive buffer.
    */
-  if (!NaClCopyInFromUser(nap, &kern_nanimh, (uintptr_t) nanimhp,
-                          sizeof kern_nanimh)) {
+  if (!NaClCopyInFromUser(nap, &kern_nanimh, nanimhp, sizeof kern_nanimh)) {
     NaClLog(4, "NaClImcMsgHdr not in user address space\n");
     retval = -NACL_ABI_EFAULT;
     goto cleanup_leave;
@@ -480,8 +477,7 @@ int32_t NaClSysImcRecvmsg(struct NaClAppThread         *natp,
   }
 
   kern_nanimh.desc_length = num_user_desc;
-  if (!NaClCopyOutToUser(nap, (uintptr_t) nanimhp, &kern_nanimh,
-                         sizeof kern_nanimh)) {
+  if (!NaClCopyOutToUser(nap, nanimhp, &kern_nanimh, sizeof kern_nanimh)) {
     NaClLog(LOG_FATAL,
             "NaClSysImcRecvMsg: in/out ptr (iov) became"
             " invalid at copyout?\n");

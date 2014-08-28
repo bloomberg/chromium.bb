@@ -17,7 +17,7 @@ struct NaClAppThread;
 struct NaClImcMsgHdr;
 
 int32_t NaClSysImcMakeBoundSock(struct NaClAppThread *natp,
-                                int32_t              *sap);
+                                uint32_t             descs_addr);
 
 int32_t NaClSysImcAccept(struct NaClAppThread  *natp,
                          int                   d);
@@ -25,15 +25,15 @@ int32_t NaClSysImcAccept(struct NaClAppThread  *natp,
 int32_t NaClSysImcConnect(struct NaClAppThread *natp,
                           int                  d);
 
-int32_t NaClSysImcSendmsg(struct NaClAppThread         *natp,
-                          int                          d,
-                          struct NaClAbiNaClImcMsgHdr  *nanimhp,
-                          int                          flags);
+int32_t NaClSysImcSendmsg(struct NaClAppThread *natp,
+                          int                  d,
+                          uint32_t             nanimhp,
+                          int                  flags);
 
-int32_t NaClSysImcRecvmsg(struct NaClAppThread         *natp,
-                          int                          d,
-                          struct NaClAbiNaClImcMsgHdr  *nanimhp,
-                          int                          flags);
+int32_t NaClSysImcRecvmsg(struct NaClAppThread *natp,
+                          int                  d,
+                          uint32_t             nanimhp,
+                          int                  flags);
 
 int32_t NaClSysImcMemObjCreate(struct NaClAppThread  *natp,
                                size_t                size);

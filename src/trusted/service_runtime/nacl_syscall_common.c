@@ -222,7 +222,7 @@ cleanup:
 }
 
 int32_t NaClSysThreadCreate(struct NaClAppThread *natp,
-                            void                 *prog_ctr,
+                            uint32_t             prog_ctr,
                             uint32_t             stack_ptr,
                             uint32_t             thread_ptr,
                             uint32_t             second_thread_ptr) {
@@ -233,11 +233,11 @@ int32_t NaClSysThreadCreate(struct NaClAppThread *natp,
 
   NaClLog(3,
           ("Entered NaClSysThreadCreate(0x%08"NACL_PRIxPTR
-           " pc=0x%08"NACL_PRIxPTR", sp=0x%08"NACL_PRIx32", thread_ptr=0x%08"
+           " pc=0x%08"NACL_PRIx32", sp=0x%08"NACL_PRIx32", thread_ptr=0x%08"
            NACL_PRIx32")\n"),
-          (uintptr_t) natp, (uintptr_t) prog_ctr, stack_ptr, thread_ptr);
+          (uintptr_t) natp, prog_ctr, stack_ptr, thread_ptr);
 
-  if (!NaClIsValidJumpTarget(nap, (uintptr_t) prog_ctr)) {
+  if (!NaClIsValidJumpTarget(nap, prog_ctr)) {
     NaClLog(LOG_ERROR, "NaClSysThreadCreate: Bad function pointer\n");
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
@@ -264,7 +264,7 @@ int32_t NaClSysThreadCreate(struct NaClAppThread *natp,
   NaClVmHoleWaitToStartThread(nap);
 
   retval = NaClCreateAdditionalThread(nap,
-                                      (uintptr_t) prog_ctr,
+                                      prog_ctr,
                                       sys_stack,
                                       thread_ptr,
                                       second_thread_ptr);
@@ -508,10 +508,10 @@ cleanup:
   return retval;
 }
 
-int32_t NaClSysCondTimedWaitAbs(struct NaClAppThread     *natp,
-                                int32_t                  cond_handle,
-                                int32_t                  mutex_handle,
-                                struct nacl_abi_timespec *ts) {
+int32_t NaClSysCondTimedWaitAbs(struct NaClAppThread *natp,
+                                int32_t              cond_handle,
+                                int32_t              mutex_handle,
+                                uint32_t             ts_addr) {
   struct NaClApp           *nap = natp->nap;
   int32_t                  retval = -NACL_ABI_EINVAL;
   struct NaClDesc          *cv_desc;
@@ -520,11 +520,10 @@ int32_t NaClSysCondTimedWaitAbs(struct NaClAppThread     *natp,
 
   NaClLog(3,
           ("Entered NaClSysCondTimedWaitAbs(0x%08"NACL_PRIxPTR
-           ", %d, %d, 0x%08"NACL_PRIxPTR")\n"),
-          (uintptr_t) natp, cond_handle, mutex_handle, (uintptr_t) ts);
+           ", %d, %d, 0x%08"NACL_PRIx32")\n"),
+          (uintptr_t) natp, cond_handle, mutex_handle, ts_addr);
 
-  if (!NaClCopyInFromUser(nap, &trusted_ts,
-                          (uintptr_t) ts, sizeof trusted_ts)) {
+  if (!NaClCopyInFromUser(nap, &trusted_ts, ts_addr, sizeof trusted_ts)) {
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
@@ -717,15 +716,15 @@ int32_t NaClSysSchedYield(struct NaClAppThread *natp) {
 
 int32_t NaClSysSysconf(struct NaClAppThread *natp,
                        int32_t              name,
-                       int32_t              *result) {
+                       uint32_t             result_addr) {
   struct NaClApp  *nap = natp->nap;
   int32_t         retval = -NACL_ABI_EINVAL;
   int32_t         result_value;
 
   NaClLog(3,
           ("Entered NaClSysSysconf(%08"NACL_PRIxPTR
-           "x, %d, 0x%08"NACL_PRIxPTR")\n"),
-          (uintptr_t) natp, name, (uintptr_t) result);
+           "x, %d, 0x%08"NACL_PRIx32")\n"),
+          (uintptr_t) natp, name, result_addr);
 
   switch (name) {
     case NACL_ABI__SC_NPROCESSORS_ONLN: {
@@ -769,7 +768,7 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
       goto cleanup;
     }
   }
-  if (!NaClCopyOutToUser(nap, (uintptr_t) result, &result_value,
+  if (!NaClCopyOutToUser(nap, result_addr, &result_value,
                          sizeof result_value)) {
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
