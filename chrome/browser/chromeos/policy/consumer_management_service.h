@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
+#include "chrome/browser/notifications/notification_delegate.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -19,7 +21,6 @@
 
 class PrefRegistrySimple;
 class Profile;
-class ProfileOAuth2TokenService;
 
 namespace chromeos {
 class CryptohomeClient;
@@ -155,13 +156,18 @@ class ConsumerManagementService : public content::NotificationObserver,
   void EndEnrollment(ConsumerEnrollmentState state);
 
   // Shows a desktop notification and resets the enrollment state.
-  void ShowDesktopNotificationAndResetState(ConsumerEnrollmentState state);
+  void ShowDesktopNotificationAndResetState(ConsumerEnrollmentState state,
+                                            Profile* profile);
+
+  // Opens the settings page.
+  void OpenSettingsPage(Profile* profile) const;
+
+  // Opens the enrollment confirmation dialog in the settings page.
+  void TryEnrollmentAgain(Profile* profile) const;
 
   chromeos::CryptohomeClient* client_;
 
-  std::string enrolling_account_id_;
-  ProfileOAuth2TokenService* enrolling_token_service_;
-
+  Profile* enrolling_profile_;
   scoped_ptr<OAuth2TokenService::Request> token_request_;
   content::NotificationRegistrar registrar_;
   base::WeakPtrFactory<ConsumerManagementService> weak_ptr_factory_;

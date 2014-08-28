@@ -150,6 +150,9 @@
       <if expr="is_win">
         <structure type="chrome_scaled_image" name="IDR_CONFLICT_FAVICON" file="common/favicon_conflicts.png" />
       </if>
+      <if expr="chromeos">
+        <structure type="chrome_scaled_image" name="IDR_CONSUMER_MANAGEMENT_NOTIFICATION_ICON" file="cros/consumer_management_notification_icon.png" />
+      </if>
       <!-- Ash doesn't draw rounded content area, so needs a special top
            image. -->
       <if expr="not use_ash">

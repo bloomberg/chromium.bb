@@ -5050,9 +5050,6 @@ Battery full
   <message name="IDS_LOGIN_CONNECTING_INDICATOR_TEXT" desc="A message to show telling the user that the device is attempting to re-connect to the network.">
     Connecting and verifying<ph name="ANIMATED_ELLIPSIS">$1<ex>...</ex></ph>
   </message>
-  <message name="IDS_LOGIN_CONSUMER_MANAGEMENT_ENROLLMENT" desc="A message to show at the signin page when consumer management enrollment is in progress.">
-    The owner must sign in to complete enrollment with Google Device Manager.
-  </message>
 
   <!-- Idle warning dialog -->
   <message name="IDS_IDLE_WARNING_TITLE" desc="Title of the warning dialog shown when the user becomes idle and is about to get logged out.">
@@ -5708,7 +5705,10 @@ All users must sign out to continue.
     Failed to submit NDEF:
   </message>
 
-  <!-- About the device control section in the settings page -->
+  <!-- About consumer management service -->
+  <message name="IDS_LOGIN_CONSUMER_MANAGEMENT_ENROLLMENT" desc="A message to show at the sign-in page when consumer management enrollment is in progress.">
+    The owner must sign in to complete enrollment with Google Device Manager.
+  </message>
   <message name="IDS_OPTIONS_DEVICE_CONTROL_SECTION_TITLE" desc="The title of the device control section in the settings page.">
     Device control
   </message>
@@ -5741,6 +5741,24 @@ All users must sign out to continue.
   </message>
   <message name="IDS_OPTIONS_CONSUMER_MANAGEMENT_OVERLAY_UNENROLL" desc="The button text of the consumer management overlay in the settings page for unenrollment.">
     Unenroll and restart
+  </message>
+  <message name="IDS_CONSUMER_MANAGEMENT_ENROLLMENT_NOTIFICATION_TITLE" desc="The title of the desktop notification shown when consumer management enrollment is completed">
+    Enrolled
+  </message>
+  <message name="IDS_CONSUMER_MANAGEMENT_ENROLLMENT_NOTIFICATION_BODY" desc="The body of the desktop notification shown when consumer management enrollment is completed">
+    You can now lock this device remotely anytime on Chrome Manager.
+  </message>
+  <message name="IDS_CONSUMER_MANAGEMENT_ENROLLMENT_FAILURE_NOTIFICATION_TITLE" desc="The title of the desktop notification shown when consumer management enrollment fails">
+    Unable to enroll
+  </message>
+  <message name="IDS_CONSUMER_MANAGEMENT_ENROLLMENT_FAILURE_NOTIFICATION_BODY" desc="The body of the desktop notification shown when consumer management enrollment fails">
+    Enrollment in Google Device Manager was not successful.
+  </message>
+  <message name="IDS_CONSUMER_MANAGEMENT_NOTIFICATION_MODIFY_SETTINGS_BUTTON" desc="The label of the modify settings button on the desktop notification shown when consumer management enrollment or unenrollment is completed">
+    Modify settings
+  </message>
+  <message name="IDS_CONSUMER_MANAGEMENT_NOTIFICATION_TRY_AGAIN_BUTTON" desc="The label of the modify settings button on the desktop notification shown when consumer management enrollment or unenrollment fails">
+    Try again
   </message>
 
   <!-- Set time/date UI display strings -->
