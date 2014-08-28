@@ -8,5 +8,6 @@ namespace athena {
 
 const int kHomeCardHeight = 100;
 const int kHomeCardMinimizedHeight = 6;
+const int kHomeCardSearchBoxId = 1000;
 
 }  // namespace athena

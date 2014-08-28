@@ -14,12 +14,21 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/focus/focus_manager.h"
+#include "ui/views/widget/widget.h"
 
 namespace athena {
 
 aura::Window* GetHomeCardWindow() {
   return static_cast<HomeCardImpl*>(HomeCard::Get())->
       GetHomeCardWindowForTest();
+}
+
+// Returns true if the keyboard focus is on the search box.
+bool IsSearchBoxFocused(aura::Window* home_card) {
+  return views::Widget::GetWidgetForNativeWindow(home_card)->
+      GetContentsView()->GetViewByID(kHomeCardSearchBoxId)->HasFocus();
 }
 
 typedef test::AthenaTestBase HomeCardTest;
@@ -218,6 +227,35 @@ TEST_F(HomeCardTest, GesturesToFullDirectly) {
                                   10);
   EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
   EXPECT_TRUE(WindowManager::GetInstance()->IsOverviewModeActive());
+}
+
+TEST_F(HomeCardTest, KeyboardFocus) {
+  ASSERT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
+  aura::Window* home_card = GetHomeCardWindow();
+  ASSERT_FALSE(IsSearchBoxFocused(home_card));
+
+  WindowManager::GetInstance()->ToggleOverview();
+  ASSERT_FALSE(IsSearchBoxFocused(home_card));
+
+  ui::test::EventGenerator generator(root_window());
+  gfx::Rect screen_rect(root_window()->bounds());
+
+  const int bottom = screen_rect.bottom();
+  const int x = screen_rect.x() + 1;
+
+  generator.GestureScrollSequence(gfx::Point(x, bottom - 40),
+                                  gfx::Point(x, 10),
+                                  base::TimeDelta::FromSeconds(1),
+                                  10);
+  EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
+  EXPECT_TRUE(IsSearchBoxFocused(home_card));
+
+  generator.GestureScrollSequence(gfx::Point(x, 10),
+                                  gfx::Point(x, bottom - 100),
+                                  base::TimeDelta::FromSeconds(1),
+                                  10);
+  EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
+  EXPECT_FALSE(IsSearchBoxFocused(home_card));
 }
 
 }  // namespace athena

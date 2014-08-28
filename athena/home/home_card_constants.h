@@ -15,6 +15,9 @@ ATHENA_EXPORT extern const int kHomeCardHeight;
 // The height of the home card of MINIMIZED state.
 ATHENA_EXPORT extern const int kHomeCardMinimizedHeight;
 
+// The view ID for the seach box in the home card.
+ATHENA_EXPORT extern const int kHomeCardSearchBoxId;
+
 }  // namespace athena
 
 #endif  // ATHENA_HOME_HOME_CARD_CONSTANTS_H_

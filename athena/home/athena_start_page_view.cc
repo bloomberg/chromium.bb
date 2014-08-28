@@ -211,6 +211,7 @@ AthenaStartPageView::AthenaStartPageView(
 
   search_box_view_ = new app_list::SearchBoxView(this, view_delegate);
   search_box_view_->set_contents_view(this);
+  search_box_view_->search_box()->set_id(kHomeCardSearchBoxId);
   search_box_container_ = new SearchBoxContainer(search_box_view_);
   search_box_container_->SetPaintToLayer(true);
   search_box_container_->SetFillsBoundsOpaquely(false);
