@@ -98,8 +98,8 @@ class SessionCrashedBubbleView
       content::WebContents* contents,
       int index) OVERRIDE;
 
-  // Create the view for user to opt in to Uma.
-  void CreateUmaOptinView(views::GridLayout* layout);
+  // Create the view for the user to opt in to UMA.
+  views::View* CreateUMAOptinView();
 
   // Restore previous session after user selects so.
   void RestorePreviousSession(views::Button* sender);

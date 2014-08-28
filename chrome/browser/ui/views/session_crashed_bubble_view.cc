@@ -152,7 +152,7 @@ void SessionCrashedBubbleView::Show(Browser* browser) {
 void SessionCrashedBubbleView::ShowForReal(
     scoped_ptr<BrowserRemovalObserver> browser_observer,
     bool uma_opted_in_already) {
-  // Determine whether or not the uma opt-in option should be offered. It is
+  // Determine whether or not the UMA opt-in option should be offered. It is
   // offered only when it is a Google chrome build, user hasn't opted in yet,
   // and the preference is modifiable by the user.
   bool offer_uma_optin = false;
@@ -281,25 +281,38 @@ void SessionCrashedBubbleView::Init() {
   layout->AddView(restore_button_);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
+  int bottom_margin = 1;
+
   // Metrics reporting option.
   if (offer_uma_optin_) {
-    CreateUmaOptinView(layout);
+    const int kUMAOptionColumnSetId = 2;
+    cs = layout->AddColumnSet(kUMAOptionColumnSetId);
+    cs->AddColumn(
+        GridLayout::FILL, GridLayout::FILL, 1, GridLayout::USE_PREF, 0, 0);
+    layout->StartRow(1, kUMAOptionColumnSetId);
+    layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
+    layout->StartRow(1, kUMAOptionColumnSetId);
+    layout->AddView(CreateUMAOptinView());
+
+    // Since the UMA optin row has a different background than the default
+    // background color of bubbles, the bottom margin has to be 0 to make sure
+    // the background extends to the bottom edge of the bubble.
+    bottom_margin = 0;
+
     RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_OPTIN_BAR_SHOWN);
   }
 
-  set_margins(gfx::Insets());
+  set_margins(gfx::Insets(1, 0, bottom_margin, 0));
   Layout();
 }
 
-void SessionCrashedBubbleView::CreateUmaOptinView(GridLayout* layout) {
+views::View* SessionCrashedBubbleView::CreateUMAOptinView() {
   // Checkbox for metric reporting setting.
   // Since the text to the right of the checkbox can't be a simple string (needs
   // a hyperlink in it), this checkbox contains an empty string as its label,
   // and the real text will be added as a separate view.
   uma_option_ = new views::Checkbox(base::string16());
   uma_option_->SetChecked(false);
-  uma_option_->set_background(
-      views::Background::CreateSolidBackground(kBackgroundColor));
 
   // The text to the right of the checkbox.
   size_t offset;
@@ -310,8 +323,6 @@ void SessionCrashedBubbleView::CreateUmaOptinView(GridLayout* layout) {
       link_text,
       &offset);
   views::StyledLabel* uma_label = new views::StyledLabel(uma_text, this);
-  uma_label->set_background(
-      views::Background::CreateSolidBackground(kBackgroundColor));
   views::StyledLabel::RangeStyleInfo link_style =
       views::StyledLabel::RangeStyleInfo::CreateForLink();
   link_style.font_style = gfx::Font::NORMAL;
@@ -326,35 +337,30 @@ void SessionCrashedBubbleView::CreateUmaOptinView(GridLayout* layout) {
   if (!after_link_range.is_empty())
     uma_label->AddStyleRange(after_link_range, uma_style);
 
-  // We use a border instead of padding so that the background color reaches
-  // the edges of the bubble.
-  const gfx::Insets title_insets = GetBubbleFrameView()->GetTitleInsets();
-  uma_option_->SetBorder(views::Border::CreateSolidSidedBorder(
-      0, title_insets.left(), 0, 0, kBackgroundColor));
-  uma_label->SetBorder(views::Border::CreateSolidSidedBorder(
-      views::kRelatedControlVerticalSpacing, kCheckboxTextDistance,
-      views::kRelatedControlVerticalSpacing, title_insets.left(),
-      kBackgroundColor));
+  // Create a view to hold the checkbox and the text.
+  views::View* uma_view = new views::View();
+  GridLayout* uma_layout = new GridLayout(uma_view);
+  uma_view->SetLayoutManager(uma_layout);
 
-  // Separator.
-  const int kSeparatorColumnSetId = 2;
-  views::ColumnSet* cs = layout->AddColumnSet(kSeparatorColumnSetId);
-  cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                GridLayout::USE_PREF, 0, 0);
+  uma_view->set_background(
+      views::Background::CreateSolidBackground(kBackgroundColor));
+  int inset_left = GetBubbleFrameView()->GetTitleInsets().left();
+  uma_layout->SetInsets(views::kRelatedControlVerticalSpacing, inset_left,
+                        views::kRelatedControlVerticalSpacing, inset_left);
 
-  // Reporting row.
-  const int kReportColumnSetId = 3;
-  cs = layout->AddColumnSet(kReportColumnSetId);
-  cs->AddColumn(GridLayout::CENTER, GridLayout::FILL, 0,
+  const int kReportColumnSetId = 0;
+  views::ColumnSet* cs = uma_layout->AddColumnSet(kReportColumnSetId);
+  cs->AddColumn(GridLayout::CENTER, GridLayout::LEADING, 0,
                 GridLayout::USE_PREF, 0, 0);
+  cs->AddPaddingColumn(0, kCheckboxTextDistance);
   cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
                 GridLayout::FIXED, kWidthOfDescriptionText, 0);
 
-  layout->StartRow(0, kSeparatorColumnSetId);
-  layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
-  layout->StartRow(0, kReportColumnSetId);
-  layout->AddView(uma_option_);
-  layout->AddView(uma_label);
+  uma_layout->StartRow(0, kReportColumnSetId);
+  uma_layout->AddView(uma_option_);
+  uma_layout->AddView(uma_label);
+
+  return uma_view;
 }
 
 void SessionCrashedBubbleView::ButtonPressed(views::Button* sender,
