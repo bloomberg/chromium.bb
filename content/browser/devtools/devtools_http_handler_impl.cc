@@ -252,9 +252,18 @@ void DevToolsHttpHandlerImpl::Stop() {
       base::Bind(&DevToolsHttpHandlerImpl::ResetHandlerThreadAndRelease, this));
 }
 
+void DevToolsHttpHandlerImpl::StopWithoutRelease() {
+  if (!thread_)
+    return;
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DevToolsHttpHandlerImpl::StopHandlerThread, this),
+      base::Bind(&DevToolsHttpHandlerImpl::ResetHandlerThread, this));
+}
+
 GURL DevToolsHttpHandlerImpl::GetFrontendURL() {
   net::IPEndPoint ip_address;
-  if (server_->GetLocalAddress(&ip_address))
+  if (server_ && server_->GetLocalAddress(&ip_address))
     return GURL();
   return GURL(std::string("http://") + ip_address.ToString() + frontend_url_);
 }
@@ -699,8 +708,17 @@ DevToolsHttpHandlerImpl::DevToolsHttpHandlerImpl(
 
 // Runs on the handler thread
 void DevToolsHttpHandlerImpl::Init() {
-  server_.reset(new net::HttpServer(server_socket_factory_->CreateAndListen(),
-                                    this));
+  scoped_ptr<net::ServerSocket> server_socket =
+      server_socket_factory_->CreateAndListen();
+  if (!server_socket) {
+    LOG(ERROR) << "Cannot start http server for devtools. Stop devtools.";
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&DevToolsHttpHandlerImpl::StopWithoutRelease, this));
+    return;
+  }
+
+  server_.reset(new net::HttpServer(server_socket.Pass(), this));
   if (!active_port_output_directory_.empty())
     WriteActivePortToUserProfile();
 }

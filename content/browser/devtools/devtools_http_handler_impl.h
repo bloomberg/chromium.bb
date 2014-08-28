@@ -89,6 +89,7 @@ class DevToolsHttpHandlerImpl
 
   void StartHandlerThread();
   void StopHandlerThread();
+  void StopWithoutRelease();
 
   void WriteActivePortToUserProfile();
 
