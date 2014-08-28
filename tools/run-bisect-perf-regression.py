@@ -6,10 +6,9 @@
 """Run Performance Test Bisect Tool
 
 This script is used by a try bot to run the src/tools/bisect-perf-regression.py
-script with the parameters specified in run-bisect-perf-regression.cfg. It will
-check out a copy of the depot in a subdirectory 'bisect' of the working
+script with the parameters specified in src/tools/auto_bisect/bisect.cfg.
+It will check out a copy of the depot in a subdirectory 'bisect' of the working
 directory provided, and run the bisect-perf-regression.py script there.
-
 """
 
 import imp
@@ -31,11 +30,12 @@ bisect = imp.load_source('bisect-perf-regression',
 CROS_BOARD_ENV = 'BISECT_CROS_BOARD'
 CROS_IP_ENV = 'BISECT_CROS_IP'
 
-# Default config file names.
-BISECT_REGRESSION_CONFIG = 'run-bisect-perf-regression.cfg'
+# Default config file paths, relative to this script.
+BISECT_REGRESSION_CONFIG = os.path.join('auto_bisect', 'bisect.cfg')
 RUN_TEST_CONFIG = 'run-perf-test.cfg'
 WEBKIT_RUN_TEST_CONFIG = os.path.join(
     '..', 'third_party', 'WebKit', 'Tools', 'run-perf-test.cfg')
+
 
 class Goma(object):
 
@@ -485,7 +485,7 @@ def _OptionParser():
   """Returns the options parser for run-bisect-perf-regression.py."""
   usage = ('%prog [options] [-- chromium-options]\n'
            'Used by a try bot to run the bisection script using the parameters'
-           ' provided in the run-bisect-perf-regression.cfg file.')
+           ' provided in the auto_bisect/bisect.cfg file.')
   parser = optparse.OptionParser(usage=usage)
   parser.add_option('-w', '--working_directory',
                     type='str',
@@ -566,7 +566,7 @@ def main():
           config, current_dir, opts.path_to_goma)
 
   print ('Error: Could not load config file. Double check your changes to '
-         'run-bisect-perf-regression.cfg or run-perf-test.cfg for syntax '
+         'auto_bisect/bisect.cfg or run-perf-test.cfg for syntax '
          'errors.\n')
   return 1
 
