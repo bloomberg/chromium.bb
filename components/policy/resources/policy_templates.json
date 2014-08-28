@@ -6777,6 +6777,10 @@
       'desc': '''Text appended in parentheses next to the policies top-level container to indicate that those policies are of the Recommended level''',
       'text': 'Default Settings (users can override)',
     },
+    'doc_complex_policies_on_windows': {
+      'desc': '''Text pointing the user to a help article for complex policies on Windows''',
+      'text': '''encoded as a JSON string, for details see <ph name="COMPLEX_POLICIES_URL">http://www.chromium.org/administrators/complex-policies-on-windows<ex>http://www.chromium.org/administrators/complex-policies-on-windows</ex></ph>''',
+    },
   },
   'placeholders': [],
 }
