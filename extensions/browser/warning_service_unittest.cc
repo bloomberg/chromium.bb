@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_warning_service.h"
+#include "extensions/browser/warning_service.h"
 
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/global_error/global_error_service.h"
-#include "chrome/browser/ui/global_error/global_error_service_factory.h"
-#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_context.h"
+#include "extensions/browser/extensions_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,52 +13,54 @@ namespace extensions {
 
 namespace {
 
-class TestExtensionWarningService : public ExtensionWarningService {
+class TestWarningService : public WarningService {
  public:
-  explicit TestExtensionWarningService(Profile* profile)
-      : ExtensionWarningService(profile) {
+  explicit TestWarningService(content::BrowserContext* browser_context)
+      : WarningService(browser_context) {
   }
-  virtual ~TestExtensionWarningService() {}
+  virtual ~TestWarningService() {}
 
-  void AddWarning(const ExtensionWarning& warning) {
-    ExtensionWarningSet warnings;
+  void AddWarning(const Warning& warning) {
+    WarningSet warnings;
     warnings.insert(warning);
     AddWarnings(warnings);
   }
 };
 
-class MockObserver : public ExtensionWarningService::Observer {
+class MockObserver : public WarningService::Observer {
  public:
   virtual ~MockObserver() {}
   MOCK_METHOD0(ExtensionWarningsChanged, void());
 };
 
+typedef ExtensionsTest WarningServiceTest;
+
 const char* ext1_id = "extension1";
 const char* ext2_id = "extension2";
-const ExtensionWarning::WarningType warning_1 =
-    ExtensionWarning::kNetworkDelay;
-const ExtensionWarning::WarningType warning_2 =
-    ExtensionWarning::kNetworkConflict;
+const Warning::WarningType warning_1 =
+    Warning::kNetworkDelay;
+const Warning::WarningType warning_2 =
+    Warning::kNetworkConflict;
 
 }  // namespace
 
 // Check that inserting a warning triggers notifications, whereas inserting
 // the same warning again is silent.
-TEST(ExtensionWarningServiceTest, SetWarning) {
-  TestingProfile profile;
-  TestExtensionWarningService warning_service(&profile);
+TEST_F(WarningServiceTest, SetWarning) {
+  content::TestBrowserContext browser_context;
+  TestWarningService warning_service(&browser_context);
   MockObserver observer;
   warning_service.AddObserver(&observer);
 
   // Insert warning for the first time.
   EXPECT_CALL(observer, ExtensionWarningsChanged());
   warning_service.AddWarning(
-      ExtensionWarning::CreateNetworkDelayWarning(ext1_id));
+      Warning::CreateNetworkDelayWarning(ext1_id));
   testing::Mock::VerifyAndClearExpectations(&warning_service);
 
   // Second insertion of same warning does not trigger anything.
   warning_service.AddWarning(
-      ExtensionWarning::CreateNetworkDelayWarning(ext1_id));
+      Warning::CreateNetworkDelayWarning(ext1_id));
   testing::Mock::VerifyAndClearExpectations(&warning_service);
 
   warning_service.RemoveObserver(&observer);
@@ -68,29 +68,29 @@ TEST(ExtensionWarningServiceTest, SetWarning) {
 
 // Check that ClearWarnings deletes exactly the specified warnings and
 // triggers notifications where appropriate.
-TEST(ExtensionWarningServiceTest, ClearWarnings) {
-  TestingProfile profile;
-  TestExtensionWarningService warning_service(&profile);
+TEST_F(WarningServiceTest, ClearWarnings) {
+  content::TestBrowserContext browser_context;
+  TestWarningService warning_service(&browser_context);
   MockObserver observer;
   warning_service.AddObserver(&observer);
 
   // Insert two unique warnings in one batch.
   EXPECT_CALL(observer, ExtensionWarningsChanged());
-  ExtensionWarningSet warning_set;
-  warning_set.insert(ExtensionWarning::CreateNetworkDelayWarning(ext1_id));
-  warning_set.insert(ExtensionWarning::CreateNetworkConflictWarning(ext2_id));
+  WarningSet warning_set;
+  warning_set.insert(Warning::CreateNetworkDelayWarning(ext1_id));
+  warning_set.insert(Warning::CreateNetworkConflictWarning(ext2_id));
   warning_service.AddWarnings(warning_set);
   testing::Mock::VerifyAndClearExpectations(&warning_service);
 
   // Remove one warning and check that the badge remains.
   EXPECT_CALL(observer, ExtensionWarningsChanged());
-  std::set<ExtensionWarning::WarningType> to_clear;
+  std::set<Warning::WarningType> to_clear;
   to_clear.insert(warning_2);
   warning_service.ClearWarnings(to_clear);
   testing::Mock::VerifyAndClearExpectations(&warning_service);
 
   // Check that the correct warnings appear in |warnings|.
-  std::set<ExtensionWarning::WarningType> existing_warnings =
+  std::set<Warning::WarningType> existing_warnings =
       warning_service.GetWarningTypesAffectingExtension(ext1_id);
   EXPECT_EQ(1u, existing_warnings.size());
   existing_warnings =

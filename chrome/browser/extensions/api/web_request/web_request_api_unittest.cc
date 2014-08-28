@@ -27,7 +27,6 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
-#include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/net/about_protocol_handler.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/common/extensions/api/web_request.h"
@@ -38,6 +37,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/warning_set.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature.h"
 #include "net/base/auth.h"
@@ -105,9 +105,9 @@ bool Contains(const Collection& collection, const Key& key) {
 }
 
 // Returns whether |warnings| contains an extension for |extension_id|.
-bool HasWarning(const ExtensionWarningSet& warnings,
+bool HasWarning(const WarningSet& warnings,
                 const std::string& extension_id) {
-  for (ExtensionWarningSet::const_iterator i = warnings.begin();
+  for (WarningSet::const_iterator i = warnings.begin();
        i != warnings.end(); ++i) {
     if (i->extension_id() == extension_id)
       return true;
@@ -1347,7 +1347,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses) {
   EventResponseDeltas deltas;
   net::CapturingBoundNetLog capturing_net_log;
   net::BoundNetLog net_log = capturing_net_log.bound();
-  ExtensionWarningSet warning_set;
+  WarningSet warning_set;
   GURL effective_new_url;
 
   // No redirect
@@ -1428,7 +1428,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses2) {
   EventResponseDeltas deltas;
   net::CapturingBoundNetLog capturing_net_log;
   net::BoundNetLog net_log = capturing_net_log.bound();
-  ExtensionWarningSet warning_set;
+  WarningSet warning_set;
   GURL effective_new_url;
 
   // Single redirect.
@@ -1497,7 +1497,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses3) {
   EventResponseDeltas deltas;
   net::CapturingBoundNetLog capturing_net_log;
   net::BoundNetLog net_log = capturing_net_log.bound();
-  ExtensionWarningSet warning_set;
+  WarningSet warning_set;
   GURL effective_new_url;
 
   // Single redirect.
@@ -1533,7 +1533,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   base_headers.AddHeaderFromString("key2: value 2");
   net::CapturingBoundNetLog capturing_net_log;
   net::BoundNetLog net_log = capturing_net_log.bound();
-  ExtensionWarningSet warning_set;
+  WarningSet warning_set;
   std::string header_value;
   EventResponseDeltas deltas;
 
@@ -1629,7 +1629,7 @@ TEST(ExtensionWebRequestHelpersTest,
       "Cookie: name=value; name2=value2; name3=\"value3\"");
   net::CapturingBoundNetLog capturing_net_log;
   net::BoundNetLog net_log = capturing_net_log.bound();
-  ExtensionWarningSet warning_set;
+  WarningSet warning_set;
   std::string header_value;
   EventResponseDeltas deltas;
 
@@ -1713,7 +1713,7 @@ TEST(ExtensionWebRequestHelpersTest,
      TestMergeCookiesInOnHeadersReceivedResponses) {
   net::CapturingBoundNetLog capturing_net_log;
   net::BoundNetLog net_log = capturing_net_log.bound();
-  ExtensionWarningSet warning_set;
+  WarningSet warning_set;
   std::string header_value;
   EventResponseDeltas deltas;
 
@@ -1948,7 +1948,7 @@ TEST(ExtensionWebRequestHelpersTest,
 TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
   net::CapturingBoundNetLog capturing_net_log;
   net::BoundNetLog net_log = capturing_net_log.bound();
-  ExtensionWarningSet warning_set;
+  WarningSet warning_set;
   std::string header_value;
   EventResponseDeltas deltas;
 
@@ -2048,7 +2048,7 @@ TEST(ExtensionWebRequestHelpersTest,
      TestMergeOnHeadersReceivedResponsesDeletion) {
   net::CapturingBoundNetLog capturing_net_log;
   net::BoundNetLog net_log = capturing_net_log.bound();
-  ExtensionWarningSet warning_set;
+  WarningSet warning_set;
   std::string header_value;
   EventResponseDeltas deltas;
 
@@ -2102,7 +2102,7 @@ TEST(ExtensionWebRequestHelpersTest,
   EventResponseDeltas deltas;
   net::CapturingBoundNetLog capturing_net_log;
   net::BoundNetLog net_log = capturing_net_log.bound();
-  ExtensionWarningSet warning_set;
+  WarningSet warning_set;
 
   char base_headers_string[] =
       "HTTP/1.0 200 OK\r\n"
@@ -2155,7 +2155,7 @@ TEST(ExtensionWebRequestHelpersTest,
 TEST(ExtensionWebRequestHelpersTest, TestMergeOnAuthRequiredResponses) {
   net::CapturingBoundNetLog capturing_net_log;
   net::BoundNetLog net_log = capturing_net_log.bound();
-  ExtensionWarningSet warning_set;
+  WarningSet warning_set;
   EventResponseDeltas deltas;
   base::string16 username = base::ASCIIToUTF16("foo");
   base::string16 password = base::ASCIIToUTF16("bar");

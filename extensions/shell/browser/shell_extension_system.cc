@@ -142,7 +142,7 @@ EventRouter* ShellExtensionSystem::event_router() {
   return event_router_.get();
 }
 
-ExtensionWarningService* ShellExtensionSystem::warning_service() {
+WarningService* ShellExtensionSystem::warning_service() {
   return NULL;
 }
 

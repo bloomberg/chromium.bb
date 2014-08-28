@@ -4096,7 +4096,7 @@ TEST(ExtensionDetermineDownloadFilenameInternal,
   base::FilePath filename;
   downloads::FilenameConflictAction conflict_action =
       downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY;
-  ExtensionWarningSet warnings;
+  WarningSet warnings;
 
   // Empty incumbent determiner
   warnings.clear();
@@ -4133,7 +4133,7 @@ TEST(ExtensionDetermineDownloadFilenameInternal,
   EXPECT_EQ(FILE_PATH_LITERAL("a"), filename.value());
   EXPECT_EQ(downloads::FILENAME_CONFLICT_ACTION_OVERWRITE, conflict_action);
   EXPECT_FALSE(warnings.empty());
-  EXPECT_EQ(ExtensionWarning::kDownloadFilenameConflict,
+  EXPECT_EQ(Warning::kDownloadFilenameConflict,
             warnings.begin()->warning_type());
   EXPECT_EQ("suggester", warnings.begin()->extension_id());
 
@@ -4154,7 +4154,7 @@ TEST(ExtensionDetermineDownloadFilenameInternal,
   EXPECT_EQ(FILE_PATH_LITERAL("b"), filename.value());
   EXPECT_EQ(downloads::FILENAME_CONFLICT_ACTION_PROMPT, conflict_action);
   EXPECT_FALSE(warnings.empty());
-  EXPECT_EQ(ExtensionWarning::kDownloadFilenameConflict,
+  EXPECT_EQ(Warning::kDownloadFilenameConflict,
             warnings.begin()->warning_type());
   EXPECT_EQ("incumbent", warnings.begin()->extension_id());
 }

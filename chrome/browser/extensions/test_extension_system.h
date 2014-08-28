@@ -73,7 +73,7 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue() OVERRIDE;
   void SetEventRouter(scoped_ptr<EventRouter> event_router);
   virtual EventRouter* event_router() OVERRIDE;
-  virtual ExtensionWarningService* warning_service() OVERRIDE;
+  virtual WarningService* warning_service() OVERRIDE;
   virtual Blacklist* blacklist() OVERRIDE;
   virtual ErrorConsole* error_console() OVERRIDE;
   virtual InstallVerifier* install_verifier() OVERRIDE;

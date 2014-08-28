@@ -14,13 +14,13 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
-#include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/runtime_data.h"
+#include "extensions/browser/warning_set.h"
 #include "net/base/net_log.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
@@ -33,7 +33,6 @@
 
 using base::Time;
 using content::ResourceType;
-using extensions::ExtensionWarning;
 using net::cookie_util::ParsedRequestCookie;
 using net::cookie_util::ParsedRequestCookies;
 
@@ -415,7 +414,7 @@ void MergeCancelOfResponses(
 static bool MergeRedirectUrlOfResponsesHelper(
     const EventResponseDeltas& deltas,
     GURL* new_url,
-    extensions::ExtensionWarningSet* conflicting_extensions,
+    extensions::WarningSet* conflicting_extensions,
     const net::BoundNetLog* net_log,
     bool consider_only_cancel_scheme_urls) {
   bool redirected = false;
@@ -441,7 +440,7 @@ static bool MergeRedirectUrlOfResponsesHelper(
           CreateNetLogExtensionIdCallback(delta->get()));
     } else {
       conflicting_extensions->insert(
-          ExtensionWarning::CreateRedirectConflictWarning(
+          extensions::Warning::CreateRedirectConflictWarning(
               (*delta)->extension_id,
               winning_extension_id,
               (*delta)->new_url,
@@ -457,7 +456,7 @@ static bool MergeRedirectUrlOfResponsesHelper(
 void MergeRedirectUrlOfResponses(
     const EventResponseDeltas& deltas,
     GURL* new_url,
-    extensions::ExtensionWarningSet* conflicting_extensions,
+    extensions::WarningSet* conflicting_extensions,
     const net::BoundNetLog* net_log) {
 
   // First handle only redirects to data:// URLs and about:blank. These are a
@@ -477,7 +476,7 @@ void MergeRedirectUrlOfResponses(
 void MergeOnBeforeRequestResponses(
     const EventResponseDeltas& deltas,
     GURL* new_url,
-    extensions::ExtensionWarningSet* conflicting_extensions,
+    extensions::WarningSet* conflicting_extensions,
     const net::BoundNetLog* net_log) {
   MergeRedirectUrlOfResponses(deltas, new_url, conflicting_extensions, net_log);
 }
@@ -603,7 +602,7 @@ static bool MergeRemoveRequestCookieModifications(
 void MergeCookiesInOnBeforeSendHeadersResponses(
     const EventResponseDeltas& deltas,
     net::HttpRequestHeaders* request_headers,
-    extensions::ExtensionWarningSet* conflicting_extensions,
+    extensions::WarningSet* conflicting_extensions,
     const net::BoundNetLog* net_log) {
   // Skip all work if there are no registered cookie modifications.
   bool cookie_modifications_exist = false;
@@ -675,7 +674,7 @@ static std::string FindRemoveRequestHeader(
 void MergeOnBeforeSendHeadersResponses(
     const EventResponseDeltas& deltas,
     net::HttpRequestHeaders* request_headers,
-    extensions::ExtensionWarningSet* conflicting_extensions,
+    extensions::WarningSet* conflicting_extensions,
     const net::BoundNetLog* net_log) {
   EventResponseDeltas::const_iterator delta;
 
@@ -776,7 +775,7 @@ void MergeOnBeforeSendHeadersResponses(
           base::Bind(&NetLogModificationCallback, delta->get()));
     } else {
       conflicting_extensions->insert(
-          ExtensionWarning::CreateRequestHeaderConflictWarning(
+          extensions::Warning::CreateRequestHeaderConflictWarning(
               (*delta)->extension_id, winning_extension_id,
               conflicting_header));
       net_log->AddEvent(
@@ -983,7 +982,7 @@ void MergeCookiesInOnHeadersReceivedResponses(
     const EventResponseDeltas& deltas,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
-    extensions::ExtensionWarningSet* conflicting_extensions,
+    extensions::WarningSet* conflicting_extensions,
     const net::BoundNetLog* net_log) {
   // Skip all work if there are no registered cookie modifications.
   bool cookie_modifications_exist = false;
@@ -1044,7 +1043,7 @@ void MergeOnHeadersReceivedResponses(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url,
-    extensions::ExtensionWarningSet* conflicting_extensions,
+    extensions::WarningSet* conflicting_extensions,
     const net::BoundNetLog* net_log) {
   EventResponseDeltas::const_iterator delta;
 
@@ -1114,7 +1113,7 @@ void MergeOnHeadersReceivedResponses(
           CreateNetLogExtensionIdCallback(delta->get()));
     } else {
       conflicting_extensions->insert(
-          ExtensionWarning::CreateResponseHeaderConflictWarning(
+          extensions::Warning::CreateResponseHeaderConflictWarning(
               (*delta)->extension_id, winning_extension_id,
               conflicting_header));
       net_log->AddEvent(
@@ -1147,7 +1146,7 @@ void MergeOnHeadersReceivedResponses(
 bool MergeOnAuthRequiredResponses(
     const EventResponseDeltas& deltas,
     net::AuthCredentials* auth_credentials,
-    extensions::ExtensionWarningSet* conflicting_extensions,
+    extensions::WarningSet* conflicting_extensions,
     const net::BoundNetLog* net_log) {
   CHECK(auth_credentials);
   bool credentials_set = false;
@@ -1164,7 +1163,7 @@ bool MergeOnAuthRequiredResponses(
         auth_credentials->password() != (*delta)->auth_credentials->password();
     if (credentials_set && different) {
       conflicting_extensions->insert(
-          ExtensionWarning::CreateCredentialsConflictWarning(
+          extensions::Warning::CreateCredentialsConflictWarning(
               (*delta)->extension_id, winning_extension_id));
       net_log->AddEvent(
           net::NetLog::TYPE_CHROME_EXTENSION_IGNORED_DUE_TO_CONFLICT,

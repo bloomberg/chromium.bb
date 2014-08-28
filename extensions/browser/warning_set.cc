@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_warning_set.h"
+#include "extensions/browser/warning_set.h"
 
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/grit/chromium_strings.h"
-#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/extensions_client.h"
+#include "extensions/strings/grit/extensions_strings.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -28,10 +27,10 @@ const size_t kMaxNumberOfParameters = 4;
 namespace extensions {
 
 //
-// ExtensionWarning
+// Warning
 //
 
-ExtensionWarning::ExtensionWarning(
+Warning::Warning(
     WarningType type,
     const std::string& extension_id,
     int message_id,
@@ -47,16 +46,16 @@ ExtensionWarning::ExtensionWarning(
   CHECK_LE(message_parameters.size(), kMaxNumberOfParameters);
 }
 
-ExtensionWarning::ExtensionWarning(const ExtensionWarning& other)
+Warning::Warning(const Warning& other)
   : type_(other.type_),
     extension_id_(other.extension_id_),
     message_id_(other.message_id_),
     message_parameters_(other.message_parameters_) {}
 
-ExtensionWarning::~ExtensionWarning() {
+Warning::~Warning() {
 }
 
-ExtensionWarning& ExtensionWarning::operator=(const ExtensionWarning& other) {
+Warning& Warning::operator=(const Warning& other) {
   type_ = other.type_;
   extension_id_ = other.extension_id_;
   message_id_ = other.message_id_;
@@ -65,11 +64,11 @@ ExtensionWarning& ExtensionWarning::operator=(const ExtensionWarning& other) {
 }
 
 // static
-ExtensionWarning ExtensionWarning::CreateNetworkDelayWarning(
+Warning Warning::CreateNetworkDelayWarning(
     const std::string& extension_id) {
   std::vector<std::string> message_parameters;
-  message_parameters.push_back(l10n_util::GetStringUTF8(IDS_PRODUCT_NAME));
-  return ExtensionWarning(
+  message_parameters.push_back(ExtensionsClient::Get()->GetProductName());
+  return Warning(
       kNetworkDelay,
       extension_id,
       IDS_EXTENSION_WARNINGS_NETWORK_DELAY,
@@ -77,10 +76,9 @@ ExtensionWarning ExtensionWarning::CreateNetworkDelayWarning(
 }
 
 // static
-ExtensionWarning ExtensionWarning::CreateNetworkConflictWarning(
-    const std::string& extension_id) {
+Warning Warning::CreateNetworkConflictWarning(const std::string& extension_id) {
   std::vector<std::string> message_parameters;
-  return ExtensionWarning(
+  return Warning(
       kNetworkConflict,
       extension_id,
       IDS_EXTENSION_WARNINGS_NETWORK_CONFLICT,
@@ -88,7 +86,7 @@ ExtensionWarning ExtensionWarning::CreateNetworkConflictWarning(
 }
 
 // static
-ExtensionWarning ExtensionWarning::CreateRedirectConflictWarning(
+Warning Warning::CreateRedirectConflictWarning(
     const std::string& extension_id,
     const std::string& winning_extension_id,
     const GURL& attempted_redirect_url,
@@ -97,7 +95,7 @@ ExtensionWarning ExtensionWarning::CreateRedirectConflictWarning(
   message_parameters.push_back(attempted_redirect_url.spec());
   message_parameters.push_back(kTranslate + winning_extension_id);
   message_parameters.push_back(winning_redirect_url.spec());
-  return ExtensionWarning(
+  return Warning(
       kRedirectConflict,
       extension_id,
       IDS_EXTENSION_WARNINGS_REDIRECT_CONFLICT,
@@ -105,14 +103,14 @@ ExtensionWarning ExtensionWarning::CreateRedirectConflictWarning(
 }
 
 // static
-ExtensionWarning ExtensionWarning::CreateRequestHeaderConflictWarning(
+Warning Warning::CreateRequestHeaderConflictWarning(
     const std::string& extension_id,
     const std::string& winning_extension_id,
     const std::string& conflicting_header) {
   std::vector<std::string> message_parameters;
   message_parameters.push_back(conflicting_header);
   message_parameters.push_back(kTranslate + winning_extension_id);
-  return ExtensionWarning(
+  return Warning(
       kNetworkConflict,
       extension_id,
       IDS_EXTENSION_WARNINGS_REQUEST_HEADER_CONFLICT,
@@ -120,14 +118,14 @@ ExtensionWarning ExtensionWarning::CreateRequestHeaderConflictWarning(
 }
 
 // static
-ExtensionWarning ExtensionWarning::CreateResponseHeaderConflictWarning(
+Warning Warning::CreateResponseHeaderConflictWarning(
     const std::string& extension_id,
     const std::string& winning_extension_id,
     const std::string& conflicting_header) {
   std::vector<std::string> message_parameters;
   message_parameters.push_back(conflicting_header);
   message_parameters.push_back(kTranslate + winning_extension_id);
-  return ExtensionWarning(
+  return Warning(
       kNetworkConflict,
       extension_id,
       IDS_EXTENSION_WARNINGS_RESPONSE_HEADER_CONFLICT,
@@ -135,12 +133,12 @@ ExtensionWarning ExtensionWarning::CreateResponseHeaderConflictWarning(
 }
 
 // static
-ExtensionWarning ExtensionWarning::CreateCredentialsConflictWarning(
+Warning Warning::CreateCredentialsConflictWarning(
     const std::string& extension_id,
     const std::string& winning_extension_id) {
   std::vector<std::string> message_parameters;
   message_parameters.push_back(kTranslate + winning_extension_id);
-  return ExtensionWarning(
+  return Warning(
       kNetworkConflict,
       extension_id,
       IDS_EXTENSION_WARNINGS_CREDENTIALS_CONFLICT,
@@ -148,11 +146,11 @@ ExtensionWarning ExtensionWarning::CreateCredentialsConflictWarning(
 }
 
 // static
-ExtensionWarning ExtensionWarning::CreateRepeatedCacheFlushesWarning(
+Warning Warning::CreateRepeatedCacheFlushesWarning(
     const std::string& extension_id) {
   std::vector<std::string> message_parameters;
-  message_parameters.push_back(l10n_util::GetStringUTF8(IDS_PRODUCT_NAME));
-  return ExtensionWarning(
+  message_parameters.push_back(ExtensionsClient::Get()->GetProductName());
+  return Warning(
       kRepeatedCacheFlushes,
       extension_id,
       IDS_EXTENSION_WARNINGS_NETWORK_DELAY,
@@ -160,7 +158,7 @@ ExtensionWarning ExtensionWarning::CreateRepeatedCacheFlushesWarning(
 }
 
 // static
-ExtensionWarning ExtensionWarning::CreateDownloadFilenameConflictWarning(
+Warning Warning::CreateDownloadFilenameConflictWarning(
     const std::string& losing_extension_id,
     const std::string& winning_extension_id,
     const base::FilePath& losing_filename,
@@ -171,7 +169,7 @@ ExtensionWarning ExtensionWarning::CreateDownloadFilenameConflictWarning(
   message_parameters.push_back(kTranslate + winning_extension_id);
   message_parameters.push_back(base::UTF16ToUTF8(
       winning_filename.LossyDisplayName()));
-  return ExtensionWarning(
+  return Warning(
       kDownloadFilenameConflict,
       losing_extension_id,
       IDS_EXTENSION_WARNINGS_DOWNLOAD_FILENAME_CONFLICT,
@@ -179,17 +177,16 @@ ExtensionWarning ExtensionWarning::CreateDownloadFilenameConflictWarning(
 }
 
 // static
-ExtensionWarning ExtensionWarning::CreateReloadTooFrequentWarning(
+Warning Warning::CreateReloadTooFrequentWarning(
     const std::string& extension_id) {
   std::vector<std::string> message_parameters;
-  return ExtensionWarning(kReloadTooFrequent,
+  return Warning(kReloadTooFrequent,
                           extension_id,
                           IDS_EXTENSION_WARNING_RELOAD_TOO_FREQUENT,
                           message_parameters);
 }
 
-std::string ExtensionWarning::GetLocalizedMessage(
-    const ExtensionSet* extensions) const {
+std::string Warning::GetLocalizedMessage(const ExtensionSet* extensions) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // These parameters may be unsafe (URLs and Extension names) and need
@@ -228,7 +225,7 @@ std::string ExtensionWarning::GetLocalizedMessage(
   }
 }
 
-bool operator<(const ExtensionWarning& a, const ExtensionWarning& b) {
+bool operator<(const Warning& a, const Warning& b) {
   if (a.extension_id() != b.extension_id())
     return a.extension_id() < b.extension_id();
   return a.warning_type() < b.warning_type();

@@ -7,8 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/extensions/extension_warning_service.h"
-#include "chrome/browser/extensions/extension_warning_set.h"
+#include "extensions/browser/warning_service.h"
+#include "extensions/browser/warning_set.h"
 
 // TODO(battre): Rename ExtensionWarningBadgeService to WarningBadgeService.
 
@@ -18,7 +18,7 @@ namespace extensions {
 
 // A service that is responsible for showing an extension warning badge on the
 // wrench menu.
-class ExtensionWarningBadgeService : public ExtensionWarningService::Observer,
+class ExtensionWarningBadgeService : public WarningService::Observer,
                                      public base::NonThreadSafe {
  public:
   explicit ExtensionWarningBadgeService(Profile* profile);
@@ -30,10 +30,10 @@ class ExtensionWarningBadgeService : public ExtensionWarningService::Observer,
 
  protected:
   // Virtual for testing.
-  virtual const std::set<ExtensionWarning>& GetCurrentWarnings() const;
+  virtual const std::set<Warning>& GetCurrentWarnings() const;
 
  private:
-  // Implementation of ExtensionWarningService::Observer.
+  // Implementation of WarningService::Observer.
   virtual void ExtensionWarningsChanged() OVERRIDE;
 
   void UpdateBadgeStatus();
@@ -42,7 +42,7 @@ class ExtensionWarningBadgeService : public ExtensionWarningService::Observer,
   Profile* profile_;
 
   // Warnings that do not trigger a badge on the wrench menu.
-  ExtensionWarningSet suppressed_warnings_;
+  WarningSet suppressed_warnings_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWarningBadgeService);
 };

@@ -49,7 +49,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
       OVERRIDE;  // shared
   virtual InfoMap* info_map() OVERRIDE; // shared
   virtual EventRouter* event_router() OVERRIDE;  // shared
-  virtual ExtensionWarningService* warning_service() OVERRIDE;
+  virtual WarningService* warning_service() OVERRIDE;
   virtual Blacklist* blacklist() OVERRIDE;  // shared
   virtual ErrorConsole* error_console() OVERRIDE;
   virtual InstallVerifier* install_verifier() OVERRIDE;
@@ -100,7 +100,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     InfoMap* info_map();
     LazyBackgroundTaskQueue* lazy_background_task_queue();
     EventRouter* event_router();
-    ExtensionWarningService* warning_service();
+    WarningService* warning_service();
     ErrorConsole* error_console();
     InstallVerifier* install_verifier();
     QuotaService* quota_service();
@@ -141,7 +141,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_ptr<ManagementPolicy> management_policy_;
     // extension_info_map_ needs to outlive process_manager_.
     scoped_refptr<InfoMap> extension_info_map_;
-    scoped_ptr<ExtensionWarningService> extension_warning_service_;
+    scoped_ptr<WarningService> warning_service_;
     scoped_ptr<ExtensionWarningBadgeService> extension_warning_badge_service_;
     scoped_ptr<ErrorConsole> error_console_;
     scoped_ptr<InstallVerifier> install_verifier_;

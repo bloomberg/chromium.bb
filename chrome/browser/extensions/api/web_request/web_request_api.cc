@@ -30,8 +30,6 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/web_request_time_tracker.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
-#include "chrome/browser/extensions/extension_warning_service.h"
-#include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/api/web_request.h"
@@ -53,6 +51,8 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/runtime_data.h"
+#include "extensions/browser/warning_service.h"
+#include "extensions/browser/warning_set.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/event_filtering_info.h"
 #include "extensions/common/extension.h"
@@ -79,12 +79,12 @@ using content::ResourceRequestInfo;
 using content::ResourceType;
 using extensions::ErrorUtils;
 using extensions::Extension;
-using extensions::ExtensionWarning;
-using extensions::ExtensionWarningService;
-using extensions::ExtensionWarningSet;
 using extensions::InfoMap;
 using extensions::Feature;
 using extensions::RulesRegistryService;
+using extensions::Warning;
+using extensions::WarningService;
+using extensions::WarningSet;
 
 namespace helpers = extension_web_request_api_helpers;
 namespace keys = extension_web_request_api_constants;
@@ -1884,7 +1884,7 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
   bool credentials_set = false;
 
   deltas.sort(&helpers::InDecreasingExtensionInstallationTimeOrder);
-  ExtensionWarningSet warnings;
+  WarningSet warnings;
 
   bool canceled = false;
   helpers::MergeCancelOfResponses(
@@ -1933,8 +1933,7 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&ExtensionWarningService::NotifyWarningsOnUI,
-                   profile, warnings));
+        base::Bind(&WarningService::NotifyWarningsOnUI, profile, warnings));
   }
 
   if (canceled) {
@@ -2456,14 +2455,13 @@ void WebRequestHandlerBehaviorChangedFunction::GetQuotaLimitHeuristics(
 void WebRequestHandlerBehaviorChangedFunction::OnQuotaExceeded(
     const std::string& violation_error) {
   // Post warning message.
-  ExtensionWarningSet warnings;
+  WarningSet warnings;
   warnings.insert(
-      ExtensionWarning::CreateRepeatedCacheFlushesWarning(extension_id()));
+      Warning::CreateRepeatedCacheFlushesWarning(extension_id()));
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&ExtensionWarningService::NotifyWarningsOnUI,
-                 profile_id(), warnings));
+      base::Bind(&WarningService::NotifyWarningsOnUI, profile_id(), warnings));
 
   // Continue gracefully.
   RunSync();

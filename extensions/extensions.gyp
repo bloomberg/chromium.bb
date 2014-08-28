@@ -554,6 +554,10 @@
         'browser/verified_contents.h',
         'browser/view_type_utils.cc',
         'browser/view_type_utils.h',
+        'browser/warning_service.cc',
+        'browser/warning_service.h',
+        'browser/warning_set.cc',
+        'browser/warning_set.h',
       ],
       'conditions': [
         ['enable_extensions==0', {
@@ -931,6 +935,7 @@
         'browser/value_store/value_store_unittest.cc',
         'browser/value_store/value_store_unittest.h',
         'browser/verified_contents_unittest.cc',
+        'browser/warning_service_unittest.cc',
         'common/api/sockets/sockets_manifest_permission_unittest.cc',
         'common/csp_validator_unittest.cc',
         'common/event_filter_unittest.cc',

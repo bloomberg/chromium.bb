@@ -99,15 +99,14 @@ void ExtensionWarningBadgeService::SuppressCurrentWarnings() {
   DCHECK(CalledOnValidThread());
   size_t old_size = suppressed_warnings_.size();
 
-  const ExtensionWarningSet& warnings = GetCurrentWarnings();
+  const WarningSet& warnings = GetCurrentWarnings();
   suppressed_warnings_.insert(warnings.begin(), warnings.end());
 
   if (old_size != suppressed_warnings_.size())
     UpdateBadgeStatus();
 }
 
-const ExtensionWarningSet&
-ExtensionWarningBadgeService::GetCurrentWarnings() const {
+const WarningSet& ExtensionWarningBadgeService::GetCurrentWarnings() const {
   return ExtensionSystem::Get(profile_)->warning_service()->warnings();
 }
 
@@ -117,9 +116,9 @@ void ExtensionWarningBadgeService::ExtensionWarningsChanged() {
 }
 
 void ExtensionWarningBadgeService::UpdateBadgeStatus() {
-  const std::set<ExtensionWarning>& warnings = GetCurrentWarnings();
+  const std::set<Warning>& warnings = GetCurrentWarnings();
   bool non_suppressed_warnings_exist = false;
-  for (std::set<ExtensionWarning>::const_iterator i = warnings.begin();
+  for (std::set<Warning>::const_iterator i = warnings.begin();
        i != warnings.end(); ++i) {
     if (!ContainsKey(suppressed_warnings_, *i)) {
       non_suppressed_warnings_exist = true;

@@ -306,6 +306,33 @@
       <message name="IDS_EXTENSION_TASK_MANAGER_WEBVIEW_TAG_PREFIX" desc="The prefix for a guest page loaded in a webview tag in the Task Manager">
         Webview: <ph name="WEBVIEW_TAG_NAME">$1<ex>Google</ex></ph>
       </message>
+
+      <!-- Global error messages for extensions. Please keep alphabetized. -->
+      <message name="IDS_EXTENSION_WARNINGS_NETWORK_DELAY" desc="Warning message indicating that an extension caused excessive network delays for web requests">
+        This extension is slowing down <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. You should disable it to restore <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s performance.
+      </message>
+      <message name="IDS_EXTENSION_WARNINGS_NETWORK_CONFLICT" desc="Warning message which indicates that two or more extensions tried to modify a network request in a conflicting way and the modification of this extension was ignored">
+        This extension failed to modify a network request because the modification conflicted with another extension.
+      </message>
+      <message name="IDS_EXTENSION_WARNINGS_REDIRECT_CONFLICT" desc="Warning message indicating that two extensions tried to redirect to different destinations">
+        This extension failed to redirect a network request to <ph name="ATTEMPTED_REDIRECT_DESTINATION">$1<ex>http://www.google.com</ex></ph> because another extension (<ph name="EXTENSION_NAME">$2<ex>My Cool Extension</ex></ph>) redirected it to <ph name="ACTUAL_REDIRECT_DESTINATION">$3<ex>https://www.google.com</ex></ph>.
+      </message>
+      <message name="IDS_EXTENSION_WARNINGS_REQUEST_HEADER_CONFLICT" desc="Warning message which indicates that two or more extensions tried to modify a network request in a conflicting way and the modification of this extension was ignored">
+        This extension failed to modify the request header "<ph name="HEADER_NAME">$1<ex>User-Agent</ex></ph>" of a network request because the modification conflicted with another extension (<ph name="EXTENSION_NAME">$2<ex>My Cool Extension</ex></ph>).
+      </message>
+      <message name="IDS_EXTENSION_WARNINGS_RESPONSE_HEADER_CONFLICT" desc="Warning message which indicates that two or more extensions tried to modify a network request in a conflicting way and the modification of this extension was ignored">
+        This extension failed to modify the response header "<ph name="HEADER_NAME">$1<ex>User-Agents</ex></ph>" of a network request because the modification conflicted with another extension (<ph name="EXTENSION_NAME">$2<ex>My Cool Extension</ex></ph>).
+      </message>
+      <message name="IDS_EXTENSION_WARNINGS_CREDENTIALS_CONFLICT" desc="Warning message which indicates that two or more extensions tried to modify a network request in a conflicting way and the modification of this extension was ignored">
+        This extension failed to provide credentials to a network request because another extension (<ph name="EXTENSION_NAME">$1<ex>My Cool Extension</ex></ph>) provided different credentials.
+      </message>
+      <message name="IDS_EXTENSION_WARNINGS_DOWNLOAD_FILENAME_CONFLICT" desc="Warning message which indicates that two or more extensions tried to determine the filename of a downloaded file in a conflicting way and the modification of this extension was ignored">
+        This extension failed to name the download "<ph name="ATTEMPTED_FILENAME">$1<ex>apple.png</ex></ph>" because another extension (<ph name="EXTENSION_NAME">$2<ex>My Cool Extension</ex></ph>) determined a different filename "<ph name="ACTUAL_FILENAME">$3<ex>banana.png</ex></ph>".
+      </message>
+      <message name="IDS_EXTENSION_WARNING_RELOAD_TOO_FREQUENT" desc="Warning message which indates that an extension got stuck in a reload loop.">
+        This extension reloaded itself too frequently.
+      </message>
+
     </messages>
   </release>
 </grit>

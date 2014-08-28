@@ -62,7 +62,7 @@ EventRouter* MockExtensionSystem::event_router() {
   return NULL;
 }
 
-ExtensionWarningService* MockExtensionSystem::warning_service() {
+WarningService* MockExtensionSystem::warning_service() {
   return NULL;
 }
 

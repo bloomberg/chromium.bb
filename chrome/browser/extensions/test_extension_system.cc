@@ -159,7 +159,7 @@ void TestExtensionSystem::SetEventRouter(scoped_ptr<EventRouter> event_router) {
 
 EventRouter* TestExtensionSystem::event_router() { return event_router_.get(); }
 
-ExtensionWarningService* TestExtensionSystem::warning_service() {
+WarningService* TestExtensionSystem::warning_service() {
   return NULL;
 }
 

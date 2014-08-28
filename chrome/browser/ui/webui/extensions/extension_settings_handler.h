@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
-#include "chrome/browser/extensions/extension_warning_service.h"
 #include "chrome/browser/extensions/requirements_checker.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
@@ -26,6 +25,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/warning_service.h"
 #include "url/gurl.h"
 
 class ExtensionService;
@@ -74,7 +74,7 @@ class ExtensionSettingsHandler
       public ExtensionPrefsObserver,
       public ExtensionRegistryObserver,
       public ExtensionUninstallDialog::Delegate,
-      public ExtensionWarningService::Observer,
+      public WarningService::Observer,
       public base::SupportsWeakPtr<ExtensionSettingsHandler> {
  public:
   ExtensionSettingsHandler();
@@ -88,7 +88,7 @@ class ExtensionSettingsHandler
   base::DictionaryValue* CreateExtensionDetailValue(
       const Extension* extension,
       const std::vector<ExtensionPage>& pages,
-      const ExtensionWarningService* warning_service);
+      const WarningService* warning_service);
 
   void GetLocalizedValues(content::WebUIDataSource* source);
 
@@ -139,7 +139,7 @@ class ExtensionSettingsHandler
   virtual void ExtensionUninstallAccepted() OVERRIDE;
   virtual void ExtensionUninstallCanceled() OVERRIDE;
 
-  // ExtensionWarningService::Observer implementation.
+  // WarningService::Observer implementation.
   virtual void ExtensionWarningsChanged() OVERRIDE;
 
   // ExtensionInstallPrompt::Delegate implementation.
@@ -286,7 +286,7 @@ class ExtensionSettingsHandler
   // The UI for showing what permissions the extension has.
   scoped_ptr<ExtensionInstallPrompt> prompt_;
 
-  ScopedObserver<ExtensionWarningService, ExtensionWarningService::Observer>
+  ScopedObserver<WarningService, WarningService::Observer>
       warning_service_observer_;
 
   // An observer to listen for when Extension errors are reported.

@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_WARNING_SET_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_WARNING_SET_H_
+#ifndef EXTENSIONS_BROWSER_WARNING_SET_H_
+#define EXTENSIONS_BROWSER_WARNING_SET_H_
 
 #include <set>
 #include <string>
 #include <vector>
 
 #include "url/gurl.h"
-
-// TODO(battre) Remove the Extension prefix.
 
 namespace base {
 class FilePath;
@@ -21,10 +19,10 @@ namespace extensions {
 
 class ExtensionSet;
 
-// This class is used by the ExtensionWarningService to represent warnings if
-// extensions misbehave. Note that the ExtensionWarningService deals only with
-// specific warnings that should trigger a badge on the Chrome menu button.
-class ExtensionWarning {
+// This class is used by the WarningService to represent warnings if extensions
+// misbehave. Note that the WarningService deals only with specific warnings
+// that should trigger a badge on the Chrome menu button.
+class Warning {
  public:
   enum WarningType {
     // Don't use this, it is only intended for the default constructor and
@@ -48,41 +46,40 @@ class ExtensionWarning {
     kMaxWarningType
   };
 
-  // We allow copy&assign for passing containers of ExtensionWarnings between
-  // threads.
-  ExtensionWarning(const ExtensionWarning& other);
-  ~ExtensionWarning();
-  ExtensionWarning& operator=(const ExtensionWarning& other);
+  // We allow copy&assign for passing containers of Warnings between threads.
+  Warning(const Warning& other);
+  ~Warning();
+  Warning& operator=(const Warning& other);
 
   // Factory methods for various warning types.
-  static ExtensionWarning CreateNetworkDelayWarning(
+  static Warning CreateNetworkDelayWarning(
       const std::string& extension_id);
-  static ExtensionWarning CreateNetworkConflictWarning(
+  static Warning CreateNetworkConflictWarning(
       const std::string& extension_id);
-  static ExtensionWarning CreateRedirectConflictWarning(
+  static Warning CreateRedirectConflictWarning(
       const std::string& extension_id,
       const std::string& winning_extension_id,
       const GURL& attempted_redirect_url,
       const GURL& winning_redirect_url);
-  static ExtensionWarning CreateRequestHeaderConflictWarning(
+  static Warning CreateRequestHeaderConflictWarning(
       const std::string& extension_id,
       const std::string& winning_extension_id,
       const std::string& conflicting_header);
-  static ExtensionWarning CreateResponseHeaderConflictWarning(
+  static Warning CreateResponseHeaderConflictWarning(
       const std::string& extension_id,
       const std::string& winning_extension_id,
       const std::string& conflicting_header);
-  static ExtensionWarning CreateCredentialsConflictWarning(
+  static Warning CreateCredentialsConflictWarning(
       const std::string& extension_id,
       const std::string& winning_extension_id);
-  static ExtensionWarning CreateRepeatedCacheFlushesWarning(
+  static Warning CreateRepeatedCacheFlushesWarning(
       const std::string& extension_id);
-  static ExtensionWarning CreateDownloadFilenameConflictWarning(
+  static Warning CreateDownloadFilenameConflictWarning(
       const std::string& losing_extension_id,
       const std::string& winning_extension_id,
       const base::FilePath& losing_filename,
       const base::FilePath& winning_filename);
-  static ExtensionWarning CreateReloadTooFrequentWarning(
+  static Warning CreateReloadTooFrequentWarning(
       const std::string& extension_id);
 
   // Returns the specific warning type.
@@ -99,7 +96,7 @@ class ExtensionWarning {
   // could indicate for example the fact that an extension conflicted with
   // others. The |message_id| refers to an IDS_ string ID. The
   // |message_parameters| are filled into the message template.
-  ExtensionWarning(WarningType type,
+  Warning(WarningType type,
                    const std::string& extension_id,
                    int message_id,
                    const std::vector<std::string>& message_parameters);
@@ -112,13 +109,13 @@ class ExtensionWarning {
   std::vector<std::string> message_parameters_;
 };
 
-// Compare ExtensionWarnings based on the tuple of (extension_id, type).
-// The message associated with ExtensionWarnings is purely informational
+// Compare Warnings based on the tuple of (extension_id, type).
+// The message associated with Warnings is purely informational
 // and does not contribute to distinguishing extensions.
-bool operator<(const ExtensionWarning& a, const ExtensionWarning& b);
+bool operator<(const Warning& a, const Warning& b);
 
-typedef std::set<ExtensionWarning> ExtensionWarningSet;
+typedef std::set<Warning> WarningSet;
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WARNING_SET_H_
+#endif  // EXTENSIONS_BROWSER_WARNING_SET_H_

@@ -32,7 +32,6 @@ class ErrorConsole;
 class EventRouter;
 class Extension;
 class ExtensionSet;
-class ExtensionWarningService;
 class InfoMap;
 class InstallVerifier;
 class LazyBackgroundTaskQueue;
@@ -43,6 +42,7 @@ class QuotaService;
 class RuntimeData;
 class SharedUserScriptMaster;
 class StateStore;
+class WarningService;
 
 // ExtensionSystem manages the lifetime of many of the services used by the
 // extensions and apps system, and it handles startup and shutdown as needed.
@@ -94,8 +94,8 @@ class ExtensionSystem : public KeyedService {
   // The EventRouter is created at startup.
   virtual EventRouter* event_router() = 0;
 
-  // The ExtensionWarningService is created at startup.
-  virtual ExtensionWarningService* warning_service() = 0;
+  // The WarningService is created at startup.
+  virtual WarningService* warning_service() = 0;
 
   // The blacklist is created at startup.
   virtual Blacklist* blacklist() = 0;

@@ -104,6 +104,10 @@ ShellExtensionsClient::GetPermissionMessageProvider() const {
   return g_permission_message_provider.Get();
 }
 
+const std::string ShellExtensionsClient::GetProductName() {
+  return "app_shell";
+}
+
 scoped_ptr<FeatureProvider> ShellExtensionsClient::CreateFeatureProvider(
     const std::string& name) const {
   scoped_ptr<FeatureProvider> provider;

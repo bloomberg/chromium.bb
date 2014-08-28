@@ -37,7 +37,6 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/path_util.h"
 #include "chrome/browser/extensions/shared_module_service.h"
@@ -84,6 +83,7 @@
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/browser/view_type_utils.h"
+#include "extensions/browser/warning_set.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
@@ -210,7 +210,7 @@ void ExtensionSettingsHandler::RegisterProfilePrefs(
 base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
     const Extension* extension,
     const std::vector<ExtensionPage>& pages,
-    const ExtensionWarningService* warning_service) {
+    const WarningService* warning_service) {
   // The items which are to be written into app_dict are also described in
   // chrome/browser/resources/extensions/extension_list.js in @typedef for
   // ExtensionData. Please update it whenever you add or remove any keys here.
@@ -829,8 +829,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   // Add the extensions to the results structure.
   base::ListValue* extensions_list = new base::ListValue();
 
-  ExtensionWarningService* warnings =
-      ExtensionSystem::Get(profile)->warning_service();
+  WarningService* warnings = ExtensionSystem::Get(profile)->warning_service();
 
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
   const ExtensionSet& enabled_set = registry->enabled_extensions();

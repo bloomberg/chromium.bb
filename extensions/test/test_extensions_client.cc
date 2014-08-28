@@ -55,6 +55,10 @@ TestExtensionsClient::GetPermissionMessageProvider() const {
   return provider;
 }
 
+const std::string TestExtensionsClient::GetProductName() {
+  return "extensions_test";
+}
+
 scoped_ptr<FeatureProvider> TestExtensionsClient::CreateFeatureProvider(
     const std::string& name) const {
   scoped_ptr<FeatureProvider> provider;

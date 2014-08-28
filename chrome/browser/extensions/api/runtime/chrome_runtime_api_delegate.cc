@@ -8,8 +8,6 @@
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_warning_service.h"
-#include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -19,6 +17,8 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/browser/warning_service.h"
+#include "extensions/browser/warning_set.h"
 #include "extensions/common/api/runtime.h"
 
 #if defined(OS_CHROMEOS)
@@ -120,13 +120,13 @@ void ChromeRuntimeAPIDelegate::ReloadExtension(
         base::Bind(&ExtensionService::TerminateExtension,
                    service->AsWeakPtr(),
                    extension_id));
-    extensions::ExtensionWarningSet warnings;
+    extensions::WarningSet warnings;
     warnings.insert(
-        extensions::ExtensionWarning::CreateReloadTooFrequentWarning(
+        extensions::Warning::CreateReloadTooFrequentWarning(
             extension_id));
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&extensions::ExtensionWarningService::NotifyWarningsOnUI,
+        base::Bind(&extensions::WarningService::NotifyWarningsOnUI,
                    browser_context_,
                    warnings));
   } else {

@@ -11,6 +11,7 @@
 #include "chrome/common/extensions/features/chrome_channel_feature_filter.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/common_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/url_constants.h"
@@ -98,6 +99,10 @@ void ChromeExtensionsClient::Initialize() {
 const PermissionMessageProvider&
 ChromeExtensionsClient::GetPermissionMessageProvider() const {
   return permission_message_provider_;
+}
+
+const std::string ChromeExtensionsClient::GetProductName() {
+  return l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
 }
 
 scoped_ptr<FeatureProvider> ChromeExtensionsClient::CreateFeatureProvider(

@@ -45,6 +45,9 @@ class ExtensionsClient {
   virtual const PermissionMessageProvider& GetPermissionMessageProvider()
       const = 0;
 
+  // Returns the application name. For example, "Chromium" or "app_shell".
+  virtual const std::string GetProductName() = 0;
+
   // Create a FeatureProvider for a specific feature type, e.g. "permission".
   virtual scoped_ptr<FeatureProvider> CreateFeatureProvider(
       const std::string& name) const = 0;

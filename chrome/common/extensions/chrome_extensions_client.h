@@ -26,6 +26,7 @@ class ChromeExtensionsClient : public ExtensionsClient {
 
   virtual const PermissionMessageProvider& GetPermissionMessageProvider() const
       OVERRIDE;
+  virtual const std::string GetProductName() OVERRIDE;
   virtual scoped_ptr<FeatureProvider> CreateFeatureProvider(
       const std::string& name) const OVERRIDE;
   virtual scoped_ptr<JSONFeatureProviderSource> CreateFeatureProviderSource(
