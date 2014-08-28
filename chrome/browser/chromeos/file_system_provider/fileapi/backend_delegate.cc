@@ -63,5 +63,11 @@ scoped_ptr<storage::FileStreamWriter> BackendDelegate::CreateFileStreamWriter(
       new FileStreamWriter(url, offset));
 }
 
+storage::WatcherManager* BackendDelegate::GetWatcherManager(
+    const storage::FileSystemURL& url) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 }  // namespace file_system_provider
 }  // namespace chromeos

@@ -16,8 +16,10 @@ class Time;
 namespace storage {
 class AsyncFileUtil;
 class FileSystemContext;
+class FileStreamReader;
 class FileSystemURL;
 class FileStreamWriter;
+class WatcherManager;
 }  // namespace storage
 
 namespace storage {
@@ -27,7 +29,7 @@ class FileStreamReader;
 namespace chromeos {
 
 // This is delegate interface to inject the implementation of the some methods
-// of FileSystemBackend. The main goal is to inject Drive File System.
+// of FileSystemBackend.
 class FileSystemBackendDelegate {
  public:
   virtual ~FileSystemBackendDelegate() {}
@@ -48,6 +50,11 @@ class FileSystemBackendDelegate {
       const storage::FileSystemURL& url,
       int64 offset,
       storage::FileSystemContext* context) = 0;
+
+  // Called from the FileSystemWatcherService class. The returned pointer must
+  // stay valid until shutdown.
+  virtual storage::WatcherManager* GetWatcherManager(
+      const storage::FileSystemURL& url) = 0;
 };
 
 }  // namespace chromeos

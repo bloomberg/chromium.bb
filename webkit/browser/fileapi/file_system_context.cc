@@ -277,6 +277,14 @@ FileSystemBackend* FileSystemContext::GetFileSystemBackend(
   return NULL;
 }
 
+WatcherManager* FileSystemContext::GetWatcherManager(
+    FileSystemType type) const {
+  FileSystemBackend* backend = GetFileSystemBackend(type);
+  if (!backend)
+    return NULL;
+  return backend->GetWatcherManager(type);
+}
+
 bool FileSystemContext::IsSandboxFileSystem(FileSystemType type) const {
   FileSystemBackendMap::const_iterator found = backend_map_.find(type);
   return found != backend_map_.end() && found->second->GetQuotaUtil();

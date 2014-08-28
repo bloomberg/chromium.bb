@@ -85,6 +85,11 @@ AsyncFileUtil* SandboxFileSystemBackend::GetAsyncFileUtil(
   return delegate_->file_util();
 }
 
+WatcherManager* SandboxFileSystemBackend::GetWatcherManager(
+    FileSystemType type) {
+  return NULL;
+}
+
 CopyOrMoveFileValidatorFactory*
 SandboxFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
     FileSystemType type,

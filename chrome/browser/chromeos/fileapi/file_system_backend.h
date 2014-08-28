@@ -19,6 +19,7 @@ namespace storage {
 class CopyOrMoveFileValidatorFactory;
 class ExternalMountPoints;
 class FileSystemURL;
+class WatcherManager;
 }  // namespace storage
 
 namespace chromeos {
@@ -92,6 +93,8 @@ class FileSystemBackend : public storage::ExternalFileSystemBackend {
                           storage::OpenFileSystemMode mode,
                           const OpenFileSystemCallback& callback) OVERRIDE;
   virtual storage::AsyncFileUtil* GetAsyncFileUtil(
+      storage::FileSystemType type) OVERRIDE;
+  virtual storage::WatcherManager* GetWatcherManager(
       storage::FileSystemType type) OVERRIDE;
   virtual storage::CopyOrMoveFileValidatorFactory*
       GetCopyOrMoveFileValidatorFactory(storage::FileSystemType type,

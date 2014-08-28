@@ -55,6 +55,11 @@ storage::AsyncFileUtil* PrivetFileSystemBackend::GetAsyncFileUtil(
   return async_util_.get();
 }
 
+storage::WatcherManager* PrivetFileSystemBackend::GetWatcherManager(
+    storage::FileSystemType type) {
+  return NULL;
+}
+
 storage::CopyOrMoveFileValidatorFactory*
 PrivetFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
     storage::FileSystemType type,

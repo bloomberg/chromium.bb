@@ -65,6 +65,7 @@ class IsolatedFileSystemBackend;
 class MountPoints;
 class QuotaReservation;
 class SandboxFileSystemBackend;
+class WatchManager;
 
 struct DefaultContextDeleter;
 struct FileSystemInfo;
@@ -162,6 +163,10 @@ class STORAGE_EXPORT FileSystemContext
   // type.
   FileSystemBackend* GetFileSystemBackend(
       FileSystemType type) const;
+
+  // Returns the watcher manager for the given |type|.
+  // This may return NULL if the type does not support watching.
+  WatcherManager* GetWatcherManager(FileSystemType type) const;
 
   // Returns true for sandboxed filesystems. Currently this does
   // the same as GetQuotaUtil(type) != NULL. (In an assumption that

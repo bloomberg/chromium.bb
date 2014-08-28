@@ -29,6 +29,7 @@ class SpecialStoragePolicy;
 namespace storage {
 
 class ObfuscatedFileUtil;
+class WatcherManager;
 
 class STORAGE_EXPORT PluginPrivateFileSystemBackend
     : public FileSystemBackend,
@@ -65,6 +66,7 @@ class STORAGE_EXPORT PluginPrivateFileSystemBackend
                           OpenFileSystemMode mode,
                           const OpenFileSystemCallback& callback) OVERRIDE;
   virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) OVERRIDE;
+  virtual WatcherManager* GetWatcherManager(FileSystemType type) OVERRIDE;
   virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(
       FileSystemType type,
       base::File::Error* error_code) OVERRIDE;

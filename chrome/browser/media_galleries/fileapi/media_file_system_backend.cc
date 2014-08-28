@@ -5,6 +5,7 @@
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -266,6 +267,11 @@ storage::AsyncFileUtil* MediaFileSystemBackend::GetAsyncFileUtil(
     default:
       NOTREACHED();
   }
+  return NULL;
+}
+
+storage::WatcherManager* MediaFileSystemBackend::GetWatcherManager(
+    storage::FileSystemType type) {
   return NULL;
 }
 

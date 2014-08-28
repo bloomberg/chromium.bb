@@ -41,6 +41,8 @@ class TestFileSystemBackend : public storage::FileSystemBackend {
                           const OpenFileSystemCallback& callback) OVERRIDE;
   virtual storage::AsyncFileUtil* GetAsyncFileUtil(
       storage::FileSystemType type) OVERRIDE;
+  virtual storage::WatcherManager* GetWatcherManager(
+      storage::FileSystemType type) OVERRIDE;
   virtual storage::CopyOrMoveFileValidatorFactory*
       GetCopyOrMoveFileValidatorFactory(storage::FileSystemType type,
                                         base::File::Error* error_code) OVERRIDE;
@@ -85,6 +87,7 @@ class TestFileSystemBackend : public storage::FileSystemBackend {
   base::FilePath base_path_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_ptr<storage::AsyncFileUtilAdapter> file_util_;
+  scoped_ptr<storage::WatcherManager> watcher_manager_;
   scoped_ptr<QuotaUtil> quota_util_;
 
   bool require_copy_or_move_validator_;

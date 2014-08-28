@@ -35,6 +35,8 @@ class PrivetFileSystemBackend : public storage::FileSystemBackend {
 
   virtual storage::AsyncFileUtil* GetAsyncFileUtil(
       storage::FileSystemType type) OVERRIDE;
+  virtual storage::WatcherManager* GetWatcherManager(
+      storage::FileSystemType type) OVERRIDE;
   virtual storage::CopyOrMoveFileValidatorFactory*
       GetCopyOrMoveFileValidatorFactory(storage::FileSystemType type,
                                         base::File::Error* error_code) OVERRIDE;

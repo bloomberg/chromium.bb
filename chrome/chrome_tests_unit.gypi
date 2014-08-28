@@ -868,6 +868,7 @@
         'browser/extensions/api/experience_sampling_private/experience_sampling_private_api_unittest.cc',
         'browser/extensions/api/extension_action/extension_action_prefs_unittest.cc',
         'browser/extensions/api/file_handlers/mime_util_unittest.cc',
+        'browser/extensions/api/file_system/entry_watcher_service_unittest.cc',
         'browser/extensions/api/file_system/file_system_api_unittest.cc',
         'browser/extensions/api/identity/extension_token_key_unittest.cc',
         'browser/extensions/api/identity/gaia_web_auth_flow_unittest.cc',

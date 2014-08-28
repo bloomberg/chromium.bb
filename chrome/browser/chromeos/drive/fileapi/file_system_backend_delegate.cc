@@ -80,4 +80,10 @@ FileSystemBackendDelegate::CreateFileStreamWriter(
           offset));
 }
 
+storage::WatcherManager* FileSystemBackendDelegate::GetWatcherManager(
+    const storage::FileSystemURL& url) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 }  // namespace drive

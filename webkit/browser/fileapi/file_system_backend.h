@@ -33,6 +33,7 @@ class FileSystemContext;
 class FileSystemFileUtil;
 class FileSystemOperation;
 class FileSystemQuotaUtil;
+class WatcherManager;
 
 // An interface for defining a file system backend.
 //
@@ -70,6 +71,9 @@ class STORAGE_EXPORT FileSystemBackend {
   // Returns the specialized AsyncFileUtil for this backend.
   virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) = 0;
 
+  // Returns the specialized WatcherManager for this backend.
+  virtual WatcherManager* GetWatcherManager(FileSystemType type) = 0;
+
   // Returns the specialized CopyOrMoveFileValidatorFactory for this backend
   // and |type|.  If |error_code| is File::FILE_OK and the result is NULL,
   // then no validator is required.
@@ -105,6 +109,8 @@ class STORAGE_EXPORT FileSystemBackend {
   // ERR_UPLOAD_FILE_CHANGED error.
   // This method itself does *not* check if the given path exists and is a
   // regular file.
+  // The |length| argument says how many bytes are going to be read using the
+  // instance of the file stream reader. If unknown, then equal to -1.
   virtual scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
       const FileSystemURL& url,
       int64 offset,

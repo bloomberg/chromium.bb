@@ -11,6 +11,11 @@
 
 namespace storage {
 class AsyncFileUtil;
+class FileSystemContext;
+class FileStreamReader;
+class FileSystemURL;
+class FileStreamWriter;
+class WatcherManager;
 }  // namespace storage
 
 namespace drive {
@@ -34,6 +39,8 @@ class FileSystemBackendDelegate : public chromeos::FileSystemBackendDelegate {
       const storage::FileSystemURL& url,
       int64 offset,
       storage::FileSystemContext* context) OVERRIDE;
+  virtual storage::WatcherManager* GetWatcherManager(
+      const storage::FileSystemURL& url) OVERRIDE;
 
  private:
   scoped_ptr<storage::AsyncFileUtil> async_file_util_;

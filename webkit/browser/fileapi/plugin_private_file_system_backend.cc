@@ -160,6 +160,11 @@ PluginPrivateFileSystemBackend::GetAsyncFileUtil(FileSystemType type) {
   return file_util_.get();
 }
 
+WatcherManager* PluginPrivateFileSystemBackend::GetWatcherManager(
+    FileSystemType type) {
+  return NULL;
+}
+
 CopyOrMoveFileValidatorFactory*
 PluginPrivateFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
     FileSystemType type,

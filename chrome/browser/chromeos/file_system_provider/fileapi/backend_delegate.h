@@ -6,11 +6,17 @@
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_FILEAPI_BACKEND_DELEGATE_H_
 
 #include "base/basictypes.h"
+#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
 
 namespace storage {
 class AsyncFileUtil;
+class FileSystemContext;
+class FileStreamReader;
+class FileSystemURL;
+class FileStreamWriter;
+class WatcherManager;
 }  // namespace storage
 
 namespace chromeos {
@@ -35,6 +41,8 @@ class BackendDelegate : public chromeos::FileSystemBackendDelegate {
       const storage::FileSystemURL& url,
       int64 offset,
       storage::FileSystemContext* context) OVERRIDE;
+  virtual storage::WatcherManager* GetWatcherManager(
+      const storage::FileSystemURL& url) OVERRIDE;
 
  private:
   scoped_ptr<storage::AsyncFileUtil> async_file_util_;

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 
+#include <string>
+
 #include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync_file_system/local/local_file_change_tracker.h"
@@ -136,6 +138,11 @@ void SyncFileSystemBackend::ResolveURL(const storage::FileSystemURL& url,
 storage::AsyncFileUtil* SyncFileSystemBackend::GetAsyncFileUtil(
     storage::FileSystemType type) {
   return GetDelegate()->file_util();
+}
+
+storage::WatcherManager* SyncFileSystemBackend::GetWatcherManager(
+    storage::FileSystemType type) {
+  return NULL;
 }
 
 storage::CopyOrMoveFileValidatorFactory*

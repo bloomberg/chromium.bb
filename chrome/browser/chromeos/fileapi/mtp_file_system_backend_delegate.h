@@ -12,6 +12,15 @@ namespace base {
 class FilePath;
 }  // namespace base
 
+namespace storage {
+class AsyncFileUtil;
+class FileSystemContext;
+class FileStreamReader;
+class FileSystemURL;
+class FileStreamWriter;
+class WatcherManager;
+}  // namespace storage
+
 class DeviceMediaAsyncFileUtil;
 
 namespace chromeos {
@@ -36,6 +45,8 @@ class MTPFileSystemBackendDelegate : public FileSystemBackendDelegate {
       const storage::FileSystemURL& url,
       int64 offset,
       storage::FileSystemContext* context) OVERRIDE;
+  virtual storage::WatcherManager* GetWatcherManager(
+      const storage::FileSystemURL& url) OVERRIDE;
 
  private:
   scoped_ptr<DeviceMediaAsyncFileUtil> device_media_async_file_util_;

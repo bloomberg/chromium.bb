@@ -9,7 +9,11 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/files/file.h"
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
 #include "webkit/browser/fileapi/file_observers.h"
@@ -20,6 +24,7 @@
 #include "webkit/browser/fileapi/native_file_util.h"
 #include "webkit/browser/fileapi/quota/quota_reservation.h"
 #include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
+#include "webkit/browser/fileapi/watcher_manager.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -32,6 +37,7 @@ namespace content {
 
 namespace {
 
+// Stub implementation of storage::LocalFileUtil.
 class TestFileUtil : public storage::LocalFileUtil {
  public:
   explicit TestFileUtil(const base::FilePath& base_path)
@@ -49,6 +55,101 @@ class TestFileUtil : public storage::LocalFileUtil {
 
  private:
   base::FilePath base_path_;
+};
+
+// Stub implementation of storage::WatcherManager. Emits a fake notification
+// after a directory watcher is set successfully.
+class TestWatcherManager : public storage::WatcherManager {
+ public:
+  TestWatcherManager() : weak_ptr_factory_(this) {}
+  virtual ~TestWatcherManager() {}
+
+  // storage::WatcherManager overrides.
+  virtual void AddObserver(Observer* observer) OVERRIDE {
+    observers_.AddObserver(observer);
+  }
+
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {
+    observers_.RemoveObserver(observer);
+  }
+
+  virtual bool HasObserver(Observer* observer) const OVERRIDE {
+    return observers_.HasObserver(observer);
+  }
+
+  virtual void WatchDirectory(const storage::FileSystemURL& url,
+                              bool recursive,
+                              const StatusCallback& callback) OVERRIDE {
+    if (recursive) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::Bind(callback, base::File::FILE_ERROR_INVALID_OPERATION));
+      return;
+    }
+
+    const GURL gurl = url.ToGURL();
+    if (watched_urls_.find(gurl) != watched_urls_.end()) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(callback, base::File::FILE_ERROR_EXISTS));
+      return;
+    }
+
+    watched_urls_.insert(gurl);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, base::File::FILE_OK));
+
+    // Send a fake changed notification.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&TestWatcherManager::SendFakeChangeNotification,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   url));
+
+    // Send a fake removed notification.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&TestWatcherManager::SendFakeRemoveNotification,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   url));
+  }
+
+  virtual void UnwatchEntry(const storage::FileSystemURL& url,
+                            const StatusCallback& callback) OVERRIDE {
+    const GURL gurl = url.ToGURL();
+    if (watched_urls_.find(gurl) == watched_urls_.end()) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(callback, base::File::FILE_ERROR_NOT_FOUND));
+      return;
+    }
+
+    watched_urls_.erase(gurl);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, base::File::FILE_OK));
+  }
+
+ private:
+  // Sends a fake notification to each observer about a changed entry
+  // represented by |url|, as long as it is still being watched.
+  void SendFakeChangeNotification(const storage::FileSystemURL& url) {
+    if (watched_urls_.find(url.ToGURL()) == watched_urls_.end())
+      return;
+
+    FOR_EACH_OBSERVER(Observer, observers_, OnEntryChanged(url));
+  }
+
+  // Sends a fake notification to each observer about a removed entry
+  // represented by |url|, as long as it is still being watched.
+  void SendFakeRemoveNotification(const storage::FileSystemURL& url) {
+    if (watched_urls_.find(url.ToGURL()) == watched_urls_.end())
+      return;
+
+    FOR_EACH_OBSERVER(Observer, observers_, OnEntryRemoved(url));
+  }
+
+  ObserverList<Observer> observers_;
+  std::set<GURL> watched_urls_;
+
+  base::WeakPtrFactory<TestWatcherManager> weak_ptr_factory_;
 };
 
 }  // namespace
@@ -162,6 +263,7 @@ TestFileSystemBackend::TestFileSystemBackend(
     : base_path_(base_path),
       file_util_(
           new storage::AsyncFileUtilAdapter(new TestFileUtil(base_path))),
+      watcher_manager_(new TestWatcherManager()),
       quota_util_(new QuotaUtil(task_runner)),
       require_copy_or_move_validator_(false) {
 }
@@ -187,6 +289,11 @@ void TestFileSystemBackend::ResolveURL(const FileSystemURL& url,
 storage::AsyncFileUtil* TestFileSystemBackend::GetAsyncFileUtil(
     storage::FileSystemType type) {
   return file_util_.get();
+}
+
+storage::WatcherManager* TestFileSystemBackend::GetWatcherManager(
+    storage::FileSystemType type) {
+  return watcher_manager_.get();
 }
 
 storage::CopyOrMoveFileValidatorFactory*

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 
+#include <set>
+
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
 #include "apps/saved_files_service.h"

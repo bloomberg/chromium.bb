@@ -249,6 +249,11 @@ storage::AsyncFileUtil* FileSystemBackend::GetAsyncFileUtil(
   return NULL;
 }
 
+storage::WatcherManager* FileSystemBackend::GetWatcherManager(
+    storage::FileSystemType type) {
+  return NULL;
+}
+
 storage::CopyOrMoveFileValidatorFactory*
 FileSystemBackend::GetCopyOrMoveFileValidatorFactory(
     storage::FileSystemType type,

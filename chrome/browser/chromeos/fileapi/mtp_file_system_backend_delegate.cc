@@ -50,4 +50,10 @@ MTPFileSystemBackendDelegate::CreateFileStreamWriter(
   return scoped_ptr<storage::FileStreamWriter>();
 }
 
+storage::WatcherManager* MTPFileSystemBackendDelegate::GetWatcherManager(
+    const storage::FileSystemURL& url) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 }  // namespace chromeos
