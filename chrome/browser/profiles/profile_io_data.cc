@@ -124,6 +124,7 @@
 #include "components/user_manager/user_manager.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
+#include "net/cert/cert_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
 #include "net/ssl/client_cert_store_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
@@ -475,7 +476,10 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   network_prediction_options_.MoveToThread(io_message_loop_proxy);
 
 #if defined(OS_CHROMEOS)
-  cert_verifier_ = policy::PolicyCertServiceFactory::CreateForProfile(profile);
+  scoped_ptr<policy::PolicyCertVerifier> verifier =
+      policy::PolicyCertServiceFactory::CreateForProfile(profile);
+  policy_cert_verifier_ = verifier.get();
+  cert_verifier_ = verifier.Pass();
 #endif
   // The URLBlacklistManager has to be created on the UI thread to register
   // observers of |pref_service|, and it also has to clean up on
@@ -571,6 +575,7 @@ ProfileIOData::ProfileParams::~ProfileParams() {}
 ProfileIOData::ProfileIOData(Profile::ProfileType profile_type)
     : initialized_(false),
 #if defined(OS_CHROMEOS)
+      policy_cert_verifier_(NULL),
       use_system_key_slot_(false),
 #endif
       resource_context_(new ResourceContext(this)),
@@ -1081,19 +1086,19 @@ void ProfileIOData::Init(
   if (use_system_key_slot_)
     EnableNSSSystemKeySlotForResourceContext(resource_context_.get());
 
-  scoped_refptr<net::CertVerifyProc> verify_proc;
   crypto::ScopedPK11Slot public_slot =
       crypto::GetPublicSlotForChromeOSUser(username_hash_);
   // The private slot won't be ready by this point. It shouldn't be necessary
   // for cert trust purposes anyway.
-  verify_proc = new chromeos::CertVerifyProcChromeOS(public_slot.Pass());
-  if (cert_verifier_) {
-    cert_verifier_->InitializeOnIOThread(verify_proc);
-    main_request_context_->set_cert_verifier(cert_verifier_.get());
+  scoped_refptr<net::CertVerifyProc> verify_proc(
+      new chromeos::CertVerifyProcChromeOS(public_slot.Pass()));
+  if (policy_cert_verifier_) {
+    DCHECK_EQ(policy_cert_verifier_, cert_verifier_.get());
+    policy_cert_verifier_->InitializeOnIOThread(verify_proc);
   } else {
-    main_request_context_->set_cert_verifier(
-        new net::MultiThreadedCertVerifier(verify_proc.get()));
+    cert_verifier_.reset(new net::MultiThreadedCertVerifier(verify_proc.get()));
   }
+  main_request_context_->set_cert_verifier(cert_verifier_.get());
 #else
   main_request_context_->set_cert_verifier(
       io_thread_globals->cert_verifier.get());

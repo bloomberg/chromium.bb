@@ -47,6 +47,7 @@ class InfoMap;
 }
 
 namespace net {
+class CertVerifier;
 class ChannelIDService;
 class CookieStore;
 class FraudulentCertificateReporter;
@@ -587,7 +588,10 @@ class ProfileIOData {
   mutable scoped_ptr<net::HttpServerProperties>
       http_server_properties_;
 #if defined(OS_CHROMEOS)
-  mutable scoped_ptr<policy::PolicyCertVerifier> cert_verifier_;
+  // Set to |cert_verifier_| if it references a PolicyCertVerifier. In that
+  // case, the verifier is owned by  |cert_verifier_|. Otherwise, set to NULL.
+  mutable policy::PolicyCertVerifier* policy_cert_verifier_;
+  mutable scoped_ptr<net::CertVerifier> cert_verifier_;
   mutable std::string username_hash_;
   mutable bool use_system_key_slot_;
 #endif
