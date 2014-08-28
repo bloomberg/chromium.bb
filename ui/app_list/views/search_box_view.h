@@ -56,7 +56,6 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
 
  private:
