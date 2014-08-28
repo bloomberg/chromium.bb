@@ -220,6 +220,30 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    public void testImeNotShownOnLongPressingDifferentEmptyInputs() throws Exception {
+        DOMUtils.focusNode(mContentViewCore, "input_radio");
+        DOMUtils.longPressNode(this, mContentViewCore, "input_text");
+        assertWaitForKeyboardStatus(false);
+        DOMUtils.longPressNode(this, mContentViewCore, "textarea");
+        assertWaitForKeyboardStatus(false);
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testImeStaysOnLongPressingDifferentNonEmptyInputs() throws Exception {
+        DOMUtils.focusNode(mContentViewCore, "input_text");
+        assertWaitForKeyboardStatus(true);
+        commitText(mConnection, "Sample Text", 1);
+        DOMUtils.focusNode(mContentViewCore, "textarea");
+        commitText(mConnection, "Sample Text", 1);
+        DOMUtils.longPressNode(this, mContentViewCore, "input_text");
+        assertWaitForKeyboardStatus(true);
+        DOMUtils.longPressNode(this, mContentViewCore, "textarea");
+        assertWaitForKeyboardStatus(true);
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
     public void testImeCut() throws Exception {
         commitText(mConnection, "snarful", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "snarful", 7, 7, -1, -1);
