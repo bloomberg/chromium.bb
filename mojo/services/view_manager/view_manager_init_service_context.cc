@@ -6,7 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "mojo/services/view_manager/root_node_manager.h"
+#include "mojo/services/view_manager/connection_manager.h"
 #include "mojo/services/view_manager/view_manager_init_service_impl.h"
 
 namespace mojo {
@@ -38,16 +38,16 @@ void ViewManagerInitServiceContext::RemoveConnection(
   }
 
   // This object is owned by an object that outlives the current thread's
-  // message loop, so we need to destroy the RootNodeManager earlier, as it may
-  // attempt to post tasks during its destruction.
+  // message loop, so we need to destroy the ConnectionManager earlier, as it
+  // may attempt to post tasks during its destruction.
   if (connections_.empty())
-    root_node_manager_.reset();
+    connection_manager_.reset();
 }
 
 void ViewManagerInitServiceContext::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
-  if (!root_node_manager_.get()) {
-    root_node_manager_.reset(new RootNodeManager(
+  if (!connection_manager_.get()) {
+    connection_manager_.reset(new ConnectionManager(
         connection,
         this,
         base::Bind(&ViewManagerInitServiceContext::OnNativeViewportDeleted,
@@ -82,7 +82,7 @@ void ViewManagerInitServiceContext::OnNativeViewportDeleted() {
     delete *it;
   }
   connections_.clear();
-  root_node_manager_.reset();
+  connection_manager_.reset();
 }
 
 void ViewManagerInitServiceContext::MaybeEmbed() {
@@ -91,7 +91,7 @@ void ViewManagerInitServiceContext::MaybeEmbed() {
 
   for (ScopedVector<ConnectParams>::const_iterator it = connect_params_.begin();
        it != connect_params_.end(); ++it) {
-    root_node_manager_->EmbedRoot((*it)->url, (*it)->service_provider.Pass());
+    connection_manager_->EmbedRoot((*it)->url, (*it)->service_provider.Pass());
     (*it)->callback.Run(true);
   }
   connect_params_.clear();

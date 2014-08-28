@@ -35,21 +35,21 @@ class ApplicationConnection;
 
 namespace service {
 
-class Node;
-class RootNodeManager;
+class ConnectionManager;
 class DisplayManagerDelegate;
+class ServerView;
 
-// DisplayManager binds the root node to an actual display.
+// DisplayManager binds the root view to an actual display.
 class MOJO_VIEW_MANAGER_EXPORT DisplayManager {
  public:
   DisplayManager(ApplicationConnection* app_connection,
-                  RootNodeManager* root_node,
-                  DisplayManagerDelegate* delegate,
-                  const Callback<void()>& native_viewport_closed_callback);
+                 ConnectionManager* connection_manager,
+                 DisplayManagerDelegate* delegate,
+                 const Callback<void()>& native_viewport_closed_callback);
   virtual ~DisplayManager();
 
-  // Schedules a paint for the specified region of the specified node.
-  void SchedulePaint(const Node* node, const gfx::Rect& bounds);
+  // Schedules a paint for the specified region of the specified view.
+  void SchedulePaint(const ServerView* view, const gfx::Rect& bounds);
 
   // See description above field for details.
   bool in_setup() const { return in_setup_; }
@@ -61,9 +61,9 @@ class MOJO_VIEW_MANAGER_EXPORT DisplayManager {
 
   DisplayManagerDelegate* delegate_;
 
-  RootNodeManager* root_node_manager_;
+  ConnectionManager* connection_manager_;
 
-  // Returns true if adding the root node's window to |window_tree_host_|.
+  // Returns true if adding the root view's window to |window_tree_host_|.
   bool in_setup_;
 
   scoped_ptr<RootWindowDelegateImpl> window_delegate_;

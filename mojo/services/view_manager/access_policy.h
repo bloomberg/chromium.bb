@@ -11,8 +11,7 @@
 namespace mojo {
 namespace service {
 
-class Node;
-class View;
+class ServerView;
 
 // AccessPolicy is used by ViewManagerServiceImpl to determine what a connection
 // is allowed to do.
@@ -21,32 +20,31 @@ class AccessPolicy {
   virtual ~AccessPolicy() {}
 
   // Unless otherwise mentioned all arguments have been validated. That is the
-  // |node| and/or |view| arguments are non-null unless otherwise stated (eg
-  // CanSetView() is allowed to take a NULL view).
-  virtual bool CanRemoveNodeFromParent(const Node* node) const = 0;
-  virtual bool CanAddNode(const Node* parent, const Node* child) const = 0;
-  virtual bool CanReorderNode(const Node* node,
-                              const Node* relative_node,
+  // |view| arguments are non-null unless otherwise stated (eg CanSetView() is
+  // allowed to take a NULL view).
+  virtual bool CanRemoveViewFromParent(const ServerView* view) const = 0;
+  virtual bool CanAddView(const ServerView* parent,
+                          const ServerView* child) const = 0;
+  virtual bool CanReorderView(const ServerView* view,
+                              const ServerView* relative_view,
                               OrderDirection direction) const = 0;
-  virtual bool CanDeleteNode(const Node* node) const = 0;
-  virtual bool CanGetNodeTree(const Node* node) const = 0;
-  // Used when building a node tree (GetNodeTree()) to decide if we should
-  // descend into |node|.
-  virtual bool CanDescendIntoNodeForNodeTree(const Node* node) const = 0;
-  virtual bool CanEmbed(const Node* node) const = 0;
-  virtual bool CanChangeNodeVisibility(const Node* node) const = 0;
-  virtual bool CanSetNodeContents(const Node* node) const = 0;
-  virtual bool CanSetNodeBounds(const Node* node) const = 0;
+  virtual bool CanDeleteView(const ServerView* view) const = 0;
+  virtual bool CanGetViewTree(const ServerView* view) const = 0;
+  // Used when building a view tree (GetViewTree()) to decide if we should
+  // descend into |view|.
+  virtual bool CanDescendIntoViewForViewTree(const ServerView* view) const = 0;
+  virtual bool CanEmbed(const ServerView* view) const = 0;
+  virtual bool CanChangeViewVisibility(const ServerView* view) const = 0;
+  virtual bool CanSetViewContents(const ServerView* view) const = 0;
+  virtual bool CanSetViewBounds(const ServerView* view) const = 0;
 
   // Returns whether the connection should notify on a hierarchy change.
   // |new_parent| and |old_parent| are initially set to the new and old parents
-  // but may be altered so that the client only sees a certain set of nodes.
+  // but may be altered so that the client only sees a certain set of views.
   virtual bool ShouldNotifyOnHierarchyChange(
-      const Node* node,
-      const Node** new_parent,
-      const Node** old_parent) const = 0;
-
-  virtual bool ShouldSendViewDeleted(const ViewId& view_id) const = 0;
+      const ServerView* view,
+      const ServerView** new_parent,
+      const ServerView** old_parent) const = 0;
 };
 
 }  // namespace service

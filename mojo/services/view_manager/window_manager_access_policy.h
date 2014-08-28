@@ -20,26 +20,27 @@ class WindowManagerAccessPolicy : public AccessPolicy {
   virtual ~WindowManagerAccessPolicy();
 
   // AccessPolicy:
-  virtual bool CanRemoveNodeFromParent(const Node* node) const OVERRIDE;
-  virtual bool CanAddNode(const Node* parent, const Node* child) const OVERRIDE;
-  virtual bool CanReorderNode(const Node* node,
-                              const Node* relative_node,
+  virtual bool CanRemoveViewFromParent(const ServerView* view) const OVERRIDE;
+  virtual bool CanAddView(const ServerView* parent,
+                          const ServerView* child) const OVERRIDE;
+  virtual bool CanReorderView(const ServerView* view,
+                              const ServerView* relative_view,
                               OrderDirection direction) const OVERRIDE;
-  virtual bool CanDeleteNode(const Node* node) const OVERRIDE;
-  virtual bool CanGetNodeTree(const Node* node) const OVERRIDE;
-  virtual bool CanDescendIntoNodeForNodeTree(const Node* node) const OVERRIDE;
-  virtual bool CanEmbed(const Node* node) const OVERRIDE;
-  virtual bool CanChangeNodeVisibility(const Node* node) const OVERRIDE;
-  virtual bool CanSetNodeContents(const Node* node) const OVERRIDE;
-  virtual bool CanSetNodeBounds(const Node* node) const OVERRIDE;
+  virtual bool CanDeleteView(const ServerView* view) const OVERRIDE;
+  virtual bool CanGetViewTree(const ServerView* view) const OVERRIDE;
+  virtual bool CanDescendIntoViewForViewTree(
+      const ServerView* view) const OVERRIDE;
+  virtual bool CanEmbed(const ServerView* view) const OVERRIDE;
+  virtual bool CanChangeViewVisibility(const ServerView* view) const OVERRIDE;
+  virtual bool CanSetViewContents(const ServerView* view) const OVERRIDE;
+  virtual bool CanSetViewBounds(const ServerView* view) const OVERRIDE;
   virtual bool ShouldNotifyOnHierarchyChange(
-      const Node* node,
-      const Node** new_parent,
-      const Node** old_parent) const OVERRIDE;
-  virtual bool ShouldSendViewDeleted(const ViewId& view_id) const OVERRIDE;
+      const ServerView* view,
+      const ServerView** new_parent,
+      const ServerView** old_parent) const OVERRIDE;
 
  private:
-  bool IsNodeKnown(const Node* node) const;
+  bool IsViewKnown(const ServerView* view) const;
 
   const ConnectionSpecificId connection_id_;
   AccessPolicyDelegate* delegate_;

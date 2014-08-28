@@ -13,21 +13,21 @@
 namespace mojo {
 namespace service {
 
-class Node;
+class ServerView;
 
 // Delegate used by the AccessPolicy implementations to get state.
 class AccessPolicyDelegate {
  public:
-  // Returns the ids of the roots nodes for this connection. That is, this is
-  // the set of nodes the connection was embedded at.
+  // Returns the ids of the roots views for this connection. That is, this is
+  // the set of views the connection was embedded at.
   virtual const base::hash_set<Id>& GetRootsForAccessPolicy() const = 0;
 
-  // Returns true if |node| has been exposed to the client.
-  virtual bool IsNodeKnownForAccessPolicy(const Node* node) const = 0;
+  // Returns true if |view| has been exposed to the client.
+  virtual bool IsViewKnownForAccessPolicy(const ServerView* view) const = 0;
 
-  // Returns true if Embed(node) has been invoked on |node|.
-  virtual bool IsNodeRootOfAnotherConnectionForAccessPolicy(
-      const Node* node) const = 0;
+  // Returns true if Embed(view) has been invoked on |view|.
+  virtual bool IsViewRootOfAnotherConnectionForAccessPolicy(
+      const ServerView* view) const = 0;
 
  protected:
   virtual ~AccessPolicyDelegate() {}

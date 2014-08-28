@@ -2,32 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/view_manager/node.h"
+#include "mojo/services/view_manager/server_view.h"
 
-#include "mojo/services/view_manager/node_delegate.h"
+#include "mojo/services/view_manager/server_view_delegate.h"
 
 namespace mojo {
 namespace service {
 
-Node::Node(NodeDelegate* delegate, const NodeId& id)
-    : delegate_(delegate),
-      id_(id),
-      parent_(NULL),
-      visible_(true) {
+ServerView::ServerView(ServerViewDelegate* delegate, const ViewId& id)
+    : delegate_(delegate), id_(id), parent_(NULL), visible_(true) {
   DCHECK(delegate);  // Must provide a delegate.
 }
 
-Node::~Node() {
+ServerView::~ServerView() {
   while (!children_.empty())
     children_.front()->parent()->Remove(children_.front());
 
   if (parent_)
     parent_->Remove(this);
 
-  delegate_->OnNodeDestroyed(this);
+  delegate_->OnViewDestroyed(this);
 }
 
-void Node::Add(Node* child) {
+void ServerView::Add(ServerView* child) {
   // We assume validation checks happened already.
   DCHECK(child);
   DCHECK(child != this);
@@ -39,32 +36,34 @@ void Node::Add(Node* child) {
     return;
   }
 
-  const Node* old_parent = child->parent();
+  const ServerView* old_parent = child->parent();
   if (child->parent())
     child->parent()->RemoveImpl(child);
 
   child->parent_ = this;
   children_.push_back(child);
-  child->delegate_->OnNodeHierarchyChanged(child, this, old_parent);
+  child->delegate_->OnViewHierarchyChanged(child, this, old_parent);
 }
 
-void Node::Remove(Node* child) {
+void ServerView::Remove(ServerView* child) {
   // We assume validation checks happened else where.
   DCHECK(child);
   DCHECK(child != this);
   DCHECK(child->parent() == this);
 
   RemoveImpl(child);
-  child->delegate_->OnNodeHierarchyChanged(child, NULL, this);
+  child->delegate_->OnViewHierarchyChanged(child, NULL, this);
 }
 
-void Node::Reorder(Node* child, Node* relative, OrderDirection direction) {
+void ServerView::Reorder(ServerView* child,
+                         ServerView* relative,
+                         OrderDirection direction) {
   // We assume validation checks happened else where.
   DCHECK(child);
   DCHECK(child->parent() == this);
   DCHECK_GT(children_.size(), 1u);
   children_.erase(std::find(children_.begin(), children_.end(), child));
-  Nodes::iterator i = std::find(children_.begin(), children_.end(), relative);
+  Views::iterator i = std::find(children_.begin(), children_.end(), relative);
   if (direction == ORDER_DIRECTION_ABOVE) {
     DCHECK(i != children_.end());
     children_.insert(++i, child);
@@ -74,44 +73,44 @@ void Node::Reorder(Node* child, Node* relative, OrderDirection direction) {
   }
 }
 
-void Node::SetBounds(const gfx::Rect& bounds) {
+void ServerView::SetBounds(const gfx::Rect& bounds) {
   if (bounds_ == bounds)
     return;
 
   const gfx::Rect old_bounds = bounds_;
   bounds_ = bounds;
-  delegate_->OnNodeBoundsChanged(this, old_bounds, bounds);
+  delegate_->OnViewBoundsChanged(this, old_bounds, bounds);
 }
 
-const Node* Node::GetRoot() const {
-  const Node* node = this;
-  while (node && node->parent())
-    node = node->parent();
-  return node;
+const ServerView* ServerView::GetRoot() const {
+  const ServerView* view = this;
+  while (view && view->parent())
+    view = view->parent();
+  return view;
 }
 
-std::vector<const Node*> Node::GetChildren() const {
-  std::vector<const Node*> children;
+std::vector<const ServerView*> ServerView::GetChildren() const {
+  std::vector<const ServerView*> children;
   children.reserve(children_.size());
   for (size_t i = 0; i < children_.size(); ++i)
     children.push_back(children_[i]);
   return children;
 }
 
-std::vector<Node*> Node::GetChildren() {
+std::vector<ServerView*> ServerView::GetChildren() {
   // TODO(sky): rename to children() and fix return type.
   return children_;
 }
 
-bool Node::Contains(const Node* node) const {
-  for (const Node* parent = node; parent; parent = parent->parent_) {
+bool ServerView::Contains(const ServerView* view) const {
+  for (const ServerView* parent = view; parent; parent = parent->parent_) {
     if (parent == this)
       return true;
   }
   return false;
 }
 
-void Node::SetVisible(bool value) {
+void ServerView::SetVisible(bool value) {
   if (visible_ == value)
     return;
 
@@ -119,14 +118,14 @@ void Node::SetVisible(bool value) {
   // TODO(sky): notification, including repaint.
 }
 
-void Node::SetBitmap(const SkBitmap& bitmap) {
+void ServerView::SetBitmap(const SkBitmap& bitmap) {
   bitmap_ = bitmap;
-  delegate_->OnNodeBitmapChanged(this);
+  delegate_->OnViewBitmapChanged(this);
 }
 
-void Node::RemoveImpl(Node* node) {
-  node->parent_ = NULL;
-  children_.erase(std::find(children_.begin(), children_.end(), node));
+void ServerView::RemoveImpl(ServerView* view) {
+  view->parent_ = NULL;
+  children_.erase(std::find(children_.begin(), children_.end(), view));
 }
 
 }  // namespace service

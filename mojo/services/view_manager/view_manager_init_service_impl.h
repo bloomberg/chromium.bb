@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
-#include "mojo/services/view_manager/root_node_manager.h"
+#include "mojo/services/view_manager/connection_manager.h"
 #include "mojo/services/view_manager/view_manager_export.h"
 
 namespace mojo {

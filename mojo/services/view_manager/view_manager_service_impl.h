@@ -26,8 +26,8 @@ namespace mojo {
 namespace service {
 
 class AccessPolicy;
-class Node;
-class RootNodeManager;
+class ConnectionManager;
+class ServerView;
 
 #if defined(OS_WIN)
 // Equivalent of NON_EXPORTED_BASE which does not work with the template snafu
@@ -41,11 +41,11 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
     : public InterfaceImpl<ViewManagerService>,
       public AccessPolicyDelegate {
  public:
-  ViewManagerServiceImpl(RootNodeManager* root_node_manager,
+  ViewManagerServiceImpl(ConnectionManager* connection_manager,
                          ConnectionSpecificId creator_id,
                          const std::string& creator_url,
                          const std::string& url,
-                         const NodeId& root_id,
+                         const ViewId& root_id,
                          InterfaceRequest<ServiceProvider> service_provider);
   virtual ~ViewManagerServiceImpl();
 
@@ -57,15 +57,15 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   ConnectionSpecificId creator_id() const { return creator_id_; }
   const std::string& url() const { return url_; }
 
-  // Returns the Node with the specified id.
-  Node* GetNode(const NodeId& id) {
-    return const_cast<Node*>(
-        const_cast<const ViewManagerServiceImpl*>(this)->GetNode(id));
+  // Returns the View with the specified id.
+  ServerView* GetView(const ViewId& id) {
+    return const_cast<ServerView*>(
+        const_cast<const ViewManagerServiceImpl*>(this)->GetView(id));
   }
-  const Node* GetNode(const NodeId& id) const;
+  const ServerView* GetView(const ViewId& id) const;
 
   // Returns true if this has |id| as a root.
-  bool HasRoot(const NodeId& id) const;
+  bool HasRoot(const ViewId& id) const;
 
   // Invoked when a connection is destroyed.
   void OnViewManagerServiceImplDestroyed(ConnectionSpecificId id);
@@ -73,19 +73,19 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   // The following methods are invoked after the corresponding change has been
   // processed. They do the appropriate bookkeeping and update the client as
   // necessary.
-  void ProcessNodeBoundsChanged(const Node* node,
+  void ProcessViewBoundsChanged(const ServerView* view,
                                 const gfx::Rect& old_bounds,
                                 const gfx::Rect& new_bounds,
                                 bool originated_change);
-  void ProcessNodeHierarchyChanged(const Node* node,
-                                   const Node* new_parent,
-                                   const Node* old_parent,
+  void ProcessViewHierarchyChanged(const ServerView* view,
+                                   const ServerView* new_parent,
+                                   const ServerView* old_parent,
                                    bool originated_change);
-  void ProcessNodeReorder(const Node* node,
-                          const Node* relative_node,
+  void ProcessViewReorder(const ServerView* view,
+                          const ServerView* relative_view,
                           OrderDirection direction,
                           bool originated_change);
-  void ProcessNodeDeleted(const NodeId& node, bool originated_change);
+  void ProcessViewDeleted(const ViewId& view, bool originated_change);
 
   // TODO(sky): move this to private section (currently can't because of
   // bindings).
@@ -93,49 +93,53 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   virtual void OnConnectionError() MOJO_OVERRIDE;
 
  private:
-  typedef std::map<ConnectionSpecificId, Node*> NodeMap;
-  typedef base::hash_set<Id> NodeIdSet;
+  typedef std::map<ConnectionSpecificId, ServerView*> ViewMap;
+  typedef base::hash_set<Id> ViewIdSet;
 
-  bool IsNodeKnown(const Node* node) const;
+  bool IsViewKnown(const ServerView* view) const;
 
   // These functions return true if the corresponding mojom function is allowed
   // for this connection.
-  bool CanReorderNode(const Node* node,
-                      const Node* relative_node,
+  bool CanReorderView(const ServerView* view,
+                      const ServerView* relative_view,
                       OrderDirection direction) const;
 
-  // Deletes a node owned by this connection. Returns true on success. |source|
+  // Deletes a view owned by this connection. Returns true on success. |source|
   // is the connection that originated the change.
-  bool DeleteNodeImpl(ViewManagerServiceImpl* source, Node* node);
+  bool DeleteViewImpl(ViewManagerServiceImpl* source, ServerView* view);
 
-  // If |node| is known (in |known_nodes_|) does nothing. Otherwise adds |node|
-  // to |nodes|, marks |node| as known and recurses.
-  void GetUnknownNodesFrom(const Node* node, std::vector<const Node*>* nodes);
+  // If |view| is known (in |known_views_|) does nothing. Otherwise adds |view|
+  // to |views|, marks |view| as known and recurses.
+  void GetUnknownViewsFrom(const ServerView* view,
+                           std::vector<const ServerView*>* views);
 
-  // Removes |node| and all its descendants from |known_nodes_|. This does not
-  // recurse through nodes that were created by this connection. All nodes owned
-  // by this connection are added to |local_nodes|.
-  void RemoveFromKnown(const Node* node, std::vector<Node*>* local_nodes);
+  // Removes |view| and all its descendants from |known_views_|. This does not
+  // recurse through views that were created by this connection. All views owned
+  // by this connection are added to |local_views|.
+  void RemoveFromKnown(const ServerView* view,
+                       std::vector<ServerView*>* local_views);
 
-  // Adds |node_id| to the set of roots this connection knows about. The caller
-  // should have verified |node_id| is not among the roots of this connection.
-  void AddRoot(const NodeId& node_id,
+  // Adds |view_id| to the set of roots this connection knows about. The caller
+  // should have verified |view_id| is not among the roots of this connection.
+  void AddRoot(const ViewId& view_id,
                InterfaceRequest<ServiceProvider> service_provider);
 
-  // Removes |node_id| from the set of roots this connection knows about.
-  void RemoveRoot(const NodeId& node_id);
+  // Removes |view_id| from the set of roots this connection knows about.
+  void RemoveRoot(const ViewId& view_id);
 
-  void RemoveChildrenAsPartOfEmbed(const NodeId& node_id);
+  void RemoveChildrenAsPartOfEmbed(const ViewId& view_id);
 
-  // Converts Node(s) to ViewData(s) for transport. This assumes all the nodes
-  // are valid for the client. The parent of nodes the client is not allowed to
+  // Converts View(s) to ViewData(s) for transport. This assumes all the views
+  // are valid for the client. The parent of views the client is not allowed to
   // see are set to NULL (in the returned ViewData(s)).
-  Array<ViewDataPtr> NodesToViewDatas(const std::vector<const Node*>& nodes);
-  ViewDataPtr NodeToViewData(const Node* node);
+  Array<ViewDataPtr> ViewsToViewDatas(
+      const std::vector<const ServerView*>& views);
+  ViewDataPtr ViewToViewData(const ServerView* view);
 
-  // Implementation of GetNodeTree(). Adds |node| to |nodes| and recurses if
-  // CanDescendIntoNodeForNodeTree() returns true.
-  void GetNodeTreeImpl(const Node* node, std::vector<const Node*>* nodes) const;
+  // Implementation of GetViewTree(). Adds |view| to |views| and recurses if
+  // CanDescendIntoViewForViewTree() returns true.
+  void GetViewTreeImpl(const ServerView* view,
+                       std::vector<const ServerView*>* views) const;
 
   // ViewManagerService:
   virtual void CreateView(Id transport_view_id,
@@ -146,7 +150,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
                        Id child_id,
                        const Callback<void(bool)>& callback) OVERRIDE;
   virtual void RemoveViewFromParent(
-      Id node_id,
+      Id view_id,
       const Callback<void(bool)>& callback) OVERRIDE;
   virtual void ReorderView(Id view_id,
                            Id relative_view_id,
@@ -176,13 +180,14 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
 
   // AccessPolicyDelegate:
   virtual const base::hash_set<Id>& GetRootsForAccessPolicy() const OVERRIDE;
-  virtual bool IsNodeKnownForAccessPolicy(const Node* node) const OVERRIDE;
-  virtual bool IsNodeRootOfAnotherConnectionForAccessPolicy(
-      const Node* node) const OVERRIDE;
+  virtual bool IsViewKnownForAccessPolicy(
+      const ServerView* view) const OVERRIDE;
+  virtual bool IsViewRootOfAnotherConnectionForAccessPolicy(
+      const ServerView* view) const OVERRIDE;
 
-  RootNodeManager* root_node_manager_;
+  ConnectionManager* connection_manager_;
 
-  // Id of this connection as assigned by RootNodeManager.
+  // Id of this connection as assigned by ConnectionManager.
   const ConnectionSpecificId id_;
 
   // URL this connection was created for.
@@ -197,20 +202,20 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
 
   scoped_ptr<AccessPolicy> access_policy_;
 
-  // The nodes and views created by this connection. This connection owns these
+  // The views and views created by this connection. This connection owns these
   // objects.
-  NodeMap node_map_;
+  ViewMap view_map_;
 
-  // The set of nodes that has been communicated to the client.
-  NodeIdSet known_nodes_;
+  // The set of views that has been communicated to the client.
+  ViewIdSet known_views_;
 
-  // Set of root nodes from other connections. More specifically any time
-  // Embed() is invoked the id of the node is added to this set for the child
+  // Set of root views from other connections. More specifically any time
+  // Embed() is invoked the id of the view is added to this set for the child
   // connection. The connection Embed() was invoked on (the parent) doesn't
-  // directly track which connections are attached to which of its nodes. That
+  // directly track which connections are attached to which of its views. That
   // information can be found by looking through the |roots_| of all
   // connections.
-  NodeIdSet roots_;
+  ViewIdSet roots_;
 
   // See description above setter.
   bool delete_on_connection_error_;

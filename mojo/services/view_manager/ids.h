@@ -20,26 +20,6 @@ const ConnectionSpecificId kInvalidConnectionId = 0;
 // api.
 const ConnectionSpecificId kWindowManagerConnection = 1;
 
-// Adds a bit of type safety to node ids.
-struct MOJO_VIEW_MANAGER_EXPORT NodeId {
-  NodeId(ConnectionSpecificId connection_id, ConnectionSpecificId node_id)
-      : connection_id(connection_id),
-        node_id(node_id) {}
-  NodeId() : connection_id(0), node_id(0) {}
-
-  bool operator==(const NodeId& other) const {
-    return other.connection_id == connection_id &&
-        other.node_id == node_id;
-  }
-
-  bool operator!=(const NodeId& other) const {
-    return !(*this == other);
-  }
-
-  ConnectionSpecificId connection_id;
-  ConnectionSpecificId node_id;
-};
-
 // Adds a bit of type safety to view ids.
 struct MOJO_VIEW_MANAGER_EXPORT ViewId {
   ViewId(ConnectionSpecificId connection_id, ConnectionSpecificId view_id)
@@ -60,15 +40,6 @@ struct MOJO_VIEW_MANAGER_EXPORT ViewId {
   ConnectionSpecificId view_id;
 };
 
-// Functions for converting to/from structs and transport values.
-inline NodeId NodeIdFromTransportId(Id id) {
-  return NodeId(HiWord(id), LoWord(id));
-}
-
-inline Id NodeIdToTransportId(const NodeId& id) {
-  return (id.connection_id << 16) | id.node_id;
-}
-
 inline ViewId ViewIdFromTransportId(Id id) {
   return ViewId(HiWord(id), LoWord(id));
 }
@@ -77,14 +48,14 @@ inline Id ViewIdToTransportId(const ViewId& id) {
   return (id.connection_id << 16) | id.view_id;
 }
 
-inline NodeId RootNodeId() {
-  return NodeId(kInvalidConnectionId, 1);
+inline ViewId RootViewId() {
+  return ViewId(kInvalidConnectionId, 1);
 }
 
-// Returns a NodeId that is reserved to indicate no node. That is, no node will
+// Returns a ViewId that is reserved to indicate no view. That is, no view will
 // ever be created with this id.
-inline NodeId InvalidNodeId() {
-  return NodeId(kInvalidConnectionId, 0);
+inline ViewId InvalidViewId() {
+  return ViewId(kInvalidConnectionId, 0);
 }
 
 }  // namespace service

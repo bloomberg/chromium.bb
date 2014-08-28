@@ -8,8 +8,8 @@
 #include "base/scoped_observer.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/services/public/interfaces/gpu/gpu.mojom.h"
+#include "mojo/services/view_manager/connection_manager.h"
 #include "mojo/services/view_manager/display_manager_delegate.h"
-#include "mojo/services/view_manager/root_node_manager.h"
 #include "mojo/services/view_manager/screen_impl.h"
 #include "mojo/services/view_manager/window_tree_host_impl.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -28,27 +28,28 @@ namespace mojo {
 namespace service {
 namespace {
 
-gfx::Rect ConvertRectToRoot(const Node* node, const gfx::Rect& bounds) {
+gfx::Rect ConvertRectToRoot(const ServerView* view, const gfx::Rect& bounds) {
   gfx::Point origin(bounds.origin());
-  while (node->parent()) {
-    origin += node->bounds().OffsetFromOrigin();
-    node = node->parent();
+  while (view->parent()) {
+    origin += view->bounds().OffsetFromOrigin();
+    view = view->parent();
   }
   return gfx::Rect(origin, bounds.size());
 }
 
-void PaintNodeTree(gfx::Canvas* canvas,
-                   const Node* node,
+void PaintViewTree(gfx::Canvas* canvas,
+                   const ServerView* view,
                    const gfx::Point& origin) {
-  if (!node->visible())
+  if (!view->visible())
     return;
 
-  canvas->DrawImageInt(gfx::ImageSkia::CreateFrom1xBitmap(node->bitmap()),
-                       origin.x(), origin.y());
-  std::vector<const Node*> children(node->GetChildren());
+  canvas->DrawImageInt(gfx::ImageSkia::CreateFrom1xBitmap(view->bitmap()),
+                       origin.x(),
+                       origin.y());
+  std::vector<const ServerView*> children(view->GetChildren());
   for (size_t i = 0; i < children.size(); ++i) {
-    PaintNodeTree(canvas, children[i],
-                  origin + children[i]->bounds().OffsetFromOrigin());
+    PaintViewTree(
+        canvas, children[i], origin + children[i]->bounds().OffsetFromOrigin());
   }
 }
 
@@ -56,8 +57,8 @@ void PaintNodeTree(gfx::Canvas* canvas,
 
 class DisplayManager::RootWindowDelegateImpl : public aura::WindowDelegate {
  public:
-  explicit RootWindowDelegateImpl(const Node* root_node)
-      : root_node_(root_node) {}
+  explicit RootWindowDelegateImpl(const ServerView* root_view)
+      : root_view_(root_view) {}
   virtual ~RootWindowDelegateImpl() {}
 
   // aura::WindowDelegate:
@@ -87,7 +88,7 @@ class DisplayManager::RootWindowDelegateImpl : public aura::WindowDelegate {
   virtual void OnCaptureLost() OVERRIDE {
   }
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    PaintNodeTree(canvas, root_node_, gfx::Point());
+    PaintViewTree(canvas, root_view_, gfx::Point());
   }
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
   }
@@ -104,7 +105,7 @@ class DisplayManager::RootWindowDelegateImpl : public aura::WindowDelegate {
   }
 
  private:
-  const Node* root_node_;
+  const ServerView* root_view_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowDelegateImpl);
 };
@@ -159,11 +160,11 @@ class WindowTreeClientImpl : public aura::client::WindowTreeClient {
 
 DisplayManager::DisplayManager(
     ApplicationConnection* app_connection,
-    RootNodeManager* root_node,
+    ConnectionManager* connection_manager,
     DisplayManagerDelegate* delegate,
     const Callback<void()>& native_viewport_closed_callback)
     : delegate_(delegate),
-      root_node_manager_(root_node),
+      connection_manager_(connection_manager),
       in_setup_(false),
       root_window_(NULL) {
   screen_.reset(ScreenImpl::Create());
@@ -181,8 +182,8 @@ DisplayManager::DisplayManager(
       gfx::Rect(800, 600),
       base::Bind(&DisplayManager::OnCompositorCreated, base::Unretained(this)),
       native_viewport_closed_callback,
-      base::Bind(&RootNodeManager::DispatchNodeInputEventToWindowManager,
-                 base::Unretained(root_node_manager_))));
+      base::Bind(&ConnectionManager::DispatchViewInputEventToWindowManager,
+                 base::Unretained(connection_manager_))));
 }
 
 DisplayManager::~DisplayManager() {
@@ -191,9 +192,10 @@ DisplayManager::~DisplayManager() {
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, NULL);
 }
 
-void DisplayManager::SchedulePaint(const Node* node, const gfx::Rect& bounds) {
+void DisplayManager::SchedulePaint(const ServerView* view,
+                                   const gfx::Rect& bounds) {
   if (root_window_)
-    root_window_->SchedulePaintInRect(ConvertRectToRoot(node, bounds));
+    root_window_->SchedulePaintInRect(ConvertRectToRoot(view, bounds));
 }
 
 void DisplayManager::OnCompositorCreated() {
@@ -201,7 +203,7 @@ void DisplayManager::OnCompositorCreated() {
   window_tree_host_->InitHost();
 
   window_delegate_.reset(
-      new RootWindowDelegateImpl(root_node_manager_->root()));
+      new RootWindowDelegateImpl(connection_manager_->root()));
   root_window_ = new aura::Window(window_delegate_.get());
   root_window_->Init(aura::WINDOW_LAYER_TEXTURED);
   root_window_->Show();
@@ -209,7 +211,7 @@ void DisplayManager::OnCompositorCreated() {
       gfx::Rect(window_tree_host_->window()->bounds().size()));
   window_tree_host_->window()->AddChild(root_window_);
 
-  root_node_manager_->root()->SetBounds(
+  connection_manager_->root()->SetBounds(
       gfx::Rect(window_tree_host_->window()->bounds().size()));
 
   window_tree_client_.reset(

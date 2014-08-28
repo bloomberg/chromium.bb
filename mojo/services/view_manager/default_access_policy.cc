@@ -5,7 +5,7 @@
 #include "mojo/services/view_manager/default_access_policy.h"
 
 #include "mojo/services/view_manager/access_policy_delegate.h"
-#include "mojo/services/view_manager/node.h"
+#include "mojo/services/view_manager/server_view.h"
 
 namespace mojo {
 namespace service {
@@ -19,89 +19,87 @@ DefaultAccessPolicy::DefaultAccessPolicy(ConnectionSpecificId connection_id,
 DefaultAccessPolicy::~DefaultAccessPolicy() {
 }
 
-bool DefaultAccessPolicy::CanRemoveNodeFromParent(const Node* node) const {
-  if (!WasCreatedByThisConnection(node))
-    return false;  // Can only unparent nodes we created.
+bool DefaultAccessPolicy::CanRemoveViewFromParent(
+    const ServerView* view) const {
+  if (!WasCreatedByThisConnection(view))
+    return false;  // Can only unparent views we created.
 
-  return IsNodeInRoots(node->parent()) ||
-      WasCreatedByThisConnection(node->parent());
+  return IsViewInRoots(view->parent()) ||
+         WasCreatedByThisConnection(view->parent());
 }
 
-bool DefaultAccessPolicy::CanAddNode(const Node* parent,
-                                     const Node* child) const {
+bool DefaultAccessPolicy::CanAddView(const ServerView* parent,
+                                     const ServerView* child) const {
   return WasCreatedByThisConnection(child) &&
-      (IsNodeInRoots(parent) ||
-       (WasCreatedByThisConnection(parent) &&
-        !delegate_->IsNodeRootOfAnotherConnectionForAccessPolicy(parent)));
+         (IsViewInRoots(parent) ||
+          (WasCreatedByThisConnection(parent) &&
+           !delegate_->IsViewRootOfAnotherConnectionForAccessPolicy(parent)));
 }
 
-bool DefaultAccessPolicy::CanReorderNode(const Node* node,
-                                         const Node* relative_node,
+bool DefaultAccessPolicy::CanReorderView(const ServerView* view,
+                                         const ServerView* relative_view,
                                          OrderDirection direction) const {
-  return WasCreatedByThisConnection(node) &&
-      WasCreatedByThisConnection(relative_node);
+  return WasCreatedByThisConnection(view) &&
+         WasCreatedByThisConnection(relative_view);
 }
 
-bool DefaultAccessPolicy::CanDeleteNode(const Node* node) const {
-  return WasCreatedByThisConnection(node);
+bool DefaultAccessPolicy::CanDeleteView(const ServerView* view) const {
+  return WasCreatedByThisConnection(view);
 }
 
-bool DefaultAccessPolicy::CanGetNodeTree(const Node* node) const {
-  return WasCreatedByThisConnection(node) || IsNodeInRoots(node);
+bool DefaultAccessPolicy::CanGetViewTree(const ServerView* view) const {
+  return WasCreatedByThisConnection(view) || IsViewInRoots(view);
 }
 
-bool DefaultAccessPolicy::CanDescendIntoNodeForNodeTree(
-    const Node* node) const {
-  return WasCreatedByThisConnection(node) &&
-      !delegate_->IsNodeRootOfAnotherConnectionForAccessPolicy(node);
+bool DefaultAccessPolicy::CanDescendIntoViewForViewTree(
+    const ServerView* view) const {
+  return WasCreatedByThisConnection(view) &&
+         !delegate_->IsViewRootOfAnotherConnectionForAccessPolicy(view);
 }
 
-bool DefaultAccessPolicy::CanEmbed(const Node* node) const {
-  return WasCreatedByThisConnection(node);
+bool DefaultAccessPolicy::CanEmbed(const ServerView* view) const {
+  return WasCreatedByThisConnection(view);
 }
 
-bool DefaultAccessPolicy::CanChangeNodeVisibility(const Node* node) const {
-  return WasCreatedByThisConnection(node) || IsNodeInRoots(node);
+bool DefaultAccessPolicy::CanChangeViewVisibility(
+    const ServerView* view) const {
+  return WasCreatedByThisConnection(view) || IsViewInRoots(view);
 }
 
-bool DefaultAccessPolicy::CanSetNodeContents(const Node* node) const {
-  // Once a node embeds another app, the embedder app is no longer able to
-  // call SetNodeContents() - this ability is transferred to the embedded app.
-  if (delegate_->IsNodeRootOfAnotherConnectionForAccessPolicy(node))
+bool DefaultAccessPolicy::CanSetViewContents(const ServerView* view) const {
+  // Once a view embeds another app, the embedder app is no longer able to
+  // call SetViewContents() - this ability is transferred to the embedded app.
+  if (delegate_->IsViewRootOfAnotherConnectionForAccessPolicy(view))
     return false;
-  return WasCreatedByThisConnection(node) || IsNodeInRoots(node);
+  return WasCreatedByThisConnection(view) || IsViewInRoots(view);
 }
 
-bool DefaultAccessPolicy::CanSetNodeBounds(const Node* node) const {
-  return WasCreatedByThisConnection(node);
+bool DefaultAccessPolicy::CanSetViewBounds(const ServerView* view) const {
+  return WasCreatedByThisConnection(view);
 }
 
 bool DefaultAccessPolicy::ShouldNotifyOnHierarchyChange(
-    const Node* node,
-    const Node** new_parent,
-    const Node** old_parent) const {
-  if (!WasCreatedByThisConnection(node))
+    const ServerView* view,
+    const ServerView** new_parent,
+    const ServerView** old_parent) const {
+  if (!WasCreatedByThisConnection(view))
     return false;
 
   if (*new_parent && !WasCreatedByThisConnection(*new_parent) &&
-      !IsNodeInRoots(*new_parent)) {
+      !IsViewInRoots(*new_parent)) {
     *new_parent = NULL;
   }
 
   if (*old_parent && !WasCreatedByThisConnection(*old_parent) &&
-      !IsNodeInRoots(*old_parent)) {
+      !IsViewInRoots(*old_parent)) {
     *old_parent = NULL;
   }
   return true;
 }
 
-bool DefaultAccessPolicy::ShouldSendViewDeleted(const ViewId& view_id) const {
-  return view_id.connection_id == connection_id_;
-}
-
-bool DefaultAccessPolicy::IsNodeInRoots(const Node* node) const {
+bool DefaultAccessPolicy::IsViewInRoots(const ServerView* view) const {
   return delegate_->GetRootsForAccessPolicy().count(
-      NodeIdToTransportId(node->id())) > 0;
+             ViewIdToTransportId(view->id())) > 0;
 }
 
 }  // namespace service

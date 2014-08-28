@@ -5,7 +5,7 @@
 #include "mojo/services/view_manager/window_manager_access_policy.h"
 
 #include "mojo/services/view_manager/access_policy_delegate.h"
-#include "mojo/services/view_manager/node.h"
+#include "mojo/services/view_manager/server_view.h"
 
 namespace mojo {
 namespace service {
@@ -23,73 +23,69 @@ WindowManagerAccessPolicy::WindowManagerAccessPolicy(
 WindowManagerAccessPolicy::~WindowManagerAccessPolicy() {
 }
 
-bool WindowManagerAccessPolicy::CanRemoveNodeFromParent(
-    const Node* node) const {
+bool WindowManagerAccessPolicy::CanRemoveViewFromParent(
+    const ServerView* view) const {
   return true;
 }
 
-bool WindowManagerAccessPolicy::CanAddNode(const Node* parent,
-                                           const Node* child) const {
+bool WindowManagerAccessPolicy::CanAddView(const ServerView* parent,
+                                           const ServerView* child) const {
   return true;
 }
 
-bool WindowManagerAccessPolicy::CanReorderNode(const Node* node,
-                                               const Node* relative_node,
+bool WindowManagerAccessPolicy::CanReorderView(const ServerView* view,
+                                               const ServerView* relative_view,
                                                OrderDirection direction) const {
   return true;
 }
 
-bool WindowManagerAccessPolicy::CanDeleteNode(const Node* node) const {
-  return node->id().connection_id == connection_id_;
+bool WindowManagerAccessPolicy::CanDeleteView(const ServerView* view) const {
+  return view->id().connection_id == connection_id_;
 }
 
-bool WindowManagerAccessPolicy::CanGetNodeTree(const Node* node) const {
+bool WindowManagerAccessPolicy::CanGetViewTree(const ServerView* view) const {
   return true;
 }
 
-bool WindowManagerAccessPolicy::CanDescendIntoNodeForNodeTree(
-    const Node* node) const {
+bool WindowManagerAccessPolicy::CanDescendIntoViewForViewTree(
+    const ServerView* view) const {
   return true;
 }
 
-bool WindowManagerAccessPolicy::CanEmbed(const Node* node) const {
-  return node->id().connection_id == connection_id_;
+bool WindowManagerAccessPolicy::CanEmbed(const ServerView* view) const {
+  return view->id().connection_id == connection_id_;
 }
 
-bool WindowManagerAccessPolicy::CanChangeNodeVisibility(
-    const Node* node) const {
-  return node->id().connection_id == connection_id_;
+bool WindowManagerAccessPolicy::CanChangeViewVisibility(
+    const ServerView* view) const {
+  return view->id().connection_id == connection_id_;
 }
 
-bool WindowManagerAccessPolicy::CanSetNodeContents(const Node* node) const {
-  if (delegate_->IsNodeRootOfAnotherConnectionForAccessPolicy(node))
+bool WindowManagerAccessPolicy::CanSetViewContents(
+    const ServerView* view) const {
+  if (delegate_->IsViewRootOfAnotherConnectionForAccessPolicy(view))
     return false;
-  return node->id().connection_id == connection_id_ ||
-      (delegate_->GetRootsForAccessPolicy().count(
-          NodeIdToTransportId(node->id())) > 0);
+  return view->id().connection_id == connection_id_ ||
+         (delegate_->GetRootsForAccessPolicy().count(
+              ViewIdToTransportId(view->id())) > 0);
 }
 
-bool WindowManagerAccessPolicy::CanSetNodeBounds(const Node* node) const {
-  return node->id().connection_id == connection_id_;
+bool WindowManagerAccessPolicy::CanSetViewBounds(const ServerView* view) const {
+  return view->id().connection_id == connection_id_;
 }
 
 bool WindowManagerAccessPolicy::ShouldNotifyOnHierarchyChange(
-    const Node* node,
-    const Node** new_parent,
-    const Node** old_parent) const {
-  // Notify if we've already told the window manager about the node, or if we've
+    const ServerView* view,
+    const ServerView** new_parent,
+    const ServerView** old_parent) const {
+  // Notify if we've already told the window manager about the view, or if we've
   // already told the window manager about the parent. The later handles the
-  // case of a node that wasn't parented to the root getting added to the root.
-  return IsNodeKnown(node) || (*new_parent && IsNodeKnown(*new_parent));
+  // case of a view that wasn't parented to the root getting added to the root.
+  return IsViewKnown(view) || (*new_parent && IsViewKnown(*new_parent));
 }
 
-bool WindowManagerAccessPolicy::ShouldSendViewDeleted(
-    const ViewId& view_id) const {
-  return true;
-}
-
-bool WindowManagerAccessPolicy::IsNodeKnown(const Node* node) const {
-  return delegate_->IsNodeKnownForAccessPolicy(node);
+bool WindowManagerAccessPolicy::IsViewKnown(const ServerView* view) const {
+  return delegate_->IsViewKnownForAccessPolicy(view);
 }
 
 }  // namespace service

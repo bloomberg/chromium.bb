@@ -17,7 +17,7 @@
 namespace mojo {
 namespace service {
 
-class RootNodeManager;
+class ConnectionManager;
 class ViewManagerInitServiceImpl;
 
 // State shared between all ViewManagerInitService impls.
@@ -36,7 +36,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitServiceContext
              ServiceProviderPtr service_provider,
              const Callback<void(bool)>& callback);
 
-  RootNodeManager* root_node_manager() { return root_node_manager_.get(); }
+  ConnectionManager* connection_manager() { return connection_manager_.get(); }
 
   bool is_tree_host_ready() const { return is_tree_host_ready_; }
 
@@ -59,7 +59,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitServiceContext
 
   void MaybeEmbed();
 
-  scoped_ptr<RootNodeManager> root_node_manager_;
+  scoped_ptr<ConnectionManager> connection_manager_;
   Connections connections_;
 
   // Stores information about inbound calls to Embed() pending execution on
