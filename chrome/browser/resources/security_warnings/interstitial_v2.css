@@ -28,7 +28,6 @@ button {
   font-size: .875em;
   height: 36px;
   margin: -6px 0 0;
-  outline: 0;
   padding: 8px 24px;
   transition: box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -39,6 +38,7 @@ button {
 
 button:active {
   background: rgb(50, 102, 213);
+  outline: 0;
 }
 
 button:hover {
@@ -195,11 +195,6 @@ input[type=checkbox] {
 
 .styled-checkbox input[type=checkbox]:checked + label::after {
   opacity: 1;
-}
-
-.yellow :-webkit-any(
-    a, #details, #details-button, h1, .small-link) {
-  color: black;
 }
 
 @media (max-width: 700px) {
