@@ -258,8 +258,6 @@ create_display(void)
 		exit(1);
 	}
 
-	wl_display_get_fd(display->display);
-
 	wl_list_init(&display->devices);
 
 	return display;
