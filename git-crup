@@ -35,7 +35,7 @@ solutions = [{
   'managed': False,
   'deps_file': '.DEPS.git',
   # Uncomment the following if you're doing blink development
-  # 'custom_vars': {'webkit_rev': ''},
+  # 'custom_vars': {'webkit_revision': ''},
 }]
 # ======== .gclient ends =========
 

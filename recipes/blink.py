@@ -26,7 +26,7 @@ class Blink(recipe_util.Recipe):
       'alias': {
         'recipe': 'chromium',
         'props': [
-          '--webkit_rev=ToT',
+          '--webkit_revision=ToT',
           '--submodule_git_svn_spec=' + json.dumps(submodule_spec),
         ],
       },

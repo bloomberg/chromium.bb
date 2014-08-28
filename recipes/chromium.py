@@ -22,8 +22,8 @@ class Chromium(recipe_util.Recipe):
                  'custom_deps': {},
                  'safesync_url': '',
     }
-    if props.get('webkit_rev', '') == 'ToT':
-      solution['custom_vars'] = {'webkit_rev': ''}
+    if props.get('webkit_revision', '') == 'ToT':
+      solution['custom_vars'] = {'webkit_revision': ''}
     spec = {
       'solutions': [solution],
     }
