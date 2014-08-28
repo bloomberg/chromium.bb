@@ -314,7 +314,13 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, CallWithDataOnly) {
   MakeTypicalPeerConnectionCall("callWithDataOnly();");
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, CallWithSctpDataOnly) {
+#if defined(MEMORY_SANITIZER)
+// Fails under MemorySanitizer: http://crbug.com/405951
+#define MAYBE_CallWithSctpDataOnly DISABLED_CallWithSctpDataOnly
+#else
+#define MAYBE_CallWithSctpDataOnly CallWithSctpDataOnly
+#endif
+IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, MAYBE_CallWithSctpDataOnly) {
   MakeTypicalPeerConnectionCall("callWithSctpDataOnly();");
 }
 
@@ -333,8 +339,10 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, DISABLED_CallWithDataAndMedia) {
 }
 
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+#if (defined(OS_LINUX) && !defined(OS_CHROMEOS) && \
+     defined(ARCH_CPU_ARM_FAMILY)) || defined(MEMORY_SANITIZER)
 // Timing out on ARM linux bot: http://crbug.com/238490
+// Fails under MemorySanitizer: http://crbug.com/405951
 #define MAYBE_CallWithSctpDataAndMedia DISABLED_CallWithSctpDataAndMedia
 #else
 #define MAYBE_CallWithSctpDataAndMedia CallWithSctpDataAndMedia
