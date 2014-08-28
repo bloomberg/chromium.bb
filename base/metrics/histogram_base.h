@@ -5,6 +5,8 @@
 #ifndef BASE_METRICS_HISTOGRAM_BASE_H_
 #define BASE_METRICS_HISTOGRAM_BASE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -49,9 +51,9 @@ BASE_EXPORT_PRIVATE HistogramBase* DeserializeHistogramInfo(
 
 class BASE_EXPORT HistogramBase {
  public:
-  typedef int Sample;                    // Used for samples.
+  typedef int32_t Sample;                // Used for samples.
   typedef subtle::Atomic32 AtomicCount;  // Used to count samples.
-  typedef int32 Count;  // Used to manipulate counts in temporaries.
+  typedef int32_t Count;  // Used to manipulate counts in temporaries.
 
   static const Sample kSampleType_MAX;  // INT_MAX
 
@@ -99,9 +101,9 @@ class BASE_EXPORT HistogramBase {
   void CheckName(const StringPiece& name) const;
 
   // Operations with Flags enum.
-  int32 flags() const { return flags_; }
-  void SetFlags(int32 flags);
-  void ClearFlags(int32 flags);
+  int32_t flags() const { return flags_; }
+  void SetFlags(int32_t flags);
+  void ClearFlags(int32_t flags);
 
   virtual HistogramType GetHistogramType() const = 0;
 
@@ -173,7 +175,7 @@ class BASE_EXPORT HistogramBase {
 
  private:
   const std::string histogram_name_;
-  int32 flags_;
+  int32_t flags_;
 
   DISALLOW_COPY_AND_ASSIGN(HistogramBase);
 };
