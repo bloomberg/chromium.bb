@@ -114,7 +114,7 @@ void SerialConnectionFactory::ConnectTask::Connect() {
 }
 
 void SerialConnectionFactory::ConnectTask::OnConnected(bool success) {
-  DCHECK(io_handler_);
+  DCHECK(io_handler_.get());
   if (!success)
     return;
   if (!options_)

@@ -26,7 +26,7 @@ void SerialIoHandler::Open(const std::string& port,
   DCHECK(CalledOnValidThread());
   DCHECK(open_complete_.is_null());
   open_complete_ = callback;
-  DCHECK(file_thread_message_loop_);
+  DCHECK(file_thread_message_loop_.get());
   file_thread_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&SerialIoHandler::StartOpen,
@@ -81,7 +81,7 @@ bool SerialIoHandler::PostOpen() {
 
 void SerialIoHandler::Close() {
   if (file_.IsValid()) {
-    DCHECK(file_thread_message_loop_);
+    DCHECK(file_thread_message_loop_.get());
     file_thread_message_loop_->PostTask(
         FROM_HERE, base::Bind(&SerialIoHandler::DoClose, Passed(file_.Pass())));
   }

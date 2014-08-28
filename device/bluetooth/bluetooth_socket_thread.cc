@@ -23,7 +23,7 @@ scoped_refptr<BluetoothSocketThread> BluetoothSocketThread::Get() {
 
 // static
 void BluetoothSocketThread::CleanupForTesting() {
-  DCHECK(g_instance.Get());
+  DCHECK(g_instance.Get().get());
   g_instance.Get() = NULL;
 }
 
@@ -70,7 +70,7 @@ scoped_refptr<base::SequencedTaskRunner> BluetoothSocketThread::task_runner()
     const {
   DCHECK(active_socket_count_ > 0);
   DCHECK(thread_);
-  DCHECK(task_runner_);
+  DCHECK(task_runner_.get());
 
   return task_runner_;
 }

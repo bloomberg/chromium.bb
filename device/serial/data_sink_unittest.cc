@@ -50,7 +50,7 @@ class DataSinkTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     read_buffer_.reset();
     message_loop_.reset();
-    if (sink_receiver_)
+    if (sink_receiver_.get())
       EXPECT_TRUE(sink_receiver_->HasOneRef());
   }
 

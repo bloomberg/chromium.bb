@@ -214,7 +214,7 @@ DataSourceSender::PendingSend::Buffer::Buffer(
 }
 
 DataSourceSender::PendingSend::Buffer::~Buffer() {
-  if (sender_)
+  if (sender_.get())
     pending_send_->Done(0);
 }
 
@@ -227,7 +227,7 @@ uint32_t DataSourceSender::PendingSend::Buffer::GetSize() {
 }
 
 void DataSourceSender::PendingSend::Buffer::Done(uint32_t bytes_written) {
-  DCHECK(sender_);
+  DCHECK(sender_.get());
   pending_send_->Done(bytes_written);
   sender_ = NULL;
   pending_send_ = NULL;
@@ -238,7 +238,7 @@ void DataSourceSender::PendingSend::Buffer::Done(uint32_t bytes_written) {
 void DataSourceSender::PendingSend::Buffer::DoneWithError(
     uint32_t bytes_written,
     int32_t error) {
-  DCHECK(sender_);
+  DCHECK(sender_.get());
   pending_send_->DoneWithError(bytes_written, error);
   sender_ = NULL;
   pending_send_ = NULL;

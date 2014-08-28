@@ -127,7 +127,7 @@ TEST_F(HidConnectionTest, ReadWrite) {
   if (!UsbTestGadget::IsTestEnabled()) return;
 
   scoped_refptr<HidConnection> conn = service_->Connect(device_id_);
-  ASSERT_TRUE(conn);
+  ASSERT_TRUE(conn.get());
 
   for (int i = 0; i < 8; ++i) {
     scoped_refptr<IOBufferWithSize> buffer(new IOBufferWithSize(9));

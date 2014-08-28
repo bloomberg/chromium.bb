@@ -70,7 +70,7 @@ class SerialServiceTest : public testing::Test, public mojo::ErrorHandler {
   scoped_refptr<SerialIoHandler> ReturnIoHandler() { return io_handler_; }
 
   void RunConnectTest(const std::string& path, bool expecting_success) {
-    if (!io_handler_)
+    if (!io_handler_.get())
       io_handler_ = new TestSerialIoHandler;
     mojo::InterfacePtr<serial::SerialService> service;
     mojo::BindToProxy(

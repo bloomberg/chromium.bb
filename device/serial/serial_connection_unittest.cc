@@ -89,7 +89,7 @@ class SerialConnectionTest : public testing::Test, public mojo::ErrorHandler {
     connection_->GetInfo(
         base::Bind(&SerialConnectionTest::StoreInfo, base::Unretained(this)));
     WaitForEvent(EVENT_GOT_INFO);
-    ASSERT_TRUE(io_handler_);
+    ASSERT_TRUE(io_handler_.get());
   }
 
   void StoreInfo(serial::ConnectionInfoPtr options) {

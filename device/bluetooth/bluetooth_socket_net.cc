@@ -258,7 +258,7 @@ void BluetoothSocketNet::SendFrontWriteRequest() {
                  request->success_callback,
                  request->error_callback);
   int send_result =
-      tcp_socket_->Write(request->buffer, request->buffer_size, callback);
+      tcp_socket_->Write(request->buffer.get(), request->buffer_size, callback);
   if (send_result != net::ERR_IO_PENDING) {
     callback.Run(send_result);
   }
