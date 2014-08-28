@@ -555,7 +555,7 @@ env.AddNodeToTestSuite(node, ['toolchain_tests','small_tests'], 'run_wrap_test')
 
 if (env.Bit('target_x86_32') and env.Bit('bitcode') and
     not env.Bit('pnacl_generate_pexe') and
-    env['TOOLCHAIN_FEATURE_VERSION'] >= 7):
+    env['TOOLCHAIN_FEATURE_VERSION'] >= 8):
   # This test compiles a file that will need to generate a call to a compiler-rt
   # function (__udivdi3) on x86-32. Ensure that when we pre-translate to a
   # native object file, libgcc is included in the bitcode link to satisfy the
@@ -567,9 +567,26 @@ if (env.Bit('target_x86_32') and env.Bit('bitcode') and
   mixedlink_env.Append(LINKFLAGS=['--pnacl-allow-translate',
                                   '--pnacl-allow-native',
                                   '-arch', 'x86-32'])
+
   nexe = mixedlink_env.ComponentProgram('libgcc_mixed_link', 'needs_libgcc.c',
                                         EXTRA_LIBS=['${NONIRT_LIBS}'])
   node = mixedlink_env.CommandSelLdrTestNacl('libgcc_mixed_link.out', nexe,
                                              ['9', '3'])
-  mixedlink_env.AddNodeToTestSuite(node, ['nonpexe_tests', 'small_tests'],
+  mixedlink_env.AddNodeToTestSuite(node, ['nonpexe_tests', 'small_tests',
+                                          'toolchain_tests'],
                                    'run_libgcc_mixed_link_test')
+
+  # This tests the translator's -force-align-stack flag, which means that the
+  # compiler cannot assume that the stack pointer is aligned to a 16-byte
+  # boundary, and must force realignment on entry to each function.
+  mixedlink_env.Append(ASFLAGS=['-arch', 'x86-32'])
+  mixedlink_env.Append(CCFLAGS=['-Wt,-force-align-stack'])
+  nexe = mixedlink_env.ComponentProgram(
+      'stackalign_test',
+      ['call_with_misaligned_stack.S', 'stackalign_test.c'],
+      EXTRA_LIBS=['${NONIRT_LIBS}'])
+  node = mixedlink_env.CommandSelLdrTestNacl('stackalign.out', nexe)
+  mixedlink_env.AddNodeToTestSuite(
+      node,
+      ['nonpexe_tests', 'small_tests', 'toolchain_tests'],
+      'run_stackalign_test')

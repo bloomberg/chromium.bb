@@ -154,6 +154,7 @@ TranslatorPatterns = [
   # chromium/src/ppapi/native_client/src/trusted/plugin/pnacl_options.cc
   ( '(-sfi-.+)',        "env.append('LLC_FLAGS_EXTRA', $0)"),
   ( '(-mtls-use-call)', "env.append('LLC_FLAGS_EXTRA', $0)"),
+  ( '(-force-align-stack)', "env.append('LLC_FLAGS_EXTRA', $0)"),
   # These flags are usually used for linktime dead code/data
   # removal but also help with reloc overflows on ARM
   ( '(-fdata-sections)',     "env.append('LLC_FLAGS_EXTRA', $0)"),
