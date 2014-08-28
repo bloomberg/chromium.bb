@@ -17,6 +17,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -512,6 +514,40 @@ void ManagePasswordsBubbleView::SaveConfirmationView::ButtonPressed(
   parent_->Close();
 }
 
+// ManagePasswordsBubbleView::WebContentMouseHandler --------------------------
+
+// The class listens for WebContentsView events and notifies the bubble if the
+// view was clicked on.
+class ManagePasswordsBubbleView::WebContentMouseHandler
+    : public ui::EventHandler {
+ public:
+  explicit WebContentMouseHandler(ManagePasswordsBubbleView* bubble)
+      : bubble_(bubble) {
+    GetWebContentsWindow()->AddPreTargetHandler(this);
+  }
+
+  virtual ~WebContentMouseHandler() {
+    aura::Window* window = GetWebContentsWindow();
+    if (window)
+      window->RemovePreTargetHandler(this);
+  }
+
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    if (event->type() == ui::ET_MOUSE_PRESSED)
+      bubble_->OnWebContentClicked();
+  }
+
+ private:
+  aura::Window* GetWebContentsWindow() {
+    content::WebContents* web_contents = bubble_->model()->web_contents();
+    return web_contents ? web_contents->GetNativeView() : NULL;
+  }
+
+  ManagePasswordsBubbleView* bubble_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebContentMouseHandler);
+};
+
 // ManagePasswordsBubbleView --------------------------------------------------
 
 // static
@@ -593,6 +629,7 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
   set_notify_enter_exit_on_child(true);
   if (anchor_view)
     anchor_view->SetActive(true);
+  mouse_handler_.reset(new WebContentMouseHandler(this));
 }
 
 ManagePasswordsBubbleView::~ManagePasswordsBubbleView() {
@@ -700,4 +737,8 @@ void ManagePasswordsBubbleView::StartTimerIfNecessary() {
                base::TimeDelta::FromSeconds(kBubbleCloseDelay),
                this,
                &ManagePasswordsBubbleView::Close);
+}
+
+void ManagePasswordsBubbleView::OnWebContentClicked() {
+  Close();
 }
