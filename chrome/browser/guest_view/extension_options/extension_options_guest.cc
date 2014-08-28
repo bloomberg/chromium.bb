@@ -132,7 +132,7 @@ const char* ExtensionOptionsGuest::GetAPINamespace() const {
 }
 
 int ExtensionOptionsGuest::GetTaskPrefix() const {
- return IDS_EXTENSION_TASK_MANAGER_EXTENSIONOPTIONS_TAG_PREFIX;
+  return IDS_EXTENSION_TASK_MANAGER_EXTENSIONOPTIONS_TAG_PREFIX;
 }
 
 content::WebContents* ExtensionOptionsGuest::GetAssociatedWebContents() const {
