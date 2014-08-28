@@ -77,6 +77,10 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
     inside_border_insets_ = insets;
   }
 
+  void set_minimum_cross_axis_size(int size) {
+    minimum_cross_axis_size_ = size;
+  }
+
   // Sets the flex weight for the given |view|. Using the preferred size as
   // the basis, free space along the main axis is distributed to views in the
   // ratio of their flex weights. Similarly, if the views will overflow the
@@ -158,6 +162,9 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
 
   // The flex weight for views if none is set. Defaults to 0.
   int default_flex_;
+
+  // The minimum cross axis size for the layout.
+  int minimum_cross_axis_size_;
 
   // The view that this BoxLayout is managing the layout for.
   views::View* host_;

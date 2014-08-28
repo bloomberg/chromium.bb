@@ -590,4 +590,24 @@ TEST_F(BoxLayoutTest, FlexShrinkVerticalWithRemainder) {
   }
 }
 
+TEST_F(BoxLayoutTest, MinimumCrossAxisVertical) {
+  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, 0, 0, 0);
+  host_->SetLayoutManager(layout);
+  View* v1 = new StaticSizedView(gfx::Size(20, 10));
+  host_->AddChildView(v1);
+  layout->set_minimum_cross_axis_size(30);
+
+  EXPECT_EQ(gfx::Size(30, 10), layout->GetPreferredSize(host_.get()));
+}
+
+TEST_F(BoxLayoutTest, MinimumCrossAxisHorizontal) {
+  BoxLayout* layout = new BoxLayout(BoxLayout::kHorizontal, 0, 0, 0);
+  host_->SetLayoutManager(layout);
+  View* v1 = new StaticSizedView(gfx::Size(20, 10));
+  host_->AddChildView(v1);
+  layout->set_minimum_cross_axis_size(30);
+
+  EXPECT_EQ(gfx::Size(20, 30), layout->GetPreferredSize(host_.get()));
+}
+
 }  // namespace views

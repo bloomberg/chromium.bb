@@ -22,6 +22,7 @@ BoxLayout::BoxLayout(BoxLayout::Orientation orientation,
       main_axis_alignment_(MAIN_AXIS_ALIGNMENT_START),
       cross_axis_alignment_(CROSS_AXIS_ALIGNMENT_STRETCH),
       default_flex_(0),
+      minimum_cross_axis_size_(0),
       host_(NULL) {
 }
 
@@ -162,6 +163,7 @@ gfx::Size BoxLayout::GetPreferredSize(const View* host) const {
 
       width = std::max(width, child->GetPreferredSize().width());
     }
+    width = std::max(width, minimum_cross_axis_size_);
   }
 
   return GetPreferredSizeForChildWidth(host, width);
@@ -278,6 +280,8 @@ gfx::Size BoxLayout::GetPreferredSizeForChildWidth(const View* host,
       child_area_bounds.Union(child_bounds);
       position += size.width() + between_child_spacing_;
     }
+    child_area_bounds.set_height(
+        std::max(child_area_bounds.height(), minimum_cross_axis_size_));
   } else {
     int height = 0;
     for (int i = 0; i < host->child_count(); ++i) {
