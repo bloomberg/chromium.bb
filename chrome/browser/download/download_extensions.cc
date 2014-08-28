@@ -200,7 +200,6 @@ static const struct Executables {
   { "rpm", ALLOW_ON_USER_GESTURE },
 #endif
 #if defined(OS_ANDROID)
-  { "apk", ALLOW_ON_USER_GESTURE },
   { "dex", ALLOW_ON_USER_GESTURE },  // Really an executable format.
 #endif
 };
