@@ -1,8 +1,8 @@
 Tests the Timeline API instrumentation of a SendRequest, ReceiveResponse etc.
 
 FunctionCall
-FunctionCall
     ResourceSendRequest
+FunctionCall
 ResourceReceiveResponse
 ResourceReceivedData
 ResourceFinish

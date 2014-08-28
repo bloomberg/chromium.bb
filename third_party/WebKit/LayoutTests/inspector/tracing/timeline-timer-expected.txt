@@ -84,6 +84,7 @@ TimerRemove Properties:
 }
 FunctionCall Properties:
 {
+    children : <object>
     data : {
         frame : <string>
         scriptId : <string>
@@ -98,7 +99,6 @@ FunctionCall Properties:
 }
 FunctionCall Properties:
 {
-    children : <object>
     data : {
         frame : <string>
         scriptId : <string>
