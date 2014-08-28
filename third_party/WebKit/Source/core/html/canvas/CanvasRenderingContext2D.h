@@ -318,7 +318,7 @@ private:
     GraphicsContext* drawingContext() const;
 
     void unwindStateStack();
-    void realizeSaves();
+    void realizeSaves(GraphicsContext*);
 
     void applyStrokePattern();
     void applyFillPattern();
