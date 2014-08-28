@@ -204,6 +204,16 @@
     },
     {
       "archives": [],
+      "description": "Chrome 38 bundle, revision xxxxx",
+      "name": "pepper_38",
+      "recommended": "no",
+      "repath": "pepper_38",
+      "revision": 0,
+      "stability": "post_stable",
+      "version": 38
+    },
+    {
+      "archives": [],
       "description": "Chrome Canary",
       "name": "pepper_canary",
       "recommended": "no",
