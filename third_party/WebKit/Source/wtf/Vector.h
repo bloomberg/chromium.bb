@@ -763,12 +763,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             ASSERT(begin());
         }
 
-// Works around an assert in VS2010. See https://connect.microsoft.com/VisualStudio/feedback/details/558044/std-copy-should-not-check-dest-when-first-last
-#if COMPILER(MSVC) && defined(_ITERATOR_DEBUG_LEVEL) && _ITERATOR_DEBUG_LEVEL
-        if (!begin())
-            return *this;
-#endif
-
         std::copy(other.begin(), other.begin() + size(), begin());
         TypeOperations::uninitializedCopy(other.begin() + size(), other.end(), end());
         m_size = other.size();
@@ -794,12 +788,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             reserveCapacity(other.size());
             ASSERT(begin());
         }
-
-// Works around an assert in VS2010. See https://connect.microsoft.com/VisualStudio/feedback/details/558044/std-copy-should-not-check-dest-when-first-last
-#if COMPILER(MSVC) && defined(_ITERATOR_DEBUG_LEVEL) && _ITERATOR_DEBUG_LEVEL
-        if (!begin())
-            return *this;
-#endif
 
         std::copy(other.begin(), other.begin() + size(), begin());
         TypeOperations::uninitializedCopy(other.begin() + size(), other.end(), end());
