@@ -162,8 +162,10 @@ bool IsGracefullyDenied(int sysno) {
     // tcmalloc calls madvise in TCMalloc_SystemRelease.
     case __NR_madvise:
     // EPERM instead of SIGSYS as glibc tries to open files in /proc.
+    // openat via opendir via get_nprocs_conf and open via get_nprocs.
     // TODO(hamaji): Remove this when we switch to newlib.
     case __NR_open:
+    case __NR_openat:
     // For RunSandboxSanityChecks().
     case __NR_ptrace:
     // glibc uses this for its pthread implementation. If we return
