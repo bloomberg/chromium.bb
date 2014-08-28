@@ -85,11 +85,6 @@ void ServiceWorker::postMessage(ExecutionContext*, PassRefPtr<SerializedScriptVa
     m_outerWorker->postMessage(messageString, webChannels.leakPtr());
 }
 
-void ServiceWorker::terminate(ExceptionState& exceptionState)
-{
-    exceptionState.throwDOMException(InvalidAccessError, "Not supported.");
-}
-
 bool ServiceWorker::isReady()
 {
     return m_proxyState == Ready;

@@ -43,8 +43,6 @@
   [CallWith=ScriptState] Promise fetch(DOMString request, optional Dictionary requestInitDict);
   [CallWith=ScriptState] Promise fetch(Request request, optional Dictionary requestInitDict);
 
-  [RaisesException] void close();
-
   attribute EventHandler onactivate;
   attribute EventHandler onfetch;
   attribute EventHandler oninstall;

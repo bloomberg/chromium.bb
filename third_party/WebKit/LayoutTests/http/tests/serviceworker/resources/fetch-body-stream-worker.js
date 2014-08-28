@@ -8,6 +8,7 @@ self.onmessage = function(e) {
 
 function quit(port) {
     port.postMessage('quit');
+    self.close();
 }
 
 function doFetchTwiceTest(port) {

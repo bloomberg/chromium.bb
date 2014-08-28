@@ -56,7 +56,6 @@ public:
     static void dispose(WebType*);
 
     void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
-    void terminate(ExceptionState&);
 
     String scriptURL() const;
     const AtomicString& state() const;

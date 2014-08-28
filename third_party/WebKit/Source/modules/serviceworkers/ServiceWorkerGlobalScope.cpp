@@ -161,11 +161,6 @@ PassRefPtrWillBeRawPtr<ServiceWorkerClients> ServiceWorkerGlobalScope::clients()
     return m_clients;
 }
 
-void ServiceWorkerGlobalScope::close(ExceptionState& exceptionState)
-{
-    exceptionState.throwDOMException(InvalidAccessError, "Not supported.");
-}
-
 const AtomicString& ServiceWorkerGlobalScope::interfaceName() const
 {
     return EventTargetNames::ServiceWorkerGlobalScope;
