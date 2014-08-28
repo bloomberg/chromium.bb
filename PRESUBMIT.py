@@ -100,6 +100,10 @@ def CheckChangeOnCommit(input_api, output_api):
   return report
 
 
+# Note that this list is duplicated in the Commit Queue.  If you
+# change this list, you should also update the CQ's list here:
+# https://chrome-internal.googlesource.com/infra/infra_internal/+/master/commit_queue/projects.py
+# (see https://crbug.com/399059).
 DEFAULT_TRYBOTS = [
     'nacl-precise32_newlib_dbg',
     'nacl-precise32_newlib_opt',
