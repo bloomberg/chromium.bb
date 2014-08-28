@@ -154,6 +154,9 @@
 // Update visibility of the infobar tip, depending on the state of the window.
 - (void)updateInfoBarTipVisibility;
 
+// Returns the max top arrow height for infobar.
+- (NSInteger)infoBarMaxTopArrowHeight;
+
 @end  // @interface BrowserWindowController(Private)
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_CONTROLLER_PRIVATE_H_

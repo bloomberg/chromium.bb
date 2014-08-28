@@ -92,6 +92,9 @@ class InfoBarDelegate;
 // |browser_controller_| that it needs to resize the container view.
 - (void)positionInfoBarsAndRedraw:(BOOL)isAnimating;
 
+// Set the max arrow height of the top infobar.
+- (void)setMaxTopArrowHeight:(NSInteger)height;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_CONTAINER_CONTROLLER_H_

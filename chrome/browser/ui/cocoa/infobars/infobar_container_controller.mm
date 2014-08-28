@@ -160,4 +160,8 @@
   [infobarControllers_ removeObject:controller];
 }
 
+- (void)setMaxTopArrowHeight:(NSInteger)height {
+  containerCocoa_->SetMaxTopArrowHeight(height);
+}
+
 @end

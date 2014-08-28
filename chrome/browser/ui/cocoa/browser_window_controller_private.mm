@@ -475,6 +475,8 @@ willPositionSheet:(NSWindow*)sheet
   containerFrame.origin.y = maxY;
   containerFrame.size.width = width;
   [containerView setFrame:containerFrame];
+  [infoBarContainerController_ setMaxTopArrowHeight:[self
+      infoBarMaxTopArrowHeight]];
   return maxY;
 }
 
@@ -1056,6 +1058,23 @@ willPositionSheet:(NSWindow*)sheet
   // If there's no toolbar then hide the infobar tip.
   [infoBarContainerController_
       setShouldSuppressTopInfoBarTip:![self hasToolbar]];
+}
+
+- (NSInteger)infoBarMaxTopArrowHeight {
+  NSInteger topArrowHeight = 0;
+  LocationBarViewMac* locationBarView = [self locationBarBridge];
+  NSPoint iconBottom = locationBarView->GetPageInfoBubblePoint();
+
+  CGFloat overlappingTipHeight =
+      [infoBarContainerController_ overlappingTipHeight];
+  NSPoint infoBarTop =
+      NSMakePoint(0, NSHeight([infoBarContainerController_ view].frame) -
+                  overlappingTipHeight);
+  infoBarTop = [[infoBarContainerController_ view] convertPoint:infoBarTop
+                                                         toView:nil];
+
+  topArrowHeight = iconBottom.y - infoBarTop.y;
+  return topArrowHeight;
 }
 
 @end  // @implementation BrowserWindowController(Private)

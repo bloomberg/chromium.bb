@@ -8,6 +8,7 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -25,6 +26,8 @@
 #import "chrome/browser/ui/cocoa/history_overlay_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
+#import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
+#import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
@@ -35,7 +38,9 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_utils.h"
 #import "testing/gtest_mac.h"
+#include "ui/gfx/animation/slide_animation.h"
 
 namespace {
 
@@ -63,6 +68,23 @@ enum ViewID {
 };
 
 }  // namespace
+
+@interface InfoBarContainerController(TestingAPI)
+- (BOOL)isTopInfoBarAnimationRunning;
+@end
+
+@implementation InfoBarContainerController(TestingAPI)
+- (BOOL)isTopInfoBarAnimationRunning {
+  InfoBarController* infoBarController = [infobarControllers_ objectAtIndex:0];
+  if (infoBarController) {
+    const gfx::SlideAnimation& infobarAnimation =
+        static_cast<const InfoBarCocoa*>(
+            infoBarController.infobar)->animation();
+    return infobarAnimation.is_animating();
+  }
+  return NO;
+}
+@end
 
 class BrowserWindowControllerTest : public InProcessBrowserTest {
  public:
@@ -132,6 +154,64 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
           overlappingTipHeight];
     }
     return height;
+  }
+
+  static void CheckTopInfoBarAnimation(
+      InfoBarContainerController* info_bar_container_controller,
+      const base::Closure& quit_task) {
+    if (![info_bar_container_controller isTopInfoBarAnimationRunning])
+      quit_task.Run();
+  }
+
+  static void CheckBookmarkBarAnimation(
+      BookmarkBarController* bookmark_bar_controller,
+      const base::Closure& quit_task) {
+    if (![bookmark_bar_controller isAnimationRunning])
+      quit_task.Run();
+  }
+
+  void WaitForTopInfoBarAnimationToFinish() {
+    scoped_refptr<content::MessageLoopRunner> runner =
+        new content::MessageLoopRunner;
+
+    base::Timer timer(false, true);
+    timer.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(15),
+        base::Bind(&CheckTopInfoBarAnimation,
+                   [controller() infoBarContainerController],
+                   runner->QuitClosure()));
+    runner->Run();
+  }
+
+  void WaitForBookmarkBarAnimationToFinish() {
+    scoped_refptr<content::MessageLoopRunner> runner =
+        new content::MessageLoopRunner;
+
+    base::Timer timer(false, true);
+    timer.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(15),
+        base::Bind(&CheckBookmarkBarAnimation,
+                   [controller() bookmarkBarController],
+                   runner->QuitClosure()));
+    runner->Run();
+  }
+
+  NSInteger GetExpectedTopInfoBarTipHeight() {
+    InfoBarContainerController* info_bar_container_controller =
+        [controller() infoBarContainerController];
+    CGFloat overlapping_tip_height =
+        [info_bar_container_controller overlappingTipHeight];
+    LocationBarViewMac* location_bar_view = [controller() locationBarBridge];
+    NSPoint icon_bottom = location_bar_view->GetPageInfoBubblePoint();
+
+    NSPoint info_bar_top = NSMakePoint(0,
+        NSHeight([info_bar_container_controller view].frame) -
+        overlapping_tip_height);
+    info_bar_top = [[info_bar_container_controller view]
+        convertPoint:info_bar_top toView:nil];
+    return icon_bottom.y - info_bar_top.y;
   }
 
  private:
@@ -353,4 +433,32 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   EXPECT_FALSE(NSEqualPoints(origin, originWithDevTools));
 
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_window);
+}
+
+// Tests that top infobar tip is streched when bookmark bar becomes SHOWN/HIDDEN
+IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
+                       InfoBarTipStrechedWhenBookmarkBarStatusChanged) {
+  EXPECT_FALSE([controller() isBookmarkBarVisible]);
+  ShowInfoBar(browser());
+  // The infobar tip is animated during the infobar is being added, wait until
+  // it completes.
+  WaitForTopInfoBarAnimationToFinish();
+
+  EXPECT_FALSE([[controller() infoBarContainerController]
+      shouldSuppressTopInfoBarTip]);
+
+  NSInteger max_tip_height = infobars::InfoBar::kMaximumArrowTargetHeight +
+      infobars::InfoBar::kSeparatorLineHeight;
+
+  chrome::ExecuteCommand(browser(), IDC_SHOW_BOOKMARK_BAR);
+  WaitForBookmarkBarAnimationToFinish();
+  EXPECT_TRUE([controller() isBookmarkBarVisible]);
+  EXPECT_EQ(std::min(GetExpectedTopInfoBarTipHeight(), max_tip_height),
+            [[controller() infoBarContainerController] overlappingTipHeight]);
+
+  chrome::ExecuteCommand(browser(), IDC_SHOW_BOOKMARK_BAR);
+  WaitForBookmarkBarAnimationToFinish();
+  EXPECT_FALSE([controller() isBookmarkBarVisible]);
+  EXPECT_EQ(std::min(GetExpectedTopInfoBarTipHeight(), max_tip_height),
+            [[controller() infoBarContainerController] overlappingTipHeight]);
 }

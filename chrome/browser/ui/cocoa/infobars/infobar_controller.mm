@@ -69,6 +69,7 @@
   [self addAdditionalControls];
 
   [infoBarView_ setInfobarType:[self delegate]->GetInfoBarType()];
+  [infoBarView_ setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 }
 
 - (void)dealloc {
