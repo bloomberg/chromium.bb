@@ -1150,6 +1150,8 @@ crbug.com/384564 crypto/rsassa-pkcs1-v1_5-generate-key.html [ Pass Timeout ]
 crbug.com/384950 fast/forms/submit-change-fragment.html [ Pass Timeout ]
 crbug.com/384566 svg/custom/textPath-change-reference2.svg [ ImageOnlyFailure Pass ]
 
+crbug.com/405683 [ Win Mac ] fast/layers/scroll-descendant-with-cached-cliprects.html [ NeedsRebaseline ]
+
 # switching to apache-win32: needs triaging.
 crbug.com/30536 [ Win ] http/tests/css/missing-repaint-after-slow-style-sheet.pl [ ImageOnlyFailure ]
 crbug.com/30536 [ Win ] http/tests/images/drag-image-to-desktop.html [ Failure ]

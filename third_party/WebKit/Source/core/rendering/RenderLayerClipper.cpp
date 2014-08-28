@@ -159,10 +159,6 @@ ClipRects* RenderLayerClipper::getClipRects(const ClipRectsContext& context) con
 
 void RenderLayerClipper::clearClipRectsIncludingDescendants()
 {
-    // FIXME: it's not clear how this layer not having clip rects guarantees that no descendants have any.
-    if (!m_cache)
-        return;
-
     m_cache = nullptr;
 
     for (RenderLayer* layer = m_renderer.layer()->firstChild(); layer; layer = layer->nextSibling())
@@ -171,11 +167,8 @@ void RenderLayerClipper::clearClipRectsIncludingDescendants()
 
 void RenderLayerClipper::clearClipRectsIncludingDescendants(ClipRectsCacheSlot cacheSlot)
 {
-    // FIXME: it's not clear how this layer not having clip rects guarantees that no descendants have any.
-    if (!m_cache)
-        return;
-
-    m_cache->clear(cacheSlot);
+    if (m_cache)
+        m_cache->clear(cacheSlot);
 
     for (RenderLayer* layer = m_renderer.layer()->firstChild(); layer; layer = layer->nextSibling())
         layer->clipper().clearClipRectsIncludingDescendants(cacheSlot);
