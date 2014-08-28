@@ -996,7 +996,7 @@ class IsolateFormatTest(unittest.TestCase):
         }],
       ],
     }
-    with self.assertRaises(isolate_format.isolateserver.ConfigError):
+    with self.assertRaises(isolate_format.IsolateError):
       isolate_format.load_isolate_as_config(
           FAKE_DIR, isolate_with_else_clauses, None)
 

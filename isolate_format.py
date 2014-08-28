@@ -20,8 +20,6 @@ import posixpath
 import re
 import sys
 
-import isolateserver
-
 from utils import short_expression_finder
 
 # Files that should be 0-length when mapped.
@@ -33,6 +31,11 @@ KEY_UNTRACKED = 'isolate_dependency_untracked'
 
 # Valid variable name.
 VALID_VARIABLE = '[A-Za-z_][A-Za-z_0-9]*'
+
+
+class IsolateError(ValueError):
+  """Generic failure to load a .isolate file."""
+  pass
 
 
 def determine_root_dir(relative_root, infiles):
@@ -62,7 +65,7 @@ def replace_variable(part, variables):
   m = re.match(r'<\((' + VALID_VARIABLE + ')\)', part)
   if m:
     if m.group(1) not in variables:
-      raise isolateserver.ConfigError(
+      raise IsolateError(
         'Variable "%s" was not found in %s.\nDid you forget to specify '
         '--path-variable?' % (m.group(1), variables))
     return variables[m.group(1)]
@@ -239,7 +242,7 @@ def match_configs(expr, config_variables, all_configs):
       except NameError:
         continue
       if not isinstance(assertion, bool):
-        raise isolateserver.ConfigError('Invalid condition')
+        raise IsolateError('Invalid condition')
       if assertion:
         out.append(values)
   return out
@@ -301,8 +304,7 @@ def verify_condition(condition, variables_and_values):
   assert isinstance(then, dict), then
   assert set(VALID_INSIDE_CONDITION).issuperset(set(then)), then.keys()
   if not 'variables' in then:
-    raise isolateserver.ConfigError('Missing \'variables\' in condition %s' %
-        condition)
+    raise IsolateError('Missing \'variables\' in condition %s' % condition)
   verify_variables(then['variables'])
 
 
@@ -440,32 +442,30 @@ def convert_map_to_isolate_dict(values, config_variables):
 
       if key == 'read_only':
         if not isinstance(item, int):
-          raise isolateserver.ConfigError(
+          raise IsolateError(
               'Unexpected entry type %r for key %s' % (item, key))
         variables[key] = item
       elif key == 'command':
         if not isinstance(item, tuple):
-          raise isolateserver.ConfigError(
+          raise IsolateError(
               'Unexpected entry type %r for key %s' % (item, key))
         if key in variables:
-          raise isolateserver.ConfigError('Unexpected duplicate key %s' % key)
+          raise IsolateError('Unexpected duplicate key %s' % key)
         if not item:
-          raise isolateserver.ConfigError(
-              'Expected non empty entry in %s' % key)
+          raise IsolateError('Expected non empty entry in %s' % key)
         variables[key] = list(item)
       elif key in (KEY_TOUCHED, KEY_TRACKED, KEY_UNTRACKED):
         if not isinstance(item, basestring):
-          raise isolateserver.ConfigError('Unexpected entry type %r' % item)
+          raise IsolateError('Unexpected entry type %r' % item)
         if not item:
-          raise isolateserver.ConfigError(
-              'Expected non empty entry in %s' % key)
+          raise IsolateError('Expected non empty entry in %s' % key)
         # The list of items (files or dirs). Append the new item and keep
         # the list sorted.
         l = variables.setdefault(key, [])
         l.append(item)
         l.sort()
       else:
-        raise isolateserver.ConfigError('Unexpected key %s' % key)
+        raise IsolateError('Unexpected key %s' % key)
 
   if all_mentioned_configs:
     # Change [(1, 2), (3, 4)] to [set(1, 3), set(2, 4)]
@@ -766,7 +766,7 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
   """
   assert os.path.isabs(isolate_dir), isolate_dir
   if any(len(cond) == 3 for cond in value.get('conditions', [])):
-    raise isolateserver.ConfigError('Using \'else\' is not supported anymore.')
+    raise IsolateError('Using \'else\' is not supported anymore.')
   variables_and_values = {}
   verify_root(value, variables_and_values)
   if variables_and_values:
@@ -795,13 +795,13 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
   # Load the includes. Process them in reverse so the last one take precedence.
   for include in reversed(value.get('includes', [])):
     if os.path.isabs(include):
-      raise isolateserver.ConfigError(
+      raise IsolateError(
           'Failed to load configuration; absolute include path \'%s\'' %
           include)
     included_isolate = os.path.normpath(os.path.join(isolate_dir, include))
     if sys.platform == 'win32':
       if included_isolate[0].lower() != isolate_dir[0].lower():
-        raise isolateserver.ConfigError(
+        raise IsolateError(
             'Can\'t reference a .isolate file from another drive')
     with open(included_isolate, 'r') as f:
       included_isolate = load_isolate_as_config(
@@ -828,7 +828,7 @@ def load_isolate_for_config(isolate_dir, content, config_variables):
     config_name = tuple(
         config_variables[var] for var in isolate.config_variables)
   except KeyError:
-    raise isolateserver.ConfigError(
+    raise IsolateError(
         'These configuration variables were missing from the command line: %s' %
         ', '.join(
             sorted(set(isolate.config_variables) - set(config_variables))))
