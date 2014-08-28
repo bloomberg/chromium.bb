@@ -114,6 +114,18 @@ footer[role="contentinfo"] {
   }
 }
 
+table {
+  font-size: $body-font-size;
+}
+
+td dl {
+  margin: 0.4em 0;
+}
+
+td dt {
+  margin: 0 0 0.4em 0;
+}
+
 em {
   padding-right: 2px; /* "kerning" adjustment */
 }
