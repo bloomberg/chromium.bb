@@ -144,8 +144,7 @@ bool HasFileSystemType(ObfuscatedFileUtil::AbstractOriginEnumerator* enumerator,
 class ObfuscatedFileUtilTest : public testing::Test {
  public:
   ObfuscatedFileUtilTest()
-      : message_loop_(base::MessageLoop::TYPE_IO),
-        origin_(GURL("http://www.example.com")),
+      : origin_(GURL("http://www.example.com")),
         type_(storage::kFileSystemTypeTemporary),
         weak_factory_(this),
         sandbox_file_system_(origin_, type_),

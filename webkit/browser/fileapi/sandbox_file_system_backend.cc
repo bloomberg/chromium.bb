@@ -128,7 +128,7 @@ bool SandboxFileSystemBackend::SupportsStreaming(
 
 bool SandboxFileSystemBackend::HasInplaceCopyImplementation(
     storage::FileSystemType type) const {
-  return false;
+  return true;
 }
 
 scoped_ptr<storage::FileStreamReader>

@@ -277,7 +277,7 @@ class FileSystemOperationImplTest
   }
 
  private:
-  base::MessageLoopForIO message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<QuotaManager> quota_manager_;
   scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
 
@@ -553,11 +553,7 @@ TEST_F(FileSystemOperationImplTest, TestCopyFailureSrcFileExistsDestDir) {
                            FileSystemOperationRunner::CopyProgressCallback(),
                            RecordStatusCallback());
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3, quota_manager_proxy()->notify_storage_accessed_count());
-
-  EXPECT_EQ(1, change_observer()->get_and_reset_create_directory_count());
-  EXPECT_EQ(1, change_observer()->get_and_reset_remove_directory_count());
-  EXPECT_EQ(base::File::FILE_ERROR_NOT_A_DIRECTORY, status());
+  EXPECT_EQ(base::File::FILE_ERROR_INVALID_OPERATION, status());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
@@ -608,8 +604,9 @@ TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcFileAndOverwrite) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(base::File::FILE_OK, status());
   EXPECT_TRUE(FileExists("dest"));
-  EXPECT_EQ(4, quota_manager_proxy()->notify_storage_accessed_count());
+  EXPECT_EQ(2, quota_manager_proxy()->notify_storage_accessed_count());
 
+  EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
@@ -623,9 +620,9 @@ TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcFileAndNew) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(base::File::FILE_OK, status());
   EXPECT_TRUE(FileExists("new"));
-  EXPECT_EQ(4, quota_manager_proxy()->notify_storage_accessed_count());
+  EXPECT_EQ(2, quota_manager_proxy()->notify_storage_accessed_count());
 
-  EXPECT_EQ(1, change_observer()->get_and_reset_create_file_count());
+  EXPECT_EQ(1, change_observer()->get_and_reset_create_file_from_count());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
@@ -645,8 +642,8 @@ TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcDirAndOverwrite) {
   EXPECT_FALSE(DirectoryExists("dest/src"));
   EXPECT_GE(quota_manager_proxy()->notify_storage_accessed_count(), 3);
 
-  EXPECT_EQ(1, change_observer()->get_and_reset_create_directory_count());
   EXPECT_EQ(1, change_observer()->get_and_reset_remove_directory_count());
+  EXPECT_EQ(1, change_observer()->get_and_reset_create_directory_count());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
@@ -687,9 +684,9 @@ TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcDirRecursive) {
   // For recursive copy we may record multiple read access.
   EXPECT_GE(quota_manager_proxy()->notify_storage_accessed_count(), 1);
 
-  EXPECT_EQ(1, change_observer()->get_and_reset_create_file_count());
   EXPECT_EQ(2, change_observer()->get_and_reset_create_directory_count());
   EXPECT_EQ(1, change_observer()->get_and_reset_remove_directory_count());
+  EXPECT_EQ(1, change_observer()->get_and_reset_create_file_from_count());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
