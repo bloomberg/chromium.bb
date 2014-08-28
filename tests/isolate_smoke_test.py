@@ -20,7 +20,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
 import isolate
-import isolateserver
+import isolated_format
 from utils import file_path
 import trace_test_util
 # Create shortcuts.
@@ -237,7 +237,7 @@ class IsolateTempdir(unittest.TestCase):
         # Upgrade the value to unicode so diffing the structure in case of
         # test failure is easier, since the basestring type must match,
         # str!=unicode.
-        v[u'h'] = unicode(isolateserver.hash_file(filepath, ALGO))
+        v[u'h'] = unicode(isolated_format.hash_file(filepath, ALGO))
 
     if empty_file:
       item = files[empty_file]
@@ -256,7 +256,7 @@ class IsolateTempdir(unittest.TestCase):
       u'algo': u'sha-1',
       u'files': self._gen_files(read_only, empty_file, False),
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
-      u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
+      u'version': unicode(isolated_format.ISOLATED_FILE_VERSION),
     }
     if read_only is not None:
       expected[u'read_only'] = read_only
@@ -497,7 +497,7 @@ class Isolate_hashtable(IsolateOutdir):
       for v in self._gen_files(False, empty_file, False).itervalues()
     ]
     expected.append(
-        unicode(isolateserver.hash_file(self.isolated, ALGO)))
+        unicode(isolated_format.hash_file(self.isolated, ALGO)))
     return expected
 
   def _expected_hash_tree(self, empty_file):
@@ -521,7 +521,7 @@ class Isolate_hashtable(IsolateOutdir):
     out = self._test_all_items_invalid('hashtable')
     expected = (
         '%s  isolate_smoke_test.isolated\n' %
-        isolateserver.hash_file(self.isolated, ALGO))
+        isolated_format.hash_file(self.isolated, ALGO))
     self.assertEqual(expected, out)
     self._expected_hash_tree(None)
 
@@ -544,8 +544,8 @@ class Isolate_hashtable(IsolateOutdir):
     tree = self._gen_expected_tree(None)
     isolated_base = self.isolated[:-len('.isolated')]
     isolated_hashes = [
-      unicode(isolateserver.hash_file(isolated_base + '.0.isolated', ALGO)),
-      unicode(isolateserver.hash_file(isolated_base + '.1.isolated', ALGO)),
+      unicode(isolated_format.hash_file(isolated_base + '.0.isolated', ALGO)),
+      unicode(isolated_format.hash_file(isolated_base + '.1.isolated', ALGO)),
     ]
     tree.extend(isolated_hashes)
     self.assertEqual(sorted(tree), map(unicode, self._result_tree()))
@@ -558,7 +558,7 @@ class Isolate_hashtable(IsolateOutdir):
       u'files': {u'split.py': files['split.py']},
       u'includes': isolated_hashes,
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
-      u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
+      u'version': unicode(isolated_format.ISOLATED_FILE_VERSION),
     }
     self.assertEqual(expected, json.load(open(self.isolated, 'r')))
 
@@ -566,7 +566,7 @@ class Isolate_hashtable(IsolateOutdir):
     expected = {
       u'algo': u'sha-1',
       u'files': {key: files[key]},
-      u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
+      u'version': unicode(isolated_format.ISOLATED_FILE_VERSION),
     }
     self.assertEqual(
         expected, json.load(open(isolated_base + '.0.isolated', 'r')))
@@ -575,7 +575,7 @@ class Isolate_hashtable(IsolateOutdir):
     expected = {
       u'algo': u'sha-1',
       u'files': {key: files[key]},
-      u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
+      u'version': unicode(isolated_format.ISOLATED_FILE_VERSION),
     }
     self.assertEqual(
         expected, json.load(open(isolated_base + '.1.isolated', 'r')))
@@ -610,7 +610,7 @@ class Isolate_hashtable(IsolateOutdir):
         str(v['h'])
         for v in self._gen_files(False, None, False).itervalues() if 'h' in v
       ]
-      expected.append(isolateserver.hash_file(self.isolated, ALGO))
+      expected.append(isolated_format.hash_file(self.isolated, ALGO))
       self.assertEqual(sorted(expected), self._result_tree())
       self._expect_results(['symlink_full.py'], None, None, None)
 
@@ -621,7 +621,7 @@ class Isolate_hashtable(IsolateOutdir):
         str(v['h'])
         for v in self._gen_files(False, None, False).itervalues() if 'h' in v
       ]
-      expected.append(isolateserver.hash_file(self.isolated, ALGO))
+      expected.append(isolated_format.hash_file(self.isolated, ALGO))
       self.assertEqual(sorted(expected), self._result_tree())
       self._expect_results(['symlink_partial.py'], None, None, None)
 
@@ -633,7 +633,7 @@ class Isolate_hashtable(IsolateOutdir):
         str(v['h'])
         for v in self._gen_files(False, None, False).itervalues() if 'h' in v
       ]
-      expected.append(isolateserver.hash_file(self.isolated, ALGO))
+      expected.append(isolated_format.hash_file(self.isolated, ALGO))
       self.assertEqual(sorted(expected), self._result_tree())
       self._expect_results(['symlink_outside_build_root.py'], None, None, None)
 

@@ -8,7 +8,6 @@
 __version__ = '0.3.4'
 
 import functools
-import hashlib
 import json
 import logging
 import os
@@ -34,12 +33,11 @@ from utils import threading_utils
 from utils import tools
 
 import auth
+import isolated_format
 
 
 # Version of isolate protocol passed to the server in /handshake request.
 ISOLATE_PROTOCOL_VERSION = '1.0'
-# Version stored and expected in .isolated files.
-ISOLATED_FILE_VERSION = '1.4'
 
 
 # The number of files to check the isolate server per /pre-upload query.
@@ -69,9 +67,6 @@ ALREADY_COMPRESSED_TYPES = [
 UNKNOWN_FILE_SIZE = None
 
 
-# Chunk size to use when doing disk I/O.
-DISK_FILE_CHUNK = 1024 * 1024
-
 # Chunk size to use when reading from network stream.
 NET_IO_FILE_CHUNK = 16 * 1024
 
@@ -90,19 +85,6 @@ DEADLOCK_TIMEOUT = 5 * 60
 # the required files. This is intended to let the user (or buildbot) know that
 # the program is still running.
 DELAY_BETWEEN_UPDATES_IN_SECS = 30
-
-
-# Sadly, hashlib uses 'sha1' instead of the standard 'sha-1' so explicitly
-# specify the names here.
-SUPPORTED_ALGOS = {
-  'md5': hashlib.md5,
-  'sha-1': hashlib.sha1,
-  'sha-512': hashlib.sha512,
-}
-
-
-# Used for serialization.
-SUPPORTED_ALGOS_REVERSE = dict((v, k) for k, v in SUPPORTED_ALGOS.iteritems())
 
 
 DEFAULT_BLACKLIST = (
@@ -135,27 +117,6 @@ class MappingError(OSError):
   pass
 
 
-def is_valid_hash(value, algo):
-  """Returns if the value is a valid hash for the corresponding algorithm."""
-  size = 2 * algo().digest_size
-  return bool(re.match(r'^[a-fA-F0-9]{%d}$' % size, value))
-
-
-def hash_file(filepath, algo):
-  """Calculates the hash of a file without reading it all in memory at once.
-
-  |algo| should be one of hashlib hashing algorithm.
-  """
-  digest = algo()
-  with open(filepath, 'rb') as f:
-    while True:
-      chunk = f.read(DISK_FILE_CHUNK)
-      if not chunk:
-        break
-      digest.update(chunk)
-  return digest.hexdigest()
-
-
 def stream_read(stream, chunk_size):
   """Reads chunks from |stream| and yields them."""
   while True:
@@ -165,7 +126,7 @@ def stream_read(stream, chunk_size):
     yield data
 
 
-def file_read(filepath, chunk_size=DISK_FILE_CHUNK, offset=0):
+def file_read(filepath, chunk_size=isolated_format.DISK_FILE_CHUNK, offset=0):
   """Yields file content in chunks of |chunk_size| starting from |offset|."""
   with open(filepath, 'rb') as f:
     if offset:
@@ -209,7 +170,8 @@ def zip_compress(content_generator, level=7):
     yield tail
 
 
-def zip_decompress(content_generator, chunk_size=DISK_FILE_CHUNK):
+def zip_decompress(
+    content_generator, chunk_size=isolated_format.DISK_FILE_CHUNK):
   """Reads zipped data from |content_generator| and yields decompressed data.
 
   Decompresses data in small chunks (no larger than |chunk_size|) so that
@@ -396,7 +358,7 @@ class Storage(object):
   def __init__(self, storage_api):
     self._storage_api = storage_api
     self._use_zip = is_namespace_with_compression(storage_api.namespace)
-    self._hash_algo = get_hash_algo(storage_api.namespace)
+    self._hash_algo = isolated_format.get_hash_algo(storage_api.namespace)
     self._cpu_thread_pool = None
     self._net_thread_pool = None
 
@@ -404,7 +366,7 @@ class Storage(object):
   def hash_algo(self):
     """Hashing algorithm used to name files in storage based on their content.
 
-    Defined by |namespace|. See also 'get_hash_algo'.
+    Defined by |namespace|. See also isolated_format.get_hash_algo().
     """
     return self._hash_algo
 
@@ -633,7 +595,7 @@ class Storage(object):
         # Prepare reading pipeline.
         stream = self._storage_api.fetch(digest)
         if self._use_zip:
-          stream = zip_decompress(stream, DISK_FILE_CHUNK)
+          stream = zip_decompress(stream, isolated_format.DISK_FILE_CHUNK)
         # Run |stream| through verifier that will assert its size.
         verifier = FetchStreamVerifier(stream, size)
         # Verified stream goes to |sink|.
@@ -1333,12 +1295,6 @@ class MemoryCache(LocalCache):
       os.chmod(dest, file_mode & self._file_mode_mask)
 
 
-def get_hash_algo(_namespace):
-  """Return hash algorithm class to use when uploading to given |namespace|."""
-  # TODO(vadimsh): Implement this at some point.
-  return hashlib.sha1
-
-
 def is_namespace_with_compression(namespace):
   """Returns True if given |namespace| stores compressed objects."""
   return namespace.endswith(('-gzip', '-deflate'))
@@ -1607,7 +1563,7 @@ def process_input(filepath, prevdict, read_only, algo):
       # Reuse the previous hash if available.
       out['h'] = prevdict.get('h')
     if not out.get('h'):
-      out['h'] = hash_file(filepath, algo)
+      out['h'] = isolated_format.hash_file(filepath, algo)
   else:
     # If the timestamp wasn't updated, carry on the link destination.
     if prevdict.get('t') == out['t']:
@@ -1635,7 +1591,7 @@ def save_isolated(isolated, data):
   Returns the list of child isolated files that are included by |isolated|.
   """
   # Make sure the data is valid .isolated data by 'reloading' it.
-  algo = SUPPORTED_ALGOS[data['algo']]
+  algo = isolated_format.SUPPORTED_ALGOS[data['algo']]
   load_isolated(json.dumps(data), algo)
   tools.write_json(isolated, data, True)
   return []
@@ -1698,30 +1654,32 @@ def load_isolated(content, algo):
   except ValueError:
     raise ConfigError('Expected valid version, got %r' % value)
 
-  expected_version = tuple(map(int, ISOLATED_FILE_VERSION.split('.')))
+  expected_version = tuple(
+      map(int, isolated_format.ISOLATED_FILE_VERSION.split('.')))
   # Major version must match.
   if version[0] != expected_version[0]:
     raise ConfigError(
         'Expected compatible \'%s\' version, got %r' %
-        (ISOLATED_FILE_VERSION, value))
+        (isolated_format.ISOLATED_FILE_VERSION, value))
 
   if algo is None:
     # TODO(maruel): Remove the default around Jan 2014.
     # Default the algorithm used in the .isolated file itself, falls back to
     # 'sha-1' if unspecified.
-    algo = SUPPORTED_ALGOS_REVERSE[data.get('algo', 'sha-1')]
+    algo = isolated_format.SUPPORTED_ALGOS_REVERSE[data.get('algo', 'sha-1')]
 
   for key, value in data.iteritems():
     if key == 'algo':
       if not isinstance(value, basestring):
         raise ConfigError('Expected string, got %r' % value)
-      if value not in SUPPORTED_ALGOS:
+      if value not in isolated_format.SUPPORTED_ALGOS:
         raise ConfigError(
             'Expected one of \'%s\', got %r' %
-            (', '.join(sorted(SUPPORTED_ALGOS)), value))
-      if value != SUPPORTED_ALGOS_REVERSE[algo]:
+            (', '.join(sorted(isolated_format.SUPPORTED_ALGOS)), value))
+      if value != isolated_format.SUPPORTED_ALGOS_REVERSE[algo]:
         raise ConfigError(
-            'Expected \'%s\', got %r' % (SUPPORTED_ALGOS_REVERSE[algo], value))
+            'Expected \'%s\', got %r' %
+            (isolated_format.SUPPORTED_ALGOS_REVERSE[algo], value))
 
     elif key == 'command':
       if not isinstance(value, list):
@@ -1748,7 +1706,7 @@ def load_isolated(content, algo):
             if not isinstance(subsubvalue, int):
               raise ConfigError('Expected int, got %r' % subsubvalue)
           elif subsubkey == 'h':
-            if not is_valid_hash(subsubvalue, algo):
+            if not isolated_format.is_valid_hash(subsubvalue, algo):
               raise ConfigError('Expected sha-1, got %r' % subsubvalue)
           elif subsubkey == 's':
             if not isinstance(subsubvalue, (int, long)):
@@ -1778,7 +1736,7 @@ def load_isolated(content, algo):
       if not value:
         raise ConfigError('Expected non-empty includes list')
       for subvalue in value:
-        if not is_valid_hash(subvalue, algo):
+        if not isolated_format.is_valid_hash(subvalue, algo):
           raise ConfigError('Expected sha-1, got %r' % subvalue)
 
     elif key == 'os':
@@ -1996,7 +1954,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
 
     with tools.Profiler('GetIsolateds'):
       # Optionally support local files by manually adding them to cache.
-      if not is_valid_hash(isolated_hash, algo):
+      if not isolated_format.is_valid_hash(isolated_hash, algo):
         logging.debug('%s is not a valid hash, assuming a file', isolated_hash)
         try:
           isolated_hash = fetch_queue.inject_local_file(isolated_hash, algo)
@@ -2115,12 +2073,13 @@ def archive_files_to_storage(storage, files, blacklist):
           handle, isolated = tempfile.mkstemp(dir=tempdir, suffix='.isolated')
           os.close(handle)
           data = {
-              'algo': SUPPORTED_ALGOS_REVERSE[storage.hash_algo],
+              'algo':
+                  isolated_format.SUPPORTED_ALGOS_REVERSE[storage.hash_algo],
               'files': metadata,
-              'version': ISOLATED_FILE_VERSION,
+              'version': isolated_format.ISOLATED_FILE_VERSION,
           }
           save_isolated(isolated, data)
-          h = hash_file(isolated, storage.hash_algo)
+          h = isolated_format.hash_file(isolated, storage.hash_algo)
           items_to_upload.extend(items)
           items_to_upload.append(
               FileItem(
@@ -2131,7 +2090,7 @@ def archive_files_to_storage(storage, files, blacklist):
           results.append((h, f))
 
         elif os.path.isfile(filepath):
-          h = hash_file(filepath, storage.hash_algo)
+          h = isolated_format.hash_file(filepath, storage.hash_algo)
           items_to_upload.append(
             FileItem(
                 path=filepath,

@@ -26,6 +26,7 @@ import sys
 
 import auth
 import isolate_format
+import isolated_format
 import isolateserver
 import run_isolated
 import trace_inputs
@@ -381,7 +382,7 @@ def chromium_save_isolated(isolated, data, path_variables, algo):
     slavepath = isolated[:-len('.isolated')] + '.%d.isolated' % index
     tools.write_json(slavepath, f, True)
     data.setdefault('includes', []).append(
-        isolateserver.hash_file(slavepath, algo))
+        isolated_format.hash_file(slavepath, algo))
     files.append(os.path.basename(slavepath))
 
   files.extend(isolateserver.save_isolated(isolated, data))
@@ -485,7 +486,7 @@ class SavedState(Flattenable):
   # Bump this version whenever the saved state changes. It is also keyed on the
   # .isolated file version so any change in the generator will invalidate .state
   # files.
-  EXPECTED_VERSION = isolateserver.ISOLATED_FILE_VERSION + '.2'
+  EXPECTED_VERSION = isolated_format.ISOLATED_FILE_VERSION + '.2'
 
   def __init__(self, isolated_basedir):
     """Creates an empty SavedState.
@@ -501,7 +502,7 @@ class SavedState(Flattenable):
 
     # The default algorithm used.
     self.OS = sys.platform
-    self.algo = isolateserver.SUPPORTED_ALGOS['sha-1']
+    self.algo = isolated_format.SUPPORTED_ALGOS['sha-1']
     self.child_isolated_files = []
     self.command = []
     self.config_variables = {}
@@ -565,12 +566,12 @@ class SavedState(Flattenable):
       return dict((k, data[k]) for k in ('h', 'l', 'm', 's') if k in data)
 
     out = {
-      'algo': isolateserver.SUPPORTED_ALGOS_REVERSE[self.algo],
+      'algo': isolated_format.SUPPORTED_ALGOS_REVERSE[self.algo],
       'files': dict(
           (filepath, strip(data)) for filepath, data in self.files.iteritems()),
       # The version of the .state file is different than the one of the
       # .isolated file.
-      'version': isolateserver.ISOLATED_FILE_VERSION,
+      'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     if self.command:
       out['command'] = self.command
@@ -600,9 +601,9 @@ class SavedState(Flattenable):
 
     # Converts human readable form back into the proper class type.
     algo = data.get('algo')
-    if not algo in isolateserver.SUPPORTED_ALGOS:
+    if not algo in isolated_format.SUPPORTED_ALGOS:
       raise isolateserver.ConfigError('Unknown algo \'%s\'' % out.algo)
-    out.algo = isolateserver.SUPPORTED_ALGOS[algo]
+    out.algo = isolated_format.SUPPORTED_ALGOS[algo]
 
     # Refuse the load non-exact version, even minor difference. This is unlike
     # isolateserver.load_isolated(). This is because .isolated.state could have
@@ -627,7 +628,7 @@ class SavedState(Flattenable):
   def flatten(self):
     """Makes sure 'algo' is in human readable form."""
     out = super(SavedState, self).flatten()
-    out['algo'] = isolateserver.SUPPORTED_ALGOS_REVERSE[out['algo']]
+    out['algo'] = isolated_format.SUPPORTED_ALGOS_REVERSE[out['algo']]
     return out
 
   def __str__(self):
@@ -1014,7 +1015,7 @@ def prepare_for_archival(options, cwd):
   for item in isolated_files:
     item_path = os.path.join(
         os.path.dirname(complete_state.isolated_filepath), item)
-    # Do not use isolateserver.hash_file() here because the file is
+    # Do not use isolated_format.hash_file() here because the file is
     # likely smallish (under 500kb) and its file size is needed.
     with open(item_path, 'rb') as f:
       content = f.read()

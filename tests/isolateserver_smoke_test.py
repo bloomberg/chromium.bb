@@ -16,7 +16,7 @@ import unittest
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
-import isolateserver
+import isolated_format
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -72,13 +72,13 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
   def _download_given_files(self, files):
     """Tries to download the files from the server."""
     args = ['download', '--target', self.rootdir]
-    file_hashes = [isolateserver.hash_file(f, hashlib.sha1) for f in files]
+    file_hashes = [isolated_format.hash_file(f, hashlib.sha1) for f in files]
     for f in file_hashes:
       args.extend(['--file', f, f])
     self._run(args)
     # Assert the files are present.
     actual = [
-        isolateserver.hash_file(os.path.join(self.rootdir, f), hashlib.sha1)
+        isolated_format.hash_file(os.path.join(self.rootdir, f), hashlib.sha1)
         for f in os.listdir(self.rootdir)
     ]
     self.assertEqual(sorted(file_hashes), sorted(actual))

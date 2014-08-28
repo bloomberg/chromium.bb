@@ -21,16 +21,13 @@ import zlib
 import net_utils
 
 from depot_tools import auto_stub
+import isolated_format
 import isolateserver
 import test_utils
 from utils import threading_utils
 
 
 ALGO = hashlib.sha1
-
-# Tests here assume ALGO is used for default namespaces, check this assumption.
-assert isolateserver.get_hash_algo('default') is ALGO
-assert isolateserver.get_hash_algo('default-gzip') is ALGO
 
 
 class TestCase(net_utils.TestCase):
@@ -816,7 +813,7 @@ class IsolateServerDownloadTest(TestCase):
       'files': dict(
           (k, {'h': ALGO(v).hexdigest(), 's': len(v)})
           for k, v in files.iteritems()),
-      'version': isolateserver.ISOLATED_FILE_VERSION,
+      'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     isolated_data = json.dumps(isolated, sort_keys=True, separators=(',',':'))
     isolated_hash = ALGO(isolated_data).hexdigest()
@@ -871,7 +868,7 @@ class TestIsolated(auto_stub.TestCase):
       u'includes': [u'0123456789abcdef0123456789abcdef01234567'],
       u'read_only': 1,
       u'relative_cwd': u'somewhere_else',
-      u'version': isolateserver.ISOLATED_FILE_VERSION,
+      u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     m = isolateserver.load_isolated(json.dumps(data), ALGO)
     self.assertEqual(data, m)
@@ -884,7 +881,7 @@ class TestIsolated(auto_stub.TestCase):
           u'h': u'0123456789abcdef0123456789abcdef01234567'
         }
       },
-      u'version': isolateserver.ISOLATED_FILE_VERSION,
+      u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     try:
       isolateserver.load_isolated(json.dumps(data), ALGO)
@@ -904,7 +901,7 @@ class TestIsolated(auto_stub.TestCase):
   def test_load_isolated_os_only_bad(self):
     data = {
       u'os': 'HP/UX',
-      u'version': isolateserver.ISOLATED_FILE_VERSION,
+      u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     with self.assertRaises(isolateserver.ConfigError):
       isolateserver.load_isolated(json.dumps(data), ALGO)
@@ -921,7 +918,7 @@ class TestIsolated(auto_stub.TestCase):
           },
         },
         u'relative_cwd': path_sep.join(('somewhere', 'else')),
-        u'version': isolateserver.ISOLATED_FILE_VERSION,
+        u'version': isolated_format.ISOLATED_FILE_VERSION,
       }
 
     data = gen_data(wrong_path_sep)
@@ -1067,7 +1064,7 @@ def get_storage(_isolate_server, namespace):
 
     @property
     def hash_algo(self):  # pylint: disable=R0201
-      return isolateserver.get_hash_algo(namespace)
+      return isolated_format.get_hash_algo(namespace)
 
     @staticmethod
     def upload_items(items):
@@ -1133,8 +1130,8 @@ class TestArchive(TestCase):
       # of the files in this directory.
       # Fix is to copy the files in a temporary directory with known file modes.
       #
-      # If you modify isolateserver.ISOLATED_FILE_VERSION, you'll have to update
-      # the hash below. Sorry about that.
+      # If you modify isolated_format.ISOLATED_FILE_VERSION, you'll have to
+      # update the hash below. Sorry about that.
       self.checkOutput(
           '1501166255279df1509408567340798d1cf089e7 %s\n' % p,
           '')

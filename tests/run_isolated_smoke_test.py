@@ -15,7 +15,7 @@ import unittest
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
-import isolateserver
+import isolated_format
 import run_isolated
 
 VERBOSE = False
@@ -134,7 +134,7 @@ class RunIsolatedTest(unittest.TestCase):
     Returns its sha-1 hash.
     """
     filepath = os.path.join(self.data_dir, filename)
-    h = isolateserver.hash_file(filepath, ALGO)
+    h = isolated_format.hash_file(filepath, ALGO)
     shutil.copyfile(filepath, os.path.join(self.table, h))
     return h
 
@@ -191,7 +191,7 @@ class RunIsolatedTest(unittest.TestCase):
       self._store('file1.txt'),
       self._store('file1_copy.txt'),
       self._store('repeated_files.py'),
-      isolateserver.hash_file(isolated, ALGO),
+      isolated_format.hash_file(isolated, ALGO),
     ]
     out, err, returncode = self._run(
         self._generate_args_with_isolated(isolated))
@@ -284,7 +284,7 @@ class RunIsolatedTest(unittest.TestCase):
     # Test that an entry with an invalid file size properly gets removed and
     # fetched again. This test case also check for file modes.
     isolated_file = os.path.join(self.data_dir, 'file_with_size.isolated')
-    isolated_hash = isolateserver.hash_file(isolated_file, ALGO)
+    isolated_hash = isolated_format.hash_file(isolated_file, ALGO)
     file1_hash = self._store('file1.txt')
     # Note that <tempdir>/table/<file1_hash> has 640 mode.
 
@@ -342,7 +342,7 @@ class RunIsolatedTest(unittest.TestCase):
     # Test that an entry with an invalid file size properly gets removed and
     # fetched again. This test case also check for file modes.
     isolated_file = os.path.join(self.data_dir, 'file_with_size.isolated')
-    isolated_hash = isolateserver.hash_file(isolated_file, ALGO)
+    isolated_hash = isolated_format.hash_file(isolated_file, ALGO)
     file1_hash = self._store('file1.txt')
     # Note that <tempdir>/table/<file1_hash> has 640 mode.
 

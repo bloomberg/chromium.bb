@@ -33,6 +33,7 @@ from utils import tools
 from utils import zip_package
 
 import auth
+import isolated_format
 import isolateserver
 import run_isolated
 
@@ -555,7 +556,7 @@ def archive(isolate_server, namespace, isolated, algo, verbose):
     logging.info(' '.join(cmd))
     if subprocess.call(cmd, verbose):
       return
-    return isolateserver.hash_file(isolated, algo)
+    return isolated_format.hash_file(isolated, algo)
   finally:
     if tempdir:
       shutil.rmtree(tempdir)
@@ -717,7 +718,7 @@ def isolated_to_hash(isolate_server, namespace, arg, algo, verbose):
       on_error.report('Archival failure %s' % arg)
       return None, True
     return file_hash, True
-  elif isolateserver.is_valid_hash(arg, algo):
+  elif isolated_format.is_valid_hash(arg, algo):
     return arg, False
   else:
     on_error.report('Invalid hash %s' % arg)

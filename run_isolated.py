@@ -38,6 +38,7 @@ from utils import tools
 from utils import zip_package
 
 import auth
+import isolated_format
 import isolateserver
 
 
@@ -79,6 +80,7 @@ def get_as_zip_package(executable=True):
   assert BASE_DIR
   package = zip_package.ZipPackage(root=BASE_DIR)
   package.add_python_file(THIS_FILE_PATH, '__main__.py' if executable else None)
+  package.add_python_file(os.path.join(BASE_DIR, 'isolated_format.py'))
   package.add_python_file(os.path.join(BASE_DIR, 'isolateserver.py'))
   package.add_python_file(os.path.join(BASE_DIR, 'auth.py'))
   package.add_directory(os.path.join(BASE_DIR, 'third_party'))
@@ -896,7 +898,7 @@ def main(args):
 
   # |options.cache| path may not exist until DiskCache() instance is created.
   cache = DiskCache(
-      options.cache, policies, isolateserver.get_hash_algo(options.namespace))
+      options.cache, policies, isolated_format.get_hash_algo(options.namespace))
 
   remote = options.isolate_server or options.indir
   if file_path.is_url(remote):

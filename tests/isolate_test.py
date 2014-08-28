@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 
 from depot_tools import auto_stub
 import isolate
+import isolated_format
 from utils import file_path
 from utils import tools
 
@@ -31,7 +32,7 @@ def _size(*args):
 
 
 def hash_file(*args):
-  return isolate.isolateserver.hash_file(os.path.join(ROOT_DIR, *args), ALGO)
+  return isolated_format.hash_file(os.path.join(ROOT_DIR, *args), ALGO)
 
 
 class IsolateBase(auto_stub.TestCase):
@@ -260,7 +261,7 @@ class IsolateLoad(IsolateBase):
         },
       },
       'relative_cwd': os.path.join(u'tests', 'isolate'),
-      'version': isolate.isolateserver.ISOLATED_FILE_VERSION,
+      'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     self._cleanup_isolated(expected_isolated)
     self.assertEqual(expected_isolated, actual_isolated)
@@ -323,7 +324,7 @@ class IsolateLoad(IsolateBase):
         },
       },
       'relative_cwd': os.path.join(u'tests', 'isolate'),
-      'version': isolate.isolateserver.ISOLATED_FILE_VERSION,
+      'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     self._cleanup_isolated(expected_isolated)
     self.assertEqual(expected_isolated, actual_isolated)
@@ -386,7 +387,7 @@ class IsolateLoad(IsolateBase):
         },
       },
       'relative_cwd': os.path.join(u'tests', 'isolate'),
-      'version': isolate.isolateserver.ISOLATED_FILE_VERSION,
+      'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     self._cleanup_isolated(expected_isolated)
     self.assertEqual(expected_isolated, actual_isolated)
@@ -469,7 +470,7 @@ class IsolateLoad(IsolateBase):
         },
       },
       'relative_cwd': os.path.join(u'tests', 'isolate'),
-      'version': isolate.isolateserver.ISOLATED_FILE_VERSION,
+      'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     self._cleanup_isolated(expected_isolated)
     self.assertEqual(expected_isolated, actual_isolated)
@@ -558,7 +559,7 @@ class IsolateLoad(IsolateBase):
         },
       },
       'relative_cwd': os.path.join(u'tests', 'isolate'),
-      'version': isolate.isolateserver.ISOLATED_FILE_VERSION,
+      'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     self._cleanup_isolated(expected_isolated)
     self.assertEqual(expected_isolated, actual_isolated)
@@ -646,7 +647,7 @@ class IsolateLoad(IsolateBase):
         unicode(hash_file(os.path.join(self.directory, 'foo.1.isolated'))),
       ],
       u'relative_cwd': u'.',
-      u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
+      u'version': unicode(isolated_format.ISOLATED_FILE_VERSION),
     }
     self._cleanup_isolated(expected_isolated_master)
     self.assertEqual(expected_isolated_master, actual_isolated_master)
@@ -663,7 +664,7 @@ class IsolateLoad(IsolateBase):
           u's': _size('tests', 'isolate', 'test', 'data', 'foo.txt'),
         },
       },
-      u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
+      u'version': unicode(isolated_format.ISOLATED_FILE_VERSION),
     }
     self._cleanup_isolated(expected_isolated_0)
     self.assertEqual(expected_isolated_0, actual_isolated_0)
@@ -680,7 +681,7 @@ class IsolateLoad(IsolateBase):
           u's': _size('tests', 'isolate', 'files1', 'subdir', '42.txt'),
         },
       },
-      u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
+      u'version': unicode(isolated_format.ISOLATED_FILE_VERSION),
     }
     self._cleanup_isolated(expected_isolated_1)
     self.assertEqual(expected_isolated_1, actual_isolated_1)
@@ -865,7 +866,7 @@ class IsolateLoad(IsolateBase):
         'command': command,
         'files': {unicode(f):{} for f in expected_files},
         'relative_cwd': relative_cwd,
-        'version': isolate.isolateserver.ISOLATED_FILE_VERSION,
+        'version': isolated_format.ISOLATED_FILE_VERSION,
       }
       self.assertEqual(expected, c.saved_state.to_isolated())
 
@@ -1060,7 +1061,7 @@ class IsolateLoad(IsolateBase):
           for f in expected_files
         },
         'relative_cwd': relative_cwd,
-        'version': isolate.isolateserver.ISOLATED_FILE_VERSION,
+        'version': isolated_format.ISOLATED_FILE_VERSION,
       }
       self.assertEqual(expected, c.saved_state.to_isolated())
 
@@ -1230,7 +1231,7 @@ class IsolateCommand(IsolateBase):
     expected_isolated = (
         '{"algo":"sha-1","command":["foo"],"files":{},'
         '"relative_cwd":".","version":"%s"}'
-    ) % isolate.isolateserver.ISOLATED_FILE_VERSION
+    ) % isolated_format.ISOLATED_FILE_VERSION
     self.assertEqual(expected_isolated, actual_isolated)
     isolated_data = json.loads(actual_isolated)
 
