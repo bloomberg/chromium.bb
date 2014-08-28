@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +27,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/google/core/browser/google_util.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
@@ -78,6 +80,9 @@ using extensions::ExperienceSamplingEvent;
 #endif
 
 namespace {
+
+// URL for help page.
+const char kHelpURL[] = "https://support.google.com/chrome/answer/4454607";
 
 // Constants for the Experience Sampling instrumentation.
 #if defined(ENABLE_EXTENSIONS)
@@ -583,8 +588,9 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
       break;
     }
     case CMD_HELP: {
-      content::NavigationController::LoadURLParams help_page_params(GURL(
-          "https://support.google.com/chrome/answer/4454607"));
+      content::NavigationController::LoadURLParams help_page_params(
+          google_util::AppendGoogleLocaleParam(
+              GURL(kHelpURL), g_browser_process->GetApplicationLocale()));
 #if defined(ENABLE_EXTENSIONS)
       if (sampling_event_.get())
         sampling_event_->set_has_viewed_learn_more(true);

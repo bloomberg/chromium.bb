@@ -302,23 +302,34 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
 
   if (command == kLearnMoreCommand) {
     // User pressed "Learn more".
-    GURL url(interstitial_type_ == TYPE_PHISHING ?
-             kLearnMorePhishingUrlV2 : kLearnMoreMalwareUrlV2);
 #if defined(ENABLE_EXTENSIONS)
     if (sampling_event_.get())
       sampling_event_->set_has_viewed_learn_more(true);
 #endif
-    OpenURLParams params(
-        url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK, false);
+    GURL learn_more_url(interstitial_type_ == TYPE_PHISHING ?
+                        kLearnMorePhishingUrlV2 : kLearnMoreMalwareUrlV2);
+    learn_more_url = google_util::AppendGoogleLocaleParam(
+        learn_more_url, g_browser_process->GetApplicationLocale());
+    OpenURLParams params(learn_more_url,
+                         Referrer(),
+                         CURRENT_TAB,
+                         content::PAGE_TRANSITION_LINK,
+                         false);
     web_contents_->OpenURL(params);
     return;
   }
 
   if (command == kShowPrivacyCommand) {
     // User pressed "Safe Browsing privacy policy".
-    GURL url(l10n_util::GetStringUTF8(IDS_SAFE_BROWSING_PRIVACY_POLICY_URL));
-    OpenURLParams params(
-        url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK, false);
+    GURL privacy_url(
+        l10n_util::GetStringUTF8(IDS_SAFE_BROWSING_PRIVACY_POLICY_URL));
+    privacy_url = google_util::AppendGoogleLocaleParam(
+        privacy_url, g_browser_process->GetApplicationLocale());
+    OpenURLParams params(privacy_url,
+                         Referrer(),
+                         CURRENT_TAB,
+                         content::PAGE_TRANSITION_LINK,
+                         false);
     web_contents_->OpenURL(params);
     return;
   }

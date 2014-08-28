@@ -19,6 +19,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/safe_browsing/binary_feature_extractor.h"
@@ -31,6 +32,7 @@
 #include "chrome/common/safe_browsing/download_protection_util.h"
 #include "chrome/common/safe_browsing/zip_analyzer.h"
 #include "chrome/common/url_constants.h"
+#include "components/google/core/browser/google_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/page_navigator.h"
@@ -959,6 +961,8 @@ void DownloadProtectionService::ShowDetailsForDownload(
     const content::DownloadItem& item,
     content::PageNavigator* navigator) {
   GURL learn_more_url(chrome::kDownloadScanningLearnMoreURL);
+  learn_more_url = google_util::AppendGoogleLocaleParam(
+      learn_more_url, g_browser_process->GetApplicationLocale());
   navigator->OpenURL(
       content::OpenURLParams(learn_more_url,
                              content::Referrer(),
