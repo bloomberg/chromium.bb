@@ -17,9 +17,9 @@ namespace content_settings {
 class CustomExtensionProvider : public ObservableProvider,
                           public extensions::ContentSettingsStore::Observer {
  public:
-  CustomExtensionProvider(
-      extensions::ContentSettingsStore* extensions_settings,
-      bool incognito);
+  CustomExtensionProvider(const scoped_refptr<extensions::ContentSettingsStore>&
+                              extensions_settings,
+                          bool incognito);
 
   virtual ~CustomExtensionProvider();
 

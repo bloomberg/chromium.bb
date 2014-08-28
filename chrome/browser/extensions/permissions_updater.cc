@@ -76,7 +76,7 @@ scoped_refptr<const PermissionSet> GetBoundedActivePermissions(
   //  b) active permissions must contains all default permissions
   scoped_refptr<PermissionSet> total_permissions = PermissionSet::CreateUnion(
       required_permissions.get(),
-      PermissionsParser::GetOptionalPermissions(extension));
+      PermissionsParser::GetOptionalPermissions(extension).get());
 
   // Make sure the active permissions contain no more than optional + default.
   scoped_refptr<PermissionSet> adjusted_active =
@@ -338,9 +338,9 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
   ExtensionMsg_UpdatePermissions_Params params;
   params.extension_id = extension->id();
   params.active_permissions = ExtensionMsg_PermissionSetStruct(
-      extension->permissions_data()->active_permissions());
+      *extension->permissions_data()->active_permissions());
   params.withheld_permissions = ExtensionMsg_PermissionSetStruct(
-      extension->permissions_data()->withheld_permissions());
+      *extension->permissions_data()->withheld_permissions());
 
   // Send the new permissions to the renderers.
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());

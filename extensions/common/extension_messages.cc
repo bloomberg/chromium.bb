@@ -26,11 +26,11 @@ ExtensionMsg_PermissionSetStruct::ExtensionMsg_PermissionSetStruct() {
 }
 
 ExtensionMsg_PermissionSetStruct::ExtensionMsg_PermissionSetStruct(
-    const PermissionSet* permissions)
-    : apis(permissions->apis()),
-      manifest_permissions(permissions->manifest_permissions()),
-      explicit_hosts(permissions->explicit_hosts()),
-      scriptable_hosts(permissions->scriptable_hosts()) {
+    const PermissionSet& permissions)
+    : apis(permissions.apis()),
+      manifest_permissions(permissions.manifest_permissions()),
+      explicit_hosts(permissions.explicit_hosts()),
+      scriptable_hosts(permissions.scriptable_hosts()) {
 }
 
 ExtensionMsg_PermissionSetStruct::~ExtensionMsg_PermissionSetStruct() {
@@ -53,9 +53,9 @@ ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
     : manifest(extension->manifest()->value()->DeepCopy()),
       location(extension->location()),
       path(extension->path()),
-      active_permissions(extension->permissions_data()->active_permissions()),
+      active_permissions(*extension->permissions_data()->active_permissions()),
       withheld_permissions(
-          extension->permissions_data()->withheld_permissions()),
+          *extension->permissions_data()->withheld_permissions()),
       id(extension->id()),
       creation_flags(extension->creation_flags()) {
 }

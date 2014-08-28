@@ -56,8 +56,10 @@ class ExtensionInstallChecker {
 
   Profile* profile() const { return profile_; }
 
-  scoped_refptr<const Extension> extension() { return extension_; }
-  void set_extension(const Extension* extension) { extension_ = extension; }
+  const scoped_refptr<const Extension>& extension() { return extension_; }
+  void set_extension(const scoped_refptr<const Extension>& extension) {
+    extension_ = extension;
+  }
 
   // Returns true if any checks are currently running.
   bool is_running() const { return running_checks_ != 0; }

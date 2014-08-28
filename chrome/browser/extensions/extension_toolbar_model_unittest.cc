@@ -119,9 +119,9 @@ class ExtensionToolbarModelUnitTest : public ExtensionServiceTestBase {
 
   // Adds or removes the given |extension| and verify success.
   testing::AssertionResult AddExtension(
-      scoped_refptr<const Extension> extension) WARN_UNUSED_RESULT;
+      const scoped_refptr<const Extension>& extension) WARN_UNUSED_RESULT;
   testing::AssertionResult RemoveExtension(
-      scoped_refptr<const Extension> extension) WARN_UNUSED_RESULT;
+      const scoped_refptr<const Extension>& extension) WARN_UNUSED_RESULT;
 
   // Adds three extensions, all with browser actions.
   testing::AssertionResult AddBrowserActionExtensions() WARN_UNUSED_RESULT;
@@ -142,15 +142,9 @@ class ExtensionToolbarModelUnitTest : public ExtensionServiceTestBase {
   size_t num_toolbar_items() const {
     return toolbar_model_->toolbar_items().size();
   }
-  const Extension* browser_action_a() const {
-    return browser_action_a_;
-  }
-  const Extension* browser_action_b() const {
-    return browser_action_b_;
-  }
-  const Extension* browser_action_c() const {
-    return browser_action_c_;
-  }
+  const Extension* browser_action_a() const { return browser_action_a_.get(); }
+  const Extension* browser_action_b() const { return browser_action_b_.get(); }
+  const Extension* browser_action_c() const { return browser_action_c_.get(); }
   const Extension* browser_action() const {
     return browser_action_extension_.get();
   }
@@ -193,12 +187,12 @@ void ExtensionToolbarModelUnitTest::Init() {
 }
 
 testing::AssertionResult ExtensionToolbarModelUnitTest::AddExtension(
-    scoped_refptr<const Extension> extension) {
+    const scoped_refptr<const Extension>& extension) {
   if (registry()->enabled_extensions().GetByID(extension->id())) {
     return testing::AssertionFailure() << "Extension " << extension->name() <<
         " already installed!";
   }
-  service()->AddExtension(extension);
+  service()->AddExtension(extension.get());
   if (!registry()->enabled_extensions().GetByID(extension->id())) {
     return testing::AssertionFailure() << "Failed to install extension: " <<
         extension->name();
@@ -207,7 +201,7 @@ testing::AssertionResult ExtensionToolbarModelUnitTest::AddExtension(
 }
 
 testing::AssertionResult ExtensionToolbarModelUnitTest::RemoveExtension(
-    scoped_refptr<const Extension> extension) {
+    const scoped_refptr<const Extension>& extension) {
   if (!registry()->enabled_extensions().GetByID(extension->id())) {
     return testing::AssertionFailure() << "Extension " << extension->name() <<
         " not installed!";
@@ -255,8 +249,9 @@ ExtensionToolbarModelUnitTest::AddBrowserActionExtensions() {
 
 const Extension* ExtensionToolbarModelUnitTest::GetExtensionAtIndex(
     size_t index) const {
-  return index < toolbar_model_->toolbar_items().size() ?
-      toolbar_model_->toolbar_items()[index] : NULL;
+  return index < toolbar_model_->toolbar_items().size()
+             ? toolbar_model_->toolbar_items()[index].get()
+             : NULL;
 }
 
 testing::AssertionResult ExtensionToolbarModelUnitTest::AddAndVerifyExtensions(
@@ -296,7 +291,7 @@ TEST_F(ExtensionToolbarModelUnitTest, BasicExtensionToolbarModelTest) {
   EXPECT_EQ(extension2, GetExtensionAtIndex(0u));
 
   // Should be a no-op, but still fires the events.
-  toolbar_model()->MoveExtensionIcon(extension2, 0);
+  toolbar_model()->MoveExtensionIcon(extension2.get(), 0);
   EXPECT_EQ(1u, observer()->moved_count());
   EXPECT_EQ(1u, num_toolbar_items());
   EXPECT_EQ(extension2, GetExtensionAtIndex(0u));

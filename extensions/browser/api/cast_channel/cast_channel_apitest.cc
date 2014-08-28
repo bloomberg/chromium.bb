@@ -70,7 +70,7 @@ class MockCastSocket : public CastSocket {
   explicit MockCastSocket(CastSocket::Delegate* delegate,
                           net::IPEndPoint ip_endpoint,
                           net::NetLog* net_log,
-                          Logger* logger)
+                          const scoped_refptr<Logger>& logger)
       : CastSocket(kTestExtensionId,
                    ip_endpoint,
                    cast_channel::CHANNEL_AUTH_TYPE_SSL,

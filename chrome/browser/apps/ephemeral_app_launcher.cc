@@ -319,7 +319,7 @@ void EphemeralAppLauncher::CheckEphemeralInstallPermitted() {
   install_checker_ = CreateInstallChecker();
   DCHECK(install_checker_.get());
 
-  install_checker_->set_extension(extension.get());
+  install_checker_->set_extension(extension);
   install_checker_->Start(ExtensionInstallChecker::CHECK_BLACKLIST |
                               ExtensionInstallChecker::CHECK_REQUIREMENTS,
                           true,

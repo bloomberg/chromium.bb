@@ -217,7 +217,7 @@ typedef std::map<std::string, std::set<std::string> > ExecutingScriptsMap;
 struct ExtensionMsg_PermissionSetStruct {
   ExtensionMsg_PermissionSetStruct();
   explicit ExtensionMsg_PermissionSetStruct(
-      const extensions::PermissionSet* permissions);
+      const extensions::PermissionSet& permissions);
   ~ExtensionMsg_PermissionSetStruct();
 
   scoped_refptr<const extensions::PermissionSet> ToPermissionSet() const;

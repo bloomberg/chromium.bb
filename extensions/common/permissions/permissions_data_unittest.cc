@@ -664,9 +664,9 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
       LoadManifestStrict("script_and_capture", "tab_specific.json");
 
   const PermissionsData* permissions_data = extension->permissions_data();
-  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(0));
-  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(1));
-  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(2));
+  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(0).get());
+  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(1).get());
+  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(2).get());
 
   std::set<GURL> no_urls;
 
@@ -699,7 +699,7 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
   EXPECT_TRUE(ScriptAllowedExclusivelyOnTab(extension.get(), no_urls, 2));
 
   permissions_data->ClearTabSpecificPermissions(0);
-  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(0));
+  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(0).get());
 
   EXPECT_TRUE(ScriptAllowedExclusivelyOnTab(extension.get(), no_urls, 0));
   EXPECT_TRUE(ScriptAllowedExclusivelyOnTab(extension.get(), no_urls, 1));
@@ -736,7 +736,7 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
   EXPECT_TRUE(ScriptAllowedExclusivelyOnTab(extension.get(), no_urls, 2));
 
   permissions_data->ClearTabSpecificPermissions(0);
-  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(0));
+  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(0).get());
 
   EXPECT_TRUE(ScriptAllowedExclusivelyOnTab(extension.get(), no_urls, 0));
   EXPECT_TRUE(
@@ -744,7 +744,7 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
   EXPECT_TRUE(ScriptAllowedExclusivelyOnTab(extension.get(), no_urls, 2));
 
   permissions_data->ClearTabSpecificPermissions(1);
-  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(1));
+  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(1).get());
 
   EXPECT_TRUE(ScriptAllowedExclusivelyOnTab(extension.get(), no_urls, 0));
   EXPECT_TRUE(ScriptAllowedExclusivelyOnTab(extension.get(), no_urls, 1));

@@ -308,7 +308,7 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
               dummy_extension->permissions_data()->active_permissions();
           valid = !(PermissionMessageProvider::Get()->IsPrivilegeIncrease(
               expected_permissions.get(),
-              extension->permissions_data()->active_permissions(),
+              extension->permissions_data()->active_permissions().get(),
               extension->GetType()));
         }
       }
@@ -571,7 +571,7 @@ void CrxInstaller::ConfirmInstall() {
   if (!service || service->browser_terminating())
     return;
 
-  if (KioskModeInfo::IsKioskOnly(install_checker_.extension())) {
+  if (KioskModeInfo::IsKioskOnly(install_checker_.extension().get())) {
     bool in_kiosk_mode = false;
 #if defined(OS_CHROMEOS)
     user_manager::UserManager* user_manager = user_manager::UserManager::Get();

@@ -159,7 +159,7 @@ void ExtensionService::CheckExternalUninstall(const std::string& id) {
 }
 
 void ExtensionService::SetFileTaskRunnerForTesting(
-    base::SequencedTaskRunner* task_runner) {
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
   file_task_runner_ = task_runner;
 }
 

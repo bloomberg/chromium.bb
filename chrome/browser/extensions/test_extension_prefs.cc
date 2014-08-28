@@ -60,7 +60,8 @@ class IncrementalTimeProvider : public ExtensionPrefs::TimeProvider {
 
 }  // namespace
 
-TestExtensionPrefs::TestExtensionPrefs(base::SequencedTaskRunner* task_runner)
+TestExtensionPrefs::TestExtensionPrefs(
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : task_runner_(task_runner), extensions_disabled_(false) {
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
   preferences_file_ = temp_dir_.path().Append(chrome::kPreferencesFilename);

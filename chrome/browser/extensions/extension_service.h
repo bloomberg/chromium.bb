@@ -335,7 +335,8 @@ class ExtensionService
   void DidCreateRenderViewForBackgroundPage(extensions::ExtensionHost* host);
 
   // Changes sequenced task runner for crx installation tasks to |task_runner|.
-  void SetFileTaskRunnerForTesting(base::SequencedTaskRunner* task_runner);
+  void SetFileTaskRunnerForTesting(
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   // Postpone installations so that we don't have to worry about race
   // conditions.

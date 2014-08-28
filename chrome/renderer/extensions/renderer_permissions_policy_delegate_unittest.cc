@@ -69,13 +69,13 @@ TEST_F(RendererPermissionsPolicyDelegateTest, CannotScriptSigninProcess) {
   std::string error;
 
   EXPECT_TRUE(extension->permissions_data()->CanAccessPage(
-      extension, kSigninUrl, kSigninUrl, -1, -1, &error))
+      extension.get(), kSigninUrl, kSigninUrl, -1, -1, &error))
       << error;
   // Pretend we are in the signin process. We should not be able to execute
   // script.
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kSigninProcess);
   EXPECT_FALSE(extension->permissions_data()->CanAccessPage(
-      extension, kSigninUrl, kSigninUrl, -1, -1, &error))
+      extension.get(), kSigninUrl, kSigninUrl, -1, -1, &error))
       << error;
 }
 
@@ -87,7 +87,7 @@ TEST_F(RendererPermissionsPolicyDelegateTest, CannotScriptWebstore) {
   std::string error;
 
   EXPECT_TRUE(extension->permissions_data()->CanAccessPage(
-      extension, kAnyUrl, kAnyUrl, -1, -1, &error))
+      extension.get(), kAnyUrl, kAnyUrl, -1, -1, &error))
       << error;
 
   // Pretend we are in the webstore process. We should not be able to execute
@@ -97,7 +97,7 @@ TEST_F(RendererPermissionsPolicyDelegateTest, CannotScriptWebstore) {
   extension_dispatcher_->OnLoadedInternal(webstore_extension);
   extension_dispatcher_->OnActivateExtension(extension_misc::kWebStoreAppId);
   EXPECT_FALSE(extension->permissions_data()->CanAccessPage(
-      extension, kAnyUrl, kAnyUrl, -1, -1, &error))
+      extension.get(), kAnyUrl, kAnyUrl, -1, -1, &error))
       << error;
 }
 

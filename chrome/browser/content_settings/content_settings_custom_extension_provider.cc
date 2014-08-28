@@ -12,10 +12,9 @@
 namespace content_settings {
 
 CustomExtensionProvider::CustomExtensionProvider(
-    extensions::ContentSettingsStore* extensions_settings,
+    const scoped_refptr<extensions::ContentSettingsStore>& extensions_settings,
     bool incognito)
-    : incognito_(incognito),
-      extensions_settings_(extensions_settings) {
+    : incognito_(incognito), extensions_settings_(extensions_settings) {
   extensions_settings_->AddObserver(this);
 }
 

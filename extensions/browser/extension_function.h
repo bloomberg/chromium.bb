@@ -213,7 +213,8 @@ class ExtensionFunction
   void set_profile_id(void* profile_id) { profile_id_ = profile_id; }
   void* profile_id() const { return profile_id_; }
 
-  void set_extension(const extensions::Extension* extension) {
+  void set_extension(
+      const scoped_refptr<const extensions::Extension>& extension) {
     extension_ = extension;
   }
   const extensions::Extension* extension() const { return extension_.get(); }

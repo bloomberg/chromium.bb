@@ -200,13 +200,14 @@ class PermissionsData {
   // page itself.
   bool CanCaptureVisiblePage(int tab_id, std::string* error) const;
 
-  scoped_refptr<const PermissionSet> active_permissions() const {
+  const scoped_refptr<const PermissionSet>& active_permissions() const {
+    // TODO(dcheng): What is the point of this lock?
     base::AutoLock auto_lock(runtime_lock_);
     return active_permissions_unsafe_;
   }
 
-  scoped_refptr<const PermissionSet> withheld_permissions() const {
-    base::AutoLock auto_lock(runtime_lock_);
+  const scoped_refptr<const PermissionSet>& withheld_permissions() const {
+    // TODO(dcheng): What is the point of this lock?
     return withheld_permissions_unsafe_;
   }
 

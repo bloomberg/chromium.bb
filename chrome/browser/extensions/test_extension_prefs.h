@@ -33,7 +33,8 @@ class ExtensionPrefs;
 // in tests.
 class TestExtensionPrefs {
  public:
-  explicit TestExtensionPrefs(base::SequencedTaskRunner* task_runner);
+  explicit TestExtensionPrefs(
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   virtual ~TestExtensionPrefs();
 
   ExtensionPrefs* prefs() { return prefs_.get(); }

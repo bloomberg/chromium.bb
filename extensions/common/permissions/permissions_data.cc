@@ -187,7 +187,7 @@ PermissionMessages PermissionsData::GetPermissionMessages() const {
     return PermissionMessages();
   } else {
     return PermissionMessageProvider::Get()->GetPermissionMessages(
-        active_permissions(), manifest_type_);
+        active_permissions().get(), manifest_type_);
   }
 }
 
@@ -196,7 +196,7 @@ std::vector<base::string16> PermissionsData::GetPermissionMessageStrings()
   if (ShouldSkipPermissionWarnings(extension_id_))
     return std::vector<base::string16>();
   return PermissionMessageProvider::Get()->GetWarningMessages(
-      active_permissions(), manifest_type_);
+      active_permissions().get(), manifest_type_);
 }
 
 std::vector<base::string16>
@@ -204,7 +204,7 @@ PermissionsData::GetPermissionMessageDetailsStrings() const {
   if (ShouldSkipPermissionWarnings(extension_id_))
     return std::vector<base::string16>();
   return PermissionMessageProvider::Get()->GetWarningMessagesDetails(
-      active_permissions(), manifest_type_);
+      active_permissions().get(), manifest_type_);
 }
 
 bool PermissionsData::HasWithheldImpliedAllHosts() const {

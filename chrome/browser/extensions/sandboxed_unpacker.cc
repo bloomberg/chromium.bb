@@ -219,7 +219,7 @@ SandboxedUnpacker::SandboxedUnpacker(
     Manifest::Location location,
     int creation_flags,
     const base::FilePath& extensions_dir,
-    base::SequencedTaskRunner* unpacker_io_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& unpacker_io_task_runner,
     SandboxedUnpackerClient* client)
     : crx_path_(crx_path),
       client_(client),
