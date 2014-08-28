@@ -182,7 +182,6 @@ void WindowManagerImpl::SetInOverview(bool active) {
   bezel_controller_->set_left_right_delegate(
       active ? NULL : split_view_controller_.get());
   if (active) {
-    split_view_controller_->DeactivateSplitMode();
     FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnOverviewModeEnter());
 
     // Re-stack all windows in the order defined by window_list_provider_.
@@ -191,9 +190,9 @@ void WindowManagerImpl::SetInOverview(bool active) {
     for (it = window_list.begin(); it != window_list.end(); ++it)
       container_->StackChildAtTop(*it);
     overview_ = WindowOverviewMode::Create(
-        container_.get(), window_list_provider_.get(), this);
+        container_.get(), window_list_provider_.get(),
+        split_view_controller_.get(), this);
   } else {
-    CHECK(!split_view_controller_->IsSplitViewModeActive());
     overview_.reset();
     FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnOverviewModeExit());
   }
@@ -219,8 +218,33 @@ void WindowManagerImpl::RemoveObserver(WindowManagerObserver* observer) {
 }
 
 void WindowManagerImpl::OnSelectWindow(aura::Window* window) {
+  if (split_view_controller_->IsSplitViewModeActive())
+    split_view_controller_->DeactivateSplitMode();
   wm::ActivateWindow(window);
   SetInOverview(false);
+  // If |window| does not have the size of the work-area, then make sure it is
+  // resized.
+  const gfx::Size work_area =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().work_area().size();
+  if (window->GetTargetBounds().size() != work_area) {
+    const gfx::Rect& window_bounds = window->bounds();
+    const gfx::Rect desired_bounds(work_area);
+    gfx::Transform transform;
+    transform.Translate(desired_bounds.x() - window_bounds.x(),
+                        desired_bounds.y() - window_bounds.y());
+    transform.Scale(desired_bounds.width() / window_bounds.width(),
+                    desired_bounds.height() / window_bounds.height());
+    window->layer()->GetAnimator()->AbortAllAnimations();
+    ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+    settings.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    settings.AddObserver(
+        new ui::ClosureAnimationObserver(base::Bind(&SetWindowState,
+                                                    base::Unretained(window),
+                                                    desired_bounds,
+                                                    gfx::Transform())));
+    window->SetTransform(transform);
+  }
 }
 
 void WindowManagerImpl::OnSplitViewMode(aura::Window* left,
@@ -347,7 +371,7 @@ void WindowManagerImpl::OnTitleDragCompleted(aura::Window* window) {
     transform.Translate(window->bounds().x() - next_window->bounds().x(), 0);
     next_window->SetTransform(transform);
 
-    OnSelectWindow(next_window);
+    wm::ActivateWindow(next_window);
   }
   window->Hide();
 }

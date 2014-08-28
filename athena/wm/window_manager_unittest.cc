@@ -315,4 +315,24 @@ TEST_F(WindowManagerTest, SplitModeActivationByShortcut) {
   EXPECT_EQ(width, w2->bounds().width());
 }
 
+TEST_F(WindowManagerTest, OverviewModeFromSplitMode) {
+  test::WindowManagerImplTestApi wm_api;
+
+  aura::test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> w1(CreateTestWindow(&delegate, gfx::Rect()));
+  scoped_ptr<aura::Window> w2(CreateTestWindow(&delegate, gfx::Rect()));
+  scoped_ptr<aura::Window> w3(CreateTestWindow(&delegate, gfx::Rect()));
+
+  // Get into split-view mode, and then turn on overview mode.
+  wm_api.GetSplitViewController()->ActivateSplitMode(NULL, NULL);
+  WindowManager::GetInstance()->ToggleOverview();
+  EXPECT_TRUE(wm_api.GetSplitViewController()->IsSplitViewModeActive());
+  EXPECT_EQ(w3.get(), wm_api.GetSplitViewController()->left_window());
+  EXPECT_EQ(w2.get(), wm_api.GetSplitViewController()->right_window());
+
+  WindowOverviewModeDelegate* overview_delegate = wm_api.wm();
+  overview_delegate->OnSelectWindow(w1.get());
+  EXPECT_FALSE(wm_api.GetSplitViewController()->IsSplitViewModeActive());
+}
+
 }  // namespace athena

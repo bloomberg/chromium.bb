@@ -9,6 +9,7 @@
 #include "ui/aura/window.h"
 
 namespace athena {
+class SplitViewController;
 class WindowListProvider;
 
 class WindowOverviewModeDelegate {
@@ -31,6 +32,7 @@ class WindowOverviewMode {
   static scoped_ptr<WindowOverviewMode> Create(
       aura::Window* container,
       const WindowListProvider* window_list_provider,
+      SplitViewController* split_view_controller,
       WindowOverviewModeDelegate* delegate);
 };
 

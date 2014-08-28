@@ -19,6 +19,7 @@ class WindowManagerImplTestApi {
   WindowManagerImplTestApi();
   ~WindowManagerImplTestApi();
 
+  athena::WindowManagerImpl* wm() { return wm_; }
   athena::WindowListProvider* GetWindowListProvider();
   athena::SplitViewController* GetSplitViewController();
 

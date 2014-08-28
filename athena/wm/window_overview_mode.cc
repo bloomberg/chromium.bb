@@ -10,6 +10,7 @@
 
 #include "athena/wm/overview_toolbar.h"
 #include "athena/wm/public/window_list_provider.h"
+#include "athena/wm/split_view_controller.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "ui/aura/scoped_window_targeter.h"
@@ -107,6 +108,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
  public:
   WindowOverviewModeImpl(aura::Window* container,
                          const WindowListProvider* window_list_provider,
+                         SplitViewController* split_view_controller,
                          WindowOverviewModeDelegate* delegate)
       : container_(container),
         window_list_provider_(window_list_provider),
@@ -115,8 +117,16 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
             container,
             scoped_ptr<ui::EventTargeter>(
                 new StaticWindowTargeter(container)))),
-        dragged_window_(NULL) {
+        dragged_window_(NULL),
+        split_({false, NULL, NULL}) {
+    CHECK(delegate_);
     container_->set_target_handler(this);
+
+    split_.enabled = split_view_controller->IsSplitViewModeActive();
+    if (split_.enabled) {
+      split_.left = split_view_controller->left_window();
+      split_.right = split_view_controller->right_window();
+    }
 
     // Prepare the desired transforms for all the windows, and set the initial
     // state on the windows.
@@ -149,6 +159,15 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
 
       WindowOverviewState* state = new WindowOverviewState;
       window->SetProperty(kWindowOverviewState, state);
+      if (split_.enabled && (window == split_.left || window == split_.right)) {
+        // Do not let the left/right windows be scrolled.
+        int x_translate = window->bounds().width() * (1 - kMaxScale) / 2;
+        state->top.Translate(x_translate, window->bounds().height() * 0.65);
+        state->top.Scale(kMaxScale, kMaxScale);
+        state->bottom = state->top;
+        --index;
+        continue;
+      }
       UpdateTerminalStateForWindowAtIndex(window, index, windows.size());
     }
   }
@@ -185,14 +204,21 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   // Sets the initial position for the windows for the overview mode.
   void SetInitialWindowStates() {
     aura::Window::Windows windows = window_list_provider_->GetWindowList();
-    size_t window_count = windows.size();
     // The initial overview state of the topmost three windows.
     const float kInitialProgress[] = { 0.5f, 0.05f, 0.01f };
-    for (size_t i = 0; i < window_count; ++i) {
+    size_t index = 0;
+    for (aura::Window::Windows::const_reverse_iterator iter = windows.rbegin();
+         iter != windows.rend();
+         ++iter) {
       float progress = 0.f;
-      aura::Window* window = windows[window_count - 1 - i];
-      if (i < arraysize(kInitialProgress))
-        progress = kInitialProgress[i];
+      aura::Window* window = *iter;
+      if (split_.enabled && (window == split_.left || window == split_.right)) {
+        progress = 1;
+      } else {
+        if (index < arraysize(kInitialProgress))
+          progress = kInitialProgress[index];
+        ++index;
+      }
 
       scoped_refptr<ui::LayerAnimator> animator =
           window->layer()->GetAnimator();
@@ -273,7 +299,10 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
 
   int GetScrollableHeight() const {
     const float kScrollableFraction = 0.65f;
-    return container_->bounds().height() * kScrollableFraction;
+    const float kScrollableFractionInSplit = 0.5f;
+    const float fraction =
+        split_.enabled ? kScrollableFractionInSplit : kScrollableFraction;
+    return container_->bounds().height() * fraction;
   }
 
   void CreateFlingerFor(const ui::GestureEvent& event) {
@@ -441,13 +470,27 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
       RestoreDragWindow();
   }
 
+  void SelectWindow(aura::Window* window) {
+    if (!split_.enabled) {
+      delegate_->OnSelectWindow(window);
+    } else {
+      // If the selected window is one of the left/right windows, then keep the
+      // current state.
+      if (window == split_.left || window == split_.right) {
+        delegate_->OnSplitViewMode(split_.left, split_.right);
+      } else {
+        delegate_->OnSelectWindow(window);
+      }
+    }
+  }
+
   // ui::EventHandler:
   virtual void OnMouseEvent(ui::MouseEvent* mouse) OVERRIDE {
     if (mouse->type() == ui::ET_MOUSE_PRESSED) {
       aura::Window* select = SelectWindowAt(mouse);
       if (select) {
         mouse->SetHandled();
-        delegate_->OnSelectWindow(select);
+        SelectWindow(select);
       }
     } else if (mouse->type() == ui::ET_MOUSEWHEEL) {
       DoScroll(static_cast<ui::MouseWheelEvent*>(mouse)->y_offset());
@@ -464,7 +507,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
       aura::Window* select = SelectWindowAt(gesture);
       if (select) {
         gesture->SetHandled();
-        delegate_->OnSelectWindow(select);
+        SelectWindow(select);
       }
     } else if (gesture->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
       if (std::abs(gesture->details().scroll_x_hint()) >
@@ -518,7 +561,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
 
   const int kMinDistanceForDismissal = 300;
   const float kMinScale = 0.6f;
-  const float kMaxScale = 0.95f;
+  const float kMaxScale = 0.75f;
   const float kMaxOpacity = 1.0f;
   const float kMinOpacity = 0.2f;
 
@@ -533,6 +576,12 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   gfx::Point dragged_start_location_;
   scoped_ptr<OverviewToolbar> overview_toolbar_;
 
+  struct {
+    bool enabled;
+    aura::Window* left;
+    aura::Window* right;
+  } split_;
+
   DISALLOW_COPY_AND_ASSIGN(WindowOverviewModeImpl);
 };
 
@@ -542,9 +591,11 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
 scoped_ptr<WindowOverviewMode> WindowOverviewMode::Create(
     aura::Window* container,
     const WindowListProvider* window_list_provider,
+    SplitViewController* split_view_controller,
     WindowOverviewModeDelegate* delegate) {
   return scoped_ptr<WindowOverviewMode>(
-      new WindowOverviewModeImpl(container, window_list_provider, delegate));
+      new WindowOverviewModeImpl(container, window_list_provider,
+                                 split_view_controller, delegate));
 }
 
 }  // namespace athena
