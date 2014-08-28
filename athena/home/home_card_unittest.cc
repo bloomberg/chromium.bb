@@ -6,23 +6,44 @@
 
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
+#include "athena/home/home_card_constants.h"
+#include "athena/home/home_card_impl.h"
 #include "athena/test/athena_test_base.h"
 #include "athena/wm/public/window_manager.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
 
 namespace athena {
+
+aura::Window* GetHomeCardWindow() {
+  return static_cast<HomeCardImpl*>(HomeCard::Get())->
+      GetHomeCardWindowForTest();
+}
 
 typedef test::AthenaTestBase HomeCardTest;
 
 TEST_F(HomeCardTest, BasicTransition) {
-  EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
+  ASSERT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
+  aura::Window* home_card = GetHomeCardWindow();
+  const int screen_height = root_window()->bounds().height();
+  const int work_area_height = gfx::Screen::GetScreenFor(root_window())->
+      GetDisplayNearestWindow(root_window()).work_area().height();
+  ASSERT_TRUE(home_card);
+
+  // In the minimized state, home card should be outside (below) the work area.
+  EXPECT_EQ(screen_height - kHomeCardMinimizedHeight,
+            home_card->GetTargetBounds().y());
+  EXPECT_EQ(work_area_height, home_card->GetTargetBounds().y());
 
   WindowManager::GetInstance()->ToggleOverview();
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
+  EXPECT_EQ(screen_height - kHomeCardHeight, home_card->GetTargetBounds().y());
 
   WindowManager::GetInstance()->ToggleOverview();
   EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
+  EXPECT_EQ(work_area_height, home_card->GetTargetBounds().y());
 }
 
 TEST_F(HomeCardTest, VirtualKeyboardTransition) {
@@ -39,6 +60,7 @@ TEST_F(HomeCardTest, VirtualKeyboardTransition) {
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
   HomeCard::Get()->UpdateVirtualKeyboardBounds(vk_bounds);
   EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
+  EXPECT_EQ(0, GetHomeCardWindow()->GetTargetBounds().y());
   HomeCard::Get()->UpdateVirtualKeyboardBounds(gfx::Rect());
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
 

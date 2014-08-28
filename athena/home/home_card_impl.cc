@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/home/public/home_card.h"
+#include "athena/home/home_card_impl.h"
 
 #include <cmath>
 #include <limits>
@@ -12,27 +12,22 @@
 #include "athena/home/app_list_view_delegate.h"
 #include "athena/home/athena_start_page_view.h"
 #include "athena/home/home_card_constants.h"
-#include "athena/home/home_card_gesture_manager.h"
 #include "athena/home/minimized_home.h"
 #include "athena/home/public/app_model_builder.h"
-#include "athena/input/public/accelerator_manager.h"
 #include "athena/screen/public/screen_manager.h"
 #include "athena/wm/public/window_manager.h"
-#include "athena/wm/public/window_manager_observer.h"
 #include "ui/app_list/search_provider.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/layer_owner.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/visibility_controller.h"
-#include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace athena {
@@ -66,6 +61,8 @@ gfx::Rect GetBoundsForState(const gfx::Rect& screen_bounds,
   NOTREACHED();
   return gfx::Rect();
 }
+
+}  // namespace
 
 // Makes sure the homecard is center-aligned horizontally and bottom-aligned
 // vertically.
@@ -226,73 +223,6 @@ class HomeCardView : public views::WidgetDelegateView {
   DISALLOW_COPY_AND_ASSIGN(HomeCardView);
 };
 
-class HomeCardImpl : public HomeCard,
-                     public AcceleratorHandler,
-                     public HomeCardGestureManager::Delegate,
-                     public WindowManagerObserver,
-                     public aura::client::ActivationChangeObserver {
- public:
-  explicit HomeCardImpl(AppModelBuilder* model_builder);
-  virtual ~HomeCardImpl();
-
-  void Init();
-
- private:
-  enum Command {
-    COMMAND_SHOW_HOME_CARD,
-  };
-  void InstallAccelerators();
-  void UpdateMinimizedHomeBounds();
-
-  // Overridden from HomeCard:
-  virtual void SetState(State state) OVERRIDE;
-  virtual State GetState() OVERRIDE;
-  virtual void RegisterSearchProvider(
-      app_list::SearchProvider* search_provider) OVERRIDE;
-  virtual void UpdateVirtualKeyboardBounds(
-      const gfx::Rect& bounds) OVERRIDE;
-
-  // AcceleratorHandler:
-  virtual bool IsCommandEnabled(int command_id) const OVERRIDE { return true; }
-  virtual bool OnAcceleratorFired(int command_id,
-                                  const ui::Accelerator& accelerator) OVERRIDE;
-
-  // HomeCardGestureManager::Delegate:
-  virtual void OnGestureEnded(State final_state) OVERRIDE;
-  virtual void OnGestureProgressed(
-      State from_state, State to_state, float progress) OVERRIDE;
-
-  // WindowManagerObserver:
-  virtual void OnOverviewModeEnter() OVERRIDE;
-  virtual void OnOverviewModeExit() OVERRIDE;
-  virtual void OnActivityOrderHasChanged() OVERRIDE;
-
-  // aura::client::ActivationChangeObserver:
-  virtual void OnWindowActivated(aura::Window* gained_active,
-                                 aura::Window* lost_active) OVERRIDE;
-
-  scoped_ptr<AppModelBuilder> model_builder_;
-
-  HomeCard::State state_;
-
-  // original_state_ is the state which the home card should go back to after
-  // the virtual keyboard is hidden.
-  HomeCard::State original_state_;
-
-  views::Widget* home_card_widget_;
-  HomeCardView* home_card_view_;
-  scoped_ptr<AppListViewDelegate> view_delegate_;
-  HomeCardLayoutManager* layout_manager_;
-  aura::client::ActivationClient* activation_client_;  // Not owned
-  scoped_ptr<ui::LayerOwner> minimized_home_;
-
-  // Right now HomeCard allows only one search provider.
-  // TODO(mukai): port app-list's SearchController and Mixer.
-  scoped_ptr<app_list::SearchProvider> search_provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(HomeCardImpl);
-};
-
 HomeCardImpl::HomeCardImpl(AppModelBuilder* model_builder)
     : model_builder_(model_builder),
       state_(HIDDEN),
@@ -358,6 +288,10 @@ void HomeCardImpl::Init() {
 
   AthenaEnv::Get()->SetDisplayWorkAreaInsets(
       gfx::Insets(0, 0, kHomeCardMinimizedHeight, 0));
+}
+
+aura::Window* HomeCardImpl::GetHomeCardWindowForTest() const {
+  return home_card_widget_ ? home_card_widget_->GetNativeWindow() : NULL;
 }
 
 void HomeCardImpl::InstallAccelerators() {
@@ -426,6 +360,10 @@ void HomeCardImpl::UpdateVirtualKeyboardBounds(
   }
 }
 
+bool HomeCardImpl::IsCommandEnabled(int command_id) const {
+  return true;
+}
+
 bool HomeCardImpl::OnAcceleratorFired(int command_id,
                                       const ui::Accelerator& accelerator) {
   DCHECK_EQ(COMMAND_SHOW_HOME_CARD, command_id);
@@ -490,8 +428,6 @@ void HomeCardImpl::OnWindowActivated(aura::Window* gained_active,
     SetState(VISIBLE_MINIMIZED);
   }
 }
-
-}  // namespace
 
 // static
 HomeCard* HomeCard::Create(AppModelBuilder* model_builder) {
