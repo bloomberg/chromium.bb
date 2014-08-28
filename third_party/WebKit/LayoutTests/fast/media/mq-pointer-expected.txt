@@ -105,8 +105,8 @@ Query "(pointer:coARse)": false
 Query "(pointer:bogusvalue)": false
 Query "(pointer:fine)": false
 Query "(pointer:fInE)": false
-Query "(any-pointer)": false
-Query "(any-Pointer)": false
+Query "(any-pointer)": true
+Query "(any-Pointer)": true
 Query "(any-pointer:none)": true
 Query "(any-pointer:NoNe)": true
 Query "(any-pointer:coarse)": true

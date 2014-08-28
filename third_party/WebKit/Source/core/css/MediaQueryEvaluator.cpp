@@ -555,7 +555,7 @@ static bool anyHoverMediaFeatureEval(const MediaQueryExpValue& value, MediaFeatu
     int availableHoverTypes = mediaValues.availableHoverTypes();
 
     if (!value.isValid())
-        return availableHoverTypes && !(availableHoverTypes & HoverTypeNone);
+        return availableHoverTypes & ~HoverTypeNone;
 
     if (!value.isID)
         return false;
@@ -596,7 +596,7 @@ static bool anyPointerMediaFeatureEval(const MediaQueryExpValue& value, MediaFea
     int availablePointers = mediaValues.availablePointerTypes();
 
     if (!value.isValid())
-        return availablePointers && !(availablePointers & PointerTypeNone);
+        return availablePointers & ~PointerTypeNone;
 
     if (!value.isID)
         return false;

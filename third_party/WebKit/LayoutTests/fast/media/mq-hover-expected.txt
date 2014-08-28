@@ -105,8 +105,8 @@ Query "(hover:oN-dEmAnd)": false
 Query "(hover:bogusvalue)": false
 Query "(hover:hover)": false
 Query "(hover:HoveR)": false
-Query "(any-hover)": false
-Query "(any-Hover)": false
+Query "(any-hover)": true
+Query "(any-Hover)": true
 Query "(any-hover:none)": true
 Query "(any-hover:NoNe)": true
 Query "(any-hover:on-demand)": true
