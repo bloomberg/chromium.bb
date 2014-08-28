@@ -943,7 +943,7 @@ public:
     }
 
     inline Address allocate(size_t, const GCInfo*);
-    PLATFORM_EXPORT void addToFreeList(Address, size_t);
+    void addToFreeList(Address, size_t);
     inline static size_t roundedAllocationSize(size_t size)
     {
         return allocationSizeFromSize(size) - sizeof(Header);
@@ -957,8 +957,6 @@ public:
     virtual void merge(BaseHeap* splitOffBase);
 
     void removePageFromHeap(HeapPage<Header>*);
-
-    void incrementPromptlyFreedCount() { m_promptlyFreedCount++; }
 
 private:
     void addPageToHeap(const GCInfo*);
@@ -989,9 +987,6 @@ private:
     void sweepNormalPages(HeapStats*);
     void sweepLargePages(HeapStats*);
 
-    void coalesce();
-    bool shouldCoalesce();
-
     Address m_currentAllocationPoint;
     size_t m_remainingAllocationSize;
 
@@ -1017,7 +1012,6 @@ private:
     int m_index;
 
     int m_numberOfNormalPages;
-    size_t m_promptlyFreedCount;
 };
 
 class PLATFORM_EXPORT Heap {
@@ -1603,44 +1597,7 @@ public:
     {
         return reinterpret_cast<Return>(Heap::allocate<Metadata>(size));
     }
-    static void backingFree(void* address)
-    {
-        if (!address || ThreadState::isAnyThreadInGC())
-            return;
-
-        ThreadState* state = ThreadState::current();
-        if (state->isSweepInProgress())
-            return;
-
-        // Don't promptly free large objects because their page is never reused
-        // and don't free backings allocated on other threads.
-        BaseHeapPage* page = pageHeaderFromObject(address);
-        if (page->isLargeObject() || page->threadState() != state)
-            return;
-
-        typedef HeapIndexTrait<CollectionBackingHeap> HeapTraits;
-        typedef HeapTraits::HeapType HeapType;
-        typedef HeapTraits::HeaderType HeaderType;
-
-        HeaderType* header = HeaderType::fromPayload(address);
-        header->checkHeader();
-
-        const GCInfo* gcInfo = header->gcInfo();
-        int heapIndex = HeapTraits::index(gcInfo->hasFinalizer());
-        HeapType* heap = static_cast<HeapType*>(state->heap(heapIndex));
-        ASSERT(heap->heapPageFromAddress(reinterpret_cast<Address>(address)));
-
-        size_t size = header->size();
-        ASSERT(size > 0);
-        header->finalize();
-        heap->stats().decreaseObjectSpace(header->payloadSize());
-#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
-        memset(header, 0, size);
-#endif
-        heap->addToFreeList(reinterpret_cast<Address>(header), size);
-        heap->incrementPromptlyFreedCount();
-    }
-
+    static void backingFree(void* address) { }
     static void free(void* address) { }
     template<typename T>
     static void* newArray(size_t bytes)
