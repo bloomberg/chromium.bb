@@ -6,6 +6,9 @@ def CustomizeBrowserOptionsForFastPath(options):
   """Enables flags needed for bleeding edge rendering fast paths."""
   options.AppendExtraBrowserArgs('--enable-bleeding-edge-rendering-fast-paths')
 
+def CustomizeBrowserOptionsForSoftwareRasterization(options):
+  """Enables flags needed for forced software rasterization."""
+  options.AppendExtraBrowserArgs('--disable-gpu-rasterization')
 
 def CustomizeBrowserOptionsForGpuRasterization(options):
   """Enables flags needed for forced GPU rasterization using Ganesh."""

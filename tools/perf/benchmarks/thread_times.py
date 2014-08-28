@@ -54,11 +54,13 @@ class ThreadTimesSimpleMobileSites(benchmark.Benchmark):
 
 class ThreadTimesCompositorCases(benchmark.Benchmark):
   """Measures timeline metrics while performing smoothness action on
-  tough compositor cases.
+  tough compositor cases, using software rasterization.
+
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = thread_times.ThreadTimes
   page_set = page_sets.ToughCompositorCasesPageSet
-
+  def CustomizeBrowserOptions(self, options):
+    silk_flags.CustomizeBrowserOptionsForSoftwareRasterization(options)
 
 @benchmark.Enabled('android')
 class ThreadTimesPolymer(benchmark.Benchmark):
