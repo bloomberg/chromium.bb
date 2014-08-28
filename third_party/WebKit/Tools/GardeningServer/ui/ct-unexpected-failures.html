@@ -7,15 +7,15 @@ found in the LICENSE file.
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../lib/ct-scheduled-updater.html">
 <link rel="import" href="../model/ct-commit-log.html">
+<link rel="import" href="../model/ct-failures.html">
 <link rel="import" href="../model/tree-status.html">
-<link rel="import" href="ct-failure-analyzer.html">
 <link rel="import" href="ct-failure-stream.html">
 <link rel="import" href="ct-last-updated.html">
 <link rel="import" href="ct-party-time.html">
 <link rel="import" href="ct-revision-details.html">
 <link rel="import" href="ct-tree-status.html">
 
-<polymer-element name="ct-unexpected-failures" attributes="tree lastUpdateDate">
+<polymer-element name="ct-unexpected-failures" attributes="tree commitLog failures">
   <template>
     <style>
       ct-tree-status {
@@ -38,28 +38,22 @@ found in the LICENSE file.
         padding: 0 5px;
       }
     </style>
-    <ct-failure-analyzer id="analyzer" commitLog="{{ commitLog }}" failures="{{ failures }}" builderLatestRevisions="{{ builderLatestRevisions }}" lastUpdateDate="{{ lastUpdateDate }}"></ct-failure-analyzer>
     <div class="toolbar">
-      <ct-revision-details id="revisionDetails" builderLatestRevisions="{{ builderLatestRevisions }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-revision-details>
+      <ct-revision-details id="revisionDetails" builderLatestRevisions="{{ failures.builderLatestRevisions }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-revision-details>
       <a href="https://code.google.com/p/chromium/wiki/UsefulURLs">Useful URLs</a>
     </div>
     <ct-tree-status status="{{ treeStatuses['chromium'] }}" state="{{ treeStatuses['chromium'].status }}"></ct-tree-status>
     <ct-tree-status status="{{ treeStatuses['blink'] }}" state="{{ treeStatuses['blink'].status }}"></ct-tree-status>
-    <ct-party-time failures="{{ failures }}" tree="{{ tree }}"></ct-party-time>
-    <ct-failure-stream category="default" groups="{{ failures[tree] }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-failure-stream>
-    <ct-failure-stream category="snoozed" groups="{{ failures[tree] }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-failure-stream>
+    <ct-party-time failures="{{ failures.failures }}" tree="{{ tree }}"></ct-party-time>
+    <ct-failure-stream category="default" groups="{{ failures.failures[tree] }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-failure-stream>
+    <ct-failure-stream category="snoozed" groups="{{ failures.failures[tree] }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-failure-stream>
   </template>
   <script>
   (function() {
-    var kUpdateFrequency = 1000 * 30;
-
     Polymer({
       tree: '',
 
       created: function() {
-        this.commitLog = new CTCommitLog(),
-        this._updater = new CTScheduledUpdater(this.update.bind(this), kUpdateFrequency);
-
         this.treeStatuses = {};
         var projects = ['chromium', 'blink'];
         for (var i = 0; i < projects.length; i++) {
@@ -73,8 +67,6 @@ found in the LICENSE file.
 
       update: function() {
         // FIXME: These shouldn't update if there's already an update in progress.
-        this.commitLog.update();
-        this.$.analyzer.update();
         Object.keys(this.treeStatuses, function(tree, status) {
           status.update();
         });

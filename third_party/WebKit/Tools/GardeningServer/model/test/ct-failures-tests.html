@@ -4,17 +4,18 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<link rel="import" href="../ct-failure-analyzer.html">
+<link rel="import" href="../ct-failures.html">
 
 <script>
 (function () {
 
 var assert = chai.assert;
 
-describe('ct-failure-analyzer', function() {
-  describe('_failureComparator', function() {
+describe('ct-failures', function() {
+  describe('failureComparator', function() {
     it('should sort failures', function() {
-      var analyzer = document.createElement('ct-failure-analyzer');
+      var analyzer = new CTFailures(new CTCommitList(undefined, []));
+
       var resultsByBuilder = {};
       var failure1 = new CTFailure("step1", "reason1", resultsByBuilder, 123, 123);
       var failure2 = new CTFailure("step1", "reason2", resultsByBuilder, 123, 123);
@@ -27,9 +28,9 @@ describe('ct-failure-analyzer', function() {
     });
   });
 
-  describe('_failureListComparator', function() {
+  describe('failureByTreeListComparator', function() {
     it('should compare failures correctly', function() {
-      var analyzer = document.createElement('ct-failure-analyzer');
+      var analyzer = new CTFailures(new CTCommitList(undefined, []));
 
       var cl1 = new CTCommitList(undefined, ['chromium:1', 'blink:2']);
       var cl2 = new CTCommitList(undefined, ['chromium:2', 'blink:1']);

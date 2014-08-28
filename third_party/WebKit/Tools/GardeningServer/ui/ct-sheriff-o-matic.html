@@ -66,17 +66,19 @@ found in the LICENSE file.
         </template>
       </div>
       <div id="right-toolbar">
-        <ct-last-updated date="{{ lastUpdateDate }}"></ct-last-updated>
+        <ct-last-updated date="{{ failures.lastUpdateDate }}"></ct-last-updated>
         <ct-tree-select tree="{{ tree }}" treeList="{{ treeList }}"></ct-tree-select>
       </div>
     </header>
 
     <core-animated-pages selected="{{ selected }}" transitions="slide-from-right">
-      <ct-unexpected-failures tree="{{ tree }}" lastUpdateDate="{{ lastUpdateDate }}" on-ct-examine-failures="{{ onExamine }}"></ct-unexpected-failures>
+      <ct-unexpected-failures id="unexpected" tree="{{ tree }}" commitLog="{{ commitLog }}" failures="{{ failures }}" on-ct-examine-failures="{{ onExamine }}"></ct-unexpected-failures>
       <ct-results-panel failures="{{ currentFailures }}" tree="{{ tree }}"></ct-results-panel>
     </core-animated-pages>
   </template>
   <script>
+    var kUpdateFrequency = 1000 * 30;
+
     Polymer({
       tree: "",
       treeList: null,
@@ -99,7 +101,23 @@ found in the LICENSE file.
       created: function() {
         this.treeList = new CTTreeList();
         this.tree = this.treeList.defaultValue();
+        this.commitLog = new CTCommitLog();
+        this.failures = new CTFailures(this.commitLog);
+        this._updater = new CTScheduledUpdater(this.update.bind(this), kUpdateFrequency);
       },
+
+      ready: function() {
+        this.update();
+      },
+
+      update: function() {
+        // FIXME: These shouldn't update if there's already an update in
+        // progress.
+        this.commitLog.update();
+        this.failures.update();
+        this.$.unexpected.update();
+      },
+
     });
   </script>
 </polymer-element>
