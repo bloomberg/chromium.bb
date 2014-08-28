@@ -200,7 +200,6 @@
             # TODO(port): Everything here times out. Attempts have been made to
             # fix the individual failures, but each time I disable a test from
             # these suites, it seems like one or another starts timing out too.
-            'browser/ui/omnibox/omnibox_view_browsertest.cc',
             'browser/extensions/api/tabs/tabs_interactive_test.cc',
             'browser/ui/views/keyboard_access_browsertest.cc',
           ],
