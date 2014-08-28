@@ -10,6 +10,7 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 namespace content {
@@ -147,7 +148,11 @@ void AccessibilityController::Reset() {
 
 void AccessibilityController::Install(blink::WebFrame* frame) {
   blink::WebAXObject::enableAccessibility();
+  frame->view()->settings()->setAccessibilityEnabled(true);
+
   blink::WebAXObject::enableInlineTextBoxAccessibility();
+  frame->view()->settings()->setInlineTextBoxAccessibilityEnabled(true);
+
   AccessibilityControllerBindings::Install(weak_factory_.GetWeakPtr(), frame);
 }
 

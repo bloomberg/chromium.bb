@@ -13,17 +13,21 @@
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
+#include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/accessibility/ax_tree.h"
 
 using blink::WebAXObject;
 using blink::WebDocument;
+using blink::WebFrame;
 using blink::WebNode;
 using blink::WebPoint;
 using blink::WebRect;
+using blink::WebSettings;
 using blink::WebView;
 
 namespace content {
@@ -37,12 +41,16 @@ RendererAccessibilityComplete::RendererAccessibilityComplete(
       last_scroll_offset_(gfx::Size()),
       ack_pending_(false) {
   WebAXObject::enableAccessibility();
+  WebView* web_view = render_frame_->GetRenderView()->GetWebView();
+  WebSettings* settings = web_view->settings();
+  settings->setAccessibilityEnabled(true);
 
 #if !defined(OS_ANDROID)
   // Skip inline text boxes on Android - since there are no native Android
   // APIs that compute the bounds of a range of text, it's a waste to
   // include these in the AX tree.
   WebAXObject::enableInlineTextBoxAccessibility();
+  settings->setInlineTextBoxAccessibilityEnabled(true);
 #endif
 
   const WebDocument& document = GetMainDocument();
