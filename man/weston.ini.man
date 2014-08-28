@@ -446,6 +446,12 @@ sets the delay in milliseconds since key down until repeating starts (unsigned
 integer)
 .RE
 .RE
+.TP 7
+.BI "numlock-on=" "false"
+sets the default state of the numlock on weston startup for the backends which
+support it.
+.RE
+.RE
 .SH "TERMINAL SECTION"
 Contains settings for the weston terminal application (weston-terminal). It
 allows to customize the font and shell of the command line interface.

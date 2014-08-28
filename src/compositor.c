@@ -4303,10 +4303,12 @@ int main(int argc, char *argv[])
 	const char *socket_name = NULL;
 	int32_t version = 0;
 	int32_t noconfig = 0;
+	int32_t numlock_on;
 	struct weston_config *config = NULL;
 	struct weston_config_section *section;
 	struct wl_client *primary_client;
 	struct wl_listener primary_client_destroyed;
+	struct weston_seat *seat;
 
 	const struct weston_option core_options[] = {
 		{ WESTON_OPTION_STRING, "backend", 'B', &option_backend },
@@ -4476,6 +4478,17 @@ int main(int argc, char *argv[])
 
 	if (load_modules(ec, option_modules, &argc, argv) < 0)
 		goto out;
+
+	section = weston_config_get_section(config, "keyboard", NULL, NULL);
+	weston_config_section_get_bool(section, "numlock-on", &numlock_on, 0);
+	if (numlock_on) {
+		wl_list_for_each(seat, &ec->seat_list, link) {
+			if (seat->keyboard)
+				weston_keyboard_set_locks(seat->keyboard,
+							  WESTON_NUM_LOCK,
+							  WESTON_NUM_LOCK);
+		}
+	}
 
 	weston_compositor_wake(ec);
 
