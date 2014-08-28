@@ -203,7 +203,7 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
         new BrowsingDataIndexedDBHelper(indexed_db_context),
         BrowsingDataFileSystemHelper::Create(file_system_context),
         BrowsingDataQuotaHelper::Create(profile),
-        BrowsingDataChannelIDHelper::Create(profile),
+        BrowsingDataChannelIDHelper::Create(profile->GetRequestContext()),
         new BrowsingDataServiceWorkerHelper(service_worker_context),
         BrowsingDataFlashLSOHelper::Create(profile));
     cookies_tree_model_.reset(

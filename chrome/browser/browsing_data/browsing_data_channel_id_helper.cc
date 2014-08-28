@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/url_request/url_request_context.h"
@@ -21,7 +20,8 @@ namespace {
 class BrowsingDataChannelIDHelperImpl
     : public BrowsingDataChannelIDHelper {
  public:
-  explicit BrowsingDataChannelIDHelperImpl(Profile* profile);
+  explicit BrowsingDataChannelIDHelperImpl(
+      net::URLRequestContextGetter* request_context);
 
   // BrowsingDataChannelIDHelper methods.
   virtual void StartFetching(const FetchResultCallback& callback) OVERRIDE;
@@ -60,10 +60,9 @@ class BrowsingDataChannelIDHelperImpl
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataChannelIDHelperImpl);
 };
 
-BrowsingDataChannelIDHelperImpl::
-BrowsingDataChannelIDHelperImpl(Profile* profile)
-    : is_fetching_(false),
-      request_context_getter_(profile->GetRequestContext()) {
+BrowsingDataChannelIDHelperImpl::BrowsingDataChannelIDHelperImpl(
+    net::URLRequestContextGetter* request_context)
+    : is_fetching_(false), request_context_getter_(request_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -155,9 +154,9 @@ void BrowsingDataChannelIDHelperImpl::DeleteCallback() {
 }  // namespace
 
 // static
-BrowsingDataChannelIDHelper*
-BrowsingDataChannelIDHelper::Create(Profile* profile) {
-  return new BrowsingDataChannelIDHelperImpl(profile);
+BrowsingDataChannelIDHelper* BrowsingDataChannelIDHelper::Create(
+    net::URLRequestContextGetter* request_context) {
+  return new BrowsingDataChannelIDHelperImpl(request_context);
 }
 
 CannedBrowsingDataChannelIDHelper::

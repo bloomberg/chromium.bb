@@ -11,7 +11,9 @@
 #include "base/callback.h"
 #include "net/ssl/channel_id_store.h"
 
-class Profile;
+namespace net {
+class URLRequestContextGetter;
+}
 
 // BrowsingDataChannelIDHelper is an interface for classes dealing with
 // aggregating and deleting browsing data stored in the channel ID store.
@@ -22,8 +24,9 @@ class BrowsingDataChannelIDHelper
     : public base::RefCountedThreadSafe<BrowsingDataChannelIDHelper> {
  public:
   // Create a BrowsingDataChannelIDHelper instance for the given
-  // |profile|.
-  static BrowsingDataChannelIDHelper* Create(Profile* profile);
+  // |request_context|.
+  static BrowsingDataChannelIDHelper* Create(
+      net::URLRequestContextGetter* request_context);
 
   typedef base::Callback<
       void(const net::ChannelIDStore::ChannelIDList&)>

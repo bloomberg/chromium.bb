@@ -69,7 +69,8 @@ class BrowsingDataChannelIDHelperTest
 TEST_F(BrowsingDataChannelIDHelperTest, FetchData) {
   CreateChannelIDsForTest();
   scoped_refptr<BrowsingDataChannelIDHelper> helper(
-      BrowsingDataChannelIDHelper::Create(testing_profile_.get()));
+      BrowsingDataChannelIDHelper::Create(
+          testing_profile_->GetRequestContext()));
 
   helper->StartFetching(
       base::Bind(&BrowsingDataChannelIDHelperTest::FetchCallback,
@@ -99,7 +100,8 @@ TEST_F(BrowsingDataChannelIDHelperTest, FetchData) {
 TEST_F(BrowsingDataChannelIDHelperTest, DeleteChannelID) {
   CreateChannelIDsForTest();
   scoped_refptr<BrowsingDataChannelIDHelper> helper(
-      BrowsingDataChannelIDHelper::Create(testing_profile_.get()));
+      BrowsingDataChannelIDHelper::Create(
+          testing_profile_->GetRequestContext()));
 
   helper->DeleteChannelID("https://www.google.com:443");
 
