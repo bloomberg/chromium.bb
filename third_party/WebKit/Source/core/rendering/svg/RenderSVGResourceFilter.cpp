@@ -170,7 +170,7 @@ static void drawDeferredFilter(GraphicsContext* context, FilterData* filterData,
     ASSERT(sourceGraphic);
     builder.setSourceGraphic(sourceGraphic);
     RefPtr<ImageFilter> imageFilter = builder.build(filterData->builder->lastEffect(), ColorSpaceDeviceRGB);
-    FloatRect boundaries = enclosingIntRect(filterData->boundaries);
+    FloatRect boundaries = filterData->boundaries;
     context->save();
 
     FloatSize deviceSize = context->getCTM().mapSize(boundaries.size());
@@ -186,8 +186,9 @@ static void drawDeferredFilter(GraphicsContext* context, FilterData* filterData,
         float scale = sqrtf(FilterEffect::maxFilterArea() / scaledArea);
         context->scale(scale, scale);
     }
-    // Clip drawing of filtered image to primitive boundaries.
-    context->clipRect(boundaries);
+    // Clip drawing of filtered image to the minimum required paint rect.
+    FilterEffect* lastEffect = filterData->builder->lastEffect();
+    context->clipRect(lastEffect->determineAbsolutePaintRect(lastEffect->maxEffectRect()));
     if (filterElement->hasAttribute(SVGNames::filterResAttr)) {
         // Get boundaries in device coords.
         // FIXME: See crbug.com/382491. Is the use of getCTM OK here, given it does not include device
