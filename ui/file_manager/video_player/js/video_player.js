@@ -159,6 +159,8 @@ function VideoPlayer() {
 
   this.loadQueue_ = new AsyncUtil.Queue();
 
+  this.onCastSessionUpdateBound_ = this.onCastSessionUpdate_.wrap(this);
+
   Object.seal(this);
 }
 
@@ -331,6 +333,8 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
               chrome.cast.requestSession(
                   fulfill, reject, undefined, this.currentCast_.label);
             }.bind(this)).then(function(session) {
+              session.addUpdateListener(this.onCastSessionUpdateBound_);
+
               this.currentSession_ = session;
               this.videoElement_ = new CastVideoElement(media, session);
               this.controls.attachMedia(this.videoElement_);
@@ -413,6 +417,7 @@ VideoPlayer.prototype.unloadVideo = function(opt_keepSession) {
 
     if (!opt_keepSession && this.currentSession_) {
       this.currentSession_.stop(callback, callback);
+      this.currentSession_.removeUpdateListener(this.onCastSessionUpdateBound_);
       this.currentSession_ = null;
     } else {
       callback();
@@ -579,9 +584,20 @@ VideoPlayer.prototype.updateCheckOnCastMenu_ = function() {
  */
 VideoPlayer.prototype.onCurrentCastDisappear_ = function() {
   this.currentCast_ = null;
+  this.currentSession_.removeUpdateListener(this.onCastSessionUpdateBound_);
   this.currentSession_ = null;
   this.controls.showErrorMessage('GALLERY_VIDEO_DECODING_ERROR');
   this.unloadVideo();
+};
+
+/**
+ * This method should be called when the session is updated.
+ * @param {boolean} alive Whether the session is alive or not.
+ * @private
+ */
+VideoPlayer.prototype.onCastSessionUpdate_ = function(alive) {
+  if (!alive)
+    this.unloadVideo();
 };
 
 /**
