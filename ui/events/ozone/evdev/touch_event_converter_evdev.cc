@@ -280,16 +280,15 @@ void TouchEventConverterEvdev::ReportEvents(base::TimeDelta delta) {
   for (int i = 0; i < MAX_FINGERS; i++) {
     if (altered_slots_[i]) {
       // TODO(rikroege): Support elliptical finger regions.
-      TouchEvent evt(
-          events_[i].type_,
-          gfx::PointF(events_[i].x_, events_[i].y_),
-          /* flags */ 0,
-          /* touch_id */ i,
-          delta,
-          events_[i].pressure_ * kFingerWidth,
-          events_[i].pressure_ * kFingerWidth,
-          /* angle */ 0.,
-          events_[i].pressure_);
+      TouchEvent evt(events_[i].type_,
+                     gfx::PointF(events_[i].x_, events_[i].y_),
+                     /* flags */ 0,
+                     /* touch_id */ events_[i].finger_,
+                     delta,
+                     events_[i].pressure_ * kFingerWidth,
+                     events_[i].pressure_ * kFingerWidth,
+                     /* angle */ 0.,
+                     events_[i].pressure_);
       DispatchEventToCallback(&evt);
 
       // Subsequent events for this finger will be touch-move until it

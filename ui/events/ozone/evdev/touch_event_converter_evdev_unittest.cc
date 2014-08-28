@@ -179,7 +179,7 @@ TEST_F(TouchEventConverterEvdevTest, TouchDown) {
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), event->time_stamp());
   EXPECT_EQ(42, event->x());
   EXPECT_EQ(51, event->y());
-  EXPECT_EQ(0, event->touch_id());
+  EXPECT_EQ(684, event->touch_id());
   EXPECT_FLOAT_EQ(.5f, event->force());
   EXPECT_FLOAT_EQ(0.f, event->rotation_angle());
 }
@@ -226,7 +226,7 @@ TEST_F(TouchEventConverterEvdevTest, TouchMove) {
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), event->time_stamp());
   EXPECT_EQ(42, event->x());
   EXPECT_EQ(43, event->y());
-  EXPECT_EQ(0, event->touch_id());
+  EXPECT_EQ(684, event->touch_id());
   EXPECT_FLOAT_EQ(2.f / 3.f, event->force());
   EXPECT_FLOAT_EQ(0.f, event->rotation_angle());
 
@@ -240,7 +240,7 @@ TEST_F(TouchEventConverterEvdevTest, TouchMove) {
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), event->time_stamp());
   EXPECT_EQ(42, event->x());
   EXPECT_EQ(42, event->y());
-  EXPECT_EQ(0, event->touch_id());
+  EXPECT_EQ(684, event->touch_id());
   EXPECT_FLOAT_EQ(2.f / 3.f, event->force());
   EXPECT_FLOAT_EQ(0.f, event->rotation_angle());
 }
@@ -277,7 +277,7 @@ TEST_F(TouchEventConverterEvdevTest, TouchRelease) {
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), event->time_stamp());
   EXPECT_EQ(42, event->x());
   EXPECT_EQ(51, event->y());
-  EXPECT_EQ(0, event->touch_id());
+  EXPECT_EQ(684, event->touch_id());
   EXPECT_FLOAT_EQ(.5f, event->force());
   EXPECT_FLOAT_EQ(0.f, event->rotation_angle());
 }
@@ -328,7 +328,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev0->time_stamp());
   EXPECT_EQ(40, ev0->x());
   EXPECT_EQ(51, ev0->y());
-  EXPECT_EQ(0, ev0->touch_id());
+  EXPECT_EQ(684, ev0->touch_id());
   EXPECT_FLOAT_EQ(.5f, ev0->force());
   EXPECT_FLOAT_EQ(0.f, ev0->rotation_angle());
 
@@ -337,7 +337,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev1->time_stamp());
   EXPECT_EQ(101, ev1->x());
   EXPECT_EQ(102, ev1->y());
-  EXPECT_EQ(1, ev1->touch_id());
+  EXPECT_EQ(686, ev1->touch_id());
   EXPECT_FLOAT_EQ(.5f, ev1->force());
   EXPECT_FLOAT_EQ(0.f, ev1->rotation_angle());
 
@@ -354,7 +354,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev1->time_stamp());
   EXPECT_EQ(40, ev1->x());
   EXPECT_EQ(102, ev1->y());
-  EXPECT_EQ(1, ev1->touch_id());
+  EXPECT_EQ(686, ev1->touch_id());
 
   EXPECT_FLOAT_EQ(.5f, ev1->force());
   EXPECT_FLOAT_EQ(0.f, ev1->rotation_angle());
@@ -373,7 +373,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev0->time_stamp());
   EXPECT_EQ(39, ev0->x());
   EXPECT_EQ(51, ev0->y());
-  EXPECT_EQ(0, ev0->touch_id());
+  EXPECT_EQ(684, ev0->touch_id());
   EXPECT_FLOAT_EQ(.5f, ev0->force());
   EXPECT_FLOAT_EQ(0.f, ev0->rotation_angle());
 
@@ -392,7 +392,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev0->time_stamp());
   EXPECT_EQ(39, ev0->x());
   EXPECT_EQ(51, ev0->y());
-  EXPECT_EQ(0, ev0->touch_id());
+  EXPECT_EQ(684, ev0->touch_id());
   EXPECT_FLOAT_EQ(.5f, ev0->force());
   EXPECT_FLOAT_EQ(0.f, ev0->rotation_angle());
 
@@ -400,7 +400,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev1->time_stamp());
   EXPECT_EQ(38, ev1->x());
   EXPECT_EQ(102, ev1->y());
-  EXPECT_EQ(1, ev1->touch_id());
+  EXPECT_EQ(686, ev1->touch_id());
   EXPECT_FLOAT_EQ(.5f, ev1->force());
   EXPECT_FLOAT_EQ(0.f, ev1->rotation_angle());
 
@@ -417,7 +417,7 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   EXPECT_EQ(base::TimeDelta::FromMicroseconds(0), ev1->time_stamp());
   EXPECT_EQ(38, ev1->x());
   EXPECT_EQ(102, ev1->y());
-  EXPECT_EQ(1, ev1->touch_id());
+  EXPECT_EQ(686, ev1->touch_id());
   EXPECT_FLOAT_EQ(.5f, ev1->force());
   EXPECT_FLOAT_EQ(0.f, ev1->rotation_angle());
 }
@@ -514,12 +514,12 @@ TEST_F(TouchEventConverterEvdevTest,
   ui::TouchEvent* ev0 = dev->event(0);
   ui::TouchEvent* ev1 = dev->event(1);
 
-  EXPECT_EQ(0, ev0->touch_id());
+  EXPECT_EQ(100, ev0->touch_id());
   EXPECT_EQ(999, ev0->x());
   EXPECT_EQ(888, ev0->y());
   EXPECT_FLOAT_EQ(0.8333333f, ev0->force());
 
-  EXPECT_EQ(1, ev1->touch_id());
+  EXPECT_EQ(200, ev1->touch_id());
   EXPECT_EQ(777, ev1->x());
   EXPECT_EQ(666, ev1->y());
   EXPECT_FLOAT_EQ(0.4666666f, ev1->force());
