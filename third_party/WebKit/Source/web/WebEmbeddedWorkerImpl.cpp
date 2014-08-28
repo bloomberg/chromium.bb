@@ -268,25 +268,15 @@ void WebEmbeddedWorkerImpl::resumeWorkerContext()
         m_workerThread->postDebuggerTask(createCrossThreadTask(resumeWorkerContextTask, true));
 }
 
-void WebEmbeddedWorkerImpl::attachDevTools()
+void WebEmbeddedWorkerImpl::attachDevTools(const WebString& hostId)
 {
     if (m_workerThread)
         m_workerThread->postDebuggerTask(createCrossThreadTask(connectToWorkerContextInspectorTask, true));
 }
 
-void WebEmbeddedWorkerImpl::attachDevTools(const WebString& hostId)
-{
-    attachDevTools();
-}
-
-void WebEmbeddedWorkerImpl::reattachDevTools(const WebString& savedState)
-{
-    m_workerThread->postDebuggerTask(createCrossThreadTask(reconnectToWorkerContextInspectorTask, String(savedState)));
-}
-
 void WebEmbeddedWorkerImpl::reattachDevTools(const WebString& hostId, const WebString& savedState)
 {
-    reattachDevTools(savedState);
+    m_workerThread->postDebuggerTask(createCrossThreadTask(reconnectToWorkerContextInspectorTask, String(savedState)));
 }
 
 void WebEmbeddedWorkerImpl::detachDevTools()
