@@ -164,13 +164,8 @@ public class BrowserAccessibilityManager {
 
         switch (action) {
             case AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS:
-                if (mAccessibilityFocusId == virtualViewId) {
-                    return true;
-                }
+                if (!moveAccessibilityFocusToId(virtualViewId)) return true;
 
-                mAccessibilityFocusId = virtualViewId;
-                sendAccessibilityEvent(mAccessibilityFocusId,
-                        AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
                 if (!mIsHovering) {
                     nativeScrollToMakeNodeVisible(
                             mNativeObj, mAccessibilityFocusId);
@@ -270,8 +265,7 @@ public class BrowserAccessibilityManager {
         // (Re-) focus focused element, since we weren't able to create an
         // AccessibilityNodeInfo for this element before.
         if (mAccessibilityFocusId != View.NO_ID) {
-            sendAccessibilityEvent(mAccessibilityFocusId,
-                                   AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
+            moveAccessibilityFocusToIdAndRefocusIfNeeded(mAccessibilityFocusId);
         }
     }
 
@@ -280,9 +274,31 @@ public class BrowserAccessibilityManager {
         if (id == 0)
             return false;
 
-        mAccessibilityFocusId = id;
-        sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
+        moveAccessibilityFocusToId(id);
         return true;
+    }
+
+    private boolean moveAccessibilityFocusToId(int newAccessibilityFocusId) {
+        if (newAccessibilityFocusId == mAccessibilityFocusId)
+            return false;
+
+        mAccessibilityFocusId = newAccessibilityFocusId;
+        sendAccessibilityEvent(mAccessibilityFocusId,
+                AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
+        return true;
+    }
+
+    private void moveAccessibilityFocusToIdAndRefocusIfNeeded(int newAccessibilityFocusId) {
+        // Work around a bug in the Android framework where it doesn't fully update the object
+        // with accessibility focus even if you send it a WINDOW_CONTENT_CHANGED. To work around
+        // this, clear focus and then set focus again.
+        if (newAccessibilityFocusId == mAccessibilityFocusId) {
+            sendAccessibilityEvent(newAccessibilityFocusId,
+                    AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED);
+            mAccessibilityFocusId = View.NO_ID;
+        }
+
+        moveAccessibilityFocusToId(newAccessibilityFocusId);
     }
 
     private void sendAccessibilityEvent(int virtualViewId, int eventType) {
@@ -371,20 +387,14 @@ public class BrowserAccessibilityManager {
         if (mUserHasTouchExplored) return;
 
         if (mContentViewCore.shouldSetAccessibilityFocusOnPageLoad()) {
-            mAccessibilityFocusId = id;
-            sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
+            moveAccessibilityFocusToIdAndRefocusIfNeeded(id);
         }
     }
 
     @CalledByNative
     private void handleFocusChanged(int id) {
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_FOCUSED);
-
-        // Update accessibility focus if not already set to this node.
-        if (mAccessibilityFocusId != id) {
-            sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
-            mAccessibilityFocusId = id;
-        }
+        moveAccessibilityFocusToId(id);
     }
 
     @CalledByNative
@@ -428,12 +438,7 @@ public class BrowserAccessibilityManager {
 
     @CalledByNative
     private void handleScrolledToAnchor(int id) {
-        if (mAccessibilityFocusId == id) {
-            return;
-        }
-
-        mAccessibilityFocusId = id;
-        sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
+        moveAccessibilityFocusToId(id);
     }
 
     @CalledByNative
