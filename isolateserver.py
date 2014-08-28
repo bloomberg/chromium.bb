@@ -35,6 +35,8 @@ from utils import tools
 import auth
 import isolated_format
 
+# TODO(maruel): Temporary to make the next code migration simpler.
+from isolated_format import IsolatedError, MappingError, UNKNOWN_FILE_SIZE
 
 # Version of isolate protocol passed to the server in /handshake request.
 ISOLATE_PROTOCOL_VERSION = '1.0'
@@ -60,11 +62,6 @@ ALREADY_COMPRESSED_TYPES = [
     '7z', 'avi', 'cur', 'gif', 'h264', 'jar', 'jpeg', 'jpg', 'mp4', 'pdf',
     'png', 'wav', 'zip',
 ]
-
-
-# The file size to be used when we don't know the correct file size,
-# generally used for .isolated files.
-UNKNOWN_FILE_SIZE = None
 
 
 # Chunk size to use when reading from network stream.
@@ -104,16 +101,6 @@ DEFAULT_BLACKLIST += (
 
 class Error(Exception):
   """Generic runtime error."""
-  pass
-
-
-class ConfigError(ValueError):
-  """Generic failure to load a .isolated file."""
-  pass
-
-
-class MappingError(OSError):
-  """Failed to recreate the tree."""
   pass
 
 
@@ -242,7 +229,7 @@ def is_valid_file(filepath, size):
 
   Currently it just checks the file's size.
   """
-  if size == UNKNOWN_FILE_SIZE:
+  if size == isolated_format.UNKNOWN_FILE_SIZE:
     return os.path.isfile(filepath)
   actual_size = os.stat(filepath).st_size
   if size != actual_size:
@@ -804,7 +791,8 @@ class FetchStreamVerifier(object):
   def _inspect_chunk(self, chunk, is_last):
     """Called for each fetched chunk before passing it to consumer."""
     self.current_size += len(chunk)
-    if (is_last and (self.expected_size != UNKNOWN_FILE_SIZE) and
+    if (is_last and
+        (self.expected_size != isolated_format.UNKNOWN_FILE_SIZE) and
         (self.expected_size != self.current_size)):
       raise IOError('Incorrect file size: expected %d, got %d' % (
           self.expected_size, self.current_size))
@@ -980,7 +968,8 @@ class IsolateServer(StorageApi):
           # KeyError exception has very confusing str conversion: it's just a
           # missing key value and nothing else. So print exception class name
           # as well.
-          raise MappingError('Invalid handshake response (%s): %s' % (
+          raise MappingError(
+              'Invalid handshake response (%s): %s' % (
               exc.__class__.__name__, exc))
       return self._server_caps
 
@@ -1640,25 +1629,25 @@ def load_isolated(content, algo):
   try:
     data = json.loads(content)
   except ValueError:
-    raise ConfigError('Failed to parse: %s...' % content[:100])
+    raise IsolatedError('Failed to parse: %s...' % content[:100])
 
   if not isinstance(data, dict):
-    raise ConfigError('Expected dict, got %r' % data)
+    raise IsolatedError('Expected dict, got %r' % data)
 
   # Check 'version' first, since it could modify the parsing after.
   value = data.get('version', '1.0')
   if not isinstance(value, basestring):
-    raise ConfigError('Expected string, got %r' % value)
+    raise IsolatedError('Expected string, got %r' % value)
   try:
     version = tuple(map(int, value.split('.')))
   except ValueError:
-    raise ConfigError('Expected valid version, got %r' % value)
+    raise IsolatedError('Expected valid version, got %r' % value)
 
   expected_version = tuple(
       map(int, isolated_format.ISOLATED_FILE_VERSION.split('.')))
   # Major version must match.
   if version[0] != expected_version[0]:
-    raise ConfigError(
+    raise IsolatedError(
         'Expected compatible \'%s\' version, got %r' %
         (isolated_format.ISOLATED_FILE_VERSION, value))
 
@@ -1671,92 +1660,92 @@ def load_isolated(content, algo):
   for key, value in data.iteritems():
     if key == 'algo':
       if not isinstance(value, basestring):
-        raise ConfigError('Expected string, got %r' % value)
+        raise IsolatedError('Expected string, got %r' % value)
       if value not in isolated_format.SUPPORTED_ALGOS:
-        raise ConfigError(
+        raise IsolatedError(
             'Expected one of \'%s\', got %r' %
             (', '.join(sorted(isolated_format.SUPPORTED_ALGOS)), value))
       if value != isolated_format.SUPPORTED_ALGOS_REVERSE[algo]:
-        raise ConfigError(
+        raise IsolatedError(
             'Expected \'%s\', got %r' %
             (isolated_format.SUPPORTED_ALGOS_REVERSE[algo], value))
 
     elif key == 'command':
       if not isinstance(value, list):
-        raise ConfigError('Expected list, got %r' % value)
+        raise IsolatedError('Expected list, got %r' % value)
       if not value:
-        raise ConfigError('Expected non-empty command')
+        raise IsolatedError('Expected non-empty command')
       for subvalue in value:
         if not isinstance(subvalue, basestring):
-          raise ConfigError('Expected string, got %r' % subvalue)
+          raise IsolatedError('Expected string, got %r' % subvalue)
 
     elif key == 'files':
       if not isinstance(value, dict):
-        raise ConfigError('Expected dict, got %r' % value)
+        raise IsolatedError('Expected dict, got %r' % value)
       for subkey, subvalue in value.iteritems():
         if not isinstance(subkey, basestring):
-          raise ConfigError('Expected string, got %r' % subkey)
+          raise IsolatedError('Expected string, got %r' % subkey)
         if not isinstance(subvalue, dict):
-          raise ConfigError('Expected dict, got %r' % subvalue)
+          raise IsolatedError('Expected dict, got %r' % subvalue)
         for subsubkey, subsubvalue in subvalue.iteritems():
           if subsubkey == 'l':
             if not isinstance(subsubvalue, basestring):
-              raise ConfigError('Expected string, got %r' % subsubvalue)
+              raise IsolatedError('Expected string, got %r' % subsubvalue)
           elif subsubkey == 'm':
             if not isinstance(subsubvalue, int):
-              raise ConfigError('Expected int, got %r' % subsubvalue)
+              raise IsolatedError('Expected int, got %r' % subsubvalue)
           elif subsubkey == 'h':
             if not isolated_format.is_valid_hash(subsubvalue, algo):
-              raise ConfigError('Expected sha-1, got %r' % subsubvalue)
+              raise IsolatedError('Expected sha-1, got %r' % subsubvalue)
           elif subsubkey == 's':
             if not isinstance(subsubvalue, (int, long)):
-              raise ConfigError('Expected int or long, got %r' % subsubvalue)
+              raise IsolatedError('Expected int or long, got %r' % subsubvalue)
           else:
-            raise ConfigError('Unknown subsubkey %s' % subsubkey)
+            raise IsolatedError('Unknown subsubkey %s' % subsubkey)
         if bool('h' in subvalue) == bool('l' in subvalue):
-          raise ConfigError(
+          raise IsolatedError(
               'Need only one of \'h\' (sha-1) or \'l\' (link), got: %r' %
               subvalue)
         if bool('h' in subvalue) != bool('s' in subvalue):
-          raise ConfigError(
+          raise IsolatedError(
               'Both \'h\' (sha-1) and \'s\' (size) should be set, got: %r' %
               subvalue)
         if bool('s' in subvalue) == bool('l' in subvalue):
-          raise ConfigError(
+          raise IsolatedError(
               'Need only one of \'s\' (size) or \'l\' (link), got: %r' %
               subvalue)
         if bool('l' in subvalue) and bool('m' in subvalue):
-          raise ConfigError(
+          raise IsolatedError(
               'Cannot use \'m\' (mode) and \'l\' (link), got: %r' %
               subvalue)
 
     elif key == 'includes':
       if not isinstance(value, list):
-        raise ConfigError('Expected list, got %r' % value)
+        raise IsolatedError('Expected list, got %r' % value)
       if not value:
-        raise ConfigError('Expected non-empty includes list')
+        raise IsolatedError('Expected non-empty includes list')
       for subvalue in value:
         if not isolated_format.is_valid_hash(subvalue, algo):
-          raise ConfigError('Expected sha-1, got %r' % subvalue)
+          raise IsolatedError('Expected sha-1, got %r' % subvalue)
 
     elif key == 'os':
       if version >= (1, 4):
-        raise ConfigError('Key \'os\' is not allowed starting version 1.4')
+        raise IsolatedError('Key \'os\' is not allowed starting version 1.4')
 
     elif key == 'read_only':
       if not value in (0, 1, 2):
-        raise ConfigError('Expected 0, 1 or 2, got %r' % value)
+        raise IsolatedError('Expected 0, 1 or 2, got %r' % value)
 
     elif key == 'relative_cwd':
       if not isinstance(value, basestring):
-        raise ConfigError('Expected string, got %r' % value)
+        raise IsolatedError('Expected string, got %r' % value)
 
     elif key == 'version':
       # Already checked above.
       pass
 
     else:
-      raise ConfigError('Unknown key %r' % key)
+      raise IsolatedError('Unknown key %r' % key)
 
   # Automatically fix os.path.sep if necessary. While .isolated files are always
   # in the the native path format, someone could want to download an .isolated
@@ -1872,7 +1861,7 @@ class Settings(object):
     def retrieve(isolated_file):
       h = isolated_file.obj_hash
       if h in seen:
-        raise ConfigError('IsolatedFile %s is retrieved recursively' % h)
+        raise IsolatedError('IsolatedFile %s is retrieved recursively' % h)
       assert h not in pending
       seen.add(h)
       pending[h] = isolated_file
@@ -1968,7 +1957,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
       if require_command and not settings.command:
         # TODO(vadimsh): All fetch operations are already enqueue and there's no
         # easy way to cancel them.
-        raise ConfigError('No command to run')
+        raise IsolatedError('No command to run')
 
     with tools.Profiler('GetRest'):
       # Create file system hierarchy.
@@ -2195,7 +2184,7 @@ def CMDdownload(parser, args):
             channel,
             WorkerPool.MED,
             digest,
-            UNKNOWN_FILE_SIZE,
+            isolated_format.UNKNOWN_FILE_SIZE,
             functools.partial(file_write, os.path.join(options.target, dest)))
       while pending:
         fetched = channel.pull()

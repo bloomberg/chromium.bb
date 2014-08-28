@@ -61,7 +61,7 @@ def expand_directories_and_symlinks(indir, infiles, blacklist,
       outfiles.extend(
           isolateserver.expand_directory_and_symlink(
               indir, relfile, blacklist, follow_symlinks))
-    except isolateserver.MappingError as e:
+    except isolated_format.MappingError as e:
       if ignore_broken_items:
         logging.info('warning: %s', e)
       else:
@@ -100,7 +100,7 @@ def recreate_tree(outdir, indir, infiles, action, as_hash):
         # Just do a quick check that the file size matches. No need to stat()
         # again the input file, grab the value from the dict.
         if not 's' in metadata:
-          raise isolateserver.MappingError(
+          raise isolated_format.MappingError(
               'Misconfigured item %s: %s' % (relfile, metadata))
         if metadata['s'] == os.stat(outfile).st_size:
           continue
@@ -597,19 +597,19 @@ class SavedState(Flattenable):
     """
     out = super(SavedState, cls).load(data, isolated_basedir)
     if data.get('OS') != sys.platform:
-      raise isolateserver.ConfigError('Unexpected OS %s', data.get('OS'))
+      raise isolated_format.IsolatedError('Unexpected OS %s', data.get('OS'))
 
     # Converts human readable form back into the proper class type.
     algo = data.get('algo')
     if not algo in isolated_format.SUPPORTED_ALGOS:
-      raise isolateserver.ConfigError('Unknown algo \'%s\'' % out.algo)
+      raise isolated_format.IsolatedError('Unknown algo \'%s\'' % out.algo)
     out.algo = isolated_format.SUPPORTED_ALGOS[algo]
 
     # Refuse the load non-exact version, even minor difference. This is unlike
     # isolateserver.load_isolated(). This is because .isolated.state could have
     # changed significantly even in minor version difference.
     if out.version != cls.EXPECTED_VERSION:
-      raise isolateserver.ConfigError(
+      raise isolated_format.IsolatedError(
           'Unsupported version \'%s\'' % out.version)
 
     # The .isolate file must be valid. If it is not present anymore, zap the
@@ -733,7 +733,7 @@ class CompleteState(object):
     for k, v in self.saved_state.path_variables.iteritems():
       dest = os.path.join(isolate_cmd_dir, relative_cwd, v)
       if not file_path.path_starts_with(self.saved_state.root_dir, dest):
-        raise isolateserver.MappingError(
+        raise isolated_format.MappingError(
             'Path variable %s=%r points outside the inferred root directory '
             '%s; %s'
             % (k, v, self.saved_state.root_dir, dest))

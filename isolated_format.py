@@ -16,6 +16,11 @@ ISOLATED_FILE_VERSION = '1.4'
 DISK_FILE_CHUNK = 1024 * 1024
 
 
+# The file size to be used when we don't know the correct file size,
+# generally used for .isolated files.
+UNKNOWN_FILE_SIZE = None
+
+
 # Sadly, hashlib uses 'sha1' instead of the standard 'sha-1' so explicitly
 # specify the names here.
 SUPPORTED_ALGOS = {
@@ -27,6 +32,16 @@ SUPPORTED_ALGOS = {
 
 # Used for serialization.
 SUPPORTED_ALGOS_REVERSE = dict((v, k) for k, v in SUPPORTED_ALGOS.iteritems())
+
+
+class IsolatedError(ValueError):
+  """Generic failure to load a .isolated file."""
+  pass
+
+
+class MappingError(OSError):
+  """Failed to recreate the tree."""
+  pass
 
 
 def is_valid_hash(value, algo):

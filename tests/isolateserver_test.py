@@ -371,7 +371,7 @@ class IsolateServerStorageApiTest(TestCase):
 
   def test_server_capabilities_network_failure(self):
     self.mock(isolateserver.net, 'url_open', lambda *_args, **_kwargs: None)
-    with self.assertRaises(isolateserver.MappingError):
+    with self.assertRaises(isolated_format.MappingError):
       storage = isolateserver.IsolateServer('http://example.com', 'default')
       _ = storage._server_capabilities
 
@@ -382,7 +382,7 @@ class IsolateServerStorageApiTest(TestCase):
     self.expected_requests(
         [(handshake_req[0], handshake_req[1], 'Im a bad response')])
     storage = isolateserver.IsolateServer(server, namespace)
-    with self.assertRaises(isolateserver.MappingError):
+    with self.assertRaises(isolated_format.MappingError):
       _ = storage._server_capabilities
 
   def test_server_capabilities_respects_error(self):
@@ -391,7 +391,7 @@ class IsolateServerStorageApiTest(TestCase):
     error = 'Im sorry, Dave. Im afraid I cant do that.'
     self.expected_requests([self.mock_handshake_request(server, error=error)])
     storage = isolateserver.IsolateServer(server, namespace)
-    with self.assertRaises(isolateserver.MappingError) as context:
+    with self.assertRaises(isolated_format.MappingError) as context:
       _ = storage._server_capabilities
     # Server error message should be reported to user.
     self.assertIn(error, str(context.exception))
@@ -633,7 +633,7 @@ class IsolateServerStorageApiTest(TestCase):
           (req[0], req[1], None),
         ])
     storage = isolateserver.IsolateServer(server, namespace)
-    with self.assertRaises(isolateserver.MappingError):
+    with self.assertRaises(isolated_format.MappingError):
       storage.contains([])
 
   def test_contains_format_failure(self):
@@ -646,7 +646,7 @@ class IsolateServerStorageApiTest(TestCase):
           self.mock_contains_request(server, namespace, token, [], [1, 2, 3]),
         ])
     storage = isolateserver.IsolateServer(server, namespace)
-    with self.assertRaises(isolateserver.MappingError):
+    with self.assertRaises(isolated_format.MappingError):
       storage.contains([])
 
 
@@ -883,11 +883,8 @@ class TestIsolated(auto_stub.TestCase):
       },
       u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
-    try:
+    with self.assertRaises(isolated_format.IsolatedError):
       isolateserver.load_isolated(json.dumps(data), ALGO)
-      self.fail()
-    except isolateserver.ConfigError:
-      pass
 
   def test_load_isolated_os_only(self):
     # Tolerate 'os' on older version.
@@ -903,7 +900,7 @@ class TestIsolated(auto_stub.TestCase):
       u'os': 'HP/UX',
       u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
-    with self.assertRaises(isolateserver.ConfigError):
+    with self.assertRaises(isolated_format.IsolatedError):
       isolateserver.load_isolated(json.dumps(data), ALGO)
 
   def test_load_isolated_path(self):
