@@ -276,6 +276,10 @@ void Compositor::SetBackgroundColor(SkColor color) {
   ScheduleDraw();
 }
 
+void Compositor::SetVisible(bool visible) {
+  host_->SetVisible(visible);
+}
+
 scoped_refptr<CompositorVSyncManager> Compositor::vsync_manager() const {
   return vsync_manager_;
 }
