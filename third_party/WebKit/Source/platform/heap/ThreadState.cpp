@@ -628,6 +628,7 @@ void ThreadState::snapshot()
     }
     json->beginArray("heaps");
     SNAPSHOT_HEAP(General);
+    SNAPSHOT_HEAP(CollectionBacking);
     FOR_EACH_TYPED_HEAP(SNAPSHOT_HEAP);
     json->endArray();
 #undef SNAPSHOT_HEAP
