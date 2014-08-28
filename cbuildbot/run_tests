@@ -254,6 +254,9 @@ main() {
   show_logs
   if ! ${dryrun}; then
     echo "All tests succeeded!"
+    if ! ${network_tests}; then
+      echo "Note: Network tests skipped; use --network to run them."
+    fi
   fi
 }
 

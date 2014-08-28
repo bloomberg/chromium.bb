@@ -60,19 +60,21 @@ class GlobalTestConfig(object):
   """Global configuration for tests."""
 
   # By default, disable all network tests.
-  NETWORK_TESTS_DISABLED = True
+  RUN_NETWORK_TESTS = False
+  NETWORK_TESTS_SKIPPED = 0
 
 
-def NetworkTest(reason='Skipping network test'):
+def NetworkTest(reason='Skipping network test (re-run w/--network)'):
   """Decorator for unit tests. Skip the test if --network is not specified."""
   def Decorator(test_item):
     @functools.wraps(test_item)
     def NetworkWrapper(*args, **kwargs):
-      if GlobalTestConfig.NETWORK_TESTS_DISABLED:
+      if not GlobalTestConfig.RUN_NETWORK_TESTS:
+        GlobalTestConfig.NETWORK_TESTS_SKIPPED += 1
         raise unittest.SkipTest(reason)
       test_item(*args, **kwargs)
 
-    # We can't check GlobalTestConfig.NETWORK_TESTS_DISABLED here because
+    # We can't check GlobalTestConfig.RUN_NETWORK_TESTS here because
     # __main__ hasn't run yet. Wrap each test so that we check the flag before
     # running it.
     if isinstance(test_item, type) and issubclass(test_item, TestCase):
@@ -1463,7 +1465,7 @@ def main(**kwargs):
   allow_exit = kwargs.pop('exit', True)
   if '--network' in sys.argv:
     sys.argv.remove('--network')
-    GlobalTestConfig.NETWORK_TESTS_DISABLED = False
+    GlobalTestConfig.RUN_NETWORK_TESTS = True
   level = kwargs.pop('level', logging.CRITICAL)
   for flag in ('-d', '--debug'):
     if flag in sys.argv:
@@ -1474,6 +1476,9 @@ def main(**kwargs):
     unittest.main(**kwargs)
     raise SystemExit(0)
   except SystemExit as e:
+    if GlobalTestConfig.NETWORK_TESTS_SKIPPED:
+      print('Note: %i network test(s) skipped; use --network to run them.' %
+            GlobalTestConfig.NETWORK_TESTS_SKIPPED)
     if e.__class__ != SystemExit or allow_exit:
       raise
     # Redo the exit code ourselves- unittest throws True on occasion.
