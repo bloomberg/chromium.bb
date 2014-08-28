@@ -90,7 +90,7 @@ class WebRtcAudioRendererTest : public testing::Test {
         stream_(new rtc::RefCountedObject<MockMediaStream>("label")),
         renderer_(new WebRtcAudioRenderer(stream_, 1, 1, 1, 44100, 441)) {
     EXPECT_CALL(*factory_.get(), CreateOutputDevice(1))
-        .WillOnce(Return(mock_output_device_));
+        .WillOnce(Return(mock_output_device_.get()));
     EXPECT_CALL(*mock_output_device_.get(), Start());
     EXPECT_TRUE(renderer_->Initialize(source_.get()));
     renderer_proxy_ = renderer_->CreateSharedAudioRendererProxy(stream_);

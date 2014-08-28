@@ -69,7 +69,7 @@ class VideoFrameCompositorTest : public testing::Test,
 };
 
 TEST_F(VideoFrameCompositorTest, InitialValues) {
-  EXPECT_FALSE(compositor()->GetCurrentFrame());
+  EXPECT_FALSE(compositor()->GetCurrentFrame().get());
 }
 
 TEST_F(VideoFrameCompositorTest, UpdateCurrentFrame) {

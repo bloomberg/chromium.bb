@@ -18,10 +18,9 @@ MediaStreamTrack* MediaStreamTrack::GetTrack(
 }
 
 MediaStreamTrack::MediaStreamTrack(
-    webrtc::MediaStreamTrackInterface* track, bool is_local_track)
-    : track_(track),
-      muted_state_(false),
-      is_local_track_(is_local_track){
+    const scoped_refptr<webrtc::MediaStreamTrackInterface>& track,
+    bool is_local_track)
+    : track_(track), muted_state_(false), is_local_track_(is_local_track) {
 }
 
 MediaStreamTrack::~MediaStreamTrack() {

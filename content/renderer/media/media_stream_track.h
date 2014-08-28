@@ -25,8 +25,9 @@ namespace content {
 class CONTENT_EXPORT MediaStreamTrack
     : NON_EXPORTED_BASE(public blink::WebMediaStreamTrack::ExtraData) {
  public:
-  MediaStreamTrack(webrtc::MediaStreamTrackInterface* track,
-                   bool is_local_track);
+  MediaStreamTrack(
+      const scoped_refptr<webrtc::MediaStreamTrackInterface>& track,
+      bool is_local_track);
   virtual ~MediaStreamTrack();
 
   static MediaStreamTrack* GetTrack(

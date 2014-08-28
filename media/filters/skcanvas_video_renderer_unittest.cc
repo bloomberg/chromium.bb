@@ -243,29 +243,31 @@ TEST_F(SkCanvasVideoRendererTest, NoFrame) {
 
 TEST_F(SkCanvasVideoRendererTest, TransparentFrame) {
   FillCanvas(target_canvas(), SK_ColorRED);
-  PaintRotated(VideoFrame::CreateTransparentFrame(gfx::Size(kWidth, kHeight)),
-               target_canvas(),
-               kNone,
-               SkXfermode::kSrcOver_Mode,
-               VIDEO_ROTATION_0);
+  PaintRotated(
+      VideoFrame::CreateTransparentFrame(gfx::Size(kWidth, kHeight)).get(),
+      target_canvas(),
+      kNone,
+      SkXfermode::kSrcOver_Mode,
+      VIDEO_ROTATION_0);
   EXPECT_EQ(static_cast<SkColor>(SK_ColorRED), GetColor(target_canvas()));
 }
 
 TEST_F(SkCanvasVideoRendererTest, TransparentFrameSrcMode) {
   FillCanvas(target_canvas(), SK_ColorRED);
   // SRC mode completely overwrites the buffer.
-  PaintRotated(VideoFrame::CreateTransparentFrame(gfx::Size(kWidth, kHeight)),
-               target_canvas(),
-               kNone,
-               SkXfermode::kSrc_Mode,
-               VIDEO_ROTATION_0);
+  PaintRotated(
+      VideoFrame::CreateTransparentFrame(gfx::Size(kWidth, kHeight)).get(),
+      target_canvas(),
+      kNone,
+      SkXfermode::kSrc_Mode,
+      VIDEO_ROTATION_0);
   EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT),
             GetColor(target_canvas()));
 }
 
 TEST_F(SkCanvasVideoRendererTest, CopyTransparentFrame) {
   FillCanvas(target_canvas(), SK_ColorRED);
-  Copy(VideoFrame::CreateTransparentFrame(gfx::Size(kWidth, kHeight)),
+  Copy(VideoFrame::CreateTransparentFrame(gfx::Size(kWidth, kHeight)).get(),
        target_canvas());
   EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT),
             GetColor(target_canvas()));

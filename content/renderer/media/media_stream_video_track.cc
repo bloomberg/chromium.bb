@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 
 namespace content {
 

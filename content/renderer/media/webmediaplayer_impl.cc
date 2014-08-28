@@ -170,7 +170,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       chunk_demuxer_(NULL),
       // Threaded compositing isn't enabled universally yet.
       compositor_task_runner_(
-          RenderThreadImpl::current()->compositor_message_loop_proxy()
+          RenderThreadImpl::current()->compositor_message_loop_proxy().get()
               ? RenderThreadImpl::current()->compositor_message_loop_proxy()
               : base::MessageLoopProxy::current()),
       compositor_(new VideoFrameCompositor(
