@@ -181,10 +181,12 @@ void PrintWebViewHelper::PrintPageInternal(
   if (params.params.display_header_footer) {
     // |page_number| is 0-based, so 1 is added.
     // TODO(vitalybuka) : why does it work only with 1.25?
-    PrintHeaderAndFooter(canvas.get(), params.page_number + 1,
+    PrintHeaderAndFooter(canvas.get(),
+                         params.page_number + 1,
                          print_preview_context_.total_page_count(),
+                         *frame,
                          scale_factor / 1.25,
-                         page_layout_in_points, *header_footer_info_,
+                         page_layout_in_points,
                          params.params);
   }
   RenderPageContent(frame, params.page_number, canvas_area, content_area,

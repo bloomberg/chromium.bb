@@ -202,9 +202,9 @@ void PrintWebViewHelper::PrintPageInternal(
     PrintHeaderAndFooter(canvas.get(),
                          params.page_number + 1,
                          print_preview_context_.total_page_count(),
+                         *frame,
                          scale_factor,
                          page_layout_in_points,
-                         *header_footer_info_,
                          params.params);
   }
 

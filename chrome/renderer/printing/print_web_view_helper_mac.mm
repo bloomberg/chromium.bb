@@ -130,11 +130,14 @@ void PrintWebViewHelper::RenderPage(
     skia::SetIsDraftMode(*canvas, is_print_ready_metafile_sent_);
     skia::SetIsPreviewMetafile(*canvas, is_preview);
 
-    if (print_pages_params_->params.display_header_footer) {
-      PrintHeaderAndFooter(canvas_ptr, page_number + 1,
+    if (params.display_header_footer) {
+      PrintHeaderAndFooter(canvas_ptr,
+                           page_number + 1,
                            print_preview_context_.total_page_count(),
-                           scale_factor, page_layout_in_points,
-                           *header_footer_info_, params);
+                           *frame,
+                           scale_factor,
+                           page_layout_in_points,
+                           params);
     }
     RenderPageContent(frame, page_number, canvas_area, content_area,
                       scale_factor, canvas_ptr);
