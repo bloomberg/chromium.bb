@@ -15,6 +15,7 @@
 
 namespace cc {
 class CompositorFrame;
+class CopyOutputRequest;
 class SurfaceManager;
 class SurfaceFactory;
 class SurfaceResourceHolder;
@@ -29,6 +30,7 @@ class CC_SURFACES_EXPORT Surface {
 
   void QueueFrame(scoped_ptr<CompositorFrame> frame,
                   const base::Closure& draw_callback);
+  void RequestCopyOfOutput(scoped_ptr<CopyOutputRequest> copy_request);
   // Returns the most recent frame that is eligible to be rendered.
   const CompositorFrame* GetEligibleFrame();
 

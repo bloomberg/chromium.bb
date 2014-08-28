@@ -19,6 +19,7 @@ class Size;
 
 namespace cc {
 class CompositorFrame;
+class CopyOutputRequest;
 class Surface;
 class SurfaceFactoryClient;
 class SurfaceManager;
@@ -42,6 +43,8 @@ class CC_SURFACES_EXPORT SurfaceFactory
   void SubmitFrame(SurfaceId surface_id,
                    scoped_ptr<CompositorFrame> frame,
                    const base::Closure& callback);
+  void RequestCopyOfSurface(SurfaceId surface_id,
+                            scoped_ptr<CopyOutputRequest> copy_request);
 
   SurfaceFactoryClient* client() { return client_; }
 

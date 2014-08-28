@@ -5,6 +5,7 @@
 #include "cc/surfaces/surface_factory.h"
 
 #include "cc/output/compositor_frame.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
 #include "ui/gfx/geometry/size.h"
@@ -42,6 +43,18 @@ void SurfaceFactory::SubmitFrame(SurfaceId surface_id,
   DCHECK(it->second->factory() == this);
   it->second->QueueFrame(frame.Pass(), callback);
   manager_->SurfaceModified(surface_id);
+}
+
+void SurfaceFactory::RequestCopyOfSurface(
+    SurfaceId surface_id,
+    scoped_ptr<CopyOutputRequest> copy_request) {
+  OwningSurfaceMap::iterator it = surface_map_.find(surface_id);
+  if (it == surface_map_.end()) {
+    copy_request->SendEmptyResult();
+    return;
+  }
+  DCHECK(it->second->factory() == this);
+  it->second->RequestCopyOfOutput(copy_request.Pass());
 }
 
 void SurfaceFactory::ReceiveFromChild(

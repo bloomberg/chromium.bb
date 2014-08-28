@@ -5,6 +5,7 @@
 #include "cc/surfaces/surface.h"
 
 #include "cc/output/compositor_frame.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/surfaces/surface_factory.h"
 
 namespace cc {
@@ -48,6 +49,11 @@ void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
   if (!draw_callback_.is_null())
     draw_callback_.Run();
   draw_callback_ = callback;
+}
+
+void Surface::RequestCopyOfOutput(scoped_ptr<CopyOutputRequest> copy_request) {
+  // TODO(jbauman): Make this work.
+  copy_request->SendEmptyResult();
 }
 
 const CompositorFrame* Surface::GetEligibleFrame() {
