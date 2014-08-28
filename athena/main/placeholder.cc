@@ -6,8 +6,8 @@
 
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
+#include "athena/resources/grit/athena_resources.h"
 #include "athena/screen/public/screen_manager.h"
-#include "grit/athena_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 

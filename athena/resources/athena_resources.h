@@ -2,4 +2,4 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "grit/ash_resources.h"
+#include "ash/resources/grit/ash_resources.h"
