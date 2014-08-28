@@ -41,8 +41,6 @@ public:
     {
     }
 
-    virtual bool makeContextCurrent() { return true; }
-
     virtual void prepareTexture() { }
 
     virtual void postSubBufferCHROMIUM(int x, int y, int width, int height) { }

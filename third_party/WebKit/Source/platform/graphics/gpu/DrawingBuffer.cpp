@@ -223,8 +223,6 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
         return false;
     }
 
-    m_context->makeContextCurrent();
-
     // Resolve the multisampled buffer into m_colorBuffer texture.
     if (m_multisampleMode != None)
         commit();
@@ -317,7 +315,6 @@ void DrawingBuffer::mailboxReleased(const WebExternalTextureMailbox& mailbox, bo
 void DrawingBuffer::mailboxReleasedWithoutRecycling(const WebExternalTextureMailbox& mailbox)
 {
     ASSERT(m_textureMailboxes.size());
-    m_context->makeContextCurrent();
     // Ensure not to call the destructor until deleteMailbox() is completed.
     RefPtr<DrawingBuffer> self = this;
     deleteMailbox(mailbox);
@@ -388,12 +385,6 @@ void DrawingBuffer::deleteMailbox(const WebExternalTextureMailbox& mailbox)
 
 bool DrawingBuffer::initialize(const IntSize& size)
 {
-    if (!m_context->makeContextCurrent()) {
-        // Most likely the GPU process exited and the attempt to reconnect to it failed.
-        // Need to try to restore the context again later.
-        return false;
-    }
-
     if (m_context->isContextLost()) {
         // Need to try to restore the context again later.
         return false;
@@ -456,9 +447,6 @@ bool DrawingBuffer::initialize(const IntSize& size)
 
 bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, bool fromFrontBuffer)
 {
-    if (!m_context->makeContextCurrent())
-        return false;
-
     GLint textureId = m_colorBuffer.textureId;
     if (fromFrontBuffer && m_frontColorBuffer.textureId)
         textureId = m_frontColorBuffer.textureId;
@@ -484,9 +472,6 @@ bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platfor
     m_context->flush();
 
     bufferMailbox->mailbox.syncPoint = m_context->insertSyncPoint();
-
-    if (!context->makeContextCurrent())
-        return false;
 
     context->waitSyncPoint(bufferMailbox->mailbox.syncPoint);
     Platform3DObject sourceTexture = context->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, bufferMailbox->mailbox.name);
@@ -535,7 +520,7 @@ WebLayer* DrawingBuffer::platformLayer()
 
 void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
 {
-    if (!m_context->makeContextCurrent() || m_context->getGraphicsResetStatusARB() != GL_NO_ERROR)
+    if (m_context->getGraphicsResetStatusARB() != GL_NO_ERROR)
         return;
 
     if (!imageBuffer)
@@ -553,7 +538,7 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
         if (!provider)
             return;
         WebGraphicsContext3D* context = provider->context3d();
-        if (!context || !context->makeContextCurrent())
+        if (!context)
             return;
 
         context->waitSyncPoint(bufferMailbox->mailbox.syncPoint);
@@ -589,8 +574,6 @@ void DrawingBuffer::beginDestruction()
 {
     ASSERT(!m_destructionInProgress);
     m_destructionInProgress = true;
-
-    m_context->makeContextCurrent();
 
     clearPlatformLayer();
 
@@ -885,8 +868,6 @@ void DrawingBuffer::commit(long x, long y, long width, long height)
         width = m_size.width();
     if (height < 0)
         height = m_size.height();
-
-    m_context->makeContextCurrent();
 
     if (m_multisampleFBO && !m_contentsChangeCommitted) {
         m_context->bindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, m_multisampleFBO);

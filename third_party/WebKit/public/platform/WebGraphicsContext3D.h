@@ -146,7 +146,8 @@ public:
 
     // Makes the OpenGL context current on the current thread. Returns true on
     // success.
-    virtual bool makeContextCurrent() = 0;
+    // TODO(dshwang): remove it. crbug.com/404121
+    virtual bool makeContextCurrent() { return true; }
 
     // Each flush or finish is assigned an unique ID. The larger
     // the ID number, the more recently the context has been flushed.

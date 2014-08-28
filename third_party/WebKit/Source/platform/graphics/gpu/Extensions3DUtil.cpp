@@ -42,12 +42,6 @@ Extensions3DUtil::~Extensions3DUtil()
 
 bool Extensions3DUtil::initializeExtensions()
 {
-    if (!m_context->makeContextCurrent()) {
-        // Most likely the GPU process exited and the attempt to reconnect to it failed.
-        // Need to try to restore the context again later.
-        return false;
-    }
-
     if (m_context->isContextLost()) {
         // Need to try to restore the context again later.
         return false;

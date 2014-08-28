@@ -213,7 +213,7 @@ bool HTMLVideoElement::copyVideoTextureToPlatformTexture(WebGraphicsContext3D* c
     if (!webMediaPlayer())
         return false;
 
-    if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(internalFormat, type, level) || !context->makeContextCurrent())
+    if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(internalFormat, type, level))
         return false;
 
     return webMediaPlayer()->copyVideoTextureToPlatformTexture(context, texture, level, internalFormat, type, premultiplyAlpha, flipY);

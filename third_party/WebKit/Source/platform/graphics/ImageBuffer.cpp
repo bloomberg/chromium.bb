@@ -180,7 +180,7 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
     if (!provider)
         return false;
     WebGraphicsContext3D* sharedContext = provider->context3d();
-    if (!sharedContext || !sharedContext->makeContextCurrent())
+    if (!sharedContext)
         return false;
 
     OwnPtr<WebExternalTextureMailbox> mailbox = adoptPtr(new WebExternalTextureMailbox);
@@ -191,9 +191,6 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
     sharedContext->flush();
 
     mailbox->syncPoint = sharedContext->insertSyncPoint();
-
-    if (!context->makeContextCurrent())
-        return false;
 
     context->waitSyncPoint(mailbox->syncPoint);
     Platform3DObject sourceTexture = context->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox->name);

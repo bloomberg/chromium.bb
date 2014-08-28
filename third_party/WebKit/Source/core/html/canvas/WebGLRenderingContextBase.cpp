@@ -5511,7 +5511,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
     OwnPtr<blink::WebGraphicsContext3D> context = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(attributes, 0));
     RefPtr<DrawingBuffer> buffer;
     // Even if a non-null WebGraphicsContext3D is created, until it's made current, it isn't known whether the context is still lost.
-    if (context) {
+    if (context && context->makeContextCurrent()) {
         // Construct a new drawing buffer with the new WebGraphicsContext3D.
         buffer = createDrawingBuffer(context.release());
         // If DrawingBuffer::create() fails to allocate a fbo, |drawingBuffer| is set to null.

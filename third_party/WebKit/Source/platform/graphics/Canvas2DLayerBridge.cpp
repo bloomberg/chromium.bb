@@ -224,7 +224,6 @@ void Canvas2DLayerBridge::prepareForDraw()
         }
         return;
     }
-    context()->makeContextCurrent();
 }
 
 void Canvas2DLayerBridge::storageAllocatedForRecordingChanged(size_t bytesAllocated)
@@ -410,7 +409,6 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
     // Release to skia textures that were previouosly released by the
     // compositor. We do this before acquiring the next snapshot in
     // order to cap maximum gpu memory consumption.
-    webContext->makeContextCurrent();
     flush();
 
     RefPtr<SkImage> image = adoptRef(m_canvas->newImageSnapshot());
