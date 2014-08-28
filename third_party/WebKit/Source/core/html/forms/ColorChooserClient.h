@@ -39,12 +39,15 @@
 
 namespace blink {
 
+class Element;
+
 class ColorChooserClient {
 public:
     virtual ~ColorChooserClient();
 
     virtual void didChooseColor(const Color&) = 0;
     virtual void didEndChooser() = 0;
+    virtual Element& ownerElement() const = 0;
     virtual IntRect elementRectRelativeToRootView() const = 0;
     virtual Color currentColor() = 0;
     virtual bool shouldShowSuggestions() const = 0;

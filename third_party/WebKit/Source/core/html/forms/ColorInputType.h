@@ -46,6 +46,7 @@ public:
     // ColorChooserClient implementation.
     virtual void didChooseColor(const Color&) OVERRIDE;
     virtual void didEndChooser() OVERRIDE;
+    virtual Element& ownerElement() const OVERRIDE;
     virtual IntRect elementRectRelativeToRootView() const OVERRIDE;
     virtual Color currentColor() OVERRIDE;
     virtual bool shouldShowSuggestions() const OVERRIDE;

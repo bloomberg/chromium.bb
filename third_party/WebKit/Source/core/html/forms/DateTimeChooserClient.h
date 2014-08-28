@@ -35,10 +35,13 @@
 
 namespace blink {
 
+class Element;
+
 class DateTimeChooserClient {
 public:
     virtual ~DateTimeChooserClient();
 
+    virtual Element& ownerElement() const = 0;
     // Called when user picked a value.
     virtual void didChooseValue(const String&) = 0;
     // Called when user picked a value.

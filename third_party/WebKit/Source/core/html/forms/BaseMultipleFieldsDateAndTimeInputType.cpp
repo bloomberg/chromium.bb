@@ -280,6 +280,11 @@ void BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorChooseValue(double v
         element().setValueAsNumber(value, ASSERT_NO_EXCEPTION, DispatchInputAndChangeEvent);
 }
 
+Element& BaseMultipleFieldsDateAndTimeInputType::pickerOwnerElement() const
+{
+    return element();
+}
+
 bool BaseMultipleFieldsDateAndTimeInputType::setupDateTimeChooserParameters(DateTimeChooserParameters& parameters)
 {
     return element().setupDateTimeChooserParameters(parameters);

@@ -133,6 +133,12 @@ void PickerIndicatorElement::openPopup()
     m_chooser = document().page()->chrome().openDateTimeChooser(this, parameters);
 }
 
+Element& PickerIndicatorElement::ownerElement() const
+{
+    ASSERT(m_pickerIndicatorOwner);
+    return m_pickerIndicatorOwner->pickerOwnerElement();
+}
+
 void PickerIndicatorElement::closePopup()
 {
     if (!m_chooser)

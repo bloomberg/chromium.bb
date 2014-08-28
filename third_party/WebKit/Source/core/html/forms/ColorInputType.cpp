@@ -217,6 +217,11 @@ HTMLElement* ColorInputType::shadowColorSwatch() const
     return shadow ? toHTMLElement(shadow->firstChild()->firstChild()) : 0;
 }
 
+Element& ColorInputType::ownerElement() const
+{
+    return element();
+}
+
 IntRect ColorInputType::elementRectRelativeToRootView() const
 {
     return element().document().view()->contentsToRootView(element().pixelSnappedBoundingBox());

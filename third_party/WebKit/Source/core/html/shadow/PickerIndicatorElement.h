@@ -52,6 +52,7 @@ public:
         // FIXME: Remove. Deprecated in favor of double version.
         virtual void pickerIndicatorChooseValue(const String&) = 0;
         virtual void pickerIndicatorChooseValue(double) = 0;
+        virtual Element& pickerOwnerElement() const = 0;
         virtual bool setupDateTimeChooserParameters(DateTimeChooserParameters&) = 0;
     };
 
@@ -66,6 +67,7 @@ public:
     AXObject* popupRootAXObject() const;
 
     // DateTimeChooserClient implementation.
+    virtual Element& ownerElement() const OVERRIDE;
     virtual void didChooseValue(const String&) OVERRIDE;
     virtual void didChooseValue(double) OVERRIDE;
     virtual void didEndChooser() OVERRIDE;

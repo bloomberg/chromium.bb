@@ -211,6 +211,7 @@ bool WebPagePopupImpl::initializePage()
     provideContextFeaturesTo(*m_page, adoptPtr(new PagePopupFeaturesClient()));
     static FrameLoaderClient* emptyFrameLoaderClient =  new EmptyFrameLoaderClient();
     RefPtr<LocalFrame> frame = LocalFrame::create(emptyFrameLoaderClient, &m_page->frameHost(), 0);
+    // FIXME: Call frame->setPagePopupOwner with m_popupClient->ownerElement().
     frame->setView(FrameView::create(frame.get()));
     frame->init();
     frame->view()->resize(m_popupClient->contentSize());

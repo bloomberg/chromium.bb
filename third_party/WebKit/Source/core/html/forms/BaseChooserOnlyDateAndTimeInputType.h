@@ -55,6 +55,7 @@ private:
     virtual void updateView() OVERRIDE;
 
     // DateTimeChooserClient functions:
+    virtual Element& ownerElement() const OVERRIDE;
     virtual void didChooseValue(const String&) OVERRIDE;
     virtual void didChooseValue(double) OVERRIDE;
     virtual void didEndChooser() OVERRIDE;

@@ -138,6 +138,10 @@ void ColorChooserPopupUIController::didClosePopup()
         didEndChooser();
 }
 
+Element& ColorChooserPopupUIController::ownerElement()
+{
+    return m_client->ownerElement();
+}
 
 void ColorChooserPopupUIController::openPopup()
 {

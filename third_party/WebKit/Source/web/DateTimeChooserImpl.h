@@ -59,6 +59,7 @@ private:
     virtual void setValueAndClosePopup(int, const String&) OVERRIDE;
     virtual void setValue(const String&) OVERRIDE;
     virtual void closePopup() OVERRIDE;
+    virtual Element& ownerElement() OVERRIDE;
     virtual void didClosePopup() OVERRIDE;
 
     ChromeClientImpl* m_chromeClient;

@@ -97,6 +97,11 @@ void BaseChooserOnlyDateAndTimeInputType::closePopupView()
     closeDateTimeChooser();
 }
 
+Element& BaseChooserOnlyDateAndTimeInputType::ownerElement() const
+{
+    return element();
+}
+
 void BaseChooserOnlyDateAndTimeInputType::didChooseValue(const String& value)
 {
     element().setValue(value, DispatchInputAndChangeEvent);

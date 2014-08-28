@@ -170,6 +170,11 @@ void DateTimeChooserImpl::writeDocument(SharedBuffer* data)
     addString("</script></body>\n", data);
 }
 
+Element& DateTimeChooserImpl::ownerElement()
+{
+    return m_client->ownerElement();
+}
+
 Locale& DateTimeChooserImpl::locale()
 {
     return *m_locale;
