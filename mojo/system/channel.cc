@@ -348,6 +348,7 @@ void Channel::OnReadMessageForDownstream(
   }
 
   EndpointInfo endpoint_info;
+  bool nonexistent_local_id_error = false;
   {
     base::AutoLock locker(lock_);
 
@@ -358,18 +359,21 @@ void Channel::OnReadMessageForDownstream(
 
     IdToEndpointInfoMap::const_iterator it =
         local_id_to_endpoint_info_map_.find(local_id);
-    if (it == local_id_to_endpoint_info_map_.end()) {
-      HandleRemoteError(base::StringPrintf(
-          "Received a message for nonexistent local destination ID %u",
-          static_cast<unsigned>(local_id)));
-      // This is strongly indicative of some problem. However, it's not a fatal
-      // error, since it may indicate a bug (or hostile) remote process. Don't
-      // die even for Debug builds, since handling this properly needs to be
-      // tested (TODO(vtl)).
-      DLOG(ERROR) << "This should not happen under normal operation.";
-      return;
-    }
-    endpoint_info = it->second;
+    if (it == local_id_to_endpoint_info_map_.end())
+      nonexistent_local_id_error = true;
+    else
+      endpoint_info = it->second;
+  }
+  if (nonexistent_local_id_error) {
+    HandleRemoteError(base::StringPrintf(
+        "Received a message for nonexistent local destination ID %u",
+        static_cast<unsigned>(local_id)));
+    // This is strongly indicative of some problem. However, it's not a fatal
+    // error, since it may indicate a buggy (or hostile) remote process. Don't
+    // die even for Debug builds, since handling this properly needs to be
+    // tested (TODO(vtl)).
+    DLOG(ERROR) << "This should not happen under normal operation.";
+    return;
   }
 
   // Ignore messages for zombie endpoints (not an error).
