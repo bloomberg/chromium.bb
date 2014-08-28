@@ -5,6 +5,7 @@
 import time
 
 from metrics import Metric
+from telemetry.core.platform import process_statistic_timeline_data
 from telemetry.value import scalar
 
 
@@ -178,7 +179,10 @@ def _SubtractCpuStats(cpu_stats, start_cpu_stats):
     if (('IdleWakeupCount' not in cpu_stats[process_type]) or
         ('IdleWakeupCount' not in start_cpu_stats[process_type])):
       continue
+
+    assert isinstance(cpu_stats[process_type]['IdleWakeupCount'],
+        process_statistic_timeline_data.IdleWakeupTimelineData)
     idle_wakeup_delta = (cpu_stats[process_type]['IdleWakeupCount'] -
                         start_cpu_stats[process_type]['IdleWakeupCount'])
-    cpu_delta[process_type] = idle_wakeup_delta
+    cpu_delta[process_type] = idle_wakeup_delta.total_sum()
   return cpu_delta
