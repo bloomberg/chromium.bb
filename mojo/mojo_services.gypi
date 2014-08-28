@@ -422,8 +422,10 @@
         'mojo_gpu_bindings',
         'mojo_surfaces_bindings',
         'mojo_surfaces_lib',
-        '<(mojo_gles2_for_loadable_module)',
         '<(mojo_system_for_loadable_module)',
+      ],
+      'includes': [
+        'mojo_public_gles2_for_loadable_module.gypi',
       ],
       'sources': [
         'services/surfaces/surfaces_impl.cc',

@@ -375,7 +375,9 @@
         'mojo_geometry_lib',
         'mojo_surfaces_bindings',
         'mojo_surfaces_lib',
-        '<(mojo_gles2_for_loadable_module)',
+      ],
+      'includes': [
+        'mojo_public_gles2_for_loadable_module.gypi',
       ],
       'export_dependent_settings': [
         'mojo_surfaces_bindings',
@@ -479,7 +481,9 @@
             '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
             'mojo_cc_support',
             'mojo_native_viewport_bindings',
-            '<(mojo_gles2_for_loadable_module)',
+          ],
+          'includes': [
+            'mojo_public_gles2_for_loadable_module.gypi',
           ],
           'sources': [
             'aura/aura_init.cc',

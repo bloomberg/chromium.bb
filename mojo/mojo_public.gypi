@@ -44,52 +44,6 @@
       ],
     },
     {
-      # GN version: //mojo/public/gles2
-      'target_name': 'mojo_gles2',
-      'type': 'static_library',
-      'defines': [
-        'MOJO_GLES2_IMPLEMENTATION',
-        'GLES2_USE_MOJO',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies': [
-        '../third_party/khronos/khronos.gyp:khronos_headers'
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '..',
-        ],
-        'defines': [
-          'GLES2_USE_MOJO',
-        ],
-      },
-      'all_dependent_settings': {
-        'conditions': [
-          # We need to be able to call the MojoSetGLES2Thunks() function in
-          # gles2_thunks.cc
-          ['OS=="android"', {
-            'ldflags!': [
-              '-Wl,--exclude-libs=ALL',
-            ],
-          }],
-        ],
-      },
-      'sources': [
-        'public/c/gles2/gles2.h',
-        'public/c/gles2/gles2_export.h',
-        'public/platform/native/gles2_thunks.cc',
-        'public/platform/native/gles2_thunks.h',
-        'public/platform/native/gles2_impl_thunks.cc',
-        'public/platform/native/gles2_impl_thunks.h',
-        'public/platform/native/gles2_impl_chromium_texture_mailbox_thunks.cc',
-        'public/platform/native/gles2_impl_chromium_texture_mailbox_thunks.h',
-        'public/platform/native/gles2_impl_chromium_sync_point_thunks.cc',
-        'public/platform/native/gles2_impl_chromium_sync_point_thunks.h',
-      ],
-    },
-    {
       # GN version: //mojo/public/cpp/bindings
       'target_name': 'mojo_cpp_bindings',
       'type': 'static_library',

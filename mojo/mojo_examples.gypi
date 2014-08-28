@@ -74,8 +74,10 @@
         'mojo_geometry_bindings',
         'mojo_gpu_bindings',
         'mojo_native_viewport_bindings',
-        '<(mojo_gles2_for_loadable_module)',
         '<(mojo_system_for_loadable_module)',
+      ],
+      'includes': [
+        'mojo_public_gles2_for_loadable_module.gypi',
       ],
       'sources': [
         'examples/sample_app/gles2_client_impl.cc',
@@ -164,8 +166,10 @@
         'mojo_geometry_lib',
         'mojo_gpu_bindings',
         'mojo_native_viewport_bindings',
-        '<(mojo_gles2_for_loadable_module)',
         '<(mojo_system_for_loadable_module)',
+      ],
+      'includes': [
+        'mojo_public_gles2_for_loadable_module.gypi',
       ],
       'sources': [
         'examples/compositor_app/compositor_app.cc',
@@ -265,8 +269,10 @@
         'mojo_geometry_bindings',
         'mojo_gpu_bindings',
         'mojo_native_viewport_bindings',
-        '<(mojo_gles2_for_loadable_module)',
         '<(mojo_system_for_loadable_module)',
+      ],
+      'includes': [
+        'mojo_public_gles2_for_loadable_module.gypi',
       ],
       'defines': [
         # We don't really want to export. We could change how
@@ -442,8 +448,10 @@
         'mojo_surfaces_app_bindings',
         'mojo_surfaces_bindings',
         'mojo_surfaces_lib',
-        '<(mojo_gles2_for_loadable_module)',
         '<(mojo_system_for_loadable_module)',
+      ],
+      'includes': [
+        'mojo_public_gles2_for_loadable_module.gypi',
       ],
       'sources': [
         'examples/surfaces_app/child_gl_app.cc',
@@ -550,8 +558,10 @@
             'mojo_base.gyp:mojo_utility',
             'mojo_geometry_bindings',
             'mojo_view_manager_bindings',
-            '<(mojo_gles2_for_loadable_module)',
             '<(mojo_system_for_loadable_module)',
+          ],
+          'includes': [
+            'mojo_public_gles2_for_loadable_module.gypi',
           ],
           'sources': [
             'examples/demo_launcher/demo_launcher.cc',
@@ -652,8 +662,10 @@
             'mojo_view_manager_lib',
             'mojo_views_support',
             'mojo_window_manager_bindings',
-            '<(mojo_gles2_for_loadable_module)',
             '<(mojo_system_for_loadable_module)',
+          ],
+          'includes': [
+            'mojo_public_gles2_for_loadable_module.gypi',
           ],
           'sources': [
             'examples/window_manager/debug_panel.h',
@@ -676,8 +688,10 @@
             'mojo_navigation_bindings',
             'mojo_view_manager_lib',
             'mojo_window_manager_bindings',
-            '<(mojo_gles2_for_loadable_module)',
             '<(mojo_system_for_loadable_module)',
+          ],
+          'includes': [
+            'mojo_public_gles2_for_loadable_module.gypi',
           ],
           'sources': [
             'examples/embedded_app/embedded_app.cc',
@@ -698,8 +712,10 @@
             'mojo_navigation_bindings',
             'mojo_view_manager_lib',
             'mojo_window_manager_bindings',
-            '<(mojo_gles2_for_loadable_module)',
             '<(mojo_system_for_loadable_module)',
+          ],
+          'includes': [
+            'mojo_public_gles2_for_loadable_module.gypi',
           ],
           'sources': [
             'examples/nesting_app/nesting_app.cc',
