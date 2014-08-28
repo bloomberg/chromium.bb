@@ -518,6 +518,16 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
                       '%s does not build chromeos-initramfs, which is required '
                       'for creating the recovery image' % build_name)
 
+  def testChildConfigsNotImportantInReleaseGroup(self):
+    """Verify that configs in an important group are not important."""
+    msg = ('Child config %s for %s should not be important because %s is '
+           'already important')
+    for build_name, config in cbuildbot_config.config.iteritems():
+      if build_name.endswith('-release-group') and config['important']:
+        for child_config in config.child_configs:
+          self.assertFalse(child_config.important,
+                           msg % (child_config.name, build_name, build_name))
+
 
 class FindFullTest(cros_test_lib.TestCase):
   """Test locating of official build for a board."""

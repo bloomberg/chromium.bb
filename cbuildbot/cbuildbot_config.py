@@ -2299,7 +2299,6 @@ _arm_release.add_config('daisy-release',
 _arm_release.add_config('peach_pi-release',
   boards=['peach_pi'],
   useflags=_release['useflags'] + ['highdpi'],
-  important=True,
 )
 
 _arm_release.add_config('nyan-release',
@@ -2315,7 +2314,6 @@ _arm_release.add_config('nyan_big-release',
 _arm_release.add_config('nyan_blaze-release',
   boards=['nyan_blaze'],
   useflags=_release['useflags'] + ['highdpi'],
-  important=True,
 )
 
 _arm_release.add_config('veyron_pinky-release',

@@ -47692,7 +47692,7 @@
                     "test",
                     "factory_install"
                 ],
-                "important": true,
+                "important": false,
                 "internal": true,
                 "latest_toolchain": false,
                 "manifest": "official.xml",
@@ -49687,7 +49687,7 @@
             "test",
             "factory_install"
         ],
-        "important": true,
+        "important": false,
         "internal": true,
         "latest_toolchain": false,
         "manifest": "official.xml",
@@ -57244,7 +57244,7 @@
                     "test",
                     "factory_install"
                 ],
-                "important": true,
+                "important": false,
                 "internal": true,
                 "latest_toolchain": false,
                 "manifest": "official.xml",
@@ -57921,7 +57921,7 @@
             "test",
             "factory_install"
         ],
-        "important": true,
+        "important": false,
         "internal": true,
         "latest_toolchain": false,
         "manifest": "official.xml",
