@@ -155,7 +155,7 @@ nacl_list="autoconf bison cmake g++-mingw-w64-i686 gawk lib32z1-dev
 # it depends on mesa, and only one version of mesa can exists on the system.
 # Hence we must match the same version or this entire script will fail.
 mesa_variant=""
-for variant in "-lts-quantal" "-lts-raring" "-lts-saucy"; do
+for variant in "-lts-quantal" "-lts-raring" "-lts-saucy" "-lts-trusty"; do
   if $(dpkg-query -Wf'${Status}' libgl1-mesa-glx${variant} | \
        grep -q " ok installed"); then
     mesa_variant="${variant}"
