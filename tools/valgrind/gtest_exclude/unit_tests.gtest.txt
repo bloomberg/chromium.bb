@@ -31,3 +31,6 @@ NativeMessagingTest.*
 
 # Timing out all over the place. Disabling for now. http://crbug.com/164589
 StorageInfoProviderTest.*
+
+# Failing on CrOS, see http://crbug.com/408013
+ProxyConfigServiceImplTest.*
