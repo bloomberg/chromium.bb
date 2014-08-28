@@ -119,7 +119,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
 
     PageScriptDebugServer* pageScriptDebugServer = &PageScriptDebugServer::shared();
 
-    m_agents.append(PageRuntimeAgent::create(injectedScriptManager, pageScriptDebugServer, m_page, m_pageAgent));
+    m_agents.append(PageRuntimeAgent::create(injectedScriptManager, inspectorClient, pageScriptDebugServer, m_page, m_pageAgent));
 
     m_agents.append(PageConsoleAgent::create(injectedScriptManager, m_domAgent, m_timelineAgent, m_tracingAgent));
 

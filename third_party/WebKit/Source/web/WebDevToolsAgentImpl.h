@@ -102,6 +102,7 @@ public:
     virtual void updateInspectorStateCookie(const WTF::String&) OVERRIDE;
     virtual void sendMessageToFrontend(PassRefPtr<JSONObject> message) OVERRIDE;
     virtual void flush() OVERRIDE;
+    virtual void resumeStartup() OVERRIDE;
 
     virtual void setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool mobile, bool fitWindow, float scale, float offsetX, float offsetY) OVERRIDE;
     virtual void clearDeviceMetricsOverride() OVERRIDE;

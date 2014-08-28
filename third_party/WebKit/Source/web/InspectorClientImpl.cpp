@@ -208,6 +208,12 @@ void InspectorClientImpl::stopGPUEventsRecording()
         agent->stopGPUEventsRecording();
 }
 
+void InspectorClientImpl::resumeStartup()
+{
+    if (WebDevToolsAgentImpl* agent = devToolsAgent())
+        agent->resumeStartup();
+}
+
 WebDevToolsAgentImpl* InspectorClientImpl::devToolsAgent()
 {
     return static_cast<WebDevToolsAgentImpl*>(m_inspectedWebView->devToolsAgent());

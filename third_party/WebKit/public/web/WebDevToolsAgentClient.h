@@ -57,6 +57,9 @@ public:
     // if the same client is reattached to another agent.
     virtual void saveAgentRuntimeState(const WebString&) { }
 
+    // Resume the inspected renderer that is waiting for DevTools front-end to initialize its state.
+    virtual void resumeStartup() { }
+
     class WebKitClientMessageLoop {
     public:
         virtual ~WebKitClientMessageLoop() { }

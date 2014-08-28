@@ -77,6 +77,8 @@ public:
     virtual void dispatchKeyEvent(const PlatformKeyboardEvent&) { }
     virtual void dispatchMouseEvent(const PlatformMouseEvent&) { }
 
+    virtual void resumeStartup() { }
+
 protected:
     virtual ~InspectorClient() { }
 };

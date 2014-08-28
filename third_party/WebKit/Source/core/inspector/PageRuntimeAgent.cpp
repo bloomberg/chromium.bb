@@ -38,6 +38,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/page/Page.h"
@@ -45,8 +46,9 @@
 
 namespace blink {
 
-PageRuntimeAgent::PageRuntimeAgent(InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer, Page* page, InspectorPageAgent* pageAgent)
+PageRuntimeAgent::PageRuntimeAgent(InjectedScriptManager* injectedScriptManager, InspectorClient* client, ScriptDebugServer* scriptDebugServer, Page* page, InspectorPageAgent* pageAgent)
     : InspectorRuntimeAgent(injectedScriptManager, scriptDebugServer)
+    , m_client(client)
     , m_inspectedPage(page)
     , m_pageAgent(pageAgent)
     , m_mainWorldContextCreated(false)
@@ -84,6 +86,11 @@ void PageRuntimeAgent::enable(ErrorString* errorString)
     // that are expected to be triggered only after the load is committed, see http://crbug.com/131623
     if (m_mainWorldContextCreated)
         reportExecutionContextCreation();
+}
+
+void PageRuntimeAgent::run(ErrorString* errorString)
+{
+    m_client->resumeStartup();
 }
 
 void PageRuntimeAgent::didClearDocumentOfWindowObject(LocalFrame* frame)

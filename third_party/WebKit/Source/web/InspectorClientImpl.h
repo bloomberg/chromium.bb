@@ -83,6 +83,8 @@ public:
     virtual void startGPUEventsRecording() OVERRIDE;
     virtual void stopGPUEventsRecording() OVERRIDE;
 
+    virtual void resumeStartup() OVERRIDE;
+
 private:
     WebDevToolsAgentImpl* devToolsAgent();
 

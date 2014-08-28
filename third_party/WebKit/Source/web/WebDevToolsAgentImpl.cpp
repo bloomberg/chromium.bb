@@ -580,6 +580,11 @@ void WebDevToolsAgentImpl::updateInspectorStateCookie(const String& state)
     m_client->saveAgentRuntimeState(state);
 }
 
+void WebDevToolsAgentImpl::resumeStartup()
+{
+    m_client->resumeStartup();
+}
+
 void WebDevToolsAgentImpl::setLayerTreeId(int layerTreeId)
 {
     m_layerTreeId = layerTreeId;

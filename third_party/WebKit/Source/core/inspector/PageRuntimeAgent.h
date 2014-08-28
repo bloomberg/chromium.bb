@@ -37,33 +37,36 @@
 
 namespace blink {
 
+class InspectorClient;
 class InspectorPageAgent;
 class Page;
 class SecurityOrigin;
 
 class PageRuntimeAgent FINAL : public InspectorRuntimeAgent {
 public:
-    static PassOwnPtrWillBeRawPtr<PageRuntimeAgent> create(InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer, Page* page, InspectorPageAgent* pageAgent)
+    static PassOwnPtrWillBeRawPtr<PageRuntimeAgent> create(InjectedScriptManager* injectedScriptManager, InspectorClient* client, ScriptDebugServer* scriptDebugServer, Page* page, InspectorPageAgent* pageAgent)
     {
-        return adoptPtrWillBeNoop(new PageRuntimeAgent(injectedScriptManager, scriptDebugServer, page, pageAgent));
+        return adoptPtrWillBeNoop(new PageRuntimeAgent(injectedScriptManager, client, scriptDebugServer, page, pageAgent));
     }
     virtual ~PageRuntimeAgent();
     virtual void trace(Visitor*) OVERRIDE;
     virtual void init() OVERRIDE;
     virtual void enable(ErrorString*) OVERRIDE;
+    virtual void run(ErrorString*) OVERRIDE;
 
     void didClearDocumentOfWindowObject(LocalFrame*);
     void didCreateIsolatedContext(LocalFrame*, ScriptState*, SecurityOrigin*);
     void frameWindowDiscarded(LocalDOMWindow*);
 
 private:
-    PageRuntimeAgent(InjectedScriptManager*, ScriptDebugServer*, Page*, InspectorPageAgent*);
+    PageRuntimeAgent(InjectedScriptManager*, InspectorClient*, ScriptDebugServer*, Page*, InspectorPageAgent*);
 
     virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) OVERRIDE;
     virtual void muteConsole() OVERRIDE;
     virtual void unmuteConsole() OVERRIDE;
     void reportExecutionContextCreation();
 
+    InspectorClient* m_client;
     RawPtrWillBeMember<Page> m_inspectedPage;
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     bool m_mainWorldContextCreated;
