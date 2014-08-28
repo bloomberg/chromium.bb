@@ -285,35 +285,6 @@ def RunGClientAndCreateConfig(opts, custom_deps=None, cwd=None):
   return return_code
 
 
-def IsDepsFileBlink(git_revision=''):
-  """Reads .DEPS.git and returns whether or not we're using blink.
-
-  Args:
-    git_revision: A git hash revision of chromium.
-  Returns:
-    True if blink, false if webkit.
-  """
-  git_cmd = ['cat-file', 'blob', '%s:%s' %(git_revision, FILE_DEPS_GIT)]
-  search_str = 'blink.git'
-  search_key = 'webkit_url'
-  (out_put, ret_val) = RunGit(git_cmd)
-  if ret_val:
-    search_str = 'blink'
-    search_key = 'webkit_trunk'
-    git_cmd = ['cat-file', 'blob', '%s:%s' %(git_revision, FILE_DEPS)]
-    (out_put, ret_val) = RunGit(git_cmd)
-    if ret_val:
-      print 'Error processing DEPS or .DEPS.git'
-      return False
-  locals =  {
-      'Var': lambda _: locals["vars"][_],
-      'From': lambda *args: None
-  }
-
-  exec out_put in  {}, locals
-
-  return search_str in locals['vars'][search_key]
-
 
 def OnAccessError(func, path, _):
   """Error handler for shutil.rmtree.
@@ -408,10 +379,7 @@ def SetupGitDepot(opts, custom_deps):
     if os.path.isfile(os.path.join('src', FILE_DEPS_GIT)):
       cwd = os.getcwd()
       os.chdir('src')
-      if not IsDepsFileBlink():
-        passed_deps_check = RemoveThirdPartyDirectory('Webkit')
-      else:
-        passed_deps_check = True
+      passed_deps_check = True
       if passed_deps_check:
         passed_deps_check = RemoveThirdPartyDirectory('libjingle')
       if passed_deps_check:

@@ -921,9 +921,6 @@ class BisectPerformanceMetrics(object):
     self.warnings = []
     self.builder = builder.Builder.FromOpts(opts)
 
-    # This always starts true since the script grabs latest first.
-    self.was_blink = True
-
     for d in DEPOT_NAMES:
       # The working directory of each depot is just the path to the depot, but
       # since we're already in 'src', we can skip that part.
@@ -1776,29 +1773,6 @@ class BisectPerformanceMetrics(object):
           path_to_file = os.path.join(path, cur_file)
           os.remove(path_to_file)
 
-  def PerformWebkitDirectoryCleanup(self, revision):
-    """Cleans up the Webkit directory before syncing another revision.
-
-    If the script is switching between Blink and WebKit during bisect,
-    its faster to just delete the directory rather than leave it up to git
-    to sync.
-
-    Returns:
-      True if successful.
-    """
-    cwd = os.getcwd()
-    os.chdir(self.src_cwd)
-
-    is_blink = bisect_utils.IsDepsFileBlink(revision)
-
-    os.chdir(cwd)
-
-    if self.was_blink != is_blink:
-      self.was_blink = is_blink
-      # Removes third_party/Webkit directory.
-      return bisect_utils.RemoveThirdPartyDirectory('Webkit')
-    return True
-
   def PerformCrosChrootCleanup(self):
     """Deletes the chroot.
 
@@ -1841,11 +1815,6 @@ class BisectPerformanceMetrics(object):
       # issues syncing when using the git workflow (crbug.com/377951).
       if not bisect_utils.RemoveThirdPartyDirectory('skia'):
         return False
-      if depot == 'chromium':
-        # The fast webkit cleanup doesn't work for android_chrome
-        # The switch from Webkit to Blink that this deals with now happened
-        # quite a long time ago so this is unlikely to be a problem.
-        return self.PerformWebkitDirectoryCleanup(revision)
     elif depot == 'cros':
       return self.PerformCrosChrootCleanup()
     return True
