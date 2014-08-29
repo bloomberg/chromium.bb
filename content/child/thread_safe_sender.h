@@ -34,8 +34,8 @@ class CONTENT_EXPORT ThreadSafeSender
   friend class WebIDBCursorImplTest;
   friend class base::RefCountedThreadSafe<ThreadSafeSender>;
 
-  ThreadSafeSender(base::MessageLoopProxy* main_loop,
-                   IPC::SyncMessageFilter* sync_filter);
+  ThreadSafeSender(const scoped_refptr<base::MessageLoopProxy>& main_loop,
+                   const scoped_refptr<IPC::SyncMessageFilter>& sync_filter);
   virtual ~ThreadSafeSender();
 
   scoped_refptr<base::MessageLoopProxy> main_loop_;

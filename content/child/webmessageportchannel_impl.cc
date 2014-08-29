@@ -20,7 +20,7 @@ using blink::WebString;
 namespace content {
 
 WebMessagePortChannelImpl::WebMessagePortChannelImpl(
-    base::MessageLoopProxy* child_thread_loop)
+    const scoped_refptr<base::MessageLoopProxy>& child_thread_loop)
     : client_(NULL),
       route_id_(MSG_ROUTING_NONE),
       message_port_id_(MSG_ROUTING_NONE),
@@ -32,7 +32,7 @@ WebMessagePortChannelImpl::WebMessagePortChannelImpl(
 WebMessagePortChannelImpl::WebMessagePortChannelImpl(
     int route_id,
     int message_port_id,
-    base::MessageLoopProxy* child_thread_loop)
+    const scoped_refptr<base::MessageLoopProxy>& child_thread_loop)
     : client_(NULL),
       route_id_(route_id),
       message_port_id_(message_port_id),
@@ -61,7 +61,7 @@ WebMessagePortChannelImpl::~WebMessagePortChannelImpl() {
 
 // static
 void WebMessagePortChannelImpl::CreatePair(
-    base::MessageLoopProxy* child_thread_loop,
+    const scoped_refptr<base::MessageLoopProxy>& child_thread_loop,
     blink::WebMessagePortChannel** channel1,
     blink::WebMessagePortChannel** channel2) {
   WebMessagePortChannelImpl* impl1 =
