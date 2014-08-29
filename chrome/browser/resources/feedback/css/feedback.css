@@ -11,6 +11,7 @@ body {
   background-color: #fbfbfb;
   height: 100%;
   margin: 0;
+  overflow: auto;
   padding: 0;
   width: 100%;
 }

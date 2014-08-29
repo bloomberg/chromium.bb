@@ -307,6 +307,8 @@ function initialize() {
           $('histograms-url').onclick =
               windowOpener(STATS_WINDOW_ID, 'chrome://histograms');
         }
+        // Make sure our focus starts on the description field.
+        $('description-text').focus();
       });
     }
   });
