@@ -28,7 +28,7 @@ vars = {
   'libcxxabi_revision': '062ba40d41870a04e0aefb64f8122e91aa824147',
   'webkit_trunk': 'http://src.chromium.org/blink/trunk',
   'nacl_trunk': 'http://src.chromium.org/native_client/trunk',
-  'webkit_revision': '0b1c83564fc6d6e5518f711306b85553a01e19b9', # from svn revision 181071
+  'webkit_revision': 'a0ba700b74d535334d0ba359bfc266cafba26104', # from svn revision 181075
   'chromium_git': 'https://chromium.googlesource.com',
   'chromiumos_git': 'https://chromium.googlesource.com/chromiumos',
   'pdfium_git': 'https://pdfium.googlesource.com',
