@@ -44,9 +44,17 @@ ScriptPromise FetchBodyStream::readAsync(ScriptState* scriptState, ResponseType 
         readType = FileReaderLoader::ReadAsArrayBuffer;
         break;
     case ResponseAsBlob:
-        m_resolver->resolve(Blob::create(m_blobDataHandle));
-        m_resolver.clear();
-        return promise;
+        if (m_blobDataHandle->size() != kuint64max) {
+            // If the size of |m_blobDataHandle| is set correctly, creates Blob from it.
+            m_resolver->resolve(Blob::create(m_blobDataHandle));
+            m_resolver.clear();
+            return promise;
+        }
+        // If the size is not set, read as ArrayBuffer and create a new blob to get the size.
+        // FIXME: This workaround is not good for performance.
+        // When we will stop using Blob as a base system of FetchBodyStream to support stream, this problem should be solved.
+        readType = FileReaderLoader::ReadAsArrayBuffer;
+        break;
     case ResponseAsFormData:
         // FIXME: Implement this.
         ASSERT_NOT_REACHED();
@@ -139,10 +147,15 @@ void FetchBodyStream::didFinishLoading()
     case ResponseAsArrayBuffer:
         m_resolver->resolve(m_loader->arrayBufferResult());
         break;
-    case ResponseAsBlob:
-        // Handled in ::readAsync().
-        ASSERT_NOT_REACHED();
+    case ResponseAsBlob: {
+        ASSERT(m_blobDataHandle->size() == kuint64max);
+        OwnPtr<BlobData> blobData = BlobData::create();
+        RefPtr<ArrayBuffer> buffer = m_loader->arrayBufferResult();
+        blobData->appendArrayBuffer(buffer.get());
+        const size_t length = blobData->length();
+        m_resolver->resolve(Blob::create(BlobDataHandle::create(blobData.release(), length)));
         break;
+    }
     case ResponseAsFormData:
         ASSERT_NOT_REACHED();
         break;
