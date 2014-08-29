@@ -28,6 +28,7 @@
 #include "ui/gfx/frame_time.h"
 #include "ui/gfx/transform.h"
 #include "ui/wm/core/shadow_types.h"
+#include "ui/wm/core/window_util.h"
 
 namespace {
 
@@ -67,14 +68,32 @@ void SetWindowProgress(aura::Window* window, float progress) {
   window->SetTransform(GetTransformForState(state));
 }
 
+void HideWindowIfNotVisible(aura::Window* window,
+                            SplitViewController* split_view_controller) {
+  bool should_hide = true;
+  if (split_view_controller->IsSplitViewModeActive()) {
+    should_hide = window != split_view_controller->left_window() &&
+                  window != split_view_controller->right_window();
+  } else {
+    should_hide = !wm::IsActiveWindow(window);
+  }
+  if (should_hide)
+    window->Hide();
+}
+
 // Resets the overview-related state for |window|.
-void RestoreWindowState(aura::Window* window) {
+void RestoreWindowState(aura::Window* window,
+                        SplitViewController* split_view_controller) {
   window->ClearProperty(kWindowOverviewState);
 
   ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
   settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(250));
+
+  settings.AddObserver(new ui::ClosureAnimationObserver(
+      base::Bind(&HideWindowIfNotVisible, window, split_view_controller)));
+
   window->SetTransform(gfx::Transform());
   wm::SetShadowType(window, wm::SHADOW_TYPE_NONE);
 }
@@ -112,21 +131,15 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
                          WindowOverviewModeDelegate* delegate)
       : container_(container),
         window_list_provider_(window_list_provider),
+        split_view_controller_(split_view_controller),
         delegate_(delegate),
         scoped_targeter_(new aura::ScopedWindowTargeter(
             container,
             scoped_ptr<ui::EventTargeter>(
                 new StaticWindowTargeter(container)))),
-        dragged_window_(NULL),
-        split_({false, NULL, NULL}) {
+        dragged_window_(NULL) {
     CHECK(delegate_);
     container_->set_target_handler(this);
-
-    split_.enabled = split_view_controller->IsSplitViewModeActive();
-    if (split_.enabled) {
-      split_.left = split_view_controller->left_window();
-      split_.right = split_view_controller->right_window();
-    }
 
     // Prepare the desired transforms for all the windows, and set the initial
     // state on the windows.
@@ -140,7 +153,9 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     aura::Window::Windows windows = window_list_provider_->GetWindowList();
     if (windows.empty())
       return;
-    std::for_each(windows.begin(), windows.end(), &RestoreWindowState);
+    std::for_each(windows.begin(), windows.end(),
+                  std::bind2nd(std::ptr_fun(&RestoreWindowState),
+                               split_view_controller_));
   }
 
  private:
@@ -159,7 +174,9 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
 
       WindowOverviewState* state = new WindowOverviewState;
       window->SetProperty(kWindowOverviewState, state);
-      if (split_.enabled && (window == split_.left || window == split_.right)) {
+      if (split_view_controller_->IsSplitViewModeActive() &&
+          (window == split_view_controller_->left_window() ||
+           window == split_view_controller_->right_window())) {
         // Do not let the left/right windows be scrolled.
         int x_translate = window->bounds().width() * (1 - kMaxScale) / 2;
         state->top.Translate(x_translate, window->bounds().height() * 0.65);
@@ -212,7 +229,9 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
          ++iter) {
       float progress = 0.f;
       aura::Window* window = *iter;
-      if (split_.enabled && (window == split_.left || window == split_.right)) {
+      if (split_view_controller_->IsSplitViewModeActive() &&
+          (window == split_view_controller_->left_window() ||
+           window == split_view_controller_->right_window())) {
         progress = 1;
       } else {
         if (index < arraysize(kInitialProgress))
@@ -300,8 +319,9 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   int GetScrollableHeight() const {
     const float kScrollableFraction = 0.65f;
     const float kScrollableFractionInSplit = 0.5f;
-    const float fraction =
-        split_.enabled ? kScrollableFractionInSplit : kScrollableFraction;
+    const float fraction = split_view_controller_->IsSplitViewModeActive()
+                               ? kScrollableFractionInSplit
+                               : kScrollableFraction;
     return container_->bounds().height() * fraction;
   }
 
@@ -471,13 +491,15 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   }
 
   void SelectWindow(aura::Window* window) {
-    if (!split_.enabled) {
+    if (!split_view_controller_->IsSplitViewModeActive()) {
       delegate_->OnSelectWindow(window);
     } else {
       // If the selected window is one of the left/right windows, then keep the
       // current state.
-      if (window == split_.left || window == split_.right) {
-        delegate_->OnSplitViewMode(split_.left, split_.right);
+      if (window == split_view_controller_->left_window() ||
+          window == split_view_controller_->right_window()) {
+        delegate_->OnSplitViewMode(split_view_controller_->left_window(),
+                                   split_view_controller_->right_window());
       } else {
         delegate_->OnSelectWindow(window);
       }
@@ -568,6 +590,8 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   aura::Window* container_;
   // Provider of the stack of windows to show in the overview mode. Not owned.
   const WindowListProvider* window_list_provider_;
+  SplitViewController* split_view_controller_;
+
   WindowOverviewModeDelegate* delegate_;
   scoped_ptr<aura::ScopedWindowTargeter> scoped_targeter_;
   scoped_ptr<ui::FlingCurve> fling_;
@@ -575,12 +599,6 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   aura::Window* dragged_window_;
   gfx::Point dragged_start_location_;
   scoped_ptr<OverviewToolbar> overview_toolbar_;
-
-  struct {
-    bool enabled;
-    aura::Window* left;
-    aura::Window* right;
-  } split_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowOverviewModeImpl);
 };

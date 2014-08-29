@@ -48,6 +48,7 @@ TEST_F(WindowManagerTest, OverviewModeBasics) {
       first.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
   aura::client::ParentWindowWithContext(
       second.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
+  wm::ActivateWindow(second.get());
 
   ASSERT_FALSE(WindowManager::GetInstance()->IsOverviewModeActive());
   EXPECT_EQ(first->bounds().ToString(), second->bounds().ToString());
@@ -69,6 +70,37 @@ TEST_F(WindowManagerTest, OverviewModeBasics) {
                 .size()
                 .ToString(),
             first->bounds().size().ToString());
+  EXPECT_TRUE(first->IsVisible());
+  EXPECT_TRUE(second->IsVisible());
+
+  // Terminate overview mode. |first| should be hidden, since it's not visible
+  // to the user anymore.
+  WindowManager::GetInstance()->ToggleOverview();
+  ASSERT_FALSE(WindowManager::GetInstance()->IsOverviewModeActive());
+  EXPECT_FALSE(first->IsVisible());
+  EXPECT_TRUE(second->IsVisible());
+}
+
+TEST_F(WindowManagerTest, OverviewToSplitViewMode) {
+  test::WindowManagerImplTestApi wm_api;
+
+  aura::test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> w1(CreateTestWindow(&delegate, gfx::Rect()));
+  scoped_ptr<aura::Window> w2(CreateTestWindow(&delegate, gfx::Rect()));
+  scoped_ptr<aura::Window> w3(CreateTestWindow(&delegate, gfx::Rect()));
+  wm::ActivateWindow(w3.get());
+
+  WindowManager::GetInstance()->ToggleOverview();
+  EXPECT_TRUE(w1->IsVisible());
+  EXPECT_TRUE(w2->IsVisible());
+  EXPECT_TRUE(w3->IsVisible());
+
+  // Go into split-view mode.
+  WindowOverviewModeDelegate* overview_delegate = wm_api.wm();
+  overview_delegate->OnSplitViewMode(NULL, w2.get());
+  EXPECT_TRUE(w3->IsVisible());
+  EXPECT_TRUE(w2->IsVisible());
+  EXPECT_FALSE(w1->IsVisible());
 }
 
 TEST_F(WindowManagerTest, BezelGestureToSplitViewMode) {
@@ -333,6 +365,10 @@ TEST_F(WindowManagerTest, OverviewModeFromSplitMode) {
   WindowOverviewModeDelegate* overview_delegate = wm_api.wm();
   overview_delegate->OnSelectWindow(w1.get());
   EXPECT_FALSE(wm_api.GetSplitViewController()->IsSplitViewModeActive());
+  EXPECT_TRUE(w1->IsVisible());
+  // Make sure the windows that were in split-view mode are hidden.
+  EXPECT_FALSE(w2->IsVisible());
+  EXPECT_FALSE(w3->IsVisible());
 }
 
 }  // namespace athena
