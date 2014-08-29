@@ -8,8 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/browser/resource_dispatcher_host_delegate.h"
-#include "content/public/common/resource_type.h"
 
 namespace base {
 class FilePath;
@@ -21,30 +19,6 @@ struct HttpRequest;
 class HttpResponse;
 }
 }
-
-using content::ResourceDispatcherHostDelegate;
-
-class TestDispatcherHostDelegate : public ResourceDispatcherHostDelegate {
- public:
-  explicit TestDispatcherHostDelegate()
-      : ResourceDispatcherHostDelegate(), found_pnacl_header_(false) {}
-
-  virtual ~TestDispatcherHostDelegate() {}
-
-  virtual void RequestBeginning(
-      net::URLRequest* request,
-      content::ResourceContext* resource_context,
-      content::AppCacheService* appcache_service,
-      content::ResourceType resource_type,
-      ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE;
-
-  bool found_pnacl_header() const { return found_pnacl_header_; }
-
- private:
-  bool found_pnacl_header_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDispatcherHostDelegate);
-};
 
 class PnaclHeaderTest : public InProcessBrowserTest {
  public:
@@ -66,7 +40,6 @@ class PnaclHeaderTest : public InProcessBrowserTest {
 
   int noncors_loads_;
   int cors_loads_;
-  TestDispatcherHostDelegate test_delegate_;
   DISALLOW_COPY_AND_ASSIGN(PnaclHeaderTest);
 };
 
