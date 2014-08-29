@@ -87,10 +87,24 @@ def RunCommand(command, tries=1):
     print 'Failed.'
   sys.exit(1)
 
+
 def CopyFile(src, dst):
   """Copy a file from src to dst."""
   shutil.copy(src, dst)
   print "Copying %s to %s" % (src, dst)
+
+
+def CopyDirectoryContents(src, dst, filename_filter=None):
+  """Copy the files from directory src to dst
+  with an optional filename filter."""
+  if not os.path.exists(dst):
+    os.makedirs(dst)
+  for root, _, files in os.walk(src):
+    for f in files:
+      if filename_filter and not re.match(filename_filter, f):
+        continue
+      CopyFile(os.path.join(root, f), dst)
+
 
 def Checkout(name, url, dir):
   """Checkout the SVN module at url into dir. Use name for the log message."""
@@ -167,18 +181,18 @@ def UpdateClang():
               '-DLLVM_ENABLE_ASSERTIONS=ON', LLVM_DIR])
   RunCommand(GetVSVersion().SetupScript('x86') + ['&&', 'ninja', 'compiler-rt'])
 
+  asan_rt_bin_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'bin')
+  asan_rt_bin_dst_dir = os.path.join(LLVM_BUILD_DIR, 'bin')
+  CopyDirectoryContents(asan_rt_bin_src_dir, asan_rt_bin_dst_dir,
+                        r'^.*-i386\.dll$')
+
   # TODO(hans): Make this (and the .gypi file) version number independent.
   asan_rt_lib_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'lib', 'clang',
                                      '3.6.0', 'lib', 'windows')
   asan_rt_lib_dst_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang',
                                      '3.6.0', 'lib', 'windows')
-
-  if not os.path.exists(asan_rt_lib_dst_dir):
-    os.makedirs(asan_rt_lib_dst_dir)
-  for root, _, files in os.walk(asan_rt_lib_src_dir):
-    for f in files:
-      if re.match(r'^.*-i386\.lib$', f):
-        CopyFile(os.path.join(root, f), asan_rt_lib_dst_dir)
+  CopyDirectoryContents(asan_rt_lib_src_dir, asan_rt_lib_dst_dir,
+                        r'^.*-i386\.lib$')
 
   CopyFile(os.path.join(asan_rt_lib_src_dir, '..', '..', 'asan_blacklist.txt'),
            os.path.join(asan_rt_lib_dst_dir, '..', '..'))
