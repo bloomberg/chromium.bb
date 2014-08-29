@@ -6,67 +6,75 @@
 
 #include <errno.h>
 
+#include <limits>
+
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 
-using namespace sandbox::bpf_dsl::internal;
-typedef ::sandbox::Trap::TrapFnc TrapFnc;
-
 namespace sandbox {
 namespace bpf_dsl {
 namespace {
 
-class AllowResultExprImpl : public ResultExprImpl {
+class AllowResultExprImpl : public internal::ResultExprImpl {
  public:
   AllowResultExprImpl() {}
+
   virtual ErrorCode Compile(SandboxBPF* sb) const OVERRIDE {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
 
  private:
   virtual ~AllowResultExprImpl() {}
+
   DISALLOW_COPY_AND_ASSIGN(AllowResultExprImpl);
 };
 
-class ErrorResultExprImpl : public ResultExprImpl {
+class ErrorResultExprImpl : public internal::ResultExprImpl {
  public:
   explicit ErrorResultExprImpl(int err) : err_(err) {
     CHECK(err_ >= ErrorCode::ERR_MIN_ERRNO && err_ <= ErrorCode::ERR_MAX_ERRNO);
   }
+
   virtual ErrorCode Compile(SandboxBPF* sb) const OVERRIDE {
     return ErrorCode(err_);
   }
 
  private:
   virtual ~ErrorResultExprImpl() {}
+
   int err_;
+
   DISALLOW_COPY_AND_ASSIGN(ErrorResultExprImpl);
 };
 
-class TrapResultExprImpl : public ResultExprImpl {
+class TrapResultExprImpl : public internal::ResultExprImpl {
  public:
-  TrapResultExprImpl(TrapFnc func, void* arg) : func_(func), arg_(arg) {
+  TrapResultExprImpl(Trap::TrapFnc func, void* arg) : func_(func), arg_(arg) {
     DCHECK(func_);
   }
+
   virtual ErrorCode Compile(SandboxBPF* sb) const OVERRIDE {
     return sb->Trap(func_, arg_);
   }
 
  private:
   virtual ~TrapResultExprImpl() {}
-  TrapFnc func_;
+
+  Trap::TrapFnc func_;
   void* arg_;
+
   DISALLOW_COPY_AND_ASSIGN(TrapResultExprImpl);
 };
 
-class IfThenResultExprImpl : public ResultExprImpl {
+class IfThenResultExprImpl : public internal::ResultExprImpl {
  public:
-  IfThenResultExprImpl(BoolExpr cond,
-                       ResultExpr then_result,
-                       ResultExpr else_result)
+  IfThenResultExprImpl(const BoolExpr& cond,
+                       const ResultExpr& then_result,
+                       const ResultExpr& else_result)
       : cond_(cond), then_result_(then_result), else_result_(else_result) {}
+
   virtual ErrorCode Compile(SandboxBPF* sb) const OVERRIDE {
     return cond_->Compile(
         sb, then_result_->Compile(sb), else_result_->Compile(sb));
@@ -74,19 +82,22 @@ class IfThenResultExprImpl : public ResultExprImpl {
 
  private:
   virtual ~IfThenResultExprImpl() {}
+
   BoolExpr cond_;
   ResultExpr then_result_;
   ResultExpr else_result_;
+
   DISALLOW_COPY_AND_ASSIGN(IfThenResultExprImpl);
 };
 
-class PrimitiveBoolExprImpl : public BoolExprImpl {
+class PrimitiveBoolExprImpl : public internal::BoolExprImpl {
  public:
   PrimitiveBoolExprImpl(int argno,
                         ErrorCode::ArgType is_32bit,
                         ErrorCode::Operation op,
                         uint64_t value)
       : argno_(argno), is_32bit_(is_32bit), op_(op), value_(value) {}
+
   virtual ErrorCode Compile(SandboxBPF* sb,
                             ErrorCode true_ec,
                             ErrorCode false_ec) const OVERRIDE {
@@ -95,16 +106,19 @@ class PrimitiveBoolExprImpl : public BoolExprImpl {
 
  private:
   virtual ~PrimitiveBoolExprImpl() {}
+
   int argno_;
   ErrorCode::ArgType is_32bit_;
   ErrorCode::Operation op_;
   uint64_t value_;
+
   DISALLOW_COPY_AND_ASSIGN(PrimitiveBoolExprImpl);
 };
 
-class NegateBoolExprImpl : public BoolExprImpl {
+class NegateBoolExprImpl : public internal::BoolExprImpl {
  public:
-  explicit NegateBoolExprImpl(BoolExpr cond) : cond_(cond) {}
+  explicit NegateBoolExprImpl(const BoolExpr& cond) : cond_(cond) {}
+
   virtual ErrorCode Compile(SandboxBPF* sb,
                             ErrorCode true_ec,
                             ErrorCode false_ec) const OVERRIDE {
@@ -113,13 +127,17 @@ class NegateBoolExprImpl : public BoolExprImpl {
 
  private:
   virtual ~NegateBoolExprImpl() {}
+
   BoolExpr cond_;
+
   DISALLOW_COPY_AND_ASSIGN(NegateBoolExprImpl);
 };
 
-class AndBoolExprImpl : public BoolExprImpl {
+class AndBoolExprImpl : public internal::BoolExprImpl {
  public:
-  AndBoolExprImpl(BoolExpr lhs, BoolExpr rhs) : lhs_(lhs), rhs_(rhs) {}
+  AndBoolExprImpl(const BoolExpr& lhs, const BoolExpr& rhs)
+      : lhs_(lhs), rhs_(rhs) {}
+
   virtual ErrorCode Compile(SandboxBPF* sb,
                             ErrorCode true_ec,
                             ErrorCode false_ec) const OVERRIDE {
@@ -128,13 +146,18 @@ class AndBoolExprImpl : public BoolExprImpl {
 
  private:
   virtual ~AndBoolExprImpl() {}
-  BoolExpr lhs_, rhs_;
+
+  BoolExpr lhs_;
+  BoolExpr rhs_;
+
   DISALLOW_COPY_AND_ASSIGN(AndBoolExprImpl);
 };
 
-class OrBoolExprImpl : public BoolExprImpl {
+class OrBoolExprImpl : public internal::BoolExprImpl {
  public:
-  OrBoolExprImpl(BoolExpr lhs, BoolExpr rhs) : lhs_(lhs), rhs_(rhs) {}
+  OrBoolExprImpl(const BoolExpr& lhs, const BoolExpr& rhs)
+      : lhs_(lhs), rhs_(rhs) {}
+
   virtual ErrorCode Compile(SandboxBPF* sb,
                             ErrorCode true_ec,
                             ErrorCode false_ec) const OVERRIDE {
@@ -143,7 +166,10 @@ class OrBoolExprImpl : public BoolExprImpl {
 
  private:
   virtual ~OrBoolExprImpl() {}
-  BoolExpr lhs_, rhs_;
+
+  BoolExpr lhs_;
+  BoolExpr rhs_;
+
   DISALLOW_COPY_AND_ASSIGN(OrBoolExprImpl);
 };
 
@@ -161,23 +187,27 @@ BoolExpr ArgEq(int num, size_t size, uint64_t mask, uint64_t val) {
   const ErrorCode::ArgType arg_type =
       (size <= 4) ? ErrorCode::TP_32BIT : ErrorCode::TP_64BIT;
 
-  if (mask == static_cast<uint64_t>(-1)) {
+  if (mask == std::numeric_limits<uint64_t>::max()) {
     // Arg == Val
     return BoolExpr(new const PrimitiveBoolExprImpl(
         num, arg_type, ErrorCode::OP_EQUAL, val));
-  } else if (mask == val) {
+  }
+
+  if (mask == val) {
     // (Arg & Mask) == Mask
     return BoolExpr(new const PrimitiveBoolExprImpl(
         num, arg_type, ErrorCode::OP_HAS_ALL_BITS, mask));
-  } else if (val == 0) {
+  }
+
+  if (val == 0) {
     // (Arg & Mask) == 0, which is semantically equivalent to !((arg & mask) !=
     // 0).
     return !BoolExpr(new const PrimitiveBoolExprImpl(
         num, arg_type, ErrorCode::OP_HAS_ANY_BITS, mask));
-  } else {
-    CHECK(false) << "Unimplemented ArgEq case";
-    return BoolExpr();
   }
+
+  CHECK(false) << "Unimplemented ArgEq case";
+  return BoolExpr();
 }
 
 }  // namespace internal
@@ -190,23 +220,23 @@ ResultExpr Error(int err) {
   return ResultExpr(new const ErrorResultExprImpl(err));
 }
 
-ResultExpr Trap(TrapFnc trap_func, void* aux) {
+ResultExpr Trap(Trap::TrapFnc trap_func, void* aux) {
   return ResultExpr(new const TrapResultExprImpl(trap_func, aux));
 }
 
-BoolExpr operator!(BoolExpr cond) {
+BoolExpr operator!(const BoolExpr& cond) {
   return BoolExpr(new const NegateBoolExprImpl(cond));
 }
 
-BoolExpr operator&&(BoolExpr lhs, BoolExpr rhs) {
+BoolExpr operator&&(const BoolExpr& lhs, const BoolExpr& rhs) {
   return BoolExpr(new const AndBoolExprImpl(lhs, rhs));
 }
 
-BoolExpr operator||(BoolExpr lhs, BoolExpr rhs) {
+BoolExpr operator||(const BoolExpr& lhs, const BoolExpr& rhs) {
   return BoolExpr(new const OrBoolExprImpl(lhs, rhs));
 }
 
-Elser If(BoolExpr cond, ResultExpr then_result) {
+Elser If(const BoolExpr& cond, const ResultExpr& then_result) {
   return Elser(Cons<Elser::Clause>::List()).ElseIf(cond, then_result);
 }
 
@@ -219,12 +249,12 @@ Elser::Elser(const Elser& elser) : clause_list_(elser.clause_list_) {
 Elser::~Elser() {
 }
 
-Elser Elser::ElseIf(BoolExpr cond, ResultExpr then_result) const {
+Elser Elser::ElseIf(const BoolExpr& cond, const ResultExpr& then_result) const {
   return Elser(
       Cons<Clause>::Make(std::make_pair(cond, then_result), clause_list_));
 }
 
-ResultExpr Elser::Else(ResultExpr else_result) const {
+ResultExpr Elser::Else(const ResultExpr& else_result) const {
   // We finally have the default result expression for this
   // if/then/else sequence.  Also, we've already accumulated all
   // if/then pairs into a list of reverse order (i.e., lower priority
@@ -269,8 +299,7 @@ ErrorCode SandboxBPFDSLPolicy::InvalidSyscall(SandboxBPF* sb) const {
   return InvalidSyscall()->Compile(sb);
 }
 
-ResultExpr SandboxBPFDSLPolicy::Trap(::sandbox::Trap::TrapFnc trap_func,
-                                     void* aux) {
+ResultExpr SandboxBPFDSLPolicy::Trap(Trap::TrapFnc trap_func, void* aux) {
   return bpf_dsl::Trap(trap_func, aux);
 }
 

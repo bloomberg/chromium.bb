@@ -16,8 +16,6 @@
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 
-using namespace sandbox::bpf_dsl;
-
 // Helper macro to assert that invoking system call |sys| directly via
 // Syscall::Call with arguments |...| returns |res|.
 // Errors can be asserted by specifying a value like "-EINVAL".
@@ -25,6 +23,7 @@ using namespace sandbox::bpf_dsl;
   BPF_ASSERT_EQ(res, Stubs::sys(__VA_ARGS__))
 
 namespace sandbox {
+namespace bpf_dsl {
 namespace {
 
 // Type safe stubs for tested system calls.
@@ -265,4 +264,5 @@ BPF_TEST_C(BPFDSL, ElseIfTest, ElseIfPolicy) {
 }
 
 }  // namespace
+}  // namespace bpf_dsl
 }  // namespace sandbox

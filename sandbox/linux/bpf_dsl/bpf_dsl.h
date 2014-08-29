@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <limits>
 #include <utility>
 
 #include "base/macros.h"
@@ -108,7 +109,7 @@ class SANDBOX_EXPORT SandboxBPFDSLPolicy : public SandboxBPFPolicy {
   virtual ErrorCode InvalidSyscall(SandboxBPF* sb) const OVERRIDE FINAL;
 
   // Helper method so policies can just write Trap(func, aux).
-  static ResultExpr Trap(::sandbox::Trap::TrapFnc trap_func, void* aux);
+  static ResultExpr Trap(Trap::TrapFnc trap_func, void* aux);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SandboxBPFDSLPolicy);
@@ -127,41 +128,48 @@ SANDBOX_EXPORT ResultExpr Error(int err);
 // Trap specifies a result that the system call should be handled by
 // trapping back into userspace and invoking |trap_func|, passing
 // |aux| as the second parameter.
-SANDBOX_EXPORT ResultExpr Trap(::sandbox::Trap::TrapFnc trap_func, void* aux);
+SANDBOX_EXPORT ResultExpr Trap(Trap::TrapFnc trap_func, void* aux);
 
 template <typename T>
 class SANDBOX_EXPORT Arg {
  public:
   // Initializes the Arg to represent the |num|th system call
   // argument (indexed from 0), which is of type |T|.
-  explicit Arg(int num) : num_(num), mask_(-1) {}
+  explicit Arg(int num)
+      : num_(num), mask_(std::numeric_limits<uint64_t>::max()) {}
 
   Arg(const Arg& arg) : num_(arg.num_), mask_(arg.mask_) {}
 
   // Returns an Arg representing the current argument, but after
   // bitwise-and'ing it with |rhs|.
-  Arg operator&(uint64_t rhs) const { return Arg(num_, mask_ & rhs); }
+  friend Arg operator&(const Arg& lhs, uint64_t rhs) {
+    return Arg(lhs.num_, lhs.mask_ & rhs);
+  }
 
   // Returns a boolean expression comparing whether the system call
   // argument (after applying any bitmasks, if appropriate) equals |rhs|.
-  BoolExpr operator==(T rhs) const;
+  friend BoolExpr operator==(const Arg& lhs, T rhs) { return lhs.EqualTo(rhs); }
 
  private:
   Arg(int num, uint64_t mask) : num_(num), mask_(mask) {}
+
+  BoolExpr EqualTo(T val) const;
+
   int num_;
   uint64_t mask_;
+
   DISALLOW_ASSIGN(Arg);
 };
 
 // Various ways to combine boolean expressions into more complex expressions.
 // They follow standard boolean algebra laws.
-SANDBOX_EXPORT BoolExpr operator!(BoolExpr cond);
-SANDBOX_EXPORT BoolExpr operator&&(BoolExpr lhs, BoolExpr rhs);
-SANDBOX_EXPORT BoolExpr operator||(BoolExpr lhs, BoolExpr rhs);
+SANDBOX_EXPORT BoolExpr operator!(const BoolExpr& cond);
+SANDBOX_EXPORT BoolExpr operator&&(const BoolExpr& lhs, const BoolExpr& rhs);
+SANDBOX_EXPORT BoolExpr operator||(const BoolExpr& lhs, const BoolExpr& rhs);
 
 // If begins a conditional result expression predicated on the
 // specified boolean expression.
-SANDBOX_EXPORT Elser If(BoolExpr cond, ResultExpr then_result);
+SANDBOX_EXPORT Elser If(const BoolExpr& cond, const ResultExpr& then_result);
 
 class SANDBOX_EXPORT Elser {
  public:
@@ -170,17 +178,20 @@ class SANDBOX_EXPORT Elser {
 
   // ElseIf extends the conditional result expression with another
   // "if then" clause, predicated on the specified boolean expression.
-  Elser ElseIf(BoolExpr cond, ResultExpr then_result) const;
+  Elser ElseIf(const BoolExpr& cond, const ResultExpr& then_result) const;
 
   // Else terminates a conditional result expression using |else_result| as
   // the default fallback result expression.
-  ResultExpr Else(ResultExpr else_result) const;
+  ResultExpr Else(const ResultExpr& else_result) const;
 
  private:
   typedef std::pair<BoolExpr, ResultExpr> Clause;
+
   explicit Elser(Cons<Clause>::List clause_list);
+
   Cons<Clause>::List clause_list_;
-  friend Elser If(BoolExpr, ResultExpr);
+
+  friend Elser If(const BoolExpr&, const ResultExpr&);
   DISALLOW_ASSIGN(Elser);
 };
 
@@ -235,9 +246,13 @@ class SANDBOX_EXPORT ResultExprImpl : public base::RefCounted<ResultExprImpl> {
 // Definition requires ArgEq to have been declared.  Moved out-of-line
 // to minimize how much internal clutter users have to ignore while
 // reading the header documentation.
+//
+// Additionally, we use this helper member function to avoid linker errors
+// caused by defining operator== out-of-line.  For a more detailed explanation,
+// see http://www.parashift.com/c++-faq-lite/template-friends.html.
 template <typename T>
-BoolExpr Arg<T>::operator==(T rhs) const {
-  return internal::ArgEq(num_, sizeof(T), mask_, static_cast<uint64_t>(rhs));
+BoolExpr Arg<T>::EqualTo(T val) const {
+  return internal::ArgEq(num_, sizeof(T), mask_, static_cast<uint64_t>(val));
 }
 
 }  // namespace bpf_dsl
