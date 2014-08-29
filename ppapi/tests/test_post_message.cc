@@ -172,14 +172,6 @@ TestPostMessage::~TestPostMessage() {
 bool TestPostMessage::Init() {
   bool success = CheckTestingInterface();
 
-  // Add a post condition to tests which caches the postMessage function and
-  // then calls it after the instance is destroyed. The ensures that no UAF
-  // occurs because the MessageChannel may still be alive after the plugin
-  // instance is destroyed (it will get garbage collected eventually).
-  instance_->EvalScript("window.pluginPostMessage = "
-                        "document.getElementById('plugin').postMessage");
-  instance_->AddPostCondition("window.pluginPostMessage('') === undefined");
-
   // Set up a special listener that only responds to a FINISHED_WAITING string.
   // This is for use by WaitForMessages.
   std::string js_code;

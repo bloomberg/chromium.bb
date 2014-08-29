@@ -28,7 +28,7 @@ namespace ppapi {
 // PP_Var IDs) for each module. This allows us to track all references owned by
 // a given module and free them when the plugin exits independently of other
 // plugins that may be running at the same time.
-class CONTENT_EXPORT V8ObjectVar : public Var {
+class V8ObjectVar : public Var {
  public:
   V8ObjectVar(PP_Instance instance, v8::Handle<v8::Object> v8_object);
 
@@ -49,7 +49,7 @@ class CONTENT_EXPORT V8ObjectVar : public Var {
 
   // Helper function that converts a PP_Var to an object. This will return NULL
   // if the PP_Var is not of object type or the object is invalid.
-  static scoped_refptr<V8ObjectVar> FromPPVar(PP_Var var);
+  CONTENT_EXPORT static scoped_refptr<V8ObjectVar> FromPPVar(PP_Var var);
 
  private:
   virtual ~V8ObjectVar();
