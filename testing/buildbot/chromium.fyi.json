@@ -238,6 +238,7 @@
       "content_unittests",
       "crypto_unittests",
       "device_unittests",
+      "extensions_unittests",
       "gpu_unittests",
       "interactive_ui_tests",
       "ipc_tests",
