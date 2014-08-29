@@ -635,7 +635,7 @@ void ThreadState::snapshot()
 
     json->setInteger("allocatedSpace", m_stats.totalAllocatedSpace());
     json->setInteger("objectSpace", m_stats.totalObjectSpace());
-    json->setInteger("pageCount", info.freeSize);
+    json->setInteger("pageCount", info.pageCount);
     json->setInteger("freeSize", info.freeSize);
 
     Vector<String> classNameVector(info.classTags.size());
