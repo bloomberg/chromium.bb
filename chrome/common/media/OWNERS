@@ -5,6 +5,7 @@ per-file *_messages*.h=cevans@chromium.org
 per-file *_messages*.h=dcheng@chromium.org
 per-file *_messages*.h=inferno@chromium.org
 per-file *_messages*.h=jln@chromium.org
+per-file *_messages*.h=jorgelo@chromium.org
 per-file *_messages*.h=jschuh@chromium.org
 per-file *_messages*.h=kenrb@chromium.org
 per-file *_messages*.h=nasko@chromium.org
