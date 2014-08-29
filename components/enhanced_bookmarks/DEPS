@@ -1,6 +1,8 @@
 include_rules = [
   "+components/bookmarks",
+  "+components/keyed_service",
   "+jni",
+  "+net",
   "+sql",
   "+ui",
 ]

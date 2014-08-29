@@ -12,13 +12,17 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../net/net.gyp:net',
         '../sql/sql.gyp:sql',
         '../ui/gfx/gfx.gyp:gfx',
         '../url/url.gyp:url_lib',
         'bookmarks_browser',
         'enhanced_bookmarks_proto',
+        'keyed_service_core',
       ],
       'sources': [
+        'enhanced_bookmarks/bookmark_image_service.cc',
+        'enhanced_bookmarks/bookmark_image_service.h',
         'enhanced_bookmarks/enhanced_bookmark_utils.cc',
         'enhanced_bookmarks/enhanced_bookmark_utils.h',
         'enhanced_bookmarks/image_store.cc',
