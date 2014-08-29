@@ -3,17 +3,31 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""A tool to scan source files for unneeded grit includes."""
+"""A tool to scan source files for unneeded grit includes.
+
+Example:
+  cd /work/chrome/src
+  tools/resources/list_unused_grit_header.py ui/strings/ui_strings.grd chrome ui
+"""
 
 import os
 import sys
 import xml.etree.ElementTree
 
+from find_unused_resources import GetBaseResourceId
+
 IF_ELSE_TAGS = ('if', 'else')
 
 
 def Usage(prog_name):
-  print prog_name, 'GRD_FILE DIRS_TO_SCAN'
+  print prog_name, 'GRD_FILE PATHS_TO_SCAN'
+
+
+def FilterResourceIds(resource_id):
+  """If the resource starts with IDR_, find its base resource id."""
+  if resource_id.startswith('IDR_'):
+    return GetBaseResourceId(resource_id)
+  return resource_id
 
 
 def GetResourcesForNode(node, parent_file, resource_tag):
@@ -42,6 +56,10 @@ def GetResourcesForNode(node, parent_file, resource_tag):
       resources.extend(GetResourcesForNode(part_root, part_file, resource_tag))
     else:
       raise Exception('unknown tag:', child.tag)
+
+  # Handle the special case for resources of type "FOO_{LEFT,RIGHT,TOP}".
+  if resource_tag == 'structure':
+    resources = [FilterResourceIds(resource_id) for resource_id in resources]
   return resources
 
 
@@ -150,7 +168,6 @@ def NeedsGritInclude(grit_header, resources, filename):
   # A list of special keywords that implies the file needs grit headers.
   # To be more thorough, one would need to run a pre-processor.
   SPECIAL_KEYWORDS = (
-      'IMAGE_GRID(',  # Macro in nine_image_painter_factory.h
       '#include "ui_localizer_table.h"',  # ui_localizer.mm
       'DEFINE_RESOURCE_ID',  # chrome/browser/android/resource_mapper.cc
       )
@@ -177,8 +194,8 @@ def main(argv):
     Usage(argv[0])
     return 1
   grd_file = argv[1]
-  dirs_to_scan = argv[2:]
-  for f in dirs_to_scan:
+  paths_to_scan = argv[2:]
+  for f in paths_to_scan:
     if not os.path.exists(f):
       print 'Error: %s does not exist' % f
       return 1
@@ -191,14 +208,21 @@ def main(argv):
   resources = GetResourcesForGrdFile(tree, grd_file)
 
   files_with_unneeded_grit_includes = []
-  for dir_to_scan in dirs_to_scan:
-    for root, dirs, files in os.walk(dir_to_scan):
-      if '.git' in dirs:
-        dirs.remove('.git')
-      full_paths = [os.path.join(root, f) for f in files if ShouldScanFile(f)]
-      files_with_unneeded_grit_includes.extend(
-          [f for f in full_paths
-           if not NeedsGritInclude(grit_header, resources, f)])
+  for path_to_scan in paths_to_scan:
+    if os.path.isdir(path_to_scan):
+      for root, dirs, files in os.walk(path_to_scan):
+        if '.git' in dirs:
+          dirs.remove('.git')
+        full_paths = [os.path.join(root, f) for f in files if ShouldScanFile(f)]
+        files_with_unneeded_grit_includes.extend(
+            [f for f in full_paths
+             if not NeedsGritInclude(grit_header, resources, f)])
+    elif os.path.isfile(path_to_scan):
+      if not NeedsGritInclude(grit_header, resources, path_to_scan):
+        files_with_unneeded_grit_includes.append(path_to_scan)
+    else:
+      print 'Warning: Skipping %s' % path_to_scan
+
   if files_with_unneeded_grit_includes:
     print '\n'.join(files_with_unneeded_grit_includes)
     return 2
