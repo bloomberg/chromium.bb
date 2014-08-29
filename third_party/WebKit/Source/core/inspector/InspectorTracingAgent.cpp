@@ -59,8 +59,6 @@ void InspectorTracingAgent::innerStart(const String& categoryFilter, bool fromCo
     m_state->setBoolean(TracingAgentState::tracingStarted, true);
     m_client->enableTracing(categoryFilter);
     emitMetadataEvents();
-    // FIXME(398787): remove once Tracing.started event is sent from browser.
-    m_frontend->started();
 }
 
 String InspectorTracingAgent::sessionId()
@@ -109,8 +107,6 @@ void InspectorTracingAgent::consoleTimelineEnd(const String& title)
 void InspectorTracingAgent::notifyTracingStopped()
 {
     m_client->disableTracing();
-    // FIXME(398787): remove once disableTracing stops tracing in the browser.
-    m_frontend->stopped();
     m_workerAgent->setTracingSessionId(String());
 }
 
