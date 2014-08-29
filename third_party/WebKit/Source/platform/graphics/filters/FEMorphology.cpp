@@ -33,8 +33,6 @@
 #include "platform/text/TextStream.h"
 #include "wtf/Uint8ClampedArray.h"
 
-using namespace std;
-
 namespace blink {
 
 FEMorphology::FEMorphology(Filter* filter, MorphologyOperatorType type, float radiusX, float radiusY)

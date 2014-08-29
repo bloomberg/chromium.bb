@@ -37,8 +37,6 @@
 
 #include "SkBlurImageFilter.h"
 
-using namespace std;
-
 static inline float gaussianKernelFactor()
 {
     return 3 / 4.f * sqrtf(twoPiFloat);
@@ -88,13 +86,13 @@ IntSize FEGaussianBlur::calculateUnscaledKernelSize(const FloatPoint& std)
     // Limit the kernel size to 1000. A bigger radius won't make a big difference for the result image but
     // inflates the absolute paint rect to much. This is compatible with Firefox' behavior.
     if (std.x()) {
-        int size = max<unsigned>(2, static_cast<unsigned>(floorf(std.x() * gaussianKernelFactor() + 0.5f)));
-        kernelSize.setWidth(min(size, gMaxKernelSize));
+        int size = std::max<unsigned>(2, static_cast<unsigned>(floorf(std.x() * gaussianKernelFactor() + 0.5f)));
+        kernelSize.setWidth(std::min(size, gMaxKernelSize));
     }
 
     if (std.y()) {
-        int size = max<unsigned>(2, static_cast<unsigned>(floorf(std.y() * gaussianKernelFactor() + 0.5f)));
-        kernelSize.setHeight(min(size, gMaxKernelSize));
+        int size = std::max<unsigned>(2, static_cast<unsigned>(floorf(std.y() * gaussianKernelFactor() + 0.5f)));
+        kernelSize.setHeight(std::min(size, gMaxKernelSize));
     }
 
     return kernelSize;

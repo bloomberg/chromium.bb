@@ -57,8 +57,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
 
-using namespace std;
-
 namespace blink {
 
 namespace {
@@ -695,17 +693,17 @@ void GraphicsContext::drawInnerShadow(const RoundedRect& rect, const Color& shad
     }
 
     if (clippedEdges & LeftEdge) {
-        holeRect.move(-max(shadowOffset.width(), 0) - shadowBlur, 0);
-        holeRect.setWidth(holeRect.width() + max(shadowOffset.width(), 0) + shadowBlur);
+        holeRect.move(-std::max(shadowOffset.width(), 0) - shadowBlur, 0);
+        holeRect.setWidth(holeRect.width() + std::max(shadowOffset.width(), 0) + shadowBlur);
     }
     if (clippedEdges & TopEdge) {
-        holeRect.move(0, -max(shadowOffset.height(), 0) - shadowBlur);
-        holeRect.setHeight(holeRect.height() + max(shadowOffset.height(), 0) + shadowBlur);
+        holeRect.move(0, -std::max(shadowOffset.height(), 0) - shadowBlur);
+        holeRect.setHeight(holeRect.height() + std::max(shadowOffset.height(), 0) + shadowBlur);
     }
     if (clippedEdges & RightEdge)
-        holeRect.setWidth(holeRect.width() - min(shadowOffset.width(), 0) + shadowBlur);
+        holeRect.setWidth(holeRect.width() - std::min(shadowOffset.width(), 0) + shadowBlur);
     if (clippedEdges & BottomEdge)
-        holeRect.setHeight(holeRect.height() - min(shadowOffset.height(), 0) + shadowBlur);
+        holeRect.setHeight(holeRect.height() - std::min(shadowOffset.height(), 0) + shadowBlur);
 
     Color fillColor(shadowColor.red(), shadowColor.green(), shadowColor.blue(), 255);
 
@@ -1123,7 +1121,7 @@ void GraphicsContext::drawPicture(PassRefPtr<SkPicture> picture, const FloatRect
     SkPaint picturePaint;
     picturePaint.setXfermodeMode(WebCoreCompositeToSkiaComposite(op, blendMode));
     picturePaint.setImageFilter(matrixFilter.get());
-    SkRect layerBounds = SkRect::MakeWH(max(deviceDest.width(), sourceBounds.width()), max(deviceDest.height(), sourceBounds.height()));
+    SkRect layerBounds = SkRect::MakeWH(std::max(deviceDest.width(), sourceBounds.width()), std::max(deviceDest.height(), sourceBounds.height()));
     m_canvas->save();
     m_canvas->resetMatrix();
     m_canvas->translate(deviceDest.x(), deviceDest.y());

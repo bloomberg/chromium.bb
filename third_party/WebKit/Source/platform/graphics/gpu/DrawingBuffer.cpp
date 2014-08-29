@@ -47,8 +47,6 @@
 #include "wtf/RefCountedLeakCounter.h"
 #endif
 
-using namespace std;
-
 namespace blink {
 
 namespace {
@@ -759,7 +757,7 @@ void DrawingBuffer::setSize(const IntSize& size)
 
 int DrawingBuffer::pixelDelta(const IntSize& newSize, const IntSize& curSize)
 {
-    return (max(0, newSize.width()) * max(0, newSize.height())) - (max(0, curSize.width()) * max(0, curSize.height()));
+    return (std::max(0, newSize.width()) * std::max(0, newSize.height())) - (std::max(0, curSize.width()) * std::max(0, curSize.height()));
 }
 
 IntSize DrawingBuffer::adjustSize(const IntSize& desiredSize, const IntSize& curSize, int maxTextureSize)

@@ -59,8 +59,6 @@
 #include "wtf/text/Base64.h"
 #include "wtf/text/WTFString.h"
 
-using namespace std;
-
 namespace blink {
 
 PassOwnPtr<ImageBuffer> ImageBuffer::create(PassOwnPtr<ImageBufferSurface> surface)
