@@ -45,6 +45,9 @@ PASS privateScriptTest.stringAttributeImplementedInCPPForPrivateScriptOnly is un
 PASS privateScriptTest.addIntegerInPartial(111, 222) is 333
 PASS privateScriptTest.addInteger2InPartial(111, 222) is 333
 PASS privateScriptTest.stringAttributeInPartial is "foo"
+PASS event.bubbles is true
+PASS event.cancelable is true
+PASS event.valueInPrivateScript is undefined.
 PASS successfullyParsed is true
 
 TEST COMPLETE

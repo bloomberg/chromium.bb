@@ -42,4 +42,5 @@
     [OnlyExposedToPrivateScript] short addIntegerImplementedInCPPForPrivateScriptOnly(short value1, short value2);
     [ImplementedInPrivateScript] attribute DOMString stringAttributeImplementedInCPP;
     [OnlyExposedToPrivateScript] attribute DOMString stringAttributeImplementedInCPPForPrivateScriptOnly;
+    [ImplementedInPrivateScript] void dispatchDocumentOnload(Document document);
 };

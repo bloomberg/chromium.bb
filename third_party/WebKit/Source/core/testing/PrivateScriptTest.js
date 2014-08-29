@@ -165,4 +165,11 @@ installClass("PrivateScriptTest", function(PrivateScriptTestPrototype) {
         get: function() { return this.m_stringAttributeImplementedInCPPForPrivateScriptOnly; },
         set: function(value) { this.m_stringAttributeImplementedInCPPForPrivateScriptOnly = value; }
     });
+
+    PrivateScriptTestPrototype.dispatchDocumentOnload = function(document) {
+        var event = new Event("load", { bubbles: true, cancelable: true });
+        event.valueInPrivateScript = "this should not be visible in user's script";
+        document.dispatchEvent(event);
+    }
+
 });

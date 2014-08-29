@@ -77,7 +77,7 @@ shouldBeEqualToString('privateScriptTest.stringAttributeImplementedInCPP', 'unde
 privateScriptTest.stringAttributeImplementedInCPP = "foo";
 shouldBeEqualToString('privateScriptTest.stringAttributeImplementedInCPP', 'foo');
 
-// These tests are important. [OnlyExposedToPrivateScript] APIs should not be visible to user's JavaScript.
+// These tests are important. [OnlyExposedToPrivateScript] APIs should not be visible to user's script.
 shouldBeUndefined('privateScriptTest.addIntegerImplementedInCPPForPrivateScriptOnly');
 shouldBeUndefined('privateScriptTest.stringAttributeImplementedInCPPForPrivateScriptOnly');
 
@@ -85,6 +85,14 @@ shouldBe('privateScriptTest.addIntegerInPartial(111, 222)', '333');
 shouldBe('privateScriptTest.addInteger2InPartial(111, 222)', '333');
 privateScriptTest.stringAttributeInPartial = "foo";
 shouldBeEqualToString('privateScriptTest.stringAttributeInPartial', 'foo');
+
+document.onload = function (event) {
+    shouldBeTrue('event.bubbles');
+    shouldBeTrue('event.cancelable');
+    // Object properties set in private scripts should not be visible in user's script.
+    shouldBeUndefined('event.valueInPrivateScript');
+}
+privateScriptTest.dispatchDocumentOnload(document);
 
 </script>
 </body>
