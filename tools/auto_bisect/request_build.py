@@ -56,7 +56,7 @@ def PostTryJob(host, port, params):
   """Sends a build request to the server using the HTTP protocol.
 
   The required parameters are:
-    'revision': "src@rev", where rev is an SVN Revision to build.
+    'revision': "src@rev", where rev is a git hash or SVN revision.
     'bot': Name of builder bot to use, e.g. "win_perf_bisect_builder".
 
   Args:

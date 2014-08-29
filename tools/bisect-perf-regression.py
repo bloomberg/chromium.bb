@@ -52,7 +52,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'telemetry'))
 from auto_bisect import bisect_utils
 from auto_bisect import builder
 from auto_bisect import math_utils
-from auto_bisect import post_perf_builder_job as bisect_builder
+from auto_bisect import request_build
 from auto_bisect import source_control as source_control_module
 from auto_bisect import ttest
 from telemetry.util import cloud_storage
