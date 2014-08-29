@@ -165,6 +165,11 @@ class MockCryptohomeClient : public CryptohomeClient {
                     const std::string& user_id,
                     const std::string& key_prefix,
                     const BoolDBusMethodCallback& callback));
+  MOCK_METHOD4(GetKeyDataEx,
+      void(const cryptohome::AccountIdentifier& id,
+           const cryptohome::AuthorizationRequest& auth,
+           const cryptohome::GetKeyDataRequest& request,
+           const ProtobufMethodCallback& callback));
   MOCK_METHOD4(CheckKeyEx,
       void(const cryptohome::AccountIdentifier& id,
            const cryptohome::AuthorizationRequest& auth,

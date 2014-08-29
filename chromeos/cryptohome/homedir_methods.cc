@@ -5,12 +5,20 @@
 #include "chromeos/cryptohome/homedir_methods.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
+#if defined(USE_SYSTEM_PROTOBUF)
+#include <google/protobuf/repeated_field.h>
+#else
+#include "third_party/protobuf/src/google/protobuf/repeated_field.h"
+#endif
+
 using chromeos::DBusThreadManager;
+using google::protobuf::RepeatedPtrField;
 
 namespace cryptohome {
 
@@ -108,6 +116,25 @@ class HomedirMethodsImpl : public HomedirMethods {
   HomedirMethodsImpl() : weak_ptr_factory_(this) {}
 
   virtual ~HomedirMethodsImpl() {}
+
+  virtual void GetKeyDataEx(const Identification& id,
+                            const std::string& label,
+                            const GetKeyDataCallback& callback) OVERRIDE {
+    cryptohome::AccountIdentifier id_proto;
+    cryptohome::AuthorizationRequest kEmptyAuthProto;
+    cryptohome::GetKeyDataRequest request;
+
+    FillIdentificationProtobuf(id, &id_proto);
+    request.mutable_key()->mutable_data()->set_label(label);
+
+    DBusThreadManager::Get()->GetCryptohomeClient()->GetKeyDataEx(
+        id_proto,
+        kEmptyAuthProto,
+        request,
+        base::Bind(&HomedirMethodsImpl::OnGetKeyDataExCallback,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  }
 
   virtual void CheckKeyEx(const Identification& id,
                           const Authorization& auth,
@@ -225,6 +252,109 @@ class HomedirMethodsImpl : public HomedirMethods {
   }
 
  private:
+  void OnGetKeyDataExCallback(const GetKeyDataCallback& callback,
+                              chromeos::DBusMethodCallStatus call_status,
+                              bool result,
+                              const BaseReply& reply) {
+    if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
+      callback.Run(false, MOUNT_ERROR_FATAL, ScopedVector<RetrievedKeyData>());
+      return;
+    }
+    if (reply.has_error()) {
+      if (reply.error() != CRYPTOHOME_ERROR_NOT_SET) {
+        callback.Run(false,
+                     MapError(reply.error()),
+                     ScopedVector<RetrievedKeyData>());
+        return;
+      }
+    }
+
+    if (!reply.HasExtension(GetKeyDataReply::reply)) {
+      callback.Run(false, MOUNT_ERROR_FATAL, ScopedVector<RetrievedKeyData>());
+      return;
+    }
+
+    // Extract the contents of the |KeyData| protos returned.
+    const RepeatedPtrField<KeyData>& key_data_proto =
+        reply.GetExtension(GetKeyDataReply::reply).key_data();
+    ScopedVector<RetrievedKeyData> key_data_list;
+    for (RepeatedPtrField<KeyData>::const_iterator it = key_data_proto.begin();
+         it != key_data_proto.end(); ++it) {
+
+      // Extract |type|, |label| and |revision|.
+      DCHECK_EQ(KeyData::KEY_TYPE_PASSWORD, it->type());
+      key_data_list.push_back(new RetrievedKeyData(
+          RetrievedKeyData::TYPE_PASSWORD,
+          it->label(),
+          it->revision()));
+      RetrievedKeyData* key_data = key_data_list.back();
+
+      // Extract |privileges|.
+      const KeyPrivileges& privileges = it->privileges();
+      if (privileges.mount())
+        key_data->privileges |= PRIV_MOUNT;
+      if (privileges.add())
+        key_data->privileges |= PRIV_ADD;
+      if (privileges.remove())
+        key_data->privileges |= PRIV_REMOVE;
+      if (privileges.update())
+        key_data->privileges |= PRIV_MIGRATE;
+      if (privileges.authorized_update())
+        key_data->privileges |= PRIV_AUTHORIZED_UPDATE;
+
+      // Extract |authorization_data|.
+      for (RepeatedPtrField<KeyAuthorizationData>::const_iterator auth_it =
+               it->authorization_data().begin();
+           auth_it != it->authorization_data().end(); ++auth_it) {
+        switch (auth_it->type()) {
+          case KeyAuthorizationData::KEY_AUTHORIZATION_TYPE_HMACSHA256:
+            key_data->authorization_types.push_back(
+                RetrievedKeyData::AUTHORIZATION_TYPE_HMACSHA256);
+            break;
+          case KeyAuthorizationData::
+                   KEY_AUTHORIZATION_TYPE_AES256CBC_HMACSHA256:
+            key_data->authorization_types.push_back(
+                RetrievedKeyData::AUTHORIZATION_TYPE_AES256CBC_HMACSHA256);
+            break;
+          default:
+            NOTREACHED();
+            break;
+        }
+      }
+
+      // Extract |provider_data|.
+      for (RepeatedPtrField<KeyProviderData::Entry>::const_iterator
+              provider_data_it = it->provider_data().entry().begin();
+           provider_data_it != it->provider_data().entry().end();
+           ++provider_data_it) {
+        // Extract |name|.
+        key_data->provider_data.push_back(
+            new RetrievedKeyData::ProviderData(provider_data_it->name()));
+        RetrievedKeyData::ProviderData* provider_data =
+            key_data->provider_data.back();
+
+        int data_items = 0;
+
+        // Extract |number|.
+        if (provider_data_it->has_number()) {
+          provider_data->number.reset(new int64(provider_data_it->number()));
+          ++data_items;
+        }
+
+        // Extract |bytes|.
+        if (provider_data_it->has_bytes()) {
+          provider_data->bytes.reset(
+              new std::string(provider_data_it->bytes()));
+          ++data_items;
+        }
+
+        DCHECK_EQ(1, data_items);
+      }
+    }
+
+    callback.Run(true, MOUNT_ERROR_NONE, key_data_list.Pass());
+  }
+
   void OnMountExCallback(const MountCallback& callback,
                          chromeos::DBusMethodCallStatus call_status,
                          bool result,

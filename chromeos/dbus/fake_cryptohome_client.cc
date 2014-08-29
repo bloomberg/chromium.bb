@@ -460,6 +460,16 @@ void FakeCryptohomeClient::TpmAttestationDeleteKeys(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false));
 }
 
+void FakeCryptohomeClient::GetKeyDataEx(
+    const cryptohome::AccountIdentifier& id,
+    const cryptohome::AuthorizationRequest& auth,
+    const cryptohome::GetKeyDataRequest& request,
+    const ProtobufMethodCallback& callback) {
+  cryptohome::BaseReply reply;
+  reply.MutableExtension(cryptohome::GetKeyDataReply::reply);
+  ReturnProtobufMethodCallback(reply, callback);
+}
+
 void FakeCryptohomeClient::CheckKeyEx(
     const cryptohome::AccountIdentifier& id,
     const cryptohome::AuthorizationRequest& auth,

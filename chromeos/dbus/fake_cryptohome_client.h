@@ -160,6 +160,11 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const std::string& user_id,
       const std::string& key_prefix,
       const BoolDBusMethodCallback& callback) OVERRIDE;
+  virtual void GetKeyDataEx(
+      const cryptohome::AccountIdentifier& id,
+      const cryptohome::AuthorizationRequest& auth,
+      const cryptohome::GetKeyDataRequest& request,
+      const ProtobufMethodCallback& callback) OVERRIDE;
   virtual void CheckKeyEx(
       const cryptohome::AccountIdentifier& id,
       const cryptohome::AuthorizationRequest& auth,

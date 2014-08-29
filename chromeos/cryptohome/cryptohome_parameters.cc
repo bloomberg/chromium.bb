@@ -4,8 +4,9 @@
 
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 
-namespace cryptohome {
+#include "chromeos/dbus/cryptohome/key.pb.h"
 
+namespace cryptohome {
 
 Identification::Identification(const std::string& user_id) : user_id(user_id) {
 }
@@ -49,14 +50,32 @@ bool Authorization::operator==(const Authorization& other) const {
   return key == other.key && label == other.label;
 }
 
-MountParameters::MountParameters(bool ephemeral) : ephemeral(ephemeral) {
+RetrievedKeyData::ProviderData::ProviderData(const std::string& name)
+    : name(name) {
 }
 
-MountParameters::~MountParameters() {
+RetrievedKeyData::ProviderData::~ProviderData() {
+}
+
+RetrievedKeyData::RetrievedKeyData(Type type,
+                                   const std::string& label,
+                                   int64 revision) : type(type),
+                                                     label(label),
+                                                     privileges(0),
+                                                     revision(revision) {
+}
+
+RetrievedKeyData::~RetrievedKeyData() {
+}
+
+MountParameters::MountParameters(bool ephemeral) : ephemeral(ephemeral) {
 }
 
 bool MountParameters::operator==(const MountParameters& other) const {
   return ephemeral == other.ephemeral && create_keys == other.create_keys;
+}
+
+MountParameters::~MountParameters() {
 }
 
 }  // namespace cryptohome

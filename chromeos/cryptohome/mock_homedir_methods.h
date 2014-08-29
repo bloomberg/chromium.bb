@@ -21,6 +21,10 @@ class CHROMEOS_EXPORT MockHomedirMethods : public HomedirMethods {
 
   void SetUp(bool success, MountError return_code);
 
+  MOCK_METHOD3(GetKeyDataEx,
+               void(const Identification& id,
+                    const std::string& label,
+                    const GetKeyDataCallback& callback));
   MOCK_METHOD3(CheckKeyEx,
                void(const Identification& id,
                     const Authorization& key,

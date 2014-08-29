@@ -547,6 +547,7 @@
         'attestation/attestation_flow_unittest.cc',
         'audio/cras_audio_handler_unittest.cc',
         'cert_loader_unittest.cc',
+        'cryptohome/homedir_methods_unittest.cc',
         'cryptohome/system_salt_getter_unittest.cc',
         'dbus/blocking_method_caller_unittest.cc',
         'dbus/cros_disks_client_unittest.cc',

@@ -24,6 +24,7 @@ class BaseReply;
 class CheckKeyRequest;
 class FlushAndSignBootAttributesRequest;
 class GetBootAttributeRequest;
+class GetKeyDataRequest;
 class MountRequest;
 class RemoveKeyRequest;
 class SetBootAttributeRequest;
@@ -453,6 +454,17 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
       const std::string& user_id,
       const std::string& key_prefix,
       const BoolDBusMethodCallback& callback) = 0;
+
+  // Asynchronously calls the GetKeyDataEx method. |callback| will be invoked
+  // with the reply protobuf.
+  // GetKeyDataEx returns information about the key specified in |request|. At
+  // present, this does not include any secret information and the call should
+  // not be authenticated (|auth| should be empty).
+  virtual void GetKeyDataEx(
+      const cryptohome::AccountIdentifier& id,
+      const cryptohome::AuthorizationRequest& auth,
+      const cryptohome::GetKeyDataRequest& request,
+      const ProtobufMethodCallback& callback) = 0;
 
   // Asynchronously calls CheckKeyEx method. |callback| is called after method
   // call, and with reply protobuf.

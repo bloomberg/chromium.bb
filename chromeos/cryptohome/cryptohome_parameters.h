@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "chromeos/chromeos_export.h"
 
 namespace cryptohome {
@@ -62,6 +64,38 @@ struct CHROMEOS_EXPORT Authorization {
 
   std::string key;
   std::string label;
+};
+
+// Information about keys returned by GetKeyDataEx().
+struct CHROMEOS_EXPORT RetrievedKeyData {
+  enum Type {
+    TYPE_PASSWORD = 0
+  };
+
+  enum AuthorizationType {
+    AUTHORIZATION_TYPE_HMACSHA256 = 0,
+    AUTHORIZATION_TYPE_AES256CBC_HMACSHA256
+  };
+
+  struct ProviderData {
+    explicit ProviderData(const std::string& name);
+    ~ProviderData();
+
+    std::string name;
+    scoped_ptr<int64> number;
+    scoped_ptr<std::string> bytes;
+  };
+
+  RetrievedKeyData(Type type, const std::string& label, int64 revision);
+  ~RetrievedKeyData();
+
+  Type type;
+  std::string label;
+  // Privileges associated with key. Combination of |AuthKeyPrivileges| values.
+  int privileges;
+  int64 revision;
+  std::vector<AuthorizationType> authorization_types;
+  ScopedVector<ProviderData> provider_data;
 };
 
 // Parameters for Mount call.

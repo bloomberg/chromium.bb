@@ -9,24 +9,37 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/memory/scoped_vector.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace cryptohome {
+
 // This class manages calls to Cryptohome service's home directory methods:
 // Mount, CheckKey, Add/UpdateKey.
 class CHROMEOS_EXPORT HomedirMethods {
  public:
-  // A callback type which is called back on the UI thread when the results of
-  // method calls are ready.
+  // Callbacks that are called back on the UI thread when the results of the
+  // respective method calls are ready.
   typedef base::Callback<void(bool success, MountError return_code)> Callback;
+  typedef base::Callback<void(
+      bool success,
+      MountError return_code,
+      ScopedVector<RetrievedKeyData> key_data)> GetKeyDataCallback;
   typedef base::Callback<
       void(bool success, MountError return_code, const std::string& mount_hash)>
       MountCallback;
 
   virtual ~HomedirMethods() {}
+
+  // Asks cryptohomed to return data about the key identified by |label| for the
+  // user identified by |id|. At present, this does not return any secret
+  // information and the request does not need to be authenticated.
+  virtual void GetKeyDataEx(const Identification& id,
+                            const std::string& label,
+                            const GetKeyDataCallback& callback) = 0;
 
   // Asks cryptohomed to attempt authorization for user identified by |id| using
   // |auth|. This can be used to unlock a user session.
