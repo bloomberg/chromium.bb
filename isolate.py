@@ -48,27 +48,6 @@ class ExecutionError(Exception):
 ### Path handling code.
 
 
-def expand_directories_and_symlinks(indir, infiles, blacklist,
-                                    follow_symlinks, ignore_broken_items):
-  """Expands the directories and the symlinks, applies the blacklist and
-  verifies files exist.
-
-  Files are specified in os native path separator.
-  """
-  outfiles = []
-  for relfile in infiles:
-    try:
-      outfiles.extend(
-          isolateserver.expand_directory_and_symlink(
-              indir, relfile, blacklist, follow_symlinks))
-    except isolated_format.MappingError as e:
-      if ignore_broken_items:
-        logging.info('warning: %s', e)
-      else:
-        raise
-  return outfiles
-
-
 def recreate_tree(outdir, indir, infiles, action, as_hash):
   """Creates a new tree with only the input files in it.
 
@@ -754,7 +733,7 @@ class CompleteState(object):
     follow_symlinks = sys.platform != 'win32'
     # Expand the directories by listing each file inside. Up to now, trailing
     # os.path.sep must be kept. Do not expand 'touched'.
-    infiles = expand_directories_and_symlinks(
+    infiles = isolated_format.expand_directories_and_symlinks(
         self.saved_state.root_dir,
         infiles,
         lambda x: re.match(r'.*\.(git|svn|pyc)$', x),
@@ -776,20 +755,20 @@ class CompleteState(object):
         command, infiles, touched, read_only, relative_cwd)
     logging.debug(self)
 
-  def process_inputs(self, subdir):
+  def files_to_metadata(self, subdir):
     """Updates self.saved_state.files with the files' mode and hash.
 
     If |subdir| is specified, filters to a subdirectory. The resulting .isolated
     file is tainted.
 
-    See isolateserver.process_input() for more information.
+    See isolated_format.file_to_metadata() for more information.
     """
     for infile in sorted(self.saved_state.files):
       if subdir and not infile.startswith(subdir):
         self.saved_state.files.pop(infile)
       else:
         filepath = os.path.join(self.root_dir, infile)
-        self.saved_state.files[infile] = isolateserver.process_input(
+        self.saved_state.files[infile] = isolated_format.file_to_metadata(
             filepath,
             self.saved_state.files[infile],
             self.saved_state.read_only,
@@ -902,7 +881,7 @@ def load_complete_state(options, cwd, subdir, skip_update):
     subdir = subdir.replace('/', os.path.sep)
 
   if not skip_update:
-    complete_state.process_inputs(subdir)
+    complete_state.files_to_metadata(subdir)
   return complete_state
 
 

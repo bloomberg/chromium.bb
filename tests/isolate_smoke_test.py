@@ -205,7 +205,7 @@ class IsolateTempdir(unittest.TestCase):
       super(IsolateTempdir, self).tearDown()
 
   def _gen_files(self, read_only, empty_file, with_time):
-    """Returns a dict of files like calling isolate.process_input() on each
+    """Returns a dict of files like calling isolate.files_to_metadata() on each
     file.
 
     Arguments:
