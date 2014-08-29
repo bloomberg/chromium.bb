@@ -55,7 +55,6 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
  private:
   // Sets up the target consumer for gestures based on the touch-event.
   void SetupTargets(const TouchEvent& event, GestureConsumer* consumer);
-  void CancelTouches(std::vector<std::pair<int, GestureConsumer*> >* touches);
 
   void DispatchGestureEvent(GestureEvent* event);
 

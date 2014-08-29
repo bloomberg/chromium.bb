@@ -187,6 +187,11 @@ class EVENTS_EXPORT Event {
     return type_ == ET_MOUSEWHEEL;
   }
 
+  bool IsLocatedEvent() const {
+    return IsMouseEvent() || IsScrollEvent() || IsTouchEvent() ||
+           IsGestureEvent();
+  }
+
   // Convenience methods to cast |this| to a GestureEvent. IsGestureEvent()
   // must be true as a precondition to calling these methods.
   GestureEvent* AsGestureEvent();

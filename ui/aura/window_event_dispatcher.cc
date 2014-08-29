@@ -140,7 +140,6 @@ void WindowEventDispatcher::DispatchGestureEvent(ui::GestureEvent* event) {
   DispatchDetails details = DispatchHeldEvents();
   if (details.dispatcher_destroyed)
     return;
-
   Window* target = GetGestureTarget(event);
   if (target) {
     event->ConvertLocationToTarget(window(), target);
@@ -437,10 +436,7 @@ void WindowEventDispatcher::PrepareEventForDispatch(ui::Event* event) {
     // coordinate system to |window()|'s coordinate system.
     return;
   }
-  if (event->IsMouseEvent() ||
-      event->IsScrollEvent() ||
-      event->IsTouchEvent() ||
-      event->IsGestureEvent()) {
+  if (event->IsLocatedEvent()) {
     TransformEventForDeviceScaleFactor(static_cast<ui::LocatedEvent*>(event));
   }
 }
@@ -530,6 +526,10 @@ bool WindowEventDispatcher::CanDispatchToConsumer(
 }
 
 void WindowEventDispatcher::DispatchCancelTouchEvent(ui::TouchEvent* event) {
+  // The touchcancel event's location is based on the last known location of
+  // the pointer, in dips. OnEventFromSource expects events with co-ordinates
+  // in raw pixels, so we convert back to raw pixels here.
+  event->UpdateForRootTransform(host_->GetRootTransform());
   DispatchDetails details = OnEventFromSource(event);
   if (details.dispatcher_destroyed)
     return;

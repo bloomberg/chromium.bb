@@ -132,18 +132,22 @@ void GestureRecognizerImpl::TransferEventsTo(GestureConsumer* current_consumer,
   // from |touch_id_target_| in |CleanupStateForConsumer()|). So create a list
   // of the touch-ids that need to be cancelled, and dispatch the cancel events
   // for them at the end.
-  std::vector<std::pair<int, GestureConsumer*> > ids;
-  for (TouchIdToConsumerMap::iterator i = touch_id_target_.begin();
-       i != touch_id_target_.end(); ++i) {
-    if (i->second && i->second != new_consumer &&
-        (i->second != current_consumer || new_consumer == NULL) &&
-        i->second) {
-      ids.push_back(std::make_pair(i->first, i->second));
+
+  std::vector<GestureConsumer*> consumers;
+  std::map<GestureConsumer*, GestureProviderAura*>::iterator i;
+  for (i = consumer_gesture_provider_.begin();
+       i != consumer_gesture_provider_.end();
+       ++i) {
+    if (i->first && i->first != new_consumer &&
+        (i->first != current_consumer || new_consumer == NULL)) {
+      consumers.push_back(i->first);
     }
   }
-
-  CancelTouches(&ids);
-
+  for (std::vector<GestureConsumer*>::iterator iter = consumers.begin();
+       iter != consumers.end();
+       ++iter) {
+    CancelActiveTouches(*iter);
+  }
   // Transfer events from |current_consumer| to |new_consumer|.
   if (current_consumer && new_consumer) {
     TransferTouchIdToConsumerMap(current_consumer, new_consumer,
@@ -167,14 +171,32 @@ bool GestureRecognizerImpl::GetLastTouchPointForTarget(
 }
 
 bool GestureRecognizerImpl::CancelActiveTouches(GestureConsumer* consumer) {
-  std::vector<std::pair<int, GestureConsumer*> > ids;
-  for (TouchIdToConsumerMap::const_iterator i = touch_id_target_.begin();
-       i != touch_id_target_.end(); ++i) {
-    if (i->second == consumer)
-      ids.push_back(std::make_pair(i->first, i->second));
+  bool cancelled_touch = false;
+  if (consumer_gesture_provider_.count(consumer) == 0)
+    return false;
+  const MotionEventAura& pointer_state =
+      consumer_gesture_provider_[consumer]->pointer_state();
+  if (pointer_state.GetPointerCount() == 0)
+    return false;
+  // Pointer_state is modified every time after DispatchCancelTouchEvent.
+  scoped_ptr<MotionEvent> pointer_state_clone = pointer_state.Clone();
+  for (size_t i = 0; i < pointer_state_clone->GetPointerCount(); ++i) {
+    gfx::PointF point(pointer_state_clone->GetX(i),
+                      pointer_state_clone->GetY(i));
+    TouchEvent touch_event(ui::ET_TOUCH_CANCELLED,
+                           point,
+                           ui::EF_IS_SYNTHESIZED,
+                           pointer_state_clone->GetPointerId(i),
+                           ui::EventTimeForNow(),
+                           0.0f,
+                           0.0f,
+                           0.0f,
+                           0.0f);
+    GestureEventHelper* helper = FindDispatchHelperForConsumer(consumer);
+    if (helper)
+      helper->DispatchCancelTouchEvent(&touch_event);
+    cancelled_touch = true;
   }
-  bool cancelled_touch = !ids.empty();
-  CancelTouches(&ids);
   return cancelled_touch;
 }
 
@@ -200,21 +222,6 @@ void GestureRecognizerImpl::SetupTargets(const TouchEvent& event,
     touch_id_target_[event.touch_id()] = target;
     if (target)
       touch_id_target_for_gestures_[event.touch_id()] = target;
-  }
-}
-
-void GestureRecognizerImpl::CancelTouches(
-    std::vector<std::pair<int, GestureConsumer*> >* touches) {
-  while (!touches->empty()) {
-    int touch_id = touches->begin()->first;
-    GestureConsumer* target = touches->begin()->second;
-    TouchEvent touch_event(ui::ET_TOUCH_CANCELLED, gfx::PointF(0, 0),
-                           ui::EF_IS_SYNTHESIZED, touch_id,
-                           ui::EventTimeForNow(), 0.0f, 0.0f, 0.0f, 0.0f);
-    GestureEventHelper* helper = FindDispatchHelperForConsumer(target);
-    if (helper)
-      helper->DispatchCancelTouchEvent(&touch_event);
-    touches->erase(touches->begin());
   }
 }
 

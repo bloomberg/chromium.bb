@@ -531,11 +531,10 @@ class TimedEvents {
 // An event handler to keep track of events.
 class TestEventHandler : public ui::EventHandler {
  public:
-  TestEventHandler() : touch_released_count_(0),
-                       touch_pressed_count_(0),
-                       touch_moved_count_(0),
-                       touch_cancelled_count_(0) {
-  }
+  TestEventHandler()
+      : touch_released_count_(0),
+        touch_pressed_count_(0),
+        touch_moved_count_(0) {}
 
   virtual ~TestEventHandler() {}
 
@@ -551,7 +550,7 @@ class TestEventHandler : public ui::EventHandler {
         touch_moved_count_++;
         break;
       case ui::ET_TOUCH_CANCELLED:
-        touch_cancelled_count_++;
+        cancelled_touch_points_.push_back(event->location());
         break;
       default:
         break;
@@ -562,19 +561,24 @@ class TestEventHandler : public ui::EventHandler {
     touch_released_count_ = 0;
     touch_pressed_count_ = 0;
     touch_moved_count_ = 0;
-    touch_cancelled_count_ = 0;
+    cancelled_touch_points_.clear();
   }
 
   int touch_released_count() const { return touch_released_count_; }
   int touch_pressed_count() const { return touch_pressed_count_; }
   int touch_moved_count() const { return touch_moved_count_; }
-  int touch_cancelled_count() const { return touch_cancelled_count_; }
+  int touch_cancelled_count() const {
+    return static_cast<int>(cancelled_touch_points_.size());
+  }
+  const std::vector<gfx::PointF>& cancelled_touch_points() const {
+    return cancelled_touch_points_;
+  }
 
  private:
   int touch_released_count_;
   int touch_pressed_count_;
   int touch_moved_count_;
-  int touch_cancelled_count_;
+  std::vector<gfx::PointF> cancelled_touch_points_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
 };
@@ -3525,26 +3529,36 @@ TEST_F(GestureRecognizerTest,
   TimedEvents tes;
   const int kWindowWidth = 800;
   const int kWindowHeight = 600;
-  const int kTouchId = 2;
+  const int kTouchId1 = 1;
+  const int kTouchId2 = 2;
   gfx::Rect bounds(0, 0, kWindowWidth, kWindowHeight);
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
       delegate.get(), -1234, bounds, root_window()));
-  scoped_ptr<RemoveOnTouchCancelHandler>
-      handler(new RemoveOnTouchCancelHandler());
+  scoped_ptr<TestEventHandler> handler(new TestEventHandler());
   window->AddPreTargetHandler(handler.get());
 
   // Start a gesture sequence on |window|. Then transfer the events to NULL.
   // Make sure |window| receives a touch-cancel event.
   delegate->Reset();
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
-                       kTouchId, tes.Now());
-  ui::TouchEvent p2(ui::ET_TOUCH_PRESSED, gfx::Point(50, 50), 1, tes.Now());
+  ui::TouchEvent press(
+      ui::ET_TOUCH_PRESSED, gfx::Point(101, 201), kTouchId1, tes.Now());
   DispatchEventUsingWindowDispatcher(&press);
+  EXPECT_2_EVENTS(
+      delegate->events(), ui::ET_GESTURE_BEGIN, ui::ET_GESTURE_TAP_DOWN);
+  delegate->Reset();
+  ui::TouchEvent p2(
+      ui::ET_TOUCH_PRESSED, gfx::Point(50, 50), kTouchId2, tes.Now());
   DispatchEventUsingWindowDispatcher(&p2);
-  EXPECT_FALSE(delegate->tap());
-  EXPECT_TRUE(delegate->tap_down());
-  EXPECT_TRUE(delegate->tap_cancel());
-  EXPECT_TRUE(delegate->begin());
+  EXPECT_2_EVENTS(
+      delegate->events(), ui::ET_GESTURE_TAP_CANCEL, ui::ET_GESTURE_BEGIN);
+  delegate->Reset();
+  ui::TouchEvent move(
+      ui::ET_TOUCH_MOVED, gfx::Point(350, 300), kTouchId2, tes.Now());
+  DispatchEventUsingWindowDispatcher(&move);
+  EXPECT_3_EVENTS(delegate->events(),
+                  ui::ET_GESTURE_SCROLL_BEGIN,
+                  ui::ET_GESTURE_SCROLL_UPDATE,
+                  ui::ET_GESTURE_PINCH_BEGIN);
   EXPECT_EQ(2, handler->touch_pressed_count());
   delegate->Reset();
   handler->Reset();
@@ -3555,9 +3569,15 @@ TEST_F(GestureRecognizerTest,
   gesture_recognizer->TransferEventsTo(window.get(), NULL);
   EXPECT_EQ(NULL,
             gesture_recognizer->GetTouchLockedTarget(press));
-  // The event-handler removes |window| from its parent on the first
-  // touch-cancel event, so it won't receive the second touch-cancel event.
-  EXPECT_EQ(1, handler->touch_cancelled_count());
+  EXPECT_4_EVENTS(delegate->events(),
+                  ui::ET_GESTURE_PINCH_END,
+                  ui::ET_GESTURE_SCROLL_END,
+                  ui::ET_GESTURE_END,
+                  ui::ET_GESTURE_END);
+  const std::vector<gfx::PointF>& points = handler->cancelled_touch_points();
+  EXPECT_EQ(2U, points.size());
+  EXPECT_EQ(gfx::Point(101, 201), points[0]);
+  EXPECT_EQ(gfx::Point(350, 300), points[1]);
 }
 
 // Check that appropriate touch events generate show press events
