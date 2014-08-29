@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<style>
+.spinner {
+  backface-visibility: hidden;
+  background-color: blue;
+  height: 100px;
+  width: 100px;
+}
+.transparent {
+  opacity: 0;
+}
+#container {
+  -webkit-perspective: 1px;
+  background-color: red;
+  overflow: hidden;
+}
+</style>
+<script src="../fast/repaint/resources/text-based-repaint.js"></script>
+<div id="container">
+  <div class="spinner"></div>
+</div>
+<script>
+// Tests that transitioning  the container div from "composited but paints into ancestor" into "composited into own backing"
+// for intrinsic reasons (in this case due to opacity change) correctly invalidates the old paint invalidation backing (document)
+// before the change.
+function repaintTest() {
+    document.getElementById('container').classList.add('transparent');
+}
+if (window.testRunner)
+    runRepaintTest();
+</script>

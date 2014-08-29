@@ -1,0 +1,54 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [100, 100],
+          "children": [
+            {
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#D3D3D3",
+              "repaintRects": [
+                [0, 0, 100, 100]
+              ],
+              "children": [
+                {
+                  "bounds": [100, 100],
+                  "shouldFlattenTransform": false,
+                  "transform": [
+                    [1, 0, 0, 0],
+                    [0, 1, 0, 0],
+                    [0, 0, 1, -0.05],
+                    [0, 0, 0, 1]
+                  ],
+                  "children": [
+                    {
+                      "bounds": [50, 50],
+                      "contentsOpaque": true,
+                      "drawsContent": true,
+                      "backgroundColor": "#FFFF00",
+                      "transform": [
+                        [1, 0, 0, 0],
+                        [0, 1, 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 1, 1]
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

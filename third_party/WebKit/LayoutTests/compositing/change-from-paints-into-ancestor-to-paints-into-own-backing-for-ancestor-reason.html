@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<div id="target" style="transform: translateZ(0); width: 100px; height: 100px; background-color: lightblue">
+  <div style="perspective: 20px; width: 100px; height: 100px; background-color: lightgray">
+     <div style="width: 50px; height: 50px; transform: translateZ(1px); background-color: yellow">
+     </div>
+  </div>
+</div>
+<script src="../fast/repaint/resources/text-based-repaint.js"></script>
+<script>
+// Tests that transitioning  the container div from "composited but paints into ancestor" into "composited into own backing"
+// for ancestor reasons (in this case due to opacity change) correctly invalidates the old paint invalidation backing (document)
+// before the change. In this case, the reason it can no longer paint into its ancestor is because the ancestor has no visible content
+// (since the background color is removed).
+function repaintTest() {
+    target.style.backgroundColor = '';
+}
+runRepaintTest()
+</script>

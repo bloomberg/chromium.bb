@@ -1890,11 +1890,13 @@ bool CompositedLayerMapping::updateRequiresOwnBackingStoreForAncestorReasons(con
         && (compositingAncestorLayer->compositedLayerMapping()->mainGraphicsLayer()->drawsContent()
             || compositingAncestorLayer->compositedLayerMapping()->paintsIntoCompositedAncestor());
 
-    if (paintsIntoCompositedAncestor() != previousPaintsIntoCompositedAncestor)
-        compositor()->paintInvalidationOnCompositingChange(&m_owningLayer);
-
-    // FIXME: this is bogus. We need to make this assignment before the check above.
     m_requiresOwnBackingStoreForAncestorReasons = !canPaintIntoAncestor;
+    if (paintsIntoCompositedAncestor() != previousPaintsIntoCompositedAncestor) {
+        // Back out the change temporarily while invalidating with respect to the old container.
+        m_requiresOwnBackingStoreForAncestorReasons = !m_requiresOwnBackingStoreForAncestorReasons;
+        compositor()->paintInvalidationOnCompositingChange(&m_owningLayer);
+        m_requiresOwnBackingStoreForAncestorReasons = !m_requiresOwnBackingStoreForAncestorReasons;
+    }
 
     return m_requiresOwnBackingStoreForAncestorReasons != previousRequiresOwnBackingStoreForAncestorReasons;
 }
@@ -1913,8 +1915,12 @@ bool CompositedLayerMapping::updateRequiresOwnBackingStoreForIntrinsicReasons()
         || renderer->hasReflection()
         || renderer->hasFilter();
 
-    if (paintsIntoCompositedAncestor() != previousPaintsIntoCompositedAncestor)
+    if (paintsIntoCompositedAncestor() != previousPaintsIntoCompositedAncestor) {
+        // Back out the change temporarily while invalidating with respect to the old container.
+        m_requiresOwnBackingStoreForIntrinsicReasons = !m_requiresOwnBackingStoreForIntrinsicReasons;
         compositor()->paintInvalidationOnCompositingChange(&m_owningLayer);
+        m_requiresOwnBackingStoreForIntrinsicReasons = !m_requiresOwnBackingStoreForIntrinsicReasons;
+    }
 
     return m_requiresOwnBackingStoreForIntrinsicReasons != previousRequiresOwnBackingStoreForIntrinsicReasons;
 }

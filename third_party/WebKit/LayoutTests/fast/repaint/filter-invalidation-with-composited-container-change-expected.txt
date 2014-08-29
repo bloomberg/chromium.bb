@@ -6,6 +6,7 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
+        [8, 8, 328, 328],
         [8, 8, 328, 328]
       ],
       "children": [
