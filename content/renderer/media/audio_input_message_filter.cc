@@ -12,11 +12,20 @@
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_sender.h"
 
-namespace content {
-
 namespace {
+
 const int kStreamIDNotSet = -1;
+
+void LogMessage(int stream_id, const std::string& msg) {
+  std::ostringstream oss;
+  oss << "[stream_id=" << stream_id << "] AIMF::" << msg;
+  content::WebRtcLogMessage(oss.str());
+  DVLOG(1) << oss.str();
 }
+
+}
+
+namespace content {
 
 class AudioInputMessageFilter::AudioInputIPCImpl
     : public NON_EXPORTED_BASE(media::AudioInputIPC) {
@@ -125,10 +134,7 @@ void AudioInputMessageFilter::OnStreamCreated(
     uint32 length,
     uint32 total_segments) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
-
-  WebRtcLogMessage(base::StringPrintf(
-      "AIMF::OnStreamCreated. stream_id=%d",
-      stream_id));
+  LogMessage(stream_id, "OnStreamCreated");
 
 #if !defined(OS_WIN)
   base::SyncSocket::Handle socket_handle = socket_descriptor.fd;
@@ -193,6 +199,9 @@ void AudioInputMessageFilter::AudioInputIPCImpl::CreateStream(
   DCHECK(delegate);
 
   stream_id_ = filter_->delegates_.Add(delegate);
+  // TODO(henrika): remove all LogMessage calls when we have sorted out the
+  // existing "no input audio" issues.
+  LogMessage(stream_id_, "CreateStream");
 
   AudioInputHostMsg_CreateStream_Config config;
   config.params = params;
@@ -204,6 +213,7 @@ void AudioInputMessageFilter::AudioInputIPCImpl::CreateStream(
 
 void AudioInputMessageFilter::AudioInputIPCImpl::RecordStream() {
   DCHECK_NE(stream_id_, kStreamIDNotSet);
+  LogMessage(stream_id_, "RecordStream");
   filter_->Send(new AudioInputHostMsg_RecordStream(stream_id_));
 }
 
@@ -215,6 +225,7 @@ void AudioInputMessageFilter::AudioInputIPCImpl::SetVolume(double volume) {
 void AudioInputMessageFilter::AudioInputIPCImpl::CloseStream() {
   DCHECK(filter_->io_message_loop_->BelongsToCurrentThread());
   DCHECK_NE(stream_id_, kStreamIDNotSet);
+  LogMessage(stream_id_, "CloseStream");
   filter_->Send(new AudioInputHostMsg_CloseStream(stream_id_));
   filter_->delegates_.Remove(stream_id_);
   stream_id_ = kStreamIDNotSet;

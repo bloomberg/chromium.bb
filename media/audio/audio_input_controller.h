@@ -272,7 +272,8 @@ class MEDIA_EXPORT AudioInputController
   virtual ~AudioInputController();
 
   // Methods called on the audio thread (owned by the AudioManager).
-  void DoCreate(AudioManager* audio_manager, const AudioParameters& params,
+  void DoCreate(AudioManager* audio_manager,
+                const AudioParameters& params,
                 const std::string& device_id);
   void DoCreateForLowLatency(AudioManager* audio_manager,
                              const AudioParameters& params,

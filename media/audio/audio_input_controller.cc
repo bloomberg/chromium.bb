@@ -120,9 +120,13 @@ scoped_refptr<AudioInputController> AudioInputController::Create(
 
   // Create and open a new audio input stream from the existing
   // audio-device thread.
-  if (!controller->task_runner_->PostTask(FROM_HERE,
-          base::Bind(&AudioInputController::DoCreate, controller,
-                     base::Unretained(audio_manager), params, device_id))) {
+  if (!controller->task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&AudioInputController::DoCreate,
+                     controller,
+                     base::Unretained(audio_manager),
+                     params,
+                     device_id))) {
     controller = NULL;
   }
 
@@ -151,9 +155,13 @@ scoped_refptr<AudioInputController> AudioInputController::CreateLowLatency(
 
   // Create and open a new audio input stream from the existing
   // audio-device thread. Use the provided audio-input device.
-  if (!controller->task_runner_->PostTask(FROM_HERE,
-          base::Bind(&AudioInputController::DoCreateForLowLatency, controller,
-                     base::Unretained(audio_manager), params, device_id))) {
+  if (!controller->task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&AudioInputController::DoCreateForLowLatency,
+                     controller,
+                     base::Unretained(audio_manager),
+                     params,
+                     device_id))) {
     controller = NULL;
   }
 
@@ -220,12 +228,15 @@ void AudioInputController::DoCreate(AudioManager* audio_manager,
                                     const std::string& device_id) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioInputController.CreateTime");
+  if (handler_)
+    handler_->OnLog(this, "AIC::DoCreate");
 
 #if defined(AUDIO_POWER_MONITORING)
   // Create the audio (power) level meter given the provided audio parameters.
   // An AudioBus is also needed to wrap the raw data buffer from the native
   // layer to match AudioPowerMonitor::Scan().
   // TODO(henrika): Remove use of extra AudioBus. See http://crbug.com/375155.
+  last_audio_level_log_time_ = base::TimeTicks::Now();
   audio_level_.reset(new media::AudioPowerMonitor(
       params.sample_rate(),
       TimeDelta::FromMilliseconds(kPowerMeasurementTimeConstantMilliseconds)));
@@ -315,6 +326,9 @@ void AudioInputController::DoRecord() {
     state_ = RECORDING;
   }
 
+  if (handler_)
+    handler_->OnLog(this, "AIC::DoRecord");
+
   if (no_data_timer_) {
     // Start the data timer. Once |kTimerResetIntervalSeconds| have passed,
     // a callback to FirstCheckForNoData() is made.
@@ -332,6 +346,9 @@ void AudioInputController::DoClose() {
 
   if (state_ == CLOSED)
     return;
+
+  if (handler_)
+    handler_->OnLog(this, "AIC::DoClose");
 
   // Delete the timer on the same thread that created it.
   no_data_timer_.reset();
@@ -400,6 +417,11 @@ void AudioInputController::FirstCheckForNoData() {
   LogCaptureStartupResult(GetDataIsActive() ?
                           CAPTURE_STARTUP_OK :
                           CAPTURE_STARTUP_NO_DATA_CALLBACK);
+  if (handler_) {
+    handler_->OnLog(this, GetDataIsActive() ?
+                    "AIC::FirstCheckForNoData => data is active" :
+                    "AIC::FirstCheckForNoData => data is NOT active");
+  }
   DoCheckForNoData();
 }
 
