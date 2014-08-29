@@ -10,18 +10,21 @@ static_library("native_viewport") {
 
   deps = [
     "//base",
+    "//cc/surfaces",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//mojo/public/cpp/application:chromium",
+    "//mojo/services/gles2",
+    "//mojo/services/public/cpp/geometry",
+    "//mojo/services/public/cpp/input_events",
+    "//mojo/services/public/cpp/surfaces",
+    "//mojo/services/public/interfaces/geometry",
+    "//mojo/services/public/interfaces/native_viewport",
+    "//mojo/services/public/interfaces/surfaces",
     "//ui/events",
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//mojo/public/cpp/application:chromium",
-    "//mojo/common",
-    "//mojo/environment:chromium",
-    "//mojo/services/public/cpp/geometry",
-    "//mojo/services/public/interfaces/geometry",
-    "//mojo/services/gles2",
-    "//mojo/services/public/cpp/input_events",
-    "//mojo/services/public/interfaces/native_viewport",
   ]
 
   sources = [
@@ -34,6 +37,8 @@ static_library("native_viewport") {
     "platform_viewport_android.h",
     "platform_viewport_mac.mm",
     "platform_viewport_win.cc",
+    "viewport_surface.cc",
+    "viewport_surface.h",
   ]
 
   if (is_ios) {

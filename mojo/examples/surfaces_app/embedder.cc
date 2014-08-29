@@ -43,31 +43,35 @@ void Embedder::ProduceFrame(cc::SurfaceId child_one,
   scoped_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetNew(pass_id, rect, rect, gfx::Transform());
 
-  gfx::Transform one_transform;
-  one_transform.Translate(10 + child_size.width() / 2,
-                          50 + child_size.height() / 2);
-  one_transform.Translate(0, offset);
-  one_transform.Translate(-child_size.width() / 2, -child_size.height() / 2);
-  CreateAndAppendSimpleSharedQuadState(pass.get(), one_transform, size);
+  if (!child_one.is_null()) {
+    gfx::Transform one_transform;
+    one_transform.Translate(10 + child_size.width() / 2,
+                            50 + child_size.height() / 2);
+    one_transform.Translate(0, offset);
+    one_transform.Translate(-child_size.width() / 2, -child_size.height() / 2);
+    CreateAndAppendSimpleSharedQuadState(pass.get(), one_transform, size);
 
-  SurfaceDrawQuad* surface_one_quad =
-      pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
-  gfx::Rect one_rect(child_size);
-  surface_one_quad->SetNew(
-      pass->shared_quad_state_list.back(), one_rect, one_rect, child_one);
+    SurfaceDrawQuad* surface_one_quad =
+        pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+    gfx::Rect one_rect(child_size);
+    surface_one_quad->SetNew(
+        pass->shared_quad_state_list.back(), one_rect, one_rect, child_one);
+  }
 
-  gfx::Transform two_transform;
-  two_transform.Translate(10 + size.width() / 2 + child_size.width() / 2,
-                          50 + child_size.height() / 2);
-  two_transform.Translate(0, 200 - offset);
-  two_transform.Translate(-child_size.width() / 2, -child_size.height() / 2);
-  CreateAndAppendSimpleSharedQuadState(pass.get(), two_transform, size);
+  if (!child_two.is_null()) {
+    gfx::Transform two_transform;
+    two_transform.Translate(10 + size.width() / 2 + child_size.width() / 2,
+                            50 + child_size.height() / 2);
+    two_transform.Translate(0, 200 - offset);
+    two_transform.Translate(-child_size.width() / 2, -child_size.height() / 2);
+    CreateAndAppendSimpleSharedQuadState(pass.get(), two_transform, size);
 
-  SurfaceDrawQuad* surface_two_quad =
-      pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
-  gfx::Rect two_rect(child_size);
-  surface_two_quad->SetNew(
-      pass->shared_quad_state_list.back(), two_rect, two_rect, child_two);
+    SurfaceDrawQuad* surface_two_quad =
+        pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+    gfx::Rect two_rect(child_size);
+    surface_two_quad->SetNew(
+        pass->shared_quad_state_list.back(), two_rect, two_rect, child_two);
+  }
 
   CreateAndAppendSimpleSharedQuadState(pass.get(), gfx::Transform(), size);
   SolidColorDrawQuad* color_quad =

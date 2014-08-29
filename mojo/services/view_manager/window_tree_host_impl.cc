@@ -162,6 +162,7 @@ ui::EventProcessor* WindowTreeHostImpl::GetEventProcessor() {
 
 void WindowTreeHostImpl::OnCreated(uint64_t native_viewport_id) {
   CommandBufferPtr cb;
+  // TODO(jamesr): Output to a surface instead.
   gpu_service_->CreateOnscreenGLES2Context(
       native_viewport_id, Size::From(bounds_.size()), Get(&cb));
   widget_ = bit_cast<gfx::AcceleratedWidget>(

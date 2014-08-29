@@ -50,6 +50,7 @@ class SampleApp : public mojo::ApplicationDelegate,
     size->width = 800;
     size->height = 600;
     mojo::CommandBufferPtr command_buffer;
+    // TODO(jamesr): Output to a surface instead.
     gpu_service_->CreateOnscreenGLES2Context(
         native_viewport_id, size.Pass(), Get(&command_buffer));
     gles2_client_.reset(new GLES2ClientImpl(command_buffer.Pass()));

@@ -1,10 +1,13 @@
 include_rules = [
+  "+cc/surfaces",
   "+gpu/command_buffer/service/mailbox_manager.h",
   "+mojo/services/public/cpp/geometry",
   "+mojo/services/public/cpp/input_events",
+  "+mojo/services/public/cpp/surfaces",
   "+mojo/services/public/interfaces/gpu",
   "+mojo/services/public/interfaces/native_viewport",
   "+mojo/services/public/interfaces/geometry",
+  "+mojo/services/public/interfaces/surfaces",
   "+mojo/services/gles2",
   "+ui/events",
   "+ui/gfx",

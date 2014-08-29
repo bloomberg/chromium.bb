@@ -141,7 +141,7 @@ class Context::NativeViewportApplicationLoader
   // InterfaceFactory<NativeViewport> implementation.
   virtual void Create(ApplicationConnection* connection,
                       InterfaceRequest<NativeViewport> request) OVERRIDE {
-    BindToRequest(new NativeViewportImpl, &request);
+    BindToRequest(new NativeViewportImpl(app_.get()), &request);
   }
 
   // InterfaceFactory<Gpu> implementation.

@@ -29,7 +29,7 @@ class SurfacesApp : public ApplicationDelegate,
                     public SurfaceClient,
                     public NativeViewportClient {
  public:
-  SurfacesApp() : native_viewport_id_(0) {}
+  SurfacesApp() {}
   virtual ~SurfacesApp() {}
 
   // ApplicationDelegate implementation
@@ -38,10 +38,6 @@ class SurfacesApp : public ApplicationDelegate,
     connection->ConnectToService("mojo:mojo_native_viewport_service",
                                  &viewport_);
     viewport_.set_client(this);
-
-    // TODO(jamesr): Should be mojo:mojo_gpu_service
-    connection->ConnectToService("mojo:mojo_native_viewport_service",
-                                 &gpu_service_);
 
     connection->ConnectToService("mojo:mojo_surfaces_service",
                                  &surfaces_service_);
@@ -70,18 +66,13 @@ class SurfacesApp : public ApplicationDelegate,
 
   void ChildOneProducedFrame(SurfaceIdPtr id) {
     child_one_id_ = id.To<cc::SurfaceId>();
-    Draw(10);
   }
 
   void ChildTwoProducedFrame(SurfaceIdPtr id) {
     child_two_id_ = id.To<cc::SurfaceId>();
-    Draw(10);
   }
 
   void Draw(int offset) {
-    if (onscreen_id_.is_null() || child_one_id_.is_null() ||
-        child_two_id_.is_null())
-      return;
     int bounced_offset = offset;
     if (offset > 200)
       bounced_offset = 400 - offset;
@@ -99,40 +90,20 @@ class SurfacesApp : public ApplicationDelegate,
     surface_.set_client(this);
     embedder_.reset(new Embedder(surface_.get()));
     allocator_.reset(new cc::SurfaceIdAllocator(id_namespace));
-    CreateSurfaceIfReady();
-  }
-  virtual void ReturnResources(
-      Array<ReturnedResourcePtr> resources) OVERRIDE {
-    DCHECK(!resources.size());
-  }
-
-  // NativeViewportClient implementation
-  virtual void OnCreated(uint64_t native_viewport_id) OVERRIDE {
-    native_viewport_id_ = native_viewport_id;
-    CreateSurfaceIfReady();
-  }
-
-  // We can't create our GLES2-bound surface until we have our id namespace from
-  // the surfaces service and our native viewport id from the native viewport
-  // service. There's no way of knowing which we'll get first, so we just start
-  // whenever both arrive.
-  void CreateSurfaceIfReady() {
-    if (!onscreen_id_.is_null())
-      return;
-    if (native_viewport_id_ == 0)
-      return;
-    if (!allocator_)
-      return;
 
     onscreen_id_ = allocator_->GenerateId();
     embedder_->SetSurfaceId(onscreen_id_);
-    CommandBufferPtr cb;
-    gpu_service_->CreateOnscreenGLES2Context(
-        native_viewport_id_, Size::From(size_), Get(&cb));
-    surface_->CreateGLES2BoundSurface(
-        cb.Pass(), SurfaceId::From(onscreen_id_), Size::From(size_));
+    surface_->CreateSurface(SurfaceId::From(onscreen_id_), Size::From(size_));
+    viewport_->SubmittedFrame(SurfaceId::From(onscreen_id_));
     Draw(10);
   }
+
+  // SurfaceClient implementation.
+  virtual void ReturnResources(Array<ReturnedResourcePtr> resources) OVERRIDE {
+    DCHECK(!resources.size());
+  }
+  // NativeViewportClient implementation.
+  virtual void OnCreated(uint64_t native_viewport_id) OVERRIDE {}
   virtual void OnBoundsChanged(mojo::RectPtr bounds) OVERRIDE {}
   virtual void OnDestroyed() OVERRIDE {}
   virtual void OnEvent(mojo::EventPtr event,
@@ -144,7 +115,6 @@ class SurfacesApp : public ApplicationDelegate,
   SurfacesServicePtr surfaces_service_;
   SurfacePtr surface_;
   cc::SurfaceId onscreen_id_;
-  uint64_t native_viewport_id_;
   scoped_ptr<cc::SurfaceIdAllocator> allocator_;
   scoped_ptr<Embedder> embedder_;
   ChildPtr child_one_;
@@ -155,7 +125,6 @@ class SurfacesApp : public ApplicationDelegate,
   gfx::Size child_size_;
 
   NativeViewportPtr viewport_;
-  GpuPtr gpu_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfacesApp);
 };

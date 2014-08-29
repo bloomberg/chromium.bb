@@ -8,13 +8,20 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("surfaces") {
   sources = [
     "quads.mojom",
-    "surface_id.mojom",
     "surfaces.mojom",
     "surfaces_service.mojom",
   ]
 
   deps = [
+    "//mojo/services/gles2:interfaces",
     "//mojo/services/public/interfaces/geometry",
     "//mojo/services/public/interfaces/native_viewport",
+  ]
+}
+
+
+mojom("surface_id") {
+  sources = [
+    "surface_id.mojom",
   ]
 }

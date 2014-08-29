@@ -6,19 +6,25 @@
 #define MOJO_SERVICES_NATIVE_VIEWPORT_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
+#include "cc/surfaces/surface_id.h"
 #include "mojo/services/native_viewport/platform_viewport.h"
+#include "mojo/services/public/interfaces/gpu/gpu.mojom.h"
 #include "mojo/services/public/interfaces/native_viewport/native_viewport.mojom.h"
+#include "mojo/services/public/interfaces/surfaces/surfaces_service.mojom.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 class Event;
 }
 
 namespace mojo {
+class ApplicationImpl;
+class ViewportSurface;
 
 class NativeViewportImpl : public InterfaceImpl<NativeViewport>,
                            public PlatformViewport::Delegate {
  public:
-  NativeViewportImpl();
+  explicit NativeViewportImpl(ApplicationImpl* app);
   virtual ~NativeViewportImpl();
 
   // InterfaceImpl<NativeViewport> implementation.
@@ -27,6 +33,7 @@ class NativeViewportImpl : public InterfaceImpl<NativeViewport>,
   virtual void Hide() OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void SetBounds(RectPtr bounds) OVERRIDE;
+  virtual void SubmittedFrame(SurfaceIdPtr surface_id) OVERRIDE;
 
   // PlatformViewport::Delegate implementation.
   virtual void OnBoundsChanged(const gfx::Rect& bounds) OVERRIDE;
@@ -38,11 +45,17 @@ class NativeViewportImpl : public InterfaceImpl<NativeViewport>,
   void AckEvent();
 
  private:
-
-  gfx::AcceleratedWidget widget_;
   scoped_ptr<PlatformViewport> platform_viewport_;
+  scoped_ptr<ViewportSurface> viewport_surface_;
+  uint64_t widget_id_;
+  gfx::Rect bounds_;
+  GpuPtr gpu_service_;
+  SurfacesServicePtr surfaces_service_;
+  cc::SurfaceId child_surface_id_;
   bool waiting_for_event_ack_;
   base::WeakPtrFactory<NativeViewportImpl> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(NativeViewportImpl);
 };
 
 }  // namespace mojo

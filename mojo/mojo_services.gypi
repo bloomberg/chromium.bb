@@ -134,7 +134,7 @@
       ],
     },
     {
-      # GN version: //mojo/services/public/cpp/geometry
+      # GN version: //mojo/services/public/cpp/surfaces
       'target_name': 'mojo_surfaces_lib',
       'type': '<(component)',
       'defines': [
@@ -239,12 +239,14 @@
         'mojo_base.gyp:mojo_gles2_bindings',
         'mojo_geometry_bindings',
         'mojo_input_events_bindings',
+        'mojo_surface_id_bindings',
       ],
       'export_dependent_settings': [
         'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_base.gyp:mojo_gles2_bindings',
         'mojo_geometry_bindings',
         'mojo_input_events_bindings',
+        'mojo_surface_id_bindings',
       ],
     },
     {
@@ -255,6 +257,8 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../cc/cc.gyp:cc_surfaces',
+        '../skia/skia.gyp:skia',
         '../ui/events/events.gyp:events',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
@@ -266,11 +270,14 @@
         'mojo_gpu_bindings',
         'mojo_input_events_lib',
         'mojo_native_viewport_bindings',
+        'mojo_surfaces_bindings',
+        'mojo_surfaces_lib',
       ],
       'export_dependent_settings': [
         'mojo_geometry_bindings',
         'mojo_gpu_bindings',
         'mojo_native_viewport_bindings',
+        'mojo_surfaces_bindings',
       ],
       'sources': [
         'services/native_viewport/gpu_impl.cc',
@@ -284,6 +291,8 @@
         'services/native_viewport/platform_viewport_stub.cc',
         'services/native_viewport/platform_viewport_win.cc',
         'services/native_viewport/platform_viewport_x11.cc',
+        'services/native_viewport/viewport_surface.cc',
+        'services/native_viewport/viewport_surface.h',
       ],
       'conditions': [
         ['OS=="win" or OS=="android" or OS=="linux" or OS=="mac"', {
@@ -573,19 +582,37 @@
       'target_name': 'mojo_surfaces_bindings',
       'type': 'static_library',
       'sources': [
-        'services/public/interfaces/surfaces/surface_id.mojom',
         'services/public/interfaces/surfaces/surfaces.mojom',
         'services/public/interfaces/surfaces/surfaces_service.mojom',
         'services/public/interfaces/surfaces/quads.mojom',
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
-      'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
-      ],
       'dependencies': [
         'mojo_base.gyp:mojo_cpp_bindings',
+        'mojo_base.gyp:mojo_gles2_bindings',
         'mojo_geometry_bindings',
-        'mojo_native_viewport_bindings',
+        'mojo_surface_id_bindings',
+      ],
+      'export_dependent_settings': [
+        'mojo_base.gyp:mojo_cpp_bindings',
+        'mojo_base.gyp:mojo_gles2_bindings',
+        'mojo_geometry_bindings',
+        'mojo_surface_id_bindings',
+      ],
+    },
+    {
+      # GN version: //mojo/services/public/interfaces/surfaces:surface_id
+      'target_name': 'mojo_surface_id_bindings',
+      'type': 'static_library',
+      'sources': [
+        'services/public/interfaces/surfaces/surface_id.mojom',
+      ],
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+      'dependencies': [
+        'mojo_base.gyp:mojo_cpp_bindings',
+      ],
+      'export_dependent_settings': [
+        'mojo_base.gyp:mojo_cpp_bindings',
       ],
     },
     {

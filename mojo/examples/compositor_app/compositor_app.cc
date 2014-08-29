@@ -37,6 +37,7 @@ class SampleApp : public ApplicationDelegate, public NativeViewportClient {
 
   virtual void OnCreated(uint64_t native_viewport_id) OVERRIDE {
     CommandBufferPtr cb;
+    // TODO(jamesr): Output to a surface instead.
     gpu_service_->CreateOnscreenGLES2Context(
         native_viewport_id, Size::From(gfx::Size(800, 600)), Get(&cb));
     host_.reset(new CompositorHost(cb.PassMessagePipe()));
