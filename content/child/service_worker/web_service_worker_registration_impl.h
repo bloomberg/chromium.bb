@@ -5,6 +5,8 @@
 #ifndef CONTENT_CHILD_SERVICE_WORKER_WEB_SERVICE_WORKER_REGISTRATION_IMPL_H_
 #define CONTENT_CHILD_SERVICE_WORKER_WEB_SERVICE_WORKER_REGISTRATION_IMPL_H_
 
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerRegistration.h"
 
@@ -38,8 +40,27 @@ class WebServiceWorkerRegistrationImpl
   virtual blink::WebURL scope() const;
 
  private:
+  enum QueuedTaskType {
+    INSTALLING,
+    WAITING,
+    ACTIVE,
+    UPDATE_FOUND,
+  };
+
+  struct QueuedTask {
+    QueuedTask(QueuedTaskType type,
+               blink::WebServiceWorker* worker);
+    QueuedTaskType type;
+    blink::WebServiceWorker* worker;
+  };
+
+  void RunQueuedTasks();
+  void ClearQueuedTasks();
+
   scoped_ptr<ServiceWorkerRegistrationHandleReference> handle_ref_;
   blink::WebServiceWorkerRegistrationProxy* proxy_;
+
+  std::vector<QueuedTask> queued_tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerRegistrationImpl);
 };
