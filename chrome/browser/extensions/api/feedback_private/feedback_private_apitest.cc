@@ -14,7 +14,14 @@ class FeedbackApiTest: public ExtensionApiTest {
   virtual ~FeedbackApiTest() {}
 };
 
-IN_PROC_BROWSER_TEST_F(FeedbackApiTest, Basic) {
+// Fails on Linux/Win.  http://crbug.com/408917
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+
+IN_PROC_BROWSER_TEST_F(FeedbackApiTest, MAYBE_Basic) {
   EXPECT_TRUE(RunExtensionTest("feedback_private/basic")) << message_;
 }
 
