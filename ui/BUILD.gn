@@ -142,13 +142,9 @@ test("ui_unittests") {
 
   if (is_mac) {
     deps += [
-      #'../third_party/mozilla/mozilla.gyp:mozilla',  TODO(GYP)
+      "//third_party/mozilla",
       #'ui_unittests_bundle',  TODO(GYP)
     ]
-    if (!is_component_build) {
-      # Needed for mozilla.gyp.
-      ldflags = [ "-Wl,-ObjC" ]
-    }
   }
 
   if (use_aura || toolkit_views) {
@@ -169,9 +165,9 @@ test("ui_unittests") {
     ]
     deps += [
       "//ui/aura:test_support",
+      "//ui/events:gesture_detection",
       #'../chromeos/chromeos.gyp:chromeos',  TODO(GYP)
       #'chromeos/ui_chromeos.gyp:ui_chromeos',
-      #'events/events.gyp:gesture_detection',
     ]
   }
 
