@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_utils.h"
@@ -226,6 +227,7 @@ class AppShimHostManagerBrowserTestSocketFiles
  protected:
   base::FilePath directory_in_tmp_;
   base::FilePath symlink_path_;
+  base::FilePath version_path_;
 
  private:
   virtual bool SetUpUserDataDirectory() OVERRIDE;
@@ -243,6 +245,12 @@ bool AppShimHostManagerBrowserTestSocketFiles::SetUpUserDataDirectory() {
   PathService::Get(base::DIR_TEMP, &temp_dir);
   EXPECT_TRUE(base::CreateSymbolicLink(temp_dir.Append("chrome-XXXXXX"),
                                        symlink_path_));
+
+  // Create an invalid RunningChromeVersion file.
+  version_path_ =
+      user_data_dir.Append(app_mode::kRunningChromeVersionSymlinkName);
+  EXPECT_TRUE(base::CreateSymbolicLink(base::FilePath("invalid_version"),
+                                       version_path_));
   return AppShimHostManagerBrowserTest::SetUpUserDataDirectory();
 }
 
@@ -251,6 +259,7 @@ void AppShimHostManagerBrowserTestSocketFiles::
   // Check that created files have been deleted.
   EXPECT_FALSE(base::PathExists(directory_in_tmp_));
   EXPECT_FALSE(base::PathExists(symlink_path_));
+  EXPECT_FALSE(base::PathExists(version_path_));
 }
 
 IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTestSocketFiles,
@@ -268,6 +277,11 @@ IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTestSocketFiles,
   base::FilePath socket_path;
   ASSERT_TRUE(base::ReadSymbolicLink(symlink_path_, &socket_path));
   EXPECT_EQ(app_mode::kAppShimSocketShortName, socket_path.BaseName().value());
+
+  // Check that the RunningChromeVersion file is correctly written.
+  base::FilePath version;
+  EXPECT_TRUE(base::ReadSymbolicLink(version_path_, &version));
+  EXPECT_EQ(chrome::VersionInfo().Version(), version.value());
 }
 
 }  // namespace

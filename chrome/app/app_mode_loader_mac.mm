@@ -10,8 +10,7 @@
 
 #include <dlfcn.h>
 
-#include <CoreFoundation/CoreFoundation.h>
-#import <Foundation/Foundation.h>
+#import <Cocoa/Cocoa.h>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -21,7 +20,9 @@
 #include "base/mac/launch_services_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/process/launch.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #import "chrome/common/mac/app_mode_chrome_locator.h"
 #include "chrome/common/mac/app_mode_common.h"
@@ -68,14 +69,37 @@ int LoadFrameworkAndStart(app_mode::ChromeAppModeInfo* info) {
     }
   }
 
-  // ** 2: Read information from the Chrome bundle.
+  // ** 2: Read the running Chrome version.
+  // The user_data_dir for shims actually contains the app_data_path.
+  // I.e. <user_data_dir>/<profile_dir>/Web Applications/_crx_extensionid/
+  base::FilePath app_data_dir = base::mac::NSStringToFilePath([app_bundle
+      objectForInfoDictionaryKey:app_mode::kCrAppModeUserDataDirKey]);
+  base::FilePath user_data_dir = app_data_dir.DirName().DirName().DirName();
+  CHECK(!user_data_dir.empty());
+
+  // If the version file does not exist, |cr_version_str| will be empty and
+  // app_mode::GetChromeBundleInfo will default to the latest version.
+  base::FilePath cr_version_str;
+  base::ReadSymbolicLink(
+      user_data_dir.Append(app_mode::kRunningChromeVersionSymlinkName),
+      &cr_version_str);
+
+  // If the version file does exist, it may have been left by a crashed Chrome
+  // process. Ensure the process is still running.
+  if (!cr_version_str.empty()) {
+    NSArray* existing_chrome = [NSRunningApplication
+        runningApplicationsWithBundleIdentifier:cr_bundle_id];
+    if ([existing_chrome count] == 0)
+      cr_version_str.clear();
+  }
+
+  // ** 3: Read information from the Chrome bundle.
   base::FilePath executable_path;
-  base::string16 raw_version_str;
   base::FilePath version_path;
   base::FilePath framework_shlib_path;
   if (!app_mode::GetChromeBundleInfo(cr_bundle_path,
+                                     cr_version_str.value(),
                                      &executable_path,
-                                     &raw_version_str,
                                      &version_path,
                                      &framework_shlib_path)) {
     LOG(FATAL) << "Couldn't ready Chrome bundle info";
@@ -83,7 +107,7 @@ int LoadFrameworkAndStart(app_mode::ChromeAppModeInfo* info) {
   base::FilePath app_mode_bundle_path =
       base::mac::NSStringToFilePath([app_bundle bundlePath]);
 
-  // ** 3: Fill in ChromeAppModeInfo.
+  // ** 4: Fill in ChromeAppModeInfo.
   info->chrome_outer_bundle_path = cr_bundle_path;
   info->chrome_versioned_path = version_path;
   info->app_mode_bundle_path = app_mode_bundle_path;
@@ -109,7 +133,7 @@ int LoadFrameworkAndStart(app_mode::ChromeAppModeInfo* info) {
   info->profile_dir = base::mac::NSStringToFilePath(
       [info_plist objectForKey:app_mode::kCrAppModeProfileDirKey]);
 
-  // Open the framework.
+  // ** 5: Open the framework.
   StartFun ChromeAppModeStart = NULL;
   void* cr_dylib = dlopen(framework_shlib_path.value().c_str(), RTLD_LAZY);
   if (cr_dylib) {

@@ -1557,6 +1557,7 @@
         'browser/ui/webui/web_ui_test_handler.h',
         'browser/ui/zoom/zoom_controller_browsertest.cc',
         'browser/unload_browsertest.cc',
+        'common/mac/app_mode_chrome_locator_browsertest.mm',
         'common/mac/mock_launchd.cc',
         'common/mac/mock_launchd.h',
         'common/time_format_browsertest.cc',
@@ -1941,6 +1942,7 @@
           # chrome_resources.gyp:{packed_extra_resources,packed_resources},
           # and can build this target standalone much faster.
           'dependencies': [
+            'app_mode_app_support',
             'chrome',
             '../components/components.gyp:breakpad_stubs',
             '../third_party/ocmock/ocmock.gyp:ocmock',
@@ -2690,36 +2692,6 @@
     },
   ],
   'conditions': [
-    ['OS=="mac"', {
-      'targets': [
-        {
-          # Tests for Mac app launcher.
-          'target_name': 'app_mode_app_tests',
-          'type': 'executable',
-          'product_name': 'app_mode_app_tests',
-          'dependencies': [
-            '../base/base.gyp:test_support_base',
-            '../chrome/common_constants.gyp:common_constants',
-            '../testing/gtest.gyp:gtest',
-            'chrome.gyp:chrome',  # run time dependency
-            'app_mode_app_support',
-          ],
-          'sources': [
-            'common/mac/app_mode_chrome_locator_unittest.mm',
-            'test/base/app_mode_app_tests.cc',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/CoreFoundation.framework',
-              '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
-            ],
-          },
-        },  # target app_mode_app_tests
-      ],
-    }],
     ['OS!="mac"', {
       'targets': [
         {

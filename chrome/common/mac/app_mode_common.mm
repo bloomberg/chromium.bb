@@ -11,6 +11,8 @@ namespace app_mode {
 const char kAppShimSocketShortName[] = "Socket";
 const char kAppShimSocketSymlinkName[] = "App Shim Socket";
 
+const char kRunningChromeVersionSymlinkName[] = "RunningChromeVersion";
+
 const char kAppListModeId[] = "app_list";
 
 const char kLaunchedByChromeProcessId[] = "launched-by-chrome-process-id";

@@ -8,6 +8,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
@@ -24,9 +25,14 @@ bool FindBundleById(NSString* bundle_id, base::FilePath* out_bundle) {
   return true;
 }
 
+NSString* GetVersionedPath(NSString* bundle_path, NSString* version) {
+  return [NSString
+      pathWithComponents:@[ bundle_path, @"Contents", @"Versions", version ]];
+}
+
 bool GetChromeBundleInfo(const base::FilePath& chrome_bundle,
+                         const std::string& version_str,
                          base::FilePath* executable_path,
-                         base::string16* raw_version_str,
                          base::FilePath* version_path,
                          base::FilePath* framework_shlib_path) {
   using base::mac::ObjCCast;
@@ -37,22 +43,23 @@ bool GetChromeBundleInfo(const base::FilePath& chrome_bundle,
   if (!cr_bundle)
     return false;
 
-  // Read raw version string.
-  NSString* cr_version =
-       ObjCCast<NSString>(
-          [cr_bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"]);
-  if (!cr_version)
-    return false;
-
   // Get versioned directory.
-  NSArray* cr_versioned_path_components =
-      [NSArray arrayWithObjects:cr_bundle_path,
-                                @"Contents",
-                                @"Versions",
-                                cr_version,
-                                nil];
-  NSString* cr_versioned_path =
-    [NSString pathWithComponents:cr_versioned_path_components];
+  NSString* cr_versioned_path;
+  if (!version_str.empty()) {
+    cr_versioned_path =
+        GetVersionedPath(cr_bundle_path, base::SysUTF8ToNSString(version_str));
+  }
+
+  if (version_str.empty() ||
+      !base::PathExists(base::mac::NSStringToFilePath(cr_versioned_path))) {
+    // Read version string.
+    NSString* cr_version = ObjCCast<NSString>(
+        [cr_bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"]);
+    if (!cr_version)
+      return false;
+
+    cr_versioned_path = GetVersionedPath(cr_bundle_path, cr_version);
+  }
 
   // Get the framework path.
   NSString* cr_bundle_exe =
@@ -90,7 +97,6 @@ bool GetChromeBundleInfo(const base::FilePath& chrome_bundle,
 
   // Everything OK, copy output parameters.
   *executable_path = base::mac::NSStringToFilePath([cr_bundle executablePath]);
-  *raw_version_str = base::SysNSStringToUTF16(cr_version);
   *version_path = base::mac::NSStringToFilePath(cr_versioned_path);
   *framework_shlib_path =
       base::mac::NSStringToFilePath(cr_framework_shlib_path);

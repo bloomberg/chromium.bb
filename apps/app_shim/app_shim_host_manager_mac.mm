@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/mac/app_mode_common.h"
 
 using content::BrowserThread;
@@ -41,11 +42,15 @@ base::FilePath GetDirectoryInTmpTemplate(const base::FilePath& user_data_dir) {
 }
 
 void DeleteSocketFiles(const base::FilePath& directory_in_tmp,
-                       const base::FilePath& symlink_path) {
-  if (!directory_in_tmp.empty())
-    base::DeleteFile(directory_in_tmp, true);
+                       const base::FilePath& symlink_path,
+                       const base::FilePath& version_path) {
+  // Delete in reverse order of creation.
+  if (!version_path.empty())
+    base::DeleteFile(version_path, false);
   if (!symlink_path.empty())
     base::DeleteFile(symlink_path, false);
+  if (!directory_in_tmp.empty())
+    base::DeleteFile(directory_in_tmp, true);
 }
 
 }  // namespace
@@ -69,13 +74,19 @@ AppShimHostManager::~AppShimHostManager() {
     return;
 
   apps::AppShimHandler::SetDefaultHandler(NULL);
+  base::FilePath user_data_dir;
   base::FilePath symlink_path;
-  if (PathService::Get(chrome::DIR_USER_DATA, &symlink_path))
-    symlink_path = symlink_path.Append(app_mode::kAppShimSocketSymlinkName);
+  base::FilePath version_path;
+  if (PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+    symlink_path = user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
+    version_path =
+        user_data_dir.Append(app_mode::kRunningChromeVersionSymlinkName);
+  }
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&DeleteSocketFiles, directory_in_tmp_, symlink_path));
+      base::Bind(
+          &DeleteSocketFiles, directory_in_tmp_, symlink_path, version_path));
 }
 
 void AppShimHostManager::InitOnFileThread() {
@@ -117,6 +128,15 @@ void AppShimHostManager::InitOnFileThread() {
       user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
   base::DeleteFile(symlink_path, false);
   base::CreateSymbolicLink(socket_path, symlink_path);
+
+  // Create a symlink containing the current version string. This allows the
+  // shim to load the same framework version as the currently running Chrome
+  // process.
+  base::FilePath version_path =
+      user_data_dir.Append(app_mode::kRunningChromeVersionSymlinkName);
+  base::DeleteFile(version_path, false);
+  base::CreateSymbolicLink(base::FilePath(chrome::VersionInfo().Version()),
+                           version_path);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

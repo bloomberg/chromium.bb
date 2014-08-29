@@ -11,6 +11,7 @@ include_rules = [
   "+chrome/browser/web_applications/web_app_mac.h",
   "+chrome/common/chrome_constants.h",
   "+chrome/common/chrome_paths.h",
+  "+chrome/common/chrome_version_info.h",
   "+chrome/common/extensions/extension_constants.h",
   "+chrome/common/mac/app_mode_common.h",
   "+components/crx_file",
