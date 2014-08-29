@@ -6,46 +6,49 @@
 #define ConsoleMessageStorage_h
 
 #include "core/inspector/ConsoleMessage.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
 class LocalDOMWindow;
 
-class ConsoleMessageStorage FINAL {
+class ConsoleMessageStorage FINAL : public NoBaseWillBeGarbageCollected<ConsoleMessageStorage> {
     WTF_MAKE_NONCOPYABLE(ConsoleMessageStorage);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<ConsoleMessageStorage> createForWorker(ExecutionContext* context)
+    static PassOwnPtrWillBeRawPtr<ConsoleMessageStorage> createForWorker(ExecutionContext* context)
     {
-        return adoptPtr(new ConsoleMessageStorage(context));
+        return adoptPtrWillBeNoop(new ConsoleMessageStorage(context));
     }
 
-    static PassOwnPtr<ConsoleMessageStorage> createForFrame(LocalFrame* frame)
+    static PassOwnPtrWillBeRawPtr<ConsoleMessageStorage> createForFrame(LocalFrame* frame)
     {
-        return adoptPtr(new ConsoleMessageStorage(frame));
+        return adoptPtrWillBeNoop(new ConsoleMessageStorage(frame));
     }
 
-    void reportMessage(PassRefPtr<ConsoleMessage>);
+    void reportMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>);
     void clear();
 
     Vector<unsigned> argumentCounts() const;
     void frameWindowDiscarded(LocalDOMWindow*);
 
     size_t size() const;
-    PassRefPtr<ConsoleMessage> at(size_t index) const;
+    PassRefPtrWillBeRawPtr<ConsoleMessage> at(size_t index) const;
 
     int expiredCount() const;
 
+    void trace(Visitor*);
+
 private:
-    ConsoleMessageStorage(ExecutionContext*);
-    ConsoleMessageStorage(LocalFrame*);
+    explicit ConsoleMessageStorage(ExecutionContext*);
+    explicit ConsoleMessageStorage(LocalFrame*);
 
     ExecutionContext* executionContext() const;
 
     int m_expiredCount;
-    Vector<RefPtr<ConsoleMessage> > m_messages;
-    ExecutionContext* m_context;
+    WillBeHeapVector<RefPtrWillBeMember<ConsoleMessage> > m_messages;
+    RawPtrWillBeMember<ExecutionContext> m_context;
     LocalFrame* m_frame;
 };
 

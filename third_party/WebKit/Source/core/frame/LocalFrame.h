@@ -175,7 +175,7 @@ namespace blink {
         const OwnPtr<SpellChecker> m_spellChecker;
         const OwnPtrWillBePersistent<FrameSelection> m_selection;
         const OwnPtrWillBePersistent<EventHandler> m_eventHandler;
-        const OwnPtr<FrameConsole> m_console;
+        const OwnPtrWillBePersistent<FrameConsole> m_console;
         OwnPtr<InputMethodController> m_inputMethodController;
 
         float m_pageZoomFactor;

@@ -184,7 +184,7 @@ namespace blink {
         double m_timeOrigin;
         TerminationObserver* m_terminationObserver;
 
-        OwnPtr<ConsoleMessageStorage> m_messageStorage;
+        OwnPtrWillBeMember<ConsoleMessageStorage> m_messageStorage;
     };
 
 DEFINE_TYPE_CASTS(WorkerGlobalScope, ExecutionContext, context, context->isWorkerGlobalScope(), context.isWorkerGlobalScope());

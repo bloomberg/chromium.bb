@@ -110,7 +110,7 @@ void InspectorConsoleAgent::enable(ErrorString*)
 
     ConsoleMessageStorage* storage = messageStorage();
     if (storage->expiredCount()) {
-        RefPtr<ConsoleMessage> expiredMessage = ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, String::format("%d console messages are not shown.", storage->expiredCount()));
+        RefPtrWillBeRawPtr<ConsoleMessage> expiredMessage = ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, String::format("%d console messages are not shown.", storage->expiredCount()));
         expiredMessage->setTimestamp(0);
         sendConsoleMessageToFrontend(expiredMessage.get(), false);
     }
@@ -386,7 +386,7 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
         jsonObj->setExecutionContextId(m_injectedScriptManager->injectedScriptIdFor(scriptState));
     if (consoleMessage->source() == NetworkMessageSource && consoleMessage->requestIdentifier())
         jsonObj->setNetworkRequestId(IdentifiersFactory::requestId(consoleMessage->requestIdentifier()));
-    RefPtr<ScriptArguments> arguments = consoleMessage->scriptArguments();
+    RefPtrWillBeRawPtr<ScriptArguments> arguments = consoleMessage->scriptArguments();
     if (arguments && arguments->argumentCount()) {
         InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(arguments->scriptState());
         if (!injectedScript.isEmpty()) {

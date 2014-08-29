@@ -354,6 +354,7 @@ void WorkerGlobalScope::trace(Visitor* visitor)
     visitor->trace(m_workerInspectorController);
     visitor->trace(m_eventQueue);
     visitor->trace(m_workerClients);
+    visitor->trace(m_messageStorage);
     WillBeHeapSupplementable<WorkerGlobalScope>::trace(visitor);
     ExecutionContext::trace(visitor);
     EventTargetWithInlineData::trace(visitor);

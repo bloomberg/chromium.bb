@@ -55,9 +55,7 @@ FrameConsole::FrameConsole(LocalFrame& frame)
 {
 }
 
-FrameConsole::~FrameConsole()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(FrameConsole);
 
 void FrameConsole::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleMessage)
 {
@@ -153,6 +151,11 @@ ConsoleMessageStorage* FrameConsole::messageStorage()
 void FrameConsole::adoptWorkerConsoleMessages(WorkerGlobalScopeProxy* proxy)
 {
     InspectorInstrumentation::adoptWorkerConsoleMessages(m_frame.document(), proxy);
+}
+
+void FrameConsole::trace(Visitor* visitor)
+{
+    visitor->trace(m_consoleMessageStorage);
 }
 
 } // namespace blink

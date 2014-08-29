@@ -28,9 +28,9 @@ ConsoleMessageStorage::ConsoleMessageStorage(LocalFrame* frame)
 {
 }
 
-void ConsoleMessageStorage::reportMessage(PassRefPtr<ConsoleMessage> prpMessage)
+void ConsoleMessageStorage::reportMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpMessage)
 {
-    RefPtr<ConsoleMessage> message = prpMessage;
+    RefPtrWillBeRawPtr<ConsoleMessage> message = prpMessage;
     message->collectCallStack();
 
     InspectorInstrumentation::addMessageToConsole(executionContext(), message.get());
@@ -67,7 +67,7 @@ size_t ConsoleMessageStorage::size() const
     return m_messages.size();
 }
 
-PassRefPtr<ConsoleMessage> ConsoleMessageStorage::at(size_t index) const
+PassRefPtrWillBeRawPtr<ConsoleMessage> ConsoleMessageStorage::at(size_t index) const
 {
     return m_messages[index];
 }
@@ -82,4 +82,10 @@ ExecutionContext* ConsoleMessageStorage::executionContext() const
     return m_frame ? m_frame->document() : m_context;
 }
 
-} // namespace WebCore
+void ConsoleMessageStorage::trace(Visitor* visitor)
+{
+    visitor->trace(m_messages);
+    visitor->trace(m_context);
+}
+
+} // namespace blink
