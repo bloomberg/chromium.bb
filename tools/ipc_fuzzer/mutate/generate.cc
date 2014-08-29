@@ -823,19 +823,14 @@ struct GenerateTraits<media::AudioParameters> {
   static bool Generate(media::AudioParameters *p, Generator* generator) {
     int format;
     int channel_layout;
-    int channels;
-    int input_channels;
     int sample_rate;
     int bits_per_sample;
     int frames_per_buffer;
+    int channels;
     int effects;
     if (!GenerateParam(&format, generator))
       return false;
     if (!GenerateParam(&channel_layout, generator))
-      return false;
-    if (!GenerateParam(&channels, generator))
-      return false;
-    if (!GenerateParam(&input_channels, generator))
       return false;
     if (!GenerateParam(&sample_rate, generator))
       return false;
@@ -843,13 +838,18 @@ struct GenerateTraits<media::AudioParameters> {
       return false;
     if (!GenerateParam(&frames_per_buffer, generator))
       return false;
+    if (!GenerateParam(&channels, generator))
+      return false;
     if (!GenerateParam(&effects, generator))
       return false;
     media::AudioParameters params(
         static_cast<media::AudioParameters::Format>(format),
         static_cast<media::ChannelLayout>(channel_layout),
-        channels, input_channels, sample_rate,
-        bits_per_sample, frames_per_buffer, effects);
+        channels,
+        sample_rate,
+        bits_per_sample,
+        frames_per_buffer,
+        effects);
     *p = params;
     return true;
   }
