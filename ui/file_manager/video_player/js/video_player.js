@@ -503,9 +503,15 @@ VideoPlayer.prototype.onCastSelected_ = function(cast) {
   if ((this.currentCast_ && this.currentCast_.label) === (cast && cast.label))
     return;
 
-  this.currentCast_ = cast || null;
-  this.updateCheckOnCastMenu_();
-  this.reloadCurrentVideo();
+  this.unloadVideo(false);
+
+  // Waits for unloading video.
+  this.loadQueue_.run(function(callback) {
+    this.currentCast_ = cast || null;
+    this.updateCheckOnCastMenu_();
+    this.reloadCurrentVideo();
+    callback();
+  }.wrap(this));
 };
 
 /**
