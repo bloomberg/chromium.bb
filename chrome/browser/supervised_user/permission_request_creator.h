@@ -5,15 +5,15 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_PERMISSION_REQUEST_CREATOR_H_
 #define CHROME_BROWSER_SUPERVISED_USER_PERMISSION_REQUEST_CREATOR_H_
 
-#include <string>
-
 #include "base/callback_forward.h"
+
+class GURL;
 
 class PermissionRequestCreator {
  public:
   virtual ~PermissionRequestCreator() {}
 
-  virtual void CreatePermissionRequest(const std::string& url_requested,
+  virtual void CreatePermissionRequest(const GURL& url_requested,
                                        const base::Closure& callback) = 0;
 };
 

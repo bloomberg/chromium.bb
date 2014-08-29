@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_PERMISSION_REQUEST_CREATOR_SYNC_H_
 #define CHROME_BROWSER_SUPERVISED_USER_PERMISSION_REQUEST_CREATOR_SYNC_H_
 
-#include "chrome/browser/supervised_user/permission_request_creator.h"
+#include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/supervised_user/permission_request_creator.h"
 
 class SupervisedUserSettingsService;
 class SupervisedUserSharedSettingsService;
@@ -22,7 +23,7 @@ class PermissionRequestCreatorSync : public PermissionRequestCreator {
   virtual ~PermissionRequestCreatorSync();
 
   // PermissionRequestCreator implementation:
-  virtual void CreatePermissionRequest(const std::string& url_requested,
+  virtual void CreatePermissionRequest(const GURL& url_requested,
                                        const base::Closure& callback) OVERRIDE;
 
  private:

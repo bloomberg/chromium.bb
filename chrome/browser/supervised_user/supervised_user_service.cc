@@ -43,7 +43,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -541,15 +540,9 @@ void SupervisedUserService::OnPermissionRequestIssued() {
 }
 
 void SupervisedUserService::AddAccessRequest(const GURL& url) {
-  // Normalize the URL.
-  GURL normalized_url = SupervisedUserURLFilter::Normalize(url);
-
-  // Escape the URL.
-  std::string output(net::EscapeQueryParamValue(normalized_url.spec(), true));
-
   waiting_for_permissions_ = true;
   permissions_creator_->CreatePermissionRequest(
-      output,
+      SupervisedUserURLFilter::Normalize(url),
       base::Bind(&SupervisedUserService::OnPermissionRequestIssued,
                  weak_ptr_factory_.GetWeakPtr()));
 }

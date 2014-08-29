@@ -8,6 +8,8 @@
 #include "base/values.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_shared_settings_service.h"
+#include "net/base/escape.h"
+#include "url/gurl.h"
 
 using base::Time;
 
@@ -35,11 +37,12 @@ PermissionRequestCreatorSync::PermissionRequestCreatorSync(
 PermissionRequestCreatorSync::~PermissionRequestCreatorSync() {}
 
 void PermissionRequestCreatorSync::CreatePermissionRequest(
-    const std::string& url_requested,
+    const GURL& url_requested,
     const base::Closure& callback) {
-  // Add the prefix.
+  // Escape the URL and add the prefix.
   std::string key = SupervisedUserSettingsService::MakeSplitSettingKey(
-      kSupervisedUserAccessRequestKeyPrefix, url_requested);
+      kSupervisedUserAccessRequestKeyPrefix,
+      net::EscapeQueryParamValue(url_requested.spec(), true));
 
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
 

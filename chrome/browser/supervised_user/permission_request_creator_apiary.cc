@@ -62,7 +62,7 @@ PermissionRequestCreatorApiary::CreateWithProfile(Profile* profile) {
 }
 
 void PermissionRequestCreatorApiary::CreatePermissionRequest(
-    const std::string& url_requested,
+    const GURL& url_requested,
     const base::Closure& callback) {
   url_requested_ = url_requested;
   callback_ = callback;
@@ -103,7 +103,7 @@ void PermissionRequestCreatorApiary::OnGetTokenSuccess(
 
   base::DictionaryValue dict;
   dict.SetStringWithoutPathExpansion("namespace", kNamespace);
-  dict.SetStringWithoutPathExpansion("objectRef", url_requested_);
+  dict.SetStringWithoutPathExpansion("objectRef", url_requested_.spec());
   dict.SetStringWithoutPathExpansion("state", kState);
   std::string body;
   base::JSONWriter::Write(&dict, &body);

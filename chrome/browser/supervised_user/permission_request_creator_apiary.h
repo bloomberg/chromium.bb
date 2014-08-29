@@ -5,11 +5,13 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_PERMISSION_REQUEST_CREATOR_APIARY_H_
 #define CHROME_BROWSER_SUPERVISED_USER_PERMISSION_REQUEST_CREATOR_APIARY_H_
 
-#include "chrome/browser/supervised_user/permission_request_creator.h"
+#include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/supervised_user/permission_request_creator.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "url/gurl.h"
 
 class Profile;
 class SupervisedUserSigninManagerWrapper;
@@ -37,7 +39,7 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
       Profile* profile);
 
   // PermissionRequestCreator implementation:
-  virtual void CreatePermissionRequest(const std::string& url_requested,
+  virtual void CreatePermissionRequest(const GURL& url_requested,
                                        const base::Closure& callback) OVERRIDE;
 
  private:
@@ -62,7 +64,7 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
   scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper_;
   base::Closure callback_;
   net::URLRequestContextGetter* context_;
-  std::string url_requested_;
+  GURL url_requested_;
   scoped_ptr<OAuth2TokenService::Request> access_token_request_;
   std::string access_token_;
   bool access_token_expired_;
