@@ -4,12 +4,13 @@
 
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/test/browser_test_utils.h"
@@ -176,10 +177,8 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
 
   EXPECT_TRUE(page_action->GetIsVisible(tab_id));
   EXPECT_TRUE(WaitForPageActionVisibilityChangeTo(1));
-  LocationBarTesting* location_bar =
-      browser()->window()->GetLocationBar()->GetLocationBarForTesting();
-  EXPECT_EQ(1, location_bar->PageActionCount());
-  EXPECT_EQ(1, location_bar->PageActionVisibleCount());
+  EXPECT_EQ(1u, extension_action_test_util::GetVisiblePageActionCount(tab));
+  EXPECT_EQ(1u, extension_action_test_util::GetTotalPageActionCount(tab));
 
   ReloadExtension(extension_id);  // Invalidates page_action and extension.
   EXPECT_EQ("test_rule",
@@ -188,14 +187,14 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
   // navigation.
   NavigateInRenderer(tab, GURL("http://test/"));
   EXPECT_TRUE(WaitForPageActionVisibilityChangeTo(1));
-  EXPECT_EQ(1, location_bar->PageActionCount());
-  EXPECT_EQ(1, location_bar->PageActionVisibleCount());
+  EXPECT_EQ(1u, extension_action_test_util::GetVisiblePageActionCount(tab));
+  EXPECT_EQ(1u, extension_action_test_util::GetTotalPageActionCount(tab));
 
   UnloadExtension(extension_id);
   NavigateInRenderer(tab, GURL("http://test/"));
   EXPECT_TRUE(WaitForPageActionVisibilityChangeTo(0));
-  EXPECT_EQ(0, location_bar->PageActionCount());
-  EXPECT_EQ(0, location_bar->PageActionVisibleCount());
+  EXPECT_EQ(0u, extension_action_test_util::GetVisiblePageActionCount(tab));
+  EXPECT_EQ(0u, extension_action_test_util::GetTotalPageActionCount(tab));
 }
 
 // This tests against a renderer crash that was present during development.
@@ -275,9 +274,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
   EXPECT_EQ(NULL,
             ExtensionActionManager::Get(browser()->profile())->
                 GetPageAction(*extension));
-  EXPECT_EQ(0,
-            browser()->window()->GetLocationBar()->GetLocationBarForTesting()->
-            PageActionCount());
+  EXPECT_EQ(0u, extension_action_test_util::GetVisiblePageActionCount(tab));
 }
 
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,

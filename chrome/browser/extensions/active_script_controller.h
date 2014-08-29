@@ -15,6 +15,7 @@
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/user_script.h"
 
@@ -30,12 +31,14 @@ class ExtensionAction;
 
 namespace extensions {
 class Extension;
+class ExtensionRegistry;
 
 // The provider for ExtensionActions corresponding to scripts which are actively
 // running or need permission.
 // TODO(rdevlin.cronin): This isn't really a controller, but it has good parity
 // with LocationBar"Controller".
-class ActiveScriptController : public content::WebContentsObserver {
+class ActiveScriptController : public content::WebContentsObserver,
+                               public ExtensionRegistryObserver {
  public:
   explicit ActiveScriptController(content::WebContents* web_contents);
   virtual ~ActiveScriptController();
@@ -67,10 +70,6 @@ class ActiveScriptController : public content::WebContentsObserver {
   // Returns the action to display for the given |extension|, or NULL if no
   // action should be displayed.
   ExtensionAction* GetActionForExtension(const Extension* extension);
-
-  // Notifies that the given |extension| has been unloaded; forwarded from the
-  // ExtensionRegistryObserver method.
-  void OnExtensionUnloaded(const Extension* extension);
 
 #if defined(UNIT_TEST)
   // Only used in tests.
@@ -113,14 +112,20 @@ class ActiveScriptController : public content::WebContentsObserver {
   // Grants permission for the given request to run.
   void PermitScriptInjection(int64 request_id);
 
+  // Log metrics.
+  void LogUMA() const;
+
   // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
 
-  // Log metrics.
-  void LogUMA() const;
+  // ExtensionRegistryObserver:
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
   // Whether or not the ActiveScriptController is enabled (corresponding to the
   // kActiveScriptEnforcement switch). If it is not, it acts as an empty shell,
@@ -141,6 +146,9 @@ class ActiveScriptController : public content::WebContentsObserver {
   // that get generated for extensions that haven't declared anything.
   typedef std::map<std::string, linked_ptr<ExtensionAction> > ActiveScriptMap;
   ActiveScriptMap active_script_actions_;
+
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveScriptController);
 };

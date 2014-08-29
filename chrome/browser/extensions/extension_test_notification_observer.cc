@@ -5,10 +5,12 @@
 #include "chrome/browser/extensions/extension_test_notification_observer.h"
 
 #include "base/callback_list.h"
+#include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
@@ -26,9 +28,10 @@ namespace {
 typedef base::Callback<bool(void)> ConditionCallback;
 
 bool HasPageActionVisibilityReachedTarget(
-    LocationBarTesting* location_bar, int target_visible_page_action_count) {
-  return location_bar->PageActionVisibleCount() ==
-         target_visible_page_action_count;
+    Browser* browser, size_t target_visible_page_action_count) {
+  return extensions::extension_action_test_util::GetVisiblePageActionCount(
+      browser->tab_strip_model()->GetActiveWebContents()) ==
+      target_visible_page_action_count;
 }
 
 bool HaveAllExtensionRenderViewHostsFinishedLoading(
@@ -125,11 +128,9 @@ void ExtensionTestNotificationObserver::WaitForNotification(
 
 bool ExtensionTestNotificationObserver::WaitForPageActionVisibilityChangeTo(
     int count) {
-  LocationBarTesting* location_bar =
-      browser_->window()->GetLocationBar()->GetLocationBarForTesting();
   extensions::ExtensionActionAPI::Get(GetProfile())->AddObserver(this);
   WaitForCondition(
-      base::Bind(&HasPageActionVisibilityReachedTarget, location_bar, count),
+      base::Bind(&HasPageActionVisibilityReachedTarget, browser_, count),
       NULL);
   extensions::ExtensionActionAPI::Get(GetProfile())->
       RemoveObserver(this);

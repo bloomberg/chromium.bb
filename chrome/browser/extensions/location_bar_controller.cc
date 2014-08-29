@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/feature_switch.h"
 
 namespace extensions {
 
@@ -17,9 +18,12 @@ LocationBarController::LocationBarController(
     : web_contents_(web_contents),
       browser_context_(web_contents->GetBrowserContext()),
       action_manager_(ExtensionActionManager::Get(browser_context_)),
+      should_show_page_actions_(
+          !FeatureSwitch::extension_action_redesign()->IsEnabled()),
       active_script_controller_(new ActiveScriptController(web_contents_)),
       extension_registry_observer_(this) {
-  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
+  if (should_show_page_actions_)
+    extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }
 
 LocationBarController::~LocationBarController() {
@@ -29,6 +33,9 @@ std::vector<ExtensionAction*> LocationBarController::GetCurrentActions() {
   const ExtensionSet& extensions =
       ExtensionRegistry::Get(browser_context_)->enabled_extensions();
   std::vector<ExtensionAction*> current_actions;
+  if (!should_show_page_actions_)
+    return current_actions;
+
   for (ExtensionSet::const_iterator iter = extensions.begin();
        iter != extensions.end();
        ++iter) {
@@ -59,16 +66,7 @@ void LocationBarController::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
-  bool should_update = false;
-  if (action_manager_->GetPageAction(*extension))
-    should_update = true;
-
-  if (active_script_controller_->GetActionForExtension(extension)) {
-    active_script_controller_->OnExtensionUnloaded(extension);
-    should_update = true;
-  }
-
-  if (should_update) {
+  if (action_manager_->GetPageAction(*extension)) {
     ExtensionActionAPI::Get(browser_context)->
         NotifyPageActionsChanged(web_contents_);
   }

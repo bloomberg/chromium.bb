@@ -61,8 +61,11 @@ bool ShouldRecordExtension(const Extension* extension) {
 ActiveScriptController::ActiveScriptController(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      enabled_(FeatureSwitch::scripts_require_action()->IsEnabled()) {
+      enabled_(FeatureSwitch::scripts_require_action()->IsEnabled()),
+      extension_registry_observer_(this) {
   CHECK(web_contents);
+  extension_registry_observer_.Add(
+      ExtensionRegistry::Get(web_contents->GetBrowserContext()));
 }
 
 ActiveScriptController::~ActiveScriptController() {
@@ -167,12 +170,6 @@ ExtensionAction* ActiveScriptController::GetActionForExtension(
 
   active_script_actions_[extension->id()] = action;
   return action.get();
-}
-
-void ActiveScriptController::OnExtensionUnloaded(const Extension* extension) {
-  PendingRequestMap::iterator iter = pending_requests_.find(extension->id());
-  if (iter != pending_requests_.end())
-    pending_requests_.erase(iter);
 }
 
 PermissionsData::AccessType
@@ -323,16 +320,6 @@ void ActiveScriptController::PermitScriptInjection(int64 request_id) {
   }
 }
 
-bool ActiveScriptController::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ActiveScriptController, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_RequestScriptInjectionPermission,
-                        OnRequestScriptInjectionPermission)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 void ActiveScriptController::LogUMA() const {
   UMA_HISTOGRAM_COUNTS_100(
       "Extensions.ActiveScriptController.ShownActiveScriptsOnPage",
@@ -350,6 +337,16 @@ void ActiveScriptController::LogUMA() const {
   }
 }
 
+bool ActiveScriptController::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(ActiveScriptController, message)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_RequestScriptInjectionPermission,
+                        OnRequestScriptInjectionPermission)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
 void ActiveScriptController::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
@@ -359,6 +356,18 @@ void ActiveScriptController::DidNavigateMainFrame(
   LogUMA();
   permitted_extensions_.clear();
   pending_requests_.clear();
+}
+
+void ActiveScriptController::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  PendingRequestMap::iterator iter = pending_requests_.find(extension->id());
+  if (iter != pending_requests_.end()) {
+    pending_requests_.erase(iter);
+    ExtensionActionAPI::Get(web_contents()->GetBrowserContext())->
+        NotifyPageActionsChanged(web_contents());
+  }
 }
 
 }  // namespace extensions

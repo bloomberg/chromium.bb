@@ -6,6 +6,7 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -14,7 +15,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -168,9 +168,8 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, DISABLED_ShowPageActionPopup) {
 
   {
     ResultCatcher catcher;
-    LocationBarTesting* location_bar =
-        browser()->window()->GetLocationBar()->GetLocationBarForTesting();
-    location_bar->TestPageActionPressed(0);
+    ExtensionActionAPI::Get(browser()->profile())->ShowExtensionActionPopup(
+        extension, browser(), true);
     ASSERT_TRUE(catcher.GetNextResult());
   }
 }

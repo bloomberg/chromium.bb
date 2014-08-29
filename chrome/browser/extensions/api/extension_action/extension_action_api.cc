@@ -171,14 +171,13 @@ ExtensionAction::ShowAction ExtensionActionAPI::ExecuteExtensionAction(
 
   int tab_id = SessionTabHelper::IdForTab(web_contents);
 
-  ExtensionAction* extension_action =
-      ExtensionActionManager::Get(browser_context_)->GetExtensionAction(
-          *extension);
-
-  // Anything that calls this should have a page or browser action.
-  DCHECK(extension_action);
-  if (!extension_action->GetIsVisible(tab_id))
-    return ExtensionAction::ACTION_NONE;
+  ActiveScriptController* active_script_controller =
+      ActiveScriptController::GetForWebContents(web_contents);
+  bool has_pending_scripts = false;
+  if (active_script_controller &&
+      active_script_controller->GetActionForExtension(extension)) {
+    has_pending_scripts = true;
+  }
 
   // Grant active tab if appropriate.
   if (grant_active_tab_permissions) {
@@ -186,13 +185,20 @@ ExtensionAction::ShowAction ExtensionActionAPI::ExecuteExtensionAction(
         GrantIfRequested(extension);
   }
 
-  // Notify ActiveScriptController that the action was clicked, if appropriate.
-  ActiveScriptController* active_script_controller =
-      ActiveScriptController::GetForWebContents(web_contents);
-  if (active_script_controller &&
-      active_script_controller->GetActionForExtension(extension)) {
-    active_script_controller->OnClicked(extension);
-  }
+  // If this was a request to run a script, it will have been run once active
+  // tab was granted. Return without executing the action, since we should only
+  // run pending scripts OR the extension action, not both.
+  if (has_pending_scripts)
+    return ExtensionAction::ACTION_NONE;
+
+  ExtensionAction* extension_action =
+      ExtensionActionManager::Get(browser_context_)->GetExtensionAction(
+          *extension);
+
+  // Anything that gets here should have a page or browser action.
+  DCHECK(extension_action);
+  if (!extension_action->GetIsVisible(tab_id))
+    return ExtensionAction::ACTION_NONE;
 
   if (extension_action->HasPopup(tab_id))
     return ExtensionAction::ACTION_SHOW_POPUP;

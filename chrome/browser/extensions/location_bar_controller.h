@@ -59,6 +59,10 @@ class LocationBarController : public ExtensionRegistryObserver {
   // The ExtensionActionManager to provide page actions.
   ExtensionActionManager* action_manager_;
 
+  // Whether or not to show page actions in the location bar at all. (This is
+  // false with the toolbar redesign enabled.)
+  bool should_show_page_actions_;
+
   // The ActiveScriptController, which could also add actions for extensions if
   // they have a pending script.
   scoped_ptr<ActiveScriptController> active_script_controller_;

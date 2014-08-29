@@ -80,6 +80,8 @@
         'browser/download/download_test_file_activity_observer.h',
         'browser/download/test_download_shelf.cc',
         'browser/download/test_download_shelf.h',
+        'browser/extensions/extension_action_test_util.cc',
+        'browser/extensions/extension_action_test_util.h',
         'browser/invalidation/fake_invalidation_service.cc',
         'browser/invalidation/fake_invalidation_service.h',
         'browser/media/fake_desktop_media_list.cc',
