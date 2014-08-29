@@ -314,6 +314,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void GotFocus() OVERRIDE;
   virtual void LostCapture() OVERRIDE;
   virtual void LostMouseLock() OVERRIDE;
+  virtual void SetIsLoading(bool is_loading) OVERRIDE;
   virtual void ForwardMouseEvent(
       const blink::WebMouseEvent& mouse_event) OVERRIDE;
   virtual void OnPointerEventActivate() OVERRIDE;

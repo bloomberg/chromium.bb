@@ -487,6 +487,13 @@ bool RenderWidgetHostImpl::Send(IPC::Message* msg) {
   return process_->Send(msg);
 }
 
+void RenderWidgetHostImpl::SetIsLoading(bool is_loading) {
+  is_loading_ = is_loading;
+  if (!view_)
+    return;
+  view_->SetIsLoading(is_loading);
+}
+
 void RenderWidgetHostImpl::WasHidden() {
   if (is_hidden_)
     return;
@@ -652,13 +659,6 @@ void RenderWidgetHostImpl::ViewDestroyed() {
   // TODO(evanm): tracking this may no longer be necessary;
   // eliminate this function if so.
   SetView(NULL);
-}
-
-void RenderWidgetHostImpl::SetIsLoading(bool is_loading) {
-  is_loading_ = is_loading;
-  if (!view_)
-    return;
-  view_->SetIsLoading(is_loading);
 }
 
 void RenderWidgetHostImpl::CopyFromBackingStore(

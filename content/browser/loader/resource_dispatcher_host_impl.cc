@@ -1360,6 +1360,12 @@ void ResourceDispatcherHostImpl::OnRenderViewHostDeleted(
   CancelRequestsForRoute(child_id, route_id);
 }
 
+void ResourceDispatcherHostImpl::OnRenderViewHostSetIsLoading(int child_id,
+                                                              int route_id,
+                                                              bool is_loading) {
+  scheduler_->OnLoadingStateChanged(child_id, route_id, !is_loading);
+}
+
 void ResourceDispatcherHostImpl::OnRenderViewHostWasHidden(
     int child_id,
     int route_id) {

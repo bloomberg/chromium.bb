@@ -204,6 +204,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Sends a message to the corresponding object in the renderer.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
+  // Indicates if the page has finished loading.
+  virtual void SetIsLoading(bool is_loading);
+
   // Called to notify the RenderWidget that it has been hidden or restored from
   // having been hidden.
   virtual void WasHidden();
@@ -225,9 +228,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Notifies the RenderWidgetHost that the View was destroyed.
   void ViewDestroyed();
-
-  // Indicates if the page has finished loading.
-  void SetIsLoading(bool is_loading);
 
 #if defined(OS_MACOSX)
   // Pause for a moment to wait for pending repaint or resize messages sent to

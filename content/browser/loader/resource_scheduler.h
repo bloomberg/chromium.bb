@@ -116,6 +116,12 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
   // Called when a renderer is destroyed.
   void OnClientDeleted(int child_id, int route_id);
 
+  // Called when a renderer stops or restarts loading.
+  void OnLoadingStateChanged(int child_id, int route_id, bool is_loaded);
+
+  // Called when a Client is shown or hidden.
+  void OnVisibilityChanged(int child_id, int route_id, bool is_visible);
+
   // Signals from IPC messages directly from the renderers:
 
   // Called when a client navigates to a new main document.
@@ -138,11 +144,6 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
 
   // Called when a Client starts or stops playing audio.
   void OnAudibilityChanged(int child_id, int route_id, bool is_audible);
-
-  // Called when a Client is shown or hidden.
-  void OnVisibilityChanged(int child_id, int route_id, bool is_visible);
-
-  void OnLoadingStateChanged(int child_id, int route_id, bool is_loaded);
 
   bool IsClientVisibleForTesting(int child_id, int route_id);
 

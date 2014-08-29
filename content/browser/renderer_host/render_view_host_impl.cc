@@ -841,6 +841,20 @@ void RenderViewHostImpl::DirectoryEnumerationFinished(
                                               files));
 }
 
+void RenderViewHostImpl::SetIsLoading(bool is_loading) {
+  if (ResourceDispatcherHostImpl::Get()) {
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&ResourceDispatcherHostImpl::OnRenderViewHostSetIsLoading,
+                   base::Unretained(ResourceDispatcherHostImpl::Get()),
+                   GetProcess()->GetID(),
+                   GetRoutingID(),
+                   is_loading));
+  }
+  RenderWidgetHostImpl::SetIsLoading(is_loading);
+}
+
 void RenderViewHostImpl::LoadStateChanged(
     const GURL& url,
     const net::LoadStateWithParam& load_state,

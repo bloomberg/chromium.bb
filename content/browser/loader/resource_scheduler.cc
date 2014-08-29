@@ -288,7 +288,7 @@ class ResourceScheduler::Client {
 
   bool is_loaded() const { return is_loaded_; }
 
-  bool IsVisible() const { return is_visible_; }
+  bool is_visible() const { return is_visible_; }
 
   void OnAudibilityChanged(bool is_audible) {
     if (is_audible == is_audible_) {
@@ -821,6 +821,22 @@ void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
   client_map_.erase(it);
 }
 
+void ResourceScheduler::OnVisibilityChanged(int child_id,
+                                            int route_id,
+                                            bool is_visible) {
+  Client* client = GetClient(child_id, route_id);
+  DCHECK(client);
+  client->OnVisibilityChanged(is_visible);
+}
+
+void ResourceScheduler::OnLoadingStateChanged(int child_id,
+                                              int route_id,
+                                              bool is_loaded) {
+  Client* client = GetClient(child_id, route_id);
+  DCHECK(client);
+  client->OnLoadingStateChanged(is_loaded);
+}
+
 void ResourceScheduler::OnNavigate(int child_id, int route_id) {
   DCHECK(CalledOnValidThread());
   ClientId client_id = MakeClientId(child_id, route_id);
@@ -872,26 +888,10 @@ void ResourceScheduler::OnAudibilityChanged(int child_id,
   client->OnAudibilityChanged(is_audible);
 }
 
-void ResourceScheduler::OnVisibilityChanged(int child_id,
-                                            int route_id,
-                                            bool is_visible) {
-  Client* client = GetClient(child_id, route_id);
-  DCHECK(client);
-  client->OnVisibilityChanged(is_visible);
-}
-
-void ResourceScheduler::OnLoadingStateChanged(int child_id,
-                                              int route_id,
-                                              bool is_loaded) {
-  Client* client = GetClient(child_id, route_id);
-  DCHECK(client);
-  client->OnLoadingStateChanged(is_loaded);
-}
-
 bool ResourceScheduler::IsClientVisibleForTesting(int child_id, int route_id) {
   Client* client = GetClient(child_id, route_id);
   DCHECK(client);
-  return client->IsVisible();
+  return client->is_visible();
 }
 
 ResourceScheduler::Client* ResourceScheduler::GetClient(int child_id,
