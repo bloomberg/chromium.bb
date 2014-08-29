@@ -155,7 +155,7 @@ class FileSystem(object):
     '''
     raise NotImplementedError(self.__class__)
 
-  def Walk(self, root, depth=-1):
+  def Walk(self, root, depth=-1, file_lister=None):
     '''Recursively walk the directories in a file system, starting with root.
 
     Behaviour is very similar to os.walk from the standard os module, yielding
@@ -163,6 +163,15 @@ class FileSystem(object):
     |dirs| relative to |root|, and |files| and |dirs| the list of files/dirs in
     |base| respectively. If |depth| is specified and greater than 0, Walk will
     only recurse |depth| times.
+
+    |file_lister|, if specified, should be a callback of signature
+
+      def my_file_lister(root):,
+
+    which returns a tuple (dirs, files), where |dirs| is a list of directory
+    names under |root|, and |files| is a list of file names under |root|. Note
+    that the listing of files and directories should be for a *single* level
+    only, i.e. it should not recursively list anything.
 
     Note that directories will always end with a '/', files never will.
 
@@ -176,13 +185,16 @@ class FileSystem(object):
       if depth == 0:
         return
       AssertIsDirectory(root)
-      dirs, files = [], []
 
-      for f in self.ReadSingle(root).Get():
-        if IsDirectory(f):
-          dirs.append(f)
-        else:
-          files.append(f)
+      if file_lister:
+        dirs, files = file_lister(root)
+      else:
+        dirs, files = [], []
+        for f in self.ReadSingle(root).Get():
+          if IsDirectory(f):
+            dirs.append(f)
+          else:
+            files.append(f)
 
       yield root[len(basepath):].rstrip('/'), dirs, files
 

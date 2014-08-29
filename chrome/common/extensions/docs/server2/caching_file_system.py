@@ -6,8 +6,8 @@ import posixpath
 import sys
 
 from file_system import FileSystem, StatInfo, FileNotFoundError
-from future import Future
-from path_util import IsDirectory, ToDirectory
+from future import All, Future
+from path_util import AssertIsDirectory, IsDirectory, ToDirectory
 from third_party.json_schema_compiler.memoize import memoize
 
 
@@ -23,12 +23,13 @@ class CachingFileSystem(FileSystem):
           CachingFileSystem,
           category='%s/%s' % (file_system.GetIdentity(), category),
           **optargs)
-    self._stat_object_store = create_object_store('stat')
+    self._stat_cache = create_object_store('stat')
     # The read caches can start populated (start_empty=False) because file
     # updates are picked up by the stat, so it doesn't need the force-refresh
     # which starting empty is designed for. Without this optimisation, cron
     # runs are extra slow.
-    self._read_object_store = create_object_store('read', start_empty=False)
+    self._read_cache = create_object_store('read', start_empty=False)
+    self._walk_cache = create_object_store('walk', start_empty=False)
 
   def Refresh(self):
     return self._file_system.Refresh()
@@ -55,14 +56,14 @@ class CachingFileSystem(FileSystem):
                                 (path, dir_path, dir_stat.child_versions))
       return StatInfo(file_version)
 
-    dir_stat = self._stat_object_store.Get(dir_path).Get()
+    dir_stat = self._stat_cache.Get(dir_path).Get()
     if dir_stat is not None:
       return Future(callback=lambda: make_stat_info(dir_stat))
 
     def next(dir_stat):
       assert dir_stat is not None  # should have raised a FileNotFoundError
       # We only ever need to cache the dir stat.
-      self._stat_object_store.Set(dir_path, dir_stat)
+      self._stat_cache.Set(dir_path, dir_stat)
       return make_stat_info(dir_stat)
     return self._MemoizedStatAsyncFromFileSystem(dir_path).Then(next)
 
@@ -82,8 +83,8 @@ class CachingFileSystem(FileSystem):
     # Files which aren't found are cached in the read object store as
     # (path, None, None). This is to prevent re-reads of files we know
     # do not exist.
-    cached_read_values = self._read_object_store.GetMulti(paths).Get()
-    cached_stat_values = self._stat_object_store.GetMulti(paths).Get()
+    cached_read_values = self._read_cache.GetMulti(paths).Get()
+    cached_stat_values = self._stat_cache.GetMulti(paths).Get()
 
     # Populate a map of paths to Futures to their stat. They may have already
     # been cached in which case their Future will already have been constructed
@@ -126,12 +127,12 @@ class CachingFileSystem(FileSystem):
 
     def next(new_results):
       # Update the cache. This is a path -> (data, version) mapping.
-      self._read_object_store.SetMulti(
+      self._read_cache.SetMulti(
           dict((path, (new_result, stat_futures[path].Get().version))
                for path, new_result in new_results.iteritems()))
       # Update the read cache to include files that weren't found, to prevent
       # constantly trying to read a file we now know doesn't exist.
-      self._read_object_store.SetMulti(
+      self._read_cache.SetMulti(
           dict((path, (None, None)) for path in paths
                if stat_futures[path].Get() is None))
       new_results.update(up_to_date_data)
@@ -139,6 +140,28 @@ class CachingFileSystem(FileSystem):
     # Read in the values that were uncached or old.
     return self._file_system.Read(set(paths) - set(up_to_date_data.iterkeys()),
                                   skip_not_found=skip_not_found).Then(next)
+
+  def Walk(self, root, depth=-1):
+    '''Overrides FileSystem.Walk() to provide caching functionality.
+    '''
+    def file_lister(root):
+      res, root_stat = All((self._walk_cache.Get(root),
+                            self.StatAsync(root))).Get()
+
+      if res and res[2] == root_stat.version:
+        dirs, files = res[0], res[1]
+      else:
+        # Wasn't cached, or not up to date.
+        dirs, files = [], []
+        for f in self.ReadSingle(root).Get():
+          if IsDirectory(f):
+            dirs.append(f)
+          else:
+            files.append(f)
+        # Update the cache. This is a root -> (dirs, files, version) mapping.
+        self._walk_cache.Set(root, (dirs, files, root_stat.version))
+      return dirs, files
+    return self._file_system.Walk(root, depth=depth, file_lister=file_lister)
 
   def GetIdentity(self):
     return self._file_system.GetIdentity()
