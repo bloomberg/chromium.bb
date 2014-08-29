@@ -106,9 +106,17 @@ class StringComparator : public std::binary_function<const Element&,
 };
 
 // Specialization of operator() method for base::string16 version.
-template <> UI_BASE_EXPORT
-bool StringComparator<base::string16>::operator()(const base::string16& lhs,
-                                                  const base::string16& rhs);
+template <>
+UI_BASE_EXPORT inline bool StringComparator<base::string16>::operator()(
+    const base::string16& lhs,
+    const base::string16& rhs) {
+  // If we can not get collator instance for specified locale, just do simple
+  // string compare.
+  if (!collator_)
+    return lhs < rhs;
+  return base::i18n::CompareString16WithCollator(collator_, lhs, rhs) ==
+      UCOL_LESS;
+}
 
 // In place sorting of |elements| of a vector according to the string key of
 // each element in the vector by using collation rules for |locale|.
