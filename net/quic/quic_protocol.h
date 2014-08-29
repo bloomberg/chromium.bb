@@ -647,7 +647,6 @@ struct NET_EXPORT_PRIVATE QuicStreamFrame {
 // TODO(ianswett): Re-evaluate the trade-offs of hash_set vs set when framing
 // is finalized.
 typedef std::set<QuicPacketSequenceNumber> SequenceNumberSet;
-typedef std::list<QuicPacketSequenceNumber> SequenceNumberList;
 
 typedef std::list<std::pair<QuicPacketSequenceNumber, QuicTime>> PacketTimeList;
 
@@ -1054,14 +1053,16 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   // Constructs a Transmission with a new all_tranmissions set
   // containing |sequence_number|.
   TransmissionInfo(RetransmittableFrames* retransmittable_frames,
+                   QuicPacketSequenceNumber sequence_number,
                    QuicSequenceNumberLength sequence_number_length);
 
   // Constructs a Transmission with the specified |all_tranmissions| set
   // and inserts |sequence_number| into it.
   TransmissionInfo(RetransmittableFrames* retransmittable_frames,
+                   QuicPacketSequenceNumber sequence_number,
                    QuicSequenceNumberLength sequence_number_length,
                    TransmissionType transmission_type,
-                   SequenceNumberList* all_transmissions);
+                   SequenceNumberSet* all_transmissions);
 
   RetransmittableFrames* retransmittable_frames;
   QuicSequenceNumberLength sequence_number_length;
@@ -1074,7 +1075,7 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   TransmissionType transmission_type;
   // Stores the sequence numbers of all transmissions of this packet.
   // Can never be null.
-  SequenceNumberList* all_transmissions;
+  SequenceNumberSet* all_transmissions;
   // In flight packets have not been abandoned or lost.
   bool in_flight;
 };

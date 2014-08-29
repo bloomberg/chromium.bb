@@ -1025,8 +1025,8 @@ TEST_F(QuicSentPacketManagerTest, CryptoHandshakeTimeoutUnsentDataPacket) {
 
   // Retransmit 2 crypto packets, but not the serialized packet.
   manager_.OnRetransmissionTimeout();
-  RetransmitNextPacket(4);
-  RetransmitNextPacket(5);
+  RetransmitNextPacket(6);
+  RetransmitNextPacket(7);
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
   EXPECT_TRUE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
 }

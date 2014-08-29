@@ -726,6 +726,7 @@ TransmissionInfo::TransmissionInfo()
 
 TransmissionInfo::TransmissionInfo(
     RetransmittableFrames* retransmittable_frames,
+    QuicPacketSequenceNumber sequence_number,
     QuicSequenceNumberLength sequence_number_length)
     : retransmittable_frames(retransmittable_frames),
       sequence_number_length(sequence_number_length),
@@ -733,14 +734,17 @@ TransmissionInfo::TransmissionInfo(
       bytes_sent(0),
       nack_count(0),
       transmission_type(NOT_RETRANSMISSION),
-      all_transmissions(NULL),
-      in_flight(false) {}
+      all_transmissions(new SequenceNumberSet),
+      in_flight(false) {
+  all_transmissions->insert(sequence_number);
+}
 
 TransmissionInfo::TransmissionInfo(
     RetransmittableFrames* retransmittable_frames,
+    QuicPacketSequenceNumber sequence_number,
     QuicSequenceNumberLength sequence_number_length,
     TransmissionType transmission_type,
-    SequenceNumberList* all_transmissions)
+    SequenceNumberSet* all_transmissions)
     : retransmittable_frames(retransmittable_frames),
       sequence_number_length(sequence_number_length),
       sent_time(QuicTime::Zero()),
@@ -748,6 +752,8 @@ TransmissionInfo::TransmissionInfo(
       nack_count(0),
       transmission_type(transmission_type),
       all_transmissions(all_transmissions),
-      in_flight(false) {}
+      in_flight(false) {
+  all_transmissions->insert(sequence_number);
+}
 
 }  // namespace net

@@ -275,12 +275,6 @@ TEST_P(QuicCryptoServerStreamTest, ChannelIDAsync) {
   EXPECT_TRUE(stream_.handshake_confirmed());
 }
 
-TEST_P(QuicCryptoServerStreamTest, OnlySendSCUPAfterHandshakeComplete) {
-  // An attempt to send a SCUP before completing handshake should fail.
-  stream_.SendServerConfigUpdate(NULL);
-  EXPECT_EQ(0, stream_.num_server_config_update_messages_sent());
-}
-
 }  // namespace
 }  // namespace test
 }  // namespace net

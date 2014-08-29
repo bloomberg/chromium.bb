@@ -5,7 +5,10 @@
 #ifndef NET_QUIC_QUIC_SENT_PACKET_MANAGER_H_
 #define NET_QUIC_QUIC_SENT_PACKET_MANAGER_H_
 
+#include <deque>
+#include <list>
 #include <map>
+#include <queue>
 #include <set>
 #include <utility>
 #include <vector>
@@ -54,8 +57,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
     virtual void OnSentPacket(
         QuicPacketSequenceNumber sequence_number,
         QuicTime sent_time,
-        QuicByteCount bytes,
-        TransmissionType transmission_type) {}
+        QuicByteCount bytes) {}
 
     virtual void OnRetransmittedPacket(
         QuicPacketSequenceNumber old_sequence_number,
@@ -69,9 +71,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
         QuicPacketSequenceNumber largest_observed,
         bool largest_observed_acked,
         QuicPacketSequenceNumber least_unacked_sent_packet) {}
-
-    virtual void OnSerializedPacket(
-        const SerializedPacket& packet) {}
   };
 
   // Interface which gets callbacks from the QuicSentPacketManager when
@@ -315,9 +314,9 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Removes the retransmittability and pending properties from the packet at
   // |it| due to receipt by the peer.  Returns an iterator to the next remaining
   // unacked packet.
-  void MarkPacketHandled(QuicPacketSequenceNumber sequence_number,
-                         const TransmissionInfo& info,
-                         QuicTime::Delta delta_largest_observed);
+  QuicUnackedPacketMap::const_iterator MarkPacketHandled(
+      QuicUnackedPacketMap::const_iterator it,
+      QuicTime::Delta delta_largest_observed);
 
   // Request that |sequence_number| be retransmitted after the other pending
   // retransmissions.  Does not add it to the retransmissions if it's already
@@ -327,7 +326,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Notify observers about spurious retransmits.
   void RecordSpuriousRetransmissions(
-      const SequenceNumberList& all_transmissions,
+      const SequenceNumberSet& all_transmissions,
       QuicPacketSequenceNumber acked_sequence_number);
 
   // Newly serialized retransmittable and fec packets are added to this map,

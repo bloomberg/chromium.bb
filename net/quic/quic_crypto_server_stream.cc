@@ -158,8 +158,7 @@ void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
 
 void QuicCryptoServerStream::SendServerConfigUpdate(
     const CachedNetworkParameters* cached_network_params) {
-  if (session()->connection()->version() <= QUIC_VERSION_21 ||
-      !handshake_confirmed_) {
+  if (session()->connection()->version() <= QUIC_VERSION_21) {
     return;
   }
 

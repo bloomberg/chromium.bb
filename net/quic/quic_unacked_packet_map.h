@@ -5,8 +5,7 @@
 #ifndef NET_QUIC_QUIC_UNACKED_PACKET_MAP_H_
 #define NET_QUIC_QUIC_UNACKED_PACKET_MAP_H_
 
-#include <deque>
-
+#include "net/base/linked_hash_map.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {
@@ -72,7 +71,7 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
 
   // Returns the smallest sequence number of a serialized packet which has not
   // been acked by the peer.  If there are no unacked packets, returns 0.
-  QuicPacketSequenceNumber GetLeastUnacked() const;
+  QuicPacketSequenceNumber GetLeastUnackedSentPacket() const;
 
   // Sets a packet as sent with the sent time |sent_time|.  Marks the packet
   // as in flight if |set_in_flight| is true.
@@ -90,7 +89,8 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // in the ack frame for new acks.
   void ClearPreviousRetransmissions(size_t num_to_clear);
 
-  typedef std::deque<TransmissionInfo> UnackedPacketMap;
+  typedef linked_hash_map<QuicPacketSequenceNumber,
+                          TransmissionInfo> UnackedPacketMap;
 
   typedef UnackedPacketMap::const_iterator const_iterator;
 
@@ -112,7 +112,7 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   QuicTime GetFirstInFlightPacketSentTime() const;
 
   // Returns the number of unacked packets.
-  size_t GetNumUnackedPacketsDebugOnly() const;
+  size_t GetNumUnackedPackets() const;
 
   // Returns true if there are multiple packets in flight.
   bool HasMultipleInFlightPackets() const;
@@ -129,16 +129,11 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // |largest_acked_packet| are discarded if they are only for the RTT purposes.
   void IncreaseLargestObserved(QuicPacketSequenceNumber largest_observed);
 
-  // Remove any packets no longer needed for retransmission, congestion, or
-  // RTT measurement purposes.
-  void RemoveObsoletePackets();
-
  private:
   void MaybeRemoveRetransmittableFrames(TransmissionInfo* transmission_info);
 
   // Returns true if the packet no longer has a purpose in the map.
-  bool IsPacketUseless(QuicPacketSequenceNumber sequence_number,
-                       const TransmissionInfo& info) const;
+  bool IsPacketUseless(UnackedPacketMap::const_iterator it) const;
 
   QuicPacketSequenceNumber largest_sent_packet_;
   QuicPacketSequenceNumber largest_observed_;
@@ -152,8 +147,6 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // be removed from the map and the new entry's retransmittable frames will be
   // set to NULL.
   UnackedPacketMap unacked_packets_;
-  // The packet at the 0th index of unacked_packets_.
-  QuicPacketSequenceNumber least_unacked_;
 
   size_t bytes_in_flight_;
   // Number of retransmittable crypto handshake packets.
