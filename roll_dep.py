@@ -27,6 +27,18 @@ from textwrap import dedent
 
 SHA1_RE = re.compile('^[a-fA-F0-9]{40}$')
 GIT_SVN_ID_RE = re.compile('^git-svn-id: .*@([0-9]+) .*$')
+ROLL_DESCRIPTION_STR = '''Roll %s from %s to %s
+
+Summary of changes available at:
+%s
+'''
+
+
+def shorten_dep_path(dep):
+  """Shorten the given dep path if necessary."""
+  while len(dep) > 31:
+    dep = '.../' + dep.lstrip('./').partition('/')[2]
+  return dep
 
 
 def posix_path(path):
@@ -248,12 +260,8 @@ def generate_commit_message(deps_section, dep_name, new_rev):
   if url.endswith('.git'):
     url = url[:-4]
   url += '/+log/%s..%s' % (old_rev[:12], new_rev[:12])
-  return dedent('''\
-      Rolled %s
-          from revision %s
-          to revision %s
-      Summary of changes available at:
-          %s\n''' % (dep_name, old_rev, new_rev, url))
+  return dedent(ROLL_DESCRIPTION_STR % (
+      shorten_dep_path(dep_name), old_rev[:12], new_rev[:12], url))
 
 def update_deps_entry(deps_lines, deps_ast, value_node, new_rev, comment):
   line_idx = update_node(deps_lines, deps_ast, value_node, new_rev)
