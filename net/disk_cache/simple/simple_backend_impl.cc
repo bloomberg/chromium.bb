@@ -656,7 +656,7 @@ void SimpleBackendImpl::GetNextEntryInIterator(
 void SimpleBackendImpl::OnEntryOpenedFromHash(
     uint64 hash,
     Entry** entry,
-    const scoped_refptr<SimpleEntryImpl>& simple_entry,
+    scoped_refptr<SimpleEntryImpl> simple_entry,
     const CompletionCallback& callback,
     int error_code) {
   if (error_code != net::OK) {
@@ -665,7 +665,7 @@ void SimpleBackendImpl::OnEntryOpenedFromHash(
   }
   DCHECK(*entry);
   std::pair<EntryMap::iterator, bool> insert_result =
-      active_entries_.insert(EntryMap::value_type(hash, simple_entry.get()));
+      active_entries_.insert(EntryMap::value_type(hash, simple_entry));
   EntryMap::iterator& it = insert_result.first;
   const bool did_insert = insert_result.second;
   if (did_insert) {
@@ -686,7 +686,7 @@ void SimpleBackendImpl::OnEntryOpenedFromHash(
 void SimpleBackendImpl::OnEntryOpenedFromKey(
     const std::string key,
     Entry** entry,
-    const scoped_refptr<SimpleEntryImpl>& simple_entry,
+    scoped_refptr<SimpleEntryImpl> simple_entry,
     const CompletionCallback& callback,
     int error_code) {
   int final_code = error_code;

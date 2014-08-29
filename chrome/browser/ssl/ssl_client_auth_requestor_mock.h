@@ -20,11 +20,11 @@ class SSLClientAuthRequestorMock
  public:
   SSLClientAuthRequestorMock(
       net::URLRequest* request,
-      const scoped_refptr<net::SSLCertRequestInfo>& cert_request_info);
+      net::SSLCertRequestInfo* cert_request_info);
 
   MOCK_METHOD1(CertificateSelected, void(net::X509Certificate* cert));
 
-  scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
+  net::SSLCertRequestInfo* cert_request_info_;
   net::HttpNetworkSession* http_network_session_;
 
  protected:

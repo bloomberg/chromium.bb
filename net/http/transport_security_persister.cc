@@ -97,7 +97,7 @@ namespace net {
 TransportSecurityPersister::TransportSecurityPersister(
     TransportSecurityState* state,
     const base::FilePath& profile_path,
-    const scoped_refptr<base::SequencedTaskRunner>& background_runner,
+    base::SequencedTaskRunner* background_runner,
     bool readonly)
     : transport_security_state_(state),
       writer_(profile_path.AppendASCII("TransportSecurity"), background_runner),
