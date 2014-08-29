@@ -2504,6 +2504,11 @@
           '<(DEPTH)/build/mac/asan.gyp:asan_dynamic_runtime',
         ],
       }],
+      ['OS=="win" and asan==1 and component=="shared_library"', {
+        'dependencies': [
+          '<(DEPTH)/build/win/asan.gyp:asan_dynamic_runtime',
+        ],
+      }],
       ['OS=="linux" and use_allocator!="none" and clang_type_profiler==1', {
         'cflags_cc!': ['-fno-rtti'],
         'cflags_cc+': [
@@ -5523,14 +5528,22 @@
                 ],
               },
               'target_conditions': [
-                ['_type=="executable"', {
+                ['component=="shared_library"', {
+                  'VCLinkerTool': {
+                    'AdditionalDependencies': [
+                       'clang_rt.asan_dynamic-i386.lib',
+                       'clang_rt.asan_uar_thunk-i386.lib',
+                    ],
+                  },
+                }],
+                ['_type=="executable" and component=="static_library"', {
                   'VCLinkerTool': {
                     'AdditionalDependencies': [
                        'clang_rt.asan-i386.lib',
                     ],
                   },
                 }],
-                ['_type=="shared_library" or _type=="loadable_module"', {
+                ['(_type=="shared_library" or _type=="loadable_module") and component=="static_library"', {
                   'VCLinkerTool': {
                     'AdditionalDependencies': [
                        'clang_rt.asan_dll_thunk-i386.lib',
