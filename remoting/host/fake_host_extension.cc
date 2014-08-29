@@ -19,10 +19,10 @@ class FakeExtension::Session : public HostExtensionSession {
   Session(FakeExtension* extension, const std::string& message_type);
   virtual ~Session() {}
 
-  virtual scoped_ptr<webrtc::DesktopCapturer> OnCreateVideoCapturer(
-      scoped_ptr<webrtc::DesktopCapturer> encoder) OVERRIDE;
-  virtual scoped_ptr<VideoEncoder> OnCreateVideoEncoder(
-      scoped_ptr<VideoEncoder> encoder) OVERRIDE;
+  // HostExtensionSession interface.
+  virtual void OnCreateVideoCapturer(
+      scoped_ptr<webrtc::DesktopCapturer>* encoder) OVERRIDE;
+  virtual void OnCreateVideoEncoder(scoped_ptr<VideoEncoder>* encoder) OVERRIDE;
   virtual bool ModifiesVideoPipeline() const OVERRIDE;
   virtual bool OnExtensionMessage(
       ClientSessionControl* client_session_control,
@@ -42,20 +42,17 @@ FakeExtension::Session::Session(
     message_type_(message_type) {
 }
 
-scoped_ptr<webrtc::DesktopCapturer>
-FakeExtension::Session::OnCreateVideoCapturer(
-    scoped_ptr<webrtc::DesktopCapturer> capturer) {
+void FakeExtension::Session::OnCreateVideoCapturer(
+    scoped_ptr<webrtc::DesktopCapturer>* capturer) {
   extension_->has_wrapped_video_capturer_ = true;
   if (extension_->steal_video_capturer_) {
-    capturer.reset();
+    capturer->reset();
   }
-  return capturer.Pass();
 }
 
-scoped_ptr<VideoEncoder> FakeExtension::Session::OnCreateVideoEncoder(
-    scoped_ptr<VideoEncoder> encoder) {
+void FakeExtension::Session::OnCreateVideoEncoder(
+    scoped_ptr<VideoEncoder>* encoder) {
   extension_->has_wrapped_video_encoder_ = true;
-  return encoder.Pass();
 }
 
 bool FakeExtension::Session::ModifiesVideoPipeline() const {
@@ -98,25 +95,6 @@ scoped_ptr<HostExtensionSession> FakeExtension::CreateExtensionSession(
   was_instantiated_ = true;
   scoped_ptr<HostExtensionSession> session(new Session(this, message_type_));
   return session.Pass();
-}
-
-void FakeExtension::set_steal_video_capturer(bool steal_video_capturer) {
-  steal_video_capturer_ = steal_video_capturer;
-}
-
-bool FakeExtension::has_wrapped_video_encoder() {
-  DCHECK(was_instantiated());
-  return has_wrapped_video_encoder_;
-}
-
-bool FakeExtension::has_wrapped_video_capturer() {
-  DCHECK(was_instantiated());
-  return has_wrapped_video_capturer_;
-}
-
-bool FakeExtension::has_handled_message() {
-  DCHECK(was_instantiated());
-  return has_handled_message_;
 }
 
 } // namespace remoting

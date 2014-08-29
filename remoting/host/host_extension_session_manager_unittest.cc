@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/string_util.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/host/fake_host_extension.h"
 #include "remoting/host/host_extension_session_manager.h"
@@ -17,7 +18,7 @@ class HostExtensionSessionManagerTest : public testing::Test {
  public:
   HostExtensionSessionManagerTest()
       : extension1_("ext1", "cap1"),
-        extension2_("ext2", ""),
+        extension2_("ext2", std::string()),
         extension3_("ext3", "cap3") {
     extensions_.push_back(&extension1_);
     extensions_.push_back(&extension2_);
@@ -30,14 +31,16 @@ class HostExtensionSessionManagerTest : public testing::Test {
   FakeExtension extension1_;
   FakeExtension extension2_;
   FakeExtension extension3_;
-  std::vector<HostExtension*> extensions_;
+  HostExtensionSessionManager::HostExtensions extensions_;
 
   // Mocks of interfaces provided by ClientSession.
   MockClientSessionControl client_session_control_;
   protocol::MockClientStub client_stub_;
+
+  DISALLOW_COPY_AND_ASSIGN(HostExtensionSessionManagerTest);
 };
 
-// Verifies that messages are passed to be handled by the correct extension.
+// Verifies that messages are handled by the correct extension.
 TEST_F(HostExtensionSessionManagerTest, ExtensionMessages_MessageHandled) {
   HostExtensionSessionManager extension_manager(extensions_,
                                                 &client_session_control_);
@@ -76,7 +79,13 @@ TEST_F(HostExtensionSessionManagerTest, ExtensionCapabilities_AreReported) {
   HostExtensionSessionManager extension_manager(extensions_,
                                                 &client_session_control_);
 
-  EXPECT_EQ(extension_manager.GetCapabilities(), "cap1 cap3");
+  std::vector<std::string> reported_caps;
+  Tokenize(extension_manager.GetCapabilities(), " ", &reported_caps);
+  std::sort(reported_caps.begin(), reported_caps.end());
+
+  ASSERT_EQ(2U, reported_caps.size());
+  EXPECT_EQ("cap1", reported_caps[0]);
+  EXPECT_EQ("cap3", reported_caps[1]);
 }
 
 // Verifies that an extension is not instantiated if the client does not
@@ -107,8 +116,8 @@ TEST_F(HostExtensionSessionManagerTest, CanWrapVideoCapturer) {
   extension3_.set_steal_video_capturer(true);
   extension_manager.OnNegotiatedCapabilities(&client_stub_, "cap1");
 
-  extension_manager.OnCreateVideoCapturer(
-      scoped_ptr<webrtc::DesktopCapturer>());
+  scoped_ptr<webrtc::DesktopCapturer> dummy_capturer;
+  extension_manager.OnCreateVideoCapturer(&dummy_capturer);
 
   EXPECT_FALSE(extension1_.has_wrapped_video_encoder());
   EXPECT_TRUE(extension1_.has_wrapped_video_capturer());
@@ -129,7 +138,8 @@ TEST_F(HostExtensionSessionManagerTest, CanWrapVideoEncoder) {
   extension3_.set_steal_video_capturer(true);
   extension_manager.OnNegotiatedCapabilities(&client_stub_, "cap1");
 
-  extension_manager.OnCreateVideoEncoder(scoped_ptr<VideoEncoder>());
+  scoped_ptr<VideoEncoder> dummy_encoder;
+  extension_manager.OnCreateVideoEncoder(&dummy_encoder);
 
   EXPECT_TRUE(extension1_.has_wrapped_video_encoder());
   EXPECT_FALSE(extension1_.has_wrapped_video_capturer());
@@ -148,9 +158,10 @@ TEST_F(HostExtensionSessionManagerTest, RespectModifiesVideoPipeline) {
   extension2_.set_steal_video_capturer(true);
   extension_manager.OnNegotiatedCapabilities(&client_stub_, "cap1");
 
-  extension_manager.OnCreateVideoCapturer(
-      scoped_ptr<webrtc::DesktopCapturer>());
-  extension_manager.OnCreateVideoEncoder(scoped_ptr<VideoEncoder>());
+  scoped_ptr<webrtc::DesktopCapturer> dummy_capturer;
+  extension_manager.OnCreateVideoCapturer(&dummy_capturer);
+  scoped_ptr<VideoEncoder> dummy_encoder;
+  extension_manager.OnCreateVideoEncoder(&dummy_encoder);
 
   EXPECT_FALSE(extension1_.has_wrapped_video_encoder());
   EXPECT_FALSE(extension1_.has_wrapped_video_capturer());
@@ -159,7 +170,7 @@ TEST_F(HostExtensionSessionManagerTest, RespectModifiesVideoPipeline) {
   EXPECT_FALSE(extension3_.was_instantiated());
 }
 
-// Verifies that if an extension reports that they modify the video pipeline
+// Verifies that if an extension reports that it modifies the video pipeline
 // then ResetVideoPipeline() is called on the ClientSessionControl interface.
 TEST_F(HostExtensionSessionManagerTest, CallsResetVideoPipeline) {
   HostExtensionSessionManager extension_manager(extensions_,

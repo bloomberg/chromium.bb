@@ -28,11 +28,11 @@ class VideoEncoder;
 // or "control" thread.
 //
 // On the control thread:
-// 1. Create the VideoFrameRecorder on the controlling thread.
+// 1. Create the VideoFrameRecorder.
 // 2. Specify the amount of memory that may be used for recording.
 // 3. Call WrapVideoEncoder(), passing the actual VideoEncoder that will be
 //    used to encode frames.
-// 4. Hand the returned wrapper VideoEncoder of to the video encoding thread,
+// 4. Hand off the returned wrapper VideoEncoder to the video encoding thread,
 //    to call in place of the actual VideoEncoder.
 // 5. Start/stop frame recording as necessary.
 // 6. Use NextFrame() to read each recorded frame in sequence.
@@ -50,19 +50,21 @@ class VideoFrameRecorder {
 
   // Wraps the supplied VideoEncoder, returning a replacement VideoEncoder that
   // will route frames to the recorder, as well as passing them for encoding.
-  // The caller must delete the previous recording VideoEncoder, or call
-  // DetachVideoEncoderWrapper() before calling WrapVideoEncoder() to create
-  // a new wrapper.
+  // Each VideoFrameRecorder supports at most one wrapper at a time; if a new
+  // wrapper is required then any existing one must be deleted, or detached via
+  // DetachVideoEncoderWrapper(), before WrapVideoEncoder() is called again.
   scoped_ptr<VideoEncoder> WrapVideoEncoder(scoped_ptr<VideoEncoder> encoder);
 
   // Detaches the existing VideoEncoder wrapper, stopping it from recording.
+  // The detached wrapper remains owned by the caller and will continue to
+  // pass-through frames to the wrapped encoder, without recording them.
   void DetachVideoEncoderWrapper();
 
   // Enables/disables frame recording. Frame recording is initially disabled.
   void SetEnableRecording(bool enable_recording);
 
   // Sets the maximum number of bytes of pixel data that may be recorded.
-  // When this maximum is reached older frames will be discard to make space
+  // When this maximum is reached older frames will be discarded to make space
   // for new ones.
   void SetMaxContentBytes(int64_t max_content_bytes);
 

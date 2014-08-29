@@ -15,8 +15,8 @@ namespace remoting {
 // sequences of frames to run tests against.
 class VideoFrameRecorderHostExtension : public HostExtension {
  public:
-  VideoFrameRecorderHostExtension() {}
-  virtual ~VideoFrameRecorderHostExtension() {}
+  VideoFrameRecorderHostExtension();
+  virtual ~VideoFrameRecorderHostExtension();
 
   // Sets the maximum number of bytes that each session may record.
   void SetMaxContentBytes(int64_t max_content_bytes);

@@ -61,8 +61,8 @@ class CastExtensionSession : public HostExtensionSession,
   void OnCreateSessionDescriptionFailure(const std::string& error);
 
   // HostExtensionSession interface.
-  virtual scoped_ptr<webrtc::DesktopCapturer> OnCreateVideoCapturer(
-      scoped_ptr<webrtc::DesktopCapturer> capturer) OVERRIDE;
+  virtual void OnCreateVideoCapturer(
+      scoped_ptr<webrtc::DesktopCapturer>* capturer) OVERRIDE;
   virtual bool ModifiesVideoPipeline() const OVERRIDE;
   virtual bool OnExtensionMessage(
       ClientSessionControl* client_session_control,
@@ -243,4 +243,3 @@ class CastExtensionSession : public HostExtensionSession,
 }  // namespace remoting
 
 #endif  // REMOTING_HOST_CAST_EXTENSION_SESSION_H_
-

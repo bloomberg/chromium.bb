@@ -456,11 +456,11 @@ void ClientSession::ResetVideoPipeline() {
   // Create VideoEncoder and DesktopCapturer to match the session's video
   // channel configuration.
   scoped_ptr<webrtc::DesktopCapturer> video_capturer =
-      extension_manager_->OnCreateVideoCapturer(
-          desktop_environment_->CreateVideoCapturer());
+      desktop_environment_->CreateVideoCapturer();
+  extension_manager_->OnCreateVideoCapturer(&video_capturer);
   scoped_ptr<VideoEncoder> video_encoder =
-      extension_manager_->OnCreateVideoEncoder(
-          CreateVideoEncoder(connection_->session()->config()));
+      CreateVideoEncoder(connection_->session()->config());
+  extension_manager_->OnCreateVideoEncoder(&video_encoder);
 
   // Don't start the VideoScheduler if either capturer or encoder are missing.
   if (!video_capturer || !video_encoder)

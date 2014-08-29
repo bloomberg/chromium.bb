@@ -21,26 +21,17 @@ namespace remoting {
 
 namespace {
 
-const char kVideoRecorderCapabilities[] = "videoRecorder";
-
-const char kVideoRecorderType[] = "video-recorder";
-
+// Name of the extension message type field, and its value for this extension.
 const char kType[] = "type";
-const char kData[] = "data";
-
-const char kStartType[] = "start";
-const char kStopType[] = "stop";
-const char kNextFrameType[] = "next-frame";
-const char kNextFrameReplyType[] = "next-frame-reply";
+const char kVideoRecorderType[] = "video-recorder";
 
 class VideoFrameRecorderHostExtensionSession : public HostExtensionSession {
  public:
   explicit VideoFrameRecorderHostExtensionSession(int64_t max_content_bytes);
-  virtual ~VideoFrameRecorderHostExtensionSession() {}
+  virtual ~VideoFrameRecorderHostExtensionSession();
 
   // remoting::HostExtensionSession interface.
-  virtual scoped_ptr<VideoEncoder> OnCreateVideoEncoder(
-      scoped_ptr<VideoEncoder> encoder) OVERRIDE;
+  virtual void OnCreateVideoEncoder(scoped_ptr<VideoEncoder>* encoder) OVERRIDE;
   virtual bool ModifiesVideoPipeline() const OVERRIDE;
   virtual bool OnExtensionMessage(
       ClientSessionControl* client_session_control,
@@ -48,23 +39,32 @@ class VideoFrameRecorderHostExtensionSession : public HostExtensionSession {
       const protocol::ExtensionMessage& message) OVERRIDE;
 
  private:
-  VideoEncoderVerbatim verbatim_encoder;
-  VideoFrameRecorder video_frame_recorder;
+  // Handlers for the different frame recorder extension message types.
+  void OnStart();
+  void OnStop();
+  void OnNextFrame(protocol::ClientStub* client_stub);
+
+  VideoEncoderVerbatim verbatim_encoder_;
+  VideoFrameRecorder video_frame_recorder_;
   bool first_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameRecorderHostExtensionSession);
 };
 
 VideoFrameRecorderHostExtensionSession::VideoFrameRecorderHostExtensionSession(
-    int64_t max_content_bytes) : first_frame_(false) {
-  video_frame_recorder.SetMaxContentBytes(max_content_bytes);
+    int64_t max_content_bytes)
+    : first_frame_(false) {
+  video_frame_recorder_.SetMaxContentBytes(max_content_bytes);
 }
 
-scoped_ptr<VideoEncoder>
-VideoFrameRecorderHostExtensionSession::OnCreateVideoEncoder(
-    scoped_ptr<VideoEncoder> encoder) {
-  video_frame_recorder.DetachVideoEncoderWrapper();
-  return video_frame_recorder.WrapVideoEncoder(encoder.Pass());
+VideoFrameRecorderHostExtensionSession::
+    ~VideoFrameRecorderHostExtensionSession() {
+}
+
+void VideoFrameRecorderHostExtensionSession::OnCreateVideoEncoder(
+    scoped_ptr<VideoEncoder>* encoder) {
+  video_frame_recorder_.DetachVideoEncoderWrapper();
+  *encoder = video_frame_recorder_.WrapVideoEncoder(encoder->Pass());
 }
 
 bool VideoFrameRecorderHostExtensionSession::ModifiesVideoPipeline() const {
@@ -85,72 +85,97 @@ bool VideoFrameRecorderHostExtensionSession::OnExtensionMessage(
 
   scoped_ptr<base::Value> value(base::JSONReader::Read(message.data()));
   base::DictionaryValue* client_message;
-  if (value && value->GetAsDictionary(&client_message)) {
-    std::string type;
-    if (!client_message->GetString(kType, &type)) {
-      LOG(ERROR) << "Invalid video-recorder message";
-      return true;
-    }
+  if (!value || !value->GetAsDictionary(&client_message)) {
+    return true;
+  }
 
-    if (type == kStartType) {
-      video_frame_recorder.SetEnableRecording(true);
-      first_frame_ = true;
-    } else if (type == kStopType) {
-      video_frame_recorder.SetEnableRecording(false);
-    } else if (type == kNextFrameType) {
-      scoped_ptr<webrtc::DesktopFrame> frame(video_frame_recorder.NextFrame());
+  std::string type;
+  if (!client_message->GetString(kType, &type)) {
+    LOG(ERROR) << "Invalid video-recorder message";
+    return true;
+  }
 
-      // TODO(wez): This involves six copies of the entire frame.
-      // See if there's some way to optimize at least a few of them out.
-      base::DictionaryValue reply_message;
-      reply_message.SetString(kType, kNextFrameReplyType);
-      if (frame) {
-        // If this is the first frame then override the updated region so that
-        // the encoder will send the whole frame's contents.
-        if (first_frame_) {
-          first_frame_ = false;
+  const char kStartType[] = "start";
+  const char kStopType[] = "stop";
+  const char kNextFrameType[] = "next-frame";
 
-          frame->mutable_updated_region()->SetRect(
-              webrtc::DesktopRect::MakeSize(frame->size()));
-        }
-
-        // Encode the frame into a raw ARGB VideoPacket.
-        scoped_ptr<VideoPacket> encoded_frame(
-            verbatim_encoder.Encode(*frame));
-
-        // Serialize that packet into a string.
-        std::string data;
-        data.resize(encoded_frame->ByteSize());
-        encoded_frame->SerializeWithCachedSizesToArray(
-            reinterpret_cast<uint8_t*>(&data[0]));
-
-        // Convert that string to Base64, so it's JSON-friendly.
-        std::string base64_data;
-        base::Base64Encode(data, &base64_data);
-
-        // Copy the Base64 data into the message.
-        reply_message.SetString(kData, base64_data);
-      }
-
-      // JSON-encode the reply into a string.
-      std::string reply_json;
-      if (!base::JSONWriter::Write(&reply_message, &reply_json)) {
-        LOG(ERROR) << "Failed to create reply json";
-        return true;
-      }
-
-      // Return the frame (or a 'data'-less reply) to the client.
-      protocol::ExtensionMessage message;
-      message.set_type(kVideoRecorderType);
-      message.set_data(reply_json);
-      client_stub->DeliverHostMessage(message);
-    }
+  if (type == kStartType) {
+    OnStart();
+  } else if (type == kStopType) {
+    OnStop();
+  } else if (type == kNextFrameType) {
+    OnNextFrame(client_stub);
   }
 
   return true;
 }
 
+void VideoFrameRecorderHostExtensionSession::OnStart() {
+  video_frame_recorder_.SetEnableRecording(true);
+  first_frame_ = true;
+}
+
+void VideoFrameRecorderHostExtensionSession::OnStop() {
+  video_frame_recorder_.SetEnableRecording(false);
+}
+
+void VideoFrameRecorderHostExtensionSession::OnNextFrame(
+    protocol::ClientStub* client_stub) {
+  scoped_ptr<webrtc::DesktopFrame> frame(video_frame_recorder_.NextFrame());
+
+  // TODO(wez): This involves six copies of the entire frame.
+  // See if there's some way to optimize at least a few of them out.
+  const char kNextFrameReplyType[] = "next-frame-reply";
+  base::DictionaryValue reply_message;
+  reply_message.SetString(kType, kNextFrameReplyType);
+  if (frame) {
+    // If this is the first frame then override the updated region so that
+    // the encoder will send the whole frame's contents.
+    if (first_frame_) {
+      first_frame_ = false;
+
+      frame->mutable_updated_region()->SetRect(
+          webrtc::DesktopRect::MakeSize(frame->size()));
+    }
+
+    // Encode the frame into a raw ARGB VideoPacket.
+    scoped_ptr<VideoPacket> encoded_frame(
+        verbatim_encoder_.Encode(*frame));
+
+    // Serialize that packet into a string.
+    std::string data(encoded_frame->ByteSize(), 0);
+    encoded_frame->SerializeWithCachedSizesToArray(
+        reinterpret_cast<uint8_t*>(&data[0]));
+
+    // Convert that string to Base64, so it's JSON-friendly.
+    std::string base64_data;
+    base::Base64Encode(data, &base64_data);
+
+    // Copy the Base64 data into the message.
+    const char kData[] = "data";
+    reply_message.SetString(kData, base64_data);
+  }
+
+  // JSON-encode the reply into a string.
+  // Note that JSONWriter::Write() can only fail due to invalid inputs, and will
+  // DCHECK in Debug builds in that case.
+  std::string reply_json;
+  if (!base::JSONWriter::Write(&reply_message, &reply_json)) {
+    return;
+  }
+
+  // Return the frame (or a 'data'-less reply) to the client.
+  protocol::ExtensionMessage message;
+  message.set_type(kVideoRecorderType);
+  message.set_data(reply_json);
+  client_stub->DeliverHostMessage(message);
+}
+
 } // namespace
+
+VideoFrameRecorderHostExtension::VideoFrameRecorderHostExtension() {}
+
+VideoFrameRecorderHostExtension::~VideoFrameRecorderHostExtension() {}
 
 void VideoFrameRecorderHostExtension::SetMaxContentBytes(
     int64_t max_content_bytes) {
@@ -158,7 +183,8 @@ void VideoFrameRecorderHostExtension::SetMaxContentBytes(
 }
 
 std::string VideoFrameRecorderHostExtension::capability() const {
-  return kVideoRecorderCapabilities;
+  const char kVideoRecorderCapability[] = "videoRecorder";
+  return kVideoRecorderCapability;
 }
 
 scoped_ptr<HostExtensionSession>

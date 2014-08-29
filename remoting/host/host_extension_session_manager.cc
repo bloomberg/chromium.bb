@@ -23,11 +23,11 @@ HostExtensionSessionManager::HostExtensionSessionManager(
 HostExtensionSessionManager::~HostExtensionSessionManager() {
 }
 
-std::string HostExtensionSessionManager::GetCapabilities() {
+std::string HostExtensionSessionManager::GetCapabilities() const {
   std::string capabilities;
-  for (HostExtensionList::const_iterator extension = extensions_.begin();
+  for (HostExtensions::const_iterator extension = extensions_.begin();
        extension != extensions_.end(); ++extension) {
-    std::string capability = (*extension)->capability();
+    const std::string& capability = (*extension)->capability();
     if (capability.empty()) {
       continue;
     }
@@ -39,27 +39,24 @@ std::string HostExtensionSessionManager::GetCapabilities() {
   return capabilities;
 }
 
-scoped_ptr<webrtc::DesktopCapturer>
-    HostExtensionSessionManager::OnCreateVideoCapturer(
-        scoped_ptr<webrtc::DesktopCapturer> capturer) {
-  for(HostExtensionSessionList::const_iterator it = extension_sessions_.begin();
+void HostExtensionSessionManager::OnCreateVideoCapturer(
+    scoped_ptr<webrtc::DesktopCapturer>* capturer) {
+  for (HostExtensionSessions::const_iterator it = extension_sessions_.begin();
       it != extension_sessions_.end(); ++it) {
     if ((*it)->ModifiesVideoPipeline()) {
-      capturer = (*it)->OnCreateVideoCapturer(capturer.Pass());
+      (*it)->OnCreateVideoCapturer(capturer);
     }
   }
-  return capturer.Pass();
 }
 
-scoped_ptr<VideoEncoder> HostExtensionSessionManager::OnCreateVideoEncoder(
-    scoped_ptr<VideoEncoder> encoder) {
-  for(HostExtensionSessionList::const_iterator it = extension_sessions_.begin();
+void HostExtensionSessionManager::OnCreateVideoEncoder(
+    scoped_ptr<VideoEncoder>* encoder) {
+  for (HostExtensionSessions::const_iterator it = extension_sessions_.begin();
       it != extension_sessions_.end(); ++it) {
     if ((*it)->ModifiesVideoPipeline()) {
-      encoder = (*it)->OnCreateVideoEncoder(encoder.Pass());
+      (*it)->OnCreateVideoEncoder(encoder);
     }
   }
-  return encoder.Pass();
 }
 
 void HostExtensionSessionManager::OnNegotiatedCapabilities(
@@ -72,7 +69,7 @@ void HostExtensionSessionManager::OnNegotiatedCapabilities(
 
   bool reset_video_pipeline = false;
 
-  for (HostExtensionList::const_iterator extension = extensions_.begin();
+  for (HostExtensions::const_iterator extension = extensions_.begin();
        extension != extensions_.end(); ++extension) {
     // If the extension requires a capability that was not negotiated then do
     // not instantiate it.
@@ -101,7 +98,7 @@ void HostExtensionSessionManager::OnNegotiatedCapabilities(
 
 bool HostExtensionSessionManager::OnExtensionMessage(
     const protocol::ExtensionMessage& message) {
-  for(HostExtensionSessionList::const_iterator it = extension_sessions_.begin();
+  for(HostExtensionSessions::const_iterator it = extension_sessions_.begin();
       it != extension_sessions_.end(); ++it) {
     if ((*it)->OnExtensionMessage(
             client_session_control_, client_stub_, message)) {

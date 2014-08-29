@@ -32,45 +32,47 @@ class ExtensionMessage;
 // set of capabilities negotiated between client and host.
 class HostExtensionSessionManager {
  public:
+  typedef std::vector<HostExtension*> HostExtensions;
+
   // Creates an extension manager for the specified |extensions|.
-  HostExtensionSessionManager(const std::vector<HostExtension*>& extensions,
+  HostExtensionSessionManager(const HostExtensions& extensions,
                               ClientSessionControl* client_session_control);
   virtual ~HostExtensionSessionManager();
 
   // Returns the union of all capabilities supported by registered extensions.
-  std::string GetCapabilities();
+  std::string GetCapabilities() const;
 
-  // Calls the corresponding hook functions in each extension in turn, to give
-  // them an opportunity to wrap or replace video components.
-  scoped_ptr<webrtc::DesktopCapturer> OnCreateVideoCapturer(
-      scoped_ptr<webrtc::DesktopCapturer> capturer);
-  scoped_ptr<VideoEncoder> OnCreateVideoEncoder(
-      scoped_ptr<VideoEncoder> encoder);
+  // Calls the corresponding hook functions for each extension, to allow them
+  // to wrap or replace video pipeline components. Only extensions which return
+  // true from ModifiesVideoPipeline() will be called.
+  // The order in which extensions are called is undefined.
+  void OnCreateVideoCapturer(scoped_ptr<webrtc::DesktopCapturer>* capturer);
+  void OnCreateVideoEncoder(scoped_ptr<VideoEncoder>* encoder);
 
   // Handles completion of authentication and capabilities negotiation, creating
-  // the set of |HostExtensionSession| to match the client's capabilities.
+  // the set of HostExtensionSessions to match the client's capabilities.
   void OnNegotiatedCapabilities(protocol::ClientStub* client_stub,
                                 const std::string& capabilities);
 
-  // Passes |message| to each |HostExtensionSession| in turn until the message
+  // Passes |message| to each HostExtensionSession in turn until the message
   // is handled, or none remain. Returns true if the message was handled.
+  // It is not valid for more than one extension to handle the same message.
   bool OnExtensionMessage(const protocol::ExtensionMessage& message);
 
  private:
-  typedef std::vector<HostExtension*> HostExtensionList;
-  typedef ScopedVector<HostExtensionSession> HostExtensionSessionList;
+  typedef ScopedVector<HostExtensionSession> HostExtensionSessions;
 
   // Passed to HostExtensionSessions to allow them to send messages,
   // disconnect the session, etc.
   ClientSessionControl* client_session_control_;
   protocol::ClientStub* client_stub_;
 
-  // List of HostExtensions to attach to the session, if it reaches the
+  // The HostExtensions to instantiate for the session, if it reaches the
   // authenticated state.
-  HostExtensionList extensions_;
+  HostExtensions extensions_;
 
-  // List of HostExtensionSessions, used to handle extension messages.
-  HostExtensionSessionList extension_sessions_;
+  // The instantiated HostExtensionSessions, used to handle extension messages.
+  HostExtensionSessions extension_sessions_;
 
   DISALLOW_COPY_AND_ASSIGN(HostExtensionSessionManager);
 };

@@ -234,28 +234,26 @@ void CastExtensionSession::OnCreateSessionDescriptionFailure(
 // stream from the peer connection here, and then attempt to re-setup the
 // peer connection in the OnRenegotiationNeeded() callback.
 // See crbug.com/403843.
-scoped_ptr<webrtc::DesktopCapturer> CastExtensionSession::OnCreateVideoCapturer(
-    scoped_ptr<webrtc::DesktopCapturer> capturer) {
+void CastExtensionSession::OnCreateVideoCapturer(
+    scoped_ptr<webrtc::DesktopCapturer>* capturer) {
   if (has_grabbed_capturer_) {
     LOG(ERROR) << "The video pipeline was reset unexpectedly.";
     has_grabbed_capturer_ = false;
     peer_connection_->RemoveStream(stream_.release());
-    return capturer.Pass();
+    return;
   }
 
   if (received_offer_) {
     has_grabbed_capturer_ = true;
-    if (SetupVideoStream(capturer.Pass())) {
+    if (SetupVideoStream(capturer->Pass())) {
       peer_connection_->CreateAnswer(create_session_desc_observer_, NULL);
     } else {
       has_grabbed_capturer_ = false;
       // Ignore the received offer, since we failed to setup a video stream.
       received_offer_ = false;
     }
-    return scoped_ptr<webrtc::DesktopCapturer>();
+    return;
   }
-
-  return capturer.Pass();
 }
 
 bool CastExtensionSession::ModifiesVideoPipeline() const {
@@ -672,4 +670,3 @@ void CastExtensionSession::OnIceCandidate(
 }
 
 }  // namespace remoting
-

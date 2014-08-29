@@ -27,64 +27,21 @@ class VideoFrameRecorder::RecordingVideoEncoder : public VideoEncoder {
  public:
   RecordingVideoEncoder(scoped_ptr<VideoEncoder> encoder,
                         scoped_refptr<base::TaskRunner> recorder_task_runner,
-                        base::WeakPtr<VideoFrameRecorder> recorder)
-      : encoder_(encoder.Pass()),
-        recorder_task_runner_(recorder_task_runner),
-        recorder_(recorder),
-        enable_recording_(false),
-        weak_factory_(this) {
-    DCHECK(encoder_);
-    DCHECK(recorder_task_runner_.get());
-  }
+                        base::WeakPtr<VideoFrameRecorder> recorder);
 
-  base::WeakPtr<RecordingVideoEncoder> AsWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
+  base::WeakPtr<RecordingVideoEncoder> AsWeakPtr();
 
-  void SetEnableRecording(bool enable_recording) {
+  void set_enable_recording(bool enable_recording) {
     DCHECK(!encoder_task_runner_.get() ||
            encoder_task_runner_->BelongsToCurrentThread());
     enable_recording_ = enable_recording;
   }
 
   // remoting::VideoEncoder interface.
-  virtual void SetLosslessEncode(bool want_lossless) OVERRIDE {
-    encoder_->SetLosslessEncode(want_lossless);
-  }
-  virtual void SetLosslessColor(bool want_lossless) OVERRIDE {
-    encoder_->SetLosslessColor(want_lossless);
-  }
+  virtual void SetLosslessEncode(bool want_lossless) OVERRIDE;
+  virtual void SetLosslessColor(bool want_lossless) OVERRIDE;
   virtual scoped_ptr<VideoPacket> Encode(
-      const webrtc::DesktopFrame& frame) OVERRIDE {
-    // If this is the first Encode() then store the TaskRunner and inform the
-    // VideoFrameRecorder so it can post SetEnableRecording() on it.
-    if (!encoder_task_runner_.get()) {
-      encoder_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-      recorder_task_runner_->PostTask(FROM_HERE,
-          base::Bind(&VideoFrameRecorder::SetEncoderTaskRunner,
-                     recorder_,
-                     encoder_task_runner_));
-    }
-
-    DCHECK(encoder_task_runner_->BelongsToCurrentThread());
-
-    if (enable_recording_) {
-      // Copy the frame and post it to the VideoFrameRecorder to store.
-      scoped_ptr<webrtc::DesktopFrame> frame_copy(
-          new webrtc::BasicDesktopFrame(frame.size()));
-      *frame_copy->mutable_updated_region() = frame.updated_region();
-      frame_copy->set_dpi(frame.dpi());
-      frame_copy->CopyPixelsFrom(frame.data(),
-                                 frame.stride(),
-                                 webrtc::DesktopRect::MakeSize(frame.size()));
-      recorder_task_runner_->PostTask(FROM_HERE,
-          base::Bind(&VideoFrameRecorder::RecordFrame,
-                     recorder_,
-                     base::Passed(&frame_copy)));
-    }
-
-    return encoder_->Encode(frame);
-  }
+      const webrtc::DesktopFrame& frame) OVERRIDE;
 
  private:
   scoped_ptr<VideoEncoder> encoder_;
@@ -98,6 +55,66 @@ class VideoFrameRecorder::RecordingVideoEncoder : public VideoEncoder {
 
   DISALLOW_COPY_AND_ASSIGN(RecordingVideoEncoder);
 };
+
+VideoFrameRecorder::RecordingVideoEncoder::RecordingVideoEncoder(
+    scoped_ptr<VideoEncoder> encoder,
+    scoped_refptr<base::TaskRunner> recorder_task_runner,
+    base::WeakPtr<VideoFrameRecorder> recorder)
+    : encoder_(encoder.Pass()),
+      recorder_task_runner_(recorder_task_runner),
+      recorder_(recorder),
+      enable_recording_(false),
+      weak_factory_(this) {
+  DCHECK(encoder_);
+  DCHECK(recorder_task_runner_.get());
+}
+
+base::WeakPtr<VideoFrameRecorder::RecordingVideoEncoder>
+VideoFrameRecorder::RecordingVideoEncoder::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
+void VideoFrameRecorder::RecordingVideoEncoder::SetLosslessEncode(
+    bool want_lossless) {
+  encoder_->SetLosslessEncode(want_lossless);
+}
+
+void VideoFrameRecorder::RecordingVideoEncoder::SetLosslessColor(
+    bool want_lossless) {
+  encoder_->SetLosslessColor(want_lossless);
+}
+
+scoped_ptr<VideoPacket> VideoFrameRecorder::RecordingVideoEncoder::Encode(
+    const webrtc::DesktopFrame& frame) {
+  // If this is the first Encode() then store the TaskRunner and inform the
+  // VideoFrameRecorder so it can post set_enable_recording() on it.
+  if (!encoder_task_runner_.get()) {
+    encoder_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+    recorder_task_runner_->PostTask(FROM_HERE,
+        base::Bind(&VideoFrameRecorder::SetEncoderTaskRunner,
+                   recorder_,
+                   encoder_task_runner_));
+  }
+
+  DCHECK(encoder_task_runner_->BelongsToCurrentThread());
+
+  if (enable_recording_) {
+    // Copy the frame and post it to the VideoFrameRecorder to store.
+    scoped_ptr<webrtc::DesktopFrame> frame_copy(
+        new webrtc::BasicDesktopFrame(frame.size()));
+    *frame_copy->mutable_updated_region() = frame.updated_region();
+    frame_copy->set_dpi(frame.dpi());
+    frame_copy->CopyPixelsFrom(frame.data(),
+                               frame.stride(),
+                               webrtc::DesktopRect::MakeSize(frame.size()));
+    recorder_task_runner_->PostTask(FROM_HERE,
+        base::Bind(&VideoFrameRecorder::RecordFrame,
+                   recorder_,
+                   base::Passed(&frame_copy)));
+  }
+
+  return encoder_->Encode(frame);
+}
 
 VideoFrameRecorder::VideoFrameRecorder()
     : content_bytes_(0),
@@ -139,7 +156,7 @@ void VideoFrameRecorder::DetachVideoEncoderWrapper() {
   // Tell the wrapper to stop recording and posting frames to us.
   if (encoder_task_runner_.get()) {
     encoder_task_runner_->PostTask(FROM_HERE,
-        base::Bind(&RecordingVideoEncoder::SetEnableRecording,
+        base::Bind(&RecordingVideoEncoder::set_enable_recording,
                    recording_encoder_, false));
   }
 
@@ -159,7 +176,7 @@ void VideoFrameRecorder::SetEnableRecording(bool enable_recording) {
 
   if (encoder_task_runner_.get()) {
     encoder_task_runner_->PostTask(FROM_HERE,
-        base::Bind(&RecordingVideoEncoder::SetEnableRecording,
+        base::Bind(&RecordingVideoEncoder::set_enable_recording,
                    recording_encoder_,
                    enable_recording_));
   }
@@ -198,7 +215,7 @@ void VideoFrameRecorder::SetEncoderTaskRunner(
   // If the caller already enabled recording, inform the recording encoder.
   if (enable_recording_ && encoder_task_runner_.get()) {
     encoder_task_runner_->PostTask(FROM_HERE,
-        base::Bind(&RecordingVideoEncoder::SetEnableRecording,
+        base::Bind(&RecordingVideoEncoder::set_enable_recording,
                    recording_encoder_,
                    enable_recording_));
   }

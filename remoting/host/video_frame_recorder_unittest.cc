@@ -18,29 +18,34 @@ namespace webrtc {
 // Define equality operator for DesktopFrame to allow use of EXPECT_EQ().
 static bool operator==(const DesktopFrame& a,
                        const DesktopFrame& b) {
-  if ((a.size().equals(b.size())) &&
-      (a.updated_region().Equals(b.updated_region())) &&
-      (a.dpi().equals(b.dpi()))) {
-    for (int i = 0; i < a.size().height(); ++i) {
-      if (memcmp(a.data() + a.stride() * i,
-                 b.data() + b.stride() * i,
-                 a.size().width() * DesktopFrame::kBytesPerPixel) != 0) {
-        return false;
-      }
-    }
-    return true;
+  if ((!a.size().equals(b.size())) ||
+      (!a.updated_region().Equals(b.updated_region())) ||
+      (!a.dpi().equals(b.dpi()))) {
+    return false;
   }
-  return false;
+
+  for (int i = 0; i < a.size().height(); ++i) {
+    if (memcmp(a.data() + a.stride() * i,
+               b.data() + b.stride() * i,
+               a.size().width() * DesktopFrame::kBytesPerPixel) != 0) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 } // namespace
 
 namespace remoting {
 
-const int64_t kMaxContentBytes = 10 * 1024 * 1024;
-const int kWidth = 640;
-const int kHeight = 480;
-const int kTestFrameCount = 6;
+namespace {
+const int kFrameWidth = 640;
+const int kFrameHeight = 480;
+const size_t kTestFrameCount = 6;
+const int64 kTestFrameBytes =
+    kFrameWidth * kFrameHeight * webrtc::DesktopFrame::kBytesPerPixel;
+} // namespace
 
 class VideoFrameRecorderTest : public testing::Test {
  public:
@@ -49,27 +54,51 @@ class VideoFrameRecorderTest : public testing::Test {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
+  // Creates a new VideoEncoder, wraps it using |recorder_|, and stores the
+  // newly wrapped encoder in |encoder_|.
   void CreateAndWrapEncoder();
+
+  // Creates the next test frame to pass to |encoder_|. Each test frame's pixel
+  // values are set uniquely, so that tests can verify that the correct set of
+  // frames were recorded.
   scoped_ptr<webrtc::DesktopFrame> CreateNextFrame();
+
+  // Calls CreateNextFrame() to create kTextFrameCount test frames, and stores
+  // them to |test_frames_|.
   void CreateTestFrames();
+
+  // Passes the frames in |test_frames_| to |encoder_|, in order, to encode.
   void EncodeTestFrames();
+
+  // Creates a frame and passes it to |encoder_| without adding it to
+  // |test_frames_|.
   void EncodeDummyFrame();
+
+  // Configures |recorder_| to start recording, and pumps events to ensure that
+  // |encoder_| is ready to record frames.
   void StartRecording();
+
+  // Reads frames from |recorder_| and compares them to the |test_frames_|.
   void VerifyTestFrames();
 
  protected:
+  typedef std::list<webrtc::DesktopFrame*> DesktopFrames;
+
   base::MessageLoop message_loop_;
 
   scoped_ptr<VideoFrameRecorder> recorder_;
   scoped_ptr<VideoEncoder> encoder_;
 
-  std::list<webrtc::DesktopFrame*> test_frames_;
+  DesktopFrames test_frames_;
   int frame_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(VideoFrameRecorderTest);
 };
 
 VideoFrameRecorderTest::VideoFrameRecorderTest() : frame_count_(0) {}
 
 void VideoFrameRecorderTest::SetUp() {
+  const int64_t kMaxContentBytes = 10 * 1024 * 1024;
   recorder_.reset(new VideoFrameRecorder());
   recorder_->SetMaxContentBytes(kMaxContentBytes);
 }
@@ -97,11 +126,12 @@ void VideoFrameRecorderTest::CreateAndWrapEncoder() {
 
 scoped_ptr<webrtc::DesktopFrame> VideoFrameRecorderTest::CreateNextFrame() {
   scoped_ptr<webrtc::DesktopFrame> frame(
-      new webrtc::BasicDesktopFrame(webrtc::DesktopSize(kWidth, kHeight)));
+      new webrtc::BasicDesktopFrame(webrtc::DesktopSize(kFrameWidth,
+                                                        kFrameHeight)));
 
   // Fill content, DPI and updated-region based on |frame_count_| so that each
   // generated frame is different.
-  memset(frame->data(), frame_count_, frame->stride() * kHeight);
+  memset(frame->data(), frame_count_, frame->stride() * kFrameHeight);
   frame->set_dpi(webrtc::DesktopVector(frame_count_, frame_count_));
   frame->mutable_updated_region()->SetRect(
       webrtc::DesktopRect::MakeWH(frame_count_, frame_count_));
@@ -111,15 +141,15 @@ scoped_ptr<webrtc::DesktopFrame> VideoFrameRecorderTest::CreateNextFrame() {
 }
 
 void VideoFrameRecorderTest::CreateTestFrames() {
-  for (int i=0; i < kTestFrameCount; ++i) {
+  for (size_t i = 0; i < kTestFrameCount; ++i) {
     test_frames_.push_back(CreateNextFrame().release());
   }
 }
 
 void VideoFrameRecorderTest::EncodeTestFrames() {
-  std::list<webrtc::DesktopFrame*>::iterator i;
-  for (i = test_frames_.begin(); i != test_frames_.end(); ++i) {
-    scoped_ptr<VideoPacket> packet = encoder_->Encode(*(*i));
+  for (DesktopFrames::iterator i = test_frames_.begin();
+       i != test_frames_.end(); ++i) {
+    ASSERT_TRUE(encoder_->Encode(**i));
 
     // Process tasks to let the recorder pick up the frame.
     base::RunLoop().RunUntilIdle();
@@ -127,8 +157,9 @@ void VideoFrameRecorderTest::EncodeTestFrames() {
 }
 
 void VideoFrameRecorderTest::EncodeDummyFrame() {
-  webrtc::BasicDesktopFrame dummy_frame(webrtc::DesktopSize(kWidth, kHeight));
-  scoped_ptr<VideoPacket> packet = encoder_->Encode(dummy_frame);
+  webrtc::BasicDesktopFrame dummy_frame(
+      webrtc::DesktopSize(kFrameWidth, kFrameHeight));
+  ASSERT_TRUE(encoder_->Encode(dummy_frame));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -158,7 +189,7 @@ TEST_F(VideoFrameRecorderTest, CreateDestroy) {
 }
 
 // Basic test that creating, starting, stopping and destroying a
-// VideoFrameRecorder don't end the world.
+// VideoFrameRecorder succeeds (e.g. does not crash or DCHECK).
 TEST_F(VideoFrameRecorderTest, StartStop) {
   StartRecording();
   recorder_->SetEnableRecording(false);
@@ -218,8 +249,7 @@ TEST_F(VideoFrameRecorderTest, MaxContentBytesEnforced) {
   CreateAndWrapEncoder();
 
   // Configure a maximum content size sufficient for five and a half frames.
-  int64 frame_bytes = kWidth * kHeight * webrtc::DesktopFrame::kBytesPerPixel;
-  recorder_->SetMaxContentBytes((frame_bytes * 11) / 2);
+  recorder_->SetMaxContentBytes((kTestFrameBytes * 11) / 2);
 
   // Start the recorder, so that the wrapper will push frames to it.
   StartRecording();
@@ -238,14 +268,13 @@ TEST_F(VideoFrameRecorderTest, MaxContentBytesEnforced) {
   VerifyTestFrames();
 }
 
-// Test that when asked to record more frames than the maximum content bytes
-// limit allows, the first encoded frames are dropped.
+// Test that when frames are consumed the corresponding space is freed up in
+// the content buffer, allowing subsequent frames to be recorded.
 TEST_F(VideoFrameRecorderTest, ContentBytesUpdatedByNextFrame) {
   CreateAndWrapEncoder();
 
   // Configure a maximum content size sufficient for kTestFrameCount frames.
-  int64 frame_bytes = kWidth * kHeight * webrtc::DesktopFrame::kBytesPerPixel;
-  recorder_->SetMaxContentBytes(frame_bytes * kTestFrameCount);
+  recorder_->SetMaxContentBytes(kTestFrameBytes * kTestFrameCount);
 
   // Start the recorder, so that the wrapper will push frames to it.
   StartRecording();

@@ -9,14 +9,12 @@
 
 namespace remoting {
 
-scoped_ptr<webrtc::DesktopCapturer> HostExtensionSession::OnCreateVideoCapturer(
-    scoped_ptr<webrtc::DesktopCapturer> capturer) {
-  return capturer.Pass();
+void HostExtensionSession::OnCreateVideoCapturer(
+    scoped_ptr<webrtc::DesktopCapturer>* capturer) {
 }
 
-scoped_ptr<VideoEncoder> HostExtensionSession::OnCreateVideoEncoder(
-    scoped_ptr<VideoEncoder> encoder) {
-  return encoder.Pass();
+void HostExtensionSession::OnCreateVideoEncoder(
+    scoped_ptr<VideoEncoder>* encoder) {
 }
 
 bool HostExtensionSession::ModifiesVideoPipeline() const {
