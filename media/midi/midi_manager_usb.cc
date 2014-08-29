@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/stringprintf.h"
 #include "media/midi/usb_midi_descriptor_parser.h"
 #include "media/midi/usb_midi_device.h"
 #include "media/midi/usb_midi_input_stream.h"
@@ -94,12 +95,24 @@ void MidiManagerUsb::OnEnumerateDevicesDone(bool result,
       if (jacks[j].direction() == UsbMidiJack::DIRECTION_OUT) {
         output_streams_.push_back(new UsbMidiOutputStream(jacks[j]));
         // TODO(yhirano): Set appropriate properties.
-        AddOutputPort(MidiPortInfo());
+        // TODO(yhiran): Port ID should contain product ID / vendor ID.
+        // Port ID must be unique in a MIDI manager. This (and the below) ID
+        // setting is sufficiently unique although there is no user-friendly
+        // meaning.
+        MidiPortInfo port;
+        port.id = base::StringPrintf("port-%ld-%ld",
+                                     static_cast<long>(i),
+                                     static_cast<long>(j));
+        AddOutputPort(port);
       } else {
         DCHECK_EQ(jacks[j].direction(), UsbMidiJack::DIRECTION_IN);
         input_jacks.push_back(jacks[j]);
         // TODO(yhirano): Set appropriate properties.
-        AddInputPort(MidiPortInfo());
+        MidiPortInfo port;
+        port.id = base::StringPrintf("port-%ld-%ld",
+                                     static_cast<long>(i),
+                                     static_cast<long>(j));
+        AddInputPort(port);
       }
     }
     input_stream_.reset(new UsbMidiInputStream(input_jacks, this));
