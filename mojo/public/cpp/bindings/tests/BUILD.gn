@@ -12,6 +12,7 @@ test("mojo_public_bindings_unittests") {
     "//mojo/public/cpp/utility",
     "//mojo/public/interfaces/bindings/tests:test_interfaces",
     "//testing/gtest",
+    ":mojo_public_bindings_test_utils",
   ]
 
   sources = [
@@ -28,8 +29,13 @@ test("mojo_public_bindings_unittests") {
     "string_unittest.cc",
     "struct_unittest.cc",
     "type_conversion_unittest.cc",
+    "validation_unittest.cc",
+  ]
+}
+
+source_set("mojo_public_bindings_test_utils") {
+  sources = [
     "validation_test_input_parser.cc",
     "validation_test_input_parser.h",
-    "validation_unittest.cc",
   ]
 }

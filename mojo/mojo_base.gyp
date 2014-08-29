@@ -509,6 +509,7 @@
           ],
           'sources': [
             'android/javatests/src/org/chromium/mojo/MojoTestCase.java',
+            'android/javatests/src/org/chromium/mojo/bindings/ValidationTestUtil.java',
             'android/system/src/org/chromium/mojo/system/impl/CoreImpl.java',
             'services/native_viewport/android/src/org/chromium/mojo/PlatformViewportAndroid.java',
             'shell/android/apk/src/org/chromium/mojo_shell_apk/MojoMain.java',
@@ -563,6 +564,7 @@
             '../base/base.gyp:test_support_base',
             'libmojo_system_java',
             'mojo_jni_headers',
+            'mojo_public_bindings_test_utils',
           ],
           'defines': [
             'UNIT_TEST'  # As exported from testing/gtest.gyp:gtest.
@@ -571,6 +573,8 @@
             'android/javatests/mojo_test_case.cc',
             'android/javatests/mojo_test_case.h',
             'android/javatests/init_library.cc',
+            'android/javatests/validation_test_util.cc',
+            'android/javatests/validation_test_util.h',
           ],
         },
         {

@@ -7,6 +7,7 @@
 #include "base/android/jni_registrar.h"
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "mojo/android/javatests/mojo_test_case.h"
+#include "mojo/android/javatests/validation_test_util.h"
 #include "mojo/android/system/core_impl.h"
 
 namespace {
@@ -14,6 +15,7 @@ namespace {
 base::android::RegistrationMethod kMojoRegisteredMethods[] = {
   { "CoreImpl", mojo::android::RegisterCoreImpl },
   { "MojoTestCase", mojo::android::RegisterMojoTestCase },
+  { "ValidationTestUtil", mojo::android::RegisterValidationTestUtil },
 };
 
 bool RegisterMojoJni(JNIEnv* env) {

@@ -50,6 +50,18 @@
         'public/cpp/test_support/test_utils.h',
       ],
     },
+    {
+      # GN version: //mojo/public/cpp/bindings/tests:mojo_public_bindings_test_utils
+      'target_name': 'mojo_public_bindings_test_utils',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'public/cpp/bindings/tests/validation_test_input_parser.cc',
+        'public/cpp/bindings/tests/validation_test_input_parser.h',
+      ],
+    },
     # TODO(vtl): Reorganize the mojo_public_*_unittests.
     {
       # GN version: //mojo/public/cpp/bindings/tests:mojo_public_bindings_unittests
@@ -61,6 +73,7 @@
         'mojo_environment_standalone',
         'mojo_public_test_utils',
         'mojo_run_all_unittests',
+        'mojo_public_bindings_test_utils',
         'mojo_public_test_interfaces',
         'mojo_utility',
       ],
@@ -78,8 +91,6 @@
         'public/cpp/bindings/tests/string_unittest.cc',
         'public/cpp/bindings/tests/struct_unittest.cc',
         'public/cpp/bindings/tests/type_conversion_unittest.cc',
-        'public/cpp/bindings/tests/validation_test_input_parser.cc',
-        'public/cpp/bindings/tests/validation_test_input_parser.h',
         'public/cpp/bindings/tests/validation_unittest.cc',
       ],
     },
