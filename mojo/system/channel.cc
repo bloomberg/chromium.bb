@@ -258,9 +258,6 @@ void Channel::DetachMessagePipeEndpoint(
       case EndpointInfo::STATE_WAIT_REMOTE_REMOVE_ACK:
         NOTREACHED();
         break;
-      case EndpointInfo::STATE_WAIT_LOCAL_DETACH_AND_REMOTE_REMOVE_ACK:
-        it->second.state = EndpointInfo::STATE_WAIT_REMOTE_REMOVE_ACK;
-        break;
     }
   }
   if (!should_send_remove_message)
