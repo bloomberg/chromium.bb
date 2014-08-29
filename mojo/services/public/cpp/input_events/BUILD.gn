@@ -22,7 +22,7 @@ component("input_events") {
 
   sources = [
     "lib/input_events_type_converters.cc",
-    "lib/input_events_type_converters.cc",
+    "lib/input_events_type_converters.h",
     "lib/mojo_extended_key_event_data.cc",
     "lib/mojo_extended_key_event_data.h",
     "input_events_type_converters.h",
