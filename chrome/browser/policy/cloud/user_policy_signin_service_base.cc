@@ -70,7 +70,8 @@ void UserPolicySigninServiceBase::FetchPolicyForSignedInUser(
   manager->core()->service()->RefreshPolicy(callback);
 }
 
-void UserPolicySigninServiceBase::GoogleSignedOut(const std::string& username) {
+void UserPolicySigninServiceBase::GoogleSignedOut(const std::string& account_id,
+                                                  const std::string& username) {
   ShutdownUserCloudPolicyManager();
 }
 

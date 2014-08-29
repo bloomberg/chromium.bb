@@ -89,7 +89,7 @@ TEST_F(TokenCacheTest, SignoutTest) {
   EXPECT_EQ(1U, CacheSize());
   EXPECT_TRUE(HasMatch("foo"));
 
-  cache_.GoogleSignedOut("foo");
+  cache_.GoogleSignedOut("foo", "foo");
 
   EXPECT_EQ(0U, CacheSize());
   EXPECT_FALSE(HasMatch("foo"));

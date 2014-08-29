@@ -773,12 +773,14 @@ void BrowserOptionsHandler::OnStateChanged() {
   UpdateSyncState();
 }
 
-void BrowserOptionsHandler::GoogleSigninSucceeded(const std::string& username,
+void BrowserOptionsHandler::GoogleSigninSucceeded(const std::string& account_id,
+                                                  const std::string& username,
                                                   const std::string& password) {
   OnStateChanged();
 }
 
-void BrowserOptionsHandler::GoogleSignedOut(const std::string& username) {
+void BrowserOptionsHandler::GoogleSignedOut(const std::string& account_id,
+                                            const std::string& username) {
   OnStateChanged();
 }
 

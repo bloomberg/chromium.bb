@@ -480,12 +480,14 @@ void LocalDiscoveryUIHandler::OnDeviceListUnavailable() {
 }
 
 void LocalDiscoveryUIHandler::GoogleSigninSucceeded(
+    const std::string& account_id,
     const std::string& username,
     const std::string& password) {
   CheckUserLoggedIn();
 }
 
-void LocalDiscoveryUIHandler::GoogleSignedOut(const std::string& username) {
+void LocalDiscoveryUIHandler::GoogleSignedOut(const std::string& account_id,
+                                              const std::string& username) {
   CheckUserLoggedIn();
 }
 

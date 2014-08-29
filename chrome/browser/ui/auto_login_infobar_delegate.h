@@ -66,7 +66,8 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
   virtual bool Cancel() OVERRIDE;
 
   // SigninManagerBase::Observer:
-  virtual void GoogleSignedOut(const std::string& username) OVERRIDE;
+  virtual void GoogleSignedOut(const std::string& account_id,
+                               const std::string& username) OVERRIDE;
 
   const Params params_;
 

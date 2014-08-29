@@ -204,11 +204,13 @@ void GAIAInfoUpdateService::ScheduleNextUpdate() {
 }
 
 void GAIAInfoUpdateService::GoogleSigninSucceeded(
+    const std::string& account_id,
     const std::string& username,
     const std::string& password) {
   OnUsernameChanged(username);
 }
 
-void GAIAInfoUpdateService::GoogleSignedOut(const std::string& username) {
+void GAIAInfoUpdateService::GoogleSignedOut(const std::string& account_id,
+                                            const std::string& username) {
   OnUsernameChanged(std::string());
 }

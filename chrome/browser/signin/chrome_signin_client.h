@@ -60,7 +60,8 @@ class ChromeSigninClient : public SigninClient,
   virtual std::string GetProductVersion() OVERRIDE;
   virtual scoped_ptr<CookieChangedCallbackList::Subscription>
       AddCookieChangedCallback(const CookieChangedCallback& callback) OVERRIDE;
-  virtual void GoogleSigninSucceeded(const std::string& username,
+  virtual void GoogleSigninSucceeded(const std::string& account_id,
+                                     const std::string& username,
                                      const std::string& password) OVERRIDE;
 
   // content::NotificationObserver implementation.

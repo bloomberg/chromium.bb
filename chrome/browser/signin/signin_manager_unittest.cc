@@ -75,11 +75,14 @@ class TestSigninManagerObserver : public SigninManagerBase::Observer {
   }
 
   virtual void GoogleSigninSucceeded(
-      const std::string& username, const std::string& password) OVERRIDE {
+      const std::string& account_id,
+      const std::string& username,
+      const std::string& password) OVERRIDE {
     num_successful_signins_++;
   }
 
-  virtual void GoogleSignedOut(const std::string& username) OVERRIDE {
+  virtual void GoogleSignedOut(const std::string& account_id,
+                               const std::string& username) OVERRIDE {
     num_signouts_++;
   }
 };

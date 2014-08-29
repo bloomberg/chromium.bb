@@ -70,7 +70,8 @@ void TokenCacheService::Shutdown() {
       ->RemoveObserver(this);
 }
 
-void TokenCacheService::GoogleSignedOut(const std::string& username) {
+void TokenCacheService::GoogleSignedOut(const std::string& account_id,
+                                        const std::string& username) {
   token_cache_.clear();
 }
 

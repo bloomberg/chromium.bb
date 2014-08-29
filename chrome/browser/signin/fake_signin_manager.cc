@@ -63,7 +63,9 @@ void FakeSigninManager::CompletePendingSignin() {
   set_auth_in_progress(std::string());
   FOR_EACH_OBSERVER(Observer,
                     observer_list_,
-                    GoogleSigninSucceeded(authenticated_username_, password_));
+                    GoogleSigninSucceeded(authenticated_username_,
+                                          authenticated_username_,
+                                          password_));
 }
 
 void FakeSigninManager::AddMergeSessionObserver(
@@ -101,11 +103,12 @@ void FakeSigninManager::SignOut(
     return;
   set_auth_in_progress(std::string());
   set_password(std::string());
+  const std::string account_id = GetAuthenticatedAccountId();
   const std::string username = authenticated_username_;
   authenticated_username_.clear();
 
   FOR_EACH_OBSERVER(SigninManagerBase::Observer, observer_list_,
-                    GoogleSignedOut(username));
+                    GoogleSignedOut(account_id, username));
 }
 
 #endif  // !defined (OS_CHROMEOS)

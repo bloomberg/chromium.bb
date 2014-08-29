@@ -68,7 +68,8 @@ class SignOutWaiter : public SigninManagerBase::Observer {
     EXPECT_TRUE(seen_);
   }
 
-  virtual void GoogleSignedOut(const std::string& username) OVERRIDE {
+  virtual void GoogleSignedOut(const std::string& account_id,
+                               const std::string& username) OVERRIDE {
     seen_ = true;
     if (!running_)
       return;

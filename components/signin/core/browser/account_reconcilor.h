@@ -213,9 +213,11 @@ class AccountReconcilor : public KeyedService,
   virtual void OnEndBatchChanges() OVERRIDE;
 
   // Overriden from SigninManagerBase::Observer.
-  virtual void GoogleSigninSucceeded(const std::string& username,
+  virtual void GoogleSigninSucceeded(const std::string& account_id,
+                                     const std::string& username,
                                      const std::string& password) OVERRIDE;
-  virtual void GoogleSignedOut(const std::string& username) OVERRIDE;
+  virtual void GoogleSignedOut(const std::string& account_id,
+                               const std::string& username) OVERRIDE;
 
   void MayBeDoNextListAccounts();
 

@@ -166,7 +166,9 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     fake_signin()->SignIn("test_user@gmail.com", "");
 #else
     fake_signin()->SetAuthenticatedUsername("test_user@gmail.com");
-    sync_->GoogleSigninSucceeded("test_user@gmail.com", "");
+    sync_->GoogleSigninSucceeded("test_user@gmail.com",
+                                 "test_user@gmail.com",
+                                 "");
 #endif
   }
 

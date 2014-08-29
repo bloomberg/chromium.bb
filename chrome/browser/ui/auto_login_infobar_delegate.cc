@@ -232,6 +232,8 @@ bool AutoLoginInfoBarDelegate::Cancel() {
   return true;
 }
 
-void AutoLoginInfoBarDelegate::GoogleSignedOut(const std::string& username) {
+void AutoLoginInfoBarDelegate::GoogleSignedOut(
+    const std::string& account_id,
+    const std::string& username) {
   infobar()->RemoveSelf();
 }

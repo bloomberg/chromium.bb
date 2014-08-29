@@ -309,12 +309,14 @@ void AppListViewDelegate::GoogleSigninFailed(
   SetUpProfileSwitcher();
 }
 
-void AppListViewDelegate::GoogleSigninSucceeded(const std::string& username,
+void AppListViewDelegate::GoogleSigninSucceeded(const std::string& account_id,
+                                                const std::string& username,
                                                 const std::string& password) {
   SetUpProfileSwitcher();
 }
 
-void AppListViewDelegate::GoogleSignedOut(const std::string& username) {
+void AppListViewDelegate::GoogleSignedOut(const std::string& account_id,
+                                          const std::string& username) {
   SetUpProfileSwitcher();
 }
 

@@ -702,12 +702,14 @@ void SyncEngine::GoogleSigninFailed(const GoogleServiceAuthError& error) {
                      "Failed to sign in.");
 }
 
-void SyncEngine::GoogleSigninSucceeded(const std::string& username,
+void SyncEngine::GoogleSigninSucceeded(const std::string& account_id,
+                                       const std::string& username,
                                        const std::string& password) {
   Initialize();
 }
 
-void SyncEngine::GoogleSignedOut(const std::string& username) {
+void SyncEngine::GoogleSignedOut(const std::string& account_id,
+                                 const std::string& username) {
   Reset();
   UpdateServiceState(REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
                      "User signed out.");

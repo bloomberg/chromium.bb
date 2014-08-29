@@ -120,13 +120,15 @@ void SigninStatusMetricsProvider::SigninManagerShutdown(
 }
 
 void SigninStatusMetricsProvider::GoogleSigninSucceeded(
+    const std::string& account_id,
     const std::string& username,
     const std::string& password) {
   if (signin_status_ == ALL_PROFILES_NOT_SIGNED_IN)
     signin_status_ = MIXED_SIGNIN_STATUS;
 }
 
-void SigninStatusMetricsProvider::GoogleSignedOut(const std::string& username) {
+void SigninStatusMetricsProvider::GoogleSignedOut(const std::string& account_id,
+                                                  const std::string& username) {
   if (signin_status_ == ALL_PROFILES_SIGNED_IN)
     signin_status_ = MIXED_SIGNIN_STATUS;
 }

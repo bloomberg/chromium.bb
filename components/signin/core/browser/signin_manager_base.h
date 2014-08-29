@@ -48,11 +48,13 @@ class SigninManagerBase : public KeyedService {
     virtual void GoogleSigninFailed(const GoogleServiceAuthError& error) {}
 
     // Called when a user signs into Google services such as sync.
-    virtual void GoogleSigninSucceeded(const std::string& username,
+    virtual void GoogleSigninSucceeded(const std::string& account_id,
+                                       const std::string& username,
                                        const std::string& password) {}
 
     // Called when the currently signed-in user for a user has been signed out.
-    virtual void GoogleSignedOut(const std::string& username) {}
+    virtual void GoogleSignedOut(const std::string& account_id,
+                                 const std::string& username) {}
 
    protected:
     virtual ~Observer() {}

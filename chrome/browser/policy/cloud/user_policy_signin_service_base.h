@@ -83,7 +83,8 @@ class UserPolicySigninServiceBase : public KeyedService,
       const PolicyFetchCallback& callback);
 
   // SigninManagerBase::Observer implementation:
-  virtual void GoogleSignedOut(const std::string& username) OVERRIDE;
+  virtual void GoogleSignedOut(const std::string& account_id,
+                               const std::string& username) OVERRIDE;
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,

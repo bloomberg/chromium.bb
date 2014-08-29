@@ -27,7 +27,8 @@ class SigninAccountIdHelper : public SigninManagerBase::Observer,
   virtual ~SigninAccountIdHelper();
 
   // SigninManagerBase::Observer:
-  virtual void GoogleSignedOut(const std::string& username) OVERRIDE;
+  virtual void GoogleSignedOut(const std::string& account_id,
+                               const std::string& username) OVERRIDE;
 
   // OAuth2TokenService::Observer:
   virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;

@@ -46,11 +46,13 @@ bool ProfileIdentityProvider::RequestLogin() {
 }
 
 void ProfileIdentityProvider::GoogleSigninSucceeded(
+    const std::string& account_id,
     const std::string& username,
     const std::string& password) {
   FireOnActiveAccountLogin();
 }
 
-void ProfileIdentityProvider::GoogleSignedOut(const std::string& username) {
+void ProfileIdentityProvider::GoogleSignedOut(const std::string& account_id,
+                                              const std::string& username) {
   FireOnActiveAccountLogout();
 }

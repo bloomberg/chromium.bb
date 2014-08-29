@@ -78,7 +78,8 @@ class SigninClient : public KeyedService {
       AddCookieChangedCallback(const CookieChangedCallback& callback) = 0;
 
   // Called when Google signin has succeeded.
-  virtual void GoogleSigninSucceeded(const std::string& username,
+  virtual void GoogleSigninSucceeded(const std::string& account_id,
+                                     const std::string& username,
                                      const std::string& password) {}
 
   virtual void SetSigninProcess(int host_id) = 0;

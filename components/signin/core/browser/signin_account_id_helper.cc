@@ -129,7 +129,8 @@ SigninAccountIdHelper::~SigninAccountIdHelper() {
   token_service_->RemoveObserver(this);
 }
 
-void SigninAccountIdHelper::GoogleSignedOut(const std::string& username) {
+void SigninAccountIdHelper::GoogleSignedOut(const std::string& account_id,
+                                            const std::string& username) {
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUserAccountId);
 }
 

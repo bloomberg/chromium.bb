@@ -72,13 +72,15 @@ TEST(SigninStatusMetricsProvider, GoogleSigninSucceeded) {
 
   // Initial status is all signed out and then one of the profiles is signed in.
   metrics_provider.UpdateInitialSigninStatus(2, 0);
-  metrics_provider.GoogleSigninSucceeded(std::string(), std::string());
+  metrics_provider.GoogleSigninSucceeded(std::string(), std::string(),
+                                         std::string());
   EXPECT_EQ(SigninStatusMetricsProvider::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
 
   // Initial status is mixed and then one of the profiles is signed in.
   metrics_provider.UpdateInitialSigninStatus(2, 1);
-  metrics_provider.GoogleSigninSucceeded(std::string(), std::string());
+  metrics_provider.GoogleSigninSucceeded(std::string(), std::string(),
+                                         std::string());
   EXPECT_EQ(SigninStatusMetricsProvider::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
 }
@@ -88,13 +90,13 @@ TEST(SigninStatusMetricsProvider, GoogleSignedOut) {
 
   // Initial status is all signed in and then one of the profiles is signed out.
   metrics_provider.UpdateInitialSigninStatus(2, 2);
-  metrics_provider.GoogleSignedOut(std::string());
+  metrics_provider.GoogleSignedOut(std::string(), std::string());
   EXPECT_EQ(SigninStatusMetricsProvider::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
 
   // Initial status is mixed and then one of the profiles is signed out.
   metrics_provider.UpdateInitialSigninStatus(2, 1);
-  metrics_provider.GoogleSignedOut(std::string());
+  metrics_provider.GoogleSignedOut(std::string(), std::string());
   EXPECT_EQ(SigninStatusMetricsProvider::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
 }

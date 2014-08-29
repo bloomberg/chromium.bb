@@ -342,14 +342,16 @@ void AccountReconcilor::OnEndBatchChanges() {
   StartReconcile();
 }
 
-void AccountReconcilor::GoogleSigninSucceeded(const std::string& username,
+void AccountReconcilor::GoogleSigninSucceeded(const std::string& account_id,
+                                              const std::string& username,
                                               const std::string& password) {
   VLOG(1) << "AccountReconcilor::GoogleSigninSucceeded: signed in";
   RegisterForCookieChanges();
   RegisterWithTokenService();
 }
 
-void AccountReconcilor::GoogleSignedOut(const std::string& username) {
+void AccountReconcilor::GoogleSignedOut(const std::string& account_id,
+                                        const std::string& username) {
   VLOG(1) << "AccountReconcilor::GoogleSignedOut: signed out";
   gaia_fetcher_.reset();
   get_gaia_accounts_callbacks_.clear();

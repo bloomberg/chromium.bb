@@ -2292,7 +2292,8 @@ void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
   }
 }
 
-void ProfileSyncService::GoogleSigninSucceeded(const std::string& username,
+void ProfileSyncService::GoogleSigninSucceeded(const std::string& account_id,
+                                               const std::string& username,
                                                const std::string& password) {
   if (!sync_prefs_.IsStartSuppressed() && !password.empty()) {
     cached_passphrase_ = password;
@@ -2310,7 +2311,8 @@ void ProfileSyncService::GoogleSigninSucceeded(const std::string& username,
   }
 }
 
-void ProfileSyncService::GoogleSignedOut(const std::string& username) {
+void ProfileSyncService::GoogleSignedOut(const std::string& account_id,
+                                         const std::string& username) {
   sync_disabled_by_admin_ = false;
   DisableForUser();
 

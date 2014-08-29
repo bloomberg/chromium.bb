@@ -201,6 +201,7 @@ void SigninManager::SignOut(
 
   ClearTransientSigninData();
 
+  const std::string account_id = GetAuthenticatedAccountId();
   const std::string username = GetAuthenticatedUsername();
   const base::Time signin_time =
       base::Time::FromInternalValue(
@@ -227,7 +228,9 @@ void SigninManager::SignOut(
                << "IsSigninAllowed: " << IsSigninAllowed();
   token_service_->RevokeAllCredentials();
 
-  FOR_EACH_OBSERVER(Observer, observer_list_, GoogleSignedOut(username));
+  FOR_EACH_OBSERVER(Observer,
+                    observer_list_,
+                    GoogleSignedOut(account_id, username));
 }
 
 void SigninManager::Initialize(PrefService* local_state) {
@@ -373,9 +376,13 @@ void SigninManager::OnSignedIn(const std::string& username) {
   FOR_EACH_OBSERVER(
       Observer,
       observer_list_,
-      GoogleSigninSucceeded(GetAuthenticatedUsername(), password_));
+      GoogleSigninSucceeded(GetAuthenticatedAccountId(),
+                            GetAuthenticatedUsername(),
+                            password_));
 
-  client_->GoogleSigninSucceeded(GetAuthenticatedUsername(), password_);
+  client_->GoogleSigninSucceeded(GetAuthenticatedAccountId(),
+                                 GetAuthenticatedUsername(),
+                                 password_);
 
   signin_metrics::LogSigninProfile(client_->IsFirstRun(),
                                    client_->GetInstallDate());

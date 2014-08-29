@@ -71,12 +71,14 @@ void SigninNamesOnIOThread::SigninManagerShutdown(SigninManagerBase* manager) {
   observed_managers_.erase(manager);
 }
 
-void SigninNamesOnIOThread::GoogleSigninSucceeded(const std::string& username,
+void SigninNamesOnIOThread::GoogleSigninSucceeded(const std::string& account_id,
+                                                  const std::string& username,
                                                   const std::string& password) {
   PostTaskToIOThread(true, base::UTF8ToUTF16(username));
 }
 
-void SigninNamesOnIOThread::GoogleSignedOut(const std::string& username) {
+void SigninNamesOnIOThread::GoogleSignedOut(const std::string& account_id,
+                                            const std::string& username) {
   PostTaskToIOThread(false, base::UTF8ToUTF16(username));
 }
 
