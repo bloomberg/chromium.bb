@@ -32,7 +32,6 @@
 #include "core/inspector/InjectedScriptManager.h"
 
 #include "bindings/core/v8/BindingSecurity.h"
-#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptDebugServer.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -47,6 +46,21 @@
 
 namespace blink {
 
+InjectedScriptManager::CallbackData* InjectedScriptManager::createCallbackData(InjectedScriptManager* injectedScriptManager)
+{
+    OwnPtr<InjectedScriptManager::CallbackData> callbackData = adoptPtr(new InjectedScriptManager::CallbackData());
+    InjectedScriptManager::CallbackData* callbackDataPtr = callbackData.get();
+    callbackData->injectedScriptManager = injectedScriptManager;
+    m_callbackDataSet.add(callbackData.release());
+    return callbackDataPtr;
+}
+
+void InjectedScriptManager::removeCallbackData(InjectedScriptManager::CallbackData* callbackData)
+{
+    ASSERT(m_callbackDataSet.contains(callbackData));
+    m_callbackDataSet.remove(callbackData);
+}
+
 static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(PassRefPtrWillBeRawPtr<InjectedScriptHost> host, InjectedScriptManager* injectedScriptManager, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(host);
@@ -55,7 +69,12 @@ static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(PassRefPtrWillBeR
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
-    DOMWrapperWorld::current(isolate).registerDOMObjectHolder(isolate, host.get(), wrapper);
+    // Create a weak reference to the v8 wrapper of InspectorBackend to deref
+    // InspectorBackend when the wrapper is garbage collected.
+    InjectedScriptManager::CallbackData* callbackData = injectedScriptManager->createCallbackData(injectedScriptManager);
+    callbackData->host = host.get();
+    callbackData->handle.set(isolate, wrapper);
+    callbackData->handle.setWeak(callbackData, &InjectedScriptManager::setWeakCallback);
 
 #if ENABLE(OILPAN)
     V8DOMWrapper::setNativeInfoWithPersistentHandle(wrapper, &V8InjectedScriptHost::wrapperTypeInfo, V8InjectedScriptHost::toInternalPointer(host), &callbackData->host);
@@ -106,6 +125,12 @@ bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)
     LocalFrame* frame = V8Window::toNative(holder)->frame();
 
     return BindingSecurity::shouldAllowAccessToFrame(scriptState->isolate(), frame, DoNotReportSecurityError);
+}
+
+void InjectedScriptManager::setWeakCallback(const v8::WeakCallbackData<v8::Object, InjectedScriptManager::CallbackData>& data)
+{
+    InjectedScriptManager::CallbackData* callbackData = data.GetParameter();
+    callbackData->injectedScriptManager->removeCallbackData(callbackData);
 }
 
 } // namespace blink
