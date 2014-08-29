@@ -109,7 +109,8 @@ scoped_ptr<HttpResponse> PnaclHeaderTest::WatchForPexeFetch(
   return http_response.PassAs<HttpResponse>();
 }
 
-IN_PROC_BROWSER_TEST_F(PnaclHeaderTest, TestHasPnaclHeader) {
+// This test is flaky. See http://crbug.com/315328.
+IN_PROC_BROWSER_TEST_F(PnaclHeaderTest, DISABLED_TestHasPnaclHeader) {
   // Load 2 pexes, one same origin and one cross orgin.
   RunLoadTest("/nacl/pnacl_request_header/pnacl_request_header.html", 1, 1);
 }
