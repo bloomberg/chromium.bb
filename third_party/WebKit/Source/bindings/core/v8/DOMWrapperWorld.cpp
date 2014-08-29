@@ -173,6 +173,26 @@ void DOMWrapperWorld::setIsolatedWorldSecurityOrigin(int worldId, PassRefPtr<Sec
         isolatedWorldSecurityOrigins().remove(worldId);
 }
 
+typedef HashMap<int, String > IsolatedWorldHumanReadableNameMap;
+static IsolatedWorldHumanReadableNameMap& isolatedWorldHumanReadableNames()
+{
+    ASSERT(isMainThread());
+    DEFINE_STATIC_LOCAL(IsolatedWorldHumanReadableNameMap, map, ());
+    return map;
+}
+
+String DOMWrapperWorld::isolatedWorldHumanReadableName()
+{
+    ASSERT(this->isIsolatedWorld());
+    return isolatedWorldHumanReadableNames().get(worldId());
+}
+
+void DOMWrapperWorld::setIsolatedWorldHumanReadableName(int worldId, const String& humanReadableName)
+{
+    ASSERT(isIsolatedWorldId(worldId));
+    isolatedWorldHumanReadableNames().set(worldId, humanReadableName);
+}
+
 typedef HashMap<int, bool> IsolatedWorldContentSecurityPolicyMap;
 static IsolatedWorldContentSecurityPolicyMap& isolatedWorldContentSecurityPolicies()
 {

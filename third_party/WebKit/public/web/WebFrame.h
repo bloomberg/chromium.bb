@@ -285,6 +285,11 @@ public:
     virtual void setIsolatedWorldContentSecurityPolicy(
         int worldID, const WebString&) = 0;
 
+    // Associates an isolated world with human-readable name which is useful for
+    // extension debugging.
+    virtual void setIsolatedWorldHumanReadableName(
+        int worldID, const WebString&) = 0;
+
     // Logs to the console associated with this frame.
     virtual void addMessageToConsole(const WebConsoleMessage&) = 0;
 

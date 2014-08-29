@@ -61,6 +61,7 @@ public:
         int extensionGroup) OVERRIDE;
     virtual void setIsolatedWorldSecurityOrigin(int worldID, const WebSecurityOrigin&) OVERRIDE;
     virtual void setIsolatedWorldContentSecurityPolicy(int worldID, const WebString&) OVERRIDE;
+    virtual void setIsolatedWorldHumanReadableName(int worldID, const WebString&) OVERRIDE;
     virtual void addMessageToConsole(const WebConsoleMessage&) OVERRIDE;
     virtual void collectGarbage() OVERRIDE;
     virtual bool checkIfRunInsecureContent(const WebURL&) const OVERRIDE;

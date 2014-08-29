@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/inspector/InspectorRuntimeAgent.h"
 
+#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptDebugServer.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/inspector/InjectedScript.h"
@@ -211,14 +212,17 @@ void InspectorRuntimeAgent::disable(ErrorString* errorString)
     m_state->setBoolean(InspectorRuntimeAgentState::runtimeEnabled, false);
 }
 
-void InspectorRuntimeAgent::addExecutionContextToFrontend(ScriptState* scriptState, bool isPageContext, const String& name, const String& frameId)
+void InspectorRuntimeAgent::addExecutionContextToFrontend(ScriptState* scriptState, bool isPageContext, const String& origin, const String& frameId)
 {
     int executionContextId = injectedScriptManager()->injectedScriptIdFor(scriptState);
     m_scriptStateToId.set(scriptState, executionContextId);
+    DOMWrapperWorld& world = scriptState->world();
+    String humanReadableName = world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "";
     m_frontend->executionContextCreated(ExecutionContextDescription::create()
         .setId(executionContextId)
         .setIsPageContext(isPageContext)
-        .setName(name)
+        .setName(humanReadableName)
+        .setOrigin(origin)
         .setFrameId(frameId)
         .release());
 }

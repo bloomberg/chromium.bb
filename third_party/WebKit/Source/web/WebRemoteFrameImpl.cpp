@@ -309,6 +309,11 @@ void WebRemoteFrameImpl::setIsolatedWorldContentSecurityPolicy(int worldID, cons
     ASSERT_NOT_REACHED();
 }
 
+void WebRemoteFrameImpl::setIsolatedWorldHumanReadableName(int worldID, const WebString&)
+{
+    ASSERT_NOT_REACHED();
+}
+
 void WebRemoteFrameImpl::addMessageToConsole(const WebConsoleMessage&)
 {
     ASSERT_NOT_REACHED();

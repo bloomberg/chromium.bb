@@ -91,6 +91,9 @@ public:
     static DOMWrapperWorld& mainWorld();
     static DOMWrapperWorld& privateScriptIsolatedWorld();
 
+    static void setIsolatedWorldHumanReadableName(int worldID, const String&);
+    String isolatedWorldHumanReadableName();
+
     // Associates an isolated world (see above for description) with a security
     // origin. XMLHttpRequest instances used in that world will be considered
     // to come from that origin, not the frame's.

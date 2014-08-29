@@ -708,6 +708,12 @@ void WebLocalFrameImpl::setIsolatedWorldContentSecurityPolicy(int worldID, const
     DOMWrapperWorld::setIsolatedWorldContentSecurityPolicy(worldID, policy);
 }
 
+void WebLocalFrameImpl::setIsolatedWorldHumanReadableName(int worldID, const WebString& humanReadableName)
+{
+    ASSERT(frame());
+    DOMWrapperWorld::setIsolatedWorldHumanReadableName(worldID, humanReadableName);
+}
+
 void WebLocalFrameImpl::addMessageToConsole(const WebConsoleMessage& message)
 {
     ASSERT(frame());

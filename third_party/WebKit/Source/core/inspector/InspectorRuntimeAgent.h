@@ -94,7 +94,7 @@ protected:
     virtual void unmuteConsole() = 0;
 
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
-    void addExecutionContextToFrontend(ScriptState*, bool isPageContext, const String& name, const String& frameId);
+    void addExecutionContextToFrontend(ScriptState*, bool isPageContext, const String& origin, const String& frameId);
 
     bool m_enabled;
     InspectorFrontend::Runtime* m_frontend;
