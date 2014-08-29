@@ -666,6 +666,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       opener_suppressed_(false),
       suppress_dialogs_until_swap_out_(false),
       page_id_(-1),
+      page_id_not_yet_reported_(false),
       last_page_id_sent_to_browser_(-1),
       next_page_id_(params->next_page_id),
       history_list_offset_(-1),
@@ -1549,6 +1550,7 @@ void RenderViewImpl::SendUpdateState(HistoryEntry* entry) {
   if (entry->root().urlString() == WebString::fromUTF8(kSwappedOutURL))
     return;
 
+  CHECK(!page_id_not_yet_reported_);
   Send(new ViewHostMsg_UpdateState(
       routing_id_, page_id_, HistoryEntryToPageState(entry)));
 }
@@ -1867,6 +1869,7 @@ void RenderViewImpl::UpdateTargetURL(const GURL& url,
     // see |ParamTraits<GURL>|.
     if (latest_url.possibly_invalid_spec().size() > GetMaxURLChars())
       latest_url = GURL();
+    CHECK(!page_id_not_yet_reported_);
     Send(new ViewHostMsg_UpdateTargetURL(routing_id_, page_id_, latest_url));
     target_url_ = latest_url;
     target_url_status_ = TARGET_INFLIGHT;
