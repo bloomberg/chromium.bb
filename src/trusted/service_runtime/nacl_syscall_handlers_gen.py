@@ -120,7 +120,7 @@ SYSCALL_LIST = [
     ('NACL_sys_gettimeofday', 'NaClSysGetTimeOfDay', ['uint32_t tv_addr']),
     ('NACL_sys_clock', 'NaClSysClock', []),
     ('NACL_sys_nanosleep', 'NaClSysNanosleep',
-     ['struct nacl_abi_timespec *req', 'struct nacl_abi_timespec *rem']),
+     ['uint32_t req_addr', 'uint32_t rem_addr']),
     ('NACL_sys_clock_getres', 'NaClSysClockGetRes',
      ['int clk_id', 'uint32_t tsp']),
     ('NACL_sys_clock_gettime', 'NaClSysClockGetTime',

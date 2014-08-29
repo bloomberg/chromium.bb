@@ -656,9 +656,9 @@ cleanup:
   return retval;
 }
 
-int32_t NaClSysNanosleep(struct NaClAppThread     *natp,
-                         struct nacl_abi_timespec *req,
-                         struct nacl_abi_timespec *rem) {
+int32_t NaClSysNanosleep(struct NaClAppThread *natp,
+                         uint32_t             req_addr,
+                         uint32_t             rem_addr) {
   struct NaClApp            *nap = natp->nap;
   struct nacl_abi_timespec  t_sleep;
   struct nacl_abi_timespec  t_rem;
@@ -667,23 +667,22 @@ int32_t NaClSysNanosleep(struct NaClAppThread     *natp,
 
   NaClLog(3,
           ("Entered NaClSysNanosleep(0x%08"NACL_PRIxPTR
-           ", 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR"x)\n"),
-          (uintptr_t) natp, (uintptr_t) req, (uintptr_t) rem);
+           ", 0x%08"NACL_PRIx32", 0x%08"NACL_PRIx32"x)\n"),
+          (uintptr_t) natp, req_addr, rem_addr);
 
   /* do the check before we sleep */
-  if (NULL != rem && kNaClBadAddress ==
-      NaClUserToSysAddrRange(nap, (uintptr_t) rem, sizeof *rem)) {
+  if (0 != rem_addr && kNaClBadAddress ==
+      NaClUserToSysAddrRange(nap, rem_addr, sizeof *remptr)) {
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
 
-  if (!NaClCopyInFromUser(nap, &t_sleep,
-                          (uintptr_t) req, sizeof t_sleep)) {
+  if (!NaClCopyInFromUser(nap, &t_sleep, req_addr, sizeof t_sleep)) {
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
 
-  remptr = (NULL == rem) ? NULL : &t_rem;
+  remptr = (0 == rem_addr) ? NULL : &t_rem;
   /* NULL != remptr \equiv NULL != rem */
 
   /*
@@ -697,8 +696,8 @@ int32_t NaClSysNanosleep(struct NaClAppThread     *natp,
   retval = NaClNanosleep(&t_sleep, remptr);
   NaClLog(4, "NaClNanosleep returned %d\n", retval);
 
-  if (-EINTR == retval && NULL != rem &&
-      !NaClCopyOutToUser(nap, (uintptr_t) rem, remptr, sizeof *remptr)) {
+  if (-EINTR == retval && 0 != rem_addr &&
+      !NaClCopyOutToUser(nap, rem_addr, remptr, sizeof *remptr)) {
     NaClLog(LOG_FATAL, "NaClSysNanosleep: check rem failed at copyout\n");
   }
 

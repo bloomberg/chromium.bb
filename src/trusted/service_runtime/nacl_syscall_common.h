@@ -133,9 +133,9 @@ int32_t NaClSysSemPost(struct NaClAppThread *natp,
 int32_t NaClSysSemGetValue(struct NaClAppThread *natp,
                            int32_t              sem_handle);
 
-int32_t NaClSysNanosleep(struct NaClAppThread     *natp,
-                         struct nacl_abi_timespec *req,
-                         struct nacl_abi_timespec *rem);
+int32_t NaClSysNanosleep(struct NaClAppThread *natp,
+                         uint32_t             req_addr,
+                         uint32_t             rem_addr);
 
 int32_t NaClSysSchedYield(struct NaClAppThread *natp);
 
