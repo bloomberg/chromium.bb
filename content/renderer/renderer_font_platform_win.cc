@@ -49,6 +49,7 @@ class FontCollectionLoader
   std::wstring GetFontNameFromKey(UINT32 idx);
 
   bool LoadFontListFromRegistry();
+  bool LoadRestrictedFontList();
 
   FontCollectionLoader() {};
   virtual ~FontCollectionLoader() {};
@@ -283,6 +284,47 @@ bool FontCollectionLoader::LoadFontListFromRegistry() {
   return true;
 }
 
+// This list is mainly based on prefs/prefs_tab_helper.cc kFontDefaults.
+const wchar_t* kRestrictedFontSet[] = {
+  L"times.ttf",     // IDS_STANDARD_FONT_FAMILY
+  L"timesbd.ttf",   // IDS_STANDARD_FONT_FAMILY
+  L"timesbi.ttf",   // IDS_STANDARD_FONT_FAMILY
+  L"timesi.ttf",    // IDS_STANDARD_FONT_FAMILY
+  L"cour.ttf",      // IDS_FIXED_FONT_FAMILY
+  L"courbd.ttf",    // IDS_FIXED_FONT_FAMILY
+  L"courbi.ttf",    // IDS_FIXED_FONT_FAMILY
+  L"couri.ttf",     // IDS_FIXED_FONT_FAMILY
+  L"consola.ttf",   // IDS_FIXED_FONT_FAMILY_ALT_WIN
+  L"consolab.ttf",  // IDS_FIXED_FONT_FAMILY_ALT_WIN
+  L"consolai.ttf",  // IDS_FIXED_FONT_FAMILY_ALT_WIN
+  L"consolaz.ttf",  // IDS_FIXED_FONT_FAMILY_ALT_WIN
+  L"arial.ttf",     // IDS_SANS_SERIF_FONT_FAMILY
+  L"arialbd.ttf",   // IDS_SANS_SERIF_FONT_FAMILY
+  L"arialbi.ttf",   // IDS_SANS_SERIF_FONT_FAMILY
+  L"ariali.ttf",    // IDS_SANS_SERIF_FONT_FAMILY
+  L"comic.ttf",     // IDS_CURSIVE_FONT_FAMILY
+  L"comicbd.ttf",   // IDS_CURSIVE_FONT_FAMILY
+  L"comici.ttf",    // IDS_CURSIVE_FONT_FAMILY
+  L"comicz.ttf",    // IDS_CURSIVE_FONT_FAMILY
+  L"impact.ttf",    // IDS_FANTASY_FONT_FAMILY
+  L"segoeui.ttf",   // IDS_PICTOGRAPH_FONT_FAMILY
+  L"segoeuib.ttf",  // IDS_PICTOGRAPH_FONT_FAMILY
+  L"segoeuii.ttf",  // IDS_PICTOGRAPH_FONT_FAMILY
+  L"msgothic.ttc",  // IDS_STANDARD_FONT_FAMILY_JAPANESE
+  L"msmincho.ttc",  // IDS_SERIF_FONT_FAMILY_JAPANESE
+  L"gulim.ttc",     // IDS_FIXED_FONT_FAMILY_KOREAN
+  L"batang.ttc",    // IDS_SERIF_FONT_FAMILY_KOREAN
+  L"simsun.ttc",    // IDS_STANDARD_FONT_FAMILY_SIMPLIFIED_HAN
+  L"mingliu.ttc",   // IDS_SERIF_FONT_FAMILY_TRADITIONAL_HAN
+};
+
+bool FontCollectionLoader::LoadRestrictedFontList() {
+  reg_fonts_.clear();
+  reg_fonts_.assign(kRestrictedFontSet,
+                    kRestrictedFontSet + _countof(kRestrictedFontSet));
+  return true;
+}
+
 }  // namespace
 
 namespace content {
@@ -297,14 +339,29 @@ IDWriteFontCollection* GetCustomFontCollection(IDWriteFactory* factory) {
 
   FontCollectionLoader::Initialize(factory);
 
-  HRESULT hr = factory->CreateCustomFontCollection(
-      g_font_loader.Get(), NULL, 0, g_font_collection.GetAddressOf());
+  // We try here to put arbitrary limit on max number of fonts that could
+  // be loaded, otherwise we fallback to restricted set of fonts.
+  const UINT32 kMaxFontThreshold = 1000;
+  HRESULT hr = E_FAIL;
+  if (g_font_loader->GetFontMapSize() < kMaxFontThreshold) {
+    hr = factory->CreateCustomFontCollection(
+        g_font_loader.Get(), NULL, 0, g_font_collection.GetAddressOf());
+  }
+
+  bool loadingRestricted = false;
+  if (FAILED(hr) || !g_font_collection.Get()) {
+    // We will try here just one more time with restricted font set.
+    g_font_loader->LoadRestrictedFontList();
+    hr = factory->CreateCustomFontCollection(
+        g_font_loader.Get(), NULL, 0, g_font_collection.GetAddressOf());
+  }
 
   base::TimeDelta time_delta = base::TimeTicks::Now() - start_tick;
   int64 delta = time_delta.ToInternalValue();
   base::debug::Alias(&delta);
   UINT32 size = g_font_loader->GetFontMapSize();
   base::debug::Alias(&size);
+  base::debug::Alias(&loadingRestricted);
 
   CHECK(SUCCEEDED(hr));
   CHECK(g_font_collection.Get() != NULL);
