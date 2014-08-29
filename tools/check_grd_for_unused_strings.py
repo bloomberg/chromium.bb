@@ -111,10 +111,9 @@ def CheckForUnusedGrdIDsInSources(grd_files, src_dirs):
 
 
 def main():
-  # script lives in src/chrome/tools
-  chrome_tools_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
-  src_dir = os.path.dirname(os.path.dirname(chrome_tools_dir))
-  chrome_dir = os.path.join(src_dir, 'chrome')
+  # script lives in src/tools
+  tools_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+  src_dir = os.path.dirname(tools_dir)
 
   # Collect the args into the right buckets
   src_dirs = []
@@ -128,6 +127,7 @@ def main():
   # If no GRD files were given, default them:
   if len(grd_files) == 0:
     ash_base_dir = os.path.join(src_dir, 'ash')
+    chrome_dir = os.path.join(src_dir, 'chrome')
     chrome_app_dir = os.path.join(chrome_dir, 'app')
     chrome_app_res_dir = os.path.join(chrome_app_dir, 'resources')
     device_base_dir = os.path.join(src_dir, 'device')
