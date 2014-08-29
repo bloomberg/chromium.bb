@@ -48,7 +48,7 @@ void QuicSentEntropyManager::RecordPacketEntropyHash(
     // Ensure packets always are recorded in order.
     // Every packet's entropy is recorded, even if it's not sent, so there
     // are not sequence number gaps.
-    DCHECK_LT(GetLargestPacketWithEntropy(), sequence_number);
+    DCHECK_EQ(GetLargestPacketWithEntropy() + 1, sequence_number);
   }
   packets_entropy_.push_back(entropy_hash);
   DVLOG(2) << "Recorded sequence number " << sequence_number

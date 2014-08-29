@@ -35,6 +35,7 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
 
   void VerifyInFlightPackets(QuicPacketSequenceNumber* packets,
                              size_t num_packets) {
+    unacked_packets_.RemoveObsoletePackets();
     if (num_packets == 0) {
       EXPECT_FALSE(unacked_packets_.HasInFlightPackets());
       EXPECT_FALSE(unacked_packets_.HasMultipleInFlightPackets());
@@ -53,7 +54,7 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
     size_t in_flight_count = 0;
     for (QuicUnackedPacketMap::const_iterator it = unacked_packets_.begin();
          it != unacked_packets_.end(); ++it) {
-      if (it->second.in_flight) {
+      if (it->in_flight) {
         ++in_flight_count;
       }
     }
@@ -62,6 +63,7 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
 
   void VerifyUnackedPackets(QuicPacketSequenceNumber* packets,
                             size_t num_packets) {
+    unacked_packets_.RemoveObsoletePackets();
     if (num_packets == 0) {
       EXPECT_FALSE(unacked_packets_.HasUnackedPackets());
       EXPECT_FALSE(unacked_packets_.HasUnackedRetransmittableFrames());
@@ -71,20 +73,16 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
     for (size_t i = 0; i < num_packets; ++i) {
       EXPECT_TRUE(unacked_packets_.IsUnacked(packets[i])) << packets[i];
     }
-    size_t unacked_count = 0;
-    for (QuicUnackedPacketMap::const_iterator it = unacked_packets_.begin();
-         it != unacked_packets_.end(); ++it) {
-      ++unacked_count;
-    }
-    EXPECT_EQ(num_packets, unacked_count);
+    EXPECT_EQ(num_packets, unacked_packets_.GetNumUnackedPacketsDebugOnly());
   }
 
   void VerifyRetransmittablePackets(QuicPacketSequenceNumber* packets,
                                     size_t num_packets) {
+    unacked_packets_.RemoveObsoletePackets();
     size_t num_retransmittable_packets = 0;
     for (QuicUnackedPacketMap::const_iterator it = unacked_packets_.begin();
          it != unacked_packets_.end(); ++it) {
-      if (it->second.retransmittable_frames != NULL) {
+      if (it->retransmittable_frames != NULL) {
         ++num_retransmittable_packets;
       }
     }

@@ -154,35 +154,14 @@ class PingAlarm : public QuicAlarm::Delegate {
   DISALLOW_COPY_AND_ASSIGN(PingAlarm);
 };
 
-QuicConnection::PacketType GetPacketType(
-    const RetransmittableFrames* retransmittable_frames) {
-  if (!retransmittable_frames) {
-    return QuicConnection::NORMAL;
-  }
-  for (size_t i = 0; i < retransmittable_frames->frames().size(); ++i) {
-    if (retransmittable_frames->frames()[i].type == CONNECTION_CLOSE_FRAME) {
-      return QuicConnection::CONNECTION_CLOSE;
-    }
-  }
-  return QuicConnection::NORMAL;
-}
-
 }  // namespace
 
 QuicConnection::QueuedPacket::QueuedPacket(SerializedPacket packet,
                                            EncryptionLevel level,
                                            TransmissionType transmission_type)
-  : sequence_number(packet.sequence_number),
-    packet(packet.packet),
+  : serialized_packet(packet),
     encryption_level(level),
-    transmission_type(transmission_type),
-    retransmittable((transmission_type != NOT_RETRANSMISSION ||
-                     packet.retransmittable_frames != NULL) ?
-                         HAS_RETRANSMITTABLE_DATA : NO_RETRANSMITTABLE_DATA),
-    handshake(packet.retransmittable_frames == NULL ?
-      NOT_HANDSHAKE : packet.retransmittable_frames->HasCryptoHandshake()),
-    type(GetPacketType(packet.retransmittable_frames)),
-    length(packet.packet->length()) {
+    transmission_type(transmission_type) {
 }
 
 #define ENDPOINT (is_server_ ? "Server: " : " Client: ")
@@ -262,7 +241,7 @@ QuicConnection::~QuicConnection() {
   STLDeleteValues(&group_map_);
   for (QueuedPacketList::iterator it = queued_packets_.begin();
        it != queued_packets_.end(); ++it) {
-    delete it->packet;
+    delete it->serialized_packet.packet;
   }
 }
 
@@ -300,13 +279,15 @@ void QuicConnection::OnError(QuicFramer* framer) {
 
 void QuicConnection::OnPacket() {
   DCHECK(last_stream_frames_.empty() &&
+         last_ack_frames_.empty() &&
+         last_congestion_frames_.empty() &&
+         last_stop_waiting_frames_.empty() &&
+         last_rst_frames_.empty() &&
          last_goaway_frames_.empty() &&
          last_window_update_frames_.empty() &&
          last_blocked_frames_.empty() &&
-         last_rst_frames_.empty() &&
-         last_ack_frames_.empty() &&
-         last_congestion_frames_.empty() &&
-         last_stop_waiting_frames_.empty());
+         last_ping_frames_.empty() &&
+         last_close_frames_.empty());
 }
 
 void QuicConnection::OnPublicResetPacket(
@@ -363,6 +344,9 @@ bool QuicConnection::OnProtocolVersionMismatch(QuicVersion received_version) {
 
   version_negotiation_state_ = NEGOTIATED_VERSION;
   visitor_->OnSuccessfulVersionNegotiation(received_version);
+  if (debug_visitor_.get() != NULL) {
+    debug_visitor_->OnSuccessfulVersionNegotiation(received_version);
+  }
   DVLOG(1) << ENDPOINT << "version negotiated " << received_version;
 
   // Store the new version.
@@ -489,6 +473,9 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
         DCHECK_EQ(header.public_header.versions[0], version());
         version_negotiation_state_ = NEGOTIATED_VERSION;
         visitor_->OnSuccessfulVersionNegotiation(version());
+        if (debug_visitor_.get() != NULL) {
+          debug_visitor_->OnSuccessfulVersionNegotiation(version());
+        }
       }
     } else {
       DCHECK(!header.public_header.version_flag);
@@ -497,6 +484,9 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
       packet_generator_.StopSendingVersion();
       version_negotiation_state_ = NEGOTIATED_VERSION;
       visitor_->OnSuccessfulVersionNegotiation(version());
+      if (debug_visitor_.get() != NULL) {
+        debug_visitor_->OnSuccessfulVersionNegotiation(version());
+      }
     }
   }
 
@@ -617,6 +607,7 @@ bool QuicConnection::OnPingFrame(const QuicPingFrame& frame) {
   if (debug_visitor_.get() != NULL) {
     debug_visitor_->OnPingFrame(frame);
   }
+  last_ping_frames_.push_back(frame);
   return true;
 }
 
@@ -778,17 +769,17 @@ void QuicConnection::OnPacketComplete() {
 
   DVLOG(1) << ENDPOINT << (last_packet_revived_ ? "Revived" : "Got")
            << " packet " << last_header_.packet_sequence_number
-           << " with " << last_ack_frames_.size() << " acks, "
+           << " with " << last_stream_frames_.size()<< " stream frames "
+           << last_ack_frames_.size() << " acks, "
            << last_congestion_frames_.size() << " congestions, "
            << last_stop_waiting_frames_.size() << " stop_waiting, "
+           << last_rst_frames_.size() << " rsts, "
            << last_goaway_frames_.size() << " goaways, "
            << last_window_update_frames_.size() << " window updates, "
            << last_blocked_frames_.size() << " blocked, "
-           << last_rst_frames_.size() << " rsts, "
+           << last_ping_frames_.size() << " pings, "
            << last_close_frames_.size() << " closes, "
-           << last_stream_frames_.size()
-           << " stream frames for "
-           << last_header_.public_header.connection_id;
+           << "for " << last_header_.public_header.connection_id;
 
   // Call MaybeQueueAck() before recording the received packet, since we want
   // to trigger an ack if the newly received packet was previously missing.
@@ -881,13 +872,15 @@ void QuicConnection::MaybeQueueAck() {
 
 void QuicConnection::ClearLastFrames() {
   last_stream_frames_.clear();
+  last_ack_frames_.clear();
+  last_congestion_frames_.clear();
+  last_stop_waiting_frames_.clear();
+  last_rst_frames_.clear();
   last_goaway_frames_.clear();
   last_window_update_frames_.clear();
   last_blocked_frames_.clear();
-  last_rst_frames_.clear();
-  last_ack_frames_.clear();
-  last_stop_waiting_frames_.clear();
-  last_congestion_frames_.clear();
+  last_ping_frames_.clear();
+  last_close_frames_.clear();
 }
 
 QuicAckFrame* QuicConnection::CreateAckFrame() {
@@ -913,7 +906,8 @@ bool QuicConnection::ShouldLastPacketInstigateAck() const {
       !last_goaway_frames_.empty() ||
       !last_rst_frames_.empty() ||
       !last_window_update_frames_.empty() ||
-      !last_blocked_frames_.empty()) {
+      !last_blocked_frames_.empty() ||
+      !last_ping_frames_.empty()) {
     return true;
   }
 
@@ -1215,7 +1209,7 @@ void QuicConnection::WriteQueuedPackets() {
   while (!writer_->IsWriteBlocked() &&
          packet_iterator != queued_packets_.end()) {
     if (WritePacket(*packet_iterator)) {
-      delete packet_iterator->packet;
+      delete packet_iterator->serialized_packet.packet;
       packet_iterator = queued_packets_.erase(packet_iterator);
     } else {
       // Continue, because some queued packets may still be writable.
@@ -1231,8 +1225,7 @@ void QuicConnection::WritePendingRetransmissions() {
   while (sent_packet_manager_.HasPendingRetransmissions()) {
     const QuicSentPacketManager::PendingRetransmission pending =
         sent_packet_manager_.NextPendingRetransmission();
-    if (GetPacketType(&pending.retransmittable_frames) == NORMAL &&
-        !CanWrite(HAS_RETRANSMITTABLE_DATA)) {
+    if (!CanWrite(HAS_RETRANSMITTABLE_DATA)) {
       break;
     }
 
@@ -1317,22 +1310,13 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
 }
 
 bool QuicConnection::WritePacket(QueuedPacket packet) {
-  QuicPacketSequenceNumber sequence_number = packet.sequence_number;
+  QuicPacketSequenceNumber sequence_number =
+      packet.serialized_packet.sequence_number;
   if (ShouldDiscardPacket(packet.encryption_level,
                           sequence_number,
-                          packet.retransmittable)) {
+                          IsRetransmittable(packet))) {
     ++stats_.packets_discarded;
     return true;
-  }
-
-  // If the packet is CONNECTION_CLOSE, we need to try to send it immediately
-  // and encrypt it to hand it off to TimeWaitListManager.
-  // If the packet is QUEUED, we don't re-consult the congestion control.
-  // This ensures packets are sent in sequence number order.
-  // TODO(ianswett): The congestion control should have been consulted before
-  // serializing the packet, so this could be turned into a LOG_IF(DFATAL).
-  if (packet.type == NORMAL && !CanWrite(packet.retransmittable)) {
-    return false;
   }
 
   // Some encryption algorithms require the packet sequence numbers not be
@@ -1341,7 +1325,9 @@ bool QuicConnection::WritePacket(QueuedPacket packet) {
   sequence_number_of_last_sent_packet_ = sequence_number;
 
   QuicEncryptedPacket* encrypted = framer_.EncryptPacket(
-      packet.encryption_level, sequence_number, *packet.packet);
+      packet.encryption_level,
+      sequence_number,
+      *packet.serialized_packet.packet);
   if (encrypted == NULL) {
     LOG(DFATAL) << ENDPOINT << "Failed to encrypt packet number "
                 << sequence_number;
@@ -1353,7 +1339,7 @@ bool QuicConnection::WritePacket(QueuedPacket packet) {
   // Connection close packets are eventually owned by TimeWaitListManager.
   // Others are deleted at the end of this call.
   scoped_ptr<QuicEncryptedPacket> encrypted_deleter;
-  if (packet.type == CONNECTION_CLOSE) {
+  if (IsConnectionClose(packet)) {
     DCHECK(connection_close_packet_.get() == NULL);
     connection_close_packet_.reset(encrypted);
     // This assures we won't try to write *forced* packets when blocked.
@@ -1370,16 +1356,19 @@ bool QuicConnection::WritePacket(QueuedPacket packet) {
     DCHECK_LE(encrypted->length(), kMaxPacketSize);
   }
   DCHECK_LE(encrypted->length(), packet_generator_.max_packet_length());
-  DVLOG(1) << ENDPOINT << "Sending packet " << sequence_number
-           << " : " << (packet.packet->is_fec_packet() ? "FEC " :
-               (packet.retransmittable == HAS_RETRANSMITTABLE_DATA
-                    ? "data bearing " : " ack only "))
+  DVLOG(1) << ENDPOINT << "Sending packet " << sequence_number << " : "
+           << (packet.serialized_packet.packet->is_fec_packet() ? "FEC " :
+               (IsRetransmittable(packet) == HAS_RETRANSMITTABLE_DATA
+                ? "data bearing " : " ack only "))
            << ", encryption level: "
            << QuicUtils::EncryptionLevelToString(packet.encryption_level)
-           << ", length:" << packet.packet->length() << ", encrypted length:"
+           << ", length:"
+           << packet.serialized_packet.packet->length()
+           << ", encrypted length:"
            << encrypted->length();
   DVLOG(2) << ENDPOINT << "packet(" << sequence_number << "): " << std::endl
-           << QuicUtils::StringToHexASCIIDump(packet.packet->AsStringPiece());
+           << QuicUtils::StringToHexASCIIDump(
+               packet.serialized_packet.packet->AsStringPiece());
 
   WriteResult result = writer_->WritePacket(encrypted->data(),
                                             encrypted->length(),
@@ -1422,12 +1411,12 @@ bool QuicConnection::WritePacket(QueuedPacket packet) {
       sent_packet_manager_.least_packet_awaited_by_peer(),
       sent_packet_manager_.GetCongestionWindow());
 
-  bool reset_retransmission_alarm =
-      sent_packet_manager_.OnPacketSent(sequence_number,
-                                        now,
-                                        encrypted->length(),
-                                        packet.transmission_type,
-                                        packet.retransmittable);
+  bool reset_retransmission_alarm = sent_packet_manager_.OnPacketSent(
+      sequence_number,
+      now,
+      encrypted->length(),
+      packet.transmission_type,
+      IsRetransmittable(packet));
 
   if (reset_retransmission_alarm || !retransmission_alarm_->IsSet()) {
     retransmission_alarm_->Update(sent_packet_manager_.GetRetransmissionTime(),
@@ -1523,6 +1512,7 @@ void QuicConnection::OnHandshakeComplete() {
 bool QuicConnection::SendOrQueuePacket(EncryptionLevel level,
                                        const SerializedPacket& packet,
                                        TransmissionType transmission_type) {
+  // The caller of this function is responsible for checking CanWrite().
   if (packet.packet == NULL) {
     LOG(DFATAL) << "NULL packet passed in to SendOrQueuePacket";
     return true;
@@ -1533,12 +1523,12 @@ bool QuicConnection::SendOrQueuePacket(EncryptionLevel level,
   QueuedPacket queued_packet(packet, level, transmission_type);
   // If there are already queued packets, put this at the end,
   // unless it's ConnectionClose, in which case it is written immediately.
-  if ((queued_packet.type == CONNECTION_CLOSE || queued_packets_.empty()) &&
+  if ((IsConnectionClose(queued_packet)
+       || queued_packets_.empty()) &&
       WritePacket(queued_packet)) {
     delete packet.packet;
     return true;
   }
-  queued_packet.type = QUEUED;
   queued_packets_.push_back(queued_packet);
   return false;
 }
@@ -1989,6 +1979,33 @@ QuicConnection::ScopedPacketBundler::~ScopedPacketBundler() {
   }
   DCHECK_EQ(already_in_batch_mode_,
             connection_->packet_generator_.InBatchMode());
+}
+
+HasRetransmittableData QuicConnection::IsRetransmittable(
+    QueuedPacket packet) {
+  // TODO(cyr): Understand why the first check here is necessary. Without it,
+  // DiscardRetransmit test fails.
+  if (packet.transmission_type != NOT_RETRANSMISSION ||
+      packet.serialized_packet.retransmittable_frames != NULL) {
+    return HAS_RETRANSMITTABLE_DATA;
+  } else {
+    return NO_RETRANSMITTABLE_DATA;
+  }
+}
+
+bool QuicConnection::IsConnectionClose(
+    QueuedPacket packet) {
+  RetransmittableFrames* retransmittable_frames =
+      packet.serialized_packet.retransmittable_frames;
+  if (!retransmittable_frames) {
+    return false;
+  }
+  for (size_t i = 0; i < retransmittable_frames->frames().size(); ++i) {
+    if (retransmittable_frames->frames()[i].type == CONNECTION_CLOSE_FRAME) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace net

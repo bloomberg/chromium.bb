@@ -68,12 +68,13 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   virtual void OnRevivedPacket(const QuicPacketHeader& revived_header,
                                base::StringPiece payload) OVERRIDE;
   virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) OVERRIDE;
+  virtual void OnSuccessfulVersionNegotiation(
+      const QuicVersion& version) OVERRIDE;
 
   void OnCryptoHandshakeMessageReceived(
       const CryptoHandshakeMessage& message);
   void OnCryptoHandshakeMessageSent(
       const CryptoHandshakeMessage& message);
-  void OnSuccessfulVersionNegotiation(const QuicVersion& version);
   void UpdateReceivedFrameCounts(QuicStreamId stream_id,
                                  int num_frames_received,
                                  int num_duplicate_frames_received);

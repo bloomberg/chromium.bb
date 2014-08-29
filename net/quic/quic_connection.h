@@ -204,6 +204,9 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
 
   // Called when the connection is closed.
   virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) {}
+
+  // Called when the version negotiation is successful.
+  virtual void OnSuccessfulVersionNegotiation(const QuicVersion& version) {}
 };
 
 class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
@@ -228,12 +231,6 @@ class NET_EXPORT_PRIVATE QuicConnection
       public QuicPacketGenerator::DelegateInterface,
       public QuicSentPacketManager::NetworkChangeVisitor {
  public:
-  enum PacketType {
-    NORMAL,
-    QUEUED,
-    CONNECTION_CLOSE
-  };
-
   enum AckBundling {
     NO_ACK = 0,
     SEND_ACK = 1,
@@ -567,14 +564,9 @@ class NET_EXPORT_PRIVATE QuicConnection
                  EncryptionLevel level,
                  TransmissionType transmission_type);
 
-    QuicPacketSequenceNumber sequence_number;
-    QuicPacket* packet;
+    SerializedPacket serialized_packet;
     const EncryptionLevel encryption_level;
     TransmissionType transmission_type;
-    HasRetransmittableData retransmittable;
-    IsHandshake handshake;
-    PacketType type;
-    QuicByteCount length;
   };
 
   typedef std::list<QueuedPacket> QueuedPacketList;
@@ -665,6 +657,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   void CheckForAddressMigration(const IPEndPoint& self_address,
                                 const IPEndPoint& peer_address);
 
+  HasRetransmittableData IsRetransmittable(QueuedPacket packet);
+  bool IsConnectionClose(QueuedPacket packet);
+
   QuicFramer framer_;
   QuicConnectionHelperInterface* helper_;  // Not owned.
   QuicPacketWriter* writer_;  // Owned or not depending on |owns_writer_|.
@@ -693,6 +688,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   std::vector<QuicGoAwayFrame> last_goaway_frames_;
   std::vector<QuicWindowUpdateFrame> last_window_update_frames_;
   std::vector<QuicBlockedFrame> last_blocked_frames_;
+  std::vector<QuicPingFrame> last_ping_frames_;
   std::vector<QuicConnectionCloseFrame> last_close_frames_;
 
   QuicCongestionFeedbackFrame outgoing_congestion_feedback_;
