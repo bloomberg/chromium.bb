@@ -3491,6 +3491,7 @@
             'html/track/vtt/VTTScannerTest.cpp',
             'loader/MixedContentCheckerTest.cpp',
             'page/NetworkStateNotifierTest.cpp',
+            'page/PrintContextTest.cpp',
             'rendering/RenderOverflowTest.cpp',
             'rendering/RenderPartTest.cpp',
             'rendering/RenderTableCellTest.cpp',

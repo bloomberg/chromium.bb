@@ -1220,52 +1220,29 @@ void RenderObject::paintFocusRing(PaintInfo& paintInfo, const LayoutPoint& paint
 {
     Vector<IntRect> focusRingRects;
     addFocusRingRects(focusRingRects, paintOffset, paintInfo.paintContainer());
-    if (style->outlineStyleIsAuto())
-        paintInfo.context->drawFocusRing(focusRingRects, style->outlineWidth(), style->outlineOffset(), resolveColor(style, CSSPropertyOutlineColor));
-    else
-        addPDFURLRect(paintInfo.context, unionRect(focusRingRects));
-}
-
-void RenderObject::addPDFURLRect(GraphicsContext* context, const LayoutRect& rect)
-{
-    if (rect.isEmpty())
-        return;
-    Node* n = node();
-    if (!n || !n->isLink() || !n->isElementNode())
-        return;
-    const AtomicString& href = toElement(n)->getAttribute(hrefAttr);
-    if (href.isNull())
-        return;
-    KURL url = n->document().completeURL(href);
-    if (!url.isValid())
-        return;
-    if (context->supportsURLFragments() && url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(url, n->document().baseURL())) {
-        String name = url.fragmentIdentifier();
-        if (document().findAnchor(name))
-            context->setURLFragmentForRect(name, pixelSnappedIntRect(rect));
-        return;
-    }
-    context->setURLForRect(url, pixelSnappedIntRect(rect));
+    ASSERT(style->outlineStyleIsAuto());
+    paintInfo.context->drawFocusRing(focusRingRects, style->outlineWidth(), style->outlineOffset(), resolveColor(style, CSSPropertyOutlineColor));
 }
 
 void RenderObject::paintOutline(PaintInfo& paintInfo, const LayoutRect& paintRect)
 {
-    if (!hasOutline())
+    RenderStyle* styleToUse = style();
+    if (!styleToUse->hasOutline())
         return;
 
-    RenderStyle* styleToUse = style();
     LayoutUnit outlineWidth = styleToUse->outlineWidth();
 
     int outlineOffset = styleToUse->outlineOffset();
 
-    if (styleToUse->outlineStyleIsAuto() || hasOutlineAnnotation()) {
+    if (styleToUse->outlineStyleIsAuto()) {
         if (RenderTheme::theme().shouldDrawDefaultFocusRing(this)) {
             // Only paint the focus ring by hand if the theme isn't able to draw the focus ring.
             paintFocusRing(paintInfo, paintRect.location(), styleToUse);
         }
+        return;
     }
 
-    if (styleToUse->outlineStyleIsAuto() || styleToUse->outlineStyle() == BNONE)
+    if (styleToUse->outlineStyle() == BNONE)
         return;
 
     IntRect inner = pixelSnappedIntRect(paintRect);
@@ -2591,11 +2568,6 @@ RespectImageOrientationEnum RenderObject::shouldRespectImageOrientation() const
     // an <img> and the setting to respect it everywhere is set.
     return document().isImageDocument()
         || (document().settings() && document().settings()->shouldRespectImageOrientation() && isHTMLImageElement(node())) ? RespectImageOrientation : DoNotRespectImageOrientation;
-}
-
-bool RenderObject::hasOutlineAnnotation() const
-{
-    return node() && node()->isLink() && document().printing();
 }
 
 bool RenderObject::hasEntirelyFixedBackground() const

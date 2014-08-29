@@ -390,7 +390,6 @@ public:
     void setURLForRect(const KURL&, const IntRect&);
     void setURLFragmentForRect(const String& name, const IntRect&);
     void addURLTargetAtPoint(const String& name, const IntPoint&);
-    bool supportsURLFragments() { return printing(); }
 
     // Create an image buffer compatible with this context, with suitable resolution
     // for drawing into the buffer and then into this context.

@@ -75,7 +75,7 @@ void RenderInline::willBeDestroyed()
 {
 #if ENABLE(ASSERT)
     // Make sure we do not retain "this" in the continuation outline table map of our containing blocks.
-    if (parent() && style()->visibility() == VISIBLE && hasOutline()) {
+    if (parent() && style()->visibility() == VISIBLE && style()->hasOutline()) {
         bool containingBlockPaintsContinuationOutline = continuation() || isInlineElementContinuation();
         if (containingBlockPaintsContinuationOutline) {
             if (RenderBlock* cb = containingBlock()) {
@@ -214,7 +214,7 @@ void RenderInline::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
     }
 
     if (!alwaysCreateLineBoxes()) {
-        bool alwaysCreateLineBoxesNew = hasSelfPaintingLayer() || hasBoxDecorationBackground() || newStyle->hasPadding() || newStyle->hasMargin() || hasOutline();
+        bool alwaysCreateLineBoxesNew = hasSelfPaintingLayer() || hasBoxDecorationBackground() || newStyle->hasPadding() || newStyle->hasMargin() || newStyle->hasOutline();
         if (oldStyle && alwaysCreateLineBoxesNew) {
             dirtyLineBoxes(false);
             setNeedsLayoutAndFullPaintInvalidation();
@@ -1436,18 +1436,19 @@ void RenderInline::computeSelfHitTestRects(Vector<LayoutRect>& rects, const Layo
 
 void RenderInline::paintOutline(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (!hasOutline())
+    RenderStyle* styleToUse = style();
+    if (!styleToUse->hasOutline())
         return;
 
-    RenderStyle* styleToUse = style();
-    if (styleToUse->outlineStyleIsAuto() || hasOutlineAnnotation()) {
+    if (styleToUse->outlineStyleIsAuto()) {
         if (RenderTheme::theme().shouldDrawDefaultFocusRing(this)) {
             // Only paint the focus ring by hand if the theme isn't able to draw the focus ring.
             paintFocusRing(paintInfo, paintOffset, styleToUse);
         }
+        return;
     }
 
-    if (styleToUse->outlineStyleIsAuto() || styleToUse->outlineStyle() == BNONE)
+    if (styleToUse->outlineStyle() == BNONE)
         return;
 
     Vector<LayoutRect> rects;

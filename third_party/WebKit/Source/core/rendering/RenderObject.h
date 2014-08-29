@@ -649,9 +649,6 @@ public:
     Document& document() const { return m_node->document(); }
     LocalFrame* frame() const { return document().frame(); }
 
-    bool hasOutlineAnnotation() const;
-    bool hasOutline() const { return style()->hasOutline() || hasOutlineAnnotation(); }
-
     // Returns the object containing this one. Can be different from parent for positioned elements.
     // If paintInvalidationContainer and paintInvalidationContainerSkipped are not null, on return *paintInvalidationContainerSkipped
     // is true if the renderer returned is an ancestor of paintInvalidationContainer.
@@ -1107,7 +1104,6 @@ protected:
 
     void paintFocusRing(PaintInfo&, const LayoutPoint&, RenderStyle*);
     void paintOutline(PaintInfo&, const LayoutRect&);
-    void addPDFURLRect(GraphicsContext*, const LayoutRect&);
     void addChildFocusRingRects(Vector<IntRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const;
 
     virtual LayoutRect viewRect() const;

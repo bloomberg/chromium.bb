@@ -681,7 +681,7 @@ void RenderTable::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffs
     }
 
     // Paint outline.
-    if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && hasOutline() && style()->visibility() == VISIBLE)
+    if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && style()->hasOutline() && style()->visibility() == VISIBLE)
         paintOutline(paintInfo, LayoutRect(paintOffset, size()));
 }
 

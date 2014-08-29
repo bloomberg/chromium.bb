@@ -1100,7 +1100,7 @@ void InlineFlowBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
     if (paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) {
         // Add ourselves to the paint info struct's list of inlines that need to paint their
         // outlines.
-        if (renderer().style()->visibility() == VISIBLE && renderer().hasOutline() && !isRootInlineBox()) {
+        if (renderer().style()->visibility() == VISIBLE && renderer().style()->hasOutline() && !isRootInlineBox()) {
             RenderInline& inlineFlow = toRenderInline(renderer());
 
             RenderBlock* cb = 0;

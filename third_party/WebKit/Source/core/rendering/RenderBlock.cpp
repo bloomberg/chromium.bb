@@ -2118,7 +2118,7 @@ void RenderBlock::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffs
     }
 
     // 5. paint outline.
-    if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && hasOutline() && style()->visibility() == VISIBLE) {
+    if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && style()->hasOutline() && style()->visibility() == VISIBLE) {
         // Don't paint focus ring for anonymous block continuation because the
         // inline element having outline-style:auto paints the whole focus ring.
         if (!style()->outlineStyleIsAuto() || !isAnonymousBlockContinuation())
@@ -2191,7 +2191,7 @@ bool RenderBlock::paintsContinuationOutline(RenderInline* flow)
 void RenderBlock::paintContinuationOutlines(PaintInfo& info, const LayoutPoint& paintOffset)
 {
     RenderInline* inlineCont = inlineElementContinuation();
-    if (inlineCont && inlineCont->hasOutline() && inlineCont->style()->visibility() == VISIBLE) {
+    if (inlineCont && inlineCont->style()->hasOutline() && inlineCont->style()->visibility() == VISIBLE) {
         RenderInline* inlineRenderer = toRenderInline(inlineCont->node()->renderer());
         RenderBlock* cb = containingBlock();
 

@@ -44,7 +44,7 @@ const float printingMaximumShrinkFactor = 2;
 PrintContext::PrintContext(LocalFrame* frame)
     : m_frame(frame)
     , m_isPrinting(false)
-    , m_linkedDestinationsValid(false)
+    , m_linkAndLinkedDestinationsValid(false)
 {
 }
 
@@ -177,7 +177,8 @@ void PrintContext::end()
     m_isPrinting = false;
     m_frame->setPrinting(false, FloatSize(), FloatSize(), 0);
     m_linkedDestinations.clear();
-    m_linkedDestinationsValid = false;
+    m_linkDestinations.clear();
+    m_linkAndLinkedDestinationsValid = false;
 }
 
 static RenderBoxModelObject* enclosingBoxModelObject(RenderObject* object)
@@ -219,10 +220,10 @@ int PrintContext::pageNumberForElement(Element* element, const FloatSize& pageSi
     return -1;
 }
 
-void PrintContext::collectLinkedDestinations(Node* node)
+void PrintContext::collectLinkAndLinkedDestinations(Node* node)
 {
     for (Node* i = node->firstChild(); i; i = i->nextSibling())
-        collectLinkedDestinations(i);
+        collectLinkAndLinkedDestinations(i);
 
     if (!node->isLink() || !node->isElementNode())
         return;
@@ -232,32 +233,57 @@ void PrintContext::collectLinkedDestinations(Node* node)
     KURL url = node->document().completeURL(href);
     if (!url.isValid())
         return;
+
+    bool linkIsValid = true;
     if (url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(url, node->document().baseURL())) {
         String name = url.fragmentIdentifier();
         Element* element = node->document().findAnchor(name);
         if (element)
             m_linkedDestinations.set(name, element);
+        else
+            linkIsValid = false;
     }
+
+    if (linkIsValid)
+        m_linkDestinations.set(toElement(node), url);
 }
 
-void PrintContext::outputLinkedDestinations(GraphicsContext& graphicsContext, Node* node, const IntRect& pageRect)
+void PrintContext::outputLinkAndLinkedDestinations(GraphicsContext& graphicsContext, Node* node, const IntRect& pageRect)
 {
-    if (!m_linkedDestinationsValid) {
-        collectLinkedDestinations(node);
-        m_linkedDestinationsValid = true;
+    if (!m_linkAndLinkedDestinationsValid) {
+        collectLinkAndLinkedDestinations(node);
+        m_linkAndLinkedDestinationsValid = true;
     }
 
-    WillBeHeapHashMap<String, RawPtrWillBeMember<Element> >::const_iterator end = m_linkedDestinations.end();
-    for (WillBeHeapHashMap<String, RawPtrWillBeMember<Element> >::const_iterator it = m_linkedDestinations.begin(); it != end; ++it) {
-        RenderObject* renderer = it->value->renderer();
-        if (renderer) {
-            IntRect boundingBox = renderer->absoluteBoundingBoxRect();
-            if (pageRect.intersects(boundingBox)) {
-                IntPoint point = boundingBox.minXMinYCorner();
-                point.clampNegativeToZero();
-                graphicsContext.addURLTargetAtPoint(it->key, point);
-            }
+    WillBeHeapHashMap<RawPtrWillBeMember<Element>, KURL>::const_iterator endOfLinkDestinations = m_linkDestinations.end();
+    for (WillBeHeapHashMap<RawPtrWillBeMember<Element>, KURL>::const_iterator it = m_linkDestinations.begin(); it != endOfLinkDestinations; ++it) {
+        RenderObject* renderer = it->key->renderer();
+        if (!renderer)
+            continue;
+        KURL url = it->value;
+        IntRect boundingBox = renderer->absoluteBoundingBoxRect();
+        if (!pageRect.intersects(boundingBox))
+            continue;
+        if (url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(url, renderer->document().baseURL())) {
+            String name = url.fragmentIdentifier();
+            ASSERT(renderer->document().findAnchor(name));
+            graphicsContext.setURLFragmentForRect(name, boundingBox);
+        } else {
+            graphicsContext.setURLForRect(url, boundingBox);
         }
+    }
+
+    WillBeHeapHashMap<String, RawPtrWillBeMember<Element> >::const_iterator endOfLinkedDestinations = m_linkedDestinations.end();
+    for (WillBeHeapHashMap<String, RawPtrWillBeMember<Element> >::const_iterator it = m_linkedDestinations.begin(); it != endOfLinkedDestinations; ++it) {
+        RenderObject* renderer = it->value->renderer();
+        if (!renderer)
+            continue;
+        IntRect boundingBox = renderer->absoluteBoundingBoxRect();
+        if (!pageRect.intersects(boundingBox))
+            continue;
+        IntPoint point = boundingBox.minXMinYCorner();
+        point.clampNegativeToZero();
+        graphicsContext.addURLTargetAtPoint(it->key, point);
     }
 }
 
