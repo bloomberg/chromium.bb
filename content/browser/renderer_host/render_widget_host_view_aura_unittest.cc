@@ -889,6 +889,13 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
             view_->touch_event_.touches[0].state);
 
   widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
+  EXPECT_TRUE(widget_host_->ShouldForwardTouchEvent());
+
+  // Ack'ing the outstanding event should flush the pending touch queue.
+  InputHostMsg_HandleInputEvent_ACK_Params ack;
+  ack.type = blink::WebInputEvent::TouchStart;
+  ack.state = INPUT_EVENT_ACK_STATE_CONSUMED;
+  widget_host_->OnMessageReceived(InputHostMsg_HandleInputEvent_ACK(0, ack));
   EXPECT_FALSE(widget_host_->ShouldForwardTouchEvent());
 
   ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(20, 20), 0,

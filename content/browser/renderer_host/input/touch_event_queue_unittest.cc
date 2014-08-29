@@ -285,9 +285,9 @@ TEST_F(TouchEventQueueTest, Basic) {
   EXPECT_TRUE(acked_event().cancelable);
 }
 
-// Tests that the touch-queue is emptied if a page stops listening for touch
-// events.
-TEST_F(TouchEventQueueTest, QueueFlushedWhenHandlersRemoved) {
+// Tests that the touch-queue is emptied after the outstanding ack is received
+// if a page stops listening for touch events.
+TEST_F(TouchEventQueueTest, QueueFlushedOnAckAfterHandlersRemoved) {
   OnHasTouchEventHandlers(true);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
@@ -295,32 +295,51 @@ TEST_F(TouchEventQueueTest, QueueFlushedWhenHandlersRemoved) {
   // Send a touch-press event.
   PressTouchPoint(1, 1);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, queued_event_count());
 
+  // Signal that all touch handlers have been removed.
+  OnHasTouchEventHandlers(false);
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(1U, queued_event_count());
+
+  // Process the ack for the sent touch, ensuring that it is honored (despite
+  // the touch handler having been removed).
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, acked_event_state());
+
+  // The release should not be forwarded.
   ReleaseTouchPoint(0);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
+
+  OnHasTouchEventHandlers(true);
 
   // Events will be queued until the first sent event is ack'ed.
-  for (int i = 5; i < 15; ++i) {
+  for (int i = 0; i < 10; ++i) {
     PressTouchPoint(1, 1);
     MoveTouchPoint(0, i, i);
     ReleaseTouchPoint(0);
   }
-  EXPECT_EQ(32U, queued_event_count());
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-
-  // Receive an ACK for the first touch-event. One of the queued touch-event
-  // should be forwarded.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(31U, queued_event_count());
+  EXPECT_EQ(30U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, GetAndResetAckedEventCount());
-  EXPECT_EQ(WebInputEvent::TouchStart, acked_event().type);
 
-  // Flush the queue. The touch-event queue should now be emptied, but none of
-  // the queued touch-events should be sent to the renderer.
+  // Signal that all touch handlers have been removed. Note that flushing of
+  // the queue will not occur until *after* the outstanding ack is received.
   OnHasTouchEventHandlers(false);
+  EXPECT_EQ(30U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+
+  // Receive an ACK for the first touch-event. All remaining touch events should
+  // be flushed with the appropriate ack type.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(31U, GetAndResetAckedEventCount());
+  EXPECT_EQ(30U, GetAndResetAckedEventCount());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, acked_event_state());
 }
 
 // Tests that addition of a touch handler during a touch sequence will not cause
@@ -364,14 +383,14 @@ TEST_F(TouchEventQueueTest, ActiveSequenceDroppedWhenHandlersRemoved) {
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
 
-  // Touch handle deregistration should flush the queue.
+  // Unregister all touch handlers.
   OnHasTouchEventHandlers(false);
-  EXPECT_EQ(2U, GetAndResetAckedEventCount());
-  EXPECT_EQ(0U, queued_event_count());
-
-  // The ack should be ignored as the touch queue is now empty.
-  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(2U, queued_event_count());
+
+  // The ack should be flush the queue.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  EXPECT_EQ(2U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, queued_event_count());
 
   // Events should be dropped while there is no touch handler.
@@ -496,33 +515,23 @@ TEST_F(TouchEventQueueTest, MultiTouch) {
   EXPECT_EQ(WebTouchPoint::StateMoved, event.touches[1].state);
 }
 
-// Tests that if a touch-event queue is destroyed in response to a touch-event
-// in the renderer, then there is no crash when the ACK for that touch-event
-// comes back.
-TEST_F(TouchEventQueueTest, AckAfterQueueFlushed) {
-  // Send some touch-events to the renderer.
+// Tests that the touch-event queue is robust to redundant acks.
+TEST_F(TouchEventQueueTest, SpuriousAcksIgnored) {
+  // Trigger a spurious ack.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+
+  // Send and ack a touch press.
   PressTouchPoint(1, 1);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, queued_event_count());
-
-  MoveTouchPoint(0, 10, 10);
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(2U, queued_event_count());
-
-  // Receive an ACK for the press. This should cause the queued touch-move to
-  // be sent to the renderer.
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(1U, GetAndResetSentEventCount());
-  EXPECT_EQ(1U, queued_event_count());
-
-  OnHasTouchEventHandlers(false);
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, queued_event_count());
 
-  // Now receive an ACK for the move.
+  // Trigger a spurious ack.
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(0U, GetAndResetSentEventCount());
-  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
 }
 
 // Tests that touch-move events are not sent to the renderer if the preceding

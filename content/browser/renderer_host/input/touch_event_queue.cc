@@ -637,10 +637,6 @@ void TouchEventQueue::OnHasTouchEventHandlers(bool has_handlers) {
     pending_async_touchmove_.reset();
     if (timeout_handler_)
       timeout_handler_->Reset();
-    if (!touch_queue_.empty())
-      ProcessTouchAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, LatencyInfo());
-    // As there is no touch handler, ack'ing the event should flush the queue.
-    DCHECK(touch_queue_.empty());
   }
 }
 
