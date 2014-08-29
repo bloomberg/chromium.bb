@@ -366,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
   for (size_t retries = 0; !succeeded && retries < 3; ++retries) {
     // Flush the profile data to disk for all loaded profiles.
     profile->SetExitType(Profile::EXIT_CRASHED);
-    FlushTaskRunner(profile->GetIOTaskRunner());
+    FlushTaskRunner(profile->GetIOTaskRunner().get());
 
     // Make sure that the prefs file was written with the expected key/value.
     ASSERT_EQ(GetExitTypePreferenceFromDisk(profile), "Crashed");
@@ -420,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
   for (size_t retries = 0; retries < 3; ++retries) {
     // Flush the profile data to disk for all loaded profiles.
     profile->SetExitType(Profile::EXIT_CRASHED);
-    FlushTaskRunner(profile->GetIOTaskRunner());
+    FlushTaskRunner(profile->GetIOTaskRunner().get());
 
     // Make sure that the prefs file was written with the expected key/value.
     ASSERT_EQ(GetExitTypePreferenceFromDisk(profile), "Crashed");

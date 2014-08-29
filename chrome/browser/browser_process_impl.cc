@@ -480,7 +480,7 @@ void BrowserProcessImpl::EndSession() {
     profile->SetExitType(Profile::EXIT_SESSION_ENDED);
 
     if (!use_broken_synchronization)
-      rundown_counter->Post(profile->GetIOTaskRunner());
+      rundown_counter->Post(profile->GetIOTaskRunner().get());
   }
 
   // Tell the metrics service it was cleanly shutdown.
@@ -510,7 +510,7 @@ void BrowserProcessImpl::EndSession() {
 #if defined(USE_X11) || defined(OS_WIN)
   if (use_broken_synchronization) {
     rundown_counter->Post(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get());
   }
 
   // Do a best-effort wait on the successful countdown of rundown tasks. Note

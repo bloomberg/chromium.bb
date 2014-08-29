@@ -2552,8 +2552,8 @@ ChromeContentBrowserClient::OverrideCookieStoreForRenderProcess(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!prerender_tracker_)
     return NULL;
-  return prerender_tracker_->
-      GetPrerenderCookieStoreForRenderProcess(render_process_id);
+  return prerender_tracker_->GetPrerenderCookieStoreForRenderProcess(
+                                 render_process_id).get();
 }
 
 #if defined(ENABLE_WEBRTC)

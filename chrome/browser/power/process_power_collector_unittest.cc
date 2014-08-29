@@ -292,8 +292,8 @@ TEST_F(BrowserProcessPowerTest, AppsRecordPowerUsage) {
   Profile* current_profile =
       profile_manager_->CreateTestingProfile("Test user");
   GURL url("chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-  apps::AppWindow* window =
-      new apps::AppWindow(current_profile, new ChromeAppDelegate(), extension);
+  apps::AppWindow* window = new apps::AppWindow(
+      current_profile, new ChromeAppDelegate(), extension.get());
   content::WebContents* web_contents(
       content::WebContents::Create(content::WebContents::CreateParams(
           current_profile,
