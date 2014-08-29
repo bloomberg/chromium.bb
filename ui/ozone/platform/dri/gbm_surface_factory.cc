@@ -28,7 +28,8 @@ class SingleOverlay : public OverlayCandidatesOzone {
   SingleOverlay() {}
   virtual ~SingleOverlay() {}
 
-  virtual void CheckOverlaySupport(OverlaySurfaceCandidateList* candidates) {
+  virtual void CheckOverlaySupport(
+      OverlaySurfaceCandidateList* candidates) OVERRIDE {
     if (candidates->size() == 2) {
       OverlayCandidatesOzone::OverlaySurfaceCandidate* first =
           &(*candidates)[0];
