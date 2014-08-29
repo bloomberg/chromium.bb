@@ -504,7 +504,7 @@ class GSContext(object):
         return True
 
       # We have seen flaky errors with 5xx return codes.
-      if 'GSResponseError: status=5' in error:
+      if 'ServiceException: 5' in error:
         return True
 
     return False

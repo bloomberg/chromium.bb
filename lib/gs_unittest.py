@@ -480,10 +480,10 @@ class GSRetryFilterTest(cros_test_lib.TestCase):
   def testRetryOnlyFlakyErrors(self):
     """Test that we retry only flaky errors."""
     cmd = ['gsutil', 'ls', self.REMOTE_PATH]
-    e = self._getException(cmd, 'GSResponseError: status=502')
+    e = self._getException(cmd, 'ServiceException: 503')
     self.assertTrue(self.ctx._RetryFilter(e))
 
-    e = self._getException(cmd, 'GSResponseError: status=603')
+    e = self._getException(cmd, 'UnknownException: 603')
     self.assertFalse(self.ctx._RetryFilter(e))
 
   def testRaiseGSErrors(self):
