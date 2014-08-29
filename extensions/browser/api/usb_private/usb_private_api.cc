@@ -12,6 +12,7 @@
 #include "components/usb_service/usb_device_filter.h"
 #include "components/usb_service/usb_device_handle.h"
 #include "components/usb_service/usb_service.h"
+#include "device/core/device_client.h"
 #include "device/usb/usb_ids.h"
 #include "extensions/common/api/usb_private.h"
 
@@ -19,6 +20,7 @@ namespace usb_private = extensions::core_api::usb_private;
 namespace GetDevices = usb_private::GetDevices;
 namespace GetDeviceInfo = usb_private::GetDeviceInfo;
 
+using content::BrowserThread;
 using usb_service::UsbDevice;
 using usb_service::UsbDeviceFilter;
 using usb_service::UsbDeviceHandle;
@@ -47,7 +49,7 @@ bool UsbPrivateGetDevicesFunction::Prepare() {
 }
 
 void UsbPrivateGetDevicesFunction::AsyncWorkStart() {
-  UsbService* service = UsbService::GetInstance();
+  UsbService* service = device::DeviceClient::Get()->GetUsbService();
   if (!service) {
     CompleteWithError(kErrorInitService);
     return;
@@ -117,7 +119,7 @@ bool UsbPrivateGetDeviceInfoFunction::Prepare() {
 }
 
 void UsbPrivateGetDeviceInfoFunction::AsyncWorkStart() {
-  UsbService* service = UsbService::GetInstance();
+  UsbService* service = device::DeviceClient::Get()->GetUsbService();
   if (!service) {
     CompleteWithError(kErrorInitService);
     return;

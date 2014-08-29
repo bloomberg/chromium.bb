@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "components/usb_service/usb_device_handle.h"
 #include "components/usb_service/usb_service.h"
+#include "device/core/device_client.h"
 #include "extensions/browser/api/usb/usb_device_resource.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/api/usb.h"
@@ -429,7 +430,7 @@ scoped_refptr<UsbDevice> UsbAsyncApiFunction::GetDeviceOrOrCompleteWithError(
     return NULL;
   }
 
-  UsbService* service = UsbService::GetInstance();
+  UsbService* service = device::DeviceClient::Get()->GetUsbService();
   if (!service) {
     CompleteWithError(kErrorInitService);
     return NULL;
@@ -560,7 +561,7 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
     return;
   }
 
-  UsbService* service = UsbService::GetInstance();
+  UsbService* service = device::DeviceClient::Get()->GetUsbService();
   if (!service) {
     CompleteWithError(kErrorInitService);
     return;
@@ -636,7 +637,7 @@ void UsbGetDevicesFunction::AsyncWorkStart() {
     return;
   }
 
-  UsbService* service = UsbService::GetInstance();
+  UsbService* service = device::DeviceClient::Get()->GetUsbService();
   if (!service) {
     CompleteWithError(kErrorInitService);
     return;

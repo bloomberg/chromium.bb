@@ -15,6 +15,10 @@
 struct libusb_device;
 struct libusb_config_descriptor;
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace usb_service {
 
 class UsbDeviceHandleImpl;
@@ -40,6 +44,7 @@ class UsbDeviceImpl : public UsbDevice {
 
   // Called by UsbServiceImpl only;
   UsbDeviceImpl(scoped_refptr<UsbContext> context,
+                scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
                 PlatformUsbDevice platform_device,
                 uint16 vendor_id,
                 uint16 product_id,
@@ -60,6 +65,9 @@ class UsbDeviceImpl : public UsbDevice {
   // Opened handles.
   typedef std::vector<scoped_refptr<UsbDeviceHandleImpl> > HandlesVector;
   HandlesVector handles_;
+
+  // Reference to the UI thread for permission-broker calls.
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceImpl);
 };

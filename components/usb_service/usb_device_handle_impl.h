@@ -15,13 +15,10 @@
 #include "components/usb_service/usb_device_handle.h"
 #include "components/usb_service/usb_interface.h"
 #include "net/base/io_buffer.h"
-
-struct libusb_device_handle;
-struct libusb_iso_packet_descriptor;
-struct libusb_transfer;
+#include "third_party/libusb/src/libusb/libusb.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace usb_service {
@@ -97,8 +94,6 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   virtual ~UsbDeviceHandleImpl();
 
  private:
-  friend void HandleTransferCompletion(PlatformUsbTransferHandle handle);
-
   class InterfaceClaimer;
   struct Transfer;
 
@@ -111,6 +106,16 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   scoped_refptr<InterfaceClaimer> GetClaimedInterfaceForEndpoint(
       unsigned char endpoint);
 
+  // If the device's task runner is on the current thread then the transfer will
+  // be submitted directly, otherwise a task to do so it posted. The callback
+  // will be called on the current message loop of the thread where this
+  // function was called.
+  void PostOrSubmitTransfer(PlatformUsbTransferHandle handle,
+                            UsbTransferType transfer_type,
+                            net::IOBuffer* buffer,
+                            size_t length,
+                            const UsbTransferCallback& callback);
+
   // Submits a transfer and starts tracking it. Retains the buffer and copies
   // the completion callback until the transfer finishes, whereupon it invokes
   // the callback then releases the buffer.
@@ -118,12 +123,15 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                       UsbTransferType transfer_type,
                       net::IOBuffer* buffer,
                       const size_t length,
-                      scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
+                      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                       const UsbTransferCallback& callback);
+
+  static void LIBUSB_CALL
+      PlatformTransferCallback(PlatformUsbTransferHandle handle);
 
   // Invokes the callbacks associated with a given transfer, and removes it from
   // the in-flight transfer set.
-  void TransferComplete(PlatformUsbTransferHandle transfer);
+  void CompleteTransfer(PlatformUsbTransferHandle transfer);
 
   bool GetSupportedLanguages();
   bool GetStringDescriptor(uint8 string_id, base::string16* string);
@@ -153,6 +161,8 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   // Retain the UsbContext so that the platform context will not be destroyed
   // before this handle.
   scoped_refptr<UsbContext> context_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::ThreadChecker thread_checker_;
 

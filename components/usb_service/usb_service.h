@@ -12,6 +12,10 @@
 #include "base/threading/non_thread_safe.h"
 #include "components/usb_service/usb_service_export.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace usb_service {
 
 class UsbDevice;
@@ -22,9 +26,12 @@ class UsbDevice;
 // competition for the same USB device.
 class USB_SERVICE_EXPORT UsbService : public base::NonThreadSafe {
  public:
-  // Must be called on FILE thread.
-  // Returns NULL when failed to initialized.
-  static UsbService* GetInstance();
+  // Must be called on a thread with a MessageLoopForIO (for example
+  // BrowserThread::FILE). The UI task runner reference is used to talk to the
+  // PermissionBrokerClient on ChromeOS (UI thread). Returns NULL when
+  // initialization fails.
+  static UsbService* GetInstance(
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   static void SetInstanceForTest(UsbService* instance);
 

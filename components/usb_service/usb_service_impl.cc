@@ -9,11 +9,11 @@
 
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "components/usb_service/usb_context.h"
 #include "components/usb_service/usb_device_impl.h"
 #include "components/usb_service/usb_error.h"
-#include "content/public/browser/browser_thread.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
 namespace usb_service {
@@ -32,7 +32,9 @@ class UsbServiceImpl
     : public UsbService,
       private base::MessageLoop::DestructionObserver {
  public:
-  explicit UsbServiceImpl(PlatformUsbContext context);
+  explicit UsbServiceImpl(
+      PlatformUsbContext context,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   virtual ~UsbServiceImpl();
 
  private:
@@ -48,6 +50,8 @@ class UsbServiceImpl
   void RefreshDevices();
 
   scoped_refptr<UsbContext> context_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   // TODO(ikarienator): Figure out a better solution.
   uint32 next_unique_id_;
@@ -85,8 +89,12 @@ void UsbServiceImpl::WillDestroyCurrentMessageLoop() {
   g_usb_service_instance.Get().reset(NULL);
 }
 
-UsbServiceImpl::UsbServiceImpl(PlatformUsbContext context)
-    : context_(new UsbContext(context)), next_unique_id_(0) {
+UsbServiceImpl::UsbServiceImpl(
+    PlatformUsbContext context,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    : context_(new UsbContext(context)),
+      ui_task_runner_(ui_task_runner),
+      next_unique_id_(0) {
   base::MessageLoop::current()->AddDestructionObserver(this);
 }
 
@@ -124,6 +132,7 @@ void UsbServiceImpl::RefreshDevices() {
         continue;
       }
       UsbDeviceImpl* new_device = new UsbDeviceImpl(context_,
+                                                    ui_task_runner_,
                                                     platform_devices[i],
                                                     descriptor.idVendor,
                                                     descriptor.idProduct,
@@ -153,7 +162,8 @@ void UsbServiceImpl::RefreshDevices() {
 }
 
 // static
-UsbService* UsbService::GetInstance() {
+UsbService* UsbService::GetInstance(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   UsbService* instance = g_usb_service_instance.Get().get();
   if (!instance) {
     PlatformUsbContext context = NULL;
@@ -166,7 +176,7 @@ UsbService* UsbService::GetInstance() {
     if (!context)
       return NULL;
 
-    instance = new UsbServiceImpl(context);
+    instance = new UsbServiceImpl(context, ui_task_runner);
     g_usb_service_instance.Get().reset(instance);
   }
   return instance;

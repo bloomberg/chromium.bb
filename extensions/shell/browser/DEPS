@@ -14,6 +14,8 @@ include_rules = [
   "+content/shell/browser/shell_net_log.h",
 
   # For device backend support.
+  "+components/usb_service",
+  "+device/core",
   "+device/hid",
 
   # Only used in API tests that should be moved to extensions/browser/api/...

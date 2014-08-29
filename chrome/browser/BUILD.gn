@@ -156,7 +156,6 @@ static_library("browser") {
       "//components/storage_monitor",
       "//components/translate/content/browser",
       "//components/url_matcher",
-      "//components/usb_service",
       "//components/visitedlink/browser",
       "//components/visitedlink/common",
       "//components/web_modal",
@@ -450,6 +449,10 @@ static_library("browser") {
     # Non-mobile.
     sources += rebase_path(gypi_values.chrome_browser_non_mobile_sources,
                            ".", "//chrome")
+    deps += [
+      "//components/usb_service",
+      "//device/core",
+    ]
   }
 
   if (is_android) {
@@ -464,7 +467,6 @@ static_library("browser") {
       "//third_party/libaddressinput",
       "//components/feedback",
       "//components/storage_monitor",
-      "//components/usb_service",
       "//components/web_modal",
     ]
   } else {

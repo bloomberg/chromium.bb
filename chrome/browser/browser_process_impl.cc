@@ -106,6 +106,7 @@
 #if defined(OS_ANDROID)
 #include "components/gcm_driver/gcm_driver_android.h"
 #else
+#include "chrome/browser/chrome_device_client.h"
 #include "chrome/browser/services/gcm/gcm_desktop_utils.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #endif
@@ -192,6 +193,10 @@ BrowserProcessImpl::BrowserProcessImpl(
 
 #if defined(OS_MACOSX)
   InitIdleMonitor();
+#endif
+
+#if !defined(OS_ANDROID)
+  device_client_.reset(new ChromeDeviceClient);
 #endif
 
 #if defined(ENABLE_EXTENSIONS)

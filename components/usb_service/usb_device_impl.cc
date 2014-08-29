@@ -6,12 +6,15 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/usb_service/usb_context.h"
 #include "components/usb_service/usb_device_handle_impl.h"
 #include "components/usb_service/usb_error.h"
 #include "components/usb_service/usb_interface_impl.h"
-#include "content/public/browser/browser_thread.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
 #if defined(OS_CHROMEOS)
@@ -20,16 +23,14 @@
 #include "chromeos/dbus/permission_broker_client.h"
 #endif  // defined(OS_CHROMEOS)
 
-using content::BrowserThread;
-
 namespace {
 
 #if defined(OS_CHROMEOS)
 void OnRequestUsbAccessReplied(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const base::Callback<void(bool success)>& callback,
     bool success) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE, base::Bind(callback, success));
+  task_runner->PostTask(FROM_HERE, base::Bind(callback, success));
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -37,14 +38,17 @@ void OnRequestUsbAccessReplied(
 
 namespace usb_service {
 
-UsbDeviceImpl::UsbDeviceImpl(scoped_refptr<UsbContext> context,
-                             PlatformUsbDevice platform_device,
-                             uint16 vendor_id,
-                             uint16 product_id,
-                             uint32 unique_id)
+UsbDeviceImpl::UsbDeviceImpl(
+    scoped_refptr<UsbContext> context,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    PlatformUsbDevice platform_device,
+    uint16 vendor_id,
+    uint16 product_id,
+    uint32 unique_id)
     : UsbDevice(vendor_id, product_id, unique_id),
       platform_device_(platform_device),
-      context_(context) {
+      context_(context),
+      ui_task_runner_(ui_task_runner) {
   CHECK(platform_device) << "platform_device cannot be NULL";
   libusb_ref_device(platform_device);
 }
@@ -77,15 +81,16 @@ void UsbDeviceImpl::RequestUsbAccess(
       return;
     }
 
-    BrowserThread::PostTask(
-        BrowserThread::UI,
+    ui_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&chromeos::PermissionBrokerClient::RequestUsbAccess,
                    base::Unretained(client),
                    vendor_id(),
                    product_id(),
                    interface_id,
-                   base::Bind(&OnRequestUsbAccessReplied, callback)));
+                   base::Bind(&OnRequestUsbAccessReplied,
+                              base::ThreadTaskRunnerHandle::Get(),
+                              callback)));
   }
 }
 

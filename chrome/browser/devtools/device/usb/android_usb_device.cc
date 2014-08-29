@@ -21,6 +21,7 @@
 #include "components/usb_service/usb_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/rsa_private_key.h"
+#include "device/core/device_client.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
@@ -224,7 +225,7 @@ static void OpenAndroidDeviceOnFileThread(
 
 static int CountOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  UsbService* service = UsbService::GetInstance();
+  UsbService* service = device::DeviceClient::Get()->GetUsbService();
   UsbDevices usb_devices;
   if (service != NULL)
     service->GetDevices(&usb_devices);
@@ -249,7 +250,7 @@ static void EnumerateOnFileThread(
     scoped_refptr<base::MessageLoopProxy> caller_message_loop_proxy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  UsbService* service = UsbService::GetInstance();
+  UsbService* service = device::DeviceClient::Get()->GetUsbService();
   UsbDevices usb_devices;
   if (service != NULL)
     service->GetDevices(&usb_devices);

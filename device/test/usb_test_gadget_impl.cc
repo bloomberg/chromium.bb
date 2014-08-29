@@ -155,7 +155,7 @@ UsbTestGadgetImpl::UsbTestGadgetImpl() {
   session_id_ = base::StringPrintf(
       "%s:%p", base::HexEncode(&process_id, sizeof(process_id)).c_str(), this);
 
-  usb_service_ = UsbService::GetInstance();
+  usb_service_ = UsbService::GetInstance(NULL);
 }
 
 UsbTestGadgetImpl::~UsbTestGadgetImpl() {

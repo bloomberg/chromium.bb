@@ -2279,6 +2279,8 @@
     'chrome_browser_non_mobile_sources': [
       'browser/chrome_browser_field_trials_desktop.cc',
       'browser/chrome_browser_field_trials_desktop.h',
+      'browser/chrome_device_client.cc',
+      'browser/chrome_device_client.h',
     ],
     'chrome_browser_supervised_user_sources': [
       'browser/supervised_user/custodian_profile_downloader_service.cc',
@@ -2911,7 +2913,6 @@
             '../components/components.gyp:storage_monitor',
             '../components/components.gyp:translate_content_browser',
             '../components/components.gyp:url_matcher',
-            '../components/components.gyp:usb_service',
             '../components/components.gyp:visitedlink_browser',
             '../components/components.gyp:visitedlink_common',
             '../components/components.gyp:web_modal',
@@ -3236,6 +3237,10 @@
           'sources': [ '<@(chrome_browser_mobile_sources)' ],
         }, {  # OS!="android" and OS!="ios"
           'sources': [ '<@(chrome_browser_non_mobile_sources)' ],
+          'dependencies': [
+            '../components/components.gyp:usb_service',
+            '../device/core/core.gyp:device_core',
+          ]
         }],
         ['OS=="android"', {
           'dependencies': [
@@ -3248,7 +3253,6 @@
           'dependencies!': [
             '../components/components.gyp:feedback_component',
             '../components/components.gyp:storage_monitor',
-            '../components/components.gyp:usb_service',
             '../components/components.gyp:web_modal',
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
           ],

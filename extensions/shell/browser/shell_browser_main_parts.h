@@ -30,6 +30,7 @@ namespace extensions {
 class DesktopController;
 class ShellBrowserContext;
 class ShellBrowserMainDelegate;
+class ShellDeviceClient;
 class ShellExtensionsBrowserClient;
 class ShellExtensionsClient;
 class ShellExtensionSystem;
@@ -69,6 +70,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
 #endif
   scoped_ptr<DesktopController> desktop_controller_;
   scoped_ptr<ShellBrowserContext> browser_context_;
+  scoped_ptr<ShellDeviceClient> device_client_;
   scoped_ptr<ShellExtensionsClient> extensions_client_;
   scoped_ptr<ShellExtensionsBrowserClient> extensions_browser_client_;
   scoped_ptr<net::NetLog> net_log_;

@@ -17,6 +17,7 @@
 #include "extensions/shell/browser/shell_browser_context.h"
 #include "extensions/shell/browser/shell_browser_main_delegate.h"
 #include "extensions/shell/browser/shell_desktop_controller.h"
+#include "extensions/shell/browser/shell_device_client.h"
 #include "extensions/shell/browser/shell_extension_system.h"
 #include "extensions/shell/browser/shell_extension_system_factory.h"
 #include "extensions/shell/browser/shell_extensions_browser_client.h"
@@ -104,6 +105,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // NOTE: Much of this is culled from chrome/test/base/chrome_test_suite.cc
   // TODO(jamescook): Initialize user_manager::UserManager.
   net_log_.reset(new content::ShellNetLog("app_shell"));
+
+  device_client_.reset(new ShellDeviceClient);
 
   extensions_client_.reset(new ShellExtensionsClient());
   ExtensionsClient::Set(extensions_client_.get());
