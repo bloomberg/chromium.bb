@@ -549,6 +549,7 @@
         'http_server',
         'net',
         'net_derived_sources',
+        'net_extras',
         'net_test_support',
         'quic_tools',
       ],
@@ -1046,6 +1047,19 @@
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
+      ],
+    },
+    {
+      'target_name': 'net_extras',
+      'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../sql/sql.gyp:sql',
+        'net',
+      ],
+      'sources': [
+        '<@(net_extras_sources)',
       ],
     },
     {
