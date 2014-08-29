@@ -42,6 +42,7 @@ module.exports = function(config) {
       'model/test/*.html',
       'scripts/test/*.html',
       'ui/test/*',
+      'bower_components/polymer/polymer.html'
     ],
 
     // list of files to exclude
