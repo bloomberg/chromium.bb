@@ -94,29 +94,6 @@ IndexedDBKey::IndexedDBKey(const base::string16& string)
 
 IndexedDBKey::~IndexedDBKey() {}
 
-IndexedDBKey::IndexedDBKey(const IndexedDBKey& other)
-    : type_(other.type_),
-      array_(other.array_),
-      binary_(other.binary_),
-      string_(other.string_),
-      date_(other.date_),
-      number_(other.number_),
-      size_estimate_(other.size_estimate_) {
-  DCHECK((!IsValid() && !other.IsValid()) || CompareTo(other) == 0);
-}
-
-IndexedDBKey& IndexedDBKey::operator=(const IndexedDBKey& other) {
-  type_ = other.type_;
-  array_ = other.array_;
-  binary_ = other.binary_;
-  string_ = other.string_;
-  date_ = other.date_;
-  number_ = other.number_;
-  size_estimate_ = other.size_estimate_;
-  DCHECK((!IsValid() && !other.IsValid()) || CompareTo(other) == 0);
-  return *this;
-}
-
 bool IndexedDBKey::IsValid() const {
   if (type_ == WebIDBKeyTypeInvalid || type_ == WebIDBKeyTypeNull)
     return false;
