@@ -2029,7 +2029,11 @@ def SendUpstream(parser, args, cmd):
     if base_has_submodules:
       RunGit(['branch', '-D', CHERRY_PICK_BRANCH])
 
-  if retcode == 0 and pushed_to_pending:
+  if retcode != 0:
+    print 'Failed to push. If this persists, please file a bug.'
+    return retcode
+
+  if pushed_to_pending:
     try:
       revision = WaitForRealCommit(remote, revision, base_branch, branch)
       # We set pushed_to_pending to False, since it made it all the way to the
@@ -2043,7 +2047,7 @@ def SendUpstream(parser, args, cmd):
       if cmd == 'dcommit' and 'Committed r' in output:
         revision = re.match(
           '.*?\nCommitted r(\\d+)', output, re.DOTALL).group(1)
-      elif cmd == 'land' and retcode == 0:
+      elif cmd == 'land':
         match = (re.match(r'.*?([a-f0-9]{7,})\.\.([a-f0-9]{7,})$', l)
                  for l in output.splitlines(False))
         match = filter(None, match)
@@ -2079,17 +2083,16 @@ def SendUpstream(parser, args, cmd):
     cl.RpcServer().add_comment(cl.GetIssue(), comment)
     cl.SetIssue(None)
 
-  if pushed_to_pending and retcode == 0:
+  if pushed_to_pending:
     _, branch = cl.FetchUpstreamTuple(cl.GetBranch())
     print 'The commit is in the pending queue (%s).' % pending_ref
     print (
         'It will show up on %s in ~1 min, once it gets Cr-Commit-Position '
         'footer.' % branch)
 
-  if retcode == 0:
-    hook = POSTUPSTREAM_HOOK_PATTERN % cmd
-    if os.path.isfile(hook):
-      RunCommand([hook, merge_base], error_ok=True)
+  hook = POSTUPSTREAM_HOOK_PATTERN % cmd
+  if os.path.isfile(hook):
+    RunCommand([hook, merge_base], error_ok=True)
 
   return 0
 
