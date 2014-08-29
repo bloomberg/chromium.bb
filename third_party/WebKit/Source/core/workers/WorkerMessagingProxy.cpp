@@ -190,7 +190,7 @@ void WorkerMessagingProxy::reportConsoleMessage(MessageSource source, MessageLev
         return;
 
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(source, level, message, sourceURL, lineNumber);
-    consoleMessage->setWorkerId(this);
+    consoleMessage->setWorkerGlobalScopeProxy(this);
     frame->console().addMessage(consoleMessage.release());
 }
 

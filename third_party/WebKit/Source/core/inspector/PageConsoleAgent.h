@@ -36,26 +36,32 @@
 
 namespace blink {
 
+class ConsoleMessageStorage;
 class InspectorDOMAgent;
+class Page;
 
 class PageConsoleAgent FINAL : public InspectorConsoleAgent {
     WTF_MAKE_NONCOPYABLE(PageConsoleAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<PageConsoleAgent> create(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectorTimelineAgent* timelineAgent, InspectorTracingAgent* tracingAgent)
+    static PassOwnPtrWillBeRawPtr<PageConsoleAgent> create(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectorTimelineAgent* timelineAgent, InspectorTracingAgent* tracingAgent, Page* page)
     {
-        return adoptPtrWillBeNoop(new PageConsoleAgent(injectedScriptManager, domAgent, timelineAgent, tracingAgent));
+        return adoptPtrWillBeNoop(new PageConsoleAgent(injectedScriptManager, domAgent, timelineAgent, tracingAgent, page));
     }
     virtual ~PageConsoleAgent();
     virtual void trace(Visitor*) OVERRIDE;
 
     virtual bool isWorkerAgent() OVERRIDE { return false; }
 
+protected:
+    virtual ConsoleMessageStorage* messageStorage() OVERRIDE;
+
 private:
-    PageConsoleAgent(InjectedScriptManager*, InspectorDOMAgent*, InspectorTimelineAgent*, InspectorTracingAgent*);
+    PageConsoleAgent(InjectedScriptManager*, InspectorDOMAgent*, InspectorTimelineAgent*, InspectorTracingAgent*, Page*);
     virtual void clearMessages(ErrorString*) OVERRIDE;
     virtual void addInspectedNode(ErrorString*, int nodeId) OVERRIDE;
 
     RawPtrWillBeMember<InspectorDOMAgent> m_inspectorDOMAgent;
+    RawPtrWillBeMember<Page> m_page;
 };
 
 } // namespace blink

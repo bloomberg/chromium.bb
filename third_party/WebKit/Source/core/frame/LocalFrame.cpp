@@ -48,6 +48,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameElementBase.h"
+#include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Chrome.h"
@@ -233,7 +234,10 @@ FloatSize LocalFrame::resizePageRectsKeepingRatio(const FloatSize& originalSize,
 
 void LocalFrame::setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow> domWindow)
 {
-    InspectorInstrumentation::frameWindowDiscarded(this, m_domWindow.get());
+    if (m_domWindow) {
+        console().messageStorage()->frameWindowDiscarded(m_domWindow.get());
+        InspectorInstrumentation::frameWindowDiscarded(this, m_domWindow.get());
+    }
     if (domWindow)
         script().clearWindowProxy();
     Frame::setDOMWindow(domWindow);

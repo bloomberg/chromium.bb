@@ -5,8 +5,11 @@
 #include "config.h"
 #include "core/inspector/ConsoleMessage.h"
 
+#include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/inspector/ScriptArguments.h"
+#include "wtf/CurrentTime.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -24,6 +27,7 @@ ConsoleMessage::ConsoleMessage(MessageSource source,
     , m_lineNumber(lineNumber)
     , m_columnNumber(columnNumber)
     , m_requestIdentifier(0)
+    , m_timestamp(WTF::currentTime())
     , m_workerProxy(nullptr)
 {
 }
@@ -81,6 +85,9 @@ ScriptState* ConsoleMessage::scriptState() const
 
 void ConsoleMessage::setScriptState(ScriptState* scriptState)
 {
+    if (m_scriptState)
+        m_scriptState->clear();
+
     if (scriptState)
         m_scriptState = adoptPtr(new ScriptStateProtectingContext(scriptState));
     else
@@ -107,6 +114,16 @@ void ConsoleMessage::setRequestIdentifier(unsigned long requestIdentifier)
     m_requestIdentifier = requestIdentifier;
 }
 
+double ConsoleMessage::timestamp() const
+{
+    return m_timestamp;
+}
+
+void ConsoleMessage::setTimestamp(double timestamp)
+{
+    m_timestamp = timestamp;
+}
+
 MessageSource ConsoleMessage::source() const
 {
     return m_source;
@@ -125,6 +142,46 @@ const String& ConsoleMessage::message() const
 unsigned ConsoleMessage::columnNumber() const
 {
     return m_columnNumber;
+}
+
+void ConsoleMessage::frameWindowDiscarded(LocalDOMWindow* window)
+{
+    if (scriptState() && scriptState()->domWindow() == window)
+        setScriptState(nullptr);
+
+    if (!m_scriptArguments)
+        return;
+    if (m_scriptArguments->scriptState()->domWindow() != window)
+        return;
+    if (!m_message)
+        m_message = "<message collected>";
+    m_scriptArguments.clear();
+}
+
+unsigned ConsoleMessage::argumentCount()
+{
+    if (m_scriptArguments)
+        return m_scriptArguments->argumentCount();
+    return 0;
+}
+
+void ConsoleMessage::collectCallStack()
+{
+    if (m_type == EndGroupMessageType)
+        return;
+
+    if (!m_callStack || m_source == ConsoleAPIMessageSource)
+        m_callStack = createScriptCallStackForConsole(ScriptCallStack::maxCallStackSizeToCapture, true);
+
+    if (m_callStack && m_callStack->size()) {
+        const ScriptCallFrame& frame = m_callStack->at(0);
+        m_url = frame.sourceURL();
+        m_lineNumber = frame.lineNumber();
+        m_columnNumber = frame.columnNumber();
+        return;
+    }
+
+    m_callStack.clear();
 }
 
 void ConsoleMessage::trace(Visitor* visitor)

@@ -104,8 +104,12 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     v8::Handle<v8::StackTrace> stackTrace = message->GetStackTrace();
     RefPtrWillBeRawPtr<ScriptCallStack> callStack = nullptr;
     // Currently stack trace is only collected when inspector is open.
-    if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0)
+    if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0) {
         callStack = createScriptCallStack(stackTrace, ScriptCallStack::maxCallStackSizeToCapture, isolate);
+    } else {
+        Vector<ScriptCallFrame> callFrames;
+        callStack = ScriptCallStack::create(callFrames);
+    }
 
     v8::Handle<v8::Value> resourceName = message->GetScriptOrigin().ResourceName();
     bool shouldUseDocumentURL = resourceName.IsEmpty() || !resourceName->IsString();

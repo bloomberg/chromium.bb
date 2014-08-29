@@ -44,13 +44,20 @@ public:
     void setScriptArguments(PassRefPtrWillBeRawPtr<ScriptArguments>);
     unsigned long requestIdentifier() const;
     void setRequestIdentifier(unsigned long);
-    WorkerGlobalScopeProxy* workerId() { return m_workerProxy; }
-    void setWorkerId(WorkerGlobalScopeProxy* proxy) { m_workerProxy = proxy; }
+    double timestamp() const;
+    void setTimestamp(double);
+    WorkerGlobalScopeProxy* workerGlobalScopeProxy() { return m_workerProxy; }
+    void setWorkerGlobalScopeProxy(WorkerGlobalScopeProxy* proxy) { m_workerProxy = proxy; }
 
     MessageSource source() const;
     MessageLevel level() const;
     const String& message() const;
     unsigned columnNumber() const;
+
+    void frameWindowDiscarded(LocalDOMWindow*);
+    unsigned argumentCount();
+
+    void collectCallStack();
 
     void trace(Visitor*);
 
@@ -68,6 +75,7 @@ private:
     OwnPtr<ScriptStateProtectingContext> m_scriptState;
     RefPtrWillBeMember<ScriptArguments> m_scriptArguments;
     unsigned long m_requestIdentifier;
+    double m_timestamp;
     WorkerGlobalScopeProxy* m_workerProxy;
 };
 

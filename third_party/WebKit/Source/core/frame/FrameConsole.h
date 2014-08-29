@@ -38,6 +38,7 @@
 namespace blink {
 
 class ConsoleMessage;
+class ConsoleMessageStorage;
 class FrameHost;
 class ScriptCallStack;
 class WorkerGlobalScopeProxy;
@@ -47,6 +48,7 @@ class WorkerGlobalScopeProxy;
 class FrameConsole FINAL {
 public:
     static PassOwnPtr<FrameConsole> create(LocalFrame& frame) { return adoptPtr(new FrameConsole(frame)); }
+    ~FrameConsole();
 
     void addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>);
     void adoptWorkerConsoleMessages(WorkerGlobalScopeProxy*);
@@ -56,10 +58,14 @@ public:
     static void mute();
     static void unmute();
 
+    ConsoleMessageStorage* messageStorage();
+
 private:
     explicit FrameConsole(LocalFrame&);
 
     LocalFrame& m_frame;
+
+    OwnPtr<ConsoleMessageStorage> m_consoleMessageStorage;
 };
 
 } // namespace blink

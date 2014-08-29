@@ -409,7 +409,7 @@ class Parameter:
         if re.match("PassRefPtr<", param_decl):
             self.is_prp = True
             self.value = self.name
-            self.name = "prpP" + self.name[1:]
+            self.name = "prp" + self.name[0].upper() + self.name[1:]
             self.inner_type = re.match("PassRefPtr<(.+)>", param_decl).group(1)
         else:
             self.is_prp = False

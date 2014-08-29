@@ -121,7 +121,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
 
     m_agents.append(PageRuntimeAgent::create(injectedScriptManager, inspectorClient, pageScriptDebugServer, m_page, m_pageAgent));
 
-    m_agents.append(PageConsoleAgent::create(injectedScriptManager, m_domAgent, m_timelineAgent, m_tracingAgent));
+    m_agents.append(PageConsoleAgent::create(injectedScriptManager, m_domAgent, m_timelineAgent, m_tracingAgent, m_page));
 
     ASSERT_ARG(inspectorClient, inspectorClient);
     m_injectedScriptManager->injectedScriptHost()->init(m_instrumentingAgents.get(), pageScriptDebugServer);

@@ -41,6 +41,7 @@
 namespace blink {
 
 class ConsoleMessage;
+class ConsoleMessageStorage;
 class DocumentLoader;
 class LocalDOMWindow;
 class LocalFrame;
@@ -82,7 +83,6 @@ public:
 
     void addMessageToConsole(ConsoleMessage*);
     void adoptWorkerConsoleMessages(WorkerGlobalScopeProxy*);
-    Vector<unsigned> consoleMessageArgumentCounts();
 
     void consoleTime(ExecutionContext*, const String& title);
     void consoleTimeEnd(ExecutionContext*, const String& title, ScriptState*);
@@ -107,14 +107,13 @@ public:
     virtual bool isWorkerAgent() = 0;
 
 protected:
-    void addConsoleMessage(PassOwnPtr<InspectorConsoleMessage>);
+    void sendConsoleMessageToFrontend(ConsoleMessage*, bool generatePreview);
+    virtual ConsoleMessageStorage* messageStorage() = 0;
 
     RawPtrWillBeMember<InspectorTimelineAgent> m_timelineAgent;
     RawPtrWillBeMember<InspectorTracingAgent> m_tracingAgent;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     InspectorFrontend::Console* m_frontend;
-    Vector<OwnPtr<InspectorConsoleMessage> > m_consoleMessages;
-    int m_expiredConsoleMessageCount;
     HashCountedSet<String> m_counts;
     HashMap<String, double> m_times;
     bool m_enabled;

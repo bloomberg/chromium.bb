@@ -69,6 +69,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/EventHandlerRegistry.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -84,6 +85,7 @@
 #include "core/html/forms/FormController.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
+#include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/InspectorController.h"
@@ -1417,13 +1419,11 @@ String Internals::dumpRefCountedInstanceCounts() const
 
 Vector<String> Internals::consoleMessageArgumentCounts(Document* document) const
 {
-    InstrumentingAgents* instrumentingAgents = instrumentationForPage(document->page());
-    if (!instrumentingAgents)
+    LocalFrame* frame = document->frame();
+    if (!frame)
         return Vector<String>();
-    InspectorConsoleAgent* consoleAgent = instrumentingAgents->inspectorConsoleAgent();
-    if (!consoleAgent)
-        return Vector<String>();
-    Vector<unsigned> counts = consoleAgent->consoleMessageArgumentCounts();
+
+    Vector<unsigned> counts = frame->console().messageStorage()->argumentCounts();
     Vector<String> result(counts.size());
     for (size_t i = 0; i < counts.size(); i++)
         result[i] = String::number(counts[i]);

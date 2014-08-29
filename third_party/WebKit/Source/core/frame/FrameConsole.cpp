@@ -33,6 +33,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/Chrome.h"
@@ -54,6 +55,10 @@ FrameConsole::FrameConsole(LocalFrame& frame)
 {
 }
 
+FrameConsole::~FrameConsole()
+{
+}
+
 void FrameConsole::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleMessage)
 {
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = prpConsoleMessage;
@@ -66,20 +71,20 @@ void FrameConsole::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleM
     if (!context)
         return;
 
-    InspectorInstrumentation::addMessageToConsole(context, consoleMessage.get());
-
-    if (consoleMessage->source() == CSSMessageSource)
-        return;
-
     String messageURL;
     unsigned lineNumber = 0;
-    if (consoleMessage->callStack()) {
+    if (consoleMessage->callStack() && consoleMessage->callStack()->size()) {
         lineNumber = consoleMessage->callStack()->at(0).lineNumber();
         messageURL = consoleMessage->callStack()->at(0).sourceURL();
     } else {
         lineNumber = consoleMessage->lineNumber();
         messageURL = consoleMessage->url();
     }
+
+    messageStorage()->reportMessage(consoleMessage);
+
+    if (consoleMessage->source() == CSSMessageSource)
+        return;
 
     RefPtrWillBeRawPtr<ScriptCallStack> reportedCallStack = nullptr;
     if (consoleMessage->source() != ConsoleAPIMessageSource) {
@@ -130,6 +135,19 @@ void FrameConsole::unmute()
 {
     ASSERT(muteCount > 0);
     muteCount--;
+}
+
+ConsoleMessageStorage* FrameConsole::messageStorage()
+{
+    LocalFrame* curFrame = &m_frame;
+    Frame* topFrame = curFrame->tree().top();
+    ASSERT(topFrame->isLocalFrame());
+    LocalFrame* localTopFrame = toLocalFrame(topFrame);
+    if (localTopFrame != curFrame)
+        return localTopFrame->console().messageStorage();
+    if (!m_consoleMessageStorage)
+        m_consoleMessageStorage = ConsoleMessageStorage::createForFrame(&m_frame);
+    return m_consoleMessageStorage.get();
 }
 
 void FrameConsole::adoptWorkerConsoleMessages(WorkerGlobalScopeProxy* proxy)

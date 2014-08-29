@@ -41,6 +41,7 @@
 #include "core/events/ErrorEvent.h"
 #include "core/events/Event.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/WorkerInspectorController.h"
@@ -89,6 +90,7 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_workerClients(workerClients)
     , m_timeOrigin(timeOrigin)
     , m_terminationObserver(0)
+    , m_messageStorage(ConsoleMessageStorage::createForWorker(this))
 {
     ScriptWrappable::init(this);
     setClient(this);
@@ -306,7 +308,7 @@ void WorkerGlobalScope::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpCon
 void WorkerGlobalScope::addMessageToWorkerConsole(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
 {
     ASSERT(isContextThread());
-    InspectorInstrumentation::addMessageToConsole(this, consoleMessage.get());
+    m_messageStorage->reportMessage(consoleMessage);
 }
 
 bool WorkerGlobalScope::isContextThread() const
@@ -337,6 +339,11 @@ void WorkerGlobalScope::countFeature(UseCounter::Feature) const
 void WorkerGlobalScope::countDeprecation(UseCounter::Feature) const
 {
     // FIXME: How should we count features for shared/service workers?
+}
+
+ConsoleMessageStorage* WorkerGlobalScope::messageStorage()
+{
+    return m_messageStorage.get();
 }
 
 void WorkerGlobalScope::trace(Visitor* visitor)

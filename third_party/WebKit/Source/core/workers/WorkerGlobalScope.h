@@ -34,7 +34,6 @@
 #include "core/frame/DOMWindowBase64.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerEventQueue.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
@@ -49,6 +48,8 @@
 namespace blink {
 
     class Blob;
+    class ConsoleMessage;
+    class ConsoleMessageStorage;
     class ExceptionState;
     class ScheduledAction;
     class WorkerClients;
@@ -138,6 +139,7 @@ namespace blink {
         using SecurityContext::contentSecurityPolicy;
 
         virtual void addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) OVERRIDE FINAL;
+        ConsoleMessageStorage* messageStorage();
 
         virtual void trace(Visitor*) OVERRIDE;
 
@@ -181,6 +183,8 @@ namespace blink {
 
         double m_timeOrigin;
         TerminationObserver* m_terminationObserver;
+
+        OwnPtr<ConsoleMessageStorage> m_messageStorage;
     };
 
 DEFINE_TYPE_CASTS(WorkerGlobalScope, ExecutionContext, context, context->isWorkerGlobalScope(), context.isWorkerGlobalScope());

@@ -34,15 +34,18 @@
 #include "core/dom/Node.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/frame/FrameConsole.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorDOMAgent.h"
+#include "core/page/Page.h"
 
 namespace blink {
 
-PageConsoleAgent::PageConsoleAgent(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectorTimelineAgent* timelineAgent, InspectorTracingAgent* tracingAgent)
+PageConsoleAgent::PageConsoleAgent(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectorTimelineAgent* timelineAgent, InspectorTracingAgent* tracingAgent, Page* page)
     : InspectorConsoleAgent(timelineAgent, tracingAgent, injectedScriptManager)
     , m_inspectorDOMAgent(domAgent)
+    , m_page(page)
 {
 }
 
@@ -56,6 +59,7 @@ PageConsoleAgent::~PageConsoleAgent()
 void PageConsoleAgent::trace(Visitor* visitor)
 {
     visitor->trace(m_inspectorDOMAgent);
+    visitor->trace(m_page);
     InspectorConsoleAgent::trace(visitor);
 }
 
@@ -63,6 +67,11 @@ void PageConsoleAgent::clearMessages(ErrorString* errorString)
 {
     m_inspectorDOMAgent->releaseDanglingNodes();
     InspectorConsoleAgent::clearMessages(errorString);
+}
+
+ConsoleMessageStorage* PageConsoleAgent::messageStorage()
+{
+    return m_page->deprecatedLocalMainFrame()->console().messageStorage();
 }
 
 class InspectableNode FINAL : public InjectedScriptHost::InspectableObject {

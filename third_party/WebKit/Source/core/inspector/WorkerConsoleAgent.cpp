@@ -31,16 +31,23 @@
 #include "config.h"
 
 #include "core/inspector/WorkerConsoleAgent.h"
+#include "core/workers/WorkerGlobalScope.h"
 
 namespace blink {
 
-WorkerConsoleAgent::WorkerConsoleAgent(InspectorTimelineAgent* timelineAgent, InjectedScriptManager* injectedScriptManager)
+WorkerConsoleAgent::WorkerConsoleAgent(InspectorTimelineAgent* timelineAgent, InjectedScriptManager* injectedScriptManager, WorkerGlobalScope* workerGlobalScope)
     : InspectorConsoleAgent(timelineAgent, 0, injectedScriptManager)
+    , m_workerGlobalScope(workerGlobalScope)
 {
 }
 
 WorkerConsoleAgent::~WorkerConsoleAgent()
 {
+}
+
+ConsoleMessageStorage* WorkerConsoleAgent::messageStorage()
+{
+    return m_workerGlobalScope->messageStorage();
 }
 
 void WorkerConsoleAgent::addInspectedNode(ErrorString* error, int)

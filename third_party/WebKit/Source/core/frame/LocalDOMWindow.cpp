@@ -71,6 +71,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -549,6 +550,7 @@ void LocalDOMWindow::frameDestroyed()
 void LocalDOMWindow::willDetachFrameHost()
 {
     m_frame->host()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
+    m_frame->console().messageStorage()->frameWindowDiscarded(this);
     InspectorInstrumentation::frameWindowDiscarded(m_frame, this);
 }
 

@@ -36,20 +36,27 @@
 
 namespace blink {
 
+class WorkerGlobalScope;
+
 class WorkerConsoleAgent FINAL : public InspectorConsoleAgent {
     WTF_MAKE_NONCOPYABLE(WorkerConsoleAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<WorkerConsoleAgent> create(InspectorTimelineAgent* timelineAgent, InjectedScriptManager* injectedScriptManager)
+    static PassOwnPtrWillBeRawPtr<WorkerConsoleAgent> create(InspectorTimelineAgent* timelineAgent, InjectedScriptManager* injectedScriptManager, WorkerGlobalScope* workerGlobalScope)
     {
-        return adoptPtrWillBeNoop(new WorkerConsoleAgent(timelineAgent, injectedScriptManager));
+        return adoptPtrWillBeNoop(new WorkerConsoleAgent(timelineAgent, injectedScriptManager, workerGlobalScope));
     }
     virtual ~WorkerConsoleAgent();
 
     virtual bool isWorkerAgent() OVERRIDE { return true; }
 
+protected:
+    virtual ConsoleMessageStorage* messageStorage() OVERRIDE;
+
 private:
-    WorkerConsoleAgent(InspectorTimelineAgent*, InjectedScriptManager*);
+    WorkerConsoleAgent(InspectorTimelineAgent*, InjectedScriptManager*, WorkerGlobalScope*);
     virtual void addInspectedNode(ErrorString*, int nodeId) OVERRIDE;
+
+    WorkerGlobalScope* m_workerGlobalScope;
 };
 
 } // namespace blink
