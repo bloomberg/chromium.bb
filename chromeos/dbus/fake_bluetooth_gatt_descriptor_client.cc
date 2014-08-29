@@ -56,6 +56,9 @@ FakeBluetoothGattDescriptorClient::FakeBluetoothGattDescriptorClient()
 }
 
 FakeBluetoothGattDescriptorClient::~FakeBluetoothGattDescriptorClient() {
+  for(PropertiesMap::iterator iter = properties_.begin(); iter !=
+      properties_.end(); iter++)
+    delete iter->second;
 }
 
 void FakeBluetoothGattDescriptorClient::Init(dbus::Bus* bus) {
