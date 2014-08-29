@@ -31,6 +31,7 @@
       'SRTP_RELATIVE_PATH',
       'USE_WEBRTC_DEV_BRANCH',
       'ENABLE_EXTERNAL_AUTH',
+      'WEBRTC_CHROMIUM_BUILD',
     ],
     'configurations': {
       'Debug': {
