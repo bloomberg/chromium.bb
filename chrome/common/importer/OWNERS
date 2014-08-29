@@ -3,7 +3,6 @@ isherman@chromium.org
 
 # For security review of IPC message files.
 per-file *_messages*.h=set noparent
-per-file *_messages*.h=cevans@chromium.org
 per-file *_messages*.h=dcheng@chromium.org
 per-file *_messages*.h=inferno@chromium.org
 per-file *_messages*.h=jln@chromium.org

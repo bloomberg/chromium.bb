@@ -1,9 +1,7 @@
 per-file gfx_param_traits.cc=set noparent
-per-file gfx_param_traits.cc=cevans@chromium.org
 per-file gfx_param_traits.cc=tsepez@chromium.org
 
 per-file *param_traits*.h=set noparent
-per-file *param_traits*.h=cevans@chromium.org
 per-file *param_traits*.h=dcheng@chromium.org
 per-file *param_traits*.h=inferno@chromium.org
 per-file *param_traits*.h=jln@chromium.org

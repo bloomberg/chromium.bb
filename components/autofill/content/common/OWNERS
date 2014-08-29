@@ -1,7 +1,6 @@
 # Changes to IPC messages require a security review to avoid introducing
 # new sandbox escapes.
 per-file autofill_messages*.h=set noparent
-per-file autofill_messages*.h=cevans@chromium.org
 per-file autofill_messages*.h=dcheng@chromium.org
 per-file autofill_messages*.h=inferno@chromium.org
 per-file autofill_messages*.h=jln@chromium.org

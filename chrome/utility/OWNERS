@@ -1,6 +1,5 @@
 # For security review of utility process message whitelisting
 per-file chrome_content_utility_ipc_whitelist.cc=set noparent
-per-file chrome_content_utility_ipc_whitelist.cc=cevans@chromium.org
 per-file chrome_content_utility_ipc_whitelist.cc=dcheng@chromium.org
 per-file chrome_content_utility_ipc_whitelist.cc=inferno@chromium.org
 per-file chrome_content_utility_ipc_whitelist.cc=jln@chromium.org

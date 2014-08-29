@@ -1,7 +1,6 @@
 # Changes to IPC messages require a security review to avoid introducing
 # new sandbox escapes.
 per-file *_message*.h=set noparent
-per-file *_message*.h=cevans@chromium.org
 per-file *_message*.h=dcheng@chromium.org
 per-file *_message*.h=inferno@chromium.org
 per-file *_message*.h=jln@chromium.org
