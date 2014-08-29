@@ -316,6 +316,26 @@ def SetSharedUserPassword(buildroot, password):
     osutils.SafeUnlink(passwd_file, sudo=True)
 
 
+def UpdateChroot(buildroot, usepkg, toolchain_boards=None, extra_env=None):
+  """Wrapper around update_chroot.
+
+  Args:
+    buildroot: The buildroot of the current build.
+    usepkg: Whether to use binary packages when setting up the toolchain.
+    toolchain_boards: List of boards to always include.
+    extra_env: A dictionary of environmental variables to set during generation.
+  """
+  cmd = ['./update_chroot']
+
+  if not usepkg:
+    cmd.extend(['--nousepkg'])
+
+  if toolchain_boards:
+    cmd.extend(['--toolchain_boards', ','.join(toolchain_boards)])
+
+  RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
+
+
 def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
                extra_env=None, force=False, profile=None, chroot_upgrade=True):
   """Wrapper around setup_board.

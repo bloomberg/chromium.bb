@@ -82,10 +82,11 @@ class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTest):
   def _RunFull(self, dir_exists=False):
     """Helper for testing a full builder."""
     self._Run(dir_exists)
+    self.assertCommandContains(['./update_chroot', '--nousepkg'])
     cmd = ['./setup_board', '--board=%s' % self._current_board, '--nousepkg']
     self.assertCommandContains(cmd, expected=not dir_exists)
     cmd = ['./setup_board', '--skip_chroot_upgrade']
-    self.assertCommandContains(cmd, expected=False)
+    self.assertCommandContains(cmd)
 
   def testFullBuildWithProfile(self):
     """Tests whether full builds add profile flag when requested."""
@@ -107,11 +108,17 @@ class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTest):
   def _RunBin(self, dir_exists):
     """Helper for testing a binary builder."""
     self._Run(dir_exists)
-    self.assertCommandContains(['./setup_board'])
-    cmd = ['./setup_board', '--nousepkg']
-    self.assertCommandContains(cmd, expected=self._run.options.latest_toolchain)
+    usepkg_toolchain = (self._run.config.usepkg_toolchain and not
+                        self._run.options.latest_toolchain)
+    self.assertCommandContains(['./update_chroot', '--nousepkg'],
+                               expected=not usepkg_toolchain)
+    run_setup_board = not dir_exists or self._run.options.latest_toolchain
+    self.assertCommandContains(['./setup_board'], expected=run_setup_board)
     cmd = ['./setup_board', '--skip_chroot_upgrade']
-    self.assertCommandContains(cmd, expected=False)
+    self.assertCommandContains(cmd, expected=run_setup_board)
+    cmd = ['./setup_board', '--nousepkg'],
+    self.assertCommandContains(cmd,
+        expected=run_setup_board and not self._run.config.usepkg_build_packages)
 
   def testBinBuildWithBoard(self):
     """Tests whether we don't create the board when it's there."""
@@ -126,6 +133,13 @@ class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTest):
   def testBinBuildWithLatestToolchain(self):
     """Tests whether we use --nousepkg for creating the board."""
     self._PrepareBin()
+    self._run.options.latest_toolchain = True
+    self._RunBin(dir_exists=False)
+
+  def testBinBuildWithNoToolchainPackages(self):
+    """Tests whether we use --nousepkg for creating the board."""
+    self._PrepareBin()
+    self._run.config.usepkg_toolchain = False
     self._RunBin(dir_exists=False)
 
   def testSDKBuild(self):
@@ -133,6 +147,7 @@ class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTest):
     extra_config = {'build_type': constants.CHROOT_BUILDER_TYPE}
     self._PrepareFull(extra_config=extra_config)
     self._Run(dir_exists=False)
+    self.assertCommandContains(['./update_chroot'], expected=False)
     self.assertCommandContains(['./setup_board', '--skip_chroot_upgrade'])
 
 

@@ -348,10 +348,12 @@ _settings = dict(
 #                      and chromeos_version.sh. See bug chromium-os:14649
   chromeos_official=False,
 
-# usepkg_setup_board -- Use binary packages for setup_board. (emerge --usepkg)
-  usepkg_setup_board=True,
+# usepkg_toolchain -- Use binary packages for building the toolchain.
+#                     (emerge --getbinpkg)
+  usepkg_toolchain=True,
 
-# usepkg_build_packages -- Use binary packages for build_packages.
+# usepkg_build_packages -- Use binary packages for build_packages and
+#                          setup_board.
   usepkg_build_packages=True,
 
 # build_packages_in_background -- If set, run BuildPackages in the background
@@ -953,7 +955,7 @@ full = _config(
   # Full builds are test builds to show that we can build from scratch,
   # so use settings to build from scratch, and archive the results.
 
-  usepkg_setup_board=False,
+  usepkg_toolchain=False,
   usepkg_build_packages=False,
   chrome_sdk=True,
   chroot_replace=True,
@@ -1159,9 +1161,9 @@ paladin.add_config('mipsel-o32-generic-paladin',
   boards=['mipsel-o32-generic'],
   important=False,
   paladin_builder_name='mipsel-o32-generic paladin',
-  # TODO(benchan): Re-enable 'usepkg_setup_board' when the pre-built toolchain
+  # TODO(benchan): Re-enable 'usepkg_toolchain' when the pre-built toolchain
   # for MIPS is available (crbug.com/380329).
-  usepkg_setup_board=False,
+  usepkg_toolchain=False,
 )
 
 incremental.add_config('amd64-generic-asan-paladin',
@@ -1993,7 +1995,7 @@ internal_notest_paladin.add_config('nyan-paladin',
 
 internal_notest_paladin.add_config('rush-paladin',
   boards=['rush'],
-  usepkg_setup_board=False,
+  usepkg_toolchain=False,
   paladin_builder_name='rush paladin',
   important=False,
 )
@@ -2446,7 +2448,7 @@ _release.add_config('rush-release',
   non_testable_builder,
   boards=['rush'],
   hw_tests=[],
-  usepkg_setup_board=False,
+  usepkg_toolchain=False,
   # This build doesn't generate signed images, so don't try to release them.
   paygen=False,
   signer_tests=False,
@@ -2583,7 +2585,7 @@ _firmware = _config(
   images=[],
   factory_toolkit=False,
   packages=('virtual/chromeos-firmware',),
-  usepkg_setup_board=True,
+  usepkg_toolchain=True,
   usepkg_build_packages=True,
   sync_chrome=False,
   build_tests=False,
