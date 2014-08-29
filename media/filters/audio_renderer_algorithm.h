@@ -51,10 +51,6 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // Clears |audio_buffer_|.
   void FlushBuffers();
 
-  // Returns the time of the next byte in our data or kNoTimestamp() if current
-  // time is unknown.
-  base::TimeDelta GetTime();
-
   // Enqueues a buffer. It is called from the owner of the algorithm after a
   // read completes.
   void EnqueueBuffer(const scoped_refptr<AudioBuffer>& buffer_in);

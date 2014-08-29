@@ -20,16 +20,9 @@ void AudioBufferQueue::Clear() {
   current_buffer_ = buffers_.begin();
   current_buffer_offset_ = 0;
   frames_ = 0;
-  current_time_ = kNoTimestamp();
 }
 
 void AudioBufferQueue::Append(const scoped_refptr<AudioBuffer>& buffer_in) {
-  // If we have just written the first buffer, update |current_time_| to be the
-  // start time.
-  if (buffers_.empty() && buffer_in->timestamp() != kNoTimestamp()) {
-    current_time_ = buffer_in->timestamp();
-  }
-
   // Add the buffer to the queue. Inserting into deque invalidates all
   // iterators, so point to the first buffer.
   buffers_.push_back(buffer_in);
@@ -114,12 +107,6 @@ int AudioBufferQueue::InternalRead(int frames,
 
     // Has the buffer has been consumed?
     if (current_buffer_offset == buffer->frame_count()) {
-      if (advance_position) {
-        // Next buffer may not have timestamp, so we need to update current
-        // timestamp before switching to the next buffer.
-        UpdateCurrentTime(current_buffer, current_buffer_offset);
-      }
-
       // If we are at the last buffer, no more data to be copied, so stop.
       BufferQueue::iterator next = current_buffer + 1;
       if (next == buffers_.end())
@@ -137,8 +124,6 @@ int AudioBufferQueue::InternalRead(int frames,
     DCHECK_GE(frames_, 0);
     DCHECK(current_buffer_ != buffers_.end() || frames_ == 0);
 
-    UpdateCurrentTime(current_buffer, current_buffer_offset);
-
     // Remove any buffers before the current buffer as there is no going
     // backwards.
     buffers_.erase(buffers_.begin(), current_buffer);
@@ -147,17 +132,6 @@ int AudioBufferQueue::InternalRead(int frames,
   }
 
   return taken;
-}
-
-void AudioBufferQueue::UpdateCurrentTime(BufferQueue::iterator buffer,
-                                         int offset) {
-  if (buffer != buffers_.end() && (*buffer)->timestamp() != kNoTimestamp()) {
-    double time_offset = ((*buffer)->duration().InMicroseconds() * offset) /
-                         static_cast<double>((*buffer)->frame_count());
-    current_time_ =
-        (*buffer)->timestamp() + base::TimeDelta::FromMicroseconds(
-                                     static_cast<int64>(time_offset + 0.5));
-  }
 }
 
 }  // namespace media

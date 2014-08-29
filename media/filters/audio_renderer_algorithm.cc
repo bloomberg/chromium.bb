@@ -210,10 +210,6 @@ void AudioRendererAlgorithm::FlushBuffers() {
   capacity_ = kStartingBufferSizeInFrames;
 }
 
-base::TimeDelta AudioRendererAlgorithm::GetTime() {
-  return audio_buffer_.current_time();
-}
-
 void AudioRendererAlgorithm::EnqueueBuffer(
     const scoped_refptr<AudioBuffer>& buffer_in) {
   DCHECK(!buffer_in->end_of_stream());

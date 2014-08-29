@@ -57,13 +57,6 @@ class MEDIA_EXPORT AudioBufferQueue {
   // Returns the number of frames buffered beyond the current position.
   int frames() const { return frames_; }
 
-  // Returns the current timestamp, taking into account current offset. The
-  // value calculated based on the timestamp of the current buffer. If timestamp
-  // for the current buffer is set to 0, then returns value that corresponds to
-  // the last position in a buffer that had timestamp set. kNoTimestamp() is
-  // returned if no buffers we read from had timestamp set.
-  base::TimeDelta current_time() const { return current_time_; }
-
  private:
   // Definition of the buffer queue.
   typedef std::deque<scoped_refptr<AudioBuffer> > BufferQueue;
@@ -81,20 +74,12 @@ class MEDIA_EXPORT AudioBufferQueue {
                    int dest_frame_offset,
                    AudioBus* dest);
 
-  // Updates |current_time_| with the time that corresponds to the specified
-  // position in the buffer.
-  void UpdateCurrentTime(BufferQueue::iterator buffer, int offset);
-
   BufferQueue::iterator current_buffer_;
   BufferQueue buffers_;
   int current_buffer_offset_;
 
   // Number of frames available to be read in the buffer.
   int frames_;
-
-  // Keeps track of the most recent time we've seen in case the |buffers_| is
-  // empty when our owner asks what time it is.
-  base::TimeDelta current_time_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioBufferQueue);
 };
