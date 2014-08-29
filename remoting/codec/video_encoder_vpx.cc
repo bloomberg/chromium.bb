@@ -133,9 +133,11 @@ ScopedVpxCodec CreateVP9Codec(const webrtc::DesktopSize& size,
   if (vpx_codec_enc_init(codec.get(), algo, &config, 0))
     return ScopedVpxCodec();
 
-  // Request the lowest-CPU encode feature-set that VP9 supports.
+  // Request the lowest-CPU usage that VP9 supports, which depends on whether
+  // we are encoding lossy or lossless.
   // Note that this is configured via the same parameter as for VP8.
-  if (vpx_codec_control(codec.get(), VP8E_SET_CPUUSED, 5))
+  int cpu_used = lossless_encode ? 5 : 7;
+  if (vpx_codec_control(codec.get(), VP8E_SET_CPUUSED, cpu_used))
     return ScopedVpxCodec();
 
   // Use the lowest level of noise sensitivity so as to spend less time
@@ -334,9 +336,6 @@ VideoEncoderVpx::VideoEncoderVpx(bool use_vp9)
       active_map_width_(0),
       active_map_height_(0) {
   if (use_vp9_) {
-    // Use lossless encoding mode by default.
-    SetLosslessEncode(true);
-
     // Use I444 colour space, by default, if specified on the command-line.
     if (CommandLine::ForCurrentProcess()->HasSwitch(kEnableI444SwitchName)) {
       SetLosslessColor(true);
