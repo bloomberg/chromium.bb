@@ -33,7 +33,6 @@ from chromite.lib.paygen import dryrun_lib
 from chromite.lib.paygen import gslib
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gspaths
-from chromite.lib.paygen import paygen_access_lib
 from chromite.lib.paygen import paygen_payload_lib
 from chromite.lib.paygen import urilib
 from chromite.lib.paygen import utils
@@ -1076,9 +1075,6 @@ class _PaygenBuild(object):
       BuildFinished: If the build was already marked as finished.
       BuildLocked: If the build is locked by another server or process.
     """
-    # TODO(mtennant): paygen build log file should be set up here, and
-    # then uploaded at the end of this method before giving up the lock.
-
     lock_uri = self._GetFlagURI(gspaths.ChromeosReleases.LOCK)
     skip_uri = self._GetFlagURI(gspaths.ChromeosReleases.SKIP)
     finished_uri = self._GetFlagURI(gspaths.ChromeosReleases.FINISHED)
@@ -1096,11 +1092,6 @@ class _PaygenBuild(object):
           raise BuildFinished()
 
         logging.info('Starting: %s', self._build)
-
-        # Update access markers.
-        self._drm(paygen_access_lib.UpdateMarkers,
-                  self._build.channel, self._build.board, self._build.version,
-                  bucket=self._build.bucket)
 
         payloads_skip = self._DiscoverRequiredPayloads()
 

@@ -26,7 +26,6 @@ from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gslib
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import urilib
-from chromite.lib.paygen import paygen_access_lib
 from chromite.lib.paygen import paygen_build_lib
 from chromite.lib.paygen import paygen_payload_lib
 from chromite.lib.paygen import unittest_lib
@@ -909,7 +908,6 @@ fsi_images: 2913.331.0,2465.105.0
     self.mox.StubOutWithMock(paygen, '_AutotestPayloads')
     self.mox.StubOutWithMock(paygen, '_CreatePayloadTests')
     self.mox.StubOutWithMock(paygen, '_CleanupBuild')
-    self.mox.StubOutWithMock(paygen_access_lib, 'UpdateMarkers')
 
     return paygen
 
@@ -985,10 +983,6 @@ fsi_images: 2913.331.0,2465.105.0
     lock.__enter__().AndReturn(lock)
     gslib.Exists(skip_uri).AndReturn(False)
     gslib.Exists(finished_uri).AndReturn(False)
-    paygen_access_lib.UpdateMarkers(self.foo_build.channel,
-                                    self.foo_build.board,
-                                    self.foo_build.version,
-                                    bucket=self.foo_build.bucket)
     # This method is being mocked out.
     # pylint: disable=E1101
     paygen._DiscoverRequiredPayloads(
@@ -1020,10 +1014,6 @@ fsi_images: 2913.331.0,2465.105.0
     lock.__enter__().AndReturn(lock)
     gslib.Exists(skip_uri).AndReturn(False)
     gslib.Exists(finished_uri).AndReturn(False)
-    paygen_access_lib.UpdateMarkers(self.foo_build.channel,
-                                    self.foo_build.board,
-                                    self.foo_build.version,
-                                    bucket=self.foo_build.bucket)
     paygen._DiscoverRequiredPayloads(
         ).AndReturn(payload_skip_list)
     self.mox.StubOutWithMock(paygen_payload_lib, 'FindExistingPayloads')
@@ -1055,10 +1045,6 @@ fsi_images: 2913.331.0,2465.105.0
     lock.__enter__().AndReturn(lock)
     gslib.Exists(skip_uri).AndReturn(False)
     gslib.Exists(finished_uri).AndReturn(False)
-    paygen_access_lib.UpdateMarkers(self.foo_build.channel,
-                                    self.foo_build.board,
-                                    self.foo_build.version,
-                                    bucket=self.foo_build.bucket)
     paygen._DiscoverRequiredPayloads(
         ).AndReturn(payload_skip_list)
     self.mox.StubOutWithMock(paygen_payload_lib, 'FindExistingPayloads')
@@ -1092,10 +1078,6 @@ fsi_images: 2913.331.0,2465.105.0
     lock.__enter__().AndReturn(lock)
     gslib.Exists(skip_uri).AndReturn(False)
     gslib.Exists(finished_uri).AndReturn(False)
-    paygen_access_lib.UpdateMarkers(self.foo_build.channel,
-                                    self.foo_build.board,
-                                    self.foo_build.version,
-                                    bucket=self.foo_build.bucket)
     paygen._DiscoverRequiredPayloads(
         ).AndReturn(payload_list)
     paygen_payload_lib.FindExistingPayloads(payload_existing).AndReturn(
