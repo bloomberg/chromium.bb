@@ -44,10 +44,11 @@ class RequestSender {
   //
   // |custom_user_agent| will be used for the User-Agent header in HTTP
   // requests issued through the request sender if the value is not empty.
-  RequestSender(AuthServiceInterface* auth_service,
-                net::URLRequestContextGetter* url_request_context_getter,
-                base::SequencedTaskRunner* blocking_task_runner,
-                const std::string& custom_user_agent);
+  RequestSender(
+      AuthServiceInterface* auth_service,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
+      const std::string& custom_user_agent);
   ~RequestSender();
 
   AuthServiceInterface* auth_service() { return auth_service_.get(); }

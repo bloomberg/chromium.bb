@@ -16,7 +16,7 @@ namespace google_apis {
 RequestSender::RequestSender(
     AuthServiceInterface* auth_service,
     net::URLRequestContextGetter* url_request_context_getter,
-    base::SequencedTaskRunner* blocking_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
     const std::string& custom_user_agent)
     : auth_service_(auth_service),
       url_request_context_getter_(url_request_context_getter),

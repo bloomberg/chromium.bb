@@ -4,6 +4,7 @@
 
 #include "google_apis/drive/request_sender.h"
 
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "google_apis/drive/base_requests.h"
 #include "google_apis/drive/dummy_auth_service.h"

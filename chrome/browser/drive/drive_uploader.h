@@ -114,7 +114,7 @@ class DriveUploaderInterface {
 class DriveUploader : public DriveUploaderInterface {
  public:
   DriveUploader(DriveServiceInterface* drive_service,
-                base::TaskRunner* blocking_task_runner);
+                const scoped_refptr<base::TaskRunner>& blocking_task_runner);
   virtual ~DriveUploader();
 
   // DriveUploaderInterface overrides.
