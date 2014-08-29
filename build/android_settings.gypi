@@ -12,9 +12,9 @@
         # Unfortunately we have to use absolute paths to the SDK/NDK because
         # they're passed to ant which uses a different relative path from
         # gyp.
-        'android_ndk_root%': '<!(cd <(DEPTH) && pwd -P)/src/third_party/android_tools/ndk/',
-        'android_ndk_experimental_root%': '<!(cd <(DEPTH) && pwd -P)/src/third_party/android_tools/ndk_experimental/',
-        'android_sdk_root%': '<!(cd <(DEPTH) && pwd -P)/src/third_party/android_tools/sdk/',
+        'android_ndk_root%': '<!(cd <(DEPTH) && pwd -P)/third_party/android_tools/ndk/',
+        'android_ndk_experimental_root%': '<!(cd <(DEPTH) && pwd -P)/third_party/android_tools/ndk_experimental/',
+        'android_sdk_root%': '<!(cd <(DEPTH) && pwd -P)/third_party/android_tools/sdk/',
         'android_host_arch%': '<!(uname -m)',
         # Android API-level of the SDK used for compilation.
         'android_sdk_version%': '19',

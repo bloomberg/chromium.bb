@@ -165,7 +165,8 @@
               'variables': {
                 'compiler': '<!(echo ${CXX:=arm-linux-gnueabihf-g++})',
               }
-            }, {
+            }],
+            ['OS!="android" and target_arch!="arm"', {
               'variables': {
                 'compiler': '<!(echo ${CXX:=g++})',
               }

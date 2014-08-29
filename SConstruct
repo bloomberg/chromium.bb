@@ -2650,12 +2650,12 @@ def SetUpAndroidEnv(env):
   env.FilterOut(CPPDEFINES=[['_LARGEFILE64_SOURCE', '1']])
   env.FilterOut(CPPDEFINES=[['NACL_ANDROID', '0']])
   env.Prepend(CPPDEFINES=[['NACL_ANDROID', '1']])
-  android_ndk_root = os.path.join('${SOURCE_ROOT}', 'src', 'third_party',
+  android_ndk_root = os.path.join('${SOURCE_ROOT}', 'third_party',
                                   'android_tools', 'ndk')
-  android_ndk_experimental_root = os.path.join('${SOURCE_ROOT}', 'src',
+  android_ndk_experimental_root = os.path.join('${SOURCE_ROOT}',
                                                'third_party', 'android_tools',
                                                'ndk_experimental')
-  android_sdk_root = os.path.join('${SOURCE_ROOT}', 'src', 'third_party',
+  android_sdk_root = os.path.join('${SOURCE_ROOT}', 'third_party',
                                   'android_tools', 'sdk')
   android_sdk_version = 19
   android_stlport_root = os.path.join(android_ndk_root, 'sources', 'cxx-stl',
