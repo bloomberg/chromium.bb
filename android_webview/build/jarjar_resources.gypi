@@ -23,7 +23,7 @@
   'variables': {
     'intermediate_dir': '<(SHARED_INTERMEDIATE_DIR)/<(_target_name)',
     'jarjar_stamp': '<(intermediate_dir)/jarjar_resources.stamp',
-    'resource_input_paths': ['<!@(find <(res_dir) -type f)'],
+    'resource_input_paths': ['<!@(find <(res_dir) -type f | sort)'],
   },
   'actions': [{
       'action_name': 'jarjar resources',
