@@ -67,7 +67,7 @@ public class BindingsTest extends TestCase {
         Foo foo = new Foo();
         foo.name = "HELLO WORLD";
         foo.arrayOfArrayOfBools = new boolean[][] {
-            { true, false, true }, null, {}, { false }, { true } };
+            { true, false, true }, { }, { }, { false }, { true } };
         foo.bar = newBar();
         foo.a = true;
         foo.c = true;

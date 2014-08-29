@@ -40,7 +40,7 @@ public class InterfacesTest extends MojoTestCase {
      */
     public static class MockNamedObjectImpl extends CapturingErrorHandler implements NamedObject {
 
-        private String mName;
+        private String mName = "";
 
         /**
          * @see org.chromium.mojo.bindings.Interface#close()
@@ -123,14 +123,16 @@ public class InterfacesTest extends MojoTestCase {
 
         @Override
         public void doStuff(Request request, MessagePipeHandle pipe) {
+            if (pipe != null) {
+                pipe.close();
+            }
+            Response response = new Response();
+            response.x = 42;
+            mFactoryClient.didStuff(response, "Hello");
         }
 
         @Override
         public void doStuff2(ConsumerHandle pipe) {
-            if (pipe != null) {
-                pipe.close();
-            }
-            mFactoryClient.didStuff2("Hello");
         }
 
         @Override
@@ -157,14 +159,14 @@ public class InterfacesTest extends MojoTestCase {
     public static class MockFactoryClientImpl implements FactoryClient {
 
         private boolean mClosed = false;
-        private boolean mDidStuff2Called = false;
+        private boolean mDidStuffCalled = false;
 
         public boolean isClosed() {
             return mClosed;
         }
 
-        public boolean wasDidStuff2Called() {
-            return mDidStuff2Called;
+        public boolean wasDidStuffCalled() {
+            return mDidStuffCalled;
         }
 
         /**
@@ -187,6 +189,7 @@ public class InterfacesTest extends MojoTestCase {
          */
         @Override
         public void didStuff(Response response, String text) {
+            mDidStuffCalled = true;
         }
 
         /**
@@ -194,7 +197,6 @@ public class InterfacesTest extends MojoTestCase {
          */
         @Override
         public void didStuff2(String text) {
-            mDidStuff2Called = true;
         }
 
     }
@@ -246,7 +248,7 @@ public class InterfacesTest extends MojoTestCase {
 
         if (impl != null) {
             assertNull(impl.getLastMojoException());
-            assertNull(impl.getNameSynchronously());
+            assertEquals("", impl.getNameSynchronously());
         }
 
         proxy.getName(callback);
@@ -254,7 +256,7 @@ public class InterfacesTest extends MojoTestCase {
 
         assertNull(errorHandler.getLastMojoException());
         assertTrue(callback.wasCalled());
-        assertNull(callback.getName());
+        assertEquals("", callback.getName());
 
         callback.reset();
         proxy.setName(NAME);
@@ -325,12 +327,14 @@ public class InterfacesTest extends MojoTestCase {
         MockFactoryClientImpl client = new MockFactoryClientImpl();
         Factory.Proxy proxy = newProxyOverPipeWithClient(
                 Factory.MANAGER, impl, client);
-        proxy.doStuff2(null);
+        Request request = new Request();
+        request.x = 42;
+        proxy.doStuff(request, null);
 
-        assertFalse(client.wasDidStuff2Called());
+        assertFalse(client.wasDidStuffCalled());
 
         nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
 
-        assertTrue(client.wasDidStuff2Called());
+        assertTrue(client.wasDidStuffCalled());
     }
 }

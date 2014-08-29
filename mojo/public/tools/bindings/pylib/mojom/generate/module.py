@@ -377,8 +377,12 @@ def IsEnumKind(kind):
   return isinstance(kind, Enum)
 
 
+def IsReferenceKind(kind):
+  return isinstance(kind, ReferenceKind)
+
+
 def IsNullableKind(kind):
-  return isinstance(kind, ReferenceKind) and kind.is_nullable
+  return IsReferenceKind(kind) and kind.is_nullable
 
 
 def IsAnyArrayKind(kind):

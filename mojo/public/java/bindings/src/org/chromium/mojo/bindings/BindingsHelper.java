@@ -36,6 +36,29 @@ public class BindingsHelper {
     }
 
     /**
+     * Passed as |arrayNullability| when neither the array nor its elements are nullable.
+     */
+    public static final int NOTHING_NULLABLE = 0;
+
+    /**
+     * "Array bit" of |arrayNullability| is set iff the array itself is nullable.
+     */
+    public static final int ARRAY_NULLABLE = (1 << 0);
+
+    /**
+     * "Element bit" of |arrayNullability| is set iff the array elements are nullable.
+     */
+    public static final int ELEMENT_NULLABLE = (1 << 1);
+
+    public static boolean isArrayNullable(int arrayNullability) {
+        return (arrayNullability & ARRAY_NULLABLE) > 0;
+    }
+
+    public static boolean isElementNullable(int arrayNullability) {
+        return (arrayNullability & ELEMENT_NULLABLE) > 0;
+    }
+
+    /**
      * Compute the size in bytes of the given string encoded as utf8.
      */
     public static int utf8StringSizeInBytes(String s) {

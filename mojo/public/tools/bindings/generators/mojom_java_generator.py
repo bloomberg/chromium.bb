@@ -136,6 +136,35 @@ def ParseStringAttribute(attribute):
   assert isinstance(attribute, basestring)
   return attribute
 
+def GetJavaTrueFalse(value):
+  return "true" if value else "false"
+
+def GetArrayNullabilityFlags(kind):
+    """Returns nullability flags for an array type, see Decoder.java.
+
+    As we have dedicated decoding functions for arrays, we have to pass
+    nullability information about both the array itself, as well as the array
+    element type there.
+    """
+    assert mojom.IsAnyArrayKind(kind)
+    ARRAY_NULLABLE   = \
+        "org.chromium.mojo.bindings.BindingsHelper.ARRAY_NULLABLE"
+    ELEMENT_NULLABLE = \
+        "org.chromium.mojo.bindings.BindingsHelper.ELEMENT_NULLABLE"
+    NOTHING_NULLABLE = \
+        "org.chromium.mojo.bindings.BindingsHelper.NOTHING_NULLABLE"
+
+    flags_to_set = []
+    if mojom.IsNullableKind(kind):
+        flags_to_set.append(ARRAY_NULLABLE)
+    if mojom.IsNullableKind(kind.kind):
+        flags_to_set.append(ELEMENT_NULLABLE)
+
+    if not flags_to_set:
+        flags_to_set = [NOTHING_NULLABLE]
+    return " | ".join(flags_to_set)
+
+
 @contextfilter
 def DecodeMethod(context, kind, offset, bit):
   def _DecodeMethodName(kind):
@@ -152,6 +181,11 @@ def DecodeMethod(context, kind, offset, bit):
   params = [ str(offset) ]
   if (kind == mojom.BOOL):
     params.append(str(bit))
+  if mojom.IsReferenceKind(kind):
+    if mojom.IsAnyArrayKind(kind):
+      params.append(GetArrayNullabilityFlags(kind))
+    else:
+      params.append(GetJavaTrueFalse(mojom.IsNullableKind(kind)))
   if mojom.IsInterfaceKind(kind):
     params.append('%s.MANAGER' % GetJavaType(context, kind))
   if mojom.IsAnyArrayKind(kind) and mojom.IsInterfaceKind(kind.kind):
@@ -324,9 +358,11 @@ class Generator(generator.Generator):
     "has_method_with_response": HasMethodWithResponse,
     "has_method_without_response": HasMethodWithoutResponse,
     "is_handle": mojom.IsNonInterfaceHandleKind,
+    "is_nullable_kind": mojom.IsNullableKind,
     "is_pointer_array_kind": IsPointerArrayKind,
     "is_struct_kind": mojom.IsStructKind,
     "java_type": GetJavaType,
+    "java_true_false": GetJavaTrueFalse,
     "method_ordinal_name": GetMethodOrdinalName,
     "name": GetNameForElement,
     "new_array": NewArray,

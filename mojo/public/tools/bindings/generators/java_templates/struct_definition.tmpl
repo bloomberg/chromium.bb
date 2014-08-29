@@ -19,7 +19,7 @@ encoder{{level}}.{{kind|encode_method(variable, offset, bit)}};
 
 {% macro decode(variable, kind, offset, bit, level=0) %}
 {% if kind|is_struct_kind or kind|is_pointer_array_kind %}
-org.chromium.mojo.bindings.Decoder decoder{{level+1}} = decoder{{level}}.readPointer({{offset}});
+org.chromium.mojo.bindings.Decoder decoder{{level+1}} = decoder{{level}}.readPointer({{offset}}, {{kind|is_nullable_kind|java_true_false}});
 {%   if kind|is_struct_kind %}
 {{variable}} = {{kind|java_type}}.decode(decoder{{level+1}});
 {%   else %}{# kind|is_pointer_array_kind #}
