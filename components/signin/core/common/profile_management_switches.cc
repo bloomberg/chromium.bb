@@ -144,11 +144,21 @@ bool IsGoogleProfileInfo() {
 }
 
 bool IsNewAvatarMenu() {
+  // NewAvatarMenu is only available on desktop.
+#if defined(OS_ANDROID) || defined(OS_IOS) || defined(OS_CHROMEOS)
+  return false;
+#else
   return GetProcessState() >= STATE_NEW_AVATAR_MENU;
+#endif
 }
 
 bool IsNewProfileManagement() {
+  // NewProfileManagement is only available on desktop.
+#if defined(OS_ANDROID) || defined(OS_IOS) || defined(OS_CHROMEOS)
+  return false;
+#else
   return GetProcessState() >= STATE_NEW_PROFILE_MANAGEMENT;
+#endif
 }
 
 bool IsNewProfileManagementPreviewEnabled() {
