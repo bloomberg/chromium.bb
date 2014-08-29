@@ -13,6 +13,8 @@
             async_test(function(test)
             {
                 var video = document.createElement("video");
+                // add to body to prevent GC pending http://crbug.com/400659
+                document.body.appendChild(video);
                 var track;
 
                 function trackRemoved()
@@ -39,6 +41,8 @@
             async_test(function(test)
             {
                 var video = document.createElement("video");
+                // add to body to prevent GC pending http://crbug.com/400659
+                document.body.appendChild(video);
 
                 // Create an out-of-band text track by adding a track element.
                 var trackElement = document.createElement('track');
