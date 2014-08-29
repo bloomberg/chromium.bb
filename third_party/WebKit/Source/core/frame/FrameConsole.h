@@ -54,7 +54,7 @@ public:
     }
 
     void addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>);
-    void adoptWorkerConsoleMessages(WorkerGlobalScopeProxy*);
+    void adoptWorkerMessagesAfterTermination(WorkerGlobalScopeProxy*);
 
     static String formatStackTraceString(const String& originalMessage, PassRefPtrWillBeRawPtr<ScriptCallStack>);
 

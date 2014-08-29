@@ -47,7 +47,6 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
-#include "core/workers/WorkerGlobalScopeProxy.h"
 #include "core/xml/XMLHttpRequest.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceResponse.h"
@@ -177,16 +176,6 @@ void InspectorConsoleAgent::addMessageToConsole(ConsoleMessage* consoleMessage)
 
     if (m_frontend && m_enabled)
         sendConsoleMessageToFrontend(consoleMessage, true);
-}
-
-void InspectorConsoleAgent::adoptWorkerConsoleMessages(WorkerGlobalScopeProxy* proxy)
-{
-    ConsoleMessageStorage* storage = messageStorage();
-    size_t messageCount = storage->size();
-    for (size_t i = 0; i < messageCount; ++i) {
-        if (storage->at(i)->workerGlobalScopeProxy() == proxy)
-            storage->at(i)->setWorkerGlobalScopeProxy(nullptr);
-    }
 }
 
 void InspectorConsoleAgent::consoleTime(ExecutionContext*, const String& title)

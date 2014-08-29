@@ -82,7 +82,6 @@ public:
     virtual void restore() OVERRIDE FINAL;
 
     void addMessageToConsole(ConsoleMessage*);
-    void adoptWorkerConsoleMessages(WorkerGlobalScopeProxy*);
 
     void consoleTime(ExecutionContext*, const String& title);
     void consoleTimeEnd(ExecutionContext*, const String& title, ScriptState*);

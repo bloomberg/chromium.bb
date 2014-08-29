@@ -289,7 +289,7 @@ void WorkerMessagingProxy::terminateInternally()
     Document* document = toDocument(m_executionContext.get());
     LocalFrame* frame = document->frame();
     if (frame)
-        frame->console().adoptWorkerConsoleMessages(this);
+        frame->console().adoptWorkerMessagesAfterTermination(this);
 }
 
 } // namespace blink

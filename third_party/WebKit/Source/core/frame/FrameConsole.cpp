@@ -148,9 +148,14 @@ ConsoleMessageStorage* FrameConsole::messageStorage()
     return m_consoleMessageStorage.get();
 }
 
-void FrameConsole::adoptWorkerConsoleMessages(WorkerGlobalScopeProxy* proxy)
+void FrameConsole::adoptWorkerMessagesAfterTermination(WorkerGlobalScopeProxy* proxy)
 {
-    InspectorInstrumentation::adoptWorkerConsoleMessages(m_frame.document(), proxy);
+    ConsoleMessageStorage* storage = messageStorage();
+    size_t messageCount = storage->size();
+    for (size_t i = 0; i < messageCount; ++i) {
+        if (storage->at(i)->workerGlobalScopeProxy() == proxy)
+            storage->at(i)->setWorkerGlobalScopeProxy(nullptr);
+    }
 }
 
 void FrameConsole::trace(Visitor* visitor)
