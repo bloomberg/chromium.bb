@@ -16,11 +16,13 @@ import json_schema
 import model
 import optparse
 import os
-import schema_loader
+import shlex
 import urlparse
 from highlighters import (
     pygments_highlighter, none_highlighter, hilite_me_highlighter)
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from cpp_namespace_environment import CppNamespaceEnvironment
+from schema_loader import SchemaLoader
 
 
 class CompilerHandler(BaseHTTPRequestHandler):
@@ -176,27 +178,6 @@ window.addEventListener('hashchange', updateEverything, false);
 updateEverything();
 </script>''')
 
-  def _LoadModel(self, basedir, name):
-    """Loads and returns the model for the |name| API from either its JSON or
-    IDL file, e.g.
-        name=contextMenus will be loaded from |basedir|/context_menus.json,
-        name=alarms will be loaded from |basedir|/alarms.idl.
-    """
-    loaders = {
-      'json': json_schema.Load,
-      'idl': idl_schema.Load
-    }
-    # APIs are referred to like "webRequest" but that's in a file
-    # "web_request.json" so we need to unixify the name.
-    unix_name = model.UnixName(name)
-    for loader_ext, loader_fn in loaders.items():
-      file_path = '%s/%s.%s' % (basedir, unix_name, loader_ext)
-      if os.path.exists(file_path):
-        # For historical reasons these files contain a singleton list with the
-        # model, so just return that single object.
-        return (loader_fn(file_path)[0], file_path)
-    raise ValueError('File for model "%s" not found' % name)
-
   def _ShowCompiledFile(self, parsed_url, head, body):
     """Show the compiled version of a json or idl file given the path to the
     compiled file.
@@ -207,34 +188,25 @@ updateEverything();
     (file_root, file_ext) = os.path.splitext(request_path)
     (filedir, filename) = os.path.split(file_root)
 
+    schema_loader = SchemaLoader("./",
+                                 filedir,
+                                 self.server.include_rules,
+                                 self.server.cpp_namespace_pattern)
     try:
       # Get main file.
-      (api_def, file_path) = self._LoadModel(filedir, filename)
-      namespace = api_model.AddNamespace(api_def, file_path)
+      namespace = schema_loader.ResolveNamespace(filename)
       type_generator = cpp_type_generator.CppTypeGenerator(
            api_model,
-           schema_loader.SchemaLoader(filedir),
+           schema_loader,
            namespace)
-
-      # Get the model's dependencies.
-      for dependency in api_def.get('dependencies', []):
-        # Dependencies can contain : in which case they don't refer to APIs,
-        # rather, permissions or manifest keys.
-        if ':' in dependency:
-          continue
-        (api_def, file_path) = self._LoadModel(filedir, dependency)
-        referenced_namespace = api_model.AddNamespace(api_def, file_path)
-        if referenced_namespace:
-          type_generator.AddNamespace(referenced_namespace,
-              cpp_util.Classname(referenced_namespace.name).lower())
 
       # Generate code
       cpp_namespace = 'generated_api_schemas'
       if file_ext == '.h':
-        cpp_code = (h_generator.HGenerator(type_generator, cpp_namespace)
+        cpp_code = (h_generator.HGenerator(type_generator)
             .Generate(namespace).Render())
       elif file_ext == '.cc':
-        cpp_code = (cc_generator.CCGenerator(type_generator, cpp_namespace)
+        cpp_code = (cc_generator.CCGenerator(type_generator)
             .Generate(namespace).Render())
       else:
         self.send_error(404, "File not found: %s" % request_path)
@@ -328,9 +300,16 @@ updateEverything();
 
 
 class PreviewHTTPServer(HTTPServer, object):
-  def __init__(self, server_address, handler, highlighters):
+  def __init__(self,
+               server_address,
+               handler,
+               highlighters,
+               include_rules,
+               cpp_namespace_pattern):
     super(PreviewHTTPServer, self).__init__(server_address, handler)
     self.highlighters = highlighters
+    self.include_rules = include_rules
+    self.cpp_namespace_pattern = cpp_namespace_pattern
 
 
 if __name__ == '__main__':
@@ -339,8 +318,25 @@ if __name__ == '__main__':
       usage='usage: %prog [option]...')
   parser.add_option('-p', '--port', default='8000',
       help='port to run the server on')
+  parser.add_option('-n', '--namespace', default='generated_api_schemas',
+      help='C++ namespace for generated files. e.g extensions::api.')
+  parser.add_option('-I', '--include-rules',
+      help='A list of paths to include when searching for referenced objects,'
+      ' with the namespace separated by a \':\'. Example: '
+      '/foo/bar:Foo::Bar::%(namespace)s')
 
   (opts, argv) = parser.parse_args()
+
+  def split_path_and_namespace(path_and_namespace):
+    if ':' not in path_and_namespace:
+      raise ValueError('Invalid include rule "%s". Rules must be of '
+                       'the form path:namespace' % path_and_namespace)
+    return path_and_namespace.split(':', 1)
+
+  include_rules = []
+  if opts.include_rules:
+    include_rules = map(split_path_and_namespace,
+                        shlex.split(opts.include_rules))
 
   try:
     print('Starting previewserver on port %s' % opts.port)
@@ -360,7 +356,9 @@ if __name__ == '__main__':
 
     server = PreviewHTTPServer(('', int(opts.port)),
                                CompilerHandler,
-                               highlighters)
+                               highlighters,
+                               include_rules,
+                               opts.namespace)
     server.serve_forever()
   except KeyboardInterrupt:
     server.socket.close()

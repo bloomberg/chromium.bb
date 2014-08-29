@@ -51,6 +51,18 @@ class SchemaLoader(object):
     self._include_rules = [(path, cpp_namespace_pattern)]
     self._include_rules.extend(include_rules)
 
+  def ResolveNamespace(self, full_namespace):
+    filenames = GenerateFilenames(full_namespace)
+    for path, cpp_namespace in self._include_rules:
+      for filename in reversed(filenames):
+        filepath = os.path.join(path, filename);
+        if os.path.exists(os.path.join(self._root, filepath)):
+          return Model().AddNamespace(
+              self.LoadSchema(filepath)[0],
+              filepath,
+              environment=CppNamespaceEnvironment(cpp_namespace))
+    return None
+
   def ResolveType(self, full_name, default_namespace):
     name_parts = full_name.rsplit('.', 1)
     if len(name_parts) == 1:
@@ -58,17 +70,9 @@ class SchemaLoader(object):
         return None
       return default_namespace
     full_namespace, type_name = full_name.rsplit('.', 1)
-    filenames = GenerateFilenames(full_namespace)
-    for path, namespace in self._include_rules:
-      for filename in reversed(filenames):
-        filepath = os.path.join(path, filename);
-        if os.path.exists(os.path.join(self._root, filepath)):
-          namespace = Model().AddNamespace(
-              self.LoadSchema(filepath)[0],
-              filepath,
-              environment=CppNamespaceEnvironment(namespace))
-          if type_name in namespace.types:
-            return namespace
+    namespace = self.ResolveNamespace(full_namespace)
+    if namespace and type_name in namespace.types:
+      return namespace
     return None
 
   def LoadSchema(self, schema):
