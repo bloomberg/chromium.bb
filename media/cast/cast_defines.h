@@ -195,6 +195,11 @@ inline base::TimeDelta RtpDeltaToTimeDelta(int64 rtp_delta, int rtp_timebase) {
   return rtp_delta * base::TimeDelta::FromSeconds(1) / rtp_timebase;
 }
 
+inline int64 TimeDeltaToRtpDelta(base::TimeDelta delta, int rtp_timebase) {
+  DCHECK_GT(rtp_timebase, 0);
+  return delta * rtp_timebase / base::TimeDelta::FromSeconds(1);
+}
+
 }  // namespace cast
 }  // namespace media
 

@@ -119,7 +119,7 @@ void VideoSender::InsertRawVideoFrame(
       "timestamp", capture_time.ToInternalValue(),
       "rtp_timestamp", rtp_timestamp);
 
-  if (AreTooManyFramesInFlight()) {
+  if (ShouldDropNextFrame(capture_time)) {
     VLOG(1) << "Dropping frame due to too many frames currently in-flight.";
     return;
   }
@@ -178,18 +178,16 @@ void VideoSender::SendEncodedVideoFrame(
       frame_id, static_cast<int>(encoded_frame->data.size()),
       encoded_frame->dependency == EncodedFrame::KEY,
       requested_bitrate_before_encode);
-  // Only use lowest 8 bits as key.
-  frame_id_to_rtp_timestamp_[frame_id & 0xff] = encoded_frame->rtp_timestamp;
+
+  RecordLatestFrameTimestamps(frame_id,
+                              encoded_frame->reference_time,
+                              encoded_frame->rtp_timestamp);
 
   // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
   TRACE_EVENT_INSTANT1(
       "cast_perf_test", "VideoFrameEncoded",
       TRACE_EVENT_SCOPE_THREAD,
       "rtp_timestamp", encoded_frame->rtp_timestamp);
-
-  DCHECK(!encoded_frame->reference_time.is_null());
-  rtp_timestamp_helper_.StoreLatestTime(encoded_frame->reference_time,
-                                        encoded_frame->rtp_timestamp);
 
   // At the start of the session, it's important to send reports before each
   // frame so that the receiver can properly compute playout times.  The reason
@@ -275,13 +273,12 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   congestion_control_.AckFrame(cast_feedback.ack_frame_id, now);
 
-  RtpTimestamp rtp_timestamp =
-      frame_id_to_rtp_timestamp_[cast_feedback.ack_frame_id & 0xff];
-  cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 FRAME_ACK_RECEIVED,
-                                                 VIDEO_EVENT,
-                                                 rtp_timestamp,
-                                                 cast_feedback.ack_frame_id);
+  cast_environment_->Logging()->InsertFrameEvent(
+      now,
+      FRAME_ACK_RECEIVED,
+      VIDEO_EVENT,
+      GetRecordedRtpTimestamp(cast_feedback.ack_frame_id),
+      cast_feedback.ack_frame_id);
 
   const bool is_acked_out_of_order =
       static_cast<int32>(cast_feedback.ack_frame_id -
@@ -300,18 +297,31 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   }
 }
 
-bool VideoSender::AreTooManyFramesInFlight() const {
+bool VideoSender::ShouldDropNextFrame(base::TimeTicks capture_time) const {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  int frames_in_flight = frames_in_encoder_;
+  int frames_in_flight = 0;
+  base::TimeDelta duration_in_flight;
   if (!last_send_time_.is_null()) {
-    frames_in_flight +=
+    frames_in_flight =
         static_cast<int32>(last_sent_frame_id_ - latest_acked_frame_id_);
+    if (frames_in_flight > 0) {
+      const uint32 oldest_unacked_frame_id = latest_acked_frame_id_ + 1;
+      duration_in_flight =
+          capture_time - GetRecordedReferenceTime(oldest_unacked_frame_id);
+    }
   }
+  frames_in_flight += frames_in_encoder_;
   VLOG(2) << frames_in_flight
           << " frames in flight; last sent: " << last_sent_frame_id_
-          << " latest acked: " << latest_acked_frame_id_
-          << " frames in encoder: " << frames_in_encoder_;
-  return frames_in_flight >= max_unacked_frames_;
+          << "; latest acked: " << latest_acked_frame_id_
+          << "; frames in encoder: " << frames_in_encoder_
+          << "; duration in flight: "
+          << duration_in_flight.InMicroseconds() << " usec ("
+          << (target_playout_delay_ > base::TimeDelta() ?
+                  100 * duration_in_flight / target_playout_delay_ :
+                  kint64max) << "%)";
+  return frames_in_flight >= max_unacked_frames_ ||
+      duration_in_flight >= target_playout_delay_;
 }
 
 }  // namespace cast

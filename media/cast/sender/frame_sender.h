@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/net/rtcp/rtcp.h"
-#include "media/cast/sender/rtp_timestamp_helper.h"
 
 namespace media {
 namespace cast {
@@ -25,7 +24,7 @@ class FrameSender {
   FrameSender(scoped_refptr<CastEnvironment> cast_environment,
               CastTransportSender* const transport_sender,
               base::TimeDelta rtcp_interval,
-              int frequency,
+              int rtp_timebase,
               uint32 ssrc,
               double max_frame_rate,
               base::TimeDelta playout_delay);
@@ -62,10 +61,6 @@ class FrameSender {
 
   const uint32 ssrc_;
 
-  // Records lip-sync (i.e., mapping of RTP <--> NTP timestamps), and
-  // extrapolates this mapping to any other point in time.
-  RtpTimestampHelper rtp_timestamp_helper_;
-
   // RTT information from RTCP.
   bool rtt_available_;
   base::TimeDelta rtt_;
@@ -82,6 +77,16 @@ class FrameSender {
   void ScheduleNextResendCheck();
   void ResendCheck();
   void ResendForKickstart();
+
+  // Record or retrieve a recent history of each frame's timestamps.
+  // Warning: If a frame ID too far in the past is requested, the getters will
+  // silently succeed but return incorrect values.  Be sure to respect
+  // media::cast::kMaxUnackedFrames.
+  void RecordLatestFrameTimestamps(uint32 frame_id,
+                                   base::TimeTicks reference_time,
+                                   RtpTimestamp rtp_timestamp);
+  base::TimeTicks GetRecordedReferenceTime(uint32 frame_id) const;
+  RtpTimestamp GetRecordedRtpTimestamp(uint32 frame_id) const;
 
   const base::TimeDelta rtcp_interval_;
 
@@ -112,7 +117,7 @@ class FrameSender {
   // last time any frame was sent or re-sent.
   base::TimeTicks last_send_time_;
 
-  // The ID of the last frame sent.  Logic throughout AudioSender assumes this
+  // The ID of the last frame sent.  Logic throughout FrameSender assumes this
   // can safely wrap-around.  This member is invalid until
   // |!last_send_time_.is_null()|.
   uint32 last_sent_frame_id_;
@@ -132,12 +137,16 @@ class FrameSender {
   // STATUS_VIDEO_INITIALIZED.
   CastInitializationStatus cast_initialization_status_;
 
-  // This is a "good enough" mapping for finding the RTP timestamp associated
-  // with a video frame. The key is the lowest 8 bits of frame id (which is
-  // what is sent via RTCP). This map is used for logging purposes.
-  RtpTimestamp frame_id_to_rtp_timestamp_[256];
-
  private:
+  // RTP timestamp increment representing one second.
+  const int rtp_timebase_;
+
+  // Ring buffers to keep track of recent frame timestamps (both in terms of
+  // local reference time and RTP media time).  These should only be accessed
+  // through the Record/GetXXX() methods.
+  base::TimeTicks frame_reference_times_[256];
+  RtpTimestamp frame_rtp_timestamps_[256];
+
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<FrameSender> weak_factory_;
 

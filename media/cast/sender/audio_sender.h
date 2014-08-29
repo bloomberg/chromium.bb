@@ -55,11 +55,11 @@ class AudioSender : public FrameSender,
   void OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback);
 
  private:
-  // Returns true if there are too many frames in flight, as defined by the
-  // configured target playout delay plus simple logic.  When this is true,
-  // InsertAudio() will silenty drop frames instead of sending them to the audio
-  // encoder.
-  bool AreTooManyFramesInFlight() const;
+  // Returns true if there are too many frames in flight, or if the media
+  // duration of the frames in flight would be too high by sending the next
+  // frame.  The latter metric is determined from the given |capture_time|
+  // for the next frame to be encoded and sent.
+  bool ShouldDropNextFrame(base::TimeTicks capture_time) const;
 
   // Called by the |audio_encoder_| with the next EncodedFrame to send.
   void SendEncodedAudioFrame(scoped_ptr<EncodedFrame> audio_frame);

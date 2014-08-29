@@ -61,11 +61,11 @@ class VideoSender : public FrameSender,
   void OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback);
 
  private:
-  // Returns true if there are too many frames in flight, as defined by the
-  // configured target playout delay plus simple logic.  When this is true,
-  // InsertRawVideoFrame() will silenty drop frames instead of sending them to
-  // the video encoder.
-  bool AreTooManyFramesInFlight() const;
+  // Returns true if there are too many frames in flight, or if the media
+  // duration of the frames in flight would be too high by sending the next
+  // frame.  The latter metric is determined from the given |capture_time|
+  // for the next frame to be encoded and sent.
+  bool ShouldDropNextFrame(base::TimeTicks capture_time) const;
 
   // Called by the |video_encoder_| with the next EncodeFrame to send.
   void SendEncodedVideoFrame(int requested_bitrate_before_encode,

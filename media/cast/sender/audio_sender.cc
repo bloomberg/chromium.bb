@@ -84,7 +84,7 @@ void AudioSender::InsertAudio(scoped_ptr<AudioBus> audio_bus,
   }
   DCHECK(audio_encoder_.get()) << "Invalid internal state";
 
-  if (AreTooManyFramesInFlight()) {
+  if (ShouldDropNextFrame(recorded_time)) {
     VLOG(1) << "Dropping frame due to too many frames currently in-flight.";
     return;
   }
@@ -114,12 +114,10 @@ void AudioSender::SendEncodedAudioFrame(
       frame_id, static_cast<int>(encoded_frame->data.size()),
       encoded_frame->dependency == EncodedFrame::KEY,
       configured_encoder_bitrate_);
-  // Only use lowest 8 bits as key.
-  frame_id_to_rtp_timestamp_[frame_id & 0xff] = encoded_frame->rtp_timestamp;
 
-  DCHECK(!encoded_frame->reference_time.is_null());
-  rtp_timestamp_helper_.StoreLatestTime(encoded_frame->reference_time,
-                                        encoded_frame->rtp_timestamp);
+  RecordLatestFrameTimestamps(frame_id,
+                              encoded_frame->reference_time,
+                              encoded_frame->rtp_timestamp);
 
   // At the start of the session, it's important to send reports before each
   // frame so that the receiver can properly compute playout times.  The reason
@@ -180,15 +178,12 @@ void AudioSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
     duplicate_ack_counter_ = 0;
   }
 
-  const base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-
-  const RtpTimestamp rtp_timestamp =
-      frame_id_to_rtp_timestamp_[cast_feedback.ack_frame_id & 0xff];
-  cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 FRAME_ACK_RECEIVED,
-                                                 AUDIO_EVENT,
-                                                 rtp_timestamp,
-                                                 cast_feedback.ack_frame_id);
+  cast_environment_->Logging()->InsertFrameEvent(
+      cast_environment_->Clock()->NowTicks(),
+      FRAME_ACK_RECEIVED,
+      AUDIO_EVENT,
+      GetRecordedRtpTimestamp(cast_feedback.ack_frame_id),
+      cast_feedback.ack_frame_id);
 
   const bool is_acked_out_of_order =
       static_cast<int32>(cast_feedback.ack_frame_id -
@@ -207,17 +202,29 @@ void AudioSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   }
 }
 
-bool AudioSender::AreTooManyFramesInFlight() const {
+bool AudioSender::ShouldDropNextFrame(base::TimeTicks capture_time) const {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   int frames_in_flight = 0;
+  base::TimeDelta duration_in_flight;
   if (!last_send_time_.is_null()) {
-    frames_in_flight +=
+    frames_in_flight =
         static_cast<int32>(last_sent_frame_id_ - latest_acked_frame_id_);
+    if (frames_in_flight > 0) {
+      const uint32 oldest_unacked_frame_id = latest_acked_frame_id_ + 1;
+      duration_in_flight =
+          capture_time - GetRecordedReferenceTime(oldest_unacked_frame_id);
+    }
   }
   VLOG(2) << frames_in_flight
           << " frames in flight; last sent: " << last_sent_frame_id_
-          << " latest acked: " << latest_acked_frame_id_;
-  return frames_in_flight >= max_unacked_frames_;
+          << "; latest acked: " << latest_acked_frame_id_
+          << "; duration in flight: "
+          << duration_in_flight.InMicroseconds() << " usec ("
+          << (target_playout_delay_ > base::TimeDelta() ?
+                  100 * duration_in_flight / target_playout_delay_ :
+                  kint64max) << "%)";
+  return frames_in_flight >= max_unacked_frames_ ||
+      duration_in_flight >= target_playout_delay_;
 }
 
 }  // namespace cast

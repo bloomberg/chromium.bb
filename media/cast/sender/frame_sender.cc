@@ -13,14 +13,13 @@ const int kMinSchedulingDelayMs = 1;
 FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
                          CastTransportSender* const transport_sender,
                          base::TimeDelta rtcp_interval,
-                         int frequency,
+                         int rtp_timebase,
                          uint32 ssrc,
                          double max_frame_rate,
                          base::TimeDelta playout_delay)
     : cast_environment_(cast_environment),
       transport_sender_(transport_sender),
       ssrc_(ssrc),
-      rtp_timestamp_helper_(frequency),
       rtt_available_(false),
       rtcp_interval_(rtcp_interval),
       max_frame_rate_(max_frame_rate),
@@ -28,10 +27,12 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
       last_sent_frame_id_(0),
       latest_acked_frame_id_(0),
       duplicate_ack_counter_(0),
+      rtp_timebase_(rtp_timebase),
       weak_factory_(this) {
+  DCHECK_GT(rtp_timebase_, 0);
   SetTargetPlayoutDelay(playout_delay);
   send_target_playout_delay_ = false;
-  memset(frame_id_to_rtp_timestamp_, 0, sizeof(frame_id_to_rtp_timestamp_));
+  memset(frame_rtp_timestamps_, 0, sizeof(frame_rtp_timestamps_));
 }
 
 FrameSender::~FrameSender() {
@@ -54,15 +55,25 @@ void FrameSender::ScheduleNextRtcpReport() {
 
 void FrameSender::SendRtcpReport(bool schedule_future_reports) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+
+  // Sanity-check: We should have sent at least the first frame by this point.
+  DCHECK(!last_send_time_.is_null());
+
+  // Create lip-sync info for the sender report.  The last sent frame's
+  // reference time and RTP timestamp are used to estimate an RTP timestamp in
+  // terms of "now."  Note that |now| is never likely to be precise to an exact
+  // frame boundary; and so the computation here will result in a
+  // |now_as_rtp_timestamp| value that is rarely equal to any one emitted by the
+  // encoder.
   const base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  uint32 now_as_rtp_timestamp = 0;
-  if (rtp_timestamp_helper_.GetCurrentTimeAsRtpTimestamp(
-          now, &now_as_rtp_timestamp)) {
-    transport_sender_->SendSenderReport(ssrc_, now, now_as_rtp_timestamp);
-  } else {
-    // |rtp_timestamp_helper_| should have stored a mapping by this point.
-    NOTREACHED();
-  }
+  const base::TimeDelta time_delta =
+      now - GetRecordedReferenceTime(last_sent_frame_id_);
+  const int64 rtp_delta = TimeDeltaToRtpDelta(time_delta, rtp_timebase_);
+  const uint32 now_as_rtp_timestamp =
+      GetRecordedRtpTimestamp(last_sent_frame_id_) +
+          static_cast<uint32>(rtp_delta);
+  transport_sender_->SendSenderReport(ssrc_, now, now_as_rtp_timestamp);
+
   if (schedule_future_reports)
     ScheduleNextRtcpReport();
 }
@@ -127,6 +138,24 @@ void FrameSender::ResendForKickstart() {
           << " to kick-start.";
   last_send_time_ = cast_environment_->Clock()->NowTicks();
   transport_sender_->ResendFrameForKickstart(ssrc_, last_sent_frame_id_);
+}
+
+void FrameSender::RecordLatestFrameTimestamps(uint32 frame_id,
+                                              base::TimeTicks reference_time,
+                                              RtpTimestamp rtp_timestamp) {
+  DCHECK(!reference_time.is_null());
+  frame_reference_times_[frame_id % arraysize(frame_reference_times_)] =
+      reference_time;
+  frame_rtp_timestamps_[frame_id % arraysize(frame_rtp_timestamps_)] =
+      rtp_timestamp;
+}
+
+base::TimeTicks FrameSender::GetRecordedReferenceTime(uint32 frame_id) const {
+  return frame_reference_times_[frame_id % arraysize(frame_reference_times_)];
+}
+
+RtpTimestamp FrameSender::GetRecordedRtpTimestamp(uint32 frame_id) const {
+  return frame_rtp_timestamps_[frame_id % arraysize(frame_rtp_timestamps_)];
 }
 
 }  // namespace cast

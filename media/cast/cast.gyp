@@ -154,8 +154,6 @@
         'sender/fake_software_video_encoder.cc',
 	'sender/frame_sender.cc',
         'sender/frame_sender.h',
-        'sender/rtp_timestamp_helper.cc',
-        'sender/rtp_timestamp_helper.h',
         'sender/software_video_encoder.h',
         'sender/video_encoder.h',
         'sender/video_encoder_impl.h',
