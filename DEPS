@@ -226,7 +226,7 @@ deps = {
    Var('chromium_git') + '/chromium/deps/yasm/patched-yasm.git' + '@' + 'c960eb11ccda80b10ed50be39df4f0663b371d1d',
 
   'src/third_party/libjpeg_turbo':
-   Var('chromium_git') + '/chromium/deps/libjpeg_turbo.git' + '@' + '7a076b517c739af5197cad380b110f0ffc085d89',
+   Var('chromium_git') + '/chromium/deps/libjpeg_turbo.git' + '@' + '2ed5319ce40b0ba2cd9b962713ea0ef775781e69',
 
   'src/third_party/flac':
    Var('chromium_git') + '/chromium/deps/flac.git' + '@' + '0635a091379d9677f1ddde5f2eec85d0f096f219',
