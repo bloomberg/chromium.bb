@@ -333,6 +333,28 @@ register_reading(struct wl_display *display)
 	assert(wl_display_flush(display) >= 0);
 }
 
+/* create thread that will call prepare+read so that
+ * it will block */
+static pthread_t
+create_thread(struct client *c, void *(*func)(void*))
+{
+	pthread_t thread;
+
+	c->display_stopped = 0;
+	/* func must set display->stopped to 1 before sleeping */
+	assert(pthread_create(&thread, NULL, func, c) == 0);
+
+	/* make sure the thread is sleeping. It's a little bit racy
+	 * (setting display_stopped to 1 and calling wl_display_read_events)
+	 * so call usleep once again after the loop ends - it should
+	 * be sufficient... */
+	while (c->display_stopped == 0)
+		usleep(500);
+	usleep(10000);
+
+	return thread;
+}
+
 static void *
 thread_read_error(void *data)
 {
@@ -369,16 +391,7 @@ threading_post_err(void)
 	c->display_stopped = 0;
 
 	/* create new thread that will register its intention too */
-	assert(pthread_create(&thread, NULL, thread_read_error, c) == 0);
-
-	/* make sure thread is sleeping. It's a little bit racy
-	 * (setting display_stopped to 1 and calling wl_display_read_events)
-	 * so call usleep once again after the loop ends - it should
-	 * be sufficient... */
-	while (c->display_stopped == 0)
-		usleep(500);
-
-	usleep(10000);
+	thread = create_thread(c, thread_read_error);
 
 	/* so now we have sleeping thread waiting for a pthread_cond signal.
 	 * The main thread must call wl_display_read_events().
@@ -429,22 +442,6 @@ thread_prepare_and_read(void *data)
 	pthread_exit(NULL);
 }
 
-static pthread_t
-create_thread(struct client *c)
-{
-	pthread_t thread;
-
-	c->display_stopped = 0;
-	assert(pthread_create(&thread, NULL, thread_prepare_and_read, c) == 0);
-
-	/* make sure thread is sleeping */
-	while (c->display_stopped == 0)
-		usleep(500);
-	usleep(10000);
-
-	return thread;
-}
-
 /* test cancel read*/
 static void
 threading_cancel_read(void)
@@ -454,9 +451,9 @@ threading_cancel_read(void)
 
 	register_reading(c->wl_display);
 
-	th1 = create_thread(c);
-	th2 = create_thread(c);
-	th3 = create_thread(c);
+	th1 = create_thread(c, thread_prepare_and_read);
+	th2 = create_thread(c, thread_prepare_and_read);
+	th3 = create_thread(c, thread_prepare_and_read);
 
 	/* all the threads are sleeping, waiting until read or cancel
 	 * is called. Cancel the read and let the threads proceed */
