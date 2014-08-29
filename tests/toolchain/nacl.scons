@@ -189,7 +189,10 @@ nexe = env.ComponentProgram('pthread_cleanup', 'pthread_cleanup.c',
                                         '${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl('pthread_cleanup.out', nexe)
 env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
-                       'run_pthread_cleanup_test')
+                       'run_pthread_cleanup_test',
+# This test is flaky on mac10.7-newlib-dbg-asan.
+# See https://code.google.com/p/nativeclient/issues/detail?id=3906
+                       is_broken=(env.Bit('asan') and env.Bit('host_mac')))
 
 
 # NOTE: the tests below break easily under valgrid and since
