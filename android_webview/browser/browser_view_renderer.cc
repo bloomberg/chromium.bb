@@ -717,6 +717,9 @@ void BrowserViewRenderer::PostFallbackTick() {
         FROM_HERE,
         fallback_tick_fired_.callback(),
         base::TimeDelta::FromMilliseconds(kFallbackTickTimeoutInMilliseconds));
+  } else {
+    // Pretend we just composited to unblock further invalidates.
+    DidComposite();
   }
 }
 
@@ -729,8 +732,12 @@ void BrowserViewRenderer::FallbackTickFired() {
   // This should only be called if OnDraw or DrawGL did not come in time, which
   // means block_invalidates_ must still be true.
   DCHECK(block_invalidates_);
-  if (compositor_needs_continuous_invalidate_ && compositor_)
+  if (compositor_needs_continuous_invalidate_ && compositor_) {
     ForceFakeCompositeSW();
+  } else {
+    // Pretend we just composited to unblock further invalidates.
+    DidComposite();
+  }
 }
 
 void BrowserViewRenderer::ForceFakeCompositeSW() {
