@@ -91,6 +91,10 @@ class Target : public Item {
   const FileList& public_headers() const { return public_headers_; }
   FileList& public_headers() { return public_headers_; }
 
+  // Whether this target's includes should be checked by "gn check".
+  bool check_includes() const { return check_includes_; }
+  void set_check_includes(bool ci) { check_includes_ = ci; }
+
   // Compile-time extra dependencies.
   const FileList& inputs() const { return inputs_; }
   FileList& inputs() { return inputs_; }
@@ -146,6 +150,14 @@ class Target : public Item {
   }
   UniqueVector<LabelTargetPair>& forward_dependent_configs() {
     return forward_dependent_configs_;
+  }
+
+  // Dependencies that can include files from this target.
+  const std::set<Label>& allow_circular_includes_from() const {
+    return allow_circular_includes_from_;
+  }
+  std::set<Label>& allow_circular_includes_from() {
+    return allow_circular_includes_from_;
   }
 
   const UniqueVector<const Target*>& inherited_libraries() const {
@@ -217,6 +229,7 @@ class Target : public Item {
   FileList sources_;
   bool all_headers_public_;
   FileList public_headers_;
+  bool check_includes_;
   FileList inputs_;
   FileList data_;
 
@@ -240,6 +253,8 @@ class Target : public Item {
   UniqueVector<LabelConfigPair> all_dependent_configs_;
   UniqueVector<LabelConfigPair> direct_dependent_configs_;
   UniqueVector<LabelTargetPair> forward_dependent_configs_;
+
+  std::set<Label> allow_circular_includes_from_;
 
   bool external_;
 

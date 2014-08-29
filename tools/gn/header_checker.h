@@ -39,7 +39,11 @@ class HeaderChecker : public base::RefCountedThreadSafe<HeaderChecker> {
   // This assumes that the current thread already has a message loop. On
   // error, fills the given vector with the errors and returns false. Returns
   // true on success.
+  //
+  // force_check, if true, will override targets opting out of header checking
+  // with "check_includes = false" and will check them anyway.
   bool Run(const std::vector<const Target*>& to_check,
+           bool force_check,
            std::vector<Err>* errors);
 
  private:
@@ -48,6 +52,7 @@ class HeaderChecker : public base::RefCountedThreadSafe<HeaderChecker> {
   FRIEND_TEST_ALL_PREFIXES(HeaderCheckerTest,
                            IsDependencyOf_ForwardsDirectDependentConfigs);
   FRIEND_TEST_ALL_PREFIXES(HeaderCheckerTest, CheckInclude);
+  FRIEND_TEST_ALL_PREFIXES(HeaderCheckerTest, CheckIncludeAllowCircular);
   FRIEND_TEST_ALL_PREFIXES(HeaderCheckerTest,
                            GetDependentConfigChainProblemIndex);
   ~HeaderChecker();
@@ -65,7 +70,7 @@ class HeaderChecker : public base::RefCountedThreadSafe<HeaderChecker> {
 
   // Backend for Run() that takes the list of files to check. The errors_ list
   // will be populate on failure.
-  void RunCheckOverFiles(const FileMap& flies);
+  void RunCheckOverFiles(const FileMap& flies, bool force_check);
 
   void DoWork(const Target* target, const SourceFile& file);
 

@@ -101,10 +101,26 @@ struct RelativeDirConverter {
   const SourceDir& current_dir;
 };
 
-// Fills the label part of a LabelPtrPair, leaving the pointer null.
+// Fills in a label.
 template<typename T> struct LabelResolver {
   LabelResolver(const SourceDir& current_dir_in,
                 const Label& current_toolchain_in)
+      : current_dir(current_dir_in),
+        current_toolchain(current_toolchain_in) {}
+  bool operator()(const Value& v, Label* out, Err* err) const {
+    if (!v.VerifyTypeIs(Value::STRING, err))
+      return false;
+    *out = Label::Resolve(current_dir, current_toolchain, v, err);
+    return !err->has_error();
+  }
+  const SourceDir& current_dir;
+  const Label& current_toolchain;
+};
+
+// Fills the label part of a LabelPtrPair, leaving the pointer null.
+template<typename T> struct LabelPtrResolver {
+  LabelPtrResolver(const SourceDir& current_dir_in,
+                   const Label& current_toolchain_in)
       : current_dir(current_dir_in),
         current_toolchain(current_toolchain_in) {}
   bool operator()(const Value& v, LabelPtrPair<T>* out, Err* err) const {
@@ -159,14 +175,14 @@ bool ExtractListOfLabels(const Value& value,
                          LabelTargetVector* dest,
                          Err* err) {
   return ListValueExtractor(value, dest, err,
-                            LabelResolver<Target>(current_dir,
-                                                  current_toolchain));
+                            LabelPtrResolver<Target>(current_dir,
+                                                     current_toolchain));
 }
 
 bool ExtractListOfUniqueLabels(const Value& value,
                                const SourceDir& current_dir,
                                const Label& current_toolchain,
-                               UniqueVector<LabelConfigPair>* dest,
+                               UniqueVector<Label>* dest,
                                Err* err) {
   return ListValueUniqueExtractor(value, dest, err,
                                   LabelResolver<Config>(current_dir,
@@ -176,11 +192,21 @@ bool ExtractListOfUniqueLabels(const Value& value,
 bool ExtractListOfUniqueLabels(const Value& value,
                                const SourceDir& current_dir,
                                const Label& current_toolchain,
+                               UniqueVector<LabelConfigPair>* dest,
+                               Err* err) {
+  return ListValueUniqueExtractor(value, dest, err,
+                                  LabelPtrResolver<Config>(current_dir,
+                                                           current_toolchain));
+}
+
+bool ExtractListOfUniqueLabels(const Value& value,
+                               const SourceDir& current_dir,
+                               const Label& current_toolchain,
                                UniqueVector<LabelTargetPair>* dest,
                                Err* err) {
   return ListValueUniqueExtractor(value, dest, err,
-                                  LabelResolver<Target>(current_dir,
-                                                        current_toolchain));
+                                  LabelPtrResolver<Target>(current_dir,
+                                                           current_toolchain));
 }
 
 bool ExtractRelativeFile(const BuildSettings* build_settings,

@@ -14,7 +14,7 @@ const char kCheck[] = "check";
 const char kCheck_HelpShort[] =
     "check: Check header dependencies.";
 const char kCheck_Help[] =
-    "gn check <out_dir> [<target label>]\n"
+    "gn check <out_dir> [<target label>] [--force]\n"
     "\n"
     "  \"gn check\" is the same thing as \"gn gen\" with the \"--check\" flag\n"
     "  except that this command does not write out any build files. It's\n"
@@ -24,6 +24,10 @@ const char kCheck_Help[] =
     "  than one (although not general regular expressions). If specified,\n"
     "  only those matching targets will be checked.\n"
     "  See \"gn help label_pattern\" for details.\n"
+    "\n"
+    "  --force\n"
+    "      Ignores specifications of \"check_includes = false\" and checks\n"
+    "      all target's files that match the target label.\n"
     "\n"
     "  See \"gn help\" for the common command-line switches.\n"
     "\n"
@@ -64,9 +68,13 @@ int RunCheck(const std::vector<std::string>& args) {
     }
   }
 
+  const CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  bool force = cmdline->HasSwitch("force");
+
   if (!CheckPublicHeaders(&setup->build_settings(),
                           setup->builder()->GetAllResolvedTargets(),
-                          targets_to_check))
+                          targets_to_check,
+                          force))
     return 1;
 
   OutputString("Header dependency check OK\n", DECORATION_GREEN);
@@ -75,14 +83,15 @@ int RunCheck(const std::vector<std::string>& args) {
 
 bool CheckPublicHeaders(const BuildSettings* build_settings,
                         const std::vector<const Target*>& all_targets,
-                        const std::vector<const Target*>& to_check) {
+                        const std::vector<const Target*>& to_check,
+                        bool force_check) {
   ScopedTrace trace(TraceItem::TRACE_CHECK_HEADERS, "Check headers");
 
   scoped_refptr<HeaderChecker> header_checker(
       new HeaderChecker(build_settings, all_targets));
 
   std::vector<Err> header_errors;
-  header_checker->Run(to_check, &header_errors);
+  header_checker->Run(to_check, force_check, &header_errors);
   for (size_t i = 0; i < header_errors.size(); i++) {
     if (i > 0)
       OutputString("___________________\n", DECORATION_YELLOW);

@@ -45,6 +45,7 @@ Target::Target(const Settings* settings, const Label& label)
     : Item(settings, label),
       output_type_(UNKNOWN),
       all_headers_public_(true),
+      check_includes_(true),
       hard_dep_(false),
       toolchain_(NULL) {
 }

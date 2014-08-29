@@ -45,9 +45,15 @@ bool ExtractListOfLabels(const Value& value,
                          LabelTargetVector* dest,
                          Err* err);
 
-// Extracts the list of labels and their origins to the given vector. Only the
-// labels are filled in, the ptr for each pair in the vector will be null. Sets
-// an error and returns false if a label is maformed or there are duplicates.
+// Extracts the list of labels and their origins to the given vector. For the
+// version taking Label*Pair, only the labels are filled in, the ptr for each
+// pair in the vector will be null. Sets an error and returns false if a label
+// is maformed or there are duplicates.
+bool ExtractListOfUniqueLabels(const Value& value,
+                               const SourceDir& current_dir,
+                               const Label& current_toolchain,
+                               UniqueVector<Label>* dest,
+                               Err* err);
 bool ExtractListOfUniqueLabels(const Value& value,
                                const SourceDir& current_dir,
                                const Label& current_toolchain,

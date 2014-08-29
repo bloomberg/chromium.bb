@@ -130,16 +130,17 @@ HeaderChecker::~HeaderChecker() {
 }
 
 bool HeaderChecker::Run(const std::vector<const Target*>& to_check,
+                        bool force_check,
                         std::vector<Err>* errors) {
   if (to_check.empty()) {
     // Check all files.
-    RunCheckOverFiles(file_map_);
+    RunCheckOverFiles(file_map_, force_check);
   } else {
     // Run only over the files in the given targets.
     FileMap files_to_check;
     for (size_t i = 0; i < to_check.size(); i++)
       AddTargetToFileMap(to_check[i], &files_to_check);
-    RunCheckOverFiles(files_to_check);
+    RunCheckOverFiles(files_to_check, force_check);
   }
 
   if (errors_.empty())
@@ -148,7 +149,7 @@ bool HeaderChecker::Run(const std::vector<const Target*>& to_check,
   return false;
 }
 
-void HeaderChecker::RunCheckOverFiles(const FileMap& files) {
+void HeaderChecker::RunCheckOverFiles(const FileMap& files, bool force_check) {
   if (files.empty())
     return;
 
@@ -163,6 +164,16 @@ void HeaderChecker::RunCheckOverFiles(const FileMap& files) {
     if (type != SOURCE_CC && type != SOURCE_H && type != SOURCE_C &&
         type != SOURCE_M && type != SOURCE_MM && type != SOURCE_RC)
       continue;
+
+    // Do a first pass to find if this should be skipped. All targets including
+    // this source file must exclude it from checking.
+    if (!force_check) {
+      bool check_includes = false;
+      for (size_t vect_i = 0; vect_i < vect.size(); ++vect_i)
+        check_includes |= vect[vect_i].target->check_includes();
+      if (!check_includes)
+        continue;
+    }
 
     for (size_t vect_i = 0; vect_i < vect.size(); ++vect_i) {
       pool->PostWorkerTaskWithShutdownBehavior(
@@ -349,6 +360,11 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
         return false;
       }
 
+      found_dependency = true;
+    } else if (
+        to_target->allow_circular_includes_from().find(from_target->label()) !=
+        to_target->allow_circular_includes_from().end()) {
+      // Not a dependency, but this include is whitelisted from the destination.
       found_dependency = true;
     }
   }

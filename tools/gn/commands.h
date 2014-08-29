@@ -99,11 +99,15 @@ bool ResolveTargetsFromCommandLinePattern(
 // all_targets, and the specific targets to check should be in to_check. If
 // to_check is empty, all targets will be checked.
 //
+// force_check, if true, will override targets opting out of header checking
+// with "check_includes = false" and will check them anyway.
+//
 // On success, returns true. If the check fails, the error(s) will be printed
 // to stdout and false will be returned.
 bool CheckPublicHeaders(const BuildSettings* build_settings,
                         const std::vector<const Target*>& all_targets,
-                        const std::vector<const Target*>& to_check);
+                        const std::vector<const Target*>& to_check,
+                        bool force_check);
 
 }  // namespace commands
 

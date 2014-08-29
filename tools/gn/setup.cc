@@ -190,7 +190,8 @@ bool CommonSetup::RunPostMessageLoop() {
   if (check_public_headers_) {
     if (!commands::CheckPublicHeaders(&build_settings_,
                                       builder_->GetAllResolvedTargets(),
-                                      std::vector<const Target*>())) {
+                                      std::vector<const Target*>(),
+                                      false)) {
       return false;
     }
   }

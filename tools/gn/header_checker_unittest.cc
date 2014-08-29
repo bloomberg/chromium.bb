@@ -226,6 +226,33 @@ TEST_F(HeaderCheckerTest, CheckInclude) {
   }
 }
 
+// Checks that the allow_circular_includes_from list works.
+TEST_F(HeaderCheckerTest, CheckIncludeAllowCircular) {
+  InputFile input_file(SourceFile("//some_file.cc"));
+  input_file.SetContents(std::string());
+  LocationRange range;  // Dummy value.
+
+  // Add an include file to A.
+  SourceFile a_public("//a_public.h");
+  a_.sources().push_back(a_public);
+
+  scoped_refptr<HeaderChecker> checker(
+      new HeaderChecker(setup_.build_settings(), targets_));
+
+  // A depends on B. So B normally can't include headers from A.
+  Err err;
+  EXPECT_FALSE(checker->CheckInclude(&b_, input_file, a_public, range, &err));
+  EXPECT_TRUE(err.has_error());
+
+  // Add an allow_circular_includes_from on A that lists B.
+  a_.allow_circular_includes_from().insert(b_.label());
+
+  // Now the include from B to A should be allowed.
+  err = Err();
+  EXPECT_TRUE(checker->CheckInclude(&b_, input_file, a_public, range, &err));
+  EXPECT_FALSE(err.has_error());
+}
+
 TEST_F(HeaderCheckerTest, GetDependentConfigChainProblemIndex) {
   // Assume we have a chain A -> B -> C -> D.
   Target target_a(setup_.settings(), Label(SourceDir("//a/"), "a"));
