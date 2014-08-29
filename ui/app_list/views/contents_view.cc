@@ -25,16 +25,6 @@
 
 namespace app_list {
 
-namespace {
-
-const int kMinMouseWheelToSwitchPage = 20;
-const int kMinScrollToSwitchPage = 20;
-const int kMinHorizVelocityToSwitchPage = 800;
-
-const double kFinishTransitionThreshold = 0.33;
-
-}  // namespace
-
 ContentsView::ContentsView(AppListMainView* app_list_main_view)
     : search_results_view_(NULL),
       start_page_view_(NULL),
@@ -236,9 +226,7 @@ void ContentsView::ShowFolderContent(AppListFolderItem* item) {
 }
 
 void ContentsView::Prerender() {
-  const int selected_page =
-      std::max(0, GetAppsPaginationModel()->selected_page());
-  apps_container_view_->apps_grid_view()->Prerender(selected_page);
+  apps_container_view_->apps_grid_view()->Prerender();
 }
 
 views::View* ContentsView::GetPageView(int index) {
@@ -303,26 +291,6 @@ bool ContentsView::OnKeyPressed(const ui::KeyEvent& event) {
   return view_model_->view_at(GetActivePageIndex())->OnKeyPressed(event);
 }
 
-bool ContentsView::OnMouseWheel(const ui::MouseWheelEvent& event) {
-  if (!IsNamedPageActive(NAMED_PAGE_APPS))
-    return false;
-
-  int offset;
-  if (abs(event.x_offset()) > abs(event.y_offset()))
-    offset = event.x_offset();
-  else
-    offset = event.y_offset();
-
-  if (abs(offset) > kMinMouseWheelToSwitchPage) {
-    if (!GetAppsPaginationModel()->has_transition()) {
-      GetAppsPaginationModel()->SelectPageRelative(offset > 0 ? -1 : 1, true);
-    }
-    return true;
-  }
-
-  return false;
-}
-
 void ContentsView::TotalPagesChanged() {
 }
 
@@ -334,63 +302,6 @@ void ContentsView::TransitionStarted() {
 
 void ContentsView::TransitionChanged() {
   UpdatePageBounds();
-}
-
-void ContentsView::OnGestureEvent(ui::GestureEvent* event) {
-  if (!IsNamedPageActive(NAMED_PAGE_APPS))
-    return;
-
-  switch (event->type()) {
-    case ui::ET_GESTURE_SCROLL_BEGIN:
-      GetAppsPaginationModel()->StartScroll();
-      event->SetHandled();
-      return;
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-      // event->details.scroll_x() > 0 means moving contents to right. That is,
-      // transitioning to previous page.
-      GetAppsPaginationModel()->UpdateScroll(event->details().scroll_x() /
-                                             GetContentsBounds().width());
-      event->SetHandled();
-      return;
-    case ui::ET_GESTURE_SCROLL_END:
-      GetAppsPaginationModel()->EndScroll(
-          GetAppsPaginationModel()->transition().progress <
-          kFinishTransitionThreshold);
-      event->SetHandled();
-      return;
-    case ui::ET_SCROLL_FLING_START: {
-      GetAppsPaginationModel()->EndScroll(true);
-      if (fabs(event->details().velocity_x()) > kMinHorizVelocityToSwitchPage) {
-        GetAppsPaginationModel()->SelectPageRelative(
-            event->details().velocity_x() < 0 ? 1 : -1, true);
-      }
-      event->SetHandled();
-      return;
-    }
-    default:
-      break;
-  }
-}
-
-void ContentsView::OnScrollEvent(ui::ScrollEvent* event) {
-  if (!IsNamedPageActive(NAMED_PAGE_APPS) ||
-      event->type() == ui::ET_SCROLL_FLING_CANCEL) {
-    return;
-  }
-
-  float offset;
-  if (std::abs(event->x_offset()) > std::abs(event->y_offset()))
-    offset = event->x_offset();
-  else
-    offset = event->y_offset();
-
-  if (std::abs(offset) > kMinScrollToSwitchPage) {
-    if (!GetAppsPaginationModel()->has_transition()) {
-      GetAppsPaginationModel()->SelectPageRelative(offset > 0 ? -1 : 1, true);
-    }
-    event->SetHandled();
-    event->StopPropagation();
-  }
 }
 
 }  // namespace app_list

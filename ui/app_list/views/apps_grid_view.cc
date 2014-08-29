@@ -92,6 +92,12 @@ const int kFolderItemReparentDelay = 50;
 // UI.
 const int kFolderDroppingCircleRadius = 15;
 
+// Constants for dealing with scroll events.
+const int kMinMouseWheelToSwitchPage = 20;
+const int kMinScrollToSwitchPage = 20;
+const int kMinHorizVelocityToSwitchPage = 800;
+
+const double kFinishTransitionThreshold = 0.33;
 
 // RowMoveAnimationDelegate is used when moving an item into a different row.
 // Before running the animation, the item's layer is re-created and kept in
@@ -846,11 +852,12 @@ void AppsGridView::SetDragAndDropHostOfCurrentAppList(
   drag_and_drop_host_ = drag_and_drop_host;
 }
 
-void AppsGridView::Prerender(int page_index) {
+void AppsGridView::Prerender() {
   Layout();
-  int start = std::max(0, (page_index - kPrerenderPages) * tiles_per_page());
+  int selected_page = std::max(0, pagination_model_.selected_page());
+  int start = std::max(0, (selected_page - kPrerenderPages) * tiles_per_page());
   int end = std::min(view_model_.view_size(),
-                     (page_index + 1 + kPrerenderPages) * tiles_per_page());
+                     (selected_page + 1 + kPrerenderPages) * tiles_per_page());
   for (int i = start; i < end; i++) {
     AppListItemView* v = static_cast<AppListItemView*>(view_model_.view_at(i));
     v->Prerender();
@@ -953,6 +960,23 @@ bool AppsGridView::OnKeyReleased(const ui::KeyEvent& event) {
   return handled;
 }
 
+bool AppsGridView::OnMouseWheel(const ui::MouseWheelEvent& event) {
+  int offset;
+  if (abs(event.x_offset()) > abs(event.y_offset()))
+    offset = event.x_offset();
+  else
+    offset = event.y_offset();
+
+  if (abs(offset) > kMinMouseWheelToSwitchPage) {
+    if (!pagination_model_.has_transition()) {
+      pagination_model_.SelectPageRelative(offset > 0 ? -1 : 1, true);
+    }
+    return true;
+  }
+
+  return false;
+}
+
 void AppsGridView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (!details.is_add && details.parent == this) {
@@ -968,6 +992,57 @@ void AppsGridView::ViewHierarchyChanged(
       EndDrag(true);
 
     bounds_animator_.StopAnimatingView(details.child);
+  }
+}
+
+void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
+  switch (event->type()) {
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      pagination_model_.StartScroll();
+      event->SetHandled();
+      return;
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      // event->details.scroll_x() > 0 means moving contents to right. That is,
+      // transitioning to previous page.
+      pagination_model_.UpdateScroll(event->details().scroll_x() /
+                                     GetContentsBounds().width());
+      event->SetHandled();
+      return;
+    case ui::ET_GESTURE_SCROLL_END:
+      pagination_model_.EndScroll(pagination_model_.transition().progress <
+                                  kFinishTransitionThreshold);
+      event->SetHandled();
+      return;
+    case ui::ET_SCROLL_FLING_START: {
+      pagination_model_.EndScroll(true);
+      if (fabs(event->details().velocity_x()) > kMinHorizVelocityToSwitchPage) {
+        pagination_model_.SelectPageRelative(
+            event->details().velocity_x() < 0 ? 1 : -1, true);
+      }
+      event->SetHandled();
+      return;
+    }
+    default:
+      break;
+  }
+}
+
+void AppsGridView::OnScrollEvent(ui::ScrollEvent* event) {
+  if (event->type() == ui::ET_SCROLL_FLING_CANCEL)
+    return;
+
+  float offset;
+  if (std::abs(event->x_offset()) > std::abs(event->y_offset()))
+    offset = event->x_offset();
+  else
+    offset = event->y_offset();
+
+  if (std::abs(offset) > kMinScrollToSwitchPage) {
+    if (!pagination_model_.has_transition()) {
+      pagination_model_.SelectPageRelative(offset > 0 ? -1 : 1, true);
+    }
+    event->SetHandled();
+    event->StopPropagation();
   }
 }
 

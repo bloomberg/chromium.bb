@@ -103,7 +103,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
 
   // Overridden from PaginationModelObserver:
   virtual void TotalPagesChanged() OVERRIDE;
@@ -142,10 +141,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Note: This is different to |pagination_model_|, which manages top-level
   // launcher-page pagination.
   PaginationModel* GetAppsPaginationModel();
-
-  // Overridden from ui::EventHandler:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
 
   // Special sub views of the ContentsView. All owned by the views hierarchy.
   AppsContainerView* apps_container_view_;

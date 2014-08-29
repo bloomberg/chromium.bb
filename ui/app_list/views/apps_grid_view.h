@@ -117,8 +117,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void SetDragAndDropHostOfCurrentAppList(
       ApplicationDragAndDropHost* drag_and_drop_host);
 
-  // Prerenders the icons on and around |page_index|.
-  void Prerender(int page_index);
+  // Prerenders the icons on and around the currently selected page.
+  void Prerender();
 
   // Return true if the |bounds_animator_| is animating |view|.
   bool IsAnimatingView(views::View* view);
@@ -134,6 +134,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   virtual void Layout() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
   virtual bool GetDropFormats(
@@ -141,6 +142,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
       std::set<OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
   virtual bool CanDrop(const OSExchangeData& data) OVERRIDE;
   virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
+
+  // Overridden from ui::EventHandler:
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
 
   // Stops the timer that triggers a page flip during a drag.
   void StopPageFlipTimer();
