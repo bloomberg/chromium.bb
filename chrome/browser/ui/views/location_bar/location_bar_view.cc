@@ -110,52 +110,6 @@ const gfx::Tween::Type kHideTweenType = gfx::Tween::FAST_OUT_LINEAR_IN;
 // by 1 px.
 const int kSearchButtonInset = 1;
 
-// Given a containing |height| and a |base_font_list|, shrinks the font size
-// until the font list will fit within |height| while having its cap height
-// vertically centered.  Returns the correctly-sized font list.
-//
-// The expected layout:
-//   +--------+-----------------------------------------------+------------+
-//   |        | y offset                                      | space      |
-//   |        +--------+-------------------+------------------+ above      |
-//   |        |        |                   | internal leading | cap height |
-//   | box    | font   | ascent (baseline) +------------------+------------+
-//   | height | height |                   | cap height                    |
-//   |        |        |-------------------+------------------+------------+
-//   |        |        | descent (height - baseline)          | space      |
-//   |        +--------+--------------------------------------+ below      |
-//   |        | space at bottom                               | cap height |
-//   +--------+-----------------------------------------------+------------+
-// Goal:
-//     center of box height == center of cap height
-//     (i.e. space above cap height == space below cap height)
-// Restrictions:
-//     y offset >= 0
-//     space at bottom >= 0
-//     (i.e. Entire font must be visible inside the box.)
-gfx::FontList GetLargestFontListWithHeightBound(
-    const gfx::FontList& base_font_list,
-    int height) {
-  gfx::FontList font_list = base_font_list;
-  for (int font_size = font_list.GetFontSize(); font_size > 1; --font_size) {
-    const int internal_leading =
-        font_list.GetBaseline() - font_list.GetCapHeight();
-    // Some platforms don't support getting the cap height, and simply return
-    // the entire font ascent from GetCapHeight().  Centering the ascent makes
-    // the font look too low, so if GetCapHeight() returns the ascent, center
-    // the entire font height instead.
-    const int space =
-        height - ((internal_leading != 0) ?
-                  font_list.GetCapHeight() : font_list.GetHeight());
-    const int y_offset = space / 2 - internal_leading;
-    const int space_at_bottom = height - (y_offset + font_list.GetHeight());
-    if ((y_offset >= 0) && (space_at_bottom >= 0))
-      break;
-    font_list = font_list.DeriveWithSizeDelta(-1);
-  }
-  return font_list;
-}
-
 int GetEditLeadingInternalSpace() {
   // The textfield has 1 px of whitespace before the text in the RTL case only.
   return base::i18n::IsRTL() ? 1 : 0;
@@ -277,16 +231,15 @@ void LocationBarView::Init() {
   // Shrink large fonts to make them fit.
   // TODO(pkasting): Stretch the location bar instead in this case.
   const int location_height = GetInternalHeight(true);
-  font_list = GetLargestFontListWithHeightBound(font_list, location_height);
+  font_list = font_list.DeriveWithHeightUpperBound(location_height);
 
   // Determine the font for use inside the bubbles.  The bubble background
   // images have 1 px thick edges, which we don't want to overlap.
   const int kBubbleInteriorVerticalPadding = 1;
   const int bubble_vertical_padding =
       (kBubblePadding + kBubbleInteriorVerticalPadding) * 2;
-  const gfx::FontList bubble_font_list(
-      GetLargestFontListWithHeightBound(
-          font_list, location_height - bubble_vertical_padding));
+  const gfx::FontList bubble_font_list(font_list.DeriveWithHeightUpperBound(
+      location_height - bubble_vertical_padding));
 
   const SkColor background_color =
       GetColor(ToolbarModel::NONE, LocationBarView::BACKGROUND);

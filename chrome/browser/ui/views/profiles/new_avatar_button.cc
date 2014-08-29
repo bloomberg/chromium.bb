@@ -61,6 +61,12 @@ NewAvatarButton::NewAvatarButton(
       gfx::ShadowValue(gfx::Point(), 1.0f, SK_ColorDKGRAY)));
   SetTextSubpixelRenderingEnabled(false);
 
+  // The largest text height that fits in the button. If the font list height
+  // is larger than this, it will be shrunk to match it.
+  // TODO(noms): Calculate this constant algorithmically.
+  const int kDisplayFontHeight = 15;
+  SetFontList(GetFontList().DeriveWithHeightUpperBound(kDisplayFontHeight));
+
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   if (button_style == THEMED_BUTTON) {
     const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_NORMAL);

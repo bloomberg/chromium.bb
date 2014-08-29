@@ -286,4 +286,27 @@ TEST(FontListTest, Fonts_GetHeight_GetBaseline) {
             font_list_mix.GetBaseline());
 }
 
+TEST(FontListTest, Fonts_DeriveWithHeightUpperBound) {
+  std::vector<Font> fonts;
+
+  fonts.push_back(gfx::Font("Arial", 18));
+  fonts.push_back(gfx::Font("Sans serif", 18));
+  fonts.push_back(gfx::Font("Symbol", 18));
+  FontList font_list = FontList(fonts);
+
+  // A smaller upper bound should derive a font list with a smaller height.
+  const int height_1 = font_list.GetHeight() - 5;
+  FontList derived_1 = font_list.DeriveWithHeightUpperBound(height_1);
+  EXPECT_LE(derived_1.GetHeight(), height_1);
+  EXPECT_LT(derived_1.GetHeight(), font_list.GetHeight());
+  EXPECT_LT(derived_1.GetFontSize(), font_list.GetFontSize());
+
+  // A larger upper bound should not change the height of the font list.
+  const int height_2 = font_list.GetHeight() + 5;
+  FontList derived_2 = font_list.DeriveWithHeightUpperBound(height_2);
+  EXPECT_LE(derived_2.GetHeight(), height_2);
+  EXPECT_EQ(font_list.GetHeight(), derived_2.GetHeight());
+  EXPECT_EQ(font_list.GetFontSize(), derived_2.GetFontSize());
+}
+
 }  // namespace gfx

@@ -83,6 +83,31 @@ class GFX_EXPORT FontList {
   // values: Font::BOLD, Font::ITALIC and Font::UNDERLINE.
   FontList DeriveWithStyle(int font_style) const;
 
+  // Shrinks the font size until the font list fits within |height| while
+  // having its cap height vertically centered. Returns a new FontList with
+  // the correct height.
+  //
+  // The expected layout:
+  //   +--------+-----------------------------------------------+------------+
+  //   |        | y offset                                      | space      |
+  //   |        +--------+-------------------+------------------+ above      |
+  //   |        |        |                   | internal leading | cap height |
+  //   | box    | font   | ascent (baseline) +------------------+------------+
+  //   | height | height |                   | cap height                    |
+  //   |        |        |-------------------+------------------+------------+
+  //   |        |        | descent (height - baseline)          | space      |
+  //   |        +--------+--------------------------------------+ below      |
+  //   |        | space at bottom                               | cap height |
+  //   +--------+-----------------------------------------------+------------+
+  // Goal:
+  //     center of box height == center of cap height
+  //     (i.e. space above cap height == space below cap height)
+  // Restrictions:
+  //     y offset >= 0
+  //     space at bottom >= 0
+  //     (i.e. Entire font must be visible inside the box.)
+  gfx::FontList DeriveWithHeightUpperBound(int height) const;
+
   // Returns the height of this font list, which is max(ascent) + max(descent)
   // for all the fonts in the font list.
   int GetHeight() const;
