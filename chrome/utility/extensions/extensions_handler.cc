@@ -111,8 +111,8 @@ bool ExtensionsHandler::OnMessageReceived(const IPC::Message& message) {
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 #if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_GetAndEncryptWiFiCredentials,
-                        OnGetAndEncryptWiFiCredentials)
+    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_GetWiFiCredentials,
+                        OnGetWiFiCredentials)
 #endif  // defined(OS_WIN)
 
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -282,9 +282,7 @@ void ExtensionsHandler::OnIndexPicasaAlbumsContents(
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 #if defined(OS_WIN)
-void ExtensionsHandler::OnGetAndEncryptWiFiCredentials(
-    const std::string& network_guid,
-    const std::vector<uint8>& public_key) {
+void ExtensionsHandler::OnGetWiFiCredentials(const std::string& network_guid) {
   scoped_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
   wifi_service->Initialize(NULL);
 
@@ -292,15 +290,7 @@ void ExtensionsHandler::OnGetAndEncryptWiFiCredentials(
   std::string error;
   wifi_service->GetKeyFromSystem(network_guid, &key_data, &error);
 
-  std::vector<uint8> ciphertext;
-  bool success = error.empty() && !key_data.empty();
-  if (success) {
-    success = networking_private_crypto::EncryptByteString(
-        public_key, key_data, &ciphertext);
-  }
-
-  Send(new ChromeUtilityHostMsg_GotEncryptedWiFiCredentials(ciphertext,
-                                                            success));
+  Send(new ChromeUtilityHostMsg_GotWiFiCredentials(key_data, error.empty()));
 }
 #endif  // defined(OS_WIN)
 

@@ -12,6 +12,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/network_change_notifier.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/local_discovery/wifi/credential_getter_win.h"
+#endif  // OS_WIN
+
 using ::wifi::WiFiService;
 
 namespace local_discovery {
@@ -96,6 +100,13 @@ class WifiManagerNonChromeos::WifiServiceWrapper
                                const std::string& password,
                                std::string* network_guid);
 
+#if defined(OS_WIN)
+  void PostCredentialsCallback(const WifiManager::CredentialsCallback& callback,
+                               const std::string& ssid,
+                               bool success,
+                               const std::string& password);
+#endif  // OS_WIN
+
   scoped_ptr<WiFiService> wifi_service_;
 
   base::WeakPtr<WifiManagerNonChromeos> wifi_manager_;
@@ -112,6 +123,10 @@ class WifiManagerNonChromeos::WifiServiceWrapper
   scoped_refptr<base::MessageLoopProxy> callback_runner_;
 
   base::WeakPtrFactory<WifiServiceWrapper> weak_factory_;
+
+#if defined(OS_WIN)
+  scoped_refptr<CredentialGetterWin> credential_getter_;
+#endif  // OS_WIN
 
   DISALLOW_COPY_AND_ASSIGN(WifiServiceWrapper);
 };
@@ -286,10 +301,6 @@ void WifiManagerNonChromeos::WifiServiceWrapper::RequestNetworkCredentials(
   std::string guid;
   std::string key;
 
-#if defined(OS_WIN)
-  NOTIMPLEMENTED();
-  success = false;
-#else
   NetworkPropertiesList network_list;
 
   GetSSIDListInternal(&network_list);
@@ -307,6 +318,20 @@ void WifiManagerNonChromeos::WifiServiceWrapper::RequestNetworkCredentials(
     success = false;
   }
 
+  if (!success) {
+    PostClosure(base::Bind(callback, success, "", ""));
+    return;
+  }
+
+#if defined(OS_WIN)
+  credential_getter_ = new CredentialGetterWin();
+  credential_getter_->StartGetCredentials(
+      guid,
+      base::Bind(&WifiServiceWrapper::PostCredentialsCallback,
+                 AsWeakPtr(),
+                 callback,
+                 ssid));
+#else
   if (success) {
     std::string error_string;
     wifi_service_->GetKeyFromSystem(guid, &key, &error_string);
@@ -315,9 +340,10 @@ void WifiManagerNonChromeos::WifiServiceWrapper::RequestNetworkCredentials(
       LOG(ERROR) << "Could not get key from system: " << error_string;
       success = false;
     }
+
+    PostClosure(base::Bind(callback, success, ssid, key));
   }
 #endif  // OS_WIN
-  PostClosure(base::Bind(callback, success, ssid, key));
 }
 
 void WifiManagerNonChromeos::WifiServiceWrapper::OnNetworkChanged(
@@ -417,6 +443,17 @@ void WifiManagerNonChromeos::WifiServiceWrapper::PostClosure(
       FROM_HERE,
       base::Bind(&WifiManagerNonChromeos::PostClosure, wifi_manager_, closure));
 }
+
+#if defined(OS_WIN)
+void WifiManagerNonChromeos::WifiServiceWrapper::PostCredentialsCallback(
+    const WifiManager::CredentialsCallback& callback,
+    const std::string& ssid,
+    bool success,
+    const std::string& password) {
+  PostClosure(base::Bind(callback, success, ssid, password));
+}
+
+#endif  // OS_WIN
 
 scoped_ptr<WifiManager> WifiManager::CreateDefault() {
   return scoped_ptr<WifiManager>(new WifiManagerNonChromeos());

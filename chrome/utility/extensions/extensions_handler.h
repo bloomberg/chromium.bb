@@ -68,8 +68,7 @@ class ExtensionsHandler : public UtilityMessageHandler {
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 #if defined(OS_WIN)
-  void OnGetAndEncryptWiFiCredentials(const std::string& network_guid,
-                                      const std::vector<uint8>& public_key);
+  void OnGetWiFiCredentials(const std::string& network_guid);
 #endif  // defined(OS_WIN)
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsHandler);

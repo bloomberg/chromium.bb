@@ -11,7 +11,7 @@
 const uint32 kMessageWhitelist[] = {
 #if defined(ENABLE_EXTENSIONS)
 #if defined(OS_WIN)
-    ChromeUtilityHostMsg_GetAndEncryptWiFiCredentials::ID,
+    ChromeUtilityHostMsg_GetWiFiCredentials::ID,
 #endif  // defined(OS_WIN)
     ChromeUtilityMsg_ImageWriter_Cancel::ID,
     ChromeUtilityMsg_ImageWriter_Write::ID,

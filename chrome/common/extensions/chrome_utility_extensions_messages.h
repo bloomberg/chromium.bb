@@ -305,14 +305,13 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_ImageWriter_Progress,
 
 #if defined(OS_WIN)
 // Get plain-text WiFi credentials from the system (requires UAC privilege
-// elevation) and encrypt them with |public_key|.
-IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_GetAndEncryptWiFiCredentials,
-                     std::string /* ssid */,
-                     std::vector<uint8> /* public_key */)
+// elevation).
+IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_GetWiFiCredentials,
+                     std::string /* ssid */)
 
-// Reply after getting WiFi credentials from the system and encrypting them with
-// caller's public key. |success| is false if error occurred.
-IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_GotEncryptedWiFiCredentials,
-                     std::vector<uint8> /* encrypted_key_data */,
+// Reply after getting WiFi credentials from the system. |success| is false if
+// error occurred.
+IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_GotWiFiCredentials,
+                     std::string /* key_data */,
                      bool /* success */)
 #endif  // defined(OS_WIN)
