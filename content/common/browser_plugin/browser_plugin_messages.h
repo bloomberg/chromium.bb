@@ -66,10 +66,6 @@ IPC_STRUCT_BEGIN(BrowserPluginMsg_UpdateRect_Params)
   // view size.
   IPC_STRUCT_MEMBER(gfx::Size, view_size)
 
-  // All the above coordinates are in DIP. This is the scale factor needed
-  // to convert them to pixels.
-  IPC_STRUCT_MEMBER(float, scale_factor)
-
   // Is this UpdateRect an ACK to a resize request?
   IPC_STRUCT_MEMBER(bool, is_resize_ack)
 IPC_STRUCT_END()

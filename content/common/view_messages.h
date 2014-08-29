@@ -374,9 +374,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_TextInputState_Params)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
-  // The scroll offset of the render view.
-  IPC_STRUCT_MEMBER(gfx::Vector2d, scroll_offset)
-
   // The size of the RenderView when this message was generated.  This is
   // included so the host knows how large the view is from the perspective of
   // the renderer process.  This is necessary in case a resize operation is in
@@ -401,10 +398,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   // which would indicate that this paint message is an ACK for multiple
   // request messages.
   IPC_STRUCT_MEMBER(int, flags)
-
-  // All the above coordinates are in DIP. This is the scale factor needed
-  // to convert them to pixels.
-  IPC_STRUCT_MEMBER(float, scale_factor)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewMsg_New_Params)

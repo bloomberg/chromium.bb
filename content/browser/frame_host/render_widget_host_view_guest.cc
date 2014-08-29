@@ -197,6 +197,8 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
     // the frame to.
     return;
   }
+
+  last_scroll_offset_ = frame->metadata.root_scroll_offset;
   base::SharedMemoryHandle software_frame_handle =
       base::SharedMemory::NULLHandle();
   if (frame->software_frame_data) {

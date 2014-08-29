@@ -1269,7 +1269,6 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
       root_window->GetHost()->compositor());
   ViewHostMsg_UpdateRect_Params update_params;
   update_params.view_size = size1;
-  update_params.scale_factor = 1.f;
   update_params.flags = ViewHostMsg_UpdateRect_Flags::IS_RESIZE_ACK;
   widget_host_->OnMessageReceived(
       ViewHostMsg_UpdateRect(widget_host_->GetRoutingID(), update_params));

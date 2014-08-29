@@ -1332,8 +1332,6 @@ void RenderWidget::didCompleteSwapBuffers() {
   params.view_size = size_;
   params.plugin_window_moves.swap(plugin_window_moves_);
   params.flags = next_paint_flags_;
-  params.scroll_offset = GetScrollOffset();
-  params.scale_factor = device_scale_factor_;
 
   Send(new ViewHostMsg_UpdateRect(routing_id_, params));
   next_paint_flags_ = 0;

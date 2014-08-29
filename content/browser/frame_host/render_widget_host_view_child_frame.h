@@ -49,6 +49,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   virtual void Hide() OVERRIDE;
   virtual bool IsShowing() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
+  virtual gfx::Vector2dF GetLastScrollOffset() const OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeViewId GetNativeViewId() const OVERRIDE;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
@@ -157,6 +158,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
  protected:
   friend class RenderWidgetHostView;
+
+  // The last scroll offset of the view.
+  gfx::Vector2dF last_scroll_offset_;
 
   // Members will become private when RenderWidgetHostViewGuest is removed.
   // The model object.

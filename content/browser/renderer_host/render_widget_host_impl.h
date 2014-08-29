@@ -146,7 +146,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const blink::WebMouseWheelEvent& wheel_event) OVERRIDE;
   virtual void ForwardKeyboardEvent(
       const NativeWebKeyboardEvent& key_event) OVERRIDE;
-  virtual const gfx::Vector2d& GetLastScrollOffset() const OVERRIDE;
   virtual RenderProcessHost* GetProcess() const OVERRIDE;
   virtual int GetRoutingID() const OVERRIDE;
   virtual RenderWidgetHostView* GetView() const OVERRIDE;
@@ -810,9 +809,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // switching back to the original tab, because the content may already be
   // changed.
   bool suppress_next_char_events_;
-
-  // The last scroll offset of the render widget.
-  gfx::Vector2d last_scroll_offset_;
 
   bool pending_mouse_lock_request_;
   bool allow_privileged_mouse_lock_;

@@ -1489,8 +1489,6 @@ void RenderWidgetHostImpl::OnUpdateRect(
 
   // Update our knowledge of the RenderWidget's size.
   current_size_ = params.view_size;
-  // Update our knowledge of the RenderWidget's scroll offset.
-  last_scroll_offset_ = params.scroll_offset;
 
   bool is_resize_ack =
       ViewHostMsg_UpdateRect_Flags::is_resize_ack(params.flags);
@@ -1900,10 +1898,6 @@ void RenderWidgetHostImpl::OnUnexpectedEventAck(UnexpectedEventAckType type) {
 void RenderWidgetHostImpl::OnSyntheticGestureCompleted(
     SyntheticGesture::Result result) {
   Send(new InputMsg_SyntheticGestureCompleted(GetRoutingID()));
-}
-
-const gfx::Vector2d& RenderWidgetHostImpl::GetLastScrollOffset() const {
-  return last_scroll_offset_;
 }
 
 bool RenderWidgetHostImpl::IgnoreInputEvents() const {

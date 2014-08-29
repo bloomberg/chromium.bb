@@ -70,6 +70,10 @@ gfx::Rect RenderWidgetHostViewChildFrame::GetViewBounds() const {
   return rect;
 }
 
+gfx::Vector2dF RenderWidgetHostViewChildFrame::GetLastScrollOffset() const {
+  return last_scroll_offset_;
+}
+
 gfx::NativeView RenderWidgetHostViewChildFrame::GetNativeView() const {
   NOTREACHED();
   return NULL;
@@ -214,6 +218,7 @@ void RenderWidgetHostViewChildFrame::AcceleratedSurfacePostSubBuffer(
 void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
       uint32 output_surface_id,
       scoped_ptr<cc::CompositorFrame> frame) {
+  last_scroll_offset_ = frame->metadata.root_scroll_offset;
   if (frame_connector_) {
     frame_connector_->ChildFrameCompositorFrameSwapped(
         output_surface_id,

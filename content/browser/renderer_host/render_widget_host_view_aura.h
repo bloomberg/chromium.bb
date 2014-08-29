@@ -135,6 +135,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
+  virtual gfx::Vector2dF GetLastScrollOffset() const OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeViewId GetNativeViewId() const OVERRIDE;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
@@ -594,6 +595,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   TouchEditingClient* touch_editing_client_;
 
   scoped_ptr<OverscrollController> overscroll_controller_;
+
+  // The last scroll offset of the view.
+  gfx::Vector2dF last_scroll_offset_;
 
   gfx::Insets insets_;
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/thumbnails/thumbnailing_context.h"
 
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 
 namespace thumbnails {
 
@@ -15,7 +16,7 @@ ThumbnailingContext::ThumbnailingContext(content::WebContents* web_contents,
       url(web_contents->GetURL()),
       clip_result(CLIP_RESULT_UNPROCESSED) {
   score.at_top =
-      (web_contents->GetRenderViewHost()->GetLastScrollOffset().y() == 0);
+      (web_contents->GetRenderWidgetHostView()->GetLastScrollOffset().y() == 0);
   score.load_completed = !web_contents->IsLoading() && !load_interrupted;
 }
 
@@ -26,4 +27,4 @@ ThumbnailingContext::ThumbnailingContext()
 ThumbnailingContext::~ThumbnailingContext() {
 }
 
-}
+}  // namespace thumbnails

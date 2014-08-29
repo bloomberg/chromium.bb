@@ -412,6 +412,11 @@ bool RenderWidgetHostViewAndroid::HasValidFrame() const {
   return true;
 }
 
+gfx::Vector2dF RenderWidgetHostViewAndroid::GetLastScrollOffset() const {
+  NOTREACHED();
+  return gfx::Vector2dF();
+}
+
 gfx::NativeView RenderWidgetHostViewAndroid::GetNativeView() const {
   return content_view_core_->GetViewAndroid();
 }

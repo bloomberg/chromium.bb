@@ -834,7 +834,6 @@ void BrowserPluginGuest::OnUpdateRect(
     const ViewHostMsg_UpdateRect_Params& params) {
   BrowserPluginMsg_UpdateRect_Params relay_params;
   relay_params.view_size = params.view_size;
-  relay_params.scale_factor = params.scale_factor;
   relay_params.is_resize_ack = ViewHostMsg_UpdateRect_Flags::is_resize_ack(
       params.flags);
 

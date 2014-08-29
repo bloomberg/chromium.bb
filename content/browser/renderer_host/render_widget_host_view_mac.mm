@@ -855,6 +855,10 @@ void RenderWidgetHostViewMac::SetBounds(const gfx::Rect& rect) {
   }
 }
 
+gfx::Vector2dF RenderWidgetHostViewMac::GetLastScrollOffset() const {
+  return last_scroll_offset_;
+}
+
 gfx::NativeView RenderWidgetHostViewMac::GetNativeView() const {
   return cocoa_view_;
 }
@@ -1381,6 +1385,7 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
     uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewMac::OnSwapCompositorFrame");
 
+  last_scroll_offset_ = frame->metadata.root_scroll_offset;
   if (frame->delegated_frame_data) {
     float scale_factor = frame->metadata.device_scale_factor;
 

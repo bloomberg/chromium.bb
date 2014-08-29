@@ -61,6 +61,9 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // screen space.
   virtual void SetBounds(const gfx::Rect& rect) = 0;
 
+  // Retrieves the last known scroll position.
+  virtual gfx::Vector2dF GetLastScrollOffset() const = 0;
+
   // Retrieves the native view used to contain plugins and identify the
   // renderer in IPC messages.
   virtual gfx::NativeView GetNativeView() const = 0;

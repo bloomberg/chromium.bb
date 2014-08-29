@@ -184,7 +184,6 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
     // We send a stale UpdateRect to the BrowserPlugin.
     BrowserPluginMsg_UpdateRect_Params update_rect_params;
     update_rect_params.view_size = gfx::Size(640, 480);
-    update_rect_params.scale_factor = 1.0f;
     update_rect_params.is_resize_ack = true;
     BrowserPluginMsg_UpdateRect msg(instance_id, update_rect_params);
     browser_plugin->OnMessageReceived(msg);
@@ -232,7 +231,6 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
     // We send a stale UpdateRect to the BrowserPlugin.
     BrowserPluginMsg_UpdateRect_Params update_rect_params;
     update_rect_params.view_size = gfx::Size(641, 480);
-    update_rect_params.scale_factor = 1.0f;
     update_rect_params.is_resize_ack = true;
     BrowserPluginMsg_UpdateRect msg(instance_id, update_rect_params);
     browser_plugin->OnMessageReceived(msg);
@@ -242,7 +240,6 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
   {
     BrowserPluginMsg_UpdateRect_Params update_rect_params;
     update_rect_params.view_size = gfx::Size(643, 480);
-    update_rect_params.scale_factor = 1.0f;
     update_rect_params.is_resize_ack = true;
     BrowserPluginMsg_UpdateRect msg(instance_id, update_rect_params);
     browser_plugin->OnMessageReceived(msg);

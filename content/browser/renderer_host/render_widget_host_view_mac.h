@@ -230,6 +230,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
+  virtual gfx::Vector2dF GetLastScrollOffset() const OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeViewId GetNativeViewId() const OVERRIDE;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
@@ -479,6 +480,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Whether it's allowed to pause waiting for a new frame.
   bool allow_pause_for_resize_or_repaint_;
+
+  // The last scroll offset of the view.
+  gfx::Vector2dF last_scroll_offset_;
 
   // The text to be shown in the tooltip, supplied by the renderer.
   base::string16 tooltip_text_;
