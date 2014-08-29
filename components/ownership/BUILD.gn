@@ -1,0 +1,43 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("ownership") {
+  sources = [
+    "owner_key_util.cc",
+    "owner_key_util.h",
+    "owner_key_util_impl.cc",
+    "owner_key_util_impl.h",
+  ]
+
+  defines = [
+    "OWNERSHIP_IMPLEMENTATION"
+  ]
+
+  deps = [
+    "//base",
+    "//crypto",
+  ]
+}
+
+component("test_support") {
+  sources = [
+    "mock_owner_key_util.cc",
+    "mock_owner_key_util.h",
+  ]
+
+  deps = [
+    ":ownership",
+    "//base",
+    "//crypto",
+  ]
+}
+
+source_set("unit_tests") {
+  sources = ["owner_key_util_unittest.cc"]
+
+  deps = [
+    ":ownership",
+    "//testing/gtest",
+  ]
+}

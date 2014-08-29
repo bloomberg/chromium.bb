@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
-#include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -39,6 +38,7 @@
 #include "chromeos/login/auth/mock_url_fetchers.h"
 #include "chromeos/login/auth/test_attempt_state.h"
 #include "chromeos/login/auth/user_context.h"
+#include "components/ownership/mock_owner_key_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
@@ -123,7 +123,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
         user_manager_enabler_(user_manager_),
         mock_caller_(NULL),
         mock_homedir_methods_(NULL),
-        owner_key_util_(new MockOwnerKeyUtil) {
+        owner_key_util_(new ownership::MockOwnerKeyUtil) {
     user_context_.SetKey(Key("fakepass"));
     user_context_.SetUserIDHash("me_nowhere_com_hash");
     const user_manager::User* user =
@@ -282,7 +282,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
   scoped_ptr<TestAttemptState> state_;
   FakeCryptohomeClient* fake_cryptohome_client_;
 
-  scoped_refptr<MockOwnerKeyUtil> owner_key_util_;
+  scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
 };
 
 TEST_F(CryptohomeAuthenticatorTest, OnAuthSuccess) {

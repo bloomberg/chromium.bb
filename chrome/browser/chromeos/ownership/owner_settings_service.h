@@ -14,10 +14,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/owner_key_util.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/tpm_token_loader.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/ownership/owner_key_util.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -75,8 +75,10 @@ class OwnerSettingsService : public DeviceSettingsService::PrivateKeyDelegate,
                                       const std::string& user_hash,
                                       const IsOwnerCallback& callback);
 
+  static scoped_refptr<ownership::OwnerKeyUtil> MakeOwnerKeyUtil();
+
   static void SetOwnerKeyUtilForTesting(
-      const scoped_refptr<OwnerKeyUtil>& owner_key_util);
+      const scoped_refptr<ownership::OwnerKeyUtil>& owner_key_util);
 
   static void SetDeviceSettingsServiceForTesting(
       DeviceSettingsService* device_settings_service);
@@ -91,8 +93,8 @@ class OwnerSettingsService : public DeviceSettingsService::PrivateKeyDelegate,
   void ReloadPrivateKey();
 
   // Called when ReloadPrivateKey() completes it's work.
-  void OnPrivateKeyLoaded(scoped_refptr<PublicKey> public_key,
-                          scoped_refptr<PrivateKey> private_key);
+  void OnPrivateKeyLoaded(scoped_refptr<ownership::PublicKey> public_key,
+                          scoped_refptr<ownership::PrivateKey> private_key);
 
   // Puts request to perform sign-and-store operation in the queue.
   void EnqueueSignAndStore(scoped_ptr<enterprise_management::PolicyData> policy,
@@ -112,7 +114,7 @@ class OwnerSettingsService : public DeviceSettingsService::PrivateKeyDelegate,
 
   // Returns testing instance of OwnerKeyUtil when it's set, otherwise
   // returns |owner_key_util_|.
-  scoped_refptr<OwnerKeyUtil> GetOwnerKeyUtil();
+  scoped_refptr<ownership::OwnerKeyUtil> GetOwnerKeyUtil();
 
   // Returns testing instance of DeviceSettingsService when it's set,
   // otherwise returns pointer to a singleton instance, when it's
@@ -125,11 +127,11 @@ class OwnerSettingsService : public DeviceSettingsService::PrivateKeyDelegate,
   // User ID this service instance belongs to.
   std::string user_id_;
 
-  scoped_refptr<PublicKey> public_key_;
+  scoped_refptr<ownership::PublicKey> public_key_;
 
-  scoped_refptr<PrivateKey> private_key_;
+  scoped_refptr<ownership::PrivateKey> private_key_;
 
-  scoped_refptr<OwnerKeyUtil> owner_key_util_;
+  scoped_refptr<ownership::OwnerKeyUtil> owner_key_util_;
 
   std::vector<IsOwnerCallback> pending_is_owner_callbacks_;
 

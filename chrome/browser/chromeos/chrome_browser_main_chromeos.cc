@@ -55,6 +55,7 @@
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/browser/chromeos/options/cert_library.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
@@ -66,7 +67,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/owner_key_util.h"
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/upgrade_detector_chromeos.h"
@@ -104,6 +104,7 @@
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm_token_loader.h"
 #include "components/metrics/metrics_service.h"
+#include "components/ownership/owner_key_util.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -186,7 +187,7 @@ class DBusServices {
     DeviceSettingsService::Initialize();
     DeviceSettingsService::Get()->SetSessionManager(
         DBusThreadManager::Get()->GetSessionManagerClient(),
-        OwnerKeyUtil::Create());
+        OwnerSettingsService::MakeOwnerKeyUtil());
   }
 
   ~DBusServices() {

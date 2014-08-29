@@ -15,8 +15,8 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
-#include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/ownership/mock_owner_key_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
@@ -38,7 +38,7 @@ class SessionManagerOperationTest : public testing::Test {
   SessionManagerOperationTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE, &message_loop_),
-        owner_key_util_(new MockOwnerKeyUtil()),
+        owner_key_util_(new ownership::MockOwnerKeyUtil()),
         validated_(false) {}
 
   virtual void SetUp() OVERRIDE {
@@ -79,7 +79,7 @@ class SessionManagerOperationTest : public testing::Test {
 
   policy::DevicePolicyBuilder policy_;
   DeviceSettingsTestHelper device_settings_test_helper_;
-  scoped_refptr<MockOwnerKeyUtil> owner_key_util_;
+  scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
 
   scoped_ptr<TestingProfile> profile_;
   OwnerSettingsService* service_;

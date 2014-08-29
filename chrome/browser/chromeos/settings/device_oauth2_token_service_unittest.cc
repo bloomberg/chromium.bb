@@ -18,6 +18,7 @@
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
+#include "components/ownership/mock_owner_key_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -83,7 +84,8 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
     SystemSaltGetter::Initialize();
 
     DeviceSettingsService::Initialize();
-    scoped_refptr<MockOwnerKeyUtil> owner_key_util_(new MockOwnerKeyUtil());
+    scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_(
+        new ownership::MockOwnerKeyUtil());
     owner_key_util_->SetPublicKeyFromPrivateKey(
         *device_policy_.GetSigningKey());
     DeviceSettingsService::Get()->SetSessionManager(

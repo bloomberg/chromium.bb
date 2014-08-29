@@ -1,6 +1,7 @@
 include_rules = [
   "+components/pairing",
   "+components/onc",
+  "+components/ownership",
   "+components/user_manager",
   "+cros",
   "+dbus",

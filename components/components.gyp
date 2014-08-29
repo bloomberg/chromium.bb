@@ -39,6 +39,7 @@
     'omaha_query_params.gypi',
     'onc.gypi',
     'os_crypt.gypi',
+    'ownership.gypi',
     'password_manager.gypi',
     'policy.gypi',
     'precache.gypi',

@@ -11,8 +11,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
-#include "chrome/browser/chromeos/settings/owner_key_util.h"
 #include "chrome/browser/chromeos/settings/session_manager_operation.h"
+#include "components/ownership/owner_key_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -20,6 +20,9 @@
 #include "crypto/rsa_private_key.h"
 
 namespace em = enterprise_management;
+
+using ownership::OwnerKeyUtil;
+using ownership::PublicKey;
 
 namespace {
 

@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/policy/device_policy_decoder_chromeos.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
-#include "chrome/browser/chromeos/settings/owner_key_util.h"
+#include "components/ownership/owner_key_util.h"
 #include "policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;
@@ -40,7 +40,7 @@ void DeviceCloudPolicyStoreChromeOS::Store(
   // Cancel all pending requests.
   weak_factory_.InvalidateWeakPtrs();
 
-  scoped_refptr<chromeos::PublicKey> public_key(
+  scoped_refptr<ownership::PublicKey> public_key(
       device_settings_service_->GetPublicKey());
   if (!install_attributes_->IsEnterpriseDevice() ||
       !device_settings_service_->policy_data() || !public_key.get() ||

@@ -2,26 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
+#include "components/ownership/mock_owner_key_util.h"
 
+#include "base/files/file_path.h"
 #include "crypto/rsa_private_key.h"
 
-namespace chromeos {
+namespace ownership {
 
-MockOwnerKeyUtil::MockOwnerKeyUtil() {}
+MockOwnerKeyUtil::MockOwnerKeyUtil() {
+}
 
-MockOwnerKeyUtil::~MockOwnerKeyUtil() {}
+MockOwnerKeyUtil::~MockOwnerKeyUtil() {
+}
 
 bool MockOwnerKeyUtil::ImportPublicKey(std::vector<uint8>* output) {
   *output = public_key_;
   return !public_key_.empty();
 }
 
+#if defined(USE_NSS)
 crypto::RSAPrivateKey* MockOwnerKeyUtil::FindPrivateKeyInSlot(
     const std::vector<uint8>& key,
     PK11SlotInfo* slot) {
   return private_key_.get() ? private_key_->Copy() : NULL;
 }
+#endif  // defined(USE_NSS)
 
 bool MockOwnerKeyUtil::IsPublicKeyPresent() {
   return !public_key_.empty();
@@ -46,4 +51,4 @@ void MockOwnerKeyUtil::SetPrivateKey(scoped_ptr<crypto::RSAPrivateKey> key) {
   private_key_->ExportPublicKey(&public_key_);
 }
 
-}  // namespace chromeos
+}  // namespace ownership

@@ -9,13 +9,17 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/path_service.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/session_manager_operation.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/ownership/owner_key_util_impl.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -31,6 +35,9 @@
 namespace em = enterprise_management;
 
 using content::BrowserThread;
+using ownership::OwnerKeyUtil;
+using ownership::PrivateKey;
+using ownership::PublicKey;
 
 namespace chromeos {
 
@@ -176,7 +183,11 @@ void DoesPrivateKeyExistAsync(
   if (g_owner_key_util_for_testing)
     owner_key_util = *g_owner_key_util_for_testing;
   else
-    owner_key_util = OwnerKeyUtil::Create();
+    owner_key_util = OwnerSettingsService::MakeOwnerKeyUtil();
+  if (!owner_key_util) {
+    callback.Run(false);
+    return;
+  }
   scoped_refptr<base::TaskRunner> task_runner =
       content::BrowserThread::GetBlockingPool()
           ->GetTaskRunnerWithShutdownBehavior(
@@ -232,7 +243,7 @@ bool CheckManagementModeTransition(em::PolicyData::ManagementMode current_mode,
 
 OwnerSettingsService::OwnerSettingsService(Profile* profile)
     : profile_(profile),
-      owner_key_util_(OwnerKeyUtil::Create()),
+      owner_key_util_(MakeOwnerKeyUtil()),
       waiting_for_profile_creation_(true),
       waiting_for_tpm_token_(true),
       weak_factory_(this) {
@@ -387,6 +398,15 @@ void OwnerSettingsService::IsOwnerForSafeModeAsync(
                  user_hash,
                  ProfileHelper::GetProfilePathByUserIdHash(user_hash)),
       base::Bind(&DoesPrivateKeyExistAsync, callback));
+}
+
+// static
+scoped_refptr<ownership::OwnerKeyUtil>
+OwnerSettingsService::MakeOwnerKeyUtil() {
+  base::FilePath public_key_path;
+  if (!PathService::Get(chromeos::FILE_OWNER_KEY, &public_key_path))
+    return NULL;
+  return new ownership::OwnerKeyUtilImpl(public_key_path);
 }
 
 // static

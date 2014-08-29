@@ -12,13 +12,16 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
-#include "chrome/browser/chromeos/settings/owner_key_util.h"
 #include "chrome/browser/net/nss_context.h"
+#include "components/ownership/owner_key_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/signature_creator.h"
 #include "policy/proto/device_management_backend.pb.h"
+
+using ownership::OwnerKeyUtil;
+using ownership::PublicKey;
 
 namespace em = enterprise_management;
 

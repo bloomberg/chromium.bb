@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/settings/owner_key_util.h"
+#include "components/ownership/owner_key_util_impl.h"
 
 #include <string>
 #include <vector>
@@ -13,10 +13,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
-#include "crypto/rsa_private_key.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace ownership {
 
 // 2048-bit RSA public key for testing.
 const uint8 kTestKeyData[] = {
@@ -47,14 +46,14 @@ const uint8 kTestKeyData[] = {
     0x41, 0x02, 0x03, 0x01, 0x00, 0x01,
 };
 
-class OwnerKeyUtilTest : public testing::Test {
+class OwnerKeyUtilImplTest : public testing::Test {
  protected:
-  OwnerKeyUtilTest() {}
-  virtual ~OwnerKeyUtilTest() {}
+  OwnerKeyUtilImplTest() {}
+  virtual ~OwnerKeyUtilImplTest() {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(tmpdir_.CreateUniqueTempDir());
-    key_file_ = tmpdir_.path().Append("key");
+    key_file_ = tmpdir_.path().Append(FILE_PATH_LITERAL("key"));
     util_ = new OwnerKeyUtilImpl(key_file_);
   }
 
@@ -63,10 +62,10 @@ class OwnerKeyUtilTest : public testing::Test {
   scoped_refptr<OwnerKeyUtil> util_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(OwnerKeyUtilTest);
+  DISALLOW_COPY_AND_ASSIGN(OwnerKeyUtilImplTest);
 };
 
-TEST_F(OwnerKeyUtilTest, ImportPublicKey) {
+TEST_F(OwnerKeyUtilImplTest, ImportPublicKey) {
   // Export public key, so that we can compare it to the one we get off disk.
   std::vector<uint8> public_key(kTestKeyData,
                                 kTestKeyData + sizeof(kTestKeyData));
@@ -83,7 +82,7 @@ TEST_F(OwnerKeyUtilTest, ImportPublicKey) {
   EXPECT_EQ(public_key, from_disk);
 }
 
-TEST_F(OwnerKeyUtilTest, ImportPublicKeyFailed) {
+TEST_F(OwnerKeyUtilImplTest, ImportPublicKeyFailed) {
   // First test the case where the file is missing which should fail.
   EXPECT_FALSE(util_->IsPublicKeyPresent());
   std::vector<uint8> from_disk;
@@ -97,4 +96,4 @@ TEST_F(OwnerKeyUtilTest, ImportPublicKeyFailed) {
   EXPECT_FALSE(from_disk.size());
 }
 
-}  // namespace chromeos
+}  // namespace ownership

@@ -155,6 +155,7 @@
             'os_crypt/ie7_password_win_unittest.cc',
             'os_crypt/keychain_password_mac_unittest.mm',
             'os_crypt/os_crypt_unittest.cc',
+            'ownership/owner_key_util_impl_unittest.cc',
             'password_manager/core/browser/browser_save_password_progress_logger_unittest.cc',
             'password_manager/core/browser/log_router_unittest.cc',
             'password_manager/core/browser/login_database_unittest.cc',
@@ -362,6 +363,9 @@
 
             # Dependencies of os_crypt
             'components.gyp:os_crypt',
+
+            # Dependencies of ownership
+            'components.gyp:ownership',
 
             # Dependencies of password_manager
             'components.gyp:password_manager_core_browser',

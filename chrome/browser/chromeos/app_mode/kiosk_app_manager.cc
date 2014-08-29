@@ -20,10 +20,10 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_external_loader.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/owner_key_util.h"
 #include "chrome/browser/extensions/external_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/common/chrome_paths.h"
@@ -31,6 +31,7 @@
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/ownership/owner_key_util.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -55,8 +56,9 @@ void OnRemoveAppCryptohomeComplete(const std::string& app,
 
 // Check for presence of machine owner public key file.
 void CheckOwnerFilePresence(bool *present) {
-  scoped_refptr<OwnerKeyUtil> util = OwnerKeyUtil::Create();
-  *present = util->IsPublicKeyPresent();
+  scoped_refptr<ownership::OwnerKeyUtil> util =
+      OwnerSettingsService::MakeOwnerKeyUtil();
+  *present = util.get() && util->IsPublicKeyPresent();
 }
 
 scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner() {
