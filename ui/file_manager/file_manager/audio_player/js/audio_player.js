@@ -117,18 +117,25 @@ AudioPlayer.prototype.load = function(playlist) {
         return;
 
       var newTracks = [];
+      var currentTracks = this.player_.tracks;
+      var unchanged = (currentTracks.length === this.entries_.length);
 
       for (var i = 0; i != this.entries_.length; i++) {
         var entry = this.entries_[i];
-        var onClick = this.select_.bind(this, i, false /* no restore */);
+        var onClick = this.select_.bind(this, i);
         newTracks.push(new AudioPlayer.TrackInfo(entry, onClick));
+
+        if (unchanged && entry.toURL() !== currentTracks[i].url)
+          unchanged = false;
       }
 
-      this.player_.tracks = newTracks;
+      if (!unchanged) {
+        this.player_.tracks = newTracks;
 
-      // Makes it sure that the handler of the track list is called, before the
-      // handler of the track index.
-      Platform.performMicrotaskCheckpoint();
+        // Makes it sure that the handler of the track list is called, before
+        // the handler of the track index.
+        Platform.performMicrotaskCheckpoint();
+      }
 
       this.select_(position, !!time);
 
