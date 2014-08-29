@@ -11,11 +11,11 @@
 
 #include "apps/app_lifetime_monitor.h"
 #include "apps/app_shim/app_shim_handler_mac.h"
-#include "apps/app_window_registry.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 
 class Profile;
 
@@ -28,12 +28,11 @@ class WebContents;
 }
 
 namespace extensions {
+class AppWindow;
 class Extension;
 }
 
 namespace apps {
-
-class AppWindow;
 
 // This app shim handler that handles events for app shims that correspond to an
 // extension.
@@ -50,7 +49,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
     virtual void LoadProfileAsync(const base::FilePath& path,
                                   base::Callback<void(Profile*)> callback);
 
-    virtual AppWindowRegistry::AppWindowList GetWindows(
+    virtual extensions::AppWindowRegistry::AppWindowList GetWindows(
         Profile* profile,
         const std::string& extension_id);
 
@@ -73,20 +72,21 @@ class ExtensionAppShimHandler : public AppShimHandler,
 
   AppShimHandler::Host* FindHost(Profile* profile, const std::string& app_id);
 
-  static void QuitAppForWindow(AppWindow* app_window);
+  static void QuitAppForWindow(extensions::AppWindow* app_window);
 
-  static void HideAppForWindow(AppWindow* app_window);
+  static void HideAppForWindow(extensions::AppWindow* app_window);
 
-  static void FocusAppForWindow(AppWindow* app_window);
+  static void FocusAppForWindow(extensions::AppWindow* app_window);
 
   // Brings the window to the front without showing it and instructs the shim to
   // request user attention. If there is no shim, show the app and return false.
-  static bool ActivateAndRequestUserAttentionForWindow(AppWindow* app_window);
+  static bool ActivateAndRequestUserAttentionForWindow(
+      extensions::AppWindow* app_window);
 
   // Instructs the shim to request user attention. Returns false if there is no
   // shim for this window.
   static void RequestUserAttentionForWindow(
-      AppWindow* app_window,
+      extensions::AppWindow* app_window,
       AppShimAttentionType attention_type);
 
   // Called by AppControllerMac when Chrome hides.

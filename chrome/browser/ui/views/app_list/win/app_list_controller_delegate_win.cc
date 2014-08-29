@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ui/views/app_list/win/app_list_controller_delegate_win.h"
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "chrome/browser/metro_utils/metro_chrome_win.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_icon_win.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "ui/base/resource/resource_bundle.h"
 
 AppListControllerDelegateWin::AppListControllerDelegateWin(
@@ -31,8 +31,8 @@ gfx::ImageSkia AppListControllerDelegateWin::GetWindowIcon() {
 
 void AppListControllerDelegateWin::FillLaunchParams(AppLaunchParams* params) {
   params->desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
-  apps::AppWindow* any_existing_window =
-      apps::AppWindowRegistry::Get(params->profile)
+  extensions::AppWindow* any_existing_window =
+      extensions::AppWindowRegistry::Get(params->profile)
           ->GetCurrentAppWindowForApp(params->extension_id);
   if (any_existing_window &&
       chrome::GetHostDesktopTypeForNativeWindow(

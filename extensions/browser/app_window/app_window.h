@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_APP_WINDOW_H_
-#define APPS_APP_WINDOW_H_
+#ifndef EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_H_
+#define EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_H_
 
 #include <string>
 #include <vector>
@@ -34,7 +34,12 @@ class BrowserContext;
 class WebContents;
 }
 
+namespace ui {
+class BaseWindow;
+}
+
 namespace extensions {
+
 class AppDelegate;
 class AppWebContentsHelper;
 class Extension;
@@ -43,13 +48,6 @@ class PlatformAppBrowserTest;
 class WindowController;
 
 struct DraggableRegion;
-}
-
-namespace ui {
-class BaseWindow;
-}
-
-namespace apps {
 
 // Manages the web contents for app windows. The implementation for this
 // class should create and maintain the WebContents for the window, and handle
@@ -68,8 +66,7 @@ class AppWindowContents {
   virtual void LoadContents(int32 creator_process_id) = 0;
 
   // Called when the native window changes.
-  virtual void NativeWindowChanged(
-      extensions::NativeAppWindow* native_app_window) = 0;
+  virtual void NativeWindowChanged(NativeAppWindow* native_app_window) = 0;
 
   // Called when the native window closes.
   virtual void NativeWindowClosed() = 0;
@@ -89,7 +86,7 @@ class AppWindow : public content::NotificationObserver,
                   public content::WebContentsDelegate,
                   public content::WebContentsObserver,
                   public web_modal::WebContentsModalDialogManagerDelegate,
-                  public extensions::IconImage::Observer {
+                  public IconImage::Observer {
  public:
   enum WindowType {
     WINDOW_TYPE_DEFAULT = 1 << 0,   // Default app window.
@@ -199,15 +196,15 @@ class AppWindow : public content::NotificationObserver,
   // Convert draggable regions in raw format to SkRegion format. Caller is
   // responsible for deleting the returned SkRegion instance.
   static SkRegion* RawDraggableRegionsToSkRegion(
-      const std::vector<extensions::DraggableRegion>& regions);
+      const std::vector<DraggableRegion>& regions);
 
   // The constructor and Init methods are public for constructing a AppWindow
   // with a non-standard render interface (e.g. v1 apps using Ash Panels).
   // Normally AppWindow::Create should be used.
   // Takes ownership of |app_delegate| and |delegate|.
   AppWindow(content::BrowserContext* context,
-            extensions::AppDelegate* app_delegate,
-            const extensions::Extension* extension);
+            AppDelegate* app_delegate,
+            const Extension* extension);
 
   // Initializes the render interface, web contents, and native window.
   // |app_window_contents| will become owned by AppWindow.
@@ -231,8 +228,8 @@ class AppWindow : public content::NotificationObserver,
   const GURL& badge_icon_url() const { return badge_icon_url_; }
   bool is_hidden() const { return is_hidden_; }
 
-  const extensions::Extension* GetExtension() const;
-  extensions::NativeAppWindow* GetBaseWindow();
+  const Extension* GetExtension() const;
+  NativeAppWindow* GetBaseWindow();
   gfx::NativeWindow GetNativeWindow();
 
   // Returns the bounds that should be reported to the renderer.
@@ -266,8 +263,7 @@ class AppWindow : public content::NotificationObserver,
   void UpdateShape(scoped_ptr<SkRegion> region);
 
   // Called from the render interface to modify the draggable regions.
-  void UpdateDraggableRegions(
-      const std::vector<extensions::DraggableRegion>& regions);
+  void UpdateDraggableRegions(const std::vector<DraggableRegion>& regions);
 
   // Updates the app image to |image|. Called internally from the image loader
   // callback. Also called externally for v1 apps using Ash Panels.
@@ -356,7 +352,7 @@ class AppWindow : public content::NotificationObserver,
 
  private:
   // PlatformAppBrowserTest needs access to web_contents()
-  friend class extensions::PlatformAppBrowserTest;
+  friend class PlatformAppBrowserTest;
 
   // content::WebContentsDelegate implementation.
   virtual void CloseContents(content::WebContents* contents) OVERRIDE;
@@ -467,9 +463,8 @@ class AppWindow : public content::NotificationObserver,
                           const std::vector<SkBitmap>& bitmaps,
                           const std::vector<gfx::Size>& original_bitmap_sizes);
 
-  // extensions::IconImage::Observer implementation.
-  virtual void OnExtensionIconImageChanged(extensions::IconImage* image)
-      OVERRIDE;
+  // IconImage::Observer implementation.
+  virtual void OnExtensionIconImageChanged(IconImage* image) OVERRIDE;
 
   // The browser context with which this window is associated. AppWindow does
   // not own this object.
@@ -493,7 +488,7 @@ class AppWindow : public content::NotificationObserver,
   GURL app_icon_url_;
 
   // An object to load the app's icon as an extension resource.
-  scoped_ptr<extensions::IconImage> app_icon_image_;
+  scoped_ptr<IconImage> app_icon_image_;
 
   // Badge for icon shown in the task bar.
   gfx::Image badge_icon_;
@@ -502,12 +497,12 @@ class AppWindow : public content::NotificationObserver,
   GURL badge_icon_url_;
 
   // An object to load the badge as an extension resource.
-  scoped_ptr<extensions::IconImage> badge_icon_image_;
+  scoped_ptr<IconImage> badge_icon_image_;
 
-  scoped_ptr<extensions::NativeAppWindow> native_app_window_;
+  scoped_ptr<NativeAppWindow> native_app_window_;
   scoped_ptr<AppWindowContents> app_window_contents_;
-  scoped_ptr<extensions::AppDelegate> app_delegate_;
-  scoped_ptr<extensions::AppWebContentsHelper> helper_;
+  scoped_ptr<AppDelegate> app_delegate_;
+  scoped_ptr<AppWebContentsHelper> helper_;
 
   // Manages popup windows (bubbles, tab-modals) visible overlapping the
   // app window.
@@ -555,6 +550,6 @@ class AppWindow : public content::NotificationObserver,
   DISALLOW_COPY_AND_ASSIGN(AppWindow);
 };
 
-}  // namespace apps
+}  // namespace extensions
 
-#endif  // APPS_APP_WINDOW_H_
+#endif  // EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_H_

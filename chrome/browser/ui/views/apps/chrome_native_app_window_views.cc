@@ -51,7 +51,7 @@
 #include "ui/aura/window_observer.h"
 #endif
 
-using apps::AppWindow;
+using extensions::AppWindow;
 
 namespace {
 
@@ -235,7 +235,7 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
   SetContentSizeConstraints(create_params.GetContentMinimumSize(frame_insets),
                             create_params.GetContentMaximumSize(frame_insets));
   if (!window_bounds.IsEmpty()) {
-    typedef apps::AppWindow::BoundsSpecification BoundsSpecification;
+    typedef AppWindow::BoundsSpecification BoundsSpecification;
     bool position_specified =
         window_bounds.x() != BoundsSpecification::kUnspecifiedPosition &&
         window_bounds.y() != BoundsSpecification::kUnspecifiedPosition;

@@ -7,8 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"

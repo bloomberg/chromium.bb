@@ -21,7 +21,7 @@
 #include "extensions/common/extension_messages.h"
 #include "ui/gfx/image/image.h"
 
-using apps::AppWindow;
+using extensions::AppWindow;
 using extensions::NativeAppWindow;
 
 // AshPanelWindowController ----------------------------------------------------

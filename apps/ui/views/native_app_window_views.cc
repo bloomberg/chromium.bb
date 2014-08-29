@@ -4,11 +4,11 @@
 
 #include "apps/ui/views/native_app_window_views.h"
 
-#include "apps/app_window.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/app_window/app_window.h"
 #include "extensions/common/draggable_region.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/path.h"
@@ -19,6 +19,8 @@
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
 #endif
+
+using extensions::AppWindow;
 
 namespace apps {
 

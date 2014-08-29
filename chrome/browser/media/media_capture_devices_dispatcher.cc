@@ -4,8 +4,6 @@
 
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -40,6 +38,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/media_stream_request.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -236,10 +236,10 @@ gfx::NativeWindow FindParentWindowForWebContents(
   if (browser && browser->window())
     return browser->window()->GetNativeWindow();
 
-  const apps::AppWindowRegistry::AppWindowList& window_list =
-      apps::AppWindowRegistry::Get(
+  const extensions::AppWindowRegistry::AppWindowList& window_list =
+      extensions::AppWindowRegistry::Get(
           web_contents->GetBrowserContext())->app_windows();
-  for (apps::AppWindowRegistry::AppWindowList::const_iterator iter =
+  for (extensions::AppWindowRegistry::AppWindowList::const_iterator iter =
            window_list.begin();
        iter != window_list.end(); ++iter) {
     if ((*iter)->web_contents() == web_contents)

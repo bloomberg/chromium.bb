@@ -5,11 +5,11 @@
 #ifndef APPS_APP_WINDOW_CONTENTS_H_
 #define APPS_APP_WINDOW_CONTENTS_H_
 
-#include "apps/app_window.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "url/gurl.h"
 
@@ -27,11 +27,11 @@ namespace apps {
 // WebContents instance and observes it for the purpose of passing
 // messages to the extensions system.
 class AppWindowContentsImpl
-    : public AppWindowContents,
+    : public extensions::AppWindowContents,
       public content::WebContentsObserver,
       public extensions::ExtensionFunctionDispatcher::Delegate {
  public:
-  explicit AppWindowContentsImpl(AppWindow* host);
+  explicit AppWindowContentsImpl(extensions::AppWindow* host);
   virtual ~AppWindowContentsImpl();
 
   // AppWindowContents
@@ -58,7 +58,7 @@ class AppWindowContentsImpl
       const std::vector<extensions::DraggableRegion>& regions);
   void SuspendRenderViewHost(content::RenderViewHost* rvh);
 
-  AppWindow* host_;  // This class is owned by |host_|
+  extensions::AppWindow* host_;  // This class is owned by |host_|
   GURL url_;
   scoped_ptr<content::WebContents> web_contents_;
   scoped_ptr<extensions::ExtensionFunctionDispatcher>

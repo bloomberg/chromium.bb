@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -33,6 +31,8 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "net/base/network_change_notifier.h"
 
 namespace chromeos {
@@ -57,13 +57,14 @@ AppLaunchController::ReturnBoolCallback*
 // AppLaunchController::AppWindowWatcher
 
 class AppLaunchController::AppWindowWatcher
-    : public apps::AppWindowRegistry::Observer {
+    : public extensions::AppWindowRegistry::Observer {
  public:
   explicit AppWindowWatcher(AppLaunchController* controller,
                             const std::string& app_id)
       : controller_(controller),
         app_id_(app_id),
-        window_registry_(apps::AppWindowRegistry::Get(controller->profile_)),
+        window_registry_(
+            extensions::AppWindowRegistry::Get(controller->profile_)),
         weak_factory_(this) {
     if (!window_registry_->GetAppWindowsForApp(app_id).empty()) {
       base::MessageLoop::current()->PostTask(
@@ -80,8 +81,8 @@ class AppLaunchController::AppWindowWatcher
   }
 
  private:
-  // apps::AppWindowRegistry::Observer overrides:
-  virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE {
+  // extensions::AppWindowRegistry::Observer overrides:
+  virtual void OnAppWindowAdded(extensions::AppWindow* app_window) OVERRIDE {
     if (app_window->extension_id() == app_id_) {
       window_registry_->RemoveObserver(this);
       NotifyAppWindowCreated();
@@ -94,7 +95,7 @@ class AppLaunchController::AppWindowWatcher
 
   AppLaunchController* controller_;
   std::string app_id_;
-  apps::AppWindowRegistry* window_registry_;
+  extensions::AppWindowRegistry* window_registry_;
   base::WeakPtrFactory<AppWindowWatcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppWindowWatcher);

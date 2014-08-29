@@ -13,12 +13,12 @@
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "ui/aura/window_observer.h"
 
-namespace apps {
-class AppWindow;
-}
-
 namespace aura {
 class Window;
+}
+
+namespace extensions {
+class AppWindow;
 }
 
 namespace gfx {
@@ -43,7 +43,8 @@ class AppWindowLauncherItemController : public LauncherItemController,
 
   virtual ~AppWindowLauncherItemController();
 
-  void AddAppWindow(apps::AppWindow* app_window, ash::ShelfItemStatus status);
+  void AddAppWindow(extensions::AppWindow* app_window,
+                    ash::ShelfItemStatus status);
 
   void RemoveAppWindowForWindow(aura::Window* window);
 
@@ -82,19 +83,19 @@ class AppWindowLauncherItemController : public LauncherItemController,
   void InstallApp();
 
  private:
-  typedef std::list<apps::AppWindow*> AppWindowList;
+  typedef std::list<extensions::AppWindow*> AppWindowList;
 
-  void ShowAndActivateOrMinimize(apps::AppWindow* app_window);
+  void ShowAndActivateOrMinimize(extensions::AppWindow* app_window);
 
   // Activate the given |window_to_show|, or - if already selected - advance to
   // the next window of similar type.
-  void ActivateOrAdvanceToNextAppWindow(apps::AppWindow* window_to_show);
+  void ActivateOrAdvanceToNextAppWindow(extensions::AppWindow* window_to_show);
 
   // List of associated app windows
   AppWindowList app_windows_;
 
   // Pointer to the most recently active app window
-  apps::AppWindow* last_active_app_window_;
+  extensions::AppWindow* last_active_app_window_;
 
   // The launcher id associated with this set of windows. There is one
   // AppLauncherItemController for each |app_shelf_id_|.

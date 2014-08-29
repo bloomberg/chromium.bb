@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
@@ -11,6 +9,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/test/base/testing_profile.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "ui/base/base_window.h"
 #include "ui/gfx/rect.h"
@@ -19,18 +19,18 @@
 #include "ui/base/win/shell.h"
 #endif
 
-using apps::AppWindow;
+namespace extensions {
 
 namespace {
 
-class TestAppWindowRegistryObserver : public apps::AppWindowRegistry::Observer {
+class TestAppWindowRegistryObserver : public AppWindowRegistry::Observer {
  public:
   explicit TestAppWindowRegistryObserver(Profile* profile)
       : profile_(profile), icon_updates_(0) {
-    apps::AppWindowRegistry::Get(profile_)->AddObserver(this);
+    AppWindowRegistry::Get(profile_)->AddObserver(this);
   }
   virtual ~TestAppWindowRegistryObserver() {
-    apps::AppWindowRegistry::Get(profile_)->RemoveObserver(this);
+    AppWindowRegistry::Get(profile_)->RemoveObserver(this);
   }
 
   // Overridden from AppWindowRegistry::Observer:
@@ -48,8 +48,6 @@ class TestAppWindowRegistryObserver : public apps::AppWindowRegistry::Observer {
 };
 
 }  // namespace
-
-namespace extensions {
 
 // Tests chrome.app.window.setIcon.
 IN_PROC_BROWSER_TEST_F(ExperimentalPlatformAppBrowserTest, WindowsApiSetIcon) {

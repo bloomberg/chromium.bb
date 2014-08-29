@@ -4,7 +4,6 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 
-#include "apps/app_window.h"
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
@@ -17,6 +16,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
+#include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/views/widget/widget.h"
@@ -240,7 +240,7 @@ class AcceleratorCommandsPlatformAppFullscreenBrowserTest
   }
 
   // Sets |app_window|'s show state to |initial_show_state_|.
-  void SetToInitialShowState(apps::AppWindow* app_window) {
+  void SetToInitialShowState(extensions::AppWindow* app_window) {
     if (initial_show_state_ == ui::SHOW_STATE_MAXIMIZED)
       app_window->Maximize();
     else
@@ -248,7 +248,7 @@ class AcceleratorCommandsPlatformAppFullscreenBrowserTest
   }
 
   // Returns true if |app_window|'s show state is |initial_show_state_|.
-  bool IsInitialShowState(apps::AppWindow* app_window) const {
+  bool IsInitialShowState(extensions::AppWindow* app_window) const {
     if (initial_show_state_ == ui::SHOW_STATE_MAXIMIZED)
       return app_window->GetBaseWindow()->IsMaximized();
     else
@@ -278,9 +278,10 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsPlatformAppFullscreenBrowserTest,
     // Test that ToggleFullscreen() toggles a platform's app's fullscreen
     // state and that it additionally puts the app into immersive fullscreen
     // if put_all_windows_in_immersive() returns true.
-    apps::AppWindow::CreateParams params;
-    params.frame = apps::AppWindow::FRAME_CHROME;
-    apps::AppWindow* app_window = CreateAppWindowFromParams(extension, params);
+    extensions::AppWindow::CreateParams params;
+    params.frame = extensions::AppWindow::FRAME_CHROME;
+    extensions::AppWindow* app_window =
+        CreateAppWindowFromParams(extension, params);
     extensions::NativeAppWindow* native_app_window =
         app_window->GetBaseWindow();
     SetToInitialShowState(app_window);
@@ -302,9 +303,10 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsPlatformAppFullscreenBrowserTest,
   {
     // Repeat the test, but make sure that frameless platform apps are never put
     // into immersive fullscreen.
-    apps::AppWindow::CreateParams params;
-    params.frame = apps::AppWindow::FRAME_NONE;
-    apps::AppWindow* app_window = CreateAppWindowFromParams(extension, params);
+    extensions::AppWindow::CreateParams params;
+    params.frame = extensions::AppWindow::FRAME_NONE;
+    extensions::AppWindow* app_window =
+        CreateAppWindowFromParams(extension, params);
     extensions::NativeAppWindow* native_app_window =
         app_window->GetBaseWindow();
     ASSERT_TRUE(app_window->GetBaseWindow()->IsActive());

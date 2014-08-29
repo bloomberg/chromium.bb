@@ -8,7 +8,7 @@
 
 // static
 extensions::NativeAppWindow* ChromeAppsClient::CreateNativeAppWindowImpl(
-    apps::AppWindow* app_window,
-    const apps::AppWindow::CreateParams& params) {
+    extensions::AppWindow* app_window,
+    const extensions::AppWindow::CreateParams& params) {
   return new NativeAppWindowCocoa(app_window, params);
 }

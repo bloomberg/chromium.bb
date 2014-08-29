@@ -5,15 +5,15 @@
 #ifndef CHROME_BROWSER_UI_APPS_CHROME_APPS_CLIENT_H_
 #define CHROME_BROWSER_UI_APPS_CHROME_APPS_CLIENT_H_
 
-#include "apps/ui/apps_client.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "extensions/browser/app_window/apps_client.h"
 
 template <typename T>
 struct DefaultSingletonTraits;
 
 // The implementation of AppsClient for Chrome.
-class ChromeAppsClient : public apps::AppsClient {
+class ChromeAppsClient : public extensions::AppsClient {
  public:
   ChromeAppsClient();
   virtual ~ChromeAppsClient();
@@ -24,15 +24,15 @@ class ChromeAppsClient : public apps::AppsClient {
  private:
   friend struct DefaultSingletonTraits<ChromeAppsClient>;
 
-  // apps::AppsClient
+  // extensions::AppsClient
   virtual std::vector<content::BrowserContext*> GetLoadedBrowserContexts()
       OVERRIDE;
-  virtual apps::AppWindow* CreateAppWindow(
+  virtual extensions::AppWindow* CreateAppWindow(
       content::BrowserContext* context,
       const extensions::Extension* extension) OVERRIDE;
   virtual extensions::NativeAppWindow* CreateNativeAppWindow(
-      apps::AppWindow* window,
-      const apps::AppWindow::CreateParams& params) OVERRIDE;
+      extensions::AppWindow* window,
+      const extensions::AppWindow::CreateParams& params) OVERRIDE;
   virtual void IncrementKeepAliveCount() OVERRIDE;
   virtual void DecrementKeepAliveCount() OVERRIDE;
   virtual void OpenDevToolsWindow(content::WebContents* web_contents,
@@ -41,8 +41,8 @@ class ChromeAppsClient : public apps::AppsClient {
 
   // Implemented in platform specific code.
   static extensions::NativeAppWindow* CreateNativeAppWindowImpl(
-      apps::AppWindow* window,
-      const apps::AppWindow::CreateParams& params);
+      extensions::AppWindow* window,
+      const extensions::AppWindow::CreateParams& params);
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppsClient);
 };

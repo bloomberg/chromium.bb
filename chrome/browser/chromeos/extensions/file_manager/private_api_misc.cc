@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_misc.h"
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "ash/frame/frame_util.h"
 #include "base/files/file_path.h"
 #include "base/prefs/pref_service.h"
@@ -39,6 +37,8 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "google_apis/drive/auth_service.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "url/gurl.h"
@@ -50,9 +50,9 @@ const char kCWSScope[] = "https://www.googleapis.com/auth/chromewebstore";
 const char kGoogleCastApiExtensionId[] = "mafeflapfdfljijmlienjedomfjfmhpd";
 
 // Obtains the current app window.
-apps::AppWindow* GetCurrentAppWindow(ChromeSyncExtensionFunction* function) {
-  apps::AppWindowRegistry* const app_window_registry =
-      apps::AppWindowRegistry::Get(function->GetProfile());
+AppWindow* GetCurrentAppWindow(ChromeSyncExtensionFunction* function) {
+  AppWindowRegistry* const app_window_registry =
+      AppWindowRegistry::Get(function->GetProfile());
   content::WebContents* const contents = function->GetAssociatedWebContents();
   content::RenderViewHost* const render_view_host =
       contents ? contents->GetRenderViewHost() : NULL;
@@ -383,7 +383,7 @@ bool FileBrowserPrivateGetProfilesFunction::RunSync() {
       profiles = GetLoggedInProfileInfoList(GetAssociatedWebContents());
 
   // Obtains the display profile ID.
-  apps::AppWindow* const app_window = GetCurrentAppWindow(this);
+  AppWindow* const app_window = GetCurrentAppWindow(this);
   chrome::MultiUserWindowManager* const window_manager =
       chrome::MultiUserWindowManager::GetInstance();
   const std::string current_profile_id =
@@ -424,7 +424,7 @@ bool FileBrowserPrivateVisitDesktopFunction::RunSync() {
   }
 
   // Look for the current app window.
-  apps::AppWindow* const app_window = GetCurrentAppWindow(this);
+  AppWindow* const app_window = GetCurrentAppWindow(this);
   if (!app_window) {
     SetError("Target window is not found.");
     return false;

@@ -869,7 +869,7 @@ void SystemTrayDelegateChromeOS::SetProfile(Profile* profile) {
   user_profile_ = profile;
 
   // Start observing the AppWindowRegistry of the newly set |user_profile_|.
-  apps::AppWindowRegistry::Get(user_profile_)->AddObserver(this);
+  extensions::AppWindowRegistry::Get(user_profile_)->AddObserver(this);
 
   PrefService* prefs = profile->GetPrefs();
   user_pref_registrar_.reset(new PrefChangeRegistrar);
@@ -1011,9 +1011,9 @@ void SystemTrayDelegateChromeOS::StopObservingAppWindowRegistry() {
   if (!user_profile_)
     return;
 
-  apps::AppWindowRegistry* registry =
-      apps::AppWindowRegistry::Factory::GetForBrowserContext(user_profile_,
-                                                             false);
+  extensions::AppWindowRegistry* registry =
+      extensions::AppWindowRegistry::Factory::GetForBrowserContext(
+          user_profile_, false);
   if (registry)
     registry->RemoveObserver(this);
 }
@@ -1033,7 +1033,8 @@ void SystemTrayDelegateChromeOS::NotifyIfLastWindowClosed() {
     }
   }
 
-  if (!apps::AppWindowRegistry::Get(user_profile_)->app_windows().empty()) {
+  if (!extensions::AppWindowRegistry::Get(
+          user_profile_)->app_windows().empty()) {
     // The current user has at least one open app window.
     return;
   }
@@ -1279,9 +1280,9 @@ void SystemTrayDelegateChromeOS::OnBrowserRemoved(Browser* browser) {
   NotifyIfLastWindowClosed();
 }
 
-// Overridden from apps::AppWindowRegistry::Observer.
+// Overridden from extensions::AppWindowRegistry::Observer.
 void SystemTrayDelegateChromeOS::OnAppWindowRemoved(
-    apps::AppWindow* app_window) {
+    extensions::AppWindow* app_window) {
   NotifyIfLastWindowClosed();
 }
 

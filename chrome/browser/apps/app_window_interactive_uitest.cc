@@ -20,6 +20,7 @@
 #include "ui/views/win/hwnd_util.h"
 #endif
 
+using extensions::AppWindow;
 using extensions::NativeAppWindow;
 
 // Helper class that has to be created in the stack to check if the fullscreen
@@ -362,7 +363,7 @@ void AppWindowInteractiveTest::TestOuterBoundsHelper(
   launched_listener.Reset();
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
-  apps::AppWindow* window = GetFirstAppWindowForApp(app->id());
+  AppWindow* window = GetFirstAppWindowForApp(app->id());
   gfx::Rect window_bounds;
   gfx::Size min_size, max_size;
 

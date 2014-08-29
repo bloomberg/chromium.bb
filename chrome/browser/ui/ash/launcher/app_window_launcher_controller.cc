@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 
-#include "apps/app_window.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
@@ -14,11 +13,13 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "extensions/browser/app_window/app_window.h"
 #include "extensions/common/extension.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/wm/public/activation_client.h"
 
-using apps::AppWindow;
+using extensions::AppWindow;
+using extensions::AppWindowRegistry;
 
 namespace {
 
@@ -38,8 +39,7 @@ bool ControlsWindow(aura::Window* window) {
 AppWindowLauncherController::AppWindowLauncherController(
     ChromeLauncherController* owner)
     : owner_(owner), activation_client_(NULL) {
-  apps::AppWindowRegistry* registry =
-      apps::AppWindowRegistry::Get(owner->profile());
+AppWindowRegistry* registry = AppWindowRegistry::Get(owner->profile());
   registry_.insert(registry);
   registry->AddObserver(this);
   if (ash::Shell::HasInstance()) {
@@ -53,7 +53,7 @@ AppWindowLauncherController::AppWindowLauncherController(
 }
 
 AppWindowLauncherController::~AppWindowLauncherController() {
-  for (std::set<apps::AppWindowRegistry*>::iterator it = registry_.begin();
+  for (std::set<AppWindowRegistry*>::iterator it = registry_.begin();
        it != registry_.end();
        ++it)
     (*it)->RemoveObserver(this);
@@ -76,7 +76,7 @@ void AppWindowLauncherController::AdditionalUserAddedToSession(
       chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_MIXED)
     return;
 
-  apps::AppWindowRegistry* registry = apps::AppWindowRegistry::Get(profile);
+  AppWindowRegistry* registry = AppWindowRegistry::Get(profile);
   if (registry_.find(registry) != registry_.end())
     return;
 

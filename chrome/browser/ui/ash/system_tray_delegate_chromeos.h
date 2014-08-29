@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_DELEGATE_CHROMEOS_H_
 #define CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_DELEGATE_CHROMEOS_H_
 
-#include "apps/app_window_registry.h"
 #include "ash/ime/input_method_menu_manager.h"
 #include "ash/session/session_state_observer.h"
 #include "ash/system/tray/system_tray.h"
@@ -30,6 +29,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 
 namespace chromeos {
 
@@ -45,7 +45,7 @@ class SystemTrayDelegateChromeOS
       public policy::CloudPolicyStore::Observer,
       public ash::SessionStateObserver,
       public chrome::BrowserListObserver,
-      public apps::AppWindowRegistry::Observer {
+      public extensions::AppWindowRegistry::Observer {
  public:
   SystemTrayDelegateChromeOS();
 
@@ -229,8 +229,8 @@ class SystemTrayDelegateChromeOS
   // Overridden from chrome::BrowserListObserver:
   virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
 
-  // Overridden from apps::AppWindowRegistry::Observer:
-  virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE;
+  // Overridden from extensions::AppWindowRegistry::Observer:
+  virtual void OnAppWindowRemoved(extensions::AppWindow* app_window) OVERRIDE;
 
   void OnAccessibilityStatusChanged(
       const AccessibilityStatusEventDetails& details);

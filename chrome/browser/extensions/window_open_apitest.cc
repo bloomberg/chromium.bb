@@ -34,7 +34,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_ASH)
-#include "apps/app_window_registry.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #endif
 
 #if defined(USE_ASH) && defined(OS_CHROMEOS)
@@ -59,8 +59,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_WindowOpen) {
 
 int GetPanelCount(Browser* browser) {
 #if defined(USE_ASH_PANELS)
-  return static_cast<int>(
-      apps::AppWindowRegistry::Get(browser->profile())->app_windows().size());
+  return static_cast<int>(extensions::AppWindowRegistry::Get(
+      browser->profile())->app_windows().size());
 #else
   return PanelManager::GetInstance()->num_panels();
 #endif

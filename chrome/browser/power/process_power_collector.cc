@@ -4,8 +4,6 @@
 
 #include "chrome/browser/power/process_power_collector.h"
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"
 #include "chrome/browser/browser_process.h"
@@ -17,6 +15,8 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -127,9 +127,9 @@ double ProcessPowerCollector::SynchronizeProcesses() {
   for (std::vector<Profile*>::const_iterator it = open_profiles.begin();
        it != open_profiles.end();
        ++it) {
-    const apps::AppWindowRegistry::AppWindowList& app_windows =
-        apps::AppWindowRegistry::Get(*it)->app_windows();
-    for (apps::AppWindowRegistry::AppWindowList::const_iterator itr =
+    const extensions::AppWindowRegistry::AppWindowList& app_windows =
+        extensions::AppWindowRegistry::Get(*it)->app_windows();
+    for (extensions::AppWindowRegistry::AppWindowList::const_iterator itr =
              app_windows.begin();
          itr != app_windows.end();
          ++itr) {

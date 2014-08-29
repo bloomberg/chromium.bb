@@ -8,20 +8,16 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 
-#include "apps/app_window.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/app_window/size_constraints.h"
 #include "extensions/common/draggable_region.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/gfx/rect.h"
-
-namespace apps {
-class AppWindow;
-}
 
 class ExtensionKeybindingRegistryCocoa;
 class NativeAppWindowCocoa;
@@ -51,8 +47,8 @@ class SkRegion;
 class NativeAppWindowCocoa : public extensions::NativeAppWindow,
                              public content::WebContentsObserver {
  public:
-  NativeAppWindowCocoa(apps::AppWindow* app_window,
-                       const apps::AppWindow::CreateParams& params);
+  NativeAppWindowCocoa(extensions::AppWindow* app_window,
+                       const extensions::AppWindow::CreateParams& params);
 
   // ui::BaseWindow implementation.
   virtual bool IsActive() const OVERRIDE;
@@ -187,7 +183,7 @@ class NativeAppWindowCocoa : public extensions::NativeAppWindow,
   // Hides the window unconditionally. Used by Hide and HideWithApp.
   void HideWithoutMarkingHidden();
 
-  apps::AppWindow* app_window_;  // weak - AppWindow owns NativeAppWindow.
+  extensions::AppWindow* app_window_;  // weak - AppWindow owns NativeAppWindow.
 
   bool has_frame_;
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/options/website_settings_handler.h"
 
-#include "apps/app_window_registry.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -19,6 +18,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
@@ -537,7 +537,7 @@ void WebsiteSettingsHandler::StopOrigin(const GURL& site_url) {
             ->enabled_extensions()
             .GetHostedAppByURL(site_url);
     if (extension) {
-      apps::AppWindowRegistry::Get(profile)
+      extensions::AppWindowRegistry::Get(profile)
           ->CloseAllAppWindowsForApp(extension->id());
     }
   }

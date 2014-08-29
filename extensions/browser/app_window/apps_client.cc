@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/ui/apps_client.h"
+#include "extensions/browser/app_window/apps_client.h"
 
 #include "base/basictypes.h"
 
-namespace apps {
+namespace extensions {
 
 namespace {
 
@@ -26,4 +26,4 @@ void AppsClient::Set(AppsClient* client) {
   g_client = client;
 }
 
-}  // namespace apps
+}  // namespace extensions

@@ -15,7 +15,7 @@ Activity* ContentActivityFactory::CreateAppActivity(
 }
 
 Activity* ContentActivityFactory::CreateAppActivity(
-    apps::AppWindow* app_window) {
+    extensions::AppWindow* app_window) {
   return NULL;
 }
 

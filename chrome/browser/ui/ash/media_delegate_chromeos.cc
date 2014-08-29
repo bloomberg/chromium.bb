@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/ash/media_delegate_chromeos.h"
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/message_loop/message_loop.h"
@@ -19,6 +17,8 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 
@@ -61,9 +61,9 @@ void GetAppMediaCaptureState(
     const MediaStreamCaptureIndicator* indicator,
     content::BrowserContext* context,
     int* media_state_out) {
-  const apps::AppWindowRegistry::AppWindowList& apps =
-      apps::AppWindowRegistry::Get(context)->app_windows();
-  for (apps::AppWindowRegistry::AppWindowList::const_iterator iter =
+  const extensions::AppWindowRegistry::AppWindowList& apps =
+      extensions::AppWindowRegistry::Get(context)->app_windows();
+  for (extensions::AppWindowRegistry::AppWindowList::const_iterator iter =
            apps.begin();
        iter != apps.end();
        ++iter) {

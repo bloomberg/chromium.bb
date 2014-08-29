@@ -42,7 +42,7 @@
 // windowWillUseStandardFrame, as the window would not restore back to the
 // desired size.
 
-using apps::AppWindow;
+using extensions::AppWindow;
 
 @interface NSWindow (NSPrivateApis)
 - (void)setBottomCornerRounded:(BOOL)rounded;
@@ -78,7 +78,7 @@ NSInteger AlwaysOnTopWindowLevel() {
 }
 
 NSRect GfxToCocoaBounds(gfx::Rect bounds) {
-  typedef apps::AppWindow::BoundsSpecification BoundsSpecification;
+  typedef AppWindow::BoundsSpecification BoundsSpecification;
 
   NSRect main_screen_rect = [[[NSScreen screens] objectAtIndex:0] frame];
 
@@ -205,7 +205,7 @@ std::vector<gfx::Rect> CalculateNonDraggableRegions(
 - (CGFloat)roundedCornerRadius;
 @end
 
-// TODO(jamescook): Should these be AppNSWindow to match apps::AppWindow?
+// TODO(jamescook): Should these be AppNSWindow to match AppWindow?
 // http://crbug.com/344082
 @interface ShellNSWindow : ChromeEventProcessingWindow
 @end

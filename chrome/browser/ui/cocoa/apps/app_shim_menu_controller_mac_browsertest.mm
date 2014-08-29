@@ -6,7 +6,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "apps/app_window_registry.h"
 #include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
@@ -90,18 +90,18 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
   SetUpApps();
   // When an app is focused, all Chrome menu items should be hidden, and a menu
   // item for the app should be added.
-  apps::AppWindow* app_1_app_window = apps::AppWindowRegistry::Get(profile())
-                                          ->GetAppWindowsForApp(app_1_->id())
-                                          .front();
+  extensions::AppWindow* app_1_app_window =
+      extensions::AppWindowRegistry::Get(profile())
+          ->GetAppWindowsForApp(app_1_->id()).front();
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSWindowDidBecomeMainNotification
                     object:app_1_app_window->GetNativeWindow()];
   CheckHasAppMenus(app_1_);
 
   // When another app is focused, the menu item for the app should change.
-  apps::AppWindow* app_2_app_window = apps::AppWindowRegistry::Get(profile())
-                                          ->GetAppWindowsForApp(app_2_->id())
-                                          .front();
+  extensions::AppWindow* app_2_app_window =
+      extensions::AppWindowRegistry::Get(profile())
+          ->GetAppWindowsForApp(app_2_->id()).front();
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSWindowDidBecomeMainNotification
                     object:app_2_app_window->GetNativeWindow()];
@@ -133,16 +133,16 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
   // an app is uninstalled. We need to close the other windows first since the
   // menu only changes on a NSWindowWillCloseNotification if there are no other
   // windows.
-  apps::AppWindow* app_2_app_window = apps::AppWindowRegistry::Get(profile())
-                                          ->GetAppWindowsForApp(app_2_->id())
-                                          .front();
+  extensions::AppWindow* app_2_app_window =
+      extensions::AppWindowRegistry::Get(profile())
+          ->GetAppWindowsForApp(app_2_->id()).front();
   app_2_app_window->GetBaseWindow()->Close();
 
   chrome::BrowserIterator()->window()->Close();
 
-  apps::AppWindow* app_1_app_window = apps::AppWindowRegistry::Get(profile())
-                                          ->GetAppWindowsForApp(app_1_->id())
-                                          .front();
+  extensions::AppWindow* app_1_app_window =
+      extensions::AppWindowRegistry::Get(profile())
+          ->GetAppWindowsForApp(app_1_->id()).front();
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSWindowDidBecomeMainNotification
                     object:app_1_app_window->GetNativeWindow()];

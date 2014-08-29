@@ -4,11 +4,11 @@
 
 #include "chrome/browser/chromeos/login/test/app_window_waiter.h"
 
-#include "apps/app_window.h"
+#include "extensions/browser/app_window/app_window.h"
 
 namespace chromeos {
 
-AppWindowWaiter::AppWindowWaiter(apps::AppWindowRegistry* registry,
+AppWindowWaiter::AppWindowWaiter(extensions::AppWindowRegistry* registry,
                                  const std::string& app_id)
     : registry_(registry), app_id_(app_id), window_(NULL) {
   registry_->AddObserver(this);
@@ -18,7 +18,7 @@ AppWindowWaiter::~AppWindowWaiter() {
   registry_->RemoveObserver(this);
 }
 
-apps::AppWindow* AppWindowWaiter::Wait() {
+extensions::AppWindow* AppWindowWaiter::Wait() {
   window_ = registry_->GetCurrentAppWindowForApp(app_id_);
   if (window_)
     return window_;
@@ -28,7 +28,7 @@ apps::AppWindow* AppWindowWaiter::Wait() {
   return window_;
 }
 
-void AppWindowWaiter::OnAppWindowAdded(apps::AppWindow* app_window) {
+void AppWindowWaiter::OnAppWindowAdded(extensions::AppWindow* app_window) {
   if (!run_loop_.running())
     return;
 

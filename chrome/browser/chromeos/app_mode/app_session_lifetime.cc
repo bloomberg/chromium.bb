@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/app_mode/app_session_lifetime.h"
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -28,8 +26,11 @@
 #include "chromeos/network/network_state_handler.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 
-using apps::AppWindowRegistry;
+using extensions::AppWindow;
+using extensions::AppWindowRegistry;
 
 namespace chromeos {
 
@@ -50,8 +51,8 @@ class AppWindowHandler : public AppWindowRegistry::Observer {
   }
 
  private:
-  // apps::AppWindowRegistry::Observer overrides:
-  virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE {
+  // extensions::AppWindowRegistry::Observer overrides:
+  virtual void OnAppWindowRemoved(AppWindow* app_window) OVERRIDE {
     if (window_registry_->app_windows().empty()) {
       if (DemoAppLauncher::IsDemoAppSession(
               user_manager::UserManager::Get()->GetActiveUser()->email())) {
@@ -69,7 +70,7 @@ class AppWindowHandler : public AppWindowRegistry::Observer {
     }
   }
 
-  apps::AppWindowRegistry* window_registry_;
+  AppWindowRegistry* window_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(AppWindowHandler);
 };

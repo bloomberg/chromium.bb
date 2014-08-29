@@ -27,7 +27,7 @@ class AppEventPageTest : public PlatformAppBrowserTest {
 
     // Close the app window.
     EXPECT_EQ(1U, GetAppWindowCount());
-    apps::AppWindow* app_window = GetFirstAppWindow();
+    extensions::AppWindow* app_window = GetFirstAppWindow();
     ASSERT_TRUE(app_window);
     CloseAppWindow(app_window);
 

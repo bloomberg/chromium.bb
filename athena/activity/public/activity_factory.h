@@ -8,15 +8,12 @@
 #include "athena/athena_export.h"
 #include "url/gurl.h"
 
-namespace apps {
-class AppWindow;
-}
-
 namespace content {
 class BrowserContext;
 }
 
 namespace extensions {
+class AppWindow;
 class ShellAppWindow;
 }
 
@@ -48,7 +45,7 @@ class ATHENA_EXPORT ActivityFactory {
                                       const std::string& id) = 0;
 
   // Create an activity of an app with |app_window| for chrome environment.
-  virtual Activity* CreateAppActivity(apps::AppWindow* app_window) = 0;
+  virtual Activity* CreateAppActivity(extensions::AppWindow* app_window) = 0;
 };
 
 }  // namespace athena

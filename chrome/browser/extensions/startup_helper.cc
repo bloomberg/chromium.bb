@@ -26,8 +26,8 @@
 #include "ipc/ipc_message.h"
 
 #if defined(OS_WIN)
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
 #endif
@@ -58,10 +58,10 @@ CreateEphemeralAppInstaller(
     return installer;
   }
 
-  apps::AppWindowRegistry* app_window_registry =
-      apps::AppWindowRegistry::Get(profile);
+  extensions::AppWindowRegistry* app_window_registry =
+      extensions::AppWindowRegistry::Get(profile);
   DCHECK(app_window_registry);
-  apps::AppWindow* app_window =
+  extensions::AppWindow* app_window =
       app_window_registry->GetCurrentAppWindowForApp(app_id);
   if (!app_window)
     return installer;

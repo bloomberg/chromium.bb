@@ -5,9 +5,9 @@
 #include "apps/app_lifetime_monitor_factory.h"
 
 #include "apps/app_lifetime_monitor.h"
-#include "apps/app_window_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
 
 namespace apps {
@@ -26,7 +26,7 @@ AppLifetimeMonitorFactory::AppLifetimeMonitorFactory()
     : BrowserContextKeyedServiceFactory(
         "AppLifetimeMonitor",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(AppWindowRegistry::Factory::GetInstance());
+  DependsOn(extensions::AppWindowRegistry::Factory::GetInstance());
 }
 
 AppLifetimeMonitorFactory::~AppLifetimeMonitorFactory() {}

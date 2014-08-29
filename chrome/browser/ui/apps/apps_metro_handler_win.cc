@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/apps/apps_metro_handler_win.h"
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "ui/base/l10n/l10n_util.h"
 
 bool VerifyASHSwitchForApps(gfx::NativeWindow parent_window,
@@ -17,8 +17,8 @@ bool VerifyASHSwitchForApps(gfx::NativeWindow parent_window,
   DCHECK(win_restart_command_id == IDC_WIN_DESKTOP_RESTART ||
       win_restart_command_id == IDC_WIN8_METRO_RESTART ||
       win_restart_command_id == IDC_WIN_CHROMEOS_RESTART);
-  if (!apps::AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(
-           apps::AppWindow::WINDOW_TYPE_DEFAULT)) {
+  if (!extensions::AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(
+           extensions::AppWindow::WINDOW_TYPE_DEFAULT)) {
     return true;
   }
 

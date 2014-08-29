@@ -9,7 +9,6 @@
 #import <objc/message.h>
 #import <objc/runtime.h>
 
-#include "apps/app_window_registry.h"
 #include "base/command_line.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
@@ -34,6 +33,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/extension.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerPlatformAppBrowserTest,
       InstallAndLaunchPlatformApp("minimal");
   ASSERT_TRUE(listener.WaitUntilSatisfied());
 
-  NSWindow* app_window = apps::AppWindowRegistry::Get(profile())
+  NSWindow* app_window = extensions::AppWindowRegistry::Get(profile())
                              ->GetAppWindowsForApp(app->id())
                              .front()
                              ->GetNativeWindow();

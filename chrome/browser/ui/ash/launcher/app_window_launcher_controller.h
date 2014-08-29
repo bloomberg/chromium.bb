@@ -9,13 +9,9 @@
 #include <map>
 #include <string>
 
-#include "apps/app_window_registry.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "ui/aura/window_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
-
-namespace apps {
-class AppWindow;
-}
 
 namespace aura {
 
@@ -26,6 +22,10 @@ class ActivationClient;
 }
 }
 
+namespace extensions {
+class AppWindow;
+}
+
 class ChromeLauncherController;
 class Profile;
 class AppWindowLauncherItemController;
@@ -34,7 +34,7 @@ class AppWindowLauncherItemController;
 // aura window manager. It handles adding and removing launcher items from
 // ChromeLauncherController.
 class AppWindowLauncherController
-    : public apps::AppWindowRegistry::Observer,
+    : public extensions::AppWindowRegistry::Observer,
       public aura::WindowObserver,
       public aura::client::ActivationChangeObserver {
  public:
@@ -50,9 +50,10 @@ class AppWindowLauncherController
   virtual void AdditionalUserAddedToSession(Profile* profile);
 
   // Overridden from AppWindowRegistry::Observer:
-  virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) OVERRIDE;
-  virtual void OnAppWindowShown(apps::AppWindow* app_window) OVERRIDE;
-  virtual void OnAppWindowHidden(apps::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowIconChanged(
+      extensions::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowShown(extensions::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowHidden(extensions::AppWindow* app_window) OVERRIDE;
 
   // Overriden from aura::WindowObserver:
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
@@ -63,7 +64,7 @@ class AppWindowLauncherController
 
  protected:
   // Registers a app window with the shelf and this object.
-  void RegisterApp(apps::AppWindow* app_window);
+  void RegisterApp(extensions::AppWindow* app_window);
 
   // Unregisters a app window with the shelf and this object.
   void UnregisterApp(aura::Window* window);
@@ -82,7 +83,7 @@ class AppWindowLauncherController
   // A set of unowned AppWindowRegistry pointers for loaded users.
   // Note that this will only be used with multiple users in the side by side
   // mode.
-  std::set<apps::AppWindowRegistry*> registry_;
+  std::set<extensions::AppWindowRegistry*> registry_;
   aura::client::ActivationClient* activation_client_;
 
   // Map of app launcher id to controller.

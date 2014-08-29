@@ -48,7 +48,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "apps/app_window_contents.h"
-#include "apps/app_window_registry.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
@@ -65,6 +64,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "ui/aura/window.h"
 #endif
@@ -742,10 +742,12 @@ class V1App : public TestBrowserWindow {
 class V2App {
  public:
   V2App(Profile* profile, const extensions::Extension* extension) {
-    window_ = new apps::AppWindow(profile, new ChromeAppDelegate(), extension);
-    apps::AppWindow::CreateParams params = apps::AppWindow::CreateParams();
-    window_->Init(
-        GURL(std::string()), new apps::AppWindowContentsImpl(window_), params);
+    window_ = new extensions::AppWindow(profile, new ChromeAppDelegate(),
+                                        extension);
+    extensions::AppWindow::CreateParams params =
+        extensions::AppWindow::CreateParams();
+    window_->Init(GURL(std::string()),
+                  new apps::AppWindowContentsImpl(window_), params);
   }
 
   virtual ~V2App() {
@@ -754,13 +756,13 @@ class V2App {
     destroyed_watcher.Wait();
   }
 
-  apps::AppWindow* window() { return window_; }
+  extensions::AppWindow* window() { return window_; }
 
  private:
   // The app window which represents the application. Note that the window
   // deletes itself asynchronously after window_->GetBaseWindow()->Close() gets
   // called.
-  apps::AppWindow* window_;
+  extensions::AppWindow* window_;
 
   DISALLOW_COPY_AND_ASSIGN(V2App);
 };
@@ -2313,7 +2315,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
     v2_app_1.window()->Hide();
     EXPECT_EQ(2, model_->item_count());
 
-    v2_app_1.window()->Show(apps::AppWindow::SHOW_ACTIVE);
+    v2_app_1.window()->Show(extensions::AppWindow::SHOW_ACTIVE);
     EXPECT_EQ(3, model_->item_count());
   }
   {
@@ -2324,7 +2326,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
     v2_app_1.window()->Hide();
     EXPECT_EQ(2, model_->item_count());
 
-    v2_app_1.window()->Show(apps::AppWindow::SHOW_ACTIVE);
+    v2_app_1.window()->Show(extensions::AppWindow::SHOW_ACTIVE);
     EXPECT_EQ(2, model_->item_count());
 
     SwitchActiveUser(profile()->GetProfileName());
@@ -2341,7 +2343,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
     SwitchActiveUser(profile()->GetProfileName());
     EXPECT_EQ(2, model_->item_count());
 
-    v2_app_1.window()->Show(apps::AppWindow::SHOW_ACTIVE);
+    v2_app_1.window()->Show(extensions::AppWindow::SHOW_ACTIVE);
     EXPECT_EQ(3, model_->item_count());
   }
   {
@@ -2352,7 +2354,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
     v2_app_2.window()->Hide();
     EXPECT_EQ(3, model_->item_count());
 
-    v2_app_2.window()->Show(apps::AppWindow::SHOW_ACTIVE);
+    v2_app_2.window()->Show(extensions::AppWindow::SHOW_ACTIVE);
     EXPECT_EQ(3, model_->item_count());
 
     v2_app_1.window()->Hide();

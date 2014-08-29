@@ -5,10 +5,7 @@
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "extensions/browser/app_window/native_app_window.h"
 
-using extensions::PlatformAppBrowserTest;
-using extensions::Extension;
-
-namespace apps {
+namespace extensions {
 
 namespace {
 
@@ -187,4 +184,4 @@ IN_PROC_BROWSER_TEST_F(AppWindowTest, MAYBE_DisableAlwaysOnTopInFullscreen) {
   CloseAppWindow(window);
 }
 
-}  // namespace apps
+}  // namespace extensions

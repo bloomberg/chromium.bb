@@ -4,8 +4,6 @@ include_rules = [
   # chrome/browser/extensions, the restriction of not being able
   # to depend on apps will be lifted.
   "-apps",
-  "+apps/app_window.h",
-  "+apps/app_window_registry.h",
   "-chrome/browser/apps",
   "+components/crx_file",
   "+components/user_manager",

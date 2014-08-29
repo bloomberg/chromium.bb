@@ -8,11 +8,11 @@
 #include <string>
 #include <vector>
 
-#include "apps/app_window_registry.h"
 #include "base/observer_list.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 
 namespace extensions {
 class Extension;
@@ -26,7 +26,7 @@ namespace apps {
 // events.
 class AppLifetimeMonitor : public KeyedService,
                            public content::NotificationObserver,
-                           public AppWindowRegistry::Observer {
+                           public extensions::AppWindowRegistry::Observer {
  public:
   class Observer {
    public:
@@ -60,15 +60,15 @@ class AppLifetimeMonitor : public KeyedService,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // AppWindowRegistry::Observer overrides:
-  virtual void OnAppWindowRemoved(AppWindow* app_window) OVERRIDE;
-  virtual void OnAppWindowHidden(apps::AppWindow* app_window) OVERRIDE;
-  virtual void OnAppWindowShown(apps::AppWindow* app_window) OVERRIDE;
+  // extensions::AppWindowRegistry::Observer overrides:
+  virtual void OnAppWindowRemoved(extensions::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowHidden(extensions::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowShown(extensions::AppWindow* app_window) OVERRIDE;
 
   // KeyedService overrides:
   virtual void Shutdown() OVERRIDE;
 
-  bool HasVisibleAppWindows(apps::AppWindow* app_window) const;
+  bool HasVisibleAppWindows(extensions::AppWindow* app_window) const;
 
   void NotifyAppStart(const std::string& app_id);
   void NotifyAppActivated(const std::string& app_id);

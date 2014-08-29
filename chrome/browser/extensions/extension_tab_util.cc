@@ -4,8 +4,6 @@
 
 #include "chrome/browser/extensions/extension_tab_util.h"
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
@@ -30,6 +28,8 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
@@ -40,7 +40,6 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "url/gurl.h"
 
-using apps::AppWindow;
 using content::NavigationEntry;
 using content::WebContents;
 
@@ -52,7 +51,7 @@ namespace keys = tabs_constants;
 
 WindowController* GetAppWindowController(const WebContents* contents) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  apps::AppWindowRegistry* registry = apps::AppWindowRegistry::Get(profile);
+  AppWindowRegistry* registry = AppWindowRegistry::Get(profile);
   if (!registry)
     return NULL;
   AppWindow* app_window =

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "ash/ash_switches.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/root_window_controller.h"
@@ -32,6 +30,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -119,18 +119,20 @@ void RecordUMAForTransferredWindowType(aura::Window* window) {
       return;
     // If it is not a browser, it is probably be a V2 application. In that case
     // one of the AppWindowRegistry instances should know about it.
-    apps::AppWindow* app_window = NULL;
+    extensions::AppWindow* app_window = NULL;
     std::vector<Profile*> profiles =
         g_browser_process->profile_manager()->GetLoadedProfiles();
     for (std::vector<Profile*>::iterator it = profiles.begin();
          it != profiles.end() && app_window == NULL;
          it++) {
-      app_window = apps::AppWindowRegistry::Get(*it)
+      app_window = extensions::AppWindowRegistry::Get(*it)
                        ->GetAppWindowForNativeWindow(window);
     }
     if (app_window) {
-      if (app_window->window_type() == apps::AppWindow::WINDOW_TYPE_PANEL ||
-          app_window->window_type() == apps::AppWindow::WINDOW_TYPE_V1_PANEL) {
+      if (app_window->window_type() ==
+          extensions::AppWindow::WINDOW_TYPE_PANEL ||
+          app_window->window_type() ==
+          extensions::AppWindow::WINDOW_TYPE_V1_PANEL) {
         window_type = ash::MultiProfileUMA::TELEPORT_WINDOW_PANEL;
       } else {
         window_type = ash::MultiProfileUMA::TELEPORT_WINDOW_V2_APP;
@@ -186,13 +188,13 @@ class AnimationSetter {
 // When an app gets created, the window will be tagged for that user. Note
 // that the destruction does not need to be tracked here since the universal
 // window observer will take care of that.
-class AppObserver : public apps::AppWindowRegistry::Observer {
+class AppObserver : public extensions::AppWindowRegistry::Observer {
  public:
   explicit AppObserver(const std::string& user_id) : user_id_(user_id) {}
   virtual ~AppObserver() {}
 
   // AppWindowRegistry::Observer overrides:
-  virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE {
+  virtual void OnAppWindowAdded(extensions::AppWindow* app_window) OVERRIDE {
     aura::Window* window = app_window->GetNativeWindow();
     DCHECK(window);
     MultiUserWindowManagerChromeOS::GetInstance()->SetWindowOwner(window,
@@ -249,7 +251,7 @@ MultiUserWindowManagerChromeOS::~MultiUserWindowManagerChromeOS() {
     Profile* profile = multi_user_util::GetProfileFromUserID(
         app_observer_iterator->first);
     DCHECK(profile);
-    apps::AppWindowRegistry::Get(profile)
+    extensions::AppWindowRegistry::Get(profile)
         ->RemoveObserver(app_observer_iterator->second);
     delete app_observer_iterator->second;
     user_id_to_app_observer_.erase(app_observer_iterator);
@@ -362,13 +364,13 @@ void MultiUserWindowManagerChromeOS::AddUser(content::BrowserContext* context) {
     return;
 
   user_id_to_app_observer_[user_id] = new AppObserver(user_id);
-  apps::AppWindowRegistry::Get(profile)
+  extensions::AppWindowRegistry::Get(profile)
       ->AddObserver(user_id_to_app_observer_[user_id]);
 
   // Account all existing application windows of this user accordingly.
-  const apps::AppWindowRegistry::AppWindowList& app_windows =
-      apps::AppWindowRegistry::Get(profile)->app_windows();
-  apps::AppWindowRegistry::AppWindowList::const_iterator it =
+  const extensions::AppWindowRegistry::AppWindowList& app_windows =
+      extensions::AppWindowRegistry::Get(profile)->app_windows();
+  extensions::AppWindowRegistry::AppWindowList::const_iterator it =
       app_windows.begin();
   for (; it != app_windows.end(); ++it)
     user_id_to_app_observer_[user_id]->OnAppWindowAdded(*it);

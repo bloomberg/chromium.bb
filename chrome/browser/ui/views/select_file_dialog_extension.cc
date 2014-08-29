@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
@@ -33,13 +31,15 @@
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/base/base_window.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "ui/views/widget/widget.h"
 
-using apps::AppWindow;
+using extensions::AppWindow;
 using content::BrowserThread;
 
 namespace {
@@ -116,7 +116,7 @@ void FindRuntimeContext(
       // If an owner_window was supplied but we couldn't find a browser, this
       // could be for a app window.
       app_window =
-          apps::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
+          extensions::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
               owner_window);
     }
   }

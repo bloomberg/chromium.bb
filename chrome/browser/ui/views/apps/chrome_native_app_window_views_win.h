@@ -37,7 +37,7 @@ class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViews {
   virtual void OnBeforeWidgetInit(views::Widget::InitParams* init_params,
                                   views::Widget* widget) OVERRIDE;
   virtual void InitializeDefaultWindow(
-      const apps::AppWindow::CreateParams& create_params) OVERRIDE;
+      const extensions::AppWindow::CreateParams& create_params) OVERRIDE;
   virtual views::NonClientFrameView* CreateStandardDesktopAppFrame() OVERRIDE;
 
   // Overridden from ui::BaseWindow:

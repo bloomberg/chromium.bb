@@ -7,12 +7,12 @@
 
 #include <string>
 
-#include "apps/app_window_registry.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 
-namespace apps {
+namespace extensions {
 class AppWindow;
 }
 
@@ -20,22 +20,22 @@ namespace chromeos {
 
 // Helper class that monitors app windows to wait for a window to appear.
 // Use a new instance for each use, one instance will only work for one Wait.
-class AppWindowWaiter : public apps::AppWindowRegistry::Observer {
+class AppWindowWaiter : public extensions::AppWindowRegistry::Observer {
  public:
-  AppWindowWaiter(apps::AppWindowRegistry* registry,
+  AppWindowWaiter(extensions::AppWindowRegistry* registry,
                   const std::string& app_id);
   virtual ~AppWindowWaiter();
 
-  apps::AppWindow* Wait();
+  extensions::AppWindow* Wait();
 
   // AppWindowRegistry::Observer:
-  virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowAdded(extensions::AppWindow* app_window) OVERRIDE;
 
  private:
-  apps::AppWindowRegistry* registry_;
+  extensions::AppWindowRegistry* registry_;
   std::string app_id_;
   base::RunLoop run_loop_;
-  apps::AppWindow* window_;
+  extensions::AppWindow* window_;
 
   DISALLOW_COPY_AND_ASSIGN(AppWindowWaiter);
 };

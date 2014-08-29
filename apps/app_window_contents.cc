@@ -21,6 +21,7 @@
 #include "extensions/common/extension_messages.h"
 
 namespace app_window = extensions::api::app_window;
+using extensions::AppWindow;
 
 namespace apps {
 

@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/ash/launcher/multi_profile_app_window_launcher_controller.h"
 
-#include "apps/app_window.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "ui/aura/window.h"
 
@@ -44,7 +44,7 @@ void MultiProfileAppWindowLauncherController::ActiveUserChanged(
   for (AppWindowList::iterator it = app_window_list_.begin();
        it != app_window_list_.end();
        ++it) {
-    apps::AppWindow* app_window = *it;
+    extensions::AppWindow* app_window = *it;
     Profile* profile =
         Profile::FromBrowserContext(app_window->browser_context());
     if (!multi_user_util::IsProfileFromActiveUser(profile) &&
@@ -54,7 +54,7 @@ void MultiProfileAppWindowLauncherController::ActiveUserChanged(
   for (AppWindowList::iterator it = app_window_list_.begin();
        it != app_window_list_.end();
        ++it) {
-    apps::AppWindow* app_window = *it;
+    extensions::AppWindow* app_window = *it;
     Profile* profile =
         Profile::FromBrowserContext(app_window->browser_context());
     if (multi_user_util::IsProfileFromActiveUser(profile) &&
@@ -68,13 +68,14 @@ void MultiProfileAppWindowLauncherController::ActiveUserChanged(
 void MultiProfileAppWindowLauncherController::AdditionalUserAddedToSession(
     Profile* profile) {
   // Each users AppWindowRegistry needs to be observed.
-  apps::AppWindowRegistry* registry = apps::AppWindowRegistry::Get(profile);
+  extensions::AppWindowRegistry* registry =
+      extensions::AppWindowRegistry::Get(profile);
   multi_user_registry_.push_back(registry);
   registry->AddObserver(this);
 }
 
 void MultiProfileAppWindowLauncherController::OnAppWindowAdded(
-    apps::AppWindow* app_window) {
+    extensions::AppWindow* app_window) {
   if (!ControlsWindow(app_window->GetNativeWindow()))
     return;
 
@@ -90,7 +91,7 @@ void MultiProfileAppWindowLauncherController::OnAppWindowAdded(
 }
 
 void MultiProfileAppWindowLauncherController::OnAppWindowShown(
-    apps::AppWindow* app_window) {
+    extensions::AppWindow* app_window) {
   if (!ControlsWindow(app_window->GetNativeWindow()))
     return;
 
@@ -113,7 +114,7 @@ void MultiProfileAppWindowLauncherController::OnAppWindowShown(
 }
 
 void MultiProfileAppWindowLauncherController::OnAppWindowHidden(
-    apps::AppWindow* app_window) {
+    extensions::AppWindow* app_window) {
   if (!ControlsWindow(app_window->GetNativeWindow()))
     return;
 
@@ -125,7 +126,7 @@ void MultiProfileAppWindowLauncherController::OnAppWindowHidden(
 }
 
 void MultiProfileAppWindowLauncherController::OnAppWindowRemoved(
-    apps::AppWindow* app_window) {
+    extensions::AppWindow* app_window) {
   if (!ControlsWindow(app_window->GetNativeWindow()))
     return;
 
@@ -141,7 +142,7 @@ void MultiProfileAppWindowLauncherController::OnAppWindowRemoved(
 }
 
 bool MultiProfileAppWindowLauncherController::UserHasAppOnActiveDesktop(
-    apps::AppWindow* app_window) {
+    extensions::AppWindow* app_window) {
   const std::string& app_id = app_window->extension_id();
   content::BrowserContext* app_context = app_window->browser_context();
   DCHECK(!app_context->IsOffTheRecord());
@@ -151,7 +152,7 @@ bool MultiProfileAppWindowLauncherController::UserHasAppOnActiveDesktop(
   for (AppWindowList::iterator it = app_window_list_.begin();
        it != app_window_list_.end();
        ++it) {
-    apps::AppWindow* other_window = *it;
+    extensions::AppWindow* other_window = *it;
     DCHECK(!other_window->browser_context()->IsOffTheRecord());
     if (manager->IsWindowOnDesktopOfUser(other_window->GetNativeWindow(),
                                          current_user) &&

@@ -5,14 +5,11 @@
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "extensions/browser/app_window/native_app_window.h"
 
-using extensions::Extension;
-using extensions::NativeAppWindow;
-
-namespace apps {
+namespace extensions {
 
 namespace {
 
-typedef extensions::PlatformAppBrowserTest AppWindowBrowserTest;
+typedef PlatformAppBrowserTest AppWindowBrowserTest;
 
 // This test is disabled on Linux because of the unpredictable nature of native
 // windows. We cannot assume that the window manager will insert any title bar
@@ -79,4 +76,4 @@ IN_PROC_BROWSER_TEST_F(AppWindowBrowserTest, FrameInsetsForNoFrame) {
 
 }  // namespace
 
-}  // namespace apps
+}  // namespace extensions

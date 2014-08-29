@@ -5,13 +5,13 @@
 #import "chrome/browser/ui/cocoa/apps/app_shim_menu_controller_mac.h"
 
 #include "apps/app_shim/extension_app_shim_handler_mac.h"
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/apps/native_app_window_cocoa.h"
 #include "chrome/grit/generated_resources.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -280,8 +280,9 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
   id window = [notification object];
   NSString* name = [notification name];
   if ([name isEqualToString:NSWindowDidBecomeMainNotification]) {
-    apps::AppWindow* appWindow =
-        apps::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(window);
+    extensions::AppWindow* appWindow =
+        extensions::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
+            window);
 
     const extensions::Extension* extension = NULL;
     if (appWindow)
@@ -360,24 +361,24 @@ void AddDuplicateItem(NSMenuItem* top_level_item,
 }
 
 - (void)quitCurrentPlatformApp {
-  apps::AppWindow* appWindow =
-      apps::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
+  extensions::AppWindow* appWindow =
+      extensions::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
           [NSApp keyWindow]);
   if (appWindow)
     apps::ExtensionAppShimHandler::QuitAppForWindow(appWindow);
 }
 
 - (void)hideCurrentPlatformApp {
-  apps::AppWindow* appWindow =
-      apps::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
+  extensions::AppWindow* appWindow =
+      extensions::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
           [NSApp keyWindow]);
   if (appWindow)
     apps::ExtensionAppShimHandler::HideAppForWindow(appWindow);
 }
 
 - (void)focusCurrentPlatformApp {
-  apps::AppWindow* appWindow =
-      apps::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
+  extensions::AppWindow* appWindow =
+      extensions::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
           [NSApp keyWindow]);
   if (appWindow)
     apps::ExtensionAppShimHandler::FocusAppForWindow(appWindow);

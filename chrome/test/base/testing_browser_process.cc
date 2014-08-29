@@ -75,7 +75,7 @@ TestingBrowserProcess::TestingBrowserProcess()
 #if defined(ENABLE_EXTENSIONS)
   extensions_browser_client_.reset(
       new extensions::ChromeExtensionsBrowserClient);
-  apps::AppsClient::Set(ChromeAppsClient::GetInstance());
+  extensions::AppsClient::Set(ChromeAppsClient::GetInstance());
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 #endif
 }

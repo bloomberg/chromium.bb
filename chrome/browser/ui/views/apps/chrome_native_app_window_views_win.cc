@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_win.h"
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "apps/ui/views/app_window_frame_view.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
@@ -27,6 +25,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "ui/aura/remote_window_tree_host_win.h"
@@ -80,8 +80,8 @@ void ChromeNativeAppWindowViewsWin::OnBeforeWidgetInit(
   std::string extension_id = app_window()->extension_id();
   // If an app has any existing windows, ensure new ones are created on the
   // same desktop.
-  apps::AppWindow* any_existing_window =
-      apps::AppWindowRegistry::Get(browser_context)
+  extensions::AppWindow* any_existing_window =
+      extensions::AppWindowRegistry::Get(browser_context)
           ->GetCurrentAppWindowForApp(extension_id);
   chrome::HostDesktopType desktop_type;
   if (any_existing_window) {
@@ -105,7 +105,7 @@ void ChromeNativeAppWindowViewsWin::OnBeforeWidgetInit(
 }
 
 void ChromeNativeAppWindowViewsWin::InitializeDefaultWindow(
-    const apps::AppWindow::CreateParams& create_params) {
+    const extensions::AppWindow::CreateParams& create_params) {
   ChromeNativeAppWindowViews::InitializeDefaultWindow(create_params);
 
   const extensions::Extension* extension = app_window()->GetExtension();

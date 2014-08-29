@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_APP_WINDOW_REGISTRY_H_
-#define APPS_APP_WINDOW_REGISTRY_H_
+#ifndef EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_REGISTRY_H_
+#define EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_REGISTRY_H_
 
 #include <list>
-#include <string>
 #include <set>
+#include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -23,7 +23,7 @@ class DevToolsAgentHost;
 class RenderViewHost;
 }
 
-namespace apps {
+namespace extensions {
 
 class AppWindow;
 
@@ -34,23 +34,23 @@ class AppWindowRegistry : public KeyedService {
   class Observer {
    public:
     // Called just after a app window was added.
-    virtual void OnAppWindowAdded(apps::AppWindow* app_window);
+    virtual void OnAppWindowAdded(AppWindow* app_window);
     // Called when the window icon changes.
-    virtual void OnAppWindowIconChanged(apps::AppWindow* app_window);
+    virtual void OnAppWindowIconChanged(AppWindow* app_window);
     // Called just after a app window was removed.
-    virtual void OnAppWindowRemoved(apps::AppWindow* app_window);
+    virtual void OnAppWindowRemoved(AppWindow* app_window);
     // Called just after a app window was hidden. This is different from
     // window visibility as a minimize does not hide a window, but does make
     // it not visible.
-    virtual void OnAppWindowHidden(apps::AppWindow* app_window);
+    virtual void OnAppWindowHidden(AppWindow* app_window);
     // Called just after a app window was shown.
-    virtual void OnAppWindowShown(apps::AppWindow* app_window);
+    virtual void OnAppWindowShown(AppWindow* app_window);
 
    protected:
     virtual ~Observer();
   };
 
-  typedef std::list<apps::AppWindow*> AppWindowList;
+  typedef std::list<AppWindow*> AppWindowList;
   typedef AppWindowList::const_iterator const_iterator;
   typedef std::set<std::string> InspectedWindowSet;
 
@@ -62,13 +62,13 @@ class AppWindowRegistry : public KeyedService {
   // AppWindowRegistry::Factory::GetForBrowserContext().
   static AppWindowRegistry* Get(content::BrowserContext* context);
 
-  void AddAppWindow(apps::AppWindow* app_window);
-  void AppWindowIconChanged(apps::AppWindow* app_window);
+  void AddAppWindow(AppWindow* app_window);
+  void AppWindowIconChanged(AppWindow* app_window);
   // Called by |app_window| when it is activated.
-  void AppWindowActivated(apps::AppWindow* app_window);
-  void AppWindowHidden(apps::AppWindow* app_window);
-  void AppWindowShown(apps::AppWindow* app_window);
-  void RemoveAppWindow(apps::AppWindow* app_window);
+  void AppWindowActivated(AppWindow* app_window);
+  void AppWindowHidden(AppWindow* app_window);
+  void AppWindowShown(AppWindow* app_window);
+  void RemoveAppWindow(AppWindow* app_window);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -81,20 +81,19 @@ class AppWindowRegistry : public KeyedService {
   void CloseAllAppWindowsForApp(const std::string& app_id);
 
   // Helper functions to find app windows with particular attributes.
-  apps::AppWindow* GetAppWindowForRenderViewHost(
+  AppWindow* GetAppWindowForRenderViewHost(
       content::RenderViewHost* render_view_host) const;
-  apps::AppWindow* GetAppWindowForNativeWindow(gfx::NativeWindow window) const;
+  AppWindow* GetAppWindowForNativeWindow(gfx::NativeWindow window) const;
   // Returns an app window for the given app, or NULL if no app windows are
   // open. If there is a window for the given app that is active, that one will
   // be returned, otherwise an arbitrary window will be returned.
-  apps::AppWindow* GetCurrentAppWindowForApp(const std::string& app_id) const;
+  AppWindow* GetCurrentAppWindowForApp(const std::string& app_id) const;
   // Returns an app window for the given app and window key, or NULL if no app
   // window with the key are open. If there is a window for the given app and
   // key that is active, that one will be returned, otherwise an arbitrary
   // window will be returned.
-  apps::AppWindow* GetAppWindowForAppAndKey(const std::string& app_id,
-                                            const std::string& window_key)
-      const;
+  AppWindow* GetAppWindowForAppAndKey(const std::string& app_id,
+                                      const std::string& window_key) const;
 
   // Returns whether a AppWindow's ID was last known to have a DevToolsAgent
   // attached to it, which should be restored during a reload of a corresponding
@@ -102,7 +101,7 @@ class AppWindowRegistry : public KeyedService {
   bool HadDevToolsAttached(content::RenderViewHost* render_view_host) const;
 
   // Returns the app window for |window|, looking in all browser contexts.
-  static apps::AppWindow* GetAppWindowForNativeWindowAnyProfile(
+  static AppWindow* GetAppWindowForNativeWindowAnyProfile(
       gfx::NativeWindow window);
 
   // Returns true if the number of app windows registered across all browser
@@ -142,11 +141,11 @@ class AppWindowRegistry : public KeyedService {
  private:
   // Ensures the specified |app_window| is included in |app_windows_|.
   // Otherwise adds |app_window| to the back of |app_windows_|.
-  void AddAppWindowToList(apps::AppWindow* app_window);
+  void AddAppWindowToList(AppWindow* app_window);
 
   // Bring |app_window| to the front of |app_windows_|. If it is not in the
   // list, add it first.
-  void BringToFront(apps::AppWindow* app_window);
+  void BringToFront(AppWindow* app_window);
 
   content::BrowserContext* context_;
   AppWindowList app_windows_;
@@ -155,6 +154,6 @@ class AppWindowRegistry : public KeyedService {
   base::Callback<void(content::DevToolsAgentHost*, bool)> devtools_callback_;
 };
 
-}  // namespace apps
+}  // namespace extensions
 
-#endif  // APPS_APP_WINDOW_REGISTRY_H_
+#endif  // EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_REGISTRY_H_

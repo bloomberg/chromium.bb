@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_APP_WINDOW_APP_WINDOW_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_APP_WINDOW_APP_WINDOW_API_H_
 
-#include "apps/app_window.h"
+#include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/extension_function.h"
 
 namespace extensions {
@@ -28,15 +28,14 @@ class AppWindowCreateFunction : public AsyncExtensionFunction {
  private:
   bool GetBoundsSpec(
       const extensions::api::app_window::CreateWindowOptions& options,
-      apps::AppWindow::CreateParams* params,
+      AppWindow::CreateParams* params,
       std::string* error);
 
-  apps::AppWindow::Frame GetFrameFromString(const std::string& frame_string);
+  AppWindow::Frame GetFrameFromString(const std::string& frame_string);
   bool GetFrameOptions(
       const extensions::api::app_window::CreateWindowOptions& options,
-      apps::AppWindow::CreateParams* create_params);
-  void UpdateFrameOptionsForChannel(
-      apps::AppWindow::CreateParams* create_params);
+      AppWindow::CreateParams* create_params);
+  void UpdateFrameOptionsForChannel(AppWindow::CreateParams* create_params);
 
   bool inject_html_titlebar_;
 };

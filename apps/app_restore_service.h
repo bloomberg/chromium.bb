@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "apps/app_lifetime_monitor.h"
-#include "apps/app_window_registry.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 
 namespace extensions {
 class Extension;

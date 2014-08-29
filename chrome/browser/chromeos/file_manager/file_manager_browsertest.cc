@@ -11,8 +11,6 @@
 #include <deque>
 #include <string>
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -44,6 +42,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/test/test_api.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -1158,12 +1158,12 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
     } else if (name == "getWindowOwnerId") {
       chrome::MultiUserWindowManager* const window_manager =
           chrome::MultiUserWindowManager::GetInstance();
-      apps::AppWindowRegistry* const app_window_registry =
-          apps::AppWindowRegistry::Get(profile());
+      extensions::AppWindowRegistry* const app_window_registry =
+          extensions::AppWindowRegistry::Get(profile());
       DCHECK(window_manager);
       DCHECK(app_window_registry);
 
-      const apps::AppWindowRegistry::AppWindowList& list =
+      const extensions::AppWindowRegistry::AppWindowList& list =
           app_window_registry->GetAppWindowsForApp(
               file_manager::kFileManagerAppId);
       return list.size() == 1u ?

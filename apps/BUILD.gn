@@ -19,12 +19,8 @@ static_library("apps") {
     "app_restore_service.h",
     "app_restore_service_factory.cc",
     "app_restore_service_factory.h",
-    "app_window.cc",
-    "app_window.h",
     "app_window_contents.cc",
     "app_window_contents.h",
-    "app_window_registry.cc",
-    "app_window_registry.h",
     "browser_context_keyed_service_factories.cc",
     "browser_context_keyed_service_factories.h",
     "custom_launcher_page_contents.cc",
@@ -38,8 +34,6 @@ static_library("apps") {
     "saved_files_service_factory.h",
     "switches.cc",
     "switches.h",
-    "ui/apps_client.cc",
-    "ui/apps_client.h",
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]

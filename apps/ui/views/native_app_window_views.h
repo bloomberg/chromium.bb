@@ -5,9 +5,9 @@
 #ifndef APPS_UI_VIEWS_NATIVE_APP_WINDOW_VIEWS_H_
 #define APPS_UI_VIEWS_NATIVE_APP_WINDOW_VIEWS_H_
 
-#include "apps/app_window.h"
 #include "base/observer_list.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/app_window/size_constraints.h"
 #include "ui/gfx/rect.h"
@@ -50,8 +50,8 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
  public:
   NativeAppWindowViews();
   virtual ~NativeAppWindowViews();
-  void Init(AppWindow* app_window,
-            const AppWindow::CreateParams& create_params);
+  void Init(extensions::AppWindow* app_window,
+            const extensions::AppWindow::CreateParams& create_params);
 
   // Signal that CanHaveTransparentBackground has changed.
   void OnCanHaveAlphaEnabledChanged();
@@ -62,16 +62,17 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
   void set_web_view_for_testing(views::WebView* view) { web_view_ = view; }
 
  protected:
-  AppWindow* app_window() { return app_window_; }
-  const AppWindow* app_window() const { return app_window_; }
+  extensions::AppWindow* app_window() { return app_window_; }
+  const extensions::AppWindow* app_window() const { return app_window_; }
 
   const views::Widget* widget() const { return widget_; }
 
   views::WebView* web_view() { return web_view_; }
 
   // Initializes |widget_| for |app_window|.
-  virtual void InitializeWindow(AppWindow* app_window,
-                                const AppWindow::CreateParams& create_params);
+  virtual void InitializeWindow(
+      extensions::AppWindow* app_window,
+      const extensions::AppWindow::CreateParams& create_params);
 
   // ui::BaseWindow implementation.
   virtual bool IsActive() const OVERRIDE;
@@ -174,7 +175,7 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
   // Informs modal dialogs that they need to update their positions.
   void OnViewWasResized();
 
-  AppWindow* app_window_;  // Not owned.
+  extensions::AppWindow* app_window_;  // Not owned.
   views::WebView* web_view_;
   views::Widget* widget_;
 

@@ -10,8 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/numerics/safe_conversions.h"
@@ -46,6 +44,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/blob_holder.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
@@ -157,8 +157,8 @@ WebContents* GetWebContents(content::RenderViewHost* rvh,
     // If there is no WebContentsModalDialogManager, then this contents is
     // probably the background page for an app. Try to find a app window to
     // host the dialog.
-    apps::AppWindow* window = apps::AppWindowRegistry::Get(profile)
-                                  ->GetCurrentAppWindowForApp(app_id);
+    AppWindow* window = AppWindowRegistry::Get(profile)
+                            ->GetCurrentAppWindowForApp(app_id);
     contents = window ? window->web_contents() : NULL;
   }
   return contents;

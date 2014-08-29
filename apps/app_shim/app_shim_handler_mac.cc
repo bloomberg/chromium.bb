@@ -6,7 +6,6 @@
 
 #include <map>
 
-#include "apps/app_window_registry.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -17,6 +16,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 
 namespace apps {
 
@@ -24,7 +24,7 @@ namespace {
 
 void TerminateIfNoAppWindows() {
   bool app_windows_left =
-      apps::AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(0);
+      extensions::AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(0);
   if (!app_windows_left &&
       !AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE)
            ->IsAppListVisible()) {

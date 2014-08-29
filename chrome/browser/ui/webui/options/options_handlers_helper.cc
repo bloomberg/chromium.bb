@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -13,6 +11,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 
 namespace options {
 namespace helper {
@@ -24,8 +24,8 @@ chrome::HostDesktopType GetDesktopType(content::WebUI* web_ui) {
   if (browser)
     return browser->host_desktop_type();
 
-  apps::AppWindow* app_window =
-      apps::AppWindowRegistry::Get(Profile::FromWebUI(web_ui))
+  extensions::AppWindow* app_window =
+      extensions::AppWindowRegistry::Get(Profile::FromWebUI(web_ui))
           ->GetAppWindowForRenderViewHost(web_contents->GetRenderViewHost());
   if (app_window) {
     return chrome::GetHostDesktopTypeForNativeWindow(
@@ -69,5 +69,3 @@ void DeleteProfileAtPath(base::FilePath file_path, content::WebUI* web_ui) {
 
 }  // namespace helper
 }  // namespace options
-
-

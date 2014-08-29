@@ -4,13 +4,13 @@
 
 #include "chrome/browser/extensions/api/app_current_window_internal/app_current_window_internal_api.h"
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/app_current_window_internal.h"
 #include "chrome/common/extensions/api/app_window.h"
 #include "chrome/common/extensions/features/feature_channel.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/app_window/size_constraints.h"
 #include "extensions/common/features/simple_feature.h"
@@ -29,7 +29,6 @@ namespace SetBadgeIcon = app_current_window_internal::SetBadgeIcon;
 namespace SetShape = app_current_window_internal::SetShape;
 namespace SetAlwaysOnTop = app_current_window_internal::SetAlwaysOnTop;
 
-using apps::AppWindow;
 using app_current_window_internal::Bounds;
 using app_current_window_internal::Region;
 using app_current_window_internal::RegionRect;
@@ -119,8 +118,7 @@ BoundsType GetBoundsType(const std::string& type_as_string) {
 }  // namespace bounds
 
 bool AppCurrentWindowInternalExtensionFunction::RunSync() {
-  apps::AppWindowRegistry* registry =
-      apps::AppWindowRegistry::Get(GetProfile());
+  AppWindowRegistry* registry = AppWindowRegistry::Get(GetProfile());
   DCHECK(registry);
   content::RenderViewHost* rvh = render_view_host();
   if (!rvh)

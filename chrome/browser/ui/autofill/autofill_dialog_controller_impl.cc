@@ -8,8 +8,6 @@
 #include <map>
 #include <string>
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -77,6 +75,8 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "grit/component_scaled_resources.h"
 #include "grit/components_strings.h"
@@ -257,8 +257,8 @@ ui::BaseWindow* GetBaseWindowForWebContents(
     return browser->window();
 
   gfx::NativeWindow native_window = web_contents->GetTopLevelNativeWindow();
-  apps::AppWindow* app_window =
-      apps::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
+  extensions::AppWindow* app_window =
+      extensions::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
           native_window);
   return app_window->GetBaseWindow();
 }

@@ -5,8 +5,6 @@
 #include "chrome/browser/power/process_power_collector.h"
 
 #include "apps/app_window_contents.h"
-#include "apps/app_window_registry.h"
-#include "apps/ui/apps_client.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -19,6 +17,8 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "extensions/browser/app_window/app_window_registry.h"
+#include "extensions/browser/app_window/apps_client.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -88,7 +88,7 @@ class BrowserProcessPowerTest : public BrowserWithTestWindowTest {
   scoped_ptr<TestingProfileManager> profile_manager_;
 };
 
-class TestAppWindowContents : public apps::AppWindowContents {
+class TestAppWindowContents : public extensions::AppWindowContents {
  public:
   explicit TestAppWindowContents(content::WebContents* web_contents)
       : web_contents_(web_contents) {}
@@ -287,21 +287,22 @@ TEST_F(BrowserProcessPowerTest, AppsRecordPowerUsage) {
                                     &error));
   EXPECT_TRUE(extension.get()) << error;
   // Increment the apps count to avoid a DCHECK later.
-  apps::AppsClient::Get()->IncrementKeepAliveCount();
+  extensions::AppsClient::Get()->IncrementKeepAliveCount();
 
   Profile* current_profile =
       profile_manager_->CreateTestingProfile("Test user");
   GURL url("chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-  apps::AppWindow* window = new apps::AppWindow(
+  extensions::AppWindow* window = new extensions::AppWindow(
       current_profile, new ChromeAppDelegate(), extension.get());
   content::WebContents* web_contents(
       content::WebContents::Create(content::WebContents::CreateParams(
           current_profile,
           content::SiteInstance::CreateForURL(current_profile, url))));
-  window->SetAppWindowContentsForTesting(scoped_ptr<apps::AppWindowContents>(
-      new TestAppWindowContents(web_contents)));
-  apps::AppWindowRegistry* app_registry =
-      apps::AppWindowRegistry::Get(current_profile);
+  window->SetAppWindowContentsForTesting(
+      scoped_ptr<extensions::AppWindowContents>(
+          new TestAppWindowContents(web_contents)));
+  extensions::AppWindowRegistry* app_registry =
+      extensions::AppWindowRegistry::Get(current_profile);
   app_registry->AddAppWindow(window);
 
   collector->set_cpu_usage_callback_for_testing(
@@ -312,7 +313,8 @@ TEST_F(BrowserProcessPowerTest, AppsRecordPowerUsage) {
   EXPECT_EQ(1u, collector->metrics_map_for_testing()->size());
 
   // Clear the AppWindowContents before trying to close.
-  window->SetAppWindowContentsForTesting(scoped_ptr<apps::AppWindowContents>());
+  window->SetAppWindowContentsForTesting(
+      scoped_ptr<extensions::AppWindowContents>());
   window->OnNativeClose();
   collector->UpdatePowerConsumptionForTesting();
   EXPECT_EQ(0u, collector->metrics_map_for_testing()->size());

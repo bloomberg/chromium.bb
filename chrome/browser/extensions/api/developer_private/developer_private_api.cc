@@ -5,8 +5,6 @@
 #include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 
 #include "apps/app_load_service.h"
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "apps/saved_files_service.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -48,6 +46,8 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -78,8 +78,6 @@
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
-using apps::AppWindow;
-using apps::AppWindowRegistry;
 using content::RenderViewHost;
 
 namespace extensions {

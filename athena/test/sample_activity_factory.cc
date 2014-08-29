@@ -44,7 +44,7 @@ Activity* SampleActivityFactory::CreateAppActivity(
 }
 
 Activity* SampleActivityFactory::CreateAppActivity(
-    apps::AppWindow* app_window) {
+    extensions::AppWindow* app_window) {
   return new SampleActivity(
       kDefaultAppColor, kDefaultAppContentColor, base::UTF8ToUTF16("App"));
 }

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 
-#include "apps/app_window.h"
 #include "base/base64.h"
 #include "base/debug/trace_event.h"
 #include "base/location.h"
@@ -26,13 +25,13 @@
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/web_contents.h"
 #include "crypto/random.h"
+#include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
 #include "grit/browser_resources.h"
 #include "url/gurl.h"
 
-using apps::AppWindow;
 using content::RenderViewHost;
 using content::ResourceRedirectDetails;
 using content::WebContents;
@@ -63,7 +62,7 @@ WebAuthFlow::~WebAuthFlow() {
   WebContentsObserver::Observe(NULL);
 
   if (!app_window_key_.empty()) {
-    apps::AppWindowRegistry::Get(profile_)->RemoveObserver(this);
+    AppWindowRegistry::Get(profile_)->RemoveObserver(this);
 
     if (app_window_ && app_window_->web_contents())
       app_window_->web_contents()->Close();
@@ -71,7 +70,7 @@ WebAuthFlow::~WebAuthFlow() {
 }
 
 void WebAuthFlow::Start() {
-  apps::AppWindowRegistry::Get(profile_)->AddObserver(this);
+  AppWindowRegistry::Get(profile_)->AddObserver(this);
 
   // Attach a random ID string to the window so we can recoginize it
   // in OnAppWindowAdded.

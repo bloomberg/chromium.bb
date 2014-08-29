@@ -4,10 +4,7 @@
 
 #include "chrome/browser/extensions/api/app_window/app_window_api.h"
 
-#include "apps/app_window.h"
 #include "apps/app_window_contents.h"
-#include "apps/app_window_registry.h"
-#include "apps/ui/apps_client.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -20,6 +17,9 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
+#include "extensions/browser/app_window/apps_client.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/image_util.h"
@@ -30,8 +30,6 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
-
-using apps::AppWindow;
 
 namespace app_window = extensions::api::app_window;
 namespace Create = app_window::Create;
@@ -87,7 +85,7 @@ bool CheckBoundsConflict(const scoped_ptr<int>& inner_property,
 // AppWindow::CreateParams.
 void CopyBoundsSpec(
     const extensions::api::app_window::BoundsSpecification* input_spec,
-    apps::AppWindow::BoundsSpecification* create_spec) {
+    AppWindow::BoundsSpecification* create_spec) {
   if (!input_spec)
     return;
 
@@ -160,7 +158,7 @@ bool AppWindowCreateFunction::RunAsync() {
       }
 
       if (!options->singleton || *options->singleton) {
-        AppWindow* window = apps::AppWindowRegistry::Get(browser_context())
+        AppWindow* window = AppWindowRegistry::Get(browser_context())
                                 ->GetAppWindowForAppAndKey(
                                     extension_id(), create_params.window_key);
         if (window) {
@@ -195,7 +193,7 @@ bool AppWindowCreateFunction::RunAsync() {
     if (!GetBoundsSpec(*options, &create_params, &error_))
       return false;
 
-    if (!apps::AppsClient::Get()->IsCurrentChannelOlderThanDev() ||
+    if (!AppsClient::Get()->IsCurrentChannelOlderThanDev() ||
         extension()->location() == extensions::Manifest::COMPONENT) {
       if (options->type == extensions::api::app_window::WINDOW_TYPE_PANEL) {
         create_params.window_type = AppWindow::WINDOW_TYPE_PANEL;
@@ -214,7 +212,7 @@ bool AppWindowCreateFunction::RunAsync() {
         "312745D9BF916161191143F6490085EEA0434997",
         "53041A2FA309EECED01FFC751E7399186E860B2C"
       };
-      if (apps::AppsClient::Get()->IsCurrentChannelOlderThanDev() &&
+      if (AppsClient::Get()->IsCurrentChannelOlderThanDev() &&
           !extensions::SimpleFeature::IsIdInList(
               extension_id(),
               std::set<std::string>(whitelist,
@@ -281,7 +279,7 @@ bool AppWindowCreateFunction::RunAsync() {
       render_view_host_->GetProcess()->GetID();
 
   AppWindow* app_window =
-      apps::AppsClient::Get()->CreateAppWindow(browser_context(), extension());
+      AppsClient::Get()->CreateAppWindow(browser_context(), extension());
   app_window->Init(
       url, new apps::AppWindowContentsImpl(app_window), create_params);
 
@@ -302,9 +300,9 @@ bool AppWindowCreateFunction::RunAsync() {
   app_window->GetSerializedState(result);
   SetResult(result);
 
-  if (apps::AppWindowRegistry::Get(browser_context())
+  if (AppWindowRegistry::Get(browser_context())
           ->HadDevToolsAttached(created_view)) {
-    apps::AppsClient::Get()->OpenDevToolsWindow(
+    AppsClient::Get()->OpenDevToolsWindow(
         app_window->web_contents(),
         base::Bind(&AppWindowCreateFunction::SendResponse, this, true));
     return true;
@@ -318,7 +316,7 @@ bool AppWindowCreateFunction::RunAsync() {
 
 bool AppWindowCreateFunction::GetBoundsSpec(
     const extensions::api::app_window::CreateWindowOptions& options,
-    apps::AppWindow::CreateParams* params,
+    AppWindow::CreateParams* params,
     std::string* error) {
   DCHECK(params);
   DCHECK(error);

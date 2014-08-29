@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 
-#include "apps/app_window.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "skia/ext/image_operations.h"
 #include "ui/aura/client/aura_constants.h"
@@ -25,7 +25,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/wm/core/window_animations.h"
 
-using apps::AppWindow;
+using extensions::AppWindow;
 
 namespace {
 

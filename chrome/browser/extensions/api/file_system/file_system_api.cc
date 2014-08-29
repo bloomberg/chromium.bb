@@ -6,8 +6,6 @@
 
 #include <set>
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "apps/saved_files_service.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -35,6 +33,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/granted_file_entry.h"
@@ -60,7 +60,6 @@
 
 using apps::SavedFileEntry;
 using apps::SavedFilesService;
-using apps::AppWindow;
 using storage::IsolatedContext;
 
 const char kInvalidCallingPage[] = "Invalid calling page. This function can't "
@@ -490,8 +489,7 @@ void FileSystemChooseEntryFunction::ShowPicker(
   // platform-app only.
   content::WebContents* web_contents = NULL;
   if (extension_->is_platform_app()) {
-    apps::AppWindowRegistry* registry =
-        apps::AppWindowRegistry::Get(GetProfile());
+    AppWindowRegistry* registry = AppWindowRegistry::Get(GetProfile());
     DCHECK(registry);
     AppWindow* app_window =
         registry->GetAppWindowForRenderViewHost(render_view_host());
@@ -611,8 +609,7 @@ void FileSystemChooseEntryFunction::FilesSelected(
   if (is_directory_) {
     // Get the WebContents for the app window to be the parent window of the
     // confirmation dialog if necessary.
-    apps::AppWindowRegistry* registry =
-        apps::AppWindowRegistry::Get(GetProfile());
+    AppWindowRegistry* registry = AppWindowRegistry::Get(GetProfile());
     DCHECK(registry);
     AppWindow* app_window =
         registry->GetAppWindowForRenderViewHost(render_view_host());

@@ -47,8 +47,8 @@
       'sources': [
         '../apps/app_shim/app_shim_interactive_uitest_mac.mm',
         '../apps/app_shim/app_shim_quit_interactive_uitest_mac.mm',
-        '../apps/app_window_interactive_uitest.cc',
         '../chrome/browser/ui/webui/options/language_options_interactive_uitest.cc',
+        '../extensions/browser/app_window/app_window_interactive_uitest.cc',
         '../ui/base/clipboard/clipboard_unittest.cc',
         '../ui/views/controls/webview/webview_interactive_uitest.cc',
         '../ui/views/corewm/desktop_capture_controller_unittest.cc',
@@ -859,7 +859,6 @@
       ],
       'sources': [
         '../apps/app_restore_service_browsertest.cc',
-        '../apps/app_window_browsertest.cc',
         '../apps/app_shim/app_shim_host_manager_browsertest_mac.mm',
         '../apps/app_shim/test/app_shim_host_manager_test_api_mac.cc',
         '../apps/app_shim/test/app_shim_host_manager_test_api_mac.h',
@@ -868,6 +867,7 @@
         '../extensions/browser/api/serial/serial_apitest.cc',
         '../extensions/browser/api/usb/usb_apitest.cc',
         '../extensions/browser/api/usb/usb_manual_apitest.cc',
+        '../extensions/browser/app_window/app_window_browsertest.cc',
         '../extensions/browser/test_extension_registry_observer.h',
         '../extensions/browser/test_extension_registry_observer.cc',
         '../extensions/renderer/script_context_browsertest.cc',

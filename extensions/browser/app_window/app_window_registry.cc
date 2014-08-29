@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/app_window_registry.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 
 #include <string>
 #include <vector>
 
-#include "apps/app_window.h"
-#include "apps/ui/apps_client.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -16,9 +14,13 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/apps_client.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
+
+namespace extensions {
 
 namespace {
 
@@ -28,9 +30,9 @@ namespace {
 // |id|, the chrome-extension://extension-id/page.html URL will be used. If the
 // RenderViewHost is not for a AppWindow, return an empty string.
 std::string GetWindowKeyForRenderViewHost(
-    const apps::AppWindowRegistry* registry,
+    const AppWindowRegistry* registry,
     content::RenderViewHost* render_view_host) {
-  apps::AppWindow* app_window =
+  AppWindow* app_window =
       registry->GetAppWindowForRenderViewHost(render_view_host);
   if (!app_window)
     return std::string();  // Not a AppWindow.
@@ -45,8 +47,6 @@ std::string GetWindowKeyForRenderViewHost(
 }
 
 }  // namespace
-
-namespace apps {
 
 void AppWindowRegistry::Observer::OnAppWindowAdded(AppWindow* app_window) {
 }
@@ -346,8 +346,7 @@ bool AppWindowRegistry::Factory::ServiceIsNULLWhileTesting() const {
 
 content::BrowserContext* AppWindowRegistry::Factory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return extensions::ExtensionsBrowserClient::Get()->GetOriginalContext(
-      context);
+  return ExtensionsBrowserClient::Get()->GetOriginalContext(context);
 }
 
-}  // namespace apps
+}  // namespace extensions

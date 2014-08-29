@@ -7,8 +7,6 @@
 #include "apps/app_lifetime_monitor_factory.h"
 #include "apps/app_shim/app_shim_host_manager_mac.h"
 #include "apps/app_shim/app_shim_messages.h"
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "apps/launcher.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -25,16 +23,20 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/base/cocoa/focus_window_set.h"
 
+using extensions::AppWindow;
+using extensions::AppWindowRegistry;
 using extensions::ExtensionRegistry;
 
 namespace {
 
-typedef apps::AppWindowRegistry::AppWindowList AppWindowList;
+typedef AppWindowRegistry::AppWindowList AppWindowList;
 
 void ProfileLoadedCallback(base::Callback<void(Profile*)> callback,
                            Profile* profile,
@@ -50,7 +52,7 @@ void ProfileLoadedCallback(base::Callback<void(Profile*)> callback,
 
 void SetAppHidden(Profile* profile, const std::string& app_id, bool hidden) {
   AppWindowList windows =
-      apps::AppWindowRegistry::Get(profile)->GetAppWindowsForApp(app_id);
+      AppWindowRegistry::Get(profile)->GetAppWindowsForApp(app_id);
   for (AppWindowList::const_reverse_iterator it = windows.rbegin();
        it != windows.rend();
        ++it) {
@@ -262,8 +264,7 @@ void ExtensionAppShimHandler::FocusAppForWindow(AppWindow* app_window) {
                          APP_SHIM_FOCUS_NORMAL,
                          std::vector<base::FilePath>());
   } else {
-    FocusWindows(
-        apps::AppWindowRegistry::Get(profile)->GetAppWindowsForApp(app_id));
+    FocusWindows(AppWindowRegistry::Get(profile)->GetAppWindowsForApp(app_id));
   }
 }
 

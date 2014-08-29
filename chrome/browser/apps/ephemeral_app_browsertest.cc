@@ -309,7 +309,7 @@ void EphemeralAppTestBase::DisableEphemeralApp(
 
 void EphemeralAppTestBase::CloseApp(const std::string& app_id) {
   EXPECT_EQ(1U, GetAppWindowCountForApp(app_id));
-  apps::AppWindow* app_window = GetFirstAppWindowForApp(app_id);
+  extensions::AppWindow* app_window = GetFirstAppWindowForApp(app_id);
   ASSERT_TRUE(app_window);
   CloseAppWindow(app_window);
 }

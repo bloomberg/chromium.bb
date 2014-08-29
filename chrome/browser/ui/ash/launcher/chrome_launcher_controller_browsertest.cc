@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
 #include "ash/shelf/shelf.h"
@@ -51,6 +49,8 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
@@ -62,7 +62,7 @@
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
 
-using apps::AppWindow;
+using extensions::AppWindow;
 using extensions::Extension;
 using content::WebContents;
 
@@ -80,15 +80,16 @@ class TestEvent : public ui::Event {
   DISALLOW_COPY_AND_ASSIGN(TestEvent);
 };
 
-class TestAppWindowRegistryObserver : public apps::AppWindowRegistry::Observer {
+class TestAppWindowRegistryObserver
+    : public extensions::AppWindowRegistry::Observer {
  public:
   explicit TestAppWindowRegistryObserver(Profile* profile)
       : profile_(profile), icon_updates_(0) {
-    apps::AppWindowRegistry::Get(profile_)->AddObserver(this);
+    extensions::AppWindowRegistry::Get(profile_)->AddObserver(this);
   }
 
   virtual ~TestAppWindowRegistryObserver() {
-    apps::AppWindowRegistry::Get(profile_)->RemoveObserver(this);
+    extensions::AppWindowRegistry::Get(profile_)->RemoveObserver(this);
   }
 
   // Overridden from AppWindowRegistry::Observer:

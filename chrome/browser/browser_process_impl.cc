@@ -200,7 +200,7 @@ BrowserProcessImpl::BrowserProcessImpl(
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
-  apps::AppsClient::Set(ChromeAppsClient::GetInstance());
+  extensions::AppsClient::Set(ChromeAppsClient::GetInstance());
 
   extension_event_router_forwarder_ = new extensions::EventRouterForwarder;
   ExtensionRendererState::GetInstance()->Init();

@@ -158,11 +158,11 @@
 #endif
 
 #if !defined(OS_MACOSX)
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "ui/base/window_open_disposition.h"
 #endif
@@ -540,26 +540,27 @@ void WebContentsLoadedOrDestroyedWatcher::DidStopLoading(
 #if !defined(OS_MACOSX)
 
 // Observer used to wait for the creation of a new app window.
-class TestAddAppWindowObserver : public apps::AppWindowRegistry::Observer {
+class TestAddAppWindowObserver
+    : public extensions::AppWindowRegistry::Observer {
  public:
-  explicit TestAddAppWindowObserver(apps::AppWindowRegistry* registry);
+  explicit TestAddAppWindowObserver(extensions::AppWindowRegistry* registry);
   virtual ~TestAddAppWindowObserver();
 
-  // apps::AppWindowRegistry::Observer:
-  virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE;
+  // extensions::AppWindowRegistry::Observer:
+  virtual void OnAppWindowAdded(extensions::AppWindow* app_window) OVERRIDE;
 
-  apps::AppWindow* WaitForAppWindow();
+  extensions::AppWindow* WaitForAppWindow();
 
  private:
-  apps::AppWindowRegistry* registry_;  // Not owned.
-  apps::AppWindow* window_;            // Not owned.
+  extensions::AppWindowRegistry* registry_;  // Not owned.
+  extensions::AppWindow* window_;            // Not owned.
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAddAppWindowObserver);
 };
 
 TestAddAppWindowObserver::TestAddAppWindowObserver(
-    apps::AppWindowRegistry* registry)
+    extensions::AppWindowRegistry* registry)
     : registry_(registry), window_(NULL) {
   registry_->AddObserver(this);
 }
@@ -568,12 +569,13 @@ TestAddAppWindowObserver::~TestAddAppWindowObserver() {
   registry_->RemoveObserver(this);
 }
 
-void TestAddAppWindowObserver::OnAppWindowAdded(apps::AppWindow* app_window) {
+void TestAddAppWindowObserver::OnAppWindowAdded(
+    extensions::AppWindow* app_window) {
   window_ = app_window;
   run_loop_.Quit();
 }
 
-apps::AppWindow* TestAddAppWindowObserver::WaitForAppWindow() {
+extensions::AppWindow* TestAddAppWindowObserver::WaitForAppWindow() {
   run_loop_.Run();
   return window_;
 }
@@ -2222,12 +2224,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedApp) {
 
   // Launch an app that tries to open a fullscreen window.
   TestAddAppWindowObserver add_window_observer(
-      apps::AppWindowRegistry::Get(browser()->profile()));
+      extensions::AppWindowRegistry::Get(browser()->profile()));
   OpenApplication(AppLaunchParams(browser()->profile(),
                                   extension,
                                   extensions::LAUNCH_CONTAINER_NONE,
                                   NEW_WINDOW));
-  apps::AppWindow* window = add_window_observer.WaitForAppWindow();
+  extensions::AppWindow* window = add_window_observer.WaitForAppWindow();
   ASSERT_TRUE(window);
 
   // Verify that the window is not in fullscreen mode.

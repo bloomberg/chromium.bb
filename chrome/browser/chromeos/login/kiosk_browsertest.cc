@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/shell.h"
@@ -53,6 +51,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_system.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -404,9 +404,9 @@ class KioskTest : public OobeBaseTest {
     EXPECT_TRUE(app);
 
     // App should appear with its window.
-    apps::AppWindowRegistry* app_window_registry =
-        apps::AppWindowRegistry::Get(app_profile);
-    apps::AppWindow* window =
+    extensions::AppWindowRegistry* app_window_registry =
+        extensions::AppWindowRegistry::Get(app_profile);
+    extensions::AppWindow* window =
         AppWindowWaiter(app_window_registry, test_app_id_).Wait();
     EXPECT_TRUE(window);
 
@@ -1303,9 +1303,10 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
             chromeos::KioskAppLaunchError::Get());
 
   // Wait for the window to appear.
-  apps::AppWindow* window =
+  extensions::AppWindow* window =
       AppWindowWaiter(
-          apps::AppWindowRegistry::Get(ProfileManager::GetPrimaryUserProfile()),
+          extensions::AppWindowRegistry::Get(
+              ProfileManager::GetPrimaryUserProfile()),
           kTestEnterpriseKioskApp).Wait();
   ASSERT_TRUE(window);
 

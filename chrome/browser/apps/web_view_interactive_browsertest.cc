@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/app_window.h"
-#include "apps/app_window_registry.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -24,6 +22,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/guest_view_manager_factory.h"
@@ -33,7 +33,7 @@
 #include "ui/base/test/ui_controls.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
-using apps::AppWindow;
+using extensions::AppWindow;
 
 class TestGuestViewManager : public extensions::GuestViewManager {
  public:
@@ -133,8 +133,8 @@ class WebViewInteractiveTest
   }
 
   gfx::NativeWindow GetPlatformAppWindow() {
-    const apps::AppWindowRegistry::AppWindowList& app_windows =
-        apps::AppWindowRegistry::Get(browser()->profile())->app_windows();
+    const extensions::AppWindowRegistry::AppWindowList& app_windows =
+        extensions::AppWindowRegistry::Get(browser()->profile())->app_windows();
     return (*app_windows.begin())->GetNativeWindow();
   }
 
