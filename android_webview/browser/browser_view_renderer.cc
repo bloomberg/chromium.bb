@@ -20,6 +20,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -42,6 +43,7 @@ const int64 kFallbackTickTimeoutInMilliseconds = 100;
 const size_t kMemoryMultiplier = 20;
 const size_t kBytesPerPixel = 4;
 const size_t kMemoryAllocationStep = 5 * 1024 * 1024;
+uint64 g_memory_override_in_bytes = 0u;
 
 // Used to calculate tile allocation. Determined experimentally.
 const size_t kTileMultiplier = 12;
@@ -75,6 +77,19 @@ class TracedValue : public base::debug::ConvertableToTraceFormat {
 
 // static
 void BrowserViewRenderer::CalculateTileMemoryPolicy(bool use_zero_copy) {
+  CommandLine* cl = CommandLine::ForCurrentProcess();
+
+  // If the value was overridden on the command line, use the specified value.
+  bool client_hard_limit_bytes_overridden =
+      cl->HasSwitch(switches::kForceGpuMemAvailableMb);
+  if (client_hard_limit_bytes_overridden) {
+    base::StringToUint64(
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kForceGpuMemAvailableMb),
+        &g_memory_override_in_bytes);
+    g_memory_override_in_bytes *= 1024 * 1024;
+  }
+
   if (!use_zero_copy) {
     // Use chrome's default tile size, which varies from 256 to 512.
     // Be conservative here and use the smallest tile size possible.
@@ -85,7 +100,6 @@ void BrowserViewRenderer::CalculateTileMemoryPolicy(bool use_zero_copy) {
     return;
   }
 
-  CommandLine* cl = CommandLine::ForCurrentProcess();
   const char kDefaultTileSize[] = "384";
 
   if (!cl->HasSwitch(switches::kDefaultTileWidth))
@@ -179,6 +193,9 @@ BrowserViewRenderer::CalculateDesiredMemoryPolicy() {
   // Round up to a multiple of kMemoryAllocationStep.
   policy.bytes_limit =
       (policy.bytes_limit / kMemoryAllocationStep + 1) * kMemoryAllocationStep;
+
+  if (g_memory_override_in_bytes)
+    policy.bytes_limit = static_cast<size_t>(g_memory_override_in_bytes);
 
   size_t tiles = width * height * kTileMultiplier / g_tile_area;
   // Round up to a multiple of kTileAllocationStep. The minimum number of tiles
