@@ -26452,6 +26452,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="RendererSyncIPC.ElapsedTime" units="milliseconds">
+  <owner>ppi@chromium.org</owner>
+  <summary>
+    Roundtrip times for synchronous IPC calls from the renderer to browser.
+  </summary>
+</histogram>
+
 <histogram name="RenderViewContextMenu.Shown" enum="RenderViewContextMenuItem">
   <owner>vitalybuka@chromium.org</owner>
   <summary>Count of renderer view context menu items shown.</summary>
