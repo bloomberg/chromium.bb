@@ -59,6 +59,14 @@ class UserScriptSet {
                      int tab_id,
                      UserScript::RunLocation run_location);
 
+  scoped_ptr<ScriptInjection> GetDeclarativeScriptInjection(
+      int script_id,
+      blink::WebFrame* web_frame,
+      int tab_id,
+      UserScript::RunLocation run_location,
+      const GURL& document_url,
+      const Extension* extension);
+
   // Updates scripts given the shared memory region containing user scripts.
   // Returns true if the scripts were successfully updated.
   bool UpdateUserScripts(base::SharedMemoryHandle shared_memory,
@@ -75,7 +83,8 @@ class UserScriptSet {
       int tab_id,
       UserScript::RunLocation run_location,
       const GURL& document_url,
-      const Extension* extension);
+      const Extension* extension,
+      bool is_declarative);
 
   // Shared memory containing raw script data.
   scoped_ptr<base::SharedMemory> shared_memory_;

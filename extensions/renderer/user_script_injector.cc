@@ -56,10 +56,12 @@ base::LazyInstance<GreasemonkeyApiJsString> g_greasemonkey_api =
 
 UserScriptInjector::UserScriptInjector(
     const UserScript* script,
-    UserScriptSet* script_list)
+    UserScriptSet* script_list,
+    bool is_declarative)
     : script_(script),
       script_id_(script_->id()),
       extension_id_(script_->extension_id()),
+      is_declarative_(is_declarative),
       user_script_set_observer_(this) {
   user_script_set_observer_.Add(script_list);
 }
@@ -132,13 +134,26 @@ PermissionsData::AccessType UserScriptInjector::CanExecuteOnFrame(
   GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
       web_frame, web_frame->document().url(), script_->match_about_blank());
 
-  return extension->permissions_data()->GetContentScriptAccess(
-      extension,
-      effective_document_url,
-      top_url,
-      tab_id,
-      -1,  // no process id
-      NULL /* ignore error */);
+  // Declarative user scripts use "page access" (from "permissions" section in
+  // manifest) whereas non-declarative user scripts use custom
+  // "content script access" logic.
+  if (is_declarative_) {
+    return extension->permissions_data()->GetPageAccess(
+        extension,
+        effective_document_url,
+        top_url,
+        tab_id,
+        -1,  // no process id
+        NULL /* ignore error */);
+  } else {
+    return extension->permissions_data()->GetContentScriptAccess(
+        extension,
+        effective_document_url,
+        top_url,
+        tab_id,
+        -1,  // no process id
+        NULL /* ignore error */);
+  }
 }
 
 std::vector<blink::WebScriptSource> UserScriptInjector::GetJsSources(

@@ -406,6 +406,13 @@ IPC_MESSAGE_CONTROL3(ExtensionMsg_UpdateUserScripts,
                      extensions::ExtensionId /* owner */,
                      std::set<std::string> /* changed extensions */)
 
+// Trigger to execute declarative content script under browser control.
+IPC_MESSAGE_ROUTED4(ExtensionMsg_ExecuteDeclarativeScript,
+                    int /* tab identifier */,
+                    extensions::ExtensionId /* extension identifier */,
+                    int /* script identifier */,
+                    GURL /* page URL where script should be injected */)
+
 // Tell the render view which browser window it's being attached to.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_UpdateBrowserWindowId,
                     int /* id of browser window */)

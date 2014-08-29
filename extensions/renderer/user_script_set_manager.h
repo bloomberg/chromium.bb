@@ -56,8 +56,14 @@ class UserScriptSetManager : public content::RenderProcessObserver {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  const UserScriptSet* GetProgrammaticScriptsByExtension(
-      const ExtensionId& extensionId);
+  // Looks up the script injection associated with |script_id| and |extension|
+  // in the context of the given |web_frame|, |tab_id|, and |url|.
+  scoped_ptr<ScriptInjection> GetInjectionForDeclarativeScript(
+      int script_id,
+      blink::WebFrame* web_frame,
+      int tab_id,
+      const GURL& url,
+      const Extension* extension);
 
   // Put all injections from |static_scripts| and each of
   // |programmatic_scripts_| into |injections|.
@@ -78,6 +84,9 @@ class UserScriptSetManager : public content::RenderProcessObserver {
 
   // content::RenderProcessObserver implementation.
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  UserScriptSet* GetProgrammaticScriptsByExtension(
+      const ExtensionId& extensionId);
 
   // Handle the UpdateUserScripts extension message.
   void OnUpdateUserScripts(base::SharedMemoryHandle shared_memory,

@@ -72,6 +72,13 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
   void HandleExecuteCode(const ExtensionMsg_ExecuteCode_Params& params,
                          content::RenderView* render_view);
 
+  // Handle the ExecuteDeclarativeScript extension message.
+  void HandleExecuteDeclarativeScript(blink::WebFrame* web_frame,
+                                      int tab_id,
+                                      const ExtensionId& extension_id,
+                                      int script_id,
+                                      const GURL& url);
+
   // Handle the GrantInjectionPermission extension message.
   void HandlePermitScriptInjection(int64 request_id);
 

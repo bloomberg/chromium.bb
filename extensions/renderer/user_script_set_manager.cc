@@ -8,6 +8,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/dispatcher.h"
+#include "extensions/renderer/script_injection.h"
 #include "extensions/renderer/user_script_set.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -31,6 +32,27 @@ void UserScriptSetManager::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+scoped_ptr<ScriptInjection>
+UserScriptSetManager::GetInjectionForDeclarativeScript(
+    int script_id,
+    blink::WebFrame* web_frame,
+    int tab_id,
+    const GURL& url,
+    const Extension* extension) {
+  UserScriptSet* user_script_set =
+      GetProgrammaticScriptsByExtension(extension->id());
+  if (!user_script_set)
+    return scoped_ptr<ScriptInjection>();
+
+  return user_script_set->GetDeclarativeScriptInjection(
+      script_id,
+      web_frame,
+      tab_id,
+      UserScript::BROWSER_DRIVEN,
+      url,
+      extension);
+}
+
 bool UserScriptSetManager::OnControlMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
@@ -39,13 +61,6 @@ bool UserScriptSetManager::OnControlMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-const UserScriptSet* UserScriptSetManager::GetProgrammaticScriptsByExtension(
-    const ExtensionId& extension_id) {
-  UserScriptSetMap::const_iterator it =
-      programmatic_scripts_.find(extension_id);
-  return it != programmatic_scripts_.end() ? it->second.get() : NULL;
 }
 
 void UserScriptSetManager::GetAllInjections(
@@ -72,6 +87,13 @@ void UserScriptSetManager::GetAllActiveExtensionIds(
   }
 }
 
+UserScriptSet* UserScriptSetManager::GetProgrammaticScriptsByExtension(
+    const ExtensionId& extension_id) {
+  UserScriptSetMap::const_iterator it =
+      programmatic_scripts_.find(extension_id);
+  return it != programmatic_scripts_.end() ? it->second.get() : NULL;
+}
+
 void UserScriptSetManager::OnUpdateUserScripts(
     base::SharedMemoryHandle shared_memory,
     const ExtensionId& extension_id,
@@ -92,10 +114,10 @@ void UserScriptSetManager::OnUpdateUserScripts(
 
   UserScriptSet* scripts = NULL;
   if (!extension_id.empty()) {
-    // The expectation when there is an extensions that "owns" this shared
-    // memory region is that it will list itself as the only changed extension.
-    CHECK(changed_extensions.size() == 1 &&
-          changed_extensions.find(extension_id) != changed_extensions.end());
+    // The expectation when there is an extension that "owns" this shared
+    // memory region is that the |changed_extensions| is either the empty list
+    // or just the owner.
+    CHECK(changed_extensions.size() <= 1);
     if (programmatic_scripts_.find(extension_id) ==
         programmatic_scripts_.end()) {
       scripts = new UserScriptSet(extensions_);
@@ -114,7 +136,14 @@ void UserScriptSetManager::OnUpdateUserScripts(
   const std::set<std::string>* effective_extensions = &changed_extensions;
   std::set<std::string> all_extensions;
   if (changed_extensions.empty()) {
-    all_extensions = extensions_->GetIDs();
+    // The meaning of "all extensions" varies, depending on whether some
+    // extension "owns" this shared memory region.
+    // No owner => all known extensions.
+    // Owner    => just the owner extension.
+    if (extension_id.empty())
+      all_extensions = extensions_->GetIDs();
+    else
+      all_extensions.insert(extension_id);
     effective_extensions = &all_extensions;
   }
 
