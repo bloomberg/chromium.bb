@@ -38,6 +38,7 @@
 
 
 import os
+import os.path
 import subprocess
 
 
@@ -165,12 +166,12 @@ def GetClangCommandFromNinjaForFilename(chrome_root, filename):
         # try to use the default flags.
         return chrome_flags
 
-  # Ninja needs the path to the source file from the output build directory.
-  # Cut off the common part and /.
-  subdir_filename = filename[len(chrome_root)+1:]
-  rel_filename = os.path.join('..', '..', subdir_filename)
-
   out_dir = GetNinjaOutputDirectory(chrome_root)
+
+  # Ninja needs the path to the source file relative to the output build
+  # directory.
+  rel_filename = os.path.relpath(os.path.realpath(filename),
+                                 os.path.realpath(out_dir))
 
   # Ask ninja how it would build our source file.
   p = subprocess.Popen(['ninja', '-v', '-C', out_dir, '-t',
