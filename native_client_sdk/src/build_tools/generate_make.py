@@ -189,28 +189,11 @@ def ModifyDescInPlace(desc):
 
   Currently this consists of:
   - Add -Wall to CXXFLAGS
-  - Synthesize SEL_LDR_LIBS and SEL_LDR_DEPS by stripping
-    down LIBS and DEPS (removing certain ppapi-only libs).
   """
-
-  ppapi_only_libs = ['ppapi_simple']
 
   for target in desc['TARGETS']:
     target.setdefault('CXXFLAGS', [])
     target['CXXFLAGS'].insert(0, '-Wall')
-
-    def filter_out(key):
-      value = target.get(key, [])
-      if type(value) == dict:
-        value = dict(value)
-        for key in value.keys():
-          value[key] = [v for v in value[key] if v not in ppapi_only_libs]
-      else:
-        value = [v for v in value if v not in ppapi_only_libs]
-      return value
-
-    target['SEL_LDR_LIBS'] = filter_out('LIBS')
-    target['SEL_LDR_DEPS'] = filter_out('DEPS')
 
 
 def ProcessProject(pepperdir, srcroot, dstroot, desc, toolchains, configs=None,

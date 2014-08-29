@@ -1,6 +1,6 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
 
 #ifndef PPAPI_SIMPLE_PS_H_
 #define PPAPI_SIMPLE_PS_H_
@@ -45,7 +45,6 @@ EXTERN_C_BEGIN
  */
 PP_Instance PSGetInstanceId(void);
 
-
 /**
  * PSGetInterface
  *
@@ -53,7 +52,6 @@ PP_Instance PSGetInstanceId(void);
  * to the interface, or NULL if not found or not available.
  */
 const void* PSGetInterface(const char *name);
-
 
 /**
  * PSUserCreateInstance
@@ -67,20 +65,6 @@ const void* PSGetInterface(const char *name);
  */
 extern void* PSUserCreateInstance(PP_Instance inst);
 
-
-/**
- * PPAPI_SIMPLE_USE_MAIN
- *
- * For use with C projects, this macro calls the provided factory with
- * configuration information.
- */
-#define PPAPI_SIMPLE_USE_MAIN(factory, func)   \
-void* PSUserCreateInstance(PP_Instance inst) { \
-  return factory(inst, func);                  \
-}
-
-
 EXTERN_C_END
 
-
-#endif  // PPAPI_SIMPLE_PS_H_
+#endif  /* PPAPI_SIMPLE_PS_H_ */

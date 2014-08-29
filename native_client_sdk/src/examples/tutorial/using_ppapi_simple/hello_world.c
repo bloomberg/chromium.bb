@@ -8,10 +8,6 @@
 
 #include "ppapi_simple/ps_main.h"
 
-#ifdef SEL_LDR
-#define example_main main
-#endif
-
 int example_main(int argc, char* argv[]) {
   /* Use ppb_messaging to send "Hello World" to JavaScript. */
   printf("Hello World STDOUT.\n");
@@ -28,6 +24,4 @@ int example_main(int argc, char* argv[]) {
  * This is not needed when building the sel_ldr version of this example
  * which does not link against ppapi_simple.
  */
-#ifndef SEL_LDR
 PPAPI_SIMPLE_REGISTER_MAIN(example_main)
-#endif

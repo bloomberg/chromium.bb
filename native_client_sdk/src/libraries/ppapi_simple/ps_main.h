@@ -18,8 +18,16 @@ typedef int (*PSMainFunc_t)(int argc, char *argv[]);
  * Constructs an instance SimpleInstance and configures it to call into
  * the provided "main" function.
  */
-void* PSMainCreate(PP_Instance inst, PSMainFunc_t func);
+void* PSMainCreate(PP_Instance inst, PSMainFunc_t entry_point);
 
+/**
+ * PSUserMainGet
+ *
+ * Prototype for the user provided function which retrieves the user's main
+ * function.
+ * This is normally defined using the PPAPI_SIMPLE_REGISTER_MAIN macro.
+ */
+PSMainFunc_t PSUserMainGet();
 
 /**
  * PPAPI_SIMPLE_REGISTER_MAIN
@@ -27,8 +35,13 @@ void* PSMainCreate(PP_Instance inst, PSMainFunc_t func);
  * Constructs a PSInstance object and configures it to use call the provided
  * 'main' function on its own thread once initialization is complete.
  */
-#define PPAPI_SIMPLE_REGISTER_MAIN(main) \
-  PPAPI_SIMPLE_USE_MAIN(PSMainCreate, main)
+#define PPAPI_SIMPLE_REGISTER_MAIN(main_func)     \
+  PSMainFunc_t PSUserMainGet() {                  \
+    return main_func;                             \
+  }                                               \
+  void* PSUserCreateInstance(PP_Instance inst) {  \
+    return PSMainCreate(inst, main_func);         \
+  }
 
 EXTERN_C_END
 

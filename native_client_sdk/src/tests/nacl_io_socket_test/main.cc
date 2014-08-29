@@ -5,16 +5,6 @@
 #include <string>
 
 #include "gtest/gtest.h"
-
-#if defined(SEL_LDR)
-
-int main(int argc, char* argv[]) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
-
-#else
-
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi_simple/ps_main.h"
@@ -54,13 +44,13 @@ class GTestEventListener : public ::testing::EmptyTestEventListener {
 
 int example_main(int argc, char* argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
-  ::testing::UnitTest::GetInstance()->listeners()
-      .Append(new GTestEventListener());
+  if (PSGetInstanceId() != 0) {
+    ::testing::UnitTest::GetInstance()->listeners()
+        .Append(new GTestEventListener());
+  }
   return RUN_ALL_TESTS();
 }
 
 // Register the function to call once the Instance Object is initialized.
 // see: pappi_simple/ps_main.h
 PPAPI_SIMPLE_REGISTER_MAIN(example_main);
-
-#endif

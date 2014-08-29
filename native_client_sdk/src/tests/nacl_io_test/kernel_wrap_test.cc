@@ -19,6 +19,7 @@
 #include "nacl_io/osmman.h"
 #include "nacl_io/ossocket.h"
 #include "nacl_io/ostermios.h"
+#include "ppapi_simple/ps.h"
 
 #if defined(__native_client__) && !defined(__GLIBC__)
 extern "C" {
@@ -633,13 +634,14 @@ TEST_F(KernelWrapTest, write) {
   EXPECT_EQ(kDummyInt3, write(kDummyInt, kDummyVoidPtr, kDummyInt2));
 }
 
-#if defined SEL_LDR
 class KernelWrapTestUninit : public ::testing::Test {
   void SetUp() {
     ASSERT_EQ(0, ki_push_state_for_testing());
+    kernel_wrap_uninit();
   }
 
   void TearDown() {
+    kernel_wrap_init();
     ki_pop_state_for_testing();
   }
 };
@@ -647,6 +649,8 @@ class KernelWrapTestUninit : public ::testing::Test {
 TEST_F(KernelWrapTestUninit, Mkdir_Uninitialised) {
   // If we are running within chrome we can't use these calls without
   // nacl_io initialized.
+  if (PSGetInstanceId() != 0)
+    return;
   EXPECT_EQ(0, mkdir("./foo", S_IREAD | S_IWRITE));
   EXPECT_EQ(0, rmdir("./foo"));
 }
@@ -654,6 +658,8 @@ TEST_F(KernelWrapTestUninit, Mkdir_Uninitialised) {
 TEST_F(KernelWrapTestUninit, Getcwd_Uninitialised) {
   // If we are running within chrome we can't use these calls without
   // nacl_io initialized.
+  if (PSGetInstanceId() != 0)
+    return;
   char dir[PATH_MAX];
   ASSERT_NE((char*)NULL, getcwd(dir, PATH_MAX));
   // Verify that the CWD ends with 'nacl_io_test'
@@ -661,7 +667,6 @@ TEST_F(KernelWrapTestUninit, Getcwd_Uninitialised) {
   ASSERT_GT(strlen(dir), strlen(suffix));
   ASSERT_EQ(0, strcmp(dir+strlen(dir)-strlen(suffix), suffix));
 }
-#endif
 
 #if defined(PROVIDES_SOCKET_API) and !defined(__BIONIC__)
 TEST_F(KernelWrapTest, poll) {

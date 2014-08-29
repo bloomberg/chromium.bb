@@ -326,10 +326,6 @@ else
 POSIX_FLAGS ?= -g -O0 -pthread -MMD -DNACL_SDK_DEBUG
 endif
 
-ifdef STANDALONE
-POSIX_FLAGS += -DSEL_LDR=1
-endif
-
 NACL_CFLAGS ?= -Wno-long-long -Werror
 NACL_CXXFLAGS ?= -Wno-long-long -Werror
 NACL_LDFLAGS += -Wl,-as-needed -pthread

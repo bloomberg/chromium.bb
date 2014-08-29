@@ -214,4 +214,4 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
   char* exit_message_;
 };
 
-#endif  // PPAPI_MAIN_PS_INSTANCE_H_
+#endif  // PPAPI_SIMPLE_PS_INSTANCE_H_
