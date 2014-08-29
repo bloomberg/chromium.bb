@@ -441,6 +441,8 @@ bool RenderViewDevToolsAgentHost::DispatchIPCMessage(
                         OnDispatchOnInspectorFrontend)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_SaveAgentRuntimeState,
                         OnSaveAgentRuntimeState)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_EnableTracing, OnEnableTracing)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_DisableTracing, OnDisableTracing)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SwapCompositorFrame,
                                 handled = false; OnSwapCompositorFrame(msg))
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -474,14 +476,16 @@ void RenderViewDevToolsAgentHost::OnDispatchOnInspectorFrontend(
     const std::string& message) {
   if (!render_view_host_)
     return;
-
-  scoped_refptr<DevToolsProtocol::Notification> notification =
-      DevToolsProtocol::ParseNotification(message);
-
-  if (notification.get()) {
-    tracing_handler_->HandleNotification(notification);
-  }
   SendMessageToClient(message);
+}
+
+void RenderViewDevToolsAgentHost::OnEnableTracing(
+    const std::string& category_filter) {
+  tracing_handler_->EnableTracing(category_filter);
+}
+
+void RenderViewDevToolsAgentHost::OnDisableTracing() {
+  tracing_handler_->DisableTracing();
 }
 
 }  // namespace content
