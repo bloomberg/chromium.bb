@@ -2279,9 +2279,6 @@ void Document::clearAXObjectCache()
 
 AXObjectCache* Document::existingAXObjectCache() const
 {
-    if (!AXObjectCache::accessibilityEnabled())
-        return 0;
-
     // If the renderer is gone then we are in the process of destruction.
     // This method will be called before m_frame = 0.
     if (!axObjectCacheOwner().renderView())
@@ -2292,7 +2289,8 @@ AXObjectCache* Document::existingAXObjectCache() const
 
 AXObjectCache* Document::axObjectCache() const
 {
-    if (!AXObjectCache::accessibilityEnabled())
+    Settings* settings = this->settings();
+    if (!settings || !settings->accessibilityEnabled())
         return 0;
 
     // The only document that actually has a AXObjectCache is the top-level
@@ -2594,7 +2592,7 @@ void Document::implicitClose()
 
     m_loadEventProgress = LoadEventCompleted;
 
-    if (frame() && renderView() && AXObjectCache::accessibilityEnabled()) {
+    if (frame() && renderView() && settings()->accessibilityEnabled()) {
         // The AX cache may have been cleared at this point, but we need to make sure it contains an
         // AX object to send the notification to. getOrCreate will make sure that an valid AX object
         // exists in the cache (we ignore the return value because we don't need it here). This is

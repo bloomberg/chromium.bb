@@ -587,7 +587,7 @@ bool Node::isEditableToAccessibility(EditableLevel editableLevel) const
     if (editableLevel == RichlyEditable)
         return false;
 
-    ASSERT(AXObjectCache::accessibilityEnabled());
+    ASSERT(document().settings() && document().settings()->accessibilityEnabled());
     ASSERT(document().existingAXObjectCache());
 
     if (AXObjectCache* cache = document().existingAXObjectCache())
@@ -1848,7 +1848,8 @@ void Node::didMoveToNewDocument(Document& oldDocument)
         }
     }
 
-    if (AXObjectCache::accessibilityEnabled()) {
+    Settings* settings = document().settings();
+    if (settings && settings->accessibilityEnabled()) {
         if (AXObjectCache* cache = oldDocument.existingAXObjectCache())
             cache->remove(this);
     }

@@ -548,7 +548,7 @@ void Editor::notifyComponentsOnChangedSelection(const VisibleSelection& oldSelec
 
 void Editor::respondToChangedContents(const VisibleSelection& endingSelection)
 {
-    if (AXObjectCache::accessibilityEnabled()) {
+    if (m_frame.settings() && m_frame.settings()->accessibilityEnabled()) {
         Node* node = endingSelection.start().deprecatedNode();
         if (AXObjectCache* cache = m_frame.document()->existingAXObjectCache())
             cache->postNotification(node, AXObjectCache::AXValueChanged, false);

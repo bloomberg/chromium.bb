@@ -44,6 +44,7 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLOptionElement.h"
@@ -1686,7 +1687,8 @@ void AXRenderObject::textChanged()
     if (!m_renderer)
         return;
 
-    if (AXObjectCache::inlineTextBoxAccessibility() && roleValue() == StaticTextRole)
+    Settings* settings = document()->settings();
+    if (settings && settings->inlineTextBoxAccessibilityEnabled() && roleValue() == StaticTextRole)
         childrenChanged();
 
     // Do this last - AXNodeObject::textChanged posts live region announcements,
@@ -1763,7 +1765,8 @@ int AXRenderObject::indexForVisiblePosition(const VisiblePosition& pos) const
 
 void AXRenderObject::addInlineTextBoxChildren()
 {
-    if (!axObjectCache()->inlineTextBoxAccessibility())
+    Settings* settings = document()->settings();
+    if (!settings || !settings->inlineTextBoxAccessibilityEnabled())
         return;
 
     if (!renderer() || !renderer()->isText())
@@ -2030,6 +2033,10 @@ AXSVGRoot* AXRenderObject::remoteSVGRootElement() const
     Document* doc = frameView->frame().document();
     if (!doc || !doc->isSVGDocument())
         return 0;
+
+    Settings* settings = doc->settings();
+    if (settings && !settings->accessibilityEnabled())
+        settings->setAccessibilityEnabled(true);
 
     SVGSVGElement* rootElement = doc->accessSVGExtensions().rootElement();
     if (!rootElement)

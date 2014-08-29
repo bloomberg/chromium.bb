@@ -86,17 +86,10 @@ bool WebAXObject::equals(const WebAXObject& n) const
 }
 
 // static
-void WebAXObject::enableAccessibility()
-{
-    AXObjectCache::enableAccessibility();
-}
-
+void WebAXObject::enableAccessibility() { }
 
 // static
-void WebAXObject::enableInlineTextBoxAccessibility()
-{
-    AXObjectCache::setInlineTextBoxAccessibility(true);
-}
+void WebAXObject::enableInlineTextBoxAccessibility() { }
 
 bool WebAXObject::isDetached() const
 {

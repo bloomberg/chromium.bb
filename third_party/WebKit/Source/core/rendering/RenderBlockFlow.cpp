@@ -33,6 +33,8 @@
 
 #include "core/accessibility/AXObjectCache.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/rendering/HitTestLocation.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderLayer.h"
@@ -1769,11 +1771,6 @@ RootInlineBox* RenderBlockFlow::createAndAppendRootInlineBox()
     RootInlineBox* rootBox = createRootInlineBox();
     m_lineBoxes.appendLineBox(rootBox);
 
-    if (UNLIKELY(AXObjectCache::accessibilityEnabled()) && m_lineBoxes.firstLineBox() == rootBox) {
-        if (AXObjectCache* cache = document().existingAXObjectCache())
-            cache->recomputeIsIgnored(this);
-    }
-
     return rootBox;
 }
 
@@ -1783,9 +1780,6 @@ void RenderBlockFlow::deleteLineBoxTree()
         m_floatingObjects->clearLineBoxTreePointers();
 
     m_lineBoxes.deleteLineBoxTree();
-
-    if (AXObjectCache* cache = document().existingAXObjectCache())
-        cache->recomputeIsIgnored(this);
 }
 
 void RenderBlockFlow::markAllDescendantsWithFloatsForLayout(RenderBox* floatToRemove, bool inLayout)

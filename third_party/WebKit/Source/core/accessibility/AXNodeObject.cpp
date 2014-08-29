@@ -1391,7 +1391,7 @@ bool AXNodeObject::canHaveChildren() const
     case ScrollBarRole:
         return false;
     case StaticTextRole:
-        if (!axObjectCache()->inlineTextBoxAccessibility())
+        if (!axObjectCache()->inlineTextBoxAccessibilityEnabled())
             return false;
     default:
         return true;
