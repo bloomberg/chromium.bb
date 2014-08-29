@@ -2014,14 +2014,18 @@ def SendUpstream(parser, args, cmd):
         assert pending_prefix[-1] == '/', pending_prefix
         pending_ref = pending_prefix + branch[len('refs/'):]
         retcode, output = PushToGitPending(remote, pending_ref, branch)
-        revision = RunGit(['rev-parse', 'HEAD']).strip()
         pushed_to_pending = (retcode == 0)
-      logging.debug(output)
+      if retcode == 0:
+        revision = RunGit(['rev-parse', 'HEAD']).strip()
     else:
       # dcommit the merge branch.
-      retcode, output = RunGitWithCode(['svn', 'dcommit',
-                                        '-C%s' % options.similarity,
-                                        '--no-rebase', '--rmdir'])
+      _, output = RunGitWithCode(['svn', 'dcommit',
+                                  '-C%s' % options.similarity,
+                                  '--no-rebase', '--rmdir'])
+      if 'Committed r' in output:
+        revision = re.match(
+          '.*?\nCommitted r(\\d+)', output, re.DOTALL).group(1)
+    logging.debug(output)
   finally:
     # And then swap back to the original branch and clean up.
     RunGit(['checkout', '-q', cl.GetBranch()])
@@ -2029,9 +2033,9 @@ def SendUpstream(parser, args, cmd):
     if base_has_submodules:
       RunGit(['branch', '-D', CHERRY_PICK_BRANCH])
 
-  if retcode != 0:
+  if not revision:
     print 'Failed to push. If this persists, please file a bug.'
-    return retcode
+    return 1
 
   if pushed_to_pending:
     try:
@@ -2043,23 +2047,6 @@ def SendUpstream(parser, args, cmd):
       pass
 
   if cl.GetIssue():
-    if not revision:
-      if cmd == 'dcommit' and 'Committed r' in output:
-        revision = re.match(
-          '.*?\nCommitted r(\\d+)', output, re.DOTALL).group(1)
-      elif cmd == 'land':
-        match = (re.match(r'.*?([a-f0-9]{7,})\.\.([a-f0-9]{7,})$', l)
-                 for l in output.splitlines(False))
-        match = filter(None, match)
-        if len(match) != 1:
-          DieWithError(
-            "Couldn't parse ouput to extract the committed hash:\n%s" % output)
-        revision = match[0].group(2)
-      else:
-        return 1
-
-    revision = revision[:7]
-
     to_pending = ' to pending queue' if pushed_to_pending else ''
     viewvc_url = settings.GetViewVCUrl()
     if not to_pending:
@@ -2075,7 +2062,7 @@ def SendUpstream(parser, args, cmd):
     props = cl.GetIssueProperties()
     patch_num = len(props['patchsets'])
     comment = "Committed patchset #%d (id:%d)%s manually as %s" % (
-        patch_num, props['patchsets'][-1], to_pending, revision)
+        patch_num, props['patchsets'][-1], to_pending, revision[:7])
     if options.bypass_hooks:
       comment += ' (tree was closed).' if GetTreeStatus() == 'closed' else '.'
     else:
