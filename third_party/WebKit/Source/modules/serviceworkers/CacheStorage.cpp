@@ -39,7 +39,7 @@ public:
         if (*reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve(false);
         else
-            m_resolver->resolve(Cache::domExceptionForCacheError(*reason));
+            m_resolver->reject(Cache::domExceptionForCacheError(*reason));
         m_resolver.clear();
     }
 
@@ -65,7 +65,7 @@ public:
         if (*reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve();
         else
-            m_resolver->resolve(Cache::domExceptionForCacheError(*reason));
+            m_resolver->reject(Cache::domExceptionForCacheError(*reason));
         m_resolver.clear();
     }
 
