@@ -907,13 +907,14 @@ bool WebMListParser::OnListEnd() {
   int lists_ended = 0;
   for (; !list_state_stack_.empty(); ++lists_ended) {
     const ListState& list_state = list_state_stack_.back();
+    int64 bytes_parsed = list_state.bytes_parsed_;
+    int id = list_state.id_;
 
-    if (list_state.bytes_parsed_ != list_state.size_)
+    if (bytes_parsed != list_state.size_)
       break;
 
     list_state_stack_.pop_back();
 
-    int64 bytes_parsed = list_state.bytes_parsed_;
     WebMParserClient* client = NULL;
     if (!list_state_stack_.empty()) {
       // Update the bytes_parsed_ for the parent element.
@@ -923,7 +924,7 @@ bool WebMListParser::OnListEnd() {
       client = root_client_;
     }
 
-    if (!client->OnListEnd(list_state.id_))
+    if (!client->OnListEnd(id))
       return false;
   }
 
