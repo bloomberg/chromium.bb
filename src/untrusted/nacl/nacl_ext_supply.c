@@ -11,12 +11,6 @@
 #include "native_client/src/untrusted/irt/irt_extension.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 
-static size_t ext_struct_memcpy_init(void *dest_table, const void *src_table,
-                                     size_t tablesize) {
-  memcpy(dest_table, src_table, tablesize);
-  return tablesize;
-}
-
 struct nacl_irt_ext_struct {
   const char *interface_ident;
   void *table;
@@ -27,27 +21,15 @@ static const struct nacl_irt_ext_struct nacl_irt_ext_structs[] = {
   {
     .interface_ident = NACL_IRT_DEV_FDIO_v0_3,
     .table = &__libnacl_irt_dev_fdio,
-    .tablesize = sizeof(__libnacl_irt_dev_fdio)
-  }, {
-    .interface_ident = NACL_IRT_DEV_FDIO_v0_2,
-    .table = &__libnacl_irt_dev_fdio,
-    .tablesize = sizeof(struct nacl_irt_dev_fdio_v0_2)
-  }, {
-    .interface_ident = NACL_IRT_FDIO_v0_1,
-    .table = &__libnacl_irt_fdio,
-    .tablesize = sizeof(__libnacl_irt_fdio)
+    .tablesize = sizeof(__libnacl_irt_dev_fdio),
   }, {
     .interface_ident = NACL_IRT_DEV_FILENAME_v0_3,
     .table = &__libnacl_irt_dev_filename,
-    .tablesize = sizeof(__libnacl_irt_dev_filename)
+    .tablesize = sizeof(__libnacl_irt_dev_filename),
   }, {
-    .interface_ident = NACL_IRT_DEV_FILENAME_v0_2,
-    .table = &__libnacl_irt_dev_filename,
-    .tablesize = sizeof(struct nacl_irt_dev_filename_v0_2)
-  }, {
-    .interface_ident = NACL_IRT_FILENAME_v0_1,
-    .table = &__libnacl_irt_dev_filename,
-    .tablesize = sizeof(struct nacl_irt_filename)
+    .interface_ident = NACL_IRT_MEMORY_v0_3,
+    .table = &__libnacl_irt_memory,
+    .tablesize = sizeof(struct nacl_irt_memory),
   },
 };
 
@@ -56,9 +38,8 @@ size_t nacl_interface_ext_supply(const char *interface_ident,
   for (int i = 0; i < NACL_ARRAY_SIZE(nacl_irt_ext_structs); i++) {
     if (nacl_irt_ext_structs[i].tablesize == tablesize &&
         strcmp(nacl_irt_ext_structs[i].interface_ident, interface_ident) == 0) {
-      return ext_struct_memcpy_init(nacl_irt_ext_structs[i].table,
-                                    table,
-                                    tablesize);
+      memcpy(nacl_irt_ext_structs[i].table, table, tablesize);
+      return tablesize;
     }
   }
 

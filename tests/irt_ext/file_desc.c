@@ -8,11 +8,11 @@
 #include <fcntl.h>
 #include <string.h>
 
-#include "native_client/tests/irt_ext/file_desc.h"
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/untrusted/irt/irt_dev.h"
 #include "native_client/src/untrusted/irt/irt_extension.h"
+#include "native_client/tests/irt_ext/file_desc.h"
 
 static struct file_desc_environment *g_activated_env = NULL;
 static const struct inode_data g_default_inode = {
@@ -296,18 +296,9 @@ void init_file_desc_module(void) {
     my_isatty,
   };
 
-  /* These tables should have share common prefixes with one another. */
-  ASSERT_GT(sizeof(struct nacl_irt_dev_fdio_v0_2),
-            sizeof(struct nacl_irt_fdio));
-  ASSERT_GT(sizeof(struct nacl_irt_dev_fdio),
-            sizeof(struct nacl_irt_dev_fdio_v0_2));
-
-  nacl_interface_ext_supply(NACL_IRT_FDIO_v0_1, &fdio,
-                            sizeof(struct nacl_irt_fdio));
-  nacl_interface_ext_supply(NACL_IRT_DEV_FDIO_v0_2, &fdio,
-                            sizeof(struct nacl_irt_dev_fdio_v0_2));
-  nacl_interface_ext_supply(NACL_IRT_DEV_FDIO_v0_3, &fdio,
-                            sizeof(fdio));
+  size_t size = nacl_interface_ext_supply(NACL_IRT_DEV_FDIO_v0_3, &fdio,
+                                          sizeof(fdio));
+  ASSERT_EQ(size, sizeof(fdio));
 
   struct nacl_irt_dev_filename fname = {
     my_open,
@@ -329,17 +320,9 @@ void init_file_desc_module(void) {
   };
 
   /* These tables should have share common prefixes with one another. */
-  ASSERT_GT(sizeof(struct nacl_irt_dev_filename_v0_2),
-            sizeof(struct nacl_irt_filename));
-  ASSERT_GT(sizeof(struct nacl_irt_dev_filename),
-            sizeof(struct nacl_irt_dev_filename_v0_2));
-
-  nacl_interface_ext_supply(NACL_IRT_FILENAME_v0_1, &fname,
-                            sizeof(struct nacl_irt_filename));
-  nacl_interface_ext_supply(NACL_IRT_DEV_FILENAME_v0_2, &fname,
-                            sizeof(struct nacl_irt_dev_filename_v0_2));
-  nacl_interface_ext_supply(NACL_IRT_DEV_FILENAME_v0_3, &fname,
-                            sizeof(fname));
+  size = nacl_interface_ext_supply(NACL_IRT_DEV_FILENAME_v0_3, &fname,
+                                   sizeof(fname));
+  ASSERT_EQ(size, sizeof(fname));
 }
 
 void init_inode_data(struct inode_data *inode_data) {

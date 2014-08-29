@@ -6,7 +6,8 @@
 
 #include "native_client/tests/irt_ext/error_report.h"
 #include "native_client/tests/irt_ext/file_desc.h"
-#include "native_client/tests/irt_ext/libc/file_tests.h"
+#include "native_client/tests/irt_ext/mem_calls.h"
+#include "native_client/tests/irt_ext/libc/libc_test.h"
 
 #include <stdio.h>
 
@@ -16,9 +17,11 @@ int main(void) {
   /* Initialize the various modules. */
   init_error_report_module();
   init_file_desc_module();
+  init_mem_calls_module();
 
   /* Run tests. */
   ret += run_file_tests();
+  ret += run_mem_tests();
 
   return ret;
 }

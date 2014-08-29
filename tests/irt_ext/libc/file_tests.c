@@ -13,7 +13,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/tests/irt_ext/error_report.h"
 #include "native_client/tests/irt_ext/file_desc.h"
-#include "native_client/tests/irt_ext/libc/file_tests.h"
+#include "native_client/tests/irt_ext/libc/libc_test.h"
 
 #define TEST_DIRECTORY "test_directory"
 

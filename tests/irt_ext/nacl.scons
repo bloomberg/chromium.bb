@@ -14,11 +14,13 @@ if env.Bit('bitcode') or env.Bit('nacl_glibc'):
 IRT_EXT_TEST_SRCS = [
     'error_report.c',
     'file_desc.c',
+    'mem_calls.c',
     ]
 
 IRT_EXT_LIBC_TEST_SRCS = [
     'libc/file_tests.c',
     'libc/libc_test.c',
+    'libc/mem_tests.c',
     ]
 
 irt_ext_libc_test_nexe = env.ComponentProgram('irt_ext_libc_test',
