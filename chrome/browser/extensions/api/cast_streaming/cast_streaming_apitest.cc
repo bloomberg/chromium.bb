@@ -4,13 +4,14 @@
 
 #include <algorithm>
 #include <cmath>
+#include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/float_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/synchronization/lock.h"
-#include "base/time/time.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/content_switches.h"
@@ -76,6 +77,23 @@ IN_PROC_BROWSER_TEST_F(CastStreamingApiTest, NullStream) {
 
 namespace {
 
+struct YUVColor {
+  int y;
+  int u;
+  int v;
+
+  YUVColor() : y(0), u(0), v(0) {}
+  YUVColor(int y_val, int u_val, int v_val) : y(y_val), u(u_val), v(v_val) {}
+};
+
+
+media::cast::FrameReceiverConfig WithFakeAesKeyAndIv(
+    media::cast::FrameReceiverConfig config) {
+  config.aes_key = "0123456789abcdef";
+  config.aes_iv_mask = "fedcba9876543210";
+  return config;
+}
+
 // An in-process Cast receiver that examines the audio/video frames being
 // received for expected colors and tones.  Used in
 // CastStreamingApiTest.EndToEnd, below.
@@ -84,75 +102,53 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
   explicit TestPatternReceiver(
       const scoped_refptr<media::cast::CastEnvironment>& cast_environment,
       const net::IPEndPoint& local_end_point)
-      : InProcessReceiver(cast_environment,
-                          local_end_point,
-                          net::IPEndPoint(),
-                          media::cast::GetDefaultAudioReceiverConfig(),
-                          media::cast::GetDefaultVideoReceiverConfig()),
-        target_tone_frequency_(0),
-        current_tone_frequency_(0.0f) {
-    memset(&target_color_, 0, sizeof(target_color_));
-    memset(&current_color_, 0, sizeof(current_color_));
+      : InProcessReceiver(
+            cast_environment,
+            local_end_point,
+            net::IPEndPoint(),
+            WithFakeAesKeyAndIv(media::cast::GetDefaultAudioReceiverConfig()),
+            WithFakeAesKeyAndIv(media::cast::GetDefaultVideoReceiverConfig())) {
   }
 
   virtual ~TestPatternReceiver() {}
 
-  // Blocks the caller until this receiver has seen both |yuv_color| and
-  // |tone_frequency| consistently for the given |duration|.
-  void WaitForColorAndTone(const uint8 yuv_color[3],
-                           int tone_frequency,
-                           base::TimeDelta duration) {
-    LOG(INFO) << "Waiting for test pattern: color=yuv("
-              << static_cast<int>(yuv_color[0]) << ", "
-              << static_cast<int>(yuv_color[1]) << ", "
-              << static_cast<int>(yuv_color[2])
-              << "), tone_frequency=" << tone_frequency << " Hz";
+  void AddExpectedTone(int tone_frequency) {
+    expected_tones_.push_back(tone_frequency);
+  }
 
+  void AddExpectedColor(const YUVColor& yuv_color) {
+    expected_yuv_colors_.push_back(yuv_color);
+  }
+
+  // Blocks the caller until all expected tones and colors have been observed.
+  void WaitForExpectedTonesAndColors() {
     base::RunLoop run_loop;
     cast_env()->PostTask(
         media::cast::CastEnvironment::MAIN,
         FROM_HERE,
-        base::Bind(&TestPatternReceiver::NotifyOnceMatched,
+        base::Bind(&TestPatternReceiver::NotifyOnceObservedAllTonesAndColors,
                    base::Unretained(this),
-                   yuv_color,
-                   tone_frequency,
-                   duration,
                    media::BindToCurrentLoop(run_loop.QuitClosure())));
     run_loop.Run();
   }
 
  private:
-  // Resets tracking data and sets the match duration and callback.
-  void NotifyOnceMatched(const uint8 yuv_color[3],
-                         int tone_frequency,
-                         base::TimeDelta match_duration,
-                         const base::Closure& matched_callback) {
+  void NotifyOnceObservedAllTonesAndColors(const base::Closure& done_callback) {
     DCHECK(cast_env()->CurrentlyOn(media::cast::CastEnvironment::MAIN));
-
-    match_duration_ = match_duration;
-    matched_callback_ = matched_callback;
-    target_color_[0] = yuv_color[0];
-    target_color_[1] = yuv_color[1];
-    target_color_[2] = yuv_color[2];
-    target_tone_frequency_ = tone_frequency;
-    first_time_near_target_color_ = base::TimeTicks();
-    first_time_near_target_tone_ = base::TimeTicks();
+    done_callback_ = done_callback;
+    MaybeRunDoneCallback();
   }
 
-  // Runs |matched_callback_| once both color and tone have been matched for the
-  // required |match_duration_|.
-  void NotifyIfMatched() {
+  void MaybeRunDoneCallback() {
     DCHECK(cast_env()->CurrentlyOn(media::cast::CastEnvironment::MAIN));
-
-    // TODO(miu): Check audio tone too, once audio is fixed in the library.
-    // http://crbug.com/349295
-    if (first_time_near_target_color_.is_null() ||
-        /*first_time_near_target_tone_.is_null()*/ false)
+    if (done_callback_.is_null())
       return;
-    const base::TimeTicks now = cast_env()->Clock()->NowTicks();
-    if ((now - first_time_near_target_color_) >= match_duration_ &&
-        /*(now - first_time_near_target_tone_) >= match_duration_*/ true) {
-      matched_callback_.Run();
+    if (expected_tones_.empty() && expected_yuv_colors_.empty()) {
+      base::ResetAndReturn(&done_callback_).Run();
+    } else {
+      LOG(INFO) << "Waiting to encounter " << expected_tones_.size()
+                << " more tone(s) and " << expected_yuv_colors_.size()
+                << " more color(s).";
     }
   }
 
@@ -167,6 +163,9 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
       return;
     }
 
+    if (done_callback_.is_null() || expected_tones_.empty())
+      return;  // No need to waste CPU doing analysis on the signal.
+
     // Assume the audio signal is a single sine wave (it can have some
     // low-amplitude noise).  Count zero crossings, and extrapolate the
     // frequency of the sine wave in |audio_frame|.
@@ -178,28 +177,23 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     crossings /= audio_frame->channels();  // Take the average.
     const float seconds_per_frame =
         audio_frame->frames() / static_cast<float>(audio_config().frequency);
-    const float frequency_in_frame = crossings / seconds_per_frame / 2.0f;
+    const float frequency = crossings / seconds_per_frame / 2.0f;
+    VLOG(1) << "Current audio tone frequency: " << frequency;
 
-    const float kAveragingWeight = 0.1f;
-    UpdateExponentialMovingAverage(
-        kAveragingWeight, frequency_in_frame, &current_tone_frequency_);
-    VLOG(1) << "Current audio tone frequency: " << current_tone_frequency_;
-
-    const float kTargetWindowHz = 20;
-    // Update the time at which the current tone started falling within
-    // kTargetWindowHz of the target tone.
-    if (fabsf(current_tone_frequency_ - target_tone_frequency_) <
-        kTargetWindowHz) {
-      if (first_time_near_target_tone_.is_null())
-        first_time_near_target_tone_ = cast_env()->Clock()->NowTicks();
-      NotifyIfMatched();
-    } else {
-      first_time_near_target_tone_ = base::TimeTicks();
+    const int kTargetWindowHz = 20;
+    for (std::vector<int>::iterator it = expected_tones_.begin();
+         it != expected_tones_.end(); ++it) {
+      if (abs(static_cast<int>(frequency) - *it) < kTargetWindowHz) {
+        LOG(INFO) << "Heard tone at frequency " << *it << " Hz.";
+        expected_tones_.erase(it);
+        MaybeRunDoneCallback();
+        break;
+      }
     }
   }
 
   virtual void OnVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
-                            const base::TimeTicks& render_time,
+                            const base::TimeTicks& playout_time,
                             bool is_continuous) OVERRIDE {
     DCHECK(cast_env()->CurrentlyOn(media::cast::CastEnvironment::MAIN));
 
@@ -207,76 +201,114 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
           video_frame->format() == media::VideoFrame::I420 ||
           video_frame->format() == media::VideoFrame::YV12A);
 
-    // Note: We take the median value of each plane because the test image will
-    // contain mostly a solid color plus some "cruft" which is the "Testing..."
-    // text in the upper-left corner of the video frame.  In other words, we
-    // want to read "the most common color."
-    const int kPlanes[] = {media::VideoFrame::kYPlane,
-                           media::VideoFrame::kUPlane,
-                           media::VideoFrame::kVPlane};
-    for (size_t i = 0; i < arraysize(kPlanes); ++i) {
-      current_color_[i] =
-          ComputeMedianIntensityInPlane(video_frame->row_bytes(kPlanes[i]),
-                                        video_frame->rows(kPlanes[i]),
-                                        video_frame->stride(kPlanes[i]),
-                                        video_frame->data(kPlanes[i]));
-    }
+    if (done_callback_.is_null() || expected_yuv_colors_.empty())
+      return;  // No need to waste CPU doing analysis on the frame.
 
-    VLOG(1) << "Current video color: yuv(" << current_color_[0] << ", "
-            << current_color_[1] << ", " << current_color_[2] << ')';
+    // Take the median value of each plane because the test image will contain a
+    // letterboxed content region of mostly a solid color plus a small piece of
+    // "something" that's animating to keep the tab capture pipeline generating
+    // new frames.
+    const gfx::Rect region = FindLetterboxedContentRegion(video_frame);
+    YUVColor current_color;
+    current_color.y = ComputeMedianIntensityInRegionInPlane(
+        region,
+        video_frame->stride(media::VideoFrame::kYPlane),
+        video_frame->data(media::VideoFrame::kYPlane));
+    current_color.u = ComputeMedianIntensityInRegionInPlane(
+        gfx::ScaleToEnclosedRect(region, 0.5f),
+        video_frame->stride(media::VideoFrame::kUPlane),
+        video_frame->data(media::VideoFrame::kUPlane));
+    current_color.v = ComputeMedianIntensityInRegionInPlane(
+        gfx::ScaleToEnclosedRect(region, 0.5f),
+        video_frame->stride(media::VideoFrame::kVPlane),
+        video_frame->data(media::VideoFrame::kVPlane));
+    VLOG(1) << "Current video color: yuv(" << current_color.y << ", "
+            << current_color.u << ", " << current_color.v << ')';
 
-    const float kTargetWindow = 10.0f;
-    // Update the time at which all color channels started falling within
-    // kTargetWindow of the target.
-    if (fabsf(current_color_[0] - target_color_[0]) < kTargetWindow &&
-        fabsf(current_color_[1] - target_color_[1]) < kTargetWindow &&
-        fabsf(current_color_[2] - target_color_[2]) < kTargetWindow) {
-      if (first_time_near_target_color_.is_null())
-        first_time_near_target_color_ = cast_env()->Clock()->NowTicks();
-      NotifyIfMatched();
-    } else {
-      first_time_near_target_color_ = base::TimeTicks();
-    }
-  }
-
-  static void UpdateExponentialMovingAverage(float weight,
-                                             float sample_value,
-                                             float* average) {
-    *average = weight * sample_value + (1.0f - weight) * (*average);
-    CHECK(base::IsFinite(*average));
-  }
-
-  static uint8 ComputeMedianIntensityInPlane(int width,
-                                             int height,
-                                             int stride,
-                                             uint8* data) {
-    const int num_pixels = width * height;
-    if (num_pixels <= 0)
-      return 0;
-    // If necessary, re-pack the pixels such that the stride is equal to the
-    // width.
-    if (width < stride) {
-      for (int y = 1; y < height; ++y) {
-        uint8* const src = data + y * stride;
-        uint8* const dest = data + y * width;
-        memmove(dest, src, width);
+    const int kTargetWindow = 10;
+    for (std::vector<YUVColor>::iterator it = expected_yuv_colors_.begin();
+         it != expected_yuv_colors_.end(); ++it) {
+      if (abs(current_color.y - it->y) < kTargetWindow &&
+          abs(current_color.u - it->u) < kTargetWindow &&
+          abs(current_color.v - it->v) < kTargetWindow) {
+        LOG(INFO) << "Saw color yuv(" << it->y << ", " << it->u << ", "
+                  << it->v << ").";
+        expected_yuv_colors_.erase(it);
+        MaybeRunDoneCallback();
+        break;
       }
     }
-    const size_t middle_idx = num_pixels / 2;
-    std::nth_element(data, data + middle_idx, data + num_pixels);
-    return data[middle_idx];
   }
 
-  base::TimeDelta match_duration_;
-  base::Closure matched_callback_;
+  // Return the region that excludes the black letterboxing borders surrounding
+  // the content within |frame|, if any.
+  static gfx::Rect FindLetterboxedContentRegion(
+      const media::VideoFrame* frame) {
+    const int kNonBlackIntensityThreshold = 20;  // 16 plus some fuzz.
+    const int width = frame->row_bytes(media::VideoFrame::kYPlane);
+    const int height = frame->rows(media::VideoFrame::kYPlane);
+    const int stride = frame->stride(media::VideoFrame::kYPlane);
 
-  float target_color_[3];  // Y, U, V
-  float target_tone_frequency_;
+    gfx::Rect result;
 
-  float current_color_[3];  // Y, U, V
-  base::TimeTicks first_time_near_target_color_;
-  float current_tone_frequency_;
-  base::TimeTicks first_time_near_target_tone_;
+    // Scan from the bottom-right until the first non-black pixel is
+    // encountered.
+    for (int y = height - 1; y >= 0; --y) {
+      const uint8* const start =
+          frame->data(media::VideoFrame::kYPlane) + y * stride;
+      const uint8* const end = start + width;
+      for (const uint8* p = end - 1; p >= start; --p) {
+        if (*p > kNonBlackIntensityThreshold) {
+          result.set_width(p - start + 1);
+          result.set_height(y + 1);
+          y = 0;  // Discontinue outer loop.
+          break;
+        }
+      }
+    }
+
+    // Scan from the upper-left until the first non-black pixel is encountered.
+    for (int y = 0; y < result.height(); ++y) {
+      const uint8* const start =
+          frame->data(media::VideoFrame::kYPlane) + y * stride;
+      const uint8* const end = start + result.width();
+      for (const uint8* p = start; p < end; ++p) {
+        if (*p > kNonBlackIntensityThreshold) {
+          result.set_x(p - start);
+          result.set_width(result.width() - result.x());
+          result.set_y(y);
+          result.set_height(result.height() - result.y());
+          y = result.height();  // Discontinue outer loop.
+          break;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  static uint8 ComputeMedianIntensityInRegionInPlane(const gfx::Rect& region,
+                                                     int stride,
+                                                     const uint8* data) {
+    if (region.IsEmpty())
+      return 0;
+    const size_t num_values = region.size().GetArea();
+    scoped_ptr<uint8[]> values(new uint8[num_values]);
+    for (int y = 0; y < region.height(); ++y) {
+      memcpy(values.get() + y * region.width(),
+             data + (region.y() + y) * stride + region.x(),
+             region.width());
+    }
+    const size_t middle_idx = num_values / 2;
+    std::nth_element(values.get(),
+                     values.get() + middle_idx,
+                     values.get() + num_values);
+    return values[middle_idx];
+  }
+
+  std::vector<int> expected_tones_;
+  std::vector<YUVColor> expected_yuv_colors_;
+  base::Closure done_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPatternReceiver);
 };
@@ -295,13 +327,23 @@ class CastStreamingApiTestWithPixelOutput : public CastStreamingApiTest {
   }
 };
 
-// http://crbug.com/396413
 // Tests the Cast streaming API and its basic functionality end-to-end.  An
 // extension subtest is run to generate test content, capture that content, and
 // use the API to send it out.  At the same time, this test launches an
 // in-process Cast receiver, listening on a localhost UDP socket, to receive the
 // content and check whether it matches expectations.
-IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, DISABLED_EndToEnd) {
+//
+// TODO(miu): In order to get this test up-and-running again, we will first
+// confirm it is stable on Release build bots, then later we will enable it for
+// the Debug build bots.  http://crbug.com/396413
+// Also, it seems that the test fails to generate any video (audio is fine) on
+// the ChromeOS bot.  Need to root-cause and resolve that issue.
+#if defined(NDEBUG) && !defined(OS_CHROMEOS)
+#define MAYBE_EndToEnd EndToEnd
+#else
+#define MAYBE_EndToEnd DISABLED_EndToEnd
+#endif
+IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, MAYBE_EndToEnd) {
   scoped_ptr<net::UDPSocket> receive_socket(
       new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND,
                          net::RandIntCallback(),
@@ -325,19 +367,26 @@ IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, DISABLED_EndToEnd) {
   // stream using Cast; and 3) calls chrome.test.succeed() once it is
   // operational.
   const std::string page_url = base::StringPrintf(
-      "end_to_end_sender.html?port=%d", receiver_end_point.port());
+      "end_to_end_sender.html?port=%d&aesKey=%s&aesIvMask=%s",
+      receiver_end_point.port(),
+      base::HexEncode(receiver->audio_config().aes_key.data(),
+                      receiver->audio_config().aes_key.size()).c_str(),
+      base::HexEncode(receiver->audio_config().aes_iv_mask.data(),
+                      receiver->audio_config().aes_iv_mask.size()).c_str());
   ASSERT_TRUE(RunExtensionSubtest("cast_streaming", page_url)) << message_;
 
   // Examine the Cast receiver for expected audio/video test patterns.  The
   // colors and tones specified here must match those in end_to_end_sender.js.
+  // Note that we do not check that the color and tone are received
+  // simultaneously since A/V sync should be measured in perf tests.
+  receiver->AddExpectedTone(200 /* Hz */);
+  receiver->AddExpectedTone(500 /* Hz */);
+  receiver->AddExpectedTone(1800 /* Hz */);
+  receiver->AddExpectedColor(YUVColor(82, 90, 240));  // rgb(255, 0, 0)
+  receiver->AddExpectedColor(YUVColor(145, 54, 34));  // rgb(0, 255, 0)
+  receiver->AddExpectedColor(YUVColor(41, 240, 110));  // rgb(0, 0, 255)
   receiver->Start();
-  const uint8 kRedInYUV[3] = {82, 90, 240};    // rgb(255, 0, 0)
-  const uint8 kGreenInYUV[3] = {145, 54, 34};  // rgb(0, 255, 0)
-  const uint8 kBlueInYUV[3] = {41, 240, 110};  // rgb(0, 0, 255)
-  const base::TimeDelta kOneHalfSecond = base::TimeDelta::FromMilliseconds(500);
-  receiver->WaitForColorAndTone(kRedInYUV, 200 /* Hz */, kOneHalfSecond);
-  receiver->WaitForColorAndTone(kGreenInYUV, 500 /* Hz */, kOneHalfSecond);
-  receiver->WaitForColorAndTone(kBlueInYUV, 1800 /* Hz */, kOneHalfSecond);
+  receiver->WaitForExpectedTonesAndColors();
   receiver->Stop();
 
   delete receiver;
