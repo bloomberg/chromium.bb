@@ -19,6 +19,7 @@
       'dns.idl',
       'extensions_manifest_types.json',
       'extension_types.json',
+      'guest_view_internal.json',
       'hid.idl',
       'power.idl',
       'runtime.json',

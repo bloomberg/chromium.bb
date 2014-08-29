@@ -295,8 +295,6 @@
       'browser/extensions/api/gcd_private/gcd_private_api.h',
       'browser/extensions/api/gcm/gcm_api.cc',
       'browser/extensions/api/gcm/gcm_api.h',
-      'browser/extensions/api/guest_view/guest_view_internal_api.cc',
-      'browser/extensions/api/guest_view/guest_view_internal_api.h',
       'browser/extensions/api/history/history_api.cc',
       'browser/extensions/api/history/history_api.h',
       'browser/extensions/api/hotword_private/hotword_private_api.cc',

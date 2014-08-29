@@ -290,6 +290,8 @@
         'browser/api/app_runtime/app_runtime_api.h',
         'browser/api/app_view/app_view_internal_api.cc',
         'browser/api/app_view/app_view_internal_api.h',
+        'browser/api/guest_view/guest_view_internal_api.cc',
+        'browser/api/guest_view/guest_view_internal_api.h',
         'browser/api/async_api_function.cc',
         'browser/api/async_api_function.h',
         'browser/api/cast_channel/cast_auth_util.cc',

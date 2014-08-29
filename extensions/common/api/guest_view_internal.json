@@ -6,7 +6,7 @@
   {
     "namespace": "guestViewInternal",
     "compiler_options": {
-      "implemented_in": "chrome/browser/extensions/api/guest_view/guest_view_internal_api.h"
+      "implemented_in": "extensions/browser/api/guest_view/guest_view_internal_api.h"
     },
     "description": "none",
     "types": [
