@@ -129,8 +129,8 @@ class SchemaVersionedMySQLConnection(object):
 
     self.schema_version = self.QuerySchemaVersion()
 
-    logging.debug('Created a SchemaVersionedMySQLConnection, '
-                  'sqlalchemy version %s', sqlalchemy.__version__)
+    logging.info('Created a SchemaVersionedMySQLConnection, '
+                 'sqlalchemy version %s', sqlalchemy.__version__)
 
   def DropDatabase(self):
     """Delete all data and tables from database, and drop database.
@@ -352,9 +352,9 @@ class SchemaVersionedMySQLConnection(object):
       )
       if error_code in retryable_codes:
         e = self._GetEngine()
-        logging.debug('Retrying a query on engine %s@%s for pid %s due to '
-                      'error code %s.', e.url.username, e.url.host,
-                      self._engine_pid, error_code)
+        logging.warn('Retrying a query on engine %s@%s for pid %s due to '
+                     'error code %s.', e.url.username, e.url.host,
+                     self._engine_pid, error_code)
         return self._GetEngine().execute(query, *args, **kwargs)
       else:
         raise
@@ -377,8 +377,8 @@ class SchemaVersionedMySQLConnection(object):
                                    listeners=[StrictModeListener()])
       self._engine = e
       self._engine_pid = pid
-      logging.debug('Created cidb engine %s@%s for pid %s', e.url.username,
-                    e.url.host, pid)
+      logging.info('Created cidb engine %s@%s for pid %s', e.url.username,
+                   e.url.host, pid)
       return self._engine
 
   def _InvalidateEngine(self):
@@ -737,8 +737,8 @@ class CIDBConnectionFactory(object):
       try:
         cls._CachedCIDB = CIDBConnection(cls._ConnectionCredsPath)
       except sqlalchemy.exc.OperationalError as e:
-        logging.debug('Retrying to create a database connection, due to '
-                      'exception %s.', e)
+        logging.warn('Retrying to create a database connection, due to '
+                     'exception %s.', e)
         cls._CachedCIDB = CIDBConnection(cls._ConnectionCredsPath)
       return cls._CachedCIDB
 
