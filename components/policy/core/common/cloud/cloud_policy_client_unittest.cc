@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
@@ -204,8 +205,8 @@ class CloudPolicyClientTest : public testing::Test {
   StrictMock<MockCloudPolicyClientObserver> observer_;
   StrictMock<MockUploadCertificateObserver> upload_certificate_observer_;
   scoped_ptr<CloudPolicyClient> client_;
-  // Cached weak pointer to the client's request context.
-  net::URLRequestContextGetter* request_context_;
+  // Pointer to the client's request context.
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
 };
 
 TEST_F(CloudPolicyClientTest, Init) {

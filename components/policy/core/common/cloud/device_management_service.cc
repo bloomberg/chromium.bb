@@ -15,6 +15,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
@@ -139,7 +140,7 @@ class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
       const std::string& agent_parameter,
       const std::string& platform_parameter,
       DeviceManagementService* service,
-      net::URLRequestContextGetter* request_context);
+      const scoped_refptr<net::URLRequestContextGetter>& request_context);
   virtual ~DeviceManagementRequestJobImpl();
 
   // Handles the URL request response.
@@ -180,7 +181,7 @@ class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
   int retries_count_;
 
   // The request context to use for this job.
-  net::URLRequestContextGetter* request_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceManagementRequestJobImpl);
 };
@@ -190,12 +191,13 @@ DeviceManagementRequestJobImpl::DeviceManagementRequestJobImpl(
     const std::string& agent_parameter,
     const std::string& platform_parameter,
     DeviceManagementService* service,
-    net::URLRequestContextGetter* request_context)
+    const scoped_refptr<net::URLRequestContextGetter>& request_context)
     : DeviceManagementRequestJob(type, agent_parameter, platform_parameter),
       service_(service),
       bypass_proxy_(false),
       retries_count_(0),
-      request_context_(request_context) {}
+      request_context_(request_context) {
+}
 
 DeviceManagementRequestJobImpl::~DeviceManagementRequestJobImpl() {
   service_->RemoveJob(this);
@@ -298,7 +300,9 @@ GURL DeviceManagementRequestJobImpl::GetURL(
 
 void DeviceManagementRequestJobImpl::ConfigureRequest(
     net::URLFetcher* fetcher) {
-  fetcher->SetRequestContext(request_context_);
+  // TODO(dcheng): It might make sense to make this take a const
+  // scoped_refptr<T>& too eventually.
+  fetcher->SetRequestContext(request_context_.get());
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                         net::LOAD_DO_NOT_SAVE_COOKIES |
                         net::LOAD_DISABLE_CACHE |
@@ -413,7 +417,7 @@ DeviceManagementService::~DeviceManagementService() {
 
 DeviceManagementRequestJob* DeviceManagementService::CreateJob(
     DeviceManagementRequestJob::JobType type,
-    net::URLRequestContextGetter* request_context) {
+    const scoped_refptr<net::URLRequestContextGetter>& request_context) {
   return new DeviceManagementRequestJobImpl(
       type,
       configuration_->GetAgentParameter(),

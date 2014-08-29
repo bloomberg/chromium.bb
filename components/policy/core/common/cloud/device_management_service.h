@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/policy_export.h"
@@ -132,7 +133,7 @@ class POLICY_EXPORT DeviceManagementService : public net::URLFetcherDelegate {
   // the caller.
   virtual DeviceManagementRequestJob* CreateJob(
       DeviceManagementRequestJob::JobType type,
-      net::URLRequestContextGetter* request_context);
+      const scoped_refptr<net::URLRequestContextGetter>& request_context);
 
   // Schedules a task to run |Initialize| after |delay_milliseconds| had passed.
   void ScheduleInitialization(int64 delay_milliseconds);

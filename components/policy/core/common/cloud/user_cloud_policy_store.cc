@@ -223,11 +223,12 @@ void UserCloudPolicyStore::Load() {
   // Start a new Load operation and have us get called back when it is
   // complete.
   base::PostTaskAndReplyWithResult(
-      background_task_runner(),
+      background_task_runner().get(),
       FROM_HERE,
       base::Bind(&LoadPolicyFromDisk, policy_path_, key_path_),
       base::Bind(&UserCloudPolicyStore::PolicyLoaded,
-                 weak_factory_.GetWeakPtr(), true));
+                 weak_factory_.GetWeakPtr(),
+                 true));
 }
 
 void UserCloudPolicyStore::PolicyLoaded(bool validate_in_background,
