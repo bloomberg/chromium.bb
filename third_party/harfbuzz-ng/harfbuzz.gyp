@@ -20,7 +20,7 @@
     'pkg-config': '<(pkg-config)',
 
     'conditions': [
-      ['OS=="linux" and (buildtype!="Official" or chromeos==1)', {
+      ['OS=="linux" and (buildtype!="Official" or chromeos==1) and embedded==0', {
         # Since version 1.31.0, pangoft2 which we depend on pulls in harfbuzz
         # anyways. However, we want to have control of the version of harfbuzz
         # we use, so don't use system harfbuzz for official builds, unless we

@@ -39,7 +39,6 @@ kUndesiredLibraryList = [
   'libpcre',
   'libpixman',
   'libpng',
-  'libresolv',
   'libselinux',
   'libudev',
   'libxcb',
@@ -53,6 +52,7 @@ kAllowedLibraryList = [
   'libgcc_s',
   'libm',
   'libpthread',
+  'libresolv',
   'librt',
   'libstdc++',
   'linux-vdso',
@@ -67,6 +67,9 @@ kAllowedLibraryList = [
   'libplc4',
   'libplds4',
   'libsmime3',
+
+  # OpenSSL
+  'libcrypto',
 
   # Miscellaneous
   'libcap',
