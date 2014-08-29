@@ -634,7 +634,11 @@ void SVGInlineTextBox::paintTextWithShadows(GraphicsContext* context, RenderStyl
         TextRunPaintInfo textRunPaintInfo(textRun);
         textRunPaintInfo.from = startPosition;
         textRunPaintInfo.to = endPosition;
-        textRunPaintInfo.bounds = FloatRect(textOrigin, textSize);
+
+        float baseline = scaledFont.fontMetrics().floatAscent();
+        textRunPaintInfo.bounds = FloatRect(textOrigin.x(), textOrigin.y() - baseline,
+            textSize.width(), textSize.height());
+
         scaledFont.drawText(context, textRunPaintInfo, textOrigin);
         restoreGraphicsContextAfterTextPainting(context, textRun, resourceMode);
     }
