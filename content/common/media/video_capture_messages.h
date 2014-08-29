@@ -45,10 +45,11 @@ IPC_MESSAGE_CONTROL2(VideoCaptureMsg_FreeBuffer,
                      int /* buffer_id */)
 
 // Tell the renderer process that a buffer is available from video capture.
-IPC_MESSAGE_CONTROL4(VideoCaptureMsg_BufferReady,
+IPC_MESSAGE_CONTROL5(VideoCaptureMsg_BufferReady,
                      int /* device id */,
                      int /* buffer_id */,
                      media::VideoCaptureFormat /* format */,
+                     gfx::Rect /* visible_rect */,
                      base::TimeTicks /* timestamp */)
 
 // Tell the renderer process that a texture mailbox buffer is available from

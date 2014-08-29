@@ -38,6 +38,7 @@ class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
     // Called when a video frame buffer is received from the browser process.
     virtual void OnBufferReceived(int buffer_id,
                                   const media::VideoCaptureFormat& format,
+                                  const gfx::Rect& visible_rect,
                                   base::TimeTicks timestamp) = 0;
 
     // Called when a video mailbox buffer is received from the browser process.
@@ -104,6 +105,7 @@ class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
   void OnBufferReceived(int device_id,
                         int buffer_id,
                         const media::VideoCaptureFormat& format,
+                        const gfx::Rect& visible_rect,
                         base::TimeTicks timestamp);
 
   // Receive a filled texture mailbox buffer from browser process.

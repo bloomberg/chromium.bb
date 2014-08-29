@@ -114,6 +114,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   virtual void OnBufferDestroyed(int buffer_id) OVERRIDE;
   virtual void OnBufferReceived(int buffer_id,
                                 const media::VideoCaptureFormat& format,
+                                const gfx::Rect& visible_rect,
                                 base::TimeTicks) OVERRIDE;
   virtual void OnMailboxBufferReceived(int buffer_id,
                                        const gpu::MailboxHolder& mailbox_holder,

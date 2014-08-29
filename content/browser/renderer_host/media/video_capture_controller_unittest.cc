@@ -68,6 +68,7 @@ class MockVideoCaptureControllerEventHandler
   virtual void OnBufferReady(const VideoCaptureControllerID& id,
                              int buffer_id,
                              const media::VideoCaptureFormat& format,
+                             const gfx::Rect& visible_rect,
                              base::TimeTicks timestamp) OVERRIDE {
     DoBufferReady(id);
     base::MessageLoop::current()->PostTask(

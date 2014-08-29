@@ -77,6 +77,7 @@ void VideoCaptureHost::OnBufferReady(
     const VideoCaptureControllerID& controller_id,
     int buffer_id,
     const media::VideoCaptureFormat& frame_format,
+    const gfx::Rect& visible_rect,
     base::TimeTicks timestamp) {
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -86,6 +87,7 @@ void VideoCaptureHost::OnBufferReady(
                  controller_id,
                  buffer_id,
                  frame_format,
+                 visible_rect,
                  timestamp));
 }
 
@@ -143,6 +145,7 @@ void VideoCaptureHost::DoSendFilledBufferOnIOThread(
     const VideoCaptureControllerID& controller_id,
     int buffer_id,
     const media::VideoCaptureFormat& format,
+    const gfx::Rect& visible_rect,
     base::TimeTicks timestamp) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -150,7 +153,7 @@ void VideoCaptureHost::DoSendFilledBufferOnIOThread(
     return;
 
   Send(new VideoCaptureMsg_BufferReady(
-      controller_id.device_id, buffer_id, format, timestamp));
+      controller_id.device_id, buffer_id, format, visible_rect, timestamp));
 }
 
 void VideoCaptureHost::DoSendFilledMailboxBufferOnIOThread(

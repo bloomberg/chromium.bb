@@ -604,7 +604,8 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
         }
 
         client->event_handler->OnBufferReady(
-            client->controller_id, buffer->id(), buffer_format, timestamp);
+            client->controller_id, buffer->id(), buffer_format,
+            frame->visible_rect(), timestamp);
       }
 
       bool inserted =

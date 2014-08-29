@@ -86,6 +86,7 @@ class CONTENT_EXPORT VideoCaptureHost
   virtual void OnBufferReady(const VideoCaptureControllerID& id,
                              int buffer_id,
                              const media::VideoCaptureFormat& format,
+                             const gfx::Rect& visible_rect,
                              base::TimeTicks timestamp) OVERRIDE;
   virtual void OnMailboxBufferReady(const VideoCaptureControllerID& id,
                                     int buffer_id,
@@ -155,6 +156,7 @@ class CONTENT_EXPORT VideoCaptureHost
       const VideoCaptureControllerID& controller_id,
       int buffer_id,
       const media::VideoCaptureFormat& format,
+      const gfx::Rect& visible_rect,
       base::TimeTicks timestamp);
 
   // Sends a filled texture mailbox buffer to the VideoCaptureMessageFilter.

@@ -9,6 +9,10 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 
+namespace gfx {
+class Rect;
+}  // namespace gfx
+
 namespace gpu {
 struct MailboxHolder;
 }  // namespace gpu
@@ -51,6 +55,7 @@ class CONTENT_EXPORT VideoCaptureControllerEventHandler {
   virtual void OnBufferReady(const VideoCaptureControllerID& id,
                              int buffer_id,
                              const media::VideoCaptureFormat& format,
+                             const gfx::Rect& visible_rect,
                              base::TimeTicks timestamp) = 0;
 
   // A texture mailbox buffer has been filled with data.

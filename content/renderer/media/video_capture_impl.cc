@@ -206,6 +206,7 @@ void VideoCaptureImpl::OnBufferDestroyed(int buffer_id) {
 
 void VideoCaptureImpl::OnBufferReceived(int buffer_id,
                                         const media::VideoCaptureFormat& format,
+                                        const gfx::Rect& visible_rect,
                                         base::TimeTicks timestamp) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -235,8 +236,8 @@ void VideoCaptureImpl::OnBufferReceived(int buffer_id,
       media::VideoFrame::WrapExternalPackedMemory(
           media::VideoFrame::I420,
           last_frame_format_.frame_size,
-          gfx::Rect(last_frame_format_.frame_size),
-          last_frame_format_.frame_size,
+          visible_rect,
+          gfx::Size(visible_rect.width(), visible_rect.height()),
           reinterpret_cast<uint8*>(buffer->buffer->memory()),
           buffer->buffer_size,
           buffer->buffer->handle(),

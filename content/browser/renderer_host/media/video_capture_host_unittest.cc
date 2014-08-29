@@ -126,10 +126,11 @@ class MockVideoCaptureHost : public VideoCaptureHost {
                     int buffer_id));
   MOCK_METHOD2(OnBufferFreed,
                void(int device_id, int buffer_id));
-  MOCK_METHOD4(OnBufferFilled,
+  MOCK_METHOD5(OnBufferFilled,
                void(int device_id,
                     int buffer_id,
                     const media::VideoCaptureFormat& format,
+                    const gfx::Rect& visible_rect,
                     base::TimeTicks timestamp));
   MOCK_METHOD5(OnMailboxBufferFilled,
                void(int device_id,
@@ -222,6 +223,7 @@ class MockVideoCaptureHost : public VideoCaptureHost {
   void OnBufferFilledDispatch(int device_id,
                               int buffer_id,
                               const media::VideoCaptureFormat& frame_format,
+                              const gfx::Rect& visible_rect,
                               base::TimeTicks timestamp) {
     base::SharedMemory* dib = filled_dib_[buffer_id];
     ASSERT_TRUE(dib != NULL);
@@ -238,7 +240,7 @@ class MockVideoCaptureHost : public VideoCaptureHost {
       dumper_.NewVideoFrame(dib->memory());
     }
 
-    OnBufferFilled(device_id, buffer_id, frame_format, timestamp);
+    OnBufferFilled(device_id, buffer_id, frame_format, visible_rect, timestamp);
     if (return_buffers_) {
       VideoCaptureHost::OnReceiveEmptyBuffer(device_id, buffer_id, 0);
     }
@@ -393,7 +395,7 @@ class VideoCaptureHostTest : public testing::Test {
         .WillRepeatedly(Return());
 
     base::RunLoop run_loop;
-    EXPECT_CALL(*host_.get(), OnBufferFilled(kDeviceId, _, _, _))
+    EXPECT_CALL(*host_.get(), OnBufferFilled(kDeviceId, _, _, _, _))
         .Times(AnyNumber())
         .WillOnce(ExitMessageLoop(message_loop_, run_loop.QuitClosure()));
 
@@ -426,7 +428,7 @@ class VideoCaptureHostTest : public testing::Test {
         .Times(AnyNumber()).WillRepeatedly(Return());
 
     base::RunLoop run_loop;
-    EXPECT_CALL(*host_, OnBufferFilled(kDeviceId, _, _, _))
+    EXPECT_CALL(*host_, OnBufferFilled(kDeviceId, _, _, _, _))
         .Times(AnyNumber())
         .WillOnce(ExitMessageLoop(message_loop_, run_loop.QuitClosure()));
 
@@ -458,7 +460,7 @@ class VideoCaptureHostTest : public testing::Test {
 
   void NotifyPacketReady() {
     base::RunLoop run_loop;
-    EXPECT_CALL(*host_.get(), OnBufferFilled(kDeviceId, _, _, _))
+    EXPECT_CALL(*host_.get(), OnBufferFilled(kDeviceId, _, _, _, _))
         .Times(AnyNumber())
         .WillOnce(ExitMessageLoop(message_loop_, run_loop.QuitClosure()))
         .RetiresOnSaturation();

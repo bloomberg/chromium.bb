@@ -125,6 +125,7 @@ void VideoCaptureMessageFilter::OnBufferReceived(
     int device_id,
     int buffer_id,
     const media::VideoCaptureFormat& format,
+    const gfx::Rect& visible_rect,
     base::TimeTicks timestamp) {
   Delegate* delegate = find_delegate(device_id);
   if (!delegate) {
@@ -137,7 +138,7 @@ void VideoCaptureMessageFilter::OnBufferReceived(
     return;
   }
 
-  delegate->OnBufferReceived(buffer_id, format, timestamp);
+  delegate->OnBufferReceived(buffer_id, format, visible_rect, timestamp);
 }
 
 void VideoCaptureMessageFilter::OnMailboxBufferReceived(
