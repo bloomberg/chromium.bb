@@ -61,6 +61,17 @@ class ManagementGetFunction : public ManagementFunction {
   virtual bool RunSync() OVERRIDE;
 };
 
+class ManagementGetSelfFunction : public ManagementFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("management.getSelf", MANAGEMENT_GETSELF)
+
+ protected:
+  virtual ~ManagementGetSelfFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunSync() OVERRIDE;
+};
+
 class ManagementGetPermissionWarningsByIdFunction : public ManagementFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("management.getPermissionWarningsById",

@@ -181,6 +181,23 @@
         ]
       },
       {
+        "name": "getSelf",
+        "description": "Returns information about the calling extension, app, or theme. Note: This function can be used without requesting the 'management' permission in the manifest.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "result",
+                "$ref": "ExtensionInfo"
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "getPermissionWarningsById",
         "description": "Returns a list of <a href='permission_warnings'>permission warnings</a> for the given extension id.",
         "parameters": [

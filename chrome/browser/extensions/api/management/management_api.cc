@@ -326,6 +326,14 @@ bool ManagementGetFunction::RunSync() {
   return true;
 }
 
+bool ManagementGetSelfFunction::RunSync() {
+  scoped_ptr<management::ExtensionInfo> info =
+      CreateExtensionInfo(*extension_, ExtensionSystem::Get(GetProfile()));
+  results_ = management::Get::Results::Create(*info);
+
+  return true;
+}
+
 bool ManagementGetPermissionWarningsByIdFunction::RunSync() {
   scoped_ptr<management::GetPermissionWarningsById::Params> params(
       management::GetPermissionWarningsById::Params::Create(*args_));
