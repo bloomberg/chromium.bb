@@ -566,6 +566,9 @@ DirectoryContents.prototype.clone = function() {
  */
 DirectoryContents.prototype.dispose = function() {
   this.context_.metadataCache.resizeBy(-this.lastSpaceInMetadataCache_);
+  // Though the lastSpaceInMetadataCache_ is not supposed to be referred after
+  // dispose(), keep it synced with requested cache size just in case.
+  this.lastSpaceInMetadataCache_ = 0;
 };
 
 /**

@@ -385,6 +385,7 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
                                                   callback) {
   if (this.currentDirContents_.isScanning())
     this.currentDirContents_.cancelScan();
+  this.currentDirContents_.dispose();
   this.currentDirContents_ = newDirContents;
   this.clearRescanTimeout_();
 
@@ -597,10 +598,13 @@ DirectoryModel.prototype.scan_ = function(
 };
 
 /**
- * @param {DirectoryContents} dirContents DirectoryContents instance.
+ * @param {DirectoryContents} dirContents DirectoryContents instance. This must
+ *     be a different instance from this.currentDirContents_.
  * @private
  */
 DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
+  console.assert(this.currentDirContents_ !== dirContents,
+      'Give directory contents instance must be different from current one.');
   cr.dispatchSimpleEvent(this, 'begin-update-files');
   this.updateSelectionAndPublishEvent_(this.fileListSelection_, function() {
     var selectedEntries = this.getSelectedEntries_();
@@ -610,9 +614,10 @@ DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
     var leadIndex = this.fileListSelection_.leadIndex;
     var leadEntry = this.getLeadEntry_();
 
-    this.currentDirContents_.dispose();
+    var previousDirContents = this.currentDirContents_;
     this.currentDirContents_ = dirContents;
-    dirContents.replaceContextFileList();
+    this.currentDirContents_.replaceContextFileList();
+    previousDirContents.dispose();
 
     this.setSelectedEntries_(selectedEntries);
     this.fileListSelection_.leadIndex = leadIndex;
