@@ -299,7 +299,7 @@ class IsolateTempdir(unittest.TestCase):
         args, read_only, empty_file, extra_vars, root_dir)
     # Also verifies run_isolated.py will be able to read it.
     with open(self.isolated, 'rb') as f:
-      isolate.isolateserver.load_isolated(f.read(), ALGO)
+      isolated_format.load_isolated(f.read(), ALGO)
 
   def _expect_no_result(self):
     self.assertFalse(os.path.exists(self.isolated))

@@ -241,7 +241,7 @@ class StorageTest(TestCase):
         with self.assertRaises(IOError):
           channel.pull()
         # First initial attempt + all retries.
-        attempts = 1 + isolateserver.WorkerPool.RETRIES
+        attempts = 1 + isolated_format.WorkerPool.RETRIES
         # Single push attempt call arguments.
         expected_push = (
             item, 'push_state', item.zipped if use_zip else item.data)
@@ -849,7 +849,7 @@ class IsolateServerDownloadTest(TestCase):
 
 class TestIsolated(auto_stub.TestCase):
   def test_load_isolated_empty(self):
-    m = isolateserver.load_isolated('{}', ALGO)
+    m = isolated_format.load_isolated('{}', ALGO)
     self.assertEqual({}, m)
 
   def test_load_isolated_good(self):
@@ -870,7 +870,7 @@ class TestIsolated(auto_stub.TestCase):
       u'relative_cwd': u'somewhere_else',
       u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
-    m = isolateserver.load_isolated(json.dumps(data), ALGO)
+    m = isolated_format.load_isolated(json.dumps(data), ALGO)
     self.assertEqual(data, m)
 
   def test_load_isolated_bad(self):
@@ -884,7 +884,7 @@ class TestIsolated(auto_stub.TestCase):
       u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     with self.assertRaises(isolated_format.IsolatedError):
-      isolateserver.load_isolated(json.dumps(data), ALGO)
+      isolated_format.load_isolated(json.dumps(data), ALGO)
 
   def test_load_isolated_os_only(self):
     # Tolerate 'os' on older version.
@@ -892,7 +892,7 @@ class TestIsolated(auto_stub.TestCase):
       u'os': 'HP/UX',
       u'version': '1.3',
     }
-    m = isolateserver.load_isolated(json.dumps(data), ALGO)
+    m = isolated_format.load_isolated(json.dumps(data), ALGO)
     self.assertEqual(data, m)
 
   def test_load_isolated_os_only_bad(self):
@@ -901,7 +901,7 @@ class TestIsolated(auto_stub.TestCase):
       u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     with self.assertRaises(isolated_format.IsolatedError):
-      isolateserver.load_isolated(json.dumps(data), ALGO)
+      isolated_format.load_isolated(json.dumps(data), ALGO)
 
   def test_load_isolated_path(self):
     # Automatically convert the path case.
@@ -919,7 +919,7 @@ class TestIsolated(auto_stub.TestCase):
       }
 
     data = gen_data(wrong_path_sep)
-    actual = isolateserver.load_isolated(json.dumps(data), ALGO)
+    actual = isolated_format.load_isolated(json.dumps(data), ALGO)
     expected = gen_data(os.path.sep)
     self.assertEqual(expected, actual)
 
@@ -936,7 +936,7 @@ class TestIsolated(auto_stub.TestCase):
         }
       },
     }
-    m = isolateserver.save_isolated('foo', data)
+    m = isolated_format.save_isolated('foo', data)
     self.assertEqual([], m)
     self.assertEqual([('foo', data, True)], calls)
 

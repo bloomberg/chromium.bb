@@ -3,12 +3,11 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
-"""Archives a set of files or directories to a server."""
+"""Archives a set of files or directories to an Isolate Server."""
 
 __version__ = '0.3.4'
 
 import functools
-import json
 import logging
 import os
 import re
@@ -34,8 +33,6 @@ from utils import tools
 import auth
 import isolated_format
 
-# TODO(maruel): Temporary to make the next code migration simpler.
-from isolated_format import IsolatedError, MappingError, UNKNOWN_FILE_SIZE
 
 # Version of isolate protocol passed to the server in /handshake request.
 ISOLATE_PROTOCOL_VERSION = '1.0'
@@ -52,7 +49,7 @@ ISOLATE_PROTOCOL_VERSION = '1.0'
 # uploading, which is especially an issue for large files. This value is
 # optimized for the "few thousands files to look up with minimal number of large
 # files missing" case.
-ITEMS_PER_CONTAINS_QUERIES = [20, 20, 50, 50, 50, 100]
+ITEMS_PER_CONTAINS_QUERIES = (20, 20, 50, 50, 50, 100)
 
 
 # A list of already compressed extension types that should not receive any
@@ -70,11 +67,6 @@ NET_IO_FILE_CHUNK = 16 * 1024
 # Read timeout in seconds for downloads from isolate storage. If there's no
 # response from the server within this timeout whole download will be aborted.
 DOWNLOAD_READ_TIMEOUT = 60
-
-# Maximum expected delay (in seconds) between successive file fetches
-# in run_tha_test. If it takes longer than that, a deadlock might be happening
-# and all stack frames for all threads are dumped to log.
-DEADLOCK_TIMEOUT = 5 * 60
 
 
 # The delay (in seconds) to wait between logging statements when retrieving
@@ -239,25 +231,6 @@ def is_valid_file(filepath, size):
   return True
 
 
-class WorkerPool(threading_utils.AutoRetryThreadPool):
-  """Thread pool that automatically retries on IOError and runs a preconfigured
-  function.
-  """
-  # Initial and maximum number of worker threads.
-  INITIAL_WORKERS = 2
-  MAX_WORKERS = 16
-  RETRIES = 5
-
-  def __init__(self):
-    super(WorkerPool, self).__init__(
-        [IOError],
-        self.RETRIES,
-        self.INITIAL_WORKERS,
-        self.MAX_WORKERS,
-        0,
-        'remote')
-
-
 class Item(object):
   """An item to push to Storage.
 
@@ -343,7 +316,8 @@ class Storage(object):
 
   def __init__(self, storage_api):
     self._storage_api = storage_api
-    self._use_zip = is_namespace_with_compression(storage_api.namespace)
+    self._use_zip = isolated_format.is_namespace_with_compression(
+        storage_api.namespace)
     self._hash_algo = isolated_format.get_hash_algo(storage_api.namespace)
     self._cpu_thread_pool = None
     self._net_thread_pool = None
@@ -385,7 +359,7 @@ class Storage(object):
   def net_thread_pool(self):
     """AutoRetryThreadPool for IO-bound tasks, retries IOError."""
     if self._net_thread_pool is None:
-      self._net_thread_pool = WorkerPool()
+      self._net_thread_pool = isolated_format.WorkerPool()
     return self._net_thread_pool
 
   def close(self):
@@ -450,7 +424,8 @@ class Storage(object):
 
     # No need to spawn deadlock detector thread if there's nothing to upload.
     if missing:
-      with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT) as detector:
+      with threading_utils.DeadlockDetector(
+          isolated_format.DEADLOCK_TIMEOUT) as detector:
         # Wait for all started uploads to finish.
         while len(uploaded) != len(missing):
           detector.ping()
@@ -517,7 +492,9 @@ class Storage(object):
       None, but |channel| later receives back |item| when upload ends.
     """
     # Thread pool task priority.
-    priority = WorkerPool.HIGH if item.high_priority else WorkerPool.MED
+    priority = (
+        isolated_format.WorkerPool.HIGH if item.high_priority
+        else isolated_format.WorkerPool.MED)
 
     def push(content):
       """Pushes an Item and returns it to |channel|."""
@@ -560,7 +537,7 @@ class Storage(object):
       Pushed item (same object as |item|).
     """
     channel = threading_utils.TaskChannel()
-    with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT):
+    with threading_utils.DeadlockDetector(isolated_format.DEADLOCK_TIMEOUT):
       self.async_push(channel, item, push_state)
       pushed = channel.pull()
       assert pushed is item
@@ -620,7 +597,8 @@ class Storage(object):
 
     # Enqueue all requests.
     for batch in batch_items_for_check(items):
-      self.net_thread_pool.add_task_with_channel(channel, WorkerPool.HIGH,
+      self.net_thread_pool.add_task_with_channel(
+          channel, isolated_format.WorkerPool.HIGH,
           self._storage_api.contains, batch)
       pending += 1
 
@@ -674,7 +652,9 @@ class FetchQueue(object):
     self._accessed = set()
     self._fetched = cache.cached_set()
 
-  def add(self, digest, size=UNKNOWN_FILE_SIZE, priority=WorkerPool.MED):
+  def add(
+      self, digest, size=isolated_format.UNKNOWN_FILE_SIZE,
+      priority=isolated_format.WorkerPool.MED):
     """Starts asynchronous fetch of item |digest|."""
     # Fetching it now?
     if digest in self._pending:
@@ -778,14 +758,16 @@ class FetchStreamVerifier(object):
         try:
           yield stored
         except IOError as exc:
-          raise MappingError('Failed to store an item in cache: %s' % exc)
+          raise isolated_format.MappingError(
+              'Failed to store an item in cache: %s' % exc)
       stored = chunk
     if stored is not None:
       self._inspect_chunk(stored, is_last=True)
       try:
         yield stored
       except IOError as exc:
-        raise MappingError('Failed to store an item in cache: %s' % exc)
+        raise isolated_format.MappingError(
+            'Failed to store an item in cache: %s' % exc)
 
   def _inspect_chunk(self, chunk, is_last):
     """Called for each fetched chunk before passing it to consumer."""
@@ -932,7 +914,7 @@ class IsolateServer(StorageApi):
     logging.info('Protocol version: %s', caps['protocol_version'])
     logging.info('Server version: %s', caps['server_app_version'])
     if caps.get('error'):
-      raise MappingError(caps['error'])
+      raise isolated_format.MappingError(caps['error'])
     if not caps['access_token']:
       raise ValueError('access_token is missing')
     return caps
@@ -959,7 +941,7 @@ class IsolateServer(StorageApi):
               url=self._base_url + '/content-gs/handshake',
               data=self._generate_handshake_request())
           if caps is None:
-            raise MappingError('Failed to perform handshake.')
+            raise isolated_format.MappingError('Failed to perform handshake.')
           if not isinstance(caps, dict):
             raise ValueError('Expecting JSON dict')
           self._server_caps = self._validate_handshake_response(caps)
@@ -967,7 +949,7 @@ class IsolateServer(StorageApi):
           # KeyError exception has very confusing str conversion: it's just a
           # missing key value and nothing else. So print exception class name
           # as well.
-          raise MappingError(
+          raise isolated_format.MappingError(
               'Invalid handshake response (%s): %s' % (
               exc.__class__.__name__, exc))
       return self._server_caps
@@ -1114,7 +1096,8 @@ class IsolateServer(StorageApi):
     try:
       response = net.url_read_json(url=query_url, data=body)
       if response is None:
-        raise MappingError('Failed to execute /pre-upload query')
+        raise isolated_format.MappingError(
+            'Failed to execute /pre-upload query')
       if not isinstance(response, list):
         raise ValueError('Expecting response with json-encoded list')
       if len(response) != len(items):
@@ -1122,7 +1105,7 @@ class IsolateServer(StorageApi):
             'Incorrect number of items in the list, expected %d, '
             'but got %d' % (len(items), len(response)))
     except ValueError as err:
-      raise MappingError(
+      raise isolated_format.MappingError(
           'Invalid response from server: %s, body is %s' % (err, response))
 
     # Pick Items that are missing, attach _PushState to them.
@@ -1283,11 +1266,6 @@ class MemoryCache(LocalCache):
       os.chmod(dest, file_mode & self._file_mode_mask)
 
 
-def is_namespace_with_compression(namespace):
-  """Returns True if given |namespace| stores compressed objects."""
-  return namespace.endswith(('-gzip', '-deflate'))
-
-
 def get_storage_api(file_or_url, namespace):
   """Returns an object that implements low-level StorageApi interface.
 
@@ -1327,21 +1305,6 @@ def get_storage(file_or_url, namespace):
   return Storage(get_storage_api(file_or_url, namespace))
 
 
-def save_isolated(isolated, data):
-  """Writes one or multiple .isolated files.
-
-  Note: this reference implementation does not create child .isolated file so it
-  always returns an empty list.
-
-  Returns the list of child isolated files that are included by |isolated|.
-  """
-  # Make sure the data is valid .isolated data by 'reloading' it.
-  algo = isolated_format.SUPPORTED_ALGOS[data['algo']]
-  load_isolated(json.dumps(data), algo)
-  tools.write_json(isolated, data, True)
-  return []
-
-
 def upload_tree(base_url, indir, infiles, namespace):
   """Uploads the given tree to the given url.
 
@@ -1371,310 +1334,6 @@ def upload_tree(base_url, indir, infiles, namespace):
   with get_storage(base_url, namespace) as storage:
     storage.upload_items(items)
   return 0
-
-
-def load_isolated(content, algo):
-  """Verifies the .isolated file is valid and loads this object with the json
-  data.
-
-  Arguments:
-  - content: raw serialized content to load.
-  - algo: hashlib algorithm class. Used to confirm the algorithm matches the
-          algorithm used on the Isolate Server.
-  """
-  try:
-    data = json.loads(content)
-  except ValueError:
-    raise IsolatedError('Failed to parse: %s...' % content[:100])
-
-  if not isinstance(data, dict):
-    raise IsolatedError('Expected dict, got %r' % data)
-
-  # Check 'version' first, since it could modify the parsing after.
-  value = data.get('version', '1.0')
-  if not isinstance(value, basestring):
-    raise IsolatedError('Expected string, got %r' % value)
-  try:
-    version = tuple(map(int, value.split('.')))
-  except ValueError:
-    raise IsolatedError('Expected valid version, got %r' % value)
-
-  expected_version = tuple(
-      map(int, isolated_format.ISOLATED_FILE_VERSION.split('.')))
-  # Major version must match.
-  if version[0] != expected_version[0]:
-    raise IsolatedError(
-        'Expected compatible \'%s\' version, got %r' %
-        (isolated_format.ISOLATED_FILE_VERSION, value))
-
-  if algo is None:
-    # TODO(maruel): Remove the default around Jan 2014.
-    # Default the algorithm used in the .isolated file itself, falls back to
-    # 'sha-1' if unspecified.
-    algo = isolated_format.SUPPORTED_ALGOS_REVERSE[data.get('algo', 'sha-1')]
-
-  for key, value in data.iteritems():
-    if key == 'algo':
-      if not isinstance(value, basestring):
-        raise IsolatedError('Expected string, got %r' % value)
-      if value not in isolated_format.SUPPORTED_ALGOS:
-        raise IsolatedError(
-            'Expected one of \'%s\', got %r' %
-            (', '.join(sorted(isolated_format.SUPPORTED_ALGOS)), value))
-      if value != isolated_format.SUPPORTED_ALGOS_REVERSE[algo]:
-        raise IsolatedError(
-            'Expected \'%s\', got %r' %
-            (isolated_format.SUPPORTED_ALGOS_REVERSE[algo], value))
-
-    elif key == 'command':
-      if not isinstance(value, list):
-        raise IsolatedError('Expected list, got %r' % value)
-      if not value:
-        raise IsolatedError('Expected non-empty command')
-      for subvalue in value:
-        if not isinstance(subvalue, basestring):
-          raise IsolatedError('Expected string, got %r' % subvalue)
-
-    elif key == 'files':
-      if not isinstance(value, dict):
-        raise IsolatedError('Expected dict, got %r' % value)
-      for subkey, subvalue in value.iteritems():
-        if not isinstance(subkey, basestring):
-          raise IsolatedError('Expected string, got %r' % subkey)
-        if not isinstance(subvalue, dict):
-          raise IsolatedError('Expected dict, got %r' % subvalue)
-        for subsubkey, subsubvalue in subvalue.iteritems():
-          if subsubkey == 'l':
-            if not isinstance(subsubvalue, basestring):
-              raise IsolatedError('Expected string, got %r' % subsubvalue)
-          elif subsubkey == 'm':
-            if not isinstance(subsubvalue, int):
-              raise IsolatedError('Expected int, got %r' % subsubvalue)
-          elif subsubkey == 'h':
-            if not isolated_format.is_valid_hash(subsubvalue, algo):
-              raise IsolatedError('Expected sha-1, got %r' % subsubvalue)
-          elif subsubkey == 's':
-            if not isinstance(subsubvalue, (int, long)):
-              raise IsolatedError('Expected int or long, got %r' % subsubvalue)
-          else:
-            raise IsolatedError('Unknown subsubkey %s' % subsubkey)
-        if bool('h' in subvalue) == bool('l' in subvalue):
-          raise IsolatedError(
-              'Need only one of \'h\' (sha-1) or \'l\' (link), got: %r' %
-              subvalue)
-        if bool('h' in subvalue) != bool('s' in subvalue):
-          raise IsolatedError(
-              'Both \'h\' (sha-1) and \'s\' (size) should be set, got: %r' %
-              subvalue)
-        if bool('s' in subvalue) == bool('l' in subvalue):
-          raise IsolatedError(
-              'Need only one of \'s\' (size) or \'l\' (link), got: %r' %
-              subvalue)
-        if bool('l' in subvalue) and bool('m' in subvalue):
-          raise IsolatedError(
-              'Cannot use \'m\' (mode) and \'l\' (link), got: %r' %
-              subvalue)
-
-    elif key == 'includes':
-      if not isinstance(value, list):
-        raise IsolatedError('Expected list, got %r' % value)
-      if not value:
-        raise IsolatedError('Expected non-empty includes list')
-      for subvalue in value:
-        if not isolated_format.is_valid_hash(subvalue, algo):
-          raise IsolatedError('Expected sha-1, got %r' % subvalue)
-
-    elif key == 'os':
-      if version >= (1, 4):
-        raise IsolatedError('Key \'os\' is not allowed starting version 1.4')
-
-    elif key == 'read_only':
-      if not value in (0, 1, 2):
-        raise IsolatedError('Expected 0, 1 or 2, got %r' % value)
-
-    elif key == 'relative_cwd':
-      if not isinstance(value, basestring):
-        raise IsolatedError('Expected string, got %r' % value)
-
-    elif key == 'version':
-      # Already checked above.
-      pass
-
-    else:
-      raise IsolatedError('Unknown key %r' % key)
-
-  # Automatically fix os.path.sep if necessary. While .isolated files are always
-  # in the the native path format, someone could want to download an .isolated
-  # tree from another OS.
-  wrong_path_sep = '/' if os.path.sep == '\\' else '\\'
-  if 'files' in data:
-    data['files'] = dict(
-        (k.replace(wrong_path_sep, os.path.sep), v)
-        for k, v in data['files'].iteritems())
-    for v in data['files'].itervalues():
-      if 'l' in v:
-        v['l'] = v['l'].replace(wrong_path_sep, os.path.sep)
-  if 'relative_cwd' in data:
-    data['relative_cwd'] = data['relative_cwd'].replace(
-        wrong_path_sep, os.path.sep)
-  return data
-
-
-class IsolatedFile(object):
-  """Represents a single parsed .isolated file."""
-  def __init__(self, obj_hash, algo):
-    """|obj_hash| is really the sha-1 of the file."""
-    logging.debug('IsolatedFile(%s)' % obj_hash)
-    self.obj_hash = obj_hash
-    self.algo = algo
-    # Set once all the left-side of the tree is parsed. 'Tree' here means the
-    # .isolate and all the .isolated files recursively included by it with
-    # 'includes' key. The order of each sha-1 in 'includes', each representing a
-    # .isolated file in the hash table, is important, as the later ones are not
-    # processed until the firsts are retrieved and read.
-    self.can_fetch = False
-
-    # Raw data.
-    self.data = {}
-    # A IsolatedFile instance, one per object in self.includes.
-    self.children = []
-
-    # Set once the .isolated file is loaded.
-    self._is_parsed = False
-    # Set once the files are fetched.
-    self.files_fetched = False
-
-  def load(self, content):
-    """Verifies the .isolated file is valid and loads this object with the json
-    data.
-    """
-    logging.debug('IsolatedFile.load(%s)' % self.obj_hash)
-    assert not self._is_parsed
-    self.data = load_isolated(content, self.algo)
-    self.children = [
-        IsolatedFile(i, self.algo) for i in self.data.get('includes', [])
-    ]
-    self._is_parsed = True
-
-  def fetch_files(self, fetch_queue, files):
-    """Adds files in this .isolated file not present in |files| dictionary.
-
-    Preemptively request files.
-
-    Note that |files| is modified by this function.
-    """
-    assert self.can_fetch
-    if not self._is_parsed or self.files_fetched:
-      return
-    logging.debug('fetch_files(%s)' % self.obj_hash)
-    for filepath, properties in self.data.get('files', {}).iteritems():
-      # Root isolated has priority on the files being mapped. In particular,
-      # overriden files must not be fetched.
-      if filepath not in files:
-        files[filepath] = properties
-        if 'h' in properties:
-          # Preemptively request files.
-          logging.debug('fetching %s' % filepath)
-          fetch_queue.add(properties['h'], properties['s'], WorkerPool.MED)
-    self.files_fetched = True
-
-
-class Settings(object):
-  """Results of a completely parsed .isolated file."""
-  def __init__(self):
-    self.command = []
-    self.files = {}
-    self.read_only = None
-    self.relative_cwd = None
-    # The main .isolated file, a IsolatedFile instance.
-    self.root = None
-
-  def load(self, fetch_queue, root_isolated_hash, algo):
-    """Loads the .isolated and all the included .isolated asynchronously.
-
-    It enables support for "included" .isolated files. They are processed in
-    strict order but fetched asynchronously from the cache. This is important so
-    that a file in an included .isolated file that is overridden by an embedding
-    .isolated file is not fetched needlessly. The includes are fetched in one
-    pass and the files are fetched as soon as all the ones on the left-side
-    of the tree were fetched.
-
-    The prioritization is very important here for nested .isolated files.
-    'includes' have the highest priority and the algorithm is optimized for both
-    deep and wide trees. A deep one is a long link of .isolated files referenced
-    one at a time by one item in 'includes'. A wide one has a large number of
-    'includes' in a single .isolated file. 'left' is defined as an included
-    .isolated file earlier in the 'includes' list. So the order of the elements
-    in 'includes' is important.
-    """
-    self.root = IsolatedFile(root_isolated_hash, algo)
-
-    # Isolated files being retrieved now: hash -> IsolatedFile instance.
-    pending = {}
-    # Set of hashes of already retrieved items to refuse recursive includes.
-    seen = set()
-
-    def retrieve(isolated_file):
-      h = isolated_file.obj_hash
-      if h in seen:
-        raise IsolatedError('IsolatedFile %s is retrieved recursively' % h)
-      assert h not in pending
-      seen.add(h)
-      pending[h] = isolated_file
-      fetch_queue.add(h, priority=WorkerPool.HIGH)
-
-    retrieve(self.root)
-
-    while pending:
-      item_hash = fetch_queue.wait(pending)
-      item = pending.pop(item_hash)
-      item.load(fetch_queue.cache.read(item_hash))
-      if item_hash == root_isolated_hash:
-        # It's the root item.
-        item.can_fetch = True
-
-      for new_child in item.children:
-        retrieve(new_child)
-
-      # Traverse the whole tree to see if files can now be fetched.
-      self._traverse_tree(fetch_queue, self.root)
-
-    def check(n):
-      return all(check(x) for x in n.children) and n.files_fetched
-    assert check(self.root)
-
-    self.relative_cwd = self.relative_cwd or ''
-
-  def _traverse_tree(self, fetch_queue, node):
-    if node.can_fetch:
-      if not node.files_fetched:
-        self._update_self(fetch_queue, node)
-      will_break = False
-      for i in node.children:
-        if not i.can_fetch:
-          if will_break:
-            break
-          # Automatically mark the first one as fetcheable.
-          i.can_fetch = True
-          will_break = True
-        self._traverse_tree(fetch_queue, i)
-
-  def _update_self(self, fetch_queue, node):
-    node.fetch_files(fetch_queue, self.files)
-    # Grabs properties.
-    if not self.command and node.data.get('command'):
-      # Ensure paths are correctly separated on windows.
-      self.command = node.data['command']
-      if self.command:
-        self.command[0] = self.command[0].replace('/', os.path.sep)
-        self.command = tools.fix_python_path(self.command)
-    if self.read_only is None and node.data.get('read_only') is not None:
-      self.read_only = node.data['read_only']
-    if (self.relative_cwd is None and
-        node.data.get('relative_cwd') is not None):
-      self.relative_cwd = node.data['relative_cwd']
-
-
 def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
   """Aggressively downloads the .isolated file(s), then download all the files.
 
@@ -1695,7 +1354,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
   algo = storage.hash_algo
   with cache:
     fetch_queue = FetchQueue(storage, cache)
-    settings = Settings()
+    settings = isolated_format.Settings()
 
     with tools.Profiler('GetIsolateds'):
       # Optionally support local files by manually adding them to cache.
@@ -1704,7 +1363,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
         try:
           isolated_hash = fetch_queue.inject_local_file(isolated_hash, algo)
         except IOError:
-          raise MappingError(
+          raise isolated_format.MappingError(
               '%s doesn\'t seem to be a valid file. Did you intent to pass a '
               'valid hash?' % isolated_hash)
 
@@ -1713,7 +1372,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
       if require_command and not settings.command:
         # TODO(vadimsh): All fetch operations are already enqueue and there's no
         # easy way to cancel them.
-        raise IsolatedError('No command to run')
+        raise isolated_format.IsolatedError('No command to run')
 
     with tools.Profiler('GetRest'):
       # Create file system hierarchy.
@@ -1737,7 +1396,8 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
       logging.info('Retrieving remaining files (%d of them)...',
           fetch_queue.pending_count)
       last_update = time.time()
-      with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT) as detector:
+      with threading_utils.DeadlockDetector(
+          isolated_format.DEADLOCK_TIMEOUT) as detector:
         while remaining:
           detector.ping()
 
@@ -1759,7 +1419,8 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
 
   # Cache could evict some items we just tried to fetch, it's a fatal error.
   if not fetch_queue.verify_all_cached():
-    raise MappingError('Cache is too small to hold all requested files')
+    raise isolated_format.MappingError(
+        'Cache is too small to hold all requested files')
   return settings
 
 
@@ -1824,7 +1485,7 @@ def archive_files_to_storage(storage, files, blacklist):
               'files': metadata,
               'version': isolated_format.ISOLATED_FILE_VERSION,
           }
-          save_isolated(isolated, data)
+          isolated_format.save_isolated(isolated, data)
           h = isolated_format.hash_file(isolated, storage.hash_algo)
           items_to_upload.extend(items)
           items_to_upload.append(
@@ -1939,7 +1600,7 @@ def CMDdownload(parser, args):
         pending[digest] = dest
         storage.async_fetch(
             channel,
-            WorkerPool.MED,
+            isolated_format.WorkerPool.MED,
             digest,
             isolated_format.UNKNOWN_FILE_SIZE,
             functools.partial(file_write, os.path.join(options.target, dest)))
