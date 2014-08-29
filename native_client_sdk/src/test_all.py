@@ -30,6 +30,7 @@ EXTRACT_PACKAGES = ['nacl_x86_glibc']
 TOOLCHAIN_OUT = os.path.join(build_paths.OUT_DIR, 'sdk_tests', 'toolchain')
 
 TEST_MODULES = [
+    'build_version_test',
     'create_html_test',
     'create_nmf_test',
     'easy_template_test',
