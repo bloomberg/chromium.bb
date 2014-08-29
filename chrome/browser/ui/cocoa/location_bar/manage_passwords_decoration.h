@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_icon.h"
 
 class CommandUpdater;
+class LocationBarViewMac;
 class ManagePasswordsDecoration;
 
 // Cocoa implementation of ManagePasswordsIcon that delegates to
@@ -34,7 +35,8 @@ class ManagePasswordsIconCocoa : public ManagePasswordsIcon {
 // password management is available on the current page.
 class ManagePasswordsDecoration : public ImageDecoration {
  public:
-  explicit ManagePasswordsDecoration(CommandUpdater* command_updater);
+  explicit ManagePasswordsDecoration(CommandUpdater* command_updater,
+                                     LocationBarViewMac* location_bar);
   virtual ~ManagePasswordsDecoration();
 
   // Implement |LocationBarDecoration|
@@ -50,8 +52,17 @@ class ManagePasswordsDecoration : public ImageDecoration {
   ManagePasswordsIconCocoa* icon() { return icon_.get(); }
 
  private:
+  // Triggers a redraw after a state change.
+  void OnChange();
+
+  // Updates child view states.
+  void UpdateUIState();
+
   // Shows the manage passwords bubble.
   CommandUpdater* command_updater_;  // Weak, owned by Browser.
+
+  // Displays all the decorations.
+  LocationBarViewMac* location_bar_;  // Weak, owns us.
 
   // The platform-independent interface.
   scoped_ptr<ManagePasswordsIconCocoa> icon_;
