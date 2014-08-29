@@ -25,6 +25,8 @@ const char* GinJavaBridgeErrorToString(GinJavaBridgeError error) {
     case kGinJavaBridgeNonAssignableTypes:
       return "The type of the object passed to the method is incompatible "
           "with the type of method's argument";
+    case kGinJavaBridgeRenderFrameDeleted:
+      return "RenderFrame has been deleted";
   }
   NOTREACHED();
   return "Unknown error";

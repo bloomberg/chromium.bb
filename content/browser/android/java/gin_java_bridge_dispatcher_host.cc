@@ -56,6 +56,7 @@ GinJavaBridgeDispatcherHost::GinJavaBridgeDispatcherHost(
 }
 
 GinJavaBridgeDispatcherHost::~GinJavaBridgeDispatcherHost() {
+  DCHECK(pending_replies_.empty());
 }
 
 void GinJavaBridgeDispatcherHost::RenderFrameCreated(
@@ -70,6 +71,15 @@ void GinJavaBridgeDispatcherHost::RenderFrameCreated(
 
 void GinJavaBridgeDispatcherHost::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  IPC::Message* reply_msg = TakePendingReply(render_frame_host);
+  if (reply_msg != NULL) {
+    base::ListValue result;
+    result.Append(base::Value::CreateNullValue());
+    IPC::WriteParam(reply_msg, result);
+    IPC::WriteParam(reply_msg, kGinJavaBridgeRenderFrameDeleted);
+    render_frame_host->Send(reply_msg);
+  }
   RemoveHolder(render_frame_host,
                GinJavaBoundObject::ObjectMap::iterator(&objects_),
                objects_.size());
@@ -352,17 +362,6 @@ bool GinJavaBridgeDispatcherHost::IsValidRenderFrameHost(
   return helper->rfh_found();
 }
 
-void GinJavaBridgeDispatcherHost::SendReply(
-    RenderFrameHost* render_frame_host,
-    IPC::Message* reply_msg) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (IsValidRenderFrameHost(render_frame_host)) {
-    render_frame_host->Send(reply_msg);
-  } else {
-    delete reply_msg;
-  }
-}
-
 void GinJavaBridgeDispatcherHost::OnGetMethods(
     RenderFrameHost* render_frame_host,
     GinJavaBoundObject::ObjectID object_id,
@@ -381,22 +380,26 @@ void GinJavaBridgeDispatcherHost::OnGetMethods(
     render_frame_host->Send(reply_msg);
     return;
   }
+  DCHECK(!HasPendingReply(render_frame_host));
+  pending_replies_[render_frame_host] = reply_msg;
   base::PostTaskAndReplyWithResult(
       g_background_thread.Get().message_loop()->message_loop_proxy(),
       FROM_HERE,
       base::Bind(&GinJavaBoundObject::GetMethodNames, object),
       base::Bind(&GinJavaBridgeDispatcherHost::SendMethods,
                  AsWeakPtr(),
-                 render_frame_host,
-                 reply_msg));
+                 render_frame_host));
 }
 
 void GinJavaBridgeDispatcherHost::SendMethods(
     RenderFrameHost* render_frame_host,
-    IPC::Message* reply_msg,
     const std::set<std::string>& method_names) {
+  IPC::Message* reply_msg = TakePendingReply(render_frame_host);
+  if (!reply_msg) {
+    return;
+  }
   IPC::WriteParam(reply_msg, method_names);
-  SendReply(render_frame_host, reply_msg);
+  render_frame_host->Send(reply_msg);
 }
 
 void GinJavaBridgeDispatcherHost::OnHasMethod(
@@ -413,22 +416,26 @@ void GinJavaBridgeDispatcherHost::OnHasMethod(
     render_frame_host->Send(reply_msg);
     return;
   }
+  DCHECK(!HasPendingReply(render_frame_host));
+  pending_replies_[render_frame_host] = reply_msg;
   base::PostTaskAndReplyWithResult(
       g_background_thread.Get().message_loop()->message_loop_proxy(),
       FROM_HERE,
       base::Bind(&GinJavaBoundObject::HasMethod, object, method_name),
       base::Bind(&GinJavaBridgeDispatcherHost::SendHasMethodReply,
                  AsWeakPtr(),
-                 render_frame_host,
-                 reply_msg));
+                 render_frame_host));
 }
 
 void GinJavaBridgeDispatcherHost::SendHasMethodReply(
     RenderFrameHost* render_frame_host,
-    IPC::Message* reply_msg,
     bool result) {
+  IPC::Message* reply_msg = TakePendingReply(render_frame_host);
+  if (!reply_msg) {
+    return;
+  }
   IPC::WriteParam(reply_msg, result);
-  SendReply(render_frame_host, reply_msg);
+  render_frame_host->Send(reply_msg);
 }
 
 void GinJavaBridgeDispatcherHost::OnInvokeMethod(
@@ -449,6 +456,8 @@ void GinJavaBridgeDispatcherHost::OnInvokeMethod(
     render_frame_host->Send(reply_msg);
     return;
   }
+  DCHECK(!HasPendingReply(render_frame_host));
+  pending_replies_[render_frame_host] = reply_msg;
   scoped_refptr<GinJavaMethodInvocationHelper> result =
       new GinJavaMethodInvocationHelper(
           make_scoped_ptr(new GinJavaBoundObjectDelegate(object))
@@ -466,32 +475,37 @@ void GinJavaBridgeDispatcherHost::OnInvokeMethod(
               &GinJavaBridgeDispatcherHost::ProcessMethodInvocationResult,
               AsWeakPtr(),
               render_frame_host,
-              reply_msg,
               result));
 }
 
 void GinJavaBridgeDispatcherHost::ProcessMethodInvocationResult(
     RenderFrameHost* render_frame_host,
-    IPC::Message* reply_msg,
     scoped_refptr<GinJavaMethodInvocationHelper> result) {
   if (result->HoldsPrimitiveResult()) {
+    IPC::Message* reply_msg = TakePendingReply(render_frame_host);
+    if (!reply_msg) {
+      return;
+    }
     IPC::WriteParam(reply_msg, result->GetPrimitiveResult());
     IPC::WriteParam(reply_msg, result->GetInvocationError());
-    SendReply(render_frame_host, reply_msg);
+    render_frame_host->Send(reply_msg);
   } else {
-    ProcessMethodInvocationObjectResult(render_frame_host, reply_msg, result);
+    ProcessMethodInvocationObjectResult(render_frame_host, result);
   }
 }
 
 void GinJavaBridgeDispatcherHost::ProcessMethodInvocationObjectResult(
     RenderFrameHost* render_frame_host,
-    IPC::Message* reply_msg,
     scoped_refptr<GinJavaMethodInvocationHelper> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   if (!IsValidRenderFrameHost(render_frame_host)) {
-    delete reply_msg;
+    // In this case, we must've already sent the reply when the render frame
+    // was destroyed.
+    DCHECK(!HasPendingReply(render_frame_host));
     return;
   }
+
   base::ListValue wrapped_result;
   if (!result->GetObjectResult().is_null()) {
     GinJavaBoundObject::ObjectID returned_object_id;
@@ -504,9 +518,14 @@ void GinJavaBridgeDispatcherHost::ProcessMethodInvocationObjectResult(
                                      render_frame_host);
     }
     wrapped_result.Append(
-        GinJavaBridgeValue::CreateObjectIDValue(returned_object_id).release());
+        GinJavaBridgeValue::CreateObjectIDValue(
+            returned_object_id).release());
   } else {
     wrapped_result.Append(base::Value::CreateNullValue());
+  }
+  IPC::Message* reply_msg = TakePendingReply(render_frame_host);
+  if (!reply_msg) {
+    return;
   }
   IPC::WriteParam(reply_msg, wrapped_result);
   IPC::WriteParam(reply_msg, result->GetInvocationError());
@@ -525,6 +544,30 @@ void GinJavaBridgeDispatcherHost::OnObjectWrapperDeleted(
     DCHECK(!iter.IsAtEnd());
     RemoveHolder(render_frame_host, iter, 1);
   }
+}
+
+IPC::Message* GinJavaBridgeDispatcherHost::TakePendingReply(
+    RenderFrameHost* render_frame_host) {
+  if (!IsValidRenderFrameHost(render_frame_host)) {
+    DCHECK(!HasPendingReply(render_frame_host));
+    return NULL;
+  }
+
+  PendingReplyMap::iterator it = pending_replies_.find(render_frame_host);
+  // There may be no pending reply if we're called from RenderFrameDeleted and
+  // we already sent the reply through the regular route.
+  if (it == pending_replies_.end()) {
+    return NULL;
+  }
+
+  IPC::Message* reply_msg = it->second;
+  pending_replies_.erase(it);
+  return reply_msg;
+}
+
+bool GinJavaBridgeDispatcherHost::HasPendingReply(
+    RenderFrameHost* render_frame_host) const {
+  return pending_replies_.find(render_frame_host) != pending_replies_.end();
 }
 
 }  // namespace content

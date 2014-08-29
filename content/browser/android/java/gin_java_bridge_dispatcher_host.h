@@ -76,20 +76,15 @@ class GinJavaBridgeDispatcherHost
                               GinJavaBoundObject::ObjectID object_id);
 
   bool IsValidRenderFrameHost(RenderFrameHost* render_frame_host);
-  void SendReply(RenderFrameHost* render_frame_host, IPC::Message* reply_msg);
   void SendMethods(RenderFrameHost* render_frame_host,
-                   IPC::Message* reply_msg,
                    const std::set<std::string>& method_names);
   void SendHasMethodReply(RenderFrameHost* render_frame_host,
-                          IPC::Message* reply_msg,
                           bool result);
   void ProcessMethodInvocationResult(
       RenderFrameHost* render_frame_host,
-      IPC::Message* reply_msg,
       scoped_refptr<GinJavaMethodInvocationHelper> result);
   void ProcessMethodInvocationObjectResult(
       RenderFrameHost* render_frame_host,
-      IPC::Message* reply_msg,
       scoped_refptr<GinJavaMethodInvocationHelper> result);
   GinJavaBoundObject::ObjectID AddObject(
       const base::android::JavaRef<jobject>& object,
@@ -101,6 +96,8 @@ class GinJavaBridgeDispatcherHost
   void RemoveHolder(RenderFrameHost* holder,
                     const GinJavaBoundObject::ObjectMap::iterator& from,
                     size_t count);
+  bool HasPendingReply(RenderFrameHost* render_frame_host) const;
+  IPC::Message* TakePendingReply(RenderFrameHost* render_frame_host);
 
   // Every time a GinJavaBoundObject backed by a real Java object is
   // created/destroyed, we insert/remove a strong ref to that Java object into
@@ -113,6 +110,13 @@ class GinJavaBridgeDispatcherHost
   GinJavaBoundObject::ObjectMap objects_;
   typedef std::map<std::string, GinJavaBoundObject::ObjectID> NamedObjectMap;
   NamedObjectMap named_objects_;
+
+  // Keep track of pending calls out to Java such that we can send a synchronous
+  // reply to the renderer waiting on the response should the RenderFrame be
+  // destroyed while the reply is pending.
+  // Only used on the UI thread.
+  typedef std::map<RenderFrameHost*, IPC::Message*> PendingReplyMap;
+  PendingReplyMap pending_replies_;
 
   DISALLOW_COPY_AND_ASSIGN(GinJavaBridgeDispatcherHost);
 };
