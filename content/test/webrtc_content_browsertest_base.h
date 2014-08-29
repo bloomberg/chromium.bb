@@ -26,6 +26,8 @@ class WebRtcContentBrowserTest: public ContentBrowserTest {
   // If the javascript returns != OK or times out, we fail the test.
   void ExecuteJavascriptAndWaitForOk(const std::string& javascript);
 
+  void DisableOpusIfOnAndroid();
+
   // Generates javascript code for a getUserMedia call.
   std::string GenerateGetUserMediaCall(const char* function_name,
                                        int min_width,

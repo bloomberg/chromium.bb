@@ -103,10 +103,10 @@ class CONTENT_EXPORT WebRTCInternals : public NotificationObserver,
 
  private:
   friend struct DefaultSingletonTraits<WebRTCInternals>;
-  FRIEND_TEST_ALL_PREFIXES(WebRtcBrowserTest, CallWithAecDump);
-  FRIEND_TEST_ALL_PREFIXES(WebRtcBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(WebRtcAecDumpBrowserTest, CallWithAecDump);
+  FRIEND_TEST_ALL_PREFIXES(WebRtcAecDumpBrowserTest,
                            CallWithAecDumpEnabledThenDisabled);
-  FRIEND_TEST_ALL_PREFIXES(WebRtcBrowserTest, TwoCallsWithAecDump);
+  FRIEND_TEST_ALL_PREFIXES(WebRtcAecDumpBrowserTest, TwoCallsWithAecDump);
   FRIEND_TEST_ALL_PREFIXES(WebRTCInternalsTest,
                            AecRecordingFileSelectionCanceled);
 
