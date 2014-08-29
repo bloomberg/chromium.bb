@@ -6,6 +6,7 @@
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/item.h"
 #include "tools/gn/label.h"
+#include "tools/gn/label_pattern.h"
 #include "tools/gn/setup.h"
 #include "tools/gn/standard_out.h"
 #include "tools/gn/target.h"
@@ -39,6 +40,7 @@ const CommandInfoMap& GetCommands() {
     INSERT_COMMAND(Desc)
     INSERT_COMMAND(Gen)
     INSERT_COMMAND(Help)
+    INSERT_COMMAND(Ls)
     INSERT_COMMAND(Refs)
 
     #undef INSERT_COMMAND
@@ -46,21 +48,12 @@ const CommandInfoMap& GetCommands() {
   return info_map;
 }
 
-const Target* GetTargetForDesc(const std::vector<std::string>& args) {
-  // Deliberately leaked to avoid expensive process teardown.
-  Setup* setup = new Setup;
-  // TODO(brettw) bug 343726: Use a temporary directory instead of this
-  // default one to avoid messing up any build that's in there.
-  if (!setup->DoSetup("//out/Default/"))
-    return NULL;
-
-  // Do the actual load. This will also write out the target ninja files.
-  if (!setup->Run())
-    return NULL;
-
+const Target* ResolveTargetFromCommandLineString(
+    Setup* setup,
+    const std::string& label_string) {
   // Need to resolve the label after we know the default toolchain.
   Label default_toolchain = setup->loader()->default_toolchain_label();
-  Value arg_value(NULL, args[0]);
+  Value arg_value(NULL, label_string);
   Err err;
   Label label = Label::Resolve(SourceDirForCurrentDirectory(
                                    setup->build_settings().root_path()),
@@ -87,6 +80,43 @@ const Target* GetTargetForDesc(const std::vector<std::string>& args) {
   }
 
   return target;
+}
+
+bool ResolveTargetsFromCommandLinePattern(
+    Setup* setup,
+    const std::string& label_pattern,
+    bool all_toolchains,
+    std::vector<const Target*>* matches) {
+  Value pattern_value(NULL, label_pattern);
+
+  Err err;
+  LabelPattern pattern = LabelPattern::GetPattern(
+      SourceDirForCurrentDirectory(setup->build_settings().root_path()),
+      pattern_value,
+      &err);
+  if (err.has_error()) {
+    err.PrintToStdout();
+    return false;
+  }
+
+  if (!all_toolchains) {
+    // By default a pattern with an empty toolchain will match all toolchains.
+    // IF the caller wants to default to the main toolchain only, set it
+    // explicitly.
+    if (pattern.toolchain().is_null()) {
+      // No explicit toolchain set.
+      pattern.set_toolchain(setup->loader()->default_toolchain_label());
+    }
+  }
+
+  std::vector<const Target*> all_targets =
+      setup->builder()->GetAllResolvedTargets();
+
+  for (size_t i = 0; i < all_targets.size(); i++) {
+    if (pattern.Matches(all_targets[i]->label()))
+      matches->push_back(all_targets[i]);
+  }
+  return true;
 }
 
 }  // namespace commands

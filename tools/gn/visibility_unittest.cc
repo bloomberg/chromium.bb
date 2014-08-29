@@ -8,61 +8,6 @@
 #include "tools/gn/value.h"
 #include "tools/gn/visibility.h"
 
-namespace {
-
-struct VisPatternCase {
-  const char* input;
-  bool success;
-
-  Visibility::VisPattern::Type type;
-  const char* dir;
-  const char* name;
-};
-
-}  // namespace
-
-TEST(Visibility, PatternParse) {
-  SourceDir current_dir("//foo/");
-  VisPatternCase cases[] = {
-    // Missing stuff.
-    { "", false, Visibility::VisPattern::MATCH, "", "" },
-    { ":", false, Visibility::VisPattern::MATCH, "", "" },
-    // Normal things.
-    { ":bar", true, Visibility::VisPattern::MATCH, "//foo/", "bar" },
-    { "//la:bar", true, Visibility::VisPattern::MATCH, "//la/", "bar" },
-    { "*", true, Visibility::VisPattern::RECURSIVE_DIRECTORY, "", "" },
-    { ":*", true, Visibility::VisPattern::DIRECTORY, "//foo/", "" },
-    { "la:*", true, Visibility::VisPattern::DIRECTORY, "//foo/la/", "" },
-    { "la/*:*", true, Visibility::VisPattern::RECURSIVE_DIRECTORY,
-      "//foo/la/", "" },
-    { "//la:*", true, Visibility::VisPattern::DIRECTORY, "//la/", "" },
-    { "./*", true, Visibility::VisPattern::RECURSIVE_DIRECTORY, "//foo/", "" },
-    { "foo/*", true, Visibility::VisPattern::RECURSIVE_DIRECTORY,
-      "//foo/foo/", "" },
-    { "//l/*", true, Visibility::VisPattern::RECURSIVE_DIRECTORY, "//l/", "" },
-    // No toolchains allowed.
-    { "//foo(//bar)", false, Visibility::VisPattern::MATCH, "", "" },
-    // Wildcards in invalid places.
-    { "*foo*:bar", false, Visibility::VisPattern::MATCH, "", "" },
-    { "foo*:*bar", false, Visibility::VisPattern::MATCH, "", "" },
-    { "*foo:bar", false, Visibility::VisPattern::MATCH, "", "" },
-    { "foo:bar*", false, Visibility::VisPattern::MATCH, "", "" },
-    { "*:*", true, Visibility::VisPattern::RECURSIVE_DIRECTORY, "", "" },
-  };
-
-  for (size_t i = 0; i < arraysize(cases); i++) {
-    const VisPatternCase& cur = cases[i];
-    Err err;
-    Visibility::VisPattern result =
-        Visibility::GetPattern(current_dir, Value(NULL, cur.input), &err);
-
-    EXPECT_EQ(cur.success, !err.has_error()) << i << " " << cur.input;
-    EXPECT_EQ(cur.type, result.type()) << i << " " << cur.input;
-    EXPECT_EQ(cur.dir, result.dir().value()) << i << " " << cur.input;
-    EXPECT_EQ(cur.name, result.name()) << i << " " << cur.input;
-  }
-}
-
 TEST(Visibility, CanSeeMe) {
   Value list(NULL, Value::LIST);
   list.list_value().push_back(Value(NULL, "//rec/*"));  // Recursive.

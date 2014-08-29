@@ -10,7 +10,7 @@
 #include "tools/gn/err.h"
 #include "tools/gn/functions.h"
 #include "tools/gn/input_conversion.h"
-#include "tools/gn/pattern.h"
+#include "tools/gn/label_pattern.h"
 #include "tools/gn/setup.h"
 #include "tools/gn/standard_out.h"
 #include "tools/gn/substitution_writer.h"
@@ -93,9 +93,9 @@ void PrintToplevelHelp() {
   OutputString("\nOther help topics:\n");
   PrintShortHelp("buildargs: How build arguments work.");
   PrintShortHelp("dotfile: Info about the toplevel .gn file.");
+  PrintShortHelp("label_pattern: Matching more than one label.");
   PrintShortHelp(
       "input_conversion: Processing input from exec_script and read_file.");
-  PrintShortHelp("patterns: How to use patterns.");
   PrintShortHelp("source_expansion: Map sources to outputs for scripts.");
 }
 
@@ -166,8 +166,8 @@ int RunHelp(const std::vector<std::string>& args) {
     PrintLongHelp(kInputConversion_Help);
     return 0;
   }
-  if (args[0] == "patterns") {
-    PrintLongHelp(kPattern_Help);
+  if (args[0] == "label_pattern") {
+    PrintLongHelp(kLabelPattern_Help);
     return 0;
   }
   if (args[0] == "source_expansion") {

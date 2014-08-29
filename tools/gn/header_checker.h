@@ -33,10 +33,14 @@ class HeaderChecker : public base::RefCountedThreadSafe<HeaderChecker> {
   HeaderChecker(const BuildSettings* build_settings,
                 const std::vector<const Target*>& targets);
 
-  // This assumes that the current thread already has a message loop.  On
-  // error, fills the given vector with the errors and returns false.  Returns
+  // Runs the check. The targets in to_check will be checked. If this list is
+  // empty, all targets will be checked.
+  //
+  // This assumes that the current thread already has a message loop. On
+  // error, fills the given vector with the errors and returns false. Returns
   // true on success.
-  bool Run(std::vector<Err>* errors);
+  bool Run(const std::vector<const Target*>& to_check,
+           std::vector<Err>* errors);
 
  private:
   friend class base::RefCountedThreadSafe<HeaderChecker>;
@@ -57,12 +61,16 @@ class HeaderChecker : public base::RefCountedThreadSafe<HeaderChecker> {
   };
 
   typedef std::vector<TargetInfo> TargetVector;
+  typedef std::map<SourceFile, TargetVector> FileMap;
+
+  // Backend for Run() that takes the list of files to check. The errors_ list
+  // will be populate on failure.
+  void RunCheckOverFiles(const FileMap& flies);
 
   void DoWork(const Target* target, const SourceFile& file);
 
-  // Adds the sources and public files from the given target to the file_map_.
-  // Not threadsafe! Called only during init.
-  void AddTargetToFileMap(const Target* target);
+  // Adds the sources and public files from the given target to the given map.
+  static void AddTargetToFileMap(const Target* target, FileMap* dest);
 
   // Returns true if the given file is in the output directory.
   bool IsFileInOuputDir(const SourceFile& file) const;
@@ -133,7 +141,6 @@ class HeaderChecker : public base::RefCountedThreadSafe<HeaderChecker> {
   const BuildSettings* build_settings_;
 
   // Maps source files to targets it appears in (usually just one target).
-  typedef std::map<SourceFile, TargetVector> FileMap;
   FileMap file_map_;
 
   // Locked variables ----------------------------------------------------------

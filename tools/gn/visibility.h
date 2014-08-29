@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string_piece.h"
+#include "tools/gn/label_pattern.h"
 #include "tools/gn/source_dir.h"
 
 class Err;
@@ -19,37 +20,6 @@ class Value;
 
 class Visibility {
  public:
-  class VisPattern {
-   public:
-    enum Type {
-      MATCH = 1,  // Exact match for a given target.
-      DIRECTORY,  // Only targets in the file in the given directory.
-      RECURSIVE_DIRECTORY  // The given directory and any subdir.
-                           // (also indicates "public" when dir is empty).
-    };
-
-    VisPattern();
-    VisPattern(Type type, const SourceDir& dir, const base::StringPiece& name);
-    ~VisPattern();
-
-    bool Matches(const Label& label) const;
-
-    Type type() const { return type_; }
-    const SourceDir& dir() const { return dir_; }
-    const std::string& name() const { return name_; }
-
-   private:
-    Type type_;
-
-    // Used when type_ == PRIVATE and PRIVATE_RECURSIVE. This specifies the
-    // directory that to which the pattern is private to.
-    SourceDir dir_;
-
-    // Empty name means match everything. Otherwise the name must match
-    // exactly.
-    std::string name_;
-  };
-
   // Defaults to private visibility (only the current file).
   Visibility();
   ~Visibility();
@@ -74,12 +44,6 @@ class Visibility {
   // result will end in a newline.
   std::string Describe(int indent, bool include_brackets) const;
 
-  // Converts the given input string to a pattern. This does special stuff
-  // to treat the pattern as a label. Sets the error on failure.
-  static VisPattern GetPattern(const SourceDir& current_dir,
-                               const Value& value,
-                               Err* err);
-
   // Helper function to check visibility between the given two items. If
   // to is invisible to from, returns false and sets the error.
   static bool CheckItemVisibility(const Item* from, const Item* to, Err* err);
@@ -89,7 +53,7 @@ class Visibility {
   static bool FillItemVisibility(Item* item, Scope* scope, Err* err);
 
  private:
-  std::vector<VisPattern> patterns_;
+  std::vector<LabelPattern> patterns_;
 
   DISALLOW_COPY_AND_ASSIGN(Visibility);
 };

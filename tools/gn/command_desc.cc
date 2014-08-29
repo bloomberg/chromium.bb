@@ -435,8 +435,12 @@ const char kDesc[] = "desc";
 const char kDesc_HelpShort[] =
     "desc: Show lots of insightful information about a target.";
 const char kDesc_Help[] =
-    "gn desc <target label> [<what to show>] [--blame] [--all | --tree]\n"
-    "  Displays information about a given labeled target.\n"
+    "gn desc <out_dir> <target label> [<what to show>]\n"
+    "        [--blame] [--all | --tree]\n"
+    "\n"
+    "  Displays information about a given labeled target for the given build.\n"
+    "  The build parameters will be taken for the build in the given\n"
+    "  <out_dir>.\n"
     "\n"
     "Possibilities for <what to show>:\n"
     "  (If unspecified an overall summary will be displayed.)\n"
@@ -510,14 +514,14 @@ const char kDesc_Help[] =
     "  mean the same thing).\n"
     "\n"
     "Examples:\n"
-    "  gn desc //base:base\n"
+    "  gn desc out/Debug //base:base\n"
     "      Summarizes the given target.\n"
     "\n"
-    "  gn desc :base_unittests deps --tree\n"
+    "  gn desc out/Foo :base_unittests deps --tree\n"
     "      Shows a dependency tree of the \"base_unittests\" project in\n"
     "      the current directory.\n"
     "\n"
-    "  gn desc //base defines --blame\n"
+    "  gn desc out/Debug //base defines --blame\n"
     "      Shows defines set for the //base:base target, annotated by where\n"
     "      each one was set from.\n";
 
@@ -525,22 +529,30 @@ const char kDesc_Help[] =
     OutputRecursiveTargetConfig<type>(target, #name, &ConfigValues::name);
 
 int RunDesc(const std::vector<std::string>& args) {
-  if (args.size() != 1 && args.size() != 2) {
+  if (args.size() != 2 && args.size() != 3) {
     Err(Location(), "You're holding it wrong.",
-        "Usage: \"gn desc <target_name> <what to display>\"").PrintToStdout();
+        "Usage: \"gn desc <out_dir> <target_name> [<what to display>]\"")
+        .PrintToStdout();
     return 1;
   }
 
-  const Target* target = GetTargetForDesc(args);
+  // Deliberately leaked to avoid expensive process teardown.
+  Setup* setup = new Setup;
+  if (!setup->DoSetup(args[0]))
+    return 1;
+  if (!setup->Run())
+    return 1;
+
+  const Target* target = ResolveTargetFromCommandLineString(setup, args[1]);
   if (!target)
     return 1;
 
 #define CONFIG_VALUE_HANDLER(name, type) \
     } else if (what == #name) { OUTPUT_CONFIG_VALUE(name, type)
 
-  if (args.size() == 2) {
+  if (args.size() == 3) {
     // User specified one thing to display.
-    const std::string& what = args[1];
+    const std::string& what = args[2];
     if (what == "configs") {
       PrintConfigs(target, false);
     } else if (what == "direct_dependent_configs") {

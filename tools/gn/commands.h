@@ -11,6 +11,8 @@
 
 #include "base/strings/string_piece.h"
 
+class BuildSettings;
+class Setup;
 class Target;
 
 // Each "Run" command returns the value we should return from main().
@@ -44,6 +46,11 @@ extern const char kHelp_HelpShort[];
 extern const char kHelp_Help[];
 int RunHelp(const std::vector<std::string>& args);
 
+extern const char kLs[];
+extern const char kLs_HelpShort[];
+extern const char kLs_Help[];
+int RunLs(const std::vector<std::string>& args);
+
 extern const char kRefs[];
 extern const char kRefs_HelpShort[];
 extern const char kRefs_Help[];
@@ -68,14 +75,35 @@ const CommandInfoMap& GetCommands();
 
 // Helper functions for some commands ------------------------------------------
 
-// Runs a build for the given command line, returning the target identified by
-// the first non-switch command line parameter.
+// Given a setup that has already been run and some command-line input,
+// resolves that input as a target label and returns the corresponding target.
+// On failure, returns null and prints the error to the standard output.
+const Target* ResolveTargetFromCommandLineString(
+    Setup* setup,
+    const std::string& label_string);
+
+// Like above but the input string can be a pattern that matches multiple
+// targets. If the input does not parse as a pattern, prints and error and
+// returns false. If the pattern is valid, fills the vector (which might be
+// empty if there are no matches) and returns true.
 //
-// Note that a lot of memory is leaked to avoid proper teardown under the
-// assumption that you will only run this once and exit.
+// If all_tolchains is false, a pattern with an unspecified toolchain will
+// match the default toolchain only. If true, all toolchains will be matched.
+bool ResolveTargetsFromCommandLinePattern(
+    Setup* setup,
+    const std::string& label_pattern,
+    bool all_toolchains,
+    std::vector<const Target*>* matches);
+
+// Runs the header checker. All targets in the build should be given in
+// all_targets, and the specific targets to check should be in to_check. If
+// to_check is empty, all targets will be checked.
 //
-// On failure, prints an error message and returns NULL.
-const Target* GetTargetForDesc(const std::vector<std::string>& args);
+// On success, returns true. If the check fails, the error(s) will be printed
+// to stdout and false will be returned.
+bool CheckPublicHeaders(const BuildSettings* build_settings,
+                        const std::vector<const Target*>& all_targets,
+                        const std::vector<const Target*>& to_check);
 
 }  // namespace commands
 

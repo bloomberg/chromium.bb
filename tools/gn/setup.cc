@@ -18,8 +18,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "tools/gn/commands.h"
 #include "tools/gn/filesystem_utils.h"
-#include "tools/gn/header_checker.h"
 #include "tools/gn/input_file.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/parser.h"
@@ -188,19 +188,11 @@ bool CommonSetup::RunPostMessageLoop() {
   }
 
   if (check_public_headers_) {
-    std::vector<const Target*> targets = builder_->GetAllResolvedTargets();
-    scoped_refptr<HeaderChecker> header_checker(
-        new HeaderChecker(&build_settings_, targets));
-
-    std::vector<Err> header_errors;
-    header_checker->Run(&header_errors);
-    for (size_t i = 0; i < header_errors.size(); i++) {
-      if (i > 0)
-        OutputString("___________________\n", DECORATION_YELLOW);
-      header_errors[i].PrintToStdout();
-    }
-    if (!header_errors.empty())
+    if (!commands::CheckPublicHeaders(&build_settings_,
+                                      builder_->GetAllResolvedTargets(),
+                                      std::vector<const Target*>())) {
       return false;
+    }
   }
 
   // Write out tracing and timing if requested.

@@ -6,40 +6,6 @@
 
 #include "tools/gn/value.h"
 
-const char kPattern_Help[] =
-    "Patterns\n"
-    "  Patterns are VERY limited regular expressions that are used in\n"
-    "  several places.\n"
-    "\n"
-    "  Patterns must match the entire input string to be counted as a match.\n"
-    "  In regular expression parlance, there is an implicit \"^...$\"\n"
-    "  surrounding your input. If you want to match a substring, you need to\n"
-    "  use wildcards at the beginning and end.\n"
-    "\n"
-    "  There are only two special tokens understood by the pattern matcher.\n"
-    "  Everything else is a literal.\n"
-    "\n"
-    "   * Matches zero or more of any character. It does not depend on the\n"
-    "     preceding character (in regular expression parlance it is\n"
-    "     equivalent to \".*\").\n"
-    "\n"
-    "  \\b Matches a path boundary. This will match the beginning or end of\n"
-    "     a string, or a slash.\n"
-    "\n"
-    "Examples\n"
-    "\n"
-    "  \"*asdf*\"\n"
-    "      Matches a string containing \"asdf\" anywhere.\n"
-    "\n"
-    "  \"asdf\"\n"
-    "      Matches only the exact string \"asdf\".\n"
-    "\n"
-    "  \"*.cc\"\n"
-    "      Matches strings ending in the literal \".cc\".\n"
-    "\n"
-    "  \"\\bwin/*\"\n"
-    "      Matches \"win/foo\" and \"foo/win/bar.cc\" but not \"iwin/foo\".\n";
-
 namespace {
 
 void ParsePattern(const std::string& s, std::vector<Pattern::Subrange>* out) {

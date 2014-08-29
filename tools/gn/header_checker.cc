@@ -123,22 +123,39 @@ HeaderChecker::HeaderChecker(const BuildSettings* build_settings,
     : main_loop_(base::MessageLoop::current()),
       build_settings_(build_settings) {
   for (size_t i = 0; i < targets.size(); i++)
-    AddTargetToFileMap(targets[i]);
+    AddTargetToFileMap(targets[i], &file_map_);
 }
 
 HeaderChecker::~HeaderChecker() {
 }
 
-bool HeaderChecker::Run(std::vector<Err>* errors) {
-  ScopedTrace trace(TraceItem::TRACE_CHECK_HEADERS, "Check headers");
+bool HeaderChecker::Run(const std::vector<const Target*>& to_check,
+                        std::vector<Err>* errors) {
+  if (to_check.empty()) {
+    // Check all files.
+    RunCheckOverFiles(file_map_);
+  } else {
+    // Run only over the files in the given targets.
+    FileMap files_to_check;
+    for (size_t i = 0; i < to_check.size(); i++)
+      AddTargetToFileMap(to_check[i], &files_to_check);
+    RunCheckOverFiles(files_to_check);
+  }
 
-  if (file_map_.empty())
+  if (errors_.empty())
     return true;
+  *errors = errors_;
+  return false;
+}
+
+void HeaderChecker::RunCheckOverFiles(const FileMap& files) {
+  if (files.empty())
+    return;
 
   scoped_refptr<base::SequencedWorkerPool> pool(
       new base::SequencedWorkerPool(16, "HeaderChecker"));
-  for (FileMap::const_iterator file_i = file_map_.begin();
-       file_i != file_map_.end(); ++file_i) {
+  for (FileMap::const_iterator file_i = files.begin();
+       file_i != files.end(); ++file_i) {
     const TargetVector& vect = file_i->second;
 
     // Only check C-like source files (RC files also have includes).
@@ -158,11 +175,6 @@ bool HeaderChecker::Run(std::vector<Err>* errors) {
 
   // After this call we're single-threaded again.
   pool->Shutdown();
-
-  if (errors_.empty())
-    return true;
-  *errors = errors_;
-  return false;
 }
 
 void HeaderChecker::DoWork(const Target* target, const SourceFile& file) {
@@ -173,7 +185,8 @@ void HeaderChecker::DoWork(const Target* target, const SourceFile& file) {
   }
 }
 
-void HeaderChecker::AddTargetToFileMap(const Target* target) {
+// static
+void HeaderChecker::AddTargetToFileMap(const Target* target, FileMap* dest) {
   // Files in the sources have this public bit by default.
   bool default_public = target->all_headers_public();
 
@@ -194,7 +207,7 @@ void HeaderChecker::AddTargetToFileMap(const Target* target) {
   // Add the merged list to the master list of all files.
   for (std::map<SourceFile, bool>::const_iterator i = files_to_public.begin();
        i != files_to_public.end(); ++i)
-    file_map_[i->first].push_back(TargetInfo(target, i->second));
+    (*dest)[i->first].push_back(TargetInfo(target, i->second));
 }
 
 bool HeaderChecker::IsFileInOuputDir(const SourceFile& file) const {
