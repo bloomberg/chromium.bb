@@ -55,11 +55,20 @@ void SetPangoUnderlineMetrics(PangoFontDescription *desc,
   // Pango returns the position "above the baseline". Change its sign to convert
   // it to a vertical offset from the baseline.
   int position = -pango_font_metrics_get_underline_position(metrics);
-  pango_quantize_line_geometry(&thickness, &position);
+
   // Note: pango_quantize_line_geometry() guarantees pixel boundaries, so
   //       PANGO_PIXELS() is safe to use.
-  renderer->SetUnderlineMetrics(PANGO_PIXELS(thickness),
-                                PANGO_PIXELS(position));
+  pango_quantize_line_geometry(&thickness, &position);
+  int thickness_pixels = PANGO_PIXELS(thickness);
+  int position_pixels = PANGO_PIXELS(position);
+
+  // Ugly hack: make sure that underlines don't get clipped. See
+  // http://crbug.com/393117.
+  int descent_pixels = PANGO_PIXELS(pango_font_metrics_get_descent(metrics));
+  position_pixels = std::min(position_pixels,
+                             descent_pixels - thickness_pixels);
+
+  renderer->SetUnderlineMetrics(thickness_pixels, position_pixels);
 }
 
 }  // namespace

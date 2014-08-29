@@ -40,13 +40,6 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   static void SetDefaultFontDescription(const std::string& font_description);
 #endif
 
-  // Position as an offset from the height of the drawn text, used to draw
-  // an underline. This is a negative number, so the underline would be
-  // drawn at y + height + underline_position.
-  double underline_position() const;
-  // The thickness to draw the underline.
-  double underline_thickness() const;
-
   // Overridden from PlatformFont:
   virtual Font DeriveFont(int size_delta, int style) const OVERRIDE;
   virtual int GetHeight() const OVERRIDE;
@@ -82,7 +75,7 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   // Initializes this object as a copy of another PlatformFontPango.
   void InitFromPlatformFont(const PlatformFontPango* other);
 
-  // Potentially slow call to get pango metrics (average width, underline info).
+  // Potentially slow call to get pango metrics (average width).
   void InitPangoMetrics();
 
   // Setup a Skia context to use the current typeface.
@@ -114,8 +107,6 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   // to compute them.
   bool pango_metrics_inited_;
   double average_width_pixels_;
-  double underline_position_pixels_;
-  double underline_thickness_pixels_;
 
   // The default font, used for the default constructor.
   static Font* default_font_;
