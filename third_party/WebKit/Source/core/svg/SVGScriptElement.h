@@ -54,6 +54,7 @@ private:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void didNotifySubtreeInsertionsToDocument() OVERRIDE;
     virtual void childrenChanged(const ChildrenChange&) OVERRIDE;
+    virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
 
     virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;

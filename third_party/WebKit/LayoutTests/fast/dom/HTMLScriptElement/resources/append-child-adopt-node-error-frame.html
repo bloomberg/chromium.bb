@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+function init()
+{
+    var script = document.createElement("script");
+    script.src = "does-not-exist.js";
+    script.onerror = function () { console.log('PASS'); };
+    document.body.appendChild(script);
+    window.top.document.adoptNode(document.documentElement);
+
+    window.top.done();
+}
+
+init();
+</script>
+</body>
+</html>

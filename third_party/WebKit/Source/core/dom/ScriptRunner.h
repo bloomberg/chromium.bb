@@ -58,12 +58,16 @@ public:
     void notifyScriptReady(ScriptLoader*, ExecutionType);
     void notifyScriptLoadError(ScriptLoader*, ExecutionType);
 
+    void movePendingAsyncScript(ScriptRunner*, ScriptLoader*);
+
     void trace(Visitor*);
 
 private:
     explicit ScriptRunner(Document*);
 
     void timerFired(Timer<ScriptRunner>*);
+
+    void addPendingAsyncScript(ScriptLoader*, const PendingScript&);
 
     RawPtrWillBeMember<Document> m_document;
     // FIXME: Oilpan: consider using heap vectors and hash map here;

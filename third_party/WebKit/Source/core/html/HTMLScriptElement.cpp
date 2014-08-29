@@ -30,6 +30,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptLoader.h"
+#include "core/dom/ScriptRunner.h"
 #include "core/dom/Text.h"
 #include "core/events/Event.h"
 
@@ -68,6 +69,12 @@ void HTMLScriptElement::childrenChanged(const ChildrenChange& change)
 {
     HTMLElement::childrenChanged(change);
     m_loader->childrenChanged();
+}
+
+void HTMLScriptElement::didMoveToNewDocument(Document& oldDocument)
+{
+    oldDocument.scriptRunner()->movePendingAsyncScript(document().scriptRunner(), m_loader.get());
+    HTMLElement::didMoveToNewDocument(oldDocument);
 }
 
 void HTMLScriptElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

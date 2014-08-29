@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<iframe src=resources/append-child-adopt-node-error-frame.html></iframe>
+<iframe src=resources/append-child-adopt-node-error-frame.svg></iframe>
+<script>
+testRunner.waitUntilDone();
+testRunner.dumpAsText();
+
+var count = document.querySelectorAll("iframe").length;
+
+function done() {
+    count--;
+    if (count)
+        return;
+    // Don't use js-test.js because this bug is about a failing load of an async
+    // <script> of a frame document being moved to its parent document.
+    // Hence it makes sense to keep this small and easy to debug when regress.
+    console.log("PASS unless crash.");
+    testRunner.notifyDone();
+}
+</script>

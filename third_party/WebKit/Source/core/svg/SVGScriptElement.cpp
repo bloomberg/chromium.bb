@@ -27,6 +27,7 @@
 #include "core/XLinkNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ScriptLoader.h"
+#include "core/dom/ScriptRunner.h"
 #include "core/events/Event.h"
 
 namespace blink {
@@ -121,6 +122,12 @@ void SVGScriptElement::childrenChanged(const ChildrenChange& change)
 {
     SVGElement::childrenChanged(change);
     m_loader->childrenChanged();
+}
+
+void SVGScriptElement::didMoveToNewDocument(Document& oldDocument)
+{
+    oldDocument.scriptRunner()->movePendingAsyncScript(document().scriptRunner(), m_loader.get());
+    SVGElement::didMoveToNewDocument(oldDocument);
 }
 
 bool SVGScriptElement::isURLAttribute(const Attribute& attribute) const

@@ -46,6 +46,12 @@ ScriptRunner::~ScriptRunner()
 {
 }
 
+void ScriptRunner::addPendingAsyncScript(ScriptLoader* scriptLoader, const PendingScript& pendingScript)
+{
+    m_document->incrementLoadEventDelayCount();
+    m_pendingAsyncScripts.add(scriptLoader, pendingScript);
+}
+
 void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, ResourcePtr<ScriptResource> resource, ExecutionType executionType)
 {
     ASSERT(scriptLoader);
@@ -55,14 +61,13 @@ void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, ResourceP
     ASSERT(element);
     ASSERT(element->inDocument());
 
-    m_document->incrementLoadEventDelayCount();
-
     switch (executionType) {
     case ASYNC_EXECUTION:
-        m_pendingAsyncScripts.add(scriptLoader, PendingScript(element, resource.get()));
+        addPendingAsyncScript(scriptLoader, PendingScript(element, resource.get()));
         break;
 
     case IN_ORDER_EXECUTION:
+        m_document->incrementLoadEventDelayCount();
         m_scriptsToExecuteInOrder.append(PendingScript(element, resource.get()));
         break;
     }
@@ -106,6 +111,14 @@ void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionTy
     case IN_ORDER_EXECUTION:
         ASSERT(!m_scriptsToExecuteInOrder.isEmpty());
         break;
+    }
+}
+
+void ScriptRunner::movePendingAsyncScript(ScriptRunner* newRunner, ScriptLoader* scriptLoader)
+{
+    if (m_pendingAsyncScripts.contains(scriptLoader)) {
+        newRunner->addPendingAsyncScript(scriptLoader, m_pendingAsyncScripts.take(scriptLoader));
+        m_document->decrementLoadEventDelayCount();
     }
 }
 
