@@ -38,6 +38,7 @@ source_set("chromium") {
 
   deps = [
     ":application",
+    "//mojo/common",
     "//mojo/environment:chromium",
   ]
 }

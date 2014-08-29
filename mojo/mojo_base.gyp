@@ -449,6 +449,7 @@
       ],
       'dependencies': [
         'mojo_application_base',
+        'mojo_common_lib',
         'mojo_environment_chromium',
        ],
       'export_dependent_settings': [

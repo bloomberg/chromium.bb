@@ -29,6 +29,11 @@ class MOJO_COMMON_EXPORT MessagePumpMojo : public base::MessagePump {
   // using |base::Bind()|).
   static scoped_ptr<base::MessagePump> Create();
 
+  // Returns the MessagePumpMojo instance of the current thread, if it exists.
+  static MessagePumpMojo* current();
+
+  static bool IsCurrent() { return !!current(); }
+
   // Registers a MessagePumpMojoHandler for the specified handle. Only one
   // handler can be registered for a specified handle.
   // NOTE: a value of 0 for |deadline| indicates an indefinite timeout.

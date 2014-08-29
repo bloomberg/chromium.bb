@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread.h"
+#include "mojo/common/message_pump_mojo.h"
 #include "mojo/common/time_helper.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
@@ -21,6 +22,11 @@
 namespace mojo {
 namespace common {
 namespace test {
+
+enum MessageLoopConfig {
+  MESSAGE_LOOP_CONFIG_DEFAULT = 0,
+  MESSAGE_LOOP_CONFIG_MOJO = 1
+};
 
 void ObserveCallback(bool* was_signaled,
                      MojoResult* result_observed,
@@ -40,6 +46,15 @@ void DeleteWatcherAndForwardResult(
     MojoResult result) {
   delete watcher;
   next_callback.Run(result);
+}
+
+scoped_ptr<base::MessageLoop> CreateMessageLoop(MessageLoopConfig config) {
+  scoped_ptr<base::MessageLoop> loop;
+  if (config == MESSAGE_LOOP_CONFIG_DEFAULT)
+    loop.reset(new base::MessageLoop());
+  else
+    loop.reset(new base::MessageLoop(MessagePumpMojo::Create()));
+  return loop.Pass();
 }
 
 // Helper class to manage the callback and running the message loop waiting for
@@ -103,14 +118,18 @@ class CallbackHelper {
   DISALLOW_COPY_AND_ASSIGN(CallbackHelper);
 };
 
-class HandleWatcherTest : public testing::Test {
+class HandleWatcherTest : public testing::TestWithParam<MessageLoopConfig> {
  public:
-  HandleWatcherTest() {}
+  HandleWatcherTest() : message_loop_(CreateMessageLoop(GetParam())) {}
   virtual ~HandleWatcherTest() {
     test::SetTickClockForTest(NULL);
   }
 
  protected:
+  void TearDownMessageLoop() {
+    message_loop_.reset();
+  }
+
   void InstallTickClock() {
     test::SetTickClockForTest(&tick_clock_);
   }
@@ -119,13 +138,17 @@ class HandleWatcherTest : public testing::Test {
 
  private:
   base::ShadowingAtExitManager at_exit_;
-  base::MessageLoop message_loop_;
+  scoped_ptr<base::MessageLoop> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(HandleWatcherTest);
 };
 
+INSTANTIATE_TEST_CASE_P(
+    MultipleMessageLoopConfigs, HandleWatcherTest,
+    testing::Values(MESSAGE_LOOP_CONFIG_DEFAULT, MESSAGE_LOOP_CONFIG_MOJO));
+
 // Trivial test case with a single handle to watch.
-TEST_F(HandleWatcherTest, SingleHandler) {
+TEST_P(HandleWatcherTest, SingleHandler) {
   MessagePipe test_pipe;
   ASSERT_TRUE(test_pipe.handle0.is_valid());
   CallbackHelper callback_helper;
@@ -141,7 +164,7 @@ TEST_F(HandleWatcherTest, SingleHandler) {
 
 // Creates three handles and notfies them in reverse order ensuring each one is
 // notified appropriately.
-TEST_F(HandleWatcherTest, ThreeHandles) {
+TEST_P(HandleWatcherTest, ThreeHandles) {
   MessagePipe test_pipe1;
   MessagePipe test_pipe2;
   MessagePipe test_pipe3;
@@ -206,7 +229,7 @@ TEST_F(HandleWatcherTest, ThreeHandles) {
 }
 
 // Verifies Start() invoked a second time works.
-TEST_F(HandleWatcherTest, Restart) {
+TEST_P(HandleWatcherTest, Restart) {
   MessagePipe test_pipe1;
   MessagePipe test_pipe2;
   CallbackHelper callback_helper1;
@@ -258,7 +281,7 @@ TEST_F(HandleWatcherTest, Restart) {
 }
 
 // Verifies deadline is honored.
-TEST_F(HandleWatcherTest, Deadline) {
+TEST_P(HandleWatcherTest, Deadline) {
   InstallTickClock();
 
   MessagePipe test_pipe1;
@@ -301,7 +324,7 @@ TEST_F(HandleWatcherTest, Deadline) {
   EXPECT_FALSE(callback_helper3.got_callback());
 }
 
-TEST_F(HandleWatcherTest, DeleteInCallback) {
+TEST_P(HandleWatcherTest, DeleteInCallback) {
   MessagePipe test_pipe;
   CallbackHelper callback_helper;
 
@@ -316,23 +339,19 @@ TEST_F(HandleWatcherTest, DeleteInCallback) {
   EXPECT_TRUE(callback_helper.got_callback());
 }
 
-TEST(HandleWatcherCleanEnvironmentTest, AbortedOnMessageLoopDestruction) {
+TEST_P(HandleWatcherTest, AbortedOnMessageLoopDestruction) {
   bool was_signaled = false;
   MojoResult result = MOJO_RESULT_OK;
 
-  base::ShadowingAtExitManager at_exit;
   MessagePipe pipe;
   HandleWatcher watcher;
-  {
-    base::MessageLoop loop;
+  watcher.Start(pipe.handle0.get(),
+                MOJO_HANDLE_SIGNAL_READABLE,
+                MOJO_DEADLINE_INDEFINITE,
+                base::Bind(&ObserveCallback, &was_signaled, &result));
 
-    watcher.Start(pipe.handle0.get(),
-                  MOJO_HANDLE_SIGNAL_READABLE,
-                  MOJO_DEADLINE_INDEFINITE,
-                  base::Bind(&ObserveCallback, &was_signaled, &result));
-
-    // Now, let the MessageLoop get torn down. We expect our callback to run.
-  }
+  // Now, let the MessageLoop get torn down. We expect our callback to run.
+  TearDownMessageLoop();
 
   EXPECT_TRUE(was_signaled);
   EXPECT_EQ(MOJO_RESULT_ABORTED, result);
@@ -423,7 +442,14 @@ TEST(HandleWatcherCleanEnvironmentTest, StressTest) {
   // threads running at once.
   for (int i = 0; i < kThreadCount; ++i) {
     scoped_ptr<base::Thread> thread(new base::Thread("test thread"));
-    thread->Start();
+    if (i % 2) {
+      base::Thread::Options thread_options;
+      thread_options.message_pump_factory =
+          base::Bind(&MessagePumpMojo::Create);
+      thread->StartWithOptions(thread_options);
+    } else {
+      thread->Start();
+    }
     threads.push_back(thread.release());
   }
   for (int i = 0; i < kThreadCount; ++i) {

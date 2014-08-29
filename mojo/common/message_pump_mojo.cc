@@ -8,7 +8,9 @@
 #include <vector>
 
 #include "base/debug/alias.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/threading/thread_local.h"
 #include "base/time/time.h"
 #include "mojo/common/message_pump_mojo_handler.h"
 #include "mojo/common/time_helper.h"
@@ -16,6 +18,9 @@
 namespace mojo {
 namespace common {
 namespace {
+
+base::LazyInstance<base::ThreadLocalPointer<MessagePumpMojo> >::Leaky
+    g_tls_current_pump = LAZY_INSTANCE_INITIALIZER;
 
 MojoDeadline TimeTicksToMojoDeadline(base::TimeTicks time_ticks,
                                      base::TimeTicks now) {
@@ -52,14 +57,24 @@ struct MessagePumpMojo::RunState {
 };
 
 MessagePumpMojo::MessagePumpMojo() : run_state_(NULL), next_handler_id_(0) {
+  DCHECK(!current())
+      << "There is already a MessagePumpMojo instance on this thread.";
+  g_tls_current_pump.Pointer()->Set(this);
 }
 
 MessagePumpMojo::~MessagePumpMojo() {
+  DCHECK_EQ(this, current());
+  g_tls_current_pump.Pointer()->Set(NULL);
 }
 
 // static
 scoped_ptr<base::MessagePump> MessagePumpMojo::Create() {
   return scoped_ptr<MessagePump>(new MessagePumpMojo());
+}
+
+// static
+MessagePumpMojo* MessagePumpMojo::current() {
+  return g_tls_current_pump.Pointer()->Get();
 }
 
 void MessagePumpMojo::AddHandler(MessagePumpMojoHandler* handler,

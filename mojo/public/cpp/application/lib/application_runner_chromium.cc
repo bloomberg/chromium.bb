@@ -6,7 +6,9 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "mojo/common/message_pump_mojo.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
 
@@ -21,27 +23,38 @@ void ApplicationImpl::Terminate() {
 ApplicationRunnerChromium::ApplicationRunnerChromium(
     ApplicationDelegate* delegate)
     : delegate_(scoped_ptr<ApplicationDelegate>(delegate)),
-      message_loop_type_(base::MessageLoop::TYPE_DEFAULT) {}
+      message_loop_type_(base::MessageLoop::TYPE_CUSTOM),
+      has_run_(false) {}
 
 ApplicationRunnerChromium::~ApplicationRunnerChromium() {}
 
 void ApplicationRunnerChromium::set_message_loop_type(
     base::MessageLoop::Type type) {
-  DCHECK_EQ(base::MessageLoop::TYPE_DEFAULT, message_loop_type_);
+  DCHECK_NE(base::MessageLoop::TYPE_CUSTOM, type);
+  DCHECK(!has_run_);
+
   message_loop_type_ = type;
 }
 
 MojoResult ApplicationRunnerChromium::Run(MojoHandle shell_handle) {
+  DCHECK(!has_run_);
+  has_run_ = true;
+
   base::CommandLine::Init(0, NULL);
 #if !defined(COMPONENT_BUILD)
   base::AtExitManager at_exit;
 #endif
 
   {
-    base::MessageLoop loop(message_loop_type_);
+    scoped_ptr<base::MessageLoop> loop;
+    if (message_loop_type_ == base::MessageLoop::TYPE_CUSTOM)
+      loop.reset(new base::MessageLoop(common::MessagePumpMojo::Create()));
+    else
+      loop.reset(new base::MessageLoop(message_loop_type_));
+
     ApplicationImpl impl(delegate_.get(),
                          MakeScopedHandle(MessagePipeHandle(shell_handle)));
-    loop.Run();
+    loop->Run();
   }
   delegate_.reset();
   return MOJO_RESULT_OK;

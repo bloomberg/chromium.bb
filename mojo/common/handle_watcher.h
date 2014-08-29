@@ -48,10 +48,12 @@ class MOJO_COMMON_EXPORT HandleWatcher {
   void Stop();
 
  private:
-  class State;
+  class StateBase;
+  class SameThreadWatchingState;
+  class SecondaryThreadWatchingState;
 
   // If non-NULL Start() has been invoked.
-  scoped_ptr<State> state_;
+  scoped_ptr<StateBase> state_;
 
   DISALLOW_COPY_AND_ASSIGN(HandleWatcher);
 };

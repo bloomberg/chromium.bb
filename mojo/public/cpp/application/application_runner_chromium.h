@@ -22,8 +22,8 @@ class ApplicationDelegate;
 //  }
 //
 // ApplicationRunnerChromium takes care of chromium environment initialization
-// and shutdown, and starting a RunLoop from which your application can run and
-// ultimately Quit().
+// and shutdown, and starting a MessageLoop from which your application can run
+// and ultimately Quit().
 class ApplicationRunnerChromium {
  public:
   // Takes ownership of |delegate|.
@@ -33,15 +33,18 @@ class ApplicationRunnerChromium {
   void set_message_loop_type(base::MessageLoop::Type type);
 
   // Once the various parameters have been set above, use Run to initialize an
-  // ApplicationImpl wired to the provided delegate, and run a RunLoop until
+  // ApplicationImpl wired to the provided delegate, and run a MessageLoop until
   // the application exits.
   MojoResult Run(MojoHandle shell_handle);
 
  private:
   scoped_ptr<ApplicationDelegate> delegate_;
 
-  // MessageLoop type. TYPE_DEFAULT is default.
+  // MessageLoop type. TYPE_CUSTOM is default (MessagePumpMojo will be used as
+  // the underlying message pump).
   base::MessageLoop::Type message_loop_type_;
+  // Whether Run() has been called.
+  bool has_run_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ApplicationRunnerChromium);
 };
