@@ -22,6 +22,8 @@
 using base::win::ScopedCoMem;
 using base::win::ScopedComPtr;
 using base::win::ScopedVariant;
+using Name = media::VideoCaptureDevice::Name;
+using Names = media::VideoCaptureDevice::Names;
 
 namespace media {
 
@@ -88,7 +90,7 @@ static bool EnumerateVideoDevicesMediaFoundation(IMFActivate*** devices,
   return SUCCEEDED(MFEnumDeviceSources(attributes, devices, count));
 }
 
-static void GetDeviceNamesDirectShow(VideoCaptureDevice::Names* device_names) {
+static void GetDeviceNamesDirectShow(Names* device_names) {
   DCHECK(device_names);
   DVLOG(1) << " GetDeviceNamesDirectShow";
 
@@ -98,69 +100,81 @@ static void GetDeviceNamesDirectShow(VideoCaptureDevice::Names* device_names) {
   if (FAILED(hr))
     return;
 
-  ScopedComPtr<IEnumMoniker> enum_moniker;
-  hr = dev_enum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory,
-                                       enum_moniker.Receive(), 0);
-  // CreateClassEnumerator returns S_FALSE on some Windows OS
-  // when no camera exist. Therefore the FAILED macro can't be used.
-  if (hr != S_OK)
-    return;
+  static const struct{
+    CLSID class_id;
+    Name::CaptureApiType capture_api_type;
+  } kDirectShowFilterClasses[] = {
+    { CLSID_VideoInputDeviceCategory, Name::DIRECT_SHOW },
+    { AM_KSCATEGORY_CROSSBAR, Name::DIRECT_SHOW_WDM}
+  };
+
 
   device_names->clear();
-
-  // Name of a fake DirectShow filter that exist on computers with
-  // GTalk installed.
-  static const char kGoogleCameraAdapter[] = "google camera adapter";
-
-  // Enumerate all video capture devices.
-  ScopedComPtr<IMoniker> moniker;
-  int index = 0;
-  while (enum_moniker->Next(1, moniker.Receive(), NULL) == S_OK) {
-    ScopedComPtr<IPropertyBag> prop_bag;
-    hr = moniker->BindToStorage(0, 0, IID_IPropertyBag, prop_bag.ReceiveVoid());
-    if (FAILED(hr)) {
-      moniker.Release();
+  for (int class_index = 0; class_index < arraysize(kDirectShowFilterClasses);
+      ++class_index) {
+    ScopedComPtr<IEnumMoniker> enum_moniker;
+    hr = dev_enum->CreateClassEnumerator(
+        kDirectShowFilterClasses[class_index].class_id,
+        enum_moniker.Receive(),
+        0);
+    // CreateClassEnumerator returns S_FALSE on some Windows OS
+    // when no camera exist. Therefore the FAILED macro can't be used.
+    if (hr != S_OK)
       continue;
-    }
 
-    // Find the description or friendly name.
-    ScopedVariant name;
-    hr = prop_bag->Read(L"Description", name.Receive(), 0);
-    if (FAILED(hr))
-      hr = prop_bag->Read(L"FriendlyName", name.Receive(), 0);
+    // Name of a fake DirectShow filter that exist on computers with
+    // GTalk installed.
+    static const char kGoogleCameraAdapter[] = "google camera adapter";
 
-    if (SUCCEEDED(hr) && name.type() == VT_BSTR) {
-      // Ignore all VFW drivers and the special Google Camera Adapter.
-      // Google Camera Adapter is not a real DirectShow camera device.
-      // VFW are very old Video for Windows drivers that can not be used.
-      const wchar_t* str_ptr = V_BSTR(&name);
-      const int name_length = arraysize(kGoogleCameraAdapter) - 1;
-
-      if ((wcsstr(str_ptr, L"(VFW)") == NULL) &&
-          lstrlenW(str_ptr) < name_length ||
-          (!(LowerCaseEqualsASCII(str_ptr, str_ptr + name_length,
-                                  kGoogleCameraAdapter)))) {
-        std::string id;
-        std::string device_name(base::SysWideToUTF8(str_ptr));
-        name.Reset();
-        hr = prop_bag->Read(L"DevicePath", name.Receive(), 0);
-        if (FAILED(hr) || name.type() != VT_BSTR) {
-          id = device_name;
-        } else {
-          DCHECK_EQ(name.type(), VT_BSTR);
-          id = base::SysWideToUTF8(V_BSTR(&name));
-        }
-
-        device_names->push_back(VideoCaptureDevice::Name(device_name, id,
-            VideoCaptureDevice::Name::DIRECT_SHOW));
+    // Enumerate all video capture devices.
+    ScopedComPtr<IMoniker> moniker;
+    int index = 0;
+    while (enum_moniker->Next(1, moniker.Receive(), NULL) == S_OK) {
+      ScopedComPtr<IPropertyBag> prop_bag;
+      hr = moniker->BindToStorage(0, 0, IID_IPropertyBag,
+          prop_bag.ReceiveVoid());
+      if (FAILED(hr)) {
+        moniker.Release();
+        continue;
       }
+
+      // Find the description or friendly name.
+      ScopedVariant name;
+      hr = prop_bag->Read(L"Description", name.Receive(), 0);
+      if (FAILED(hr))
+        hr = prop_bag->Read(L"FriendlyName", name.Receive(), 0);
+
+      if (SUCCEEDED(hr) && name.type() == VT_BSTR) {
+        // Ignore all VFW drivers and the special Google Camera Adapter.
+        // Google Camera Adapter is not a real DirectShow camera device.
+        // VFW are very old Video for Windows drivers that can not be used.
+        const wchar_t* str_ptr = V_BSTR(&name);
+        const int name_length = arraysize(kGoogleCameraAdapter) - 1;
+
+        if ((wcsstr(str_ptr, L"(VFW)") == NULL) &&
+            lstrlenW(str_ptr) < name_length ||
+            (!(LowerCaseEqualsASCII(str_ptr, str_ptr + name_length,
+                                    kGoogleCameraAdapter)))) {
+          std::string id;
+          std::string device_name(base::SysWideToUTF8(str_ptr));
+          name.Reset();
+          hr = prop_bag->Read(L"DevicePath", name.Receive(), 0);
+          if (FAILED(hr) || name.type() != VT_BSTR) {
+            id = device_name;
+          } else {
+            DCHECK_EQ(name.type(), VT_BSTR);
+            id = base::SysWideToUTF8(V_BSTR(&name));
+          }
+          device_names->push_back(Name(device_name, id,
+              kDirectShowFilterClasses[class_index].capture_api_type));
+        }
+      }
+      moniker.Release();
     }
-    moniker.Release();
   }
 }
 
-static void GetDeviceNamesMediaFoundation(
-    VideoCaptureDevice::Names* device_names) {
+static void GetDeviceNamesMediaFoundation(Names* device_names) {
   DVLOG(1) << " GetDeviceNamesMediaFoundation";
   ScopedCoMem<IMFActivate*> devices;
   UINT32 count;
@@ -179,10 +193,10 @@ static void GetDeviceNamesMediaFoundation(
           MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, &id,
           &id_size);
       if (SUCCEEDED(hr)) {
-        device_names->push_back(VideoCaptureDevice::Name(
+        device_names->push_back(Name(
             base::SysWideToUTF8(std::wstring(name, name_size)),
             base::SysWideToUTF8(std::wstring(id, id_size)),
-            VideoCaptureDevice::Name::MEDIA_FOUNDATION));
+            Name::MEDIA_FOUNDATION));
       }
     }
     if (FAILED(hr))
@@ -191,9 +205,8 @@ static void GetDeviceNamesMediaFoundation(
   }
 }
 
-static void GetDeviceSupportedFormatsDirectShow(
-    const VideoCaptureDevice::Name& device,
-    VideoCaptureFormats* formats) {
+static void GetDeviceSupportedFormatsDirectShow(const Name& device,
+                                                VideoCaptureFormats* formats) {
   DVLOG(1) << "GetDeviceSupportedFormatsDirectShow for " << device.name();
   ScopedComPtr<ICreateDevEnum> dev_enum;
   HRESULT hr = dev_enum.CreateInstance(CLSID_SystemDeviceEnum, NULL,
@@ -280,7 +293,7 @@ static void GetDeviceSupportedFormatsDirectShow(
 }
 
 static void GetDeviceSupportedFormatsMediaFoundation(
-    const VideoCaptureDevice::Name& device,
+    const Name& device,
     VideoCaptureFormats* formats) {
   DVLOG(1) << "GetDeviceSupportedFormatsMediaFoundation for " << device.name();
   ScopedComPtr<IMFMediaSource> source;
@@ -368,11 +381,10 @@ VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin() {
 
 
 scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::Create(
-    const VideoCaptureDevice::Name& device_name) {
+    const Name& device_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
   scoped_ptr<VideoCaptureDevice> device;
-  if (device_name.capture_api_type() ==
-      VideoCaptureDevice::Name::MEDIA_FOUNDATION) {
+  if (device_name.capture_api_type() == Name::MEDIA_FOUNDATION) {
     DCHECK(PlatformSupportsMediaFoundation());
     device.reset(new VideoCaptureDeviceMFWin(device_name));
     DVLOG(1) << " MediaFoundation Device: " << device_name.name();
@@ -384,8 +396,8 @@ scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::Create(
     if (!static_cast<VideoCaptureDeviceMFWin*>(device.get())->Init(source))
       device.reset();
   } else {
-    DCHECK_EQ(device_name.capture_api_type(),
-              VideoCaptureDevice::Name::DIRECT_SHOW);
+    DCHECK(device_name.capture_api_type() == Name::DIRECT_SHOW ||
+           device_name.capture_api_type() == Name::DIRECT_SHOW_WDM);
     device.reset(new VideoCaptureDeviceWin(device_name));
     DVLOG(1) << " DirectShow Device: " << device_name.name();
     if (!static_cast<VideoCaptureDeviceWin*>(device.get())->Init())
@@ -394,8 +406,7 @@ scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::Create(
   return device.Pass();
 }
 
-void VideoCaptureDeviceFactoryWin::GetDeviceNames(
-    VideoCaptureDevice::Names* device_names) {
+void VideoCaptureDeviceFactoryWin::GetDeviceNames(Names* device_names) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (use_media_foundation_)
     GetDeviceNamesMediaFoundation(device_names);
@@ -404,7 +415,7 @@ void VideoCaptureDeviceFactoryWin::GetDeviceNames(
 }
 
 void VideoCaptureDeviceFactoryWin::GetDeviceSupportedFormats(
-    const VideoCaptureDevice::Name& device,
+    const Name& device,
     VideoCaptureFormats* formats) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (use_media_foundation_)

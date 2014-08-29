@@ -46,6 +46,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
     enum CaptureApiType {
       MEDIA_FOUNDATION,
       DIRECT_SHOW,
+      DIRECT_SHOW_WDM,
       API_TYPE_UNKNOWN
     };
 #endif
