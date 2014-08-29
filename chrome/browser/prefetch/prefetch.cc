@@ -19,17 +19,6 @@ bool IsPrefetchEnabled(content::ResourceContext* resource_context) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-  DCHECK(io_data);
-
-  // TODO(bnc): Remove this condition once the new
-  // predictive preference is used on all platforms. See crbug.com/334602.
-  if (io_data->network_prediction_options()->GetValue() ==
-          chrome_browser_net::NETWORK_PREDICTION_UNSET &&
-      net::NetworkChangeNotifier::IsConnectionCellular(
-          net::NetworkChangeNotifier::GetConnectionType())) {
-    return false;
-  }
-
   return chrome_browser_net::CanPrefetchAndPrerenderIO(io_data) &&
          !DisableForFieldTrial();
 }

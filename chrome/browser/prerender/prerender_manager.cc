@@ -238,8 +238,7 @@ struct PrerenderManager::NavigationRecord {
 
 PrerenderManager::PrerenderManager(Profile* profile,
                                    PrerenderTracker* prerender_tracker)
-    : enabled_(profile && profile->GetPrefs() &&
-          profile->GetPrefs()->GetBoolean(prefs::kNetworkPredictionEnabled)),
+    : enabled_(true),
       profile_(profile),
       prerender_tracker_(prerender_tracker),
       prerender_contents_factory_(PrerenderContents::CreateFactory()),
@@ -1862,24 +1861,9 @@ void PrerenderManager::RecordNetworkBytes(Origin origin,
 bool PrerenderManager::IsEnabled() const {
   DCHECK(CalledOnValidThread());
 
-  // TODO(bnc): remove conditional as per crbug.com/334602.
-  if (profile_ && profile_->GetPrefs() &&
-        profile_->GetPrefs()->GetInteger(prefs::kNetworkPredictionOptions) !=
-        chrome_browser_net::NETWORK_PREDICTION_UNSET) {
-    return chrome_browser_net::CanPrefetchAndPrerenderUI(profile_->GetPrefs());
-  }
-  // TODO(bnc): remove rest of method as per crbug.com/334602.
   if (!enabled_)
     return false;
-  for (std::list<const PrerenderCondition*>::const_iterator it =
-           prerender_conditions_.begin();
-       it != prerender_conditions_.end();
-       ++it) {
-    const PrerenderCondition* condition = *it;
-    if (!condition->CanPrerender())
-      return false;
-  }
-  return true;
+  return chrome_browser_net::CanPrefetchAndPrerenderUI(profile_->GetPrefs());
 }
 
 void PrerenderManager::AddProfileNetworkBytesIfEnabled(int64 bytes) {

@@ -17,14 +17,11 @@ namespace chrome_browser_net {
 // Enum describing when to allow network predictions based on connection type.
 // The numerical value is stored in the prefs file, therefore the same enum
 // with the same order must be used by the platform-dependent components.
-// TODO(bnc): implement as per crbug.com/334602.
-// NETWORK_PREDICTION_UNSET means that the old preferences,
-// kNetworkPredictionEnabled and kAllowPrerender, should be observed.
 enum NetworkPredictionOptions {
   NETWORK_PREDICTION_ALWAYS,
   NETWORK_PREDICTION_WIFI_ONLY,
   NETWORK_PREDICTION_NEVER,
-  NETWORK_PREDICTION_UNSET,
+  NETWORK_PREDICTION_DEFAULT = NETWORK_PREDICTION_WIFI_ONLY,
 };
 
 void RegisterPredictionOptionsProfilePrefs(
