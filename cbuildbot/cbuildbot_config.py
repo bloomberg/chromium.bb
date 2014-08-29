@@ -1376,6 +1376,7 @@ chromium_info_daisy.add_config('daisy-webrtc-chromium-pfq-informational',
 
 _arm_release_boards = frozenset([
   'daisy',
+  'daisy_freon',
   'daisy_skate',
   'daisy_spring',
   'nyan',
@@ -1963,6 +1964,12 @@ internal_notest_paladin.add_config('daisy-paladin',
   boards=['daisy'],
   paladin_builder_name='daisy paladin',
   hw_tests=HWTestConfig.DefaultListCQ(),
+)
+
+internal_notest_paladin.add_config('daisy_freon-paladin',
+  boards=['daisy_freon'],
+  important=False,
+  paladin_builder_name='daisy_freon paladin',
 )
 
 internal_notest_paladin.add_config('daisy_spring-paladin',
