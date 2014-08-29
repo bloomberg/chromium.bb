@@ -22,9 +22,40 @@ except ImportError:
 import time
 
 from chromite.cbuildbot import constants
+from chromite.lib import retry_util
 
 CIDB_MIGRATIONS_DIR = os.path.join(constants.CHROMITE_DIR, 'cidb',
                                    'migrations')
+
+_RETRYABLE_OPERATIONAL_ERROR_CODES = (
+    2006,   # Error code 2006 'MySQL server has gone away' indicates that
+            # the connection used was closed or dropped
+    2013,   # 'Lost connection to MySQL server during query'
+            # TODO(akeshet): consider only retrying UPDATE queries against
+            # this error code, not INSERT queries, since we don't know
+            # whether the query completed before or after the connection
+            # lost.
+)
+
+
+def _IsRetryableException(e):
+  """Determine whether a query should be retried based on exception.
+
+  Intended for use as a handler for retry_util.
+
+  Args:
+    e: The exception to be filtered.
+
+  Returns:
+    True if the query should be retried, False otherwise.
+  """
+  if isinstance(e, sqlalchemy.exc.OperationalError):
+    error_code = e.orig.args[0]
+    if error_code in _RETRYABLE_OPERATIONAL_ERROR_CODES:
+      return True
+
+  return False
+
 
 class DBException(Exception):
   """General exception class for this module."""
@@ -323,8 +354,8 @@ class SchemaVersionedMySQLConnection(object):
   def _Execute(self, query, *args, **kwargs):
     """Execute a query using engine, with retires.
 
-    This method wraps execution of a query in a single retry in case the
-    engine's connection has been dropped.
+    This method wraps execution of a query in retries that create a new
+    engine in case the engine's connection has been dropped.
 
     Args:
       query: Query to execute, of type string, or sqlalchemy.Executible,
@@ -336,28 +367,12 @@ class SchemaVersionedMySQLConnection(object):
     Returns:
       The result of .execute(...)
     """
-    try:
-      return self._GetEngine().execute(query, *args, **kwargs)
-    except sqlalchemy.exc.OperationalError as e:
-      error_code = e.orig.args[0]
-      retryable_codes = (
-          2006,   # Error code 2006 'MySQL server has gone away' indicates that
-                  # the connection used was closed or dropped.
-                  #
-          2013,   # 'Lost connection to MySQL server during query'
-                  # TODO(akeshet): consider only retrying UPDATE queries agsint
-                  # this error code, not INSERT queries, since we don't know
-                  # whether the query completed before or after the connection
-                  # lost.
-      )
-      if error_code in retryable_codes:
-        e = self._GetEngine()
-        logging.warn('Retrying a query on engine %s@%s for pid %s due to '
-                     'error code %s.', e.url.username, e.url.host,
-                     self._engine_pid, error_code)
-        return self._GetEngine().execute(query, *args, **kwargs)
-      else:
-        raise
+    f = lambda: self._GetEngine().execute(query, *args, **kwargs)
+    return retry_util.GenericRetry(
+        handler=_IsRetryableException,
+        max_retry=4,
+        sleep=1,
+        functor=f)
 
   def _GetEngine(self):
     """Get the sqlalchemy engine for this process.
