@@ -412,7 +412,7 @@
             "description": "The instance ID of the guest <webview> process."
           },
           {
-            "$ref": "types.ImageDetails",
+            "$ref": "extensionTypes.ImageDetails",
             "name": "options",
             "optional": true
           },

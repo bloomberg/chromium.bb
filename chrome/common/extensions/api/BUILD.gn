@@ -9,6 +9,8 @@ import("schemas.gni")
 generated_extensions_api("api") {
   schemas = true
   bundle = true
+
+  deps = schema_dependencies
 }
 
 # GYP version: chrome/browser/extensions/api/api.gyp:chrome_api_registration
@@ -32,4 +34,5 @@ generated_extensions_api("api_registration") {
   if (is_chromeos) {
     # deps += [ "<(DEPTH)/chrome/chrome.gyp:drive_proto" ]  TODO(GYP)
   }
+  deps += schema_dependencies
 }

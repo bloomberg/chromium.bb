@@ -16,6 +16,12 @@
 #     namespace for each API. Use %(namespace)s to replace with the API
 #     namespace, like "toplevel::%(namespace)s_api".
 #
+# schema_include_rules [optional]
+#     A list of paths to include when searching for referenced objects,
+#     with the namespace separated by a :.
+#     Example:
+#       [ '/foo/bar:Foo::Bar::%(namespace)s' ]
+#
 # schemas [optional, default = false]
 #   Boolean indicating if the schema files should be generated.
 #
@@ -53,6 +59,11 @@ template("generated_extensions_api") {
   bundle = defined(invoker.bundle) && invoker.bundle
   bundle_registration = defined(invoker.bundle_registration) &&
       invoker.bundle_registration
+
+  schema_include_rules = ""
+  if (defined(invoker.schema_include_rules)) {
+    schema_include_rules = invoker.schema_include_rules
+  }
 
   # Keep a copy of the target_name here since it will be trampled
   # in nested targets.
@@ -96,7 +107,8 @@ template("generated_extensions_api") {
         "--root=" + rebase_path("//", root_build_dir),
         "--destdir=" + rebase_path(root_gen_dir, root_build_dir),
         "--namespace=$root_namespace",
-        "--generator=cpp" ]
+        "--generator=cpp",
+        "--include-rules=$schema_include_rules" ]
       visibility = target_visibility
     }
   }
@@ -120,9 +132,9 @@ template("generated_extensions_api") {
         "--destdir=" + rebase_path(root_gen_dir, root_build_dir),
         "--namespace=$root_namespace",
         "--generator=cpp-bundle-schema",
-      ] +
-        rebase_path(sources, root_build_dir) +
-        rebase_path(uncompiled_sources, root_build_dir)
+        "--include-rules=$schema_include_rules" ]
+        + rebase_path(sources, root_build_dir)
+        + rebase_path(uncompiled_sources, root_build_dir)
     }
   }
 
@@ -151,9 +163,9 @@ template("generated_extensions_api") {
         "--namespace=$root_namespace",
         "--generator=cpp-bundle-registration",
         "--impl-dir=" + rebase_path(impl_dir, "//"),
-      ] +
-        rebase_path(sources, root_build_dir) +
-        rebase_path(uncompiled_sources, root_build_dir)
+        "--include-rules=$schema_include_rules" ]
+        + rebase_path(sources, root_build_dir)
+        + rebase_path(uncompiled_sources, root_build_dir)
     }
   }
 

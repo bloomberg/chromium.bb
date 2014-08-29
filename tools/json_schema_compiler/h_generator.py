@@ -10,23 +10,19 @@ import cpp_util
 import schema_util
 
 class HGenerator(object):
-  def __init__(self, type_generator, cpp_namespace_pattern):
+  def __init__(self, type_generator):
     self._type_generator = type_generator
-    self._cpp_namespace_pattern = cpp_namespace_pattern
 
   def Generate(self, namespace):
-    return _Generator(namespace,
-                      self._type_generator,
-                      self._cpp_namespace_pattern).Generate()
+    return _Generator(namespace, self._type_generator).Generate()
 
 
 class _Generator(object):
   """A .h generator for a namespace.
   """
-  def __init__(self, namespace, cpp_type_generator, cpp_namespace_pattern):
+  def __init__(self, namespace, cpp_type_generator):
     self._namespace = namespace
     self._type_helper = cpp_type_generator
-    self._cpp_namespace_pattern = cpp_namespace_pattern
     self._generate_error_messages = namespace.compiler_options.get(
         'generate_error_messages', False)
 
@@ -65,11 +61,11 @@ class _Generator(object):
     # $ref types from other files to be used as required params. This requires
     # some detangling of windows and tabs which will currently lead to circular
     # #includes.
-    c.Cblock(self._type_helper.GenerateForwardDeclarations(
-        self._cpp_namespace_pattern))
+    c.Cblock(self._type_helper.GenerateForwardDeclarations())
 
-    cpp_namespace = cpp_util.GetCppNamespace(self._cpp_namespace_pattern,
-                                             self._namespace.unix_name)
+    cpp_namespace = cpp_util.GetCppNamespace(
+        self._namespace.environment.namespace_pattern,
+        self._namespace.unix_name)
     c.Concat(cpp_util.OpenNamespace(cpp_namespace))
     c.Append()
     if self._namespace.properties:

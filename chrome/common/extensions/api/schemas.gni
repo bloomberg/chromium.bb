@@ -29,3 +29,6 @@ if (!is_android) {
 }
 
 root_namespace = "extensions::api::%(namespace)s"
+schema_include_rules =
+    "extensions/common/api:extensions::core_api::%(namespace)s"
+schema_dependencies = [ "//extensions/common/api" ]

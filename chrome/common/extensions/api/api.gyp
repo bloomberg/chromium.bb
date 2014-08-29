@@ -18,6 +18,9 @@
         '../../../../build/json_schema_compile.gypi',
         'schemas.gypi',
       ],
+      'dependencies': [
+        '<@(schema_dependencies)',
+      ],
     },
   ],
 }

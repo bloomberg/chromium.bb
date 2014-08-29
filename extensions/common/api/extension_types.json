@@ -1,0 +1,32 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+  {
+    "namespace": "extensionTypes",
+    "description": "The <code>chrome.extension_types</code> API contains type declarations for Chrome extensions.",
+    "types": [
+      {
+        "id": "ImageDetails",
+        "type": "object",
+        "description": "Details about the format and quality of an image.",
+        "properties": {
+          "format": {
+            "type": "string",
+            "optional": true,
+            "enum": ["jpeg", "png"],
+            "description": "The format of the resulting image.  Default is <code>\"jpeg\"</code>."
+          },
+          "quality": {
+            "type": "integer",
+            "optional": true,
+            "minimum": 0,
+            "maximum": 100,
+            "description": "When format is <code>\"jpeg\"</code>, controls the quality of the resulting image.  This value is ignored for PNG images.  As quality is decreased, the resulting image will have more visual artifacts, and the number of bytes needed to store it will decrease."
+          }
+        }
+      }
+    ]
+  }
+]

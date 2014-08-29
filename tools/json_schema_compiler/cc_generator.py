@@ -7,25 +7,23 @@ from model import PropertyType
 import cpp_util
 import schema_util
 import util_cc_helper
+from cpp_namespace_environment import CppNamespaceEnvironment
 
 class CCGenerator(object):
-  def __init__(self, type_generator, cpp_namespace_pattern):
+  def __init__(self, type_generator):
     self._type_generator = type_generator
-    self._cpp_namespace_pattern = cpp_namespace_pattern
 
   def Generate(self, namespace):
-    return _Generator(namespace,
-                      self._type_generator,
-                      self._cpp_namespace_pattern).Generate()
+    return _Generator(namespace, self._type_generator).Generate()
 
 
 class _Generator(object):
   """A .cc generator for a namespace.
   """
-  def __init__(self, namespace, cpp_type_generator, cpp_namespace_pattern):
+  def __init__(self, namespace, cpp_type_generator):
+    assert type(namespace.environment) is CppNamespaceEnvironment
     self._namespace = namespace
     self._type_helper = cpp_type_generator
-    self._cpp_namespace_pattern = cpp_namespace_pattern
     self._util_cc_helper = (
         util_cc_helper.UtilCCHelper(self._type_helper))
     self._generate_error_messages = namespace.compiler_options.get(
@@ -34,8 +32,9 @@ class _Generator(object):
   def Generate(self):
     """Generates a Code object with the .cc for a single namespace.
     """
-    cpp_namespace = cpp_util.GetCppNamespace(self._cpp_namespace_pattern,
-                                             self._namespace.unix_name)
+    cpp_namespace = cpp_util.GetCppNamespace(
+        self._namespace.environment.namespace_pattern,
+        self._namespace.unix_name)
 
     c = Code()
     (c.Append(cpp_util.CHROMIUM_LICENSE)

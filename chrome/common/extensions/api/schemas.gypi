@@ -116,6 +116,9 @@
       'web_view_internal.json',
       'windows.json',
     ],
+    'main_schema_include_rules': [
+      'extensions/common/api:extensions::core_api::%(namespace)s',
+    ],
     'main_non_compiled_schema_files': [
       'browsing_data.json',
       'chromeos_info_private.json',
@@ -157,11 +160,19 @@
         'non_compiled_schema_files': [
           '<@(main_non_compiled_schema_files)',
         ],
+        'schema_dependencies': [
+          '<(DEPTH)/extensions/common/api/api.gyp:extensions_api',
+        ],
         'schema_files': [
           '<@(main_schema_files)',
         ],
+        'schema_include_rules': [
+          '<@(main_schema_include_rules)',
+        ],
       }, {  # enable_extensions==0
         'non_compiled_schema_files': [
+        ],
+        'schema_dependencies': [
         ],
         'schema_files': [
           # These should be eliminated. See crbug.com/305852.

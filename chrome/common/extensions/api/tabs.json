@@ -654,7 +654,7 @@
             "description": "The target window. Defaults to the <a href='windows#current-window'>current window</a>."
           },
           {
-            "$ref": "types.ImageDetails",
+            "$ref": "extensionTypes.ImageDetails",
             "name": "options",
             "optional": true
           },

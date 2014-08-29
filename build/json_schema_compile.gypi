@@ -7,6 +7,11 @@
     # When including this gypi, the following variables must be set:
     #   schema_files:
     #     An array of json or idl files that comprise the api model.
+    #   schema_include_rules (optional):
+    #     An array of paths to include when searching for referenced objects,
+    #     with the namespace separated by a :.
+    #     Example:
+    #       [ '/foo/bar:Foo::Bar::%(namespace)s' ]
     #   cc_dir:
     #     The directory to put the generated code in.
     #   root_namespace:
@@ -17,6 +22,7 @@
     # Functions and namespaces can be excluded by setting "nocompile" to true.
     'api_gen_dir': '<(DEPTH)/tools/json_schema_compiler',
     'api_gen': '<(api_gen_dir)/compiler.py',
+    'schema_include_rules': [],
   },
   'rules': [
     {
@@ -54,6 +60,7 @@
         '--destdir=<(SHARED_INTERMEDIATE_DIR)',
         '--namespace=<(root_namespace)',
         '--generator=cpp',
+        '--include-rules=<(schema_include_rules)'
       ],
       'message': 'Generating C++ code from <(RULE_INPUT_PATH) json files',
       'process_outputs_as_sources': 1,
@@ -92,6 +99,7 @@
         '--destdir=<(SHARED_INTERMEDIATE_DIR)',
         '--namespace=<(root_namespace)',
         '--generator=cpp',
+        '--include-rules=<(schema_include_rules)'
       ],
       'message': 'Generating C++ code from <(RULE_INPUT_PATH) IDL files',
       'process_outputs_as_sources': 1,

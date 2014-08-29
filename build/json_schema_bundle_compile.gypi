@@ -7,6 +7,11 @@
     # When including this gypi, the following variables must be set:
     #   schema_files:
     #     An array of json or idl files that comprise the api model.
+    #   schema_include_rules (optional):
+    #     An array of paths to include when searching for referenced objects,
+    #     with the namespace separated by a :.
+    #     Example:
+    #       [ '/foo/bar:Foo::Bar::%(namespace)s' ]
     #   cc_dir:
     #     The directory to put the generated code in.
     #   root_namespace:
@@ -32,6 +37,7 @@
       '<(api_gen_dir)/model.py',
       '<(api_gen_dir)/util_cc_helper.py',
     ],
+    'schema_include_rules': [],
   },
   'actions': [
     {
@@ -52,6 +58,7 @@
         '--destdir=<(SHARED_INTERMEDIATE_DIR)',
         '--namespace=<(root_namespace)',
         '--generator=cpp-bundle-schema',
+        '--include-rules=<(schema_include_rules)',
         '<@(schema_files)',
         '<@(non_compiled_schema_files)',
       ],

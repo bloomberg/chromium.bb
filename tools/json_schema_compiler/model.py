@@ -27,12 +27,17 @@ class Model(object):
   def __init__(self):
     self.namespaces = {}
 
-  def AddNamespace(self, json, source_file, include_compiler_options=False):
+  def AddNamespace(self,
+                   json,
+                   source_file,
+                   include_compiler_options=False,
+                   environment=None):
     """Add a namespace's json to the model and returns the namespace.
     """
     namespace = Namespace(json,
                           source_file,
-                          include_compiler_options=include_compiler_options)
+                          include_compiler_options=include_compiler_options,
+                          environment=environment)
     self.namespaces[namespace.name] = namespace
     return namespace
 
@@ -95,7 +100,11 @@ class Namespace(object):
   - |compiler_options| the compiler_options dict, only not empty if
                        |include_compiler_options| is True
   """
-  def __init__(self, json, source_file, include_compiler_options=False):
+  def __init__(self,
+               json,
+               source_file,
+               include_compiler_options=False,
+               environment=None):
     self.name = json['namespace']
     if 'description' not in json:
       # TODO(kalman): Go back to throwing an error here.
@@ -119,6 +128,7 @@ class Namespace(object):
       self.compiler_options = json.get('compiler_options', {})
     else:
       self.compiler_options = {}
+    self.environment = environment
     self.documentation_options = json.get('documentation_options', {})
 
 

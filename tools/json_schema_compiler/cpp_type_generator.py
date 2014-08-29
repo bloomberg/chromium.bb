@@ -96,7 +96,10 @@ class CppTypeGenerator(object):
       if self._default_namespace is type_.namespace:
         cpp_type = cpp_util.Classname(type_.name)
       else:
-        cpp_type = '%s::%s' % (type_.namespace.unix_name,
+        cpp_namespace = cpp_util.GetCppNamespace(
+            type_.namespace.environment.namespace_pattern,
+            type_.namespace.unix_name)
+        cpp_type = '%s::%s' % (cpp_namespace,
                                cpp_util.Classname(type_.name))
     elif type_.property_type == PropertyType.ANY:
       cpp_type = 'base::Value'
@@ -130,7 +133,7 @@ class CppTypeGenerator(object):
                                                         PropertyType.OBJECT,
                                                         PropertyType.CHOICES))
 
-  def GenerateForwardDeclarations(self, cpp_namespace_pattern):
+  def GenerateForwardDeclarations(self):
     """Returns the forward declarations for self._default_namespace.
     """
     c = Code()
@@ -144,8 +147,9 @@ class CppTypeGenerator(object):
       if not filtered_deps:
         continue
 
-      cpp_namespace = cpp_util.GetCppNamespace(cpp_namespace_pattern,
-                                               namespace.unix_name)
+      cpp_namespace = cpp_util.GetCppNamespace(
+          namespace.environment.namespace_pattern,
+          namespace.unix_name)
       c.Concat(cpp_util.OpenNamespace(cpp_namespace))
       for dep in filtered_deps:
         c.Append('struct %s;' % dep.type_.name)

@@ -18,6 +18,7 @@
       'cast_channel.idl',
       'dns.idl',
       'extensions_manifest_types.json',
+      'extension_types.json',
       'hid.idl',
       'power.idl',
       'runtime.json',

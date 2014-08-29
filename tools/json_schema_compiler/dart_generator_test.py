@@ -32,7 +32,7 @@ class DartTest(unittest.TestCase):
     if REBASE_MODE:
       output_dir = TESTS_DIR
     output_code = GenerateSchema('dart', ['%s.idl' % file_rel], TESTS_DIR,
-                                 output_dir, None, None, None)
+                                 output_dir, '', None, None, [])
 
     if not REBASE_MODE:
       with open('%s.dart' % file_rel) as f:
