@@ -2780,6 +2780,24 @@ TEST_F(AutofillManagerTest, RemoveProfileVariant) {
   EXPECT_TRUE(autofill_manager_->GetProfileWithGUID(guid.c_str()));
 }
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+TEST_F(AutofillManagerTest, AccessAddressBookPrompt) {
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+  FormFieldData& field = form.fields[0];
+
+  field.should_autocomplete = false;
+  EXPECT_FALSE(
+      autofill_manager_->ShouldShowAccessAddressBookSuggestion(form, field));
+
+  field.should_autocomplete = true;
+  EXPECT_TRUE(
+      autofill_manager_->ShouldShowAccessAddressBookSuggestion(form, field));
+}
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
 namespace {
 
 class MockAutofillClient : public TestAutofillClient {

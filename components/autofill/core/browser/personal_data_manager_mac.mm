@@ -363,6 +363,9 @@ bool PersonalDataManager::AccessAddressBook() {
 
 bool PersonalDataManager::ShouldShowAccessAddressBookSuggestion(
     AutofillType type) {
+  if (!enabled_pref_->GetValue())
+    return false;
+
   if (HasPromptedForAccessToAddressBook(pref_service_))
     return false;
 

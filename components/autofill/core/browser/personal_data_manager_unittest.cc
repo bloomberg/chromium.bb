@@ -2675,4 +2675,18 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
   EXPECT_EQ(base::string16(), labels[1]);
 }
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+TEST_F(PersonalDataManagerTest, ShowAddressBookPrompt) {
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(2);
+
+  AutofillType type(ADDRESS_HOME_STREET_ADDRESS);
+
+  prefs_->SetBoolean(prefs::kAutofillEnabled, true);
+  EXPECT_TRUE(personal_data_->ShouldShowAccessAddressBookSuggestion(type));
+
+  prefs_->SetBoolean(prefs::kAutofillEnabled, false);
+  EXPECT_FALSE(personal_data_->ShouldShowAccessAddressBookSuggestion(type));
+}
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
 }  // namespace autofill

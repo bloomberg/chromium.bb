@@ -285,11 +285,15 @@ void AutofillManager::ShowAutofillSettings() {
 bool AutofillManager::ShouldShowAccessAddressBookSuggestion(
     const FormData& form,
     const FormFieldData& field) {
-  if (!personal_data_)
+  if (!personal_data_ || !field.should_autocomplete)
     return false;
+
   FormStructure* form_structure = NULL;
   AutofillField* autofill_field = NULL;
   if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
+    return false;
+
+  if (!form_structure->IsAutofillable())
     return false;
 
   return personal_data_->ShouldShowAccessAddressBookSuggestion(
