@@ -182,7 +182,8 @@
         }],
         [ 'target_arch=="arm64"', {
           'sources': [
-            'jsimd_none.c',
+            'simd/jsimd_arm64.c',
+            'simd/jsimd_arm64_neon.S',
           ],
         }],
         [ 'target_arch=="mipsel"', {
@@ -245,7 +246,7 @@
             ],
           },
         }],
-        [ 'OS=="linux" or OS=="freebsd" or (OS=="android" and target_arch!="arm")', {
+        [ 'OS=="linux" or OS=="freebsd" or (OS=="android" and (target_arch=="ia32" or target_arch=="x64"))', {
           'conditions': [
             [ 'use_system_yasm==0', {
               'dependencies': [
@@ -284,7 +285,7 @@
           'rule_name': 'assemble',
           'extension': 'asm',
           'conditions': [
-            [ 'target_arch!="arm"', {
+            [ 'target_arch=="ia32" or target_arch=="x64"', {
               'inputs': [ '<(yasm_path)', ],
               'outputs': [
                 '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(object_suffix)',
