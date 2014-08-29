@@ -25,7 +25,9 @@
         # TODO(mukai): declare those symbols for Athena.
         '../../components/components.gyp:infobars_test_support',
         '../../components/components.gyp:omnibox',
+        '../../components/components.gyp:pdf_renderer',
         '../../components/components.gyp:search_engines',
+        '../../pdf/pdf.gyp:pdf',
         '../../skia/skia.gyp:skia',
         '../../ui/app_list/app_list.gyp:app_list',
         '../../ui/chromeos/ui_chromeos.gyp:ui_chromeos',
@@ -37,8 +39,12 @@
         '../..',
       ],
       'sources': [
+        'athena_content_client.cc',
+        'athena_content_client.h',
         'athena_launcher.cc',
         'athena_launcher.h',
+        'athena_renderer_pdf_helper.cc',
+        'athena_renderer_pdf_helper.h',
         'debug/debug_window.cc',
         'debug/debug_window.h',
         'debug/network_selector.cc',
@@ -54,7 +60,7 @@
       'type': 'executable',
       'dependencies': [
         '../../ui/accessibility/accessibility.gyp:ax_gen',
-	'../athena.gyp:athena_app_shell_lib',
+        '../athena.gyp:athena_app_shell_lib',
         '../resources/athena_resources.gyp:athena_pak',
         'athena_main_lib',
       ],

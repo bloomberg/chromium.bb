@@ -14,9 +14,11 @@ include_rules = [
   "+athena/wm/public",
   "+components/metrics/proto",
   "+components/omnibox",
+  "+components/pdf",
   "+components/search_engines",
   "+content/public",
   "+net",
+  "+ppapi",
   "+ui/aura",
   "+ui/app_list",
   "+ui/base",
@@ -39,6 +41,9 @@ specific_include_rules = {
   ],
   "athena_app_window_controller\.*": [
     "+extensions/shell/browser",
+  ],
+  "athena_content_client\.h": [
+    "+extensions/shell/common",
   ],
 # TODO(oshima): Remove this.
   "placeholder\.*": [

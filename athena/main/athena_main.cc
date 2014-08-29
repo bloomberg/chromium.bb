@@ -7,11 +7,14 @@
 #include "athena/content/public/web_contents_view_delegate_creator.h"
 #include "athena/env/public/athena_env.h"
 #include "athena/extensions/public/extensions_delegate.h"
+#include "athena/main/athena_content_client.h"
 #include "athena/main/athena_launcher.h"
+#include "athena/main/athena_renderer_pdf_helper.h"
 #include "athena/screen/public/screen_manager.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "components/pdf/renderer/ppb_pdf_impl.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/shell/app/shell_main_delegate.h"
@@ -20,7 +23,10 @@
 #include "extensions/shell/browser/shell_browser_main_delegate.h"
 #include "extensions/shell/browser/shell_content_browser_client.h"
 #include "extensions/shell/browser/shell_extension_system.h"
+#include "extensions/shell/common/shell_content_client.h"
 #include "extensions/shell/common/switches.h"
+#include "extensions/shell/renderer/shell_content_renderer_client.h"
+#include "ppapi/c/private/ppb_pdf.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/wm/core/visibility_controller.h"
@@ -123,6 +129,27 @@ class AthenaContentBrowserClient
   DISALLOW_COPY_AND_ASSIGN(AthenaContentBrowserClient);
 };
 
+class AthenaContentRendererClient
+    : public extensions::ShellContentRendererClient {
+ public:
+  AthenaContentRendererClient() {}
+  virtual ~AthenaContentRendererClient() {}
+
+  // content::ContentRendererClient:
+  virtual void RenderFrameCreated(content::RenderFrame* render_frame) OVERRIDE {
+    new athena::AthenaRendererPDFHelper(render_frame);
+    extensions::ShellContentRendererClient::RenderFrameCreated(render_frame);
+  }
+
+  virtual const void* CreatePPAPIInterface(
+      const std::string& interface_name) OVERRIDE {
+    if (interface_name == PPB_PDF_INTERFACE)
+      return pdf::PPB_PDF_Impl::GetInterface();
+    return extensions::ShellContentRendererClient::CreatePPAPIInterface(
+        interface_name);
+  }
+};
+
 class AthenaMainDelegate : public extensions::ShellMainDelegate {
  public:
   AthenaMainDelegate() {}
@@ -130,9 +157,17 @@ class AthenaMainDelegate : public extensions::ShellMainDelegate {
 
  private:
   // extensions::ShellMainDelegate:
+  virtual content::ContentClient* CreateContentClient() OVERRIDE {
+    return new athena::AthenaContentClient();
+  }
   virtual content::ContentBrowserClient* CreateShellContentBrowserClient()
       OVERRIDE {
     return new AthenaContentBrowserClient();
+  }
+
+  virtual content::ContentRendererClient* CreateShellContentRendererClient()
+      OVERRIDE {
+    return new AthenaContentRendererClient();
   }
 
   virtual void InitializeResourceBundle() OVERRIDE {
