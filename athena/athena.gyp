@@ -19,6 +19,7 @@
         '../ui/app_list/app_list.gyp:app_list',
         '../ui/aura/aura.gyp:aura',
         '../ui/aura/aura.gyp:aura_test_support',
+        '../ui/display/display.gyp:display',
         '../ui/events/events.gyp:events_base',
         '../ui/strings/ui_strings.gyp:ui_strings',
         '../ui/views/views.gyp:views',
