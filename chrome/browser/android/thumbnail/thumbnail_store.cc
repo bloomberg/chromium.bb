@@ -564,10 +564,10 @@ void ThumbnailStore::CompressionTask(
 
     size_t encoded_bytes =
         etc1_get_encoded_data_size(encoded_size.width(), encoded_size.height());
-    SkImageInfo info = {encoded_size.width(),
-                        encoded_size.height(),
-                        kUnknown_SkColorType,
-                        kUnpremul_SkAlphaType};
+    SkImageInfo info = SkImageInfo::Make(encoded_size.width(),
+                                         encoded_size.height(),
+                                         kUnknown_SkColorType,
+                                         kUnpremul_SkAlphaType);
     skia::RefPtr<SkData> etc1_pixel_data = skia::AdoptRef(
         SkData::NewFromMalloc(new uint8_t[encoded_bytes], encoded_bytes));
     skia::RefPtr<SkMallocPixelRef> etc1_pixel_ref = skia::AdoptRef(
@@ -694,10 +694,10 @@ bool ReadFromFile(base::File& file,
   if (pixel_bytes_read != data_size)
     return false;
 
-  SkImageInfo info = {raw_width,
-                      raw_height,
-                      kUnknown_SkColorType,
-                      kUnpremul_SkAlphaType};
+  SkImageInfo info = SkImageInfo::Make(raw_width,
+                                       raw_height,
+                                       kUnknown_SkColorType,
+                                       kUnpremul_SkAlphaType);
 
   etc1_pixel_data = skia::AdoptRef(
       SkData::NewFromMalloc(raw_data.release(), data_size));
