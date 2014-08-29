@@ -8,6 +8,9 @@
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
+#if defined(OS_WIN)
+#include "base/strings/utf_string_conversions.h"
+#endif
 #include "ui/gl/gl_surface.h"
 
 extern "C" {
@@ -23,10 +26,30 @@ int main(int argc, char *argv[]) {
   CommandLine::Init(argc, argv);
   base::MessageLoopForUI message_loop;
 
+  CommandLine::StringVector args =
+    CommandLine::ForCurrentProcess()->GetArgs();
+
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
-  GTFMain(argc, argv);
+
+  scoped_ptr<const char*[]> argsArray(new const char*[args.size()+1]);
+  argsArray[0] = argv[0];
+
+#if defined(OS_WIN)
+  std::vector<std::string> argsNonWide(args.size());
+  for (size_t index = 0; index < args.size(); ++index) {
+    argsNonWide[index] = base::UTF16ToASCII(args[index]);
+    argsArray[index+1] = argsNonWide[index].c_str();
+  }
+#else
+  for (size_t index = 0; index < args.size(); ++index) {
+    argsArray[index+1] = args[index].c_str();
+  }
+#endif
+
+  GTFMain(static_cast<int>(args.size()+1),
+    const_cast<char**>(argsArray.get()));
 
   return 0;
 }
