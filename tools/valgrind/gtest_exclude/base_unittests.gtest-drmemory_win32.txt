@@ -36,3 +36,5 @@ TraceEventTestFixture.TraceContinuousSampling
 # so we can avoid excluding this for light mode.
 MessageLoopTestTypeUI.RecursiveDenial3
 
+# http://crbug.com/408911
+HiResTimerManagerTest.ToggleOnOff
