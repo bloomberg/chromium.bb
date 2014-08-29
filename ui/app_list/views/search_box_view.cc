@@ -83,13 +83,16 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
     : delegate_(delegate),
       view_delegate_(view_delegate),
       model_(NULL),
-      icon_view_(new views::ImageView),
+      icon_view_(NULL),
       speech_button_(NULL),
       search_box_(new views::Textfield),
       contents_view_(NULL) {
-  AddChildView(icon_view_);
-  if (switches::IsExperimentalAppListEnabled())
+  if (switches::IsExperimentalAppListEnabled()) {
     set_background(new SearchBoxBackground());
+  } else {
+    icon_view_ = new views::ImageView;
+    AddChildView(icon_view_);
+  }
 
   views::BoxLayout* layout = new views::BoxLayout(
       views::BoxLayout::kHorizontal, kPadding, 0, kPadding);
@@ -219,7 +222,8 @@ void SearchBoxView::OnMenuButtonClicked(View* source, const gfx::Point& point) {
 }
 
 void SearchBoxView::IconChanged() {
-  icon_view_->SetImage(model_->search_box()->icon());
+  if (icon_view_)
+    icon_view_->SetImage(model_->search_box()->icon());
 }
 
 void SearchBoxView::SpeechRecognitionButtonPropChanged() {
