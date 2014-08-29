@@ -32,7 +32,7 @@ IPCTestBase::~IPCTestBase() {
 void IPCTestBase::SetUp() {
   MultiProcessTest::SetUp();
 
-  // Construct a fresh IO Message loop for the duration of each test.
+  // Construct a fresh Message loop for the duration of each test.
   DCHECK(!message_loop_.get());
   message_loop_.reset(new base::MessageLoopForIO());
 }
@@ -130,6 +130,10 @@ bool IPCTestBase::WaitForClientShutdown() {
   return rv;
 }
 
-scoped_refptr<base::TaskRunner> IPCTestBase::io_thread_task_runner() {
+scoped_refptr<base::TaskRunner> IPCTestBase::task_runner() {
   return message_loop_->message_loop_proxy();
+}
+
+void IPCTestBase::set_message_loop(scoped_ptr<base::MessageLoop> loop) {
+  message_loop_ = loop.Pass();
 }

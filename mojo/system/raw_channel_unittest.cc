@@ -17,6 +17,7 @@
 #include "base/rand_util.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/test_io_thread.h"
 #include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "base/threading/simple_thread.h"
 #include "base/time/time.h"
@@ -71,7 +72,7 @@ bool WriteTestMessageToHandle(const embedder::PlatformHandle& handle,
 
 class RawChannelTest : public testing::Test {
  public:
-  RawChannelTest() : io_thread_(test::TestIOThread::kManualStart) {}
+  RawChannelTest() : io_thread_(base::TestIOThread::kManualStart) {}
   virtual ~RawChannelTest() {}
 
   virtual void SetUp() OVERRIDE {
@@ -88,12 +89,12 @@ class RawChannelTest : public testing::Test {
   }
 
  protected:
-  test::TestIOThread* io_thread() { return &io_thread_; }
+  base::TestIOThread* io_thread() { return &io_thread_; }
 
   embedder::ScopedPlatformHandle handles[2];
 
  private:
-  test::TestIOThread io_thread_;
+  base::TestIOThread io_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(RawChannelTest);
 };

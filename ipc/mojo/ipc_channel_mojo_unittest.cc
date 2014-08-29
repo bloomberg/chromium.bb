@@ -114,7 +114,7 @@ void IPCChannelMojoTest::CreateMojoChannel(IPC::Listener* listener) {
   CreateChannel(&never_called_);
   scoped_ptr<IPC::Channel> mojo_channel = IPC::ChannelMojo::Create(
       ReleaseChannel(), IPC::Channel::MODE_SERVER, listener,
-      io_thread_task_runner()).PassAs<IPC::Channel>();
+      task_runner()).PassAs<IPC::Channel>();
   SetChannel(mojo_channel.PassAs<IPC::Channel>());
 }
 

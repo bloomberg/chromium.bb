@@ -13,6 +13,7 @@
 #include "base/pickle.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/perf_time_logger.h"
+#include "base/test/test_io_thread.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "ipc/ipc_channel.h"
@@ -137,8 +138,9 @@ class ChannelReflectorListener : public IPC::Listener {
 
 class PerformanceChannelListener : public IPC::Listener {
  public:
-  PerformanceChannelListener()
-      : channel_(NULL),
+  explicit PerformanceChannelListener(const std::string& label)
+      : label_(label),
+        sender_(NULL),
         msg_count_(0),
         msg_size_(0),
         count_down_(0),
@@ -150,9 +152,9 @@ class PerformanceChannelListener : public IPC::Listener {
     VLOG(1) << "Server listener down";
   }
 
-  void Init(IPC::Channel* channel) {
-    DCHECK(!channel_);
-    channel_ = channel;
+  void Init(IPC::Sender* sender) {
+    DCHECK(!sender_);
+    sender_ = sender;
   }
 
   // Call this before running the message loop.
@@ -165,7 +167,7 @@ class PerformanceChannelListener : public IPC::Listener {
   }
 
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    CHECK(channel_);
+    CHECK(sender_);
 
     PickleIterator iter(message);
     int64 time_internal;
@@ -182,8 +184,11 @@ class PerformanceChannelListener : public IPC::Listener {
       // Start timing on hello.
       latency_tracker_.Reset();
       DCHECK(!perf_logger_.get());
-      std::string test_name = base::StringPrintf(
-          "IPC_Perf_%dx_%u", msg_count_, static_cast<unsigned>(msg_size_));
+      std::string test_name =
+          base::StringPrintf("IPC_%s_Perf_%dx_%u",
+                             label_.c_str(),
+                             msg_count_,
+                             static_cast<unsigned>(msg_size_));
       perf_logger_.reset(new base::PerfTimeLogger(test_name.c_str()));
     } else {
       DCHECK_EQ(payload_.size(), reflected_payload.size());
@@ -205,12 +210,13 @@ class PerformanceChannelListener : public IPC::Listener {
     msg->WriteInt64(base::TimeTicks::Now().ToInternalValue());
     msg->WriteInt(count_down_);
     msg->WriteString(payload_);
-    channel_->Send(msg);
+    sender_->Send(msg);
     return true;
   }
 
  private:
-  IPC::Channel* channel_;
+  std::string label_;
+  IPC::Sender* sender_;
   int msg_count_;
   size_t msg_size_;
 
@@ -220,11 +226,11 @@ class PerformanceChannelListener : public IPC::Listener {
   scoped_ptr<base::PerfTimeLogger> perf_logger_;
 };
 
-TEST_F(IPCChannelPerfTest, Performance) {
+TEST_F(IPCChannelPerfTest, ChannelPingPong) {
   Init("PerformanceClient");
 
   // Set up IPC channel and start client.
-  PerformanceChannelListener listener;
+  PerformanceChannelListener listener("Channel");
   CreateChannel(&listener);
   listener.Init(channel());
   ASSERT_TRUE(ConnectChannel());
@@ -272,6 +278,49 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(PerformanceClient) {
 
   base::MessageLoop::current()->Run();
   return 0;
+}
+
+TEST_F(IPCChannelPerfTest, ChannelProxyPingPong) {
+  set_message_loop(make_scoped_ptr(new base::MessageLoop()));
+  Init("PerformanceClient");
+
+  base::TestIOThread io_thread(base::TestIOThread::kAutoStart);
+
+  // Set up IPC channel and start client.
+  PerformanceChannelListener listener("ChannelProxy");
+  CreateChannelProxy(&listener, io_thread.task_runner());
+  listener.Init(channel_proxy());
+  ASSERT_TRUE(StartClient());
+
+  // Test several sizes. We use 12^N for message size, and limit the message
+  // count to keep the test duration reasonable.
+  const size_t kMsgSize[5] = {12, 144, 1728, 20736, 248832};
+  const int kMessageCount[5] = {50000, 50000, 50000, 12000, 1000};
+
+  for (size_t i = 0; i < 5; i++) {
+    listener.SetTestParams(kMessageCount[i], kMsgSize[i]);
+
+    // This initial message will kick-start the ping-pong of messages.
+    IPC::Message* message =
+        new IPC::Message(0, 2, IPC::Message::PRIORITY_NORMAL);
+    message->WriteInt64(base::TimeTicks::Now().ToInternalValue());
+    message->WriteInt(-1);
+    message->WriteString("hello");
+    sender()->Send(message);
+
+    // Run message loop.
+    base::MessageLoop::current()->Run();
+  }
+
+  // Send quit message.
+  IPC::Message* message = new IPC::Message(0, 2, IPC::Message::PRIORITY_NORMAL);
+  message->WriteInt64(base::TimeTicks::Now().ToInternalValue());
+  message->WriteInt(-1);
+  message->WriteString("quit");
+  sender()->Send(message);
+
+  EXPECT_TRUE(WaitForClientShutdown());
+  DestroyChannelProxy();
 }
 
 }  // namespace

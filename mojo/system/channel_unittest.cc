@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/test_io_thread.h"
 #include "mojo/embedder/platform_channel_pair.h"
 #include "mojo/embedder/simple_platform_support.h"
 #include "mojo/system/message_in_transit.h"
@@ -29,7 +30,7 @@ Tristate BoolToTristate(bool b) {
 class ChannelTest : public testing::Test {
  public:
   ChannelTest()
-      : io_thread_(test::TestIOThread::kAutoStart),
+      : io_thread_(base::TestIOThread::kAutoStart),
         init_result_(TRISTATE_UNKNOWN) {}
   virtual ~ChannelTest() {}
 
@@ -61,7 +62,7 @@ class ChannelTest : public testing::Test {
     channel_->Shutdown();
   }
 
-  test::TestIOThread* io_thread() { return &io_thread_; }
+  base::TestIOThread* io_thread() { return &io_thread_; }
   RawChannel* raw_channel() { return raw_channel_.get(); }
   scoped_ptr<RawChannel>* mutable_raw_channel() { return &raw_channel_; }
   Channel* channel() { return channel_.get(); }
@@ -78,7 +79,7 @@ class ChannelTest : public testing::Test {
   }
 
   embedder::SimplePlatformSupport platform_support_;
-  test::TestIOThread io_thread_;
+  base::TestIOThread io_thread_;
   scoped_ptr<RawChannel> raw_channel_;
   embedder::ScopedPlatformHandle other_platform_handle_;
   scoped_refptr<Channel> channel_;

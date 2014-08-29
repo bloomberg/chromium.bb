@@ -16,7 +16,7 @@
 #include "ipc/ipc_multiprocess_test.h"
 
 namespace base {
-class MessageLoopForIO;
+class MessageLoop;
 }
 
 // A test fixture for multiprocess IPC tests. Such tests include a "client" side
@@ -86,11 +86,21 @@ class IPCTestBase : public base::MultiProcessTest {
   IPC::ChannelProxy* channel_proxy() { return channel_proxy_.get(); }
 
   const base::ProcessHandle& client_process() const { return client_process_; }
-  scoped_refptr<base::TaskRunner> io_thread_task_runner();
+  scoped_refptr<base::TaskRunner> task_runner();
+
+  // Some tests creates separate thread for IO message loop and Run
+  // non-IO message loop on the main thread. As IPCTestBase creates IO
+  // message loop by default, such tests might want to replace it with
+  // non-IO one using set_message_loop().
+  //
+  // The replacement should be done at the beginning of the test.
+  // You should be careful not to replace "live" message loop that has
+  // started running.
+  void set_message_loop(scoped_ptr<base::MessageLoop> loop);
 
  private:
   std::string test_client_name_;
-  scoped_ptr<base::MessageLoopForIO> message_loop_;
+  scoped_ptr<base::MessageLoop> message_loop_;
 
   scoped_ptr<IPC::Channel> channel_;
   scoped_ptr<IPC::ChannelProxy> channel_proxy_;

@@ -67,6 +67,8 @@ source_set("test_support") {
     "test_file_util_mac.cc",
     "test_file_util_posix.cc",
     "test_file_util_win.cc",
+    "test_io_thread.cc",
+    "test_io_thread.h",
     "test_listener_ios.h",
     "test_listener_ios.mm",
     "test_pending_task.cc",

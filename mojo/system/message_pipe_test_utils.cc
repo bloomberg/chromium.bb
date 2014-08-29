@@ -31,7 +31,7 @@ MojoResult WaitIfNecessary(scoped_refptr<MessagePipe> mp,
 
 ChannelThread::ChannelThread(embedder::PlatformSupport* platform_support)
     : platform_support_(platform_support),
-      test_io_thread_(test::TestIOThread::kManualStart) {
+      test_io_thread_(base::TestIOThread::kManualStart) {
 }
 
 ChannelThread::~ChannelThread() {

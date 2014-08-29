@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/test_io_thread.h"
 #include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "build/build_config.h"              // TODO(vtl): Remove this.
 #include "mojo/common/test/test_utils.h"
@@ -40,7 +41,7 @@ namespace {
 
 class RemoteMessagePipeTest : public testing::Test {
  public:
-  RemoteMessagePipeTest() : io_thread_(test::TestIOThread::kAutoStart) {}
+  RemoteMessagePipeTest() : io_thread_(base::TestIOThread::kAutoStart) {}
   virtual ~RemoteMessagePipeTest() {}
 
   virtual void SetUp() OVERRIDE {
@@ -93,7 +94,7 @@ class RemoteMessagePipeTest : public testing::Test {
   }
 
   embedder::PlatformSupport* platform_support() { return &platform_support_; }
-  test::TestIOThread* io_thread() { return &io_thread_; }
+  base::TestIOThread* io_thread() { return &io_thread_; }
 
  private:
   void SetUpOnIOThread() {
@@ -171,7 +172,7 @@ class RemoteMessagePipeTest : public testing::Test {
   }
 
   embedder::SimplePlatformSupport platform_support_;
-  test::TestIOThread io_thread_;
+  base::TestIOThread io_thread_;
   embedder::ScopedPlatformHandle platform_handles_[2];
   scoped_refptr<Channel> channels_[2];
 

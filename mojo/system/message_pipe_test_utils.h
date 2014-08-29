@@ -5,6 +5,7 @@
 #ifndef MOJO_SYSTEM_MESSAGE_PIPE_TEST_UTILS_H_
 #define MOJO_SYSTEM_MESSAGE_PIPE_TEST_UTILS_H_
 
+#include "base/test/test_io_thread.h"
 #include "mojo/common/test/multiprocess_test_helper.h"
 #include "mojo/embedder/simple_platform_support.h"
 #include "mojo/system/channel.h"
@@ -34,7 +35,7 @@ class ChannelThread {
   void ShutdownChannelOnIOThread();
 
   embedder::PlatformSupport* const platform_support_;
-  TestIOThread test_io_thread_;
+  base::TestIOThread test_io_thread_;
   scoped_refptr<Channel> channel_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelThread);

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/test_io_thread.h"
 #include "mojo/common/test/multiprocess_test_helper.h"
 #include "mojo/embedder/platform_channel_pair.h"
 #include "mojo/embedder/test_embedder.h"
@@ -100,14 +101,14 @@ class ScopedTestChannel {
 
 class EmbedderTest : public testing::Test {
  public:
-  EmbedderTest() : test_io_thread_(system::test::TestIOThread::kAutoStart) {}
+  EmbedderTest() : test_io_thread_(base::TestIOThread::kAutoStart) {}
   virtual ~EmbedderTest() {}
 
  protected:
-  system::test::TestIOThread* test_io_thread() { return &test_io_thread_; }
+  base::TestIOThread* test_io_thread() { return &test_io_thread_; }
 
  private:
-  system::test::TestIOThread test_io_thread_;
+  base::TestIOThread test_io_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbedderTest);
 };
@@ -460,8 +461,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
       mojo::test::MultiprocessTestHelper::client_platform_handle.Pass();
   EXPECT_TRUE(client_platform_handle.is_valid());
 
-  system::test::TestIOThread test_io_thread(
-      system::test::TestIOThread::kAutoStart);
+  base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
   mojo::embedder::test::InitWithSimplePlatformSupport();
 
   {
