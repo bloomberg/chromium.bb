@@ -59,6 +59,13 @@ public class BindingsHelper {
     }
 
     /**
+     * Align |size| on {@link BindingsHelper#ALIGNMENT}.
+     */
+    public static long align(long size) {
+        return (size + ALIGNMENT - 1) & ~(ALIGNMENT - 1);
+    }
+
+    /**
      * Compute the size in bytes of the given string encoded as utf8.
      */
     public static int utf8StringSizeInBytes(String s) {

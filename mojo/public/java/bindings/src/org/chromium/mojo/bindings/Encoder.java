@@ -148,7 +148,7 @@ public class Encoder {
      * (resizing the buffer if required).
      */
     public void encode(DataHeader s) {
-        mEncoderState.claimMemory(s.size);
+        mEncoderState.claimMemory(BindingsHelper.align(s.size));
         encode(s.size, DataHeader.SIZE_OFFSET);
         encode(s.numFields, DataHeader.NUM_FIELDS_OFFSET);
     }
@@ -438,7 +438,7 @@ public class Encoder {
     private Encoder encoderForArrayByTotalSize(int byteSize, int length, int offset) {
         encodePointerToNextUnclaimedData(offset);
         return getEncoderAtDataOffset(
-                new DataHeader(DataHeader.HEADER_SIZE + BindingsHelper.align(byteSize), length));
+                new DataHeader(DataHeader.HEADER_SIZE + byteSize, length));
     }
 
     private void encodeByteArray(byte[] bytes, int length, int offset) {

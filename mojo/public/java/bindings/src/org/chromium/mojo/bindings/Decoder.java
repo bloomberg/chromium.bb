@@ -66,6 +66,9 @@ public class Decoder {
         }
 
         public void claimMemory(long start, long end) {
+            if (start % BindingsHelper.ALIGNMENT != 0) {
+                throw new DeserializationException("Incorrect starting alignment: " + start + ".");
+            }
             if (start < mMinNextMemory) {
                 throw new DeserializationException("Trying to access memory out of order.");
             }
@@ -75,10 +78,7 @@ public class Decoder {
             if (end > mMaxMemory) {
                 throw new DeserializationException("Trying to access out of range memory.");
             }
-            if (start % BindingsHelper.ALIGNMENT != 0 || end % BindingsHelper.ALIGNMENT != 0) {
-                throw new DeserializationException("Incorrect alignment.");
-            }
-            mMinNextMemory = end;
+            mMinNextMemory = BindingsHelper.align(end);
         }
     }
 
@@ -111,17 +111,17 @@ public class Decoder {
         mMessage.buffer.order(ByteOrder.nativeOrder());
         mBaseOffset = baseOffset;
         mValidator = validator;
-        // Claim the memory for the header.
-        mValidator.claimMemory(mBaseOffset, mBaseOffset + DataHeader.HEADER_SIZE);
     }
 
     /**
      * Deserializes a {@link DataHeader} at the given offset.
      */
     public DataHeader readDataHeader() {
+        // Claim the memory for the header.
+        mValidator.claimMemory(mBaseOffset, mBaseOffset + DataHeader.HEADER_SIZE);
         int size = readInt(DataHeader.SIZE_OFFSET);
         int numFields = readInt(DataHeader.NUM_FIELDS_OFFSET);
-        // The memory for the header has already been claimed.
+        // Claim the remaining memory.
         mValidator.claimMemory(mBaseOffset + DataHeader.HEADER_SIZE, mBaseOffset + size);
         DataHeader res = new DataHeader(size, numFields);
         return res;
