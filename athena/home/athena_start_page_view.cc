@@ -40,7 +40,10 @@ const int kWebViewWidth = 500;
 const int kWebViewHeight = 105;
 const int kSearchBoxBorderWidth = 1;
 const int kSearchBoxCornerRadius = 2;
-const int kSearchBoxWidth = 490;
+
+// Taken from the mock. The width is not specified by pixel but the search box
+// covers 6 icons with margin.
+const int kSearchBoxWidth = kIconSize * 6 + kIconMargin * 7;
 const int kSearchBoxHeight = 40;
 
 class PlaceHolderButton : public views::ImageButton,
@@ -258,7 +261,10 @@ AthenaStartPageView::LayoutData AthenaStartPageView::CreateBottomBounds(
   state.controls.set_x(width - kIconMargin - state.controls.width());
   state.controls.set_y(kIconMargin);
 
-  state.search_box.set_size(search_box_container_->size());
+  int search_box_max_width =
+      state.controls.x() - state.icons.right() - kIconMargin * 2;
+  state.search_box.set_width(std::min(search_box_max_width, kSearchBoxWidth));
+  state.search_box.set_height(search_box_container_->height());
   state.search_box.set_x((width - state.search_box.width()) / 2);
   state.search_box.set_y((kHomeCardHeight - state.search_box.height()) / 2);
 
@@ -271,7 +277,7 @@ AthenaStartPageView::LayoutData AthenaStartPageView::CreateCenteredBounds(
     int width) {
   LayoutData state;
 
-  state.search_box.set_size(search_box_container_->size());
+  state.search_box.set_size(search_box_container_->GetPreferredSize());
   state.search_box.set_x((width - state.search_box.width()) / 2);
   state.search_box.set_y(logo_->bounds().bottom() + kInstantContainerSpacing);
 

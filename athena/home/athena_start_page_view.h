@@ -5,6 +5,7 @@
 #ifndef ATHENA_HOME_ATHENA_START_PAGE_VIEW_H_
 #define ATHENA_HOME_ATHENA_START_PAGE_VIEW_H_
 
+#include "athena/athena_export.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/app_list/views/search_box_view_delegate.h"
 #include "ui/views/view.h"
@@ -17,8 +18,9 @@ class SearchResultListView;
 
 namespace athena {
 
-class AthenaStartPageView : public views::View,
-                            public app_list::SearchBoxViewDelegate {
+class ATHENA_EXPORT AthenaStartPageView
+    : public views::View,
+      public app_list::SearchBoxViewDelegate {
  public:
   explicit AthenaStartPageView(app_list::AppListViewDelegate* delegate);
   virtual ~AthenaStartPageView();
@@ -34,6 +36,8 @@ class AthenaStartPageView : public views::View,
   void SetLayoutStateWithAnimation(float layout_state);
 
  private:
+  friend class AthenaStartPageViewTest;
+
   static const char kViewClassName[];
 
   // A struct which bundles the layout data of subviews.
