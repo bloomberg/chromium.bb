@@ -23,56 +23,7 @@
 
 namespace {
 
-enum UMAEventType {
-  // WARNING: Do not change the numerical values of any of these types.
-  // Do not remove deprecated types - just comment them as deprecated.
-  UMA_ET_UNKNOWN = 0,
-  UMA_ET_TOUCH_RELEASED = 1,
-  UMA_ET_TOUCH_PRESSED = 2,
-  UMA_ET_TOUCH_MOVED = 3,
-  UMA_ET_TOUCH_STATIONARY = 4,  // Deprecated. Do not remove.
-  UMA_ET_TOUCH_CANCELLED = 5,
-  UMA_ET_GESTURE_SCROLL_BEGIN = 6,
-  UMA_ET_GESTURE_SCROLL_END = 7,
-  UMA_ET_GESTURE_SCROLL_UPDATE = 8,
-  UMA_ET_GESTURE_TAP = 9,
-  UMA_ET_GESTURE_TAP_DOWN = 10,
-  UMA_ET_GESTURE_BEGIN = 11,
-  UMA_ET_GESTURE_END = 12,
-  UMA_ET_GESTURE_DOUBLE_TAP = 13,
-  UMA_ET_GESTURE_TRIPLE_TAP = 14,
-  UMA_ET_GESTURE_TWO_FINGER_TAP = 15,
-  UMA_ET_GESTURE_PINCH_BEGIN = 16,
-  UMA_ET_GESTURE_PINCH_END = 17,
-  UMA_ET_GESTURE_PINCH_UPDATE = 18,
-  UMA_ET_GESTURE_LONG_PRESS = 19,
-  UMA_ET_GESTURE_SWIPE_2 = 20,   // Swipe with 2 fingers
-  UMA_ET_SCROLL = 21,
-  UMA_ET_SCROLL_FLING_START = 22,
-  UMA_ET_SCROLL_FLING_CANCEL = 23,
-  UMA_ET_GESTURE_SWIPE_3 = 24,   // Swipe with 3 fingers
-  UMA_ET_GESTURE_SWIPE_4P = 25,  // Swipe with 4+ fingers
-  UMA_ET_GESTURE_SCROLL_UPDATE_2 = 26,
-  UMA_ET_GESTURE_SCROLL_UPDATE_3 = 27,
-  UMA_ET_GESTURE_SCROLL_UPDATE_4P = 28,
-  UMA_ET_GESTURE_PINCH_UPDATE_3 = 29,
-  UMA_ET_GESTURE_PINCH_UPDATE_4P = 30,
-  UMA_ET_GESTURE_LONG_TAP = 31,
-  UMA_ET_GESTURE_SHOW_PRESS = 32,
-  UMA_ET_GESTURE_TAP_CANCEL = 33,
-  UMA_ET_GESTURE_WIN8_EDGE_SWIPE = 34,
-  UMA_ET_GESTURE_SWIPE_1 = 35,   // Swipe with 1 finger
-  // NOTE: Add new event types only immediately above this line. Make sure to
-  // update the UIEventType enum in tools/metrics/histograms/histograms.xml
-  // accordingly.
-  UMA_ET_COUNT
-};
-
 struct WindowTouchDetails {
-  WindowTouchDetails()
-      : max_distance_from_start_squared_(0) {
-  }
-
   // Move and start times of the touch points. The key is the touch-id.
   std::map<int, base::TimeDelta> last_move_time_;
   std::map<int, base::TimeDelta> last_start_time_;
@@ -80,10 +31,6 @@ struct WindowTouchDetails {
   // The first and last positions of the touch points.
   std::map<int, gfx::Point> start_touch_position_;
   std::map<int, gfx::Point> last_touch_position_;
-
-  // The maximum distance the first touch point travelled from its starting
-  // location in pixels.
-  float max_distance_from_start_squared_;
 
   // Last time-stamp of the last touch-end event.
   base::TimeDelta last_release_time_;
@@ -97,100 +44,6 @@ struct WindowTouchDetails {
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(WindowTouchDetails,
                                  kWindowTouchDetails,
                                  NULL);
-
-
-UMAEventType UMAEventTypeFromEvent(const ui::Event& event) {
-  switch (event.type()) {
-    case ui::ET_TOUCH_RELEASED:
-      return UMA_ET_TOUCH_RELEASED;
-    case ui::ET_TOUCH_PRESSED:
-      return UMA_ET_TOUCH_PRESSED;
-    case ui::ET_TOUCH_MOVED:
-      return UMA_ET_TOUCH_MOVED;
-    case ui::ET_TOUCH_CANCELLED:
-      return UMA_ET_TOUCH_CANCELLED;
-    case ui::ET_GESTURE_SCROLL_BEGIN:
-      return UMA_ET_GESTURE_SCROLL_BEGIN;
-    case ui::ET_GESTURE_SCROLL_END:
-      return UMA_ET_GESTURE_SCROLL_END;
-    case ui::ET_GESTURE_SCROLL_UPDATE: {
-      const ui::GestureEvent& gesture =
-          static_cast<const ui::GestureEvent&>(event);
-      if (gesture.details().touch_points() == 1)
-        return UMA_ET_GESTURE_SCROLL_UPDATE;
-      else if (gesture.details().touch_points() == 2)
-        return UMA_ET_GESTURE_SCROLL_UPDATE_2;
-      else if (gesture.details().touch_points() == 3)
-        return UMA_ET_GESTURE_SCROLL_UPDATE_3;
-      return UMA_ET_GESTURE_SCROLL_UPDATE_4P;
-    }
-    case ui::ET_GESTURE_TAP: {
-      const ui::GestureEvent& gesture =
-          static_cast<const ui::GestureEvent&>(event);
-      int tap_count = gesture.details().tap_count();
-      if (tap_count == 1)
-        return UMA_ET_GESTURE_TAP;
-      if (tap_count == 2)
-        return UMA_ET_GESTURE_DOUBLE_TAP;
-      if (tap_count == 3)
-        return UMA_ET_GESTURE_TRIPLE_TAP;
-      NOTREACHED() << "Received tap with tapcount " << tap_count;
-      return UMA_ET_UNKNOWN;
-    }
-    case ui::ET_GESTURE_TAP_DOWN:
-      return UMA_ET_GESTURE_TAP_DOWN;
-    case ui::ET_GESTURE_BEGIN:
-      return UMA_ET_GESTURE_BEGIN;
-    case ui::ET_GESTURE_END:
-      return UMA_ET_GESTURE_END;
-    case ui::ET_GESTURE_TWO_FINGER_TAP:
-      return UMA_ET_GESTURE_TWO_FINGER_TAP;
-    case ui::ET_GESTURE_PINCH_BEGIN:
-      return UMA_ET_GESTURE_PINCH_BEGIN;
-    case ui::ET_GESTURE_PINCH_END:
-      return UMA_ET_GESTURE_PINCH_END;
-    case ui::ET_GESTURE_PINCH_UPDATE: {
-      const ui::GestureEvent& gesture =
-          static_cast<const ui::GestureEvent&>(event);
-      if (gesture.details().touch_points() >= 4)
-        return UMA_ET_GESTURE_PINCH_UPDATE_4P;
-      else if (gesture.details().touch_points() == 3)
-        return UMA_ET_GESTURE_PINCH_UPDATE_3;
-      return UMA_ET_GESTURE_PINCH_UPDATE;
-    }
-    case ui::ET_GESTURE_LONG_PRESS:
-      return UMA_ET_GESTURE_LONG_PRESS;
-    case ui::ET_GESTURE_LONG_TAP:
-      return UMA_ET_GESTURE_LONG_TAP;
-    case ui::ET_GESTURE_SWIPE: {
-      const ui::GestureEvent& gesture =
-          static_cast<const ui::GestureEvent&>(event);
-      if (gesture.details().touch_points() == 1)
-        return UMA_ET_GESTURE_SWIPE_1;
-      else if (gesture.details().touch_points() == 2)
-        return UMA_ET_GESTURE_SWIPE_2;
-      else if (gesture.details().touch_points() == 3)
-        return UMA_ET_GESTURE_SWIPE_3;
-      return UMA_ET_GESTURE_SWIPE_4P;
-    }
-    case ui::ET_GESTURE_WIN8_EDGE_SWIPE:
-      return UMA_ET_GESTURE_WIN8_EDGE_SWIPE;
-    case ui::ET_GESTURE_TAP_CANCEL:
-      return UMA_ET_GESTURE_TAP_CANCEL;
-    case ui::ET_GESTURE_SHOW_PRESS:
-      return UMA_ET_GESTURE_SHOW_PRESS;
-    case ui::ET_SCROLL:
-      return UMA_ET_SCROLL;
-    case ui::ET_SCROLL_FLING_START:
-      return UMA_ET_SCROLL_FLING_START;
-    case ui::ET_SCROLL_FLING_CANCEL:
-      return UMA_ET_SCROLL_FLING_CANCEL;
-    default:
-      NOTREACHED();
-      return UMA_ET_UNKNOWN;
-  }
-}
-
 }
 
 namespace ash {
@@ -202,10 +55,6 @@ TouchUMA* TouchUMA::GetInstance() {
 
 void TouchUMA::RecordGestureEvent(aura::Window* target,
                                   const ui::GestureEvent& event) {
-  UMA_HISTOGRAM_ENUMERATION("Ash.GestureCreated",
-                            UMAEventTypeFromEvent(event),
-                            UMA_ET_COUNT);
-
   GestureActionType action = FindGestureActionType(target, event);
   RecordGestureAction(action);
 
@@ -292,7 +141,6 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
     details->last_start_time_[event.touch_id()] = event.time_stamp();
     details->start_touch_position_[event.touch_id()] = event.root_location();
     details->last_touch_position_[event.touch_id()] = event.location();
-    details->max_distance_from_start_squared_ = 0;
 
     if (details->last_release_time_.ToInternalValue()) {
       // Measuring the interval between a touch-release and the next
@@ -313,17 +161,9 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
         details->last_start_time_.size(),
         1, kMaxTouchPoints, kMaxTouchPoints + 1);
   } else if (event.type() == ui::ET_TOUCH_RELEASED) {
-    if (is_single_finger_gesture_) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchMaxDistance",
-          static_cast<int>(
-              sqrt(details->max_distance_from_start_squared_)), 0, 1500, 50);
-    }
-
     if (details->last_start_time_.count(event.touch_id())) {
       base::TimeDelta duration = event.time_stamp() -
                                  details->last_start_time_[event.touch_id()];
-      UMA_HISTOGRAM_TIMES("Ash.TouchDuration2", duration);
-
       // Look for touches that were [almost] stationary for a long time.
       const double kLongStationaryTouchDuration = 10;
       const int kLongStationaryTouchDistanceSquared = 100;
@@ -364,11 +204,6 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
 
     details->last_move_time_[event.touch_id()] = event.time_stamp();
     details->last_touch_position_[event.touch_id()] = event.location();
-
-    float cur_dist = (details->start_touch_position_[event.touch_id()] -
-                      event.root_location()).LengthSquared();
-    if (cur_dist > details->max_distance_from_start_squared_)
-      details->max_distance_from_start_squared_ = cur_dist;
   }
 }
 

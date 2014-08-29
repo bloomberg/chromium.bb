@@ -208,6 +208,8 @@
         'gesture_detection/gesture_event_data_packet.h',
         'gesture_detection/gesture_provider.cc',
         'gesture_detection/gesture_provider.h',
+        'gesture_detection/gesture_touch_uma_histogram.cc',
+        'gesture_detection/gesture_touch_uma_histogram.h',
         'gesture_detection/motion_event.cc',
         'gesture_detection/motion_event.h',
         'gesture_detection/motion_event_buffer.cc',

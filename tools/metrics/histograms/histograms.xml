@@ -595,6 +595,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Ash.GestureCreated" enum="UIEventType">
+  <obsolete>
+    Deprecated 08/2014 in Issue 352654, and replaced by Event.GestureCreated.
+  </obsolete>
   <owner>kuscher@google.com</owner>
   <owner>rbyers@chromium.org</owner>
   <summary>
@@ -649,12 +652,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Ash.TouchDuration2" units="milliseconds">
+  <obsolete>
+    Deprecated 08/2014 in Issue 352654, and replaced by Event.TouchDuration.
+  </obsolete>
   <owner>kuscher@google.com</owner>
   <owner>rbyers@chromium.org</owner>
   <summary>The duration of a touch-sequence.</summary>
 </histogram>
 
 <histogram name="Ash.TouchMaxDistance" units="pixels">
+  <obsolete>
+    Deprecated 08/2014 in Issue 352654, and replaced by Event.TouchMaxDistance.
+  </obsolete>
   <owner>kuscher@google.com</owner>
   <owner>rbyers@chromium.org</owner>
   <summary>
@@ -6287,6 +6296,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Event.GestureCreated" enum="UIEventType">
+  <owner>kuscher@google.com</owner>
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    The gesture-events recognized and dispatched by the browser gesture
+    recognizer. This replaces Ash.GestureCreated, which did not record events on
+    Android and Windows.
+  </summary>
+</histogram>
+
 <histogram name="Event.Latency.Browser" units="microseconds">
   <owner>rbyers@chromium.org</owner>
   <summary>
@@ -6646,6 +6665,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     sending a click event. This stat counts the number of taps that are delayed
     by the double-tap delay versus those that are sent immediately on mobile
     sites.
+  </summary>
+</histogram>
+
+<histogram name="Event.TouchDuration" units="milliseconds">
+  <owner>kuscher@google.com</owner>
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    The duration of a touch-sequence. Only measured for single finger gestures.
+    This replaces Ash.TouchDuration2, which did not record events on Android and
+    Windows.
+  </summary>
+</histogram>
+
+<histogram name="Event.TouchMaxDistance" units="pixels">
+  <owner>kuscher@google.com</owner>
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    The maximum euclidean distance in dips (device independent pixel) which a
+    touch point has travelled away from its starting point. Only measured for
+    single finger gestures. This replaces Ash.TouchMaxDistance, which did not
+    record events on Android and Windows.
   </summary>
 </histogram>
 
@@ -50705,6 +50745,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="33" label="Tap Cancel"/>
   <int value="34" label="Edge swipe"/>
   <int value="35" label="One-finger swipe"/>
+  <int value="36" label="Tap unconfirmed"/>
 </enum>
 
 <enum name="UmaInitSequence" type="int">

@@ -265,6 +265,7 @@ class GestureProvider::GestureListenerImpl
     };
 
     client_->OnGestureEvent(gesture);
+    GestureTouchUMAHistogram::RecordGestureEvent(gesture);
   }
 
   // ScaleGestureDetector::ScaleGestureListener implementation.
@@ -656,6 +657,7 @@ bool GestureProvider::OnTouchEvent(const MotionEvent& event) {
   OnTouchEventHandlingBegin(event);
   gesture_listener_->OnTouchEvent(event);
   OnTouchEventHandlingEnd(event);
+  uma_histogram_.RecordTouchEvent(event);
   return true;
 }
 

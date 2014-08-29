@@ -10,6 +10,7 @@
 #include "ui/events/gesture_detection/gesture_detection_export.h"
 #include "ui/events/gesture_detection/gesture_detector.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"
+#include "ui/events/gesture_detection/gesture_touch_uma_histogram.h"
 #include "ui/events/gesture_detection/scale_gesture_detector.h"
 #include "ui/events/gesture_detection/snap_scroll_controller.h"
 #include "ui/gfx/display.h"
@@ -100,6 +101,9 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
   scoped_ptr<GestureListenerImpl> gesture_listener_;
 
   scoped_ptr<MotionEvent> current_down_event_;
+
+  // Logs information on touch and gesture events.
+  GestureTouchUMAHistogram uma_histogram_;
 
   // Whether double-tap gesture detection is currently supported.
   bool double_tap_support_for_page_;
