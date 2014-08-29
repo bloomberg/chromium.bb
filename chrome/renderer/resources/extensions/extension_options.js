@@ -53,7 +53,7 @@ ExtensionOptionsInternal.prototype.attachWindow = function() {
       this.internalInstanceId,
       this.guestInstanceId,
       {
-        'autosize': this.autosize,
+        'autosize': this.extensionoptionsNode.hasAttribute('autosize'),
         'instanceId': this.viewInstanceId,
         'maxheight': parseInt(this.maxheight || 0),
         'maxwidth': parseInt(this.maxwidth || 0),

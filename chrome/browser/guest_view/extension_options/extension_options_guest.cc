@@ -135,25 +135,6 @@ int ExtensionOptionsGuest::GetTaskPrefix() const {
   return IDS_EXTENSION_TASK_MANAGER_EXTENSIONOPTIONS_TAG_PREFIX;
 }
 
-content::WebContents* ExtensionOptionsGuest::GetAssociatedWebContents() const {
-  return guest_web_contents();
-}
-
-bool ExtensionOptionsGuest::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ExtensionOptionsGuest, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void ExtensionOptionsGuest::OnRequest(
-    const ExtensionHostMsg_Request_Params& params) {
-  extension_function_dispatcher_->Dispatch(
-      params, guest_web_contents()->GetRenderViewHost());
-}
-
 void ExtensionOptionsGuest::GuestSizeChangedDueToAutoSize(
     const gfx::Size& old_size,
     const gfx::Size& new_size) {
@@ -170,28 +151,8 @@ bool ExtensionOptionsGuest::IsAutoSizeSupported() const {
   return true;
 }
 
-void ExtensionOptionsGuest::SetUpAutoSize() {
-  // Read the autosize parameters passed in from the embedder.
-  bool auto_size_enabled = false;
-  attach_params()->GetBoolean(extensionoptions::kAttributeAutoSize,
-                             &auto_size_enabled);
-
-  int max_height = 0;
-  int max_width = 0;
-  attach_params()->GetInteger(extensionoptions::kAttributeMaxHeight,
-                              &max_height);
-  attach_params()->GetInteger(extensionoptions::kAttributeMaxWidth, &max_width);
-
-  int min_height = 0;
-  int min_width = 0;
-  attach_params()->GetInteger(extensionoptions::kAttributeMinHeight,
-                              &min_height);
-  attach_params()->GetInteger(extensionoptions::kAttributeMinWidth, &min_width);
-
-  // Call SetAutoSize to apply all the appropriate validation and clipping of
-  // values.
-  SetAutoSize(
-      true, gfx::Size(min_width, min_height), gfx::Size(max_width, max_height));
+content::WebContents* ExtensionOptionsGuest::GetAssociatedWebContents() const {
+  return guest_web_contents();
 }
 
 void ExtensionOptionsGuest::CloseContents(content::WebContents* source) {
@@ -236,4 +197,44 @@ bool ExtensionOptionsGuest::ShouldCreateWebContents(
   // TODO(ericzeng): Open the tab in the background if the click was a
   //   ctrl-click or middle mouse button click
   return false;
+}
+
+bool ExtensionOptionsGuest::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(ExtensionOptionsGuest, message)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void ExtensionOptionsGuest::OnRequest(
+    const ExtensionHostMsg_Request_Params& params) {
+  extension_function_dispatcher_->Dispatch(
+      params, guest_web_contents()->GetRenderViewHost());
+}
+
+void ExtensionOptionsGuest::SetUpAutoSize() {
+  // Read the autosize parameters passed in from the embedder.
+  bool auto_size_enabled = false;
+  attach_params()->GetBoolean(extensionoptions::kAttributeAutoSize,
+                              &auto_size_enabled);
+
+  int max_height = 0;
+  int max_width = 0;
+  attach_params()->GetInteger(extensionoptions::kAttributeMaxHeight,
+                              &max_height);
+  attach_params()->GetInteger(extensionoptions::kAttributeMaxWidth, &max_width);
+
+  int min_height = 0;
+  int min_width = 0;
+  attach_params()->GetInteger(extensionoptions::kAttributeMinHeight,
+                              &min_height);
+  attach_params()->GetInteger(extensionoptions::kAttributeMinWidth, &min_width);
+
+  // Call SetAutoSize to apply all the appropriate validation and clipping of
+  // values.
+  SetAutoSize(auto_size_enabled,
+              gfx::Size(min_width, min_height),
+              gfx::Size(max_width, max_height));
 }
