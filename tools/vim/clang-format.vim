@@ -9,7 +9,6 @@
 
 let s:script = expand('<sfile>:p:h') .
   \'/../../buildtools/clang_format/script/clang-format.py'
-echo s:script
 
 if has('mac')
   execute "map <D-I> :pyf " . s:script . "<CR>"
