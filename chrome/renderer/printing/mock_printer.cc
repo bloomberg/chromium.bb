@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/print_messages.h"
 #include "ipc/ipc_message_utils.h"
-#include "printing/metafile_impl.h"
+#include "printing/pdf_metafile_skia.h"
 #include "printing/units.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -216,7 +216,7 @@ void MockPrinter::PrintPage(const PrintHostMsg_DidPrintPage_Params& params) {
 #if defined(OS_MACOSX)
   printing::PdfMetafileCg metafile;
 #else
-  printing::NativeMetafile metafile;
+  printing::PdfMetafileSkia metafile;
 #endif
   metafile.InitFromData(metafile_data.memory(), params.data_size);
   printing::Image image(metafile);

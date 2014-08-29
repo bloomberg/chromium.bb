@@ -16,7 +16,7 @@
 #include "base/time/time.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
-#include "printing/metafile_impl.h"
+#include "printing/pdf_metafile_skia.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebPrintParams.h"
@@ -420,7 +420,7 @@ class PrintWebViewHelper
 
     int total_page_count() const;
     bool generate_draft_pages() const;
-    PreviewMetafile* metafile();
+    PdfMetafileSkia* metafile();
     gfx::Size GetPrintCanvasSize() const;
     int last_error() const;
 
@@ -440,7 +440,7 @@ class PrintWebViewHelper
     blink::WebNode source_node_;
 
     scoped_ptr<PrepareFrameAndViewForPrint> prep_frame_view_;
-    scoped_ptr<PreviewMetafile> metafile_;
+    scoped_ptr<PdfMetafileSkia> metafile_;
 
     // Total page count in the renderer.
     int total_page_count_;

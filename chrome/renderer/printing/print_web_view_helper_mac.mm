@@ -11,7 +11,6 @@
 #include "base/metrics/histogram.h"
 #include "chrome/common/print_messages.h"
 #include "printing/metafile.h"
-#include "printing/metafile_impl.h"
 #include "printing/metafile_skia_wrapper.h"
 #include "printing/page_size_margins.h"
 #include "skia/ext/platform_device.h"
@@ -27,7 +26,7 @@ void PrintWebViewHelper::PrintPageInternal(
     const PrintMsg_PrintPage_Params& params,
     const gfx::Size& canvas_size,
     WebFrame* frame) {
-  NativeMetafile metafile;
+  PdfMetafileSkia metafile;
   if (!metafile.Init())
     return;
 
@@ -65,11 +64,11 @@ bool PrintWebViewHelper::RenderPreviewPage(
                          is_print_ready_metafile_sent_;
 
   if (render_to_draft) {
-    draft_metafile.reset(new PreviewMetafile());
+    draft_metafile.reset(new PdfMetafileSkia());
     if (!draft_metafile->Init()) {
       print_preview_context_.set_error(
           PREVIEW_ERROR_MAC_DRAFT_METAFILE_INIT_FAILED);
-      LOG(ERROR) << "Draft PreviewMetafile Init failed";
+      LOG(ERROR) << "Draft PdfMetafileSkia Init failed";
       return false;
     }
     initial_render_metafile = draft_metafile.get();

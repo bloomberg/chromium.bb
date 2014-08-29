@@ -133,10 +133,6 @@
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "printing/metafile_impl.h"
-#endif  // defined(OS_MACOSX)
-
 #if defined(OS_WIN)
 #include "base/metrics/histogram.h"
 #include "base/win/windows_version.h"
@@ -1963,9 +1959,6 @@ bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
 
   bool ret = false;
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
-  // On Linux we just set the final bits in the native metafile
-  // (NativeMetafile and PreviewMetafile must have compatible formats,
-  // i.e. both PDF for this to work).
   printing::Metafile* metafile =
       printing::MetafileSkiaWrapper::GetMetafileFromCanvas(*canvas);
   DCHECK(metafile != NULL);

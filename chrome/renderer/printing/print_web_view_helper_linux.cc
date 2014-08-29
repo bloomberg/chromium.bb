@@ -9,9 +9,9 @@
 #include "chrome/common/print_messages.h"
 #include "content/public/renderer/render_thread.h"
 #include "printing/metafile.h"
-#include "printing/metafile_impl.h"
 #include "printing/metafile_skia_wrapper.h"
 #include "printing/page_size_margins.h"
+#include "printing/pdf_metafile_skia.h"
 #include "skia/ext/platform_device.h"
 #include "skia/ext/vector_canvas.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -35,7 +35,7 @@ bool PrintWebViewHelper::RenderPreviewPage(
   scoped_ptr<Metafile> draft_metafile;
   Metafile* initial_render_metafile = print_preview_context_.metafile();
   if (print_preview_context_.IsModifiable() && is_print_ready_metafile_sent_) {
-    draft_metafile.reset(new PreviewMetafile);
+    draft_metafile.reset(new PdfMetafileSkia);
     initial_render_metafile = draft_metafile.get();
   }
 
@@ -60,7 +60,7 @@ bool PrintWebViewHelper::RenderPreviewPage(
 bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
                                           int page_count,
                                           const gfx::Size& canvas_size) {
-  NativeMetafile metafile;
+  PdfMetafileSkia metafile;
   if (!metafile.Init())
     return false;
 

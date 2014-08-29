@@ -11,7 +11,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "printing/metafile.h"
-#include "printing/metafile_impl.h"
+#include "printing/pdf_metafile_skia.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -150,7 +150,7 @@ bool Image::LoadPng(const std::string& compressed) {
 
 bool Image::LoadMetafile(const std::string& data) {
   DCHECK(!data.empty());
-  NativeMetafile metafile;
+  PdfMetafileSkia metafile;
   if (!metafile.InitFromData(data.data(),
                              base::checked_cast<uint32>(data.size())))
     return false;

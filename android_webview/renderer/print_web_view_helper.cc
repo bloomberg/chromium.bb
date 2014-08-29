@@ -24,7 +24,7 @@
 #include "content/public/renderer/render_view.h"
 #include "net/base/escape.h"
 #include "printing/metafile.h"
-#include "printing/metafile_impl.h"
+#include "printing/pdf_metafile_skia.h"
 #include "printing/units.h"
 #include "skia/ext/vector_platform_device_skia.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -1137,7 +1137,7 @@ bool PrintWebViewHelper::FinalizePrintReadyDocument() {
   print_preview_context_.FinalizePrintReadyDocument();
 
   // Get the size of the resulting metafile.
-  PreviewMetafile* metafile = print_preview_context_.metafile();
+  PdfMetafileSkia* metafile = print_preview_context_.metafile();
   uint32 buf_size = metafile->GetDataSize();
   DCHECK_GT(buf_size, 0u);
 
@@ -1833,10 +1833,10 @@ bool PrintWebViewHelper::PrintPreviewContext::CreatePreviewDocument(
     return false;
   }
 
-  metafile_.reset(new PreviewMetafile);
+  metafile_.reset(new PdfMetafileSkia);
   if (!metafile_->Init()) {
     set_error(PREVIEW_ERROR_METAFILE_INIT_FAILED);
-    LOG(ERROR) << "PreviewMetafile Init failed";
+    LOG(ERROR) << "PdfMetafileSkia Init failed";
     return false;
   }
 
@@ -2001,7 +2001,7 @@ bool PrintWebViewHelper::PrintPreviewContext::generate_draft_pages() const {
   return generate_draft_pages_;
 }
 
-PreviewMetafile* PrintWebViewHelper::PrintPreviewContext::metafile() {
+PdfMetafileSkia* PrintWebViewHelper::PrintPreviewContext::metafile() {
   DCHECK(IsRendering());
   return metafile_.get();
 }

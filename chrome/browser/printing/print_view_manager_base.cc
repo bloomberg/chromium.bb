@@ -25,7 +25,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "printing/metafile_impl.h"
+#include "printing/pdf_metafile_skia.h"
 #include "printing/printed_document.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -183,7 +183,7 @@ void PrintViewManagerBase::OnDidPrintPage(
     }
   }
 
-  scoped_ptr<NativeMetafile> metafile(new NativeMetafile);
+  scoped_ptr<PdfMetafileSkia> metafile(new PdfMetafileSkia);
   if (metafile_must_be_valid) {
     if (!metafile->InitFromData(shared_buf.memory(), params.data_size)) {
       NOTREACHED() << "Invalid metafile header";

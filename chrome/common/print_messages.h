@@ -395,7 +395,7 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PrintHostMsg_ScriptedPrint,
 
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 // Asks the browser to create a temporary file for the renderer to fill
-// in resulting NativeMetafile in printing.
+// in resulting PdfMetafileSkia in printing.
 IPC_SYNC_MESSAGE_CONTROL1_2(PrintHostMsg_AllocateTempFileForPrinting,
                             int /* render_view_id */,
                             base::FileDescriptor /* temp file fd */,

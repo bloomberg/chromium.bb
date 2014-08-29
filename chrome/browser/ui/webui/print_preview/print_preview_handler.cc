@@ -72,7 +72,7 @@
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/metafile.h"
-#include "printing/metafile_impl.h"
+#include "printing/pdf_metafile_skia.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/print_settings.h"
 #include "printing/printing_context.h"
@@ -1309,7 +1309,7 @@ void PrintPreviewHandler::PostPrintToPdfTask() {
     NOTREACHED() << "Preview data was checked before file dialog.";
     return;
   }
-  scoped_ptr<printing::PreviewMetafile> metafile(new printing::PreviewMetafile);
+  scoped_ptr<printing::PdfMetafileSkia> metafile(new printing::PdfMetafileSkia);
   metafile->InitFromData(static_cast<const void*>(data->front()), data->size());
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,

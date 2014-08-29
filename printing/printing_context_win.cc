@@ -284,7 +284,7 @@ PrintingContext::Result PrintingContextWin::NewPage() {
   DCHECK(context_);
   DCHECK(in_print_job_);
 
-  // Intentional No-op. NativeMetafile::SafePlayback takes care of calling
+  // Intentional No-op. PdfMetafileSkia::SafePlayback takes care of calling
   // ::StartPage().
 
   return OK;
@@ -295,7 +295,7 @@ PrintingContext::Result PrintingContextWin::PageDone() {
     return CANCEL;
   DCHECK(in_print_job_);
 
-  // Intentional No-op. NativeMetafile::SafePlayback takes care of calling
+  // Intentional No-op. PdfMetafileSkia::SafePlayback takes care of calling
   // ::EndPage().
 
   return OK;

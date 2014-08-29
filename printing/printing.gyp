@@ -44,7 +44,6 @@
         'image_mac.cc',
         'image_win.cc',
         'metafile.h',
-        'metafile_impl.h',
         'metafile_skia_wrapper.cc',
         'metafile_skia_wrapper.h',
         'page_number.cc',
