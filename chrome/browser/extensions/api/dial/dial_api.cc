@@ -19,8 +19,6 @@ using content::BrowserThread;
 
 namespace {
 
-const char kDialServiceError[] = "Dial service error.";
-
 // How often to poll for devices.
 const int kDialRefreshIntervalSecs = 120;
 
@@ -163,9 +161,6 @@ void DialDiscoverNowFunction::Work() {
 
 bool DialDiscoverNowFunction::Respond() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!result_)
-    error_ = kDialServiceError;
-
   SetResult(new base::FundamentalValue(result_));
   return true;
 }

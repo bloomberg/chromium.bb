@@ -52,7 +52,6 @@ IN_PROC_BROWSER_TEST_F(DialAPITest, MAYBE_DeviceListEvents) {
   ASSERT_TRUE(api.get());
   extensions::DialRegistry::DeviceList devices;
 
-
   ResultCatcher catcher;
 
   DialDeviceData device1;
@@ -82,10 +81,15 @@ IN_PROC_BROWSER_TEST_F(DialAPITest, MAYBE_DeviceListEvents) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// Test discoverNow fails if there are no listeners. When there are no listeners
-// the DIAL API will not be active.
 IN_PROC_BROWSER_TEST_F(DialAPITest, Discovery) {
   ASSERT_TRUE(RunExtensionSubtest("dial/experimental", "discovery.html"));
+}
+
+// discoverNow does not do discovery when there are no listeners; in that case
+// the DIAL service will not be active.
+IN_PROC_BROWSER_TEST_F(DialAPITest, DiscoveryNoListeners) {
+  ASSERT_TRUE(RunExtensionSubtest("dial/experimental",
+                                  "discovery_no_listeners.html"));
 }
 
 // Make sure this API is only accessible to whitelisted extensions.
