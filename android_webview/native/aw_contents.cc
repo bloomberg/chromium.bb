@@ -267,7 +267,7 @@ void AwContents::SetAwAutofillClient(jobject client) {
 }
 
 AwContents::~AwContents() {
-  DCHECK(AwContents::FromWebContents(web_contents_.get()) == this);
+  DCHECK_EQ(this, AwContents::FromWebContents(web_contents_.get()));
   DCHECK(!hardware_renderer_.get());
   web_contents_->RemoveUserData(kAwContentsUserDataKey);
   if (find_helper_.get())

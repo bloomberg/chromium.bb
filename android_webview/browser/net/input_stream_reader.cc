@@ -87,7 +87,7 @@ int InputStreamReader::SkipToRequestedRange(
 
       if (skipped <= 0)
         return net::ERR_REQUEST_RANGE_NOT_SATISFIABLE;
-      DCHECK(skipped <= bytes_to_skip);
+      DCHECK_LE(skipped, bytes_to_skip);
 
       bytes_to_skip -= skipped;
     } while (bytes_to_skip > 0);

@@ -24,11 +24,11 @@ namespace {
 // Everything is called and accessed on the IO thread.
 
 void Noop(int rv) {
-  DCHECK(rv == net::OK);
+  DCHECK_EQ(net::OK, rv);
 }
 
 void CallDoomAllEntries(Backend** backend, int rv) {
-  DCHECK(rv == net::OK);
+  DCHECK_EQ(net::OK, rv);
   (*backend)->DoomAllEntries(base::Bind(&Noop));
 }
 

@@ -42,7 +42,7 @@ void SetCacheControlFlag(
       net::LOAD_VALIDATE_CACHE |
       net::LOAD_PREFERRING_CACHE |
       net::LOAD_ONLY_FROM_CACHE;
-  DCHECK((flag & all_cache_control_flags) == flag);
+  DCHECK_EQ((flag & all_cache_control_flags), flag);
   int load_flags = request->load_flags();
   load_flags &= ~all_cache_control_flags;
   load_flags |= flag;

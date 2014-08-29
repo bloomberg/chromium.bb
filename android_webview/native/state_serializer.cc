@@ -50,9 +50,9 @@ bool WriteToPickle(const content::WebContents& web_contents,
       web_contents.GetController();
   const int entry_count = controller.GetEntryCount();
   const int selected_entry = controller.GetCurrentEntryIndex();
-  DCHECK(entry_count >= 0);
-  DCHECK(selected_entry >= -1);  // -1 is valid
-  DCHECK(selected_entry < entry_count);
+  DCHECK_GE(entry_count, 0);
+  DCHECK_GE(selected_entry, -1);  // -1 is valid
+  DCHECK_LT(selected_entry, entry_count);
 
   if (!pickle->WriteInt(entry_count))
     return false;

@@ -142,7 +142,7 @@ PrintMsg_Print_Params GetCssPrintParams(
 
   // Invalid page size and/or margins. We just use the default setting.
   if (new_content_width < 1 || new_content_height < 1) {
-    CHECK(frame != NULL);
+    CHECK(frame);
     page_css_params = GetCssPrintParams(NULL, page_index, page_params);
     return page_css_params;
   }
@@ -1970,30 +1970,30 @@ void PrintWebViewHelper::PrintPreviewContext::set_error(
 }
 
 blink::WebLocalFrame* PrintWebViewHelper::PrintPreviewContext::source_frame() {
-  DCHECK(state_ != UNINITIALIZED);
+  DCHECK_NE(UNINITIALIZED, state_);
   return source_frame_.GetFrame();
 }
 
 const blink::WebNode&
     PrintWebViewHelper::PrintPreviewContext::source_node() const {
-  DCHECK(state_ != UNINITIALIZED);
+  DCHECK_NE(UNINITIALIZED, state_);
   return source_node_;
 }
 
 blink::WebLocalFrame*
 PrintWebViewHelper::PrintPreviewContext::prepared_frame() {
-  DCHECK(state_ != UNINITIALIZED);
+  DCHECK_NE(UNINITIALIZED, state_);
   return prep_frame_view_->frame();
 }
 
 const blink::WebNode&
     PrintWebViewHelper::PrintPreviewContext::prepared_node() const {
-  DCHECK(state_ != UNINITIALIZED);
+  DCHECK_NE(UNINITIALIZED, state_);
   return prep_frame_view_->node();
 }
 
 int PrintWebViewHelper::PrintPreviewContext::total_page_count() const {
-  DCHECK(state_ != UNINITIALIZED);
+  DCHECK_NE(UNINITIALIZED, state_);
   return total_page_count_;
 }
 

@@ -527,7 +527,7 @@ void BrowserViewRenderer::SetContinuousInvalidate(bool invalidate) {
 
 void BrowserViewRenderer::SetDipScale(float dip_scale) {
   dip_scale_ = dip_scale;
-  CHECK(dip_scale_ > 0);
+  CHECK_GT(dip_scale_, 0);
 }
 
 gfx::Vector2d BrowserViewRenderer::max_scroll_offset() const {
@@ -606,10 +606,10 @@ void BrowserViewRenderer::SetTotalRootLayerScrollOffset(
                         max_scroll_offset_dip_.y());
   }
 
-  DCHECK(0 <= scroll_offset.x());
-  DCHECK(0 <= scroll_offset.y());
-  DCHECK(scroll_offset.x() <= max_offset.x());
-  DCHECK(scroll_offset.y() <= max_offset.y());
+  DCHECK_LE(0, scroll_offset.x());
+  DCHECK_LE(0, scroll_offset.y());
+  DCHECK_LE(scroll_offset.x(), max_offset.x());
+  DCHECK_LE(scroll_offset.y(), max_offset.y());
 
   client_->ScrollContainerViewTo(scroll_offset);
 }

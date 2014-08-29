@@ -64,7 +64,7 @@ AwLoginDelegate::AwLoginDelegate(net::AuthChallengeInfo* auth_info,
 AwLoginDelegate::~AwLoginDelegate() {
   // The Auth handler holds a ref count back on |this| object, so it should be
   // impossible to reach here while this object still owns an auth handler.
-  DCHECK(aw_http_auth_handler_ == NULL);
+  DCHECK(!aw_http_auth_handler_);
 }
 
 void AwLoginDelegate::Proceed(const base::string16& user,

@@ -218,7 +218,7 @@ void AwSettings::RenderViewCreated(content::RenderViewHost* render_view_host) {
   // we shouldn't have to deal with the multiple RVH per WebContents case. That
   // in turn means that the newly created RVH is always the 'current' RVH
   // (since we only ever go from 0 to 1 RVH instances) and hence the DCHECK.
-  DCHECK(web_contents()->GetRenderViewHost() == render_view_host);
+  DCHECK_EQ(render_view_host, web_contents()->GetRenderViewHost());
 
   UpdateEverything();
 }

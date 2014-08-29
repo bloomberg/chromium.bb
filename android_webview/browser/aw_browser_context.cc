@@ -54,7 +54,7 @@ AwBrowserContext::AwBrowserContext(
     JniDependencyFactory* native_factory)
     : context_storage_path_(path),
       native_factory_(native_factory) {
-  DCHECK(g_browser_context == NULL);
+  DCHECK(!g_browser_context);
   g_browser_context = this;
 
   // This constructor is entered during the creation of ContentBrowserClient,
@@ -63,7 +63,7 @@ AwBrowserContext::AwBrowserContext(
 }
 
 AwBrowserContext::~AwBrowserContext() {
-  DCHECK(g_browser_context == this);
+  DCHECK_EQ(this, g_browser_context);
   g_browser_context = NULL;
 }
 

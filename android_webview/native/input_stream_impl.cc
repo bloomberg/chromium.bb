@@ -127,7 +127,8 @@ bool InputStreamImpl::Read(net::IOBuffer* dest, int length, int* bytes_read) {
     dest_write_ptr += transfer_length;
   }
   // bytes_read can be strictly less than the req. length if EOF is encountered.
-  DCHECK(remaining_length >= 0 && remaining_length <= length);
+  DCHECK_GE(remaining_length, 0);
+  DCHECK_LE(remaining_length, length);
   *bytes_read = length - remaining_length;
   return true;
 }

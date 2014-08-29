@@ -236,7 +236,7 @@ net::URLRequestContextGetter* AwContentBrowserClient::CreateRequestContext(
     content::BrowserContext* browser_context,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
-  DCHECK(browser_context_.get() == browser_context);
+  DCHECK_EQ(browser_context_.get(), browser_context);
   return browser_context_->CreateRequestContext(protocol_handlers,
                                                 request_interceptors.Pass());
 }
@@ -248,7 +248,7 @@ AwContentBrowserClient::CreateRequestContextForStoragePartition(
     bool in_memory,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
-  DCHECK(browser_context_.get() == browser_context);
+  DCHECK_EQ(browser_context_.get(), browser_context);
   // TODO(mkosiba,kinuko): request_interceptors should be hooked up in the
   // downstream. (crbug.com/350286)
   return browser_context_->CreateRequestContextForStoragePartition(

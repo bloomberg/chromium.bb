@@ -87,7 +87,7 @@ bool AwWebResourceResponseImpl::GetResponseHeaders(
       env, jstringArray_headerNames.obj(), &header_names);
   AppendJavaStringArrayToStringVector(
       env, jstringArray_headerValues.obj(), &header_values);
-  DCHECK(header_names.size() == header_values.size());
+  DCHECK_EQ(header_values.size(), header_names.size());
   for(size_t i = 0; i < header_names.size(); ++i) {
     std::string header_line(header_names[i]);
     header_line.append(": ");
