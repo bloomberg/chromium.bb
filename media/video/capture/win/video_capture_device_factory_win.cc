@@ -299,11 +299,8 @@ static void GetDeviceSupportedFormatsMediaFoundation(
 
   DWORD stream_index = 0;
   ScopedComPtr<IMFMediaType> type;
-  for (hr = reader->GetNativeMediaType(kFirstVideoStream, stream_index,
-                                       type.Receive());
-       SUCCEEDED(hr);
-       hr = reader->GetNativeMediaType(kFirstVideoStream, stream_index,
-                                       type.Receive())) {
+  while (SUCCEEDED(reader->GetNativeMediaType(
+             kFirstVideoStream, stream_index, type.Receive()))) {
     UINT32 width, height;
     hr = MFGetAttributeSize(type, MF_MT_FRAME_SIZE, &width, &height);
     if (FAILED(hr)) {
