@@ -552,6 +552,7 @@
         'dbus/blocking_method_caller_unittest.cc',
         'dbus/cros_disks_client_unittest.cc',
         'dbus/dbus_client_bundle_unittest.cc',
+        'dbus/fake_easy_unlock_client_unittest.cc',
         'dbus/gsm_sms_client_unittest.cc',
         'dbus/introspectable_client_unittest.cc',
         'dbus/modem_messaging_client_unittest.cc',
