@@ -33,7 +33,8 @@ void DeleteStaleTestKeys(const base::Time& now,
   for (; iterator_test_root_key.Valid(); ++iterator_test_root_key) {
     base::string16 key_name = iterator_test_root_key.Name();
     std::vector<base::string16> tokens;
-    Tokenize(key_name, base::string16(kTimestampDelimiter), &tokens);
+    if (!Tokenize(key_name, base::string16(kTimestampDelimiter), &tokens))
+      continue;
     int64 key_name_as_number = 0;
 
     if (!base::StringToInt64(tokens[0], &key_name_as_number)) {
