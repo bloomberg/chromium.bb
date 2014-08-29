@@ -356,18 +356,14 @@ void UpdateContentLengthPrefsForDataReductionProxy(
   int64 then_internal = prefs->GetInt64(
       data_reduction_proxy::prefs::kDailyHttpContentLengthLastUpdateDate);
 
-#if defined(OS_WIN)
-  base::Time then_midnight = base::Time::FromInternalValue(then_internal);
-  base::Time midnight =
-      base::Time::FromInternalValue(
-          (now.ToInternalValue() / base::Time::kMicrosecondsPerDay) *
-              base::Time::kMicrosecondsPerDay);
-#else
   // Local midnight could have been shifted due to time zone change.
-  base::Time then_midnight =
-      base::Time::FromInternalValue(then_internal).LocalMidnight();
+  // If time is null then don't care if midnight will be wrong shifted due to
+  // time zone change because it's still too much time ago.
+  base::Time then_midnight = base::Time::FromInternalValue(then_internal);
+  if (!then_midnight.is_null()) {
+    then_midnight = then_midnight.LocalMidnight();
+  }
   base::Time midnight = now.LocalMidnight();
-#endif
 
   int days_since_last_update = (midnight - then_midnight).InDays();
 
