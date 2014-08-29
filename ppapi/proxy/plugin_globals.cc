@@ -172,7 +172,7 @@ base::TaskRunner* PluginGlobals::GetFileTaskRunner() {
     options.message_loop_type = base::MessageLoop::TYPE_IO;
     file_thread_->StartWithOptions(options);
   }
-  return file_thread_->message_loop_proxy();
+  return file_thread_->message_loop_proxy().get();
 }
 
 void PluginGlobals::MarkPluginIsActive() {

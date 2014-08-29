@@ -37,7 +37,7 @@ BrowserPpapiHost* BrowserPpapiHost::CreateExternalPluginProcess(
   scoped_refptr<PepperMessageFilter> pepper_message_filter(
       new PepperMessageFilter());
   channel->AddFilter(pepper_message_filter->GetFilter());
-  channel->AddFilter(browser_ppapi_host->message_filter());
+  channel->AddFilter(browser_ppapi_host->message_filter().get());
   channel->AddFilter((new TraceMessageFilter())->GetFilter());
 
   return browser_ppapi_host;
