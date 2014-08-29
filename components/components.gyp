@@ -44,6 +44,7 @@
     'policy.gypi',
     'precache.gypi',
     'pref_registry.gypi',
+    'proximity_auth.gypi',
     'query_parser.gypi',
     'rappor.gypi',
     'search.gypi',

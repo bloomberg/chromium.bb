@@ -171,6 +171,7 @@
             'precache/core/precache_database_unittest.cc',
             'precache/core/precache_fetcher_unittest.cc',
             'precache/core/precache_url_table_unittest.cc',
+            'proximity_auth/proximity_auth_system_unittest.cc',
             'query_parser/query_parser_unittest.cc',
             'query_parser/snippet_unittest.cc',
             'rappor/bloom_filter_unittest.cc',
@@ -370,6 +371,9 @@
             # Dependencies of password_manager
             'components.gyp:password_manager_core_browser',
             'components.gyp:password_manager_core_browser_test_support',
+
+            # Dependencies of proxmity_auth
+            'components.gyp:proximity_auth',
 
             # Dependencies of precache/core
             'components.gyp:password_manager_core_browser',

@@ -138,6 +138,11 @@ per-file policy*=atwilson@chromium.org
 per-file policy*=pneubeck@chromium.org
 per-file policy*=dconnelly@chromium.org
 
+per-file proximity_auth*=isherman@chromium.org
+per-file proximity_auth*=tbarzic@chromium.org
+per-file proximity_auth*=tengs@chromium.org
+per-file proximity_auth*=xiyuan@chromium.org
+
 per-file query_parser.gypi=brettw@chromium.org
 per-file query_parser.gypi=sky@chromium.org
 

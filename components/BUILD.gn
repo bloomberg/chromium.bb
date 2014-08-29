@@ -67,6 +67,7 @@ group("all_components") {
     "//components/precache/core",
     "//components/precache/content",
     "//components/pref_registry",
+    "//components/proximity_auth",
     "//components/query_parser",
     "//components/rappor",
     "//components/renderer_context_menu",
@@ -214,6 +215,7 @@ test("components_unittests") {
     "//components/domain_reliability:unit_tests",
     "//components/omnibox:unit_tests",
     "//components/ownership:unit_tests",
+    "//components/proximity_auth:unit_tests",
   ]
 
   # TODO(GYP) need this target.
