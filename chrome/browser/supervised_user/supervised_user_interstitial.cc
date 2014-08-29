@@ -37,14 +37,12 @@ namespace {
 static const int kAvatarSize1x = 45;
 static const int kAvatarSize2x = 90;
 
-std::string BuildAvatarImageUrl(const std::string& url,
-                                const GURL& base_url,
-                                int size) {
+std::string BuildAvatarImageUrl(const std::string& url, int size) {
   std::string result = url;
   size_t slash = result.rfind('/');
   if (slash != std::string::npos)
     result.insert(slash, "/s" + base::IntToString(size));
-  return base_url.Resolve(result).spec();
+  return result;
 }
 
 } // namespace
@@ -148,32 +146,18 @@ std::string SupervisedUserInterstitial::GetHTMLContents() {
   bool allow_access_requests = supervised_user_service->AccessRequestsEnabled();
   strings.SetBoolean("allowAccessRequests", allow_access_requests);
 
-  GURL base_url = GURL(profile->GetPrefs()->GetString(
-      prefs::kSupervisedUserCustodianProfileURL));
-  if (!base_url.is_valid())
-    base_url = GURL("https://dummy.url");
-  DCHECK(base_url.is_valid());
   std::string profile_image_url = profile->GetPrefs()->GetString(
       prefs::kSupervisedUserCustodianProfileImageURL);
   strings.SetString("avatarURL1x", BuildAvatarImageUrl(profile_image_url,
-                                                       base_url,
                                                        kAvatarSize1x));
   strings.SetString("avatarURL2x", BuildAvatarImageUrl(profile_image_url,
-                                                       base_url,
                                                        kAvatarSize2x));
 
-  GURL base_url2 = GURL(profile->GetPrefs()->GetString(
-      prefs::kSupervisedUserSecondCustodianProfileURL));
-  if (!base_url2.is_valid())
-    base_url2 = GURL("https://dummy.url");
-  DCHECK(base_url2.is_valid());
   std::string profile_image_url2 = profile->GetPrefs()->GetString(
       prefs::kSupervisedUserSecondCustodianProfileImageURL);
   strings.SetString("secondAvatarURL1x", BuildAvatarImageUrl(profile_image_url2,
-                                                             base_url2,
                                                              kAvatarSize1x));
   strings.SetString("secondAvatarURL2x", BuildAvatarImageUrl(profile_image_url2,
-                                                             base_url2,
                                                              kAvatarSize2x));
 
   base::string16 custodian =
