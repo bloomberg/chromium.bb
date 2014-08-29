@@ -31,8 +31,6 @@ class DepsWhitelist(object):
     # team and are in the process of having the required branches being created
     # in the Android tree.
     self._compile_but_not_snapshot_dependencies = [
-      'third_party/libaddressinput/src',
-      'third_party/boringssl/src',
     ]
 
     # Dependencies that need to be merged into the Android tree.
@@ -41,12 +39,14 @@ class DepsWhitelist(object):
       'testing/gtest',
       'third_party/WebKit',
       'third_party/angle',
+      'third_party/boringssl/src',
       'third_party/brotli/src',
       ('third_party/eyesfree/src/android/java/src/com/googlecode/eyesfree/'
        'braille'),
       'third_party/freetype',
       'third_party/icu',
       'third_party/leveldatabase/src',
+      'third_party/libaddressinput/src',
       'third_party/libjingle/source/talk',
       'third_party/libphonenumber/src/phonenumbers',
       'third_party/libphonenumber/src/resources',
@@ -55,7 +55,6 @@ class DepsWhitelist(object):
       'third_party/libyuv',
       'third_party/mesa/src',
       'third_party/openmax_dl',
-      'third_party/openssl',
       'third_party/opus/src',
       'third_party/ots',
       'third_party/sfntly/cpp/src',
