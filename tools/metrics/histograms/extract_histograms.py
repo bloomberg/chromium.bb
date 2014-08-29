@@ -42,9 +42,9 @@ XML below will generate the following five histograms:
 <histogram_suffixes_list>
 
 <histogram_suffixes name="BrowserType">
-  <group name="Chrome"/>
-  <group name="IE"/>
-  <group name="Firefox"/>
+  <suffix name="Chrome"/>
+  <suffix name="IE"/>
+  <suffix name="Firefox"/>
   <affected-histogram name="HistogramEnum"/>
 </histogram_suffixes>
 
@@ -307,15 +307,9 @@ def _UpdateHistogramsWithSuffixes(tree, histograms):
   """
   have_errors = False
 
-  # TODO(yiyaoliu): Remove this part after fieldtrial is not used any more.
-  if tree.getElementsByTagName('histogram_suffixes'):
-    histogram_suffix_tag = 'histogram_suffixes'
-    suffix_tag = 'suffix'
-    with_tag = 'with-suffix'
-  else:
-    histogram_suffix_tag = 'fieldtrial'
-    suffix_tag = 'group'
-    with_tag = 'with-group'
+  histogram_suffix_tag = 'histogram_suffixes'
+  suffix_tag = 'suffix'
+  with_tag = 'with-suffix'
 
   # Verify order of histogram_suffixes fields first.
   last_name = None
