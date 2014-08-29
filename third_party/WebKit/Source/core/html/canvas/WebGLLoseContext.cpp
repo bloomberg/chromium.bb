@@ -60,7 +60,7 @@ PassRefPtrWillBeRawPtr<WebGLLoseContext> WebGLLoseContext::create(WebGLRendering
 void WebGLLoseContext::loseContext()
 {
     if (!isLost())
-        m_context->forceLostContext(WebGLRenderingContextBase::SyntheticLostContext);
+        m_context->forceLostContext(WebGLRenderingContextBase::WebGLLoseContextLostContext, WebGLRenderingContextBase::Manual);
 }
 
 void WebGLLoseContext::restoreContext()

@@ -314,20 +314,32 @@ public:
 
     void viewport(GLint x, GLint y, GLsizei width, GLsizei height);
 
-    // WEBKIT_lose_context support
+    // WEBGL_lose_context support
     enum LostContextMode {
+        NotLostContext,
+
         // Lost context occurred at the graphics system level.
         RealLostContext,
 
-        // Lost context provoked by WEBKIT_lose_context.
-        SyntheticLostContext,
+        // Lost context provoked by WEBGL_lose_context.
+        WebGLLoseContextLostContext,
 
-        // A synthetic lost context that should attempt to recover automatically
-        AutoRecoverSyntheticLostContext
+        // Lost context occurred due to internal implementation reasons.
+        SyntheticLostContext,
     };
-    void forceLostContext(LostContextMode);
+    enum AutoRecoveryMethod {
+        // Don't restore automatically.
+        Manual,
+
+        // Restore when resources are available.
+        WhenAvailable,
+
+        // Restore as soon as possible.
+        Auto
+    };
+    void forceLostContext(LostContextMode, AutoRecoveryMethod);
     void forceRestoreContext();
-    void loseContextImpl(LostContextMode);
+    void loseContextImpl(LostContextMode, AutoRecoveryMethod);
 
     blink::WebGraphicsContext3D* webContext() const { return drawingBuffer()->context(); }
     WebGLContextGroup* contextGroup() const { return m_contextGroup.get(); }
@@ -433,8 +445,10 @@ protected:
 
     RefPtr<WebGLContextGroup> m_contextGroup;
 
+    LostContextMode m_contextLostMode;
+    AutoRecoveryMethod m_autoRecoveryMethod;
     // Dispatches a context lost event once it is determined that one is needed.
-    // This is used both for synthetic and real context losses. For real ones, it's
+    // This is used for synthetic, WEBGL_lose_context and real context losses. For real ones, it's
     // likely that there's no JavaScript on the stack, but that might be dependent
     // on how exactly the platform discovers that the context was lost. For better
     // portability we always defer the dispatch of the event.
@@ -530,8 +544,6 @@ protected:
     bool m_unpackFlipY;
     bool m_unpackPremultiplyAlpha;
     GLenum m_unpackColorspaceConversion;
-    bool m_contextLost;
-    LostContextMode m_contextLostMode;
     RefPtrWillBeMember<WebGLContextAttributes> m_requestedAttributes;
 
     bool m_layerCleared;
@@ -934,7 +946,9 @@ protected:
     static Vector<WebGLRenderingContextBase*>& forciblyEvictedContexts();
 
     static void activateContext(WebGLRenderingContextBase*);
-    static void deactivateContext(WebGLRenderingContextBase*, bool addToInactiveList);
+    static void deactivateContext(WebGLRenderingContextBase*);
+    static void addToEvictedList(WebGLRenderingContextBase*);
+    static void removeFromEvictedList(WebGLRenderingContextBase*);
     static void willDestroyContext(WebGLRenderingContextBase*);
     static void forciblyLoseOldestContext(const String& reason);
     // Return the least recently used context's position in the active context vector.

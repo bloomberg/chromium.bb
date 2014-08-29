@@ -56,7 +56,7 @@ public:
 
     blink::WebGraphicsContext3D* getAWebGraphicsContext3D();
 
-    void loseContextGroup(WebGLRenderingContextBase::LostContextMode);
+    void loseContextGroup(WebGLRenderingContextBase::LostContextMode, WebGLRenderingContextBase::AutoRecoveryMethod);
 
 private:
     friend class WebGLObject;
