@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "chromecast/common/chromecast_config.h"
 #include "chromecast/metrics/platform_metrics_providers.h"
+#include "components/metrics/client_info.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -14,6 +15,17 @@
 
 namespace chromecast {
 namespace metrics {
+
+namespace {
+
+void StoreClientInfo(const ::metrics::ClientInfo& client_info) {
+}
+
+scoped_ptr<::metrics::ClientInfo> LoadClientInfo() {
+  return scoped_ptr<::metrics::ClientInfo>();
+}
+
+}  // namespace
 
 // static
 CastMetricsServiceClient* CastMetricsServiceClient::Create(
@@ -92,12 +104,12 @@ CastMetricsServiceClient::CastMetricsServiceClient(
           pref_service,
           base::Bind(&CastMetricsServiceClient::IsReportingEnabled,
                      base::Unretained(this)),
-                     ::metrics::MetricsStateManager::StoreClientInfoCallback(),
-                     ::metrics::MetricsStateManager::LoadClientInfoCallback())),
+                     base::Bind(&StoreClientInfo),
+                     base::Bind(&LoadClientInfo))),
       metrics_service_(new ::metrics::MetricsService(
           metrics_state_manager_.get(),
           this,
-          ChromecastConfig::GetInstance()->pref_service())),
+          pref_service)),
       request_context_(request_context) {
   // Always create a client id as it may also be used by crash reporting,
   // (indirectly) included in feedback, and can be queried during setup.

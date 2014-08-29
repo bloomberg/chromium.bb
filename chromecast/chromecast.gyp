@@ -45,6 +45,7 @@
       'target_name': 'cast_metrics',
       'type': '<(component)',
       'dependencies': [
+        'cast_common',
         '../components/components.gyp:component_metrics_proto',
         '../components/components.gyp:metrics',
         '../components/components.gyp:metrics_net',
@@ -68,6 +69,21 @@
         }],
       ],
     },
+    {
+      'target_name': 'cast_metrics_unittests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        'cast_metrics',
+        '../base/base.gyp:base_prefs_test_support',
+        '../base/base.gyp:run_all_unittests',
+        '../base/base.gyp:test_support_base',
+        '../components/components.gyp:component_metrics_proto',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'sources': [
+        'metrics/cast_metrics_service_client_unittest.cc',
+      ],
+    },  # end of target 'cast_metrics_unittests'
     {
       'target_name': 'cast_service',
       'type': '<(component)',
