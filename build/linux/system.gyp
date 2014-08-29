@@ -567,12 +567,28 @@
           'cflags': [
             '<!@(<(pkg-config) --cflags gio-2.0)',
           ],
+          'variables': {
+            'gio_warning_define': [
+              # glib >=2.40 deprecate g_settings_list_schemas in favor of
+              # g_settings_schema_source_list_schemas. This function is not
+              # available on earlier versions that we still need to support
+              # (specifically, 2.32), so disable the warning.
+              # TODO(mgiuca): Remove this suppression (and variable) when we
+              # drop support for Ubuntu 13.10 (saucy) and earlier. Update the
+              # code to use g_settings_schema_source_list_schemas instead.
+              'GLIB_DISABLE_DEPRECATION_WARNINGS',
+            ],
+          },
+          'defines': [
+            '<(gio_warning_define)',
+          ],
           'direct_dependent_settings': {
             'cflags': [
               '<!@(<(pkg-config) --cflags gio-2.0)',
             ],
             'defines': [
               'USE_GIO',
+              '<(gio_warning_define)',
             ],
             'include_dirs': [
               '<(SHARED_INTERMEDIATE_DIR)',

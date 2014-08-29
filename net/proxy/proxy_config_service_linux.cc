@@ -4,15 +4,6 @@
 
 #include "net/proxy/proxy_config_service_linux.h"
 
-// glib >=2.40 deprecate g_settings_list_schemas in favor of
-// g_settings_schema_source_list_schemas. This function is not available on
-// earlier versions that we still need to support (specifically, 2.32), so
-// disable the warning.
-// TODO(mgiuca): Remove this suppression when we drop support for Ubuntu 13.10
-// (saucy) and earlier. Update the code to use
-// g_settings_schema_source_list_schemas instead.
-#define GLIB_DISABLE_DEPRECATION_WARNINGS
-
 #include <errno.h>
 #include <fcntl.h>
 #if defined(USE_GCONF)
