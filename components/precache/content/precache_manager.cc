@@ -9,10 +9,13 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
+#include "base/prefs/pref_service.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/common/data_reduction_proxy_pref_names.h"
 #include "components/precache/core/precache_database.h"
 #include "components/precache/core/precache_switches.h"
 #include "components/precache/core/url_list_provider.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/network_change_notifier.h"
@@ -48,6 +51,16 @@ bool PrecacheManager::IsPrecachingEnabled() {
   return base::FieldTrialList::FindFullName(kPrecacheFieldTrialName) ==
              kPrecacheFieldTrialEnabledGroup ||
          CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePrecache);
+}
+
+bool PrecacheManager::IsPrecachingAllowed() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  return user_prefs::UserPrefs::Get(browser_context_)->GetBoolean(
+      data_reduction_proxy::prefs::kDataReductionProxyEnabled);
+#else
+  return false;
+#endif
 }
 
 void PrecacheManager::StartPrecaching(

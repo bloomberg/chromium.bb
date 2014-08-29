@@ -49,6 +49,9 @@ class PrecacheManager : public KeyedService,
   // command line flag. This method can be called on any thread.
   static bool IsPrecachingEnabled();
 
+  // Returns true if precaching is allowed for the browser context.
+  bool IsPrecachingAllowed();
+
   // Starts precaching resources that the user is predicted to fetch in the
   // future. If precaching is already currently in progress, then this method
   // does nothing. The |precache_completion_callback| will be run when

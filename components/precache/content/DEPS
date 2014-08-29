@@ -1,5 +1,7 @@
 include_rules = [
+  "+components/data_reduction_proxy/common",
   "+components/keyed_service",
+  "+components/user_prefs",
   "+content/public/browser",
   "+net/base",
 ]
