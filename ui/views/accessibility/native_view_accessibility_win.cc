@@ -529,8 +529,12 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accChild(VARIANT var_child,
   }
 
   *disp_child = child_view->GetNativeViewAccessible();
-  (*disp_child)->AddRef();
-  return S_OK;
+  if (*disp_child) {
+    (*disp_child)->AddRef();
+    return S_OK;
+  }
+
+  return E_FAIL;
 }
 
 STDMETHODIMP NativeViewAccessibilityWin::get_accChildCount(LONG* child_count) {
