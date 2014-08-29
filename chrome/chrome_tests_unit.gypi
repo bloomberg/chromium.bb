@@ -1240,10 +1240,6 @@
         'browser/search/suggestions/image_manager_impl_unittest.cc',
         'browser/search_engines/default_search_pref_migration_unittest.cc',
         'browser/search_engines/search_provider_install_data_unittest.cc',
-        'browser/search_engines/template_url_fetcher_unittest.cc',
-        'browser/search_engines/template_url_parser_unittest.cc',
-        'browser/search_engines/template_url_service_sync_unittest.cc',
-        'browser/search_engines/template_url_service_unittest.cc',
         'browser/search_engines/template_url_scraper_unittest.cc',
         'browser/services/gcm/fake_signin_manager.cc',
         'browser/services/gcm/fake_signin_manager.h',
@@ -1948,6 +1944,11 @@
         # nacl_defines is moved out of chrome.gyp into a common place.
         '../components/nacl/loader/nacl_ipc_adapter_unittest.cc',
         '../components/nacl/loader/nacl_validation_query_unittest.cc',
+
+        '../components/search_engines/template_url_fetcher_unittest.cc',
+        '../components/search_engines/template_url_parser_unittest.cc',
+        '../components/search_engines/template_url_service_sync_unittest.cc',
+        '../components/search_engines/template_url_service_unittest.cc',
 
         '../components/webdata/common/web_data_service_test_util.cc',
         '../components/webdata/common/web_data_service_test_util.h',

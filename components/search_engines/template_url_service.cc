@@ -1408,14 +1408,6 @@ SyncDataMap TemplateURLService::CreateGUIDToSyncDataMap(
   return data_map;
 }
 
-void TemplateURLService::SetKeywordSearchTermsForURL(
-    const TemplateURL* t_url,
-    const GURL& url,
-    const base::string16& term) {
-  if (client_)
-    client_->SetKeywordSearchTermsForURL(url, t_url->id(), term);
-}
-
 void TemplateURLService::Init(const Initializer* initializers,
                               int num_initializers) {
   if (client_)
@@ -1747,7 +1739,10 @@ void TemplateURLService::UpdateKeywordSearchTermsForURL(
         // count is boosted.
         AddTabToSearchVisit(**i);
       }
-      SetKeywordSearchTermsForURL(*i, details.url, search_terms);
+      if (client_) {
+        client_->SetKeywordSearchTermsForURL(
+            details.url, (*i)->id(), search_terms);
+      }
     }
   }
 }

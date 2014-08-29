@@ -14,6 +14,7 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_fetcher.h"
 #include "components/search_engines/template_url_service.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -47,7 +48,6 @@ class TemplateURLFetcherTest : public testing::Test {
       base::ScopedClosureRunner* callback_destruction_notifier,
       scoped_ptr<TemplateURL> template_url);
 
- protected:
   // Schedules the download of the url.
   void StartDownload(const base::string16& keyword,
                      const std::string& osdd_file_name,
@@ -57,6 +57,18 @@ class TemplateURLFetcherTest : public testing::Test {
   // Waits for any downloads to finish.
   void WaitForDownloadToFinish();
 
+  TemplateURLServiceTestUtil* test_util() { return &test_util_; }
+  TemplateURLFetcher* template_url_fetcher() {
+    return template_url_fetcher_.get();
+  }
+  const TemplateURL* last_callback_template_url() const {
+    return last_callback_template_url_.get();
+  }
+  int callbacks_destroyed() const { return callbacks_destroyed_; }
+  int add_provider_called() const { return add_provider_called_; }
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;  // To set up BrowserThreads.
   TemplateURLServiceTestUtil test_util_;
   scoped_ptr<TemplateURLFetcher> template_url_fetcher_;
   net::test_server::EmbeddedTestServer test_server_;
@@ -79,7 +91,8 @@ class TemplateURLFetcherTest : public testing::Test {
 };
 
 TemplateURLFetcherTest::TemplateURLFetcherTest()
-    : callbacks_destroyed_(0),
+    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      callbacks_destroyed_(0),
       add_provider_called_(0),
       waiting_for_download_(false) {
   base::FilePath src_dir;
@@ -142,39 +155,39 @@ void TemplateURLFetcherTest::WaitForDownloadToFinish() {
 TEST_F(TemplateURLFetcherTest, BasicAutodetectedTest) {
   base::string16 keyword(ASCIIToUTF16("test"));
 
-  test_util_.ChangeModelToLoadState();
-  ASSERT_FALSE(test_util_.model()->GetTemplateURLForKeyword(keyword));
+  test_util()->ChangeModelToLoadState();
+  ASSERT_FALSE(test_util()->model()->GetTemplateURLForKeyword(keyword));
 
   std::string osdd_file_name("simple_open_search.xml");
   StartDownload(keyword, osdd_file_name,
                 TemplateURLFetcher::AUTODETECTED_PROVIDER, true);
-  ASSERT_EQ(0, add_provider_called_);
-  ASSERT_EQ(0, callbacks_destroyed_);
+  ASSERT_EQ(0, add_provider_called());
+  ASSERT_EQ(0, callbacks_destroyed());
 
   WaitForDownloadToFinish();
-  ASSERT_EQ(0, add_provider_called_);
-  ASSERT_EQ(1, callbacks_destroyed_);
+  ASSERT_EQ(0, add_provider_called());
+  ASSERT_EQ(1, callbacks_destroyed());
 
-  const TemplateURL* t_url = test_util_.model()->GetTemplateURLForKeyword(
+  const TemplateURL* t_url = test_util()->model()->GetTemplateURLForKeyword(
       keyword);
   ASSERT_TRUE(t_url);
   EXPECT_EQ(ASCIIToUTF16("http://example.com/%s/other_stuff"),
             t_url->url_ref().DisplayURL(
-                test_util_.model()->search_terms_data()));
+                test_util()->model()->search_terms_data()));
   EXPECT_TRUE(t_url->safe_for_autoreplace());
 }
 
 TEST_F(TemplateURLFetcherTest, DuplicatesThrownAway) {
   base::string16 keyword(ASCIIToUTF16("test"));
 
-  test_util_.ChangeModelToLoadState();
-  ASSERT_FALSE(test_util_.model()->GetTemplateURLForKeyword(keyword));
+  test_util()->ChangeModelToLoadState();
+  ASSERT_FALSE(test_util()->model()->GetTemplateURLForKeyword(keyword));
 
   std::string osdd_file_name("simple_open_search.xml");
   StartDownload(keyword, osdd_file_name,
                 TemplateURLFetcher::AUTODETECTED_PROVIDER, true);
-  ASSERT_EQ(0, add_provider_called_);
-  ASSERT_EQ(0, callbacks_destroyed_);
+  ASSERT_EQ(0, add_provider_called());
+  ASSERT_EQ(0, callbacks_destroyed());
 
   struct {
     std::string description;
@@ -194,74 +207,74 @@ TEST_F(TemplateURLFetcherTest, DuplicatesThrownAway) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     StartDownload(test_cases[i].keyword, test_cases[i].osdd_file_name,
                   test_cases[i].provider_type, false);
-    ASSERT_EQ(1, template_url_fetcher_->requests_count())
+    ASSERT_EQ(1, template_url_fetcher()->requests_count())
         << test_cases[i].description;
-    ASSERT_EQ(i + 1, static_cast<size_t>(callbacks_destroyed_));
+    ASSERT_EQ(i + 1, static_cast<size_t>(callbacks_destroyed()));
   }
 
   WaitForDownloadToFinish();
   ASSERT_EQ(1 + ARRAYSIZE_UNSAFE(test_cases),
-            static_cast<size_t>(callbacks_destroyed_));
-  ASSERT_EQ(0, add_provider_called_);
+            static_cast<size_t>(callbacks_destroyed()));
+  ASSERT_EQ(0, add_provider_called());
 }
 
 TEST_F(TemplateURLFetcherTest, BasicExplicitTest) {
   base::string16 keyword(ASCIIToUTF16("test"));
 
-  test_util_.ChangeModelToLoadState();
-  ASSERT_FALSE(test_util_.model()->GetTemplateURLForKeyword(keyword));
+  test_util()->ChangeModelToLoadState();
+  ASSERT_FALSE(test_util()->model()->GetTemplateURLForKeyword(keyword));
 
   std::string osdd_file_name("simple_open_search.xml");
   StartDownload(keyword, osdd_file_name,
                 TemplateURLFetcher::EXPLICIT_PROVIDER, true);
-  ASSERT_EQ(0, add_provider_called_);
-  ASSERT_EQ(0, callbacks_destroyed_);
+  ASSERT_EQ(0, add_provider_called());
+  ASSERT_EQ(0, callbacks_destroyed());
 
   WaitForDownloadToFinish();
-  ASSERT_EQ(1, add_provider_called_);
-  ASSERT_EQ(1, callbacks_destroyed_);
+  ASSERT_EQ(1, add_provider_called());
+  ASSERT_EQ(1, callbacks_destroyed());
 
-  ASSERT_TRUE(last_callback_template_url_.get());
+  ASSERT_TRUE(last_callback_template_url());
   EXPECT_EQ(ASCIIToUTF16("http://example.com/%s/other_stuff"),
-            last_callback_template_url_->url_ref().DisplayURL(
-                test_util_.model()->search_terms_data()));
+            last_callback_template_url()->url_ref().DisplayURL(
+                test_util()->model()->search_terms_data()));
   EXPECT_EQ(ASCIIToUTF16("example.com"),
-            last_callback_template_url_->keyword());
-  EXPECT_FALSE(last_callback_template_url_->safe_for_autoreplace());
+            last_callback_template_url()->keyword());
+  EXPECT_FALSE(last_callback_template_url()->safe_for_autoreplace());
 }
 
 TEST_F(TemplateURLFetcherTest, AutodetectedBeforeLoadTest) {
   base::string16 keyword(ASCIIToUTF16("test"));
-  ASSERT_FALSE(test_util_.model()->GetTemplateURLForKeyword(keyword));
+  ASSERT_FALSE(test_util()->model()->GetTemplateURLForKeyword(keyword));
 
   std::string osdd_file_name("simple_open_search.xml");
   StartDownload(keyword, osdd_file_name,
                 TemplateURLFetcher::AUTODETECTED_PROVIDER, true);
-  ASSERT_EQ(0, add_provider_called_);
-  ASSERT_EQ(1, callbacks_destroyed_);
+  ASSERT_EQ(0, add_provider_called());
+  ASSERT_EQ(1, callbacks_destroyed());
 }
 
 TEST_F(TemplateURLFetcherTest, ExplicitBeforeLoadTest) {
   base::string16 keyword(ASCIIToUTF16("test"));
-  ASSERT_FALSE(test_util_.model()->GetTemplateURLForKeyword(keyword));
+  ASSERT_FALSE(test_util()->model()->GetTemplateURLForKeyword(keyword));
 
   std::string osdd_file_name("simple_open_search.xml");
   StartDownload(keyword, osdd_file_name,
                 TemplateURLFetcher::EXPLICIT_PROVIDER, true);
-  ASSERT_EQ(0, add_provider_called_);
-  ASSERT_EQ(0, callbacks_destroyed_);
+  ASSERT_EQ(0, add_provider_called());
+  ASSERT_EQ(0, callbacks_destroyed());
 
   WaitForDownloadToFinish();
-  ASSERT_EQ(1, add_provider_called_);
-  ASSERT_EQ(1, callbacks_destroyed_);
+  ASSERT_EQ(1, add_provider_called());
+  ASSERT_EQ(1, callbacks_destroyed());
 
-  ASSERT_TRUE(last_callback_template_url_.get());
+  ASSERT_TRUE(last_callback_template_url());
   EXPECT_EQ(ASCIIToUTF16("http://example.com/%s/other_stuff"),
-            last_callback_template_url_->url_ref().DisplayURL(
-                test_util_.model()->search_terms_data()));
+            last_callback_template_url()->url_ref().DisplayURL(
+                test_util()->model()->search_terms_data()));
   EXPECT_EQ(ASCIIToUTF16("example.com"),
-            last_callback_template_url_->keyword());
-  EXPECT_FALSE(last_callback_template_url_->safe_for_autoreplace());
+            last_callback_template_url()->keyword());
+  EXPECT_FALSE(last_callback_template_url()->safe_for_autoreplace());
 }
 
 TEST_F(TemplateURLFetcherTest, DuplicateKeywordsTest) {
@@ -270,18 +283,18 @@ TEST_F(TemplateURLFetcherTest, DuplicateKeywordsTest) {
   data.short_name = keyword;
   data.SetKeyword(keyword);
   data.SetURL("http://example.com/");
-  test_util_.model()->Add(new TemplateURL(data));
-  test_util_.ChangeModelToLoadState();
+  test_util()->model()->Add(new TemplateURL(data));
+  test_util()->ChangeModelToLoadState();
 
-  ASSERT_TRUE(test_util_.model()->GetTemplateURLForKeyword(keyword));
+  ASSERT_TRUE(test_util()->model()->GetTemplateURLForKeyword(keyword));
 
   // This should bail because the keyword already exists.
   std::string osdd_file_name("simple_open_search.xml");
   StartDownload(keyword, osdd_file_name,
                 TemplateURLFetcher::AUTODETECTED_PROVIDER, true);
-  ASSERT_EQ(0, add_provider_called_);
-  ASSERT_EQ(1, callbacks_destroyed_);
-  ASSERT_FALSE(last_callback_template_url_.get());
+  ASSERT_EQ(0, add_provider_called());
+  ASSERT_EQ(1, callbacks_destroyed());
+  ASSERT_FALSE(last_callback_template_url());
 }
 
 TEST_F(TemplateURLFetcherTest, DuplicateDownloadTest) {
@@ -289,17 +302,17 @@ TEST_F(TemplateURLFetcherTest, DuplicateDownloadTest) {
   std::string osdd_file_name("simple_open_search.xml");
   StartDownload(keyword, osdd_file_name,
                 TemplateURLFetcher::EXPLICIT_PROVIDER, true);
-  ASSERT_EQ(0, add_provider_called_);
-  ASSERT_EQ(0, callbacks_destroyed_);
+  ASSERT_EQ(0, add_provider_called());
+  ASSERT_EQ(0, callbacks_destroyed());
 
   // This should bail because the keyword already has a pending download.
   StartDownload(keyword, osdd_file_name,
                 TemplateURLFetcher::EXPLICIT_PROVIDER, true);
-  ASSERT_EQ(0, add_provider_called_);
-  ASSERT_EQ(1, callbacks_destroyed_);
+  ASSERT_EQ(0, add_provider_called());
+  ASSERT_EQ(1, callbacks_destroyed());
 
   WaitForDownloadToFinish();
-  ASSERT_EQ(1, add_provider_called_);
-  ASSERT_EQ(2, callbacks_destroyed_);
-  ASSERT_TRUE(last_callback_template_url_.get());
+  ASSERT_EQ(1, add_provider_called());
+  ASSERT_EQ(2, callbacks_destroyed());
+  ASSERT_TRUE(last_callback_template_url());
 }

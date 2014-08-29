@@ -374,15 +374,6 @@ class TemplateURLService : public WebDataServiceConsumer,
   }
 #endif
 
- protected:
-  // Cover method for the method of the same name on the HistoryService.
-  // url is the one that was visited with the given search terms.
-  //
-  // This exists and is virtual for testing.
-  virtual void SetKeywordSearchTermsForURL(const TemplateURL* t_url,
-                                           const GURL& url,
-                                           const base::string16& term);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, TestManagedDefaultSearch);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest,

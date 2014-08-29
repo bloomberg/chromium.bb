@@ -4,11 +4,11 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
@@ -161,7 +161,7 @@ class TemplateURLServiceSyncTest : public testing::Test {
   // For readability, we redefine an accessor for Model A for use in tests that
   // involve syncing two models.
   TemplateURLService* model_a() { return test_util_a_->model(); }
-  TemplateURLService* model_b() { return model_b_.get(); }
+  TemplateURLService* model_b() { return test_util_b_->model(); }
   TestingProfile* profile_a() { return test_util_a_->profile(); }
   TestChangeProcessor* processor() { return sync_processor_.get(); }
   scoped_ptr<syncer::SyncChangeProcessor> PassProcessor();
@@ -209,10 +209,10 @@ class TemplateURLServiceSyncTest : public testing::Test {
                                const std::string& guid);
 
  protected:
+  base::MessageLoop message_loop_;
   // We keep two TemplateURLServices to test syncing between them.
   scoped_ptr<TemplateURLServiceTestUtil> test_util_a_;
-  scoped_ptr<TestingProfile> profile_b_;
-  scoped_ptr<TemplateURLService> model_b_;
+  scoped_ptr<TemplateURLServiceTestUtil> test_util_b_;
 
   // Our dummy ChangeProcessor used to inspect changes pushed to Sync.
   scoped_ptr<TestChangeProcessor> sync_processor_;
@@ -233,13 +233,9 @@ void TemplateURLServiceSyncTest::SetUp() {
   // in the prepopulate data, which the sync tests don't care about (and would
   // just foul them up).
   test_util_a_->ChangeModelToLoadState();
-  profile_b_.reset(new TestingProfile);
-  TemplateURLServiceFactory::GetInstance()->
-      RegisterUserPrefsOnBrowserContextForTest(profile_b_.get());
-  model_b_.reset(new TemplateURLService(
-      profile_b_->GetPrefs(), make_scoped_ptr(new SearchTermsData), NULL,
-      scoped_ptr<TemplateURLServiceClient>(), NULL, NULL, base::Closure()));
-  model_b_->Load();
+
+  test_util_b_.reset(new TemplateURLServiceTestUtil);
+  test_util_b_->VerifyLoad();
 }
 
 void TemplateURLServiceSyncTest::TearDown() {
