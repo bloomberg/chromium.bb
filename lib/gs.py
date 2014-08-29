@@ -480,6 +480,7 @@ class GSContext(object):
           self.RESUMABLE_DOWNLOAD_ERROR,
           self.RESUMABLE_UPLOAD_ERROR,
           'ResumableUploadException',
+          'ResumableUploadAbortException',
           'ResumableDownloadException',
           'ssl.SSLError: The read operation timed out',
       )
