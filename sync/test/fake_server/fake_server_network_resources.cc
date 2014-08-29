@@ -24,10 +24,10 @@ FakeServerNetworkResources::FakeServerNetworkResources(FakeServer* fake_server)
 FakeServerNetworkResources::~FakeServerNetworkResources() {}
 
 scoped_ptr<syncer::HttpPostProviderFactory>
-    FakeServerNetworkResources::GetHttpPostProviderFactory(
-        net::URLRequestContextGetter* baseline_context_getter,
-        const NetworkTimeUpdateCallback& network_time_update_callback,
-        CancelationSignal* cancelation_signal) {
+FakeServerNetworkResources::GetHttpPostProviderFactory(
+    const scoped_refptr<net::URLRequestContextGetter>& baseline_context_getter,
+    const NetworkTimeUpdateCallback& network_time_update_callback,
+    CancelationSignal* cancelation_signal) {
   return make_scoped_ptr<syncer::HttpPostProviderFactory>(
       new FakeServerHttpPostProviderFactory(
           fake_server_,

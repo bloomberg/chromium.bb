@@ -25,7 +25,8 @@ class SYNC_EXPORT HttpBridgeNetworkResources : public NetworkResources {
 
    // NetworkResources
    virtual scoped_ptr<HttpPostProviderFactory> GetHttpPostProviderFactory(
-       net::URLRequestContextGetter* baseline_context_getter,
+       const scoped_refptr<net::URLRequestContextGetter>&
+           baseline_context_getter,
        const NetworkTimeUpdateCallback& network_time_update_callback,
        CancelationSignal* cancelation_signal) OVERRIDE;
 };

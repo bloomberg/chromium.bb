@@ -16,10 +16,10 @@ namespace syncer {
 HttpBridgeNetworkResources::~HttpBridgeNetworkResources() {}
 
 scoped_ptr<HttpPostProviderFactory>
-    HttpBridgeNetworkResources::GetHttpPostProviderFactory(
-        net::URLRequestContextGetter* baseline_context_getter,
-        const NetworkTimeUpdateCallback& network_time_update_callback,
-        CancelationSignal* cancelation_signal) {
+HttpBridgeNetworkResources::GetHttpPostProviderFactory(
+    const scoped_refptr<net::URLRequestContextGetter>& baseline_context_getter,
+    const NetworkTimeUpdateCallback& network_time_update_callback,
+    CancelationSignal* cancelation_signal) {
   return make_scoped_ptr<HttpPostProviderFactory>(
       new HttpBridgeFactory(baseline_context_getter,
                             network_time_update_callback,
