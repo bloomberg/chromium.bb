@@ -4,9 +4,9 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<polymer-element name="ct-party-time" attributes="tree failures">
+<polymer-element name="ct-party-time" attributes="partytime" noscript>
   <template>
-    <template if="{{ _partytime }}">
+    <template if="{{ partytime }}">
       <style>
         :host {
           height: 100%;
@@ -18,25 +18,4 @@ found in the LICENSE file.
       <img src="../images/partytime.gif">
     </template>
   </template>
-  <script>
-  (function() {
-    Polymer({
-      failures: null,
-      tree: '',
-      _partytime: false,
-
-      observe: {
-        failures: 'updatePartyTime',
-        tree: 'updatePartyTime'
-      },
-
-      updatePartyTime: function() {
-        // FIXME: This should all be done with a template, but there's a Polymer bug that prevents it:
-        // https://github.com/Polymer/polymer-expressions/issues/42
-        // FIXME: Failures should be a model with a hasFailures method instead of leaking that meaning here.
-        this._partytime = this.failures && (!this.failures[this.tree] || !this.failures[this.tree].length);
-      },
-    });
-  })();
-  </script>
 </polymer-element>

@@ -12,36 +12,29 @@ found in the LICENSE file.
 var assert = chai.assert;
 
 describe('ct-party-time', function() {
-  var partyTime;
-  var blinkFailures;
-
-  beforeEach(function(done) {
-    partyTime = document.createElement('ct-party-time');
-
-    partyTime.failures = { blink: blinkFailures };
-    partyTime.tree = 'blink';
-
-    setTimeout(done);
-  });
-
   describe('party time: party', function() {
-    before(function() {
-      blinkFailures = [];
+    var partyTime;
+    before(function(done) {
+      partyTime = document.createElement('ct-party-time');
+      partyTime.partytime = true;
+      setTimeout(done);
     });
 
     it('should have a party', function() {
-      assert(partyTime._partytime);
+      assert(partyTime.shadowRoot.querySelector('img'));
     });
   });
 
   describe('party time: no party', function() {
-    before(function() {
-      var resultsByBuilder = {};
-      blinkFailures = [new CTFailure("step1", "reason1", resultsByBuilder, 123, 123)];
+    var partyTime;
+    before(function(done) {
+      partyTime = document.createElement('ct-party-time');
+      partyTime.partytime = false;
+      setTimeout(done);
     });
 
     it('should not have a party', function() {
-      assert(!partyTime._partytime);
+      assert(!partyTime.shadowRoot.querySelector('img'));
     });
   });
 });
