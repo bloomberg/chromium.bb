@@ -8,6 +8,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
@@ -34,6 +35,18 @@ DemoModeDetector::~DemoModeDetector() {
 // Public methods.
 
 void DemoModeDetector::InitDetection() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableDemoMode))
+    return;
+
+  if (base::SysInfo::IsRunningOnChromeOS()) {
+    std::string track;
+    // We're running on an actual device; if we cannot find our release track
+    // value or if the track contains "testimage", don't start demo mode.
+    if (!base::SysInfo::GetLsbReleaseValue("CHROMEOS_RELEASE_TRACK", &track) ||
+        track.find("testimage") != std::string::npos)
+      return;
+  }
+
   if (IsDerelict())
     StartIdleDetection();
   else

@@ -112,8 +112,7 @@ void HIDDetectionScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableDemoMode))
-    core_oobe_actor_->InitDemoModeDetection();
+  core_oobe_actor_->InitDemoModeDetection();
   input_service_proxy_.AddObserver(this);
   UpdateDevices();
 

@@ -6,11 +6,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -25,7 +23,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -127,17 +124,6 @@ void NetworkScreenHandler::Show() {
                                 true,
                                 chromeos::network_handler::ErrorCallback());
   ShowScreen(OobeUI::kScreenOobeNetwork, NULL);
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableDemoMode))
-    return;
-  if (base::SysInfo::IsRunningOnChromeOS()) {
-    std::string track;
-    // We're running on an actual device; if we cannot find our release track
-    // value or if the track contains "testimage", don't start demo mode.
-    if (!base::SysInfo::GetLsbReleaseValue("CHROMEOS_RELEASE_TRACK", &track) ||
-        track.find("testimage") != std::string::npos)
-      return;
-  }
   core_oobe_actor_->InitDemoModeDetection();
 }
 
