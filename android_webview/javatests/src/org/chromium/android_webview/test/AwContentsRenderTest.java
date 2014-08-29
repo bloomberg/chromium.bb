@@ -10,7 +10,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 
 import java.util.concurrent.Callable;
@@ -68,9 +67,7 @@ public class AwContentsRenderTest extends AwTestBase {
     /*
     @SmallTest
     @Feature({"AndroidWebView"})
-    crbug.com/384559
     */
-    @DisabledTest
     public void testSetGetBackgroundColor() throws Throwable {
         setBackgroundColorOnUiThread(Color.MAGENTA);
         pollForBackgroundColor(Color.MAGENTA);
@@ -86,7 +83,7 @@ public class AwContentsRenderTest extends AwTestBase {
 
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
             "data:text/html,<html><head><style>body {background-color:#227788}</style></head>" +
-            "<body><br>HelloWorld</body></html>");
+            "<body></body></html>");
         pollForBackgroundColor(Color.rgb(0x22, 0x77, 0x88));
 
         // Changing the base background should not override CSS background.
