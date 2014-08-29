@@ -6,11 +6,12 @@
 
 #include <algorithm>
 
-#if defined(OS_POSIX)
-#include "base/environment.h"
-#endif
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
+#if defined(OS_POSIX)
+#include "base/path_service.h"
+#endif
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/escape.h"
@@ -122,14 +123,22 @@ std::string FixupHomedir(const std::string& text) {
   DCHECK(text.length() > 0 && text[0] == '~');
 
   if (text.length() == 1 || text[1] == '/') {
-    const char* home = getenv(base::env_vars::kHome);
+    base::FilePath file_path;
     if (url_fixer::home_directory_override)
-      home = url_fixer::home_directory_override;
+      file_path = base::FilePath(url_fixer::home_directory_override);
+    else
+      PathService::Get(base::DIR_HOME, &file_path);
+
     // We'll probably break elsewhere if $HOME is undefined, but check here
     // just in case.
-    if (!home)
+    if (file_path.value().empty())
       return text;
-    return home + text.substr(1);
+    // Append requires to be a relative path, so we have to cut all preceeding
+    // '/' characters.
+    size_t i = 1;
+    while (i < text.length() && text[i] == '/')
+      ++i;
+    return file_path.Append(text.substr(i)).value();
   }
 
 // Otherwise, this is a path like ~foobar/baz, where we must expand to
