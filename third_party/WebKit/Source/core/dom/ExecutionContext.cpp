@@ -45,10 +45,11 @@ namespace blink {
 class ExecutionContext::PendingException : public NoBaseWillBeGarbageCollectedFinalized<ExecutionContext::PendingException> {
     WTF_MAKE_NONCOPYABLE(PendingException);
 public:
-    PendingException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
+    PendingException(const String& errorMessage, int lineNumber, int columnNumber, int scriptId, const String& sourceURL, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
         : m_errorMessage(errorMessage)
         , m_lineNumber(lineNumber)
         , m_columnNumber(columnNumber)
+        , m_scriptId(scriptId)
         , m_sourceURL(sourceURL)
         , m_callStack(callStack)
     {
@@ -60,6 +61,7 @@ public:
     String m_errorMessage;
     int m_lineNumber;
     int m_columnNumber;
+    int m_scriptId;
     String m_sourceURL;
     RefPtrWillBeMember<ScriptCallStack> m_callStack;
 };
@@ -133,19 +135,19 @@ bool ExecutionContext::shouldSanitizeScriptError(const String& sourceURL, Access
     return !(securityOrigin()->canRequest(completeURL(sourceURL)) || corsStatus == SharableCrossOrigin);
 }
 
-void ExecutionContext::reportException(PassRefPtrWillBeRawPtr<ErrorEvent> event, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
+void ExecutionContext::reportException(PassRefPtrWillBeRawPtr<ErrorEvent> event, int scriptId, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
 {
     RefPtrWillBeRawPtr<ErrorEvent> errorEvent = event;
     if (m_inDispatchErrorEvent) {
         if (!m_pendingExceptions)
             m_pendingExceptions = adoptPtrWillBeNoop(new WillBeHeapVector<OwnPtrWillBeMember<PendingException> >());
-        m_pendingExceptions->append(adoptPtrWillBeNoop(new PendingException(errorEvent->messageForConsole(), errorEvent->lineno(), errorEvent->colno(), errorEvent->filename(), callStack)));
+        m_pendingExceptions->append(adoptPtrWillBeNoop(new PendingException(errorEvent->messageForConsole(), errorEvent->lineno(), errorEvent->colno(), scriptId, errorEvent->filename(), callStack)));
         return;
     }
 
     // First report the original exception and only then all the nested ones.
     if (!dispatchErrorEvent(errorEvent, corsStatus) && m_client)
-        m_client->logExceptionToConsole(errorEvent->messageForConsole(), errorEvent->filename(), errorEvent->lineno(), errorEvent->colno(), callStack);
+        m_client->logExceptionToConsole(errorEvent->messageForConsole(), scriptId, errorEvent->filename(), errorEvent->lineno(), errorEvent->colno(), callStack);
 
     if (!m_pendingExceptions)
         return;
@@ -153,7 +155,7 @@ void ExecutionContext::reportException(PassRefPtrWillBeRawPtr<ErrorEvent> event,
     for (size_t i = 0; i < m_pendingExceptions->size(); i++) {
         PendingException* e = m_pendingExceptions->at(i).get();
         if (m_client)
-            m_client->logExceptionToConsole(e->m_errorMessage, e->m_sourceURL, e->m_lineNumber, e->m_columnNumber, e->m_callStack);
+            m_client->logExceptionToConsole(e->m_errorMessage, e->m_scriptId, e->m_sourceURL, e->m_lineNumber, e->m_columnNumber, e->m_callStack);
     }
     m_pendingExceptions.clear();
 }

@@ -23,6 +23,7 @@ ConsoleMessage::ConsoleMessage(MessageSource source,
     , m_level(level)
     , m_type(LogMessageType)
     , m_message(message)
+    , m_scriptId(0)
     , m_url(url)
     , m_lineNumber(lineNumber)
     , m_columnNumber(columnNumber)
@@ -44,6 +45,16 @@ MessageType ConsoleMessage::type() const
 void ConsoleMessage::setType(MessageType type)
 {
     m_type = type;
+}
+
+int ConsoleMessage::scriptId() const
+{
+    return m_scriptId;
+}
+
+void ConsoleMessage::setScriptId(int scriptId)
+{
+    m_scriptId = scriptId;
 }
 
 const String& ConsoleMessage::url() const
@@ -173,7 +184,7 @@ void ConsoleMessage::collectCallStack()
     if (!m_callStack || m_source == ConsoleAPIMessageSource)
         m_callStack = createScriptCallStackForConsole(ScriptCallStack::maxCallStackSizeToCapture, true);
 
-    if (m_callStack && m_callStack->size()) {
+    if (m_callStack && m_callStack->size() && !m_scriptId) {
         const ScriptCallFrame& frame = m_callStack->at(0);
         m_url = frame.sourceURL();
         m_lineNumber = frame.lineNumber();

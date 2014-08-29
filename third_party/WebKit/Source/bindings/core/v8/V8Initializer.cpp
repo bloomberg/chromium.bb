@@ -103,9 +103,14 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
 
     v8::Handle<v8::StackTrace> stackTrace = message->GetStackTrace();
     RefPtrWillBeRawPtr<ScriptCallStack> callStack = nullptr;
+    int scriptId = message->GetScriptOrigin().ScriptID()->Value();
     // Currently stack trace is only collected when inspector is open.
     if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0) {
         callStack = createScriptCallStack(stackTrace, ScriptCallStack::maxCallStackSizeToCapture, isolate);
+        bool success = false;
+        int topScriptId = callStack->at(0).scriptId().toInt(&success);
+        if (success && topScriptId == scriptId)
+            scriptId = 0;
     } else {
         Vector<ScriptCallFrame> callFrames;
         callStack = ScriptCallStack::create(callFrames);
@@ -144,9 +149,9 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
         // other isolated worlds (which means that the error events won't fire any event listeners
         // in user's scripts).
         EventDispatchForbiddenScope::AllowUserAgentEvents allowUserAgentEvents;
-        enteredWindow->document()->reportException(event.release(), callStack, corsStatus);
+        enteredWindow->document()->reportException(event.release(), scriptId, callStack, corsStatus);
     } else {
-        enteredWindow->document()->reportException(event.release(), callStack, corsStatus);
+        enteredWindow->document()->reportException(event.release(), scriptId, callStack, corsStatus);
     }
 }
 
@@ -239,6 +244,7 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
     if (ExecutionContext* context = scriptState->executionContext()) {
         String errorMessage = toCoreString(message->Get());
         TOSTRING_VOID(V8StringResource<>, sourceURL, message->GetScriptOrigin().ResourceName());
+        int scriptId = message->GetScriptOrigin().ScriptID()->Value();
 
         RefPtrWillBeRawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, sourceURL, message->GetLineNumber(), message->GetStartColumn() + 1, &DOMWrapperWorld::current(isolate));
         AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
@@ -247,7 +253,7 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
         // the error event from the v8::Message, quietly leave.
         if (!v8::V8::IsExecutionTerminating(isolate)) {
             V8ErrorHandler::storeExceptionOnErrorEventWrapper(event.get(), data, scriptState->context()->Global(), isolate);
-            context->reportException(event.release(), nullptr, corsStatus);
+            context->reportException(event.release(), scriptId, nullptr, corsStatus);
         }
     }
 

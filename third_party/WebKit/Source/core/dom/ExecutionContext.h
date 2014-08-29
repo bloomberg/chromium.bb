@@ -86,7 +86,7 @@ public:
     KURL contextCompleteURL(const String& url) const { return virtualCompleteURL(url); }
 
     bool shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus);
-    void reportException(PassRefPtrWillBeRawPtr<ErrorEvent>, PassRefPtrWillBeRawPtr<ScriptCallStack>, AccessControlStatus);
+    void reportException(PassRefPtrWillBeRawPtr<ErrorEvent>, int scriptId, PassRefPtrWillBeRawPtr<ScriptCallStack>, AccessControlStatus);
 
     void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>);
 

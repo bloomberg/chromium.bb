@@ -188,10 +188,11 @@ void ServiceWorkerGlobalScope::importScripts(const Vector<String>& urls, Excepti
     WorkerGlobalScope::importScripts(urls, exceptionState);
 }
 
-void ServiceWorkerGlobalScope::logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
+void ServiceWorkerGlobalScope::logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
 {
-    WorkerGlobalScope::logExceptionToConsole(errorMessage, sourceURL, lineNumber, columnNumber, callStack);
+    WorkerGlobalScope::logExceptionToConsole(errorMessage, scriptId, sourceURL, lineNumber, columnNumber, callStack);
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber);
+    consoleMessage->setScriptId(scriptId);
     consoleMessage->setCallStack(callStack);
     addMessageToWorkerConsole(consoleMessage.release());
 }

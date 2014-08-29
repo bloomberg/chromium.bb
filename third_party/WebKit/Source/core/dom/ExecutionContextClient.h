@@ -60,7 +60,7 @@ public:
     virtual SecurityContext& securityContext() = 0;
     virtual void addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) = 0;
     virtual EventTarget* errorEventTarget() = 0;
-    virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) = 0;
+    virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) = 0;
     virtual double timerAlignmentInterval() const = 0;
     virtual void didUpdateSecurityOrigin() = 0;
 

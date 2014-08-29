@@ -32,6 +32,8 @@ public:
 
     MessageType type() const;
     void setType(MessageType);
+    int scriptId() const;
+    void setScriptId(int);
     const String& url() const;
     void setURL(const String&);
     unsigned lineNumber() const;
@@ -68,6 +70,7 @@ private:
     MessageLevel m_level;
     MessageType m_type;
     String m_message;
+    int m_scriptId;
     String m_url;
     unsigned m_lineNumber;
     unsigned m_columnNumber;

@@ -62,7 +62,7 @@ public:
 
 private:
     SharedWorkerGlobalScope(const String& name, const KURL&, const String& userAgent, SharedWorkerThread*, PassOwnPtrWillBeRawPtr<WorkerClients>);
-    virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) OVERRIDE;
+    virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) OVERRIDE;
 
     String m_name;
 };

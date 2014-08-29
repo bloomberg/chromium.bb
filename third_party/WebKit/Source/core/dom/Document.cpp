@@ -2801,9 +2801,10 @@ EventTarget* Document::errorEventTarget()
     return domWindow();
 }
 
-void Document::logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
+void Document::logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
 {
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber);
+    consoleMessage->setScriptId(scriptId);
     consoleMessage->setCallStack(callStack);
     addMessage(consoleMessage.release());
 }

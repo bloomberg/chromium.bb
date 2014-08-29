@@ -83,7 +83,7 @@ public:
 private:
     ServiceWorkerGlobalScope(const KURL&, const String& userAgent, ServiceWorkerThread*, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerClients>);
     virtual void importScripts(const Vector<String>& urls, ExceptionState&) OVERRIDE;
-    virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) OVERRIDE;
+    virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) OVERRIDE;
 
     RefPtrWillBeMember<ServiceWorkerClients> m_clients;
     OwnPtr<FetchManager> m_fetchManager;

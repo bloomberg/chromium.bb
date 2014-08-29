@@ -270,7 +270,7 @@ void WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtr
                 event = state.m_errorEventFromImportedScript.release();
             else
                 event = ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, m_world.get());
-            m_workerGlobalScope.reportException(event, nullptr, NotSharableCrossOrigin);
+            m_workerGlobalScope.reportException(event, 0, nullptr, NotSharableCrossOrigin);
         }
     }
 }

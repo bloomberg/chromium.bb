@@ -284,7 +284,7 @@ EventTarget* WorkerGlobalScope::errorEventTarget()
     return this;
 }
 
-void WorkerGlobalScope::logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>)
+void WorkerGlobalScope::logExceptionToConsole(const String& errorMessage, int, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>)
 {
     thread()->workerReportingProxy().reportException(errorMessage, lineNumber, columnNumber, sourceURL);
 }

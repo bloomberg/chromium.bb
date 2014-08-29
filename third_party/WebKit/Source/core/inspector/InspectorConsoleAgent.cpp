@@ -380,6 +380,8 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
     jsonObj->setType(messageTypeValue(consoleMessage->type()));
     jsonObj->setLine(static_cast<int>(consoleMessage->lineNumber()));
     jsonObj->setColumn(static_cast<int>(consoleMessage->columnNumber()));
+    if (consoleMessage->scriptId())
+        jsonObj->setScriptId(String::number(consoleMessage->scriptId()));
     jsonObj->setUrl(consoleMessage->url());
     ScriptState* scriptState = consoleMessage->scriptState();
     if (scriptState)

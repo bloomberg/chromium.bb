@@ -936,7 +936,7 @@ public:
     void serviceScriptedAnimations(double monotonicAnimationStartTime);
 
     virtual EventTarget* errorEventTarget() OVERRIDE FINAL;
-    virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) OVERRIDE FINAL;
+    virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) OVERRIDE FINAL;
 
     void initDNSPrefetch();
 

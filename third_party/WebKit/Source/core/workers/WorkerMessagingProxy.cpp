@@ -175,7 +175,7 @@ void WorkerMessagingProxy::reportException(const String& errorMessage, int lineN
     RefPtrWillBeRawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, sourceURL, lineNumber, columnNumber, 0);
     bool errorHandled = !m_workerObject->dispatchEvent(event);
     if (!errorHandled)
-        m_executionContext->reportException(event, nullptr, NotSharableCrossOrigin);
+        m_executionContext->reportException(event, 0, nullptr, NotSharableCrossOrigin);
 }
 
 void WorkerMessagingProxy::reportConsoleMessage(MessageSource source, MessageLevel level, const String& message, int lineNumber, const String& sourceURL)
