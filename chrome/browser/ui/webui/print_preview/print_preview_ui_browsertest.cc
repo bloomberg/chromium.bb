@@ -56,17 +56,22 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, PrintCommands) {
 
   ASSERT_TRUE(chrome::IsCommandEnabled(browser(), IDC_PRINT));
 
-  // Make sure advanced print command (Ctrl+Shift+p) is enabled.
-  ASSERT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ADVANCED_PRINT));
+#if defined(OS_WIN)
+  bool is_advanced_print_expected = false;
+#else
+  bool is_advanced_print_expected = true;
+#endif  // OS_WIN
+
+  ASSERT_EQ(is_advanced_print_expected,
+            chrome::IsCommandEnabled(browser(), IDC_ADVANCED_PRINT));
 
   // Create the print preview dialog.
   Print();
 
-  // Make sure print is disabled.
   ASSERT_FALSE(chrome::IsCommandEnabled(browser(), IDC_PRINT));
 
-  // Make sure advanced print command (Ctrl+Shift+p) is enabled.
-  ASSERT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ADVANCED_PRINT));
+  ASSERT_EQ(is_advanced_print_expected,
+            chrome::IsCommandEnabled(browser(), IDC_ADVANCED_PRINT));
 
   content::TestNavigationObserver reload_observer(
       browser()->tab_strip_model()->GetActiveWebContents());
@@ -75,8 +80,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, PrintCommands) {
 
   ASSERT_TRUE(chrome::IsCommandEnabled(browser(), IDC_PRINT));
 
-  // Make sure advanced print command (Ctrl+Shift+p) is enabled.
-  ASSERT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ADVANCED_PRINT));
+  ASSERT_EQ(is_advanced_print_expected,
+            chrome::IsCommandEnabled(browser(), IDC_ADVANCED_PRINT));
 }
 
 // Disable the test for mac, see http://crbug/367665.

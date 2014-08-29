@@ -542,10 +542,12 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_PRINT:
       Print(browser_);
       break;
+#if !defined(OS_WIN)
     case IDC_ADVANCED_PRINT:
       content::RecordAction(base::UserMetricsAction("Accel_Advanced_Print"));
       AdvancedPrint(browser_);
       break;
+#endif  // !OS_WIN
     case IDC_PRINT_TO_DESTINATION:
       PrintToDestination(browser_);
       break;
@@ -1273,11 +1275,10 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
 void BrowserCommandController::UpdatePrintingState() {
   bool print_enabled = CanPrint(browser_);
   command_updater_.UpdateCommandEnabled(IDC_PRINT, print_enabled);
+#if !defined(OS_WIN)
   command_updater_.UpdateCommandEnabled(IDC_ADVANCED_PRINT,
                                         CanAdvancedPrint(browser_));
-  command_updater_.UpdateCommandEnabled(IDC_PRINT_TO_DESTINATION,
-                                        print_enabled);
-#if defined(OS_WIN)
+#else   // !OS_WIN
   HMODULE metro_module = base::win::GetMetroModule();
   if (metro_module != NULL) {
     typedef void (*MetroEnablePrinting)(BOOL);
@@ -1287,7 +1288,7 @@ void BrowserCommandController::UpdatePrintingState() {
     if (metro_enable_printing)
       metro_enable_printing(print_enabled);
   }
-#endif
+#endif  // !OS_WIN
 }
 
 void BrowserCommandController::UpdateSaveAsState() {
