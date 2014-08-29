@@ -8,9 +8,13 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "device/hid/hid_device_filter.h"
 #include "device/hid/hid_service.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/permissions/usb_device_permission.h"
 
+using device::HidDeviceFilter;
 using device::HidService;
 using device::HidUsageAndPage;
 
@@ -30,8 +34,8 @@ HidDeviceManager::GetFactoryInstance() {
 }
 
 scoped_ptr<base::ListValue> HidDeviceManager::GetApiDevices(
-    uint16_t vendor_id,
-    uint16_t product_id) {
+    const Extension* extension,
+    const std::vector<HidDeviceFilter>& filters) {
   UpdateDevices();
 
   HidService* hid_service = ExtensionsAPIClient::Get()->GetHidService();
@@ -46,47 +50,52 @@ scoped_ptr<base::ListValue> HidDeviceManager::GetApiDevices(
     device::HidDeviceInfo device_info;
 
     if (hid_service->GetDeviceInfo(device_id, &device_info)) {
-      if (device_info.vendor_id == vendor_id &&
-          device_info.product_id == product_id) {
-        core_api::hid::HidDeviceInfo api_device_info;
-        api_device_info.device_id = resource_id;
-        api_device_info.vendor_id = device_info.vendor_id;
-        api_device_info.product_id = device_info.product_id;
-        api_device_info.max_input_report_size =
-            device_info.max_input_report_size;
-        api_device_info.max_output_report_size =
-            device_info.max_output_report_size;
-        api_device_info.max_feature_report_size =
-            device_info.max_feature_report_size;
+      if (!filters.empty() &&
+          !HidDeviceFilter::MatchesAny(device_info, filters)) {
+        continue;
+      }
 
-        for (std::vector<device::HidCollectionInfo>::const_iterator
-                 collections_iter = device_info.collections.begin();
-             collections_iter != device_info.collections.end();
-             ++collections_iter) {
-          device::HidCollectionInfo collection = *collections_iter;
+      if (!HasPermission(extension, device_info)) {
+        continue;
+      }
 
-          // Don't expose sensitive data.
-          if (collection.usage.IsProtected()) {
-            continue;
-          }
+      core_api::hid::HidDeviceInfo api_device_info;
+      api_device_info.device_id = resource_id;
+      api_device_info.vendor_id = device_info.vendor_id;
+      api_device_info.product_id = device_info.product_id;
+      api_device_info.max_input_report_size = device_info.max_input_report_size;
+      api_device_info.max_output_report_size =
+          device_info.max_output_report_size;
+      api_device_info.max_feature_report_size =
+          device_info.max_feature_report_size;
 
-          core_api::hid::HidCollectionInfo* api_collection =
-              new core_api::hid::HidCollectionInfo();
-          api_collection->usage_page = collection.usage.usage_page;
-          api_collection->usage = collection.usage.usage;
+      for (std::vector<device::HidCollectionInfo>::const_iterator
+               collections_iter = device_info.collections.begin();
+           collections_iter != device_info.collections.end();
+           ++collections_iter) {
+        const device::HidCollectionInfo& collection = *collections_iter;
 
-          api_collection->report_ids.resize(collection.report_ids.size());
-          std::copy(collection.report_ids.begin(),
-                    collection.report_ids.end(),
-                    api_collection->report_ids.begin());
-
-          api_device_info.collections.push_back(
-              make_linked_ptr(api_collection));
+        // Don't expose sensitive data.
+        if (collection.usage.IsProtected()) {
+          continue;
         }
 
-        // Expose devices with which user can communicate.
-        if (api_device_info.collections.size() > 0)
-          api_devices->Append(api_device_info.ToValue().release());
+        core_api::hid::HidCollectionInfo* api_collection =
+            new core_api::hid::HidCollectionInfo();
+        api_collection->usage_page = collection.usage.usage_page;
+        api_collection->usage = collection.usage.usage;
+
+        api_collection->report_ids.resize(collection.report_ids.size());
+        std::copy(collection.report_ids.begin(),
+                  collection.report_ids.end(),
+                  api_collection->report_ids.begin());
+
+        api_device_info.collections.push_back(make_linked_ptr(api_collection));
+      }
+
+      // Expose devices with which user can communicate.
+      if (api_device_info.collections.size() > 0) {
+        api_devices->Append(api_device_info.ToValue().release());
       }
     }
   }
@@ -106,6 +115,20 @@ bool HidDeviceManager::GetDeviceInfo(int resource_id,
     return false;
 
   return hid_service->GetDeviceInfo(device_iter->second, device_info);
+}
+
+bool HidDeviceManager::HasPermission(const Extension* extension,
+                                     const device::HidDeviceInfo& device_info) {
+  UsbDevicePermission::CheckParam usbParam(
+      device_info.vendor_id,
+      device_info.product_id,
+      UsbDevicePermissionData::UNSPECIFIED_INTERFACE);
+  if (extension->permissions_data()->CheckAPIPermissionWithParam(
+          APIPermission::kUsbDevice, &usbParam)) {
+    return true;
+  }
+
+  return false;
 }
 
 void HidDeviceManager::UpdateDevices() {

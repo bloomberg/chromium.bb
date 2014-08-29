@@ -6,33 +6,29 @@
 // This API provides access to HID operations from within the context of an app.
 // Using this API, apps can function as drivers for hardware devices.
 namespace hid {
-  // HID top-level collection attributes.
-  // Each enumerated device interface exposes an array of these objects.
-  // |usagePage|: HID usage page identifier.
-  // |usage|: Page-defined usage identifier.
-  // |reportIds|: Report IDs which belong to the collection and to its children.
   dictionary HidCollectionInfo {
+    // HID usage page identifier.
     long usagePage;
+    // Page-defined usage identifier.
     long usage;
+    // Report IDs which belong to the collection and to its children.
     long[] reportIds;
   };
 
-  // Returned by <code>getDevices</code> functions to describes a connected HID
-  // device. Use <code>connect</code> to connect to any of the returned devices.
-  // |deviceId|: Device opaque ID.
-  // |vendorId|: Vendor ID.
-  // |productId|: Product ID.
-  // |collections|: Top-level collections from this device's report descriptor.
-  // |maxInputReportSize|: Top-level collection's max input report size.
-  // |maxOutputReportSize|: Top-level collection's max output report size.
-  // |maxFeatureReportSize|: Top-level collection's max feature report size.
-  dictionary HidDeviceInfo {
+  [noinline_doc] dictionary HidDeviceInfo {
+    // Device opaque ID.
     long deviceId;
+    // Vendor ID.
     long vendorId;
+    // Product ID.
     long productId;
+    // Top-level collections from this device's report descriptors.
     HidCollectionInfo[] collections;
+    // Top-level collection's maximum input report size.
     long maxInputReportSize;
+    // Top-level collection's maximum output report size.
     long maxOutputReportSize;
+    // Top-level collection's maximum feature report size.
     long maxFeatureReportSize;
   };
 
@@ -42,48 +38,54 @@ namespace hid {
     long connectionId;
   };
 
-  // Searching criteria to enumerate devices with.
+  [noinline_doc] dictionary DeviceFilter {
+    // Device vendor ID.
+    long? vendorId;
+    // Device product ID, only checked only if the vendor ID matches.
+    long? productId;
+    // HID usage page identifier.
+    long? usagePage;
+    // HID usage identifier, checked only if the HID usage page matches.
+    long? usage;
+  };
+
   dictionary GetDevicesOptions {
-    long vendorId;
-    long productId;
+    [deprecated="Equivalent to setting $(ref:DeviceFilter.vendorId)."]
+    long? vendorId;
+    [deprecated="Equivalent to setting $(ref:DeviceFilter.productId)."]
+    long? productId;
+    // A device matching any given filter will be returned. An empty filter list
+    // will return all devices the app has permission for.
+    DeviceFilter[]? filters;
   };
 
   callback GetDevicesCallback = void (HidDeviceInfo[] devices);
   callback ConnectCallback = void (HidConnectInfo connection);
   callback DisconnectCallback = void ();
 
-  // The callback to be invoked when a <code>receive</code> call is finished.
   // |reportId|: The ID of the report.
   // |data|: The content of the report.
   callback ReceiveCallback = void (long reportId, ArrayBuffer data);
 
-  // The callback to be invoked when a <code>receiveFeatureReport</code> call
-  // is finished.
   // |data|: The content of the report.
   callback ReceiveFeatureReportCallback = void (ArrayBuffer data);
 
-  // The callback to be invoked when a <code>send</code> or
-  // <code>sendFeatureReport</code> call is finished.
   callback SendCallback = void();
 
   interface Functions {
-    // Enumerate all the connected HID devices specified by the vendorId/
-    // productId/interfaceId tuple.
+    // Enumerate connected HID devices.
     // |options|: The properties to search for on target devices.
-    // |callback|: Invoked with the <code>HidDeviceInfo</code> array on success.
     static void getDevices(GetDevicesOptions options,
                            GetDevicesCallback callback);
 
     // Open a connection to an HID device for communication.
     // |deviceId|: The ID of the device to open.
-    // |callback|: Invoked with an <code>HidConnectInfo</code>.
     static void connect(long deviceId,
                         ConnectCallback callback);
 
     // Disconnect from a device. Invoking operations on a device after calling
     // this is safe but has no effect.
     // |connectionId|: The connection to close.
-    // |callback|: The callback to invoke once the device is closed.
     static void disconnect(long connectionId,
                            optional DisconnectCallback callback);
 
@@ -91,7 +93,6 @@ namespace hid {
     //
     // Input reports are returned to the host through the INTERRUPT IN endpoint.
     // |connectionId|: The connection from which to receive a report.
-    // |callback|: The callback to invoke with received report.
     static void receive(long connectionId,
                         ReceiveCallback callback);
 
@@ -103,7 +104,6 @@ namespace hid {
     // |connectionId|: The connection to which to send a report.
     // |reportId|: The report ID to use, or <code>0</code> if none.
     // |data|: The report data.
-    // |callback|: The callback to invoke once the write is finished.
     static void send(long connectionId,
                      long reportId,
                      ArrayBuffer data,
@@ -113,7 +113,6 @@ namespace hid {
     //
     // |connectionId|: The connection to read Input report from.
     // |reportId|: The report ID, or zero if none.
-    // |callback|: The callback to invoke once the write is finished.
     static void receiveFeatureReport(long connectionId,
                                      long reportId,
                                      ReceiveFeatureReportCallback callback);
@@ -125,7 +124,6 @@ namespace hid {
     // |connectionId|: The connection to read Input report from.
     // |reportId|: The report ID to use, or <code>0</code> if none.
     // |data|: The report data.
-    // |callback|: The callback to invoke once the write is finished.
     static void sendFeatureReport(long connectionId,
                                   long reportId,
                                   ArrayBuffer data,

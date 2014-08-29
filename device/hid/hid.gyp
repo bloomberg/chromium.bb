@@ -26,6 +26,8 @@
         'hid_connection_mac.h',
         'hid_connection_win.cc',
         'hid_connection_win.h',
+        'hid_device_filter.cc',
+        'hid_device_filter.h',
         'hid_device_info.cc',
         'hid_device_info.h',
         'hid_report_descriptor.cc',

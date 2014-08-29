@@ -16,7 +16,13 @@
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/common/api/hid.h"
 
+namespace device {
+class HidDeviceFilter;
+}
+
 namespace extensions {
+
+class Extension;
 
 class HidDeviceManager : public BrowserContextKeyedAPI {
  public:
@@ -31,10 +37,14 @@ class HidDeviceManager : public BrowserContextKeyedAPI {
     return BrowserContextKeyedAPIFactory<HidDeviceManager>::Get(context);
   }
 
-  scoped_ptr<base::ListValue> GetApiDevices(uint16_t vendor_id,
-                                            uint16_t product_id);
+  scoped_ptr<base::ListValue> GetApiDevices(
+      const Extension* extension,
+      const std::vector<device::HidDeviceFilter>& filters);
 
   bool GetDeviceInfo(int resource_id, device::HidDeviceInfo* device_info);
+
+  bool HasPermission(const Extension* extension,
+                     const device::HidDeviceInfo& device_info);
 
  private:
   friend class BrowserContextKeyedAPIFactory<HidDeviceManager>;

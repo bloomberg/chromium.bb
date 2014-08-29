@@ -8,18 +8,18 @@
 #include <vector>
 
 #include "device/hid/hid_connection.h"
+#include "device/hid/hid_device_filter.h"
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_service.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/common/api/hid.h"
-#include "extensions/common/permissions/permissions_data.h"
-#include "extensions/common/permissions/usb_device_permission.h"
 #include "net/base/io_buffer.h"
 
 namespace hid = extensions::core_api::hid;
 
 using device::HidConnection;
+using device::HidDeviceFilter;
 using device::HidDeviceInfo;
 using device::HidService;
 
@@ -36,6 +36,22 @@ base::Value* PopulateHidConnection(int connection_id,
   hid::HidConnectInfo connection_value;
   connection_value.connection_id = connection_id;
   return connection_value.ToValue().release();
+}
+
+void ConvertHidDeviceFilter(linked_ptr<hid::DeviceFilter> input,
+                            HidDeviceFilter* output) {
+  if (input->vendor_id) {
+    output->SetVendorId(*input->vendor_id);
+  }
+  if (input->product_id) {
+    output->SetProductId(*input->product_id);
+  }
+  if (input->usage_page) {
+    output->SetUsagePage(*input->usage_page);
+  }
+  if (input->usage) {
+    output->SetUsage(*input->usage);
+  }
 }
 
 }  // namespace
@@ -84,18 +100,23 @@ bool HidGetDevicesFunction::Prepare() {
 }
 
 void HidGetDevicesFunction::AsyncWorkStart() {
-  const uint16_t vendor_id = parameters_->options.vendor_id;
-  const uint16_t product_id = parameters_->options.product_id;
-  UsbDevicePermission::CheckParam param(
-      vendor_id, product_id, UsbDevicePermissionData::UNSPECIFIED_INTERFACE);
-  if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
-          APIPermission::kUsbDevice, &param)) {
-    LOG(WARNING) << "Insufficient permissions to access device.";
-    CompleteWithError(kErrorPermissionDenied);
-    return;
+  std::vector<HidDeviceFilter> filters;
+  if (parameters_->options.filters) {
+    filters.resize(parameters_->options.filters->size());
+    for (size_t i = 0; i < parameters_->options.filters->size(); ++i) {
+      ConvertHidDeviceFilter(parameters_->options.filters->at(i), &filters[i]);
+    }
+  }
+  if (parameters_->options.vendor_id) {
+    HidDeviceFilter legacy_filter;
+    legacy_filter.SetVendorId(*parameters_->options.vendor_id);
+    if (parameters_->options.product_id) {
+      legacy_filter.SetProductId(*parameters_->options.product_id);
+    }
+    filters.push_back(legacy_filter);
   }
 
-  SetResult(device_manager_->GetApiDevices(vendor_id, product_id).release());
+  SetResult(device_manager_->GetApiDevices(extension(), filters).release());
   AsyncWorkCompleted();
 }
 
@@ -116,12 +137,7 @@ void HidConnectFunction::AsyncWorkStart() {
     return;
   }
 
-  UsbDevicePermission::CheckParam param(
-      device_info.vendor_id,
-      device_info.product_id,
-      UsbDevicePermissionData::UNSPECIFIED_INTERFACE);
-  if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
-          APIPermission::kUsbDevice, &param)) {
+  if (!device_manager_->HasPermission(extension(), device_info)) {
     LOG(WARNING) << "Insufficient permissions to access device.";
     CompleteWithError(kErrorPermissionDenied);
     return;
