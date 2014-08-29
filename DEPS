@@ -74,7 +74,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nss
   # and whatever else without interference from each other.
-  'nss_revision': 'e2e35dbd9b41c0e5cb8485f13831cd61eb484196',
+  'nss_revision': '90c5f9a8b8980fe60165813f578bbeb4fe20b18d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling google-toolbox-for-mac
   # and whatever else without interference from each other.
