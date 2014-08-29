@@ -2330,6 +2330,7 @@ public class ContentViewCore
     private void showSelectPopup(long nativeSelectPopupSourceFrame, Rect bounds, String[] items,
             int[] enabled, boolean multiple, int[] selectedIndices) {
         if (mContainerView.getParent() == null || mContainerView.getVisibility() != View.VISIBLE) {
+            mNativeSelectPopupSourceFrame = nativeSelectPopupSourceFrame;
             selectPopupMenuItems(null);
             return;
         }
