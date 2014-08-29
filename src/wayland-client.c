@@ -110,6 +110,26 @@ struct wl_display {
 static int debug_client = 0;
 
 /**
+ * This helper function wakes up all threads that are
+ * waiting for display->reader_cond (i. e. when reading is done,
+ * canceled, or an error occured)
+ *
+ * NOTE: must be called with display->mutex locked
+ */
+static void
+display_wakeup_threads(struct wl_display *display)
+{
+	/* Thread can get sleeping only in read_events(). If we're
+	 * waking it up, it means that the read completed or was
+	 * canceled, so we must increase the read_serial.
+	 * This prevents from indefinite sleeping in read_events().
+	 */
+	++display->read_serial;
+
+	pthread_cond_broadcast(&display->reader_cond);
+}
+
+/**
  * This function is called for local errors (no memory, server hung up)
  *
  * \param display
@@ -128,11 +148,7 @@ display_fatal_error(struct wl_display *display, int error)
 
 	display->last_error = error;
 
-       pthread_cond_broadcast(&display->reader_cond);
-       /* prevent from indefinite looping in read_events()
-	* (when calling pthread_cond_wait under condition
-	* display->read_serial == serial) */
-       ++display->read_serial;
+	display_wakeup_threads(display);
 }
 
 /**
@@ -182,7 +198,7 @@ display_protocol_error(struct wl_display *display, uint32_t code,
 	display->protocol_error.interface = intf;
 
 	/*
-	 * here it is not necessary to broadcast reader's cond like in
+	 * here it is not necessary to wake up threads like in
 	 * display_fatal_error, because this function is called from
 	 * an event handler and that means that read_events() is done
 	 * and woke up all threads. Since wl_display_prepare_read()
@@ -1160,8 +1176,7 @@ read_events(struct wl_display *display)
 			}
 		}
 
-		display->read_serial++;
-		pthread_cond_broadcast(&display->reader_cond);
+		display_wakeup_threads(display);
 	} else {
 		serial = display->read_serial;
 		while (display->read_serial == serial)
@@ -1346,10 +1361,8 @@ wl_display_cancel_read(struct wl_display *display)
 	pthread_mutex_lock(&display->mutex);
 
 	display->reader_count--;
-	if (display->reader_count == 0) {
-		display->read_serial++;
-		pthread_cond_broadcast(&display->reader_cond);
-	}
+	if (display->reader_count == 0)
+		display_wakeup_threads(display);
 
 	pthread_mutex_unlock(&display->mutex);
 }
