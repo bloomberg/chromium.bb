@@ -3325,6 +3325,7 @@
             ],
             'AdditionalOptions': [
                 '/d2Zi+',  # Improve debugging of Release builds.
+                '/Zc:inline',  # Remove unreferenced COMDAT (faster links).
                 '<@(win_release_extra_cflags)',
             ],
           },
@@ -5285,6 +5286,11 @@
               4702
             ],
             'msvs_settings': {
+              'VCCLCompilerTool': {
+                'AdditionalOptions!': [
+                    '/Zc:inline',  # Not supported on non-updated Express.
+                ],
+              },
               'VCLinkerTool': {
                 # Explicitly required when using the ATL with express
                 'AdditionalDependencies': ['atlthunk.lib'],
