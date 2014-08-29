@@ -110,7 +110,7 @@ void return_from_exception_handler(void) {
    * Clear the exception flag so that future faults will invoke the
    * exception handler.
    */
-  int rc = NACL_SYSCALL(exception_clear_flag)();
+  int rc = nacl_exception_clear_flag();
   assert(rc == 0);
   longjmp(g_jmp_buf, 1);
 }
@@ -196,11 +196,11 @@ void exception_handler_wrapped(struct NaClSignalContext *entry_regs) {
 }
 
 void test_exception_stack_with_size(char *stack, size_t stack_size) {
-  if (0 != NACL_SYSCALL(exception_handler)(exception_handler, 0)) {
+  if (0 != nacl_exception_set_handler(exception_handler)) {
     printf("failed to set exception handler\n");
     exit(4);
   }
-  if (0 != NACL_SYSCALL(exception_stack)(stack, stack_size)) {
+  if (0 != nacl_exception_set_stack(stack, stack_size)) {
     printf("failed to set alt stack\n");
     exit(5);
   }
@@ -243,6 +243,11 @@ void test_exception_stack_alignments(void) {
 }
 
 void test_getting_previous_handler(void) {
+  /*
+   * The direct IRT call and NaCl syscall exposes old handler as API
+   * whereas nacl_exception_set_handler() does not. This test
+   * exercises that path.
+   */
   int rc;
   nacl_exception_handler_t prev_handler;
 
@@ -265,13 +270,13 @@ void test_invalid_handlers(void) {
   const char *ptr_in_rodata_segment = "";
 
   /* An alignment check is required for safety in all NaCl sandboxes. */
-  rc = NACL_SYSCALL(exception_handler)(unaligned_func_ptr, NULL);
-  assert(rc == -EFAULT);
+  rc = nacl_exception_set_handler(unaligned_func_ptr);
+  assert(rc == EFAULT);
 
   /* A range check is required for safety in the NaCl ARM sandbox. */
-  rc = NACL_SYSCALL(exception_handler)(
-      (nacl_exception_handler_t) (uintptr_t) ptr_in_rodata_segment, NULL);
-  assert(rc == -EFAULT);
+  rc = nacl_exception_set_handler(
+      (nacl_exception_handler_t) (uintptr_t) ptr_in_rodata_segment);
+  assert(rc == EFAULT);
 }
 
 
@@ -300,7 +305,7 @@ void test_exceptions_on_non_main_thread(void) {
 }
 
 void test_catching_various_exception_types(void) {
-  int rc = NACL_SYSCALL(exception_handler)(simple_exception_handler, NULL);
+  int rc = nacl_exception_set_handler(simple_exception_handler);
   assert(rc == 0);
 
   printf("Testing __builtin_trap()...\n");
@@ -366,8 +371,7 @@ void direction_flag_exception_handler(struct NaClExceptionContext *context) {
  * checks that this happens.
  */
 void test_unsetting_x86_direction_flag(void) {
-  int rc = NACL_SYSCALL(exception_handler)(direction_flag_exception_handler,
-                                           NULL);
+  int rc = nacl_exception_set_handler(direction_flag_exception_handler);
   assert(rc == 0);
   if (!setjmp(g_jmp_buf)) {
     /* Cause a crash with the direction flag set. */

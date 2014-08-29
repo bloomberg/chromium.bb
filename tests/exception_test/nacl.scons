@@ -20,7 +20,7 @@ exception_test = env.ComponentProgram(
     env.ProgramNameForNmf('exception_test'),
     ['exception_test.c'] + helper_files,
     EXTRA_LIBS=['${NONIRT_LIBS}', '${PTHREAD_LIBS}', '${TESTRUNNER_LIBS}',
-                'test_common'])
+                '${EXCEPTION_LIBS}', 'test_common'])
 
 node = env.CommandSelLdrTestNacl(
     'exception_test.out', exception_test, **test_args)
@@ -30,7 +30,7 @@ env.AddNodeToTestSuite(
 
 exception_crash_test = env.ComponentProgram(
     'exception_crash_test', ['exception_crash_test.c'],
-    EXTRA_LIBS=['${NONIRT_LIBS}'])
+    EXTRA_LIBS=['${NONIRT_LIBS}', '${EXCEPTION_LIBS}'])
 
 for subtest in ('test_bad_handler',
                 'test_stack_outside_sandbox',

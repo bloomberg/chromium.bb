@@ -32,7 +32,7 @@ void test_bad_handler(void) {
    * address space is never mapped.
    */
   nacl_exception_handler_t handler = (nacl_exception_handler_t) 0x1000;
-  int rc = NACL_SYSCALL(exception_handler)(handler, NULL);
+  int rc = nacl_exception_set_handler(handler);
   assert(rc == 0);
   fprintf(stderr, "** intended_exit_status=untrusted_segfault\n");
   /* Cause crash. */
@@ -119,7 +119,7 @@ void bad_stack_exception_handler(struct NaClExceptionContext *context) {
  */
 void test_stack_outside_sandbox(void) {
 #if defined(__i386__)
-  int rc = NACL_SYSCALL(exception_handler)(bad_stack_exception_handler, NULL);
+  int rc = nacl_exception_set_handler(bad_stack_exception_handler);
   assert(rc == 0);
   fprintf(stderr, "** intended_exit_status=untrusted_segfault\n");
   asm(/*
@@ -144,10 +144,10 @@ void test_stack_outside_sandbox(void) {
  * accidentally.
  */
 void test_stack_in_rwdata(void) {
-  int rc = NACL_SYSCALL(exception_handler)(bad_stack_exception_handler, NULL);
+  int rc = nacl_exception_set_handler(bad_stack_exception_handler);
   assert(rc == 0);
-  rc = NACL_SYSCALL(exception_stack)((void *) stack_in_rwdata,
-                                     sizeof(stack_in_rwdata));
+  rc = nacl_exception_set_stack((void *) stack_in_rwdata,
+                                sizeof(stack_in_rwdata));
   assert(rc == 0);
   fprintf(stderr, "** intended_exit_status=1\n");
   /* Cause crash. */
@@ -161,10 +161,10 @@ void test_stack_in_rwdata(void) {
  * unwritable stack.
  */
 void test_stack_in_rodata(void) {
-  int rc = NACL_SYSCALL(exception_handler)(bad_stack_exception_handler, NULL);
+  int rc = nacl_exception_set_handler(bad_stack_exception_handler);
   assert(rc == 0);
-  rc = NACL_SYSCALL(exception_stack)((void *) stack_in_rodata,
-                                     sizeof(stack_in_rodata));
+  rc = nacl_exception_set_stack((void *) stack_in_rodata,
+                                sizeof(stack_in_rodata));
   assert(rc == 0);
   fprintf(stderr, "** intended_exit_status=unwritable_exception_stack\n");
   /* Cause crash. */
@@ -201,9 +201,9 @@ char *stack_in_code = (char *) 0x20000;
 const int stack_in_code_size = 0x1000;
 
 void test_stack_in_code(void) {
-  int rc = NACL_SYSCALL(exception_handler)(bad_stack_exception_handler, NULL);
+  int rc = nacl_exception_set_handler(bad_stack_exception_handler);
   assert(rc == 0);
-  rc = NACL_SYSCALL(exception_stack)(stack_in_code, stack_in_code_size);
+  rc = nacl_exception_set_stack(stack_in_code, stack_in_code_size);
   assert(rc == 0);
   fprintf(stderr, "** intended_exit_status=unwritable_exception_stack\n");
   /* Cause crash. */
@@ -216,10 +216,10 @@ void test_stack_in_code(void) {
  * syscalls) do not cause the untrusted exception handler to run.
  */
 void test_crash_in_syscall(void) {
-  int rc = NACL_SYSCALL(exception_handler)(bad_stack_exception_handler, NULL);
+  int rc = nacl_exception_set_handler(bad_stack_exception_handler);
   assert(rc == 0);
-  rc = NACL_SYSCALL(exception_stack)((void *) stack_in_rwdata,
-                                     sizeof(stack_in_rwdata));
+  rc = nacl_exception_set_stack((void *) stack_in_rwdata,
+                                sizeof(stack_in_rwdata));
   assert(rc == 0);
   fprintf(stderr, "** intended_exit_status=trusted_segfault\n");
   /*
