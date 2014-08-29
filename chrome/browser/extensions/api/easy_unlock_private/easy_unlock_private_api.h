@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/bluetooth_socket/bluetooth_socket_api.h"
+#include "extensions/browser/api/bluetooth_socket/bluetooth_socket_api.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 
@@ -166,7 +166,7 @@ class EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction
 };
 
 class EasyUnlockPrivateConnectToBluetoothServiceInsecurelyFunction
-    : public BluetoothSocketAbstractConnectFunction {
+    : public core_api::BluetoothSocketAbstractConnectFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "easyUnlockPrivate.connectToBluetoothServiceInsecurely",

@@ -4,7 +4,6 @@
 
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
 
-#include "chrome/common/extensions/api/bluetooth/bluetooth_manifest_handler.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "chrome/common/extensions/api/extension_action/browser_action_handler.h"
 #include "chrome/common/extensions/api/extension_action/page_action_handler.h"
@@ -33,6 +32,7 @@
 #include "chrome/common/extensions/manifest_handlers/theme_handler.h"
 #include "chrome/common/extensions/manifest_handlers/ui_overrides_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "extensions/common/api/bluetooth/bluetooth_manifest_handler.h"
 #include "extensions/common/api/sockets/sockets_manifest_handler.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/common/manifest_handlers/requirements_info.h"

@@ -4355,12 +4355,6 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_ALL_DEVICES" desc="Permission string for access all user's connected devices.">
         Access all your hardware devices
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH" desc="Permission string for general access to the Bluetooth API.">
-        Access information about Bluetooth devices paired with your system and discover nearby Bluetooth devices.
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_DEVICES" desc="Permission string for implementing Bluetooth profiles.">
-        Send messages to and receive messages from Bluetooth devices.
-      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_DOWNLOADS" desc="Permission string for access to downloads.">
         Manage your downloads
       </message>

@@ -190,12 +190,6 @@
       'common/worker_thread_ticker.h',
     ],
     'chrome_common_extensions_sources': [
-      'common/extensions/api/bluetooth/bluetooth_manifest_data.cc',
-      'common/extensions/api/bluetooth/bluetooth_manifest_data.h',
-      'common/extensions/api/bluetooth/bluetooth_manifest_handler.cc',
-      'common/extensions/api/bluetooth/bluetooth_manifest_handler.h',
-      'common/extensions/api/bluetooth/bluetooth_manifest_permission.cc',
-      'common/extensions/api/bluetooth/bluetooth_manifest_permission.h',
       'common/extensions/api/commands/commands_handler.cc',
       'common/extensions/api/commands/commands_handler.h',
       'common/extensions/api/extension_action/browser_action_handler.cc',
@@ -343,7 +337,6 @@
         ['enable_extensions==1', {
           'sources': [ '<@(chrome_common_extensions_sources)' ],
           'dependencies': [
-            '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../device/usb/usb.gyp:device_usb',
           ],
         }],

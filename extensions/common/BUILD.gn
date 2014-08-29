@@ -8,6 +8,12 @@ import("//build/config/features.gni")
 source_set("common") {
   sources = [
     "api/messaging/message.h",
+    "api/bluetooth/bluetooth_manifest_data.cc",
+    "api/bluetooth/bluetooth_manifest_data.h",
+    "api/bluetooth/bluetooth_manifest_handler.cc",
+    "api/bluetooth/bluetooth_manifest_handler.h",
+    "api/bluetooth/bluetooth_manifest_permission.cc",
+    "api/bluetooth/bluetooth_manifest_permission.h",
     "api/sockets/sockets_manifest_data.cc",
     "api/sockets/sockets_manifest_data.h",
     "api/sockets/sockets_manifest_handler.cc",
@@ -207,10 +213,17 @@ source_set("common") {
     ]
 
     deps += [
+      "//device/bluetooth",
       "//device/usb",
     ]
   } else {
     sources -= [
+      "api/bluetooth/bluetooth_manifest_data.cc",
+      "api/bluetooth/bluetooth_manifest_data.h",
+      "api/bluetooth/bluetooth_manifest_handler.cc",
+      "api/bluetooth/bluetooth_manifest_handler.h",
+      "api/bluetooth/bluetooth_manifest_permission.cc",
+      "api/bluetooth/bluetooth_manifest_permission.h",
       "api/messaging/message.h",
       "api/sockets/sockets_manifest_data.cc",
       "api/sockets/sockets_manifest_data.h",

@@ -199,7 +199,15 @@
       <message name="IDS_EXTENSION_MANIFEST_INVALID" desc="">
         Manifest file is invalid.
       </message>
-      
+
+      <!-- Bluetooth access permissions. Please keep alphabetized. -->
+      <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH" desc="Permission string for general access to the Bluetooth API.">
+        Access information about Bluetooth devices paired with your system and discover nearby Bluetooth devices.
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_DEVICES" desc="Permission string for implementing Bluetooth profiles.">
+        Send messages to and receive messages from Bluetooth devices.
+      </message>
+
       <!-- Host access permissions. Please keep alphabetized. -->
       <message name="IDS_EXTENSION_PROMPT_WARNING_1_HOST" desc="Permission string for access to data on one website.">
         Read and change your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>
@@ -277,7 +285,7 @@
       <message name="IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOSTS" desc="Permission string for access to multiple specific computers on the local network or internet.">
         Exchange data with the computers named: <ph name="HOSTNAMES">$1<ex>foo.example.com bar.example.com</ex></ph>
       </message>
-      
+
       <!-- Device API strings. Please keep alphabetized. -->
       <message name="IDS_EXTENSION_PROMPT_WARNING_HID" desc="Permission string for access to HID devices.">
         Access your input devices

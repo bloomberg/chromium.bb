@@ -8,10 +8,6 @@
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/api/alarms/alarm_manager.h"
 #include "chrome/browser/extensions/api/audio/audio_api.h"
-#include "chrome/browser/extensions/api/bluetooth/bluetooth_api.h"
-#include "chrome/browser/extensions/api/bluetooth/bluetooth_private_api.h"
-#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
-#include "chrome/browser/extensions/api/bluetooth_socket/bluetooth_socket_event_dispatcher.h"
 #include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmarks_api.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_display_private_api.h"
@@ -63,6 +59,10 @@
 #include "chrome/browser/extensions/token_cache/token_cache_service_factory.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
 #include "extensions/browser/api/api_resource_manager.h"
+#include "extensions/browser/api/bluetooth/bluetooth_api.h"
+#include "extensions/browser/api/bluetooth/bluetooth_private_api.h"
+#include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
+#include "extensions/browser/api/bluetooth_socket/bluetooth_socket_event_dispatcher.h"
 #include "extensions/browser/api/power/power_api_manager.h"
 #include "extensions/browser/api/usb/usb_device_resource.h"
 
@@ -163,7 +163,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
   TokenCacheServiceFactory::GetInstance();
   extensions::ExtensionGCMAppHandler::GetFactoryInstance();
-  extensions::api::BluetoothSocketEventDispatcher::GetFactoryInstance();
+  extensions::core_api::BluetoothSocketEventDispatcher::GetFactoryInstance();
 }
 
 }  // namespace chrome_extensions

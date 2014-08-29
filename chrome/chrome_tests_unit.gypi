@@ -528,6 +528,7 @@
         # http://crbug.com/348066. They are duplicated here because we haven't
         # extensions_unittests running in the bots yet. Until that happens,
         # they should be kept here.
+        '../extensions/browser/api/bluetooth/bluetooth_event_router_unittest.cc',
         '../extensions/browser/api/cast_channel/cast_channel_api_unittest.cc',
         '../extensions/browser/api/cast_channel/cast_socket_unittest.cc',
         '../extensions/browser/api/cast_channel/logger_unittest.cc',
@@ -838,7 +839,6 @@
         'browser/extensions/activity_log/uma_policy_unittest.cc',
         'browser/extensions/api/activity_log_private/activity_log_private_api_unittest.cc',
         'browser/extensions/api/alarms/alarms_api_unittest.cc',
-        'browser/extensions/api/bluetooth/bluetooth_event_router_unittest.cc',
         'browser/extensions/api/bookmarks/bookmark_api_helpers_unittest.cc',
         'browser/extensions/api/content_settings/content_settings_store_unittest.cc',
         'browser/extensions/api/content_settings/content_settings_unittest.cc',

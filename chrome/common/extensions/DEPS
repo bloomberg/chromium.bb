@@ -1,6 +1,5 @@
 include_rules = [
   "+components/policy/core/common",
-  "+device/bluetooth",  # For BluetoothPermission
   "+device/usb",  # For UsbDevicePermission
   "+extensions/grit",
   "+extensions/strings/grit",

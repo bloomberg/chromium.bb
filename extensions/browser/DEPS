@@ -4,6 +4,7 @@ include_rules = [
   "+components/sessions",
   "+components/web_modal",
   "+content/public/browser",
+  "+device/bluetooth",
   "+grit/extensions_strings.h",
   "+net",
   "+skia/ext/image_operations.h",

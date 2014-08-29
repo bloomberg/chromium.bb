@@ -142,32 +142,6 @@
         }
       },
       {
-        "id": "bluetooth",
-        "type": "object",
-        "description": "The <code>bluetooth</code> manifest property give permission to an app to use the $(ref:bluetooth) API. A list of UUIDs can be optionally specified to enable communication with devices.",
-        "properties": {
-          "uuids": {
-            "description": "The <code>uuids</code> manifest property declares the list of protocols, profiles and services that an app can communicate using.",
-            "optional": true,
-            "type": "array",
-            "items": {
-              "description": "<p>The list specified as UUID strings.</p>",
-              "type": "string"
-            }
-          },
-          "socket": {
-            "type": "boolean",
-            "description": "If <code>true</code>, gives permission to an app to use the $(ref:bluetoothSocket) API",
-            "optional": true
-          },
-          "low_energy": {
-            "type": "boolean",
-            "description": "If <code>true</code>, gives permission to an app to use the $(ref:bluetoothLowEnergy) API",
-            "optional": true
-          }
-        }
-      },
-      {
         "id": "automation",
         "description": "This API provides programmatic access to the user interface elements of Chrome. This includes everything in the web view, and optionally Chrome's full user interface.",
         "choices": [

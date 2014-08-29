@@ -27,12 +27,9 @@
 
 namespace extensions {
 
-namespace api {
+namespace core_api {
 class BluetoothSocketApiFunction;
 class BluetoothSocketEventDispatcher;
-}
-
-namespace core_api {
 class SerialEventDispatcher;
 class TCPServerSocketEventDispatcher;
 class TCPSocketEventDispatcher;
@@ -204,8 +201,8 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
   // TODO(rockot): ApiResourceData could be moved out of ApiResourceManager and
   // we could avoid maintaining a friends list here.
   friend class BluetoothAPI;
-  friend class api::BluetoothSocketApiFunction;
-  friend class api::BluetoothSocketEventDispatcher;
+  friend class core_api::BluetoothSocketApiFunction;
+  friend class core_api::BluetoothSocketEventDispatcher;
   friend class core_api::SerialEventDispatcher;
   friend class core_api::TCPServerSocketEventDispatcher;
   friend class core_api::TCPSocketEventDispatcher;
