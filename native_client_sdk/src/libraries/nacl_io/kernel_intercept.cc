@@ -482,6 +482,18 @@ struct hostent* ki_gethostbyname(const char* name) {
   return s_state.kp->gethostbyname(name);
 }
 
+int ki_getnameinfo(const struct sockaddr *sa,
+                   socklen_t salen,
+                   char *host,
+                   size_t hostlen,
+                   char *serv,
+                   size_t servlen,
+                   unsigned int flags) {
+  ON_NOSYS_RETURN(EAI_SYSTEM);
+  return s_state.kp->getnameinfo(sa, salen, host, hostlen, serv, servlen,
+                                 flags);
+}
+
 int ki_getaddrinfo(const char* node,
                    const char* service,
                    const struct addrinfo* hints,

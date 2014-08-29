@@ -1356,6 +1356,17 @@ int KernelProxy::getaddrinfo(const char* node,
   return host_resolver_.getaddrinfo(node, service, hints, res);
 }
 
+int KernelProxy::getnameinfo(const struct sockaddr *sa,
+                             socklen_t salen,
+                             char *host,
+                             size_t hostlen,
+                             char *serv,
+                             size_t servlen,
+                             int flags) {
+  return host_resolver_.getnameinfo(sa, salen, host, hostlen, serv, servlen,
+                                    flags);
+}
+
 struct hostent* KernelProxy::gethostbyname(const char* name) {
   return host_resolver_.gethostbyname(name);
 }

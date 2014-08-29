@@ -154,6 +154,13 @@ int ki_getaddrinfo(const char* node,
                    const struct addrinfo* hints,
                    struct addrinfo** res);
 struct hostent* ki_gethostbyname(const char* name);
+int ki_getnameinfo(const struct sockaddr *sa,
+                   socklen_t salen,
+                   char *host,
+                   size_t hostlen,
+                   char *serv,
+                   size_t servlen,
+                   unsigned int flags);
 int ki_getpeername(int fd, struct sockaddr* addr, socklen_t* len);
 int ki_getsockname(int fd, struct sockaddr* addr, socklen_t* len);
 int ki_getsockopt(int fd, int lvl, int optname, void* optval, socklen_t* len);

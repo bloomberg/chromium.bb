@@ -83,6 +83,7 @@
         "syscalls/getaddrinfo.c",
         "syscalls/getcwd.c",
         "syscalls/gethostbyname.c",
+        "syscalls/getnameinfo.c",
         "syscalls/getpeername.c",
         "syscalls/getsockname.c",
         "syscalls/getsockopt.c",

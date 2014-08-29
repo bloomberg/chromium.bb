@@ -221,6 +221,16 @@ void HostResolver::freeaddrinfo(struct addrinfo* res) {
   }
 }
 
+int HostResolver::getnameinfo(const struct sockaddr *sa,
+                              socklen_t salen,
+                              char *host,
+                              size_t hostlen,
+                              char *serv,
+                              size_t servlen,
+                              int flags) {
+  return ENOSYS;
+}
+
 int HostResolver::getaddrinfo(const char* node,
                               const char* service,
                               const struct addrinfo* hints_in,
