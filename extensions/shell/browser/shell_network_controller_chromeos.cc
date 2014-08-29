@@ -54,7 +54,6 @@ ShellNetworkController::ShellNetworkController(
       preferred_network_name_(preferred_network_name),
       preferred_network_is_active_(false),
       weak_ptr_factory_(this) {
-  chromeos::NetworkHandler::Initialize();
   chromeos::NetworkStateHandler* state_handler =
       chromeos::NetworkHandler::Get()->network_state_handler();
   state_handler->AddObserver(this, FROM_HERE);
@@ -70,7 +69,6 @@ ShellNetworkController::ShellNetworkController(
 ShellNetworkController::~ShellNetworkController() {
   chromeos::NetworkHandler::Get()->network_state_handler()->RemoveObserver(
       this, FROM_HERE);
-  chromeos::NetworkHandler::Shutdown();
 }
 
 void ShellNetworkController::NetworkListChanged() {

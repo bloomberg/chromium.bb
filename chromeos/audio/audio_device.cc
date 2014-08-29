@@ -9,80 +9,80 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 
+namespace chromeos {
+
 namespace {
 
 // Get the priority for a particular device type. The priority returned
 // will be between 0 to 3, the higher number meaning a higher priority.
-uint8 GetDevicePriority(chromeos::AudioDeviceType type) {
+uint8 GetDevicePriority(AudioDeviceType type) {
   switch (type) {
-    // Fall through.
-    case chromeos::AUDIO_TYPE_HEADPHONE:
-    case chromeos::AUDIO_TYPE_MIC:
-    case chromeos::AUDIO_TYPE_USB:
-    case chromeos::AUDIO_TYPE_BLUETOOTH:
+    case AUDIO_TYPE_HEADPHONE:
+    case AUDIO_TYPE_MIC:
+    case AUDIO_TYPE_USB:
+    case AUDIO_TYPE_BLUETOOTH:
       return 3;
-    case chromeos::AUDIO_TYPE_HDMI:
+    case AUDIO_TYPE_HDMI:
       return 2;
-      // Fall through.
-    case chromeos::AUDIO_TYPE_INTERNAL_SPEAKER:
-    case chromeos::AUDIO_TYPE_INTERNAL_MIC:
+    case AUDIO_TYPE_INTERNAL_SPEAKER:
+    case AUDIO_TYPE_INTERNAL_MIC:
       return 1;
-      // Fall through.
-    case chromeos::AUDIO_TYPE_KEYBOARD_MIC:
-    case chromeos::AUDIO_TYPE_OTHER:
+    case AUDIO_TYPE_KEYBOARD_MIC:
+    case AUDIO_TYPE_OTHER:
     default:
       return 0;
   }
 }
 
-std::string GetTypeString(chromeos::AudioDeviceType type) {
+}  // namespace
+
+// static
+std::string AudioDevice::GetTypeString(AudioDeviceType type) {
   switch (type) {
-    case chromeos::AUDIO_TYPE_HEADPHONE:
+    case AUDIO_TYPE_HEADPHONE:
       return "HEADPHONE";
-    case chromeos::AUDIO_TYPE_MIC:
+    case AUDIO_TYPE_MIC:
       return "MIC";
-    case chromeos::AUDIO_TYPE_USB:
+    case AUDIO_TYPE_USB:
       return "USB";
-    case chromeos::AUDIO_TYPE_BLUETOOTH:
+    case AUDIO_TYPE_BLUETOOTH:
       return "BLUETOOTH";
-    case chromeos::AUDIO_TYPE_HDMI:
+    case AUDIO_TYPE_HDMI:
       return "HDMI";
-    case chromeos::AUDIO_TYPE_INTERNAL_SPEAKER:
+    case AUDIO_TYPE_INTERNAL_SPEAKER:
       return "INTERNAL_SPEAKER";
-    case chromeos::AUDIO_TYPE_INTERNAL_MIC:
+    case AUDIO_TYPE_INTERNAL_MIC:
       return "INTERNAL_MIC";
-    case chromeos::AUDIO_TYPE_KEYBOARD_MIC:
+    case AUDIO_TYPE_KEYBOARD_MIC:
       return "KEYBOARD_MIC";
-    case chromeos::AUDIO_TYPE_OTHER:
+    case AUDIO_TYPE_OTHER:
     default:
       return "OTHER";
   }
 }
 
-chromeos::AudioDeviceType GetAudioType(const std::string& node_type) {
+// static
+AudioDeviceType AudioDevice::GetAudioType(
+    const std::string& node_type) {
   if (node_type.find("HEADPHONE") != std::string::npos)
-    return chromeos::AUDIO_TYPE_HEADPHONE;
+    return AUDIO_TYPE_HEADPHONE;
   else if (node_type.find("INTERNAL_MIC") != std::string::npos)
-    return chromeos::AUDIO_TYPE_INTERNAL_MIC;
+    return AUDIO_TYPE_INTERNAL_MIC;
   else if (node_type.find("KEYBOARD_MIC") != std::string::npos)
-    return chromeos::AUDIO_TYPE_KEYBOARD_MIC;
+    return AUDIO_TYPE_KEYBOARD_MIC;
   else if (node_type.find("MIC") != std::string::npos)
-    return chromeos::AUDIO_TYPE_MIC;
+    return AUDIO_TYPE_MIC;
   else if (node_type.find("USB") != std::string::npos)
-    return chromeos::AUDIO_TYPE_USB;
+    return AUDIO_TYPE_USB;
   else if (node_type.find("BLUETOOTH") != std::string::npos)
-    return chromeos::AUDIO_TYPE_BLUETOOTH;
+    return AUDIO_TYPE_BLUETOOTH;
   else if (node_type.find("HDMI") != std::string::npos)
-    return chromeos::AUDIO_TYPE_HDMI;
+    return AUDIO_TYPE_HDMI;
   else if (node_type.find("INTERNAL_SPEAKER") != std::string::npos)
-    return chromeos::AUDIO_TYPE_INTERNAL_SPEAKER;
+    return AUDIO_TYPE_INTERNAL_SPEAKER;
   else
-    return chromeos::AUDIO_TYPE_OTHER;
+    return AUDIO_TYPE_OTHER;
 }
-
-}  // namespace
-
-namespace chromeos {
 
 AudioDevice::AudioDevice()
     : is_input(false),

@@ -123,7 +123,6 @@ class CHROMEOS_EXPORT CrasAudioClient : public DBusClient {
   CrasAudioClient();
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(CrasAudioClient);
 };
 

@@ -37,6 +37,7 @@ class ShellExtensionSystem;
 class ShellOmahaQueryParamsDelegate;
 
 #if defined(OS_CHROMEOS)
+class ShellAudioController;
 class ShellNetworkController;
 #endif
 
@@ -67,6 +68,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<ShellNetworkController> network_controller_;
+  scoped_ptr<ShellAudioController> audio_controller_;
 #endif
   scoped_ptr<DesktopController> desktop_controller_;
   scoped_ptr<ShellBrowserContext> browser_context_;

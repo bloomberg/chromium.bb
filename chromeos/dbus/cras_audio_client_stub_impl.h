@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_DBUS_CRAS_AUDIO_CLIENT_STUB_IMPL_H_
 #define CHROMEOS_DBUS_CRAS_AUDIO_CLIENT_STUB_IMPL_H_
 
+#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/cras_audio_client.h"
 
 namespace chromeos {
@@ -12,12 +13,12 @@ namespace chromeos {
 class CrasAudioHandlerTest;
 
 // The CrasAudioClient implementation used on Linux desktop.
-class CrasAudioClientStubImpl : public CrasAudioClient {
+class CHROMEOS_EXPORT CrasAudioClientStubImpl : public CrasAudioClient {
  public:
   CrasAudioClientStubImpl();
   virtual ~CrasAudioClientStubImpl();
 
-  // CrasAudioClient overrides
+  // CrasAudioClient overrides:
   virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
@@ -36,14 +37,14 @@ class CrasAudioClientStubImpl : public CrasAudioClient {
   virtual void AddActiveOutputNode(uint64 node_id) OVERRIDE;
   virtual void RemoveActiveOutputNode(uint64 node_id) OVERRIDE;
 
- protected:
-  // Helper functions for testing
-  virtual void SetAudioDevices(const AudioNodeList& audio_nodes);
-  virtual void ChangeAudioNodes(const AudioNodeList& new_nodes);
+  // Updates |node_list_| to contain |audio_nodes|.
+  void SetAudioNodesForTesting(const AudioNodeList& audio_nodes);
+
+  // Calls SetAudioNodesForTesting() and additionally notifies |observers_|.
+  void SetAudioNodesAndNotifyObserversForTesting(
+      const AudioNodeList& new_nodes);
 
  private:
-  friend class CrasAudioHandlerTest;
-
   VolumeState volume_state_;
   AudioNodeList node_list_;
   uint64 active_input_node_id_;

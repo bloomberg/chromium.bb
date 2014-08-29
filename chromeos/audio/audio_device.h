@@ -29,6 +29,15 @@ enum AudioDeviceType {
 };
 
 struct CHROMEOS_EXPORT AudioDevice {
+  AudioDevice();
+  explicit AudioDevice(const AudioNode& node);
+  std::string ToString() const;
+
+  // Converts between the string type sent via D-Bus and AudioDeviceType.
+  // Static so they can be used by tests.
+  static std::string GetTypeString(chromeos::AudioDeviceType type);
+  static chromeos::AudioDeviceType GetAudioType(const std::string& node_type);
+
   bool is_input;
   uint64 id;
   std::string display_name;
@@ -37,10 +46,6 @@ struct CHROMEOS_EXPORT AudioDevice {
   uint8 priority;
   bool active;
   uint64 plugged_time;
-
-  AudioDevice();
-  explicit AudioDevice(const AudioNode& node);
-  std::string ToString() const;
 };
 
 typedef std::vector<AudioDevice> AudioDeviceList;

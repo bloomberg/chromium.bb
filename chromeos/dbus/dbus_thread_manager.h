@@ -88,8 +88,9 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // making it a Singleton, to ensure clean startup and shutdown.
   static void Initialize();
 
-  // Returns DBusThreadManagerSetter instance that allows tests to
-  // replace individual dbus clients with their own implementations.
+  // Returns a DBusThreadManagerSetter instance that allows tests to
+  // replace individual D-Bus clients with their own implementations.
+  // Also initializes the main DBusThreadManager for testing if necessary.
   static scoped_ptr<DBusThreadManagerSetter> GetSetterForTesting();
 
   // Returns true if DBusThreadManager has been initialized. Call this to

@@ -11,6 +11,9 @@ CrasAudioClientStubImpl::CrasAudioClientStubImpl()
       active_output_node_id_(0) {
 }
 
+CrasAudioClientStubImpl::~CrasAudioClientStubImpl() {
+}
+
 void CrasAudioClientStubImpl::Init(dbus::Bus* bus) {
   VLOG(1) << "CrasAudioClientStubImpl is created";
 
@@ -55,9 +58,6 @@ void CrasAudioClientStubImpl::Init(dbus::Bus* bus) {
   node_5.type = "USB";
   node_5.name = "Mic";
   node_list_.push_back(node_5);
-}
-
-CrasAudioClientStubImpl::~CrasAudioClientStubImpl() {
 }
 
 void CrasAudioClientStubImpl::AddObserver(Observer* observer) {
@@ -164,15 +164,14 @@ void CrasAudioClientStubImpl::RemoveActiveOutputNode(uint64 node_id) {
   }
 }
 
-void CrasAudioClientStubImpl::SetAudioDevices(
+void CrasAudioClientStubImpl::SetAudioNodesForTesting(
     const AudioNodeList& audio_nodes) {
-  node_list_.clear();
-  for (size_t i = 0; i < audio_nodes.size(); ++i)
-    node_list_.push_back(audio_nodes[i]);
+  node_list_ = audio_nodes;
 }
 
-void CrasAudioClientStubImpl::ChangeAudioNodes(const AudioNodeList& new_nodes) {
-  SetAudioDevices(new_nodes);
+void CrasAudioClientStubImpl::SetAudioNodesAndNotifyObserversForTesting(
+    const AudioNodeList& new_nodes) {
+  SetAudioNodesForTesting(new_nodes);
   FOR_EACH_OBSERVER(Observer, observers_, NodesChanged());
 }
 

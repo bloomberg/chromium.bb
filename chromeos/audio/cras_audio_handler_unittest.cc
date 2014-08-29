@@ -255,7 +255,7 @@ class CrasAudioHandlerTest : public testing::Test {
     DBusThreadManager::Initialize();
     cras_audio_client_stub_ = static_cast<CrasAudioClientStubImpl*>(
         DBusThreadManager::Get()->GetCrasAudioClient());
-    cras_audio_client_stub_->SetAudioDevices(audio_nodes);
+    cras_audio_client_stub_->SetAudioNodesForTesting(audio_nodes);
     audio_pref_handler_ = new AudioDevicesPrefHandlerStub();
     CrasAudioHandler::Initialize(audio_pref_handler_);
     cras_audio_handler_ = CrasAudioHandler::Get();
@@ -265,7 +265,8 @@ class CrasAudioHandlerTest : public testing::Test {
   }
 
   void ChangeAudioNodes(const AudioNodeList& audio_nodes) {
-    cras_audio_client_stub_->ChangeAudioNodes(audio_nodes);
+    cras_audio_client_stub_->SetAudioNodesAndNotifyObserversForTesting(
+        audio_nodes);
     message_loop_.RunUntilIdle();
   }
 

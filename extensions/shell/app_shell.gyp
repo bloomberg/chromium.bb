@@ -63,6 +63,8 @@
         'browser/shell_app_window.cc',
         'browser/shell_app_window.h',
         'browser/shell_app_window_controller.h',
+        'browser/shell_audio_controller_chromeos.cc',
+        'browser/shell_audio_controller_chromeos.h',
         'browser/shell_browser_context.cc',
         'browser/shell_browser_context.h',
         'browser/shell_browser_main_delegate.h',
@@ -207,6 +209,7 @@
       ],
       'sources': [
         '../test/extensions_unittests_main.cc',
+        'browser/shell_audio_controller_chromeos_unittest.cc',
         'browser/shell_desktop_controller_unittest.cc',
         'browser/shell_nacl_browser_delegate_unittest.cc',
         'common/shell_content_client_unittest.cc'

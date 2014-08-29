@@ -30,7 +30,10 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/network_handler.h"
+#include "extensions/shell/browser/shell_audio_controller_chromeos.h"
 #include "extensions/shell/browser/shell_network_controller_chromeos.h"
 #endif
 
@@ -42,17 +45,6 @@
 #endif
 
 using content::BrowserContext;
-
-namespace {
-
-// Register additional KeyedService factories here. See
-// ChromeBrowserMainExtraPartsProfiles for details.
-void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
-  extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
-  extensions::ShellExtensionSystemFactory::GetInstance();
-}
-
-}  // namespace
 
 namespace extensions {
 
@@ -74,10 +66,19 @@ void ShellBrowserMainParts::PreMainMessageLoopStart() {
 
 void ShellBrowserMainParts::PostMainMessageLoopStart() {
 #if defined(OS_CHROMEOS)
+  // Perform initialization of D-Bus objects here rather than in the below
+  // helper classes so those classes' tests can initialize stub versions of the
+  // D-Bus objects.
   chromeos::DBusThreadManager::Initialize();
+
+  chromeos::NetworkHandler::Initialize();
   network_controller_.reset(new ShellNetworkController(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
           switches::kAppShellPreferredNetwork)));
+
+  chromeos::CrasAudioHandler::Initialize(
+      new ShellAudioController::PrefHandler());
+  audio_controller_.reset(new ShellAudioController());
 #else
   // Non-Chrome OS platforms are for developer convenience, so use a test IME.
   ui::InitializeInputMethodForTesting();
@@ -124,7 +125,11 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // TODO(yoz): Move this after EnsureBrowserContextKeyedServiceFactoriesBuilt.
   CreateExtensionSystem();
 
-  ::EnsureBrowserContextKeyedServiceFactoriesBuilt();
+  // Register additional KeyedService factories here. See
+  // ChromeBrowserMainExtraPartsProfiles for details.
+  EnsureBrowserContextKeyedServiceFactoriesBuilt();
+  ShellExtensionSystemFactory::GetInstance();
+
   BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
       browser_context_.get());
 
@@ -175,7 +180,10 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 
 void ShellBrowserMainParts::PostDestroyThreads() {
 #if defined(OS_CHROMEOS)
+  audio_controller_.reset();
+  chromeos::CrasAudioHandler::Shutdown();
   network_controller_.reset();
+  chromeos::NetworkHandler::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
 #endif
 }
