@@ -192,10 +192,6 @@ bool TestPlugin::initialize(WebPluginContainer* container)
 {
     WebGraphicsContext3D::Attributes attrs;
     m_context = Platform::current()->createOffscreenGraphicsContext3D(attrs);
-    if (m_context && !m_context->makeContextCurrent()) {
-        delete m_context;
-        m_context = 0;
-    }
 
     if (!initScene())
         return false;

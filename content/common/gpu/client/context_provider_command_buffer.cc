@@ -91,7 +91,7 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
   if (lost_context_callback_proxy_)
     return true;
 
-  if (!context3d_->makeContextCurrent())
+  if (!context3d_->InitializeOnCurrentThread())
     return false;
 
   InitializeCapabilities();

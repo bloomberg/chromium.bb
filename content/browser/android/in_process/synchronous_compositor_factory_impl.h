@@ -44,9 +44,9 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
           const std::string& debug_name) OVERRIDE;
   virtual scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
       int view_id) OVERRIDE;
-  virtual blink::WebGraphicsContext3D* CreateOffscreenGraphicsContext3D(
-      const blink::WebGraphicsContext3D::Attributes& attributes) OVERRIDE;
-
+  virtual webkit::gpu::WebGraphicsContext3DImpl*
+      CreateOffscreenGraphicsContext3D(
+          const blink::WebGraphicsContext3D::Attributes& attributes) OVERRIDE;
 
   SynchronousInputEventFilter* synchronous_input_event_filter() {
     return &synchronous_input_event_filter_;

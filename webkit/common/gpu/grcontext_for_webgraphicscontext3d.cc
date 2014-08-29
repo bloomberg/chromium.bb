@@ -5,24 +5,46 @@
 #include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
 
 #include "base/debug/trace_event.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
+#include "base/lazy_instance.h"
+#include "gpu/command_buffer/client/gles2_lib.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
+#include "webkit/common/gpu/webgraphicscontext3d_impl.h"
 
 namespace webkit {
 namespace gpu {
 
-static void BindWebGraphicsContext3DGLContextCallback(
-    const GrGLInterface* interface) {
-  reinterpret_cast<blink::WebGraphicsContext3D*>(
-      interface->fCallbackData)->makeContextCurrent();
+namespace {
+
+// Singleton used to initialize and terminate the gles2 library.
+class GLES2Initializer {
+ public:
+  GLES2Initializer() { gles2::Initialize(); }
+
+  ~GLES2Initializer() { gles2::Terminate(); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GLES2Initializer);
+};
+
+base::LazyInstance<GLES2Initializer> g_gles2_initializer =
+    LAZY_INSTANCE_INITIALIZER;
+
+void BindWebGraphicsContext3DGLContextCallback(const GrGLInterface* interface) {
+  gles2::SetGLContext(reinterpret_cast<WebGraphicsContext3DImpl*>(
+                          interface->fCallbackData)->GetGLInterface());
 }
 
+}  // namespace anonymous
+
 GrContextForWebGraphicsContext3D::GrContextForWebGraphicsContext3D(
-    blink::WebGraphicsContext3D* context3d) {
+    WebGraphicsContext3DImpl* context3d) {
   if (!context3d)
     return;
 
+  // Ensure the gles2 library is initialized first in a thread safe way.
+  g_gles2_initializer.Get();
+  gles2::SetGLContext(context3d->GetGLInterface());
   skia::RefPtr<GrGLInterface> interface = skia::AdoptRef(
       context3d->createGrGLInterface());
   if (!interface)

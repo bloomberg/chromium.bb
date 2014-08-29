@@ -142,14 +142,11 @@ class WebGraphicsContext3DCommandBufferImpl
     return mem_limits_.mapped_memory_reclaim_limit;
   }
 
+  // WebGraphicsContext3DImpl methods
+  virtual bool InitializeOnCurrentThread() OVERRIDE;
+
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods
-
-  // Must be called after initialize() and before any of the following methods.
-  // Permanently binds to the first calling thread. Returns false if the
-  // graphics context fails to create. Do not call from more than one thread.
-  virtual bool makeContextCurrent();
-
   virtual bool isContextLost();
 
   virtual WGC3Denum getGraphicsResetStatusARB();

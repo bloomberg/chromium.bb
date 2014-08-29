@@ -61,7 +61,7 @@ class GLHelperTest : public testing::Test {
     bool lose_context_when_out_of_memory = false;
     context_ = webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::
         CreateOffscreenContext(attributes, lose_context_when_out_of_memory);
-    context_->makeContextCurrent();
+    context_->InitializeOnCurrentThread();
 
     helper_.reset(
         new content::GLHelper(context_->GetGLInterface(),

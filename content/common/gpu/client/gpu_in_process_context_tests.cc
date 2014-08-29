@@ -24,7 +24,7 @@ class ContextTestBase : public testing::Test {
     typedef WebGraphicsContext3DInProcessCommandBufferImpl WGC3DIPCBI;
     context_ = WGC3DIPCBI::CreateOffscreenContext(
         attributes, lose_context_when_out_of_memory);
-    context_->makeContextCurrent();
+    context_->InitializeOnCurrentThread();
     context_support_ = context_->GetContextSupport();
   }
 

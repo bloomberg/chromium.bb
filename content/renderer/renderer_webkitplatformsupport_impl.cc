@@ -952,26 +952,35 @@ RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
   if (!RenderThreadImpl::current())
     return NULL;
 
+  scoped_ptr<webkit::gpu::WebGraphicsContext3DImpl> context;
+  bool must_use_synchronous_factory = false;
 #if defined(OS_ANDROID)
   if (SynchronousCompositorFactory* factory =
           SynchronousCompositorFactory::GetInstance()) {
-    return factory->CreateOffscreenGraphicsContext3D(attributes);
+    context.reset(factory->CreateOffscreenGraphicsContext3D(attributes));
+    must_use_synchronous_factory = true;
   }
 #endif
+  if (!must_use_synchronous_factory) {
+    scoped_refptr<GpuChannelHost> gpu_channel_host(
+        RenderThreadImpl::current()->EstablishGpuChannelSync(
+            CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
 
-  scoped_refptr<GpuChannelHost> gpu_channel_host(
-      RenderThreadImpl::current()->EstablishGpuChannelSync(
-          CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
-
-  WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
-  bool lose_context_when_out_of_memory = false;
-  return WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-      gpu_channel_host.get(),
-      attributes,
-      lose_context_when_out_of_memory,
-      GURL(attributes.topDocumentURL),
-      limits,
-      static_cast<WebGraphicsContext3DCommandBufferImpl*>(share_context));
+    WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
+    bool lose_context_when_out_of_memory = false;
+    context.reset(WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
+        gpu_channel_host.get(),
+        attributes,
+        lose_context_when_out_of_memory,
+        GURL(attributes.topDocumentURL),
+        limits,
+        static_cast<WebGraphicsContext3DCommandBufferImpl*>(share_context)));
+  }
+  // Most likely the GPU process exited and the attempt to reconnect to it
+  // failed. Need to try to restore the context again later.
+  if (!context || !context->InitializeOnCurrentThread())
+    return NULL;
+  return context.release();
 }
 
 //------------------------------------------------------------------------------

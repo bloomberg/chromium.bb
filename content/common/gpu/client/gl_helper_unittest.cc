@@ -59,7 +59,7 @@ class GLHelperTest : public testing::Test {
     context_ =
         WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
             attributes, lose_context_when_out_of_memory);
-    context_->makeContextCurrent();
+    context_->InitializeOnCurrentThread();
     context_support_ = context_->GetContextSupport();
     helper_.reset(
         new content::GLHelper(context_->GetGLInterface(), context_support_));

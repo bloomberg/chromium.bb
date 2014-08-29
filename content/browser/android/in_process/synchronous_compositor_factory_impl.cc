@@ -216,7 +216,7 @@ SynchronousCompositorFactoryImpl::CreateStreamTextureFactory(int frame_id) {
   return factory;
 }
 
-blink::WebGraphicsContext3D*
+webkit::gpu::WebGraphicsContext3DImpl*
 SynchronousCompositorFactoryImpl::CreateOffscreenGraphicsContext3D(
     const blink::WebGraphicsContext3D::Attributes& attributes) {
   return WrapContextWithAttributes(CreateOffscreenContext(attributes),

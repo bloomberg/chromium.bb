@@ -21,6 +21,7 @@ class OutputSurface;
 namespace webkit {
 namespace gpu {
 class ContextProviderWebContext;
+class WebGraphicsContext3DImpl;
 }
 }
 
@@ -57,8 +58,9 @@ class SynchronousCompositorFactory {
           const std::string& debug_name) = 0;
   virtual scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
       int frame_id) = 0;
-  virtual blink::WebGraphicsContext3D* CreateOffscreenGraphicsContext3D(
-      const blink::WebGraphicsContext3D::Attributes& attributes) = 0;
+  virtual webkit::gpu::WebGraphicsContext3DImpl*
+      CreateOffscreenGraphicsContext3D(
+          const blink::WebGraphicsContext3D::Attributes& attributes) = 0;
 
  protected:
   SynchronousCompositorFactory() {}

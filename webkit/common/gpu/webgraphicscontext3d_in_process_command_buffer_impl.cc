@@ -17,10 +17,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
 #include "ui/gfx/size.h"
@@ -31,28 +29,6 @@ using gpu::GLInProcessContext;
 
 namespace webkit {
 namespace gpu {
-
-namespace {
-
-// Singleton used to initialize and terminate the gles2 library.
-class GLES2Initializer {
- public:
-  GLES2Initializer() {
-    ::gles2::Initialize();
-  }
-
-  ~GLES2Initializer() {
-    ::gles2::Terminate();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GLES2Initializer);
-};
-
-static base::LazyInstance<GLES2Initializer> g_gles2_initializer =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace anonymous
 
 // static
 scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
@@ -129,9 +105,6 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
   if (initialize_failed_)
     return false;
 
-  // Ensure the gles2 library is initialized first in a thread safe way.
-  g_gles2_initializer.Get();
-
   if (!context_) {
     // TODO(kbr): More work will be needed in this implementation to
     // properly support GPU switching. Like in the out-of-process
@@ -172,10 +145,10 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
   return true;
 }
 
-bool WebGraphicsContext3DInProcessCommandBufferImpl::makeContextCurrent() {
+bool
+WebGraphicsContext3DInProcessCommandBufferImpl::InitializeOnCurrentThread() {
   if (!MaybeInitializeGL())
     return false;
-  ::gles2::SetGLContext(GetGLInterface());
   return context_ && !isContextLost();
 }
 

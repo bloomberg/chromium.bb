@@ -532,7 +532,7 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
   if (!provider)
     return;
   blink::WebGraphicsContext3D* context3D = provider->context3d();
-  if (!context3D || !context3D->makeContextCurrent())
+  if (!context3D)
     return;
 
   // Copy video texture into a RGBA texture based bitmap first as video texture

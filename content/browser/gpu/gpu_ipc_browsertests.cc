@@ -47,7 +47,7 @@ class ContextTestBase : public content::ContentBrowserTest {
             WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
             NULL));
     CHECK(context_.get());
-    context_->makeContextCurrent();
+    context_->InitializeOnCurrentThread();
     context_support_ = context_->GetContextSupport();
     ContentBrowserTest::SetUpOnMainThread();
   }

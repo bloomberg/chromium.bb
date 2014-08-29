@@ -45,7 +45,7 @@ class TestContextProvider : public ContextProvider {
   // This returns the TestWebGraphicsContext3D but is valid to call
   // before the context is bound to a thread. This is needed to set up
   // state on the test context before binding. Don't call
-  // makeContextCurrent on the context returned from this method.
+  // InitializeOnCurrentThread on the context returned from this method.
   TestWebGraphicsContext3D* UnboundTestContext3d();
 
   TestContextSupport* support() { return &support_; }

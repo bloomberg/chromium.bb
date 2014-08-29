@@ -83,7 +83,7 @@ CmdBufferImageTransportFactory::CmdBufferImageTransportFactory() {
                                                 limits,
                                                 NULL));
   context_->setContextLostCallback(context_lost_listener_.get());
-  if (context_->makeContextCurrent())
+  if (context_->InitializeOnCurrentThread())
     context_->pushGroupMarkerEXT(
         base::StringPrintf("CmdBufferImageTransportFactory-%p",
                            context_.get()).c_str());
