@@ -227,7 +227,6 @@ bool DesktopVideoCaptureMachine::Start(
                base::Bind(&DesktopVideoCaptureMachine::Capture, AsWeakPtr(),
                           false));
 
-  started_ = true;
   return true;
 }
 
@@ -245,8 +244,6 @@ void DesktopVideoCaptureMachine::Stop(const base::Closure& callback) {
 
   // Stop timer.
   timer_.Stop();
-
-  started_ = false;
 
   callback.Run();
 }

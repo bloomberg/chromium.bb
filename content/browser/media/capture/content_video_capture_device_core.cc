@@ -297,9 +297,13 @@ void ContentVideoCaptureDeviceCore::CaptureStarted(bool success) {
 ContentVideoCaptureDeviceCore::ContentVideoCaptureDeviceCore(
     scoped_ptr<VideoCaptureMachine> capture_machine)
     : state_(kIdle),
-      capture_machine_(capture_machine.Pass()) {}
+      capture_machine_(capture_machine.Pass()) {
+  DCHECK(capture_machine_.get());
+}
 
 ContentVideoCaptureDeviceCore::~ContentVideoCaptureDeviceCore() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_NE(state_, kCapturing);
   // If capture_machine is not NULL, then we need to return to the UI thread to
   // safely stop the capture machine.
   if (capture_machine_) {
