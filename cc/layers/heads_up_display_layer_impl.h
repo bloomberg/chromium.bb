@@ -119,7 +119,10 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
                      const std::string& label_text) const;
   void DrawDebugRects(SkCanvas* canvas, DebugRectHistory* debug_rect_history);
 
-  scoped_ptr<ScopedResource> hud_resource_;
+  void AcquireResource(ResourceProvider* resource_provider);
+  void ReleaseUnmatchedSizeResources(ResourceProvider* resource_provider);
+
+  ScopedPtrVector<ScopedResource> resources_;
   scoped_ptr<SkCanvas> hud_canvas_;
 
   skia::RefPtr<SkTypeface> typeface_;
