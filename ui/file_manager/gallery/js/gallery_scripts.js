@@ -51,8 +51,8 @@
 //<include src="image_editor/image_encoder.js"/>
 //<include src="image_editor/exif_encoder.js"/>
 
-//<include src="../../file_manager/foreground/js/media/mouse_inactivity_watcher.js"/>
 //<include src="../../file_manager/foreground/js/metadata/metadata_cache.js"/>
+//<include src="../../file_manager/foreground/js/mouse_inactivity_watcher.js"/>
 
 //<include src="../../file_manager/foreground/js/ui/file_manager_dialog_base.js">
 //<include src="../../file_manager/foreground/js/share_client.js">
