@@ -81,7 +81,6 @@ class CC_EXPORT LayerTreeImpl {
   FrameRateCounter* frame_rate_counter() const;
   PaintTimeCounter* paint_time_counter() const;
   MemoryHistory* memory_history() const;
-  bool resourceless_software_draw() const;
   gfx::Size device_viewport_size() const;
   bool IsActiveTree() const;
   bool IsPendingTree() const;

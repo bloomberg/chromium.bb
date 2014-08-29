@@ -200,9 +200,15 @@ SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
   surface_size_ = gfx::Size(canvas->getDeviceSize().width(),
                             canvas->getDeviceSize().height());
 
-  // Resourceless software draw does not need viewport_for_tiling.
-  gfx::Rect empty;
-  InvokeComposite(transform, clip, clip, empty, gfx::Transform(), false);
+  // Pass in the cached hw viewport and transform for tile priority to avoid
+  // tile thrashing when the WebView is alternating between hardware and
+  // software draws.
+  InvokeComposite(transform,
+                  clip,
+                  clip,
+                  cached_hw_viewport_rect_for_tile_priority_,
+                  cached_hw_transform_for_tile_priority_,
+                  false);
 
   return frame_holder_.Pass();
 }
