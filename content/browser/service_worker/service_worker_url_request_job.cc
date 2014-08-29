@@ -268,8 +268,7 @@ bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
                                                        uint64* blob_size) {
   if (!body_.get() || !blob_storage_context_)
     return false;
-  const std::string uuid(base::GenerateGUID());
-  uint64 size = 0;
+
   std::vector<const ResourceRequestBody::Element*> resolved_elements;
   for (size_t i = 0; i < body_->elements()->size(); ++i) {
     const ResourceRequestBody::Element& element = (*body_->elements())[i];
@@ -287,10 +286,16 @@ bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
       resolved_elements.push_back(&item);
     }
   }
+
+  const std::string uuid(base::GenerateGUID());
+  uint64 total_size = 0;
   scoped_refptr<storage::BlobData> blob_data = new storage::BlobData(uuid);
   for (size_t i = 0; i < resolved_elements.size(); ++i) {
     const ResourceRequestBody::Element& element = *resolved_elements[i];
-    size += element.length();
+    if (total_size != kuint64max && element.length() != kuint64max)
+      total_size += element.length();
+    else
+      total_size = kuint64max;
     switch (element.type()) {
       case ResourceRequestBody::Element::TYPE_BYTES:
         blob_data->AppendData(element.bytes(), element.length());
@@ -319,7 +324,7 @@ bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
   request_body_blob_data_handle_ =
       blob_storage_context_->AddFinishedBlob(blob_data.get());
   *blob_uuid = uuid;
-  *blob_size = size;
+  *blob_size = total_size;
   return true;
 }
 
