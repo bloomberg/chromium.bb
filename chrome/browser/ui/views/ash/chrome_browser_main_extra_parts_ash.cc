@@ -31,6 +31,10 @@
 #include "ui/shell_dialogs/shell_dialogs_delegate.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 #if !defined(OS_CHROMEOS)
 class ScreenTypeDelegateWin : public gfx::ScreenTypeDelegate {
  public:
@@ -49,6 +53,10 @@ class ShellDialogsDelegateWin : public ui::ShellDialogsDelegate {
  public:
   ShellDialogsDelegateWin() {}
   virtual bool IsWindowInMetro(gfx::NativeWindow window) OVERRIDE {
+#if defined(OS_WIN)
+    if (base::win::GetVersion() < base::win::VERSION_WIN8)
+      return false;
+#endif
     return chrome::IsNativeViewInAsh(window);
   }
  private:
