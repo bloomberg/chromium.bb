@@ -52,13 +52,13 @@ FREEZE_MATCHER = re.compile(r'%s.(%s)' % (FREEZE, '|'.join(FREEZE_SECTIONS)))
 # It was last imported from '7add3ac29564d98ac35ce426bc295e743e7c0c02'.
 GIT_TRANSIENT_ERRORS = (
     # crbug.com/285832
-    r'! \[remote rejected\].*\(error in hook\)',
+    r'!.*\[remote rejected\].*\(error in hook\)',
 
     # crbug.com/289932
-    r'! \[remote rejected\].*\(failed to lock\)',
+    r'!.*\[remote rejected\].*\(failed to lock\)',
 
     # crbug.com/307156
-    r'! \[remote rejected\].*\(error in Gerrit backend\)',
+    r'!.*\[remote rejected\].*\(error in Gerrit backend\)',
 
     # crbug.com/285832
     r'remote error: Internal Server Error',
