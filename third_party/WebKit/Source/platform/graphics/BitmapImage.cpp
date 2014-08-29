@@ -43,7 +43,7 @@ namespace blink {
 BitmapImage::BitmapImage(ImageObserver* observer)
     : Image(observer)
     , m_currentFrame(0)
-    , m_frames(0)
+    , m_frames()
     , m_frameTimer(0)
     , m_repetitionCount(cAnimationNone)
     , m_repetitionCountStatus(Unknown)
