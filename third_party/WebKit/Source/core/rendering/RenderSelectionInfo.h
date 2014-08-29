@@ -73,7 +73,7 @@ public:
             m_rect = o->selectionRectForPaintInvalidation(m_paintInvalidationContainer, clipToVisibleContent);
             // FIXME: groupedMapping() leaks the squashing abstraction. See RenderBlockSelectionInfo for more details.
             if (m_paintInvalidationContainer && m_paintInvalidationContainer->layer()->groupedMapping())
-                RenderLayer::mapRectToPaintInvalidationBacking(m_paintInvalidationContainer, m_paintInvalidationContainer, m_rect);
+                RenderLayer::mapRectToPaintBackingCoordinates(m_paintInvalidationContainer, m_rect);
         } else {
             m_rect = LayoutRect();
         }
@@ -89,7 +89,6 @@ public:
 private:
     LayoutRect m_rect; // relative to paint invalidation container
 };
-
 
 // This struct is used when the selection changes to cache the old and new state of the selection for each RenderBlock.
 class RenderBlockSelectionInfo FINAL : public RenderSelectionInfoBase {
@@ -110,7 +109,7 @@ public:
         // RenderBox::mapRectToPaintInvalidationBacking to get called, which makes rect adjustments even if you pass the same
         // paintInvalidationContainer as the render object. Find out why it does that and fix.
         if (m_paintInvalidationContainer && m_paintInvalidationContainer->layer()->groupedMapping())
-            RenderLayer::mapRectToPaintInvalidationBacking(m_paintInvalidationContainer, m_paintInvalidationContainer, paintInvalidationRect);
+            RenderLayer::mapRectToPaintBackingCoordinates(m_paintInvalidationContainer, paintInvalidationRect);
         m_object->invalidatePaintUsingContainer(m_paintInvalidationContainer, enclosingIntRect(paintInvalidationRect), InvalidationSelection);
     }
 
