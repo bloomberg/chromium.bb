@@ -267,7 +267,7 @@ static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse
 
     responseObject->setFromDiskCache(response.wasCached());
     responseObject->setFromServiceWorker(response.wasFetchedViaServiceWorker());
-    if (response.resourceLoadTiming())
+    if (loader && response.resourceLoadTiming())
         responseObject->setTiming(buildObjectForTiming(*response.resourceLoadTiming(), loader));
 
     if (response.resourceLoadInfo()) {
@@ -369,9 +369,6 @@ bool isResponseEmpty(PassRefPtr<TypeBuilder::Network::Response> response)
 
 void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
 {
-    if (!loader)
-        return;
-
     String requestId = IdentifiersFactory::requestId(identifier);
     RefPtr<TypeBuilder::Network::Response> resourceResponse = buildObjectForResourceResponse(response, loader);
 
@@ -381,7 +378,7 @@ void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsig
     if (resourceLoader && !isNotModified)
         cachedResource = resourceLoader->cachedResource();
     if (!cachedResource || cachedResource->type() == Resource::MainResource)
-        cachedResource = InspectorPageAgent::cachedResource(loader->frame(), response.url());
+        cachedResource = InspectorPageAgent::cachedResource(frame, response.url());
 
     if (cachedResource) {
         // Use mime type from cached resource in case the one in response is empty.
@@ -395,14 +392,14 @@ void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsig
     if (m_resourcesData->resourceType(requestId) == InspectorPageAgent::ScriptResource)
         type = InspectorPageAgent::ScriptResource;
     // Workaround for background: url() in inline style.
-    if (equalIgnoringFragmentIdentifier(response.url(), loader->url()) && !loader->isCommitted())
+    if (loader && equalIgnoringFragmentIdentifier(response.url(), loader->url()) && !loader->isCommitted())
         type = InspectorPageAgent::DocumentResource;
 
-    m_resourcesData->responseReceived(requestId, m_pageAgent->frameId(loader->frame()), response);
+    m_resourcesData->responseReceived(requestId, m_pageAgent->frameId(frame), response);
     m_resourcesData->setResourceType(requestId, type);
 
     if (!isResponseEmpty(resourceResponse))
-        m_frontend->responseReceived(requestId, m_pageAgent->frameId(loader->frame()), m_pageAgent->loaderId(loader), currentTime(), InspectorPageAgent::resourceTypeJson(type), resourceResponse);
+        m_frontend->responseReceived(requestId, m_pageAgent->frameId(frame), m_pageAgent->loaderId(loader), currentTime(), InspectorPageAgent::resourceTypeJson(type), resourceResponse);
     // If we revalidated the resource and got Not modified, send content length following didReceiveResponse
     // as there will be no calls to didReceiveData from the network stack.
     if (isNotModified && cachedResource && cachedResource->encodedSize())
