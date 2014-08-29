@@ -6,12 +6,12 @@
 #include "base/memory/scoped_vector.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/backend_migrator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
+#include "chrome/browser/sync/test/integration/migration_waiter.h"
+#include "chrome/browser/sync/test/integration/migration_watcher.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
-#include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -66,97 +66,6 @@ MigrationList MakeList(syncer::ModelType type1,
   return MakeList(MakeSet(type1), MakeSet(type2));
 }
 
-// Helper class that checks if the sync backend has successfully completed
-// migration for a set of data types.
-class MigrationChecker : public SingleClientStatusChangeChecker,
-                         public browser_sync::MigrationObserver {
- public:
-  explicit MigrationChecker(ProfileSyncServiceHarness* harness)
-      : SingleClientStatusChangeChecker(harness->service()),
-        harness_(harness) {
-    DCHECK(harness_);
-    browser_sync::BackendMigrator* migrator =
-        harness_->service()->GetBackendMigratorForTest();
-    // PSS must have a migrator after sync is setup and initial data type
-    // configuration is complete.
-    DCHECK(migrator);
-    migrator->AddMigrationObserver(this);
-  }
-
-  virtual ~MigrationChecker() {}
-
-  // Returns true when sync reports that there is no pending migration, and
-  // migration is complete for all data types in |expected_types_|.
-  virtual bool IsExitConditionSatisfied() OVERRIDE {
-    DCHECK(!expected_types_.Empty());
-    bool all_expected_types_migrated = migrated_types_.HasAll(expected_types_);
-    DVLOG(1) << harness_->profile_debug_name() << ": Migrated types "
-             << syncer::ModelTypeSetToString(migrated_types_)
-             << (all_expected_types_migrated ? " contains " :
-                                               " does not contain ")
-             << syncer::ModelTypeSetToString(expected_types_);
-    return all_expected_types_migrated &&
-           !HasPendingBackendMigration();
-  }
-
-  virtual std::string GetDebugMessage() const OVERRIDE {
-    return "Waiting to migrate (" + ModelTypeSetToString(expected_types_) + ")";
-  }
-
-  bool HasPendingBackendMigration() const {
-    browser_sync::BackendMigrator* migrator =
-        harness_->service()->GetBackendMigratorForTest();
-    return migrator && migrator->state() != browser_sync::BackendMigrator::IDLE;
-  }
-
-  void set_expected_types(syncer::ModelTypeSet expected_types) {
-    expected_types_ = expected_types;
-  }
-
-  syncer::ModelTypeSet migrated_types() const {
-    return migrated_types_;
-  }
-
-  virtual void OnMigrationStateChange() OVERRIDE {
-    if (HasPendingBackendMigration()) {
-      // A new bunch of data types are in the process of being migrated. Merge
-      // them into |pending_types_|.
-      pending_types_.PutAll(
-          harness_->service()->GetBackendMigratorForTest()->
-              GetPendingMigrationTypesForTest());
-      DVLOG(1) << harness_->profile_debug_name()
-               << ": new pending migration types "
-               << syncer::ModelTypeSetToString(pending_types_);
-    } else {
-      // Migration just finished for a bunch of data types. Merge them into
-      // |migrated_types_|.
-      migrated_types_.PutAll(pending_types_);
-      pending_types_.Clear();
-      DVLOG(1) << harness_->profile_debug_name() << ": new migrated types "
-               << syncer::ModelTypeSetToString(migrated_types_);
-    }
-
-    // Manually trigger a check of the exit condition.
-    if (!expected_types_.Empty())
-      OnStateChanged();
-  }
-
- private:
-  // The sync client for which migration is being verified.
-  ProfileSyncServiceHarness* harness_;
-
-  // The set of data types that are expected to eventually undergo migration.
-  syncer::ModelTypeSet expected_types_;
-
-  // The set of data types currently undergoing migration.
-  syncer::ModelTypeSet pending_types_;
-
-  // The set of data types for which migration is complete. Accumulated by
-  // successive calls to OnMigrationStateChanged.
-  syncer::ModelTypeSet migrated_types_;
-
-  DISALLOW_COPY_AND_ASSIGN(MigrationChecker);
-};
 
 class MigrationTest : public SyncTest  {
  public:
@@ -165,7 +74,7 @@ class MigrationTest : public SyncTest  {
 
   enum TriggerMethod { MODIFY_PREF, MODIFY_BOOKMARK, TRIGGER_NOTIFICATION };
 
-  // Set up sync for all profiles and initialize all MigrationCheckers. This
+  // Set up sync for all profiles and initialize all MigrationWatchers. This
   // helps ensure that all migration events are captured, even if they were to
   // occur before a test calls AwaitMigration for a specific profile.
   virtual bool SetupSync() OVERRIDE {
@@ -173,8 +82,8 @@ class MigrationTest : public SyncTest  {
       return false;
 
     for (int i = 0; i < num_clients(); ++i) {
-      MigrationChecker* checker = new MigrationChecker(GetClient(i));
-      migration_checkers_.push_back(checker);
+      MigrationWatcher* watcher = new MigrationWatcher(GetClient(i));
+      migration_watchers_.push_back(watcher);
     }
     return true;
   }
@@ -241,10 +150,9 @@ class MigrationTest : public SyncTest  {
   // types.
   void AwaitMigration(syncer::ModelTypeSet migrate_types) {
     for (int i = 0; i < num_clients(); ++i) {
-      MigrationChecker* checker = migration_checkers_[i];
-      checker->set_expected_types(migrate_types);
-      checker->Wait();
-      ASSERT_FALSE(checker->TimedOut());
+      MigrationWaiter waiter(migrate_types, migration_watchers_[i]);
+      waiter.Wait();
+      ASSERT_FALSE(waiter.TimedOut());
     }
   }
 
@@ -263,7 +171,7 @@ class MigrationTest : public SyncTest  {
 
     // Make sure migration hasn't been triggered prematurely.
     for (int i = 0; i < num_clients(); ++i) {
-      ASSERT_TRUE(migration_checkers_[i]->migrated_types().Empty());
+      ASSERT_TRUE(migration_watchers_[i]->GetMigratedTypes().Empty());
     }
 
     // Phase 1: Trigger the migrations on the server.
@@ -300,7 +208,7 @@ class MigrationTest : public SyncTest  {
 
  private:
   // Used to keep track of the migration progress for each sync client.
-  ScopedVector<MigrationChecker> migration_checkers_;
+  ScopedVector<MigrationWatcher> migration_watchers_;
 
   DISALLOW_COPY_AND_ASSIGN(MigrationTest);
 };
