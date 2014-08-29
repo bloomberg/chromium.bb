@@ -410,7 +410,9 @@ bool MTPDeviceDelegateImplLinux::IsStreaming() {
 
 void MTPDeviceDelegateImplLinux::ReadBytes(
     const base::FilePath& device_file_path,
-    net::IOBuffer* buf, int64 offset, int buf_len,
+    const scoped_refptr<net::IOBuffer>& buf,
+    int64 offset,
+    int buf_len,
     const ReadBytesSuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -419,7 +421,7 @@ void MTPDeviceDelegateImplLinux::ReadBytes(
       base::Bind(&MTPDeviceDelegateImplLinux::ReadBytesInternal,
                  weak_ptr_factory_.GetWeakPtr(),
                  device_file_path,
-                 make_scoped_refptr(buf),
+                 buf,
                  offset,
                  buf_len,
                  success_callback,

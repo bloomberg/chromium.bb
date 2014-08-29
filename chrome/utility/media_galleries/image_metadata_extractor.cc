@@ -28,10 +28,13 @@ namespace {
 
 const size_t kMaxBufferSize = 50 * 1024 * 1024;  // Arbitrary maximum of 50MB.
 
+typedef base::Callback<void(const scoped_refptr<net::DrainableIOBuffer>&)>
+    GotImageCallback;
+
 void FinishGetImageBytes(
-    net::DrainableIOBuffer* buffer,
+    const scoped_refptr<net::DrainableIOBuffer>& buffer,
     media::DataSource* source,
-    const base::Callback<void(net::DrainableIOBuffer*)>& callback,
+    const GotImageCallback& callback,
     int bytes_read) {
   if (bytes_read == media::DataSource::kReadError) {
     callback.Run(NULL);
@@ -41,20 +44,22 @@ void FinishGetImageBytes(
   buffer->DidConsume(bytes_read);
   // Didn't get the whole file. Continue reading to get the rest.
   if (buffer->BytesRemaining() > 0) {
-    source->Read(0, buffer->BytesRemaining(),
-                 reinterpret_cast<uint8*>(buffer->data()),
-                 base::Bind(&FinishGetImageBytes, make_scoped_refptr(buffer),
-                            base::Unretained(source), callback));
+    source->Read(
+        0,
+        buffer->BytesRemaining(),
+        reinterpret_cast<uint8*>(buffer->data()),
+        base::Bind(
+            &FinishGetImageBytes, buffer, base::Unretained(source), callback));
     return;
   }
 
   buffer->SetOffset(0);
-  callback.Run(make_scoped_refptr(buffer));
+  callback.Run(buffer);
 }
 
 void GetImageBytes(
     media::DataSource* source,
-    const base::Callback<void(net::DrainableIOBuffer*)>& callback) {
+    const GotImageCallback& callback) {
   int64 size64 = 0;
   if (!source->GetSize(&size64) ||
       base::saturated_cast<size_t>(size64) > kMaxBufferSize) {
@@ -383,8 +388,9 @@ int ImageMetadataExtractor::iso_equivalent() const {
 }
 
 void ImageMetadataExtractor::FinishExtraction(
-    const DoneCallback& callback, net::DrainableIOBuffer* buffer) {
-  if (!buffer) {
+    const DoneCallback& callback,
+    const scoped_refptr<net::DrainableIOBuffer>& buffer) {
+  if (!buffer.get()) {
     callback.Run(false);
     return;
   }

@@ -85,11 +85,12 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
       const CreateSnapshotFileSuccessCallback& success_callback,
       const ErrorCallback& error_callback) OVERRIDE;
   virtual bool IsStreaming() OVERRIDE;
-  virtual void ReadBytes(
-      const base::FilePath& device_file_path,
-      net::IOBuffer* buf, int64 offset, int buf_len,
-      const ReadBytesSuccessCallback& success_callback,
-      const ErrorCallback& error_callback) OVERRIDE;
+  virtual void ReadBytes(const base::FilePath& device_file_path,
+                         const scoped_refptr<net::IOBuffer>& buf,
+                         int64 offset,
+                         int buf_len,
+                         const ReadBytesSuccessCallback& success_callback,
+                         const ErrorCallback& error_callback) OVERRIDE;
   virtual void CancelPendingTasksAndDeleteDelegate() OVERRIDE;
 
   // The internal methods correspond to the similarly named methods above.

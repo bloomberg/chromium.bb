@@ -448,7 +448,9 @@ bool MTPDeviceDelegateImplWin::IsStreaming() {
 
 void MTPDeviceDelegateImplWin::ReadBytes(
     const base::FilePath& device_file_path,
-    net::IOBuffer* buf, int64 offset, int buf_len,
+    const scoped_refptr<net::IOBuffer>& buf,
+    int64 offset,
+    int buf_len,
     const ReadBytesSuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
   NOTREACHED();

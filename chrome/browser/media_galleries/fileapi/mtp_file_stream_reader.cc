@@ -42,7 +42,7 @@ void CallInt64CompletionCallbackWithPlatformFileError(
 
 void ReadBytes(
     const storage::FileSystemURL& url,
-    net::IOBuffer* buf,
+    const scoped_refptr<net::IOBuffer>& buf,
     int64 offset,
     int buf_len,
     const MTPDeviceAsyncDelegate::ReadBytesSuccessCallback& success_callback,
@@ -55,7 +55,7 @@ void ReadBytes(
 
   delegate->ReadBytes(
       url.path(),
-      make_scoped_refptr(buf),
+      buf,
       offset,
       buf_len,
       success_callback,

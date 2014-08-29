@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
 
 namespace media {
 class DataSource;
@@ -64,7 +65,7 @@ class ImageMetadataExtractor {
  private:
   // Second half of the Extract method.
   void FinishExtraction(const DoneCallback& callback,
-                        net::DrainableIOBuffer* buffer);
+                        const scoped_refptr<net::DrainableIOBuffer>& buffer);
 
   bool extracted_;
 
