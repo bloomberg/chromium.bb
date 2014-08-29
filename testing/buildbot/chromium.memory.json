@@ -16,6 +16,7 @@
   "Linux ASan LSan Tests (2)": {
     "gtest_tests": [
       "accessibility_unittests",
+      "app_shell_browsertests",
       "cast_unittests",
       "content_unittests",
       "display_unittests",
