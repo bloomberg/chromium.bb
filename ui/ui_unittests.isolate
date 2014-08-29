@@ -6,13 +6,13 @@
     ['OS=="android"', {
       'variables': {
         'isolate_dependency_tracked': [
-          'test/data/data_pack_unittest/truncated-header.pak',
+          'base/test/data/data_pack_unittest/truncated-header.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',
         ],
       },
     }],
   ],
   'includes': [
-    '../../third_party/icu/icu.isolate',
+    '../third_party/icu/icu.isolate',
   ],
 }
