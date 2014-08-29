@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-partial interface PrivateScriptTest {
+[
+    NoImplHeader
+] partial interface PrivateScriptTest {
     [ImplementedInPrivateScript] short addIntegerInPartial(short value1, short value2);
     [ImplementedInPrivateScript] short addInteger2InPartial(short value1, short value2);
     [ImplementedInPrivateScript] attribute DOMString stringAttributeInPartial;

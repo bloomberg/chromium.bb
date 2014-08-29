@@ -68,6 +68,7 @@ LogAllWorlds
 LogPreviousValue
 MeasureAs=*
 NamedConstructor=*
+NoImplHeader
 NoInterfaceObject
 NotEnumerable
 NotScriptWrappable

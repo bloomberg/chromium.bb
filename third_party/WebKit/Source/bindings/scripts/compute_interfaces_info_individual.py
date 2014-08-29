@@ -120,8 +120,8 @@ def compute_info_individual(idl_filename, component_dir):
 
     extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
     implemented_as = extended_attributes.get('ImplementedAs')
-    this_include_path = include_path(idl_filename, implemented_as)
     relative_dir = relative_dir_posix(idl_filename)
+    this_include_path = None if 'NoImplHeader' in extended_attributes else include_path(idl_filename, implemented_as)
 
     # Handle partial interfaces
     partial_interface_name = get_partial_interface_name_from_idl(idl_file_contents)
