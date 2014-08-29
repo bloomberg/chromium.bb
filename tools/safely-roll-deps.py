@@ -33,8 +33,8 @@ def process_deps(path, project, new_rev, is_dry_run):
   # Hack for Blink to get the AutoRollBot running again.
   if project == "blink":
     project = "webkit"
-  old_line = r'(\s+)"%s_revision": "([0-9a-f]{2,40})",' % project
-  new_line = r'\1"%s_revision": "%s",' % (project, new_rev)
+  old_line = r"(\s+)'%s_revision': '([0-9a-f]{2,40})'," % project
+  new_line = r"\1'%s_revision': '%s'," % (project, new_rev)
   new_content = re.sub(old_line, new_line, content, 1)
   old_rev = re.search(old_line, content).group(2)
   if not old_rev or new_content == content:
