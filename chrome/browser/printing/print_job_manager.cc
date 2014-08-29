@@ -22,11 +22,6 @@ PrintQueriesQueue::~PrintQueriesQueue() {
   queued_queries_.clear();
 }
 
-void PrintQueriesQueue::SetDestination(PrintDestinationInterface* destination) {
-  base::AutoLock lock(lock_);
-  destination_ = destination;
-}
-
 void PrintQueriesQueue::QueuePrinterQuery(PrinterQuery* job) {
   base::AutoLock lock(lock_);
   DCHECK(job);
@@ -54,8 +49,6 @@ scoped_refptr<PrinterQuery> PrintQueriesQueue::CreatePrinterQuery(
     int render_view_id) {
   scoped_refptr<PrinterQuery> job =
       new printing::PrinterQuery(render_process_id, render_view_id);
-  base::AutoLock lock(lock_);
-  job->SetWorkerDestination(destination_.get());
   return job;
 }
 
@@ -64,7 +57,6 @@ void PrintQueriesQueue::Shutdown() {
   {
     base::AutoLock lock(lock_);
     queued_queries_.swap(queries_to_stop);
-    destination_ = NULL;
   }
   // Stop all pending queries, requests to generate print preview do not have
   // corresponding PrintJob, so any pending preview requests are not covered

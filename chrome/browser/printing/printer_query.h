@@ -53,9 +53,6 @@ class PrinterQuery : public PrintJobWorkerOwner {
   void SetSettings(scoped_ptr<base::DictionaryValue> new_settings,
                    const base::Closure& callback);
 
-  // Set a destination for the worker.
-  void SetWorkerDestination(PrintDestinationInterface* destination);
-
   // Stops the worker thread since the client is done with this object.
   void StopWorker();
 

@@ -15,7 +15,6 @@
 #include "base/threading/non_thread_safe.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "printing/print_destination_interface.h"
 
 namespace printing {
 
@@ -26,9 +25,6 @@ class PrinterQuery;
 class PrintQueriesQueue : public base::RefCountedThreadSafe<PrintQueriesQueue> {
  public:
   PrintQueriesQueue();
-
-  // Sets the print destination to be set on the next print job.
-  void SetDestination(PrintDestinationInterface* destination);
 
   // Queues a semi-initialized worker thread. Can be called from any thread.
   // Current use case is queuing from the I/O thread.
@@ -55,8 +51,6 @@ class PrintQueriesQueue : public base::RefCountedThreadSafe<PrintQueriesQueue> {
   base::Lock lock_;
 
   PrinterQueries queued_queries_;
-
-  scoped_refptr<PrintDestinationInterface> destination_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintQueriesQueue);
 };

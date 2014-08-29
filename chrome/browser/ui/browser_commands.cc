@@ -888,15 +888,6 @@ bool CanAdvancedPrint(Browser* browser) {
 }
 #endif  // !OS_WIN
 
-void PrintToDestination(Browser* browser) {
-#if defined(ENABLE_FULL_PRINTING)
-  printing::PrintViewManager* print_view_manager =
-      printing::PrintViewManager::FromWebContents(
-          browser->tab_strip_model()->GetActiveWebContents());
-  print_view_manager->PrintToDestination();
-#endif
-}
-
 void EmailPageLocation(Browser* browser) {
   content::RecordAction(UserMetricsAction("EmailPageLocation"));
   WebContents* wc = browser->tab_strip_model()->GetActiveWebContents();

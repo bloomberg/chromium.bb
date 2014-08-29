@@ -551,8 +551,6 @@ void PrintViewManagerBase::ReleasePrinterQuery() {
 
   int cookie = cookie_;
   cookie_ = 0;
-  queue_->SetDestination(NULL);
-
 
   printing::PrintJobManager* print_job_manager =
       g_browser_process->print_job_manager();

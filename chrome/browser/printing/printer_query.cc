@@ -95,11 +95,6 @@ void PrinterQuery::SetSettings(scoped_ptr<base::DictionaryValue> new_settings,
                                base::Passed(&new_settings)));
 }
 
-void PrinterQuery::SetWorkerDestination(
-    PrintDestinationInterface* destination) {
-  worker_->SetPrintDestination(destination);
-}
-
 void PrinterQuery::StartWorker(const base::Closure& callback) {
   DCHECK(callback_.is_null());
   DCHECK(worker_.get());

@@ -57,8 +57,6 @@
         'pdf_metafile_cg_mac.h',
         'pdf_metafile_skia.cc',
         'pdf_metafile_skia.h',
-        'print_destination_interface.h',
-        'print_destination_none.cc',
         'print_dialog_gtk_interface.h',
         'print_job_constants.cc',
         'print_job_constants.h',

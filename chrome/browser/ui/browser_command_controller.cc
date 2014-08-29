@@ -548,9 +548,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       AdvancedPrint(browser_);
       break;
 #endif  // !OS_WIN
-    case IDC_PRINT_TO_DESTINATION:
-      PrintToDestination(browser_);
-      break;
     case IDC_TRANSLATE_PAGE:
       Translate(browser_);
       break;

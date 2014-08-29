@@ -85,7 +85,6 @@
 #define IDC_ENCODING_MENU               35005
 #define IDC_EMAIL_PAGE_LOCATION         35006
 #define IDC_ADVANCED_PRINT              35007
-#define IDC_PRINT_TO_DESTINATION        35008
 #define IDC_TRANSLATE_PAGE              35009
 #define IDC_MANAGE_PASSWORDS_FOR_PAGE   35010
 
