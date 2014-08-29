@@ -9,6 +9,7 @@ code_generator_template_files =
       "attributes.cpp",
       "callback_interface.cpp",
       "callback_interface.h",
+      "constants.cpp",
       "interface_base.cpp",
       "interface.cpp",
       "interface.h",

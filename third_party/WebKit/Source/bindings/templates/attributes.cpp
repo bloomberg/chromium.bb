@@ -407,3 +407,54 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
     return true;
 }
 {% endmacro %}
+
+
+{##############################################################################}
+{% macro attribute_configuration(attribute) %}
+{% set getter_callback =
+       '%sV8Internal::%sAttributeGetterCallback' %
+            (cpp_class, attribute.name)
+       if not attribute.constructor_type else
+       ('%sV8Internal::%sConstructorGetterCallback' %
+            (cpp_class, attribute.name)
+        if attribute.needs_constructor_getter_callback else
+       '{0}V8Internal::{0}ConstructorGetter'.format(cpp_class)) %}
+{% set getter_callback_for_main_world =
+       '%sV8Internal::%sAttributeGetterCallbackForMainWorld' %
+            (cpp_class, attribute.name)
+       if attribute.is_per_world_bindings else '0' %}
+{% set setter_callback = attribute.setter_callback %}
+{% set setter_callback_for_main_world =
+       '%sV8Internal::%sAttributeSetterCallbackForMainWorld' %
+           (cpp_class, attribute.name)
+       if attribute.is_per_world_bindings and
+          (not attribute.is_read_only or attribute.put_forwards) else '0' %}
+{% set wrapper_type_info =
+       'const_cast<WrapperTypeInfo*>(&V8%s::wrapperTypeInfo)' %
+            attribute.constructor_type
+        if attribute.constructor_type else '0' %}
+{% set access_control = 'static_cast<v8::AccessControl>(%s)' %
+                        ' | '.join(attribute.access_control_list) %}
+{% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
+                            ' | '.join(attribute.property_attributes) %}
+{% set only_exposed_to_private_script = 'V8DOMConfiguration::OnlyExposedToPrivateScript' if attribute.only_exposed_to_private_script else 'V8DOMConfiguration::ExposedToAllScripts' %}
+{% set on_prototype = 'V8DOMConfiguration::OnPrototype'
+       if interface_name == 'Window' and attribute.idl_type == 'EventHandler'
+       else 'V8DOMConfiguration::OnInstance' %}
+{% set attribute_configuration_list = [
+       '"%s"' % attribute.name,
+       getter_callback,
+       setter_callback,
+       getter_callback_for_main_world,
+       setter_callback_for_main_world,
+       wrapper_type_info,
+       access_control,
+       property_attribute,
+       only_exposed_to_private_script,
+   ] %}
+{% if not attribute.is_expose_js_accessors %}
+{% set attribute_configuration_list = attribute_configuration_list
+                                    + [on_prototype] %}
+{% endif %}
+{{'{'}}{{attribute_configuration_list | join(', ')}}{{'}'}}
+{%- endmacro %}

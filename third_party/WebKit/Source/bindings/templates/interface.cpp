@@ -2,69 +2,6 @@
 
 
 {##############################################################################}
-{% macro attribute_configuration(attribute) %}
-{% set getter_callback =
-       '%sV8Internal::%sAttributeGetterCallback' %
-            (cpp_class, attribute.name)
-       if not attribute.constructor_type else
-       ('%sV8Internal::%sConstructorGetterCallback' %
-            (cpp_class, attribute.name)
-        if attribute.needs_constructor_getter_callback else
-       '{0}V8Internal::{0}ConstructorGetter'.format(cpp_class)) %}
-{% set getter_callback_for_main_world =
-       '%sV8Internal::%sAttributeGetterCallbackForMainWorld' %
-            (cpp_class, attribute.name)
-       if attribute.is_per_world_bindings else '0' %}
-{% set setter_callback = attribute.setter_callback %}
-{% set setter_callback_for_main_world =
-       '%sV8Internal::%sAttributeSetterCallbackForMainWorld' %
-           (cpp_class, attribute.name)
-       if attribute.is_per_world_bindings and
-          (not attribute.is_read_only or attribute.put_forwards) else '0' %}
-{% set wrapper_type_info =
-       'const_cast<WrapperTypeInfo*>(&V8%s::wrapperTypeInfo)' %
-            attribute.constructor_type
-        if attribute.constructor_type else '0' %}
-{% set access_control = 'static_cast<v8::AccessControl>(%s)' %
-                        ' | '.join(attribute.access_control_list) %}
-{% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
-                            ' | '.join(attribute.property_attributes) %}
-{% set only_exposed_to_private_script = 'V8DOMConfiguration::OnlyExposedToPrivateScript' if attribute.only_exposed_to_private_script else 'V8DOMConfiguration::ExposedToAllScripts' %}
-{% set on_prototype = 'V8DOMConfiguration::OnPrototype'
-       if interface_name == 'Window' and attribute.idl_type == 'EventHandler'
-       else 'V8DOMConfiguration::OnInstance' %}
-{% set attribute_configuration_list = [
-       '"%s"' % attribute.name,
-       getter_callback,
-       setter_callback,
-       getter_callback_for_main_world,
-       setter_callback_for_main_world,
-       wrapper_type_info,
-       access_control,
-       property_attribute,
-       only_exposed_to_private_script,
-   ] %}
-{% if not attribute.is_expose_js_accessors %}
-{% set attribute_configuration_list = attribute_configuration_list
-                                    + [on_prototype] %}
-{% endif %}
-{{'{'}}{{attribute_configuration_list | join(', ')}}{{'}'}}
-{%- endmacro %}
-
-
-{##############################################################################}
-{% macro method_configuration(method) %}
-{% set method_callback =
-   '%sV8Internal::%sMethodCallback' % (cpp_class, method.name) %}
-{% set method_callback_for_main_world =
-   '%sV8Internal::%sMethodCallbackForMainWorld' % (cpp_class, method.name)
-   if method.is_per_world_bindings else '0' %}
-{% set only_exposed_to_private_script = 'V8DOMConfiguration::OnlyExposedToPrivateScript' if method.only_exposed_to_private_script else 'V8DOMConfiguration::ExposedToAllScripts' %}
-{"{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.length}}, {{only_exposed_to_private_script}}}
-{%- endmacro %}
-
-
-{##############################################################################}
 {% block constructor_getter %}
 {% if has_constructor_attributes %}
 static void {{cpp_class}}ConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -727,6 +664,7 @@ void {{v8_class}}::visitDOMWrapper(ScriptWrappableBase* internalPointer, const v
 
 
 {##############################################################################}
+{% from 'attributes.cpp' import attribute_configuration with context %}
 {% block shadow_attributes %}
 {% if interface_name == 'Window' %}
 static const V8DOMConfiguration::AttributeConfiguration shadowAttributes[] = {
@@ -775,6 +713,7 @@ static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] =
 
 
 {##############################################################################}
+{% from 'methods.cpp' import method_configuration with context %}
 {% block install_methods %}
 {% if method_configuration_methods %}
 static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
@@ -870,6 +809,8 @@ static void configureShadowObjectTemplate(v8::Handle<v8::ObjectTemplate> templ, 
 
 
 {##############################################################################}
+{% from 'methods.cpp' import install_custom_signature with context %}
+{% from 'constants.cpp' import install_constants with context %}
 {% block install_dom_template %}
 static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {
@@ -1059,68 +1000,6 @@ static const V8DOMConfiguration::AttributeConfiguration {{method.name}}OriginSaf
 };
 V8DOMConfiguration::installAttribute({{method.function_template}}, v8::Handle<v8::ObjectTemplate>(), {{method.name}}OriginSafeAttributeConfiguration, isolate);
 {%- endmacro %}
-
-
-{######################################}
-{% macro install_custom_signature(method) %}
-{% set method_callback = '%sV8Internal::%sMethodCallback' % (cpp_class, method.name) %}
-{% set method_callback_for_main_world = '%sForMainWorld' % method_callback
-  if method.is_per_world_bindings else '0' %}
-{% set property_attribute =
-  'static_cast<v8::PropertyAttribute>(%s)' % ' | '.join(method.property_attributes)
-  if method.property_attributes else 'v8::None' %}
-{% set only_exposed_to_private_script = 'V8DOMConfiguration::OnlyExposedToPrivateScript' if method.only_exposed_to_private_script else 'V8DOMConfiguration::ExposedToAllScripts' %}
-static const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration = {
-    "{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.length}}, {{only_exposed_to_private_script}},
-};
-V8DOMConfiguration::installMethod({{method.function_template}}, {{method.signature}}, {{property_attribute}}, {{method.name}}MethodConfiguration, isolate);
-{%- endmacro %}
-
-
-{######################################}
-{% macro install_constants() %}
-{% if has_constant_configuration %}
-{# Normal (always enabled) constants #}
-static const V8DOMConfiguration::ConstantConfiguration {{v8_class}}Constants[] = {
-    {% for constant in constants if not constant.runtime_enabled_function %}
-    {% if constant.idl_type in ('Double', 'Float') %}
-        {% set value = '0, %s, 0' % constant.value %}
-    {% elif constant.idl_type == 'String' %}
-        {% set value = '0, 0, %s' % constant.value %}
-    {% else %}
-        {# 'Short', 'Long' etc. #}
-        {% set value = '%s, 0, 0' % constant.value %}
-    {% endif %}
-    {"{{constant.name}}", {{value}}, V8DOMConfiguration::ConstantType{{constant.idl_type}}},
-    {% endfor %}
-};
-V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, {{v8_class}}Constants, WTF_ARRAY_LENGTH({{v8_class}}Constants), isolate);
-{% endif %}
-{# Runtime-enabled constants #}
-{% for constant in constants if constant.runtime_enabled_function %}
-if ({{constant.runtime_enabled_function}}()) {
-    {% if constant.idl_type in ('Double', 'Float') %}
-        {% set value = '0, %s, 0' % constant.value %}
-    {% elif constant.idl_type == 'String' %}
-        {% set value = '0, 0, %s' % constant.value %}
-    {% else %}
-        {# 'Short', 'Long' etc. #}
-        {% set value = '%s, 0, 0' % constant.value %}
-    {% endif %}
-    static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"{{constant.name}}", {{value}}, V8DOMConfiguration::ConstantType{{constant.idl_type}}};
-    V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, &constantConfiguration, 1, isolate);
-}
-{% endfor %}
-{# Check constants #}
-{% if not do_not_check_constants %}
-{% for constant in constants %}
-{% if constant.idl_type not in ('Double', 'Float', 'String') %}
-{% set constant_cpp_class = constant.cpp_class or cpp_class %}
-COMPILE_ASSERT({{constant.value}} == {{constant_cpp_class}}::{{constant.reflected_name}}, TheValueOf{{cpp_class}}_{{constant.reflected_name}}DoesntMatchWithImplementation);
-{% endif %}
-{% endfor %}
-{% endif %}
-{% endmacro %}
 
 
 {##############################################################################}

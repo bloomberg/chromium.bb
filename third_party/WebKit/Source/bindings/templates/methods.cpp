@@ -625,3 +625,31 @@ V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{constr
 {% endif %}
 v8SetReturnValue(info, wrapper);
 {% endmacro %}
+
+
+{##############################################################################}
+{% macro method_configuration(method) %}
+{% set method_callback =
+   '%sV8Internal::%sMethodCallback' % (cpp_class, method.name) %}
+{% set method_callback_for_main_world =
+   '%sV8Internal::%sMethodCallbackForMainWorld' % (cpp_class, method.name)
+   if method.is_per_world_bindings else '0' %}
+{% set only_exposed_to_private_script = 'V8DOMConfiguration::OnlyExposedToPrivateScript' if method.only_exposed_to_private_script else 'V8DOMConfiguration::ExposedToAllScripts' %}
+{"{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.length}}, {{only_exposed_to_private_script}}}
+{%- endmacro %}
+
+
+{######################################}
+{% macro install_custom_signature(method) %}
+{% set method_callback = '%sV8Internal::%sMethodCallback' % (cpp_class, method.name) %}
+{% set method_callback_for_main_world = '%sForMainWorld' % method_callback
+  if method.is_per_world_bindings else '0' %}
+{% set property_attribute =
+  'static_cast<v8::PropertyAttribute>(%s)' % ' | '.join(method.property_attributes)
+  if method.property_attributes else 'v8::None' %}
+{% set only_exposed_to_private_script = 'V8DOMConfiguration::OnlyExposedToPrivateScript' if method.only_exposed_to_private_script else 'V8DOMConfiguration::ExposedToAllScripts' %}
+static const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration = {
+    "{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.length}}, {{only_exposed_to_private_script}},
+};
+V8DOMConfiguration::installMethod({{method.function_template}}, {{method.signature}}, {{property_attribute}}, {{method.name}}MethodConfiguration, isolate);
+{%- endmacro %}
