@@ -38,7 +38,9 @@ void MaybeCallConsumerCallback(base::WeakPtr<PasswordStoreConsumer> consumer,
 
 // http://crbug.com/404012. Let's see where the empty fields come from.
 void CheckForEmptyUsernameAndPassword(const PasswordForm& form) {
-  if (form.username_value.empty() && form.password_value.empty())
+  if (form.username_value.empty() &&
+      form.password_value.empty() &&
+      !form.blacklisted_by_user)
     base::debug::DumpWithoutCrashing();
 }
 
