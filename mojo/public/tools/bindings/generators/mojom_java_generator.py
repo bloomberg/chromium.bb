@@ -149,25 +149,25 @@ def DecodeMethod(context, kind, offset, bit):
       return "readServiceInterface"
     return _spec_to_decode_method[kind.spec]
   methodName = _DecodeMethodName(kind)
-  additionalParams = ''
+  params = [ str(offset) ]
   if (kind == mojom.BOOL):
-    additionalParams = ', %d' % bit
+    params.append(str(bit))
   if mojom.IsInterfaceKind(kind):
-    additionalParams = ', %s.MANAGER' % GetJavaType(context, kind)
+    params.append('%s.MANAGER' % GetJavaType(context, kind))
   if mojom.IsAnyArrayKind(kind) and mojom.IsInterfaceKind(kind.kind):
-    additionalParams = ', %s.MANAGER' % GetJavaType(context, kind.kind)
-  return '%s(%s%s)' % (methodName, offset, additionalParams)
+    params.append('%s.MANAGER' % GetJavaType(context, kind.kind))
+  return '%s(%s)' % (methodName, ', '.join(params))
 
 @contextfilter
 def EncodeMethod(context, kind, variable, offset, bit):
-  additionalParams = ''
+  params = [ variable, str(offset) ]
   if (kind == mojom.BOOL):
-    additionalParams = ', %d' % bit
+    params.append(str(bit))
   if mojom.IsInterfaceKind(kind):
-    additionalParams = ', %s.MANAGER' % GetJavaType(context, kind)
+    params.append('%s.MANAGER' % GetJavaType(context, kind))
   if mojom.IsAnyArrayKind(kind) and mojom.IsInterfaceKind(kind.kind):
-    additionalParams = ', %s.MANAGER' % GetJavaType(context, kind.kind)
-  return 'encode(%s, %s%s)' % (variable, offset, additionalParams)
+    params.append('%s.MANAGER' % GetJavaType(context, kind.kind))
+  return 'encode(%s)' % ', '.join(params)
 
 def GetPackage(module):
   if 'JavaPackage' in module.attributes:
