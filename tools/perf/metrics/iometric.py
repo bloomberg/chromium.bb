@@ -14,7 +14,7 @@ class IOMetric(Metric):
   @classmethod
   def CustomizeBrowserOptions(cls, options):
     # TODO(tonyg): This is the host platform, so not totally correct.
-    if sys.platform != 'darwin':
+    if sys.platform not in ('darwin', 'win32'):
       # TODO(playmobil): Get rid of this on all platforms crbug.com/361049.
       options.AppendExtraBrowserArgs('--no-sandbox')
 
