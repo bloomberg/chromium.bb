@@ -22,7 +22,6 @@
       'cmp-cc@chromium.org',
       'dpranke@chromium.org',
       'iannucci+depot_tools@chromium.org',
-      'ilevy-cc@chromium.org',
     ],
   },
 
