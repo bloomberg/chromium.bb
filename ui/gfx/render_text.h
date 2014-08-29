@@ -58,7 +58,7 @@ class SkiaTextRenderer {
   void SetTextSize(SkScalar size);
   void SetFontFamilyWithStyle(const std::string& family, int font_style);
   void SetForegroundColor(SkColor foreground);
-  void SetShader(SkShader* shader, const Rect& bounds);
+  void SetShader(SkShader* shader);
   // Sets underline metrics to use if the text will be drawn with an underline.
   // If not set, default values based on the size of the text will be used. The
   // two metrics must be set together.
@@ -104,8 +104,6 @@ class SkiaTextRenderer {
   SkCanvas* canvas_skia_;
   bool started_drawing_;
   SkPaint paint_;
-  SkRect bounds_;
-  skia::RefPtr<SkShader> deferred_fade_shader_;
   SkScalar underline_thickness_;
   SkScalar underline_position_;
   scoped_ptr<DiagonalStrike> diagonal_;
