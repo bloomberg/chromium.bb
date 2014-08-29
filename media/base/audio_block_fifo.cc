@@ -22,7 +22,8 @@ AudioBlockFifo::AudioBlockFifo(int channels, int frames, int blocks)
   }
 }
 
-AudioBlockFifo::~AudioBlockFifo() {}
+AudioBlockFifo::~AudioBlockFifo() {
+}
 
 void AudioBlockFifo::Push(const void* source,
                           int frames,
@@ -46,17 +47,36 @@ void AudioBlockFifo::Push(const void* source,
     // Deinterleave the content to the FIFO and update the |write_pos_|.
     current_block->FromInterleavedPartial(
         source_ptr, write_pos_, push_frames, bytes_per_sample);
-    write_pos_ = (write_pos_ + push_frames) % block_frames_;
-    if (!write_pos_) {
-      // The current block is completely filled, increment |write_block_| and
-      // |available_blocks_|.
-      write_block_ = (write_block_ + 1) % audio_blocks_.size();
-      ++available_blocks_;
-    }
 
+    UpdatePosition(push_frames);
     source_ptr += push_frames * bytes_per_sample * current_block->channels();
     frames_to_push -= push_frames;
     DCHECK_GE(frames_to_push, 0);
+  }
+}
+
+void AudioBlockFifo::Push(const AudioBus* source) {
+  DCHECK(source);
+  DCHECK_LT(available_blocks_, static_cast<int>(audio_blocks_.size()));
+
+  int source_start_frame = 0;
+  while (source_start_frame < source->frames()) {
+    // Get the current write block.
+    AudioBus* current_block = audio_blocks_[write_block_];
+    DCHECK_EQ(source->channels(), current_block->channels());
+
+    // Figure out what segment sizes we need when adding the new content to
+    // the FIFO.
+    const int push_frames = std::min(block_frames_ - write_pos_,
+                                     source->frames() - source_start_frame);
+
+    // Copy the data to FIFO.
+    source->CopyPartialFramesTo(
+        source_start_frame, push_frames, write_pos_, current_block);
+
+    UpdatePosition(push_frames);
+    source_start_frame += push_frames;
+    DCHECK_LE(source_start_frame, source->frames());
   }
 }
 
@@ -84,6 +104,16 @@ int AudioBlockFifo::GetUnfilledFrames() const {
       (audio_blocks_.size() - available_blocks_) * block_frames_ - write_pos_;
   DCHECK_GE(unfilled_frames, 0);
   return unfilled_frames;
+}
+
+void AudioBlockFifo::UpdatePosition(int push_frames) {
+  write_pos_ = (write_pos_ + push_frames) % block_frames_;
+  if (!write_pos_) {
+    // The current block is completely filled, increment |write_block_| and
+    // |available_blocks_|.
+    write_block_ = (write_block_ + 1) % audio_blocks_.size();
+    ++available_blocks_;
+  }
 }
 
 }  // namespace media
