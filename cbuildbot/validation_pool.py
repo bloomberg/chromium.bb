@@ -2438,11 +2438,11 @@ class ValidationPool(object):
            '%(build_log)s . This means that a supporting builder did not '
            'finish building your change within the specified timeout.')
     if sanity:
-      msg += ('If you believe this happened in error, just re-mark your '
+      msg += (' If you believe this happened in error, just re-mark your '
               'commit as ready. Your change will then get automatically '
               'retried.')
     else:
-      msg += ('The build failure may have been caused by infrastructure '
+      msg += (' The build failure may have been caused by infrastructure '
               'issues, so no changes will be blamed for the failure.')
 
     for change in changes:
