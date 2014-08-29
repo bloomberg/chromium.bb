@@ -113,7 +113,7 @@ BOOL __stdcall CanOfferReactivation(const wchar_t* brand_code,
 // |shell_mode| should be set to one of GCAPI_INVOKED_STANDARD_SHELL or
 // GCAPI_INVOKED_UAC_ELEVATION depending on whether this method is invoked
 // from an elevated or non-elevated process.
-BOOL __stdcall ReactivateChrome(wchar_t* brand_code,
+BOOL __stdcall ReactivateChrome(const wchar_t* brand_code,
                                 int shell_mode,
                                 DWORD* error_code);
 
