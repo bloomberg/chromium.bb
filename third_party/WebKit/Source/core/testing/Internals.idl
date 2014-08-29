@@ -116,9 +116,9 @@
     [TypeChecking=Interface] unsigned long lengthFromRange(Element scope, Range range);
     [TypeChecking=Interface] DOMString rangeAsText(Range range);
 
-    [RaisesException, TypeChecking=Interface] WebKitPoint touchPositionAdjustedToBestClickableNode(long x, long y, long width, long height, Document document);
+    [RaisesException, TypeChecking=Interface] DOMPoint touchPositionAdjustedToBestClickableNode(long x, long y, long width, long height, Document document);
     [RaisesException, TypeChecking=Interface] Node touchNodeAdjustedToBestClickableNode(long x, long y, long width, long height, Document document);
-    [RaisesException, TypeChecking=Interface] WebKitPoint touchPositionAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document document);
+    [RaisesException, TypeChecking=Interface] DOMPoint touchPositionAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document document);
     [RaisesException, TypeChecking=Interface] Node touchNodeAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document document);
     [RaisesException, TypeChecking=Interface] ClientRect bestZoomableAreaForTouchPoint(long x, long y, long width, long height, Document document);
 

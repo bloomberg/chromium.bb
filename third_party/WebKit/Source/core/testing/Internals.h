@@ -45,7 +45,7 @@ namespace blink {
 class CanvasRenderingContext2D;
 class ClientRect;
 class ClientRectList;
-class WebKitPoint;
+class DOMPoint;
 class DOMStringList;
 class LocalDOMWindow;
 class DictionaryTest;
@@ -164,9 +164,9 @@ public:
     unsigned lengthFromRange(Element* scope, const Range*);
     String rangeAsText(const Range*);
 
-    PassRefPtrWillBeRawPtr<WebKitPoint> touchPositionAdjustedToBestClickableNode(long x, long y, long width, long height, Document*, ExceptionState&);
+    DOMPoint* touchPositionAdjustedToBestClickableNode(long x, long y, long width, long height, Document*, ExceptionState&);
     Node* touchNodeAdjustedToBestClickableNode(long x, long y, long width, long height, Document*, ExceptionState&);
-    PassRefPtrWillBeRawPtr<WebKitPoint> touchPositionAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document*, ExceptionState&);
+    DOMPoint* touchPositionAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document*, ExceptionState&);
     Node* touchNodeAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document*, ExceptionState&);
     PassRefPtrWillBeRawPtr<ClientRect> bestZoomableAreaForTouchPoint(long x, long y, long width, long height, Document*, ExceptionState&);
 

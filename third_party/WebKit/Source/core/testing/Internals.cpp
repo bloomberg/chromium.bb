@@ -42,6 +42,7 @@
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/ClientRectList.h"
+#include "core/dom/DOMPoint.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarker.h"
@@ -73,7 +74,6 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
-#include "core/frame/WebKitPoint.h"
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -964,12 +964,12 @@ String Internals::rangeAsText(const Range* range)
 // FIXME: The next four functions are very similar - combine them once
 // bestClickableNode/bestContextMenuNode have been combined..
 
-PassRefPtrWillBeRawPtr<WebKitPoint> Internals::touchPositionAdjustedToBestClickableNode(long x, long y, long width, long height, Document* document, ExceptionState& exceptionState)
+DOMPoint* Internals::touchPositionAdjustedToBestClickableNode(long x, long y, long width, long height, Document* document, ExceptionState& exceptionState)
 {
     ASSERT(document);
     if (!document->frame()) {
         exceptionState.throwDOMException(InvalidAccessError, "The document provided is invalid.");
-        return nullptr;
+        return 0;
     }
 
     document->updateLayout();
@@ -986,9 +986,9 @@ PassRefPtrWillBeRawPtr<WebKitPoint> Internals::touchPositionAdjustedToBestClicka
 
     bool foundNode = eventHandler.bestClickableNodeForHitTestResult(result, adjustedPoint, targetNode);
     if (foundNode)
-        return WebKitPoint::create(adjustedPoint.x(), adjustedPoint.y());
+        return DOMPoint::create(adjustedPoint.x(), adjustedPoint.y());
 
-    return nullptr;
+    return 0;
 }
 
 Node* Internals::touchNodeAdjustedToBestClickableNode(long x, long y, long width, long height, Document* document, ExceptionState& exceptionState)
@@ -1014,12 +1014,12 @@ Node* Internals::touchNodeAdjustedToBestClickableNode(long x, long y, long width
     return targetNode;
 }
 
-PassRefPtrWillBeRawPtr<WebKitPoint> Internals::touchPositionAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document* document, ExceptionState& exceptionState)
+DOMPoint* Internals::touchPositionAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document* document, ExceptionState& exceptionState)
 {
     ASSERT(document);
     if (!document->frame()) {
         exceptionState.throwDOMException(InvalidAccessError, "The document provided is invalid.");
-        return nullptr;
+        return 0;
     }
 
     document->updateLayout();
@@ -1036,9 +1036,9 @@ PassRefPtrWillBeRawPtr<WebKitPoint> Internals::touchPositionAdjustedToBestContex
 
     bool foundNode = eventHandler.bestContextMenuNodeForHitTestResult(result, adjustedPoint, targetNode);
     if (foundNode)
-        return WebKitPoint::create(adjustedPoint.x(), adjustedPoint.y());
+        return DOMPoint::create(adjustedPoint.x(), adjustedPoint.y());
 
-    return WebKitPoint::create(x, y);
+    return DOMPoint::create(x, y);
 }
 
 Node* Internals::touchNodeAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document* document, ExceptionState& exceptionState)
