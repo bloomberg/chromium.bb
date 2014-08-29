@@ -152,7 +152,7 @@ DEPOT_NAMES = DEPOT_DEPS_NAME.keys()
 
 CROS_CHROMEOS_PATTERN = 'chromeos-base/chromeos-chrome'
 
-# Possible return values from BisectPerformanceMetrics.SyncBuildAndRunRevision.
+# Possible return values from BisectPerformanceMetrics.RunTest.
 BUILD_RESULT_SUCCEED = 0
 BUILD_RESULT_FAIL = 1
 BUILD_RESULT_SKIPPED = 2
@@ -1187,7 +1187,7 @@ class BisectPerformanceMetrics(object):
 
     return results
 
-  def BackupOrRestoreOutputdirectory(self, restore=False, build_type='Release'):
+  def BackupOrRestoreOutputDirectory(self, restore=False, build_type='Release'):
     """Backs up or restores build output directory based on restore argument.
 
     Args:
@@ -1285,7 +1285,7 @@ class BisectPerformanceMetrics(object):
     # Unzip build archive directory.
     try:
       RmTreeAndMkDir(output_dir, skip_makedir=True)
-      self.BackupOrRestoreOutputdirectory(restore=False)
+      self.BackupOrRestoreOutputDirectory(restore=False)
       # Build output directory based on target(e.g. out/Release, out/Debug).
       target_build_output_dir = os.path.join(abs_build_dir, build_type)
       ExtractZip(downloaded_file, abs_build_dir)
@@ -1303,7 +1303,7 @@ class BisectPerformanceMetrics(object):
       return True
     except Exception as e:
       print 'Something went wrong while extracting archive file: %s' % e
-      self.BackupOrRestoreOutputdirectory(restore=True)
+      self.BackupOrRestoreOutputDirectory(restore=True)
       # Cleanup any leftovers from unzipping.
       if os.path.exists(output_dir):
         RmTreeAndMkDir(output_dir, skip_makedir=True)
@@ -1711,7 +1711,7 @@ class BisectPerformanceMetrics(object):
       print
     return (values, success_code, output_of_all_runs)
 
-  def FindAllRevisionsToSync(self, revision, depot):
+  def _FindAllRevisionsToSync(self, revision, depot):
     """Finds all dependent revisions and depots that need to be synced.
 
     For example skia is broken up into 3 git mirrors over skia/src,
@@ -1799,8 +1799,11 @@ class BisectPerformanceMetrics(object):
     os.chdir(cwd)
     return not return_code
 
-  def PerformPreSyncCleanup(self, revision, depot):
+  def _PerformPreSyncCleanup(self, depot):
     """Performs any necessary cleanup before syncing.
+
+    Args:
+      depot: Depot name.
 
     Returns:
       True if successful.
@@ -1819,8 +1822,11 @@ class BisectPerformanceMetrics(object):
       return self.PerformCrosChrootCleanup()
     return True
 
-  def RunPostSync(self, depot):
+  def _RunPostSync(self, depot):
     """Performs any work after syncing.
+
+    Args:
+      depot: Depot name.
 
     Returns:
       True if successful.
@@ -1861,96 +1867,110 @@ class BisectPerformanceMetrics(object):
 
     return False
 
-  def SyncBuildAndRunRevision(self, revision, depot, command_to_run, metric,
-                              skippable=False):
+  def RunTest(self, revision, depot, command, metric, skippable=False):
     """Performs a full sync/build/run of the specified revision.
 
     Args:
       revision: The revision to sync to.
       depot: The depot that's being used at the moment (src, webkit, etc.)
-      command_to_run: The command to execute the performance test.
+      command: The command to execute the performance test.
       metric: The performance metric being tested.
 
     Returns:
       On success, a tuple containing the results of the performance test.
       Otherwise, a tuple with the error message.
     """
+    # Decide which sync program to use.
     sync_client = None
     if depot == 'chromium' or depot == 'android-chrome':
       sync_client = 'gclient'
     elif depot == 'cros':
       sync_client = 'repo'
 
-    revisions_to_sync = self.FindAllRevisionsToSync(revision, depot)
-
+    # Decide what depots will need to be synced to what revisions.
+    revisions_to_sync = self._FindAllRevisionsToSync(revision, depot)
     if not revisions_to_sync:
       return ('Failed to resolve dependent depots.', BUILD_RESULT_FAIL)
 
-    if not self.PerformPreSyncCleanup(revision, depot):
+    if not self._PerformPreSyncCleanup(depot):
       return ('Failed to perform pre-sync cleanup.', BUILD_RESULT_FAIL)
 
-    success = True
-
+    # Do the syncing for all depots.
     if not self.opts.debug_ignore_sync:
-      for r in revisions_to_sync:
-        self.ChangeToDepotWorkingDirectory(r[0])
+      if not self._SyncAllRevisions(revisions_to_sync, sync_client):
+        return ('Failed to sync: [%s]' % str(revision), BUILD_RESULT_FAIL)
 
-        if sync_client:
-          self.PerformPreBuildCleanup()
+     # Try to do any post-sync steps. This may include "gclient runhooks".
+    if not self._RunPostSync(depot):
+      return ('Failed to run [gclient runhooks].', BUILD_RESULT_FAIL)
 
-        # If you're using gclient to sync, you need to specify the depot you
-        # want so that all the dependencies sync properly as well.
-        # i.e. gclient sync src@<SHA1>
-        current_revision = r[1]
-        if sync_client == 'gclient':
-          current_revision = '%s@%s' % (DEPOT_DEPS_NAME[depot]['src'],
-              current_revision)
-        if not self.source_control.SyncToRevision(current_revision,
-            sync_client):
-          success = False
+    # Skip this revision if it can be skipped.
+    if skippable and self.ShouldSkipRevision(depot, revision):
+      return ('Skipped revision: [%s]' % str(revision),
+              BUILD_RESULT_SKIPPED)
 
-          break
-
-    if success:
-      success = self.RunPostSync(depot)
-      if success:
-        if skippable and self.ShouldSkipRevision(depot, revision):
-          return ('Skipped revision: [%s]' % str(revision),
-                  BUILD_RESULT_SKIPPED)
-
-        start_build_time = time.time()
-        if self.BuildCurrentRevision(depot, revision):
-          after_build_time = time.time()
-          # Hack to support things that got changed.
-          command_to_run = self.GetCompatibleCommand(
-              command_to_run, revision, depot)
-          results = self.RunPerformanceTestAndParseResults(command_to_run,
-                                                           metric)
-          # Restore build output directory once the tests are done, to avoid
-          # any discrepancies.
-          if self.IsDownloadable(depot) and revision:
-            self.BackupOrRestoreOutputdirectory(restore=True)
-
-          if results[1] == 0:
-            external_revisions = self._Get3rdPartyRevisions(depot)
-
-            if not external_revisions is None:
-              return (results[0], results[1], external_revisions,
-                  time.time() - after_build_time, after_build_time -
-                  start_build_time)
-            else:
-              return ('Failed to parse DEPS file for external revisions.',
-                      BUILD_RESULT_FAIL)
-          else:
-            return results
-        else:
-          return ('Failed to build revision: [%s]' % str(revision),
-                  BUILD_RESULT_FAIL)
-      else:
-        return ('Failed to run [gclient runhooks].', BUILD_RESULT_FAIL)
-    else:
-      return ('Failed to sync revision: [%s]' % str(revision),
+    # Obtain a build for this revision. This may be done by requesting a build
+    # from another builder, waiting for it and downloading it.
+    start_build_time = time.time()
+    build_success = self.BuildCurrentRevision(depot, revision)
+    if not build_success:
+      return ('Failed to build revision: [%s]' % str(revision),
               BUILD_RESULT_FAIL)
+    after_build_time = time.time()
+
+    # Possibly alter the command.
+    command = self.GetCompatibleCommand(command, revision, depot)
+
+    # Run the command and get the results.
+    results = self.RunPerformanceTestAndParseResults(command, metric)
+
+    # Restore build output directory once the tests are done, to avoid
+    # any discrepancies.
+    if self.IsDownloadable(depot) and revision:
+      self.BackupOrRestoreOutputDirectory(restore=True)
+
+    # A value other than 0 indicates that the test couldn't be run, and results
+    # should also include an error message.
+    if results[1] != 0:
+      return results
+
+    external_revisions = self._Get3rdPartyRevisions(depot)
+
+    if not external_revisions is None:
+      return (results[0], results[1], external_revisions,
+          time.time() - after_build_time, after_build_time -
+          start_build_time)
+    else:
+      return ('Failed to parse DEPS file for external revisions.',
+               BUILD_RESULT_FAIL)
+
+  def _SyncAllRevisions(self, revisions_to_sync, sync_client):
+    """Syncs multiple depots to particular revisions.
+
+    Args:
+      revisions_to_sync: A list of (depot, revision) pairs to be synced.
+      sync_client: Program used to sync, e.g. "gclient", "repo". Can be None.
+
+    Returns:
+      True if successful, False otherwise.
+    """
+    for depot, revision in revisions_to_sync:
+      self.ChangeToDepotWorkingDirectory(depot)
+
+      if sync_client:
+        self.PerformPreBuildCleanup()
+
+      # When using gclient to sync, you need to specify the depot you
+      # want so that all the dependencies sync properly as well.
+      # i.e. gclient sync src@<SHA1>
+      if sync_client == 'gclient':
+        revision = '%s@%s' % (DEPOT_DEPS_NAME[depot]['src'], revision)
+
+      sync_success = self.source_control.SyncToRevision(revision, sync_client)
+      if not sync_success:
+        return False
+
+    return True
 
   def _CheckIfRunPassed(self, current_value, known_good_value, known_bad_value):
     """Given known good and bad values, decide if the current_value passed
@@ -2119,14 +2139,12 @@ class BisectPerformanceMetrics(object):
     Returns:
       A tuple with the results of building and running each revision.
     """
-    bad_run_results = self.SyncBuildAndRunRevision(
-        bad_rev, target_depot, cmd, metric)
+    bad_run_results = self.RunTest(bad_rev, target_depot, cmd, metric)
 
     good_run_results = None
 
     if not bad_run_results[1]:
-      good_run_results = self.SyncBuildAndRunRevision(
-          good_rev, target_depot, cmd, metric)
+      good_run_results = self.RunTest(good_rev, target_depot, cmd, metric)
 
     return (bad_run_results, good_run_results)
 
@@ -2510,10 +2528,9 @@ class BisectPerformanceMetrics(object):
 
         print 'Working on revision: [%s]' % next_revision_id
 
-        run_results = self.SyncBuildAndRunRevision(next_revision_id,
-                                                   next_revision_depot,
-                                                   command_to_run,
-                                                   metric, skippable=True)
+        run_results = self.RunTest(
+            next_revision_id, next_revision_depot, command_to_run, metric,
+            skippable=True)
 
         # If the build is successful, check whether or not the metric
         # had regressed.
