@@ -1562,4 +1562,26 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackChainedOggVideo) {
   EXPECT_EQ(PIPELINE_ERROR_DECODE, WaitUntilEndedOrError());
 }
 
+// Tests that we signal ended even when audio runs longer than video track.
+TEST_F(PipelineIntegrationTest, BasicPlaybackAudioLongerThanVideo) {
+  ASSERT_TRUE(Start(GetTestDataFilePath("bear_audio_longer_than_video.ogv"),
+                    PIPELINE_OK));
+  // Audio track is 2000ms. Video track is 1001ms. Duration should be higher
+  // of the two.
+  EXPECT_EQ(2000, pipeline_->GetMediaDuration().InMilliseconds());
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
+// Tests that we signal ended even when audio runs shorter than video track.
+TEST_F(PipelineIntegrationTest, BasicPlaybackAudioShorterThanVideo) {
+  ASSERT_TRUE(Start(GetTestDataFilePath("bear_audio_shorter_than_video.ogv"),
+                    PIPELINE_OK));
+  // Audio track is 500ms. Video track is 1001ms. Duration should be higher of
+  // the two.
+  EXPECT_EQ(1001, pipeline_->GetMediaDuration().InMilliseconds());
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
 }  // namespace media
