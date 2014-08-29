@@ -111,7 +111,6 @@
 #include "content/renderer/web_ui_mojo.h"
 #include "content/renderer/websharedworker_proxy.h"
 #include "media/audio/audio_output_device.h"
-#include "media/base/filter_collection.h"
 #include "media/base/media_switches.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/gpu_video_accelerator_factories.h"

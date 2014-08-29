@@ -356,9 +356,6 @@ const char kEnableLowResTiling[] = "enable-low-res-tiling";
 // Paint content on the compositor thread instead of the main thread.
 const char kEnableImplSidePainting[]        = "enable-impl-side-painting";
 
-// Enables support for inband text tracks in media content.
-const char kEnableInbandTextTracks[]        = "enable-inband-text-tracks";
-
 // Force logging to be enabled.  Logging is disabled by default in release
 // builds.
 const char kEnableLogging[]                 = "enable-logging";

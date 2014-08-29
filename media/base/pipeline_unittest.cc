@@ -86,21 +86,9 @@ class PipelineTest : public ::testing::Test {
   PipelineTest()
       : pipeline_(new Pipeline(message_loop_.message_loop_proxy(),
                                new MediaLog())),
-        filter_collection_(new FilterCollection()),
-        demuxer_(new StrictMock<MockDemuxer>()) {
-    filter_collection_->SetDemuxer(demuxer_.get());
-
-    renderer_ = new StrictMock<MockRenderer>();
-    scoped_ptr<Renderer> renderer(renderer_);
-    filter_collection_->SetRenderer(renderer.Pass());
-
-    text_renderer_ = new TextRenderer(
-                         message_loop_.message_loop_proxy(),
-                         base::Bind(&PipelineTest::OnAddTextTrack,
-                                    base::Unretained(this)));
-    scoped_ptr<TextRenderer> text_renderer(text_renderer_);
-    filter_collection_->SetTextRenderer(text_renderer.Pass());
-
+        demuxer_(new StrictMock<MockDemuxer>()),
+        scoped_renderer_(new StrictMock<MockRenderer>()),
+        renderer_(scoped_renderer_.get()) {
     // SetDemuxerExpectations() adds overriding expectations for expected
     // non-NULL streams.
     DemuxerStream* null_pointer = NULL;
@@ -191,9 +179,24 @@ class PipelineTest : public ::testing::Test {
     message_loop_.RunUntilIdle();
   }
 
+  void StartPipeline() {
+    pipeline_->Start(
+        demuxer_.get(),
+        scoped_renderer_.PassAs<Renderer>(),
+        base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
+        base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
+        base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
+        base::Bind(&CallbackHelper::OnMetadata, base::Unretained(&callbacks_)),
+        base::Bind(&CallbackHelper::OnBufferingStateChange,
+                   base::Unretained(&callbacks_)),
+        base::Bind(&CallbackHelper::OnDurationChange,
+                   base::Unretained(&callbacks_)),
+        base::Bind(&PipelineTest::OnAddTextTrack, base::Unretained(this)));
+  }
+
   // Sets up expectations on the callback and initializes the pipeline. Called
   // after tests have set expectations any filters they wish to use.
-  void StartPipeline(PipelineStatus start_status) {
+  void StartPipelineAndExpect(PipelineStatus start_status) {
     EXPECT_CALL(callbacks_, OnStart(start_status));
 
     if (start_status == PIPELINE_OK) {
@@ -206,16 +209,7 @@ class PipelineTest : public ::testing::Test {
       EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
     }
 
-    pipeline_->Start(
-        filter_collection_.Pass(),
-        base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnMetadata, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnBufferingStateChange,
-                   base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnDurationChange,
-                   base::Unretained(&callbacks_)));
+    StartPipeline();
     message_loop_.RunUntilIdle();
   }
 
@@ -307,8 +301,8 @@ class PipelineTest : public ::testing::Test {
   base::MessageLoop message_loop_;
   scoped_ptr<Pipeline> pipeline_;
 
-  scoped_ptr<FilterCollection> filter_collection_;
   scoped_ptr<StrictMock<MockDemuxer> > demuxer_;
+  scoped_ptr<StrictMock<MockRenderer> > scoped_renderer_;
   StrictMock<MockRenderer>* renderer_;
   StrictMock<CallbackHelper> text_renderer_callbacks_;
   TextRenderer* text_renderer_;
@@ -357,16 +351,7 @@ TEST_F(PipelineTest, NeverInitializes) {
   // This test hangs during initialization by never calling
   // InitializationComplete().  StrictMock<> will ensure that the callback is
   // never executed.
-  pipeline_->Start(
-        filter_collection_.Pass(),
-        base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnMetadata, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnBufferingStateChange,
-                   base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnDurationChange,
-                   base::Unretained(&callbacks_)));
+  StartPipeline();
   message_loop_.RunUntilIdle();
 
   // Because our callback will get executed when the test tears down, we'll
@@ -390,17 +375,7 @@ TEST_F(PipelineTest, StartThenStopImmediately) {
       .WillOnce(RunClosure<0>());
 
   EXPECT_CALL(callbacks_, OnStart(_));
-
-  pipeline_->Start(
-      filter_collection_.Pass(),
-      base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
-      base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
-      base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
-      base::Bind(&CallbackHelper::OnMetadata, base::Unretained(&callbacks_)),
-      base::Bind(&CallbackHelper::OnBufferingStateChange,
-                 base::Unretained(&callbacks_)),
-      base::Bind(&CallbackHelper::OnDurationChange,
-                 base::Unretained(&callbacks_)));
+  StartPipeline();
 
   // Expect a stop callback if we were started.
   ExpectPipelineStopAndDestroyPipeline();
@@ -417,7 +392,7 @@ TEST_F(PipelineTest, DemuxerErrorDuringStop) {
   SetDemuxerExpectations(&streams);
   SetRendererExpectations();
 
-  StartPipeline(PIPELINE_OK);
+  StartPipelineAndExpect(PIPELINE_OK);
 
   EXPECT_CALL(*demuxer_, Stop(_))
       .WillOnce(DoAll(InvokeWithoutArgs(this, &PipelineTest::OnDemuxerError),
@@ -435,7 +410,7 @@ TEST_F(PipelineTest, URLNotFound) {
   EXPECT_CALL(*demuxer_, Stop(_))
       .WillOnce(RunClosure<0>());
 
-  StartPipeline(PIPELINE_ERROR_URL_NOT_FOUND);
+  StartPipelineAndExpect(PIPELINE_ERROR_URL_NOT_FOUND);
 }
 
 TEST_F(PipelineTest, NoStreams) {
@@ -444,7 +419,7 @@ TEST_F(PipelineTest, NoStreams) {
   EXPECT_CALL(*demuxer_, Stop(_))
       .WillOnce(RunClosure<0>());
 
-  StartPipeline(PIPELINE_ERROR_COULD_NOT_RENDER);
+  StartPipelineAndExpect(PIPELINE_ERROR_COULD_NOT_RENDER);
 }
 
 TEST_F(PipelineTest, AudioStream) {
@@ -455,7 +430,7 @@ TEST_F(PipelineTest, AudioStream) {
   SetDemuxerExpectations(&streams);
   SetRendererExpectations();
 
-  StartPipeline(PIPELINE_OK);
+  StartPipelineAndExpect(PIPELINE_OK);
   EXPECT_TRUE(metadata_.has_audio);
   EXPECT_FALSE(metadata_.has_video);
 }
@@ -468,7 +443,7 @@ TEST_F(PipelineTest, VideoStream) {
   SetDemuxerExpectations(&streams);
   SetRendererExpectations();
 
-  StartPipeline(PIPELINE_OK);
+  StartPipelineAndExpect(PIPELINE_OK);
   EXPECT_FALSE(metadata_.has_audio);
   EXPECT_TRUE(metadata_.has_video);
 }
@@ -483,7 +458,7 @@ TEST_F(PipelineTest, AudioVideoStream) {
   SetDemuxerExpectations(&streams);
   SetRendererExpectations();
 
-  StartPipeline(PIPELINE_OK);
+  StartPipelineAndExpect(PIPELINE_OK);
   EXPECT_TRUE(metadata_.has_audio);
   EXPECT_TRUE(metadata_.has_video);
 }
@@ -497,7 +472,7 @@ TEST_F(PipelineTest, VideoTextStream) {
   SetDemuxerExpectations(&streams);
   SetRendererExpectations();
 
-  StartPipeline(PIPELINE_OK);
+  StartPipelineAndExpect(PIPELINE_OK);
   EXPECT_FALSE(metadata_.has_audio);
   EXPECT_TRUE(metadata_.has_video);
 
@@ -515,7 +490,7 @@ TEST_F(PipelineTest, VideoAudioTextStream) {
   SetDemuxerExpectations(&streams);
   SetRendererExpectations();
 
-  StartPipeline(PIPELINE_OK);
+  StartPipelineAndExpect(PIPELINE_OK);
   EXPECT_TRUE(metadata_.has_audio);
   EXPECT_TRUE(metadata_.has_video);
 
@@ -534,7 +509,7 @@ TEST_F(PipelineTest, Seek) {
   SetRendererExpectations();
 
   // Initialize then seek!
-  StartPipeline(PIPELINE_OK);
+  StartPipelineAndExpect(PIPELINE_OK);
 
   // Every filter should receive a call to Seek().
   base::TimeDelta expected = base::TimeDelta::FromSeconds(2000);
@@ -551,7 +526,7 @@ TEST_F(PipelineTest, SeekAfterError) {
   SetRendererExpectations();
 
   // Initialize then seek!
-  StartPipeline(PIPELINE_OK);
+  StartPipelineAndExpect(PIPELINE_OK);
 
   EXPECT_CALL(*demuxer_, Stop(_))
       .WillOnce(RunClosure<0>());
@@ -580,7 +555,7 @@ TEST_F(PipelineTest, SetVolume) {
   EXPECT_CALL(*renderer_, SetVolume(expected));
 
   // Initialize then set volume!
-  StartPipeline(PIPELINE_OK);
+  StartPipelineAndExpect(PIPELINE_OK);
   pipeline_->SetVolume(expected);
 }
 
@@ -593,7 +568,7 @@ TEST_F(PipelineTest, Properties) {
   SetDemuxerExpectations(&streams, kDuration);
   SetRendererExpectations();
 
-  StartPipeline(PIPELINE_OK);
+  StartPipelineAndExpect(PIPELINE_OK);
   EXPECT_EQ(kDuration.ToInternalValue(),
             pipeline_->GetMediaDuration().ToInternalValue());
   EXPECT_FALSE(pipeline_->DidLoadingProgress());
@@ -608,7 +583,7 @@ TEST_F(PipelineTest, GetBufferedTimeRanges) {
   SetDemuxerExpectations(&streams, kDuration);
   SetRendererExpectations();
 
-  StartPipeline(PIPELINE_OK);
+  StartPipelineAndExpect(PIPELINE_OK);
 
   EXPECT_EQ(0u, pipeline_->GetBufferedTimeRanges().size());
 
@@ -637,7 +612,7 @@ TEST_F(PipelineTest, EndedCallback) {
 
   SetDemuxerExpectations(&streams);
   SetRendererExpectations();
-  StartPipeline(PIPELINE_OK);
+  StartPipelineAndExpect(PIPELINE_OK);
 
   AddTextStream();
 
@@ -657,7 +632,7 @@ TEST_F(PipelineTest, ErrorDuringSeek) {
 
   SetDemuxerExpectations(&streams);
   SetRendererExpectations();
-  StartPipeline(PIPELINE_OK);
+  StartPipelineAndExpect(PIPELINE_OK);
 
   float playback_rate = 1.0f;
   EXPECT_CALL(*renderer_, SetPlaybackRate(playback_rate));
@@ -709,7 +684,7 @@ TEST_F(PipelineTest, NoMessageDuringTearDownFromError) {
 
   SetDemuxerExpectations(&streams);
   SetRendererExpectations();
-  StartPipeline(PIPELINE_OK);
+  StartPipelineAndExpect(PIPELINE_OK);
 
   // Trigger additional requests on the pipeline during tear down from error.
   base::Callback<void(PipelineStatus)> cb = base::Bind(
@@ -743,7 +718,7 @@ TEST_F(PipelineTest, DestroyAfterStop) {
   streams.push_back(audio_stream());
   SetDemuxerExpectations(&streams);
   SetRendererExpectations();
-  StartPipeline(PIPELINE_OK);
+  StartPipelineAndExpect(PIPELINE_OK);
 
   ExpectDemuxerStop();
 
@@ -762,7 +737,7 @@ TEST_F(PipelineTest, Underflow) {
 
   SetDemuxerExpectations(&streams);
   SetRendererExpectations();
-  StartPipeline(PIPELINE_OK);
+  StartPipelineAndExpect(PIPELINE_OK);
 
   // Simulate underflow.
   EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
@@ -822,16 +797,7 @@ class PipelineTeardownTest : public PipelineTest {
         SetInitializeExpectations(state, stop_or_error);
 
     EXPECT_CALL(callbacks_, OnStart(expected_status));
-    pipeline_->Start(
-        filter_collection_.Pass(),
-        base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnMetadata, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnBufferingStateChange,
-                   base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnDurationChange,
-                   base::Unretained(&callbacks_)));
+    StartPipeline();
     message_loop_.RunUntilIdle();
   }
 

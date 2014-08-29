@@ -279,8 +279,6 @@
         'base/demuxer_stream.h',
         'base/djb2.cc',
         'base/djb2.h',
-        'base/filter_collection.cc',
-        'base/filter_collection.h',
         'base/keyboard_event_counter.cc',
         'base/keyboard_event_counter.h',
         'base/media.cc',

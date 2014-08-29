@@ -94,4 +94,7 @@ const char kUseFakeDeviceForMediaStream[] = "use-fake-device-for-media-stream";
 // Use a raw video file as fake video capture device.
 const char kUseFileForFakeVideoCapture[] = "use-file-for-fake-video-capture";
 
+// Enables support for inband text tracks in media content.
+const char kEnableInbandTextTracks[] = "enable-inband-text-tracks";
+
 }  // namespace switches

@@ -25,7 +25,6 @@ namespace media {
 
 class AudioRenderer;
 class Demuxer;
-class FilterCollection;
 class TimeDeltaInterpolator;
 class TimeSource;
 class VideoRenderer;
@@ -129,7 +128,6 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   // Task runner used to execute pipeline tasks.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  scoped_ptr<FilterCollection> filter_collection_;
   Demuxer* demuxer_;
 
   // Permanent callback to get the media duration.

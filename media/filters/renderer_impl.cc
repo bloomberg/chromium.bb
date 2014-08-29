@@ -12,7 +12,6 @@
 #include "base/single_thread_task_runner.h"
 #include "media/base/audio_renderer.h"
 #include "media/base/demuxer.h"
-#include "media/base/filter_collection.h"
 #include "media/base/time_delta_interpolator.h"
 #include "media/base/time_source.h"
 #include "media/base/video_renderer.h"

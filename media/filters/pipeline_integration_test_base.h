@@ -11,9 +11,10 @@
 #include "media/audio/null_audio_sink.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/demuxer.h"
-#include "media/base/filter_collection.h"
 #include "media/base/media_keys.h"
 #include "media/base/pipeline.h"
+#include "media/base/text_track.h"
+#include "media/base/text_track_config.h"
 #include "media/base/video_frame.h"
 #include "media/filters/video_renderer_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -77,8 +78,6 @@ class PipelineIntegrationTestBase {
   bool Seek(base::TimeDelta seek_time);
   void Stop();
   bool WaitUntilCurrentTimeIsAfter(const base::TimeDelta& wait_time);
-  scoped_ptr<FilterCollection> CreateFilterCollection(
-      const base::FilePath& file_path, Decryptor* decryptor);
 
   // Returns the MD5 hash of all video frames seen.  Should only be called once
   // after playback completes.  First time hashes should be generated with
@@ -126,8 +125,12 @@ class PipelineIntegrationTestBase {
   void OnEnded();
   void OnError(PipelineStatus status);
   void QuitAfterCurrentTimeTask(const base::TimeDelta& quit_time);
-  scoped_ptr<FilterCollection> CreateFilterCollection(
-      scoped_ptr<Demuxer> demuxer, Decryptor* decryptor);
+
+  // Creates Demuxer and sets |demuxer_|.
+  void CreateDemuxer(const base::FilePath& file_path);
+
+  // Creates and returns a Renderer.
+  scoped_ptr<Renderer> CreateRenderer(Decryptor* decryptor);
 
   void SetDecryptor(Decryptor* decryptor,
                     const DecryptorReadyCB& decryptor_ready_cb);
@@ -136,6 +139,9 @@ class PipelineIntegrationTestBase {
   MOCK_METHOD1(OnMetadata, void(PipelineMetadata));
   MOCK_METHOD1(OnBufferingStateChanged, void(BufferingState));
   MOCK_METHOD1(DecryptorAttached, void(bool));
+  MOCK_METHOD2(OnAddTextTrack,
+               void(const TextTrackConfig& config,
+                    const AddTextTrackDoneCB& done_cb));
 };
 
 }  // namespace media

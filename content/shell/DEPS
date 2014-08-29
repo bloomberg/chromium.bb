@@ -21,6 +21,9 @@ include_rules = [
   "+ui/views",
 
   "+components/crash",
+
+  # For enabling media related features.
+  "+media/base/media_switches.h",
 ]
 
 specific_include_rules = {

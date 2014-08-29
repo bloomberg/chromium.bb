@@ -16,6 +16,7 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/ranges.h"
 #include "media/base/serial_runner.h"
+#include "media/base/text_track.h"
 #include "media/base/video_rotation.h"
 #include "ui/gfx/size.h"
 
@@ -26,7 +27,6 @@ class TimeDelta;
 
 namespace media {
 
-class FilterCollection;
 class MediaLog;
 class Renderer;
 class TextRenderer;
@@ -81,12 +81,8 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
            MediaLog* media_log);
   virtual ~Pipeline();
 
-  // Build a pipeline to using the given filter collection to construct a filter
-  // chain, executing |seek_cb| when the initial seek has completed.
-  //
-  // |filter_collection| must be a complete collection containing a demuxer,
-  // audio/video decoders, and audio/video renderers. Failing to do so will
-  // result in a crash.
+  // Build a pipeline to using the given |demuxer| and |renderer| to construct
+  // a filter chain, executing |seek_cb| when the initial seek has completed.
   //
   // The following permanent callbacks will be executed as follows up until
   // Stop() has completed:
@@ -100,14 +96,17 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   //                        overall buffering state of the pipeline.
   //   |duration_change_cb| optional callback that will be executed whenever the
   //                        presentation duration changes.
+  //   |add_text_track_cb| will be executed whenever a text track is added.
   // It is an error to call this method after the pipeline has already started.
-  void Start(scoped_ptr<FilterCollection> filter_collection,
+  void Start(Demuxer* demuxer,
+             scoped_ptr<Renderer> renderer,
              const base::Closure& ended_cb,
              const PipelineStatusCB& error_cb,
              const PipelineStatusCB& seek_cb,
              const PipelineMetadataCB& metadata_cb,
              const BufferingStateCB& buffering_state_cb,
-             const base::Closure& duration_change_cb);
+             const base::Closure& duration_change_cb,
+             const AddTextTrackCB& add_text_track_cb);
 
   // Asynchronously stops the pipeline, executing |stop_cb| when the pipeline
   // teardown has completed.
@@ -245,12 +244,18 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   void OnTextRendererEnded();
   void RunEndedCallbackIfNeeded();
 
+  scoped_ptr<TextRenderer> CreateTextRenderer();
+
   // Carries out adding a new text stream to the text renderer.
   void AddTextStreamTask(DemuxerStream* text_stream,
                          const TextTrackConfig& config);
 
   // Carries out removing a text stream from the text renderer.
   void RemoveTextStreamTask(DemuxerStream* text_stream);
+
+  // Callbacks executed when a text track is added.
+  void OnAddTextTrack(const TextTrackConfig& config,
+                      const AddTextTrackDoneCB& done_cb);
 
   // Kicks off initialization for each media object, executing |done_cb| with
   // the result when completed.
@@ -268,6 +273,8 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // |done_cb| when completed.
   void DoStop(const PipelineStatusCB& done_cb);
   void OnStopCompleted(PipelineStatus status);
+
+  void ReportMetadata();
 
   void BufferingStateChanged(BufferingState new_buffering_state);
 
@@ -336,9 +343,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   PipelineMetadataCB metadata_cb_;
   BufferingStateCB buffering_state_cb_;
   base::Closure duration_change_cb_;
-
-  // Contains the demuxer and renderers to use when initializing.
-  scoped_ptr<FilterCollection> filter_collection_;
+  AddTextTrackCB add_text_track_cb_;
 
   // Holds the initialized demuxer. Used for seeking. Owned by client.
   Demuxer* demuxer_;

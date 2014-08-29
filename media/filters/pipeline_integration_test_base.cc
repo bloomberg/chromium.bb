@@ -110,8 +110,10 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
       .WillRepeatedly(SaveArg<0>(&metadata_));
   EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_ENOUGH))
       .Times(AtMost(1));
+  CreateDemuxer(file_path);
   pipeline_->Start(
-      CreateFilterCollection(file_path, NULL),
+      demuxer_.get(),
+      CreateRenderer(NULL),
       base::Bind(&PipelineIntegrationTestBase::OnEnded, base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnError, base::Unretained(this)),
       QuitOnStatusCB(expected_status),
@@ -119,7 +121,9 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
                  base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnBufferingStateChanged,
                  base::Unretained(this)),
-      base::Closure());
+      base::Closure(),
+      base::Bind(&PipelineIntegrationTestBase::OnAddTextTrack,
+                 base::Unretained(this)));
   message_loop_.Run();
   return (pipeline_status_ == PIPELINE_OK);
 }
@@ -143,8 +147,11 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
       .WillRepeatedly(SaveArg<0>(&metadata_));
   EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_ENOUGH))
       .Times(AtMost(1));
+
+  CreateDemuxer(file_path);
   pipeline_->Start(
-      CreateFilterCollection(file_path, decryptor),
+      demuxer_.get(),
+      CreateRenderer(decryptor),
       base::Bind(&PipelineIntegrationTestBase::OnEnded, base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnError, base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
@@ -153,7 +160,9 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
                  base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnBufferingStateChanged,
                  base::Unretained(this)),
-      base::Closure());
+      base::Closure(),
+      base::Bind(&PipelineIntegrationTestBase::OnAddTextTrack,
+                 base::Unretained(this)));
   message_loop_.Run();
   return (pipeline_status_ == PIPELINE_OK);
 }
@@ -212,10 +221,8 @@ bool PipelineIntegrationTestBase::WaitUntilCurrentTimeIsAfter(
   return (pipeline_status_ == PIPELINE_OK);
 }
 
-scoped_ptr<FilterCollection>
-PipelineIntegrationTestBase::CreateFilterCollection(
-    const base::FilePath& file_path,
-    Decryptor* decryptor) {
+void PipelineIntegrationTestBase::CreateDemuxer(
+    const base::FilePath& file_path) {
   FileDataSource* file_data_source = new FileDataSource();
   CHECK(file_data_source->Initialize(file_path)) << "Is " << file_path.value()
                                                  << " missing?";
@@ -223,23 +230,15 @@ PipelineIntegrationTestBase::CreateFilterCollection(
 
   Demuxer::NeedKeyCB need_key_cb = base::Bind(
       &PipelineIntegrationTestBase::DemuxerNeedKeyCB, base::Unretained(this));
-  scoped_ptr<Demuxer> demuxer(
-      new FFmpegDemuxer(message_loop_.message_loop_proxy(),
-                        data_source_.get(),
-                        need_key_cb,
-                        new MediaLog()));
-  return CreateFilterCollection(demuxer.Pass(), decryptor);
+  demuxer_ =
+      scoped_ptr<Demuxer>(new FFmpegDemuxer(message_loop_.message_loop_proxy(),
+                                            data_source_.get(),
+                                            need_key_cb,
+                                            new MediaLog()));
 }
 
-scoped_ptr<FilterCollection>
-PipelineIntegrationTestBase::CreateFilterCollection(
-    scoped_ptr<Demuxer> demuxer,
+scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
     Decryptor* decryptor) {
-  demuxer_ = demuxer.Pass();
-
-  scoped_ptr<FilterCollection> collection(new FilterCollection());
-  collection->SetDemuxer(demuxer_.get());
-
   ScopedVector<VideoDecoder> video_decoders;
 #if !defined(MEDIA_DISABLE_LIBVPX)
   video_decoders.push_back(
@@ -306,9 +305,7 @@ PipelineIntegrationTestBase::CreateFilterCollection(
         new TimeDeltaInterpolator(&dummy_clock_));
   }
 
-  collection->SetRenderer(renderer_impl.PassAs<Renderer>());
-
-  return collection.Pass();
+  return renderer_impl.PassAs<Renderer>();
 }
 
 void PipelineIntegrationTestBase::SetDecryptor(

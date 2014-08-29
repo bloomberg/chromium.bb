@@ -23,6 +23,7 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/shell_content_renderer_client.h"
+#include "media/base/media_switches.h"
 #include "net/cookies/cookie_monster.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"

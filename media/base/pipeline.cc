@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
@@ -17,8 +18,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/condition_variable.h"
-#include "media/base/filter_collection.h"
 #include "media/base/media_log.h"
+#include "media/base/media_switches.h"
 #include "media/base/renderer.h"
 #include "media/base/text_renderer.h"
 #include "media/base/text_track_config.h"
@@ -60,13 +61,15 @@ Pipeline::~Pipeline() {
       media_log_->CreateEvent(MediaLogEvent::PIPELINE_DESTROYED));
 }
 
-void Pipeline::Start(scoped_ptr<FilterCollection> collection,
+void Pipeline::Start(Demuxer* demuxer,
+                     scoped_ptr<Renderer> renderer,
                      const base::Closure& ended_cb,
                      const PipelineStatusCB& error_cb,
                      const PipelineStatusCB& seek_cb,
                      const PipelineMetadataCB& metadata_cb,
                      const BufferingStateCB& buffering_state_cb,
-                     const base::Closure& duration_change_cb) {
+                     const base::Closure& duration_change_cb,
+                     const AddTextTrackCB& add_text_track_cb) {
   DCHECK(!ended_cb.is_null());
   DCHECK(!error_cb.is_null());
   DCHECK(!seek_cb.is_null());
@@ -77,13 +80,15 @@ void Pipeline::Start(scoped_ptr<FilterCollection> collection,
   CHECK(!running_) << "Media pipeline is already running";
   running_ = true;
 
-  filter_collection_ = collection.Pass();
+  demuxer_ = demuxer;
+  renderer_ = renderer.Pass();
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
   seek_cb_ = seek_cb;
   metadata_cb_ = metadata_cb;
   buffering_state_cb_ = buffering_state_cb;
   duration_change_cb_ = duration_change_cb;
+  add_text_track_cb_ = add_text_track_cb;
 
   task_runner_->PostTask(
       FROM_HERE, base::Bind(&Pipeline::StartTask, weak_factory_.GetWeakPtr()));
@@ -230,11 +235,7 @@ Pipeline::State Pipeline::GetNextState() const {
       return kInitDemuxer;
 
     case kInitDemuxer:
-      if (demuxer_->GetStream(DemuxerStream::AUDIO) ||
-          demuxer_->GetStream(DemuxerStream::VIDEO)) {
-        return kInitRenderer;
-      }
-      return kPlaying;
+      return kInitRenderer;
 
     case kInitRenderer:
     case kSeeking:
@@ -339,29 +340,10 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
       return InitializeRenderer(done_cb);
 
     case kPlaying:
-      // Finish initial start sequence the first time we enter the playing
-      // state.
+      // Report metadata the first time we enter the playing state.
       if (!is_initialized_) {
-        if (!renderer_) {
-          ErrorChangedTask(PIPELINE_ERROR_COULD_NOT_RENDER);
-          return;
-        }
-
         is_initialized_ = true;
-
-        {
-          PipelineMetadata metadata;
-          metadata.has_audio = renderer_->HasAudio();
-          metadata.has_video = renderer_->HasVideo();
-          metadata.timeline_offset = demuxer_->GetTimelineOffset();
-          DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
-          if (stream) {
-            metadata.natural_size =
-                stream->video_decoder_config().natural_size();
-            metadata.video_rotation = stream->video_rotation();
-          }
-          metadata_cb_.Run(metadata);
-        }
+        ReportMetadata();
       }
 
       base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
@@ -448,7 +430,6 @@ void Pipeline::OnStopCompleted(PipelineStatus status) {
   }
 
   SetState(kStopped);
-  filter_collection_.reset();
   demuxer_ = NULL;
 
   // If we stop during initialization/seeking we want to run |seek_cb_|
@@ -498,8 +479,7 @@ void Pipeline::StartTask() {
   CHECK_EQ(kCreated, state_)
       << "Media pipeline cannot be started more than once";
 
-  text_renderer_ = filter_collection_->GetTextRenderer();
-
+  text_renderer_ = CreateTextRenderer();
   if (text_renderer_) {
     text_renderer_->Initialize(
         base::Bind(&Pipeline::OnTextRendererEnded, weak_factory_.GetWeakPtr()));
@@ -530,9 +510,14 @@ void Pipeline::StopTask(const base::Closure& stop_cb) {
   if (state_ == kStopping)
     return;
 
-  PipelineStatistics stats = GetStatistics();
-  if (renderer_ && renderer_->HasVideo() && stats.video_frames_decoded > 0)
-    UMA_HISTOGRAM_COUNTS("Media.DroppedFrameCount", stats.video_frames_dropped);
+  // Do not report statistics if the pipeline is not fully initialized.
+  if (state_ == kSeeking || state_ == kPlaying) {
+    PipelineStatistics stats = GetStatistics();
+    if (renderer_->HasVideo() && stats.video_frames_decoded > 0) {
+      UMA_HISTOGRAM_COUNTS("Media.DroppedFrameCount",
+                           stats.video_frames_dropped);
+    }
+  }
 
   SetState(kStopping);
   pending_callbacks_.reset();
@@ -642,30 +627,54 @@ void Pipeline::RunEndedCallbackIfNeeded() {
   ended_cb_.Run();
 }
 
+scoped_ptr<TextRenderer> Pipeline::CreateTextRenderer() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (!cmd_line->HasSwitch(switches::kEnableInbandTextTracks))
+    return scoped_ptr<media::TextRenderer>();
+
+  return scoped_ptr<media::TextRenderer>(new media::TextRenderer(
+      task_runner_,
+      base::Bind(&Pipeline::OnAddTextTrack, weak_factory_.GetWeakPtr())));
+}
+
 void Pipeline::AddTextStreamTask(DemuxerStream* text_stream,
                                  const TextTrackConfig& config) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   // TODO(matthewjheaney): fix up text_ended_ when text stream
   // is added (http://crbug.com/321446).
-  text_renderer_->AddTextStream(text_stream, config);
+  if (text_renderer_)
+    text_renderer_->AddTextStream(text_stream, config);
 }
 
 void Pipeline::RemoveTextStreamTask(DemuxerStream* text_stream) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  text_renderer_->RemoveTextStream(text_stream);
+  if (text_renderer_)
+    text_renderer_->RemoveTextStream(text_stream);
+}
+
+void Pipeline::OnAddTextTrack(const TextTrackConfig& config,
+                              const AddTextTrackDoneCB& done_cb) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  add_text_track_cb_.Run(config, done_cb);
 }
 
 void Pipeline::InitializeDemuxer(const PipelineStatusCB& done_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  demuxer_ = filter_collection_->GetDemuxer();
   demuxer_->Initialize(this, done_cb, text_renderer_);
 }
 
 void Pipeline::InitializeRenderer(const PipelineStatusCB& done_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  renderer_ = filter_collection_->GetRenderer();
+  if (!demuxer_->GetStream(DemuxerStream::AUDIO) &&
+      !demuxer_->GetStream(DemuxerStream::VIDEO)) {
+    renderer_.reset();
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(done_cb, PIPELINE_ERROR_COULD_NOT_RENDER));
+    return;
+  }
 
   base::WeakPtr<Pipeline> weak_this = weak_factory_.GetWeakPtr();
   renderer_->Initialize(
@@ -675,6 +684,20 @@ void Pipeline::InitializeRenderer(const PipelineStatusCB& done_cb) {
       base::Bind(&Pipeline::OnError, weak_this),
       base::Bind(&Pipeline::BufferingStateChanged, weak_this),
       base::Bind(&Pipeline::GetMediaDuration, base::Unretained(this)));
+}
+
+void Pipeline::ReportMetadata() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  PipelineMetadata metadata;
+  metadata.has_audio = renderer_->HasAudio();
+  metadata.has_video = renderer_->HasVideo();
+  metadata.timeline_offset = demuxer_->GetTimelineOffset();
+  DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
+  if (stream) {
+    metadata.natural_size = stream->video_decoder_config().natural_size();
+    metadata.video_rotation = stream->video_rotation();
+  }
+  metadata_cb_.Run(metadata);
 }
 
 void Pipeline::BufferingStateChanged(BufferingState new_buffering_state) {

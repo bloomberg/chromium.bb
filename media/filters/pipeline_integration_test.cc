@@ -17,6 +17,7 @@
 #include "media/cdm/aes_decryptor.h"
 #include "media/cdm/json_web_key.h"
 #include "media/filters/chunk_demuxer.h"
+#include "media/filters/renderer_impl.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -540,8 +541,10 @@ class PipelineIntegrationTest
         .WillRepeatedly(SaveArg<0>(&metadata_));
     EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_ENOUGH))
         .Times(AtMost(1));
+    demuxer_ = source->GetDemuxer().Pass();
     pipeline_->Start(
-        CreateFilterCollection(source->GetDemuxer(), NULL),
+        demuxer_.get(),
+        CreateRenderer(NULL),
         base::Bind(&PipelineIntegrationTest::OnEnded, base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnError, base::Unretained(this)),
         QuitOnStatusCB(PIPELINE_OK),
@@ -549,8 +552,9 @@ class PipelineIntegrationTest
                    base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnBufferingStateChanged,
                    base::Unretained(this)),
-        base::Closure());
-
+        base::Closure(),
+        base::Bind(&PipelineIntegrationTest::OnAddTextTrack,
+                   base::Unretained(this)));
     message_loop_.Run();
   }
 
@@ -567,9 +571,10 @@ class PipelineIntegrationTest
         .WillRepeatedly(SaveArg<0>(&metadata_));
     EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_ENOUGH))
         .Times(AtMost(1));
+    demuxer_ = source->GetDemuxer().Pass();
     pipeline_->Start(
-        CreateFilterCollection(source->GetDemuxer(),
-                               encrypted_media->decryptor()),
+        demuxer_.get(),
+        CreateRenderer(encrypted_media->decryptor()),
         base::Bind(&PipelineIntegrationTest::OnEnded, base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnError, base::Unretained(this)),
         QuitOnStatusCB(PIPELINE_OK),
@@ -577,7 +582,9 @@ class PipelineIntegrationTest
                    base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnBufferingStateChanged,
                    base::Unretained(this)),
-        base::Closure());
+        base::Closure(),
+        base::Bind(&PipelineIntegrationTest::OnAddTextTrack,
+                   base::Unretained(this)));
 
     source->set_need_key_cb(base::Bind(&FakeEncryptedMedia::NeedKey,
                                        base::Unretained(encrypted_media)));

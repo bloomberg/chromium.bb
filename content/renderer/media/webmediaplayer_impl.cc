@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/trace_event.h"
@@ -22,7 +21,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/video_layer.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/buffered_data_source.h"
 #include "content/renderer/media/crypto/encrypted_media_player_support.h"
@@ -40,10 +38,8 @@
 #include "media/audio/null_audio_sink.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/filter_collection.h"
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
-#include "media/base/media_switches.h"
 #include "media/base/pipeline.h"
 #include "media/base/text_renderer.h"
 #include "media/base/video_frame.h"
@@ -875,7 +871,6 @@ scoped_ptr<media::Renderer> WebMediaPlayerImpl::CreateRenderer() {
 
 void WebMediaPlayerImpl::StartPipeline() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
   // Keep track if this is a MSE or non-MSE playback.
   UMA_HISTOGRAM_BOOLEAN("Media.MSE.Playback",
@@ -908,30 +903,18 @@ void WebMediaPlayerImpl::StartPipeline() {
     demuxer_.reset(chunk_demuxer_);
   }
 
-  scoped_ptr<media::FilterCollection> filter_collection(
-      new media::FilterCollection());
-  filter_collection->SetDemuxer(demuxer_.get());
-  filter_collection->SetRenderer(CreateRenderer());
-
-  if (cmd_line->HasSwitch(switches::kEnableInbandTextTracks)) {
-    scoped_ptr<media::TextRenderer> text_renderer(
-        new media::TextRenderer(
-            media_task_runner_,
-            BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnAddTextTrack)));
-
-    filter_collection->SetTextRenderer(text_renderer.Pass());
-  }
-
   // ... and we're ready to go!
   seeking_ = true;
   pipeline_.Start(
-      filter_collection.Pass(),
+      demuxer_.get(),
+      CreateRenderer(),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineEnded),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineError),
       BIND_TO_RENDER_LOOP1(&WebMediaPlayerImpl::OnPipelineSeeked, false),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineMetadata),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineBufferingStateChanged),
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDurationChanged));
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDurationChanged),
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnAddTextTrack));
 }
 
 void WebMediaPlayerImpl::SetNetworkState(WebMediaPlayer::NetworkState state) {

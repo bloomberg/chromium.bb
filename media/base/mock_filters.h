@@ -14,7 +14,6 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer.h"
-#include "media/base/filter_collection.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer.h"
 #include "media/base/text_track.h"
