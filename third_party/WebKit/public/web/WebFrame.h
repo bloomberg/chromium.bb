@@ -300,6 +300,11 @@ public:
     virtual v8::Handle<v8::Value> executeScriptAndReturnValue(
         const WebScriptSource&) = 0;
 
+    // ONLY FOR TESTS: Same as above but sets a fake UserGestureIndicator before
+    // execution.
+    virtual v8::Handle<v8::Value> executeScriptAndReturnValueForTests(
+        const WebScriptSource&);
+
     // worldID must be > 0 (as 0 represents the main world).
     // worldID must be < EmbedderWorldIdLimit, high number used internally.
     virtual void executeScriptInIsolatedWorld(

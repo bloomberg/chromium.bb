@@ -7,6 +7,7 @@
 
 #include "core/frame/RemoteFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "platform/UserGestureIndicator.h"
 #include "web/OpenedFrameTracker.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"
@@ -73,6 +74,16 @@ void WebFrame::swap(WebFrame* frame)
     } else {
         toWebRemoteFrameImpl(frame)->initializeCoreFrame(oldFrame->host(), owner, oldFrame->tree().name());
     }
+}
+
+v8::Handle<v8::Value> WebFrame::executeScriptAndReturnValueForTests(const WebScriptSource& source)
+{
+    // FIXME: This fake UserGestureIndicator is required for a bunch of browser
+    // tests to pass. We should update the tests to simulate input and get rid
+    // of this.
+    // http://code.google.com/p/chromium/issues/detail?id=86397
+    UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
+    return executeScriptAndReturnValue(source);
 }
 
 WebFrame* WebFrame::opener() const

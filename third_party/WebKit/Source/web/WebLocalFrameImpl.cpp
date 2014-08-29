@@ -753,10 +753,7 @@ v8::Handle<v8::Value> WebLocalFrameImpl::executeScriptAndReturnValue(const WebSc
 {
     ASSERT(frame());
 
-    // FIXME: This fake user gesture is required to make a bunch of pyauto
-    // tests pass. If this isn't needed in non-test situations, we should
-    // consider removing this code and changing the tests.
-    // http://code.google.com/p/chromium/issues/detail?id=86397
+    // TODO: Remove this after blink has rolled and chromium change landed. (crrev.com/516753002)
     UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
 
     TextPosition position(OrdinalNumber::fromOneBasedInt(source.startLine), OrdinalNumber::first());
