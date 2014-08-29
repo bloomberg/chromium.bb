@@ -36,7 +36,7 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
  public:
   static scoped_ptr<ServiceWorkerCacheStorageManager> Create(
       const base::FilePath& path,
-      base::SequencedTaskRunner* cache_task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner);
 
   static scoped_ptr<ServiceWorkerCacheStorageManager> Create(
       ServiceWorkerCacheStorageManager* old_manager);
@@ -78,7 +78,7 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
 
   ServiceWorkerCacheStorageManager(
       const base::FilePath& path,
-      base::SequencedTaskRunner* cache_task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner);
 
   // The returned ServiceWorkerCacheStorage* is owned by
   // service_worker_cache_storages_.
@@ -92,7 +92,7 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
     return blob_context_;
   }
   base::FilePath root_path() const { return root_path_; }
-  scoped_refptr<base::SequencedTaskRunner> cache_task_runner() const {
+  const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner() const {
     return cache_task_runner_;
   }
 

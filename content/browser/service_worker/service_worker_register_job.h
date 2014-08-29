@@ -99,11 +99,13 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
     scoped_refptr<ServiceWorkerRegistration> uninstalling_registration;
   };
 
-  void set_registration(ServiceWorkerRegistration* registration);
+  void set_registration(
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
   ServiceWorkerRegistration* registration();
   void set_new_version(ServiceWorkerVersion* version);
   ServiceWorkerVersion* new_version();
-  void set_uninstalling_registration(ServiceWorkerRegistration* registration);
+  void set_uninstalling_registration(
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
   ServiceWorkerRegistration* uninstalling_registration();
 
   void SetPhase(Phase phase);

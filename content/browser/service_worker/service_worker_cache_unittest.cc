@@ -99,7 +99,8 @@ class ServiceWorkerCacheTest : public testing::Test {
         new storage::BlobData("blob-id:myblob"));
     blob_data->AppendData(expected_blob_data_);
 
-    blob_handle_ = blob_storage_context->context()->AddFinishedBlob(blob_data);
+    blob_handle_ =
+        blob_storage_context->context()->AddFinishedBlob(blob_data.get());
 
     body_response_.reset(
         new ServiceWorkerResponse(GURL("http://example.com/body.html"),

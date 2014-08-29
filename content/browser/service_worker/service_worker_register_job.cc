@@ -117,7 +117,7 @@ ServiceWorkerRegisterJob::Internal::Internal() {}
 ServiceWorkerRegisterJob::Internal::~Internal() {}
 
 void ServiceWorkerRegisterJob::set_registration(
-    ServiceWorkerRegistration* registration) {
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
   DCHECK(phase_ == START || phase_ == REGISTER) << phase_;
   DCHECK(!internal_.registration.get());
   internal_.registration = registration;
@@ -141,7 +141,7 @@ ServiceWorkerVersion* ServiceWorkerRegisterJob::new_version() {
 }
 
 void ServiceWorkerRegisterJob::set_uninstalling_registration(
-    ServiceWorkerRegistration* registration) {
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
   DCHECK_EQ(phase_, WAIT_FOR_UNINSTALL);
   internal_.uninstalling_registration = registration;
 }
@@ -149,7 +149,7 @@ void ServiceWorkerRegisterJob::set_uninstalling_registration(
 ServiceWorkerRegistration*
 ServiceWorkerRegisterJob::uninstalling_registration() {
   DCHECK_EQ(phase_, WAIT_FOR_UNINSTALL);
-  return internal_.uninstalling_registration;
+  return internal_.uninstalling_registration.get();
 }
 
 void ServiceWorkerRegisterJob::SetPhase(Phase phase) {
@@ -297,8 +297,9 @@ void ServiceWorkerRegisterJob::ContinueWithRegistrationForSameScriptUrl(
     return;
   }
 
-  ResolvePromise(
-      status, existing_registration, existing_registration->active_version());
+  ResolvePromise(status,
+                 existing_registration.get(),
+                 existing_registration->active_version());
   Complete(SERVICE_WORKER_OK);
 }
 

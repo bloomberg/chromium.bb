@@ -74,7 +74,7 @@ void ServiceWorkerProviderHost::UpdatePotentialControllees(
     ServiceWorkerVersion* active_version) {
    if (installing_version != installing_version_.get()) {
      scoped_refptr<ServiceWorkerVersion> previous_version = installing_version_;
-     if (previous_version)
+     if (previous_version.get())
        previous_version->RemovePotentialControllee(this);
      if (installing_version)
        installing_version->AddPotentialControllee(this);
@@ -83,7 +83,7 @@ void ServiceWorkerProviderHost::UpdatePotentialControllees(
 
    if (waiting_version != waiting_version_.get()) {
      scoped_refptr<ServiceWorkerVersion> previous_version = waiting_version_;
-     if (previous_version)
+     if (previous_version.get())
        previous_version->RemovePotentialControllee(this);
      if (waiting_version)
        waiting_version->AddPotentialControllee(this);
@@ -92,7 +92,7 @@ void ServiceWorkerProviderHost::UpdatePotentialControllees(
 
    if (active_version != active_version_.get()) {
      scoped_refptr<ServiceWorkerVersion> previous_version = active_version_;
-     if (previous_version)
+     if (previous_version.get())
        previous_version->RemovePotentialControllee(this);
      if (active_version)
        active_version->AddPotentialControllee(this);
