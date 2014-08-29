@@ -126,7 +126,57 @@ public:
     static bool windowIsBeingInitialized() { return !!worldOfInitializingWindow; }
 
 private:
+    class DOMObjectHolderBase {
+    public:
+        DOMObjectHolderBase(v8::Isolate* isolate, v8::Handle<v8::Object> wrapper)
+            : m_wrapper(isolate, wrapper)
+            , m_world(0)
+        {
+        }
+
+        DOMWrapperWorld* world() const { return m_world; }
+        void setWorld(DOMWrapperWorld* world) { m_world = world; }
+        void setWeak(void (*callback)(const v8::WeakCallbackData<v8::Object, DOMObjectHolderBase>&))
+        {
+            m_wrapper.setWeak(this, callback);
+        }
+
+    private:
+        ScopedPersistent<v8::Object> m_wrapper;
+        DOMWrapperWorld* m_world;
+    };
+
+    template<typename T>
+    class DOMObjectHolder : public DOMObjectHolderBase {
+    public:
+        static PassOwnPtr<DOMObjectHolder<T> > create(v8::Isolate* isolate, PassRefPtrWillBeRawPtr<T> object, v8::Handle<v8::Object> wrapper)
+        {
+            return adoptPtr(new DOMObjectHolder(isolate, object, wrapper));
+        }
+
+    private:
+        DOMObjectHolder(v8::Isolate* isolate, PassRefPtrWillBeRawPtr<T> object, v8::Handle<v8::Object> wrapper)
+            : DOMObjectHolderBase(isolate, wrapper)
+            , m_object(object)
+        {
+        }
+
+        RefPtrWillBePersistent<T> m_object;
+    };
+
+public:
+    template<typename T>
+    void registerDOMObjectHolder(v8::Isolate* isolate, T* object, v8::Handle<v8::Object> wrapper)
+    {
+        registerDOMObjectHolderInternal(DOMObjectHolder<T>::create(isolate, object, wrapper));
+    }
+
+private:
     DOMWrapperWorld(int worldId, int extensionGroup);
+
+    static void weakCallbackForDOMObjectHolder(const v8::WeakCallbackData<v8::Object, DOMObjectHolderBase>&);
+    void registerDOMObjectHolderInternal(PassOwnPtr<DOMObjectHolderBase>);
+    void unregisterDOMObjectHolder(DOMObjectHolderBase*);
 
     static unsigned isolatedWorldCount;
     static DOMWrapperWorld* worldOfInitializingWindow;
@@ -134,6 +184,7 @@ private:
     const int m_worldId;
     const int m_extensionGroup;
     OwnPtr<DOMDataStore> m_domDataStore;
+    HashSet<OwnPtr<DOMObjectHolderBase> > m_domObjectHolders;
 };
 
 } // namespace blink
