@@ -1981,13 +1981,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialClosesDialogs) {
   EXPECT_FALSE(contents->GetRenderProcessHost()->IgnoreInputEvents());
 }
 
-#if defined(OS_MACOSX)
-// http://crbug.com/393218
-#define MAYBE_InterstitialCloseTab DISABLED_InterstitialCloseTab
-#else
-#define MAYBE_InterstitialCloseTab InterstitialCloseTab
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_InterstitialCloseTab) {
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCloseTab) {
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
 
   {
