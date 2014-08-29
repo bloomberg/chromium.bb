@@ -1,0 +1,46 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<link rel="import" href="../lib/net.html">
+<link href="../model/ct-builder-status.html" rel="import">
+
+<script>
+  // FIXME: Just fetch the latest_builder_info data instead of the entire
+  // alerts structure.
+  var BUILD_DATA_URI = 'http://sheriff-o-matic.appspot.com/alerts';
+
+  var revisions = revisions || {};
+
+  (function() {
+    revisions.parseBuildInfo = function(data) {
+      var groups = data['latest_builder_info'];
+      return new Promise(function(resolve, reject) {
+        var model = new CTBuilderStatus();
+        for (var group in groups) {
+          var modelGroup = new CTBuilderGroup(group);
+          for (var build in groups[group]) {
+            var modelBuilder = new CTBuilderBot(modelGroup, build,
+              groups[group][build]['state'],
+              groups[group][build]['lastUpdateTime']);
+            var revisions = groups[group][build]['revisions'];
+            for (var repository in revisions) {
+              modelBuilder.addRepository(
+                new CTBuilderRepository(repository, revisions[repository]));
+            }
+            modelGroup.addBuilder(modelBuilder);
+          }
+          model.addGroup(modelGroup);
+        }
+        model.sort();
+        resolve(model);
+      });
+    };
+
+    revisions.load = function() {
+      return net.json(BUILD_DATA_URI).then(revisions.parseBuildInfo);
+    };
+
+  })();
+</script>

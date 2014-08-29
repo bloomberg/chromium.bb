@@ -1,0 +1,31 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel='import' href='ct-builder-bot.html'>
+
+<script>
+
+var CTBuilderGroup;
+
+(function() {
+
+  CTBuilderGroup = function(name) {
+    this.name = name;
+    this.builders = [];
+  }
+
+  CTBuilderGroup.prototype.addBuilder = function(builder) {
+    builder.sort();
+    this.builders.push(builder);
+  };
+
+  CTBuilderGroup.prototype.sort = function() {
+      this.builders.sort(function(a, b) { return a.name > b.name; });
+  };
+
+})();
+
+</script>

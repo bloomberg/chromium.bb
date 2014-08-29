@@ -1,0 +1,65 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Builder Revisions</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:400,700">
+    <style>
+    html, body {
+      height: 100%;
+    }
+    body {
+      font-family: 'Open Sans';
+      font-size: 14px;
+      margin: 0px;
+    }
+    header {
+      -webkit-user-select: none;
+      background-color: #212121;
+      color: white;
+      cursor: default;
+      justify-content: space-between;
+      font-size: 1.1em;
+      padding: 0 5px;
+    }
+    header span {
+      color: white;
+      display: inline-block;
+      padding: 0.25em 4px;
+      text-decoration: none;
+    }
+    div {
+      padding: 0 5px;
+    }
+    </style>
+    <script src="bower_components/platform/platform.js"></script>
+    <link rel="import" href="bower_components/polymer/polymer.html">
+    <link rel="import" href="ui/ct-builder-status.html">
+    <link rel="import" href="../lib/revisions.html">
+  </head>
+  <body>
+    <header>
+      <div>
+        <img src="../favicon.ico"> <span>Builder Revisions</span>
+      </div>
+    </header>
+    <div>
+      Latest revision  processed by each bot.
+    </div>
+    <ct-builder-status></ct-builder-status>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var el = document.querySelector('ct-builder-status');
+        revisions.load().
+          then(function(model) { el.groups = model.groups; }).
+          catch(function(error) { el.errorMessage = error; });
+      });
+    </script>
+  </body>
+</html>

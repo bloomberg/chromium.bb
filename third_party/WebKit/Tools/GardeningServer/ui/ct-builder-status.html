@@ -1,0 +1,77 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link href="../model/ct-builder-status.html" rel="import">
+
+<polymer-element name="ct-builder-status">
+  <template>
+    <style>
+      li > a { display: inline-block; width: 40ex; }
+      li > span { display: inline-block; width: 20ex;}
+      .groups {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .groups > li {
+        margin-bottom: 5px;
+        padding: 5px;
+        border-top: 1px solid lightgrey;
+      }
+      h2 {
+        font-size: 100%;
+        padding: 0 5px;
+        margin: 0;
+      }
+      p {
+        padding: 0 5px;
+        margin: 0;
+      }
+    </style>
+
+    <template if="{{ errorMessage }}">
+      <h2>Failed to load and/or parse data.</h2>
+      <p>{{ errorMessage }}</p>
+    </template>
+
+    <template if="{{ groups.length && !errorMessage }}">
+      <ul class="groups">
+        <template repeat="{{ group in groups }}">
+          <li>
+            <h2>{{ group.name }}</h2>
+            <ul class="builds">
+              <template repeat="{{ builder in group.builders }}">
+                <li>
+                  <a href="{{builder.uri}}">{{ builder.name }}</a>
+                  <template repeat="{{ repository in builder.repositories }}">
+                    <span>
+                      {{ repository.name }}:
+                      <template if="{{ repository.uri }}">
+                        <a href="{{repository.uri}}">{{ repository.revision }}</a>
+                      </template>
+                      <template if="{{ !repository.uri }}">
+                        {{ repository.revision }}
+                      </template>
+                    </span>
+                  </template>
+                </li>
+              </template>
+            </ul>
+          </li>
+        </template>
+      </ul>
+    </template>
+  </template>
+
+  <script>
+    Polymer('ct-builder-status', {
+      ready: function() {
+        this.groups = [];
+        this.errorMessage = '';
+      }
+    });
+  </script>
+</polymer-element>

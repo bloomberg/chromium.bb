@@ -1,0 +1,148 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../revisions.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+var REVISION_JSON = {
+  "latest_builder_info": {
+    "Group 1": {
+      "Bot A": {
+        "state": "building",
+        "lastUpdateTime": 0,
+        "revisions": {
+          "v8": 100,
+          "chromium": 200,
+          "nacl": 300,
+          "blink": 400
+        }
+      },
+      "Bot B": {
+        "state": "building",
+        "lastUpdateTime": 0,
+        "revisions": {
+          "v8": 101,
+          "chromium": 201,
+          "nacl": 301,
+          "blink": 401
+        }
+      },
+    },
+    "Group 2": {
+      "Bot A": {
+        "state": "building",
+        "lastUpdateTime": 0,
+        "revisions": {
+          "v8": 102,
+          "chromium": 203,
+          "nacl": 304,
+          "blink": 405
+        }
+      },
+      "Bot B": {
+        "state": "building",
+        "lastUpdateTime": 0,
+        "revisions": {
+          "v8": 103,
+          "chromium": 203,
+          "nacl": 303,
+          "blink": 403
+        }
+      },
+      "Bot C": {
+        "state": "building",
+        "lastUpdateTime": 0,
+        "revisions": {
+          "v8": 104,
+          "chromium": 204,
+          "nacl": 304,
+          "blink": 404
+        }
+      }
+    }
+  }
+};
+
+describe('bot revisions', function() {
+  describe('Parsing', function() {
+    it('Should parse groups in JSON data correctly.', function(done) {
+      revisions.parseBuildInfo(REVISION_JSON).then(function(parsedData) {
+        assert.equal(parsedData.groups.length, 2);
+        assert.equal(parsedData.groups[0].name, 'Group 1');
+        assert.equal(parsedData.groups[1].name, 'Group 2');
+      }).then(done).catch(function(error) {
+        assert(false, 'Failed to parse JSON data.');
+      }).catch(done);
+    });
+    it('Should parse builders in a group correctly.', function(done) {
+      revisions.parseBuildInfo(REVISION_JSON).then(function(parsedData) {
+        var group1 = parsedData.groups[0];
+        assert.equal(group1.builders.length, 2);
+        assert.equal(group1.builders[0].name, 'Bot A');
+        assert.equal(group1.builders[1].name, 'Bot B');
+        var group2 = parsedData.groups[1];
+        assert.equal(group2.builders.length, 3);
+        assert.equal(group2.builders[0].name, 'Bot A');
+        assert.equal(group2.builders[1].name, 'Bot B');
+        assert.equal(group2.builders[2].name, 'Bot C');
+      }).then(done, done);
+    });
+    it('Should parse revision data for a builder correctly.', function(done) {
+      revisions.parseBuildInfo(REVISION_JSON).then(function(parsedData) {
+        var bot1A = parsedData.groups[0].builders[0];
+        assert.equal(bot1A.status, 'building');
+        assert.equal(bot1A.repositories[0].name, 'chromium');
+        assert.equal(bot1A.repositories[0].revision, 200);
+        assert.equal(bot1A.repositories[1].name, 'blink');
+        assert.equal(bot1A.repositories[1].revision, 400);
+        assert.equal(bot1A.repositories[2].name, 'v8');
+        assert.equal(bot1A.repositories[2].revision, 100);
+        assert.equal(bot1A.repositories[3].name, 'nacl');
+        assert.equal(bot1A.repositories[3].revision, 300);
+
+        var bot2C = parsedData.groups[1].builders[2];
+        assert.equal(bot2C.status, 'building');
+        assert.equal(bot2C.repositories[0].name, 'chromium');
+        assert.equal(bot2C.repositories[0].revision, 204);
+        assert.equal(bot2C.repositories[1].name, 'blink');
+        assert.equal(bot2C.repositories[1].revision, 404);
+        assert.equal(bot2C.repositories[2].name, 'v8');
+        assert.equal(bot2C.repositories[2].revision, 104);
+        assert.equal(bot2C.repositories[3].name, 'nacl');
+        assert.equal(bot2C.repositories[3].revision, 304);
+
+      }).then(done, done);
+    });
+  });
+
+  describe('Builder URIs', function() {
+    it('Should construct proper buildbot URIs.', function(done) {
+      revisions.parseBuildInfo(REVISION_JSON).then(function(parsedData) {
+        var bot1A = parsedData.groups[0].builders[0];
+        assert.equal(bot1A.uri,
+          'http://build.chromium.org/p/Group 1/builders/Bot A');
+        var bot2B = parsedData.groups[1].builders[1];
+        assert.equal(bot2B.uri,
+          'http://build.chromium.org/p/Group 2/builders/Bot B');
+      }).then(done, done);
+    });
+    it('Should construct proper revision URIs.', function(done) {
+      revisions.parseBuildInfo(REVISION_JSON).then(function(parsedData) {
+        var bot1A = parsedData.groups[0].builders[0];
+        assert.equal(bot1A.repositories[0].uri,
+          'https://chromium.googlesource.com/chromium/src/+/200');
+        assert.equal(bot1A.repositories[1].uri,
+          'http://src.chromium.org/viewvc/blink/?pathrev=400');
+      }).then(done, done);
+    });
+  });
+});
+})()
+</script>

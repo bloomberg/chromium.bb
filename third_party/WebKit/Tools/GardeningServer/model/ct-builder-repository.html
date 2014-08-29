@@ -1,0 +1,43 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<script>
+
+var CTBuilderRepository;
+
+(function() {
+
+  var BLINK_REV_URI = 'http://src.chromium.org/viewvc/blink/?pathrev=<revision>';
+  var CHROMIUM_REV_URI = 'https://chromium.googlesource.com/chromium/' +
+    'src/+/<revision>';
+
+  var REVISION_URIS = {
+    'chromium': CHROMIUM_REV_URI,
+    'blink': BLINK_REV_URI,
+    'v8': '', // FIXME: Add v8 and nacl revision uris.
+    'nacl': ''
+  };
+
+  var BUILDER_SORT_ORDER = {
+    'chromium': 1,
+    'blink': 2,
+    'v8': 3,
+    'nacl': 4
+  };
+
+  CTBuilderRepository = function(name, revision) {
+    this.name = name;
+    this.revision = revision || '';
+    this.uri = REVISION_URIS[this.name].replace('<revision>', this.revision);
+  };
+
+  CTBuilderRepository.sortFunction = function(a, b) {
+      return BUILDER_SORT_ORDER[a.name] > BUILDER_SORT_ORDER[b.name];
+  };
+
+})();
+
+</script>
