@@ -483,8 +483,17 @@ fsi_images: 2913.331.0,2465.105.0
     self.mox.StubOutWithMock(paygen, '_DiscoverNmoBuild')
     self.mox.StubOutWithMock(paygen, '_DiscoverFsiBuilds')
 
+    paygen.BUILD_DISCOVER_RETRY_SLEEP = 0
+
+    # Check that we retry 3 times.
     paygen._DiscoverImages(paygen._build).AndRaise(
-        paygen_build_lib.BuildNotReady())
+        paygen_build_lib.ImageMissing())
+    paygen._DiscoverImages(paygen._build).AndRaise(
+        paygen_build_lib.ImageMissing())
+    paygen._DiscoverImages(paygen._build).AndRaise(
+        paygen_build_lib.ImageMissing())
+    paygen._DiscoverImages(paygen._build).AndRaise(
+        paygen_build_lib.ImageMissing())
 
     # Run the test verification.
     self.mox.ReplayAll()

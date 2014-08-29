@@ -27,6 +27,7 @@ from chromite.cbuildbot import commands
 from chromite.cbuildbot import cbuildbot_config
 from chromite.lib import cros_build_lib
 from chromite.lib import parallel
+from chromite.lib import retry_util
 from chromite.lib.paygen import download_cache
 from chromite.lib.paygen import dryrun_lib
 from chromite.lib.paygen import gslib
@@ -269,6 +270,9 @@ class _PaygenBuild(object):
 
   # Name of the Autotest control file tarball.
   CONTROL_TARBALL_TEMPLATE = PAYGEN_AU_SUITE_TEMPLATE + '_control.tar.bz2'
+
+  # Sleep time used in _DiscoverRequiredPayloads. Export so tests can change.
+  BUILD_DISCOVER_RETRY_SLEEP = 90
 
   # Cache of full test payloads for a given version.
   _version_to_full_test_payloads = {}
@@ -676,7 +680,11 @@ class _PaygenBuild(object):
     payload_sublists_skip = []
 
     try:
-      images = self._DiscoverImages(self._build)
+      # When discovering the images for our current build, they might
+      # discoverable right away (GS eventual consistency). So, we retry.
+      images = retry_util.RetryException(ImageMissing, 3,
+                                         self._DiscoverImages, self._build,
+                                         sleep=self.BUILD_DISCOVER_RETRY_SLEEP)
       images += self._DiscoverTestImageArchives(self._build)
     except ImageMissing as e:
       # If the main build doesn't have the final build images, then it's
