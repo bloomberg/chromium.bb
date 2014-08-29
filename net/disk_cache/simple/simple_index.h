@@ -77,7 +77,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
  public:
   typedef std::vector<uint64> HashList;
 
-  SimpleIndex(base::SingleThreadTaskRunner* io_thread,
+  SimpleIndex(const scoped_refptr<base::SingleThreadTaskRunner>& io_thread,
               SimpleIndexDelegate* delegate,
               net::CacheType cache_type,
               scoped_ptr<SimpleIndexFile> simple_index_file);

@@ -20,7 +20,7 @@ typedef std::pair<net::SSLCertRequestInfo*, net::X509Certificate*> CertDetails;
 
 SSLClientAuthObserver::SSLClientAuthObserver(
     const net::HttpNetworkSession* network_session,
-    net::SSLCertRequestInfo* cert_request_info,
+    const scoped_refptr<net::SSLCertRequestInfo>& cert_request_info,
     const base::Callback<void(net::X509Certificate*)>& callback)
     : network_session_(network_session),
       cert_request_info_(cert_request_info),

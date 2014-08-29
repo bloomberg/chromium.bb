@@ -46,15 +46,15 @@ SSLSocketParams::SSLSocketParams(
       force_spdy_over_ssl_(force_spdy_over_ssl),
       want_spdy_over_npn_(want_spdy_over_npn),
       ignore_limits_(false) {
-  if (direct_params_) {
-    DCHECK(!socks_proxy_params_);
-    DCHECK(!http_proxy_params_);
+  if (direct_params_.get()) {
+    DCHECK(!socks_proxy_params_.get());
+    DCHECK(!http_proxy_params_.get());
     ignore_limits_ = direct_params_->ignore_limits();
-  } else if (socks_proxy_params_) {
-    DCHECK(!http_proxy_params_);
+  } else if (socks_proxy_params_.get()) {
+    DCHECK(!http_proxy_params_.get());
     ignore_limits_ = socks_proxy_params_->ignore_limits();
   } else {
-    DCHECK(http_proxy_params_);
+    DCHECK(http_proxy_params_.get());
     ignore_limits_ = http_proxy_params_->ignore_limits();
   }
 }
@@ -62,18 +62,18 @@ SSLSocketParams::SSLSocketParams(
 SSLSocketParams::~SSLSocketParams() {}
 
 SSLSocketParams::ConnectionType SSLSocketParams::GetConnectionType() const {
-  if (direct_params_) {
-    DCHECK(!socks_proxy_params_);
-    DCHECK(!http_proxy_params_);
+  if (direct_params_.get()) {
+    DCHECK(!socks_proxy_params_.get());
+    DCHECK(!http_proxy_params_.get());
     return DIRECT;
   }
 
-  if (socks_proxy_params_) {
-    DCHECK(!http_proxy_params_);
+  if (socks_proxy_params_.get()) {
+    DCHECK(!http_proxy_params_.get());
     return SOCKS_PROXY;
   }
 
-  DCHECK(http_proxy_params_);
+  DCHECK(http_proxy_params_.get());
   return HTTP_PROXY;
 }
 

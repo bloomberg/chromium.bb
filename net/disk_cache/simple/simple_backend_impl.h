@@ -169,7 +169,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   // using a key in the meantime.
   void OnEntryOpenedFromHash(uint64 hash,
                              Entry** entry,
-                             scoped_refptr<SimpleEntryImpl> simple_entry,
+                             const scoped_refptr<SimpleEntryImpl>& simple_entry,
                              const CompletionCallback& callback,
                              int error_code);
 
@@ -177,7 +177,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   // opened, a check for key mismatch is performed.
   void OnEntryOpenedFromKey(const std::string key,
                             Entry** entry,
-                            scoped_refptr<SimpleEntryImpl> simple_entry,
+                            const scoped_refptr<SimpleEntryImpl>& simple_entry,
                             const CompletionCallback& callback,
                             int error_code);
 
