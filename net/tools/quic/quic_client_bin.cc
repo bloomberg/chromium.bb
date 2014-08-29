@@ -44,15 +44,18 @@ bool FLAGS_secure = false;
 int main(int argc, char *argv[]) {
   base::CommandLine::Init(argc, argv);
   base::CommandLine* line = base::CommandLine::ForCurrentProcess();
+  const base::CommandLine::StringVector& urls = line->GetArgs();
 
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   CHECK(logging::InitLogging(settings));
 
-  if (line->HasSwitch("h") || line->HasSwitch("help")) {
+  if (line->HasSwitch("h") || line->HasSwitch("help") || urls.empty()) {
     const char* help_str =
-        "Usage: quic_client [options]\n"
+        "Usage: quic_client [options] <url> ...\n"
         "\n"
+        "At least one <url> with scheme must be provided "
+        "(e.g. http://www.google.com/)\n\n"
         "Options:\n"
         "-h, --help                  show this help message and exit\n"
         "--port=<port>               specify the port to connect to\n"
@@ -108,6 +111,6 @@ int main(int argc, char *argv[]) {
 
   if (!client.Connect()) return 1;
 
-  client.SendRequestsAndWaitForResponse(line->GetArgs());
+  client.SendRequestsAndWaitForResponse(urls);
   return 0;
 }
