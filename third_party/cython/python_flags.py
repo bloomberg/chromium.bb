@@ -34,9 +34,13 @@ def main():
   result = []
   if opts.libraries:
     libraries = b.get_libraries(ext)
-    if sys.platform == 'darwin':
-      libraries += [ '-lpython%s' % sys.version[:3] ]
-    result = result + libraries
+    if sys.platform in ['darwin', 'linux2']:
+      # In case of darwin and linux prefix all libraries (if there is any)
+      # so it can be used as a compiler argument.
+      libraries = ['-l%s' % library for library in libraries]
+      if sys.platform == 'darwin':
+        libraries.append('-lpython%s' % sys.version[:3])
+    result.extend(libraries)
   if opts.includes:
     result = result  + b.include_dirs
   if opts.library_dirs:
