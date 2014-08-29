@@ -60,7 +60,7 @@ found in the LICENSE file.
           <img src="../favicon.ico"> <span>Sheriff-o-matic</span>
         </template>
         <template if="{{ selected == 1 }}">
-          <a on-click="{{ onBack }}" href="{{ currentUrl }}">
+          <a on-click="{{ onBack }}" href="">
             &lt;&lt; Go back
           </a>
         </template>
@@ -85,16 +85,36 @@ found in the LICENSE file.
       selected: 0,
       currentFailures: [],
 
+      updateFromHistoryState: function(state) {
+        if ('selected' in state)
+          this.selected = state.selected;
+        if ('currentFailures' in state) {
+          this.currentFailures = [];
+          state.currentFailures.forEach(function(failure) {
+            this.currentFailures.push(
+              new CTFailure(failure.step, failure.testName, failure.resultNodesByBuilder));
+          }, this);
+        }
+      },
+
+      onPopState: function(e) {
+        this.updateFromHistoryState(e.state);
+      },
+
       onBack: function(event) {
         if (event.button == 0) {
-          this.selected = 0;
+          window.history.back();
           event.preventDefault();
         }
       },
 
       onExamine: function(event) {
+        window.history.pushState({
+          currentFailures: event.detail.failures,
+          selected: 1,
+        });
+
         this.currentFailures = event.detail.failures;
-        this.currentUrl = document.location.href;
         this.selected = 1;
       },
 
@@ -104,6 +124,23 @@ found in the LICENSE file.
         this.commitLog = new CTCommitLog();
         this.failures = new CTFailures(this.commitLog);
         this._updater = new CTScheduledUpdater(this.update.bind(this), kUpdateFrequency);
+
+        // History API handling:
+        // If we have a current state, we should make sure the view is shown
+        // accordingly.
+        // Otherwise, we should inject a state using replaceState() so we can
+        // handle history navigation cleanly.
+        // Either way, the object will react to popstate events.
+        if (window.history.state) {
+          // Will be a no-op if the current state is already being used.
+          this.updateFromHistoryState(window.history.state);
+        } else {
+          window.history.replaceState({
+            selected: 0,
+          });
+        }
+
+        window.addEventListener('popstate', this.onPopState.bind(this));
       },
 
       ready: function() {
