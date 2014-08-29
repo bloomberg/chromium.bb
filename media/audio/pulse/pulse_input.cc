@@ -119,7 +119,9 @@ void PulseAudioInputStream::Close() {
     if (handle_) {
       // Disable all the callbacks before disconnecting.
       pa_stream_set_state_callback(handle_, NULL, NULL);
-      pa_stream_flush(handle_, NULL, NULL);
+      pa_operation* operation = pa_stream_flush(
+          handle_, &pulse::StreamSuccessCallback, pa_mainloop_);
+      WaitForOperationCompletion(pa_mainloop_, operation);
 
       if (pa_stream_get_state(handle_) != PA_STREAM_UNCONNECTED)
         pa_stream_disconnect(handle_);
