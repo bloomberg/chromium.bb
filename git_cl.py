@@ -1893,7 +1893,7 @@ def SendUpstream(parser, args, cmd):
              'before attempting to %s.' % (base_branch, cmd))
       return 1
 
-  base_branch = RunGit(['merge-base', base_branch, 'HEAD']).strip()
+  merge_base = RunGit(['merge-base', base_branch, 'HEAD']).strip()
   if not options.bypass_hooks:
     author = None
     if options.contributor:
@@ -1902,7 +1902,7 @@ def SendUpstream(parser, args, cmd):
         committing=True,
         may_prompt=not options.force,
         verbose=options.verbose,
-        change=cl.GetChange(base_branch, author))
+        change=cl.GetChange(merge_base, author))
     if not hook_results.should_continue():
       return 1
 
@@ -1929,7 +1929,7 @@ def SendUpstream(parser, args, cmd):
 
   if not change_desc.description:
     if not cl.GetIssue() and options.bypass_hooks:
-      change_desc = ChangeDescription(CreateDescriptionFromLog([base_branch]))
+      change_desc = ChangeDescription(CreateDescriptionFromLog([merge_base]))
     else:
       print 'No description set.'
       print 'Visit %s/edit to set it.' % (cl.GetIssueURL())
@@ -1951,7 +1951,7 @@ def SendUpstream(parser, args, cmd):
   print('Description:')
   print(commit_desc.description)
 
-  branches = [base_branch, cl.GetBranchRef()]
+  branches = [merge_base, cl.GetBranchRef()]
   if not options.force:
     print_stats(options.similarity, options.find_copies, branches)
 
@@ -1980,11 +1980,12 @@ def SendUpstream(parser, args, cmd):
   # We wrap in a try...finally block so if anything goes wrong,
   # we clean up the branches.
   retcode = -1
-  used_pending = False
+  pushed_to_pending = False
   pending_ref = None
+  revision = None
   try:
     RunGit(['checkout', '-q', '-b', MERGE_BRANCH])
-    RunGit(['reset', '--soft', base_branch])
+    RunGit(['reset', '--soft', merge_base])
     if options.contributor:
       RunGit(
           [
@@ -2006,14 +2007,15 @@ def SendUpstream(parser, args, cmd):
         # to pending, then push to the target ref directly.
         retcode, output = RunGitWithCode(
             ['push', '--porcelain', remote, 'HEAD:%s' % branch])
-        used_pending = pending_prefix and branch.startswith(pending_prefix)
+        pushed_to_pending = pending_prefix and branch.startswith(pending_prefix)
       else:
         # Cherry-pick the change on top of pending ref and then push it.
         assert branch.startswith('refs/'), branch
         assert pending_prefix[-1] == '/', pending_prefix
         pending_ref = pending_prefix + branch[len('refs/'):]
         retcode, output = PushToGitPending(remote, pending_ref, branch)
-        used_pending = (retcode == 0)
+        revision = RunGit(['rev-parse', 'HEAD']).strip()
+        pushed_to_pending = (retcode == 0)
       logging.debug(output)
     else:
       # dcommit the merge branch.
@@ -2027,26 +2029,41 @@ def SendUpstream(parser, args, cmd):
     if base_has_submodules:
       RunGit(['branch', '-D', CHERRY_PICK_BRANCH])
 
+  if retcode == 0 and pushed_to_pending:
+    try:
+      revision = WaitForRealCommit(remote, revision, base_branch, branch)
+      # We set pushed_to_pending to False, since it made it all the way to the
+      # real ref.
+      pushed_to_pending = False
+    except KeyboardInterrupt:
+      pass
+
   if cl.GetIssue():
-    if cmd == 'dcommit' and 'Committed r' in output:
-      revision = re.match('.*?\nCommitted r(\\d+)', output, re.DOTALL).group(1)
-    elif cmd == 'land' and retcode == 0:
-      match = (re.match(r'.*?([a-f0-9]{7,})\.\.([a-f0-9]{7,})$', l)
-               for l in output.splitlines(False))
-      match = filter(None, match)
-      if len(match) != 1:
-        DieWithError("Couldn't parse ouput to extract the committed hash:\n%s" %
-            output)
-      revision = match[0].group(2)
-    else:
-      return 1
-    to_pending = ' to pending queue' if used_pending else ''
+    if not revision:
+      if cmd == 'dcommit' and 'Committed r' in output:
+        revision = re.match(
+          '.*?\nCommitted r(\\d+)', output, re.DOTALL).group(1)
+      elif cmd == 'land' and retcode == 0:
+        match = (re.match(r'.*?([a-f0-9]{7,})\.\.([a-f0-9]{7,})$', l)
+                 for l in output.splitlines(False))
+        match = filter(None, match)
+        if len(match) != 1:
+          DieWithError(
+            "Couldn't parse ouput to extract the committed hash:\n%s" % output)
+        revision = match[0].group(2)
+      else:
+        return 1
+
+    revision = revision[:7]
+
+    to_pending = ' to pending queue' if pushed_to_pending else ''
     viewvc_url = settings.GetViewVCUrl()
-    if viewvc_url and revision:
-      change_desc.append_footer(
-          'Committed%s: %s%s' % (to_pending, viewvc_url, revision))
-    elif revision:
-      change_desc.append_footer('Committed%s: %s' % (to_pending, revision))
+    if not to_pending:
+      if viewvc_url and revision:
+        change_desc.append_footer(
+            'Committed: %s%s' % (viewvc_url, revision))
+      elif revision:
+        change_desc.append_footer('Committed: %s' % (revision,))
     print ('Closing issue '
            '(you may be prompted for your codereview password)...')
     cl.UpdateDescription(change_desc.description)
@@ -2062,7 +2079,7 @@ def SendUpstream(parser, args, cmd):
     cl.RpcServer().add_comment(cl.GetIssue(), comment)
     cl.SetIssue(None)
 
-  if used_pending and retcode == 0:
+  if pushed_to_pending and retcode == 0:
     _, branch = cl.FetchUpstreamTuple(cl.GetBranch())
     print 'The commit is in the pending queue (%s).' % pending_ref
     print (
@@ -2072,9 +2089,33 @@ def SendUpstream(parser, args, cmd):
   if retcode == 0:
     hook = POSTUPSTREAM_HOOK_PATTERN % cmd
     if os.path.isfile(hook):
-      RunCommand([hook, base_branch], error_ok=True)
+      RunCommand([hook, merge_base], error_ok=True)
 
   return 0
+
+
+def WaitForRealCommit(remote, pushed_commit, local_base_ref, real_ref):
+  print
+  print 'Waiting for commit to be landed on %s...' % real_ref
+  print '(If you are impatient, you may Ctrl-C once without harm)'
+  target_tree = RunGit(['rev-parse', '%s:' % pushed_commit]).strip()
+  current_rev = RunGit(['rev-parse', local_base_ref]).strip()
+
+  loop = 0
+  while True:
+    sys.stdout.write('fetching (%d)...        \r' % loop)
+    sys.stdout.flush()
+    loop += 1
+
+    RunGit(['retry', 'fetch', remote, real_ref], stderr=subprocess2.VOID)
+    to_rev = RunGit(['rev-parse', 'FETCH_HEAD']).strip()
+    commits = RunGit(['rev-list', '%s..%s' % (current_rev, to_rev)])
+    for commit in commits.splitlines():
+      if RunGit(['rev-parse', '%s:' % commit]).strip() == target_tree:
+        print 'Found commit on %s' % real_ref
+        return commit
+
+    current_rev = to_rev
 
 
 def PushToGitPending(remote, pending_ref, upstream_ref):
@@ -2124,6 +2165,7 @@ def PushToGitPending(remote, pending_ref, upstream_ref):
         ['retry', 'push', '--porcelain', remote, 'HEAD:%s' % pending_ref])
     if code == 0:
       # Success.
+      print 'Commit pushed to pending ref successfully!'
       return code, out
 
     print 'Push failed with exit code %d.' % code
