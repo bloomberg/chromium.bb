@@ -1346,4 +1346,7 @@ crbug.com/401902  [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-lose-restore-goo
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/cursor-continue-validity.html [ Pass Slow ]
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/mozilla/indexes.html [ Pass Slow ]
 
+crbug.com/408858 [ Win7 Debug ] fast/text/zero-font-size-2.html [ Crash ]
+crbug.com/408858 [ Win7 Debug ] virtual/antialiasedtext/fast/text/zero-font-size-2.html [ Crash ]
+
 crbug.com/402801 [ XP Release ] http/tests/misc/location-replace-crossdomain.html [ Pass Slow ]
