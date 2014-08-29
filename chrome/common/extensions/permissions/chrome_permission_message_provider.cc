@@ -81,6 +81,14 @@ ChromePermissionMessageProvider::~ChromePermissionMessageProvider() {
 PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
+  PermissionMessages messages;
+  if (permissions->HasEffectiveFullAccess()) {
+    messages.push_back(PermissionMessage(
+        PermissionMessage::kFullAccess,
+        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS)));
+    return messages;
+  }
+
   // Some warnings are more generic and/or powerful and superseed other
   // warnings. In that case, the first message suppresses the second one.
   std::multimap<PermissionMessage::ID, PermissionMessage::ID> kSuppressList;
@@ -94,6 +102,9 @@ PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
   // History already allows tabs access.
   kSuppressList.insert(
       {PermissionMessage::kBrowsingHistory, PermissionMessage::kTabs});
+  // History already allows access the list of most frequently visited sites.
+  kSuppressList.insert(
+      {PermissionMessage::kBrowsingHistory, PermissionMessage::kTopSites});
   // A special hack: If kFileSystemWriteDirectory would be displayed, hide
   // kFileSystemDirectory as the write directory message implies it.
   // TODO(sammc): Remove this. See http://crbug.com/284849.
@@ -102,20 +113,17 @@ PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
   // Full access already allows DeclarativeWebRequest.
   kSuppressList.insert({PermissionMessage::kHostsAll,
                         PermissionMessage::kDeclarativeWebRequest});
+  // Full access implies reading the list of most frequently visited sites.
+  kSuppressList.insert(
+      {PermissionMessage::kHostsAll, PermissionMessage::kTopSites});
   // Full access already covers tabs access.
   kSuppressList.insert(
       {PermissionMessage::kHostsAll, PermissionMessage::kTabs});
   // Tabs already allows reading favicons.
   kSuppressList.insert({PermissionMessage::kTabs, PermissionMessage::kFavicon});
-
-  PermissionMessages messages;
-
-  if (permissions->HasEffectiveFullAccess()) {
-    messages.push_back(PermissionMessage(
-        PermissionMessage::kFullAccess,
-        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS)));
-    return messages;
-  }
+  // Tabs already allows reading the list of most frequently visited sites.
+  kSuppressList.insert(
+      {PermissionMessage::kTabs, PermissionMessage::kTopSites});
 
   PermissionMsgSet host_msgs =
       GetHostPermissionMessages(permissions, extension_type);

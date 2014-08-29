@@ -824,6 +824,7 @@ TEST(PermissionsTest, HiddenFileSystemPermissionMessages) {
 
 TEST(PermissionsTest, SuppressedPermissionMessages) {
   {
+    // Tabs warning suppresses favicon warning.
     APIPermissionSet api_permissions;
     api_permissions.insert(APIPermission::kTab);
     URLPatternSet hosts;
@@ -839,6 +840,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     EXPECT_EQ(PermissionMessage::kTabs, messages[0].id());
   }
   {
+    // History warning suppresses favicon warning.
     APIPermissionSet api_permissions;
     api_permissions.insert(APIPermission::kHistory);
     URLPatternSet hosts;
@@ -854,6 +856,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     EXPECT_EQ(PermissionMessage::kBrowsingHistory, messages[0].id());
   }
   {
+    // All sites warning suppresses tabs warning.
     APIPermissionSet api_permissions;
     URLPatternSet hosts;
     hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI, "*://*/*"));
@@ -867,6 +870,21 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     EXPECT_EQ(PermissionMessage::kHostsAll, messages[0].id());
   }
   {
+    // All sites warning suppresses topSites warning.
+    APIPermissionSet api_permissions;
+    URLPatternSet hosts;
+    hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI, "*://*/*"));
+    api_permissions.insert(APIPermission::kTopSites);
+    scoped_refptr<PermissionSet> permissions(new PermissionSet(
+        api_permissions, ManifestPermissionSet(), hosts, URLPatternSet()));
+    PermissionMessages messages =
+        PermissionMessageProvider::Get()->GetPermissionMessages(
+            permissions, Manifest::TYPE_EXTENSION);
+    EXPECT_EQ(1u, messages.size());
+    EXPECT_EQ(PermissionMessage::kHostsAll, messages[0].id());
+  }
+  {
+    // All sites warning suppresses declarativeWebRequest warning.
     APIPermissionSet api_permissions;
     URLPatternSet hosts;
     hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI, "*://*/*"));
@@ -880,6 +898,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     EXPECT_EQ(PermissionMessage::kHostsAll, messages[0].id());
   }
   {
+    // BrowsingHistory warning suppresses all history read/write warnings.
     APIPermissionSet api_permissions;
     api_permissions.insert(APIPermission::kHistory);
     api_permissions.insert(APIPermission::kTab);
@@ -896,6 +915,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     EXPECT_EQ(PermissionMessage::kBrowsingHistory, messages[0].id());
   }
   {
+    // Tabs warning suppresses all read-only history warnings.
     APIPermissionSet api_permissions;
     api_permissions.insert(APIPermission::kTab);
     api_permissions.insert(APIPermission::kTopSites);

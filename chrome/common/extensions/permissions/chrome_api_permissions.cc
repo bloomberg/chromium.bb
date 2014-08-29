@@ -151,7 +151,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       {APIPermission::kTab, "tabs", APIPermissionInfo::kFlagNone,
        IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ, PermissionMessage::kTabs},
       {APIPermission::kTopSites, "topSites", APIPermissionInfo::kFlagNone,
-       IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ, PermissionMessage::kTabs},
+       IDS_EXTENSION_PROMPT_WARNING_TOPSITES, PermissionMessage::kTopSites},
       {APIPermission::kTts, "tts", 0, APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kTtsEngine, "ttsEngine",
        APIPermissionInfo::kFlagCannotBeOptional,

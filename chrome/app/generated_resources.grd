@@ -4316,6 +4316,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT" desc="Permisson string for access to extension management.">
         Manage your apps, extensions, and themes
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_TOPSITES" desc="Permission string for access to the list of most frequently visited websites.">
+        Read a list of your most frequently visited websites
+      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ" desc="Permission string for access to browsing history.">
         Read your browsing history
       </message>
