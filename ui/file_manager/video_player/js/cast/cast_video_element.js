@@ -119,7 +119,8 @@ CastVideoElement.prototype = {
     if (!this.castMedia_)
       return true;
 
-   return this.castMedia_.idleReason === chrome.cast.media.IdleReason.FINISHED;
+   return !this.playInProgress &&
+     this.castMedia_.idleReason === chrome.cast.media.IdleReason.FINISHED;
   },
 
   /**
