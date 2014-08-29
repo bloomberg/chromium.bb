@@ -78,16 +78,13 @@ def GetResourcesForGrdFile(tree, grd_file):
   release_node = FindNodeWithTag(root, 'release')
   assert release_node != None
 
-  messages_node = FindNodeWithTag(release_node, 'messages')
-  messages = set()
-  if messages_node != None:
-    messages = set(GetResourcesForNode(messages_node, grd_file, 'message'))
-
-  includes_node = FindNodeWithTag(release_node, 'includes')
-  includes = set()
-  if includes_node != None:
-    includes = set(GetResourcesForNode(includes_node, grd_file, 'include'))
-  return messages.union(includes)
+  resources = set()
+  for node_type in ('message', 'include', 'structure'):
+    resources_node = FindNodeWithTag(release_node, node_type + 's')
+    if resources_node != None:
+      resources = resources.union(
+          set(GetResourcesForNode(resources_node, grd_file, node_type)))
+  return resources
 
 
 def GetOutputFileForNode(node):
@@ -150,6 +147,13 @@ def NeedsGritInclude(grit_header, resources, filename):
   Returns:
     True if the file should include the grit header.
   """
+  # A list of special keywords that implies the file needs grit headers.
+  # To be more thorough, one would need to run a pre-processor.
+  SPECIAL_KEYWORDS = (
+      'IMAGE_GRID(',  # Macro in nine_image_painter_factory.h
+      '#include "ui_localizer_table.h"',  # ui_localizer.mm
+      'DEFINE_RESOURCE_ID',  # chrome/browser/android/resource_mapper.cc
+      )
   with open(filename, 'rb') as f:
     grit_header_line = grit_header + '"\n'
     has_grit_header = False
@@ -164,7 +168,8 @@ def NeedsGritInclude(grit_header, resources, filename):
     if not has_grit_header:
       return True
     rest_of_the_file = f.read()
-    return any(resource in rest_of_the_file for resource in resources)
+    return (any(resource in rest_of_the_file for resource in resources) or
+            any(keyword in rest_of_the_file for keyword in SPECIAL_KEYWORDS))
 
 
 def main(argv):

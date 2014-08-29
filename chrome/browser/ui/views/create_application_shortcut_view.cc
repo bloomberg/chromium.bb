@@ -29,7 +29,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
-#include "grit/theme_resources.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 #include "skia/ext/image_operations.h"

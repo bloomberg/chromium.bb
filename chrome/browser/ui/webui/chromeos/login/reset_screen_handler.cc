@@ -24,7 +24,6 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "content/public/browser/browser_thread.h"
-#include "grit/browser_resources.h"
 
 namespace {
 
@@ -139,7 +138,7 @@ void ResetScreenHandler::DeclareLocalizedValues(
     LocalizedValuesBuilder* builder) {
   builder->Add("resetScreenTitle", IDS_RESET_SCREEN_TITLE);
   builder->Add("resetScreenAccessibleTitle", IDS_RESET_SCREEN_TITLE);
-  builder->Add("resetScreenIconTitle",IDS_RESET_SCREEN_ICON_TITLE);
+  builder->Add("resetScreenIconTitle", IDS_RESET_SCREEN_ICON_TITLE);
   builder->Add("cancelButton", IDS_CANCEL);
 
   builder->Add("resetWarningDataDetails",

@@ -12,7 +12,6 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_drag_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
-#include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"

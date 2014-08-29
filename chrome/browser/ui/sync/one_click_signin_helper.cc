@@ -82,7 +82,6 @@
 #include "content/public/common/page_transition_types.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "grit/theme_resources.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/url_util.h"
 #include "net/cookies/cookie_monster.h"

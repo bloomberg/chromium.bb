@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"

@@ -35,7 +35,6 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/webplugininfo.h"
 #include "grit/browser_resources.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)

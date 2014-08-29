@@ -124,7 +124,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "extensions/browser/extension_protocols.h"
-#include "grit/browser_resources.h"
+#include "grit/app_locale_settings.h"
 #include "grit/platform_locale_settings.h"
 #include "net/base/net_module.h"
 #include "net/base/sdch_manager.h"

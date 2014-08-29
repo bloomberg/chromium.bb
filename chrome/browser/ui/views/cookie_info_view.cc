@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/locale_settings.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/parsed_cookie.h"
 #include "third_party/skia/include/core/SkColor.h"

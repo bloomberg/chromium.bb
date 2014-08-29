@@ -29,7 +29,6 @@
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "grit/browser_resources.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 #include "sync/protocol/proto_enum_conversions.h"

@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_connection_handler.h"
@@ -187,7 +186,8 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
   if (carrier)
     deal = GetCarrierDeal(carrier);
 
-  base::string16 message = l10n_util::GetStringUTF16(IDS_3G_NOTIFICATION_MESSAGE);
+  base::string16 message =
+      l10n_util::GetStringUTF16(IDS_3G_NOTIFICATION_MESSAGE);
   std::string info_url;
   if (deal) {
     carrier_deal_promo_pref = GetCarrierDealPromoShown();

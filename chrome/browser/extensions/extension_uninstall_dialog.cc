@@ -18,7 +18,6 @@
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"

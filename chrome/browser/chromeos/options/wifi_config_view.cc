@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/options/passphrase_textfield.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/locale_settings.h"
 #include "chrome/grit/theme_resources.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/client_cert_util.h"

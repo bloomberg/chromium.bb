@@ -19,7 +19,6 @@
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"

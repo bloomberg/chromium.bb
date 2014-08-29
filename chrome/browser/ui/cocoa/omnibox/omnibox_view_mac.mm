@@ -26,7 +26,6 @@
 #include "components/omnibox/omnibox_field_trial.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
-#include "grit/theme_resources.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/clipboard.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"

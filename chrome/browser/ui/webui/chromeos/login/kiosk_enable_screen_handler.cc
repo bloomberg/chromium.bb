@@ -12,7 +12,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
-#include "grit/browser_resources.h"
 
 namespace {
 

@@ -20,7 +20,6 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
-#include "grit/browser_resources.h"
 #include "ui/base/webui/web_ui_util.h"
 
 namespace {

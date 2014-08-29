@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/size.h"
 #include "ui/views/border.h"

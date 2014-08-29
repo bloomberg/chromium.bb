@@ -39,7 +39,6 @@
 #include "content/public/common/webplugininfo.h"
 #include "gpu/config/gpu_info.h"
 #include "grit/browser_resources.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
