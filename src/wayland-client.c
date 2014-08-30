@@ -270,12 +270,11 @@ proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
 	if (proxy == NULL)
 		return NULL;
 
+	memset(proxy, 0, sizeof *proxy);
+
 	proxy->object.interface = interface;
-	proxy->object.implementation = NULL;
-	proxy->dispatcher = NULL;
 	proxy->display = display;
 	proxy->queue = factory->queue;
-	proxy->flags = 0;
 	proxy->refcount = 1;
 
 	proxy->object.id = wl_map_insert_new(&display->objects, 0, proxy);
@@ -327,13 +326,12 @@ wl_proxy_create_for_id(struct wl_proxy *factory,
 	if (proxy == NULL)
 		return NULL;
 
+	memset(proxy, 0, sizeof *proxy);
+
 	proxy->object.interface = interface;
-	proxy->object.implementation = NULL;
 	proxy->object.id = id;
-	proxy->dispatcher = NULL;
 	proxy->display = display;
 	proxy->queue = factory->queue;
-	proxy->flags = 0;
 	proxy->refcount = 1;
 
 	wl_map_insert_at(&display->objects, 0, id, proxy);
