@@ -43,10 +43,10 @@ struct DisallowedFeatures;
 class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
  public:
   ContextGroup(
-      MailboxManager* mailbox_manager,
-      MemoryTracker* memory_tracker,
-      ShaderTranslatorCache* shader_translator_cache,
-      FeatureInfo* feature_info,
+      const scoped_refptr<MailboxManager>& mailbox_manager,
+      const scoped_refptr<MemoryTracker>& memory_tracker,
+      const scoped_refptr<ShaderTranslatorCache>& shader_translator_cache,
+      const scoped_refptr<FeatureInfo>& feature_info,
       bool bind_generates_resource);
 
   // This should only be called by GLES2Decoder. This must be paired with a

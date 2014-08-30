@@ -37,7 +37,7 @@ class AsyncPixelTransferCompletionObserverImpl
   virtual void DidComplete(const AsyncMemoryParams& mem_params) OVERRIDE {
     base::AutoLock locked(lock_);
     if (!cancelled_) {
-      DCHECK(mem_params.buffer());
+      DCHECK(mem_params.buffer().get());
       void* data = mem_params.GetDataAddress();
       QuerySync* sync = static_cast<QuerySync*>(data);
       base::subtle::Release_Store(&sync->process_count, submit_count_);

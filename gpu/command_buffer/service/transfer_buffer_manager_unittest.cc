@@ -26,15 +26,15 @@ class TransferBufferManagerTest : public testing::Test {
 };
 
 TEST_F(TransferBufferManagerTest, ZeroHandleMapsToNull) {
-  EXPECT_TRUE(NULL == transfer_buffer_manager_->GetTransferBuffer(0));
+  EXPECT_TRUE(NULL == transfer_buffer_manager_->GetTransferBuffer(0).get());
 }
 
 TEST_F(TransferBufferManagerTest, NegativeHandleMapsToNull) {
-  EXPECT_TRUE(NULL == transfer_buffer_manager_->GetTransferBuffer(-1));
+  EXPECT_TRUE(NULL == transfer_buffer_manager_->GetTransferBuffer(-1).get());
 }
 
 TEST_F(TransferBufferManagerTest, OutOfRangeHandleMapsToNull) {
-  EXPECT_TRUE(NULL == transfer_buffer_manager_->GetTransferBuffer(1));
+  EXPECT_TRUE(NULL == transfer_buffer_manager_->GetTransferBuffer(1).get());
 }
 
 TEST_F(TransferBufferManagerTest, CanRegisterTransferBuffer) {

@@ -539,7 +539,7 @@ class AsyncUploadTokenCompletionObserver
   }
 
   virtual void DidComplete(const AsyncMemoryParams& mem_params) OVERRIDE {
-    DCHECK(mem_params.buffer());
+    DCHECK(mem_params.buffer().get());
     void* data = mem_params.GetDataAddress();
     AsyncUploadSync* sync = static_cast<AsyncUploadSync*>(data);
     sync->SetAsyncUploadToken(async_upload_token_);
