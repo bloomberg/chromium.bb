@@ -1289,6 +1289,13 @@
             '../net/net.gyp:net_unittests_run',
           ],
         }, # target_name: chromium_swarm_tests
+        {
+          'target_name': 'chromoting_swarm_tests',
+          'type': 'none',
+          'dependencies': [
+            '../testing/chromoting/integration_test.gyp:chromoting_integration_tests_run',
+          ],
+        }, # target_name: chromoting_swarm_tests
       ],
     }],
     ['OS=="mac" and toolkit_views==1', {
