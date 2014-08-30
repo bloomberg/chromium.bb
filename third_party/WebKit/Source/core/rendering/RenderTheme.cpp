@@ -605,10 +605,10 @@ bool RenderTheme::shouldDrawDefaultFocusRing(RenderObject* renderer) const
 {
     if (supportsFocusRing(renderer->style()))
         return false;
-    if (!renderer->style()->hasAppearance())
-        return true;
     Node* node = renderer->node();
     if (!node)
+        return true;
+    if (!renderer->style()->hasAppearance() && !node->isLink())
         return true;
     // We can't use RenderTheme::isFocused because outline:auto might be
     // specified to non-:focus rulesets.

@@ -63,6 +63,7 @@ HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tagName, Document& doc
     : HTMLElement(tagName, document)
     , m_linkRelations(0)
     , m_cachedVisitedLinkHash(0)
+    , m_wasFocusedByMouse(false)
 {
     ScriptWrappable::init(this);
 }
@@ -84,12 +85,25 @@ bool HTMLAnchorElement::supportsFocus() const
     return isLink() || HTMLElement::supportsFocus();
 }
 
+bool HTMLAnchorElement::shouldHaveFocusAppearance() const
+{
+    return !m_wasFocusedByMouse || HTMLElement::supportsFocus();
+}
+
+bool HTMLAnchorElement::wasFocusedByMouse() const
+{
+    return m_wasFocusedByMouse;
+}
+
+void HTMLAnchorElement::setWasFocusedByMouse(bool wasFocusedByMouse)
+{
+    m_wasFocusedByMouse = wasFocusedByMouse;
+}
+
 bool HTMLAnchorElement::isMouseFocusable() const
 {
-    // Links are focusable by default, but only allow links with tabindex or contenteditable to be mouse focusable.
-    // https://bugs.webkit.org/show_bug.cgi?id=26856
     if (isLink())
-        return HTMLElement::supportsFocus();
+        return supportsFocus();
 
     return HTMLElement::isMouseFocusable();
 }

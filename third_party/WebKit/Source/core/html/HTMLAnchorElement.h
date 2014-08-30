@@ -92,6 +92,9 @@ protected:
     virtual bool supportsFocus() const OVERRIDE;
 
 private:
+    virtual bool shouldHaveFocusAppearance() const OVERRIDE FINAL;
+    virtual bool wasFocusedByMouse() const OVERRIDE FINAL;
+    virtual void setWasFocusedByMouse(bool) OVERRIDE FINAL;
     virtual bool isMouseFocusable() const OVERRIDE;
     virtual bool isKeyboardFocusable() const OVERRIDE;
     virtual void defaultEventHandler(Event*) OVERRIDE FINAL;
@@ -108,6 +111,7 @@ private:
 
     uint32_t m_linkRelations;
     mutable LinkHash m_cachedVisitedLinkHash;
+    bool m_wasFocusedByMouse;
 };
 
 inline LinkHash HTMLAnchorElement::visitedLinkHash() const

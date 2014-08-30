@@ -57,6 +57,7 @@ inline SVGAElement::SVGAElement(Document& document)
     : SVGGraphicsElement(SVGNames::aTag, document)
     , SVGURIReference(this)
     , m_svgTarget(SVGAnimatedString::create(this, SVGNames::targetAttr, SVGString::create()))
+    , m_wasFocusedByMouse(false)
 {
     ScriptWrappable::init(this);
     addToPropertyMap(m_svgTarget);
@@ -157,7 +158,22 @@ bool SVGAElement::supportsFocus() const
     if (hasEditableStyle())
         return SVGGraphicsElement::supportsFocus();
     // If not a link we should still be able to focus the element if it has tabIndex.
-    return isLink() || Element::supportsFocus();
+    return isLink() || SVGGraphicsElement::supportsFocus();
+}
+
+bool SVGAElement::shouldHaveFocusAppearance() const
+{
+    return !m_wasFocusedByMouse || SVGGraphicsElement::supportsFocus();
+}
+
+bool SVGAElement::wasFocusedByMouse() const
+{
+    return m_wasFocusedByMouse;
+}
+
+void SVGAElement::setWasFocusedByMouse(bool wasFocusedByMouse)
+{
+    m_wasFocusedByMouse = wasFocusedByMouse;
 }
 
 bool SVGAElement::isURLAttribute(const Attribute& attribute) const
@@ -167,10 +183,8 @@ bool SVGAElement::isURLAttribute(const Attribute& attribute) const
 
 bool SVGAElement::isMouseFocusable() const
 {
-    // Links are focusable by default, but only allow links with tabindex or contenteditable to be mouse focusable.
-    // https://bugs.webkit.org/show_bug.cgi?id=26856
     if (isLink())
-        return Element::supportsFocus();
+        return supportsFocus();
 
     return SVGElement::isMouseFocusable();
 }
