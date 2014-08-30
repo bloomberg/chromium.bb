@@ -17,6 +17,16 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:background="@drawable/progress">
+        <ImageButton android:id="@+id/stop"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            android:scaleType="center" />
+        <ImageButton android:id="@+id/reload"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:src="@drawable/ic_refresh"
+            android:scaleType="centerCrop" />
         <EditText android:id="@+id/url"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

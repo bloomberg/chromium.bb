@@ -49,6 +49,8 @@ public class Shell extends LinearLayout {
     private EditText mUrlTextView;
     private ImageButton mPrevButton;
     private ImageButton mNextButton;
+    private ImageButton mStopButton;
+    private ImageButton mReloadButton;
 
     private ClipDrawable mProgressDrawable;
 
@@ -213,6 +215,20 @@ public class Shell extends LinearLayout {
                 if (mContentViewCore.canGoForward()) mContentViewCore.goForward();
             }
         });
+        mStopButton = (ImageButton)findViewById(R.id.stop);
+        mStopButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mLoading) mContentViewCore.stopLoading();
+            }
+        });
+        mReloadButton = (ImageButton)findViewById(R.id.reload);
+        mReloadButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mContentViewCore.reload(true);
+            }
+        });
     }
 
     @SuppressWarnings("unused")
@@ -277,6 +293,10 @@ public class Shell extends LinearLayout {
     private void enableUiControl(int controlId, boolean enabled) {
         if (controlId == 0) mPrevButton.setEnabled(enabled);
         else if (controlId == 1) mNextButton.setEnabled(enabled);
+        else if (controlId == 2) {
+            mStopButton.setVisibility(enabled ? VISIBLE : GONE);
+            mReloadButton.setVisibility(enabled ? GONE : VISIBLE);
+        }
     }
 
     /**
