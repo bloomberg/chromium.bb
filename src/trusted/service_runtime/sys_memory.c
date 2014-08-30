@@ -931,23 +931,23 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
 }
 
 int32_t NaClSysMmap(struct NaClAppThread  *natp,
-                    void                  *start,
+                    uint32_t              start,
                     size_t                length,
                     int                   prot,
                     int                   flags,
                     int                   d,
-                    nacl_abi_off_t        *offp) {
+                    uint32_t              offp) {
   struct NaClApp  *nap = natp->nap;
   int32_t         retval;
   uintptr_t       sysaddr;
   nacl_abi_off_t  offset;
 
   NaClLog(3,
-          "Entered NaClSysMmap(0x%08"NACL_PRIxPTR",0x%"NACL_PRIxS","
-          "0x%x,0x%x,%d,0x%08"NACL_PRIxPTR")\n",
-          (uintptr_t) start, length, prot, flags, d, (uintptr_t) offp);
+          "Entered NaClSysMmap(0x%08"NACL_PRIx32",0x%"NACL_PRIxS","
+          "0x%x,0x%x,%d,0x%08"NACL_PRIx32")\n",
+          start, length, prot, flags, d, offp);
 
-  if ((nacl_abi_off_t *) 0 == offp) {
+  if (0 == offp) {
     /*
      * This warning is really targetted towards trusted code,
      * especially tests that didn't notice the argument type change.
@@ -972,7 +972,8 @@ int32_t NaClSysMmap(struct NaClAppThread  *natp,
 
   NaClLog(4, " offset = 0x%08"NACL_PRIx64"\n", (uint64_t) offset);
 
-  retval = NaClSysMmapIntern(nap, start, length, prot, flags, d, offset);
+  retval = NaClSysMmapIntern(nap, (void *) (uintptr_t) start, length, prot,
+                             flags, d, offset);
 cleanup:
   return retval;
 }
@@ -1068,7 +1069,7 @@ static int32_t MunmapInternal(struct NaClApp *nap,
 #endif
 
 int32_t NaClSysMunmap(struct NaClAppThread  *natp,
-                      void                  *start,
+                      uint32_t              start,
                       uint32_t              length) {
   struct NaClApp *nap = natp->nap;
   int32_t   retval = -NACL_ABI_EINVAL;
@@ -1077,10 +1078,10 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
   size_t    alloc_rounded_length;
 
   NaClLog(3, "Entered NaClSysMunmap(0x%08"NACL_PRIxPTR", "
-          "0x%08"NACL_PRIxPTR", 0x%"NACL_PRIx32")\n",
-          (uintptr_t) natp, (uintptr_t) start, length);
+          "0x%08"NACL_PRIx32", 0x%"NACL_PRIx32")\n",
+          (uintptr_t) natp, start, length);
 
-  if (!NaClIsAllocPageMultiple((uintptr_t) start)) {
+  if (!NaClIsAllocPageMultiple(start)) {
     NaClLog(4, "start addr not allocation multiple\n");
     retval = -NACL_ABI_EINVAL;
     goto cleanup;
@@ -1112,7 +1113,7 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
     retval = -NACL_ABI_EINVAL;
     goto cleanup;
   }
-  sysaddr = NaClUserToSysAddrRange(nap, (uintptr_t) start, length);
+  sysaddr = NaClUserToSysAddrRange(nap, start, length);
   if (kNaClBadAddress == sysaddr) {
     NaClLog(4, "munmap: region not user addresses\n");
     retval = -NACL_ABI_EFAULT;
@@ -1128,17 +1129,13 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
   /*
    * User should be unable to unmap any executable pages.  We check here.
    */
-  if (NaClSysCommonAddrRangeContainsExecutablePages(nap,
-                                                    (uintptr_t) start,
-                                                    length)) {
+  if (NaClSysCommonAddrRangeContainsExecutablePages(nap, start, length)) {
     NaClLog(2, "NaClSysMunmap: region contains executable pages\n");
     retval = -NACL_ABI_EINVAL;
     goto cleanup;
   }
 
-  NaClVmIoPendingCheck_mu(nap,
-                          (uint32_t) (uintptr_t) start,
-                          (uint32_t) ((uintptr_t) start + length - 1));
+  NaClVmIoPendingCheck_mu(nap, start, start + length - 1);
 
   retval = MunmapInternal(nap, sysaddr, length);
 cleanup:

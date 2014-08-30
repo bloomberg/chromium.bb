@@ -202,8 +202,7 @@ int main(int argc, char **argv) {
    * Undo effects of previous mmaps
    */
   errcode = NaClSysMunmap(natp,
-                          (void *) (uintptr_t) (initial_addr
-                                                - NACL_MAP_PAGESIZE),
+                          initial_addr - NACL_MAP_PAGESIZE,
                           NACL_MAP_PAGESIZE * 4);
   ASSERT_EQ(errcode, 0);
   /*
@@ -381,8 +380,7 @@ int main(int argc, char **argv) {
   /*
    * Undo effects of previous mmaps
    */
-  errcode = NaClSysMunmap(natp, (void *) (uintptr_t) initial_addr,
-                          9 * NACL_MAP_PAGESIZE);
+  errcode = NaClSysMunmap(natp, initial_addr, 9 * NACL_MAP_PAGESIZE);
   ASSERT_EQ(errcode, 0);
   ASSERT_EQ(mem_map->nvalid, 5);
   CheckLowerMappings(mem_map);
@@ -406,7 +404,7 @@ int main(int argc, char **argv) {
   ASSERT_LE(addr, 0xffff0000u);
   printf("addr=0x%"NACL_PRIx32"\n", addr);
   ASSERT_LE_MSG(initial_addr, addr, "returned address not at or above hint");
-  errcode = NaClSysMunmap(natp, (void *) (uintptr_t) addr, NACL_MAP_PAGESIZE);
+  errcode = NaClSysMunmap(natp, addr, NACL_MAP_PAGESIZE);
   ASSERT_EQ(errcode, 0);
 
   /* Check handling of zero-sized mappings. */
@@ -416,7 +414,7 @@ int main(int argc, char **argv) {
                            -1, 0);
   ASSERT_EQ((int) addr, -NACL_ABI_EINVAL);
 
-  errcode = NaClSysMunmap(natp, (void *) (uintptr_t) initial_addr, 0);
+  errcode = NaClSysMunmap(natp, initial_addr, 0);
   ASSERT_EQ(errcode, -NACL_ABI_EINVAL);
 
   /* Check changing the memory protection of neighbouring mmaps */
@@ -442,8 +440,7 @@ int main(int argc, char **argv) {
   ASSERT_EQ(errcode, 0);
 
   /* Undo effects of previous mmaps */
-  errcode = NaClSysMunmap(natp, (void *) (uintptr_t) initial_addr,
-                          2 * NACL_MAP_PAGESIZE);
+  errcode = NaClSysMunmap(natp, initial_addr, 2 * NACL_MAP_PAGESIZE);
   ASSERT_EQ(errcode, 0);
 
   /* Check that we cannot make the read-only data segment writable */

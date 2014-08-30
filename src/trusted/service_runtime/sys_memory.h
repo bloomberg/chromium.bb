@@ -20,12 +20,12 @@ int32_t NaClSysBrk(struct NaClAppThread *natp,
                    uintptr_t            new_break);
 
 int32_t NaClSysMmap(struct NaClAppThread  *natp,
-                    void                  *start,
+                    uint32_t              start,
                     size_t                length,
                     int                   prot,
                     int                   flags,
                     int                   d,
-                    nacl_abi_off_t        *offp);
+                    uint32_t              offp);
 
 int32_t NaClSysMmapIntern(struct NaClApp  *nap,
                           void            *start,
@@ -34,14 +34,6 @@ int32_t NaClSysMmapIntern(struct NaClApp  *nap,
                           int             flags,
                           int             d,
                           nacl_abi_off_t  offset);
-
-int32_t NaClSysMmap(struct NaClAppThread  *natp,
-                    void                  *start,
-                    size_t                length,
-                    int                   prot,
-                    int                   flags,
-                    int                   d,
-                    nacl_abi_off_t        *offp);
 
 int32_t NaClSysMprotectInternal(struct NaClApp  *nap,
                                 uint32_t        start,
@@ -54,7 +46,7 @@ int32_t NaClSysMprotect(struct NaClAppThread  *natp,
                         int                   prot);
 
 int32_t NaClSysMunmap(struct NaClAppThread  *natp,
-                      void                  *start,
+                      uint32_t              start,
                       uint32_t              length);
 
 EXTERN_C_END

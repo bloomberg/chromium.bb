@@ -106,13 +106,13 @@ SYSCALL_LIST = [
     ('NACL_sys_isatty', 'NaClSysIsatty', ['int d']),
     ('NACL_sys_brk', 'NaClSysBrk', ['uintptr_t new_break']),
     ('NACL_sys_mmap', 'NaClSysMmap',
-     ['void *start', 'size_t length', 'int prot',
-      'int flags', 'int d', 'nacl_abi_off_t *offp']),
+     ['uint32_t start', 'size_t length', 'int prot',
+      'int flags', 'int d', 'uint32_t offp']),
     ('NACL_sys_mprotect', 'NaClSysMprotect',
      ['uint32_t start', 'size_t length', 'int prot']),
     ('NACL_sys_list_mappings', 'NaClSysListMappings',
      ['uint32_t regions', 'uint32_t count']),
-    ('NACL_sys_munmap', 'NaClSysMunmap', ['void *start', 'uint32_t length']),
+    ('NACL_sys_munmap', 'NaClSysMunmap', ['uint32_t start', 'uint32_t length']),
     ('NACL_sys_exit', 'NaClSysExit', ['int status']),
     ('NACL_sys_getpid', 'NaClSysGetpid', []),
     ('NACL_sys_thread_exit', 'NaClSysThreadExit',
@@ -251,11 +251,11 @@ def ArgList(architecture, alist):
   extractedargs = []
   for arg in alist:
     t = ExtractType(arg)
-    extra_cast = ''
     # avoid cast to pointer from integer of different size
     if TypeIsPointer(t):
-      extra_cast = '(uintptr_t)'
-    extractedargs += ['(' + t + ') ' + extra_cast
+      raise Exception(
+          'Pointer type %r is not allowed -- use an int type instead' % t)
+    extractedargs += ['(' + t + ') '
                       + ' p.' + ExtractVariable(arg)]
 
   return ', ' + ', '.join(extractedargs)
