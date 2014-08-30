@@ -54,7 +54,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
   void EnableMetricsService(bool enabled);
 
  private:
-  explicit CastMetricsServiceClient(
+  CastMetricsServiceClient(
       PrefService* pref_service,
       net::URLRequestContextGetter* request_context);
 
