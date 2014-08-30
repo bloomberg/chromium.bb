@@ -126,6 +126,20 @@ bool ExternalCache::GetExtension(const std::string& id,
   return local_cache_.GetExtension(id, file_path, version);
 }
 
+void ExternalCache::PutExternalExtension(
+    const std::string& id,
+    const base::FilePath& crx_file_path,
+    const std::string& version,
+    const PutExternalExtensionCallback& callback) {
+  local_cache_.PutExtension(id,
+                            crx_file_path,
+                            version,
+                            base::Bind(&ExternalCache::OnPutExternalExtension,
+                                       weak_ptr_factory_.GetWeakPtr(),
+                                       id,
+                                       callback));
+}
+
 void ExternalCache::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
@@ -319,6 +333,16 @@ void ExternalCache::OnPutExtension(const std::string& id,
   if (delegate_)
     delegate_->OnExtensionLoadedInCache(id);
   UpdateExtensionLoader();
+}
+
+void ExternalCache::OnPutExternalExtension(
+    const std::string& id,
+    const PutExternalExtensionCallback& callback,
+    const base::FilePath& file_path,
+    bool file_ownership_passed) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  OnPutExtension(id, file_path, file_ownership_passed);
+  callback.Run(id, !file_ownership_passed);
 }
 
 std::string ExternalCache::Delegate::GetInstalledExtensionVersion(

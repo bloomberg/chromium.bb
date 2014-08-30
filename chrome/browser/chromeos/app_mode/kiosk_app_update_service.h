@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager_observer.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -31,7 +32,8 @@ class AutomaticRebootManager;
 // This class enforces automatic restart on app and Chrome updates in app mode.
 class KioskAppUpdateService : public KeyedService,
                               public extensions::UpdateObserver,
-                              public system::AutomaticRebootManagerObserver {
+                              public system::AutomaticRebootManagerObserver,
+                              public KioskAppManagerObserver {
  public:
   KioskAppUpdateService(
       Profile* profile,
@@ -58,6 +60,9 @@ class KioskAppUpdateService : public KeyedService,
   // system::AutomaticRebootManagerObserver overrides:
   virtual void OnRebootScheduled(Reason reason) OVERRIDE;
   virtual void WillDestroyAutomaticRebootManager() OVERRIDE;
+
+  // KioskAppManagerObserver overrides:
+  virtual void OnKioskAppCacheUpdated(const std::string& app_id) OVERRIDE;
 
   Profile* profile_;
   std::string app_id_;

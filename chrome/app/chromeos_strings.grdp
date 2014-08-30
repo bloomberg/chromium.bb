@@ -5076,6 +5076,42 @@ Battery full
   <message name="IDS_KIOSK_APP_ERROR_USER_CANCEL" desc="Error message used when a kiosk app launch is canceled by user.">
     Kiosk application launch canceled.
   </message>
+  <message name="IDS_KIOSK_EXTERNAL_UPDATE_IN_PROGRESS" desc="Message shown on screen when the system is updating kiosk apps from usb stick.">
+    Kiosk applications are being updated from usb stick, please wait. Do not remove the usb stick.
+  </message>  
+  <message name="IDS_KIOSK_EXTERNAL_UPDATE_NO_UPDATES" desc="Error message for no external extensions to update.">
+    No kiosk apps with newer version are found on the usb stick, nothing to update. Please remove the usb stick.
+  </message>  
+  <message name="IDS_KIOSK_EXTERNAL_UPDATE_NO_MANIFEST" desc="Error message for external update manifest file not found.">
+    Can't find kiosk external update manifest file on the usb stick, failed to update kiosk apps. Please remove the usb stick.
+  </message>
+  <message name="IDS_KIOSK_EXTERNAL_UPDATE_INVALID_MANIFEST" desc="Error message for invalid external update manifest file from usb stick.">
+    Found invalid kiosk external update manifest file on the usb stick, failed to update kiosk apps. Please remove the usb stick.
+  </message>     
+  <message name="IDS_KIOSK_EXTERNAL_UPDATE_COMPLETE" desc="Message shown on screen when the system completes updating kiosk apps from usb stick.">
+    Kiosk app updating from usb stick is completed. Please remove the usb stick from the device.
+  </message>  
+  <message name="IDS_KIOSK_EXTERNAL_UPDATE_SUCCESSFUL_UPDATED_APPS" desc="Message shown for successfully updated kiosk apps.">
+    The following kiosk apps have been updated, please reboot the device to complete the update process: <ph name="updated_apps">$1<ex>PrintApp</ex></ph>.
+  </message>
+  <message name="IDS_KIOSK_EXTERNAL_UPDATE_FAILED_UPDATED_APPS" desc="Message shown for failed updated kiosk apps.">
+    The following kiosk apps have been failed for updating: 
+  </message>    
+  <message name="IDS_KIOSK_EXTERNAL_UPDATE_BAD_CRX" desc="Error message for crx file unpacking failure.">
+    Bad crx file, unpacking failed.
+  </message>
+  <message name="IDS_KIOSK_EXTERNAL_UPDATE_SAME_OR_LOWER_APP_VERSION" desc="Error message for external extension is the same or lower version comparing to the existing one.">
+    External extension is at the same or lower version comparing to the existing one.
+  </message>
+  <message name="IDS_KIOSK_EXTERNAL_UPDATE_REQUIRE_HIGHER_BROWSER_VERSION" desc="Error message for external extension requires higher version of chrome to be installed.">
+    The external extension requires chrome version <ph name="MINIMUM_CHROME_VERSION">$1<ex>1.0.0</ex></ph> or greater to be installed.
+  </message>
+  <message name="IDS_KIOSK_EXTERNAL_UPDATE_CANNOT_INSTALL_IN_LOCAL_CACHE" desc="Error message for not being able to install kiosk external crx file in local cache.">
+    Can't install <ph name="EXTERNAL_CRX_FILE">$1<ex>/media/usb/app_v2.crx</ex></ph> in local cache.
+  </message> 
+  <message name="IDS_KIOSK_EXTERNAL_UPDATE_FAILED_COPY_CRX_TO_TEMP" desc="Error message for not being able to copy external crx file to a temp file.">
+    Can't copy external crx file to <ph name="TEMP_CRX_FILE">$1<ex>/tmp/kiosk_update/app.crx</ex></ph>.
+  </message> 
 
   <!-- About Chrome page -->
   <message name="IDS_UPGRADE_BUTTON" desc="The button label to check for updates and apply (download and install) if found">

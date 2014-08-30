@@ -38,6 +38,9 @@ namespace chromeos {
 class ExternalCache : public content::NotificationObserver,
                       public extensions::ExtensionDownloaderDelegate {
  public:
+  typedef base::Callback<void(const std::string& id, bool success)>
+      PutExternalExtensionCallback;
+
   class Delegate {
    public:
     virtual ~Delegate() {}
@@ -127,6 +130,13 @@ class ExternalCache : public content::NotificationObserver,
                     base::FilePath* file_path,
                     std::string* version);
 
+  // Puts the external |crx_file_path| into |local_cache_| for extension with
+  // |id|.
+  void PutExternalExtension(const std::string& id,
+                            const base::FilePath& crx_file_path,
+                            const std::string& version,
+                            const PutExternalExtensionCallback& callback);
+
  private:
   // Notifies the that the cache has been updated, providing
   // extensions loader with an updated list of extensions.
@@ -139,6 +149,13 @@ class ExternalCache : public content::NotificationObserver,
   void OnPutExtension(const std::string& id,
                       const base::FilePath& file_path,
                       bool file_ownership_passed);
+
+  // Invoked on the UI thread when the external extension has been installed
+  // in the local cache by calling PutExternalExtension.
+  void OnPutExternalExtension(const std::string& id,
+                              const PutExternalExtensionCallback& callback,
+                              const base::FilePath& file_path,
+                              bool file_ownership_passed);
 
   extensions::LocalExtensionCache local_cache_;
 

@@ -26,6 +26,9 @@ class KioskAppManagerObserver {
   // Invoked when the Kiosk Apps configuration changes.
   virtual void OnKioskAppsSettingsChanged() {}
 
+  // Invoked when kiosk app cache is updated for |app_id|.
+  virtual void OnKioskAppCacheUpdated(const std::string& app_id) {}
+
  protected:
   virtual ~KioskAppManagerObserver() {}
 };

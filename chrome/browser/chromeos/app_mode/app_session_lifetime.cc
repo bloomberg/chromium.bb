@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_update_service.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
@@ -139,6 +140,9 @@ void InitAppSession(Profile* profile, const std::string& app_id) {
   DCHECK(update_service);
   if (update_service)
     update_service->set_app_id(app_id);
+
+  // Start to monitor external update from usb stick.
+  KioskAppManager::Get()->MonitorKioskExternalUpdate();
 
   // If the device is not enterprise managed, set prefs to reboot after update
   // and create a user security message which shows the user the application

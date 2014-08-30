@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/app_window_waiter.h"
@@ -45,6 +46,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/disks/disk_mount_manager.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -94,6 +96,8 @@ const char kTestOfflineEnabledKioskApp[] = "ajoggoflpgplnnjkjamcmbepjdjdnpdp";
 //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
 //       detail/bmbpicmpniaclbbpdkfglgipkkebnbjf
 const char kTestLocalFsKioskApp[] = "bmbpicmpniaclbbpdkfglgipkkebnbjf";
+
+const char kFakeUsbStickMountPath[] = "chromeos/app_mode/external_update/";
 
 // Timeout while waiting for network connectivity during tests.
 const int kTestNetworkTimeoutSeconds = 1;
@@ -236,6 +240,29 @@ class JsConditionWaiter {
   scoped_refptr<content::MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(JsConditionWaiter);
+};
+
+class KioskFakeDiskMountManager : public file_manager::FakeDiskMountManager {
+ public:
+  explicit KioskFakeDiskMountManager(const std::string& usb_mount_path)
+      : usb_mount_path_(usb_mount_path) {}
+
+  virtual ~KioskFakeDiskMountManager() {}
+
+  void MountUsbStick() {
+    MountPath(usb_mount_path_, "", "", chromeos::MOUNT_TYPE_DEVICE);
+  }
+
+  void UnMountUsbStick() {
+    UnmountPath(usb_mount_path_,
+                UNMOUNT_OPTIONS_NONE,
+                disks::DiskMountManager::UnmountPathCallback());
+  }
+
+ private:
+  std::string usb_mount_path_;
+
+  DISALLOW_COPY_AND_ASSIGN(KioskFakeDiskMountManager);
 };
 
 }  // namespace
@@ -924,6 +951,23 @@ class KioskUpdateTest : public KioskTest {
   virtual ~KioskUpdateTest() {}
 
  protected:
+  virtual void SetUp() OVERRIDE {
+    base::FilePath test_data_dir;
+    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+    test_data_dir = test_data_dir.AppendASCII(kFakeUsbStickMountPath);
+    fake_disk_mount_manager_ =
+        new KioskFakeDiskMountManager(test_data_dir.value());
+    disks::DiskMountManager::InitializeForTesting(fake_disk_mount_manager_);
+
+    KioskTest::SetUp();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    disks::DiskMountManager::Shutdown();
+
+    KioskTest::TearDown();
+  }
+
   virtual void SetUpOnMainThread() OVERRIDE {
     KioskTest::SetUpOnMainThread();
   }
@@ -964,6 +1008,13 @@ class KioskUpdateTest : public KioskTest {
     EXPECT_EQ(version, cached_version);
   }
 
+  void SimulateUpdateAppFromUsbStick() {
+    KioskAppExternalUpdateWaiter waiter(KioskAppManager::Get(), test_app_id());
+    fake_disk_mount_manager_->MountUsbStick();
+    waiter.Wait();
+    fake_disk_mount_manager_->UnMountUsbStick();
+  }
+
   void PreCacheAndLaunchApp(const std::string& app_id,
                             const std::string& version,
                             const std::string& crx_file) {
@@ -978,6 +1029,41 @@ class KioskUpdateTest : public KioskTest {
   }
 
  private:
+  class KioskAppExternalUpdateWaiter : KioskAppManagerObserver {
+   public:
+    KioskAppExternalUpdateWaiter(KioskAppManager* manager,
+                                 const std::string& app_id)
+        : runner_(NULL), manager_(manager), app_id_(app_id), quit_(false) {
+      manager_->AddObserver(this);
+    }
+
+    virtual ~KioskAppExternalUpdateWaiter() { manager_->RemoveObserver(this); }
+
+    void Wait() {
+      if (quit_)
+        return;
+      runner_ = new content::MessageLoopRunner;
+      runner_->Run();
+    }
+
+   private:
+    // KioskAppManagerObserver overrides:
+    virtual void OnKioskAppCacheUpdated(const std::string& app_id) OVERRIDE {
+      if (app_id_ != app_id)
+        return;
+      quit_ = true;
+      if (runner_)
+        runner_->Quit();
+    }
+
+    scoped_refptr<content::MessageLoopRunner> runner_;
+    KioskAppManager* manager_;
+    const std::string app_id_;
+    bool quit_;
+
+    DISALLOW_COPY_AND_ASSIGN(KioskAppExternalUpdateWaiter);
+  };
+
   class AppDataLoadWaiter : public KioskAppManagerObserver {
    public:
     AppDataLoadWaiter(KioskAppManager* manager,
@@ -1036,6 +1122,9 @@ class KioskUpdateTest : public KioskTest {
 
     DISALLOW_COPY_AND_ASSIGN(AppDataLoadWaiter);
   };
+
+  // Owned by DiskMountManager.
+  KioskFakeDiskMountManager* fake_disk_mount_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskUpdateTest);
 };
@@ -1139,6 +1228,39 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppHasUpdate) {
   LaunchApp(test_app_id(), false);
   WaitForAppLaunchSuccess();
 
+  EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
+}
+
+// Pre-cache v1 kiosk app, then launch the app without network,
+// plug in usb stick with a v2 app for offline updating.
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_UsbStickUpdateAppNoNetwork) {
+  PreCacheApp(kTestOfflineEnabledKioskApp,
+              "1.0.0",
+              std::string(kTestOfflineEnabledKioskApp) + "_v1.crx");
+
+  set_test_app_id(kTestOfflineEnabledKioskApp);
+  StartUIForAppLaunch();
+  SimulateNetworkOffline();
+  LaunchApp(test_app_id(), false);
+  WaitForAppLaunchSuccess();
+  EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
+
+  // Simulate mounting of usb stick with v2 app on the stick.
+  SimulateUpdateAppFromUsbStick();
+
+  // The v2 kiosk app is copied into external cache, but won't be loaded
+  // until next time the device is started.
+  EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
+}
+
+// Restart the device, verify the app has been updated to v2.
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UsbStickUpdateAppNoNetwork) {
+  // Verify the kiosk app has been updated to v2.
+  set_test_app_id(kTestOfflineEnabledKioskApp);
+  StartUIForAppLaunch();
+  SimulateNetworkOffline();
+  LaunchApp(test_app_id(), false);
+  WaitForAppLaunchSuccess();
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
 }
 

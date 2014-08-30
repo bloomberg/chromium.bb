@@ -259,6 +259,8 @@
           'sources': [
             'browser/chromeos/app_mode/fake_cws.cc',
             'browser/chromeos/app_mode/fake_cws.h',
+            'browser/chromeos/file_manager/fake_disk_mount_manager.cc',
+            'browser/chromeos/file_manager/fake_disk_mount_manager.h',
             'browser/chromeos/input_method/mock_candidate_window_controller.cc',
             'browser/chromeos/input_method/mock_candidate_window_controller.h',
             'browser/chromeos/input_method/mock_input_method_engine.cc',
@@ -679,8 +681,6 @@
         'browser/chromeos/extensions/file_manager/device_event_router_unittest.cc',
         'browser/chromeos/extensions/wallpaper_private_api_unittest.cc',
         'browser/chromeos/external_metrics_unittest.cc',
-        'browser/chromeos/file_manager/fake_disk_mount_manager.cc',
-        'browser/chromeos/file_manager/fake_disk_mount_manager.h',
         'browser/chromeos/file_manager/file_tasks_unittest.cc',
         'browser/chromeos/file_manager/file_watcher_unittest.cc',
         'browser/chromeos/file_manager/path_util_unittest.cc',
