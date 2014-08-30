@@ -4083,6 +4083,33 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DirectWrite.Fonts.Ignored">
+  <owner>shrikant@chromium.org</owner>
+  <summary>
+    Reports the total number of fonts that will be ignored while loading a
+    custom font collection. With current criteria fonts that are not in
+    system-font location will be ignored.
+  </summary>
+</histogram>
+
+<histogram name="DirectWrite.Fonts.Loaded">
+  <owner>shrikant@chromium.org</owner>
+  <summary>
+    Reports the total number of fonts to be loaded through a custom font
+    collection. This actually reports total font entries from registry excluding
+    font entries that point to non-system location.
+  </summary>
+</histogram>
+
+<histogram name="DirectWrite.Fonts.LoadTime" units="milliseconds">
+  <owner>shrikant@chromium.org</owner>
+  <summary>
+    Measures the total time spent in loading a custom font collection. We load
+    system fonts as a custom font collection to avoid any interaction with font
+    cache service from sandboxed renderer process.
+  </summary>
+</histogram>
+
 <histogram name="DisabledExtension.ExtensionWipedStatus" enum="BooleanWiped">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Whether an extension has been wiped out.</summary>
