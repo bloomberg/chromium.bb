@@ -80,7 +80,7 @@ public class AwShellActivity extends Activity {
 
     private AwTestContainerView createAwTestContainerView() {
         AwBrowserProcess.start(this);
-        AwTestContainerView testContainerView = new AwTestContainerView(this, true);
+        AwTestContainerView testContainerView = new AwTestContainerView(this);
         AwContentsClient awContentsClient = new NullContentsClient() {
             private View mCustomView;
 

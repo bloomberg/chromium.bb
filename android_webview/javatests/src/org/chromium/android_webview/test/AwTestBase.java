@@ -274,7 +274,7 @@ public class AwTestBase
      */
     public static class TestDependencyFactory extends AwContents.DependencyFactory {
         public AwTestContainerView createAwTestContainerView(AwTestRunnerActivity activity) {
-            return new AwTestContainerView(activity, false);
+            return new AwTestContainerView(activity);
         }
         public AwSettings createAwSettings(Context context, boolean supportsLegacyQuirks) {
             return new AwSettings(context, false, supportsLegacyQuirks);

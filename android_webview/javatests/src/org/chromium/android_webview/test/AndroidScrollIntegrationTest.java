@@ -65,7 +65,7 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
             new OverScrollByCallbackHelper();
 
         public ScrollTestContainerView(Context context) {
-            super(context, false);
+            super(context);
         }
 
         public CallbackHelper getOnScrollToCallbackHelper() {
