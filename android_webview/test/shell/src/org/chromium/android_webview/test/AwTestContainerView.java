@@ -7,10 +7,13 @@ package org.chromium.android_webview.test;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
+import android.graphics.PixelFormat;
 import android.graphics.Rect;
+import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -20,7 +23,11 @@ import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.shell.DrawGL;
 import org.chromium.content.browser.ContentViewCore;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
 
 /**
  * A View used for testing the AwContents internals.
@@ -32,8 +39,180 @@ public class AwTestContainerView extends FrameLayout {
     private AwContents.NativeGLDelegate mNativeGLDelegate;
     private AwContents.InternalAccessDelegate mInternalAccessDelegate;
 
-    public AwTestContainerView(Context context) {
+    HardwareView mHardwareView = null;
+    private boolean mAttachedContents = false;
+
+    private class HardwareView extends GLSurfaceView {
+        private static final int MODE_DRAW = 0;
+        private static final int MODE_PROCESS = 1;
+        private static final int MODE_PROCESS_NO_CONTEXT = 2;
+        private static final int MODE_SYNC = 3;
+
+        // mSyncLock is used to synchronized requestRender on the UI thread
+        // and drawGL on the rendering thread. The variables following
+        // are protected by it.
+        private final Object mSyncLock = new Object();
+        private boolean mNeedsProcessGL = false;
+        private boolean mNeedsDrawGL = false;
+        private boolean mWaitForCompletion = false;
+        private int mLastScrollX = 0;
+        private int mLastScrollY = 0;
+
+        private int mCommittedScrollX = 0;
+        private int mCommittedScrollY = 0;
+
+        private boolean mHaveSurface = false;
+        private Runnable mReadyToRenderCallback = null;
+
+        private long mDrawGL = 0;
+        private long mViewContext = 0;
+
+        public HardwareView(Context context) {
+            super(context);
+            setEGLContextClientVersion(2); // GLES2
+            getHolder().setFormat(PixelFormat.OPAQUE);
+            setPreserveEGLContextOnPause(true);
+            setRenderer(new Renderer() {
+                private int mWidth = 0;
+                private int mHeight = 0;
+
+                @Override
+                public void onDrawFrame(GL10 gl) {
+                    HardwareView.this.drawGL(mWidth, mHeight);
+                }
+
+                @Override
+                public void onSurfaceChanged(GL10 gl, int width, int height) {
+                    gl.glViewport(0, 0, width, height);
+                    gl.glScissor(0, 0, width, height);
+                    mWidth = width;
+                    mHeight = height;
+                }
+
+                @Override
+                public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+                }
+            });
+
+            setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+        }
+
+        public void initialize(long drawGL, long viewContext) {
+            mDrawGL = drawGL;
+            mViewContext = viewContext;
+        }
+
+        public boolean isReadyToRender() {
+            return mHaveSurface;
+        }
+
+        public void setReadyToRenderCallback(Runnable runner) {
+            assert !isReadyToRender() || runner == null;
+            mReadyToRenderCallback = runner;
+        }
+
+        @Override
+        public void surfaceCreated(SurfaceHolder holder) {
+            boolean didHaveSurface = mHaveSurface;
+            mHaveSurface = true;
+            if (!didHaveSurface && mReadyToRenderCallback != null) {
+                mReadyToRenderCallback.run();
+                mReadyToRenderCallback = null;
+            }
+            super.surfaceCreated(holder);
+        }
+
+        @Override
+        public void surfaceDestroyed(SurfaceHolder holder) {
+            mHaveSurface = false;
+            super.surfaceDestroyed(holder);
+        }
+
+        public void updateScroll(int x, int y) {
+            synchronized (mSyncLock) {
+                mLastScrollX = x;
+                mLastScrollY = y;
+            }
+        }
+
+        public void requestRender(Canvas canvas, boolean waitForCompletion) {
+            synchronized (mSyncLock) {
+                super.requestRender();
+                mWaitForCompletion = waitForCompletion;
+                if (canvas == null) {
+                    mNeedsProcessGL = true;
+                } else {
+                    mNeedsDrawGL = true;
+                    if (!waitForCompletion) {
+                        // Wait until SYNC is complete only.
+                        // Do this every time there was a new frame.
+                        try {
+                            while (mNeedsDrawGL) {
+                                mSyncLock.wait();
+                            }
+                        } catch (InterruptedException e) {
+                            // ...
+                        }
+                    }
+                }
+                if (waitForCompletion) {
+                    try {
+                        while (mWaitForCompletion) {
+                            mSyncLock.wait();
+                        }
+                    } catch (InterruptedException e) {
+                        // ...
+                    }
+                }
+            }
+        }
+
+        public void drawGL(int width, int height) {
+            final boolean draw;
+            final boolean process;
+            final boolean waitForCompletion;
+
+            synchronized (mSyncLock) {
+                draw = mNeedsDrawGL;
+                process = mNeedsProcessGL;
+                waitForCompletion = mWaitForCompletion;
+
+                if (draw) {
+                    DrawGL.drawGL(mDrawGL, mViewContext, width, height, 0, 0, MODE_SYNC);
+                    mCommittedScrollX = mLastScrollX;
+                    mCommittedScrollY = mLastScrollY;
+                }
+                mNeedsDrawGL = false;
+                mNeedsProcessGL = false;
+                if (!waitForCompletion) {
+                    mSyncLock.notifyAll();
+                }
+            }
+            if (draw) {
+                DrawGL.drawGL(mDrawGL, mViewContext, width, height,
+                        mCommittedScrollX, mCommittedScrollY, MODE_DRAW);
+            } else if (process) {
+                DrawGL.drawGL(mDrawGL, mViewContext, width, height, 0, 0, MODE_PROCESS);
+            }
+
+            if (waitForCompletion) {
+                synchronized (mSyncLock) {
+                    mWaitForCompletion = false;
+                    mSyncLock.notifyAll();
+                }
+            }
+        }
+    }
+
+    public AwTestContainerView(Context context, boolean hardwareAccelerated) {
         super(context);
+        if (hardwareAccelerated) {
+            mHardwareView = new HardwareView(context);
+            addView(mHardwareView,
+                    new FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.MATCH_PARENT,
+                        FrameLayout.LayoutParams.MATCH_PARENT));
+        }
         mNativeGLDelegate = new NativeGLDelegate();
         mInternalAccessDelegate = new InternalAccessAdapter();
         setOverScrollMode(View.OVER_SCROLL_ALWAYS);
@@ -43,6 +222,10 @@ public class AwTestContainerView extends FrameLayout {
 
     public void initialize(AwContents awContents) {
         mAwContents = awContents;
+        if (mHardwareView != null) {
+            mHardwareView.initialize(
+                    mAwContents.getAwDrawGLFunction(), mAwContents.getAwDrawGLViewContext());
+        }
     }
 
     public ContentViewCore getContentViewCore() {
@@ -74,13 +257,28 @@ public class AwTestContainerView extends FrameLayout {
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        mAwContents.onAttachedToWindow();
+        if (mHardwareView == null || mHardwareView.isReadyToRender()) {
+            mAwContents.onAttachedToWindow();
+            mAttachedContents = true;
+        } else {
+            mHardwareView.setReadyToRenderCallback(new Runnable() {
+                public void run() {
+                    assert !mAttachedContents;
+                    mAwContents.onAttachedToWindow();
+                    mAttachedContents = true;
+                }
+            });
+        }
     }
 
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         mAwContents.onDetachedFromWindow();
+        if (mHardwareView != null) {
+            mHardwareView.setReadyToRenderCallback(null);
+        }
+        mAttachedContents = false;
     }
 
     @Override
@@ -107,6 +305,7 @@ public class AwTestContainerView extends FrameLayout {
     @Override
     public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         mAwContents.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     @Override
@@ -153,6 +352,9 @@ public class AwTestContainerView extends FrameLayout {
 
     @Override
     public void onDraw(Canvas canvas) {
+        if (mHardwareView != null) {
+            mHardwareView.updateScroll(getScrollX(), getScrollY());
+        }
         mAwContents.onDraw(canvas);
         super.onDraw(canvas);
     }
@@ -183,11 +385,13 @@ public class AwTestContainerView extends FrameLayout {
         return mAwContents.performAccessibilityAction(action, arguments);
     }
 
-    private static class NativeGLDelegate implements AwContents.NativeGLDelegate {
+    private class NativeGLDelegate implements AwContents.NativeGLDelegate {
         @Override
         public boolean requestDrawGL(Canvas canvas, boolean waitForCompletion,
                 View containerview) {
-            return false;
+            if (mHardwareView == null) return false;
+            mHardwareView.requestRender(canvas, waitForCompletion);
+            return true;
         }
 
         @Override
@@ -234,6 +438,12 @@ public class AwTestContainerView extends FrameLayout {
         public void super_scrollTo(int scrollX, int scrollY) {
             // We're intentionally not calling super.scrollTo here to make testing easier.
             AwTestContainerView.this.scrollTo(scrollX, scrollY);
+            if (mHardwareView != null) {
+                // Undo the scroll that will be applied because of mHardwareView
+                // being a child of |this|.
+                mHardwareView.setTranslationX(scrollX);
+                mHardwareView.setTranslationY(scrollY);
+            }
         }
 
         @Override

@@ -10,6 +10,7 @@
         'libwebviewchromium',
         'android_webview_java',
         'android_webview_pak',
+        'libdrawgl',
       ],
       'variables': {
         'apk_name': 'AndroidWebView',
@@ -17,6 +18,7 @@
         'native_lib_target': 'libstandalonelibwebviewchromium',
         'resource_dir': 'test/shell/res',
         'extensions_to_not_compress': 'pak',
+        'extra_native_libs': ['<(SHARED_LIB_DIR)/libdrawgl.>(android_product_extension)'],
         'additional_input_paths': [
           '<(PRODUCT_DIR)/android_webview_apk/assets/webviewchromium.pak',
           '<(PRODUCT_DIR)/android_webview_apk/assets/en-US.pak',
@@ -161,6 +163,18 @@
         },
       ],
       'includes': [ '../build/apk_test.gypi' ],
+    },
+    {
+      'target_name': 'libdrawgl',
+      'type': 'shared_library',
+      # Do not depend on any other component here, since this target
+      # builds a separate shared library!
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+          '../android_webview/test/shell/src/draw_gl/draw_gl.cc',
+      ],
     },
   ],
 }
