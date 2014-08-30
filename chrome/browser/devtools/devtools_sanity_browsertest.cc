@@ -772,7 +772,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkRawHeadersText) {
 }
 
 // Tests that console messages are not duplicated on navigation back.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleOnNavigateBack) {
+#if defined(OS_WIN)
+// Flaking on windows swarm try runs: crbug.com/409285.
+#define MAYBE_TestConsoleOnNavigateBack DISABLED_TestConsoleOnNavigateBack
+#else
+#define MAYBE_TestConsoleOnNavigateBack TestConsoleOnNavigateBack
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestConsoleOnNavigateBack) {
   RunTest("testConsoleOnNavigateBack", kNavigateBackTestPage);
 }
 
