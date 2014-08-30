@@ -31,8 +31,6 @@
 #include <algorithm>
 #include "platform/audio/AudioResampler.h"
 
-using namespace std;
-
 namespace blink {
 
 const size_t AudioResamplerKernel::MaxFramesToProcess = 128;
@@ -80,8 +78,8 @@ void AudioResamplerKernel::process(float* destination, size_t framesToProcess)
     float* source = m_sourceBuffer.data();
 
     double rate = this->rate();
-    rate = max(0.0, rate);
-    rate = min(AudioResampler::MaxRate, rate);
+    rate = std::max(0.0, rate);
+    rate = std::min(AudioResampler::MaxRate, rate);
 
     // Start out with the previous saved values (if any).
     if (m_fillIndex > 0) {

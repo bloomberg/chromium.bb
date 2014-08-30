@@ -37,8 +37,6 @@
 #include "wtf/MainThread.h"
 #endif
 
-using namespace std;
-
 namespace blink {
 
 static const unsigned segmentSize = 0x1000;
@@ -266,7 +264,7 @@ void SharedBuffer::append(const char* data, unsigned length)
         segment = m_segments.last() + positionInSegment;
 
     unsigned segmentFreeSpace = segmentSize - positionInSegment;
-    unsigned bytesToCopy = min(length, segmentFreeSpace);
+    unsigned bytesToCopy = std::min(length, segmentFreeSpace);
 
     for (;;) {
         memcpy(segment, data, bytesToCopy);
@@ -277,7 +275,7 @@ void SharedBuffer::append(const char* data, unsigned length)
         data += bytesToCopy;
         segment = allocateSegment();
         m_segments.append(segment);
-        bytesToCopy = min(length, segmentSize);
+        bytesToCopy = std::min(length, segmentSize);
     }
 }
 
@@ -321,7 +319,7 @@ void SharedBuffer::mergeSegmentsIntoBuffer() const
         m_buffer.reserveCapacity(m_size);
         unsigned bytesLeft = m_size - bufferSize;
         for (unsigned i = 0; i < m_segments.size(); ++i) {
-            unsigned bytesToCopy = min(bytesLeft, segmentSize);
+            unsigned bytesToCopy = std::min(bytesLeft, segmentSize);
             m_buffer.append(m_segments[i], bytesToCopy);
             bytesLeft -= bytesToCopy;
             freeSegment(m_segments[i]);
@@ -352,7 +350,7 @@ unsigned SharedBuffer::getSomeData(const char*& someData, unsigned position) con
     unsigned segment = segmentIndex(position);
     if (segment < segments) {
         unsigned bytesLeft = totalSize - consecutiveSize;
-        unsigned segmentedSize = min(maxSegmentedSize, bytesLeft);
+        unsigned segmentedSize = std::min(maxSegmentedSize, bytesLeft);
 
         unsigned positionInSegment = offsetInSegment(position);
         someData = m_segments[segment] + positionInSegment;

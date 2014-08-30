@@ -39,8 +39,6 @@
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/StringHash.h"
 
-using namespace std;
-
 namespace blink {
 
 const unsigned HRTFElevation::AzimuthSpacing = 15;
@@ -249,7 +247,7 @@ PassOwnPtr<HRTFElevation> HRTFElevation::createForSubject(const String& subjectN
     for (unsigned rawIndex = 0; rawIndex < NumberOfRawAzimuths; ++rawIndex) {
         // Don't let elevation exceed maximum for this azimuth.
         int maxElevation = maxElevations[rawIndex];
-        int actualElevation = min(elevation, maxElevation);
+        int actualElevation = std::min(elevation, maxElevation);
 
         bool success = calculateKernelsForAzimuthElevation(rawIndex * AzimuthSpacing, actualElevation, sampleRate, subjectName, kernelListL->at(interpolatedIndex), kernelListR->at(interpolatedIndex));
         if (!success)

@@ -37,8 +37,6 @@
 #include "wtf/MathExtras.h"
 #include "wtf/text/WTFString.h"
 
-using namespace std;
-
 namespace blink {
 
 // HTML5 specification defines minimum week of year is one.
@@ -498,9 +496,9 @@ void DateComponents::setMillisecondsSinceMidnightInternal(double msInDay)
 {
     ASSERT(msInDay >= 0 && msInDay < msPerDay);
     m_millisecond = static_cast<int>(fmod(msInDay, msPerSecond));
-    double value = floor(msInDay / msPerSecond);
+    double value = std::floor(msInDay / msPerSecond);
     m_second = static_cast<int>(fmod(value, secondsPerMinute));
-    value = floor(value / secondsPerMinute);
+    value = std::floor(value / secondsPerMinute);
     m_minute = static_cast<int>(fmod(value, minutesPerHour));
     m_hour = static_cast<int>(value / minutesPerHour);
 }

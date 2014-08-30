@@ -36,8 +36,6 @@
 #include <math.h>
 #include <algorithm>
 
-using namespace std;
-
 namespace blink {
 
 DistanceEffect::DistanceEffect()
@@ -52,11 +50,11 @@ DistanceEffect::DistanceEffect()
 double DistanceEffect::gain(double distance)
 {
     // don't go beyond maximum distance
-    distance = min(distance, m_maxDistance);
+    distance = std::min(distance, m_maxDistance);
 
     // if clamped, don't get closer than reference distance
     if (m_isClamped)
-        distance = max(distance, m_refDistance);
+        distance = std::max(distance, m_refDistance);
 
     switch (m_model) {
     case ModelLinear:

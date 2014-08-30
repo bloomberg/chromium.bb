@@ -40,8 +40,6 @@
 #include <emmintrin.h>
 #endif
 
-using namespace std;
-
 // Input buffer layout, dividing the total buffer into regions (r0 - r5):
 //
 // |----------------|----------------------------------------------------------------|----------------|
@@ -115,12 +113,12 @@ void SincResampler::initializeKernel()
         for (int i = 0; i < n; ++i) {
             // Compute the sinc() with offset.
             double s = sincScaleFactor * piDouble * (i - halfSize - subsampleOffset);
-            double sinc = !s ? 1.0 : sin(s) / s;
+            double sinc = !s ? 1.0 : std::sin(s) / s;
             sinc *= sincScaleFactor;
 
             // Compute Blackman window, matching the offset of the sinc().
             double x = (i - subsampleOffset) / n;
-            double window = a0 - a1 * cos(twoPiDouble * x) + a2 * cos(twoPiDouble * 2.0 * x);
+            double window = a0 - a1 * std::cos(twoPiDouble * x) + a2 * std::cos(twoPiDouble * 2.0 * x);
 
             // Window the sinc() function and store at the correct offset.
             m_kernelStorage[i + offsetIndex * m_kernelSize] = sinc * window;
@@ -165,7 +163,7 @@ public:
         float* buffer = bus->channel(0)->mutableData();
 
         // Clamp to number of frames available and zero-pad.
-        size_t framesToCopy = min(m_sourceFramesAvailable, framesToProcess);
+        size_t framesToCopy = std::min(m_sourceFramesAvailable, framesToProcess);
         memcpy(buffer, m_source, sizeof(float) * framesToCopy);
 
         // Zero-pad if necessary.
@@ -192,7 +190,7 @@ void SincResampler::process(const float* source, float* destination, unsigned nu
     unsigned remaining = numberOfDestinationFrames;
 
     while (remaining) {
-        unsigned framesThisTime = min(remaining, m_blockSize);
+        unsigned framesThisTime = std::min(remaining, m_blockSize);
         process(&sourceProvider, destination, framesThisTime);
 
         destination += framesThisTime;
