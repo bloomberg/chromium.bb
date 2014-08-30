@@ -5,6 +5,7 @@
 #include "chromecast/shell/browser/cast_content_browser_client.h"
 
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "chromecast/shell/browser/cast_browser_context.h"
 #include "chromecast/shell/browser/cast_browser_main_parts.h"
 #include "chromecast/shell/browser/cast_browser_process.h"
