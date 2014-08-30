@@ -147,10 +147,7 @@ void AccessibilityController::Reset() {
 }
 
 void AccessibilityController::Install(blink::WebFrame* frame) {
-  blink::WebAXObject::enableAccessibility();
   frame->view()->settings()->setAccessibilityEnabled(true);
-
-  blink::WebAXObject::enableInlineTextBoxAccessibility();
   frame->view()->settings()->setInlineTextBoxAccessibilityEnabled(true);
 
   AccessibilityControllerBindings::Install(weak_factory_.GetWeakPtr(), frame);

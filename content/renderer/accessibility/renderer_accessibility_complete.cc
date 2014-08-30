@@ -40,7 +40,6 @@ RendererAccessibilityComplete::RendererAccessibilityComplete(
       serializer_(&tree_source_),
       last_scroll_offset_(gfx::Size()),
       ack_pending_(false) {
-  WebAXObject::enableAccessibility();
   WebView* web_view = render_frame_->GetRenderView()->GetWebView();
   WebSettings* settings = web_view->settings();
   settings->setAccessibilityEnabled(true);
@@ -49,7 +48,6 @@ RendererAccessibilityComplete::RendererAccessibilityComplete(
   // Skip inline text boxes on Android - since there are no native Android
   // APIs that compute the bounds of a range of text, it's a waste to
   // include these in the AX tree.
-  WebAXObject::enableInlineTextBoxAccessibility();
   settings->setInlineTextBoxAccessibilityEnabled(true);
 #endif
 
