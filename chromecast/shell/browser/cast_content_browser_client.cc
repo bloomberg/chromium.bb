@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chromecast/shell/browser/cast_browser_context.h"
 #include "chromecast/shell/browser/cast_browser_main_parts.h"
+#include "chromecast/shell/browser/cast_browser_process.h"
 #include "chromecast/shell/browser/geolocation/cast_access_token_store.h"
 #include "chromecast/shell/browser/url_request_context_factory.h"
 #include "content/public/browser/certificate_request_result_type.h"
@@ -28,9 +29,8 @@ CastContentBrowserClient::~CastContentBrowserClient() {
 
 content::BrowserMainParts* CastContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
-  shell_browser_main_parts_ =
-      new CastBrowserMainParts(parameters, url_request_context_factory_.get());
-  return shell_browser_main_parts_;
+  return new CastBrowserMainParts(parameters,
+                                  url_request_context_factory_.get());
 }
 
 void CastContentBrowserClient::RenderProcessWillLaunch(
@@ -81,7 +81,8 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
 }
 
 content::AccessTokenStore* CastContentBrowserClient::CreateAccessTokenStore() {
-  return new CastAccessTokenStore(shell_browser_main_parts_->browser_context());
+  return new CastAccessTokenStore(
+      CastBrowserProcess::GetInstance()->browser_context());
 }
 
 void CastContentBrowserClient::OverrideWebkitPrefs(

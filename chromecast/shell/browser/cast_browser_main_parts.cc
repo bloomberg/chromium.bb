@@ -12,6 +12,7 @@
 #include "chromecast/net/network_change_notifier_factory_cast.h"
 #include "chromecast/service/cast_service.h"
 #include "chromecast/shell/browser/cast_browser_context.h"
+#include "chromecast/shell/browser/cast_browser_process.h"
 #include "chromecast/shell/browser/devtools/remote_debugging_server.h"
 #include "chromecast/shell/browser/url_request_context_factory.h"
 #include "chromecast/shell/browser/webui/webui_cast.h"
@@ -49,6 +50,7 @@ CastBrowserMainParts::CastBrowserMainParts(
     const content::MainFunctionParams& parameters,
     URLRequestContextFactory* url_request_context_factory)
     : BrowserMainParts(),
+      cast_browser_process_(new CastBrowserProcess()),
       url_request_context_factory_(url_request_context_factory) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   AddDefaultCommandLineSwitches(command_line);
@@ -74,16 +76,19 @@ int CastBrowserMainParts::PreCreateThreads() {
 void CastBrowserMainParts::PreMainMessageLoopRun() {
   url_request_context_factory_->InitializeOnUIThread();
 
-  browser_context_.reset(new CastBrowserContext(url_request_context_factory_));
-  metrics_service_client_.reset(metrics::CastMetricsServiceClient::Create(
-      ChromecastConfig::GetInstance()->pref_service(),
-      browser_context_->GetRequestContext()));
-  dev_tools_.reset(new RemoteDebuggingServer());
+  cast_browser_process_->SetBrowserContext(
+      new CastBrowserContext(url_request_context_factory_));
+  cast_browser_process_->SetMetricsServiceClient(
+      metrics::CastMetricsServiceClient::Create(
+          ChromecastConfig::GetInstance()->pref_service(),
+          cast_browser_process_->browser_context()->GetRequestContext()));
+  cast_browser_process_->SetRemoteDebuggingServer(new RemoteDebuggingServer());
 
   InitializeWebUI();
 
-  cast_service_.reset(CastService::Create(browser_context_.get()));
-  cast_service_->Start();
+  cast_browser_process_->SetCastService(
+      CastService::Create(cast_browser_process_->browser_context()));
+  cast_browser_process_->cast_service()->Start();
 }
 
 bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
@@ -92,12 +97,8 @@ bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
 }
 
 void CastBrowserMainParts::PostMainMessageLoopRun() {
-  cast_service_->Stop();
-
-  cast_service_.reset();
-  dev_tools_.reset();
-  metrics_service_client_.reset();
-  browser_context_.reset();
+  cast_browser_process_->cast_service()->Stop();
+  cast_browser_process_.reset();
 }
 
 }  // namespace shell

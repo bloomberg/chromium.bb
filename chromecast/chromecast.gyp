@@ -195,6 +195,8 @@
         'shell/browser/cast_browser_context.h',
         'shell/browser/cast_browser_main_parts.cc',
         'shell/browser/cast_browser_main_parts.h',
+        'shell/browser/cast_browser_process.cc',
+        'shell/browser/cast_browser_process.h',
         'shell/browser/cast_content_browser_client.cc',
         'shell/browser/cast_content_browser_client.h',
         'shell/browser/cast_http_user_agent_settings.cc',

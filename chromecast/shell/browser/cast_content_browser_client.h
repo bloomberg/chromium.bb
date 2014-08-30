@@ -71,9 +71,6 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
       std::vector<content::FileDescriptorInfo>* mappings) OVERRIDE;
 
  private:
-  // Note: BrowserMainLoop holds ownership of CastBrowserMainParts after it is
-  // created.
-  CastBrowserMainParts* shell_browser_main_parts_;
   scoped_ptr<URLRequestContextFactory> url_request_context_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentBrowserClient);
