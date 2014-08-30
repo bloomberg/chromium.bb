@@ -8,8 +8,9 @@ from compiled_file_system import SingleFile, Unicode
 from extensions_paths import API_PATHS
 from features_bundle import HasParent, GetParentName
 from file_system import FileNotFoundError
-from future import All, Future
+from future import All, Future, Race
 from operator import itemgetter
+from path_util import Join
 from platform_util import PlatformToExtensionType
 from schema_util import ProcessSchema
 from third_party.json_schema_compiler.json_schema import DeleteNodes
@@ -86,7 +87,10 @@ class APIModels(object):
     return [name for name, feature in api_features.iteritems()
             if not HasParent(name, feature, api_features)]
 
-  def GetModel(self, api_name):
+  def _GetPotentialPathsForModel(self, api_name):
+    '''Returns the list of file system paths that the model for |api_name|
+    might be located at.
+    '''
     # By default |api_name| is assumed to be given without a path or extension,
     # so combinations of known paths and extension types will be searched.
     api_extensions = ('.json', '.idl')
@@ -116,19 +120,13 @@ class APIModels(object):
           'devtools', file_name.replace(basename,
                                         basename.replace('devtools_' , '')))
 
-    futures = [self._model_cache.GetFromFile(
-                   posixpath.join(path, '%s%s' % (file_name, ext)))
-               for ext in api_extensions
-               for path in api_paths]
-    def resolve():
-      for future in futures:
-        try:
-          return future.Get()
-        # Either the file wasn't found or there was no schema for the file
-        except (FileNotFoundError, ValueError): pass
-      # Propagate the first error if neither were found.
-      futures[0].Get()
-    return Future(callback=resolve)
+    return [Join(path, file_name + ext) for ext in api_extensions
+                                        for path in api_paths]
+
+  def GetModel(self, api_name):
+    futures = [self._model_cache.GetFromFile(path)
+               for path in self._GetPotentialPathsForModel(api_name)]
+    return Race(futures, except_pass=(FileNotFoundError, ValueError))
 
   def GetContentScriptAPIs(self):
     '''Creates a dict of APIs and nodes supported by content scripts in

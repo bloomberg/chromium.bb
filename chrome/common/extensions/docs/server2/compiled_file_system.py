@@ -232,21 +232,25 @@ class CompiledFileSystem(object):
       return cache_data
     return self._RecursiveList(path).Then(next)
 
-  def GetFileVersion(self, path):
+  # _GetFileVersionFromCache and _GetFileListingVersionFromCache are exposed
+  # *only* so that ChainedCompiledFileSystem can optimise its caches. *Do not*
+  # use these methods otherwise, they don't do what you want. Use
+  # FileSystem.Stat on the FileSystem that this CompiledFileSystem uses.
+
+  def _GetFileVersionFromCache(self, path):
     cache_entry = self._file_object_store.Get(path).Get()
     if cache_entry is not None:
-      return cache_entry.version
-    return self._file_system.Stat(path).version
+      return Future(value=cache_entry.version)
+    stat_future = self._file_system.StatAsync(path)
+    return Future(callback=lambda: stat_future.Get().version)
 
-  def GetFileListingVersion(self, path):
+  def _GetFileListingVersionFromCache(self, path):
     path = ToDirectory(path)
     cache_entry = self._list_object_store.Get(path).Get()
     if cache_entry is not None:
-      return cache_entry.version
-    return self._file_system.Stat(path).version
-
-  def FileExists(self, path):
-    return self._file_system.Exists(path)
+      return Future(value=cache_entry.version)
+    stat_future = self._file_system.StatAsync(path)
+    return Future(callback=lambda: stat_future.Get().version)
 
   def GetIdentity(self):
     return self._file_system.GetIdentity()

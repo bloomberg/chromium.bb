@@ -50,14 +50,14 @@ class ChainedCompiledFileSystem(object):
     return self._GetImpl(
         path,
         lambda cfs: cfs.GetFromFile(path, skip_not_found=skip_not_found),
-        lambda cfs: cfs.GetFileVersion(path))
+        lambda cfs: cfs._GetFileVersionFromCache(path))
 
   def GetFromFileListing(self, path):
     path = ToDirectory(path)
     return self._GetImpl(
         path,
         lambda compiled_fs: compiled_fs.GetFromFileListing(path),
-        lambda compiled_fs: compiled_fs.GetFileListingVersion(path))
+        lambda compiled_fs: compiled_fs._GetFileListingVersionFromCache(path))
 
   def _GetImpl(self, path, reader, version_getter):
     # Strategy: Get the current version of |path| in main FileSystem, then run
@@ -66,26 +66,27 @@ class ChainedCompiledFileSystem(object):
     #
     # Obviously, if files have been added in the main FileSystem then none of
     # the older FileSystems will be able to find it.
-    read_futures = [(reader(compiled_fs), compiled_fs)
-                    for compiled_fs in self._compiled_fs_chain]
+    read_and_version_futures = [(reader(fs), version_getter(fs), fs)
+                                for fs in self._compiled_fs_chain]
 
     def resolve():
       try:
-        first_compiled_fs = self._compiled_fs_chain[0]
         # The first file system contains both files of a newer version and
         # files shared with other compiled file systems. We are going to try
         # each compiled file system in the reverse order and return the data
         # when version matches. Data cached in other compiled file system will
         # be reused whenever possible so that we don't need to recompile things
         # that are not changed across these file systems.
-        first_version = version_getter(first_compiled_fs)
-        for read_future, compiled_fs in reversed(read_futures):
-          if version_getter(compiled_fs) == first_version:
+        first_version = read_and_version_futures[0][1].Get()
+        for (read_future,
+             version_future,
+             compiled_fs) in reversed(read_and_version_futures):
+          if version_future.Get() == first_version:
             return read_future.Get()
       except FileNotFoundError:
         pass
       # Try an arbitrary operation again to generate a realistic stack trace.
-      return read_futures[0][0].Get()
+      return read_and_version_futures[0][0].Get()
 
     return Future(callback=resolve)
 
