@@ -97,7 +97,8 @@ void CastContentBrowserClient::OverrideWebkitPrefs(
 }
 
 std::string CastContentBrowserClient::GetApplicationLocale() {
-  return "en-US";
+  const std::string locale(base::i18n::GetConfiguredLocale());
+  return locale.empty() ? "en-US" : locale;
 }
 
 void CastContentBrowserClient::AllowCertificateError(
