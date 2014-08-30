@@ -107,6 +107,11 @@ public:
         return !m_failed && m_sizeAvailable;
     }
 
+    bool isSizeAvailable() const
+    {
+        return !m_failed && m_sizeAvailable;
+    }
+
     virtual IntSize size() const { return m_size; }
 
     // Decoders which downsample images should override this method to
