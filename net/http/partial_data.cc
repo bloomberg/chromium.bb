@@ -280,9 +280,6 @@ bool PartialData::UpdateFromStoredHeaders(const HttpResponseHeaders* headers,
     return true;
   }
 
-  if (!headers->HasStrongValidators())
-    return false;
-
   int64 length_value = headers->GetContentLength();
   if (length_value <= 0)
     return false;  // We must have stored the resource length.

@@ -1574,15 +1574,6 @@ int HttpCache::Transaction::DoOverwriteCachedResponse() {
     return OK;
   }
 
-  if (handling_206_ && !CanResume(false)) {
-    // There is no point in storing this resource because it will never be used.
-    DoneWritingToEntry(false);
-    if (partial_.get())
-      partial_->FixResponseHeaders(response_.headers.get(), true);
-    next_state_ = STATE_PARTIAL_HEADERS_RECEIVED;
-    return OK;
-  }
-
   target_state_ = STATE_TRUNCATE_CACHED_DATA;
   next_state_ = truncated_ ? STATE_CACHE_WRITE_TRUNCATED_RESPONSE :
                              STATE_CACHE_WRITE_RESPONSE;
@@ -2322,9 +2313,10 @@ bool HttpCache::Transaction::ConditionalizeRequest() {
     return false;
   }
 
-  // We should have handled this case before.
-  DCHECK(response_.headers->response_code() != 206 ||
-         response_.headers->HasStrongValidators());
+  if (response_.headers->response_code() == 206 &&
+      !response_.headers->HasStrongValidators()) {
+    return false;
+  }
 
   // Just use the first available ETag and/or Last-Modified header value.
   // TODO(darin): Or should we use the last?
