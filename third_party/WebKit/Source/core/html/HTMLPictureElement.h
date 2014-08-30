@@ -17,6 +17,9 @@ public:
 
 protected:
     explicit HTMLPictureElement(Document&);
+
+private:
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
 };
 
 } // namespace

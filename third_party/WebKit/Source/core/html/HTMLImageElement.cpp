@@ -225,8 +225,12 @@ void HTMLImageElement::setBestFitURLAndDPRFromImageCandidate(const ImageCandidat
     float candidateDensity = candidate.density();
     if (candidateDensity >= 0)
         m_imageDevicePixelRatio = 1.0 / candidateDensity;
-    if (candidate.resourceWidth() > 0)
+    if (candidate.resourceWidth() > 0) {
         m_intrinsicSizingViewportDependant = true;
+        UseCounter::count(document(), UseCounter::SrcsetWDescriptor);
+    } else if (!candidate.srcOrigin()) {
+        UseCounter::count(document(), UseCounter::SrcsetXDescriptor);
+    }
     if (renderer() && renderer()->isImage())
         toRenderImage(renderer())->setImageDevicePixelRatio(m_imageDevicePixelRatio);
 }
@@ -295,7 +299,10 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
         if (!source->mediaQueryMatches())
             continue;
 
-        SizesAttributeParser parser = SizesAttributeParser(MediaValuesDynamic::create(document()), source->fastGetAttribute(sizesAttr));
+        String sizes = source->fastGetAttribute(sizesAttr);
+        if (!sizes.isNull())
+            UseCounter::count(document(), UseCounter::Sizes);
+        SizesAttributeParser parser = SizesAttributeParser(MediaValuesDynamic::create(document()), sizes);
         unsigned effectiveSize = parser.length();
         m_effectiveSizeViewportDependant = parser.viewportDependant();
         ImageCandidate candidate = bestFitSourceForSrcsetAttribute(document().devicePixelRatio(), effectiveSize, source->fastGetAttribute(srcsetAttr));
@@ -626,7 +633,10 @@ void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior be
     if (!foundURL) {
         unsigned effectiveSize = 0;
         if (RuntimeEnabledFeatures::pictureSizesEnabled()) {
-            SizesAttributeParser parser = SizesAttributeParser(MediaValuesDynamic::create(document()), fastGetAttribute(sizesAttr));
+            String sizes = fastGetAttribute(sizesAttr);
+            if (!sizes.isNull())
+                UseCounter::count(document(), UseCounter::Sizes);
+            SizesAttributeParser parser = SizesAttributeParser(MediaValuesDynamic::create(document()), sizes);
             effectiveSize = parser.length();
             m_effectiveSizeViewportDependant = parser.viewportDependant();
         }
