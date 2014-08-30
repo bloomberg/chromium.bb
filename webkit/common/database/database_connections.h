@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
-#include "webkit/common/storage_export.h"
+#include "webkit/common/storage_common_export.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -20,7 +20,7 @@ class MessageLoopProxy;
 
 namespace storage {
 
-class STORAGE_EXPORT DatabaseConnections {
+class STORAGE_COMMON_EXPORT DatabaseConnections {
  public:
   DatabaseConnections();
   ~DatabaseConnections();
@@ -69,7 +69,7 @@ class STORAGE_EXPORT DatabaseConnections {
 // A wrapper class that provides thread-safety and the
 // ability to wait until all connections have closed.
 // Intended for use in renderer processes.
-class STORAGE_EXPORT DatabaseConnectionsWrapper
+class STORAGE_COMMON_EXPORT DatabaseConnectionsWrapper
     : public base::RefCountedThreadSafe<DatabaseConnectionsWrapper> {
  public:
   DatabaseConnectionsWrapper();

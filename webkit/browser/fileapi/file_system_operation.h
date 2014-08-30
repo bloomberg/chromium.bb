@@ -12,8 +12,8 @@
 #include "base/files/file_path.h"
 #include "base/process/process.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
+#include "webkit/browser/storage_browser_export.h"
 #include "webkit/common/fileapi/directory_entry.h"
-#include "webkit/common/storage_export.h"
 
 namespace base {
 class Time;

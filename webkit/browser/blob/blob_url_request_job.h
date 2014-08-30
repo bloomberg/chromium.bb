@@ -12,8 +12,8 @@
 #include "net/http/http_byte_range.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_job.h"
+#include "webkit/browser/storage_browser_export.h"
 #include "webkit/common/blob/blob_data.h"
-#include "webkit/common/storage_export.h"
 
 namespace base {
 class MessageLoopProxy;

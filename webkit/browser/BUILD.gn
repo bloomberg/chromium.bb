@@ -5,7 +5,7 @@
 component("storage") {
   output_name = "storage"
   sources = [
-    "storage_export.h",
+    "storage_browser_export.h",
     "blob/blob_data_handle.cc",
     "blob/blob_data_handle.h",
     "blob/blob_storage_context.cc",
@@ -152,7 +152,7 @@ component("storage") {
     "quota/usage_tracker.h",
   ]
 
-  defines = [ "WEBKIT_STORAGE_BROWSER_IMPLEMENTATION" ]
+  defines = [ "STORAGE_BROWSER_IMPLEMENTATION" ]
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
   if (is_win) {
     cflags = [ "/wd4267" ]  # TODO(jschuh): fix size_t to int truncations.
@@ -168,7 +168,7 @@ component("storage") {
     "//third_party/sqlite",
     "//url",
     "//webkit/common",
-    "//webkit/common:storage",
+    "//webkit/common:storage_common",
   ]
 
   # TODO(GYP) support chrome_multiple_dll
@@ -187,6 +187,6 @@ executable("dump_file_system") {
   deps = [
     ":storage",
     "//base",
-    "//webkit/common:storage",
+    "//webkit/common:storage_common",
   ]
 }

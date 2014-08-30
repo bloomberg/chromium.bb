@@ -59,7 +59,7 @@ static_library("test_support") {
       "//webkit/child",
       "//webkit/common/gpu",
       "//webkit/browser:storage",
-      "//webkit/common:storage",
+      "//webkit/common:storage_common",
     ]
 
     forward_dependent_configs_from = [

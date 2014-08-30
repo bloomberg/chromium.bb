@@ -108,7 +108,7 @@ static_library("ui") {
       "//v8",
       "//webkit/browser:storage",
       "//webkit/common",
-      "//webkit/common:storage",
+      "//webkit/common:storage_common",
     ]
     # TODO(GYP)
     #'defines': [

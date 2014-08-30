@@ -15,11 +15,11 @@
 #include "url/gurl.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/data_element.h"
-#include "webkit/common/storage_export.h"
+#include "webkit/common/storage_common_export.h"
 
 namespace storage {
 
-class STORAGE_EXPORT BlobData
+class STORAGE_COMMON_EXPORT BlobData
     : public base::RefCounted<BlobData> {
  public:
   typedef storage::DataElement Item;

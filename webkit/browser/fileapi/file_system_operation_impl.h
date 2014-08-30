@@ -14,9 +14,9 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/file_writer_delegate.h"
+#include "webkit/browser/storage_browser_export.h"
 #include "webkit/common/blob/scoped_file.h"
 #include "webkit/common/quota/quota_types.h"
-#include "webkit/common/storage_export.h"
 
 namespace storage {
 

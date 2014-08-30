@@ -26,7 +26,7 @@
 #include "webkit/browser/quota/quota_task.h"
 #include "webkit/browser/quota/special_storage_policy.h"
 #include "webkit/browser/quota/storage_observer.h"
-#include "webkit/common/storage_export.h"
+#include "webkit/browser/storage_browser_export.h"
 
 namespace base {
 class FilePath;

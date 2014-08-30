@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "webkit/browser/storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_util.h"
-#include "webkit/common/storage_export.h"
 
 class GURL;
 

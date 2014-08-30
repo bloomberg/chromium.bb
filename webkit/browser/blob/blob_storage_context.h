@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "webkit/browser/blob/blob_data_handle.h"
+#include "webkit/browser/storage_browser_export.h"
 #include "webkit/common/blob/blob_data.h"
-#include "webkit/common/storage_export.h"
 
 class GURL;
 

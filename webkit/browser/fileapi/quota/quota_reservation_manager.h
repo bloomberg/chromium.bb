@@ -14,8 +14,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "url/gurl.h"
+#include "webkit/browser/storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/common/storage_export.h"
 
 namespace content {
 class QuotaReservationManagerTest;

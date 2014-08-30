@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "webkit/common/storage_export.h"
+#include "webkit/browser/storage_browser_export.h"
 
 namespace base {
 class SequencedTaskRunner;

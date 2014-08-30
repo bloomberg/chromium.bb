@@ -17,7 +17,7 @@
 #include "webkit/browser/fileapi/sandbox_file_system_backend_delegate.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
 #include "webkit/browser/quota/special_storage_policy.h"
-#include "webkit/common/storage_export.h"
+#include "webkit/browser/storage_browser_export.h"
 
 namespace storage {
 

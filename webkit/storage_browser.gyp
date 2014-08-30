@@ -24,7 +24,7 @@
         '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
         '<(DEPTH)/webkit/storage_common.gyp:storage_common',
       ],
-      'defines': ['STORAGE_IMPLEMENTATION'],
+      'defines': ['STORAGE_BROWSER_IMPLEMENTATION'],
       'sources': [
         'browser/blob/blob_data_handle.cc',
         'browser/blob/blob_data_handle.h',
@@ -170,6 +170,7 @@
         'browser/quota/storage_observer.h',
         'browser/quota/usage_tracker.cc',
         'browser/quota/usage_tracker.h',
+        'browser/storage_browser_export.h',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],

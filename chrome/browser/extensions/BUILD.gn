@@ -74,7 +74,7 @@ static_library("extensions") {
     "//ui/strings",
     "//url",
     "//webkit/browser:storage",
-    "//webkit/common:storage",
+    "//webkit/common:storage_common",
     #"../third_party/webrtc/modules/modules.gyp:desktop_capture",  TODO(GYP)
   ]
 

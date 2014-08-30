@@ -16,7 +16,7 @@
 #include "webkit/browser/blob/blob_data_handle.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/common/storage_export.h"
+#include "webkit/browser/storage_browser_export.h"
 
 namespace net {
 class URLRequestContext;

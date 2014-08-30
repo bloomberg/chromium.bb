@@ -20,8 +20,8 @@
 #include "webkit/browser/fileapi/plugin_private_file_system_backend.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend_delegate.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
+#include "webkit/browser/storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/common/storage_export.h"
 
 namespace base {
 class FilePath;

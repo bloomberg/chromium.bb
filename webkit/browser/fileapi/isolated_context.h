@@ -16,8 +16,8 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "webkit/browser/fileapi/mount_points.h"
+#include "webkit/browser/storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/common/storage_export.h"
 
 namespace storage {
 class FileSystemURL;

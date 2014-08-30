@@ -10,12 +10,12 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/time/time.h"
-#include "webkit/common/storage_export.h"
+#include "webkit/common/storage_common_export.h"
 
 namespace storage {
 
 // Holds metadata for file or directory entry.
-struct STORAGE_EXPORT DirectoryEntry {
+struct STORAGE_COMMON_EXPORT DirectoryEntry {
   enum DirectoryEntryType {
     FILE,
     DIRECTORY,

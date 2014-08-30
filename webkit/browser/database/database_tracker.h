@@ -19,8 +19,8 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
+#include "webkit/browser/storage_browser_export.h"
 #include "webkit/common/database/database_connections.h"
-#include "webkit/common/storage_export.h"
 
 namespace base {
 class MessageLoopProxy;

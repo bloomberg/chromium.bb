@@ -10,9 +10,9 @@
 
 #include "base/files/file_path.h"
 #include "url/gurl.h"
+#include "webkit/browser/storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_mount_option.h"
 #include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/common/storage_export.h"
 
 namespace storage {
 

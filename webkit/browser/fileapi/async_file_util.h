@@ -13,8 +13,8 @@
 #include "base/files/file_util_proxy.h"
 #include "base/memory/scoped_ptr.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
+#include "webkit/browser/storage_browser_export.h"
 #include "webkit/common/fileapi/directory_entry.h"
-#include "webkit/common/storage_export.h"
 
 namespace base {
 class Time;

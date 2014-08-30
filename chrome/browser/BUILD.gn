@@ -181,7 +181,7 @@ static_library("browser") {
       "//v8",
       "//webkit/browser:storage",
       "//webkit/common",
-      "//webkit/common:storage",
+      "//webkit/common:storage_common",
       ## TODO(tonyg): Remove this dependency (crbug.com/280157).
       #"../testing/perf/perf_test.gyp:*",  TODO(GYP)
       # Note: for this one also remove the webrtc_stub_config

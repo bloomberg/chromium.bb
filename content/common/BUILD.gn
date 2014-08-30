@@ -65,7 +65,7 @@ source_set("common") {
       "//ui/gl",
       "//webkit/browser:storage",
       "//webkit/common",
-      "//webkit/common:storage",
+      "//webkit/common:storage_common",
       "//webkit/common/gpu",
     ]
   }

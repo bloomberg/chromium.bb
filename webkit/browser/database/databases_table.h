@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "webkit/common/storage_export.h"
+#include "webkit/browser/storage_browser_export.h"
 
 namespace sql {
 class Connection;

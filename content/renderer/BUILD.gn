@@ -48,7 +48,7 @@ source_set("renderer") {
     "//v8",
     "//webkit/child",
     "//webkit/common",
-    "//webkit/common:storage",
+    "//webkit/common:storage_common",
     "//webkit/common/gpu",
   ]
 

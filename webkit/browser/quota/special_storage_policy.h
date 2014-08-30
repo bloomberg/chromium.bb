@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "webkit/common/storage_export.h"
+#include "webkit/browser/storage_browser_export.h"
 
 class GURL;
 

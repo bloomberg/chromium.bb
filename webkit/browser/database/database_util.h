@@ -8,7 +8,7 @@
 #include <string>
 #include "base/strings/string16.h"
 #include "url/gurl.h"
-#include "webkit/common/storage_export.h"
+#include "webkit/browser/storage_browser_export.h"
 
 namespace base {
 class FilePath;

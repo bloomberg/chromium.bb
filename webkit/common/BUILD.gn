@@ -20,10 +20,10 @@ component("common") {
   ]
 }
 
-component("storage") {
-  output_name = "storage_common"
+component("storage_common") {
+  output_name = "storage"
   sources = [
-    "storage_export.h",
+    "storage_common_export.h",
     "blob/blob_data.cc",
     "blob/blob_data.h",
     "blob/scoped_file.cc",
@@ -47,7 +47,7 @@ component("storage") {
     "quota/quota_types.h",
   ]
 
-  defines = [ "WEBKIT_STORAGE_COMMON_IMPLEMENTATION" ]
+  defines = [ "STORAGE_COMMON_IMPLEMENTATION" ]
   if (is_win) {
     cflags = [ "/wd4267" ]  # TODO(jschuh): fix size_t to int truncations.
   }

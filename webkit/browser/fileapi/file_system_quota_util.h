@@ -12,8 +12,8 @@
 #include "base/files/file.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
+#include "webkit/browser/storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/common/storage_export.h"
 
 namespace base {
 class SequencedTaskRunner;

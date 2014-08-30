@@ -20,7 +20,7 @@
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_options.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
-#include "webkit/common/storage_export.h"
+#include "webkit/browser/storage_browser_export.h"
 
 namespace base {
 class SequencedTaskRunner;
