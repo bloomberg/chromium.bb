@@ -564,8 +564,9 @@ void LocalDiscoveryUIHandler::PrivetClientToV3(
 
 void LocalDiscoveryUIHandler::CheckUserLoggedIn() {
   base::FundamentalValue logged_in_value(!GetSyncAccount().empty());
-  web_ui()->CallJavascriptFunction("local_discovery.setUserLoggedIn",
-                                   logged_in_value);
+  base::FundamentalValue is_supervised_value(IsUserSupervisedOrOffTheRecord());
+  web_ui()->CallJavascriptFunction(
+      "local_discovery.setUserLoggedIn", logged_in_value, is_supervised_value);
 }
 
 void LocalDiscoveryUIHandler::CheckListingDone() {
@@ -634,6 +635,12 @@ void LocalDiscoveryUIHandler::CreatePrivetV3Client(
   if (!privet_resolution_)
     return callback.Run(scoped_ptr<PrivetHTTPClient>());
   privet_resolution_->Start();
+}
+
+bool LocalDiscoveryUIHandler::IsUserSupervisedOrOffTheRecord() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+
+  return profile->IsSupervised() || profile->IsOffTheRecord();
 }
 
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)

@@ -46,6 +46,12 @@ cr.define('local_discovery', function() {
   var isUserLoggedIn = true;
 
   /**
+   * Whether or not the user is supervised or off the record.
+   * @type bool
+   */
+  var isUserSupervisedOrOffTheRecord = false;
+
+  /**
    * Whether or not the path-based dialog has been shown.
    * @type bool
    */
@@ -407,7 +413,8 @@ cr.define('local_discovery', function() {
       $('register-login-promo').hidden = true;
     } else {
       $('no-printers-message').hidden = true;
-      $('register-login-promo').hidden = isUserLoggedIn;
+      $('register-login-promo').hidden = isUserLoggedIn ||
+        isUserSupervisedOrOffTheRecord;
     }
   }
 
@@ -506,14 +513,24 @@ cr.define('local_discovery', function() {
   /**
    * User is not logged in.
    */
-  function setUserLoggedIn(userLoggedIn) {
+  function setUserLoggedIn(userLoggedIn, userSupervisedOrOffTheRecord) {
     isUserLoggedIn = userLoggedIn;
+    isUserSupervisedOrOffTheRecord = userSupervisedOrOffTheRecord;
 
-    $('cloud-devices-login-promo').hidden = isUserLoggedIn;
-    $('register-overlay-login-promo').hidden = isUserLoggedIn;
-    $('register-continue-button').disabled = !isUserLoggedIn;
+    $('cloud-devices-login-promo').hidden = isUserLoggedIn ||
+      isUserSupervisedOrOffTheRecord;
+    $('register-overlay-login-promo').hidden = isUserLoggedIn ||
+      isUserSupervisedOrOffTheRecord;
+    $('register-continue-button').disabled = !isUserLoggedIn ||
+      isUserSupervisedOrOffTheRecord;
 
-    if (isUserLoggedIn) {
+    $('my-devices-container').hidden = userSupervisedOrOffTheRecord;
+
+    if (isUserSupervisedOrOffTheRecord) {
+      $('cloud-print-connector-section').hidden = true;
+    }
+
+    if (isUserLoggedIn && !isUserSupervisedOrOffTheRecord) {
       requestDeviceList();
       $('register-login-promo').hidden = true;
     } else {

@@ -165,6 +165,8 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
 
   void CheckListingDone();
 
+  bool IsUserSupervisedOrOffTheRecord();
+
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
   void StartCloudPrintConnector();
   void OnCloudPrintPrefsChanged();
