@@ -174,12 +174,13 @@ void NetworkingPrivateServiceClient::GetProperties(
   scoped_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
   std::string* error = new std::string;
 
+  base::DictionaryValue* properties_ptr = properties.get();
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&WiFiService::GetProperties,
                  base::Unretained(wifi_service_.get()),
                  guid,
-                 properties.get(),
+                 properties_ptr,
                  error),
       base::Bind(&NetworkingPrivateServiceClient::AfterGetProperties,
                  weak_factory_.GetWeakPtr(),
@@ -200,12 +201,13 @@ void NetworkingPrivateServiceClient::GetManagedProperties(
   scoped_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
   std::string* error = new std::string;
 
+  base::DictionaryValue* properties_ptr = properties.get();
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&WiFiService::GetManagedProperties,
                  base::Unretained(wifi_service_.get()),
                  guid,
-                 properties.get(),
+                 properties_ptr,
                  error),
       base::Bind(&NetworkingPrivateServiceClient::AfterGetProperties,
                  weak_factory_.GetWeakPtr(),
@@ -226,12 +228,13 @@ void NetworkingPrivateServiceClient::GetState(
   scoped_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
   std::string* error = new std::string;
 
+  base::DictionaryValue* properties_ptr = properties.get();
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&WiFiService::GetState,
                  base::Unretained(wifi_service_.get()),
                  guid,
-                 properties.get(),
+                 properties_ptr,
                  error),
       base::Bind(&NetworkingPrivateServiceClient::AfterGetProperties,
                  weak_factory_.GetWeakPtr(),
@@ -307,12 +310,13 @@ void NetworkingPrivateServiceClient::GetNetworks(
 
   // TODO(stevenjb/mef): Apply filters (configured, visible, limit).
 
+  base::ListValue* networks_ptr = networks.get();
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&WiFiService::GetVisibleNetworks,
                  base::Unretained(wifi_service_.get()),
                  network_type,
-                 networks.get(),
+                 networks_ptr,
                  false),
       base::Bind(&NetworkingPrivateServiceClient::AfterGetVisibleNetworks,
                  weak_factory_.GetWeakPtr(),
