@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_path_override.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/version.h"
 #include "base/win/registry.h"
@@ -603,6 +604,19 @@ TEST_F(InstallerStateTest, RemoveOldVersionDirs) {
 }
 
 TEST_F(InstallerStateTest, InitializeTwice) {
+  // Override these paths so that they can be found after the registry override
+  // manager is in place.
+  base::FilePath temp;
+  PathService::Get(base::DIR_PROGRAM_FILES, &temp);
+  base::ScopedPathOverride program_files_override(base::DIR_PROGRAM_FILES,
+                                                  temp);
+  PathService::Get(base::DIR_PROGRAM_FILESX86, &temp);
+  base::ScopedPathOverride program_filesx86_override(base::DIR_PROGRAM_FILESX86,
+                                                     temp);
+  registry_util::RegistryOverrideManager override_manager;
+  override_manager.OverrideRegistry(HKEY_CURRENT_USER, base::string16());
+  override_manager.OverrideRegistry(HKEY_LOCAL_MACHINE, base::string16());
+
   InstallationState machine_state;
   machine_state.Initialize();
 
