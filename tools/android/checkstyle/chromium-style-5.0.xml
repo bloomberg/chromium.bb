@@ -38,8 +38,8 @@
       <property name="allowMissingThrowsTags" value="true"/>
     </module>
     <module name="PackageName">
-      <property name="severity" value="warning"/>
-      <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]{1,})*$"/>
+      <property name="severity" value="error"/>
+      <property name="format" value="^[a-z]+(\.[a-z][a-z0-9_]{1,})*$"/>
     </module>
     <module name="TypeName">
       <property name="severity" value="warning"/>
