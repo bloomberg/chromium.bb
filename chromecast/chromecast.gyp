@@ -26,6 +26,8 @@
         'common/cast_resource_delegate.h',
         'common/chromecast_config.cc',
         'common/chromecast_config.h',
+        'common/chromecast_switches.cc',
+        'common/chromecast_switches.h',
         'common/pref_names.cc',
         'common/pref_names.h',
       ],

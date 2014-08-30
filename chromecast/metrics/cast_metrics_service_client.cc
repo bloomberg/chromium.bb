@@ -4,8 +4,10 @@
 
 #include "chromecast/metrics/cast_metrics_service_client.h"
 
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "chromecast/common/chromecast_config.h"
+#include "chromecast/common/chromecast_switches.h"
 #include "chromecast/metrics/platform_metrics_providers.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/metrics_provider.h"
@@ -81,10 +83,17 @@ CastMetricsServiceClient::CreateUploader(
     const std::string& server_url,
     const std::string& mime_type,
     const base::Callback<void(int)>& on_upload_complete) {
+  std::string uma_server_url(server_url);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kOverrideMetricsUploadUrl)) {
+    uma_server_url.assign(
+        command_line->GetSwitchValueASCII(switches::kOverrideMetricsUploadUrl));
+  }
+  DCHECK(!uma_server_url.empty());
   return scoped_ptr< ::metrics::MetricsLogUploader>(
       new ::metrics::NetMetricsLogUploader(
           request_context_,
-          server_url,
+          uma_server_url,
           mime_type,
           on_upload_complete));
 }
