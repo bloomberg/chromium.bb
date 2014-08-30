@@ -94,6 +94,7 @@ cr.define('gpu', function() {
         'panel_fitting': 'Panel Fitting',
         'rasterization': 'Rasterization',
         'threaded_rasterization': 'Threaded Rasterization',
+        'multiple_raster_threads': 'Multiple Raster Threads',
       };
 
       var statusMap =  {
@@ -136,7 +137,11 @@ cr.define('gpu', function() {
         'enabled_on': {
           'label': 'Enabled',
           'class': 'feature-green'
-        }
+        },
+        'enabled_force_on': {
+          'label': 'Force enabled',
+          'class': 'feature-green'
+        },
       };
 
       // GPU info, basic

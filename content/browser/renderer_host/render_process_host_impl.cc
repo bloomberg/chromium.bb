@@ -1020,8 +1020,12 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   if (IsDelegatedRendererEnabled())
     command_line->AppendSwitch(switches::kEnableDelegatedRenderer);
 
-  if (IsImplSidePaintingEnabled())
+  if (IsImplSidePaintingEnabled()) {
     command_line->AppendSwitch(switches::kEnableImplSidePainting);
+    command_line->AppendSwitchASCII(
+        switches::kNumRasterThreads,
+        base::IntToString(NumberOfRendererRasterThreads()));
+  }
 
   if (content::IsGpuRasterizationEnabled())
     command_line->AppendSwitch(switches::kEnableGpuRasterization);
@@ -1179,7 +1183,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kMemoryMetrics,
     switches::kNoReferrers,
     switches::kNoSandbox,
-    switches::kNumRasterThreads,
     switches::kPpapiInProcess,
     switches::kProfilerTiming,
     switches::kReduceSecurityForTesting,

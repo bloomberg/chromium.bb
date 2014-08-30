@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
+#include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -27,6 +28,10 @@ const char* kGpuCompositingFeatureName = "gpu_compositing";
 const char* kWebGLFeatureName = "webgl";
 const char* kRasterizationFeatureName = "rasterization";
 const char* kThreadedRasterizationFeatureName = "threaded_rasterization";
+const char* kMultipleRasterThreadsFeatureName = "multiple_raster_threads";
+
+const int kMinRasterThreads = 1;
+const int kMaxRasterThreads = 64;
 
 struct GpuFeatureInfo {
   std::string name;
@@ -142,8 +147,14 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
           "Threaded rasterization has not been enabled or"
           " is not supported by the current system.",
           false
-      }
-
+      },
+      {
+          kMultipleRasterThreadsFeatureName,
+          false,
+          NumberOfRendererRasterThreads() == 1,
+          "Raster is using a single thread.",
+          false
+      },
   };
   DCHECK(index < arraysize(kGpuFeatureInfo));
   *eof = (index == arraysize(kGpuFeatureInfo) - 1);
@@ -200,6 +211,36 @@ bool IsImplSidePaintingEnabled() {
   return true;
 }
 
+int NumberOfRendererRasterThreads() {
+  int num_raster_threads = 1;
+
+  int force_num_raster_threads = ForceNumberOfRendererRasterThreads();
+  if (force_num_raster_threads)
+    num_raster_threads = force_num_raster_threads;
+
+  return num_raster_threads;
+}
+
+int ForceNumberOfRendererRasterThreads() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+
+  if (!command_line.HasSwitch(switches::kNumRasterThreads))
+    return 0;
+  std::string string_value =
+      command_line.GetSwitchValueASCII(switches::kNumRasterThreads);
+  int force_num_raster_threads = 0;
+  if (base::StringToInt(string_value, &force_num_raster_threads) &&
+      force_num_raster_threads >= kMinRasterThreads &&
+      force_num_raster_threads <= kMaxRasterThreads) {
+    return force_num_raster_threads;
+  } else {
+    LOG(WARNING) << "Failed to parse switch " <<
+        switches::kNumRasterThreads  << ": " << string_value;
+    return 0;
+  }
+}
+
 bool IsGpuRasterizationEnabled() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -252,9 +293,9 @@ base::Value* GetFeatureStatus() {
     } else if (gpu_feature_info.blocked ||
                gpu_access_blocked) {
       status = "unavailable";
-      if (gpu_feature_info.fallback_to_software) {
+      if (gpu_feature_info.fallback_to_software)
         status += "_software";
-      } else
+      else
         status += "_off";
     } else {
       status = "enabled";
@@ -265,7 +306,12 @@ base::Value* GetFeatureStatus() {
         if (IsForceGpuRasterizationEnabled())
           status += "_force";
       }
-      if (gpu_feature_info.name == kThreadedRasterizationFeatureName)
+      if (gpu_feature_info.name == kMultipleRasterThreadsFeatureName) {
+        if (ForceNumberOfRendererRasterThreads() > 0)
+          status += "_force";
+      }
+      if (gpu_feature_info.name == kThreadedRasterizationFeatureName ||
+          gpu_feature_info.name == kMultipleRasterThreadsFeatureName)
         status += "_on";
     }
     if (gpu_feature_info.name == kWebGLFeatureName &&

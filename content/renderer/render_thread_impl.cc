@@ -173,8 +173,6 @@ const int64 kInitialIdleHandlerDelayMs = 1000;
 const int64 kShortIdleHandlerDelayMs = 1000;
 const int64 kLongIdleHandlerDelayMs = 30*1000;
 const int kIdleCPUUsageThresholdInPercents = 3;
-const int kMinRasterThreads = 1;
-const int kMaxRasterThreads = 64;
 
 // Maximum allocation size allowed for image scaling filters that
 // require pre-scaling. Skia will fallback to a filter that doesn't
@@ -556,18 +554,15 @@ void RenderThreadImpl::Init() {
   // it doesn't have to be the same thread RenderThreadImpl is created on.
   allocate_gpu_memory_buffer_thread_checker_.DetachFromThread();
 
-  if (command_line.HasSwitch(switches::kNumRasterThreads)) {
-    int num_raster_threads;
+  if (is_impl_side_painting_enabled_) {
+    int num_raster_threads = 0;
     std::string string_value =
         command_line.GetSwitchValueASCII(switches::kNumRasterThreads);
-    if (base::StringToInt(string_value, &num_raster_threads) &&
-        num_raster_threads >= kMinRasterThreads &&
-        num_raster_threads <= kMaxRasterThreads) {
-      cc::RasterWorkerPool::SetNumRasterThreads(num_raster_threads);
-    } else {
-      LOG(WARNING) << "Failed to parse switch " <<
-                      switches::kNumRasterThreads  << ": " << string_value;
-    }
+    bool parsed_num_raster_threads =
+        base::StringToInt(string_value, &num_raster_threads);
+    DCHECK(parsed_num_raster_threads) << string_value;
+    DCHECK_GT(num_raster_threads, 0);
+    cc::RasterWorkerPool::SetNumRasterThreads(num_raster_threads);
   }
 
   service_registry()->AddService<RenderFrameSetup>(
