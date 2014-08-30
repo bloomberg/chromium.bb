@@ -103,11 +103,11 @@ class CdmWrapper {
   virtual std::string LookupWebSessionId(uint32_t session_id) = 0;
   virtual void DropWebSessionId(std::string web_session_id) = 0;
 
-  // Helper functions for the cdm::Host_4 and cdm::Host_5 methods.
+  // Helper functions for the cdm::Host_4 methods.
   // CDMs using cdm::Host_6 will call OnSessionUsableKeys() as necessary when
   // resolving LoadSession() and UpdateSession(). This needs to be simulated
   // for the older CDMs. These must not be called for cdm::Host_6 and later.
-  // TODO(jrummell): Remove these once Host_4 and Host_5 interfaces are removed.
+  // TODO(jrummell): Remove these once Host_4 interface is removed.
 
   // Query whether a SessionUsableKeys event is necessary for the specified
   // |promise_id|. Returns true if needed and |web_session_id| is updated,
@@ -122,16 +122,16 @@ class CdmWrapper {
       const char* web_session_id,
       uint32_t web_session_id_size) = 0;
 
-  // cdm::Host_6 introduces InputBuffer_2 (aka InputBuffer). cdm::Host_4 and
-  // cdm::Host_5 methods still use InputBuffer_1, so this helper function
+  // cdm::Host_6 introduces InputBuffer_2 (aka InputBuffer). cdm::Host_4
+  // methods still use InputBuffer_1, so this helper function
   // converts InputBuffer_2 to InputBuffer_1.
-  // TODO(jrummell): Remove these once Host_4 and Host_5 interfaces are removed.
+  // TODO(jrummell): Remove these once Host_4 interfaces is removed.
   virtual void ConvertInputBuffer(const cdm::InputBuffer& v2,
                                   cdm::InputBuffer_1* v1) = 0;
 
   // Prior to CDM_6, |init_data_type| was a content type. This helper convererts
   // an |init_data_type| to a content type.
-  // TODO(sandersd): Remove once Host_4 and Host_5 interfaces are removed.
+  // TODO(sandersd): Remove once Host_4 interface is removed.
   virtual std::string ConvertInitDataTypeToContentType(
       const std::string& init_data_type) const = 0;
 
@@ -511,121 +511,6 @@ CdmWrapperImpl<cdm::ContentDecryptionModule_4>::DecryptAndDecodeSamples(
   return cdm_->DecryptAndDecodeSamples(buffer, audio_frames);
 }
 
-// Overrides for the cdm::Host_5 methods.
-// TODO(jrummell): Remove these once Host_5 interface is removed.
-
-template <>
-void CdmWrapperImpl<cdm::ContentDecryptionModule_5>::CreateSession(
-    uint32_t promise_id,
-    const char* init_data_type,
-    uint32_t init_data_type_size,
-    const uint8_t* init_data,
-    uint32_t init_data_size,
-    cdm::SessionType session_type) {
-  std::string converted_init_data_type = ConvertInitDataTypeToContentType(
-      std::string(init_data_type, init_data_type_size));
-  // TODO(jrummell): Remove this code once |session_type| is passed through
-  // Pepper. When removing, add the header back in for CDM4.
-  PP_DCHECK(session_type == cdm::kTemporary);
-  const char kPersistentSessionHeader[] = "PERSISTENT|";
-  if (HasHeader(init_data, init_data_size, kPersistentSessionHeader)) {
-    cdm_->CreateSession(promise_id,
-                        converted_init_data_type.data(),
-                        converted_init_data_type.length(),
-                        init_data + strlen(kPersistentSessionHeader),
-                        init_data_size - strlen(kPersistentSessionHeader),
-                        cdm::kPersistent);
-    return;
-  }
-
-  cdm_->CreateSession(promise_id,
-                      converted_init_data_type.data(),
-                      converted_init_data_type.length(),
-                      init_data,
-                      init_data_size,
-                      session_type);
-}
-
-template <>
-void CdmWrapperImpl<cdm::ContentDecryptionModule_5>::LoadSession(
-    uint32_t promise_id,
-    const char* web_session_id,
-    uint32_t web_session_id_size) {
-  // As CDM_5 doesn't support OnSessionUsableKeysChange(), make sure to generate
-  // one when the promise is resolved. This may be overly aggressive.
-  SetSessionUsableKeysEventNeeded(
-      promise_id, web_session_id, web_session_id_size);
-  cdm_->LoadSession(promise_id, web_session_id, web_session_id_size);
-}
-
-template <>
-void CdmWrapperImpl<cdm::ContentDecryptionModule_5>::UpdateSession(
-    uint32_t promise_id,
-    const char* web_session_id,
-    uint32_t web_session_id_size,
-    const uint8_t* response,
-    uint32_t response_size) {
-  // As CDM_5 doesn't support OnSessionUsableKeysChange(), make sure to generate
-  // one when the promise is resolved. This may be overly aggressive.
-  SetSessionUsableKeysEventNeeded(
-      promise_id, web_session_id, web_session_id_size);
-  cdm_->UpdateSession(
-      promise_id, web_session_id, web_session_id_size, response, response_size);
-}
-
-template <>
-bool CdmWrapperImpl<cdm::ContentDecryptionModule_5>::CloseSession(
-    uint32_t promise_id,
-    const char* web_session_id,
-    uint32_t web_session_id_size) {
-  return false;
-}
-
-template <>
-void CdmWrapperImpl<cdm::ContentDecryptionModule_5>::RemoveSession(
-    uint32_t promise_id,
-    const char* web_session_id,
-    uint32_t web_session_id_size) {
-  cdm_->ReleaseSession(promise_id, web_session_id, web_session_id_size);
-}
-
-template <>
-bool CdmWrapperImpl<cdm::ContentDecryptionModule_5>::GetUsableKeyIds(
-    uint32_t promise_id,
-    const char* web_session_id,
-    uint32_t web_session_id_size) {
-  return false;
-}
-
-template <>
-cdm::Status CdmWrapperImpl<cdm::ContentDecryptionModule_5>::Decrypt(
-    const cdm::InputBuffer& encrypted_buffer,
-    cdm::DecryptedBlock* decrypted_buffer) {
-  cdm::InputBuffer_1 buffer;
-  ConvertInputBuffer(encrypted_buffer, &buffer);
-  return cdm_->Decrypt(buffer, decrypted_buffer);
-}
-
-template <>
-cdm::Status
-CdmWrapperImpl<cdm::ContentDecryptionModule_5>::DecryptAndDecodeFrame(
-    const cdm::InputBuffer& encrypted_buffer,
-    cdm::VideoFrame* video_frame) {
-  cdm::InputBuffer_1 buffer;
-  ConvertInputBuffer(encrypted_buffer, &buffer);
-  return cdm_->DecryptAndDecodeFrame(buffer, video_frame);
-}
-
-template <>
-cdm::Status
-CdmWrapperImpl<cdm::ContentDecryptionModule_5>::DecryptAndDecodeSamples(
-    const cdm::InputBuffer& encrypted_buffer,
-    cdm::AudioFrames* audio_frames) {
-  cdm::InputBuffer_1 buffer;
-  ConvertInputBuffer(encrypted_buffer, &buffer);
-  return cdm_->DecryptAndDecodeSamples(buffer, audio_frames);
-}
-
 CdmWrapper* CdmWrapper::Create(const char* key_system,
                                uint32_t key_system_size,
                                GetCdmHostFunc get_cdm_host_func,
@@ -656,11 +541,6 @@ CdmWrapper* CdmWrapper::Create(const char* key_system,
 
   // If |cdm_wrapper| is NULL, try to create the CDM using older supported
   // versions of the CDM interface.
-  cdm_wrapper = CdmWrapperImpl<cdm::ContentDecryptionModule_5>::Create(
-      key_system, key_system_size, get_cdm_host_func, user_data);
-  if (cdm_wrapper)
-    return cdm_wrapper;
-
   cdm_wrapper = CdmWrapperImpl<cdm::ContentDecryptionModule_4>::Create(
       key_system, key_system_size, get_cdm_host_func, user_data);
   return cdm_wrapper;

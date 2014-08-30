@@ -387,7 +387,7 @@ void CdmAdapter::CloseSession(uint32_t promise_id,
                               const std::string& web_session_id) {
   if (!cdm_->CloseSession(
           promise_id, web_session_id.data(), web_session_id.length())) {
-    // CDM_4 and CDM_5 don't support this method, so reject the promise.
+    // CDM_4 doesn't support this method, so reject the promise.
     RejectPromise(promise_id, cdm::kNotSupportedError, 0, "Not implemented.");
   }
 }
@@ -402,7 +402,7 @@ void CdmAdapter::GetUsableKeyIds(uint32_t promise_id,
                                  const std::string& web_session_id) {
   if (!cdm_->GetUsableKeyIds(
           promise_id, web_session_id.data(), web_session_id.length())) {
-    // CDM_4 and CDM_5 don't support this method, so reject the promise.
+    // CDM_4 doesn't support this method, so reject the promise.
     RejectPromise(promise_id, cdm::kNotSupportedError, 0, "Not implemented.");
   }
 }
@@ -604,7 +604,7 @@ void CdmAdapter::TimerExpired(int32_t result, void* context) {
 // cdm::Host_4 methods
 
 double CdmAdapter::GetCurrentWallTimeInSeconds() {
-  return GetCurrentTime();
+  return GetCurrentWallTime();
 }
 
 void CdmAdapter::OnSessionCreated(uint32_t session_id,
@@ -635,7 +635,8 @@ void CdmAdapter::OnSessionReady(uint32_t session_id) {
     OnResolvePromise(promise_id);
   } else {
     std::string web_session_id = cdm_->LookupWebSessionId(session_id);
-    OnSessionReady(web_session_id.data(), web_session_id.length());
+    PostOnMain(callback_factory_.NewCallback(
+        &CdmAdapter::SendSessionReadyInternal, web_session_id));
   }
 }
 
@@ -685,25 +686,10 @@ void CdmAdapter::OnSessionError(uint32_t session_id,
   }
 }
 
-// cdm::Host_5 and cdm::Host_6 methods
-
-cdm::Time CdmAdapter::GetCurrentTime() {
-  return GetCurrentWallTime();
-}
+// cdm::Host_6 methods
 
 cdm::Time CdmAdapter::GetCurrentWallTime() {
   return pp::Module::Get()->core()->GetTime();
-}
-
-void CdmAdapter::OnResolvePromise(uint32_t promise_id) {
-  PostOnMain(callback_factory_.NewCallback(
-      &CdmAdapter::SendPromiseResolvedInternal, promise_id));
-
-  // CDM_5 doesn't support OnSessionKeysChange(), so simulate one if requested.
-  // Passing "true" which may result in false positives for retrying.
-  std::string session_id;
-  if (cdm_->SessionUsableKeysEventNeeded(promise_id, &session_id))
-    OnSessionKeysChange(session_id.data(), session_id.length(), true);
 }
 
 void CdmAdapter::OnResolveNewSessionPromise(uint32_t promise_id,
@@ -713,12 +699,11 @@ void CdmAdapter::OnResolveNewSessionPromise(uint32_t promise_id,
       &CdmAdapter::SendPromiseResolvedWithSessionInternal,
       promise_id,
       std::string(web_session_id, web_session_id_length)));
+}
 
-  // CDM_5 doesn't support OnSessionKeysChange(), so simulate one if requested.
-  // Passing "true" which may result in false positives for retrying.
-  std::string session_id;
-  if (cdm_->SessionUsableKeysEventNeeded(promise_id, &session_id))
-    OnSessionKeysChange(web_session_id, web_session_id_length, true);
+void CdmAdapter::OnResolvePromise(uint32_t promise_id) {
+  PostOnMain(callback_factory_.NewCallback(
+      &CdmAdapter::SendPromiseResolvedInternal, promise_id));
 }
 
 void CdmAdapter::OnResolveKeyIdsPromise(uint32_t promise_id,
@@ -770,13 +755,6 @@ void CdmAdapter::OnSessionMessage(const char* web_session_id,
       std::string(destination_url, destination_url_length)));
 }
 
-void CdmAdapter::OnSessionKeysChange(const char* web_session_id,
-                                     uint32_t web_session_id_length,
-                                     bool has_additional_usable_key) {
-  OnSessionUsableKeysChange(
-      web_session_id, web_session_id_length, has_additional_usable_key);
-}
-
 void CdmAdapter::OnSessionUsableKeysChange(const char* web_session_id,
                                            uint32_t web_session_id_length,
                                            bool has_additional_usable_key) {
@@ -793,13 +771,6 @@ void CdmAdapter::OnExpirationChange(const char* web_session_id,
       &CdmAdapter::SendExpirationChangeInternal,
       std::string(web_session_id, web_session_id_length),
       new_expiry_time));
-}
-
-void CdmAdapter::OnSessionReady(const char* web_session_id,
-                                uint32_t web_session_id_length) {
-  PostOnMain(callback_factory_.NewCallback(
-      &CdmAdapter::SendSessionReadyInternal,
-      std::string(web_session_id, web_session_id_length)));
 }
 
 void CdmAdapter::OnSessionClosed(const char* web_session_id,
@@ -1312,7 +1283,7 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
       // Current version is supported.
       IsSupportedCdmHostVersion(cdm::Host_6::kVersion) &&
       // Include all previous supported versions (if any) here.
-      IsSupportedCdmHostVersion(cdm::Host_5::kVersion) &&
+      // Host_5 is not supported.
       IsSupportedCdmHostVersion(cdm::Host_4::kVersion) &&
       // One older than the oldest supported version is not supported.
       !IsSupportedCdmHostVersion(cdm::Host_4::kVersion - 1));
@@ -1323,8 +1294,6 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
   switch (host_interface_version) {
     case cdm::Host_4::kVersion:
       return static_cast<cdm::Host_4*>(cdm_adapter);
-    case cdm::Host_5::kVersion:
-      return static_cast<cdm::Host_5*>(cdm_adapter);
     case cdm::Host_6::kVersion:
       return static_cast<cdm::Host_6*>(cdm_adapter);
     default:
