@@ -25,6 +25,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "base/command_line.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/capture_client.h"
@@ -266,17 +267,27 @@ void DisplayController::Shutdown() {
   virtual_keyboard_window_controller_.reset();
 
   Shell::GetScreen()->RemoveObserver(this);
-  // Delete all root window controllers, which deletes root window
-  // from the last so that the primary root window gets deleted last.
-  for (WindowTreeHostMap::const_reverse_iterator it =
-           window_tree_hosts_.rbegin();
-       it != window_tree_hosts_.rend();
-       ++it) {
-    RootWindowController* controller =
-        GetRootWindowController(GetWindow(it->second));
-    DCHECK(controller);
-    delete controller;
+
+  int64 primary_id = Shell::GetScreen()->GetPrimaryDisplay().id();
+
+  // Delete non primary root window controllers first, then
+  // delete the primary root window controller.
+  aura::Window::Windows root_windows = DisplayController::GetAllRootWindows();
+  std::vector<RootWindowController*> to_delete;
+  RootWindowController* primary_rwc = NULL;
+  for (aura::Window::Windows::iterator iter = root_windows.begin();
+       iter != root_windows.end();
+       ++iter) {
+    RootWindowController* rwc = GetRootWindowController(*iter);
+    if (GetRootWindowSettings(*iter)->display_id == primary_id)
+      primary_rwc = rwc;
+    else
+      to_delete.push_back(rwc);
   }
+  CHECK(primary_rwc);
+
+  STLDeleteElements(&to_delete);
+  delete primary_rwc;
 }
 
 void DisplayController::CreatePrimaryHost(
@@ -325,7 +336,7 @@ aura::Window* DisplayController::GetPrimaryRootWindow() {
 }
 
 aura::Window* DisplayController::GetRootWindowForDisplayId(int64 id) {
-  DCHECK_EQ(1u, window_tree_hosts_.count(id));
+  CHECK_EQ(1u, window_tree_hosts_.count(id));
   AshWindowTreeHost* host = window_tree_hosts_[id];
   CHECK(host);
   return GetWindow(host);
