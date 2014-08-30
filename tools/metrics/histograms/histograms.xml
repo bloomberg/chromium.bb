@@ -10949,6 +10949,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Media.Android.IsHttpLiveStreamingMedia" enum="MediaUrlType">
+  <owner>qinmin@chromium.org</owner>
+  <summary>
+    Android: Records whether a regular media url is HLS (http live streaming)
+    media or not.
+  </summary>
+</histogram>
+
 <histogram name="Media.AudioBitsPerChannel">
   <owner>dalecurtis@chromium.org</owner>
   <summary>Bits per channel of HTML5 audio sample data.</summary>
@@ -45079,6 +45087,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Explicitly Cancelled"/>
   <int value="1" label="Stream Not Generated"/>
   <int value="2" label="Pending Media Tracks"/>
+</enum>
+
+<enum name="MediaUrlType" type="int">
+  <int value="0" label="Non Http Live Stream Type"/>
+  <int value="1" label="Http Live Stream Type"/>
 </enum>
 
 <enum name="MetaTagTypeEnum" type="int">

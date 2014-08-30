@@ -353,6 +353,10 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // URL of the media file to be fetched.
   GURL url_;
 
+  // URL of the media file after |media_info_loader_| resolves all the
+  // redirections.
+  GURL redirected_url_;
+
   // Media duration.
   base::TimeDelta duration_;
 

@@ -257,6 +257,8 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
 
   UpdateNetworkState(WebMediaPlayer::NetworkStateLoading);
   UpdateReadyState(WebMediaPlayer::ReadyStateHaveNothing);
+  UMA_HISTOGRAM_BOOLEAN(
+      "Media.MSE.Playback", player_type_ == MEDIA_PLAYER_TYPE_MEDIA_SOURCE);
 }
 
 void WebMediaPlayerAndroid::DidLoadMediaInfo(
@@ -271,7 +273,7 @@ void WebMediaPlayerAndroid::DidLoadMediaInfo(
     UpdateNetworkState(WebMediaPlayer::NetworkStateNetworkError);
     return;
   }
-
+  redirected_url_ = redirected_url;
   InitializePlayer(
       redirected_url, first_party_for_cookies, allow_stored_credentials, 0);
 
@@ -991,6 +993,10 @@ void WebMediaPlayerAndroid::InitializePlayer(
     const GURL& first_party_for_cookies,
     bool allow_stored_credentials,
     int demuxer_client_id) {
+  if (player_type_ == MEDIA_PLAYER_TYPE_URL) {
+    UMA_HISTOGRAM_BOOLEAN("Media.Android.IsHttpLiveStreamingMedia",
+                          IsHLSStream());
+  }
   allow_stored_credentials_ = allow_stored_credentials;
   player_manager_->Initialize(
       player_type_, player_id_, url, first_party_for_cookies, demuxer_client_id,
@@ -1741,7 +1747,8 @@ bool WebMediaPlayerAndroid::canEnterFullscreen() const {
 
 bool WebMediaPlayerAndroid::IsHLSStream() const {
   std::string mime;
-  if (!net::GetMimeTypeFromFile(base::FilePath(url_.path()), &mime))
+  GURL url = redirected_url_.is_empty() ? url_ : redirected_url_;
+  if (!net::GetMimeTypeFromFile(base::FilePath(url.path()), &mime))
     return false;
   return !mime.compare("application/x-mpegurl");
 }
