@@ -1067,7 +1067,7 @@ int RenderFrameHostManager::CreateRenderFrame(SiteInstance* instance,
   // remove it from the list of proxy hosts below if it will be active.
   RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(instance);
 
-  if (proxy) {
+  if (proxy && proxy->render_frame_host()) {
     routing_id = proxy->GetRenderViewHost()->GetRoutingID();
     // Delete the existing RenderFrameProxyHost, but reuse the RenderFrameHost.
     // Prevent the process from exiting while we're trying to use it.
@@ -1108,8 +1108,9 @@ int RenderFrameHostManager::CreateRenderFrame(SiteInstance* instance,
       proxy = new RenderFrameProxyHost(
           new_render_frame_host->GetSiteInstance(), frame_tree_node_);
       proxy_hosts_[instance->GetId()] = proxy;
-      proxy->TakeFrameHostOwnership(new_render_frame_host.Pass());
       proxy_routing_id = proxy->GetRoutingID();
+      if (frame_tree_node_->IsMainFrame())
+        proxy->TakeFrameHostOwnership(new_render_frame_host.Pass());
     }
 
     bool success = InitRenderView(render_view_host,
