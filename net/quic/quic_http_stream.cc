@@ -103,11 +103,14 @@ void QuicHttpStream::OnStreamReady(int rv) {
 int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
                                 HttpResponseInfo* response,
                                 const CompletionCallback& callback) {
-  CHECK(stream_);
   CHECK(!request_body_stream_);
   CHECK(!response_info_);
   CHECK(!callback.is_null());
   CHECK(response);
+
+   if (!stream_) {
+    return ERR_CONNECTION_CLOSED;
+  }
 
   QuicPriority priority = ConvertRequestPriorityToQuicPriority(priority_);
   stream_->set_priority(priority);
@@ -353,6 +356,7 @@ void QuicHttpStream::OnCryptoHandshakeConfirmed() {
 }
 
 void QuicHttpStream::OnSessionClosed(int error) {
+  Close(false);
   session_error_ = error;
   session_.reset();
 }

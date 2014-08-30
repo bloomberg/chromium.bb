@@ -440,6 +440,24 @@ TEST_P(QuicHttpStreamTest, GetRequestLargeResponse) {
   EXPECT_TRUE(AtEof());
 }
 
+// Regression test for http://crbug.com/409101
+TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendRequest) {
+  SetRequest("GET", "/", DEFAULT_PRIORITY);
+  Initialize();
+
+  request_.method = "GET";
+  request_.url = GURL("http://www.google.com/");
+
+  EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+                                          net_log_, callback_.callback()));
+
+  session_->connection()->CloseConnection(QUIC_NO_ERROR, true);
+
+  EXPECT_EQ(ERR_CONNECTION_CLOSED,
+            stream_->SendRequest(headers_, &response_,
+                                 callback_.callback()));
+}
+
 TEST_P(QuicHttpStreamTest, SendPostRequest) {
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   AddWrite(ConstructRequestHeadersPacket(1, !kFin));
