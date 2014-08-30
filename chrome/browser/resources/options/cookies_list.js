@@ -173,12 +173,12 @@ cr.define('options', function() {
         return;
       this.expanded_ = expanded;
       if (expanded) {
+        this.classList.add('show-items');
         var oldExpanded = this.list.expandedItem;
         this.list.expandedItem = this;
         this.updateItems_();
         if (oldExpanded)
           oldExpanded.expanded = false;
-        this.classList.add('show-items');
       } else {
         if (this.list.expandedItem == this) {
           this.list.expandedItem = null;
@@ -535,7 +535,6 @@ cr.define('options', function() {
       div.className = 'cookie-item';
       // Help out screen readers and such: this is a clickable thing.
       div.setAttribute('role', 'button');
-      div.tabIndex = 0;
       div.textContent = text;
       var apps = this.data.appsProtectingThis;
       if (apps)

@@ -116,6 +116,7 @@ list.cookie-list > .deletable-item[selected] .cookie-data {
   -webkit-margin-start: 14em;
   -webkit-padding-start: 7px;
   -webkit-transition: 150ms ease-in-out;
+  display: none;
   height: 0;
   opacity: 0;
   /* Make the cookie items wrap correctly. */
@@ -129,6 +130,7 @@ list.cookie-list > .deletable-item[selected] .cookie-data {
 }
 
 .show-items .cookie-items {
+  display: block;
   opacity: 1;
 }
 
