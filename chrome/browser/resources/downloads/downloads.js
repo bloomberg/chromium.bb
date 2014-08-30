@@ -101,6 +101,13 @@ function Downloads() {
   // Icon load request queue.
   this.iconLoadQueue_ = [];
   this.isIconLoading_ = false;
+
+  this.progressForeground1_ = new Image();
+  this.progressForeground1_.src =
+    'chrome://theme/IDR_DOWNLOAD_PROGRESS_FOREGROUND_32@1x';
+  this.progressForeground2_ = new Image();
+  this.progressForeground2_.src =
+    'chrome://theme/IDR_DOWNLOAD_PROGRESS_FOREGROUND_32@2x';
 }
 
 /**
@@ -486,15 +493,6 @@ computeDownloadProgress();
   window.matchMedia(media).addListener(computeDownloadProgress);
 });
 
-var ImageCache = {};
-function getCachedImage(src) {
-  if (!ImageCache[src]) {
-    ImageCache[src] = new Image();
-    ImageCache[src].src = src;
-  }
-  return ImageCache[src];
-}
-
 /**
  * Updates the download to reflect new data.
  * @param {BackendDownloadObject} download A backend download object
@@ -559,9 +557,8 @@ Download.prototype.update = function(download) {
       this.nodeProgressForeground_.width = Download.Progress.width;
       this.nodeProgressForeground_.height = Download.Progress.height;
 
-      var foregroundImage = getCachedImage(
-          'chrome://theme/IDR_DOWNLOAD_PROGRESS_FOREGROUND_32@' +
-          window.devicePixelRatio + 'x');
+      var foregroundImage = (window.devicePixelRatio < 2) ?
+        downloads.progressForeground1_ : downloads.progressForeground2_;
 
       // Draw a pie-slice for the progress.
       this.canvasProgress_.globalCompositeOperation = 'copy';
