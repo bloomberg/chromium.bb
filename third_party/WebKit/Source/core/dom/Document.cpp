@@ -710,7 +710,7 @@ void Document::setCompatibilityMode(CompatibilityMode mode)
     selectorQueryCache().invalidate();
     if (inQuirksMode() != wasInQuirksMode) {
         // All injected stylesheets have to reparse using the different mode.
-        m_styleEngine->invalidateInjectedStyleSheetCache();
+        m_styleEngine->compatibilityModeChanged();
     }
 }
 

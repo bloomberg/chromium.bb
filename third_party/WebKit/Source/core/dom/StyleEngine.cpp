@@ -231,6 +231,12 @@ void StyleEngine::invalidateInjectedStyleSheetCache()
     document().styleResolverChanged();
 }
 
+void StyleEngine::compatibilityModeChanged()
+{
+    if (!m_injectedAuthorStyleSheets.isEmpty())
+        invalidateInjectedStyleSheetCache();
+}
+
 void StyleEngine::addAuthorSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> authorSheet)
 {
     m_authorStyleSheets.append(CSSStyleSheet::create(authorSheet, m_document));
