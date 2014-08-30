@@ -177,6 +177,7 @@
         'cast_version_header',
         'chromecast_locales.gyp:chromecast_locales_pak',
         'chromecast_locales.gyp:chromecast_settings',
+        'media/media.gyp:cast_media',
         '../components/components.gyp:component_metrics_proto',
         '../content/content.gyp:content',
         '../content/content.gyp:content_app_browser',
@@ -262,6 +263,13 @@
             '../build/util/version.gypi',
           ],
         },
+      ],
+    },
+    {
+      'target_name': 'cast_tests',
+      'type': 'none',
+      'dependencies': [
+        'media/media.gyp:cast_media_unittests',
       ],
     },
   ],  # end of targets
