@@ -37,14 +37,12 @@
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
+
 class WebData;
 class WebSocketStreamError;
 class WebSocketStreamHandle;
-}
 
-namespace blink {
-
-class PLATFORM_EXPORT SocketStreamHandleInternal : public GarbageCollectedFinalized<SocketStreamHandleInternal>, public blink::WebSocketStreamHandleClient {
+class PLATFORM_EXPORT SocketStreamHandleInternal : public GarbageCollectedFinalized<SocketStreamHandleInternal>, public WebSocketStreamHandleClient {
     WTF_MAKE_NONCOPYABLE(SocketStreamHandleInternal);
 public:
     static SocketStreamHandleInternal* create(SocketStreamHandle* handle)
@@ -57,13 +55,13 @@ public:
     int send(const char*, int);
     void close();
 
-    virtual void didOpenStream(blink::WebSocketStreamHandle*, int);
-    virtual void didSendData(blink::WebSocketStreamHandle*, int);
-    virtual void didReceiveData(blink::WebSocketStreamHandle*, const blink::WebData&);
-    virtual void didClose(blink::WebSocketStreamHandle*);
-    virtual void didFail(blink::WebSocketStreamHandle*, const blink::WebSocketStreamError&);
+    virtual void didOpenStream(WebSocketStreamHandle*, int);
+    virtual void didSendData(WebSocketStreamHandle*, int);
+    virtual void didReceiveData(WebSocketStreamHandle*, const WebData&);
+    virtual void didClose(WebSocketStreamHandle*);
+    virtual void didFail(WebSocketStreamHandle*, const WebSocketStreamError&);
 
-    static blink::WebSocketStreamHandle* toWebSocketStreamHandle(SocketStreamHandle* handle)
+    static WebSocketStreamHandle* toWebSocketStreamHandle(SocketStreamHandle* handle)
     {
         if (handle && handle->m_internal)
             return handle->m_internal->m_socket.get();
@@ -76,7 +74,7 @@ private:
     explicit SocketStreamHandleInternal(SocketStreamHandle*);
 
     Member<SocketStreamHandle> m_handle;
-    OwnPtr<blink::WebSocketStreamHandle> m_socket;
+    OwnPtr<WebSocketStreamHandle> m_socket;
     int m_maxPendingSendAllowed;
     int m_pendingAmountSent;
 };

@@ -40,13 +40,10 @@
 #include "wtf/text/WTFString.h"
 
 namespace blink {
-class WebAudioSourceProvider;
-}
-
-namespace blink {
 
 class MediaStreamDescriptor;
 class MediaStreamSource;
+class WebAudioSourceProvider;
 
 class PLATFORM_EXPORT MediaStreamComponent : public RefCounted<MediaStreamComponent> {
 public:
@@ -67,7 +64,7 @@ public:
 
 #if ENABLE(WEB_AUDIO)
     AudioSourceProvider* audioSourceProvider() { return &m_sourceProvider; }
-    void setSourceProvider(blink::WebAudioSourceProvider* provider) { m_sourceProvider.wrap(provider); }
+    void setSourceProvider(WebAudioSourceProvider* provider) { m_sourceProvider.wrap(provider); }
 #endif // ENABLE(WEB_AUDIO)
 
     ExtraData* extraData() const { return m_extraData.get(); }
@@ -90,13 +87,13 @@ private:
         virtual ~AudioSourceProviderImpl() { }
 
         // Wraps the given blink::WebAudioSourceProvider to blink::AudioSourceProvider.
-        void wrap(blink::WebAudioSourceProvider*);
+        void wrap(WebAudioSourceProvider*);
 
         // blink::AudioSourceProvider
         virtual void provideInput(blink::AudioBus*, size_t framesToProcess) OVERRIDE;
 
     private:
-        blink::WebAudioSourceProvider* m_webAudioSourceProvider;
+        WebAudioSourceProvider* m_webAudioSourceProvider;
         Mutex m_provideInputLock;
     };
 

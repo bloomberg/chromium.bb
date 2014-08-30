@@ -13,14 +13,12 @@
 #include "wtf/ThreadingPrimitives.h"
 
 namespace blink {
-class WebThread;
-}
-
-namespace blink {
 
 // The scheduler is an opinionated gateway for arranging work to be run on the
 // main thread. It decides which tasks get priority over others based on a
 // scheduling policy and the overall system state.
+class WebThread;
+
 class PLATFORM_EXPORT Scheduler {
     WTF_MAKE_NONCOPYABLE(Scheduler);
 public:

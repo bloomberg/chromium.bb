@@ -32,10 +32,8 @@
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
-class WebSourceInfo;
-}
 
-namespace blink {
+class WebSourceInfo;
 
 class MediaStreamTrackSourcesRequest : public GarbageCollectedFinalized<MediaStreamTrackSourcesRequest> {
 public:
@@ -47,7 +45,7 @@ public:
     virtual ~MediaStreamTrackSourcesRequest() { }
 
     virtual String origin() = 0;
-    virtual void requestSucceeded(const blink::WebVector<blink::WebSourceInfo>&) = 0;
+    virtual void requestSucceeded(const blink::WebVector<WebSourceInfo>&) = 0;
 
     ExtraData* extraData() const { return m_extraData.get(); }
     void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = extraData; }

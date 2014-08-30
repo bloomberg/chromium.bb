@@ -38,25 +38,23 @@
 #include "wtf/ThreadingPrimitives.h"
 
 namespace blink {
-class WebAudioSourceProvider;
-}
 
-namespace blink {
+class WebAudioSourceProvider;
 
 class MediaStreamWebAudioSource : public AudioSourceProvider {
     WTF_MAKE_NONCOPYABLE(MediaStreamWebAudioSource);
 public:
-    static PassOwnPtr<MediaStreamWebAudioSource> create(PassOwnPtr<blink::WebAudioSourceProvider> provider) { return adoptPtr(new MediaStreamWebAudioSource(provider)); }
+    static PassOwnPtr<MediaStreamWebAudioSource> create(PassOwnPtr<WebAudioSourceProvider> provider) { return adoptPtr(new MediaStreamWebAudioSource(provider)); }
 
     virtual ~MediaStreamWebAudioSource();
 
 private:
-    explicit MediaStreamWebAudioSource(PassOwnPtr<blink::WebAudioSourceProvider>);
+    explicit MediaStreamWebAudioSource(PassOwnPtr<WebAudioSourceProvider>);
 
     // blink::AudioSourceProvider implementation.
     virtual void provideInput(blink::AudioBus*, size_t framesToProcess) OVERRIDE;
 
-    OwnPtr<blink::WebAudioSourceProvider> m_webAudioSourceProvider;
+    OwnPtr<WebAudioSourceProvider> m_webAudioSourceProvider;
 };
 
 } // namespace blink

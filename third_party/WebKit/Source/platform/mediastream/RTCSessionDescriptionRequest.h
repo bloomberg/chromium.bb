@@ -37,9 +37,6 @@
 
 namespace blink {
 class WebRTCSessionDescription;
-}
-
-namespace blink {
 
 class RTCSessionDescriptionRequest : public RefCounted<RTCSessionDescriptionRequest> {
 public:
@@ -50,7 +47,7 @@ public:
 
     virtual ~RTCSessionDescriptionRequest() { }
 
-    virtual void requestSucceeded(const blink::WebRTCSessionDescription&) = 0;
+    virtual void requestSucceeded(const WebRTCSessionDescription&) = 0;
     virtual void requestFailed(const String& error) = 0;
 
     ExtraData* extraData() const { return m_extraData.get(); }
