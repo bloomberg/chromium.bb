@@ -642,6 +642,8 @@ void Scheduler::ProcessScheduledActions() {
         client_->ScheduledActionAnimate();
         break;
       case SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME:
+        VLOG(2) << "Scheduler::ProcessScheduledActions: "
+                   "ACTION_SEND_BEGIN_MAIN_FRAME";
         client_->ScheduledActionSendBeginMainFrame();
         break;
       case SchedulerStateMachine::ACTION_COMMIT:
