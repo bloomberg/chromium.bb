@@ -10,6 +10,7 @@ include_rules = [
   "+extensions/common",
   "+ui/app_list",
   "+ui/aura",
+  "+ui/compositor",
   "+ui/gfx",
   "+ui/views",
 

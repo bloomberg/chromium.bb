@@ -7,12 +7,15 @@
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
 #include "athena/input/public/accelerator_manager.h"
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/closure_animation_observer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/focus_manager.h"
@@ -256,12 +259,48 @@ class AthenaWebView : public views::WebView {
     return fullscreen_;
   }
 
+  virtual void LoadingStateChanged(content::WebContents* source,
+                                   bool to_different_document) OVERRIDE {
+    bool has_stopped = source == NULL || !source->IsLoading();
+    LoadProgressChanged(source, has_stopped ? 1 : 0);
+  }
+
+  virtual void LoadProgressChanged(content::WebContents* source,
+                                   double progress) OVERRIDE {
+    if (!progress)
+      return;
+
+    if (!progress_bar_) {
+      CreateProgressBar();
+      source->GetNativeView()->layer()->Add(progress_bar_.get());
+    }
+    progress_bar_->SetBounds(gfx::Rect(
+        0, 0, progress * progress_bar_->parent()->bounds().width(), 3));
+    if (progress < 1)
+      return;
+
+    ui::ScopedLayerAnimationSettings settings(progress_bar_->GetAnimator());
+    settings.SetTweenType(gfx::Tween::EASE_IN);
+    ui::Layer* layer = progress_bar_.get();
+    settings.AddObserver(new ui::ClosureAnimationObserver(
+        base::Bind(&base::DeletePointer<ui::Layer>, progress_bar_.release())));
+    layer->SetOpacity(0.f);
+  }
+
  private:
+  void CreateProgressBar() {
+    CHECK(!progress_bar_);
+    progress_bar_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
+    progress_bar_->SetColor(SkColorSetRGB(0x00, 0xb0, 0xc7));
+  }
+
   scoped_ptr<WebActivityController> controller_;
 
   // If the activity got evicted, this is the web content which holds the known
   // state of the content before eviction.
   scoped_ptr<content::WebContents> evicted_web_contents_;
+
+  scoped_ptr<ui::Layer> progress_bar_;
 
   // TODO(oshima): Find out if we should support window fullscreen.
   // It may still useful when a user is in split mode.
