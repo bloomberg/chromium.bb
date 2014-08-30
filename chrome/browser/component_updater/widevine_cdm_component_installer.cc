@@ -126,7 +126,9 @@ bool MakeWidevineCdmPluginInfo(
   plugin_info->is_out_of_process = true;
   plugin_info->path = path;
   plugin_info->name = kWidevineCdmDisplayName;
-  plugin_info->description = kWidevineCdmDescription;
+  plugin_info->description = kWidevineCdmDescription +
+                             std::string(" (version: ") + version.GetString() +
+                             ")";
   plugin_info->version = version.GetString();
   content::WebPluginMimeType widevine_cdm_mime_type(
       kWidevineCdmPluginMimeType,
