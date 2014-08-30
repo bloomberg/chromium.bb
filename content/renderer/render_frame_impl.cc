@@ -1997,7 +1997,6 @@ void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(
   std::vector<GURL> redirects;
   GetRedirectChain(data_source, &redirects);
   if (redirects.size() >= 2) {
-    CHECK(!render_view_->page_id_not_yet_reported_);
     Send(new FrameHostMsg_DidRedirectProvisionalLoad(
         routing_id_,
         render_view_->page_id_,
@@ -2147,7 +2146,6 @@ void RenderFrameImpl::didCommitProvisionalLoad(
   if (is_new_navigation) {
     // We bump our Page ID to correspond with the new session history entry.
     render_view_->page_id_ = render_view_->next_page_id_++;
-    render_view_->page_id_not_yet_reported_ = true;
 
     // Don't update history_page_ids_ (etc) for kSwappedOutURL, since
     // we don't want to forget the entry that was there, and since we will
@@ -2184,7 +2182,6 @@ void RenderFrameImpl::didCommitProvisionalLoad(
         !navigation_state->request_committed()) {
       // This is a successful session history navigation!
       render_view_->page_id_ = navigation_state->pending_page_id();
-      render_view_->page_id_not_yet_reported_ = true;
 
       render_view_->history_list_offset_ =
           navigation_state->pending_history_list_offset();
@@ -2275,7 +2272,6 @@ void RenderFrameImpl::didReceiveTitle(blink::WebLocalFrame* frame,
         routing_id_, base::UTF16ToUTF8(title16));
 
     base::string16 shortened_title = title16.substr(0, kMaxTitleChars);
-    CHECK(!render_view_->page_id_not_yet_reported_);
     Send(new FrameHostMsg_UpdateTitle(routing_id_,
                                       render_view_->page_id_,
                                       shortened_title, direction));
@@ -3362,7 +3358,6 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(blink::WebFrame* frame) {
     if (!is_swapped_out())
       Send(new FrameHostMsg_DidCommitProvisionalLoad(routing_id_, params));
   }
-  render_view_->page_id_not_yet_reported_ = false;
 
   render_view_->last_page_id_sent_to_browser_ =
       std::max(render_view_->last_page_id_sent_to_browser_,
