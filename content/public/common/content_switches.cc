@@ -598,9 +598,16 @@ const char kNoSandbox[]                     = "no-sandbox";
 // Number of worker threads used to rasterize content.
 const char kNumRasterThreads[]              = "num-raster-threads";
 
-// Enables or disables history navigation in response to horizontal overscroll.
-// Set the value to '1' to enable the feature, and set to '0' to disable.
-// Defaults to enabled.
+// Controls the behavior of history navigation in response to horizontal
+// overscroll.
+// Set the value to '0' to disable.
+// Set the value to '1' to enable the behavior where pages slide in and out in
+// response to the horizontal overscroll gesture and a screenshot of the target
+// page is shown.
+// Set the value to '2' to enable the simplified overscroll UI where a
+// navigation arrow slides in from the side of the screen in response to the
+// horizontal overscroll gesture.
+// Defaults to '1'.
 const char kOverscrollHistoryNavigation[] =
     "overscroll-history-navigation";
 
