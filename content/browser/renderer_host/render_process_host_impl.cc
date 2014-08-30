@@ -1248,6 +1248,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kMediaDrmEnableNonCompositing,
     switches::kNetworkCountryIso,
     switches::kDisableWebAudio,
+    switches::kRendererWaitForJavaDebugger,
 #endif
 #if defined(OS_MACOSX)
     // Allow this to be set when invoking the browser and relayed along.

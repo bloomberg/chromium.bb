@@ -889,6 +889,10 @@ const char kNetworkCountryIso[] = "network-country-iso";
 
 // Enables remote debug over HTTP on the specified socket name.
 const char kRemoteDebuggingSocketName[]     = "remote-debugging-socket-name";
+
+// Block ChildProcessMain thread of the renderer's ChildProcessService until a
+// Java debugger is attached.
+const char kRendererWaitForJavaDebugger[] = "renderer-wait-for-java-debugger";
 #endif
 
 // Disable web audio API.

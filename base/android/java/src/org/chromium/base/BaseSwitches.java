@@ -12,6 +12,9 @@ public abstract class BaseSwitches {
     // Block onCreate() of Chrome until a Java debugger is attached.
     public static final String WAIT_FOR_JAVA_DEBUGGER = "wait-for-java-debugger";
 
+    // Block ChildProcessMain thread of render process service until a Java debugger is attached.
+    public static final String RENDERER_WAIT_FOR_JAVA_DEBUGGER = "renderer-wait-for-java-debugger";
+
     // Force low-end device when set to 1;
     // Force non-low-end device when set to 0;
     // Auto-detect low-end device when set to other values or empty;

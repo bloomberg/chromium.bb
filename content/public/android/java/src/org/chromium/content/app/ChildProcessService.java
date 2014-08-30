@@ -16,6 +16,7 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.view.Surface;
 
+import org.chromium.base.BaseSwitches;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CommandLine;
 import org.chromium.base.JNINamespace;
@@ -154,6 +155,11 @@ public class ChildProcessService extends Service {
                         }
                     }
                     CommandLine.init(mCommandLineParams);
+                    if (CommandLine.getInstance().hasSwitch(
+                            BaseSwitches.RENDERER_WAIT_FOR_JAVA_DEBUGGER)) {
+                        android.os.Debug.waitForDebugger();
+                    }
+
                     try {
                         LibraryLoader.loadNow(getApplicationContext(), false);
                         isLoaded = true;

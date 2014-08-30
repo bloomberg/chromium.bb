@@ -256,6 +256,7 @@ CONTENT_EXPORT extern const char kForceUseOverlayEmbeddedVideo[];
 CONTENT_EXPORT extern const char kHideScrollbars[];
 extern const char kNetworkCountryIso[];
 CONTENT_EXPORT extern const char kRemoteDebuggingSocketName[];
+CONTENT_EXPORT extern const char kRendererWaitForJavaDebugger[];
 #endif
 
 CONTENT_EXPORT extern const char kDisableWebAudio[];
