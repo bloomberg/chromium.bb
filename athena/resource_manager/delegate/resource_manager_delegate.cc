@@ -25,14 +25,40 @@ class ResourceManagerDelegateImpl : public ResourceManagerDelegate {
 
  private:
   virtual int GetUsedMemoryInPercent() OVERRIDE {
-    base::SystemMemoryInfoKB memory;
-    // TODO(skuhne): According to semenzato this calculation has to change.
-    if (base::GetSystemMemoryInfo(&memory) &&
-        memory.total > 0 && memory.free >= 0) {
-      return ((memory.total - memory.free) * 100) / memory.total;
+    base::SystemMemoryInfoKB info;
+    if (!base::GetSystemMemoryInfo(&info)) {
+      LOG(WARNING) << "Cannot determine the free memory of the system.";
+      return 0;
     }
-    LOG(WARNING) << "Cannot determine the free memory of the system.";
-    return 0;
+    // TODO(skuhne): Instead of adding the kernel memory pressure calculation
+    // logic here, we should have a kernel mechanism similar to the low memory
+    // notifier in ChromeOS which offers multiple pressure states.
+    // To track this, we have crbug.com/381196.
+
+    // The available memory consists of "real" and virtual (z)ram memory.
+    // Since swappable memory uses a non pre-deterministic compression and
+    // the compression creates its own "dynamic" in the system, it gets
+    // de-emphasized by the |kSwapWeight| factor.
+    const int kSwapWeight = 4;
+
+    // The total memory we have is the "real memory" plus the virtual (z)ram.
+    int total_memory = info.total + info.swap_total / kSwapWeight;
+
+    // The kernel internally uses 50MB.
+    const int kMinFileMemory = 50 * 1024;
+
+    // Most file memory can be easily reclaimed.
+    int file_memory = info.active_file + info.inactive_file;
+    // unless it is dirty or it's a minimal portion which is required.
+    file_memory -= info.dirty + kMinFileMemory;
+
+    // Available memory is the sum of free, swap and easy reclaimable memory.
+    int available_memory =
+        info.free + info.swap_free / kSwapWeight + file_memory;
+
+    DCHECK(available_memory < total_memory);
+    int percentage = ((total_memory - available_memory) * 100) / total_memory;
+    return percentage;
   }
 
   virtual int MemoryPressureIntervalInMS() OVERRIDE {
