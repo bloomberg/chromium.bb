@@ -36,6 +36,8 @@ public:
         static bool nodeAttributeAttributeSetter(LocalFrame* frame, TestObject* holderImpl, PassRefPtrWillBeRawPtr<Node> cppValue);
         static bool attributeForPrivateScriptOnlyAttributeGetter(LocalFrame* frame, TestObject* holderImpl, String* result);
         static bool attributeForPrivateScriptOnlyAttributeSetter(LocalFrame* frame, TestObject* holderImpl, String cppValue);
+        static bool enumForPrivateScriptAttributeGetter(LocalFrame* frame, TestObject* holderImpl, String* result);
+        static bool enumForPrivateScriptAttributeSetter(LocalFrame* frame, TestObject* holderImpl, String cppValue);
     };
 
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);

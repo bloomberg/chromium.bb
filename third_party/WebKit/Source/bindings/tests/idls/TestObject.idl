@@ -551,4 +551,5 @@ interface TestObject {
     [OnlyExposedToPrivateScript] attribute DOMString attributeImplementedInCPPForPrivateScriptOnly;
     [ImplementedInPrivateScript, OnlyExposedToPrivateScript] short methodForPrivateScriptOnly(short value1, short value2);
     [ImplementedInPrivateScript, OnlyExposedToPrivateScript] attribute DOMString attributeForPrivateScriptOnly;
+    [ImplementedInPrivateScript] attribute TestEnum enumForPrivateScript;
 };

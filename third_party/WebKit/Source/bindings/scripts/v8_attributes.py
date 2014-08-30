@@ -177,7 +177,8 @@ def getter_context(interface, attribute, context):
     release = False
     if 'ImplementedInPrivateScript' in extended_attributes:
         if (not idl_type.is_wrapper_type and
-            not idl_type.is_basic_type):
+            not idl_type.is_basic_type and
+            not idl_type.is_enum):
             raise Exception('Private scripts supports only primitive types and DOM wrappers.')
 
         context['cpp_value_original'] = cpp_value
