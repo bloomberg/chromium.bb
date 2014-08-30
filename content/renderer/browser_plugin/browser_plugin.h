@@ -85,8 +85,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // sent, if needed.
   void DidCommitCompositorFrame();
 
-  static BrowserPlugin* FromNode(blink::WebNode& node);
-
   // Returns whether a message should be forwarded to BrowserPlugin.
   static bool ShouldForwardToBrowserPlugin(const IPC::Message& message);
 
