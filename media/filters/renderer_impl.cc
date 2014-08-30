@@ -82,7 +82,7 @@ void RendererImpl::Initialize(const PipelineStatusCB& init_cb,
 }
 
 void RendererImpl::Flush(const base::Closure& flush_cb) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_PLAYING) << state_;
   DCHECK(flush_cb_.is_null());
@@ -98,7 +98,7 @@ void RendererImpl::Flush(const base::Closure& flush_cb) {
 }
 
 void RendererImpl::StartPlayingFrom(base::TimeDelta time) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_PLAYING) << state_;
 
@@ -116,7 +116,7 @@ void RendererImpl::StartPlayingFrom(base::TimeDelta time) {
 }
 
 void RendererImpl::SetPlaybackRate(float playback_rate) {
-  DVLOG(2) << __FUNCTION__ << "(" << playback_rate << ")";
+  DVLOG(1) << __FUNCTION__ << "(" << playback_rate << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Playback rate changes are only carried out while playing.
@@ -166,7 +166,7 @@ void RendererImpl::SetCdm(MediaKeys* cdm) {
 }
 
 void RendererImpl::DisableUnderflowForTesting() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
 
@@ -175,7 +175,7 @@ void RendererImpl::DisableUnderflowForTesting() {
 
 void RendererImpl::SetTimeDeltaInterpolatorForTesting(
     TimeDeltaInterpolator* interpolator) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
 
@@ -188,7 +188,7 @@ base::TimeDelta RendererImpl::GetMediaDuration() {
 }
 
 void RendererImpl::InitializeAudioRenderer() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_INITIALIZING) << state_;
   DCHECK(!init_cb_.is_null());
@@ -214,7 +214,7 @@ void RendererImpl::InitializeAudioRenderer() {
 }
 
 void RendererImpl::OnAudioRendererInitializeDone(PipelineStatus status) {
-  DVLOG(2) << __FUNCTION__ << ": " << status;
+  DVLOG(1) << __FUNCTION__ << ": " << status;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_INITIALIZING) << state_;
   DCHECK(!init_cb_.is_null());
@@ -233,7 +233,7 @@ void RendererImpl::OnAudioRendererInitializeDone(PipelineStatus status) {
 }
 
 void RendererImpl::InitializeVideoRenderer() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_INITIALIZING) << state_;
   DCHECK(!init_cb_.is_null());
@@ -262,7 +262,7 @@ void RendererImpl::InitializeVideoRenderer() {
 }
 
 void RendererImpl::OnVideoRendererInitializeDone(PipelineStatus status) {
-  DVLOG(2) << __FUNCTION__ << ": " << status;
+  DVLOG(1) << __FUNCTION__ << ": " << status;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_INITIALIZING) << state_;
   DCHECK(!init_cb_.is_null());
@@ -347,7 +347,7 @@ void RendererImpl::OnVideoRendererFlushDone() {
 
 void RendererImpl::OnAudioTimeUpdate(base::TimeDelta time,
                                      base::TimeDelta max_time) {
-  DVLOG(3) << __FUNCTION__ << "(" << time.InMilliseconds()
+  DVLOG(2) << __FUNCTION__ << "(" << time.InMilliseconds()
            << ", " << max_time.InMilliseconds() << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_LE(time.InMicroseconds(), max_time.InMicroseconds());
@@ -367,7 +367,7 @@ void RendererImpl::OnAudioTimeUpdate(base::TimeDelta time,
 }
 
 void RendererImpl::OnVideoTimeUpdate(base::TimeDelta max_time) {
-  DVLOG(3) << __FUNCTION__ << "(" << max_time.InMilliseconds() << ")";
+  DVLOG(2) << __FUNCTION__ << "(" << max_time.InMilliseconds() << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (audio_renderer_)
@@ -388,7 +388,7 @@ void RendererImpl::OnUpdateStatistics(const PipelineStatistics& stats) {
 
 void RendererImpl::OnBufferingStateChanged(BufferingState* buffering_state,
                                            BufferingState new_buffering_state) {
-  DVLOG(2) << __FUNCTION__ << "(" << *buffering_state << ", "
+  DVLOG(1) << __FUNCTION__ << "(" << *buffering_state << ", "
            << new_buffering_state << ") "
            << (buffering_state == &audio_buffering_state_ ? "audio" : "video");
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -399,7 +399,7 @@ void RendererImpl::OnBufferingStateChanged(BufferingState* buffering_state,
   // Disable underflow by ignoring updates that renderers have ran out of data.
   if (state_ == STATE_PLAYING && underflow_disabled_for_testing_ &&
       interpolation_state_ != INTERPOLATION_STOPPED) {
-    DVLOG(2) << "Update ignored because underflow is disabled for testing.";
+    DVLOG(1) << "Update ignored because underflow is disabled for testing.";
     return;
   }
 
@@ -432,7 +432,7 @@ bool RendererImpl::WaitingForEnoughData() const {
 }
 
 void RendererImpl::PausePlayback() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_PLAYING);
   DCHECK(WaitingForEnoughData());
@@ -442,7 +442,7 @@ void RendererImpl::PausePlayback() {
 }
 
 void RendererImpl::StartPlayback() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_PLAYING);
   DCHECK_EQ(interpolation_state_, INTERPOLATION_STOPPED);
@@ -464,7 +464,7 @@ void RendererImpl::StartPlayback() {
 }
 
 void RendererImpl::PauseClockAndStopTicking_Locked() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   interpolator_lock_.AssertAcquired();
   switch (interpolation_state_) {
     case INTERPOLATION_STOPPED:
@@ -494,7 +494,7 @@ void RendererImpl::StartClockIfWaitingForTimeUpdate_Locked() {
 }
 
 void RendererImpl::OnAudioRendererEnded() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (state_ != STATE_PLAYING)
@@ -515,7 +515,7 @@ void RendererImpl::OnAudioRendererEnded() {
 }
 
 void RendererImpl::OnVideoRendererEnded() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (state_ != STATE_PLAYING)
@@ -528,7 +528,7 @@ void RendererImpl::OnVideoRendererEnded() {
 }
 
 void RendererImpl::RunEndedCallbackIfNeeded() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (audio_renderer_ && !audio_ended_)
@@ -548,7 +548,7 @@ void RendererImpl::RunEndedCallbackIfNeeded() {
 }
 
 void RendererImpl::OnError(PipelineStatus error) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__ << "(" << error << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_NE(PIPELINE_OK, error) << "PIPELINE_OK isn't an error!";
 
