@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "components/copresence/proto/rpcs.pb.h"
 #include "components/copresence/public/copresence_manager.h"
 
@@ -35,8 +35,7 @@ struct PendingRequest {
 };
 
 // The implementation for CopresenceManager.
-class CopresenceManagerImpl : public CopresenceManager,
-    public base::SupportsWeakPtr<CopresenceManagerImpl> {
+class CopresenceManagerImpl : public CopresenceManager {
  public:
   virtual ~CopresenceManagerImpl();
   virtual void ExecuteReportRequest(ReportRequest request,
@@ -53,6 +52,8 @@ class CopresenceManagerImpl : public CopresenceManager,
 
   bool init_failed_;
   std::vector<PendingRequest> pending_requests_queue_;
+
+  base::CancelableCallback<void(bool)> init_callback_;
 
   // TODO(rkc): This code is almost identical to what we use in feedback to
   // perform multiple blocking tasks and then run a post process method. Look

@@ -23,14 +23,17 @@ scoped_ptr<CopresenceManager> CopresenceManager::Create(
                  base::Unretained(manager),
                  "Copresence device registration"));
 
+  // This callback will be canceled on manager's destruction, hence unretained
+  // is safe to use here.
+  manager->init_callback_.Reset(
+      base::Bind(&CopresenceManagerImpl::InitStepComplete,
+                 base::Unretained(manager),
+                 "Whispernet proxy initialization"));
+
   manager->pending_init_operations_++;
   DCHECK(delegate->GetWhispernetClient());
   delegate->GetWhispernetClient()->Initialize(
-      base::Bind(&CopresenceManagerImpl::InitStepComplete,
-                 // We cannot cancel WhispernetClient initialization.
-                 // TODO(ckehoe): Get rid of this.
-                 manager->AsWeakPtr(),
-                 "Whispernet proxy initialization"));
+      manager->init_callback_.callback());
 
   return make_scoped_ptr<CopresenceManager>(manager);
 }
