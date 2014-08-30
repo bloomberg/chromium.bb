@@ -21,10 +21,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/video_layer.h"
-#include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/buffered_data_source.h"
 #include "content/renderer/media/crypto/encrypted_media_player_support.h"
-#include "content/renderer/media/render_media_log.h"
 #include "content/renderer/media/texttrack_impl.h"
 #include "content/renderer/media/webaudiosourceprovider_impl.h"
 #include "content/renderer/media/webinbandtexttrack_impl.h"
@@ -32,7 +30,6 @@
 #include "content/renderer/media/webmediaplayer_params.h"
 #include "content/renderer/media/webmediaplayer_util.h"
 #include "content/renderer/media/webmediasource_impl.h"
-#include "content/renderer/render_thread_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/audio/null_audio_sink.h"
@@ -146,9 +143,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       preload_(BufferedDataSource::AUTO),
       main_task_runner_(base::MessageLoopProxy::current()),
-      media_task_runner_(
-          RenderThreadImpl::current()->GetMediaThreadTaskRunner()),
-      media_log_(new RenderMediaLog()),
+      media_task_runner_(params.media_task_runner()),
+      media_log_(params.media_log()),
       pipeline_(media_task_runner_, media_log_.get()),
       load_type_(LoadTypeURL),
       opaque_(false),
@@ -161,20 +157,22 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       client_(client),
       delegate_(delegate),
       defer_load_cb_(params.defer_load_cb()),
-      gpu_factories_(RenderThreadImpl::current()->GetGpuFactories()),
+      gpu_factories_(params.gpu_factories()),
       supports_save_(true),
       chunk_demuxer_(NULL),
-      // Threaded compositing isn't enabled universally yet.
-      compositor_task_runner_(
-          RenderThreadImpl::current()->compositor_message_loop_proxy().get()
-              ? RenderThreadImpl::current()->compositor_message_loop_proxy()
-              : base::MessageLoopProxy::current()),
+      compositor_task_runner_(params.compositor_task_runner()),
       compositor_(new VideoFrameCompositor(
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNaturalSizeChanged),
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnOpacityChanged))),
       text_track_index_(0),
-      encrypted_media_support_(EncryptedMediaPlayerSupport::Create(client)) {
+      encrypted_media_support_(
+          params.CreateEncryptedMediaPlayerSupport(client)),
+      audio_hardware_config_(params.audio_hardware_config()) {
   DCHECK(encrypted_media_support_);
+
+  // Threaded compositing isn't enabled universally yet.
+  if (!compositor_task_runner_)
+    compositor_task_runner_ = base::MessageLoopProxy::current();
 
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
@@ -837,7 +835,7 @@ scoped_ptr<media::Renderer> WebMediaPlayerImpl::CreateRenderer() {
       audio_source_provider_.get(),
       audio_decoders.Pass(),
       set_decryptor_ready_cb,
-      RenderThreadImpl::current()->GetAudioHardwareConfig()));
+      audio_hardware_config_));
 
   // Create our video decoders and renderer.
   ScopedVector<media::VideoDecoder> video_decoders;

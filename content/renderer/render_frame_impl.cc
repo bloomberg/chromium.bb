@@ -66,6 +66,7 @@
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
+#include "content/renderer/media/crypto/encrypted_media_player_support_impl.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_impl.h"
 #include "content/renderer/media/media_stream_renderer_factory.h"
@@ -91,6 +92,7 @@
 #include "content/renderer/v8_value_converter_impl.h"
 #include "content/renderer/websharedworker_proxy.h"
 #include "media/base/audio_renderer_mixer_input.h"
+#include "media/filters/gpu_video_accelerator_factories.h"
 #include "net/base/data_url.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -1570,12 +1572,19 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 #if defined(OS_ANDROID)
   return CreateAndroidWebMediaPlayer(url, client);
 #else
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
   WebMediaPlayerParams params(
       base::Bind(&ContentRendererClient::DeferMediaLoad,
                  base::Unretained(GetContentClient()->renderer()),
                  static_cast<RenderFrame*>(this)),
-      RenderThreadImpl::current()->GetAudioRendererMixerManager()->CreateInput(
-          render_view_->routing_id_, routing_id_));
+      render_thread->GetAudioRendererMixerManager()->CreateInput(
+          render_view_->routing_id_, routing_id_),
+      *render_thread->GetAudioHardwareConfig(),
+      new RenderMediaLog(),
+      render_thread->GetGpuFactories(),
+      render_thread->GetMediaThreadTaskRunner(),
+      render_thread->compositor_message_loop_proxy(),
+      base::Bind(&EncryptedMediaPlayerSupportImpl::Create));
   return new WebMediaPlayerImpl(frame, client, weak_factory_.GetWeakPtr(),
                                 params);
 #endif  // defined(OS_ANDROID)

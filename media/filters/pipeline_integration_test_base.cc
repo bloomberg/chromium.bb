@@ -286,7 +286,7 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
       base::Bind(&PipelineIntegrationTestBase::SetDecryptor,
                  base::Unretained(this),
                  decryptor),
-      &hardware_config_));
+      hardware_config_));
   if (hashing_enabled_)
     audio_sink_->StartAudioHashForTesting();
 

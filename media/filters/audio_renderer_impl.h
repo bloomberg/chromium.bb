@@ -64,7 +64,7 @@ class MEDIA_EXPORT AudioRendererImpl
       AudioRendererSink* sink,
       ScopedVector<AudioDecoder> decoders,
       const SetDecryptorReadyCB& set_decryptor_ready_cb,
-      AudioHardwareConfig* hardware_params);
+      const AudioHardwareConfig& hardware_params);
   virtual ~AudioRendererImpl();
 
   // TimeSource implementation.
@@ -206,7 +206,7 @@ class MEDIA_EXPORT AudioRendererImpl
   scoped_ptr<AudioBufferStream> audio_buffer_stream_;
 
   // Interface to the hardware audio params.
-  const AudioHardwareConfig* const hardware_config_;
+  const AudioHardwareConfig& hardware_config_;
 
   // Cached copy of hardware params from |hardware_config_|.
   AudioParameters audio_parameters_;

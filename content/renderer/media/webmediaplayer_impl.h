@@ -42,6 +42,7 @@ class WebLayerImpl;
 }
 
 namespace media {
+class AudioHardwareConfig;
 class ChunkDemuxer;
 class GpuVideoAcceleratorFactories;
 class MediaLog;
@@ -312,6 +313,8 @@ class WebMediaPlayerImpl
   int text_track_index_;
 
   scoped_ptr<EncryptedMediaPlayerSupport> encrypted_media_support_;
+
+  const media::AudioHardwareConfig& audio_hardware_config_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

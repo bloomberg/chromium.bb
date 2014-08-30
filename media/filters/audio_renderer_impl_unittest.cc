@@ -98,7 +98,7 @@ class AudioRendererImplTest : public ::testing::Test {
                                           sink_.get(),
                                           decoders.Pass(),
                                           SetDecryptorReadyCB(),
-                                          &hardware_config_));
+                                          hardware_config_));
   }
 
   virtual ~AudioRendererImplTest() {

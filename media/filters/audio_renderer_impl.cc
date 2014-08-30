@@ -45,7 +45,7 @@ AudioRendererImpl::AudioRendererImpl(
     media::AudioRendererSink* sink,
     ScopedVector<AudioDecoder> decoders,
     const SetDecryptorReadyCB& set_decryptor_ready_cb,
-    AudioHardwareConfig* hardware_config)
+    const AudioHardwareConfig& hardware_config)
     : task_runner_(task_runner),
       expecting_config_changes_(false),
       sink_(sink),
@@ -283,7 +283,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
     buffer_converter_.reset();
   } else {
     // TODO(rileya): Support hardware config changes
-    const AudioParameters& hw_params = hardware_config_->GetOutputConfig();
+    const AudioParameters& hw_params = hardware_config_.GetOutputConfig();
     audio_parameters_.Reset(
         hw_params.format(),
         // Always use the source's channel layout and channel count to avoid
@@ -295,7 +295,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
             stream->audio_decoder_config().channel_layout()),
         hw_params.sample_rate(),
         hw_params.bits_per_sample(),
-        hardware_config_->GetHighLatencyBufferSize());
+        hardware_config_.GetHighLatencyBufferSize());
   }
 
   audio_clock_.reset(

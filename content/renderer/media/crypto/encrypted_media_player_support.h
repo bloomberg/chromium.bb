@@ -21,11 +21,6 @@ namespace content {
 
 class EncryptedMediaPlayerSupport {
  public:
-  // Creates a new instance of EncryptedMediaPlayerSupport for |client|. This
-  // method must always return a valid pointer.
-  static scoped_ptr<EncryptedMediaPlayerSupport> Create(
-      blink::WebMediaPlayerClient* client);
-
   EncryptedMediaPlayerSupport();
   virtual ~EncryptedMediaPlayerSupport();
 

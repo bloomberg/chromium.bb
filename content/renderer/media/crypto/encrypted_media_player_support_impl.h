@@ -12,6 +12,10 @@
 #include "content/renderer/media/crypto/encrypted_media_player_support.h"
 #include "content/renderer/media/crypto/proxy_decryptor.h"
 
+namespace blink {
+class WebMediaPlayerClient;
+}
+
 namespace content {
 
 class WebContentDecryptionModuleImpl;
@@ -20,7 +24,9 @@ class EncryptedMediaPlayerSupportImpl
     : public EncryptedMediaPlayerSupport,
       public base::SupportsWeakPtr<EncryptedMediaPlayerSupportImpl> {
  public:
-  explicit EncryptedMediaPlayerSupportImpl(blink::WebMediaPlayerClient* client);
+  static scoped_ptr<EncryptedMediaPlayerSupport> Create(
+      blink::WebMediaPlayerClient* client);
+
   virtual ~EncryptedMediaPlayerSupportImpl();
 
   // EncryptedMediaPlayerSupport implementation.
@@ -56,6 +62,8 @@ class EncryptedMediaPlayerSupportImpl
   virtual void OnPipelineDecryptError() OVERRIDE;
 
  private:
+  explicit EncryptedMediaPlayerSupportImpl(blink::WebMediaPlayerClient* client);
+
   // Requests that this object notifies when a decryptor is ready through the
   // |decryptor_ready_cb| provided.
   // If |decryptor_ready_cb| is null, the existing callback will be fired with

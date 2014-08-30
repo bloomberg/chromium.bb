@@ -123,7 +123,7 @@ static std::string GuessInitDataType(const unsigned char* init_data,
   return "video/mp4";
 }
 
-scoped_ptr<EncryptedMediaPlayerSupport> EncryptedMediaPlayerSupport::Create(
+scoped_ptr<EncryptedMediaPlayerSupport> EncryptedMediaPlayerSupportImpl::Create(
     blink::WebMediaPlayerClient* client) {
   return scoped_ptr<EncryptedMediaPlayerSupport>(
       new EncryptedMediaPlayerSupportImpl(client));

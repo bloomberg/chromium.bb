@@ -139,7 +139,7 @@ void InitPipeline(
                                    new media::NullAudioSink(task_runner),
                                    audio_decoders.Pass(),
                                    media::SetDecryptorReadyCB(),
-                                   &hardware_config));
+                                   hardware_config));
 
   scoped_ptr<media::Renderer> renderer(new media::RendererImpl(
       task_runner, demuxer, audio_renderer.Pass(), video_renderer.Pass()));
