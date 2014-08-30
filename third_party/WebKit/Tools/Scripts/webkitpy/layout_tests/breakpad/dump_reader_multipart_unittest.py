@@ -30,6 +30,7 @@ import unittest
 
 import cgi
 
+from webkitpy.common.host import Host
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.layout_tests.breakpad.dump_reader_multipart import DumpReaderMultipart
@@ -52,6 +53,11 @@ class TestDumpReaderMultipart(unittest.TestCase):
         'MDMP',
         '--boundary--',
     ]
+
+    def test_check_generate_breakpad_symbols_actually_exists(self):
+        host = Host()
+        dump_reader = DumpReaderMultipart(host, build_dir=None)
+        self.assertTrue(host.filesystem.exists(dump_reader._path_to_generate_breakpad_symbols()))
 
     def test_check_is_functional_breakpad_tools_not_found(self):
         host = MockHost()
