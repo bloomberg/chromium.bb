@@ -32,15 +32,12 @@ class ExperienceSamplingEvent;
 }
 #endif
 
+class SSLErrorClassification;
+
 // This class is responsible for showing/hiding the interstitial page that is
 // shown when a certificate error happens.
 // It deletes itself when the interstitial page is closed.
-//
-// This class should only be used on the UI thread because its implementation
-// uses captive_portal::CaptivePortalService which can only be accessed on the
-// UI thread.
-class SSLBlockingPage : public content::InterstitialPageDelegate,
-                        public content::NotificationObserver {
+class SSLBlockingPage : public content::InterstitialPageDelegate {
  public:
   // These represent the commands sent from the interstitial JavaScript. They
   // are defined in chrome/browser/resources/ssl/ssl_errors_common.js.
@@ -100,12 +97,6 @@ class SSLBlockingPage : public content::InterstitialPageDelegate,
   // Used to query the HistoryService to see if the URL is in history. For UMA.
   void OnGotHistoryCount(bool success, int num_visits, base::Time first_visit);
 
-  // content::NotificationObserver:
-  virtual void Observe(
-      int type,
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) OVERRIDE;
-
   base::Callback<void(bool)> callback_;
 
   content::WebContents* web_contents_;
@@ -124,20 +115,10 @@ class SSLBlockingPage : public content::InterstitialPageDelegate,
   int num_visits_;
   // Used for getting num_visits_.
   base::CancelableTaskTracker request_tracker_;
-  // Is captive portal detection enabled?
-  bool captive_portal_detection_enabled_;
-  // Did the probe complete before the interstitial was closed?
-  bool captive_portal_probe_completed_;
-  // Did the captive portal probe receive an error or get a non-HTTP response?
-  bool captive_portal_no_response_;
-  // Was a captive portal detected?
-  bool captive_portal_detected_;
   // Did the user previously allow a bad certificate but the decision has now
   // expired?
   const bool expired_but_previously_allowed_;
-
-  // For the FieldTrial: this contains the name of the condition.
-  std::string trial_condition_;
+  scoped_ptr<SSLErrorClassification> ssl_error_classification_;
 
 #if defined(ENABLE_EXTENSIONS)
   // For Chrome Experience Sampling Platform: this maintains event state.

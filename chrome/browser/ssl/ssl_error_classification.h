@@ -9,17 +9,29 @@
 #include <vector>
 
 #include "base/time/time.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "net/cert/x509_certificate.h"
 #include "url/gurl.h"
 
-// This class calculates the severity scores for the different type of SSL
-// errors.
-class SSLErrorClassification {
+namespace content {
+class WebContents;
+}
+
+// This class classifies characteristics of SSL errors, including information
+// about captive portal detection.
+//
+// This class should only be used on the UI thread because its
+// implementation uses captive_portal::CaptivePortalService which can only be
+// accessed on the UI thread.
+class SSLErrorClassification : public content::NotificationObserver {
  public:
-  SSLErrorClassification(const base::Time& current_time,
+  SSLErrorClassification(content::WebContents* web_contents,
+                         const base::Time& current_time,
                          const GURL& url,
+                         int cert_error,
                          const net::X509Certificate& cert);
-  ~SSLErrorClassification();
+  virtual ~SSLErrorClassification();
 
   // Returns true if the system time is in the past.
   static bool IsUserClockInThePast(const base::Time& time_now);
@@ -31,18 +43,19 @@ class SSLErrorClassification {
   static bool IsWindowsVersionSP3OrLower();
 
   // A function which calculates the severity score when the ssl error is
-  // CERT_DATE_INVALID, returns a score between 0.0 and 1.0, higher values
-  // being more severe, indicating how severe the certificate's invalid
-  // date error is.
-  float InvalidDateSeverityScore(int cert_error) const;
+  // |CERT_DATE_INVALID|. The calculated score is between 0.0 and 1.0, higher
+  // being more severe, indicating how severe the certificate's
+  // date invalid error is.
+  void InvalidDateSeverityScore();
 
   // A function which calculates the severity score when the ssl error is
-  // when the SSL error is |CERT_COMMON_NAME_INVALID|, returns a score between
-  // between 0.0 and 1.0, higher values being more severe, indicating how
-  // severe the certificate's common name invalid error is.
-  float InvalidCommonNameSeverityScore(int cert_error) const;
+  // |CERT_COMMON_NAME_INVALID|. The calculated score is between 0.0 and 1.0,
+  // higher being more severe, indicating how severe the certificate's common
+  // name invalid error is.
+  void InvalidCommonNameSeverityScore();
 
-  void RecordUMAStatistics(bool overridable, int cert_error);
+  void RecordUMAStatistics(bool overridable) const;
+  void RecordCaptivePortalUMAStatistics(bool overridable) const;
   base::TimeDelta TimePassedSinceExpiry() const;
 
  private:
@@ -90,8 +103,6 @@ class SSLErrorClassification {
   // fields.
   bool IsCertLikelyFromMultiTenantHosting() const;
 
-  float CalculateScoreTimePassedSinceExpiry() const;
-
   static std::vector<Tokens> GetTokenizedDNSNames(
       const std::vector<std::string>& dns_names);
 
@@ -109,13 +120,32 @@ class SSLErrorClassification {
 
   static Tokens Tokenize(const std::string& name);
 
+  float CalculateScoreTimePassedSinceExpiry() const;
+  float CalculateScoreEnvironments() const;
+
+  // content::NotificationObserver:
+  virtual void Observe(
+      int type,
+      const content::NotificationSource& source,
+      const content::NotificationDetails& details) OVERRIDE;
+
+  content::WebContents* web_contents_;
   // This stores the current time.
   base::Time current_time_;
-
   const GURL& request_url_;
-
+  int cert_error_;
   // This stores the certificate.
   const net::X509Certificate& cert_;
+  // Is captive portal detection enabled?
+  bool captive_portal_detection_enabled_;
+  // Did the probe complete before the interstitial was closed?
+  bool captive_portal_probe_completed_;
+  // Did the captive portal probe receive an error or get a non-HTTP response?
+  bool captive_portal_no_response_;
+  // Was a captive portal detected?
+  bool captive_portal_detected_;
+
+  content::NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_BROWSER_SSL_SSL_ERROR_CLASSIFICATION_H_

@@ -7,6 +7,9 @@
 #include "base/files/file_path.h"
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "content/public/browser/web_contents.h"
+#include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
@@ -16,34 +19,56 @@
 #include "url/gurl.h"
 
 using base::Time;
+using content::WebContents;
 
-TEST(SSLErrorClassificationTest, TestDateInvalidScore) {
+class SSLErrorClassificationTest : public ChromeRenderViewHostTestHarness {
+ public:
+  SSLErrorClassificationTest() {
+    SetThreadBundleOptions(content::TestBrowserThreadBundle::REAL_IO_THREAD);
+  }
+};
+
+TEST_F(SSLErrorClassificationTest, TestDateInvalidScore) {
   base::FilePath certs_dir = net::GetTestCertsDirectory();
   scoped_refptr<net::X509Certificate> expired_cert =
       net::ImportCertFromFile(certs_dir, "expired_cert.pem");
   base::Time time;
   GURL origin("https://example.com");
+  int cert_error = net::ERR_CERT_DATE_INVALID;
+  WebContents* contents = web_contents();
 
   {
     EXPECT_TRUE(base::Time::FromString("Wed, 03 Jan 2007 12:00:00 GMT", &time));
-    SSLErrorClassification ssl_error(time, origin, *expired_cert);
+    SSLErrorClassification ssl_error(contents,
+                                     time,
+                                     origin,
+                                     cert_error,
+                                     *expired_cert);
     EXPECT_FLOAT_EQ(0.2f, ssl_error.CalculateScoreTimePassedSinceExpiry());
   }
 
   {
     EXPECT_TRUE(base::Time::FromString("Sat, 06 Jan 2007 12:00:00 GMT", &time));
-    SSLErrorClassification ssl_error(time, origin, *expired_cert);
+    SSLErrorClassification ssl_error(contents,
+                                     time,
+                                     origin,
+                                     cert_error,
+                                     *expired_cert);
     EXPECT_FLOAT_EQ(0.3f, ssl_error.CalculateScoreTimePassedSinceExpiry());
   }
 
   {
     EXPECT_TRUE(base::Time::FromString("Mon, 08 Jan 2007 12:00:00 GMT", &time));
-    SSLErrorClassification ssl_error(time, origin, *expired_cert);
+    SSLErrorClassification ssl_error(contents,
+                                     time,
+                                     origin,
+                                     cert_error,
+                                     *expired_cert);
     EXPECT_FLOAT_EQ(0.4f, ssl_error.CalculateScoreTimePassedSinceExpiry());
   }
 }
 
-TEST(SSLErrorClassificationTest, TestNameMismatch) {
+TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
   scoped_refptr<net::X509Certificate> google_cert(
       net::X509Certificate::CreateFromBytes(
           reinterpret_cast<const char*>(google_der), sizeof(google_der)));
@@ -55,12 +80,18 @@ TEST(SSLErrorClassificationTest, TestNameMismatch) {
   dns_names_google.push_back("com");
   std::vector<std::vector<std::string>> dns_name_tokens_google;
   dns_name_tokens_google.push_back(dns_names_google);
+  int cert_error = net::ERR_CERT_COMMON_NAME_INVALID;
+  WebContents* contents = web_contents();
   {
     GURL origin("https://google.com");
     std::string host_name = origin.host();
     std::vector<std::string> host_name_tokens;
     base::SplitStringDontTrim(host_name, '.', &host_name_tokens);
-    SSLErrorClassification ssl_error(time, origin, *google_cert);
+    SSLErrorClassification ssl_error(contents,
+                                     time,
+                                     origin,
+                                     cert_error,
+                                     *google_cert);
     EXPECT_TRUE(ssl_error.IsWWWSubDomainMatch());
     EXPECT_FALSE(ssl_error.NameUnderAnyNames(host_name_tokens,
                                              dns_name_tokens_google));
@@ -75,7 +106,11 @@ TEST(SSLErrorClassificationTest, TestNameMismatch) {
     std::string host_name = origin.host();
     std::vector<std::string> host_name_tokens;
     base::SplitStringDontTrim(host_name, '.', &host_name_tokens);
-    SSLErrorClassification ssl_error(time, origin, *google_cert);
+    SSLErrorClassification ssl_error(contents,
+                                     time,
+                                     origin,
+                                     cert_error,
+                                     *google_cert);
     EXPECT_FALSE(ssl_error.IsWWWSubDomainMatch());
     EXPECT_FALSE(ssl_error.NameUnderAnyNames(host_name_tokens,
                                              dns_name_tokens_google));
@@ -88,7 +123,11 @@ TEST(SSLErrorClassificationTest, TestNameMismatch) {
     std::string host_name = origin.host();
     std::vector<std::string> host_name_tokens;
     base::SplitStringDontTrim(host_name, '.', &host_name_tokens);
-    SSLErrorClassification ssl_error(time, origin, *google_cert);
+    SSLErrorClassification ssl_error(contents,
+                                     time,
+                                     origin,
+                                     cert_error,
+                                     *google_cert);
     EXPECT_FALSE(ssl_error.IsWWWSubDomainMatch());
     EXPECT_TRUE(ssl_error.NameUnderAnyNames(host_name_tokens,
                                             dns_name_tokens_google));
@@ -101,7 +140,11 @@ TEST(SSLErrorClassificationTest, TestNameMismatch) {
      std::string host_name = origin.host();
      std::vector<std::string> host_name_tokens;
      base::SplitStringDontTrim(host_name, '.', &host_name_tokens);
-     SSLErrorClassification ssl_error(time, origin, *google_cert);
+     SSLErrorClassification ssl_error(contents,
+                                      time,
+                                      origin,
+                                      cert_error,
+                                      *google_cert);
      EXPECT_FALSE(ssl_error.IsWWWSubDomainMatch());
      EXPECT_FALSE(ssl_error.NameUnderAnyNames(host_name_tokens,
                                               dns_name_tokens_google));
@@ -114,7 +157,11 @@ TEST(SSLErrorClassificationTest, TestNameMismatch) {
     std::string host_name = origin.host();
     std::vector<std::string> host_name_tokens;
     base::SplitStringDontTrim(host_name, '.', &host_name_tokens);
-    SSLErrorClassification ssl_error(time, origin, *google_cert);
+    SSLErrorClassification ssl_error(contents,
+                                     time,
+                                     origin,
+                                     cert_error,
+                                     *google_cert);
     EXPECT_FALSE(ssl_error.IsWWWSubDomainMatch());
     EXPECT_FALSE(ssl_error.NameUnderAnyNames(host_name_tokens,
                                              dns_name_tokens_google));
@@ -136,7 +183,11 @@ TEST(SSLErrorClassificationTest, TestNameMismatch) {
     std::string host_name = origin.host();
     std::vector<std::string> host_name_tokens;
     base::SplitStringDontTrim(host_name, '.', &host_name_tokens);
-    SSLErrorClassification ssl_error(time, origin, *webkit_cert);
+    SSLErrorClassification ssl_error(contents,
+                                     time,
+                                     origin,
+                                     cert_error,
+                                     *webkit_cert);
     EXPECT_FALSE(ssl_error.IsWWWSubDomainMatch());
     EXPECT_FALSE(ssl_error.NameUnderAnyNames(host_name_tokens,
                                              dns_name_tokens_webkit));
@@ -147,7 +198,7 @@ TEST(SSLErrorClassificationTest, TestNameMismatch) {
   }
 }
 
-TEST(SSLErrorClassificationTest, TestHostNameHasKnownTLD) {
+TEST_F(SSLErrorClassificationTest, TestHostNameHasKnownTLD) {
   std::string url1 = "www.google.com";
   std::string url2 = "b.appspot.com";
   std::string url3 = "a.private";

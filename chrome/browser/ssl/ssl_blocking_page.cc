@@ -47,11 +47,6 @@
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
 
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-#include "chrome/browser/captive_portal/captive_portal_service.h"
-#include "chrome/browser/captive_portal/captive_portal_service_factory.h"
-#endif
-
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
 #endif
@@ -110,14 +105,15 @@ enum SSLBlockingPageEvent {
   SHOW_NEW_SITE,
   PROCEED_NEW_SITE,
   PROCEED_MANUAL_NONOVERRIDABLE,
-  CAPTIVE_PORTAL_DETECTION_ENABLED,
-  CAPTIVE_PORTAL_DETECTION_ENABLED_OVERRIDABLE,
-  CAPTIVE_PORTAL_PROBE_COMPLETED,
-  CAPTIVE_PORTAL_PROBE_COMPLETED_OVERRIDABLE,
-  CAPTIVE_PORTAL_NO_RESPONSE,
-  CAPTIVE_PORTAL_NO_RESPONSE_OVERRIDABLE,
-  CAPTIVE_PORTAL_DETECTED,
-  CAPTIVE_PORTAL_DETECTED_OVERRIDABLE,
+  // Captive Portal errors moved to ssl_error_classification.
+  DEPRECATED_CAPTIVE_PORTAL_DETECTION_ENABLED,
+  DEPRECATED_CAPTIVE_PORTAL_DETECTION_ENABLED_OVERRIDABLE,
+  DEPRECATED_CAPTIVE_PORTAL_PROBE_COMPLETED,
+  DEPRECATED_CAPTIVE_PORTAL_PROBE_COMPLETED_OVERRIDABLE,
+  DEPRECATED_CAPTIVE_PORTAL_NO_RESPONSE,
+  DEPRECATED_CAPTIVE_PORTAL_NO_RESPONSE_OVERRIDABLE,
+  DEPRECATED_CAPTIVE_PORTAL_DETECTED,
+  DEPRECATED_CAPTIVE_PORTAL_DETECTED_OVERRIDABLE,
   UNUSED_BLOCKING_PAGE_EVENT,
 };
 
@@ -167,38 +163,11 @@ void RecordSSLBlockingPageDetailedStats(bool proceed,
                                         bool overridable,
                                         bool internal,
                                         int num_visits,
-                                        bool captive_portal_detection_enabled,
-                                        bool captive_portal_probe_completed,
-                                        bool captive_portal_no_response,
-                                        bool captive_portal_detected,
                                         bool expired_but_previously_allowed) {
   UMA_HISTOGRAM_ENUMERATION("interstitial.ssl_error_type",
       SSLErrorInfo::NetErrorToErrorType(cert_error), SSLErrorInfo::END_OF_ENUM);
   RecordSSLExpirationPageEventState(
       expired_but_previously_allowed, proceed, overridable);
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  if (captive_portal_detection_enabled)
-    RecordSSLBlockingPageEventStats(
-        overridable ?
-        CAPTIVE_PORTAL_DETECTION_ENABLED_OVERRIDABLE :
-        CAPTIVE_PORTAL_DETECTION_ENABLED);
-  if (captive_portal_probe_completed)
-    RecordSSLBlockingPageEventStats(
-        overridable ?
-        CAPTIVE_PORTAL_PROBE_COMPLETED_OVERRIDABLE :
-        CAPTIVE_PORTAL_PROBE_COMPLETED);
-  // Log only one of portal detected and no response results.
-  if (captive_portal_detected)
-    RecordSSLBlockingPageEventStats(
-        overridable ?
-        CAPTIVE_PORTAL_DETECTED_OVERRIDABLE :
-        CAPTIVE_PORTAL_DETECTED);
-  else if (captive_portal_no_response)
-    RecordSSLBlockingPageEventStats(
-        overridable ?
-        CAPTIVE_PORTAL_NO_RESPONSE_OVERRIDABLE :
-        CAPTIVE_PORTAL_NO_RESPONSE);
-#endif
   if (!overridable) {
     if (proceed) {
       RecordSSLBlockingPageEventStats(PROCEED_MANUAL_NONOVERRIDABLE);
@@ -351,10 +320,6 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
       interstitial_page_(NULL),
       internal_(false),
       num_visits_(-1),
-      captive_portal_detection_enabled_(false),
-      captive_portal_probe_completed_(false),
-      captive_portal_no_response_(false),
-      captive_portal_detected_(false),
       expired_but_previously_allowed_(
           (options_mask & EXPIRED_BUT_PREVIOUSLY_ALLOWED) != 0) {
   Profile* profile = Profile::FromBrowserContext(
@@ -378,20 +343,16 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
     }
   }
 
-  SSLErrorClassification ssl_error_classification(
+  ssl_error_classification_.reset(new SSLErrorClassification(
+      web_contents_,
       base::Time::NowFromSystemTime(),
       request_url_,
-      *ssl_info_.cert.get());
-  ssl_error_classification.RecordUMAStatistics(overridable_, cert_error_);
+      cert_error_,
+      *ssl_info_.cert.get()));
+  ssl_error_classification_->RecordUMAStatistics(overridable_);
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  CaptivePortalService* captive_portal_service =
-      CaptivePortalServiceFactory::GetForProfile(profile);
-  captive_portal_detection_enabled_ = captive_portal_service ->enabled();
-  captive_portal_service ->DetectCaptivePortal();
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
-                 content::Source<Profile>(profile));
+  ssl_error_classification_->RecordCaptivePortalUMAStatistics(overridable_);
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
@@ -414,16 +375,27 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
 }
 
 SSLBlockingPage::~SSLBlockingPage() {
+  // InvalidCommonNameSeverityScore() and InvalidDateSeverityScore() are in the
+  // destructor because they depend on knowing whether captive portal detection
+  // happened before the user made a decision.
+  SSLErrorInfo::ErrorType type =
+      SSLErrorInfo::NetErrorToErrorType(cert_error_);
+  switch (type) {
+    case SSLErrorInfo::CERT_DATE_INVALID:
+      ssl_error_classification_->InvalidDateSeverityScore();
+      break;
+    case SSLErrorInfo::CERT_COMMON_NAME_INVALID:
+      ssl_error_classification_->InvalidCommonNameSeverityScore();
+      break;
+    default:
+      break;
+  }
   if (!callback_.is_null()) {
     RecordSSLBlockingPageDetailedStats(false,
                                        cert_error_,
                                        overridable_,
                                        internal_,
                                        num_visits_,
-                                       captive_portal_detection_enabled_,
-                                       captive_portal_probe_completed_,
-                                       captive_portal_no_response_,
-                                       captive_portal_detected_,
                                        expired_but_previously_allowed_);
     // The page is closed without the user having chosen what to do, default to
     // deny.
@@ -621,16 +593,13 @@ void SSLBlockingPage::OnProceed() {
                                      overridable_,
                                      internal_,
                                      num_visits_,
-                                     captive_portal_detection_enabled_,
-                                     captive_portal_probe_completed_,
-                                     captive_portal_no_response_,
-                                     captive_portal_detected_,
                                      expired_but_previously_allowed_);
 #if defined(ENABLE_EXTENSIONS)
   // ExperienceSampling: Notify that user decided to proceed.
   if (sampling_event_.get())
     sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kProceed);
 #endif
+
   // Accepting the certificate resumes the loading of the page.
   NotifyAllowCertificate();
 }
@@ -641,10 +610,6 @@ void SSLBlockingPage::OnDontProceed() {
                                      overridable_,
                                      internal_,
                                      num_visits_,
-                                     captive_portal_detection_enabled_,
-                                     captive_portal_probe_completed_,
-                                     captive_portal_no_response_,
-                                     captive_portal_detected_,
                                      expired_but_previously_allowed_);
 #if defined(ENABLE_EXTENSIONS)
   // ExperienceSampling: Notify that user decided to not proceed.
@@ -694,36 +659,4 @@ void SSLBlockingPage::OnGotHistoryCount(bool success,
                                         int num_visits,
                                         base::Time first_visit) {
   num_visits_ = num_visits;
-}
-
-void SSLBlockingPage::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  // When detection is disabled, captive portal service always sends
-  // RESULT_INTERNET_CONNECTED. Ignore any probe results in that case.
-  if (!captive_portal_detection_enabled_)
-    return;
-  if (type == chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT) {
-    captive_portal_probe_completed_ = true;
-    CaptivePortalService::Results* results =
-        content::Details<CaptivePortalService::Results>(
-            details).ptr();
-    // If a captive portal was detected at any point when the interstitial was
-    // displayed, assume that the interstitial was caused by a captive portal.
-    // Example scenario:
-    // 1- Interstitial displayed and captive portal detected, setting the flag.
-    // 2- Captive portal detection automatically opens portal login page.
-    // 3- User logs in on the portal login page.
-    // A notification will be received here for RESULT_INTERNET_CONNECTED. Make
-    // sure we don't clear the captive portal flag, since the interstitial was
-    // potentially caused by the captive portal.
-    captive_portal_detected_ = captive_portal_detected_ ||
-        (results->result == captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
-    // Also keep track of non-HTTP portals and error cases.
-    captive_portal_no_response_ = captive_portal_no_response_ ||
-        (results->result == captive_portal::RESULT_NO_RESPONSE);
-  }
-#endif
 }

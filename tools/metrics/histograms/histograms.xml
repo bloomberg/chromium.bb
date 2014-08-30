@@ -10436,6 +10436,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="interstitial.ssl.captive_portal" enum="SSLCaptivePortal">
+  <owner>meacer@chromium.org</owner>
+  <summary>
+    Record possible states of captive portals. This histogram is emitted
+    (possibly multiple times to different buckets) whenever a ssl interstitial
+    page is displayed and captive portal detection is enabled. The captive
+    portal technique forces a client on a network to see a special web page
+    (usually for authentication purposes) before using the internet normally.
+  </summary>
+</histogram>
+
 <histogram name="interstitial.ssl.cause.nonoverridable"
     enum="SSLNonAttackCauses">
   <owner>felt@chromium.org</owner>
@@ -49871,6 +49882,44 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="DEPRECATION_RAZE_FAILED">Raze failed.</int>
 </enum>
 
+<enum name="SSLCaptivePortal" type="int">
+  <int value="0"
+      label="Chrome captive portal detection enabled
+             (CAPTIVE_PORTAL_DETECTION_ENABLED)"/>
+  <int value="1"
+      label="Chrome captive portal detection enabled on an overridable SSL
+             error page (CAPTIVE_PORTAL_DETECTION_ENABLED_OVERRIDABLE)">
+    This is a subset of CAPTIVE_PORTAL_DETECTION_ENABLED (bucket 0), the only
+    difference is that it is for overridable errors.
+  </int>
+  <int value="2"
+      label="Received a captive portal probe result.
+             (CAPTIVE_PORTAL_PROBE_COMPLETED)">
+    Was the captive portal probe completed before the interstitial was closed?
+    Captive Portal won't be detected unless ::Observe is triggered which might
+    be a few seconds later.
+  </int>
+  <int value="3"
+      label="Received a captive portal result on an overridable SSL error page
+             (CAPTIVE_PORTAL_PROBE_COMPLETED_OVERRIDABLE)">
+    This is a subset of CAPTIVE_PORTAL_PROBE_COMPLETED (bucket 2), the only
+    difference is that it is for overridable errors.
+  </int>
+  <int value="4"
+      label="Received no response or Non-HTTP login page
+             (CAPTIVE_PORTAL_NO_RESPONSE)"/>
+  <int value="5"
+      label="Received no response or Non-HTTP login page on an overridable
+             SSL error page (CAPTIVE_PORTAL_NO_RESPONSE_OVERRIDABLE)"/>
+  <int value="6" label="Detected captive portal (CAPTIVE_PORTAL_DETECTED)"/>
+  <int value="7"
+      label="Detected captive portal on an overridable SSL error page
+             (CAPTIVE_PORTAL_DETECTED_OVERRIDABLE)">
+    This is a subset of CAPTIVE_PORTAL_DETECTED (bucket 6), the only difference
+    is that it is for overridable errors.
+  </int>
+</enum>
+
 <enum name="SSLCipherSuite" type="int">
   <summary>SSL/TLS cipher suites from the IANA registry</summary>
   <int value="0" label="TLS_NULL_WITH_NULL_NULL"/>
@@ -50274,26 +50323,28 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="User manually typed proceed (PROCEED_MANUAL_NONOVERRIDABLE)"/>
   <int value="17"
       label="Chrome captive portal detection enabled
-             (CAPTIVE_PORTAL_DETECTION_ENABLED)"/>
+             (DEPRECATED_CAPTIVE_PORTAL_DETECTION_ENABLED)"/>
   <int value="18"
       label="Chrome captive portal detection enabled on an overridable SSL
-             error page (CAPTIVE_PORTAL_DETECTION_ENABLED_OVERRIDABLE)"/>
+             error page
+             (DEPRECATED_CAPTIVE_PORTAL_DETECTION_ENABLED_OVERRIDABLE)"/>
   <int value="19"
       label="Received a captive portal result
-             (CAPTIVE_PORTAL_PROBE_COMPLETED)"/>
+             (DEPRECATED_CAPTIVE_PORTAL_PROBE_COMPLETED)"/>
   <int value="20"
       label="Received a captive portal result on an overridable SSL error
-             page (CAPTIVE_PORTAL_PROBE_COMPLETED_OVERRIDABLE)"/>
+             page (DEPRECATED_CAPTIVE_PORTAL_PROBE_COMPLETED_OVERRIDABLE)"/>
   <int value="21"
       label="Received no response or Non-HTTP login page
-             (CAPTIVE_PORTAL_NO_RESPONSE)"/>
+             (DEPRECATED_CAPTIVE_PORTAL_NO_RESPONSE)"/>
   <int value="22"
       label="Received no response or Non-HTTP login page on an overridable
-             SSL error page (CAPTIVE_PORTAL_NO_RESPONSE_OVERRIDABLE)"/>
+             SSL error page
+             (DEPRECATED_CAPTIVE_PORTAL_NO_RESPONSE_OVERRIDABLE)"/>
   <int value="23" label="Detected captive portal (CAPTIVE_PORTAL_DETECTED)"/>
   <int value="24"
       label="Detected captive portal on an overridable SSL error page
-             (CAPTIVE_PORTAL_DETECTED_OVERRIDABLE)"/>
+             (DEPRECATED_CAPTIVE_PORTAL_DETECTED_OVERRIDABLE)"/>
 </enum>
 
 <enum name="StartupURLsMigration" type="int">
