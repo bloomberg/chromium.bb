@@ -89,7 +89,8 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
 
   // Returns |true| if the input frame rate is higher that the requested max
   // frame rate and |frame| should be dropped.
-  bool MaybeDropFrame(const scoped_refptr<media::VideoFrame>& frame);
+  bool MaybeDropFrame(const scoped_refptr<media::VideoFrame>& frame,
+                      float source_frame_rate);
 
   // Bound to the IO-thread.
   base::ThreadChecker io_thread_checker_;
@@ -152,7 +153,7 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
     const base::TimeTicks& estimated_capture_time) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
 
-  if (MaybeDropFrame(frame))
+  if (MaybeDropFrame(frame, format.frame_rate))
     return;
 
   // TODO(perkj): Allow cropping / scaling of textures once
@@ -224,8 +225,15 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
 }
 
 bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeDropFrame(
-    const scoped_refptr<media::VideoFrame>& frame) {
-  if (max_frame_rate_ == 0.0f)
+    const scoped_refptr<media::VideoFrame>& frame,
+    float source_frame_rate) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+
+  // Do not drop frames if max frame rate hasn't been specified or the source
+  // frame rate is known and is lower than max.
+  if (max_frame_rate_ == 0.0f ||
+      (source_frame_rate > 0 &&
+          source_frame_rate <= max_frame_rate_))
     return false;
 
   base::TimeDelta delta = frame->timestamp() - last_time_stamp_;
@@ -243,7 +251,7 @@ bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeDropFrame(
     return true;
   }
   last_time_stamp_ = frame->timestamp();
-  if (delta == last_time_stamp_) // First received frame.
+  if (delta == last_time_stamp_)  // First received frame.
     return false;
   // Calculate the frame rate using a simple AR filter.
   // Use a simple filter with 0.1 weight of the current sample.

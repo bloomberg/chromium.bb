@@ -43,6 +43,7 @@ const char* kSupportedConstraints[] = {
 const int MediaStreamVideoSource::kDefaultWidth = 640;
 const int MediaStreamVideoSource::kDefaultHeight = 480;
 const int MediaStreamVideoSource::kDefaultFrameRate = 30;
+const int MediaStreamVideoSource::kUnknownFrameRate = 0;
 
 namespace {
 

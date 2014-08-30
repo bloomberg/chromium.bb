@@ -146,7 +146,7 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
                               gfx::Rect(frame_size), frame_size, timestamp);
   media::VideoCaptureFormat format(
       frame_size,
-      MediaStreamVideoSource::kDefaultFrameRate,
+      MediaStreamVideoSource::kUnknownFrameRate,
       media::PIXEL_FORMAT_YV12);
 
   libyuv::BGRAToI420(reinterpret_cast<uint8*>(bitmap->getPixels()),

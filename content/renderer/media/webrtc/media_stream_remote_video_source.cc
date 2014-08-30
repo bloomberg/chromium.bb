@@ -106,7 +106,7 @@ RemoteVideoSourceDelegate::RenderFrame(
   media::VideoCaptureFormat format(
       gfx::Size(video_frame->natural_size().width(),
                 video_frame->natural_size().height()),
-                MediaStreamVideoSource::kDefaultFrameRate,
+                MediaStreamVideoSource::kUnknownFrameRate,
                 pixel_format);
 
   io_message_loop_->PostTask(

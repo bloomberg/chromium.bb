@@ -81,6 +81,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
   static const int kDefaultWidth;
   static const int kDefaultHeight;
   static const int kDefaultFrameRate;
+  static const int kUnknownFrameRate;
 
  protected:
   virtual void DoStopSource() OVERRIDE;
