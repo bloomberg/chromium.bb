@@ -45,8 +45,6 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
 
-using namespace std;
-
 namespace blink {
 
 typedef LCID (WINAPI* LocaleNameToLCIDPtr)(LPCWSTR, DWORD);

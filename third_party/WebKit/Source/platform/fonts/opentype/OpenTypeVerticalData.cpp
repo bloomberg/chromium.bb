@@ -33,8 +33,6 @@
 #include "platform/geometry/FloatRect.h"
 #include "wtf/RefPtr.h"
 
-using namespace std;
-
 namespace blink {
 namespace OpenType {
 

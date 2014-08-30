@@ -36,8 +36,6 @@
 #include "platform/text/TextRun.h"
 #include "wtf/MathExtras.h"
 
-using namespace std;
-
 namespace blink {
 
 static bool preferHarfBuzz(const Font* font)
@@ -138,8 +136,8 @@ float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFon
     ComplexTextController controller(this, run, true, fallbackFonts);
     glyphBounds->setTop(floorf(-controller.minGlyphBoundingBoxY()));
     glyphBounds->setBottom(ceilf(controller.maxGlyphBoundingBoxY()));
-    glyphBounds->setLeft(max<int>(0, floorf(-controller.minGlyphBoundingBoxX())));
-    glyphBounds->setRight(max<int>(0, ceilf(controller.maxGlyphBoundingBoxX() - controller.totalWidth())));
+    glyphBounds->setLeft(std::max<int>(0, floorf(-controller.minGlyphBoundingBoxX())));
+    glyphBounds->setRight(std::max<int>(0, ceilf(controller.maxGlyphBoundingBoxX() - controller.totalWidth())));
 
     return controller.totalWidth();
 }

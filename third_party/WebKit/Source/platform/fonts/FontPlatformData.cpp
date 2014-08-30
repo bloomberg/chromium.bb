@@ -29,8 +29,6 @@
 #include "platform/fonts/harfbuzz/HarfBuzzFace.h"
 #endif
 
-using namespace std;
-
 namespace blink {
 
 FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)

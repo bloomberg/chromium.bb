@@ -35,8 +35,6 @@
 #include "wtf/unicode/CharacterNames.h"
 #include <ApplicationServices/ApplicationServices.h>
 
-using namespace std;
-
 namespace blink {
 
 ComplexTextController::ComplexTextController(const Font* font, const TextRun& run, bool mayUseNaturalWritingDirection, HashSet<const SimpleFontData*>* fallbackFonts, bool forTextEmphasis)
@@ -57,10 +55,10 @@ ComplexTextController::ComplexTextController(const Font* font, const TextRun& ru
     , m_leadingExpansion(0)
     , m_afterExpansion(!run.allowsLeadingExpansion())
     , m_fallbackFonts(fallbackFonts)
-    , m_minGlyphBoundingBoxX(numeric_limits<float>::max())
-    , m_maxGlyphBoundingBoxX(numeric_limits<float>::min())
-    , m_minGlyphBoundingBoxY(numeric_limits<float>::max())
-    , m_maxGlyphBoundingBoxY(numeric_limits<float>::min())
+    , m_minGlyphBoundingBoxX(std::numeric_limits<float>::max())
+    , m_maxGlyphBoundingBoxX(std::numeric_limits<float>::min())
+    , m_minGlyphBoundingBoxY(std::numeric_limits<float>::max())
+    , m_maxGlyphBoundingBoxY(std::numeric_limits<float>::min())
 {
     if (!m_expansion)
         m_expansionPerOpportunity = 0;
@@ -119,9 +117,9 @@ int ComplexTextController::offsetForPosition(float h, bool includePartialGlyphs)
                 CFIndex hitGlyphStart = complexTextRun.indexAt(j);
                 CFIndex hitGlyphEnd;
                 if (m_run.ltr())
-                    hitGlyphEnd = max<CFIndex>(hitGlyphStart, j + 1 < complexTextRun.glyphCount() ? complexTextRun.indexAt(j + 1) : static_cast<CFIndex>(complexTextRun.indexEnd()));
+                    hitGlyphEnd = std::max<CFIndex>(hitGlyphStart, j + 1 < complexTextRun.glyphCount() ? complexTextRun.indexAt(j + 1) : static_cast<CFIndex>(complexTextRun.indexEnd()));
                 else
-                    hitGlyphEnd = max<CFIndex>(hitGlyphStart, j > 0 ? complexTextRun.indexAt(j - 1) : static_cast<CFIndex>(complexTextRun.indexEnd()));
+                    hitGlyphEnd = std::max<CFIndex>(hitGlyphStart, j > 0 ? complexTextRun.indexAt(j - 1) : static_cast<CFIndex>(complexTextRun.indexEnd()));
 
                 // FIXME: Instead of dividing the glyph's advance equally between the characters, this
                 // could use the glyph's "ligature carets". However, there is no Core Text API to get the
@@ -443,9 +441,9 @@ void ComplexTextController::advance(unsigned offset, GlyphBuffer* glyphBuffer, G
             unsigned glyphEndOffset;
             if (complexTextRun.isMonotonic()) {
                 if (ltr)
-                    glyphEndOffset = max<unsigned>(glyphStartOffset, static_cast<unsigned>(g + 1 < glyphCount ? complexTextRun.indexAt(g + 1) : complexTextRun.indexEnd()));
+                    glyphEndOffset = std::max<unsigned>(glyphStartOffset, static_cast<unsigned>(g + 1 < glyphCount ? complexTextRun.indexAt(g + 1) : complexTextRun.indexEnd()));
                 else
-                    glyphEndOffset = max<unsigned>(glyphStartOffset, static_cast<unsigned>(g > 0 ? complexTextRun.indexAt(g - 1) : complexTextRun.indexEnd()));
+                    glyphEndOffset = std::max<unsigned>(glyphStartOffset, static_cast<unsigned>(g > 0 ? complexTextRun.indexAt(g - 1) : complexTextRun.indexEnd()));
             } else
                 glyphEndOffset = complexTextRun.endOffsetAt(g);
 
@@ -458,7 +456,7 @@ void ComplexTextController::advance(unsigned offset, GlyphBuffer* glyphBuffer, G
                 glyphBuffer->add(m_adjustedGlyphs[k], complexTextRun.fontData(), FloatSize(adjustedAdvance));
 
             unsigned oldCharacterInCurrentGlyph = m_characterInCurrentGlyph;
-            m_characterInCurrentGlyph = min(m_currentCharacter - complexTextRun.stringLocation(), glyphEndOffset) - glyphStartOffset;
+            m_characterInCurrentGlyph = std::min(m_currentCharacter - complexTextRun.stringLocation(), glyphEndOffset) - glyphStartOffset;
             // FIXME: Instead of dividing the glyph's advance equally between the characters, this
             // could use the glyph's "ligature carets". However, there is no Core Text API to get the
             // ligature carets.
@@ -512,7 +510,7 @@ void ComplexTextController::adjustGlyphsAndAdvances()
         float spaceWidth = fontData->spaceWidth() - fontData->syntheticBoldOffset();
         const UChar* cp = complexTextRun.characters();
         CGPoint glyphOrigin = CGPointZero;
-        CFIndex lastCharacterIndex = m_run.ltr() ? numeric_limits<CFIndex>::min() : numeric_limits<CFIndex>::max();
+        CFIndex lastCharacterIndex = m_run.ltr() ? std::numeric_limits<CFIndex>::min() : std::numeric_limits<CFIndex>::max();
         bool isMonotonic = true;
 
         for (unsigned i = 0; i < glyphCount; i++) {
@@ -598,10 +596,10 @@ void ComplexTextController::adjustGlyphsAndAdvances()
 
             FloatRect glyphBounds = fontData->boundsForGlyph(glyph);
             glyphBounds.move(glyphOrigin.x, glyphOrigin.y);
-            m_minGlyphBoundingBoxX = min(m_minGlyphBoundingBoxX, glyphBounds.x());
-            m_maxGlyphBoundingBoxX = max(m_maxGlyphBoundingBoxX, glyphBounds.maxX());
-            m_minGlyphBoundingBoxY = min(m_minGlyphBoundingBoxY, glyphBounds.y());
-            m_maxGlyphBoundingBoxY = max(m_maxGlyphBoundingBoxY, glyphBounds.maxY());
+            m_minGlyphBoundingBoxX = std::min(m_minGlyphBoundingBoxX, glyphBounds.x());
+            m_maxGlyphBoundingBoxX = std::max(m_maxGlyphBoundingBoxX, glyphBounds.maxX());
+            m_minGlyphBoundingBoxY = std::min(m_minGlyphBoundingBoxY, glyphBounds.y());
+            m_maxGlyphBoundingBoxY = std::max(m_maxGlyphBoundingBoxY, glyphBounds.maxY());
             glyphOrigin.x += advance.width;
             glyphOrigin.y += advance.height;
 

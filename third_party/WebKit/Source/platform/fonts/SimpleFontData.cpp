@@ -32,8 +32,6 @@
 
 #include "wtf/MathExtras.h"
 
-using namespace std;
-
 namespace blink {
 
 const float smallCapsFontSizeMultiplier = 0.7f;
@@ -96,7 +94,7 @@ void SimpleFontData::initCharWidths()
         m_avgCharWidth = m_fontMetrics.xHeight();
 
     if (m_maxCharWidth <= 0.f)
-        m_maxCharWidth = max(m_avgCharWidth, m_fontMetrics.floatAscent());
+        m_maxCharWidth = std::max(m_avgCharWidth, m_fontMetrics.floatAscent());
 }
 
 void SimpleFontData::platformGlyphInit()

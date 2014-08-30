@@ -77,8 +77,6 @@ static CGFontRenderingMode cgFontRenderingModeForNSFont(NSFont* font) {
     }
 }
 
-using namespace std;
-
 namespace blink {
 
 static bool fontHasVerticalGlyphs(CTFontRef ctFont)

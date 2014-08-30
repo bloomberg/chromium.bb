@@ -40,7 +40,6 @@
 #include "wtf/text/StringBuilder.h"
 
 using namespace icu;
-using namespace std;
 
 namespace blink {
 

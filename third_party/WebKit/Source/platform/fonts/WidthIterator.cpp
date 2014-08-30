@@ -34,7 +34,6 @@
 
 using namespace WTF;
 using namespace Unicode;
-using namespace std;
 
 namespace blink {
 
@@ -45,8 +44,8 @@ WidthIterator::WidthIterator(const Font* font, const TextRun& run, HashSet<const
     , m_runWidthSoFar(0)
     , m_isAfterExpansion(!run.allowsLeadingExpansion())
     , m_fallbackFonts(fallbackFonts)
-    , m_maxGlyphBoundingBoxY(numeric_limits<float>::min())
-    , m_minGlyphBoundingBoxY(numeric_limits<float>::max())
+    , m_maxGlyphBoundingBoxY(std::numeric_limits<float>::min())
+    , m_minGlyphBoundingBoxY(std::numeric_limits<float>::max())
     , m_firstGlyphOverflow(0)
     , m_lastGlyphOverflow(0)
     , m_accountForGlyphBounds(accountForGlyphBounds)
@@ -179,10 +178,10 @@ void WidthIterator::updateGlyphBounds(const GlyphData& glyphData, float width, b
     FloatRect bounds = glyphData.fontData->boundsForGlyph(glyphData.glyph);
 
     if (firstCharacter)
-        m_firstGlyphOverflow = max<float>(0, -bounds.x());
-    m_lastGlyphOverflow = max<float>(0, bounds.maxX() - width);
-    m_maxGlyphBoundingBoxY = max(m_maxGlyphBoundingBoxY, bounds.maxY());
-    m_minGlyphBoundingBoxY = min(m_minGlyphBoundingBoxY, bounds.y());
+        m_firstGlyphOverflow = std::max<float>(0, -bounds.x());
+    m_lastGlyphOverflow = std::max<float>(0, bounds.maxX() - width);
+    m_maxGlyphBoundingBoxY = std::max(m_maxGlyphBoundingBoxY, bounds.maxY());
+    m_minGlyphBoundingBoxY = std::min(m_minGlyphBoundingBoxY, bounds.y());
 }
 
 template <typename TextIterator>

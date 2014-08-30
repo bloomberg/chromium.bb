@@ -39,8 +39,6 @@
 #include "wtf/RetainPtr.h"
 #include "wtf/text/StringBuilder.h"
 
-using namespace std;
-
 namespace blink {
 
 static inline String languageFromLocale(const String& locale)
