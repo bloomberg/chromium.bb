@@ -33,6 +33,7 @@ REPLACEMENTS = {
   'use_system_libxslt': 'third_party/libxslt/libxslt.gyp',
   'use_system_openssl': 'third_party/boringssl/boringssl.gyp',
   'use_system_opus': 'third_party/opus/opus.gyp',
+  'use_system_protobuf': 'third_party/protobuf/protobuf.gyp',
   'use_system_re2': 'third_party/re2/re2.gyp',
   'use_system_snappy': 'third_party/snappy/snappy.gyp',
   'use_system_speex': 'third_party/speex/speex.gyp',
