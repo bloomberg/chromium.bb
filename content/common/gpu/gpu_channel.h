@@ -167,6 +167,12 @@ class GpuChannel : public IPC::Listener, public IPC::Sender {
   // Decrement the count of unhandled IPC messages and defer preemption.
   void MessageProcessed();
 
+  // Try to match the messages pattern for GL SwapBuffers operation in the
+  // deferred message queue starting from the current processing message.
+  // Return the number of messages that matches the given pattern, e.g.
+  // SetLatencyInfo -> AsyncFlush -> Echo sequence.
+  size_t MatchSwapBufferMessagesPattern(IPC::Message* current_message);
+
   // The lifetime of objects of this class is managed by a GpuChannelManager.
   // The GpuChannelManager destroy all the GpuChannels that they own when they
   // are destroyed. So a raw pointer is safe.
