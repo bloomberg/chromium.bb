@@ -566,9 +566,11 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("getPrinterCapabilities",
       base::Bind(&PrintPreviewHandler::HandleGetPrinterCapabilities,
                  base::Unretained(this)));
+#if !defined(OS_WIN)
   web_ui()->RegisterMessageCallback("showSystemDialog",
       base::Bind(&PrintPreviewHandler::HandleShowSystemDialog,
                  base::Unretained(this)));
+#endif  // !OS_WIN
   web_ui()->RegisterMessageCallback("signIn",
       base::Bind(&PrintPreviewHandler::HandleSignin,
                  base::Unretained(this)));
@@ -1022,6 +1024,7 @@ void PrintPreviewHandler::HandleManageCloudPrint(
       false));
 }
 
+#if !defined(OS_WIN)
 void PrintPreviewHandler::HandleShowSystemDialog(
     const base::ListValue* /*args*/) {
   ReportStats();
@@ -1041,6 +1044,7 @@ void PrintPreviewHandler::HandleShowSystemDialog(
       static_cast<PrintPreviewUI*>(web_ui()->GetController());
   print_preview_ui->OnCancelPendingPreviewRequest();
 }
+#endif  // !OS_WIN
 
 void PrintPreviewHandler::HandleManagePrinters(
     const base::ListValue* /*args*/) {
@@ -1286,9 +1290,11 @@ void PrintPreviewHandler::OnPrintPreviewFailed() {
   ReportUserActionHistogram(PREVIEW_FAILED);
 }
 
+#if !defined(OS_WIN)
 void PrintPreviewHandler::ShowSystemDialog() {
   HandleShowSystemDialog(NULL);
 }
+#endif  // !OS_WIN
 
 void PrintPreviewHandler::FileSelected(const base::FilePath& path,
                                        int index, void* params) {

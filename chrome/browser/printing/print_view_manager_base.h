@@ -35,10 +35,12 @@ class PrintViewManagerBase : public content::NotificationObserver,
  public:
   virtual ~PrintViewManagerBase();
 
+#if !defined(OS_WIN)
   // Prints the current document immediately. Since the rendering is
   // asynchronous, the actual printing will not be completed on the return of
   // this function. Returns false if printing is impossible at the moment.
   virtual bool PrintNow();
+#endif  // !OS_WIN
 
   // Whether to block scripted printing for our tab or not.
   void UpdateScriptedPrintingBlocked();

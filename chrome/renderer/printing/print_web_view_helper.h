@@ -118,8 +118,10 @@ class PrintWebViewHelper
   virtual void DidStopLoading() OVERRIDE;
 
   // Message handlers ---------------------------------------------------------
+#if !defined(OS_WIN)
   void OnPrintPages();
   void OnPrintForSystemDialog();
+#endif  // !OS_WIN
   void OnInitiatePrintPreview(bool selection_only);
   void OnPrintPreview(const base::DictionaryValue& settings);
   void OnPrintForPrintPreview(const base::DictionaryValue& job_settings);
