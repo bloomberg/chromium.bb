@@ -42,20 +42,20 @@ _IMPLEMENTATION_EXTENSIONS = r'\.(cc|cpp|cxx|mm)$'
 # Regular expression that matches code only used for test binaries
 # (best effort).
 _TEST_CODE_EXCLUDED_PATHS = (
-    r'.*[/\\](fake_|test_|mock_).+%s' % _IMPLEMENTATION_EXTENSIONS,
+    r'.*[\\\/](fake_|test_|mock_).+%s' % _IMPLEMENTATION_EXTENSIONS,
     r'.+_test_(base|support|util)%s' % _IMPLEMENTATION_EXTENSIONS,
     r'.+_(api|browser|kif|perf|pixel|unit|ui)?test(_[a-z]+)?%s' %
         _IMPLEMENTATION_EXTENSIONS,
     r'.+profile_sync_service_harness%s' % _IMPLEMENTATION_EXTENSIONS,
-    r'.*[/\\](test|tool(s)?)[/\\].*',
+    r'.*[\\\/](test|tool(s)?)[\\\/].*',
     # content_shell is used for running layout tests.
-    r'content[/\\]shell[/\\].*',
+    r'content[\\\/]shell[\\\/].*',
     # At request of folks maintaining this folder.
-    r'chrome[/\\]browser[/\\]automation[/\\].*',
+    r'chrome[\\\/]browser[\\\/]automation[\\\/].*',
     # Non-production example code.
-    r'mojo[/\\]examples[/\\].*',
+    r'mojo[\\\/]examples[\\\/].*',
     # Launcher for running iOS tests on the simulator.
-    r'testing[/\\]iossim[/\\]iossim\.mm$',
+    r'testing[\\\/]iossim[\\\/]iossim\.mm$',
 )
 
 _TEST_ONLY_WARNING = (
@@ -245,7 +245,7 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       True,
       (
-        r'extensions[/\\]renderer[/\\]safe_builtins\.*',
+        r'extensions[\\\/]renderer[\\\/]safe_builtins\.*',
       ),
     ),
 )
@@ -1118,17 +1118,17 @@ def _CheckParseErrors(input_api, output_api):
   }
   # These paths contain test data and other known invalid JSON files.
   excluded_patterns = [
-    'test/data/',
-    '^components/policy/resources/policy_templates.json$',
+    r'test[\\\/]data[\\\/]',
+    r'^components[\\\/]policy[\\\/]resources[\\\/]policy_templates\.json$',
   ]
   # Most JSON files are preprocessed and support comments, but these do not.
   json_no_comments_patterns = [
-    '^testing/',
+    r'^testing[\\\/]',
   ]
   # Only run IDL checker on files in these directories.
   idl_included_patterns = [
-    '^chrome/common/extensions/api/',
-    '^extensions/common/api/',
+    r'^chrome[\\\/]common[\\\/]extensions[\\\/]api[\\\/]',
+    r'^extensions[\\\/]common[\\\/]api[\\\/]',
   ]
 
   def get_action(affected_file):
@@ -1526,10 +1526,10 @@ def CheckChangeOnCommit(input_api, output_api):
 def GetPreferredTryMasters(project, change):
   files = change.LocalPaths()
 
-  if not files or all(re.search(r'[\\/]OWNERS$', f) for f in files):
+  if not files or all(re.search(r'[\\\/]OWNERS$', f) for f in files):
     return {}
 
-  if all(re.search('\.(m|mm)$|(^|[/_])mac[/_.]', f) for f in files):
+  if all(re.search(r'\.(m|mm)$|(^|[\\\/_])mac[\\\/_.]', f) for f in files):
     return GetDefaultTryConfigs([
         'mac_chromium_compile_dbg',
         'mac_chromium_rel_swarming',
@@ -1539,13 +1539,13 @@ def GetPreferredTryMasters(project, change):
         'win_chromium_dbg',
         'win_chromium_rel_swarming',
     ])
-  if all(re.search('(^|[/_])android[/_.]', f) for f in files):
+  if all(re.search(r'(^|[\\\/_])android[\\\/_.]', f) for f in files):
     return GetDefaultTryConfigs([
         'android_aosp',
         'android_clang_dbg',
         'android_dbg_tests_recipe',
     ])
-  if all(re.search('[/_]ios[/_.]', f) for f in files):
+  if all(re.search(r'[\\\/_]ios[\\\/_.]', f) for f in files):
     return GetDefaultTryConfigs(['ios_rel_device', 'ios_dbg_simulator'])
 
   builders = [
@@ -1570,7 +1570,7 @@ def GetPreferredTryMasters(project, change):
 
   # Match things like path/aura/file.cc and path/file_aura.cc.
   # Same for chromeos.
-  if any(re.search('[/_](aura|chromeos)', f) for f in files):
+  if any(re.search(r'[\\\/_](aura|chromeos)', f) for f in files):
     builders.extend([
         'linux_chromeos_asan',
         'linux_chromium_chromeos_clang_dbg'
