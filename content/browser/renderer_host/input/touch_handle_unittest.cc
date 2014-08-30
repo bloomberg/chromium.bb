@@ -13,6 +13,8 @@ using ui::test::MockMotionEvent;
 namespace content {
 namespace {
 
+const int kDefaultTapTimeoutMs = 200;
+const float kDefaultTapSlop = 10.f;
 const float kDefaultDrawableSize = 10.f;
 
 struct MockDrawableData {
@@ -94,6 +96,12 @@ class TouchHandleTest : public testing::Test, public TouchHandleClient {
     return scoped_ptr<TouchHandleDrawable>(
         new MockTouchHandleDrawable(&drawable_data_));
   }
+
+  virtual base::TimeDelta GetTapTimeout() const OVERRIDE {
+    return base::TimeDelta::FromMilliseconds(kDefaultTapTimeoutMs);
+  }
+
+  virtual float GetTapSlop() const OVERRIDE { return kDefaultTapSlop; }
 
   void Animate(TouchHandle& handle) {
     needs_animate_ = false;
@@ -452,18 +460,34 @@ TEST_F(TouchHandleTest, Tap) {
   // Long press shouldn't trigger a tap.
   event = MockMotionEvent(MockMotionEvent::ACTION_DOWN, event_time, 0, 0);
   EXPECT_TRUE(handle.WillHandleTouchEvent(event));
-  event_time += base::TimeDelta::FromMilliseconds(500);
+  event_time += 2 * GetTapTimeout();
   event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 0, 0);
   EXPECT_TRUE(handle.WillHandleTouchEvent(event));
   EXPECT_FALSE(GetAndResetHandleTapped());
 
-  // Only a brief tap should trigger a tap.
+  // Only a brief tap within the slop region should trigger a tap.
   event = MockMotionEvent(MockMotionEvent::ACTION_DOWN, event_time, 0, 0);
   EXPECT_TRUE(handle.WillHandleTouchEvent(event));
-  event_time += base::TimeDelta::FromMilliseconds(50);
-  event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 0, 0);
+  event_time += GetTapTimeout() / 2;
+  event = MockMotionEvent(
+      MockMotionEvent::ACTION_MOVE, event_time, kDefaultTapSlop / 2.f, 0);
+  EXPECT_TRUE(handle.WillHandleTouchEvent(event));
+  event = MockMotionEvent(
+      MockMotionEvent::ACTION_UP, event_time, kDefaultTapSlop / 2.f, 0);
   EXPECT_TRUE(handle.WillHandleTouchEvent(event));
   EXPECT_TRUE(GetAndResetHandleTapped());
+
+  // Moving beyond the slop region shouldn't trigger a tap.
+  event = MockMotionEvent(MockMotionEvent::ACTION_DOWN, event_time, 0, 0);
+  EXPECT_TRUE(handle.WillHandleTouchEvent(event));
+  event_time += GetTapTimeout() / 2;
+  event = MockMotionEvent(
+      MockMotionEvent::ACTION_MOVE, event_time, kDefaultTapSlop * 2.f, 0);
+  EXPECT_TRUE(handle.WillHandleTouchEvent(event));
+  event = MockMotionEvent(
+      MockMotionEvent::ACTION_UP, event_time, kDefaultTapSlop * 2.f, 0);
+  EXPECT_TRUE(handle.WillHandleTouchEvent(event));
+  EXPECT_FALSE(GetAndResetHandleTapped());
 }
 
 }  // namespace content

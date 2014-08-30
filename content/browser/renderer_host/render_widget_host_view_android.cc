@@ -72,6 +72,7 @@
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/android/view_configuration.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
@@ -193,6 +194,19 @@ scoped_ptr<OverscrollGlow> CreateOverscrollEffect(
       new OverscrollGlow(base::Bind(&CreateEdgeEffect,
                                     system_resource_manager,
                                     content_view_core->GetDpiScale())));
+}
+
+scoped_ptr<TouchSelectionController> CreateSelectionController(
+    TouchSelectionControllerClient* client,
+    ContentViewCore* content_view_core) {
+  DCHECK(client);
+  DCHECK(content_view_core);
+  int tap_timeout_ms = gfx::ViewConfiguration::GetTapTimeoutInMs();
+  int touch_slop_pixels = gfx::ViewConfiguration::GetTouchSlopInPixels();
+  return make_scoped_ptr(new TouchSelectionController(
+      client,
+      base::TimeDelta::FromMilliseconds(tap_timeout_ms),
+      touch_slop_pixels / content_view_core->GetDpiScale()));
 }
 
 ui::GestureProvider::Config CreateGestureProviderConfig() {
@@ -1635,7 +1649,7 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     WasResized();
 
   if (!selection_controller_)
-    selection_controller_.reset(new TouchSelectionController(this));
+    selection_controller_ = CreateSelectionController(this, content_view_core_);
 
   if (overscroll_effect_enabled_ && !overscroll_effect_ &&
       content_view_core_->GetWindowAndroid()->GetCompositor())

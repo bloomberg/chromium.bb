@@ -49,6 +49,8 @@ class CONTENT_EXPORT TouchHandleClient {
   virtual void OnHandleTapped(const TouchHandle& handle) = 0;
   virtual void SetNeedsAnimate() = 0;
   virtual scoped_ptr<TouchHandleDrawable> CreateDrawable() = 0;
+  virtual base::TimeDelta GetTapTimeout() const = 0;
+  virtual float GetTapSlop() const = 0;
 };
 
 // Responsible for displaying a selection or insertion handle for text
@@ -123,6 +125,7 @@ class CONTENT_EXPORT TouchHandle {
   bool enabled_;
   bool is_visible_;
   bool is_dragging_;
+  bool is_drag_within_tap_region_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchHandle);
 };

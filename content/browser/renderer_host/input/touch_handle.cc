@@ -40,7 +40,8 @@ TouchHandle::TouchHandle(TouchHandleClient* client,
       animate_deferred_fade_(false),
       enabled_(true),
       is_visible_(false),
-      is_dragging_(false) {
+      is_dragging_(false),
+      is_drag_within_tap_region_(false) {
   DCHECK_NE(orientation, TOUCH_HANDLE_ORIENTATION_UNDEFINED);
   drawable_->SetEnabled(enabled_);
   drawable_->SetOrientation(orientation_);
@@ -140,17 +141,26 @@ bool TouchHandle::WillHandleTouchEvent(const ui::MotionEvent& event) {
     } break;
 
     case ui::MotionEvent::ACTION_MOVE: {
-      gfx::PointF new_position =
-          gfx::PointF(event.GetX(), event.GetY()) + touch_to_focus_offset_;
-      client_->OnHandleDragUpdate(*this, new_position);
+      gfx::PointF touch_move_position(event.GetX(), event.GetY());
+      if (is_drag_within_tap_region_) {
+        const float tap_slop = client_->GetTapSlop();
+        is_drag_within_tap_region_ =
+            (touch_move_position - touch_down_position_).LengthSquared() <
+            tap_slop * tap_slop;
+      }
+
+      // Note that we signal drag update even if we're inside the tap region,
+      // as there are cases where characters are narrower than the slop length.
+      client_->OnHandleDragUpdate(*this,
+                                  touch_move_position + touch_to_focus_offset_);
     } break;
 
     case ui::MotionEvent::ACTION_UP: {
-      // TODO(jdduke): Use the platform touch slop distance and tap delay to
-      // properly detect a tap, crbug.com/394093.
-      base::TimeDelta delay = event.GetEventTime() - touch_down_time_;
-      if (delay < base::TimeDelta::FromMilliseconds(180))
+      if (is_drag_within_tap_region_ &&
+          (event.GetEventTime() - touch_down_time_) <
+              client_->GetTapTimeout()) {
         client_->OnHandleTapped(*this);
+      }
 
       EndDrag();
     } break;
@@ -192,6 +202,7 @@ void TouchHandle::BeginDrag() {
     return;
   EndFade();
   is_dragging_ = true;
+  is_drag_within_tap_region_ = true;
   client_->OnHandleDragBegin(*this);
 }
 
@@ -201,6 +212,7 @@ void TouchHandle::EndDrag() {
     return;
 
   is_dragging_ = false;
+  is_drag_within_tap_region_ = false;
   client_->OnHandleDragEnd(*this);
 
   if (deferred_orientation_ != TOUCH_HANDLE_ORIENTATION_UNDEFINED) {

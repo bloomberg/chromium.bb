@@ -29,8 +29,12 @@ TouchHandleOrientation ToTouchHandleOrientation(cc::SelectionBoundType type) {
 }  // namespace
 
 TouchSelectionController::TouchSelectionController(
-    TouchSelectionControllerClient* client)
+    TouchSelectionControllerClient* client,
+    base::TimeDelta tap_timeout,
+    float tap_slop)
     : client_(client),
+      tap_timeout_(tap_timeout),
+      tap_slop_(tap_slop),
       response_pending_input_event_(INPUT_EVENT_TYPE_NONE),
       start_orientation_(TOUCH_HANDLE_ORIENTATION_UNDEFINED),
       end_orientation_(TOUCH_HANDLE_ORIENTATION_UNDEFINED),
@@ -246,6 +250,14 @@ void TouchSelectionController::SetNeedsAnimate() {
 
 scoped_ptr<TouchHandleDrawable> TouchSelectionController::CreateDrawable() {
   return client_->CreateDrawable();
+}
+
+base::TimeDelta TouchSelectionController::GetTapTimeout() const {
+  return tap_timeout_;
+}
+
+float TouchSelectionController::GetTapSlop() const {
+  return tap_slop_;
 }
 
 void TouchSelectionController::ShowInsertionHandleAutomatically() {

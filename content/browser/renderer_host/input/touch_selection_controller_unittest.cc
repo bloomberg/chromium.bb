@@ -12,6 +12,9 @@ using ui::test::MockMotionEvent;
 namespace content {
 namespace {
 
+const int kDefaultTapTimeoutMs = 200;
+const float kDefaulTapSlop = 10.f;
+
 class MockTouchHandleDrawable : public TouchHandleDrawable {
  public:
   explicit MockTouchHandleDrawable(bool* contains_point)
@@ -47,7 +50,10 @@ class TouchSelectionControllerTest : public testing::Test,
 
   // testing::Test implementation.
   virtual void SetUp() OVERRIDE {
-    controller_.reset(new TouchSelectionController(this));
+    controller_.reset(new TouchSelectionController(
+        this,
+        base::TimeDelta::FromMilliseconds(kDefaultTapTimeoutMs),
+        kDefaulTapSlop));
   }
 
   virtual void TearDown() OVERRIDE { controller_.reset(); }
@@ -382,6 +388,21 @@ TEST_F(TouchSelectionControllerTest, InsertionTapped) {
                           event_time + base::TimeDelta::FromSeconds(1),
                           0,
                           0);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  EXPECT_EQ(INSERTION_DRAG_STARTED, GetLastEventType());
+
+  // Reset the insertion.
+  ClearInsertion();
+  controller().OnTapEvent();
+  ChangeInsertion(start_rect, visible);
+  ASSERT_EQ(INSERTION_SHOWN, GetLastEventType());
+
+  // No tap should be signalled if the drag was too long.
+  event = MockMotionEvent(MockMotionEvent::ACTION_DOWN, event_time, 0, 0);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  event = MockMotionEvent(MockMotionEvent::ACTION_MOVE, event_time, 100, 0);
+  EXPECT_TRUE(controller().WillHandleTouchEvent(event));
+  event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 100, 0);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
   EXPECT_EQ(INSERTION_DRAG_STARTED, GetLastEventType());
 

@@ -41,7 +41,9 @@ class CONTENT_EXPORT TouchSelectionControllerClient {
 // Controller for manipulating text selection via touch input.
 class CONTENT_EXPORT TouchSelectionController : public TouchHandleClient {
  public:
-  explicit TouchSelectionController(TouchSelectionControllerClient* client);
+  TouchSelectionController(TouchSelectionControllerClient* client,
+                           base::TimeDelta tap_timeout,
+                           float tap_slop);
   virtual ~TouchSelectionController();
 
   // To be called when the selection bounds have changed.
@@ -91,6 +93,8 @@ class CONTENT_EXPORT TouchSelectionController : public TouchHandleClient {
   virtual void OnHandleTapped(const TouchHandle& handle) OVERRIDE;
   virtual void SetNeedsAnimate() OVERRIDE;
   virtual scoped_ptr<TouchHandleDrawable> CreateDrawable() OVERRIDE;
+  virtual base::TimeDelta GetTapTimeout() const OVERRIDE;
+  virtual float GetTapSlop() const OVERRIDE;
 
   void ShowInsertionHandleAutomatically();
   void ShowSelectionHandlesAutomatically();
@@ -113,6 +117,8 @@ class CONTENT_EXPORT TouchSelectionController : public TouchHandleClient {
   TouchHandle::AnimationStyle GetAnimationStyle(bool was_active) const;
 
   TouchSelectionControllerClient* const client_;
+  const base::TimeDelta tap_timeout_;
+  const float tap_slop_;
 
   InputEventType response_pending_input_event_;
 
