@@ -711,6 +711,10 @@ public:
     // Returns 0 if this is the top level document.
     HTMLFrameOwnerElement* ownerElement() const;
 
+    // Returns true if this document belongs to a frame that the parent document
+    // made invisible (for instance by setting as style display:none).
+    bool isInInvisibleSubframe() const;
+
     String title() const { return m_title; }
     void setTitle(const String&);
 

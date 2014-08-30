@@ -779,6 +779,11 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
         if (!node || !node->inDocument())
             continue;
 
+        // If the document belongs to an invisible subframe it does not have a composited layer
+        // and should be skipped.
+        if (node->document().isInInvisibleSubframe())
+            continue;
+
         if (node->isDocumentNode() && node != document) {
             accumulateDocumentTouchEventTargetRects(rects, toDocument(node));
         } else if (RenderObject* renderer = node->renderer()) {
@@ -809,7 +814,6 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
             }
         }
     }
-
 }
 
 void ScrollingCoordinator::computeTouchEventTargetRects(LayerHitTestRects& rects)
