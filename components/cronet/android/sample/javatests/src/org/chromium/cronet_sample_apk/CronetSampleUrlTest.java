@@ -130,7 +130,7 @@ public class CronetSampleUrlTest extends CronetSampleTestBase {
         HashMap<String, String> headers = new HashMap<String, String>();
         BadHttpUrlRequestListener listener = new BadHttpUrlRequestListener();
 
-        // Create request with null listener to trigger an exception.
+        // Create request with bad listener to trigger an exception.
         HttpUrlRequest request = activity.mChromiumRequestFactory.createRequest(
                 URL, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
         request.start();
@@ -138,7 +138,31 @@ public class CronetSampleUrlTest extends CronetSampleTestBase {
         assertTrue(request.isCanceled());
         assertNotNull(request.getException());
         assertEquals(listener.THROW_TAG, request.getException().getCause().getMessage());
+    }
 
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testSetUploadDataWithNullContentType() throws Exception {
+        CronetSampleActivity activity = launchCronetSampleWithUrl(URL);
+
+        // Make sure the activity was created as expected.
+        assertNotNull(activity);
+
+        waitForActiveShellToBeDoneLoading();
+
+        HashMap<String, String> headers = new HashMap<String, String>();
+        BadHttpUrlRequestListener listener = new BadHttpUrlRequestListener();
+
+        // Create request.
+        HttpUrlRequest request = activity.mChromiumRequestFactory.createRequest(
+                URL, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
+        byte[] uploadData = new byte[] {1, 2, 3};
+        try {
+            request.setUploadData(null, uploadData);
+            fail("setUploadData should throw on null content type");
+        } catch (NullPointerException e) {
+            // Nothing to do here.
+        }
     }
 
     @SmallTest

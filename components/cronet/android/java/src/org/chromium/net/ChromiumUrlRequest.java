@@ -214,6 +214,7 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
     public void setUploadData(String contentType, byte[] data) {
         synchronized (mLock) {
             validateNotStarted();
+            validateContentType(contentType);
             mUploadContentType = contentType;
             mUploadData = data;
             mUploadChannel = null;
@@ -234,6 +235,7 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
             ReadableByteChannel channel, long contentLength) {
         synchronized (mLock) {
             validateNotStarted();
+            validateContentType(contentType);
             mUploadContentType = contentType;
             mUploadChannel = channel;
             mUploadContentLength = contentLength;
@@ -252,6 +254,7 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
     public void setChunkedUpload(String contentType) {
         synchronized (mLock) {
             validateNotStarted();
+            validateContentType(contentType);
             mUploadContentType = contentType;
             mChunkedUpload = true;
             mUploadData = null;
@@ -452,6 +455,12 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
     private void validateHeadersAvailable() {
         if (!mHeadersAvailable) {
             throw new IllegalStateException("Response headers not available");
+        }
+    }
+
+    private void validateContentType(String contentType) {
+        if (contentType == null) {
+            throw new NullPointerException("contentType is required");
         }
     }
 
