@@ -23,6 +23,7 @@ bool ContextMenuContentTypeWebView::SupportsGroup(int group) {
     case ITEM_GROUP_PAGE:
     case ITEM_GROUP_FRAME:
     case ITEM_GROUP_LINK:
+    case ITEM_GROUP_SEARCHWEBFORIMAGE:
     case ITEM_GROUP_SEARCH_PROVIDER:
     case ITEM_GROUP_PRINT:
     case ITEM_GROUP_ALL_EXTENSION:
