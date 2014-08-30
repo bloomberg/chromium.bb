@@ -255,7 +255,7 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   // Returns a list of values from the stored profiles that match |type| and the
   // value of |field| and returns the labels of the matching profiles. |labels|
   // is filled with the Profile label.
-  void GetProfileSuggestions(FormStructure* form,
+  void GetProfileSuggestions(const FormStructure& form,
                              const FormFieldData& field,
                              const AutofillType& type,
                              std::vector<base::string16>* values,

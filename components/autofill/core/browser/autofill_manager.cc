@@ -465,7 +465,7 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
           field, type, &values, &labels, &icons, &unique_ids);
     } else {
       GetProfileSuggestions(
-          form_structure, field, type, &values, &labels, &icons, &unique_ids);
+          *form_structure, field, type, &values, &labels, &icons, &unique_ids);
     }
 
     DCHECK_EQ(values.size(), labels.size());
@@ -477,9 +477,7 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
       // provide credit card suggestions for non-HTTPS pages. However, provide a
       // warning to the user in these cases.
       int warning = 0;
-      if (!form_structure->IsAutofillable())
-        warning = IDS_AUTOFILL_WARNING_FORM_DISABLED;
-      else if (is_filling_credit_card && !FormIsHTTPS(*form_structure))
+      if (is_filling_credit_card && !FormIsHTTPS(*form_structure))
         warning = IDS_AUTOFILL_WARNING_INSECURE_CONNECTION;
       if (warning) {
         values.assign(1, l10n_util::GetStringUTF16(warning));
@@ -1074,16 +1072,16 @@ bool AutofillManager::UpdateCachedForm(const FormData& live_form,
 }
 
 void AutofillManager::GetProfileSuggestions(
-    FormStructure* form,
+    const FormStructure& form,
     const FormFieldData& field,
     const AutofillType& type,
     std::vector<base::string16>* values,
     std::vector<base::string16>* labels,
     std::vector<base::string16>* icons,
     std::vector<int>* unique_ids) const {
-  std::vector<ServerFieldType> field_types(form->field_count());
-  for (size_t i = 0; i < form->field_count(); ++i) {
-    field_types.push_back(form->field(i)->Type().GetStorableType());
+  std::vector<ServerFieldType> field_types(form.field_count());
+  for (size_t i = 0; i < form.field_count(); ++i) {
+    field_types.push_back(form.field(i)->Type().GetStorableType());
   }
   std::vector<GUIDPair> guid_pairs;
 
