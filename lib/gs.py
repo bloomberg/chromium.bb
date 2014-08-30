@@ -318,8 +318,8 @@ class GSContext(object):
       result = self.DoCommand(cmd, combine_stdout_stderr=True,
                               redirect_stdout=True)
 
-      # Expect output like: gsutil version 3.35
-      match = re.search(r'^\s*gsutil\s+version\s+([\d.]+)', result.output,
+      # Expect output like: 'gsutil version 3.35' or 'gsutil version: 4.5'.
+      match = re.search(r'^\s*gsutil\s+version:?\s+([\d.]+)', result.output,
                         re.IGNORECASE)
       if match:
         self._gsutil_version = match.group(1)

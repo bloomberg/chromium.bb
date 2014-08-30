@@ -150,6 +150,12 @@ class VersionTest(AbstractGSContextTest):
     self.ctx._gsutil_version = '3.37'
     self.assertEquals('3.37', self.ctx.gsutil_version)
 
+  def testGetVersionNewFormat(self):
+    """Simple gsutil_version fetch test for new gsutil output format."""
+    self.gs_mock.AddCmdResult(partial_mock.In('version'), returncode=0,
+                              output='gsutil version: 4.5\n')
+    self.assertEquals('4.5', self.ctx.gsutil_version)
+
   def testGetVersionBadOutput(self):
     """Simple gsutil_version fetch test from cache."""
     self.gs_mock.AddCmdResult(partial_mock.In('version'), returncode=0,
