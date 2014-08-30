@@ -701,6 +701,9 @@ weston_wm_window_activate(struct wl_listener *listener, void *data)
 	}
 
 	if (window) {
+		if (window->override_redirect)
+			return;
+
 		client_message.response_type = XCB_CLIENT_MESSAGE;
 		client_message.format = 32;
 		client_message.window = window->id;
