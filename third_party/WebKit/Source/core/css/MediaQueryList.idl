@@ -16,13 +16,22 @@
  *  the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  *  Boston, MA 02110-1301, USA.
  */
+
+// http://dev.w3.org/csswg/cssom-view/#mediaquerylist
 [
     ActiveDOMObject,
     NoInterfaceObject,
     WillBeGarbageCollected
-] interface MediaQueryList {
+] interface MediaQueryList : EventTarget {
     readonly attribute DOMString media;
     readonly attribute boolean matches;
-    void addListener([Default=Undefined] optional MediaQueryListListener listener);
-    void removeListener([Default=Undefined] optional MediaQueryListListener listener);
+
+    // Even though this interface is now an event target, these functions
+    // exist as aliases for addEventListener for backwards compatibility
+    // with older versions of this interface. See the note at
+    // http://dev.w3.org/csswg/cssom-view/#dom-mediaquerylist-removelistener
+    [ImplementedAs=addDeprecatedListener] void addListener([Default=Undefined] optional EventListener listener);
+    [ImplementedAs=removeDeprecatedListener]void removeListener([Default=Undefined] optional EventListener listener);
+
+    attribute EventHandler onchange;
 };

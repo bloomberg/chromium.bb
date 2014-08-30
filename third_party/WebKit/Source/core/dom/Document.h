@@ -911,6 +911,8 @@ public:
     void enqueueResizeEvent();
     void enqueueScrollEventForNode(Node*);
     void enqueueAnimationFrameEvent(PassRefPtrWillBeRawPtr<Event>);
+    // Only one event for a target/event type combination will be dispatched per frame.
+    void enqueueUniqueAnimationFrameEvent(PassRefPtrWillBeRawPtr<Event>);
     void enqueueMediaQueryChangeListeners(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> >&);
 
     bool hasFullscreenSupplement() const { return m_hasFullscreenSupplement; }

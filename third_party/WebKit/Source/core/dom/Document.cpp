@@ -3895,6 +3895,11 @@ void Document::enqueueAnimationFrameEvent(PassRefPtrWillBeRawPtr<Event> event)
     ensureScriptedAnimationController().enqueueEvent(event);
 }
 
+void Document::enqueueUniqueAnimationFrameEvent(PassRefPtrWillBeRawPtr<Event> event)
+{
+    ensureScriptedAnimationController().enqueuePerFrameEvent(event);
+}
+
 void Document::enqueueScrollEventForNode(Node* target)
 {
     // Per the W3C CSSOM View Module only scroll events fired at the document should bubble.
@@ -3914,7 +3919,6 @@ void Document::enqueueMediaQueryChangeListeners(WillBeHeapVector<RefPtrWillBeMem
 {
     ensureScriptedAnimationController().enqueueMediaQueryChangeListeners(listeners);
 }
-
 
 Document::EventFactorySet& Document::eventFactories()
 {

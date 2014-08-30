@@ -22,6 +22,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
+#include "core/events/EventTarget.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
@@ -29,6 +30,7 @@
 
 namespace blink {
 
+class Document;
 class ExecutionContext;
 class MediaQueryListListener;
 class MediaQueryEvaluator;
@@ -40,7 +42,9 @@ class MediaQuerySet;
 // retrieve the current value of the given media query and to add/remove listeners that
 // will be called whenever the value of the query changes.
 
-class MediaQueryList FINAL : public RefCountedWillBeGarbageCollectedFinalized<MediaQueryList>, public ActiveDOMObject, public ScriptWrappable {
+class MediaQueryList FINAL : public RefCountedWillBeGarbageCollectedFinalized<MediaQueryList>, public EventTargetWithInlineData, public ActiveDOMObject {
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCounted<MediaQueryList>);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaQueryList);
 public:
     static PassRefPtrWillBeRawPtr<MediaQueryList> create(ExecutionContext*, PassRefPtrWillBeRawPtr<MediaQueryMatcher>, PassRefPtrWillBeRawPtr<MediaQuerySet>);
     virtual ~MediaQueryList();
@@ -48,16 +52,28 @@ public:
     String media() const;
     bool matches();
 
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
+
+    // These two functions are provided for compatibility with JS code
+    // written before the change listener became a DOM event.
+    void addDeprecatedListener(PassRefPtr<EventListener>);
+    void removeDeprecatedListener(PassRefPtr<EventListener>);
+
+    // C++ code can use these functions to listen to changes instead of having to use DOM event listeners.
     void addListener(PassRefPtrWillBeRawPtr<MediaQueryListListener>);
     void removeListener(PassRefPtrWillBeRawPtr<MediaQueryListListener>);
 
-    void mediaFeaturesChanged(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> >* listenersToNotify);
+    // Will return true if a DOM event should be scheduled.
+    bool mediaFeaturesChanged(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> >* listenersToNotify);
 
     void trace(Visitor*);
 
     // From ActiveDOMObject
     virtual bool hasPendingActivity() const OVERRIDE;
     virtual void stop() OVERRIDE;
+
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual ExecutionContext* executionContext() const OVERRIDE;
 
 private:
     MediaQueryList(ExecutionContext*, PassRefPtrWillBeRawPtr<MediaQueryMatcher>, PassRefPtrWillBeRawPtr<MediaQuerySet>);

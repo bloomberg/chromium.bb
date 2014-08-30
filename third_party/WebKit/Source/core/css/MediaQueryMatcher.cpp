@@ -23,6 +23,7 @@
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/MediaQueryList.h"
+#include "core/css/MediaQueryListEvent.h"
 #include "core/css/MediaQueryListListener.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
@@ -121,8 +122,13 @@ void MediaQueryMatcher::mediaFeaturesChanged()
         return;
 
     WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> > listenersToNotify;
-    for (MediaQueryListSet::iterator it = m_mediaLists.begin(); it != m_mediaLists.end(); ++it)
-        (*it)->mediaFeaturesChanged(&listenersToNotify);
+    for (MediaQueryListSet::iterator it = m_mediaLists.begin(); it != m_mediaLists.end(); ++it) {
+        if ((*it)->mediaFeaturesChanged(&listenersToNotify)) {
+            RefPtrWillBeRawPtr<Event> event(MediaQueryListEvent::create(*it));
+            event->setTarget(*it);
+            m_document->enqueueUniqueAnimationFrameEvent(event);
+        }
+    }
     m_document->enqueueMediaQueryChangeListeners(listenersToNotify);
 }
 

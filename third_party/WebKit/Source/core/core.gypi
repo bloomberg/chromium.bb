@@ -40,6 +40,7 @@
             'css/FontFaceSetLoadEvent.idl',
             'css/MediaList.idl',
             'css/MediaQueryList.idl',
+            'css/MediaQueryListEvent.idl',
             'css/RGBColor.idl',
             'css/Rect.idl',
             'css/StyleMedia.idl',
@@ -498,6 +499,7 @@
         # interfaces that inherit from Event, including Event itself
         'core_event_idl_files': [
             'css/FontFaceSetLoadEvent.idl',
+            'css/MediaQueryListEvent.idl',
             'events/AnimationPlayerEvent.idl',
             'events/ApplicationCacheErrorEvent.idl',
             'events/AutocompleteErrorEvent.idl',
@@ -862,6 +864,7 @@
             'css/MediaQueryExp.h',
             'css/MediaQueryList.cpp',
             'css/MediaQueryList.h',
+            'css/MediaQueryListEvent.h',
             'css/MediaQueryListListener.cpp',
             'css/MediaQueryListListener.h',
             'css/MediaQueryMatcher.cpp',

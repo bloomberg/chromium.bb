@@ -22,7 +22,8 @@
     }
     function listener(list) {
         window.mediaListArgument = list;
-        shouldBe("mediaList", "mediaListArgument");
+        shouldBe("mediaList.matches", "mediaListArgument.matches");
+        shouldBe("mediaList.media", "mediaListArgument.media");
         shouldBe("mediaList.matches", expectedValue);
         runNextTest();
     }

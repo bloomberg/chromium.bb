@@ -134,7 +134,7 @@ if (info.Length() > {{argument.index}} && {% if argument.is_nullable %}!isUndefi
 {% if argument.is_callback_interface %}
 {# FIXME: remove EventListener special case #}
 {% if argument.idl_type == 'EventListener' %}
-{% if method.name == 'removeEventListener' %}
+{% if method.name == 'removeEventListener' or method.name == 'removeListener' %}
 {{argument.name}} = V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), info[{{argument.index}}], false, ListenerFindOnly);
 {% else %}{# method.name == 'addEventListener' #}
 {{argument.name}} = V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), info[{{argument.index}}], false, ListenerFindOrCreate);
@@ -281,14 +281,15 @@ else
 {% endif %}
 {%- endif %}{# None for void #}
 {# Post-set #}
-{% if interface_name == 'EventTarget' and method.name in ('addEventListener',
-                                                          'removeEventListener') %}
+{% if interface_name in ('EventTarget', 'MediaQueryList')
+    and method.name in ('addEventListener', 'removeEventListener', 'addListener', 'removeListener') %}
 {% set hidden_dependency_action = 'addHiddenValueToArray'
-       if method.name == 'addEventListener' else 'removeHiddenValueFromArray' %}
+       if method.name in ('addEventListener', 'addListener') else 'removeHiddenValueFromArray' %}
+{% set argument_index = '1' if interface_name == 'EventTarget' else '0' %}
 {# Length check needed to skip action on legacy calls without enough arguments.
    http://crbug.com/353484 #}
-if (info.Length() >= 2 && listener && !impl->toNode())
-    {{hidden_dependency_action}}(info.Holder(), info[1], {{v8_class}}::eventListenerCacheIndex, info.GetIsolate());
+if (info.Length() >= {{argument_index}} + 1 && listener && !impl->toNode())
+    {{hidden_dependency_action}}(info.Holder(), info[{{argument_index}}], {{v8_class}}::eventListenerCacheIndex, info.GetIsolate());
 {% endif %}
 {% endmacro %}
 

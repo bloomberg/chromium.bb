@@ -313,7 +313,6 @@ interface TestObject {
     any anyMethod();
     void voidMethodCompareHowArg(CompareHow compareHowArg);
     void voidMethodEventTargetArg(EventTarget eventTargetArg);
-    void voidMethodMediaQueryListListenerArg(MediaQueryListListener mediaQueryListListenerArg);
     void voidMethodAnyArg(any anyArg);
     // DOM node types
     void voidMethodAttrArg(Attr attrArg);

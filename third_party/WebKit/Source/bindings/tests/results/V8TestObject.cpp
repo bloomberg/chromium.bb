@@ -49,7 +49,6 @@
 #include "bindings/tests/v8/V8Window.h"
 #include "bindings/tests/v8/V8XPathNSResolver.h"
 #include "core/HTMLNames.h"
-#include "core/css/MediaQueryListListener.h"
 #include "core/dom/ClassCollection.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
@@ -5818,29 +5817,6 @@ static void voidMethodEventTargetArgMethodCallback(const v8::FunctionCallbackInf
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void voidMethodMediaQueryListListenerArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodMediaQueryListListenerArg", "TestObject", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
-        return;
-    }
-    TestObject* impl = V8TestObject::toNative(info.Holder());
-    RefPtrWillBeRawPtr<MediaQueryListListener> mediaQueryListListenerArg;
-    {
-        v8::TryCatch block;
-        V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(mediaQueryListListenerArg, MediaQueryListListener::create(ScriptState::current(info.GetIsolate()), ScriptValue(ScriptState::current(info.GetIsolate()), info[0])));
-    }
-    impl->voidMethodMediaQueryListListenerArg(mediaQueryListListenerArg);
-}
-
-static void voidMethodMediaQueryListListenerArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    TestObjectV8Internal::voidMethodMediaQueryListListenerArgMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
 static void voidMethodAnyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
@@ -10419,7 +10395,6 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"anyMethod", TestObjectV8Internal::anyMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodCompareHowArg", TestObjectV8Internal::voidMethodCompareHowArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodEventTargetArg", TestObjectV8Internal::voidMethodEventTargetArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
-    {"voidMethodMediaQueryListListenerArg", TestObjectV8Internal::voidMethodMediaQueryListListenerArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodAnyArg", TestObjectV8Internal::voidMethodAnyArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodAttrArg", TestObjectV8Internal::voidMethodAttrArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodDocumentArg", TestObjectV8Internal::voidMethodDocumentArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},

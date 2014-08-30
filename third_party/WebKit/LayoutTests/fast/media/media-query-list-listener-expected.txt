@@ -4,9 +4,11 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS mediaList.matches is true
-PASS mediaList is mediaListArgument
+PASS mediaList.matches is mediaListArgument.matches
+PASS mediaList.media is mediaListArgument.media
 PASS mediaList.matches is false
-PASS mediaList is mediaListArgument
+PASS mediaList.matches is mediaListArgument.matches
+PASS mediaList.media is mediaListArgument.media
 PASS mediaList.matches is true
 PASS mediaList.matches is false
 PASS successfullyParsed is true

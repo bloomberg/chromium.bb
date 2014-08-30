@@ -24,6 +24,7 @@
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/MediaQueryListListener.h"
 #include "core/css/MediaQueryMatcher.h"
+#include "core/dom/Document.h"
 
 namespace blink {
 
@@ -58,6 +59,16 @@ String MediaQueryList::media() const
     return m_media->mediaText();
 }
 
+void MediaQueryList::addDeprecatedListener(PassRefPtr<EventListener> listener)
+{
+    addEventListener(EventTypeNames::change, listener, false);
+}
+
+void MediaQueryList::removeDeprecatedListener(PassRefPtr<EventListener> listener)
+{
+    removeEventListener(EventTypeNames::change, listener, false);
+}
+
 void MediaQueryList::addListener(PassRefPtrWillBeRawPtr<MediaQueryListListener> listener)
 {
     if (!listener)
@@ -74,20 +85,12 @@ void MediaQueryList::removeListener(PassRefPtrWillBeRawPtr<MediaQueryListListene
 
     RefPtrWillBeRawPtr<MediaQueryList> protect(this);
     listener->clearMediaQueryList();
-
-    for (ListenerList::iterator it = m_listeners.begin(), end = m_listeners.end(); it != end; ++it) {
-        // We can't just use m_listeners.remove() here, because we get a new wrapper for the
-        // listener callback every time. We have to use MediaQueryListListener::operator==.
-        if (**it == *listener.get()) {
-            m_listeners.remove(it);
-            break;
-        }
-    }
+    m_listeners.remove(listener);
 }
 
 bool MediaQueryList::hasPendingActivity() const
 {
-    return m_listeners.size();
+    return m_listeners.size() || hasEventListeners(EventTypeNames::change);
 }
 
 void MediaQueryList::stop()
@@ -95,16 +98,18 @@ void MediaQueryList::stop()
     // m_listeners.clear() can drop the last ref to this MediaQueryList.
     RefPtrWillBeRawPtr<MediaQueryList> protect(this);
     m_listeners.clear();
+    removeAllEventListeners();
 }
 
-void MediaQueryList::mediaFeaturesChanged(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> >* listenersToNotify)
+bool MediaQueryList::mediaFeaturesChanged(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> >* listenersToNotify)
 {
     m_matchesDirty = true;
     if (!updateMatches())
-        return;
+        return false;
     for (ListenerList::const_iterator it = m_listeners.begin(), end = m_listeners.end(); it != end; ++it) {
         listenersToNotify->append(*it);
     }
+    return hasEventListeners(EventTypeNames::change);
 }
 
 bool MediaQueryList::updateMatches()
@@ -130,6 +135,17 @@ void MediaQueryList::trace(Visitor* visitor)
     visitor->trace(m_media);
     visitor->trace(m_listeners);
 #endif
+    EventTargetWithInlineData::trace(visitor);
+}
+
+const AtomicString& MediaQueryList::interfaceName() const
+{
+    return EventTargetNames::MediaQueryList;
+}
+
+ExecutionContext* MediaQueryList::executionContext() const
+{
+    return ActiveDOMObject::executionContext();
 }
 
 }
