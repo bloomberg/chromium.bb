@@ -165,24 +165,11 @@ class HomeCardView : public views::WidgetDelegateView {
       main_view_->SetLayoutState(1.0f - progress);
     else if (to_state == HomeCard::VISIBLE_CENTERED)
       main_view_->SetLayoutState(progress);
-    else
-      SetState(to_state);
-  }
-
-  void SetState(HomeCard::State state) {
-    if (state == HomeCard::VISIBLE_CENTERED)
-      main_view_->RequestFocusOnSearchBox();
-    else
-      GetWidget()->GetFocusManager()->ClearFocus();
-    wm::SetShadowType(GetWidget()->GetNativeView(),
-                      state == HomeCard::VISIBLE_MINIMIZED ?
-                      wm::SHADOW_TYPE_NONE :
-                      wm::SHADOW_TYPE_RECTANGULAR);
-    main_view_->SetLayoutState(
-        (state == HomeCard::VISIBLE_CENTERED) ? 1.0f : 0.0f);
+    UpdateShadow(true);
   }
 
   void SetStateWithAnimation(HomeCard::State state) {
+    UpdateShadow(state != HomeCard::VISIBLE_MINIMIZED);
     if (state == HomeCard::VISIBLE_CENTERED)
       main_view_->RequestFocusOnSearchBox();
     else
@@ -221,6 +208,12 @@ class HomeCardView : public views::WidgetDelegateView {
   }
 
  private:
+  void UpdateShadow(bool should_show) {
+    wm::SetShadowType(
+        GetWidget()->GetNativeWindow(),
+        should_show ? wm::SHADOW_TYPE_RECTANGULAR : wm::SHADOW_TYPE_NONE);
+  }
+
   // views::WidgetDelegate:
   virtual views::View* GetContentsView() OVERRIDE {
     return this;

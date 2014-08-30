@@ -17,6 +17,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace athena {
 
@@ -45,14 +46,18 @@ TEST_F(HomeCardTest, BasicTransition) {
   EXPECT_EQ(screen_height - kHomeCardMinimizedHeight,
             home_card->GetTargetBounds().y());
   EXPECT_EQ(work_area_height, home_card->GetTargetBounds().y());
+  EXPECT_EQ(wm::ShadowType::SHADOW_TYPE_NONE, wm::GetShadowType(home_card));
 
   WindowManager::GetInstance()->ToggleOverview();
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
   EXPECT_EQ(screen_height - kHomeCardHeight, home_card->GetTargetBounds().y());
+  EXPECT_EQ(wm::ShadowType::SHADOW_TYPE_RECTANGULAR,
+            wm::GetShadowType(home_card));
 
   WindowManager::GetInstance()->ToggleOverview();
   EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
   EXPECT_EQ(work_area_height, home_card->GetTargetBounds().y());
+  EXPECT_EQ(wm::ShadowType::SHADOW_TYPE_NONE, wm::GetShadowType(home_card));
 }
 
 TEST_F(HomeCardTest, VirtualKeyboardTransition) {
@@ -69,7 +74,12 @@ TEST_F(HomeCardTest, VirtualKeyboardTransition) {
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
   HomeCard::Get()->UpdateVirtualKeyboardBounds(vk_bounds);
   EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
-  EXPECT_EQ(0, GetHomeCardWindow()->GetTargetBounds().y());
+
+  aura::Window* home_card = GetHomeCardWindow();
+  EXPECT_EQ(0, home_card->GetTargetBounds().y());
+  EXPECT_EQ(wm::ShadowType::SHADOW_TYPE_RECTANGULAR,
+            wm::GetShadowType(home_card));
+
   HomeCard::Get()->UpdateVirtualKeyboardBounds(gfx::Rect());
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
 
