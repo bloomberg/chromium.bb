@@ -378,6 +378,7 @@
       'fonts/SegmentedFontData.h',
       'fonts/SimpleFontData.cpp',
       'fonts/SimpleFontData.h',
+      'fonts/TextBlob.h',
       'fonts/VDMXParser.cpp',
       'fonts/VDMXParser.h',
       'fonts/WidthCache.h',

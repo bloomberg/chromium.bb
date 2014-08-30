@@ -44,6 +44,8 @@
 
 #include "wtf/unicode/Unicode.h"
 
+#include <algorithm>
+
 namespace blink {
 
 bool FontPlatformFeatures::canReturnFallbackFontsForComplexText()
@@ -202,6 +204,30 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
     paintGlyphs(gc, font, glyphs, numGlyphs, pos, textRect);
 }
 
+void Font::drawTextBlob(GraphicsContext* gc, const SkTextBlob* blob, const SkPoint& origin) const
+{
+    // FIXME: It would be good to move this to Font.cpp, if we're sure that none
+    // of the things in FontMac's setupPaint need to apply here.
+    // See also paintGlyphs.
+    TextDrawingModeFlags textMode = gc->textDrawingMode();
+
+    if (textMode & TextModeFill) {
+        SkPaint paint = gc->fillPaint();
+        gc->adjustTextRenderMode(&paint);
+        paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+        gc->drawTextBlob(blob, origin, paint);
+    }
+
+    if ((textMode & TextModeStroke) && gc->hasStroke()) {
+        SkPaint paint = gc->strokePaint();
+        gc->adjustTextRenderMode(&paint);
+        paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+        if (textMode & TextModeFill)
+            paint.setLooper(0);
+        gc->drawTextBlob(blob, origin, paint);
+    }
+}
+
 void Font::drawComplexText(GraphicsContext* gc, const TextRunPaintInfo& runInfo, const FloatPoint& point) const
 {
     if (!runInfo.run.length())
@@ -276,6 +302,55 @@ FloatRect Font::selectionRectForComplexText(const TextRun& run,
     if (!shaper.shape())
         return FloatRect();
     return shaper.selectionRect(point, height, from, to);
+}
+
+PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, float initialAdvance, const FloatRect& bounds) const
+{
+    // FIXME: Except for setupPaint, this is not specific to FontHarfBuzz.
+    // FIXME: Also implement the more general full-positioning path.
+    ASSERT(!glyphBuffer.hasVerticalAdvances());
+
+    SkTextBlobBuilder builder;
+    SkScalar x = SkFloatToScalar(initialAdvance);
+    SkRect skBounds = bounds;
+
+    unsigned i = 0;
+    while (i < glyphBuffer.size()) {
+        const SimpleFontData* fontData = glyphBuffer.fontDataAt(i);
+
+        // FIXME: Handle vertical text.
+        if (fontData->platformData().orientation() == Vertical)
+            return nullptr;
+
+        // FIXME: Handle SVG fonts.
+        if (fontData->isSVGFont())
+            return nullptr;
+
+        // FIXME: FontPlatformData makes some decisions on the device scale
+        // factor, which is found via the GraphicsContext. This should be fixed
+        // to avoid correctness problems here.
+        SkPaint paint;
+        fontData->platformData().setupPaint(&paint);
+        paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+
+        unsigned start = i++;
+        while (i < glyphBuffer.size() && glyphBuffer.fontDataAt(i) == fontData)
+            i++;
+        unsigned count = i - start;
+
+        const SkTextBlobBuilder::RunBuffer& buffer = builder.allocRunPosH(paint, count, 0, &skBounds);
+
+        const uint16_t* glyphs = glyphBuffer.glyphs(start);
+        std::copy(glyphs, glyphs + count, buffer.glyphs);
+
+        const FloatSize* advances = glyphBuffer.advances(start);
+        for (unsigned j = 0; j < count; j++) {
+            buffer.pos[j] = x;
+            x += SkFloatToScalar(advances[j].width());
+        }
+    }
+
+    return adoptRef(builder.build());
 }
 
 } // namespace blink

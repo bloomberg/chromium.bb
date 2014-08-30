@@ -25,6 +25,7 @@
 #include "platform/fonts/Font.h"
 
 #include "platform/LayoutUnit.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/Character.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontFallbackList.h"
@@ -34,6 +35,7 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/WidthIterator.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/text/TextRun.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
@@ -649,14 +651,30 @@ void Font::drawSimpleText(GraphicsContext* context, const TextRunPaintInfo& runI
 {
     // This glyph buffer holds our glyphs+advances+font data for each glyph.
     GlyphBuffer glyphBuffer;
-
-    float startX = point.x() + getGlyphsAndAdvancesForSimpleText(runInfo, glyphBuffer);
+    float initialAdvance = getGlyphsAndAdvancesForSimpleText(runInfo, glyphBuffer);
+    ASSERT(!glyphBuffer.hasVerticalAdvances());
 
     if (glyphBuffer.isEmpty())
         return;
 
-    FloatPoint startPoint(startX, point.y());
-    drawGlyphBuffer(context, runInfo, glyphBuffer, startPoint);
+    TextBlobPtr textBlob;
+    if (RuntimeEnabledFeatures::textBlobEnabled()) {
+        // Using text blob causes a small difference in how gradients and
+        // patterns are rendered.
+        // FIXME: Fix this, most likely in Skia.
+        if (!context->strokeGradient() && !context->strokePattern() && !context->fillGradient() && !context->fillPattern()) {
+            FloatRect blobBounds = runInfo.bounds;
+            blobBounds.moveBy(-point);
+            textBlob = buildTextBlob(glyphBuffer, initialAdvance, blobBounds);
+        }
+    }
+
+    if (textBlob) {
+        drawTextBlob(context, textBlob.get(), point.data());
+    } else {
+        FloatPoint startPoint(point.x() + initialAdvance, point.y());
+        drawGlyphBuffer(context, runInfo, glyphBuffer, startPoint);
+    }
 }
 
 void Font::drawEmphasisMarksForSimpleText(GraphicsContext* context, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point) const

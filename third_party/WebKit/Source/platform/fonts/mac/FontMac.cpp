@@ -172,4 +172,15 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         gc->restore();
 }
 
+void Font::drawTextBlob(GraphicsContext*, const SkTextBlob*, const SkPoint&) const
+{
+    // FIXME: Add text blob support to FontMac.
+}
+
+PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, float initialAdvance, const FloatRect& bounds) const
+{
+    // FIXME: Add text blob support to FontMac.
+    return nullptr;
+}
+
 } // namespace blink

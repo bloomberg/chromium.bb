@@ -1272,6 +1272,22 @@ void GraphicsContext::drawPosTextH(const void* text, size_t byteLength,
         m_trackedRegion.didDrawUnbounded(this, paint, RegionTracker::FillOrStroke);
 }
 
+void GraphicsContext::drawTextBlob(const SkTextBlob* blob, const SkPoint& origin, const SkPaint& paint)
+{
+    if (contextDisabled())
+        return;
+
+    m_canvas->drawTextBlob(blob, origin.x(), origin.y(), paint);
+
+    SkRect bounds = blob->bounds();
+    bounds.offset(origin);
+    didDrawTextInRect(bounds);
+
+    // FIXME: use bounds here if it helps performance.
+    if (regionTrackingEnabled())
+        m_trackedRegion.didDrawUnbounded(this, paint, RegionTracker::FillOrStroke);
+}
+
 void GraphicsContext::fillPath(const Path& pathToFill)
 {
     if (contextDisabled() || pathToFill.isEmpty())

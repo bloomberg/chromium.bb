@@ -49,6 +49,7 @@ class SkBitmap;
 class SkPaint;
 class SkPath;
 class SkRRect;
+class SkTextBlob;
 struct SkRect;
 
 namespace blink {
@@ -303,6 +304,7 @@ public:
     void drawRect(const SkRect&, const SkPaint&);
     void drawPosText(const void* text, size_t byteLength, const SkPoint pos[], const SkRect& textRect, const SkPaint&);
     void drawPosTextH(const void* text, size_t byteLength, const SkScalar xpos[], SkScalar constY, const SkRect& textRect, const SkPaint&);
+    void drawTextBlob(const SkTextBlob*, const SkPoint& origin, const SkPaint&);
 
     void clip(const IntRect& rect) { clipRect(rect); }
     void clip(const FloatRect& rect) { clipRect(rect); }
