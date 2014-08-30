@@ -1,7 +1,7 @@
-# Core extension and apps team members.
+# Extension and apps team owners.
 #
-# Specific extension APIs may have other authors (e.g. dmazzoni@ for TTS,
-# kalman@ for settings), please check with them when making significant changes.
+# Many APIs have specific OWNERS from other teams, such as
+# c/b/e/api/automation/OWNERS. Use those reviewers where possible.
 #
 # Use file history to guide reviewer selection as this list is randomized.
 #
