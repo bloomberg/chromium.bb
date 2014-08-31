@@ -7,6 +7,7 @@
 #include <OpenGL/CGLIOSurface.h>
 #include <OpenGL/CGLRenderers.h>
 #include <OpenGL/OpenGL.h>
+#include <OpenGL/gl.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
