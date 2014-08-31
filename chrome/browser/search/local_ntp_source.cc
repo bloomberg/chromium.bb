@@ -59,9 +59,11 @@ const struct Resource{
   { "images/close_2_hover.png", IDR_CLOSE_2_H, "image/png" },
   { "images/close_2_active.png", IDR_CLOSE_2_P, "image/png" },
   { "images/close_2_white.png", IDR_CLOSE_2_MASK, "image/png" },
+  { "images/close_3_mask.png", IDR_CLOSE_3_MASK, "image/png" },
   { "images/google_logo.png", IDR_LOCAL_NTP_IMAGES_LOGO_PNG, "image/png" },
   { "images/white_google_logo.png",
     IDR_LOCAL_NTP_IMAGES_WHITE_LOGO_PNG, "image/png" },
+  { "images/ntp_default_favicon.png", IDR_NTP_DEFAULT_FAVICON, "image/png" },
 };
 
 // Strips any query parameters from the specified path.

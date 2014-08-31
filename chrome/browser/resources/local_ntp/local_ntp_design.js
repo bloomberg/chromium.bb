@@ -19,13 +19,13 @@
  * fontSize: Font size to use for the <iframe>s, in px.
  * tileWidth: The width of each suggestion tile, in px.
  * tileMargin: Spacing between successive tiles, in px.
- * titleColor: The RRGGBB color of title text.
- * titleColorAgainstDark: The RRGGBB color of title text against a dark theme.
+ * titleColor: The RRGGBBAA color of title text.
+ * titleColorAgainstDark: The RRGGBBAA color of title text against a dark theme.
  * titleTextAlign: (Optional) The alignment of title text. If unspecified, the
  *   default value is 'center'.
  * titleTextFade: (Optional) The number of pixels beyond which title
  *   text begins to fade. This overrides the default ellipsis style.
- * thumbnailTextColor: The RRGGBB color that thumbnail <iframe> may use to
+ * thumbnailTextColor: The RRGGBBAA color that thumbnail <iframe> may use to
  *   display text message in place of missing thumbnail.
  * thumbnailFallback: (Optional) A value in THUMBNAIL_FALLBACK to specify the
  *   thumbnail fallback strategy. If unassigned, then the thumbnail.html
@@ -63,13 +63,13 @@ function getNtpDesign(opt_name) {
       name: opt_name,
       fontFamily: 'arial, sans-serif',
       fontSize: 12,
-      tileWidth: 146,
-      tileMargin: 12,
-      titleColor: '000000',
-      titleColorAgainstDark: 'd2d2d2',
+      tileWidth: 156,
+      tileMargin: 16,
+      titleColor: '323232ff',
+      titleColorAgainstDark: 'd2d2d2ff',
       titleTextAlign: 'inherit',
-      titleTextFade: 112 - 24,  // 112px wide title with 24 pixel fade at end.
-      thumbnailTextColor: '777777',
+      titleTextFade: 122 - 36,  // 112px wide title with 32 pixel fade at end.
+      thumbnailTextColor: '323232ff',  // Unused.
       thumbnailFallback: THUMBNAIL_FALLBACK.DOT,
       showFakeboxHint: true
     };
@@ -80,11 +80,11 @@ function getNtpDesign(opt_name) {
       fontSize: 11,
       tileWidth: 140,
       tileMargin: 20,
-      titleColor: '777777',
-      titleColorAgainstDark: '777777',
+      titleColor: '777777ff',
+      titleColorAgainstDark: '777777ff',
       titleTextAlign: 'center',
       titleTextFade: null,  // Default to ellipsis.
-      thumbnailTextColor: '777777',
+      thumbnailTextColor: '777777ff',
       thumbnailFallback: null,  // Default to false.
       showFakeboxHint: false
     };

@@ -15,7 +15,16 @@ body {
   text-align: -webkit-center;
 }
 
+#ntp-contents.classical {
+  margin-top: 157px;
+}
+
+#ntp-contents.md {
+  margin-top: 157px;
+}
+
 .non-google-page #ntp-contents {
+  margin-top: 0;
   position: absolute;
   top: calc(50% - 155px);
   width: 100%;
@@ -41,12 +50,14 @@ body.fakebox-disable #fakebox > input {
   background-size: 269px 95px;
   height: 95px;
   margin-bottom: 24px;
-  margin-top: 157px;
   width: 269px;
 }
 
 body.alternate-logo #logo {
-  background-image: url('images/white_google_logo.png@2x');
+  -webkit-mask-image: url('images/google_logo.png@2x');
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background: #eee;
 }
 
 #fakebox {
@@ -61,7 +72,7 @@ body.alternate-logo #logo {
   font-size: 18px;
   height: 36px;
   line-height: 36px;
-  max-width: 620px;
+  max-width: 672px;
   position: relative;
   /* #fakebox width (here and below) should be 2px less than #mv-tiles
      to account for its border. */
@@ -103,12 +114,17 @@ body[dir=rtl] #fakebox > input {
   color: #bbb;
   font-family: arial, sans-serif;
   font-size: 16px;
-  height: 16px;
+  height: 100%;
   left: 9px;
   margin-top: 1px;
+  overflow: hidden;
   position: absolute;
+  text-align: left;
+  text-overflow: ellipsis;
   vertical-align: middle;
-  visibility: hidden;
+  visibility: inherit;
+  white-space: nowrap;
+  width: calc(100% - 2 * 9px);
 }
 
 body[dir=rtl] #fakebox-text {
@@ -142,7 +158,7 @@ body[dir=rtl] #cursor {
 
 body.fakebox-drag-focused #fakebox-text,
 body.fakebox-focused #fakebox-text {
-  visibility: inherit;
+  visibility: hidden;
 }
 
 body.fakebox-drag-focused #cursor {
@@ -164,7 +180,7 @@ body.fakebox-focused #cursor {
 }
 
 .md #most-visited {
-  margin-top: 50px;
+  margin-top: 64px;
 }
 
 #mv-tiles {
@@ -183,8 +199,8 @@ body[dir=rtl] #mv-tiles {
 }
 
 .md #mv-tiles {
-  height: calc(2 * 126px);
-  line-height: 126px;
+  height: calc(2 * 146px);
+  line-height: 146px;
 }
 
 .mv-tile {
@@ -214,12 +230,12 @@ body[dir=rtl] #mv-tiles {
 }
 
 .md .mv-tile {
-  background: #f2f2f2;
+  background: rgb(242,242,242);
   border-radius: 1px;
-  height: 114px;
-  margin-left: 6px;
-  margin-right: 6px;
-  width: 146px;
+  height: 130px;
+  margin-left: 8px;
+  margin-right: 8px;
+  width: 156px;
 }
 
 .md .mv-page-ready {
@@ -228,7 +244,7 @@ body[dir=rtl] #mv-tiles {
 }
 
 .md.dark .mv-tile {
-  background: #333;
+  background: rgb(51,51,51);
 }
 
 .mv-tile-inner {
@@ -274,8 +290,8 @@ body[dir=rtl] #mv-tiles {
 .md .mv-mask {
   border-color: transparent;
   border-radius: 2px;
-  height: 112px;
-  width: 144px;
+  height: calc(130px - 2px);
+  width: calc(156px - 2px);
 }
 
 /* Styling border. */
@@ -304,11 +320,11 @@ body[dir=rtl] #mv-tiles {
 }
 
 /* Styling shadow. */
-.md .mv-page-ready .mv-mask {
+.default-theme.md .mv-page-ready .mv-mask {
   -webkit-transition: box-shadow 200ms, border 200ms;
 }
 .default-theme.md .mv-page-ready:hover .mv-mask {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,0.1), 0 4px 8px 0 rgba(0,0,0,0.2);
 }
 
 .default-theme..md.dark .mv-page-ready:hover .mv-mask,
@@ -326,7 +342,7 @@ body[dir=rtl] #mv-tiles {
 
 .md .mv-page:focus .mv-mask {
   -webkit-transition: box-shadow 200ms, border 200ms,
-      background-color 100ms ease-in-out, ;
+      background-color 100ms ease-in-out;
   background: rgba(0, 0, 0, 0.3);
   border-color: rgba(0, 0, 0, 0.3);
 }
@@ -346,20 +362,20 @@ body[dir=rtl] #mv-tiles {
 .md .mv-title {
   bottom: auto;
   height: 15px;
-  left: 28px;
-  top: 7px;
-  width: 112px;
+  left: 32px;
+  top: 9px;
+  width: calc(156px - 32px - 4px);
 }
 
 @media (-webkit-min-device-pixel-ratio: 2) {
   .md .mv-title {
-    top: 6px;
+    top: 8px;
   }
 }
 
 body[dir=rtl] .md .mv-title {
   left: auto;
-  right: 28px;
+  right: 32px;
 }
 
 .mv-thumb {
@@ -389,10 +405,10 @@ body[dir=rtl] .md .mv-title {
 .md .mv-thumb,
 .md .mv-thumb-fallback {
   border-radius: 0;
-  height: 82px;
+  height: 94px;
   left: 4px;
-  top: 28px;
-  width: 138px;
+  top: 32px;
+  width: 148px;
 }
 
 body[dir=rtl] .md .mv-thumb,
@@ -402,30 +418,29 @@ body[dir=rtl] .md .mv-thumb-fallback {
 }
 
 .md .mv-thumb-fallback {
-  background: #fff;
-  padding: none;
+  background-color: #fff;
   position: absolute;
 }
 
 .md.dark .mv-thumb-fallback {
-  background: #555;
+  background-color: #555;
 }
 
 .md .mv-thumb-fallback .dot {
-  background: #f2f2f2;
-  border-radius: 16px;
+  background-color: #f2f2f2;
+  border-radius: 8px;
   display: block;
-  height: 32px;
+  height: 16px;
   left: 50%;
-  margin-left: -16px;
-  margin-top: -16px;
+  margin-left: -8px;
+  margin-top: -8px;
   position: absolute;
   top: 50%;
-  width: 32px;
+  width: 16px;
 }
 
 .md.dark .mv-thumb-fallback .dot {
-  background: #333;
+  background-color: #333;
 }
 
 .mv-x-hide .mv-x {
@@ -435,11 +450,8 @@ body[dir=rtl] .md .mv-thumb-fallback {
 /* An X button to blacklist a tile or hide the notification. */
 .mv-x {
   background-color: transparent;
-  background-image: url(images/close_2.png);
   border: none;
-  cursor: default;
-  height: 16px;
-  width: 16px;
+  cursor: pointer;
 }
 
 .mv-page .mv-x {
@@ -448,13 +460,20 @@ body[dir=rtl] .md .mv-thumb-fallback {
   position: absolute;
 }
 
-.mv-x:hover,
-#mv-notice-x:focus {
-  background-image: url(images/close_2_hover.png);
+.classical .mv-x {
+  background-image: url('images/close_2.png');
+  height: 16px;
+  width: 16px;
 }
 
-.mv-x:active {
-  background-image: url(images/close_2_active.png);
+.classical .mv-x:hover,
+.classical #mv-notice-x:focus {
+  background-image: url('images/close_2_hover.png');
+}
+
+.classical .mv-x:active,
+.classical #mv-notice-x:active {
+  background-image: url('images/close_2_active.png');
 }
 
 .classical .mv-page .mv-x {
@@ -462,28 +481,87 @@ body[dir=rtl] .md .mv-thumb-fallback {
   top: 2px;
 }
 
-.md .mv-x {
-  background-color: rgba(187,187,187,0.8);
-  border-radius: 8px;
-}
-
-.md.dark .mv-x {
-  background-color: rgba(119,119,119,0.8);
-}
-
-.md .mv-page .mv-x {
-  right: 4px;
-  top: 5px;
-}
-
 body[dir=rtl] .classical .mv-page .mv-x {
   left: 2px;
   right: auto;
 }
 
+#mv-notice-x {
+  display: inline-block;
+  position: relative;
+}
+
+.md #mv-notice-x {
+  -webkit-transform: translate(0,-8px);
+}
+
+.md .mv-x {
+  height: 32px;
+  width: 32px;
+}
+
+.md .mv-x .mv-x-inner {
+  -webkit-mask-image: -webkit-image-set(
+      url('images/close_3_mask.png') 1x,
+      url('images/close_3_mask.png@2x') 2x);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 10px 10px;
+  background-color: rgba(90,90,90,0.7);
+  height: 10px;
+  left: 50%;
+  margin-left: -5px;
+  margin-top: -5px;
+  position: absolute;
+  top: 50%;
+  width: 10px;
+}
+
+.md.dark .mv-x .mv-x-inner {
+  background-color: rgba(255,255,255,0.7);
+}
+
+.md .mv-x:hover .mv-x-inner,
+.md #mv-notice-x:focus .mv-x-inner {
+  background-color: rgb(90,90,90);
+}
+
+.md.dark .mv-x:hover .mv-x-inner,
+.md.dark #mv-notice-x:focus .mv-x-inner {
+  background-color: rgb(255,255,255);
+}
+
+.md .mv-x:active .mv-x-inner,
+.md #mv-notice-x:active .mv-x-inner {
+  background-color: rgb(66,133,244);
+}
+
+.md.dark .mv-x:active .mv-x-inner,
+.md.dark #mv-notice-x:active .mv-x-inner {
+  background-color: rgba(255,255,255,0.5);
+}
+
+.md .mv-page .mv-x {
+  /* background color needs to match .md .mv-tile */
+  background: linear-gradient(to right, transparent, rgb(242,242,242) 10%);
+  right: 0;
+  top: 0;
+}
+
 body[dir=rtl] .md .mv-page .mv-x {
-  left: 4px;
+  /* background color needs to match .md .mv-tile */
+  background: linear-gradient(to left, transparent, rgb(242,242,242) 10%);
+  left: 0;
   right: auto;
+}
+
+.md.dark .mv-page .mv-x {
+  /* background color needs to match .md.dark .mv-tile */
+  background: linear-gradient(to right, transparent, rgba(51,51,51,0.9) 30%);
+}
+
+body[dir=rtl] .md.dark .mv-page .mv-x {
+  /* background color needs to match .md.dark .mv-tile */
+  background: linear-gradient(to left, transparent, rgba(51,51,51,0.9) 30%);
 }
 
 .mv-page-ready:hover .mv-x {
@@ -509,14 +587,22 @@ body[dir=rtl] .md .mv-page .mv-x {
 }
 
 .md .mv-favicon {
-  left: 6px;
-  top: 6px;
+  left: 8px;
+  top: 8px;
 }
 
 body[dir=rtl] .md .mv-favicon {
   left: auto;
-  right: 6px;
-  top: 6px;
+  right: 8px;
+  top: 8px;
+}
+
+.md .mv-favicon-fallback {
+  background-image: -webkit-image-set(
+      url('images/ntp_default_favicon.png') 1x,
+      url('images/ntp_default_favicon.png@2x') 2x);
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
 }
 
 /* The notification shown when a tile is blacklisted. */
@@ -529,6 +615,10 @@ body[dir=rtl] .md .mv-favicon {
 
 #mv-notice span {
   cursor: default;
+  display: inline-block;
+  height: 16px;
+  line-height: 16px;
+  vertical-align: top;
 }
 
 /* Links in the notification. */
@@ -547,6 +637,10 @@ body[dir=rtl] .md .mv-favicon {
 }
 
 .default-theme.dark #mv-msg {
+  color: #fff;
+}
+
+.default-theme.dark #mv-notice-links span {
   color: #fff;
 }
 

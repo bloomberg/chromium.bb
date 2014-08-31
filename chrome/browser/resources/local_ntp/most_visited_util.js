@@ -162,6 +162,38 @@ function createMostVisitedLink(params, href, title, text, direction, provider) {
 
 
 /**
+ * Returns the color to display string with, depending on whether title is
+ * displayed, the current theme, and URL parameters.
+ * @param {Object.<string, string>} params URL parameters specifying style.
+ * @param {boolean} isTitle if the style is for the Most Visited Title.
+ * @return {string} The color to use, in "rgba(#,#,#,#)" format.
+ */
+function getTextColor(params, isTitle) {
+  // 'RRGGBBAA' color format overrides everything.
+  if ('c' in params && params.c.match(/^[0-9A-Fa-f]{8}$/)) {
+    // Extract the 4 pairs of hex digits, map to number, then form rgba().
+    var t = params.c.match(/(..)(..)(..)(..)/).slice(1).map(function(s) {
+      return parseInt(s, 16);
+    });
+    return 'rgba(' + t[0] + ',' + t[1] + ',' + t[2] + ',' + t[3] / 255 + ')';
+  }
+
+  // For backward compatibility with server-side NTP, look at themes directly
+  // and use param.c for non-title or as fallback.
+  var apiHandle = chrome.embeddedSearch.newTabPage;
+  var themeInfo = apiHandle.themeBackgroundInfo;
+  var c = '#777';
+  if (isTitle && themeInfo && !themeInfo.usingDefaultTheme) {
+    // Read from theme directly
+    c = convertArrayToRGBAColor(themeInfo.textColorRgba) || c;
+  } else if ('c' in params) {
+    c = convertToHexColor(parseInt(params.c, 16)) || c;
+  }
+  return c;
+}
+
+
+/**
  * Decodes most visited styles from URL parameters.
  * - c: A hexadecimal number interpreted as a hex color code.
  * - f: font-family.
@@ -174,18 +206,10 @@ function createMostVisitedLink(params, href, title, text, direction, provider) {
  */
 function getMostVisitedStyles(params, isTitle) {
   var styles = {
-    color: '#777',
+    color: getTextColor(params, isTitle),  // Handles 'c' in params.
     fontFamily: '',
     fontSize: 11
   };
-  var apiHandle = chrome.embeddedSearch.newTabPage;
-  var themeInfo = apiHandle.themeBackgroundInfo;
-  if (isTitle && themeInfo && !themeInfo.usingDefaultTheme) {
-    styles.color = convertArrayToRGBAColor(themeInfo.textColorRgba) ||
-        styles.color;
-  } else if ('c' in params) {
-    styles.color = convertToHexColor(parseInt(params.c, 16)) || styles.color;
-  }
   if ('f' in params && /^[-0-9a-zA-Z ,]+$/.test(params.f))
     styles.fontFamily = params.f;
   if ('fs' in params && isFinite(parseInt(params.fs, 10)))
