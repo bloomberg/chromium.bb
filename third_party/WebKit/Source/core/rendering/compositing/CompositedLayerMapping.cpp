@@ -1747,7 +1747,7 @@ bool CompositedLayerMapping::isDirectlyCompositedImage() const
     ASSERT(renderer()->isImage());
 
     RenderObject* renderObject = renderer();
-    if (m_owningLayer.hasBoxDecorationsOrBackground() || renderObject->hasClip())
+    if (m_owningLayer.hasBoxDecorationsOrBackground() || renderObject->hasClip() || renderObject->hasClipPath())
         return false;
 
     RenderImage* imageRenderer = toRenderImage(renderObject);
