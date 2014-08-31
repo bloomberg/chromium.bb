@@ -59,7 +59,7 @@ bool XPrivetToken::CheckValidXToken(const std::string& token) const {
 
 std::string XPrivetToken::GenerateXTokenWithTime(uint64 issue_time) const {
   std::string result;
-  std::string issue_time_str = base::StringPrintf("%"PRIu64, issue_time);
+  std::string issue_time_str = base::StringPrintf("%" PRIu64, issue_time);
   std::string hash = base::SHA1HashString(secret_ +
                                           kXPrivetTokenDelimeter +
                                           issue_time_str);

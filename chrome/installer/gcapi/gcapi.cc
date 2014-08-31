@@ -672,7 +672,7 @@ BOOL __stdcall CanOfferReactivation(const wchar_t* brand_code,
   return TRUE;
 }
 
-BOOL __stdcall ReactivateChrome(wchar_t* brand_code,
+BOOL __stdcall ReactivateChrome(const wchar_t* brand_code,
                                 int shell_mode,
                                 DWORD* error_code) {
   BOOL result = FALSE;
