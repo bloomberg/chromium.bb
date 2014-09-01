@@ -14,6 +14,8 @@ import re
 import sys
 
 
+RE_INCLUDE = re.compile('<include[^>]+src=[\'"]([^>]*)[\'"]>')
+
 # We assume that X.js has a corresponding X.idl in the same directory.
 # If X is a partial interface, this method extracts the base name of the partial interface from X.idl.
 # Otherwise, this method returns None.
@@ -31,6 +33,21 @@ def extract_partial_interface_name(filename):
         return match and match.group(1)
 
 
+# Expand <include src="file_name"> directives
+# FIXME: Expansion of include directive will be done by GRD resources building
+# system in the future.
+def process_input_file(filename):
+    result_text = ''
+    dirname = os.path.dirname(filename)
+    with open(filename) as input_file:
+        for line in input_file.readlines():
+            match = re.search(RE_INCLUDE, line)
+            if match:
+                result_text += process_input_file(os.path.join(dirname, match.group(1)))
+            else:
+                result_text += line
+        return result_text
+
 def main():
     output_filename = sys.argv[1]
     input_filenames = sys.argv[2:]
@@ -39,11 +56,10 @@ def main():
     contents = []
     for input_filename in input_filenames:
         class_name, ext = os.path.splitext(os.path.basename(input_filename))
-        with open(input_filename) as input_file:
-            input_text = input_file.read()
-            hex_values = ['0x{0:02x}'.format(ord(char)) for char in input_text]
-            contents.append('const unsigned char kSourceOf%s[] = {\n    %s\n};\n\n' % (
-                class_name, ', '.join(hex_values)))
+        input_text = process_input_file(input_filename)
+        hex_values = ['0x{0:02x}'.format(ord(char)) for char in input_text]
+        contents.append('const unsigned char kSourceOf%s[] = {\n    %s\n};\n\n' % (
+                        class_name, ', '.join(hex_values)))
     contents.append('struct %s {' % source_name)
     contents.append("""
     const char* scriptClassName;
