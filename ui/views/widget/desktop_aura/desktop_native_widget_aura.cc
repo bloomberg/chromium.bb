@@ -1140,7 +1140,8 @@ void DesktopNativeWidgetAura::OnDragExited() {
 
 int DesktopNativeWidgetAura::OnPerformDrop(const ui::DropTargetEvent& event) {
   DCHECK(drop_helper_.get() != NULL);
-  Activate();
+  if (ShouldActivate())
+    Activate();
   return drop_helper_->OnDrop(event.data(), event.location(),
       last_drop_operation_);
 }
