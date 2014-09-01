@@ -16,13 +16,11 @@ namespace content {
 MediaStreamDispatcherHost::MediaStreamDispatcherHost(
     int render_process_id,
     const ResourceContext::SaltCallback& salt_callback,
-    MediaStreamManager* media_stream_manager,
-    ResourceContext* resource_context)
+    MediaStreamManager* media_stream_manager)
     : BrowserMessageFilter(MediaStreamMsgStart),
       render_process_id_(render_process_id),
       salt_callback_(salt_callback),
-      media_stream_manager_(media_stream_manager),
-      resource_context_(resource_context) {
+      media_stream_manager_(media_stream_manager) {
 }
 
 void MediaStreamDispatcherHost::StreamGenerated(
@@ -179,17 +177,9 @@ void MediaStreamDispatcherHost::OnEnumerateDevices(
   if (!IsURLAllowed(security_origin))
     return;
 
-  DCHECK(type == MEDIA_DEVICE_AUDIO_CAPTURE ||
-         type == MEDIA_DEVICE_VIDEO_CAPTURE ||
-         type == MEDIA_DEVICE_AUDIO_OUTPUT);
-  bool have_permission =
-      type == MEDIA_DEVICE_AUDIO_CAPTURE || type == MEDIA_DEVICE_AUDIO_OUTPUT ?
-          resource_context_->AllowMicAccess(security_origin) :
-          resource_context_->AllowCameraAccess(security_origin);
-
   media_stream_manager_->EnumerateDevices(
       this, render_process_id_, render_frame_id, salt_callback_,
-      page_request_id, type, security_origin, have_permission);
+      page_request_id, type, security_origin);
 }
 
 void MediaStreamDispatcherHost::OnCancelEnumerateDevices(

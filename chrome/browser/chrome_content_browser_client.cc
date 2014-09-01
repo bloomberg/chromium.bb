@@ -2482,6 +2482,15 @@ void ChromeContentBrowserClient::PreSpawnRenderer(
 }
 #endif
 
+bool ChromeContentBrowserClient::CheckMediaAccessPermission(
+    content::BrowserContext* browser_context,
+    const GURL& security_origin,
+    content::MediaStreamType type) {
+  return MediaCaptureDevicesDispatcher::GetInstance()
+      ->CheckMediaAccessPermission(
+          browser_context, security_origin, type);
+}
+
 content::DevToolsManagerDelegate*
 ChromeContentBrowserClient::GetDevToolsManagerDelegate() {
   return new ChromeDevToolsManagerDelegate();

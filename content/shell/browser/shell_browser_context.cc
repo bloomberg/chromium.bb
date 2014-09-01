@@ -43,12 +43,6 @@ class ShellBrowserContext::ShellResourceContext : public ResourceContext {
     CHECK(getter_);
     return getter_->GetURLRequestContext();
   }
-  virtual bool AllowMicAccess(const GURL& origin) OVERRIDE {
-    return false;
-  }
-  virtual bool AllowCameraAccess(const GURL& origin) OVERRIDE {
-    return false;
-  }
 
   void set_url_request_context_getter(ShellURLRequestContextGetter* getter) {
     getter_ = getter;

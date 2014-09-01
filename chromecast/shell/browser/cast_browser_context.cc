@@ -22,7 +22,8 @@ namespace shell {
 class CastBrowserContext::CastResourceContext :
     public content::ResourceContext {
  public:
-  CastResourceContext(URLRequestContextFactory* url_request_context_factory) :
+  explicit CastResourceContext(
+      URLRequestContextFactory* url_request_context_factory) :
     url_request_context_factory_(url_request_context_factory) {}
   virtual ~CastResourceContext() {}
 
@@ -35,14 +36,6 @@ class CastBrowserContext::CastResourceContext :
   virtual net::URLRequestContext* GetRequestContext() OVERRIDE {
     return url_request_context_factory_->GetMainGetter()->
         GetURLRequestContext();
-  }
-
-  virtual bool AllowMicAccess(const GURL& origin) OVERRIDE {
-    return false;
-  }
-
-  virtual bool AllowCameraAccess(const GURL& origin) OVERRIDE {
-    return false;
   }
 
  private:

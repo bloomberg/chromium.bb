@@ -18,6 +18,7 @@
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/media_stream_request.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/socket_permission_request.h"
 #include "content/public/common/window_container_type.h"
@@ -637,6 +638,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual ExternalVideoSurfaceContainer*
   OverrideCreateExternalVideoSurfaceContainer(WebContents* web_contents);
 #endif
+
+// Checks if |security_origin| has permission to access the microphone or
+// camera. Note that this does not query the user. |type| must be
+// MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.
+virtual bool CheckMediaAccessPermission(BrowserContext* browser_context,
+                                        const GURL& security_origin,
+                                        MediaStreamType type);
 };
 
 }  // namespace content

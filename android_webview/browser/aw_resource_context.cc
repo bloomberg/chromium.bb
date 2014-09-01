@@ -48,12 +48,4 @@ net::URLRequestContext* AwResourceContext::GetRequestContext() {
   return getter_->GetURLRequestContext();
 }
 
-bool AwResourceContext::AllowMicAccess(const GURL& origin) {
-  return false;
-}
-
-bool AwResourceContext::AllowCameraAccess(const GURL& origin) {
-  return false;
-}
-
 }  // namespace android_webview

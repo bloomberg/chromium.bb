@@ -28,8 +28,6 @@ class AwResourceContext : public content::ResourceContext {
   // content::ResourceContext implementation.
   virtual net::HostResolver* GetHostResolver() OVERRIDE;
   virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
-  virtual bool AllowMicAccess(const GURL& origin) OVERRIDE;
-  virtual bool AllowCameraAccess(const GURL& origin) OVERRIDE;
 
  private:
   net::URLRequestContextGetter* getter_;

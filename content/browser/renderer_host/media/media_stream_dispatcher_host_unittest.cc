@@ -52,10 +52,8 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   MockMediaStreamDispatcherHost(
       const ResourceContext::SaltCallback salt_callback,
       const scoped_refptr<base::MessageLoopProxy>& message_loop,
-      MediaStreamManager* manager,
-      ResourceContext* resource_context)
-      : MediaStreamDispatcherHost(kProcessId, salt_callback, manager,
-                                  resource_context),
+      MediaStreamManager* manager)
+      : MediaStreamDispatcherHost(kProcessId, salt_callback, manager),
         message_loop_(message_loop),
         current_ipc_(NULL) {}
 
@@ -214,6 +212,39 @@ class MockMediaStreamUIProxy : public FakeMediaStreamUIProxy {
            const MediaStreamUIProxy::WindowIdCallback& window_id_callback));
 };
 
+class MediaStreamManagerForTest : public MediaStreamManager {
+ public:
+  MediaStreamManagerForTest(media::AudioManager* audio_manager)
+      : MediaStreamManager(audio_manager),
+        mic_access_(true),
+        camera_access_(true) {}
+
+  virtual ~MediaStreamManagerForTest() {}
+
+  void set_mic_access(bool allow_access) {
+    mic_access_ = allow_access;
+  }
+
+  void set_camera_access(bool allow_access) {
+    camera_access_ = allow_access;
+  }
+
+ private:
+  virtual bool CheckMediaAccessPermissionOnUIThread(
+      int render_process_id,
+      const GURL& security_origin,
+      MediaStreamType type) OVERRIDE {
+    if (type == MEDIA_DEVICE_AUDIO_CAPTURE)
+      return mic_access_;
+    else if (type == MEDIA_DEVICE_VIDEO_CAPTURE)
+      return camera_access_;
+    return false;
+  }
+
+  bool mic_access_;
+  bool camera_access_;
+};
+
 class MediaStreamDispatcherHostTest : public testing::Test {
  public:
   MediaStreamDispatcherHostTest()
@@ -226,7 +257,8 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
     // Create our own MediaStreamManager.
-    media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
+    media_stream_manager_.reset(
+        new MediaStreamManagerForTest(audio_manager_.get()));
     video_capture_device_factory_ =
         static_cast<media::FakeVideoCaptureDeviceFactory*>(
             media_stream_manager_->video_capture_manager()
@@ -236,14 +268,11 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     MockResourceContext* mock_resource_context =
         static_cast<MockResourceContext*>(
             browser_context_.GetResourceContext());
-    mock_resource_context->set_mic_access(true);
-    mock_resource_context->set_camera_access(true);
 
     host_ = new MockMediaStreamDispatcherHost(
         mock_resource_context->GetMediaDeviceIDSalt(),
         base::MessageLoopProxy::current(),
-        media_stream_manager_.get(),
-        mock_resource_context);
+        media_stream_manager_.get());
 
     // Use the fake content client and browser.
     content_client_.reset(new TestContentClient());
@@ -417,7 +446,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 
   scoped_refptr<MockMediaStreamDispatcherHost> host_;
   scoped_ptr<media::AudioManager> audio_manager_;
-  scoped_ptr<MediaStreamManager> media_stream_manager_;
+  scoped_ptr<MediaStreamManagerForTest> media_stream_manager_;
   ContentBrowserClient* old_browser_client_;
   scoped_ptr<ContentClient> content_client_;
   content::TestBrowserThreadBundle thread_bundle_;
@@ -894,18 +923,14 @@ TEST_F(MediaStreamDispatcherHostTest, EnumerateVideoDevices) {
 }
 
 TEST_F(MediaStreamDispatcherHostTest, EnumerateAudioDevicesNoAccess) {
-  MockResourceContext* mock_resource_context =
-      static_cast<MockResourceContext*>(browser_context_.GetResourceContext());
-  mock_resource_context->set_mic_access(false);
+  media_stream_manager_->set_mic_access(false);
   EnumerateDevicesAndWaitForResult(kRenderId, kPageRequestId,
                                    MEDIA_DEVICE_AUDIO_CAPTURE);
   EXPECT_TRUE(DoesNotContainLabels(host_->enumerated_devices_));
 }
 
 TEST_F(MediaStreamDispatcherHostTest, EnumerateVideoDevicesNoAccess) {
-  MockResourceContext* mock_resource_context =
-      static_cast<MockResourceContext*>(browser_context_.GetResourceContext());
-  mock_resource_context->set_camera_access(false);
+  media_stream_manager_->set_camera_access(false);
   EnumerateDevicesAndWaitForResult(kRenderId, kPageRequestId,
                                    MEDIA_DEVICE_VIDEO_CAPTURE);
   EXPECT_TRUE(DoesNotContainLabels(host_->enumerated_devices_));

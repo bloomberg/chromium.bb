@@ -955,23 +955,6 @@ void ProfileIOData::ResourceContext::CreateKeygenHandler(
 #endif
 }
 
-bool ProfileIOData::ResourceContext::AllowMicAccess(const GURL& origin) {
-  return AllowContentAccess(origin, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-}
-
-bool ProfileIOData::ResourceContext::AllowCameraAccess(const GURL& origin) {
-  return AllowContentAccess(origin, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
-}
-
-bool ProfileIOData::ResourceContext::AllowContentAccess(
-    const GURL& origin, ContentSettingsType type) {
-  HostContentSettingsMap* content_settings =
-      io_data_->GetHostContentSettingsMap();
-  ContentSetting setting = content_settings->GetContentSetting(
-      origin, origin, type, NO_RESOURCE_IDENTIFIER);
-  return setting == CONTENT_SETTING_ALLOW;
-}
-
 ResourceContext::SaltCallback
 ProfileIOData::ResourceContext::GetMediaDeviceIDSalt() {
   return io_data_->GetMediaDeviceIDSalt();

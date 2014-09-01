@@ -345,4 +345,11 @@ ContentBrowserClient::OverrideCreateExternalVideoSurfaceContainer(
 }
 #endif
 
+bool ContentBrowserClient::CheckMediaAccessPermission(
+    BrowserContext* browser_context,
+    const GURL& security_origin,
+    MediaStreamType type) {
+  return false;
+}
+
 }  // namespace content

@@ -656,6 +656,8 @@
       'browser/media/media_device_id_salt.h',
       'browser/media/media_stream_capture_indicator.cc',
       'browser/media/media_stream_capture_indicator.h',
+      'browser/media/media_stream_device_permissions.cc',
+      'browser/media/media_stream_device_permissions.h',
       'browser/media/media_stream_devices_controller.cc',
       'browser/media/media_stream_devices_controller.h',
       'browser/media/media_stream_infobar_delegate.cc',

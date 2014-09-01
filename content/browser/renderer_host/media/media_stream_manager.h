@@ -50,6 +50,7 @@ class AudioManager;
 namespace content {
 
 class AudioInputDeviceManager;
+class BrowserContext;
 class FakeMediaStreamUIProxy;
 class MediaStreamDeviceSettings;
 class MediaStreamRequester;
@@ -129,15 +130,13 @@ class CONTENT_EXPORT MediaStreamManager
   // and video devices and also start monitoring device changes, such as
   // plug/unplug. The new device lists will be delivered via media observer to
   // MediaCaptureDevicesDispatcher.
-  // If |have_permission| is false, we remove the device label from the result.
   virtual std::string EnumerateDevices(MediaStreamRequester* requester,
                                        int render_process_id,
                                        int render_frame_id,
                                        const ResourceContext::SaltCallback& sc,
                                        int page_request_id,
                                        MediaStreamType type,
-                                       const GURL& security_origin,
-                                       bool have_permission);
+                                       const GURL& security_origin);
 
   // Open a device identified by |device_id|.  |type| must be either
   // MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.
@@ -322,6 +321,13 @@ class CONTENT_EXPORT MediaStreamManager
                                   const MediaStreamDevices& devices);
   void FinalizeEnumerateDevices(const std::string& label,
                                 DeviceRequest* request);
+
+  // Checks for media access. Overridden by unit tests.
+  virtual bool CheckMediaAccessPermissionOnUIThread(int render_process_id,
+                                                    const GURL& security_origin,
+                                                    MediaStreamType type);
+  void HandleCheckMediaAccessResponse(const std::string& label,
+                                      bool have_access);
 
   // This method is called when an audio or video device is plugged in or
   // removed. It make sure all MediaStreams that use a removed device is

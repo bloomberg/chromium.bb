@@ -31,6 +31,7 @@
 #include "content/public/browser/media_observer.h"
 #include "content/public/browser/media_request_state.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/audio/audio_manager_base.h"
@@ -198,7 +199,6 @@ class MediaStreamManager::DeviceRequest {
                 int requesting_frame_id,
                 int page_request_id,
                 const GURL& security_origin,
-                bool have_permission,
                 bool user_gesture,
                 MediaStreamRequestType request_type,
                 const StreamOptions& options,
@@ -208,7 +208,6 @@ class MediaStreamManager::DeviceRequest {
         requesting_frame_id(requesting_frame_id),
         page_request_id(page_request_id),
         security_origin(security_origin),
-        have_permission(have_permission),
         user_gesture(user_gesture),
         request_type(request_type),
         options(options),
@@ -325,10 +324,6 @@ class MediaStreamManager::DeviceRequest {
 
   const GURL security_origin;
 
-  // This is used when enumerating devices; if we don't have device access
-  // permission, we remove the device label.
-  bool have_permission;
-
   const bool user_gesture;
 
   const MediaStreamRequestType request_type;
@@ -433,7 +428,6 @@ std::string MediaStreamManager::MakeMediaAccessRequest(
                                              render_frame_id,
                                              page_request_id,
                                              security_origin,
-                                             true,
                                              false,  // user gesture
                                              MEDIA_DEVICE_ACCESS,
                                              options,
@@ -474,7 +468,6 @@ void MediaStreamManager::GenerateStream(MediaStreamRequester* requester,
                                              render_frame_id,
                                              page_request_id,
                                              security_origin,
-                                             true,
                                              user_gesture,
                                              MEDIA_GENERATE_STREAM,
                                              options,
@@ -657,8 +650,7 @@ std::string MediaStreamManager::EnumerateDevices(
     const ResourceContext::SaltCallback& sc,
     int page_request_id,
     MediaStreamType type,
-    const GURL& security_origin,
-    bool have_permission) {
+    const GURL& security_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(requester);
   DCHECK(type == MEDIA_DEVICE_AUDIO_CAPTURE ||
@@ -670,7 +662,6 @@ std::string MediaStreamManager::EnumerateDevices(
                                              render_frame_id,
                                              page_request_id,
                                              security_origin,
-                                             have_permission,
                                              false,  // user gesture
                                              MEDIA_ENUMERATE_DEVICES,
                                              StreamOptions(),
@@ -817,7 +808,6 @@ void MediaStreamManager::OpenDevice(MediaStreamRequester* requester,
                                              render_frame_id,
                                              page_request_id,
                                              security_origin,
-                                             true,
                                              false,  // user gesture
                                              MEDIA_OPEN_DEVICE,
                                              options,
@@ -1467,6 +1457,11 @@ void MediaStreamManager::FinalizeEnumerateDevices(const std::string& label,
                                                   DeviceRequest* request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(request->request_type, MEDIA_ENUMERATE_DEVICES);
+  DCHECK(((request->audio_type() == MEDIA_DEVICE_AUDIO_CAPTURE ||
+           request->audio_type() == MEDIA_DEVICE_AUDIO_OUTPUT) &&
+          request->video_type() == MEDIA_NO_SERVICE) ||
+         (request->audio_type() == MEDIA_NO_SERVICE &&
+          request->video_type() == MEDIA_DEVICE_VIDEO_CAPTURE));
 
   if (request->security_origin.is_valid()) {
     for (StreamDeviceInfoArray::iterator it = request->devices.begin();
@@ -1477,7 +1472,60 @@ void MediaStreamManager::FinalizeEnumerateDevices(const std::string& label,
     request->devices.clear();
   }
 
-  if (!request->have_permission)
+  // Output label permissions are based on input permission.
+  MediaStreamType type =
+      request->audio_type() == MEDIA_DEVICE_AUDIO_CAPTURE ||
+      request->audio_type() == MEDIA_DEVICE_AUDIO_OUTPUT
+      ? MEDIA_DEVICE_AUDIO_CAPTURE
+      : MEDIA_DEVICE_VIDEO_CAPTURE;
+
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&MediaStreamManager::CheckMediaAccessPermissionOnUIThread,
+                 base::Unretained(this),
+                 request->requesting_process_id,
+                 request->security_origin,
+                 type),
+      base::Bind(&MediaStreamManager::HandleCheckMediaAccessResponse,
+                 base::Unretained(this),
+                 label));
+}
+
+bool MediaStreamManager::CheckMediaAccessPermissionOnUIThread(
+    int render_process_id,
+    const GURL& security_origin,
+    MediaStreamType type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  RenderProcessHost* host =
+      RenderProcessHost::FromID(render_process_id);
+  if (!host) {
+    // This can happen if the renderer goes away during the lifetime of a
+    // request.
+    return false;
+  }
+  content::BrowserContext* context = host->GetBrowserContext();
+  DCHECK(context);
+  return GetContentClient()->browser()->CheckMediaAccessPermission(
+      context,
+      security_origin,
+      type);
+}
+
+void MediaStreamManager::HandleCheckMediaAccessResponse(
+    const std::string& label,
+    bool have_access) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  DeviceRequest* request = FindRequest(label);
+  if (!request) {
+    // This can happen if the request was cancelled.
+    DVLOG(1) << "The request with label " << label << " does not exist.";
+    return;
+  }
+
+  if (!have_access)
     ClearDeviceLabels(&request->devices);
 
   request->requester->DevicesEnumerated(

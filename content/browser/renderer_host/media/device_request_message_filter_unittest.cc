@@ -25,15 +25,14 @@ class MockMediaStreamManager : public MediaStreamManager {
 
   virtual ~MockMediaStreamManager() {}
 
-  MOCK_METHOD8(EnumerateDevices,
+  MOCK_METHOD7(EnumerateDevices,
                std::string(MediaStreamRequester* requester,
                            int render_process_id,
                            int render_frame_id,
                            const ResourceContext::SaltCallback& rc,
                            int page_request_id,
                            MediaStreamType type,
-                           const GURL& security_origin,
-                           bool have_permission));
+                           const GURL& security_origin));
 
   std::string DoEnumerateDevices(MediaStreamRequester* requester,
                                  int render_process_id,
@@ -41,8 +40,7 @@ class MockMediaStreamManager : public MediaStreamManager {
                                  const ResourceContext::SaltCallback& rc,
                                  int page_request_id,
                                  MediaStreamType type,
-                                 const GURL& security_origin,
-                                 bool have_permission) {
+                                 const GURL& security_origin) {
     if (type == MEDIA_DEVICE_AUDIO_CAPTURE) {
       return kAudioLabel;
     } else {
@@ -97,11 +95,11 @@ class DeviceRequestMessageFilterTest : public testing::Test {
     GURL origin("https://test.com");
     EXPECT_CALL(*media_stream_manager_,
                 EnumerateDevices(_, _, _, _, _, MEDIA_DEVICE_AUDIO_CAPTURE,
-                                 _, _))
+                                 _))
         .Times(1);
     EXPECT_CALL(*media_stream_manager_,
                 EnumerateDevices(_, _, _, _, _, MEDIA_DEVICE_VIDEO_CAPTURE,
-                                 _, _))
+                                 _))
         .Times(1);
     // Send message to get devices. Should trigger 2 EnumerateDevice() requests.
     const int kRequestId = 123;
@@ -129,7 +127,7 @@ class DeviceRequestMessageFilterTest : public testing::Test {
         new TestBrowserThread(BrowserThread::IO, message_loop_.get()));
 
     media_stream_manager_.reset(new MockMediaStreamManager());
-    ON_CALL(*media_stream_manager_, EnumerateDevices(_, _, _, _, _, _, _, _))
+    ON_CALL(*media_stream_manager_, EnumerateDevices(_, _, _, _, _, _, _))
         .WillByDefault(Invoke(media_stream_manager_.get(),
                               &MockMediaStreamManager::DoEnumerateDevices));
 

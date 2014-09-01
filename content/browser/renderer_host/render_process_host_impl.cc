@@ -792,8 +792,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new MediaStreamDispatcherHost(
       GetID(),
       browser_context->GetResourceContext()->GetMediaDeviceIDSalt(),
-      media_stream_manager,
-      resource_context));
+      media_stream_manager));
   AddFilter(new DeviceRequestMessageFilter(
       resource_context, media_stream_manager, GetID()));
   AddFilter(new MediaStreamTrackMetricsHost());

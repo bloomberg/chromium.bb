@@ -84,17 +84,6 @@ class MediaStreamDevicesController : public PermissionBubbleRequest {
   virtual void RequestFinished() OVERRIDE;
 
  private:
-  enum DevicePolicy {
-    POLICY_NOT_SET,
-    ALWAYS_DENY,
-    ALWAYS_ALLOW,
-  };
-
-  // Called by GetAudioDevicePolicy and GetVideoDevicePolicy to check
-  // the currently set capture device policy.
-  DevicePolicy GetDevicePolicy(const char* policy_name,
-                               const char* whitelist_policy_name) const;
-
   // Returns true if the origin of the request has been granted the media
   // access before, otherwise returns false.
   bool IsRequestAllowedByDefault() const;
@@ -112,10 +101,6 @@ class MediaStreamDevicesController : public PermissionBubbleRequest {
 
   // Returns true if the origin is a secure scheme, otherwise returns false.
   bool IsSchemeSecure() const;
-
-  // Returns true if request's origin is from internal objects like
-  // chrome://URLs, otherwise returns false.
-  bool ShouldAlwaysAllowOrigin() const;
 
   // Sets the permission of the origin of the request. This is triggered when
   // the users deny the request or allow the request for https sites.

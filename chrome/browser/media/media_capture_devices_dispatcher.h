@@ -84,6 +84,12 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
       const content::MediaResponseCallback& callback,
       const extensions::Extension* extension);
 
+  // Checks if we have media access permission. Note that this only checks the
+  // settings and does not query the user.
+  bool CheckMediaAccessPermission(content::BrowserContext* browser_context,
+                                  const GURL& security_origin,
+                                  content::MediaStreamType type);
+
   // Helper to get the default devices which can be used by the media request.
   // Uses the first available devices if the default devices are not available.
   // If the return list is empty, it means there is no available device on the

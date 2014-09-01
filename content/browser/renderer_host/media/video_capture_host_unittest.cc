@@ -336,8 +336,7 @@ class VideoCaptureHostTest : public testing::Test {
           browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(),
           page_request_id,
           MEDIA_DEVICE_VIDEO_CAPTURE,
-          security_origin,
-          true);
+          security_origin);
       EXPECT_CALL(stream_requester_, DevicesEnumerated(render_frame_id,
                                                        page_request_id,
                                                        label,

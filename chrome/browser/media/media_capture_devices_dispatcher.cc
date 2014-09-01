@@ -13,8 +13,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/content_settings/content_settings_provider.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/media/desktop_streams_registry.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
+#include "chrome/browser/media/media_stream_device_permissions.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -40,6 +44,7 @@
 #include "content/public/common/media_stream_request.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -250,6 +255,24 @@ gfx::NativeWindow FindParentWindowForWebContents(
 }
 #endif
 
+const extensions::Extension* GetExtensionForOrigin(
+    Profile* profile,
+    const GURL& security_origin) {
+#if defined(ENABLE_EXTENSIONS)
+  if (!security_origin.SchemeIs(extensions::kExtensionScheme))
+    return NULL;
+
+  ExtensionService* extensions_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  const extensions::Extension* extension =
+      extensions_service->extensions()->GetByID(security_origin.host());
+  DCHECK(extension);
+  return extension;
+#else
+  return NULL;
+#endif
+}
+
 }  // namespace
 
 MediaCaptureDevicesDispatcher::PendingAccessRequest::PendingAccessRequest(
@@ -369,6 +392,56 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequest(
   } else {
     ProcessRegularMediaAccessRequest(web_contents, request, callback);
   }
+}
+
+bool MediaCaptureDevicesDispatcher::CheckMediaAccessPermission(
+    content::BrowserContext* browser_context,
+    const GURL& security_origin,
+    content::MediaStreamType type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
+         type == content::MEDIA_DEVICE_VIDEO_CAPTURE);
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  const extensions::Extension* extension =
+      GetExtensionForOrigin(profile, security_origin);
+
+  if (extension && (extension->is_platform_app() ||
+                    IsMediaRequestWhitelistedForExtension(extension))) {
+    return extension->permissions_data()->HasAPIPermission(
+        type == content::MEDIA_DEVICE_AUDIO_CAPTURE
+            ? extensions::APIPermission::kAudioCapture
+            : extensions::APIPermission::kVideoCapture);
+  }
+
+  if (CheckAllowAllMediaStreamContentForOrigin(profile, security_origin))
+    return true;
+
+  const char* policy_name = type == content::MEDIA_DEVICE_AUDIO_CAPTURE
+                                ? prefs::kAudioCaptureAllowed
+                                : prefs::kVideoCaptureAllowed;
+  const char* list_policy_name = type == content::MEDIA_DEVICE_AUDIO_CAPTURE
+                                     ? prefs::kAudioCaptureAllowedUrls
+                                     : prefs::kVideoCaptureAllowedUrls;
+  if (GetDevicePolicy(
+          profile, security_origin, policy_name, list_policy_name) ==
+      ALWAYS_ALLOW) {
+    return true;
+  }
+
+  // There's no secondary URL for these content types, hence duplicating
+  // |security_origin|.
+  if (profile->GetHostContentSettingsMap()->GetContentSetting(
+          security_origin,
+          security_origin,
+          type == content::MEDIA_DEVICE_AUDIO_CAPTURE
+              ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
+              : CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+          NO_RESOURCE_IDENTIFIER) == CONTENT_SETTING_ALLOW) {
+    return true;
+  }
+
+  return false;
 }
 
 void MediaCaptureDevicesDispatcher::ProcessDesktopCaptureAccessRequest(

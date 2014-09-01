@@ -431,16 +431,10 @@ class ProfileIOData {
         const GURL& url,
         const base::Callback<void(scoped_ptr<net::KeygenHandler>)>& callback)
         OVERRIDE;
-    virtual bool AllowMicAccess(const GURL& origin) OVERRIDE;
-    virtual bool AllowCameraAccess(const GURL& origin) OVERRIDE;
     virtual SaltCallback GetMediaDeviceIDSalt() OVERRIDE;
 
    private:
     friend class ProfileIOData;
-
-    // Helper method that returns true if |type| is allowed for |origin|, false
-    // otherwise.
-    bool AllowContentAccess(const GURL& origin, ContentSettingsType type);
 
     ProfileIOData* const io_data_;
 

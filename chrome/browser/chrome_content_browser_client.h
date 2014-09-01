@@ -289,6 +289,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void PreSpawnRenderer(sandbox::TargetPolicy* policy,
                                 bool* success) OVERRIDE;
 #endif
+  virtual bool CheckMediaAccessPermission(
+      content::BrowserContext* browser_context,
+      const GURL& security_origin,
+      content::MediaStreamType type) OVERRIDE;
 
  private:
   friend class DisableWebRtcEncryptionFlagTest;

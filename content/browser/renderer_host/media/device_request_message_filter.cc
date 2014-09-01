@@ -131,16 +131,14 @@ void DeviceRequestMessageFilter::OnGetSources(int request_id,
 
   // Make request to get audio devices.
   const std::string& audio_label = media_stream_manager_->EnumerateDevices(
-      this, -1, -1, resource_context_->GetMediaDeviceIDSalt(), -1,
-      MEDIA_DEVICE_AUDIO_CAPTURE, security_origin,
-      resource_context_->AllowMicAccess(security_origin));
+      this, render_process_id_, -1, resource_context_->GetMediaDeviceIDSalt(),
+      -1, MEDIA_DEVICE_AUDIO_CAPTURE, security_origin);
   DCHECK(!audio_label.empty());
 
   // Make request for video devices.
   const std::string& video_label = media_stream_manager_->EnumerateDevices(
-      this, -1, -1, resource_context_->GetMediaDeviceIDSalt(), -1,
-      MEDIA_DEVICE_VIDEO_CAPTURE, security_origin,
-      resource_context_->AllowCameraAccess(security_origin));
+      this, render_process_id_, -1, resource_context_->GetMediaDeviceIDSalt(),
+      -1, MEDIA_DEVICE_VIDEO_CAPTURE, security_origin);
   DCHECK(!video_label.empty());
 
   requests_.push_back(DeviceRequest(
