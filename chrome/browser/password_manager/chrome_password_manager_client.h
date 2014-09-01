@@ -25,6 +25,7 @@ class WebContents;
 }
 
 namespace password_manager {
+struct CredentialInfo;
 class PasswordGenerationManager;
 class PasswordManager;
 }
@@ -65,6 +66,17 @@ class ChromePasswordManagerClient
   virtual void OnLogRouterAvailabilityChanged(bool router_can_be_used) OVERRIDE;
   virtual void LogSavePasswordProgress(const std::string& text) OVERRIDE;
   virtual bool IsLoggingActive() const OVERRIDE;
+  virtual void OnNotifyFailedSignIn(
+      int request_id,
+      const password_manager::CredentialInfo&) OVERRIDE;
+  virtual void OnNotifySignedIn(
+      int request_id,
+      const password_manager::CredentialInfo&) OVERRIDE;
+  virtual void OnNotifySignedOut(int request_id) OVERRIDE;
+  virtual void OnRequestCredential(
+      int request_id,
+      bool zero_click_only,
+      const std::vector<GURL>& federations) OVERRIDE;
 
   // Hides any visible generation UI.
   void HidePasswordGenerationPopup();

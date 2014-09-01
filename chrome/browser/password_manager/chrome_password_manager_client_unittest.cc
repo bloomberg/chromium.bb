@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
-
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 
+#include "base/command_line.h"
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
+#include "components/password_manager/content/common/credential_manager_messages.h"
+#include "components/password_manager/content/common/credential_manager_types.h"
 #include "components/password_manager/core/browser/log_receiver.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
@@ -26,6 +29,7 @@ using content::WebContents;
 namespace {
 
 const char kTestText[] = "abcd1234";
+const int kRequestId = 4;
 
 class MockLogReceiver : public password_manager::LogReceiver {
  public:
@@ -320,4 +324,63 @@ TEST_F(ChromePasswordManagerClientTest,
       GURL("https://other.site.com/ServiceLogin?continue="
            "https://passwords.google.com&rart=234"));
   EXPECT_TRUE(client->IsPasswordManagerEnabledForCurrentPage());
+}
+
+TEST_F(ChromePasswordManagerClientTest, CredentialManagerOnNotifyFailedSignIn) {
+  scoped_ptr<TestChromePasswordManagerClient> client(
+      new TestChromePasswordManagerClient(web_contents()));
+
+  password_manager::CredentialInfo info(base::ASCIIToUTF16("id"),
+                                        base::ASCIIToUTF16("name"),
+                                        GURL("https://example.com/image.png"));
+  client->OnNotifyFailedSignIn(kRequestId, info);
+
+  const uint32 kMsgID = CredentialManagerMsg_AcknowledgeFailedSignIn::ID;
+  const IPC::Message* message =
+      process()->sink().GetFirstMessageMatching(kMsgID);
+  EXPECT_TRUE(message);
+  process()->sink().ClearMessages();
+}
+
+TEST_F(ChromePasswordManagerClientTest, CredentialManagerOnNotifySignedIn) {
+  scoped_ptr<TestChromePasswordManagerClient> client(
+      new TestChromePasswordManagerClient(web_contents()));
+
+  password_manager::CredentialInfo info(base::ASCIIToUTF16("id"),
+                                        base::ASCIIToUTF16("name"),
+                                        GURL("https://example.com/image.png"));
+  client->OnNotifySignedIn(kRequestId, info);
+
+  const uint32 kMsgID = CredentialManagerMsg_AcknowledgeSignedIn::ID;
+  const IPC::Message* message =
+      process()->sink().GetFirstMessageMatching(kMsgID);
+  EXPECT_TRUE(message);
+  process()->sink().ClearMessages();
+}
+
+TEST_F(ChromePasswordManagerClientTest, CredentialManagerOnNotifySignedOut) {
+  scoped_ptr<TestChromePasswordManagerClient> client(
+      new TestChromePasswordManagerClient(web_contents()));
+
+  client->OnNotifySignedOut(kRequestId);
+
+  const uint32 kMsgID = CredentialManagerMsg_AcknowledgeSignedOut::ID;
+  const IPC::Message* message =
+      process()->sink().GetFirstMessageMatching(kMsgID);
+  EXPECT_TRUE(message);
+  process()->sink().ClearMessages();
+}
+
+TEST_F(ChromePasswordManagerClientTest, CredentialManagerOnRequestCredential) {
+  scoped_ptr<TestChromePasswordManagerClient> client(
+      new TestChromePasswordManagerClient(web_contents()));
+
+  std::vector<GURL> federations;
+  client->OnRequestCredential(kRequestId, false, federations);
+
+  const uint32 kMsgID = CredentialManagerMsg_SendCredential::ID;
+  const IPC::Message* message =
+      process()->sink().GetFirstMessageMatching(kMsgID);
+  EXPECT_TRUE(message);
+  process()->sink().ClearMessages();
 }

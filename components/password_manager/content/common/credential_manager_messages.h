@@ -13,13 +13,9 @@
 #include "content/public/common/common_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
-#include "third_party/WebKit/public/platform/WebCredentialManagerError.h"
 #include "url/gurl.h"
 
 #define IPC_MESSAGE_START CredentialManagerMsgStart
-
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebCredentialManagerError::ErrorType,
-                          blink::WebCredentialManagerError::ErrorTypeLast);
 
 IPC_ENUM_TRAITS_MAX_VALUE(password_manager::CredentialType,
                           password_manager::CREDENTIAL_TYPE_LAST);

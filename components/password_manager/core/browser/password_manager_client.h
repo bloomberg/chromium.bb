@@ -14,6 +14,7 @@ class PrefService;
 
 namespace password_manager {
 
+struct CredentialInfo;
 class PasswordFormManager;
 class PasswordManagerDriver;
 class PasswordStore;
@@ -113,6 +114,24 @@ class PasswordManagerClient {
   // Only relevant on OSX.
   virtual PasswordStore::AuthorizationPromptPolicy GetAuthorizationPromptPolicy(
       const autofill::PasswordForm& form);
+
+  // Called in response to an IPC from the renderer, triggered by a page's call
+  // to 'navigator.credentials.notifyFailedSignIn'.
+  virtual void OnNotifyFailedSignIn(int request_id, const CredentialInfo&) {}
+
+  // Called in response to an IPC from the renderer, triggered by a page's call
+  // to 'navigator.credentials.notifySignedIn'.
+  virtual void OnNotifySignedIn(int request_id, const CredentialInfo&) {}
+
+  // Called in response to an IPC from the renderer, triggered by a page's call
+  // to 'navigator.credentials.notifySignedOut'.
+  virtual void OnNotifySignedOut(int request_id) {}
+
+  // Called in response to an IPC from the renderer, triggered by a page's call
+  // to 'navigator.credentials.request'.
+  virtual void OnRequestCredential(int request_id,
+                                   bool zero_click_only,
+                                   const std::vector<GURL>& federations) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);
