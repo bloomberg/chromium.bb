@@ -83,7 +83,7 @@ typedef base::hash_set<HashedHandle> ParentHandleSet;
 // value was created as a result of calling the function.
 bool GetOrCreateV8Value(v8::Handle<v8::Context> context,
                         const PP_Var& var,
-                        bool object_vars_allowed,
+                        V8VarConverter::AllowObjectVars object_vars_allowed,
                         v8::Handle<v8::Value>* result,
                         bool* did_create,
                         VarHandleMap* visited_ids,
@@ -155,7 +155,7 @@ bool GetOrCreateV8Value(v8::Handle<v8::Context> context,
       *result = v8::Object::New(isolate);
       break;
     case PP_VARTYPE_OBJECT: {
-      DCHECK(object_vars_allowed);
+      DCHECK(object_vars_allowed == V8VarConverter::kAllowObjectVars);
       scoped_refptr<V8ObjectVar> v8_object_var = V8ObjectVar::FromPPVar(var);
       if (!v8_object_var.get()) {
         NOTREACHED();
@@ -187,7 +187,7 @@ bool GetOrCreateV8Value(v8::Handle<v8::Context> context,
 bool GetOrCreateVar(v8::Handle<v8::Value> val,
                     v8::Handle<v8::Context> context,
                     PP_Instance instance,
-                    bool object_vars_allowed,
+                    V8VarConverter::AllowObjectVars object_vars_allowed,
                     PP_Var* result,
                     bool* did_create,
                     HandleVarMap* visited_handles,
@@ -234,7 +234,7 @@ bool GetOrCreateVar(v8::Handle<v8::Value> val,
       scoped_refptr<HostArrayBufferVar> buffer_var(
           new HostArrayBufferVar(*web_array_buffer));
       *result = buffer_var->GetPPVar();
-    } else if (object_vars_allowed) {
+    } else if (object_vars_allowed == V8VarConverter::kAllowObjectVars) {
       v8::Handle<v8::Object> object = val->ToObject();
       *result = content::HostGlobals::Get()->
           host_var_tracker()->V8ObjectVarForV8Object(instance, object);
@@ -271,13 +271,14 @@ bool CanHaveChildren(PP_Var var) {
 
 V8VarConverter::V8VarConverter(PP_Instance instance)
     : instance_(instance),
-      object_vars_allowed_(false),
+      object_vars_allowed_(kDisallowObjectVars),
       message_loop_proxy_(base::MessageLoopProxy::current()) {
   resource_converter_.reset(new ResourceConverterImpl(
       instance, RendererPpapiHost::GetForPPInstance(instance)));
 }
 
-V8VarConverter::V8VarConverter(PP_Instance instance, bool object_vars_allowed)
+V8VarConverter::V8VarConverter(PP_Instance instance,
+                               AllowObjectVars object_vars_allowed)
     : instance_(instance),
       object_vars_allowed_(object_vars_allowed),
       message_loop_proxy_(base::MessageLoopProxy::current()) {
@@ -288,7 +289,7 @@ V8VarConverter::V8VarConverter(PP_Instance instance, bool object_vars_allowed)
 V8VarConverter::V8VarConverter(PP_Instance instance,
                                scoped_ptr<ResourceConverter> resource_converter)
     : instance_(instance),
-      object_vars_allowed_(false),
+      object_vars_allowed_(kDisallowObjectVars),
       message_loop_proxy_(base::MessageLoopProxy::current()),
       resource_converter_(resource_converter.release()) {}
 
