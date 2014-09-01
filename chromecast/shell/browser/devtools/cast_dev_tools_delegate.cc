@@ -24,6 +24,7 @@ namespace {
 
 const char kTargetTypePage[] = "page";
 const char kTargetTypeServiceWorker[] = "service_worker";
+const char kTargetTypeSharedWorker[] = "worker";
 const char kTargetTypeOther[] = "other";
 
 class Target : public content::DevToolsTarget {
@@ -38,6 +39,8 @@ class Target : public content::DevToolsTarget {
         return kTargetTypePage;
       case content::DevToolsAgentHost::TYPE_SERVICE_WORKER:
         return kTargetTypeServiceWorker;
+      case content::DevToolsAgentHost::TYPE_SHARED_WORKER:
+        return kTargetTypeSharedWorker;
       default:
         break;
     }
@@ -47,7 +50,9 @@ class Target : public content::DevToolsTarget {
     return agent_host_->GetTitle();
   }
   virtual std::string GetDescription() const OVERRIDE { return std::string(); }
-  virtual GURL GetURL() const OVERRIDE { return url_; }
+  virtual GURL GetURL() const OVERRIDE {
+    return agent_host_->GetURL();
+  }
   virtual GURL GetFaviconURL() const OVERRIDE { return favicon_url_; }
   virtual base::TimeTicks GetLastActivityTime() const OVERRIDE {
     return last_activity_time_;
@@ -59,14 +64,15 @@ class Target : public content::DevToolsTarget {
       const OVERRIDE {
     return agent_host_;
   }
-  virtual bool Activate() const OVERRIDE;
-  virtual bool Close() const OVERRIDE;
+  virtual bool Activate() const OVERRIDE {
+    return agent_host_->Activate();
+  }
+  virtual bool Close() const OVERRIDE {
+    return agent_host_->Close();
+  }
 
  private:
   scoped_refptr<content::DevToolsAgentHost> agent_host_;
-  std::string id_;
-  std::string title_;
-  GURL url_;
   GURL favicon_url_;
   base::TimeTicks last_activity_time_;
 
@@ -84,22 +90,6 @@ Target::Target(scoped_refptr<content::DevToolsAgentHost> agent_host)
   }
 }
 
-bool Target::Activate() const {
-  content::WebContents* web_contents = agent_host_->GetWebContents();
-  if (!web_contents)
-    return false;
-  web_contents->GetDelegate()->ActivateContents(web_contents);
-  return true;
-}
-
-bool Target::Close() const {
-  content::WebContents* web_contents = agent_host_->GetWebContents();
-  if (!web_contents)
-    return false;
-  web_contents->GetRenderViewHost()->ClosePage();
-  return true;
-}
-
 }  // namespace
 
 CastDevToolsDelegate::CastDevToolsDelegate() {
@@ -109,22 +99,12 @@ CastDevToolsDelegate::~CastDevToolsDelegate() {
 }
 
 std::string CastDevToolsDelegate::GetDiscoveryPageHTML() {
-#if defined(OS_ANDROID)
-  return std::string();
-#else
   return ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_CAST_SHELL_DEVTOOLS_DISCOVERY_PAGE).as_string();
-#endif  // defined(OS_ANDROID)
 }
 
 bool CastDevToolsDelegate::BundlesFrontendResources() {
-#if defined(OS_ANDROID)
-  // Since Android remote debugging connects over a Unix domain socket, Chrome
-  // will not load the same homepage.
-  return false;
-#else
   return true;
-#endif  // defined(OS_ANDROID)
 }
 
 base::FilePath CastDevToolsDelegate::GetDebugFrontendDir() {
