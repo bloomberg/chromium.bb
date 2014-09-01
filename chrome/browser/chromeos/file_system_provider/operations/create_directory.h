@@ -26,14 +26,13 @@ namespace file_system_provider {
 namespace operations {
 
 // Creates a directory. If |recursive| is set to true, then creates also all
-// non-existing directories on the path. If |exclusive| is true, then the
-// operation will fail if the directory already exists. Created per request.
+// non-existing directories on the path. The operation will fail if the
+// directory already exists. Created per request.
 class CreateDirectory : public Operation {
  public:
   CreateDirectory(extensions::EventRouter* event_router,
                   const ProvidedFileSystemInfo& file_system_info,
                   const base::FilePath& directory_path,
-                  bool exclusive,
                   bool recursive,
                   const storage::AsyncFileUtil::StatusCallback& callback);
   virtual ~CreateDirectory();
@@ -50,7 +49,6 @@ class CreateDirectory : public Operation {
  private:
   base::FilePath directory_path_;
   ProvidedFileSystemInterface::OpenFileMode mode_;
-  bool exclusive_;
   bool recursive_;
   const storage::AsyncFileUtil::StatusCallback callback_;
 

@@ -122,11 +122,10 @@ class ProvidedFileSystemInterface {
                                  const ReadChunkReceivedCallback& callback) = 0;
 
   // Requests creating a directory. If |recursive| is passed, then all non
-  // existing directories on the path will be created. If |exclusive| is true,
-  // then creating the directory will fail, if it already exists.
+  // existing directories on the path will be created. The operation will fail
+  // if the target directory already exists.
   virtual AbortCallback CreateDirectory(
       const base::FilePath& directory_path,
-      bool exclusive,
       bool recursive,
       const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 

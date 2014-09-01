@@ -17,12 +17,10 @@ CreateDirectory::CreateDirectory(
     extensions::EventRouter* event_router,
     const ProvidedFileSystemInfo& file_system_info,
     const base::FilePath& directory_path,
-    bool exclusive,
     bool recursive,
     const storage::AsyncFileUtil::StatusCallback& callback)
     : Operation(event_router, file_system_info),
       directory_path_(directory_path),
-      exclusive_(exclusive),
       recursive_(recursive),
       callback_(callback) {
 }
@@ -36,7 +34,6 @@ bool CreateDirectory::Execute(int request_id) {
 
   scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
   values->SetString("directoryPath", directory_path_.AsUTF8Unsafe());
-  values->SetBoolean("exclusive", exclusive_);
   values->SetBoolean("recursive", recursive_);
 
   return SendEvent(request_id,

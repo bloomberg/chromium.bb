@@ -56,7 +56,6 @@ TEST_F(FileSystemProviderOperationsCreateDirectoryTest, Execute) {
       NULL,
       file_system_info_,
       base::FilePath::FromUTF8Unsafe(kDirectoryPath),
-      false /* exclusive */,
       true /* recursive */,
       base::Bind(&util::LogStatusCallback, &callback_log));
   create_directory.SetDispatchEventImplForTesting(
@@ -88,10 +87,6 @@ TEST_F(FileSystemProviderOperationsCreateDirectoryTest, Execute) {
   EXPECT_TRUE(options->GetString("directoryPath", &event_directory_path));
   EXPECT_EQ(kDirectoryPath, event_directory_path);
 
-  bool event_exclusive;
-  EXPECT_TRUE(options->GetBoolean("exclusive", &event_exclusive));
-  EXPECT_FALSE(event_exclusive);
-
   bool event_recursive;
   EXPECT_TRUE(options->GetBoolean("recursive", &event_recursive));
   EXPECT_TRUE(event_recursive);
@@ -105,7 +100,6 @@ TEST_F(FileSystemProviderOperationsCreateDirectoryTest, Execute_NoListener) {
       NULL,
       file_system_info_,
       base::FilePath::FromUTF8Unsafe(kDirectoryPath),
-      false /* exclusive */,
       true /* recursive */,
       base::Bind(&util::LogStatusCallback, &callback_log));
   create_directory.SetDispatchEventImplForTesting(
@@ -130,7 +124,6 @@ TEST_F(FileSystemProviderOperationsCreateDirectoryTest, Execute_ReadOnly) {
       NULL,
       read_only_file_system_info,
       base::FilePath::FromUTF8Unsafe(kDirectoryPath),
-      false /* exclusive */,
       true /* recursive */,
       base::Bind(&util::LogStatusCallback, &callback_log));
   create_directory.SetDispatchEventImplForTesting(
@@ -148,7 +141,6 @@ TEST_F(FileSystemProviderOperationsCreateDirectoryTest, OnSuccess) {
       NULL,
       file_system_info_,
       base::FilePath::FromUTF8Unsafe(kDirectoryPath),
-      false /* exclusive */,
       true /* recursive */,
       base::Bind(&util::LogStatusCallback, &callback_log));
   create_directory.SetDispatchEventImplForTesting(
@@ -172,7 +164,6 @@ TEST_F(FileSystemProviderOperationsCreateDirectoryTest, OnError) {
       NULL,
       file_system_info_,
       base::FilePath::FromUTF8Unsafe(kDirectoryPath),
-      false /* exclusive */,
       true /* recursive */,
       base::Bind(&util::LogStatusCallback, &callback_log));
   create_directory.SetDispatchEventImplForTesting(

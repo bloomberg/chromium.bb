@@ -177,7 +177,6 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::CloseFile(
 
 ProvidedFileSystem::AbortCallback ProvidedFileSystem::CreateDirectory(
     const base::FilePath& directory_path,
-    bool exclusive,
     bool recursive,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_.CreateRequest(
@@ -186,7 +185,6 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::CreateDirectory(
           new operations::CreateDirectory(event_router_,
                                           file_system_info_,
                                           directory_path,
-                                          exclusive,
                                           recursive,
                                           callback)));
   if (!request_id) {

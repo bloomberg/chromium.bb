@@ -33,8 +33,7 @@ function onCreateDirectoryRequested(options, onSuccess, onError) {
     return;
   }
 
-  if (options.exclusive && (options.directoryPath in
-      test_util.defaultMetadata)) {
+  if (options.directoryPath in test_util.defaultMetadata) {
     onError('EXISTS');
     return;
   }

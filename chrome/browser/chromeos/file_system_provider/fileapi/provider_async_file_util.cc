@@ -110,14 +110,22 @@ void CreateDirectoryOnUIThread(
   }
 
   parser.file_system()->CreateDirectory(
-      parser.file_path(), exclusive, recursive, callback);
+      parser.file_path(), recursive, callback);
 }
 
 // Routes the response of CreateDirectory back to the IO thread.
-void OnCreateDirectory(const storage::AsyncFileUtil::StatusCallback& callback,
+void OnCreateDirectory(bool exclusive,
+                       const storage::AsyncFileUtil::StatusCallback& callback,
                        base::File::Error result) {
+  // If the directory already existed and the operation wasn't exclusive, then
+  // return success anyway, since it is not an error.
+  const base::File::Error error =
+      (result == base::File::FILE_ERROR_EXISTS && !exclusive)
+          ? base::File::FILE_OK
+          : result;
+
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE, base::Bind(callback, result));
+      BrowserThread::IO, FROM_HERE, base::Bind(callback, error));
 }
 
 // Executes DeleteEntry on the UI thread.
@@ -295,14 +303,15 @@ void ProviderAsyncFileUtil::CreateDirectory(
     bool recursive,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&CreateDirectoryOnUIThread,
-                                     base::Passed(&context),
-                                     url,
-                                     exclusive,
-                                     recursive,
-                                     base::Bind(&OnCreateDirectory, callback)));
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&CreateDirectoryOnUIThread,
+                 base::Passed(&context),
+                 url,
+                 exclusive,
+                 recursive,
+                 base::Bind(&OnCreateDirectory, exclusive, callback)));
 }
 
 void ProviderAsyncFileUtil::GetFileInfo(

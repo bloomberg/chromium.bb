@@ -235,7 +235,6 @@ ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::ReadFile(
 ProvidedFileSystemInterface::AbortCallback
 FakeProvidedFileSystem::CreateDirectory(
     const base::FilePath& directory_path,
-    bool exclusive,
     bool recursive,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   // TODO(mtomasz): Implement it once needed.

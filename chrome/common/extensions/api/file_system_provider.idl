@@ -128,7 +128,6 @@ namespace fileSystemProvider {
     DOMString fileSystemId;
     long requestId;
     DOMString directoryPath;
-    boolean exclusive;
     boolean recursive;
   };
 
@@ -303,10 +302,10 @@ namespace fileSystemProvider {
         FileDataCallback successCallback,
         ProviderErrorCallback errorCallback);
 
-    // Raised when creating a directory is requested. If <code>exclusive</code>
-    // is set to true, then the operation must fail if the target directory
-    // already exists. If <code>recursive</code> is true, then all of the
-    // missing directories on the directory path must be created.
+    // Raised when creating a directory is requested. The operation must fail
+    // with the EXISTS error if the target directory already exists.
+    // If <code>recursive</code> is true, then all of the missing directories
+    // on the directory path must be created.
     [maxListeners=1, nodoc] static void onCreateDirectoryRequested(
         CreateDirectoryRequestedOptions options,
         ProviderSuccessCallback successCallback,

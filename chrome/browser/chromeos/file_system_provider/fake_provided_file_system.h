@@ -95,7 +95,6 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
       const ReadChunkReceivedCallback& callback) OVERRIDE;
   virtual AbortCallback CreateDirectory(
       const base::FilePath& directory_path,
-      bool exclusive,
       bool recursive,
       const storage::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual AbortCallback DeleteEntry(
