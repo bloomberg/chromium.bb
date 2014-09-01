@@ -66,8 +66,7 @@
     // Firefox extensions
     // https://developer.mozilla.org/En/DOM/Selection
     //
-    // FIXME: Add use counters.
-    boolean containsNode([Default = Undefined] optional Node node, [Default = Undefined] optional boolean allowPartial);
+    [MeasureAs=SelectionContainsNode] boolean containsNode([Default = Undefined] optional Node node, [Default = Undefined] optional boolean allowPartial);
 
     // WebKit extensions
     [MeasureAs=SelectionBaseNode] readonly attribute Node baseNode;
