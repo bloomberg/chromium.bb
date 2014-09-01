@@ -268,12 +268,16 @@ class MockFileSystem(object):
             norm_path = self.dirname(norm_path)
 
     def move(self, source, destination):
-        if self.files[source] is None:
+        if not self.exists(source):
             self._raise_not_found(source)
-        self.files[destination] = self.files[source]
-        self.written_files[destination] = self.files[destination]
-        self.files[source] = None
-        self.written_files[source] = None
+        if self.isfile(source):
+            self.files[destination] = self.files[source]
+            self.written_files[destination] = self.files[destination]
+            self.files[source] = None
+            self.written_files[source] = None
+            return
+        self.copytree(source, destination)
+        self.rmtree(source)
 
     def _slow_but_correct_normpath(self, path):
         return re.sub(re.escape(os.path.sep), self.sep, os.path.normpath(path))
