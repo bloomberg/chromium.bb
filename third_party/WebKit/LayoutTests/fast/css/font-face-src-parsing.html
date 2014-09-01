@@ -65,6 +65,9 @@
 @font-face {
     src: url(foo.ttf) "invalid";
 }
+@font-face {
+    src: url(foo.ttf) !important;
+}
 </style>
 <p>Test parsing the src descriptor of @font-face.</p>
 
@@ -98,6 +101,7 @@
 @font-face { }
 @font-face { }
 @font-face { }
+@font-face { }
 </pre>
 
 <script>
@@ -115,7 +119,7 @@ document.getElementById('validResult').innerText = result;
 var invalidRules = document.styleSheets[1].cssRules;
 result = '';
 for (var i = 0; i < invalidRules.length; ++i) {
-    var itemText = invalidRules.item(i).cssText;
+    var itemText = invalidRules.item(i).cssText.replace(/file:.*LayoutTests\/fast\/css\//, '');
     result += itemText + '\n';
 }
 document.getElementById('invalidResult').innerText = result;

@@ -59,7 +59,7 @@ class CSSPropertyParser {
     STACK_ALLOCATED();
 public:
     CSSPropertyParser(OwnPtr<CSSParserValueList>&,
-        const CSSParserContext&, bool inViewport, bool savedImportant,
+        const CSSParserContext&, bool inViewport,
         WillBeHeapVector<CSSProperty, 256>&, CSSRuleSourceData::Type);
     ~CSSPropertyParser();
 
@@ -186,8 +186,8 @@ private:
     bool parseFontSize(bool important);
     bool parseFontVariant(bool important);
     bool parseFontWeight(bool important);
-    bool parseFontFaceSrc();
-    bool parseFontFaceUnicodeRange();
+    PassRefPtrWillBeRawPtr<CSSValueList> parseFontFaceSrc();
+    PassRefPtrWillBeRawPtr<CSSValueList> parseFontFaceUnicodeRange();
 
     bool parseSVGValue(CSSPropertyID propId, bool important);
     PassRefPtrWillBeRawPtr<CSSValue> parseSVGStrokeDasharray();
@@ -358,7 +358,6 @@ private:
     const OwnPtr<CSSParserValueList>& m_valueList;
     const CSSParserContext& m_context;
     const bool m_inViewport;
-    const bool m_important; // FIXME: This is only used by font-face-src and unicode-range and undoubtably wrong!
 
     // Outputs:
     WillBeHeapVector<CSSProperty, 256>& m_parsedProperties;

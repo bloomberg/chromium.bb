@@ -109,13 +109,12 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createPrimitiveValuePair(PassRe
 }
 
 CSSPropertyParser::CSSPropertyParser(OwnPtr<CSSParserValueList>& valueList,
-    const CSSParserContext& context, bool inViewport, bool savedImportant,
+    const CSSParserContext& context, bool inViewport,
     WillBeHeapVector<CSSProperty, 256>& parsedProperties,
     CSSRuleSourceData::Type ruleType)
     : m_valueList(valueList)
     , m_context(context)
     , m_inViewport(inViewport)
-    , m_important(savedImportant) // See comment in header, should be removed.
     , m_parsedProperties(parsedProperties)
     , m_ruleType(ruleType)
     , m_inParseShorthand(0)
@@ -928,10 +927,12 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         break;
 
     case CSSPropertySrc: // Only used within @font-face and @-webkit-filter, so cannot use inherit | initial or be !important. This is a list of urls or local references.
-        return parseFontFaceSrc();
+        parsedValue = parseFontFaceSrc();
+        break;
 
     case CSSPropertyUnicodeRange:
-        return parseFontFaceUnicodeRange();
+        parsedValue = parseFontFaceUnicodeRange();
+        break;
 
     /* CSS3 properties */
 
@@ -4754,29 +4755,29 @@ bool CSSPropertyParser::parseFontFaceSrcLocal(CSSValueList* valueList)
     return true;
 }
 
-bool CSSPropertyParser::parseFontFaceSrc()
+PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFaceSrc()
 {
     RefPtrWillBeRawPtr<CSSValueList> values(CSSValueList::createCommaSeparated());
 
     while (CSSParserValue* value = m_valueList->current()) {
         if (value->unit == CSSPrimitiveValue::CSS_URI) {
             if (!parseFontFaceSrcURI(values.get()))
-                return false;
+                return nullptr;
         } else if (value->unit == CSSParserValue::Function && equalIgnoringCase(value->function->name, "local(")) {
             if (!parseFontFaceSrcLocal(values.get()))
-                return false;
-        } else
-            return false;
+                return nullptr;
+        } else {
+            return nullptr;
+        }
     }
     if (!values->length())
-        return false;
+        return nullptr;
 
-    addProperty(CSSPropertySrc, values.release(), m_important);
     m_valueList->next();
-    return true;
+    return values.release();
 }
 
-bool CSSPropertyParser::parseFontFaceUnicodeRange()
+PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFaceUnicodeRange()
 {
     RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createCommaSeparated();
     bool failed = false;
@@ -4864,9 +4865,8 @@ bool CSSPropertyParser::parseFontFaceUnicodeRange()
             values->append(CSSUnicodeRangeValue::create(from, to));
     }
     if (failed || !values->length())
-        return false;
-    addProperty(CSSPropertyUnicodeRange, values.release(), m_important);
-    return true;
+        return nullptr;
+    return values.release();
 }
 
 // Returns the number of characters which form a valid double

@@ -1179,7 +1179,7 @@ void BisonCSSParser::setCurrentProperty(CSSPropertyID propId)
 
 bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
 {
-    CSSPropertyParser parser(m_valueList, m_context, m_inViewport, m_important, m_parsedProperties, m_ruleHeaderType);
+    CSSPropertyParser parser(m_valueList, m_context, m_inViewport, m_parsedProperties, m_ruleHeaderType);
     return parser.parseValue(propId, important);
 }
 
