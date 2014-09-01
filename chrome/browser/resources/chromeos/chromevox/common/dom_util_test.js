@@ -141,6 +141,12 @@ TEST_F('CvoxDomUtilUnitTest', 'IsVisible', function() {
   node = $('nested_visibility_hide');
   assertEquals(false,
       cvox.DomUtil.isVisible(node, {checkDescendants: false}));
+
+  // Test that an element not part of the DOM is treated as invisible.
+  var div = document.createElement('div');
+  assertEquals(false, cvox.DomUtil.isVisible(div));
+  document.body.appendChild(div);
+  assertEquals(true, cvox.DomUtil.isVisible(div));
 });
 
 /** Test determining if a node is a leaf node or not. @export */

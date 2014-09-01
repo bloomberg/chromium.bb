@@ -193,7 +193,8 @@ cvox.DomUtil.computeIsVisible_ = function(
 /**
  * Checks the ancestor chain for the given node for invisibility. If an
  * ancestor is invisible and this cannot be overriden by a descendant,
- * we return true.
+ * we return true. If the element is not a descendant of the document
+ * element it will return true (invisible).
  * @param {Node} node The node to check the ancestor chain for.
  * @return {boolean} True if a descendant is invisible.
  * @private
@@ -205,8 +206,15 @@ cvox.DomUtil.hasInvisibleAncestor_ = function(node) {
     if (cvox.DomUtil.isInvisibleStyle(style, true)) {
       return true;
     }
+    // Once we reach the document element and we haven't found anything
+    // invisible yet, we're done. If we exit the while loop and never found
+    // the document element, the element wasn't part of the DOM and thus it's
+    // invisible.
+    if (ancestor == document.documentElement) {
+      return false;
+    }
   }
-  return false;
+  return true;
 };
 
 
