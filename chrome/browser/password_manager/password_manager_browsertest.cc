@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/login/login_prompt_test_utils.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
@@ -37,11 +38,13 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -1119,3 +1122,59 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_TRUE(prompt_observer->IsShowingPrompt());
 }
 
+// Test that if login fails and content server pushes a different login form
+// with action URL having different schemes. Heuristic shall be able
+// identify such cases and *shall not* prompt to save incorrect password.
+IN_PROC_BROWSER_TEST_F(
+    PasswordManagerBrowserTest,
+    NoPromptForLoginFailedAndServerPushSeperateLoginForm_HttpToHttps) {
+  std::string path =
+      "/password/separate_login_form_with_onload_submit_script.html";
+  GURL http_url(embedded_test_server()->GetURL(path));
+  ASSERT_TRUE(http_url.SchemeIs(url::kHttpScheme));
+
+  NavigationObserver observer(WebContents());
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  ui_test_utils::NavigateToURL(browser(), http_url);
+
+  observer.SetPathToWaitFor("/password/done_and_separate_login_form.html");
+  observer.Wait();
+
+  EXPECT_FALSE(prompt_observer->IsShowingPrompt());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PasswordManagerBrowserTest,
+    NoPromptForLoginFailedAndServerPushSeperateLoginForm_HttpsToHttp) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowRunningInsecureContent);
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kIgnoreCertificateErrors);
+  const base::FilePath::CharType kDocRoot[] =
+      FILE_PATH_LITERAL("chrome/test/data");
+  net::SpawnedTestServer https_test_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::SSLOptions(
+          net::SpawnedTestServer::SSLOptions::CERT_OK),
+      base::FilePath(kDocRoot));
+  ASSERT_TRUE(https_test_server.Start());
+
+  // This test case cannot inject the scripts via content::ExecuteScript() in
+  // files served through HTTPS. Therefore the scripts are made part of the HTML
+  // site and executed on load.
+  std::string path =
+      "password/separate_login_form_with_onload_submit_script.html";
+  GURL https_url(https_test_server.GetURL(path));
+  ASSERT_TRUE(https_url.SchemeIs(url::kHttpsScheme));
+
+  NavigationObserver observer(WebContents());
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  ui_test_utils::NavigateToURL(browser(), https_url);
+
+  observer.SetPathToWaitFor("/password/done_and_separate_login_form.html");
+  observer.Wait();
+
+  EXPECT_FALSE(prompt_observer->IsShowingPrompt());
+}

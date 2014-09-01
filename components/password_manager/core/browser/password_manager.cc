@@ -69,6 +69,22 @@ bool ShouldDropSyncCredential() {
   return group_name != "Disabled";
 }
 
+bool URLsEqualUpToScheme(const GURL& a, const GURL& b) {
+  return (a.GetContent() == b.GetContent());
+}
+
+bool URLsEqualUpToHttpHttpsSubstitution(const GURL& a, const GURL& b) {
+  if (a == b)
+    return true;
+
+  // The first-time and retry login forms action URLs sometimes differ in
+  // switching from HTTP to HTTPS, see http://crbug.com/400769.
+  if (a.SchemeIsHTTPOrHTTPS() && b.SchemeIsHTTPOrHTTPS())
+    return URLsEqualUpToScheme(a, b);
+
+  return false;
+}
+
 }  // namespace
 
 const char PasswordManager::kOtherPossibleUsernamesExperiment[] =
@@ -437,12 +453,14 @@ void PasswordManager::OnPasswordFormsRendered(
   // If we see the login form again, then the login failed.
   if (did_stop_loading) {
     for (size_t i = 0; i < all_visible_forms_.size(); ++i) {
-      // TODO(vabr): The similarity check is just action equality for now. If it
-      // becomes more complex, it may make sense to consider modifying and using
+      // TODO(vabr): The similarity check is just action equality up to
+      // HTTP<->HTTPS substitution for now. If it becomes more complex, it may
+      // make sense to consider modifying and using
       // PasswordFormManager::DoesManage for it.
       if (all_visible_forms_[i].action.is_valid() &&
-          provisional_save_manager_->pending_credentials().action ==
-              all_visible_forms_[i].action) {
+          URLsEqualUpToHttpHttpsSubstitution(
+              provisional_save_manager_->pending_credentials().action,
+              all_visible_forms_[i].action)) {
         if (logger) {
           logger->LogPasswordForm(Logger::STRING_PASSWORD_FORM_REAPPEARED,
                                   visible_forms[i]);
