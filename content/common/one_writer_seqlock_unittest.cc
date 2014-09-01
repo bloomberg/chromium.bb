@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gamepad_seqlock.h"
+#include "content/common/one_writer_seqlock.h"
 
 #include <stdlib.h>
 
 #include "base/atomic_ref_count.h"
-#include "base/threading/platform_thread.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
+#include "base/threading/platform_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -24,14 +24,14 @@ class BasicSeqLockTestThread : public PlatformThread::Delegate {
   BasicSeqLockTestThread() {}
 
   void Init(
-      content::GamepadSeqLock* seqlock,
+      content::OneWriterSeqLock* seqlock,
       TestData* data,
       base::subtle::Atomic32* ready) {
     seqlock_ = seqlock;
     data_ = data;
     ready_ = ready;
   }
-  virtual void ThreadMain() {
+  virtual void ThreadMain() OVERRIDE {
     while (AtomicRefCountIsZero(ready_)) {
       PlatformThread::YieldCurrentThread();
     }
@@ -52,15 +52,15 @@ class BasicSeqLockTestThread : public PlatformThread::Delegate {
   }
 
  private:
-  content::GamepadSeqLock* seqlock_;
+  content::OneWriterSeqLock* seqlock_;
   TestData* data_;
   base::AtomicRefCount* ready_;
 
   DISALLOW_COPY_AND_ASSIGN(BasicSeqLockTestThread);
 };
 
-TEST(GamepadSeqLockTest, ManyThreads) {
-  content::GamepadSeqLock seqlock;
+TEST(OneWriterSeqLockTest, ManyThreads) {
+  content::OneWriterSeqLock seqlock;
   TestData data = { 0, 0, 0 };
   base::AtomicRefCount ready = 0;
 

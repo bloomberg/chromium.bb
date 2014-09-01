@@ -671,6 +671,7 @@
         'common/inter_process_time_ticks_converter_unittest.cc',
         'common/mac/attributed_string_coder_unittest.mm',
         'common/mac/font_descriptor_unittest.mm',
+        'common/one_writer_seqlock_unittest.cc',
         'common/page_state_serialization_unittest.cc',
         'common/page_zoom_unittest.cc',
         'common/plugin_list_unittest.cc',
