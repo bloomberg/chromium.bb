@@ -118,6 +118,11 @@ class GenericFileSystemTests(object):
         self.assertFalse(self.fs.exists('foodir'))
         self.assertFalse(self.fs.exists(self.fs.join('foodir', 'baz')))
 
+    def test_copytree(self):
+        self.fs.chdir(self.generic_test_dir)
+        self.fs.copytree('foodir/', 'bardir/')
+        self.assertTrue(self.fs.exists('bardir'))
+        self.assertTrue(self.fs.exists(self.fs.join('bardir', 'baz')))
 
 class RealFileSystemTest(unittest.TestCase, GenericFileSystemTests):
     def setUp(self):
