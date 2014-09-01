@@ -202,6 +202,12 @@ dictionary DriveEntryProperties {
   // True if the file is hosted on a Drive server instead of local.
   boolean? isHosted;
 
+  // True if the file is available offline.
+  boolean? isAvailableOffline;
+
+  // True if the file is available on metered connection.
+  boolean? isAvailableWhenMetered;
+
   // URL to the custom icon for this file.
   DOMString? customIconUrl;
 

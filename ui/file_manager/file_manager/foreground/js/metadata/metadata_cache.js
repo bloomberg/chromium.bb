@@ -13,7 +13,6 @@
  *   filesystem: size, modificationTime
  *   internal: presence
  *   drive: pinned, present, hosted, availableOffline
- *   streaming: (no property)
  *
  *   Following are not fetched for non-present drive files.
  *   media: artist, album, title, width, height, imageTransform, etc.
@@ -763,7 +762,6 @@ FilesystemProvider.prototype.fetch = function(
  * This provider returns the following objects:
  *     drive: { pinned, hosted, present, customIconUrl, etc. }
  *     thumbnail: { url, transform }
- *     streaming: { }
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @constructor
  */
@@ -803,7 +801,7 @@ DriveProvider.prototype.supportsEntry = function(entry) {
  */
 DriveProvider.prototype.providesType = function(type) {
   return type === 'drive' || type === 'thumbnail' ||
-      type === 'streaming' || type === 'media' || type === 'filesystem';
+      type === 'media' || type === 'filesystem';
 };
 
 /**
@@ -853,36 +851,6 @@ DriveProvider.prototype.callApi_ = function() {
 };
 
 /**
- * @param {DriveEntryProperties} data Drive entry properties.
- * @param {Entry} entry File entry.
- * @return {boolean} True if the file is available offline.
- */
-DriveProvider.isAvailableOffline = function(data, entry) {
-  if (data.isPresent)
-    return true;
-
-  if (!data.isHosted)
-    return false;
-
-  // What's available offline? See the 'Web' column at:
-  // http://support.google.com/drive/answer/1628467
-  var subtype = FileType.getType(entry).subtype;
-  return (subtype === 'doc' ||
-          subtype === 'draw' ||
-          subtype === 'sheet' ||
-          subtype === 'slides');
-};
-
-/**
- * @param {DriveEntryProperties} data Drive entry properties.
- * @return {boolean} True if opening the file does not require downloading it
- *    via a metered connection.
- */
-DriveProvider.isAvailableWhenMetered = function(data) {
-  return data.isPresent || data.isHosted;
-};
-
-/**
  * Converts API metadata to internal format.
  * @param {Object} data Metadata from API call.
  * @param {Entry} entry File entry.
@@ -898,8 +866,8 @@ DriveProvider.prototype.convert_ = function(data, entry) {
     imageWidth: data.imageWidth,
     imageHeight: data.imageHeight,
     imageRotation: data.imageRotation,
-    availableOffline: DriveProvider.isAvailableOffline(data, entry),
-    availableWhenMetered: DriveProvider.isAvailableWhenMetered(data),
+    availableOffline: data.isAvailableOffline,
+    availableWhenMetered: data.isAvailableWhenMetered,
     customIconUrl: data.customIconUrl || '',
     contentMimeType: data.contentMimeType || '',
     sharedWithMe: data.sharedWithMe,
@@ -919,15 +887,12 @@ DriveProvider.prototype.convert_ = function(data, entry) {
   } else if (data.isPresent) {
     result.thumbnail = null;
   } else {
-    // Block the local fetch for drive files, which require downloading.
+    // Not present in cache, so do not allow to generate it by next providers.
     result.thumbnail = {url: '', transform: null};
   }
 
+  // If present in cache, then allow to fetch media by next providers.
   result.media = data.isPresent ? null : {};
-  // Indicate that the data is not available in local cache.
-  // It used to have a field 'url' for streaming play, but it is
-  // derprecated. See crbug.com/174560.
-  result.streaming = data.isPresent ? null : {};
 
   return result;
 };

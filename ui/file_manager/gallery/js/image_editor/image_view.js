@@ -381,8 +381,7 @@ ImageView.prototype.load =
         loadType, ImageView.LOAD_TYPE_TOTAL);
 
     if (loadType === ImageView.LOAD_TYPE_ERROR &&
-        !navigator.onLine && metadata.streaming) {
-      // |streaming| is set only when the file is not locally cached.
+        !navigator.onLine && !metadata.drive.present) {
       loadType = ImageView.LOAD_TYPE_OFFLINE;
     }
     if (loadCallback) loadCallback(loadType, animationDuration, opt_error);

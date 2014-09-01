@@ -100,6 +100,24 @@ void FillDriveEntryPropertiesValue(const drive::ResourceEntry& entry_proto,
       new bool(file_specific_info.cache_state().is_pinned()));
   properties->is_present.reset(
       new bool(file_specific_info.cache_state().is_present()));
+
+  if (file_specific_info.cache_state().is_present()) {
+    properties->is_available_offline.reset(new bool(true));
+  } else if (file_specific_info.is_hosted_document() &&
+             file_specific_info.has_document_extension()) {
+    const std::string file_extension = file_specific_info.document_extension();
+    // What's available offline? See the 'Web' column at:
+    // http://support.google.com/drive/answer/1628467
+    properties->is_available_offline.reset(
+        new bool(file_extension == ".gdoc" || file_extension == ".gdraw" ||
+                 file_extension == ".gsheet" || file_extension == ".gslides"));
+  } else {
+    properties->is_available_offline.reset(new bool(false));
+  }
+
+  properties->is_available_when_metered.reset(
+      new bool(file_specific_info.cache_state().is_present() ||
+               file_specific_info.is_hosted_document()));
 }
 
 // Creates entry definition list for (metadata) search result info list.
