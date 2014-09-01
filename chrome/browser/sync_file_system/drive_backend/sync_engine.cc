@@ -576,16 +576,37 @@ void SyncEngine::DumpDatabase(const ListCallback& callback) {
 }
 
 void SyncEngine::SetSyncEnabled(bool sync_enabled) {
+  if (sync_enabled_ == sync_enabled)
+    return;
   sync_enabled_ = sync_enabled;
+
+  if (sync_enabled_) {
+    if (!sync_worker_)
+      Initialize();
+
+    // Have no login credential.
+    if (!sync_worker_)
+      return;
+
+    worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&SyncWorkerInterface::SetSyncEnabled,
+                   base::Unretained(sync_worker_.get()),
+                   sync_enabled_));
+    return;
+  }
 
   if (!sync_worker_)
     return;
 
+  // TODO(tzik): Consider removing SyncWorkerInterface::SetSyncEnabled and
+  // let SyncEngine handle the flag.
   worker_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncWorkerInterface::SetSyncEnabled,
                  base::Unretained(sync_worker_.get()),
-                 sync_enabled));
+                 sync_enabled_));
+  Reset();
 }
 
 void SyncEngine::PromoteDemotedChanges(const base::Closure& callback) {
