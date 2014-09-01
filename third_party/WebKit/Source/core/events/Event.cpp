@@ -225,7 +225,7 @@ EventPath& Event::ensureEventPath()
 PassRefPtrWillBeRawPtr<StaticNodeList> Event::path() const
 {
     if (!m_currentTarget) {
-        ASSERT(m_eventPhase == PhaseType::NONE);
+        ASSERT(m_eventPhase == Event::NONE);
         if (!m_eventPath) {
             // Before dispatching the event
             return StaticNodeList::createEmpty();
