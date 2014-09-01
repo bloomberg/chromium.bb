@@ -34,7 +34,6 @@ class GeolocationDispatcher : public RenderFrameObserver,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // WebGeolocationClient
-  virtual void geolocationDestroyed();
   virtual void startUpdating();
   virtual void stopUpdating();
   virtual void setEnableHighAccuracy(bool enable_high_accuracy);
@@ -51,9 +50,6 @@ class GeolocationDispatcher : public RenderFrameObserver,
   // We have an updated geolocation position or error code.
   void OnPositionUpdated(const content::Geoposition& geoposition);
 
-  // The controller_ is valid for the lifetime of the underlying
-  // WebCore::GeolocationController. geolocationDestroyed() is
-  // invoked when the underlying object is destroyed.
   scoped_ptr<blink::WebGeolocationController> controller_;
 
   scoped_ptr<blink::WebGeolocationPermissionRequestManager>

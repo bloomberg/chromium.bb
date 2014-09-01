@@ -41,11 +41,6 @@ bool GeolocationDispatcher::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void GeolocationDispatcher::geolocationDestroyed() {
-  controller_.reset();
-  DCHECK(!updating_);
-}
-
 void GeolocationDispatcher::startUpdating() {
   GURL url;
   Send(new GeolocationHostMsg_StartUpdating(
