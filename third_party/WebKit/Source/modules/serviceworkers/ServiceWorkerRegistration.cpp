@@ -20,6 +20,7 @@
 
 namespace blink {
 
+#ifdef DISABLE_SERVICEWORKER_UNREGISTER_RESOLVE_TO_BOOLEAN
 class UndefinedValue {
 public:
     typedef WebServiceWorkerRegistration WebType;
@@ -36,6 +37,20 @@ public:
 private:
     UndefinedValue();
 };
+#else
+class BooleanValue {
+public:
+    typedef bool WebType;
+    static bool take(ScriptPromiseResolver* resolver, WebType* boolean)
+    {
+        return *boolean;
+    }
+    static void dispose(WebType* boolean) { }
+
+private:
+    BooleanValue();
+};
+#endif
 
 static void deleteIfNoExistingOwner(WebServiceWorker* serviceWorker)
 {
@@ -115,7 +130,11 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* scriptState)
         return promise;
     }
 
+#ifdef DISABLE_SERVICEWORKER_UNREGISTER_RESOLVE_TO_BOOLEAN
     m_provider->unregisterServiceWorker(scopeURL, new CallbackPromiseAdapter<UndefinedValue, ServiceWorkerError>(resolver));
+#else
+    m_provider->unregisterServiceWorker(scopeURL, new CallbackPromiseAdapter<BooleanValue, ServiceWorkerError>(resolver));
+#endif
     return promise;
 }
 

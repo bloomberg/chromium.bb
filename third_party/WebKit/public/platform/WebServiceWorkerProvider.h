@@ -42,6 +42,10 @@ class WebServiceWorkerProviderClient;
 class WebServiceWorkerRegistration;
 struct WebServiceWorkerError;
 
+// FIXME: Remove this macro after the chromium side patch is applied
+// See: https://crbug.com/390894
+#define DISABLE_SERVICEWORKER_UNREGISTER_RESOLVE_TO_BOOLEAN
+
 // Created on the main thread, and may be passed to another script context
 // thread (e.g. worker thread) later. All methods of this class must be called
 // on the single script context thread.
@@ -54,15 +58,16 @@ public:
     // The WebServiceWorkerRegistration and WebServiceWorkerError ownership are
     // passed to the WebServiceWorkerRegistrationCallbacks implementation.
     typedef WebCallbacks<WebServiceWorkerRegistration, WebServiceWorkerError> WebServiceWorkerRegistrationCallbacks;
+#ifdef DISABLE_SERVICEWORKER_UNREGISTER_RESOLVE_TO_BOOLEAN
+    typedef WebServiceWorkerRegistrationCallbacks WebServiceWorkerUnregistrationCallbacks;
+#else
+    typedef WebCallbacks<bool, WebServiceWorkerError> WebServiceWorkerUnregistrationCallbacks;
+#endif
 
     virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptUrl, WebServiceWorkerRegistrationCallbacks*) { }
 
-    // Unregisters the ServiceWorker for a given scope. The provider
-    // must always pass null to onSuccess.
-    // FIXME: "unregister" does not provide a WebServiceWorkerRegistration,
-    // revisit this to clean up the the callback type to not take a
-    // WebServiceWorkerRegistration*.
-    virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerRegistrationCallbacks*) { }
+    // Unregisters the ServiceWorker for a given scope.
+    virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerUnregistrationCallbacks*) { }
 
     virtual ~WebServiceWorkerProvider() { }
 };
