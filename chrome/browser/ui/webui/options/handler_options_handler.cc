@@ -109,6 +109,11 @@ void HandlerOptionsHandler::GetHandlersForProtocol(
   handlers_value->SetString("protocol", protocol);
   handlers_value->SetInteger("default_handler",
       registry->GetHandlerIndex(protocol));
+  handlers_value->SetBoolean(
+      "is_default_handler_set_by_user",
+      registry->IsRegisteredByUser(registry->GetHandlerFor(protocol)));
+  handlers_value->SetBoolean("has_policy_recommendations",
+                             registry->HasPolicyRegisteredHandler(protocol));
 
   base::ListValue* handlers_list = new base::ListValue();
   GetHandlersAsListValue(registry->GetHandlersFor(protocol), handlers_list);

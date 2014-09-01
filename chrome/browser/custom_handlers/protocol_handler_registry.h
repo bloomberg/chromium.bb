@@ -201,6 +201,14 @@ class ProtocolHandlerRegistry : public KeyedService {
   // Returns true if an identical protocol handler has already been registered.
   bool IsRegistered(const ProtocolHandler& handler) const;
 
+  // Returns true if an identical protocol handler has already been registered
+  // by the user.
+  bool IsRegisteredByUser(const ProtocolHandler& handler);
+
+  // Returns true if the scheme has at least one handler that is registered by
+  // policy.
+  bool HasPolicyRegisteredHandler(const std::string& scheme);
+
   // Returns true if an identical protocol handler is being ignored.
   bool IsIgnored(const ProtocolHandler& handler) const;
 

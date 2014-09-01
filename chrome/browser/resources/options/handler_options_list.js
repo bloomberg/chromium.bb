@@ -151,16 +151,46 @@ cr.define('options', function() {
         this.classList.add('none');
       this.appendChild(handlerElement);
 
-      // Remove link.
-      var removeElement = document.createElement('div');
-      removeElement.textContent =
-          loadTimeData.getString('handlers_remove_link');
-      removeElement.addEventListener('click', function(e) {
-        var value = selectElement ? selectElement.value : 0;
-        delegate.removeHandler(value, data.handlers[value]);
-      });
-      removeElement.className = 'handlers-remove-column handlers-remove-link';
-      this.appendChild(removeElement);
+      if (data.has_policy_recommendations) {
+        // Create an indicator to show that the handler has policy
+        // recommendations.
+        var indicator = new options.ControlledSettingIndicator();
+        if (data.is_default_handler_set_by_user || data.default_handler == -1) {
+          // The default handler is registered by the user or set to none, which
+          // indicates that the user setting has overridden a policy
+          // recommendation. Show the appropriate bubble.
+          indicator.controlledBy = 'hasRecommendation';
+          indicator.resetHandler = function() {
+            // If there is a policy recommendation, data.handlers.length >= 1.
+            // Setting the default handler to 0 ensures that it won't be 'none',
+            // and there *is* a user registered handler created by setDefault,
+            // which is required for a change notification.
+            // The user-registered handlers are removed in a loop. Note that if
+            // a handler is installed by policy, removeHandler does nothing.
+            delegate.setDefault(data.handlers[0]);
+            for (var i = 0; i < data.handlers.length; ++i) {
+              delegate.removeHandler(value, data.handlers[i]);
+            }
+          };
+        } else {
+          indicator.controlledBy = 'recommended';
+        }
+        this.appendChild(indicator);
+      }
+
+      if (data.registered_by_user) {
+        // Remove link.
+        var removeElement = document.createElement('div');
+        removeElement.textContent =
+            loadTimeData.getString('handlers_remove_link');
+        removeElement.addEventListener('click', function(e) {
+          var value = selectElement ? selectElement.value : 0;
+          delegate.removeHandler(value, data.handlers[value]);
+        });
+        removeElement.className =
+            'handlers-remove-column handlers-remove-link';
+        this.appendChild(removeElement);
+      }
     },
 
     /** @override */

@@ -533,6 +533,17 @@ bool ProtocolHandlerRegistry::IsRegistered(
       handlers->end();
 }
 
+bool ProtocolHandlerRegistry::IsRegisteredByUser(
+    const ProtocolHandler& handler) {
+  return HandlerExists(handler, &user_protocol_handlers_);
+}
+
+bool ProtocolHandlerRegistry::HasPolicyRegisteredHandler(
+    const std::string& scheme) {
+  return (policy_protocol_handlers_.find(scheme) !=
+          policy_protocol_handlers_.end());
+}
+
 bool ProtocolHandlerRegistry::IsIgnored(const ProtocolHandler& handler) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ProtocolHandlerList::const_iterator i;
@@ -605,10 +616,9 @@ void ProtocolHandlerRegistry::RemoveHandler(
   if (HandlerExists(handler, handlers) &&
       HandlerExists(handler, &user_protocol_handlers_)) {
     EraseHandler(handler, &user_protocol_handlers_);
-    if (!HandlerExists(handler, &policy_protocol_handlers_)) {
-      erase_success = true;
+    erase_success = true;
+    if (!HandlerExists(handler, &policy_protocol_handlers_))
       EraseHandler(handler, &protocol_handlers_);
-    }
   }
   ProtocolHandlerMap::iterator q = default_handlers_.find(handler.protocol());
   if (erase_success && q != default_handlers_.end() && q->second == handler) {
