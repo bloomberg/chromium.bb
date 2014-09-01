@@ -647,14 +647,14 @@ cvox.NavigationManager.prototype.speakDescriptionArray = function(
     opt_personality,
     opt_category) {
   if (opt_personality) {
-    descriptionArray.every(function(desc) {
+    descriptionArray.forEach(function(desc) {
       if (!desc.personality) {
         desc.personality = opt_personality;
       }
     });
   }
   if (opt_category) {
-    descriptionArray.every(function(desc) {
+    descriptionArray.forEach(function(desc) {
       if (!desc.category) {
         desc.category = opt_category;
       }
