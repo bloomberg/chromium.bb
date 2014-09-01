@@ -204,7 +204,7 @@ private:
     bool m_cancelBubble;
 
     unsigned short m_eventPhase;
-    RawPtrWillBeMember<EventTarget> m_currentTarget;
+    RefPtrWillBeMember<EventTarget> m_currentTarget;
     RefPtrWillBeMember<EventTarget> m_target;
     DOMTimeStamp m_createTime;
     RefPtrWillBeMember<Event> m_underlyingEvent;
