@@ -65,7 +65,7 @@ public:
     BLINK_PLATFORM_EXPORT WebString credential() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCICEServer(const WTF::PassRefPtr<RTCIceServer>&);
+    BLINK_PLATFORM_EXPORT WebRTCICEServer(RTCIceServer*);
 #endif
 
 private:
@@ -101,7 +101,7 @@ public:
     BLINK_PLATFORM_EXPORT WebRTCIceTransports iceTransports() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCConfiguration(const WTF::PassRefPtr<RTCConfiguration>&);
+    BLINK_PLATFORM_EXPORT WebRTCConfiguration(RTCConfiguration*);
 #endif
 
 private:

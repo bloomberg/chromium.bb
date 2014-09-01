@@ -39,7 +39,7 @@
 
 namespace blink {
 
-WebRTCICEServer::WebRTCICEServer(const PassRefPtr<RTCIceServer>& iceServer)
+WebRTCICEServer::WebRTCICEServer(RTCIceServer* iceServer)
     : m_private(iceServer)
 {
 }
@@ -72,7 +72,7 @@ WebString WebRTCICEServer::credential() const
     return m_private->credential();
 }
 
-WebRTCConfiguration::WebRTCConfiguration(const PassRefPtr<RTCConfiguration>& configuration)
+WebRTCConfiguration::WebRTCConfiguration(RTCConfiguration* configuration)
     : m_private(configuration)
 {
 }

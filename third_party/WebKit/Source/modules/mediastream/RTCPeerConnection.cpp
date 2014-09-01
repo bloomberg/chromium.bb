@@ -84,10 +84,10 @@ static bool throwExceptionIfSignalingStateClosed(RTCPeerConnection::SignalingSta
 
 } // namespace
 
-PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Dictionary& configuration, ExceptionState& exceptionState)
+RTCConfiguration* RTCPeerConnection::parseConfiguration(const Dictionary& configuration, ExceptionState& exceptionState)
 {
     if (configuration.isUndefinedOrNull())
-        return nullptr;
+        return 0;
 
     RTCIceTransports iceTransports = RTCIceTransportsAll;
     String iceTransportsString;
@@ -98,7 +98,7 @@ PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Diction
             iceTransports = RTCIceTransportsRelay;
         } else if (iceTransportsString != "all") {
             exceptionState.throwTypeError("Malformed RTCIceTransports");
-            return nullptr;
+            return 0;
         }
     }
 
@@ -106,17 +106,17 @@ PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Diction
     bool ok = DictionaryHelper::get(configuration, "iceServers", iceServers);
     if (!ok || iceServers.isUndefinedOrNull()) {
         exceptionState.throwTypeError("Malformed RTCConfiguration");
-        return nullptr;
+        return 0;
     }
 
     size_t numberOfServers;
     ok = iceServers.length(numberOfServers);
     if (!ok) {
         exceptionState.throwTypeError("Malformed RTCConfiguration");
-        return nullptr;
+        return 0;
     }
 
-    RefPtr<RTCConfiguration> rtcConfiguration = RTCConfiguration::create();
+    RTCConfiguration* rtcConfiguration = RTCConfiguration::create();
     rtcConfiguration->setIceTransports(iceTransports);
 
     for (size_t i = 0; i < numberOfServers; ++i) {
@@ -124,7 +124,7 @@ PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Diction
         ok = iceServers.get(i, iceServer);
         if (!ok) {
             exceptionState.throwTypeError("Malformed RTCIceServer");
-            return nullptr;
+            return 0;
         }
 
         Vector<String> names;
@@ -138,7 +138,7 @@ PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Diction
                     urlStrings.append(urlString);
                 } else {
                     exceptionState.throwTypeError("Malformed RTCIceServer");
-                    return nullptr;
+                    return 0;
                 }
             }
         } else if (names.contains("url")) {
@@ -147,11 +147,11 @@ PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Diction
                 urlStrings.append(urlString);
             } else {
                 exceptionState.throwTypeError("Malformed RTCIceServer");
-                return nullptr;
+                return 0;
             }
         } else {
             exceptionState.throwTypeError("Malformed RTCIceServer");
-            return nullptr;
+            return 0;
         }
 
         String username, credential;
@@ -162,14 +162,14 @@ PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Diction
             KURL url(KURL(), *iter);
             if (!url.isValid() || !(url.protocolIs("turn") || url.protocolIs("turns") || url.protocolIs("stun"))) {
                 exceptionState.throwTypeError("Malformed URL");
-                return nullptr;
+                return 0;
             }
 
             rtcConfiguration->appendServer(RTCIceServer::create(url, username, credential));
         }
     }
 
-    return rtcConfiguration.release();
+    return rtcConfiguration;
 }
 
 PassRefPtr<RTCOfferOptions> RTCPeerConnection::parseOfferOptions(const Dictionary& options, ExceptionState& exceptionState)
@@ -209,23 +209,23 @@ PassRefPtr<RTCOfferOptions> RTCPeerConnection::parseOfferOptions(const Dictionar
 
 RTCPeerConnection* RTCPeerConnection::create(ExecutionContext* context, const Dictionary& rtcConfiguration, const Dictionary& mediaConstraints, ExceptionState& exceptionState)
 {
-    RefPtr<RTCConfiguration> configuration = parseConfiguration(rtcConfiguration, exceptionState);
+    RTCConfiguration* configuration = parseConfiguration(rtcConfiguration, exceptionState);
     if (exceptionState.hadException())
-        return nullptr;
+        return 0;
 
     WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
     if (exceptionState.hadException())
-        return nullptr;
+        return 0;
 
-    RTCPeerConnection* peerConnection = adoptRefCountedGarbageCollectedWillBeNoop(new RTCPeerConnection(context, configuration.release(), constraints, exceptionState));
+    RTCPeerConnection* peerConnection = adoptRefCountedGarbageCollectedWillBeNoop(new RTCPeerConnection(context, configuration, constraints, exceptionState));
     peerConnection->suspendIfNeeded();
     if (exceptionState.hadException())
-        return nullptr;
+        return 0;
 
     return peerConnection;
 }
 
-RTCPeerConnection::RTCPeerConnection(ExecutionContext* context, PassRefPtr<RTCConfiguration> configuration, WebMediaConstraints constraints, ExceptionState& exceptionState)
+RTCPeerConnection::RTCPeerConnection(ExecutionContext* context, RTCConfiguration* configuration, WebMediaConstraints constraints, ExceptionState& exceptionState)
     : ActiveDOMObject(context)
     , m_signalingState(SignalingStateStable)
     , m_iceGatheringState(ICEGatheringStateNew)
@@ -361,7 +361,7 @@ void RTCPeerConnection::updateIce(const Dictionary& rtcConfiguration, const Dict
     if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
         return;
 
-    RefPtr<RTCConfiguration> configuration = parseConfiguration(rtcConfiguration, exceptionState);
+    RTCConfiguration* configuration = parseConfiguration(rtcConfiguration, exceptionState);
     if (exceptionState.hadException())
         return;
 
@@ -369,7 +369,7 @@ void RTCPeerConnection::updateIce(const Dictionary& rtcConfiguration, const Dict
     if (exceptionState.hadException())
         return;
 
-    bool valid = m_peerHandler->updateICE(configuration.release(), constraints);
+    bool valid = m_peerHandler->updateICE(configuration, constraints);
     if (!valid)
         exceptionState.throwDOMException(SyntaxError, "Could not update the ICE Agent with the given configuration.");
 }

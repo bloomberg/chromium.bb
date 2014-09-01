@@ -31,24 +31,26 @@
 #ifndef RTCConfiguration_h
 #define RTCConfiguration_h
 
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class RTCIceServer FINAL : public RefCounted<RTCIceServer> {
+class RTCIceServer FINAL : public GarbageCollectedFinalized<RTCIceServer> {
 public:
-    static PassRefPtr<RTCIceServer> create(const KURL& uri, const String& username, const String& credential)
+    static RTCIceServer* create(const KURL& uri, const String& username, const String& credential)
     {
-        return adoptRef(new RTCIceServer(uri, username, credential));
+        return new RTCIceServer(uri, username, credential);
     }
 
     const KURL& uri() { return m_uri; }
     const String& username() { return m_username; }
     const String& credential() { return m_credential; }
+
+    void trace(Visitor*) { }
 
 private:
     RTCIceServer(const KURL& uri, const String& username, const String& credential)
@@ -69,20 +71,22 @@ enum RTCIceTransports {
     RTCIceTransportsAll
 };
 
-class RTCConfiguration FINAL : public RefCounted<RTCConfiguration> {
+class RTCConfiguration FINAL : public GarbageCollected<RTCConfiguration> {
 public:
-    static PassRefPtr<RTCConfiguration> create() { return adoptRef(new RTCConfiguration()); }
+    static RTCConfiguration* create() { return new RTCConfiguration(); }
 
-    void appendServer(PassRefPtr<RTCIceServer> server) { m_servers.append(server); }
+    void appendServer(RTCIceServer* server) { m_servers.append(server); }
     size_t numberOfServers() { return m_servers.size(); }
     RTCIceServer* server(size_t index) { return m_servers[index].get(); }
     void setIceTransports(RTCIceTransports iceTransports) { m_iceTransports = iceTransports; }
     RTCIceTransports iceTransports() { return m_iceTransports; }
 
+    void trace(Visitor* visitor) { visitor->trace(m_servers); }
+
 private:
     RTCConfiguration() : m_iceTransports(RTCIceTransportsAll) { }
 
-    Vector<RefPtr<RTCIceServer> > m_servers;
+    HeapVector<Member<RTCIceServer> > m_servers;
     RTCIceTransports m_iceTransports;
 };
 

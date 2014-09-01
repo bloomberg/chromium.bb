@@ -148,9 +148,9 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    RTCPeerConnection(ExecutionContext*, PassRefPtr<RTCConfiguration>, WebMediaConstraints, ExceptionState&);
+    RTCPeerConnection(ExecutionContext*, RTCConfiguration*, WebMediaConstraints, ExceptionState&);
 
-    static PassRefPtr<RTCConfiguration> parseConfiguration(const Dictionary&, ExceptionState&);
+    static RTCConfiguration* parseConfiguration(const Dictionary&, ExceptionState&);
     static PassRefPtr<RTCOfferOptions> parseOfferOptions(const Dictionary&, ExceptionState&);
 
     void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>);
