@@ -170,9 +170,9 @@ void GlyphPageTreeNode::initializePage(const FontData* fontData, unsigned pageNu
                     buffer[softHyphen] = zeroWidthSpace;
 
                     // \n, \t, and nonbreaking space must render as a space.
-                    buffer[(int)'\n'] = ' ';
-                    buffer[(int)'\t'] = ' ';
-                    buffer[noBreakSpace] = ' ';
+                    buffer[newlineCharacter] = space;
+                    buffer[characterTabulation] = space;
+                    buffer[noBreakSpace] = space;
                 } else if (start == (leftToRightMark & ~(GlyphPage::size - 1))) {
                     // LRM, RLM, LRE, RLE, ZWNJ, ZWJ, and PDF must not render at all.
                     buffer[leftToRightMark - start] = zeroWidthSpace;

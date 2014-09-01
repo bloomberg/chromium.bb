@@ -34,6 +34,7 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFamily.h"
 #include "platform/fonts/SegmentedFontData.h"
+#include "wtf/unicode/CharacterNames.h"
 
 namespace blink {
 
@@ -140,17 +141,17 @@ const SimpleFontData* FontFallbackList::determinePrimarySimpleFontData(const Fon
             // All fonts are custom fonts and are loading. Return the first FontData.
             fontData = fontDataAt(fontDescription, 0);
             if (fontData)
-                return fontData->fontDataForCharacter(' ');
+                return fontData->fontDataForCharacter(space);
 
             SimpleFontData* lastResortFallback = FontCache::fontCache()->getLastResortFallbackFont(fontDescription).get();
             ASSERT(lastResortFallback);
             return lastResortFallback;
         }
 
-        if (fontData->isSegmented() && !toSegmentedFontData(fontData)->containsCharacter(' '))
+        if (fontData->isSegmented() && !toSegmentedFontData(fontData)->containsCharacter(space))
             continue;
 
-        const SimpleFontData* fontDataForSpace = fontData->fontDataForCharacter(' ');
+        const SimpleFontData* fontDataForSpace = fontData->fontDataForCharacter(space);
         ASSERT(fontDataForSpace);
 
         // When a custom font is loading, we should use the correct fallback font to layout the text.

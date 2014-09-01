@@ -357,8 +357,8 @@ static void normalizeCharacters(const TextRun& run, unsigned length, UChar* dest
         UChar32 character;
         U16_NEXT(source, position, length, character);
         // Don't normalize tabs as they are not treated as spaces for word-end.
-        if (Character::treatAsSpace(character) && character != '\t')
-            character = ' ';
+        if (Character::treatAsSpace(character) && character != characterTabulation)
+            character = space;
         else if (Character::treatAsZeroWidthSpaceInComplexScript(character))
             character = zeroWidthSpace;
         U16_APPEND(destination, *destinationLength, length, character, error);
@@ -389,7 +389,7 @@ HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run, ForTextEmph
 // In complex text word-spacing affects each line-break, space (U+0020) and non-breaking space (U+00A0).
 static inline bool isCodepointSpace(UChar c)
 {
-    return c == ' ' || c == noBreakSpace || c == '\n';
+    return c == space || c == noBreakSpace || c == newlineCharacter;
 }
 
 static inline bool isWordEnd(const UChar* normalizedBuffer, unsigned index)

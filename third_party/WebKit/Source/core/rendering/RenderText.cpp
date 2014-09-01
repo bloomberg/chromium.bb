@@ -108,11 +108,11 @@ static void makeCapitalized(String* string, UChar previous)
         CRASH();
 
     StringBuffer<UChar> stringWithPrevious(length + 1);
-    stringWithPrevious[0] = previous == noBreakSpace ? ' ' : previous;
+    stringWithPrevious[0] = previous == noBreakSpace ? space : previous;
     for (unsigned i = 1; i < length + 1; i++) {
         // Replace &nbsp with a real space since ICU no longer treats &nbsp as a word separator.
         if (input[i - 1] == noBreakSpace)
-            stringWithPrevious[i] = ' ';
+            stringWithPrevious[i] = space;
         else
             stringWithPrevious[i] = input[i - 1];
     }
@@ -318,7 +318,7 @@ String RenderText::plainText() const
         String text = m_text.substring(textBox->start(), textBox->len()).simplifyWhiteSpace(WTF::DoNotStripWhiteSpace);
         plainTextBuilder.append(text);
         if (textBox->nextTextBox() && textBox->nextTextBox()->start() > textBox->end() && text.length() && !text.right(1).containsOnlyWhitespace())
-            plainTextBuilder.append(' ');
+            plainTextBuilder.append(space);
     }
     return plainTextBuilder.toString();
 }
@@ -721,11 +721,11 @@ ALWAYS_INLINE float RenderText::widthFromCache(const Font& f, int start, int len
         StringImpl& text = *m_text.impl();
         for (int i = start; i < start + len; i++) {
             char c = text[i];
-            if (c <= ' ') {
-                if (c == ' ' || c == '\n') {
+            if (c <= space) {
+                if (c == space || c == newlineCharacter) {
                     w += monospaceCharacterWidth;
                     isSpace = true;
-                } else if (c == '\t') {
+                } else if (c == characterTabulation) {
                     if (style()->collapseWhiteSpace()) {
                         w += monospaceCharacterWidth;
                         isSpace = true;
@@ -798,11 +798,11 @@ void RenderText::trimmedPrefWidths(float leadWidth,
 
     ASSERT(m_text);
     StringImpl& text = *m_text.impl();
-    if (text[0] == ' ' || (text[0] == '\n' && !style()->preserveNewline()) || text[0] == '\t') {
+    if (text[0] == space || (text[0] == newlineCharacter && !style()->preserveNewline()) || text[0] == characterTabulation) {
         const Font& font = style()->font(); // FIXME: This ignores first-line.
         if (stripFrontSpaces) {
-            const UChar space = ' ';
-            float spaceWidth = font.width(constructTextRun(this, font, &space, 1, style(), direction));
+            const UChar spaceChar = space;
+            float spaceWidth = font.width(constructTextRun(this, font, &spaceChar, 1, style(), direction));
             maxWidth -= spaceWidth;
         } else {
             maxWidth += font.fontDescription().wordSpacing();
@@ -822,7 +822,7 @@ void RenderText::trimmedPrefWidths(float leadWidth,
         lastLineMaxWidth = maxWidth;
         for (int i = 0; i < len; i++) {
             int linelen = 0;
-            while (i + linelen < len && text[i + linelen] != '\n')
+            while (i + linelen < len && text[i + linelen] != newlineCharacter)
                 linelen++;
 
             if (linelen) {
@@ -955,21 +955,22 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
 
         bool previousCharacterIsSpace = isSpace;
         bool isNewline = false;
-        if (c == '\n') {
+        if (c == newlineCharacter) {
             if (styleToUse->preserveNewline()) {
                 m_hasBreak = true;
                 isNewline = true;
                 isSpace = false;
             } else
                 isSpace = true;
-        } else if (c == '\t') {
+        } else if (c == characterTabulation) {
             if (!styleToUse->collapseWhiteSpace()) {
                 m_hasTab = true;
                 isSpace = false;
             } else
                 isSpace = true;
-        } else
-            isSpace = c == ' ';
+        } else {
+            isSpace = c == space;
+        }
 
         bool isBreakableLocation = isNewline || (isSpace && styleToUse->autoWrap());
         if (!i)
@@ -1001,7 +1002,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
         bool hasBreak = breakAll || isBreakable(breakIterator, i, nextBreakable);
         bool betweenWords = true;
         int j = i;
-        while (c != '\n' && c != ' ' && c != '\t' && (c != softHyphen)) {
+        while (c != newlineCharacter && c != space && c != characterTabulation && (c != softHyphen)) {
             j++;
             if (j == len)
                 break;
@@ -1019,7 +1020,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             j = std::min(j, run->stop() + 1);
         int wordLen = j - i;
         if (wordLen) {
-            bool isSpace = (j < len) && c == ' ';
+            bool isSpace = (j < len) && c == space;
 
             // Non-zero only when kerning is enabled, in which case we measure words with their trailing
             // space, then subtract its width.
@@ -1159,8 +1160,8 @@ bool RenderText::containsOnlyWhitespace(unsigned from, unsigned len) const
     StringImpl& text = *m_text.impl();
     unsigned currPos;
     for (currPos = from;
-         currPos < from + len && (text[currPos] == '\n' || text[currPos] == ' ' || text[currPos] == '\t');
-         currPos++) { }
+    currPos < from + len && (text[currPos] == newlineCharacter || text[currPos] == space || text[currPos] == characterTabulation);
+    currPos++) { }
     return currPos >= (from + len);
 }
 
@@ -1314,7 +1315,7 @@ UChar RenderText::previousCharacter() const
     for (; previousText; previousText = previousText->previousInPreOrder())
         if (!isInlineFlowOrEmptyText(previousText))
             break;
-    UChar prev = ' ';
+    UChar prev = space;
     if (previousText && previousText->isText())
         if (StringImpl* previousString = toRenderText(previousText)->text().impl())
             prev = (*previousString)[previousString->length() - 1];
@@ -1371,7 +1372,7 @@ void RenderText::setTextInternal(PassRefPtr<StringImpl> text)
     }
 
     ASSERT(m_text);
-    ASSERT(!isBR() || (textLength() == 1 && m_text[0] == '\n'));
+    ASSERT(!isBR() || (textLength() == 1 && m_text[0] == newlineCharacter));
 
     m_isAllASCII = m_text.containsOnlyASCII();
     m_canUseSimpleFontCodePath = computeCanUseSimpleFontCodePath();

@@ -615,7 +615,7 @@ bool TextIterator::handleTextNode()
     if (!renderer->style()->collapseWhiteSpace()) {
         int runStart = m_offset;
         if (m_lastTextNodeEndedWithCollapsedSpace && hasVisibleTextNode(renderer)) {
-            emitCharacter(' ', textNode, 0, runStart, runStart);
+            emitCharacter(space, textNode, 0, runStart, runStart);
             return false;
         }
         if (!m_handledFirstLetter && renderer->isTextFragment() && !m_offset) {
@@ -698,7 +698,7 @@ void TextIterator::handleTextBox()
                     --spaceRunStart;
                 emitText(m_node, renderer, spaceRunStart, spaceRunStart + 1);
             } else {
-                emitCharacter(' ', m_node, 0, runStart, runStart);
+                emitCharacter(space, m_node, 0, runStart, runStart);
             }
             return;
         }
@@ -720,7 +720,7 @@ void TextIterator::handleTextBox()
             // or a run of characters that does not include a newline.
             // This effectively translates newlines to spaces without copying the text.
             if (str[runStart] == '\n') {
-                emitCharacter(' ', m_node, 0, runStart, runStart + 1);
+                emitCharacter(space, m_node, 0, runStart, runStart + 1);
                 m_offset = runStart + 1;
             } else {
                 size_t subrunEnd = str.find('\n', runStart);
@@ -804,7 +804,7 @@ bool TextIterator::handleReplacedElement()
     }
 
     if (m_lastTextNodeEndedWithCollapsedSpace) {
-        emitCharacter(' ', m_lastTextNode->parentNode(), m_lastTextNode, 1, 1);
+        emitCharacter(space, m_lastTextNode->parentNode(), m_lastTextNode, 1, 1);
         return false;
     }
 
@@ -1080,7 +1080,7 @@ void TextIterator::representNodeOffsetZero()
             emitCharacter('\n', m_node->parentNode(), m_node, 0, 0);
     } else if (shouldEmitSpaceBeforeAndAfterNode(m_node)) {
         if (shouldRepresentNodeOffsetZero())
-            emitCharacter(' ', m_node->parentNode(), m_node, 0, 0);
+            emitCharacter(space, m_node->parentNode(), m_node, 0, 0);
     }
 }
 
@@ -1089,7 +1089,7 @@ bool TextIterator::handleNonTextNode()
     if (shouldEmitNewlineForNode(m_node, m_emitsOriginalText))
         emitCharacter('\n', m_node->parentNode(), m_node, 0, 1);
     else if (m_emitsCharactersBetweenAllVisiblePositions && m_node->renderer() && m_node->renderer()->isHR())
-        emitCharacter(' ', m_node->parentNode(), m_node, 0, 1);
+        emitCharacter(space, m_node->parentNode(), m_node, 0, 1);
     else
         representNodeOffsetZero();
 
@@ -1133,7 +1133,7 @@ void TextIterator::exitNode()
 
     // If nothing was emitted, see if we need to emit a space.
     if (!m_positionNode && shouldEmitSpaceBeforeAndAfterNode(m_node))
-        emitCharacter(' ', baseNode->parentNode(), baseNode, 1, 1);
+        emitCharacter(space, baseNode->parentNode(), baseNode, 1, 1);
 }
 
 void TextIterator::emitCharacter(UChar c, Node* textNode, Node* offsetBaseNode, int textStartOffset, int textEndOffset)
