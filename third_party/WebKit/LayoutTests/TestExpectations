@@ -1325,9 +1325,11 @@ crbug.com/407915 [ Win Release ] virtual/implsidepainting/inspector/tracing/time
 crbug.com/407915 [ Mac Release ] virtual/implsidepainting/inspector/tracing/timeline-timer.html [ Failure Pass ]
 crbug.com/407915 [ Win Release ] virtual/implsidepainting/inspector/tracing/paint-command-log-nodes.html [ Failure Pass ]
 crbug.com/407915 [ Win Release ] virtual/implsidepainting/inspector/tracing/timeline-layout-reason.html [ Failure Pass ]
-crbug.com/407993 [ Win Release ] media/encrypted-media/encrypted-media-waiting-for-a-key.html [ Failure Pass ]
-crbug.com/407993 [ Win Release ] media/encrypted-media/encrypted-media-v2-events.html [ Failure Pass ]
+crbug.com/409580 inspector/device-emulation/device-emulation-320-2x.html [ Crash Pass ]
+crbug.com/407993 [ Win Release ] media/encrypted-media/encrypted-media-waiting-for-a-key.html [ Pass Timeout ]
+crbug.com/407993 [ Win Release ] media/encrypted-media/encrypted-media-v2-events.html [ Pass Timeout ]
 crbug.com/407993 [ Mac Win Release ] media/encrypted-media/encrypted-media-playback-multiple-sessions.html [ Pass Timeout ]
+crbug.com/409579 http/tests/security/javascriptURL/xss-DENIED-to-javascript-url-in-foreign-domain-subframe.html [ Pass Timeout ]
 
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-cross-none-block.html [ Failure Pass Timeout ]
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-cross-self-block.html [ Failure Pass Timeout ]
