@@ -50,7 +50,7 @@ class AppListItemView;
 class AppsGridViewDelegate;
 class AppsGridViewFolderDelegate;
 class PageSwitcher;
-class PaginationModel;
+class PaginationController;
 
 // AppsGridView displays a grid for AppListItemList sub model.
 class APP_LIST_EXPORT AppsGridView : public views::View,
@@ -223,8 +223,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
     DROP_FOR_REORDER,
     DROP_FOR_FOLDER,
   };
-
-  enum ScrollAxis { SCROLL_AXIS_HORIZONTAL, SCROLL_AXIS_VERTICAL };
 
   // Represents the index to an item view in the grid.
   struct Index {
@@ -461,9 +459,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
                          const base::FilePath& path);
 #endif
 
-  // Determines whether the grid view scrolls horizontally or vertically.
-  static ScrollAxis GetScrollAxis();
-
   AppListModel* model_;  // Owned by AppListView.
   AppListItemList* item_list_;  // Not owned.
   AppsGridViewDelegate* delegate_;
@@ -472,6 +467,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   AppsGridViewFolderDelegate* folder_delegate_;
 
   PaginationModel pagination_model_;
+  // Must appear after |pagination_model_|.
+  scoped_ptr<PaginationController> pagination_controller_;
   PageSwitcher* page_switcher_view_;  // Owned by views hierarchy.
 
   int cols_;

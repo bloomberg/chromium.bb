@@ -13,6 +13,7 @@
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_switches.h"
+#include "ui/app_list/pagination_controller.h"
 #include "ui/app_list/views/app_list_drag_and_drop_host.h"
 #include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/app_list_item_view.h"
@@ -23,6 +24,8 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/animation.h"
+#include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/views/border.h"
 #include "ui/views/view_model_utils.h"
 #include "ui/views/widget/widget.h"
@@ -91,13 +94,6 @@ const int kFolderItemReparentDelay = 50;
 // Radius of the circle, in which if entered, show folder dropping preview
 // UI.
 const int kFolderDroppingCircleRadius = 15;
-
-// Constants for dealing with scroll events.
-const int kMinMouseWheelToSwitchPage = 20;
-const int kMinScrollToSwitchPage = 20;
-const int kMinHorizVelocityToSwitchPage = 800;
-
-const double kFinishTransitionThreshold = 0.33;
 
 // RowMoveAnimationDelegate is used when moving an item into a different row.
 // Before running the animation, the item's layer is re-created and kept in
@@ -369,6 +365,13 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate)
                                            kOverscrollPageTransitionDurationMs);
 
   pagination_model_.AddObserver(this);
+  // The experimental app list transitions vertically.
+  PaginationController::ScrollAxis scroll_axis =
+      app_list::switches::IsExperimentalAppListEnabled()
+          ? PaginationController::SCROLL_AXIS_VERTICAL
+          : PaginationController::SCROLL_AXIS_HORIZONTAL;
+  pagination_controller_.reset(
+      new PaginationController(&pagination_model_, scroll_axis));
   page_switcher_view_ = new PageSwitcher(&pagination_model_);
   AddChildView(page_switcher_view_);
 }
@@ -961,27 +964,8 @@ bool AppsGridView::OnKeyReleased(const ui::KeyEvent& event) {
 }
 
 bool AppsGridView::OnMouseWheel(const ui::MouseWheelEvent& event) {
-  int offset;
-  if (GetScrollAxis() == SCROLL_AXIS_HORIZONTAL) {
-    // If the view scrolls horizontally, both horizontal and vertical scroll
-    // events are valid (since most mouse wheels only have vertical scrolling).
-    if (abs(event.x_offset()) > abs(event.y_offset()))
-      offset = event.x_offset();
-    else
-      offset = event.y_offset();
-  } else {
-    // If the view scrolls vertically, only vertical scroll events are valid.
-    offset = event.y_offset();
-  }
-
-  if (abs(offset) > kMinMouseWheelToSwitchPage) {
-    if (!pagination_model_.has_transition()) {
-      pagination_model_.SelectPageRelative(offset > 0 ? -1 : 1, true);
-    }
-    return true;
-  }
-
-  return false;
+  return pagination_controller_->OnScroll(
+      gfx::Vector2d(event.x_offset(), event.y_offset()));
 }
 
 void AppsGridView::ViewHierarchyChanged(
@@ -1003,66 +987,16 @@ void AppsGridView::ViewHierarchyChanged(
 }
 
 void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
-  const ui::GestureEventDetails& details = event->details();
-  switch (event->type()) {
-    case ui::ET_GESTURE_SCROLL_BEGIN:
-      pagination_model_.StartScroll();
-      event->SetHandled();
-      return;
-    case ui::ET_GESTURE_SCROLL_UPDATE: {
-      float scroll = GetScrollAxis() == SCROLL_AXIS_HORIZONTAL
-                         ? details.scroll_x()
-                         : details.scroll_y();
-      gfx::Rect bounds(GetContentsBounds());
-      int size = GetScrollAxis() == SCROLL_AXIS_HORIZONTAL ? bounds.width()
-                                                           : bounds.height();
-      // scroll > 0 means moving contents right or down. That is, transitioning
-      // to the previous page.
-      pagination_model_.UpdateScroll(scroll / size);
-      event->SetHandled();
-      return;
-    }
-    case ui::ET_GESTURE_SCROLL_END:
-      pagination_model_.EndScroll(pagination_model_.transition().progress <
-                                  kFinishTransitionThreshold);
-      event->SetHandled();
-      return;
-    case ui::ET_SCROLL_FLING_START: {
-      float velocity = GetScrollAxis() == SCROLL_AXIS_HORIZONTAL
-                           ? details.velocity_x()
-                           : details.velocity_y();
-      pagination_model_.EndScroll(true);
-      if (fabs(velocity) > kMinHorizVelocityToSwitchPage)
-        pagination_model_.SelectPageRelative(velocity < 0 ? 1 : -1, true);
-      event->SetHandled();
-      return;
-    }
-    default:
-      break;
-  }
+  if (pagination_controller_->OnGestureEvent(*event, GetContentsBounds()))
+    event->SetHandled();
 }
 
 void AppsGridView::OnScrollEvent(ui::ScrollEvent* event) {
   if (event->type() == ui::ET_SCROLL_FLING_CANCEL)
     return;
 
-  float offset;
-  if (GetScrollAxis() == SCROLL_AXIS_HORIZONTAL) {
-    // If the view scrolls horizontally, both horizontal and vertical scroll
-    // events are valid (vertical scroll events simulate mouse wheel).
-    if (std::abs(event->x_offset()) > std::abs(event->y_offset()))
-      offset = event->x_offset();
-    else
-      offset = event->y_offset();
-  } else {
-    // If the view scrolls vertically, only vertical scroll events are valid.
-    offset = event->y_offset();
-  }
-
-  if (std::abs(offset) > kMinScrollToSwitchPage) {
-    if (!pagination_model_.has_transition()) {
-      pagination_model_.SelectPageRelative(offset > 0 ? -1 : 1, true);
-    }
+  gfx::Vector2dF offset(event->x_offset(), event->y_offset());
+  if (pagination_controller_->OnScroll(gfx::ToFlooredVector2d(offset))) {
     event->SetHandled();
     event->StopPropagation();
   }
@@ -1270,7 +1204,8 @@ void AppsGridView::CalculateIdealBounds() {
     int x_offset = 0;
     int y_offset = 0;
 
-    if (GetScrollAxis() == SCROLL_AXIS_HORIZONTAL) {
+    if (pagination_controller_->scroll_axis() ==
+        PaginationController::SCROLL_AXIS_HORIZONTAL) {
       if (view_index.page < current_page)
         x_offset = -page_width;
       else if (view_index.page > current_page)
@@ -2287,14 +2222,6 @@ void AppsGridView::SetAsFolderDroppingTarget(const Index& target_index,
           GetViewAtSlotOnCurrentPage(target_index.slot));
   if (target_view)
     target_view->SetAsAttemptedFolderTarget(is_target_folder);
-}
-
-// static
-AppsGridView::ScrollAxis AppsGridView::GetScrollAxis() {
-  // The experimental app list transitions vertically.
-  return app_list::switches::IsExperimentalAppListEnabled()
-             ? SCROLL_AXIS_VERTICAL
-             : SCROLL_AXIS_HORIZONTAL;
 }
 
 }  // namespace app_list

@@ -26,6 +26,8 @@ component("app_list") {
     "app_list_switches.h",
     "app_list_view_delegate.cc",
     "app_list_view_delegate.h",
+    "pagination_controller.cc",
+    "pagination_controller.h",
     "pagination_model.cc",
     "pagination_model.h",
     "pagination_model_observer.h",

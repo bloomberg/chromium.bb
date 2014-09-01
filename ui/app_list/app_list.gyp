@@ -72,6 +72,8 @@
         'cocoa/item_drag_controller.mm',
         'cocoa/scroll_view_with_no_scrollbars.h',
         'cocoa/scroll_view_with_no_scrollbars.mm',
+        'pagination_controller.cc',
+        'pagination_controller.h',
         'pagination_model.cc',
         'pagination_model.h',
         'pagination_model_observer.h',
