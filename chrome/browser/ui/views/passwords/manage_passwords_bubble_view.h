@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_VIEW_H_
 
 #include "base/basictypes.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble.h"
 #include "chrome/browser/ui/passwords/save_password_refusal_combobox_model.h"
 #include "ui/views/bubble/bubble_delegate.h"
@@ -175,8 +174,8 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
     return initially_focused_view_;
   }
 
-  bool IsTimerRunning() const {
-    return timer_.IsRunning();
+  bool IsFadingAway() const {
+    return fadeout_observer_;
   }
 
  private:
@@ -210,9 +209,6 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   // undo the action and refresh to PendingView.
   void NotifyUndoNeverForThisSite();
 
-  // Starts a timer which will close the bubble if it's inactive.
-  void StartTimerIfNecessary();
-
   // views::BubbleDelegateView:
   virtual void Init() OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
@@ -224,10 +220,15 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
 
   // views::View methods.
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
 
-  // Called from WebContentMouseHandler when user clicks the web view.
-  void OnWebContentClicked();
+  // Starts animating the bubble.
+  void StartFadingOut();
+
+  // Cancel fading out if it's active.
+  void CancelFadingOut();
+
+  // Called when the bubble completely faded out.
+  void OnBubbleDisappeared();
 
   void set_initially_focused_view(views::View* view) {
     DCHECK(!initially_focused_view_);
@@ -248,11 +249,13 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
 
   views::View* initially_focused_view_;
 
-  // Timer used to close the bubble after timeout.
-  base::OneShotTimer<ManagePasswordsBubbleView> timer_;
-
+  // A helper to intercept mouse click events on the web contents.
   class WebContentMouseHandler;
   scoped_ptr<WebContentMouseHandler> mouse_handler_;
+
+  // A helper to get a notification when the bubble fades out completely.
+  class FadeOutObserver;
+  scoped_ptr<FadeOutObserver> fadeout_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleView);
 };

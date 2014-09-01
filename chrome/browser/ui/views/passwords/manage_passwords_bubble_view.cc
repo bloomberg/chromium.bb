@@ -22,6 +22,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -36,8 +38,8 @@
 
 namespace {
 
-// The number of seconds the inactive bubble should stay alive.
-const int kBubbleCloseDelay = 15;
+// The number of seconds the bubble needs to fade out.
+const int kBubbleFadeDelay = 2;
 
 const int kDesiredBubbleWidth = 370;
 
@@ -534,7 +536,7 @@ class ManagePasswordsBubbleView::WebContentMouseHandler
 
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     if (event->type() == ui::ET_MOUSE_PRESSED)
-      bubble_->OnWebContentClicked();
+      bubble_->StartFadingOut();
   }
 
  private:
@@ -546,6 +548,26 @@ class ManagePasswordsBubbleView::WebContentMouseHandler
   ManagePasswordsBubbleView* bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentMouseHandler);
+};
+
+// ManagePasswordsBubbleView::FadeOutObserver ---------------------------------
+
+// The class notifies the bubble when it faded out completely.
+class ManagePasswordsBubbleView::FadeOutObserver
+    : public ui::ImplicitAnimationObserver {
+ public:
+  explicit FadeOutObserver(ManagePasswordsBubbleView* bubble)
+      : bubble_(bubble) {
+  }
+
+  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+    bubble_->OnBubbleDisappeared();
+  }
+
+ private:
+  ManagePasswordsBubbleView* bubble_;
+
+  DISALLOW_COPY_AND_ASSIGN(FadeOutObserver);
 };
 
 // ManagePasswordsBubbleView --------------------------------------------------
@@ -590,7 +612,6 @@ void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
     manage_passwords_bubble_->GetWidget()->ShowInactive();
   else
     manage_passwords_bubble_->GetWidget()->Show();
-  manage_passwords_bubble_->StartTimerIfNecessary();
 }
 
 // static
@@ -652,6 +673,8 @@ void ManagePasswordsBubbleView::AdjustForFullscreen(
 }
 
 void ManagePasswordsBubbleView::Close() {
+  fadeout_observer_.reset();
+  mouse_handler_.reset();
   GetWidget()->Close();
 }
 
@@ -672,7 +695,7 @@ void ManagePasswordsBubbleView::WindowClosing() {
 void ManagePasswordsBubbleView::OnWidgetActivationChanged(views::Widget* widget,
                                                           bool active) {
   if (active && widget == GetWidget())
-    timer_.Stop();
+    CancelFadingOut();
   BubbleDelegateView::OnWidgetActivationChanged(widget, active);
 }
 
@@ -681,11 +704,7 @@ views::View* ManagePasswordsBubbleView::GetInitiallyFocusedView() {
 }
 
 void ManagePasswordsBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
-  timer_.Stop();
-}
-
-void ManagePasswordsBubbleView::OnMouseExited(const ui::MouseEvent& event) {
-  StartTimerIfNecessary();
+  CancelFadingOut();
 }
 
 void ManagePasswordsBubbleView::Refresh() {
@@ -704,9 +723,7 @@ void ManagePasswordsBubbleView::Refresh() {
     AddChildView(new ManageView(this));
   }
   GetLayoutManager()->Layout(this);
-  // If we refresh the existing bubble we may want to restart the timer.
-  if (GetWidget())
-    StartTimerIfNecessary();
+  CancelFadingOut();
 }
 
 void ManagePasswordsBubbleView::NotifyNeverForThisSiteClicked() {
@@ -729,16 +746,26 @@ void ManagePasswordsBubbleView::NotifyUndoNeverForThisSite() {
   Refresh();
 }
 
-void ManagePasswordsBubbleView::StartTimerIfNecessary() {
-  // Active bubble will stay visible until it loses focus.
-  if (GetWidget()->IsActive())
+void ManagePasswordsBubbleView::StartFadingOut() {
+  if (fadeout_observer_)
     return;
-  timer_.Start(FROM_HERE,
-               base::TimeDelta::FromSeconds(kBubbleCloseDelay),
-               this,
-               &ManagePasswordsBubbleView::Close);
+  aura::Window* window = GetWidget()->GetNativeView();
+  ui::ScopedLayerAnimationSettings animator(window->layer()->GetAnimator());
+  fadeout_observer_.reset(new FadeOutObserver(this));
+  animator.AddObserver(fadeout_observer_.get());
+  animator.SetTransitionDuration(
+      base::TimeDelta::FromSeconds(kBubbleFadeDelay));
+  window->layer()->SetOpacity(0);
 }
 
-void ManagePasswordsBubbleView::OnWebContentClicked() {
+void ManagePasswordsBubbleView::CancelFadingOut() {
+  if (!fadeout_observer_)
+    return;
+  fadeout_observer_.reset();
+  aura::Window* window = GetWidget()->GetNativeView();
+  window->layer()->SetOpacity(1);
+}
+
+void ManagePasswordsBubbleView::OnBubbleDisappeared() {
   Close();
 }

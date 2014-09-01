@@ -15,11 +15,51 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/window.h"
 
 namespace {
 
 const char kDisplayDispositionMetric[] = "PasswordBubble.DisplayDisposition";
+
+// Listens to WebContents and invokes a callback on the mouse down event.
+class WebContentMouseClickHandler : public ui::EventHandler {
+ public:
+  explicit WebContentMouseClickHandler(content::WebContents* web_contents,
+                                       const base::Closure& callback)
+      : web_contents_(web_contents),
+        callback_(callback),
+        was_called_(false) {
+    web_contents_->GetNativeView()->AddPreTargetHandler(this);
+  }
+
+  virtual ~WebContentMouseClickHandler() {
+    web_contents_->GetNativeView()->RemovePreTargetHandler(this);
+  }
+
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    if (event->type() == ui::ET_MOUSE_PRESSED) {
+      callback_.Run();
+      was_called_ = true;
+    }
+  }
+
+  bool was_called() const { return was_called_; }
+
+ private:
+  content::WebContents* web_contents_;
+  base::Closure callback_;
+  bool was_called_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebContentMouseClickHandler);
+};
+
+void CheckBubbleAnimation() {
+  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(ManagePasswordsBubbleView::manage_password_bubble()->
+      IsFadingAway());
+}
 
 }  // namespace
 
@@ -52,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, BasicOpenAndClose) {
   EXPECT_TRUE(bubble->initially_focused_view());
   EXPECT_EQ(bubble->initially_focused_view(),
             bubble->GetFocusManager()->GetFocusedView());
-  EXPECT_FALSE(bubble->IsTimerRunning());
+  EXPECT_FALSE(bubble->IsFadingAway());
   ManagePasswordsBubbleView::CloseBubble();
   EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
 
@@ -80,6 +120,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CommandControlsBubble) {
   EXPECT_TRUE(bubble->initially_focused_view());
   EXPECT_EQ(bubble->initially_focused_view(),
             bubble->GetFocusManager()->GetFocusedView());
+  EXPECT_FALSE(bubble->IsFadingAway());
   ManagePasswordsBubbleView::CloseBubble();
   EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
 
@@ -120,8 +161,8 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
   // Bubble can be active if user clicks it.
   EXPECT_TRUE(ManagePasswordsBubbleView::manage_password_bubble()->
       CanActivate());
-  EXPECT_TRUE(ManagePasswordsBubbleView::manage_password_bubble()->
-      IsTimerRunning());
+  EXPECT_FALSE(ManagePasswordsBubbleView::manage_password_bubble()->
+      IsFadingAway());
 
   scoped_ptr<base::HistogramSamples> samples(
       GetSamples(kDisplayDispositionMetric));
@@ -180,13 +221,18 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
                 metrics_util::MANUAL_MANAGE_PASSWORDS));
 }
 
-IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CloseOnClick) {
+IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, FadeOnClick) {
   ManagePasswordsBubbleView::ShowBubble(
       browser()->tab_strip_model()->GetActiveWebContents(),
       ManagePasswordsBubble::AUTOMATIC);
   EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
   EXPECT_FALSE(ManagePasswordsBubbleView::manage_password_bubble()->
       GetFocusManager()->GetFocusedView());
+  // We have to check the animation in the process of handling the mouse down
+  // event. Otherwise, animation may finish too quickly.
+  WebContentMouseClickHandler observer(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      base::Bind(&CheckBubbleAnimation));
   ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
-  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(observer.was_called());
 }
