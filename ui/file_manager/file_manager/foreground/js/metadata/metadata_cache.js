@@ -838,9 +838,9 @@ DriveProvider.prototype.callApi_ = function() {
   this.callbacks_ = [];
   var self = this;
 
-  // TODO(mtomasz): Make getDriveEntryProperties accept Entry instead of URL.
+  // TODO(mtomasz): Make getEntryProperties accept Entry instead of URL.
   var entryURLs = util.entriesToURLs(entries);
-  chrome.fileBrowserPrivate.getDriveEntryProperties(
+  chrome.fileBrowserPrivate.getEntryProperties(
       entryURLs,
       function(propertiesList) {
         console.assert(propertiesList.length === callbacks.length);

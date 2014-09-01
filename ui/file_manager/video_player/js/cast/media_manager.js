@@ -105,7 +105,7 @@ MediaManager.prototype.getMime = function() {
     return Promise.resolve(this.cachedDriveProp_.thumbnailUrl);
 
   return new Promise(function(fulfill, reject) {
-    chrome.fileBrowserPrivate.getDriveEntryProperties(
+    chrome.fileBrowserPrivate.getEntryProperties(
         [this.entry_.toURL()], fulfill);
   }.bind(this)).then(function(props) {
     if (!props || !props[0] || !props[0].contentMimeType) {
@@ -128,7 +128,7 @@ MediaManager.prototype.getThumbnail = function() {
     return Promise.resolve(this.cachedDriveProp_.thumbnailUrl);
 
   return new Promise(function(fulfill, reject) {
-    chrome.fileBrowserPrivate.getDriveEntryProperties(
+    chrome.fileBrowserPrivate.getEntryProperties(
         [this.entry_.toURL()], fulfill);
   }.bind(this)).then(function(props) {
     if (!props || !props[0] || !props[0].thumbnailUrl) {

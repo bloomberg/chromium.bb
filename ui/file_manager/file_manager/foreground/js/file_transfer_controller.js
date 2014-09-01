@@ -263,7 +263,7 @@ FileTransferController.prototype = {
     var processFileEntries = function(entries) {
       return new Promise(function(callback) {
         var urls = util.entriesToURLs(entries);
-        chrome.fileBrowserPrivate.getDriveEntryProperties(urls, callback);
+        chrome.fileBrowserPrivate.getEntryProperties(urls, callback);
       }).
       then(function(metadatas) {
         return entries.filter(function(entry, i) {

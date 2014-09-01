@@ -7,6 +7,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_DRIVE_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_DRIVE_H_
 
+#include "base/files/file.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
@@ -26,32 +28,35 @@ namespace extensions {
 
 namespace api {
 namespace file_browser_private {
-struct DriveEntryProperties;
+struct EntryProperties;
 }  // namespace file_browser_private
 }  // namespace api
 
 // Retrieves property information for an entry and returns it as a dictionary.
 // On error, returns a dictionary with the key "error" set to the error number
-// (drive::FileError).
-class FileBrowserPrivateGetDriveEntryPropertiesFunction
+// (base::File::Error).
+class FileBrowserPrivateGetEntryPropertiesFunction
     : public LoggedAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getDriveEntryProperties",
-                             FILEBROWSERPRIVATE_GETDRIVEFILEPROPERTIES)
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getEntryProperties",
+                             FILEBROWSERPRIVATE_GETENTRYPROPERTIES)
 
-  FileBrowserPrivateGetDriveEntryPropertiesFunction();
+  FileBrowserPrivateGetEntryPropertiesFunction();
 
  protected:
-  virtual ~FileBrowserPrivateGetDriveEntryPropertiesFunction();
+  virtual ~FileBrowserPrivateGetEntryPropertiesFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunAsync() OVERRIDE;
 
  private:
-  void CompleteGetFileProperties(drive::FileError error);
+  void CompleteGetEntryProperties(
+      size_t index,
+      scoped_ptr<api::file_browser_private::EntryProperties> properties,
+      base::File::Error error);
 
   size_t processed_count_;
-  std::vector<linked_ptr<api::file_browser_private::DriveEntryProperties> >
+  std::vector<linked_ptr<api::file_browser_private::EntryProperties> >
       properties_list_;
 };
 

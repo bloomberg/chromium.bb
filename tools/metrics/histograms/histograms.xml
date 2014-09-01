@@ -40356,7 +40356,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="74" label="DELETED_FILEBROWSERPRIVATE_CLEARDRIVECACHE"/>
   <int value="75" label="SERIAL_GETCONTROLSIGNALS"/>
   <int value="76" label="DEVELOPERPRIVATE_ENABLE"/>
-  <int value="77" label="FILEBROWSERPRIVATE_GETDRIVEFILEPROPERTIES"/>
+  <int value="77" label="FILEBROWSERPRIVATE_GETENTRYPROPERTIES"/>
   <int value="78" label="USB_FINDDEVICES"/>
   <int value="79" label="BOOKMARKMANAGERPRIVATE_DROP"/>
   <int value="80" label="DELETED_FILEBROWSERPRIVATE_GETFILETRANSFERS"/>

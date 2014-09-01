@@ -35,7 +35,7 @@ using file_manager::util::EntryDefinitionList;
 using file_manager::util::EntryDefinitionListCallback;
 using file_manager::util::FileDefinition;
 using file_manager::util::FileDefinitionList;
-using extensions::api::file_browser_private::DriveEntryProperties;
+using extensions::api::file_browser_private::EntryProperties;
 
 namespace extensions {
 namespace {
@@ -54,9 +54,9 @@ const char kDriveConnectionReasonNoService[] = "no_service";
 
 // Copies properties from |entry_proto| to |properties|. |shared_with_me| is
 // given from the running profile.
-void FillDriveEntryPropertiesValue(const drive::ResourceEntry& entry_proto,
-                                   bool shared_with_me,
-                                   DriveEntryProperties* properties) {
+void FillEntryPropertiesValue(const drive::ResourceEntry& entry_proto,
+                              bool shared_with_me,
+                              EntryProperties* properties) {
   properties->shared_with_me.reset(new bool(shared_with_me));
   properties->shared.reset(new bool(entry_proto.shared()));
 
@@ -145,55 +145,52 @@ void ConvertSearchResultInfoListToEntryDefinitionList(
       callback);
 }
 
-class SingleDriveEntryPropertiesGetter {
+class SingleEntryPropertiesGetterForDrive {
  public:
-  typedef base::Callback<void(drive::FileError error)> ResultCallback;
+  typedef base::Callback<void(scoped_ptr<EntryProperties> properties,
+                              base::File::Error error)> ResultCallback;
 
   // Creates an instance and starts the process.
   static void Start(const base::FilePath local_path,
-                    linked_ptr<DriveEntryProperties> properties,
                     Profile* const profile,
                     const ResultCallback& callback) {
-
-    SingleDriveEntryPropertiesGetter* instance =
-        new SingleDriveEntryPropertiesGetter(
-            local_path, properties, profile, callback);
+    SingleEntryPropertiesGetterForDrive* instance =
+        new SingleEntryPropertiesGetterForDrive(local_path, profile, callback);
     instance->StartProcess();
 
     // The instance will be destroyed by itself.
   }
 
-  virtual ~SingleDriveEntryPropertiesGetter() {}
+  virtual ~SingleEntryPropertiesGetterForDrive() {}
 
  private:
   // Given parameters.
   const ResultCallback callback_;
   const base::FilePath local_path_;
-  const linked_ptr<DriveEntryProperties> properties_;
   Profile* const running_profile_;
 
   // Values used in the process.
+  scoped_ptr<EntryProperties> properties_;
   Profile* file_owner_profile_;
   base::FilePath file_path_;
   scoped_ptr<drive::ResourceEntry> owner_resource_entry_;
 
-  base::WeakPtrFactory<SingleDriveEntryPropertiesGetter> weak_ptr_factory_;
+  base::WeakPtrFactory<SingleEntryPropertiesGetterForDrive> weak_ptr_factory_;
 
-  SingleDriveEntryPropertiesGetter(const base::FilePath local_path,
-                                   linked_ptr<DriveEntryProperties> properties,
-                                   Profile* const profile,
-                                   const ResultCallback& callback)
+  SingleEntryPropertiesGetterForDrive(const base::FilePath local_path,
+                                      Profile* const profile,
+                                      const ResultCallback& callback)
       : callback_(callback),
         local_path_(local_path),
-        properties_(properties),
         running_profile_(profile),
+        properties_(new EntryProperties),
         file_owner_profile_(NULL),
         weak_ptr_factory_(this) {
     DCHECK(!callback_.is_null());
     DCHECK(profile);
   }
 
-  base::WeakPtr<SingleDriveEntryPropertiesGetter> GetWeakPtr() {
+  base::WeakPtr<SingleEntryPropertiesGetterForDrive> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
@@ -206,7 +203,7 @@ class SingleDriveEntryPropertiesGetter {
     if (!file_owner_profile_ ||
         !g_browser_process->profile_manager()->IsValidProfile(
             file_owner_profile_)) {
-      CompleteGetFileProperties(drive::FILE_ERROR_FAILED);
+      CompleteGetEntryProperties(drive::FILE_ERROR_FAILED);
       return;
     }
 
@@ -215,13 +212,13 @@ class SingleDriveEntryPropertiesGetter {
         drive::util::GetFileSystemByProfile(file_owner_profile_);
     if (!file_system) {
       // |file_system| is NULL if Drive is disabled or not mounted.
-      CompleteGetFileProperties(drive::FILE_ERROR_FAILED);
+      CompleteGetEntryProperties(drive::FILE_ERROR_FAILED);
       return;
     }
 
     file_system->GetResourceEntry(
         file_path_,
-        base::Bind(&SingleDriveEntryPropertiesGetter::OnGetFileInfo,
+        base::Bind(&SingleEntryPropertiesGetterForDrive::OnGetFileInfo,
                    GetWeakPtr()));
   }
 
@@ -230,7 +227,7 @@ class SingleDriveEntryPropertiesGetter {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     if (error != drive::FILE_ERROR_OK) {
-      CompleteGetFileProperties(error);
+      CompleteGetEntryProperties(error);
       return;
     }
 
@@ -247,12 +244,12 @@ class SingleDriveEntryPropertiesGetter {
     drive::FileSystemInterface* const file_system =
         drive::util::GetFileSystemByProfile(running_profile_);
     if (!file_system) {
-      CompleteGetFileProperties(drive::FILE_ERROR_FAILED);
+      CompleteGetEntryProperties(drive::FILE_ERROR_FAILED);
       return;
     }
     file_system->GetPathFromResourceId(
         owner_resource_entry_->resource_id(),
-        base::Bind(&SingleDriveEntryPropertiesGetter::OnGetRunningPath,
+        base::Bind(&SingleEntryPropertiesGetterForDrive::OnGetRunningPath,
                    GetWeakPtr()));
   }
 
@@ -276,7 +273,7 @@ class SingleDriveEntryPropertiesGetter {
 
     file_system->GetResourceEntry(
         file_path,
-        base::Bind(&SingleDriveEntryPropertiesGetter::OnGetShareInfo,
+        base::Bind(&SingleEntryPropertiesGetterForDrive::OnGetShareInfo,
                    GetWeakPtr()));
   }
 
@@ -285,7 +282,7 @@ class SingleDriveEntryPropertiesGetter {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     if (error != drive::FILE_ERROR_OK) {
-      CompleteGetFileProperties(error);
+      CompleteGetEntryProperties(error);
       return;
     }
 
@@ -296,7 +293,7 @@ class SingleDriveEntryPropertiesGetter {
   void StartParseFileInfo(bool shared_with_me) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    FillDriveEntryPropertiesValue(
+    FillEntryPropertiesValue(
         *owner_resource_entry_, shared_with_me, properties_.get());
 
     drive::FileSystemInterface* const file_system =
@@ -305,14 +302,14 @@ class SingleDriveEntryPropertiesGetter {
         drive::util::GetDriveAppRegistryByProfile(file_owner_profile_);
     if (!file_system || !app_registry) {
       // |file_system| or |app_registry| is NULL if Drive is disabled.
-      CompleteGetFileProperties(drive::FILE_ERROR_FAILED);
+      CompleteGetEntryProperties(drive::FILE_ERROR_FAILED);
       return;
     }
 
     // The properties meaningful for directories are already filled in
-    // FillDriveEntryPropertiesValue().
+    // FillEntryPropertiesValue().
     if (!owner_resource_entry_->has_file_specific_info()) {
-      CompleteGetFileProperties(drive::FILE_ERROR_OK);
+      CompleteGetEntryProperties(drive::FILE_ERROR_OK);
       return;
     }
 
@@ -345,64 +342,85 @@ class SingleDriveEntryPropertiesGetter {
       }
     }
 
-    CompleteGetFileProperties(drive::FILE_ERROR_OK);
+    CompleteGetEntryProperties(drive::FILE_ERROR_OK);
   }
 
-  void CompleteGetFileProperties(drive::FileError error) {
+  void CompleteGetEntryProperties(drive::FileError error) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!callback_.is_null());
-    callback_.Run(error);
+
+    callback_.Run(properties_.Pass(), drive::FileErrorToBaseFileError(error));
 
     delete this;
   }
-};  // class SingleDriveEntryPropertiesGetter
+};  // class SingleEntryPropertiesGetterForDrive
 
 }  // namespace
 
-FileBrowserPrivateGetDriveEntryPropertiesFunction::
-    FileBrowserPrivateGetDriveEntryPropertiesFunction()
-    : processed_count_(0) {}
+FileBrowserPrivateGetEntryPropertiesFunction::
+    FileBrowserPrivateGetEntryPropertiesFunction()
+    : processed_count_(0) {
+}
 
-FileBrowserPrivateGetDriveEntryPropertiesFunction::
-    ~FileBrowserPrivateGetDriveEntryPropertiesFunction() {}
+FileBrowserPrivateGetEntryPropertiesFunction::
+    ~FileBrowserPrivateGetEntryPropertiesFunction() {
+}
 
-bool FileBrowserPrivateGetDriveEntryPropertiesFunction::RunAsync() {
+bool FileBrowserPrivateGetEntryPropertiesFunction::RunAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  using api::file_browser_private::GetDriveEntryProperties::Params;
+  using api::file_browser_private::GetEntryProperties::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  properties_list_.resize(params->file_urls.size());
+  scoped_refptr<storage::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderViewHost(
+          GetProfile(), render_view_host());
 
+  properties_list_.resize(params->file_urls.size());
   for (size_t i = 0; i < params->file_urls.size(); i++) {
     const GURL url = GURL(params->file_urls[i]);
-    const base::FilePath local_path = file_manager::util::GetLocalPathFromURL(
-        render_view_host(), GetProfile(), url);
-    properties_list_[i] = make_linked_ptr(new DriveEntryProperties);
-
-    SingleDriveEntryPropertiesGetter::Start(
-        local_path,
-        properties_list_[i],
-        GetProfile(),
-        base::Bind(&FileBrowserPrivateGetDriveEntryPropertiesFunction::
-                       CompleteGetFileProperties,
-                   this));
+    const storage::FileSystemURL file_system_url =
+        file_system_context->CrackURL(url);
+    switch (file_system_url.type()) {
+      case storage::kFileSystemTypeDrive:
+        SingleEntryPropertiesGetterForDrive::Start(
+            file_system_url.path(),
+            GetProfile(),
+            base::Bind(&FileBrowserPrivateGetEntryPropertiesFunction::
+                           CompleteGetEntryProperties,
+                       this,
+                       i));
+        break;
+      case storage::kFileSystemTypeProvided:
+        // TODO(mtomasz): Add support for provided file systems.
+        NOTIMPLEMENTED();
+        break;
+      default:
+        LOG(ERROR) << "Not supported file system type.";
+        CompleteGetEntryProperties(i,
+                                  make_scoped_ptr(new EntryProperties),
+                                  base::File::FILE_ERROR_INVALID_OPERATION);
+    }
   }
 
   return true;
 }
 
-void FileBrowserPrivateGetDriveEntryPropertiesFunction::
-    CompleteGetFileProperties(drive::FileError error) {
+void FileBrowserPrivateGetEntryPropertiesFunction::CompleteGetEntryProperties(
+    size_t index,
+    scoped_ptr<EntryProperties> properties,
+    base::File::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(0 <= processed_count_ && processed_count_ < properties_list_.size());
+
+  properties_list_[index] = make_linked_ptr(properties.release());
 
   processed_count_++;
   if (processed_count_ < properties_list_.size())
     return;
 
-  results_ = extensions::api::file_browser_private::GetDriveEntryProperties::
+  results_ = extensions::api::file_browser_private::GetEntryProperties::
       Results::Create(properties_list_);
   SendResponse(true);
 }

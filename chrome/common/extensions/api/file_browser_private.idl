@@ -173,8 +173,8 @@ dictionary FileTask {
   boolean isDefault;
 };
 
-// Drive file properties.
-dictionary DriveEntryProperties {
+// Additional entry properties.
+dictionary EntryProperties {
   // Size of this file.
   double? fileSize;
 
@@ -477,12 +477,13 @@ callback AddFileWatchCallback = void(optional boolean success);
 callback RemoveFileWatchCallback = void(optional boolean success);
 
 // |fileSystem| A DOMFileSystem instance for local file system access. null if
-// |the caller has no appropriate permissions.
+// the caller has no appropriate permissions.
 callback RequestFileSystemCallback = void(optional object fileSystem);
 
-// |fileProperties| A dictionary containing properties of the requested entries.
-callback GetDriveEntryPropertiesCallback =
-    void(DriveEntryProperties[] entryProperties);
+// |entryProperties| A dictionary containing properties of the requested
+// entries.
+callback GetEntryPropertiesCallback =
+    void(EntryProperties[] entryProperties);
 
 // |localFilePaths| An array of the local file paths for the requested files,
 // one entry for each file in fileUrls.
@@ -628,12 +629,12 @@ interface Functions {
                          boolean shouldReturnLocalPath,
                          SimpleCallback callback);
 
-  // Requests Drive file properties for files.
+  // Requests additional properties for files.
   // |fileUrls| list of URLs of files
   // |callback|
-  static void getDriveEntryProperties(
+  static void getEntryProperties(
       DOMString[] fileUrls,
-      GetDriveEntryPropertiesCallback callback);
+      GetEntryPropertiesCallback callback);
 
   // Pins/unpins a Drive file in the cache.
   // |fileUrl| URL of a file to pin/unpin.
