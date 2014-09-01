@@ -23,7 +23,6 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -34,7 +33,6 @@ using blink::WebDocument;
 using blink::WebDocumentType;
 using blink::WebElement;
 using blink::WebFrame;
-using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebVector;
 using blink::WebView;
@@ -439,15 +437,15 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
                               UTF16ToUTF8(doctype.name()));
     }
 
-    const gfx::Size& scroll_offset = document.frame()->scrollOffset();
+    const gfx::Size& scroll_offset = document.scrollOffset();
     dst->AddIntAttribute(ui::AX_ATTR_SCROLL_X, scroll_offset.width());
     dst->AddIntAttribute(ui::AX_ATTR_SCROLL_Y, scroll_offset.height());
 
-    const gfx::Size& min_offset = document.frame()->minimumScrollOffset();
+    const gfx::Size& min_offset = document.minimumScrollOffset();
     dst->AddIntAttribute(ui::AX_ATTR_SCROLL_X_MIN, min_offset.width());
     dst->AddIntAttribute(ui::AX_ATTR_SCROLL_Y_MIN, min_offset.height());
 
-    const gfx::Size& max_offset = document.frame()->maximumScrollOffset();
+    const gfx::Size& max_offset = document.maximumScrollOffset();
     dst->AddIntAttribute(ui::AX_ATTR_SCROLL_X_MAX, max_offset.width());
     dst->AddIntAttribute(ui::AX_ATTR_SCROLL_Y_MAX, max_offset.height());
   }
