@@ -1100,7 +1100,6 @@ cr.define('options', function() {
      * @private
      */
     showHotwordSection_: function(opt_enabled, opt_error) {
-      $('voice-section-title').hidden = false;
       $('hotword-search').hidden = false;
       $('hotword-search-setting-indicator').setError(opt_error);
       if (opt_enabled && opt_error)
@@ -1113,6 +1112,7 @@ cr.define('options', function() {
      * @private
      */
     showHotwordAlwaysOnSection_: function() {
+      $('voice-section-title').hidden = false;
       $('hotword-always-on-search').hidden = false;
       $('audio-logging').hidden = false;
     },

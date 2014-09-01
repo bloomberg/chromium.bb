@@ -154,22 +154,6 @@
   <section>
     <h3 id="voice-section-title" i18n-content="sectionTitleVoice" hidden></h3>
     <div id="voice-section-content">
-      <div id="hotword-search" hidden>
-        <div class="checkbox">
-          <span class="controlled-setting-with-label">
-            <input id="hotword-search-enable" pref="hotword.search_enabled_2"
-                metric="Options_HotwordCheckbox" type="checkbox" dialog-pref>
-            <span>
-              <label for="hotword-search-enable"
-                  i18n-values=".innerHTML:hotwordSearchEnable">
-              </label>
-              <span id="hotword-search-setting-indicator"
-                  pref="hotword.search_enabled_2" dialog-pref>
-              </span>
-            </span>
-          </span>
-        </div>
-      </div>
       <div id="hotword-always-on-search" hidden>
         <div class="checkbox">
           <span class="controlled-setting-with-label">
@@ -453,6 +437,22 @@
         </span>
       </div>
 </if>
+      <div id="hotword-search" hidden>
+        <div class="checkbox">
+          <span class="controlled-setting-with-label">
+            <input id="hotword-search-enable" pref="hotword.search_enabled_2"
+                metric="Options_HotwordCheckbox" type="checkbox" dialog-pref>
+            <span>
+              <label for="hotword-search-enable"
+                  i18n-values=".innerHTML:hotwordSearchEnable">
+              </label>
+              <span id="hotword-search-setting-indicator"
+                  pref="hotword.search_enabled_2" dialog-pref>
+              </span>
+            </span>
+          </span>
+        </div>
+      </div>
     </div>
   </section>
 <if expr="chromeos">
