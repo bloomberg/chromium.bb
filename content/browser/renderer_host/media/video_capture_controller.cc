@@ -12,6 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/gpu/client/gl_helper.h"
@@ -516,8 +517,13 @@ VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
 
 void VideoCaptureController::VideoCaptureDeviceClient::OnError(
     const std::string& reason) {
-  MediaStreamManager::SendMessageToNativeLog(
-      "Error on video capture: " + reason);
+  const std::string log_message = base::StringPrintf(
+      "Error on video capture: %s, OS message: %s",
+      reason.c_str(),
+      logging::SystemErrorCodeToString(
+          logging::GetLastSystemErrorCode()).c_str());
+  DLOG(ERROR) << log_message;
+  MediaStreamManager::SendMessageToNativeLog(log_message);
   BrowserThread::PostTask(BrowserThread::IO,
       FROM_HERE,
       base::Bind(&VideoCaptureController::DoErrorOnIOThread, controller_));

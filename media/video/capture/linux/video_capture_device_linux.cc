@@ -503,7 +503,6 @@ void VideoCaptureDeviceLinux::DeAllocateVideoBuffers() {
 void VideoCaptureDeviceLinux::SetErrorState(const std::string& reason) {
   DCHECK(!v4l2_thread_.IsRunning() ||
          v4l2_thread_.message_loop() == base::MessageLoop::current());
-  DVLOG(1) << reason;
   state_ = kError;
   client_->OnError(reason);
 }

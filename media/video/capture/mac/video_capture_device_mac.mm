@@ -559,7 +559,6 @@ void VideoCaptureDeviceMac::ReceiveError(const std::string& reason) {
 
 void VideoCaptureDeviceMac::SetErrorState(const std::string& reason) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DLOG(ERROR) << reason;
   state_ = kError;
   client_->OnError(reason);
 }

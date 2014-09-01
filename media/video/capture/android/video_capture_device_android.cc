@@ -190,7 +190,6 @@ VideoPixelFormat VideoCaptureDeviceAndroid::GetColorspace() {
 }
 
 void VideoCaptureDeviceAndroid::SetErrorState(const std::string& reason) {
-  LOG(ERROR) << "VideoCaptureDeviceAndroid::SetErrorState: " << reason;
   {
     base::AutoLock lock(lock_);
     state_ = kError;

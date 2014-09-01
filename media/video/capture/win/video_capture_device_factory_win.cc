@@ -199,8 +199,8 @@ static void GetDeviceNamesMediaFoundation(Names* device_names) {
             Name::MEDIA_FOUNDATION));
       }
     }
-    if (FAILED(hr))
-      DLOG(WARNING) << "GetAllocatedString failed: " << std::hex << hr;
+    DLOG_IF(ERROR, FAILED(hr)) << "GetAllocatedString failed: "
+                               << logging::SystemErrorCodeToString(hr);
     devices[i]->Release();
   }
 }
@@ -229,7 +229,8 @@ static void GetDeviceSupportedFormatsDirectShow(const Name& device,
   hr = VideoCaptureDeviceWin::GetDeviceFilter(device,
                                               capture_filter.Receive());
   if (!capture_filter) {
-    DVLOG(2) << "Failed to create capture filter.";
+    DLOG(ERROR) << "Failed to create capture filter: "
+                << logging::SystemErrorCodeToString(hr);
     return;
   }
 
@@ -238,22 +239,23 @@ static void GetDeviceSupportedFormatsDirectShow(const Name& device,
                                     PINDIR_OUTPUT,
                                     PIN_CATEGORY_CAPTURE));
   if (!output_capture_pin) {
-    DVLOG(2) << "Failed to get capture output pin";
+    DLOG(ERROR) << "Failed to get capture output pin";
     return;
   }
 
   ScopedComPtr<IAMStreamConfig> stream_config;
   hr = output_capture_pin.QueryInterface(stream_config.Receive());
   if (FAILED(hr)) {
-    DVLOG(2) << "Failed to get IAMStreamConfig interface from "
-                "capture device";
+    DLOG(ERROR) << "Failed to get IAMStreamConfig interface from "
+                   "capture device: " << logging::SystemErrorCodeToString(hr);
     return;
   }
 
   int count = 0, size = 0;
   hr = stream_config->GetNumberOfCapabilities(&count, &size);
   if (FAILED(hr)) {
-    DVLOG(2) << "Failed to GetNumberOfCapabilities";
+    DLOG(ERROR) << "GetNumberOfCapabilities failed: "
+                << logging::SystemErrorCodeToString(hr);
     return;
   }
 
@@ -264,7 +266,8 @@ static void GetDeviceSupportedFormatsDirectShow(const Name& device,
     // GetStreamCaps() may return S_FALSE, so don't use FAILED() or SUCCEED()
     // macros here since they'll trigger incorrectly.
     if (hr != S_OK) {
-      DVLOG(2) << "Failed to GetStreamCaps";
+      DLOG(ERROR) << "GetStreamCaps failed: "
+                  << logging::SystemErrorCodeToString(hr);
       return;
     }
 
@@ -306,7 +309,8 @@ static void GetDeviceSupportedFormatsMediaFoundation(
   HRESULT hr =
       MFCreateSourceReaderFromMediaSource(source, NULL, reader.Receive());
   if (FAILED(hr)) {
-    DLOG(ERROR) << "MFCreateSourceReaderFromMediaSource: " << std::hex << hr;
+    DLOG(ERROR) << "MFCreateSourceReaderFromMediaSource failed: "
+                << logging::SystemErrorCodeToString(hr);
     return;
   }
 
@@ -317,7 +321,8 @@ static void GetDeviceSupportedFormatsMediaFoundation(
     UINT32 width, height;
     hr = MFGetAttributeSize(type, MF_MT_FRAME_SIZE, &width, &height);
     if (FAILED(hr)) {
-      DLOG(ERROR) << "MFGetAttributeSize: " << std::hex << hr;
+      DLOG(ERROR) << "MFGetAttributeSize failed: "
+                  << logging::SystemErrorCodeToString(hr);
       return;
     }
     VideoCaptureFormat capture_format;
@@ -326,7 +331,8 @@ static void GetDeviceSupportedFormatsMediaFoundation(
     UINT32 numerator, denominator;
     hr = MFGetAttributeRatio(type, MF_MT_FRAME_RATE, &numerator, &denominator);
     if (FAILED(hr)) {
-      DLOG(ERROR) << "MFGetAttributeSize: " << std::hex << hr;
+      DLOG(ERROR) << "MFGetAttributeSize failed: "
+                  << logging::SystemErrorCodeToString(hr);
       return;
     }
     capture_format.frame_rate = denominator
@@ -335,7 +341,8 @@ static void GetDeviceSupportedFormatsMediaFoundation(
     GUID type_guid;
     hr = type->GetGUID(MF_MT_SUBTYPE, &type_guid);
     if (FAILED(hr)) {
-      DLOG(ERROR) << "GetGUID: " << std::hex << hr;
+      DLOG(ERROR) << "GetGUID failed: "
+                  << logging::SystemErrorCodeToString(hr);
       return;
     }
     VideoCaptureDeviceMFWin::FormatFromGuid(type_guid,

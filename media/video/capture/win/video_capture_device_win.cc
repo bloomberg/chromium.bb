@@ -69,7 +69,8 @@ HRESULT VideoCaptureDeviceWin::GetDeviceFilter(
         // We have found the requested device
         hr = moniker->BindToObject(0, 0, IID_IBaseFilter,
                                    capture_filter.ReceiveVoid());
-        DVPLOG_IF(2, FAILED(hr)) << "Failed to bind camera filter.";
+        DLOG_IF(ERROR, FAILED(hr)) << "Failed to bind camera filter: "
+                                   << logging::SystemErrorCodeToString(hr);
         break;
       }
     }
@@ -225,21 +226,22 @@ bool VideoCaptureDeviceWin::Init() {
   DCHECK(CalledOnValidThread());
   HRESULT hr = GetDeviceFilter(device_name_, capture_filter_.Receive());
   if (!capture_filter_) {
-    DVLOG(2) << "Failed to create capture filter.";
+    DLOG(ERROR) << "Failed to create capture filter: "
+                << logging::SystemErrorCodeToString(hr);
     return false;
   }
 
   output_capture_pin_ =
       GetPin(capture_filter_, PINDIR_OUTPUT, PIN_CATEGORY_CAPTURE);
   if (!output_capture_pin_) {
-    DVLOG(2) << "Failed to get capture output pin";
+    DLOG(ERROR) << "Failed to get capture output pin";
     return false;
   }
 
   // Create the sink filter used for receiving Captured frames.
   sink_filter_ = new SinkFilter(this);
   if (sink_filter_ == NULL) {
-    DVLOG(2) << "Failed to create send filter";
+    DLOG(ERROR) << "Failed to create send filter";
     return false;
   }
 
@@ -248,25 +250,29 @@ bool VideoCaptureDeviceWin::Init() {
   hr = graph_builder_.CreateInstance(CLSID_FilterGraph, NULL,
                                      CLSCTX_INPROC_SERVER);
   if (FAILED(hr)) {
-    DVLOG(2) << "Failed to create graph builder.";
+    DLOG(ERROR) << "Failed to create graph builder: "
+                << logging::SystemErrorCodeToString(hr);
     return false;
   }
 
   hr = graph_builder_.QueryInterface(media_control_.Receive());
   if (FAILED(hr)) {
-    DVLOG(2) << "Failed to create media control builder.";
+    DLOG(ERROR) << "Failed to create media control builder: "
+                << logging::SystemErrorCodeToString(hr);
     return false;
   }
 
   hr = graph_builder_->AddFilter(capture_filter_, NULL);
   if (FAILED(hr)) {
-    DVLOG(2) << "Failed to add the capture device to the graph.";
+    DLOG(ERROR) << "Failed to add the capture device to the graph: "
+                << logging::SystemErrorCodeToString(hr);
     return false;
   }
 
   hr = graph_builder_->AddFilter(sink_filter_, NULL);
   if (FAILED(hr)) {
-    DVLOG(2)<< "Failed to add the send filter to the graph.";
+    DLOG(ERROR) << "Failed to add the send filter to the graph: "
+                << logging::SystemErrorCodeToString(hr);
     return false;
   }
 
@@ -439,20 +445,22 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
   ScopedComPtr<IAMStreamConfig> stream_config;
   HRESULT hr = output_capture_pin_.QueryInterface(stream_config.Receive());
   if (FAILED(hr)) {
-    DVLOG(2) << "Failed to get IAMStreamConfig interface from "
-                "capture device";
+    DPLOG(ERROR) << "Failed to get IAMStreamConfig interface from "
+                    "capture device: " << logging::SystemErrorCodeToString(hr);
     return false;
   }
 
   // Get interface used for getting the frame rate.
   ScopedComPtr<IAMVideoControl> video_control;
   hr = capture_filter_.QueryInterface(video_control.Receive());
-  DVLOG_IF(2, FAILED(hr)) << "IAMVideoControl Interface NOT SUPPORTED";
+  DLOG_IF(WARNING, FAILED(hr)) << "IAMVideoControl Interface NOT SUPPORTED: "
+                               << logging::SystemErrorCodeToString(hr);
 
   int count = 0, size = 0;
   hr = stream_config->GetNumberOfCapabilities(&count, &size);
   if (FAILED(hr)) {
-    DVLOG(2) << "Failed to GetNumberOfCapabilities";
+    DLOG(ERROR) << "Failed to GetNumberOfCapabilities: "
+                << logging::SystemErrorCodeToString(hr);
     return false;
   }
 
@@ -463,7 +471,8 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
     // GetStreamCaps() may return S_FALSE, so don't use FAILED() or SUCCEED()
     // macros here since they'll trigger incorrectly.
     if (hr != S_OK) {
-      DVLOG(2) << "Failed to GetStreamCaps";
+      DLOG(ERROR) << "Failed to GetStreamCaps: "
+                  << logging::SystemErrorCodeToString(hr);
       return false;
     }
 
@@ -545,7 +554,8 @@ void VideoCaptureDeviceWin::SetAntiFlickerInCaptureFilter() {
     hr = ks_propset->Set(PROPSETID_VIDCAP_VIDEOPROCAMP,
                          KSPROPERTY_VIDEOPROCAMP_POWERLINE_FREQUENCY,
                          &data, sizeof(data), &data, sizeof(data));
-    DVLOG_IF(ERROR, FAILED(hr)) << "Anti-flicker setting failed.";
+    DLOG_IF(ERROR, FAILED(hr)) << "Anti-flicker setting failed: "
+                               << logging::SystemErrorCodeToString(hr);
     DVLOG_IF(2, SUCCEEDED(hr)) << "Anti-flicker set correctly.";
   } else {
     DVLOG(2) << "Anti-flicker setting not supported.";
@@ -554,7 +564,6 @@ void VideoCaptureDeviceWin::SetAntiFlickerInCaptureFilter() {
 
 void VideoCaptureDeviceWin::SetErrorState(const std::string& reason) {
   DCHECK(CalledOnValidThread());
-  DVLOG(1) << reason;
   state_ = kError;
   client_->OnError(reason);
 }

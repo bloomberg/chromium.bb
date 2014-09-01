@@ -332,10 +332,11 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedData(
 }
 
 void VideoCaptureDeviceMFWin::OnError(HRESULT hr) {
-  std::string log_msg = base::StringPrintf("VideoCaptureDeviceMFWin: %x", hr);
-  DLOG(ERROR) << log_msg;
-  if (client_.get())
-    client_->OnError(log_msg);
+  if (client_.get()) {
+    client_->OnError(
+        base::StringPrintf("VideoCaptureDeviceMFWin: %s",
+                           logging::SystemErrorCodeToString(hr).c_str()));
+  }
 }
 
 }  // namespace media
