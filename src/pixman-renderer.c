@@ -385,6 +385,7 @@ static void
 draw_view(struct weston_view *ev, struct weston_output *output,
 	  pixman_region32_t *damage) /* in global coordinates */
 {
+	static int zoom_logged = 0;
 	struct pixman_surface_state *ps = get_surface_state(ev->surface);
 	/* repaint bounding region in global coordinates: */
 	pixman_region32_t repaint;
@@ -403,9 +404,9 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 	if (!pixman_region32_not_empty(&repaint))
 		goto out;
 
-	if (output->zoom.active) {
+	if (output->zoom.active && !zoom_logged) {
 		weston_log("pixman renderer does not support zoom\n");
-		goto out;
+		zoom_logged = 1;
 	}
 
 	/* TODO: Implement repaint_region_complex() using pixman_composite_trapezoids() */
