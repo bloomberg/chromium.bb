@@ -36,7 +36,7 @@ public:
     BLINK_PLATFORM_EXPORT bool iceRestart() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCOfferOptions(const WTF::PassRefPtr<RTCOfferOptions>&);
+    BLINK_PLATFORM_EXPORT WebRTCOfferOptions(RTCOfferOptions*);
 #endif
 
 private:

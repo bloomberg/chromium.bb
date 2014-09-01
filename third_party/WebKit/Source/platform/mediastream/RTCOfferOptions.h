@@ -5,22 +5,23 @@
 #ifndef RTCOfferOptions_h
 #define RTCOfferOptions_h
 
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
-class RTCOfferOptions FINAL : public RefCounted<RTCOfferOptions> {
+class RTCOfferOptions FINAL : public GarbageCollected<RTCOfferOptions> {
 public:
-    static PassRefPtr<RTCOfferOptions> create(int32_t offerToReceiveVideo, int32_t offerToReceiveAudio, bool voiceActivityDetection, bool iceRestart)
+    static RTCOfferOptions* create(int32_t offerToReceiveVideo, int32_t offerToReceiveAudio, bool voiceActivityDetection, bool iceRestart)
     {
-        return adoptRef(new RTCOfferOptions(offerToReceiveVideo, offerToReceiveAudio, voiceActivityDetection, iceRestart));
+        return new RTCOfferOptions(offerToReceiveVideo, offerToReceiveAudio, voiceActivityDetection, iceRestart);
     }
 
     int32_t offerToReceiveVideo() const { return m_offerToReceiveVideo; }
     int32_t offerToReceiveAudio() const { return m_offerToReceiveAudio; }
     bool voiceActivityDetection() const { return m_voiceActivityDetection; }
     bool iceRestart() const { return m_iceRestart; }
+
+    void trace(Visitor*) { }
 
 private:
     RTCOfferOptions(int32_t offerToReceiveVideo, int32_t offerToReceiveAudio, bool voiceActivityDetection, bool iceRestart)

@@ -172,10 +172,10 @@ RTCConfiguration* RTCPeerConnection::parseConfiguration(const Dictionary& config
     return rtcConfiguration;
 }
 
-PassRefPtr<RTCOfferOptions> RTCPeerConnection::parseOfferOptions(const Dictionary& options, ExceptionState& exceptionState)
+RTCOfferOptions* RTCPeerConnection::parseOfferOptions(const Dictionary& options, ExceptionState& exceptionState)
 {
     if (options.isUndefinedOrNull())
-        return nullptr;
+        return 0;
 
     Vector<String> propertyNames;
     options.getOwnPropertyNames(propertyNames);
@@ -183,7 +183,7 @@ PassRefPtr<RTCOfferOptions> RTCPeerConnection::parseOfferOptions(const Dictionar
     // Treat |options| as MediaConstraints if it is empty or has "optional" or "mandatory" properties for compatibility.
     // TODO(jiayl): remove constraints when RTCOfferOptions reaches Stable and client code is ready.
     if (propertyNames.isEmpty() || propertyNames.contains("optional") || propertyNames.contains("mandatory"))
-        return nullptr;
+        return 0;
 
     int32_t offerToReceiveVideo = -1;
     int32_t offerToReceiveAudio = -1;
@@ -192,19 +192,19 @@ PassRefPtr<RTCOfferOptions> RTCPeerConnection::parseOfferOptions(const Dictionar
 
     if (DictionaryHelper::get(options, "offerToReceiveVideo", offerToReceiveVideo) && offerToReceiveVideo < 0) {
         exceptionState.throwTypeError("Invalid offerToReceiveVideo");
-        return nullptr;
+        return 0;
     }
 
     if (DictionaryHelper::get(options, "offerToReceiveAudio", offerToReceiveAudio) && offerToReceiveAudio < 0) {
         exceptionState.throwTypeError("Invalid offerToReceiveAudio");
-        return nullptr;
+        return 0;
     }
 
     DictionaryHelper::get(options, "voiceActivityDetection", voiceActivityDetection);
     DictionaryHelper::get(options, "iceRestart", iceRestart);
 
-    RefPtr<RTCOfferOptions> rtcOfferOptions = RTCOfferOptions::create(offerToReceiveVideo, offerToReceiveAudio, voiceActivityDetection, iceRestart);
-    return rtcOfferOptions.release();
+    RTCOfferOptions* rtcOfferOptions = RTCOfferOptions::create(offerToReceiveVideo, offerToReceiveAudio, voiceActivityDetection, iceRestart);
+    return rtcOfferOptions;
 }
 
 RTCPeerConnection* RTCPeerConnection::create(ExecutionContext* context, const Dictionary& rtcConfiguration, const Dictionary& mediaConstraints, ExceptionState& exceptionState)
@@ -278,14 +278,14 @@ void RTCPeerConnection::createOffer(PassOwnPtrWillBeRawPtr<RTCSessionDescription
 
     ASSERT(successCallback);
 
-    RefPtr<RTCOfferOptions> offerOptions = parseOfferOptions(rtcOfferOptions, exceptionState);
+    RTCOfferOptions* offerOptions = parseOfferOptions(rtcOfferOptions, exceptionState);
     if (exceptionState.hadException())
         return;
 
     RefPtr<RTCSessionDescriptionRequest> request = RTCSessionDescriptionRequestImpl::create(executionContext(), this, successCallback, errorCallback);
 
     if (offerOptions) {
-        m_peerHandler->createOffer(request.release(), offerOptions.release());
+        m_peerHandler->createOffer(request.release(), offerOptions);
     } else {
         WebMediaConstraints constraints = MediaConstraintsImpl::create(rtcOfferOptions, exceptionState);
         if (exceptionState.hadException())

@@ -9,7 +9,7 @@
 
 namespace blink {
 
-WebRTCOfferOptions::WebRTCOfferOptions(const PassRefPtr<RTCOfferOptions>& options)
+WebRTCOfferOptions::WebRTCOfferOptions(RTCOfferOptions* options)
     : m_private(options)
 {
 }
