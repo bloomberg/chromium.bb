@@ -1265,7 +1265,7 @@ crbug.com/406283 [ Release ] inspector/console/console-command-clear.html [ Fail
 crbug.com/406283 [ Release ] inspector/console/console-dir.html [ Failure Pass ]
 crbug.com/406283 [ Release ] inspector/console/console-dir-es6.html [ Failure Pass ]
 crbug.com/406283 inspector/console/console-external-array.html [ Failure Pass ]
-crbug.com/406283 [ Release ] inspector/console/console-filter-test.html [ Failure Pass ]
+crbug.com/406283 inspector/console/console-filter-test.html [ Failure Pass ]
 crbug.com/406283 [ Release ] inspector/console/console-format.html [ Failure Pass ]
 crbug.com/406283 inspector/console/console-format-collections.html [ Failure Pass ]
 crbug.com/406283 inspector/console/console-filter-level-test.html [ Failure Pass ]
