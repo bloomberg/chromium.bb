@@ -1039,7 +1039,6 @@ class AudioManagerAndroid {
         logd("Android SDK: " + Build.VERSION.SDK_INT + ", " +
             "Release: " + Build.VERSION.RELEASE + ", " +
             "Brand: " + Build.BRAND + ", " +
-            "CPU_ABI: " + Build.CPU_ABI + ", " +
             "Device: " + Build.DEVICE + ", " +
             "Id: " + Build.ID + ", " +
             "Hardware: " + Build.HARDWARE + ", " +
