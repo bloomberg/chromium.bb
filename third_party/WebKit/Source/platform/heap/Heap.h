@@ -35,7 +35,7 @@
 #include "platform/heap/AddressSanitizer.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
-
+#include "public/platform/WebThread.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/LinkedHashSet.h"
@@ -90,6 +90,8 @@ const uint8_t finalizedZapValue = 24;
 // The orphaned zap value must be zero in the lowest bits to allow for using
 // the mark bit when tracing.
 const uint8_t orphanedZapValue = 240;
+
+const int numberOfMarkingThreads = 2;
 
 enum CallbackInvocationMode {
     GlobalMarking,
@@ -298,7 +300,7 @@ public:
 #endif
 
 protected:
-    size_t m_size;
+    volatile unsigned m_size;
 };
 
 // Our heap object layout is layered with the HeapObjectHeader closest
@@ -799,6 +801,8 @@ public:
 
     bool isEmpty();
 
+    CallbackStack* takeCallbacks(CallbackStack** first);
+
     class Item {
     public:
         Item() { }
@@ -838,10 +842,22 @@ public:
     bool hasCallbackForObject(const void*);
 #endif
 
+    bool numberOfBlocksExceeds(int blocks)
+    {
+        CallbackStack* current = this;
+        for (int i = 0; i < blocks; ++i) {
+            if (!current->m_next)
+                return false;
+            current = current->m_next;
+        }
+        return true;
+    }
+
 private:
     void invokeOldestCallbacks(Visitor*);
+    bool currentBlockIsEmpty() { return m_current == &(m_buffer[0]); }
 
-    static const size_t bufferSize = 4000;
+    static const size_t bufferSize = 200;
     Item m_buffer[bufferSize];
     Item* m_limit;
     Item* m_current;
@@ -1028,7 +1044,7 @@ public:
 #endif
 
     // Push a trace callback on the marking stack.
-    static void pushTraceCallback(void* containerObject, TraceCallback);
+    static void pushTraceCallback(CallbackStack**, void* containerObject, TraceCallback);
 
     // Push a trace callback on the post-marking callback stack. These callbacks
     // are called after normal marking (including ephemeron iteration).
@@ -1075,6 +1091,9 @@ public:
     static void collectGarbage(ThreadState::StackState);
     static void collectGarbageForTerminatingThread(ThreadState*);
     static void collectAllGarbage();
+    static void processMarkingStackEntries(int* numberOfMarkingThreads);
+    static void processMarkingStackOnMultipleThreads();
+    static void processMarkingStackInParallel();
     template<CallbackInvocationMode Mode> static void processMarkingStack();
     static void postMarkingProcessing();
     static void globalWeakProcessing();
@@ -1123,7 +1142,7 @@ public:
 
 private:
     static Visitor* s_markingVisitor;
-
+    static Vector<OwnPtr<blink::WebThread> >* s_markingThreads;
     static CallbackStack* s_markingStack;
     static CallbackStack* s_postMarkingCallbackStack;
     static CallbackStack* s_weakCallbackStack;
@@ -1464,7 +1483,13 @@ NO_SANITIZE_ADDRESS
 void HeapObjectHeader::mark()
 {
     checkHeader();
-    m_size |= markBitMask;
+    // The use of atomic ops guarantees that the reads and writes are
+    // atomic and that no memory operation reorderings take place.
+    // Multiple threads can still read the old value and all store the
+    // new value. However, the new value will be the same for all of
+    // the threads and the end result is therefore consistent.
+    unsigned size = acquireLoad(&m_size);
+    releaseStore(&m_size, size | markBitMask);
 }
 
 Address FinalizedHeapObjectHeader::payload()
