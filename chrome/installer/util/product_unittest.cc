@@ -76,15 +76,15 @@ TEST_F(ProductTest, ProductInstallBasic) {
   EXPECT_EQ(std::wstring::npos,
             user_data_dir.value().find(program_files.value()));
 
-  // There should be no installed version in the registry.
-  machine_state.Initialize();
-  EXPECT_TRUE(machine_state.GetProductState(
-      system_level, distribution->GetType()) == NULL);
-
   HKEY root = installer_state.root_key();
   {
     RegistryOverrideManager override_manager;
     override_manager.OverrideRegistry(root, L"root_pit");
+
+    // There should be no installed version in the registry.
+    machine_state.Initialize();
+    EXPECT_TRUE(machine_state.GetProductState(
+        system_level, distribution->GetType()) == NULL);
 
     // Let's pretend chrome is installed.
     RegKey version_key(root, distribution->GetVersionKey().c_str(),
