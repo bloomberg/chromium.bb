@@ -70,7 +70,7 @@ V8GCForContextDispose& V8GCForContextDispose::instanceTemplate()
 
 void V8GCForContextDispose::pseudoIdleTimerFired(Timer<V8GCForContextDispose>*)
 {
-    const int longIdlePauseInMs = 1000;
+    const int longIdlePauseInMs = 100;
     const int shortIdlePauseInMs = 10;
     int hint = m_didDisposeContextForMainFrame ? longIdlePauseInMs : shortIdlePauseInMs;
     V8PerIsolateData::mainThreadIsolate()->IdleNotification(hint);
