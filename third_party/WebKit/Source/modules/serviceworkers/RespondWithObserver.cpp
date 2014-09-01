@@ -25,15 +25,15 @@ public:
         Rejected,
     };
 
-    static PassOwnPtr<ScriptFunction> create(PassRefPtr<RespondWithObserver> observer, ResolveType type)
+    static v8::Handle<v8::Function> createFunction(ScriptState* scriptState, PassRefPtr<RespondWithObserver> observer, ResolveType type)
     {
-        ExecutionContext* executionContext = observer->executionContext();
-        return adoptPtr(new ThenFunction(toIsolate(executionContext), observer, type));
+        ThenFunction* self = new ThenFunction(scriptState, observer, type);
+        return self->bindToV8Function();
     }
 
 private:
-    ThenFunction(v8::Isolate* isolate, PassRefPtr<RespondWithObserver> observer, ResolveType type)
-        : ScriptFunction(isolate)
+    ThenFunction(ScriptState* scriptState, PassRefPtr<RespondWithObserver> observer, ResolveType type)
+        : ScriptFunction(scriptState)
         , m_observer(observer)
         , m_resolveType(type)
     {
@@ -83,8 +83,8 @@ void RespondWithObserver::respondWith(ScriptState* scriptState, const ScriptValu
 
     m_state = Pending;
     ScriptPromise::cast(scriptState, value).then(
-        ThenFunction::create(this, ThenFunction::Fulfilled),
-        ThenFunction::create(this, ThenFunction::Rejected));
+        ThenFunction::createFunction(scriptState, this, ThenFunction::Fulfilled),
+        ThenFunction::createFunction(scriptState, this, ThenFunction::Rejected));
 }
 
 void RespondWithObserver::sendResponse(PassRefPtrWillBeRawPtr<Response> response)

@@ -9,24 +9,20 @@
 
 namespace blink {
 
-void ScriptFunction::callCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+v8::Handle<v8::Function> ScriptFunction::bindToV8Function()
 {
-    v8::Isolate* isolate = args.GetIsolate();
-    ASSERT(!args.Data().IsEmpty());
-    ScriptFunction* function = ScriptFunction::Cast(args.Data());
-    v8::Local<v8::Value> value = args.Length() > 0 ? args[0] : v8::Local<v8::Value>(v8::Undefined(isolate));
-
-    ScriptValue result = function->call(ScriptValue(ScriptState::current(isolate), value));
-
-    v8SetReturnValue(args, result.v8Value());
+    v8::Isolate* isolate = m_scriptState->isolate();
+    v8::Handle<v8::External> wrapper = v8::External::New(isolate, this);
+    m_scriptState->world().registerDOMObjectHolder(isolate, this, wrapper);
+    return createClosure(&ScriptFunction::callCallback, wrapper, isolate);
 }
 
-v8::Handle<v8::Function> ScriptFunction::adoptByGarbageCollector(PassOwnPtr<ScriptFunction> function)
+void ScriptFunction::callCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    if (!function)
-        return v8::Handle<v8::Function>();
-    v8::Isolate* isolate = function->isolate();
-    return createClosure(&ScriptFunction::callCallback, function.leakPtr()->releaseToV8GarbageCollector(), isolate);
+    ASSERT(args.Data()->IsExternal());
+    ScriptFunction* scriptFunction = static_cast<ScriptFunction*>(v8::Handle<v8::External>::Cast(args.Data())->Value());
+    ScriptValue result = scriptFunction->call(ScriptValue(scriptFunction->scriptState(), args[0]));
+    v8SetReturnValue(args, result.v8Value());
 }
 
 } // namespace blink

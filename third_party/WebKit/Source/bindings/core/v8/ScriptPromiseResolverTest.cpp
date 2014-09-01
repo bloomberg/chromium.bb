@@ -23,9 +23,17 @@ void callback(const v8::FunctionCallbackInfo<v8::Value>& info) { }
 
 class Function : public ScriptFunction {
 public:
-    static PassOwnPtr<Function> create(v8::Isolate* isolate, String* value)
+    static v8::Handle<v8::Function> createFunction(ScriptState* scriptState, String* value)
     {
-        return adoptPtr(new Function(isolate, value));
+        Function* self = new Function(scriptState, value);
+        return self->bindToV8Function();
+    }
+
+private:
+    Function(ScriptState* scriptState, String* value)
+        : ScriptFunction(scriptState)
+        , m_value(value)
+    {
     }
 
     virtual ScriptValue call(ScriptValue value) OVERRIDE
@@ -34,9 +42,6 @@ public:
         *m_value = toCoreString(value.v8Value()->ToString());
         return value;
     }
-
-private:
-    Function(v8::Isolate* isolate, String* value) : ScriptFunction(isolate), m_value(value) { }
 
     String* m_value;
 };
@@ -86,7 +91,7 @@ TEST_F(ScriptPromiseResolverTest, resolve)
     ASSERT_FALSE(promise.isEmpty());
     {
         ScriptState::Scope scope(scriptState());
-        promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
+        promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
     }
 
     EXPECT_EQ(String(), onFulfilled);
@@ -134,7 +139,7 @@ TEST_F(ScriptPromiseResolverTest, reject)
     ASSERT_FALSE(promise.isEmpty());
     {
         ScriptState::Scope scope(scriptState());
-        promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
+        promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
     }
 
     EXPECT_EQ(String(), onFulfilled);
@@ -182,7 +187,7 @@ TEST_F(ScriptPromiseResolverTest, stop)
     ASSERT_FALSE(promise.isEmpty());
     {
         ScriptState::Scope scope(scriptState());
-        promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
+        promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
     }
 
     executionContext()->stopActiveDOMObjects();
@@ -275,7 +280,7 @@ TEST_F(ScriptPromiseResolverTest, resolveVoid)
     ASSERT_FALSE(promise.isEmpty());
     {
         ScriptState::Scope scope(scriptState());
-        promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
+        promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
     }
 
     resolver->resolve();
@@ -299,7 +304,7 @@ TEST_F(ScriptPromiseResolverTest, rejectVoid)
     ASSERT_FALSE(promise.isEmpty());
     {
         ScriptState::Scope scope(scriptState());
-        promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
+        promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
     }
 
     resolver->reject();

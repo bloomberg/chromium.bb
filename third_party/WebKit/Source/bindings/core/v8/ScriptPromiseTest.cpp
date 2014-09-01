@@ -48,9 +48,17 @@ void callback(const v8::FunctionCallbackInfo<v8::Value>& info) { }
 
 class Function : public ScriptFunction {
 public:
-    static PassOwnPtr<Function> create(v8::Isolate* isolate, String* value)
+    static v8::Handle<v8::Function> createFunction(ScriptState* scriptState, String* value)
     {
-        return adoptPtr(new Function(isolate, value));
+        Function* self = new Function(scriptState, value);
+        return self->bindToV8Function();
+    }
+
+private:
+    Function(ScriptState* scriptState, String* value)
+        : ScriptFunction(scriptState)
+        , m_value(value)
+    {
     }
 
     virtual ScriptValue call(ScriptValue value) OVERRIDE
@@ -59,9 +67,6 @@ public:
         *m_value = toCoreString(value.v8Value()->ToString());
         return value;
     }
-
-private:
-    Function(v8::Isolate* isolate, String* value) : ScriptFunction(isolate), m_value(value) { }
 
     String* m_value;
 };
@@ -103,7 +108,7 @@ TEST_F(ScriptPromiseTest, thenResolve)
     Resolver resolver(scriptState());
     ScriptPromise promise = resolver.promise();
     String onFulfilled, onRejected;
-    promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
+    promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
 
     ASSERT_FALSE(promise.isEmpty());
     EXPECT_EQ(String(), onFulfilled);
@@ -127,7 +132,7 @@ TEST_F(ScriptPromiseTest, resolveThen)
     ScriptPromise promise = resolver.promise();
     String onFulfilled, onRejected;
     resolver.resolve(v8String(isolate(), "hello"));
-    promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
+    promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
 
     ASSERT_FALSE(promise.isEmpty());
     EXPECT_EQ(String(), onFulfilled);
@@ -144,7 +149,7 @@ TEST_F(ScriptPromiseTest, thenReject)
     Resolver resolver(scriptState());
     ScriptPromise promise = resolver.promise();
     String onFulfilled, onRejected;
-    promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
+    promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
 
     ASSERT_FALSE(promise.isEmpty());
     EXPECT_EQ(String(), onFulfilled);
@@ -168,7 +173,7 @@ TEST_F(ScriptPromiseTest, rejectThen)
     ScriptPromise promise = resolver.promise();
     String onFulfilled, onRejected;
     resolver.reject(v8String(isolate(), "hello"));
-    promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
+    promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
 
     ASSERT_FALSE(promise.isEmpty());
     EXPECT_EQ(String(), onFulfilled);
@@ -196,8 +201,8 @@ TEST_F(ScriptPromiseTest, castNonPromise)
     ScriptValue value = ScriptValue(scriptState(), v8String(isolate(), "hello"));
     ScriptPromise promise1 = ScriptPromise::cast(scriptState(), ScriptValue(value));
     ScriptPromise promise2 = ScriptPromise::cast(scriptState(), ScriptValue(value));
-    promise1.then(Function::create(isolate(), &onFulfilled1), Function::create(isolate(), &onRejected1));
-    promise2.then(Function::create(isolate(), &onFulfilled2), Function::create(isolate(), &onRejected2));
+    promise1.then(Function::createFunction(scriptState(), &onFulfilled1), Function::createFunction(scriptState(), &onRejected1));
+    promise2.then(Function::createFunction(scriptState(), &onFulfilled2), Function::createFunction(scriptState(), &onRejected2));
 
     ASSERT_FALSE(promise1.isEmpty());
     ASSERT_FALSE(promise2.isEmpty());
@@ -225,7 +230,7 @@ TEST_F(ScriptPromiseTest, reject)
 
     ScriptValue value = ScriptValue(scriptState(), v8String(isolate(), "hello"));
     ScriptPromise promise = ScriptPromise::reject(scriptState(), ScriptValue(value));
-    promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
+    promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
 
     ASSERT_FALSE(promise.isEmpty());
     ASSERT_TRUE(promise.v8Value()->IsPromise());
@@ -243,7 +248,7 @@ TEST_F(ScriptPromiseTest, rejectWithExceptionState)
 {
     String onFulfilled, onRejected;
     ScriptPromise promise = ScriptPromise::rejectWithDOMException(scriptState(), DOMException::create(SyntaxError, "some syntax error"));
-    promise.then(Function::create(isolate(), &onFulfilled), Function::create(isolate(), &onRejected));
+    promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
 
     ASSERT_FALSE(promise.isEmpty());
     EXPECT_EQ(String(), onFulfilled);

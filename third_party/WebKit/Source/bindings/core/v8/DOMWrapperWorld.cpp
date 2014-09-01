@@ -118,6 +118,7 @@ DOMWrapperWorld::~DOMWrapperWorld()
 
 void DOMWrapperWorld::dispose()
 {
+    m_domObjectHolders.clear();
     m_domDataStore.clear();
 }
 
@@ -215,6 +216,26 @@ void DOMWrapperWorld::setIsolatedWorldContentSecurityPolicy(int worldId, const S
         isolatedWorldContentSecurityPolicies().set(worldId, true);
     else
         isolatedWorldContentSecurityPolicies().remove(worldId);
+}
+
+void DOMWrapperWorld::registerDOMObjectHolderInternal(PassOwnPtr<DOMObjectHolderBase> holderBase)
+{
+    ASSERT(!m_domObjectHolders.contains(holderBase.get()));
+    holderBase->setWorld(this);
+    holderBase->setWeak(&DOMWrapperWorld::weakCallbackForDOMObjectHolder);
+    m_domObjectHolders.add(holderBase);
+}
+
+void DOMWrapperWorld::unregisterDOMObjectHolder(DOMObjectHolderBase* holderBase)
+{
+    ASSERT(m_domObjectHolders.contains(holderBase));
+    m_domObjectHolders.remove(holderBase);
+}
+
+void DOMWrapperWorld::weakCallbackForDOMObjectHolder(const v8::WeakCallbackData<v8::Value, DOMObjectHolderBase>& data)
+{
+    DOMObjectHolderBase* holderBase = data.GetParameter();
+    holderBase->world()->unregisterDOMObjectHolder(holderBase);
 }
 
 } // namespace blink

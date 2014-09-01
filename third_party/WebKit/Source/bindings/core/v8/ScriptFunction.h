@@ -32,23 +32,42 @@
 #define ScriptFunction_h
 
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8GarbageCollected.h"
-#include "wtf/RefCounted.h"
+#include "platform/heap/Handle.h"
 #include <v8.h>
 
 namespace blink {
 
-class ScriptFunction : public V8GarbageCollected<ScriptFunction> {
+// A common way of using ScriptFunction is as follows:
+//
+// class DerivedFunction : public ScriptFunction {
+//     // This returns a V8 function which the DerivedFunction is bound to.
+//     // The DerivedFunction is destructed when the V8 function is
+//     // garbage-collected.
+//     static v8::Handle<v8::Function> createFunction(ScriptState* scriptState)
+//     {
+//         DerivedFunction* self = new DerivedFunction(scriptState);
+//         return self->bindToV8Function();
+//     }
+// };
+class ScriptFunction : public GarbageCollectedFinalized<ScriptFunction> {
 public:
     virtual ~ScriptFunction() { }
-    static v8::Handle<v8::Function> adoptByGarbageCollector(PassOwnPtr<ScriptFunction>);
+    ScriptState* scriptState() const { return m_scriptState.get(); }
+    virtual void trace(Visitor*) { }
 
 protected:
-    ScriptFunction(v8::Isolate* isolate) : V8GarbageCollected<ScriptFunction>(isolate) { }
+    explicit ScriptFunction(ScriptState* scriptState)
+        : m_scriptState(scriptState)
+    {
+    }
+
+    v8::Handle<v8::Function> bindToV8Function();
 
 private:
     virtual ScriptValue call(ScriptValue) = 0;
-    static void callCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void callCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+
+    RefPtr<ScriptState> m_scriptState;
 };
 
 } // namespace blink

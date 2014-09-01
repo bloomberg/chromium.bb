@@ -26,15 +26,15 @@ public:
         Rejected,
     };
 
-    static PassOwnPtr<ScriptFunction> create(PassRefPtr<WaitUntilObserver> observer, ResolveType type)
+    static v8::Handle<v8::Function> createFunction(ScriptState* scriptState, PassRefPtr<WaitUntilObserver> observer, ResolveType type)
     {
-        ExecutionContext* executionContext = observer->executionContext();
-        return adoptPtr(new ThenFunction(toIsolate(executionContext), observer, type));
+        ThenFunction* self = new ThenFunction(scriptState, observer, type);
+        return self->bindToV8Function();
     }
 
 private:
-    ThenFunction(v8::Isolate* isolate, PassRefPtr<WaitUntilObserver> observer, ResolveType type)
-        : ScriptFunction(isolate)
+    ThenFunction(ScriptState* scriptState, PassRefPtr<WaitUntilObserver> observer, ResolveType type)
+        : ScriptFunction(scriptState)
         , m_observer(observer)
         , m_resolveType(type)
     {
@@ -78,8 +78,8 @@ void WaitUntilObserver::waitUntil(ScriptState* scriptState, const ScriptValue& v
 {
     incrementPendingActivity();
     ScriptPromise::cast(scriptState, value).then(
-        ThenFunction::create(this, ThenFunction::Fulfilled),
-        ThenFunction::create(this, ThenFunction::Rejected));
+        ThenFunction::createFunction(scriptState, this, ThenFunction::Fulfilled),
+        ThenFunction::createFunction(scriptState, this, ThenFunction::Rejected));
 }
 
 WaitUntilObserver::WaitUntilObserver(ExecutionContext* context, EventType type, int eventID)

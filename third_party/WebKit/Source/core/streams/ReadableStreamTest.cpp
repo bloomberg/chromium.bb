@@ -31,9 +31,17 @@ typedef ReadableStreamImpl<ReadableStreamChunkTypeTraits<String> > StringStream;
 
 class StringCapturingFunction : public ScriptFunction {
 public:
-    static PassOwnPtr<StringCapturingFunction> create(v8::Isolate* isolate, String* value)
+    static v8::Handle<v8::Function> createFunction(ScriptState* scriptState, String* value)
     {
-        return adoptPtr(new StringCapturingFunction(isolate, value));
+        StringCapturingFunction* self = new StringCapturingFunction(scriptState, value);
+        return self->bindToV8Function();
+    }
+
+private:
+    StringCapturingFunction(ScriptState* scriptState, String* value)
+        : ScriptFunction(scriptState)
+        , m_value(value)
+    {
     }
 
     virtual ScriptValue call(ScriptValue value) OVERRIDE
@@ -42,9 +50,6 @@ public:
         *m_value = toCoreString(value.v8Value()->ToString());
         return value;
     }
-
-private:
-    StringCapturingFunction(v8::Isolate* isolate, String* value) : ScriptFunction(isolate), m_value(value) { }
 
     String* m_value;
 };
@@ -91,9 +96,9 @@ public:
     ScriptState* scriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
     v8::Isolate* isolate() { return scriptState()->isolate(); }
 
-    PassOwnPtr<StringCapturingFunction> createCaptor(String* value)
+    v8::Handle<v8::Function> createCaptor(String* value)
     {
-        return StringCapturingFunction::create(isolate(), value);
+        return StringCapturingFunction::createFunction(scriptState(), value);
     }
 
     StringStream* construct()

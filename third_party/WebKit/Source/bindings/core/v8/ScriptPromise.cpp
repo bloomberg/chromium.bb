@@ -100,30 +100,28 @@ ScriptPromise::ScriptPromise(ScriptState* scriptState, v8::Handle<v8::Value> val
     m_promise = ScriptValue(scriptState, value);
 }
 
-ScriptPromise ScriptPromise::then(PassOwnPtr<ScriptFunction> onFulfilled, PassOwnPtr<ScriptFunction> onRejected)
+ScriptPromise ScriptPromise::then(v8::Handle<v8::Function> onFulfilled, v8::Handle<v8::Function> onRejected)
 {
     if (m_promise.isEmpty())
         return ScriptPromise();
 
     v8::Local<v8::Object> promise = m_promise.v8Value().As<v8::Object>();
-    v8::Local<v8::Function> v8OnFulfilled = ScriptFunction::adoptByGarbageCollector(onFulfilled);
-    v8::Local<v8::Function> v8OnRejected = ScriptFunction::adoptByGarbageCollector(onRejected);
 
     ASSERT(promise->IsPromise());
     // Return this Promise if no handlers are given.
     // In fact it is not the exact bahavior of Promise.prototype.then
     // but that is not a problem in this case.
     v8::Local<v8::Promise> resultPromise = promise.As<v8::Promise>();
-    if (!v8OnFulfilled.IsEmpty()) {
-        resultPromise = resultPromise->Then(v8OnFulfilled);
+    if (!onFulfilled.IsEmpty()) {
+        resultPromise = resultPromise->Then(onFulfilled);
         if (resultPromise.IsEmpty()) {
             // v8::Promise::Then may return an empty value, for example when
             // the stack is exhausted.
             return ScriptPromise();
         }
     }
-    if (!v8OnRejected.IsEmpty())
-        resultPromise = resultPromise->Catch(v8OnRejected);
+    if (!onRejected.IsEmpty())
+        resultPromise = resultPromise->Catch(onRejected);
 
     return ScriptPromise(m_scriptState.get(), resultPromise);
 }

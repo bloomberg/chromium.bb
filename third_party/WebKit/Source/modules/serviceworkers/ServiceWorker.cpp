@@ -47,14 +47,21 @@ namespace blink {
 
 class ServiceWorker::ThenFunction FINAL : public ScriptFunction {
 public:
-    static PassOwnPtr<ScriptFunction> create(PassRefPtrWillBeRawPtr<ServiceWorker> observer)
+    static v8::Handle<v8::Function> createFunction(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ServiceWorker> observer)
     {
-        ExecutionContext* executionContext = observer->executionContext();
-        return adoptPtr(new ThenFunction(toIsolate(executionContext), observer));
+        ThenFunction* self = new ThenFunction(scriptState, observer);
+        return self->bindToV8Function();
     }
+
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_observer);
+        ScriptFunction::trace(visitor);
+    }
+
 private:
-    ThenFunction(v8::Isolate* isolate, PassRefPtrWillBeRawPtr<ServiceWorker> observer)
-        : ScriptFunction(isolate)
+    ThenFunction(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ServiceWorker> observer)
+        : ScriptFunction(scriptState)
         , m_observer(observer)
     {
     }
@@ -65,7 +72,7 @@ private:
         return value;
     }
 
-    RefPtrWillBePersistent<ServiceWorker> m_observer;
+    RefPtrWillBeMember<ServiceWorker> m_observer;
 };
 
 const AtomicString& ServiceWorker::interfaceName() const
@@ -158,7 +165,7 @@ PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::take(ScriptPromiseResolver*
     RefPtrWillBeRawPtr<ServiceWorker> serviceWorker = getOrCreate(resolver->scriptState()->executionContext(), worker);
     ScriptState::Scope scope(resolver->scriptState());
     if (serviceWorker->m_proxyState == Initial)
-        serviceWorker->waitOnPromise(resolver->promise());
+        serviceWorker->waitOnPromise(resolver);
     return serviceWorker;
 }
 
@@ -200,16 +207,16 @@ void ServiceWorker::onPromiseResolved()
     setProxyState(Ready);
 }
 
-void ServiceWorker::waitOnPromise(ScriptPromise promise)
+void ServiceWorker::waitOnPromise(ScriptPromiseResolver* resolver)
 {
-    if (promise.isEmpty()) {
+    if (resolver->promise().isEmpty()) {
         // The document was detached during registration. The state doesn't really
         // matter since this ServiceWorker will immediately die.
         setProxyState(ContextStopped);
         return;
     }
     setProxyState(RegisterPromisePending);
-    promise.then(ThenFunction::create(this));
+    resolver->promise().then(ThenFunction::createFunction(resolver->scriptState(), this));
 }
 
 bool ServiceWorker::hasPendingActivity() const

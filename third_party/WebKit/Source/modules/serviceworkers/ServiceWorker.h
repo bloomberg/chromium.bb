@@ -83,7 +83,7 @@ private:
     ServiceWorker(ExecutionContext*, PassOwnPtr<WebServiceWorker>);
     void setProxyState(ProxyState);
     void onPromiseResolved();
-    void waitOnPromise(ScriptPromise);
+    void waitOnPromise(ScriptPromiseResolver*);
 
     // ActiveDOMObject overrides.
     virtual bool hasPendingActivity() const OVERRIDE;

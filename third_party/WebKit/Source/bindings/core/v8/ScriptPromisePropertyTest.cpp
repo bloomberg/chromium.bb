@@ -31,9 +31,18 @@ namespace {
 
 class NotReached : public ScriptFunction {
 public:
-    NotReached() : ScriptFunction(v8::Isolate::GetCurrent()) { }
+    static v8::Handle<v8::Function> createFunction(ScriptState* scriptState)
+    {
+        NotReached* self = new NotReached(scriptState);
+        return self->bindToV8Function();
+    }
 
 private:
+    explicit NotReached(ScriptState* scriptState)
+        : ScriptFunction(scriptState)
+    {
+    }
+
     virtual ScriptValue call(ScriptValue) OVERRIDE;
 };
 
@@ -45,10 +54,26 @@ ScriptValue NotReached::call(ScriptValue)
 
 class StubFunction : public ScriptFunction {
 public:
-    StubFunction(ScriptValue&, size_t& callCount);
+    static v8::Handle<v8::Function> createFunction(ScriptState* scriptState, ScriptValue& value, size_t& callCount)
+    {
+        StubFunction* self = new StubFunction(scriptState, value, callCount);
+        return self->bindToV8Function();
+    }
 
 private:
-    virtual ScriptValue call(ScriptValue) OVERRIDE;
+    StubFunction(ScriptState* scriptState, ScriptValue& value, size_t& callCount)
+        : ScriptFunction(scriptState)
+        , m_value(value)
+        , m_callCount(callCount)
+    {
+    }
+
+    virtual ScriptValue call(ScriptValue arg) OVERRIDE
+    {
+        m_value = arg;
+        m_callCount++;
+        return ScriptValue();
+    }
 
     ScriptValue& m_value;
     size_t& m_callCount;
@@ -94,20 +119,6 @@ private:
     Persistent<Property> m_property;
 };
 
-StubFunction::StubFunction(ScriptValue& value, size_t& callCount)
-    : ScriptFunction(v8::Isolate::GetCurrent())
-    , m_value(value)
-    , m_callCount(callCount)
-{
-}
-
-ScriptValue StubFunction::call(ScriptValue arg)
-{
-    m_value = arg;
-    m_callCount++;
-    return ScriptValue();
-}
-
 class ScriptPromisePropertyTestBase {
 public:
     ScriptPromisePropertyTestBase()
@@ -130,6 +141,7 @@ public:
     DOMWrapperWorld& mainWorld() { return mainScriptState()->world(); }
     ScriptState* otherScriptState() { return m_otherScriptState.get(); }
     DOMWrapperWorld& otherWorld() { return m_otherScriptState->world(); }
+    ScriptState* currentScriptState() { return ScriptState::current(isolate()); }
 
     virtual void destroyContext()
     {
@@ -141,8 +153,8 @@ public:
 
     void gc() { V8GCController::collectGarbage(v8::Isolate::GetCurrent()); }
 
-    PassOwnPtr<ScriptFunction> notReached() { return adoptPtr(new NotReached()); }
-    PassOwnPtr<ScriptFunction> stub(ScriptValue& value, size_t& callCount) { return adoptPtr(new StubFunction(value, callCount)); }
+    v8::Handle<v8::Function> notReached(ScriptState* scriptState) { return NotReached::createFunction(scriptState); }
+    v8::Handle<v8::Function> stub(ScriptState* scriptState, ScriptValue& value, size_t& callCount) { return StubFunction::createFunction(scriptState, value, callCount); }
 
     template <typename T>
     ScriptValue wrap(DOMWrapperWorld& world, const T& value)
@@ -262,12 +274,12 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Resolve_ResolvesScriptPromise)
 
     {
         ScriptState::Scope scope(mainScriptState());
-        promise.then(stub(actual, nResolveCalls), notReached());
+        promise.then(stub(currentScriptState(), actual, nResolveCalls), notReached(currentScriptState()));
     }
 
     {
         ScriptState::Scope scope(otherScriptState());
-        otherPromise.then(stub(otherActual, nOtherResolveCalls), notReached());
+        otherPromise.then(stub(currentScriptState(), otherActual, nOtherResolveCalls), notReached(currentScriptState()));
     }
 
     EXPECT_NE(promise, otherPromise);
@@ -294,7 +306,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, ResolveAndGetPromiseOnOtherWor
 
     {
         ScriptState::Scope scope(mainScriptState());
-        promise.then(stub(actual, nResolveCalls), notReached());
+        promise.then(stub(currentScriptState(), actual, nResolveCalls), notReached(currentScriptState()));
     }
 
     EXPECT_NE(promise, otherPromise);
@@ -308,7 +320,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, ResolveAndGetPromiseOnOtherWor
 
     {
         ScriptState::Scope scope(otherScriptState());
-        otherPromise.then(stub(otherActual, nOtherResolveCalls), notReached());
+        otherPromise.then(stub(currentScriptState(), otherActual, nOtherResolveCalls), notReached(currentScriptState()));
     }
 
     isolate()->RunMicrotasks();
@@ -330,12 +342,12 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Reject_RejectsScriptPromise)
     size_t nOtherRejectCalls = 0;
     {
         ScriptState::Scope scope(mainScriptState());
-        property()->promise(DOMWrapperWorld::mainWorld()).then(notReached(), stub(actual, nRejectCalls));
+        property()->promise(DOMWrapperWorld::mainWorld()).then(notReached(currentScriptState()), stub(currentScriptState(), actual, nRejectCalls));
     }
 
     {
         ScriptState::Scope scope(otherScriptState());
-        property()->promise(otherWorld()).then(notReached(), stub(otherActual, nOtherRejectCalls));
+        property()->promise(otherWorld()).then(notReached(currentScriptState()), stub(currentScriptState(), otherActual, nOtherRejectCalls));
     }
 
     isolate()->RunMicrotasks();
@@ -363,7 +375,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Resolve_DeadContext)
 
     {
         ScriptState::Scope scope(mainScriptState());
-        property->promise(DOMWrapperWorld::mainWorld()).then(notReached(), notReached());
+        property->promise(DOMWrapperWorld::mainWorld()).then(notReached(currentScriptState()), notReached(currentScriptState()));
     }
 
     destroyContext();
@@ -388,7 +400,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Reset)
         ScriptState::Scope scope(mainScriptState());
         property()->resolve(oldValue);
         oldPromise = property()->promise(mainWorld());
-        oldPromise.then(stub(oldActual, nOldResolveCalls), notReached());
+        oldPromise.then(stub(currentScriptState(), oldActual, nOldResolveCalls), notReached(currentScriptState()));
     }
 
     property()->reset();
@@ -396,7 +408,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Reset)
     {
         ScriptState::Scope scope(mainScriptState());
         newPromise = property()->promise(mainWorld());
-        newPromise.then(notReached(), stub(newActual, nNewRejectCalls));
+        newPromise.then(notReached(currentScriptState()), stub(currentScriptState(), newActual, nNewRejectCalls));
         property()->reject(newValue);
     }
 
@@ -436,7 +448,7 @@ TEST_F(ScriptPromisePropertyRefCountedTest, Resolve)
 
     {
         ScriptState::Scope scope(mainScriptState());
-        property()->promise(DOMWrapperWorld::mainWorld()).then(stub(actual, nResolveCalls), notReached());
+        property()->promise(DOMWrapperWorld::mainWorld()).then(stub(currentScriptState(), actual, nResolveCalls), notReached(currentScriptState()));
     }
 
     RefPtr<RefCountedScriptWrappable> value = RefCountedScriptWrappable::create("value");
@@ -455,7 +467,7 @@ TEST_F(ScriptPromisePropertyRefCountedTest, Reject)
 
     {
         ScriptState::Scope scope(mainScriptState());
-        property()->promise(DOMWrapperWorld::mainWorld()).then(notReached(), stub(actual, nRejectCalls));
+        property()->promise(DOMWrapperWorld::mainWorld()).then(notReached(currentScriptState()), stub(currentScriptState(), actual, nRejectCalls));
     }
 
     RefPtr<RefCountedScriptWrappable> reason = RefCountedScriptWrappable::create("reason");
@@ -509,7 +521,7 @@ public:
         String actual;
         {
             ScriptState::Scope scope(mainScriptState());
-            property->promise(DOMWrapperWorld::mainWorld()).then(stub(actualValue, nResolveCalls), notReached());
+            property->promise(DOMWrapperWorld::mainWorld()).then(stub(currentScriptState(), actualValue, nResolveCalls), notReached(currentScriptState()));
         }
         property->resolve(value);
         isolate()->RunMicrotasks();

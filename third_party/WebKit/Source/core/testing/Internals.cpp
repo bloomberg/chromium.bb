@@ -2067,14 +2067,15 @@ namespace {
 
 class AddOneFunction : public ScriptFunction {
 public:
-    static PassOwnPtr<ScriptFunction> create(ExecutionContext* context)
+    static v8::Handle<v8::Function> createFunction(ScriptState* scriptState)
     {
-        return adoptPtr(new AddOneFunction(toIsolate(context)));
+        AddOneFunction* self = new AddOneFunction(scriptState);
+        return self->bindToV8Function();
     }
 
 private:
-    AddOneFunction(v8::Isolate* isolate)
-        : ScriptFunction(isolate)
+    explicit AddOneFunction(ScriptState* scriptState)
+        : ScriptFunction(scriptState)
     {
     }
 
@@ -2083,8 +2084,7 @@ private:
         v8::Local<v8::Value> v8Value = value.v8Value();
         ASSERT(v8Value->IsNumber());
         int intValue = v8Value.As<v8::Integer>()->Value();
-        ScriptValue result  = ScriptValue(ScriptState::current(isolate()), v8::Integer::New(isolate(), intValue + 1));
-        return result;
+        return ScriptValue(scriptState(), v8::Integer::New(scriptState()->isolate(), intValue + 1));
     }
 };
 
@@ -2108,7 +2108,7 @@ ScriptPromise Internals::createRejectedPromise(ScriptState* scriptState, ScriptV
 
 ScriptPromise Internals::addOneToPromise(ScriptState* scriptState, ScriptPromise promise)
 {
-    return promise.then(AddOneFunction::create(scriptState->executionContext()));
+    return promise.then(AddOneFunction::createFunction(scriptState));
 }
 
 ScriptPromise Internals::promiseCheck(ScriptState* scriptState, long arg1, bool arg2, const Dictionary& arg3, const String& arg4, const Vector<String>& arg5, ExceptionState& exceptionState)

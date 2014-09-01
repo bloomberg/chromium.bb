@@ -40,9 +40,9 @@ public:
 
     // The returned ScriptFunction can outlive the StubScriptFunction,
     // but it should not be called after the StubScriptFunction dies.
-    PassOwnPtr<ScriptFunction> function(v8::Isolate* isolate)
+    v8::Handle<v8::Function> function(ScriptState* scriptState)
     {
-        return adoptPtr(new ScriptFunctionImpl(isolate, *this));
+        return ScriptFunctionImpl::createFunction(scriptState, *this);
     }
 
     size_t callCount() { return m_callCount; }
@@ -54,8 +54,15 @@ private:
 
     class ScriptFunctionImpl : public ScriptFunction {
     public:
-        ScriptFunctionImpl(v8::Isolate* isolate, StubScriptFunction& owner)
-            : ScriptFunction(isolate)
+        static v8::Handle<v8::Function> createFunction(ScriptState* scriptState, StubScriptFunction& owner)
+        {
+            ScriptFunctionImpl* self = new ScriptFunctionImpl(scriptState, owner);
+            return self->bindToV8Function();
+        }
+
+    private:
+        ScriptFunctionImpl(ScriptState* scriptState, StubScriptFunction& owner)
+            : ScriptFunction(scriptState)
             , m_owner(owner)
         {
         }
@@ -67,7 +74,6 @@ private:
             return ScriptValue();
         }
 
-    private:
         StubScriptFunction& m_owner;
     };
 };
@@ -80,10 +86,10 @@ public:
 
 // Runs microtasks and expects |promise| to be rejected. Calls
 // |valueTest| with the value passed to |reject|, if any.
-void expectRejected(ScriptPromise& promise, const ScriptValueTest& valueTest)
+void expectRejected(ScriptState* scriptState, ScriptPromise& promise, const ScriptValueTest& valueTest)
 {
     StubScriptFunction resolved, rejected;
-    promise.then(resolved.function(promise.isolate()), rejected.function(promise.isolate()));
+    promise.then(resolved.function(scriptState), rejected.function(scriptState));
     promise.isolate()->RunMicrotasks();
     EXPECT_EQ(0ul, resolved.callCount());
     EXPECT_EQ(1ul, rejected.callCount());
@@ -180,7 +186,7 @@ protected:
         Dictionary options = Dictionary::createEmpty(isolate());
         EXPECT_TRUE(options.set("scope", scope));
         ScriptPromise promise = container->registerServiceWorker(scriptState(), scriptURL, options);
-        expectRejected(promise, valueTest);
+        expectRejected(scriptState(), promise, valueTest);
 
         container->willBeDetachedFromFrame();
     }
@@ -194,7 +200,7 @@ protected:
         Dictionary options = Dictionary::createEmpty(isolate());
         EXPECT_TRUE(options.set("scope", scope));
         ScriptPromise promise = container->unregisterServiceWorker(scriptState(), scope);
-        expectRejected(promise, valueTest);
+        expectRejected(scriptState(), promise, valueTest);
 
         container->willBeDetachedFromFrame();
     }
