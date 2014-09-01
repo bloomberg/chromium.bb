@@ -188,9 +188,6 @@ the content. In order to update the site simply edit, commit and push.
 For the new release update the project web site. Add a post containing
 the current NEWS to the _posts directory.
 
-** Other web updates
-Also update the page on freshmeat (http://freshmeat.net/projects/liblouis/).
-
 ** Announce
 Send an announcement to the liblouis list
 liblouis-liblouisxml@freelists.org. See ANNOUNCEMENT for an example.
