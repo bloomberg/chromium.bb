@@ -1525,6 +1525,7 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
 
     FloatRect dirtyRect = clipBounds;
     if (imageSource->isVideoElement()) {
+        // TODO(dshwang): unify video code into below code to composite correctly; crbug.com/407079
         drawVideo(static_cast<HTMLVideoElement*>(imageSource), srcRect, dstRect);
         computeDirtyRect(dstRect, clipBounds, &dirtyRect);
     } else {

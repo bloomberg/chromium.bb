@@ -35,6 +35,7 @@
 #include "WebMediaSource.h"
 #include "WebString.h"
 #include "WebTimeRange.h"
+#include "third_party/skia/include/core/SkXfermode.h"
 
 namespace blink {
 
@@ -112,8 +113,6 @@ public:
     virtual WebTimeRanges buffered() const = 0;
     virtual double maxTimeSeekable() const = 0;
 
-    virtual void paint(WebCanvas*, const WebRect&, unsigned char alpha) = 0;
-
     // True if the loaded media has a playable video/audio track.
     virtual bool hasVideo() const = 0;
     virtual bool hasAudio() const = 0;
@@ -144,6 +143,7 @@ public:
     virtual unsigned audioDecodedByteCount() const = 0;
     virtual unsigned videoDecodedByteCount() const = 0;
 
+    virtual void paint(WebCanvas*, const WebRect&, unsigned char alpha, SkXfermode::Mode) = 0;
     // Do a GPU-GPU textures copy if possible.
     virtual bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, unsigned texture, unsigned level, unsigned internalFormat, unsigned type, bool premultiplyAlpha, bool flipY) { return false; }
 

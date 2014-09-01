@@ -205,7 +205,8 @@ void HTMLVideoElement::paintCurrentFrameInContext(GraphicsContext* context, cons
         return;
 
     WebCanvas* canvas = context->canvas();
-    webMediaPlayer()->paint(canvas, destRect, context->getNormalizedAlpha());
+    SkXfermode::Mode mode = WebCoreCompositeToSkiaComposite(context->compositeOperation(), context->blendModeOperation());
+    webMediaPlayer()->paint(canvas, destRect, context->getNormalizedAlpha(), mode);
 }
 
 bool HTMLVideoElement::copyVideoTextureToPlatformTexture(WebGraphicsContext3D* context, Platform3DObject texture, GLint level, GLenum internalFormat, GLenum type, bool premultiplyAlpha, bool flipY)
