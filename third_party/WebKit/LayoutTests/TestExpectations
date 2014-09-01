@@ -1284,7 +1284,7 @@ crbug.com/396936 [ Lion ] fast/writing-mode/broken-ideograph-small-caps.html [ C
 crbug.com/396936 [ Lion ] fast/writing-mode/broken-ideographic-font.html [ Crash ]
 crbug.com/396936 [ Lion ] fast/writing-mode/japanese-rl-text-with-broken-font.html [ Crash ]
 crbug.com/397244 [ Snowleopard Debug ] inspector/elements/edit-dom-actions.html [ Crash ]
-crbug.com/399533 http/tests/serviceworker/ready.html [ Pass Failure Timeout ]
+crbug.com/399533 http/tests/serviceworker/ready.html [ Skip ]
 crbug.com/401377 [ Win Release ] http/tests/serviceworker/fetch-mixed-content.html [ Pass Timeout ]
 crbug.com/401380 inspector/elements/styles/styles-should-not-force-sync-style-recalc.html [ Pass Failure ]
 crbug.com/401381 [ XP ] http/tests/serviceworker/fetch-event.html [ Pass Failure ]
