@@ -67,10 +67,7 @@ public:
         visitor->trace(m_currentNode);
     }
 
-private:
-    NodeType* nodeBeforeCachedNode(const Collection&, unsigned index);
-    NodeType* nodeAfterCachedNode(const Collection&, unsigned index);
-
+protected:
     ALWAYS_INLINE NodeType* cachedNode() const { return m_currentNode; }
     ALWAYS_INLINE unsigned cachedNodeIndex() const { ASSERT(cachedNode()); return m_cachedNodeIndex; }
     ALWAYS_INLINE void setCachedNode(NodeType* node, unsigned index)
@@ -87,6 +84,10 @@ private:
         m_cachedNodeCount = length;
         m_isLengthCacheValid = true;
     }
+
+private:
+    NodeType* nodeBeforeCachedNode(const Collection&, unsigned index);
+    NodeType* nodeAfterCachedNode(const Collection&, unsigned index);
 
     RawPtrWillBeMember<NodeType> m_currentNode;
     unsigned m_cachedNodeCount;

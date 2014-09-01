@@ -51,17 +51,17 @@ Node* LiveNodeList::virtualOwnerNode() const
 
 void LiveNodeList::invalidateCache(Document*) const
 {
-    m_collectionIndexCache.invalidate();
+    m_collectionItemsCache.invalidate();
 }
 
 unsigned LiveNodeList::length() const
 {
-    return m_collectionIndexCache.nodeCount(*this);
+    return m_collectionItemsCache.nodeCount(*this);
 }
 
 Element* LiveNodeList::item(unsigned offset) const
 {
-    return m_collectionIndexCache.nodeAt(*this, offset);
+    return m_collectionItemsCache.nodeAt(*this, offset);
 }
 
 Element* LiveNodeList::traverseToFirst() const
@@ -86,7 +86,7 @@ Element* LiveNodeList::traverseBackwardToOffset(unsigned offset, Element& curren
 
 void LiveNodeList::trace(Visitor* visitor)
 {
-    visitor->trace(m_collectionIndexCache);
+    visitor->trace(m_collectionItemsCache);
     LiveNodeListBase::trace(visitor);
     NodeList::trace(visitor);
 }

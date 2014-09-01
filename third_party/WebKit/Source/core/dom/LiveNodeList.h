@@ -26,7 +26,7 @@
 
 #include "core/dom/LiveNodeListBase.h"
 #include "core/dom/NodeList.h"
-#include "core/html/CollectionIndexCache.h"
+#include "core/html/CollectionItemsCache.h"
 #include "core/html/CollectionType.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
@@ -60,7 +60,7 @@ public:
 private:
     virtual Node* virtualOwnerNode() const OVERRIDE FINAL;
 
-    mutable CollectionIndexCache<LiveNodeList, Element> m_collectionIndexCache;
+    mutable CollectionItemsCache<LiveNodeList, Element> m_collectionItemsCache;
 };
 
 DEFINE_TYPE_CASTS(LiveNodeList, LiveNodeListBase, list, isLiveNodeListType(list->type()), isLiveNodeListType(list.type()));
