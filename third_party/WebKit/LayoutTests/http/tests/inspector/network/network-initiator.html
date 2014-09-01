@@ -67,7 +67,7 @@ var test = function()
                 InspectorTest.addResult(url + " NOT FOUND");
                 return;
             }
-            var initiator = request.initiator;
+            var initiator = request.initiator();
             InspectorTest.addResult(request.url + ": " + initiator.type);
             if (initiator.url)
                 InspectorTest.addResult("    " + initiator.url + " " + initiator.lineNumber);
