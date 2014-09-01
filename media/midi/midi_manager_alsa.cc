@@ -184,6 +184,7 @@ void MidiManagerAlsa::StartInitialization() {
       const std::string driver = snd_ctl_card_info_get_driver(card);
       cards.push_back(new CardInfo(name, manufacturer, driver));
     }
+    snd_ctl_close(handle);
   }
 
   // Enumerate all ports in all clients.
