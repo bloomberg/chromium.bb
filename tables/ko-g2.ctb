@@ -3,26 +3,33 @@
 # Based on the braille contraction table in BRLTTY
 #
 # Copyright (C) 1995-2012 by The BRLTTY Team. 
+# Copyright (C) 2012 by Samuel Thibault <samuel.thibault@ens-lyon.org>
+# Copyright (C) 2012 by Mesar Hameed <mhameed@src.gnome.org>
+# Copyright (C) 2013, 2014 by Joseph Lee <joseph.lee22590@gmail.com>
 #
-# Samuel Thibault <samuel.thibault@ens-lyon.org>
+# This file is part of liblouis.
 #
+# liblouis is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# liblouis is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with liblouis. If not, see
+# <http://www.gnu.org/licenses/>.
+
 # This is missing CHITUEUM*, CEONGCHIEUMSIOS, PANSIOS, YESIEUNG, RINHIEUH and
 # ARAEA for which I couldn't find documentation.  Please contact me to fix
 # anything, as this table was generated from a C program.
-#
-# Copyright (C) 2012 by Mesar Hameed <mhameed@src.gnome.org>
-# Copyright (C) 2013 by Joseph Lee <joseph.lee22590@gmail.com>
-#
-# liblouis comes with ABSOLUTELY NO WARRANTY.
-#
-# This is free software, placed under the terms of the
-# GNU General Public License, as published by the Free Software
-# Foundation.  Please see the file COPYING for details.
-
 
 # Globals:
 include ko.cti Uncontracted Hangul, punctuation and symbols.
-
+include en-us-g2.ctb To display contracted English in Korean grade 2 mode. Contributed by a certain Mr. Hahn in U.S.
 
 # Common letter contractions:
 # Using "always" opcode in order for contraction to work correctly.
