@@ -83,6 +83,7 @@ public:
     Tainting tainting() const { return m_responseTainting; }
     FetchHeaderList* headerList() { return m_headerList.get(); }
     PassRefPtr<BlobDataHandle> blobDataHandle() const { return m_blobDataHandle; }
+    void setBlobDataHandle(PassRefPtr<BlobDataHandle> blobHandle) { m_blobDataHandle = blobHandle; }
 
     void trace(Visitor*);
 

@@ -6,29 +6,25 @@
 #define RequestInit_h
 
 #include "bindings/core/v8/Dictionary.h"
-#include "modules/serviceworkers/Headers.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
+
+class BlobDataHandle;
+class ExceptionState;
+class Headers;
 
 class RequestInit {
     STACK_ALLOCATED();
 public:
-    explicit RequestInit(const Dictionary& options)
-    {
-        DictionaryHelper::get(options, "method", method);
-        DictionaryHelper::get(options, "headers", headers);
-        if (!headers) {
-            DictionaryHelper::get(options, "headers", headersDictionary);
-        }
-        DictionaryHelper::get(options, "mode", mode);
-        DictionaryHelper::get(options, "credentials", credentials);
-    }
+    explicit RequestInit(ExecutionContext*, const Dictionary&, ExceptionState&);
 
     String method;
     RefPtrWillBeMember<Headers> headers;
     Dictionary headersDictionary;
+    RefPtr<BlobDataHandle> bodyBlobHandle;
     String mode;
     String credentials;
 };

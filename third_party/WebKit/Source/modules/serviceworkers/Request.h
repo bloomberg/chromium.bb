@@ -46,6 +46,8 @@ public:
     String mode() const;
     String credentials() const;
 
+    void setBodyBlobHandle(PassRefPtr<BlobDataHandle>);
+
     void trace(Visitor*);
 
 private:

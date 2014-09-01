@@ -112,8 +112,27 @@ PassRefPtrWillBeRawPtr<Request> createRequestWithRequestData(PassRefPtrWillBeRaw
     }
     if (exceptionState.hadException())
         return nullptr;
-    // FIXME: Support body.
-    // "20. Return |r|."
+    // "17. If |init|'s body member is present, run these substeps:"
+    if (init.bodyBlobHandle) {
+        // "1. Let |stream| and |Content-Type| be the result of extracting
+        // |init|'s body member."
+        // "2. Set |r|'s request's body to |stream|."
+        // "3.If |Content-Type| is non-null and |r|'s request's header list
+        //  contains no header named `Content-Type`, append
+        // `Content-Type`/|Content-Type| to |r|'s Headers object. Rethrow any
+        // exception."
+        r->setBodyBlobHandle(init.bodyBlobHandle);
+        if (!init.bodyBlobHandle->type().isEmpty() && !r->headers()->has("Content-Type", exceptionState)) {
+            r->headers()->append("Content-Type", init.bodyBlobHandle->type(), exceptionState);
+        }
+        if (exceptionState.hadException())
+            return nullptr;
+    }
+    // "18. Set |r|'s FetchBodyStream object's MIME type to the result of
+    // extracting a MIME type from |r|'s request's header list."
+    // FIXME: We don't have MIME type in FetchBodyStream object yet.
+
+    // "19. Return |r|."
     return r.release();
 }
 
@@ -147,7 +166,7 @@ PassRefPtrWillBeRawPtr<Request> Request::create(ExecutionContext* context, const
     request->setURL(parsedURL);
     // "4. Set |fallbackMode| to CORS."
     // "5. Set |fallbackCredentials| to omit."
-    return createRequestWithRequestData(request.release(), RequestInit(init), FetchRequestData::CORSMode, FetchRequestData::OmitCredentials, exceptionState);
+    return createRequestWithRequestData(request.release(), RequestInit(context, init, exceptionState), FetchRequestData::CORSMode, FetchRequestData::OmitCredentials, exceptionState);
 }
 
 PassRefPtrWillBeRawPtr<Request> Request::create(ExecutionContext* context, Request* input, ExceptionState& exceptionState)
@@ -167,7 +186,7 @@ PassRefPtrWillBeRawPtr<Request> Request::create(ExecutionContext* context, Reque
     // mode and credentials; it has the same effect.
     const FetchRequestData::Mode currentMode = request->mode();
     const FetchRequestData::Credentials currentCredentials = request->credentials();
-    return createRequestWithRequestData(request.release(), RequestInit(init), currentMode, currentCredentials, exceptionState);
+    return createRequestWithRequestData(request.release(), RequestInit(context, init, exceptionState), currentMode, currentCredentials, exceptionState);
 }
 
 PassRefPtrWillBeRawPtr<Request> Request::create(PassRefPtrWillBeRawPtr<FetchRequestData> request)
@@ -262,6 +281,11 @@ String Request::credentials() const
     }
     ASSERT_NOT_REACHED();
     return "";
+}
+
+void Request::setBodyBlobHandle(PassRefPtr<BlobDataHandle>blobHandle)
+{
+    m_request->setBlobDataHandle(blobHandle);
 }
 
 void Request::trace(Visitor* visitor)

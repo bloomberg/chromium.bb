@@ -1,4 +1,5 @@
 importScripts('worker-test-harness.js');
+importScripts('test-helpers.js');
 
 var URL = 'https://www.example.com/test.html';
 
@@ -282,3 +283,101 @@ test(function() {
                   'method should not be changed when normalized: ' + method);
   });
 }, 'Request method names are normalized');
+
+async_test(function(t) {
+    var getContentType = function(headers) {
+        var content_type = '';
+        headers.forEach(function(value, key) {
+            if (key == 'content-type') {
+              content_type = value;
+            }
+          });
+        return content_type;
+      };
+    var request =
+      new Request(URL,
+                  {
+                    method: 'POST',
+                    body: new Blob(['Test Blob'], {type: 'test/type'})
+                  });
+    assert_equals(
+      getContentType(request.headers), 'test/type',
+      'ContentType header of Request created with Blob body must be set.');
+    request.body.asText()
+      .then(function(result) {
+          assert_equals(result, 'Test Blob',
+                        'Creating a Request with Blob body should success.');
+
+          request = new Request(URL, {method: 'POST', body: 'Test String'});
+          assert_equals(
+            getContentType(request.headers), 'text/plain;charset=UTF-8',
+            'ContentType header of Request created with string must be set.');
+          return request.body.asText();
+        })
+      .then(function(result) {
+          assert_equals(result, 'Test String',
+                        'Creating a Request with string body should success.');
+
+          var text = "Test ArrayBuffer";
+          var array = new Uint8Array(text.length);
+          for (var i = 0; i < text.length; ++i)
+            array[i] = text.charCodeAt(i);
+          request = new Request(URL, {method: 'POST', body: array.buffer});
+          return request.body.asText();
+        })
+      .then(function(result) {
+          assert_equals(
+            result, 'Test ArrayBuffer',
+            'Creating a Request with ArrayBuffer body should success.');
+
+          var text = "Test ArrayBufferView";
+          var array = new Uint8Array(text.length);
+          for (var i = 0; i < text.length; ++i)
+            array[i] = text.charCodeAt(i);
+          request = new Request(URL, {method: 'POST', body: array});
+          return request.body.asText();
+        })
+      .then(function(result) {
+          assert_equals(
+            result, 'Test ArrayBufferView',
+            'Creating a Request with ArrayBuffer body should success.');
+
+          var formData = new FormData();
+          formData.append('sample string', '1234567890');
+          formData.append('sample blob', new Blob(['blob content']));
+          formData.append('sample file',
+                          new File(['file content'], 'file.dat'));
+          request = new Request(URL, {method: 'POST', body: formData});
+          return request.body.asText();
+        })
+      .then(function(result) {
+          var reg = new RegExp('multipart\/form-data; boundary=(.*)');
+          var regResult = reg.exec(getContentType(request.headers));
+          var boundary = regResult[1];
+          var expected_body =
+            '--' + boundary + '\r\n' +
+            'Content-Disposition: form-data; name="sample string"\r\n' +
+            '\r\n' +
+            '1234567890\r\n' +
+            '--' + boundary + '\r\n' +
+            'Content-Disposition: form-data; name="sample blob"; ' +
+            'filename="blob"\r\n' +
+            'Content-Type: application/octet-stream\r\n' +
+            '\r\n' +
+            'blob content\r\n' +
+            '--' + boundary + '\r\n' +
+            'Content-Disposition: form-data; name="sample file"; ' +
+            'filename="file.dat"\r\n' +
+            'Content-Type: application/octet-stream\r\n' +
+            '\r\n' +
+            'file content\r\n' +
+            '--' + boundary + '--\r\n';
+          assert_equals(
+            result, expected_body,
+            'Creating a Request with FormData body should success.');
+        })
+      .then(function() {
+          t.done();
+        })
+      .catch(unreached_rejection(t));
+  }, 'Request body test in ServiceWorkerGlobalScope');

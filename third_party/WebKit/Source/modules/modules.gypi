@@ -704,6 +704,7 @@
       'serviceworkers/RegistrationOptionList.h',
       'serviceworkers/Request.cpp',
       'serviceworkers/Request.h',
+      'serviceworkers/RequestInit.cpp',
       'serviceworkers/RequestInit.h',
       'serviceworkers/RespondWithObserver.cpp',
       'serviceworkers/RespondWithObserver.h',
