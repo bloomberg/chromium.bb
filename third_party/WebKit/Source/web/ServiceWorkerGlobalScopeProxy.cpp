@@ -126,13 +126,13 @@ void ServiceWorkerGlobalScopeProxy::reportConsoleMessage(PassRefPtrWillBeRawPtr<
 
 void ServiceWorkerGlobalScopeProxy::postMessageToPageInspector(const String& message)
 {
-    m_client.dispatchDevToolsMessage(message);
     m_document.postInspectorTask(createCrossThreadTask(&WebEmbeddedWorkerImpl::postMessageToPageInspector, &m_embeddedWorker, message));
 }
 
 void ServiceWorkerGlobalScopeProxy::updateInspectorStateCookie(const String& message)
 {
-    m_client.saveDevToolsAgentState(message);
+    // The inspector cookie saving/restoring is controlled from the main thread.
+    // This method could be removed once shared workers are moved to the main thread inspection as well.
 }
 
 void ServiceWorkerGlobalScopeProxy::workerGlobalScopeStarted(WorkerGlobalScope* workerGlobalScope)
@@ -140,7 +140,6 @@ void ServiceWorkerGlobalScopeProxy::workerGlobalScopeStarted(WorkerGlobalScope* 
     ASSERT(!m_workerGlobalScope);
     m_workerGlobalScope = workerGlobalScope;
     m_client.workerContextStarted(this);
-    m_client.workerReadyForInspection();
 }
 
 void ServiceWorkerGlobalScopeProxy::workerGlobalScopeClosed()

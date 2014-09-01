@@ -32,6 +32,7 @@
 #define WebEmbeddedWorkerImpl_h
 
 #include "public/web/WebContentSecurityPolicy.h"
+#include "public/web/WebDevToolsAgentClient.h"
 #include "public/web/WebEmbeddedWorker.h"
 #include "public/web/WebEmbeddedWorkerStartData.h"
 #include "public/web/WebFrameClient.h"
@@ -47,7 +48,8 @@ class WorkerThread;
 
 class WebEmbeddedWorkerImpl FINAL
     : public WebEmbeddedWorker
-    , public WebFrameClient {
+    , public WebFrameClient
+    , public WebDevToolsAgentClient {
     WTF_MAKE_NONCOPYABLE(WebEmbeddedWorkerImpl);
 public:
     WebEmbeddedWorkerImpl(
@@ -84,6 +86,12 @@ private:
         const WebURLResponse& redirectResponse) OVERRIDE;
     virtual void didFinishDocumentLoad(WebLocalFrame*) OVERRIDE;
 
+    // WebDevToolsAgentClient overrides.
+    virtual void sendMessageToInspectorFrontend(const WebString&) OVERRIDE;
+    virtual void saveAgentRuntimeState(const WebString&) OVERRIDE;
+    virtual void resumeStartup() OVERRIDE;
+
+    void startScriptLoader(WebLocalFrame*);
     void onScriptLoaderFinished();
     void startWorkerThread();
 
@@ -116,11 +124,19 @@ private:
 
     bool m_askedToTerminate;
 
+    enum WaitingForDebuggerState {
+        WaitingForDebuggerBeforeLoadingScript,
+        WaitingForDebuggerAfterScriptLoaded,
+        NotWaitingForDebugger
+    };
+
     enum {
         DontPauseAfterDownload,
         DoPauseAfterDownload,
         IsPausedAfterDownload
     } m_pauseAfterDownloadState;
+
+    WaitingForDebuggerState m_waitingForDebuggerState;
 };
 
 } // namespace blink

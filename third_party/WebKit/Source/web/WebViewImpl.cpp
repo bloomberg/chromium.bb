@@ -874,7 +874,8 @@ void WebViewImpl::setContinuousPaintingEnabled(bool enabled)
         m_layerTreeView->setContinuousPaintingEnabled(enabled);
     }
     m_continuousPaintingEnabled = enabled;
-    m_client->scheduleAnimation();
+    if (m_client)
+        m_client->scheduleAnimation();
 }
 
 void WebViewImpl::setShowScrollBottleneckRects(bool show)
