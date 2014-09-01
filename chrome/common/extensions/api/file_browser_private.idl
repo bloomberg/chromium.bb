@@ -237,9 +237,6 @@ dictionary ProfileInfo {
   // TODO(hirono): Remove the property because of the design change of
   // multi-profile suuport.
   boolean isCurrentProfile;
-
-  // Image set of profile image.
-  ImageSet? profileImage;
 };
 
 // Mounted disk volume metadata.

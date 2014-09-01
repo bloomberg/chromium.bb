@@ -1221,24 +1221,6 @@ IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, MAYBE_BasicDrive) {
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 #if !defined(NDEBUG)
-#define MAYBE_PRE_Badge DISABLED_PRE_Badge
-#define MAYBE_Badge DISABLED_Badge
-#else
-#define MAYBE_PRE_Badge PRE_Badge
-#define MAYBE_Badge Badge
-#endif
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, MAYBE_PRE_Badge) {
-  AddAllUsers();
-}
-
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, MAYBE_Badge) {
-  // Test the profile badge to be correctly shown and hidden.
-  set_test_case_name("multiProfileBadge");
-  StartTest();
-}
-
-// Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG)
 #define MAYBE_PRE_VisitDesktopMenu DISABLED_PRE_VisitDesktopMenu
 #define MAYBE_VisitDesktopMenu DISABLED_VisitDesktopMenu
 #else

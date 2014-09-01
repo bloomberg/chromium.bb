@@ -137,7 +137,6 @@ var FileManagerUI = function(element, dialogType) {
   Object.seal(this);
 
   // Initialize the header.
-  this.updateProfileBadge();
   this.element_.querySelector('#app-name').innerText =
       chrome.runtime.getManifest().name;
 
@@ -234,39 +233,6 @@ FileManagerUI.prototype.initAdditionalUI = function() {
   this.searchBox = new SearchBox(this.element_.querySelector('#search-box'));
 
   this.toggleViewButton = this.element_.querySelector('#view-button');
-};
-
-/**
- * Updates visibility and image of the profile badge.
- */
-FileManagerUI.prototype.updateProfileBadge = function() {
-  if (this.dialogType_ !== DialogType.FULL_PAGE)
-    return;
-
-  chrome.fileBrowserPrivate.getProfiles(function(profiles,
-                                                 currentId,
-                                                 displayedId) {
-    var profileImage;
-    if (currentId !== displayedId) {
-      for (var i = 0; i < profiles.length; i++) {
-        if (profiles[i].profileId === currentId) {
-          profileImage = profiles[i].profileImage;
-          break;
-        }
-      }
-    }
-    var profileBadge = this.element_.querySelector('#profile-badge');
-    if (profileImage) {
-      profileBadge.style.background =
-          '-webkit-image-set(' +
-          'url(' + profileImage.scale1xUrl + ') 1x,' +
-          'url(' + profileImage.scale2xUrl + ') 2x) no-repeat center';
-      profileBadge.hidden = false;
-    } else {
-      profileBadge.style.background = '';
-      profileBadge.hidden = true;
-    }
-  }.bind(this));
 };
 
 /**

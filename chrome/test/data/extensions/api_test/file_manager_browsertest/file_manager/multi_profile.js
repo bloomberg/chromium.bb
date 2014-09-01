@@ -49,65 +49,6 @@ function waitForVisitDesktopMenu(windowId, profileId, waitMode) {
   });
 }
 
-testcase.multiProfileBadge = function() {
-  var appId;
-  StepsRunner.run([
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
-    },
-    // Add all users.
-    function(inAppId) {
-      appId = inAppId;
-      chrome.test.sendMessage(JSON.stringify({name: 'addAllUsers'}),
-                              this.next);
-    },
-    // Get the badge element.
-    function(json) {
-      chrome.test.assertTrue(JSON.parse(json));
-      waitForElement(appId, '#profile-badge').then(this.next);
-    },
-    // Verify no badge image is shown yet.  Move to other deskop.
-    function(element) {
-      chrome.test.assertTrue(element.hidden, 'Badge hidden initially');
-      callRemoteTestUtil('visitDesktop',
-                         appId,
-                         ['bob@invalid.domain'],
-                         this.next);
-    },
-    // Get the badge element again.
-    function(result) {
-      chrome.test.assertTrue(result);
-      waitForElement(appId, '#profile-badge:not([hidden])').then(this.next);
-    },
-    // Verify an image source is filled. Go back to the original desktop
-    function(element) {
-      callRemoteTestUtil('queryAllElements',
-                         appId,
-                         ['#profile-badge',
-                          null,
-                          ['background']]).then(this.next);
-    },
-    function(elements) {
-      chrome.test.assertTrue(
-          elements[0].styles.background.indexOf('data:image') !== -1,
-          'Badge shown after moving desktop');
-      callRemoteTestUtil('visitDesktop',
-                         appId,
-                         ['alice@invalid.domain'],
-                         this.next);
-    },
-    // Wait for #profile-badge element to disappear.
-    function(result) {
-      chrome.test.assertTrue(result);
-      waitForElementLost(appId, '#profile-badge:not([hidden])').then(this.next);
-    },
-    // The image is gone.
-    function(result) {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
-};
-
 testcase.multiProfileVisitDesktopMenu = function() {
   var appId;
   StepsRunner.run([

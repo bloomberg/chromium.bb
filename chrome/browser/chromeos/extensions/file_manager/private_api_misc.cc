@@ -62,7 +62,7 @@ AppWindow* GetCurrentAppWindow(ChromeSyncExtensionFunction* function) {
 }
 
 std::vector<linked_ptr<api::file_browser_private::ProfileInfo> >
-GetLoggedInProfileInfoList(content::WebContents* contents) {
+GetLoggedInProfileInfoList() {
   DCHECK(user_manager::UserManager::IsInitialized());
   const std::vector<Profile*>& profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
@@ -89,18 +89,6 @@ GetLoggedInProfileInfoList(content::WebContents* contents) {
     // TODO(hirono): Remove the property from the profile_info.
     profile_info->is_current_profile = true;
 
-    // Make an icon URL of the profile.
-    if (contents) {
-      const gfx::Image& image =
-          ash::GetAvatarImageForContext(contents->GetBrowserContext());
-      const gfx::ImageSkia& skia = image.AsImageSkia();
-      profile_info->profile_image.reset(
-          new api::file_browser_private::ImageSet);
-      profile_info->profile_image->scale1x_url =
-          webui::GetBitmapDataUrl(skia.GetRepresentation(1.0f).sk_bitmap());
-      profile_info->profile_image->scale2x_url =
-          webui::GetBitmapDataUrl(skia.GetRepresentation(2.0f).sk_bitmap());
-    }
     result_profiles.push_back(profile_info);
   }
 
@@ -380,7 +368,7 @@ void FileBrowserPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
 
 bool FileBrowserPrivateGetProfilesFunction::RunSync() {
   const std::vector<linked_ptr<api::file_browser_private::ProfileInfo> >&
-      profiles = GetLoggedInProfileInfoList(GetAssociatedWebContents());
+      profiles = GetLoggedInProfileInfoList();
 
   // Obtains the display profile ID.
   AppWindow* const app_window = GetCurrentAppWindow(this);
@@ -404,7 +392,7 @@ bool FileBrowserPrivateVisitDesktopFunction::RunSync() {
   using api::file_browser_private::VisitDesktop::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   const std::vector<linked_ptr<api::file_browser_private::ProfileInfo> >&
-      profiles = GetLoggedInProfileInfoList(GetAssociatedWebContents());
+      profiles = GetLoggedInProfileInfoList();
 
   chrome::MultiUserWindowManager* const window_manager =
       chrome::MultiUserWindowManager::GetInstance();
