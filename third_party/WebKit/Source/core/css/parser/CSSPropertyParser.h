@@ -174,7 +174,7 @@ private:
     bool parseFont(bool important);
     PassRefPtrWillBeRawPtr<CSSValueList> parseFontFamily();
 
-    bool parseCounter(CSSPropertyID, int defaultValue, bool important);
+    PassRefPtrWillBeRawPtr<CSSValue> parseCounter(int defaultValue);
     PassRefPtrWillBeRawPtr<CSSValue> parseCounterContent(CSSParserValueList* args, bool counters);
 
     bool parseColorParameters(CSSParserValue*, int* colorValues, bool parseAlpha);

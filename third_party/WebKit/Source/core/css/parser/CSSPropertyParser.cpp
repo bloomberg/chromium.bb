@@ -885,15 +885,17 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
 
     case CSSPropertyLineHeight:
         return parseLineHeight(important);
-    case CSSPropertyCounterIncrement:    // [ <identifier> <integer>? ]+ | none | inherit
-        if (id != CSSValueNone)
-            return parseCounter(propId, 1, important);
-        validPrimitive = true;
+    case CSSPropertyCounterIncrement:
+        if (id == CSSValueNone)
+            validPrimitive = true;
+        else
+            parsedValue = parseCounter(1);
         break;
-    case CSSPropertyCounterReset:        // [ <identifier> <integer>? ]+ | none | inherit
-        if (id != CSSValueNone)
-            return parseCounter(propId, 0, important);
-        validPrimitive = true;
+    case CSSPropertyCounterReset:
+        if (id == CSSValueNone)
+            validPrimitive = true;
+        else
+            parsedValue = parseCounter(0);
         break;
     case CSSPropertyFontFamily:
         // [[ <family-name> | <generic-family> ],]* [<family-name> | <generic-family>] | inherit
@@ -6191,46 +6193,31 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAspectRatio()
     return CSSAspectRatioValue::create(narrowPrecisionToFloat(lvalue->fValue), narrowPrecisionToFloat(rvalue->fValue));
 }
 
-bool CSSPropertyParser::parseCounter(CSSPropertyID propId, int defaultValue, bool important)
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseCounter(int defaultValue)
 {
-    enum { ID, VAL } state = ID;
-
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> counterName = nullptr;
 
-    while (true) {
+    while (m_valueList->current()) {
         CSSParserValue* val = m_valueList->current();
-        switch (state) {
-            case ID:
-                if (val && val->unit == CSSPrimitiveValue::CSS_IDENT) {
-                    counterName = createPrimitiveStringValue(val);
-                    state = VAL;
-                    m_valueList->next();
-                    continue;
-                }
-                break;
-            case VAL: {
-                int i = defaultValue;
-                if (val && val->unit == CSSPrimitiveValue::CSS_NUMBER) {
-                    i = clampToInteger(val->fValue);
-                    m_valueList->next();
-                }
+        if (val->unit != CSSPrimitiveValue::CSS_IDENT)
+            return nullptr;
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> counterName = createPrimitiveStringValue(val);
+        m_valueList->next();
 
-                list->append(createPrimitiveValuePair(counterName.release(),
-                    cssValuePool().createValue(i, CSSPrimitiveValue::CSS_NUMBER)));
-                state = ID;
-                continue;
-            }
+        val = m_valueList->current();
+        int i = defaultValue;
+        if (val && validUnit(val, FInteger)) {
+            i = clampToInteger(val->fValue);
+            m_valueList->next();
         }
-        break;
+
+        list->append(createPrimitiveValuePair(counterName.release(),
+            cssValuePool().createValue(i, CSSPrimitiveValue::CSS_NUMBER)));
     }
 
-    if (list->length() > 0) {
-        addProperty(propId, list.release(), important);
-        return true;
-    }
-
-    return false;
+    if (!list->length())
+        return nullptr;
+    return list.release();
 }
 
 // This should go away once we drop support for -webkit-gradient
