@@ -478,12 +478,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.gearButton_ = this.dialogDom_.querySelector('#gear-button');
     this.gearButton_.addEventListener('menushow',
         this.onShowGearMenu_.bind(this));
-    chrome.fileBrowserPrivate.onDesktopChanged.addListener(function() {
-      this.updateVisitDesktopMenus_();
-    }.bind(this));
-    chrome.fileBrowserPrivate.onProfileAdded.addListener(
-        this.updateVisitDesktopMenus_.bind(this));
-    this.updateVisitDesktopMenus_();
 
     this.dialogDom_.querySelector('#gear-menu').menuItemSelector =
         'menuitem, hr';
@@ -2152,62 +2146,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.updateGearMenu_ = function() {
     this.refreshRemainingSpace_(true);  // Show loading caption.
-  };
-
-  /**
-   * Update menus that move the window to the other profile's desktop.
-   * TODO(hirono): Add the GearMenu class and make it a member of the class.
-   * TODO(hirono): Handle the case where a profile is added while the menu is
-   *     opened.
-   * @private
-   */
-  FileManager.prototype.updateVisitDesktopMenus_ = function() {
-    var gearMenu = this.document_.querySelector('#gear-menu');
-    var separator =
-        this.document_.querySelector('#multi-profile-separator');
-
-    // Remove existing menu items.
-    var oldItems =
-        this.document_.querySelectorAll('#gear-menu .visit-desktop');
-    for (var i = 0; i < oldItems.length; i++) {
-      gearMenu.removeChild(oldItems[i]);
-    }
-    separator.hidden = true;
-
-    if (this.dialogType !== DialogType.FULL_PAGE)
-      return;
-
-    // Obtain the profile information.
-    chrome.fileBrowserPrivate.getProfiles(function(profiles,
-                                                   currentId,
-                                                   displayedId) {
-      // Check if the menus are needed or not.
-      var insertingPosition = separator.nextSibling;
-      if (profiles.length === 1 && profiles[0].profileId === displayedId)
-        return;
-
-      separator.hidden = false;
-      for (var i = 0; i < profiles.length; i++) {
-        var profile = profiles[i];
-        if (profile.profileId === displayedId)
-          continue;
-        var item = this.document_.createElement('menuitem');
-        cr.ui.MenuItem.decorate(item);
-        gearMenu.insertBefore(item, insertingPosition);
-        item.className = 'visit-desktop';
-        item.label = strf('VISIT_DESKTOP_OF_USER',
-                          profile.displayName,
-                          profile.profileId);
-        item.addEventListener('activate', function(inProfile, event) {
-          // Stop propagate and hide the menu manually, in order to prevent the
-          // focus from being back to the button. (cf. http://crbug.com/248479)
-          event.stopPropagation();
-          this.gearButton_.hideMenu();
-          this.gearButton_.blur();
-          chrome.fileBrowserPrivate.visitDesktop(inProfile.profileId);
-        }.bind(this, profile));
-      }
-    }.bind(this));
   };
 
   /**

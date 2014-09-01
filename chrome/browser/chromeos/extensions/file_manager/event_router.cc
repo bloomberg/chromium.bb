@@ -38,7 +38,6 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/event_router.h"
@@ -251,22 +250,6 @@ std::string FileErrorToErrorName(base::File::Error error_code) {
   }
 }
 
-void GrantAccessForAddedProfileToRunningInstance(Profile* added_profile,
-                                                 Profile* running_profile) {
-  extensions::ProcessManager* const process_manager =
-      extensions::ExtensionSystem::Get(running_profile)->process_manager();
-  if (!process_manager)
-    return;
-
-  extensions::ExtensionHost* const extension_host =
-      process_manager->GetBackgroundHostForExtension(kFileManagerAppId);
-  if (!extension_host || !extension_host->render_process_host())
-    return;
-
-  const int id = extension_host->render_process_host()->GetID();
-  file_manager::util::SetupProfileFileAccessPermissions(id, added_profile);
-}
-
 // Checks if we should send a progress event or not according to the
 // |last_time| of sending an event. If |always| is true, the function always
 // returns true. If the function returns true, the function also updates
@@ -367,7 +350,6 @@ EventRouter::DriveJobInfoWithStatus::DriveJobInfoWithStatus(
 EventRouter::EventRouter(Profile* profile)
     : pref_change_registrar_(new PrefChangeRegistrar),
       profile_(profile),
-      multi_user_window_manager_observer_registered_(false),
       device_event_router_(new DeviceEventRouterImpl(profile)),
       weak_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -412,14 +394,6 @@ void EventRouter::Shutdown() {
   chromeos::PowerManagerClient* const power_manager_client =
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
   power_manager_client->RemoveObserver(device_event_router_.get());
-
-  chrome::MultiUserWindowManager* const multi_user_window_manager =
-      chrome::MultiUserWindowManager::GetInstance();
-  if (multi_user_window_manager &&
-      multi_user_window_manager_observer_registered_) {
-    multi_user_window_manager_observer_registered_ = false;
-    multi_user_window_manager->RemoveObserver(this);
-  }
 
   profile_ = NULL;
 }
@@ -471,10 +445,6 @@ void EventRouter::ObserveEvents() {
   pref_change_registrar_->Add(prefs::kDisableDriveHostedFiles, callback);
   pref_change_registrar_->Add(prefs::kDisableDrive, callback);
   pref_change_registrar_->Add(prefs::kUse24HourClock, callback);
-
-  notification_registrar_.Add(this,
-                              chrome::NOTIFICATION_PROFILE_ADDED,
-                              content::NotificationService::AllSources());
 }
 
 // File watch setup routines.
@@ -938,37 +908,6 @@ void EventRouter::OnFormatCompleted(const std::string& device_path,
                                     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Do nothing.
-}
-
-void EventRouter::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PROFILE_ADDED) {
-    Profile* const added_profile = content::Source<Profile>(source).ptr();
-    if (!added_profile->IsOffTheRecord())
-      GrantAccessForAddedProfileToRunningInstance(added_profile, profile_);
-
-    BroadcastEvent(profile_,
-                   file_browser_private::OnProfileAdded::kEventName,
-                   file_browser_private::OnProfileAdded::Create());
-  }
-}
-
-void EventRouter::RegisterMultiUserWindowManagerObserver() {
-  if (multi_user_window_manager_observer_registered_)
-    return;
-  chrome::MultiUserWindowManager* const multi_user_window_manager =
-      chrome::MultiUserWindowManager::GetInstance();
-  if (multi_user_window_manager) {
-    multi_user_window_manager->AddObserver(this);
-    multi_user_window_manager_observer_registered_ = true;
-  }
-}
-
-void EventRouter::OnOwnerEntryChanged(aura::Window* window) {
-  BroadcastEvent(profile_,
-                 file_browser_private::OnDesktopChanged::kEventName,
-                 file_browser_private::OnDesktopChanged::Create());
 }
 
 }  // namespace file_manager

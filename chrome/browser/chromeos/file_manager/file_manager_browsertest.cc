@@ -1219,26 +1219,6 @@ IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, MAYBE_BasicDrive) {
   StartTest();
 }
 
-// Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG)
-#define MAYBE_PRE_VisitDesktopMenu DISABLED_PRE_VisitDesktopMenu
-#define MAYBE_VisitDesktopMenu DISABLED_VisitDesktopMenu
-#else
-#define MAYBE_PRE_VisitDesktopMenu PRE_VisitDesktopMenu
-#define MAYBE_VisitDesktopMenu VisitDesktopMenu
-#endif
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
-                       MAYBE_PRE_VisitDesktopMenu) {
-  AddAllUsers();
-}
-
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
-                       MAYBE_VisitDesktopMenu) {
-  // Test for the menu item for visiting other profile's desktop.
-  set_test_case_name("multiProfileVisitDesktopMenu");
-  StartTest();
-}
-
 template<GuestMode M>
 class GalleryBrowserTestBase : public FileManagerBrowserTestBase {
  public:

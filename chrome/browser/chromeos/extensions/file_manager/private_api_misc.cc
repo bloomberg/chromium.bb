@@ -11,7 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/app_installer.h"
@@ -417,11 +416,6 @@ bool FileBrowserPrivateVisitDesktopFunction::RunSync() {
     SetError("Target window is not found.");
     return false;
   }
-
-  // Observe owner changes of windows.
-  file_manager::EventRouter* const event_router =
-      file_manager::FileBrowserPrivateAPI::Get(GetProfile())->event_router();
-  event_router->RegisterMultiUserWindowManagerObserver();
 
   // Move the window to the user's desktop.
   window_manager->ShowWindowForUser(app_window->GetNativeWindow(),

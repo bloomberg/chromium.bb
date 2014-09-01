@@ -818,12 +818,5 @@ interface Events {
   static void onDeviceChanged(DeviceEvent event);
 
   static void onDriveSyncError(DriveSyncErrorEvent event);
-
-  // Dispatched when a profile is added.
-  static void onProfileAdded();
-
-  // Dispatched when any window moves another desktop.
-  // TODO(hirono): Add information which window is moved.
-  static void onDesktopChanged();
 };
 };

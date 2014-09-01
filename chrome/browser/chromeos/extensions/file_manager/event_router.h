@@ -21,12 +21,9 @@
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
 #include "chrome/browser/drive/drive_service_interface.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/common/extensions/api/file_browser_private.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/network/network_state_handler_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 
 class PrefChangeRegistrar;
@@ -51,14 +48,11 @@ class DeviceEventRouter;
 
 // Monitors changes in disk mounts, network connection state and preferences
 // affecting File Manager. Dispatches appropriate File Browser events.
-class EventRouter
-    : public chromeos::NetworkStateHandlerObserver,
-      public drive::FileSystemObserver,
-      public drive::JobListObserver,
-      public drive::DriveServiceObserver,
-      public VolumeManagerObserver,
-      public content::NotificationObserver,
-      public chrome::MultiUserWindowManager::Observer {
+class EventRouter : public chromeos::NetworkStateHandlerObserver,
+                    public drive::FileSystemObserver,
+                    public drive::JobListObserver,
+                    public drive::DriveServiceObserver,
+                    public VolumeManagerObserver {
  public:
   explicit EventRouter(Profile* profile);
   virtual ~EventRouter();
@@ -96,9 +90,6 @@ class EventRouter
                       const GURL& destination_url,
                       int64 size);
 
-  // Register observer to the multi user window manager.
-  void RegisterMultiUserWindowManagerObserver();
-
   // chromeos::NetworkStateHandlerObserver overrides.
   virtual void DefaultNetworkChanged(
       const chromeos::NetworkState* network) OVERRIDE;
@@ -134,14 +125,6 @@ class EventRouter
       const std::string& device_path, bool success) OVERRIDE;
   virtual void OnFormatCompleted(
       const std::string& device_path, bool success) OVERRIDE;
-
-  // content::NotificationObserver overrides.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  // chrome::MultiUserWindowManager::Observer overrides:
-  virtual void OnOwnerEntryChanged(aura::Window* window) OVERRIDE;
 
  private:
   typedef std::map<base::FilePath, FileWatcher*> WatcherMap;
@@ -201,9 +184,6 @@ class EventRouter
   WatcherMap file_watchers_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
   Profile* profile_;
-
-  content::NotificationRegistrar notification_registrar_;
-  bool multi_user_window_manager_observer_registered_;
 
   scoped_ptr<DeviceEventRouter> device_event_router_;
 
