@@ -133,9 +133,6 @@ void InspectorConsoleAgent::disable(ErrorString*)
 void InspectorConsoleAgent::clearMessages(ErrorString*)
 {
     messageStorage()->clear();
-    m_injectedScriptManager->releaseObjectGroup("console");
-    if (m_frontend && m_enabled)
-        m_frontend->messagesCleared();
 }
 
 void InspectorConsoleAgent::reset()
@@ -169,13 +166,15 @@ void InspectorConsoleAgent::clearFrontend()
 
 void InspectorConsoleAgent::addMessageToConsole(ConsoleMessage* consoleMessage)
 {
-    if (consoleMessage->type() == ClearMessageType) {
-        ErrorString error;
-        clearMessages(&error);
-    }
-
     if (m_frontend && m_enabled)
         sendConsoleMessageToFrontend(consoleMessage, true);
+}
+
+void InspectorConsoleAgent::consoleMessagesCleared()
+{
+    m_injectedScriptManager->releaseObjectGroup("console");
+    if (m_frontend && m_enabled)
+        m_frontend->messagesCleared();
 }
 
 void InspectorConsoleAgent::consoleTime(ExecutionContext*, const String& title)

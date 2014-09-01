@@ -33,6 +33,9 @@ void ConsoleMessageStorage::reportMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>
     RefPtrWillBeRawPtr<ConsoleMessage> message = prpMessage;
     message->collectCallStack();
 
+    if (message->type() == ClearMessageType)
+        clear();
+
     InspectorInstrumentation::addMessageToConsole(executionContext(), message.get());
 
     m_messages.append(message);
@@ -44,6 +47,7 @@ void ConsoleMessageStorage::reportMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>
 
 void ConsoleMessageStorage::clear()
 {
+    InspectorInstrumentation::consoleMessagesCleared(executionContext());
     m_messages.clear();
     m_expiredCount = 0;
 }

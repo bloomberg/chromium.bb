@@ -506,6 +506,9 @@ class ConsoleMessage;
 
     [Profiler, Inline=FastReturn]
     void consoleProfileEnd(ExecutionContext* context, const String& title);
+
+    [Console]
+    void consoleMessagesCleared(ExecutionContext* context);
 }
 
 interface InspectorOverrides {
