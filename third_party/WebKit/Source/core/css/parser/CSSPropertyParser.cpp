@@ -108,7 +108,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createPrimitiveValuePair(PassRe
     return cssValuePool().createValue(Pair::create(first, second, identicalValuesPolicy));
 }
 
-CSSPropertyParser::CSSPropertyParser(OwnPtr<CSSParserValueList>& valueList,
+CSSPropertyParser::CSSPropertyParser(CSSParserValueList* valueList,
     const CSSParserContext& context, bool inViewport,
     WillBeHeapVector<CSSProperty, 256>& parsedProperties,
     CSSRuleSourceData::Type ruleType)
@@ -123,8 +123,12 @@ CSSPropertyParser::CSSPropertyParser(OwnPtr<CSSParserValueList>& valueList,
 {
 }
 
-CSSPropertyParser::~CSSPropertyParser()
+bool CSSPropertyParser::parseValue(CSSPropertyID property, bool important,
+    CSSParserValueList* valueList, const CSSParserContext& context, bool inViewport,
+    WillBeHeapVector<CSSProperty, 256>& parsedProperties, CSSRuleSourceData::Type ruleType)
 {
+    CSSPropertyParser parser(valueList, context, inViewport, parsedProperties, ruleType);
+    return parser.parseValue(property, important);
 }
 
 void CSSPropertyParser::addPropertyWithPrefixingVariant(CSSPropertyID propId, PassRefPtrWillBeRawPtr<CSSValue> value, bool important, bool implicit)
@@ -634,7 +638,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
                 if (!uri.isNull())
                     image = createCSSImageValueWithReferrer(uri, completeURL(uri));
             } else if (value->unit == CSSParserValue::Function && equalIgnoringCase(value->function->name, "-webkit-image-set(")) {
-                image = parseImageSet(m_valueList.get());
+                image = parseImageSet(m_valueList);
                 if (!image)
                     break;
             } else
@@ -662,7 +666,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
             if (image)
                 list->append(CSSCursorImageValue::create(image, hasHotSpot, hotSpot));
 
-            if (!consumeComma(m_valueList.get()))
+            if (!consumeComma(m_valueList))
                 return false;
             value = m_valueList->current();
         }
@@ -760,13 +764,13 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
             parsedValue = createCSSImageValueWithReferrer(value->string, completeURL(value->string));
             m_valueList->next();
         } else if (isGeneratedImageValue(value)) {
-            if (parseGeneratedImage(m_valueList.get(), parsedValue))
+            if (parseGeneratedImage(m_valueList, parsedValue))
                 m_valueList->next();
             else
                 return false;
         }
         else if (value->unit == CSSParserValue::Function && equalIgnoringCase(value->function->name, "-webkit-image-set(")) {
-            parsedValue = parseImageSet(m_valueList.get());
+            parsedValue = parseImageSet(m_valueList);
             if (!parsedValue)
                 return false;
             m_valueList->next();
@@ -1026,7 +1030,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         if (id == CSSValueNone)
             validPrimitive = true;
         else {
-            RefPtrWillBeRawPtr<CSSValueList> shadowValueList = parseShadow(m_valueList.get(), propId);
+            RefPtrWillBeRawPtr<CSSValueList> shadowValueList = parseShadow(m_valueList, propId);
             if (shadowValueList) {
                 addProperty(propId, shadowValueList.release(), important);
                 m_valueList->next();
@@ -1073,7 +1077,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
             addProperty(CSSPropertyFlexBasis, cssValuePool().createIdentifierValue(CSSValueAuto), important);
             return true;
         }
-        return parseFlex(m_valueList.get(), important);
+        return parseFlex(m_valueList, important);
     }
     case CSSPropertyFlexBasis:
         // FIXME: Support intrinsic dimensions too.
@@ -1128,13 +1132,13 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     }
     case CSSPropertyWebkitPerspectiveOriginX:
     case CSSPropertyWebkitTransformOriginX:
-        parsedValue = parseFillPositionX(m_valueList.get());
+        parsedValue = parseFillPositionX(m_valueList);
         if (parsedValue)
             m_valueList->next();
         break;
     case CSSPropertyWebkitPerspectiveOriginY:
     case CSSPropertyWebkitTransformOriginY:
-        parsedValue = parseFillPositionY(m_valueList.get());
+        parsedValue = parseFillPositionY(m_valueList);
         if (parsedValue)
             m_valueList->next();
         break;
@@ -1175,7 +1179,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
             return false;
         RefPtrWillBeRawPtr<CSSValue> originX = nullptr;
         RefPtrWillBeRawPtr<CSSValue> originY = nullptr;
-        parse2ValuesFillPosition(m_valueList.get(), originX, originY);
+        parse2ValuesFillPosition(m_valueList, originX, originY);
         if (!originX)
             return false;
         addProperty(CSSPropertyWebkitPerspectiveOriginX, originX.release(), important);
@@ -1754,7 +1758,7 @@ bool CSSPropertyParser::parseAnimationShorthand(CSSPropertyID propId, bool impor
         values[i] = CSSValueList::createCommaSeparated();
 
     while (m_valueList->current()) {
-        if (consumeComma(m_valueList.get())) {
+        if (consumeComma(m_valueList)) {
             // We hit the end. Fill in all remaining values with the initial value.
             for (size_t i = 0; i < numProperties; ++i) {
                 if (!parsedProperty[i])
@@ -1810,7 +1814,7 @@ bool CSSPropertyParser::parseTransitionShorthand(CSSPropertyID propId, bool impo
         values[i] = CSSValueList::createCommaSeparated();
 
     while (m_valueList->current()) {
-        if (consumeComma(m_valueList.get())) {
+        if (consumeComma(m_valueList)) {
             // We hit the end. Fill in all remaining values with the initial value.
             for (size_t i = 0; i < numProperties; ++i) {
                 if (!parsedProperty[i])
@@ -2179,11 +2183,11 @@ bool CSSPropertyParser::parseContent(CSSPropertyID propId, bool important)
                 if (!parsedValue)
                     return false;
             } else if (equalIgnoringCase(val->function->name, "-webkit-image-set(")) {
-                parsedValue = parseImageSet(m_valueList.get());
+                parsedValue = parseImageSet(m_valueList);
                 if (!parsedValue)
                     return false;
             } else if (isGeneratedImageValue(val)) {
-                if (!parseGeneratedImage(m_valueList.get(), parsedValue))
+                if (!parseGeneratedImage(m_valueList, parsedValue))
                     return false;
             } else
                 return false;
@@ -2272,7 +2276,7 @@ bool CSSPropertyParser::parseFillImage(CSSParserValueList* valueList, RefPtrWill
         return parseGeneratedImage(valueList, value);
 
     if (valueList->current()->unit == CSSParserValue::Function && equalIgnoringCase(valueList->current()->function->name, "-webkit-image-set(")) {
-        value = parseImageSet(m_valueList.get());
+        value = parseImageSet(m_valueList);
         if (value)
             return true;
     }
@@ -2767,7 +2771,7 @@ bool CSSPropertyParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& p
                     break;
                 case CSSPropertyBackgroundImage:
                 case CSSPropertyWebkitMaskImage:
-                    if (parseFillImage(m_valueList.get(), currValue))
+                    if (parseFillImage(m_valueList, currValue))
                         m_valueList->next();
                     break;
                 case CSSPropertyWebkitBackgroundClip:
@@ -2796,19 +2800,19 @@ bool CSSPropertyParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& p
                     break;
                 case CSSPropertyBackgroundPosition:
                 case CSSPropertyWebkitMaskPosition:
-                    parseFillPosition(m_valueList.get(), currValue, currValue2);
+                    parseFillPosition(m_valueList, currValue, currValue2);
                     // parseFillPosition advances the m_valueList pointer.
                     break;
                 case CSSPropertyBackgroundPositionX:
                 case CSSPropertyWebkitMaskPositionX: {
-                    currValue = parseFillPositionX(m_valueList.get());
+                    currValue = parseFillPositionX(m_valueList);
                     if (currValue)
                         m_valueList->next();
                     break;
                 }
                 case CSSPropertyBackgroundPositionY:
                 case CSSPropertyWebkitMaskPositionY: {
-                    currValue = parseFillPositionY(m_valueList.get());
+                    currValue = parseFillPositionY(m_valueList);
                     if (currValue)
                         m_valueList->next();
                     break;
@@ -2993,7 +2997,7 @@ bool CSSPropertyParser::parseWebkitTransformOriginShorthand(bool important)
     RefPtrWillBeRawPtr<CSSValue> originY = nullptr;
     RefPtrWillBeRawPtr<CSSValue> originZ = nullptr;
 
-    parse2ValuesFillPosition(m_valueList.get(), originX, originY);
+    parse2ValuesFillPosition(m_valueList, originX, originY);
 
     if (m_valueList->current()) {
         if (!validUnit(m_valueList->current(), FLength))
@@ -4342,7 +4346,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseShapeProperty(CSSProper
     }
 
     RefPtrWillBeRawPtr<CSSValue> imageValue = nullptr;
-    if (valueId != CSSValueNone && parseFillImage(m_valueList.get(), imageValue)) {
+    if (valueId != CSSValueNone && parseFillImage(m_valueList, imageValue)) {
         m_valueList->next();
         return imageValue.release();
     }
@@ -4652,7 +4656,7 @@ bool CSSPropertyParser::parseFontVariant(bool important)
                 values = CSSValueList::createCommaSeparated();
                 parsedValue = cssValuePool().createIdentifierValue(val->id);
             }
-        } else if (consumeComma(m_valueList.get())) {
+        } else if (consumeComma(m_valueList)) {
             expectComma = false;
             continue;
         }
@@ -4846,7 +4850,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFaceUnicodeRang
         if (from <= to)
             values->append(CSSUnicodeRangeValue::create(from, to));
         m_valueList->next();
-    } while (consumeComma(m_valueList.get()));
+    } while (consumeComma(m_valueList));
 
     return values.release();
 }
@@ -5610,7 +5614,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseObjectPosition()
 {
     RefPtrWillBeRawPtr<CSSValue> xValue = nullptr;
     RefPtrWillBeRawPtr<CSSValue> yValue = nullptr;
-    parseFillPosition(m_valueList.get(), xValue, yValue);
+    parseFillPosition(m_valueList, xValue, yValue);
     if (!xValue || !yValue)
         return nullptr;
     return createPrimitiveValuePair(toCSSPrimitiveValue(xValue.get()), toCSSPrimitiveValue(yValue.get()), Pair::KeepIdenticalValues);
@@ -5766,12 +5770,12 @@ bool BorderImageParseContext::buildFromParser(CSSPropertyParser& parser, CSSProp
                 context.commitImage(parser.createCSSImageValueWithReferrer(val->string, parser.m_context.completeURL(val->string)));
             } else if (isGeneratedImageValue(val)) {
                 RefPtrWillBeRawPtr<CSSValue> value = nullptr;
-                if (parser.parseGeneratedImage(parser.m_valueList.get(), value))
+                if (parser.parseGeneratedImage(parser.m_valueList, value))
                     context.commitImage(value.release());
                 else
                     return false;
             } else if (val->unit == CSSParserValue::Function && equalIgnoringCase(val->function->name, "-webkit-image-set(")) {
-                RefPtrWillBeRawPtr<CSSValue> value = parser.parseImageSet(parser.m_valueList.get());
+                RefPtrWillBeRawPtr<CSSValue> value = parser.parseImageSet(parser.m_valueList);
                 if (value)
                     context.commitImage(value.release());
                 else
@@ -7102,7 +7106,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseWillChange()
 
         if (!m_valueList->next())
             break;
-        if (!consumeComma(m_valueList.get()))
+        if (!consumeComma(m_valueList))
             return nullptr;
     }
 
@@ -7608,7 +7612,7 @@ bool CSSPropertyParser::parseFontFeatureSettings(bool important)
             return false;
         if (!m_valueList->current())
             break;
-        if (!consumeComma(m_valueList.get()))
+        if (!consumeComma(m_valueList))
             return false;
     }
     addProperty(CSSPropertyWebkitFontFeatureSettings, settings.release(), important);
