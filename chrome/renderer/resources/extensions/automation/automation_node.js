@@ -197,7 +197,7 @@ AutomationNodeImpl.prototype = {
     // Not yet initialized.
     if (this.rootImpl.processID === undefined ||
         this.rootImpl.routingID === undefined ||
-        this.wrapper.id === undefined) {
+        this.id === undefined) {
       return;
     }
 
@@ -209,7 +209,7 @@ AutomationNodeImpl.prototype = {
 
     automationInternal.performAction({ processID: this.rootImpl.processID,
                                        routingID: this.rootImpl.routingID,
-                                       automationNodeID: this.wrapper.id,
+                                       automationNodeID: this.id,
                                        actionType: actionType },
                                      opt_args || {});
   }
@@ -329,8 +329,9 @@ AutomationRootNodeImpl.prototype = {
         var children = nodeToClear.children();
         for (var i = 0; i < children.length; i++)
           this.invalidate_(children[i]);
-        privates(nodeToClear).impl.childIds = []
-        updateState.pendingNodes[nodeToClear.id] = nodeToClear;
+        var nodeToClearImpl = privates(nodeToClear).impl;
+        nodeToClearImpl.childIds = []
+        updateState.pendingNodes[nodeToClearImpl.id] = nodeToClear;
       }
     }
 
@@ -402,7 +403,7 @@ AutomationRootNodeImpl.prototype = {
     // This object is not accessible outside of bindings code, but we can access
     // it here.
     var nodeImpl = privates(node).impl;
-    var id = node.id;
+    var id = nodeImpl.id;
     for (var key in AutomationAttributeDefaults) {
       nodeImpl[key] = AutomationAttributeDefaults[key];
     }
@@ -427,8 +428,8 @@ AutomationRootNodeImpl.prototype = {
     for (var i = 0; i < newChildIds.length; i++) {
       var childId = newChildIds[i];
       if (newChildIdSet[childId]) {
-        logging.WARNING('Node ' + node.id + ' has duplicate child id ' +
-                        childId);
+        logging.WARNING('Node ' + privates(node).impl.id +
+                        ' has duplicate child id ' + childId);
         lastError.set('automation',
                       'Bad update received on automation tree',
                       null,
@@ -463,13 +464,16 @@ AutomationRootNodeImpl.prototype = {
       var childNode = this.axNodeDataCache_[childId];
       if (childNode) {
         if (childNode.parent() != node) {
-          var parentId = 0;
-          if (childNode.parent()) parentId = childNode.parent().id;
+          var parentId = -1;
+          if (childNode.parent()) {
+            var parentImpl = privates(childNode.parent()).impl;
+            parentId = parentImpl.id;
+          }
           // This is a serious error - nodes should never be reparented.
           // If this case occurs, continue so this node isn't left in an
           // inconsistent state, but return failure at the end.
           logging.WARNING('Node ' + childId + ' reparented from ' +
-                          parentId + ' to ' + node.id);
+                          parentId + ' to ' + privates(node).impl.id);
           lastError.set('automation',
                         'Bad update received on automation tree',
                         null,
@@ -481,11 +485,11 @@ AutomationRootNodeImpl.prototype = {
         childNode = new AutomationNode(this);
         this.axNodeDataCache_[childId] = childNode;
         privates(childNode).impl.id = childId;
-        updateState.pendingNodes[childNode.id] = childNode;
-        updateState.newNodes[childNode.id] = childNode;
+        updateState.pendingNodes[childId] = childNode;
+        updateState.newNodes[childId] = childNode;
       }
       privates(childNode).impl.indexInParent = i;
-      privates(childNode).impl.parentID = node.id;
+      privates(childNode).impl.parentID = privates(node).impl.id;
     }
 
     return success;
@@ -548,7 +552,7 @@ AutomationRootNodeImpl.prototype = {
     var node = this.axNodeDataCache_[nodeData.id];
     var didUpdateRoot = false;
     if (node) {
-      delete updateState.pendingNodes[node.id];
+      delete updateState.pendingNodes[privates(node).impl.id];
     } else {
       if (nodeData.role != schema.RoleType.rootWebArea &&
           nodeData.role != schema.RoleType.desktop) {
@@ -582,7 +586,7 @@ AutomationRootNodeImpl.prototype = {
                                           nodeData.childIds,
                                           updateState);
     nodeImpl.childIds = nodeData.childIds;
-    this.axNodeDataCache_[node.id] = node;
+    this.axNodeDataCache_[nodeImpl.id] = node;
 
     return success;
   }
@@ -602,16 +606,13 @@ var AutomationNode = utils.expose('AutomationNode',
                                                 'makeVisible',
                                                 'setSelection',
                                                 'addEventListener',
-                                                'removeEventListener',
-                                                'toString'],
+                                                'removeEventListener'],
                                     readonly: ['isRootNode',
-                                               'id',
                                                'role',
                                                'state',
                                                'location',
                                                'attributes',
-                                               'root',
-                                               'toString'] });
+                                               'root'] });
 
 var AutomationRootNode = utils.expose('AutomationRootNode',
                                       AutomationRootNodeImpl,
