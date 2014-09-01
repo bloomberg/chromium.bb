@@ -42,3 +42,4 @@ WebRtcBrowserTest.CanSetupVideoCallWith16To9AspectRatio
 WebRtcBrowserTest.CanSetupVideoCallWith1To1AspectRatio
 WebRtcBrowserTest.CanSetupVideoCallWith4To3AspectRatio
 WebRtcBrowserTest.NegotiateOfferWithBLine
+WebRtcAecDumpBrowserTest.*CallWithAecDump*
