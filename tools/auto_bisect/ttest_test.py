@@ -9,6 +9,8 @@ import unittest
 import ttest
 
 
+# This test case accesses private functions of the ttest module.
+# pylint: disable=W0212
 class TTestTest(unittest.TestCase):
   """Tests for the t-test functions."""
 

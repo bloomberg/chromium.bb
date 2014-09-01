@@ -5,10 +5,11 @@
 """Top-level presubmit script for auto-bisect.
 
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts for
-details on the presubmit API built into gcl.
+details on the presubmit API.
 """
 
 import imp
+import subprocess
 import os
 
 # Paths to bisect config files relative to src/tools.
@@ -16,10 +17,6 @@ CONFIG_FILES = [
     'auto_bisect/config.cfg',
     'run-perf-test.cfg'
 ]
-
-PYLINT_BLACKLIST = []
-PYLINT_DISABLED_WARNINGS = []
-
 
 def CheckChangeOnUpload(input_api, output_api):
   return _CommonChecks(input_api, output_api)
@@ -31,10 +28,10 @@ def CheckChangeOnCommit(input_api, output_api):
 
 def _CommonChecks(input_api, output_api):
   """Does all presubmit checks for auto-bisect."""
-  # TODO(qyearsley) Run bisect unit test.
-  # TODO(qyearsley) Run pylint on all auto-bisect py files but not other files.
   results = []
   results.extend(_CheckAllConfigFiles(input_api, output_api))
+  results.extend(_RunUnitTests(input_api, output_api))
+  results.extend(_RunPyLint(input_api, output_api))
   return results
 
 
@@ -64,7 +61,7 @@ def _CheckConfigFile(file_path, output_api):
     warning = 'Config file "config" global variable is not dict: %s' % str(e)
     return [output_api.PresubmitError(warning, items=[file_path])]
 
-  for k, v in config_dict.iteritems():
+  for k, v in config_file.config.iteritems():
     if v != '':
       warning = 'Non-empty value in config dict: %s: %s' % (repr(k), repr(v))
       warning += ('\nThe bisection config file should only contain a config '
@@ -73,3 +70,21 @@ def _CheckConfigFile(file_path, output_api):
       return [output_api.PresubmitError(warning, items=[file_path])]
 
   return []
+
+
+def _RunUnitTests(input_api, output_api):
+  """Runs unit tests for auto-bisect."""
+  repo_root = input_api.change.RepositoryRoot()
+  auto_bisect_dir = os.path.join(repo_root, 'tools', 'auto_bisect')
+  test_runner = os.path.join(auto_bisect_dir, 'run_tests')
+  return_code = subprocess.call(['python', test_runner])
+  if return_code:
+    message = 'Auto-bisect unit tests did not all pass.'
+    return [output_api.PresubmitError(message)]
+  return []
+
+
+def _RunPyLint(input_api, output_api):
+  """Runs unit tests for auto-bisect."""
+  tests = input_api.canned_checks.GetPylint(input_api, output_api)
+  return input_api.RunTests(tests)

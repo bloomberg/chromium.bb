@@ -539,14 +539,14 @@ def _WaitUntilBuildIsReady(
       last_status_check = time.time()
       if not build_num:
         # Get the build number on try server for the current build.
-        build_num = bisect_builder.GetBuildNumFromBuilder(
+        build_num = request_build.GetBuildNumFromBuilder(
             build_request_id, bot_name, builder_host, builder_port)
       # Check the status of build using the build number.
       # Note: Build is treated as PENDING if build number is not found
       # on the the try server.
-      build_status, status_link = bisect_builder.GetBuildStatus(
+      build_status, status_link = request_build.GetBuildStatus(
           build_num, bot_name, builder_host, builder_port)
-      if build_status == bisect_builder.FAILED:
+      if build_status == request_build.FAILED:
         return (None, 'Failed to produce build, log: %s' % status_link)
     elapsed_time = time.time() - start_time
     if elapsed_time > max_timeout:
@@ -1369,7 +1369,7 @@ class BisectPerformanceMetrics(object):
     if patch:
       job_args['patch'] = patch
     # Posts job to build the revision on the server.
-    if bisect_builder.PostTryJob(builder_host, builder_port, job_args):
+    if request_build.PostTryJob(builder_host, builder_port, job_args):
       target_file, error_msg = _WaitUntilBuildIsReady(
           fetch_build, bot_name, builder_host, builder_port, build_request_id,
           build_timeout)

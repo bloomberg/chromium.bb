@@ -28,6 +28,9 @@ def DetermineAndCreateSourceControl(opts):
   return None
 
 
+# TODO(qyearsley): Almost all of the methods below could be top-level functions
+# (or class methods). Refactoring may make this simpler.
+# pylint: disable=R0201
 class SourceControl(object):
   """SourceControl is an abstraction over the source control system."""
 

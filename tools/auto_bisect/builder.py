@@ -142,6 +142,9 @@ class AndroidBuilder(Builder):
   def __init__(self, opts):
     super(AndroidBuilder, self).__init__(opts)
 
+  # TODO(qyearsley): Make this a class method and verify that it works with
+  # a unit test.
+  # pylint: disable=R0201
   def _GetTargets(self):
     """Returns a list of build targets."""
     return ['chrome_shell_apk', 'cc_perftests_apk', 'android_tools']
@@ -179,6 +182,9 @@ class AndroidChromeBuilder(AndroidBuilder):
   def __init__(self, opts):
     super(AndroidChromeBuilder, self).__init__(opts)
 
+  # TODO(qyearsley): Make this a class method and verify that it works with
+  # a unit test.
+  # pylint: disable=R0201
   def _GetTargets(self):
     """Returns a list of build targets."""
     return AndroidBuilder._GetTargets(self) + ['chrome_apk']
