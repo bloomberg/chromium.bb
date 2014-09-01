@@ -226,7 +226,8 @@ public class Encoder {
             encodeNullPointer(offset);
             return;
         }
-        encode(v.getBytes(Charset.forName("utf8")), offset);
+        encode(v.getBytes(
+                Charset.forName("utf8")), offset, BindingsHelper.UNSPECIFIED_ARRAY_LENGTH);
     }
 
     /**
@@ -286,17 +287,21 @@ public class Encoder {
     /**
      * Returns an {@link Encoder} suitable for encoding an array of pointer of the given length.
      */
-    public Encoder encodePointerArray(int length, int offset) {
-        return encoderForArray(BindingsHelper.POINTER_SIZE, length, offset);
+    public Encoder encodePointerArray(int length, int offset, int expectedLength) {
+        return encoderForArray(BindingsHelper.POINTER_SIZE, length, offset, expectedLength);
     }
 
     /**
      * Encodes an array of booleans.
      */
-    public void encode(boolean[] v, int offset) {
+    public void encode(boolean[] v, int offset, int expectedLength) {
         if (v == null) {
             encodeNullPointer(offset);
             return;
+        }
+        if (expectedLength != BindingsHelper.UNSPECIFIED_ARRAY_LENGTH &&
+                expectedLength != v.length) {
+            throw new SerializationException("Trying to encode a fixed array of incorrect length.");
         }
         byte[] bytes = new byte[(v.length + 7) / BindingsHelper.ALIGNMENT];
         for (int i = 0; i < bytes.length; ++i) {
@@ -313,10 +318,14 @@ public class Encoder {
     /**
      * Encodes an array of bytes.
      */
-    public void encode(byte[] v, int offset) {
+    public void encode(byte[] v, int offset, int expectedLength) {
         if (v == null) {
             encodeNullPointer(offset);
             return;
+        }
+        if (expectedLength != BindingsHelper.UNSPECIFIED_ARRAY_LENGTH &&
+                expectedLength != v.length) {
+            throw new SerializationException("Trying to encode a fixed array of incorrect length.");
         }
         encodeByteArray(v, v.length, offset);
     }
@@ -324,67 +333,68 @@ public class Encoder {
     /**
      * Encodes an array of shorts.
      */
-    public void encode(short[] v, int offset) {
+    public void encode(short[] v, int offset, int expectedLength) {
         if (v == null) {
             encodeNullPointer(offset);
             return;
         }
-        encoderForArray(2, v.length, offset).append(v);
+        encoderForArray(2, v.length, offset, expectedLength).append(v);
     }
 
     /**
      * Encodes an array of ints.
      */
-    public void encode(int[] v, int offset) {
+    public void encode(int[] v, int offset, int expectedLength) {
         if (v == null) {
             encodeNullPointer(offset);
             return;
         }
-        encoderForArray(4, v.length, offset).append(v);
+        encoderForArray(4, v.length, offset, expectedLength).append(v);
     }
 
     /**
      * Encodes an array of floats.
      */
-    public void encode(float[] v, int offset) {
+    public void encode(float[] v, int offset, int expectedLength) {
         if (v == null) {
             encodeNullPointer(offset);
             return;
         }
-        encoderForArray(4, v.length, offset).append(v);
+        encoderForArray(4, v.length, offset, expectedLength).append(v);
     }
 
     /**
      * Encodes an array of longs.
      */
-    public void encode(long[] v, int offset) {
+    public void encode(long[] v, int offset, int expectedLength) {
         if (v == null) {
             encodeNullPointer(offset);
             return;
         }
-        encoderForArray(8, v.length, offset).append(v);
+        encoderForArray(8, v.length, offset, expectedLength).append(v);
     }
 
     /**
      * Encodes an array of doubles.
      */
-    public void encode(double[] v, int offset) {
+    public void encode(double[] v, int offset, int expectedLength) {
         if (v == null) {
             encodeNullPointer(offset);
             return;
         }
-        encoderForArray(8, v.length, offset).append(v);
+        encoderForArray(8, v.length, offset, expectedLength).append(v);
     }
 
     /**
      * Encodes an array of {@link Handle}.
      */
-    public void encode(Handle[] v, int offset) {
+    public void encode(Handle[] v, int offset, int expectedLength) {
         if (v == null) {
             encodeNullPointer(offset);
             return;
         }
-        Encoder e = encoderForArray(BindingsHelper.SERIALIZED_HANDLE_SIZE, v.length, offset);
+        Encoder e = encoderForArray(
+                BindingsHelper.SERIALIZED_HANDLE_SIZE, v.length, offset, expectedLength);
         for (int i = 0; i < v.length; ++i) {
             e.encode(v[i], DataHeader.HEADER_SIZE + BindingsHelper.SERIALIZED_HANDLE_SIZE * i);
         }
@@ -393,13 +403,14 @@ public class Encoder {
     /**
      * Encodes an array of {@link Interface}.
      */
-    public <T extends Interface> void encode(T[] v, int offset,
+    public <T extends Interface> void encode(T[] v, int offset, int expectedLength,
             Interface.Manager<T, ?> manager) {
         if (v == null) {
             encodeNullPointer(offset);
             return;
         }
-        Encoder e = encoderForArray(BindingsHelper.SERIALIZED_HANDLE_SIZE, v.length, offset);
+        Encoder e = encoderForArray(
+                BindingsHelper.SERIALIZED_HANDLE_SIZE, v.length, offset, expectedLength);
         for (int i = 0; i < v.length; ++i) {
             e.encode(v[i], DataHeader.HEADER_SIZE + BindingsHelper.SERIALIZED_HANDLE_SIZE * i,
                     manager);
@@ -409,12 +420,14 @@ public class Encoder {
     /**
      * Encodes an array of {@link InterfaceRequest}.
      */
-    public <I extends Interface> void encode(InterfaceRequest<I>[] v, int offset) {
+    public <I extends Interface> void encode(InterfaceRequest<I>[] v, int offset,
+            int expectedLength) {
         if (v == null) {
             encodeNullPointer(offset);
             return;
         }
-        Encoder e = encoderForArray(BindingsHelper.SERIALIZED_HANDLE_SIZE, v.length, offset);
+        Encoder e = encoderForArray(
+                BindingsHelper.SERIALIZED_HANDLE_SIZE, v.length, offset, expectedLength);
         for (int i = 0; i < v.length; ++i) {
             e.encode(v[i], DataHeader.HEADER_SIZE + BindingsHelper.SERIALIZED_HANDLE_SIZE * i);
         }
@@ -431,7 +444,12 @@ public class Encoder {
         encode((long) mEncoderState.dataEnd - (mBaseOffset + offset), offset);
     }
 
-    private Encoder encoderForArray(int elementSizeInByte, int length, int offset) {
+    private Encoder encoderForArray(
+            int elementSizeInByte, int length, int offset, int expectedLength) {
+        if (expectedLength != BindingsHelper.UNSPECIFIED_ARRAY_LENGTH &&
+                expectedLength != length) {
+            throw new SerializationException("Trying to encode a fixed array of incorrect length.");
+        }
         return encoderForArrayByTotalSize(length * elementSizeInByte, length, offset);
     }
 

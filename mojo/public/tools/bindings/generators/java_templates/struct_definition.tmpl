@@ -1,13 +1,21 @@
 {% from "constant_definition.tmpl" import constant_def %}
 {% from "enum_definition.tmpl" import enum_def %}
 
+{%- macro array_expected_length(kind) -%}
+{%- if kind|is_fixed_array_kind -%}
+{{kind.length}}
+{%- else -%}
+org.chromium.mojo.bindings.BindingsHelper.UNSPECIFIED_ARRAY_LENGTH
+{%- endif -%}
+{%- endmacro -%}
+
 {% macro encode(variable, kind, offset, bit, level=0) %}
 {% if kind|is_pointer_array_kind %}
 {% set sub_kind = kind.kind %}
 if ({{variable}} == null) {
     encoder{{level}}.encodeNullPointer({{offset}});
 } else {
-    org.chromium.mojo.bindings.Encoder encoder{{level + 1}} = encoder{{level}}.encodePointerArray({{variable}}.length, {{offset}});
+    org.chromium.mojo.bindings.Encoder encoder{{level + 1}} = encoder{{level}}.encodePointerArray({{variable}}.length, {{offset}}, {{array_expected_length(kind)}});
     for (int i{{level}} = 0; i{{level}} < {{variable}}.length; ++i{{level}}) {
         {{encode(variable~'[i'~level~']', sub_kind, 'DataHeader.HEADER_SIZE + org.chromium.mojo.bindings.BindingsHelper.POINTER_SIZE * i'~level, 0, level+1)|indent(8)}}
     }
@@ -26,7 +34,7 @@ org.chromium.mojo.bindings.Decoder decoder{{level+1}} = decoder{{level}}.readPoi
 if (decoder{{level+1}} == null) {
     {{variable}} = null;
 } else {
-    DataHeader si{{level+1}} = decoder{{level+1}}.readDataHeader();
+    DataHeader si{{level+1}} = decoder{{level+1}}.readArrayDataHeader({{array_expected_length(kind)}});
     {{variable}} = {{kind|new_array('si'~(level+1)~'.numFields')}};
     for (int i{{level+1}} = 0; i{{level+1}} < si{{level+1}}.numFields; ++i{{level+1}}) {
         {{decode(variable~'[i'~(level+1)~']', kind.kind, 'DataHeader.HEADER_SIZE + org.chromium.mojo.bindings.BindingsHelper.POINTER_SIZE * i'~(level+1), 0, level+1)|indent(8)}}

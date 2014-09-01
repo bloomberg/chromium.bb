@@ -29,6 +29,11 @@ public class BindingsHelper {
     public static final int POINTER_SIZE = 8;
 
     /**
+     * The value used for the expected length of a non-fixed size array.
+     */
+    public static final int UNSPECIFIED_ARRAY_LENGTH = -1;
+
+    /**
      * Align |size| on {@link BindingsHelper#ALIGNMENT}.
      */
     public static int align(int size) {

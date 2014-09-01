@@ -186,6 +186,12 @@ def DecodeMethod(context, kind, offset, bit):
       params.append(GetArrayNullabilityFlags(kind))
     else:
       params.append(GetJavaTrueFalse(mojom.IsNullableKind(kind)))
+  if mojom.IsAnyArrayKind(kind):
+    if mojom.IsFixedArrayKind(kind):
+      params.append(str(kind.length))
+    else:
+      params.append(
+        "org.chromium.mojo.bindings.BindingsHelper.UNSPECIFIED_ARRAY_LENGTH");
   if mojom.IsInterfaceKind(kind):
     params.append('%s.MANAGER' % GetJavaType(context, kind))
   if mojom.IsAnyArrayKind(kind) and mojom.IsInterfaceKind(kind.kind):
@@ -197,6 +203,12 @@ def EncodeMethod(context, kind, variable, offset, bit):
   params = [ variable, str(offset) ]
   if (kind == mojom.BOOL):
     params.append(str(bit))
+  if mojom.IsAnyArrayKind(kind):
+    if mojom.IsFixedArrayKind(kind):
+      params.append(str(kind.length))
+    else:
+      params.append(
+        "org.chromium.mojo.bindings.BindingsHelper.UNSPECIFIED_ARRAY_LENGTH");
   if mojom.IsInterfaceKind(kind):
     params.append('%s.MANAGER' % GetJavaType(context, kind))
   if mojom.IsAnyArrayKind(kind) and mojom.IsInterfaceKind(kind.kind):
@@ -357,6 +369,7 @@ class Generator(generator.Generator):
     "encode_method": EncodeMethod,
     "has_method_with_response": HasMethodWithResponse,
     "has_method_without_response": HasMethodWithoutResponse,
+    "is_fixed_array_kind": mojom.IsFixedArrayKind,
     "is_handle": mojom.IsNonInterfaceHandleKind,
     "is_nullable_kind": mojom.IsNullableKind,
     "is_pointer_array_kind": IsPointerArrayKind,
