@@ -2477,6 +2477,13 @@ class ValidationPool(object):
       if self.GetCLStatus(self.bot, change) not in ok_statuses:
         self.SendNotification(change, msg)
         self.UpdateCLStatus(PRE_CQ, change, new_status, self.dryrun)
+        if self._metadata:
+          timestamp = int(time.time())
+          self._metadata.RecordCLAction(change, constants.CL_ACTION_VERIFIED,
+                                        timestamp)
+          self._InsertCLActionToDatabase(change, constants.CL_ACTION_VERIFIED,
+                                         timestamp)
+
 
     # Set the new statuses in parallel.
     inputs = [[change] for change in self.changes]
