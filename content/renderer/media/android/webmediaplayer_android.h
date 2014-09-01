@@ -287,6 +287,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
                         const GURL& first_party_for_cookies,
                         bool allow_stored_credentials);
   bool IsKeySystemSupported(const std::string& key_system);
+  bool IsLocalResource();
 
   // Actually do the work for generateKeyRequest/addKey so they can easily
   // report results to UMA.
@@ -488,6 +489,9 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
 
   // Whether stored credentials are allowed to be passed to the server.
   bool allow_stored_credentials_;
+
+  // Whether the resource is local.
+  bool is_local_resource_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<WebMediaPlayerAndroid> weak_factory_;

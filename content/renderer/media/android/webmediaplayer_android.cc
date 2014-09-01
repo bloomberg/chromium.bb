@@ -147,6 +147,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       media_log_(media_log),
       web_cdm_(NULL),
       allow_stored_credentials_(false),
+      is_local_resource_(false),
       weak_factory_(this) {
   DCHECK(player_manager_);
   DCHECK(cdm_manager_);
@@ -217,6 +218,7 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
   }
 
   url_ = url;
+  is_local_resource_ = IsLocalResource();
   int demuxer_client_id = 0;
   if (player_type_ != MEDIA_PLAYER_TYPE_URL) {
     RendererDemuxerAndroid* demuxer =
@@ -278,6 +280,19 @@ void WebMediaPlayerAndroid::DidLoadMediaInfo(
       redirected_url, first_party_for_cookies, allow_stored_credentials, 0);
 
   UpdateNetworkState(WebMediaPlayer::NetworkStateIdle);
+}
+
+bool WebMediaPlayerAndroid::IsLocalResource() {
+  if (url_.SchemeIsFile() || url_.SchemeIsBlob())
+    return true;
+
+  std::string host = url_.host();
+  if (!host.compare("localhost") || !host.compare("127.0.0.1") ||
+      !host.compare("[::1]")) {
+    return true;
+  }
+
+  return false;
 }
 
 void WebMediaPlayerAndroid::play() {
@@ -693,7 +708,7 @@ void WebMediaPlayerAndroid::OnMediaMetadataChanged(
   DCHECK(main_thread_checker_.CalledOnValidThread());
   bool need_to_signal_duration_changed = false;
 
-  if (url_.SchemeIs("file"))
+  if (is_local_resource_)
     UpdateNetworkState(WebMediaPlayer::NetworkStateLoaded);
 
   // Update duration, if necessary, prior to ready state updates that may
@@ -851,6 +866,8 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
 void WebMediaPlayerAndroid::OnTimeUpdate(const base::TimeDelta& current_time) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   current_time_ = current_time.InSecondsF();
+  if (is_local_resource_ && current_time_ <= duration())
+    buffered_[0].end = current_time_;
 }
 
 void WebMediaPlayerAndroid::OnConnectedToRemoteDevice(

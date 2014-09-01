@@ -236,6 +236,11 @@ class URL_EXPORT GURL {
         (SchemeIsFileSystem() && inner_url() && inner_url()->SchemeIsSecure());
   }
 
+  // Returns true if the scheme is "blob".
+  bool SchemeIsBlob() const {
+    return SchemeIs(url::kBlobScheme);
+  }
+
   // The "content" of the URL is everything after the scheme (skipping the
   // scheme delimiting colon). It is an error to get the origin of an invalid
   // URL. The result will be an empty string.

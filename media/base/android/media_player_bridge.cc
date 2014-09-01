@@ -21,9 +21,6 @@ using base::android::ScopedJavaLocalRef;
 // Time update happens every 250ms.
 const int kTimeUpdateInterval = 250;
 
-// blob url scheme.
-const char kBlobScheme[] = "blob";
-
 namespace media {
 
 MediaPlayerBridge::MediaPlayerBridge(
@@ -79,7 +76,7 @@ void MediaPlayerBridge::Initialize() {
 
   media::MediaResourceGetter* resource_getter =
       manager()->GetMediaResourceGetter();
-  if (url_.SchemeIsFileSystem() || url_.SchemeIs(kBlobScheme)) {
+  if (url_.SchemeIsFileSystem() || url_.SchemeIsBlob()) {
     resource_getter->GetPlatformPathFromURL(
         url_,
         base::Bind(&MediaPlayerBridge::ExtractMediaMetadata,
@@ -156,7 +153,7 @@ void MediaPlayerBridge::SetVideoSurface(gfx::ScopedJavaSurface surface) {
 void MediaPlayerBridge::Prepare() {
   DCHECK(j_media_player_bridge_.is_null());
   CreateJavaMediaPlayerBridge();
-  if (url_.SchemeIsFileSystem() || url_.SchemeIs(kBlobScheme)) {
+  if (url_.SchemeIsFileSystem() || url_.SchemeIsBlob()) {
     manager()->GetMediaResourceGetter()->GetPlatformPathFromURL(
         url_,
         base::Bind(&MediaPlayerBridge::SetDataSource,

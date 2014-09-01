@@ -635,4 +635,10 @@ TEST(GURLTest, SchemeIsWSOrWSS) {
   EXPECT_FALSE(GURL("http://bar/").SchemeIsWSOrWSS());
 }
 
+TEST(GURLTest, SchemeIsBlob) {
+  EXPECT_TRUE(GURL("BLOB://BAR/").SchemeIsBlob());
+  EXPECT_TRUE(GURL("blob://bar/").SchemeIsBlob());
+  EXPECT_FALSE(GURL("http://bar/").SchemeIsBlob());
+}
+
 }  // namespace url
