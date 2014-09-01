@@ -228,8 +228,6 @@ void FeatureInfo::InitializeFeatures() {
   StringSet extensions(
       reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
 
-  bool npot_ok = false;
-
   const char* renderer_str =
       reinterpret_cast<const char*>(glGetString(GL_RENDERER));
   if (renderer_str) {
@@ -374,7 +372,7 @@ void FeatureInfo::InitializeFeatures() {
     validators_.render_buffer_format.AddValue(GL_DEPTH24_STENCIL8);
   }
 
-  if (extensions.Contains("GL_OES_vertex_array_object") ||
+  if (is_es3 || extensions.Contains("GL_OES_vertex_array_object") ||
       extensions.Contains("GL_ARB_vertex_array_object") ||
       extensions.Contains("GL_APPLE_vertex_array_object")) {
     feature_flags_.native_vertex_array_object = true;
@@ -387,7 +385,7 @@ void FeatureInfo::InitializeFeatures() {
     feature_flags_.native_vertex_array_object = false;
   }
 
-  if (extensions.Contains("GL_OES_element_index_uint") ||
+  if (is_es3 || extensions.Contains("GL_OES_element_index_uint") ||
       gfx::HasDesktopGLFeatures()) {
     AddExtensionString("GL_OES_element_index_uint");
     validators_.index_type.AddValue(GL_UNSIGNED_INT);
@@ -440,10 +438,10 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   // Check if we should allow GL_OES_texture_npot
-  if (extensions.Contains("GL_ARB_texture_non_power_of_two") ||
+  if (is_es3 || extensions.Contains("GL_ARB_texture_non_power_of_two") ||
       extensions.Contains("GL_OES_texture_npot")) {
     AddExtensionString("GL_OES_texture_npot");
-    npot_ok = true;
+    feature_flags_.npot_ok = true;
   }
 
   // Check if we should allow GL_OES_texture_float, GL_OES_texture_half_float,
@@ -462,7 +460,7 @@ void FeatureInfo::InitializeFeatures() {
     enable_texture_half_float_linear = true;
     may_enable_chromium_color_buffer_float = true;
   } else {
-    if (extensions.Contains("GL_OES_texture_float")) {
+    if (is_es3 || extensions.Contains("GL_OES_texture_float")) {
       enable_texture_float = true;
       if (extensions.Contains("GL_OES_texture_float_linear")) {
         enable_texture_float_linear = true;
@@ -472,6 +470,8 @@ void FeatureInfo::InitializeFeatures() {
         may_enable_chromium_color_buffer_float = true;
       }
     }
+    // TODO(dshwang): GLES3 supports half float by default but GL_HALF_FLOAT_OES
+    // isn't equal to GL_HALF_FLOAT.
     if (extensions.Contains("GL_OES_texture_half_float")) {
       enable_texture_half_float = true;
       if (extensions.Contains("GL_OES_texture_half_float_linear")) {
@@ -606,7 +606,7 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   if (!workarounds_.disable_oes_standard_derivatives &&
-      (extensions.Contains("GL_OES_standard_derivatives") ||
+      (is_es3 || extensions.Contains("GL_OES_standard_derivatives") ||
        gfx::HasDesktopGLFeatures())) {
     AddExtensionString("GL_OES_standard_derivatives");
     feature_flags_.oes_standard_derivatives = true;
@@ -679,7 +679,6 @@ void FeatureInfo::InitializeFeatures() {
   feature_flags_.enable_texture_float_linear |= enable_texture_float_linear;
   feature_flags_.enable_texture_half_float_linear |=
       enable_texture_half_float_linear;
-  feature_flags_.npot_ok |= npot_ok;
 
   if (extensions.Contains("GL_ANGLE_pack_reverse_row_order")) {
     AddExtensionString("GL_ANGLE_pack_reverse_row_order");
@@ -774,6 +773,8 @@ void FeatureInfo::InitializeFeatures() {
          ++i) {
       validators_.attachment.AddValue(i);
     }
+    COMPILE_ASSERT(GL_COLOR_ATTACHMENT0_EXT == GL_COLOR_ATTACHMENT0,
+                   color_attachment0_variation_must_match);
 
     validators_.g_l_state.AddValue(GL_MAX_COLOR_ATTACHMENTS_EXT);
     validators_.g_l_state.AddValue(GL_MAX_DRAW_BUFFERS_ARB);
@@ -786,13 +787,16 @@ void FeatureInfo::InitializeFeatures() {
     }
   }
 
-  if (extensions.Contains("GL_EXT_blend_minmax") ||
+  if (is_es3 || extensions.Contains("GL_EXT_blend_minmax") ||
       gfx::HasDesktopGLFeatures()) {
     AddExtensionString("GL_EXT_blend_minmax");
     validators_.equation.AddValue(GL_MIN_EXT);
     validators_.equation.AddValue(GL_MAX_EXT);
+    COMPILE_ASSERT(GL_MIN_EXT == GL_MIN && GL_MAX_EXT == GL_MAX,
+                   min_max_variations_must_match);
   }
 
+  // TODO(dshwang): GLES3 supports gl_FragDepth, not gl_FragDepthEXT.
   if (extensions.Contains("GL_EXT_frag_depth") || gfx::HasDesktopGLFeatures()) {
     AddExtensionString("GL_EXT_frag_depth");
     feature_flags_.ext_frag_depth = true;

@@ -1170,18 +1170,23 @@ TEST_F(FeatureInfoTest, InitializeSamplersWithARBSamplerObjects) {
 
 TEST_F(FeatureInfoTest, InitializeWithES3) {
   SetupInitExpectationsWithGLVersion("", "", "OpenGL ES 3.0");
-  EXPECT_TRUE(info_->feature_flags().enable_samplers);
-  EXPECT_TRUE(info_->feature_flags().map_buffer_range);
-  EXPECT_TRUE(info_->feature_flags().ext_discard_framebuffer);
-  EXPECT_THAT(info_->extensions(), HasSubstr("GL_EXT_discard_framebuffer"));
   EXPECT_TRUE(info_->feature_flags().chromium_framebuffer_multisample);
   EXPECT_TRUE(info_->feature_flags().use_core_framebuffer_multisample);
   EXPECT_THAT(info_->extensions(),
               HasSubstr("GL_CHROMIUM_framebuffer_multisample"));
   EXPECT_TRUE(info_->feature_flags().use_async_readpixels);
+  EXPECT_TRUE(info_->feature_flags().oes_standard_derivatives);
   EXPECT_TRUE(info_->feature_flags().oes_depth24);
   EXPECT_THAT(info_->extensions(), HasSubstr("GL_GOOGLE_depth_texture"));
   EXPECT_THAT(info_->extensions(), HasSubstr("GL_CHROMIUM_depth_texture"));
+  EXPECT_TRUE(
+      info_->validators()->texture_internal_format.IsValid(GL_DEPTH_COMPONENT));
+  EXPECT_TRUE(
+      info_->validators()->texture_internal_format.IsValid(GL_DEPTH_STENCIL));
+  EXPECT_TRUE(info_->validators()->texture_format.IsValid(GL_DEPTH_COMPONENT));
+  EXPECT_TRUE(info_->validators()->texture_format.IsValid(GL_DEPTH_STENCIL));
+  EXPECT_TRUE(info_->validators()->pixel_type.IsValid(GL_UNSIGNED_SHORT));
+  EXPECT_TRUE(info_->validators()->pixel_type.IsValid(GL_UNSIGNED_INT));
   EXPECT_TRUE(info_->validators()->pixel_type.IsValid(GL_UNSIGNED_INT_24_8));
   EXPECT_TRUE(info_->GetTextureFormatValidator(GL_DEPTH_COMPONENT)
                   .IsValid(GL_UNSIGNED_SHORT));
@@ -1198,6 +1203,12 @@ TEST_F(FeatureInfoTest, InitializeWithES3) {
   EXPECT_TRUE(
       info_->validators()->texture_internal_format.IsValid(GL_DEPTH_STENCIL));
   EXPECT_TRUE(info_->validators()->texture_format.IsValid(GL_DEPTH_STENCIL));
+  EXPECT_TRUE(info_->feature_flags().npot_ok);
+  EXPECT_TRUE(info_->feature_flags().native_vertex_array_object);
+  EXPECT_TRUE(info_->feature_flags().enable_samplers);
+  EXPECT_TRUE(info_->feature_flags().map_buffer_range);
+  EXPECT_TRUE(info_->feature_flags().ext_discard_framebuffer);
+  EXPECT_THAT(info_->extensions(), HasSubstr("GL_EXT_discard_framebuffer"));
   EXPECT_TRUE(info_->feature_flags().chromium_sync_query);
   EXPECT_TRUE(gfx::GLFence::IsSupported());
 }
