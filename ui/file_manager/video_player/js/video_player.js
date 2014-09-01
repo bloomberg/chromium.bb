@@ -252,6 +252,10 @@ VideoPlayer.prototype.prepare = function(videos) {
   else
     videoPlayerElement.removeAttribute('multiple');
 
+  document.querySelector('#cast-menu').setAttribute(
+      'playon-text',
+      loadTimeData.getString('VIDEO_PLAYER_PLAY_ON'));
+
   document.addEventListener('keydown', reloadVideo);
   document.addEventListener('click', reloadVideo);
 };

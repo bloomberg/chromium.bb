@@ -3,12 +3,19 @@
  * found in the LICENSE file. */
 
 .cast-menu {
-  border: 1px solid #7f7f7f;
+  background: #222;
+  border: 0;
   border-radius: 1px;
   min-width: 120px;
-  padding: 0;
+  padding: 0 15px 15px;
   position: absolute;
   z-index: 1000;
+}
+
+.cast-menu:before {
+  color: #fff;
+  content: attr(playon-text);
+  line-height: 42px;
 }
 
 .cast-menu.hidden {
@@ -18,7 +25,7 @@
 .cast-menu > :not(hr) {
   -webkit-padding-end: 14px;
   -webkit-padding-start: 19px;
-  background-color: #fff;
+  background-color: #e6e6e6;
   font-size: 12px;
   padding-bottom: 5px;
   padding-top: 5px;
@@ -30,6 +37,22 @@
   -webkit-padding-start: 0;
 }
 
+.cast-menu > [selected]:not(hr) {
+  background-color: #888;
+  color: #fff;
+}
+
+.cast-menu > [selected]:not(hr):active {
+  background-color: #888;
+  color: #fff;
+}
+
+.cast-menu > [checked]:hover:before,
+.cast-menu > [checked]:active:before {
+  content: url('../../../webui/resources/images/checkbox_white.png');
+}
+
 .cast-menu > :not(hr):hover {
-  background-color: #eee;
+  background-color: #555;
+  color: #fff;
 }
