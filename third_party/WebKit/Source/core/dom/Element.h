@@ -842,6 +842,14 @@ inline bool isShadowHost(const Element* element)
     return element && element->shadow();
 }
 
+inline bool isAtShadowBoundary(const Element* element)
+{
+    if (!element)
+        return false;
+    ContainerNode* parentNode = element->parentNode();
+    return parentNode && parentNode->isShadowRoot();
+}
+
 // These macros do the same as their NODE equivalents but additionally provide a template specialization
 // for isElementOfType<>() so that the Traversal<> API works for these Element types.
 #define DEFINE_ELEMENT_TYPE_CASTS(thisType, predicate) \

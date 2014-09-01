@@ -526,16 +526,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForDocument(Document& document)
     return documentStyle.release();
 }
 
-// FIXME: This is duplicated with StyleAdjuster.cpp
-// Perhaps this should move onto ElementResolveContext or even Element?
-static inline bool isAtShadowBoundary(const Element* element)
-{
-    if (!element)
-        return false;
-    ContainerNode* parentNode = element->parentNode();
-    return parentNode && parentNode->isShadowRoot();
-}
-
 static inline void resetDirectionAndWritingModeOnDocument(Document& document)
 {
     document.setDirectionSetOnDocumentElement(false);

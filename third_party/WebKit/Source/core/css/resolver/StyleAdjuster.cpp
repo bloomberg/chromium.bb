@@ -56,17 +56,6 @@ namespace blink {
 
 using namespace HTMLNames;
 
-// FIXME: This is duplicated with StyleResolver.cpp
-// Perhaps this should move onto ElementResolveContext or even Element?
-static inline bool isAtShadowBoundary(const Element* element)
-{
-    if (!element)
-        return false;
-    ContainerNode* parentNode = element->parentNode();
-    return parentNode && parentNode->isShadowRoot();
-}
-
-
 static EDisplay equivalentBlockDisplay(EDisplay display, bool isFloating, bool strictParsing)
 {
     switch (display) {
