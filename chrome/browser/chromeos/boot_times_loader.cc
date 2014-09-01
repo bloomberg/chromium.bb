@@ -145,7 +145,7 @@ BootTimesLoader::Stats BootTimesLoader::Stats::GetCurrentStats() {
 }
 
 std::string BootTimesLoader::Stats::SerializeToString() const {
-  if (uptime_.empty() || disk_.empty())
+  if (uptime_.empty() && disk_.empty())
     return std::string();
   base::DictionaryValue dictionary;
   dictionary.SetString(kUptime, uptime_);
