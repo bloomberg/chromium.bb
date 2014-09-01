@@ -852,6 +852,7 @@
         'cookies/cookie_monster_perftest.cc',
         'disk_cache/blockfile/disk_cache_perftest.cc',
         'proxy/proxy_resolver_perftest.cc',
+        'websockets/websocket_frame_perftest.cc',
       ],
       'conditions': [
         [ 'use_v8_in_net==1', {
@@ -876,6 +877,11 @@
             ],
             # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
             'msvs_disabled_warnings': [4267, ],
+        }],
+        [ 'enable_websockets != 1', {
+          'sources!': [
+            'websockets/websocket_frame_perftest.cc',
+          ],
         }],
       ],
     },

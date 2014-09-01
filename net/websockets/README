@@ -25,7 +25,7 @@ websocket_throttle_test.cc
 The following files are part of the new implementation. The new implementation
 performs framing and implements protocol semantics in the browser process, and
 presents a high-level interface to the renderer process similar to a
-multiplexing proxy. This is not yet used in any stable Chromium version.
+multiplexing proxy. This is the default implementation from M38.
 
 websocket_basic_handshake_stream.cc
 websocket_basic_handshake_stream.h
@@ -60,6 +60,7 @@ websocket_frame_parser.cc
 websocket_frame_parser.h
 websocket_frame_parser_test.cc
 websocket_frame_test.cc
+websocket_frame_perftest.cc
 websocket_handshake_stream_base.h
 websocket_handshake_stream_create_helper.cc
 websocket_handshake_stream_create_helper.h

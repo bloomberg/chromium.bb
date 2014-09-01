@@ -5,28 +5,16 @@
 #include "net/websockets/websocket_frame.h"
 
 #include <algorithm>
-#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/command_line.h"
-#include "base/logging.h"
 #include "base/memory/aligned_memory.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
-#include "base/time/time.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Run
-//   out/Release/net_unittests --websocket-mask-iterations=100000
-//      --gtest_filter='WebSocketFrameTestMaskBenchmark.*'
-// to benchmark the MaskWebSocketFramePayload() function.
-static const char kBenchmarkIterations[] = "websocket-mask-iterations";
-static const int kDefaultIterations = 10;
-static const int kLongPayloadSize = 1 << 16;
-
 namespace net {
+
+namespace {
 
 TEST(WebSocketFrameHeaderTest, FrameLengths) {
   struct TestCase {
@@ -342,64 +330,6 @@ TEST(WebSocketFrameTest, MaskPayloadAlignment) {
   }
 }
 
-class WebSocketFrameTestMaskBenchmark : public testing::Test {
- public:
-  WebSocketFrameTestMaskBenchmark() : iterations_(kDefaultIterations) {}
-
-  virtual void SetUp() {
-    std::string iterations(
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            kBenchmarkIterations));
-    int benchmark_iterations = 0;
-    if (!iterations.empty() &&
-        base::StringToInt(iterations, &benchmark_iterations)) {
-      iterations_ = benchmark_iterations;
-    }
-  }
-
-  void Benchmark(const char* const payload, size_t size) {
-    std::vector<char> scratch(payload, payload + size);
-    static const char kMaskingKey[] = "\xFE\xED\xBE\xEF";
-    COMPILE_ASSERT(
-        arraysize(kMaskingKey) == WebSocketFrameHeader::kMaskingKeyLength + 1,
-        incorrect_masking_key_size);
-    WebSocketMaskingKey masking_key;
-    std::copy(kMaskingKey,
-              kMaskingKey + WebSocketFrameHeader::kMaskingKeyLength,
-              masking_key.key);
-    LOG(INFO) << "Benchmarking MaskWebSocketFramePayload() for " << iterations_
-              << " iterations";
-    using base::TimeTicks;
-    TimeTicks start = TimeTicks::HighResNow();
-    for (int x = 0; x < iterations_; ++x) {
-      MaskWebSocketFramePayload(
-          masking_key, x % size, &scratch.front(), scratch.size());
-    }
-    double total_time_ms =
-        1000 * (TimeTicks::HighResNow() - start).InMillisecondsF() /
-        iterations_;
-    LOG(INFO) << "Payload size " << size
-              << base::StringPrintf(" took %.03f microseconds per iteration",
-                                    total_time_ms);
-  }
-
- private:
-  int iterations_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebSocketFrameTestMaskBenchmark);
-};
-
-TEST_F(WebSocketFrameTestMaskBenchmark, BenchmarkMaskShortPayload) {
-  static const char kShortPayload[] = "Short Payload";
-  Benchmark(kShortPayload, arraysize(kShortPayload));
-}
-
-TEST_F(WebSocketFrameTestMaskBenchmark, BenchmarkMaskLongPayload) {
-  scoped_ptr<char[]> payload(new char[kLongPayloadSize]);
-  std::fill(payload.get(), payload.get() + kLongPayloadSize, 'a');
-  Benchmark(payload.get(), kLongPayloadSize);
-}
-
 // "IsKnownDataOpCode" is currently implemented in an "obviously correct"
 // manner, but we test is anyway in case it changes to a more complex
 // implementation in future.
@@ -458,5 +388,7 @@ TEST(WebSocketFrameHeaderTest, IsKnownControlOpCode) {
   EXPECT_FALSE(Frame::IsKnownControlOpCode(-1));
   EXPECT_FALSE(Frame::IsKnownControlOpCode(0xFF));
 }
+
+}  // namespace
 
 }  // namespace net
