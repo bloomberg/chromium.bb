@@ -183,7 +183,6 @@ table_files = \
 	nemeth.ctb \
 	nemethdefs.cti \
 	nemeth_edit.ctb \
-	new.ctb \
 	nl-BE-chardefs.cti \
 	nl-BE.dis \
 	nl-BE-g1.ctb \
@@ -217,7 +216,6 @@ table_files = \
 	ru-ru.dis \
 	ru-ru-g1.utb \
 	sa-in-g1.utb \
-	sat.ctb \
 	se-se.ctb \
 	se-se.dis \
 	Se-Se-g1.utb \
