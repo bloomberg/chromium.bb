@@ -1,10 +1,11 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
 * Noteworthy changes in release 2.6.0 (2014-9-1)
-This is the first release by the new maintainer team. A lot of people
-from the community contributed to this release. Aside from the usual
-improvements and addition of braille tables we also have changes to
-the C API to enable call backs for error messages and warnings.
+This is the first release by the new maintainer team. A lot of work by
+people from across the community contributed to this release. There
+are massive additions and updates to the Braille tables and also
+changes to the C API to enable call backs for error messages and
+warnings.
 
 ** New features
 *** New Braille tables
@@ -58,7 +59,8 @@ warnings for example.
     typing but need to be before the consonant in braille. This rule
     is applicable for all Indian languages.
   - defined rules for two conjunct characters "ksha and gya" used in
-    all Indian Languages for which there are specific codes in Braille
+    all Indian Languages for which there are specific codes in
+    Braille.
 
 * Noteworthy changes in release 2.5.4 (2014-3-3)
 This release contains nine months worth of braille table improvements
