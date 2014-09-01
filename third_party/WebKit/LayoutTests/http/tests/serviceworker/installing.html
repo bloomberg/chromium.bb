@@ -24,9 +24,6 @@ async_test(function(t) {
         registration = r;
         return wait_for_update(t, registration);
     }))
-    .then(step(function(serviceWorker) {
-        return wait_for_state(t, serviceWorker, 'installing');
-    }), unreached_rejection(t, 'Registration should not fail'))
     .then(step(function() {
         var container = frame.contentWindow.navigator.serviceWorker;
         assert_equals(container.controller, null);

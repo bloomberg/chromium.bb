@@ -1288,12 +1288,7 @@ crbug.com/399533 http/tests/serviceworker/ready.html [ Skip ]
 crbug.com/401377 [ Win Release ] http/tests/serviceworker/fetch-mixed-content.html [ Pass Timeout ]
 crbug.com/401380 inspector/elements/styles/styles-should-not-force-sync-style-recalc.html [ Pass Failure ]
 crbug.com/401381 [ XP ] http/tests/serviceworker/fetch-event.html [ Pass Failure ]
-crbug.com/405847 http/tests/serviceworker/install-phase-event-waituntil.html [ Skip ]
-
-crbug.com/406240 http/tests/serviceworker/activation-after-registration.html [ Skip ]
-crbug.com/406240 http/tests/serviceworker/installing.html [ Skip ]
-crbug.com/406240 http/tests/serviceworker/registration-end-to-end.html [ Skip ]
-crbug.com/406240 http/tests/serviceworker/registration-service-worker-attributes.html [ Skip ]
+crbug.com/405847 [ XP ] http/tests/serviceworker/install-phase-event-waituntil.html [ Pass Failure ]
 
 crbug.com/398355 http/tests/serviceworker/unregister-then-register-new-script.html [ Pass Failure Timeout ]
 

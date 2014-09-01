@@ -12,17 +12,20 @@ t.step(function() {
 
     service_worker_unregister_and_register(
         t, 'resources/empty-worker.js', scope)
-      .then(t.step_func(function(r) {
+      .then(function(r) {
           registration = r;
           return wait_for_update(t, registration);
-        }))
-      .then(t.step_func(function(worker) {
-          assert_equals(worker.state, 'parsed', 'worker should be in the "parsed" state upon registration');
-          worker.addEventListener('statechange', t.step_func(function(event) {
-              if (event.target.state == 'activated')
-                  service_worker_unregister_and_done(t, scope);
-          }));
-        }))
+        })
+      .then(function(worker) {
+          assert_equals(
+              worker.state,
+              'installing',
+              'worker should be in the "installing" state upon registration');
+          return wait_for_state(t, worker, 'activated');
+        })
+      .then(function() {
+          service_worker_unregister_and_done(t, scope);
+        })
       .catch(unreached_rejection(t));
 });
 </script>

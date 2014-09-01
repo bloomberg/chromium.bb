@@ -52,10 +52,11 @@ async_test(function(t) {
     var scope = 'install-fulfilled';
     var onRegister = function(worker) {
         var obj = {};
+        assert_equals(worker.state,
+                      'installing',
+                      'Should be in the "installing" state upon updatefound');
         worker.onstatechange = t.step_func(function() {
-            if (worker.state == 'installing') {
-              syncWorker(t, worker, obj);
-            } else if (worker.state == 'installed') {
+            if (worker.state == 'installed') {
               assert_true(
                   obj.synced,
                   'state should be "installed" after the waitUntil promise ' +
@@ -63,6 +64,7 @@ async_test(function(t) {
               service_worker_unregister_and_done(t, scope);
             }
           });
+        syncWorker(t, worker, obj);
       };
     runTest(t, scope, onRegister);
   }, 'Test install event waitUntil fulfilled', properties);

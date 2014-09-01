@@ -11,7 +11,7 @@ async_test(function(t) {
     service_worker_unregister_and_register(t, worker_url, scope)
       .then(function(r) {
           registration = r;
-          assert_equals(registration.installing, null,
+          assert_equals(registration.installing.scriptURL, expected_url,
                         'installing before updatefound');
           assert_equals(registration.waiting, null,
                         'waiting before updatefound');
