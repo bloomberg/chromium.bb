@@ -89,6 +89,8 @@ void RTCVoidRequestImpl::clear()
 
 void RTCVoidRequestImpl::trace(Visitor* visitor)
 {
+    visitor->trace(m_successCallback);
+    visitor->trace(m_errorCallback);
     visitor->trace(m_requester);
     RTCVoidRequest::trace(visitor);
 }

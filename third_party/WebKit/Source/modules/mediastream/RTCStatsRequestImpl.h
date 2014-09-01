@@ -59,9 +59,8 @@ private:
 
     void clear();
 
-    OwnPtrWillBePersistent<RTCStatsCallback> m_successCallback;
+    OwnPtrWillBeMember<RTCStatsCallback> m_successCallback;
     RefPtr<MediaStreamComponent> m_component;
-
     Member<RTCPeerConnection> m_requester;
 };
 

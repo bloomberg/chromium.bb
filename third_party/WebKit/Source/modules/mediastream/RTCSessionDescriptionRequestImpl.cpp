@@ -92,6 +92,8 @@ void RTCSessionDescriptionRequestImpl::clear()
 
 void RTCSessionDescriptionRequestImpl::trace(Visitor* visitor)
 {
+    visitor->trace(m_successCallback);
+    visitor->trace(m_errorCallback);
     visitor->trace(m_requester);
     RTCSessionDescriptionRequest::trace(visitor);
 }

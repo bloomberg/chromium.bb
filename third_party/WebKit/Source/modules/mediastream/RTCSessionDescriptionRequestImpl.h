@@ -62,9 +62,8 @@ private:
 
     void clear();
 
-    OwnPtrWillBePersistent<RTCSessionDescriptionCallback> m_successCallback;
-    OwnPtrWillBePersistent<RTCErrorCallback> m_errorCallback;
-
+    OwnPtrWillBeMember<RTCSessionDescriptionCallback> m_successCallback;
+    OwnPtrWillBeMember<RTCErrorCallback> m_errorCallback;
     Member<RTCPeerConnection> m_requester;
 };
 
