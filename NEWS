@@ -34,6 +34,8 @@ warnings for example.
 - Fixes to the build system by Simon Aittamaa
 
 ** Braille table improvements
+- UEB table fixes: Fix ity contraction, fixed the missing end word 
+  contraction ;n ;d sign 46. thanks to Ken Perry.	 
 - Fix for Norwegian where letsign is affecting some extra characters
   thanks to Lars Bjørndal
 - Much improved hyphenation for Norwegian thanks to Lars Bjørndal
