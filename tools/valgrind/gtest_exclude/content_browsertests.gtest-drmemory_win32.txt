@@ -1,5 +1,5 @@
 # crbug.com/389132
-WebRtcBrowserTest.TwoCallsWithAecDump
+WebRtcAecDumpBrowserTest.*CallWithAecDump*
 
 # http://code.google.com/p/drmemory/issues/detail?id=1528
 # Un-analyzed test failures:
@@ -42,4 +42,3 @@ WebRtcBrowserTest.CanSetupVideoCallWith16To9AspectRatio
 WebRtcBrowserTest.CanSetupVideoCallWith1To1AspectRatio
 WebRtcBrowserTest.CanSetupVideoCallWith4To3AspectRatio
 WebRtcBrowserTest.NegotiateOfferWithBLine
-WebRtcAecDumpBrowserTest.*CallWithAecDump*
