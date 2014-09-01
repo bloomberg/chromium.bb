@@ -12,6 +12,22 @@ var fileSystemNatives = requireNative('file_system_natives');
 var GetDOMError = fileSystemNatives.GetDOMError;
 
 /**
+ * Maximum size of the thumbnail in bytes.
+ * @type {number}
+ * @const
+ */
+var METADATA_THUMBNAIL_SIZE_LIMIT = 32 * 1024 * 1024;
+
+/**
+ * Regular expression to validate if the thumbnail URI is a valid data URI,
+ * taking into account allowed formats.
+ * @type {RegExp}
+ * @const
+ */
+var METADATA_THUMBNAIL_FORMAT = new RegExp(
+    '^data:image/(png|jpeg|webp);', 'i');
+
+/**
  * Annotates a date with its serialized value.
  * @param {Date} date Input date.
  * @return {Date} Date with an extra <code>value</code> attribute.
@@ -21,6 +37,19 @@ function annotateDate(date) {
   var result = new Date(date.getTime());
   result.value = result.toString();
   return result;
+}
+
+/**
+ * Verifies if the passed image URI is valid.
+ * @param {*} uri Image URI.
+ * @return {boolean} True if valid, valse otherwise.
+ */
+function verifyImageURI(uri) {
+  // The URI is specified by a user, so the type may be incorrect.
+  if (typeof uri != 'string' && !(uri instanceof String))
+    return false;
+
+  return METADATA_THUMBNAIL_FORMAT.test(uri);
 }
 
 /**
@@ -38,6 +67,8 @@ function annotateMetadata(metadata) {
   };
   if ('mimeType' in metadata)
     result.mimeType = metadata.mimeType;
+  if ('thumbnail' in metadata)
+    result.thumbnail = metadata.thumbnail;
   return result;
 }
 
@@ -141,6 +172,25 @@ eventBindings.registerArgumentMassager(
       var executionStart = Date.now();
       var options = args[0];
       var onSuccessCallback = function(metadata) {
+        // It is invalid to return a thumbnail when it's not requested. The
+        // restriction is added in order to avoid fetching the thumbnail while
+        // it's not needed.
+        if (!options.thumbnail && metadata.thumbnail) {
+          fileSystemProviderInternal.operationRequestedError(
+              options.fileSystemId, options.requestId, 'FAILED',
+              Date.now() - executionStart);
+          throw new Error('Thumbnail data provided, but not requested.');
+        }
+
+        // Check the format and size. Note, that in the C++ layer, there is
+        // another sanity check to avoid passing any evil URL.
+        if ('thumbnail' in metadata && !verifyImageURI(metadata.thumbnail))
+          throw new Error('Thumbnail format invalid.');
+        if ('thumbnail' in metadata &&
+            metadata.thumbnail.length > METADATA_THUMBNAIL_SIZE_LIMIT) {
+          throw new Error('Thumbnail data too large.');
+        }
+
         fileSystemProviderInternal.getMetadataRequestedSuccess(
             options.fileSystemId,
             options.requestId,
@@ -162,6 +212,16 @@ eventBindings.registerArgumentMassager(
       var options = args[0];
       var onSuccessCallback = function(entries, hasNext) {
         var annotatedEntries = entries.map(annotateMetadata);
+        // It is invalid to return a thumbnail when it's not requested.
+        annotatedEntries.forEach(function(metadata) {
+          if (metadata.thumbnail) {
+            fileSystemProviderInternal.operationRequestedError(
+                options.fileSystemId, options.requestId, 'FAILED',
+                Date.now() - executionStart);
+            throw new Error(
+                'Thumbnails must not be provided when reading a directory.');
+          }
+        });
         fileSystemProviderInternal.readDirectoryRequestedSuccess(
             options.fileSystemId, options.requestId, annotatedEntries, hasNext,
             Date.now() - executionStart);

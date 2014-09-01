@@ -30,7 +30,8 @@ class GetMetadata : public Operation {
  public:
   GetMetadata(extensions::EventRouter* event_router,
               const ProvidedFileSystemInfo& file_system_info,
-              const base::FilePath& directory_path,
+              const base::FilePath& entry_path,
+              ProvidedFileSystemInterface::MetadataFieldMask fields,
               const ProvidedFileSystemInterface::GetMetadataCallback& callback);
   virtual ~GetMetadata();
 
@@ -45,6 +46,7 @@ class GetMetadata : public Operation {
 
  private:
   base::FilePath entry_path_;
+  ProvidedFileSystemInterface::MetadataFieldMask fields_;
   const ProvidedFileSystemInterface::GetMetadataCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GetMetadata);

@@ -29,31 +29,44 @@ void GetFileInfoOnUIThread(
     const ProvidedFileSystemInterface::GetMetadataCallback& callback) {
   util::FileSystemURLParser parser(url);
   if (!parser.Parse()) {
-    callback.Run(EntryMetadata(), base::File::FILE_ERROR_INVALID_OPERATION);
+    callback.Run(make_scoped_ptr<EntryMetadata>(NULL),
+                 base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
-  parser.file_system()->GetMetadata(parser.file_path(), callback);
+  parser.file_system()->GetMetadata(
+      parser.file_path(),
+      ProvidedFileSystemInterface::METADATA_FIELD_DEFAULT,
+      callback);
 }
 
 // Routes the response of GetFileInfo back to the IO thread with a type
 // conversion.
 void OnGetFileInfo(const storage::AsyncFileUtil::GetFileInfoCallback& callback,
-                   const EntryMetadata& metadata,
+                   scoped_ptr<EntryMetadata> metadata,
                    base::File::Error result) {
+  if (result != base::File::FILE_OK) {
+    BrowserThread::PostTask(BrowserThread::IO,
+                            FROM_HERE,
+                            base::Bind(callback, result, base::File::Info()));
+    return;
+  }
+
+  DCHECK(metadata.get());
   base::File::Info file_info;
 
   // TODO(mtomasz): Add support for last modified time and creation time.
   // See: crbug.com/388540.
-  file_info.size = metadata.size;
-  file_info.is_directory = metadata.is_directory;
+  file_info.size = metadata->size;
+  file_info.is_directory = metadata->is_directory;
   file_info.is_symbolic_link = false;  // Not supported.
-  file_info.last_modified = metadata.modification_time;
-  file_info.last_accessed = metadata.modification_time;  // Not supported.
-  file_info.creation_time = metadata.modification_time;  // Not supported.
+  file_info.last_modified = metadata->modification_time;
+  file_info.last_accessed = metadata->modification_time;  // Not supported.
+  file_info.creation_time = metadata->modification_time;  // Not supported.
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE, base::Bind(callback, result, file_info));
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(callback, base::File::FILE_OK, file_info));
 }
 
 // Executes ReadDirectory on the UI thread.

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
@@ -36,15 +37,15 @@ extern const char kFakeFilePath[];
 
 // Represents a file or a directory on a fake file system.
 struct FakeEntry {
-  FakeEntry() {}
+  FakeEntry();
+  FakeEntry(scoped_ptr<EntryMetadata> metadata, const std::string& contents);
+  ~FakeEntry();
 
-  FakeEntry(const EntryMetadata& metadata, const std::string& contents)
-      : metadata(metadata), contents(contents) {}
-
-  virtual ~FakeEntry() {}
-
-  EntryMetadata metadata;
+  scoped_ptr<EntryMetadata> metadata;
   std::string contents;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakeEntry);
 };
 
 // Fake provided file system implementation. Does not communicate with target
@@ -65,15 +66,16 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
                 std::string contents);
 
   // Fetches a pointer to a fake entry registered in the fake file system. If
-  // found, then the result is written to |fake_entry| and true is returned.
-  // Otherwise, false is returned. |fake_entry| must not be NULL.
-  bool GetEntry(const base::FilePath& entry_path, FakeEntry* fake_entry) const;
+  // not found, then returns NULL. The returned pointes is owned by
+  // FakeProvidedFileSystem.
+  const FakeEntry* GetEntry(const base::FilePath& entry_path) const;
 
   // ProvidedFileSystemInterface overrides.
   virtual AbortCallback RequestUnmount(
       const storage::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual AbortCallback GetMetadata(
       const base::FilePath& entry_path,
+      ProvidedFileSystemInterface::MetadataFieldMask fields,
       const ProvidedFileSystemInterface::GetMetadataCallback& callback)
       OVERRIDE;
   virtual AbortCallback ReadDirectory(
@@ -132,7 +134,7 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
       const ProvidedFileSystemInfo& file_system_info);
 
  private:
-  typedef std::map<base::FilePath, FakeEntry> Entries;
+  typedef std::map<base::FilePath, linked_ptr<FakeEntry> > Entries;
   typedef std::map<int, base::FilePath> OpenedFilesMap;
 
   // Utility function for posting a task which can be aborted by calling the

@@ -43,6 +43,7 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
       const storage::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual AbortCallback GetMetadata(
       const base::FilePath& entry_path,
+      MetadataFieldMask fields,
       const GetMetadataCallback& callback) OVERRIDE;
   virtual AbortCallback ReadDirectory(
       const base::FilePath& directory_path,

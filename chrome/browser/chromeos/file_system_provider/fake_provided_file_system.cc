@@ -23,6 +23,17 @@ const char kFakeFileMimeType[] = "text/plain";
 
 const char kFakeFilePath[] = "/hello.txt";
 
+FakeEntry::FakeEntry() {
+}
+
+FakeEntry::FakeEntry(scoped_ptr<EntryMetadata> metadata,
+                     const std::string& contents)
+    : metadata(metadata.Pass()), contents(contents) {
+}
+
+FakeEntry::~FakeEntry() {
+}
+
 FakeProvidedFileSystem::FakeProvidedFileSystem(
     const ProvidedFileSystemInfo& file_system_info)
     : file_system_info_(file_system_info),
@@ -52,25 +63,25 @@ void FakeProvidedFileSystem::AddEntry(const base::FilePath& entry_path,
                                       std::string mime_type,
                                       std::string contents) {
   DCHECK(entries_.find(entry_path) == entries_.end());
-  EntryMetadata metadata;
+  scoped_ptr<EntryMetadata> metadata(new EntryMetadata);
 
-  metadata.is_directory = is_directory;
-  metadata.name = name;
-  metadata.size = size;
-  metadata.modification_time = modification_time;
-  metadata.mime_type = mime_type;
+  metadata->is_directory = is_directory;
+  metadata->name = name;
+  metadata->size = size;
+  metadata->modification_time = modification_time;
+  metadata->mime_type = mime_type;
 
-  entries_[entry_path] = FakeEntry(metadata, contents);
+  entries_[entry_path] =
+      make_linked_ptr(new FakeEntry(metadata.Pass(), contents));
 }
 
-bool FakeProvidedFileSystem::GetEntry(const base::FilePath& entry_path,
-                                      FakeEntry* fake_entry) const {
+const FakeEntry* FakeProvidedFileSystem::GetEntry(
+    const base::FilePath& entry_path) const {
   const Entries::const_iterator entry_it = entries_.find(entry_path);
   if (entry_it == entries_.end())
-    return false;
+    return NULL;
 
-  *fake_entry = entry_it->second;
-  return true;
+  return entry_it->second.get();
 }
 
 ProvidedFileSystemInterface::AbortCallback
@@ -81,16 +92,27 @@ FakeProvidedFileSystem::RequestUnmount(
 
 ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::GetMetadata(
     const base::FilePath& entry_path,
+    ProvidedFileSystemInterface::MetadataFieldMask fields,
     const ProvidedFileSystemInterface::GetMetadataCallback& callback) {
   const Entries::const_iterator entry_it = entries_.find(entry_path);
 
   if (entry_it == entries_.end()) {
-    return PostAbortableTask(base::Bind(
-        callback, EntryMetadata(), base::File::FILE_ERROR_NOT_FOUND));
+    return PostAbortableTask(
+        base::Bind(callback,
+                   base::Passed(make_scoped_ptr<EntryMetadata>(NULL)),
+                   base::File::FILE_ERROR_NOT_FOUND));
   }
 
+  scoped_ptr<EntryMetadata> metadata(new EntryMetadata);
+  metadata->is_directory = entry_it->second->metadata->is_directory;
+  metadata->name = entry_it->second->metadata->name;
+  metadata->size = entry_it->second->metadata->size;
+  metadata->modification_time = entry_it->second->metadata->modification_time;
+  metadata->mime_type = entry_it->second->metadata->mime_type;
+  metadata->thumbnail = entry_it->second->metadata->thumbnail;
+
   return PostAbortableTask(
-      base::Bind(callback, entry_it->second.metadata, base::File::FILE_OK));
+      base::Bind(callback, base::Passed(&metadata), base::File::FILE_OK));
 }
 
 ProvidedFileSystemInterface::AbortCallback
@@ -103,13 +125,13 @@ FakeProvidedFileSystem::ReadDirectory(
        ++it) {
     const base::FilePath file_path = it->first;
     if (file_path == directory_path || directory_path.IsParent(file_path)) {
-      const EntryMetadata& metadata = it->second.metadata;
+      const EntryMetadata* const metadata = it->second->metadata.get();
       entry_list.push_back(storage::DirectoryEntry(
-          metadata.name,
-          metadata.is_directory ? storage::DirectoryEntry::DIRECTORY
-                                : storage::DirectoryEntry::FILE,
-          metadata.size,
-          metadata.modification_time));
+          metadata->name,
+          metadata->is_directory ? storage::DirectoryEntry::DIRECTORY
+                                 : storage::DirectoryEntry::FILE,
+          metadata->size,
+          metadata->modification_time));
     }
   }
 
@@ -182,19 +204,19 @@ ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::ReadFile(
   int current_length = length;
 
   // Reading behind EOF is fine, it will just return 0 bytes.
-  if (current_offset >= entry_it->second.metadata.size || !current_length) {
+  if (current_offset >= entry_it->second->metadata->size || !current_length) {
     return PostAbortableTask(base::Bind(callback,
                                         0 /* chunk_length */,
                                         false /* has_more */,
                                         base::File::FILE_OK));
   }
 
-  const FakeEntry& entry = entry_it->second;
+  const FakeEntry* const entry = entry_it->second.get();
   std::vector<int> task_ids;
-  while (current_offset < entry.metadata.size && current_length) {
-    buffer->data()[current_offset - offset] = entry.contents[current_offset];
+  while (current_offset < entry->metadata->size && current_length) {
+    buffer->data()[current_offset - offset] = entry->contents[current_offset];
     const bool has_more =
-        (current_offset + 1 < entry.metadata.size) && (current_length - 1);
+        (current_offset + 1 < entry->metadata->size) && (current_length - 1);
     const int task_id = tracker_.PostTask(
         base::MessageLoopProxy::current(),
         FROM_HERE,
@@ -283,16 +305,16 @@ ProvidedFileSystemInterface::AbortCallback FakeProvidedFileSystem::WriteFile(
         base::Bind(callback, base::File::FILE_ERROR_INVALID_OPERATION));
   }
 
-  FakeEntry* const entry = &entry_it->second;
-  if (offset > entry->metadata.size) {
+  FakeEntry* const entry = entry_it->second.get();
+  if (offset > entry->metadata->size) {
     return PostAbortableTask(
         base::Bind(callback, base::File::FILE_ERROR_INVALID_OPERATION));
   }
 
   // Allocate the string size in advance.
-  if (offset + length > entry->metadata.size) {
-    entry->metadata.size = offset + length;
-    entry->contents.resize(entry->metadata.size);
+  if (offset + length > entry->metadata->size) {
+    entry->metadata->size = offset + length;
+    entry->contents.resize(entry->metadata->size);
   }
 
   entry->contents.replace(offset, length, buffer->data(), length);

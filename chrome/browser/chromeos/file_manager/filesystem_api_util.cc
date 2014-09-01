@@ -46,7 +46,7 @@ void GetMimeTypeAfterGetResourceEntryForDrive(
 // the mime type from the passed metadata from a providing extension.
 void GetMimeTypeAfterGetMetadataForProvidedFileSystem(
     const base::Callback<void(bool, const std::string&)>& callback,
-    const chromeos::file_system_provider::EntryMetadata& metadata,
+    scoped_ptr<chromeos::file_system_provider::EntryMetadata> metadata,
     base::File::Error result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -54,7 +54,7 @@ void GetMimeTypeAfterGetMetadataForProvidedFileSystem(
     callback.Run(false, std::string());
     return;
   }
-  callback.Run(true, metadata.mime_type);
+  callback.Run(true, metadata->mime_type);
 }
 
 // Helper function to converts a callback that takes boolean value to that takes
@@ -170,6 +170,8 @@ void GetNonNativeLocalPathMimeType(
 
     parser.file_system()->GetMetadata(
         parser.file_path(),
+        chromeos::file_system_provider::ProvidedFileSystemInterface::
+            METADATA_FIELD_DEFAULT,
         base::Bind(&GetMimeTypeAfterGetMetadataForProvidedFileSystem,
                    callback));
     return;

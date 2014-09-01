@@ -134,10 +134,12 @@ TEST_F(FileSystemProviderFileStreamWriter, Write) {
     EXPECT_LT(0, write_log[0]);
     EXPECT_EQ(sizeof(kTextToWrite) - 1, static_cast<size_t>(write_log[0]));
 
-    FakeEntry entry;
-    ASSERT_TRUE(provided_file_system_->GetEntry(
-        base::FilePath::FromUTF8Unsafe(kFakeFilePath), &entry));
-    EXPECT_EQ(kTextToWrite, entry.contents.substr(0, sizeof(kTextToWrite) - 1));
+    const FakeEntry* const entry = provided_file_system_->GetEntry(
+        base::FilePath::FromUTF8Unsafe(kFakeFilePath));
+    ASSERT_TRUE(entry);
+
+    EXPECT_EQ(kTextToWrite,
+              entry->contents.substr(0, sizeof(kTextToWrite) - 1));
   }
 
   // Write additional data to be sure, that the writer's offset is shifted
@@ -153,15 +155,15 @@ TEST_F(FileSystemProviderFileStreamWriter, Write) {
     EXPECT_LT(0, write_log[0]);
     EXPECT_EQ(sizeof(kTextToWrite) - 1, static_cast<size_t>(write_log[0]));
 
-    FakeEntry entry;
-    ASSERT_TRUE(provided_file_system_->GetEntry(
-        base::FilePath::FromUTF8Unsafe(kFakeFilePath), &entry));
+    const FakeEntry* const entry = provided_file_system_->GetEntry(
+        base::FilePath::FromUTF8Unsafe(kFakeFilePath));
+    ASSERT_TRUE(entry);
 
     // The testing text is written twice.
     const std::string expected_contents =
         std::string(kTextToWrite) + kTextToWrite;
     EXPECT_EQ(expected_contents,
-              entry.contents.substr(0, expected_contents.size()));
+              entry->contents.substr(0, expected_contents.size()));
   }
 }
 
@@ -207,11 +209,12 @@ TEST_F(FileSystemProviderFileStreamWriter, Write_WrongFile) {
 TEST_F(FileSystemProviderFileStreamWriter, Write_Append) {
   std::vector<int> write_log;
 
-  FakeEntry entry_before;
-  ASSERT_TRUE(provided_file_system_->GetEntry(
-      base::FilePath::FromUTF8Unsafe(kFakeFilePath), &entry_before));
+  const FakeEntry* const entry = provided_file_system_->GetEntry(
+      base::FilePath::FromUTF8Unsafe(kFakeFilePath));
+  ASSERT_TRUE(entry);
 
-  const int64 initial_offset = entry_before.metadata.size;
+  const std::string original_contents = entry->contents;
+  const int64 initial_offset = entry->metadata->size;
   ASSERT_LT(0, initial_offset);
 
   FileStreamWriter writer(file_url_, initial_offset);
@@ -226,11 +229,8 @@ TEST_F(FileSystemProviderFileStreamWriter, Write_Append) {
   ASSERT_EQ(1u, write_log.size());
   EXPECT_EQ(sizeof(kTextToWrite) - 1, static_cast<size_t>(write_log[0]));
 
-  FakeEntry entry_after;
-  ASSERT_TRUE(provided_file_system_->GetEntry(
-      base::FilePath::FromUTF8Unsafe(kFakeFilePath), &entry_after));
-  const std::string expected_contents = entry_before.contents + kTextToWrite;
-  EXPECT_EQ(expected_contents, entry_after.contents);
+  const std::string expected_contents = original_contents + kTextToWrite;
+  EXPECT_EQ(expected_contents, entry->contents);
 }
 
 }  // namespace file_system_provider

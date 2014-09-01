@@ -114,12 +114,15 @@ class FileStreamReader::OperationRunner
       BrowserThread::PostTask(
           BrowserThread::IO,
           FROM_HERE,
-          base::Bind(callback, EntryMetadata(), base::File::FILE_ERROR_ABORT));
+          base::Bind(callback,
+                     base::Passed(make_scoped_ptr<EntryMetadata>(NULL)),
+                     base::File::FILE_ERROR_ABORT));
       return;
     }
 
     abort_callback_ = file_system_->GetMetadata(
         file_path_,
+        ProvidedFileSystemInterface::METADATA_FIELD_DEFAULT,
         base::Bind(&OperationRunner::OnGetMetadataCompletedOnUIThread,
                    this,
                    callback));
@@ -166,11 +169,13 @@ class FileStreamReader::OperationRunner
   // Forwards a metadata to the IO thread.
   void OnGetMetadataCompletedOnUIThread(
       const ProvidedFileSystemInterface::GetMetadataCallback& callback,
-      const EntryMetadata& metadata,
+      scoped_ptr<EntryMetadata> metadata,
       base::File::Error result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, base::Bind(callback, metadata, result));
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(callback, base::Passed(&metadata), result));
   }
 
   // Forwards a response of reading from a file to the IO thread.
@@ -282,7 +287,7 @@ void FileStreamReader::OnOpenFileCompleted(
 void FileStreamReader::OnInitializeCompleted(
     const base::Closure& pending_closure,
     const net::Int64CompletionCallback& error_callback,
-    const EntryMetadata& metadata,
+    scoped_ptr<EntryMetadata> metadata,
     base::File::Error result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(INITIALIZING, state_);
@@ -296,8 +301,9 @@ void FileStreamReader::OnInitializeCompleted(
 
   // If the file modification time has changed, then abort. Note, that the file
   // may be changed without affecting the modification time.
+  DCHECK(metadata.get());
   if (!expected_modification_time_.is_null() &&
-      metadata.modification_time != expected_modification_time_) {
+      metadata->modification_time != expected_modification_time_) {
     state_ = FAILED;
     error_callback.Run(net::ERR_UPLOAD_FILE_CHANGED);
     return;
@@ -461,7 +467,7 @@ void FileStreamReader::OnReadChunkReceived(
 
 void FileStreamReader::OnGetMetadataForGetLengthReceived(
     const net::Int64CompletionCallback& callback,
-    const EntryMetadata& metadata,
+    scoped_ptr<EntryMetadata> metadata,
     base::File::Error result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(INITIALIZED, state_);
@@ -475,14 +481,15 @@ void FileStreamReader::OnGetMetadataForGetLengthReceived(
 
   // If the file modification time has changed, then abort. Note, that the file
   // may be changed without affecting the modification time.
+  DCHECK(metadata.get());
   if (!expected_modification_time_.is_null() &&
-      metadata.modification_time != expected_modification_time_) {
+      metadata->modification_time != expected_modification_time_) {
     callback.Run(net::ERR_UPLOAD_FILE_CHANGED);
     return;
   }
 
   DCHECK_EQ(base::File::FILE_OK, result);
-  callback.Run(metadata.size);
+  callback.Run(metadata->size);
 }
 
 }  // namespace file_system_provider
