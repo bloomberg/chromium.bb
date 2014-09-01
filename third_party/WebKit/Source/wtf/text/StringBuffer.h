@@ -51,13 +51,7 @@ public:
     {
     }
 
-    void shrink(unsigned newLength)
-    {
-        if (m_data->length() == newLength)
-            return;
-        m_data->truncateAssumingIsolated(newLength);
-    }
-
+    void shrink(unsigned newLength);
     void resize(unsigned newLength)
     {
         if (!m_data) {
@@ -82,6 +76,15 @@ public:
 private:
     RefPtr<StringImpl> m_data;
 };
+
+template <typename CharType>
+void StringBuffer<CharType>::shrink(unsigned newLength)
+{
+    ASSERT(m_data);
+    if (m_data->length() == newLength)
+        return;
+    m_data->truncateAssumingIsolated(newLength);
+}
 
 } // namespace WTF
 

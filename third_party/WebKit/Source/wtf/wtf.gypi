@@ -229,6 +229,7 @@
             'testing/WTFTestHelpersTest.cpp',
             'text/AtomicStringTest.cpp',
             'text/CStringTest.cpp',
+            'text/StringBufferTest.cpp',
             'text/StringBuilderTest.cpp',
             'text/StringImplTest.cpp',
             'text/StringOperatorsTest.cpp',
