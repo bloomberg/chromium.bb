@@ -218,11 +218,6 @@ void DOMSelection::collapse(Node* node, int offset, ExceptionState& exceptionSta
     m_frame->selection().setSelectedRange(range.get(), DOWNSTREAM, m_frame->selection().isDirectional() ? FrameSelection::Directional : FrameSelection::NonDirectional);
 }
 
-void DOMSelection::collapse(Node* node, ExceptionState& exceptionState)
-{
-    collapse(node, 0, exceptionState);
-}
-
 void DOMSelection::collapseToEnd(ExceptionState& exceptionState)
 {
     if (!m_frame)
@@ -356,13 +351,6 @@ void DOMSelection::extend(Node* node, int offset, ExceptionState& exceptionState
 
     // FIXME: Eliminate legacy editing positions
     m_frame->selection().setExtent(VisiblePosition(createLegacyEditingPosition(node, offset), DOWNSTREAM));
-}
-
-void DOMSelection::extend(Node* node, ExceptionState& exceptionState)
-{
-    // This default value implementation differs from the spec, which says |offset| is not optional.
-    // FIXME: Specify this default value in Selection.idl.
-    extend(node, 0, exceptionState);
 }
 
 PassRefPtrWillBeRawPtr<Range> DOMSelection::getRangeAt(int index, ExceptionState& exceptionState)

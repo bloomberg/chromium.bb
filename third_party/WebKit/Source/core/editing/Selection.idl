@@ -45,14 +45,13 @@
     readonly attribute long focusOffset;
 
     readonly attribute boolean isCollapsed;
-    [RaisesException, TypeChecking=Interface] void collapse(Node node, optional long offset);
+    [RaisesException, TypeChecking=Interface] void collapse(Node node, optional long offset = 0);
     [RaisesException] void collapseToStart();
     [RaisesException] void collapseToEnd();
 
-    // FIXME: should be: optional long offset = 0  http://crbug.com/258153
     // We mark offset as optional, defaulting to 0; this differs from spec.
     // http://crbug.com/384966
-    [RaisesException, TypeChecking=Interface] void extend(Node node, optional long offset);
+    [RaisesException, TypeChecking=Interface] void extend(Node node, optional long offset = 0);
 
     [RaisesException] void selectAllChildren([Default=Undefined] optional Node node);
     [CustomElementCallbacks] void deleteFromDocument();
@@ -88,7 +87,7 @@
                                                                                  [Default=Undefined] optional Node extentNode,
                                                                                  [Default=Undefined] optional long extentOffset);
     [ImplementedAs=collapse, MeasureAs=SelectionSetPosition, RaisesException, TypeChecking=Interface] void setPosition(Node node,
-                                                                                                                       optional long offset);
+                                                                                                                       optional long offset = 0);
 
     // IE extensions
     // http://msdn.microsoft.com/en-us/library/ms535869(VS.85).aspx

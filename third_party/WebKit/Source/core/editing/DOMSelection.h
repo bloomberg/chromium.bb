@@ -80,11 +80,9 @@ public:
     bool isCollapsed() const;
     int rangeCount() const;
     void collapse(Node*, int offset, ExceptionState&);
-    void collapse(Node*, ExceptionState&);
     void collapseToEnd(ExceptionState&);
     void collapseToStart(ExceptionState&);
     void extend(Node*, int offset, ExceptionState&);
-    void extend(Node*, ExceptionState&);
     PassRefPtrWillBeRawPtr<Range> getRangeAt(int, ExceptionState&);
     void removeAllRanges();
     void addRange(Range*);
