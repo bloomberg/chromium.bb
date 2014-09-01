@@ -23,6 +23,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -293,7 +294,9 @@ void CheckCanOpenURL(Browser* browser, const char* spec) {
   content::WebContents* contents =
       browser->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(url, contents->GetURL());
-  base::string16 title = base::UTF8ToUTF16(url.spec() + " was blocked");
+  base::string16 spec16 = base::UTF8ToUTF16(url.spec());
+  base::string16 title =
+      l10n_util::GetStringFUTF16(IDS_ERRORPAGES_TITLE_BLOCKED, spec16);
   EXPECT_NE(title, contents->GetTitle());
 }
 
@@ -304,7 +307,9 @@ void CheckURLIsBlocked(Browser* browser, const char* spec) {
   content::WebContents* contents =
       browser->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(url, contents->GetURL());
-  base::string16 title = base::UTF8ToUTF16(url.spec() + " was blocked");
+  base::string16 spec16 = base::UTF8ToUTF16(url.spec());
+  base::string16 title =
+      l10n_util::GetStringFUTF16(IDS_ERRORPAGES_TITLE_BLOCKED, spec16);
   EXPECT_EQ(title, contents->GetTitle());
 
   // Verify that the expected error page is being displayed.
@@ -452,9 +457,9 @@ int CountPlugins() {
 
 void FlushBlacklistPolicy() {
   // Updates of the URLBlacklist are done on IO, after building the blacklist
-  // on FILE, which is initiated from IO.
+  // on the blocking pool, which is initiated from IO.
   content::RunAllPendingInMessageLoop(BrowserThread::IO);
-  content::RunAllPendingInMessageLoop(BrowserThread::FILE);
+  BrowserThread::GetBlockingPool()->FlushForTesting();
   content::RunAllPendingInMessageLoop(BrowserThread::IO);
 }
 

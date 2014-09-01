@@ -19,6 +19,3 @@ SSLUITest.TestBadFrameNavigation
 SSLUITest.TestInterstitialJavaScriptProceeds
 SSLUITest.TestRefNavigation
 SSLUITest.TestWSSInvalidCertAndGoForward
-
-# http://crbug.com/339240
-PolicyTest.FileURLBlacklist
