@@ -485,6 +485,9 @@ bool ChromePasswordManagerClient::IsURLPasswordWebsiteReauth(
 }
 
 bool ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled() {
+#if !defined(USE_AURA) && !defined(OS_MACOSX)
+  return false;
+#endif
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableSavePasswordBubble))
     return false;
