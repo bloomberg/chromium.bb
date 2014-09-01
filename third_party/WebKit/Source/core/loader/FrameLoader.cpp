@@ -835,6 +835,7 @@ void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, con
         request.setURL(overrideURL);
         request.clearHTTPReferrer();
     }
+    request.setSkipServiceWorker(reloadPolicy == EndToEndReload);
 
     FrameLoadType type = reloadPolicy == EndToEndReload ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload;
     loadWithNavigationAction(NavigationAction(request, type), type, nullptr, SubstituteData(), CheckContentSecurityPolicy, clientRedirectPolicy, overrideEncoding);

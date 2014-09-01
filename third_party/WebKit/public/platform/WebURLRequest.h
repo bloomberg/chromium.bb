@@ -211,6 +211,10 @@ public:
     BLINK_PLATFORM_EXPORT bool downloadToFile() const;
     BLINK_PLATFORM_EXPORT void setDownloadToFile(bool);
 
+    // True if the request should not be handled by the ServiceWorker.
+    BLINK_PLATFORM_EXPORT bool skipServiceWorker() const;
+    BLINK_PLATFORM_EXPORT void setSkipServiceWorker(bool);
+
     // Extra data associated with the underlying resource request. Resource
     // requests can be copied. If non-null, each copy of a resource requests
     // holds a pointer to the extra data, and the extra data pointer will be

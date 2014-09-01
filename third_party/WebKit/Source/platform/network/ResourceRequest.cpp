@@ -395,6 +395,7 @@ void ResourceRequest::initialize(const KURL& url, ResourceRequestCachePolicy cac
     m_reportRawHeaders = false;
     m_hasUserGesture = false;
     m_downloadToFile = false;
+    m_skipServiceWorker = false;
     m_priority = ResourceLoadPriorityLow;
     m_intraPriorityValue = 0;
     m_requestorID = 0;

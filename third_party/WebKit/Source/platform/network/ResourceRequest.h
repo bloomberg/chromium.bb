@@ -177,6 +177,10 @@ public:
     bool downloadToFile() const { return m_downloadToFile; }
     void setDownloadToFile(bool downloadToFile) { m_downloadToFile = downloadToFile; }
 
+    // True if the request should not be handled by the ServiceWorker.
+    bool skipServiceWorker() const { return m_skipServiceWorker; }
+    void setSkipServiceWorker(bool skipServiceWorker) { m_skipServiceWorker = skipServiceWorker; }
+
     // Extra data associated with this request.
     ExtraData* extraData() const { return m_extraData.get(); }
     void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
@@ -213,6 +217,7 @@ private:
     bool m_reportRawHeaders : 1;
     bool m_hasUserGesture : 1;
     bool m_downloadToFile : 1;
+    bool m_skipServiceWorker : 1;
     ResourceLoadPriority m_priority;
     int m_intraPriorityValue;
     int m_requestorID;
