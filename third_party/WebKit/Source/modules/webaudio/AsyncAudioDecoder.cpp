@@ -76,6 +76,10 @@ void AsyncAudioDecoder::notifyComplete(ArrayBuffer* audioData, AudioBufferCallba
 {
     // Adopt references, so everything gets correctly dereffed.
     RefPtr<ArrayBuffer> audioDataRef = adoptRef(audioData);
+#if !ENABLE(OILPAN)
+    OwnPtr<AudioBufferCallback> successCallbackPtr = adoptPtr(successCallback);
+    OwnPtr<AudioBufferCallback> errorCallbackPtr = adoptPtr(errorCallback);
+#endif
     RefPtr<AudioBus> audioBusRef = adoptRef(audioBus);
 
     AudioBuffer* audioBuffer = AudioBuffer::createFromAudioBus(audioBus);
