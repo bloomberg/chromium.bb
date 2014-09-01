@@ -6,8 +6,7 @@ test(function() {
     assert_equals(response.url, '', 'Response.url should be the empty string');
     assert_equals(response.status, 200, 'Default Response.status should be 200');
     assert_equals(response.statusText, 'OK', 'Default Response.statusText should be \'OK\'');
-    assert_equals(response.headers.size, 1, 'Default Response should have one header.');
-    assert_equals(response.headers.get('content-type'), '', 'Default Response should have one header which name is \'content-type\' and value is an empty string.');
+    assert_equals(response.headers.size, 0, 'Default Response should not have any header.');
 
     response.status = 394;
     response.statusText = 'Sesame Street';

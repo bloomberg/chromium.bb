@@ -74,16 +74,12 @@ PassRefPtrWillBeRawPtr<Response> Response::create(Blob* body, const ResponseInit
     if (body) {
         // "1. Let |stream| and |Content-Type| be the result of extracting body."
         // "2. Set |r|'s response's body to |stream|."
-        // "3. If |r|'s response's header list contains no header named
-        // `Content-Type`, append `Content-Type`/|Content-Type| to |r|'s
-        // response's header list."
+        // "3. If |Content-Type| is non-null and |r|'s response's header list
+        // contains no header named `Content-Type`, append `Content-Type`/
+        // |Content-Type| to |r|'s response's header list."
         r->m_response->setBlobDataHandle(body->blobDataHandle());
-        if (!r->m_response->headerList()->has("Content-Type")) {
-            if (body->type().isNull())
-                r->m_response->headerList()->append("Content-Type", "");
-            else
-                r->m_response->headerList()->append("Content-Type", body->type());
-        }
+        if (!body->type().isNull() && !r->m_response->headerList()->has("Content-Type"))
+            r->m_response->headerList()->append("Content-Type", body->type());
     }
 
     // FIXME: "8. Set |r|'s FetchBodyStream object's MIME type to the result of
