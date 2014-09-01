@@ -51,7 +51,7 @@ public:
 
     virtual ~DirectoryReader();
 
-    void readEntries(PassOwnPtr<EntriesCallback>, PassOwnPtr<ErrorCallback> = nullptr);
+    void readEntries(PassOwnPtrWillBeRawPtr<EntriesCallback>, PassOwnPtrWillBeRawPtr<ErrorCallback> = nullptr);
 
     DOMFileSystem* filesystem() const { return static_cast<DOMFileSystem*>(m_fileSystem.get()); }
 
@@ -70,8 +70,8 @@ private:
     bool m_isReading;
     EntryHeapVector m_entries;
     RefPtrWillBeMember<FileError> m_error;
-    OwnPtr<EntriesCallback> m_entriesCallback;
-    OwnPtr<ErrorCallback> m_errorCallback;
+    OwnPtrWillBeMember<EntriesCallback> m_entriesCallback;
+    OwnPtrWillBeMember<ErrorCallback> m_errorCallback;
 };
 
 }

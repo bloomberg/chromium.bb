@@ -31,13 +31,15 @@
 #ifndef RTCErrorCallback_h
 #define RTCErrorCallback_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class RTCErrorCallback {
+class RTCErrorCallback : public NoBaseWillBeGarbageCollectedFinalized<RTCErrorCallback> {
 public:
     virtual ~RTCErrorCallback() { }
+    virtual void trace(Visitor*) { }
     virtual void handleEvent(const String& errorInformation) = 0;
 };
 

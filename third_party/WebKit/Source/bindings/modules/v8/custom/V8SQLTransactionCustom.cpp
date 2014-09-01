@@ -91,7 +91,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
     }
 
     SQLTransaction* transaction = V8SQLTransaction::toNative(info.Holder());
-    OwnPtr<SQLStatementCallback> callback;
+    OwnPtrWillBeRawPtr<SQLStatementCallback> callback = nullptr;
     if (info.Length() > 2 && !isUndefinedOrNull(info[2])) {
         if (!info[2]->IsFunction()) {
             exceptionState.throwDOMException(TypeMismatchError, "The 'callback' (2nd) argument provided is not a function.");
@@ -101,7 +101,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
         callback = V8SQLStatementCallback::create(v8::Handle<v8::Function>::Cast(info[2]), ScriptState::current(info.GetIsolate()));
     }
 
-    OwnPtr<SQLStatementErrorCallback> errorCallback;
+    OwnPtrWillBeRawPtr<SQLStatementErrorCallback> errorCallback = nullptr;
     if (info.Length() > 3 && !isUndefinedOrNull(info[3])) {
         if (!info[3]->IsFunction()) {
             exceptionState.throwDOMException(TypeMismatchError, "The 'errorCallback' (3rd) argument provided is not a function.");

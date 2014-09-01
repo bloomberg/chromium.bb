@@ -41,9 +41,10 @@ class RTCErrorCallback;
 class RTCPeerConnection;
 class VoidCallback;
 
+// FIXME: Oilpan: Move RTCVoidRequestImpl to heap in a follow-up.
 class RTCVoidRequestImpl FINAL : public RTCVoidRequest, public ActiveDOMObject {
 public:
-    static PassRefPtr<RTCVoidRequestImpl> create(ExecutionContext*, RTCPeerConnection*, PassOwnPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>);
+    static PassRefPtr<RTCVoidRequestImpl> create(ExecutionContext*, RTCPeerConnection*, PassOwnPtrWillBeRawPtr<VoidCallback>, PassOwnPtrWillBeRawPtr<RTCErrorCallback>);
     virtual ~RTCVoidRequestImpl();
 
     // RTCVoidRequest
@@ -54,12 +55,12 @@ public:
     virtual void stop() OVERRIDE;
 
 private:
-    RTCVoidRequestImpl(ExecutionContext*, RTCPeerConnection*, PassOwnPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>);
+    RTCVoidRequestImpl(ExecutionContext*, RTCPeerConnection*, PassOwnPtrWillBeRawPtr<VoidCallback>, PassOwnPtrWillBeRawPtr<RTCErrorCallback>);
 
     void clear();
 
-    OwnPtr<VoidCallback> m_successCallback;
-    OwnPtr<RTCErrorCallback> m_errorCallback;
+    OwnPtrWillBePersistent<VoidCallback> m_successCallback;
+    OwnPtrWillBePersistent<RTCErrorCallback> m_errorCallback;
 
     Persistent<RTCPeerConnection> m_requester;
 };

@@ -16,12 +16,13 @@ class Page;
 class Resource;
 class VoidCallback;
 
+// FIXME: Oilpan: Move InspectorResourceContentLoader to the heap.
 class InspectorResourceContentLoader FINAL {
     WTF_MAKE_NONCOPYABLE(InspectorResourceContentLoader);
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    InspectorResourceContentLoader(Page*);
-    void ensureResourcesContentLoaded(PassOwnPtr<VoidCallback>);
+    explicit InspectorResourceContentLoader(Page*);
+    void ensureResourcesContentLoaded(PassOwnPtrWillBeRawPtr<VoidCallback>);
     ~InspectorResourceContentLoader();
     bool hasFinished();
     void stop();
@@ -33,7 +34,7 @@ private:
     void checkDone();
     void start();
 
-    Vector<OwnPtr<VoidCallback> > m_callbacks;
+    WillBePersistentHeapVector<OwnPtrWillBeMember<VoidCallback> > m_callbacks;
     bool m_allRequestsStarted;
     bool m_started;
     Page* m_page;

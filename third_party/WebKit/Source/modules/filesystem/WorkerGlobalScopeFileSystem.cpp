@@ -45,7 +45,7 @@
 
 namespace blink {
 
-void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(WorkerGlobalScope& worker, int type, long long size, PassOwnPtr<FileSystemCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
+void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(WorkerGlobalScope& worker, int type, long long size, PassOwnPtrWillBeRawPtr<FileSystemCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback)
 {
     ExecutionContext* secureContext = worker.executionContext();
     if (!secureContext->securityOrigin()->canAccessFileSystem()) {
@@ -84,7 +84,7 @@ DOMFileSystemSync* WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(Work
     return helper->getResult(exceptionState);
 }
 
-void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(WorkerGlobalScope& worker, const String& url, PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
+void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(WorkerGlobalScope& worker, const String& url, PassOwnPtrWillBeRawPtr<EntryCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback)
 {
     KURL completedURL = worker.completeURL(url);
     ExecutionContext* secureContext = worker.executionContext();

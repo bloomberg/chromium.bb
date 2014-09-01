@@ -26,13 +26,16 @@
 #ifndef PositionErrorCallback_h
 #define PositionErrorCallback_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
     class PositionError;
 
-    class PositionErrorCallback {
+    class PositionErrorCallback : public NoBaseWillBeGarbageCollectedFinalized<PositionErrorCallback> {
     public:
         virtual ~PositionErrorCallback() { }
+        virtual void trace(Visitor*) { }
         virtual void handleEvent(PositionError*) = 0;
     };
 

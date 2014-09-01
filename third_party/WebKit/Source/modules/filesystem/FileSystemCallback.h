@@ -31,13 +31,16 @@
 #ifndef FileSystemCallback_h
 #define FileSystemCallback_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
 class DOMFileSystem;
 
-class FileSystemCallback {
+class FileSystemCallback : public NoBaseWillBeGarbageCollectedFinalized<FileSystemCallback> {
 public:
     virtual ~FileSystemCallback() { }
+    virtual void trace(Visitor*) { }
     virtual void handleEvent(DOMFileSystem*) = 0;
 };
 

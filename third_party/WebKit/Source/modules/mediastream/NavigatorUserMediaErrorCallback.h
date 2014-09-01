@@ -26,12 +26,14 @@
 #define NavigatorUserMediaErrorCallback_h
 
 #include "modules/mediastream/NavigatorUserMediaError.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
-class NavigatorUserMediaErrorCallback {
+class NavigatorUserMediaErrorCallback : public NoBaseWillBeGarbageCollectedFinalized<NavigatorUserMediaErrorCallback> {
 public:
     virtual ~NavigatorUserMediaErrorCallback() { }
+    virtual void trace(Visitor*) { }
     virtual void handleEvent(NavigatorUserMediaError*) = 0;
 };
 

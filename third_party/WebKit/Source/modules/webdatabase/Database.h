@@ -55,9 +55,9 @@ public:
 
     // Direct support for the DOM API
     virtual String version() const OVERRIDE;
-    void changeVersion(const String& oldVersion, const String& newVersion, PassOwnPtr<SQLTransactionCallback>, PassOwnPtr<SQLTransactionErrorCallback>, PassOwnPtr<VoidCallback> successCallback);
-    void transaction(PassOwnPtr<SQLTransactionCallback>, PassOwnPtr<SQLTransactionErrorCallback>, PassOwnPtr<VoidCallback> successCallback);
-    void readTransaction(PassOwnPtr<SQLTransactionCallback>, PassOwnPtr<SQLTransactionErrorCallback>, PassOwnPtr<VoidCallback> successCallback);
+    void changeVersion(const String& oldVersion, const String& newVersion, PassOwnPtrWillBeRawPtr<SQLTransactionCallback>, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>, PassOwnPtrWillBeRawPtr<VoidCallback> successCallback);
+    void transaction(PassOwnPtrWillBeRawPtr<SQLTransactionCallback>, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>, PassOwnPtrWillBeRawPtr<VoidCallback> successCallback);
+    void readTransaction(PassOwnPtrWillBeRawPtr<SQLTransactionCallback>, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>, PassOwnPtrWillBeRawPtr<VoidCallback> successCallback);
 
     // Internal engine support
     static Database* from(DatabaseBackend*);
@@ -77,8 +77,8 @@ private:
     PassRefPtrWillBeRawPtr<DatabaseBackend> backend();
     static PassRefPtrWillBeRawPtr<Database> create(ExecutionContext*, PassRefPtrWillBeRawPtr<DatabaseBackendBase>);
 
-    void runTransaction(PassOwnPtr<SQLTransactionCallback>, PassOwnPtr<SQLTransactionErrorCallback>,
-        PassOwnPtr<VoidCallback> successCallback, bool readOnly, const ChangeVersionData* = 0);
+    void runTransaction(PassOwnPtrWillBeRawPtr<SQLTransactionCallback>, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>,
+        PassOwnPtrWillBeRawPtr<VoidCallback> successCallback, bool readOnly, const ChangeVersionData* = 0);
 
     Vector<String> performGetTableNames();
 

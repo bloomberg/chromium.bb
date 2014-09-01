@@ -37,14 +37,14 @@
 
 namespace blink {
 
-PassRefPtr<RTCVoidRequestImpl> RTCVoidRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<RTCErrorCallback> errorCallback)
+PassRefPtr<RTCVoidRequestImpl> RTCVoidRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, PassOwnPtrWillBeRawPtr<VoidCallback> successCallback, PassOwnPtrWillBeRawPtr<RTCErrorCallback> errorCallback)
 {
     RefPtr<RTCVoidRequestImpl> request = adoptRef(new RTCVoidRequestImpl(context, requester, successCallback, errorCallback));
     request->suspendIfNeeded();
     return request.release();
 }
 
-RTCVoidRequestImpl::RTCVoidRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<RTCErrorCallback> errorCallback)
+RTCVoidRequestImpl::RTCVoidRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, PassOwnPtrWillBeRawPtr<VoidCallback> successCallback, PassOwnPtrWillBeRawPtr<RTCErrorCallback> errorCallback)
     : ActiveDOMObject(context)
     , m_successCallback(successCallback)
     , m_errorCallback(errorCallback)

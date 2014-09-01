@@ -31,11 +31,14 @@
 #ifndef StorageQuotaCallback_h
 #define StorageQuotaCallback_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
-class StorageQuotaCallback {
+class StorageQuotaCallback : public NoBaseWillBeGarbageCollectedFinalized<StorageQuotaCallback> {
 public:
     virtual ~StorageQuotaCallback() { }
+    virtual void trace(Visitor*) { }
     virtual void handleEvent(unsigned long long grantedQuotaInBytes) = 0;
 };
 

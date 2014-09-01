@@ -27,12 +27,14 @@
 #define MediaDeviceInfoCallback_h
 
 #include "modules/mediastream/MediaDeviceInfo.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
-class MediaDeviceInfoCallback {
+class MediaDeviceInfoCallback : public NoBaseWillBeGarbageCollectedFinalized<MediaDeviceInfoCallback> {
 public:
     virtual ~MediaDeviceInfoCallback() { }
+    virtual void trace(Visitor*) { }
     virtual void handleEvent(const MediaDeviceInfoVector&) = 0;
 };
 

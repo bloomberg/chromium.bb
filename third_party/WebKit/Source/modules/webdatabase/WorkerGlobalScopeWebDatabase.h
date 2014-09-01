@@ -40,8 +40,8 @@ class WorkerGlobalScope;
 
 class WorkerGlobalScopeWebDatabase {
 public:
-    static PassRefPtrWillBeRawPtr<Database> openDatabase(WorkerGlobalScope&, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState&);
-    static PassRefPtrWillBeRawPtr<DatabaseSync> openDatabaseSync(WorkerGlobalScope&, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<Database> openDatabase(WorkerGlobalScope&, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtrWillBeRawPtr<DatabaseCallback> creationCallback, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<DatabaseSync> openDatabaseSync(WorkerGlobalScope&, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtrWillBeRawPtr<DatabaseCallback> creationCallback, ExceptionState&);
 
 private:
     WorkerGlobalScopeWebDatabase() { };

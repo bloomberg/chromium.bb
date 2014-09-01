@@ -26,13 +26,15 @@
 #ifndef NotificationPermissionCallback_h
 #define NotificationPermissionCallback_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
-class NotificationPermissionCallback {
+class NotificationPermissionCallback : public NoBaseWillBeGarbageCollectedFinalized<NotificationPermissionCallback> {
 public:
     virtual ~NotificationPermissionCallback() { }
+    virtual void trace(Visitor*) { }
     virtual void handleEvent(const String& permission) = 0;
 };
 

@@ -52,9 +52,9 @@ public:
     virtual ~DatabaseSync();
     virtual void trace(Visitor*) OVERRIDE;
 
-    void changeVersion(const String& oldVersion, const String& newVersion, PassOwnPtr<SQLTransactionSyncCallback>, ExceptionState&);
-    void transaction(PassOwnPtr<SQLTransactionSyncCallback>, ExceptionState&);
-    void readTransaction(PassOwnPtr<SQLTransactionSyncCallback>, ExceptionState&);
+    void changeVersion(const String& oldVersion, const String& newVersion, PassOwnPtrWillBeRawPtr<SQLTransactionSyncCallback>, ExceptionState&);
+    void transaction(PassOwnPtrWillBeRawPtr<SQLTransactionSyncCallback>, ExceptionState&);
+    void readTransaction(PassOwnPtrWillBeRawPtr<SQLTransactionSyncCallback>, ExceptionState&);
 
     virtual void closeImmediately() OVERRIDE;
     void observeTransaction(SQLTransactionSync&);
@@ -71,7 +71,7 @@ private:
         const String& expectedVersion, const String& displayName, unsigned long estimatedSize);
     static PassRefPtrWillBeRawPtr<DatabaseSync> create(ExecutionContext*, PassRefPtrWillBeRawPtr<DatabaseBackendBase>);
 
-    void runTransaction(PassOwnPtr<SQLTransactionSyncCallback>, bool readOnly, ExceptionState&);
+    void runTransaction(PassOwnPtrWillBeRawPtr<SQLTransactionSyncCallback>, bool readOnly, ExceptionState&);
     void rollbackTransaction(SQLTransactionSync&);
 #if ENABLE(OILPAN)
     class TransactionObserver {

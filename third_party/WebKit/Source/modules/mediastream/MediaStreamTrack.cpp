@@ -127,7 +127,7 @@ String MediaStreamTrack::readyState() const
     return String();
 }
 
-void MediaStreamTrack::getSources(ExecutionContext* context, PassOwnPtr<MediaStreamTrackSourcesCallback> callback, ExceptionState& exceptionState)
+void MediaStreamTrack::getSources(ExecutionContext* context, PassOwnPtrWillBeRawPtr<MediaStreamTrackSourcesCallback> callback, ExceptionState& exceptionState)
 {
     MediaStreamTrackSourcesRequest* request = MediaStreamTrackSourcesRequestImpl::create(*context, callback);
     if (!MediaStreamCenter::instance().getMediaStreamTrackSources(request))

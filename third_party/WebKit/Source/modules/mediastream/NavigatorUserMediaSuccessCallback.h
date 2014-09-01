@@ -25,13 +25,16 @@
 #ifndef NavigatorUserMediaSuccessCallback_h
 #define NavigatorUserMediaSuccessCallback_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
 class MediaStream;
 
-class NavigatorUserMediaSuccessCallback {
+class NavigatorUserMediaSuccessCallback : public NoBaseWillBeGarbageCollectedFinalized<NavigatorUserMediaSuccessCallback> {
 public:
     virtual ~NavigatorUserMediaSuccessCallback() { }
+    virtual void trace(Visitor*) { }
     virtual void handleEvent(MediaStream*) = 0;
 };
 

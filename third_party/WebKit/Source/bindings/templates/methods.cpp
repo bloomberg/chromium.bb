@@ -89,7 +89,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
 {% if argument.idl_type == 'EventListener' %}
 RefPtr<{{argument.idl_type}}> {{argument.name}}
 {%- else %}
-OwnPtr<{{argument.idl_type}}> {{argument.name}}
+OwnPtrWillBeRawPtr<{{argument.idl_type}}> {{argument.name}} = nullptr;
 {%- endif %}{# argument.idl_type == 'EventListener' #}
 {%- elif argument.is_clamp %}{# argument.is_callback_interface #}
 {# NaN is treated as 0: http://www.w3.org/TR/WebIDL/#es-type-mapping #}

@@ -150,7 +150,7 @@ static void voidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallb
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
-    OwnPtr<TestCallbackInterface> testCallbackInterfaceTypeArg;
+    OwnPtrWillBeRawPtr<TestCallbackInterface> testCallbackInterfaceTypeArg = nullptr;;
     {
         if (info.Length() <= 0 || !info[0]->IsFunction()) {
             V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceTypeArg", "TestTypedefs", "The callback provided as parameter 1 is not a function."), info.GetIsolate());

@@ -31,13 +31,16 @@
 #ifndef ErrorCallback_h
 #define ErrorCallback_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
 class FileError;
 
-class ErrorCallback {
+class ErrorCallback : public NoBaseWillBeGarbageCollectedFinalized<ErrorCallback> {
 public:
     virtual ~ErrorCallback() { }
+    virtual void trace(Visitor*) { }
     virtual void handleEvent(FileError*) = 0;
 };
 

@@ -51,7 +51,7 @@
 
 namespace blink {
 
-SQLTransactionBackendSync::SQLTransactionBackendSync(DatabaseSync* db, PassOwnPtr<SQLTransactionSyncCallback> callback, bool readOnly)
+SQLTransactionBackendSync::SQLTransactionBackendSync(DatabaseSync* db, PassOwnPtrWillBeRawPtr<SQLTransactionSyncCallback> callback, bool readOnly)
     : m_database(db)
     , m_callback(callback)
     , m_readOnly(readOnly)
@@ -81,6 +81,7 @@ SQLTransactionBackendSync::~SQLTransactionBackendSync()
 void SQLTransactionBackendSync::trace(Visitor* visitor)
 {
     visitor->trace(m_database);
+    visitor->trace(m_callback);
 }
 
 PassRefPtrWillBeRawPtr<SQLResultSet> SQLTransactionBackendSync::executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, ExceptionState& exceptionState)

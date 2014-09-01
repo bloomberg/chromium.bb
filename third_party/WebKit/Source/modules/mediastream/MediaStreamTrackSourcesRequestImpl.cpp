@@ -36,12 +36,12 @@
 
 namespace blink {
 
-MediaStreamTrackSourcesRequestImpl* MediaStreamTrackSourcesRequestImpl::create(ExecutionContext& context, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
+MediaStreamTrackSourcesRequestImpl* MediaStreamTrackSourcesRequestImpl::create(ExecutionContext& context, PassOwnPtrWillBeRawPtr<MediaStreamTrackSourcesCallback> callback)
 {
     return new MediaStreamTrackSourcesRequestImpl(context, callback);
 }
 
-MediaStreamTrackSourcesRequestImpl::MediaStreamTrackSourcesRequestImpl(ExecutionContext& context, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
+MediaStreamTrackSourcesRequestImpl::MediaStreamTrackSourcesRequestImpl(ExecutionContext& context, PassOwnPtrWillBeRawPtr<MediaStreamTrackSourcesCallback> callback)
     : m_callback(callback)
     , m_executionContext(&context)
 {
@@ -73,6 +73,7 @@ void MediaStreamTrackSourcesRequestImpl::performCallback()
 
 void MediaStreamTrackSourcesRequestImpl::trace(Visitor* visitor)
 {
+    visitor->trace(m_callback);
     visitor->trace(m_executionContext);
     visitor->trace(m_sourceInfos);
     MediaStreamTrackSourcesRequest::trace(visitor);

@@ -40,12 +40,12 @@ namespace blink {
 // Instances of this class should be created and used only on the worker's context thread.
 class SQLTransactionSync FINAL : public SQLTransactionBackendSync, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<SQLTransactionSync> create(DatabaseSync*, PassOwnPtr<SQLTransactionSyncCallback>, bool readOnly = false);
+    static PassRefPtrWillBeRawPtr<SQLTransactionSync> create(DatabaseSync*, PassOwnPtrWillBeRawPtr<SQLTransactionSyncCallback>, bool readOnly = false);
 
     static SQLTransactionSync* from(SQLTransactionBackendSync*);
 
 private:
-    SQLTransactionSync(DatabaseSync*, PassOwnPtr<SQLTransactionSyncCallback>, bool readOnly);
+    SQLTransactionSync(DatabaseSync*, PassOwnPtrWillBeRawPtr<SQLTransactionSyncCallback>, bool readOnly);
 };
 
 } // namespace blink

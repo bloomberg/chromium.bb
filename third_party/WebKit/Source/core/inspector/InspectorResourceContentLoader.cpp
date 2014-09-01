@@ -145,7 +145,7 @@ void InspectorResourceContentLoader::start()
     checkDone();
 }
 
-void InspectorResourceContentLoader::ensureResourcesContentLoaded(PassOwnPtr<VoidCallback> callback)
+void InspectorResourceContentLoader::ensureResourcesContentLoaded(PassOwnPtrWillBeRawPtr<VoidCallback> callback)
 {
     if (!m_started)
         start();
@@ -178,9 +178,9 @@ void InspectorResourceContentLoader::checkDone()
 {
     if (!hasFinished())
         return;
-    Vector<OwnPtr<VoidCallback> > callbacks;
+    WillBeHeapVector<OwnPtrWillBeMember<VoidCallback> > callbacks;
     callbacks.swap(m_callbacks);
-    for (Vector<OwnPtr<VoidCallback> >::const_iterator it = callbacks.begin(); it != callbacks.end(); ++it)
+    for (WillBeHeapVector<OwnPtrWillBeMember<VoidCallback> >::const_iterator it = callbacks.begin(); it != callbacks.end(); ++it)
         (*it)->handleEvent();
 }
 

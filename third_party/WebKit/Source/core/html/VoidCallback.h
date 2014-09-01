@@ -26,11 +26,14 @@
 #ifndef VoidCallback_h
 #define VoidCallback_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
-class VoidCallback {
+class VoidCallback : public NoBaseWillBeGarbageCollectedFinalized<VoidCallback> {
 public:
     virtual ~VoidCallback() { }
+    virtual void trace(Visitor*) { }
     virtual void handleEvent() = 0;
 };
 

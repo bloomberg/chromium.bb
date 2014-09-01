@@ -31,14 +31,17 @@
 #ifndef SQLTransactionSyncCallback_h
 #define SQLTransactionSyncCallback_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
 class SQLTransactionSync;
 
 // Instances of this class should be created and used only on the worker's context thread.
-class SQLTransactionSyncCallback {
+class SQLTransactionSyncCallback : public NoBaseWillBeGarbageCollectedFinalized<SQLTransactionSyncCallback> {
 public:
     virtual ~SQLTransactionSyncCallback() { }
+    virtual void trace(Visitor*) { }
     virtual bool handleEvent(SQLTransactionSync*) = 0;
 };
 

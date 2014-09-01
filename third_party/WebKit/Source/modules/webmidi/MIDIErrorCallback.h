@@ -31,13 +31,16 @@
 #ifndef MIDIErrorCallback_h
 #define MIDIErrorCallback_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
 class DOMError;
 
-class MIDIErrorCallback {
+class MIDIErrorCallback : public NoBaseWillBeGarbageCollectedFinalized<MIDIErrorCallback> {
 public:
     virtual ~MIDIErrorCallback() { }
+    virtual void trace(Visitor*) { }
     virtual void handleEvent(DOMError*) = 0;
 };
 

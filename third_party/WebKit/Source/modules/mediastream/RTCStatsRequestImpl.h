@@ -38,9 +38,10 @@ class MediaStreamTrack;
 class RTCPeerConnection;
 class RTCStatsCallback;
 
+// FIXME: Oilpan: Move RTCStatsRequestImpl to heap in a follow-up.
 class RTCStatsRequestImpl FINAL : public RTCStatsRequest, public ActiveDOMObject {
 public:
-    static PassRefPtr<RTCStatsRequestImpl> create(ExecutionContext*, RTCPeerConnection*, PassOwnPtr<RTCStatsCallback>, MediaStreamTrack*);
+    static PassRefPtr<RTCStatsRequestImpl> create(ExecutionContext*, RTCPeerConnection*, PassOwnPtrWillBeRawPtr<RTCStatsCallback>, MediaStreamTrack*);
     virtual ~RTCStatsRequestImpl();
 
     virtual RTCStatsResponseBase* createResponse() OVERRIDE;
@@ -53,11 +54,11 @@ public:
     virtual void stop() OVERRIDE;
 
 private:
-    RTCStatsRequestImpl(ExecutionContext*, RTCPeerConnection*, PassOwnPtr<RTCStatsCallback>, MediaStreamTrack*);
+    RTCStatsRequestImpl(ExecutionContext*, RTCPeerConnection*, PassOwnPtrWillBeRawPtr<RTCStatsCallback>, MediaStreamTrack*);
 
     void clear();
 
-    OwnPtr<RTCStatsCallback> m_successCallback;
+    OwnPtrWillBePersistent<RTCStatsCallback> m_successCallback;
     RefPtr<MediaStreamComponent> m_component;
 
     Persistent<RTCPeerConnection> m_requester;

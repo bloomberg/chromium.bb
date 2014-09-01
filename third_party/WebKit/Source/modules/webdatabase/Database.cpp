@@ -113,30 +113,30 @@ void Database::closeImmediately()
     }
 }
 
-void Database::changeVersion(const String& oldVersion, const String& newVersion, PassOwnPtr<SQLTransactionCallback> callback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback, PassOwnPtr<VoidCallback> successCallback)
+void Database::changeVersion(const String& oldVersion, const String& newVersion, PassOwnPtrWillBeRawPtr<SQLTransactionCallback> callback, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> errorCallback, PassOwnPtrWillBeRawPtr<VoidCallback> successCallback)
 {
     ChangeVersionData data(oldVersion, newVersion);
     runTransaction(callback, errorCallback, successCallback, false, &data);
 }
 
-void Database::transaction(PassOwnPtr<SQLTransactionCallback> callback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback, PassOwnPtr<VoidCallback> successCallback)
+void Database::transaction(PassOwnPtrWillBeRawPtr<SQLTransactionCallback> callback, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> errorCallback, PassOwnPtrWillBeRawPtr<VoidCallback> successCallback)
 {
     runTransaction(callback, errorCallback, successCallback, false);
 }
 
-void Database::readTransaction(PassOwnPtr<SQLTransactionCallback> callback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback, PassOwnPtr<VoidCallback> successCallback)
+void Database::readTransaction(PassOwnPtrWillBeRawPtr<SQLTransactionCallback> callback, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> errorCallback, PassOwnPtrWillBeRawPtr<VoidCallback> successCallback)
 {
     runTransaction(callback, errorCallback, successCallback, true);
 }
 
-static void callTransactionErrorCallback(ExecutionContext*, PassOwnPtr<SQLTransactionErrorCallback> callback, PassOwnPtr<SQLErrorData> errorData)
+static void callTransactionErrorCallback(ExecutionContext*, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> callback, PassOwnPtr<SQLErrorData> errorData)
 {
     RefPtrWillBeRawPtr<SQLError> error = SQLError::create(*errorData);
     callback->handleEvent(error.get());
 }
 
-void Database::runTransaction(PassOwnPtr<SQLTransactionCallback> callback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback,
-    PassOwnPtr<VoidCallback> successCallback, bool readOnly, const ChangeVersionData* changeVersionData)
+void Database::runTransaction(PassOwnPtrWillBeRawPtr<SQLTransactionCallback> callback, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> errorCallback,
+    PassOwnPtrWillBeRawPtr<VoidCallback> successCallback, bool readOnly, const ChangeVersionData* changeVersionData)
 {
     // FIXME: Rather than passing errorCallback to SQLTransaction and then sometimes firing it ourselves,
     // this code should probably be pushed down into DatabaseBackend so that we only create the SQLTransaction
@@ -147,7 +147,7 @@ void Database::runTransaction(PassOwnPtr<SQLTransactionCallback> callback, PassO
     RefPtrWillBeRawPtr<SQLTransaction> transaction = SQLTransaction::create(this, callback, successCallback, errorCallback, readOnly);
     RefPtrWillBeRawPtr<SQLTransactionBackend> transactionBackend = backend()->runTransaction(transaction, readOnly, changeVersionData);
     if (!transactionBackend) {
-        OwnPtr<SQLTransactionErrorCallback> callback = transaction->releaseErrorCallback();
+        OwnPtrWillBeRawPtr<SQLTransactionErrorCallback> callback = transaction->releaseErrorCallback();
         ASSERT(callback == originalErrorCallback);
         if (callback) {
             OwnPtr<SQLErrorData> error = SQLErrorData::create(SQLError::UNKNOWN_ERR, "database has been closed");

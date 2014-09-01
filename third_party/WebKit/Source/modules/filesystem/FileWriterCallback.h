@@ -31,13 +31,16 @@
 #ifndef FileWriterCallback_h
 #define FileWriterCallback_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
 class FileWriter;
 
-class FileWriterCallback {
+class FileWriterCallback : public NoBaseWillBeGarbageCollectedFinalized<FileWriterCallback> {
 public:
     virtual ~FileWriterCallback() { }
+    virtual void trace(Visitor*) { }
     virtual void handleEvent(FileWriter*) = 0;
 };
 

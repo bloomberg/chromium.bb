@@ -75,7 +75,7 @@ void DatabaseSync::trace(Visitor* visitor)
     DatabaseBackendSync::trace(visitor);
 }
 
-void DatabaseSync::changeVersion(const String& oldVersion, const String& newVersion, PassOwnPtr<SQLTransactionSyncCallback> changeVersionCallback, ExceptionState& exceptionState)
+void DatabaseSync::changeVersion(const String& oldVersion, const String& newVersion, PassOwnPtrWillBeRawPtr<SQLTransactionSyncCallback> changeVersionCallback, ExceptionState& exceptionState)
 {
     ASSERT(executionContext()->isContextThread());
 
@@ -135,12 +135,12 @@ void DatabaseSync::changeVersion(const String& oldVersion, const String& newVers
     setLastErrorMessage("");
 }
 
-void DatabaseSync::transaction(PassOwnPtr<SQLTransactionSyncCallback> callback, ExceptionState& exceptionState)
+void DatabaseSync::transaction(PassOwnPtrWillBeRawPtr<SQLTransactionSyncCallback> callback, ExceptionState& exceptionState)
 {
     runTransaction(callback, false, exceptionState);
 }
 
-void DatabaseSync::readTransaction(PassOwnPtr<SQLTransactionSyncCallback> callback, ExceptionState& exceptionState)
+void DatabaseSync::readTransaction(PassOwnPtrWillBeRawPtr<SQLTransactionSyncCallback> callback, ExceptionState& exceptionState)
 {
     runTransaction(callback, true, exceptionState);
 }
@@ -153,7 +153,7 @@ void DatabaseSync::rollbackTransaction(SQLTransactionSync& transaction)
     return;
 }
 
-void DatabaseSync::runTransaction(PassOwnPtr<SQLTransactionSyncCallback> callback, bool readOnly, ExceptionState& exceptionState)
+void DatabaseSync::runTransaction(PassOwnPtrWillBeRawPtr<SQLTransactionSyncCallback> callback, bool readOnly, ExceptionState& exceptionState)
 {
     ASSERT(executionContext()->isContextThread());
 

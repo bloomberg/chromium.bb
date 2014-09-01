@@ -89,6 +89,12 @@ public:
         m_ptr = 0;
         return ptr;
     }
+    T* leakPtr()
+    {
+        T* ptr = m_ptr;
+        m_ptr = 0;
+        return ptr;
+    }
 
     template<typename U>
     RawPtr& operator=(U* ptr)

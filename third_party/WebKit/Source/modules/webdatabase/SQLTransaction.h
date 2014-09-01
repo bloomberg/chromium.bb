@@ -53,23 +53,23 @@ class VoidCallback;
 
 class SQLTransaction FINAL : public AbstractSQLTransaction, public SQLTransactionStateMachine<SQLTransaction>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<SQLTransaction> create(Database*, PassOwnPtr<SQLTransactionCallback>,
-        PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<SQLTransactionErrorCallback>,
+    static PassRefPtrWillBeRawPtr<SQLTransaction> create(Database*, PassOwnPtrWillBeRawPtr<SQLTransactionCallback>,
+        PassOwnPtrWillBeRawPtr<VoidCallback> successCallback, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>,
         bool readOnly);
     virtual void trace(Visitor*) OVERRIDE;
 
     void performPendingCallback();
 
     void executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments,
-        PassOwnPtr<SQLStatementCallback>, PassOwnPtr<SQLStatementErrorCallback>, ExceptionState&);
+        PassOwnPtrWillBeRawPtr<SQLStatementCallback>, PassOwnPtrWillBeRawPtr<SQLStatementErrorCallback>, ExceptionState&);
 
     Database* database() { return m_database.get(); }
 
-    PassOwnPtr<SQLTransactionErrorCallback> releaseErrorCallback();
+    PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> releaseErrorCallback();
 
 private:
-    SQLTransaction(Database*, PassOwnPtr<SQLTransactionCallback>,
-        PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<SQLTransactionErrorCallback>,
+    SQLTransaction(Database*, PassOwnPtrWillBeRawPtr<SQLTransactionCallback>,
+        PassOwnPtrWillBeRawPtr<VoidCallback> successCallback, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>,
         bool readOnly);
 
     void clearCallbackWrappers();

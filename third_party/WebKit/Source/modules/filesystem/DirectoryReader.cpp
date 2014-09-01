@@ -38,7 +38,7 @@
 
 namespace blink {
 
-class DirectoryReader::EntriesCallbackHelper : public EntriesCallback {
+class DirectoryReader::EntriesCallbackHelper FINAL : public EntriesCallback {
 public:
     explicit EntriesCallbackHelper(DirectoryReader* reader)
         : m_reader(reader)
@@ -50,12 +50,18 @@ public:
         m_reader->addEntries(entries);
     }
 
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_reader);
+        EntriesCallback::trace(visitor);
+    }
+
 private:
     // FIXME: This Persistent keeps the reader alive until all of the readDirectory results are received. crbug.com/350285
-    Persistent<DirectoryReader> m_reader;
+    PersistentWillBeMember<DirectoryReader> m_reader;
 };
 
-class DirectoryReader::ErrorCallbackHelper : public ErrorCallback {
+class DirectoryReader::ErrorCallbackHelper FINAL : public ErrorCallback {
 public:
     explicit ErrorCallbackHelper(DirectoryReader* reader)
         : m_reader(reader)
@@ -67,8 +73,14 @@ public:
         m_reader->onError(error);
     }
 
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_reader);
+        ErrorCallback::trace(visitor);
+    }
+
 private:
-    Persistent<DirectoryReader> m_reader;
+    PersistentWillBeMember<DirectoryReader> m_reader;
 };
 
 DirectoryReader::DirectoryReader(DOMFileSystemBase* fileSystem, const String& fullPath)
@@ -82,11 +94,11 @@ DirectoryReader::~DirectoryReader()
 {
 }
 
-void DirectoryReader::readEntries(PassOwnPtr<EntriesCallback> entriesCallback, PassOwnPtr<ErrorCallback> errorCallback)
+void DirectoryReader::readEntries(PassOwnPtrWillBeRawPtr<EntriesCallback> entriesCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback)
 {
     if (!m_isReading) {
         m_isReading = true;
-        filesystem()->readDirectory(this, m_fullPath, adoptPtr(new EntriesCallbackHelper(this)), adoptPtr(new ErrorCallbackHelper(this)));
+        filesystem()->readDirectory(this, m_fullPath, adoptPtrWillBeNoop(new EntriesCallbackHelper(this)), adoptPtrWillBeNoop(new ErrorCallbackHelper(this)));
     }
 
     if (m_error) {
@@ -115,7 +127,7 @@ void DirectoryReader::addEntries(const EntryHeapVector& entries)
     m_entries.appendVector(entries);
     m_errorCallback = nullptr;
     if (m_entriesCallback) {
-        OwnPtr<EntriesCallback> entriesCallback = m_entriesCallback.release();
+        OwnPtrWillBeRawPtr<EntriesCallback> entriesCallback = m_entriesCallback.release();
         EntryHeapVector entries;
         entries.swap(m_entries);
         entriesCallback->handleEvent(entries);
@@ -127,7 +139,7 @@ void DirectoryReader::onError(FileError* error)
     m_error = error;
     m_entriesCallback = nullptr;
     if (m_errorCallback) {
-        OwnPtr<ErrorCallback> errorCallback = m_errorCallback.release();
+        OwnPtrWillBeRawPtr<ErrorCallback> errorCallback = m_errorCallback.release();
         errorCallback->handleEvent(error);
     }
 }
@@ -136,6 +148,8 @@ void DirectoryReader::trace(Visitor* visitor)
 {
     visitor->trace(m_entries);
     visitor->trace(m_error);
+    visitor->trace(m_entriesCallback);
+    visitor->trace(m_errorCallback);
     DirectoryReaderBase::trace(visitor);
 }
 

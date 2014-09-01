@@ -49,7 +49,7 @@ AsyncAudioDecoder::~AsyncAudioDecoder()
 {
 }
 
-void AsyncAudioDecoder::decodeAsync(ArrayBuffer* audioData, float sampleRate, PassOwnPtr<AudioBufferCallback> successCallback, PassOwnPtr<AudioBufferCallback> errorCallback)
+void AsyncAudioDecoder::decodeAsync(ArrayBuffer* audioData, float sampleRate, PassOwnPtrWillBeRawPtr<AudioBufferCallback> successCallback, PassOwnPtrWillBeRawPtr<AudioBufferCallback> errorCallback)
 {
     ASSERT(isMainThread());
     ASSERT(audioData);
@@ -76,8 +76,6 @@ void AsyncAudioDecoder::notifyComplete(ArrayBuffer* audioData, AudioBufferCallba
 {
     // Adopt references, so everything gets correctly dereffed.
     RefPtr<ArrayBuffer> audioDataRef = adoptRef(audioData);
-    OwnPtr<AudioBufferCallback> successCallbackPtr = adoptPtr(successCallback);
-    OwnPtr<AudioBufferCallback> errorCallbackPtr = adoptPtr(errorCallback);
     RefPtr<AudioBus> audioBusRef = adoptRef(audioBus);
 
     AudioBuffer* audioBuffer = AudioBuffer::createFromAudioBus(audioBus);

@@ -28,14 +28,17 @@
 #ifndef SQLStatementCallback_h
 #define SQLStatementCallback_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
 class SQLTransaction;
 class SQLResultSet;
 
-class SQLStatementCallback {
+class SQLStatementCallback : public NoBaseWillBeGarbageCollectedFinalized<SQLStatementCallback> {
 public:
     virtual ~SQLStatementCallback() { }
+    virtual void trace(Visitor*) { }
     virtual bool handleEvent(SQLTransaction*, SQLResultSet*) = 0;
 };
 

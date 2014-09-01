@@ -44,7 +44,7 @@ namespace blink {
 template<typename T> class SQLCallbackWrapper {
     DISALLOW_ALLOCATION();
 public:
-    SQLCallbackWrapper(PassOwnPtr<T> callback, ExecutionContext* executionContext)
+    SQLCallbackWrapper(PassOwnPtrWillBeRawPtr<T> callback, ExecutionContext* executionContext)
         : m_callback(callback)
         , m_executionContext(m_callback ? executionContext : 0)
     {
@@ -53,10 +53,16 @@ public:
 
     ~SQLCallbackWrapper()
     {
+#if !ENABLE(OILPAN)
         clear();
+#endif
     }
 
-    void trace(Visitor* visitor) { visitor->trace(m_executionContext); }
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_callback);
+        visitor->trace(m_executionContext);
+    }
 
     void clear()
     {
@@ -88,7 +94,7 @@ public:
 #endif
     }
 
-    PassOwnPtr<T> unwrap()
+    PassOwnPtrWillBeRawPtr<T> unwrap()
     {
         MutexLocker locker(m_mutex);
         ASSERT(!m_callback || m_executionContext->isContextThread());
@@ -128,7 +134,7 @@ private:
 #endif
 
     Mutex m_mutex;
-    OwnPtr<T> m_callback;
+    OwnPtrWillBeMember<T> m_callback;
     RefPtrWillBeMember<ExecutionContext> m_executionContext;
 };
 

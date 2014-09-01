@@ -70,7 +70,7 @@ DatabaseManager::~DatabaseManager()
 
 class DatabaseCreationCallbackTask FINAL : public ExecutionContextTask {
 public:
-    static PassOwnPtr<DatabaseCreationCallbackTask> create(PassRefPtrWillBeRawPtr<Database> database, PassOwnPtr<DatabaseCallback> creationCallback)
+    static PassOwnPtr<DatabaseCreationCallbackTask> create(PassRefPtrWillBeRawPtr<Database> database, PassOwnPtrWillBeRawPtr<DatabaseCallback> creationCallback)
     {
         return adoptPtr(new DatabaseCreationCallbackTask(database, creationCallback));
     }
@@ -81,14 +81,14 @@ public:
     }
 
 private:
-    DatabaseCreationCallbackTask(PassRefPtrWillBeRawPtr<Database> database, PassOwnPtr<DatabaseCallback> callback)
+    DatabaseCreationCallbackTask(PassRefPtrWillBeRawPtr<Database> database, PassOwnPtrWillBeRawPtr<DatabaseCallback> callback)
         : m_database(database)
         , m_creationCallback(callback)
     {
     }
 
     RefPtrWillBePersistent<Database> m_database;
-    OwnPtr<DatabaseCallback> m_creationCallback;
+    OwnPtrWillBePersistent<DatabaseCallback> m_creationCallback;
 };
 
 DatabaseContext* DatabaseManager::existingDatabaseContextFor(ExecutionContext* context)
@@ -210,7 +210,7 @@ PassRefPtrWillBeRawPtr<DatabaseBackendBase> DatabaseManager::openDatabaseBackend
 
 PassRefPtrWillBeRawPtr<Database> DatabaseManager::openDatabase(ExecutionContext* context,
     const String& name, const String& expectedVersion, const String& displayName,
-    unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback,
+    unsigned long estimatedSize, PassOwnPtrWillBeRawPtr<DatabaseCallback> creationCallback,
     DatabaseError& error, String& errorMessage)
 {
     ASSERT(error == DatabaseError::None);
@@ -237,7 +237,7 @@ PassRefPtrWillBeRawPtr<Database> DatabaseManager::openDatabase(ExecutionContext*
 
 PassRefPtrWillBeRawPtr<DatabaseSync> DatabaseManager::openDatabaseSync(ExecutionContext* context,
     const String& name, const String& expectedVersion, const String& displayName,
-    unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback,
+    unsigned long estimatedSize, PassOwnPtrWillBeRawPtr<DatabaseCallback> creationCallback,
     DatabaseError& error, String& errorMessage)
 {
     ASSERT(context->isContextThread());

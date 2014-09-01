@@ -18,7 +18,7 @@ namespace {
 
 class WebNotificationPermissionCallbackImpl : public WebNotificationPermissionCallback {
 public:
-    WebNotificationPermissionCallbackImpl(PassOwnPtr<NotificationPermissionCallback> callback)
+    WebNotificationPermissionCallbackImpl(PassOwnPtrWillBeRawPtr<NotificationPermissionCallback> callback)
         : m_callback(callback)
     {
     }
@@ -32,7 +32,7 @@ public:
     }
 
 private:
-    OwnPtr<NotificationPermissionCallback> m_callback;
+    OwnPtrWillBePersistent<NotificationPermissionCallback> m_callback;
 };
 
 } // namespace
@@ -50,7 +50,7 @@ NotificationPermissionClientImpl::~NotificationPermissionClientImpl()
 {
 }
 
-void NotificationPermissionClientImpl::requestPermission(ExecutionContext* context, PassOwnPtr<NotificationPermissionCallback> callback)
+void NotificationPermissionClientImpl::requestPermission(ExecutionContext* context, PassOwnPtrWillBeRawPtr<NotificationPermissionCallback> callback)
 {
     ASSERT(context && context->isDocument());
 

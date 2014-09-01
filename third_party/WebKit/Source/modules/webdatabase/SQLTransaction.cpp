@@ -48,15 +48,15 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<SQLTransaction> SQLTransaction::create(Database* db, PassOwnPtr<SQLTransactionCallback> callback,
-    PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback,
+PassRefPtrWillBeRawPtr<SQLTransaction> SQLTransaction::create(Database* db, PassOwnPtrWillBeRawPtr<SQLTransactionCallback> callback,
+    PassOwnPtrWillBeRawPtr<VoidCallback> successCallback, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> errorCallback,
     bool readOnly)
 {
     return adoptRefWillBeNoop(new SQLTransaction(db, callback, successCallback, errorCallback, readOnly));
 }
 
-SQLTransaction::SQLTransaction(Database* db, PassOwnPtr<SQLTransactionCallback> callback,
-    PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback,
+SQLTransaction::SQLTransaction(Database* db, PassOwnPtrWillBeRawPtr<SQLTransactionCallback> callback,
+    PassOwnPtrWillBeRawPtr<VoidCallback> successCallback, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> errorCallback,
     bool readOnly)
     : m_database(db)
     , m_callbackWrapper(callback, db->executionContext())
@@ -150,7 +150,7 @@ SQLTransactionState SQLTransaction::deliverTransactionCallback()
     bool shouldDeliverErrorCallback = false;
 
     // Spec 4.3.2 4: Invoke the transaction callback with the new SQLTransaction object
-    OwnPtr<SQLTransactionCallback> callback = m_callbackWrapper.unwrap();
+    OwnPtrWillBeRawPtr<SQLTransactionCallback> callback = m_callbackWrapper.unwrap();
     if (callback) {
         m_executeSqlAllowed = true;
         shouldDeliverErrorCallback = !callback->handleEvent(this);
@@ -172,7 +172,7 @@ SQLTransactionState SQLTransaction::deliverTransactionErrorCallback()
 {
     // Spec 4.3.2.10: If exists, invoke error callback with the last
     // error to have occurred in this transaction.
-    OwnPtr<SQLTransactionErrorCallback> errorCallback = m_errorCallbackWrapper.unwrap();
+    OwnPtrWillBeRawPtr<SQLTransactionErrorCallback> errorCallback = m_errorCallbackWrapper.unwrap();
     if (errorCallback) {
         // If we get here with an empty m_transactionError, then the backend
         // must be waiting in the idle state waiting for this state to finish.
@@ -230,7 +230,7 @@ SQLTransactionState SQLTransaction::deliverQuotaIncreaseCallback()
 SQLTransactionState SQLTransaction::deliverSuccessCallback()
 {
     // Spec 4.3.2.8: Deliver success callback.
-    OwnPtr<VoidCallback> successCallback = m_successCallbackWrapper.unwrap();
+    OwnPtrWillBeRawPtr<VoidCallback> successCallback = m_successCallbackWrapper.unwrap();
     if (successCallback)
         successCallback->handleEvent();
 
@@ -263,7 +263,7 @@ void SQLTransaction::performPendingCallback()
     runStateMachine();
 }
 
-void SQLTransaction::executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, PassOwnPtr<SQLStatementCallback> callback, PassOwnPtr<SQLStatementErrorCallback> callbackError, ExceptionState& exceptionState)
+void SQLTransaction::executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, PassOwnPtrWillBeRawPtr<SQLStatementCallback> callback, PassOwnPtrWillBeRawPtr<SQLStatementErrorCallback> callbackError, ExceptionState& exceptionState)
 {
     if (!m_executeSqlAllowed) {
         exceptionState.throwDOMException(InvalidStateError, "SQL execution is disallowed.");
@@ -316,7 +316,7 @@ void SQLTransaction::clearCallbackWrappers()
     m_errorCallbackWrapper.clear();
 }
 
-PassOwnPtr<SQLTransactionErrorCallback> SQLTransaction::releaseErrorCallback()
+PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback> SQLTransaction::releaseErrorCallback()
 {
     return m_errorCallbackWrapper.unwrap();
 }

@@ -46,7 +46,7 @@ public:
     ~AsyncAudioDecoder();
 
     // Must be called on the main thread.
-    void decodeAsync(ArrayBuffer* audioData, float sampleRate, PassOwnPtr<AudioBufferCallback> successCallback, PassOwnPtr<AudioBufferCallback> errorCallback);
+    void decodeAsync(ArrayBuffer* audioData, float sampleRate, PassOwnPtrWillBeRawPtr<AudioBufferCallback> successCallback, PassOwnPtrWillBeRawPtr<AudioBufferCallback> errorCallback);
 
 private:
     AudioBuffer* createAudioBufferFromAudioBus(AudioBus*);

@@ -20,6 +20,7 @@
 #ifndef NavigatorMediaStream_h
 #define NavigatorMediaStream_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -34,9 +35,9 @@ class NavigatorUserMediaSuccessCallback;
 
 class NavigatorMediaStream {
 public:
-    static void webkitGetUserMedia(Navigator&, const Dictionary&, PassOwnPtr<NavigatorUserMediaSuccessCallback>, PassOwnPtr<NavigatorUserMediaErrorCallback>, ExceptionState&);
+    static void webkitGetUserMedia(Navigator&, const Dictionary&, PassOwnPtrWillBeRawPtr<NavigatorUserMediaSuccessCallback>, PassOwnPtrWillBeRawPtr<NavigatorUserMediaErrorCallback>, ExceptionState&);
 
-    static void getMediaDevices(Navigator&, PassOwnPtr<MediaDeviceInfoCallback>, ExceptionState&);
+    static void getMediaDevices(Navigator&, PassOwnPtrWillBeRawPtr<MediaDeviceInfoCallback>, ExceptionState&);
 
 private:
     NavigatorMediaStream();

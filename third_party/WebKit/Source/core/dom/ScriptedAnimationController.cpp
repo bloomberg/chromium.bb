@@ -58,6 +58,8 @@ ScriptedAnimationController::~ScriptedAnimationController()
 void ScriptedAnimationController::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
+    visitor->trace(m_callbacks);
+    visitor->trace(m_callbacksToInvoke);
     visitor->trace(m_document);
     visitor->trace(m_eventQueue);
     visitor->trace(m_mediaQueryListListeners);
@@ -81,7 +83,7 @@ void ScriptedAnimationController::resume()
     scheduleAnimationIfNeeded();
 }
 
-ScriptedAnimationController::CallbackId ScriptedAnimationController::registerCallback(PassOwnPtr<RequestAnimationFrameCallback> callback)
+ScriptedAnimationController::CallbackId ScriptedAnimationController::registerCallback(PassOwnPtrWillBeRawPtr<RequestAnimationFrameCallback> callback)
 {
     ScriptedAnimationController::CallbackId id = ++m_nextCallbackId;
     WTF_LOG(ScriptedAnimationController, "registerCallback: id = %d", id);

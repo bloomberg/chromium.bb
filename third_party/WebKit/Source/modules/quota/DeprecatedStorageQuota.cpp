@@ -52,7 +52,7 @@ DeprecatedStorageQuota::DeprecatedStorageQuota(Type type)
     ScriptWrappable::init(this);
 }
 
-void DeprecatedStorageQuota::queryUsageAndQuota(ExecutionContext* executionContext, PassOwnPtr<StorageUsageCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
+void DeprecatedStorageQuota::queryUsageAndQuota(ExecutionContext* executionContext, PassOwnPtrWillBeRawPtr<StorageUsageCallback> successCallback, PassOwnPtrWillBeRawPtr<StorageErrorCallback> errorCallback)
 {
     ASSERT(executionContext);
 
@@ -74,7 +74,7 @@ void DeprecatedStorageQuota::queryUsageAndQuota(ExecutionContext* executionConte
     Platform::current()->queryStorageUsageAndQuota(storagePartition, storageType, callbacks.release());
 }
 
-void DeprecatedStorageQuota::requestQuota(ExecutionContext* executionContext, unsigned long long newQuotaInBytes, PassOwnPtr<StorageQuotaCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
+void DeprecatedStorageQuota::requestQuota(ExecutionContext* executionContext, unsigned long long newQuotaInBytes, PassOwnPtrWillBeRawPtr<StorageQuotaCallback> successCallback, PassOwnPtrWillBeRawPtr<StorageErrorCallback> errorCallback)
 {
     ASSERT(executionContext);
 

@@ -47,7 +47,7 @@ NavigatorMediaStream::~NavigatorMediaStream()
 {
 }
 
-void NavigatorMediaStream::webkitGetUserMedia(Navigator& navigator, const Dictionary& options, PassOwnPtr<NavigatorUserMediaSuccessCallback> successCallback, PassOwnPtr<NavigatorUserMediaErrorCallback> errorCallback, ExceptionState& exceptionState)
+void NavigatorMediaStream::webkitGetUserMedia(Navigator& navigator, const Dictionary& options, PassOwnPtrWillBeRawPtr<NavigatorUserMediaSuccessCallback> successCallback, PassOwnPtrWillBeRawPtr<NavigatorUserMediaErrorCallback> errorCallback, ExceptionState& exceptionState)
 {
     if (!successCallback)
         return;
@@ -67,7 +67,7 @@ void NavigatorMediaStream::webkitGetUserMedia(Navigator& navigator, const Dictio
     request->start();
 }
 
-void NavigatorMediaStream::getMediaDevices(Navigator& navigator, PassOwnPtr<MediaDeviceInfoCallback> callback, ExceptionState& exceptionState)
+void NavigatorMediaStream::getMediaDevices(Navigator& navigator, PassOwnPtrWillBeRawPtr<MediaDeviceInfoCallback> callback, ExceptionState& exceptionState)
 {
     UserMediaController* userMedia = UserMediaController::from(navigator.frame());
     if (!userMedia) {

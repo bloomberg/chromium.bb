@@ -59,7 +59,7 @@ StorageQuotaClientImpl::~StorageQuotaClientImpl()
 {
 }
 
-void StorageQuotaClientImpl::requestQuota(ExecutionContext* executionContext, WebStorageQuotaType storageType, unsigned long long newQuotaInBytes, PassOwnPtr<StorageQuotaCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
+void StorageQuotaClientImpl::requestQuota(ExecutionContext* executionContext, WebStorageQuotaType storageType, unsigned long long newQuotaInBytes, PassOwnPtrWillBeRawPtr<StorageQuotaCallback> successCallback, PassOwnPtrWillBeRawPtr<StorageErrorCallback> errorCallback)
 {
     ASSERT(executionContext);
 

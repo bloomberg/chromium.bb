@@ -98,7 +98,7 @@ public:
     AudioBuffer* createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
 
     // Asynchronous audio file data decoding.
-    void decodeAudioData(ArrayBuffer*, PassOwnPtr<AudioBufferCallback>, PassOwnPtr<AudioBufferCallback>, ExceptionState&);
+    void decodeAudioData(ArrayBuffer*, PassOwnPtrWillBeRawPtr<AudioBufferCallback>, PassOwnPtrWillBeRawPtr<AudioBufferCallback>, ExceptionState&);
 
     AudioListener* listener() { return m_listener.get(); }
 

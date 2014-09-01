@@ -33,6 +33,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -41,14 +42,15 @@ class DOMError;
 
 typedef int ExceptionCode;
 
-class StorageErrorCallback {
+class StorageErrorCallback : public NoBaseWillBeGarbageCollectedFinalized<StorageErrorCallback> {
 public:
     virtual ~StorageErrorCallback() { }
+    virtual void trace(Visitor*) { }
     virtual void handleEvent(DOMError*) = 0;
 
     class CallbackTask FINAL : public ExecutionContextTask {
     public:
-        static PassOwnPtr<CallbackTask> create(PassOwnPtr<StorageErrorCallback> callback, ExceptionCode ec)
+        static PassOwnPtr<CallbackTask> create(PassOwnPtrWillBeRawPtr<StorageErrorCallback> callback, ExceptionCode ec)
         {
             return adoptPtr(new CallbackTask(callback, ec));
         }
@@ -56,9 +58,9 @@ public:
         virtual void performTask(ExecutionContext*) OVERRIDE;
 
     private:
-        CallbackTask(PassOwnPtr<StorageErrorCallback>, ExceptionCode);
+        CallbackTask(PassOwnPtrWillBeRawPtr<StorageErrorCallback>, ExceptionCode);
 
-        OwnPtr<StorageErrorCallback> m_callback;
+        OwnPtrWillBePersistent<StorageErrorCallback> m_callback;
         ExceptionCode m_ec;
     };
 };

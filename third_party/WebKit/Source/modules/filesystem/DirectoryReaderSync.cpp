@@ -42,7 +42,7 @@
 
 namespace blink {
 
-class DirectoryReaderSync::EntriesCallbackHelper : public EntriesCallback {
+class DirectoryReaderSync::EntriesCallbackHelper FINAL : public EntriesCallback {
 public:
     explicit EntriesCallbackHelper(DirectoryReaderSync* reader)
         : m_reader(reader)
@@ -58,11 +58,17 @@ public:
         m_reader->addEntries(syncEntries);
     }
 
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_reader);
+        EntriesCallback::trace(visitor);
+    }
+
 private:
-    Persistent<DirectoryReaderSync> m_reader;
+    PersistentWillBeMember<DirectoryReaderSync> m_reader;
 };
 
-class DirectoryReaderSync::ErrorCallbackHelper : public ErrorCallback {
+class DirectoryReaderSync::ErrorCallbackHelper FINAL : public ErrorCallback {
 public:
     explicit ErrorCallbackHelper(DirectoryReaderSync* reader)
         : m_reader(reader)
@@ -74,8 +80,14 @@ public:
         m_reader->setError(error->code());
     }
 
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_reader);
+        ErrorCallback::trace(visitor);
+    }
+
 private:
-    Persistent<DirectoryReaderSync> m_reader;
+    PersistentWillBeMember<DirectoryReaderSync> m_reader;
 };
 
 DirectoryReaderSync::DirectoryReaderSync(DOMFileSystemBase* fileSystem, const String& fullPath)
@@ -93,7 +105,7 @@ DirectoryReaderSync::~DirectoryReaderSync()
 EntrySyncHeapVector DirectoryReaderSync::readEntries(ExceptionState& exceptionState)
 {
     if (!m_callbacksId) {
-        m_callbacksId = filesystem()->readDirectory(this, m_fullPath, adoptPtr(new EntriesCallbackHelper(this)), adoptPtr(new ErrorCallbackHelper(this)), DOMFileSystemBase::Synchronous);
+        m_callbacksId = filesystem()->readDirectory(this, m_fullPath, adoptPtrWillBeNoop(new EntriesCallbackHelper(this)), adoptPtrWillBeNoop(new ErrorCallbackHelper(this)), DOMFileSystemBase::Synchronous);
     }
 
     if (m_errorCode == FileError::OK && m_hasMoreEntries && m_entries.isEmpty())

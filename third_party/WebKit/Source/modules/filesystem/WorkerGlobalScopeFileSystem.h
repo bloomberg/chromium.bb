@@ -46,9 +46,9 @@ public:
         PERSISTENT,
     };
 
-    static void webkitRequestFileSystem(WorkerGlobalScope&, int type, long long size, PassOwnPtr<FileSystemCallback> successCallback, PassOwnPtr<ErrorCallback>);
+    static void webkitRequestFileSystem(WorkerGlobalScope&, int type, long long size, PassOwnPtrWillBeRawPtr<FileSystemCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback>);
     static DOMFileSystemSync* webkitRequestFileSystemSync(WorkerGlobalScope&, int type, long long size, ExceptionState&);
-    static void webkitResolveLocalFileSystemURL(WorkerGlobalScope&, const String& url, PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback>);
+    static void webkitResolveLocalFileSystemURL(WorkerGlobalScope&, const String& url, PassOwnPtrWillBeRawPtr<EntryCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback>);
     static EntrySync* webkitResolveLocalFileSystemSyncURL(WorkerGlobalScope&, const String& url, ExceptionState&);
 
 private:

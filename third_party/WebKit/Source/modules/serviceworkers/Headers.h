@@ -42,8 +42,8 @@ public:
     bool has(const String& key, ExceptionState&);
     void set(const String& key, const String& value, ExceptionState&);
     unsigned long size() const;
-    void forEach(PassOwnPtr<HeadersForEachCallback>, const ScriptValue&);
-    void forEach(PassOwnPtr<HeadersForEachCallback>);
+    void forEach(PassOwnPtrWillBeRawPtr<HeadersForEachCallback>, const ScriptValue&);
+    void forEach(PassOwnPtrWillBeRawPtr<HeadersForEachCallback>);
 
     void setGuard(Guard guard) { m_guard = guard; }
     Guard guard() const { return m_guard; }
@@ -58,7 +58,7 @@ private:
     Headers();
     // Shares the FetchHeaderList. Called when creating a Request or Response.
     explicit Headers(FetchHeaderList*);
-    void forEachInternal(PassOwnPtr<HeadersForEachCallback>, const ScriptValue*);
+    void forEachInternal(PassOwnPtrWillBeRawPtr<HeadersForEachCallback>, const ScriptValue*);
 
     RefPtrWillBeMember<FetchHeaderList> m_headerList;
     Guard m_guard;

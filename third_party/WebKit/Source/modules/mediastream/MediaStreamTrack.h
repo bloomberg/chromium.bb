@@ -62,7 +62,7 @@ public:
 
     String readyState() const;
 
-    static void getSources(ExecutionContext*, PassOwnPtr<MediaStreamTrackSourcesCallback>, ExceptionState&);
+    static void getSources(ExecutionContext*, PassOwnPtrWillBeRawPtr<MediaStreamTrackSourcesCallback>, ExceptionState&);
     void stopTrack(ExceptionState&);
     MediaStreamTrack* clone(ExecutionContext*);
 

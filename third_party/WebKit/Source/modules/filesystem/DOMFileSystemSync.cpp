@@ -65,7 +65,7 @@ DOMFileSystemSync::~DOMFileSystemSync()
 {
 }
 
-void DOMFileSystemSync::reportError(PassOwnPtr<ErrorCallback> errorCallback, PassRefPtrWillBeRawPtr<FileError> fileError)
+void DOMFileSystemSync::reportError(PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback, PassRefPtrWillBeRawPtr<FileError> fileError)
 {
     errorCallback->handleEvent(fileError.get());
 }
@@ -179,9 +179,9 @@ namespace {
 
 class ReceiveFileWriterCallback FINAL : public FileWriterBaseCallback {
 public:
-    static PassOwnPtr<ReceiveFileWriterCallback> create()
+    static PassOwnPtrWillBeRawPtr<ReceiveFileWriterCallback> create()
     {
-        return adoptPtr(new ReceiveFileWriterCallback());
+        return adoptPtrWillBeNoop(new ReceiveFileWriterCallback());
     }
 
     virtual void handleEvent(FileWriterBase*) OVERRIDE
@@ -196,9 +196,9 @@ private:
 
 class LocalErrorCallback FINAL : public ErrorCallback {
 public:
-    static PassOwnPtr<LocalErrorCallback> create(FileError::ErrorCode& errorCode)
+    static PassOwnPtrWillBeRawPtr<LocalErrorCallback> create(FileError::ErrorCode& errorCode)
     {
-        return adoptPtr(new LocalErrorCallback(errorCode));
+        return adoptPtrWillBeNoop(new LocalErrorCallback(errorCode));
     }
 
     virtual void handleEvent(FileError* error) OVERRIDE
@@ -223,9 +223,9 @@ FileWriterSync* DOMFileSystemSync::createWriter(const FileEntrySync* fileEntry, 
     ASSERT(fileEntry);
 
     FileWriterSync* fileWriter = FileWriterSync::create();
-    OwnPtr<ReceiveFileWriterCallback> successCallback = ReceiveFileWriterCallback::create();
+    OwnPtrWillBeRawPtr<ReceiveFileWriterCallback> successCallback = ReceiveFileWriterCallback::create();
     FileError::ErrorCode errorCode = FileError::OK;
-    OwnPtr<LocalErrorCallback> errorCallback = LocalErrorCallback::create(errorCode);
+    OwnPtrWillBeRawPtr<LocalErrorCallback> errorCallback = LocalErrorCallback::create(errorCode);
 
     OwnPtr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, successCallback.release(), errorCallback.release(), m_context);
     callbacks->setShouldBlockUntilCompletion(true);

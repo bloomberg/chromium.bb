@@ -44,9 +44,10 @@ class RTCPeerConnection;
 class RTCSessionDescriptionCallback;
 class WebRTCSessionDescription;
 
+// FIXME: Oilpan: Move RTCSessionDescriptionRequestImpl to heap in a follow-up.
 class RTCSessionDescriptionRequestImpl FINAL : public RTCSessionDescriptionRequest, public ActiveDOMObject {
 public:
-    static PassRefPtr<RTCSessionDescriptionRequestImpl> create(ExecutionContext*, RTCPeerConnection*, PassOwnPtr<RTCSessionDescriptionCallback>, PassOwnPtr<RTCErrorCallback>);
+    static PassRefPtr<RTCSessionDescriptionRequestImpl> create(ExecutionContext*, RTCPeerConnection*, PassOwnPtrWillBeRawPtr<RTCSessionDescriptionCallback>, PassOwnPtrWillBeRawPtr<RTCErrorCallback>);
     virtual ~RTCSessionDescriptionRequestImpl();
 
     virtual void requestSucceeded(const WebRTCSessionDescription&) OVERRIDE;
@@ -56,12 +57,12 @@ public:
     virtual void stop() OVERRIDE;
 
 private:
-    RTCSessionDescriptionRequestImpl(ExecutionContext*, RTCPeerConnection*, PassOwnPtr<RTCSessionDescriptionCallback>, PassOwnPtr<RTCErrorCallback>);
+    RTCSessionDescriptionRequestImpl(ExecutionContext*, RTCPeerConnection*, PassOwnPtrWillBeRawPtr<RTCSessionDescriptionCallback>, PassOwnPtrWillBeRawPtr<RTCErrorCallback>);
 
     void clear();
 
-    OwnPtr<RTCSessionDescriptionCallback> m_successCallback;
-    OwnPtr<RTCErrorCallback> m_errorCallback;
+    OwnPtrWillBePersistent<RTCSessionDescriptionCallback> m_successCallback;
+    OwnPtrWillBePersistent<RTCErrorCallback> m_errorCallback;
 
     Persistent<RTCPeerConnection> m_requester;
 };

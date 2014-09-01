@@ -41,7 +41,7 @@ class UserMediaController;
 
 class MediaDevicesRequest FINAL : public GarbageCollectedFinalized<MediaDevicesRequest>, public ActiveDOMObject {
 public:
-    static MediaDevicesRequest* create(ExecutionContext*, UserMediaController*, PassOwnPtr<MediaDeviceInfoCallback>, ExceptionState&);
+    static MediaDevicesRequest* create(ExecutionContext*, UserMediaController*, PassOwnPtrWillBeRawPtr<MediaDeviceInfoCallback>, ExceptionState&);
     virtual ~MediaDevicesRequest();
 
     MediaDeviceInfoCallback* callback() const { return m_callback.get(); }
@@ -54,14 +54,14 @@ public:
     // ActiveDOMObject
     virtual void stop() OVERRIDE;
 
-    void trace(Visitor*) { }
+    void trace(Visitor*);
 
 private:
-    MediaDevicesRequest(ExecutionContext*, UserMediaController*, PassOwnPtr<MediaDeviceInfoCallback>);
+    MediaDevicesRequest(ExecutionContext*, UserMediaController*, PassOwnPtrWillBeRawPtr<MediaDeviceInfoCallback>);
 
     UserMediaController* m_controller;
 
-    OwnPtr<MediaDeviceInfoCallback> m_callback;
+    OwnPtrWillBeMember<MediaDeviceInfoCallback> m_callback;
 };
 
 } // namespace blink

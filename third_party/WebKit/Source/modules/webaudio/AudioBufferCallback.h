@@ -27,13 +27,16 @@
 
 #if ENABLE(WEB_AUDIO)
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
 class AudioBuffer;
 
-class AudioBufferCallback {
+class AudioBufferCallback : public NoBaseWillBeGarbageCollectedFinalized<AudioBufferCallback> {
 public:
     virtual ~AudioBufferCallback() { }
+    virtual void trace(Visitor*) { }
     virtual void handleEvent(AudioBuffer*) = 0;
 };
 

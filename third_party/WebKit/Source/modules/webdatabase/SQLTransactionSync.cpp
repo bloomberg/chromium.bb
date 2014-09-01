@@ -38,12 +38,12 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<SQLTransactionSync> SQLTransactionSync::create(DatabaseSync* db, PassOwnPtr<SQLTransactionSyncCallback> callback, bool readOnly)
+PassRefPtrWillBeRawPtr<SQLTransactionSync> SQLTransactionSync::create(DatabaseSync* db, PassOwnPtrWillBeRawPtr<SQLTransactionSyncCallback> callback, bool readOnly)
 {
     return adoptRefWillBeNoop(new SQLTransactionSync(db, callback, readOnly));
 }
 
-SQLTransactionSync::SQLTransactionSync(DatabaseSync* db, PassOwnPtr<SQLTransactionSyncCallback> callback, bool readOnly)
+SQLTransactionSync::SQLTransactionSync(DatabaseSync* db, PassOwnPtrWillBeRawPtr<SQLTransactionSyncCallback> callback, bool readOnly)
     : SQLTransactionBackendSync(db, callback, readOnly)
 {
     ASSERT(m_database->executionContext()->isContextThread());

@@ -38,7 +38,7 @@ template<typename T> class WebVector;
 
 class MediaStreamTrackSourcesRequestImpl FINAL : public MediaStreamTrackSourcesRequest {
 public:
-    static MediaStreamTrackSourcesRequestImpl* create(ExecutionContext&, PassOwnPtr<MediaStreamTrackSourcesCallback>);
+    static MediaStreamTrackSourcesRequestImpl* create(ExecutionContext&, PassOwnPtrWillBeRawPtr<MediaStreamTrackSourcesCallback>);
     ~MediaStreamTrackSourcesRequestImpl();
 
     virtual String origin() OVERRIDE;
@@ -47,11 +47,11 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    MediaStreamTrackSourcesRequestImpl(ExecutionContext&, PassOwnPtr<MediaStreamTrackSourcesCallback>);
+    MediaStreamTrackSourcesRequestImpl(ExecutionContext&, PassOwnPtrWillBeRawPtr<MediaStreamTrackSourcesCallback>);
 
     void performCallback();
 
-    OwnPtr<MediaStreamTrackSourcesCallback> m_callback;
+    OwnPtrWillBeMember<MediaStreamTrackSourcesCallback> m_callback;
     RefPtrWillBeMember<ExecutionContext> m_executionContext;
     SourceInfoVector m_sourceInfos;
 };

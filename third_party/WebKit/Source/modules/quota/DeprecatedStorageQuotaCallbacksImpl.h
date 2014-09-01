@@ -41,14 +41,15 @@
 
 namespace blink {
 
+// FIXME: Oilpan: Move DeprecatedStorageQuotaCallbacksImpl to heap in a follow-up.
 class DeprecatedStorageQuotaCallbacksImpl FINAL : public StorageQuotaCallbacks {
 public:
-    static PassOwnPtr<DeprecatedStorageQuotaCallbacksImpl> create(PassOwnPtr<StorageUsageCallback> success, PassOwnPtr<StorageErrorCallback> error)
+    static PassOwnPtr<DeprecatedStorageQuotaCallbacksImpl> create(PassOwnPtrWillBeRawPtr<StorageUsageCallback> success, PassOwnPtrWillBeRawPtr<StorageErrorCallback> error)
     {
         return adoptPtr(new DeprecatedStorageQuotaCallbacksImpl(success, error));
     }
 
-    static PassOwnPtr<DeprecatedStorageQuotaCallbacksImpl> create(PassOwnPtr<StorageQuotaCallback> success, PassOwnPtr<StorageErrorCallback> error)
+    static PassOwnPtr<DeprecatedStorageQuotaCallbacksImpl> create(PassOwnPtrWillBeRawPtr<StorageQuotaCallback> success, PassOwnPtrWillBeRawPtr<StorageErrorCallback> error)
     {
         return adoptPtr(new DeprecatedStorageQuotaCallbacksImpl(success, error));
     }
@@ -60,12 +61,12 @@ public:
     virtual void didFail(WebStorageQuotaError) OVERRIDE;
 
 private:
-    DeprecatedStorageQuotaCallbacksImpl(PassOwnPtr<StorageUsageCallback>, PassOwnPtr<StorageErrorCallback>);
-    DeprecatedStorageQuotaCallbacksImpl(PassOwnPtr<StorageQuotaCallback>, PassOwnPtr<StorageErrorCallback>);
+    DeprecatedStorageQuotaCallbacksImpl(PassOwnPtrWillBeRawPtr<StorageUsageCallback>, PassOwnPtrWillBeRawPtr<StorageErrorCallback>);
+    DeprecatedStorageQuotaCallbacksImpl(PassOwnPtrWillBeRawPtr<StorageQuotaCallback>, PassOwnPtrWillBeRawPtr<StorageErrorCallback>);
 
-    OwnPtr<StorageUsageCallback> m_usageCallback;
-    OwnPtr<StorageQuotaCallback> m_quotaCallback;
-    OwnPtr<StorageErrorCallback> m_errorCallback;
+    OwnPtrWillBePersistent<StorageUsageCallback> m_usageCallback;
+    OwnPtrWillBePersistent<StorageQuotaCallback> m_quotaCallback;
+    OwnPtrWillBePersistent<StorageErrorCallback> m_errorCallback;
 };
 
 } // namespace blink

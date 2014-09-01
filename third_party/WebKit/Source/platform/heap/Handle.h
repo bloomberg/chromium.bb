@@ -372,9 +372,9 @@ public:
         visitor->mark(m_raw);
     }
 
-    T* release()
+    RawPtr<T> release()
     {
-        T* result = m_raw;
+        RawPtr<T> result = m_raw;
         m_raw = 0;
         return result;
     }

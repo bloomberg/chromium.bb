@@ -31,13 +31,16 @@
 #ifndef RTCSessionDescriptionCallback_h
 #define RTCSessionDescriptionCallback_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
 class RTCSessionDescription;
 
-class RTCSessionDescriptionCallback {
+class RTCSessionDescriptionCallback : public NoBaseWillBeGarbageCollectedFinalized<RTCSessionDescriptionCallback> {
 public:
     virtual ~RTCSessionDescriptionCallback() { }
+    virtual void trace(Visitor*) { }
     virtual void handleEvent(RTCSessionDescription*) = 0;
 };
 

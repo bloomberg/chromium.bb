@@ -66,10 +66,10 @@ public:
     void rollbackIfInProgress();
 
 private:
-    SQLTransactionBackendSync(DatabaseSync*, PassOwnPtr<SQLTransactionSyncCallback>, bool readOnly);
+    SQLTransactionBackendSync(DatabaseSync*, PassOwnPtrWillBeRawPtr<SQLTransactionSyncCallback>, bool readOnly);
 
     RefPtrWillBeMember<DatabaseSync> m_database;
-    OwnPtr<SQLTransactionSyncCallback> m_callback;
+    OwnPtrWillBeMember<SQLTransactionSyncCallback> m_callback;
     bool m_readOnly;
     bool m_hasVersionMismatch;
 

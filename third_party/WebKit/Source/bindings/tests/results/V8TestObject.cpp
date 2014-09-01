@@ -6576,7 +6576,7 @@ static void voidMethodTestCallbackInterfaceArgMethod(const v8::FunctionCallbackI
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg;
+    OwnPtrWillBeRawPtr<TestCallbackInterface> testCallbackInterfaceArg = nullptr;;
     {
         if (info.Length() <= 0 || !info[0]->IsFunction()) {
             V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
@@ -6597,7 +6597,7 @@ static void voidMethodTestCallbackInterfaceArgMethodCallback(const v8::FunctionC
 static void voidMethodOptionalTestCallbackInterfaceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    OwnPtr<TestCallbackInterface> optionalTestCallbackInterfaceArg;
+    OwnPtrWillBeRawPtr<TestCallbackInterface> optionalTestCallbackInterfaceArg = nullptr;;
     {
         if (info.Length() > 0 && !isUndefinedOrNull(info[0])) {
             if (!info[0]->IsFunction()) {
@@ -6624,7 +6624,7 @@ static void voidMethodTestCallbackInterfaceOrNullArgMethod(const v8::FunctionCal
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg;
+    OwnPtrWillBeRawPtr<TestCallbackInterface> testCallbackInterfaceArg = nullptr;;
     {
         if (info.Length() <= 0 || !(info[0]->IsFunction() || info[0]->IsNull())) {
             V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceOrNullArg", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
@@ -9495,7 +9495,7 @@ static void raisesExceptionVoidMethodTestCallbackInterfaceArgMethod(const v8::Fu
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg;
+    OwnPtrWillBeRawPtr<TestCallbackInterface> testCallbackInterfaceArg = nullptr;;
     {
         if (info.Length() <= 0 || !info[0]->IsFunction()) {
             exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
@@ -9522,7 +9522,7 @@ static void raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethod(cons
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    OwnPtr<TestCallbackInterface> optionalTestCallbackInterfaceArg;
+    OwnPtrWillBeRawPtr<TestCallbackInterface> optionalTestCallbackInterfaceArg = nullptr;;
     {
         if (info.Length() > 0 && !isUndefinedOrNull(info[0])) {
             if (!info[0]->IsFunction()) {

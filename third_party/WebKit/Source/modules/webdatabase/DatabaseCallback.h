@@ -31,14 +31,17 @@
 #ifndef DatabaseCallback_h
 #define DatabaseCallback_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
 class Database;
 class DatabaseSync;
 
-class DatabaseCallback {
+class DatabaseCallback : public NoBaseWillBeGarbageCollectedFinalized<DatabaseCallback> {
 public:
     virtual ~DatabaseCallback() { }
+    virtual void trace(Visitor*) { }
     virtual bool handleEvent(Database*) = 0;
     virtual bool handleEvent(DatabaseSync*) = 0;
 };

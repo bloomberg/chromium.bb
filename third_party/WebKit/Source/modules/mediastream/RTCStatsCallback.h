@@ -25,13 +25,16 @@
 #ifndef RTCStatsCallback_h
 #define RTCStatsCallback_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
 class RTCStatsResponse;
 
-class RTCStatsCallback {
+class RTCStatsCallback : public NoBaseWillBeGarbageCollectedFinalized<RTCStatsCallback> {
 public:
     virtual ~RTCStatsCallback() { }
+    virtual void trace(Visitor*) { }
     virtual void handleEvent(RTCStatsResponse*) = 0;
 };
 

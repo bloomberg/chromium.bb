@@ -16,9 +16,9 @@ namespace blink {
 
 class V8TestCallbackInterface FINAL : public TestCallbackInterface, public ActiveDOMCallback {
 public:
-    static PassOwnPtr<V8TestCallbackInterface> create(v8::Handle<v8::Function> callback, ScriptState* scriptState)
+    static PassOwnPtrWillBeRawPtr<V8TestCallbackInterface> create(v8::Handle<v8::Function> callback, ScriptState* scriptState)
     {
-        return adoptPtr(new V8TestCallbackInterface(callback, scriptState));
+        return adoptPtrWillBeNoop(new V8TestCallbackInterface(callback, scriptState));
     }
 
     virtual ~V8TestCallbackInterface();

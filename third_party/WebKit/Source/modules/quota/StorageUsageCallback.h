@@ -31,11 +31,14 @@
 #ifndef StorageUsageCallback_h
 #define StorageUsageCallback_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
-class StorageUsageCallback {
+class StorageUsageCallback : public NoBaseWillBeGarbageCollectedFinalized<StorageUsageCallback> {
 public:
     virtual ~StorageUsageCallback() { }
+    virtual void trace(Visitor*) { }
     virtual void handleEvent(unsigned long long currentUsageInBytes, unsigned long long currentQuotaInBytes) = 0;
 };
 

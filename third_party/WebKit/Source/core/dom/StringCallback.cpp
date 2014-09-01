@@ -41,7 +41,7 @@ namespace {
 
 class DispatchCallbackTask FINAL : public ExecutionContextTask {
 public:
-    static PassOwnPtr<DispatchCallbackTask> create(PassOwnPtr<StringCallback> callback, const String& data, const String& taskName)
+    static PassOwnPtr<DispatchCallbackTask> create(PassOwnPtrWillBeRawPtr<StringCallback> callback, const String& data, const String& taskName)
     {
         return adoptPtr(new DispatchCallbackTask(callback, data, taskName));
     }
@@ -57,21 +57,21 @@ public:
     }
 
 private:
-    DispatchCallbackTask(PassOwnPtr<StringCallback> callback, const String& data, const String& taskName)
+    DispatchCallbackTask(PassOwnPtrWillBeRawPtr<StringCallback> callback, const String& data, const String& taskName)
         : m_callback(callback)
         , m_data(data)
         , m_taskName(taskName)
     {
     }
 
-    OwnPtr<StringCallback> m_callback;
+    OwnPtrWillBePersistent<StringCallback> m_callback;
     const String m_data;
     const String m_taskName;
 };
 
 } // namespace
 
-void StringCallback::scheduleCallback(PassOwnPtr<StringCallback> callback, ExecutionContext* context, const String& data, const String& instrumentationName)
+void StringCallback::scheduleCallback(PassOwnPtrWillBeRawPtr<StringCallback> callback, ExecutionContext* context, const String& data, const String& instrumentationName)
 {
     context->postTask(DispatchCallbackTask::create(callback, data, instrumentationName));
 }

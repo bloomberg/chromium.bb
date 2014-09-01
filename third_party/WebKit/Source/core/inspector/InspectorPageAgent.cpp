@@ -729,7 +729,7 @@ void InspectorPageAgent::getResourceContent(ErrorString* errorString, const Stri
         callback->sendFailure("Agent is not enabled.");
         return;
     }
-    m_inspectorResourceContentLoader->ensureResourcesContentLoaded(adoptPtr(new GetResourceContentLoadListener(this, frameId, url, callback)));
+    m_inspectorResourceContentLoader->ensureResourcesContentLoaded(adoptPtrWillBeNoop(new GetResourceContentLoadListener(this, frameId, url, callback)));
 }
 
 static bool textContentForResource(Resource* cachedResource, String* result)

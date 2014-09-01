@@ -31,19 +31,21 @@
 #ifndef StringCallback_h
 #define StringCallback_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
 class ExecutionContext;
 
-class StringCallback {
+class StringCallback : public NoBaseWillBeGarbageCollectedFinalized<StringCallback> {
 public:
     virtual ~StringCallback() { }
+    virtual void trace(Visitor*) { }
     virtual void handleEvent(const String& data) = 0;
 
     // Helper to post callback task.
-    static void scheduleCallback(PassOwnPtr<StringCallback>, ExecutionContext*, const String& data, const String& instrumentationName);
+    static void scheduleCallback(PassOwnPtrWillBeRawPtr<StringCallback>, ExecutionContext*, const String& data, const String& instrumentationName);
 };
 
 } // namespace blink
