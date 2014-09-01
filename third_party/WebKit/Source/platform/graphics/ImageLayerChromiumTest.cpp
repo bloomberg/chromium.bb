@@ -107,6 +107,27 @@ public:
     virtual WebLayer* contentsLayer() const { return GraphicsLayer::contentsLayer(); }
 };
 
+TEST(ImageLayerChromiumTest, imageLayerContentReset)
+{
+    MockGraphicsLayerClient client;
+    OwnPtr<GraphicsLayerForTesting> graphicsLayer = adoptPtr(new GraphicsLayerForTesting(&client));
+    ASSERT_TRUE(graphicsLayer.get());
+
+    ASSERT_FALSE(graphicsLayer->hasContentsLayer());
+    ASSERT_FALSE(graphicsLayer->contentsLayer());
+
+    RefPtr<Image> image = TestImage::create(IntSize(100, 100), false);
+    ASSERT_TRUE(image.get());
+
+    graphicsLayer->setContentsToImage(image.get());
+    ASSERT_TRUE(graphicsLayer->hasContentsLayer());
+    ASSERT_TRUE(graphicsLayer->contentsLayer());
+
+    graphicsLayer->setContentsToImage(0);
+    ASSERT_FALSE(graphicsLayer->hasContentsLayer());
+    ASSERT_FALSE(graphicsLayer->contentsLayer());
+}
+
 TEST(ImageLayerChromiumTest, opaqueImages)
 {
     MockGraphicsLayerClient client;

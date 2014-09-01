@@ -458,8 +458,13 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
 
     updateBackgroundColor();
 
-    if (renderer->isImage() && isDirectlyCompositedImage())
-        updateImageContents();
+    if (renderer->isImage()) {
+        if (isDirectlyCompositedImage()) {
+            updateImageContents();
+        } else if (m_graphicsLayer->hasContentsLayer()) {
+            m_graphicsLayer->setContentsToImage(0);
+        }
+    }
 
     if (WebLayer* layer = platformLayerForPlugin(renderer)) {
         m_graphicsLayer->setContentsToPlatformLayer(layer);
