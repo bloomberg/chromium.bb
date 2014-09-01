@@ -44,33 +44,47 @@ TEST(DequeTest, Basic)
 void checkNumberSequence(Deque<int>& deque, int from, int to, bool increment)
 {
     Deque<int>::iterator it = increment ? deque.begin() : deque.end();
+    size_t index = increment ? 0 : deque.size();
     int step = from < to ? 1 : -1;
     for (int i = from; i != to + step; i += step) {
-        if (!increment)
+        if (!increment) {
             --it;
+            --index;
+        }
 
         EXPECT_EQ(i, *it);
+        EXPECT_EQ(i, deque[index]);
 
-        if (increment)
+        if (increment) {
             ++it;
+            ++index;
+        }
     }
     EXPECT_EQ(increment ? deque.end() : deque.begin(), it);
+    EXPECT_EQ(increment ? deque.size() : 0, index);
 }
 
 void checkNumberSequenceReverse(Deque<int>& deque, int from, int to, bool increment)
 {
     Deque<int>::reverse_iterator it = increment ? deque.rbegin() : deque.rend();
+    size_t index = increment ? 0 : deque.size();
     int step = from < to ? 1 : -1;
     for (int i = from; i != to + step; i += step) {
-        if (!increment)
+        if (!increment) {
             --it;
+            --index;
+        }
 
         EXPECT_EQ(i, *it);
+        EXPECT_EQ(i, deque.at(deque.size() - 1 - index));
 
-        if (increment)
+        if (increment) {
             ++it;
+            ++index;
+        }
     }
     EXPECT_EQ(increment ? deque.rend() : deque.rbegin(), it);
+    EXPECT_EQ(increment ? deque.size() : 0, index);
 }
 
 TEST(DequeTest, Reverse)
@@ -102,8 +116,10 @@ TEST(DequeTest, Reverse)
     checkNumberSequenceReverse(intDeque, 199, 11, true);
     checkNumberSequenceReverse(intDeque, 11, 199, false);
 
-    for (int i = 0; i < 180; ++i)
+    for (int i = 0; i < 180; ++i) {
+        EXPECT_EQ(i + 11, intDeque[0]);
         EXPECT_EQ(i + 11, intDeque.takeFirst());
+    }
     checkNumberSequence(intDeque, 191, 199, true);
     checkNumberSequence(intDeque, 199, 191, false);
     checkNumberSequenceReverse(intDeque, 199, 191, true);
