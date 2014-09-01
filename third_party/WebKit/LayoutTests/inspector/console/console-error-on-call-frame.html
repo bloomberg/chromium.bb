@@ -31,7 +31,11 @@ function test()
 
     function step4()
     {
-        InspectorTest.expandConsoleMessages();
+        InspectorTest.expandConsoleMessages(onExpanded);
+    }
+
+    function onExpanded()
+    {
         InspectorTest.dumpConsoleMessages();
         InspectorTest.completeDebuggerTest();
     }

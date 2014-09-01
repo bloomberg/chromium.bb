@@ -9,7 +9,11 @@ function test()
 
     function step1(current, total)
     {
-        InspectorTest.expandConsoleMessages();
+        InspectorTest.expandConsoleMessages(onExpanded);
+    }
+
+    function onExpanded()
+    {
         InspectorTest.dumpConsoleMessages();
         InspectorTest.completeTest();
     }

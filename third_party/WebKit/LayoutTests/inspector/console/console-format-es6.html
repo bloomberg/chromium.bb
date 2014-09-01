@@ -51,12 +51,10 @@ function test()
         function advance()
         {
             var next = current + 1;
-            if (next == total.description) {
-                InspectorTest.expandConsoleMessages();
-                InspectorTest.runAfterPendingDispatches(finish);
-            } else {
+            if (next == total.description)
+                InspectorTest.expandConsoleMessages(finish);
+            else
                 loopOverGlobals(next, total);
-            }
         }
 
         function finish()

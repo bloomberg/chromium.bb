@@ -130,48 +130,39 @@ InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
         InspectorTest.addResult(result[i]);
 }
 
-InspectorTest.expandConsoleMessages = function(callback)
+InspectorTest.expandConsoleMessages = function(callback, deep)
 {
     WebInspector.inspectorView.panel("console");
     var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
-    for (var i = 0; i < messageViews.length; ++i) {
-        var message = messageViews[i].consoleMessage();
-        var element = messageViews[i].contentElement();
-        var node = element;
-        while (node) {
-            if (node.treeElementForTest)
-                node.treeElementForTest.expand();
-            if (node._section) {
-                message.section = node._section;
-                node._section.expanded = true;
-            }
-            node = node.traverseNextNode(element);
-        }
-    }
-    if (callback)
-        InspectorTest.runAfterPendingDispatches(callback);
-}
 
-InspectorTest.expandConsoleTreeElements = function(constructorClass, callback)
-{
-    WebInspector.inspectorView.panel("console");
-    var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
-    for (var i = 0; i < messageViews.length; ++i) {
-        var element = messageViews[i].contentElement();
-        for (var node = element; node; node = node.traverseNextNode(element)) {
-            if (!node._section)
-                continue;
-            var treeElements = node._section.propertiesTreeOutline.children;
-            for (var j = 0; j < treeElements.length; ++j) {
-                for (var treeElement = treeElements[j]; treeElement; treeElement = treeElement.traverseNextTreeElement(false, null, false)) {
-                    if (treeElement instanceof constructorClass)
+    // Initiate round-trips to fetch necessary data for further rendering.
+    for (var i = 0; i < messageViews.length; ++i)
+        messageViews[i].contentElement();
+
+    InspectorTest.runAfterPendingDispatches(expandTreeElements);
+
+    function expandTreeElements()
+    {
+        for (var i = 0; i < messageViews.length; ++i) {
+            var element = messageViews[i].contentElement();
+            for (var node = element; node; node = node.traverseNextNode(element)) {
+                if (node.treeElementForTest)
+                    node.treeElementForTest.expand();
+                if (!node._section)
+                    continue;
+                node._section.expanded = true;
+
+                if (!deep)
+                    continue;
+                var treeElements = node._section.propertiesTreeOutline.children;
+                for (var j = 0; j < treeElements.length; ++j) {
+                    for (var treeElement = treeElements[j]; treeElement; treeElement = treeElement.traverseNextTreeElement(false, null, false))
                         treeElement.expand();
                 }
             }
         }
-    }
-    if (callback)
         InspectorTest.runAfterPendingDispatches(callback);
+    }
 }
 
 InspectorTest.waitForRemoteObjectsConsoleMessages = function(callback)

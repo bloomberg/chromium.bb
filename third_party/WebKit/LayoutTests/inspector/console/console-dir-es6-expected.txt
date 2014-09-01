@@ -13,23 +13,76 @@ console-dir-es6.html:15 Object
     Symbol(a): 3
     Symbol(a): Symbol(Symbol.iterator)
     __proto__: Object
+    __defineGetter__: function __defineGetter__() { [native code] }
+    __defineSetter__: function __defineSetter__() { [native code] }
+    __lookupGetter__: function __lookupGetter__() { [native code] }
+    __lookupSetter__: function __lookupSetter__() { [native code] }
+    constructor: function Object() { [native code] }
+    hasOwnProperty: function hasOwnProperty() { [native code] }
+    isPrototypeOf: function isPrototypeOf() { [native code] }
+    propertyIsEnumerable: function propertyIsEnumerable() { [native code] }
+    toLocaleString: function toLocaleString() { [native code] }
+    toString: function toString() { [native code] }
+    valueOf: function valueOf() { [native code] }
+    get __proto__: function __proto__() { [native code] }
+    set __proto__: function __proto__() { [native code] }
 console-dir-es6.html:18 Symbol()
 console-dir-es6.html:22 Map
     size: (...)
     __proto__: Map
+    clear: function clear() { [native code] }
+    constructor: function Map() { [native code] }
+    delete: function delete() { [native code] }
+    entries: function entries() { [native code] }
+    forEach: function forEach() { [native code] }
+    get: function get() { [native code] }
+    has: function has() { [native code] }
+    keys: function keys() { [native code] }
+    set: function set() { [native code] }
+    size: (...)
+    get size: function size() { [native code] }
+    values: function values() { [native code] }
+    Symbol(Symbol.iterator): function entries() { [native code] }
+    __proto__: Object
     <entries>[1]
     0: {key:Object, value:Object}
 console-dir-es6.html:22 WeakMap
     __proto__: WeakMap
+    clear: function clear() { [native code] }
+    constructor: function WeakMap() { [native code] }
+    delete: function delete() { [native code] }
+    get: function get() { [native code] }
+    has: function has() { [native code] }
+    set: function set() { [native code] }
+    __proto__: Object
     <entries>[1]
     0: {key:Object, value:Object}
 console-dir-es6.html:26 Set
     size: (...)
     __proto__: Set
+    add: function add() { [native code] }
+    clear: function clear() { [native code] }
+    constructor: function Set() { [native code] }
+    delete: function delete() { [native code] }
+    entries: function entries() { [native code] }
+    forEach: function forEach() { [native code] }
+    has: function has() { [native code] }
+    keys: function values() { [native code] }
+    size: (...)
+    get size: function size() { [native code] }
+    values: function values() { [native code] }
+    Symbol(Symbol.iterator): function values() { [native code] }
+    __proto__: Object
     <entries>[1]
     0: Object
 console-dir-es6.html:26 WeakSet
     __proto__: WeakSet
+    add: function add() { [native code] }
+    clear: function clear() { [native code] }
+    constructor: function WeakSet() { [native code] }
+    delete: function delete() { [native code] }
+    has: function has() { [native code] }
+    __proto__: Object
     <entries>[1]
     0: Object
 

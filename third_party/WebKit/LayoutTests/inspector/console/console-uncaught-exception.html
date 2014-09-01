@@ -10,11 +10,14 @@ function test()
     InspectorTest.evaluateInPage("loadIframe()");
     function addMessage(viewMessage)
     {
-        if (viewMessage.toString().indexOf("setTimeout") !== -1) {
-            InspectorTest.expandConsoleMessages();
-            InspectorTest.dumpConsoleMessages();
-            InspectorTest.completeTest();
-        }
+        if (viewMessage.toString().indexOf("setTimeout") !== -1)
+            InspectorTest.expandConsoleMessages(onExpanded);
+    }
+
+    function onExpanded()
+    {
+        InspectorTest.dumpConsoleMessages();
+        InspectorTest.completeTest();
     }
 }
 

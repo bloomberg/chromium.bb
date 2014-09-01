@@ -17,9 +17,13 @@ function onload()
 
 function test()
 {
-    InspectorTest.expandConsoleMessages();
-    InspectorTest.dumpConsoleMessagesWithStyles();
-    InspectorTest.completeTest();
+    InspectorTest.expandConsoleMessages(onExpanded);
+
+    function onExpanded()
+    {
+        InspectorTest.dumpConsoleMessagesWithStyles();
+        InspectorTest.completeTest();
+    }
 }
 </script>
 </head>

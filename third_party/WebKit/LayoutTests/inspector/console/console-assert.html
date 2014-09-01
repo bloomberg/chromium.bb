@@ -20,12 +20,16 @@ function test()
     var callCount = 0;
     function callback()
     {
-        if (++callCount === 2) {
-            InspectorTest.expandConsoleMessages();
-            InspectorTest.dumpConsoleMessages();
-            InspectorTest.completeTest();
-        }
+        if (++callCount === 2)
+            InspectorTest.expandConsoleMessages(onExpandedMessages);
     }
+
+    function onExpandedMessages()
+    {
+        InspectorTest.dumpConsoleMessages();
+        InspectorTest.completeTest();
+    }
+
     InspectorTest.evaluateInPage("setTimeout(a, 0)");
     InspectorTest.addConsoleSniffer(callback, true);
 }
