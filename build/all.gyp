@@ -802,24 +802,6 @@
           ],
         },
         {
-          # WebRTC Android APK tests.
-          'target_name': 'android_builder_webrtc',
-          'type': 'none',
-          'variables': {
-            # Set default value for include_tests to '0'. It is normally only
-            # used in WebRTC GYP files. It is set to '1' only when building
-            # WebRTC for Android, inside a Chromium checkout.
-            'include_tests%': 0,
-          },
-          'conditions': [
-            ['include_tests==1', {
-              'dependencies': [
-                '../third_party/webrtc/build/apk_tests.gyp:*',
-              ],
-            }],
-          ],
-        },  # target_name: android_builder_webrtc
-        {
           # WebRTC Chromium tests to run on Android.
           'target_name': 'android_builder_chromium_webrtc',
           'type': 'none',

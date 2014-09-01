@@ -76,7 +76,7 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
 
 VALID_TESTS = set(['chromedriver', 'chrome_proxy', 'gpu', 'mojo', 'sync',
                    'telemetry_perf_unittests', 'ui', 'unit', 'webkit',
-                   'webkit_layout', 'webrtc_chromium', 'webrtc_native'])
+                   'webkit_layout'])
 
 RunCmd = bb_utils.RunCmd
 
@@ -498,14 +498,6 @@ def RunWebkitTests(options):
   RunWebkitLint(options.target)
 
 
-def RunWebRTCChromiumTests(options):
-  RunTestSuites(options, gtest_config.WEBRTC_CHROMIUM_TEST_SUITES)
-
-
-def RunWebRTCNativeTests(options):
-  RunTestSuites(options, gtest_config.WEBRTC_NATIVE_TEST_SUITES)
-
-
 def RunGPUTests(options):
   revision = _GetRevision(options)
   builder_name = options.build_properties.get('buildername', 'noname')
@@ -553,8 +545,6 @@ def GetTestStepCmds():
       ('unit', RunUnitTests),
       ('webkit', RunWebkitTests),
       ('webkit_layout', RunWebkitLayoutTests),
-      ('webrtc_chromium', RunWebRTCChromiumTests),
-      ('webrtc_native', RunWebRTCNativeTests),
   ]
 
 
