@@ -224,6 +224,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
     DROP_FOR_FOLDER,
   };
 
+  enum ScrollAxis { SCROLL_AXIS_HORIZONTAL, SCROLL_AXIS_VERTICAL };
+
   // Represents the index to an item view in the grid.
   struct Index {
     Index() : page(-1), slot(-1) {}
@@ -458,6 +460,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void OnGotShortcutPath(scoped_refptr<SynchronousDrag> drag,
                          const base::FilePath& path);
 #endif
+
+  // Determines whether the grid view scrolls horizontally or vertically.
+  static ScrollAxis GetScrollAxis();
 
   AppListModel* model_;  // Owned by AppListView.
   AppListItemList* item_list_;  // Not owned.

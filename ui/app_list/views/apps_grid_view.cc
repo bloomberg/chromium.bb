@@ -962,10 +962,17 @@ bool AppsGridView::OnKeyReleased(const ui::KeyEvent& event) {
 
 bool AppsGridView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   int offset;
-  if (abs(event.x_offset()) > abs(event.y_offset()))
-    offset = event.x_offset();
-  else
+  if (GetScrollAxis() == SCROLL_AXIS_HORIZONTAL) {
+    // If the view scrolls horizontally, both horizontal and vertical scroll
+    // events are valid (since most mouse wheels only have vertical scrolling).
+    if (abs(event.x_offset()) > abs(event.y_offset()))
+      offset = event.x_offset();
+    else
+      offset = event.y_offset();
+  } else {
+    // If the view scrolls vertically, only vertical scroll events are valid.
     offset = event.y_offset();
+  }
 
   if (abs(offset) > kMinMouseWheelToSwitchPage) {
     if (!pagination_model_.has_transition()) {
@@ -996,29 +1003,37 @@ void AppsGridView::ViewHierarchyChanged(
 }
 
 void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
+  const ui::GestureEventDetails& details = event->details();
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
       pagination_model_.StartScroll();
       event->SetHandled();
       return;
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-      // event->details.scroll_x() > 0 means moving contents to right. That is,
-      // transitioning to previous page.
-      pagination_model_.UpdateScroll(event->details().scroll_x() /
-                                     GetContentsBounds().width());
+    case ui::ET_GESTURE_SCROLL_UPDATE: {
+      float scroll = GetScrollAxis() == SCROLL_AXIS_HORIZONTAL
+                         ? details.scroll_x()
+                         : details.scroll_y();
+      gfx::Rect bounds(GetContentsBounds());
+      int size = GetScrollAxis() == SCROLL_AXIS_HORIZONTAL ? bounds.width()
+                                                           : bounds.height();
+      // scroll > 0 means moving contents right or down. That is, transitioning
+      // to the previous page.
+      pagination_model_.UpdateScroll(scroll / size);
       event->SetHandled();
       return;
+    }
     case ui::ET_GESTURE_SCROLL_END:
       pagination_model_.EndScroll(pagination_model_.transition().progress <
                                   kFinishTransitionThreshold);
       event->SetHandled();
       return;
     case ui::ET_SCROLL_FLING_START: {
+      float velocity = GetScrollAxis() == SCROLL_AXIS_HORIZONTAL
+                           ? details.velocity_x()
+                           : details.velocity_y();
       pagination_model_.EndScroll(true);
-      if (fabs(event->details().velocity_x()) > kMinHorizVelocityToSwitchPage) {
-        pagination_model_.SelectPageRelative(
-            event->details().velocity_x() < 0 ? 1 : -1, true);
-      }
+      if (fabs(velocity) > kMinHorizVelocityToSwitchPage)
+        pagination_model_.SelectPageRelative(velocity < 0 ? 1 : -1, true);
       event->SetHandled();
       return;
     }
@@ -1032,10 +1047,17 @@ void AppsGridView::OnScrollEvent(ui::ScrollEvent* event) {
     return;
 
   float offset;
-  if (std::abs(event->x_offset()) > std::abs(event->y_offset()))
-    offset = event->x_offset();
-  else
+  if (GetScrollAxis() == SCROLL_AXIS_HORIZONTAL) {
+    // If the view scrolls horizontally, both horizontal and vertical scroll
+    // events are valid (vertical scroll events simulate mouse wheel).
+    if (std::abs(event->x_offset()) > std::abs(event->y_offset()))
+      offset = event->x_offset();
+    else
+      offset = event->y_offset();
+  } else {
+    // If the view scrolls vertically, only vertical scroll events are valid.
     offset = event->y_offset();
+  }
 
   if (std::abs(offset) > kMinScrollToSwitchPage) {
     if (!pagination_model_.has_transition()) {
@@ -1208,9 +1230,10 @@ void AppsGridView::CalculateIdealBounds() {
                                 tile_size.height() * rows_per_page_));
   grid_rect.Intersect(rect);
 
-  // Page width including padding pixels. A tile.x + page_width means the same
-  // tile slot in the next page.
+  // Page size including padding pixels. A tile.x + page_width means the same
+  // tile slot in the next page; similarly for tile.y + page_height.
   const int page_width = grid_rect.width() + kPagePadding;
+  const int page_height = grid_rect.height() + kPagePadding;
 
   // If there is a transition, calculates offset for current and target page.
   const int current_page = pagination_model_.selected_page();
@@ -1218,10 +1241,8 @@ void AppsGridView::CalculateIdealBounds() {
       pagination_model_.transition();
   const bool is_valid = pagination_model_.is_valid_page(transition.target_page);
 
-  // Transition to right means negative offset.
+  // Transition to previous page means negative offset.
   const int dir = transition.target_page > current_page ? -1 : 1;
-  const int transition_offset = is_valid ?
-      transition.progress * page_width * dir : 0;
 
   const int total_views =
       view_model_.view_size() + pulsing_blocks_model_.view_size();
@@ -1245,17 +1266,33 @@ void AppsGridView::CalculateIdealBounds() {
       }
     }
 
-    // Decides an x_offset for current item.
+    // Decide the x or y offset for current item.
     int x_offset = 0;
-    if (view_index.page < current_page)
-      x_offset = -page_width;
-    else if (view_index.page > current_page)
-      x_offset = page_width;
+    int y_offset = 0;
 
-    if (is_valid) {
-      if (view_index.page == current_page ||
-          view_index.page == transition.target_page) {
-        x_offset += transition_offset;
+    if (GetScrollAxis() == SCROLL_AXIS_HORIZONTAL) {
+      if (view_index.page < current_page)
+        x_offset = -page_width;
+      else if (view_index.page > current_page)
+        x_offset = page_width;
+
+      if (is_valid) {
+        if (view_index.page == current_page ||
+            view_index.page == transition.target_page) {
+          x_offset += transition.progress * page_width * dir;
+        }
+      }
+    } else {
+      if (view_index.page < current_page)
+        y_offset = -page_height;
+      else if (view_index.page > current_page)
+        y_offset = page_height;
+
+      if (is_valid) {
+        if (view_index.page == current_page ||
+            view_index.page == transition.target_page) {
+          y_offset += transition.progress * page_height * dir;
+        }
       }
     }
 
@@ -1263,7 +1300,7 @@ void AppsGridView::CalculateIdealBounds() {
     const int col = view_index.slot % cols_;
     gfx::Rect tile_slot(
         gfx::Point(grid_rect.x() + col * tile_size.width() + x_offset,
-                   grid_rect.y() + row * tile_size.height()),
+                   grid_rect.y() + row * tile_size.height() + y_offset),
         tile_size);
     if (i < view_model_.view_size()) {
       view_model_.set_ideal_bounds(i, tile_slot);
@@ -2250,6 +2287,14 @@ void AppsGridView::SetAsFolderDroppingTarget(const Index& target_index,
           GetViewAtSlotOnCurrentPage(target_index.slot));
   if (target_view)
     target_view->SetAsAttemptedFolderTarget(is_target_folder);
+}
+
+// static
+AppsGridView::ScrollAxis AppsGridView::GetScrollAxis() {
+  // The experimental app list transitions vertically.
+  return app_list::switches::IsExperimentalAppListEnabled()
+             ? SCROLL_AXIS_VERTICAL
+             : SCROLL_AXIS_HORIZONTAL;
 }
 
 }  // namespace app_list
