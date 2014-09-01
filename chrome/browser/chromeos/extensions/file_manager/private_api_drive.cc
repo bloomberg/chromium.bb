@@ -71,7 +71,10 @@ void FillDriveEntryPropertiesValue(const drive::ResourceEntry& entry_proto,
   const drive::FileSpecificInfo& file_specific_info =
       entry_proto.file_specific_info();
 
-  if (!entry_proto.resource_id().empty()) {
+  // The web thumbnail is used only when the file is not present. Otherwise
+  // it could be out of sync.
+  if (!entry_proto.resource_id().empty() &&
+      !file_specific_info.cache_state().is_present()) {
     properties->thumbnail_url.reset(
         new std::string("https://www.googledrive.com/thumb/" +
                         entry_proto.resource_id() + "?width=500&height=500"));

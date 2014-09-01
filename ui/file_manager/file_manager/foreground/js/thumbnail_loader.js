@@ -49,13 +49,6 @@ function ThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
     };
   }
 
-  // If the file is on the drive and it is present, the file may be out of sync
-  // drive's thumbnail. So we don't use it.
-  if (opt_metadata.drive && opt_metadata.drive.present) {
-    opt_metadata = MetadataCache.cloneMetadata(opt_metadata);
-    opt_metadata.thumbnail = null;
-  }
-
   if (opt_metadata.thumbnail && opt_metadata.thumbnail.url &&
       opt_useEmbedded === ThumbnailLoader.UseEmbedded.USE_EMBEDDED) {
     this.thumbnailUrl_ = opt_metadata.thumbnail.url;
