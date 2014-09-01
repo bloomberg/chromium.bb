@@ -85,12 +85,6 @@ bool WebAXObject::equals(const WebAXObject& n) const
     return m_private.get() == n.m_private.get();
 }
 
-// static
-void WebAXObject::enableAccessibility() { }
-
-// static
-void WebAXObject::enableInlineTextBoxAccessibility() { }
-
 bool WebAXObject::isDetached() const
 {
     if (m_private.isNull())
