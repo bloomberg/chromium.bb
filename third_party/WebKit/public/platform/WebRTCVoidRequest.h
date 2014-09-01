@@ -73,7 +73,7 @@ public:
     BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCVoidRequest(const WTF::PassRefPtr<RTCVoidRequest>&);
+    BLINK_PLATFORM_EXPORT WebRTCVoidRequest(RTCVoidRequest*);
 #endif
 
 private:

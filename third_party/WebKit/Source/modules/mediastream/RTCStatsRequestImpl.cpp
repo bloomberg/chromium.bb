@@ -31,11 +31,11 @@
 
 namespace blink {
 
-PassRefPtr<RTCStatsRequestImpl> RTCStatsRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, PassOwnPtrWillBeRawPtr<RTCStatsCallback> callback, MediaStreamTrack* selector)
+RTCStatsRequestImpl* RTCStatsRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, PassOwnPtrWillBeRawPtr<RTCStatsCallback> callback, MediaStreamTrack* selector)
 {
-    RefPtr<RTCStatsRequestImpl> request = adoptRef(new RTCStatsRequestImpl(context, requester, callback, selector));
+    RTCStatsRequestImpl* request = new RTCStatsRequestImpl(context, requester, callback, selector);
     request->suspendIfNeeded();
-    return request.release();
+    return request;
 }
 
 RTCStatsRequestImpl::RTCStatsRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, PassOwnPtrWillBeRawPtr<RTCStatsCallback> callback, MediaStreamTrack* selector)
@@ -83,6 +83,12 @@ void RTCStatsRequestImpl::clear()
 {
     m_successCallback.clear();
     m_requester.clear();
+}
+
+void RTCStatsRequestImpl::trace(Visitor* visitor)
+{
+    visitor->trace(m_requester);
+    RTCStatsRequest::trace(visitor);
 }
 
 } // namespace blink

@@ -41,7 +41,7 @@
 
 namespace blink {
 
-WebRTCStatsRequest::WebRTCStatsRequest(const PassRefPtr<RTCStatsRequest>& request)
+WebRTCStatsRequest::WebRTCStatsRequest(RTCStatsRequest* request)
     : m_private(request)
 {
 }

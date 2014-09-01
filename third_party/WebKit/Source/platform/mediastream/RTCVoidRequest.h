@@ -31,13 +31,13 @@
 #ifndef RTCVoidRequest_h
 #define RTCVoidRequest_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class RTCVoidRequest : public RefCounted<RTCVoidRequest> {
+class RTCVoidRequest : public GarbageCollectedFinalized<RTCVoidRequest> {
 public:
     class ExtraData {
     public:
@@ -51,6 +51,8 @@ public:
 
     ExtraData* extraData() const { return m_extraData.get(); }
     void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = extraData; }
+
+    virtual void trace(Visitor*) { }
 
 protected:
     RTCVoidRequest() { }

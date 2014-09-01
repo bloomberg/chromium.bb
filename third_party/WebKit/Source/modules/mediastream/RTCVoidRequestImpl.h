@@ -41,10 +41,9 @@ class RTCErrorCallback;
 class RTCPeerConnection;
 class VoidCallback;
 
-// FIXME: Oilpan: Move RTCVoidRequestImpl to heap in a follow-up.
 class RTCVoidRequestImpl FINAL : public RTCVoidRequest, public ActiveDOMObject {
 public:
-    static PassRefPtr<RTCVoidRequestImpl> create(ExecutionContext*, RTCPeerConnection*, PassOwnPtrWillBeRawPtr<VoidCallback>, PassOwnPtrWillBeRawPtr<RTCErrorCallback>);
+    static RTCVoidRequestImpl* create(ExecutionContext*, RTCPeerConnection*, PassOwnPtrWillBeRawPtr<VoidCallback>, PassOwnPtrWillBeRawPtr<RTCErrorCallback>);
     virtual ~RTCVoidRequestImpl();
 
     // RTCVoidRequest
@@ -54,6 +53,8 @@ public:
     // ActiveDOMObject
     virtual void stop() OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     RTCVoidRequestImpl(ExecutionContext*, RTCPeerConnection*, PassOwnPtrWillBeRawPtr<VoidCallback>, PassOwnPtrWillBeRawPtr<RTCErrorCallback>);
 
@@ -62,7 +63,7 @@ private:
     OwnPtrWillBePersistent<VoidCallback> m_successCallback;
     OwnPtrWillBePersistent<RTCErrorCallback> m_errorCallback;
 
-    Persistent<RTCPeerConnection> m_requester;
+    Member<RTCPeerConnection> m_requester;
 };
 
 } // namespace blink

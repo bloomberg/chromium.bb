@@ -52,7 +52,7 @@ private:
 
 } // namespace
 
-WebRTCSessionDescriptionRequest::WebRTCSessionDescriptionRequest(const PassRefPtr<RTCSessionDescriptionRequest>& constraints)
+WebRTCSessionDescriptionRequest::WebRTCSessionDescriptionRequest(RTCSessionDescriptionRequest* constraints)
     : m_private(constraints)
 {
 }

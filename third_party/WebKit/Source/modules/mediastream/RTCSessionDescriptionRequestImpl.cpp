@@ -41,11 +41,11 @@
 
 namespace blink {
 
-PassRefPtr<RTCSessionDescriptionRequestImpl> RTCSessionDescriptionRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, PassOwnPtrWillBeRawPtr<RTCSessionDescriptionCallback> successCallback, PassOwnPtrWillBeRawPtr<RTCErrorCallback> errorCallback)
+RTCSessionDescriptionRequestImpl* RTCSessionDescriptionRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, PassOwnPtrWillBeRawPtr<RTCSessionDescriptionCallback> successCallback, PassOwnPtrWillBeRawPtr<RTCErrorCallback> errorCallback)
 {
-    RefPtr<RTCSessionDescriptionRequestImpl> request = adoptRef(new RTCSessionDescriptionRequestImpl(context, requester, successCallback, errorCallback));
+    RTCSessionDescriptionRequestImpl* request = new RTCSessionDescriptionRequestImpl(context, requester, successCallback, errorCallback);
     request->suspendIfNeeded();
-    return request.release();
+    return request;
 }
 
 RTCSessionDescriptionRequestImpl::RTCSessionDescriptionRequestImpl(ExecutionContext* context, RTCPeerConnection* requester, PassOwnPtrWillBeRawPtr<RTCSessionDescriptionCallback> successCallback, PassOwnPtrWillBeRawPtr<RTCErrorCallback> errorCallback)
@@ -88,6 +88,12 @@ void RTCSessionDescriptionRequestImpl::clear()
     m_successCallback.clear();
     m_errorCallback.clear();
     m_requester.clear();
+}
+
+void RTCSessionDescriptionRequestImpl::trace(Visitor* visitor)
+{
+    visitor->trace(m_requester);
+    RTCSessionDescriptionRequest::trace(visitor);
 }
 
 } // namespace blink

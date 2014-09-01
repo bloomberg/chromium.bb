@@ -51,7 +51,7 @@ private:
 
 } // namespace
 
-WebRTCVoidRequest::WebRTCVoidRequest(const PassRefPtr<RTCVoidRequest>& constraints)
+WebRTCVoidRequest::WebRTCVoidRequest(RTCVoidRequest* constraints)
     : m_private(constraints)
 {
 }

@@ -74,7 +74,7 @@ public:
     BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCSessionDescriptionRequest(const WTF::PassRefPtr<RTCSessionDescriptionRequest>&);
+    BLINK_PLATFORM_EXPORT WebRTCSessionDescriptionRequest(RTCSessionDescriptionRequest*);
 #endif
 
 private:

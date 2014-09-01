@@ -282,16 +282,16 @@ void RTCPeerConnection::createOffer(PassOwnPtrWillBeRawPtr<RTCSessionDescription
     if (exceptionState.hadException())
         return;
 
-    RefPtr<RTCSessionDescriptionRequest> request = RTCSessionDescriptionRequestImpl::create(executionContext(), this, successCallback, errorCallback);
+    RTCSessionDescriptionRequest* request = RTCSessionDescriptionRequestImpl::create(executionContext(), this, successCallback, errorCallback);
 
     if (offerOptions) {
-        m_peerHandler->createOffer(request.release(), offerOptions);
+        m_peerHandler->createOffer(request, offerOptions);
     } else {
         WebMediaConstraints constraints = MediaConstraintsImpl::create(rtcOfferOptions, exceptionState);
         if (exceptionState.hadException())
             return;
 
-        m_peerHandler->createOffer(request.release(), constraints);
+        m_peerHandler->createOffer(request, constraints);
     }
 }
 
@@ -306,8 +306,8 @@ void RTCPeerConnection::createAnswer(PassOwnPtrWillBeRawPtr<RTCSessionDescriptio
     if (exceptionState.hadException())
         return;
 
-    RefPtr<RTCSessionDescriptionRequest> request = RTCSessionDescriptionRequestImpl::create(executionContext(), this, successCallback, errorCallback);
-    m_peerHandler->createAnswer(request.release(), constraints);
+    RTCSessionDescriptionRequest* request = RTCSessionDescriptionRequestImpl::create(executionContext(), this, successCallback, errorCallback);
+    m_peerHandler->createAnswer(request, constraints);
 }
 
 void RTCPeerConnection::setLocalDescription(RTCSessionDescription* sessionDescription, PassOwnPtrWillBeRawPtr<VoidCallback> successCallback, PassOwnPtrWillBeRawPtr<RTCErrorCallback> errorCallback, ExceptionState& exceptionState)
@@ -320,8 +320,8 @@ void RTCPeerConnection::setLocalDescription(RTCSessionDescription* sessionDescri
         return;
     }
 
-    RefPtr<RTCVoidRequest> request = RTCVoidRequestImpl::create(executionContext(), this, successCallback, errorCallback);
-    m_peerHandler->setLocalDescription(request.release(), sessionDescription->webSessionDescription());
+    RTCVoidRequest* request = RTCVoidRequestImpl::create(executionContext(), this, successCallback, errorCallback);
+    m_peerHandler->setLocalDescription(request, sessionDescription->webSessionDescription());
 }
 
 RTCSessionDescription* RTCPeerConnection::localDescription(ExceptionState& exceptionState)
@@ -343,8 +343,8 @@ void RTCPeerConnection::setRemoteDescription(RTCSessionDescription* sessionDescr
         return;
     }
 
-    RefPtr<RTCVoidRequest> request = RTCVoidRequestImpl::create(executionContext(), this, successCallback, errorCallback);
-    m_peerHandler->setRemoteDescription(request.release(), sessionDescription->webSessionDescription());
+    RTCVoidRequest* request = RTCVoidRequestImpl::create(executionContext(), this, successCallback, errorCallback);
+    m_peerHandler->setRemoteDescription(request, sessionDescription->webSessionDescription());
 }
 
 RTCSessionDescription* RTCPeerConnection::remoteDescription(ExceptionState& exceptionState)
@@ -401,9 +401,9 @@ void RTCPeerConnection::addIceCandidate(RTCIceCandidate* iceCandidate, PassOwnPt
     ASSERT(successCallback);
     ASSERT(errorCallback);
 
-    RefPtr<RTCVoidRequest> request = RTCVoidRequestImpl::create(executionContext(), this, successCallback, errorCallback);
+    RTCVoidRequest* request = RTCVoidRequestImpl::create(executionContext(), this, successCallback, errorCallback);
 
-    bool implemented = m_peerHandler->addICECandidate(request.release(), iceCandidate->webCandidate());
+    bool implemented = m_peerHandler->addICECandidate(request, iceCandidate->webCandidate());
     if (!implemented) {
         exceptionState.throwDOMException(NotSupportedError, "This method is not yet implemented.");
     }
@@ -538,9 +538,9 @@ MediaStream* RTCPeerConnection::getStreamById(const String& streamId)
 
 void RTCPeerConnection::getStats(PassOwnPtrWillBeRawPtr<RTCStatsCallback> successCallback, MediaStreamTrack* selector)
 {
-    RefPtr<RTCStatsRequest> statsRequest = RTCStatsRequestImpl::create(executionContext(), this, successCallback, selector);
+    RTCStatsRequest* statsRequest = RTCStatsRequestImpl::create(executionContext(), this, successCallback, selector);
     // FIXME: Add passing selector as part of the statsRequest.
-    m_peerHandler->getStats(statsRequest.release());
+    m_peerHandler->getStats(statsRequest);
 }
 
 RTCDataChannel* RTCPeerConnection::createDataChannel(String label, const Dictionary& options, ExceptionState& exceptionState)
