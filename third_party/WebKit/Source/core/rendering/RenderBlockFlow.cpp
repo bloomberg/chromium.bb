@@ -388,8 +388,8 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren)
 inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &pageLogicalHeight, SubtreeLayoutScope& layoutScope)
 {
     LayoutUnit oldLeft = logicalLeft();
-    bool logicalWidthChanged = updateLogicalWidthAndColumnWidth();
-    relayoutChildren |= logicalWidthChanged;
+    if (updateLogicalWidthAndColumnWidth())
+        relayoutChildren = true;
 
     rebuildFloatsFromIntruding();
 
@@ -399,7 +399,7 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     if (pageLogicalHeightChanged)
         relayoutChildren = true;
 
-    LayoutState state(*this, locationOffset(), pageLogicalHeight, pageLogicalHeightChanged, columnInfo(), logicalWidthChanged);
+    LayoutState state(*this, locationOffset(), pageLogicalHeight, pageLogicalHeightChanged, columnInfo());
 
     // We use four values, maxTopPos, maxTopNeg, maxBottomPos, and maxBottomNeg, to track
     // our current maximal positive and negative margins. These values are used when we

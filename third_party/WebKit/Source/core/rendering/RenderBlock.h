@@ -252,8 +252,6 @@ public:
     bool recalcChildOverflowAfterStyleChange();
     bool recalcOverflowAfterStyleChange();
 
-    void invalidatePositionedObjectsAffectedByOverflowClip();
-
 protected:
     virtual void willBeDestroyed() OVERRIDE;
 
@@ -442,7 +440,6 @@ private:
 
     // End helper functions and structs used by layoutBlockChildren.
 
-    bool widthAvailableToChildrenHasChanged();
     void removeFromGlobalMaps();
 
 protected:

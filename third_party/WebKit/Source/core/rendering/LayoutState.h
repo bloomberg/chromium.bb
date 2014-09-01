@@ -47,7 +47,7 @@ public:
     // Constructor for sub-tree Layout and RenderTableSections
     explicit LayoutState(RenderObject& root);
 
-    LayoutState(RenderBox&, const LayoutSize& offset, LayoutUnit pageLogicalHeight = 0, bool pageHeightLogicalChanged = false, ColumnInfo* = 0, bool containingBlockLogicalWidthChanged = false);
+    LayoutState(RenderBox&, const LayoutSize& offset, LayoutUnit pageLogicalHeight = 0, bool pageHeightLogicalChanged = false, ColumnInfo* = 0);
     LayoutState(RenderInline&);
 
     ~LayoutState();
@@ -68,7 +68,6 @@ public:
     const LayoutSize& pageOffset() const { return m_pageOffset; }
     LayoutUnit pageLogicalHeight() const { return m_pageLogicalHeight; }
     bool pageLogicalHeightChanged() const { return m_pageLogicalHeightChanged; }
-    bool containingBlockLogicalWidthChanged() const { return m_containingBlockLogicalWidthChanged; }
 
     LayoutState* next() const { return m_next; }
 
@@ -85,7 +84,6 @@ private:
     bool m_isPaginated : 1;
     // If our page height has changed, this will force all blocks to relayout.
     bool m_pageLogicalHeightChanged : 1;
-    bool m_containingBlockLogicalWidthChanged : 1;
 
     // If the enclosing pagination model is a column model, then this will store column information for easy retrieval/manipulation.
     ColumnInfo* m_columnInfo;
