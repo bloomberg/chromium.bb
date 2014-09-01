@@ -35,7 +35,7 @@ void webCoreInitializeScriptWrappableForInterface(blink::TestInterfaceConstructo
 
 namespace blink {
 
-const WrapperTypeInfo V8TestInterfaceConstructor3::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceConstructor3::domTemplate, V8TestInterfaceConstructor3::refObject, V8TestInterfaceConstructor3::derefObject, V8TestInterfaceConstructor3::createPersistentHandle, 0, 0, 0, V8TestInterfaceConstructor3::installConditionallyEnabledMethods, V8TestInterfaceConstructor3::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceConstructor3::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceConstructor3::domTemplate, V8TestInterfaceConstructor3::refObject, V8TestInterfaceConstructor3::derefObject, V8TestInterfaceConstructor3::createPersistentHandle, 0, 0, 0, V8TestInterfaceConstructor3::installConditionallyEnabledMethods, V8TestInterfaceConstructor3::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
 
 namespace TestInterfaceConstructor3V8Internal {
 
@@ -53,7 +53,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     }
     RefPtr<TestInterfaceConstructor3> impl = TestInterfaceConstructor3::create(stringArg);
     v8::Handle<v8::Object> wrapper = info.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor3>(impl.release(), &V8TestInterfaceConstructor3::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor3>(impl.release(), &V8TestInterfaceConstructor3::wrapperTypeInfo, wrapper, info.GetIsolate());
     v8SetReturnValue(info, wrapper);
 }
 
@@ -135,7 +135,7 @@ v8::Handle<v8::Object> V8TestInterfaceConstructor3::createWrapper(PassRefPtr<Tes
         return wrapper;
 
     installConditionallyEnabledProperties(wrapper, isolate);
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor3>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor3>(impl, &wrapperTypeInfo, wrapper, isolate);
     return wrapper;
 }
 

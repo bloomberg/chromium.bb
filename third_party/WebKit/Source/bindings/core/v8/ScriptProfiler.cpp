@@ -244,7 +244,7 @@ PassRefPtr<ScriptHeapSnapshot> ScriptProfiler::takeHeapSnapshot(const String& ti
 
 static v8::RetainedObjectInfo* retainedDOMInfo(uint16_t classId, v8::Handle<v8::Value> wrapper)
 {
-    ASSERT(classId == v8DOMNodeClassId);
+    ASSERT(classId == WrapperTypeInfo::NodeClassId);
     if (!wrapper->IsObject())
         return 0;
     Node* node = V8Node::toNative(wrapper.As<v8::Object>());
@@ -256,7 +256,7 @@ void ScriptProfiler::initialize()
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
     if (profiler)
-        profiler->SetWrapperClassInfoProvider(v8DOMNodeClassId, &retainedDOMInfo);
+        profiler->SetWrapperClassInfoProvider(WrapperTypeInfo::NodeClassId, &retainedDOMInfo);
 }
 
 void ScriptProfiler::visitNodeWrappers(WrappedNodeVisitor* visitor)
@@ -276,7 +276,7 @@ void ScriptProfiler::visitNodeWrappers(WrappedNodeVisitor* visitor)
 
         virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId) OVERRIDE
         {
-            if (classId != v8DOMNodeClassId)
+            if (classId != WrapperTypeInfo::NodeClassId)
                 return;
             // Casting to Handle is safe here, since the Persistent cannot get
             // GCd during visiting.

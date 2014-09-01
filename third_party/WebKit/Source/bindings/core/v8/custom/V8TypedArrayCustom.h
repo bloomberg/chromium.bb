@@ -154,7 +154,7 @@ v8::Handle<v8::Object> V8TypedArray<TypedArray>::createWrapper(PassRefPtr<TypedA
 
     v8::Local<v8::Object> wrapper = V8Type::New(v8Buffer.As<v8::ArrayBuffer>(), impl->byteOffset(), Traits::length(impl.get()));
 
-    V8DOMWrapper::associateObjectWithWrapper<Binding>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<Binding>(impl, &wrapperTypeInfo, wrapper, isolate);
     return wrapper;
 }
 
@@ -170,7 +170,7 @@ TypedArray* V8TypedArray<TypedArray>::toNative(v8::Handle<v8::Object> object)
     RefPtr<ArrayBuffer> arrayBuffer = V8ArrayBuffer::toNative(view->Buffer());
     RefPtr<TypedArray> typedArray = TypedArray::create(arrayBuffer, view->ByteOffset(), Traits::length(view));
     ASSERT(typedArray.get());
-    V8DOMWrapper::associateObjectWithWrapper<Binding>(typedArray.release(), &wrapperTypeInfo, object, v8::Isolate::GetCurrent(), WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<Binding>(typedArray.release(), &wrapperTypeInfo, object, v8::Isolate::GetCurrent());
 
     typedarrayPtr = object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex);
     ASSERT(typedarrayPtr);
@@ -187,9 +187,14 @@ template <typename TypedArray>
 const WrapperTypeInfo V8TypedArray<TypedArray>::wrapperTypeInfo = {
     gin::kEmbedderBlink,
     0,
-    V8TypedArray<TypedArray>::refObject, V8TypedArray<TypedArray>::derefObject,
+    V8TypedArray<TypedArray>::refObject,
+    V8TypedArray<TypedArray>::derefObject,
     V8TypedArray<TypedArray>::createPersistentHandle,
-    0, 0, 0, 0, 0, 0, WrapperTypeObjectPrototype, RefCountedObject
+    0, 0, 0, 0, 0, 0,
+    WrapperTypeInfo::WrapperTypeObjectPrototype,
+    WrapperTypeInfo::ObjectClassId,
+    WrapperTypeInfo::Independent,
+    WrapperTypeInfo::RefCountedObject
 };
 
 template <typename TypedArray>

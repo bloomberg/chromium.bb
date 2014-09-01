@@ -48,7 +48,7 @@ namespace blink {
 {% set wrapper_type_prototype = 'WrapperTypeExceptionPrototype' if is_exception else
                                 'WrapperTypeObjectPrototype' %}
 
-const WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}::domTemplate, {{v8_class}}::refObject, {{v8_class}}::derefObject, {{v8_class}}::createPersistentHandle, {{to_active_dom_object}}, {{to_event_target}}, {{visit_dom_wrapper}}, {{v8_class}}::installConditionallyEnabledMethods, {{v8_class}}::installConditionallyEnabledProperties, {{parent_wrapper_type_info}}, {{wrapper_type_prototype}}, {{gc_type}} };
+const WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}::domTemplate, {{v8_class}}::refObject, {{v8_class}}::derefObject, {{v8_class}}::createPersistentHandle, {{to_active_dom_object}}, {{to_event_target}}, {{visit_dom_wrapper}}, {{v8_class}}::installConditionallyEnabledMethods, {{v8_class}}::installConditionallyEnabledProperties, {{parent_wrapper_type_info}}, WrapperTypeInfo::{{wrapper_type_prototype}}, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{lifetime}}, WrapperTypeInfo::{{gc_type}} };
 
 namespace {{cpp_class}}V8Internal {
 

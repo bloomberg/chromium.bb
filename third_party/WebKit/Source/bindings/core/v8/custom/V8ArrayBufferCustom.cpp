@@ -47,9 +47,15 @@ V8ArrayBufferDeallocationObserver* V8ArrayBufferDeallocationObserver::instanceTe
 
 const WrapperTypeInfo V8ArrayBuffer::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    0, V8ArrayBuffer::refObject, V8ArrayBuffer::derefObject,
+    0,
+    V8ArrayBuffer::refObject,
+    V8ArrayBuffer::derefObject,
     V8ArrayBuffer::createPersistentHandle,
-    0, 0, 0, 0, 0, 0, WrapperTypeObjectPrototype, RefCountedObject
+    0, 0, 0, 0, 0, 0,
+    WrapperTypeInfo::WrapperTypeObjectPrototype,
+    WrapperTypeInfo::ObjectClassId,
+    WrapperTypeInfo::Independent,
+    WrapperTypeInfo::RefCountedObject
 };
 
 bool V8ArrayBuffer::hasInstance(v8::Handle<v8::Value> value, v8::Isolate*)
@@ -81,7 +87,7 @@ v8::Handle<v8::Object> V8ArrayBuffer::createWrapper(PassRefPtr<ArrayBuffer> impl
     v8::Handle<v8::Object> wrapper = v8::ArrayBuffer::New(isolate, impl->data(), impl->byteLength());
     impl->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instanceTemplate());
 
-    V8DOMWrapper::associateObjectWithWrapper<V8ArrayBuffer>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<V8ArrayBuffer>(impl, &wrapperTypeInfo, wrapper, isolate);
     return wrapper;
 }
 
@@ -98,7 +104,7 @@ ArrayBuffer* V8ArrayBuffer::toNative(v8::Handle<v8::Object> object)
     ArrayBufferContents contents(v8Contents.Data(), v8Contents.ByteLength(),
         V8ArrayBufferDeallocationObserver::instanceTemplate());
     RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(contents);
-    V8DOMWrapper::associateObjectWithWrapper<V8ArrayBuffer>(buffer.release(), &wrapperTypeInfo, object, v8::Isolate::GetCurrent(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8ArrayBuffer>(buffer.release(), &wrapperTypeInfo, object, v8::Isolate::GetCurrent());
 
     return reinterpret_cast<ArrayBuffer*>(blink::toInternalPointer(object));
 }

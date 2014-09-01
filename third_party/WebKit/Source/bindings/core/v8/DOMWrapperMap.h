@@ -68,12 +68,12 @@ public:
         return m_map.Contains(key);
     }
 
-    void set(KeyType* key, v8::Handle<v8::Object> wrapper, const WrapperConfiguration& configuration)
+    void set(KeyType* key, v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* wrapperTypeInfo)
     {
         ASSERT(reinterpret_cast<KeyType*>(toInternalPointer(wrapper)) == key);
         RELEASE_ASSERT(!containsKey(key)); // See crbug.com/368095
         v8::UniquePersistent<v8::Object> unique(m_isolate, wrapper);
-        configuration.configureWrapper(&unique);
+        wrapperTypeInfo->configureWrapper(&unique);
         m_map.Set(key, unique.Pass());
     }
 

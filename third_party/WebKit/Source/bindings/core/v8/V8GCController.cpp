@@ -111,7 +111,7 @@ public:
     virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId) OVERRIDE
     {
         // A minor DOM GC can collect only Nodes.
-        if (classId != v8DOMNodeClassId)
+        if (classId != WrapperTypeInfo::NodeClassId)
             return;
 
         // To make minor GC cycle time bounded, we limit the number of wrappers handled
@@ -254,7 +254,7 @@ public:
 
     virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId) OVERRIDE
     {
-        if (classId != v8DOMNodeClassId && classId != v8DOMObjectClassId)
+        if (classId != WrapperTypeInfo::NodeClassId && classId != WrapperTypeInfo::ObjectClassId)
             return;
 
         // Casting to a Handle is safe here, since the Persistent doesn't get GCd
@@ -272,7 +272,7 @@ public:
         if (activeDOMObject && activeDOMObject->hasPendingActivity())
             m_isolate->SetObjectGroupId(*value, liveRootId());
 
-        if (classId == v8DOMNodeClassId) {
+        if (classId == WrapperTypeInfo::NodeClassId) {
             ASSERT(V8Node::hasInstance(*wrapper, m_isolate));
             Node* node = V8Node::toNative(*wrapper);
             if (node->hasEventListeners())
@@ -281,7 +281,7 @@ public:
             m_isolate->SetObjectGroupId(*value, v8::UniqueId(reinterpret_cast<intptr_t>(root)));
             if (m_constructRetainedObjectInfos)
                 m_groupsWhichNeedRetainerInfo.append(root);
-        } else if (classId == v8DOMObjectClassId) {
+        } else if (classId == WrapperTypeInfo::ObjectClassId) {
             type->visitDOMWrapper(toInternalPointer(*wrapper), v8::Persistent<v8::Object>::Cast(*value), m_isolate);
         } else {
             ASSERT_NOT_REACHED();

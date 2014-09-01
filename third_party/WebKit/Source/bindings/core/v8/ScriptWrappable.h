@@ -148,7 +148,7 @@ public:
         initializeScriptWrappableHelper(object);
     }
 
-    void setWrapper(v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, const WrapperConfiguration& configuration)
+    void setWrapper(v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo)
     {
         ASSERT(!containsWrapper());
         if (!*wrapper) {
@@ -156,7 +156,7 @@ public:
             return;
         }
         v8::Persistent<v8::Object> persistent(isolate, wrapper);
-        configuration.configureWrapper(&persistent);
+        wrapperTypeInfo->configureWrapper(&persistent);
         persistent.SetWeak(this, &setWeakCallback);
         m_wrapperOrTypeInfo = reinterpret_cast<uintptr_t>(persistent.ClearAndLeak()) | 1;
         ASSERT(containsWrapper());

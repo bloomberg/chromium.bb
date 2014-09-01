@@ -112,10 +112,10 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const Wrapp
     if (!prototypeValue.IsEmpty() && prototypeValue->IsObject()) {
         v8::Local<v8::Object> prototypeObject = v8::Local<v8::Object>::Cast(prototypeValue);
         if (prototypeObject->InternalFieldCount() == v8PrototypeInternalFieldcount
-            && type->wrapperTypePrototype == WrapperTypeObjectPrototype)
+            && type->wrapperTypePrototype == WrapperTypeInfo::WrapperTypeObjectPrototype)
             prototypeObject->SetAlignedPointerInInternalField(v8PrototypeTypeIndex, const_cast<WrapperTypeInfo*>(type));
         type->installConditionallyEnabledMethods(prototypeObject, m_isolate);
-        if (type->wrapperTypePrototype == WrapperTypeExceptionPrototype)
+        if (type->wrapperTypePrototype == WrapperTypeInfo::WrapperTypeExceptionPrototype)
             prototypeObject->SetPrototype(m_errorPrototype.newLocal(m_isolate));
     }
 

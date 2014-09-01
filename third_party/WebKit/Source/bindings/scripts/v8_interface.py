@@ -147,6 +147,8 @@ def interface_context(interface):
 
     this_gc_type = gc_type(interface)
 
+    wrapper_class_id = ('NodeClassId' if inherits_interface(interface.name, 'Node') else 'ObjectClassId')
+
     context = {
         'conditional_string': conditional_string(interface),  # [Conditional]
         'cpp_class': cpp_name(interface),
@@ -170,6 +172,11 @@ def interface_context(interface):
         'is_exception': interface.is_exception,
         'is_node': inherits_interface(interface.name, 'Node'),
         'is_script_wrappable': is_script_wrappable,
+        'lifetime': 'Dependent'
+            if (has_visit_dom_wrapper or
+                is_active_dom_object or
+                is_dependent_lifetime)
+            else 'Independent',
         'measure_as': v8_utilities.measure_as(interface),  # [MeasureAs]
         'parent_interface': parent_interface,
         'pass_cpp_type': cpp_template_type(
@@ -180,11 +187,7 @@ def interface_context(interface):
         'set_wrapper_reference_to_list': set_wrapper_reference_to_list,
         'special_wrap_for': special_wrap_for,
         'v8_class': v8_utilities.v8_class_name(interface),
-        'wrapper_configuration': 'WrapperConfiguration::Dependent'
-            if (has_visit_dom_wrapper or
-                is_active_dom_object or
-                is_dependent_lifetime)
-            else 'WrapperConfiguration::Independent',
+        'wrapper_class_id': wrapper_class_id,
     }
 
     # Constructors

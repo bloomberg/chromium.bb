@@ -49,9 +49,6 @@ static const int v8DefaultWrapperInternalFieldCount = static_cast<int>(gin::kNum
 static const int v8PrototypeTypeIndex = 0;
 static const int v8PrototypeInternalFieldcount = 1;
 
-static const uint16_t v8DOMNodeClassId = 1;
-static const uint16_t v8DOMObjectClassId = 2;
-
 typedef v8::Handle<v8::FunctionTemplate> (*DomTemplateFunction)(v8::Isolate*);
 typedef void (*RefObjectFunction)(ScriptWrappableBase* internalPointer);
 typedef void (*DerefObjectFunction)(ScriptWrappableBase* internalPointer);
@@ -62,17 +59,6 @@ typedef void (*ResolveWrapperReachabilityFunction)(ScriptWrappableBase* internal
 typedef void (*InstallConditionallyEnabledMethodsFunction)(v8::Handle<v8::Object>, v8::Isolate*);
 typedef void (*InstallConditionallyEnabledPropertiesFunction)(v8::Handle<v8::Object>, v8::Isolate*);
 
-enum WrapperTypePrototype {
-    WrapperTypeObjectPrototype,
-    WrapperTypeExceptionPrototype,
-};
-
-enum GCType {
-    GarbageCollectedObject,
-    WillBeGarbageCollectedObject,
-    RefCountedObject,
-};
-
 inline void setObjectGroup(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
     isolate->SetObjectGroupId(wrapper, v8::UniqueId(reinterpret_cast<intptr_t>(internalPointer)));
@@ -82,6 +68,26 @@ inline void setObjectGroup(ScriptWrappableBase* internalPointer, const v8::Persi
 // v8 objects. Each v8 bindings class has exactly one static WrapperTypeInfo member, so
 // comparing pointers is a safe way to determine if types match.
 struct WrapperTypeInfo {
+    enum WrapperTypePrototype {
+        WrapperTypeObjectPrototype,
+        WrapperTypeExceptionPrototype,
+    };
+
+    enum WrapperClassId {
+        NodeClassId = 1, // NodeClassId must be smaller than ObjectClassId.
+        ObjectClassId,
+    };
+
+    enum Lifetime {
+        Dependent,
+        Independent,
+    };
+
+    enum GCType {
+        GarbageCollectedObject,
+        WillBeGarbageCollectedObject,
+        RefCountedObject,
+    };
 
     static const WrapperTypeInfo* unwrap(v8::Handle<v8::Value> typeInfoWrapper)
     {
@@ -102,6 +108,13 @@ struct WrapperTypeInfo {
         }
 
         return false;
+    }
+
+    void configureWrapper(v8::PersistentBase<v8::Object>* wrapper) const
+    {
+        wrapper->SetWrapperClassId(wrapperClassId);
+        if (lifetime == Independent)
+            wrapper->MarkIndependent();
     }
 
     v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate* isolate) const
@@ -169,9 +182,10 @@ struct WrapperTypeInfo {
     const InstallConditionallyEnabledPropertiesFunction installConditionallyEnabledPropertiesFunction;
     const WrapperTypeInfo* parentClass;
     const WrapperTypePrototype wrapperTypePrototype;
+    const WrapperClassId wrapperClassId;
+    const Lifetime lifetime;
     const GCType gcType;
 };
-
 
 COMPILE_ASSERT(offsetof(struct WrapperTypeInfo, ginEmbedder) == offsetof(struct gin::WrapperInfo, embedder), wrapper_type_info_compatible_to_gin);
 
@@ -215,12 +229,12 @@ inline const PersistentNode* toPersistentHandle(const v8::Handle<v8::Object>& wr
 inline void releaseObject(v8::Handle<v8::Object> wrapper)
 {
     const WrapperTypeInfo* typeInfo = toWrapperTypeInfo(wrapper);
-    if (typeInfo->gcType == GarbageCollectedObject) {
+    if (typeInfo->gcType == WrapperTypeInfo::GarbageCollectedObject) {
         const PersistentNode* handle = toPersistentHandle(wrapper);
         // This will be null iff a wrapper for a hidden wrapper object,
         // see V8DOMWrapper::setNativeInfoForHiddenWrapper().
         delete handle;
-    } else if (typeInfo->gcType == WillBeGarbageCollectedObject) {
+    } else if (typeInfo->gcType == WrapperTypeInfo::WillBeGarbageCollectedObject) {
 #if ENABLE(OILPAN)
         const PersistentNode* handle = toPersistentHandle(wrapper);
         // This will be null iff a wrapper for a hidden wrapper object,
@@ -234,35 +248,6 @@ inline void releaseObject(v8::Handle<v8::Object> wrapper)
         ASSERT(typeInfo->derefObjectFunction);
         typeInfo->derefObjectFunction(toInternalPointer(wrapper));
     }
-}
-
-struct WrapperConfiguration {
-
-    enum Lifetime {
-        Dependent, Independent
-    };
-
-    void configureWrapper(v8::PersistentBase<v8::Object>* wrapper) const
-    {
-        wrapper->SetWrapperClassId(classId);
-        if (lifetime == Independent)
-            wrapper->MarkIndependent();
-    }
-
-    const uint16_t classId;
-    const Lifetime lifetime;
-};
-
-inline WrapperConfiguration buildWrapperConfiguration(void*, WrapperConfiguration::Lifetime lifetime)
-{
-    WrapperConfiguration configuration = {v8DOMObjectClassId, lifetime};
-    return configuration;
-}
-
-inline WrapperConfiguration buildWrapperConfiguration(Node*, WrapperConfiguration::Lifetime lifetime)
-{
-    WrapperConfiguration configuration = {v8DOMNodeClassId, lifetime};
-    return configuration;
 }
 
 } // namespace blink

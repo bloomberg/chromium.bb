@@ -77,7 +77,7 @@ static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(PassRefPtrWillBeR
     callbackData->handle.setWeak(callbackData, &InjectedScriptManager::setWeakCallback);
 
 #if ENABLE(OILPAN)
-    V8DOMWrapper::setNativeInfoWithPersistentHandle(wrapper, &V8InjectedScriptHost::wrapperTypeInfo, V8InjectedScriptHost::toInternalPointer(host), &callbackData->host);
+    V8DOMWrapper::setNativeInfoWithPersistentHandle(wrapper, &V8InjectedScriptHost::wrapperTypeInfo, V8InjectedScriptHost::toInternalPointer(host.get()), &callbackData->host);
 #else
     V8DOMWrapper::setNativeInfo(wrapper, &V8InjectedScriptHost::wrapperTypeInfo, V8InjectedScriptHost::toInternalPointer(host.get()));
 #endif

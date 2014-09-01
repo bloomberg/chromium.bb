@@ -54,7 +54,7 @@ void V8MessageChannel::constructorCustom(const v8::FunctionCallbackInfo<v8::Valu
     V8HiddenValue::setHiddenValue(info.GetIsolate(), wrapper, V8HiddenValue::port1(info.GetIsolate()), toV8(obj->port1(), info.Holder(), info.GetIsolate()));
     V8HiddenValue::setHiddenValue(info.GetIsolate(), wrapper, V8HiddenValue::port2(info.GetIsolate()), toV8(obj->port2(), info.Holder(), info.GetIsolate()));
 
-    V8DOMWrapper::associateObjectWithWrapper<V8MessageChannel>(obj.release(), &wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<V8MessageChannel>(obj.release(), &wrapperTypeInfo, wrapper, info.GetIsolate());
     info.GetReturnValue().Set(wrapper);
 }
 

@@ -107,7 +107,8 @@ v8::Handle<v8::Object> CustomElementWrapper<ElementType, WrapperType>::wrap(Pass
 
     wrapper->SetPrototype(binding->prototype());
 
-    V8DOMWrapper::associateObjectWithWrapper<WrapperType>(element, binding->wrapperType(), wrapper, isolate, WrapperConfiguration::Dependent);
+    ASSERT(binding->wrapperType()->lifetime == WrapperTypeInfo::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper<WrapperType>(element, binding->wrapperType(), wrapper, isolate);
     return wrapper;
 }
 

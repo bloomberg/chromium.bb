@@ -476,8 +476,7 @@ v8::Local<v8::Object> createV8ObjectForNPObject(NPObject* object, NPObject* root
     _NPN_RetainObject(object);
     _NPN_RegisterObject(object, root);
 
-    WrapperConfiguration configuration = buildWrapperConfiguration(object, WrapperConfiguration::Dependent);
-    staticNPObjectMap().set(object, value, configuration);
+    staticNPObjectMap().set(object, value, npObjectTypeInfo());
     ASSERT(V8DOMWrapper::isDOMWrapper(value));
     return value;
 }

@@ -21,7 +21,7 @@
 
 namespace blink {
 
-const WrapperTypeInfo V8TestInterfaceNotScriptWrappable::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNotScriptWrappable::domTemplate, V8TestInterfaceNotScriptWrappable::refObject, V8TestInterfaceNotScriptWrappable::derefObject, V8TestInterfaceNotScriptWrappable::createPersistentHandle, 0, 0, 0, V8TestInterfaceNotScriptWrappable::installConditionallyEnabledMethods, V8TestInterfaceNotScriptWrappable::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceNotScriptWrappable::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNotScriptWrappable::domTemplate, V8TestInterfaceNotScriptWrappable::refObject, V8TestInterfaceNotScriptWrappable::derefObject, V8TestInterfaceNotScriptWrappable::createPersistentHandle, 0, 0, 0, V8TestInterfaceNotScriptWrappable::installConditionallyEnabledMethods, V8TestInterfaceNotScriptWrappable::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
 
 namespace TestInterfaceNotScriptWrappableV8Internal {
 
@@ -143,7 +143,7 @@ v8::Handle<v8::Object> V8TestInterfaceNotScriptWrappable::createWrapper(PassRefP
         return wrapper;
 
     installConditionallyEnabledProperties(wrapper, isolate);
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceNotScriptWrappable>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceNotScriptWrappable>(impl, &wrapperTypeInfo, wrapper, isolate);
     return wrapper;
 }
 
