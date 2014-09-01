@@ -370,7 +370,7 @@ void VideoCaptureDeviceMac::AllocateAndStart(
   }
   int width = params.requested_format.frame_size.width();
   int height = params.requested_format.frame_size.height();
-  int frame_rate = params.requested_format.frame_rate;
+  float frame_rate = params.requested_format.frame_rate;
 
   // QTKit API can scale captured frame to any size requested, which would lead
   // to undesired aspect ratio changes. Try to open the camera with a known
