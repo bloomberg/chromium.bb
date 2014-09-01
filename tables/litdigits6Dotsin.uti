@@ -1,4 +1,3 @@
-# This table contains braille codes and rules for Hindi Grade 1 and includes English grade 1
 #
 # Copyright (C) 2014 National Institute for Visually Handicapped, 116, Rajpur Road, Dehradun, Uttrakhand, India
 #
@@ -23,5 +22,13 @@
 # Last updated on May 5, 2014
 # To report any bugs or any suggestion, please write to d@saksham.org and sreeja.param@gmail.com
 
-include devanagari.cti
-include en-in-g1.ctb
+litdigit 0 245
+litdigit 1 1
+litdigit 2 12
+litdigit 3 14
+litdigit 4 145
+litdigit 5 15
+litdigit 6 124
+litdigit 7 1245
+litdigit 8 125
+litdigit 9 24

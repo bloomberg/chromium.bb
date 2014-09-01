@@ -1,4 +1,4 @@
-# This table contains braille codes and rules for Hindi Grade 1 and includes English grade 1
+# This table contains braille codes and rules for Punjabi Grade 1 and includes English grade 1
 #
 # Copyright (C) 2014 National Institute for Visually Handicapped, 116, Rajpur Road, Dehradun, Uttrakhand, India
 #
@@ -23,5 +23,5 @@
 # Last updated on May 5, 2014
 # To report any bugs or any suggestion, please write to d@saksham.org and sreeja.param@gmail.com
 
-include devanagari.cti
+include gurumuki.cti
 include en-in-g1.ctb
