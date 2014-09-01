@@ -205,17 +205,14 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(user_context.GetUserID());
   if (user) {
-    if (user->is_active()) {
-      DCHECK(saved_ime_state_);
-      input_method::InputMethodManager::Get()->SetState(saved_ime_state_);
-    } else {
+    if (!user->is_active()) {
+      saved_ime_state_ = NULL;
       user_manager::UserManager::Get()->SwitchActiveUser(
           user_context.GetUserID());
     }
   } else {
     NOTREACHED() << "Logged in user not found.";
   }
-  saved_ime_state_ = NULL;
 
   authentication_capture_.reset(new AuthenticationParametersCapture());
   authentication_capture_->user_context = user_context;
@@ -463,6 +460,10 @@ ScreenLocker::~ScreenLocker() {
   VLOG(1) << "Calling session manager's HandleLockScreenDismissed D-Bus method";
   DBusThreadManager::Get()->GetSessionManagerClient()->
       NotifyLockScreenDismissed();
+
+  if (saved_ime_state_) {
+    input_method::InputMethodManager::Get()->SetState(saved_ime_state_);
+  }
 }
 
 void ScreenLocker::SetAuthenticator(Authenticator* authenticator) {
