@@ -488,6 +488,8 @@ public:
         DevToolsConsoleProfile = 518,
         SVGStyleElementTitle = 519,
         PictureSourceSrc = 520,
+        // The above items are available in M38 branch.
+
         Picture = 521,
         Sizes = 522,
         SrcsetXDescriptor = 523,
