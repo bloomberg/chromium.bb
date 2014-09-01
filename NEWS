@@ -3,9 +3,9 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 * Noteworthy changes in release 2.6.0 (2014-9-1)
 This is the first release by the new maintainer team. A lot of work by
 people from across the community contributed to this release. There
-are massive additions and updates to the Braille tables and also
-changes to the C API to enable call backs for error messages and
-warnings.
+are massive additions and updates to the Braille tables (e.g.
+Afrikaans, Hebrew, many Indian languages, Korean) and also changes to
+the C API to enable call backs for error messages and warnings.
 
 ** New features
 *** New Braille tables
@@ -63,6 +63,12 @@ warnings for example.
   - defined rules for two conjunct characters "ksha and gya" used in
     all Indian Languages for which there are specific codes in
     Braille.
+- New Hebrew table that is based on the new unified Hebrew Braille
+  code standard that was put together on January 2014 after a
+  conference with all of the specialists in this field in Israel. It
+  includes improved representation of Hebrew letters, special letters
+  that are called Nikud, and punctuation symbols. The old Braille
+  standard is not relevant any more. Thanks to Adi Kushnir.
 
 * Noteworthy changes in release 2.5.4 (2014-3-3)
 This release contains nine months worth of braille table improvements
