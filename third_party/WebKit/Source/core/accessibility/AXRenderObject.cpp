@@ -389,6 +389,9 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     if (isEmbeddedObject())
         return EmbeddedObjectRole;
 
+    if (node && node->hasTagName(figureTag))
+        return FigureRole;
+
     // There should only be one banner/contentInfo per page. If header/footer are being used within an article or section
     // then it should not be exposed as whole page's banner/contentInfo
     if (node && node->hasTagName(headerTag) && !isDescendantOfElementType(articleTag) && !isDescendantOfElementType(sectionTag))
@@ -674,6 +677,9 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
         return false;
 
     if (roleValue() == DialogRole)
+        return false;
+
+    if (roleValue() == FigureRole)
         return false;
 
     // if this element has aria attributes on it, it should not be ignored.

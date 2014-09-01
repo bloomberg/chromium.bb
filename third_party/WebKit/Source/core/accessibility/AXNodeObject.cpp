@@ -221,6 +221,8 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
         return ParagraphRole;
     if (isHTMLLabelElement(*node()))
         return LabelRole;
+    if (node()->isElementNode() && node()->hasTagName(figureTag))
+        return FigureRole;
     if (node()->isElementNode() && toElement(node())->isFocusable())
         return GroupRole;
     if (isHTMLAnchorElement(*node()) && isClickable())
