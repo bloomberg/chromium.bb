@@ -395,7 +395,7 @@ FileTable.prototype.shouldStartDragSelection_ = function(event) {
 
   // If the pointed item is already selected, it should not start the drag
   // selection.
-  if (this.lastSelection_.indexOf(itemIndex) !== -1)
+  if (this.lastSelection_ && this.lastSelection_.indexOf(itemIndex) !== -1)
     return false;
 
   // If the horizontal value is not hit to column, it should start the drag
