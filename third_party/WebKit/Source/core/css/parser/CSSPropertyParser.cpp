@@ -4780,29 +4780,19 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFaceSrc()
 PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFaceUnicodeRange()
 {
     RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createCommaSeparated();
-    bool failed = false;
-    bool operatorExpected = false;
-    for (; m_valueList->current(); m_valueList->next(), operatorExpected = !operatorExpected) {
-        if (operatorExpected) {
-            if (m_valueList->current()->unit == CSSParserValue::Operator && m_valueList->current()->iValue == ',')
-                continue;
-            failed = true;
-            break;
-        }
-        if (m_valueList->current()->unit != CSSPrimitiveValue::CSS_UNICODE_RANGE) {
-            failed = true;
-            break;
-        }
 
-        String rangeString = m_valueList->current()->string;
+    do {
+        CSSParserValue* current = m_valueList->current();
+        if (!current || current->unit != CSSPrimitiveValue::CSS_UNICODE_RANGE)
+            return nullptr;
+
+        String rangeString = current->string;
         UChar32 from = 0;
         UChar32 to = 0;
         unsigned length = rangeString.length();
 
-        if (length < 3) {
-            failed = true;
-            break;
-        }
+        if (length < 3)
+            return nullptr;
 
         unsigned i = 2;
         while (i < length) {
@@ -4816,14 +4806,10 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFaceUnicodeRang
                 from += 10 + c - 'A';
             else if (c >= 'a' && c <= 'f')
                 from += 10 + c - 'a';
-            else {
-                failed = true;
-                break;
-            }
+            else
+                return nullptr;
             i++;
         }
-        if (failed)
-            break;
 
         if (i == length)
             to = from;
@@ -4835,13 +4821,11 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFaceUnicodeRang
                 i++;
             }
             if (i < length)
-                failed = true;
+                return nullptr;
             to = from + span - 1;
         } else {
-            if (length < i + 2) {
-                failed = true;
-                break;
-            }
+            if (length < i + 2)
+                return nullptr;
             i++;
             while (i < length) {
                 UChar c = rangeString[i];
@@ -4852,20 +4836,16 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFaceUnicodeRang
                     to += 10 + c - 'A';
                 else if (c >= 'a' && c <= 'f')
                     to += 10 + c - 'a';
-                else {
-                    failed = true;
-                    break;
-                }
+                else
+                    return nullptr;
                 i++;
             }
-            if (failed)
-                break;
         }
         if (from <= to)
             values->append(CSSUnicodeRangeValue::create(from, to));
-    }
-    if (failed || !values->length())
-        return nullptr;
+        m_valueList->next();
+    } while (consumeComma(m_valueList.get()));
+
     return values.release();
 }
 
