@@ -10,6 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -639,6 +640,12 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
     CreateDragWidget(drag_image);
     drag_widget_offset_ = source_provider_->GetDragImageOffset();
   }
+
+  // Chrome expects starting drag and drop to release capture.
+  aura::Window* capture_window =
+      aura::client::GetCaptureClient(root_window)->GetGlobalCaptureWindow();
+  if (capture_window)
+    capture_window->ReleaseCapture();
 
   // It is possible for the DesktopWindowTreeHostX11 to be destroyed during the
   // move loop, which would also destroy this drag-client. So keep track of

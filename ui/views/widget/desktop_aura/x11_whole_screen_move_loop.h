@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
@@ -48,9 +49,12 @@ class X11WholeScreenMoveLoop : public X11MoveLoop,
   virtual void EndMoveLoop() OVERRIDE;
 
  private:
-  // Grabs the pointer and keyboard, setting the mouse cursor to |cursor|.
-  // Returns true if the grab was successful.
-  bool GrabPointerAndKeyboard(gfx::NativeCursor cursor);
+  // Grabs the pointer, setting the mouse cursor to |cursor|. Returns true if
+  // successful.
+  bool GrabPointer(gfx::NativeCursor cursor);
+
+  // Grabs the keyboard. Returns true if successful.
+  bool GrabKeyboard();
 
   // Creates an input-only window to be used during the drag.
   Window CreateDragInputWindow(XDisplay* display);
@@ -64,21 +68,24 @@ class X11WholeScreenMoveLoop : public X11MoveLoop,
   bool in_move_loop_;
   scoped_ptr<ui::ScopedEventDispatcher> nested_dispatcher_;
 
+  // Cursor in use prior to the move loop starting. Restored when the move loop
+  // quits.
+  gfx::NativeCursor initial_cursor_;
+
   bool should_reset_mouse_flags_;
 
-  // An invisible InputOnly window . We create this window so we can track the
-  // cursor wherever it goes on screen during a drag, since normal windows
-  // don't receive pointer motion events outside of their bounds.
+  // An invisible InputOnly window. Keyboard grab and sometimes mouse grab
+  // are set on this window.
   ::Window grab_input_window_;
+
+  // Whether the pointer was grabbed on |grab_input_window_|.
+  bool grabbed_pointer_;
 
   base::Closure quit_closure_;
 
   // Keeps track of whether the move-loop is cancled by the user (e.g. by
   // pressing escape).
   bool canceled_;
-
-  // Keeps track of whether we still have a pointer grab at the end of the loop.
-  bool has_grab_;
 
   XMotionEvent last_xmotion_;
   base::WeakPtrFactory<X11WholeScreenMoveLoop> weak_factory_;

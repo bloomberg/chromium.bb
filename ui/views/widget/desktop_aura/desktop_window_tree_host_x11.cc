@@ -928,6 +928,9 @@ gfx::Point DesktopWindowTreeHostX11::GetLocationOnNativeScreen() const {
 }
 
 void DesktopWindowTreeHostX11::SetCapture() {
+  if (HasCapture())
+    return;
+
   // Grabbing the mouse is asynchronous. However, we synchronously start
   // forwarding all mouse events received by Chrome to the
   // aura::WindowEventDispatcher which has capture. This makes capture
@@ -935,9 +938,10 @@ void DesktopWindowTreeHostX11::SetCapture() {
   // - |g_current_capture|'s X window has capture.
   // OR
   // - The topmost window underneath the mouse is managed by Chrome.
-  if (g_current_capture)
-    g_current_capture->OnHostLostWindowCapture();
+  DesktopWindowTreeHostX11* old_capturer = g_current_capture;
   g_current_capture = this;
+  if (old_capturer)
+    old_capturer->OnHostLostWindowCapture();
 
   unsigned int event_mask = PointerMotionMask | ButtonReleaseMask |
                             ButtonPressMask;

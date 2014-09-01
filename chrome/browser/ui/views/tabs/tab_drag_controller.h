@@ -468,9 +468,10 @@ class TabDragController : public content::NotificationObserver,
   // object.
   chrome::HostDesktopType host_desktop_type_;
 
-  // Aura mouse capture and release is used on Ash platforms as well as on
-  // Linux to ensure that pointer grab is not released prematurely.
-  bool use_aura_capture_policy_;
+  // Whether capture can be released during the drag. When false, capture should
+  // not be released when transferring capture between widgets and when starting
+  // the move loop.
+  bool can_release_capture_;
 
   // The position of the mouse (in screen coordinates) at the start of the drag
   // operation. This is used to calculate minimum elasticity before a

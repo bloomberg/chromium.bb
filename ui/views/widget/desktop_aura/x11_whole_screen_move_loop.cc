@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -19,38 +20,17 @@
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/events/platform/scoped_event_dispatcher.h"
 #include "ui/events/platform/x11/x11_event_source.h"
-#include "ui/gfx/point_conversions.h"
 
 namespace views {
-
-namespace {
-
-class ScopedCapturer {
- public:
-  explicit ScopedCapturer(aura::WindowTreeHost* host)
-      : host_(host) {
-    host_->SetCapture();
-  }
-
-  ~ScopedCapturer() {
-    host_->ReleaseCapture();
-  }
-
- private:
-  aura::WindowTreeHost* host_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedCapturer);
-};
-
-}  // namespace
 
 X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(X11MoveLoopDelegate* delegate)
     : delegate_(delegate),
       in_move_loop_(false),
+      initial_cursor_(ui::kCursorNull),
       should_reset_mouse_flags_(false),
       grab_input_window_(None),
+      grabbed_pointer_(false),
       canceled_(false),
-      has_grab_(false),
       weak_factory_(this) {
   last_xmotion_.type = LASTEvent;
 }
@@ -74,19 +54,11 @@ bool X11WholeScreenMoveLoop::CanDispatchEvent(const ui::PlatformEvent& event) {
 }
 
 uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
-  // This method processes all events for the grab_input_window_ as well as
-  // mouse events for all windows while the move loop is active - even before
-  // the grab is granted by X. This allows mouse notification events that were
-  // sent after the capture was requested but before the capture was granted
-  // to be dispatched. It is especially important to process the mouse release
-  // event that should have stopped the drag even if that mouse release happened
-  // before the grab was granted.
+  // This method processes all events while the move loop is active.
   if (!in_move_loop_)
     return ui::POST_DISPATCH_PERFORM_DEFAULT;
-  XEvent* xev = event;
 
-  // Note: the escape key is handled in the tab drag controller, which has
-  // keyboard focus even though we took pointer grab.
+  XEvent* xev = event;
   switch (xev->type) {
     case MotionNotify: {
       last_xmotion_ = xev->xmotion;
@@ -107,6 +79,13 @@ uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
         // break the drag if the left mouse button was released.
         DispatchMouseMovement();
         delegate_->OnMouseReleased();
+
+        if (!grabbed_pointer_) {
+          // If the source widget had capture prior to the move loop starting,
+          // it may be relying on views::Widget getting the mouse release and
+          // releasing capture in Widget::OnMouseEvent().
+          return ui::POST_DISPATCH_PERFORM_DEFAULT;
+        }
       }
       return ui::POST_DISPATCH_NONE;
     }
@@ -116,11 +95,6 @@ uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
         EndMoveLoop();
         return ui::POST_DISPATCH_NONE;
       }
-      break;
-    }
-    case FocusOut: {
-      if (xev->xfocus.mode != NotifyGrab)
-        has_grab_ = false;
       break;
     }
     case GenericEvent: {
@@ -146,8 +120,7 @@ uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
           gfx::Point point(ui::EventSystemLocationFromNative(xev));
           xevent.xmotion.x_root = point.x();
           xevent.xmotion.y_root = point.y();
-          DispatchEvent(&xevent);
-          return ui::POST_DISPATCH_NONE;
+          return DispatchEvent(&xevent);
         }
         default:
           break;
@@ -155,31 +128,39 @@ uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
     }
   }
 
-  return (event->xany.window == grab_input_window_) ?
-      ui::POST_DISPATCH_NONE : ui::POST_DISPATCH_PERFORM_DEFAULT;
+  return ui::POST_DISPATCH_PERFORM_DEFAULT;
 }
 
 bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
                                          gfx::NativeCursor cursor) {
   DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
 
-  // Start a capture on the host, so that it continues to receive events during
-  // the drag. This may be second time we are capturing the mouse events - the
-  // first being when a mouse is first pressed. That first capture needs to be
-  // released before the call to GrabPointerAndKeyboard below, otherwise it may
-  // get released while we still need the pointer grab, which is why we restrict
-  // the scope here.
-  {
-    ScopedCapturer capturer(source->GetHost());
+  // Query the mouse cursor prior to the move loop starting so that it can be
+  // restored when the move loop finishes.
+  initial_cursor_ = source->GetHost()->last_cursor();
 
-    grab_input_window_ = CreateDragInputWindow(gfx::GetXDisplay());
-    // Releasing ScopedCapturer ensures that any other instance of
-    // X11ScopedCapture will not prematurely release grab that will be acquired
-    // below.
+  grab_input_window_ = CreateDragInputWindow(gfx::GetXDisplay());
+
+  // Only grab mouse capture of |grab_input_window_| if |source| does not have
+  // capture.
+  // - The caller may intend to transfer capture to a different aura::Window
+  //   when the move loop ends and not release capture.
+  // - Releasing capture and X window destruction are both asynchronous. We drop
+  //   events targeted at |grab_input_window_| in the time between the move
+  //   loop ends and |grab_input_window_| loses capture.
+  grabbed_pointer_ = false;
+  if (!source->HasCapture()) {
+    aura::client::CaptureClient* capture_client =
+        aura::client::GetCaptureClient(source->GetRootWindow());
+    CHECK(capture_client->GetGlobalCaptureWindow() == NULL);
+    grabbed_pointer_ = GrabPointer(cursor);
+    if (!grabbed_pointer_) {
+      XDestroyWindow(gfx::GetXDisplay(), grab_input_window_);
+      return false;
+    }
   }
-  // TODO(varkha): Consider integrating GrabPointerAndKeyboard with
-  // ScopedCapturer to avoid possibility of logically keeping multiple grabs.
-  if (!GrabPointerAndKeyboard(cursor)) {
+
+  if (!GrabKeyboard()) {
     XDestroyWindow(gfx::GetXDisplay(), grab_input_window_);
     return false;
   }
@@ -189,9 +170,9 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
   nested_dispatcher_ =
          ui::PlatformEventSource::GetInstance()->OverrideDispatcher(this);
 
-  // We are handling a mouse drag outside of the aura::RootWindow system. We
-  // must manually make aura think that the mouse button is pressed so that we
-  // don't draw extraneous tooltips.
+  // We are handling a mouse drag outside of the aura::Window system. We must
+  // manually make aura think that the mouse button is pressed so that we don't
+  // draw extraneous tooltips.
   aura::Env* env = aura::Env::GetInstance();
   if (!env->IsMouseButtonDown()) {
     env->set_mouse_button_flags(ui::EF_LEFT_MOUSE_BUTTON);
@@ -211,10 +192,13 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
 
 void X11WholeScreenMoveLoop::UpdateCursor(gfx::NativeCursor cursor) {
   if (in_move_loop_) {
-    // If we're still in the move loop, regrab the pointer with the updated
-    // cursor. Note: we can be called from handling an XdndStatus message after
-    // EndMoveLoop() was called, but before we return from the nested RunLoop.
-    GrabPointerAndKeyboard(cursor);
+    // We cannot call GrabPointer() because we do not want to change the
+    // "owner_events" property of the active pointer grab.
+    XChangeActivePointerGrab(
+        gfx::GetXDisplay(),
+        ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+        cursor.platform(),
+        CurrentTime);
   }
 }
 
@@ -238,11 +222,12 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
 
   // Ungrab before we let go of the window.
   XDisplay* display = gfx::GetXDisplay();
-  // Only ungrab pointer if capture was not switched to another window.
-  if (has_grab_) {
+  if (grabbed_pointer_)
     XUngrabPointer(display, CurrentTime);
-    XUngrabKeyboard(display, CurrentTime);
-  }
+  else
+    UpdateCursor(initial_cursor_);
+
+  XUngrabKeyboard(display, CurrentTime);
 
   // Restore the previous dispatcher.
   nested_dispatcher_.reset();
@@ -254,15 +239,16 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
   quit_closure_.Run();
 }
 
-bool X11WholeScreenMoveLoop::GrabPointerAndKeyboard(gfx::NativeCursor cursor) {
+bool X11WholeScreenMoveLoop::GrabPointer(gfx::NativeCursor cursor) {
   XDisplay* display = gfx::GetXDisplay();
   XGrabServer(display);
 
-  XUngrabPointer(display, CurrentTime);
+  // Pass "owner_events" as false so that X sends all mouse events to
+  // |grab_input_window_|.
   int ret = XGrabPointer(
       display,
       grab_input_window_,
-      False,
+      False,  // owner_events
       ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
       GrabModeAsync,
       GrabModeAsync,
@@ -272,33 +258,29 @@ bool X11WholeScreenMoveLoop::GrabPointerAndKeyboard(gfx::NativeCursor cursor) {
   if (ret != GrabSuccess) {
     DLOG(ERROR) << "Grabbing pointer for dragging failed: "
                 << ui::GetX11ErrorString(display, ret);
-  } else {
-    has_grab_ = true;
-    XUngrabKeyboard(display, CurrentTime);
-    ret = XGrabKeyboard(
-        display,
-        grab_input_window_,
-        False,
-        GrabModeAsync,
-        GrabModeAsync,
-        CurrentTime);
-    if (ret != GrabSuccess) {
-      DLOG(ERROR) << "Grabbing keyboard for dragging failed: "
-                  << ui::GetX11ErrorString(display, ret);
-    }
   }
-
   XUngrabServer(display);
   XFlush(display);
   return ret == GrabSuccess;
 }
 
+bool X11WholeScreenMoveLoop::GrabKeyboard() {
+  XDisplay* display = gfx::GetXDisplay();
+  int ret = XGrabKeyboard(display,
+                          grab_input_window_,
+                          False,
+                          GrabModeAsync,
+                          GrabModeAsync,
+                          CurrentTime);
+  if (ret != GrabSuccess) {
+    DLOG(ERROR) << "Grabbing keyboard for dragging failed: "
+                << ui::GetX11ErrorString(display, ret);
+    return false;
+  }
+  return true;
+}
+
 Window X11WholeScreenMoveLoop::CreateDragInputWindow(XDisplay* display) {
-  // Creates an invisible, InputOnly toplevel window. This window will receive
-  // all mouse movement for drags. It turns out that normal windows doing a
-  // grab doesn't redirect pointer motion events if the pointer isn't over the
-  // grabbing window. But InputOnly windows are able to grab everything. This
-  // is what GTK+ does, and I found a patch to KDE that did something similar.
   unsigned long attribute_mask = CWEventMask | CWOverrideRedirect;
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));

@@ -49,6 +49,7 @@ aura::client::WindowMoveResult X11DesktopWindowMoveClient::RunMoveLoop(
   window_offset_ = drag_offset;
   host_ = source->GetHost();
 
+  source->SetCapture();
   bool success = move_loop_.RunMoveLoop(source, host_->last_cursor());
   return success ? aura::client::MOVE_SUCCESSFUL : aura::client::MOVE_CANCELED;
 }
