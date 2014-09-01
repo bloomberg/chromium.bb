@@ -43,8 +43,7 @@ WebServiceWorkerImpl::~WebServiceWorkerImpl() {
 
 void WebServiceWorkerImpl::OnStateChanged(
     blink::WebServiceWorkerState new_state) {
-  DCHECK(proxy_);
-  if (proxy_->isReady())
+  if (proxy_ && proxy_->isReady())
     CommitState(new_state);
   else
     queued_states_.push_back(new_state);

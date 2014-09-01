@@ -339,24 +339,25 @@ void ServiceWorkerRegisterJob::OnStartWorkerFinished(
     return;
   }
 
-  // "Resolve promise with serviceWorker."
-  DCHECK(!registration()->installing_version());
-  ResolvePromise(status, registration(), new_version());
   InstallAndContinue();
 }
 
-// This function corresponds to the spec's _Install algorithm.
+// This function corresponds to the spec's [[Install]] algorithm.
 void ServiceWorkerRegisterJob::InstallAndContinue() {
   SetPhase(INSTALL);
 
-  // "3. Set registration.installingWorker to worker."
+  // "2. Set registration.installingWorker to worker."
   registration()->SetInstallingVersion(new_version());
+
+  // "3. Resolve promise with registration."
+  ResolvePromise(SERVICE_WORKER_OK, registration(), new_version());
 
   // "4. Run the [[UpdateState]] algorithm passing registration.installingWorker
   // and "installing" as the arguments."
   new_version()->SetStatus(ServiceWorkerVersion::INSTALLING);
 
-  // TODO(nhiroki,michaeln): "5. Fire a simple event named updatefound..."
+  // "5. Fire a simple event named updatefound..."
+  registration()->NotifyUpdateFound();
 
   // "6. Fire an event named install..."
   new_version()->DispatchInstallEvent(

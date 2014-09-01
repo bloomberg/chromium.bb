@@ -376,11 +376,20 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
         new ServiceWorkerRegistrationHandle(
             GetContext()->AsWeakPtr(), this, provider_id, registration));
     info = new_handle->GetObjectInfo();
+    handle = new_handle.get();
     RegisterServiceWorkerRegistrationHandle(new_handle.Pass());
   }
 
+  ServiceWorkerVersionAttributes attrs;
+  attrs.installing = handle->CreateServiceWorkerHandleAndPass(
+      registration->installing_version());
+  attrs.waiting = handle->CreateServiceWorkerHandleAndPass(
+      registration->waiting_version());
+  attrs.active = handle->CreateServiceWorkerHandleAndPass(
+      registration->active_version());
+
   Send(new ServiceWorkerMsg_ServiceWorkerRegistered(
-      thread_id, request_id, info));
+      thread_id, request_id, info, attrs));
 }
 
 void ServiceWorkerDispatcherHost::OnWorkerReadyForInspection(

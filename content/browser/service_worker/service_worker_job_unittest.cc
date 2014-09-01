@@ -894,7 +894,8 @@ class UpdateJobTestHelper
   };
 
   UpdateJobTestHelper(int mock_render_process_id)
-      : EmbeddedWorkerTestHelper(mock_render_process_id) {}
+      : EmbeddedWorkerTestHelper(mock_render_process_id),
+        update_found_(false) {}
   virtual ~UpdateJobTestHelper() {
     if (registration_.get())
       registration_->RemoveListener(this);
@@ -972,6 +973,17 @@ class UpdateJobTestHelper
     NOTREACHED();
   }
 
+  virtual void OnRegistrationFinishedUninstalling(
+      ServiceWorkerRegistration* registration) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void OnUpdateFound(
+      ServiceWorkerRegistration* registration) OVERRIDE {
+    ASSERT_FALSE(update_found_);
+    update_found_ = true;
+  }
+
   // ServiceWorkerVersion::Listener overrides
   virtual void OnVersionStateChanged(ServiceWorkerVersion* version) OVERRIDE {
     StateChangeLogEntry entry;
@@ -984,6 +996,7 @@ class UpdateJobTestHelper
 
   std::vector<AttributeChangeLogEntry> attribute_change_log_;
   std::vector<StateChangeLogEntry> state_change_log_;
+  bool update_found_;
 };
 
 }  // namespace
@@ -1024,6 +1037,7 @@ TEST_F(ServiceWorkerJobTest, Update_NoChange) {
             update_helper->state_change_log_[0].version_id);
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT,
             update_helper->state_change_log_[0].status);
+  EXPECT_FALSE(update_helper->update_found_);
 }
 
 TEST_F(ServiceWorkerJobTest, Update_NewVersion) {
@@ -1104,6 +1118,8 @@ TEST_F(ServiceWorkerJobTest, Update_NewVersion) {
             update_helper->state_change_log_[4].version_id);
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED,
             update_helper->state_change_log_[4].status);
+
+  EXPECT_TRUE(update_helper->update_found_);
 }
 
 TEST_F(ServiceWorkerJobTest, Update_NewestVersionChanged) {

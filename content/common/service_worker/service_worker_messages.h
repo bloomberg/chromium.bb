@@ -185,10 +185,11 @@ IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_CacheStorageKeys,
 // on the correct thread.
 
 // Response to ServiceWorkerMsg_RegisterServiceWorker.
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerRegistered,
+IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerRegistered,
                      int /* thread_id */,
                      int /* request_id */,
-                     content::ServiceWorkerRegistrationObjectInfo)
+                     content::ServiceWorkerRegistrationObjectInfo,
+                     content::ServiceWorkerVersionAttributes)
 
 // Response to ServiceWorkerMsg_UnregisterServiceWorker.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_ServiceWorkerUnregistered,
@@ -216,6 +217,12 @@ IPC_MESSAGE_CONTROL5(ServiceWorkerMsg_SetVersionAttributes,
                      int /* registration_handle_id */,
                      int /* changed_mask */,
                      content::ServiceWorkerVersionAttributes)
+
+// Informs the child process that new ServiceWorker enters the installation
+// phase.
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_UpdateFound,
+                     int /* thread_id */,
+                     content::ServiceWorkerRegistrationObjectInfo)
 
 // Tells the child process to set the controller ServiceWorker for the given
 // provider.

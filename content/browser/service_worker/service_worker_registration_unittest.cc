@@ -61,6 +61,16 @@ class ServiceWorkerRegistrationTest : public testing::Test {
       NOTREACHED();
     }
 
+    virtual void OnRegistrationFinishedUninstalling(
+        ServiceWorkerRegistration* registration) OVERRIDE {
+      NOTREACHED();
+    }
+
+    virtual void OnUpdateFound(
+        ServiceWorkerRegistration* registration) OVERRIDE {
+      NOTREACHED();
+    }
+
     void Reset() {
       observed_registration_ = NULL;
       observed_changed_mask_ = ChangedVersionAttributesMask();

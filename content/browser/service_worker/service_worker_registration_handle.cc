@@ -45,6 +45,23 @@ ServiceWorkerRegistrationHandle::GetObjectInfo() {
   return info;
 }
 
+ServiceWorkerObjectInfo
+ServiceWorkerRegistrationHandle::CreateServiceWorkerHandleAndPass(
+    ServiceWorkerVersion* version) {
+  ServiceWorkerObjectInfo info;
+  if (context_ && version) {
+    scoped_ptr<ServiceWorkerHandle> handle =
+        ServiceWorkerHandle::Create(context_,
+                                    dispatcher_host_,
+                                    kDocumentMainThreadId,
+                                    provider_id_,
+                                    version);
+    info = handle->GetObjectInfo();
+    dispatcher_host_->RegisterServiceWorkerHandle(handle.Pass());
+  }
+  return info;
+}
+
 void ServiceWorkerRegistrationHandle::IncrementRefCount() {
   DCHECK_GT(ref_count_, 0);
   ++ref_count_;
@@ -69,6 +86,14 @@ void ServiceWorkerRegistrationHandle::OnRegistrationFailed(
     ServiceWorkerRegistration* registration) {
   DCHECK_EQ(registration->id(), registration_->id());
   ClearVersionAttributes();
+}
+
+void ServiceWorkerRegistrationHandle::OnUpdateFound(
+    ServiceWorkerRegistration* registration) {
+  if (!dispatcher_host_)
+    return;  // Could be NULL in some tests.
+  dispatcher_host_->Send(new ServiceWorkerMsg_UpdateFound(
+      kDocumentMainThreadId, GetObjectInfo()));
 }
 
 void ServiceWorkerRegistrationHandle::SetVersionAttributes(
@@ -116,23 +141,6 @@ void ServiceWorkerRegistrationHandle::SetVersionAttributes(
 
 void ServiceWorkerRegistrationHandle::ClearVersionAttributes() {
   SetVersionAttributes(NULL, NULL, NULL);
-}
-
-ServiceWorkerObjectInfo
-ServiceWorkerRegistrationHandle::CreateServiceWorkerHandleAndPass(
-    ServiceWorkerVersion* version) {
-  ServiceWorkerObjectInfo info;
-  if (context_ && version) {
-    scoped_ptr<ServiceWorkerHandle> handle =
-        ServiceWorkerHandle::Create(context_,
-                                    dispatcher_host_,
-                                    kDocumentMainThreadId,
-                                    provider_id_,
-                                    version);
-    info = handle->GetObjectInfo();
-    dispatcher_host_->RegisterServiceWorkerHandle(handle.Pass());
-  }
-  return info;
 }
 
 }  // namespace content

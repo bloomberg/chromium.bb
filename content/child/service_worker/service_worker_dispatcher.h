@@ -129,7 +129,8 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
 
   void OnRegistered(int thread_id,
                     int request_id,
-                    const ServiceWorkerRegistrationObjectInfo& info);
+                    const ServiceWorkerRegistrationObjectInfo& info,
+                    const ServiceWorkerVersionAttributes& attrs);
   void OnUnregistered(int thread_id,
                       int request_id);
   void OnRegistrationError(int thread_id,
@@ -144,6 +145,8 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
                               int registration_handle_id,
                               int changed_mask,
                               const ServiceWorkerVersionAttributes& attributes);
+  void OnUpdateFound(int thread_id,
+                     const ServiceWorkerRegistrationObjectInfo& info);
   void OnSetControllerServiceWorker(int thread_id,
                                     int provider_id,
                                     const ServiceWorkerObjectInfo& info);

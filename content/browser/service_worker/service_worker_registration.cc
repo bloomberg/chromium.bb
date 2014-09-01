@@ -66,6 +66,10 @@ void ServiceWorkerRegistration::NotifyRegistrationFailed() {
   FOR_EACH_OBSERVER(Listener, listeners_, OnRegistrationFailed(this));
 }
 
+void ServiceWorkerRegistration::NotifyUpdateFound() {
+  FOR_EACH_OBSERVER(Listener, listeners_, OnUpdateFound(this));
+}
+
 ServiceWorkerRegistrationInfo ServiceWorkerRegistration::GetInfo() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return ServiceWorkerRegistrationInfo(

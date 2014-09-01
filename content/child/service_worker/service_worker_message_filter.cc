@@ -81,7 +81,14 @@ void ServiceWorkerMessageFilter::OnStaleMessageReceived(
 void ServiceWorkerMessageFilter::OnStaleRegistered(
     int thread_id,
     int request_id,
-    const ServiceWorkerRegistrationObjectInfo& info) {
+    const ServiceWorkerRegistrationObjectInfo& info,
+    const ServiceWorkerVersionAttributes& attrs) {
+  SendServiceWorkerObjectDestroyed(thread_safe_sender_.get(),
+                                   attrs.installing.handle_id);
+  SendServiceWorkerObjectDestroyed(thread_safe_sender_.get(),
+                                   attrs.waiting.handle_id);
+  SendServiceWorkerObjectDestroyed(thread_safe_sender_.get(),
+                                   attrs.active.handle_id);
   SendRegistrationObjectDestroyed(thread_safe_sender_.get(), info.handle_id);
 }
 
@@ -90,13 +97,13 @@ void ServiceWorkerMessageFilter::OnStaleSetVersionAttributes(
     int provider_id,
     int registration_handle_id,
     int changed_mask,
-    const ServiceWorkerVersionAttributes& attributes) {
+    const ServiceWorkerVersionAttributes& attrs) {
   SendServiceWorkerObjectDestroyed(thread_safe_sender_.get(),
-                                   attributes.installing.handle_id);
+                                   attrs.installing.handle_id);
   SendServiceWorkerObjectDestroyed(thread_safe_sender_.get(),
-                                   attributes.waiting.handle_id);
+                                   attrs.waiting.handle_id);
   SendServiceWorkerObjectDestroyed(thread_safe_sender_.get(),
-                                   attributes.active.handle_id);
+                                   attrs.active.handle_id);
   SendRegistrationObjectDestroyed(thread_safe_sender_.get(),
                                   registration_handle_id);
 }

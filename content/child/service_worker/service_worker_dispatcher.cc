@@ -62,6 +62,8 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnServiceWorkerStateChanged)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetVersionAttributes,
                         OnSetVersionAttributes)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_UpdateFound,
+                        OnUpdateFound)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetControllerServiceWorker,
                         OnSetControllerServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToDocument,
@@ -238,14 +240,21 @@ ServiceWorkerDispatcher::GetServiceWorkerRegistration(
 void ServiceWorkerDispatcher::OnRegistered(
     int thread_id,
     int request_id,
-    const ServiceWorkerRegistrationObjectInfo& info) {
+    const ServiceWorkerRegistrationObjectInfo& info,
+    const ServiceWorkerVersionAttributes& attrs) {
   WebServiceWorkerRegistrationCallbacks* callbacks =
       pending_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
   if (!callbacks)
     return;
 
-  callbacks->onSuccess(GetServiceWorkerRegistration(info, true));
+  WebServiceWorkerRegistrationImpl* registration =
+      GetServiceWorkerRegistration(info, true);
+  registration->SetInstalling(GetServiceWorker(attrs.installing, true));
+  registration->SetWaiting(GetServiceWorker(attrs.waiting, true));
+  registration->SetActive(GetServiceWorker(attrs.active, true));
+
+  callbacks->onSuccess(registration);
   pending_callbacks_.Remove(request_id);
 }
 
@@ -316,6 +325,14 @@ void ServiceWorkerDispatcher::OnSetVersionAttributes(
   }
 }
 
+void ServiceWorkerDispatcher::OnUpdateFound(
+    int thread_id,
+    const ServiceWorkerRegistrationObjectInfo& info) {
+  RegistrationObjectMap::iterator found = registrations_.find(info.handle_id);
+  if (found != registrations_.end())
+    found->second->OnUpdateFound();
+}
+
 void ServiceWorkerDispatcher::SetInstallingServiceWorker(
     int provider_id,
     int registration_handle_id,
@@ -341,8 +358,6 @@ void ServiceWorkerDispatcher::SetInstallingServiceWorker(
   if (found != registrations_.end()) {
     // Populate the .installing field with the new worker object.
     found->second->SetInstalling(GetServiceWorker(info, false));
-    if (info.handle_id != kInvalidServiceWorkerHandleId)
-      found->second->OnUpdateFound();
   }
 }
 

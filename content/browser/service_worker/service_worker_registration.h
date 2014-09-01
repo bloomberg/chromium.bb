@@ -39,6 +39,8 @@ class CONTENT_EXPORT ServiceWorkerRegistration
         ServiceWorkerRegistration* registration) {}
     virtual void OnRegistrationFinishedUninstalling(
         ServiceWorkerRegistration* registration) {}
+    virtual void OnUpdateFound(
+        ServiceWorkerRegistration* registration) {}
   };
 
   ServiceWorkerRegistration(const GURL& pattern,
@@ -70,6 +72,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);
   void NotifyRegistrationFailed();
+  void NotifyUpdateFound();
 
   ServiceWorkerRegistrationInfo GetInfo();
 
