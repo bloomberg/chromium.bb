@@ -214,7 +214,7 @@ def RunMojoTests(options):
            None,
            'org.chromium.mojo.tests',
            'MojoTest',
-           None)
+           'bindings:mojo/public/interfaces/bindings/tests/data')
   RunInstrumentationSuite(options, test)
 
 
