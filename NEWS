@@ -15,7 +15,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 - Fix for Norwegian where letsign is affecting some extra characters
   thanks to Lars Bjørndal
 - Much improved hyphenation for Norwegian thanks to Lars Bjørndal
-- Major improvements to Indian tables thanks to Dipendra Manocha,
+- Major improvements to Indian tables thanks to the Indian National
+  Institute for Visually Handicapped, in particular Dipendra Manocha,
   Mesar Hameed, Dinesh Kaushall and Sreeja Parameswaran:
   - Corrected opcodes for letters, punctuation marks, digits, signs
     etc.
