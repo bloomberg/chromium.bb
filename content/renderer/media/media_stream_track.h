@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_MEDIA_STREAM_TRACK_EXTRA_DATA_H_
-#define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_TRACK_EXTRA_DATA_H_
+#ifndef CONTENT_RENDERER_MEDIA_MEDIA_STREAM_TRACK_H_
+#define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_TRACK_H_
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -36,9 +36,6 @@ class CONTENT_EXPORT MediaStreamTrack
   // If a subclass overrides this method it has to call the base class.
   virtual void SetEnabled(bool enabled);
 
-  virtual void SetMutedState(bool muted_state);
-  virtual bool GetMutedState(void) const;
-
   // TODO(xians): Make this pure virtual when Stop[Track] has been
   // implemented for remote audio tracks.
   virtual void Stop();
@@ -50,9 +47,6 @@ class CONTENT_EXPORT MediaStreamTrack
  protected:
   scoped_refptr<webrtc::MediaStreamTrackInterface> track_;
 
-  // Set to true if the owner MediaStreamSource is not delivering frames.
-  bool muted_state_;
-
  private:
   const bool is_local_track_;
 
@@ -63,4 +57,4 @@ class CONTENT_EXPORT MediaStreamTrack
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_MEDIA_STREAM_TRACK_EXTRA_DATA_H_
+#endif  // CONTENT_RENDERER_MEDIA_MEDIA_STREAM_TRACK_H_

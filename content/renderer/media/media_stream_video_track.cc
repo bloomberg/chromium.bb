@@ -263,14 +263,4 @@ void MediaStreamVideoTrack::OnReadyStateChanged(
   }
 }
 
-void MediaStreamVideoTrack::SetMutedState(bool muted_state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  muted_state_ = muted_state;
-}
-
-bool MediaStreamVideoTrack::GetMutedState(void) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return muted_state_;
-}
-
 }  // namespace content

@@ -149,7 +149,6 @@ class CONTENT_EXPORT MediaStreamVideoSource
   void FinalizeAddTrack();
 
   State state_;
-  bool muted_state_;
 
   media::VideoCaptureFormat current_format_;
 

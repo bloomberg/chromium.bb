@@ -43,9 +43,7 @@ class VideoTrackAdapter
                 int max_width, int max_height,
                 double min_aspect_ratio,
                 double max_aspect_ratio,
-                double max_frame_rate,
-                double source_frame_rate,
-                const OnMutedCallback& on_muted_state_callback);
+                double max_frame_rate);
   void RemoveTrack(const MediaStreamVideoTrack* track);
 
   // Delivers |frame| to all tracks that have registered a callback.
@@ -60,6 +58,13 @@ class VideoTrackAdapter
     return io_message_loop_;
   }
 
+  // Start monitor that frames are delivered to this object. I.E, that
+  // |DeliverFrameOnIO| is called with a frame rate of |source_frame_rate|.
+  // |on_muted_callback| is triggered on the main render thread.
+  void StartFrameMonitoring(double source_frame_rate,
+                            const OnMutedCallback& on_muted_callback);
+  void StopFrameMonitoring();
+
  private:
   virtual ~VideoTrackAdapter();
   friend class base::RefCountedThreadSafe<VideoTrackAdapter>;
@@ -73,9 +78,10 @@ class VideoTrackAdapter
       double max_frame_rate);
   void RemoveTrackOnIO(const MediaStreamVideoTrack* track);
 
-  void StartTrackMonitoringOnIO(
+  void StartFrameMonitoringOnIO(
     const OnMutedCallback& on_muted_state_callback,
     double source_frame_rate);
+  void StopFrameMonitoringOnIO();
 
   // Compare |frame_counter_snapshot| with the current |frame_counter_|, and
   // inform of the situation (muted, not muted) via |set_muted_state_callback|.
@@ -98,6 +104,14 @@ class VideoTrackAdapter
   typedef std::vector<scoped_refptr<VideoFrameResolutionAdapter> >
       FrameAdapters;
   FrameAdapters adapters_;
+
+  // Set to true if frame monitoring has been started. It is only accessed on
+  // the IO-thread.
+  bool monitoring_frame_rate_;
+
+  // Keeps track of it frames have been received. It is only accessed on the
+  // IO-thread.
+  bool muted_state_;
 
   // Running frame counter, accessed on the IO-thread.
   uint64 frame_counter_;
