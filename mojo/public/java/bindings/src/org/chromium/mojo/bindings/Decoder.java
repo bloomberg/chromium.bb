@@ -103,12 +103,12 @@ public class Decoder {
      * @param message The message to decode.
      */
     public Decoder(Message message) {
-        this(message, new Validator(message.buffer.limit(), message.handles.size()), 0);
+        this(message, new Validator(message.getData().limit(), message.getHandles().size()), 0);
     }
 
     private Decoder(Message message, Validator validator, int baseOffset) {
         mMessage = message;
-        mMessage.buffer.order(ByteOrder.nativeOrder());
+        mMessage.getData().order(ByteOrder.nativeOrder());
         mBaseOffset = baseOffset;
         mValidator = validator;
     }
@@ -146,7 +146,7 @@ public class Decoder {
      * Deserializes a byte at the given offset.
      */
     public byte readByte(int offset) {
-        return mMessage.buffer.get(mBaseOffset + offset);
+        return mMessage.getData().get(mBaseOffset + offset);
     }
 
     /**
@@ -160,35 +160,35 @@ public class Decoder {
      * Deserializes a short at the given offset.
      */
     public short readShort(int offset) {
-        return mMessage.buffer.getShort(mBaseOffset + offset);
+        return mMessage.getData().getShort(mBaseOffset + offset);
     }
 
     /**
      * Deserializes an int at the given offset.
      */
     public int readInt(int offset) {
-        return mMessage.buffer.getInt(mBaseOffset + offset);
+        return mMessage.getData().getInt(mBaseOffset + offset);
     }
 
     /**
      * Deserializes a float at the given offset.
      */
     public float readFloat(int offset) {
-        return mMessage.buffer.getFloat(mBaseOffset + offset);
+        return mMessage.getData().getFloat(mBaseOffset + offset);
     }
 
     /**
      * Deserializes a long at the given offset.
      */
     public long readLong(int offset) {
-        return mMessage.buffer.getLong(mBaseOffset + offset);
+        return mMessage.getData().getLong(mBaseOffset + offset);
     }
 
     /**
      * Deserializes a double at the given offset.
      */
     public double readDouble(int offset) {
-        return mMessage.buffer.getDouble(mBaseOffset + offset);
+        return mMessage.getData().getDouble(mBaseOffset + offset);
     }
 
     /**
@@ -221,8 +221,8 @@ public class Decoder {
         }
         DataHeader si = d.readArrayDataHeader(expectedLength);
         byte[] bytes = new byte[si.numFields + 7 / BindingsHelper.ALIGNMENT];
-        d.mMessage.buffer.position(d.mBaseOffset + DataHeader.HEADER_SIZE);
-        d.mMessage.buffer.get(bytes);
+        d.mMessage.getData().position(d.mBaseOffset + DataHeader.HEADER_SIZE);
+        d.mMessage.getData().get(bytes);
         boolean[] result = new boolean[si.numFields];
         for (int i = 0; i < bytes.length; ++i) {
             for (int j = 0; j < BindingsHelper.ALIGNMENT; ++j) {
@@ -245,8 +245,8 @@ public class Decoder {
         }
         DataHeader si = d.readArrayDataHeader(expectedLength);
         byte[] result = new byte[si.numFields];
-        d.mMessage.buffer.position(d.mBaseOffset + DataHeader.HEADER_SIZE);
-        d.mMessage.buffer.get(result);
+        d.mMessage.getData().position(d.mBaseOffset + DataHeader.HEADER_SIZE);
+        d.mMessage.getData().get(result);
         return result;
     }
 
@@ -260,8 +260,8 @@ public class Decoder {
         }
         DataHeader si = d.readArrayDataHeader(expectedLength);
         short[] result = new short[si.numFields];
-        d.mMessage.buffer.position(d.mBaseOffset + DataHeader.HEADER_SIZE);
-        d.mMessage.buffer.asShortBuffer().get(result);
+        d.mMessage.getData().position(d.mBaseOffset + DataHeader.HEADER_SIZE);
+        d.mMessage.getData().asShortBuffer().get(result);
         return result;
     }
 
@@ -275,8 +275,8 @@ public class Decoder {
         }
         DataHeader si = d.readArrayDataHeader(expectedLength);
         int[] result = new int[si.numFields];
-        d.mMessage.buffer.position(d.mBaseOffset + DataHeader.HEADER_SIZE);
-        d.mMessage.buffer.asIntBuffer().get(result);
+        d.mMessage.getData().position(d.mBaseOffset + DataHeader.HEADER_SIZE);
+        d.mMessage.getData().asIntBuffer().get(result);
         return result;
     }
 
@@ -290,8 +290,8 @@ public class Decoder {
         }
         DataHeader si = d.readArrayDataHeader(expectedLength);
         float[] result = new float[si.numFields];
-        d.mMessage.buffer.position(d.mBaseOffset + DataHeader.HEADER_SIZE);
-        d.mMessage.buffer.asFloatBuffer().get(result);
+        d.mMessage.getData().position(d.mBaseOffset + DataHeader.HEADER_SIZE);
+        d.mMessage.getData().asFloatBuffer().get(result);
         return result;
     }
 
@@ -305,8 +305,8 @@ public class Decoder {
         }
         DataHeader si = d.readArrayDataHeader(expectedLength);
         long[] result = new long[si.numFields];
-        d.mMessage.buffer.position(d.mBaseOffset + DataHeader.HEADER_SIZE);
-        d.mMessage.buffer.asLongBuffer().get(result);
+        d.mMessage.getData().position(d.mBaseOffset + DataHeader.HEADER_SIZE);
+        d.mMessage.getData().asLongBuffer().get(result);
         return result;
     }
 
@@ -320,8 +320,8 @@ public class Decoder {
         }
         DataHeader si = d.readArrayDataHeader(expectedLength);
         double[] result = new double[si.numFields];
-        d.mMessage.buffer.position(d.mBaseOffset + DataHeader.HEADER_SIZE);
-        d.mMessage.buffer.asDoubleBuffer().get(result);
+        d.mMessage.getData().position(d.mBaseOffset + DataHeader.HEADER_SIZE);
+        d.mMessage.getData().asDoubleBuffer().get(result);
         return result;
     }
 
@@ -338,7 +338,7 @@ public class Decoder {
             return InvalidHandle.INSTANCE;
         }
         mValidator.claimHandle(index);
-        return mMessage.handles.get(index);
+        return mMessage.getHandles().get(index);
     }
 
     /**
@@ -579,5 +579,4 @@ public class Decoder {
     private Decoder getDecoderAtPosition(int offset) {
         return new Decoder(mMessage, mValidator, offset);
     }
-
 }

@@ -15,7 +15,7 @@ public interface MessageReceiver extends Closeable {
      * Receive a {@link MessageWithHeader}. The {@link MessageReceiver} is allowed to mutable the
      * message. Returns |true| if the message has been handled, |false| otherwise.
      */
-    boolean accept(MessageWithHeader message);
+    boolean accept(Message message);
 
     /**
      * @see java.io.Closeable#close()

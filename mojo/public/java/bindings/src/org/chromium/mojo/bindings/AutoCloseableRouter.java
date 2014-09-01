@@ -54,18 +54,18 @@ class AutoCloseableRouter implements Router {
     }
 
     /**
-     * @see MessageReceiver#accept(MessageWithHeader)
+     * @see MessageReceiver#accept(Message)
      */
     @Override
-    public boolean accept(MessageWithHeader message) {
+    public boolean accept(Message message) {
         return mRouter.accept(message);
     }
 
     /**
-     * @see MessageReceiverWithResponder#acceptWithResponder(MessageWithHeader, MessageReceiver)
+     * @see MessageReceiverWithResponder#acceptWithResponder(Message, MessageReceiver)
      */
     @Override
-    public boolean acceptWithResponder(MessageWithHeader message, MessageReceiver responder) {
+    public boolean acceptWithResponder(Message message, MessageReceiver responder) {
         return mRouter.acceptWithResponder(message, responder);
 
     }

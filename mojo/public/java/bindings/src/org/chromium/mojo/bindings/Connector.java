@@ -7,8 +7,11 @@ package org.chromium.mojo.bindings;
 import org.chromium.mojo.system.AsyncWaiter;
 import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.MessagePipeHandle;
+import org.chromium.mojo.system.MessagePipeHandle.ReadMessageResult;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.MojoResult;
+
+import java.nio.ByteBuffer;
 
 /**
  * A {@link Connector} owns a {@link MessagePipeHandle} and will send any received messages to the
@@ -92,13 +95,13 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
     }
 
     /**
-     * @see MessageReceiver#accept(MessageWithHeader)
+     * @see MessageReceiver#accept(Message)
      */
     @Override
-    public boolean accept(MessageWithHeader message) {
+    public boolean accept(Message message) {
         try {
-            mMessagePipeHandle.writeMessage(message.getMessage().buffer,
-                    message.getMessage().handles, MessagePipeHandle.WriteFlags.NONE);
+            mMessagePipeHandle.writeMessage(message.getData(),
+                    message.getHandles(), MessagePipeHandle.WriteFlags.NONE);
             return true;
         } catch (MojoException e) {
             onError(e);
@@ -194,8 +197,7 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
         int result;
         do {
             try {
-                result = MessageWithHeader.readAndDispatchMessage(mMessagePipeHandle,
-                        mIncomingMessageReceiver);
+                result = readAndDispatchMessage(mMessagePipeHandle, mIncomingMessageReceiver);
             } catch (MojoException e) {
                 onError(e);
                 return;
@@ -213,5 +215,27 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
             mCancellable.cancel();
             mCancellable = null;
         }
+    }
+
+    /**
+     * Read a message, and pass it to the given |MessageReceiver| if not null. If the
+     * |MessageReceiver| is null, the message is lost.
+     *
+     * @param receiver The {@link MessageReceiver} that will receive the read {@link Message}. Can
+     *            be <code>null</code>, in which case the message is discarded.
+     */
+    static int readAndDispatchMessage(MessagePipeHandle handle, MessageReceiver receiver) {
+        // TODO(qsr) Allow usage of a pool of pre-allocated buffer for performance.
+        ReadMessageResult result = handle.readMessage(null, 0, MessagePipeHandle.ReadFlags.NONE);
+        if (result.getMojoResult() != MojoResult.RESOURCE_EXHAUSTED) {
+            return result.getMojoResult();
+        }
+        ByteBuffer buffer = ByteBuffer.allocateDirect(result.getMessageSize());
+        result = handle.readMessage(buffer, result.getHandlesCount(),
+                MessagePipeHandle.ReadFlags.NONE);
+        if (receiver != null && result.getMojoResult() == MojoResult.OK) {
+            receiver.accept(new SimpleMessage(buffer, result.getHandles()));
+        }
+        return result.getMojoResult();
     }
 }

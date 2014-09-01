@@ -46,6 +46,7 @@ android_library("bindings") {
     "bindings/src/org/chromium/mojo/bindings/Router.java",
     "bindings/src/org/chromium/mojo/bindings/SerializationException.java",
     "bindings/src/org/chromium/mojo/bindings/SideEffectFreeCloseable.java",
+    "bindings/src/org/chromium/mojo/bindings/SimpleMessage.java",
     "bindings/src/org/chromium/mojo/bindings/Struct.java",
   ]
 

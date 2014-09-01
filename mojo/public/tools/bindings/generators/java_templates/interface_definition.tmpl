@@ -93,7 +93,9 @@ public static final {{manager_class(interface, client, True)}} MANAGER =
 {% if (interface|has_method_with_response and with_response) or
       (interface|has_method_without_response and not with_response) %}
 try {
-    org.chromium.mojo.bindings.MessageHeader header = message.getHeader();
+    org.chromium.mojo.bindings.MessageWithHeader messageWithHeader =
+            message.asMojoMessage();
+    org.chromium.mojo.bindings.MessageHeader header = messageWithHeader.getHeader();
     if (!header.validateHeader({{flags(with_response, True)}})) {
         return false;
     }
@@ -108,9 +110,9 @@ try {
         case {{method|method_ordinal_name}}: {
 {%       if method.parameters %}
             {{request_struct|name}} data =
-                    {{request_struct|name}}.deserialize(message.getPayload());
+                    {{request_struct|name}}.deserialize(messageWithHeader.getPayload());
 {%       else %}
-            {{request_struct|name}}.deserialize(message.getPayload());
+            {{request_struct|name}}.deserialize(messageWithHeader.getPayload());
 {%       endif %}
             getImpl().{{method|name}}({{run_callback('data', method.parameters)}}{% if with_response %}{% if method.parameters %}, {% endif %}new {{response_struct|name}}ProxyToResponder(getCore(), receiver, header.getRequestId()){% endif %});
             return true;
@@ -204,12 +206,12 @@ class {{interface|name}}_Internal {
         }
 
         @Override
-        public boolean accept(org.chromium.mojo.bindings.MessageWithHeader message) {
+        public boolean accept(org.chromium.mojo.bindings.Message message) {
             {{accept_body(interface, False)|indent(12)}}
         }
 
         @Override
-        public boolean acceptWithResponder(org.chromium.mojo.bindings.MessageWithHeader message, org.chromium.mojo.bindings.MessageReceiver receiver) {
+        public boolean acceptWithResponder(org.chromium.mojo.bindings.Message message, org.chromium.mojo.bindings.MessageReceiver receiver) {
             {{accept_body(interface, True)|indent(12)}}
         }
     }
@@ -230,14 +232,16 @@ class {{interface|name}}_Internal {
         }
 
         @Override
-        public boolean accept(org.chromium.mojo.bindings.MessageWithHeader message) {
+        public boolean accept(org.chromium.mojo.bindings.Message message) {
             try {
-                org.chromium.mojo.bindings.MessageHeader header = message.getHeader();
+                org.chromium.mojo.bindings.MessageWithHeader messageWithHeader =
+                        message.asMojoMessage();
+                org.chromium.mojo.bindings.MessageHeader header = messageWithHeader.getHeader();
                 if (!header.validateHeader({{method|method_ordinal_name}},
                                            {{flags_for_method(method, False)}})) {
                     return false;
                 }
-                {{response_struct|name}} response = {{response_struct|name}}.deserialize(message.getPayload());
+                {{response_struct|name}} response = {{response_struct|name}}.deserialize(messageWithHeader.getPayload());
                 mCallback.call({{run_callback('response', method.response_parameters)}});
                 return true;
             } catch (org.chromium.mojo.bindings.DeserializationException e) {

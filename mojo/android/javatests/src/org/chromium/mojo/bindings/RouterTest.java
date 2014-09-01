@@ -61,16 +61,14 @@ public class RouterTest extends MojoTestCase {
                 MessageHeader.MESSAGE_EXPECTS_RESPONSE_FLAG, 0);
         Encoder encoder = new Encoder(CoreImpl.getInstance(), header.getSize());
         header.encode(encoder);
-        MessageWithHeader headerMessage = new MessageWithHeader(encoder.getMessage());
-        mRouter.acceptWithResponder(headerMessage, mReceiver);
+        mRouter.acceptWithResponder(encoder.getMessage(), mReceiver);
         ByteBuffer receiveBuffer = ByteBuffer.allocateDirect(header.getSize());
         MessagePipeHandle.ReadMessageResult result = mHandle.readMessage(receiveBuffer, 0,
                 MessagePipeHandle.ReadFlags.NONE);
 
         assertEquals(MojoResult.OK, result.getMojoResult());
-        MessageHeader receivedHeader = new MessageWithHeader(
-                new Message(receiveBuffer, new ArrayList<Handle>()))
-                .getHeader();
+        MessageHeader receivedHeader = new SimpleMessage(
+                receiveBuffer, new ArrayList<Handle>()).asMojoMessage().getHeader();
 
         assertEquals(header.getType(), receivedHeader.getType());
         assertEquals(header.getFlags(), receivedHeader.getFlags());
@@ -82,15 +80,15 @@ public class RouterTest extends MojoTestCase {
         encoder = new Encoder(CoreImpl.getInstance(), header.getSize());
         responseHeader.encode(encoder);
         Message responseMessage = encoder.getMessage();
-        mHandle.writeMessage(responseMessage.buffer, new ArrayList<Handle>(),
+        mHandle.writeMessage(responseMessage.getData(), new ArrayList<Handle>(),
                 MessagePipeHandle.WriteFlags.NONE);
         nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
 
         assertEquals(1, mReceiver.messages.size());
-        MessageWithHeader receivedResponseMessage = mReceiver.messages.get(0);
+        MessageWithHeader receivedResponseMessage = mReceiver.messages.get(0).asMojoMessage();
         assertEquals(MessageHeader.MESSAGE_IS_RESPONSE_FLAG,
                 receivedResponseMessage.getHeader().getFlags());
-        assertEquals(responseMessage.buffer, receivedResponseMessage.getMessage().buffer);
+        assertEquals(responseMessage.getData(), receivedResponseMessage.getData());
     }
 
     /**
@@ -108,27 +106,27 @@ public class RouterTest extends MojoTestCase {
         Encoder encoder = new Encoder(CoreImpl.getInstance(), header.getSize());
         header.encode(encoder);
         Message headerMessage = encoder.getMessage();
-        mHandle.writeMessage(headerMessage.buffer, new ArrayList<Handle>(),
+        mHandle.writeMessage(headerMessage.getData(), new ArrayList<Handle>(),
                 MessagePipeHandle.WriteFlags.NONE);
         nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
 
         assertEquals(1, mReceiver.messagesWithReceivers.size());
-        Pair<MessageWithHeader, MessageReceiver> receivedMessage =
+        Pair<Message, MessageReceiver> receivedMessage =
                 mReceiver.messagesWithReceivers.get(0);
-        assertEquals(headerMessage.buffer, receivedMessage.first.getMessage().buffer);
+        assertEquals(headerMessage.getData(), receivedMessage.first.getData());
 
         // Sending the response.
         MessageHeader responseHeader = new MessageHeader(responseMessageType,
                 MessageHeader.MESSAGE_EXPECTS_RESPONSE_FLAG, requestId);
         encoder = new Encoder(CoreImpl.getInstance(), header.getSize());
         responseHeader.encode(encoder);
-        MessageWithHeader responseHeaderMessage = new MessageWithHeader(encoder.getMessage());
-        receivedMessage.second.accept(responseHeaderMessage);
+        Message message = encoder.getMessage();
+        receivedMessage.second.accept(message);
         ByteBuffer receivedResponseMessage = ByteBuffer.allocateDirect(responseHeader.getSize());
         MessagePipeHandle.ReadMessageResult result = mHandle.readMessage(receivedResponseMessage, 0,
                 MessagePipeHandle.ReadFlags.NONE);
 
         assertEquals(MojoResult.OK, result.getMojoResult());
-        assertEquals(responseHeaderMessage.getMessage().buffer, receivedResponseMessage);
+        assertEquals(message.getData(), receivedResponseMessage);
     }
 }

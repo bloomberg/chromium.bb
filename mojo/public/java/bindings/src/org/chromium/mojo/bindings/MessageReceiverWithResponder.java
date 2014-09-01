@@ -11,11 +11,11 @@ package org.chromium.mojo.bindings;
 public interface MessageReceiverWithResponder extends MessageReceiver {
 
     /**
-     * A variant on {@link #accept(MessageWithHeader)} that registers a {@link MessageReceiver}
+     * A variant on {@link #accept(Message)} that registers a {@link MessageReceiver}
      * (known as the responder) to handle the response message generated from the given message. The
-     * responder's {@link #accept(MessageWithHeader)} method may be called as part of the call to
-     * {@link #acceptWithResponder(MessageWithHeader, MessageReceiver)}, or some time after its
+     * responder's {@link #accept(Message)} method may be called as part of the call to
+     * {@link #acceptWithResponder(Message, MessageReceiver)}, or some time after its
      * return.
      */
-    boolean acceptWithResponder(MessageWithHeader message, MessageReceiver responder);
+    boolean acceptWithResponder(Message message, MessageReceiver responder);
 }

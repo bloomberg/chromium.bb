@@ -4,18 +4,17 @@
 
 package org.chromium.mojo.bindings;
 
-import org.chromium.mojo.system.MessagePipeHandle;
-import org.chromium.mojo.system.MessagePipeHandle.ReadMessageResult;
-import org.chromium.mojo.system.MojoResult;
+import org.chromium.mojo.system.Handle;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.List;
 
 /**
  * Represents a {@link Message} which contains a {@link MessageHeader}. Deals with parsing the
  * {@link MessageHeader} for a message.
  */
-public class MessageWithHeader {
+public class MessageWithHeader implements Message {
 
     private final Message mBaseMessage;
     private final MessageHeader mHeader;
@@ -35,8 +34,32 @@ public class MessageWithHeader {
      * Reinterpret the given |message| as a message with a header. The |message| must contain a
      * header as the start of it's raw data, which will be parsed by this constructor.
      */
-    public MessageWithHeader(Message baseMessage) {
+    MessageWithHeader(Message baseMessage) {
         this(baseMessage, new org.chromium.mojo.bindings.MessageHeader(baseMessage));
+    }
+
+    /**
+     * @see Message#getData()
+     */
+    @Override
+    public ByteBuffer getData() {
+        return mBaseMessage.getData();
+    }
+
+    /**
+     * @see Message#getHandles()
+     */
+    @Override
+    public List<? extends Handle> getHandles() {
+        return mBaseMessage.getHandles();
+    }
+
+    /**
+     * @see Message#asMojoMessage()
+     */
+    @Override
+    public MessageWithHeader asMojoMessage() {
+        return this;
     }
 
     /**
@@ -52,47 +75,19 @@ public class MessageWithHeader {
      */
     public Message getPayload() {
         if (mPayload == null) {
-            ByteBuffer truncatedBuffer = ((ByteBuffer) mBaseMessage.buffer.position(
+            ByteBuffer truncatedBuffer = ((ByteBuffer) mBaseMessage.getData().position(
                     getHeader().getSize())).slice();
             truncatedBuffer.order(ByteOrder.nativeOrder());
-            mPayload = new Message(truncatedBuffer, mBaseMessage.handles);
+            mPayload = new SimpleMessage(truncatedBuffer, mBaseMessage.getHandles());
         }
         return mPayload;
-    }
-
-    /**
-     * Returns the raw message.
-     */
-    public Message getMessage() {
-        return mBaseMessage;
     }
 
     /**
      * Set the request identifier on the message.
      */
     void setRequestId(long requestId) {
-        mHeader.setRequestId(mBaseMessage.buffer, requestId);
+        mHeader.setRequestId(mBaseMessage.getData(), requestId);
     }
 
-    /**
-     * Read a message, and pass it to the given |MessageReceiver| if not null. If the
-     * |MessageReceiver| is null, the message is lost.
-     *
-     * @param receiver The {@link MessageReceiver} that will receive the read {@link Message}. Can
-     *            be <code>null</code>, in which case the message is discarded.
-     */
-    public static int readAndDispatchMessage(MessagePipeHandle handle, MessageReceiver receiver) {
-        // TODO(qsr) Allow usage of a pool of pre-allocated buffer for performance.
-        ReadMessageResult result = handle.readMessage(null, 0, MessagePipeHandle.ReadFlags.NONE);
-        if (result.getMojoResult() != MojoResult.RESOURCE_EXHAUSTED) {
-            return result.getMojoResult();
-        }
-        ByteBuffer buffer = ByteBuffer.allocateDirect(result.getMessageSize());
-        result = handle.readMessage(buffer, result.getHandlesCount(),
-                MessagePipeHandle.ReadFlags.NONE);
-        if (receiver != null && result.getMojoResult() == MojoResult.OK) {
-            receiver.accept(new MessageWithHeader(new Message(buffer, result.getHandles())));
-        }
-        return result.getMojoResult();
-    }
 }

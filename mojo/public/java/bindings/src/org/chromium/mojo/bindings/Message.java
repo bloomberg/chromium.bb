@@ -11,29 +11,25 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 /**
- * A raw message to be sent/received from a {@link MessagePipeHandle}.
+ * A raw message to be sent/received from a {@link MessagePipeHandle}. Note that this can contain
+ * any data, not necessarily a Mojo message with a proper header. See also {@link MessageWithHeader}
+ * and {@link SimpleMessage}.
  */
-public final class Message {
+public interface Message {
 
     /**
-     * The data of the message.
+     * The data part of the message.
      */
-    public final ByteBuffer buffer;
+    public ByteBuffer getData();
 
     /**
-     * The handles of the message.
+     * The handles part of the message.
      */
-    public final List<? extends Handle> handles;
+    public List<? extends Handle> getHandles();
 
     /**
-     * Constructor.
-     *
-     * @param buffer The buffer containing the bytes to send. This must be a direct buffer.
-     * @param handles The list of handles to send.
+     * Returns the message considered as a message with a header.
      */
-    public Message(ByteBuffer buffer, List<? extends Handle> handles) {
-        assert buffer.isDirect();
-        this.buffer = buffer;
-        this.handles = handles;
-    }
+    public MessageWithHeader asMojoMessage();
+
 }

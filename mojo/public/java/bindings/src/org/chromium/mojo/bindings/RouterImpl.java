@@ -21,10 +21,10 @@ public class RouterImpl implements Router {
     private class ResponderThunk implements MessageReceiver {
 
         /**
-         * @see MessageReceiver#accept(MessageWithHeader)
+         * @see MessageReceiver#accept(Message)
          */
         @Override
-        public boolean accept(MessageWithHeader message) {
+        public boolean accept(Message message) {
             return handleIncomingMessage(message);
         }
 
@@ -97,21 +97,23 @@ public class RouterImpl implements Router {
     }
 
     /**
-     * @see MessageReceiver#accept(MessageWithHeader)
+     * @see MessageReceiver#accept(Message)
      */
     @Override
-    public boolean accept(MessageWithHeader message) {
+    public boolean accept(Message message) {
         // A message without responder is directly forwarded to the connector.
         return mConnector.accept(message);
     }
 
     /**
-     * @see MessageReceiverWithResponder#acceptWithResponder(MessageWithHeader, MessageReceiver)
+     * @see MessageReceiverWithResponder#acceptWithResponder(Message, MessageReceiver)
      */
     @Override
-    public boolean acceptWithResponder(MessageWithHeader message, MessageReceiver responder) {
+    public boolean acceptWithResponder(Message message, MessageReceiver responder) {
+        // The message must have a header.
+        MessageWithHeader messageWithHeader = message.asMojoMessage();
         // Checking the message expects a response.
-        assert message.getHeader().hasFlag(MessageHeader.MESSAGE_EXPECTS_RESPONSE_FLAG);
+        assert messageWithHeader.getHeader().hasFlag(MessageHeader.MESSAGE_EXPECTS_RESPONSE_FLAG);
 
         // Compute a request id for being able to route the response.
         long requestId = mNextRequestId++;
@@ -122,8 +124,8 @@ public class RouterImpl implements Router {
         if (mResponders.containsKey(requestId)) {
             throw new IllegalStateException("Unable to find a new request identifier.");
         }
-        message.setRequestId(requestId);
-        if (!mConnector.accept(message)) {
+        messageWithHeader.setRequestId(requestId);
+        if (!mConnector.accept(messageWithHeader)) {
             return false;
         }
         // Only keep the responder is the message has been accepted.
@@ -158,8 +160,8 @@ public class RouterImpl implements Router {
     /**
      * Receive a message from the connector. Returns |true| if the message has been handled.
      */
-    private boolean handleIncomingMessage(MessageWithHeader message) {
-        MessageHeader header = message.getHeader();
+    private boolean handleIncomingMessage(Message message) {
+        MessageHeader header = message.asMojoMessage().getHeader();
         if (header.hasFlag(MessageHeader.MESSAGE_EXPECTS_RESPONSE_FLAG)) {
             if (mIncomingMessageReceiver != null) {
                 return mIncomingMessageReceiver.acceptWithResponder(message, this);
