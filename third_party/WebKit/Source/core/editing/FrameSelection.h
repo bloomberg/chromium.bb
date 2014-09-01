@@ -174,6 +174,7 @@ public:
     void scheduleVisualUpdate() const;
     void invalidateCaretRect();
     void paintCaret(GraphicsContext*, const LayoutPoint&, const LayoutRect& clipRect);
+    bool ShouldPaintCaretForTesting() const { return m_shouldPaintCaret; }
 
     // Used to suspend caret blinking while the mouse is down.
     void setCaretBlinkingSuspended(bool suspended) { m_isCaretBlinkingSuspended = suspended; }
@@ -286,7 +287,7 @@ private:
     Timer<FrameSelection> m_caretBlinkTimer;
 
     bool m_caretRectDirty : 1;
-    bool m_caretPaint : 1;
+    bool m_shouldPaintCaret : 1;
     bool m_isCaretBlinkingSuspended : 1;
     bool m_focused : 1;
     bool m_shouldShowBlockCursor : 1;

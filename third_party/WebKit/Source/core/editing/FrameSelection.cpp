@@ -97,7 +97,7 @@ FrameSelection::FrameSelection(LocalFrame* frame)
     , m_granularity(CharacterGranularity)
     , m_caretBlinkTimer(this, &FrameSelection::caretBlinkTimerFired)
     , m_caretRectDirty(true)
-    , m_caretPaint(true)
+    , m_shouldPaintCaret(true)
     , m_isCaretBlinkingSuspended(false)
     , m_focused(frame && frame->page() && frame->page()->focusController().focusedFrame() == frame)
     , m_shouldShowBlockCursor(false)
@@ -1277,8 +1277,8 @@ void FrameSelection::invalidateCaretRect()
 
 void FrameSelection::paintCaret(GraphicsContext* context, const LayoutPoint& paintOffset, const LayoutRect& clipRect)
 {
-    if (m_selection.isCaret() && m_caretPaint) {
-        updateCaretRect(m_frame->document(), m_selection.visibleStart());
+    if (m_selection.isCaret() && m_shouldPaintCaret) {
+        updateCaretRect(m_frame->document(), PositionWithAffinity(m_selection.start(), m_selection.affinity()));
         CaretBase::paintCaret(m_selection.start().deprecatedNode(), context, paintOffset, clipRect);
     }
 }
@@ -1541,7 +1541,7 @@ void FrameSelection::updateAppearance(ResetCaretBlinkOption option)
     if (option == ResetCaretBlink || !shouldBlink || shouldStopBlinkingDueToTypingCommand(m_frame)) {
         m_caretBlinkTimer.stop();
 
-        m_caretPaint = false;
+        m_shouldPaintCaret = false;
         willNeedCaretRectUpdate = true;
     }
 
@@ -1551,7 +1551,7 @@ void FrameSelection::updateAppearance(ResetCaretBlinkOption option)
         if (double blinkInterval = RenderTheme::theme().caretBlinkInterval())
             m_caretBlinkTimer.startRepeating(blinkInterval, FROM_HERE);
 
-        m_caretPaint = true;
+        m_shouldPaintCaret = true;
         willNeedCaretRectUpdate = true;
     }
 
@@ -1637,9 +1637,9 @@ void FrameSelection::caretBlinkTimerFired(Timer<FrameSelection>*)
 {
     ASSERT(caretIsVisible());
     ASSERT(isCaret());
-    if (isCaretBlinkingSuspended() && m_caretPaint)
+    if (isCaretBlinkingSuspended() && m_shouldPaintCaret)
         return;
-    m_caretPaint = !m_caretPaint;
+    m_shouldPaintCaret = !m_shouldPaintCaret;
     setCaretRectNeedsUpdate();
 }
 

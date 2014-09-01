@@ -28,10 +28,12 @@ class FrameSelectionTest : public ::testing::Test {
 protected:
     virtual void SetUp() OVERRIDE;
 
+    DummyPageHolder& dummyPageHolder() const { return *m_dummyPageHolder; }
     HTMLDocument& document() const;
     void setSelection(const VisibleSelection&);
     FrameSelection& selection() const;
     Text* textNode() { return m_textNode.get(); }
+    int layoutCount() const { return m_dummyPageHolder->frameView().layoutCount(); }
 
 private:
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
@@ -107,6 +109,33 @@ TEST_F(FrameSelectionTest, InvalidateCaretRect)
     EXPECT_TRUE(selection().isCaretBoundsDirty());
     selection().invalidateCaretRect();
     EXPECT_FALSE(selection().isCaretBoundsDirty());
+}
+
+TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout)
+{
+    document().view()->updateLayoutAndStyleIfNeededRecursive();
+
+    document().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
+    document().body()->focus();
+    EXPECT_TRUE(document().body()->focused());
+
+    VisibleSelection validSelection(Position(textNode(), 0), Position(textNode(), 0));
+    selection().setCaretVisible(true);
+    setSelection(validSelection);
+    EXPECT_TRUE(selection().isCaret());
+    EXPECT_TRUE(selection().ShouldPaintCaretForTesting());
+
+    int startCount = layoutCount();
+    {
+        // To force layout in next updateLayout calling, widen view.
+        FrameView& frameView = dummyPageHolder().frameView();
+        IntRect frameRect = frameView.frameRect();
+        frameRect.setWidth(frameRect.width() + 1);
+        frameRect.setHeight(frameRect.height() + 1);
+        dummyPageHolder().frameView().setFrameRect(frameRect);
+    }
+    selection().paintCaret(nullptr, LayoutPoint(), LayoutRect());
+    EXPECT_EQ(startCount, layoutCount());
 }
 
 }
