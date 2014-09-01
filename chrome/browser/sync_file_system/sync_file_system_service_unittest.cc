@@ -353,6 +353,9 @@ TEST_F(SyncFileSystemServiceTest, SimpleLocalSyncFlow) {
   EXPECT_CALL(*mock_local_change_processor(),
               ApplyLocalChange(change, _, _, kFile, _))
       .WillOnce(MockStatusCallback(SYNC_STATUS_OK));
+  EXPECT_CALL(*mock_remote_service(), ProcessRemoteChange(_))
+      .WillRepeatedly(MockSyncFileCallback(SYNC_STATUS_NO_CHANGE_TO_SYNC,
+                                           FileSystemURL()));
 
   EXPECT_CALL(*mock_remote_service(), PromoteDemotedChanges(_))
       .WillRepeatedly(InvokeCompletionClosure());
