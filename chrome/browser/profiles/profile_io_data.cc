@@ -465,11 +465,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
   media_device_id_salt_ = new MediaDeviceIDSalt(pref_service, IsOffTheRecord());
 
-  // TODO(bnc): remove per https://crbug.com/334602.
-  network_prediction_enabled_.Init(prefs::kNetworkPredictionEnabled,
-                                   pref_service);
-  network_prediction_enabled_.MoveToThread(io_message_loop_proxy);
-
   network_prediction_options_.Init(prefs::kNetworkPredictionOptions,
                                    pref_service);
 
@@ -1202,8 +1197,6 @@ void ProfileIOData::ShutdownOnUIThread(
   printing_enabled_.Destroy();
   sync_disabled_.Destroy();
   signin_allowed_.Destroy();
-  // TODO(bnc): remove per https://crbug.com/334602.
-  network_prediction_enabled_.Destroy();
   network_prediction_options_.Destroy();
   quick_check_enabled_.Destroy();
   if (media_device_id_salt_.get())

@@ -196,11 +196,6 @@ class ProfileIOData {
     return &signin_allowed_;
   }
 
-  // TODO(bnc): remove per https://crbug.com/334602.
-  BooleanPrefMember* network_prediction_enabled() const {
-    return &network_prediction_enabled_;
-  }
-
   IntegerPrefMember* network_prediction_options() const {
     return &network_prediction_options_;
   }
@@ -547,7 +542,6 @@ class ProfileIOData {
   mutable BooleanPrefMember printing_enabled_;
   mutable BooleanPrefMember sync_disabled_;
   mutable BooleanPrefMember signin_allowed_;
-  mutable BooleanPrefMember network_prediction_enabled_;
   mutable IntegerPrefMember network_prediction_options_;
   // TODO(marja): Remove session_startup_pref_ if no longer needed.
   mutable IntegerPrefMember session_startup_pref_;
