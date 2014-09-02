@@ -8,3 +8,4 @@ PipelineIntegrationTest.MediaSource_Opus_Seeking_WebM
 # crbug.com/409485, cannot revert due to git migration,
 # exclude the test now
 AudioInputTest.Record
+MacAudioInputTest.AUAudioInputStreamVerifyStereoRecording
