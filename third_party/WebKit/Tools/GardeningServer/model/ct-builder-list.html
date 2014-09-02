@@ -1,0 +1,37 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel='import' href='ct-builder.html'>
+
+<script>
+// .builders[i] will have the CTBuilder objects
+function CTBuilderList(failures) {
+  this.builders = [];
+
+  var builderMap = {};
+  failures.forEach(function(failure) {
+    var results = failure.resultNodesByBuilder;
+    Object.keys(results, (function(builder, result) {
+      if (!builderMap[builder])
+        builderMap[builder] = {};
+      // This assumes that duplicate builder/master pairs all have the same
+      // earliestFailingBuild.
+      builderMap[builder][result.masterUrl] = {
+        earliestFailingBuild: result.earliestFailingBuild,
+        failingBuildCount: result.failingBuildCount,
+      };
+    }).bind(this));
+  }, this);
+
+  Object.keys(builderMap).sort().forEach(function(builder) {
+    Object.keys(builderMap[builder]).sort().forEach(function(masterUrl) {
+      var result = builderMap[builder][masterUrl];
+      this.builders.push(new CTBuilder(masterUrl, builder,
+          result.earliestFailingBuild, result.failingBuildCount));
+    }, this);
+  }, this);
+}
+</script>

@@ -5,6 +5,7 @@ found in the LICENSE file.
 -->
 
 <link rel="import" href="../model/ct-builder.html">
+<link rel="import" href="../model/ct-builder-list.html">
 <link rel="import" href="ct-builder.html">
 
 <polymer-element name="ct-builder-grid" attributes="failures">
@@ -14,40 +15,17 @@ found in the LICENSE file.
         display: block;
       }
     </style>
-    <template repeat="{{ builder in _builders }}">
+    <template repeat="{{ builder in _builderList.builders }}">
       <ct-builder builder="{{ builder }}"></ct-builder>
     </template>
   </template>
   <script>
     Polymer({
       failures: null,
-      _builders: null,
+      _builderList: null,
 
       failuresChanged: function() {
-        var builderMap = {};
-        this.failures.forEach(function(failure) {
-          var results = failure.resultNodesByBuilder;
-          Object.keys(results, (function(builder, result) {
-            if (!builderMap[builder])
-              builderMap[builder] = {};
-            // This assumes that duplicate builder/master pairs all have the same
-            // earliestFailingBuild.
-            builderMap[builder][result.masterUrl] = {
-              earliestFailingBuild: result.earliestFailingBuild,
-              failingBuildCount: result.failingBuildCount,
-            };
-          }).bind(this));
-        }, this);
-
-        this._builders = [];
-
-        Object.keys(builderMap).sort().forEach(function(builder) {
-          Object.keys(builderMap[builder]).sort().forEach(function(masterUrl) {
-            var result = builderMap[builder][masterUrl];
-            this._builders.push(new CTBuilder(masterUrl, builder,
-                result.earliestFailingBuild, result.failingBuildCount));
-          }, this);
-        }, this);
+        this._builderList = new CTBuilderList(this.failures);
       },
     });
   </script>
