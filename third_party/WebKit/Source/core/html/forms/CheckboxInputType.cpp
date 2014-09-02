@@ -102,9 +102,9 @@ bool CheckboxInputType::isCheckbox() const
     return true;
 }
 
-bool CheckboxInputType::supportsIndeterminateAppearance() const
+bool CheckboxInputType::shouldAppearIndeterminate() const
 {
-    return true;
+    return element().indeterminate();
 }
 
 } // namespace blink

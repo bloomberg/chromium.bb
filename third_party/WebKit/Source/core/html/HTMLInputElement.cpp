@@ -1704,7 +1704,7 @@ String HTMLInputElement::defaultToolTip() const
 
 bool HTMLInputElement::shouldAppearIndeterminate() const
 {
-    return m_inputType->supportsIndeterminateAppearance() && indeterminate();
+    return m_inputType->shouldAppearIndeterminate();
 }
 
 bool HTMLInputElement::isInRequiredRadioButtonGroup()
@@ -1715,8 +1715,10 @@ bool HTMLInputElement::isInRequiredRadioButtonGroup()
     return false;
 }
 
-HTMLInputElement* HTMLInputElement::checkedRadioButtonForGroup() const
+HTMLInputElement* HTMLInputElement::checkedRadioButtonForGroup()
 {
+    if (checked())
+        return this;
     if (RadioButtonGroupScope* scope = radioButtonGroupScope())
         return scope->checkedButtonForGroup(name());
     return 0;

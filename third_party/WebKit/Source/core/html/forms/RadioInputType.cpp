@@ -195,9 +195,9 @@ bool RadioInputType::isRadioButton() const
     return true;
 }
 
-bool RadioInputType::supportsIndeterminateAppearance() const
+bool RadioInputType::shouldAppearIndeterminate() const
 {
-    return false;
+    return !element().checkedRadioButtonForGroup();
 }
 
 } // namespace blink

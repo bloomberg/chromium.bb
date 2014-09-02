@@ -220,7 +220,7 @@ public:
     bool hasValidDataListOptions() const;
     void listAttributeTargetChanged();
 
-    HTMLInputElement* checkedRadioButtonForGroup() const;
+    HTMLInputElement* checkedRadioButtonForGroup();
     bool isInRequiredRadioButtonGroup();
 
     // Functions for InputType classes.

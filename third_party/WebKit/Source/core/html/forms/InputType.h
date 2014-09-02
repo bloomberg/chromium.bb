@@ -204,7 +204,7 @@ public:
     // string. This should not be called for types without valueAsNumber.
     virtual String serialize(const Decimal&) const;
 
-    virtual bool supportsIndeterminateAppearance() const;
+    virtual bool shouldAppearIndeterminate() const;
 
     virtual bool supportsInputModeAttribute() const;
 

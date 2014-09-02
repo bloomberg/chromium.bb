@@ -770,7 +770,7 @@ const QualifiedName& InputType::subResourceAttributeName() const
     return QualifiedName::null();
 }
 
-bool InputType::supportsIndeterminateAppearance() const
+bool InputType::shouldAppearIndeterminate() const
 {
     return false;
 }
