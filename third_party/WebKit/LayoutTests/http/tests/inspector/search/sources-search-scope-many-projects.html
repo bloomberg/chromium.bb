@@ -1,0 +1,136 @@
+<html>
+<head>
+<title>Test search in sources.</title>
+<script src="../inspector-test.js"></script>
+<script src="../isolated-filesystem-test.js"></script>
+<script src="../workspace-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script>
+function test()
+{
+    var fileSystemPath = "/var/www";
+    var names = ["search.html", "search.js", "search.css"];
+    var files = {};
+    for (var i = 0; i < names.length; ++i) {
+        var name = names[i];
+        files["/" + name] = loadResource(name);
+    }
+
+    function loadResource(name)
+    {
+        var urlPrefix = WebInspector.resourceTreeModel.inspectedPageURL().substr(0, WebInspector.resourceTreeModel.inspectedPageURL().lastIndexOf("/") + 1);
+        var url = urlPrefix + "resources/" + name;
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, false);
+        xhr.send(null);
+        return xhr.responseText;
+    }
+
+    function addNetworkUISourceCode(url, content)
+    {
+        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, content);
+        var uiSourceCode = InspectorTest.testNetworkWorkspaceBinding.addFileForURL(url, contentProvider, false);
+        return uiSourceCode;
+    }
+
+    InspectorFrontendHost.searchInPath = function(requestId, path, query)
+    {
+        setTimeout(reply);
+        
+        function reply()
+        {
+            var paths = [];
+            for (var i = 0; i < names.length; ++i)
+                paths.push("/var/www/" + names[i]);
+            manager.fileSystemWorkspaceBinding._onSearchCompleted({data: {requestId: requestId, fileSystemPath: path, files: paths}});
+        }
+    }
+
+    WebInspector.inspectorView.showPanel("sources");
+    WebInspector.inspectorView.showViewInDrawer("search");
+
+    InspectorTest.createWorkspace();
+    manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace, InspectorTest.testFileSystemMapping);
+    manager.addMockFileSystem(fileSystemPath);
+    InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(function(){}, 3);
+    manager.addFiles(fileSystemPath, files);
+
+    var jsFileSystemUISourceCode;
+    var uiSourceCodes = InspectorTest.testWorkspace.uiSourceCodes();
+    for (var i = 0; i < uiSourceCodes.length; ++i) {
+        if (uiSourceCodes[i].name() === "search.js") {
+            jsFileSystemUISourceCode = uiSourceCodes[i];
+            break;
+        }
+    }
+
+    InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(function(){}, 2);
+    addNetworkUISourceCode("http://localhost/search.html", loadResource("search.html"));
+    var jsNetworkUISourceCode = addNetworkUISourceCode("http://localhost/search.js", loadResource("search.js"));
+
+    var scope = new WebInspector.SourcesSearchScope();
+    WebInspector.workspace = InspectorTest.testWorkspace;
+
+    function runSearchAndDumpResults(searchConfig, callback)
+    {
+        var searchResults = [];
+        var progress = new WebInspector.Progress();
+        scope.performSearch(searchConfig, progress, searchResultCallback, searchFinishedCallback);
+
+        function searchResultCallback(searchResult)
+        {
+            searchResults.push(searchResult);
+        }
+
+        function searchFinishedCallback()
+        {
+            function filterOutEmptySearchResults(searchResult)
+            {
+                return searchResult.searchMatches.length;
+            }
+            searchResults = searchResults.filter(filterOutEmptySearchResults);
+
+            for (var i = 0; i < searchResults.length; ++i) {
+                var searchResult = searchResults[i];
+                var uiSourceCode = searchResult.uiSourceCode;
+                var searchMatches = searchResult.searchMatches;
+
+                if (!searchMatches.length)
+                    continue;
+                InspectorTest.addResult("Search result #" + (i + 1) + ": uiSourceCode.uri = " + uiSourceCode.uri());
+                for (var j = 0; j < searchMatches.length; ++j) {
+                    var lineNumber = searchMatches[j].lineNumber;
+                    var lineContent = searchMatches[j].lineContent;
+                    InspectorTest.addResult("  search match #" + (j + 1) + ": lineNumber = " + lineNumber + ", lineContent = '" + lineContent + "'");
+                }
+            }
+            callback();
+        }
+    }
+
+    InspectorTest.runTestSuite([
+        function testSearch(next)
+        {
+            var query = "searchTest" + "UniqueString";
+            var searchConfig = new WebInspector.SearchConfig(query, true, false);
+            runSearchAndDumpResults(searchConfig, next);
+        },
+
+        function testDirtyFiles(next)
+        {
+            jsFileSystemUISourceCode.setWorkingCopy("FOO " + "searchTest" + "UniqueString" + " BAR");
+            jsNetworkUISourceCode.setWorkingCopy("FOO " + "searchTest" + "UniqueString" + " BAR");
+
+            var query = "searchTest" + "UniqueString";
+            var searchConfig = new WebInspector.SearchConfig(query, true, false);
+            runSearchAndDumpResults(searchConfig, next);
+        }
+    ]);
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that ScriptSearchScope sorts network and dirty results correctly.</p>
+</body>
+</html>
