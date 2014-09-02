@@ -42,7 +42,7 @@ class ExecutionContext;
 class InstallEvent FINAL : public InstallPhaseEvent {
 public:
     static PassRefPtrWillBeRawPtr<InstallEvent> create();
-    static PassRefPtrWillBeRawPtr<InstallEvent> create(const AtomicString& type, const EventInit&, PassRefPtr<WaitUntilObserver>);
+    static PassRefPtrWillBeRawPtr<InstallEvent> create(const AtomicString& type, const EventInit&, WaitUntilObserver*);
 
     void replace();
 
@@ -54,7 +54,7 @@ public:
 
 private:
     InstallEvent();
-    InstallEvent(const AtomicString& type, const EventInit&, PassRefPtr<WaitUntilObserver>);
+    InstallEvent(const AtomicString& type, const EventInit&, WaitUntilObserver*);
 };
 
 } // namespace blink

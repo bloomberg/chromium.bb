@@ -25,14 +25,20 @@ public:
         Rejected,
     };
 
-    static v8::Handle<v8::Function> createFunction(ScriptState* scriptState, PassRefPtr<RespondWithObserver> observer, ResolveType type)
+    static v8::Handle<v8::Function> createFunction(ScriptState* scriptState, RespondWithObserver* observer, ResolveType type)
     {
         ThenFunction* self = new ThenFunction(scriptState, observer, type);
         return self->bindToV8Function();
     }
 
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_observer);
+        ScriptFunction::trace(visitor);
+    }
+
 private:
-    ThenFunction(ScriptState* scriptState, PassRefPtr<RespondWithObserver> observer, ResolveType type)
+    ThenFunction(ScriptState* scriptState, RespondWithObserver* observer, ResolveType type)
         : ScriptFunction(scriptState)
         , m_observer(observer)
         , m_resolveType(type)
@@ -51,17 +57,13 @@ private:
         return value;
     }
 
-    RefPtr<RespondWithObserver> m_observer;
+    Member<RespondWithObserver> m_observer;
     ResolveType m_resolveType;
 };
 
-PassRefPtr<RespondWithObserver> RespondWithObserver::create(ExecutionContext* context, int eventID)
+RespondWithObserver* RespondWithObserver::create(ExecutionContext* context, int eventID)
 {
-    return adoptRef(new RespondWithObserver(context, eventID));
-}
-
-RespondWithObserver::~RespondWithObserver()
-{
+    return new RespondWithObserver(context, eventID);
 }
 
 void RespondWithObserver::contextDestroyed()
