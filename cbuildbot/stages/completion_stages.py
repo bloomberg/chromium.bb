@@ -428,9 +428,9 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
       A string.
     """
     slave_status_list = [
-        ('did not start', no_stat),
-        ('timed out', inflight),
-        ('failed', failing),]
+        ('did not start', list(no_stat)),
+        ('timed out', list(inflight)),
+        ('failed', list(failing)),]
     # Print maximum 2 slaves for each category to not clutter the
     # message.
     max_num = 2
