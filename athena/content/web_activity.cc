@@ -8,11 +8,13 @@
 #include "athena/activity/public/activity_manager.h"
 #include "athena/input/public/accelerator_manager.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/content_switches.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/closure_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -229,6 +231,12 @@ class AthenaWebView : public views::WebView {
     }
     // NULL is returned if the URL wasn't opened immediately.
     return NULL;
+  }
+
+  virtual bool CanOverscrollContent() const OVERRIDE {
+    const std::string value = CommandLine::ForCurrentProcess()->
+        GetSwitchValueASCII(switches::kOverscrollHistoryNavigation);
+    return value != "0";
   }
 
   virtual void AddNewContents(content::WebContents* source,
