@@ -4,6 +4,7 @@
 
 #include "media/cast/logging/encoding_event_subscriber.h"
 
+#include <algorithm>
 #include <cstring>
 #include <utility>
 
