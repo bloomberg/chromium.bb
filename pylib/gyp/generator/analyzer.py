@@ -128,16 +128,20 @@ def _ExtractSourcesFromAction(action, base_path, base_path_components,
     _AddSources(action['inputs'], base_path, base_path_components, results)
 
 
+def _ToLocalPath(toplevel_dir, path):
+  """Converts |path| to a path relative to |toplevel_dir|."""
+  if path == toplevel_dir:
+    return ''
+  if path.startswith(toplevel_dir + '/'):
+    return path[len(toplevel_dir) + len('/'):]
+  return path
+
+
 def _ExtractSources(target, target_dict, toplevel_dir):
   # |target| is either absolute or relative and in the format of the OS. Gyp
   # source paths are always posix. Convert |target| to a posix path relative to
   # |toplevel_dir_|. This is done to make it easy to build source paths.
-  base_path = _ToGypPath(target)
-  if base_path == toplevel_dir:
-    base_path = ''
-  elif base_path.startswith(toplevel_dir + '/'):
-    base_path = base_path[len(toplevel_dir) + len('/'):]
-  base_path = posixpath.dirname(base_path)
+  base_path = posixpath.dirname(_ToLocalPath(toplevel_dir, _ToGypPath(target)))
   base_path_components = base_path.split('/')
 
   # Add a trailing '/' so that _AddSources() can easily build paths.
@@ -223,10 +227,11 @@ class Config(object):
     self.targets = set(config.get('targets', []))
 
 
-def _WasBuildFileModified(build_file, data, files):
+def _WasBuildFileModified(build_file, data, files, toplevel_dir):
   """Returns true if the build file |build_file| is either in |files| or
-  one of the files included by |build_file| is in |files|."""
-  if _ToGypPath(build_file) in files:
+  one of the files included by |build_file| is in |files|. |toplevel_dir| is
+  the root of the source tree."""
+  if _ToLocalPath(toplevel_dir, _ToGypPath(build_file)) in files:
     if debug:
       print 'gyp file modified', build_file
     return True
@@ -239,7 +244,7 @@ def _WasBuildFileModified(build_file, data, files):
     # |included_files| are relative to the directory of the |build_file|.
     rel_include_file = \
         _ToGypPath(gyp.common.UnrelativePath(include_file, build_file))
-    if rel_include_file in files:
+    if _ToLocalPath(toplevel_dir, rel_include_file) in files:
       if debug:
         print 'included gyp file modified, gyp_file=', build_file, \
             'included file=', rel_include_file
@@ -309,7 +314,7 @@ def _GenerateTargets(data, target_list, target_dicts, toplevel_dir, files,
     build_file = gyp.common.ParseQualifiedTarget(target_name)[0]
     if not build_file in build_file_in_files:
       build_file_in_files[build_file] = \
-          _WasBuildFileModified(build_file, data, files)
+          _WasBuildFileModified(build_file, data, files, toplevel_dir)
 
     if build_file in build_files:
       build_file_targets.add(target)
