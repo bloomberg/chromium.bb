@@ -15,7 +15,7 @@ namespace {
 
 class TestListener : public blink::MediaQueryListListener {
 public:
-    virtual void call() OVERRIDE { }
+    virtual void notifyMediaQueryChanged() OVERRIDE { }
 };
 
 }

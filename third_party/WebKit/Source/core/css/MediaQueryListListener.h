@@ -33,7 +33,7 @@ class MediaQueryListListener : public RefCountedWillBeGarbageCollectedFinalized<
 public:
     virtual ~MediaQueryListListener();
 
-    virtual void call() = 0;
+    virtual void notifyMediaQueryChanged() = 0;
 
     virtual void trace(Visitor* visitor) { }
 protected:
