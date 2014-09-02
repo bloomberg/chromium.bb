@@ -95,7 +95,7 @@ const CGFloat kFixedGaiaViewHeight = 440;
 const CGFloat kFixedAccountRemovalViewWidth = 280;
 
 // Fixed size for the switch user view.
-const int kFixedSwitchUserViewWidth = 280;
+const int kFixedSwitchUserViewWidth = 320;
 
 // The tag number for the primary account.
 const int kPrimaryProfileTag = -1;
@@ -231,7 +231,7 @@ NSView* BuildTitleCard(NSRect frame_rect,
   [container addSubview:button];
   [container addSubview:title_label];
   CGFloat height = std::max(NSMaxY([title_label frame]),
-                            NSMaxY([button frame])) + kSmallVerticalSpacing;
+                            NSMaxY([button frame])) + kVerticalSpacing;
   [container setFrameSize:NSMakeSize(NSWidth([container frame]), height)];
 
   return container.autorelease();
@@ -1902,7 +1902,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   NSBox* separator = [self horizontalSeparatorWithFrame:
       NSMakeRect(0, yOffset, kFixedGaiaViewWidth, 0)];
   [container addSubview:separator];
-  yOffset = NSMaxY([separator frame]) + kSmallVerticalSpacing;
+  yOffset = NSMaxY([separator frame]) + kVerticalSpacing;
 
   NSView* titleView = BuildTitleCard(
       NSMakeRect(0, yOffset, kFixedGaiaViewWidth, 0),
@@ -1974,7 +1974,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   NSBox* separator = [self horizontalSeparatorWithFrame:
       NSMakeRect(0, yOffset, kFixedAccountRemovalViewWidth, 0)];
   [container addSubview:separator];
-  yOffset = NSMaxY([separator frame]) + kSmallVerticalSpacing;
+  yOffset = NSMaxY([separator frame]) + kVerticalSpacing;
 
   NSView* titleView = BuildTitleCard(
       NSMakeRect(0, yOffset, kFixedAccountRemovalViewWidth,0),
@@ -2014,7 +2014,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   yOffset = NSMaxY([disconnectButton frame]);
 
   NSBox* separator = [self horizontalSeparatorWithFrame:
-      NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
+      NSMakeRect(0, yOffset, kFixedSwitchUserViewWidth, 0)];
   [container addSubview:separator];
   yOffset = NSMaxY([separator frame]);
 
@@ -2030,7 +2030,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   yOffset = NSMaxY([addPersonButton frame]);
 
   separator = [self horizontalSeparatorWithFrame:
-      NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
+      NSMakeRect(0, yOffset, kFixedSwitchUserViewWidth, 0)];
   [container addSubview:separator];
   yOffset = NSMaxY([separator frame]);
 
@@ -2050,7 +2050,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   separator = [self horizontalSeparatorWithFrame:
       NSMakeRect(0, yOffset, kFixedSwitchUserViewWidth, 0)];
   [container addSubview:separator];
-  yOffset = NSMaxY([separator frame]) + kSmallVerticalSpacing;
+  yOffset = NSMaxY([separator frame]) + kVerticalSpacing;
 
   NSView* titleView = BuildTitleCard(
       NSMakeRect(0, yOffset, kFixedSwitchUserViewWidth,0),
@@ -2060,7 +2060,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [container addSubview:titleView];
   yOffset = NSMaxY([titleView frame]);
 
-  [container setFrameSize:NSMakeSize(kFixedAccountRemovalViewWidth, yOffset)];
+  [container setFrameSize:NSMakeSize(kFixedSwitchUserViewWidth, yOffset)];
   return container.autorelease();
 }
 

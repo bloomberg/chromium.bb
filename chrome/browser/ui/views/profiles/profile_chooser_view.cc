@@ -72,8 +72,10 @@ const int kButtonHeight = 32;
 const int kFixedGaiaViewHeight = 440;
 const int kFixedGaiaViewWidth = 360;
 const int kFixedAccountRemovalViewWidth = 280;
-const int kFixedSwitchUserViewWidth = 280;
+const int kFixedSwitchUserViewWidth = 320;
 const int kLargeImageSide = 88;
+
+const int kVerticalSpacing = 16;
 
 // Creates a GridLayout with a single column. This ensures that all the child
 // views added get auto-expanded to fill the full width of the bubble.
@@ -422,8 +424,9 @@ class TitleCard : public views::View {
     AddChildView(title_label_);
   }
 
-  // Creates a new view that has the |title_card| with padding at the top, an
-  // edge-to-edge separator below, and the specified |view| at the bottom.
+  // Creates a new view that has the |title_card| with horizontal padding at the
+  // top, an edge-to-edge separator below, and the specified |view| at the
+  // bottom.
   static views::View* AddPaddedTitleCard(views::View* view,
                                          TitleCard* title_card,
                                          int width) {
@@ -442,9 +445,9 @@ class TitleCard : public views::View {
     layout->AddColumnSet(1)->AddColumn(views::GridLayout::FILL,
         views::GridLayout::FILL, 0,views::GridLayout::FIXED, width, width);
 
-    layout->StartRowWithPadding(1, 0, 0, views::kButtonVEdgeMarginNew);
+    layout->StartRowWithPadding(1, 0, 0, kVerticalSpacing);
     layout->AddView(title_card);
-    layout->StartRowWithPadding(1, 1, 0, views::kRelatedControlVerticalSpacing);
+    layout->StartRowWithPadding(1, 1, 0, kVerticalSpacing);
     layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
 
     layout->StartRow(1, 1);
