@@ -14,7 +14,6 @@ to the above test instance.
 
 # pylint: disable-msg= W0212
 
-import datetime
 import glob
 import logging
 import os
@@ -96,6 +95,29 @@ class CIDBMigrationsTest(CIDBIntegrationTest):
     for i in range(1, max_version+1):
       db.ApplySchemaMigrations(i)
 
+  def testActions(self):
+    """Test that InsertCLActions accepts 0-, 1-, and multi-item lists."""
+    db = self._PrepareFreshDatabase()
+    build_id = db.InsertBuild('my builder', 'chromiumos', 12, 'my config',
+                              'my bot hostname')
+
+    a1 = metadata_lib.GetCLActionTuple(
+        metadata_lib.GerritPatchTuple(1, 1, True),
+        constants.CL_ACTION_PICKED_UP)
+    a2 = metadata_lib.GetCLActionTuple(
+        metadata_lib.GerritPatchTuple(1, 1, True),
+        constants.CL_ACTION_PICKED_UP)
+    a3 = metadata_lib.GetCLActionTuple(
+        metadata_lib.GerritPatchTuple(1, 1, True),
+        constants.CL_ACTION_PICKED_UP)
+
+    db.InsertCLActions(build_id, [])
+    db.InsertCLActions(build_id, [a1])
+    db.InsertCLActions(build_id, [a2, a3])
+
+    action_count = db._GetEngine().execute('select count(*) from clActionTable'
+                                           ).fetchall()[0][0]
+    self.assertEqual(action_count, 3)
 
 class CIDBAPITest(CIDBIntegrationTest):
   """Tests of the CIDB API."""
@@ -136,58 +158,11 @@ def GetTestDataSeries(test_data_path):
 class DataSeries0Test(CIDBIntegrationTest):
   """Simulate a set of 630 master/slave CQ builds."""
 
-  # TODO(akeshet): Once our prod and debug databases are migrated
-  # to schema 11, this test of the migration can be removed.
-  def testCQWithSchema8(self):
-    """Run the CQ test with schema version 8, then migrate to 11."""
-    # Run the CQ test at schema version 8
-    self._PrepareFreshDatabase(8)
+  def testCQWithSchema11(self):
+    """Run the CQ test with schema version 11."""
+    # Run the CQ test at schema version 11
+    self._PrepareFreshDatabase(11)
     self._runCQTest()
-
-    # Now migrate to schema version 11, and run sanity checks.
-    root_db = cidb.CIDBConnection(TEST_DB_CRED_ROOT)
-    root_db.ApplySchemaMigrations(11)
-
-    readonly_db = cidb.CIDBConnection(TEST_DB_CRED_READONLY)
-
-    # last_updated column should be 0 for all rows.
-    num_0_last_updated = readonly_db._GetEngine().execute(
-          'select count(*) from buildTable where last_updated = 0'
-          ).fetchall()[0][0]
-    self.assertEqual(num_0_last_updated, 630)
-
-    self._start_and_finish_time_checks(readonly_db)
-    self._cl_action_checks(readonly_db)
-
-  def testCQWithSchema9(self):
-    """Run the CQ test with schema version 9."""
-    # Run the CQ test at schema version 8
-    self._PrepareFreshDatabase(9)
-    self._runCQTest()
-
-    readonly_db = cidb.CIDBConnection(TEST_DB_CRED_READONLY)
-
-    # We should have a diversity of last_updated times. Since the timestamp
-    # resolution is only 1 second, and we have lots of parallelism in the test,
-    # we won't have a distring last_updated time per row. But we will have at
-    # least 100 distinct last_updated times.
-    distinct_last_updated = readonly_db._GetEngine().execute(
-        'select count(distinct last_updated) from buildTable').fetchall()[0][0]
-    self.assertTrue(distinct_last_updated > 100)
-
-    ids_by_last_updated = readonly_db._GetEngine().execute(
-        'select id from buildTable order by last_updated').fetchall()
-
-    ids_by_last_updated = [id_tuple[0] for id_tuple in ids_by_last_updated]
-
-    # Build #1 should have been last updated before build # 200.
-    self.assertLess(ids_by_last_updated.index(1),
-                    ids_by_last_updated.index(200))
-
-    # However, build #1 (which was a master build) should have been last updated
-    # AFTER build #2 which was its slave.
-    self.assertGreater(ids_by_last_updated.index(1),
-                       ids_by_last_updated.index(2))
 
   def _runCQTest(self):
     """Simulate a set of 630 master/slave CQ builds.
@@ -231,6 +206,34 @@ class DataSeries0Test(CIDBIntegrationTest):
     self.assertEqual(len(readonly_db.GetSlaveStatuses(1)), 29)
     self.assertEqual(len(readonly_db.GetSlaveStatuses(2)), 0)
 
+    self._start_and_finish_time_checks(readonly_db)
+    self._cl_action_checks(readonly_db)
+    self._last_updated_time_checks(readonly_db)
+
+  def _last_updated_time_checks(self, db):
+    """Sanity checks on the last_updated column."""
+    # We should have a diversity of last_updated times. Since the timestamp
+    # resolution is only 1 second, and we have lots of parallelism in the test,
+    # we won't have a distring last_updated time per row. But we will have at
+    # least 100 distinct last_updated times.
+    distinct_last_updated = db._GetEngine().execute(
+        'select count(distinct last_updated) from buildTable').fetchall()[0][0]
+    self.assertTrue(distinct_last_updated > 100)
+
+    ids_by_last_updated = db._GetEngine().execute(
+        'select id from buildTable order by last_updated').fetchall()
+
+    ids_by_last_updated = [id_tuple[0] for id_tuple in ids_by_last_updated]
+
+    # Build #1 should have been last updated before build # 200.
+    self.assertLess(ids_by_last_updated.index(1),
+                    ids_by_last_updated.index(200))
+
+    # However, build #1 (which was a master build) should have been last updated
+    # AFTER build #2 which was its slave.
+    self.assertGreater(ids_by_last_updated.index(1),
+                       ids_by_last_updated.index(2))
+
   def _cl_action_checks(self, db):
     """Sanity checks that correct cl actions were recorded."""
     submitted_cl_count = db._GetEngine().execute(
@@ -255,10 +258,15 @@ class DataSeries0Test(CIDBIntegrationTest):
           'select max(finish_time) from buildTable').fetchall()[0][0]
     min_fin_time = db._GetEngine().execute(
           'select min(finish_time) from buildTable').fetchall()[0][0]
-    self.assertEqual(max_start_time, datetime.datetime(2014, 7, 7, 12, 49, 44))
-    self.assertEqual(min_start_time, datetime.datetime(2014, 7, 4, 16, 14, 28))
-    self.assertEqual(max_fin_time, datetime.datetime(2014, 7, 7, 14, 51, 38))
-    self.assertEqual(min_fin_time, datetime.datetime(2014, 7, 4, 16, 33, 10))
+    self.assertGreater(max_start_time, min_start_time)
+    self.assertGreater(max_fin_time, min_fin_time)
+
+    # For all builds, finish_time should equal last_updated.
+    mismatching_times = db._GetEngine().execute(
+        'select count(*) from buildTable where finish_time != last_updated'
+        ).fetchall()[0][0]
+    self.assertEqual(mismatching_times, 0)
+
 
   def simulate_builds(self, db, metadatas):
     """Simulate a serires of Commit Queue master and slave builds.
@@ -323,7 +331,7 @@ class DataSeries1Test(CIDBIntegrationTest):
     # Migrate db to specified version. As new schema versions are added,
     # migrations to later version can be applied after the test builds are
     # simulated, to test that db contents are correctly migrated.
-    self._PrepareFreshDatabase(8)
+    self._PrepareFreshDatabase(11)
 
     bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
 
@@ -350,6 +358,12 @@ class DataSeries1Test(CIDBIntegrationTest):
         ).fetchall()[0][0]
     self.assertEqual(main_firmware_versions, 29)
 
+    # For all builds, finish_time should equal last_updated.
+    mismatching_times = bot_db._GetEngine().execute(
+        'select count(*) from buildTable where finish_time != last_updated'
+        ).fetchall()[0][0]
+    self.assertEqual(mismatching_times, 0)
+
   def _simulate_canary(self, db, metadata, master_build_id=None):
     """Helper method to simulate an individual canary build.
 
@@ -375,6 +389,11 @@ class DataSeries1Test(CIDBIntegrationTest):
       db.UpdateBoardPerBuildMetadata(build_id, board, bm)
 
     db.UpdateMetadata(build_id, metadata)
+
+    status = metadata_dict['status']['status']
+    status = _TranslateStatus(status)
+    db.FinishBuild(build_id, status)
+
     return build_id
 
 
@@ -399,15 +418,11 @@ def _SimulateBuildStart(db, metadata, master_build_id=None):
   # build was on.
   waterfall = 'chromeos'
 
-  start_time = cros_build_lib.ParseUserDateTimeFormat(
-      metadata_dict['time']['start'])
-
   build_id = db.InsertBuild(metadata_dict['builder-name'],
                             waterfall,
                             metadata_dict['build-number'],
                             metadata_dict['bot-config'],
                             metadata_dict['bot-hostname'],
-                            start_time,
                             master_build_id)
 
   return build_id
@@ -443,13 +458,11 @@ def _SimulateCQBuildFinish(db, metadata, build_id):
 
   db.UpdateMetadata(build_id, metadata)
 
-  finish_time = cros_build_lib.ParseUserDateTimeFormat(
-      metadata_dict['time']['finish'])
   status = metadata_dict['status']['status']
 
   status = _TranslateStatus(status)
 
-  db.FinishBuild(build_id, finish_time, status)
+  db.FinishBuild(build_id, status)
 
 
 # TODO(akeshet): Allow command line args to specify alternate CIDB instance

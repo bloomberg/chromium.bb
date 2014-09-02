@@ -55,7 +55,6 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTest):
                                build_number=1234321,
                                builder_name=mox.IgnoreArg(),
                                master_build_id=None,
-                               start_time=mox.IgnoreArg(),
                                waterfall='chromiumos').AndReturn(31337)
     mox.Replay(self.mock_cidb)
     self.RunStage()

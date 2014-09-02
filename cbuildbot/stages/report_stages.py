@@ -96,8 +96,6 @@ class BuildStartStage(generic_stages.BuilderStage):
              build_number=d['build-number'],
              build_config=d['bot-config'],
              bot_hostname=d['bot-hostname'],
-             start_time=cros_build_lib.ParseUserDateTimeFormat(
-                 d['time']['start']),
              master_build_id=d['master_build_id'])
         self._run.attrs.metadata.UpdateWithDict({'build_id': build_id,
                                                  'db_type': db_type})

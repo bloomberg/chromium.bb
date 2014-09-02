@@ -2274,9 +2274,6 @@ class ValidationPool(object):
       db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
       if db:
         build_id = self._metadata.GetValue('build_id')
-        # NOTE(akeshet): If timestamp is None, then the database timestamp
-        # will differ slightly from the metadata timestamp, but I don't
-        # think that matters.
         db.InsertCLActions(build_id,
             [metadata_lib.GetCLActionTuple(change, action, timestamp)])
 

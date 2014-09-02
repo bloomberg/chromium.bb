@@ -4,7 +4,6 @@
 
 """Continuous Integration Database Library."""
 
-import datetime
 import glob
 import logging
 import os
@@ -18,8 +17,6 @@ except ImportError:
   raise AssertionError(
       'Unable to import sqlalchemy. Please install this package by running '
       '`sudo apt-get install python-sqlalchemy` or similar.')
-
-import time
 
 from chromite.cbuildbot import constants
 from chromite.lib import retry_util
@@ -254,19 +251,18 @@ class SchemaVersionedMySQLConnection(object):
     self._meta.reflect(bind=self._GetEngine())
 
   def _Insert(self, table, values):
-    """Create and execute an INSERT query.
+    """Create and execute a one-row INSERT query.
 
     Args:
       table: Table name to insert to.
-      values: Dictionary of column values to insert. Or, list of
-              value dictionaries to insert multiple rows.
+      values: Dictionary of column values to insert.
 
     Returns:
-      Integer primary key of the last inserted row.
+      Integer primary key of the inserted row.
     """
     self._ReflectToMetadata()
-    ins = self._meta.tables[table].insert()
-    r = self._Execute(ins, values)
+    ins = self._meta.tables[table].insert().values(values)
+    r = self._Execute(ins)
     return r.inserted_primary_key[0]
 
   def _InsertMany(self, table, values):
@@ -279,9 +275,16 @@ class SchemaVersionedMySQLConnection(object):
     Returns:
       The number of inserted rows.
     """
+    # sqlalchemy 0.7 and prior has a bug in which it does not always
+    # correctly unpack a list of rows to multi-insert if the list contains
+    # only one item.
+    if len(values) == 1:
+      self._Insert(table, values[0])
+      return 1
+
     self._ReflectToMetadata()
-    ins = self._meta.tables[table].insert()
-    r = self._Execute(ins, values)
+    ins = self._meta.tables[table].insert().values(values)
+    r = self._Execute(ins)
     return r.rowcount
 
   def _GetPrimaryKey(self, table):
@@ -330,8 +333,9 @@ class SchemaVersionedMySQLConnection(object):
     """
     self._ReflectToMetadata()
     primary_key = self._GetPrimaryKey(table)
-    upd = self._meta.tables[table].update().where(primary_key==row_id)
-    r = self._Execute(upd, values)
+    upd = self._meta.tables[table].update().where(primary_key==row_id
+                                                  ).values(values)
+    r = self._Execute(upd)
     return r.rowcount
 
   def _UpdateWhere(self, table, where, values):
@@ -459,8 +463,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
   @minimum_schema(2)
   def InsertBuild(self, builder_name, waterfall, build_number,
-                  build_config, bot_hostname, start_time=None,
-                  master_build_id=None):
+                  build_config, bot_hostname,  master_build_id=None):
     """Insert a build row.
 
     Args:
@@ -469,13 +472,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       build_number: buildbot build number.
       build_config: cbuildbot config of build
       bot_hostname: hostname of bot running the build
-      start_time: (Optional) Unix timestamp of build start time. If None,
-                  current time will be used.
       master_build_id: (Optional) primary key of master build to this build.
     """
-    start_time = start_time or time.time()
-    dt = datetime.datetime.fromtimestamp(start_time)
-
     return self._Insert('buildTable', {'builder_name': builder_name,
                                        'buildbot_generation':
                                          constants.BUILDBOT_GENERATION,
@@ -483,7 +481,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                                        'build_number': build_number,
                                        'build_config' : build_config,
                                        'bot_hostname': bot_hostname,
-                                       'start_time' : dt,
+                                       'start_time' :
+                                           sqlalchemy.func.current_timestamp(),
                                        'master_build_id' : master_build_id}
                         )
 
@@ -511,7 +510,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       change_number = cl_action[0]['gerrit_number']
       patch_number = cl_action[0]['patch_number']
       action = cl_action[1]
-      timestamp = cl_action[2]
       reason = cl_action[3]
       values.append({
           'build_id' : build_id,
@@ -519,7 +517,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
           'change_number': change_number,
           'patch_number' : patch_number,
           'action' : action,
-          'timestamp' : datetime.datetime.fromtimestamp(timestamp),
           'reason' : reason})
 
     return self._InsertMany('clActionTable', values)
@@ -635,8 +632,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
 
   @minimum_schema(2)
-  def FinishBuild(self, build_id, finish_time=None, status=None,
-                  status_pickle=None):
+  def FinishBuild(self, build_id, status=None, status_pickle=None):
     """Update the given build row, marking it as finished.
 
     This should be called once per build, as the last update to the build.
@@ -644,19 +640,14 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     Args:
       build_id: id of row to update.
-      finish_time: Unix timestamp of build finish time. If None, current time
-                   will be used.
       status: Final build status, one of
               manifest_version.BuilderStatus.COMPLETED_STATUSES.
       status_pickle: Pickled manifest_version.BuilderStatus.
     """
     self._ReflectToMetadata()
-    finish_time = finish_time or time.time()
-    dt = datetime.datetime.fromtimestamp(finish_time)
-
-    # TODO(akeshet) atomically update the final field of metadata to
-    # True
-    self._Update('buildTable', build_id, {'finish_time' : dt,
+    # The current timestamp is evaluated on the database, not locally.
+    current_timestamp = sqlalchemy.func.current_timestamp()
+    self._Update('buildTable', build_id, {'finish_time' : current_timestamp,
                                           'status' : status,
                                           'status_pickle' : status_pickle,
                                           'final' : True})
