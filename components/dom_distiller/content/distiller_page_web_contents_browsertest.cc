@@ -17,6 +17,7 @@
 #include "content/shell/browser/shell.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/dom_distiller_js/dom_distiller.pb.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::ContentBrowserTest;
@@ -47,9 +48,10 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
                    this));
   }
 
-  void OnPageDistillationFinished(scoped_ptr<DistilledPageInfo> distilled_page,
-                                  bool distillation_successful) {
-    page_info_ = distilled_page.Pass();
+  void OnPageDistillationFinished(
+      scoped_ptr<proto::DomDistillerResult> distiller_result,
+      bool distillation_successful) {
+    distiller_result_ = distiller_result.Pass();
     quit_closure_.Run();
   }
 
@@ -79,7 +81,7 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
 
   DistillerPageWebContents* distiller_page_;
   base::Closure quit_closure_;
-  scoped_ptr<DistilledPageInfo> page_info_;
+  scoped_ptr<proto::DomDistillerResult> distiller_result_;
 };
 
 // Use this class to be able to leak the WebContents, which is needed for when
@@ -169,11 +171,13 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, BasicDistillationWorks) {
   DistillPage(run_loop.QuitClosure(), kSimpleArticlePath);
   run_loop.Run();
 
-  EXPECT_EQ("Test Page Title", page_info_.get()->title);
-  EXPECT_THAT(page_info_.get()->html, HasSubstr("Lorem ipsum"));
-  EXPECT_THAT(page_info_.get()->html, Not(HasSubstr("questionable content")));
-  EXPECT_EQ("", page_info_.get()->next_page_url);
-  EXPECT_EQ("", page_info_.get()->prev_page_url);
+  EXPECT_EQ("Test Page Title", distiller_result_->title());
+  EXPECT_THAT(distiller_result_->distilled_content().html(),
+              HasSubstr("Lorem ipsum"));
+  EXPECT_THAT(distiller_result_->distilled_content().html(),
+              Not(HasSubstr("questionable content")));
+  EXPECT_EQ("", distiller_result_->pagination_info().next_page());
+  EXPECT_EQ("", distiller_result_->pagination_info().prev_page());
 }
 
 IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeLinks) {
@@ -188,9 +192,9 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeLinks) {
   run_loop.Run();
 
   // A relative link should've been updated.
-  EXPECT_THAT(page_info_.get()->html,
+  EXPECT_THAT(distiller_result_->distilled_content().html(),
               ContainsRegex("href=\"http://127.0.0.1:.*/relativelink.html\""));
-  EXPECT_THAT(page_info_.get()->html,
+  EXPECT_THAT(distiller_result_->distilled_content().html(),
               HasSubstr("href=\"http://www.google.com/absolutelink.html\""));
 }
 
@@ -206,9 +210,9 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeImages) {
   run_loop.Run();
 
   // A relative link should've been updated.
-  EXPECT_THAT(page_info_.get()->html,
+  EXPECT_THAT(distiller_result_->distilled_content().html(),
               ContainsRegex("src=\"http://127.0.0.1:.*/relativeimage.png\""));
-  EXPECT_THAT(page_info_.get()->html,
+  EXPECT_THAT(distiller_result_->distilled_content().html(),
               HasSubstr("src=\"http://www.google.com/absoluteimage.png\""));
 }
 
@@ -225,18 +229,15 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeVideos) {
   run_loop.Run();
 
   // A relative source/track should've been updated.
+  EXPECT_THAT(distiller_result_->distilled_content().html(),
+              ContainsRegex("src=\"http://127.0.0.1:.*/relative_video.mp4\""));
   EXPECT_THAT(
-      page_info_.get()->html,
-      ContainsRegex("src=\"http://127.0.0.1:.*/relative_video.mp4\""));
-  EXPECT_THAT(
-      page_info_.get()->html,
+      distiller_result_->distilled_content().html(),
       ContainsRegex("src=\"http://127.0.0.1:.*/relative_track_en.vtt\""));
-  EXPECT_THAT(
-      page_info_.get()->html,
-      HasSubstr("src=\"http://www.google.com/absolute_video.ogg\""));
-  EXPECT_THAT(
-      page_info_.get()->html,
-      HasSubstr("src=\"http://www.google.com/absolute_track_fr.vtt\""));
+  EXPECT_THAT(distiller_result_->distilled_content().html(),
+              HasSubstr("src=\"http://www.google.com/absolute_video.ogg\""));
+  EXPECT_THAT(distiller_result_->distilled_content().html(),
+              HasSubstr("src=\"http://www.google.com/absolute_track_fr.vtt\""));
 }
 
 IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, VisibilityDetection) {
@@ -253,14 +254,16 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, VisibilityDetection) {
     base::RunLoop run_loop;
     DistillPage(run_loop.QuitClosure(), "/visible_style.html");
     run_loop.Run();
-    EXPECT_THAT(page_info_.get()->html, HasSubstr("Lorem ipsum"));
+    EXPECT_THAT(distiller_result_->distilled_content().html(),
+                HasSubstr("Lorem ipsum"));
   }
 
   {
     base::RunLoop run_loop;
     DistillPage(run_loop.QuitClosure(), "/invisible_style.html");
     run_loop.Run();
-    EXPECT_THAT(page_info_.get()->html, Not(HasSubstr("Lorem ipsum")));
+    EXPECT_THAT(distiller_result_->distilled_content().html(),
+                Not(HasSubstr("Lorem ipsum")));
   }
 }
 
@@ -350,7 +353,7 @@ void DistillerPageWebContentsTest::RunUseCurrentWebContentsTest(
 
   // Sanity check of distillation process.
   EXPECT_EQ(expect_new_web_contents, distiller_page.new_web_contents_created());
-  EXPECT_EQ("Test Page Title", page_info_.get()->title);
+  EXPECT_EQ("Test Page Title", distiller_result_->title());
 }
 
 IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, MarkupInfo) {
@@ -364,43 +367,44 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, MarkupInfo) {
   DistillPage(run_loop.QuitClosure(), "/markup_article.html");
   run_loop.Run();
 
-  EXPECT_THAT(page_info_.get()->html, HasSubstr("Lorem ipsum"));
-  EXPECT_EQ("Marked-up Markup Test Page Title", page_info_.get()->title);
+  EXPECT_THAT(distiller_result_->distilled_content().html(),
+              HasSubstr("Lorem ipsum"));
+  EXPECT_EQ("Marked-up Markup Test Page Title", distiller_result_->title());
 
-  const DistilledPageInfo::MarkupInfo& markup_info = page_info_->markup_info;
-  EXPECT_EQ("Marked-up Markup Test Page Title", markup_info.title);
-  EXPECT_EQ("Article", markup_info.type);
-  EXPECT_EQ("http://test/markup.html", markup_info.url);
-  EXPECT_EQ("This page tests Markup Info.", markup_info.description);
-  EXPECT_EQ("Whoever Published", markup_info.publisher);
-  EXPECT_EQ("Copyright 2000-2014 Whoever Copyrighted", markup_info.copyright);
-  EXPECT_EQ("Whoever Authored", markup_info.author);
+  const proto::MarkupInfo markup_info = distiller_result_->markup_info();
+  EXPECT_EQ("Marked-up Markup Test Page Title", markup_info.title());
+  EXPECT_EQ("Article", markup_info.type());
+  EXPECT_EQ("http://test/markup.html", markup_info.url());
+  EXPECT_EQ("This page tests Markup Info.", markup_info.description());
+  EXPECT_EQ("Whoever Published", markup_info.publisher());
+  EXPECT_EQ("Copyright 2000-2014 Whoever Copyrighted", markup_info.copyright());
+  EXPECT_EQ("Whoever Authored", markup_info.author());
 
-  const DistilledPageInfo::MarkupArticle& markup_article = markup_info.article;
-  EXPECT_EQ("Whatever Section", markup_article.section);
-  EXPECT_EQ("July 23, 2014", markup_article.published_time);
-  EXPECT_EQ("2014-07-23T23:59", markup_article.modified_time);
-  EXPECT_EQ("", markup_article.expiration_time);
-  ASSERT_EQ(1U, markup_article.authors.size());
-  EXPECT_EQ("Whoever Authored", markup_article.authors[0]);
+  const proto::MarkupArticle markup_article = markup_info.article();
+  EXPECT_EQ("Whatever Section", markup_article.section());
+  EXPECT_EQ("July 23, 2014", markup_article.published_time());
+  EXPECT_EQ("2014-07-23T23:59", markup_article.modified_time());
+  EXPECT_EQ("", markup_article.expiration_time());
+  ASSERT_EQ(1, markup_article.authors_size());
+  EXPECT_EQ("Whoever Authored", markup_article.authors(0));
 
-  ASSERT_EQ(2U, markup_info.images.size());
+  ASSERT_EQ(2, markup_info.images_size());
 
-  const DistilledPageInfo::MarkupImage& markup_image1 = markup_info.images[0];
-  EXPECT_EQ("http://test/markup1.jpeg", markup_image1.url);
-  EXPECT_EQ("https://test/markup1.jpeg", markup_image1.secure_url);
-  EXPECT_EQ("jpeg", markup_image1.type);
-  EXPECT_EQ("", markup_image1.caption);
-  EXPECT_EQ(600, markup_image1.width);
-  EXPECT_EQ(400, markup_image1.height);
+  const proto::MarkupImage markup_image1 = markup_info.images(0);
+  EXPECT_EQ("http://test/markup1.jpeg", markup_image1.url());
+  EXPECT_EQ("https://test/markup1.jpeg", markup_image1.secure_url());
+  EXPECT_EQ("jpeg", markup_image1.type());
+  EXPECT_EQ("", markup_image1.caption());
+  EXPECT_EQ(600, markup_image1.width());
+  EXPECT_EQ(400, markup_image1.height());
 
-  const DistilledPageInfo::MarkupImage& markup_image2 = markup_info.images[1];
-  EXPECT_EQ("http://test/markup2.gif", markup_image2.url);
-  EXPECT_EQ("https://test/markup2.gif", markup_image2.secure_url);
-  EXPECT_EQ("gif", markup_image2.type);
-  EXPECT_EQ("", markup_image2.caption);
-  EXPECT_EQ(1000, markup_image2.width);
-  EXPECT_EQ(600, markup_image2.height);
+  const proto::MarkupImage markup_image2 = markup_info.images(1);
+  EXPECT_EQ("http://test/markup2.gif", markup_image2.url());
+  EXPECT_EQ("https://test/markup2.gif", markup_image2.secure_url());
+  EXPECT_EQ("gif", markup_image2.type());
+  EXPECT_EQ("", markup_image2.caption());
+  EXPECT_EQ(1000, markup_image2.width());
+  EXPECT_EQ(600, markup_image2.height());
 }
 
 }  // namespace dom_distiller

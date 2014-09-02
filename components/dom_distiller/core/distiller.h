@@ -107,10 +107,11 @@ class DistillerImpl : public Distiller {
                         const std::string& id,
                         const std::string& response);
 
-  void OnPageDistillationFinished(int page_num,
-                                  const GURL& page_url,
-                                  scoped_ptr<DistilledPageInfo> distilled_page,
-                                  bool distillation_successful);
+  void OnPageDistillationFinished(
+      int page_num,
+      const GURL& page_url,
+      scoped_ptr<proto::DomDistillerResult> distilled_page,
+      bool distillation_successful);
 
   virtual void FetchImage(int page_num,
                           const std::string& image_id,

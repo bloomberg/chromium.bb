@@ -17,59 +17,6 @@
 
 namespace dom_distiller {
 
-struct DistilledPageInfo {
-  struct MarkupArticle {
-    std::string published_time;
-    std::string modified_time;
-    std::string expiration_time;
-    std::string section;
-    std::vector<std::string> authors;
-
-    MarkupArticle();
-    ~MarkupArticle();
-  };
-
-  struct MarkupImage {
-    std::string url;
-    std::string secure_url;
-    std::string type;
-    std::string caption;
-    int width;
-    int height;
-
-    MarkupImage();
-    ~MarkupImage();
-  };
-
-  struct MarkupInfo {
-    std::string title;
-    std::string type;
-    std::string url;
-    std::string description;
-    std::string publisher;
-    std::string copyright;
-    std::string author;
-    MarkupArticle article;
-    std::vector<MarkupImage> images;
-
-    MarkupInfo();
-    ~MarkupInfo();
-  };
-
-  std::string title;
-  std::string html;
-  std::string next_page_url;
-  std::string prev_page_url;
-  std::vector<std::string> image_urls;
-  MarkupInfo markup_info;
-
-  DistilledPageInfo();
-  ~DistilledPageInfo();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DistilledPageInfo);
-};
-
 class SourcePageHandle {
  public:
   virtual ~SourcePageHandle() {}
@@ -82,9 +29,9 @@ class SourcePageHandle {
 // thrown away without ever being used.
 class DistillerPage {
  public:
-  typedef base::Callback<void(scoped_ptr<DistilledPageInfo> distilled_page,
-                              bool distillation_successful)>
-      DistillerPageCallback;
+  typedef base::Callback<
+      void(scoped_ptr<proto::DomDistillerResult> distilled_page,
+           bool distillation_successful)> DistillerPageCallback;
 
   DistillerPage();
   virtual ~DistillerPage();
@@ -94,7 +41,7 @@ class DistillerPage {
   // for a given |url| and |options|, any DistillerPage implementation will
   // extract the same content.
   void DistillPage(const GURL& url,
-                   const dom_distiller::proto::DomDistillerOptions options,
+                   const proto::DomDistillerOptions options,
                    const DistillerPageCallback& callback);
 
   // Called when the JavaScript execution completes. |page_url| is the url of
