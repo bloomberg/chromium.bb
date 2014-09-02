@@ -13,7 +13,6 @@
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #import "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -519,10 +518,7 @@ NSColor* IdentityVerifiedTextColor() {
 // Handler for the link button to revoke user certificate decisions.
 - (void)resetCertificateDecisions:(id)sender {
   DCHECK(resetDecisionsButton_);
-  ChromeSSLHostStateDelegate* delegate =
-      presenter_->chrome_ssl_host_state_delegate();
-  DCHECK(delegate);
-  delegate->RevokeUserDecisionsHard(presenter_->site_url().host());
+  presenter_->OnRevokeSSLErrorBypassButtonPressed();
   [self close];
 }
 

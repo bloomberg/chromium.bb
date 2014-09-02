@@ -11,7 +11,6 @@
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
@@ -382,12 +381,8 @@ void WebsiteSettingsPopupView::OnWidgetDestroying(views::Widget* widget) {
 
 void WebsiteSettingsPopupView::ButtonPressed(views::Button* button,
                                              const ui::Event& event) {
-  if (button == reset_decisions_button_) {
-    ChromeSSLHostStateDelegate* delegate =
-        presenter_->chrome_ssl_host_state_delegate();
-    DCHECK(delegate);
-    delegate->RevokeUserDecisionsHard(presenter_->site_url().host());
-  }
+  if (button == reset_decisions_button_)
+    presenter_->OnRevokeSSLErrorBypassButtonPressed();
   GetWidget()->Close();
 }
 

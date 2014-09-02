@@ -10478,6 +10478,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="interstitial.ssl.did_user_revoke_decisions"
+    enum="BooleanRevoked">
+  <owner>jww@chromium.org</owner>
+  <summary>
+    Specifies when a user enters the page info menu whether or not the user
+    pressed the SSL decisions revoke button. This can only by done if the user
+    is in the &quot;Remember Certificate Error Decisions&quot; experiment. This
+    is logged when the page info UI is closed.
+  </summary>
+</histogram>
+
 <histogram name="interstitial.ssl.expiration_and_decision.nonoverridable"
     enum="SSLIsExpiredAndDecision">
   <owner>jww@chromium.org</owner>
@@ -38154,6 +38165,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanReported" type="int">
   <int value="0" label="Not reported"/>
   <int value="1" label="Reported"/>
+</enum>
+
+<enum name="BooleanRevoked" type="int">
+  <int value="0" label="Not revoked"/>
+  <int value="1" label="Revoked"/>
 </enum>
 
 <enum name="BooleanSelected" type="int">

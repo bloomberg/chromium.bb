@@ -61,6 +61,13 @@ using content::BrowserThread;
 
 namespace {
 
+// Events for UMA. Do not reorder or change!
+enum SSLCertificateDecisionsDidRevoke {
+  USER_CERT_DECISIONS_NOT_REVOKED = 0,
+  USER_CERT_DECISIONS_REVOKED,
+  END_OF_SSL_CERTIFICATE_DECISIONS_DID_REVOKE_ENUM
+};
+
 // The list of content settings types to display on the Website Settings UI.
 ContentSettingsType kPermissionType[] = {
   CONTENT_SETTINGS_TYPE_IMAGES,
@@ -174,7 +181,8 @@ WebsiteSettings::WebsiteSettings(
       cert_store_(cert_store),
       content_settings_(profile->GetHostContentSettingsMap()),
       chrome_ssl_host_state_delegate_(
-          ChromeSSLHostStateDelegateFactory::GetForProfile(profile)) {
+          ChromeSSLHostStateDelegateFactory::GetForProfile(profile)),
+      did_revoke_user_ssl_decisions_(false) {
   Init(profile, url, ssl);
 
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
@@ -308,6 +316,20 @@ void WebsiteSettings::OnSiteDataAccessed() {
 void WebsiteSettings::OnUIClosing() {
   if (show_info_bar_)
     WebsiteSettingsInfoBarDelegate::Create(infobar_service_);
+
+  SSLCertificateDecisionsDidRevoke user_decision =
+      did_revoke_user_ssl_decisions_ ? USER_CERT_DECISIONS_REVOKED
+                                     : USER_CERT_DECISIONS_NOT_REVOKED;
+
+  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.did_user_revoke_decisions",
+                            user_decision,
+                            END_OF_SSL_CERTIFICATE_DECISIONS_DID_REVOKE_ENUM);
+}
+
+void WebsiteSettings::OnRevokeSSLErrorBypassButtonPressed() {
+  DCHECK(chrome_ssl_host_state_delegate_);
+  chrome_ssl_host_state_delegate_->RevokeUserDecisionsHard(site_url().host());
+  did_revoke_user_ssl_decisions_ = true;
 }
 
 void WebsiteSettings::Init(Profile* profile,
