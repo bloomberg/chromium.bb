@@ -1134,6 +1134,8 @@
     { "name": "xtream-hosting.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "xtream-hosting.eu", "include_subdomains": true, "mode": "force-https" },
     { "name": "xtreamhosting.eu", "include_subdomains": true, "mode": "force-https" },
+    { "name": "honeybadger.io", "mode": "force-https" },
+    { "name": "www.honeybadger.io", "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
