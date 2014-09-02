@@ -8,8 +8,17 @@
 namespace blink {
 
 struct WebBeginFrameArgs {
+    WebBeginFrameArgs(double lastFrameTimeMonotonic, double deadline, double interval)
+        : lastFrameTimeMonotonic(lastFrameTimeMonotonic)
+        , deadline(deadline)
+        , interval(interval)
+    { }
+
+    // TODO: Remove this constructor once Chromium has been updated.
     WebBeginFrameArgs(double lastFrameTimeMonotonic)
         : lastFrameTimeMonotonic(lastFrameTimeMonotonic)
+        , deadline(0)
+        , interval(0)
     { }
 
     // FIXME: Upgrade the time in CLOCK_MONOTONIC values to use a TimeTick like
@@ -20,6 +29,12 @@ struct WebBeginFrameArgs {
 
     // Time in CLOCK_MONOTONIC that is the most recent vsync time.
     double lastFrameTimeMonotonic;
+
+    // Time in CLOCK_MONOTONIC by which the renderer should finish producing the current frame. 0 means a deadline wasn't set.
+    double deadline;
+
+    // Expected delta between two successive frame times. 0 if a regular interval isn't available.
+    double interval;
 };
 
 } // namespace blink

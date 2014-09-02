@@ -96,6 +96,11 @@ public:
     }
     virtual void beginFrame(const WebBeginFrameArgs& frameTime) { }
 
+    // Called to notify that a previously begun frame was finished and
+    // committed to the compositor. This is used to schedule lower priority
+    // work after tasks such as input processing and painting.
+    virtual void didCommitFrameToCompositor() { }
+
     // Called to layout the WebWidget. This MUST be called before Paint,
     // and it may result in calls to WebWidgetClient::didInvalidateRect.
     virtual void layout() { }

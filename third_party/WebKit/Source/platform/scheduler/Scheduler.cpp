@@ -126,6 +126,16 @@ Scheduler::~Scheduler()
     }
 }
 
+void Scheduler::willBeginFrame(const WebBeginFrameArgs& args)
+{
+    // TODO: Use frame deadline and interval to schedule idle tasks.
+}
+
+void Scheduler::didCommitFrameToCompositor()
+{
+    // TODO: Trigger the frame deadline immediately.
+}
+
 void Scheduler::scheduleIdleTask(const TraceLocation& location, const IdleTask& idleTask)
 {
     // TODO: send a real allottedTime here.

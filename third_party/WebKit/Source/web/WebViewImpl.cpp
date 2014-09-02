@@ -110,6 +110,7 @@
 #include "platform/graphics/Color.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/scheduler/Scheduler.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/Platform.h"
@@ -1733,13 +1734,15 @@ void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
 {
     TRACE_EVENT0("blink", "WebViewImpl::beginFrame");
 
-    double monotonicFrameBeginTime = frameTime.lastFrameTimeMonotonic;
-    if (!monotonicFrameBeginTime)
-        monotonicFrameBeginTime = monotonicallyIncreasingTime();
+    WebBeginFrameArgs validFrameTime(frameTime);
+    if (!validFrameTime.lastFrameTimeMonotonic)
+        validFrameTime.lastFrameTimeMonotonic = monotonicallyIncreasingTime();
+
+    Scheduler::shared()->willBeginFrame(validFrameTime);
 
     // Create synthetic wheel events as necessary for fling.
     if (m_gestureAnimation) {
-        if (m_gestureAnimation->animate(monotonicFrameBeginTime))
+        if (m_gestureAnimation->animate(validFrameTime.lastFrameTimeMonotonic))
             scheduleAnimation();
         else {
             endActiveFlingAnimation();
@@ -1757,12 +1760,17 @@ void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
     if (!m_page)
         return;
 
-    PageWidgetDelegate::animate(m_page.get(), monotonicFrameBeginTime);
+    PageWidgetDelegate::animate(m_page.get(), validFrameTime.lastFrameTimeMonotonic);
 
     if (m_continuousPaintingEnabled) {
         ContinuousPainter::setNeedsDisplayRecursive(m_rootGraphicsLayer, m_pageOverlays.get());
         m_client->scheduleAnimation();
     }
+}
+
+void WebViewImpl::didCommitFrameToCompositor()
+{
+    Scheduler::shared()->didCommitFrameToCompositor();
 }
 
 void WebViewImpl::layout()

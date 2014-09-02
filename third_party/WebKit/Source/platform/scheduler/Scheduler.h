@@ -13,12 +13,12 @@
 #include "wtf/ThreadingPrimitives.h"
 
 namespace blink {
+class WebThread;
+struct WebBeginFrameArgs;
 
 // The scheduler is an opinionated gateway for arranging work to be run on the
 // main thread. It decides which tasks get priority over others based on a
 // scheduling policy and the overall system state.
-class WebThread;
-
 class PLATFORM_EXPORT Scheduler {
     WTF_MAKE_NONCOPYABLE(Scheduler);
 public:
@@ -29,6 +29,12 @@ public:
     static Scheduler* shared();
     static void initializeOnMainThread();
     static void shutdown();
+
+    // Called to notify about the start of a new frame.
+    void willBeginFrame(const WebBeginFrameArgs&);
+
+    // Called to notify that a previously begun frame was committed.
+    void didCommitFrameToCompositor();
 
     // The following entrypoints are used to schedule different types of tasks
     // to be run on the main thread. They can be called from any thread.

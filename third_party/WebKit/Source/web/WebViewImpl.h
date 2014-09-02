@@ -96,6 +96,7 @@ public:
     virtual void didExitFullScreen() OVERRIDE;
 
     virtual void beginFrame(const WebBeginFrameArgs&) OVERRIDE;
+    virtual void didCommitFrameToCompositor() OVERRIDE;
 
     virtual void layout() OVERRIDE;
     virtual void paint(WebCanvas*, const WebRect&) OVERRIDE;
