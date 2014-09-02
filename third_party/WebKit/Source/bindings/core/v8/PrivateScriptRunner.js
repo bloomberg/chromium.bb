@@ -5,23 +5,38 @@
 "use strict";
 
 var installedClasses = {};
-var domExceptionCode = {};
+var PrivateScriptDOMException = {};
+var PrivateScriptJSError = {};
 
-function DOMExceptionInPrivateScript(code, message)
+// Private scripts can throw JS errors and DOM exceptions as follows:
+//     throwException(PrivateScriptDOMException.IndexSizeError, "...");
+//     throwException(PrivateScriptJSError.TypeError, "...");
+//
+// Note that normal JS errors thrown by private scripts are treated
+// as real JS errors caused by programming mistake and the execution crashes.
+// If you want to intentially throw JS errors from private scripts,
+// you need to use throwException(PrivateScriptJSError.TypeError, "...").
+function throwException(code, message)
 {
-    this.code = domExceptionCode[code] || 0;
-    this.message = message;
-    this.name = "DOMExceptionInPrivateScript";
+    function PrivateScriptException()
+    {
+    }
+
+    var exception = new PrivateScriptException();
+    exception.code = code;
+    exception.message = message;
+    exception.name = "PrivateScriptException";
+    throw exception;
 }
 
 function installClass(className, implementation)
 {
-    function privateScriptClass()
+    function PrivateScriptClass()
     {
     }
 
     if (!(className in installedClasses))
-        installedClasses[className] = new privateScriptClass();
+        installedClasses[className] = new PrivateScriptClass();
     implementation(installedClasses[className]);
 }
 
@@ -79,11 +94,27 @@ function installClass(className, implementation)
         "OperationError",
     ];
 
+    // This list must be in sync with the enum in ExceptionCode.h. The order matters.
+    var jsErrors = [
+        "Error",
+        "TypeError",
+        "RangeError",
+        "SyntaxError",
+        "ReferenceError",
+    ];
+
     var code = 1;
     domExceptions.forEach(function (exception) {
-        global.domExceptionCode[exception] = code;
-        code++;
+        global.PrivateScriptDOMException[exception] = code;
+        ++code;
     });
+
+    var code = 1000;
+    jsErrors.forEach(function (exception) {
+        global.PrivateScriptJSError[exception] = code;
+        ++code;
+    });
+
 })(window);
 
 // This line must be the last statement of this JS file.

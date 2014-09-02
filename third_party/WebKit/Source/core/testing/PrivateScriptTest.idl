@@ -35,7 +35,6 @@
     [ImplementedInPrivateScript] void voidMethodThrowsRangeError();
     [ImplementedInPrivateScript] void voidMethodThrowsSyntaxError();
     [ImplementedInPrivateScript] void voidMethodThrowsReferenceError();
-    [ImplementedInPrivateScript] void voidMethodWithStackOverflow();
     [ImplementedInPrivateScript, OnlyExposedToPrivateScript] short addIntegerForPrivateScriptOnly(short value1, short value2);
     [ImplementedInPrivateScript, OnlyExposedToPrivateScript] attribute DOMString stringAttributeForPrivateScriptOnly;
     [ImplementedInPrivateScript] short addIntegerImplementedInCPP(short value1, short value2);

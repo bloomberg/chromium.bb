@@ -196,7 +196,7 @@ installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
         },
         set: function(value) {
             if (value < 0)
-                throw new DOMExceptionInPrivateScript("IndexSizeError", "The provided value (" + value + ") is negative.");
+                throwException(PrivateScriptDOMException.IndexSizeError, "The provided value (" + value + ") is negative.");
             this.setAttribute('scrollamount', value);
         },
     });
@@ -211,7 +211,7 @@ installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
         },
         set: function(value) {
             if (value < 0)
-                throw new DOMExceptionInPrivateScript("IndexSizeError", "The provided value (" + value + ") is negative.");
+                throwException(PrivateScriptDOMException.IndexSizeError, "The provided value (" + value + ") is negative.");
             this.setAttribute('scrolldelay', value);
         },
     });
@@ -226,7 +226,7 @@ installClass('HTMLMarqueeElement', function(HTMLMarqueeElementPrototype) {
         },
         set: function(value) {
             if (value <= 0 && value != -1)
-                throw new DOMExceptionInPrivateScript("IndexSizeError", "The provided value (" + value + ") is neither positive nor -1.");
+                throwException(PrivateScriptDOMException.IndexSizeError, "The provided value (" + value + ") is neither positive nor -1.");
             this.setAttribute('loop', value);
         },
     });

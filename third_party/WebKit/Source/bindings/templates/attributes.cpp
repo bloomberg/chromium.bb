@@ -361,10 +361,7 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeGetter(LocalFrame* 
     v8::TryCatch block;
     v8::Handle<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, "{{cpp_class}}", "{{attribute.name}}", holder);
     if (block.HasCaught()) {
-        if (!PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block)) {
-            // FIXME: We should support more exceptions.
-            RELEASE_ASSERT_NOT_REACHED();
-        }
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
         block.ReThrow();
         return false;
     }
@@ -397,10 +394,7 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
     v8::TryCatch block;
     PrivateScriptRunner::runDOMAttributeSetter(scriptState, "{{cpp_class}}", "{{attribute.name}}", holder, {{attribute.private_script_cpp_value_to_v8_value}});
     if (block.HasCaught()) {
-        if (!PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block)) {
-            // FIXME: We should support more exceptions.
-            RELEASE_ASSERT_NOT_REACHED();
-        }
+        PrivateScriptRunner::rethrowExceptionInPrivateScript(scriptState->isolate(), exceptionState, block);
         block.ReThrow();
         return false;
     }

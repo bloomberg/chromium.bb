@@ -39,15 +39,6 @@ static void dumpV8Message(v8::Handle<v8::Message> message)
     fprintf(stderr, "%s (line %d): %s\n", fileName.utf8().data(), lineNumber, toCoreString(errorMessage).utf8().data());
 }
 
-static void dumpJSError(String exceptionName, v8::Handle<v8::Message> message)
-{
-    // FIXME: Set a ScriptOrigin of the private script and print a more informative message.
-#ifndef NDEBUG
-    fprintf(stderr, "Private script throws an exception: %s\n", exceptionName.utf8().data());
-    dumpV8Message(message);
-#endif
-}
-
 static v8::Handle<v8::Value> compileAndRunPrivateScript(v8::Isolate* isolate, String scriptClassName, const unsigned char* source, size_t size)
 {
     v8::TryCatch block;
@@ -239,16 +230,14 @@ v8::Handle<v8::Value> PrivateScriptRunner::runDOMMethod(ScriptState* scriptState
     return V8ScriptRunner::callFunction(v8::Handle<v8::Function>::Cast(method), scriptState->executionContext(), holder, argc, argv, scriptState->isolate());
 }
 
-bool PrivateScriptRunner::rethrowExceptionInPrivateScript(v8::Isolate* isolate, ExceptionState& exceptionState, v8::TryCatch& block)
+void PrivateScriptRunner::rethrowExceptionInPrivateScript(v8::Isolate* isolate, ExceptionState& exceptionState, v8::TryCatch& block)
 {
     v8::Handle<v8::Value> exception = block.Exception();
-    if (exception.IsEmpty() || !exception->IsObject())
-        return false;
+    RELEASE_ASSERT(!exception.IsEmpty() && exception->IsObject());
 
     v8::Handle<v8::Object> exceptionObject = v8::Handle<v8::Object>::Cast(exception);
     v8::Handle<v8::Value> name = exceptionObject->Get(v8String(isolate, "name"));
-    if (name.IsEmpty() || !name->IsString())
-        return false;
+    RELEASE_ASSERT(!name.IsEmpty() && name->IsString());
 
     v8::Handle<v8::Message> tryCatchMessage = block.Message();
     v8::Handle<v8::Value> message = exceptionObject->Get(v8String(isolate, "message"));
@@ -257,44 +246,17 @@ bool PrivateScriptRunner::rethrowExceptionInPrivateScript(v8::Isolate* isolate, 
         messageString = toCoreString(v8::Handle<v8::String>::Cast(message));
 
     String exceptionName = toCoreString(v8::Handle<v8::String>::Cast(name));
-    if (exceptionName == "DOMExceptionInPrivateScript") {
+    if (exceptionName == "PrivateScriptException") {
         v8::Handle<v8::Value> code = exceptionObject->Get(v8String(isolate, "code"));
         RELEASE_ASSERT(!code.IsEmpty() && code->IsInt32());
         exceptionState.throwDOMException(toInt32(code), messageString);
         exceptionState.throwIfNeeded();
-        return true;
+        return;
     }
-    if (exceptionName == "Error") {
-        exceptionState.throwDOMException(V8GeneralError, messageString);
-        exceptionState.throwIfNeeded();
-        dumpJSError(exceptionName, tryCatchMessage);
-        return true;
-    }
-    if (exceptionName == "TypeError") {
-        exceptionState.throwDOMException(V8TypeError, messageString);
-        exceptionState.throwIfNeeded();
-        dumpJSError(exceptionName, tryCatchMessage);
-        return true;
-    }
-    if (exceptionName == "RangeError") {
-        exceptionState.throwDOMException(V8RangeError, messageString);
-        exceptionState.throwIfNeeded();
-        dumpJSError(exceptionName, tryCatchMessage);
-        return true;
-    }
-    if (exceptionName == "SyntaxError") {
-        exceptionState.throwDOMException(V8SyntaxError, messageString);
-        exceptionState.throwIfNeeded();
-        dumpJSError(exceptionName, tryCatchMessage);
-        return true;
-    }
-    if (exceptionName == "ReferenceError") {
-        exceptionState.throwDOMException(V8ReferenceError, messageString);
-        exceptionState.throwIfNeeded();
-        dumpJSError(exceptionName, tryCatchMessage);
-        return true;
-    }
-    return false;
+
+    fprintf(stderr, "Private script error: %s was thrown.\n", exceptionName.utf8().data());
+    dumpV8Message(tryCatchMessage);
+    RELEASE_ASSERT_NOT_REACHED();
 }
 
 } // namespace blink
