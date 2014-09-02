@@ -147,8 +147,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupIframe) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("window_open").AppendASCII("popup_iframe")));
 
-  const int num_tabs = 0;
-  const int num_popups = 1;
+  const int num_tabs = 1;
+  const int num_popups = 0;
   EXPECT_TRUE(WaitForTabsAndPopups(browser(), num_tabs, num_popups, 0));
 }
 

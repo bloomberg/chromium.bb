@@ -2027,15 +2027,6 @@ void RenderViewImpl::show(WebNavigationPolicy policy) {
 
   DCHECK(opener_id_ != MSG_ROUTING_NONE);
 
-  // Force new windows to a popup if they were not opened with a user gesture.
-  if (!opened_by_user_gesture_) {
-    // We exempt background tabs for compat with older versions of Chrome.
-    // TODO(darin): This seems bogus.  These should have a user gesture, so
-    // we probably don't need this check.
-    if (policy != blink::WebNavigationPolicyNewBackgroundTab)
-      policy = blink::WebNavigationPolicyNewPopup;
-  }
-
   // NOTE: initial_pos_ may still have its default values at this point, but
   // that's okay.  It'll be ignored if disposition is not NEW_POPUP, or the
   // browser process will impose a default position otherwise.
