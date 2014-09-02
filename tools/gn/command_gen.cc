@@ -25,20 +25,9 @@ const char kSwitchQuiet[] = "q";
 
 const char kSwitchCheck[] = "check";
 
-void BackgroundDoWrite(const Target* target,
-                       const std::vector<const Item*>& deps_for_visibility) {
-  // Validate visibility.
-  Err err;
-  for (size_t i = 0; i < deps_for_visibility.size(); i++) {
-    if (!Visibility::CheckItemVisibility(target, deps_for_visibility[i],
-                                         &err)) {
-      g_scheduler->FailWithError(err);
-      break;  // Don't return early since we need DecrementWorkCount below.
-    }
-  }
-
-  if (!err.has_error())
-    NinjaTargetWriter::RunAndWriteFile(target);
+// Called on worker thread to write the ninja file.
+void BackgroundDoWrite(const Target* target) {
+  NinjaTargetWriter::RunAndWriteFile(target);
   g_scheduler->DecrementWorkCount();
 }
 
@@ -51,16 +40,8 @@ void ItemResolvedCallback(base::subtle::Atomic32* write_counter,
   const Item* item = record->item();
   const Target* target = item->AsTarget();
   if (target) {
-    // Collect all dependencies.
-    std::vector<const Item*> deps;
-    for (BuilderRecord::BuilderRecordSet::const_iterator iter =
-             record->all_deps().begin();
-         iter != record->all_deps().end();
-         ++iter)
-      deps.push_back((*iter)->item());
-
     g_scheduler->IncrementWorkCount();
-    g_scheduler->ScheduleWork(base::Bind(&BackgroundDoWrite, target, deps));
+    g_scheduler->ScheduleWork(base::Bind(&BackgroundDoWrite, target));
   }
 }
 

@@ -36,7 +36,11 @@ struct LabelPtrPair {
 
   Label label;
   const T* ptr;  // May be NULL.
-  const ParseNode* origin;  // May be NULL.
+
+  // The origin of this dependency. This will be null for internally generated
+  // dependencies. This happens when a group is automatically expanded and that
+  // group's members are added to the target that depends on that group.
+  const ParseNode* origin;
 };
 
 typedef LabelPtrPair<Config> LabelConfigPair;

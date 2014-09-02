@@ -173,11 +173,12 @@ TEST(SubstutitionWriter, SourceSubstitutions) {
 
 TEST(SubstitutionWriter, TargetSubstitutions) {
   TestWithScope setup;
+  Err err;
 
   Target target(setup.settings(), Label(SourceDir("//foo/bar/"), "baz"));
   target.set_output_type(Target::STATIC_LIBRARY);
   target.SetToolchain(setup.toolchain());
-  target.OnResolved();
+  ASSERT_TRUE(target.OnResolved(&err));
 
   std::string result;
   EXPECT_TRUE(SubstitutionWriter::GetTargetSubstitution(
@@ -207,11 +208,12 @@ TEST(SubstitutionWriter, TargetSubstitutions) {
 
 TEST(SubstitutionWriter, CompilerSubstitutions) {
   TestWithScope setup;
+  Err err;
 
   Target target(setup.settings(), Label(SourceDir("//foo/bar/"), "baz"));
   target.set_output_type(Target::STATIC_LIBRARY);
   target.SetToolchain(setup.toolchain());
-  target.OnResolved();
+  ASSERT_TRUE(target.OnResolved(&err));
 
   // The compiler substitution is just source + target combined. So test one
   // of each of those classes of things to make sure this is hooked up.
@@ -227,11 +229,12 @@ TEST(SubstitutionWriter, CompilerSubstitutions) {
 
 TEST(SubstitutionWriter, LinkerSubstitutions) {
   TestWithScope setup;
+  Err err;
 
   Target target(setup.settings(), Label(SourceDir("//foo/bar/"), "baz"));
   target.set_output_type(Target::SHARED_LIBRARY);
   target.SetToolchain(setup.toolchain());
-  target.OnResolved();
+  ASSERT_TRUE(target.OnResolved(&err));
 
   const Tool* tool = setup.toolchain()->GetToolForTargetFinalOutput(&target);
 
@@ -246,7 +249,6 @@ TEST(SubstitutionWriter, LinkerSubstitutions) {
 
   // Test that we handle paths that end up in the root build dir properly
   // (no leading "./" or "/").
-  Err err;
   SubstitutionPattern pattern;
   ASSERT_TRUE(
       pattern.Parse("{{root_out_dir}}/{{target_output_name}}.so", NULL, &err));

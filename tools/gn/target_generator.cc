@@ -48,6 +48,10 @@ void TargetGenerator::Run() {
   if (err_->has_error())
     return;
 
+  FillTestonly();
+  if (err_->has_error())
+    return;
+
   if (!Visibility::FillItemVisibility(target_, scope_, err_))
     return;
 
@@ -215,6 +219,15 @@ void TargetGenerator::FillDependencies() {
   FillForwardDependentConfigs();
   if (err_->has_error())
     return;
+}
+
+void TargetGenerator::FillTestonly() {
+  const Value* value = scope_->GetValue(variables::kTestonly, true);
+  if (value) {
+    if (!value->VerifyTypeIs(Value::BOOLEAN, err_))
+      return;
+    target_->set_testonly(value->boolean_value());
+  }
 }
 
 void TargetGenerator::FillOutputs(bool allow_substitutions) {

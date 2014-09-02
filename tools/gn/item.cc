@@ -32,3 +32,7 @@ std::string Item::GetItemTypeName() const {
   NOTREACHED();
   return "this thing that I have no idea what it is";
 }
+
+bool Item::OnResolved(Err* err) {
+  return true;
+}

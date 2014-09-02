@@ -418,7 +418,9 @@ bool Builder::ResolveItem(BuilderRecord* record, Err* err) {
   }
 
   record->set_resolved(true);
-  record->item()->OnResolved();
+
+  if (!record->item()->OnResolved(err))
+    return false;
   if (!resolved_callback_.is_null())
     resolved_callback_.Run(record);
 

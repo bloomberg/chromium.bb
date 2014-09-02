@@ -48,8 +48,9 @@ class Item {
   std::string GetItemTypeName() const;
 
   // Called when this item is resolved, meaning it and all of its dependents
-  // have no unresolved deps.
-  virtual void OnResolved() {}
+  // have no unresolved deps. Returns true on success. Sets the error and
+  // returns false on failure.
+  virtual bool OnResolved(Err* err);
 
  private:
   const Settings* settings_;

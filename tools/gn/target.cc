@@ -39,6 +39,33 @@ void MergeAllDependentConfigsFrom(const Target* from_target,
   }
 }
 
+Err MakeTestOnlyError(const Target* from, const Target* to) {
+  return Err(from->defined_from(), "Test-only dependency not allowed.",
+      from->label().GetUserVisibleName(false) + "\n"
+      "which is NOT marked testonly can't depend on\n" +
+      to->label().GetUserVisibleName(false) + "\n"
+      "which is marked testonly. Only targets with \"testonly = true\"\n"
+      "can depend on other test-only targets.\n"
+      "\n"
+      "Either mark it test-only or don't do this dependency.");
+}
+
+// Inserts the given groups dependencies, starting at the given index of the
+// given vector. Returns the number of items inserted.
+size_t InsertGroupDeps(LabelTargetVector* vector,
+                       size_t insert_at,
+                       const Target* group) {
+  const LabelTargetVector& deps = group->deps();
+  vector->insert(vector->begin() + insert_at, deps.begin(), deps.end());
+
+  // Clear the origin of each of the insertions. This marks these dependencies
+  // as internally generated.
+  for (size_t i = insert_at; i < deps.size() + insert_at; i++)
+    (*vector)[i].origin = NULL;
+
+  return deps.size();
+}
+
 }  // namespace
 
 Target::Target(const Settings* settings, const Label& label)
@@ -46,6 +73,7 @@ Target::Target(const Settings* settings, const Label& label)
       output_type_(UNKNOWN),
       all_headers_public_(true),
       check_includes_(true),
+      testonly_(false),
       hard_dep_(false),
       toolchain_(NULL) {
 }
@@ -87,22 +115,11 @@ const Target* Target::AsTarget() const {
   return this;
 }
 
-void Target::OnResolved() {
+bool Target::OnResolved(Err* err) {
   DCHECK(output_type_ != UNKNOWN);
   DCHECK(toolchain_) << "Toolchain should have been set before resolving.";
 
-  // Convert any groups we depend on to just direct dependencies on that
-  // group's deps. We insert the new deps immediately after the group so that
-  // the ordering is preserved. We need to keep the original group so that any
-  // flags, etc. that it specifies itself are applied to us.
-  for (size_t i = 0; i < deps_.size(); i++) {
-    const Target* dep = deps_[i].ptr;
-    if (dep->output_type_ == GROUP) {
-      // TODO(brettw) bug 403488 this should also handle datadeps.
-      deps_.insert(deps_.begin() + i + 1, dep->deps_.begin(), dep->deps_.end());
-      i += dep->deps_.size();
-    }
-  }
+  ExpandGroups();
 
   // Copy our own dependent configs to the list of configs applying to us.
   configs_.Append(all_dependent_configs_.begin(), all_dependent_configs_.end());
@@ -130,6 +147,13 @@ void Target::OnResolved() {
   PullRecursiveHardDeps();
 
   FillOutputFiles();
+
+  if (!CheckVisibility(err))
+    return false;
+  if (!CheckTestonly(err))
+    return false;
+
+  return true;
 }
 
 bool Target::IsLinkable() const {
@@ -181,6 +205,19 @@ bool Target::SetToolchain(const Toolchain* toolchain, Err* err) {
                 toolchain->GetToolTypeForTargetFinalOutput(this)).c_str()));
   }
   return false;
+}
+
+void Target::ExpandGroups() {
+  // Convert any groups we depend on to just direct dependencies on that
+  // group's deps. We insert the new deps immediately after the group so that
+  // the ordering is preserved. We need to keep the original group so that any
+  // flags, etc. that it specifies itself are applied to us.
+  // TODO(brettw) bug 403488 this should also handle datadeps.
+  for (size_t i = 0; i < deps_.size(); i++) {
+    const Target* dep = deps_[i].ptr;
+    if (dep->output_type_ == GROUP)
+      i += InsertGroupDeps(&deps_, i + 1, dep);
+  }
 }
 
 void Target::PullDependentTargetInfo() {
@@ -305,4 +342,49 @@ void Target::FillOutputFiles() {
     default:
       NOTREACHED();
   }
+}
+
+bool Target::CheckVisibility(Err* err) const {
+  // Only check visibility when the origin of the dependency is non-null. These
+  // are dependencies added by the GN files. Internally added dependencies
+  // (expanded groups) will have a null origin. We don't want to check
+  // visibility for these, since the point of a group would often be to
+  // forward visibility.
+  for (size_t i = 0; i < deps_.size(); i++) {
+    if (deps_[i].origin &&
+        !Visibility::CheckItemVisibility(this, deps_[i].ptr, err))
+      return false;
+  }
+
+  for (size_t i = 0; i < datadeps_.size(); i++) {
+    if (deps_[i].origin &&
+        !Visibility::CheckItemVisibility(this, datadeps_[i].ptr, err))
+      return false;
+  }
+
+  return true;
+}
+
+bool Target::CheckTestonly(Err* err) const {
+  // If there current target is marked testonly, it can include both testonly
+  // and non-testonly targets, so there's nothing to check.
+  if (testonly())
+    return true;
+
+  // Verify no deps have "testonly" set.
+  for (size_t i = 0; i < deps_.size(); i++) {
+    if (deps_[i].ptr->testonly()) {
+      *err = MakeTestOnlyError(this, deps_[i].ptr);
+      return false;
+    }
+  }
+
+  for (size_t i = 0; i < datadeps_.size(); i++) {
+    if (datadeps_[i].ptr->testonly()) {
+      *err = MakeTestOnlyError(this, datadeps_[i].ptr);
+      return false;
+    }
+  }
+
+  return true;
 }

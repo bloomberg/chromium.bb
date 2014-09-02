@@ -28,6 +28,7 @@ struct IncludeWriter {
 
 TEST(ConfigValuesExtractors, IncludeOrdering) {
   TestWithScope setup;
+  Err err;
 
   // Construct a chain of dependencies: target -> dep1 -> dep2
   // Add representative values: cflags (opaque, always copied) and include_dirs
@@ -100,9 +101,9 @@ TEST(ConfigValuesExtractors, IncludeOrdering) {
       SourceDir("//target/"));
 
   // Mark targets resolved. This should push dependent configs.
-  dep2.OnResolved();
-  dep1.OnResolved();
-  target.OnResolved();
+  ASSERT_TRUE(dep2.OnResolved(&err));
+  ASSERT_TRUE(dep1.OnResolved(&err));
+  ASSERT_TRUE(target.OnResolved(&err));
 
   // Verify cflags by serializing.
   std::ostringstream flag_out;

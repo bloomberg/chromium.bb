@@ -53,7 +53,7 @@ class Target : public Item {
   // Item overrides.
   virtual Target* AsTarget() OVERRIDE;
   virtual const Target* AsTarget() const OVERRIDE;
-  virtual void OnResolved() OVERRIDE;
+  virtual bool OnResolved(Err* err) OVERRIDE;
 
   OutputType output_type() const { return output_type_; }
   void set_output_type(OutputType t) { output_type_ = t; }
@@ -94,6 +94,9 @@ class Target : public Item {
   // Whether this target's includes should be checked by "gn check".
   bool check_includes() const { return check_includes_; }
   void set_check_includes(bool ci) { check_includes_ = ci; }
+
+  bool testonly() const { return testonly_; }
+  void set_testonly(bool value) { testonly_ = value; }
 
   // Compile-time extra dependencies.
   const FileList& inputs() const { return inputs_; }
@@ -210,6 +213,8 @@ class Target : public Item {
   }
 
  private:
+  void ExpandGroups();
+
   // Pulls necessary information from dependencies to this one when all
   // dependencies have been resolved.
   void PullDependentTargetInfo();
@@ -222,6 +227,10 @@ class Target : public Item {
   // Fills the link and dependency output files when a target is resolved.
   void FillOutputFiles();
 
+  // Validates the given thing when a target is resolved.
+  bool CheckVisibility(Err* err) const;
+  bool CheckTestonly(Err* err) const;
+
   OutputType output_type_;
   std::string output_name_;
   std::string output_extension_;
@@ -230,6 +239,7 @@ class Target : public Item {
   bool all_headers_public_;
   FileList public_headers_;
   bool check_includes_;
+  bool testonly_;
   FileList inputs_;
   FileList data_;
 

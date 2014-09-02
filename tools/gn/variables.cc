@@ -795,6 +795,28 @@ const char kSources_Help[] =
     "\n"
     "  A list of files relative to the current buildfile.\n";
 
+const char kTestonly[] = "testonly";
+const char kTestonly_HelpShort[] =
+    "testonly: [boolean] Declares a target must only be used for testing.";
+const char kTestonly_Help[] =
+    "testonly: Declares a target must only be used for testing.\n"
+    "\n"
+    "  Boolean. Defaults to false.\n"
+    "\n"
+    "  When a target is marked \"testonly = true\", it must only be depended\n"
+    "  on by other test-only targets. Otherwise, GN will issue an error\n"
+    "  that the depenedency is not allowed.\n"
+    "\n"
+    "  This feature is intended to prevent accidentally shipping test code\n"
+    "  in a final product.\n"
+    "\n"
+    "Example\n"
+    "\n"
+    "  source_set(\"test_support\") {\n"
+    "    testonly = true\n"
+    "    ...\n"
+    "  }\n";
+
 const char kVisibility[] = "visibility";
 const char kVisibility_HelpShort[] =
     "visibility: [label list] A list of labels that can depend on a target.";
@@ -915,6 +937,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(Public)
     INSERT_VARIABLE(Script)
     INSERT_VARIABLE(Sources)
+    INSERT_VARIABLE(Testonly)
     INSERT_VARIABLE(Visibility)
   }
   return info_map;

@@ -13,6 +13,8 @@
 
 TEST(NinjaActionTargetWriter, WriteOutputFilesForBuildLine) {
   TestWithScope setup;
+  Err err;
+
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
 
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
@@ -22,7 +24,7 @@ TEST(NinjaActionTargetWriter, WriteOutputFilesForBuildLine) {
       "//out/Debug/gen/{{source_name_part}}.cc");
 
   target.SetToolchain(setup.toolchain());
-  target.OnResolved();
+  ASSERT_TRUE(target.OnResolved(&err));
 
   std::ostringstream out;
   NinjaActionTargetWriter writer(&target, out);
@@ -37,6 +39,8 @@ TEST(NinjaActionTargetWriter, WriteOutputFilesForBuildLine) {
 // Tests an action with no sources.
 TEST(NinjaActionTargetWriter, ActionNoSources) {
   TestWithScope setup;
+  Err err;
+
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   target.set_output_type(Target::ACTION);
@@ -48,7 +52,7 @@ TEST(NinjaActionTargetWriter, ActionNoSources) {
       SubstitutionList::MakeForTest("//out/Debug/foo.out");
 
   target.SetToolchain(setup.toolchain());
-  target.OnResolved();
+  ASSERT_TRUE(target.OnResolved(&err));
 
   setup.settings()->set_target_os(Settings::LINUX);
   setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
@@ -76,6 +80,8 @@ TEST(NinjaActionTargetWriter, ActionNoSources) {
 // both sources and inputs (ACTION_FOREACH treats the sources differently).
 TEST(NinjaActionTargetWriter, ActionWithSources) {
   TestWithScope setup;
+  Err err;
+
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   target.set_output_type(Target::ACTION);
@@ -89,7 +95,7 @@ TEST(NinjaActionTargetWriter, ActionWithSources) {
       SubstitutionList::MakeForTest("//out/Debug/foo.out");
 
   target.SetToolchain(setup.toolchain());
-  target.OnResolved();
+  ASSERT_TRUE(target.OnResolved(&err));
 
   // Posix.
   {
@@ -146,6 +152,8 @@ TEST(NinjaActionTargetWriter, ActionWithSources) {
 
 TEST(NinjaActionTargetWriter, ForEach) {
   TestWithScope setup;
+  Err err;
+
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
 
   // Some dependencies that the action can depend on. Use actions for these
@@ -155,12 +163,12 @@ TEST(NinjaActionTargetWriter, ForEach) {
   Target dep(setup.settings(), Label(SourceDir("//foo/"), "dep"));
   dep.set_output_type(Target::ACTION);
   dep.SetToolchain(setup.toolchain());
-  dep.OnResolved();
+  ASSERT_TRUE(dep.OnResolved(&err));
 
   Target datadep(setup.settings(), Label(SourceDir("//foo/"), "datadep"));
   datadep.set_output_type(Target::ACTION);
   datadep.SetToolchain(setup.toolchain());
-  datadep.OnResolved();
+  ASSERT_TRUE(datadep.OnResolved(&err));
 
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   target.set_output_type(Target::ACTION_FOREACH);
@@ -182,7 +190,7 @@ TEST(NinjaActionTargetWriter, ForEach) {
   target.inputs().push_back(SourceFile("//foo/included.txt"));
 
   target.SetToolchain(setup.toolchain());
-  target.OnResolved();
+  ASSERT_TRUE(target.OnResolved(&err));
 
   // Posix.
   {
@@ -268,6 +276,8 @@ TEST(NinjaActionTargetWriter, ForEach) {
 
 TEST(NinjaActionTargetWriter, ForEachWithDepfile) {
   TestWithScope setup;
+  Err err;
+
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
   target.set_output_type(Target::ACTION_FOREACH);
@@ -278,10 +288,9 @@ TEST(NinjaActionTargetWriter, ForEachWithDepfile) {
   target.action_values().set_script(SourceFile("//foo/script.py"));
 
   target.SetToolchain(setup.toolchain());
-  target.OnResolved();
+  ASSERT_TRUE(target.OnResolved(&err));
 
   SubstitutionPattern depfile;
-  Err err;
   ASSERT_TRUE(
       depfile.Parse("//out/Debug/gen/{{source_name_part}}.d", NULL, &err));
   target.action_values().set_depfile(depfile);

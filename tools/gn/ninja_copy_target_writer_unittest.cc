@@ -13,6 +13,7 @@
 // Tests mutliple files with an output pattern and no toolchain dependency.
 TEST(NinjaCopyTargetWriter, Run) {
   TestWithScope setup;
+  Err err;
 
   setup.settings()->set_target_os(Settings::LINUX);
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
@@ -26,7 +27,7 @@ TEST(NinjaCopyTargetWriter, Run) {
       SubstitutionList::MakeForTest("//out/Debug/{{source_name_part}}.out");
 
   target.SetToolchain(setup.toolchain());
-  target.OnResolved();
+  ASSERT_TRUE(target.OnResolved(&err));
 
   std::ostringstream out;
   NinjaCopyTargetWriter writer(&target, out);
@@ -44,6 +45,7 @@ TEST(NinjaCopyTargetWriter, Run) {
 // Tests a single file with no output pattern.
 TEST(NinjaCopyTargetWriter, ToolchainDeps) {
   TestWithScope setup;
+  Err err;
 
   setup.settings()->set_target_os(Settings::LINUX);
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
@@ -56,7 +58,7 @@ TEST(NinjaCopyTargetWriter, ToolchainDeps) {
       SubstitutionList::MakeForTest("//out/Debug/output.out");
 
   target.SetToolchain(setup.toolchain());
-  target.OnResolved();
+  ASSERT_TRUE(target.OnResolved(&err));
 
   std::ostringstream out;
   NinjaCopyTargetWriter writer(&target, out);

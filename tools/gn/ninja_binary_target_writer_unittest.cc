@@ -11,6 +11,8 @@
 
 TEST(NinjaBinaryTargetWriter, SourceSet) {
   TestWithScope setup;
+  Err err;
+
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   setup.settings()->set_target_os(Settings::WIN);
 
@@ -23,7 +25,7 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
   target.sources().push_back(SourceFile("//foo/input3.o"));
   target.sources().push_back(SourceFile("//foo/input4.obj"));
   target.SetToolchain(setup.toolchain());
-  target.OnResolved();
+  ASSERT_TRUE(target.OnResolved(&err));
 
   // Source set itself.
   {
@@ -57,7 +59,7 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
   shlib_target.set_output_type(Target::SHARED_LIBRARY);
   shlib_target.deps().push_back(LabelTargetPair(&target));
   shlib_target.SetToolchain(setup.toolchain());
-  shlib_target.OnResolved();
+  ASSERT_TRUE(shlib_target.OnResolved(&err));
 
   {
     std::ostringstream out;
@@ -94,7 +96,7 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
   stlib_target.set_output_type(Target::STATIC_LIBRARY);
   stlib_target.deps().push_back(LabelTargetPair(&target));
   stlib_target.SetToolchain(setup.toolchain());
-  stlib_target.OnResolved();
+  ASSERT_TRUE(stlib_target.OnResolved(&err));
 
   {
     std::ostringstream out;
@@ -129,6 +131,8 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
 // are applied.
 TEST(NinjaBinaryTargetWriter, ProductExtensionAndInputDeps) {
   TestWithScope setup;
+  Err err;
+
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   setup.settings()->set_target_os(Settings::LINUX);
 
@@ -136,7 +140,7 @@ TEST(NinjaBinaryTargetWriter, ProductExtensionAndInputDeps) {
   Target action(setup.settings(), Label(SourceDir("//foo/"), "action"));
   action.set_output_type(Target::ACTION_FOREACH);
   action.SetToolchain(setup.toolchain());
-  action.OnResolved();
+  ASSERT_TRUE(action.OnResolved(&err));
 
   // A shared library w/ the product_extension set to a custom value.
   Target target(setup.settings(), Label(SourceDir("//foo/"), "shlib"));
@@ -146,7 +150,7 @@ TEST(NinjaBinaryTargetWriter, ProductExtensionAndInputDeps) {
   target.sources().push_back(SourceFile("//foo/input2.cc"));
   target.deps().push_back(LabelTargetPair(&action));
   target.SetToolchain(setup.toolchain());
-  target.OnResolved();
+  ASSERT_TRUE(target.OnResolved(&err));
 
   std::ostringstream out;
   NinjaBinaryTargetWriter writer(&target, out);
@@ -185,6 +189,8 @@ TEST(NinjaBinaryTargetWriter, ProductExtensionAndInputDeps) {
 
 TEST(NinjaBinaryTargetWriter, EmptyProductExtension) {
   TestWithScope setup;
+  Err err;
+
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   setup.settings()->set_target_os(Settings::LINUX);
 
@@ -197,7 +203,7 @@ TEST(NinjaBinaryTargetWriter, EmptyProductExtension) {
   target.sources().push_back(SourceFile("//foo/input2.cc"));
 
   target.SetToolchain(setup.toolchain());
-  target.OnResolved();
+  ASSERT_TRUE(target.OnResolved(&err));
 
   std::ostringstream out;
   NinjaBinaryTargetWriter writer(&target, out);
