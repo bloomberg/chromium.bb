@@ -17,6 +17,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -349,9 +351,26 @@ public class MockAccountManager implements AccountManagerDelegate {
 
     private Intent newGrantCredentialsPermissionIntent(boolean hasActivity, Account account,
             String authTokenType) {
+        ComponentName component = new ComponentName(mTestContext,
+                MockGrantCredentialsPermissionActivity.class.getCanonicalName());
+
+        // Make sure we can start the activity.
+        ActivityInfo ai = null;
+        try {
+            ai = mContext.getPackageManager().getActivityInfo(component, 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new IllegalStateException(
+                    "Unable to find " + component.getClassName());
+        }
+        if (ai.applicationInfo != mContext.getApplicationInfo() && !ai.exported) {
+            throw new IllegalStateException(
+                    "Unable to start " + ai.name + ". " +
+                    "The accounts you added to MockAccountManager may not be " +
+                    "configured correctly.");
+        }
+
         Intent intent = new Intent();
-        intent.setComponent(new ComponentName(mTestContext,
-                MockGrantCredentialsPermissionActivity.class.getCanonicalName()));
+        intent.setComponent(component);
         intent.putExtra(MockGrantCredentialsPermissionActivity.ACCOUNT, account);
         intent.putExtra(MockGrantCredentialsPermissionActivity.AUTH_TOKEN_TYPE, authTokenType);
         if (!hasActivity) {
