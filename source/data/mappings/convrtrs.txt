@@ -513,11 +513,11 @@ ibm-923_P100-1998 { UTR22* }
 
 # CJK encodings
 
+# Chrome: Instead of ibm-943_P15A-2003, we use what's specified in the WHATWG
+# encoding standard (HTML5) for Shift_JIS. Keep all the aliases (even though
+not all of them not required by the encoding spec) for now.
 
-# ibm-943_P15A-2003 differs from windows-932-2000 only in a few roundtrip mappings:
-# - the usual IBM PC control code rotation (1A-1C-7F)
-# - the Windows table has roundtrips for bytes 80, A0, and FD-FF to U+0080 and PUA
-ibm-943_P15A-2003 { UTR22* }
+shift_jis-html5 { UTR22* }
                         ibm-943 # Leave untagged because this isn't the default
                         Shift_JIS { IANA* MIME* WINDOWS JAVA }
                         MS_Kanji { IANA WINDOWS JAVA }
@@ -536,11 +536,9 @@ ibm-943_P15A-2003 { UTR22* }
                         ibm-943_VSUB_VPUA
                         x-MS932_0213 { JAVA }
                         x-JISAutoDetect { JAVA }
-                        # cp943 # This isn't Windows, and no one else uses it.
-                        # IANA says that Windows-31J is an extension to csshiftjis ibm-932 
 
 # Chrome: Instead of ibm-33722_P*, we use what's specified in the WHATWG
-# encoding standard (HTML5) with 30+ additional decode-only mappings. All the
+# encoding standard (HTML5). All the
 # 3-byte seqeunces in the normative EUC-JP are now decode-only.
 euc-jp-html5 { UTR22* }
                         EUC-JP { MIME* IANA JAVA* WINDOWS*}

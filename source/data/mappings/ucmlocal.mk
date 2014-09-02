@@ -13,7 +13,7 @@
 #     to GBK in convrtrs.txt to treat GB2312 as a synonym of GBK.
 #   - GB-HZ is supported now that it uses the GBK table.
 # * Traditional Chinese : Big5 (Windows cp950), Big5HKSCS (no PUA)
-# * Japanese : SJIS (Windows cp932), EUC-JP (google-euc_jp_mod)
+# * Japanese : SJIS (shift_jis-html5), EUC-JP (euc-jp_html5)
 # * Korean : Windows-949
 #  - EUC-KR table was removed. It's different from Windows-949, but
 #    in practice EUC-KR and Windows-949 are treated synonymously.
@@ -46,7 +46,7 @@ ibm-5349_P100-1998.ucm ibm-5350_P100-1998.ucm ibm-9447_P100-2002.ucm\
 ibm-9448_X100-2005.ucm ibm-9449_P100-2002.ucm ibm-5354_P100-1998.ucm\
 windows-936-2000.ucm gb18030.ucm\
 windows-950-2000.ucm ibm-1375_P100-2007.ucm\
-ibm-943_P15A-2003.ucm euc-jp-html5.ucm\
+shift_jis-html5.ucm euc-jp-html5.ucm\
 windows-949-2000.ucm\
 windows-874-2000.ucm ibm-874_P100-1995.ucm\
 macos-0_2-10.2.ucm macos-7_3-10.2.ucm\

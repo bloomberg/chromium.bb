@@ -124,7 +124,7 @@ Index: source/data/mappings/convrtrs.txt
 -UTF-7 { IANA* MIME* WINDOWS }   windows-65000 { WINDOWS* }
 -                                unicode-1-1-utf-7
 -                                unicode-2-0-utf-7
-+# Chrome : Remove all the entries for UTF-7, SCSU, BOCU, CESU-8.
++# Chrome: Remove all the entries for UTF-7, SCSU, BOCU, CESU-8.
  
 -# UTF-EBCDIC doesn't exist in ICU, but the aliases are here for reference.
 -#UTF-EBCDIC ibm-1210 { IBM* } ibm-1211 { IBM }
@@ -223,7 +223,7 @@ Index: source/data/mappings/convrtrs.txt
                          cp920 { JAVA }
                          920 { JAVA }
                          windows-28599 { WINDOWS* }
-@@ -567,17 +513,6 @@
+@@ -567,22 +513,11 @@
  
  # CJK encodings
  
@@ -238,13 +238,24 @@ Index: source/data/mappings/convrtrs.txt
 -                        x-IBM942 { JAVA* }
 -                        x-IBM942C { JAVA }
 -                        # Is this "JIS_C6226-1978"?
++# Chrome: Instead of ibm-943_P15A-2003, we use what's specified in the WHATWG
++# encoding standard (HTML5) for Shift_JIS. Keep all the aliases (even though
++not all of them not required by the encoding spec) for now.
  
- # ibm-943_P15A-2003 differs from windows-932-2000 only in a few roundtrip mappings:
- # - the usual IBM PC control code rotation (1A-1C-7F)
-@@ -603,62 +538,20 @@
+-# ibm-943_P15A-2003 differs from windows-932-2000 only in a few roundtrip mappings:
+-# - the usual IBM PC control code rotation (1A-1C-7F)
+-# - the Windows table has roundtrips for bytes 80, A0, and FD-FF to U+0080 and PUA
+-ibm-943_P15A-2003 { UTR22* }
++shift_jis-html5 { UTR22* }
+                         ibm-943 # Leave untagged because this isn't the default
+                         Shift_JIS { IANA* MIME* WINDOWS JAVA }
+                         MS_Kanji { IANA WINDOWS JAVA }
+@@ -601,64 +536,20 @@
+                         ibm-943_VSUB_VPUA
+                         x-MS932_0213 { JAVA }
                          x-JISAutoDetect { JAVA }
-                         # cp943 # This isn't Windows, and no one else uses it.
-                         # IANA says that Windows-31J is an extension to csshiftjis ibm-932 
+-                        # cp943 # This isn't Windows, and no one else uses it.
+-                        # IANA says that Windows-31J is an extension to csshiftjis ibm-932 
 -ibm-943_P130-1999 { UTR22* }
 -                        ibm-943 { IBM* JAVA }
 -                        Shift_JIS # Leave untagged because this isn't the default
@@ -283,7 +294,7 @@ Index: source/data/mappings/convrtrs.txt
 -                        EUC-JP { MIME* IANA JAVA* WINDOWS* }
 +
 +# Chrome: Instead of ibm-33722_P*, we use what's specified in the WHATWG
-+# encoding standard (HTML5) with 30+ additional decode-only mappings. All the
++# encoding standard (HTML5). All the
 +# 3-byte seqeunces in the normative EUC-JP are now decode-only.
 +euc-jp-html5 { UTR22* }
 +                        EUC-JP { MIME* IANA JAVA* WINDOWS*}
@@ -311,7 +322,7 @@ Index: source/data/mappings/convrtrs.txt
  windows-950-2000 { UTR22* }
                          Big5 { IANA* MIME* JAVA* WINDOWS }
                          csBig5 { IANA WINDOWS }
-@@ -666,16 +559,14 @@
+@@ -666,16 +557,14 @@
                          x-windows-950 { JAVA }
                          x-big5
                          ms950
@@ -331,7 +342,7 @@ Index: source/data/mappings/convrtrs.txt
  ibm-5471_P100-2006 { UTR22* }   # Big5-HKSCS-2001 with Unicode 3.0 mappings. This uses many PUA characters.
                          ibm-5471 { IBM* }
                          Big5-HKSCS
-@@ -685,201 +576,68 @@
+@@ -685,201 +574,68 @@
                          x-MS950-HKSCS { JAVA }
                          # windows-950 # Windows-950 can be w/ or w/o HKSCS extensions. By default it's not.
                          # windows-950_hkscs
@@ -571,7 +582,7 @@ Index: source/data/mappings/convrtrs.txt
  
  # The cp aliases in this section aren't really windows aliases, but it was used by ICU for Windows.
  # cp is usually used to denote IBM in Java, and that is why we don't do that anymore.
-@@ -888,53 +646,26 @@
+@@ -888,53 +644,26 @@
  ibm-5347_P100-1998 { UTR22* }   ibm-5347 { IBM* } windows-1251 { IANA* JAVA* WINDOWS* } cp1251 { WINDOWS JAVA } ANSI1251 # Windows Cyrillic (w/ euro update). ANSI1251 is from Solaris
  ibm-5348_P100-1997 { UTR22* }   ibm-5348 { IBM* } windows-1252 { IANA* JAVA* WINDOWS* } cp1252 { JAVA }         # Windows Latin1 (w/ euro update)
  ibm-5349_P100-1998 { UTR22* }   ibm-5349 { IBM* } windows-1253 { IANA* JAVA* WINDOWS* } cp1253 { JAVA }         # Windows Greek (w/ euro update)
@@ -637,7 +648,7 @@ Index: source/data/mappings/convrtrs.txt
  # Partially algorithmic converters
  
  # [U_ENABLE_GENERIC_ISO_2022]
-@@ -943,322 +674,25 @@
+@@ -943,322 +672,25 @@
  # Language-specific variants of ISO-2022 continue to be available as listed below.
  # ISO_2022                         ISO-2022
  

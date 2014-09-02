@@ -80,8 +80,9 @@ This directory contains the source code of ICU 52.1 for C/C++
         (source/data/mappings/convrtrs.txt ) leading to 40kB size reduction.
 
   - Add source/data/mappings/ucmlocal.txt : to list only converters we need.
-  - Add two new tables per WHATWG encoding standards for EUC-JP and CP866.
-    They're generated with scripts/{eucjp, ibm866}_gen.sh. 
+  - Add three new tables per WHATWG encoding standards for EUC-JP,
+    Shift_JIS and CP866.
+    They're generated with scripts/{eucjp, sjis, ibm866}_gen.sh. 
   - Add three 'fake' tables for ISO-2022-CN(-Ext) : noop-*.ucm.
 
   - uconv.patch 
@@ -133,9 +134,9 @@ This directory contains the source code of ICU 52.1 for C/C++
      windowsZones.txt
      zoneinfo64.txt
 
-   As of April 2014, the latest version is 2014b and the above files
+   As of August 2014, the latest version is 2014f and the above files
    are available at
-   http://source.icu-project.org/repos/icu/data/trunk/tzdata/icunew/2014b/44/
+   http://source.icu-project.org/repos/icu/data/trunk/tzdata/icunew/2014f/44/
 
 7. Transliterator customization
 
