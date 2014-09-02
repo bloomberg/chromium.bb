@@ -210,8 +210,6 @@ public:
     virtual void setTouchEditingEnabled(bool) = 0;
     virtual void setUnifiedTextCheckerEnabled(bool) = 0;
     virtual void setUnsafePluginPastingEnabled(bool) = 0;
-    // DEPRECATED: Does nothing.
-    virtual void setUseExpandedHeuristicsForGpuRasterization(bool) { }
     virtual void setUseLegacyBackgroundSizeShorthandBehavior(bool) = 0;
     virtual void setUseSolidColorScrollbars(bool) = 0;
     virtual void setUseWideViewport(bool) = 0;
