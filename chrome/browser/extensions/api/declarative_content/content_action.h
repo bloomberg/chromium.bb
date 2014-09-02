@@ -92,15 +92,7 @@ class ContentAction : public base::RefCounted<ContentAction> {
 // Action that injects a content script.
 class RequestContentScript : public ContentAction {
  public:
-  struct ScriptData {
-    ScriptData();
-    ~ScriptData();
-
-    std::vector<std::string> css_file_names;
-    std::vector<std::string> js_file_names;
-    bool all_frames;
-    bool match_about_blank;
-  };
+  struct ScriptData;
 
   RequestContentScript(content::BrowserContext* browser_context,
                        const Extension* extension,

@@ -157,7 +157,19 @@ base::LazyInstance<ContentActionFactory>::Leaky
 // RequestContentScript
 //
 
-RequestContentScript::ScriptData::ScriptData() {}
+struct RequestContentScript::ScriptData {
+  ScriptData();
+  ~ScriptData();
+
+  std::vector<std::string> css_file_names;
+  std::vector<std::string> js_file_names;
+  bool all_frames;
+  bool match_about_blank;
+};
+
+RequestContentScript::ScriptData::ScriptData()
+    : all_frames(false),
+      match_about_blank(false) {}
 RequestContentScript::ScriptData::~ScriptData() {}
 
 // static
