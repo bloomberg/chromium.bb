@@ -38,6 +38,7 @@
 #include "core/fetch/FetchUtils.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -325,7 +326,10 @@ void DocumentThreadableLoader::handlePreflightResponse(unsigned long identifier,
     DocumentLoader* loader = m_document.frame()->loader().documentLoader();
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceReceiveResponse", "data", InspectorReceiveResponseEvent::data(identifier, m_document.frame(), response));
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-    InspectorInstrumentation::didReceiveResourceResponse(m_document.frame(), identifier, loader, response, resource() ? resource()->loader() : 0);
+    LocalFrame* frame = m_document.frame();
+    InspectorInstrumentation::didReceiveResourceResponse(frame, identifier, loader, response, resource() ? resource()->loader() : 0);
+    // It is essential that inspector gets resource response BEFORE console.
+    frame->console().reportResourceResponseReceived(loader, identifier, response);
 
     String accessControlErrorDescription;
 

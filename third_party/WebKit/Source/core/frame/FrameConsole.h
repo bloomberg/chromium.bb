@@ -39,7 +39,9 @@ namespace blink {
 
 class ConsoleMessage;
 class ConsoleMessageStorage;
+class DocumentLoader;
 class FrameHost;
+class ResourceResponse;
 class ScriptCallStack;
 class WorkerGlobalScopeProxy;
 
@@ -55,6 +57,8 @@ public:
 
     void addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>);
     void adoptWorkerMessagesAfterTermination(WorkerGlobalScopeProxy*);
+
+    void reportResourceResponseReceived(DocumentLoader*, unsigned long requestIdentifier, const ResourceResponse&);
 
     static String formatStackTraceString(const String& originalMessage, PassRefPtrWillBeRawPtr<ScriptCallStack>);
 

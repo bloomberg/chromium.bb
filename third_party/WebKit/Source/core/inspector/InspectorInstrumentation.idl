@@ -286,7 +286,7 @@ interface InspectorInstrumentation {
     [Resource]
     void markResourceAsCached(Page*, unsigned long identifier);
 
-    [Timeline, Resource, Console] // Console should come AFTER Resource notification, front-end relies on this.
+    [Timeline, Resource]
     void didReceiveResourceResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
 
     [Inline=Forward]

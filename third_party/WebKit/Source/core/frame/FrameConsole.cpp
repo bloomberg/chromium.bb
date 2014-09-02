@@ -40,6 +40,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/workers/WorkerGlobalScopeProxy.h"
+#include "platform/network/ResourceResponse.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -81,7 +82,7 @@ void FrameConsole::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleM
 
     messageStorage()->reportMessage(consoleMessage);
 
-    if (consoleMessage->source() == CSSMessageSource)
+    if (consoleMessage->source() == CSSMessageSource || consoleMessage->source() == NetworkMessageSource)
         return;
 
     RefPtrWillBeRawPtr<ScriptCallStack> reportedCallStack = nullptr;
@@ -104,6 +105,18 @@ void FrameConsole::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleM
     if (reportedCallStack)
         stackTrace = FrameConsole::formatStackTraceString(consoleMessage->message(), reportedCallStack);
     m_frame.chromeClient().addMessageToConsole(&m_frame, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), lineNumber, messageURL, stackTrace);
+}
+
+void FrameConsole::reportResourceResponseReceived(DocumentLoader* loader, unsigned long requestIdentifier, const ResourceResponse& response)
+{
+    if (!loader)
+        return;
+    if (response.httpStatusCode() < 400)
+        return;
+    String message = "Failed to load resource: the server responded with a status of " + String::number(response.httpStatusCode()) + " (" + response.httpStatusText() + ')';
+    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, ErrorMessageLevel, message, response.url().string());
+    consoleMessage->setRequestIdentifier(requestIdentifier);
+    addMessage(consoleMessage.release());
 }
 
 String FrameConsole::formatStackTraceString(const String& originalMessage, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)

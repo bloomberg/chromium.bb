@@ -32,6 +32,7 @@
 #include "core/loader/FrameFetchContext.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -152,7 +153,10 @@ void FrameFetchContext::dispatchDidReceiveResponse(DocumentLoader* loader, unsig
     m_frame->loader().client()->dispatchDidReceiveResponse(loader, identifier, r);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceReceiveResponse", "data", InspectorReceiveResponseEvent::data(identifier, m_frame, r));
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
-    InspectorInstrumentation::didReceiveResourceResponse(m_frame, identifier, ensureLoader(loader), r, resourceLoader);
+    DocumentLoader* documentLoader = ensureLoader(loader);
+    InspectorInstrumentation::didReceiveResourceResponse(m_frame, identifier, documentLoader, r, resourceLoader);
+    // It is essential that inspector gets resource response BEFORE console.
+    m_frame->console().reportResourceResponseReceived(documentLoader, identifier, r);
 }
 
 void FrameFetchContext::dispatchDidReceiveData(DocumentLoader*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength)
