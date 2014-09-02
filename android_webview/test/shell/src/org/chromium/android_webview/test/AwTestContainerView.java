@@ -305,7 +305,8 @@ public class AwTestContainerView extends FrameLayout {
     @Override
     public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         mAwContents.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        // This method is intended to be overridden without calling super. Doing so clobbers state
+        // set by mAwContents.onMeasure.
     }
 
     @Override
