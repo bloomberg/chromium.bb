@@ -81,6 +81,7 @@
         'link_dependency': 1,
       },
       'dependencies': [
+        '<(_sanitizer_type)-freetype',
         '<(_sanitizer_type)-libcairo2',
         '<(_sanitizer_type)-libexpat1',
         '<(_sanitizer_type)-libffi6',
