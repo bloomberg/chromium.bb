@@ -683,14 +683,21 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
     return true;
   }
 
-  // Short-circuit touch forwarding if no touch handlers exist.
-  if (!host_->ShouldForwardTouchEvent()) {
+  if (host_->ShouldForwardTouchEvent()) {
+    blink::WebTouchEvent web_event = CreateWebTouchEventFromMotionEvent(event);
+    host_->ForwardTouchEventWithLatencyInfo(web_event,
+                                            CreateLatencyInfo(web_event));
+  } else {
     const bool event_consumed = false;
     gesture_provider_.OnTouchEventAck(event_consumed);
-    return true;
   }
 
-  SendTouchEvent(CreateWebTouchEventFromMotionEvent(event));
+  // Send a proactive BeginFrame on the next vsync to reduce latency.
+  // This is good enough as long as the first touch event has Begin semantics
+  // and the actual scroll happens on the next vsync.
+  if (observing_root_window_)
+    RequestVSyncUpdate(BEGIN_FRAME);
+
   return true;
 }
 
@@ -1506,19 +1513,6 @@ void RenderWidgetHostViewAndroid::SendKeyEvent(
     const NativeWebKeyboardEvent& event) {
   if (host_)
     host_->ForwardKeyboardEvent(event);
-}
-
-void RenderWidgetHostViewAndroid::SendTouchEvent(
-    const blink::WebTouchEvent& event) {
-  if (host_)
-    host_->ForwardTouchEventWithLatencyInfo(event, CreateLatencyInfo(event));
-
-  // Send a proactive BeginFrame on the next vsync to reduce latency.
-  // This is good enough as long as the first touch event has Begin semantics
-  // and the actual scroll happens on the next vsync.
-  // TODO: Is this actually still needed?
-  if (observing_root_window_)
-    RequestVSyncUpdate(BEGIN_FRAME);
 }
 
 void RenderWidgetHostViewAndroid::SendMouseEvent(
