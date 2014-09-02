@@ -24,6 +24,12 @@ function test()
     xhr.open("GET", "resources/chunked-transfer.php", true);
 
     xhr.onprogress = function(e) {
+        if (xhr.readyState != xhr.LOADING) {
+            // As this test ends when a readystatechange event arrives with
+            // readyState == DONE, a "progress" event cannot arrive when
+            // readyState == DONE.
+            log("FAIL: xhr.readyState must be LOADING when a progress event arrives, but is " + xhr.readyState);
+        }
         if (e.loaded == 4 && e.total == 0 && !e.lengthComputable)
             log("PASS");
         else if (e.total != 0 && !e.lengthComputable)

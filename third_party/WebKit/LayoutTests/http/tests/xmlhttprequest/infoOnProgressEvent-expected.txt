@@ -8,4 +8,5 @@ Cancelable: true
 EventPhase: 2
 Target: [object XMLHttpRequest]
 Current target: [object XMLHttpRequest]
+Target.readyState: 3
 

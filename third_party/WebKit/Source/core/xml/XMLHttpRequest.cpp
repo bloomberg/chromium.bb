@@ -433,19 +433,17 @@ void XMLHttpRequest::trackProgress(int length)
 {
     m_receivedLength += length;
 
-    if (m_async)
-        dispatchProgressEventFromSnapshot(EventTypeNames::progress);
-
     if (m_state != LOADING) {
         changeState(LOADING);
     } else {
-        // Firefox calls readyStateChanged every time it receives data. Do
-        // the same to align with Firefox.
+        // Dispatch a readystatechange event because many applications use
+        // it to track progress although this is not specified.
         //
-        // FIXME: Make our implementation and the spec consistent. This
-        // behavior was needed when the progress event was not available.
+        // FIXME: Stop dispatching this event for progress tracking.
         dispatchReadyStateChangeEvent();
     }
+    if (m_async)
+        dispatchProgressEventFromSnapshot(EventTypeNames::progress);
 }
 
 void XMLHttpRequest::changeState(State newState)

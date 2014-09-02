@@ -22,6 +22,7 @@ function onProgress(e) {
     log("EventPhase: " + e.eventPhase);
     log("Target: " + e.target);
     log("Current target: " + e.currentTarget);
+    log("Target.readyState: " + e.target.readyState);
     e.currentTarget.onprogress = null;
     if (window.testRunner)
         testRunner.notifyDone();
