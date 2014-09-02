@@ -193,7 +193,7 @@ void AudioInputRendererHost::DoCompleteCreation(
   }
 
   LogMessage(entry->stream_id,
-             "DoCompleteCreation => IPC channel and stream are now open",
+             "DoCompleteCreation: IPC channel and stream are now open",
              true);
 
   Send(new AudioInputMsg_NotifyStreamCreated(entry->stream_id,
@@ -212,9 +212,8 @@ void AudioInputRendererHost::DoSendRecordingMessage(
     NOTREACHED() << "AudioInputController is invalid.";
     return;
   }
-  LogMessage(entry->stream_id,
-             "DoSendRecordingMessage => stream is now started",
-             true);
+  LogMessage(
+      entry->stream_id, "DoSendRecordingMessage: stream is now started", true);
 }
 
 void AudioInputRendererHost::DoHandleError(
@@ -234,7 +233,7 @@ void AudioInputRendererHost::DoHandleError(
   if (error_code == media::AudioInputController::NO_DATA_ERROR) {
     // TODO(henrika): it might be possible to do something other than just
     // logging when we detect many NO_DATA_ERROR calls for a stream.
-    LogMessage(entry->stream_id, "AIC => NO_DATA_ERROR", false);
+    LogMessage(entry->stream_id, "AIC::DoCheckForNoData: NO_DATA_ERROR", false);
     return;
   }
 
@@ -465,7 +464,7 @@ void AudioInputRendererHost::CloseAndDeleteStream(AudioEntry* entry) {
 
 void AudioInputRendererHost::DeleteEntry(AudioEntry* entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  LogMessage(entry->stream_id, "DeleteEntry => stream is now closed", true);
+  LogMessage(entry->stream_id, "DeleteEntry: stream is now closed", true);
 
   // Delete the entry when this method goes out of scope.
   scoped_ptr<AudioEntry> entry_deleter(entry);

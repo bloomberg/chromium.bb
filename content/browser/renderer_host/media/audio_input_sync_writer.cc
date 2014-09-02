@@ -60,13 +60,13 @@ void AudioInputSyncWriter::Write(const media::AudioBus* data,
   if (last_write_time_.is_null()) {
     // This is the first time Write is called.
     base::TimeDelta interval = base::Time::Now() - creation_time_;
-    oss << "AISW::Write => audio input data received for the first time: delay "
+    oss << "AISW::Write: audio input data received for the first time: delay "
            "= " << interval.InMilliseconds() << "ms";
 
   } else {
     base::TimeDelta interval = base::Time::Now() - last_write_time_;
     if (interval > kLogDelayThreadhold) {
-      oss << "AISW::Write => audio input data delay unexpectedly long: delay = "
+      oss << "AISW::Write: audio input data delay unexpectedly long: delay = "
           << interval.InMilliseconds() << "ms";
     }
   }
