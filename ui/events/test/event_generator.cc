@@ -47,7 +47,7 @@ class TestTouchEvent : public ui::TouchEvent {
                  int flags,
                  base::TimeDelta timestamp)
       : TouchEvent(type, root_location, flags, touch_id, timestamp,
-                   1.0f, 1.0f, 1.0f, 1.0f) {
+                   1.0f, 1.0f, 0.0f, 0.0f) {
   }
 
  private:
