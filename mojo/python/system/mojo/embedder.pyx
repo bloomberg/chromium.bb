@@ -34,8 +34,8 @@ cdef extern from "mojo/public/platform/native/system_thunks.h" nogil:
     pass
   cdef MojoSystemThunks MojoMakeSystemThunks()
 
-def init():
+def Init():
   InitCEmbedder(scoped_ptr[PlatformSupport](
       new SimplePlatformSupport()))
   cdef MojoSystemThunks thunks = MojoMakeSystemThunks()
-  system.set_system_thunks(<uintptr_t>(&thunks))
+  system.SetSystemThunks(<uintptr_t>(&thunks))
