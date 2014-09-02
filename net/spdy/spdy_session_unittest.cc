@@ -4977,9 +4977,12 @@ TEST_P(SpdySessionTest, RejectInvalidUnknownFrames) {
   EXPECT_TRUE(session->OnUnknownFrame(3, 0));
   // Client id exceeding watermark.
   EXPECT_FALSE(session->OnUnknownFrame(9, 0));
-  // Currently we do not keep track of server initiated (even) ids.
+
+  session->last_accepted_push_stream_id_ = 6;
+  // Low server (even) ids are fine.
   EXPECT_TRUE(session->OnUnknownFrame(2, 0));
-  EXPECT_TRUE(session->OnUnknownFrame(8, 0));
+  // Server id exceeding last accepted id.
+  EXPECT_FALSE(session->OnUnknownFrame(8, 0));
 }
 
 TEST(MapFramerErrorToProtocolError, MapsValues) {

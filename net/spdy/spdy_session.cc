@@ -590,6 +590,7 @@ SpdySession::SpdySession(
       transport_security_state_(transport_security_state),
       read_buffer_(new IOBuffer(kReadBufferSize)),
       stream_hi_water_mark_(kFirstStreamId),
+      last_accepted_push_stream_id_(0),
       num_pushed_streams_(0u),
       num_active_pushed_streams_(0u),
       in_flight_write_frame_type_(DATA),
@@ -1677,7 +1678,7 @@ void SpdySession::DoDrainSession(Error err, const std::string& description) {
       err != ERR_SOCKET_NOT_CONNECTED &&
       err != ERR_CONNECTION_CLOSED && err != ERR_CONNECTION_RESET) {
     // Enqueue a GOAWAY to inform the peer of why we're closing the connection.
-    SpdyGoAwayIR goaway_ir(0,  // Last accepted stream ID.
+    SpdyGoAwayIR goaway_ir(last_accepted_push_stream_id_,
                            MapNetErrorToGoAwayStatus(err),
                            description);
     EnqueueSessionWrite(HIGHEST,
@@ -2360,7 +2361,10 @@ bool SpdySession::OnUnknownFrame(SpdyStreamId stream_id, int frame_type) {
   // Was the frame sent on a stream id that has not been used in this session?
   if (stream_id % 2 == 1 && stream_id > stream_hi_water_mark_)
     return false;
-  // TODO(bnc):  Track highest id for server initiated streams.
+
+  if (stream_id % 2 == 0 && stream_id > last_accepted_push_stream_id_)
+    return false;
+
   return true;
 }
 
@@ -2521,13 +2525,31 @@ bool SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   // Server-initiated streams should have even sequence numbers.
   if ((stream_id & 0x1) != 0) {
     LOG(WARNING) << "Received invalid push stream id " << stream_id;
+    if (GetProtocolVersion() > SPDY2)
+      CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, "Odd push stream id.");
     return false;
   }
 
+  if (GetProtocolVersion() > SPDY2) {
+    if (stream_id <= last_accepted_push_stream_id_) {
+      LOG(WARNING) << "Received push stream id lesser or equal to the last "
+                   << "accepted before " << stream_id;
+      CloseSessionOnError(
+          ERR_SPDY_PROTOCOL_ERROR,
+          "New push stream id must be greater than the last accepted.");
+      return false;
+    }
+  }
+
   if (IsStreamActive(stream_id)) {
+    // For SPDY3 and higher we should not get here, we'll start going away
+    // earlier on |last_seen_push_stream_id_| check.
+    CHECK_GT(SPDY3, GetProtocolVersion());
     LOG(WARNING) << "Received push for active stream " << stream_id;
     return false;
   }
+
+  last_accepted_push_stream_id_ = stream_id;
 
   RequestPriority request_priority =
       ConvertSpdyPriorityToRequestPriority(priority, GetProtocolVersion());

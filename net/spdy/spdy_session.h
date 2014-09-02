@@ -984,6 +984,9 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   SpdyStreamId stream_hi_water_mark_;  // The next stream id to use.
 
+  // Used to ensure the server increments push stream ids correctly.
+  SpdyStreamId last_accepted_push_stream_id_;
+
   // Queue, for each priority, of pending stream requests that have
   // not yet been satisfied.
   PendingStreamRequestQueue pending_create_stream_queues_[NUM_PRIORITIES];
