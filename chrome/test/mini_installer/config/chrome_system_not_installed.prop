@@ -3,11 +3,12 @@
     "$PROGRAM_FILES\\$CHROME_DIR\\Application": {"exists": false}
   },
   "RegistryEntries": {
-    "HKEY_LOCAL_MACHINE\\$CHROME_UPDATE_REGISTRY_SUBKEY": {"exists": false},
+    "HKEY_LOCAL_MACHINE\\$CHROME_UPDATE_REGISTRY_SUBKEY": {
+      "exists": "forbidden"},
     "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\$CHROME_LONG_NAME":
-        {"exists": false},
+        {"exists": "forbidden"},
     "HKEY_LOCAL_MACHINE\\Software\\Classes\\$CHROME_SHORT_NAME": {
-      "exists": false
+      "exists": "forbidden"
     }
   }
 }

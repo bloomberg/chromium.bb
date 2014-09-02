@@ -14,13 +14,13 @@
   },
   "RegistryEntries": {
     "HKEY_CURRENT_USER\\$CHROME_UPDATE_REGISTRY_SUBKEY": {
-      "exists": true,
+      "exists": "required",
       "values": {
         "pv": {"type": "SZ", "data": "$MINI_INSTALLER_FILE_VERSION"}
       }
     },
     "HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\$CHROME_LONG_NAME": {
-      "exists": true,
+      "exists": "required",
       "values": {
         "UninstallString": {
           "type": "SZ",
@@ -31,7 +31,7 @@
     },
     "HKEY_CURRENT_USER\\Software\\Classes\\$CHROME_SHORT_NAME$USER_SPECIFIC_REGISTRY_SUFFIX": {
       "condition": "$WINDOWS_VERSION >= $VERSION_WIN8",
-      "exists": true
+      "exists": "required"
     }
   }
 }

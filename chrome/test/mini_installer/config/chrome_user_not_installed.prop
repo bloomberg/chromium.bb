@@ -4,11 +4,11 @@
   },
   "RegistryEntries": {
     "HKEY_CURRENT_USER\\$CHROME_UPDATE_REGISTRY_SUBKEY\\Commands":
-        {"exists": false},
+        {"exists": "forbidden"},
     "HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\$CHROME_LONG_NAME":
-        {"exists": false},
+        {"exists": "forbidden"},
     "HKEY_CURRENT_USER\\Software\\Classes\\$CHROME_SHORT_NAME$USER_SPECIFIC_REGISTRY_SUFFIX": {
-      "exists": false
+      "exists": "forbidden"
     }
   }
 }

@@ -16,6 +16,7 @@ import subprocess
 import sys
 import time
 import unittest
+import _winreg
 
 from variable_expander import VariableExpander
 import verifier_runner
@@ -144,6 +145,26 @@ def RunCommand(command, variable_expander):
         expanded_command, exit_status))
 
 
+def DeleteGoogleUpdateRegistration(system_level, variable_expander):
+  """Deletes Chrome's registration with Google Update.
+
+  Args:
+    system_level: True if system-level Chrome is to be deleted.
+    variable_expander: A VariableExpander object.
+  """
+  root = (_winreg.HKEY_LOCAL_MACHINE if system_level
+          else _winreg.HKEY_CURRENT_USER)
+  key_name = variable_expander.Expand('$CHROME_UPDATE_REGISTRY_SUBKEY')
+  try:
+    key_handle = _winreg.OpenKey(root, key_name, 0,
+                                 _winreg.KEY_SET_VALUE |
+                                 _winreg.KEY_WOW64_32KEY)
+    _winreg.DeleteValue(key_handle, 'pv')
+  except WindowsError:
+    # The key isn't present, so there is no value to delete.
+    pass
+
+
 def RunCleanCommand(force_clean, variable_expander):
   """Puts the machine in the clean state (i.e. Chrome not installed).
 
@@ -152,17 +173,17 @@ def RunCleanCommand(force_clean, variable_expander):
         installations.
     variable_expander: A VariableExpander object.
   """
-  # TODO(sukolsak): Read the clean state from the config file and clean
-  # the machine according to it.
   # TODO(sukolsak): Handle Chrome SxS installs.
-  commands = []
   interactive_option = '--interactive' if not force_clean else ''
-  for level_option in ('', '--system-level'):
-    commands.append('python uninstall_chrome.py '
-                    '--chrome-long-name="$CHROME_LONG_NAME" '
-                    '--no-error-if-absent %s %s' %
-                    (level_option, interactive_option))
-  RunCommand(' && '.join(commands), variable_expander)
+  for system_level in (False, True):
+    level_option = '--system-level' if system_level else ''
+    command = ('python uninstall_chrome.py '
+               '--chrome-long-name="$CHROME_LONG_NAME" '
+               '--no-error-if-absent %s %s' %
+               (level_option, interactive_option))
+    RunCommand(command, variable_expander)
+    if force_clean:
+      DeleteGoogleUpdateRegistration(system_level, variable_expander)
 
 
 def MergePropertyDictionaries(current_property, new_property):

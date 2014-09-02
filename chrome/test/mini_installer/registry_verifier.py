@@ -49,13 +49,17 @@ class RegistryVerifier(verifier.Verifier):
       expectation_name: The registry key being verified. It is expanded using
           Expand.
       expectation: A dictionary with the following keys and values:
-          'exists' a boolean indicating whether the registry key should exist.
+          'exists' a string indicating whether the registry key's existence is
+              'required', 'optional', or 'forbidden'. Values are not checked if
+              an 'optional' key is not present in the registry.
           'values' (optional) a dictionary where each key is a registry value
               and its associated value is a dictionary with the following key
               and values:
-                  'type' a string indicating the type of the registry value.
-                  'data' the associated data of the registry value. If it is a
-                      string, it is expanded using Expand.
+                  'type' (optional) a string indicating the type of the registry
+                      value. If not present, the corresponding value is expected
+                      to be absent in the registry.
+                  'data' the associated data of the registry value if 'type' is
+                      specified. If it is a string, it is expanded using Expand.
       variable_expander: A VariableExpander object.
     """
     key = variable_expander.Expand(expectation_name)
@@ -67,11 +71,13 @@ class RegistryVerifier(verifier.Verifier):
                                    _winreg.KEY_QUERY_VALUE)
     except WindowsError:
       # Key doesn't exist. See that it matches the expectation.
-      assert not expectation['exists'], ('Registry key %s is missing' %
-                                         key)
+      assert expectation['exists'] is not 'required', ('Registry key %s is '
+                                                       'missing' % key)
+      # Values are not checked if the missing key's existence is optional.
       return
     # The key exists, see that it matches the expectation.
-    assert expectation['exists'], ('Registry key %s exists' % key)
+    assert expectation['exists'] is not 'forbidden', ('Registry key %s exists' %
+                                                      key)
 
     # Verify the expected values.
     if 'values' not in expectation:
@@ -82,8 +88,13 @@ class RegistryVerifier(verifier.Verifier):
       try:
         data, value_type = _winreg.QueryValueEx(key_handle, value)
       except WindowsError:
-        raise KeyError("Value '%s' of registry key %s is missing" % (
-            value, key))
+        # The value does not exist. See that this matches the expectation.
+        assert 'type' not in value_expectation, ('Value %s of registry key %s '
+                                                 'is missing' % (value, key))
+        continue
+
+      assert 'type' in value_expectation, ('Value %s of registry key %s exists '
+                                           'with value %s' % (value, key, data))
 
       # Verify the type of the value.
       expected_value_type = value_expectation['type']
