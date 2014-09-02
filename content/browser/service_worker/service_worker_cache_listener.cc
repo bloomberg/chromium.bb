@@ -23,30 +23,28 @@ WebServiceWorkerCacheError ToWebServiceWorkerCacheError(
   switch (err) {
     case ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NO_ERROR:
       NOTREACHED();
-      return WebServiceWorkerCacheError::
-          WebServiceWorkerCacheErrorNotImplemented;
+      return blink::WebServiceWorkerCacheErrorNotImplemented;
     case ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NOT_IMPLEMENTED:
-      return WebServiceWorkerCacheError::
-          WebServiceWorkerCacheErrorNotImplemented;
+      return blink::WebServiceWorkerCacheErrorNotImplemented;
     case ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NOT_FOUND:
-      return WebServiceWorkerCacheError::WebServiceWorkerCacheErrorNotFound;
+      return blink::WebServiceWorkerCacheErrorNotFound;
     case ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_EXISTS:
-      return WebServiceWorkerCacheError::WebServiceWorkerCacheErrorExists;
+      return blink::WebServiceWorkerCacheErrorExists;
     case ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_STORAGE:
       // TODO(jkarlin): Changethis to CACHE_STORAGE_ERROR_STORAGE once that's
       // added.
-      return WebServiceWorkerCacheError::WebServiceWorkerCacheErrorNotFound;
+      return blink::WebServiceWorkerCacheErrorNotFound;
     case ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_EMPTY_KEY:
       // TODO(jkarlin): Update this to CACHE_STORAGE_ERROR_EMPTY_KEY once that's
       // added.
-      return WebServiceWorkerCacheError::WebServiceWorkerCacheErrorNotFound;
+      return blink::WebServiceWorkerCacheErrorNotFound;
     case ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_CLOSING:
       // TODO(jkarlin): Update this to CACHE_STORAGE_ERROR_CLOSING once that's
       // added.
-      return WebServiceWorkerCacheError::WebServiceWorkerCacheErrorNotFound;
+      return blink::WebServiceWorkerCacheErrorNotFound;
   }
   NOTREACHED();
-  return WebServiceWorkerCacheError::WebServiceWorkerCacheErrorNotImplemented;
+  return blink::WebServiceWorkerCacheErrorNotImplemented;
 }
 
 }  // namespace
@@ -160,7 +158,7 @@ void ServiceWorkerCacheListener::OnCacheStorageHasCallback(
   if (!has_cache) {
     Send(ServiceWorkerMsg_CacheStorageHasError(
         request_id,
-        WebServiceWorkerCacheError::WebServiceWorkerCacheErrorNotFound));
+        blink::WebServiceWorkerCacheErrorNotFound));
     return;
   }
   Send(ServiceWorkerMsg_CacheStorageHasSuccess(request_id));
