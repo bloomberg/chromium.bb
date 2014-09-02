@@ -57,11 +57,11 @@ public class ShareHelper {
      * @param screenshot Screenshot of the page to be shared.
      */
     public static void share(boolean shareDirectly, Activity activity, String title, String url,
-            Bitmap screenshot) {
+            Bitmap screenshot, int extraIntentFlags) {
         if (shareDirectly) {
-            shareWithLastUsed(activity, title, url, screenshot);
+            shareWithLastUsed(activity, title, url, screenshot, extraIntentFlags);
         } else {
-            showShareDialog(activity, title, url, screenshot);
+            showShareDialog(activity, title, url, screenshot, extraIntentFlags);
         }
     }
 
@@ -72,10 +72,11 @@ public class ShareHelper {
      * @param title Title of the page to be shared.
      * @param url URL of the page to be shared.
      * @param screenshot Screenshot of the page to be shared.
+     * @param extraIntentFlags Additional flags that should be added to the share intent.
      */
     private static void showShareDialog(final Activity activity, final String title,
-            final String url, final Bitmap screenshot) {
-        Intent intent = getShareIntent(title, url, screenshot);
+            final String url, final Bitmap screenshot, final int extraIntentFlags) {
+        Intent intent = getShareIntent(title, url, screenshot, extraIntentFlags);
         PackageManager manager = activity.getPackageManager();
         List<ResolveInfo> resolveInfoList = manager.queryIntentActivities(intent, 0);
         assert resolveInfoList.size() > 0;
@@ -98,7 +99,8 @@ public class ShareHelper {
                 ComponentName component =
                         new ComponentName(ai.applicationInfo.packageName, ai.name);
                 setLastShareComponentName(activity, component);
-                Intent intent = getDirectShareIntentForComponent(title, url, screenshot, component);
+                Intent intent = getDirectShareIntentForComponent(title, url, screenshot, component,
+                        extraIntentFlags);
                 activity.startActivity(intent);
                 dialog.dismiss();
             }
@@ -112,12 +114,14 @@ public class ShareHelper {
      * @param title Title of the page to be shared.
      * @param url URL of the page to be shared.
      * @param screenshot Screenshot of the page to be shared.
+     * @param extraIntentFlags Additional flags that should be added to the share intent.
      */
     private static void shareWithLastUsed(
-            Activity activity, String title, String url, Bitmap screenshot) {
+            Activity activity, String title, String url, Bitmap screenshot, int extraIntentFlags) {
         ComponentName component = getLastShareComponentName(activity);
         if (component == null) return;
-        Intent intent = getDirectShareIntentForComponent(title, url, screenshot, component);
+        Intent intent = getDirectShareIntentForComponent(
+                title, url, screenshot, component, extraIntentFlags);
         activity.startActivity(intent);
     }
 
@@ -150,8 +154,10 @@ public class ShareHelper {
         }
     }
 
-    private static Intent getShareIntent(String title, String url, Bitmap screenshot) {
+    private static Intent getShareIntent(String title, String url, Bitmap screenshot,
+            int extraIntentFlags) {
         Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.addFlags(extraIntentFlags);
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_SUBJECT, title);
         intent.putExtra(Intent.EXTRA_TEXT, url);
@@ -160,8 +166,8 @@ public class ShareHelper {
     }
 
     private static Intent getDirectShareIntentForComponent(String title, String url,
-            Bitmap screenshot, ComponentName component) {
-        Intent intent = getShareIntent(title, url, screenshot);
+            Bitmap screenshot, ComponentName component, int extraIntentFlags) {
+        Intent intent = getShareIntent(title, url, screenshot, extraIntentFlags);
         intent.addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT
                 | Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
         intent.setComponent(component);

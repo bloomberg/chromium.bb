@@ -287,6 +287,7 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
         return super.onKeyDown(keyCode, event);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         ChromeShellTab activeTab = getActiveTab();
@@ -325,7 +326,8 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
             case R.id.share_menu_id:
             case R.id.direct_share_menu_id:
                 ShareHelper.share(item.getItemId() == R.id.direct_share_menu_id, this,
-                        activeTab.getTitle(), activeTab.getUrl(), null);
+                        activeTab.getTitle(), activeTab.getUrl(), null,
+                        Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
