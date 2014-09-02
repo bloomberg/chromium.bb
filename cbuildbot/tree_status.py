@@ -244,7 +244,7 @@ def UpdateTreeStatus(status, message, announcer='cbuildbot', epilogue='',
   _UpdateTreeStatus(status_url, text)
 
 
-def ThrottleOrCloseTheTree(announcer, message):
+def ThrottleOrCloseTheTree(announcer, message, internal=None, buildnumber=None):
   """Throttle or close the tree with |message|.
 
   By default, this function throttles the tree with an updated
@@ -259,7 +259,9 @@ def ThrottleOrCloseTheTree(announcer, message):
   Args:
     announcer: The announcer the message.
     message: A string to display as part of the tree status.
-
+    internal: Whether the build is internal or not. Append the build type
+      if this is set. Defaults to None.
+    buildnumber: The build number to append.
   """
   # Get current tree status.
   status_dict = _GetStatusDict(CROS_TREE_STATUS_JSON_URL)
@@ -278,7 +280,7 @@ def ThrottleOrCloseTheTree(announcer, message):
     # Scan the current message and discard the text by the same
     # announcer.
     chunks = [x.strip() for x in current_msg.split(MESSAGE_DELIMITER)
-              if '%s:' % announcer not in x.strip()]
+              if '%s' % announcer not in x.strip()]
     current_msg = MESSAGE_DELIMITER.join(chunks)
 
     if any(x for x in MESSAGE_KEYWORDS if x.lower() in
@@ -291,6 +293,12 @@ def ThrottleOrCloseTheTree(announcer, message):
     else:
       epilogue = current_msg
 
+  if internal is not None:
+    # 'p' stands for 'public.
+    announcer += '-i' if internal else '-p'
+
+  if buildnumber:
+    announcer = '%s-%d' % (announcer, buildnumber)
   UpdateTreeStatus(status, message, announcer=announcer, epilogue=epilogue)
 
 

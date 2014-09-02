@@ -200,6 +200,28 @@ class TestTreeStatus(cros_test_lib.MoxTestCase):
       self.assertRaises(tree_status.InvalidTreeStatus,
                         tree_status.UpdateTreeStatus, 'foostatus', 'failure')
 
+  def testThrottlesTreeOnWithBuildNumberAndType(self):
+    """Tests that tree is throttled with the build number in the message."""
+    self._SetupMockTreeStatusResponses(self.status_url,
+                                       final_tree_status='Tree is open (taco)',
+                                       final_general_state=constants.TREE_OPEN)
+    with mock.patch.object(tree_status, '_UpdateTreeStatus') as m:
+      tree_status.ThrottleOrCloseTheTree('foo', 'failure', buildnumber=1234,
+                                         internal=True)
+      m.assert_called_once_with(mock.ANY,
+                                'Tree is throttled (foo-i-1234: failure)')
+
+  def testThrottlesTreeOnWithBuildNumberAndPublicType(self):
+    """Tests that tree is throttled with the build number in the message."""
+    self._SetupMockTreeStatusResponses(self.status_url,
+                                       final_tree_status='Tree is open (taco)',
+                                       final_general_state=constants.TREE_OPEN)
+    with mock.patch.object(tree_status, '_UpdateTreeStatus') as m:
+      tree_status.ThrottleOrCloseTheTree('foo', 'failure', buildnumber=1234,
+                                         internal=False)
+      m.assert_called_once_with(mock.ANY,
+                                'Tree is throttled (foo-p-1234: failure)')
+
   def testThrottlesTreeOnOpen(self):
     """Tests that ThrottleOrCloseTheTree throttles the tree if tree is open."""
     self._SetupMockTreeStatusResponses(self.status_url,

@@ -460,8 +460,10 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
       # Use "cbuildbot" on "Canary master" so that it is a clickable
       # link on the waterfall.
       tree_status.ThrottleOrCloseTheTree(
-          '"cbuildbot" on "Canary master"',
-          self._ComposeTreeStatusMessage(failing, inflight, no_stat))
+          '"Canary master"',
+          self._ComposeTreeStatusMessage(failing, inflight, no_stat),
+          internal=self._run.config.internal,
+          buildnumber=self._run.buildnumber)
 
   def _HandleStageException(self, exc_info):
     """Decide whether an exception should be treated as fatal."""
