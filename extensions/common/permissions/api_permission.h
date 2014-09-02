@@ -163,6 +163,7 @@ class APIPermission {
     kTts,
     kTtsEngine,
     kUnlimitedStorage,
+    kU2fDevices,
     kUsb,
     kUsbDevice,
     kVideoCapture,

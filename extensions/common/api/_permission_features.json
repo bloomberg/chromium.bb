@@ -69,6 +69,18 @@
       ]
     }
   ],
+  "u2fDevices": [
+    {
+      "channel": "dev",
+      "extension_types": ["extension", "platform_app"],
+      "whitelist": [
+        "496B6890097EB6E19809ADEADD095A8721FBB2E0",  // FIDO U2F APIs
+        "E24F1786D842E91E74C27929B0B3715A4689A473",  // CryptoToken
+        "6F9E349A0561C78A0D3F41496FE521C5151C7F71",  // Security Key
+        "C06709A259378015404ED20F75C7D08547E0F10B"   // Security Key (dev)
+      ]
+    }
+  ],
   "power": {
     "channel": "stable",
     "extension_types": [ "extension", "legacy_packaged_app", "platform_app" ]

@@ -340,7 +340,9 @@
       <message name="IDS_EXTENSION_WARNING_RELOAD_TOO_FREQUENT" desc="Warning message which indates that an extension got stuck in a reload loop.">
         This extension reloaded itself too frequently.
       </message>
-
+      <message name="IDS_EXTENSION_PROMPT_WARNING_U2F_DEVICES" desc="Warning message which indicates that an extension has access to Universal 2nd Factor devices.">
+        Access your Universal 2nd Factor devices
+      </message>
     </messages>
   </release>
 </grit>

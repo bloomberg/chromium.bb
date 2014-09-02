@@ -128,6 +128,15 @@ bool HidDeviceManager::HasPermission(const Extension* extension,
     return true;
   }
 
+  if (extension->permissions_data()->HasAPIPermission(
+          APIPermission::kU2fDevices)) {
+    HidDeviceFilter u2f_filter;
+    u2f_filter.SetUsagePage(0xF1D0);
+    if (u2f_filter.Matches(device_info)) {
+      return true;
+    }
+  }
+
   return false;
 }
 
