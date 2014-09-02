@@ -463,6 +463,20 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
           '"cbuildbot" on "Canary master"',
           self._ComposeTreeStatusMessage(failing, inflight, no_stat))
 
+  def _HandleStageException(self, exc_info):
+    """Decide whether an exception should be treated as fatal."""
+    # Canary master already updates the tree status for slave
+    # failures. There is no need to mark this stage red. For slave
+    # builders, the build itself would already be red. In this case,
+    # report a warning instead.
+    # pylint: disable=W0212
+    exc_type = exc_info[0]
+    if issubclass(exc_type, ImportantBuilderFailedException):
+      return self._HandleExceptionAsWarning(exc_info)
+    else:
+      # In all other cases, exceptions should be treated as fatal.
+      return super(CanaryCompletionStage, self)._HandleStageException(exc_info)
+
 
 class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
   """Commits or reports errors to CL's that failed to be validated."""
