@@ -209,6 +209,7 @@ TEST(FakeEasyUnlockClientTest, CreateSecureMessage) {
       "ASSOCIATED_DATA",
       "PUBLIC_METADATA",
       "VERIFICATION_KEY_ID",
+      "DECRYPTION_KEY_ID",
       "ENCRYPTION_TYPE",
       "SIGNATURE_TYPE",
       base::Bind(&RecordData, &message));
@@ -220,6 +221,7 @@ TEST(FakeEasyUnlockClientTest, CreateSecureMessage) {
           "\"associated_data\": \"ASSOCIATED_DATA\","
           "\"public_metadata\": \"PUBLIC_METADATA\","
           "\"verification_key_id\": \"VERIFICATION_KEY_ID\","
+          "\"decryption_key_id\": \"DECRYPTION_KEY_ID\","
           "\"encryption_type\": \"ENCRYPTION_TYPE\","
           "\"signature_type\": \"SIGNATURE_TYPE\"}"
       "}");

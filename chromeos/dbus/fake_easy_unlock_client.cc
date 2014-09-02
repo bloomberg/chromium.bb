@@ -99,6 +99,7 @@ void FakeEasyUnlockClient::CreateSecureMessage(
     const std::string& associated_data,
     const std::string& public_metadata,
     const std::string& verification_key_id,
+    const std::string& decryption_key_id,
     const std::string& encryption_type,
     const std::string& signature_type,
     const DataCallback& callback) {
@@ -109,6 +110,7 @@ void FakeEasyUnlockClient::CreateSecureMessage(
           "\"associated_data\": \"%s\","
           "\"public_metadata\": \"%s\","
           "\"verification_key_id\": \"%s\","
+          "\"decryption_key_id\": \"%s\","
           "\"encryption_type\": \"%s\","
           "\"signature_type\": \"%s\""
       "}}",
@@ -117,6 +119,7 @@ void FakeEasyUnlockClient::CreateSecureMessage(
       associated_data.c_str(),
       public_metadata.c_str(),
       verification_key_id.c_str(),
+      decryption_key_id.c_str(),
       encryption_type.c_str(),
       signature_type.c_str()));
 }

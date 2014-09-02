@@ -324,6 +324,8 @@ bool EasyUnlockPrivateCreateSecureMessageFunction::RunAsync() {
           *params->options.public_metadata : std::string(),
       params->options.verification_key_id ?
           *params->options.verification_key_id : std::string(),
+      params->options.decryption_key_id ?
+          *params->options.decryption_key_id : std::string(),
       params->options.encrypt_type,
       params->options.sign_type,
       base::Bind(&EasyUnlockPrivateCreateSecureMessageFunction::OnData,

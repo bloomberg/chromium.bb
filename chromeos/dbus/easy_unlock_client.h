@@ -62,6 +62,9 @@ class CHROMEOS_EXPORT EasyUnlockClient : public DBusClient {
   //     set if the message is signed with private asymetric key. This value
   //     is used by the receiver to identify the public key that should be used
   //     to verify the signature.
+  // |decryption_key_id|: Key id added to the message header. Used by the
+  //     message receiver to identify the key that should be used to decrypt
+  //     the message.
   // |encryption_type|: The encryption algorithm to use for encrypting the
   //     message. (May be set to none).
   // |signature_type|: The algorithm to use to sign the message.
@@ -72,6 +75,7 @@ class CHROMEOS_EXPORT EasyUnlockClient : public DBusClient {
                                    const std::string& associated_data,
                                    const std::string& public_metadata,
                                    const std::string& verification_key_id,
+                                   const std::string& decryption_key_id,
                                    const std::string& encryption_type,
                                    const std::string& signature_type,
                                    const DataCallback& callback) = 0;

@@ -41,6 +41,7 @@ class EasyUnlockPrivateCryptoDelegate {
       const std::string& associated_data,
       const std::string& public_metadata,
       const std::string& verification_key_id,
+      const std::string& decryption_key_id,
       easy_unlock_private::EncryptionType encryption_type,
       easy_unlock_private::SignatureType signature_type,
       const DataCallback& callback) = 0;

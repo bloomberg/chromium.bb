@@ -173,6 +173,7 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage) {
       "ASSOCIATED_DATA",
       "PUBLIC_METADATA",
       "VERIFICATION_KEY_ID",
+      "DECRYPTION_KEY_ID",
       easy_unlock::kEncryptionTypeAES256CBC,
       easy_unlock::kSignatureTypeHMACSHA256,
       base::Bind(&CopyData, &expected_result));
@@ -187,6 +188,8 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage) {
   options->Set("publicMetadata", StringToBinaryValue("PUBLIC_METADATA"));
   options->Set("verificationKeyId",
                StringToBinaryValue("VERIFICATION_KEY_ID"));
+  options->Set("decryptionKeyId",
+               StringToBinaryValue("DECRYPTION_KEY_ID"));
   options->SetString(
       "encryptType",
       api::ToString(api::ENCRYPTION_TYPE_AES_256_CBC));
@@ -212,9 +215,10 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage_EmptyOptions) {
   client_->CreateSecureMessage(
       "PAYLOAD",
       "KEY",
-      "",
-      "",
-      "",
+      "",  // associated data
+      "",  // public metadata
+      "",  // verification key id
+      "",  // decryption key id
       easy_unlock::kEncryptionTypeNone,
       easy_unlock::kSignatureTypeHMACSHA256,
       base::Bind(&CopyData, &expected_result));
@@ -245,8 +249,9 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage_AsymmetricSign) {
       "PAYLOAD",
       "KEY",
       "ASSOCIATED_DATA",
-      "",
+      "",  // public metadata
       "VERIFICATION_KEY_ID",
+      "",  // decryption key id
       easy_unlock::kEncryptionTypeNone,
       easy_unlock::kSignatureTypeECDSAP256SHA256,
       base::Bind(&CopyData, &expected_result));
@@ -320,7 +325,7 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage_EmptyOptions) {
   client_->UnwrapSecureMessage(
       "MESSAGE",
       "KEY",
-      "",
+      "",  // associated data
       easy_unlock::kEncryptionTypeNone,
       easy_unlock::kSignatureTypeHMACSHA256,
       base::Bind(&CopyData, &expected_result));

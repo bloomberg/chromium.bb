@@ -33,6 +33,7 @@ class CHROMEOS_EXPORT FakeEasyUnlockClient : public EasyUnlockClient {
                                    const std::string& associated_data,
                                    const std::string& public_metadata,
                                    const std::string& verification_key_id,
+                                   const std::string& decryption_key_id,
                                    const std::string& encryption_type,
                                    const std::string& signature_type,
                                    const DataCallback& callback) OVERRIDE;

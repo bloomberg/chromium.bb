@@ -77,10 +77,14 @@
     ArrayBuffer? publicMetadata;
 
     // Verification key id added to the message header. Should be set if the
-    // message is signed using |ECDSA_P256_SHA256|. It's used by the message
+    // message is signed using |ECDSA_P256_SHA256|. Used by the message
     // recepient to determine which key should be used to verify the message
     // signature.
     ArrayBuffer? verificationKeyId;
+
+    // Decryption key id added to the message header. Used by the message
+    // recepient to determine which key should be used to decrypt the message.
+    ArrayBuffer? decryptionKeyId;
 
     // The encryption algorithm that should be used to encrypt the message.
     // Should not be set for a cleartext message.
