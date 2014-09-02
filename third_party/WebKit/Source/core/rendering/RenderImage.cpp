@@ -279,10 +279,6 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
 {
     LayoutUnit cWidth = contentWidth();
     LayoutUnit cHeight = contentHeight();
-    LayoutUnit leftBorder = borderLeft();
-    LayoutUnit topBorder = borderTop();
-    LayoutUnit leftPad = paddingLeft();
-    LayoutUnit topPad = paddingTop();
 
     GraphicsContext* context = paintInfo.context;
 
@@ -292,6 +288,11 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
 
         if (cWidth > 2 && cHeight > 2) {
             const int borderWidth = 1;
+
+            LayoutUnit leftBorder = borderLeft();
+            LayoutUnit topBorder = borderTop();
+            LayoutUnit leftPad = paddingLeft();
+            LayoutUnit topPad = paddingTop();
 
             // Draw an outline rect where the image should be.
             context->setStrokeStyle(SolidStroke);
@@ -355,10 +356,6 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
             }
         }
     } else if (m_imageResource->hasImage() && cWidth > 0 && cHeight > 0) {
-        RefPtr<Image> img = m_imageResource->image(cWidth, cHeight);
-        if (!img || img->isNull())
-            return;
-
         LayoutRect contentRect = contentBoxRect();
         contentRect.moveBy(paintOffset);
         LayoutRect paintRect = replacedContentRect();
@@ -450,7 +447,7 @@ void RenderImage::paintIntoRect(GraphicsContext* context, const LayoutRect& rect
 
     HTMLImageElement* imageElt = isHTMLImageElement(node()) ? toHTMLImageElement(node()) : 0;
     CompositeOperator compositeOperator = imageElt ? imageElt->compositeOperator() : CompositeSourceOver;
-    Image* image = m_imageResource->image().get();
+    Image* image = img.get();
     InterpolationQuality interpolationQuality = chooseInterpolationQuality(context, image, image, alignedRect.size());
 
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(*this));
@@ -458,7 +455,7 @@ void RenderImage::paintIntoRect(GraphicsContext* context, const LayoutRect& rect
     InspectorInstrumentation::willPaintImage(this);
     InterpolationQuality previousInterpolationQuality = context->imageInterpolationQuality();
     context->setImageInterpolationQuality(interpolationQuality);
-    context->drawImage(m_imageResource->image(alignedRect.width(), alignedRect.height()).get(), alignedRect, compositeOperator, shouldRespectImageOrientation());
+    context->drawImage(image, alignedRect, compositeOperator, shouldRespectImageOrientation());
     context->setImageInterpolationQuality(previousInterpolationQuality);
     InspectorInstrumentation::didPaintImage(this);
 }
