@@ -252,6 +252,13 @@ def main():  # pragma: no cover
   levels = [logging.ERROR, logging.INFO, logging.DEBUG]
   logging.basicConfig(level=levels[min(opts.verbose, len(levels) - 1)])
 
+  # 'git number' should only be used on bots.
+  if os.getenv('CHROME_HEADLESS') != '1':
+    logging.error("'git-number' is an infrastructure tool that is only "
+                  "intended to be used internally by bots. Developers should "
+                  "use the 'Cr-Commit-Position' value in the commit's message.")
+    return 1
+
   try:
     if opts.reset:
       clear_caches(on_disk=True)
