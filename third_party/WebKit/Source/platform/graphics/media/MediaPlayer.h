@@ -35,8 +35,6 @@ namespace blink {
 class AudioSourceProvider;
 class KURL;
 class MediaPlayer;
-class TimeRanges;
-class WebContentDecryptionModule;
 class WebInbandTextTrack;
 class WebLayer;
 class WebMediaSource;

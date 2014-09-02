@@ -43,9 +43,6 @@ class SkShader;
 
 namespace blink {
 
-class FloatRect;
-class IntSize;
-
 class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
 public:
     static PassRefPtr<Gradient> create(const FloatPoint& p0, const FloatPoint& p1)

@@ -32,7 +32,6 @@
 #include "wtf/Noncopyable.h"
 
 namespace blink {
-class ScrollView;
 
 // Adapts a WebScrollbar to the ScrollbarThemeClient interface
 class PLATFORM_EXPORT WebScrollbarThemeClientImpl : public ScrollbarThemeClient {

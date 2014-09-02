@@ -50,7 +50,6 @@ namespace blink {
 
 class Extensions3DUtil;
 class ImageBuffer;
-class ImageData;
 class WebExternalBitmap;
 class WebExternalTextureLayer;
 class WebGraphicsContext3D;

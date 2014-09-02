@@ -58,7 +58,6 @@ class GraphicsLayerFactoryChromium;
 class Image;
 class JSONObject;
 class ScrollableArea;
-class TextStream;
 class WebCompositorAnimation;
 class WebLayer;
 

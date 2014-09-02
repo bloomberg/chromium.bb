@@ -45,7 +45,6 @@
 namespace blink {
 
 class PrerenderClient;
-class WebPrerender;
 
 class PLATFORM_EXPORT Prerender : public RefCounted<Prerender> {
     WTF_MAKE_NONCOPYABLE(Prerender);

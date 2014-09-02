@@ -39,10 +39,6 @@ class ScrollAnimatorNoneTest;
 
 namespace blink {
 
-class IntPoint;
-class ActivePlatformGestureAnimation;
-struct ScrollAnimatorParameters;
-
 class PLATFORM_EXPORT ScrollAnimatorNone : public ScrollAnimator {
 public:
     explicit ScrollAnimatorNone(ScrollableArea*);

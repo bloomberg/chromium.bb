@@ -75,7 +75,6 @@ struct CookieHash {
 } // namespace blink
 
 namespace WTF {
-template<typename T> struct DefaultHash;
 template<> struct DefaultHash<blink::Cookie> {
     typedef blink::CookieHash Hash;
 };

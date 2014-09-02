@@ -41,7 +41,6 @@
 
 namespace blink {
 
-class MediaStreamDescriptor;
 class MediaStreamSource;
 class WebAudioSourceProvider;
 

@@ -44,9 +44,6 @@
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/MathExtras.h"
 
-class SkCanvas;
-class SkRegion;
-
 namespace blink {
 
 class GraphicsContext;

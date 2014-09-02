@@ -43,8 +43,6 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/Uint8ClampedArray.h"
 
-class SkCanvas;
-
 namespace blink {
 
 class DrawingBuffer;

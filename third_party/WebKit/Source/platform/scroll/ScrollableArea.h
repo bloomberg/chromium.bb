@@ -35,10 +35,8 @@
 namespace blink {
 
 class FloatPoint;
-class GraphicsContext;
 class GraphicsLayer;
 class HostWindow;
-class PlatformGestureEvent;
 class PlatformWheelEvent;
 class ProgrammaticScrollAnimator;
 class ScrollAnimator;

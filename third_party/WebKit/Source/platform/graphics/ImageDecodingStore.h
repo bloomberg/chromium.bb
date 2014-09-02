@@ -42,7 +42,6 @@
 namespace blink {
 
 class ImageFrameGenerator;
-class SharedBuffer;
 
 // FUNCTION
 //

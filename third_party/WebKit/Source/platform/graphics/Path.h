@@ -45,7 +45,6 @@ class AffineTransform;
 class FloatPoint;
 class FloatRect;
 class FloatSize;
-class GraphicsContext;
 class StrokeData;
 
 enum PathElementType {

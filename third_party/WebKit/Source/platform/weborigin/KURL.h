@@ -270,7 +270,6 @@ inline bool operator!=(const String& a, const KURL& b)
 namespace WTF {
 
 // KURLHash is the default hash for String
-template<typename T> struct DefaultHash;
 template<> struct DefaultHash<blink::KURL> {
     typedef blink::KURLHash Hash;
 };

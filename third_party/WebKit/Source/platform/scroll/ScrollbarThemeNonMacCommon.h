@@ -35,8 +35,6 @@
 
 namespace blink {
 
-class PlatformMouseEvent;
-
 class PLATFORM_EXPORT ScrollbarThemeNonMacCommon : public ScrollbarTheme {
 protected:
     virtual bool hasButtons(ScrollbarThemeClient*) OVERRIDE { return true; }

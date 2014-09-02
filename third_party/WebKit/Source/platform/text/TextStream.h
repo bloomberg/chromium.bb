@@ -36,7 +36,6 @@ namespace blink {
 
 class IntPoint;
 class IntRect;
-class LayoutPoint;
 class FloatPoint;
 class FloatRect;
 class FloatSize;

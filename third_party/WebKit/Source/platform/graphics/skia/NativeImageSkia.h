@@ -42,9 +42,6 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-class SkMatrix;
-class SkPaint;
-
 namespace blink {
 
 class FloatPoint;

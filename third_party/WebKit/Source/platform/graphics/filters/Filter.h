@@ -29,8 +29,6 @@
 
 namespace blink {
 
-class FilterEffect;
-
 class PLATFORM_EXPORT Filter : public RefCounted<Filter> {
 public:
     Filter(const AffineTransform& absoluteTransform)

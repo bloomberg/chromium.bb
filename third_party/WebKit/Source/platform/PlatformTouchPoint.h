@@ -24,8 +24,6 @@
 
 namespace blink {
 
-class PlatformTouchEvent;
-
 class PlatformTouchPoint {
 public:
     enum State {

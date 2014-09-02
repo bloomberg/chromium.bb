@@ -34,8 +34,6 @@
 
 namespace blink {
 
-class CSSCrossfadeValue;
-
 class PLATFORM_EXPORT CrossfadeGeneratedImage : public GeneratedImage {
 public:
     static PassRefPtr<CrossfadeGeneratedImage> create(Image* fromImage, Image* toImage, float percentage, IntSize crossfadeSize, const IntSize& size)

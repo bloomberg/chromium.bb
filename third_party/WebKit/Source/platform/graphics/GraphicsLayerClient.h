@@ -31,12 +31,9 @@
 
 namespace blink {
 
-class FloatPoint;
 class GraphicsContext;
 class GraphicsLayer;
-class IntPoint;
 class IntRect;
-class TransformationMatrix;
 
 enum GraphicsLayerPaintingPhaseFlags {
     GraphicsLayerPaintBackground = (1 << 0),

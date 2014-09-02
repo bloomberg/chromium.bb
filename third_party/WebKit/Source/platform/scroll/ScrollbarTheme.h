@@ -35,7 +35,6 @@ namespace blink {
 class GraphicsContext;
 class PlatformMouseEvent;
 class ScrollbarThemeClient;
-class ScrollView;
 
 class PLATFORM_EXPORT ScrollbarTheme {
     WTF_MAKE_NONCOPYABLE(ScrollbarTheme); WTF_MAKE_FAST_ALLOCATED;
