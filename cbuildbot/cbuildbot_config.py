@@ -2102,6 +2102,7 @@ _release = full.derive(official, internal,
   build_type=constants.CANARY_TYPE,
   useflags=official['useflags'] + ['-cros-debug', '-highdpi'],
   build_tests=True,
+  afdo_use=True,
   manifest=constants.OFFICIAL_MANIFEST,
   manifest_version=True,
   images=['base', 'test', 'factory_install'],
@@ -2147,6 +2148,7 @@ _release.add_config('master-release',
   chrome_sdk=False,
   health_alert_recipients=['chromeos-build-alerts@google.com',
                            'tree', 'build'],
+  afdo_use=False,
 )
 
 ### Release config groups.
@@ -2178,12 +2180,10 @@ _config.add_group('x86-zgb-release-group',
 _config.add_group('parrot-release-group',
   _release.add_config('parrot-release',
     boards=['parrot'],
-    afdo_use=True,
     critical_for_chrome=True,
   ),
   _grouped_variant_release.add_config('parrot_ivb-release',
     boards=['parrot_ivb'],
-    afdo_use=True,
   )
 )
 
@@ -2213,6 +2213,7 @@ def _AddAFDOConfigs():
         base,
         boards=(board,),
         afdo_generate_min=True,
+        afdo_use=False,
         afdo_update_ebuild=True,
     )
     use_config = _config(
@@ -2278,7 +2279,6 @@ _release.add_config('link_freon-release',
 _release.add_config('lumpy-release',
   boards=['lumpy'],
   critical_for_chrome=True,
-  afdo_use=True,
 )
 
 _release.add_config('quawks-release',
@@ -2295,25 +2295,6 @@ _release.add_config('swanky-release',
   boards=['swanky'],
   useflags=_release['useflags'] + ['highdpi'],
 )
-
-# Add specific release configs for these sandybridge/ivybridge boards to
-# enable AFDO. We should remove these once AFDO is enabled everywhere.
-# parrot is added in parrot-release-group above.
-_release.add_config('stumpy-release',
-  boards=['stumpy'],
-  afdo_use=True,
-)
-
-_release.add_config('butterfly-release',
-  boards=['butterfly'],
-  afdo_use=True,
-)
-
-_release.add_config('stout-release',
-  boards=['stout'],
-  afdo_use=True,
-)
-
 
 ### Arm release configs.
 
@@ -2382,6 +2363,7 @@ _AddReleaseConfigs()
 
 _brillo_release = _release.derive(brillo,
   dev_installer_prebuilts=False,
+  afdo_use=False,
 )
 
 _brillo_release.add_config('duck-release',
@@ -2447,6 +2429,7 @@ _release.add_config('mipsel-o32-generic-release',
   brillo_non_testable,
   boards=['mipsel-o32-generic'],
   paygen_skip_delta_payloads=True,
+  afdo_use=False,
 )
 
 _release.add_config('stumpy_moblab-release',
@@ -2457,6 +2440,7 @@ _release.add_config('stumpy_moblab-release',
   # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
   paygen_skip_testing=True,
   important=True,
+  afdo_use=False,
   hw_tests=HWTestConfig.DefaultList(warn_only=True)
 )
 
@@ -2512,12 +2496,12 @@ _AddGroupConfig('sandybridge', 'lumpy', (
     'butterfly',
     'parrot',
     'stumpy',
-), afdo_use=True)
+))
 
 # ivybridge chipset boards
 _AddGroupConfig('ivybridge', 'stout', (), (
     'parrot_ivb',
-), afdo_use=True)
+))
 
 # slippy-based haswell boards
 # TODO(davidjames): Combine slippy and beltino into haswell canary, once we've
@@ -2595,6 +2579,7 @@ _factory_release = _release.derive(
   chrome_sdk=False,
   description='Factory Builds',
   paygen=False,
+  afdo_use=False,
 )
 
 _firmware = _config(
@@ -2621,6 +2606,7 @@ _firmware = _config(
 _firmware_release = _release.derive(_firmware,
   description='Firmware Canary',
   manifest=constants.DEFAULT_MANIFEST,
+  afdo_use=False,
 )
 
 _depthcharge_release = _firmware_release.derive(useflags=['depthcharge'])
