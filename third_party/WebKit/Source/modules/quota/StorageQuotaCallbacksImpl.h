@@ -42,9 +42,9 @@ namespace blink {
 class StorageQuotaCallbacksImpl FINAL : public StorageQuotaCallbacks {
     WTF_MAKE_NONCOPYABLE(StorageQuotaCallbacksImpl);
 public:
-    static PassOwnPtr<StorageQuotaCallbacksImpl> create(PassRefPtr<ScriptPromiseResolver> resolver)
+    static PassOwnPtrWillBeRawPtr<StorageQuotaCallbacksImpl> create(PassRefPtr<ScriptPromiseResolver> resolver)
     {
-        return adoptPtr(new StorageQuotaCallbacksImpl(resolver));
+        return adoptPtrWillBeNoop(new StorageQuotaCallbacksImpl(resolver));
     }
 
     virtual ~StorageQuotaCallbacksImpl();

@@ -57,7 +57,7 @@ public:
     BLINK_PLATFORM_EXPORT void assign(const WebStorageQuotaCallbacks&);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebStorageQuotaCallbacks(const WTF::PassOwnPtr<StorageQuotaCallbacks>&);
+    BLINK_PLATFORM_EXPORT WebStorageQuotaCallbacks(const PassOwnPtrWillBeRawPtr<StorageQuotaCallbacks>&);
 #endif
 
     // Callback for WebFrameClient::queryStorageUsageAndQuota.

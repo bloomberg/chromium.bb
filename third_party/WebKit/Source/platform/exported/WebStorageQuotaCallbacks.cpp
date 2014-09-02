@@ -14,21 +14,28 @@
 
 namespace blink {
 
-class WebStorageQuotaCallbacksPrivate : public RefCounted<WebStorageQuotaCallbacksPrivate> {
+class WebStorageQuotaCallbacksPrivate FINAL : public RefCountedWillBeGarbageCollected<WebStorageQuotaCallbacksPrivate> {
 public:
-    static PassRefPtr<WebStorageQuotaCallbacksPrivate> create(const PassOwnPtr<StorageQuotaCallbacks>& callbacks)
+    static PassRefPtrWillBeRawPtr<WebStorageQuotaCallbacksPrivate> create(const PassOwnPtrWillBeRawPtr<StorageQuotaCallbacks>& callbacks)
     {
-        return adoptRef(new WebStorageQuotaCallbacksPrivate(callbacks));
+        return adoptRefWillBeNoop(new WebStorageQuotaCallbacksPrivate(callbacks));
     }
+
+    void trace(Visitor*);
 
     StorageQuotaCallbacks* callbacks() { return m_callbacks.get(); }
 
 private:
-    WebStorageQuotaCallbacksPrivate(const PassOwnPtr<StorageQuotaCallbacks>& callbacks) : m_callbacks(callbacks) { }
-    OwnPtr<StorageQuotaCallbacks> m_callbacks;
+    WebStorageQuotaCallbacksPrivate(const PassOwnPtrWillBeRawPtr<StorageQuotaCallbacks>& callbacks) : m_callbacks(callbacks) { }
+    OwnPtrWillBeMember<StorageQuotaCallbacks> m_callbacks;
 };
 
-WebStorageQuotaCallbacks::WebStorageQuotaCallbacks(const PassOwnPtr<StorageQuotaCallbacks>& callbacks)
+void WebStorageQuotaCallbacksPrivate::trace(Visitor* visitor)
+{
+    visitor->trace(m_callbacks);
+}
+
+WebStorageQuotaCallbacks::WebStorageQuotaCallbacks(const PassOwnPtrWillBeRawPtr<StorageQuotaCallbacks>& callbacks)
 {
     m_private = WebStorageQuotaCallbacksPrivate::create(callbacks);
 }

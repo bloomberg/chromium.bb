@@ -52,6 +52,14 @@ DeprecatedStorageQuotaCallbacksImpl::~DeprecatedStorageQuotaCallbacksImpl()
 {
 }
 
+void DeprecatedStorageQuotaCallbacksImpl::trace(Visitor* visitor)
+{
+    visitor->trace(m_usageCallback);
+    visitor->trace(m_quotaCallback);
+    visitor->trace(m_errorCallback);
+    StorageQuotaCallbacks::trace(visitor);
+}
+
 void DeprecatedStorageQuotaCallbacksImpl::didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes)
 {
     if (m_usageCallback)

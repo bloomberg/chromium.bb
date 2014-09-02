@@ -41,20 +41,20 @@
 
 namespace blink {
 
-// FIXME: Oilpan: Move DeprecatedStorageQuotaCallbacksImpl to heap in a follow-up.
 class DeprecatedStorageQuotaCallbacksImpl FINAL : public StorageQuotaCallbacks {
 public:
-    static PassOwnPtr<DeprecatedStorageQuotaCallbacksImpl> create(PassOwnPtrWillBeRawPtr<StorageUsageCallback> success, PassOwnPtrWillBeRawPtr<StorageErrorCallback> error)
+    static PassOwnPtrWillBeRawPtr<DeprecatedStorageQuotaCallbacksImpl> create(PassOwnPtrWillBeRawPtr<StorageUsageCallback> success, PassOwnPtrWillBeRawPtr<StorageErrorCallback> error)
     {
-        return adoptPtr(new DeprecatedStorageQuotaCallbacksImpl(success, error));
+        return adoptPtrWillBeNoop(new DeprecatedStorageQuotaCallbacksImpl(success, error));
     }
 
-    static PassOwnPtr<DeprecatedStorageQuotaCallbacksImpl> create(PassOwnPtrWillBeRawPtr<StorageQuotaCallback> success, PassOwnPtrWillBeRawPtr<StorageErrorCallback> error)
+    static PassOwnPtrWillBeRawPtr<DeprecatedStorageQuotaCallbacksImpl> create(PassOwnPtrWillBeRawPtr<StorageQuotaCallback> success, PassOwnPtrWillBeRawPtr<StorageErrorCallback> error)
     {
-        return adoptPtr(new DeprecatedStorageQuotaCallbacksImpl(success, error));
+        return adoptPtrWillBeNoop(new DeprecatedStorageQuotaCallbacksImpl(success, error));
     }
 
     virtual ~DeprecatedStorageQuotaCallbacksImpl();
+    virtual void trace(Visitor*) OVERRIDE;
 
     virtual void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes) OVERRIDE;
     virtual void didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes) OVERRIDE;
@@ -64,9 +64,9 @@ private:
     DeprecatedStorageQuotaCallbacksImpl(PassOwnPtrWillBeRawPtr<StorageUsageCallback>, PassOwnPtrWillBeRawPtr<StorageErrorCallback>);
     DeprecatedStorageQuotaCallbacksImpl(PassOwnPtrWillBeRawPtr<StorageQuotaCallback>, PassOwnPtrWillBeRawPtr<StorageErrorCallback>);
 
-    OwnPtrWillBePersistent<StorageUsageCallback> m_usageCallback;
-    OwnPtrWillBePersistent<StorageQuotaCallback> m_quotaCallback;
-    OwnPtrWillBePersistent<StorageErrorCallback> m_errorCallback;
+    OwnPtrWillBeMember<StorageUsageCallback> m_usageCallback;
+    OwnPtrWillBeMember<StorageQuotaCallback> m_quotaCallback;
+    OwnPtrWillBeMember<StorageErrorCallback> m_errorCallback;
 };
 
 } // namespace blink
