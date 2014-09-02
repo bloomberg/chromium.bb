@@ -204,6 +204,9 @@
     'chromeos_calculator': {
       'filepath': 'chrome/common/extensions/docs/examples/apps/calculator/',
     },
+    'chromeos_dbus': {
+      'filepath': 'chromeos/dbus/',
+    },
     'chromeos_login': {
       'filepath': 'chrome/browser/chromeos/login/|'\
                   'chrome/browser/ui/webui/chromeos/login/|'\
@@ -814,6 +817,7 @@
                   'stevenjb+watch@chromium.org'],
     'chromeos_attestation' : ['dkrahn+watch@chromium.org'],
     'chromeos_calculator' : ['dharcourt@chromium.org'],
+    'chromeos_dbus': ['hashimoto+watch@chromium.org'],
     'chromeos_net' : ['stevenjb+watch@chromium.org'],
     'chromeos_power' : ['derat+watch@chromium.org'],
     'chromeos_webui': ['nkostylev+watch@chromium.org'],
