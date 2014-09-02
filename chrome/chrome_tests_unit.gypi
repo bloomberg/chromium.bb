@@ -2122,10 +2122,6 @@
             'browser/ui/app_list/search/history_unittest.cc',
             'browser/ui/app_list/search/history_data_store_unittest.cc',
             'browser/ui/app_list/search/mixer_unittest.cc',
-            'browser/ui/app_list/search/term_break_iterator_unittest.cc',
-            'browser/ui/app_list/search/tokenized_string_char_iterator_unittest.cc',
-            'browser/ui/app_list/search/tokenized_string_match_unittest.cc',
-            'browser/ui/app_list/search/tokenized_string_unittest.cc',
           ],
           'dependencies': [
             '../ash/ash.gyp:ash_test_support',

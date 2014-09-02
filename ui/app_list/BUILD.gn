@@ -38,6 +38,14 @@ component("app_list") {
     "search_provider.h",
     "search_result.cc",
     "search_result.h",
+    "search/term_break_iterator.cc",
+    "search/term_break_iterator.h",
+    "search/tokenized_string.cc",
+    "search/tokenized_string.h",
+    "search/tokenized_string_char_iterator.cc",
+    "search/tokenized_string_char_iterator.h",
+    "search/tokenized_string_match.cc",
+    "search/tokenized_string_match.h",
     "speech_ui_model.cc",
     "speech_ui_model.h",
     "speech_ui_model_observer.h",
@@ -50,6 +58,7 @@ component("app_list") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//skia",
+    "//third_party/icu",
     "//ui/accessibility",
     "//ui/base",
     "//ui/compositor",
@@ -158,7 +167,7 @@ component("app_list") {
       "cocoa/scroll_view_with_no_scrollbars.mm",
     ]
     deps += [
-      #'../../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',  TODO(GYP)
+      #"../../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac",  TODO(GYP)
     ]
     libs = [ "QuartzCore.framework" ]
   }
@@ -186,6 +195,10 @@ test("app_list_unittests") {
     "app_list_item_list_unittest.cc",
     "app_list_model_unittest.cc",
     "pagination_model_unittest.cc",
+    "search/term_break_iterator_unittest.cc",
+    "search/tokenized_string_char_iterator_unittest.cc",
+    "search/tokenized_string_match_unittest.cc",
+    "search/tokenized_string_unittest.cc",
     "test/run_all_unittests.cc",
   ]
 

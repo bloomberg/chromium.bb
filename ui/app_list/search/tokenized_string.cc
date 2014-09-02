@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/search/tokenized_string.h"
+#include "ui/app_list/search/tokenized_string.h"
 
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
-#include "chrome/browser/ui/app_list/search/term_break_iterator.h"
+#include "ui/app_list/search/term_break_iterator.h"
 
 using base::i18n::BreakIterator;
 

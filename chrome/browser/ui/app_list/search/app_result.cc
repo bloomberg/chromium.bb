@@ -10,8 +10,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/app_list/search/tokenized_string.h"
-#include "chrome/browser/ui/app_list/search/tokenized_string_match.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "content/public/browser/user_metrics.h"
@@ -24,6 +22,8 @@
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "ui/app_list/app_list_switches.h"
+#include "ui/app_list/search/tokenized_string.h"
+#include "ui/app_list/search/tokenized_string_match.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia_operations.h"
 

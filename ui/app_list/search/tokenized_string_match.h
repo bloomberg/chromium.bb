@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_TOKENIZED_STRING_MATCH_H_
-#define CHROME_BROWSER_UI_APP_LIST_SEARCH_TOKENIZED_STRING_MATCH_H_
+#ifndef UI_APP_LIST_SEARCH_TOKENIZED_STRING_MATCH_H_
+#define UI_APP_LIST_SEARCH_TOKENIZED_STRING_MATCH_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
+#include "ui/app_list/app_list_export.h"
 #include "ui/gfx/range/range.h"
 
 namespace app_list {
@@ -21,7 +22,7 @@ class TokenizedString;
 // of text. A relevance of zero means the two are completely different to each
 // other. The higher the relevance score, the better the two strings are
 // matched. Matched portions of text are stored as index ranges.
-class TokenizedStringMatch {
+class APP_LIST_EXPORT TokenizedStringMatch {
  public:
   typedef std::vector<gfx::Range> Hits;
 
@@ -50,4 +51,4 @@ class TokenizedStringMatch {
 
 }  // namespace app_list
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_TOKENIZED_STRING_MATCH_H_
+#endif  // UI_APP_LIST_SEARCH_TOKENIZED_STRING_MATCH_H_

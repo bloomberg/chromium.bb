@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/app_list/search/tokenized_string_match.h"
+
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/app_list/search/tokenized_string_match.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace app_list {

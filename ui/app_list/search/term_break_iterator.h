@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_TERM_BREAK_ITERATOR_H_
-#define CHROME_BROWSER_UI_APP_LIST_SEARCH_TERM_BREAK_ITERATOR_H_
+#ifndef UI_APP_LIST_SEARCH_TERM_BREAK_ITERATOR_H_
+#define UI_APP_LIST_SEARCH_TERM_BREAK_ITERATOR_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "ui/app_list/app_list_export.h"
 
 namespace base {
 namespace i18n {
@@ -23,7 +24,7 @@ namespace app_list {
 //  e.g.
 //   CamelCase -> Camel, Case
 //   Python2.7 -> Python, 2.7
-class TermBreakIterator {
+class APP_LIST_EXPORT TermBreakIterator {
  public:
   // Note that |word| must out live this iterator.
   explicit TermBreakIterator(const base::string16& word);
@@ -66,4 +67,4 @@ class TermBreakIterator {
 
 }  // namespace app_list
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_TERM_BREAK_ITERATOR_H_
+#endif  // UI_APP_LIST_SEARCH_TERM_BREAK_ITERATOR_H_

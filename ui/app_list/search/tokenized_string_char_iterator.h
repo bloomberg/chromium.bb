@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_TOKENIZED_STRING_CHAR_ITERATOR_H_
-#define CHROME_BROWSER_UI_APP_LIST_SEARCH_TOKENIZED_STRING_CHAR_ITERATOR_H_
+#ifndef UI_APP_LIST_SEARCH_TOKENIZED_STRING_CHAR_ITERATOR_H_
+#define UI_APP_LIST_SEARCH_TOKENIZED_STRING_CHAR_ITERATOR_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/app_list/search/tokenized_string.h"
+#include "ui/app_list/app_list_export.h"
+#include "ui/app_list/search/tokenized_string.h"
 
 namespace base {
 namespace i18n {
@@ -18,7 +19,7 @@ class UTF16CharIterator;
 namespace app_list {
 
 // An UTF16 char iterator for a TokenizedString.
-class TokenizedStringCharIterator {
+class APP_LIST_EXPORT TokenizedStringCharIterator {
  public:
   struct State {
     State();
@@ -73,4 +74,4 @@ class TokenizedStringCharIterator {
 
 }  // namespace app_list
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_TOKENIZED_STRING_CHAR_ITERATOR_H_
+#endif  // UI_APP_LIST_SEARCH_TOKENIZED_STRING_CHAR_ITERATOR_H_

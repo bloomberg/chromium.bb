@@ -12,13 +12,13 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/app_result.h"
-#include "chrome/browser/ui/app_list/search/tokenized_string.h"
-#include "chrome/browser/ui/app_list/search/tokenized_string_match.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "ui/app_list/search/tokenized_string.h"
+#include "ui/app_list/search/tokenized_string_match.h"
 
 using extensions::ExtensionRegistry;
 

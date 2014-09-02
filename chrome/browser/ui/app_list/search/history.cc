@@ -9,8 +9,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/search/history_data.h"
 #include "chrome/browser/ui/app_list/search/history_data_store.h"
-#include "chrome/browser/ui/app_list/search/tokenized_string.h"
 #include "content/public/browser/browser_context.h"
+#include "ui/app_list/search/tokenized_string.h"
 
 namespace app_list {
 

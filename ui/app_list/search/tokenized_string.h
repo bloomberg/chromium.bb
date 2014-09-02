@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_TOKENIZED_STRING_H_
-#define CHROME_BROWSER_UI_APP_LIST_SEARCH_TOKENIZED_STRING_H_
+#ifndef UI_APP_LIST_SEARCH_TOKENIZED_STRING_H_
+#define UI_APP_LIST_SEARCH_TOKENIZED_STRING_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
+#include "ui/app_list/app_list_export.h"
 #include "ui/gfx/range/range.h"
 
 namespace app_list {
@@ -16,7 +17,7 @@ namespace app_list {
 // TokenizedString takes a string and breaks it down into token words. It
 // first breaks using BreakIterator to get all the words. Then it breaks
 // the words again at camel case boundaries and alpha/number boundaries.
-class TokenizedString {
+class APP_LIST_EXPORT TokenizedString {
  public:
   typedef std::vector<base::string16> Tokens;
   typedef std::vector<gfx::Range> Mappings;
@@ -43,4 +44,4 @@ class TokenizedString {
 
 }  // namespace app_list
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_TOKENIZED_STRING_H_
+#endif  // UI_APP_LIST_SEARCH_TOKENIZED_STRING_H_
