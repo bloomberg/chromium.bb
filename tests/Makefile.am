@@ -130,6 +130,13 @@ resolve_table_SOURCES =				\
 logging_SOURCES =				\
 	logging.c
 
+# Note that this is not currently included in check_programs below
+# otherwise make check would never complete.
+infiniteTranslationLoop_SOURCES =				\
+	brl_checks.c				\
+	brl_checks.h				\
+	infiniteTranslationLoop.c
+
 check_PROGRAMS =				\
 	pass2					\
 	pass2_inpos				\
