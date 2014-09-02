@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_CONTENT_SETTINGS_TYPES_H_
 #define COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_CONTENT_SETTINGS_TYPES_H_
 
+#include "build/build_config.h"
+
 // A particular type of content to care about.  We give the user various types
 // of controls over each of these.
 enum ContentSettingsType {

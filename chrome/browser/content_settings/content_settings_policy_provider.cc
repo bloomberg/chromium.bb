@@ -370,7 +370,7 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
     // Ignore invalid patterns.
     if (!pattern.IsValid()) {
       VLOG(1) << "Ignoring invalid certificate auto select setting:"
-                 " Invalid content settings pattern: " << pattern;
+                 " Invalid content settings pattern: " << pattern.ToString();
       continue;
     }
 

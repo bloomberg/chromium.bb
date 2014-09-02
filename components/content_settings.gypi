@@ -8,6 +8,7 @@
       # GN version: //components/content_settings/core/common
       'target_name': 'content_settings_core_common',
       'type': 'none',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'include_dirs': [
         '..',
       ],

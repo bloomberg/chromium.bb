@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "chrome/browser/content_settings/content_settings_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -26,6 +27,6 @@ class MockObserver : public Observer {
   DISALLOW_COPY_AND_ASSIGN(MockObserver);
 };
 
-}  // content_settings
+}  // namespace content_settings
 
 #endif  // CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_MOCK_OBSERVER_H_

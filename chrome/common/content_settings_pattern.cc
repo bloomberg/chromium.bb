@@ -10,16 +10,14 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/content_settings_pattern_parser.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/url_constants.h"
-#include "extensions/common/constants.h"
-#include "ipc/ipc_message_utils.h"
 #include "net/base/dns_util.h"
 #include "net/base/net_util.h"
 #include "url/gurl.h"
-#include "url/url_canon.h"
 
 namespace {
+
+// The component supports only one scheme for simplicity.
+const char* non_port_non_domain_wildcard_scheme = NULL;
 
 std::string GetDefaultPort(const std::string& scheme) {
   if (scheme == url::kHttpScheme)
@@ -85,6 +83,44 @@ typedef ContentSettingsPattern::BuilderInterface BuilderInterface;
 // ////////////////////////////////////////////////////////////////////////////
 // ContentSettingsPattern::Builder
 //
+class ContentSettingsPattern::Builder :
+    public ContentSettingsPattern::BuilderInterface {
+ public:
+  explicit Builder(bool use_legacy_validate);
+  virtual ~Builder();
+
+  // BuilderInterface:
+  virtual BuilderInterface* WithPort(const std::string& port) OVERRIDE;
+  virtual BuilderInterface* WithPortWildcard() OVERRIDE;
+  virtual BuilderInterface* WithHost(const std::string& host) OVERRIDE;
+  virtual BuilderInterface* WithDomainWildcard() OVERRIDE;
+  virtual BuilderInterface* WithScheme(const std::string& scheme) OVERRIDE;
+  virtual BuilderInterface* WithSchemeWildcard() OVERRIDE;
+  virtual BuilderInterface* WithPath(const std::string& path) OVERRIDE;
+  virtual BuilderInterface* WithPathWildcard() OVERRIDE;
+  virtual BuilderInterface* Invalid() OVERRIDE;
+  virtual ContentSettingsPattern Build() OVERRIDE;
+
+ private:
+  // Canonicalizes the pattern parts so that they are ASCII only, either
+  // in original (if it was already ASCII) or punycode form. Returns true if
+  // the canonicalization was successful.
+  static bool Canonicalize(PatternParts* parts);
+
+  // Returns true when the pattern |parts| represent a valid pattern.
+  static bool Validate(const PatternParts& parts);
+
+  static bool LegacyValidate(const PatternParts& parts);
+
+  bool is_valid_;
+
+  bool use_legacy_validate_;
+
+  PatternParts parts_;
+
+  DISALLOW_COPY_AND_ASSIGN(Builder);
+};
+
 ContentSettingsPattern::Builder::Builder(bool use_legacy_validate)
     : is_valid_(true),
       use_legacy_validate_(use_legacy_validate) {}
@@ -224,7 +260,7 @@ bool ContentSettingsPattern::Builder::Validate(const PatternParts& parts) {
   }
 
   // If the pattern is for an extension URL test if it is valid.
-  if (parts.scheme == std::string(extensions::kExtensionScheme) &&
+  if (IsNonWildcardDomainNonPortScheme(parts.scheme) &&
       parts.port.empty() &&
       !parts.is_port_wildcard) {
     return true;
@@ -261,7 +297,7 @@ bool ContentSettingsPattern::Builder::LegacyValidate(
     return true;
 
   // If the pattern is for an extension URL test if it is valid.
-  if (parts.scheme == std::string(extensions::kExtensionScheme) &&
+  if (IsNonWildcardDomainNonPortScheme(parts.scheme) &&
       !parts.is_scheme_wildcard &&
       !parts.host.empty() &&
       !parts.has_domain_wildcard &&
@@ -311,15 +347,19 @@ ContentSettingsPattern::PatternParts::~PatternParts() {}
 // TODO(jochen): update once this feature is no longer behind a flag.
 const int ContentSettingsPattern::kContentSettingsPatternVersion = 1;
 
-// TODO(markusheintz): These two constants were moved to the Pattern Parser.
-// Remove once the dependency of the ContentSettingsBaseProvider is removed.
-const char* ContentSettingsPattern::kDomainWildcard = "[*.]";
-const size_t ContentSettingsPattern::kDomainWildcardLength = 4;
-
 // static
 BuilderInterface* ContentSettingsPattern::CreateBuilder(
     bool validate) {
   return new Builder(validate);
+}
+
+// static
+ContentSettingsPattern ContentSettingsPattern::Wildcard() {
+  scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
+      ContentSettingsPattern::CreateBuilder(true));
+  builder->WithSchemeWildcard()->WithDomainWildcard()->WithPortWildcard()->
+           WithPathWildcard();
+  return builder->Build();
 }
 
 // static
@@ -388,26 +428,25 @@ ContentSettingsPattern ContentSettingsPattern::FromString(
     const std::string& pattern_spec) {
   scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
       ContentSettingsPattern::CreateBuilder(false));
-  content_settings::PatternParser::Parse(pattern_spec, builder.get());
+  content_settings::PatternParser::Parse(pattern_spec,
+                                         builder.get());
   return builder->Build();
 }
 
 // static
-ContentSettingsPattern ContentSettingsPattern::LegacyFromString(
-    const std::string& pattern_spec) {
-  scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
-      ContentSettingsPattern::CreateBuilder(true));
-  content_settings::PatternParser::Parse(pattern_spec, builder.get());
-  return builder->Build();
+void ContentSettingsPattern::SetNonWildcardDomainNonPortScheme(
+    const char* scheme) {
+  DCHECK(scheme);
+  DCHECK(!non_port_non_domain_wildcard_scheme ||
+         non_port_non_domain_wildcard_scheme == scheme);
+  non_port_non_domain_wildcard_scheme = scheme;
 }
 
 // static
-ContentSettingsPattern ContentSettingsPattern::Wildcard() {
-  scoped_ptr<ContentSettingsPattern::BuilderInterface> builder(
-      ContentSettingsPattern::CreateBuilder(true));
-  builder->WithSchemeWildcard()->WithDomainWildcard()->WithPortWildcard()->
-           WithPathWildcard();
-  return builder->Build();
+bool ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(
+    const std::string& scheme) {
+  DCHECK(non_port_non_domain_wildcard_scheme);
+  return scheme == non_port_non_domain_wildcard_scheme;
 }
 
 ContentSettingsPattern::ContentSettingsPattern()
@@ -419,17 +458,6 @@ ContentSettingsPattern::ContentSettingsPattern(
     bool valid)
     : parts_(parts),
       is_valid_(valid) {
-}
-
-void ContentSettingsPattern::WriteToMessage(IPC::Message* m) const {
-  IPC::WriteParam(m, is_valid_);
-  IPC::WriteParam(m, parts_);
-}
-
-bool ContentSettingsPattern::ReadFromMessage(const IPC::Message* m,
-                                             PickleIterator* iter) {
-  return IPC::ReadParam(m, iter, &is_valid_) &&
-         IPC::ReadParam(m, iter, &parts_);
 }
 
 bool ContentSettingsPattern::Matches(
@@ -471,8 +499,8 @@ bool ContentSettingsPattern::Matches(
       return false;
   }
 
-  // For chrome extensions URLs ignore the port.
-  if (parts_.scheme == std::string(extensions::kExtensionScheme))
+  // Ignore the port if the scheme doesn't support it.
+  if (IsNonWildcardDomainNonPortScheme(parts_.scheme))
     return true;
 
   // Match the port part.
@@ -497,7 +525,7 @@ bool ContentSettingsPattern::MatchesAllHosts() const {
   return parts_.has_domain_wildcard && parts_.host.empty();
 }
 
-const std::string ContentSettingsPattern::ToString() const {
+std::string ContentSettingsPattern::ToString() const {
   if (IsValid())
     return content_settings::PatternParser::ToString(parts_);
   else
@@ -559,6 +587,23 @@ bool ContentSettingsPattern::operator<(
 bool ContentSettingsPattern::operator>(
     const ContentSettingsPattern& other) const {
   return Compare(other) > 0;
+}
+
+// static
+ContentSettingsPattern::Relation ContentSettingsPattern::CompareScheme(
+    const ContentSettingsPattern::PatternParts& parts,
+    const ContentSettingsPattern::PatternParts& other_parts) {
+  if (parts.is_scheme_wildcard && !other_parts.is_scheme_wildcard)
+    return ContentSettingsPattern::SUCCESSOR;
+  if (!parts.is_scheme_wildcard && other_parts.is_scheme_wildcard)
+    return ContentSettingsPattern::PREDECESSOR;
+
+  int result = parts.scheme.compare(other_parts.scheme);
+  if (result == 0)
+    return ContentSettingsPattern::IDENTITY;
+  if (result > 0)
+    return ContentSettingsPattern::DISJOINT_ORDER_PRE;
+  return ContentSettingsPattern::DISJOINT_ORDER_POST;
 }
 
 // static
@@ -646,23 +691,6 @@ ContentSettingsPattern::Relation ContentSettingsPattern::CompareHost(
 
   NOTREACHED();
   return ContentSettingsPattern::IDENTITY;
-}
-
-// static
-ContentSettingsPattern::Relation ContentSettingsPattern::CompareScheme(
-    const ContentSettingsPattern::PatternParts& parts,
-    const ContentSettingsPattern::PatternParts& other_parts) {
-  if (parts.is_scheme_wildcard && !other_parts.is_scheme_wildcard)
-    return ContentSettingsPattern::SUCCESSOR;
-  if (!parts.is_scheme_wildcard && other_parts.is_scheme_wildcard)
-    return ContentSettingsPattern::PREDECESSOR;
-
-  int result = parts.scheme.compare(other_parts.scheme);
-  if (result == 0)
-    return ContentSettingsPattern::IDENTITY;
-  if (result > 0)
-    return ContentSettingsPattern::DISJOINT_ORDER_PRE;
-  return ContentSettingsPattern::DISJOINT_ORDER_POST;
 }
 
 // static

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
-
+#include "base/macros.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_helpers.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 namespace helpers = content_settings_helpers;

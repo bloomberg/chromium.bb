@@ -7,23 +7,14 @@
 #ifndef CHROME_COMMON_CONTENT_SETTINGS_PATTERN_H_
 #define CHROME_COMMON_CONTENT_SETTINGS_PATTERN_H_
 
-#include <ostream>
 #include <string>
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 
 class GURL;
-class Pickle;
-class PickleIterator;
 
 namespace content_settings {
 class PatternParser;
-}
-
-namespace IPC {
-class Message;
 }
 
 // A pattern used in content setting rules. See |IsValid| for a description of
@@ -131,12 +122,6 @@ class ContentSettingsPattern {
   // The version of the pattern format implemented.
   static const int kContentSettingsPatternVersion;
 
-  // The format of a domain wildcard.
-  static const char* kDomainWildcard;
-
-  // The length of kDomainWildcard (without the trailing '\0').
-  static const size_t kDomainWildcardLength;
-
   // Returns a wildcard content settings pattern that matches all possible valid
   // origins.
   static ContentSettingsPattern Wildcard();
@@ -159,16 +144,18 @@ class ContentSettingsPattern {
   //   - [a:b:c:d:e:f:g:h] (matches an exact IPv6 ip)
   static ContentSettingsPattern FromString(const std::string& pattern_spec);
 
-  static ContentSettingsPattern LegacyFromString(
-      const std::string& pattern_spec);
+  // Sets the scheme that doesn't support domain wildcard and port.
+  // Needs to be called by the embedder before using ContentSettingsPattern.
+  // |scheme| can't be NULL, and the pointed string must remain alive until the
+  // app terminates.
+  static void SetNonWildcardDomainNonPortScheme(const char* scheme);
+
+  // Compares |scheme| against the scheme set by the embedder.
+  static bool IsNonWildcardDomainNonPortScheme(const std::string& scheme);
 
   // Constructs an empty pattern. Empty patterns are invalid patterns. Invalid
   // patterns match nothing.
   ContentSettingsPattern();
-
-  // Serializes the pattern to an IPC message or deserializes it.
-  void WriteToMessage(IPC::Message* m) const;
-  bool ReadFromMessage(const IPC::Message* m, PickleIterator* iter);
 
   // True if this is a valid pattern.
   bool IsValid() const { return is_valid_; }
@@ -180,7 +167,7 @@ class ContentSettingsPattern {
   bool MatchesAllHosts() const;
 
   // Returns a std::string representation of this pattern.
-  const std::string ToString() const;
+  std::string ToString() const;
 
   // Compares the pattern with a given |other| pattern and returns the
   // |Relation| of the two patterns.
@@ -200,54 +187,10 @@ class ContentSettingsPattern {
 
  private:
   friend class content_settings::PatternParser;
-  friend class Builder;
+  friend class ContentSettingsPatternSerializer;
   FRIEND_TEST_ALL_PREFIXES(ContentSettingsPatternParserTest, SerializePatterns);
 
-  class Builder : public BuilderInterface {
-    public:
-     explicit Builder(bool use_legacy_validate);
-     virtual ~Builder();
-
-     // Overrides BuilderInterface
-     virtual BuilderInterface* WithPort(const std::string& port) OVERRIDE;
-
-     virtual BuilderInterface* WithPortWildcard() OVERRIDE;
-
-     virtual BuilderInterface* WithHost(const std::string& host) OVERRIDE;
-
-     virtual BuilderInterface* WithDomainWildcard() OVERRIDE;
-
-     virtual BuilderInterface* WithScheme(const std::string& scheme) OVERRIDE;
-
-     virtual BuilderInterface* WithSchemeWildcard() OVERRIDE;
-
-     virtual BuilderInterface* WithPath(const std::string& path) OVERRIDE;
-
-     virtual BuilderInterface* WithPathWildcard() OVERRIDE;
-
-     virtual BuilderInterface* Invalid() OVERRIDE;
-
-     virtual ContentSettingsPattern Build() OVERRIDE;
-
-    private:
-     // Canonicalizes the pattern parts so that they are ASCII only, either
-     // in original (if it was already ASCII) or punycode form. Returns true if
-     // the canonicalization was successful.
-     static bool Canonicalize(PatternParts* parts);
-
-     // Returns true when the pattern |parts| represent a valid pattern.
-     static bool Validate(const PatternParts& parts);
-
-     static bool LegacyValidate(const PatternParts& parts);
-
-     bool is_valid_;
-
-     bool use_legacy_validate_;
-
-     PatternParts parts_;
-
-     DISALLOW_COPY_AND_ASSIGN(Builder);
-  };
+  class Builder;
 
   static Relation CompareScheme(
       const ContentSettingsPattern::PatternParts& parts,
@@ -261,20 +204,11 @@ class ContentSettingsPattern {
       const ContentSettingsPattern::PatternParts& parts,
       const ContentSettingsPattern::PatternParts& other_parts);
 
-  static bool Validate(const PatternParts& parts);
-
   ContentSettingsPattern(const PatternParts& parts, bool valid);
 
   PatternParts parts_;
 
   bool is_valid_;
 };
-
-// Stream operator so ContentSettingsPattern can be used in assertion
-// statements.
-inline std::ostream& operator<<(
-    std::ostream& out, const ContentSettingsPattern& pattern) {
-  return out << pattern.ToString();
-}
 
 #endif  // CHROME_COMMON_CONTENT_SETTINGS_PATTERN_H_

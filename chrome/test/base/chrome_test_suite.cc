@@ -16,8 +16,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/test/test_launcher.h"
+#include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
@@ -105,6 +107,9 @@ void ChromeTestSuite::Initialize() {
   // Initialize after overriding paths as some content paths depend on correct
   // values for DIR_EXE and DIR_MODULE.
   content::ContentTestSuiteBase::Initialize();
+
+  ContentSettingsPattern::SetNonWildcardDomainNonPortScheme(
+      extensions::kExtensionScheme);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // Look in the framework bundle for resources.

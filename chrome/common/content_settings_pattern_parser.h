@@ -12,8 +12,6 @@
 
 namespace content_settings {
 
-struct PatternParts;
-
 class PatternParser {
  public:
   static void Parse(const std::string& pattern_spec,
@@ -21,21 +19,6 @@ class PatternParser {
 
   static std::string ToString(
       const ContentSettingsPattern::PatternParts& parts);
-
- private:
-  static const char* kDomainWildcard;
-
-  static const size_t kDomainWildcardLength;
-
-  static const char* kSchemeWildcard;
-
-  static const char* kHostWildcard;
-
-  static const char* kPortWildcard;
-
-  static const char* kPathWildcard;
-
-  DISALLOW_COPY_AND_ASSIGN(PatternParser);
 };
 
 }  // namespace content_settings

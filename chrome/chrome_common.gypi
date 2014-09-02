@@ -52,6 +52,8 @@
       'common/content_settings_pattern.h',
       'common/content_settings_pattern_parser.cc',
       'common/content_settings_pattern_parser.h',
+      'common/content_settings_pattern_serializer.cc',
+      'common/content_settings_pattern_serializer.h',
       'common/crash_keys.cc',
       'common/crash_keys.h',
       'common/custom_handlers/protocol_handler.cc',

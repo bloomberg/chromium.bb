@@ -4,16 +4,18 @@
 
 #include "chrome/common/render_messages.h"
 
+#include "chrome/common/content_settings_pattern_serializer.h"
+
 namespace IPC {
 
 void ParamTraits<ContentSettingsPattern>::Write(
     Message* m, const ContentSettingsPattern& pattern) {
-  pattern.WriteToMessage(m);
+  ContentSettingsPatternSerializer::WriteToMessage(pattern, m);
 }
 
 bool ParamTraits<ContentSettingsPattern>::Read(
     const Message* m, PickleIterator* iter, ContentSettingsPattern* pattern) {
-  return pattern->ReadFromMessage(m, iter);
+  return ContentSettingsPatternSerializer::ReadFromMessage(m, iter, pattern);
 }
 
 void ParamTraits<ContentSettingsPattern>::Log(

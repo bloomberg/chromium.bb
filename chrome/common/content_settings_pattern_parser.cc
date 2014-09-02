@@ -5,16 +5,18 @@
 #include "chrome/common/content_settings_pattern_parser.h"
 
 #include "base/strings/string_util.h"
-#include "chrome/common/url_constants.h"
-#include "extensions/common/constants.h"
-#include "net/base/net_util.h"
-#include "url/gurl.h"
-#include "url/url_canon.h"
+#include "url/url_constants.h"
 
 namespace {
 
-const char* kUrlPathSeparator = "/";
-const char* kUrlPortSeparator = ":";
+const char kDomainWildcard[] = "[*.]";
+const size_t kDomainWildcardLength = 4;
+const char kHostWildcard[] = "*";
+const char kPathWildcard[] = "*";
+const char kPortWildcard[] = "*";
+const char kSchemeWildcard[] = "*";
+const char kUrlPathSeparator[] = "/";
+const char kUrlPortSeparator[] = ":";
 
 class Component {
  public:
@@ -33,19 +35,6 @@ class Component {
 
 namespace content_settings {
 
-const char* PatternParser::kDomainWildcard = "[*.]";
-
-const size_t PatternParser::kDomainWildcardLength = 4;
-
-const char* PatternParser::kSchemeWildcard = "*";
-
-const char* PatternParser::kHostWildcard = "*";
-
-const char* PatternParser::kPortWildcard = "*";
-
-const char* PatternParser::kPathWildcard = "*";
-
-// static
 void PatternParser::Parse(const std::string& pattern_spec,
                           ContentSettingsPattern::BuilderInterface* builder) {
   if (pattern_spec == "*") {
@@ -69,11 +58,11 @@ void PatternParser::Parse(const std::string& pattern_spec,
     return;
 
   // Test if a scheme pattern is in the spec.
-  current_pos = pattern_spec.find(
-      std::string(url::kStandardSchemeSeparator), start);
+  const std::string standard_scheme_separator(url::kStandardSchemeSeparator);
+  current_pos = pattern_spec.find(standard_scheme_separator, start);
   if (current_pos != std::string::npos) {
     scheme_component = Component(start, current_pos);
-    start = current_pos + strlen(url::kStandardSchemeSeparator);
+    start = current_pos + standard_scheme_separator.size();
     current_pos = start;
   } else {
     current_pos = start;
@@ -172,8 +161,8 @@ void PatternParser::Parse(const std::string& pattern_spec,
       builder->WithPort(port);
     }
   } else {
-    if (scheme != std::string(extensions::kExtensionScheme) &&
-        scheme != std::string(url::kFileScheme))
+    if (!ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(scheme) &&
+        scheme != url::kFileScheme)
       builder->WithPortWildcard();
   }
 
@@ -217,7 +206,7 @@ std::string PatternParser::ToString(
   }
   str += parts.host;
 
-  if (parts.scheme == std::string(extensions::kExtensionScheme)) {
+  if (ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(parts.scheme)) {
     str += parts.path.empty() ? std::string(kUrlPathSeparator) : parts.path;
     return str;
   }
