@@ -90,6 +90,7 @@ HttpNetworkSession::Params::Params()
       enable_quic(false),
       enable_quic_port_selection(true),
       enable_quic_time_based_loss_detection(false),
+      quic_always_require_handshake_confirmation(false),
       quic_clock(NULL),
       quic_random(NULL),
       quic_max_packet_length(kDefaultMaxPacketSize),
@@ -113,25 +114,25 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
           CreateSocketPoolManager(NORMAL_SOCKET_POOL, params)),
       websocket_socket_pool_manager_(
           CreateSocketPoolManager(WEBSOCKET_SOCKET_POOL, params)),
-      quic_stream_factory_(params.host_resolver,
-                           params.client_socket_factory ?
-                               params.client_socket_factory :
-                               net::ClientSocketFactory::GetDefaultFactory(),
-                           params.http_server_properties,
-                           params.cert_verifier,
-                           params.channel_id_service,
-                           params.transport_security_state,
-                           params.quic_crypto_client_stream_factory,
-                           params.quic_random ? params.quic_random :
-                               QuicRandom::GetInstance(),
-                           params.quic_clock ? params. quic_clock :
-                               new QuicClock(),
-                           params.quic_max_packet_length,
-                           params.quic_user_agent_id,
-                           params.quic_supported_versions,
-                           params.enable_quic_port_selection,
-                           params.enable_quic_time_based_loss_detection,
-                           params.quic_connection_options),
+      quic_stream_factory_(
+          params.host_resolver,
+          params.client_socket_factory
+              ? params.client_socket_factory
+              : net::ClientSocketFactory::GetDefaultFactory(),
+          params.http_server_properties,
+          params.cert_verifier,
+          params.channel_id_service,
+          params.transport_security_state,
+          params.quic_crypto_client_stream_factory,
+          params.quic_random ? params.quic_random : QuicRandom::GetInstance(),
+          params.quic_clock ? params.quic_clock : new QuicClock(),
+          params.quic_max_packet_length,
+          params.quic_user_agent_id,
+          params.quic_supported_versions,
+          params.enable_quic_port_selection,
+          params.enable_quic_time_based_loss_detection,
+          params.quic_always_require_handshake_confirmation,
+          params.quic_connection_options),
       spdy_session_pool_(params.host_resolver,
                          params.ssl_config_service,
                          params.http_server_properties,
@@ -146,8 +147,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
                          params.time_func,
                          params.trusted_spdy_proxy),
       http_stream_factory_(new HttpStreamFactoryImpl(this, false)),
-      http_stream_factory_for_websocket_(
-          new HttpStreamFactoryImpl(this, true)),
+      http_stream_factory_for_websocket_(new HttpStreamFactoryImpl(this, true)),
       params_(params) {
   DCHECK(proxy_service_);
   DCHECK(ssl_config_service_.get());

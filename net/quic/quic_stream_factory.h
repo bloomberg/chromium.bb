@@ -103,6 +103,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       const QuicVersionVector& supported_versions,
       bool enable_port_selection,
       bool enable_time_based_loss_detection,
+      bool always_require_handshake_confirmation,
       const QuicTagVector& connection_options);
   virtual ~QuicStreamFactory();
 
@@ -154,7 +155,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   virtual void OnCertAdded(const X509Certificate* cert) OVERRIDE;
   virtual void OnCACertChanged(const X509Certificate* cert) OVERRIDE;
 
-  bool require_confirmation() const { return require_confirmation_; }
+  bool require_confirmation() const {
+    return require_confirmation_;
+  }
 
   void set_require_confirmation(bool require_confirmation) {
     require_confirmation_ = require_confirmation;
@@ -273,6 +276,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // then we will just let the OS select a random client port for each new
   // connection.
   bool enable_port_selection_;
+
+  // Set if we always require handshake confirmation. If true, this will
+  // introduce at least one RTT for the handshake before the client sends data.
+  bool always_require_handshake_confirmation_;
 
   // Each profile will (probably) have a unique port_seed_ value.  This value is
   // used to help seed a pseudo-random number generator (PortSuggester) so that

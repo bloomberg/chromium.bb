@@ -132,6 +132,7 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_EQ(default_params.quic_supported_versions,
             params.quic_supported_versions);
   EXPECT_EQ(net::QuicTagVector(), params.quic_connection_options);
+  EXPECT_FALSE(params.quic_always_require_handshake_confirmation);
 }
 
 TEST_F(IOThreadTest, EnableQuicFromCommandLine) {
@@ -318,6 +319,16 @@ TEST_F(IOThreadTest, QuicConnectionOptionsFromDeprecatedFieldTrialParams) {
   options.push_back(net::kTBBR);
   options.push_back(net::kREJ);
   EXPECT_EQ(options, params.quic_connection_options);
+}
+
+TEST_F(IOThreadTest,
+       QuicAlwaysRequireHandshakeConfirmationFromFieldTrialParams) {
+  field_trial_group_ = "Enabled";
+  field_trial_params_["always_require_handshake_confirmation"] = "true";
+  ConfigureQuicGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_TRUE(params.quic_always_require_handshake_confirmation);
 }
 
 }  // namespace test

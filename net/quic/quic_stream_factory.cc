@@ -481,6 +481,7 @@ QuicStreamFactory::QuicStreamFactory(
     const QuicVersionVector& supported_versions,
     bool enable_port_selection,
     bool enable_time_based_loss_detection,
+    bool always_require_handshake_confirmation,
     const QuicTagVector& connection_options)
     : require_confirmation_(true),
       host_resolver_(host_resolver),
@@ -496,6 +497,8 @@ QuicStreamFactory::QuicStreamFactory(
                                    connection_options)),
       supported_versions_(supported_versions),
       enable_port_selection_(enable_port_selection),
+      always_require_handshake_confirmation_(
+          always_require_handshake_confirmation),
       port_seed_(random_generator_->RandUint64()),
       weak_factory_(this) {
   DCHECK(transport_security_state_);
@@ -599,7 +602,8 @@ bool QuicStreamFactory::OnResolution(
 
 void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
   if (rv == OK) {
-    require_confirmation_ = false;
+    if (!always_require_handshake_confirmation_)
+      require_confirmation_ = false;
 
     // Create all the streams, but do not notify them yet.
     for (RequestSet::iterator it = job_requests_map_[job].begin();
