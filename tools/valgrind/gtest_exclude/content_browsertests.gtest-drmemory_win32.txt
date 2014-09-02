@@ -1,5 +1,5 @@
 # crbug.com/389132
-WebRtcAecDumpBrowserTest.*CallWithAecDump*
+WebRtcAecDumpBrowserTest.*WithAecDump*
 
 # http://code.google.com/p/drmemory/issues/detail?id=1528
 # Un-analyzed test failures:
