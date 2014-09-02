@@ -6,12 +6,15 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/password_manager/core/common/password_manager_ui.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/controls/link.h"
+#include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -89,7 +92,15 @@ views::Label* GeneratePasswordLabel(const autofill::PasswordForm& form) {
 
 }  // namespace
 
-// Pending View
+// Render credentials in two columns: username and password.
+class ManagePasswordItemView::PendingView : public views::View {
+ public:
+  explicit PendingView(ManagePasswordItemView* parent);
+
+ private:
+  virtual ~PendingView();
+};
+
 ManagePasswordItemView::PendingView::PendingView(
     ManagePasswordItemView* parent) {
   views::GridLayout* layout = new views::GridLayout(this);
@@ -106,7 +117,23 @@ ManagePasswordItemView::PendingView::PendingView(
 ManagePasswordItemView::PendingView::~PendingView() {
 }
 
-// Manage View
+// Render credentials in three columns: username, password, and delete.
+class ManagePasswordItemView::ManageView : public views::View,
+                                           public views::ButtonListener {
+ public:
+  explicit ManageView(ManagePasswordItemView* parent);
+
+ private:
+  virtual ~ManageView();
+
+  // views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
+
+  views::ImageButton* delete_button_;
+  ManagePasswordItemView* parent_;
+};
+
 ManagePasswordItemView::ManageView::ManageView(ManagePasswordItemView* parent)
     : parent_(parent) {
   views::GridLayout* layout = new views::GridLayout(this);
@@ -130,16 +157,32 @@ ManagePasswordItemView::ManageView::ManageView(ManagePasswordItemView* parent)
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 }
 
+ManagePasswordItemView::ManageView::~ManageView() {
+}
+
 void ManagePasswordItemView::ManageView::ButtonPressed(views::Button* sender,
                                                        const ui::Event& event) {
   DCHECK_EQ(delete_button_, sender);
   parent_->NotifyClickedDelete();
 }
 
-ManagePasswordItemView::ManageView::~ManageView() {
-}
+// Render a notification to the user that a password has been removed, and
+// offer an undo link.
+class ManagePasswordItemView::UndoView : public views::View,
+                                         public views::LinkListener {
+ public:
+  explicit UndoView(ManagePasswordItemView* parent);
 
-// Undo View
+ private:
+  virtual ~UndoView();
+
+  // views::LinkListener:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+
+  views::Link* undo_link_;
+  ManagePasswordItemView* parent_;
+};
+
 ManagePasswordItemView::UndoView::UndoView(ManagePasswordItemView* parent)
     : parent_(parent) {
   views::GridLayout* layout = new views::GridLayout(this);
@@ -167,13 +210,13 @@ ManagePasswordItemView::UndoView::UndoView(ManagePasswordItemView* parent)
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 }
 
+ManagePasswordItemView::UndoView::~UndoView() {
+}
+
 void ManagePasswordItemView::UndoView::LinkClicked(views::Link* sender,
                                                    int event_flags) {
   DCHECK_EQ(undo_link_, sender);
   parent_->NotifyClickedUndo();
-}
-
-ManagePasswordItemView::UndoView::~UndoView() {
 }
 
 // ManagePasswordItemView
@@ -209,6 +252,16 @@ ManagePasswordItemView::ManagePasswordItemView(
 ManagePasswordItemView::~ManagePasswordItemView() {
 }
 
+void ManagePasswordItemView::NotifyClickedDelete() {
+  delete_password_ = true;
+  Refresh();
+}
+
+void ManagePasswordItemView::NotifyClickedUndo() {
+  delete_password_ = false;
+  Refresh();
+}
+
 void ManagePasswordItemView::Refresh() {
   DCHECK(!password_manager::ui::IsPendingState(model_->state()));
 
@@ -225,14 +278,4 @@ void ManagePasswordItemView::Refresh() {
                            delete_password_
                                ? ManagePasswordsBubbleModel::REMOVE_PASSWORD
                                : ManagePasswordsBubbleModel::ADD_PASSWORD);
-}
-
-void ManagePasswordItemView::NotifyClickedDelete() {
-  delete_password_ = true;
-  Refresh();
-}
-
-void ManagePasswordItemView::NotifyClickedUndo() {
-  delete_password_ = false;
-  Refresh();
 }

@@ -4,31 +4,30 @@
 
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
+#include "chrome/browser/ui/passwords/save_password_refusal_combobox_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_item_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/password_manager/core/common/password_manager_ui.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/gfx/text_utils.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/combobox/combobox_listener.h"
+#include "ui/views/controls/link.h"
+#include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/styled_label.h"
+#include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -165,6 +164,36 @@ void ShowManagePasswordsBubble(content::WebContents* web_contents) {
 
 // ManagePasswordsBubbleView::PendingView -------------------------------------
 
+// A view offering the user the ability to save credentials. Contains a
+// single ManagePasswordItemView, along with a "Save Passwords" button
+// and a rejection combobox.
+class ManagePasswordsBubbleView::PendingView : public views::View,
+                                               public views::ButtonListener,
+                                               public views::ComboboxListener {
+ public:
+  explicit PendingView(ManagePasswordsBubbleView* parent);
+  virtual ~PendingView();
+
+ private:
+  // views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
+
+  // Handles the event when the user changes an index of a combobox.
+  virtual void OnPerformAction(views::Combobox* source) OVERRIDE;
+
+  ManagePasswordsBubbleView* parent_;
+
+  views::BlueButton* save_button_;
+
+  // The combobox doesn't take ownership of its model. If we created a
+  // combobox we need to ensure that we delete the model here, and because the
+  // combobox uses the model in it's destructor, we need to make sure we
+  // delete the model _after_ the combobox itself is deleted.
+  scoped_ptr<SavePasswordRefusalComboboxModel> combobox_model_;
+  scoped_ptr<views::Combobox> refuse_combobox_;
+};
+
 ManagePasswordsBubbleView::PendingView::PendingView(
     ManagePasswordsBubbleView* parent)
     : parent_(parent) {
@@ -235,6 +264,26 @@ void ManagePasswordsBubbleView::PendingView::OnPerformAction(
 }
 
 // ManagePasswordsBubbleView::ConfirmNeverView ---------------------------------
+
+// A view offering the user the ability to undo her decision to never save
+// passwords for a particular site.
+class ManagePasswordsBubbleView::ConfirmNeverView
+    : public views::View,
+      public views::ButtonListener {
+ public:
+  explicit ConfirmNeverView(ManagePasswordsBubbleView* parent);
+  virtual ~ConfirmNeverView();
+
+ private:
+  // views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
+
+  ManagePasswordsBubbleView* parent_;
+
+  views::LabelButton* confirm_button_;
+  views::LabelButton* undo_button_;
+};
 
 ManagePasswordsBubbleView::ConfirmNeverView::ConfirmNeverView(
     ManagePasswordsBubbleView* parent)
@@ -309,6 +358,30 @@ void ManagePasswordsBubbleView::ConfirmNeverView::ButtonPressed(
 }
 
 // ManagePasswordsBubbleView::ManageView --------------------------------------
+
+// A view offering the user a list of her currently saved credentials
+// for the current page, along with a "Manage passwords" link and a
+// "Done" button.
+class ManagePasswordsBubbleView::ManageView : public views::View,
+                                              public views::ButtonListener,
+                                              public views::LinkListener {
+ public:
+  explicit ManageView(ManagePasswordsBubbleView* parent);
+  virtual ~ManageView();
+
+ private:
+  // views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
+
+  // views::LinkListener:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+
+  ManagePasswordsBubbleView* parent_;
+
+  views::Link* manage_link_;
+  views::LabelButton* done_button_;
+};
 
 ManagePasswordsBubbleView::ManageView::ManageView(
     ManagePasswordsBubbleView* parent)
@@ -399,6 +472,26 @@ void ManagePasswordsBubbleView::ManageView::LinkClicked(views::Link* source,
 
 // ManagePasswordsBubbleView::BlacklistedView ---------------------------------
 
+// A view offering the user the ability to re-enable the password manager for
+// a specific site after she's decided to "never save passwords".
+class ManagePasswordsBubbleView::BlacklistedView
+    : public views::View,
+      public views::ButtonListener {
+ public:
+  explicit BlacklistedView(ManagePasswordsBubbleView* parent);
+  virtual ~BlacklistedView();
+
+ private:
+  // views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
+
+  ManagePasswordsBubbleView* parent_;
+
+  views::BlueButton* unblacklist_button_;
+  views::LabelButton* done_button_;
+};
+
 ManagePasswordsBubbleView::BlacklistedView::BlacklistedView(
     ManagePasswordsBubbleView* parent)
     : parent_(parent) {
@@ -460,6 +553,30 @@ void ManagePasswordsBubbleView::BlacklistedView::ButtonPressed(
 }
 
 // ManagePasswordsBubbleView::SaveConfirmationView ----------------------------
+
+// A view confirming to the user that a password was saved and offering a link
+// to the Google account manager.
+class ManagePasswordsBubbleView::SaveConfirmationView
+    : public views::View,
+      public views::ButtonListener,
+      public views::StyledLabelListener {
+ public:
+  explicit SaveConfirmationView(ManagePasswordsBubbleView* parent);
+  virtual ~SaveConfirmationView();
+
+ private:
+  // views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
+
+  // views::StyledLabelListener implementation
+  virtual void StyledLabelLinkClicked(const gfx::Range& range,
+                                      int event_flags) OVERRIDE;
+
+  ManagePasswordsBubbleView* parent_;
+
+  views::LabelButton* ok_button_;
+};
 
 ManagePasswordsBubbleView::SaveConfirmationView::SaveConfirmationView(
     ManagePasswordsBubbleView* parent)
@@ -678,35 +795,6 @@ void ManagePasswordsBubbleView::Close() {
   GetWidget()->Close();
 }
 
-void ManagePasswordsBubbleView::Init() {
-  views::FillLayout* layout = new views::FillLayout();
-  SetLayoutManager(layout);
-
-  Refresh();
-}
-
-void ManagePasswordsBubbleView::WindowClosing() {
-  // Close() closes the window asynchronously, so by the time we reach here,
-  // |manage_passwords_bubble_| may have already been reset.
-  if (manage_passwords_bubble_ == this)
-    manage_passwords_bubble_ = NULL;
-}
-
-void ManagePasswordsBubbleView::OnWidgetActivationChanged(views::Widget* widget,
-                                                          bool active) {
-  if (active && widget == GetWidget())
-    CancelFadingOut();
-  BubbleDelegateView::OnWidgetActivationChanged(widget, active);
-}
-
-views::View* ManagePasswordsBubbleView::GetInitiallyFocusedView() {
-  return initially_focused_view_;
-}
-
-void ManagePasswordsBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
-  CancelFadingOut();
-}
-
 void ManagePasswordsBubbleView::Refresh() {
   RemoveAllChildViews(true);
   initially_focused_view_ = NULL;
@@ -744,6 +832,35 @@ void ManagePasswordsBubbleView::NotifyConfirmedNeverForThisSite() {
 void ManagePasswordsBubbleView::NotifyUndoNeverForThisSite() {
   never_save_passwords_ = false;
   Refresh();
+}
+
+void ManagePasswordsBubbleView::Init() {
+  views::FillLayout* layout = new views::FillLayout();
+  SetLayoutManager(layout);
+
+  Refresh();
+}
+
+void ManagePasswordsBubbleView::WindowClosing() {
+  // Close() closes the window asynchronously, so by the time we reach here,
+  // |manage_passwords_bubble_| may have already been reset.
+  if (manage_passwords_bubble_ == this)
+    manage_passwords_bubble_ = NULL;
+}
+
+void ManagePasswordsBubbleView::OnWidgetActivationChanged(views::Widget* widget,
+                                                          bool active) {
+  if (active && widget == GetWidget())
+    CancelFadingOut();
+  BubbleDelegateView::OnWidgetActivationChanged(widget, active);
+}
+
+views::View* ManagePasswordsBubbleView::GetInitiallyFocusedView() {
+  return initially_focused_view_;
+}
+
+void ManagePasswordsBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
+  CancelFadingOut();
 }
 
 void ManagePasswordsBubbleView::StartFadingOut() {

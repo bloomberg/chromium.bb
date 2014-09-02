@@ -5,27 +5,13 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_VIEW_H_
 
-#include "base/basictypes.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble.h"
-#include "chrome/browser/ui/passwords/save_password_refusal_combobox_model.h"
 #include "ui/views/bubble/bubble_delegate.h"
-#include "ui/views/controls/button/button.h"
-#include "ui/views/controls/combobox/combobox.h"
-#include "ui/views/controls/combobox/combobox_listener.h"
-#include "ui/views/controls/link.h"
-#include "ui/views/controls/link_listener.h"
-#include "ui/views/controls/styled_label_listener.h"
 
 class ManagePasswordsIconView;
 
 namespace content {
 class WebContents;
-}
-
-namespace views {
-class BlueButton;
-class LabelButton;
-class GridLayout;
 }
 
 // The ManagePasswordsBubbleView controls the contents of the bubble which
@@ -39,124 +25,11 @@ class GridLayout;
 class ManagePasswordsBubbleView : public ManagePasswordsBubble,
                                   public views::BubbleDelegateView {
  public:
-  // A view offering the user the ability to save credentials. Contains a
-  // single ManagePasswordItemView, along with a "Save Passwords" button
-  // and a rejection combobox.
-  class PendingView : public views::View,
-                      public views::ButtonListener,
-                      public views::ComboboxListener {
-   public:
-    explicit PendingView(ManagePasswordsBubbleView* parent);
-    virtual ~PendingView();
-
-   private:
-    // views::ButtonListener:
-    virtual void ButtonPressed(views::Button* sender,
-                               const ui::Event& event) OVERRIDE;
-
-    // Handles the event when the user changes an index of a combobox.
-    virtual void OnPerformAction(views::Combobox* source) OVERRIDE;
-
-    ManagePasswordsBubbleView* parent_;
-
-    views::BlueButton* save_button_;
-
-    // The combobox doesn't take ownership of its model. If we created a
-    // combobox we need to ensure that we delete the model here, and because the
-    // combobox uses the model in it's destructor, we need to make sure we
-    // delete the model _after_ the combobox itself is deleted.
-    scoped_ptr<SavePasswordRefusalComboboxModel> combobox_model_;
-    scoped_ptr<views::Combobox> refuse_combobox_;
-  };
-
-  // A view offering the user the ability to undo her decision to never save
-  // passwords for a particular site.
-  class ConfirmNeverView : public views::View, public views::ButtonListener {
-   public:
-    explicit ConfirmNeverView(ManagePasswordsBubbleView* parent);
-    virtual ~ConfirmNeverView();
-
-   private:
-    // views::ButtonListener:
-    virtual void ButtonPressed(views::Button* sender,
-                               const ui::Event& event) OVERRIDE;
-
-    ManagePasswordsBubbleView* parent_;
-
-    views::LabelButton* confirm_button_;
-    views::LabelButton* undo_button_;
-  };
-
-  // A view offering the user a list of her currently saved credentials
-  // for the current page, along with a "Manage passwords" link and a
-  // "Done" button.
-  class ManageView : public views::View,
-                     public views::ButtonListener,
-                     public views::LinkListener {
-   public:
-    explicit ManageView(ManagePasswordsBubbleView* parent);
-    virtual ~ManageView();
-
-   private:
-    // views::ButtonListener:
-    virtual void ButtonPressed(views::Button* sender,
-                               const ui::Event& event) OVERRIDE;
-
-    // views::LinkListener:
-    virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
-
-    ManagePasswordsBubbleView* parent_;
-
-    views::Link* manage_link_;
-    views::LabelButton* done_button_;
-  };
-
-  // A view offering the user the ability to re-enable the password manager for
-  // a specific site after she's decided to "never save passwords".
-  class BlacklistedView : public views::View, public views::ButtonListener {
-   public:
-    explicit BlacklistedView(ManagePasswordsBubbleView* parent);
-    virtual ~BlacklistedView();
-
-   private:
-    // views::ButtonListener:
-    virtual void ButtonPressed(views::Button* sender,
-                               const ui::Event& event) OVERRIDE;
-
-    ManagePasswordsBubbleView* parent_;
-
-    views::BlueButton* unblacklist_button_;
-    views::LabelButton* done_button_;
-  };
-
-  // A view confirming to the user that a password was saved and offering a link
-  // to the Google account manager.
-  class SaveConfirmationView : public views::View,
-                               public views::ButtonListener,
-                               public views::StyledLabelListener {
-   public:
-    explicit SaveConfirmationView(ManagePasswordsBubbleView* parent);
-    virtual ~SaveConfirmationView();
-
-   private:
-    // views::ButtonListener:
-    virtual void ButtonPressed(views::Button* sender,
-                               const ui::Event& event) OVERRIDE;
-
-    // views::StyledLabelListener implementation
-    virtual void StyledLabelLinkClicked(const gfx::Range& range,
-                                        int event_flags) OVERRIDE;
-
-    ManagePasswordsBubbleView* parent_;
-
-    views::LabelButton* ok_button_;
-  };
-
   // Shows the bubble.
   static void ShowBubble(content::WebContents* web_contents,
                          DisplayReason reason);
 
-  // Closes any existing bubble.
+  // Closes the existing bubble.
   static void CloseBubble();
 
   // Makes the bubble the foreground window.
@@ -179,6 +52,12 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   }
 
  private:
+  class BlacklistedView;
+  class ConfirmNeverView;
+  class ManageView;
+  class PendingView;
+  class SaveConfirmationView;
+
   ManagePasswordsBubbleView(content::WebContents* web_contents,
                             ManagePasswordsIconView* anchor_view,
                             DisplayReason reason);
