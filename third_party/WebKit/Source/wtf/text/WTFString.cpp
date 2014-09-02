@@ -874,7 +874,7 @@ CString String::utf8(UTF8ConversionMode mode) const
 String String::make8BitFrom16BitSource(const UChar* source, size_t length)
 {
     if (!length)
-        return String();
+        return emptyString();
 
     LChar* destination;
     String result = String::createUninitialized(length, destination);
@@ -887,7 +887,7 @@ String String::make8BitFrom16BitSource(const UChar* source, size_t length)
 String String::make16BitFrom8BitSource(const LChar* source, size_t length)
 {
     if (!length)
-        return String();
+        return emptyString();
 
     UChar* destination;
     String result = String::createUninitialized(length, destination);
