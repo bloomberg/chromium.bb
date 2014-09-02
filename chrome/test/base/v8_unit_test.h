@@ -68,35 +68,11 @@ class V8UnitTest : public testing::Test {
   static void ChromeSend(const v8::FunctionCallbackInfo<v8::Value>& args);
 
  private:
-  // A helper class to ensure that the lifetimes of the Isolate and the
-  // HandleScope are correctly nested.
-  class IsolateScope {
-   public:
-    IsolateScope() : isolate_(v8::Isolate::New()) { isolate_->Enter(); }
-
-    ~IsolateScope() {
-      isolate_->Exit();
-      isolate_->Dispose();
-    }
-
-    v8::Isolate* isolate() const { return isolate_; }
-
-   private:
-    v8::Isolate* isolate_;
-
-    DISALLOW_COPY_AND_ASSIGN(IsolateScope);
-  };
-
-  // A handy shortcut.
-  v8::Isolate* isolate() const { return isolate_scope_.isolate(); }
-
   // Executes all added javascript libraries. Returns true if no errors.
   bool ExecuteJavascriptLibraries();
 
   // Initializes paths and libraries.
   void InitPathsAndLibraries();
-
-  IsolateScope isolate_scope_;
 
   // Handle scope that is used throughout the life of this class.
   v8::HandleScope handle_scope_;
