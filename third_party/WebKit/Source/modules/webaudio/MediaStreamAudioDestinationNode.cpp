@@ -72,7 +72,6 @@ void MediaStreamAudioDestinationNode::dispose()
 
 void MediaStreamAudioDestinationNode::trace(Visitor* visitor)
 {
-    visitor->trace(m_source);
     visitor->trace(m_stream);
     AudioBasicInspectorNode::trace(visitor);
 }

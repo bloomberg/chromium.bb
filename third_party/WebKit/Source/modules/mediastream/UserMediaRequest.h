@@ -58,7 +58,7 @@ public:
 
     void start();
 
-    void succeed(MediaStreamDescriptor*);
+    void succeed(PassRefPtr<MediaStreamDescriptor>);
     void failPermissionDenied(const String& message);
     void failConstraint(const String& constraintName, const String& message);
     void failUASpecific(const String& name, const String& message, const String& constraintName);
