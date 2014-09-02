@@ -610,8 +610,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                          'full_version': versions.get('full'),
                          'sdk_version': d.get('sdk-versions'),
                          'toolchain_url': d.get('toolchain-url'),
-                         'build_type': d.get('build_type'),
-                         'metadata_json': metadata.GetJSON()})
+                         'build_type': d.get('build_type')})
 
   @minimum_schema(6)
   def UpdateBoardPerBuildMetadata(self, build_id, board, board_metadata):
@@ -631,8 +630,9 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         update_dict)
 
 
-  @minimum_schema(2)
-  def FinishBuild(self, build_id, status=None, status_pickle=None):
+  @minimum_schema(11)
+  def FinishBuild(self, build_id, status=None, status_pickle=None,
+                  metadata_url=None):
     """Update the given build row, marking it as finished.
 
     This should be called once per build, as the last update to the build.
@@ -643,6 +643,9 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       status: Final build status, one of
               manifest_version.BuilderStatus.COMPLETED_STATUSES.
       status_pickle: Pickled manifest_version.BuilderStatus.
+      metadata_url: google storage url to metadata.json file for this build,
+                    e.g. ('gs://chromeos-image-archive/master-paladin/'
+                          'R39-6225.0.0-rc1/metadata.json')
     """
     self._ReflectToMetadata()
     # The current timestamp is evaluated on the database, not locally.
@@ -650,6 +653,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     self._Update('buildTable', build_id, {'finish_time' : current_timestamp,
                                           'status' : status,
                                           'status_pickle' : status_pickle,
+                                          'metadata_url': metadata_url,
                                           'final' : True})
 
   @minimum_schema(2)

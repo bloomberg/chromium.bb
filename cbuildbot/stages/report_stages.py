@@ -479,7 +479,13 @@ class ReportStage(generic_stages.BuilderStage,
         # TODO(akeshet): Consider uploading the status pickle to the database,
         # (by specifying that argument to FinishBuild), or come up with a
         # pickle-free mechanism to describe failure details in database.
-        db.FinishBuild(build_id, status=status_for_db)
+        # TODO(akeshet): Find a clearer way to get the "primary upload url" for
+        # the metadata.json file. One alternative is _GetUploadUrls(...)[0].
+        # Today it seems that element 0 of its return list is the primary upload
+        # url, but there is no guarantee or unit test coverage of that.
+        metadata_url = os.path.join(self.upload_url, constants.METADATA_JSON)
+        db.FinishBuild(build_id, status=status_for_db,
+                       metadata_url=metadata_url)
 
 
 class RefreshPackageStatusStage(generic_stages.BuilderStage):
