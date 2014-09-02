@@ -9,7 +9,10 @@ layer at (0,0) size 800x163
       RenderBlock {INPUT} at (29,4) size 13x13
       RenderText {#text} at (46,3) size 4x17
         text run at (46,3) width 4: " "
-      RenderBR {BR} at (50,3) size 0x17
+      RenderBlock {INPUT} at (54,4) size 13x13
+      RenderText {#text} at (71,3) size 4x17
+        text run at (71,3) width 4: " "
+      RenderBR {BR} at (75,3) size 0x17
       RenderBlock {INPUT} at (4,25) size 13x13
       RenderText {#text} at (21,24) size 4x17
         text run at (21,24) width 4: " "

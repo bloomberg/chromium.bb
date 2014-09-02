@@ -810,8 +810,6 @@ crbug.com/356957 [ Win Mac Debug ] editing/spelling/spellcheck-editable-on-focus
 
 crbug.com/344238 [ Mac Win Debug ] virtual/deferred/inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 
-crbug.com/393827 fast/forms/radio/radio-appearance-basic.html [ NeedsRebaseline ]
-
 crbug.com/359960 compositing/iframes/scrolling-iframe.html [ Pass Failure ]
 crbug.com/359961 inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 
