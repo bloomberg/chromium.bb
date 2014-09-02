@@ -2197,3 +2197,11 @@ content.dll!content::WebContentsImpl::CreateRenderViewForRenderManager
 content.dll!content::NavigationControllerImpl::LoadEntry
 ...
 *!extensions::ExtensionHost::LoadInitialURL
+
+UNINITIALIZED READ
+name=bug_409865
+*!Pickle::WriteBool
+*!extensions::UserScript::Pickle
+*!extensions::`anonymous namespace'::Serialize
+*!extensions::`anonymous namespace'::LoadScriptsOnFileThread
+*!base::internal::RunnableAdapter<>::Run
