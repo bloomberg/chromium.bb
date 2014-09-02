@@ -46,15 +46,6 @@ void ContentsView::InitNamedPages(AppListModel* model,
   DCHECK(model);
 
   if (app_list::switches::IsExperimentalAppListEnabled()) {
-    std::vector<views::View*> custom_page_views =
-        view_delegate->CreateCustomPageWebViews(GetLocalBounds().size());
-    for (std::vector<views::View*>::const_iterator it =
-             custom_page_views.begin();
-         it != custom_page_views.end();
-         ++it) {
-      AddLauncherPage(*it, IDR_APP_LIST_NOTIFICATIONS_ICON);
-    }
-
     start_page_view_ = new StartPageView(app_list_main_view_, view_delegate);
     AddLauncherPage(
         start_page_view_, IDR_APP_LIST_SEARCH_ICON, NAMED_PAGE_START);
@@ -67,10 +58,23 @@ void ContentsView::InitNamedPages(AppListModel* model,
 
   apps_container_view_ = new AppsContainerView(app_list_main_view_, model);
 
-  int initial_page_index = AddLauncherPage(
+  AddLauncherPage(
       apps_container_view_, IDR_APP_LIST_APPS_ICON, NAMED_PAGE_APPS);
-  if (app_list::switches::IsExperimentalAppListEnabled())
-    initial_page_index = GetPageIndexForNamedPage(NAMED_PAGE_START);
+
+  if (app_list::switches::IsExperimentalAppListEnabled()) {
+    std::vector<views::View*> custom_page_views =
+        view_delegate->CreateCustomPageWebViews(GetLocalBounds().size());
+    for (std::vector<views::View*>::const_iterator it =
+             custom_page_views.begin();
+         it != custom_page_views.end();
+         ++it) {
+      AddLauncherPage(*it, IDR_APP_LIST_NOTIFICATIONS_ICON);
+    }
+  }
+
+  int initial_page_index = app_list::switches::IsExperimentalAppListEnabled()
+                               ? GetPageIndexForNamedPage(NAMED_PAGE_START)
+                               : GetPageIndexForNamedPage(NAMED_PAGE_APPS);
 
   page_before_search_ = initial_page_index;
   pagination_model_.SelectPage(initial_page_index, false);
