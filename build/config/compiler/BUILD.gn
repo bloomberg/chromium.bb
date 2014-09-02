@@ -18,16 +18,18 @@ declare_args() {
 
 use_gold = is_linux && cpu_arch == "x64"
 
-# linux_use_debug_fission: whether to use split DWARF debug info
-# files. This can reduce link time significantly, but is incompatible
-# with some utilities such as icecc and ccache. Requires gold and
-# gcc >= 4.8 or clang.
-# http://gcc.gnu.org/wiki/DebugFission
-#
-# TODO(GYP) enable this. Currently this gives errors from objcopy, presumably
-# because some other symbol or toolchain setting isn't correct.
-#use_debug_fission = use_gold
-use_debug_fission = false
+if (!is_win) {
+  # linux_use_debug_fission: whether to use split DWARF debug info
+  # files. This can reduce link time significantly, but is incompatible
+  # with some utilities such as icecc and ccache. Requires gold and
+  # gcc >= 4.8 or clang.
+  # http://gcc.gnu.org/wiki/DebugFission
+  #
+  # TODO(GYP) enable this. Currently this gives errors from objcopy, presumably
+  # because some other symbol or toolchain setting isn't correct.
+  #use_debug_fission = use_gold
+  use_debug_fission = false
+}
 
 # default_include_dirs ---------------------------------------------------------
 #

@@ -66,6 +66,12 @@
 # saves unnecessarily compiling your tool for the target platform. But if you
 # need a target build of your tool as well, just leave off the if statement.
 
+if (build_os == "win") {
+  _host_executable_suffix = ".exe"
+} else {
+  _host_executable_suffix = ""
+}
+
 template("compiled_action") {
   assert(defined(invoker.tool), "tool must be defined for $target_name")
   assert(defined(invoker.outputs), "outputs must be defined for $target_name")
@@ -97,7 +103,7 @@ template("compiled_action") {
     # specify this, since we can't know what the output name is (it might be in
     # another file not processed yet).
     host_executable = get_label_info(host_tool, "root_out_dir") + "/" +
-      get_label_info(host_tool, "name")
+      get_label_info(host_tool, "name") + _host_executable_suffix
 
     # Add the executable itself as an input.
     inputs += [ host_executable ]
@@ -146,7 +152,7 @@ template("compiled_action_foreach") {
     # specify this, since we can't know what the output name is (it might be in
     # another file not processed yet).
     host_executable = get_label_info(host_tool, "root_out_dir") + "/" +
-      get_label_info(host_tool, "name")
+      get_label_info(host_tool, "name") + _host_executable_suffix
 
     # Add the executable itself as an input.
     inputs += [ host_executable ]
