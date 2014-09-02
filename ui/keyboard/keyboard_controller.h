@@ -139,11 +139,10 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   void ShowAnimationFinished();
   void HideAnimationFinished();
 
-  // Adds or removes an observer for tracking changes to a window size or
+  // Adds an observer for tracking changes to a window size or
   // position while the keyboard is displayed. Any window repositioning
   // invalidates insets for overscrolling.
   void AddBoundsChangedObserver(aura::Window* window);
-  void RemoveBoundsChangedObserver(aura::Window* window);
 
   scoped_ptr<KeyboardControllerProxy> proxy_;
   scoped_ptr<aura::Window> container_;

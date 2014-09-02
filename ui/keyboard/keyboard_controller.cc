@@ -4,6 +4,8 @@
 
 #include "ui/keyboard/keyboard_controller.h"
 
+#include <set>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "content/public/browser/render_widget_host.h"
@@ -207,6 +209,12 @@ class WindowBoundsChangeObserver : public aura::WindowObserver {
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) OVERRIDE;
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
+
+  void AddObservedWindow(aura::Window* window);
+  void RemoveAllObservedWindows();
+
+ private:
+  std::set<aura::Window*> observed_windows_;
 };
 
 void WindowBoundsChangeObserver::OnWindowBoundsChanged(aura::Window* window,
@@ -219,6 +227,21 @@ void WindowBoundsChangeObserver::OnWindowBoundsChanged(aura::Window* window,
 void WindowBoundsChangeObserver::OnWindowDestroyed(aura::Window* window) {
    if (window->HasObserver(this))
      window->RemoveObserver(this);
+   observed_windows_.erase(window);
+}
+
+void WindowBoundsChangeObserver::AddObservedWindow(aura::Window* window) {
+  if (!window->HasObserver(this)) {
+    window->AddObserver(this);
+    observed_windows_.insert(window);
+  }
+}
+
+void WindowBoundsChangeObserver::RemoveAllObservedWindows() {
+  for (std::set<aura::Window*>::iterator it = observed_windows_.begin();
+       it != observed_windows_.end(); ++it)
+    (*it)->RemoveObserver(this);
+  observed_windows_.clear();
 }
 
 // static
@@ -533,12 +556,10 @@ void KeyboardController::ResetWindowInsets() {
       content::RenderWidgetHost::GetRenderWidgetHosts());
   while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
     content::RenderWidgetHostView* view = widget->GetView();
-    if (view) {
+    if (view)
       view->SetInsets(insets);
-      aura::Window *window = view->GetNativeView();
-      RemoveBoundsChangedObserver(window);
-    }
   }
+  window_bounds_observer_->RemoveAllObservedWindows();
 }
 
 bool KeyboardController::WillHideKeyboard() const {
@@ -558,18 +579,8 @@ void KeyboardController::HideAnimationFinished() {
 
 void KeyboardController::AddBoundsChangedObserver(aura::Window* window) {
   aura::Window* target_window = GetFrameWindow(window);
-  if (target_window &&
-      !target_window->HasObserver(window_bounds_observer_.get())) {
-    target_window->AddObserver(window_bounds_observer_.get());
-  }
-}
-
-void KeyboardController::RemoveBoundsChangedObserver(aura::Window* window) {
-  aura::Window* target_window = GetFrameWindow(window);
-  if (target_window &&
-      target_window->HasObserver(window_bounds_observer_.get())) {
-    target_window->RemoveObserver(window_bounds_observer_.get());
-  }
+  if (target_window)
+    window_bounds_observer_->AddObservedWindow(target_window);
 }
 
 }  // namespace keyboard
