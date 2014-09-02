@@ -52,7 +52,6 @@ class FloatPoint;
 class FloatRect;
 class FontData;
 class FontMetrics;
-class FontPlatformData;
 class FontSelector;
 class GlyphBuffer;
 class GraphicsContext;

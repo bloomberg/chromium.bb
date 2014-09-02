@@ -37,9 +37,6 @@
 
 namespace blink {
 
-class HTTPHeaderMap;
-class ResourceResponseBase;
-
 typedef enum {
     ContentDispositionNone,
     ContentDispositionInline,

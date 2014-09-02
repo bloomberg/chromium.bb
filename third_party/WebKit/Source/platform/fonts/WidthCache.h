@@ -36,8 +36,6 @@
 
 namespace blink {
 
-struct GlyphOverflow;
-
 struct WidthCacheEntry {
     WidthCacheEntry()
     {

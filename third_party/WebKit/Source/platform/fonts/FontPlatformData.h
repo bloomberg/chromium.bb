@@ -61,9 +61,6 @@ typedef UInt32 ATSFontRef;
 
 namespace blink {
 
-class FontDescription;
-class SharedBuffer;
-
 class HarfBuzzFace;
 
 inline CTFontRef toCTFontRef(NSFont *nsFont) { return reinterpret_cast<CTFontRef>(nsFont); }

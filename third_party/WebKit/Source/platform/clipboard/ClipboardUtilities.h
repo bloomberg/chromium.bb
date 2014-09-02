@@ -36,8 +36,6 @@
 
 namespace blink {
 
-class KURL;
-
 #if OS(WIN)
 PLATFORM_EXPORT void replaceNewlinesWithWindowsStyleNewlines(String&);
 #endif

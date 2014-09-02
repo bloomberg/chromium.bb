@@ -39,9 +39,6 @@
 
 namespace blink {
 
-class DateComponents;
-struct DateFormatToken;
-
 class PLATFORM_EXPORT LocaleWin : public Locale {
 public:
     static PassOwnPtr<LocaleWin> create(LCID, bool defaultsForLocale);

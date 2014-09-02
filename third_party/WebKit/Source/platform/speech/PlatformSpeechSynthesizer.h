@@ -40,7 +40,6 @@ enum SpeechBoundary {
 
 class PlatformSpeechSynthesisUtterance;
 class WebSpeechSynthesizer;
-class WebSpeechSynthesizerClient;
 class WebSpeechSynthesizerClientImpl;
 
 class PlatformSpeechSynthesizerClient : public GarbageCollectedMixin {

@@ -30,11 +30,7 @@
 namespace blink {
 
 class GlyphPageTreeNode;
-class GraphicsContext;
-class IntRect;
 class FontDescription;
-class FontPlatformData;
-class FontSelector;
 
 const int cAllFamiliesScanned = -1;
 

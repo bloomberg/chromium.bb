@@ -11,8 +11,6 @@
 
 namespace blink {
 
-class WebPlatformCredential;
-
 class PLATFORM_EXPORT PlatformCredential : public GarbageCollectedFinalized<PlatformCredential> {
     WTF_MAKE_NONCOPYABLE(PlatformCredential);
 public:

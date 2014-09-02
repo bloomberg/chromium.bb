@@ -37,8 +37,6 @@
 
 namespace blink {
 
-class LayoutPoint;
-
 enum AspectRatioFit {
     AspectRatioFitShrink,
     AspectRatioFitGrow

@@ -45,10 +45,7 @@
 
 namespace blink {
 
-class CSSFontFaceSource;
 class FontDescription;
-class SharedBuffer;
-struct WidthIterator;
 
 enum FontDataVariant { AutoVariant, NormalVariant, SmallCapsVariant, EmphasisMarkVariant, BrokenIdeographVariant };
 enum Pitch { UnknownPitch, FixedPitch, VariablePitch };

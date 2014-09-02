@@ -27,8 +27,6 @@
 namespace blink {
 
 class FloatQuad;
-class FrameView;
-class IntRect;
 class IntSize;
 
 class PopupMenu : public RefCounted<PopupMenu> {

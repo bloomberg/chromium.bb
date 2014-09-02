@@ -60,7 +60,6 @@ namespace blink {
 class FontCacheClient;
 class FontFaceCreationParams;
 class FontPlatformData;
-class FontData;
 class FontDescription;
 class OpenTypeVerticalData;
 class SimpleFontData;

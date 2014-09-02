@@ -29,8 +29,6 @@
 
 namespace blink {
 
-class RenderStyle;
-
 class PLATFORM_EXPORT LengthBox {
 public:
     LengthBox()

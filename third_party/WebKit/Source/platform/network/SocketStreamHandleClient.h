@@ -34,7 +34,6 @@
 
 namespace blink {
 
-class KURL;
 class SocketStreamError;
 class SocketStreamHandle;
 

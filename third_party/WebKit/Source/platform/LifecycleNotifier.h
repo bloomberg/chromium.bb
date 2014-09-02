@@ -34,8 +34,6 @@
 
 namespace blink {
 
-template<typename T> class LifecycleContext;
-
 template<typename T>
 class LifecycleNotifier {
 public:

@@ -32,8 +32,6 @@
 
 namespace blink {
 
-class DocumentLoadTiming;
-
 class ResourceLoadTiming : public RefCounted<ResourceLoadTiming> {
 public:
     static PassRefPtr<ResourceLoadTiming> create()

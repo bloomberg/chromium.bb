@@ -43,8 +43,6 @@ OBJC_CLASS NSLocale;
 
 namespace blink {
 
-class DateComponents;
-
 class PLATFORM_EXPORT LocaleMac : public Locale {
 public:
     static PassOwnPtr<LocaleMac> create(const String&);

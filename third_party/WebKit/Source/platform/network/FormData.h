@@ -27,10 +27,6 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WTF{
-class TextEncoding;
-}
-
 namespace blink {
 
 class BlobDataHandle;

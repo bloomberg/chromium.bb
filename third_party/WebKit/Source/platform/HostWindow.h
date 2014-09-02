@@ -31,10 +31,7 @@
 #include "wtf/Noncopyable.h"
 
 namespace blink {
-class Cursor;
-class IntPoint;
 class IntRect;
-class IntSize;
 struct WebScreenInfo;
 
 class PLATFORM_EXPORT HostWindow {
