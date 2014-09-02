@@ -512,7 +512,8 @@ def NativeLibs(arch, is_canonical):
       Mangle('compiler_rt', arch): {
           'type': 'build' if is_canonical else 'work',
           'output_subdir': 'lib-' + arch,
-          'dependencies': [ 'compiler_rt_src', 'target_lib_compiler'],
+          'dependencies': ['compiler_rt_src', 'target_lib_compiler',
+                           'newlib_portable'],
           'commands': [
               command.Command(MakeCommand() + [
                   '-f',
@@ -523,7 +524,8 @@ def NativeLibs(arch, is_canonical):
                   ['SRC_DIR=' + command.path.join('%(abs_compiler_rt_src)s',
                                                   'lib'),
                    'CFLAGS=-arch ' + arch + ' -DPNACL_' +
-                    arch.replace('-', '_') + ' --pnacl-allow-translate -O3']),
+                    arch.replace('-', '_') + ' --pnacl-allow-translate -O3' +
+                   ' -isystem %(newlib_portable)s/include']),
               command.Copy('libgcc.a', os.path.join('%(output)s', 'libgcc.a')),
           ],
       },
