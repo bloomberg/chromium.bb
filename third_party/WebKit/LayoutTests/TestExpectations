@@ -859,12 +859,6 @@ crbug.com/392640 svg/as-object/sizing/svg-in-object-placeholder-height-percentag
 
 crbug.com/368531 virtual/gpu/fast/canvas/canvas-path-addpath.html [ Failure Pass ]
 
-# Oilpan's conservative GC makes the test results flaky.
-# If we can rewrite these tests using asyncGC() the flakiness is gone, but we cannot do it
-# because these tests rely on not going back to the event loop during the test.
-crbug.com/378245 media/encrypted-media/encrypted-media-lifetime-mediakeys.html [ Pass Failure ]
-crbug.com/378245 media/encrypted-media/encrypted-media-lifetime-mediakeysession-reference.html [ Pass Failure ]
-
 # Expectations changes due to switiching to In-renderer Shared Worker.
 crbug.com/327256 fast/workers/shared-worker-lifecycle.html [ Failure Pass ]
 
