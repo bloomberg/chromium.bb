@@ -37,6 +37,7 @@ class InputImeEventRouter {
   static InputImeEventRouter* GetInstance();
 
   bool RegisterImeExtension(
+      Profile* profile,
       const std::string& extension_id,
       const std::vector<extensions::InputComponentInfo>& input_components);
   void UnregisterAllImes(const std::string& extension_id);

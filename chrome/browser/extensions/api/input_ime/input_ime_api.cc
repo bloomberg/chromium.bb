@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -340,6 +341,7 @@ InputImeEventRouter::GetInstance() {
 }
 
 bool InputImeEventRouter::RegisterImeExtension(
+    Profile* profile,
     const std::string& extension_id,
     const std::vector<extensions::InputComponentInfo>& input_components) {
   VLOG(1) << "RegisterImeExtension: " << extension_id;
@@ -388,8 +390,9 @@ bool InputImeEventRouter::RegisterImeExtension(
   chromeos::InputMethodEngine* engine = new chromeos::InputMethodEngine();
   engine->Initialize(observer.Pass(), extension_id.c_str());
   engine_map_[extension_id] = engine;
-  manager->GetActiveIMEState()->AddInputMethodExtension(
-      extension_id, descriptors, engine);
+  chromeos::UserSessionManager::GetInstance()
+      ->GetDefaultIMEState(profile)
+      ->AddInputMethodExtension(extension_id, descriptors, engine);
 
   return true;
 }
@@ -825,8 +828,10 @@ void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
   const std::vector<InputComponentInfo>* input_components =
       extensions::InputComponents::GetInputComponents(extension);
   if (input_components)
-    input_ime_event_router()->RegisterImeExtension(extension->id(),
-                                                   *input_components);
+    input_ime_event_router()->RegisterImeExtension(
+        Profile::FromBrowserContext(browser_context),
+        extension->id(),
+        *input_components);
 }
 
 void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
