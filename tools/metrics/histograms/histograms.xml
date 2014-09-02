@@ -886,21 +886,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.AttemptCountFail">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Count of DnsAttempts before DnsTransaction completes with failure.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.AttemptCountSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Count of DnsAttempts before DnsTransaction completes successfully.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.ConfigChange" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Whether DnsConfigService::OnConfigChange actually corresponded to a change
     in DnsConfig.
@@ -908,45 +908,45 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.ConfigNotifyInterval" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time between calls to DnsConfigService::InvalidateConfig.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.ConfigParseDuration" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>Duration of time spent parsing DnsConfig.</summary>
 </histogram>
 
 <histogram name="AsyncDNS.ConfigParsePosix" enum="AsyncDNSConfigParsePosix">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Counts of results of parsing DnsConfig in DnsConfigServicePosix.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.ConfigParseResult" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>Whether DnsConfig was parsed successfully.</summary>
 </histogram>
 
 <histogram name="AsyncDNS.ConfigParseWin" enum="AsyncDNSConfigParseWin">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Counts of results of parsing DnsConfig in DnsConfigServiceWin.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.DNSChangerDetected" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Whether the first valid DnsConfig included a rogue nameserver.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.DnsClientDisabledReason" enum="NetErrorCodes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Counts of specific error codes returned by DnsTask if a subsequent ProcTask
     succeeded, at the end of a streak of failures after which the DnsClient was
@@ -955,7 +955,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.DnsClientEnabled" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     TRUE counts the events when a valid DnsConfig is received and used to enable
     DnsClient, while FALSE counts the events when DnsClient is disabled after a
@@ -964,21 +964,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.FallbackFail" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time spent by ProcTask in failing fallback resolutions.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.FallbackSuccess" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time spent by ProcTask in successful fallback resolutions.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.HaveDnsConfig" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Whether there was a valid DNS configuration at the start of a job which
     eventually completed successfully.
@@ -986,12 +986,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.HostParseResult" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>Whether DnsHosts were parsed successfully.</summary>
 </histogram>
 
 <histogram name="AsyncDNS.HostsChange" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Whether DnsConfigService::OnHostsChange actually corresponded to a change in
     DnsHosts.
@@ -999,33 +999,33 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.HostsNotifyInterval" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time between calls to DnsConfigService::InvalidateHosts.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.HostsParseDuration" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>Duration of time spent parsing DnsHosts.</summary>
 </histogram>
 
 <histogram name="AsyncDNS.HostsParseWin" enum="AsyncDNSHostsParseWin">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Counts of results of parsing DnsHosts in DnsConfigServiceWin.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.HostsSize" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     The size of the HOSTS file observed before each attempt to parse it.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.JobQueueTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the time the HostResolverImpl::Job was created and the
     time the Job was started (using DnsClient).
@@ -1033,7 +1033,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.JobQueueTime_HIGHEST" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the time the HostResolverImpl::Job was created and the
     time the Job was started (using DnsClient). Includes only Jobs which had
@@ -1042,7 +1042,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.JobQueueTime_IDLE" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the time the HostResolverImpl::Job was created and the
     time the Job was started (using DnsClient). Includes only Jobs which had
@@ -1051,7 +1051,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.JobQueueTime_LOW" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the time the HostResolverImpl::Job was created and the
     time the Job was started (using DnsClient). Includes only Jobs which had
@@ -1060,7 +1060,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.JobQueueTime_LOWEST" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the time the HostResolverImpl::Job was created and the
     time the Job was started (using DnsClient). Includes only Jobs which had
@@ -1069,7 +1069,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.JobQueueTime_MEDIUM" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the time the HostResolverImpl::Job was created and the
     time the Job was started (using DnsClient). Includes only Jobs which had
@@ -1078,7 +1078,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.JobQueueTimeAfterChange" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the last time the priority of a HostResolverImpl::Job
     changed (when a Request was attached or detached) and the time the Job was
@@ -1087,7 +1087,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.JobQueueTimeAfterChange_HIGHEST" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the last time the priority of a HostResolverImpl::Job
     changed (when a Request was attached or detached) and the time the Job was
@@ -1097,7 +1097,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.JobQueueTimeAfterChange_IDLE" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the last time the priority of a HostResolverImpl::Job
     changed (when a Request was attached or detached) and the time the Job was
@@ -1107,7 +1107,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.JobQueueTimeAfterChange_LOW" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the last time the priority of a HostResolverImpl::Job
     changed (when a Request was attached or detached) and the time the Job was
@@ -1117,7 +1117,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.JobQueueTimeAfterChange_LOWEST" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the last time the priority of a HostResolverImpl::Job
     changed (when a Request was attached or detached) and the time the Job was
@@ -1127,7 +1127,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.JobQueueTimeAfterChange_MEDIUM" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the last time the priority of a HostResolverImpl::Job
     changed (when a Request was attached or detached) and the time the Job was
@@ -1137,7 +1137,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.NameServersType" enum="AsyncDNSNameServersType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Type of nameservers in the DNS config, recorded each time the config is read
     by the DNSConfigService.
@@ -1145,7 +1145,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.ParseToAddressList" enum="AsyncDNSParseResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Counts of results of parsing addresses out of DNS responses in successful
     DnsTransactions.
@@ -1153,7 +1153,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.ResolveError" enum="NetErrorCodes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Counts of specific error codes returned by DnsTask if a subsequent ProcTask
     succeeded.
@@ -1161,7 +1161,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.ResolveFail" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time taken by DnsTask in resolutions that failed. Excludes time
     spent in the subsequent fallback.
@@ -1169,7 +1169,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.ResolveStatus" enum="AsyncDNSResolveStatus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Counts of the overall results of using asynchronous DNS in HostResolverImpl.
     This only includes jobs started with valid DNS configuration and excludes
@@ -1178,35 +1178,35 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.ResolveSuccess" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time taken by DnsTask in resolutions that succeeded.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.ResolveSuccess_FAMILY_IPV4" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Same as AsyncDNS.ResolveSuccess, but limited to pure IPv4 lookups.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.ResolveSuccess_FAMILY_IPV6" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Same as AsyncDNS.ResolveSuccess, but limited to pure IPv6 lookups.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.ResolveSuccess_FAMILY_UNSPEC" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Same as AsyncDNS.ResolveSuccess, but limited to IPv4/IPv6 lookups.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.ServerCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Count of servers in DnsConfig. Recorded on every new DnsSession, which is
     created on DNS change.
@@ -1214,14 +1214,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.ServerFailureIndex">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Index in DnsConfig of the failing server, recorded at the time of failure.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.ServerFailuresAfterNetworkChange">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Count of server failures after network change before first success in the
     DnsSession. Recorded at the time of first success.
@@ -1229,7 +1229,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.ServerFailuresAfterSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Count of server failures after success until the end of the session. Server
     has reported success at some point during the session. Recorded at the end
@@ -1238,7 +1238,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.ServerFailuresBeforeSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Count of server failures before success. This is NOT the first success in
     the DnsSession. Recorded at the time of success.
@@ -1246,7 +1246,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.ServerFailuresWithoutSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Count of server failures without success until the end of the session.
     Server has never reported success during the DnsSession. Recorded at the end
@@ -1255,14 +1255,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.ServerIsGood" units="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     The current server is &quot;good&quot; and does not have to be skipped.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.SortFailure" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time taken in failing calls to AddressSorter in dual-stack
     resolutions using DnsTask.
@@ -1270,7 +1270,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.SortSuccess" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time taken in successful calls to AddressSorter in dual-stack
     resolutions using DnsTask.
@@ -1278,7 +1278,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.SuffixSearchDone">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     The number of names from the search name list consumed during a successful
     transaction (QTYPE A only).
@@ -1286,7 +1286,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.SuffixSearchRemain">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     The number of names left on the search name list at the end of a successful
     transaction (QTYPE A only).
@@ -1294,7 +1294,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.SuffixSearchStart">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     The number of names on the search name list at the start of a transaction
     (QTYPE A only).
@@ -1302,7 +1302,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.TCPAttemptFail" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time taken by DnsTCPAttempt in failed attempts. Excludes
     timeouts.
@@ -1310,42 +1310,42 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.TCPAttemptSuccess" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time taken by DnsTCPAttempt in successful attempts.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.TimeoutErrorHistogram" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Difference between RTT and timeout calculated using Histogram algorithm.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.TimeoutErrorHistogramUnder" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Difference between timeout calculated using Histogram algorithm and RTT.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.TimeoutErrorJacobson" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Difference between RTT and timeout calculated using Jacobson algorithm.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.TimeoutErrorJacobsonUnder" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Difference between timeout calculated using Jacobson algorithm and RTT.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.TimeoutSpentHistogram" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time that would be spent waiting for lost request using
     Histogram algorithm.
@@ -1353,7 +1353,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.TimeoutSpentJacobson" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time that would be spent waiting for lost request using Jacobson
     algorithm.
@@ -1361,7 +1361,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.TotalTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time since a HostResolverImpl::Resolve request to the time a
     result is posted. Excludes canceled, evicted, and aborted requests. Includes
@@ -1370,7 +1370,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.TotalTime_speculative" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time since a HostResolverImpl::Resolve request to the time a
     result is posted. Excludes canceled, evicted, and aborted requests. Includes
@@ -1379,7 +1379,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.TransactionFailure" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time taken in failing DnsTransactions. This includes server
     failures, timeouts and NXDOMAIN results.
@@ -1387,7 +1387,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.TransactionSuccess" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time taken in successful DnsTransactions. This includes all
     NOERROR answers, even if they indicate the name has no addresses or they
@@ -1396,21 +1396,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.TransactionSuccess_A" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Same as AsyncDNS.TransactionSuccess but limited to A query type.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.TransactionSuccess_AAAA" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Same as AsyncDNS.TransactionSuccess but limited to AAAA query type.
   </summary>
 </histogram>
 
 <histogram name="AsyncDNS.TTL" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     TTL of the resolved addresses, as in the response received from the server.
     For results served from local cache, the TTL is from the original response.
@@ -1418,7 +1418,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.UDPAttemptFail" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time taken by DnsUDPAttempt in failed attempts. Excludes
     timeouts.
@@ -1426,7 +1426,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.UDPAttemptSuccess" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time taken by DnsUDPAttempt in successful attempts. Includes
     responses arriving after timeout, if multiple attempts are allowed.
@@ -1434,7 +1434,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.UnchangedConfigInterval" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time since the last empty config result to the time a non-change
     OnConfigChange is received.
@@ -1442,7 +1442,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.UnchangedHostsInterval" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time since the last empty config result to the time a non-change
     OnHostsChange is received.
@@ -1450,7 +1450,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="AsyncDNS.WatchStatus" enum="AsyncDNSWatchStatus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     The result of DnsConfigService watch. Counts STARTED on every initialization
     and FAILED_* on any failure.
@@ -4231,14 +4231,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.AttemptCancelled">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     The attempt which completed after the job was already cancelled.
   </summary>
 </histogram>
 
 <histogram name="DNS.AttemptDiscarded">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     The attempt which completed after the job was already cancelled OR the
     attempt that has finished after host resolution was already completed by an
@@ -4247,7 +4247,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.AttemptFailDuration" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time taken in OS resolutions for actual navigations. These
     attempts which completed after the job was already canceled OR after the job
@@ -4257,12 +4257,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.AttemptFailure">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>The attempt that has not resolved the host successfully.</summary>
 </histogram>
 
 <histogram name="DNS.AttemptFirstFailure">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     The attempt that resolved the host first and the resolution was not
     successful.
@@ -4270,19 +4270,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.AttemptFirstSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     The attempt that resolved the host first and the resolution was successful.
   </summary>
 </histogram>
 
 <histogram name="DNS.AttemptSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>The attempt that has resolved the host successfully.</summary>
 </histogram>
 
 <histogram name="DNS.AttemptSuccessDuration" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time taken in OS resolutions that succeeded and were requested
     for actual navigations. These attempts which completed after the job was
@@ -4293,7 +4293,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.AttemptTimeSavedByRetry" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     This histogram shows the time saved by having spawned an extra attempt, when
     the first attempt didn't finish before retry attempt.
@@ -4301,7 +4301,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.CacheEvicted" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     The time left to expiration of an entry when it is removed while compacting
     the HostCache.
@@ -4309,7 +4309,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.CacheExpired" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     The time since expiration of an entry when it is removed while compacting
     the HostCache.
@@ -4317,7 +4317,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.CacheExpiredOnGet" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     The time since expiration of an entry when it is removed on lookup.
   </summary>
@@ -4325,14 +4325,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="DNS.EmptyAddressListAndNoError"
     enum="DNSEmptyAddressListAndNoError">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Error status when an empty address list was found in OnLookupComplete().
   </summary>
 </histogram>
 
 <histogram name="DNS.IndependentFailedNavigation" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     When either a pre-resolution was not done recently enough to provide
     benefit, or the corresponding pre-resolution is still pending, this
@@ -4345,7 +4345,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.IndependentNavigation" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     When either a pre-resolution was not done recently enough to provide
     benefit, or the corresponding pre-resolution is still pending, this
@@ -4358,7 +4358,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.JobQueueTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the time the HostResolverImpl::Job was created and the
     time the Job was started (a getaddrinfo call was dispatched to the thread
@@ -4367,7 +4367,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.JobQueueTime_HIGHEST" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the time the HostResolverImpl::Job was created and the
     time the Job was started (a getaddrinfo call was dispatched to the thread
@@ -4376,7 +4376,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.JobQueueTime_IDLE" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the time the HostResolverImpl::Job was created and the
     time the Job was started (a getaddrinfo call was dispatched to the thread
@@ -4385,7 +4385,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.JobQueueTime_LOW" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the time the HostResolverImpl::Job was created and the
     time the Job was started (a getaddrinfo call was dispatched to the thread
@@ -4394,7 +4394,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.JobQueueTime_LOWEST" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the time the HostResolverImpl::Job was created and the
     time the Job was started (a getaddrinfo call was dispatched to the thread
@@ -4403,7 +4403,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.JobQueueTime_MEDIUM" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the time the HostResolverImpl::Job was created and the
     time the Job was started (a getaddrinfo call was dispatched to the thread
@@ -4412,7 +4412,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.JobQueueTimeAfterChange" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the last time the priority of a HostResolverImpl::Job
     changed (when a Request was attached or detached) and the time the Job was
@@ -4421,7 +4421,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.JobQueueTimeAfterChange_HIGHEST" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the last time the priority of a HostResolverImpl::Job
     changed (when a Request was attached or detached) and the time the Job was
@@ -4431,7 +4431,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.JobQueueTimeAfterChange_IDLE" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the last time the priority of a HostResolverImpl::Job
     changed (when a Request was attached or detached) and the time the Job was
@@ -4441,7 +4441,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.JobQueueTimeAfterChange_LOW" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the last time the priority of a HostResolverImpl::Job
     changed (when a Request was attached or detached) and the time the Job was
@@ -4451,7 +4451,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.JobQueueTimeAfterChange_LOWEST" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the last time the priority of a HostResolverImpl::Job
     changed (when a Request was attached or detached) and the time the Job was
@@ -4461,7 +4461,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.JobQueueTimeAfterChange_MEDIUM" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Time elapsed between the last time the priority of a HostResolverImpl::Job
     changed (when a Request was attached or detached) and the time the Job was
@@ -4471,7 +4471,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.PrefetchCacheEviction" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     The duration of time used (most recently) to pre-resolve a hostname, when
     the prefetched resolution was apparently evicted from the cache.  The
@@ -4481,7 +4481,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.PrefetchCacheEvictionL" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     The duration of time used (most recently) to pre-resolve a hostname, when
     the prefetched resolution was apparently evicted from the cache.  The
@@ -4491,15 +4491,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.PrefetchFoundName">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>Replaced by DNS.PrefetchFoundNameL.</summary>
 </histogram>
 
 <histogram name="DNS.PrefetchFoundNameL" units="milliseconds">
+  <owner>ttuttle@chromium.org</owner>
   <obsolete>
     Deprecated 2/2010, and replaced by DNS.PrefetchResolution
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The duration of time used by the DNS pre-resolving threads to resolve a host
     name via the network.  Any resolutions that are faster than 15ms are
@@ -4513,12 +4513,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.PrefetchNegativeHit">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>Replaced by DNS.PrefetchNegativeHitL.</summary>
 </histogram>
 
 <histogram name="DNS.PrefetchNegativeHitL" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     The duration of time saved due to DNS pre-resolving in the &quot;name not
     found&quot; case.  Time &quot;savings&quot; shown in the histogram are
@@ -4536,12 +4536,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.PrefetchPositiveHit">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>Replaced by DNS.PrefetchPositiveHitL.</summary>
 </histogram>
 
 <histogram name="DNS.PrefetchPositiveHitL" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     The duration of time saved due to DNS pre-resolving in the &quot;name was
     found&quot; case, and induced by either a page scan for a link or an omnibox
@@ -4557,7 +4557,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.PrefetchQueue" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     The duration of time spent by a proposed resolution waiting in the queue to
     be resolved.  This number is in addition to any DNS resolution time that may
@@ -4566,7 +4566,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.PrefetchReferredPositiveHit" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     The duration of time saved due to DNS pre-resolving in the &quot;name was
     found&quot; case, and induced by predicting (using referrer lists) that a
@@ -4582,7 +4582,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.PrefetchResolution" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     The duration of time used by the DNS pre-resolving threads to resolve a host
     name via the network.  Any resolutions that are faster than 15ms are
@@ -4596,7 +4596,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.QueueRecycledDeltaOver2">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     When, due to congestion avoidance, a queued pre-resolution is abandoned
     (recycled) without actually being resolved, this histograms records the age
@@ -4606,7 +4606,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.QueueRecycledUnder2">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     When, due to congestion avoidance, a queued pre-resolution is abandoned
     (recycled) without actually being resolved, this histograms records the age
@@ -4616,14 +4616,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.ResolveCategory" enum="ResolutionCategory">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Counts of successes and failures of OS resolutions in various categories.
   </summary>
 </histogram>
 
 <histogram name="DNS.ResolveFail" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time taken in OS resolutions for actual navigations.  Note that
     cached OS resolutions may provide low (0ms?) resolution times.
@@ -4631,22 +4631,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.ResolveFail_FAMILY_IPV4" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>Same as DNS.ResolveFail, but limited to pure IPv4 lookups.</summary>
 </histogram>
 
 <histogram name="DNS.ResolveFail_FAMILY_IPV6" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>Same as DNS.ResolveFail, but limited to pure IPv6 lookups.</summary>
 </histogram>
 
 <histogram name="DNS.ResolveFail_FAMILY_UNSPEC" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>Same as DNS.ResolveFail, but limited to IPv4/IPv6 lookups.</summary>
 </histogram>
 
 <histogram name="DNS.ResolveSpeculativeFail" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time taken in speculative OS resolutions.  Note that cached OS
     resolutions may provide low (0ms?) resolution times.
@@ -4654,7 +4654,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.ResolveSpeculativeSuccess" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time taken in speculative OS resolution that succeeded.  Note
     that cached resolutions may provide low (0ms?) resolution times.
@@ -4662,7 +4662,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.ResolveSuccess" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time taken in OS resolutions that succeeded and were requested
     for actual navigations.  Note that cached resolutions may provide low (0ms?)
@@ -4671,31 +4671,31 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.ResolveSuccess_FAMILY_IPV4" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Same as DNS.ResolveSuccess, but limited to pure IPv4 lookups.
   </summary>
 </histogram>
 
 <histogram name="DNS.ResolveSuccess_FAMILY_IPV6" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Same as DNS.ResolveSuccess, but limited to pure IPv6 lookups.
   </summary>
 </histogram>
 
 <histogram name="DNS.ResolveSuccess_FAMILY_UNSPEC" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Same as DNS.ResolveSuccess, but limited to IPv4/IPv6 lookups.
   </summary>
 </histogram>
 
 <histogram name="DNS.ResolveUnspecWaste" enum="ResolutionUnspecWasteCategory">
+  <owner>ttuttle@chromium.org</owner>
   <obsolete>
     Deprecated as of 5/2013.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Counts of hits and misses in the DNS cache and DNS jobs pool of wasted
     HostResolverImpl::Jobs that could be avoided by always resolving using
@@ -4704,7 +4704,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.TotalTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time since a HostResolverImpl::Resolve request to the time a
     result is posted. Excludes canceled, evicted, and aborted requests. Includes
@@ -4713,7 +4713,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.TotalTime_speculative" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     Duration of time since a HostResolverImpl::Resolve request to the time a
     result is posted. Excludes canceled, evicted, and aborted requests. Includes
@@ -4722,7 +4722,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.UnexpectedResolution">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     In some cases, such as when content arrives with embedded references to
     other servers, the prefetch system can't (or doesn't) attempt to pre-resolve
@@ -4740,7 +4740,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DNS.UnexpectedResolutionL">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>
     In some cases, such as when content arrives with embedded references to
     other servers, or when a page (such as one in SSL) preclude scanning and
@@ -4759,23 +4759,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DnsProbe.ErrorPageUpdateStatus" enum="DnsProbe.ProbeStatus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>Status of DNS probe updates sent to a DNS error page.</summary>
 </histogram>
 
 <histogram name="DnsProbe.Probe.Elapsed" units="ms">
+  <owner>ttuttle@chromium.org</owner>
   <obsolete>
     Renamed 7/2013 to DnsProbe.ProbeDuration.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Time between starting and finishing DNS probe.</summary>
 </histogram>
 
 <histogram name="DnsProbe.Probe.NcnOffline.Elapsed" units="ms">
+  <owner>ttuttle@chromium.org</owner>
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time between starting and finishing DNS probe when NCN says we're offline.
   </summary>
@@ -4783,20 +4783,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="DnsProbe.Probe.NcnOffline.Result"
     enum="DnsProbe.ObsoleteProbeResult">
+  <owner>ttuttle@chromium.org</owner>
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Result of DNS probes sent by the probe service when NCN says we're offline.
   </summary>
 </histogram>
 
 <histogram name="DnsProbe.Probe.NcnOnline.Elapsed" units="ms">
+  <owner>ttuttle@chromium.org</owner>
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Time between starting and finishing DNS probe when NCN says we're online.
   </summary>
@@ -4804,38 +4804,38 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="DnsProbe.Probe.NcnOnline.Result"
     enum="DnsProbe.ObsoleteProbeResult">
+  <owner>ttuttle@chromium.org</owner>
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Result of DNS probes sent by the probe service when NCN says we're online.
   </summary>
 </histogram>
 
 <histogram name="DnsProbe.Probe.Result" enum="DnsProbe.ObsoleteProbeResult">
+  <owner>ttuttle@chromium.org</owner>
   <obsolete>
     Renamed 7/2013 to DnsProbe.ProbeResult.  (Also switched to the full
     DnsProbe.ProbeStatus enum.)
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Result of DNS probes sent by the probe service.</summary>
 </histogram>
 
 <histogram name="DnsProbe.Probe.ResultBadConfig.Elapsed" units="ms">
+  <owner>ttuttle@chromium.org</owner>
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Elapsed time of DNS probes that return PROBE_BAD_CONFIG.</summary>
 </histogram>
 
 <histogram name="DnsProbe.Probe.ResultBadConfig.SystemIsLocalhost"
     enum="DnsProbe.SystemIsLocalhost">
+  <owner>ttuttle@chromium.org</owner>
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Whether the only nameserver in the system DNS config was 127.0.0.1 when the
     probe result was BAD_CONFIG.
@@ -4844,10 +4844,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="DnsProbe.Probe.ResultBadConfig.SystemJobResult"
     enum="DnsProbe.JobResult">
+  <owner>ttuttle@chromium.org</owner>
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The result of the system probe job when the overall probe result was
     BAD_CONFIG.
@@ -4855,10 +4855,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DnsProbe.Probe.ResultBadConfig.SystemNameserverCount">
+  <owner>ttuttle@chromium.org</owner>
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of nameservers in the system DNS config when the probe result was
     BAD_CONFIG.
@@ -4866,36 +4866,36 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="DnsProbe.Probe.ResultNoInternet.Elapsed" units="ms">
+  <owner>ttuttle@chromium.org</owner>
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Elapsed time of DNS probes that return PROBE_NO_INTERNET.</summary>
 </histogram>
 
 <histogram name="DnsProbe.Probe.ResultNxdomain.Elapsed" units="ms">
+  <owner>ttuttle@chromium.org</owner>
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Elapsed time of DNS probes that return PROBE_NXDOMAIN.</summary>
 </histogram>
 
 <histogram name="DnsProbe.Probe.ResultUnknown.Elapsed" units="ms">
+  <owner>ttuttle@chromium.org</owner>
   <obsolete>
     Removed 7/2013.
   </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Elapsed time of DNS probes that return PROBE_UNKNOWN.</summary>
 </histogram>
 
 <histogram name="DnsProbe.ProbeDuration" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>Time between starting and finishing DNS probe.</summary>
 </histogram>
 
 <histogram name="DnsProbe.ProbeResult" enum="DnsProbe.ProbeStatus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ttuttle@chromium.org</owner>
   <summary>Result of DNS probes sent by the probe service.</summary>
 </histogram>
 
