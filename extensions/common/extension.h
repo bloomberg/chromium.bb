@@ -351,6 +351,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   void AddWebExtentPattern(const URLPattern& pattern);
   const URLPatternSet& web_extent() const { return extent_; }
 
+  bool HasPlatformSpecificResources() const;
+  bool HasResourcesForPlatform(const std::string& arch) const;
+
  private:
   friend class base::RefCountedThreadSafe<Extension>;
 
@@ -479,6 +482,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The flags that were passed to InitFromValue.
   int creation_flags_;
+
+  // The set of archs for which platform-specific resources are present in
+  // this extension installation.
+  std::set<std::string> platform_specific_resource_archs_;
 
   DISALLOW_COPY_AND_ASSIGN(Extension);
 };
