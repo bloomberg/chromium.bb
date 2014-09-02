@@ -33,11 +33,16 @@ function test()
             var categoryName = WebInspector.panels.timeline._uiUtils.categoryForRecord(record).name;
             if (categoryName !== "loading" && categoryName !== "scripting")
                 return;
-            if (!presentationRecord.coalesced() && record.type() !== "GCEvent")
+            var childPrefix = prefix;
+            // Filter out InjectedScript function call because they happen out of sync.
+            if (!presentationRecord.coalesced()
+                && record.type() !== "GCEvent"
+                && (record.type() !== "FunctionCall" || record.data().scriptName !== "InjectedScript")) {
                 InspectorTest.addResult(prefix + record.type());
+                childPrefix = childPrefix + "    ";
+            }
             // Ignore stray paint & rendering events for better stability.
             if (presentationRecord.presentationChildren()) {
-                var childPrefix = prefix + (presentationRecord.coalesced() ? "" : "    ");
                 for (var i = 0; i < presentationRecord.presentationChildren().length; ++i)
                     dumpFormattedRecord(presentationRecord.presentationChildren()[i], childPrefix);
             }
