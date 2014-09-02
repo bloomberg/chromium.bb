@@ -192,14 +192,7 @@ class MediaGalleriesGalleryWatchApiTest : public ExtensionApiTest {
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesGalleryWatchApiTest);
 };
 
-// Crashing on OSX.
-#if defined(OS_MACOSX)
-#define MAYBE_BasicGalleryWatch DISABLED_BasicGalleryWatch
-#else
-#define MAYBE_BasicGalleryWatch BasicGalleryWatch
-#endif
-IN_PROC_BROWSER_TEST_F(MediaGalleriesGalleryWatchApiTest,
-                       MAYBE_BasicGalleryWatch) {
+IN_PROC_BROWSER_TEST_F(MediaGalleriesGalleryWatchApiTest, BasicGalleryWatch) {
   // Add gallery watch listener.
   ExecuteCmdAndCheckReply(kAddGalleryChangedListenerCmd,
                           kAddGalleryChangedListenerOK);
@@ -241,9 +234,8 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesGalleryWatchApiTest,
   EXPECT_TRUE(got_correct_details.WaitUntilSatisfied());
 }
 
-// http://crbug.com/390979
 IN_PROC_BROWSER_TEST_F(MediaGalleriesGalleryWatchApiTest,
-                       DISABLED_RemoveListenerAndModifyGallery) {
+                       RemoveListenerAndModifyGallery) {
   if (!GalleryWatchesSupported())
     return;
 
