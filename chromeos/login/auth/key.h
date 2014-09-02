@@ -17,11 +17,16 @@ class CHROMEOS_EXPORT Key {
  public:
   enum KeyType {
     // Plain text password.
-    KEY_TYPE_PASSWORD_PLAIN,
+    KEY_TYPE_PASSWORD_PLAIN = 0,
     // SHA256 of salt + password, first half only, lower-case hex encoded.
-    KEY_TYPE_SALTED_SHA256_TOP_HALF,
+    KEY_TYPE_SALTED_SHA256_TOP_HALF = 1,
     // PBKDF2 with 256 bit AES and 1234 iterations, base64 encoded.
-    KEY_TYPE_SALTED_PBKDF2_AES256_1234,
+    KEY_TYPE_SALTED_PBKDF2_AES256_1234 = 2,
+    // SHA256 of salt + password, base64 encoded.
+    KEY_TYPE_SALTED_SHA256 = 3,
+
+    // Sentinel. Must be last.
+    KEY_TYPE_COUNT
   };
 
   Key();

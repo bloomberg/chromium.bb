@@ -100,6 +100,10 @@ void Key::Transform(KeyType target_key_type, const std::string& salt) {
       base::Base64Encode(raw_secret, &secret_);
       break;
     }
+    case KEY_TYPE_SALTED_SHA256:
+      base::Base64Encode(crypto::SHA256HashString(salt + secret_), &secret_);
+      break;
+
     default:
       // The resulting key will be sent to cryptohomed. It should always be
       // hashed. If hashing fails, crash instead of sending a plain-text key.
