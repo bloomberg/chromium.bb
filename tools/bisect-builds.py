@@ -30,9 +30,13 @@ GOOGLE_APIS_URL = 'commondatastorage.googleapis.com'
 OFFICIAL_BASE_URL = 'http://%s/%s' % (GOOGLE_APIS_URL, GS_BUCKET_NAME)
 
 # URL template for viewing changelogs between revisions.
-CHANGELOG_URL = ('http://build.chromium.org'
-                 '/f/chromium/perf/dashboard/ui/changelog.html'
-                 '?url=/trunk/src&range=%d%%3A%d')
+CHANGELOG_URL = ('https://chromium.googlesource.com/chromium/src/+log/%s..%s')
+
+# URL to convert SVN revision to git hash.
+CRREV_URL = ('http://crrev.com/')
+
+# Search pattern to match git hash.
+GITHASH_SEARCH_PATTERN = (r'<title>(\w+)\s')
 
 # URL template for viewing changelogs between official versions.
 OFFICIAL_CHANGELOG_URL = ('https://chromium.googlesource.com/chromium/'
@@ -944,6 +948,19 @@ def GetChromiumRevision(context, url):
     print 'Could not determine latest revision. This could be bad...'
     return 999999999
 
+def PrintChangeLog(min_chromium_rev, max_chromium_rev):
+  """Prints the changelog URL."""
+
+  def _GetGitHashFromSVNRevision(svn_revision):
+    crrev_url = CRREV_URL + str(svn_revision)
+    url = urllib.urlopen(crrev_url)
+    if url.getcode() == 200:
+      result = re.search(GITHASH_SEARCH_PATTERN, url.read())
+      return result.group(1)
+
+  print ('  ' + CHANGELOG_URL % (_GetGitHashFromSVNRevision(min_chromium_rev),
+         _GetGitHashFromSVNRevision(max_chromium_rev)))
+
 
 def main():
   usage = ('%prog [options] [-- chromium-options]\n'
@@ -1147,7 +1164,7 @@ def main():
     if opts.official_builds:
       print OFFICIAL_CHANGELOG_URL % (min_chromium_rev, max_chromium_rev)
     else:
-      print '  ' + CHANGELOG_URL % (min_chromium_rev, max_chromium_rev)
+      PrintChangeLog(min_chromium_rev, max_chromium_rev)
 
 
 if __name__ == '__main__':
