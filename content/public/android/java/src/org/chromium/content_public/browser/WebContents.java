@@ -43,6 +43,11 @@ public interface WebContents {
     public void onShow();
 
     /**
+     * Stops all media players for this WebContents.
+     */
+    public void releaseMediaPlayers();
+
+    /**
      * Get the Background color from underlying RenderWidgetHost for this WebContent.
      */
     public int getBackgroundColor();

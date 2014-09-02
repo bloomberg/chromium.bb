@@ -70,6 +70,9 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // Pauses all video players manages by this class.
   void PauseVideo();
 
+  // Stops and releases every media managed by this class.
+  void ReleaseAllMediaPlayers();
+
   // media::MediaPlayerManager overrides.
   virtual void OnTimeUpdate(
       int player_id, base::TimeDelta current_time) OVERRIDE;

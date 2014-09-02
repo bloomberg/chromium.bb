@@ -10,6 +10,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -436,6 +437,13 @@ public abstract class TabModelBase implements TabModel {
 
         // TODO(dtrainor): Update the list of undoable tabs instead of committing it.
         if (!canUndo) commitAllTabClosures();
+
+        // Cancel any media currently playing.
+        if (canUndo) {
+            WebContents webContents = tab.getWebContents();
+            if (webContents != null) webContents.releaseMediaPlayers();
+        }
+
         mTabs.remove(tab);
 
         boolean nextIsIncognito = nextTab == null ? false : nextTab.isIncognito();

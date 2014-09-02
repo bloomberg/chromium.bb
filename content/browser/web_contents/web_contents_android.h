@@ -64,7 +64,9 @@ class CONTENT_EXPORT WebContentsAndroid
 
   void OnHide(JNIEnv* env, jobject obj);
   void OnShow(JNIEnv* env, jobject obj);
+  void ReleaseMediaPlayers(JNIEnv* env, jobject jobj);
   void PauseVideo();
+
   void AddStyleSheetByURL(
       JNIEnv* env, jobject obj, jstring url);
   void ShowInterstitialPage(

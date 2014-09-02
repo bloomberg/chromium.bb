@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
+#include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -182,6 +183,21 @@ void WebContentsAndroid::OnHide(JNIEnv* env, jobject obj) {
 
 void WebContentsAndroid::OnShow(JNIEnv* env, jobject obj) {
   web_contents_->WasShown();
+}
+
+void WebContentsAndroid::ReleaseMediaPlayers(JNIEnv* env, jobject jobj) {
+#if defined(ENABLE_BROWSER_CDMS)
+  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
+      web_contents_->GetRenderViewHost());
+  if (!rvhi || !rvhi->GetMainFrame())
+    return;
+
+  BrowserMediaPlayerManager* manager =
+      rvhi->media_web_contents_observer()->GetMediaPlayerManager(
+          rvhi->GetMainFrame());
+  if (manager)
+    manager->ReleaseAllMediaPlayers();
+#endif // defined(ENABLE_BROWSER_CDMS)
 }
 
 void WebContentsAndroid::PauseVideo() {

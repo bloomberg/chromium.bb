@@ -85,6 +85,11 @@ import org.chromium.content_public.browser.WebContents;
     }
 
     @Override
+    public void releaseMediaPlayers() {
+        nativeReleaseMediaPlayers(mNativeWebContentsAndroid);
+    }
+
+    @Override
     public int getBackgroundColor() {
         return nativeGetBackgroundColor(mNativeWebContentsAndroid);
     }
@@ -229,6 +234,7 @@ import org.chromium.content_public.browser.WebContents;
     private native void nativeInsertCSS(long nativeWebContentsAndroid, String css);
     private native void nativeOnHide(long nativeWebContentsAndroid);
     private native void nativeOnShow(long nativeWebContentsAndroid);
+    private native void nativeReleaseMediaPlayers(long nativeWebContentsAndroid);
     private native int nativeGetBackgroundColor(long nativeWebContentsAndroid);
     private native void nativeAddStyleSheetByURL(long nativeWebContentsAndroid,
             String url);
