@@ -113,6 +113,29 @@ function testEventsFiredOnDistributedNodesShouldNotBeStoppedAtShadowBoundary()
     dumpDispatchedEvent('selectstart');
 }
 
+function testEventsInMultipleShadowTrees()
+{
+    debug("\nAn event is dispatched on a node in an older shadow tree. The older and the younger shadow root should receive the event, however, the shadow host shouldn't");
+
+    var sandbox = document.getElementById('sandbox');
+    sandbox.innerHTML = '';
+    sandbox.appendChild(
+          createDOM('div', {'id': 'shadow-host'},
+                    createShadowRoot({'id': 'older-shadow-root'},
+                                     createDOM('div', {'id': 'target'})),
+                    createShadowRoot({'id': 'younger-shadow-root'},
+                        createDOM('shadow', {'id': 'shadow-insertion-point'}))));
+    document.body.offsetLeft;
+
+    addEventListeners(['shadow-host', 'shadow-host/', 'shadow-host/target', 'shadow-host//', 'shadow-host//shadow-insertion-point']);
+
+    eventRecords = {};
+    var event = document.createEvent('UIEvent');
+    event.initEvent('selectstart', true, false);
+    getNodeInTreeOfTrees('shadow-host/target').dispatchEvent(event);
+    dumpDispatchedEvent('selectstart');
+}
+
 function test()
 {
     if (window.testRunner)
@@ -120,6 +143,7 @@ function test()
 
     testEventsShoudBeStoppedAtShadowBoundary()
     testEventsFiredOnDistributedNodesShouldNotBeStoppedAtShadowBoundary();
+    testEventsInMultipleShadowTrees();
 }
 test();
 </script>

@@ -48,18 +48,13 @@ EventTarget* EventPath::eventTargetRespectingTargetRules(Node* referenceNode)
     return referenceNode;
 }
 
-static inline bool inTheSameScope(ShadowRoot* shadowRoot, EventTarget* target)
-{
-    return target->toNode() && target->toNode()->treeScope().rootNode() == shadowRoot;
-}
-
-static inline EventDispatchBehavior determineDispatchBehavior(Event* event, ShadowRoot* shadowRoot, EventTarget* target)
+static inline bool shouldStopAtShadowRoot(Event& event, ShadowRoot& shadowRoot, EventTarget& target)
 {
     // WebKit never allowed selectstart event to cross the the shadow DOM boundary.
     // Changing this breaks existing sites.
     // See https://bugs.webkit.org/show_bug.cgi?id=52195 for details.
-    const AtomicString eventType = event->type();
-    if (inTheSameScope(shadowRoot, target)
+    const AtomicString eventType = event.type();
+    return target.toNode() && target.toNode()->shadowHost() == shadowRoot.host()
         && (eventType == EventTypeNames::abort
             || eventType == EventTypeNames::change
             || eventType == EventTypeNames::error
@@ -68,10 +63,7 @@ static inline EventDispatchBehavior determineDispatchBehavior(Event* event, Shad
             || eventType == EventTypeNames::resize
             || eventType == EventTypeNames::scroll
             || eventType == EventTypeNames::select
-            || eventType == EventTypeNames::selectstart))
-        return StayInsideShadowDOM;
-
-    return RetargetEvent;
+            || eventType == EventTypeNames::selectstart);
 }
 
 EventPath::EventPath(Event* event)
@@ -116,8 +108,6 @@ void EventPath::calculatePath()
     while (current) {
         if (m_event && current->keepEventInNode(m_event))
             break;
-        if (current->isShadowRoot() && m_event && determineDispatchBehavior(m_event, toShadowRoot(current), m_node) == StayInsideShadowDOM)
-            break;
         WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8> insertionPoints;
         collectDestinationInsertionPoints(*current, insertionPoints);
         if (!insertionPoints.isEmpty()) {
@@ -135,6 +125,8 @@ void EventPath::calculatePath()
             continue;
         }
         if (current->isShadowRoot()) {
+            if (m_event && shouldStopAtShadowRoot(*m_event, *toShadowRoot(current), *m_node))
+                break;
             current = current->shadowHost();
             addNodeEventContext(current);
         } else {

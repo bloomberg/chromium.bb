@@ -42,11 +42,6 @@ class TouchEvent;
 class TouchList;
 class TreeScope;
 
-enum EventDispatchBehavior {
-    RetargetEvent,
-    StayInsideShadowDOM
-};
-
 class EventPath FINAL : public NoBaseWillBeGarbageCollected<EventPath> {
 public:
     explicit EventPath(Event*);

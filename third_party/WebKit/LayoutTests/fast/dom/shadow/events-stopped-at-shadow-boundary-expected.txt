@@ -54,6 +54,14 @@ An event fired on a distributed child should not be stopped at the shadow bounda
      @content (target: distributed-child)
      @parent-of-content (target: distributed-child)
      @host2 (target: distributed-child)
+
+An event is dispatched on a node in an older shadow tree. The older and the younger shadow root should receive the event, however, the shadow host shouldn't
+
+  selectstart
+     @target (target: target)
+     @older-shadow-root (target: target)
+     @shadow-insertion-point (target: target)
+     @younger-shadow-root (target: target)
 PASS successfullyParsed is true
 
 TEST COMPLETE
