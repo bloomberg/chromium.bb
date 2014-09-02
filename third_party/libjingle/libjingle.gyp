@@ -325,6 +325,7 @@
     ['enable_webrtc==1', {
       'targets': [
         {
+          # GN version: //third_party/libjingle:libjingle_webrtc_common
           'target_name': 'libjingle_webrtc_common',
           'type': 'static_library',
           'all_dependent_settings': {
@@ -582,6 +583,7 @@
           ],
         },  # target libjingle_webrtc_common
         {
+          # GN version: //third_party/libjingle:libjingle_webrtc
           'target_name': 'libjingle_webrtc',
           'type': 'static_library',
           'sources': [
@@ -593,9 +595,11 @@
           ],
         },
         {
+          # GN version: //third_party/libjingle:libpeerconnection
           'target_name': 'libpeerconnection',
           'type': '<(libpeer_target_type)',
           'sources': [
+            # Note: sources list duplicated in GN build.
             '<(libjingle_source)/talk/media/webrtc/webrtcmediaengine.cc',
             '<(libjingle_source)/talk/media/webrtc/webrtcmediaengine.h',
             '<(libjingle_source)/talk/media/webrtc/webrtcvideoengine.cc',

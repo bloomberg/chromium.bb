@@ -130,8 +130,8 @@ source_set("renderer") {
       "//third_party/libyuv",
       "//third_party/webrtc/modules/audio_device",
       "//third_party/webrtc/modules/audio_processing",
-      #"../third_party/libjingle/libjingle.gyp:libjingle_webrtc",  TODO(GYP)
-      #"../third_party/libjingle/libjingle.gyp:libpeerconnection",  TODO(GYP)
+      "//third_party/libjingle:libjingle_webrtc",
+      "//third_party/libjingle:libpeerconnection",
     ]
   } else {
     sources += [

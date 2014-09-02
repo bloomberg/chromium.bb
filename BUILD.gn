@@ -96,6 +96,7 @@ group("root") {
     "//third_party/smhasher:pmurhash",
     "//third_party/snappy",
     "//third_party/speex",
+    "//third_party/usrsctp",
     "//third_party/widevine/cdm:version_h",
     "//third_party/webrtc",
     "//third_party/zlib",

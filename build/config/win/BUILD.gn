@@ -11,13 +11,11 @@ config("sdk") {
 
   defines = [
     "_ATL_NO_OPENGL",
-    "_WIN32_WINNT=0x0602",
     "_WINDOWS",
     "CERT_CHAIN_PARA_HAS_EXTRA_FIELDS",
     "NTDDI_VERSION=0x06020000",
     "PSAPI_VERSION=1",
     "WIN32",
-    "WINVER=0x0602",
   ]
 
   include_dirs = system_include_dirs
@@ -31,6 +29,15 @@ config("sdk") {
     # Only supported on non-Express versions.
     defines += [ "_SECURE_ATL" ]
   }
+}
+
+# Sets the default Windows build version. This is separated because some
+# targets need to manually override it for their compiles.
+config("winver") {
+  defines = [
+    "_WIN32_WINNT=0x0602",
+    "WINVER=0x0602",
+  ]
 }
 
 # Linker flags for Windows SDK setup, this is applied only to EXEs and DLLs.
