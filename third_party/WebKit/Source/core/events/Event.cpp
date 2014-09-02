@@ -258,7 +258,7 @@ EventTarget* Event::currentTarget() const
         if (SVGElement* svgElement = toSVGElement(node)->correspondingElement())
             return svgElement;
     }
-    return m_currentTarget;
+    return m_currentTarget.get();
 }
 
 void Event::trace(Visitor* visitor)
