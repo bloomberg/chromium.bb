@@ -28,9 +28,6 @@ TEST(FontCache, getLastResortFallbackFont)
     OwnPtr<EmptyPlatform> platform = adoptPtr(new EmptyPlatform);
     Platform::initialize(platform.get());
 
-    if (emptyAtom.isNull())
-        AtomicString::init();
-
     FontDescription fontDescription;
     fontDescription.setGenericFamily(FontDescription::StandardFamily);
     RefPtr<SimpleFontData> fontData = fontCache->getLastResortFallbackFont(fontDescription, Retain);

@@ -34,6 +34,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
 #include "wtf/Threading.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WTF {
 
@@ -49,6 +50,8 @@ void initializeMainThread(void (*function)(MainThreadFunction, void*))
     callOnMainThreadFunction = function;
 
     mainThreadIdentifier = currentThread();
+
+    AtomicString::init();
 }
 
 void callOnMainThread(MainThreadFunction* function, void* context)

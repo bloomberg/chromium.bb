@@ -499,22 +499,22 @@ TEST(KURLTest, Empty)
 
     // Test resolving a null URL on an empty string.
     blink::KURL kurl2(kurl, "");
-    EXPECT_TRUE(kurl2.isNull());
+    EXPECT_FALSE(kurl2.isNull());
     EXPECT_TRUE(kurl2.isEmpty());
     EXPECT_FALSE(kurl2.isValid());
-    EXPECT_TRUE(kurl2.string().isNull());
+    EXPECT_FALSE(kurl2.string().isNull());
     EXPECT_TRUE(kurl2.string().isEmpty());
-    EXPECT_TRUE(kurl2.string().isNull());
+    EXPECT_FALSE(kurl2.string().isNull());
     EXPECT_TRUE(kurl2.string().isEmpty());
 
     // Resolve the null URL on a null string.
     blink::KURL kurl22(kurl, WTF::String());
-    EXPECT_TRUE(kurl22.isNull());
+    EXPECT_FALSE(kurl22.isNull());
     EXPECT_TRUE(kurl22.isEmpty());
     EXPECT_FALSE(kurl22.isValid());
-    EXPECT_TRUE(kurl22.string().isNull());
+    EXPECT_FALSE(kurl22.string().isNull());
     EXPECT_TRUE(kurl22.string().isEmpty());
-    EXPECT_TRUE(kurl22.string().isNull());
+    EXPECT_FALSE(kurl22.string().isNull());
     EXPECT_TRUE(kurl22.string().isEmpty());
 
     // Test non-hierarchical schemes resolving. The actual URLs will be different.
@@ -539,13 +539,13 @@ TEST(KURLTest, Empty)
     // EXPECT_EQ(kurl5.isEmpty(), kurl5.isEmpty());
     // EXPECT_EQ(kurl5.string().isEmpty(), kurl5.string().isEmpty());
     EXPECT_FALSE(kurl5.isValid());
-    EXPECT_TRUE(kurl5.string().isNull());
+    EXPECT_FALSE(kurl5.string().isNull());
 
     // Empty string as input
     blink::KURL kurl6(blink::ParsedURLString, "");
     EXPECT_TRUE(kurl6.isEmpty());
     EXPECT_FALSE(kurl6.isValid());
-    EXPECT_TRUE(kurl6.string().isNull());
+    EXPECT_FALSE(kurl6.string().isNull());
     EXPECT_TRUE(kurl6.string().isEmpty());
 
     // Non-empty but invalid C string as input.
@@ -554,7 +554,7 @@ TEST(KURLTest, Empty)
     // We don't do that.
     // EXPECT_EQ(kurl7.isEmpty(), kurl7.isEmpty());
     EXPECT_FALSE(kurl7.isValid());
-    EXPECT_TRUE(kurl7.string().isNull());
+    EXPECT_FALSE(kurl7.string().isNull());
 }
 
 TEST(KURLTest, UserPass)
