@@ -701,4 +701,34 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
   EXPECT_TRUE(accelerator.IsAltDown());
 }
 
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, ContinuePropagation) {
+  // Setup the environment.
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  ASSERT_TRUE(RunExtensionTest("keybinding/continue_propagation")) << message_;
+  ui_test_utils::NavigateToURL(
+      browser(), test_server()->GetURL("files/extensions/test_file.txt"));
+
+  ResultCatcher catcher;
+
+  // Activate the shortcut (Ctrl+Shift+F). The page should capture the
+  // keystroke and not the extension since |onCommand| has no event listener
+  // initially.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_F, true, true, false, false));
+  ASSERT_TRUE(catcher.GetNextResult());
+
+  // Now, the extension should have added an |onCommand| event listener.
+  // Send the same key, but the |onCommand| listener should now receive it.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_F, true, true, false, false));
+  ASSERT_TRUE(catcher.GetNextResult());
+
+  // The extension should now have removed its |onCommand| event listener.
+  // Finally, the page should again receive the key.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_F, true, true, false, false));
+  ASSERT_TRUE(catcher.GetNextResult());
+}
+
 }  // namespace extensions
