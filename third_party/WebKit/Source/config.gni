@@ -51,7 +51,6 @@ use_concatenated_impulse_responses = true
 # feature_defines_list ---------------------------------------------------------
 
 feature_defines_list = [
-  "ENABLE_CUSTOM_SCHEME_HANDLER=0",
   "ENABLE_SVG_FONTS=1",
 ]
 

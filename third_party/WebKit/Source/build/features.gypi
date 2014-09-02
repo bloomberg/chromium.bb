@@ -32,7 +32,6 @@
   # The following defines turn WebKit features on and off.
   'variables': {
     'feature_defines': [
-      'ENABLE_CUSTOM_SCHEME_HANDLER=0',
       'ENABLE_SVG_FONTS=1',
       # WTF_USE_DYNAMIC_ANNOTATIONS=1 may be defined in build/common.gypi
       # We can't define it here because it should be present only
