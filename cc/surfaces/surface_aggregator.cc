@@ -346,14 +346,6 @@ scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(SurfaceId surface_id) {
   contained_surfaces_.swap(previous_contained_surfaces_);
   contained_surfaces_.clear();
 
-  for (SurfaceIndexMap::iterator it = previous_contained_surfaces_.begin();
-       it != previous_contained_surfaces_.end();
-       ++it) {
-    Surface* surface = manager_->GetSurfaceForId(it->first);
-    if (surface)
-      surface->TakeLatencyInfo(&frame->metadata.latency_info);
-  }
-
   // TODO(jamesr): Aggregate all resource references into the returned frame's
   // resource list.
 

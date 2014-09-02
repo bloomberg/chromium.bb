@@ -33,7 +33,6 @@ Surface::~Surface() {
 
 void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
                          const base::Closure& callback) {
-  TakeLatencyInfo(&frame->metadata.latency_info);
   scoped_ptr<CompositorFrame> previous_frame = current_frame_.Pass();
   current_frame_ = frame.Pass();
   factory_->ReceiveFromChild(
@@ -59,19 +58,6 @@ void Surface::RequestCopyOfOutput(scoped_ptr<CopyOutputRequest> copy_request) {
 
 const CompositorFrame* Surface::GetEligibleFrame() {
   return current_frame_.get();
-}
-
-void Surface::TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info) {
-  if (!current_frame_)
-    return;
-  if (latency_info->empty()) {
-    current_frame_->metadata.latency_info.swap(*latency_info);
-    return;
-  }
-  std::copy(current_frame_->metadata.latency_info.begin(),
-            current_frame_->metadata.latency_info.end(),
-            std::back_inserter(*latency_info));
-  current_frame_->metadata.latency_info.clear();
 }
 
 void Surface::RunDrawCallbacks() {

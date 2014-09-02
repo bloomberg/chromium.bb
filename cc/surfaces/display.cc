@@ -112,7 +112,8 @@ bool Display::Draw() {
                        device_viewport_rect,
                        device_clip_rect,
                        disable_picture_quad_image_filtering);
-  renderer_->SwapBuffers(frame->metadata);
+  CompositorFrameMetadata metadata;
+  renderer_->SwapBuffers(metadata);
   for (SurfaceAggregator::SurfaceIndexMap::iterator it =
            aggregator_->previous_contained_surfaces().begin();
        it != aggregator_->previous_contained_surfaces().end();
