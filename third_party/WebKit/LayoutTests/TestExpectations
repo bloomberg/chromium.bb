@@ -1263,7 +1263,7 @@ crbug.com/401377 [ Win Release ] http/tests/serviceworker/fetch-mixed-content.ht
 crbug.com/401380 inspector/elements/styles/styles-should-not-force-sync-style-recalc.html [ Pass Failure ]
 crbug.com/401381 [ XP ] http/tests/serviceworker/fetch-event.html [ Pass Failure ]
 crbug.com/405847 [ XP ] http/tests/serviceworker/install-phase-event-waituntil.html [ Pass Failure ]
-
+crbug.com/409755 http/tests/serviceworker/request.html [ Crash Pass ]
 crbug.com/398355 http/tests/serviceworker/unregister-then-register-new-script.html [ Pass Failure Timeout ]
 
 crbug.com/397321 compositing/repaint/should-not-repaint-composited-opacity.html [ Crash Pass ]
