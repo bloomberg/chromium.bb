@@ -2735,27 +2735,29 @@ void SpdySession::SendInitialData() {
         kDefaultInitialRecvWindowSize - session_recv_window_size_);
   }
 
-  // Finally, notify the server about the settings they have
-  // previously told us to use when communicating with them (after
-  // applying them).
-  const SettingsMap& server_settings_map =
-      http_server_properties_->GetSpdySettings(host_port_pair());
-  if (server_settings_map.empty())
-    return;
+  if (protocol_ <= kProtoSPDY31) {
+    // Finally, notify the server about the settings they have
+    // previously told us to use when communicating with them (after
+    // applying them).
+    const SettingsMap& server_settings_map =
+        http_server_properties_->GetSpdySettings(host_port_pair());
+    if (server_settings_map.empty())
+      return;
 
-  SettingsMap::const_iterator it =
-      server_settings_map.find(SETTINGS_CURRENT_CWND);
-  uint32 cwnd = (it != server_settings_map.end()) ? it->second.second : 0;
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySettingsCwndSent", cwnd, 1, 200, 100);
+    SettingsMap::const_iterator it =
+        server_settings_map.find(SETTINGS_CURRENT_CWND);
+    uint32 cwnd = (it != server_settings_map.end()) ? it->second.second : 0;
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySettingsCwndSent", cwnd, 1, 200, 100);
 
-  for (SettingsMap::const_iterator it = server_settings_map.begin();
-       it != server_settings_map.end(); ++it) {
-    const SpdySettingsIds new_id = it->first;
-    const uint32 new_val = it->second.second;
-    HandleSetting(new_id, new_val);
+    for (SettingsMap::const_iterator it = server_settings_map.begin();
+         it != server_settings_map.end(); ++it) {
+      const SpdySettingsIds new_id = it->first;
+      const uint32 new_val = it->second.second;
+      HandleSetting(new_id, new_val);
+    }
+
+    SendSettings(server_settings_map);
   }
-
-  SendSettings(server_settings_map);
 }
 
 

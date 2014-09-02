@@ -1576,7 +1576,9 @@ TEST_P(SpdySessionTest, SendInitialDataOnNewSession) {
                             initial_max_concurrent_streams);
   scoped_ptr<SpdyFrame> server_settings_frame(
       spdy_util_.ConstructSpdySettings(server_settings));
-  writes.push_back(CreateMockWrite(*server_settings_frame));
+  if (GetParam() <= kProtoSPDY31) {
+    writes.push_back(CreateMockWrite(*server_settings_frame));
+  }
 
   session_deps_.stream_initial_recv_window_size = kInitialRecvWindowSize;
 
