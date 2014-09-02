@@ -12,6 +12,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "net/base/escape.h"
@@ -46,7 +47,7 @@ void CoreAppLauncherHandler::RecordAppListSearchLaunch(
     const extensions::Extension* extension) {
   extension_misc::AppLaunchBucket bucket =
       extension_misc::APP_LAUNCH_APP_LIST_SEARCH;
-  if (extension->id() == extension_misc::kWebStoreAppId)
+  if (extension->id() == extensions::kWebStoreAppId)
     bucket = extension_misc::APP_LAUNCH_APP_LIST_SEARCH_WEBSTORE;
   else if (extension->id() == extension_misc::kChromeAppId)
     bucket = extension_misc::APP_LAUNCH_APP_LIST_SEARCH_CHROME;
@@ -58,7 +59,7 @@ void CoreAppLauncherHandler::RecordAppListMainLaunch(
     const extensions::Extension* extension) {
   extension_misc::AppLaunchBucket bucket =
       extension_misc::APP_LAUNCH_APP_LIST_MAIN;
-  if (extension->id() == extension_misc::kWebStoreAppId)
+  if (extension->id() == extensions::kWebStoreAppId)
     bucket = extension_misc::APP_LAUNCH_APP_LIST_MAIN_WEBSTORE;
   else if (extension->id() == extension_misc::kChromeAppId)
     bucket = extension_misc::APP_LAUNCH_APP_LIST_MAIN_CHROME;

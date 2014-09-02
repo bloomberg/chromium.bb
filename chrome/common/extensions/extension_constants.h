@@ -140,9 +140,6 @@ extern const char kSettingsAppId[];
 // The extension id used for testing streamsPrivate
 extern const char kStreamsPrivateTestExtensionId[];
 
-// The extension id of the Web Store component application.
-extern const char kWebStoreAppId[];
-
 // The extension id of the Youtube application.
 extern const char kYoutubeAppId[];
 

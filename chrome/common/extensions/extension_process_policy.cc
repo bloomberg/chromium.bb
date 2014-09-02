@@ -6,6 +6,7 @@
 
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 
@@ -50,9 +51,9 @@ bool CrossesExtensionProcessBoundary(
          !AppIsolationInfo::HasIsolatedStorage(new_url_extension));
     bool either_is_web_store =
         (old_url_extension &&
-        old_url_extension->id() == extension_misc::kWebStoreAppId) ||
+        old_url_extension->id() == extensions::kWebStoreAppId) ||
         (new_url_extension &&
-        new_url_extension->id() == extension_misc::kWebStoreAppId);
+        new_url_extension->id() == extensions::kWebStoreAppId);
     if (old_url_is_hosted_app &&
         new_url_is_normal_or_hosted &&
         !either_is_web_store)

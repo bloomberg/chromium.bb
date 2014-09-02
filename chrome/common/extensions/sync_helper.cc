@@ -8,6 +8,7 @@
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -88,7 +89,7 @@ bool IsSyncable(const Extension* extension) {
   bool is_syncable = (extension->location() == Manifest::INTERNAL &&
                       !extension->was_installed_by_default());
   // Sync the chrome web store to maintain its position on the new tab page.
-  is_syncable |= (extension->id() == extension_misc::kWebStoreAppId);
+  is_syncable |= (extension->id() == extensions::kWebStoreAppId);
   // Sync the chrome component app to maintain its position on the app list.
   is_syncable |= (extension->id() == extension_misc::kChromeAppId);
   return is_syncable;

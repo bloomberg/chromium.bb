@@ -24,6 +24,7 @@
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/uninstall_reason.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -156,7 +157,7 @@ TEST_F(ExtensionAppModelBuilderTest, HideWebStore) {
       MakeApp("webstore",
               "0.0",
               "http://google.com",
-              std::string(extension_misc::kWebStoreAppId));
+              std::string(extensions::kWebStoreAppId));
   service_->AddExtension(store.get());
 
   // Install an "enterprise web store" app.

@@ -9,6 +9,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/extension_util.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
@@ -19,7 +20,7 @@ bool IsBlockedByPolicy(const Extension* app, content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   DCHECK(profile);
 
-  return (app->id() == extension_misc::kWebStoreAppId ||
+  return (app->id() == extensions::kWebStoreAppId ||
       app->id() == extension_misc::kEnterpriseWebStoreAppId) &&
       profile->GetPrefs()->GetBoolean(prefs::kHideWebStoreIcon);
 }

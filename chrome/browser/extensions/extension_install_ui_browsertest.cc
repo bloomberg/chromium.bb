@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -28,6 +27,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/common/constants.h"
 
 using content::WebContents;
 using extensions::AppSorting;
@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(NewTabUISortingBrowserTest,
   const std::string app_id = crx_file::id_util::GenerateIdForPath(app_dir);
 
   const extensions::Extension* webstore_extension =
-      service->GetInstalledExtension(extension_misc::kWebStoreAppId);
+      service->GetInstalledExtension(extensions::kWebStoreAppId);
   EXPECT_TRUE(webstore_extension);
   AppSorting* sorting =
       extensions::ExtensionPrefs::Get(browser()->profile())->app_sorting();
@@ -242,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(NewTabUISortingBrowserTest,
   EXPECT_FALSE(service->GetInstalledExtension(app_id));
   // Move the test app from the end to be before the web store.
   sorting->OnExtensionMoved(
-      app_id, std::string(), extension_misc::kWebStoreAppId);
+      app_id, std::string(), extensions::kWebStoreAppId);
   EXPECT_EQ(app_id, last_reordered_extension_id_);
 
   // Now install the app.

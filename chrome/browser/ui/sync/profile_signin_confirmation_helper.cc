@@ -26,6 +26,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #endif
@@ -207,7 +208,7 @@ bool HasSyncedExtensions(Profile* profile) {
       // page, but since it's installed by default we don't want to
       // consider it when determining if the profile is dirty.
       if (extensions::sync_helper::IsSyncable(iter->get()) &&
-          (*iter)->id() != extension_misc::kWebStoreAppId &&
+          (*iter)->id() != extensions::kWebStoreAppId &&
           (*iter)->id() != extension_misc::kChromeAppId) {
         DVLOG(1) << "ProfileSigninConfirmationHelper: "
                  << "profile contains a synced extension: " << (*iter)->id();

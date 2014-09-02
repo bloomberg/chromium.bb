@@ -52,6 +52,7 @@ const char kSyncExtensionSettingsDirectoryName[] = "Sync Extension Settings";
 const char kManagedSettingsDirectoryName[] = "Managed Extension Settings";
 const char kStateStoreName[] = "Extension State";
 const char kRulesStoreName[] = "Extension Rules";
+const char kWebStoreAppId[] = "ahfgeienlihckogmohjhadlkjgocpleb";
 
 }  // namespace extensions
 

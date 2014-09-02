@@ -74,6 +74,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -737,7 +738,7 @@ void ChromeLauncherController::LaunchApp(const std::string& app_id,
                          event_flags,
                          chrome::HOST_DESKTOP_TYPE_ASH);
   if (source != ash::LAUNCH_FROM_UNKNOWN &&
-      app_id == extension_misc::kWebStoreAppId) {
+      app_id == extensions::kWebStoreAppId) {
     // Get the corresponding source string.
     std::string source_value = GetSourceFromAppListSource(source);
 

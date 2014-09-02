@@ -7,8 +7,8 @@
 #include <map>
 
 #include "chrome/browser/extensions/./extension_prefs_unittest.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "components/crx_file/id_util.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/manifest_constants.h"
 #include "sync/api/string_ordinal.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -227,9 +227,9 @@ class ChromeAppSortingInitializeWithNoApps : public PrefsPrepopulatedTestBase {
     // Make sure that the web store has valid ordinals.
     syncer::StringOrdinal initial_ordinal =
         syncer::StringOrdinal::CreateInitialOrdinal();
-    app_sorting->SetPageOrdinal(extension_misc::kWebStoreAppId,
+    app_sorting->SetPageOrdinal(extensions::kWebStoreAppId,
                                 initial_ordinal);
-    app_sorting->SetAppLaunchOrdinal(extension_misc::kWebStoreAppId,
+    app_sorting->SetAppLaunchOrdinal(extensions::kWebStoreAppId,
                                      initial_ordinal);
 
     ExtensionIdList ids;
@@ -240,7 +240,7 @@ class ChromeAppSortingInitializeWithNoApps : public PrefsPrepopulatedTestBase {
         static_cast<ChromeAppSorting*>(prefs()->app_sorting());
 
     syncer::StringOrdinal page =
-        app_sorting->GetPageOrdinal(extension_misc::kWebStoreAppId);
+        app_sorting->GetPageOrdinal(extensions::kWebStoreAppId);
     EXPECT_TRUE(page.IsValid());
 
     ChromeAppSorting::PageOrdinalMap::iterator page_it =
@@ -248,7 +248,7 @@ class ChromeAppSortingInitializeWithNoApps : public PrefsPrepopulatedTestBase {
     EXPECT_TRUE(page_it != app_sorting->ntp_ordinal_map_.end());
 
     syncer::StringOrdinal app_launch =
-        app_sorting->GetPageOrdinal(extension_misc::kWebStoreAppId);
+        app_sorting->GetPageOrdinal(extensions::kWebStoreAppId);
     EXPECT_TRUE(app_launch.IsValid());
 
     ChromeAppSorting::AppLaunchOrdinalMap::iterator app_launch_it =

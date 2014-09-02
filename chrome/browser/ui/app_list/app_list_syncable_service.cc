@@ -20,6 +20,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/uninstall_reason.h"
+#include "extensions/common/constants.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_merge_result.h"
@@ -107,7 +108,7 @@ bool AppIsDefault(ExtensionService* service, const std::string& id) {
 
 bool IsUnRemovableDefaultApp(const std::string& id) {
   if (id == extension_misc::kChromeAppId ||
-      id == extension_misc::kWebStoreAppId)
+      id == extensions::kWebStoreAppId)
     return true;
 #if defined(OS_CHROMEOS)
   if (id == file_manager::kFileManagerAppId || id == genius_app::kGeniusAppId)
@@ -881,7 +882,7 @@ syncer::StringOrdinal AppListSyncableService::GetOemFolderPos() {
   size_t oem_index = 0;
   for (; oem_index < item_list->item_count() - 1; ++oem_index) {
     AppListItem* cur_item = item_list->item_at(oem_index);
-    if (cur_item->id() == extension_misc::kWebStoreAppId)
+    if (cur_item->id() == extensions::kWebStoreAppId)
       break;
   }
   syncer::StringOrdinal oem_ordinal;

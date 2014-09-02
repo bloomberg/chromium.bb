@@ -9,6 +9,7 @@
 #include "chrome/renderer/extensions/renderer_permissions_policy_delegate.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/mock_render_thread.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_messages.h"
@@ -93,9 +94,9 @@ TEST_F(RendererPermissionsPolicyDelegateTest, CannotScriptWebstore) {
   // Pretend we are in the webstore process. We should not be able to execute
   // script.
   scoped_refptr<const Extension> webstore_extension(
-      CreateTestExtension(extension_misc::kWebStoreAppId));
+      CreateTestExtension(extensions::kWebStoreAppId));
   extension_dispatcher_->OnLoadedInternal(webstore_extension);
-  extension_dispatcher_->OnActivateExtension(extension_misc::kWebStoreAppId);
+  extension_dispatcher_->OnActivateExtension(extensions::kWebStoreAppId);
   EXPECT_FALSE(extension->permissions_data()->CanAccessPage(
       extension.get(), kAnyUrl, kAnyUrl, -1, -1, &error))
       << error;

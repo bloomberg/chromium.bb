@@ -2445,9 +2445,9 @@ TEST_F(ExtensionServiceTest, EnsureCWSOrdinalsInitialized) {
 
   AppSorting* sorting = ExtensionPrefs::Get(profile())->app_sorting();
   EXPECT_TRUE(
-      sorting->GetPageOrdinal(extension_misc::kWebStoreAppId).IsValid());
+      sorting->GetPageOrdinal(extensions::kWebStoreAppId).IsValid());
   EXPECT_TRUE(
-      sorting->GetAppLaunchOrdinal(extension_misc::kWebStoreAppId).IsValid());
+      sorting->GetAppLaunchOrdinal(extensions::kWebStoreAppId).IsValid());
 }
 
 TEST_F(ExtensionServiceTest, InstallAppsWithUnlimitedStorage) {

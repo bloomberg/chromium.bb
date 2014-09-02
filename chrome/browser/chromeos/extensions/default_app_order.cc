@@ -15,6 +15,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/chromeos_paths.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/constants.h"
 
 namespace chromeos {
 namespace default_app_order {
@@ -32,7 +33,7 @@ const char kImportDefaultOrderAttr[] = "import_default_order";
 
 const char* kDefaultAppOrder[] = {
     extension_misc::kChromeAppId,
-    extension_misc::kWebStoreAppId,
+    extensions::kWebStoreAppId,
     extension_misc::kGoogleSearchAppId,
     extension_misc::kYoutubeAppId,
     extension_misc::kGmailAppId,

@@ -5,12 +5,11 @@
 #include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
 
 #include "base/message_loop/message_loop.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_test_util.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/common/constants.h"
 #include "ipc/ipc_message.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request_test_util.h"
@@ -139,7 +138,7 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
                                             MSG_ROUTING_NONE,
                                             false);
     extension_info_map_->RegisterExtensionProcess(
-        extension_misc::kWebStoreAppId, process_id, site_instance_id);
+        extensions::kWebStoreAppId, process_id, site_instance_id);
     EXPECT_TRUE(WebRequestPermissions::HideRequest(extension_info_map_.get(),
                                                    &sensitive_request));
   }

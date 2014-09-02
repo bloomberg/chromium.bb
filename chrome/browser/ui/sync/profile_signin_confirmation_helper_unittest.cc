@@ -44,6 +44,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -210,7 +211,7 @@ TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Extensions) {
 
   // (The web store doesn't count.)
   scoped_refptr<extensions::Extension> webstore =
-      CreateExtension("web store", extension_misc::kWebStoreAppId);
+      CreateExtension("web store", extensions::kWebStoreAppId);
   extensions::ExtensionPrefs::Get(profile_.get())->AddGrantedPermissions(
       webstore->id(), make_scoped_refptr(new extensions::PermissionSet).get());
   extensions->AddExtension(webstore.get());

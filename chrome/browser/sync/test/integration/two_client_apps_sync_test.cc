@@ -16,13 +16,13 @@
 #include "chrome/browser/sync/test/integration/sync_app_helper.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
 #include "sync/api/string_ordinal.h"
 
 using apps_helper::AllProfilesHaveSameAppsAsVerifier;
@@ -335,14 +335,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UpdateCWSOrdinals) {
   syncer::StringOrdinal cws_app_launch_ordinal =
       extensions::ExtensionPrefs::Get(GetProfile(0))
           ->app_sorting()
-          ->GetAppLaunchOrdinal(extension_misc::kWebStoreAppId);
+          ->GetAppLaunchOrdinal(extensions::kWebStoreAppId);
   extensions::ExtensionPrefs::Get(GetProfile(0))
       ->app_sorting()
-      ->SetAppLaunchOrdinal(extension_misc::kWebStoreAppId,
+      ->SetAppLaunchOrdinal(extensions::kWebStoreAppId,
                             cws_app_launch_ordinal.CreateAfter());
   extensions::ExtensionPrefs::Get(verifier())
       ->app_sorting()
-      ->SetAppLaunchOrdinal(extension_misc::kWebStoreAppId,
+      ->SetAppLaunchOrdinal(extensions::kWebStoreAppId,
                             cws_app_launch_ordinal.CreateAfter());
   ASSERT_TRUE(AwaitAllProfilesHaveSameAppsAsVerifier());
 
@@ -350,11 +350,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UpdateCWSOrdinals) {
   syncer::StringOrdinal cws_page_ordinal =
       extensions::ExtensionPrefs::Get(GetProfile(1))
           ->app_sorting()
-          ->GetPageOrdinal(extension_misc::kWebStoreAppId);
+          ->GetPageOrdinal(extensions::kWebStoreAppId);
   extensions::ExtensionPrefs::Get(GetProfile(1))->app_sorting()->SetPageOrdinal(
-      extension_misc::kWebStoreAppId, cws_page_ordinal.CreateAfter());
+      extensions::kWebStoreAppId, cws_page_ordinal.CreateAfter());
   extensions::ExtensionPrefs::Get(verifier())->app_sorting()->SetPageOrdinal(
-      extension_misc::kWebStoreAppId, cws_page_ordinal.CreateAfter());
+      extensions::kWebStoreAppId, cws_page_ordinal.CreateAfter());
   ASSERT_TRUE(AwaitAllProfilesHaveSameAppsAsVerifier());
 }
 
@@ -366,20 +366,20 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UpdateLaunchType) {
 
   // Change the launch type to window.
   extensions::SetLaunchType(GetExtensionService(GetProfile(1)),
-                            extension_misc::kWebStoreAppId,
+                            extensions::kWebStoreAppId,
                             extensions::LAUNCH_TYPE_WINDOW);
   extensions::SetLaunchType(GetExtensionService(verifier()),
-                            extension_misc::kWebStoreAppId,
+                            extensions::kWebStoreAppId,
                             extensions::LAUNCH_TYPE_WINDOW);
   ASSERT_TRUE(AwaitAllProfilesHaveSameAppsAsVerifier());
 
   // Change the launch type to regular tab.
   extensions::SetLaunchType(GetExtensionService(GetProfile(1)),
-                            extension_misc::kWebStoreAppId,
+                            extensions::kWebStoreAppId,
                             extensions::LAUNCH_TYPE_REGULAR);
   ASSERT_FALSE(HasSameAppsAsVerifier(1));
   extensions::SetLaunchType(GetExtensionService(verifier()),
-                            extension_misc::kWebStoreAppId,
+                            extensions::kWebStoreAppId,
                             extensions::LAUNCH_TYPE_REGULAR);
   ASSERT_TRUE(AwaitAllProfilesHaveSameAppsAsVerifier());
 }
@@ -389,16 +389,16 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UnexpectedLaunchType) {
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 
   extensions::SetLaunchType(GetExtensionService(GetProfile(1)),
-                            extension_misc::kWebStoreAppId,
+                            extensions::kWebStoreAppId,
                             extensions::LAUNCH_TYPE_REGULAR);
   extensions::SetLaunchType(GetExtensionService(verifier()),
-                            extension_misc::kWebStoreAppId,
+                            extensions::kWebStoreAppId,
                             extensions::LAUNCH_TYPE_REGULAR);
   ASSERT_TRUE(AwaitAllProfilesHaveSameAppsAsVerifier());
 
   const extensions::Extension* extension =
       GetExtensionRegistry(GetProfile(1))->GetExtensionById(
-          extension_misc::kWebStoreAppId,
+          extensions::kWebStoreAppId,
           extensions::ExtensionRegistry::EVERYTHING);
   ASSERT_TRUE(extension);
 

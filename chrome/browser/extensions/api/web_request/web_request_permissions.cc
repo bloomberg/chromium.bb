@@ -7,7 +7,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
@@ -92,7 +91,7 @@ bool WebRequestPermissions::HideRequest(
     if (extension_info_map && (
         extension_info_map->IsSigninProcess(process_id) ||
         extension_info_map->process_map().Contains(
-            extension_misc::kWebStoreAppId, process_id))) {
+            extensions::kWebStoreAppId, process_id))) {
       return true;
     }
   }

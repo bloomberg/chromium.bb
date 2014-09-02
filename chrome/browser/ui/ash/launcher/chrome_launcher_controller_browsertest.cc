@@ -2066,16 +2066,16 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, OverflowBubble) {
 // still gets detected properly.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, V1AppNavigation) {
   // We assume that the web store is always there (which it apparently is).
-  controller_->PinAppWithID(extension_misc::kWebStoreAppId);
+  controller_->PinAppWithID(extensions::kWebStoreAppId);
   ash::ShelfID id = controller_->GetShelfIDForAppID(
-      extension_misc::kWebStoreAppId);
+      extensions::kWebStoreAppId);
   ASSERT_NE(0, id);
   EXPECT_EQ(ash::STATUS_CLOSED, model_->ItemByID(id)->status);
 
   // Create a windowed application.
   AppLaunchParams params(
       profile(),
-      controller_->GetExtensionForAppID(extension_misc::kWebStoreAppId),
+      controller_->GetExtensionForAppID(extensions::kWebStoreAppId),
       0,
       chrome::HOST_DESKTOP_TYPE_ASH);
   params.container = extensions::LAUNCH_CONTAINER_WINDOW;

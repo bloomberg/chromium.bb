@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "components/cloud_devices/common/cloud_devices_urls.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
 
@@ -194,7 +195,7 @@ bool AppLaunchInfo::LoadLaunchURL(Extension* extension, base::string16* error) {
   // In order for the --apps-gallery-url switch to work with the gallery
   // process isolation, we must insert any provided value into the component
   // app's launch url and web extent.
-  if (extension->id() == extension_misc::kWebStoreAppId) {
+  if (extension->id() == extensions::kWebStoreAppId) {
     std::string gallery_url_str = CommandLine::ForCurrentProcess()->
         GetSwitchValueASCII(switches::kAppsGalleryURL);
 

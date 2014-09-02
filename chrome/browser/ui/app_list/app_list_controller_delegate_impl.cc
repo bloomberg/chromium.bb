@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "net/base/url_util.h"
 #include "ui/gfx/image/image_skia.h"
@@ -103,7 +104,7 @@ void AppListControllerDelegateImpl::LaunchApp(
   AppLaunchParams params(profile, extension, NEW_FOREGROUND_TAB);
 
   if (source != LAUNCH_FROM_UNKNOWN &&
-      extension->id() == extension_misc::kWebStoreAppId) {
+      extension->id() == extensions::kWebStoreAppId) {
     // Set an override URL to include the source.
     GURL extension_url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
     params.override_url = net::AppendQueryParameter(
