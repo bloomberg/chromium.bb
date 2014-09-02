@@ -264,7 +264,7 @@ deviceScaleAdjustment type=double, initial=1.0, invalidate=TextAutosizing
 # The spec ( https://dvcs.w3.org/hg/webperf/raw-file/tip/specs/Beacon/Overview.html )
 # does not proscribe an upper limit, but allows for it -- the underlying
 # API will return 'false' in that case.
-maxBeaconTransmission type=int, initial=16384
+maxBeaconTransmission type=int, initial=65536
 
 # This value is set to false if the platform does not support fullscreen.
 # When set to false all the requests to enter fullscreen will return an error
