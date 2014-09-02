@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import os
-from threading import Lock, Thread
+from threading import Lock
 
 import blame
 from common import utils
@@ -139,8 +139,8 @@ def FindMatch(revisions_info_map, file_to_revision_info, file_to_crash_info,
     Matches, a set of match objects.
   """
   matches = match_set.MatchSet(codereview_api_url)
-  threads = []
 
+  tasks = []
   # Iterate through the crashed files in the stacktrace.
   for crashed_file_path in file_to_crash_info:
     # Ignore header file.
@@ -172,17 +172,15 @@ def FindMatch(revisions_info_map, file_to_revision_info, file_to_crash_info,
 
         revision = revisions_info_map[cl]
 
-        match_thread = Thread(
-            target=GenerateMatchEntry,
-            args=[matches, revision, cl, changed_file_path, functions,
-                  component_path, component_name, crashed_line_numbers,
-                  stack_frame_nums, file_change_type,
-                  repository_parser])
-        threads.append(match_thread)
-        match_thread.start()
+        tasks.append({
+            'function': GenerateMatchEntry,
+            'args':[matches, revision, cl, changed_file_path, functions,
+                    component_path, component_name, crashed_line_numbers,
+                    stack_frame_nums, file_change_type,
+                   repository_parser]})
 
-  for match_thread in threads:
-    match_thread.join()
+  # Run all the tasks.
+  crash_utils.RunTasks(tasks)
 
   matches.RemoveRevertedCLs()
 
@@ -241,8 +239,7 @@ def FindMatchForCallstack(
                                                             components)
   callstack_priority = callstack.priority
 
-  # Iterate through all components and create new thread for each component.
-  threads = []
+  # Iterate through all components.
   for component_path in component_dict:
     # If the component to consider in this callstack is not in the parsed list
     # of components, ignore this one.
@@ -251,15 +248,8 @@ def FindMatchForCallstack(
 
     changelog = component_to_changelog_map[component_path]
     file_to_crash_info = component_dict.GetFileDict(component_path)
-    t = Thread(
-        target=FindMatchForComponent,
-        args=[component_path, file_to_crash_info, changelog,
-              callstack_priority, results, results_lock])
-    threads.append(t)
-    t.start()
-
-  for t in threads:
-    t.join()
+    FindMatchForComponent(component_path, file_to_crash_info, changelog,
+                          callstack_priority, results, results_lock)
 
 
 def FindMatchForStacktrace(stacktrace, components,
@@ -320,18 +310,10 @@ def FindMatchForStacktrace(stacktrace, components,
                                                   revisions,
                                                   file_to_revision_map)
 
-  # Create separate threads for each of the call stack in the stacktrace.
-  threads = []
+  # Analyze each of the call stacks in the stacktrace.
   for callstack in stacktrace.stack_list:
-    t = Thread(
-        target=FindMatchForCallstack,
-        args=[callstack, components, component_to_changelog_map,
-              results, results_lock])
-    threads.append(t)
-    t.start()
-
-  for t in threads:
-    t.join()
+    FindMatchForCallstack(callstack, components, component_to_changelog_map,
+                          results, results_lock)
 
   return results
 

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from threading import Lock, Thread
+from threading import Lock
 
 from common import utils
 import crash_utils
@@ -77,7 +77,7 @@ class BlameList(object):
     """
     # Only return blame information for first 'top_n_frames' frames.
     stack_frames = callstack.GetTopNFrames(top_n_frames)
-    threads = []
+    tasks = []
     # Iterate through frames in stack.
     for stack_frame in stack_frames:
       # If the component this line is from does not have a crash revision,
@@ -102,17 +102,14 @@ class BlameList(object):
           range_start = int(component_object['old_revision'])
           range_end = int(component_object['new_revision'])
 
-      # Generate blame entry, one thread for one entry.
-      blame_thread = Thread(
-          target=self.__GenerateBlameEntry,
-          args=[repository_parser, stack_frame, crash_revision,
-                range_start, range_end])
-      threads.append(blame_thread)
-      blame_thread.start()
+      # Create a task to generate blame entry.
+      tasks.append({
+          'function': self.__GenerateBlameEntry,
+          'args': [repository_parser, stack_frame, crash_revision,
+                   range_start, range_end]})
 
-    # Join the results before returning.
-    for blame_thread in threads:
-      blame_thread.join()
+    # Run all the tasks.
+    crash_utils.RunTasks(tasks)
 
   def __GenerateBlameEntry(self, repository_parser, stack_frame,
                            crash_revision, range_start, range_end):
