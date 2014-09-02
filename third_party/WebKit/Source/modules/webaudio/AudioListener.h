@@ -32,7 +32,6 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -110,7 +109,7 @@ private:
     // and can be referred in audio thread.
     HeapVector<Member<PannerNode> > m_panners;
     // HRTF DB loader for panner node.
-    RefPtr<HRTFDatabaseLoader> m_hrtfDatabaseLoader;
+    Member<HRTFDatabaseLoader> m_hrtfDatabaseLoader;
 };
 
 } // namespace blink

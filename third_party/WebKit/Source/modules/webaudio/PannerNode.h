@@ -33,7 +33,6 @@
 #include "modules/webaudio/AudioNode.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "wtf/HashMap.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -107,6 +106,8 @@ public:
     virtual double tailTime() const OVERRIDE { return m_panner ? m_panner->tailTime() : 0; }
     virtual double latencyTime() const OVERRIDE { return m_panner ? m_panner->latencyTime() : 0; }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     PannerNode(AudioContext*, float sampleRate);
 
@@ -131,7 +132,7 @@ private:
     // This is in order to handle the pitch change necessary for the doppler shift.
     void notifyAudioSourcesConnectedToNode(AudioNode*, HashMap<AudioNode*, bool> &visitedNodes);
 
-    OwnPtr<Panner> m_panner;
+    Member<Panner> m_panner;
     unsigned m_panningModel;
     unsigned m_distanceModel;
 

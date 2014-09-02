@@ -30,24 +30,22 @@
 #define HRTFDatabaseLoader_h
 
 #include "platform/audio/HRTFDatabase.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebThread.h"
 #include "wtf/HashMap.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 #include "wtf/ThreadingPrimitives.h"
 
 namespace blink {
 
 // HRTFDatabaseLoader will asynchronously load the default HRTFDatabase in a new thread.
 
-class PLATFORM_EXPORT HRTFDatabaseLoader : public RefCounted<HRTFDatabaseLoader> {
+class PLATFORM_EXPORT HRTFDatabaseLoader FINAL : public GarbageCollectedFinalized<HRTFDatabaseLoader> {
 public:
     // Lazily creates a HRTFDatabaseLoader (if not already created) for the given sample-rate
     // and starts loading asynchronously (when created the first time).
     // Returns the HRTFDatabaseLoader.
     // Must be called from the main thread.
-    static PassRefPtr<HRTFDatabaseLoader> createAndLoadAsynchronouslyIfNecessary(float sampleRate);
+    static HRTFDatabaseLoader* createAndLoadAsynchronouslyIfNecessary(float sampleRate);
 
     // Both constructor and destructor must be called from the main thread.
     ~HRTFDatabaseLoader();
@@ -65,6 +63,8 @@ public:
     // Called in asynchronous loading thread.
     void load();
 
+    void trace(Visitor*) { }
+
 private:
     // Both constructor and destructor must be called from the main thread.
     explicit HRTFDatabaseLoader(float sampleRate);
@@ -72,12 +72,6 @@ private:
     // If it hasn't already been loaded, creates a new thread and initiates asynchronous loading of the default database.
     // This must be called from the main thread.
     void loadAsynchronously();
-
-    // Map from sample-rate to loader.
-    typedef HashMap<double, HRTFDatabaseLoader*> LoaderMap;
-
-    // Keeps track of loaders on a per-sample-rate basis.
-    static LoaderMap* s_loaderMap; // singleton
 
     OwnPtr<HRTFDatabase> m_hrtfDatabase;
 

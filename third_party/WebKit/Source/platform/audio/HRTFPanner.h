@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT HRTFPanner : public Panner {
+class PLATFORM_EXPORT HRTFPanner FINAL : public Panner {
 public:
     HRTFPanner(float sampleRate, HRTFDatabaseLoader*);
     virtual ~HRTFPanner();
@@ -49,12 +49,14 @@ public:
     virtual double tailTime() const OVERRIDE;
     virtual double latencyTime() const OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     // Given an azimuth angle in the range -180 -> +180, returns the corresponding azimuth index for the database,
     // and azimuthBlend which is an interpolation value from 0 -> 1.
     int calculateDesiredAzimuthIndexAndBlend(double azimuth, double& azimuthBlend);
 
-    RefPtr<HRTFDatabaseLoader> m_databaseLoader;
+    Member<HRTFDatabaseLoader> m_databaseLoader;
 
     float m_sampleRate;
 

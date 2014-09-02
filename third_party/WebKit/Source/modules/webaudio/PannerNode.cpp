@@ -217,8 +217,7 @@ bool PannerNode::setPanningModel(unsigned model)
         if (!m_panner.get() || model != m_panningModel) {
             // This synchronizes with process().
             MutexLocker processLocker(m_processLock);
-            OwnPtr<Panner> newPanner = Panner::create(model, sampleRate(), listener()->hrtfDatabaseLoader());
-            m_panner = newPanner.release();
+            m_panner = Panner::create(model, sampleRate(), listener()->hrtfDatabaseLoader());
             m_panningModel = model;
         }
         break;
@@ -579,6 +578,12 @@ void PannerNode::notifyAudioSourcesConnectedToNode(AudioNode* node, HashMap<Audi
             }
         }
     }
+}
+
+void PannerNode::trace(Visitor* visitor)
+{
+    visitor->trace(m_panner);
+    AudioNode::trace(visitor);
 }
 
 } // namespace blink

@@ -38,27 +38,27 @@
 
 namespace blink {
 
-// Singleton
-HRTFDatabaseLoader::LoaderMap* HRTFDatabaseLoader::s_loaderMap = 0;
+typedef HeapHashMap<double, WeakMember<HRTFDatabaseLoader> > LoaderMap;
 
-PassRefPtr<HRTFDatabaseLoader> HRTFDatabaseLoader::createAndLoadAsynchronouslyIfNecessary(float sampleRate)
+static LoaderMap& loaderMap()
+{
+    DEFINE_STATIC_LOCAL(Persistent<LoaderMap>, map, (new LoaderMap));
+    return *map;
+}
+
+HRTFDatabaseLoader* HRTFDatabaseLoader::createAndLoadAsynchronouslyIfNecessary(float sampleRate)
 {
     ASSERT(isMainThread());
 
-    if (!s_loaderMap)
-        s_loaderMap = adoptPtr(new LoaderMap()).leakPtr();
-
-    RefPtr<HRTFDatabaseLoader> loader = s_loaderMap->get(sampleRate);
+    HRTFDatabaseLoader* loader = loaderMap().get(sampleRate);
     if (loader) {
         ASSERT(sampleRate == loader->databaseSampleRate());
         return loader;
     }
 
-    loader = adoptRef(new HRTFDatabaseLoader(sampleRate));
-    s_loaderMap->add(sampleRate, loader.get());
-
+    loader = new HRTFDatabaseLoader(sampleRate);
+    loaderMap().add(sampleRate, loader);
     loader->loadAsynchronously();
-
     return loader;
 }
 
@@ -74,10 +74,6 @@ HRTFDatabaseLoader::~HRTFDatabaseLoader()
 
     waitForLoaderThreadCompletion();
     m_hrtfDatabase.clear();
-
-    // Remove ourself from the map.
-    if (s_loaderMap)
-        s_loaderMap->remove(m_databaseSampleRate);
 }
 
 void HRTFDatabaseLoader::load()
