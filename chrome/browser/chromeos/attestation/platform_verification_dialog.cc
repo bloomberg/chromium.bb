@@ -17,6 +17,7 @@
 #include "content/public/common/page_transition_types.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
+#include "grit/components_strings.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/border.h"

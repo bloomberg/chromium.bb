@@ -14,6 +14,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
+#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 

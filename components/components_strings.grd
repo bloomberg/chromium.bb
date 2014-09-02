@@ -175,6 +175,11 @@
       <part file="pdf_strings.grdp" />
       <part file="policy_strings.grdp" />
       <part file="translate_strings.grdp" />
+
+      <!-- Generic terms -->
+      <message name="IDS_LEARN_MORE" desc="Learn more text">
+        Learn more
+      </message>
     </messages>
   </release>
 </grit>

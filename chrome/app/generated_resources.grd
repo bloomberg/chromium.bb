@@ -595,9 +595,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_EDIT" desc="Edit menu item">
         &amp;Edit
       </message>
-      <message name="IDS_LEARN_MORE" desc="Learn more text">
-        Learn more
-      </message>
       <message name="IDS_CLOSE" desc="A generic term for Close on buttons and menus.">
         Close
       </message>

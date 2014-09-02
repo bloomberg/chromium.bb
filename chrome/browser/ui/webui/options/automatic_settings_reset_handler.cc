@@ -12,6 +12,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui.h"
+#include "grit/components_strings.h"
 
 namespace {
 

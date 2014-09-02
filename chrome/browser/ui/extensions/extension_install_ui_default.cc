@@ -36,6 +36,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
+#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(USE_ASH)

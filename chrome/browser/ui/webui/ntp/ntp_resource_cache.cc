@@ -47,6 +47,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "extensions/common/extension.h"
 #include "grit/browser_resources.h"
+#include "grit/components_strings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

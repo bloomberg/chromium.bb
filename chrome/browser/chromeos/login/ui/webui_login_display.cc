@@ -20,6 +20,7 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/login/user_names.h"
 #include "components/user_manager/user_manager.h"
+#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/user_activity_detector.h"
