@@ -35,8 +35,8 @@ const char kLocalhost[] = "127.0.0.1";
 const int kListenBacklog = 5;
 const int kBufferSize = 16 * 1024;
 
-const int kMinTetheringPort = 5000;
-const int kMaxTetheringPort = 10000;
+const int kMinTetheringPort = 1024;
+const int kMaxTetheringPort = 32767;
 
 class SocketPump : public net::StreamListenSocket::Delegate {
  public:
