@@ -377,6 +377,8 @@ interface TestObject {
     void voidMethodSerializedScriptValueArg(SerializedScriptValue serializedScriptValueArg);
     void voidMethodXPathNSResolverArg(XPathNSResolver xPathNSResolverArg);
     void voidMethodDictionarySequenceArg(sequence<Dictionary> dictionarySequenceArg);
+    Promise overloadedPromiseMethod(long arg);
+    Promise overloadedPromiseMethod(DOMString arg);
 
     // Arguments
     void voidMethodStringArgLongArg(DOMString stringArg, long longArg);

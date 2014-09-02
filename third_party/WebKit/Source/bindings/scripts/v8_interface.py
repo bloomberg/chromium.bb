@@ -457,6 +457,13 @@ def overloads_context(overloads):
                 raise ValueError('Overloads of %s have conflicting extended attribute %s'
                                  % (name, extended_attribute))
 
+    # Check and fail if overloads disagree about whether the return type
+    # is a Promise or not.
+    promise_overload_count = sum(1 for method in overloads if method.get('idl_type') == 'Promise')
+    if promise_overload_count not in (0, len(overloads)):
+        raise ValueError('Overloads of %s have conflicting Promise/non-Promise types'
+                         % (name))
+
     return {
         'deprecate_all_as': common_value(overloads, 'deprecate_as'),  # [DeprecateAs]
         'exposed_test_all': common_value(overloads, 'exposed_test'),  # [Exposed]
