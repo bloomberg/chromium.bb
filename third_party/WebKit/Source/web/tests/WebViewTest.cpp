@@ -902,7 +902,6 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
 
     RefPtrWillBeRawPtr<blink::Element> element = static_cast<PassRefPtrWillBeRawPtr<blink::Element> >(webViewImpl->mainFrame()->document().body());
     webViewImpl->enterFullScreenForElement(element.get());
-    webViewImpl->willEnterFullScreen();
     webViewImpl->didEnterFullScreen();
 
     // Page scale factor must be 1.0 during fullscreen for elements to be sized
@@ -914,7 +913,6 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
     webViewImpl->enterFullScreenForElement(otherElement.get());
 
     // Confirm that exiting fullscreen restores the parameters.
-    webViewImpl->willExitFullScreen();
     webViewImpl->didExitFullScreen();
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(116, webViewImpl->mainFrame()->scrollOffset().width);

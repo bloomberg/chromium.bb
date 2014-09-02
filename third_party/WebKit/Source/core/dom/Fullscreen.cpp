@@ -409,7 +409,7 @@ bool Fullscreen::fullscreenEnabled(Document& document)
     return fullscreenIsAllowedForAllOwners(document) && fullscreenIsSupported(document);
 }
 
-void Fullscreen::willEnterFullScreenForElement(Element* element)
+void Fullscreen::didEnterFullScreenForElement(Element* element)
 {
     ASSERT(element);
     if (!document()->isActive())
@@ -439,30 +439,10 @@ void Fullscreen::willEnterFullScreenForElement(Element* element)
     // FIXME: This should not call updateStyleIfNeeded.
     document()->setNeedsStyleRecalc(SubtreeStyleChange);
     document()->updateRenderTreeIfNeeded();
-}
-
-void Fullscreen::didEnterFullScreenForElement(Element*)
-{
-    if (!m_fullScreenElement)
-        return;
-
-    if (!document()->isActive())
-        return;
 
     m_fullScreenElement->didBecomeFullscreenElement();
 
     m_eventQueueTimer.startOneShot(0, FROM_HERE);
-}
-
-void Fullscreen::willExitFullScreenForElement(Element*)
-{
-    if (!m_fullScreenElement)
-        return;
-
-    if (!document()->isActive())
-        return;
-
-    m_fullScreenElement->willStopBeingFullscreenElement();
 }
 
 void Fullscreen::didExitFullScreenForElement(Element*)
@@ -472,6 +452,8 @@ void Fullscreen::didExitFullScreenForElement(Element*)
 
     if (!document()->isActive())
         return;
+
+    m_fullScreenElement->willStopBeingFullscreenElement();
 
     m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
 

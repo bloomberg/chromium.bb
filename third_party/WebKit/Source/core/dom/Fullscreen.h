@@ -73,9 +73,7 @@ public:
     static bool fullscreenEnabled(Document&);
     Element* fullscreenElement() const { return !m_fullScreenElementStack.isEmpty() ? m_fullScreenElementStack.last().first.get() : 0; }
 
-    void willEnterFullScreenForElement(Element*);
     void didEnterFullScreenForElement(Element*);
-    void willExitFullScreenForElement(Element*);
     void didExitFullScreenForElement(Element*);
 
     void setFullScreenRenderer(RenderFullScreen*);

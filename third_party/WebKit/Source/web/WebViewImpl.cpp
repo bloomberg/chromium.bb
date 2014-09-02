@@ -1719,19 +1719,9 @@ void WebViewImpl::willEndLiveResize()
         pluginContainer->willEndLiveResize();
 }
 
-void WebViewImpl::willEnterFullScreen()
-{
-    m_fullscreenController->willEnterFullScreen();
-}
-
 void WebViewImpl::didEnterFullScreen()
 {
     m_fullscreenController->didEnterFullScreen();
-}
-
-void WebViewImpl::willExitFullScreen()
-{
-    m_fullscreenController->willExitFullScreen();
 }
 
 void WebViewImpl::didExitFullScreen()

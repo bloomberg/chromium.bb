@@ -56,73 +56,40 @@ FullscreenController::FullscreenController(WebViewImpl* webViewImpl)
 {
 }
 
-void FullscreenController::willEnterFullScreen()
+void FullscreenController::didEnterFullScreen()
 {
     if (!m_provisionalFullScreenElement)
         return;
 
-    // Ensure that this element's document is still attached.
-    Document& doc = m_provisionalFullScreenElement->document();
-    if (doc.frame()) {
-        Fullscreen::from(doc).willEnterFullScreenForElement(m_provisionalFullScreenElement.get());
-        m_fullScreenFrame = doc.frame();
-    }
-    m_provisionalFullScreenElement.clear();
-}
+    RefPtrWillBeRawPtr<Element> element = m_provisionalFullScreenElement.release();
+    Document& document = element->document();
+    m_fullScreenFrame = document.frame();
 
-void FullscreenController::didEnterFullScreen()
-{
     if (!m_fullScreenFrame)
         return;
 
-    if (Document* doc = m_fullScreenFrame->document()) {
-        if (Fullscreen::isFullScreen(*doc)) {
-            if (!m_exitFullscreenPageScaleFactor) {
-                m_exitFullscreenPageScaleFactor = m_webViewImpl->pageScaleFactor();
-                m_exitFullscreenScrollOffset = m_webViewImpl->mainFrame()->scrollOffset();
-                m_exitFullscreenPinchViewportOffset = m_webViewImpl->pinchViewportOffset();
-                m_webViewImpl->setPageScaleFactor(1.0f);
-                m_webViewImpl->setMainFrameScrollOffset(IntPoint());
-                m_webViewImpl->setPinchViewportOffset(FloatPoint());
-            }
-
-            Fullscreen::from(*doc).didEnterFullScreenForElement(0);
-            if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled()) {
-                Element* element = Fullscreen::currentFullScreenElementFrom(*doc);
-                ASSERT(element);
-                if (isHTMLMediaElement(*element)) {
-                    HTMLMediaElement* mediaElement = toHTMLMediaElement(element);
-                    if (mediaElement->webMediaPlayer() && mediaElement->webMediaPlayer()->canEnterFullscreen()
-                        // FIXME: There is no embedder-side handling in layout test mode.
-                        && !LayoutTestSupport::isRunningLayoutTest()) {
-                        mediaElement->webMediaPlayer()->enterFullscreen();
-                    }
-                    if (m_webViewImpl->layerTreeView())
-                        m_webViewImpl->layerTreeView()->setHasTransparentBackground(true);
-                }
-            }
-        }
+    if (!m_exitFullscreenPageScaleFactor) {
+        m_exitFullscreenPageScaleFactor = m_webViewImpl->pageScaleFactor();
+        m_exitFullscreenScrollOffset = m_webViewImpl->mainFrame()->scrollOffset();
+        m_exitFullscreenPinchViewportOffset = m_webViewImpl->pinchViewportOffset();
+        m_webViewImpl->setPageScaleFactor(1.0f);
+        m_webViewImpl->setMainFrameScrollOffset(IntPoint());
+        m_webViewImpl->setPinchViewportOffset(FloatPoint());
     }
-}
 
-void FullscreenController::willExitFullScreen()
-{
-    if (!m_fullScreenFrame)
-        return;
+    Fullscreen::from(document).didEnterFullScreenForElement(element.get());
+    ASSERT(Fullscreen::currentFullScreenElementFrom(document) == element);
 
-    if (Document* doc = m_fullScreenFrame->document()) {
-        Fullscreen* fullscreen = Fullscreen::fromIfExists(*doc);
-        if (!fullscreen)
-            return;
-        if (fullscreen->isFullScreen(*doc)) {
-            // When the client exits from full screen we have to call fullyExitFullscreen to notify
-            // the document. While doing that, suppress notifications back to the client.
-            m_isCancelingFullScreen = true;
-            Fullscreen::fullyExitFullscreen(*doc);
-            m_isCancelingFullScreen = false;
-            fullscreen->willExitFullScreenForElement(0);
-            if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && m_webViewImpl->layerTreeView())
-                m_webViewImpl->layerTreeView()->setHasTransparentBackground(m_webViewImpl->isTransparent());
+    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled()) {
+        if (isHTMLMediaElement(element)) {
+            HTMLMediaElement* mediaElement = toHTMLMediaElement(element);
+            if (mediaElement->webMediaPlayer() && mediaElement->webMediaPlayer()->canEnterFullscreen()
+                // FIXME: There is no embedder-side handling in layout test mode.
+                && !LayoutTestSupport::isRunningLayoutTest()) {
+                mediaElement->webMediaPlayer()->enterFullscreen();
+            }
+            if (m_webViewImpl->layerTreeView())
+                m_webViewImpl->layerTreeView()->setHasTransparentBackground(true);
         }
     }
 }
@@ -132,9 +99,18 @@ void FullscreenController::didExitFullScreen()
     if (!m_fullScreenFrame)
         return;
 
-    if (Document* doc = m_fullScreenFrame->document()) {
-        if (Fullscreen* fullscreen = Fullscreen::fromIfExists(*doc)) {
+    if (Document* document = m_fullScreenFrame->document()) {
+        if (Fullscreen* fullscreen = Fullscreen::fromIfExists(*document)) {
             if (fullscreen->webkitCurrentFullScreenElement()) {
+                // When the client exits from full screen we have to call fullyExitFullscreen to notify
+                // the document. While doing that, suppress notifications back to the client.
+                m_isCancelingFullScreen = true;
+                Fullscreen::fullyExitFullscreen(*document);
+                m_isCancelingFullScreen = false;
+
+                if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && m_webViewImpl->layerTreeView())
+                    m_webViewImpl->layerTreeView()->setHasTransparentBackground(m_webViewImpl->isTransparent());
+
                 if (m_exitFullscreenPageScaleFactor) {
                     m_webViewImpl->setPageScaleFactor(m_exitFullscreenPageScaleFactor);
                     m_webViewImpl->setMainFrameScrollOffset(IntPoint(m_exitFullscreenScrollOffset));
@@ -162,7 +138,6 @@ void FullscreenController::enterFullScreenForElement(Element* element)
     // We are already in fullscreen mode.
     if (m_fullScreenFrame) {
         m_provisionalFullScreenElement = element;
-        willEnterFullScreen();
         didEnterFullScreen();
         return;
     }

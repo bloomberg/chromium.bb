@@ -47,9 +47,7 @@ class FullscreenController {
 public:
     static PassOwnPtr<FullscreenController> create(WebViewImpl*);
 
-    void willEnterFullScreen();
     void didEnterFullScreen();
-    void willExitFullScreen();
     void didExitFullScreen();
 
     void enterFullScreenForElement(Element*);

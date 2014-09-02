@@ -92,9 +92,7 @@ public:
     virtual void resize(const WebSize&) OVERRIDE;
     virtual void resizePinchViewport(const WebSize&) OVERRIDE;
     virtual void willEndLiveResize() OVERRIDE;
-    virtual void willEnterFullScreen() OVERRIDE;
     virtual void didEnterFullScreen() OVERRIDE;
-    virtual void willExitFullScreen() OVERRIDE;
     virtual void didExitFullScreen() OVERRIDE;
 
     virtual void beginFrame(const WebBeginFrameArgs&) OVERRIDE;

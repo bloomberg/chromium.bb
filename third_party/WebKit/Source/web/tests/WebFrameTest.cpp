@@ -5695,7 +5695,6 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable)
     blink::UserGestureIndicator gesture(blink::DefinitelyProcessingUserGesture);
     Element* divFullscreen = document->getElementById("div1");
     Fullscreen::from(*document).requestFullscreen(*divFullscreen, Fullscreen::PrefixedRequest);
-    webViewImpl->willEnterFullScreen();
     webViewImpl->didEnterFullScreen();
     webViewImpl->layout();
 
@@ -5705,7 +5704,6 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable)
     ASSERT_FALSE(webScrollLayer->scrollable());
 
     // Verify that the main frame is scrollable upon exiting fullscreen.
-    webViewImpl->willExitFullScreen();
     webViewImpl->didExitFullScreen();
     webViewImpl->layout();
     ASSERT_FALSE(blink::Fullscreen::isFullScreen(*document));
@@ -5727,7 +5725,6 @@ TEST_F(WebFrameTest, FullscreenMainFrameScrollable)
     Document* document = toWebLocalFrameImpl(webViewImpl->mainFrame())->frame()->document();
     blink::UserGestureIndicator gesture(blink::DefinitelyProcessingUserGesture);
     Fullscreen::from(*document).requestFullscreen(*document->documentElement(), Fullscreen::PrefixedRequest);
-    webViewImpl->willEnterFullScreen();
     webViewImpl->didEnterFullScreen();
     webViewImpl->layout();
 
