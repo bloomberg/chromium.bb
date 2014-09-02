@@ -6,20 +6,17 @@
 #define ASH_ACCELEROMETER_ACCELEROMETER_OBSERVER_H_
 
 #include "ash/ash_export.h"
-
-namespace gfx {
-class Vector3dF;
-}
+#include "ui/accelerometer/accelerometer_types.h"
 
 namespace ash {
 
 // The interface for classes which observe accelerometer updates.
 class ASH_EXPORT AccelerometerObserver {
  public:
-  // Invoked when an accelerometer reading has been taken. The |base| and |lid|
-  // accelerometer readings are in G's.
-  virtual void OnAccelerometerUpdated(const gfx::Vector3dF& base,
-                                      const gfx::Vector3dF& lid) = 0;
+  // Invoked when an accelerometer reading has been taken. The |update| can
+  // contain readings from one or more AccelerometerSources.
+  virtual void OnAccelerometerUpdated(
+      const ui::AccelerometerUpdate& update) = 0;
 
  protected:
   virtual ~AccelerometerObserver() {}

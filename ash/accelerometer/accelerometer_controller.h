@@ -18,10 +18,6 @@ namespace base {
 class TaskRunner;
 }
 
-namespace gfx {
-class Vector3dF;
-}
-
 namespace ash {
 
 class AccelerometerObserver;
@@ -50,8 +46,8 @@ class ASH_EXPORT AccelerometerController
   // This needs to be CHROMEOS only as on other platforms it does not actually
   // override a method.
   // chromeos::AccelerometerReader::Delegate:
-  virtual void HandleAccelerometerReading(const gfx::Vector3dF& base,
-                                          const gfx::Vector3dF& lid) OVERRIDE;
+  virtual void HandleAccelerometerUpdate(
+      const ui::AccelerometerUpdate& update) OVERRIDE;
 #endif
 
  private:

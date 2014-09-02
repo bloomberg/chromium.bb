@@ -109,8 +109,8 @@ class ASH_EXPORT MaximizeModeController
   void Shutdown();
 
   // AccelerometerObserver:
-  virtual void OnAccelerometerUpdated(const gfx::Vector3dF& base,
-                                      const gfx::Vector3dF& lid) OVERRIDE;
+  virtual void OnAccelerometerUpdated(
+      const ui::AccelerometerUpdate& update) OVERRIDE;
 
   // ShellObserver:
   virtual void OnAppTerminating() OVERRIDE;

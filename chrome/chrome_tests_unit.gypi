@@ -500,6 +500,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
+        '../ui/accelerometer/ui_accelerometer.gyp:ui_accelerometer',
         '../ui/base/ui_base.gyp:ui_base_test_support',
         '../ui/gfx/gfx.gyp:gfx_test_support',
         '../ui/resources/ui_resources.gyp:ui_resources',

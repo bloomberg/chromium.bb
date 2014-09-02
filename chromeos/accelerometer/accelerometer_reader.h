@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
-#include "ui/gfx/geometry/vector3d_f.h"
+#include "ui/accelerometer/accelerometer_types.h"
 
 namespace base {
 class TaskRunner;
@@ -41,8 +41,8 @@ class CHROMEOS_EXPORT AccelerometerReader {
   // An interface to receive data from the AccelerometerReader.
   class Delegate {
    public:
-    virtual void HandleAccelerometerReading(const gfx::Vector3dF& base,
-                                            const gfx::Vector3dF& lid) = 0;
+    virtual void HandleAccelerometerUpdate(
+        const ui::AccelerometerUpdate& update) = 0;
   };
 
   AccelerometerReader(base::TaskRunner* blocking_task_runner,
@@ -58,8 +58,8 @@ class CHROMEOS_EXPORT AccelerometerReader {
   // OnDataRead with the result.
   void TriggerRead();
 
-  // If |success|, converts the raw reading to a pair of Vector3dF
-  // values and notifies the |delegate_| with the new readings.
+  // If |success|, converts the raw reading to an AccelerometerUpdate
+  // message and notifies the |delegate_| with the new readings.
   // Triggers another read from the accelerometer at the current sampling rate.
   void OnDataRead(scoped_refptr<Reading> reading, bool success);
 
@@ -68,6 +68,9 @@ class CHROMEOS_EXPORT AccelerometerReader {
 
   // A weak pointer to the delegate to send accelerometer readings to.
   Delegate* delegate_;
+
+  // The last seen accelerometer data.
+  ui::AccelerometerUpdate update_;
 
   // The accelerometer configuration.
   scoped_refptr<Configuration> configuration_;

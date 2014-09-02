@@ -52,6 +52,9 @@ const size_t kMaxAsciiUintLength = 21;
 // The time to wait between reading the accelerometer.
 const int kDelayBetweenReadsMs = 100;
 
+// The mean acceleration due to gravity on Earth in m/s^2.
+const float kMeanGravity = 9.80665f;
+
 // Reads |path| to the unsigned int pointed to by |value|. Returns true on
 // success or false on failure.
 bool ReadFileToUint(const base::FilePath& path, unsigned int* value) {
@@ -193,18 +196,18 @@ void AccelerometerReader::OnDataRead(
   DCHECK(!task_runner_->RunsTasksOnCurrentThread());
 
   if (success) {
-    gfx::Vector3dF base_reading, lid_reading;
     int16* values = reinterpret_cast<int16*>(reading->data);
-    base_reading.set_x(values[configuration_->data.index[0]]);
-    base_reading.set_y(values[configuration_->data.index[1]]);
-    base_reading.set_z(values[configuration_->data.index[2]]);
-    base_reading.Scale(1.0f / configuration_->data.base_scale);
-
-    lid_reading.set_x(values[configuration_->data.index[3]]);
-    lid_reading.set_y(values[configuration_->data.index[4]]);
-    lid_reading.set_z(values[configuration_->data.index[5]]);
-    lid_reading.Scale(1.0f / configuration_->data.lid_scale);
-    delegate_->HandleAccelerometerReading(base_reading, lid_reading);
+    float lid_scale = kMeanGravity / configuration_->data.lid_scale;
+    update_.Set(ui::ACCELEROMETER_SOURCE_SCREEN,
+                -values[configuration_->data.index[4]] * lid_scale,
+                values[configuration_->data.index[3]] * lid_scale,
+                values[configuration_->data.index[5]] * lid_scale);
+    float base_scale = kMeanGravity / configuration_->data.base_scale;
+    update_.Set(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD,
+                -values[configuration_->data.index[1]] * base_scale,
+                -values[configuration_->data.index[0]] * base_scale,
+                -values[configuration_->data.index[2]] * base_scale);
+    delegate_->HandleAccelerometerUpdate(update_);
   }
 
   // Trigger another read after the current sampling delay.

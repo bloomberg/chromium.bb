@@ -56,34 +56,37 @@ const float kMaxStableAngle = 340.0f;
 const base::TimeDelta kLidRecentlyOpenedDuration =
     base::TimeDelta::FromSeconds(2);
 
+// The mean acceleration due to gravity on Earth in m/s^2.
+const float kMeanGravity = 9.80665f;
+
 // When the device approaches vertical orientation (i.e. portrait orientation)
 // the accelerometers for the base and lid approach the same values (i.e.
 // gravity pointing in the direction of the hinge). When this happens we cannot
 // compute the hinge angle reliably and must turn ignore accelerometer readings.
 // This is the minimum acceleration perpendicular to the hinge under which to
-// detect hinge angle.
-const float kHingeAngleDetectionThreshold = 0.25f;
+// detect hinge angle in m/s^2.
+const float kHingeAngleDetectionThreshold = 2.5f;
 
 // The maximum deviation from the acceleration expected due to gravity under
-// which to detect hinge angle and screen rotation.
-const float kDeviationFromGravityThreshold = 0.1f;
+// which to detect hinge angle and screen rotation in m/s^2
+const float kDeviationFromGravityThreshold = 1.0f;
 
 // The maximum deviation between the magnitude of the two accelerometers under
-// which to detect hinge angle and screen rotation. These accelerometers are
-// attached to the same physical device and so should be under the same
-// acceleration.
-const float kNoisyMagnitudeDeviation = 0.1f;
+// which to detect hinge angle and screen rotation in m/s^2. These
+// accelerometers are attached to the same physical device and so should be
+// under the same acceleration.
+const float kNoisyMagnitudeDeviation = 1.0f;
 
 // The angle which the screen has to be rotated past before the display will
 // rotate to match it (i.e. 45.0f is no stickiness).
 const float kDisplayRotationStickyAngleDegrees = 60.0f;
 
-// The minimum acceleration in a direction required to trigger screen rotation.
-// This prevents rapid toggling of rotation when the device is near flat and
-// there is very little screen aligned force on it. The value is effectively the
-// sine of the rise angle required, with the current value requiring at least a
-// 25 degree rise.
-const float kMinimumAccelerationScreenRotation = 0.42f;
+// The minimum acceleration in m/s^2 in a direction required to trigger screen
+// rotation. This prevents rapid toggling of rotation when the device is near
+// flat and there is very little screen aligned force on it. The value is
+// effectively the sine of the rise angle required times the acceleration due
+// to gravity, with the current value requiring at least a 25 degree rise.
+const float kMinimumAccelerationScreenRotation = 4.2f;
 
 const float kRadiansToDegrees = 180.0f / 3.14159265f;
 
@@ -236,26 +239,35 @@ void MaximizeModeController::Shutdown() {
 }
 
 void MaximizeModeController::OnAccelerometerUpdated(
-    const gfx::Vector3dF& base,
-    const gfx::Vector3dF& lid) {
+    const ui::AccelerometerUpdate& update) {
   bool first_accelerometer_update = !have_seen_accelerometer_data_;
   have_seen_accelerometer_data_ = true;
 
   // Ignore the reading if it appears unstable. The reading is considered
   // unstable if it deviates too much from gravity and/or the magnitude of the
   // reading from the lid differs too much from the reading from the base.
-  float base_magnitude = base.Length();
-  float lid_magnitude = lid.Length();
-  if (std::abs(base_magnitude - lid_magnitude) > kNoisyMagnitudeDeviation ||
-      std::abs(base_magnitude - 1.0f) > kDeviationFromGravityThreshold ||
-      std::abs(lid_magnitude - 1.0f) > kDeviationFromGravityThreshold) {
-      return;
-  }
+  float base_magnitude =
+      update.has(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD) ?
+      update.get(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD).Length() :
+      0.0f;
+  float lid_magnitude = update.has(ui::ACCELEROMETER_SOURCE_SCREEN) ?
+      update.get(ui::ACCELEROMETER_SOURCE_SCREEN).Length() : 0.0f;
+  bool lid_stable = update.has(ui::ACCELEROMETER_SOURCE_SCREEN) &&
+      std::abs(lid_magnitude - kMeanGravity) <= kDeviationFromGravityThreshold;
+  bool base_angle_stable = lid_stable &&
+      update.has(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD) &&
+      std::abs(base_magnitude - lid_magnitude) <= kNoisyMagnitudeDeviation &&
+      std::abs(base_magnitude - kMeanGravity) <= kDeviationFromGravityThreshold;
 
-  // Responding to the hinge rotation can change the maximize mode state which
-  // affects screen rotation, so we handle hinge rotation first.
-  HandleHingeRotation(base, lid);
-  HandleScreenRotation(lid);
+  if (base_angle_stable) {
+    // Responding to the hinge rotation can change the maximize mode state which
+    // affects screen rotation, so we handle hinge rotation first.
+    HandleHingeRotation(
+        update.get(ui::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD),
+        update.get(ui::ACCELEROMETER_SOURCE_SCREEN));
+  }
+  if (lid_stable)
+    HandleScreenRotation(update.get(ui::ACCELEROMETER_SOURCE_SCREEN));
 
   if (first_accelerometer_update) {
     // On the first accelerometer update we will know if we have entered
@@ -303,14 +315,14 @@ void MaximizeModeController::SuspendDone(
 
 void MaximizeModeController::HandleHingeRotation(const gfx::Vector3dF& base,
                                                  const gfx::Vector3dF& lid) {
-  static const gfx::Vector3dF hinge_vector(0.0f, 1.0f, 0.0f);
+  static const gfx::Vector3dF hinge_vector(1.0f, 0.0f, 0.0f);
   bool maximize_mode_engaged = IsMaximizeModeWindowManagerEnabled();
   // Ignore the component of acceleration parallel to the hinge for the purposes
   // of hinge angle calculation.
   gfx::Vector3dF base_flattened(base);
   gfx::Vector3dF lid_flattened(lid);
-  base_flattened.set_y(0.0f);
-  lid_flattened.set_y(0.0f);
+  base_flattened.set_x(0.0f);
+  lid_flattened.set_x(0.0f);
 
   // As the hinge approaches a vertical angle, the base and lid accelerometers
   // approach the same values making any angle calculations highly inaccurate.
@@ -321,10 +333,13 @@ void MaximizeModeController::HandleHingeRotation(const gfx::Vector3dF& base,
   }
 
   // Compute the angle between the base and the lid.
-  float angle = ClockwiseAngleBetweenVectorsInDegrees(base_flattened,
-      lid_flattened, hinge_vector);
+  float lid_angle = 180.0f - ClockwiseAngleBetweenVectorsInDegrees(
+      base_flattened, lid_flattened, hinge_vector);
+  if (lid_angle < 0.0f)
+    lid_angle += 360.0f;
 
-  bool is_angle_stable = angle > kMinStableAngle && angle < kMaxStableAngle;
+  bool is_angle_stable = lid_angle >= kMinStableAngle &&
+                         lid_angle <= kMaxStableAngle;
 
   // Clear the last_lid_open_time_ for a stable reading so that there is less
   // chance of a delay if the lid is moved from the close state to the fully
@@ -337,10 +352,10 @@ void MaximizeModeController::HandleHingeRotation(const gfx::Vector3dF& base,
   // such that observations of state changes occur after the change and shell
   // has fewer states to track.
   if (maximize_mode_engaged && is_angle_stable &&
-      angle < kExitMaximizeModeAngle) {
+      lid_angle <= kExitMaximizeModeAngle) {
     LeaveMaximizeMode();
   } else if (!lid_is_closed_ && !maximize_mode_engaged &&
-             angle > kEnterMaximizeModeAngle &&
+             lid_angle >= kEnterMaximizeModeAngle &&
              (is_angle_stable || !WasLidOpenedRecently())) {
     EnterMaximizeMode();
   }
@@ -372,7 +387,7 @@ void MaximizeModeController::HandleScreenRotation(const gfx::Vector3dF& lid) {
   // The reference vector is the angle of gravity when the device is rotated
   // clockwise by 45 degrees. Computing the angle between this vector and
   // gravity we can easily determine the expected display rotation.
-  static gfx::Vector3dF rotation_reference(-1.0f, 1.0f, 0.0f);
+  static const gfx::Vector3dF rotation_reference(-1.0f, -1.0f, 0.0f);
 
   // Set the down vector to match the expected direction of gravity given the
   // last configured rotation. This is used to enforce a stickiness that the
@@ -380,13 +395,13 @@ void MaximizeModeController::HandleScreenRotation(const gfx::Vector3dF& lid) {
   // when holding the device near 45 degrees.
   gfx::Vector3dF down(0.0f, 0.0f, 0.0f);
   if (current_rotation == gfx::Display::ROTATE_0)
-    down.set_x(-1.0f);
-  else if (current_rotation == gfx::Display::ROTATE_90)
-    down.set_y(1.0f);
-  else if (current_rotation == gfx::Display::ROTATE_180)
-    down.set_x(1.0f);
-  else
     down.set_y(-1.0f);
+  else if (current_rotation == gfx::Display::ROTATE_90)
+    down.set_x(-1.0f);
+  else if (current_rotation == gfx::Display::ROTATE_180)
+    down.set_y(1.0f);
+  else
+    down.set_x(1.0f);
 
   // Don't rotate if the screen has not passed the threshold.
   if (AngleBetweenVectorsInDegrees(down, lid_flattened) <
