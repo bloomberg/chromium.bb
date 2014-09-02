@@ -38,6 +38,7 @@
 #include "core/html/parser/HTMLScriptRunnerHost.h"
 #include "core/html/parser/NestingLevelIncrementer.h"
 #include "platform/NotImplemented.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -166,6 +167,12 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
             element->dispatchEvent(createScriptLoadEvent());
         }
     }
+    if (sourceCode.resource()) {
+        double timeBetweenLoadedAndCompiledMs = (WTF::monotonicallyIncreasingTime() - sourceCode.resource()->loadFinishTime()) * 1000;
+        const char* histogramName = pendingScriptType == PendingScriptBlockingParser ? "WebCore.Scripts.ParsingBlocking.TimeBetweenLoadedAndCompiled" : "WebCore.Scripts.Deferred.TimeBetweenLoadedAndCompiled";
+        blink::Platform::current()->histogramCustomCounts(histogramName, timeBetweenLoadedAndCompiledMs, 0, 10000, 50);
+    }
+
     ASSERT(!isExecutingScript());
 }
 
@@ -272,6 +279,7 @@ void HTMLScriptRunner::requestParsingBlockingScript(Element* element)
 
     ASSERT(m_parserBlockingScript.resource());
 
+    blink::Platform::current()->histogramEnumeration("WebCore.Scripts.ParsingBlocking.AlreadyLoaded", m_parserBlockingScript.resource()->isLoaded() ? 1 : 0, 2);
     // We only care about a load callback if resource is not already
     // in the cache. Callers will attempt to run the m_parserBlockingScript
     // if possible before returning control to the parser.
