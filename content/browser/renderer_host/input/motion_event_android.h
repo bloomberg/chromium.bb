@@ -39,6 +39,10 @@ class CONTENT_EXPORT MotionEventAndroid : public ui::MotionEvent {
                      jint pointer_id_1,
                      jfloat touch_major_0_pixels,
                      jfloat touch_major_1_pixels,
+                     jfloat touch_minor_0_pixels,
+                     jfloat touch_minor_1_pixels,
+                     jfloat orientation_0_rad,
+                     jfloat orientation_1_rad,
                      jfloat raw_pos_x_pixels,
                      jfloat raw_pos_y_pixels,
                      jint android_tool_type_0,
@@ -57,6 +61,8 @@ class CONTENT_EXPORT MotionEventAndroid : public ui::MotionEvent {
   virtual float GetRawX(size_t pointer_index) const OVERRIDE;
   virtual float GetRawY(size_t pointer_index) const OVERRIDE;
   virtual float GetTouchMajor(size_t pointer_index) const OVERRIDE;
+  virtual float GetTouchMinor(size_t pointer_index) const OVERRIDE;
+  virtual float GetOrientation(size_t pointer_index) const OVERRIDE;
   virtual float GetPressure(size_t pointer_index) const OVERRIDE;
   virtual base::TimeTicks GetEventTime() const OVERRIDE;
   virtual size_t GetHistorySize() const OVERRIDE;
@@ -74,9 +80,6 @@ class CONTENT_EXPORT MotionEventAndroid : public ui::MotionEvent {
   virtual scoped_ptr<MotionEvent> Cancel() const OVERRIDE;
 
   // Additional Android MotionEvent methods.
-  float GetTouchMinor() const { return GetTouchMinor(0); }
-  float GetTouchMinor(size_t pointer_index) const;
-  float GetOrientation() const;
   base::TimeTicks GetDownTime() const;
 
   static bool RegisterMotionEventAndroid(JNIEnv* env);
@@ -115,6 +118,8 @@ class CONTENT_EXPORT MotionEventAndroid : public ui::MotionEvent {
   gfx::PointF cached_positions_[MAX_POINTERS_TO_CACHE];
   int cached_pointer_ids_[MAX_POINTERS_TO_CACHE];
   float cached_touch_majors_[MAX_POINTERS_TO_CACHE];
+  float cached_touch_minors_[MAX_POINTERS_TO_CACHE];
+  float cached_orientations_[MAX_POINTERS_TO_CACHE];
   gfx::Vector2dF cached_raw_position_offset_;
   ToolType cached_tool_types_[MAX_POINTERS_TO_CACHE];
   int cached_button_state_;

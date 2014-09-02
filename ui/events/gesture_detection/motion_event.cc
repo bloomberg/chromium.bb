@@ -63,6 +63,8 @@ bool operator==(const MotionEvent& lhs, const MotionEvent& rhs) {
         lhs.GetRawX(i) != rhs.GetRawX(rhsi) ||
         lhs.GetRawY(i) != rhs.GetRawY(rhsi) ||
         lhs.GetTouchMajor(i) != rhs.GetTouchMajor(rhsi) ||
+        lhs.GetTouchMinor(i) != rhs.GetTouchMinor(rhsi) ||
+        lhs.GetOrientation(i) != rhs.GetOrientation(rhsi) ||
         lhs.GetPressure(i) != rhs.GetPressure(rhsi) ||
         lhs.GetToolType(i) != rhs.GetToolType(rhsi))
       return false;

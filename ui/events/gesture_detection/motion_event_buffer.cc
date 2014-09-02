@@ -97,6 +97,8 @@ PointerProperties PointerFromMotionEvent(const MotionEvent& event,
   result.raw_y = event.GetRawY(pointer_index);
   result.pressure = event.GetPressure(pointer_index);
   result.touch_major = event.GetTouchMajor(pointer_index);
+  result.touch_minor = event.GetTouchMinor(pointer_index);
+  result.orientation = event.GetOrientation(pointer_index);
   return result;
 }
 
@@ -174,65 +176,92 @@ class CompoundMotionEvent : public ui::MotionEvent {
   virtual ~CompoundMotionEvent() {}
 
   virtual int GetId() const OVERRIDE { return latest().GetId(); }
+
   virtual Action GetAction() const OVERRIDE { return latest().GetAction(); }
+
   virtual int GetActionIndex() const OVERRIDE {
     return latest().GetActionIndex();
   }
+
   virtual size_t GetPointerCount() const OVERRIDE {
     return latest().GetPointerCount();
   }
+
   virtual int GetPointerId(size_t pointer_index) const OVERRIDE {
     return latest().GetPointerId(pointer_index);
   }
+
   virtual float GetX(size_t pointer_index) const OVERRIDE {
     return latest().GetX(pointer_index);
   }
+
   virtual float GetY(size_t pointer_index) const OVERRIDE {
     return latest().GetY(pointer_index);
   }
+
   virtual float GetRawX(size_t pointer_index) const OVERRIDE {
     return latest().GetRawX(pointer_index);
   }
+
   virtual float GetRawY(size_t pointer_index) const OVERRIDE {
     return latest().GetRawY(pointer_index);
   }
+
   virtual float GetTouchMajor(size_t pointer_index) const OVERRIDE {
     return latest().GetTouchMajor(pointer_index);
   }
+
+  virtual float GetTouchMinor(size_t pointer_index) const OVERRIDE {
+    return latest().GetTouchMinor(pointer_index);
+  }
+
+  virtual float GetOrientation(size_t pointer_index) const OVERRIDE {
+    return latest().GetOrientation(pointer_index);
+  }
+
   virtual float GetPressure(size_t pointer_index) const OVERRIDE {
     return latest().GetPressure(pointer_index);
   }
+
   virtual ToolType GetToolType(size_t pointer_index) const OVERRIDE {
     return latest().GetToolType(pointer_index);
   }
+
   virtual int GetButtonState() const OVERRIDE {
     return latest().GetButtonState();
   }
+
   virtual base::TimeTicks GetEventTime() const OVERRIDE {
     return latest().GetEventTime();
   }
+
   virtual size_t GetHistorySize() const OVERRIDE { return events_.size() - 1; }
+
   virtual base::TimeTicks GetHistoricalEventTime(
       size_t historical_index) const OVERRIDE {
     DCHECK_LT(historical_index, GetHistorySize());
     return events_[historical_index]->GetEventTime();
   }
+
   virtual float GetHistoricalTouchMajor(
       size_t pointer_index,
       size_t historical_index) const OVERRIDE {
     DCHECK_LT(historical_index, GetHistorySize());
     return events_[historical_index]->GetTouchMajor();
   }
+
   virtual float GetHistoricalX(size_t pointer_index,
                                size_t historical_index) const OVERRIDE {
     DCHECK_LT(historical_index, GetHistorySize());
     return events_[historical_index]->GetX(pointer_index);
   }
+
   virtual float GetHistoricalY(size_t pointer_index,
                                size_t historical_index) const OVERRIDE {
     DCHECK_LT(historical_index, GetHistorySize());
     return events_[historical_index]->GetY(pointer_index);
   }
+
   virtual scoped_ptr<MotionEvent> Clone() const OVERRIDE {
     MotionEventVector cloned_events;
     cloned_events.reserve(events_.size());
@@ -241,6 +270,7 @@ class CompoundMotionEvent : public ui::MotionEvent {
     return scoped_ptr<MotionEvent>(
         new CompoundMotionEvent(cloned_events.Pass()));
   }
+
   virtual scoped_ptr<MotionEvent> Cancel() const OVERRIDE {
     return latest().Cancel();
   }

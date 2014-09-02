@@ -24,6 +24,8 @@ struct GESTURE_DETECTION_EXPORT PointerProperties {
   float raw_y;
   float pressure;
   float touch_major;
+  float touch_minor;
+  float orientation;
 };
 
 // A generic MotionEvent implementation.
@@ -47,6 +49,8 @@ class GESTURE_DETECTION_EXPORT MotionEventGeneric : public MotionEvent {
   virtual float GetRawX(size_t pointer_index) const OVERRIDE;
   virtual float GetRawY(size_t pointer_index) const OVERRIDE;
   virtual float GetTouchMajor(size_t pointer_index) const OVERRIDE;
+  virtual float GetTouchMinor(size_t pointer_index) const OVERRIDE;
+  virtual float GetOrientation(size_t pointer_index) const OVERRIDE;
   virtual float GetPressure(size_t pointer_index) const OVERRIDE;
   virtual ToolType GetToolType(size_t pointer_index) const OVERRIDE;
   virtual int GetButtonState() const OVERRIDE;

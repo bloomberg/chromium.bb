@@ -62,10 +62,10 @@ TEST_F(GestureProviderAuraTest, IgnoresExtraMoveOrReleaseEvents) {
 }
 
 TEST_F(GestureProviderAuraTest, IgnoresIdenticalMoveEvents) {
-  const float kRadiusX = 20;
-  const float kRadiusY = 30;
-  const float kAngle = 120;
-  const float kForce = 40;
+  const float kRadiusX = 20.f;
+  const float kRadiusY = 30.f;
+  const float kAngle = 0.321f;
+  const float kForce = 40.f;
   const int kTouchId0 = 5;
   const int kTouchId1 = 3;
 

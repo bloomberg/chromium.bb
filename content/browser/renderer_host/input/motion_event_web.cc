@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// MSVC++ requires this to be set before any other includes to get M_PI.
+#define _USE_MATH_DEFINES
+
 #include "content/browser/renderer_host/input/motion_event_web.h"
+
+#include <cmath>
 
 #include "base/logging.h"
 #include "content/common/input/web_touch_event_traits.h"
@@ -102,9 +107,33 @@ float MotionEventWeb::GetRawY(size_t pointer_index) const {
 
 float MotionEventWeb::GetTouchMajor(size_t pointer_index) const {
   DCHECK_LT(pointer_index, GetPointerCount());
-  // TODO(jdduke): We should be a bit more careful about axes here.
   return 2.f * std::max(event_.touches[pointer_index].radiusX,
                         event_.touches[pointer_index].radiusY);
+}
+
+float MotionEventWeb::GetTouchMinor(size_t pointer_index) const {
+  DCHECK_LT(pointer_index, GetPointerCount());
+  return 2.f * std::min(event_.touches[pointer_index].radiusX,
+                        event_.touches[pointer_index].radiusY);
+}
+
+float MotionEventWeb::GetOrientation(size_t pointer_index) const {
+  DCHECK_LT(pointer_index, GetPointerCount());
+
+  float rotation_angle_rad = event_.touches[pointer_index].rotationAngle
+      * M_PI / 180.f;
+  DCHECK(0 <= rotation_angle_rad && rotation_angle_rad <= M_PI_2)
+      << "Unexpected touch rotation angle";
+
+  if (event_.touches[pointer_index].radiusX
+      > event_.touches[pointer_index].radiusY) {
+    // The case radiusX == radiusY is omitted from here on purpose: for circles,
+    // we want to pass the angle (which could be any value in such cases but
+    // always seem to be set to zero) unchanged.
+    rotation_angle_rad -= (float) M_PI_2;
+  }
+
+  return rotation_angle_rad;
 }
 
 float MotionEventWeb::GetPressure(size_t pointer_index) const {

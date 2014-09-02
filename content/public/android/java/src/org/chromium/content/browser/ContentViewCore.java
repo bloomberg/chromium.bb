@@ -1140,6 +1140,8 @@ public class ContentViewCore
                     pointerCount > 1 ? event.getY(1) : 0,
                     event.getPointerId(0), pointerCount > 1 ? event.getPointerId(1) : -1,
                     event.getTouchMajor(), pointerCount > 1 ? event.getTouchMajor(1) : 0,
+                    event.getTouchMinor(), pointerCount > 1 ? event.getTouchMinor(1) : 0,
+                    event.getOrientation(), pointerCount > 1 ? event.getOrientation(1) : 0,
                     event.getRawX(), event.getRawY(),
                     event.getToolType(0),
                     pointerCount > 1 ? event.getToolType(1) : MotionEvent.TOOL_TYPE_UNKNOWN,
@@ -3137,6 +3139,8 @@ public class ContentViewCore
             float x0, float y0, float x1, float y1,
             int pointerId0, int pointerId1,
             float touchMajor0, float touchMajor1,
+            float touchMinor0, float touchMinor1,
+            float orientation0, float orientation1,
             float rawX, float rawY,
             int androidToolType0, int androidToolType1, int androidButtonState,
             boolean isTouchHandleEvent);

@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// MSVC++ requires this to be set before any other includes to get M_PI.
+#define _USE_MATH_DEFINES
+
 #include "content/browser/renderer_host/input/web_input_event_util.h"
+
+#include <cmath>
 
 #include "base/strings/string_util.h"
 #include "content/common/input/web_touch_event_traits.h"
@@ -188,7 +193,41 @@ WebTouchPoint CreateWebTouchPoint(const MotionEvent& event,
   touch.position.y = event.GetY(pointer_index);
   touch.screenPosition.x = event.GetRawX(pointer_index);
   touch.screenPosition.y = event.GetRawY(pointer_index);
-  touch.radiusX = touch.radiusY = event.GetTouchMajor(pointer_index) * 0.5f;
+
+  // A note on touch ellipse specifications:
+  //
+  // Android MotionEvent provides the major and minor axes of the touch ellipse,
+  // as well as the orientation of the major axis clockwise from vertical, in
+  // radians. See:
+  // http://developer.android.com/reference/android/view/MotionEvent.html
+  //
+  // The proposed extension to W3C Touch Events specifies the touch ellipse
+  // using two radii along x- & y-axes and a positive acute rotation angle in
+  // degrees. See:
+  // http://dvcs.w3.org/hg/webevents/raw-file/default/touchevents.html
+
+  float major_radius = event.GetTouchMajor(pointer_index) / 2.f;
+  float minor_radius = event.GetTouchMinor(pointer_index) / 2.f;
+  float orientation_deg = event.GetOrientation(pointer_index) * 180.f / M_PI;
+  DCHECK_GE(major_radius, 0) << "Unexpected touch major < 0";
+  DCHECK_GE(minor_radius, 0) << "Unexpected touch minor < 0";
+  DCHECK_GE(major_radius, minor_radius) << "Unexpected major/minor touch radii";
+  DCHECK(-90 <= orientation_deg && orientation_deg <= 90)
+      << "Unexpected touch orientation angle";
+  if (orientation_deg >= 0) {
+    // The case orientation_deg == 0 is handled here on purpose: although the
+    // 'else' block is equivalent in this case, we want to pass the 0 value
+    // unchanged (and 0 is the default value for many devices that don't
+    // report elliptical touches).
+    touch.radiusX = minor_radius;
+    touch.radiusY = major_radius;
+    touch.rotationAngle = orientation_deg;
+  } else {
+    touch.radiusX = major_radius;
+    touch.radiusY = minor_radius;
+    touch.rotationAngle = orientation_deg + 90;
+  }
+
   touch.force = event.GetPressure(pointer_index);
 
   return touch;

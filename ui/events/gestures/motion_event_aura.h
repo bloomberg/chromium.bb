@@ -34,6 +34,8 @@ class EVENTS_EXPORT MotionEventAura : public MotionEvent {
   virtual float GetRawX(size_t pointer_index) const OVERRIDE;
   virtual float GetRawY(size_t pointer_index) const OVERRIDE;
   virtual float GetTouchMajor(size_t pointer_index) const OVERRIDE;
+  virtual float GetTouchMinor(size_t pointer_index) const OVERRIDE;
+  virtual float GetOrientation(size_t pointer_index) const OVERRIDE;
   virtual float GetPressure(size_t pointer_index) const OVERRIDE;
   virtual ToolType GetToolType(size_t pointer_index) const OVERRIDE;
   virtual int GetButtonState() const OVERRIDE;
@@ -61,7 +63,9 @@ class EVENTS_EXPORT MotionEventAura : public MotionEvent {
     int touch_id;
     float pressure;
     int source_device_id;
-    float major_radius;
+    float touch_major;
+    float touch_minor;
+    float orientation;
   };
 
   MotionEventAura(

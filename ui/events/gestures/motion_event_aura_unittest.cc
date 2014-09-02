@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// MSVC++ requires this to be set before any other includes to get M_PI.
+#define _USE_MATH_DEFINES
+
+#include <cmath>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/gestures/motion_event_aura.h"
@@ -18,19 +23,36 @@ ui::TouchEvent TouchWithPosition(ui::EventType type,
                                  float x,
                                  float y,
                                  float raw_x,
-                                 float raw_y,
-                                 float radius,
-                                 float pressure) {
+                                 float raw_y) {
   ui::TouchEvent event(type,
                        gfx::PointF(x, y),
                        0,
                        id,
                        base::TimeDelta::FromMilliseconds(0),
-                       radius,
-                       radius,
                        0,
-                       pressure);
+                       0,
+                       0,
+                       0);
   event.set_root_location(gfx::PointF(raw_x, raw_y));
+  return event;
+}
+
+ui::TouchEvent TouchWithTapParams(ui::EventType type,
+                                 int id,
+                                 float radius_x,
+                                 float radius_y,
+                                 float rotation_angle,
+                                 float pressure) {
+  ui::TouchEvent event(type,
+                       gfx::PointF(1, 1),
+                       0,
+                       id,
+                       base::TimeDelta::FromMilliseconds(0),
+                       radius_x,
+                       radius_y,
+                       rotation_angle,
+                       pressure);
+  event.set_root_location(gfx::PointF(1, 1));
   return event;
 }
 
@@ -85,6 +107,7 @@ TEST(MotionEventAuraTest, PointerCountAndIds) {
   EXPECT_EQ(ids[2], event.GetPointerId(1));
 
   // Test cloning of pointer count and id information.
+  // TODO(mustaq): Make a separate clone test
   scoped_ptr<MotionEvent> clone = event.Clone();
   EXPECT_EQ(2U, clone->GetPointerCount());
   EXPECT_EQ(ids[0], clone->GetPointerId(0));
@@ -149,17 +172,13 @@ TEST(MotionEventAuraTest, PointerLocations) {
   float y;
   float raw_x;
   float raw_y;
-  float r;
-  float p;
 
   x = 14.4f;
   y = 17.3f;
   raw_x = x + kRawOffsetX;
   raw_y = y + kRawOffsetY;
-  r = 25.7f;
-  p = 48.2f;
   TouchEvent press0 =
-      TouchWithPosition(ET_TOUCH_PRESSED, ids[0], x, y, raw_x, raw_y, r, p);
+      TouchWithPosition(ET_TOUCH_PRESSED, ids[0], x, y, raw_x, raw_y);
   event.OnTouch(press0);
 
   EXPECT_EQ(1U, event.GetPointerCount());
@@ -167,17 +186,13 @@ TEST(MotionEventAuraTest, PointerLocations) {
   EXPECT_FLOAT_EQ(y, event.GetY(0));
   EXPECT_FLOAT_EQ(raw_x, event.GetRawX(0));
   EXPECT_FLOAT_EQ(raw_y, event.GetRawY(0));
-  EXPECT_FLOAT_EQ(r, event.GetTouchMajor(0) / 2);
-  EXPECT_FLOAT_EQ(p, event.GetPressure(0));
 
   x = 17.8f;
   y = 12.1f;
   raw_x = x + kRawOffsetX;
   raw_y = y + kRawOffsetY;
-  r = 21.2f;
-  p = 18.4f;
   TouchEvent press1 =
-      TouchWithPosition(ET_TOUCH_PRESSED, ids[1], x, y, raw_x, raw_y, r, p);
+      TouchWithPosition(ET_TOUCH_PRESSED, ids[1], x, y, raw_x, raw_y);
   event.OnTouch(press1);
 
   EXPECT_EQ(2U, event.GetPointerCount());
@@ -185,52 +200,111 @@ TEST(MotionEventAuraTest, PointerLocations) {
   EXPECT_FLOAT_EQ(y, event.GetY(1));
   EXPECT_FLOAT_EQ(raw_x, event.GetRawX(1));
   EXPECT_FLOAT_EQ(raw_y, event.GetRawY(1));
-  EXPECT_FLOAT_EQ(r, event.GetTouchMajor(1) / 2);
-  EXPECT_FLOAT_EQ(p, event.GetPressure(1));
 
   // Test cloning of pointer location information.
   scoped_ptr<MotionEvent> clone = event.Clone();
-  EXPECT_EQ(2U, clone->GetPointerCount());
-  EXPECT_FLOAT_EQ(x, clone->GetX(1));
-  EXPECT_FLOAT_EQ(y, clone->GetY(1));
-  EXPECT_FLOAT_EQ(raw_x, event.GetRawX(1));
-  EXPECT_FLOAT_EQ(raw_y, event.GetRawY(1));
-  EXPECT_FLOAT_EQ(r, clone->GetTouchMajor(1) / 2);
-  EXPECT_FLOAT_EQ(p, clone->GetPressure(1));
+  {
+    const MotionEventAura* raw_clone_aura =
+        static_cast<MotionEventAura*>(clone.get());
+    EXPECT_EQ(2U, raw_clone_aura->GetPointerCount());
+    EXPECT_FLOAT_EQ(x, raw_clone_aura->GetX(1));
+    EXPECT_FLOAT_EQ(y, raw_clone_aura->GetY(1));
+    EXPECT_FLOAT_EQ(raw_x, raw_clone_aura->GetRawX(1));
+    EXPECT_FLOAT_EQ(raw_y, raw_clone_aura->GetRawY(1));
+  }
 
   x = 27.9f;
   y = 22.3f;
   raw_x = x + kRawOffsetX;
   raw_y = y + kRawOffsetY;
-  r = 7.6f;
-  p = 82.1f;
   TouchEvent move1 =
-      TouchWithPosition(ET_TOUCH_MOVED, ids[1], x, y, raw_x, raw_y, r, p);
+      TouchWithPosition(ET_TOUCH_MOVED, ids[1], x, y, raw_x, raw_y);
   event.OnTouch(move1);
 
   EXPECT_FLOAT_EQ(x, event.GetX(1));
   EXPECT_FLOAT_EQ(y, event.GetY(1));
   EXPECT_FLOAT_EQ(raw_x, event.GetRawX(1));
   EXPECT_FLOAT_EQ(raw_y, event.GetRawY(1));
-  EXPECT_FLOAT_EQ(r, event.GetTouchMajor(1) / 2);
-  EXPECT_FLOAT_EQ(p, event.GetPressure(1));
 
   x = 34.6f;
   y = 23.8f;
   raw_x = x + kRawOffsetX;
   raw_y = y + kRawOffsetY;
-  r = 12.9f;
-  p = 14.2f;
   TouchEvent move0 =
-      TouchWithPosition(ET_TOUCH_MOVED, ids[0], x, y, raw_x, raw_y, r, p);
+      TouchWithPosition(ET_TOUCH_MOVED, ids[0], x, y, raw_x, raw_y);
   event.OnTouch(move0);
 
   EXPECT_FLOAT_EQ(x, event.GetX(0));
   EXPECT_FLOAT_EQ(y, event.GetY(0));
   EXPECT_FLOAT_EQ(raw_x, event.GetRawX(0));
   EXPECT_FLOAT_EQ(raw_y, event.GetRawY(0));
-  EXPECT_FLOAT_EQ(r, event.GetTouchMajor(0) / 2);
-  EXPECT_FLOAT_EQ(p, event.GetPressure(0));
+}
+
+TEST(MotionEventAuraTest, TapParams) {
+  // Test that touch params are stored correctly.
+  MotionEventAura event;
+
+  int ids[] = {15, 13};
+
+  float radius_x;
+  float radius_y;
+  float rotation_angle;
+  float pressure;
+
+  radius_x = 123.45f;
+  radius_y = 67.89f;
+  rotation_angle = 23.f;
+  pressure = 0.123f;
+  TouchEvent press0 = TouchWithTapParams(
+      ET_TOUCH_PRESSED, ids[0], radius_x, radius_y, rotation_angle, pressure);
+  event.OnTouch(press0);
+
+  EXPECT_EQ(1U, event.GetPointerCount());
+  EXPECT_FLOAT_EQ(radius_x, event.GetTouchMajor(0) / 2);
+  EXPECT_FLOAT_EQ(radius_y, event.GetTouchMinor(0) / 2);
+  EXPECT_FLOAT_EQ(rotation_angle, event.GetOrientation(0) * 180 / M_PI + 90);
+  EXPECT_FLOAT_EQ(pressure, event.GetPressure(0));
+
+  radius_x = 67.89f;
+  radius_y = 123.45f;
+  rotation_angle = 46.f;
+  pressure = 0.456f;
+  TouchEvent press1 = TouchWithTapParams(
+      ET_TOUCH_PRESSED, ids[1], radius_x, radius_y, rotation_angle, pressure);
+  event.OnTouch(press1);
+
+  EXPECT_EQ(2U, event.GetPointerCount());
+  EXPECT_FLOAT_EQ(radius_y, event.GetTouchMajor(1) / 2);
+  EXPECT_FLOAT_EQ(radius_x, event.GetTouchMinor(1) / 2);
+  EXPECT_FLOAT_EQ(rotation_angle, event.GetOrientation(1) * 180 / M_PI);
+  EXPECT_FLOAT_EQ(pressure, event.GetPressure(1));
+
+  // Test cloning of tap params
+  scoped_ptr<MotionEvent> clone = event.Clone();
+  {
+    const MotionEventAura* raw_clone_aura =
+        static_cast<MotionEventAura*>(clone.get());
+    EXPECT_EQ(2U, raw_clone_aura->GetPointerCount());
+    EXPECT_FLOAT_EQ(radius_y, raw_clone_aura->GetTouchMajor(1) / 2);
+    EXPECT_FLOAT_EQ(radius_x, raw_clone_aura->GetTouchMinor(1) / 2);
+    EXPECT_FLOAT_EQ(
+        rotation_angle, raw_clone_aura->GetOrientation(1) * 180 / M_PI);
+    EXPECT_FLOAT_EQ(pressure, raw_clone_aura->GetPressure(1));
+  }
+
+  radius_x = 76.98f;
+  radius_y = 321.54f;
+  rotation_angle = 64.f;
+  pressure = 0.654f;
+  TouchEvent move1 = TouchWithTapParams(
+      ET_TOUCH_MOVED, ids[1], radius_x, radius_y, rotation_angle, pressure);
+  event.OnTouch(move1);
+
+  EXPECT_EQ(2U, event.GetPointerCount());
+  EXPECT_FLOAT_EQ(radius_y, event.GetTouchMajor(1) / 2);
+  EXPECT_FLOAT_EQ(radius_x, event.GetTouchMinor(1) / 2);
+  EXPECT_FLOAT_EQ(rotation_angle, event.GetOrientation(1) * 180 / M_PI);
+  EXPECT_FLOAT_EQ(pressure, event.GetPressure(1));
 }
 
 TEST(MotionEventAuraTest, Timestamps) {

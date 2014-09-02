@@ -96,6 +96,8 @@ class MotionEventBufferTest : public testing::Test,
       EXPECT_EQ(a.GetRawX(i), b.GetRawX(bi));
       EXPECT_EQ(a.GetRawY(i), b.GetRawY(bi));
       EXPECT_EQ(a.GetTouchMajor(i), b.GetTouchMajor(bi));
+      EXPECT_EQ(a.GetTouchMinor(i), b.GetTouchMinor(bi));
+      EXPECT_EQ(a.GetOrientation(i), b.GetOrientation(bi));
       EXPECT_EQ(a.GetPressure(i), b.GetPressure(bi));
       EXPECT_EQ(a.GetToolType(i), b.GetToolType(bi));
     }

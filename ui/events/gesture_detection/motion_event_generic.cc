@@ -16,7 +16,9 @@ PointerProperties::PointerProperties()
       raw_x(0),
       raw_y(0),
       pressure(0),
-      touch_major(0) {
+      touch_major(0),
+      touch_minor(0),
+      orientation(0) {
 }
 
 PointerProperties::PointerProperties(float x, float y)
@@ -27,7 +29,9 @@ PointerProperties::PointerProperties(float x, float y)
       raw_x(x),
       raw_y(y),
       pressure(0),
-      touch_major(0) {
+      touch_major(0),
+      touch_minor(0),
+      orientation(0) {
 }
 
 MotionEventGeneric::MotionEventGeneric()
@@ -101,6 +105,16 @@ float MotionEventGeneric::GetRawY(size_t pointer_index) const {
 float MotionEventGeneric::GetTouchMajor(size_t pointer_index) const {
   DCHECK_LT(pointer_index, pointers_->size());
   return pointers_[pointer_index].touch_major;
+}
+
+float MotionEventGeneric::GetTouchMinor(size_t pointer_index) const {
+  DCHECK_LT(pointer_index, pointers_->size());
+  return pointers_[pointer_index].touch_minor;
+}
+
+float MotionEventGeneric::GetOrientation(size_t pointer_index) const {
+  DCHECK_LT(pointer_index, pointers_->size());
+  return pointers_[pointer_index].orientation;
 }
 
 float MotionEventGeneric::GetPressure(size_t pointer_index) const {
