@@ -912,12 +912,22 @@ void XMLHttpRequest::clearVariablesForLoading()
 {
     m_decoder.clear();
 
+    if (m_responseDocumentParser) {
+#if !ENABLE(OILPAN)
+        m_responseDocumentParser->detach();
+#endif
+        m_responseDocumentParser = nullptr;
+    }
+
     m_finalResponseCharset = String();
 }
 
 bool XMLHttpRequest::internalAbort()
 {
     m_error = true;
+
+    if (m_responseDocumentParser && !m_responseDocumentParser->isStopped())
+        m_responseDocumentParser->stopParsing();
 
     clearVariablesForLoading();
 
@@ -969,7 +979,6 @@ void XMLHttpRequest::clearResponse()
 
     m_parsedResponse = false;
     m_responseDocument = nullptr;
-    m_responseDocumentParser = nullptr;
 
     m_responseBlob = nullptr;
     m_downloadedBlobLength = 0;
