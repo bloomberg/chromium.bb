@@ -179,7 +179,6 @@ const SkScalar kUnderlineMetricsNotSet = -1.0f;
 SkiaTextRenderer::SkiaTextRenderer(Canvas* canvas)
     : canvas_(canvas),
       canvas_skia_(canvas->sk_canvas()),
-      started_drawing_(false),
       underline_thickness_(kUnderlineMetricsNotSet),
       underline_position_(0.0f) {
   DCHECK(canvas_skia_);

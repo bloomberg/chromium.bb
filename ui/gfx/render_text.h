@@ -18,7 +18,6 @@
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/break_list.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/font_render_params.h"
@@ -102,7 +101,6 @@ class SkiaTextRenderer {
 
   Canvas* canvas_;
   SkCanvas* canvas_skia_;
-  bool started_drawing_;
   SkPaint paint_;
   SkScalar underline_thickness_;
   SkScalar underline_position_;
