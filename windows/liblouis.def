@@ -20,7 +20,6 @@ EXPORTS
 	lou_getDataPath
 	lou_registerLogCallback
 	lou_setLogLevel
-	lou_log
 	lou_free
 	getDotsForChar
 	getCharFromDots

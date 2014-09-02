@@ -150,13 +150,13 @@ i.e. LIBLOUIS_REVISION and possibly LIBLOUIS_CURRENT and LIBLOUIS_AGE.
 ** Commit and tag
 Commit the changes and tag this version
 
-  git tag -s liblouis_2_6_0 -m "Release 2.6.0"
-  git push origin liblouis_2_6_0
+  git tag -s v2.6.0 -m "Release 2.6.0"
+  git push origin v2.6.0
 
 If you know the exact version number that needs to be tagged use
 
-  git tag -s liblouis_2_6_0 -m "Release 2.6.0" <commit>
-  git push origin liblouis_2_6_0
+  git tag -s v2.6.0 -m "Release 2.6.0" <commit>
+  git push origin v2.6.0
 
 ** Make the release
 Check out a clean copy in a different directory, like /tmp. Run
@@ -168,7 +168,7 @@ general sanity check. Run make dist. This will produce a tarball.
 
 ** Upload
 Add the tarball to the liblouis web site, i.e. add it under
-$WEBSITE/downloads and add a link to it in $WEBSITE/downloads/index.textile.
+$WEBSITE/downloads and add a link to it in $WEBSITE/downloads/index.md.
 See below for instructions on how to update the web site.
 
 ** Online documentation
@@ -187,9 +187,6 @@ the content. In order to update the site simply edit, commit and push.
 
 For the new release update the project web site. Add a post containing
 the current NEWS to the _posts directory.
-
-** Other web updates
-Also update the page on freshmeat (http://freshmeat.net/projects/liblouis/).
 
 ** Announce
 Send an announcement to the liblouis list
