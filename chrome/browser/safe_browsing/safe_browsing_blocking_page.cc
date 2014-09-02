@@ -189,7 +189,6 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       url_(unsafe_resources[0].url),
       interstitial_page_(NULL),
       has_expanded_see_more_section_(false),
-      reporting_checkbox_checked_(false),
       create_view_(true),
       num_visits_(-1) {
   bool malware = false;
@@ -457,31 +456,11 @@ void SafeBrowsingBlockingPage::SetReportingPreference(bool report) {
   PrefService* pref = profile->GetPrefs();
   pref->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled, report);
   UMA_HISTOGRAM_BOOLEAN("SB2.SetExtendedReportingEnabled", report);
-  reporting_checkbox_checked_ = report;
-  pref->ClearPref(prefs::kSafeBrowsingReportingEnabled);
-  pref->ClearPref(prefs::kSafeBrowsingDownloadFeedbackEnabled);
-}
-
-// If the reporting checkbox was left checked on close, the new pref
-// kSafeBrowsingExtendedReportingEnabled should be updated.
-// TODO(felt): Remove this in M-39. crbug.com/384668
-void SafeBrowsingBlockingPage::UpdateReportingPref() {
-  if (!reporting_checkbox_checked_)
-    return;
-  if (IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled))
-    return;
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents_->GetBrowserContext());
-  if (profile->GetPrefs()->HasPrefPath(
-      prefs::kSafeBrowsingExtendedReportingEnabled))
-    return;
-  SetReportingPreference(true);
 }
 
 void SafeBrowsingBlockingPage::OnProceed() {
   proceeded_ = true;
   RecordUserAction(PROCEED);
-  UpdateReportingPref();
   // Send the malware details, if we opted to.
   FinishMalwareDetails(malware_details_proceed_delay_ms_);
 
@@ -534,7 +513,6 @@ void SafeBrowsingBlockingPage::OnDontProceed() {
     return;
 
   RecordUserAction(DONT_PROCEED);
-  UpdateReportingPref();
   // Send the malware details, if we opted to.
   FinishMalwareDetails(0);  // No delay
 
@@ -944,18 +922,9 @@ void SafeBrowsingBlockingPage::PopulateMalwareLoadTimeData(
         "optInLink",
         l10n_util::GetStringFUTF16(IDS_SAFE_BROWSING_MALWARE_REPORTING_AGREE,
                                    base::UTF8ToUTF16(privacy_link)));
-    Profile* profile = Profile::FromBrowserContext(
-       web_contents_->GetBrowserContext());
-    if (profile->GetPrefs()->HasPrefPath(
-            prefs::kSafeBrowsingExtendedReportingEnabled)) {
-      reporting_checkbox_checked_ =
-          IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled);
-    } else if (IsPrefEnabled(prefs::kSafeBrowsingReportingEnabled) ||
-         IsPrefEnabled(prefs::kSafeBrowsingDownloadFeedbackEnabled)) {
-      reporting_checkbox_checked_ = true;
-    }
     load_time_data->SetBoolean(
-        kBoxChecked, reporting_checkbox_checked_);
+        kBoxChecked,
+        IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled));
   }
 }
 

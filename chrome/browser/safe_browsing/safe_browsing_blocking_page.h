@@ -214,9 +214,6 @@ class SafeBrowsingBlockingPage : public content::InterstitialPageDelegate {
   // during this interstitial page.
   bool has_expanded_see_more_section_;
 
-  // Whether the user has left the reporting checkbox checked.
-  bool reporting_checkbox_checked_;
-
   // Whether the interstitial should create a view.
   bool create_view_;
 
