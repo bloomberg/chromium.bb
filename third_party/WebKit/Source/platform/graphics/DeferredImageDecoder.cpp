@@ -266,15 +266,12 @@ SkBitmap DeferredImageDecoder::createBitmap(size_t index)
     ASSERT(decodedSize.width() > 0);
     ASSERT(decodedSize.height() > 0);
 
-    SkImageInfo info;
-    info.fWidth = decodedSize.width();
-    info.fHeight = decodedSize.height();
 #if SK_B32_SHIFT // Little-endian RGBA pixels. (Android)
-    info.fColorType = kRGBA_8888_SkColorType;
+    const SkColorType colorType = kRGBA_8888_SkColorType;
 #else
-    info.fColorType = kBGRA_8888_SkColorType;
+    const SkColorType colorType = kBGRA_8888_SkColorType;
 #endif
-    info.fAlphaType = kPremul_SkAlphaType;
+    const SkImageInfo info = SkImageInfo::Make(decodedSize.width(), decodedSize.height(), colorType, kPremul_SkAlphaType);
 
     SkBitmap bitmap;
     DecodingImageGenerator* generator = new DecodingImageGenerator(m_frameGenerator, info, index);

@@ -43,12 +43,7 @@ SkISize fullSize() { return SkISize::Make(100, 100); }
 
 SkImageInfo imageInfo()
 {
-    SkImageInfo info;
-    info.fWidth = 100;
-    info.fHeight = 100;
-    info.fColorType = kBGRA_8888_SkColorType;
-    info.fAlphaType = kOpaque_SkAlphaType;
-    return info;
+    return SkImageInfo::Make(100, 100, kBGRA_8888_SkColorType, kOpaque_SkAlphaType);
 }
 
 } // namespace
