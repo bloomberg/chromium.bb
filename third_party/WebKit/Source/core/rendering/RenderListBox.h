@@ -54,6 +54,7 @@ private:
     virtual bool isListBox() const OVERRIDE { return true; }
 
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
+    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
 
     virtual void stopAutoscroll() OVERRIDE;
 

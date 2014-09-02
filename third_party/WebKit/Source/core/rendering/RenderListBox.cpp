@@ -138,4 +138,11 @@ void RenderListBox::stopAutoscroll()
     select->handleMouseRelease();
 }
 
+void RenderListBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
+{
+    RenderBlockFlow::computeIntrinsicLogicalWidths(minLogicalWidth, maxLogicalWidth);
+    if (style()->width().isPercent())
+        minLogicalWidth = 0;
+}
+
 } // namespace blink
