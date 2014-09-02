@@ -13,6 +13,10 @@
 #include "cc/surfaces/surfaces_export.h"
 #include "ui/gfx/size.h"
 
+namespace ui {
+struct LatencyInfo;
+}
+
 namespace cc {
 class CompositorFrame;
 class CopyOutputRequest;
@@ -37,6 +41,7 @@ class CC_SURFACES_EXPORT Surface {
   // Returns a number that increments by 1 every time a new frame is enqueued.
   int frame_index() const { return frame_index_; }
 
+  void TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info);
   void RunDrawCallbacks();
 
   SurfaceFactory* factory() { return factory_; }
