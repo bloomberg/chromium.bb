@@ -87,8 +87,7 @@ class ProfileSyncComponentsFactory
       const sync_driver::DataTypeController::TypeMap* controllers,
       const sync_driver::DataTypeEncryptionHandler* encryption_handler,
       browser_sync::SyncBackendHost* backend,
-      sync_driver::DataTypeManagerObserver* observer,
-      sync_driver::DataTypeStatusTable* data_type_status_table) = 0;
+      sync_driver::DataTypeManagerObserver* observer) = 0;
 
   // Creating this in the factory helps us mock it out in testing.
   virtual browser_sync::SyncBackendHost* CreateSyncBackendHost(

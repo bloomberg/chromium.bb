@@ -27,6 +27,7 @@
 #include "chrome/browser/sync/glue/extension_backed_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_setting_data_type_controller.h"
+#include "chrome/browser/sync/glue/history_delete_directives_data_type_controller.h"
 #include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
 #include "chrome/browser/sync/glue/password_data_type_controller.h"
 #include "chrome/browser/sync/glue/search_engine_data_type_controller.h"
@@ -106,6 +107,7 @@ using browser_sync::ChromeReportUnrecoverableError;
 using browser_sync::ExtensionBackedDataTypeController;
 using browser_sync::ExtensionDataTypeController;
 using browser_sync::ExtensionSettingDataTypeController;
+using browser_sync::HistoryDeleteDirectivesDataTypeController;
 using browser_sync::PasswordDataTypeController;
 using browser_sync::SearchEngineDataTypeController;
 using browser_sync::SessionDataTypeController;
@@ -215,13 +217,10 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
 
   // Delete directive sync is enabled by default.  Register unless full history
   // sync is disabled.
-  if (!disabled_types.Has(syncer::HISTORY_DELETE_DIRECTIVES)) {
+  if (!disabled_types.Has(syncer::HISTORY_DELETE_DIRECTIVES) &&
+      !history_disabled) {
     pss->RegisterDataTypeController(
-        new UIDataTypeController(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-            base::Bind(&ChromeReportUnrecoverableError),
-            syncer::HISTORY_DELETE_DIRECTIVES,
-            this));
+        new HistoryDeleteDirectivesDataTypeController(this, pss));
   }
 
   // Session sync is enabled by default.  Register unless explicitly disabled.
@@ -240,7 +239,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
 
   // Favicon sync is enabled by default. Register unless explicitly disabled.
   if (!disabled_types.Has(syncer::FAVICON_IMAGES) &&
-      !disabled_types.Has(syncer::FAVICON_TRACKING)) {
+      !disabled_types.Has(syncer::FAVICON_TRACKING) &&
+      !history_disabled) {
     // crbug/384552. We disable error uploading for this data types for now.
     pss->RegisterDataTypeController(
         new UIDataTypeController(
@@ -411,15 +411,13 @@ DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
     const DataTypeController::TypeMap* controllers,
     const sync_driver::DataTypeEncryptionHandler* encryption_handler,
     SyncBackendHost* backend,
-    DataTypeManagerObserver* observer,
-    sync_driver::DataTypeStatusTable* data_type_status_table) {
+    DataTypeManagerObserver* observer) {
   return new DataTypeManagerImpl(base::Bind(ChromeReportUnrecoverableError),
                                  debug_info_listener,
                                  controllers,
                                  encryption_handler,
                                  backend,
-                                 observer,
-                                 data_type_status_table);
+                                 observer);
 }
 
 browser_sync::SyncBackendHost*

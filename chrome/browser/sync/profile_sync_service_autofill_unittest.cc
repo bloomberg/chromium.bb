@@ -362,8 +362,7 @@ ACTION_P(ReturnNewDataTypeManagerWithDebugListener, debug_listener) {
       arg1,
       arg2,
       arg3,
-      arg4,
-      arg5);
+      arg4);
 }
 
 ACTION_P(MakeAutofillProfileSyncComponents, wds) {
@@ -557,7 +556,7 @@ class ProfileSyncServiceAutofillTest
                             web_data_service_.get(),
                             data_type_controller);
 
-    EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _, _, _)).
+    EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _, _)).
         WillOnce(ReturnNewDataTypeManagerWithDebugListener(
                      syncer::MakeWeakHandle(debug_ptr_factory_.GetWeakPtr())));
 

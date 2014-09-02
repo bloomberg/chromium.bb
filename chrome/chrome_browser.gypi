@@ -1265,6 +1265,8 @@
       'browser/sync/glue/favicon_cache.h',
       'browser/sync/glue/frontend_data_type_controller.cc',
       'browser/sync/glue/frontend_data_type_controller.h',
+      'browser/sync/glue/history_delete_directives_data_type_controller.cc',
+      'browser/sync/glue/history_delete_directives_data_type_controller.h',
       'browser/sync/glue/history_model_worker.cc',
       'browser/sync/glue/history_model_worker.h',
       'browser/sync/glue/invalidation_adapter.cc',

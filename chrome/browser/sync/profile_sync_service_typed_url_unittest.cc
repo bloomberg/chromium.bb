@@ -273,7 +273,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
                                               data_type_controller,
                                               &error_handler_,
                                               &model_associator));
-      EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _, _, _)).
+      EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _, _)).
           WillOnce(ReturnNewDataTypeManager());
 
       ProfileOAuth2TokenService* oauth2_token_service =
