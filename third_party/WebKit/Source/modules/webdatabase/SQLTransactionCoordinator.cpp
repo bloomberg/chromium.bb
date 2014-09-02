@@ -144,7 +144,7 @@ void SQLTransactionCoordinator::shutdown()
         // Transaction phase 3 cleanup. See comment on "What happens if a
         // transaction is interrupted?" at the top of SQLTransactionBackend.cpp.
         while (!info.pendingTransactions.isEmpty()) {
-            RefPtrWillBeRawPtr<SQLTransactionBackend> transaction = info.pendingTransactions.first();
+            RefPtrWillBeRawPtr<SQLTransactionBackend> transaction = info.pendingTransactions.takeFirst();
             transaction->notifyDatabaseThreadIsShuttingDown();
         }
     }
