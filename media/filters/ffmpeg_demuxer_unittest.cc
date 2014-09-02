@@ -67,11 +67,8 @@ class FFmpegDemuxerTest : public testing::Test {
   FFmpegDemuxerTest() {}
 
   virtual ~FFmpegDemuxerTest() {
-    if (demuxer_) {
-      WaitableMessageLoopEvent event;
-      demuxer_->Stop(event.GetClosure());
-      event.RunAndWait();
-    }
+    if (demuxer_)
+      demuxer_->Stop();
   }
 
   void CreateDemuxer(const std::string& name) {
@@ -753,9 +750,7 @@ TEST_F(FFmpegDemuxerTest, Stop) {
   DemuxerStream* audio = demuxer_->GetStream(DemuxerStream::AUDIO);
   ASSERT_TRUE(audio);
 
-  WaitableMessageLoopEvent event;
-  demuxer_->Stop(event.GetClosure());
-  event.RunAndWait();
+  demuxer_->Stop();
 
   // Reads after being stopped are all EOS buffers.
   StrictMock<MockReadCB> callback;
@@ -914,9 +909,7 @@ TEST_F(FFmpegDemuxerTest, IsValidAnnexB) {
     stream->Read(base::Bind(&ValidateAnnexB, stream));
     message_loop_.Run();
 
-    WaitableMessageLoopEvent event;
-    demuxer_->Stop(event.GetClosure());
-    event.RunAndWait();
+    demuxer_->Stop();
     demuxer_.reset();
     data_source_.reset();
   }

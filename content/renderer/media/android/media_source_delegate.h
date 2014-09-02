@@ -146,9 +146,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
   void ResetVideoDecryptingDemuxerStream();
   void FinishResettingDecryptingDemuxerStreams();
 
-  // Callback for ChunkDemuxer::Stop() and helper for deleting |this| on the
-  // main thread.
-  void OnDemuxerStopDone();
+  // Helper for deleting |this| on the main thread.
   void DeleteSelf();
 
   void OnDemuxerOpened();

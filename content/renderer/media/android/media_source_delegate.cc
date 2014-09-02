@@ -139,10 +139,14 @@ void MediaSourceDelegate::StopDemuxer() {
   media_weak_factory_.InvalidateWeakPtrs();
   DCHECK(!media_weak_factory_.HasWeakPtrs());
 
-  // The callback OnDemuxerStopDone() owns |this| and will delete it when
-  // called. Hence using base::Unretained(this) is safe here.
-  chunk_demuxer_->Stop(base::Bind(&MediaSourceDelegate::OnDemuxerStopDone,
-                                  base::Unretained(this)));
+  chunk_demuxer_->Stop();
+  chunk_demuxer_.reset();
+
+  // The callback DeleteSelf() owns |this| and will delete it when called.
+  // Hence using base::Unretained(this) is safe here.
+  media_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&MediaSourceDelegate::DeleteSelf, base::Unretained(this)));
 }
 
 void MediaSourceDelegate::InitializeMediaSource(
@@ -626,18 +630,9 @@ void MediaSourceDelegate::FinishResettingDecryptingDemuxerStreams() {
   demuxer_client_->DemuxerSeekDone(demuxer_client_id_, browser_seek_time_);
 }
 
-void MediaSourceDelegate::OnDemuxerStopDone() {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-  DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
-  main_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&MediaSourceDelegate::DeleteSelf, base::Unretained(this)));
-}
-
 void MediaSourceDelegate::DeleteSelf() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
-  chunk_demuxer_.reset();
   delete this;
 }
 

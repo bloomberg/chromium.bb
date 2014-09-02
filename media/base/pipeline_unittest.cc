@@ -276,7 +276,7 @@ class PipelineTest : public ::testing::Test {
 
   void ExpectDemuxerStop() {
     if (demuxer_)
-      EXPECT_CALL(*demuxer_, Stop(_)).WillOnce(RunClosure<0>());
+      EXPECT_CALL(*demuxer_, Stop());
   }
 
   void ExpectPipelineStopAndDestroyPipeline() {
@@ -371,8 +371,7 @@ TEST_F(PipelineTest, StopWithoutStart) {
 TEST_F(PipelineTest, StartThenStopImmediately) {
   EXPECT_CALL(*demuxer_, Initialize(_, _, _))
       .WillOnce(RunCallback<1>(PIPELINE_OK));
-  EXPECT_CALL(*demuxer_, Stop(_))
-      .WillOnce(RunClosure<0>());
+  EXPECT_CALL(*demuxer_, Stop());
 
   EXPECT_CALL(callbacks_, OnStart(_));
   StartPipeline();
@@ -394,9 +393,8 @@ TEST_F(PipelineTest, DemuxerErrorDuringStop) {
 
   StartPipelineAndExpect(PIPELINE_OK);
 
-  EXPECT_CALL(*demuxer_, Stop(_))
-      .WillOnce(DoAll(InvokeWithoutArgs(this, &PipelineTest::OnDemuxerError),
-                      RunClosure<0>()));
+  EXPECT_CALL(*demuxer_, Stop())
+      .WillOnce(InvokeWithoutArgs(this, &PipelineTest::OnDemuxerError));
   ExpectPipelineStopAndDestroyPipeline();
 
   pipeline_->Stop(
@@ -407,8 +405,7 @@ TEST_F(PipelineTest, DemuxerErrorDuringStop) {
 TEST_F(PipelineTest, URLNotFound) {
   EXPECT_CALL(*demuxer_, Initialize(_, _, _))
       .WillOnce(RunCallback<1>(PIPELINE_ERROR_URL_NOT_FOUND));
-  EXPECT_CALL(*demuxer_, Stop(_))
-      .WillOnce(RunClosure<0>());
+  EXPECT_CALL(*demuxer_, Stop());
 
   StartPipelineAndExpect(PIPELINE_ERROR_URL_NOT_FOUND);
 }
@@ -416,8 +413,7 @@ TEST_F(PipelineTest, URLNotFound) {
 TEST_F(PipelineTest, NoStreams) {
   EXPECT_CALL(*demuxer_, Initialize(_, _, _))
       .WillOnce(RunCallback<1>(PIPELINE_OK));
-  EXPECT_CALL(*demuxer_, Stop(_))
-      .WillOnce(RunClosure<0>());
+  EXPECT_CALL(*demuxer_, Stop());
 
   StartPipelineAndExpect(PIPELINE_ERROR_COULD_NOT_RENDER);
 }
@@ -528,8 +524,7 @@ TEST_F(PipelineTest, SeekAfterError) {
   // Initialize then seek!
   StartPipelineAndExpect(PIPELINE_OK);
 
-  EXPECT_CALL(*demuxer_, Stop(_))
-      .WillOnce(RunClosure<0>());
+  EXPECT_CALL(*demuxer_, Stop());
   EXPECT_CALL(callbacks_, OnError(_));
 
   static_cast<DemuxerHost*>(pipeline_.get())
@@ -649,8 +644,7 @@ TEST_F(PipelineTest, ErrorDuringSeek) {
 
   EXPECT_CALL(*demuxer_, Seek(seek_time, _))
       .WillOnce(RunCallback<1>(PIPELINE_ERROR_READ));
-  EXPECT_CALL(*demuxer_, Stop(_))
-      .WillOnce(RunClosure<0>());
+  EXPECT_CALL(*demuxer_, Stop());
 
   pipeline_->Seek(seek_time, base::Bind(&CallbackHelper::OnSeek,
                                         base::Unretained(&callbacks_)));
@@ -703,8 +697,7 @@ TEST_F(PipelineTest, NoMessageDuringTearDownFromError) {
 
   EXPECT_CALL(*demuxer_, Seek(seek_time, _))
       .WillOnce(RunCallback<1>(PIPELINE_ERROR_READ));
-  EXPECT_CALL(*demuxer_, Stop(_))
-      .WillOnce(RunClosure<0>());
+  EXPECT_CALL(*demuxer_, Stop());
 
   pipeline_->Seek(seek_time, base::Bind(&CallbackHelper::OnSeek,
                                         base::Unretained(&callbacks_)));
@@ -819,7 +812,7 @@ class PipelineTeardownTest : public PipelineTest {
             .WillOnce(RunCallback<1>(status));
       }
 
-      EXPECT_CALL(*demuxer_, Stop(_)).WillOnce(RunClosure<0>());
+      EXPECT_CALL(*demuxer_, Stop());
       return status;
     }
 
@@ -845,7 +838,7 @@ class PipelineTeardownTest : public PipelineTest {
             .WillOnce(RunCallback<0>(status));
       }
 
-      EXPECT_CALL(*demuxer_, Stop(_)).WillOnce(RunClosure<0>());
+      EXPECT_CALL(*demuxer_, Stop());
       return status;
     }
 
@@ -872,7 +865,7 @@ class PipelineTeardownTest : public PipelineTest {
     InSequence s;
     PipelineStatus status = SetSeekExpectations(state, stop_or_error);
 
-    EXPECT_CALL(*demuxer_, Stop(_)).WillOnce(RunClosure<0>());
+    EXPECT_CALL(*demuxer_, Stop());
     EXPECT_CALL(callbacks_, OnSeek(status));
 
     if (status == PIPELINE_OK) {
@@ -938,7 +931,7 @@ class PipelineTeardownTest : public PipelineTest {
   void DoStopOrError(StopOrError stop_or_error) {
     InSequence s;
 
-    EXPECT_CALL(*demuxer_, Stop(_)).WillOnce(RunClosure<0>());
+    EXPECT_CALL(*demuxer_, Stop());
 
     switch (stop_or_error) {
       case kStop:
@@ -956,6 +949,7 @@ class PipelineTeardownTest : public PipelineTest {
         EXPECT_CALL(callbacks_, OnError(PIPELINE_ERROR_READ));
         ExpectPipelineStopAndDestroyPipeline();
         pipeline_->SetErrorForTesting(PIPELINE_ERROR_READ);
+        message_loop_.RunUntilIdle();
         pipeline_->Stop(base::Bind(
             &CallbackHelper::OnStop, base::Unretained(&callbacks_)));
         break;

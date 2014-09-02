@@ -38,7 +38,7 @@ class DemuxerHostImpl : public media::DemuxerHost {
 };
 
 static void QuitLoopWithStatus(base::MessageLoop* message_loop,
-                        media::PipelineStatus status) {
+                               media::PipelineStatus status) {
   CHECK_EQ(status, media::PIPELINE_OK);
   message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
@@ -194,8 +194,8 @@ static void RunDemuxerBenchmark(const std::string& filename) {
     }
     base::TimeTicks end = base::TimeTicks::HighResNow();
     total_time += (end - start).InSecondsF();
-    demuxer.Stop(base::Bind(
-        &QuitLoopWithStatus, &message_loop, PIPELINE_OK));
+    demuxer.Stop();
+    QuitLoopWithStatus(&message_loop, PIPELINE_OK);
     message_loop.Run();
   }
 

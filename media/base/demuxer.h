@@ -72,11 +72,11 @@ class MEDIA_EXPORT Demuxer {
   virtual void Seek(base::TimeDelta time,
                     const PipelineStatusCB& status_cb) = 0;
 
-  // Starts stopping this demuxer, executing the callback upon completion.
+  // Stops this demuxer.
   //
-  // After the callback completes the demuxer may be destroyed. It is illegal to
-  // call any method (including Stop()) after a demuxer has stopped.
-  virtual void Stop(const base::Closure& callback) = 0;
+  // After this call the demuxer may be destroyed. It is illegal to call any
+  // method (including Stop()) after a demuxer has stopped.
+  virtual void Stop() = 0;
 
   // Returns the first stream of the given stream type (which is not allowed
   // to be DemuxerStream::TEXT), or NULL if that type of stream is not present.

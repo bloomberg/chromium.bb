@@ -1057,10 +1057,9 @@ void ChunkDemuxer::Initialize(
   base::ResetAndReturn(&open_cb_).Run();
 }
 
-void ChunkDemuxer::Stop(const base::Closure& callback) {
+void ChunkDemuxer::Stop() {
   DVLOG(1) << "Stop()";
   Shutdown();
-  callback.Run();
 }
 
 void ChunkDemuxer::Seek(TimeDelta time, const PipelineStatusCB& cb) {

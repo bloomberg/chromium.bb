@@ -410,8 +410,8 @@ void Pipeline::DoStop(const PipelineStatusCB& done_cb) {
   text_renderer_.reset();
 
   if (demuxer_) {
-    demuxer_->Stop(base::Bind(done_cb, PIPELINE_OK));
-    return;
+    demuxer_->Stop();
+    demuxer_ = NULL;
   }
 
   task_runner_->PostTask(FROM_HERE, base::Bind(done_cb, PIPELINE_OK));

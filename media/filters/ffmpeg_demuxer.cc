@@ -555,7 +555,7 @@ FFmpegDemuxer::FFmpegDemuxer(
 
 FFmpegDemuxer::~FFmpegDemuxer() {}
 
-void FFmpegDemuxer::Stop(const base::Closure& callback) {
+void FFmpegDemuxer::Stop() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   url_protocol_->Abort();
   data_source_->Stop();
@@ -573,7 +573,6 @@ void FFmpegDemuxer::Stop(const base::Closure& callback) {
   }
 
   data_source_ = NULL;
-  task_runner_->PostTask(FROM_HERE, callback);
 }
 
 void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {

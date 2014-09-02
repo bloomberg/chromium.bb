@@ -36,7 +36,7 @@ class MockDemuxer : public Demuxer {
                void(DemuxerHost* host, const PipelineStatusCB& cb, bool));
   MOCK_METHOD1(SetPlaybackRate, void(float playback_rate));
   MOCK_METHOD2(Seek, void(base::TimeDelta time, const PipelineStatusCB& cb));
-  MOCK_METHOD1(Stop, void(const base::Closure& callback));
+  MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(OnAudioRendererDisabled, void());
   MOCK_METHOD1(GetStream, DemuxerStream*(DemuxerStream::Type));
   MOCK_CONST_METHOD0(GetTimelineOffset, base::Time());
