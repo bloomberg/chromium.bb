@@ -38,8 +38,8 @@ HISTOGRAM_REGEX = re.compile(r"""
     \w*            # Match the rest of the macro name, e.g. '_ENUMERATION'
     \(             # Match the opening parenthesis for the macro
     \s*            # Match any whitespace -- especially, any newlines
-    ([^,]*)        # Capture the first parameter to the macro
-    ,              # Match the comma that delineates the first parameter
+    ([^,)]*)       # Capture the first parameter to the macro
+    [,)]           # Match the comma/paren that delineates the first parameter
     """, re.VERBOSE)
 
 
@@ -111,10 +111,6 @@ def logNonLiteralHistogram(filename, histogram):
   # Ignore histogram macros, which typically contain backslashes so that they
   # can be formatted across lines.
   if '\\' in histogram:
-    return
-
-  # Field trials are unique within a session, so are effectively constants.
-  if histogram.startswith('base::FieldTrial::MakeName'):
     return
 
   # Ignore histogram names that have been pulled out into C++ constants.
