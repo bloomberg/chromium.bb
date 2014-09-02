@@ -1436,6 +1436,12 @@ class VideoPlayerBrowserTestBase : public FileManagerBrowserTestBase {
     FileManagerBrowserTestBase::SetUp();
   }
 
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(
+        chromeos::switches::kEnableVideoPlayerChromecastSupport);
+    FileManagerBrowserTestBase::SetUpCommandLine(command_line);
+  }
+
   virtual std::string OnMessage(const std::string& name,
                                 const base::Value* value) OVERRIDE;
 

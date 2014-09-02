@@ -13,12 +13,13 @@
  */
 function openSingleVideo(volumeName, volumeType) {
   var entries = [ENTRIES.world];
-  return launch(volumeName, volumeType, entries).then(function(videoPlayer) {
+  return launch(volumeName, volumeType, entries).then(function(args) {
+    var videoPlayer = args[1];
     chrome.test.assertTrue(videoPlayer.hasAttribute('first-video'));
     chrome.test.assertTrue(videoPlayer.hasAttribute('last-video'));
     chrome.test.assertFalse(videoPlayer.hasAttribute('multiple'));
     chrome.test.assertFalse(videoPlayer.hasAttribute('disabled'));
-    return videoPlayer;
+    return args;
   });
 }
 
@@ -28,7 +29,8 @@ function openSingleVideo(volumeName, volumeType) {
  */
 function openSingleVideoOnDownloads() {
   var test = openSingleVideo('local', VolumeManagerCommon.VolumeType.DOWNLOADS);
-  return test.then(function(videoPlayer) {
+  return test.then(function(args) {
+    var videoPlayer = args[1];
     chrome.test.assertFalse(videoPlayer.hasAttribute('cast-available'));
   });
 }
@@ -39,8 +41,13 @@ function openSingleVideoOnDownloads() {
  */
 function openSingleVideoOnDrive() {
   var test = openSingleVideo('drive', VolumeManagerCommon.VolumeType.DRIVE);
-  return test.then(function(videoPlayer) {
-    // TODO(yoshiki): flip this after launching the feature.
+  return test.then(function(args) {
+    var appWindow = args[0];
+    var videoPlayer = args[1];
     chrome.test.assertFalse(videoPlayer.hasAttribute('cast-available'));
+
+    // Loads cast extension and wait for available cast.
+    loadMockCastExtesntion(appWindow);
+    return waitForElement(appWindow, '#video-player[cast-available]');
   });
 }

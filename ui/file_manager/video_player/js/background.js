@@ -84,9 +84,13 @@ function open(videos) {
     // Stores the window for test purpose.
     appWindowsForTest[videos[0].entry.name] = createdWindow;
 
-    createdWindow.setIcon('images/icon/video-player-64.png');
     createdWindow.contentWindow.videos = videos;
-    chrome.runtime.sendMessage({ready: true}, function() {});
+    createdWindow.setIcon('images/icon/video-player-64.png');
+
+    if (chrome.test)
+      createdWindow.contentWindow.loadMockCastExtensionForTest = true;
+
+    chrome.runtime.sendMessage({ready: true});
   }).catch(function(error) {
     console.error('Launch failed', error.stack || error);
     return Promise.reject(error);

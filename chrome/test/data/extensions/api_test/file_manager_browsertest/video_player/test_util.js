@@ -17,7 +17,6 @@
  * @return {Promise} Promise to be fulfilled with the video player element.
  */
 function launch(testVolumeName, volumeType, entries, opt_selected) {
-
   var entriesPromise = addEntries([testVolumeName], entries).then(function() {
     var selectedEntries = opt_selected || entries;
     return getFilesUnderVolume(
@@ -33,11 +32,31 @@ function launch(testVolumeName, volumeType, entries, opt_selected) {
       appWindow = appWindowsForTest[entries[0].name];
     });
   }).then(function() {
+    return waitForElement(appWindow, 'body').then(function() {
+      var script = document.createElement('script');
+      script.src =
+          'chrome-extension://ljoplibgfehghmibaoaepfagnmbbfiga/' +
+          'video_player/test_helper_on_ui_page.js';
+      appWindow.contentWindow.document.body.appendChild(script);
+    });
+  }).then(function() {
     return Promise.all([
       waitForElement(appWindow, '#video-player[first-video][last-video]'),
       waitForElement(appWindow, '.play.media-button[state="playing"]'),
     ]).then(function(args) {
-      return args[0];
+      return [appWindow, args[0]];
     });
   });
+}
+
+/**
+ * Loads the mock cast extension to the content page.
+ * @param {AppWindow} appWindow The target video player window.
+ */
+function loadMockCastExtesntion(appWindow) {
+  var script = document.createElement('script');
+  script.src =
+      'chrome-extension://ljoplibgfehghmibaoaepfagnmbbfiga/' +
+      'cast_extension_mock/load.js';
+  appWindow.contentWindow.document.body.appendChild(script);
 }
