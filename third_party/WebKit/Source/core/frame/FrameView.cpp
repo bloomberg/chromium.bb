@@ -784,6 +784,9 @@ void FrameView::layout(bool allowSubtree)
     // Every scroll that happens during layout is programmatic.
     TemporaryChange<bool> changeInProgrammaticScroll(m_inProgrammaticScroll, true);
 
+    if (m_autoSizeInfo)
+        m_autoSizeInfo->autoSizeIfNeeded();
+
     m_hasPendingLayout = false;
     DocumentLifecycle::Scope lifecycleScope(lifecycle(), DocumentLifecycle::LayoutClean);
 
@@ -834,8 +837,6 @@ void FrameView::layout(bool allowSubtree)
             }
         }
         updateCounters();
-        if (m_autoSizeInfo)
-            m_autoSizeInfo->autoSizeIfNeeded();
 
         ScrollbarMode hMode;
         ScrollbarMode vMode;

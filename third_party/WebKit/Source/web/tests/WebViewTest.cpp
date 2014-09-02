@@ -82,6 +82,7 @@
 #include <gtest/gtest.h>
 
 using namespace blink;
+using blink::FrameTestHelpers::loadFrame;
 using blink::FrameTestHelpers::runPendingTasks;
 using blink::URLTestHelpers::toKURL;
 
@@ -2167,5 +2168,21 @@ TEST_F(WebViewTest, CompareSelectAllToContentAsText)
     std::string expected = frame->contentAsText(kMaxOutputCharacters).utf8();
     EXPECT_EQ(expected, actual);
 }
+
+TEST_F(WebViewTest, AutoResizeSubtreeLayout)
+{
+    std::string url = m_baseURL + "subtree-layout.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "subtree-layout.html");
+    WebView* webView = m_webViewHelper.initialize(true);
+
+    webView->enableAutoResizeMode(WebSize(200, 200), WebSize(200, 200));
+    loadFrame(webView->mainFrame(), url);
+
+    blink::FrameView* frameView = m_webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
+
+    // Auto-resizing used to ASSERT(needsLayout()) in RenderBlockFlow::layout. This EXPECT is
+    // merely a dummy. The real test is that we don't trigger asserts in debug builds.
+    EXPECT_FALSE(frameView->needsLayout());
+};
 
 } // namespace
