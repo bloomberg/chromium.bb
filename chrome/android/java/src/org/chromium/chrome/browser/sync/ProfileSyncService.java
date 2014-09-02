@@ -7,11 +7,11 @@ package org.chromium.chrome.browser.sync;
 import android.content.Context;
 import android.util.Log;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.sync.internal_api.pub.SyncDecryptionPassphraseType;
 import org.chromium.sync.internal_api.pub.base.ModelType;
@@ -508,6 +508,7 @@ public class ProfileSyncService {
      * @return The difference measured in microseconds, between last sync cycle completion time
      * and 1 January 1970 00:00:00 UTC.
      */
+    @VisibleForTesting
     public long getLastSyncedTimeForTest() {
         return nativeGetLastSyncedTimeForTest(mNativeProfileSyncServiceAndroid);
     }

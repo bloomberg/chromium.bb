@@ -7,9 +7,8 @@ package org.chromium.chrome.browser.infobar;
 import android.content.Context;
 import android.view.View;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.base.CalledByNative;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 
 /**
@@ -199,6 +198,7 @@ public abstract class InfoBar implements InfoBarView {
     /**
      * @return The content view for the info bar.
      */
+    @VisibleForTesting
     public ContentWrapperView getContentWrapper() {
         return getContentWrapper(true);
     }

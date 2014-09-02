@@ -47,8 +47,6 @@ import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CommandLine;
@@ -56,6 +54,7 @@ import org.chromium.base.JNINamespace;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.content.R;
 import org.chromium.content.browser.ScreenOrientationListener.ScreenOrientationObserver;
 import org.chromium.content.browser.accessibility.AccessibilityInjector;
@@ -947,7 +946,9 @@ public class ContentViewCore
     public int getPhysicalBackingHeightPix() { return mPhysicalBackingHeightPix; }
 
     /* TODO(aelias): Remove these when downstream callers disappear. */
+    @VisibleForTesting
     public int getViewportSizeOffsetWidthPix() { return 0; }
+    @VisibleForTesting
     public int getViewportSizeOffsetHeightPix() { return getTopControlsLayoutHeightPix(); }
 
     /**
@@ -1000,6 +1001,7 @@ public class ContentViewCore
      * of bounds.
      * @param offset The offset into the navigation history.
      */
+    @VisibleForTesting
     public void goToOffset(int offset) {
         if (mWebContents != null) mWebContents.getNavigationController().goToOffset(offset);
     }
@@ -1421,6 +1423,7 @@ public class ContentViewCore
      * @return The ID of the renderer process that backs this tab or
      *         {@link #INVALID_RENDER_PROCESS_PID} if there is none.
      */
+    @VisibleForTesting
     public int getCurrentRenderProcessId() {
         return nativeGetCurrentRenderProcessId(mNativeContentViewCore);
     }
@@ -2385,14 +2388,17 @@ public class ContentViewCore
     private PopupTouchHandleDrawable createPopupTouchHandleDrawable() {
         if (mTouchHandleDelegate == null) {
             mTouchHandleDelegate = new PopupTouchHandleDrawableDelegate() {
+                @Override
                 public View getParent() {
                     return getContainerView();
                 }
 
+                @Override
                 public PositionObserver getParentPositionObserver() {
                     return mPositionObserver;
                 }
 
+                @Override
                 public boolean onTouchHandleEvent(MotionEvent event) {
                     final boolean isTouchHandleEvent = true;
                     return onTouchEventImpl(event, isTouchHandleEvent);
@@ -2432,6 +2438,7 @@ public class ContentViewCore
         if (mPastePopupMenu == null) {
             mPastePopupMenu = new PastePopupMenu(getContainerView(),
                 new PastePopupMenuDelegate() {
+                    @Override
                     public void paste() {
                         mImeAdapter.paste();
                         hideTextHandles();
@@ -2675,6 +2682,7 @@ public class ContentViewCore
      * Return the current scale of the ContentView.
      * @return The current page scale factor.
      */
+    @VisibleForTesting
     public float getScale() {
         return mRenderCoordinates.getPageScaleFactor();
     }

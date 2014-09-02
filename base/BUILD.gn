@@ -1407,6 +1407,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/ActivityState.java",
       "android/java/src/org/chromium/base/ApplicationStatus.java",
       "android/java/src/org/chromium/base/ApiCompatibilityUtils.java",
+      "android/java/src/org/chromium/base/VisibleForTesting.java",
     ]
 
     # A new version of NativeLibraries.java (with the actual correct values)

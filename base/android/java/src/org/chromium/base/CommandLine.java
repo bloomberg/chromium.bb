@@ -126,6 +126,7 @@ public abstract class CommandLine {
      * Resets both the java proxy and the native command lines. This allows the entire
      * command line initialization to be re-run including the call to onJniLoaded.
      */
+    @VisibleForTesting
     public static void reset() {
         setInstance(null);
     }

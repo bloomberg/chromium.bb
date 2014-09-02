@@ -82,6 +82,7 @@ public class PerfTraceEvent {
      *
      * @param strings Event names we will record.
      */
+    @VisibleForTesting
     public static synchronized void setFilter(List<String> strings) {
         sFilter = new LinkedList<String>(strings);
     }
@@ -90,6 +91,7 @@ public class PerfTraceEvent {
      * Enable or disable perf tracing.
      * Disabling of perf tracing will dump trace data to the system log.
      */
+    @VisibleForTesting
     public static synchronized void setEnabled(boolean enabled) {
         if (sEnabled == enabled) {
             return;
@@ -118,6 +120,7 @@ public class PerfTraceEvent {
      *
      * @param enabled Whether to enable memory tracking for all perf events.
      */
+    @VisibleForTesting
     public static synchronized void setMemoryTrackingEnabled(boolean enabled) {
         sTrackMemory = enabled;
     }
@@ -134,6 +137,7 @@ public class PerfTraceEvent {
      *
      * @param enabled Whether to enable timing tracking for all perf events.
      */
+    @VisibleForTesting
     public static synchronized void setTimingTrackingEnabled(boolean enabled) {
         sTrackTiming = enabled;
     }
@@ -143,6 +147,7 @@ public class PerfTraceEvent {
      * It is safe to call trace methods without checking if PerfTraceEvent
      * is enabled.
      */
+    @VisibleForTesting
     public static synchronized boolean enabled() {
         return sEnabled;
     }
@@ -164,6 +169,7 @@ public class PerfTraceEvent {
      * Record an "begin" perf trace event.
      * Begin trace events should have a matching end event.
      */
+    @VisibleForTesting
     public static synchronized void begin(String name) {
         final long eventId = name.hashCode();
         TraceEvent.startAsync(name, eventId);
@@ -185,6 +191,7 @@ public class PerfTraceEvent {
      * time delta between begin and end is usually interesting to
      * graph code.
      */
+    @VisibleForTesting
     public static synchronized void end(String name) {
         final long eventId = name.hashCode();
         TraceEvent.finishAsync(name, eventId);
@@ -205,6 +212,7 @@ public class PerfTraceEvent {
      * Record an "begin" memory trace event.
      * Begin trace events should have a matching end event.
      */
+    @VisibleForTesting
     public static synchronized void begin(String name, MemoryInfo memoryInfo) {
         final long eventId = name.hashCode();
         TraceEvent.startAsync(name, eventId);
@@ -225,6 +233,7 @@ public class PerfTraceEvent {
      * memory usage delta between begin and end is usually interesting to
      * graph code.
      */
+    @VisibleForTesting
     public static synchronized void end(String name, MemoryInfo memoryInfo) {
         final long eventId = name.hashCode();
         TraceEvent.finishAsync(name, eventId);
@@ -333,6 +342,7 @@ public class PerfTraceEvent {
      * @param file Which file to append the performance data to.  If {@code null}, the performance
      *             data will be sent to STDOUT.
      */
+    @VisibleForTesting
     public static synchronized void setOutputFile(File file) {
         sOutputFile = file;
     }

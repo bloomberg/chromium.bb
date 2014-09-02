@@ -16,9 +16,8 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.base.CalledByNative;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
@@ -151,6 +150,7 @@ public class InfoBarContainer extends ScrollView {
         return mLinearLayout;
     }
 
+    @VisibleForTesting
     public void setAnimationListener(InfoBarAnimationListener listener) {
         mAnimationListener = listener;
     }

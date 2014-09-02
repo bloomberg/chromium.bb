@@ -14,6 +14,7 @@ import android.view.View;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItemDelegate;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
@@ -305,6 +306,7 @@ public class Tab implements NavigationClient {
      * @param context   An instance of a {@link Context}.
      * @param window    An instance of a {@link WindowAndroid}.
      */
+    @VisibleForTesting
     public Tab(boolean incognito, Context context, WindowAndroid window) {
         this(INVALID_TAB_ID, incognito, context, window);
     }
