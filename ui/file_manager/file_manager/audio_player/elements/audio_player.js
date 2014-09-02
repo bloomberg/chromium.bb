@@ -261,15 +261,29 @@ Polymer('audio-player', {
    */
   scheduleAutoAdvance_: function(forward, repeat) {
     this.cancelAutoAdvance_();
-    this.autoAdvanceTimer_ = setTimeout(
+    var currentTrackIndex = this.currentTrackIndex;
+
+    var timerId = setTimeout(
         function() {
+          // If the other timer is scheduled, do nothing.
+          if (this.autoAdvanceTimer_ !== timerId)
+            return;
+
           this.autoAdvanceTimer_ = null;
+
+          // If the track has been changed since the advance was scheduled, do
+          // nothing.
+          if (this.currentTrackIndex !== currentTrackIndex)
+            return;
+
           // We are advancing only if the next track is not known to be invalid.
           // This prevents an endless auto-advancing in the case when all tracks
           // are invalid (we will only visit each track once).
           this.advance_(forward, repeat, true /* only if valid */);
         }.bind(this),
         3000);
+
+    this.autoAdvanceTimer_ = timerId;
   },
 
   /**
