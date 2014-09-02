@@ -89,7 +89,8 @@ void DidVisibilityChange(cc::LayerTreeHostImpl* id, bool visible) {
   TRACE_EVENT_ASYNC_END0("webkit", "LayerTreeHostImpl::SetVisible", id);
 }
 
-size_t GetMaxTransferBufferUsageBytes(cc::ContextProvider* context_provider) {
+size_t GetMaxTransferBufferUsageBytes(cc::ContextProvider* context_provider,
+                                      double refresh_rate) {
   // Software compositing should not use this value in production. Just use a
   // default value when testing uploads with the software compositor.
   if (!context_provider)
@@ -100,13 +101,20 @@ size_t GetMaxTransferBufferUsageBytes(cc::ContextProvider* context_provider) {
   // the pipeline.
   // For reference Chromebook Pixel can upload 1MB in about 0.5ms.
   const size_t kMaxBytesUploadedPerMs = 1024 * 1024 * 2;
-  // Assuming a two frame deep pipeline between CPU and GPU and we are
-  // drawing 60 frames per second which would require us to draw one
-  // frame in 16 milliseconds.
-  const size_t kMaxTransferBufferUsageBytes = 16 * 2 * kMaxBytesUploadedPerMs;
+
+  // We need to upload at least enough work to keep the GPU process busy until
+  // the next time it can handle a request to start more uploads from the
+  // compositor. We assume that it will pick up any sent upload requests within
+  // the time of a vsync, since the browser will want to swap a frame within
+  // that time interval, and then uploads should have a chance to be processed.
+  size_t ms_per_frame = std::floor(1000.0 / refresh_rate);
+  size_t max_transfer_buffer_usage_bytes =
+      ms_per_frame * kMaxBytesUploadedPerMs;
+
+  // The context may request a lower limit based on the device capabilities.
   return std::min(
       context_provider->ContextCapabilities().max_transfer_buffer_usage_bytes,
-      kMaxTransferBufferUsageBytes);
+      max_transfer_buffer_usage_bytes);
 }
 
 unsigned GetMapImageTextureTarget(cc::ContextProvider* context_provider) {
@@ -1939,7 +1947,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
 
   ContextProvider* context_provider = output_surface_->context_provider();
   transfer_buffer_memory_limit_ =
-      GetMaxTransferBufferUsageBytes(context_provider);
+      GetMaxTransferBufferUsageBytes(context_provider, settings_.refresh_rate);
 
   if (use_gpu_rasterization_ && context_provider) {
     resource_pool_ =
@@ -2065,9 +2073,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
     EnforceZeroBudget(true);
 
   CreateAndSetRenderer();
-
-  transfer_buffer_memory_limit_ =
-      GetMaxTransferBufferUsageBytes(output_surface_->context_provider());
 
   if (settings_.impl_side_painting)
     CreateAndSetTileManager();
