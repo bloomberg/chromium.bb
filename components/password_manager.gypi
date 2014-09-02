@@ -199,26 +199,6 @@
           ],
         },
         {
-          # GN version: //components/password_manager/core/browser:test_support
-          'target_name': 'password_manager_content_renderer_test_support',
-          'type': 'static_library',
-          'dependencies': [
-            'password_manager_content_common',
-            '../base/base.gyp:base',
-            '../testing/gmock.gyp:gmock',
-            '../testing/gtest.gyp:gtest',
-            '../third_party/WebKit/public/blink.gyp:blink',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            # Note: sources list duplicated in GN build.
-            'password_manager/content/renderer/test_credential_manager_client.cc',
-            'password_manager/content/renderer/test_credential_manager_client.h',
-          ],
-        },
-        {
           # GN version: //components/password_manager/content/browser
           'target_name': 'password_manager_content_browser',
           'type': 'static_library',

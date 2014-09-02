@@ -4,9 +4,7 @@
 
 #include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/content/renderer/credential_manager_client.h"
-#include "components/password_manager/content/renderer/test_credential_manager_client.h"
-#include "content/public/test/mock_render_thread.h"
-#include "content/test/blink_test_environment.h"
+#include "content/public/test/render_view_test.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebCredential.h"
@@ -17,22 +15,24 @@ namespace password_manager {
 
 namespace {
 
-class CredentialManagerClientTest : public testing::Test {
+class CredentialManagerClientTest : public content::RenderViewTest {
  public:
   CredentialManagerClientTest()
-      : callback_errored_(false),
-        callback_succeeded_(false) {
-    blink::WebString string = blink::WebString::fromUTF8("");
-    GURL url("https://example.com/image");
-    credential_.reset(new blink::WebCredential(string, string, url));
-  }
+      : callback_errored_(false), callback_succeeded_(false) {}
   virtual ~CredentialManagerClientTest() {}
 
-  static void SetUpTestCase() { content::SetUpBlinkTestEnvironment(); }
+  virtual void SetUp() OVERRIDE {
+    content::RenderViewTest::SetUp();
+    credential_.reset(new blink::WebCredential("", "", GURL()));
+    client_.reset(new CredentialManagerClient(view_));
+  }
 
-  static void TearDownTestCase() { content::TearDownBlinkTestEnvironment(); }
+  virtual void TearDown() OVERRIDE {
+    credential_.reset();
+    content::RenderViewTest::TearDown();
+  }
 
-  IPC::TestSink& sink() { return render_thread_.sink(); }
+  IPC::TestSink& sink() { return render_thread_->sink(); }
 
   blink::WebCredential* credential() { return credential_.get(); }
 
@@ -91,8 +91,7 @@ class CredentialManagerClientTest : public testing::Test {
   void set_callback_succeeded(bool state) { callback_succeeded_ = state; }
 
  protected:
-  content::MockRenderThread render_thread_;
-  TestCredentialManagerClient client_;
+  scoped_ptr<CredentialManagerClient> client_;
 
   // True if a message's callback's 'onSuccess'/'onError' methods were called,
   // false otherwise. We put these on the test object rather than on the
@@ -109,8 +108,7 @@ class TestNotificationCallbacks
     : public blink::WebCredentialManagerClient::NotificationCallbacks {
  public:
   explicit TestNotificationCallbacks(CredentialManagerClientTest* test)
-      : test_(test) {
-  }
+      : test_(test) {}
 
   virtual ~TestNotificationCallbacks() {}
 
@@ -128,8 +126,7 @@ class TestRequestCallbacks
     : public blink::WebCredentialManagerClient::RequestCallbacks {
  public:
   explicit TestRequestCallbacks(CredentialManagerClientTest* test)
-      : test_(test) {
-  }
+      : test_(test) {}
 
   virtual ~TestRequestCallbacks() {}
 
@@ -154,12 +151,12 @@ TEST_F(CredentialManagerClientTest, SendNotifyFailedSignIn) {
 
   scoped_ptr<TestNotificationCallbacks> callbacks(
       new TestNotificationCallbacks(this));
-  client_.dispatchFailedSignIn(*credential(), callbacks.release());
+  client_->dispatchFailedSignIn(*credential(), callbacks.release());
 
   EXPECT_TRUE(ExtractRequestId(CredentialManagerHostMsg_NotifyFailedSignIn::ID,
                                request_id));
 
-  client_.OnAcknowledgeFailedSignIn(request_id);
+  client_->OnAcknowledgeFailedSignIn(request_id);
   EXPECT_TRUE(callback_succeeded());
   EXPECT_FALSE(callback_errored());
 }
@@ -171,12 +168,12 @@ TEST_F(CredentialManagerClientTest, SendNotifySignedIn) {
 
   scoped_ptr<TestNotificationCallbacks> callbacks(
       new TestNotificationCallbacks(this));
-  client_.dispatchSignedIn(*credential(), callbacks.release());
+  client_->dispatchSignedIn(*credential(), callbacks.release());
 
   EXPECT_TRUE(ExtractRequestId(CredentialManagerHostMsg_NotifySignedIn::ID,
                                request_id));
 
-  client_.OnAcknowledgeSignedIn(request_id);
+  client_->OnAcknowledgeSignedIn(request_id);
   EXPECT_TRUE(callback_succeeded());
   EXPECT_FALSE(callback_errored());
 }
@@ -188,12 +185,12 @@ TEST_F(CredentialManagerClientTest, SendNotifySignedOut) {
 
   scoped_ptr<TestNotificationCallbacks> callbacks(
       new TestNotificationCallbacks(this));
-  client_.dispatchSignedOut(callbacks.release());
+  client_->dispatchSignedOut(callbacks.release());
 
   EXPECT_TRUE(ExtractRequestId(CredentialManagerHostMsg_NotifySignedOut::ID,
                                request_id));
 
-  client_.OnAcknowledgeSignedOut(request_id);
+  client_->OnAcknowledgeSignedOut(request_id);
   EXPECT_TRUE(callback_succeeded());
   EXPECT_FALSE(callback_errored());
 }
@@ -205,13 +202,13 @@ TEST_F(CredentialManagerClientTest, SendRequestCredential) {
 
   scoped_ptr<TestRequestCallbacks> callbacks(new TestRequestCallbacks(this));
   std::vector<GURL> federations;
-  client_.dispatchRequest(false, federations, callbacks.release());
+  client_->dispatchRequest(false, federations, callbacks.release());
 
   EXPECT_TRUE(ExtractRequestId(CredentialManagerHostMsg_RequestCredential::ID,
                                request_id));
 
   CredentialInfo info;
-  client_.OnSendCredential(request_id, info);
+  client_->OnSendCredential(request_id, info);
   EXPECT_TRUE(callback_succeeded());
   EXPECT_FALSE(callback_errored());
 }

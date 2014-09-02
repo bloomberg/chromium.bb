@@ -6,7 +6,6 @@
 
 #include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/content/common/credential_manager_types.h"
-#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/platform/WebCredential.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerError.h"
@@ -31,43 +30,17 @@ void ClearCallbacksMapWithErrors(T* callbacks_map) {
 
 }  // namespace
 
-CredentialManagerClient::CredentialManagerClient()
-    : routing_id_(MSG_ROUTING_NONE),
-      render_thread_(content::RenderThread::Get()) {
-  DCHECK(render_thread_);
+CredentialManagerClient::CredentialManagerClient(
+    content::RenderView* render_view)
+    : content::RenderViewObserver(render_view) {
+  render_view->GetWebView()->setCredentialManagerClient(this);
 }
 
 CredentialManagerClient::~CredentialManagerClient() {
-  DisconnectFromRenderThread();
-
   ClearCallbacksMapWithErrors(&failed_sign_in_callbacks_);
   ClearCallbacksMapWithErrors(&signed_in_callbacks_);
   ClearCallbacksMapWithErrors(&signed_out_callbacks_);
   ClearCallbacksMapWithErrors(&request_callbacks_);
-}
-
-void CredentialManagerClient::OnRenderViewCreated(
-    content::RenderView* render_view) {
-  render_view->GetWebView()->setCredentialManagerClient(this);
-}
-
-void CredentialManagerClient::OnRenderProcessShutdown() {
-  DisconnectFromRenderThread();
-}
-
-int CredentialManagerClient::GetRoutingID() {
-  if (render_thread_ && routing_id_ == MSG_ROUTING_NONE) {
-    routing_id_ = render_thread_->GenerateRoutingID();
-    render_thread_->AddRoute(routing_id_, this);
-  }
-  return routing_id_;
-}
-
-void CredentialManagerClient::DisconnectFromRenderThread() {
-  if (render_thread_ && routing_id_ != MSG_ROUTING_NONE)
-    render_thread_->RemoveRoute(routing_id_);
-  render_thread_ = NULL;
-  routing_id_ = MSG_ROUTING_NONE;
 }
 
 // -----------------------------------------------------------------------------
@@ -119,10 +92,8 @@ void CredentialManagerClient::dispatchFailedSignIn(
   int request_id = failed_sign_in_callbacks_.Add(callbacks);
   CredentialInfo info(
       credential.id(), credential.name(), credential.avatarURL());
-  if (render_thread_) {
-    render_thread_->Send(new CredentialManagerHostMsg_NotifyFailedSignIn(
-        GetRoutingID(), request_id, info));
-  }
+  Send(new CredentialManagerHostMsg_NotifyFailedSignIn(
+      routing_id(), request_id, info));
 }
 
 void CredentialManagerClient::dispatchSignedIn(
@@ -131,19 +102,14 @@ void CredentialManagerClient::dispatchSignedIn(
   int request_id = signed_in_callbacks_.Add(callbacks);
   CredentialInfo info(
       credential.id(), credential.name(), credential.avatarURL());
-  if (render_thread_) {
-    render_thread_->Send(new CredentialManagerHostMsg_NotifySignedIn(
-        GetRoutingID(), request_id, info));
-  }
+  Send(new CredentialManagerHostMsg_NotifySignedIn(
+      routing_id(), request_id, info));
 }
 
 void CredentialManagerClient::dispatchSignedOut(
     NotificationCallbacks* callbacks) {
   int request_id = signed_out_callbacks_.Add(callbacks);
-  if (render_thread_) {
-    render_thread_->Send(new CredentialManagerHostMsg_NotifySignedOut(
-        GetRoutingID(), request_id));
-  }
+  Send(new CredentialManagerHostMsg_NotifySignedOut(routing_id(), request_id));
 }
 
 void CredentialManagerClient::dispatchRequest(
@@ -154,10 +120,8 @@ void CredentialManagerClient::dispatchRequest(
   std::vector<GURL> federation_vector;
   for (size_t i = 0; i < std::min(federations.size(), kMaxFederations); ++i)
     federation_vector.push_back(federations[i]);
-  if (render_thread_) {
-    render_thread_->Send(new CredentialManagerHostMsg_RequestCredential(
-        GetRoutingID(), request_id, zeroClickOnly, federation_vector));
-  }
+  Send(new CredentialManagerHostMsg_RequestCredential(
+      routing_id(), request_id, zeroClickOnly, federation_vector));
 }
 
 void CredentialManagerClient::RespondToNotificationCallback(

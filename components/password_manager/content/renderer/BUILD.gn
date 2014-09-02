@@ -17,26 +17,13 @@ static_library("renderer") {
   ]
 }
 
-static_library("test_support") {
+source_set("browser_tests") {
   sources = [
-    "test_credential_manager_client.cc",
-    "test_credential_manager_client.h",
-  ]
-
-  deps = [
-    "//testing/gmock",
-    "//third_party/WebKit/public:blink",
-  ]
-}
-
-source_set("unit_tests") {
-  sources = [
-    "credential_manager_client_unittest.cc"
+    "credential_manager_client_browsertest.cc"
   ]
 
   deps = [
     ":renderer",
-    ":test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/public:blink",

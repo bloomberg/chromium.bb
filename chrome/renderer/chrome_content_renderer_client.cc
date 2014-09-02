@@ -319,9 +319,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #endif
   search_bouncer_.reset(new SearchBouncer());
 
-  credential_manager_client_.reset(
-      new password_manager::CredentialManagerClient());
-
   thread->AddObserver(chrome_observer_.get());
   thread->AddObserver(extension_dispatcher_.get());
 #if defined(FULL_SAFE_BROWSING)
@@ -330,7 +327,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   thread->AddObserver(visited_link_slave_.get());
   thread->AddObserver(prerender_dispatcher_.get());
   thread->AddObserver(search_bouncer_.get());
-  thread->AddObserver(credential_manager_client_.get());
 
 #if defined(ENABLE_WEBRTC)
   thread->AddFilter(webrtc_logging_message_filter_.get());
@@ -507,8 +503,7 @@ void ChromeContentRendererClient::RenderViewCreated(
 
   new ChromeRenderViewObserver(render_view, chrome_observer_.get());
 
-  if (credential_manager_client_)
-    credential_manager_client_->OnRenderViewCreated(render_view);
+  new password_manager::CredentialManagerClient(render_view);
 }
 
 void ChromeContentRendererClient::SetNumberOfViews(int number_of_views) {

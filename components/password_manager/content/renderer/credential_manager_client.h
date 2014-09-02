@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
-#include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "ipc/ipc_listener.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerClient.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -45,19 +45,12 @@ struct CredentialInfo;
 // CredentialManagerClient (set in 'OnRenderViewCreated()'). The client is
 // guaranteed to outlive the views that point to it.
 class CredentialManagerClient : public blink::WebCredentialManagerClient,
-                                public content::RenderProcessObserver,
-                                public IPC::Listener {
+                                public content::RenderViewObserver {
  public:
-  CredentialManagerClient();
+  explicit CredentialManagerClient(content::RenderView* render_view);
   virtual ~CredentialManagerClient();
 
-  // When a RenderView is created, we need to set this object as its client.
-  void OnRenderViewCreated(content::RenderView*);
-
-  // content::RenderProcessObserver:
-  virtual void OnRenderProcessShutdown() OVERRIDE;
-
-  // IPC::Listener:
+  // RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Message handlers for messages from the browser process:
@@ -80,9 +73,6 @@ class CredentialManagerClient : public blink::WebCredentialManagerClient,
       const blink::WebVector<blink::WebURL>& federations,
       RequestCallbacks* callbacks) OVERRIDE;
 
- protected:
-  virtual int GetRoutingID();
-
  private:
   typedef IDMap<blink::WebCredentialManagerClient::RequestCallbacks,
                 IDMapOwnPointer> RequestCallbacksMap;
@@ -91,13 +81,6 @@ class CredentialManagerClient : public blink::WebCredentialManagerClient,
 
   void RespondToNotificationCallback(int request_id,
                                      NotificationCallbacksMap* map);
-
-  // Nulls out the raw pointer to |render_thread_| after ensuring that any
-  // message routing is removed.
-  void DisconnectFromRenderThread();
-
-  int routing_id_;
-  content::RenderThread* render_thread_;
 
   // Track the various blink::WebCredentialManagerClient::*Callbacks objects
   // generated from Blink. This class takes ownership of these objects.
