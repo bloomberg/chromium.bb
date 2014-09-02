@@ -62,6 +62,7 @@ const int kDragBufferPx = 20;
 // Padding space in pixels for fixed layout.
 const int kLeftRightPadding = 20;
 const int kTopPadding = 1;
+const int kBottomPadding = 24;
 
 // Padding space in pixels between pages.
 const int kPagePadding = 40;
@@ -372,8 +373,10 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate)
           : PaginationController::SCROLL_AXIS_HORIZONTAL;
   pagination_controller_.reset(
       new PaginationController(&pagination_model_, scroll_axis));
-  page_switcher_view_ = new PageSwitcher(&pagination_model_);
-  AddChildView(page_switcher_view_);
+  if (!switches::IsExperimentalAppListEnabled()) {
+    page_switcher_view_ = new PageSwitcher(&pagination_model_);
+    AddChildView(page_switcher_view_);
+  }
 }
 
 AppsGridView::~AppsGridView() {
@@ -622,10 +625,12 @@ void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {
   else
     StopPageFlipTimer();
 
-  gfx::Point page_switcher_point(last_drag_point_);
-  views::View::ConvertPointToTarget(this, page_switcher_view_,
-                                    &page_switcher_point);
-  page_switcher_view_->UpdateUIForDragPoint(page_switcher_point);
+  if (page_switcher_view_) {
+    gfx::Point page_switcher_point(last_drag_point_);
+    views::View::ConvertPointToTarget(
+        this, page_switcher_view_, &page_switcher_point);
+    page_switcher_view_->UpdateUIForDragPoint(page_switcher_point);
+  }
 
   if (!EnableFolderDragDropUI()) {
     if (last_drop_target != drop_target_)
@@ -875,8 +880,9 @@ gfx::Size AppsGridView::GetPreferredSize() const {
   const gfx::Insets insets(GetInsets());
   const gfx::Size tile_size = gfx::Size(kPreferredTileWidth,
                                         kPreferredTileHeight);
-  const int page_switcher_height =
-      page_switcher_view_->GetPreferredSize().height();
+  int page_switcher_height = kBottomPadding;
+  if (page_switcher_view_)
+    page_switcher_height = page_switcher_view_->GetPreferredSize().height();
   return gfx::Size(
       tile_size.width() * cols_ + insets.width(),
       tile_size.height() * rows_per_page_ +
@@ -911,12 +917,14 @@ void AppsGridView::Layout() {
   }
   views::ViewModelUtils::SetViewBoundsToIdealBounds(pulsing_blocks_model_);
 
-  const int page_switcher_height =
-      page_switcher_view_->GetPreferredSize().height();
-  gfx::Rect rect(GetContentsBounds());
-  rect.set_y(rect.bottom() - page_switcher_height);
-  rect.set_height(page_switcher_height);
-  page_switcher_view_->SetBoundsRect(rect);
+  if (page_switcher_view_) {
+    const int page_switcher_height =
+        page_switcher_view_->GetPreferredSize().height();
+    gfx::Rect rect(GetContentsBounds());
+    rect.set_y(rect.bottom() - page_switcher_height);
+    rect.set_height(page_switcher_height);
+    page_switcher_view_->SetBoundsRect(rect);
+  }
 }
 
 bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -1364,7 +1372,7 @@ void AppsGridView::CalculateDropTarget(const gfx::Point& drag_point,
     current_page = drag_start_page_;
   }
 
-  if (use_page_button_hovering &&
+  if (use_page_button_hovering && page_switcher_view_ &&
       page_switcher_view_->bounds().Contains(point)) {
     gfx::Point page_switcher_point(point);
     views::View::ConvertPointToTarget(this, page_switcher_view_,
@@ -1403,7 +1411,7 @@ void AppsGridView::CalculateDropTargetWithFolderEnabled(
     point = drag_start_grid_view_;
   }
 
-  if (use_page_button_hovering &&
+  if (use_page_button_hovering && page_switcher_view_ &&
       page_switcher_view_->bounds().Contains(point)) {
     gfx::Point page_switcher_point(point);
     views::View::ConvertPointToTarget(this, page_switcher_view_,
@@ -1644,7 +1652,8 @@ void AppsGridView::MaybeStartPageFlipTimer(const gfx::Point& drag_point) {
     StopPageFlipTimer();
   int new_page_flip_target = -1;
 
-  if (page_switcher_view_->bounds().Contains(drag_point)) {
+  if (page_switcher_view_ &&
+      page_switcher_view_->bounds().Contains(drag_point)) {
     gfx::Point page_switcher_point(drag_point);
     views::View::ConvertPointToTarget(this, page_switcher_view_,
                                       &page_switcher_point);
