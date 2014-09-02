@@ -47,21 +47,20 @@
 
 namespace blink {
 
-static inline FrameView* mainFrameView(Page* page)
+static inline FrameView* rootFrameView(Page* page, LocalFrame* rootFrame)
 {
+    if (rootFrame)
+        return rootFrame->view();
     if (!page)
-        return 0;
-    // FIXME: Can we remove this check?
-    if (!page->mainFrame())
         return 0;
     if (!page->mainFrame()->isLocalFrame())
         return 0;
-    return page->deprecatedLocalMainFrame()->view();
+    return toLocalFrame(page->mainFrame())->view();
 }
 
-void PageWidgetDelegate::animate(Page* page, double monotonicFrameBeginTime)
+void PageWidgetDelegate::animate(Page* page, double monotonicFrameBeginTime, LocalFrame* rootFrame)
 {
-    RefPtr<FrameView> view = mainFrameView(page);
+    RefPtr<FrameView> view = rootFrameView(page, rootFrame);
     WTF_LOG(ScriptedAnimationController, "PageWidgetDelegate::animate: view = %d", !view ? 0 : 1);
     if (!view)
         return;
@@ -83,7 +82,7 @@ void PageWidgetDelegate::layout(Page* page, LocalFrame* rootFrame)
     page->animator().updateLayoutAndStyleForPainting(rootFrame);
 }
 
-void PageWidgetDelegate::paint(Page* page, PageOverlayList* overlays, WebCanvas* canvas, const WebRect& rect, CanvasBackground background)
+void PageWidgetDelegate::paint(Page* page, PageOverlayList* overlays, WebCanvas* canvas, const WebRect& rect, CanvasBackground background, LocalFrame* rootFrame)
 {
     if (rect.isEmpty())
         return;
@@ -93,9 +92,8 @@ void PageWidgetDelegate::paint(Page* page, PageOverlayList* overlays, WebCanvas*
     gc.setDeviceScaleFactor(page->deviceScaleFactor());
     IntRect dirtyRect(rect);
     gc.save(); // Needed to save the canvas, not the GraphicsContext.
-    FrameView* view = mainFrameView(page);
-    // FIXME: Can we remove the mainFrame()->document() check?
-    if (view && page->deprecatedLocalMainFrame()->document()) {
+    FrameView* view = rootFrameView(page, rootFrame);
+    if (view) {
         gc.clip(dirtyRect);
         view->paint(&gc, dirtyRect);
         if (overlays)
@@ -106,9 +104,11 @@ void PageWidgetDelegate::paint(Page* page, PageOverlayList* overlays, WebCanvas*
     gc.restore();
 }
 
-bool PageWidgetDelegate::handleInputEvent(Page* page, PageWidgetEventHandler& handler, const WebInputEvent& event)
+bool PageWidgetDelegate::handleInputEvent(Page* page, PageWidgetEventHandler& handler, const WebInputEvent& event, LocalFrame* rootFrame)
 {
-    LocalFrame* frame = page && page->mainFrame()->isLocalFrame() ? page->deprecatedLocalMainFrame() : 0;
+    LocalFrame* frame = rootFrame;
+    if (!frame)
+        frame = page && page->mainFrame()->isLocalFrame() ? toLocalFrame(page->mainFrame()) : 0;
     switch (event.type) {
 
     // FIXME: WebKit seems to always return false on mouse events processing

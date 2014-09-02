@@ -69,10 +69,13 @@ public:
         Opaque,
         Translucent,
     };
-    static void animate(Page*, double monotonicFrameBeginTime);
+    // rootFrame arguments indicate a root localFrame from which to start performing the
+    // specified operation. If rootFrame is 0, these methods will attempt to use the
+    // Page's mainFrame(), if it is a LocalFrame.
+    static void animate(Page*, double monotonicFrameBeginTime, LocalFrame* rootFrame = 0);
     static void layout(Page*, LocalFrame* rootFrame = 0);
-    static void paint(Page*, PageOverlayList*, WebCanvas*, const WebRect&, CanvasBackground);
-    static bool handleInputEvent(Page*, PageWidgetEventHandler&, const WebInputEvent&);
+    static void paint(Page*, PageOverlayList*, WebCanvas*, const WebRect&, CanvasBackground, LocalFrame* rootFrame = 0);
+    static bool handleInputEvent(Page*, PageWidgetEventHandler&, const WebInputEvent&, LocalFrame* rootFrame = 0);
 
 private:
     PageWidgetDelegate() { }
