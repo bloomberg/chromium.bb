@@ -31,6 +31,11 @@ View* RootViewTargeter::FindTargetForGestureEvent(
     return root_view_->gesture_handler_;
   }
 
+  // If no default gesture handler has already been set, do not perform any
+  // targeting for a ET_GESTURE_END event.
+  if (gesture.type() == ui::ET_GESTURE_END)
+    return NULL;
+
   // If rect-based targeting is enabled, use the gesture's bounding box to
   // determine the target. Otherwise use the center point of the gesture's
   // bounding box to determine the target.
@@ -49,6 +54,12 @@ View* RootViewTargeter::FindTargetForGestureEvent(
 ui::EventTarget* RootViewTargeter::FindNextBestTargetForGestureEvent(
     ui::EventTarget* previous_target,
     const ui::GestureEvent& gesture) {
+  // ET_GESTURE_END events should only ever be targeted to the default
+  // gesture handler set by a previous gesture, if one exists. Thus we do not
+  // permit any re-targeting of ET_GESTURE_END events.
+  if (gesture.type() == ui::ET_GESTURE_END)
+    return NULL;
+
   // GESTURE_SCROLL_BEGIN events are always permitted to be re-targeted, even
   // if |allow_gesture_event_retargeting_| is false.
   if (!root_view_->allow_gesture_event_retargeting_ &&

@@ -1973,7 +1973,7 @@ class GestureEventForTest : public ui::GestureEvent {
 // after the dispatch of a ui::ET_GESTURE_END event corresponding to
 // the release of the final touch point on the screen and that
 // ui::ET_GESTURE_END events corresponding to the removal of any other touch
-// point  are never dispatched to a view. Also verifies that
+// point are never dispatched to a view. Also verifies that
 // ui::ET_GESTURE_BEGIN is never dispatched to a view and does not change the
 // value of |gesture_handler_|.
 TEST_F(WidgetTest, GestureBeginAndEndEvents) {
@@ -2025,11 +2025,12 @@ TEST_F(WidgetTest, GestureBeginAndEndEvents) {
 
   // If no gesture handler is set, dispatching only a ui::ET_GESTURE_END
   // event corresponding to the final touch point should not set the gesture
-  // handler, but it should be marked as handled because it was dispatched to
-  // the view targeted by the event's location.
+  // handler. Furthermore, it should not be marked as handled because it was
+  // not dispatched (GESTURE_END events are only dispatched in cases where
+  // a gesture handler is already set).
   end = GestureEventForTest(ui::ET_GESTURE_END, 15, 15);
   widget->OnGestureEvent(&end);
-  EXPECT_TRUE(end.handled());
+  EXPECT_FALSE(end.handled());
   EXPECT_EQ(NULL, GetGestureHandler(root_view));
 
   // If the gesture handler has been set by a previous gesture, then it should
@@ -2387,17 +2388,17 @@ TEST_F(WidgetTest, DisabledGestureEventTarget) {
   v3->SetEnabled(false);
 
   // No gesture handler is set in the root view, so it should remain unset
-  // after a GESTURE_END. The event is first dispatched to |v4| (which does
-  // not want to handle the event) and is then targeted at |v3|. Since |v3|
-  // is disabled, the event is not dispatched but is still marked as handled.
+  // after a GESTURE_END. GESTURE_END events are not dispatched unless
+  // a gesture handler is already set in the root view, so none of the
+  // views should see this event and it should not be marked as handled.
   GestureEventForTest end(ui::ET_GESTURE_END, 5, 5);
   widget->OnGestureEvent(&end);
   EXPECT_EQ(0, v1->GetEventCount(ui::ET_GESTURE_END));
   EXPECT_EQ(0, v2->GetEventCount(ui::ET_GESTURE_END));
   EXPECT_EQ(0, v3->GetEventCount(ui::ET_GESTURE_END));
-  EXPECT_EQ(1, v4->GetEventCount(ui::ET_GESTURE_END));
+  EXPECT_EQ(0, v4->GetEventCount(ui::ET_GESTURE_END));
   EXPECT_EQ(NULL, GetGestureHandler(root_view));
-  EXPECT_TRUE(end.handled());
+  EXPECT_FALSE(end.handled());
   v1->ResetCounts();
   v2->ResetCounts();
   v3->ResetCounts();
