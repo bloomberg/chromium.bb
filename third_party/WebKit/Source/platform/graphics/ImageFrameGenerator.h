@@ -42,6 +42,7 @@
 namespace blink {
 
 class ImageDecoder;
+class ImagePlanes;
 class SharedBuffer;
 
 class PLATFORM_EXPORT ImageDecoderFactory {
@@ -70,6 +71,9 @@ public:
     // Returns true if decoding was successful.
     bool decodeAndScale(const SkImageInfo&, size_t index, void* pixels, size_t rowBytes);
 
+    // Decodes YUV components directly into the provided memory planes.
+    bool decodeToYUV(void* planes[3], size_t rowBytes[3]);
+
     void setData(PassRefPtr<SharedBuffer>, bool allDataReceived);
 
     // Creates a new SharedBuffer containing the data received so far.
@@ -82,6 +86,8 @@ public:
     // FIXME: Return alpha state for each frame.
     bool hasAlpha(size_t);
 
+    bool getYUVComponentSizes(SkISize componentSizes[3]);
+
 private:
     class ExternalMemoryAllocator;
     friend class ImageFrameGeneratorTest;
@@ -89,12 +95,14 @@ private:
     // For testing. |factory| will overwrite the default ImageDecoder creation logic if |factory->create()| returns non-zero.
     void setImageDecoderFactory(PassOwnPtr<ImageDecoderFactory> factory) { m_imageDecoderFactory = factory; }
 
+    void setHasAlpha(size_t index, bool hasAlpha);
+
     // These methods are called while m_decodeMutex is locked.
     SkBitmap tryToResumeDecode(const SkISize& scaledSize, size_t index);
 
     // Use the given decoder to decode. If a decoder is not given then try to create one.
-    // |complete| will be true if decoding was complete.
-    SkBitmap decode(size_t index, ImageDecoder**, bool* complete);
+    // Returns true if decoding was complete.
+    bool decode(size_t index, ImageDecoder**, SkBitmap*);
 
     SkISize m_fullSize;
     ThreadSafeDataTransport m_data;

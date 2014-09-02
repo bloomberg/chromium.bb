@@ -53,6 +53,7 @@ protected:
     virtual SkData* onRefEncodedData() OVERRIDE;
     virtual bool onGetInfo(SkImageInfo*) OVERRIDE;
     virtual bool onGetPixels(const SkImageInfo&, void* pixels, size_t rowBytes, SkPMColor ctable[], int* ctableCount) OVERRIDE;
+    virtual bool onGetYUV8Planes(SkISize sizes[3], void* planes[3], size_t rowBytes[3]) OVERRIDE;
 
 private:
     RefPtr<ImageFrameGenerator> m_frameGenerator;

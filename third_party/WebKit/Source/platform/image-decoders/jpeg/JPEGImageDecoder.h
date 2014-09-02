@@ -55,9 +55,10 @@ public:
     // accessing deleted memory, especially when calling this from inside
     // JPEGImageReader!
     virtual bool setFailed() OVERRIDE;
-    virtual bool YUVDecoding() const OVERRIDE { return m_imagePlanes.get(); }
+    virtual bool canDecodeToYUV() const OVERRIDE;
     virtual bool decodeToYUV() OVERRIDE;
-    virtual void setImagePlanes(OwnPtr<ImagePlanes>&) OVERRIDE;
+    virtual void setImagePlanes(PassOwnPtr<ImagePlanes>) OVERRIDE;
+    bool hasImagePlanes() const { return m_imagePlanes; }
 
     bool outputScanlines();
     unsigned desiredScaleNumerator() const;

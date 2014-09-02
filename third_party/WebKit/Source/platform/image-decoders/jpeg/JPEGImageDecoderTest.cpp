@@ -88,7 +88,7 @@ void readYUV(size_t maxDecodedBytes, unsigned* outputYWidth, unsigned* outputYHe
     decoder->setData(data.get(), true);
 
     OwnPtr<ImagePlanes> imagePlanes = adoptPtr(new ImagePlanes());
-    decoder->setImagePlanes(imagePlanes);
+    decoder->setImagePlanes(imagePlanes.release());
     bool sizeIsAvailable = decoder->isSizeAvailable();
     ASSERT_TRUE(sizeIsAvailable);
 

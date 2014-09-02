@@ -411,9 +411,8 @@ public:
             case JCS_YCbCr:
                 // libjpeg can convert YCbCr image pixels to RGB.
                 m_info.out_color_space = rgbOutputColorSpace();
-                if (m_decoder->YUVDecoding() && (yuvSubsampling(m_info) != YUV_UNKNOWN)) {
+                if (m_decoder->hasImagePlanes() && (yuvSubsampling(m_info) != YUV_UNKNOWN))
                     overrideColorSpace = JCS_YCbCr;
-                }
                 break;
             case JCS_GRAYSCALE:
             case JCS_RGB:
@@ -736,8 +735,17 @@ unsigned JPEGImageDecoder::desiredScaleNumerator() const
     return scaleNumerator;
 }
 
+bool JPEGImageDecoder::canDecodeToYUV() const
+{
+    ASSERT(const_cast<JPEGImageDecoder*>(this)->isSizeAvailable() && m_reader);
+
+    return m_reader->info()->out_color_space == JCS_YCbCr;
+}
+
 bool JPEGImageDecoder::decodeToYUV()
 {
+    if (!hasImagePlanes())
+        return false;
     PlatformInstrumentation::willDecodeImage("JPEG");
     decode(false);
     PlatformInstrumentation::didDecodeImage();
@@ -771,9 +779,9 @@ bool JPEGImageDecoder::setFailed()
     return ImageDecoder::setFailed();
 }
 
-void JPEGImageDecoder::setImagePlanes(OwnPtr<ImagePlanes>& imagePlanes)
+void JPEGImageDecoder::setImagePlanes(PassOwnPtr<ImagePlanes> imagePlanes)
 {
-    m_imagePlanes = imagePlanes.release();
+    m_imagePlanes = imagePlanes;
 }
 
 template <J_COLOR_SPACE colorSpace> void setPixel(ImageFrame& buffer, ImageFrame::PixelData* pixel, JSAMPARRAY samples, int column)
@@ -910,14 +918,14 @@ static bool outputRawData(JPEGImageReader* reader, ImagePlanes* imagePlanes)
 
 bool JPEGImageDecoder::outputScanlines()
 {
+    if (hasImagePlanes()) {
+        return outputRawData(m_reader.get(), m_imagePlanes.get());
+    }
+
     if (m_frameBufferCache.isEmpty())
         return false;
 
     jpeg_decompress_struct* info = m_reader->info();
-
-    if (m_imagePlanes.get()) {
-        return outputRawData(m_reader.get(), m_imagePlanes.get());
-    }
 
     // Initialize the framebuffer if needed.
     ImageFrame& buffer = m_frameBufferCache[0];
@@ -991,7 +999,7 @@ void JPEGImageDecoder::decode(bool onlySize)
         setFailed();
     // If we're done decoding the image, we don't need the JPEGImageReader
     // anymore.  (If we failed, |m_reader| has already been cleared.)
-    else if (!m_frameBufferCache.isEmpty() && (m_frameBufferCache[0].status() == ImageFrame::FrameComplete))
+    else if ((!m_frameBufferCache.isEmpty() && (m_frameBufferCache[0].status() == ImageFrame::FrameComplete)) || (hasImagePlanes() && !onlySize))
         m_reader.clear();
 }
 

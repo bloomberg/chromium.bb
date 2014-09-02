@@ -83,4 +83,17 @@ bool DecodingImageGenerator::onGetPixels(const SkImageInfo& info, void* pixels, 
     return decoded;
 }
 
+bool DecodingImageGenerator::onGetYUV8Planes(SkISize sizes[3], void* planes[3], size_t rowBytes[3])
+{
+    if (!planes || !planes[0]) {
+        return m_frameGenerator->getYUVComponentSizes(sizes);
+    }
+
+    TRACE_EVENT0("blink", "DecodingImageGenerator::onGetYUV8Planes");
+    PlatformInstrumentation::willDecodeLazyPixelRef(m_generationId);
+    bool decoded = m_frameGenerator->decodeToYUV(planes, rowBytes);
+    PlatformInstrumentation::didDecodeLazyPixelRef();
+    return decoded;
+}
+
 } // namespace blink

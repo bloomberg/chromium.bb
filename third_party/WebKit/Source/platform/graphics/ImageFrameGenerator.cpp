@@ -108,7 +108,7 @@ bool ImageFrameGenerator::decodeAndScale(const SkImageInfo& info, size_t index, 
     ASSERT(m_fullSize == scaledSize);
 
     if (m_decodeFailedAndEmpty)
-        return 0;
+        return false;
 
     TRACE_EVENT2("blink", "ImageFrameGenerator::decodeAndScale", "generator", this, "decodeCount", m_decodeCount);
 
@@ -133,6 +133,45 @@ bool ImageFrameGenerator::decodeAndScale(const SkImageInfo& info, size_t index, 
     return result;
 }
 
+bool ImageFrameGenerator::decodeToYUV(void* planes[3], size_t rowBytes[3])
+{
+    // This method is called to populate a discardable memory owned by Skia.
+
+    // Prevents concurrent decode or scale operations on the same image data.
+    MutexLocker lock(m_decodeMutex);
+
+    if (m_decodeFailedAndEmpty)
+        return false;
+
+    TRACE_EVENT2("blink", "ImageFrameGenerator::decodeToYUV", "generator", this, "decodeCount", static_cast<int>(m_decodeCount));
+
+    if (!planes || !planes[0] || !planes[1] || !planes[2]
+        || !rowBytes || !rowBytes[0] || !rowBytes[1] || !rowBytes[2]) {
+        return false;
+    }
+
+    SharedBuffer* data = 0;
+    bool allDataReceived = false;
+    m_data.data(&data, &allDataReceived);
+
+    // FIXME: YUV decoding does not currently support progressive decoding.
+    if (!allDataReceived)
+        return false;
+
+    OwnPtr<ImageDecoder> decoder = ImageDecoder::create(*data, ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied);
+    if (!decoder)
+        return false;
+
+    decoder->setData(data, allDataReceived);
+
+    OwnPtr<ImagePlanes> imagePlanes = adoptPtr(new ImagePlanes(planes, rowBytes));
+    decoder->setImagePlanes(imagePlanes.release());
+    bool yuvDecoded = decoder->decodeToYUV();
+    if (yuvDecoded)
+        setHasAlpha(0, false); // YUV is always opaque
+    return yuvDecoded;
+}
+
 SkBitmap ImageFrameGenerator::tryToResumeDecode(const SkISize& scaledSize, size_t index)
 {
     TRACE_EVENT1("blink", "ImageFrameGenerator::tryToResumeDecodeAndScale", "index", static_cast<int>(index));
@@ -141,8 +180,8 @@ SkBitmap ImageFrameGenerator::tryToResumeDecode(const SkISize& scaledSize, size_
     const bool resumeDecoding = ImageDecodingStore::instance()->lockDecoder(this, m_fullSize, &decoder);
     ASSERT(!resumeDecoding || decoder);
 
-    bool complete = false;
-    SkBitmap fullSizeImage = decode(index, &decoder, &complete);
+    SkBitmap fullSizeImage;
+    bool complete = decode(index, &decoder, &fullSizeImage);
 
     if (!decoder)
         return SkBitmap();
@@ -180,7 +219,19 @@ SkBitmap ImageFrameGenerator::tryToResumeDecode(const SkISize& scaledSize, size_
     return fullSizeImage;
 }
 
-SkBitmap ImageFrameGenerator::decode(size_t index, ImageDecoder** decoder, bool* complete)
+void ImageFrameGenerator::setHasAlpha(size_t index, bool hasAlpha)
+{
+    MutexLocker lock(m_alphaMutex);
+    if (index >= m_hasAlpha.size()) {
+        const size_t oldSize = m_hasAlpha.size();
+        m_hasAlpha.resize(index + 1);
+        for (size_t i = oldSize; i < m_hasAlpha.size(); ++i)
+            m_hasAlpha[i] = true;
+    }
+    m_hasAlpha[index] = hasAlpha;
+}
+
+bool ImageFrameGenerator::decode(size_t index, ImageDecoder** decoder, SkBitmap* bitmap)
 {
     TRACE_EVENT2("blink", "ImageFrameGenerator::decode", "width", m_fullSize.width(), "height", m_fullSize.height());
 
@@ -200,7 +251,7 @@ SkBitmap ImageFrameGenerator::decode(size_t index, ImageDecoder** decoder, bool*
             *decoder = ImageDecoder::create(*data, ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied).leakPtr();
 
         if (!*decoder)
-            return SkBitmap();
+            return false;
     }
 
     if (!m_isMultiFrame && newDecoder && allDataReceived) {
@@ -210,13 +261,14 @@ SkBitmap ImageFrameGenerator::decode(size_t index, ImageDecoder** decoder, bool*
         (*decoder)->setMemoryAllocator(m_externalAllocator.get());
     }
     (*decoder)->setData(data, allDataReceived);
+
     ImageFrame* frame = (*decoder)->frameBufferAtIndex(index);
     (*decoder)->setData(0, false); // Unref SharedBuffer from ImageDecoder.
     (*decoder)->clearCacheExceptFrame(index);
     (*decoder)->setMemoryAllocator(0);
 
     if (!frame || frame->status() == ImageFrame::FrameEmpty)
-        return SkBitmap();
+        return false;
 
     // A cache object is considered complete if we can decode a complete frame.
     // Or we have received all data. The image might not be fully decoded in
@@ -226,18 +278,10 @@ SkBitmap ImageFrameGenerator::decode(size_t index, ImageDecoder** decoder, bool*
     if (!fullSizeBitmap.isNull())
     {
         ASSERT(fullSizeBitmap.width() == m_fullSize.width() && fullSizeBitmap.height() == m_fullSize.height());
-
-        MutexLocker lock(m_alphaMutex);
-        if (index >= m_hasAlpha.size()) {
-            const size_t oldSize = m_hasAlpha.size();
-            m_hasAlpha.resize(index + 1);
-            for (size_t i = oldSize; i < m_hasAlpha.size(); ++i)
-                m_hasAlpha[i] = true;
-        }
-        m_hasAlpha[index] = !fullSizeBitmap.isOpaque();
+        setHasAlpha(index, !fullSizeBitmap.isOpaque());
     }
-    *complete = isDecodeComplete;
-    return fullSizeBitmap;
+    *bitmap = fullSizeBitmap;
+    return isDecodeComplete;
 }
 
 bool ImageFrameGenerator::hasAlpha(size_t index)
@@ -245,6 +289,42 @@ bool ImageFrameGenerator::hasAlpha(size_t index)
     MutexLocker lock(m_alphaMutex);
     if (index < m_hasAlpha.size())
         return m_hasAlpha[index];
+    return true;
+}
+
+bool ImageFrameGenerator::getYUVComponentSizes(SkISize componentSizes[3])
+{
+    ASSERT(componentSizes);
+
+    TRACE_EVENT2("webkit", "ImageFrameGenerator::getYUVComponentSizes", "width", m_fullSize.width(), "height", m_fullSize.height());
+
+    SharedBuffer* data = 0;
+    bool allDataReceived = false;
+    m_data.data(&data, &allDataReceived);
+
+    // FIXME: YUV decoding does not currently support progressive decoding.
+    ASSERT(allDataReceived);
+
+    OwnPtr<ImageDecoder> decoder = ImageDecoder::create(*data, ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied);
+    if (!decoder)
+        return false;
+
+    // Setting a dummy ImagePlanes object signals to the decoder that we want to do YUV decoding.
+    decoder->setData(data, allDataReceived);
+    OwnPtr<ImagePlanes> dummyImagePlanes = adoptPtr(new ImagePlanes);
+    decoder->setImagePlanes(dummyImagePlanes.release());
+
+    // canDecodeToYUV() has to be called AFTER isSizeAvailable(),
+    // otherwise the output color space may not be set in the decoder.
+    if (!decoder->isSizeAvailable() || !decoder->canDecodeToYUV())
+        return false;
+
+    IntSize size = decoder->decodedYUVSize(0);
+    componentSizes[0].set(size.width(), size.height());
+    size = decoder->decodedYUVSize(1);
+    componentSizes[1].set(size.width(), size.height());
+    size = decoder->decodedYUVSize(2);
+    componentSizes[2].set(size.width(), size.height());
     return true;
 }
 

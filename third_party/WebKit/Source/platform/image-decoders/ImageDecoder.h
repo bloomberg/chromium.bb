@@ -53,8 +53,8 @@ namespace blink {
 class PLATFORM_EXPORT ImagePlanes {
 public:
     ImagePlanes();
+    ImagePlanes(void* planes[3], size_t rowBytes[3]);
 
-    void setPlanes(void* planes[3], size_t rowBytes[3]);
     void* plane(int);
     size_t rowBytes(int) const;
 
@@ -272,9 +272,9 @@ public:
         m_frameBufferCache[0].setMemoryAllocator(allocator);
     }
 
-    virtual bool YUVDecoding() const { return false; }
+    virtual bool canDecodeToYUV() const { return false; }
     virtual bool decodeToYUV() { return false; }
-    virtual void setImagePlanes(OwnPtr<ImagePlanes>&) { }
+    virtual void setImagePlanes(PassOwnPtr<ImagePlanes>) { }
 
 protected:
     // Calculates the most recent frame whose image data may be needed in
