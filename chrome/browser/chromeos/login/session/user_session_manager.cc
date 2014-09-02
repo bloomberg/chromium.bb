@@ -645,6 +645,12 @@ void UserSessionManager::OnProfileCreated(const UserContext& user_context,
 void UserSessionManager::InitProfilePreferences(
     Profile* profile,
     const UserContext& user_context) {
+  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+  if (user->is_active()) {
+    input_method::InputMethodManager* manager =
+        input_method::InputMethodManager::Get();
+    manager->SetState(GetDefaultIMEState(profile));
+  }
   if (user_manager::UserManager::Get()->IsCurrentUserNew()) {
     SetFirstLoginPrefs(profile,
                        user_context.GetPublicSessionLocale(),
@@ -987,6 +993,11 @@ void UserSessionManager::NotifyPendingUserSessionsRestoreFinished() {
 
 void UserSessionManager::ActiveUserChanged(
     const user_manager::User* active_user) {
+  Profile* profile = ProfileHelper::Get()->GetProfileByUser(active_user);
+  // If profile has not yet been initialized, delay initialization of IME.
+  if (!profile)
+    return;
+
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
   manager->SetState(
