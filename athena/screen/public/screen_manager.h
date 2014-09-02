@@ -14,11 +14,6 @@ namespace aura {
 class Window;
 }
 
-namespace gfx {
-class ImageSkia;
-class Insets;
-}
-
 namespace ui {
 class LayerAnimator;
 }
@@ -67,9 +62,6 @@ class ATHENA_EXPORT ScreenManager {
 
   // Return the context object to be used for widget creation.
   virtual aura::Window* GetContext() = 0;
-
-  // Sets the background image.
-  virtual void SetBackgroundImage(const gfx::ImageSkia& image) = 0;
 
   // Set screen rotation.
   // TODO(flackr): Extract and use ash DisplayManager to set rotation

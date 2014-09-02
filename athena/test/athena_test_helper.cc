@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/network_handler.h"
 #include "ui/aura/env.h"
 #include "ui/aura/input_state_lookup.h"
 #include "ui/aura/test/env_test_helper.h"
@@ -49,6 +50,7 @@ void AthenaTestHelper::SetUp(ui::ContextFactory* context_factory) {
   file_thread_->StartWithOptions(options);
 
   chromeos::DBusThreadManager::Initialize();
+  chromeos::NetworkHandler::Initialize();
   ui::InitializeInputMethodForTesting();
   aura::Env::CreateInstance(true);
   aura::Env::GetInstance()->set_context_factory(context_factory);
@@ -75,6 +77,7 @@ void AthenaTestHelper::TearDown() {
 #endif
 
   ui::ShutdownInputMethodForTesting();
+  chromeos::NetworkHandler::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
 }
 

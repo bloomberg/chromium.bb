@@ -14,10 +14,6 @@
         '../athena.gyp:athena_lib',
         '../athena.gyp:athena_content_lib',
         '../resources/athena_resources.gyp:athena_resources',
-	# debug_widow.cc depends on this. Remove this once debug_window
-	# is removed.
-        '../../ash/ash_resources.gyp:ash_resources',
-        '../../chromeos/chromeos.gyp:power_manager_proto',
         '../../components/components.gyp:component_metrics_proto',
         '../../components/components.gyp:history_core_browser',
         # infobars_test_support is required to declare some symbols used in the
@@ -45,10 +41,6 @@
         'athena_launcher.h',
         'athena_renderer_pdf_helper.cc',
         'athena_renderer_pdf_helper.h',
-        'debug/debug_window.cc',
-        'debug/debug_window.h',
-        'debug/network_selector.cc',
-        'debug/network_selector.h',
         'url_search_provider.cc',
         'url_search_provider.h',
         'placeholder.cc',

@@ -1,9 +1,0 @@
-include_rules = [
-  "+athena/resources",
-  "+chromeos",
-  "+third_party/cros_system_api/dbus/service_constants.h",
-  "+ui/aura",
-  "+ui/chromeos",
-  "+ui/gfx",
-  "+ui/views",
-]

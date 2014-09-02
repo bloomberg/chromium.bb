@@ -1,7 +1,15 @@
 include_rules = [
+  "+athena/resources",
   "+athena/screen/public",
   "+athena/system/public",
-  "+chromeos/dbus",
+  "+chromeos",
+  "+third_party/cros_system_api/dbus/service_constants.h",
+  "+third_party/skia/include",
   "+ui",
 ]
 
+specific_include_rules = {
+  "status_icon_container_view.cc": [
+    "+extensions/shell/common/version.h",
+  ],
+}

@@ -7,7 +7,6 @@
 #include "athena/common/container_priorities.h"
 #include "athena/common/fill_layout_manager.h"
 #include "athena/input/public/accelerator_manager.h"
-#include "athena/screen/background_controller.h"
 #include "athena/screen/screen_accelerator_handler.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -192,7 +191,7 @@ class AthenaEventTargeter : public aura::WindowTargeter,
 
 class ScreenManagerImpl : public ScreenManager {
  public:
-  ScreenManagerImpl(aura::Window* root_window);
+  explicit ScreenManagerImpl(aura::Window* root_window);
   virtual ~ScreenManagerImpl();
 
   void Init();
@@ -203,16 +202,13 @@ class ScreenManagerImpl : public ScreenManager {
       const ContainerParams& params) OVERRIDE;
   virtual aura::Window* CreateContainer(const ContainerParams& params) OVERRIDE;
   virtual aura::Window* GetContext() OVERRIDE { return root_window_; }
-  virtual void SetBackgroundImage(const gfx::ImageSkia& image) OVERRIDE;
   virtual void SetRotation(gfx::Display::Rotation rotation) OVERRIDE;
   virtual ui::LayerAnimator* GetScreenAnimator() OVERRIDE;
 
   // Not owned.
   aura::Window* root_window_;
-  aura::Window* background_window_;
 
   scoped_ptr<aura::client::FocusClient> focus_client_;
-  scoped_ptr<BackgroundController> background_controller_;
   scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
   scoped_ptr<AcceleratorHandler> accelerator_handler_;
   scoped_ptr< ::wm::ScopedCaptureClient> capture_client_;
@@ -248,15 +244,7 @@ void ScreenManagerImpl::Init() {
   aura::client::SetActivationClient(root_window_, focus_controller);
   focus_client_.reset(focus_controller);
 
-  // TODO(oshima): Move the background out from ScreenManager.
   root_window_->SetLayoutManager(new FillLayoutManager(root_window_));
-  background_window_ =
-      CreateContainer(ContainerParams("AthenaBackground", CP_BACKGROUND));
-
-  background_window_->SetLayoutManager(
-      new FillLayoutManager(background_window_));
-  background_controller_.reset(new BackgroundController(background_window_));
-
   capture_client_.reset(new ::wm::ScopedCaptureClient(root_window_));
   accelerator_handler_.reset(new ScreenAcceleratorHandler(root_window_));
 }
@@ -338,10 +326,6 @@ aura::Window* ScreenManagerImpl::CreateContainer(
 
   container->Show();
   return container;
-}
-
-void ScreenManagerImpl::SetBackgroundImage(const gfx::ImageSkia& image) {
-  background_controller_->SetImage(image);
 }
 
 void ScreenManagerImpl::SetRotation(gfx::Display::Rotation rotation) {

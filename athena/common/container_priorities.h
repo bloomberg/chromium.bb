@@ -11,7 +11,7 @@ enum ContainerPriorities {
   CP_BACKGROUND = 0,
   CP_DEFAULT,
   CP_HOME_CARD,
-  CP_DEBUG,
+  CP_SYSTEM_MODAL,
   CP_VIRTUAL_KEYBOARD,
 };
 

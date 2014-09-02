@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/main/debug/network_selector.h"
+#include "athena/system/network_selector.h"
 
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
@@ -460,10 +460,10 @@ class NetworkSelector : public ui::NetworkListDelegate,
 
 }  // namespace
 
-namespace debug {
+namespace athena {
 
 void CreateNetworkSelector(aura::Window* container) {
   new NetworkSelector(container);
 }
 
-}  // namespace debug
+}  // namespace athena

@@ -7,7 +7,7 @@
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
 #include "athena/resources/grit/athena_resources.h"
-#include "athena/screen/public/screen_manager.h"
+#include "athena/system/public/system_ui.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -26,5 +26,5 @@ void CreateTestPages(content::BrowserContext* browser_context) {
 void SetupBackgroundImage() {
   const gfx::ImageSkia wallpaper = *ui::ResourceBundle::GetSharedInstance()
       .GetImageSkiaNamed(IDR_ATHENA_BACKGROUND);
-  athena::ScreenManager::Get()->SetBackgroundImage(wallpaper);
+  athena::SystemUI::Get()->SetBackgroundImage(wallpaper);
 }

@@ -13,7 +13,6 @@
 #include "athena/extensions/public/extensions_delegate.h"
 #include "athena/home/public/home_card.h"
 #include "athena/input/public/input_manager.h"
-#include "athena/main/debug/debug_window.h"
 #include "athena/main/placeholder.h"
 #include "athena/main/placeholder.h"
 #include "athena/main/url_search_provider.h"
@@ -119,9 +118,9 @@ void StartAthenaEnv(scoped_refptr<base::TaskRunner> file_runner) {
   aura::client::SetVisibilityClient(root_window,
                                     env_state->visibility_client.get());
 
-  athena::SystemUI::Create(file_runner);
   athena::InputManager::Create()->OnRootWindowCreated(root_window);
   athena::ScreenManager::Create(root_window);
+  athena::SystemUI::Create(file_runner);
   athena::WindowManager::Create();
   athena::AppRegistry::Create();
   SetupBackgroundImage();
@@ -142,7 +141,6 @@ void StartAthenaSessionWithContext(content::BrowserContext* context) {
 
   env_state->virtual_keyboard_observer.reset(new VirtualKeyboardObserver);
   CreateTestPages(context);
-  CreateDebugWindow();
 }
 
 void StartAthenaSession(athena::ActivityFactory* activity_factory,
@@ -160,9 +158,9 @@ void ShutdownAthena() {
   athena::HomeCard::Shutdown();
   athena::AppRegistry::ShutDown();
   athena::WindowManager::Shutdown();
+  athena::SystemUI::Shutdown();
   athena::ScreenManager::Shutdown();
   athena::InputManager::Shutdown();
-  athena::SystemUI::Shutdown();
   athena::ExtensionsDelegate::Shutdown();
   athena::AthenaEnv::Shutdown();
 

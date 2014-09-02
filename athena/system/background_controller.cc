@@ -2,55 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/screen/background_controller.h"
+#include "athena/system/background_controller.h"
 
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
-#include "extensions/shell/common/version.h"
-#include "third_party/skia/include/core/SkColor.h"
+#include "athena/system/public/system_ui.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace athena {
 
-namespace {
-
-const SkColor kVersionColor = SK_ColorWHITE;
-const SkColor kVersionBackground = SK_ColorTRANSPARENT;
-const SkColor kVersionShadow = 0xB0000000;
-const int kVersionShadowBlur = 10;
-
-class VersionView : public views::Label {
- public:
-  VersionView() {
-    SetEnabledColor(kVersionColor);
-    SetBackgroundColor(kVersionBackground);
-    SetShadows(gfx::ShadowValues(1, gfx::ShadowValue(gfx::Point(0, 1),
-                                                     kVersionShadowBlur,
-                                                     kVersionShadow)));
-    SetText(base::UTF8ToUTF16(base::StringPrintf("%s (Build %s)",
-                                                 PRODUCT_VERSION,
-                                                 LAST_CHANGE)));
-    SetBoundsRect(gfx::Rect(gfx::Point(), GetPreferredSize()));
-  }
-  virtual ~VersionView() {
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(VersionView);
-};
-
-}  // namespace
-
 class BackgroundView : public views::View {
  public:
-  BackgroundView() {
-    AddChildView(new VersionView);
+  BackgroundView()
+      : time_view_(SystemUI::Get()->CreateTimeView()),
+        status_icon_view_(SystemUI::Get()->CreateStatusIconView()) {
+    AddChildView(time_view_);
+    AddChildView(status_icon_view_);
   }
   virtual ~BackgroundView() {}
 
@@ -59,7 +29,22 @@ class BackgroundView : public views::View {
     SchedulePaint();
   }
 
-  // views::View
+  // views::View:
+  virtual void Layout() OVERRIDE {
+    time_view_->SetBoundsRect(gfx::Rect(time_view_->GetPreferredSize()));
+    gfx::Size status_icon_preferred_size =
+        status_icon_view_->GetPreferredSize();
+    status_icon_view_->SetBounds(width() - status_icon_preferred_size.width(),
+                                 0,
+                                 status_icon_preferred_size.width(),
+                                 status_icon_preferred_size.height());
+  }
+
+  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE {
+    // Relayout when |status_icon_view_| changes its preferred size.
+    Layout();
+  }
+
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->DrawImageInt(image_,
                          0,
@@ -75,20 +60,17 @@ class BackgroundView : public views::View {
 
  private:
   gfx::ImageSkia image_;
+  views::View* time_view_;
+  views::View* status_icon_view_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundView);
 };
 
-BackgroundController::BackgroundController(aura::Window* container) {
-  // TODO(oshima): Using widget to just draw an image is probably
-  // overkill. Just use WindowDelegate to draw the background and
-  // remove dependency to ui/views.
-
+BackgroundController::BackgroundController(aura::Window* background_container) {
   views::Widget* background_widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.accept_events = false;
-  params.parent = container;
+  params.parent = background_container;
   background_widget->Init(params);
   background_widget->GetNativeWindow()->layer()->SetMasksToBounds(true);
   background_view_ = new BackgroundView;

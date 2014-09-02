@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ATHENA_SCREEN_BACKGROUND_CONTROLLER_H_
-#define ATHENA_SCREEN_BACKGROUND_CONTROLLER_H_
+#ifndef ATHENA_SYSTEM_BACKGROUND_CONTROLLER_H_
+#define ATHENA_SYSTEM_BACKGROUND_CONTROLLER_H_
 
 #include "base/macros.h"
 
@@ -21,7 +21,7 @@ class BackgroundView;
 // Controls background image switching.
 class BackgroundController {
  public:
-  explicit BackgroundController(aura::Window* container);
+  explicit BackgroundController(aura::Window* background_container);
   ~BackgroundController();
 
   void SetImage(const gfx::ImageSkia& image);
@@ -31,6 +31,7 @@ class BackgroundController {
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundController);
 };
-}
 
-#endif  // ATHENA_SCREEN_BACKGROUND_CONTROLLER_H_
+}  // namespace athena
+
+#endif  // ATHENA_SYSTEM_BACKGROUND_CONTROLLER_H_
