@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 
+#include "chrome/browser/ui/sad_tab.h"
 #include "chrome/browser/ui/zoom/zoom_event_manager.h"
 #include "chrome/browser/ui/zoom/zoom_observer.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -80,7 +81,7 @@ bool ZoomController::SetZoomLevelByExtension(
   // Cannot zoom in disabled mode. Also, don't allow changing zoom level on
   // a crashed tab.
   if (zoom_mode_ == ZOOM_MODE_DISABLED ||
-      !web_contents()->GetRenderProcessHost()->HasConnection())
+      !web_contents()->GetRenderViewHost()->IsRenderViewLive())
     return false;
 
   // Store extension data so that |extension| can be attributed when the zoom
