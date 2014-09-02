@@ -35,8 +35,6 @@ class GeolocationController;
 class WebGeolocationPosition;
 class WebGeolocationError;
 
-// Note that the WebGeolocationController is invalid after the
-// WebGeolocationClient::geolocationDestroyed() has been received.
 class WebGeolocationController : public WebNonCopyable {
 public:
     BLINK_EXPORT void positionChanged(const WebGeolocationPosition&);
