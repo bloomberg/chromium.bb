@@ -173,8 +173,6 @@ public:
     bool inOverlayFullscreenVideo() const { return m_inOverlayFullscreenVideo; }
 
 private:
-    class OverlapMap;
-
 #if ENABLE(ASSERT)
     void assertNoUnresolvedDirtyBits();
 #endif
@@ -190,8 +188,6 @@ private:
 
     void updateWithoutAcceleratedCompositing(CompositingUpdateType);
     void updateIfNeeded();
-
-    void computeCompositingRequirements(RenderLayer* ancestorLayer, RenderLayer*, OverlapMap&, struct CompositingRecursionData&, bool& descendantHas3DTransform, Vector<RenderLayer*>& unclippedDescendants, IntRect& absoluteDecendantBoundingBox);
 
     bool hasAnyAdditionalCompositedLayers(const RenderLayer* rootLayer) const;
 
