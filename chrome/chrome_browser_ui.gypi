@@ -2465,6 +2465,11 @@
       'browser/ui/ash/session_state_delegate_views.cc',
       'browser/ui/ash/session_state_delegate_views.h',
     ],
+    # Used when athena is enabled.
+    'chrome_browser_ui_athena_sources': [
+      'browser/ui/views/athena/chrome_browser_main_extra_parts_athena.cc',
+      'browser/ui/views/athena/chrome_browser_main_extra_parts_athena.h',
+    ],
     # Counts desktop Linux and ChromeOS.
     'chrome_browser_ui_linux_sources': [
       'browser/ui/startup/autolaunch_prompt.cc',
@@ -2722,6 +2727,15 @@
           ],
         }, { # use_ash==0
           'sources': [ '<@(chrome_browser_ui_non_ash_sources)' ],
+        }],
+        ['use_athena==1', {
+          'sources': [ '<@(chrome_browser_ui_athena_sources)' ],
+          'dependencies': [
+            '<(DEPTH)/athena/athena.gyp:athena_lib',
+            '<(DEPTH)/athena/athena.gyp:athena_chrome_lib',
+            '<(DEPTH)/athena/athena.gyp:athena_content_lib',
+            '<(DEPTH)/athena/main/athena_main.gyp:athena_main_lib',
+          ],
         }],
         ['toolkit_views==1', {
           'sources': [ '<@(chrome_browser_ui_views_sources)' ],

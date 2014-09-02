@@ -210,7 +210,11 @@ void IconImage::OnImageLoaded(float scale, const gfx::Image& image_in) {
 
   gfx::ImageSkiaRep rep = image->GetRepresentation(scale);
   DCHECK(!rep.is_null());
+#if !defined(USE_ATHENA)
+  // TODO(oshima): It someshow gets 2x image for 1x for some extensions. Fix
+  // this.
   DCHECK_EQ(scale, rep.scale());
+#endif
 
   // Remove old representation if there is one.
   image_skia_.RemoveRepresentation(scale);

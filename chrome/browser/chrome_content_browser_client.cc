@@ -193,7 +193,9 @@
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h"
 #endif
 
-#if defined(USE_ASH)
+#if defined(USE_ATHENA)
+#include "chrome/browser/ui/views/athena/chrome_browser_main_extra_parts_athena.h"
+#elif defined(USE_ASH)
 #include "chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h"
 #endif
 
@@ -676,7 +678,11 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   main_parts->AddParts(new ChromeBrowserMainExtraPartsViews());
 #endif
 
-#if defined(USE_ASH)
+// TODO(oshima): Athena on chrome currently requires USE_ASH to build.
+// We should reduce the dependency as much as possible.
+#if defined(USE_ATHENA)
+  main_parts->AddParts(CreateChromeBrowserMainExtraPartsAthena());
+#elif defined(USE_ASH)
   main_parts->AddParts(new ChromeBrowserMainExtraPartsAsh());
 #endif
 

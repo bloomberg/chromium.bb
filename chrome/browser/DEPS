@@ -126,6 +126,7 @@ include_rules = [
   "-chrome/browser/ui/views",
   "+chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h",
   "+chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h",
+  "+chrome/browser/ui/views/athena/chrome_browser_main_extra_parts_athena.h",
 
   # Other libraries.
   "+libxml",  # For search engine definition parsing.

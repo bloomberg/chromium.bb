@@ -22,6 +22,11 @@
           '<(SHARED_INTERMEDIATE_DIR)/ash/resources/ash_resources_200_percent.pak',
         ],
       }],
+      ['use_athena==1', {
+        'pak_inputs': [
+          '<(SHARED_INTERMEDIATE_DIR)/athena/resources/athena_resources_200_percent.pak',
+        ],
+      }],
       ['chromeos==1', {
         'pak_inputs': [
           '<(SHARED_INTERMEDIATE_DIR)/ui/chromeos/resources/ui_chromeos_resources_200_percent.pak',

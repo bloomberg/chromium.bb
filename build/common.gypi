@@ -30,6 +30,9 @@
             # Whether or not we are building the Ash shell.
             'use_ash%': 0,
 
+            # Whether or not we are building the Athena shell.
+            'use_athena%': 0,
+
             # Whether or not we are using CRAS, the ChromeOS Audio Server.
             'use_cras%': 0,
 
@@ -53,6 +56,7 @@
           'chromecast%': '<(chromecast)',
           'use_aura%': '<(use_aura)',
           'use_ash%': '<(use_ash)',
+          'use_athena%': '<(use_athena)',
           'use_cras%': '<(use_cras)',
           'use_ozone%': '<(use_ozone)',
           'embedded%': '<(embedded)',
@@ -133,6 +137,7 @@
         'desktop_linux%': '<(desktop_linux)',
         'use_aura%': '<(use_aura)',
         'use_ash%': '<(use_ash)',
+        'use_athena%': '<(use_athena)',
         'use_cras%': '<(use_cras)',
         'use_ozone%': '<(use_ozone)',
         'embedded%': '<(embedded)',
@@ -271,6 +276,7 @@
       'desktop_linux%': '<(desktop_linux)',
       'use_aura%': '<(use_aura)',
       'use_ash%': '<(use_ash)',
+      'use_athena%': '<(use_athena)',
       'use_cras%': '<(use_cras)',
       'use_ozone%': '<(use_ozone)',
       'use_ozone_evdev%': '<(use_ozone_evdev)',
@@ -1065,6 +1071,7 @@
     'ui_compositor_image_transport%': '<(ui_compositor_image_transport)',
     'use_aura%': '<(use_aura)',
     'use_ash%': '<(use_ash)',
+    'use_athena%': '<(use_athena)',
     'use_cras%': '<(use_cras)',
     'use_openssl%': '<(use_openssl)',
     'use_openssl_certs%': '<(use_openssl_certs)',
@@ -2562,6 +2569,9 @@
       }],
       ['use_ash==1', {
         'defines': ['USE_ASH=1'],
+      }],
+      ['use_athena==1', {
+        'defines': ['USE_ATHENA=1'],
       }],
       ['use_pango==1', {
         'defines': ['USE_PANGO=1'],

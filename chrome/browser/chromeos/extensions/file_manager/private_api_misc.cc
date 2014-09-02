@@ -366,6 +366,11 @@ void FileBrowserPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
 }
 
 bool FileBrowserPrivateGetProfilesFunction::RunSync() {
+#if defined(USE_ATHENA)
+  // TODO(oshima): Figure out what to do.
+  return false;
+#endif
+
   const std::vector<linked_ptr<api::file_browser_private::ProfileInfo> >&
       profiles = GetLoggedInProfileInfoList();
 

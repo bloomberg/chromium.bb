@@ -5,6 +5,7 @@
 #ifndef ATHENA_RESOURCE_MANAGER_PUBLIC_RESOURCE_MANAGER_H_
 #define ATHENA_RESOURCE_MANAGER_PUBLIC_RESOURCE_MANAGER_H_
 
+#include "athena/athena_export.h"
 #include "athena/resource_manager/memory_pressure_notifier.h"
 #include "base/basictypes.h"
 
@@ -14,7 +15,7 @@ namespace athena {
 // and other events to control the activity state (pre-/un-/re-/loading them)
 // to keep enough memory free that no jank/lag will show when new applications
 // are loaded and / or a navigation between applications takes place.
-class ResourceManager {
+class ATHENA_EXPORT ResourceManager {
  public:
   // Creates the instance handling the resources.
   static void Create();

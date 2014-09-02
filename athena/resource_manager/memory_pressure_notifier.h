@@ -5,6 +5,7 @@
 #ifndef ATHENA_RESOURCE_MANAGER_MEMORY_PRESSURE_NOTIFIER_H_
 #define ATHENA_RESOURCE_MANAGER_MEMORY_PRESSURE_NOTIFIER_H_
 
+#include "athena/athena_export.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
@@ -51,7 +52,7 @@ class MemoryPressureObserver {
 //
 // The observer will use 3 different fill levels: 50% full, 75% full and 90%
 // full.
-class MemoryPressureNotifier {
+class ATHENA_EXPORT MemoryPressureNotifier {
  public:
   // The creator gets the |listener| object. Note that the ownership of the
   // listener object remains with the creator.

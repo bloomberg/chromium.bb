@@ -389,11 +389,15 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // Initialize magnification manager before ash tray is created. And this must
   // be placed after UserManager::SessionStarted();
   AccessibilityManager::Initialize();
+#if !defined(USE_ATHENA)
+  // TODO(oshima): MagnificationManager/WallpaperManager depends on ash.
+  // crbug.com/408733, crbug.com/408734.
   MagnificationManager::Initialize();
 
   // Add observers for WallpaperManager. This depends on PowerManagerClient,
   // TimezoneSettings and CrosSettings.
   WallpaperManager::Get()->AddObservers();
+#endif
 
   cros_version_loader_.GetVersion(VersionLoader::VERSION_FULL,
                                   base::Bind(&ChromeOSVersionCallback),
@@ -616,15 +620,22 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   // These are dependent on the ash::Shell singleton already having been
   // initialized.
+#if !defined(USE_ATHENA)
+  // TODO(oshima): Remove ash dependency in PowerButtonObserver.
+  // crbug.com/408832.
   power_button_observer_.reset(new PowerButtonObserver);
+#endif
   data_promo_notification_.reset(new DataPromoNotification());
 
   keyboard_event_rewriters_.reset(new EventRewriterController());
   keyboard_event_rewriters_->AddEventRewriter(
       scoped_ptr<ui::EventRewriter>(new KeyboardDrivenEventRewriter()));
+#if !defined(USE_ATHENA)
+  // TODO(oshima): Support accessibility on athena. crbug.com/408733.
   keyboard_event_rewriters_->AddEventRewriter(scoped_ptr<ui::EventRewriter>(
       new EventRewriter(ash::Shell::GetInstance()->sticky_keys_controller())));
   keyboard_event_rewriters_->Init();
+#endif
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }

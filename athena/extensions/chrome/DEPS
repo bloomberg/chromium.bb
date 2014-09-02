@@ -1,0 +1,14 @@
+include_rules = [
+  "+chrome/browser",
+  "+chrome/common/extensions",
+  "+extensions/browser",
+  "+net/base",
+]
+
+specific_include_rules = {
+  "athena_apps_client\.cc": [
+    # TODO(oshima): Remove this dependency.
+    "+athena/activity/public"
+  ],
+}
+

@@ -29,6 +29,10 @@ class ATHENA_EXPORT ExtensionsDelegate {
   static void CreateExtensionsDelegateForShell(
       content::BrowserContext* context);
 
+  // Creates the extension delegate for chrome environment.
+  static void CreateExtensionsDelegateForChrome(
+      content::BrowserContext* context);
+
   // Creates the extension delegate for test environment.
   static void CreateExtensionsDelegateForTest();
 
@@ -46,6 +50,7 @@ class ATHENA_EXPORT ExtensionsDelegate {
 
   // Starts an application. Returns true if the application was
   // successfully started.
+  // TODO(oshima): Add launcher source type. (see chrome_launcher_types.h)
   virtual bool LaunchApp(const std::string& app_id) = 0;
 
   // Unload an application. Returns true if the application was

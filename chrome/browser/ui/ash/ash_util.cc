@@ -13,8 +13,8 @@ namespace chrome {
 
 bool IsNativeViewInAsh(gfx::NativeView native_view) {
 #if defined(OS_CHROMEOS)
-  // Optimization. There is only ash on ChromeOS.
-  return true;
+  // Optimization. There is only ash or only athena on ChromeOS.
+  return ash::Shell::HasInstance();
 #endif
 
   if (!ash::Shell::HasInstance())

@@ -7,13 +7,14 @@
 
 #include <string>
 
+#include "athena/athena_export.h"
 #include "base/macros.h"
 
 namespace athena {
 
 // The resource manager delegate which abstracts system function calls to allow
 // unit tests to override them.
-class ResourceManagerDelegate {
+class ATHENA_EXPORT ResourceManagerDelegate {
  public:
   static ResourceManagerDelegate* CreateResourceManagerDelegate();
 

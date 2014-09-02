@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 
 class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {

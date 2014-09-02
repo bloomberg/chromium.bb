@@ -76,8 +76,11 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
   message_center_->SetNotifierSettingsProvider(settings_provider_.get());
 
 #if defined(OS_CHROMEOS)
+#if !defined(USE_ATHENA)
+  // TODO(oshima|hashimoto): Support notification on athena. crbug.com/408755.
   blockers_.push_back(
       new LoginStateNotificationBlockerChromeOS(message_center));
+#endif
 #else
   blockers_.push_back(new ScreenLockNotificationBlocker(message_center));
 #endif
