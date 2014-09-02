@@ -12,6 +12,9 @@ handlers:
 - url: /alerts
   script: alerts.app
 
+- url: /internal-alerts
+  script: internal_alerts.app
+
 - url: /favicon.ico
   static_files: favicon.ico
   upload: favicon.ico
