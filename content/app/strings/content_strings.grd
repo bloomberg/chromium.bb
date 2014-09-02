@@ -665,22 +665,6 @@ below:
         Please shorten this text to <ph name="MAX_CHARACTERS">$2<ex>100</ex></ph> characters or less (you are currently using <ph name="CURRENT_LENGTH">$1<ex>101</ex></ph> characters).
       </message>
 
-      <message name="IDS_PDF_NEED_PASSWORD" desc="A message asking the user for a password to open a PDF file.">
-        This document is password protected.  Please enter a password.
-      </message>
-
-      <message name="IDS_PDF_PAGE_LOADING" desc="A message displayed on the PDF page while page is loading.">
-        Loading...
-      </message>
-
-      <message name="IDS_PDF_PAGE_LOAD_FAILED" desc="A message displayed on the PDF control to indicate that the PDF document failed to load.">
-        Failed to load PDF document
-      </message>
-
-      <message name="IDS_PDF_PROGRESS_LOADING" desc="A message displayed on the progress control over PDF page during document loading.">
-        Loading
-      </message>
-
       <message name="IDS_PLUGIN_INITIALIZATION_ERROR" desc="A message displayed when a plug-in failed to load">
         Couldn't load plug-in.
       </message>

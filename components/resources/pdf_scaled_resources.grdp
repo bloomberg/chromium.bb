@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grit-part>
+  <if expr="enable_plugins">
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_FTP" file="common/pdf/pdf_button_ftp.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_FTP_HOVER" file="common/pdf/pdf_button_ftp_hover.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_FTP_PRESSED" file="common/pdf/pdf_button_ftp_pressed.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_FTW" file="common/pdf/pdf_button_ftw.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_FTW_HOVER" file="common/pdf/pdf_button_ftw_hover.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_FTW_PRESSED" file="common/pdf/pdf_button_ftw_pressed.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_ZOOMIN_END" file="common/pdf/pdf_button_zoomin_end.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_ZOOMIN_END_HOVER" file="common/pdf/pdf_button_zoomin_end_hover.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_ZOOMIN_END_PRESSED" file="common/pdf/pdf_button_zoomin_end_pressed.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_ZOOMIN" file="common/pdf/pdf_button_zoomin.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_ZOOMIN_HOVER" file="common/pdf/pdf_button_zoomin_hover.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_ZOOMIN_PRESSED" file="common/pdf/pdf_button_zoomin_pressed.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_ZOOMOUT" file="common/pdf/pdf_button_zoomout.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_ZOOMOUT_HOVER" file="common/pdf/pdf_button_zoomout_hover.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_ZOOMOUT_PRESSED" file="common/pdf/pdf_button_zoomout_pressed.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_SAVE" file="common/pdf/pdf_button_save.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_SAVE_HOVER" file="common/pdf/pdf_button_save_hover.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_SAVE_PRESSED" file="common/pdf/pdf_button_save_pressed.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_PRINT" file="common/pdf/pdf_button_print.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_PRINT_HOVER" file="common/pdf/pdf_button_print_hover.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_PRINT_PRESSED" file="common/pdf/pdf_button_print_pressed.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_PRINT_DISABLED" file="common/pdf/pdf_button_print_disabled.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_THUMBNAIL_0" file="common/pdf/pdf_thumbnail_0.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_THUMBNAIL_1" file="common/pdf/pdf_thumbnail_1.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_THUMBNAIL_2" file="common/pdf/pdf_thumbnail_2.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_THUMBNAIL_3" file="common/pdf/pdf_thumbnail_3.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_THUMBNAIL_4" file="common/pdf/pdf_thumbnail_4.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_THUMBNAIL_5" file="common/pdf/pdf_thumbnail_5.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_THUMBNAIL_6" file="common/pdf/pdf_thumbnail_6.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_THUMBNAIL_7" file="common/pdf/pdf_thumbnail_7.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_THUMBNAIL_8" file="common/pdf/pdf_thumbnail_8.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_THUMBNAIL_9" file="common/pdf/pdf_thumbnail_9.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_THUMBNAIL_NUM_BACKGROUND" file="common/pdf/pdf_thumbnail_num_background.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_PROGRESS_BAR_0" file="common/pdf/pdf_progress_0.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_PROGRESS_BAR_1" file="common/pdf/pdf_progress_1.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_PROGRESS_BAR_2" file="common/pdf/pdf_progress_2.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_PROGRESS_BAR_3" file="common/pdf/pdf_progress_3.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_PROGRESS_BAR_4" file="common/pdf/pdf_progress_4.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_PROGRESS_BAR_5" file="common/pdf/pdf_progress_5.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_PROGRESS_BAR_6" file="common/pdf/pdf_progress_6.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_PROGRESS_BAR_7" file="common/pdf/pdf_progress_7.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_PROGRESS_BAR_8" file="common/pdf/pdf_progress_8.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_PROGRESS_BAR_BACKGROUND" file="common/pdf/pdf_progress_background.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_PAGE_INDICATOR_BACKGROUND" file="common/pdf/pdf_page_indicator_background.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_PAGE_DROPSHADOW" file="common/pdf/pdf_dropshadow.png" />
+    <structure type="chrome_scaled_image" name="IDR_PDF_PAN_SCROLL_ICON" file="common/pdf/pan_icon.png" />
+  </if>
+</grit-part>

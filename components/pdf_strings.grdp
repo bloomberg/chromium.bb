@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <if expr="enable_plugins">
+    <message name="IDS_PDF_NEED_PASSWORD" desc="A message asking the user for a password to open a PDF file.">
+      This document is password protected.  Please enter a password.
+    </message>
+    <message name="IDS_PDF_PAGE_LOADING" desc="A message displayed on the PDF page while page is loading.">
+      Loading...
+    </message>
+    <message name="IDS_PDF_PAGE_LOAD_FAILED" desc="A message displayed on the PDF control to indicate that the PDF document failed to load.">
+      Failed to load PDF document
+    </message>
+    <message name="IDS_PDF_PROGRESS_LOADING" desc="A message displayed on the progress control over PDF page during document loading.">
+      Loading
+    </message>
+  </if>
+</grit-part>

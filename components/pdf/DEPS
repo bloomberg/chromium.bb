@@ -1,7 +1,5 @@
 include_rules = [
-  "+content/app",
   "+content/public",
-  "+grit/webkit_resources.h",
   "+ipc",
   "+ppapi",
   "+third_party/skia/include",

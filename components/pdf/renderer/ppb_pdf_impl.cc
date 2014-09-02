@@ -7,11 +7,9 @@
 #include "base/files/scoped_file.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/pdf/common/pdf_messages.h"
-#include "content/app/resources/grit/content_resources.h"
-#include "content/app/strings/grit/content_strings.h"
+#include "components/pdf/renderer/pdf_resource_util.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
@@ -31,8 +29,6 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/icu/source/i18n/unicode/usearch.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace pdf {
 namespace {
@@ -64,66 +60,6 @@ class PrivateFontFile : public ppapi::Resource {
 };
 #endif
 
-struct ResourceImageInfo {
-  PP_ResourceImage pp_id;
-  int res_id;
-};
-
-static const ResourceImageInfo kResourceImageMap[] = {
-    {PP_RESOURCEIMAGE_PDF_BUTTON_FTP, IDR_PDF_BUTTON_FTP},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_FTP_HOVER, IDR_PDF_BUTTON_FTP_HOVER},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_FTP_PRESSED, IDR_PDF_BUTTON_FTP_PRESSED},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_FTW, IDR_PDF_BUTTON_FTW},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_FTW_HOVER, IDR_PDF_BUTTON_FTW_HOVER},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_FTW_PRESSED, IDR_PDF_BUTTON_FTW_PRESSED},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN_END, IDR_PDF_BUTTON_ZOOMIN_END},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN_END_HOVER,
-     IDR_PDF_BUTTON_ZOOMIN_END_HOVER},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN_END_PRESSED,
-     IDR_PDF_BUTTON_ZOOMIN_END_PRESSED},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN, IDR_PDF_BUTTON_ZOOMIN},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN_HOVER, IDR_PDF_BUTTON_ZOOMIN_HOVER},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN_PRESSED, IDR_PDF_BUTTON_ZOOMIN_PRESSED},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMOUT, IDR_PDF_BUTTON_ZOOMOUT},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMOUT_HOVER, IDR_PDF_BUTTON_ZOOMOUT_HOVER},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMOUT_PRESSED,
-     IDR_PDF_BUTTON_ZOOMOUT_PRESSED},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_SAVE, IDR_PDF_BUTTON_SAVE},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_SAVE_HOVER, IDR_PDF_BUTTON_SAVE_HOVER},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_SAVE_PRESSED, IDR_PDF_BUTTON_SAVE_PRESSED},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_PRINT, IDR_PDF_BUTTON_PRINT},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_PRINT_HOVER, IDR_PDF_BUTTON_PRINT_HOVER},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_PRINT_PRESSED, IDR_PDF_BUTTON_PRINT_PRESSED},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_PRINT_DISABLED, IDR_PDF_BUTTON_PRINT_DISABLED},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_0, IDR_PDF_THUMBNAIL_0},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_1, IDR_PDF_THUMBNAIL_1},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_2, IDR_PDF_THUMBNAIL_2},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_3, IDR_PDF_THUMBNAIL_3},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_4, IDR_PDF_THUMBNAIL_4},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_5, IDR_PDF_THUMBNAIL_5},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_6, IDR_PDF_THUMBNAIL_6},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_7, IDR_PDF_THUMBNAIL_7},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_8, IDR_PDF_THUMBNAIL_8},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_9, IDR_PDF_THUMBNAIL_9},
-    {PP_RESOURCEIMAGE_PDF_BUTTON_THUMBNAIL_NUM_BACKGROUND,
-     IDR_PDF_THUMBNAIL_NUM_BACKGROUND},
-    {PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_0, IDR_PDF_PROGRESS_BAR_0},
-    {PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_1, IDR_PDF_PROGRESS_BAR_1},
-    {PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_2, IDR_PDF_PROGRESS_BAR_2},
-    {PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_3, IDR_PDF_PROGRESS_BAR_3},
-    {PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_4, IDR_PDF_PROGRESS_BAR_4},
-    {PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_5, IDR_PDF_PROGRESS_BAR_5},
-    {PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_6, IDR_PDF_PROGRESS_BAR_6},
-    {PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_7, IDR_PDF_PROGRESS_BAR_7},
-    {PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_8, IDR_PDF_PROGRESS_BAR_8},
-    {PP_RESOURCEIMAGE_PDF_PROGRESS_BAR_BACKGROUND,
-     IDR_PDF_PROGRESS_BAR_BACKGROUND},
-    {PP_RESOURCEIMAGE_PDF_PAGE_INDICATOR_BACKGROUND,
-     IDR_PDF_PAGE_INDICATOR_BACKGROUND},
-    {PP_RESOURCEIMAGE_PDF_PAGE_DROPSHADOW, IDR_PDF_PAGE_DROPSHADOW},
-    {PP_RESOURCEIMAGE_PDF_PAN_SCROLL_ICON, IDR_PAN_SCROLL_ICON},
-};
-
 PP_Var GetLocalizedString(PP_Instance instance_id,
                           PP_ResourceString string_id) {
   content::PepperPluginInstance* instance =
@@ -131,19 +67,7 @@ PP_Var GetLocalizedString(PP_Instance instance_id,
   if (!instance)
     return PP_MakeUndefined();
 
-  std::string rv;
-  if (string_id == PP_RESOURCESTRING_PDFGETPASSWORD) {
-    rv = base::UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_PDF_NEED_PASSWORD));
-  } else if (string_id == PP_RESOURCESTRING_PDFLOADING) {
-    rv = base::UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_PDF_PAGE_LOADING));
-  } else if (string_id == PP_RESOURCESTRING_PDFLOAD_FAILED) {
-    rv = base::UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_PDF_PAGE_LOAD_FAILED));
-  } else if (string_id == PP_RESOURCESTRING_PDFPROGRESSLOADING) {
-    rv = base::UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_PDF_PROGRESS_LOADING));
-  } else {
-    NOTREACHED();
-  }
-
+  std::string rv = GetStringResource(string_id);
   return ppapi::StringVar::StringToPPVar(rv);
 }
 
@@ -341,24 +265,13 @@ PP_Bool IsFeatureEnabled(PP_Instance instance, PP_PDFFeature feature) {
 PP_Resource GetResourceImageForScale(PP_Instance instance_id,
                                      PP_ResourceImage image_id,
                                      float scale) {
-  int res_id = 0;
-  for (size_t i = 0; i < arraysize(kResourceImageMap); ++i) {
-    if (kResourceImageMap[i].pp_id == image_id) {
-      res_id = kResourceImageMap[i].res_id;
-      break;
-    }
-  }
-  if (res_id == 0)
-    return 0;
-
   // Validate the instance.
   content::PepperPluginInstance* instance =
       content::PepperPluginInstance::Get(instance_id);
   if (!instance)
     return 0;
 
-  gfx::ImageSkia* res_image_skia =
-      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(res_id);
+  gfx::ImageSkia* res_image_skia = GetImageResource(image_id);
 
   if (!res_image_skia)
     return 0;

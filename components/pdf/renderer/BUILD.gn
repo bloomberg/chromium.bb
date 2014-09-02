@@ -8,6 +8,8 @@ static_library("renderer") {
   sources = [
     "pepper_pdf_host.cc",
     "pepper_pdf_host.h",
+    "pdf_resource_util.cc",
+    "pdf_resource_util.h",
     "ppb_pdf_impl.cc",
     "ppb_pdf_impl.h",
   ]
@@ -15,6 +17,8 @@ static_library("renderer") {
   deps = [
     "//base",
     "//components/pdf/common",
+    "//components/resources:components_resources",
+    "//components/strings",
     "//content/public/renderer",
     "//ppapi:ppapi_shared",
     "//third_party/icu",
