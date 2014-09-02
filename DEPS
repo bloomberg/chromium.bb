@@ -24,8 +24,8 @@ vars = {
   'sourceforge_url': 'http://svn.code.sf.net/p/%(repo)s/code',
   'llvm_url': 'http://src.chromium.org/llvm-project',
   'llvm_git': 'https://llvm.googlesource.com',
-  'libcxx_revision': 'e785ef19637f88c5e3e9926fabd8a64cd7eac49d',
-  'libcxxabi_revision': '062ba40d41870a04e0aefb64f8122e91aa824147',
+  'libcxx_revision': '48198f9110397fff47fe7c37cbfa296be7d44d3d',
+  'libcxxabi_revision': '4ad1009ab3a59fa7a6896d74d5e4de5885697f95',
   'webkit_trunk': 'http://src.chromium.org/blink/trunk',
   'nacl_trunk': 'http://src.chromium.org/native_client/trunk',
   'webkit_revision': 'd61a485818c6e67e43934ccd3c6cd453994bebf9', # from svn revision 181230
