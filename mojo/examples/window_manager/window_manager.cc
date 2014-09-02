@@ -265,7 +265,10 @@ class WindowManager
         app_(NULL) {}
 
   virtual ~WindowManager() {
-    window_manager_app_->host()->window()->RemovePreTargetHandler(this);
+    // host() may be destroyed by the time we get here.
+    // TODO: figure out a way to always cleanly remove handler.
+    if (window_manager_app_->host())
+      window_manager_app_->host()->window()->RemovePreTargetHandler(this);
   }
 
   void CloseWindow(Id view_id) {
