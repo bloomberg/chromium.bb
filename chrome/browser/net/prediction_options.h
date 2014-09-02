@@ -40,10 +40,6 @@ bool CanPrefetchAndPrerenderIO(ProfileIOData* profile_io_data);
 // To be executed on the UI thread only.
 bool CanPrefetchAndPrerenderUI(PrefService* prefs);
 
-// TODO(bnc): remove the following function as soon as Android Chrome is
-// modified to use CanPrefetchAndPrerenderUI instead.
-bool CanPredictNetworkActionsUI(PrefService* prefs);
-
 // The following two global functions determine whether TCP preconnect
 // and DNS preresolution are enabled, based on preferences.
 

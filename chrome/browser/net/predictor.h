@@ -517,11 +517,11 @@ class Predictor {
   const bool predictor_enabled_;
 
   // This is set by InitNetworkPredictor and used for calling
-  // chrome_browser_net::CanPredictNetworkActionsUI.
+  // CanPrefetchAndPrerenderUI and CanPreresolveAndPreconnectUI.
   PrefService* user_prefs_;
 
   // This is set by InitNetworkPredictor and used for calling
-  // chrome_browser_net::CanPredictNetworkActionsIO.
+  // CanPrefetchAndPrerenderIO and CanPreresolveAndPreconnectIO.
   ProfileIOData* profile_io_data_;
 
   // work_queue_ holds a list of names we need to look up.

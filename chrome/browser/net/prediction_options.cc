@@ -81,10 +81,6 @@ bool CanPrefetchAndPrerenderUI(PrefService* prefs) {
       prefs->GetInteger(prefs::kNetworkPredictionOptions));
 }
 
-bool CanPredictNetworkActionsUI(PrefService* prefs) {
-  return CanPrefetchAndPrerenderUI(prefs);
-}
-
 bool CanPreresolveAndPreconnectIO(ProfileIOData* profile_io_data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK(profile_io_data);
