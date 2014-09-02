@@ -461,7 +461,6 @@ public:
         MeterElement = 483,
         ProgressElement = 484,
         VideoFullscreenAllowedExemption = 485,
-        WebKitPoint = 488,
         PrefixedHTMLElementDropzone = 490,
         WheelEventWheelDeltaX = 491,
         WheelEventWheelDeltaY = 492,

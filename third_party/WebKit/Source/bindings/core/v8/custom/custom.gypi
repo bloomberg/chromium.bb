@@ -67,7 +67,6 @@
             'V8Uint8ArrayCustom.h',
             'V8Uint8ClampedArrayCustom.h',
             'V8WebGLRenderingContextCustom.cpp',
-            'V8WebKitPointCustom.cpp',
             'V8WindowCustom.cpp',
             'V8WorkerCustom.cpp',
             'V8WorkerGlobalScopeCustom.cpp',

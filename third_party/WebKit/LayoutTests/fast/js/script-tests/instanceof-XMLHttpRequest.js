@@ -18,9 +18,6 @@ shouldBeFalse("(new Array()) instanceof Option");
 shouldBeTrue("(new WebKitCSSMatrix()) instanceof WebKitCSSMatrix");
 shouldBeFalse("(new Array()) instanceof WebKitCSSMatrix");
 
-shouldBeTrue("(new WebKitPoint()) instanceof WebKitPoint");
-shouldBeFalse("(new Array()) instanceof WebKitPoint");
-
 shouldBeTrue("(new Worker('instanceof-operator-dummy-worker.js')) instanceof Worker");
 shouldBeFalse("(new Array()) instanceof Worker");
 

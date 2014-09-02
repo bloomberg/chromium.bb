@@ -5,7 +5,6 @@ PASS: MessageChannel
 PASS: SharedWorker
 PASS: WebGLArrayBuffer
 PASS: WebKitCSSMatrix
-PASS: WebKitPoint
 PASS: WebSocket
 PASS: Worker
 PASS: XMLHttpRequest

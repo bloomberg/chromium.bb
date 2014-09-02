@@ -463,7 +463,6 @@ WebKitCSSMatrix
 WebKitCSSTransformValue
 WebKitGamepad
 WebKitMutationObserver
-WebKitPoint
 WebKitTransitionEvent
 WebSocket
 WheelEvent
