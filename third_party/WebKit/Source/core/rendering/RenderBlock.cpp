@@ -1411,6 +1411,18 @@ void RenderBlock::computeRegionRangeForBlock(RenderFlowThread* flowThread)
         flowThread->setRegionRangeForBox(this, offsetFromLogicalTopOfFirstPage());
 }
 
+bool RenderBlock::widthAvailableToChildrenHasChanged()
+{
+    bool widthAvailableToChildrenHasChanged = m_hasBorderOrPaddingLogicalWidthChanged;
+    m_hasBorderOrPaddingLogicalWidthChanged = false;
+
+    // If we use border-box sizing, have percentage padding, and our parent has changed width then the width available to our children has changed even
+    // though our own width has remained the same.
+    widthAvailableToChildrenHasChanged |= style()->boxSizing() == BORDER_BOX && needsPreferredWidthsRecalculation() && view()->layoutState()->containingBlockLogicalWidthChanged();
+
+    return widthAvailableToChildrenHasChanged;
+}
+
 bool RenderBlock::updateLogicalWidthAndColumnWidth()
 {
     LayoutUnit oldWidth = logicalWidth();
@@ -1419,10 +1431,7 @@ bool RenderBlock::updateLogicalWidthAndColumnWidth()
     updateLogicalWidth();
     calcColumnWidth();
 
-    bool hasBorderOrPaddingLogicalWidthChanged = m_hasBorderOrPaddingLogicalWidthChanged;
-    m_hasBorderOrPaddingLogicalWidthChanged = false;
-
-    return oldWidth != logicalWidth() || oldColumnWidth != desiredColumnWidth() || hasBorderOrPaddingLogicalWidthChanged;
+    return oldWidth != logicalWidth() || oldColumnWidth != desiredColumnWidth() || widthAvailableToChildrenHasChanged();
 }
 
 void RenderBlock::layoutBlock(bool)

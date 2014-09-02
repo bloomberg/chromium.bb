@@ -441,6 +441,7 @@ private:
     // End helper functions and structs used by layoutBlockChildren.
 
     void removeFromGlobalMaps();
+    bool widthAvailableToChildrenHasChanged();
 
 protected:
     // Returns the logicalOffset at the top of the next page. If the offset passed in is already at the top of the current page,
