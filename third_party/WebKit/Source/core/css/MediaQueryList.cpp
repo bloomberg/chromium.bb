@@ -74,7 +74,6 @@ void MediaQueryList::addListener(PassRefPtrWillBeRawPtr<MediaQueryListListener> 
     if (!listener)
         return;
 
-    listener->setMediaQueryList(this);
     m_listeners.add(listener);
 }
 
@@ -84,7 +83,6 @@ void MediaQueryList::removeListener(PassRefPtrWillBeRawPtr<MediaQueryListListene
         return;
 
     RefPtrWillBeRawPtr<MediaQueryList> protect(this);
-    listener->clearMediaQueryList();
     m_listeners.remove(listener);
 }
 

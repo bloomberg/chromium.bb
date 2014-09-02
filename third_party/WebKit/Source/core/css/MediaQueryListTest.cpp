@@ -27,10 +27,7 @@ TEST(MediaQueryListTest, CrashInStop)
     RefPtrWillBeRawPtr<Document> document = Document::create();
     RefPtrWillBeRawPtr<MediaQueryList> list = MediaQueryList::create(document.get(), MediaQueryMatcher::create(*document), MediaQuerySet::create());
     list->addListener(adoptRefWillBeNoop(new TestListener()));
-    // Now, MediaQueryList and MediaQueryListListener have reference cycle. We
-    // can clear |list|.
-    MediaQueryList* rawList = list.release().get();
-    rawList->stop();
+    list->stop();
     // This test passes if it's not crashed.
 }
 
