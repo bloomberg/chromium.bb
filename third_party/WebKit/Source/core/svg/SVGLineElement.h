@@ -29,6 +29,7 @@
 namespace blink {
 
 class SVGLineElement FINAL : public SVGGeometryElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGLineElement);
 
@@ -54,4 +55,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGLineElement_h

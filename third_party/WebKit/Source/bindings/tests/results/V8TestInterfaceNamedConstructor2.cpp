@@ -37,6 +37,11 @@ namespace blink {
 
 const WrapperTypeInfo V8TestInterfaceNamedConstructor2::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNamedConstructor2::domTemplate, V8TestInterfaceNamedConstructor2::refObject, V8TestInterfaceNamedConstructor2::derefObject, V8TestInterfaceNamedConstructor2::createPersistentHandle, 0, 0, 0, V8TestInterfaceNamedConstructor2::installConditionallyEnabledMethods, V8TestInterfaceNamedConstructor2::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
 
+// This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceNamedConstructor2.h.
+// For details, see the comment of DEFINE_WRAPPERTYPEINFO in
+// bindings/core/v8/ScriptWrappable.h.
+const WrapperTypeInfo& TestInterfaceNamedConstructor2::s_wrapperTypeInfo = V8TestInterfaceNamedConstructor2::wrapperTypeInfo;
+
 namespace TestInterfaceNamedConstructor2V8Internal {
 
 template <typename T> void V8_USE(T) { }

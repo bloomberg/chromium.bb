@@ -47,6 +47,7 @@ struct MIDIMessageEventInit : public EventInit {
 };
 
 class MIDIMessageEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<MIDIMessageEvent> create()
     {

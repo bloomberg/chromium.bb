@@ -44,6 +44,7 @@ namespace blink {
 class Node;
 
 class LayerRect FINAL : public RefCountedWillBeGarbageCollectedFinalized<LayerRect>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<LayerRect> create(PassRefPtrWillBeRawPtr<Node> node, const String& layerType, int nodeOffsetX, int nodeOffsetY, PassRefPtrWillBeRawPtr<ClientRect> rect)
     {
@@ -82,4 +83,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // LayerRect_h

@@ -34,6 +34,7 @@ namespace blink {
 class ExceptionState;
 
 class AnalyserNode FINAL : public AudioBasicInspectorNode {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static AnalyserNode* create(AudioContext* context, float sampleRate)
     {

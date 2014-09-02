@@ -216,6 +216,7 @@ private:
 
 class Document : public ContainerNode, public TreeScope, public SecurityContext, public ExecutionContext, public ExecutionContextClient
     , public DocumentSupplementable, public LifecycleContext<Document> {
+    DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Document);
 public:
     static PassRefPtrWillBeRawPtr<Document> create(const DocumentInit& initializer = DocumentInit())
@@ -1039,6 +1040,8 @@ public:
     void didRecalculateStyleForElement() { ++m_styleRecalcElementCounter; }
 
     AtomicString convertLocalName(const AtomicString&);
+
+    virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) OVERRIDE;
 
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);

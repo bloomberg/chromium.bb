@@ -45,6 +45,7 @@ class FileReaderLoader;
 class ExecutionContext;
 
 class FileReaderSync FINAL : public RefCountedWillBeGarbageCollected<FileReaderSync>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<FileReaderSync> create()
     {

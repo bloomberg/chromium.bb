@@ -36,6 +36,7 @@ class Node;
 class StyleSheet;
 
 class StyleSheet : public RefCountedWillBeGarbageCollectedFinalized<StyleSheet>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     StyleSheet()
     {
@@ -61,6 +62,6 @@ public:
     virtual void trace(Visitor*) { }
 };
 
-} // namespace
+} // namespace blink
 
 #endif

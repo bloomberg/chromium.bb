@@ -82,4 +82,4 @@ bool DocumentFragment::parseXML(const String& source, Element* contextElement, P
     return XMLDocumentParser::parseDocumentFragment(source, this, contextElement, parserContentPolicy);
 }
 
-}
+} // namespace blink

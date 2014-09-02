@@ -34,6 +34,7 @@
 namespace blink {
 
 class TypeConversions : public RefCountedWillBeGarbageCollectedFinalized<TypeConversions>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<TypeConversions> create()
     {
@@ -88,4 +89,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // TypeConversions_h

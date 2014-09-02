@@ -28,6 +28,7 @@
 namespace blink {
 
 class HTMLHRElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLHRElement);
 

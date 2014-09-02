@@ -17,6 +17,7 @@ struct AnimationPlayerEventInit : public EventInit {
 };
 
 class AnimationPlayerEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<AnimationPlayerEvent> create()
     {

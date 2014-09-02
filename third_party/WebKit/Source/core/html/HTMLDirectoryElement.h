@@ -28,6 +28,7 @@
 namespace blink {
 
 class HTMLDirectoryElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLDirectoryElement);
 
@@ -35,6 +36,6 @@ private:
     explicit HTMLDirectoryElement(Document&);
 };
 
-} //namespace
+} // namespace blink
 
-#endif
+#endif // HTMLDirectoryElement_h

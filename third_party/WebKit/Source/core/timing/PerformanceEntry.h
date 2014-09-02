@@ -41,6 +41,7 @@
 namespace blink {
 
 class PerformanceEntry : public RefCountedWillBeGarbageCollectedFinalized<PerformanceEntry>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~PerformanceEntry();
 
@@ -70,6 +71,6 @@ private:
     const double m_duration;
 };
 
-}
+} // namespace blink
 
-#endif // !defined(PerformanceEntry_h)
+#endif // PerformanceEntry_h

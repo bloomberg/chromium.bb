@@ -41,6 +41,7 @@ class FileCallback;
 class FileWriterCallback;
 
 class FileEntry FINAL : public Entry {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static FileEntry* create(DOMFileSystemBase* fileSystem, const String& fullPath)
     {
@@ -60,6 +61,6 @@ private:
 
 DEFINE_TYPE_CASTS(FileEntry, Entry, entry, entry->isFile(), entry.isFile());
 
-} // namespace
+} // namespace blink
 
 #endif // FileEntry_h

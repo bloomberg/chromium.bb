@@ -46,6 +46,7 @@ class MetadataCallback;
 class VoidCallback;
 
 class Entry : public EntryBase, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DOMFileSystem* filesystem() const { return static_cast<DOMFileSystem*>(m_fileSystem.get()); }
 

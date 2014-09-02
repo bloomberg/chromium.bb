@@ -43,6 +43,7 @@ class Blob;
 class ExceptionState;
 
 class FileWriterSync FINAL : public FileWriterBase, public ScriptWrappable, public WebFileWriterClient {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static FileWriterSync* create()
     {

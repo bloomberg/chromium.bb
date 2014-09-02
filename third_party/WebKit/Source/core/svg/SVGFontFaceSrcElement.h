@@ -29,6 +29,7 @@ namespace blink {
 class CSSValueList;
 
 class SVGFontFaceSrcElement FINAL : public SVGElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFontFaceSrcElement);
 
@@ -44,6 +45,4 @@ private:
 } // namespace blink
 
 #endif // ENABLE(SVG_FONTS)
-#endif
-
-// vim:ts=4:noet
+#endif // SVGFontFaceSrcElement_h

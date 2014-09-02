@@ -35,6 +35,7 @@ namespace blink {
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<EdgeModeType>();
 
 class SVGFEConvolveMatrixElement FINAL : public SVGFilterPrimitiveStandardAttributes {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFEConvolveMatrixElement);
 
@@ -74,4 +75,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGFEConvolveMatrixElement_h

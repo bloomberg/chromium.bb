@@ -33,6 +33,7 @@ namespace blink {
 class AudioContext;
 
 class ChannelSplitterNode FINAL : public AudioNode {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static ChannelSplitterNode* create(AudioContext*, float sampleRate, unsigned numberOfOutputs);
 

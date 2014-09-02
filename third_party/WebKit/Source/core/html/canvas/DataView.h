@@ -35,6 +35,7 @@ namespace blink {
 class ExceptionState;
 
 class DataView FINAL : public ArrayBufferView, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtr<DataView> create(unsigned length);
     static PassRefPtr<DataView> create(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned byteLength);
@@ -76,6 +77,8 @@ public:
         return TypeDataView;
     }
 
+    virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) OVERRIDE;
+
 protected:
     virtual void neuter() OVERRIDE;
 
@@ -93,7 +96,6 @@ private:
 
     unsigned m_byteLength;
 };
-
 
 } // namespace blink
 

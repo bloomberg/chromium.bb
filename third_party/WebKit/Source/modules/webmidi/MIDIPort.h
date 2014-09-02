@@ -40,6 +40,7 @@ class MIDIAccess;
 
 class MIDIPort : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MIDIPort>, public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MIDIPort>);
+    DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MIDIPort);
 public:
     enum MIDIPortTypeCode {

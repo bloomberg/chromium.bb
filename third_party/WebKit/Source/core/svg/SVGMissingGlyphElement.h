@@ -27,6 +27,7 @@
 namespace blink {
 
 class SVGMissingGlyphElement FINAL : public SVGElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGMissingGlyphElement);
 
@@ -39,4 +40,4 @@ private:
 } // namespace blink
 
 #endif // ENABLE(SVG_FONTS)
-#endif
+#endif // SVGMissingGlyphElement_h

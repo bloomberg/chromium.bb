@@ -48,6 +48,7 @@ enum StyleSheetUpdateType {
 };
 
 class CSSStyleSheet FINAL : public StyleSheet {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CSSStyleSheet> create(PassRefPtrWillBeRawPtr<StyleSheetContents>, CSSImportRule* ownerRule = 0);
     static PassRefPtrWillBeRawPtr<CSSStyleSheet> create(PassRefPtrWillBeRawPtr<StyleSheetContents>, Node* ownerNode);
@@ -171,6 +172,6 @@ inline CSSStyleSheet::RuleMutationScope::~RuleMutationScope()
 
 DEFINE_TYPE_CASTS(CSSStyleSheet, StyleSheet, sheet, sheet->isCSSStyleSheet(), sheet.isCSSStyleSheet());
 
-} // namespace
+} // namespace blink
 
 #endif

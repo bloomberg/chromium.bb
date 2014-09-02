@@ -30,6 +30,7 @@ class ProgressValueElement;
 class RenderProgress;
 
 class HTMLProgressElement FINAL : public LabelableElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static const double IndeterminatePosition;
     static const double InvalidPosition;
@@ -70,6 +71,6 @@ private:
     RawPtrWillBeMember<ProgressValueElement> m_value;
 };
 
-} // namespace
+} // namespace blink
 
-#endif
+#endif // HTMLProgressElement_h

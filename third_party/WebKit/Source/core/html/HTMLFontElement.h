@@ -29,6 +29,7 @@
 namespace blink {
 
 class HTMLFontElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLFontElement);
 
@@ -41,6 +42,6 @@ private:
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
 };
 
-} // namespace
+} // namespace blink
 
-#endif
+#endif // HTMLFontElement_h

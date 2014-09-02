@@ -76,6 +76,7 @@ typedef Vector<CueInterval> CueList;
 
 class HTMLMediaElement : public HTMLElement, public WillBeHeapSupplementable<HTMLMediaElement>, public MediaPlayerClient, public ActiveDOMObject
 {
+    DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElement);
 public:
     static blink::WebMimeRegistry::SupportsType supportsType(const ContentType&, const String& keySystem = String());
@@ -635,6 +636,6 @@ inline bool isHTMLMediaElement(const HTMLElement& element)
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLMediaElement);
 
-} //namespace
+} // namespace blink
 
-#endif
+#endif // HTMLMediaElement_h

@@ -31,8 +31,8 @@ namespace blink {
 class HTMLFormElement;
 
 class HTMLObjectElement FINAL : public HTMLPlugInElement, public FormAssociatedElement {
+    DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLObjectElement);
-
 public:
     static PassRefPtrWillBeRawPtr<HTMLObjectElement> create(Document&, HTMLFormElement*, bool createdByParser);
     virtual ~HTMLObjectElement();
@@ -144,6 +144,6 @@ template<> inline const HTMLObjectElement& toElement<HTMLObjectElement>(const Fo
     return objectElement;
 }
 
-}
+} // namespace blink
 
-#endif
+#endif // HTMLObjectElement_h

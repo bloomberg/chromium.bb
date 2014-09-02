@@ -41,6 +41,7 @@ class PeriodicWave;
 // OscillatorNode is an audio generator of periodic waveforms.
 
 class OscillatorNode FINAL : public AudioScheduledSourceNode {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     // The waveform type.
     // These must be defined as in the .idl file.

@@ -36,6 +36,7 @@ struct RTCDTMFToneChangeEventInit : public EventInit {
 };
 
 class RTCDTMFToneChangeEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~RTCDTMFToneChangeEvent();
 

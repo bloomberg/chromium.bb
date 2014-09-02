@@ -42,6 +42,7 @@ class GenericEventQueue;
 
 class SourceBufferList FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SourceBufferList>, public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SourceBufferList>);
+    DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SourceBufferList);
 public:
     static SourceBufferList* create(ExecutionContext* context, GenericEventQueue* asyncEventQueue)
@@ -77,4 +78,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SourceBufferList_h

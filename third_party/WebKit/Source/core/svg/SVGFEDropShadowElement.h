@@ -28,6 +28,7 @@
 namespace blink {
 
 class SVGFEDropShadowElement FINAL : public SVGFilterPrimitiveStandardAttributes {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFEDropShadowElement);
 
@@ -58,4 +59,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGFEDropShadowElement_h

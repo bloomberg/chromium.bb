@@ -44,6 +44,7 @@ class ShadowRootRareData;
 class StyleSheetList;
 
 class ShadowRoot FINAL : public DocumentFragment, public TreeScope, public DoublyLinkedListNode<ShadowRoot> {
+    DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ShadowRoot);
     friend class WTF::DoublyLinkedListNode<ShadowRoot>;
 public:
@@ -165,6 +166,6 @@ inline Element* ShadowRoot::activeElement() const
 DEFINE_NODE_TYPE_CASTS(ShadowRoot, isShadowRoot());
 DEFINE_TYPE_CASTS(ShadowRoot, TreeScope, treeScope, treeScope->rootNode().isShadowRoot(), treeScope.rootNode().isShadowRoot());
 
-} // namespace
+} // namespace blink
 
-#endif
+#endif // ShadowRoot_h

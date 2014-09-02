@@ -26,6 +26,7 @@
 namespace blink {
 
 class SVGDescElement FINAL : public SVGElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGDescElement);
 
@@ -37,4 +38,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGDescElement_h

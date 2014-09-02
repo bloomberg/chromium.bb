@@ -41,6 +41,7 @@ class AudioBus;
 class ExceptionState;
 
 class AudioBuffer : public GarbageCollectedFinalized<AudioBuffer>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static AudioBuffer* create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
     static AudioBuffer* create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);

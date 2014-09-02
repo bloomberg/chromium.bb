@@ -44,6 +44,7 @@ class Metadata;
 class ExceptionState;
 
 class EntrySync : public EntryBase, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static EntrySync* create(EntryBase*);
 
@@ -61,6 +62,6 @@ protected:
     EntrySync(DOMFileSystemBase*, const String& fullPath);
 };
 
-}
+} // namespace blink
 
 #endif // EntrySync_h

@@ -41,6 +41,7 @@ class Dictionary;
 class ExceptionState;
 
 class RTCIceCandidate FINAL : public GarbageCollectedFinalized<RTCIceCandidate>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static RTCIceCandidate* create(const Dictionary&, ExceptionState&);
     static RTCIceCandidate* create(WebRTCICECandidate);

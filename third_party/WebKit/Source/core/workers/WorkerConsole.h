@@ -46,6 +46,7 @@ class ScriptArguments;
 class WorkerGlobalScope;
 
 class WorkerConsole FINAL : public ConsoleBase {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<WorkerConsole> create(WorkerGlobalScope* scope)
     {

@@ -31,6 +31,7 @@ namespace blink {
 class HTMLSelectElement;
 
 class HTMLKeygenElement FINAL : public HTMLFormControlElementWithState {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLKeygenElement> create(Document&, HTMLFormElement*);
 
@@ -62,6 +63,6 @@ private:
     HTMLSelectElement* shadowSelect() const;
 };
 
-} //namespace
+} // namespace blink
 
-#endif
+#endif // HTMLKeygenElement_h

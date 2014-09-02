@@ -33,6 +33,7 @@ namespace blink {
 class MediaStreamTrack;
 
 class MediaStreamTrackEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~MediaStreamTrackEvent();
 

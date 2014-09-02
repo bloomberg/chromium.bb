@@ -28,6 +28,7 @@
 namespace blink {
 
 class SVGAltGlyphDefElement FINAL : public SVGElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGAltGlyphDefElement);
 
@@ -39,7 +40,7 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 };
 
-}
+} // namespace blink
 
-#endif
-#endif
+#endif // ENABLE(SVG_FONTS)
+#endif // SVGAltGlyphDefElement_h

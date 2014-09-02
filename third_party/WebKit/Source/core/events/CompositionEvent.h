@@ -39,6 +39,7 @@ struct CompositionEventInit : UIEventInit {
 };
 
 class CompositionEvent FINAL : public UIEvent {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CompositionEvent> create()
     {

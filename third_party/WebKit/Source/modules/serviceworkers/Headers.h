@@ -21,6 +21,7 @@ class ScriptValue;
 // http://fetch.spec.whatwg.org/#headers-class
 class Headers FINAL : public RefCountedWillBeGarbageCollected<Headers>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Headers);
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum Guard { ImmutableGuard, RequestGuard, RequestNoCORSGuard, ResponseGuard, NoneGuard };
 

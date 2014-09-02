@@ -21,6 +21,7 @@ struct DeviceLightEventInit : public EventInit {
 };
 
 class DeviceLightEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~DeviceLightEvent();
 

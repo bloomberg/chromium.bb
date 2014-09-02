@@ -34,6 +34,7 @@ namespace blink {
 class IDBDatabaseCallbacks;
 
 class IDBOpenDBRequest FINAL : public IDBRequest {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static IDBOpenDBRequest* create(ScriptState*, IDBDatabaseCallbacks*, int64_t transactionId, int64_t version);
     virtual ~IDBOpenDBRequest();

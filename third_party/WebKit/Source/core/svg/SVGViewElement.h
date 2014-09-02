@@ -33,6 +33,7 @@ namespace blink {
 class SVGViewElement FINAL : public SVGElement,
                              public SVGFitToViewBox,
                              public SVGZoomAndPan {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGViewElement);
 
@@ -57,4 +58,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGViewElement_h

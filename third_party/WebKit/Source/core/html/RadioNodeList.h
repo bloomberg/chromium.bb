@@ -33,6 +33,7 @@
 namespace blink {
 
 class RadioNodeList FINAL : public LiveNodeList {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<RadioNodeList> create(ContainerNode& ownerNode, CollectionType type, const AtomicString& name)
     {
@@ -58,6 +59,6 @@ private:
     AtomicString m_name;
 };
 
-} // namespace
+} // namespace blink
 
-#endif
+#endif // RadioNodeList_h

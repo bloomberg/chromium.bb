@@ -15,6 +15,7 @@ struct RelatedEventInit : public EventInit {
 };
 
 class RelatedEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<RelatedEvent> create();
     static PassRefPtrWillBeRawPtr<RelatedEvent> create(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget);

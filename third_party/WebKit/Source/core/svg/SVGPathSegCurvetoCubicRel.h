@@ -27,6 +27,7 @@
 namespace blink {
 
 class SVGPathSegCurvetoCubicRel FINAL : public SVGPathSegCurvetoCubic {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtr<SVGPathSegCurvetoCubicRel> create(SVGPathElement* element, float x, float y, float x1, float y1, float x2, float y2)
     {
@@ -46,4 +47,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGPathSegCurvetoCubicRel_h

@@ -90,6 +90,7 @@ enum ElementFlags {
 };
 
 class Element : public ContainerNode {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Element> create(const QualifiedName&, Document*);
     virtual ~Element();
@@ -870,4 +871,4 @@ inline bool isAtShadowBoundary(const Element* element)
 
 } // namespace
 
-#endif
+#endif // Element_h

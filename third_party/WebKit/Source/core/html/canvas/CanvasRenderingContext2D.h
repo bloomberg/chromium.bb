@@ -67,6 +67,7 @@ class TextMetrics;
 typedef WillBeHeapHashMap<String, RefPtrWillBeMember<MutableStylePropertySet> > MutableStylePropertyMap;
 
 class CanvasRenderingContext2D FINAL: public CanvasRenderingContext, public ScriptWrappable, public CanvasPathMethods {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassOwnPtrWillBeRawPtr<CanvasRenderingContext2D> create(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode)
     {
@@ -386,4 +387,4 @@ DEFINE_TYPE_CASTS(CanvasRenderingContext2D, CanvasRenderingContext, context, con
 
 } // namespace blink
 
-#endif
+#endif // CanvasRenderingContext2D_h

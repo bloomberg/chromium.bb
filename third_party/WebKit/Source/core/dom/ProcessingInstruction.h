@@ -33,6 +33,7 @@ class StyleSheet;
 class CSSStyleSheet;
 
 class ProcessingInstruction FINAL : public CharacterData, private ResourceOwner<StyleSheetResource> {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<ProcessingInstruction> create(Document&, const String& target, const String& data);
     virtual ~ProcessingInstruction();
@@ -94,4 +95,4 @@ inline bool isXSLStyleSheet(const Node& node)
 
 } // namespace blink
 
-#endif
+#endif // ProcessingInstruction_h

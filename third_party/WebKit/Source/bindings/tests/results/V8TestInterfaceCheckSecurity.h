@@ -57,7 +57,8 @@ inline v8::Handle<v8::Value> toV8(TestInterfaceCheckSecurity* impl, v8::Handle<v
     v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper<V8TestInterfaceCheckSecurity>(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
-    return wrap(impl, creationContext, isolate);
+
+    return impl->wrap(creationContext, isolate);
 }
 
 template<typename CallbackInfo>

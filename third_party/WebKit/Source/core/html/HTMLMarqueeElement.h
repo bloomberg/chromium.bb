@@ -33,6 +33,7 @@ class ExceptionState;
 class RenderMarquee;
 
 class HTMLMarqueeElement FINAL : public HTMLElement, private ActiveDOMObject {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLMarqueeElement> create(Document&);
 

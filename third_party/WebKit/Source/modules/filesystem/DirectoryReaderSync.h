@@ -45,6 +45,7 @@ class ExceptionState;
 typedef HeapVector<Member<EntrySync> > EntrySyncHeapVector;
 
 class DirectoryReaderSync : public DirectoryReaderBase, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static DirectoryReaderSync* create(DOMFileSystemBase* fileSystem, const String& fullPath)
     {
@@ -78,6 +79,6 @@ private:
     FileError::ErrorCode m_errorCode;
 };
 
-} // namespace
+} // namespace blink
 
 #endif // DirectoryReaderSync_h

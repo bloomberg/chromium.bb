@@ -19,6 +19,7 @@ class RespondWithObserver;
 // context. RespondWithObserver can be used to notify the client about the
 // service worker's response.
 class FetchEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<FetchEvent> create();
     static PassRefPtrWillBeRawPtr<FetchEvent> create(RespondWithObserver*, PassRefPtrWillBeRawPtr<Request>);

@@ -48,6 +48,7 @@ class NodeWithIndex;
 class Text;
 
 class Range FINAL : public RefCountedWillBeGarbageCollectedFinalized<Range>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Range> create(Document&);
     static PassRefPtrWillBeRawPtr<Range> create(Document&, Node* startContainer, int startOffset, Node* endContainer, int endOffset);
@@ -181,4 +182,4 @@ bool areRangesEqual(const Range*, const Range*);
 void showTree(const blink::Range*);
 #endif
 
-#endif
+#endif // Range_h

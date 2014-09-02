@@ -34,6 +34,7 @@ class HTMLDataListElement;
 class HTMLSelectElement;
 
 class HTMLOptionElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLOptionElement> create(Document&);
     static PassRefPtrWillBeRawPtr<HTMLOptionElement> createForJSConstructor(Document&, const String& data, const AtomicString& value,
@@ -99,4 +100,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // HTMLOptionElement_h

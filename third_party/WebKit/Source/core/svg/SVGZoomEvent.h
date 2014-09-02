@@ -29,6 +29,7 @@
 namespace blink {
 
 class SVGZoomEvent FINAL : public UIEvent {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SVGZoomEvent> create()
     {

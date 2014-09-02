@@ -28,6 +28,7 @@
 namespace blink {
 
 class SVGFEOffsetElement FINAL : public SVGFilterPrimitiveStandardAttributes {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFEOffsetElement);
 
@@ -49,4 +50,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGFEOffsetElement_h

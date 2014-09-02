@@ -29,6 +29,7 @@ template<typename T> class EventSender;
 typedef EventSender<HTMLDetailsElement> DetailsEventSender;
 
 class HTMLDetailsElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLDetailsElement> create(Document&);
     void toggleOpen();

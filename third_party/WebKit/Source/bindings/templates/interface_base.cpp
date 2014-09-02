@@ -50,6 +50,13 @@ namespace blink {
 
 const WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}::domTemplate, {{v8_class}}::refObject, {{v8_class}}::derefObject, {{v8_class}}::createPersistentHandle, {{to_active_dom_object}}, {{to_event_target}}, {{visit_dom_wrapper}}, {{v8_class}}::installConditionallyEnabledMethods, {{v8_class}}::installConditionallyEnabledProperties, {{parent_wrapper_type_info}}, WrapperTypeInfo::{{wrapper_type_prototype}}, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{lifetime}}, WrapperTypeInfo::{{gc_type}} };
 
+{% if is_script_wrappable %}
+// This static member must be declared by DEFINE_WRAPPERTYPEINFO in {{cpp_class}}.h.
+// For details, see the comment of DEFINE_WRAPPERTYPEINFO in
+// bindings/core/v8/ScriptWrappable.h.
+const WrapperTypeInfo& {{cpp_class}}::s_wrapperTypeInfo = {{v8_class}}::wrapperTypeInfo;
+
+{% endif %}
 namespace {{cpp_class}}V8Internal {
 
 template <typename T> void V8_USE(T) { }

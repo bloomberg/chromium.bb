@@ -33,6 +33,7 @@
 namespace blink {
 
 class MediaDeviceInfo FINAL : public GarbageCollectedFinalized<MediaDeviceInfo>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static MediaDeviceInfo* create(const WebMediaDeviceInfo&);
 

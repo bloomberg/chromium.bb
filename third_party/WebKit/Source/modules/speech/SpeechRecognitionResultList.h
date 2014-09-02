@@ -33,6 +33,7 @@
 namespace blink {
 
 class SpeechRecognitionResultList : public GarbageCollected<SpeechRecognitionResultList>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static SpeechRecognitionResultList* create(const HeapVector<Member<SpeechRecognitionResult> >&);
 

@@ -43,6 +43,7 @@ class CryptoKey;
 class Dictionary;
 
 class SubtleCrypto FINAL : public GarbageCollected<SubtleCrypto>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static SubtleCrypto* create()
     {
@@ -72,4 +73,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SubtleCrypto_h

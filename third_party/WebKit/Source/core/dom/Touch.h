@@ -41,6 +41,7 @@ namespace blink {
 class LocalFrame;
 
 class Touch FINAL : public RefCountedWillBeGarbageCollected<Touch>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Touch> create(LocalFrame* frame, EventTarget* target,
         unsigned identifier, const FloatPoint& screenPos, const FloatPoint& pagePos,
@@ -103,4 +104,4 @@ private:
 
 } // namespace blink
 
-#endif /* Touch_h */
+#endif // Touch_h

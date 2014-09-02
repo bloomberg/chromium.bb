@@ -28,6 +28,7 @@
 namespace blink {
 
 class HTMLEmbedElement FINAL : public HTMLPlugInElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLEmbedElement> create(Document&, bool createdByParser = false);
 
@@ -55,6 +56,6 @@ private:
     virtual bool isInteractiveContent() const OVERRIDE;
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // HTMLEmbedElement_h

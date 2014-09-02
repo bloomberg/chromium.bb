@@ -32,6 +32,7 @@ class SVGPathElement;
 
 class SVGMPathElement FINAL : public SVGElement,
                               public SVGURIReference {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGMPathElement);
 

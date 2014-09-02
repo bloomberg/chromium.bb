@@ -48,6 +48,7 @@ class FileEntry;
 class FileWriterCallback;
 
 class DOMFileSystem FINAL : public DOMFileSystemBase, public ScriptWrappable, public ActiveDOMObject {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static DOMFileSystem* create(ExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);
 
@@ -239,6 +240,6 @@ void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, PassOwn
         executionContext->postTask(adoptPtr(new DispatchCallbackNoArgTask<CB>(callback)));
 }
 
-} // namespace
+} // namespace blink
 
 #endif // DOMFileSystem_h

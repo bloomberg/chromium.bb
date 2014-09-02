@@ -35,6 +35,7 @@ namespace blink {
 class WebGLRenderingContextBase;
 
 class WebGLLoseContext FINAL : public WebGLExtension, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<WebGLLoseContext> create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);

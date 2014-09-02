@@ -72,7 +72,8 @@ inline v8::Handle<v8::Value> toV8(TestInterfaceWillBeGarbageCollected* impl, v8:
     v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper<V8TestInterfaceWillBeGarbageCollected>(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
-    return wrap(impl, creationContext, isolate);
+
+    return impl->wrap(creationContext, isolate);
 }
 
 template<typename CallbackInfo>

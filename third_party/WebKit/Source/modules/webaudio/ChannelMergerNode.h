@@ -37,6 +37,7 @@ namespace blink {
 class AudioContext;
 
 class ChannelMergerNode FINAL : public AudioNode {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static ChannelMergerNode* create(AudioContext*, float sampleRate, unsigned numberOfInputs);
 

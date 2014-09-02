@@ -41,6 +41,7 @@ class GenericEventQueue;
 class TextTrack;
 
 class TextTrackList FINAL : public RefCountedWillBeGarbageCollectedFinalized<TextTrackList>, public EventTargetWithInlineData {
+    DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(TextTrackList);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TextTrackList);
 public:
@@ -99,4 +100,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // TextTrackList_h

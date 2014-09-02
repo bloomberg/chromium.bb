@@ -28,6 +28,7 @@
 namespace blink {
 
 class SVGFEGaussianBlurElement FINAL : public SVGFilterPrimitiveStandardAttributes {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFEGaussianBlurElement);
 
@@ -51,4 +52,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGFEGaussianBlurElement_h

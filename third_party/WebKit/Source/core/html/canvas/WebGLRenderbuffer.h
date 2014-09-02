@@ -33,6 +33,7 @@
 namespace blink {
 
 class WebGLRenderbuffer FINAL : public WebGLSharedObject, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~WebGLRenderbuffer();
 

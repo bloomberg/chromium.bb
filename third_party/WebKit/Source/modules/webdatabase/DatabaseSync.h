@@ -48,6 +48,7 @@ class SQLTransactionSyncCallback;
 
 // Instances of this class should be created and used only on the worker's context thread.
 class DatabaseSync FINAL : public DatabaseBackendSync, public DatabaseBase, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~DatabaseSync();
     virtual void trace(Visitor*) OVERRIDE;
@@ -100,4 +101,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // DatabaseSync_h

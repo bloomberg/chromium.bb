@@ -57,6 +57,7 @@ class MessagePort FINAL : public RefCountedWillBeGarbageCollectedFinalized<Messa
     , public ActiveDOMObject
     , public EventTargetWithInlineData
     , public WebMessagePortChannelClient {
+    DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(MessagePort);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MessagePort);
 public:

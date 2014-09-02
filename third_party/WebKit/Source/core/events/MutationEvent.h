@@ -29,54 +29,51 @@
 
 namespace blink {
 
-    class MutationEvent FINAL : public Event {
-    public:
-        virtual ~MutationEvent();
+class MutationEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    virtual ~MutationEvent();
 
-        enum attrChangeType {
-            MODIFICATION    = 1,
-            ADDITION        = 2,
-            REMOVAL         = 3
-        };
-
-        static PassRefPtrWillBeRawPtr<MutationEvent> create()
-        {
-            return adoptRefWillBeNoop(new MutationEvent);
-        }
-
-        static PassRefPtrWillBeRawPtr<MutationEvent> create(
-            const AtomicString& type, bool canBubble, PassRefPtrWillBeRawPtr<Node> relatedNode = nullptr,
-            const String& prevValue = String(), const String& newValue = String(), const String& attrName = String(), unsigned short attrChange = 0)
-        {
-            return adoptRefWillBeNoop(new MutationEvent(type, canBubble, false, relatedNode, prevValue, newValue, attrName, attrChange));
-        }
-
-        void initMutationEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<Node> relatedNode,
-                               const String& prevValue, const String& newValue,
-                               const String& attrName, unsigned short attrChange);
-
-        Node* relatedNode() const { return m_relatedNode.get(); }
-        String prevValue() const { return m_prevValue; }
-        String newValue() const { return m_newValue; }
-        String attrName() const { return m_attrName; }
-        unsigned short attrChange() const { return m_attrChange; }
-
-        virtual const AtomicString& interfaceName() const OVERRIDE;
-
-        virtual void trace(Visitor*) OVERRIDE;
-
-    private:
-        MutationEvent();
-        MutationEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<Node> relatedNode,
-                      const String& prevValue, const String& newValue,
-                      const String& attrName, unsigned short attrChange);
-
-        RefPtrWillBeMember<Node> m_relatedNode;
-        String m_prevValue;
-        String m_newValue;
-        String m_attrName;
-        unsigned short m_attrChange;
+    enum AttrChangeType {
+        MODIFICATION    = 1, // NOLINT
+        ADDITION        = 2, // NOLINT
+        REMOVAL         = 3  // NOLINT
     };
+
+    static PassRefPtrWillBeRawPtr<MutationEvent> create()
+    {
+        return adoptRefWillBeNoop(new MutationEvent);
+    }
+
+    static PassRefPtrWillBeRawPtr<MutationEvent> create(
+        const AtomicString& type, bool canBubble, PassRefPtrWillBeRawPtr<Node> relatedNode = nullptr,
+        const String& prevValue = String(), const String& newValue = String(), const String& attrName = String(), unsigned short attrChange = 0)
+    {
+        return adoptRefWillBeNoop(new MutationEvent(type, canBubble, false, relatedNode, prevValue, newValue, attrName, attrChange));
+    }
+
+    void initMutationEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<Node> relatedNode, const String& prevValue, const String& newValue, const String& attrName, unsigned short attrChange);
+
+    Node* relatedNode() const { return m_relatedNode.get(); }
+    String prevValue() const { return m_prevValue; }
+    String newValue() const { return m_newValue; }
+    String attrName() const { return m_attrName; }
+    unsigned short attrChange() const { return m_attrChange; }
+
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+
+    virtual void trace(Visitor*) OVERRIDE;
+
+private:
+    MutationEvent();
+    MutationEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<Node> relatedNode, const String& prevValue, const String& newValue, const String& attrName, unsigned short attrChange);
+
+    RefPtrWillBeMember<Node> m_relatedNode;
+    String m_prevValue;
+    String m_newValue;
+    String m_attrName;
+    unsigned short m_attrChange;
+};
 
 } // namespace blink
 

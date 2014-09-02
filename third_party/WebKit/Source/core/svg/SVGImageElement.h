@@ -33,6 +33,7 @@ namespace blink {
 
 class SVGImageElement FINAL : public SVGGraphicsElement,
                               public SVGURIReference {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGImageElement);
     virtual void trace(Visitor*) OVERRIDE;
@@ -81,4 +82,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGImageElement_h

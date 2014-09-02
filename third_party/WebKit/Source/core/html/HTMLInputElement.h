@@ -46,6 +46,7 @@ class RadioButtonGroupScope;
 struct DateTimeChooserParameters;
 
 class HTMLInputElement : public HTMLTextFormControlElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLInputElement> create(Document&, HTMLFormElement*, bool createdByParser);
     virtual ~HTMLInputElement();
@@ -398,5 +399,6 @@ private:
     OwnPtrWillBeMember<ListAttributeTargetObserver> m_listAttributeTargetObserver;
 };
 
-} //namespace
-#endif
+} // namespace blink
+
+#endif // HTMLInputElement_h

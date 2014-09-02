@@ -40,6 +40,7 @@ namespace blink {
 class AudioContext;
 
 class MediaStreamAudioSourceNode FINAL : public AudioSourceNode, public AudioSourceProviderClient {
+    DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(MediaStreamAudioSourceNode);
 public:
     static MediaStreamAudioSourceNode* create(AudioContext*, MediaStream*, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);

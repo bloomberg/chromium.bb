@@ -49,6 +49,7 @@ class VTTCueBox;
 class VTTScanner;
 
 class VTTRegion FINAL : public RefCountedWillBeGarbageCollectedFinalized<VTTRegion>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<VTTRegion> create()
     {
@@ -156,4 +157,5 @@ private:
 };
 
 } // namespace blink
-#endif
+
+#endif // VTTRegion_h

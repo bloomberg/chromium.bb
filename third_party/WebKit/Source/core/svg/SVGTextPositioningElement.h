@@ -29,6 +29,7 @@
 namespace blink {
 
 class SVGTextPositioningElement : public SVGTextContentElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static SVGTextPositioningElement* elementFromRenderer(RenderObject*);
 
@@ -62,4 +63,4 @@ DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGTextPositioningElement);
 
 } // namespace blink
 
-#endif
+#endif // SVGTextPositioningElement_h

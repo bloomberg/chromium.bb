@@ -37,6 +37,7 @@ namespace blink {
 
 class SVGFilterElement FINAL : public SVGElement,
                                public SVGURIReference {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFilterElement);
     virtual void trace(Visitor*) OVERRIDE;
@@ -79,6 +80,6 @@ private:
     WillBeHeapHashSet<RefPtrWillBeMember<Node> > m_clientsToAdd;
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // SVGFilterElement_h

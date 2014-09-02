@@ -31,6 +31,7 @@
 namespace blink {
 
 class HTMLTableColElement FINAL : public HTMLTablePartElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableColElement);
 
@@ -59,4 +60,4 @@ DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTableColElement);
 
 } // namespace blink
 
-#endif
+#endif // HTMLTableColElement_h

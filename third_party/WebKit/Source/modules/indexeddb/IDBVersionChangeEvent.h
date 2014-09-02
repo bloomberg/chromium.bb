@@ -47,6 +47,7 @@ struct IDBVersionChangeEventInit : public EventInit {
 };
 
 class IDBVersionChangeEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<IDBVersionChangeEvent> create()
     {

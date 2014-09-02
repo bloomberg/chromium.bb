@@ -27,6 +27,7 @@
 namespace blink {
 
 class SVGPolylineElement FINAL : public SVGPolyElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGPolylineElement);
 
@@ -36,4 +37,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGPolylineElement_h

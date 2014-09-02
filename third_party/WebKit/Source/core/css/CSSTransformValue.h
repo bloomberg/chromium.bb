@@ -82,6 +82,6 @@ private:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSTransformValue, isTransformValue());
 
-}
+} // namespace blink
 
 #endif

@@ -31,6 +31,7 @@
 namespace blink {
 
 class HTMLTableCaptionElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLTableCaptionElement);
 
@@ -40,6 +41,6 @@ private:
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
 };
 
-} // namespace
+} // namespace blink
 
-#endif
+#endif // HTMLTableCaptionElement_h

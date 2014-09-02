@@ -33,6 +33,7 @@
 namespace blink {
 
 class NodeFilter FINAL : public RefCountedWillBeGarbageCollected<NodeFilter>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     /**
      * The following constants are returned by the acceptNode()

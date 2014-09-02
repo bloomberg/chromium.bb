@@ -32,6 +32,7 @@
 namespace blink {
 
 class SVGFESpecularLightingElement FINAL : public SVGFilterPrimitiveStandardAttributes {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFESpecularLightingElement);
     void lightElementAttributeChanged(const SVGFELightElement*, const QualifiedName&);
@@ -63,4 +64,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGFESpecularLightingElement_h

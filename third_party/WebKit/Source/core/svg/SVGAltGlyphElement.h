@@ -34,6 +34,7 @@ class ExceptionState;
 
 class SVGAltGlyphElement FINAL : public SVGTextPositioningElement,
                                  public SVGURIReference {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGAltGlyphElement);
 
@@ -52,5 +53,5 @@ private:
 
 } // namespace blink
 
-#endif
-#endif
+#endif // ENABLE(SVG_FONTS)
+#endif // SVGAltGlyphElement_h

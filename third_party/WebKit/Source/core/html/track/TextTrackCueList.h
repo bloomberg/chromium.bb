@@ -36,6 +36,7 @@ namespace blink {
 
 class TextTrackCueList FINAL : public RefCountedWillBeGarbageCollected<TextTrackCueList>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(TextTrackCueList);
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<TextTrackCueList> create()
     {
@@ -69,4 +70,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // TextTrackCueList_h

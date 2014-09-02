@@ -220,7 +220,12 @@ inline v8::Handle<v8::Value> toV8({{cpp_class}}* impl, v8::Handle<v8::Object> cr
     v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper<{{v8_class}}>(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
+
+{% if is_script_wrappable %}
+    return impl->wrap(creationContext, isolate);
+{% else %}
     return wrap(impl, creationContext, isolate);
+{% endif %}
 }
 
 template<typename CallbackInfo>

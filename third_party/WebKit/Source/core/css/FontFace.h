@@ -54,6 +54,7 @@ class StylePropertySet;
 class StyleRuleFontFace;
 
 class FontFace : public RefCountedWillBeGarbageCollectedFinalized<FontFace>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum LoadStatus { Unloaded, Loading, Loaded, Error };
 

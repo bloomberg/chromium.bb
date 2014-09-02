@@ -28,6 +28,7 @@
 namespace blink {
 
 class SVGVKernElement FINAL : public SVGElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGVKernElement);
 
@@ -45,4 +46,4 @@ private:
 } // namespace blink
 
 #endif // ENABLE(SVG_FONTS)
-#endif
+#endif // SVGVKernElement_h

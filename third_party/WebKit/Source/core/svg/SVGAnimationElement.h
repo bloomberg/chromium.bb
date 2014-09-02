@@ -57,6 +57,7 @@ enum CalcMode {
 };
 
 class SVGAnimationElement : public SVGSMILElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     // SVGAnimationElement
     float getStartTime() const;

@@ -46,6 +46,7 @@ struct MIDIConnectionEventInit : public EventInit {
 };
 
 class MIDIConnectionEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<MIDIConnectionEvent> create();
     static PassRefPtrWillBeRawPtr<MIDIConnectionEvent> create(const AtomicString&, MIDIPort*);

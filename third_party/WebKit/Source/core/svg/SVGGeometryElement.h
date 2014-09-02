@@ -38,6 +38,7 @@ namespace blink {
 class SVGPointTearOff;
 
 class SVGGeometryElement : public SVGGraphicsElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     bool isPointInFill(PassRefPtr<SVGPointTearOff>) const;
     bool isPointInStroke(PassRefPtr<SVGPointTearOff>) const;

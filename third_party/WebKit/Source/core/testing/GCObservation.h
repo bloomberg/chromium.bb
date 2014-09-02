@@ -41,6 +41,7 @@
 namespace blink {
 
 class GCObservation : public RefCountedWillBeGarbageCollectedFinalized<GCObservation>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<GCObservation> create(v8::Handle<v8::Value> observedValue)
     {
@@ -64,6 +65,6 @@ private:
     bool m_collected;
 };
 
-}
+} // namespace blink
 
 #endif // GCObservation_h

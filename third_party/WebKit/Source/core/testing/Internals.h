@@ -74,6 +74,7 @@ typedef StaticNodeTypeList<Node> StaticNodeList;
 class TypeConversions;
 
 class Internals FINAL : public RefCountedWillBeGarbageCollectedFinalized<Internals>, public ScriptWrappable, public ContextLifecycleObserver {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Internals> create(Document*);
     virtual ~Internals();
@@ -331,4 +332,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // Internals_h

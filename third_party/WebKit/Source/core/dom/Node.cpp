@@ -25,8 +25,10 @@
 #include "config.h"
 #include "core/dom/Node.h"
 
+#include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/V8DOMWrapper.h"
 #include "core/HTMLNames.h"
 #include "core/XMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
@@ -75,6 +77,7 @@
 #include "core/events/WheelEvent.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -82,7 +85,6 @@
 #include "core/page/ContextMenuController.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
-#include "core/frame/Settings.h"
 #include "core/rendering/FlowThreadController.h"
 #include "core/rendering/RenderBox.h"
 #include "core/svg/graphics/SVGImage.h"
@@ -2465,6 +2467,22 @@ unsigned Node::lengthOfContents() const
     }
     ASSERT_NOT_REACHED();
     return 0;
+}
+
+v8::Handle<v8::Object> Node::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT(!DOMDataStore::containsWrapperNonTemplate(this, isolate));
+
+    const WrapperTypeInfo* wrapperType = wrapperTypeInfo();
+
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, wrapperType, toInternalPointer(), isolate);
+    if (UNLIKELY(wrapper.IsEmpty()))
+        return wrapper;
+
+    wrapperType->installConditionallyEnabledProperties(wrapper, isolate);
+    wrapperType->refObject(toInternalPointer());
+    V8DOMWrapper::associateObjectWithWrapperNonTemplate(this, wrapperType, wrapper, isolate);
+    return wrapper;
 }
 
 } // namespace blink

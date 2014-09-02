@@ -44,6 +44,7 @@ public:
 };
 
 class SpeechRecognitionEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> create();
     static PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> create(const AtomicString&, const SpeechRecognitionEventInit&);

@@ -36,6 +36,7 @@
 namespace blink {
 
 class InspectorOverlayHost FINAL : public RefCountedWillBeGarbageCollectedFinalized<InspectorOverlayHost>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<InspectorOverlayHost> create()
     {
@@ -63,4 +64,4 @@ private:
 
 } // namespace blink
 
-#endif // !defined(InspectorOverlayHost_h)
+#endif // InspectorOverlayHost_h

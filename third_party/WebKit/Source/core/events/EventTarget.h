@@ -98,6 +98,7 @@ public:
 // Optionally, add a FooEvent.idl class, but that's outside the scope of this
 // comment (and much more straightforward).
 class EventTarget : public WillBeGarbageCollectedMixin, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
 #if !ENABLE(OILPAN)
     void ref() { refEventTarget(); }

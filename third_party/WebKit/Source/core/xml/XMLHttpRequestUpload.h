@@ -42,6 +42,7 @@ class ExecutionContext;
 class XMLHttpRequest;
 
 class XMLHttpRequestUpload FINAL : public NoBaseWillBeGarbageCollectedFinalized<XMLHttpRequestUpload>, public XMLHttpRequestEventTarget {
+    DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequestUpload);
 public:
     static PassOwnPtrWillBeRawPtr<XMLHttpRequestUpload> create(XMLHttpRequest* xmlHttpRequest)

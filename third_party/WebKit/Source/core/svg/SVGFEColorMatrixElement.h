@@ -31,6 +31,7 @@ namespace blink {
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<ColorMatrixType>();
 
 class SVGFEColorMatrixElement FINAL : public SVGFilterPrimitiveStandardAttributes {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFEColorMatrixElement);
 
@@ -54,4 +55,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGFEColorMatrixElement_h

@@ -44,6 +44,7 @@ class CryptoResult;
 class KeyAlgorithm;
 
 class CryptoKey : public GarbageCollectedFinalized<CryptoKey>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static CryptoKey* create(const WebCryptoKey& key)
     {
@@ -76,4 +77,4 @@ protected:
 
 } // namespace blink
 
-#endif
+#endif // CryptoKey_h

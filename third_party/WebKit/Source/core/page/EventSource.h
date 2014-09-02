@@ -51,9 +51,10 @@ class TextResourceDecoder;
 class ThreadableLoader;
 
 class EventSource FINAL : public RefCountedWillBeGarbageCollectedFinalized<EventSource>, public EventTargetWithInlineData, private ThreadableLoaderClient, public ActiveDOMObject {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(EventSource);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(EventSource);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static PassRefPtrWillBeRawPtr<EventSource> create(ExecutionContext*, const String& url, const Dictionary&, ExceptionState&);
     virtual ~EventSource();

@@ -35,6 +35,7 @@ namespace blink {
 class AudioBuffer;
 
 class OfflineAudioCompletionEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<OfflineAudioCompletionEvent> create();
     static PassRefPtrWillBeRawPtr<OfflineAudioCompletionEvent> create(AudioBuffer* renderedBuffer);

@@ -41,6 +41,7 @@ class ExceptionState;
 class LocalFrame;
 
 class Storage FINAL : public RefCountedWillBeGarbageCollectedFinalized<Storage>, public ScriptWrappable, public DOMWindowProperty {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Storage> create(LocalFrame*, PassOwnPtrWillBeRawPtr<StorageArea>);
     virtual ~Storage();

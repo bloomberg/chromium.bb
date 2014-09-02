@@ -28,6 +28,7 @@
 namespace blink {
 
 class SVGFEMergeNodeElement FINAL : public SVGElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFEMergeNodeElement);
     SVGAnimatedString* in1() { return m_in1.get(); }
@@ -45,4 +46,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGFEMergeNodeElement_h

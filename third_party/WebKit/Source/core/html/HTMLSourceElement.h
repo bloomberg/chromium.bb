@@ -36,6 +36,7 @@ template<typename T> class EventSender;
 typedef EventSender<HTMLSourceElement> SourceEventSender;
 
 class HTMLSourceElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     class Listener;
 
@@ -71,4 +72,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // HTMLSourceElement_h

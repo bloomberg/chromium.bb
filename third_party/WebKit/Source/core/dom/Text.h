@@ -31,6 +31,7 @@ class ExceptionState;
 class RenderText;
 
 class Text : public CharacterData {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static const unsigned defaultLengthLimit = 1 << 16;
 

@@ -58,7 +58,8 @@ inline v8::Handle<v8::Value> toV8(TestTypedefs* impl, v8::Handle<v8::Object> cre
     v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper<V8TestTypedefs>(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
-    return wrap(impl, creationContext, isolate);
+
+    return impl->wrap(creationContext, isolate);
 }
 
 template<typename CallbackInfo>

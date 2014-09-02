@@ -44,6 +44,7 @@ class VTTRegion;
 class VTTRegionList;
 
 class TextTrack : public TrackBase, public EventTargetWithInlineData {
+    DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(TrackBase);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TextTrack);
 public:
@@ -144,4 +145,4 @@ DEFINE_TRACK_TYPE_CASTS(TextTrack, TrackBase::TextTrack);
 
 } // namespace blink
 
-#endif
+#endif // TextTrack_h

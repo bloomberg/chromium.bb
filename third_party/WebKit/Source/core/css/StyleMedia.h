@@ -38,6 +38,7 @@ namespace blink {
 class LocalFrame;
 
 class StyleMedia : public RefCountedWillBeGarbageCollectedFinalized<StyleMedia>, public DOMWindowProperty, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<StyleMedia> create(LocalFrame* frame) { return adoptRefWillBeNoop(new StyleMedia(frame));}
 
@@ -50,6 +51,6 @@ private:
     explicit StyleMedia(LocalFrame*);
 };
 
-} // namespace
+} // namespace blink
 
 #endif // StyleMedia_h

@@ -35,6 +35,7 @@ class SerializedScriptValue;
 typedef EventInit CustomEventInit;
 
 class CustomEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~CustomEvent();
 

@@ -35,6 +35,7 @@ class DocumentResource;
 class SVGUseElement FINAL : public SVGGraphicsElement,
                             public SVGURIReference,
                             public DocumentResourceClient {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SVGUseElement> create(Document&);
     virtual ~SVGUseElement();
@@ -106,6 +107,6 @@ private:
     Timer<SVGElement> m_svgLoadEventTimer;
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // SVGUseElement_h

@@ -26,6 +26,7 @@
 namespace blink {
 
 class SVGPathSegClosePath FINAL : public SVGPathSegWithContext {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtr<SVGPathSegClosePath> create(SVGPathElement* element)
     {
@@ -45,4 +46,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGPathSegClosePath_h

@@ -30,6 +30,7 @@ namespace blink {
 
 class SVGAElement FINAL : public SVGGraphicsElement,
                           public SVGURIReference {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGAElement);
     SVGAnimatedString* svgTarget() { return m_svgTarget.get(); }

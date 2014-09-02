@@ -40,6 +40,7 @@ class ExecutionContext;
 
 class MessageChannel FINAL : public RefCountedWillBeGarbageCollected<MessageChannel>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MessageChannel);
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<MessageChannel> create(ExecutionContext* context)
     {

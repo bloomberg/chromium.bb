@@ -46,6 +46,7 @@ class Node;
 
 class LayerRectList FINAL : public RefCountedWillBeGarbageCollected<LayerRectList>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(LayerRectList);
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<LayerRectList> create()
     {

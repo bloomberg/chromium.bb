@@ -39,9 +39,10 @@ namespace blink {
 class Element;
 
 class DOMStringMap : public NoBaseWillBeGarbageCollected<DOMStringMap>, public ScriptWrappable {
-    WTF_MAKE_NONCOPYABLE(DOMStringMap);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(DOMStringMap);
+    DEFINE_WRAPPERTYPEINFO();
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_NONCOPYABLE(DOMStringMap);
 public:
 #if !ENABLE(OILPAN)
     virtual void ref() = 0;

@@ -33,6 +33,7 @@
 namespace blink {
 
 class OESElementIndexUint FINAL : public WebGLExtension, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<OESElementIndexUint> create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);

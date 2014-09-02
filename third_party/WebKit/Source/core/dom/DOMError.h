@@ -37,6 +37,7 @@
 namespace blink {
 
 class DOMError : public RefCountedWillBeGarbageCollectedFinalized<DOMError>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<DOMError> create(const String& name)
     {

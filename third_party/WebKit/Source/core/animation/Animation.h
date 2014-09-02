@@ -46,6 +46,7 @@ class ExceptionState;
 class SampledEffect;
 
 class Animation FINAL : public AnimationNode {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum Priority { DefaultPriority, TransitionPriority };
 
@@ -110,4 +111,4 @@ DEFINE_TYPE_CASTS(Animation, AnimationNode, animationNode, animationNode->isAnim
 
 } // namespace blink
 
-#endif
+#endif // Animation_h

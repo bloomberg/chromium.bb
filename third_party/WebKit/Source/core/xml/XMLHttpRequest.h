@@ -59,9 +59,10 @@ class XMLHttpRequest FINAL
     , public XMLHttpRequestEventTarget
     , private ThreadableLoaderClient
     , public ActiveDOMObject {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(XMLHttpRequest);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequest);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static PassRefPtrWillBeRawPtr<XMLHttpRequest> create(ExecutionContext*, PassRefPtr<SecurityOrigin> = nullptr);
     virtual ~XMLHttpRequest();

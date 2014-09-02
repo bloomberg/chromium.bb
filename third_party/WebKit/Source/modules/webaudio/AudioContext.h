@@ -74,6 +74,7 @@ class WaveShaperNode;
 
 class AudioContext : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<AudioContext>, public ActiveDOMObject, public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<AudioContext>);
+    DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AudioContext);
 public:
     // Create an AudioContext for rendering to the audio hardware.

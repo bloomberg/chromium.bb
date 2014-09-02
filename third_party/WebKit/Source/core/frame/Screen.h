@@ -39,30 +39,31 @@
 
 namespace blink {
 
-    class LocalFrame;
+class LocalFrame;
 
-    class Screen FINAL : public RefCountedWillBeGarbageCollectedFinalized<Screen>, public ScriptWrappable, public DOMWindowProperty, public WillBeHeapSupplementable<Screen> {
-        WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Screen);
-    public:
-        static PassRefPtrWillBeRawPtr<Screen> create(LocalFrame* frame)
-        {
-            return adoptRefWillBeNoop(new Screen(frame));
-        }
+class Screen FINAL : public RefCountedWillBeGarbageCollectedFinalized<Screen>, public ScriptWrappable, public DOMWindowProperty, public WillBeHeapSupplementable<Screen> {
+    DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Screen);
+public:
+    static PassRefPtrWillBeRawPtr<Screen> create(LocalFrame* frame)
+    {
+        return adoptRefWillBeNoop(new Screen(frame));
+    }
 
-        unsigned height() const;
-        unsigned width() const;
-        unsigned colorDepth() const;
-        unsigned pixelDepth() const;
-        int availLeft() const;
-        int availTop() const;
-        unsigned availHeight() const;
-        unsigned availWidth() const;
+    unsigned height() const;
+    unsigned width() const;
+    unsigned colorDepth() const;
+    unsigned pixelDepth() const;
+    int availLeft() const;
+    int availTop() const;
+    unsigned availHeight() const;
+    unsigned availWidth() const;
 
-        void trace(Visitor*);
+    void trace(Visitor*);
 
-    private:
-        explicit Screen(LocalFrame*);
-    };
+private:
+    explicit Screen(LocalFrame*);
+};
 
 } // namespace blink
 

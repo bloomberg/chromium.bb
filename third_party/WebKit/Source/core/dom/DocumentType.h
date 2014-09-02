@@ -29,6 +29,7 @@
 namespace blink {
 
 class DocumentType FINAL : public Node {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<DocumentType> create(Document* document, const String& name, const String& publicId, const String& systemId)
     {
@@ -59,4 +60,4 @@ DEFINE_NODE_TYPE_CASTS(DocumentType, isDocumentTypeNode());
 
 } // namespace blink
 
-#endif
+#endif // DocumentType_h

@@ -48,6 +48,7 @@ class AnimationNode;
 
 // AnimationTimeline is constructed and owned by Document, and tied to its lifecycle.
 class AnimationTimeline : public RefCountedWillBeGarbageCollectedFinalized<AnimationTimeline>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     class PlatformTiming : public NoBaseWillBeGarbageCollectedFinalized<PlatformTiming> {
 
@@ -138,6 +139,6 @@ private:
     friend class AnimationAnimationTimelineTest;
 };
 
-} // namespace
+} // namespace blink
 
 #endif

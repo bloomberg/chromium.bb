@@ -44,6 +44,7 @@ namespace blink {
 class ScriptValue;
 
 class JavaScriptCallFrame : public RefCountedWillBeGarbageCollectedFinalized<JavaScriptCallFrame>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<JavaScriptCallFrame> create(v8::Handle<v8::Context> debuggerContext, v8::Handle<v8::Object> callFrame)
     {
@@ -86,6 +87,5 @@ private:
 };
 
 } // namespace blink
-
 
 #endif // JavaScriptCallFrame_h

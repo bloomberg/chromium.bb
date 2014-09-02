@@ -34,6 +34,7 @@
 namespace blink {
 
 class DeviceAcceleration : public RefCountedWillBeGarbageCollected<DeviceAcceleration>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<DeviceAcceleration> create(PassRefPtrWillBeRawPtr<DeviceMotionData::Acceleration> acceleration)
     {

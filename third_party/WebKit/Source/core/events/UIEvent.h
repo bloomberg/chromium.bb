@@ -40,6 +40,7 @@ struct UIEventInit : public EventInit {
 };
 
 class UIEvent : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<UIEvent> create()
     {

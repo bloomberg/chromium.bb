@@ -35,6 +35,7 @@ class DOMPlugin;
 class LocalFrame;
 
 class DOMMimeType FINAL : public RefCountedWillBeGarbageCollectedFinalized<DOMMimeType>, public ScriptWrappable, public FrameDestructionObserver {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<DOMMimeType> create(PassRefPtr<PluginData> pluginData, LocalFrame* frame, unsigned index)
     {
@@ -57,6 +58,6 @@ private:
     unsigned m_index;
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // DOMMimeType_h

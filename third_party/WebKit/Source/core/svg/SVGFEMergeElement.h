@@ -27,6 +27,7 @@
 namespace blink {
 
 class SVGFEMergeElement FINAL : public SVGFilterPrimitiveStandardAttributes {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFEMergeElement);
 
@@ -38,4 +39,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGFEMergeElement_h

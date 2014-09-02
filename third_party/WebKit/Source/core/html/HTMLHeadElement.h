@@ -29,6 +29,7 @@
 namespace blink {
 
 class HTMLHeadElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLHeadElement);
 
@@ -36,6 +37,6 @@ private:
     explicit HTMLHeadElement(Document&);
 };
 
-} // namespace
+} // namespace blink
 
-#endif
+#endif // HTMLHeadElement_h

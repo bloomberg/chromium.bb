@@ -48,6 +48,7 @@ class ExecutionContext;
 
 class DataTransferItem FINAL : public RefCountedWillBeGarbageCollected<DataTransferItem>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DataTransferItem);
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<DataTransferItem> create(PassRefPtrWillBeRawPtr<DataTransfer>, PassRefPtrWillBeRawPtr<DataObjectItem>);
 

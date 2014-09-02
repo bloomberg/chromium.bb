@@ -57,6 +57,7 @@ struct EventListenerInfo;
 // page already has itself (e.g. origin restriction bypasses).
 
 class InjectedScriptHost : public RefCountedWillBeGarbageCollectedFinalized<InjectedScriptHost>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<InjectedScriptHost> create();
     ~InjectedScriptHost();
@@ -105,4 +106,4 @@ private:
 
 } // namespace blink
 
-#endif // !defined(InjectedScriptHost_h)
+#endif // InjectedScriptHost_h

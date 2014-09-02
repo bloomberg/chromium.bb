@@ -14,6 +14,7 @@
 namespace blink {
 
 class LocalCredential FINAL : public Credential {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static LocalCredential* create(const String& id, const String& name, const String& avatar, const String& password, ExceptionState&);
 

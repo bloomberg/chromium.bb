@@ -35,6 +35,7 @@ namespace blink {
 class WebGLShader;
 
 class WebGLDebugShaders FINAL : public WebGLExtension, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<WebGLDebugShaders> create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);

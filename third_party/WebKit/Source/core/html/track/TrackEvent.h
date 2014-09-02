@@ -38,6 +38,7 @@ struct TrackEventInit : public EventInit {
 };
 
 class TrackEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~TrackEvent();
 
@@ -66,4 +67,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // TrackEvent_h

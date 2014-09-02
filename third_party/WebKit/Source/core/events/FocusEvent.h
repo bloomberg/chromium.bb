@@ -40,6 +40,7 @@ struct FocusEventInit : public UIEventInit {
 };
 
 class FocusEvent FINAL : public UIEvent {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<FocusEvent> create()
     {

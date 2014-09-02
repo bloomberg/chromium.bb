@@ -28,6 +28,7 @@
 namespace blink {
 
 class SVGStopElement FINAL : public SVGElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGStopElement);
 
@@ -50,4 +51,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGStopElement_h

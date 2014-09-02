@@ -38,6 +38,7 @@ namespace blink {
 class AudioContext;
 
 class MediaStreamAudioDestinationNode FINAL : public AudioBasicInspectorNode {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static MediaStreamAudioDestinationNode* create(AudioContext*, size_t numberOfChannels);
     virtual ~MediaStreamAudioDestinationNode();

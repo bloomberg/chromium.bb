@@ -34,6 +34,7 @@
 namespace blink {
 
 class WebGLTexture FINAL : public WebGLSharedObject, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum TextureExtensionFlag {
         NoTextureExtensionEnabled = 0,

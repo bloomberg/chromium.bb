@@ -36,8 +36,9 @@ class Element;
 class ExceptionState;
 
 class DOMTokenList : public NoBaseWillBeGarbageCollectedFinalized<DOMTokenList>, public ScriptWrappable {
-    WTF_MAKE_NONCOPYABLE(DOMTokenList);
+    DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    WTF_MAKE_NONCOPYABLE(DOMTokenList);
 public:
     DOMTokenList()
     {

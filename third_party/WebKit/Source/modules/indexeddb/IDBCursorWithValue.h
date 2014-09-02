@@ -39,6 +39,7 @@ class IDBRequest;
 class IDBTransaction;
 
 class IDBCursorWithValue FINAL : public IDBCursor {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static IDBCursorWithValue* create(PassOwnPtr<WebIDBCursor>, WebIDBCursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
     virtual ~IDBCursorWithValue();

@@ -12,6 +12,7 @@
 namespace blink {
 
 class GeofencingRegion : public GarbageCollectedFinalized<GeofencingRegion>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(GeofencingRegion);
 public:
     virtual ~GeofencingRegion() { }
@@ -29,4 +30,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // GeofencingRegion_h

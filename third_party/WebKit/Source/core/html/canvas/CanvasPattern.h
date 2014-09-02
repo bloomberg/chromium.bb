@@ -38,6 +38,7 @@ class ExceptionState;
 class Image;
 
 class CanvasPattern FINAL : public RefCountedWillBeGarbageCollectedFinalized<CanvasPattern>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static Pattern::RepeatMode parseRepetitionType(const String&, ExceptionState&);
 
@@ -62,4 +63,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // CanvasPattern_h

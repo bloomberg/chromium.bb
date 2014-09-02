@@ -39,6 +39,7 @@ struct SpeechRecognitionErrorInit : public EventInit {
 };
 
 class SpeechRecognitionError FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum ErrorCode {
         // FIXME: This is an unspecified error and Chromium should stop using it.

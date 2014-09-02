@@ -44,6 +44,7 @@ class ExceptionState;
 class IDBObjectStore;
 
 class IDBIndex : public GarbageCollectedFinalized<IDBIndex>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static IDBIndex* create(const IDBIndexMetadata& metadata, IDBObjectStore* objectStore, IDBTransaction* transaction)
     {

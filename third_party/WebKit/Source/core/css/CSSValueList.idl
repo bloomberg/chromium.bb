@@ -24,8 +24,7 @@
  */
 
 // Introduced in DOM Level 2:
-[
-] interface CSSValueList : CSSValue {
+interface CSSValueList : CSSValue {
     readonly attribute unsigned long    length;
     [ImplementedAs=itemWithBoundsCheck] getter CSSValue item(unsigned long index);
 };

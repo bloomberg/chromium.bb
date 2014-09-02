@@ -33,19 +33,17 @@
 #include "wtf/text/WTFString.h"
 
 namespace blink {
-class WebContentDecryptionModule;
-}
-
-namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
 class HTMLMediaElement;
 class ScriptState;
+class WebContentDecryptionModule;
 
 // References are held by JS and HTMLMediaElement.
 // The WebContentDecryptionModule has the same lifetime as this object.
 class MediaKeys : public GarbageCollectedFinalized<MediaKeys>, public ContextLifecycleObserver, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static ScriptPromise create(ScriptState*, const String& keySystem);
     virtual ~MediaKeys();
@@ -74,6 +72,6 @@ private:
     OwnPtr<blink::WebContentDecryptionModule> m_cdm;
 };
 
-}
+} // namespace blink
 
 #endif // MediaKeys_h

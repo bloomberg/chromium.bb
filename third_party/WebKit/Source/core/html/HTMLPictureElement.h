@@ -10,6 +10,7 @@
 namespace blink {
 
 class HTMLPictureElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLPictureElement);
 
@@ -22,6 +23,6 @@ private:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
 };
 
-} // namespace
+} // namespace blink
 
-#endif
+#endif // HTMLPictureElement_h

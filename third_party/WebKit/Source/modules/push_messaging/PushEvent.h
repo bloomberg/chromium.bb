@@ -19,6 +19,7 @@ struct PushEventInit : public EventInit {
 };
 
 class PushEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<PushEvent> create()
     {

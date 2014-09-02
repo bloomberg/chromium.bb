@@ -43,6 +43,7 @@ namespace blink {
 class ErrorCallback;
 
 class DirectoryReader : public DirectoryReaderBase, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static DirectoryReader* create(DOMFileSystemBase* fileSystem, const String& fullPath)
     {
@@ -74,6 +75,6 @@ private:
     OwnPtrWillBeMember<ErrorCallback> m_errorCallback;
 };
 
-}
+} // namespace blink
 
 #endif // DirectoryReader_h

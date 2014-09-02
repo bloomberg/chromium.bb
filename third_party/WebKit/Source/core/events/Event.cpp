@@ -23,6 +23,9 @@
 #include "config.h"
 #include "core/events/Event.h"
 
+#include "bindings/core/v8/ModuleProxy.h"
+#include "core/EventHeaders.h"
+#include "core/EventInterfaces.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/UseCounter.h"

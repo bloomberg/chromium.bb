@@ -46,6 +46,7 @@ class MediaStreamTrack FINAL
     , public EventTargetWithInlineData
     , public MediaStreamSource::Observer {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaStreamTrack>);
+    DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaStreamTrack);
 public:
     static MediaStreamTrack* create(ExecutionContext*, MediaStreamComponent*);

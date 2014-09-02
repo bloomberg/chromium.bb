@@ -13,6 +13,7 @@
 namespace blink {
 
 class WebKitGamepadList FINAL : public GarbageCollected<WebKitGamepadList>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static WebKitGamepadList* create()
     {

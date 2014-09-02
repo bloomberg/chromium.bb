@@ -42,6 +42,7 @@ namespace blink {
 class LocalFrame;
 
 class PerformanceNavigation FINAL : public RefCountedWillBeGarbageCollectedFinalized<PerformanceNavigation>, public ScriptWrappable, public DOMWindowProperty {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<PerformanceNavigation> create(LocalFrame* frame)
     {
@@ -64,6 +65,6 @@ private:
     explicit PerformanceNavigation(LocalFrame*);
 };
 
-}
+} // namespace blink
 
-#endif // !defined(PerformanceNavigation_h)
+#endif // PerformanceNavigation_h

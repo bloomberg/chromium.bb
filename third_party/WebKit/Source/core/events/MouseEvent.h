@@ -49,6 +49,7 @@ struct MouseEventInit : public UIEventInit {
 };
 
 class MouseEvent : public MouseRelatedEvent {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<MouseEvent> create()
     {

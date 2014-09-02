@@ -39,6 +39,7 @@
 namespace blink {
 
 class WorkerNavigator FINAL : public RefCountedWillBeGarbageCollectedFinalized<WorkerNavigator>, public ScriptWrappable, public NavigatorCPU, public NavigatorID, public NavigatorOnLine, public WillBeHeapSupplementable<WorkerNavigator> {
+    DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigator);
 public:
     static PassRefPtrWillBeRawPtr<WorkerNavigator> create(const String& userAgent)

@@ -34,6 +34,7 @@
 namespace blink {
 
 class MediaKeyError FINAL : public RefCountedWillBeGarbageCollectedFinalized<MediaKeyError>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum {
         MEDIA_KEYERR_UNKNOWN = 1,
@@ -67,4 +68,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // MediaKeyError_h

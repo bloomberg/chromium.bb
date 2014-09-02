@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/custom/V8ArrayBufferCustom.h"
 
 namespace blink {
 
@@ -192,6 +193,27 @@ void MessageEvent::trace(Visitor* visitor)
     visitor->trace(m_ports);
 #endif
     Event::trace(visitor);
+}
+
+v8::Handle<v8::Object> MessageEvent::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    v8::Handle<v8::Object> wrapper = Event::wrap(creationContext, isolate);
+
+    switch (dataType()) {
+    case MessageEvent::DataTypeScriptValue:
+    case MessageEvent::DataTypeSerializedScriptValue:
+        break;
+    case MessageEvent::DataTypeString:
+        V8HiddenValue::setHiddenValue(isolate, wrapper, V8HiddenValue::stringData(isolate), v8String(isolate, dataAsString()));
+        break;
+    case MessageEvent::DataTypeBlob:
+        break;
+    case MessageEvent::DataTypeArrayBuffer:
+        V8HiddenValue::setHiddenValue(isolate, wrapper, V8HiddenValue::arrayBufferData(isolate), toV8(dataAsArrayBuffer(), wrapper, isolate));
+        break;
+    }
+
+    return wrapper;
 }
 
 } // namespace blink

@@ -48,6 +48,7 @@ class ExceptionState;
 class ExecutionContext;
 
 class FileReader FINAL : public RefCountedWillBeGarbageCollectedFinalized<FileReader>, public ActiveDOMObject, public FileReaderLoaderClient, public EventTargetWithInlineData {
+    DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(FileReader);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileReader);
 public:

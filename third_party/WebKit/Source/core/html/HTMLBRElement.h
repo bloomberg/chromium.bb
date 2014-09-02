@@ -29,6 +29,7 @@
 namespace blink {
 
 class HTMLBRElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLBRElement);
 
@@ -43,6 +44,6 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 };
 
-} // namespace
+} // namespace blink
 
-#endif
+#endif // HTMLBRElement_h

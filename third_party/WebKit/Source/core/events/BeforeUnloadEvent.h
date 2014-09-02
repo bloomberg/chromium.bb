@@ -30,6 +30,7 @@
 namespace blink {
 
 class BeforeUnloadEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~BeforeUnloadEvent();
 

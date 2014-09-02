@@ -38,6 +38,7 @@
 namespace blink {
 
 class Metadata : public GarbageCollectedFinalized<Metadata>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static Metadata* create(const FileMetadata& platformMetadata)
     {
@@ -65,6 +66,6 @@ private:
     FileMetadata m_platformMetadata;
 };
 
-} // namespace
+} // namespace blink
 
 #endif // Metadata_h

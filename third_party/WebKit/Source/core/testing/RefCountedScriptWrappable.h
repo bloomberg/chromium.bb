@@ -13,6 +13,7 @@
 namespace blink {
 
 class RefCountedScriptWrappable : public RefCounted<RefCountedScriptWrappable>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtr<RefCountedScriptWrappable> create(const String&);
     virtual ~RefCountedScriptWrappable();
@@ -28,4 +29,4 @@ private:
 
 } // namespace blink
 
-#endif // #ifndef RefCountedScriptWrappable_h
+#endif // RefCountedScriptWrappable_h

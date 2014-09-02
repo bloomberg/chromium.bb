@@ -43,6 +43,7 @@ namespace blink {
 class Interpolation;
 
 class AnimationEffect : public RefCountedWillBeGarbageCollectedFinalized<AnimationEffect>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum CompositeOperation {
         CompositeReplace,

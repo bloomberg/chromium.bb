@@ -35,6 +35,7 @@ class AudioParam;
 class ExceptionState;
 
 class DelayNode FINAL : public AudioBasicProcessorNode {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static DelayNode* create(AudioContext* context, float sampleRate, double maxDelayTime, ExceptionState& exceptionState)
     {

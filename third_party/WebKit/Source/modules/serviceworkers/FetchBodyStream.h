@@ -25,6 +25,7 @@ class FetchBodyStream FINAL
     , public ScriptWrappable
     , public ActiveDOMObject
     , public FileReaderLoaderClient {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum ResponseType {
         ResponseAsArrayBuffer,

@@ -47,6 +47,7 @@ struct SecurityPolicyViolationEventInit : public EventInit {
 };
 
 class SecurityPolicyViolationEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SecurityPolicyViolationEvent> create()
     {

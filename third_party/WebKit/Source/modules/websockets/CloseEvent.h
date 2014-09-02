@@ -40,7 +40,7 @@ struct CloseEventInit : public EventInit {
         : wasClean(false)
         , code(0)
     {
-    };
+    }
 
     bool wasClean;
     unsigned short code;
@@ -48,6 +48,7 @@ struct CloseEventInit : public EventInit {
 };
 
 class CloseEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CloseEvent> create()
     {

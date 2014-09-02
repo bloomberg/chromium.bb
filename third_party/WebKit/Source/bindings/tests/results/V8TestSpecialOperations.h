@@ -57,7 +57,8 @@ inline v8::Handle<v8::Value> toV8(TestSpecialOperations* impl, v8::Handle<v8::Ob
     v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper<V8TestSpecialOperations>(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
-    return wrap(impl, creationContext, isolate);
+
+    return impl->wrap(creationContext, isolate);
 }
 
 template<typename CallbackInfo>

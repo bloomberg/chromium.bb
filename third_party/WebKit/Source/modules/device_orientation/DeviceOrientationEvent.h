@@ -34,6 +34,7 @@ namespace blink {
 class DeviceOrientationData;
 
 class DeviceOrientationEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~DeviceOrientationEvent();
     static PassRefPtrWillBeRawPtr<DeviceOrientationEvent> create()

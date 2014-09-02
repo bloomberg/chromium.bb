@@ -63,7 +63,8 @@ inline v8::Handle<v8::Value> toV8(TestInterfaceNamedConstructor2* impl, v8::Hand
     v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper<V8TestInterfaceNamedConstructor2>(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
-    return wrap(impl, creationContext, isolate);
+
+    return impl->wrap(creationContext, isolate);
 }
 
 template<typename CallbackInfo>

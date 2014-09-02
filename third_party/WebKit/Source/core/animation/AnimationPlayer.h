@@ -44,10 +44,10 @@ class ExceptionState;
 class AnimationPlayer FINAL : public RefCountedWillBeGarbageCollectedFinalized<AnimationPlayer>
     , public ActiveDOMObject
     , public EventTargetWithInlineData {
+    DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(AnimationPlayer);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AnimationPlayer);
 public:
-
     ~AnimationPlayer();
     static PassRefPtrWillBeRawPtr<AnimationPlayer> create(ExecutionContext*, AnimationTimeline&, AnimationNode*);
 
@@ -168,6 +168,6 @@ private:
     RefPtrWillBeMember<Event> m_pendingFinishedEvent;
 };
 
-} // namespace
+} // namespace blink
 
 #endif

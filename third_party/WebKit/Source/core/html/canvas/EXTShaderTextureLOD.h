@@ -12,6 +12,7 @@
 namespace blink {
 
 class EXTShaderTextureLOD FINAL : public WebGLExtension, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<EXTShaderTextureLOD> create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);

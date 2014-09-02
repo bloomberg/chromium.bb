@@ -30,6 +30,7 @@
 namespace blink {
 
 class HTMLQuoteElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLQuoteElement);
 
@@ -48,6 +49,6 @@ inline bool isHTMLQuoteElement(const HTMLElement& element)
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLQuoteElement);
 
-} //namespace
+} // namespace blink
 
-#endif
+#endif // HTMLQuoteElement_h

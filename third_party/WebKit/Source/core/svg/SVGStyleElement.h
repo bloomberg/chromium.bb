@@ -29,6 +29,7 @@ namespace blink {
 
 class SVGStyleElement FINAL : public SVGElement
                             , public StyleElement {
+    DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGStyleElement);
 public:
     static PassRefPtrWillBeRawPtr<SVGStyleElement> create(Document&, bool createdByParser);

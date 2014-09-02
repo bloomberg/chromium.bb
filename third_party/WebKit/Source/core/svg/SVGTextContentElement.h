@@ -39,6 +39,7 @@ enum SVGLengthAdjustType {
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGLengthAdjustType>();
 
 class SVGTextContentElement : public SVGGraphicsElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     // Forward declare enumerations in the W3C naming scheme, for IDL generation.
     enum {
@@ -91,4 +92,4 @@ DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGTextContentElement);
 
 } // namespace blink
 
-#endif
+#endif // SVGTextContentElement_h

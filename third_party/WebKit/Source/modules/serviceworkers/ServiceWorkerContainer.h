@@ -56,6 +56,7 @@ class ServiceWorkerContainer FINAL
     , public ScriptWrappable
     , public ContextLifecycleObserver
     , public WebServiceWorkerProviderClient {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<ServiceWorkerContainer> create(ExecutionContext*);
     ~ServiceWorkerContainer();

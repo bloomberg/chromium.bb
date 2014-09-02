@@ -148,6 +148,14 @@ public:
         initializeScriptWrappableHelper(object);
     }
 
+    // Returns the WrapperTypeInfo of the instance.
+    //
+    // This method must be overridden by DEFINE_WRAPPERTYPEINFO macro.
+    virtual const WrapperTypeInfo* wrapperTypeInfo() const = 0;
+
+    // Creates and returns a new wrapper object.
+    virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*);
+
     void setWrapper(v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo)
     {
         ASSERT(!containsWrapper());
@@ -337,6 +345,33 @@ private:
         releaseObject(data.GetValue());
     }
 };
+
+// Defines 'wrapperTypeInfo' virtual method which returns the WrapperTypeInfo of
+// the instance. Also declares a static member of type WrapperTypeInfo, of which
+// the definition is given by the IDL code generator.
+//
+// Every DOM Class T must meet either of the following conditions:
+// - T.idl inherits from [NotScriptWrappable] or has [NoInterfaceObject].
+// - T inherits from ScriptWrappable and has DEFINE_WRAPPERTYPEINFO().
+//
+// All the derived classes of ScriptWrappable, regardless of directly or
+// indirectly, must write this macro in the class definition except for the case
+// that the class is [NoInterfaceObject]. In the case of [NoInterfaceObject],
+// the IDL code generator does not generate V8T.cpp, so the definition of
+// T::s_wrapperTypeInfo will not be generated, either.
+//
+// If a DOM class T does not inherit from ScriptWrappable, you have to write
+// [NotScriptWrappable] in the IDL file as an extended attribute in order to let
+// IDL code generator know that T does not inherit from ScriptWrappable. Note
+// that [NotScriptWrappable] is inheritable.
+#define DEFINE_WRAPPERTYPEINFO() \
+public: \
+    virtual const WrapperTypeInfo* wrapperTypeInfo() const OVERRIDE \
+    { \
+        return &s_wrapperTypeInfo; \
+    } \
+private: \
+    static const WrapperTypeInfo& s_wrapperTypeInfo
 
 } // namespace blink
 

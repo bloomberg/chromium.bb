@@ -45,6 +45,7 @@ struct StorageEventInit : public EventInit {
 };
 
 class StorageEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<StorageEvent> create();
     static PassRefPtrWillBeRawPtr<StorageEvent> create(const AtomicString& type, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea);

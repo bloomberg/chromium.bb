@@ -40,6 +40,7 @@ class Document;
 class DocumentFragment;
 
 class XSLTProcessor : public RefCountedWillBeGarbageCollectedFinalized<XSLTProcessor>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<XSLTProcessor> create()
     {
@@ -89,6 +90,6 @@ private:
     ParameterMap m_parameters;
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // XSLTProcessor_h

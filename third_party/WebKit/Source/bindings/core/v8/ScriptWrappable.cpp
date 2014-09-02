@@ -5,6 +5,9 @@
 #include "config.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 
+#include "bindings/core/v8/DOMDataStore.h"
+#include "bindings/core/v8/V8DOMWrapper.h"
+
 namespace blink {
 
 #if COMPILER(MSVC)
@@ -20,5 +23,21 @@ struct SameSizeAsScriptWrappable : public ScriptWrappableBase {
 };
 
 COMPILE_ASSERT(sizeof(ScriptWrappable) <= sizeof(SameSizeAsScriptWrappable), ScriptWrappable_should_stay_small);
+
+v8::Handle<v8::Object> ScriptWrappable::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT(!DOMDataStore::containsWrapperNonTemplate(this, isolate));
+
+    const WrapperTypeInfo* wrapperType = wrapperTypeInfo();
+
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, wrapperType, toInternalPointer(), isolate);
+    if (UNLIKELY(wrapper.IsEmpty()))
+        return wrapper;
+
+    wrapperType->installConditionallyEnabledProperties(wrapper, isolate);
+    wrapperType->refObject(toInternalPointer());
+    V8DOMWrapper::associateObjectWithWrapperNonTemplate(this, wrapperType, wrapper, isolate);
+    return wrapper;
+}
 
 } // namespace blink

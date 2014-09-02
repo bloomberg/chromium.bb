@@ -29,6 +29,7 @@ namespace blink {
 
 class SVGSymbolElement FINAL : public SVGElement,
                                public SVGFitToViewBox {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGSymbolElement);
 
@@ -44,4 +45,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGSymbolElement_h

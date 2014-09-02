@@ -17,6 +17,7 @@ class WebCredential;
 class ExceptionState;
 
 class Credential : public GarbageCollected<Credential>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static Credential* create(const String& id, const String& name, const KURL& avatar);
     static Credential* create(const String& id, const String& name, const String& avatar, ExceptionState&);

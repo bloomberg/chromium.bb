@@ -47,6 +47,7 @@ class HTMLImageElement;
 class HTMLInputElement;
 
 class HTMLFormElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLFormElement> create(Document&);
     virtual ~HTMLFormElement();

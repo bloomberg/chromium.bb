@@ -57,7 +57,8 @@ inline v8::Handle<v8::Value> toV8(TestException* impl, v8::Handle<v8::Object> cr
     v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper<V8TestException>(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
-    return wrap(impl, creationContext, isolate);
+
+    return impl->wrap(creationContext, isolate);
 }
 
 template<typename CallbackInfo>

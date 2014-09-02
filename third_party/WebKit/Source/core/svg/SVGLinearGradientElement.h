@@ -30,6 +30,7 @@ namespace blink {
 struct LinearGradientAttributes;
 
 class SVGLinearGradientElement FINAL : public SVGGradientElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGLinearGradientElement);
 
@@ -59,4 +60,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGLinearGradientElement_h

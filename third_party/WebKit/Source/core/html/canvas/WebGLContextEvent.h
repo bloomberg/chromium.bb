@@ -37,6 +37,8 @@ struct WebGLContextEventInit : public EventInit {
 };
 
 class WebGLContextEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
+
 public:
     static PassRefPtrWillBeRawPtr<WebGLContextEvent> create()
     {

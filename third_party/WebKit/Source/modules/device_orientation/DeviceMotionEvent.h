@@ -36,6 +36,7 @@ class DeviceMotionData;
 class DeviceRotationRate;
 
 class DeviceMotionEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~DeviceMotionEvent();
     static PassRefPtrWillBeRawPtr<DeviceMotionEvent> create()

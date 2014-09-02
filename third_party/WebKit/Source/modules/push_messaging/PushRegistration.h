@@ -15,6 +15,7 @@ namespace blink {
 class ScriptPromiseResolver;
 
 class PushRegistration FINAL : public GarbageCollectedFinalized<PushRegistration>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     // For CallbackPromiseAdapter.
     typedef WebPushRegistration WebType;

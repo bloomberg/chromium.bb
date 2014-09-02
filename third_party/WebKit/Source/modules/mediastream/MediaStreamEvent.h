@@ -38,6 +38,7 @@ struct MediaStreamEventInit : public EventInit {
 };
 
 class MediaStreamEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~MediaStreamEvent();
 

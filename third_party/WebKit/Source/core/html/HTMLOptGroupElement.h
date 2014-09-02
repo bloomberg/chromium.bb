@@ -32,6 +32,7 @@ class HTMLSelectElement;
 class HTMLDivElement;
 
 class HTMLOptGroupElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLOptGroupElement> create(Document&);
 
@@ -63,6 +64,6 @@ private:
     RefPtr<RenderStyle> m_style;
 };
 
-} //namespace
+} // namespace blink
 
-#endif
+#endif // HTMLOptGroupElement_h

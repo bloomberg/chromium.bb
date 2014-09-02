@@ -32,6 +32,7 @@ namespace blink {
 class ExceptionState;
 
 class HTMLOptionsCollection FINAL : public HTMLCollection {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLOptionsCollection> create(ContainerNode&, CollectionType);
 
@@ -63,6 +64,6 @@ inline bool HTMLOptionsCollection::elementMatches(const HTMLElement& element) co
     return isHTMLOptionElement(element);
 }
 
-} //namespace
+} // namespace blink
 
-#endif
+#endif // HTMLOptionsCollection_h

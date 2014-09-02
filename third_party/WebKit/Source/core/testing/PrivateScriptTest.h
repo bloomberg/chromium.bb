@@ -15,6 +15,7 @@ namespace blink {
 class LocalFrame;
 
 class PrivateScriptTest : public GarbageCollectedFinalized<PrivateScriptTest>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PrivateScriptTest* create(LocalFrame* frame)
     {
@@ -35,4 +36,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // PrivateScriptTest_h

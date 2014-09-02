@@ -39,6 +39,7 @@ namespace blink {
 class WaitUntilObserver;
 
 class InstallPhaseEvent : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<InstallPhaseEvent> create();
     static PassRefPtrWillBeRawPtr<InstallPhaseEvent> create(const AtomicString& type, const EventInit&, WaitUntilObserver*);

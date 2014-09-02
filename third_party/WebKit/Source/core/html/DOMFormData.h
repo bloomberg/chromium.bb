@@ -47,6 +47,7 @@ class Blob;
 class HTMLFormElement;
 
 class DOMFormData : public RefCountedWillBeGarbageCollectedFinalized<DOMFormData>, public FormDataList, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<DOMFormData> create(HTMLFormElement* form = 0)
     {

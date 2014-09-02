@@ -30,6 +30,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
+#include "core/V8HTMLElementWrapperFactory.h" // FIXME: should be bindings/core/v8
 #include "core/XMLNames.h"
 #include "core/css/CSSMarkup.h"
 #include "core/css/CSSValuePool.h"
@@ -987,6 +988,11 @@ const AtomicString& HTMLElement::eventParameterName()
 {
     DEFINE_STATIC_LOCAL(const AtomicString, eventString, ("event", AtomicString::ConstructFromLiteral));
     return eventString;
+}
+
+v8::Handle<v8::Object> HTMLElement::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    return createV8HTMLWrapper(this, creationContext, isolate);
 }
 
 } // namespace blink

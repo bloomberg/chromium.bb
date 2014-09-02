@@ -39,6 +39,7 @@ namespace blink {
 class ExceptionState;
 
 class CanvasGradient FINAL : public RefCountedWillBeGarbageCollectedFinalized<CanvasGradient>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CanvasGradient> create(const FloatPoint& p0, const FloatPoint& p1)
     {
@@ -62,6 +63,6 @@ private:
     RefPtr<Gradient> m_gradient;
 };
 
-} //namespace
+} // namespace blink
 
-#endif
+#endif // CanvasGradient_h

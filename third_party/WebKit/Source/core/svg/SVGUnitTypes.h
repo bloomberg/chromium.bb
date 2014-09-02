@@ -27,6 +27,7 @@
 namespace blink {
 
 class SVGUnitTypes : public RefCounted<SVGUnitTypes>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum SVGUnitType {
         SVG_UNIT_TYPE_UNKNOWN               = 0,
@@ -37,8 +38,9 @@ public:
 private:
     SVGUnitTypes(); // No instantiation.
 };
+
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGUnitTypes::SVGUnitType>();
 
-}
+} // namespace blink
 
-#endif
+#endif // SVGUnitTypes_h

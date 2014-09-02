@@ -122,12 +122,12 @@ protected:
 #endif
 
 class Node : NODE_BASE_CLASSES {
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(TreeShared<Node>);
+    DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Node);
     friend class Document;
     friend class TreeScope;
     friend class TreeScopeAdopter;
-
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(TreeShared<Node>);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Node);
 public:
     enum NodeType {
         ELEMENT_NODE = 1,
@@ -660,6 +660,8 @@ public:
 
     unsigned lengthOfContents() const;
 
+    virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) OVERRIDE;
+
 private:
     enum NodeFlags {
         HasRareDataFlag = 1,
@@ -890,4 +892,4 @@ void showTree(const blink::Node*);
 void showNodePath(const blink::Node*);
 #endif
 
-#endif
+#endif // Node_h

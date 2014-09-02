@@ -39,6 +39,7 @@ class DocumentFragment;
 class TemplateContentDocumentFragment;
 
 class HTMLTemplateElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLTemplateElement);
     virtual ~HTMLTemplateElement();

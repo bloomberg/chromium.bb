@@ -35,6 +35,7 @@ namespace blink {
 class ExceptionState;
 
 class IDBKeyRange FINAL : public GarbageCollected<IDBKeyRange>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum LowerBoundType {
         LowerBoundOpen,

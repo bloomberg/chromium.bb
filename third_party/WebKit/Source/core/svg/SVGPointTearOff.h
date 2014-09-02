@@ -40,6 +40,7 @@ namespace blink {
 class SVGMatrixTearOff;
 
 class SVGPointTearOff : public SVGPropertyTearOff<SVGPoint>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtr<SVGPointTearOff> create(PassRefPtr<SVGPoint> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
@@ -59,4 +60,4 @@ protected:
 
 } // namespace blink
 
-#endif // SVGPointTearOff_h_
+#endif // SVGPointTearOff_h

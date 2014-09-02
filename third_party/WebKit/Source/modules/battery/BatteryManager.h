@@ -18,6 +18,7 @@ class BatteryStatus;
 
 class BatteryManager FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<BatteryManager>, public ActiveDOMObject, public PlatformEventController, public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<BatteryManager>);
+    DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BatteryManager);
 public:
     virtual ~BatteryManager();
@@ -69,6 +70,6 @@ private:
     State m_state;
 };
 
-}
+} // namespace blink
 
 #endif // BatteryManager_h

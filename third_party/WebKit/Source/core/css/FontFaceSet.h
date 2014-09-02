@@ -66,6 +66,7 @@ class FontFaceSet FINAL : public RefCountedSupplement<Document, FontFaceSet>, pu
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCounted<FontFaceSet>);
     typedef RefCountedSupplement<Document, FontFaceSet> SupplementType;
 #endif
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~FontFaceSet();
 

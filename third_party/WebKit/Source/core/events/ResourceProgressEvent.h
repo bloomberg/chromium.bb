@@ -43,6 +43,7 @@ namespace blink {
 // constructable by web content at all, and so does not provide the usual
 // EventInit pattern for Event construction.
 class ResourceProgressEvent FINAL : public ProgressEvent {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<ResourceProgressEvent> create()
     {

@@ -31,6 +31,7 @@
 namespace blink {
 
 class HTMLFrameSetElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLFrameSetElement);
 

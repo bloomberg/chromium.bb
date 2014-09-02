@@ -36,6 +36,7 @@ class SVGScriptElement FINAL
     : public SVGElement
     , public SVGURIReference
     , public ScriptLoaderClient {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SVGScriptElement> create(Document&, bool wasInsertedByParser);
 
@@ -87,4 +88,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGScriptElement_h

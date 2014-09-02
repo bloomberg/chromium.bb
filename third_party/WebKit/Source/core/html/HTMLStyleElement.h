@@ -34,6 +34,7 @@ template<typename T> class EventSender;
 typedef EventSender<HTMLStyleElement> StyleEventSender;
 
 class HTMLStyleElement FINAL : public HTMLElement, private StyleElement {
+    DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLStyleElement);
 public:
     static PassRefPtrWillBeRawPtr<HTMLStyleElement> create(Document&, bool createdByParser);
@@ -74,6 +75,6 @@ private:
     bool m_loadedSheet;
 };
 
-} //namespace
+} // namespace blink
 
-#endif
+#endif // HTMLStyleElement_h

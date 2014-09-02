@@ -15,6 +15,7 @@ namespace blink {
 class InternalDictionary;
 
 class DictionaryTest : public GarbageCollectedFinalized<DictionaryTest>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static DictionaryTest* create()
     {

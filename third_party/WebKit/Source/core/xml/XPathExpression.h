@@ -46,6 +46,7 @@ class Expression;
 
 class XPathExpression : public RefCountedWillBeGarbageCollected<XPathExpression>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(XPathExpression);
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<XPathExpression> create()
     {
@@ -63,6 +64,6 @@ private:
     OwnPtrWillBeMember<XPath::Expression> m_topExpression;
 };
 
-}
+} // namespace blink
 
 #endif // XPathExpression_h

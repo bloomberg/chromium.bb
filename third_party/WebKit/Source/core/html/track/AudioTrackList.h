@@ -11,6 +11,7 @@
 namespace blink {
 
 class AudioTrackList FINAL : public TrackListBase<AudioTrack> {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<AudioTrackList> create(HTMLMediaElement&);
 
@@ -25,6 +26,6 @@ private:
     explicit AudioTrackList(HTMLMediaElement&);
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // AudioTrackList_h

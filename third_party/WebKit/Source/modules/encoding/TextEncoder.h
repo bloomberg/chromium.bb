@@ -44,6 +44,7 @@ namespace blink {
 class ExceptionState;
 
 class TextEncoder FINAL : public GarbageCollectedFinalized<TextEncoder>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static TextEncoder* create(const String& utfLabel, ExceptionState&);
     ~TextEncoder();

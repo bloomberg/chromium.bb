@@ -40,6 +40,7 @@ class ExecutionContext;
 class GenericEventQueue;
 
 class MediaController FINAL : public RefCountedWillBeGarbageCollectedFinalized<MediaController>, public EventTargetWithInlineData {
+    DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(MediaController);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaController);
 public:
@@ -132,4 +133,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // MediaController_h

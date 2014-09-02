@@ -36,6 +36,7 @@ class WebGLRenderingContextBase;
 class WebGLVertexArrayObjectOES;
 
 class OESVertexArrayObject FINAL : public WebGLExtension, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<OESVertexArrayObject> create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);

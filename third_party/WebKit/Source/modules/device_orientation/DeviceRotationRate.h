@@ -34,6 +34,7 @@
 namespace blink {
 
 class DeviceRotationRate : public RefCountedWillBeGarbageCollected<DeviceRotationRate>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<DeviceRotationRate> create(PassRefPtrWillBeRawPtr<DeviceMotionData::RotationRate> rotationRate)
     {

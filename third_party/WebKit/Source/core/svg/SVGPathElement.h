@@ -52,6 +52,7 @@ class SVGPathSegCurvetoQuadraticSmoothAbs;
 class SVGPathSegCurvetoQuadraticSmoothRel;
 
 class SVGPathElement FINAL : public SVGGeometryElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGPathElement);
 
@@ -113,4 +114,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGPathElement_h

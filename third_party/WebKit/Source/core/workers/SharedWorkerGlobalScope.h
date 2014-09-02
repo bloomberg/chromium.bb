@@ -42,6 +42,7 @@ class MessageEvent;
 class SharedWorkerThread;
 
 class SharedWorkerGlobalScope FINAL : public WorkerGlobalScope {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     typedef WorkerGlobalScope Base;
     static PassRefPtrWillBeRawPtr<SharedWorkerGlobalScope> create(const String& name, SharedWorkerThread*, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);

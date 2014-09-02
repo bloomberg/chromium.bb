@@ -40,6 +40,7 @@ class AudioContext;
 class HTMLMediaElement;
 
 class MediaElementAudioSourceNode FINAL : public AudioSourceNode, public AudioSourceProviderClient {
+    DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(MediaElementAudioSourceNode);
 public:
     static MediaElementAudioSourceNode* create(AudioContext*, HTMLMediaElement*);

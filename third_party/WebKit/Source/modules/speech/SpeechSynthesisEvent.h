@@ -31,6 +31,7 @@
 namespace blink {
 
 class SpeechSynthesisEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SpeechSynthesisEvent> create();
     static PassRefPtrWillBeRawPtr<SpeechSynthesisEvent> create(const AtomicString& type, unsigned long charIndex, float elapsedTime, const String& name);

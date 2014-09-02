@@ -27,6 +27,7 @@
 namespace blink {
 
 class SVGPathSegArcRel FINAL : public SVGPathSegArc {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtr<SVGPathSegArcRel> create(SVGPathElement* element, float x, float y, float r1, float r2, float angle, bool largeArcFlag, bool sweepFlag)
     {
@@ -46,4 +47,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGPathSegArcRel_h

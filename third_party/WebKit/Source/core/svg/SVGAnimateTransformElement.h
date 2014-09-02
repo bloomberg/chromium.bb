@@ -29,6 +29,7 @@
 namespace blink {
 
 class SVGAnimateTransformElement FINAL : public SVGAnimateElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGAnimateTransformElement);
 

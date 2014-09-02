@@ -27,6 +27,7 @@
 namespace blink {
 
 class SVGFEBlendElement FINAL : public SVGFilterPrimitiveStandardAttributes {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum Mode {
         ModeUnknown = 0,
@@ -75,4 +76,4 @@ template<> unsigned short getMaxExposedEnumValue<SVGFEBlendElement::Mode>();
 
 } // namespace blink
 
-#endif
+#endif // SVGFEBlendElement_h

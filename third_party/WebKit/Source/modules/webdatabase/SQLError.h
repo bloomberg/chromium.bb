@@ -63,6 +63,7 @@ private:
 };
 
 class SQLError : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<SQLError>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SQLError> create(const SQLErrorData& data) { return adoptRefWillBeNoop(new SQLError(data)); }
     void trace(Visitor*) { }
@@ -94,6 +95,6 @@ private:
     const SQLErrorData m_data;
 };
 
-}
+} // namespace blink
 
 #endif // SQLError_h

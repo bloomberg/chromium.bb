@@ -38,6 +38,7 @@ class QualifiedName;
 // The famous <table><tr><form><td> problem.
 
 class HTMLFormControlsCollection FINAL : public HTMLCollection {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> create(ContainerNode&, CollectionType);
 
@@ -66,6 +67,6 @@ private:
 };
 DEFINE_TYPE_CASTS(HTMLFormControlsCollection, LiveNodeListBase, collection, collection->type() == FormControls, collection.type() == FormControls);
 
-} // namespace
+} // namespace blink
 
-#endif
+#endif // HTMLFormControlsCollection_h

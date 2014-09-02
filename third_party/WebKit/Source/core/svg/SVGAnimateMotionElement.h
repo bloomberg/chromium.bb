@@ -27,6 +27,7 @@
 namespace blink {
 
 class SVGAnimateMotionElement FINAL : public SVGAnimationElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~SVGAnimateMotionElement();
 

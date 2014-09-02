@@ -30,6 +30,7 @@
 namespace blink {
 
 class HTMLLabelElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLLabelElement);
 
@@ -63,6 +64,6 @@ private:
     void updateLabel(TreeScope&, const AtomicString& oldForAttributeValue, const AtomicString& newForAttributeValue);
 };
 
-} //namespace
+} // namespace blink
 
-#endif
+#endif // HTMLLabelElement_h

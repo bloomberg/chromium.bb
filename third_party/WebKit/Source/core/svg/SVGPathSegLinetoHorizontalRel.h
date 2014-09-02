@@ -27,6 +27,7 @@
 namespace blink {
 
 class SVGPathSegLinetoHorizontalRel FINAL : public SVGPathSegLinetoHorizontal {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtr<SVGPathSegLinetoHorizontalRel> create(SVGPathElement* element, float x)
     {
@@ -46,4 +47,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGPathSegLinetoHorizontalRel_h

@@ -35,6 +35,7 @@ namespace blink {
 class ExceptionState;
 
 class WaveShaperNode FINAL : public AudioBasicProcessorNode {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static WaveShaperNode* create(AudioContext* context)
     {

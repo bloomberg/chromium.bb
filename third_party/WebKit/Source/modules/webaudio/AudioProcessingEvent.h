@@ -35,6 +35,7 @@ namespace blink {
 class AudioBuffer;
 
 class AudioProcessingEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<AudioProcessingEvent> create();
     static PassRefPtrWillBeRawPtr<AudioProcessingEvent> create(AudioBuffer* inputBuffer, AudioBuffer* outputBuffer, double playbackTime);

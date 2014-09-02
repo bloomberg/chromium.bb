@@ -44,6 +44,7 @@ class LocalFrame;
 class KURL;
 
 class Location FINAL : public RefCountedWillBeGarbageCollectedFinalized<Location>, public ScriptWrappable, public DOMWindowProperty {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Location> create(LocalFrame* frame)
     {

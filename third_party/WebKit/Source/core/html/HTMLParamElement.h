@@ -28,6 +28,7 @@
 namespace blink {
 
 class HTMLParamElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLParamElement);
 
@@ -44,4 +45,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // HTMLParamElement_h

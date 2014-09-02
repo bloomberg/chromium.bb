@@ -43,6 +43,7 @@ class AudioContext;
 // It generally will be used for short sounds which require a high degree of scheduling flexibility (can playback in rhythmically perfect ways).
 
 class AudioBufferSourceNode FINAL : public AudioScheduledSourceNode {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static AudioBufferSourceNode* create(AudioContext*, float sampleRate);
 

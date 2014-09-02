@@ -27,6 +27,7 @@
 namespace blink {
 
 class SVGPathSegCurvetoCubicSmoothAbs FINAL : public SVGPathSegCurvetoCubicSmooth {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtr<SVGPathSegCurvetoCubicSmoothAbs> create(SVGPathElement* element, float x, float y, float x2, float y2)
     {
@@ -46,4 +47,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGPathSegCurvetoCubicSmoothAbs_h

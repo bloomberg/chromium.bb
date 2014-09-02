@@ -34,6 +34,7 @@
 namespace blink {
 
 class TouchEvent FINAL : public UIEventWithKeyState {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~TouchEvent();
 

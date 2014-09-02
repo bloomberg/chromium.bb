@@ -46,6 +46,7 @@ class ExceptionState;
 class ExecutionContext;
 
 class Blob : public RefCountedWillBeGarbageCollectedFinalized<Blob>, public ScriptWrappable, public URLRegistrable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Blob> create()
     {

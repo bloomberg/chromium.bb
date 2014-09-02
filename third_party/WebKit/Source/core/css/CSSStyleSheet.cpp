@@ -468,4 +468,4 @@ void CSSStyleSheet::trace(Visitor* visitor)
     StyleSheet::trace(visitor);
 }
 
-}
+} // namespace blink

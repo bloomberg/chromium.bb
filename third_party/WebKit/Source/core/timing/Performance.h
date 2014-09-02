@@ -56,6 +56,7 @@ class UserTiming;
 typedef WillBeHeapVector<RefPtrWillBeMember<PerformanceEntry> > PerformanceEntryVector;
 
 class Performance FINAL : public RefCountedWillBeGarbageCollectedFinalized<Performance>, public DOMWindowProperty, public EventTargetWithInlineData {
+    DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(Performance);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Performance);
 public:
@@ -108,6 +109,6 @@ private:
     RefPtrWillBeMember<UserTiming> m_userTiming;
 };
 
-}
+} // namespace blink
 
 #endif // Performance_h

@@ -35,6 +35,7 @@
 namespace blink {
 
 class WebGLProgram FINAL : public WebGLSharedObject, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~WebGLProgram();
 

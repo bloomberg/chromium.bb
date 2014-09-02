@@ -47,6 +47,7 @@ class ScriptState;
 class ScriptPromiseResolver;
 
 class ServiceWorker FINAL : public AbstractWorker, public WebServiceWorkerProxy {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     // For CallbackPromiseAdapter
     typedef WebServiceWorker WebType;

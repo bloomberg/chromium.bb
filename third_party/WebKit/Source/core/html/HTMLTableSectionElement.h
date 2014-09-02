@@ -33,6 +33,7 @@ namespace blink {
 class ExceptionState;
 
 class HTMLTableSectionElement FINAL : public HTMLTablePartElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableSectionElement);
 
@@ -56,6 +57,6 @@ inline bool isHTMLTableSectionElement(const HTMLElement& element)
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTableSectionElement);
 
-} //namespace
+} // namespace blink
 
-#endif
+#endif // HTMLTableSectionElement_h

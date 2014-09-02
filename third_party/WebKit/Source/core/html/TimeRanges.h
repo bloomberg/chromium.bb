@@ -39,6 +39,7 @@ namespace blink {
 class ExceptionState;
 
 class TimeRanges : public RefCountedWillBeGarbageCollected<TimeRanges>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     // We consider all the Ranges to be semi-bounded as follow: [start, end[
     struct Range {
@@ -129,4 +130,4 @@ private:
 
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::TimeRanges::Range);
 
-#endif
+#endif // TimeRanges_h

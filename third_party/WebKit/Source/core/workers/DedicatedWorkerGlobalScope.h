@@ -42,6 +42,7 @@ class DedicatedWorkerThread;
 class WorkerThreadStartupData;
 
 class DedicatedWorkerGlobalScope FINAL : public WorkerGlobalScope {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     typedef WorkerGlobalScope Base;
     static PassRefPtrWillBeRawPtr<DedicatedWorkerGlobalScope> create(DedicatedWorkerThread*, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>, double timeOrigin);

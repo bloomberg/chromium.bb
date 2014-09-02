@@ -26,6 +26,7 @@ class WebServiceWorkerRequest;
 
 class Request FINAL : public RefCountedWillBeGarbageCollected<Request>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Request);
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Request> create(ExecutionContext*, const String&, ExceptionState&);
     static PassRefPtrWillBeRawPtr<Request> create(ExecutionContext*, const String&, const Dictionary&, ExceptionState&);

@@ -27,6 +27,7 @@
 namespace blink {
 
 class SVGPolygonElement FINAL : public SVGPolyElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGPolygonElement);
 
@@ -36,4 +37,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGPolygonElement_h

@@ -33,6 +33,7 @@
 namespace blink {
 
 class Coordinates : public GarbageCollected<Coordinates>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static Coordinates* create(double latitude, double longitude, bool providesAltitude, double altitude, double accuracy, bool providesAltitudeAccuracy, double altitudeAccuracy, bool providesHeading, double heading, bool providesSpeed, double speed)
     {

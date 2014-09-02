@@ -32,6 +32,7 @@ namespace blink {
 class Document;
 
 class HTMLBodyElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLBodyElement);
     virtual ~HTMLBodyElement();
@@ -70,6 +71,6 @@ private:
     virtual int scrollWidth() OVERRIDE;
 };
 
-} //namespace
+} // namespace blink
 
-#endif
+#endif // HTMLBodyElement_h

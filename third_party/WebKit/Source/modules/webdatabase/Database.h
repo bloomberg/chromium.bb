@@ -49,6 +49,7 @@ class SQLTransactionErrorCallback;
 class VoidCallback;
 
 class Database FINAL : public DatabaseBackend, public DatabaseBase, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~Database();
     virtual void trace(Visitor*) OVERRIDE;

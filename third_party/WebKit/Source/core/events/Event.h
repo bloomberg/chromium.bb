@@ -47,6 +47,7 @@ public:
 };
 
 class Event : public RefCountedWillBeGarbageCollectedFinalized<Event>,  public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum PhaseType {
         NONE                = 0,

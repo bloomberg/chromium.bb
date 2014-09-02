@@ -53,6 +53,7 @@ class MediaSource FINAL
     , public ActiveDOMObject
     , public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MediaSource>);
+    DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaSource);
 public:
     static const AtomicString& openKeyword();
@@ -136,4 +137,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // MediaSource_h

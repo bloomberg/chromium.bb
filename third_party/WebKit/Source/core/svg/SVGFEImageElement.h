@@ -36,6 +36,7 @@ namespace blink {
 class SVGFEImageElement FINAL : public SVGFilterPrimitiveStandardAttributes,
                                 public SVGURIReference,
                                 public ImageResourceClient {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFEImageElement);
 
@@ -68,4 +69,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGFEImageElement_h

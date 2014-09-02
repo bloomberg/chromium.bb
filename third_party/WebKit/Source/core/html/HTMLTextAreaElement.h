@@ -33,6 +33,7 @@ class ExceptionState;
 class VisibleSelection;
 
 class HTMLTextAreaElement FINAL : public HTMLTextFormControlElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLTextAreaElement> create(Document&, HTMLFormElement*);
 
@@ -132,6 +133,6 @@ private:
     String m_suggestedValue;
 };
 
-} //namespace
+} // namespace blink
 
-#endif
+#endif // HTMLTextAreaElement_h

@@ -30,6 +30,7 @@
 namespace blink {
 
 class SVGViewSpec FINAL : public RefCountedWillBeGarbageCollectedFinalized<SVGViewSpec>, public ScriptWrappable, public SVGZoomAndPan, public SVGFitToViewBox {
+    DEFINE_WRAPPERTYPEINFO();
 public:
 #if !ENABLE(OILPAN)
     using RefCounted<SVGViewSpec>::ref;
@@ -74,4 +75,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGViewSpec_h

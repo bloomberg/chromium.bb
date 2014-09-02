@@ -27,6 +27,7 @@
 namespace blink {
 
 class SVGFEComponentTransferElement FINAL : public SVGFilterPrimitiveStandardAttributes {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFEComponentTransferElement);
     SVGAnimatedString* in1() { return m_in1.get(); }
@@ -44,4 +45,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGFEComponentTransferElement_h

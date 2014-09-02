@@ -29,6 +29,7 @@
 namespace blink {
 
 class HTMLHtmlElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLHtmlElement);
 
@@ -40,6 +41,6 @@ private:
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
 };
 
-} // namespace
+} // namespace blink
 
-#endif
+#endif // HTMLHtmlElement_h

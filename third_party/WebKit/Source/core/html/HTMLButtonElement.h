@@ -29,6 +29,7 @@
 namespace blink {
 
 class HTMLButtonElement FINAL : public HTMLFormControlElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLButtonElement> create(Document&, HTMLFormElement*);
 
@@ -79,6 +80,6 @@ private:
     bool m_isActivatedSubmit;
 };
 
-} // namespace
+} // namespace blink
 
-#endif
+#endif // HTMLButtonElement_h

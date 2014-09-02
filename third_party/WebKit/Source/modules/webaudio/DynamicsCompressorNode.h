@@ -34,6 +34,7 @@ namespace blink {
 class DynamicsCompressor;
 
 class DynamicsCompressorNode FINAL : public AudioNode {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static DynamicsCompressorNode* create(AudioContext* context, float sampleRate)
     {

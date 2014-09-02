@@ -33,6 +33,7 @@ class HTMLImageElement;
 class Path;
 
 class HTMLAreaElement FINAL : public HTMLAnchorElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLAreaElement);
 
@@ -66,6 +67,6 @@ private:
     Shape m_shape;
 };
 
-} //namespace
+} // namespace blink
 
-#endif
+#endif // HTMLAreaElement_h

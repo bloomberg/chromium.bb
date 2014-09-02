@@ -43,6 +43,7 @@ class SMILTimeContainer;
 class SVGSVGElement FINAL : public SVGGraphicsElement,
                             public SVGFitToViewBox,
                             public SVGZoomAndPan {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGSVGElement);
 
@@ -167,4 +168,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGSVGElement_h

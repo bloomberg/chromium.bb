@@ -46,6 +46,7 @@ class LocalFrame;
 class ResourceLoadTiming;
 
 class PerformanceTiming FINAL : public RefCountedWillBeGarbageCollectedFinalized<PerformanceTiming>, public ScriptWrappable, public DOMWindowProperty {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<PerformanceTiming> create(LocalFrame* frame)
     {
@@ -87,6 +88,6 @@ private:
     unsigned long long monotonicTimeToIntegerMilliseconds(double) const;
 };
 
-}
+} // namespace blink
 
-#endif // !defined(PerformanceTiming_h)
+#endif // PerformanceTiming_h

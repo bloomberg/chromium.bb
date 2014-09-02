@@ -30,6 +30,7 @@ namespace blink {
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<ChannelSelectorType>();
 
 class SVGFEDisplacementMapElement FINAL : public SVGFilterPrimitiveStandardAttributes {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFEDisplacementMapElement);
 

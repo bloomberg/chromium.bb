@@ -38,6 +38,7 @@ class SerializedScriptValue;
 typedef EventInit PopStateEventInit;
 
 class PopStateEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~PopStateEvent();
     static PassRefPtrWillBeRawPtr<PopStateEvent> create();

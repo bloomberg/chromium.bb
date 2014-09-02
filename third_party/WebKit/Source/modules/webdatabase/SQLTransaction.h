@@ -52,6 +52,7 @@ class SQLValue;
 class VoidCallback;
 
 class SQLTransaction FINAL : public AbstractSQLTransaction, public SQLTransactionStateMachine<SQLTransaction>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SQLTransaction> create(Database*, PassOwnPtrWillBeRawPtr<SQLTransactionCallback>,
         PassOwnPtrWillBeRawPtr<VoidCallback> successCallback, PassOwnPtrWillBeRawPtr<SQLTransactionErrorCallback>,

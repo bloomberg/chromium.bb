@@ -37,6 +37,7 @@
 namespace blink {
 
 class FileList FINAL : public RefCountedWillBeGarbageCollected<FileList>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<FileList> create()
     {

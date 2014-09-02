@@ -37,6 +37,7 @@ namespace blink {
 // destruction. however, this is not yet implemented.
 
 class Attr FINAL : public ContainerNode {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Attr> create(Element&, const QualifiedName&);
     static PassRefPtrWillBeRawPtr<Attr> create(Document&, const QualifiedName&, const AtomicString& value);

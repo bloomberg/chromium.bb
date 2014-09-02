@@ -38,6 +38,7 @@
 namespace blink {
 
 class PeriodicWave : public GarbageCollectedFinalized<PeriodicWave>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PeriodicWave* createSine(float sampleRate);
     static PeriodicWave* createSquare(float sampleRate);

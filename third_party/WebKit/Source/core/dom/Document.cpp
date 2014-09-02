@@ -29,11 +29,14 @@
 #include "core/dom/Document.h"
 
 #include "bindings/core/v8/CustomElementConstructorBuilder.h"
+#include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/V8DOMWrapper.h"
+#include "bindings/core/v8/WindowProxy.h"
 #include "core/HTMLElementFactory.h"
 #include "core/HTMLNames.h"
 #include "core/SVGElementFactory.h"
@@ -110,11 +113,11 @@
 #include "core/events/ScopedEventQueue.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/EventHandlerRegistry.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/History.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -5753,6 +5756,34 @@ void Document::clearWeakMembers(Visitor* visitor)
 {
     if (m_axObjectCache)
         m_axObjectCache->clearWeakMembers(visitor);
+}
+
+v8::Handle<v8::Object> Document::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT(!DOMDataStore::containsWrapperNonTemplate(this, isolate));
+
+    const WrapperTypeInfo* wrapperType = wrapperTypeInfo();
+
+    if (frame() && frame()->script().initializeMainWorld()) {
+        // initializeMainWorld may have created a wrapper for the object, retry from the start.
+        v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperNonTemplate(this, isolate);
+        if (!wrapper.IsEmpty())
+            return wrapper;
+    }
+
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, wrapperType, toInternalPointer(), isolate);
+    if (UNLIKELY(wrapper.IsEmpty()))
+        return wrapper;
+
+    wrapperType->installConditionallyEnabledProperties(wrapper, isolate);
+    wrapperType->refObject(toInternalPointer());
+    V8DOMWrapper::associateObjectWithWrapperNonTemplate(this, wrapperType, wrapper, isolate);
+
+    DOMWrapperWorld& world = DOMWrapperWorld::current(isolate);
+    if (world.isMainWorld() && frame())
+        frame()->script().windowProxy(world)->updateDocumentWrapper(wrapper);
+
+    return wrapper;
 }
 
 void Document::trace(Visitor* visitor)

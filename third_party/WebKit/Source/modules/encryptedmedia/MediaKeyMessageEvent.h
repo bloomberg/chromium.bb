@@ -41,6 +41,7 @@ struct MediaKeyMessageEventInit : public EventInit {
 };
 
 class MediaKeyMessageEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~MediaKeyMessageEvent();
 
@@ -71,4 +72,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // MediaKeyMessageEvent_h

@@ -32,6 +32,7 @@ namespace blink {
 class SVGCursorElement FINAL : public SVGElement,
                                public SVGTests,
                                public SVGURIReference {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGCursorElement);
 
@@ -67,4 +68,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGCursorElement_h

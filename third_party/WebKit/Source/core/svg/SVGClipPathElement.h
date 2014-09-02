@@ -32,6 +32,7 @@ namespace blink {
 class RenderObject;
 
 class SVGClipPathElement FINAL : public SVGGraphicsElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGClipPathElement);
     SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* clipPathUnits() { return m_clipPathUnits.get(); }
@@ -52,6 +53,6 @@ private:
     RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_clipPathUnits;
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // SVGClipPathElement_h

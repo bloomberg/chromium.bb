@@ -53,6 +53,7 @@ class Geolocation FINAL
     : public GarbageCollectedFinalized<Geolocation>
     , public ScriptWrappable
     , public ActiveDOMObject {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static Geolocation* create(ExecutionContext*);
     virtual ~Geolocation();

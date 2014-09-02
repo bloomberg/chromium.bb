@@ -37,6 +37,7 @@ struct PageTransitionEventInit : public EventInit {
 };
 
 class PageTransitionEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<PageTransitionEvent> create()
     {

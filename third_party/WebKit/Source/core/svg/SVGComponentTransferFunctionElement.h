@@ -32,6 +32,7 @@ namespace blink {
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<ComponentTransferType>();
 
 class SVGComponentTransferFunctionElement : public SVGElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     ComponentTransferFunction transferFunction() const;
 
@@ -64,4 +65,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGComponentTransferFunctionElement_h

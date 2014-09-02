@@ -71,6 +71,7 @@ private:
 };
 
 class MediaList : public RefCountedWillBeGarbageCollectedFinalized<MediaList>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<MediaList> create(MediaQuerySet* mediaQueries, CSSStyleSheet* parentSheet)
     {
@@ -120,6 +121,6 @@ private:
 // Adds message to inspector console whenever dpi or dpcm values are used for "screen" media.
 void reportMediaQueryWarningIfNeeded(Document*, const MediaQuerySet*);
 
-} // namespace
+} // namespace blink
 
 #endif

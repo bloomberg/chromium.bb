@@ -35,6 +35,7 @@
 namespace blink {
 
 class TouchList FINAL : public RefCountedWillBeGarbageCollected<TouchList>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<TouchList> create()
     {
@@ -72,4 +73,4 @@ private:
 
 } // namespace blink
 
-#endif /* TouchList_h */
+#endif // TouchList_h

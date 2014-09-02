@@ -46,6 +46,7 @@ class SharedBuffer;
 class WebBlobInfo;
 
 class IDBCursor : public GarbageCollectedFinalized<IDBCursor>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static WebIDBCursorDirection stringToDirection(const String& modeString, ExceptionState&);
 

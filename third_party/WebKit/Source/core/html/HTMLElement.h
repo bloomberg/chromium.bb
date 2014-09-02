@@ -40,6 +40,7 @@ enum TranslateAttributeMode {
 };
 
 class HTMLElement : public Element {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLElement);
 
@@ -98,6 +99,8 @@ public:
 
     HTMLMenuElement* contextMenu() const;
     void setContextMenu(HTMLMenuElement*);
+
+    virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) OVERRIDE;
 
 protected:
     HTMLElement(const QualifiedName& tagName, Document&, ConstructionType);

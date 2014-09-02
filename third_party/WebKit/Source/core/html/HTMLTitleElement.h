@@ -27,6 +27,7 @@
 namespace blink {
 
 class HTMLTitleElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLTitleElement);
 
@@ -43,6 +44,6 @@ private:
     bool m_ignoreTitleUpdatesWhenChildrenChange;
 };
 
-} //namespace
+} // namespace blink
 
-#endif
+#endif // HTMLTitleElement_h

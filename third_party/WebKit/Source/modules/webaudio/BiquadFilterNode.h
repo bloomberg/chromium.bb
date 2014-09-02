@@ -33,6 +33,7 @@ namespace blink {
 class AudioParam;
 
 class BiquadFilterNode FINAL : public AudioBasicProcessorNode {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     // These must be defined as in the .idl file and must match those in the BiquadProcessor class.
     enum {

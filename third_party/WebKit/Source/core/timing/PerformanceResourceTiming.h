@@ -47,6 +47,7 @@ class ResourceResponse;
 class ResourceTimingInfo;
 
 class PerformanceResourceTiming FINAL : public PerformanceEntry {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<PerformanceResourceTiming> create(const ResourceTimingInfo& info, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails)
     {
@@ -90,6 +91,6 @@ private:
     RefPtrWillBeMember<Document> m_requestingDocument;
 };
 
-}
+} // namespace blink
 
-#endif // !defined(PerformanceResourceTiming_h)
+#endif // PerformanceResourceTiming_h

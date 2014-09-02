@@ -29,6 +29,7 @@
 namespace blink {
 
 class SVGForeignObjectElement FINAL : public SVGGraphicsElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGForeignObjectElement);
 
@@ -59,4 +60,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGForeignObjectElement_h

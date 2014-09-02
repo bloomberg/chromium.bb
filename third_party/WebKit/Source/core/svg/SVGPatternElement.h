@@ -40,6 +40,7 @@ class SVGPatternElement FINAL : public SVGElement,
                                 public SVGURIReference,
                                 public SVGTests,
                                 public SVGFitToViewBox {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGPatternElement);
 
@@ -84,4 +85,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGPatternElement_h

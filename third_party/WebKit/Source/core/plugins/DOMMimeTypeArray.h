@@ -35,6 +35,7 @@ class LocalFrame;
 class PluginData;
 
 class DOMMimeTypeArray FINAL : public RefCountedWillBeGarbageCollectedFinalized<DOMMimeTypeArray>, public ScriptWrappable, public DOMWindowProperty {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<DOMMimeTypeArray> create(LocalFrame* frame)
     {

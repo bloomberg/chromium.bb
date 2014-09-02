@@ -29,6 +29,7 @@
 namespace blink {
 
 class SVGCircleElement FINAL : public SVGGeometryElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGCircleElement);
 

@@ -35,6 +35,7 @@
 namespace blink {
 
 class WebGLVertexArrayObjectOES FINAL : public WebGLContextObject, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum VaoType {
         VaoTypeDefault,
@@ -109,6 +110,7 @@ private:
 } // namespace blink
 
 namespace WTF {
+
 template<>
 struct VectorTraits<blink::WebGLVertexArrayObjectOES::VertexAttribState> : SimpleClassVectorTraits<blink::WebGLVertexArrayObjectOES::VertexAttribState> {
     // Specialization needed as the VertexAttribState's struct fields
@@ -120,6 +122,7 @@ struct VectorTraits<blink::WebGLVertexArrayObjectOES::VertexAttribState> : Simpl
     static const bool canInitializeWithMemset = false;
     static const bool canCopyWithMemcpy = true;
 };
-}
+
+} // namespace WTF
 
 #endif // WebGLVertexArrayObjectOES_h

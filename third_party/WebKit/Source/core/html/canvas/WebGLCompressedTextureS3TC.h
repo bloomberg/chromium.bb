@@ -35,6 +35,7 @@ namespace blink {
 class WebGLTexture;
 
 class WebGLCompressedTextureS3TC FINAL : public WebGLExtension, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<WebGLCompressedTextureS3TC> create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);

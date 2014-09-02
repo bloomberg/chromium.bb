@@ -39,6 +39,7 @@
 namespace blink {
 
 class WorkerLocation FINAL : public RefCountedWillBeGarbageCollectedFinalized<WorkerLocation>, public ScriptWrappable, public DOMURLUtilsReadOnly {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<WorkerLocation> create(const KURL& url)
     {

@@ -22,6 +22,7 @@ struct CircularRegionInit {
 };
 
 class CircularRegion FINAL : public GeofencingRegion {
+    DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(CircularRegion);
 public:
     static CircularRegion* create(const Dictionary& init);
@@ -43,4 +44,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // CircularRegion_h

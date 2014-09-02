@@ -47,6 +47,7 @@ class ConsoleMessage;
 class ScriptArguments;
 
 class ConsoleBase : public RefCountedWillBeGarbageCollectedFinalized<ConsoleBase>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     void debug(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);
     void error(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);

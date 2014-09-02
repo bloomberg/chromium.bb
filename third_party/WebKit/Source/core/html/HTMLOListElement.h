@@ -28,6 +28,7 @@
 namespace blink {
 
 class HTMLOListElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLOListElement);
 
@@ -64,6 +65,6 @@ private:
     bool m_shouldRecalculateItemCount : 1;
 };
 
-} //namespace
+} // namespace blink
 
-#endif
+#endif // HTMLOListElement_h

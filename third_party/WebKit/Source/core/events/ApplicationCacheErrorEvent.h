@@ -23,6 +23,7 @@ struct ApplicationCacheErrorEventInit : public EventInit {
 };
 
 class ApplicationCacheErrorEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~ApplicationCacheErrorEvent();
 

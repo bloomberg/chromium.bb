@@ -43,6 +43,7 @@ class InspectorFrontendClient;
 class Page;
 
 class InspectorFrontendHost : public RefCountedWillBeGarbageCollectedFinalized<InspectorFrontendHost>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<InspectorFrontendHost> create(InspectorFrontendClient* client, Page* frontendPage)
     {
@@ -85,4 +86,4 @@ private:
 
 } // namespace blink
 
-#endif // !defined(InspectorFrontendHost_h)
+#endif // InspectorFrontendHost_h

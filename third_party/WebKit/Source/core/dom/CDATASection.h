@@ -28,6 +28,7 @@
 namespace blink {
 
 class CDATASection FINAL : public Text {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CDATASection> create(Document&, const String&);
 

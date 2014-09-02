@@ -26,6 +26,7 @@
 namespace blink {
 
 class SVGTSpanElement FINAL : public SVGTextPositioningElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGTSpanElement);
 
@@ -38,4 +39,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGTSpanElement_h

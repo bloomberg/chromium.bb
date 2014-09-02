@@ -51,6 +51,7 @@ class Navigator FINAL
     , public ScriptWrappable
     , public DOMWindowProperty
     , public WillBeHeapSupplementable<Navigator> {
+    DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Navigator);
 public:
     static PassRefPtrWillBeRawPtr<Navigator> create(LocalFrame* frame)
@@ -86,6 +87,6 @@ private:
     mutable RefPtrWillBeMember<DOMMimeTypeArray> m_mimeTypes;
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // Navigator_h

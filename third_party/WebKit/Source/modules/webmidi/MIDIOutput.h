@@ -40,6 +40,7 @@ class ExceptionState;
 class MIDIAccess;
 
 class MIDIOutput FINAL : public MIDIPort {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static MIDIOutput* create(MIDIAccess*, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version);
     virtual ~MIDIOutput();

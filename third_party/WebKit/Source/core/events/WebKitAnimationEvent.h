@@ -41,6 +41,7 @@ struct WebKitAnimationEventInit : public EventInit {
 };
 
 class WebKitAnimationEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<WebKitAnimationEvent> create()
     {

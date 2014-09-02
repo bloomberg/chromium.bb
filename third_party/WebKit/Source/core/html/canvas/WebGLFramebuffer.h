@@ -38,6 +38,7 @@ class WebGLRenderbuffer;
 class WebGLTexture;
 
 class WebGLFramebuffer FINAL : public WebGLContextObject, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     class WebGLAttachment : public RefCountedWillBeGarbageCollectedFinalized<WebGLAttachment> {
     public:

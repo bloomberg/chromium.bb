@@ -26,6 +26,7 @@
 namespace blink {
 
 class SVGRenderingIntent : public RefCounted<SVGRenderingIntent>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum SVGRenderingIntentType {
         RENDERING_INTENT_UNKNOWN                  = 0,

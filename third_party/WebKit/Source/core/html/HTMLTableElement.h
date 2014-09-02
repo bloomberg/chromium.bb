@@ -37,6 +37,7 @@ class HTMLTableRowsCollection;
 class HTMLTableSectionElement;
 
 class HTMLTableElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLTableElement);
 
@@ -104,6 +105,6 @@ private:
     RefPtrWillBeMember<StylePropertySet> m_sharedCellStyle;
 };
 
-} //namespace
+} // namespace blink
 
-#endif
+#endif // HTMLTableElement_h

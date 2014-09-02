@@ -33,6 +33,7 @@
 namespace blink {
 
 class PositionError : public GarbageCollectedFinalized<PositionError>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum ErrorCode {
         PERMISSION_DENIED = 1,

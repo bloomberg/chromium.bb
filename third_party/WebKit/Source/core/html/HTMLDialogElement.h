@@ -35,6 +35,7 @@ class ExceptionState;
 class QualifiedName;
 
 class HTMLDialogElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLDialogElement);
 
@@ -75,4 +76,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // HTMLDialogElement_h

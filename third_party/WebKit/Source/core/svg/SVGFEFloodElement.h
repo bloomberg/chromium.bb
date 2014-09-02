@@ -27,6 +27,7 @@
 namespace blink {
 
 class SVGFEFloodElement FINAL : public SVGFilterPrimitiveStandardAttributes {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFEFloodElement);
 
@@ -39,4 +40,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGFEFloodElement_h

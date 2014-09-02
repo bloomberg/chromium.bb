@@ -25,6 +25,7 @@ class WebServiceWorkerResponse;
 
 class Response FINAL : public RefCountedWillBeGarbageCollected<Response>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Response);
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Response> create(Blob*, const Dictionary&, ExceptionState&);
     static PassRefPtrWillBeRawPtr<Response> create(const String&, const Dictionary&, ExceptionState&);

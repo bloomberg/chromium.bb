@@ -38,6 +38,7 @@ class Settings;
 
 class WebGLContextAttributes FINAL : public CanvasContextAttributes, public ScriptWrappable {
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(WebGLContextAttributes);
+    DEFINE_WRAPPERTYPEINFO();
 public:
     // Create a new attributes object
     static PassRefPtrWillBeRawPtr<WebGLContextAttributes> create();

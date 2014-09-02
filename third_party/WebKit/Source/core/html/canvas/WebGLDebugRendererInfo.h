@@ -33,6 +33,7 @@
 namespace blink {
 
 class WebGLDebugRendererInfo FINAL : public WebGLExtension, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum EnumType {
         UNMASKED_VENDOR_WEBGL = 0x9245,

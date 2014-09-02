@@ -42,6 +42,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGSpreadMe
 
 class SVGGradientElement : public SVGElement,
                            public SVGURIReference {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum {
         SVG_SPREADMETHOD_UNKNOWN = SVGSpreadMethodUnknown,
@@ -82,4 +83,4 @@ DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGGradientElement);
 
 } // namespace blink
 
-#endif
+#endif // SVGGradientElement_h

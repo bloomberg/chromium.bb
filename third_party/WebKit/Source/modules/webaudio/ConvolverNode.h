@@ -37,6 +37,7 @@ class ExceptionState;
 class Reverb;
 
 class ConvolverNode FINAL : public AudioNode {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static ConvolverNode* create(AudioContext* context, float sampleRate)
     {

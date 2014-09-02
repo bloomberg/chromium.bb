@@ -37,6 +37,7 @@ class AudioBus;
 class AudioContext;
 
 class AudioDestinationNode : public AudioNode, public AudioIOCallback {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     AudioDestinationNode(AudioContext*, float sampleRate);
     virtual ~AudioDestinationNode();

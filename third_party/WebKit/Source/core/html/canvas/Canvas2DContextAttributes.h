@@ -40,6 +40,7 @@ enum Canvas2DContextStorage {
 
 class Canvas2DContextAttributes : public CanvasContextAttributes, public ScriptWrappable {
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(Canvas2DContextAttributes);
+    DEFINE_WRAPPERTYPEINFO();
 public:
     // Create a new attributes object
     static PassRefPtrWillBeRawPtr<Canvas2DContextAttributes> create();

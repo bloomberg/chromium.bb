@@ -42,6 +42,7 @@ namespace blink {
 class ExceptionState;
 
 class TextTrackCue : public RefCountedWillBeGarbageCollectedFinalized<TextTrackCue>, public EventTargetWithInlineData {
+    DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(TextTrackCue);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TextTrackCue);
 public:
@@ -118,4 +119,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // TextTrackCue_h

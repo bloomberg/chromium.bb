@@ -31,6 +31,7 @@ namespace blink {
 class ExceptionState;
 
 class CharacterData : public Node {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     void atomize();
     const String& data() const { return m_data; }

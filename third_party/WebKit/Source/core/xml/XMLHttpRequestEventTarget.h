@@ -36,6 +36,7 @@
 namespace blink {
 
 class XMLHttpRequestEventTarget : public EventTargetWithInlineData {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);

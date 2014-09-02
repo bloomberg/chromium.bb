@@ -28,6 +28,7 @@
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
+#include "core/V8SVGElementWrapperFactory.h" // FIXME: should be bindings/core/v8
 #include "core/XLinkNames.h"
 #include "core/XMLNames.h"
 #include "core/css/CSSCursorImageValue.h"
@@ -1190,4 +1191,9 @@ const AtomicString& SVGElement::eventParameterName()
     return evtString;
 }
 
+v8::Handle<v8::Object> SVGElement::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    return createV8SVGWrapper(this, creationContext, isolate);
 }
+
+} // namespace blink

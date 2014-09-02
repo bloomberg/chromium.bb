@@ -25,6 +25,7 @@
 namespace blink {
 
 class SVGFESpotLightElement FINAL : public SVGFELightElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFESpotLightElement);
 
@@ -36,4 +37,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGFESpotLightElement_h

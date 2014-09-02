@@ -31,6 +31,7 @@
 namespace blink {
 
 class HTMLTableCellElement FINAL : public HTMLTablePartElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableCellElement);
 
@@ -70,6 +71,6 @@ inline bool isHTMLTableCellElement(const HTMLElement& element)
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTableCellElement);
 
-} // namespace
+} // namespace blink
 
-#endif
+#endif // HTMLTableCellElement_h

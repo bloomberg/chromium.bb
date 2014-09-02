@@ -31,6 +31,7 @@ namespace blink {
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<CompositeOperationType>();
 
 class SVGFECompositeElement FINAL : public SVGFilterPrimitiveStandardAttributes {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFECompositeElement);
 
@@ -62,4 +63,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGFECompositeElement_h

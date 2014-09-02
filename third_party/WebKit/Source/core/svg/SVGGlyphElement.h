@@ -32,6 +32,7 @@ namespace blink {
 class SVGFontData;
 
 class SVGGlyphElement FINAL : public SVGElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGGlyphElement);
 
@@ -60,4 +61,4 @@ private:
 } // namespace blink
 
 #endif // ENABLE(SVG_FONTS)
-#endif
+#endif // SVGGlyphElement_h

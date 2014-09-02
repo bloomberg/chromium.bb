@@ -18,6 +18,7 @@ struct MediaQueryListEventInit : public EventInit {
 };
 
 class MediaQueryListEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<MediaQueryListEvent> create()
     {

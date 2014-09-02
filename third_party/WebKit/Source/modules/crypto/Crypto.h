@@ -39,6 +39,7 @@ namespace blink {
 class ExceptionState;
 
 class Crypto FINAL : public GarbageCollected<Crypto>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static Crypto* create()
     {
@@ -57,6 +58,6 @@ private:
     Member<SubtleCrypto> m_subtleCrypto;
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // Crypto_h

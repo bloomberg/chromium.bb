@@ -34,6 +34,7 @@
 namespace blink {
 
 class TextMetrics FINAL : public RefCountedWillBeGarbageCollected<TextMetrics>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<TextMetrics> create() { return adoptRefWillBeNoop(new TextMetrics); }
 

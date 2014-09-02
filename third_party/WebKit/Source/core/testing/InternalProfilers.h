@@ -40,6 +40,7 @@
 namespace blink {
 
 class InternalProfilers : public RefCountedWillBeGarbageCollected<InternalProfilers>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     InternalProfilers();
 
@@ -58,4 +59,4 @@ public:
 
 } // namespace blink
 
-#endif
+#endif // InternalProfilers_h

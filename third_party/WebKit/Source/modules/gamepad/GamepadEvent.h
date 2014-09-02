@@ -17,6 +17,7 @@ struct GamepadEventInit : public EventInit {
 };
 
 class GamepadEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<GamepadEvent> create()
     {

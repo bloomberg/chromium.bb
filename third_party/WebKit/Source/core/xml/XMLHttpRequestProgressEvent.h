@@ -32,6 +32,7 @@
 namespace blink {
 
 class XMLHttpRequestProgressEvent FINAL : public ProgressEvent {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<XMLHttpRequestProgressEvent> create()
     {

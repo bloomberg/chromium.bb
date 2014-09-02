@@ -45,6 +45,7 @@ class ErrorCallback;
 class VoidCallback;
 
 class DirectoryEntry FINAL : public Entry {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static DirectoryEntry* create(DOMFileSystemBase* fileSystem, const String& fullPath)
     {
@@ -65,6 +66,6 @@ private:
 
 DEFINE_TYPE_CASTS(DirectoryEntry, Entry, entry, entry->isDirectory(), entry.isDirectory());
 
-} // namespace
+} // namespace blink
 
 #endif // DirectoryEntry_h

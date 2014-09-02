@@ -27,6 +27,7 @@ namespace blink {
 
 // SVGAnimateElement implements superset of the functionality.
 class SVGSetElement FINAL : public SVGAnimateElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGSetElement);
 
@@ -37,4 +38,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGSetElement_h

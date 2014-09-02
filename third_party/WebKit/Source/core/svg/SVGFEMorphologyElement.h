@@ -30,6 +30,7 @@ namespace blink {
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<MorphologyOperatorType>();
 
 class SVGFEMorphologyElement FINAL : public SVGFilterPrimitiveStandardAttributes {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFEMorphologyElement);
 
@@ -54,4 +55,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGFEMorphologyElement_h

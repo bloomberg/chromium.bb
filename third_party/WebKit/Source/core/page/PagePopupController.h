@@ -41,6 +41,7 @@ namespace blink {
 class PagePopupClient;
 
 class PagePopupController FINAL : public RefCountedWillBeGarbageCollected<PagePopupController>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<PagePopupController> create(PagePopupClient*);
     void setValueAndClosePopup(int numValue, const String& stringValue);
@@ -60,5 +61,6 @@ private:
     PagePopupClient* m_popupClient;
 };
 
-}
-#endif
+} // namespace blink
+
+#endif // PagePopupController_h

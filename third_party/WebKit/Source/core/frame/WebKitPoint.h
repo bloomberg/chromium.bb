@@ -34,6 +34,7 @@
 namespace blink {
 
 class WebKitPoint FINAL : public RefCountedWillBeGarbageCollected<WebKitPoint>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<WebKitPoint> create()
     {

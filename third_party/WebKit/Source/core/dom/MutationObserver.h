@@ -59,6 +59,7 @@ typedef WillBeHeapVector<RefPtrWillBeMember<MutationObserver> > MutationObserver
 typedef WillBeHeapVector<RefPtrWillBeMember<MutationRecord> > MutationRecordVector;
 
 class MutationObserver FINAL : public RefCountedWillBeGarbageCollectedFinalized<MutationObserver>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum MutationType {
         ChildList = 1 << 0,
@@ -109,6 +110,6 @@ private:
     unsigned m_priority;
 };
 
-}
+} // namespace blink
 
 #endif // MutationObserver_h

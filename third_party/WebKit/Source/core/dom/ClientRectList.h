@@ -40,6 +40,7 @@ class ClientRect;
 
 class ClientRectList FINAL : public RefCountedWillBeGarbageCollected<ClientRectList>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ClientRectList);
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<ClientRectList> create()
     {

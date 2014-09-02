@@ -63,6 +63,7 @@ public:
 class SVGPathSegListTearOff FINAL
     : public SVGListPropertyTearOffHelper<SVGPathSegListTearOff, SVGPathSegList>
     , public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtr<SVGPathSegListTearOff> create(PassRefPtr<SVGPathSegList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
@@ -79,4 +80,4 @@ private:
 
 } // namespace blink
 
-#endif // SVGPathSegListTearOff_h_
+#endif // SVGPathSegListTearOff_h

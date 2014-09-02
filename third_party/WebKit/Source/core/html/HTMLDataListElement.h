@@ -39,6 +39,7 @@ namespace blink {
 class HTMLDataListOptionsCollection;
 
 class HTMLDataListElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLDataListElement> create(Document&);
 

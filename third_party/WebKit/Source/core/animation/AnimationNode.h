@@ -60,6 +60,7 @@ static inline double nullValue()
 }
 
 class AnimationNode : public RefCountedWillBeGarbageCollectedFinalized<AnimationNode>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
     friend class AnimationPlayer; // Calls attach/detach, updateInheritedTime.
 public:
     // Note that logic in CSSAnimations depends on the order of these values.

@@ -31,6 +31,7 @@ class HitTestResult;
 class HTMLImageElement;
 
 class HTMLMapElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLMapElement);
     virtual ~HTMLMapElement();
@@ -53,6 +54,6 @@ private:
     AtomicString m_name;
 };
 
-} //namespace
+} // namespace blink
 
-#endif
+#endif // HTMLMapElement_h

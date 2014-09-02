@@ -32,6 +32,7 @@
 namespace blink {
 
 class HTMLCollection : public RefCountedWillBeGarbageCollectedFinalized<HTMLCollection>, public ScriptWrappable, public LiveNodeListBase {
+    DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLCollection);
 public:
     enum ItemAfterOverrideType {
@@ -161,6 +162,6 @@ inline void HTMLCollection::invalidateCacheForAttribute(const QualifiedName* att
         invalidateIdNameCacheMaps();
 }
 
-} // namespace
+} // namespace blink
 
-#endif
+#endif // HTMLCollection_h

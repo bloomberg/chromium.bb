@@ -40,6 +40,7 @@ namespace blink {
 class ExecutionContext;
 
 class InstallEvent FINAL : public InstallPhaseEvent {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<InstallEvent> create();
     static PassRefPtrWillBeRawPtr<InstallEvent> create(const AtomicString& type, const EventInit&, WaitUntilObserver*);

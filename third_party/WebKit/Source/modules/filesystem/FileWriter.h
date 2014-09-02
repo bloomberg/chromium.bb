@@ -48,6 +48,7 @@ class ExecutionContext;
 
 class FileWriter FINAL : public FileWriterBase, public ActiveDOMObject, public EventTargetWithInlineData, public WebFileWriterClient {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<FileWriterBase>);
+    DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileWriter);
 public:
     static FileWriter* create(ExecutionContext*);

@@ -11,6 +11,7 @@
 namespace blink {
 
 class VideoTrackList FINAL : public TrackListBase<VideoTrack> {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<VideoTrackList> create(HTMLMediaElement&);
 
@@ -27,6 +28,6 @@ private:
     explicit VideoTrackList(HTMLMediaElement&);
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // VideoTrackList_h

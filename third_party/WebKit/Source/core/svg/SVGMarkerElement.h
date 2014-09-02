@@ -40,6 +40,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGMarkerUn
 
 class SVGMarkerElement FINAL : public SVGElement,
                                public SVGFitToViewBox {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     // Forward declare enumerations in the W3C naming scheme, for IDL generation.
     enum {
@@ -92,6 +93,6 @@ private:
     RefPtr<SVGAnimatedEnumeration<SVGMarkerUnitsType> > m_markerUnits;
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // SVGMarkerElement_h

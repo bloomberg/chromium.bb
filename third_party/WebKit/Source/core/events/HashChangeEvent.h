@@ -35,6 +35,7 @@ struct HashChangeEventInit : public EventInit {
 };
 
 class HashChangeEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HashChangeEvent> create()
     {

@@ -31,6 +31,7 @@ namespace blink {
 class HTMLFormControlElement;
 
 class HTMLLegendElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLLegendElement);
 
@@ -46,6 +47,6 @@ private:
     virtual void focus(bool restorePreviousSelection, FocusType) OVERRIDE;
 };
 
-} //namespace
+} // namespace blink
 
-#endif
+#endif // HTMLLegendElement_h

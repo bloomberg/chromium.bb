@@ -42,6 +42,7 @@ namespace blink {
 class ExceptionState;
 
 class FileError : public DOMError {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum ErrorCode {
         OK = 0,

@@ -27,6 +27,7 @@ class ServiceWorkerRegistration FINAL
     , public ActiveDOMObject
     , public EventTargetWithInlineData
     , public WebServiceWorkerRegistrationProxy {
+    DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(ServiceWorkerRegistration);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistration);
 public:

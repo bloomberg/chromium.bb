@@ -34,6 +34,7 @@
 namespace blink {
 
 class PerformanceMeasure FINAL : public PerformanceEntry {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<PerformanceMeasure> create(const String& name, double startTime, double endTime)
     {
@@ -55,6 +56,6 @@ private:
     virtual ~PerformanceMeasure() { }
 };
 
-}
+} // namespace blink
 
-#endif // !defined(PerformanceMeasure_h)
+#endif // PerformanceMeasure_h

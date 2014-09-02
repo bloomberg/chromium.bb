@@ -38,6 +38,7 @@
 namespace blink {
 
 class SVGAngleTearOff FINAL : public SVGPropertyTearOff<SVGAngle>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtr<SVGAngleTearOff> create(PassRefPtr<SVGAngle> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
@@ -76,4 +77,4 @@ private:
 
 } // namespace blink
 
-#endif // SVGAngleTearOff_h_
+#endif // SVGAngleTearOff_h

@@ -36,6 +36,7 @@
 namespace blink {
 
 class RTCStatsResponse FINAL : public RTCStatsResponseBase, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static RTCStatsResponse* create();
 

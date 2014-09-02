@@ -34,6 +34,7 @@ struct AutocompleteErrorEventInit : public EventInit {
 };
 
 class AutocompleteErrorEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<AutocompleteErrorEvent> create()
     {

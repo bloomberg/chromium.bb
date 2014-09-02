@@ -17,6 +17,7 @@ namespace blink {
 class WebServiceWorkerCacheStorage;
 
 class CacheStorage FINAL : public RefCountedWillBeGarbageCollected<CacheStorage>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(CacheStorage);
 public:
     static PassRefPtrWillBeRawPtr<CacheStorage> create(WebServiceWorkerCacheStorage*);

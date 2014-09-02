@@ -39,6 +39,7 @@ namespace blink {
 class WebGLRenderingContextBase;
 
 class ANGLEInstancedArrays FINAL : public WebGLExtension, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<ANGLEInstancedArrays> create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);

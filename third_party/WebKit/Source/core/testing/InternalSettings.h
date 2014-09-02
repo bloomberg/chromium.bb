@@ -49,6 +49,7 @@ class InternalSettings FINAL : public InternalSettingsGenerated, public HeapSupp
 #else
 class InternalSettings FINAL : public InternalSettingsGenerated {
 #endif
+    DEFINE_WRAPPERTYPEINFO();
 public:
     class Backup {
     public:
@@ -139,4 +140,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // InternalSettings_h

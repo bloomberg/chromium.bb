@@ -34,6 +34,7 @@
 namespace blink {
 
 class RTCStatsReport FINAL : public GarbageCollectedFinalized<RTCStatsReport>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static RTCStatsReport* create(const String& id, const String& type, double timestamp);
 

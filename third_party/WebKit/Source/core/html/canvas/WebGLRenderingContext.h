@@ -32,6 +32,7 @@
 namespace blink {
 
 class WebGLRenderingContext FINAL : public WebGLRenderingContextBase, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassOwnPtrWillBeRawPtr<WebGLRenderingContext> create(HTMLCanvasElement*, WebGLContextAttributes*);
     virtual ~WebGLRenderingContext();
@@ -75,4 +76,4 @@ DEFINE_TYPE_CASTS(WebGLRenderingContext, CanvasRenderingContext, context,
 
 } // namespace blink
 
-#endif
+#endif // WebGLRenderingContext_h

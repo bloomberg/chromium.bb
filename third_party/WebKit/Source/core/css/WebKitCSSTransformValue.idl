@@ -30,9 +30,7 @@
     DoNotCheckConstants,
     ImplementedAs=CSSTransformValue,
 ] interface WebKitCSSTransformValue : CSSValueList {
-
     // OperationTypes
-
     const unsigned short CSS_TRANSLATE   = 1;
     const unsigned short CSS_TRANSLATEX  = 2;
     const unsigned short CSS_TRANSLATEY  = 3;

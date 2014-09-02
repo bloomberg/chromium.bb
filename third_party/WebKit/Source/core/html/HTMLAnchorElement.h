@@ -56,6 +56,7 @@ enum {
 };
 
 class HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLAnchorElement> create(Document&);
 

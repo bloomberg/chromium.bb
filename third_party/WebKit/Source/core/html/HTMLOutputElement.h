@@ -37,6 +37,7 @@
 namespace blink {
 
 class HTMLOutputElement FINAL : public HTMLFormControlElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLOutputElement> create(Document&, HTMLFormElement*);
 
@@ -69,6 +70,6 @@ private:
     RefPtrWillBeMember<DOMSettableTokenList> m_tokens;
 };
 
-} // namespace
+} // namespace blink
 
-#endif
+#endif // HTMLOutputElement_h

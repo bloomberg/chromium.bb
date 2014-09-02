@@ -44,6 +44,7 @@ class FileWriterSync;
 class ExceptionState;
 
 class DOMFileSystemSync FINAL : public DOMFileSystemBase, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static DOMFileSystemSync* create(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
     {
@@ -65,6 +66,6 @@ private:
     DOMFileSystemSync(ExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);
 };
 
-}
+} // namespace blink
 
 #endif // DOMFileSystemSync_h

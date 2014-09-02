@@ -40,6 +40,7 @@ struct TransitionEventInit : public EventInit {
 };
 
 class TransitionEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<TransitionEvent> create()
     {
@@ -77,4 +78,3 @@ private:
 } // namespace blink
 
 #endif // TransitionEvent_h
-

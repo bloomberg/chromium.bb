@@ -48,6 +48,7 @@ struct ErrorEventInit : public EventInit {
 };
 
 class ErrorEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<ErrorEvent> create()
     {

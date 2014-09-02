@@ -44,6 +44,7 @@ class Page;
 class ScriptArguments;
 
 class Console FINAL : public ConsoleBase, public DOMWindowProperty {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Console> create(LocalFrame* frame)
     {

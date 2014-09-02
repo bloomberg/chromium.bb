@@ -24,6 +24,7 @@ class ExceptionState;
 class UnderlyingSource;
 
 class ReadableStream : public GarbageCollectedFinalized<ReadableStream>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum State {
         Readable,
@@ -88,4 +89,3 @@ private:
 } // namespace blink
 
 #endif // ReadableStream_h
-

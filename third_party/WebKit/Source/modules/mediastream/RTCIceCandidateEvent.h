@@ -32,6 +32,7 @@ namespace blink {
 class RTCIceCandidate;
 
 class RTCIceCandidateEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~RTCIceCandidateEvent();
 

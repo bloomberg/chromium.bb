@@ -30,6 +30,7 @@
 namespace blink {
 
 class DocumentFragment : public ContainerNode {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<DocumentFragment> create(Document&);
 
@@ -55,4 +56,4 @@ DEFINE_NODE_TYPE_CASTS(DocumentFragment, isDocumentFragment());
 
 } // namespace blink
 
-#endif
+#endif // DocumentFragment_h

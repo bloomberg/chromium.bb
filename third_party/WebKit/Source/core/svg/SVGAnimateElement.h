@@ -33,6 +33,7 @@ namespace blink {
 class SVGAnimatedTypeAnimator;
 
 class SVGAnimateElement : public SVGAnimationElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SVGAnimateElement> create(Document&);
     virtual ~SVGAnimateElement();

@@ -17,6 +17,7 @@ class ScriptPromise;
 class ScriptState;
 
 class Geofencing FINAL : public GarbageCollected<Geofencing>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static Geofencing* create()
     {

@@ -41,6 +41,7 @@ namespace blink {
 class ExceptionState;
 
 class SharedWorker FINAL : public AbstractWorker, public WillBeHeapSupplementable<SharedWorker> {
+    DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SharedWorker);
 public:
     static PassRefPtrWillBeRawPtr<SharedWorker> create(ExecutionContext*, const String& url, const String& name, ExceptionState&);

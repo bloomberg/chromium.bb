@@ -28,9 +28,12 @@
 
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/custom/V8ArrayBufferViewCustom.h"
+#include "bindings/core/v8/custom/V8TypedArrayCustom.h"
 #include "core/html/canvas/DataView.h"
 
 namespace blink {
+
+const WrapperTypeInfo& DataView::s_wrapperTypeInfo = V8TypedArray<DataView>::wrapperTypeInfo;
 
 static void initializeScriptWrappableForInterface(DataView* object)
 {

@@ -30,6 +30,7 @@ namespace blink {
 struct RadialGradientAttributes;
 
 class SVGRadialGradientElement FINAL : public SVGGradientElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGRadialGradientElement);
 
@@ -63,4 +64,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGRadialGradientElement_h

@@ -32,6 +32,7 @@
 namespace blink {
 
 class RTCDataChannelEvent FINAL : public Event {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~RTCDataChannelEvent();
 

@@ -35,6 +35,8 @@ class FilterEffect;
 class SVGFilterBuilder;
 
 class SVGFilterPrimitiveStandardAttributes : public SVGElement {
+    // No need of DEFINE_WRAPPERTYPEINFO() here because
+    // SVGFilterPrimitiveStandardAttributes is NoInterfaceObject.
 public:
     void setStandardAttributes(FilterEffect*) const;
 
@@ -82,4 +84,4 @@ void invalidateFilterPrimitiveParent(SVGElement*);
 
 } // namespace blink
 
-#endif
+#endif // SVGFilterPrimitiveStandardAttributes_h

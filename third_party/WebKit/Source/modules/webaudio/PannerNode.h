@@ -44,6 +44,7 @@ namespace blink {
 // All of these effects follow the OpenAL specification very closely.
 
 class PannerNode FINAL : public AudioNode {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     // These enums are used to distinguish what cached values of panner are dirty.
     enum {

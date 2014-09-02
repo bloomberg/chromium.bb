@@ -61,6 +61,7 @@ private:
 };
 
 class VTTCue FINAL : public TextTrackCue {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<VTTCue> create(Document& document, double startTime, double endTime, const String& text)
     {
@@ -196,4 +197,4 @@ DEFINE_TYPE_CASTS(VTTCue, TextTrackCue, cue, true, true);
 
 } // namespace blink
 
-#endif
+#endif // VTTCue_h

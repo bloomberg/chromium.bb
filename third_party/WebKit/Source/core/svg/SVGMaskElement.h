@@ -32,6 +32,7 @@ namespace blink {
 
 class SVGMaskElement FINAL : public SVGElement,
                              public SVGTests {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGMaskElement);
 
@@ -65,6 +66,6 @@ private:
     RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_maskContentUnits;
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // SVGMaskElement_h

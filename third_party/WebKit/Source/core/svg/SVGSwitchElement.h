@@ -27,6 +27,7 @@
 namespace blink {
 
 class SVGSwitchElement FINAL : public SVGGraphicsElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGSwitchElement);
 
@@ -39,4 +40,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGSwitchElement_h

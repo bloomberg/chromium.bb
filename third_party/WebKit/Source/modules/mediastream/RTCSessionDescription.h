@@ -41,6 +41,7 @@ class Dictionary;
 class ExceptionState;
 
 class RTCSessionDescription FINAL : public GarbageCollectedFinalized<RTCSessionDescription>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static RTCSessionDescription* create(const Dictionary&, ExceptionState&);
     static RTCSessionDescription* create(WebRTCSessionDescription);

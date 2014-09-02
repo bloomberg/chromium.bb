@@ -57,6 +57,7 @@ inline v8::Handle<v8::Value> toV8(TestInterfaceNotScriptWrappable* impl, v8::Han
     v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper<V8TestInterfaceNotScriptWrappable>(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
+
     return wrap(impl, creationContext, isolate);
 }
 

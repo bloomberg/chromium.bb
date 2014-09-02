@@ -37,6 +37,7 @@ enum ViewportErrorCode {
 };
 
 class HTMLMetaElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLMetaElement);
 
@@ -70,4 +71,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // HTMLMetaElement_h

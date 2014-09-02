@@ -45,6 +45,7 @@ struct WheelEventInit : public MouseEventInit {
 };
 
 class WheelEvent FINAL : public MouseEvent {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum { TickMultiplier = 120 };
 

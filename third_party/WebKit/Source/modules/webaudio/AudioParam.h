@@ -43,6 +43,7 @@ namespace blink {
 class AudioNodeOutput;
 
 class AudioParam FINAL : public AudioSummingJunction, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static const double DefaultSmoothingConstant;
     static const double SnapThreshold;

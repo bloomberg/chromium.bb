@@ -63,6 +63,7 @@ class SVGPathElement;
 class SVGElement;
 
 class SVGPathSeg : public RefCounted<SVGPathSeg>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     // SVGPathSeg itself is used as a tear-off type.
     // FIXME: A tear-off type should be introduced to distinguish animVal/baseVal
@@ -131,4 +132,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGPathSeg_h

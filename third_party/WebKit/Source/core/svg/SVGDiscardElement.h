@@ -36,6 +36,7 @@
 namespace blink {
 
 class SVGDiscardElement FINAL : public SVGSMILElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGDiscardElement);
 

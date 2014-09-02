@@ -34,6 +34,7 @@
 namespace blink {
 
 class WebGLShader FINAL : public WebGLSharedObject, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~WebGLShader();
 

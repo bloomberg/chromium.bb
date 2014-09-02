@@ -46,6 +46,7 @@ struct KeyboardEventInit : public UIEventInit {
 };
 
 class KeyboardEvent FINAL : public UIEventWithKeyState {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum KeyLocationCode {
         DOM_KEY_LOCATION_STANDARD   = 0x00,

@@ -45,6 +45,7 @@ struct EvaluationContext;
 
 class XPathResult FINAL : public RefCountedWillBeGarbageCollected<XPathResult>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(XPathResult);
+    DEFINE_WRAPPERTYPEINFO();
 public:
     enum XPathResultType {
         ANY_TYPE = 0,

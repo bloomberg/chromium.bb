@@ -50,6 +50,7 @@ class ExceptionState;
 
 class DOMWebSocket : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<DOMWebSocket>, public EventTargetWithInlineData, public ActiveDOMObject, public WebSocketChannelClient {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<DOMWebSocket>);
+    DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(DOMWebSocket);
 public:
     static const char* subprotocolSeperator();

@@ -42,6 +42,7 @@ class ExceptionState;
 class FileEntrySync;
 
 class DirectoryEntrySync FINAL : public EntrySync {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static DirectoryEntrySync* create(DOMFileSystemBase* fileSystem, const String& fullPath)
     {
@@ -62,6 +63,6 @@ private:
 
 DEFINE_TYPE_CASTS(DirectoryEntrySync, EntrySync, entry, entry->isDirectory(), entry.isDirectory());
 
-}
+} // namespace blink
 
 #endif // DirectoryEntrySync_h

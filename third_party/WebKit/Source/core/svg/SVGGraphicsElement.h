@@ -34,6 +34,7 @@ class Path;
 class SVGMatrixTearOff;
 
 class SVGGraphicsElement : public SVGElement, public SVGTests {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~SVGGraphicsElement();
 

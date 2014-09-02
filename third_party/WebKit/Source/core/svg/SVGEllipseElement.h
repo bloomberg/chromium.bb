@@ -29,6 +29,7 @@
 namespace blink {
 
 class SVGEllipseElement FINAL : public SVGGeometryElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGEllipseElement);
 
@@ -56,4 +57,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGEllipseElement_h

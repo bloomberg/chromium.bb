@@ -40,6 +40,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGStitchOp
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<TurbulenceType>();
 
 class SVGFETurbulenceElement FINAL : public SVGFilterPrimitiveStandardAttributes {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(SVGFETurbulenceElement);
 
@@ -68,4 +69,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // SVGFETurbulenceElement_h

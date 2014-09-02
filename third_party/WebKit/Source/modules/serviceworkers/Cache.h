@@ -25,6 +25,7 @@ class ScriptState;
 class WebServiceWorkerCache;
 
 class Cache FINAL : public RefCountedWillBeGarbageCollected<Cache>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(Cache);
 public:
     static PassRefPtrWillBeRawPtr<Cache> fromWebServiceWorkerCache(WebServiceWorkerCache*);

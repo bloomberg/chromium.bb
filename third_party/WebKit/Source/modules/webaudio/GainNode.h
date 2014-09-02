@@ -38,6 +38,7 @@ class AudioContext;
 // De-zippering (smoothing) is applied when the gain value is changed dynamically.
 
 class GainNode FINAL : public AudioNode {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static GainNode* create(AudioContext* context, float sampleRate)
     {

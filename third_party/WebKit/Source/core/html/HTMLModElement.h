@@ -29,6 +29,7 @@
 namespace blink {
 
 class HTMLModElement FINAL : public HTMLElement {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLModElement);
 
@@ -40,6 +41,6 @@ private:
     virtual const QualifiedName& subResourceAttributeName() const OVERRIDE;
 };
 
-} //namespace
+} // namespace blink
 
-#endif
+#endif // HTMLModElement_h

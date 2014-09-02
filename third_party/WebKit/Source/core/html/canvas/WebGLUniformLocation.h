@@ -35,6 +35,7 @@
 namespace blink {
 
 class WebGLUniformLocation FINAL : public RefCountedWillBeGarbageCollected<WebGLUniformLocation>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<WebGLUniformLocation> create(WebGLProgram*, GLint location);
 
