@@ -78,15 +78,8 @@ function test()
     {
         function callback()
         {
-            function printRecord(record)
-            {
-                var title = WebInspector.TracingTimelineUIUtils.eventTitle(record.traceEvent(), InspectorTest.timelineModel());
-                InspectorTest.addResult("    " + title);
-            }
             var rootRecord = InspectorTest.timelinePresentationModel().rootRecord();
             InspectorTest.dumpPresentationRecord(rootRecord, undefined, undefined, ["FunctionCall", "ConsoleTime", "TimeStamp"]);
-            InspectorTest.addResult("Marker records:");
-            InspectorTest.printTimestampRecords(null, printRecord);
             InspectorTest.timelinePresentationModel().reset();
             next();
         }

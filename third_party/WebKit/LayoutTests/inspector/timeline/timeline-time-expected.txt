@@ -5,26 +5,26 @@ Running: testSimpleConsoleTime
 Root
 ----> FunctionCall
 ----> FunctionCall
---------> ConsoleTime : a
+--------> Console Time: a
 
 Running: testNestedConsoleTime
 Root
 ----> FunctionCall
---------> ConsoleTime : a
-------------> ConsoleTime : b
-------------> ConsoleTime : c
-----------------> ConsoleTime : d
+--------> Console Time: a
+------------> Console Time: b
+------------> Console Time: c
+----------------> Console Time: d
 
 Running: testUnbalancedConsoleTime
 Root
 ----> FunctionCall
---------> ConsoleTime : b
+--------> Console Time: b
 
 Running: testConsoleTimeWithoutConsoleTimeEnd
 Root
 ----> FunctionCall
---------> TimeStamp : Foo
---------> TimeStamp : Bar
---------> ConsoleTime : d
-------------> TimeStamp : Baz
+--------> Timestamp: Foo
+--------> Timestamp: Bar
+--------> Console Time: d
+------------> Timestamp: Baz
 
