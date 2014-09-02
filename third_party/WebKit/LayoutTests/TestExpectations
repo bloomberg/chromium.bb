@@ -1297,6 +1297,7 @@ crbug.com/407915 [ Win Release ] virtual/deferred/inspector/tracing/timeline-lay
 crbug.com/407915 [ Win Release ] virtual/deferred/inspector/tracing/timeline-layout.html [ Failure Pass ]
 crbug.com/407915 [ Win Release ] virtual/deferred/inspector/tracing/timeline-recalculate-styles.html [ Failure Pass ]
 crbug.com/407915 [ Win Release ] virtual/deferred/inspector/tracing/timeline-time.html [ Failure Pass Timeout ]
+crbug.com/407915 virtual/implsidepainting/inspector/timeline/timeline-frames.html [ Failure Pass ]
 crbug.com/407915 [ Win Release ] virtual/implsidepainting/inspector/tracing/timeline-injected-script-eval.html [ Failure Pass ]
 crbug.com/407915 [ Win Release ] virtual/implsidepainting/inspector/tracing/timeline-layout.html [ Failure Pass ]
 crbug.com/407915 [ Win Release ] virtual/implsidepainting/inspector/tracing/timeline-recalculate-styles.html [ Failure Pass ]
