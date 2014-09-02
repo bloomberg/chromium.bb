@@ -53,8 +53,7 @@ void registerMockedURLLoad(const WebURL& fullURL, const WebString& fileName, con
 
 void registerMockedURLLoad(const WebURL& fullURL, const WebString& fileName, const WebString& relativeBaseDirectory, const WebString& mimeType)
 {
-    WebURLResponse response;
-    response.initialize();
+    WebURLResponse response(fullURL);
     response.setMIMEType(mimeType);
     response.setHTTPStatusCode(200);
 
