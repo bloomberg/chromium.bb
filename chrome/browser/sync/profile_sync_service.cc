@@ -962,9 +962,7 @@ void ProfileSyncService::ClearStaleErrors() {
   ClearUnrecoverableError();
   last_actionable_error_ = SyncProtocolError();
   // Clear the data type errors as well.
-  if (directory_data_type_manager_.get())
-    directory_data_type_manager_->ResetDataTypeErrors();
-
+  data_type_status_table_.Reset();
 }
 
 void ProfileSyncService::ClearUnrecoverableError() {
@@ -1412,7 +1410,20 @@ void ProfileSyncService::OnEncryptedTypesChanged(
            << (encrypt_everything_ ? "true" : "false") << ")";
   DCHECK(encrypted_types_.Has(syncer::PASSWORDS));
 
-  NotifyObservers();
+  // If sessions are encrypted, full history sync is not possible, and
+  // delete directives are unnecessary.
+  if (GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES) &&
+      encrypted_types_.Has(syncer::SESSIONS)) {
+    syncer::SyncError error(
+        FROM_HERE,
+        syncer::SyncError::DATATYPE_POLICY_ERROR,
+        "Delete directives not supported with encryption.",
+        syncer::HISTORY_DELETE_DIRECTIVES);
+    DataTypeStatusTable::TypeErrorMap error_map;
+    error_map[error.model_type()] = error;
+    data_type_status_table_.UpdateFailedDataTypes(error_map);
+    ReconfigureDatatypeManager();
+  }
 }
 
 void ProfileSyncService::OnEncryptionComplete() {
@@ -1500,7 +1511,6 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
 void ProfileSyncService::OnConfigureDone(
     const DataTypeManager::ConfigureResult& result) {
   configure_status_ = result.status;
-  data_type_status_table_ = result.data_type_status_table;
 
   if (backend_mode_ != SYNC) {
     if (configure_status_ == DataTypeManager::OK) {
@@ -1830,8 +1840,18 @@ void ProfileSyncService::OnUserChoseDatatypes(
   UpdateSelectedTypesHistogram(sync_everything, chosen_types);
   sync_prefs_.SetKeepEverythingSynced(sync_everything);
 
-  if (directory_data_type_manager_.get())
-    directory_data_type_manager_->ResetDataTypeErrors();
+  data_type_status_table_.Reset();
+  if (GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES) &&
+      encrypted_types_.Has(syncer::SESSIONS)) {
+    syncer::SyncError error(
+        FROM_HERE,
+        syncer::SyncError::DATATYPE_POLICY_ERROR,
+        "Delete directives not supported with encryption.",
+        syncer::HISTORY_DELETE_DIRECTIVES);
+    DataTypeStatusTable::TypeErrorMap error_map;
+    error_map[error.model_type()] = error;
+    data_type_status_table_.UpdateFailedDataTypes(error_map);
+  }
   ChangePreferredDataTypes(chosen_types);
   AcknowledgeSyncedTypes();
   NotifyObservers();
@@ -1966,7 +1986,8 @@ void ProfileSyncService::ConfigureDataTypeManager() {
                                         &directory_data_type_controllers_,
                                         this,
                                         backend_.get(),
-                                        this));
+                                        this,
+                                        &data_type_status_table_));
 
     // We create the migrator at the same time.
     migrator_.reset(

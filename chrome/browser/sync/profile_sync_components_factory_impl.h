@@ -50,7 +50,8 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
       const sync_driver::DataTypeController::TypeMap* controllers,
       const sync_driver::DataTypeEncryptionHandler* encryption_handler,
       browser_sync::SyncBackendHost* backend,
-      sync_driver::DataTypeManagerObserver* observer)
+      sync_driver::DataTypeManagerObserver* observer,
+      sync_driver::DataTypeStatusTable* data_type_status_table)
           OVERRIDE;
 
   virtual browser_sync::SyncBackendHost* CreateSyncBackendHost(

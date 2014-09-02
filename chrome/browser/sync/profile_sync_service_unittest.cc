@@ -58,7 +58,6 @@ class FakeDataTypeManager : public sync_driver::DataTypeManager {
   }
 
   virtual void ReenableType(syncer::ModelType type) OVERRIDE {}
-  virtual void ResetDataTypeErrors() OVERRIDE {}
   virtual void PurgeForMigration(syncer::ModelTypeSet undesired_types,
                                  syncer::ConfigureReason reason) OVERRIDE {}
   virtual void Stop() OVERRIDE {};
@@ -252,7 +251,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
   }
 
   void ExpectDataTypeManagerCreation(int times) {
-    EXPECT_CALL(*components_factory_, CreateDataTypeManager(_, _, _, _, _))
+    EXPECT_CALL(*components_factory_, CreateDataTypeManager(_, _, _, _, _, _))
         .Times(times)
         .WillRepeatedly(ReturnNewDataTypeManager());
   }

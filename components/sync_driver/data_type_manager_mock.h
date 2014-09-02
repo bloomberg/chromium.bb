@@ -18,7 +18,6 @@ class DataTypeManagerMock : public DataTypeManager {
 
   MOCK_METHOD2(Configure, void(syncer::ModelTypeSet, syncer::ConfigureReason));
   MOCK_METHOD1(ReenableType, void(syncer::ModelType));
-  MOCK_METHOD0(ResetDataTypeErrors, void());
   MOCK_METHOD2(PurgeForMigration, void(syncer::ModelTypeSet,
                                        syncer::ConfigureReason));
   MOCK_METHOD0(Stop, void());

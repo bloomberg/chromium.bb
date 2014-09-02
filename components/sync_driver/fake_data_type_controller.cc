@@ -80,15 +80,13 @@ void FakeDataTypeController::FinishStart(ConfigureResult result) {
                           syncer::SyncError::UNRECOVERABLE_ERROR,
                           "Unrecoverable error",
                           type()));
-  } else if (result == NEEDS_CRYPTO) {
+  } else {
     state_ = NOT_RUNNING;
     local_merge_result.set_error(
         syncer::SyncError(FROM_HERE,
-                          syncer::SyncError::CRYPTO_ERROR,
-                          "Crypto error",
+                          syncer::SyncError::DATATYPE_ERROR,
+                          "Fake error",
                           type()));
-  } else {
-    NOTREACHED();
   }
   last_start_callback_.Run(result, local_merge_result, syncer_merge_result);
 }
