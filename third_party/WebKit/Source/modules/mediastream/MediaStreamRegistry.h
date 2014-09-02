@@ -26,6 +26,7 @@
 #define MediaStreamRegistry_h
 
 #include "core/html/URLRegistry.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/StringHash.h"
@@ -50,7 +51,7 @@ public:
 
 private:
     MediaStreamRegistry();
-    HashMap<String, RefPtr<MediaStreamDescriptor> > m_streamDescriptors;
+    PersistentHeapHashMap<String, Member<MediaStreamDescriptor> > m_streamDescriptors;
 };
 
 } // namespace blink

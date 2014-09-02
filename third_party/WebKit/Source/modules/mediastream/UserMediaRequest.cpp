@@ -132,7 +132,7 @@ void UserMediaRequest::start()
         m_controller->requestUserMedia(this);
 }
 
-void UserMediaRequest::succeed(PassRefPtr<MediaStreamDescriptor> streamDescriptor)
+void UserMediaRequest::succeed(MediaStreamDescriptor* streamDescriptor)
 {
     if (!executionContext())
         return;

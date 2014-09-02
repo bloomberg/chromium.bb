@@ -41,17 +41,8 @@ class WebMediaStreamTrack {
 public:
     class ExtraData {
     public:
-        ExtraData() : m_owner(0) { }
+        ExtraData() { }
         virtual ~ExtraData() { }
-
-        BLINK_PLATFORM_EXPORT WebMediaStreamTrack owner();
-
-#if INSIDE_BLINK
-        BLINK_PLATFORM_EXPORT void setOwner(MediaStreamComponent*);
-#endif
-
-    private:
-        MediaStreamComponent* m_owner;
     };
 
     WebMediaStreamTrack() { }
@@ -89,10 +80,8 @@ public:
     BLINK_PLATFORM_EXPORT void setSourceProvider(WebAudioSourceProvider*);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebMediaStreamTrack(PassRefPtr<MediaStreamComponent>);
     BLINK_PLATFORM_EXPORT WebMediaStreamTrack(MediaStreamComponent*);
     BLINK_PLATFORM_EXPORT WebMediaStreamTrack& operator=(MediaStreamComponent*);
-    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<MediaStreamComponent>() const;
     BLINK_PLATFORM_EXPORT operator MediaStreamComponent*() const;
 #endif
 

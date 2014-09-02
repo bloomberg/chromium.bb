@@ -34,9 +34,9 @@
 
 namespace blink {
 
-PassRefPtr<MediaStreamSource> MediaStreamSource::create(const String& id, Type type, const String& name, ReadyState readyState, bool requiresConsumer)
+MediaStreamSource* MediaStreamSource::create(const String& id, Type type, const String& name, ReadyState readyState, bool requiresConsumer)
 {
-    return adoptRef(new MediaStreamSource(id, type, name, readyState, requiresConsumer));
+    return new MediaStreamSource(id, type, name, readyState, requiresConsumer);
 }
 
 MediaStreamSource::MediaStreamSource(const String& id, Type type, const String& name, ReadyState readyState, bool requiresConsumer)
@@ -52,21 +52,15 @@ void MediaStreamSource::setReadyState(ReadyState readyState)
 {
     if (m_readyState != ReadyStateEnded && m_readyState != readyState) {
         m_readyState = readyState;
-        for (Vector<Observer*>::iterator i = m_observers.begin(); i != m_observers.end(); ++i)
+        for (HeapHashSet<WeakMember<Observer> >::iterator i = m_observers.begin(); i != m_observers.end(); ++i)
             (*i)->sourceChangedState();
     }
 }
 
 void MediaStreamSource::addObserver(MediaStreamSource::Observer* observer)
 {
-    m_observers.append(observer);
-}
-
-void MediaStreamSource::removeObserver(MediaStreamSource::Observer* observer)
-{
-    size_t pos = m_observers.find(observer);
-    if (pos != kNotFound)
-        m_observers.remove(pos);
+    ASSERT(!m_observers.contains(observer));
+    m_observers.add(observer);
 }
 
 void MediaStreamSource::addAudioConsumer(PassRefPtr<AudioDestinationConsumer> consumer)
@@ -104,4 +98,10 @@ void MediaStreamSource::consumeAudio(AudioBus* bus, size_t numberOfFrames)
         (*it)->consumeAudio(bus, numberOfFrames);
 }
 
+void MediaStreamSource::trace(Visitor* visitor)
+{
+    visitor->trace(m_observers);
+}
+
 } // namespace blink
+

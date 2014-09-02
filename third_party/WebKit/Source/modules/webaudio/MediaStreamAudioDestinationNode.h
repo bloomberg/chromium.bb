@@ -59,7 +59,7 @@ private:
     virtual bool propagatesSilence() const OVERRIDE { return false; }
 
     Member<MediaStream> m_stream;
-    RefPtr<MediaStreamSource> m_source;
+    Member<MediaStreamSource> m_source;
     RefPtr<AudioBus> m_mixBus;
 };
 
