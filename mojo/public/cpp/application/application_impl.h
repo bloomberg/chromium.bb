@@ -70,15 +70,7 @@ class ApplicationImpl : public InterfaceImpl<Application> {
   }
 
  private:
-  class ShellPtrWatcher : public ErrorHandler {
-   public:
-    explicit ShellPtrWatcher(ApplicationImpl* impl);
-    virtual ~ShellPtrWatcher();
-    virtual void OnConnectionError() MOJO_OVERRIDE;
-   private:
-    ApplicationImpl* impl_;
-    MOJO_DISALLOW_COPY_AND_ASSIGN(ShellPtrWatcher);
-  };
+  class ShellPtrWatcher;
 
   void BindShell(ScopedMessagePipeHandle shell_handle);
   void ClearConnections();
@@ -99,7 +91,7 @@ class ApplicationImpl : public InterfaceImpl<Application> {
   ServiceRegistryList outgoing_service_registries_;
   ApplicationDelegate* delegate_;
   ShellPtr shell_;
-  ShellPtrWatcher shell_watch_;
+  ShellPtrWatcher* shell_watch_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ApplicationImpl);
 };
