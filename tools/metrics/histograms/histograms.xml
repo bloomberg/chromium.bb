@@ -34648,6 +34648,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="UMA.LogSize.OnSuccess" units="KB">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Size in kilobytes (after compression) of an uploaded UMA log. Recorded after
+    a successful UMA upload.
+  </summary>
+</histogram>
+
 <histogram name="UMA.LowEntropySourceValue">
   <owner>asvitkine@chromium.org</owner>
   <summary>

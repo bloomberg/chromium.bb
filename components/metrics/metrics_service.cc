@@ -1026,7 +1026,9 @@ void MetricsService::OnLogUploadComplete(int response_code) {
   // Provide boolean for error recovery (allow us to ignore response_code).
   bool discard_log = false;
   const size_t log_size = log_manager_.staged_log().length();
-  if (!upload_succeeded && log_size > kUploadLogAvoidRetransmitSize) {
+  if (upload_succeeded) {
+    UMA_HISTOGRAM_COUNTS_10000("UMA.LogSize.OnSuccess", log_size / 1024);
+  } else if (log_size > kUploadLogAvoidRetransmitSize) {
     UMA_HISTOGRAM_COUNTS("UMA.Large Rejected Log was Discarded",
                          static_cast<int>(log_size));
     discard_log = true;
