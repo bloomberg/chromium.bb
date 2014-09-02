@@ -35,11 +35,12 @@ class ATHENA_EXPORT SplitViewController
   // |left| nor |right|) is selected instead.
   void ActivateSplitMode(aura::Window* left, aura::Window* right);
 
-  // Resets the internal state to an inactive state. Calling this does not
-  // change the window bounds/transforms etc. The caller must take care of
-  // making any necessary changes.
+  // Resets the internal state to an inactive state.
   void DeactivateSplitMode();
 
+  // Replaces |window| in split-view mode with |replace_with|. Adjusts
+  // |replace_with|'s visibility, transform and bounds. Resets |window|'s
+  // visibility and transform but does not change its bounds.
   void ReplaceWindow(aura::Window* window,
                      aura::Window* replace_with);
 
@@ -69,11 +70,12 @@ class ATHENA_EXPORT SplitViewController
 
   void UpdateLayout(bool animate);
 
-  void SetWindowTransform(aura::Window* left_window,
-                          const gfx::Transform& transform,
-                          bool animate);
+  void SetWindowTransforms(const gfx::Transform& left_transform,
+                           const gfx::Transform& right_transform,
+                           bool animate);
 
-  void OnAnimationCompleted(aura::Window* window);
+  // Called when the animation initiated by SetWindowTransforms() completes.
+  void OnAnimationCompleted();
 
   void UpdateSeparatorPositionFromScrollDelta(float delta);
 

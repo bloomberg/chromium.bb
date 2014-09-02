@@ -112,19 +112,20 @@ void SplitViewController::ReplaceWindow(aura::Window* window,
          windows.end());
 #endif
 
-  replace_with->SetBounds(window->bounds());
-  replace_with->SetTransform(gfx::Transform());
   if (window == left_window_)
     left_window_ = replace_with;
   else
     right_window_ = replace_with;
   wm::ActivateWindow(replace_with);
+  UpdateLayout(false);
   window->SetTransform(gfx::Transform());
+  window->Hide();
 }
 
 void SplitViewController::DeactivateSplitMode() {
-  CHECK_NE(SCROLLING, state_);
+  CHECK_EQ(ACTIVE, state_);
   state_ = INACTIVE;
+  UpdateLayout(false);
   left_window_ = right_window_ = NULL;
 }
 
@@ -143,76 +144,80 @@ gfx::Rect SplitViewController::GetRightTargetBounds() {
 }
 
 void SplitViewController::UpdateLayout(bool animate) {
-  if  (!left_window_)
-    return;
+  CHECK(left_window_);
   CHECK(right_window_);
-  gfx::Transform left_transform;
-  gfx::Transform right_transform;
-  int container_width = container_->GetBoundsInScreen().width();
-  if (state_ == ACTIVE) {
-    // Windows should be resized via an animation when entering the ACTIVE
-    // state.
-    CHECK(animate);
-    // We scale the windows here, but when the animation finishes, we reset
-    // the scaling and update the window bounds to the proper size - see
-    // OnAnimationCompleted().
-    left_transform = GetTargetTransformForBoundsAnimation(
-        left_window_->bounds(), GetLeftTargetBounds());
-    right_transform = GetTargetTransformForBoundsAnimation(
-        right_window_->bounds(), GetRightTargetBounds());
-  } else {
-    left_transform.Translate(separator_position_ - container_width, 0);
-    right_transform.Translate(separator_position_, 0);
+
+  if (state_ == INACTIVE && !animate) {
+    if (!wm::IsActiveWindow(left_window_))
+      left_window_->Hide();
+    if (!wm::IsActiveWindow(right_window_))
+      right_window_->Hide();
+    SetWindowTransforms(gfx::Transform(), gfx::Transform(), false);
+    return;
   }
+
   left_window_->Show();
   right_window_->Show();
-  SetWindowTransform(left_window_, left_transform, animate);
-  SetWindowTransform(right_window_, right_transform, animate);
+  if (state_ == ACTIVE) {
+    if (animate) {
+      gfx::Transform left_transform = GetTargetTransformForBoundsAnimation(
+          left_window_->bounds(), GetLeftTargetBounds());
+      gfx::Transform right_transform = GetTargetTransformForBoundsAnimation(
+          right_window_->bounds(), GetRightTargetBounds());
+      SetWindowTransforms(left_transform, right_transform, true);
+    } else {
+      left_window_->SetBounds(GetLeftTargetBounds());
+      right_window_->SetBounds(GetRightTargetBounds());
+      SetWindowTransforms(gfx::Transform(), gfx::Transform(), false);
+    }
+  } else {
+    gfx::Transform left_transform;
+    left_transform.Translate(separator_position_ - container_->bounds().width(),
+                             0);
+    gfx::Transform right_transform;
+    right_transform.Translate(separator_position_, 0);
+    SetWindowTransforms(left_transform, right_transform, animate);
+  }
+  // Note: |left_window_| and |right_window_| may be NULL if calling
+  // SetWindowTransforms():
+  // - caused the in-progress animation to abort.
+  // - started a zero duration animation.
 }
 
-void SplitViewController::SetWindowTransform(aura::Window* window,
-                                             const gfx::Transform& transform,
-                                             bool animate) {
+void SplitViewController::SetWindowTransforms(
+    const gfx::Transform& left_transform,
+    const gfx::Transform& right_transform,
+    bool animate) {
   if (animate) {
-    scoped_refptr<ui::LayerAnimator> animator = window->layer()->GetAnimator();
-    ui::ScopedLayerAnimationSettings settings(animator);
-    settings.SetPreemptionStrategy(
+    ui::ScopedLayerAnimationSettings left_settings(
+        left_window_->layer()->GetAnimator());
+    left_settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    settings.AddObserver(new ui::ClosureAnimationObserver(
+    left_window_->SetTransform(left_transform);
+
+    ui::ScopedLayerAnimationSettings right_settings(
+        right_window_->layer()->GetAnimator());
+    right_settings.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    right_settings.AddObserver(new ui::ClosureAnimationObserver(
         base::Bind(&SplitViewController::OnAnimationCompleted,
-                   weak_factory_.GetWeakPtr(),
-                   window)));
-    window->SetTransform(transform);
+                   weak_factory_.GetWeakPtr())));
+    right_window_->SetTransform(right_transform);
   } else {
-    window->SetTransform(transform);
+    left_window_->SetTransform(left_transform);
+    right_window_->SetTransform(right_transform);
   }
 }
 
-void SplitViewController::OnAnimationCompleted(aura::Window* window) {
+void SplitViewController::OnAnimationCompleted() {
   // Animation can be cancelled when deactivated.
   if (left_window_ == NULL)
     return;
-  DCHECK(window == left_window_ || window == right_window_);
-  if (state_ == ACTIVE) {
-    window->SetTransform(gfx::Transform());
-    if (window == left_window_)
-      left_window_->SetBounds(GetLeftTargetBounds());
-    else
-      right_window_->SetBounds(GetRightTargetBounds());
-  } else {
-    int container_width = container_->bounds().width();
-    window->SetTransform(gfx::Transform());
-    if (window == left_window_) {
-      if (separator_position_ == 0)
-        left_window_->Hide();
-      if (state_ == INACTIVE)
-        left_window_ = NULL;
-    } else {
-      if (separator_position_ == container_width)
-        right_window_->Hide();
-      if (state_ == INACTIVE)
-        right_window_ = NULL;
-    }
+  UpdateLayout(false);
+
+  if (state_ == INACTIVE) {
+    left_window_ = NULL;
+    right_window_ = NULL;
   }
 }
 

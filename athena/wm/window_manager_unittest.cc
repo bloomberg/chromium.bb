@@ -139,6 +139,8 @@ TEST_F(WindowManagerTest, BezelGestureToSwitchBetweenWindows) {
   scoped_ptr<aura::Window> first(CreateWindow(&delegate));
   scoped_ptr<aura::Window> second(CreateWindow(&delegate));
   scoped_ptr<aura::Window> third(CreateWindow(&delegate));
+  first->Hide();
+  second->Hide();
 
   test::WindowManagerImplTestApi wm_api;
   aura::client::ParentWindowWithContext(
@@ -163,6 +165,9 @@ TEST_F(WindowManagerTest, BezelGestureToSwitchBetweenWindows) {
   EXPECT_TRUE(wm::IsActiveWindow(second.get()));
   EXPECT_EQ(second.get(),
             wm_api.GetWindowListProvider()->GetWindowList().back());
+  EXPECT_FALSE(first->IsVisible());
+  EXPECT_TRUE(second->IsVisible());
+  EXPECT_FALSE(third->IsVisible());
 }
 
 TEST_F(WindowManagerTest, TitleDragSwitchBetweenWindows) {
@@ -300,16 +305,12 @@ TEST_F(WindowManagerTest, NewWindowBounds) {
   EXPECT_NE(work_area.ToString(),
             left_bounds.size().ToString());
 
+  // A new window should replace the left window when in split view.
   scoped_ptr<aura::Window> third(CreateWindow(&delegate));
   aura::client::ParentWindowWithContext(
       third.get(), ScreenManager::Get()->GetContext(), gfx::Rect());
-  EXPECT_NE(wm_api.GetSplitViewController()->left_window(), third.get());
+  EXPECT_EQ(wm_api.GetSplitViewController()->left_window(), third.get());
   EXPECT_EQ(left_bounds.ToString(), third->bounds().ToString());
-
-  third->Hide();
-  EXPECT_EQ(
-      left_bounds.ToString(),
-      wm_api.GetSplitViewController()->left_window()->bounds().ToString());
 }
 
 TEST_F(WindowManagerTest, SplitModeActivationByShortcut) {

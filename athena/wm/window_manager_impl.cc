@@ -101,14 +101,14 @@ void AthenaContainerLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   aura::Window::Windows list = instance->window_list_provider_->GetWindowList();
   if (std::find(list.begin(), list.end(), child) == list.end())
     return;
-  gfx::Size size;
   if (instance->split_view_controller_->IsSplitViewModeActive()) {
-    size = instance->split_view_controller_->left_window()->bounds().size();
+    instance->split_view_controller_->ReplaceWindow(
+        instance->split_view_controller_->left_window(), child);
   } else {
-    size =
+    gfx::Size size =
         gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().work_area().size();
+    child->SetBounds(gfx::Rect(size));
   }
-  child->SetBounds(gfx::Rect(size));
 }
 
 void AthenaContainerLayoutManager::OnWillRemoveWindowFromLayout(
