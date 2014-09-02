@@ -202,7 +202,7 @@ class RedirectorTest(unittest.TestCase):
           # the cron run. Returns strings parsed as JSON.
           # TODO(jshumway): Make a non hack version of this check.
           self._redirector._cache._file_object_store.Get(
-              path).Get()._cache_data)
+              path).Get().cache_data)
 
   def testDirectoryRedirection(self):
     # Simple redirect.

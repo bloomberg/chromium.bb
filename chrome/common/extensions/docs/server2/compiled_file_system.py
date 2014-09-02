@@ -4,7 +4,6 @@
 
 import sys
 
-import schema_util
 from docs_server_utils import ToUnicode
 from file_system import FileNotFoundError
 from future import Future
@@ -14,7 +13,28 @@ from third_party.json_schema_compiler.memoize import memoize
 from third_party.motemplate import Motemplate
 
 
+_CACHEABLE_FUNCTIONS = set()
 _SINGLE_FILE_FUNCTIONS = set()
+
+
+def _GetUnboundFunction(fn):
+  '''Functions bound to an object are separate from the unbound
+  defintion. This causes issues when checking for cache membership,
+  so always get the unbound function, if possible.
+  '''
+  return getattr(fn, 'im_func', fn)
+
+
+def Cache(fn):
+  '''A decorator which can be applied to the compilation function
+  passed to CompiledFileSystem.Create, indicating that file/list data
+  should be cached.
+
+  This decorator should be listed first in any list of decorators, along
+  with the SingleFile decorator below.
+  '''
+  _CACHEABLE_FUNCTIONS.add(_GetUnboundFunction(fn))
+  return fn
 
 
 def SingleFile(fn):
@@ -26,7 +46,7 @@ def SingleFile(fn):
   Note that this decorator must be listed first in any list of decorators to
   have any effect.
   '''
-  _SINGLE_FILE_FUNCTIONS.add(fn)
+  _SINGLE_FILE_FUNCTIONS.add(_GetUnboundFunction(fn))
   return fn
 
 
@@ -50,7 +70,7 @@ def Unicode(fn):
 class _CacheEntry(object):
   def __init__(self, cache_data, version):
 
-    self._cache_data = cache_data
+    self.cache_data = cache_data
     self.version = version
 
 
@@ -100,8 +120,8 @@ class CompiledFileSystem(object):
       These are memoized over file systems tied to different branches.
       '''
       return self.Create(file_system,
-                         SingleFile(lambda _, data:
-                             json_parse.Parse(ToUnicode(data))),
+                         Cache(SingleFile(lambda _, data:
+                             json_parse.Parse(ToUnicode(data)))),
                          CompiledFileSystem,
                          category='json')
 
@@ -133,6 +153,15 @@ class CompiledFileSystem(object):
     self._compilation_function = compilation_function
     self._file_object_store = file_object_store
     self._list_object_store = list_object_store
+
+  def _Get(self, store, key):
+    if _GetUnboundFunction(self._compilation_function) in _CACHEABLE_FUNCTIONS:
+      return store.Get(key)
+    return Future(value=None)
+
+  def _Set(self, store, key, value):
+    if _GetUnboundFunction(self._compilation_function) in _CACHEABLE_FUNCTIONS:
+      store.Set(key, value)
 
   def _RecursiveList(self, path):
     '''Returns a Future containing the recursive directory listing of |path| as
@@ -179,7 +208,7 @@ class CompiledFileSystem(object):
         files += add_prefix(dir_name[len(path):], new_files)
       if dirs:
         files += self._file_system.Read(dirs).Then(
-            lambda results: get_from_future_listing(results)).Get()
+            get_from_future_listing).Get()
       return files
 
     return self._file_system.Read(add_prefix(path, first_layer_dirs)).Then(
@@ -199,13 +228,13 @@ class CompiledFileSystem(object):
       else:
         return Future(exc_info=sys.exc_info())
 
-    cache_entry = self._file_object_store.Get(path).Get()
+    cache_entry = self._Get(self._file_object_store, path).Get()
     if (cache_entry is not None) and (version == cache_entry.version):
-      return Future(value=cache_entry._cache_data)
+      return Future(value=cache_entry.cache_data)
 
     def compile_(files):
       cache_data = self._compilation_function(path, files)
-      self._file_object_store.Set(path, _CacheEntry(cache_data, version))
+      self._Set(self._file_object_store, path, _CacheEntry(cache_data, version))
       return cache_data
 
     return self._file_system.ReadSingle(
@@ -222,15 +251,15 @@ class CompiledFileSystem(object):
     except FileNotFoundError:
       return Future(exc_info=sys.exc_info())
 
-    cache_entry = self._list_object_store.Get(path).Get()
+    cache_entry = self._Get(self._list_object_store, path).Get()
     if (cache_entry is not None) and (version == cache_entry.version):
-      return Future(value=cache_entry._cache_data)
+      return Future(value=cache_entry.cache_data)
 
-    def next(files):
+    def compile_(files):
       cache_data = self._compilation_function(path, files)
-      self._list_object_store.Set(path, _CacheEntry(cache_data, version))
+      self._Set(self._list_object_store, path, _CacheEntry(cache_data, version))
       return cache_data
-    return self._RecursiveList(path).Then(next)
+    return self._RecursiveList(path).Then(compile_)
 
   # _GetFileVersionFromCache and _GetFileListingVersionFromCache are exposed
   # *only* so that ChainedCompiledFileSystem can optimise its caches. *Do not*
@@ -238,7 +267,7 @@ class CompiledFileSystem(object):
   # FileSystem.Stat on the FileSystem that this CompiledFileSystem uses.
 
   def _GetFileVersionFromCache(self, path):
-    cache_entry = self._file_object_store.Get(path).Get()
+    cache_entry = self._Get(self._file_object_store, path).Get()
     if cache_entry is not None:
       return Future(value=cache_entry.version)
     stat_future = self._file_system.StatAsync(path)
@@ -246,7 +275,7 @@ class CompiledFileSystem(object):
 
   def _GetFileListingVersionFromCache(self, path):
     path = ToDirectory(path)
-    cache_entry = self._list_object_store.Get(path).Get()
+    cache_entry = self._Get(self._list_object_store, path).Get()
     if cache_entry is not None:
       return Future(value=cache_entry.version)
     stat_future = self._file_system.StatAsync(path)

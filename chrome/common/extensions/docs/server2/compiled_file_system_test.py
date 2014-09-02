@@ -6,7 +6,7 @@
 import functools
 import os
 
-from compiled_file_system import CompiledFileSystem
+from compiled_file_system import Cache, CompiledFileSystem
 from copy import deepcopy
 from environment import GetAppVersion
 from file_system import FileNotFoundError
@@ -87,7 +87,7 @@ class CompiledFileSystemTest(unittest.TestCase):
                      compiled_fs.GetFromFile('apps/fakedir/file.html').Get())
 
   def testPopulateFromFileListing(self):
-    def strip_ext(path, files):
+    def strip_ext(_, files):
       return [os.path.splitext(f)[0] for f in files]
     compiled_fs = _GetTestCompiledFsCreator()(strip_ext, CompiledFileSystemTest)
     expected_top_listing = [
@@ -121,7 +121,8 @@ class CompiledFileSystemTest(unittest.TestCase):
                          'apps/deepdir/deeper/').Get())
 
   def testCaching(self):
-    compiled_fs = _GetTestCompiledFsCreator()(identity, CompiledFileSystemTest)
+    compiled_fs = _GetTestCompiledFsCreator()(Cache(identity),
+                                              CompiledFileSystemTest)
     self.assertEqual('404.html contents',
                      compiled_fs.GetFromFile('404.html').Get())
     self.assertEqual(set(('file.html',)),
@@ -204,7 +205,7 @@ class CompiledFileSystemTest(unittest.TestCase):
     mock_fs = MockFileSystem(TestFileSystem(_TEST_DATA))
     compiled_fs = CompiledFileSystem.Factory(
         ObjectStoreCreator.ForTest()).Create(
-            mock_fs, lambda path, contents: contents, type(self))
+            mock_fs, Cache(lambda path, contents: contents), type(self))
 
     future = compiled_fs.GetFromFile('no_file', skip_not_found=True)
     # If the file doesn't exist, then the file system is not read.

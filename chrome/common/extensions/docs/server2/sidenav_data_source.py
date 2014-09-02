@@ -6,7 +6,7 @@ import copy
 import logging
 import posixpath
 
-from compiled_file_system import SingleFile, Unicode
+from compiled_file_system import Cache, SingleFile, Unicode
 from data_source import DataSource
 from extensions_paths import JSON_TEMPLATES
 from future import Future
@@ -65,6 +65,7 @@ class SidenavDataSource(DataSource):
     self._server_instance = server_instance
     self._request = request
 
+  @Cache
   @SingleFile
   @Unicode
   def _CreateSidenavDict(self, _, content):

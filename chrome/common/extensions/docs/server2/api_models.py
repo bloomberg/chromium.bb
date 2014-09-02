@@ -4,7 +4,7 @@
 
 import posixpath
 
-from compiled_file_system import SingleFile, Unicode
+from compiled_file_system import Cache, SingleFile, Unicode
 from extensions_paths import API_PATHS
 from features_bundle import HasParent, GetParentName
 from file_system import FileNotFoundError
@@ -64,6 +64,7 @@ class APIModels(object):
         file_system, self._CreateAPIModel, APIModels, category=self._platform)
     self._object_store = object_store_creator.Create(APIModels)
 
+  @Cache
   @SingleFile
   @Unicode
   def _CreateAPIModel(self, path, data):

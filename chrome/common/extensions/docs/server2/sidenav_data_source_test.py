@@ -149,11 +149,11 @@ class SamplesDataSourceTest(unittest.TestCase):
         ServerInstance.ForTest(file_system), request=None)
     sidenav_data_source.Cron().Get()
 
-    # If Cron fails, chrome_sidenav.json will not be cached, and the _cache_data
+    # If Cron fails, chrome_sidenav.json will not be cached, and the cache_data
     # access will fail.
     # TODO(jshumway): Make a non hack version of this check.
     sidenav_data_source._cache._file_object_store.Get(
-        '%schrome_sidenav.json' % JSON_TEMPLATES).Get()._cache_data
+        '%schrome_sidenav.json' % JSON_TEMPLATES).Get().cache_data
 
 
 if __name__ == '__main__':
