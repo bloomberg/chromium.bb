@@ -68,7 +68,7 @@ static_library("test_support") {
 
     if (enable_webrtc) {
       # TODO(GYP) remove this when libjingle is converted.
-      configs += [ "//content:libjingle_stub_config" ]
+      configs += [ "//third_party/libjingle:jingle_direct_dependent_configs" ]
 
       sources += [
         "../renderer/media/mock_media_stream_dispatcher.cc",
@@ -84,7 +84,7 @@ static_library("test_support") {
       deps += [
         #"//third_party/libjingle:webrtc",  TODO(GYP)
         #"//third_party/libjingle:peerconnection",  TODO(GYP)
-        #"//third_party/webrtc/modules:video_capture",  TODO(GYP)
+        "//third_party/webrtc/modules/video_capture",
       ]
     }
 

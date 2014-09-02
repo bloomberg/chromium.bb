@@ -211,11 +211,15 @@ static_library("common") {
     deps += [ "//remoting/client/plugin" ]
   }
   if (enable_plugins) {
+    sources += [
+      "pepper_flash.cc",
+      "pepper_flash.h",
+      "pepper_permission_util.cc",
+      "pepper_permission_util.h",
+    ]
     deps += [
       "//third_party/adobe/flash:flapper_version_h",
     ]
-  } else {
-    sources -= [ "pepper_permission_util.cc" ]
   }
   if (!enable_webrtc) {
     sources -= [ "media/webrtc_logging_messages.h" ]

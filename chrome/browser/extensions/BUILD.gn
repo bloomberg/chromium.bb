@@ -21,9 +21,6 @@ static_library("extensions") {
 
   defines = []
 
-  # TODO(GYP) remove this when webrtc is ported.
-  configs += [ "//content:webrtc_stub_config" ]
-
   # Since browser and browser_extensions actually depend on each other,
   # we must omit the dependency from browser_extensions to browser.
   # However, this means browser_extensions and browser should more or less
@@ -66,6 +63,7 @@ static_library("extensions") {
     "//third_party/icu",
     "//third_party/leveldatabase",
     "//third_party/re2",
+    "//third_party/webrtc/modules/desktop_capture",
     "//ui/accessibility:ax_gen",
     "//ui/base",
     "//ui/gfx",
@@ -75,13 +73,17 @@ static_library("extensions") {
     "//url",
     "//webkit/browser:storage",
     "//webkit/common:storage_common",
-    #"../third_party/webrtc/modules/modules.gyp:desktop_capture",  TODO(GYP)
   ]
 
   forward_dependent_configs_from = [
     "//chrome/common/extensions/api",
     "//content/public/browser",
   ]
+
+  # TODO(GYP) This config should be a direct_dependent_config of 
+  # //third_party/webrtc/modules/desktop_capture so we shouldn't have to
+  # include it here. Remove this line when the direct_dependent_config is set.
+  configs += [ "//third_party/webrtc:common_inherited_config" ]
 
   if (is_chromeos) {
     sources += rebase_path(

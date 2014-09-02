@@ -15,7 +15,6 @@ source_set("renderer") {
 
   configs += [
     "//content:content_implementation",
-    "//content:libjingle_stub_config",
   ]
 
   deps = [
@@ -129,10 +128,10 @@ source_set("renderer") {
     deps += [
       "//crypto",
       "//third_party/libyuv",
+      "//third_party/webrtc/modules/audio_device",
+      "//third_party/webrtc/modules/audio_processing",
       #"../third_party/libjingle/libjingle.gyp:libjingle_webrtc",  TODO(GYP)
       #"../third_party/libjingle/libjingle.gyp:libpeerconnection",  TODO(GYP)
-      #"../third_party/webrtc/modules/modules.gyp:audio_device",  TODO(GYP)
-      #"../third_party/webrtc/modules/modules.gyp:audio_processing",  TODO(GYP)
     ]
   } else {
     sources += [

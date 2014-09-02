@@ -136,25 +136,18 @@ static_library("protocol") {
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
-  # TODO(GYP) Remove when WebRTC/jingle is converted.
-  configs += [
-    "//content:webrtc_stub_config",
-    "//content:libjingle_stub_config",
-  ]
 
   deps = [
     "//base",
     "//crypto",
+    "//jingle:jingle_glue",
+    "//jingle:notifier",
     "//net",
     "//remoting/base",
-    #'../jingle/jingle.gyp:jingle_glue',  TODO(GYP)
-    #'../jingle/jingle.gyp:notifier',  TODO(GYP)
-    #'../third_party/libjingle/libjingle.gyp:libjingle',  TODO(GYP)
+    "//third_party/libjingle",
   ]
 
   forward_dependent_configs_from = [
-    #'../third_party/libjingle/libjingle.gyp:libjingle',  TODO(GYP)
+    "//third_party/libjingle",
   ]
-  # TODO(GYP) Remove when jingle is converted.
-  direct_dependent_configs = [ "//content:libjingle_stub_config" ]
 }

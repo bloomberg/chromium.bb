@@ -249,8 +249,7 @@ static_library("libjingle") {
     "source/talk/p2p/base/constants.h",
   ]
   deps = [
-    # TODO(GYP): Uncomment when WebRTC GN build has settled.
-    # "//third_party/webrtc/base:webrtc_base",
+    "//third_party/webrtc/base:webrtc_base",
     ":libjingle_p2p_constants",
     ":jingle_deps"
   ]

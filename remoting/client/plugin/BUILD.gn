@@ -52,7 +52,7 @@ static_library("plugin") {
     "//remoting/base",
     "//remoting/client",
     "//remoting/protocol",
-    #"//third_party/webrtc/modules/desktop_capture",  TODO(GYP)
+    "//third_party/webrtc/modules/desktop_capture",
     "//ui/events:dom4_keycode_converter",
   ]
 }

@@ -35,8 +35,6 @@ static_library("client") {
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
-  # TODO(GYP) Remove when WebRTC is converted.
-  configs += [ "//content:webrtc_stub_config" ]
 
   defines = [ "VERSION=$version_full" ]
 
@@ -44,7 +42,7 @@ static_library("client") {
     "//remoting/base",
     "//remoting/protocol",
     "//third_party/libyuv",
-    #"//third_party/webrtc/modules/desktop_capture",  TODO(GYP)
+    "//third_party/webrtc/modules/desktop_capture",
     "//third_party/libwebm",
   ]
 }

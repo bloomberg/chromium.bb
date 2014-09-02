@@ -68,6 +68,7 @@ static_library("browser") {
     "//components/os_crypt",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
+    "//components/pdf/browser",
     "//components/policy:policy_component",
     "//components/precache/core",
     "//components/query_parser",
@@ -135,9 +136,6 @@ static_library("browser") {
 
     defines = nacl_defines
 
-    # TODO(GYP) remove this when the real webrtc target is used below.
-    configs += [ "//content:webrtc_stub_config" ]
-
     deps += [
       "//apps",
       "//cc",
@@ -166,6 +164,7 @@ static_library("browser") {
       "//mojo/public/cpp/bindings",
       "//mojo/public/js/bindings",
       "//mojo/system",
+      "//net:extras",
       "//net:net_with_v8",
       "//third_party/WebKit/public:resources",
       "//third_party/expat",
@@ -175,6 +174,7 @@ static_library("browser") {
       "//third_party/npapi",
       "//third_party/re2",
       "//third_party/smhasher:cityhash",
+      "//third_party/webrtc/modules/desktop_capture",
       "//ui/gl",
       "//ui/surface",
       "//ui/web_dialogs",
@@ -184,8 +184,6 @@ static_library("browser") {
       "//webkit/common:storage_common",
       ## TODO(tonyg): Remove this dependency (crbug.com/280157).
       #"../testing/perf/perf_test.gyp:*",  TODO(GYP)
-      # Note: for this one also remove the webrtc_stub_config
-      #"../third_party/webrtc/modules/modules.gyp:desktop_capture",  TODO(GYP)
     ]
   } else {  # iOS
     sources += rebase_path(gypi_values.chrome_browser_ios_sources,

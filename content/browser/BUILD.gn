@@ -113,8 +113,9 @@ source_set("browser") {
 
   configs += [
     "//content:content_implementation",
-    "//content:libjingle_stub_config",  # TODO(GYP) remove when libjingle is ready.
-    "//content:webrtc_stub_config",  # TODO(GYP) remove when webrtc is ready.
+
+    # TODO(GYP) remove this when libjingle_webrtc is working.
+    "//third_party/libjingle:jingle_direct_dependent_configs",  # TODO(GYP)
   ]
 
   if (toolkit_views) {
@@ -156,11 +157,9 @@ source_set("browser") {
   if (enable_webrtc) {
     sources += rebase_path(content_browser_gypi_values.webrtc_browser_sources,
                            ".", "//content")
-    # TODO(GYP)
-    #deps += [ "//jingle:glue" ]
+    deps += [ "//jingle:jingle_glue" ]
     if (is_linux) {
-      # TODO(GYP)
-      #deps += [ "//third_party/libjingle:libjingle_webrtc" ]
+      #deps += [ "//third_party/libjingle:libjingle_webrtc" ]  TODO(GYP)
     }
     if (is_linux || is_mac || is_win) {
       sources += [
@@ -176,8 +175,7 @@ source_set("browser") {
         ]
       }
       defines += [ "ENABLE_SCREEN_CAPTURE=1" ]
-      # TODO(GYP)
-      #deps += [ "//third_party/webrtc/modules:desktop_capture" ]
+      deps += [ "//third_party/webrtc/modules/desktop_capture" ]
     }
   }
 

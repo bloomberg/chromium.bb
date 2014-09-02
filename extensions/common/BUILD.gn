@@ -108,6 +108,8 @@ source_set("common") {
     "manifest_handlers/incognito_info.h",
     "manifest_handlers/kiosk_mode_info.cc",
     "manifest_handlers/kiosk_mode_info.h",
+    "manifest_handlers/launcher_page_info.cc",
+    "manifest_handlers/launcher_page_info.h",
     "manifest_handlers/offline_enabled_info.cc",
     "manifest_handlers/offline_enabled_info.h",
     "manifest_handlers/permissions_parser.cc",

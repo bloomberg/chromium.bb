@@ -18,6 +18,8 @@ static_library("gcm_driver") {
     "gcm_client_factory.h",
     "gcm_client_impl.cc",
     "gcm_client_impl.h",
+    "gcm_connection_observer.cc",
+    "gcm_connection_observer.h",
     "gcm_driver.cc",
     "gcm_driver.h",
     "gcm_driver_android.cc",
