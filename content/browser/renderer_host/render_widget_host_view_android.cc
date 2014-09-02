@@ -427,8 +427,7 @@ bool RenderWidgetHostViewAndroid::HasValidFrame() const {
 }
 
 gfx::Vector2dF RenderWidgetHostViewAndroid::GetLastScrollOffset() const {
-  NOTREACHED();
-  return gfx::Vector2dF();
+  return last_scroll_offset_;
 }
 
 gfx::NativeView RenderWidgetHostViewAndroid::GetNativeView() const {
@@ -1034,6 +1033,7 @@ void RenderWidgetHostViewAndroid::ComputeContentsSize(
 void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
     uint32 output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
+  last_scroll_offset_ = frame->metadata.root_scroll_offset;
   if (!frame->delegated_frame_data) {
     LOG(ERROR) << "Non-delegated renderer path no longer supported";
     return;

@@ -429,6 +429,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // List of readbackrequests waiting for arrival of a valid frame.
   std::queue<ReadbackRequest> readbacks_waiting_for_frame_;
 
+  // The last scroll offset of the view.
+  gfx::Vector2dF last_scroll_offset_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };
 
