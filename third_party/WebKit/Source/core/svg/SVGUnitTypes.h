@@ -22,11 +22,12 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGEnumeration.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
 
-class SVGUnitTypes : public RefCounted<SVGUnitTypes>, public ScriptWrappable {
+class SVGUnitTypes FINAL : public RefCountedWillBeGarbageCollected<SVGUnitTypes>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum SVGUnitType {
@@ -34,6 +35,8 @@ public:
         SVG_UNIT_TYPE_USERSPACEONUSE        = 1,
         SVG_UNIT_TYPE_OBJECTBOUNDINGBOX     = 2
     };
+
+    void trace(Visitor*) { }
 
 private:
     SVGUnitTypes(); // No instantiation.

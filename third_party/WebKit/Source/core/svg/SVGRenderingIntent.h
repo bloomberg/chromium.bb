@@ -21,11 +21,12 @@
 #define SVGRenderingIntent_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
 
-class SVGRenderingIntent : public RefCounted<SVGRenderingIntent>, public ScriptWrappable {
+class SVGRenderingIntent FINAL : public RefCountedWillBeGarbageCollected<SVGRenderingIntent>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum SVGRenderingIntentType {
@@ -36,6 +37,8 @@ public:
         RENDERING_INTENT_SATURATION               = 4,
         RENDERING_INTENT_ABSOLUTE_COLORIMETRIC    = 5
     };
+
+    void trace(Visitor*) { }
 
 private:
     SVGRenderingIntent(); // No instantiation.
