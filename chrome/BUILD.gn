@@ -8,8 +8,7 @@ import("//chrome/version.gni")
 
 # TODO(GYP) for Windows need to the the reorder-imports step which probably
 # means adding another target and renaming this to chrome_initial like in GYP.
-#executable("chrome") {  # TODO(GYP) enable once this links.
-source_set("chrome") {
+executable("chrome") {
   # Because the sources list varies so significantly per-platform, generally
   # each platform lists its own files rather than relying on filtering or
   # removing unused files.
