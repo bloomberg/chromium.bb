@@ -13,6 +13,7 @@ import re
 import subprocess
 import sys
 import threading
+import time
 
 
 # addr2line builds a possibly infinite memory cache that can exhaust
@@ -184,12 +185,17 @@ class ELFSymbolizer(object):
 
   def _CreateDisambiguationTable(self):
     """ Non-unique file names will result in None entries"""
+    start_time = time.time()
+    logging.info('Collecting information about available source files...')
     self.disambiguation_table = {}
 
     for root, _, filenames in os.walk(self.source_root_path):
       for f in filenames:
         self.disambiguation_table[f] = os.path.join(root, f) if (f not in
                                        self.disambiguation_table) else None
+    logging.info('Finished collecting information about '
+                 'possible files (took %.1f s).',
+                 (time.time() - start_time))
 
 
   class Addr2Line(object):

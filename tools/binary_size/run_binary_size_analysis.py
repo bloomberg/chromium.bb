@@ -541,7 +541,7 @@ def RunElfSymbolizer(outfile, library, addr2line_binary, nm_binary, jobs,
 
         sys.stdout.write('\r%.1f%%: Looked up %d symbols (%d collisions, '
               '%d disambiguations where %.1f%% succeeded)'
-              '- %.1f lookups/s.' %
+              ' - %.1f lookups/s.' %
               (progress_percent, progress.count, progress.collisions,
                progress.disambiguations, disambiguation_percent, speed))
 
@@ -618,7 +618,6 @@ def RunElfSymbolizer(outfile, library, addr2line_binary, nm_binary, jobs,
 
 
 def RunNm(binary, nm_binary):
-  print('Starting nm')
   cmd = [nm_binary, '-C', '--print-size', '--size-sort', '--reverse-sort',
          binary]
   nm_process = subprocess.Popen(cmd,
@@ -632,7 +631,6 @@ def RunNm(binary, nm_binary):
     else:
       raise Exception, process_output
 
-  print('Finished nm')
   return process_output
 
 
