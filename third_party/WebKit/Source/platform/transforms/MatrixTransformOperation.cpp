@@ -24,8 +24,6 @@
 
 #include <algorithm>
 
-using namespace std;
-
 namespace blink {
 
 PassRefPtr<TransformOperation> MatrixTransformOperation::blend(const TransformOperation* from, double progress, bool blendToIdentity)

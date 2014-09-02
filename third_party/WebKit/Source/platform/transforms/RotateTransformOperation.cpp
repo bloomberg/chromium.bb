@@ -27,8 +27,6 @@
 #include "wtf/MathExtras.h"
 #include <algorithm>
 
-using namespace std;
-
 namespace blink {
 
 static const double angleEpsilon = 1e-4;
@@ -135,14 +133,14 @@ PassRefPtr<TransformOperation> RotateTransformOperation::blend(const TransformOp
     double x = -decomp.quaternionX;
     double y = -decomp.quaternionY;
     double z = -decomp.quaternionZ;
-    double length = sqrt(x * x + y * y + z * z);
+    double length = std::sqrt(x * x + y * y + z * z);
     double angle = 0;
 
     if (length > 0.00001) {
         x /= length;
         y /= length;
         z /= length;
-        angle = rad2deg(acos(decomp.quaternionW) * 2);
+        angle = rad2deg(std::acos(decomp.quaternionW) * 2);
     } else {
         x = 0;
         y = 0;

@@ -34,8 +34,6 @@
 #import "platform/scroll/ScrollView.h"
 #include "wtf/StdLibExtras.h"
 
-using namespace std;
-
 NSRect focusRingClipRect;
 
 // This is a view whose sole purpose is to tell AppKit that it's flipped.

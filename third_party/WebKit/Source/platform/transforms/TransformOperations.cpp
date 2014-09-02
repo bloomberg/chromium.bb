@@ -29,8 +29,6 @@
 #include "platform/transforms/RotateTransformOperation.h"
 #include <algorithm>
 
-using namespace std;
-
 namespace blink {
 
 TransformOperations::TransformOperations(bool makeIdentity)
@@ -74,7 +72,7 @@ TransformOperations TransformOperations::blendByMatchingOperations(const Transfo
 
     unsigned fromSize = from.operations().size();
     unsigned toSize = operations().size();
-    unsigned size = max(fromSize, toSize);
+    unsigned size = std::max(fromSize, toSize);
     for (unsigned i = 0; i < size; i++) {
         RefPtr<TransformOperation> fromOperation = (i < fromSize) ? from.operations()[i].get() : 0;
         RefPtr<TransformOperation> toOperation = (i < toSize) ? operations()[i].get() : 0;
@@ -243,7 +241,7 @@ bool TransformOperations::blendedBoundsForBox(const FloatBox& box, const Transfo
 
     int fromSize = from.operations().size();
     int toSize = operations().size();
-    int size = max(fromSize, toSize);
+    int size = std::max(fromSize, toSize);
 
     *bounds = box;
     for (int i = size - 1; i >= 0; i--) {

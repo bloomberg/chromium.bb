@@ -31,9 +31,6 @@
 #include "config.h"
 #include "platform/network/HTTPHeaderMap.h"
 
-
-using namespace std;
-
 namespace blink {
 
 HTTPHeaderMap::HTTPHeaderMap()
@@ -51,7 +48,7 @@ PassOwnPtr<CrossThreadHTTPHeaderMapData> HTTPHeaderMap::copyData() const
 
     HTTPHeaderMap::const_iterator endIt = end();
     for (HTTPHeaderMap::const_iterator it = begin(); it != endIt; ++it)
-        data->uncheckedAppend(make_pair(it->key.string().isolatedCopy(), it->value.string().isolatedCopy()));
+        data->uncheckedAppend(std::make_pair(it->key.string().isolatedCopy(), it->value.string().isolatedCopy()));
 
     return data.release();
 }

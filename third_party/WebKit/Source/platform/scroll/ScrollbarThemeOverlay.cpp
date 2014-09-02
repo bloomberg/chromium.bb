@@ -36,8 +36,6 @@
 
 #include <algorithm>
 
-using namespace std;
-
 namespace blink {
 
 ScrollbarThemeOverlay::ScrollbarThemeOverlay(int thumbThickness, int scrollbarMargin, HitTestBehavior allowHitTest, Color color)
@@ -88,7 +86,7 @@ int ScrollbarThemeOverlay::thumbLength(ScrollbarThemeClient* scrollbar)
 
     float proportion = static_cast<float>(scrollbar->visibleSize()) / scrollbar->totalSize();
     int length = round(proportion * trackLen);
-    length = min(max(length, minimumThumbLength(scrollbar)), trackLen);
+    length = std::min(std::max(length, minimumThumbLength(scrollbar)), trackLen);
     return length;
 }
 

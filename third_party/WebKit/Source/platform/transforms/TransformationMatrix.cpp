@@ -42,8 +42,6 @@
 #include <emmintrin.h>
 #endif
 
-using namespace std;
-
 namespace blink {
 
 //
@@ -261,7 +259,7 @@ static void v4MulPointByMatrix(const Vector4 p, const TransformationMatrix::Matr
 
 static double v3Length(Vector3 a)
 {
-    return sqrt((a[0] * a[0]) + (a[1] * a[1]) + (a[2] * a[2]));
+    return std::sqrt((a[0] * a[0]) + (a[1] * a[1]) + (a[2] * a[2]));
 }
 
 static void v3Scale(Vector3 v, double desiredLength)
@@ -437,25 +435,25 @@ static bool decompose(const TransformationMatrix::Matrix4& mat, TransformationMa
     t = row[0][0] + row[1][1] + row[2][2] + 1.0;
 
     if (t > 1e-4) {
-        s = 0.5 / sqrt(t);
+        s = 0.5 / std::sqrt(t);
         w = 0.25 / s;
         x = (row[2][1] - row[1][2]) * s;
         y = (row[0][2] - row[2][0]) * s;
         z = (row[1][0] - row[0][1]) * s;
     } else if (row[0][0] > row[1][1] && row[0][0] > row[2][2]) {
-        s = sqrt (1.0 + row[0][0] - row[1][1] - row[2][2]) * 2.0; // S=4*qx
+        s = std::sqrt(1.0 + row[0][0] - row[1][1] - row[2][2]) * 2.0; // S=4*qx
         x = 0.25 * s;
         y = (row[0][1] + row[1][0]) / s;
         z = (row[0][2] + row[2][0]) / s;
         w = (row[2][1] - row[1][2]) / s;
     } else if (row[1][1] > row[2][2]) {
-        s = sqrt (1.0 + row[1][1] - row[0][0] - row[2][2]) * 2.0; // S=4*qy
+        s = std::sqrt(1.0 + row[1][1] - row[0][0] - row[2][2]) * 2.0; // S=4*qy
         x = (row[0][1] + row[1][0]) / s;
         y = 0.25 * s;
         z = (row[1][2] + row[2][1]) / s;
         w = (row[0][2] - row[2][0]) / s;
     } else {
-        s = sqrt(1.0 + row[2][2] - row[0][0] - row[1][1]) * 2.0; // S=4*qz
+        s = std::sqrt(1.0 + row[2][2] - row[0][0] - row[1][1]) * 2.0; // S=4*qz
         x = (row[0][2] + row[2][0]) / s;
         y = (row[1][2] + row[2][1]) / s;
         z = 0.25 * s;
@@ -493,10 +491,10 @@ static void slerp(double qa[4], const double qb[4], double t)
 
     if (angle + 1.0 > .05) {
         if (1.0 - angle >= .05) {
-            th = acos (angle);
-            invth = 1.0 / sin (th);
-            scale = sin (th * (1.0 - t)) * invth;
-            invscale = sin (th * t) * invth;
+            th = std::acos(angle);
+            invth = 1.0 / std::sin(th);
+            scale = std::sin(th * (1.0 - t)) * invth;
+            invscale = std::sin(th * t) * invth;
         } else {
             scale = 1.0 - t;
             invscale = t;
@@ -506,8 +504,8 @@ static void slerp(double qa[4], const double qb[4], double t)
         by = ax;
         bz = -aw;
         bw = az;
-        scale = sin(piDouble * (.5 - t));
-        invscale = sin (piDouble * t);
+        scale = std::sin(piDouble * (.5 - t));
+        invscale = std::sin(piDouble * t);
     }
 
     cx = ax * scale + bx * invscale;
@@ -622,7 +620,7 @@ FloatQuad TransformationMatrix::projectQuad(const FloatQuad& q, bool* clamped) c
 static float clampEdgeValue(float f)
 {
     ASSERT(!std::isnan(f));
-    return min<float>(max<float>(f, (-LayoutUnit::max() / 2).toFloat()), (LayoutUnit::max() / 2).toFloat());
+    return std::min<float>(std::max<float>(f, (-LayoutUnit::max() / 2).toFloat()), (LayoutUnit::max() / 2).toFloat());
 }
 
 LayoutRect TransformationMatrix::clampedBoundsOfProjectedQuad(const FloatQuad& q) const
@@ -761,7 +759,7 @@ TransformationMatrix& TransformationMatrix::scale3d(double sx, double sy, double
 TransformationMatrix& TransformationMatrix::rotate3d(double x, double y, double z, double angle)
 {
     // Normalize the axis of rotation
-    double length = sqrt(x * x + y * y + z * z);
+    double length = std::sqrt(x * x + y * y + z * z);
     if (length == 0) {
         // A direction vector that cannot be normalized, such as [0, 0, 0], will cause the rotation to not be applied.
         return *this;
@@ -774,8 +772,8 @@ TransformationMatrix& TransformationMatrix::rotate3d(double x, double y, double 
     // Angles are in degrees. Switch to radians.
     angle = deg2rad(angle);
 
-    double sinTheta = sin(angle);
-    double cosTheta = cos(angle);
+    double sinTheta = std::sin(angle);
+    double cosTheta = std::cos(angle);
 
     TransformationMatrix mat;
 
@@ -854,8 +852,8 @@ TransformationMatrix& TransformationMatrix::rotate3d(double rx, double ry, doubl
 
     TransformationMatrix mat;
 
-    double sinTheta = sin(rz);
-    double cosTheta = cos(rz);
+    double sinTheta = std::sin(rz);
+    double cosTheta = std::cos(rz);
 
     mat.m_matrix[0][0] = cosTheta;
     mat.m_matrix[0][1] = sinTheta;
@@ -872,8 +870,8 @@ TransformationMatrix& TransformationMatrix::rotate3d(double rx, double ry, doubl
 
     TransformationMatrix rmat(mat);
 
-    sinTheta = sin(ry);
-    cosTheta = cos(ry);
+    sinTheta = std::sin(ry);
+    cosTheta = std::cos(ry);
 
     mat.m_matrix[0][0] = cosTheta;
     mat.m_matrix[0][1] = 0.0;
@@ -890,8 +888,8 @@ TransformationMatrix& TransformationMatrix::rotate3d(double rx, double ry, doubl
 
     rmat.multiply(mat);
 
-    sinTheta = sin(rx);
-    cosTheta = cos(rx);
+    sinTheta = std::sin(rx);
+    cosTheta = std::cos(rx);
 
     mat.m_matrix[0][0] = 1.0;
     mat.m_matrix[0][1] = 0.0;
@@ -969,8 +967,8 @@ TransformationMatrix& TransformationMatrix::skew(double sx, double sy)
     sy = deg2rad(sy);
 
     TransformationMatrix mat;
-    mat.m_matrix[0][1] = tan(sy); // note that the y shear goes in the first row
-    mat.m_matrix[1][0] = tan(sx); // and the x shear in the second row
+    mat.m_matrix[0][1] = std::tan(sy); // note that the y shear goes in the first row
+    mat.m_matrix[1][0] = std::tan(sx); // and the x shear in the second row
 
     multiply(mat);
     return *this;

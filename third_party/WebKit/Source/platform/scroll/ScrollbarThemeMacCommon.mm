@@ -52,7 +52,6 @@
 
 // FIXME: There are repainting problems due to Aqua scroll bar buttons' visual overflow.
 
-using namespace std;
 using namespace blink;
 
 @interface NSColor (WebNSColorDetails)

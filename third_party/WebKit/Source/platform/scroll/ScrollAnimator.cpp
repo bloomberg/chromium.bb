@@ -36,8 +36,6 @@
 #include "wtf/PassOwnPtr.h"
 #include <algorithm>
 
-using namespace std;
-
 namespace blink {
 
 ScrollAnimator::ScrollAnimator(ScrollableArea* scrollableArea)

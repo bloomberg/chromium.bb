@@ -16,7 +16,6 @@
 #include <vector>
 
 using blink::Scheduler;
-using namespace std;
 
 namespace {
 
@@ -147,7 +146,7 @@ public:
         m_platformSupport.runPendingTasks();
     }
 
-    void appendToVector(string value)
+    void appendToVector(std::string value)
     {
         m_order.push_back(value);
     }
@@ -182,7 +181,7 @@ public:
 protected:
     SchedulerTestingPlatformSupport m_platformSupport;
     Scheduler* m_scheduler;
-    std::vector<string> m_order;
+    std::vector<std::string> m_order;
     std::vector<int> m_reentrantOrder;
     int m_reentrantCount;
     int m_maxRecursion;
@@ -263,16 +262,16 @@ TEST_F(SchedulerTest, TestIdleTask)
 
 TEST_F(SchedulerTest, TestTaskPrioritization)
 {
-    m_scheduler->postTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, string("L1")));
-    m_scheduler->postTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, string("L2")));
-    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, string("I1")));
-    m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, string("C1")));
-    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, string("I2")));
-    m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, string("C2")));
+    m_scheduler->postTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("L1")));
+    m_scheduler->postTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("L2")));
+    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("I1")));
+    m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("C1")));
+    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("I2")));
+    m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, std::string("C2")));
 
     runPendingTasks();
     EXPECT_THAT(m_order, testing::ElementsAre(
-        string("I1"), string("C1"), string("I2"), string("C2"), string("L1"), string("L2")));
+        std::string("I1"), std::string("C1"), std::string("I2"), std::string("C2"), std::string("L1"), std::string("L2")));
 }
 
 TEST_F(SchedulerTest, TestRentrantTask)

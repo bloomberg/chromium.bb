@@ -42,7 +42,6 @@
 #include "wtf/PassOwnPtr.h"
 
 using namespace blink;
-using namespace std;
 
 static bool supportsUIStateTransitionProgress()
 {
@@ -687,8 +686,8 @@ FloatPoint ScrollAnimatorMac::adjustScrollPositionIfNecessary(const FloatPoint& 
     IntPoint minPos = m_scrollableArea->minimumScrollPosition();
     IntPoint maxPos = m_scrollableArea->maximumScrollPosition();
 
-    float newX = max<float>(min<float>(position.x(), maxPos.x()), minPos.x());
-    float newY = max<float>(min<float>(position.y(), maxPos.y()), minPos.y());
+    float newX = std::max<float>(std::min<float>(position.x(), maxPos.x()), minPos.x());
+    float newY = std::max<float>(std::min<float>(position.y(), maxPos.y()), minPos.y());
 
     return FloatPoint(newX, newY);
 }

@@ -29,8 +29,6 @@
 #include "platform/animation/AnimationUtilities.h"
 #include "wtf/MathExtras.h"
 
-using namespace std;
-
 namespace blink {
 
 PassRefPtr<TransformOperation> PerspectiveTransformOperation::blend(const TransformOperation* from, double progress, bool blendToIdentity)
