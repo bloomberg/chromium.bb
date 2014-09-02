@@ -306,7 +306,7 @@ class AthenaWebView : public views::WebView {
   void CreateProgressBar() {
     CHECK(!progress_bar_);
     progress_bar_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
-    progress_bar_->SetColor(SkColorSetRGB(0x00, 0xb0, 0xc7));
+    progress_bar_->SetColor(SkColorSetRGB(0x17, 0x59, 0xcd));
   }
 
   scoped_ptr<WebActivityController> controller_;
