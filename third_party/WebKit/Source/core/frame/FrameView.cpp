@@ -560,7 +560,7 @@ void FrameView::updateAcceleratedCompositingSettings()
 void FrameView::recalcOverflowAfterStyleChange()
 {
     RenderView* renderView = this->renderView();
-    ASSERT(renderView);
+    RELEASE_ASSERT(renderView);
     if (!renderView->needsOverflowRecalcAfterStyleChange())
         return;
 
@@ -953,6 +953,7 @@ void FrameView::layout(bool allowSubtree)
 // See http://crbug.com/306706
 void FrameView::invalidateTreeIfNeeded()
 {
+    ASSERT(renderView());
     RenderView& rootForPaintInvalidation = *renderView();
     ASSERT(!rootForPaintInvalidation.needsLayout());
 
