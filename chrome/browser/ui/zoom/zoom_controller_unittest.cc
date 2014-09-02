@@ -65,23 +65,6 @@ TEST_F(ZoomControllerTest, DidNavigateMainFrame) {
                                          content::FrameNavigateParams());
 }
 
-TEST_F(ZoomControllerTest, OnPreferenceChanged) {
-  double zoom_level = zoom_controller_->GetZoomLevel();
-  // Note that while the change in the default zoom level triggers an event,
-  // the current zoom level for this web contents does not change since the
-  // default zoom level in HostZoomMap is not updated.
-  // TODO(wjmaclean) Make sure changes to the default zoom level in preferences
-  // propagate to HostZoomMap. http://crbug.com/391484
-  ZoomController::ZoomChangedEventData zoom_change_data(
-      web_contents(),
-      zoom_level,
-      zoom_level,
-      ZoomController::ZOOM_MODE_DEFAULT,
-      false);
-  EXPECT_CALL(zoom_observer_, OnZoomChanged(zoom_change_data)).Times(1);
-  profile()->GetPrefs()->SetDouble(prefs::kDefaultZoomLevel, 110.0);
-}
-
 TEST_F(ZoomControllerTest, Observe) {
   double new_zoom_level = 110.0;
   // When the event is initiated from HostZoomMap, the old zoom level is not
