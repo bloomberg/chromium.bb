@@ -197,6 +197,8 @@ TEST(SelectFaviconFramesTest, _16From16_Scale2x_32_From_32) {
 }
 
 TEST(SelectFaviconFramesTest, ExactMatchBetterThanLargeBitmap) {
+  SCOPED_FAVICON_SCALE_FACTOR_1XAND2X;
+
   float score1;
   vector<SkBitmap> bitmaps1;
   bitmaps1.push_back(MakeBitmap(SK_ColorGREEN, 48, 48));
@@ -215,6 +217,8 @@ TEST(SelectFaviconFramesTest, ExactMatchBetterThanLargeBitmap) {
 }
 
 TEST(SelectFaviconFramesTest, UpsampleABitBetterThanHugeBitmap) {
+  SCOPED_FAVICON_SCALE_FACTOR_1XAND2X;
+
   float score1;
   vector<SkBitmap> bitmaps1;
   bitmaps1.push_back(MakeBitmap(SK_ColorGREEN, 128, 128));
@@ -245,6 +249,8 @@ TEST(SelectFaviconFramesTest, UpsampleABitBetterThanHugeBitmap) {
 }
 
 TEST(SelectFaviconFramesTest, DownsamplingBetterThanUpsampling) {
+  SCOPED_FAVICON_SCALE_FACTOR_1XAND2X;
+
   float score1;
   vector<SkBitmap> bitmaps1;
   bitmaps1.push_back(MakeBitmap(SK_ColorGREEN, 8, 8));
@@ -261,6 +267,8 @@ TEST(SelectFaviconFramesTest, DownsamplingBetterThanUpsampling) {
 }
 
 TEST(SelectFaviconFramesTest, DownsamplingLessIsBetter) {
+  SCOPED_FAVICON_SCALE_FACTOR_1XAND2X;
+
   float score1;
   vector<SkBitmap> bitmaps1;
   bitmaps1.push_back(MakeBitmap(SK_ColorGREEN, 34, 34));
@@ -277,6 +285,8 @@ TEST(SelectFaviconFramesTest, DownsamplingLessIsBetter) {
 }
 
 TEST(SelectFaviconFramesTest, UpsamplingLessIsBetter) {
+  SCOPED_FAVICON_SCALE_FACTOR_1XAND2X;
+
   float score1;
   vector<SkBitmap> bitmaps1;
   bitmaps1.push_back(MakeBitmap(SK_ColorGREEN, 8, 8));
@@ -295,6 +305,8 @@ TEST(SelectFaviconFramesTest, UpsamplingLessIsBetter) {
 // Test that the score is determined by the |original_sizes| parameter, not the
 // |bitmaps| parameter to SelectFaviconFrames().
 TEST(SelectFaviconFramesTest, ScoreDeterminedByOriginalSizes) {
+  SCOPED_FAVICON_SCALE_FACTOR_1XAND2X;
+
   vector<SkBitmap> bitmaps1;
   bitmaps1.push_back(MakeBitmap(SK_ColorGREEN, 16, 16));
   vector<gfx::Size> sizes1;
