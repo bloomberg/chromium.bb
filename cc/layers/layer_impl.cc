@@ -206,7 +206,7 @@ void LayerImpl::PassCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests) {
     return;
 
   bool was_empty = copy_requests_.empty();
-  copy_requests_.insert_and_take(copy_requests_.end(), *requests);
+  copy_requests_.insert_and_take(copy_requests_.end(), requests);
   requests->clear();
 
   if (was_empty && layer_tree_impl()->IsActiveTree())
@@ -220,7 +220,7 @@ void LayerImpl::TakeCopyRequestsAndTransformToTarget(
   DCHECK(layer_tree_impl()->IsActiveTree());
 
   size_t first_inserted_request = requests->size();
-  requests->insert_and_take(requests->end(), copy_requests_);
+  requests->insert_and_take(requests->end(), &copy_requests_);
   copy_requests_.clear();
 
   for (size_t i = first_inserted_request; i < requests->size(); ++i) {

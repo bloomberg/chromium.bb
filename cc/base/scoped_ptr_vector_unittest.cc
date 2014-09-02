@@ -59,7 +59,7 @@ TEST(ScopedPtrVectorTest, InsertAndTake) {
   ++it;
   EXPECT_EQ(6, (*it)->data());
 
-  v.insert_and_take(it, v2);
+  v.insert_and_take(it, &v2);
 
   EXPECT_EQ(6u, v.size());
   EXPECT_EQ(1, v[0]->data());

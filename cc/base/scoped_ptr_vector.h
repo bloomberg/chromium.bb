@@ -20,7 +20,7 @@ namespace cc {
 template <typename T>
 class ScopedPtrVector {
  public:
-  typedef typename std::vector<const T*>::const_iterator const_iterator;
+  typedef typename std::vector<T*>::const_iterator const_iterator;
   typedef typename std::vector<T*>::reverse_iterator reverse_iterator;
   typedef typename std::vector<T*>::const_reverse_iterator
       const_reverse_iterator;
@@ -129,13 +129,11 @@ class ScopedPtrVector {
     data_.insert(position, item.release());
   }
 
-  void insert_and_take(iterator position,
-                       ScopedPtrVector<T>& other) {
+  void insert_and_take(iterator position, ScopedPtrVector<T>* other) {
     std::vector<T*> tmp_data;
-    for (ScopedPtrVector<T>::iterator it = other.begin();
-         it != other.end();
+    for (ScopedPtrVector<T>::iterator it = other->begin(); it != other->end();
          ++it) {
-      tmp_data.push_back(other.take(it).release());
+      tmp_data.push_back(other->take(it).release());
     }
     data_.insert(position, tmp_data.begin(), tmp_data.end());
   }
