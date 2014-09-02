@@ -49,7 +49,6 @@ struct WebURLLoaderOptions {
 
     WebURLLoaderOptions()
         : untrustedHTTP(false)
-        , sniffContent(false)
         , allowCredentials(false)
         , exposeAllResponseHeaders(false)
         , preflightPolicy(ConsiderPreflight)
@@ -57,7 +56,6 @@ struct WebURLLoaderOptions {
         { }
 
     bool untrustedHTTP; // Whether to validate the method and headers as if this was an XMLHttpRequest.
-    bool sniffContent; // Whether to sniff content.
     bool allowCredentials; // Whether to send HTTP credentials and cookies with the request.
     bool exposeAllResponseHeaders; // If policy is to use access control, whether to expose non-whitelisted response headers to the client.
     PreflightPolicy preflightPolicy;

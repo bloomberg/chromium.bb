@@ -341,7 +341,6 @@ void AssociatedURLLoader::loadAsynchronously(const WebURLRequest& request, WebUR
         options.crossOriginRequestPolicy = static_cast<CrossOriginRequestPolicy>(m_options.crossOriginRequestPolicy);
 
         ResourceLoaderOptions resourceLoaderOptions;
-        resourceLoaderOptions.sniffContent = m_options.sniffContent ? SniffContent : DoNotSniffContent;
         resourceLoaderOptions.allowCredentials = m_options.allowCredentials ? AllowStoredCredentials : DoNotAllowStoredCredentials;
         resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;
 

@@ -37,11 +37,6 @@
 
 namespace blink {
 
-enum ContentSniffingPolicy {
-    SniffContent,
-    DoNotSniffContent
-};
-
 enum DataBufferingPolicy {
     BufferData,
     DoNotBufferData
@@ -92,8 +87,7 @@ enum CORSEnabled {
 
 struct ResourceLoaderOptions {
     ResourceLoaderOptions()
-        : sniffContent(DoNotSniffContent)
-        , dataBufferingPolicy(BufferData)
+        : dataBufferingPolicy(BufferData)
         , allowCredentials(DoNotAllowStoredCredentials)
         , credentialsRequested(ClientDidNotRequestCredentials)
         , contentSecurityPolicyOption(CheckContentSecurityPolicy)
@@ -105,14 +99,12 @@ struct ResourceLoaderOptions {
     }
 
     ResourceLoaderOptions(
-        ContentSniffingPolicy sniffContent,
         DataBufferingPolicy dataBufferingPolicy,
         StoredCredentials allowCredentials,
         CredentialRequest credentialsRequested,
         ContentSecurityPolicyCheck contentSecurityPolicyOption,
         RequestInitiatorContext requestInitiatorContext)
-        : sniffContent(sniffContent)
-        , dataBufferingPolicy(dataBufferingPolicy)
+        : dataBufferingPolicy(dataBufferingPolicy)
         , allowCredentials(allowCredentials)
         , credentialsRequested(credentialsRequested)
         , contentSecurityPolicyOption(contentSecurityPolicyOption)
@@ -128,7 +120,6 @@ struct ResourceLoaderOptions {
     // The safe (but possibly slow) answer is always false.
     bool canReuseRequest(const ResourceLoaderOptions& other) const
     {
-        // sniffContent is dead code.
         // dataBufferingPolicy differences are believed to be safe for re-use.
         // FIXME: check allowCredentials.
         // FIXME: check credentialsRequested.
@@ -143,7 +134,6 @@ struct ResourceLoaderOptions {
 
     // When adding members, CrossThreadResourceLoaderOptionsData should be
     // updated.
-    ContentSniffingPolicy sniffContent; // FIXME: Dead code, please remove.
     DataBufferingPolicy dataBufferingPolicy;
     StoredCredentials allowCredentials; // Whether HTTP credentials and cookies are sent with the request.
     CredentialRequest credentialsRequested; // Whether the client (e.g. XHR) wanted credentials in the first place.
@@ -159,8 +149,7 @@ struct ResourceLoaderOptions {
 // Encode AtomicString (in FetchInitiatorInfo) as String to cross threads.
 struct CrossThreadResourceLoaderOptionsData {
     explicit CrossThreadResourceLoaderOptionsData(const ResourceLoaderOptions& options)
-        : sniffContent(options.sniffContent)
-        , dataBufferingPolicy(options.dataBufferingPolicy)
+        : dataBufferingPolicy(options.dataBufferingPolicy)
         , allowCredentials(options.allowCredentials)
         , credentialsRequested(options.credentialsRequested)
         , contentSecurityPolicyOption(options.contentSecurityPolicyOption)
@@ -174,7 +163,6 @@ struct CrossThreadResourceLoaderOptionsData {
     operator ResourceLoaderOptions() const
     {
         ResourceLoaderOptions options;
-        options.sniffContent = sniffContent;
         options.dataBufferingPolicy = dataBufferingPolicy;
         options.allowCredentials = allowCredentials;
         options.credentialsRequested = credentialsRequested;
@@ -188,7 +176,6 @@ struct CrossThreadResourceLoaderOptionsData {
         return options;
     }
 
-    ContentSniffingPolicy sniffContent;
     DataBufferingPolicy dataBufferingPolicy;
     StoredCredentials allowCredentials;
     CredentialRequest credentialsRequested;

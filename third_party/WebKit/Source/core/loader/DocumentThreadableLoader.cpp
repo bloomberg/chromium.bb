@@ -484,10 +484,8 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
         resourceLoaderOptions.allowCredentials = DoNotAllowStoredCredentials;
     resourceLoaderOptions.securityOrigin = m_securityOrigin;
     if (m_async) {
-        if (m_actualRequest) {
-            resourceLoaderOptions.sniffContent = DoNotSniffContent;
+        if (m_actualRequest)
             resourceLoaderOptions.dataBufferingPolicy = BufferData;
-        }
 
         if (m_options.timeoutMilliseconds > 0)
             m_timeoutTimer.startOneShot(m_options.timeoutMilliseconds / 1000.0, FROM_HERE);
