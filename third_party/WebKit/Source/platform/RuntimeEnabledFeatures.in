@@ -21,7 +21,7 @@ ApplicationCache status=stable
 AudioVideoTracks depends_on=Media, status=experimental
 AuthorShadowDOMForAnyElement
 BatteryStatus status=stable
-Beacon status=experimental
+Beacon status=stable
 
 // This feature is deprecated and we are evangalizing affected sites.
 // See https://crbug.com/346236 for current status.
