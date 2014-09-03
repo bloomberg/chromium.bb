@@ -125,6 +125,7 @@ def main(argv):
       proguard_cmd += [
           '-dontobfuscate',
           '-dontoptimize',
+          '-dontshrink',
           '-dontskipnonpubliclibraryclassmembers',
           '-libraryjars', options.tested_apk_obfuscated_jar_path,
           '-applymapping', options.tested_apk_obfuscated_jar_path + '.mapping',
