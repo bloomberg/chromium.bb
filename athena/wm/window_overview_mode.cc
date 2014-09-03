@@ -189,6 +189,10 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     }
   }
 
+  // Computes the terminal states (i.e. the transforms for the top-most and
+  // bottom-most position in the stack) for |window|. |window_count| is the
+  // number of windows in the stack, and |index| is the position of the window
+  // in the stack (0 being the front-most window).
   void UpdateTerminalStateForWindowAtIndex(aura::Window* window,
                                            size_t index,
                                            size_t window_count) {
@@ -418,45 +422,72 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
 
   void CloseDragWindow(const ui::GestureEvent& gesture) {
     // Animate |dragged_window_| offscreen first, then destroy it.
-    ui::ScopedLayerAnimationSettings settings(
-        dragged_window_->layer()->GetAnimator());
-    settings.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    settings.AddObserver(new ui::ClosureAnimationObserver(
-        base::Bind(&base::DeletePointer<aura::Window>, dragged_window_)));
-
-    WindowOverviewState* dragged_state =
-        dragged_window_->GetProperty(kWindowOverviewState);
-    CHECK(dragged_state);
-    gfx::Transform transform = dragged_window_->layer()->transform();
-    gfx::RectF transformed_bounds = dragged_window_->bounds();
-    transform.TransformRect(&transformed_bounds);
-    float transform_x = 0.f;
-    if (gesture.location().x() > dragged_start_location_.x())
-      transform_x = container_->bounds().right() - transformed_bounds.x();
-    else
-      transform_x = -(transformed_bounds.x() + transformed_bounds.width());
-    float scale = gfx::Tween::FloatValueBetween(
-        dragged_state->progress, kMinScale, kMaxScale);
-    transform.Translate(transform_x / scale, 0);
-    dragged_window_->SetTransform(transform);
-    dragged_window_->layer()->SetOpacity(kMinOpacity);
-
-    // Move the windows behind |dragged_window_| in the stack forward one step.
-    const aura::Window::Windows& list = container_->children();
-    for (aura::Window::Windows::const_iterator iter = list.begin();
-         iter != list.end() && *iter != dragged_window_;
-         ++iter) {
-      aura::Window* window = *iter;
-      ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+    {
+      ui::ScopedLayerAnimationSettings settings(
+          dragged_window_->layer()->GetAnimator());
       settings.SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      settings.AddObserver(new ui::ClosureAnimationObserver(
+          base::Bind(&base::DeletePointer<aura::Window>, dragged_window_)));
 
-      aura::Window* next = *(iter + 1);
-      WindowOverviewState* next_state = next->GetProperty(kWindowOverviewState);
-      UpdateTerminalStateForWindowAtIndex(window, list.end() - iter,
-                                          list.size());
-      SetWindowProgress(window, next_state->progress);
+      WindowOverviewState* dragged_state =
+          dragged_window_->GetProperty(kWindowOverviewState);
+      CHECK(dragged_state);
+      gfx::Transform transform = dragged_window_->layer()->transform();
+      gfx::RectF transformed_bounds = dragged_window_->bounds();
+      transform.TransformRect(&transformed_bounds);
+      float transform_x = 0.f;
+      if (gesture.location().x() > dragged_start_location_.x())
+        transform_x = container_->bounds().right() - transformed_bounds.x();
+      else
+        transform_x = -(transformed_bounds.x() + transformed_bounds.width());
+      float scale = gfx::Tween::FloatValueBetween(
+          dragged_state->progress, kMinScale, kMaxScale);
+      transform.Translate(transform_x / scale, 0);
+      dragged_window_->SetTransform(transform);
+      dragged_window_->layer()->SetOpacity(kMinOpacity);
+    }
+
+    const aura::Window::Windows list = window_list_provider_->GetWindowList();
+    CHECK(!list.empty());
+    if (list.front() == dragged_window_) {
+      // There's no window behind |dragged_window_|. So move the windows in
+      // front take a step back.
+      for (aura::Window::Windows::const_reverse_iterator iter = list.rbegin();
+           iter != list.rend() && *iter != dragged_window_;
+           ++iter) {
+        aura::Window* window = *iter;
+        ui::ScopedLayerAnimationSettings settings(
+            window->layer()->GetAnimator());
+        settings.SetPreemptionStrategy(
+            ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+
+        aura::Window* next = *(iter + 1);
+        WindowOverviewState* next_state =
+            next->GetProperty(kWindowOverviewState);
+        UpdateTerminalStateForWindowAtIndex(
+            window, iter - list.rbegin(), list.size());
+        SetWindowProgress(window, next_state->progress);
+      }
+    } else {
+      // Move the windows behind |dragged_window_| in the stack forward one
+      // step.
+      for (aura::Window::Windows::const_iterator iter = list.begin();
+           iter != list.end() && *iter != dragged_window_;
+           ++iter) {
+        aura::Window* window = *iter;
+        ui::ScopedLayerAnimationSettings settings(
+            window->layer()->GetAnimator());
+        settings.SetPreemptionStrategy(
+            ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+
+        aura::Window* next = *(iter + 1);
+        WindowOverviewState* next_state =
+            next->GetProperty(kWindowOverviewState);
+        UpdateTerminalStateForWindowAtIndex(
+            window, list.end() - iter, list.size());
+        SetWindowProgress(window, next_state->progress);
+      }
     }
 
     dragged_window_ = NULL;
