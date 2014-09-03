@@ -119,6 +119,12 @@ class CIDBMigrationsTest(CIDBIntegrationTest):
                                            ).fetchall()[0][0]
     self.assertEqual(action_count, 3)
 
+    # Test that all known CL action types can be inserted
+    fakepatch = metadata_lib.GerritPatchTuple(1, 1, True)
+    all_actions_list = [metadata_lib.GetCLActionTuple(fakepatch, action)
+                        for action in constants.CL_ACTIONS]
+    db.InsertCLActions(build_id, all_actions_list)
+
 class CIDBAPITest(CIDBIntegrationTest):
   """Tests of the CIDB API."""
 
@@ -159,9 +165,9 @@ class DataSeries0Test(CIDBIntegrationTest):
   """Simulate a set of 630 master/slave CQ builds."""
 
   def testCQWithSchema11(self):
-    """Run the CQ test with schema version 11."""
-    # Run the CQ test at schema version 11
-    self._PrepareFreshDatabase(11)
+    """Run the CQ test with schema version 12."""
+    # Run the CQ test at schema version 12
+    self._PrepareFreshDatabase(12)
     self._runCQTest()
 
   def _runCQTest(self):

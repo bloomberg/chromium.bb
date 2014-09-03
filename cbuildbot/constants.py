@@ -422,11 +422,26 @@ CL_ACTION_KICKED_OUT = 'kicked_out'       # CL CQ-Ready value set to zero
 CL_ACTION_SUBMIT_FAILED = 'submit_failed' # CL submitted but submit failed
 CL_ACTION_VERIFIED = 'verified'           # CL was verified by the builder
 
+# Actions the Pre-CQ Launcher can take on a CL
+# See cbuildbot/stages/sync_stages.py:PreCQLauncherStage for more info
+CL_ACTION_PRE_CQ_INFLIGHT = 'pre_cq_inflight'
+CL_ACTION_PRE_CQ_PASSED = 'pre_cq_passed'
+CL_ACTION_PRE_CQ_FAILED = 'pre_cq_failed'
+CL_ACTION_PRE_CQ_LAUNCHING = 'pre_cq_launching'
+CL_ACTION_PRE_CQ_WAITING = 'pre_cq_waiting'
+CL_ACTION_PRE_CQ_READY_TO_SUBMIT = 'pre_cq_ready_to_submit'
+
 CL_ACTIONS = [CL_ACTION_PICKED_UP,
               CL_ACTION_SUBMITTED,
               CL_ACTION_KICKED_OUT,
               CL_ACTION_SUBMIT_FAILED,
-              CL_ACTION_VERIFIED]
+              CL_ACTION_VERIFIED,
+              CL_ACTION_PRE_CQ_INFLIGHT,
+              CL_ACTION_PRE_CQ_PASSED,
+              CL_ACTION_PRE_CQ_FAILED,
+              CL_ACTION_PRE_CQ_LAUNCHING,
+              CL_ACTION_PRE_CQ_WAITING,
+              CL_ACTION_PRE_CQ_READY_TO_SUBMIT]
 
 # CQ types.
 CQ = 'cq'
