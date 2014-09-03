@@ -463,4 +463,28 @@ TEST_F(VariationsSeedProcessorTest, StartsActiveWithFlag) {
             base::FieldTrialList::FindFullName(kFlagStudyName));
 }
 
+TEST_F(VariationsSeedProcessorTest, ForcingFlagAlreadyForced) {
+  Study study = CreateStudyWithFlagGroups(100, 0, 0);
+  ASSERT_EQ(kNonFlagGroupName, study.experiment(0).name());
+  Study_Experiment_Param* param = study.mutable_experiment(0)->add_param();
+  param->set_name("x");
+  param->set_value("y");
+  study.mutable_experiment(0)->set_google_web_experiment_id(kExperimentId);
+
+  base::FieldTrialList field_trial_list(NULL);
+  base::FieldTrialList::CreateFieldTrial(kFlagStudyName, kNonFlagGroupName);
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
+  EXPECT_TRUE(CreateTrialFromStudy(&study));
+  // The previously forced experiment should still hold.
+  EXPECT_EQ(kNonFlagGroupName,
+            base::FieldTrialList::FindFullName(study.name()));
+
+  // Check that params and experiment ids correspond.
+  EXPECT_EQ("y", GetVariationParamValue(study.name(), "x"));
+  VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, kFlagStudyName,
+                                        kNonFlagGroupName);
+  EXPECT_EQ(kExperimentId, id);
+}
+
 }  // namespace variations

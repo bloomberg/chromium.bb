@@ -111,6 +111,13 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
       scoped_refptr<base::FieldTrial> trial(
           base::FieldTrialList::CreateFieldTrial(study.name(),
                                                  experiment.name()));
+      // If |trial| is NULL, then there might already be a trial forced to a
+      // different group (e.g. via --force-fieldtrials). Break out of the loop,
+      // but don't return, so that variation ids and params for the selected
+      // group will still be picked up.
+      if (!trial)
+        break;
+
       RegisterExperimentParams(study, experiment);
       RegisterVariationIds(experiment, study.name());
       if (study.activation_type() == Study_ActivationType_ACTIVATION_AUTO) {
