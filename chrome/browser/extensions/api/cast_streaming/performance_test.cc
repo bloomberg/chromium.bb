@@ -72,7 +72,7 @@ enum TestFlags {
   k30fps               = 1 << 4, // use 30 fps video
   k60fps               = 1 << 5, // use 60 fps video
   kProxyWifi           = 1 << 6, // Run UDP through UDPProxy wifi profile
-  kProxyBad            = 1 << 7, // Run UDP through UDPProxy bad profile
+  kProxyEvil           = 1 << 7, // Run UDP through UDPProxy evil profile
   kSlowClock           = 1 << 8, // Receiver clock is 10 seconds slow
   kFastClock           = 1 << 9, // Receiver clock is 10 seconds fast
 };
@@ -314,8 +314,8 @@ class CastV2PerformanceTest
       suffix += "_60fps";
     if (HasFlag(kProxyWifi))
       suffix += "_wifi";
-    if (HasFlag(kProxyBad))
-      suffix += "_bad";
+    if (HasFlag(kProxyEvil))
+      suffix += "_evil";
     if (HasFlag(kSlowClock))
       suffix += "_slow";
     if (HasFlag(kFastClock))
@@ -595,7 +595,7 @@ class CastV2PerformanceTest
     receiver->Start();
 
     scoped_ptr<media::cast::test::UDPProxy> udp_proxy;
-    if (HasFlag(kProxyWifi) || HasFlag(kProxyBad)) {
+    if (HasFlag(kProxyWifi) || HasFlag(kProxyEvil)) {
       net::IPEndPoint proxy_end_point = GetFreeLocalPort();
       if (HasFlag(kProxyWifi)) {
         udp_proxy = media::cast::test::UDPProxy::Create(
@@ -604,12 +604,12 @@ class CastV2PerformanceTest
             media::cast::test::WifiNetwork().Pass(),
             media::cast::test::WifiNetwork().Pass(),
             NULL);
-      } else if (HasFlag(kProxyBad)) {
+      } else if (HasFlag(kProxyEvil)) {
         udp_proxy = media::cast::test::UDPProxy::Create(
             proxy_end_point,
             receiver_end_point,
-            media::cast::test::BadNetwork().Pass(),
-            media::cast::test::BadNetwork().Pass(),
+            media::cast::test::EvilNetwork().Pass(),
+            media::cast::test::EvilNetwork().Pass(),
             NULL);
       }
       receiver_end_point = proxy_end_point;
@@ -660,7 +660,8 @@ class CastV2PerformanceTest
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_P(CastV2PerformanceTest, Performance) {
+// crbug.com/356842
+IN_PROC_BROWSER_TEST_P(CastV2PerformanceTest, DISABLED_Performance) {
   RunTest("CastV2Performance");
 }
 
@@ -675,6 +676,6 @@ INSTANTIATE_TEST_CASE_P(
         kUseGpu | k60fps,
         kUseGpu | k24fps | kDisableVsync,
         kUseGpu | k30fps | kProxyWifi,
-        kUseGpu | k30fps | kProxyBad,
+        kUseGpu | k30fps | kProxyEvil,
         kUseGpu | k30fps | kSlowClock,
         kUseGpu | k30fps | kFastClock));
