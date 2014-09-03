@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "platform/fonts/harfbuzz/FontPlatformDataHarfBuzz.h"
+#include "platform/fonts/FontPlatformData.h"
 
 #include "SkTypeface.h"
 #include "platform/fonts/harfbuzz/HarfBuzzFace.h"
@@ -142,7 +142,7 @@ FontPlatformData::~FontPlatformData()
 {
 }
 
-FontPlatformData& FontPlatformData::operator=(const FontPlatformData& src)
+const FontPlatformData& FontPlatformData::operator=(const FontPlatformData& src)
 {
     m_typeface = src.m_typeface;
 #if !OS(WIN)
@@ -209,6 +209,11 @@ bool FontPlatformData::operator==(const FontPlatformData& a) const
 bool FontPlatformData::isFixedPitch() const
 {
     return typeface() && typeface()->isFixedPitch();
+}
+
+SkTypeface* FontPlatformData::typeface() const
+{
+    return m_typeface.get();
 }
 
 HarfBuzzFace* FontPlatformData::harfBuzzFace() const

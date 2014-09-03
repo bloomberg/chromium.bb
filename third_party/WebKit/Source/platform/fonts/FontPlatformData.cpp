@@ -21,6 +21,8 @@
 #include "config.h"
 #include "platform/fonts/FontPlatformData.h"
 
+#include "SkTypeface.h"
+#include "platform/fonts/harfbuzz/HarfBuzzFace.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
@@ -29,73 +31,80 @@
 #include "platform/fonts/harfbuzz/HarfBuzzFace.h"
 #endif
 
+using namespace std;
+
 namespace blink {
 
 FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
-    : m_syntheticBold(false)
-    , m_syntheticOblique(false)
+    : m_textSize(0)
+    , m_syntheticBold(false)
+    , m_syntheticItalic(false)
     , m_orientation(Horizontal)
-    , m_size(0)
+    , m_isColorBitmapFont(false)
+    , m_isCompositeFontReference(false)
     , m_widthVariant(RegularWidth)
 #if OS(MACOSX)
     , m_font(hashTableDeletedFontValue())
 #endif
-    , m_isColorBitmapFont(false)
-    , m_isCompositeFontReference(false)
+    , m_isHashTableDeletedValue(true)
 {
 }
 
 FontPlatformData::FontPlatformData()
-    : m_syntheticBold(false)
-    , m_syntheticOblique(false)
+    : m_textSize(0)
+    , m_syntheticBold(false)
+    , m_syntheticItalic(false)
     , m_orientation(Horizontal)
-    , m_size(0)
+    , m_isColorBitmapFont(false)
+    , m_isCompositeFontReference(false)
     , m_widthVariant(RegularWidth)
 #if OS(MACOSX)
     , m_font(0)
 #endif
-    , m_isColorBitmapFont(false)
-    , m_isCompositeFontReference(false)
+    , m_isHashTableDeletedValue(false)
 {
 }
 
-FontPlatformData::FontPlatformData(float size, bool syntheticBold, bool syntheticOblique, FontOrientation orientation, FontWidthVariant widthVariant)
-    : m_syntheticBold(syntheticBold)
-    , m_syntheticOblique(syntheticOblique)
+FontPlatformData::FontPlatformData(float size, bool syntheticBold, bool syntheticItalic, FontOrientation orientation, FontWidthVariant widthVariant)
+    : m_textSize(size)
+    , m_syntheticBold(syntheticBold)
+    , m_syntheticItalic(syntheticItalic)
     , m_orientation(orientation)
-    , m_size(size)
+    , m_isColorBitmapFont(false)
+    , m_isCompositeFontReference(false)
     , m_widthVariant(widthVariant)
 #if OS(MACOSX)
     , m_font(0)
 #endif
-    , m_isColorBitmapFont(false)
-    , m_isCompositeFontReference(false)
+    , m_isHashTableDeletedValue(false)
 {
 }
 
 #if OS(MACOSX)
-FontPlatformData::FontPlatformData(CGFontRef cgFont, float size, bool syntheticBold, bool syntheticOblique, FontOrientation orientation, FontWidthVariant widthVariant)
-    : m_syntheticBold(syntheticBold)
-    , m_syntheticOblique(syntheticOblique)
+FontPlatformData::FontPlatformData(CGFontRef cgFont, float size, bool syntheticBold, bool syntheticItalic, FontOrientation orientation, FontWidthVariant widthVariant)
+    : m_textSize(size)
+    , m_syntheticBold(syntheticBold)
+    , m_syntheticItalic(syntheticItalic)
     , m_orientation(orientation)
-    , m_size(size)
+    , m_isColorBitmapFont(false)
+    , m_isCompositeFontReference(false)
     , m_widthVariant(widthVariant)
     , m_font(0)
     , m_cgFont(cgFont)
-    , m_isColorBitmapFont(false)
-    , m_isCompositeFontReference(false)
+    , m_isHashTableDeletedValue(false)
 {
 }
 #endif
 
 FontPlatformData::FontPlatformData(const FontPlatformData& source)
-    : m_syntheticBold(source.m_syntheticBold)
-    , m_syntheticOblique(source.m_syntheticOblique)
+    : m_textSize(source.m_textSize)
+    , m_syntheticBold(source.m_syntheticBold)
+    , m_syntheticItalic(source.m_syntheticItalic)
     , m_orientation(source.m_orientation)
-    , m_size(source.m_size)
-    , m_widthVariant(source.m_widthVariant)
     , m_isColorBitmapFont(source.m_isColorBitmapFont)
     , m_isCompositeFontReference(source.m_isCompositeFontReference)
+    , m_widthVariant(source.m_widthVariant)
+    , m_isHashTableDeletedValue(false)
 {
     platformDataInit(source);
 }
@@ -107,14 +116,39 @@ const FontPlatformData& FontPlatformData::operator=(const FontPlatformData& othe
         return *this;
 
     m_syntheticBold = other.m_syntheticBold;
-    m_syntheticOblique = other.m_syntheticOblique;
+    m_syntheticItalic = other.m_syntheticItalic;
     m_orientation = other.m_orientation;
-    m_size = other.m_size;
+    m_textSize = other.m_textSize;
     m_widthVariant = other.m_widthVariant;
     m_isColorBitmapFont = other.m_isColorBitmapFont;
     m_isCompositeFontReference = other.m_isCompositeFontReference;
 
     return platformDataAssign(other);
 }
+
+bool FontPlatformData::operator==(const FontPlatformData& a) const
+{
+    // If either of the typeface pointers are null then we test for pointer
+    // equality. Otherwise, we call SkTypeface::Equal on the valid pointers.
+    bool typefacesEqual = false;
+    if (!typeface() || !a.typeface())
+        typefacesEqual = typeface() == a.typeface();
+    else
+        typefacesEqual = SkTypeface::Equal(typeface(), a.typeface());
+
+    return typefacesEqual
+        && m_textSize == a.m_textSize
+        && m_syntheticBold == a.m_syntheticBold
+        && m_syntheticItalic == a.m_syntheticItalic
+        && m_orientation == a.m_orientation
+#if !OS(MACOSX)
+        && m_style == a.m_style
+#endif
+        && m_isHashTableDeletedValue == a.m_isHashTableDeletedValue
+        && m_isColorBitmapFont == a.m_isColorBitmapFont
+        && m_isCompositeFontReference == a.m_isCompositeFontReference
+        && m_widthVariant == a.m_widthVariant;
+}
+
 
 } // namespace blink
