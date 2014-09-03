@@ -149,7 +149,7 @@ TEST_F(PacingSenderTest, VariousSending) {
 
   // Now update the RTT and verify that packets are actually paced.
   EXPECT_CALL(*mock_sender_, OnCongestionEvent(true, kBytesInFlight, _, _));
-  SendAlgorithmInterface::CongestionMap empty_map;
+  SendAlgorithmInterface::CongestionVector empty_map;
   pacing_sender_->OnCongestionEvent(true, kBytesInFlight, empty_map, empty_map);
 
   CheckPacketIsSentImmediately();
@@ -224,7 +224,7 @@ TEST_F(PacingSenderTest, CongestionAvoidanceSending) {
 
   // Now update the RTT and verify that packets are actually paced.
   EXPECT_CALL(*mock_sender_, OnCongestionEvent(true, kBytesInFlight, _, _));
-  SendAlgorithmInterface::CongestionMap empty_map;
+  SendAlgorithmInterface::CongestionVector empty_map;
   pacing_sender_->OnCongestionEvent(true, kBytesInFlight, empty_map, empty_map);
 
   CheckPacketIsSentImmediately();
@@ -292,7 +292,7 @@ TEST_F(PacingSenderTest, InitialBurst) {
 
   // Update the RTT and verify that the first 10 packets aren't paced.
   EXPECT_CALL(*mock_sender_, OnCongestionEvent(true, kBytesInFlight, _, _));
-  SendAlgorithmInterface::CongestionMap empty_map;
+  SendAlgorithmInterface::CongestionVector empty_map;
   pacing_sender_->OnCongestionEvent(true, kBytesInFlight, empty_map, empty_map);
 
   // Send 10 packets, and verify that they are not paced.

@@ -80,7 +80,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     }
 
     EXPECT_TRUE(manager_.HasUnackedPackets());
-    EXPECT_EQ(packets[0], manager_.GetLeastUnackedSentPacket());
+    EXPECT_EQ(packets[0], manager_.GetLeastUnacked());
     for (size_t i = 0; i < num_packets; ++i) {
       EXPECT_TRUE(manager_.IsUnacked(packets[i])) << packets[i];
     }
@@ -643,38 +643,38 @@ TEST_F(QuicSentPacketManagerTest, AckPreviousTransmissionThenTruncatedAck) {
   VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
 }
 
-TEST_F(QuicSentPacketManagerTest, GetLeastUnackedSentPacket) {
-  EXPECT_EQ(0u, manager_.GetLeastUnackedSentPacket());
+TEST_F(QuicSentPacketManagerTest, GetLeastUnacked) {
+  EXPECT_EQ(1u, manager_.GetLeastUnacked());
 }
 
-TEST_F(QuicSentPacketManagerTest, GetLeastUnackedSentPacketUnacked) {
+TEST_F(QuicSentPacketManagerTest, GetLeastUnackedUnacked) {
   SerializedPacket serialized_packet(CreateDataPacket(1));
 
   manager_.OnSerializedPacket(serialized_packet);
-  EXPECT_EQ(1u, manager_.GetLeastUnackedSentPacket());
+  EXPECT_EQ(1u, manager_.GetLeastUnacked());
 }
 
-TEST_F(QuicSentPacketManagerTest, GetLeastUnackedSentPacketUnackedFec) {
+TEST_F(QuicSentPacketManagerTest, GetLeastUnackedUnackedFec) {
   SerializedPacket serialized_packet(CreateFecPacket(1));
 
   manager_.OnSerializedPacket(serialized_packet);
-  EXPECT_EQ(1u, manager_.GetLeastUnackedSentPacket());
+  EXPECT_EQ(1u, manager_.GetLeastUnacked());
 }
 
-TEST_F(QuicSentPacketManagerTest, GetLeastUnackedPacketAndDiscard) {
+TEST_F(QuicSentPacketManagerTest, GetLeastUnackedAndDiscard) {
   VerifyUnackedPackets(NULL, 0);
 
   SerializedPacket serialized_packet(CreateFecPacket(1));
   manager_.OnSerializedPacket(serialized_packet);
-  EXPECT_EQ(1u, manager_.GetLeastUnackedSentPacket());
+  EXPECT_EQ(1u, manager_.GetLeastUnacked());
 
   SerializedPacket serialized_packet2(CreateFecPacket(2));
   manager_.OnSerializedPacket(serialized_packet2);
-  EXPECT_EQ(1u, manager_.GetLeastUnackedSentPacket());
+  EXPECT_EQ(1u, manager_.GetLeastUnacked());
 
   SerializedPacket serialized_packet3(CreateFecPacket(3));
   manager_.OnSerializedPacket(serialized_packet3);
-  EXPECT_EQ(1u, manager_.GetLeastUnackedSentPacket());
+  EXPECT_EQ(1u, manager_.GetLeastUnacked());
 
   QuicPacketSequenceNumber unacked[] = { 1, 2, 3 };
   VerifyUnackedPackets(unacked, arraysize(unacked));
@@ -685,7 +685,7 @@ TEST_F(QuicSentPacketManagerTest, GetLeastUnackedPacketAndDiscard) {
   ack_frame.largest_observed = 2;
   manager_.OnIncomingAck(ack_frame, clock_.Now());
 
-  EXPECT_EQ(3u, manager_.GetLeastUnackedSentPacket());
+  EXPECT_EQ(3u, manager_.GetLeastUnacked());
 }
 
 TEST_F(QuicSentPacketManagerTest, GetSentTime) {

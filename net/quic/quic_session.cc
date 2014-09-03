@@ -272,7 +272,7 @@ void QuicSession::OnWindowUpdateFrames(
       continue;
     }
 
-    if (connection_->version() <= QUIC_VERSION_20 &&
+    if (connection_->version() <= QUIC_VERSION_21 &&
         (stream_id == kCryptoStreamId || stream_id == kHeadersStreamId)) {
       DLOG(DFATAL) << "WindowUpdate for stream " << stream_id << " in version "
                    << QuicVersionToString(connection_->version());
@@ -500,7 +500,7 @@ void QuicSession::OnConfigNegotiated() {
     return;
   }
 
-  // QUIC_VERSION_20 and higher can have independent stream and session flow
+  // QUIC_VERSION_21 and higher can have independent stream and session flow
   // control windows.
   if (config_.HasReceivedInitialStreamFlowControlWindowBytes()) {
     // Streams which were created before the SHLO was received (0-RTT
@@ -526,7 +526,7 @@ void QuicSession::OnNewStreamFlowControlWindow(uint32 new_window) {
   }
 
   // Inform all existing streams about the new window.
-  if (connection_->version() > QUIC_VERSION_20) {
+  if (connection_->version() >= QUIC_VERSION_21) {
     GetCryptoStream()->flow_controller()->UpdateSendWindowOffset(new_window);
     headers_stream_->flow_controller()->UpdateSendWindowOffset(new_window);
   }
@@ -759,7 +759,7 @@ void QuicSession::OnSuccessfulVersionNegotiation(const QuicVersion& version) {
 
   // Disable stream level flow control based on negotiated version. Streams may
   // have been created with a different version.
-  if (version <= QUIC_VERSION_20) {
+  if (version < QUIC_VERSION_21) {
     GetCryptoStream()->flow_controller()->Disable();
     headers_stream_->flow_controller()->Disable();
   }

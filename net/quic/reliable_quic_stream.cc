@@ -44,7 +44,7 @@ size_t GetReceivedFlowControlWindow(QuicSession* session) {
     return kDefaultFlowControlSendWindow;
   }
 
-  // Version must be >= QUIC_VERSION_20, so we check for stream specific flow
+  // Version must be >= QUIC_VERSION_21, so we check for stream specific flow
   // control window.
   if (session->config()->HasReceivedInitialStreamFlowControlWindowBytes()) {
     return session->config()->ReceivedInitialStreamFlowControlWindowBytes();

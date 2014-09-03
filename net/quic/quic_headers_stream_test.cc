@@ -326,7 +326,7 @@ TEST_P(QuicHeadersStreamTest, ProcessSpdyWindowUpdateFrame) {
 }
 
 TEST_P(QuicHeadersStreamTest, NoConnectionLevelFlowControl) {
-  if (connection_->version() <= QUIC_VERSION_20) {
+  if (connection_->version() < QUIC_VERSION_21) {
     EXPECT_FALSE(headers_stream_->flow_controller()->IsEnabled());
   } else {
     EXPECT_TRUE(headers_stream_->flow_controller()->IsEnabled());

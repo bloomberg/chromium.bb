@@ -158,8 +158,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   bool HasUnackedPackets() const;
 
   // Returns the smallest sequence number of a serialized packet which has not
-  // been acked by the peer.  If there are no unacked packets, returns 0.
-  QuicPacketSequenceNumber GetLeastUnackedSentPacket() const;
+  // been acked by the peer.
+  QuicPacketSequenceNumber GetLeastUnacked() const;
 
   // Called when a congestion feedback frame is received from peer.
   virtual void OnIncomingQuicCongestionFeedbackFrame(
@@ -377,9 +377,9 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   size_t max_tail_loss_probes_;
   bool using_pacing_;
 
-  // Sets of packets acked and lost as a result of the last congestion event.
-  SendAlgorithmInterface::CongestionMap packets_acked_;
-  SendAlgorithmInterface::CongestionMap packets_lost_;
+  // Vectors packets acked and lost as a result of the last congestion event.
+  SendAlgorithmInterface::CongestionVector packets_acked_;
+  SendAlgorithmInterface::CongestionVector packets_lost_;
 
   // Set to true after the crypto handshake has successfully completed. After
   // this is true we no longer use HANDSHAKE_MODE, and further frames sent on

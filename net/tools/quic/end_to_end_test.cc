@@ -1327,7 +1327,7 @@ TEST_P(EndToEndTest, HeadersAndCryptoStreamsNoConnectionFlowControl) {
   set_server_initial_session_flow_control_receive_window(kSessionIFCW);
 
   ASSERT_TRUE(Initialize());
-  if (negotiated_version_ <= QUIC_VERSION_20) {
+  if (negotiated_version_ < QUIC_VERSION_21) {
     return;
   }
 

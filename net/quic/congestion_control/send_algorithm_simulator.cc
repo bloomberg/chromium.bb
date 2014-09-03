@@ -11,6 +11,7 @@
 #include "net/quic/crypto/quic_random.h"
 
 using std::list;
+using std::make_pair;
 using std::max;
 using std::min;
 using std::vector;
@@ -244,8 +245,8 @@ bool SendAlgorithmSimulator::HasRecentLostPackets(
 void SendAlgorithmSimulator::HandlePendingAck(Transfer* transfer) {
   Sender* sender  = transfer->sender;
   DCHECK_LT(sender->last_acked, sender->next_acked);
-  SendAlgorithmInterface::CongestionMap acked_packets;
-  SendAlgorithmInterface::CongestionMap lost_packets;
+  SendAlgorithmInterface::CongestionVector acked_packets;
+  SendAlgorithmInterface::CongestionVector lost_packets;
   DVLOG(1) << "Acking packets from:" << sender->last_acked
              << " to " << sender->next_acked
              << " bytes_in_flight:" << transfer->bytes_in_flight
@@ -268,13 +269,13 @@ void SendAlgorithmSimulator::HandlePendingAck(Transfer* transfer) {
     if (it->sequence_number > sender->last_acked) {
       DVLOG(1) << "Lost packet:" << sender->last_acked
                << " dropped by buffer overflow.";
-      lost_packets[sender->last_acked] = info;
+      lost_packets.push_back(make_pair(sender->last_acked, info));
       continue;
     }
     if (it->lost) {
-      lost_packets[sender->last_acked] = info;
+      lost_packets.push_back(make_pair(sender->last_acked, info));
     } else {
-      acked_packets[sender->last_acked] = info;
+      acked_packets.push_back(make_pair(sender->last_acked, info));
     }
     // This packet has been acked or lost, remove it from sent_packets_.
     largest_observed = *it;

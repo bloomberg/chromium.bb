@@ -36,8 +36,8 @@ void PacingSender::OnIncomingQuicCongestionFeedbackFrame(
 
 void PacingSender::OnCongestionEvent(bool rtt_updated,
                                      QuicByteCount bytes_in_flight,
-                                     const CongestionMap& acked_packets,
-                                     const CongestionMap& lost_packets) {
+                                     const CongestionVector& acked_packets,
+                                     const CongestionVector& lost_packets) {
   if (rtt_updated) {
     has_valid_rtt_ = true;
   }

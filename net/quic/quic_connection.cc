@@ -933,9 +933,7 @@ void QuicConnection::UpdateStopWaitingCount() {
 }
 
 QuicPacketSequenceNumber QuicConnection::GetLeastUnacked() const {
-  return sent_packet_manager_.HasUnackedPackets() ?
-      sent_packet_manager_.GetLeastUnackedSentPacket() :
-      packet_generator_.sequence_number() + 1;
+  return sent_packet_manager_.GetLeastUnacked();
 }
 
 void QuicConnection::MaybeSendInResponseToPacket() {
@@ -1304,11 +1302,7 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
 }
 
 bool QuicConnection::WritePacket(const QueuedPacket& packet) {
-  QuicPacketSequenceNumber sequence_number =
-      packet.serialized_packet.sequence_number;
-  if (ShouldDiscardPacket(packet.encryption_level,
-                          sequence_number,
-                          IsRetransmittable(packet))) {
+  if (ShouldDiscardPacket(packet)) {
     ++stats_.packets_discarded;
     return true;
   }
@@ -1317,6 +1311,8 @@ bool QuicConnection::WritePacket(const QueuedPacket& packet) {
     return false;
   }
 
+  QuicPacketSequenceNumber sequence_number =
+      packet.serialized_packet.sequence_number;
   // Some encryption algorithms require the packet sequence numbers not be
   // repeated.
   DCHECK_LE(sequence_number_of_last_sent_packet_, sequence_number);
@@ -1436,16 +1432,15 @@ bool QuicConnection::WritePacket(const QueuedPacket& packet) {
   return true;
 }
 
-bool QuicConnection::ShouldDiscardPacket(
-    EncryptionLevel level,
-    QuicPacketSequenceNumber sequence_number,
-    HasRetransmittableData retransmittable) {
+bool QuicConnection::ShouldDiscardPacket(const QueuedPacket& packet) {
   if (!connected_) {
     DVLOG(1) << ENDPOINT
              << "Not sending packet as connection is disconnected.";
     return true;
   }
 
+  QuicPacketSequenceNumber sequence_number =
+      packet.serialized_packet.sequence_number;
   // If the packet has been discarded before sending, don't send it.
   // This occurs if a packet gets serialized, queued, then discarded.
   if (!sent_packet_manager_.IsUnacked(sequence_number)) {
@@ -1455,7 +1450,7 @@ bool QuicConnection::ShouldDiscardPacket(
   }
 
   if (encryption_level_ == ENCRYPTION_FORWARD_SECURE &&
-      level == ENCRYPTION_NONE) {
+      packet.encryption_level == ENCRYPTION_NONE) {
     // Drop packets that are NULL encrypted since the peer won't accept them
     // anymore.
     DVLOG(1) << ENDPOINT << "Dropping NULL encrypted packet: "
@@ -1467,7 +1462,7 @@ bool QuicConnection::ShouldDiscardPacket(
     return true;
   }
 
-  if (retransmittable == HAS_RETRANSMITTABLE_DATA &&
+  if (packet.transmission_type != NOT_RETRANSMISSION &&
       !sent_packet_manager_.HasRetransmittableFrames(sequence_number)) {
     DVLOG(1) << ENDPOINT << "Dropping unacked packet: " << sequence_number
              << " A previous transmission was acked while write blocked.";
@@ -1978,9 +1973,9 @@ QuicConnection::ScopedPacketBundler::~ScopedPacketBundler() {
 }
 
 HasRetransmittableData QuicConnection::IsRetransmittable(
-    QueuedPacket packet) {
-  // TODO(cyr): Understand why the first check here is necessary. Without it,
-  // DiscardRetransmit test fails.
+    const QueuedPacket& packet) {
+  // Retransmitted packets retransmittable frames are owned by the unacked
+  // packet map, but are not present in the serialized packet.
   if (packet.transmission_type != NOT_RETRANSMISSION ||
       packet.serialized_packet.retransmittable_frames != NULL) {
     return HAS_RETRANSMITTABLE_DATA;

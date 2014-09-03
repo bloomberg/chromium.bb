@@ -165,8 +165,6 @@ QuicTag QuicVersionToQuicTag(const QuicVersion version) {
       return MakeQuicTag('Q', '0', '1', '8');
     case QUIC_VERSION_19:
       return MakeQuicTag('Q', '0', '1', '9');
-    case QUIC_VERSION_20:
-      return MakeQuicTag('Q', '0', '2', '0');
     case QUIC_VERSION_21:
       return MakeQuicTag('Q', '0', '2', '1');
     case QUIC_VERSION_22:
@@ -202,7 +200,6 @@ string QuicVersionToString(const QuicVersion version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_16);
     RETURN_STRING_LITERAL(QUIC_VERSION_18);
     RETURN_STRING_LITERAL(QUIC_VERSION_19);
-    RETURN_STRING_LITERAL(QUIC_VERSION_20);
     RETURN_STRING_LITERAL(QUIC_VERSION_21);
     RETURN_STRING_LITERAL(QUIC_VERSION_22);
     RETURN_STRING_LITERAL(QUIC_VERSION_23);

@@ -601,9 +601,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   void WritePendingRetransmissions();
 
   // Returns true if the packet should be discarded and not sent.
-  bool ShouldDiscardPacket(EncryptionLevel level,
-                           QuicPacketSequenceNumber sequence_number,
-                           HasRetransmittableData retransmittable);
+  bool ShouldDiscardPacket(const QueuedPacket& packet);
 
   // Queues |packet| in the hopes that it can be decrypted in the
   // future, when a new key is installed.
@@ -657,7 +655,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   void CheckForAddressMigration(const IPEndPoint& self_address,
                                 const IPEndPoint& peer_address);
 
-  HasRetransmittableData IsRetransmittable(QueuedPacket packet);
+  HasRetransmittableData IsRetransmittable(const QueuedPacket& packet);
   bool IsConnectionClose(QueuedPacket packet);
 
   QuicFramer framer_;

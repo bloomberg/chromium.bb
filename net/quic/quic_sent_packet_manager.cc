@@ -228,7 +228,7 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
                                    ack_receive_time,
                                    unacked_packets_.largest_observed(),
                                    largest_observed_acked,
-                                   GetLeastUnackedSentPacket());
+                                   GetLeastUnacked());
   }
 }
 
@@ -270,6 +270,10 @@ void QuicSentPacketManager::HandleAckForSentPackets(
     }
 
     if (ContainsKey(ack_frame.missing_packets, sequence_number)) {
+      // Don't continue to increase the nack count for packets not in flight.
+      if (!it->in_flight) {
+        continue;
+      }
       // Consider it multiple nacks when there is a gap between the missing
       // packet and the largest observed, since the purpose of a nack
       // threshold is to tolerate re-ordering.  This handles both StretchAcks
@@ -288,7 +292,7 @@ void QuicSentPacketManager::HandleAckForSentPackets(
     // If data is associated with the most recent transmission of this
     // packet, then inform the caller.
     if (it->in_flight) {
-      packets_acked_[sequence_number] = *it;
+      packets_acked_.push_back(make_pair(sequence_number, *it));
     }
     MarkPacketHandled(sequence_number, *it, delta_largest_observed);
   }
@@ -494,7 +498,7 @@ bool QuicSentPacketManager::HasUnackedPackets() const {
 }
 
 QuicPacketSequenceNumber
-QuicSentPacketManager::GetLeastUnackedSentPacket() const {
+QuicSentPacketManager::GetLeastUnacked() const {
   return unacked_packets_.GetLeastUnacked();
 }
 
@@ -689,7 +693,7 @@ void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
     // should be recorded as a loss to the send algorithm, but not retransmitted
     // until it's known whether the FEC packet arrived.
     ++stats_->packets_lost;
-    packets_lost_[sequence_number] = transmission_info;
+    packets_lost_.push_back(make_pair(sequence_number, transmission_info));
     DVLOG(1) << ENDPOINT << "Lost packet " << sequence_number;
 
     if (transmission_info.retransmittable_frames != NULL) {

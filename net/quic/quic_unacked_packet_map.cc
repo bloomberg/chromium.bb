@@ -295,10 +295,6 @@ bool QuicUnackedPacketMap::HasUnackedRetransmittableFrames() const {
 
 QuicPacketSequenceNumber
 QuicUnackedPacketMap::GetLeastUnacked() const {
-  if (unacked_packets_.empty()) {
-    // If there are no unacked packets, return 0.
-    return 0;
-  }
   return least_unacked_;
 }
 

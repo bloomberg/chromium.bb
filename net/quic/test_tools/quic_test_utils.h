@@ -448,8 +448,8 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
                     QuicTime feedback_receive_time));
   MOCK_METHOD4(OnCongestionEvent, void(bool rtt_updated,
                                        QuicByteCount bytes_in_flight,
-                                       const CongestionMap& acked_packets,
-                                       const CongestionMap& lost_packets));
+                                       const CongestionVector& acked_packets,
+                                       const CongestionVector& lost_packets));
   MOCK_METHOD5(OnPacketSent,
                bool(QuicTime, QuicByteCount, QuicPacketSequenceNumber,
                     QuicByteCount, HasRetransmittableData));
