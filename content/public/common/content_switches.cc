@@ -473,9 +473,6 @@ const char kMainFrameResizesAreOrientationChanges[] =
 // Enable the Vtune profiler support.
 const char kEnableVtune[]                   = "enable-vtune-support";
 
-// Enable SVG Animations on the Web Animations model.
-const char kEnableWebAnimationsSVG[]        = "enable-web-animations-svg";
-
 // Enables WebGL extensions not yet approved by the community.
 const char kEnableWebGLDraftExtensions[] = "enable-webgl-draft-extensions";
 
