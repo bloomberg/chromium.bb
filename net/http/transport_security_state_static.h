@@ -1084,7 +1084,6 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {7, true, "\002" "ed" "\002" "gs", true, kNoPins, DOMAIN_NOT_PINNED },
   {21, true, "\017" "forewordreviews" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
   {21, true, "\020" "giacomopelagatti" "\002" "it", true, kNoPins, DOMAIN_NOT_PINNED },
-  {16, true, "\010" "globalcs" "\002" "co" "\002" "uk", true, kNoPins, DOMAIN_NOT_PINNED },
   {13, true, "\010" "helichat" "\002" "de", true, kNoPins, DOMAIN_NOT_PINNED },
   {23, true, "\022" "hostinginnederland" "\002" "nl", true, kNoPins, DOMAIN_NOT_PINNED },
   {19, true, "\015" "isitchristmas" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },

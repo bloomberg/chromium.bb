@@ -846,7 +846,6 @@
     { "name": "ed.gs", "include_subdomains": true, "mode": "force-https" },
     { "name": "forewordreviews.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "giacomopelagatti.it", "include_subdomains": true, "mode": "force-https" },
-    { "name": "globalcs.co.uk", "include_subdomains": true, "mode": "force-https" },
     { "name": "helichat.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "hostinginnederland.nl", "include_subdomains": true, "mode": "force-https" },
     { "name": "isitchristmas.com", "include_subdomains": true, "mode": "force-https" },
