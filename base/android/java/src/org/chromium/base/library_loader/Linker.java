@@ -10,6 +10,8 @@ import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
 import android.util.Log;
 
+import org.chromium.base.AccessedByNative;
+import org.chromium.base.CalledByNative;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 
@@ -830,6 +832,7 @@ public class Linker {
      *
      * @param opaque Opaque argument.
      */
+    @CalledByNative
     public static void postCallbackOnMainThread(final long opaque) {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
@@ -1008,10 +1011,15 @@ public class Linker {
 
         // IMPORTANT: Don't change these fields without modifying the
         // native code that accesses them directly!
+        @AccessedByNative
         public long mLoadAddress; // page-aligned library load address.
+        @AccessedByNative
         public long mLoadSize;    // page-aligned library load size.
+        @AccessedByNative
         public long mRelroStart;  // page-aligned address in memory, or 0 if none.
+        @AccessedByNative
         public long mRelroSize;   // page-aligned size in memory, or 0.
+        @AccessedByNative
         public int  mRelroFd;     // ashmem file descriptor, or -1
     }
 
