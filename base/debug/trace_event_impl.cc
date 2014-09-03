@@ -1697,6 +1697,9 @@ void TraceLog::Flush(const TraceLog::OutputCallback& cb) {
   }
 
   int generation = this->generation();
+  // Copy of thread_message_loops_ to be used without locking.
+  std::vector<scoped_refptr<SingleThreadTaskRunner> >
+      thread_message_loop_task_runners;
   {
     AutoLock lock(lock_);
     DCHECK(!flush_message_loop_proxy_.get());
@@ -1713,16 +1716,22 @@ void TraceLog::Flush(const TraceLog::OutputCallback& cb) {
       for (hash_set<MessageLoop*>::const_iterator it =
            thread_message_loops_.begin();
            it != thread_message_loops_.end(); ++it) {
-        (*it)->PostTask(
-            FROM_HERE,
-            Bind(&TraceLog::FlushCurrentThread, Unretained(this), generation));
+        thread_message_loop_task_runners.push_back((*it)->task_runner());
       }
-      flush_message_loop_proxy_->PostDelayedTask(
-          FROM_HERE,
-          Bind(&TraceLog::OnFlushTimeout, Unretained(this), generation),
-          TimeDelta::FromMilliseconds(kThreadFlushTimeoutMs));
-      return;
     }
+  }
+
+  if (thread_message_loop_task_runners.size()) {
+    for (size_t i = 0; i < thread_message_loop_task_runners.size(); ++i) {
+      thread_message_loop_task_runners[i]->PostTask(
+          FROM_HERE,
+          Bind(&TraceLog::FlushCurrentThread, Unretained(this), generation));
+    }
+    flush_message_loop_proxy_->PostDelayedTask(
+        FROM_HERE,
+        Bind(&TraceLog::OnFlushTimeout, Unretained(this), generation),
+        TimeDelta::FromMilliseconds(kThreadFlushTimeoutMs));
+    return;
   }
 
   FinishFlush(generation);
