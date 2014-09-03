@@ -260,8 +260,8 @@ class PrintPreviewHandler
 #endif
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
-  void StartPrivetLister(
-      scoped_refptr<local_discovery::ServiceDiscoverySharedClient> client);
+  void StartPrivetLister(const scoped_refptr<
+      local_discovery::ServiceDiscoverySharedClient>& client);
   void OnPrivetCapabilities(const base::DictionaryValue* capabilities);
   void PrivetCapabilitiesUpdateClient(
       scoped_ptr<local_discovery::PrivetHTTPClient> http_client);

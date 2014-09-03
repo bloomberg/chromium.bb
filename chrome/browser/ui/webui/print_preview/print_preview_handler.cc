@@ -1369,13 +1369,14 @@ bool PrintPreviewHandler::GetPreviewDataAndTitle(
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
 
-void PrintPreviewHandler::StartPrivetLister(
-    scoped_refptr<local_discovery::ServiceDiscoverySharedClient> client) {
+void PrintPreviewHandler::StartPrivetLister(const scoped_refptr<
+    local_discovery::ServiceDiscoverySharedClient>& client) {
   if (!PrivetPrintingEnabled())
     return web_ui()->CallJavascriptFunction("onPrivetPrinterSearchDone");
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  DCHECK(!service_discovery_client_ || service_discovery_client_ == client);
+  DCHECK(!service_discovery_client_.get() ||
+         service_discovery_client_ == client);
   service_discovery_client_ = client;
   printer_lister_.reset(new local_discovery::PrivetLocalPrinterLister(
       service_discovery_client_.get(), profile->GetRequestContext(), this));
