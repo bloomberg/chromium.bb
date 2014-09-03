@@ -1,0 +1,40 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+
+function sendBeacon()
+{
+    console.log("Beacon sent: " + navigator.sendBeacon("resources/empty.html", "foo"));
+}
+
+function test()
+{
+    InspectorTest.addConsoleSniffer(step2);
+    InspectorTest.evaluateInPage("sendBeacon()");
+
+    function step2()
+    {
+        InspectorTest.networkRequests().pop().requestContent(step3);
+    }
+
+    function step3()
+    {
+        var request = InspectorTest.networkRequests().pop();
+        InspectorTest.addResult("URL: " + request.url);
+        InspectorTest.addResult("Finished: " + request.finished);
+        InspectorTest.addResult("Cached: " + request.cached);
+        InspectorTest.addResult("Method: " + request.requestMethod);
+        InspectorTest.addResult("Status: " + request.statusCode + " " + request.statusText);
+        InspectorTest.addResult("Has raw request headers: " + (typeof request.requestHeadersText() === "string"));
+        InspectorTest.addResult("Has raw response headers: " + (typeof request.responseHeadersText === "string"));
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Test that ping request response is recorded.</p>
+</body>
+</html>
