@@ -618,6 +618,20 @@ void RenderFrameHostManager::CommitNavigation(
       render_frame_host_->render_view_host()->AttachToFrameTree();
   }
 
+  // If the renderer that needs to navigate is not live (it was just created or
+  // it crashed), initialize it.
+  if (!render_frame_host_->render_view_host()->IsRenderViewLive()) {
+    // Recreate the opener chain.
+    int opener_route_id = delegate_->CreateOpenerRenderViewsForRenderManager(
+        render_frame_host_->GetSiteInstance());
+    if (!InitRenderView(render_frame_host_->render_view_host(),
+                        opener_route_id,
+                        MSG_ROUTING_NONE,
+                        frame_tree_node_->IsMainFrame())) {
+      return;
+    }
+  }
+
   frame_tree_node_->navigator()->CommitNavigation(
       render_frame_host_.get(), info);
 }

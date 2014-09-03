@@ -1758,8 +1758,10 @@ TEST_F(RenderFrameHostManagerTest,
   render_manager->CommitNavigation(commit_info);
   main_request = GetNavigationRequestForRenderFrameManager(render_manager);
 
-  // The main RFH should not have been changed.
+  // The main RFH should not have been changed, and the renderer should have
+  // been initialized.
   EXPECT_EQ(rfh, main_test_rfh());
+  EXPECT_TRUE(main_test_rfh()->render_view_host()->IsRenderViewLive());
 }
 
 // PlzNavigate: Test that a new RenderFrameHost is created when doing a cross
@@ -1791,6 +1793,7 @@ TEST_F(RenderFrameHostManagerTest,
   render_manager->CommitNavigation(commit_info);
   main_request = GetNavigationRequestForRenderFrameManager(render_manager);
   EXPECT_NE(main_test_rfh(), rfh);
+  EXPECT_TRUE(main_test_rfh()->render_view_host()->IsRenderViewLive());
 }
 
 }  // namespace content
