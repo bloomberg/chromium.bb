@@ -504,16 +504,7 @@ ErrorCode GreyListedPolicy(SandboxBPF* sandbox, int sysno, int* aux) {
 
   // Some system calls must always be allowed, if our policy wants to make
   // use of UnsafeTrap()
-  if (sysno == __NR_rt_sigprocmask || sysno == __NR_rt_sigreturn
-#if defined(__NR_sigprocmask)
-      ||
-      sysno == __NR_sigprocmask
-#endif
-#if defined(__NR_sigreturn)
-      ||
-      sysno == __NR_sigreturn
-#endif
-      ) {
+  if (SandboxBPF::IsRequiredForUnsafeTrap(sysno)) {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   } else if (sysno == __NR_getpid) {
     // Disallow getpid()
@@ -637,18 +628,8 @@ ErrorCode RedirectAllSyscallsPolicy::EvaluateSyscall(SandboxBPF* sandbox,
 
   // Some system calls must always be allowed, if our policy wants to make
   // use of UnsafeTrap()
-  if (sysno == __NR_rt_sigprocmask || sysno == __NR_rt_sigreturn
-#if defined(__NR_sigprocmask)
-      ||
-      sysno == __NR_sigprocmask
-#endif
-#if defined(__NR_sigreturn)
-      ||
-      sysno == __NR_sigreturn
-#endif
-      ) {
+  if (SandboxBPF::IsRequiredForUnsafeTrap(sysno))
     return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
   return sandbox->UnsafeTrap(AllowRedirectedSyscall, NULL);
 }
 
@@ -2260,6 +2241,75 @@ SANDBOX_DEATH_TEST(SandboxBPF, StartSingleThreadedAsMultiThreaded,
   BPF_ASSERT(!sandbox.StartSandbox(SandboxBPF::PROCESS_MULTI_THREADED));
 }
 #endif  // !defined(THREAD_SANITIZER)
+
+// A stub handler for the UnsafeTrap. Never called.
+intptr_t NoOpHandler(const struct arch_seccomp_data& args, void*) {
+  return -1;
+}
+
+class UnsafeTrapWithCondPolicy : public SandboxBPFPolicy {
+ public:
+  UnsafeTrapWithCondPolicy() {}
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
+                                    int sysno) const OVERRIDE {
+    DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
+    setenv(kSandboxDebuggingEnv, "t", 0);
+    Die::SuppressInfoMessages(true);
+
+    if (SandboxBPF::IsRequiredForUnsafeTrap(sysno))
+      return ErrorCode(ErrorCode::ERR_ALLOWED);
+
+    switch (sysno) {
+      case __NR_uname:
+        return sandbox->Cond(0,
+                             ErrorCode::TP_32BIT,
+                             ErrorCode::OP_EQUAL,
+                             0,
+                             ErrorCode(ErrorCode::ERR_ALLOWED),
+                             ErrorCode(EPERM));
+      case __NR_setgid:
+        return sandbox->Cond(0,
+                             ErrorCode::TP_32BIT,
+                             ErrorCode::OP_EQUAL,
+                             100,
+                             ErrorCode(ErrorCode(ENOMEM)),
+                             sandbox->Cond(0,
+                                           ErrorCode::TP_32BIT,
+                                           ErrorCode::OP_EQUAL,
+                                           200,
+                                           ErrorCode(ENOSYS),
+                                           ErrorCode(EPERM)));
+      case __NR_close:
+      case __NR_exit_group:
+      case __NR_write:
+        return ErrorCode(ErrorCode::ERR_ALLOWED);
+      case __NR_getppid:
+        return sandbox->UnsafeTrap(NoOpHandler, NULL);
+      default:
+        return ErrorCode(EPERM);
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UnsafeTrapWithCondPolicy);
+};
+
+BPF_TEST_C(SandboxBPF, UnsafeTrapWithCond, UnsafeTrapWithCondPolicy) {
+  BPF_ASSERT_EQ(-1, syscall(__NR_uname, 0));
+  BPF_ASSERT_EQ(EFAULT, errno);
+
+  BPF_ASSERT_EQ(-1, syscall(__NR_uname, 1));
+  BPF_ASSERT_EQ(EPERM, errno);
+
+  BPF_ASSERT_EQ(-1, syscall(__NR_setgid, 100));
+  BPF_ASSERT_EQ(ENOMEM, errno);
+
+  BPF_ASSERT_EQ(-1, syscall(__NR_setgid, 200));
+  BPF_ASSERT_EQ(ENOSYS, errno);
+
+  BPF_ASSERT_EQ(-1, syscall(__NR_setgid, 300));
+  BPF_ASSERT_EQ(EPERM, errno);
+}
 
 }  // namespace
 

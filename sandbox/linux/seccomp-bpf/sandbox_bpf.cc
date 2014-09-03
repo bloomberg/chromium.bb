@@ -199,9 +199,7 @@ class RedirectToUserSpacePolicyWrapper : public SandboxBPFPolicy {
                                     int system_call_number) const OVERRIDE {
     ErrorCode err =
         wrapped_policy_->EvaluateSyscall(sandbox_compiler, system_call_number);
-    if ((err.err() & SECCOMP_RET_ACTION) == SECCOMP_RET_ERRNO) {
-      return ReturnErrnoViaTrap(sandbox_compiler, err.err() & SECCOMP_RET_DATA);
-    }
+    ChangeErrnoToTraps(&err, sandbox_compiler);
     return err;
   }
 
@@ -213,6 +211,29 @@ class RedirectToUserSpacePolicyWrapper : public SandboxBPFPolicy {
  private:
   ErrorCode ReturnErrnoViaTrap(SandboxBPF* sandbox_compiler, int err) const {
     return sandbox_compiler->Trap(ReturnErrno, reinterpret_cast<void*>(err));
+  }
+
+  // ChangeErrnoToTraps recursivly iterates through the ErrorCode
+  // converting any ERRNO to a userspace trap
+  void ChangeErrnoToTraps(ErrorCode* err, SandboxBPF* sandbox_compiler) const {
+    if (err->error_type() == ErrorCode::ET_SIMPLE &&
+        (err->err() & SECCOMP_RET_ACTION) == SECCOMP_RET_ERRNO) {
+      // Have an errno, need to change this to a trap
+      *err =
+          ReturnErrnoViaTrap(sandbox_compiler, err->err() & SECCOMP_RET_DATA);
+      return;
+    } else if (err->error_type() == ErrorCode::ET_COND) {
+      // Need to explore both paths
+      ChangeErrnoToTraps((ErrorCode*)err->passed(), sandbox_compiler);
+      ChangeErrnoToTraps((ErrorCode*)err->failed(), sandbox_compiler);
+      return;
+    } else if (err->error_type() == ErrorCode::ET_TRAP) {
+      return;
+    } else if (err->error_type() == ErrorCode::ET_SIMPLE &&
+               (err->err() & SECCOMP_RET_ACTION) == SECCOMP_RET_ALLOW) {
+      return;
+    }
+    NOTREACHED();
   }
 
   const SandboxBPFPolicy* wrapped_policy_;
@@ -1033,6 +1054,19 @@ ErrorCode SandboxBPF::Trap(Trap::TrapFnc fnc, const void* aux) {
 
 ErrorCode SandboxBPF::UnsafeTrap(Trap::TrapFnc fnc, const void* aux) {
   return Trap::MakeTrap(fnc, aux, false /* Unsafe Trap */);
+}
+
+bool SandboxBPF::IsRequiredForUnsafeTrap(int sysno) {
+  return (sysno == __NR_rt_sigprocmask || sysno == __NR_rt_sigreturn
+#if defined(__NR_sigprocmask)
+          ||
+          sysno == __NR_sigprocmask
+#endif
+#if defined(__NR_sigreturn)
+          ||
+          sysno == __NR_sigreturn
+#endif
+          );
 }
 
 intptr_t SandboxBPF::ForwardSyscall(const struct arch_seccomp_data& args) {

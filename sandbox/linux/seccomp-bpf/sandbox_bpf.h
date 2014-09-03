@@ -130,6 +130,10 @@ class SANDBOX_EXPORT SandboxBPF {
   //   entire sandbox should be considered compromised.
   ErrorCode UnsafeTrap(Trap::TrapFnc fnc, const void* aux);
 
+  // UnsafeTraps require some syscalls to always be allowed.
+  // This helper function returns true for these calls.
+  static bool IsRequiredForUnsafeTrap(int sysno);
+
   // From within an UnsafeTrap() it is often useful to be able to execute
   // the system call that triggered the trap. The ForwardSyscall() method
   // makes this easy. It is more efficient than calling glibc's syscall()
