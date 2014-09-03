@@ -389,6 +389,9 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     if (isEmbeddedObject())
         return EmbeddedObjectRole;
 
+    if (node && node->hasTagName(figcaptionTag))
+        return FigcaptionRole;
+
     if (node && node->hasTagName(figureTag))
         return FigureRole;
 

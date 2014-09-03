@@ -88,6 +88,7 @@ enum AccessibilityRole {
     DrawerRole,
     EditableTextRole,
     EmbeddedObjectRole,
+    FigcaptionRole,
     FigureRole,
     FooterRole,
     FormRole,
