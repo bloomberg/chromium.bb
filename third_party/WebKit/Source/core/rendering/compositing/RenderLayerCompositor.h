@@ -183,13 +183,8 @@ private:
 
     virtual bool isTrackingPaintInvalidations() const OVERRIDE;
 
-    // Whether the given RL needs to paint into its own separate backing (and hence would need its own CompositedLayerMapping).
-    bool needsOwnBacking(const RenderLayer*) const;
-
     void updateWithoutAcceleratedCompositing(CompositingUpdateType);
     void updateIfNeeded();
-
-    bool hasAnyAdditionalCompositedLayers(const RenderLayer* rootLayer) const;
 
     void ensureRootLayer();
     void destroyRootLayer();
