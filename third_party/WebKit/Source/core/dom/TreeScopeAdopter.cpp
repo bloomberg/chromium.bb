@@ -88,6 +88,13 @@ void TreeScopeAdopter::moveTreeToNewDocument(Node& root, Document& oldDocument, 
     ASSERT(oldDocument != newDocument);
     for (Node* node = &root; node; node = NodeTraversal::next(*node, &root)) {
         moveNodeToNewDocument(*node, oldDocument, newDocument);
+
+        if (node->hasSyntheticAttrChildNodes()) {
+            WillBeHeapVector<RefPtrWillBeMember<Attr> >& attrs = *toElement(node)->attrNodeList();
+            for (unsigned i = 0; i < attrs.size(); ++i)
+                moveTreeToNewDocument(*attrs[i], oldDocument, newDocument);
+        }
+
         for (ShadowRoot* shadow = node->youngestShadowRoot(); shadow; shadow = shadow->olderShadowRoot())
             moveTreeToNewDocument(*shadow, oldDocument, newDocument);
     }
