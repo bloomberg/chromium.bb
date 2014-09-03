@@ -143,6 +143,9 @@ void FetchBodyStream::didStartLoading() { }
 void FetchBodyStream::didReceiveData() { }
 void FetchBodyStream::didFinishLoading()
 {
+    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        return;
+
     switch (m_responseType) {
     case ResponseAsArrayBuffer:
         m_resolver->resolve(m_loader->arrayBufferResult());
@@ -174,6 +177,9 @@ void FetchBodyStream::didFinishLoading()
 void FetchBodyStream::didFail(FileError::ErrorCode code)
 {
     ASSERT(m_resolver);
+    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        return;
+
     m_resolver->resolve("");
     m_resolver.clear();
 }
