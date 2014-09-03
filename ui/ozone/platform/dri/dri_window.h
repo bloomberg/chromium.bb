@@ -13,6 +13,7 @@
 
 namespace ui {
 
+class DriCursor;
 class DriWindowDelegate;
 class DriWindowManager;
 class EventFactoryEvdev;
@@ -24,7 +25,8 @@ class DriWindow : public PlatformWindow,
             const gfx::Rect& bounds,
             scoped_ptr<DriWindowDelegate> dri_window_delegate,
             EventFactoryEvdev* event_factory,
-            DriWindowManager* window_manager);
+            DriWindowManager* window_manager,
+            DriCursor* cursor);
   virtual ~DriWindow();
 
   void Initialize();
@@ -55,6 +57,7 @@ class DriWindow : public PlatformWindow,
   DriWindowDelegate* dri_window_delegate_;
   EventFactoryEvdev* event_factory_;
   DriWindowManager* window_manager_;
+  DriCursor* cursor_;
 
   DISALLOW_COPY_AND_ASSIGN(DriWindow);
 };

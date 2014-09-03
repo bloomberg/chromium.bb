@@ -48,19 +48,16 @@ class UI_BASE_EXPORT BitmapCursorFactoryOzone : public CursorFactoryOzone {
   BitmapCursorFactoryOzone();
   virtual ~BitmapCursorFactoryOzone();
 
+  // Convert PlatformCursor to BitmapCursorOzone.
+  static scoped_refptr<BitmapCursorOzone> GetBitmapCursor(
+      PlatformCursor platform_cursor);
+
   // CursorFactoryOzone:
   virtual PlatformCursor GetDefaultCursor(int type) OVERRIDE;
   virtual PlatformCursor CreateImageCursor(const SkBitmap& bitmap,
                                            const gfx::Point& hotspot) OVERRIDE;
   virtual void RefImageCursor(PlatformCursor cursor) OVERRIDE;
   virtual void UnrefImageCursor(PlatformCursor cursor) OVERRIDE;
-  virtual void SetCursor(gfx::AcceleratedWidget widget,
-                         PlatformCursor cursor) OVERRIDE;
-
-  // Set a bitmap cursor for the given window. This must be overridden by
-  // subclasses. If the cursor is hidden (kCursorNone) then cursor is NULL.
-  virtual void SetBitmapCursor(gfx::AcceleratedWidget window,
-                               scoped_refptr<BitmapCursorOzone> cursor);
 
  private:
   // Default cursors are cached & owned by the factory.

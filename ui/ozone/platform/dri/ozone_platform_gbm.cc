@@ -10,9 +10,10 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
-#include "ui/ozone/platform/dri/cursor_factory_evdev_dri.h"
+#include "ui/ozone/platform/dri/dri_cursor.h"
 #include "ui/ozone/platform/dri/dri_window.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_proxy.h"
 #include "ui/ozone/platform/dri/dri_window_manager.h"
@@ -105,7 +106,8 @@ class OzonePlatformGbm : public OzonePlatform {
                           ui_window_manager_.NextAcceleratedWidget(),
                           gpu_platform_support_host_.get())),
                       event_factory_ozone_.get(),
-                      &ui_window_manager_));
+                      &ui_window_manager_,
+                      cursor_.get()));
     platform_window->Initialize();
     return platform_window.PassAs<PlatformWindow>();
   }
@@ -128,10 +130,10 @@ class OzonePlatformGbm : public OzonePlatform {
     surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
     device_manager_ = CreateDeviceManager();
     gpu_platform_support_host_.reset(new GpuPlatformSupportHostGbm());
-    cursor_factory_ozone_.reset(
-        new CursorFactoryEvdevDri(gpu_platform_support_host_.get()));
-    event_factory_ozone_.reset(new EventFactoryEvdev(
-        cursor_factory_ozone_.get(), device_manager_.get()));
+    cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
+    cursor_.reset(new DriCursor(gpu_platform_support_host_.get()));
+    event_factory_ozone_.reset(
+        new EventFactoryEvdev(cursor_.get(), device_manager_.get()));
   }
 
   virtual void InitializeGPU() OVERRIDE {
@@ -172,7 +174,8 @@ class OzonePlatformGbm : public OzonePlatform {
   scoped_ptr<DeviceManager> device_manager_;
 
   scoped_ptr<GbmSurfaceFactory> surface_factory_ozone_;
-  scoped_ptr<CursorFactoryEvdevDri> cursor_factory_ozone_;
+  scoped_ptr<BitmapCursorFactoryOzone> cursor_factory_ozone_;
+  scoped_ptr<DriCursor> cursor_;
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
 
   scoped_ptr<GpuPlatformSupportGbm> gpu_platform_support_;

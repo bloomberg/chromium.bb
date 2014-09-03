@@ -26,6 +26,12 @@ BitmapCursorFactoryOzone::BitmapCursorFactoryOzone() {}
 
 BitmapCursorFactoryOzone::~BitmapCursorFactoryOzone() {}
 
+// static
+scoped_refptr<BitmapCursorOzone> BitmapCursorFactoryOzone::GetBitmapCursor(
+    PlatformCursor platform_cursor) {
+  return make_scoped_refptr(ToBitmapCursorOzone(platform_cursor));
+}
+
 PlatformCursor BitmapCursorFactoryOzone::GetDefaultCursor(int type) {
   if (type == kCursorNone)
     return NULL;  // NULL is used for hidden cursor.
@@ -56,18 +62,6 @@ void BitmapCursorFactoryOzone::RefImageCursor(PlatformCursor cursor) {
 
 void BitmapCursorFactoryOzone::UnrefImageCursor(PlatformCursor cursor) {
   ToBitmapCursorOzone(cursor)->Release();
-}
-
-void BitmapCursorFactoryOzone::SetCursor(gfx::AcceleratedWidget widget,
-                                         PlatformCursor platform_cursor) {
-  BitmapCursorOzone* cursor = ToBitmapCursorOzone(platform_cursor);
-  SetBitmapCursor(widget, make_scoped_refptr(cursor));
-}
-
-void BitmapCursorFactoryOzone::SetBitmapCursor(
-    gfx::AcceleratedWidget widget,
-    scoped_refptr<BitmapCursorOzone>) {
-  NOTIMPLEMENTED();
 }
 
 }  // namespace ui

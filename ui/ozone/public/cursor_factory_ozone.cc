@@ -46,14 +46,4 @@ void CursorFactoryOzone::UnrefImageCursor(PlatformCursor cursor) {
   NOTIMPLEMENTED();
 }
 
-void CursorFactoryOzone::SetCursor(gfx::AcceleratedWidget widget,
-                                   PlatformCursor cursor) {
-  NOTIMPLEMENTED();
-}
-
-gfx::AcceleratedWidget CursorFactoryOzone::GetCursorWindow() {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
 }  // namespace ui

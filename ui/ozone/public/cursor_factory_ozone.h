@@ -41,15 +41,6 @@ class OZONE_BASE_EXPORT CursorFactoryOzone {
   // Decrement platform image cursor refcount.
   virtual void UnrefImageCursor(PlatformCursor cursor);
 
-  // Change the active cursor for an AcceleratedWidget.
-  // TODO(spang): Move this.
-  virtual void SetCursor(gfx::AcceleratedWidget widget, PlatformCursor cursor);
-
-  // Returns the window on which the cursor is active.
-  // TODO(dnicoara) Move this once the WindowTreeHost refactoring finishes and
-  // WindowTreeHost::CanDispatchEvent() is no longer present.
-  virtual gfx::AcceleratedWidget GetCursorWindow();
-
  private:
   static CursorFactoryOzone* impl_;  // not owned
 };

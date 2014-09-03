@@ -5,11 +5,12 @@
 #include "ui/ozone/platform/dri/ozone_platform_dri.h"
 
 #include "base/at_exit.h"
+#include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
-#include "ui/ozone/platform/dri/cursor_factory_evdev_dri.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
+#include "ui/ozone/platform/dri/dri_cursor.h"
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
 #include "ui/ozone/platform/dri/dri_window.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
@@ -70,7 +71,8 @@ class OzonePlatformDri : public OzonePlatform {
         scoped_ptr<DriWindowDelegate>(new DriWindowDelegateImpl(
             window_manager_.NextAcceleratedWidget(), screen_manager_.get())),
         event_factory_ozone_.get(),
-        &window_manager_));
+        &window_manager_,
+        cursor_.get()));
     platform_window->Initialize();
     return platform_window.PassAs<PlatformWindow>();
   }
@@ -89,10 +91,10 @@ class OzonePlatformDri : public OzonePlatform {
   virtual void InitializeUI() OVERRIDE {
     surface_factory_ozone_.reset(new DriSurfaceFactory(
         dri_.get(), screen_manager_.get(), &window_manager_));
-    cursor_factory_ozone_.reset(
-        new CursorFactoryEvdevDri(surface_factory_ozone_.get()));
-    event_factory_ozone_.reset(new EventFactoryEvdev(
-        cursor_factory_ozone_.get(), device_manager_.get()));
+    cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
+    cursor_.reset(new DriCursor(surface_factory_ozone_.get()));
+    event_factory_ozone_.reset(
+        new EventFactoryEvdev(cursor_.get(), device_manager_.get()));
     if (surface_factory_ozone_->InitializeHardware() !=
         DriSurfaceFactory::INITIALIZED)
       LOG(FATAL) << "failed to initialize display hardware";
@@ -109,7 +111,8 @@ class OzonePlatformDri : public OzonePlatform {
   scoped_ptr<DeviceManager> device_manager_;
 
   scoped_ptr<DriSurfaceFactory> surface_factory_ozone_;
-  scoped_ptr<CursorFactoryEvdevDri> cursor_factory_ozone_;
+  scoped_ptr<BitmapCursorFactoryOzone> cursor_factory_ozone_;
+  scoped_ptr<DriCursor> cursor_;
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
 
   DriWindowManager window_manager_;

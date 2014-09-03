@@ -7,6 +7,7 @@
 #include "ui/events/event.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/ozone/platform/dri/dri_cursor.h"
 #include "ui/ozone/platform/dri/dri_window_delegate.h"
 #include "ui/ozone/platform/dri/dri_window_manager.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
@@ -18,13 +19,15 @@ DriWindow::DriWindow(PlatformWindowDelegate* delegate,
                      const gfx::Rect& bounds,
                      scoped_ptr<DriWindowDelegate> dri_window_delegate,
                      EventFactoryEvdev* event_factory,
-                     DriWindowManager* window_manager)
+                     DriWindowManager* window_manager,
+                     DriCursor* cursor)
     : delegate_(delegate),
       bounds_(bounds),
       widget_(dri_window_delegate->GetAcceleratedWidget()),
       dri_window_delegate_(dri_window_delegate.get()),
       event_factory_(event_factory),
-      window_manager_(window_manager) {
+      window_manager_(window_manager),
+      cursor_(cursor) {
   window_manager_->AddWindowDelegate(widget_, dri_window_delegate.Pass());
 }
 
@@ -70,7 +73,7 @@ void DriWindow::Minimize() {}
 void DriWindow::Restore() {}
 
 void DriWindow::SetCursor(PlatformCursor cursor) {
-  ui::CursorFactoryOzone::GetInstance()->SetCursor(widget_, cursor);
+  cursor_->SetCursor(widget_, cursor);
 }
 
 void DriWindow::MoveCursorTo(const gfx::Point& location) {
@@ -81,7 +84,7 @@ bool DriWindow::CanDispatchEvent(const PlatformEvent& ne) {
   DCHECK(ne);
   Event* event = static_cast<Event*>(ne);
   if (event->IsMouseEvent() || event->IsScrollEvent())
-    return ui::CursorFactoryOzone::GetInstance()->GetCursorWindow() == widget_;
+    return cursor_->GetCursorWindow() == widget_;
 
   return true;
 }

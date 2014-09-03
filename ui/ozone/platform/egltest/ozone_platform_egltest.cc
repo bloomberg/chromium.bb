@@ -141,7 +141,6 @@ void EgltestWindow::Restore() {
 }
 
 void EgltestWindow::SetCursor(PlatformCursor cursor) {
-  CursorFactoryOzone::GetInstance()->SetCursor(window_id_, cursor);
 }
 
 void EgltestWindow::MoveCursorTo(const gfx::Point& location) {
