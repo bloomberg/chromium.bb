@@ -457,6 +457,7 @@ copy_to_hw_buffer(struct weston_output *output, pixman_region32_t *region)
 	region_global_to_output(output, &output_region);
 
 	pixman_image_set_clip_region32 (po->hw_buffer, &output_region);
+	pixman_region32_fini(&output_region);
 
 	pixman_image_composite32(PIXMAN_OP_SRC,
 				 po->shadow_image, /* src */
