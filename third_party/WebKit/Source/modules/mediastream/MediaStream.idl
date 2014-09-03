@@ -45,8 +45,8 @@
     [RaisesException] void removeTrack(MediaStreamTrack track);
     MediaStreamTrack getTrackById(DOMString trackId);
     [CallWith=ExecutionContext] MediaStream clone();
-
-    readonly attribute boolean ended;
+    // DEPRECATED
+    [MeasureAs=MediaStreamEnded] readonly attribute boolean ended;
 
     // DEPRECATED
     void stop();
