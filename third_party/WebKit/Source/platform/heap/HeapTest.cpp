@@ -1879,11 +1879,11 @@ TEST(HeapTest, HashMapOfMembers)
         IntWrapper* gross(map->get(dozen));
         EXPECT_EQ(gross->value(), 144);
 
-        // This should clear out junk created by all the adds.
+        // This should clear out any junk backings created by all the adds.
         Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
         HeapStats afterGC3;
         getHeapStats(&afterGC3);
-        EXPECT_TRUE(afterGC3.totalObjectSpace() < afterAdding1000.totalObjectSpace());
+        EXPECT_TRUE(afterGC3.totalObjectSpace() <= afterAdding1000.totalObjectSpace());
     }
 
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);

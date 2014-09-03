@@ -595,6 +595,7 @@ ThreadHeap<Header>::ThreadHeap(ThreadState* state, int index)
     , m_threadState(state)
     , m_index(index)
     , m_numberOfNormalPages(0)
+    , m_promptlyFreedCount(0)
 {
     clearFreeLists();
 }
@@ -667,6 +668,8 @@ void ThreadHeap<Header>::ensureCurrentAllocation(size_t minSize, const GCInfo* g
     if (remainingAllocationSize() > 0)
         addToFreeList(currentAllocationPoint(), remainingAllocationSize());
     if (allocateFromFreeList(minSize))
+        return;
+    if (coalesce(minSize) && allocateFromFreeList(minSize))
         return;
     addPageToHeap(gcInfo);
     bool success = allocateFromFreeList(minSize);
@@ -773,6 +776,131 @@ void ThreadHeap<Header>::addToFreeList(Address address, size_t size)
         m_lastFreeListEntries[index] = entry;
     if (index > m_biggestFreeListIndex)
         m_biggestFreeListIndex = index;
+}
+
+template<typename Header>
+void ThreadHeap<Header>::promptlyFreeObject(Header* header)
+{
+    ASSERT(!m_threadState->isSweepInProgress());
+    header->checkHeader();
+    Address address = reinterpret_cast<Address>(header);
+    Address payload = header->payload();
+    size_t size = header->size();
+    size_t payloadSize = header->payloadSize();
+    BaseHeapPage* page = pageHeaderFromObject(address);
+    ASSERT(size > 0);
+    ASSERT(page == heapPageFromAddress(address));
+
+    {
+        ThreadState::NoSweepScope scope(m_threadState);
+        HeapObjectHeader::finalize(header->gcInfo(), payload, payloadSize);
+#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
+        memset(payload, 0, payloadSize);
+#endif
+        header->markPromptlyFreed();
+    }
+
+    page->addToPromptlyFreedSize(size);
+    m_promptlyFreedCount++;
+}
+
+template<typename Header>
+bool ThreadHeap<Header>::coalesce(size_t minSize)
+{
+    if (m_threadState->isSweepInProgress())
+        return false;
+
+    if (m_promptlyFreedCount < 256)
+        return false;
+
+    // The smallest bucket able to satisfy an allocation request for minSize is
+    // the bucket where all free-list entries are guarantied to be larger than
+    // minSize. That bucket is one larger than the bucket minSize would go into.
+    size_t neededBucketIndex = bucketIndexForSize(minSize) + 1;
+    size_t neededFreeEntrySize = 1 << neededBucketIndex;
+    size_t neededPromptlyFreedSize = neededFreeEntrySize * 3;
+    size_t foundFreeEntrySize = 0;
+
+    // Bailout early on large requests because it is unlikely we will find a free-list entry.
+    if (neededPromptlyFreedSize >= blinkPageSize)
+        return false;
+
+    TRACE_EVENT_BEGIN2("blink_gc", "ThreadHeap::coalesce" , "requestedSize", (unsigned)minSize , "neededSize", (unsigned)neededFreeEntrySize);
+
+    // Search for a coalescing candidate.
+    ASSERT(!ownsNonEmptyAllocationArea());
+    size_t pageCount = 0;
+    HeapPage<Header>* page = m_firstPage;
+    while (page) {
+        // Only consider one of the first 'n' pages. A "younger" page is more likely to have freed backings.
+        if (++pageCount > numberOfPagesToConsiderForCoalescing) {
+            page = 0;
+            break;
+        }
+        // Only coalesce pages with "sufficient" promptly freed space.
+        if (page->promptlyFreedSize() >= neededPromptlyFreedSize) {
+            break;
+        }
+        page = page->next();
+    }
+
+    // If we found a likely candidate, fully coalesce all its promptly-freed entries.
+    if (page) {
+        page->clearObjectStartBitMap();
+        page->resetPromptlyFreedSize();
+        size_t freedCount = 0;
+        Address startOfGap = page->payload();
+        for (Address headerAddress = startOfGap; headerAddress < page->end(); ) {
+            BasicObjectHeader* basicHeader = reinterpret_cast<BasicObjectHeader*>(headerAddress);
+            ASSERT(basicHeader->size() > 0);
+            ASSERT(basicHeader->size() < blinkPagePayloadSize());
+
+            if (basicHeader->isPromptlyFreed()) {
+                stats().decreaseObjectSpace(reinterpret_cast<Header*>(basicHeader)->payloadSize());
+                size_t size = basicHeader->size();
+                ASSERT(size >= sizeof(Header));
+#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
+                memset(headerAddress, 0, sizeof(Header));
+#endif
+                ++freedCount;
+                headerAddress += size;
+                continue;
+            }
+
+            if (startOfGap != headerAddress) {
+                size_t size = headerAddress - startOfGap;
+                addToFreeList(startOfGap, size);
+                if (size > foundFreeEntrySize)
+                    foundFreeEntrySize = size;
+            }
+
+            headerAddress += basicHeader->size();
+            startOfGap = headerAddress;
+        }
+
+        if (startOfGap != page->end()) {
+            size_t size = page->end() - startOfGap;
+            addToFreeList(startOfGap, size);
+            if (size > foundFreeEntrySize)
+                foundFreeEntrySize = size;
+        }
+
+        // Check before subtracting because freedCount might not be balanced with freed entries.
+        if (freedCount < m_promptlyFreedCount)
+            m_promptlyFreedCount -= freedCount;
+        else
+            m_promptlyFreedCount = 0;
+    }
+
+    TRACE_EVENT_END1("blink_gc", "ThreadHeap::coalesce", "foundFreeEntrySize", (unsigned)foundFreeEntrySize);
+
+    if (foundFreeEntrySize < neededFreeEntrySize) {
+        // If coalescing failed, reset the freed count to delay coalescing again.
+        m_promptlyFreedCount = 0;
+        return false;
+    }
+
+    return true;
 }
 
 template<typename Header>
@@ -1118,6 +1246,7 @@ void ThreadHeap<Header>::sweepNormalPages(HeapStats* stats)
     HeapPage<Header>** previousNext = &m_firstPage;
     HeapPage<Header>* previous = 0;
     while (page) {
+        page->resetPromptlyFreedSize();
         if (page->isEmpty()) {
             HeapPage<Header>* unused = page;
             if (unused == m_mergePoint)
@@ -1240,6 +1369,7 @@ void ThreadHeap<Header>::clearLiveAndMarkDead()
 template<typename Header>
 void ThreadHeap<Header>::clearFreeLists()
 {
+    m_promptlyFreedCount = 0;
     for (size_t i = 0; i < blinkPageSizeLog2; i++) {
         m_freeLists[i] = 0;
         m_lastFreeListEntries[i] = 0;
@@ -2667,6 +2797,34 @@ void Heap::makeConsistentForSweeping()
     ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
     for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
         (*it)->makeConsistentForSweeping();
+}
+
+void HeapAllocator::backingFree(void* address)
+{
+    if (!address || ThreadState::isAnyThreadInGC())
+        return;
+
+    ThreadState* state = ThreadState::current();
+    if (state->isSweepInProgress())
+        return;
+
+    // Don't promptly free large objects because their page is never reused
+    // and don't free backings allocated on other threads.
+    BaseHeapPage* page = pageHeaderFromObject(address);
+    if (page->isLargeObject() || page->threadState() != state)
+        return;
+
+    typedef HeapIndexTrait<CollectionBackingHeap> HeapTraits;
+    typedef HeapTraits::HeapType HeapType;
+    typedef HeapTraits::HeaderType HeaderType;
+
+    HeaderType* header = HeaderType::fromPayload(address);
+    header->checkHeader();
+
+    const GCInfo* gcInfo = header->gcInfo();
+    int heapIndex = HeapTraits::index(gcInfo->hasFinalizer());
+    HeapType* heap = static_cast<HeapType*>(state->heap(heapIndex));
+    heap->promptlyFreeObject(header);
 }
 
 // Force template instantiations for the types that we need.

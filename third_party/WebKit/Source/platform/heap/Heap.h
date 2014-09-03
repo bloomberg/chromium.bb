@@ -77,6 +77,9 @@ const size_t freeListMask = 2;
 // tracing of already finalized objects in another thread's heap which is a
 // use-after-free situation.
 const size_t deadBitMask = 4;
+// On free-list entries we reuse the dead bit to distinguish a normal free-list
+// entry from one that has been promptly freed.
+const size_t promptlyFreedMask = freeListMask | deadBitMask;
 #if ENABLE(GC_PROFILE_HEAP)
 const size_t heapObjectGenerations = 8;
 const size_t maxHeapObjectAge = heapObjectGenerations - 1;
@@ -92,6 +95,8 @@ const uint8_t finalizedZapValue = 24;
 const uint8_t orphanedZapValue = 240;
 
 const int numberOfMarkingThreads = 2;
+
+const int numberOfPagesToConsiderForCoalescing = 100;
 
 enum CallbackInvocationMode {
     GlobalMarking,
@@ -279,6 +284,12 @@ public:
 
     NO_SANITIZE_ADDRESS
     bool isFree() { return m_size & freeListMask; }
+
+    NO_SANITIZE_ADDRESS
+    bool isPromptlyFreed() { return (m_size & promptlyFreedMask) == promptlyFreedMask; }
+
+    NO_SANITIZE_ADDRESS
+    void markPromptlyFreed() { m_size |= promptlyFreedMask; }
 
     NO_SANITIZE_ADDRESS
     size_t size() const { return m_size & sizeMask; }
@@ -974,6 +985,8 @@ public:
 
     void removePageFromHeap(HeapPage<Header>*);
 
+    PLATFORM_EXPORT void promptlyFreeObject(Header*);
+
 private:
     void addPageToHeap(const GCInfo*);
     PLATFORM_EXPORT Address outOfLineAllocate(size_t, const GCInfo*);
@@ -1002,6 +1015,7 @@ private:
 
     void sweepNormalPages(HeapStats*);
     void sweepLargePages(HeapStats*);
+    bool coalesce(size_t);
 
     Address m_currentAllocationPoint;
     size_t m_remainingAllocationSize;
@@ -1028,6 +1042,10 @@ private:
     int m_index;
 
     int m_numberOfNormalPages;
+
+    // The promptly freed count contains the number of promptly freed objects
+    // since the last sweep or since it was manually reset to delay coalescing.
+    size_t m_promptlyFreedCount;
 };
 
 class PLATFORM_EXPORT Heap {
@@ -1622,7 +1640,8 @@ public:
     {
         return reinterpret_cast<Return>(Heap::allocate<Metadata>(size));
     }
-    static void backingFree(void* address) { }
+    PLATFORM_EXPORT static void backingFree(void* address);
+
     static void free(void* address) { }
     template<typename T>
     static void* newArray(size_t bytes)

@@ -161,7 +161,8 @@ enum TypedHeaps {
 // Base implementation for HeapIndexTrait found below.
 template<int heapIndex>
 struct HeapIndexTraitBase {
-    typedef ThreadHeap<FinalizedHeapObjectHeader> HeapType;
+    typedef FinalizedHeapObjectHeader HeaderType;
+    typedef ThreadHeap<HeaderType> HeapType;
     static const int finalizedIndex = heapIndex;
     static const int nonFinalizedIndex = heapIndex + static_cast<int>(NonFinalizedHeapOffset);
     static int index(bool isFinalized)
@@ -187,7 +188,8 @@ struct HeapIndexTrait<CollectionBackingHeapNonFinalized> : public HeapIndexTrait
 #define DEFINE_TYPED_HEAP_INDEX_TRAIT(Type)                                     \
     template<>                                                                  \
     struct HeapIndexTrait<Type##Heap> : public HeapIndexTraitBase<Type##Heap> { \
-        typedef ThreadHeap<HeapObjectHeader> HeapType;                          \
+        typedef HeapObjectHeader HeaderType;                                    \
+        typedef ThreadHeap<HeaderType> HeapType;                                \
     };                                                                          \
     template<>                                                                  \
     struct HeapIndexTrait<Type##HeapNonFinalized> : public HeapIndexTrait<Type##Heap> { };
@@ -275,6 +277,22 @@ public:
     enum StackState {
         NoHeapPointersOnStack,
         HeapPointersOnStack
+    };
+
+    class NoSweepScope {
+    public:
+        explicit NoSweepScope(ThreadState* state) : m_state(state)
+        {
+            ASSERT(!m_state->m_sweepInProgress);
+            m_state->m_sweepInProgress = true;
+        }
+        ~NoSweepScope()
+        {
+            ASSERT(m_state->m_sweepInProgress);
+            m_state->m_sweepInProgress = false;
+        }
+    private:
+        ThreadState* m_state;
     };
 
     // The set of ThreadStates for all threads attached to the Blink
@@ -810,6 +828,9 @@ public:
     void setTerminating() { m_terminating = true; }
     bool tracedAfterOrphaned() { return m_tracedAfterOrphaned; }
     void setTracedAfterOrphaned() { m_tracedAfterOrphaned = true; }
+    size_t promptlyFreedSize() { return m_promptlyFreedSize; }
+    void resetPromptlyFreedSize() { m_promptlyFreedSize = 0; }
+    void addToPromptlyFreedSize(size_t size) { m_promptlyFreedSize += size; }
 
 private:
     PageMemory* m_storage;
@@ -821,6 +842,7 @@ private:
     // if the page is traced after being terminated (orphaned).
     uintptr_t m_terminating : 1;
     uintptr_t m_tracedAfterOrphaned : 1;
+    uintptr_t m_promptlyFreedSize : 17; // == blinkPageSizeLog2
 };
 
 }
