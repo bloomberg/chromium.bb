@@ -1143,11 +1143,6 @@ void AwContents::SetExtraHeadersForUrl(JNIEnv* env, jobject obj,
                                     extra_headers);
 }
 
-void AwContents::SendCheckRenderThreadResponsiveness(JNIEnv* env, jobject obj) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  render_view_host_ext_->SendCheckRenderThreadResponsiveness();
-}
-
 void AwContents::SetJsOnlineProperty(JNIEnv* env,
                                      jobject obj,
                                      jboolean network_up) {

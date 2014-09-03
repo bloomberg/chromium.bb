@@ -7,7 +7,6 @@
 #include "android_webview/common/aw_resource.h"
 #include "android_webview/common/render_view_messages.h"
 #include "android_webview/common/url_constants.h"
-#include "android_webview/renderer/aw_execution_termination_filter.h"
 #include "android_webview/renderer/aw_key_systems.h"
 #include "android_webview/renderer/aw_permission_client.h"
 #include "android_webview/renderer/aw_render_frame_ext.h"
@@ -32,7 +31,6 @@
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebNavigationType.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "url/gurl.h"
@@ -63,17 +61,6 @@ void AwContentRendererClient::RenderThreadStarted() {
 
   visited_link_slave_.reset(new visitedlink::VisitedLinkSlave);
   thread->AddObserver(visited_link_slave_.get());
-
-  execution_termination_filter_ = new AwExecutionTerminationFilter(
-      thread->GetIOMessageLoopProxy(),
-      thread->GetMessageLoop()->message_loop_proxy());
-  thread->AddFilter(execution_termination_filter_.get());
-  thread->AddObserver(this);
-}
-
-void AwContentRendererClient::WebKitInitialized() {
-  execution_termination_filter_->SetRenderThreadIsolate(
-      blink::mainThreadIsolate());
 }
 
 bool AwContentRendererClient::HandleNavigation(

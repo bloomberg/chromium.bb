@@ -74,10 +74,6 @@ IPC_MESSAGE_ROUTED1(AwViewMsg_SetBackgroundColor,
 IPC_MESSAGE_CONTROL1(AwViewMsg_SetJsOnlineProperty,
                      bool /* network_up */)
 
-// Sent prior to making a navigation via loadUrl to make sure that
-// render thread isn't stuck in a loop induced by JavaScript code.
-IPC_MESSAGE_CONTROL0(AwViewMsg_CheckRenderThreadResponsiveness)
-
 //-----------------------------------------------------------------------------
 // RenderView messages
 // These are messages sent from the renderer to the browser process.
