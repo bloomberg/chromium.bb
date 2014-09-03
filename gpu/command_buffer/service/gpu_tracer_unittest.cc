@@ -51,14 +51,14 @@ class GlFakeQueries {
 
   void SetCurrentGLTime(GLint64 current_time) { current_time_ = current_time; }
 
-  void GenQueries(GLsizei n, GLuint* ids) {
+  void GenQueriesARB(GLsizei n, GLuint* ids) {
     for (GLsizei i = 0; i < n; i++) {
       ids[i] = next_query_id_++;
       alloced_queries_.insert(ids[i]);
     }
   }
 
-  void DeleteQueries(GLsizei n, const GLuint* ids) {
+  void DeleteQueriesARB(GLsizei n, const GLuint* ids) {
     for (GLsizei i = 0; i < n; i++) {
       alloced_queries_.erase(ids[i]);
       query_timestamp_.erase(ids[i]);
@@ -109,56 +109,13 @@ class GlFakeQueries {
   std::map<GLuint, GLint64> query_timestamp_;
 };
 
-class GpuTracerTest : public GpuServiceTest {
+class BaseGpuTracerTest : public GpuServiceTest {
  public:
-  GpuTracerTest() {}
+  BaseGpuTracerTest() {}
 
   ///////////////////////////////////////////////////////////////////////////
 
- protected:
-  virtual void SetUp() {
-    GpuServiceTest::SetUp();
-    gl_fake_queries_.Reset();
-  }
-
-  virtual void TearDown() {
-    gl_.reset();
-    gl_fake_queries_.Reset();
-    GpuServiceTest::TearDown();
-  }
-
-  void SetupTimerQueryMocks() {
-    // Delegate query APIs used by GPUTrace to a GlFakeQueries
-    EXPECT_CALL(*gl_, GenQueries(_, NotNull())).Times(AtLeast(1)).WillOnce(
-        Invoke(&gl_fake_queries_, &GlFakeQueries::GenQueries));
-
-    EXPECT_CALL(*gl_, GetQueryObjectiv(_, GL_QUERY_RESULT_AVAILABLE, NotNull()))
-        .Times(AtLeast(2))
-        .WillRepeatedly(
-             Invoke(&gl_fake_queries_, &GlFakeQueries::GetQueryObjectiv));
-
-    EXPECT_CALL(*gl_, QueryCounter(_, GL_TIMESTAMP))
-        .Times(AtLeast(2))
-        .WillRepeatedly(
-             Invoke(&gl_fake_queries_, &GlFakeQueries::QueryCounter));
-
-    EXPECT_CALL(*gl_, GetQueryObjectui64v(_, GL_QUERY_RESULT, NotNull()))
-        .Times(AtLeast(2))
-        .WillRepeatedly(
-             Invoke(&gl_fake_queries_, &GlFakeQueries::GetQueryObjectui64v));
-
-    EXPECT_CALL(*gl_, DeleteQueries(2, NotNull()))
-        .Times(AtLeast(1))
-        .WillRepeatedly(
-             Invoke(&gl_fake_queries_, &GlFakeQueries::DeleteQueries));
-  }
-
-  GlFakeQueries gl_fake_queries_;
-};
-
-TEST_F(GpuTracerTest, GPUTrace) {
-  // Test basic timer query functionality
-  {
+  void DoTraceTest() {
     MockOutputter* outputter = new MockOutputter();
     scoped_refptr<Outputter> outputter_ref = outputter;
 
@@ -180,7 +137,8 @@ TEST_F(GpuTracerTest, GPUTrace) {
                 Trace(trace_name, expect_start_time, expect_end_time));
 
     scoped_refptr<GPUTrace> trace =
-        new GPUTrace(outputter_ref, trace_name, offset_time);
+        new GPUTrace(outputter_ref, trace_name, offset_time,
+                     GetTracerType());
 
     gl_fake_queries_.SetCurrentGLTime(start_timestamp);
     trace->Start();
@@ -202,6 +160,76 @@ TEST_F(GpuTracerTest, GPUTrace) {
 
     // Proces should output expected Trace results to MockOutputter
     trace->Process();
+  }
+
+ protected:
+  virtual void SetUp() {
+    GpuServiceTest::SetUp();
+    gl_fake_queries_.Reset();
+  }
+
+  virtual void TearDown() {
+    gl_.reset();
+    gl_fake_queries_.Reset();
+    GpuServiceTest::TearDown();
+  }
+
+  virtual void SetupTimerQueryMocks() {
+    // Delegate query APIs used by GPUTrace to a GlFakeQueries
+    EXPECT_CALL(*gl_, GenQueriesARB(_, NotNull())).Times(AtLeast(1)).WillOnce(
+        Invoke(&gl_fake_queries_, &GlFakeQueries::GenQueriesARB));
+
+    EXPECT_CALL(*gl_, GetQueryObjectiv(_, GL_QUERY_RESULT_AVAILABLE, NotNull()))
+        .Times(AtLeast(2))
+        .WillRepeatedly(
+             Invoke(&gl_fake_queries_, &GlFakeQueries::GetQueryObjectiv));
+
+    EXPECT_CALL(*gl_, QueryCounter(_, GL_TIMESTAMP))
+        .Times(AtLeast(2))
+        .WillRepeatedly(
+             Invoke(&gl_fake_queries_, &GlFakeQueries::QueryCounter));
+
+    EXPECT_CALL(*gl_, GetQueryObjectui64v(_, GL_QUERY_RESULT, NotNull()))
+        .Times(AtLeast(2))
+        .WillRepeatedly(
+             Invoke(&gl_fake_queries_, &GlFakeQueries::GetQueryObjectui64v));
+
+    EXPECT_CALL(*gl_, DeleteQueriesARB(2, NotNull()))
+        .Times(AtLeast(1))
+        .WillRepeatedly(
+             Invoke(&gl_fake_queries_, &GlFakeQueries::DeleteQueriesARB));
+  }
+
+  virtual GpuTracerType GetTracerType() = 0;
+
+  GlFakeQueries gl_fake_queries_;
+};
+
+class GpuARBTimerTracerTest : public BaseGpuTracerTest {
+ protected:
+  virtual GpuTracerType GetTracerType() OVERRIDE {
+    return kTracerTypeARBTimer;
+  }
+};
+
+class GpuDisjointTimerTracerTest : public BaseGpuTracerTest {
+ protected:
+  virtual GpuTracerType GetTracerType() OVERRIDE {
+    return kTracerTypeDisjointTimer;
+  }
+};
+
+TEST_F(GpuARBTimerTracerTest, GPUTrace) {
+  // Test basic timer query functionality
+  {
+    DoTraceTest();
+  }
+}
+
+TEST_F(GpuDisjointTimerTracerTest, GPUTrace) {
+  // Test basic timer query functionality
+  {
+    DoTraceTest();
   }
 }
 

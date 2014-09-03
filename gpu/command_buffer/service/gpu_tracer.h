@@ -33,6 +33,13 @@ enum GpuTracerSource {
   NUM_TRACER_SOURCES
 };
 
+enum GpuTracerType {
+  kTracerTypeInvalid = -1,
+
+  kTracerTypeARBTimer,
+  kTracerTypeDisjointTimer
+};
+
 // Marker structure for a Trace.
 struct TraceMarker {
   TraceMarker(const std::string& name);
@@ -86,7 +93,7 @@ class GPUTracer : public base::SupportsWeakPtr<GPUTracer> {
   int64 timer_offset_;
   GpuTracerSource last_tracer_source_;
 
-  bool enabled_;
+  GpuTracerType tracer_type_;
   bool gpu_timing_synced_;
   bool gpu_executing_;
   bool process_posted_;
@@ -126,12 +133,12 @@ class TraceOutputter : public Outputter {
 class GPU_EXPORT GPUTrace
     : public base::RefCounted<GPUTrace> {
  public:
-  explicit GPUTrace(const std::string& name);
   GPUTrace(scoped_refptr<Outputter> outputter,
            const std::string& name,
-           int64 offset);
+           int64 offset,
+           GpuTracerType tracer_type);
 
-  bool IsEnabled() { return enabled_; }
+  bool IsEnabled() { return tracer_type_ != kTracerTypeInvalid; }
   const std::string& name() { return name_; }
 
   void Start();
@@ -152,8 +159,8 @@ class GPU_EXPORT GPUTrace
   int64 offset_;
   int64 start_time_;
   int64 end_time_;
+  GpuTracerType tracer_type_;
   bool end_requested_;
-  bool enabled_;
 
   GLuint queries_[2];
 
