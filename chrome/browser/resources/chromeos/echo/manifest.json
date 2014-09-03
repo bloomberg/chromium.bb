@@ -40,7 +40,7 @@
   "externally_connectable": {
     "ids": ["*"],
     "matches": [
-      "*://www.google.com/*/chrome/devices/goodies.html*"
+      "*://www.google.com/*chrome/devices/goodies.html*"
     ]
   }
 }
