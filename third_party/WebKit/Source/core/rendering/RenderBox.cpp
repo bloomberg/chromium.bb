@@ -1420,6 +1420,7 @@ void RenderBox::paintFillLayers(const PaintInfo& paintInfo, const Color& c, cons
     Vector<const FillLayer*, 8> layers;
     const FillLayer* curLayer = &fillLayer;
     bool shouldDrawBackgroundInSeparateBuffer = false;
+    bool isBottomLayerOccluded = false;
     while (curLayer) {
         layers.append(curLayer);
         // Stop traversal when an opaque layer is encountered.
@@ -1439,24 +1440,38 @@ void RenderBox::paintFillLayers(const PaintInfo& paintInfo, const Color& c, cons
         curLayer = curLayer->next();
     }
 
+    if (layers.size() > 0  && (**layers.rbegin()).next())
+        isBottomLayerOccluded = true;
+
     GraphicsContext* context = paintInfo.context;
     if (!context)
         shouldDrawBackgroundInSeparateBuffer = false;
-    if (shouldDrawBackgroundInSeparateBuffer)
+
+    bool skipBaseColor = false;
+    if (shouldDrawBackgroundInSeparateBuffer) {
+        bool isBaseColorVisible = !isBottomLayerOccluded && c.hasAlpha();
+
+        // Paint the document's base background color outside the transparency layer,
+        // so that the background images don't blend with this color: http://crbug.com/389039.
+        if (isBaseColorVisible && isDocumentElementWithOpaqueBackground()) {
+            paintRootBackgroundColor(paintInfo, rect, Color());
+            skipBaseColor = true;
+        }
         context->beginTransparencyLayer(1);
+    }
 
     Vector<const FillLayer*>::const_reverse_iterator topLayer = layers.rend();
     for (Vector<const FillLayer*>::const_reverse_iterator it = layers.rbegin(); it != topLayer; ++it)
-        paintFillLayer(paintInfo, c, **it, rect, bleedAvoidance, op, backgroundObject);
+        paintFillLayer(paintInfo, c, **it, rect, bleedAvoidance, op, backgroundObject, skipBaseColor);
 
     if (shouldDrawBackgroundInSeparateBuffer)
         context->endLayer();
 }
 
 void RenderBox::paintFillLayer(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect,
-    BackgroundBleedAvoidance bleedAvoidance, CompositeOperator op, RenderObject* backgroundObject)
+    BackgroundBleedAvoidance bleedAvoidance, CompositeOperator op, RenderObject* backgroundObject, bool skipBaseColor)
 {
-    paintFillLayerExtended(paintInfo, c, fillLayer, rect, bleedAvoidance, 0, LayoutSize(), op, backgroundObject);
+    paintFillLayerExtended(paintInfo, c, fillLayer, rect, bleedAvoidance, 0, LayoutSize(), op, backgroundObject, skipBaseColor);
 }
 
 void RenderBox::imageChanged(WrappedImagePtr image, const IntRect*)

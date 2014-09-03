@@ -201,6 +201,65 @@ bool RenderBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight() const
     return cb->hasAutoHeightOrContainingBlockWithAutoHeight();
 }
 
+bool RenderBoxModelObject::isDocumentElementWithOpaqueBackground() const
+{
+    if (!isDocumentElement())
+        return false;
+
+    // The background is opaque only if we're the root document, since iframes with
+    // no background in the child document should show the parent's background.
+    bool isOpaque = true;
+    Element* ownerElement = document().ownerElement();
+    if (ownerElement) {
+        if (!isHTMLFrameElement(*ownerElement)) {
+            // Locate the <body> element using the DOM. This is easier than trying
+            // to crawl around a render tree with potential :before/:after content and
+            // anonymous blocks created by inline <body> tags etc. We can locate the <body>
+            // render object very easily via the DOM.
+            HTMLElement* body = document().body();
+            if (body) {
+                // Can't scroll a frameset document anyway.
+                isOpaque = body->hasTagName(framesetTag);
+            } else {
+                // FIXME: SVG specific behavior should be in the SVG code.
+                // SVG documents and XML documents with SVG root nodes are transparent.
+                isOpaque = !document().hasSVGRootNode();
+            }
+        }
+    } else if (view()->frameView()) {
+        isOpaque = !view()->frameView()->isTransparent();
+    }
+
+    return isOpaque;
+}
+
+void RenderBoxModelObject::paintRootBackgroundColor(const PaintInfo& paintInfo, const LayoutRect& rect, const Color& bgColor)
+{
+    GraphicsContext* context = paintInfo.context;
+    if (rect.isEmpty())
+        return;
+
+    ASSERT(isDocumentElement());
+
+    IntRect backgroundRect(pixelSnappedIntRect(rect));
+    backgroundRect.intersect(paintInfo.rect);
+
+    Color baseColor = view()->frameView()->baseBackgroundColor();
+    bool shouldClearDocumentBackground = document().settings() && document().settings()->shouldClearDocumentBackground();
+    CompositeOperator operation = shouldClearDocumentBackground ? CompositeCopy : context->compositeOperation();
+
+    // If we have an alpha go ahead and blend with the base background color.
+    if (baseColor.alpha()) {
+        if (bgColor.alpha())
+            baseColor = baseColor.blend(bgColor);
+        context->fillRect(backgroundRect, baseColor, operation);
+    } else if (bgColor.alpha()) {
+        context->fillRect(backgroundRect, bgColor, operation);
+    } else if (shouldClearDocumentBackground) {
+        context->clearRect(backgroundRect);
+    }
+}
+
 LayoutSize RenderBoxModelObject::relativePositionOffset() const
 {
     LayoutSize offset = accumulateInFlowPositionOffsets(this);
@@ -409,7 +468,7 @@ static void applyBoxShadowForBackground(GraphicsContext* context, const RenderOb
 }
 
 void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, const Color& color, const FillLayer& bgLayer, const LayoutRect& rect,
-    BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox* box, const LayoutSize& boxSize, CompositeOperator op, RenderObject* backgroundObject)
+    BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox* box, const LayoutSize& boxSize, CompositeOperator op, RenderObject* backgroundObject, bool skipBaseColor)
 {
     GraphicsContext* context = paintInfo.context;
     if (rect.isEmpty())
@@ -421,7 +480,8 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
     bool hasRoundedBorder = style()->hasBorderRadius() && (includeLeftEdge || includeRightEdge);
     bool clippedWithLocalScrolling = hasOverflowClip() && bgLayer.attachment() == LocalBackgroundAttachment;
     bool isBorderFill = bgLayer.clip() == BorderFillBox;
-    bool isRoot = this->isDocumentElement();
+    bool isDocumentElementRenderer = this->isDocumentElement();
+    bool isBottomLayer = !bgLayer.next();
 
     Color bgColor = color;
     StyleImage* bgImage = bgLayer.image();
@@ -444,7 +504,7 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
     // while rendering.)
     if (forceBackgroundToWhite) {
         // Note that we can't reuse this variable below because the bgColor might be changed
-        bool shouldPaintBackgroundColor = !bgLayer.next() && bgColor.alpha();
+        bool shouldPaintBackgroundColor = isBottomLayer && bgColor.alpha();
         if (shouldPaintBackgroundImage || shouldPaintBackgroundColor) {
             bgColor = Color::white;
             shouldPaintBackgroundImage = false;
@@ -454,7 +514,7 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
     bool colorVisible = bgColor.alpha();
 
     // Fast path for drawing simple color backgrounds.
-    if (!isRoot && !clippedWithLocalScrolling && !shouldPaintBackgroundImage && isBorderFill && !bgLayer.next()) {
+    if (!isDocumentElementRenderer && !clippedWithLocalScrolling && !shouldPaintBackgroundImage && isBorderFill && isBottomLayer) {
         if (!colorVisible)
             return;
 
@@ -556,39 +616,13 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
         break;
     }
 
-    // Only fill with a base color (e.g., white) if we're the root document, since iframes/frames with
-    // no background in the child document should show the parent's background.
-    bool isOpaqueRoot = false;
-    if (isRoot) {
-        isOpaqueRoot = true;
-        if (!bgLayer.next() && bgColor.hasAlpha() && view()->frameView()) {
-            if (HTMLFrameOwnerElement* ownerElement = document().ownerElement()) {
-                if (!isHTMLFrameElement(*ownerElement)) {
-                    // Locate the <body> element using the DOM.  This is easier than trying
-                    // to crawl around a render tree with potential :before/:after content and
-                    // anonymous blocks created by inline <body> tags etc.  We can locate the <body>
-                    // render object very easily via the DOM.
-                    HTMLElement* body = document().body();
-                    if (body) {
-                        // Can't scroll a frameset document anyway.
-                        isOpaqueRoot = body->hasTagName(framesetTag);
-                    } else {
-                        // SVG documents and XML documents with SVG root nodes are transparent.
-                        isOpaqueRoot = !document().hasSVGRootNode();
-                    }
-                }
-            } else {
-                isOpaqueRoot = !view()->frameView()->isTransparent();
-            }
-        }
-    }
-
     // Paint the color first underneath all images, culled if background image occludes it.
     // FIXME: In the bgLayer->hasFiniteBounds() case, we could improve the culling test
     // by verifying whether the background image covers the entire layout rect.
-    if (!bgLayer.next()) {
+    if (isBottomLayer) {
         IntRect backgroundRect(pixelSnappedIntRect(scrolledPaintRect));
         bool boxShadowShouldBeAppliedToBackground = this->boxShadowShouldBeAppliedToBackground(bleedAvoidance, box);
+        bool isOpaqueRoot = (isDocumentElementRenderer && !bgColor.hasAlpha()) || isDocumentElementWithOpaqueBackground();
         if (boxShadowShouldBeAppliedToBackground || !shouldPaintBackgroundImage || !bgLayer.hasOpaqueImage(this) || !bgLayer.hasRepeatXY() || (isOpaqueRoot && !toRenderBox(this)->height()))  {
             if (!boxShadowShouldBeAppliedToBackground)
                 backgroundRect.intersect(paintInfo.rect);
@@ -597,21 +631,8 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
             if (boxShadowShouldBeAppliedToBackground)
                 applyBoxShadowForBackground(context, this);
 
-            if (isOpaqueRoot) {
-                // If we have an alpha and we are painting the root element, go ahead and blend with the base background color.
-                Color baseColor = view()->frameView()->baseBackgroundColor();
-                bool shouldClearDocumentBackground = document().settings() && document().settings()->shouldClearDocumentBackground();
-                CompositeOperator operation = shouldClearDocumentBackground ? CompositeCopy : context->compositeOperation();
-
-                if (baseColor.alpha()) {
-                    if (bgColor.alpha())
-                        baseColor = baseColor.blend(bgColor);
-                    context->fillRect(backgroundRect, baseColor, operation);
-                } else if (bgColor.alpha()) {
-                    context->fillRect(backgroundRect, bgColor, operation);
-                } else if (shouldClearDocumentBackground) {
-                    context->clearRect(backgroundRect);
-                }
+            if (isOpaqueRoot && !skipBaseColor) {
+                paintRootBackgroundColor(paintInfo, rect, bgColor);
             } else if (bgColor.alpha()) {
                 context->fillRect(backgroundRect, bgColor, context->compositeOperation());
             }
