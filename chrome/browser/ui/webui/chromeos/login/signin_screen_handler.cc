@@ -299,6 +299,9 @@ SigninScreenHandler::SigninScreenHandler(
   if (keyboard)
     keyboard->AddObserver(this);
 
+  max_mode_delegate_.reset(new TouchViewControllerDelegate());
+  max_mode_delegate_->AddObserver(this);
+
   policy::ConsumerManagementService* consumer_management =
       g_browser_process->platform_part()->browser_policy_connector_chromeos()->
           GetConsumerManagementService();
@@ -317,6 +320,8 @@ SigninScreenHandler::~SigninScreenHandler() {
   if (delegate_)
     delegate_->SetWebUIHandler(NULL);
   network_state_informer_->RemoveObserver(this);
+  max_mode_delegate_->RemoveObserver(this);
+  max_mode_delegate_.reset(NULL);
   ScreenlockBridge::Get()->SetLockHandler(NULL);
 }
 
@@ -771,6 +776,8 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleGetPublicSessionKeyboardLayouts);
   AddCallback("cancelConsumerManagementEnrollment",
               &SigninScreenHandler::HandleCancelConsumerManagementEnrollment);
+  AddCallback("getTouchViewState",
+              &SigninScreenHandler::HandleGetTouchViewState);
 
 
   // This message is sent by the kiosk app menu, but is handled here
@@ -969,6 +976,14 @@ ScreenlockBridge::LockHandler::AuthType SigninScreenHandler::GetAuthType(
 void SigninScreenHandler::Unlock(const std::string& user_email) {
   DCHECK(ScreenLocker::default_screen_locker());
   ScreenLocker::Hide();
+}
+
+void SigninScreenHandler::OnMaximizeModeStarted() {
+  CallJS("login.AccountPickerScreen.setTouchViewState", true);
+}
+
+void SigninScreenHandler::OnMaximizeModeEnded() {
+  CallJS("login.AccountPickerScreen.setTouchViewState", false);
 }
 
 bool SigninScreenHandler::ShouldLoadGaia() const {
@@ -1366,6 +1381,11 @@ void SigninScreenHandler::HandleCancelConsumerManagementEnrollment() {
       policy::ConsumerManagementService::ENROLLMENT_CANCELED);
   is_enrolling_consumer_management_ = false;
   ShowImpl();
+}
+
+void SigninScreenHandler::HandleGetTouchViewState() {
+  CallJS("login.AccountPickerScreen.setTouchViewState",
+         max_mode_delegate_->IsMaximizeModeEnabled());
 }
 
 bool SigninScreenHandler::AllWhitelistedUsersPresent() {

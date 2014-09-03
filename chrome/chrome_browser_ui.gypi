@@ -1016,6 +1016,8 @@
       'browser/ui/webui/chromeos/login/user_image_screen_handler.h',
       'browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.cc',
       'browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h',
+      'browser/ui/webui/chromeos/touch_view_controller_delegate.cc',
+      'browser/ui/webui/chromeos/touch_view_controller_delegate.h',
       'browser/ui/webui/chromeos/mobile_setup_dialog.cc',
       'browser/ui/webui/chromeos/mobile_setup_dialog.h',
       'browser/ui/webui/chromeos/mobile_setup_ui.cc',

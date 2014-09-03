@@ -2005,6 +2005,10 @@ cr.define('login', function() {
     // Array of users that are shown (public/supervised/regular).
     users_: [],
 
+    // If we're disabling single pod autofocus for Touch View.
+    touchViewSinglePodExperimentOn_: true,
+
+
     /** @override */
     decorate: function() {
       // Event listeners that are installed for the time period during which
@@ -2034,14 +2038,17 @@ cr.define('login', function() {
 
     /**
      * Return true if user pod row has only single user pod in it, which should
-     * always be focused.
+     * always be focused except desktop and touch view modes.
      * @type {boolean}
      */
     get alwaysFocusSinglePod() {
       var isDesktopUserManager = Oobe.getInstance().displayType ==
           DISPLAY_TYPE.DESKTOP_USER_MANAGER;
 
-      return isDesktopUserManager ? false : this.children.length == 1;
+      return (isDesktopUserManager ||
+              (this.touchViewSinglePodExperimentOn_ &&
+               this.touchViewEnabled_)) ?
+          false : this.children.length == 1;
     },
 
     /**
@@ -2369,6 +2376,14 @@ cr.define('login', function() {
         return;
       }
       pod.setAuthType(authType, value);
+    },
+
+    /**
+     * Sets the state of touch view mode.
+     * @param {boolean} isTouchViewEnabled true if the mode is on.
+     */
+    setTouchViewState: function(isTouchViewEnabled) {
+      this.touchViewEnabled_ = isTouchViewEnabled;
     },
 
     /**

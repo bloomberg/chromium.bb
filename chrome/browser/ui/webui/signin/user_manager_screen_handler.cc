@@ -495,6 +495,7 @@ void UserManagerScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("accountPickerReady", kDoNothingCallback);
   web_ui()->RegisterMessageCallback("loginUIStateChanged", kDoNothingCallback);
   web_ui()->RegisterMessageCallback("hideCaptivePortal", kDoNothingCallback);
+  web_ui()->RegisterMessageCallback("getTouchViewState", kDoNothingCallback);
   // Unused callbacks from display_manager.js
   web_ui()->RegisterMessageCallback("showAddUser", kDoNothingCallback);
   web_ui()->RegisterMessageCallback("loadWallpaper", kDoNothingCallback);

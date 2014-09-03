@@ -29,6 +29,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       'showUserPodCustomIcon',
       'hideUserPodCustomIcon',
       'setAuthType',
+      'setTouchViewState',
       'setPublicSessionDisplayName',
       'setPublicSessionLocales',
       'setPublicSessionKeyboardLayouts',
@@ -113,6 +114,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      * Event handler invoked when the page is shown and ready.
      */
     onShow: function() {
+      chrome.send('getTouchViewState');
       if (!this.firstShown_) return;
       this.firstShown_ = false;
 
@@ -301,6 +303,14 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      */
     setAuthType: function(username, authType, value) {
       $('pod-row').setAuthType(username, authType, value);
+    },
+
+    /**
+     * Sets the state of touch view mode.
+     * @param {boolean} isTouchViewEnabled true if the mode is on.
+     */
+    setTouchViewState: function(isTouchViewEnabled) {
+      $('pod-row').setTouchViewState(isTouchViewEnabled);
     },
 
     /**
