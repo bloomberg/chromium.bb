@@ -53,7 +53,7 @@ void Control::PaintMultipleRects(pp::ImageData* image_data,
     return;
 
   pp::Rect draw_rc = pp::Rect(image_data->size()).Intersect(rect());
-  pp::Rect ctrl_rc = pp::Rect(rect().point() - draw_rc.point(), draw_rc.size());
+  pp::Rect ctrl_rc = pp::Rect(draw_rc.point() - rect().point(), draw_rc.size());
   CopyImage(*image_data, draw_rc, &buffer, ctrl_rc, false);
 
   // Temporary move control to origin (0,0) and draw it into temp buffer.
