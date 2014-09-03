@@ -9,9 +9,7 @@ namespace extensions {
 class FileSystemProviderApiTest : public ExtensionApiTest {
  public:
   FileSystemProviderApiTest()
-      // Set the channel to "trunk" since this API is restricted to trunk.
-      : current_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {
-  }
+      : current_channel_(chrome::VersionInfo::CHANNEL_DEV) {}
 
   // Loads a helper testing extension.
   virtual void SetUpOnMainThread() OVERRIDE {

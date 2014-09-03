@@ -558,7 +558,7 @@
     ]
   }],
   "fileSystemProvider": {
-    "channel": "trunk",
+    "channel": "dev",
     "extension_types": ["platform_app"]
   },
   "firstRunPrivate": {
