@@ -102,6 +102,8 @@
         'public/ozone_platform.h',
         'public/ozone_switches.cc',
         'public/ozone_switches.h',
+        'public/ui_thread_gpu.cc',
+        'public/ui_thread_gpu.h',
         'platform_selection.cc',
         'platform_selection.h',
         '<@(external_ozone_platform_files)',

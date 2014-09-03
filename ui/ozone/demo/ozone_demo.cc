@@ -16,6 +16,7 @@
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
+#include "ui/ozone/public/ui_thread_gpu.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
@@ -47,7 +48,8 @@ class DemoWindow : public ui::PlatformWindowDelegate {
 
   void Start() {
     if (!CommandLine::ForCurrentProcess()->HasSwitch(kDisableGpu) &&
-        gfx::GLSurface::InitializeOneOff() && InitializeGLSurface()) {
+        gfx::GLSurface::InitializeOneOff() && StartInProcessGpu() &&
+        InitializeGLSurface()) {
       StartAnimationGL();
     } else if (InitializeSoftwareSurface()) {
       StartAnimationSoftware();
@@ -173,6 +175,8 @@ class DemoWindow : public ui::PlatformWindowDelegate {
     software_surface_->PresentCanvas(gfx::Rect(window_size));
   }
 
+  bool StartInProcessGpu() { return ui_thread_gpu_.Initialize(); }
+
   // Timer for animation.
   base::RepeatingTimer<DemoWindow> timer_;
 
@@ -186,6 +190,9 @@ class DemoWindow : public ui::PlatformWindowDelegate {
   // Window-related state.
   scoped_ptr<ui::PlatformWindow> platform_window_;
   gfx::AcceleratedWidget widget_;
+
+  // Helper for applications that do GL on main thread.
+  ui::UiThreadGpu ui_thread_gpu_;
 
   // Animation state.
   int iteration_;
