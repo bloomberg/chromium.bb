@@ -149,7 +149,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescrip
         traits = [fontManager traitsOfFont:nsFont];
         if (platformData.m_syntheticBold)
             traits |= NSBoldFontMask;
-        if (platformData.m_syntheticItalic)
+        if (platformData.m_syntheticOblique)
             traits |= NSFontItalicTrait;
         weight = [fontManager weightOfFont:nsFont];
         size = [nsFont pointSize];
@@ -179,7 +179,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescrip
     FontPlatformData alternateFont(substituteFont, platformData.size(),
         isAppKitFontWeightBold(weight) && !isAppKitFontWeightBold(substituteFontWeight),
         (traits & NSFontItalicTrait) && !(substituteFontTraits & NSFontItalicTrait),
-        platformData.orientation());
+        platformData.m_orientation);
 
     return fontDataFromFontPlatformData(&alternateFont, DoNotRetain);
 }
@@ -220,11 +220,11 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
 
     NSFont *platformFont = useHinting() ? [nsFont screenFont] : [nsFont printerFont];
     bool syntheticBold = (isAppKitFontWeightBold(weight) && !isAppKitFontWeightBold(actualWeight)) || fontDescription.isSyntheticBold();
-    bool syntheticItalic = ((traits & NSFontItalicTrait) && !(actualTraits & NSFontItalicTrait)) || fontDescription.isSyntheticItalic();
+    bool syntheticOblique = ((traits & NSFontItalicTrait) && !(actualTraits & NSFontItalicTrait)) || fontDescription.isSyntheticItalic();
 
     // FontPlatformData::font() can be null for the case of Chromium out-of-process font loading.
     // In that case, we don't want to use the platformData.
-    OwnPtr<FontPlatformData> platformData = adoptPtr(new FontPlatformData(platformFont, size, syntheticBold, syntheticItalic, fontDescription.orientation(), fontDescription.widthVariant()));
+    OwnPtr<FontPlatformData> platformData = adoptPtr(new FontPlatformData(platformFont, size, syntheticBold, syntheticOblique, fontDescription.orientation(), fontDescription.widthVariant()));
     if (!platformData->font())
         return 0;
     return platformData.leakPtr();
