@@ -30,7 +30,6 @@ function test()
         var request = InspectorTest.networkRequests().pop();
 
         InspectorTest.addResult(request.url);
-        InspectorTest.addResult("resource.isPingRequest(): " + request.isPingRequest());
         InspectorTest.addResult("resource.requestContentType: " + request.requestContentType());
 
         InspectorTest.completeTest();
