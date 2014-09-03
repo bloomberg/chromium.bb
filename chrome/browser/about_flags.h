@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/metrics/histogram_base.h"
 #include "base/strings/string16.h"
 
 class PrefService;
@@ -26,7 +27,7 @@ class FlagsStorage;
 
 // This value is reported as switch histogram ID if switch name has unknown
 // format.
-extern const uint32_t kBadSwitchFormatHistogramId;
+extern const base::HistogramBase::Sample kBadSwitchFormatHistogramId;
 
 // Enumeration of OSs.
 // This is exposed only for testing.
@@ -171,7 +172,7 @@ int GetCurrentPlatform();
 void RecordUMAStatistics(FlagsStorage* flags_storage);
 
 // Returns the UMA id for the specified switch name.
-uint32_t GetSwitchUMAId(const std::string& switch_name);
+base::HistogramBase::Sample GetSwitchUMAId(const std::string& switch_name);
 
 // Sends stats (as UMA histogram) about command_line_difference.
 // This is used on ChromeOS to report flags that lead to browser restart.

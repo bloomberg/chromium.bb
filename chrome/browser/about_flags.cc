@@ -67,7 +67,7 @@ using base::UserMetricsAction;
 
 namespace about_flags {
 
-const uint32_t kBadSwitchFormatHistogramId = 0;
+const base::HistogramBase::Sample kBadSwitchFormatHistogramId = 0;
 
 // Macros to simplify specifying the type.
 #define SINGLE_VALUE_TYPE_AND_VALUE(command_line_switch, switch_value) \
@@ -2265,8 +2265,9 @@ void RecordUMAStatistics(FlagsStorage* flags_storage) {
   content::RecordAction(UserMetricsAction("StartupTick"));
 }
 
-uint32_t GetSwitchUMAId(const std::string& switch_name) {
-  return static_cast<uint32_t>(metrics::HashMetricName(switch_name));
+base::HistogramBase::Sample GetSwitchUMAId(const std::string& switch_name) {
+  return static_cast<base::HistogramBase::Sample>(
+      metrics::HashMetricName(switch_name));
 }
 
 void ReportCustomFlags(const std::string& uma_histogram_hame,

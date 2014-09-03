@@ -41,19 +41,20 @@ const char kValueForMultiSwitch2[] = "value_for_multi_switch2";
 const char kEnableDisableValue1[] = "value1";
 const char kEnableDisableValue2[] = "value2";
 
-typedef std::map<std::string, uint32_t> SwitchToIdMap;
+typedef base::HistogramBase::Sample Sample;
+typedef std::map<std::string, Sample> SwitchToIdMap;
 
 // This is a helper function to the ReadEnumFromHistogramsXml().
 // Extracts single enum (with integer values) from histograms.xml.
 // Expects |reader| to point at given enum.
 // Returns map { value => label }.
 // Returns empty map on error.
-std::map<uint32_t, std::string> ParseEnumFromHistogramsXml(
+std::map<Sample, std::string> ParseEnumFromHistogramsXml(
     const std::string& enum_name,
     XmlReader* reader) {
   int entries_index = -1;
 
-  std::map<uint32_t, std::string> result;
+  std::map<Sample, std::string> result;
   bool success = true;
 
   while (true) {
@@ -80,8 +81,8 @@ std::map<uint32_t, std::string> ParseEnumFromHistogramsXml(
         success = false;
       }
 
-      uint32_t value;
-      if (has_value && !base::StringToUint(value_str, &value)) {
+      Sample value;
+      if (has_value && !base::StringToInt(value_str, &value)) {
         ADD_FAILURE() << "Bad " << enum_name << " enum entry (at index "
                       << entries_index << ", label='" << label
                       << "', value_str='" << value_str
@@ -105,7 +106,7 @@ std::map<uint32_t, std::string> ParseEnumFromHistogramsXml(
     // until possible.
     reader->Next();
   }
-  return (success ? result : std::map<uint32_t, std::string>());
+  return (success ? result : std::map<Sample, std::string>());
 }
 
 // Find and read given enum (with integer values) from histograms.xml.
@@ -117,10 +118,10 @@ std::map<uint32_t, std::string> ParseEnumFromHistogramsXml(
 // becomes:
 //   { 9 => "enable-pinch-virtual-viewport" }
 // Returns empty map on error.
-std::map<uint32_t, std::string> ReadEnumFromHistogramsXml(
+std::map<Sample, std::string> ReadEnumFromHistogramsXml(
     const std::string& enum_name,
     XmlReader* histograms_xml) {
-  std::map<uint32_t, std::string> login_custom_flags;
+  std::map<Sample, std::string> login_custom_flags;
 
   // Implement simple depth first search.
   while (true) {
@@ -131,7 +132,7 @@ std::map<uint32_t, std::string> ReadEnumFromHistogramsXml(
         if (!login_custom_flags.empty()) {
           EXPECT_TRUE(login_custom_flags.empty())
               << "Duplicate enum '" << enum_name << "' found in histograms.xml";
-          return std::map<uint32_t, std::string>();
+          return std::map<Sample, std::string>();
         }
 
         const bool got_into_enum = histograms_xml->Read();
@@ -147,7 +148,7 @@ std::map<uint32_t, std::string> ReadEnumFromHistogramsXml(
               << "' (looks empty) found in histograms.xml.";
         }
         if (login_custom_flags.empty())
-          return std::map<uint32_t, std::string>();
+          return std::map<Sample, std::string>();
       }
     }
     // Go deeper if possible (stops at the closing tag of the deepest node).
@@ -676,9 +677,9 @@ class AboutFlagsHistogramTest : public ::testing::Test {
   // This is a helper function to check that all IDs in enum LoginCustomFlags in
   // histograms.xml are unique.
   void SetSwitchToHistogramIdMapping(const std::string& switch_name,
-                                     const uint32_t switch_histogram_id,
-                                     std::map<std::string, uint32_t>* out_map) {
-    const std::pair<std::map<std::string, uint32_t>::iterator, bool> status =
+                                     const Sample switch_histogram_id,
+                                     std::map<std::string, Sample>* out_map) {
+    const std::pair<std::map<std::string, Sample>::iterator, bool> status =
         out_map->insert(std::make_pair(switch_name, switch_histogram_id));
     if (!status.second) {
       EXPECT_TRUE(status.first->second == switch_histogram_id)
@@ -690,9 +691,9 @@ class AboutFlagsHistogramTest : public ::testing::Test {
   // This method generates a hint for the user for what string should be added
   // to the enum LoginCustomFlags to make in consistent.
   std::string GetHistogramEnumEntryText(const std::string& switch_name,
-                                        uint32_t value) {
+                                        Sample value) {
     return base::StringPrintf(
-        "<int value=\"%u\" label=\"%s\"/>", value, switch_name.c_str());
+        "<int value=\"%d\" label=\"%s\"/>", value, switch_name.c_str());
   }
 };
 
@@ -708,7 +709,7 @@ TEST_F(AboutFlagsHistogramTest, CheckHistograms) {
   XmlReader histograms_xml;
   ASSERT_TRUE(histograms_xml.LoadFile(
       FilePathStringTypeToString(histograms_xml_file_path.value())));
-  std::map<uint32_t, std::string> login_custom_flags =
+  std::map<Sample, std::string> login_custom_flags =
       ReadEnumFromHistogramsXml("LoginCustomFlags", &histograms_xml);
   ASSERT_TRUE(login_custom_flags.size())
       << "Error reading enum 'LoginCustomFlags' from histograms.xml.";
@@ -722,7 +723,7 @@ TEST_F(AboutFlagsHistogramTest, CheckHistograms) {
          "Consider adding entry:\n"
       << "  " << GetHistogramEnumEntryText("BAD_FLAG_FORMAT", 0);
   // Check that all LoginCustomFlags entries have correct values.
-  for (std::map<uint32_t, std::string>::const_iterator it =
+  for (std::map<Sample, std::string>::const_iterator it =
            login_custom_flags.begin();
        it != login_custom_flags.end();
        ++it) {
@@ -732,7 +733,7 @@ TEST_F(AboutFlagsHistogramTest, CheckHistograms) {
           "", it->first, &histograms_xml_switches_ids);
       continue;
     }
-    const uint32_t uma_id = GetSwitchUMAId(it->second);
+    const Sample uma_id = GetSwitchUMAId(it->second);
     EXPECT_EQ(uma_id, it->first)
         << "histograms.xml enum LoginCustomFlags "
            "entry '" << it->second << "' has incorrect value=" << it->first
@@ -750,7 +751,7 @@ TEST_F(AboutFlagsHistogramTest, CheckHistograms) {
     // Skip empty placeholders.
     if (it->empty())
       continue;
-    const uint32_t uma_id = GetSwitchUMAId(*it);
+    const Sample uma_id = GetSwitchUMAId(*it);
     EXPECT_NE(kBadSwitchFormatHistogramId, uma_id)
         << "Command-line switch '" << *it
         << "' from about_flags.cc has UMA ID equal to reserved value "
