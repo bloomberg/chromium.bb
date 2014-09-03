@@ -1493,8 +1493,8 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_VP9_Odd_WebM) {
 }
 
 // Verify that VP8 video with inband text track can be played back.
-TEST_F(PipelineIntegrationTest,
-       BasicPlayback_VP8_WebVTT_WebM) {
+TEST_F(PipelineIntegrationTest, BasicPlayback_VP8_WebVTT_WebM) {
+  EXPECT_CALL(*this, OnAddTextTrack(_, _));
   ASSERT_TRUE(Start(GetTestDataFilePath("bear-vp8-webvtt.webm"),
                     PIPELINE_OK));
   Play();
