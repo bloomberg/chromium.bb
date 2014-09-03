@@ -372,6 +372,7 @@ private:
 
     void updateWidgetPositionsIfNeeded();
 
+    bool wasViewportResized();
     void sendResizeEventIfNeeded();
 
     void updateScrollableAreaSet();
