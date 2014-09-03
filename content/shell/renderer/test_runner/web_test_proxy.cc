@@ -13,7 +13,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/common/content_switches.h"
-#include "content/shell/renderer/test_runner/TestPlugin.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/WebTestInterfaces.h"
 #include "content/shell/renderer/test_runner/accessibility_controller.h"
@@ -25,6 +24,7 @@
 #include "content/shell/renderer/test_runner/mock_web_user_media_client.h"
 #include "content/shell/renderer/test_runner/spell_check_client.h"
 #include "content/shell/renderer/test_runner/test_interfaces.h"
+#include "content/shell/renderer/test_runner/test_plugin.h"
 #include "content/shell/renderer/test_runner/test_runner.h"
 #include "content/shell/renderer/test_runner/web_test_runner.h"
 // FIXME: Including platform_canvas.h here is a layering violation.
@@ -789,7 +789,7 @@ bool WebTestProxyBase::CreateView(blink::WebLocalFrame* frame,
 blink::WebPlugin* WebTestProxyBase::CreatePlugin(
     blink::WebLocalFrame* frame,
     const blink::WebPluginParams& params) {
-  if (TestPlugin::isSupportedMimeType(params.mimeType))
+  if (TestPlugin::IsSupportedMimeType(params.mimeType))
     return TestPlugin::create(frame, params, delegate_);
   return 0;
 }
