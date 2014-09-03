@@ -837,14 +837,6 @@ content::ColorChooser* WebViewGuest::OpenColorChooser(
       web_contents, color, suggestions);
 }
 
-void WebViewGuest::RunFileChooser(WebContents* web_contents,
-                                  const content::FileChooserParams& params) {
-  if (!attached() || !embedder_web_contents()->GetDelegate())
-    return;
-
-  embedder_web_contents()->GetDelegate()->RunFileChooser(web_contents, params);
-}
-
 void WebViewGuest::NavigateGuest(const std::string& src) {
   GURL url = ResolveURL(src);
 

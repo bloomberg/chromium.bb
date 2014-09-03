@@ -278,6 +278,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   virtual void WebContentsDestroyed() OVERRIDE FINAL;
 
   // WebContentsDelegate implementation.
+  virtual void RunFileChooser(
+      content::WebContents* web_contents,
+      const content::FileChooserParams& params) OVERRIDE;
   virtual bool ShouldFocusPageAfterCrash() OVERRIDE FINAL;
   virtual bool PreHandleGestureEvent(
       content::WebContents* source,
