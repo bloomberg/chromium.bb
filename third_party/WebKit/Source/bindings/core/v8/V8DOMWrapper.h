@@ -60,7 +60,7 @@ public:
     static v8::Handle<v8::Object> associateObjectWithWrapperNonTemplate(Node*, const WrapperTypeInfo*, v8::Handle<v8::Object>, v8::Isolate*);
     static void setNativeInfo(v8::Handle<v8::Object>, const WrapperTypeInfo*, ScriptWrappableBase* internalPointer);
     static void setNativeInfoForHiddenWrapper(v8::Handle<v8::Object>, const WrapperTypeInfo*, ScriptWrappableBase* internalPointer);
-    static void setNativeInfoWithPersistentHandle(v8::Handle<v8::Object>, const WrapperTypeInfo*, ScriptWrappableBase* internalPointer, PersistentNode*);
+    static void setNativeInfoWithPersistentHandle(v8::Handle<v8::Object>, const WrapperTypeInfo*, ScriptWrappableBase* internalPointer, WrapperPersistentNode*);
     static void clearNativeInfo(v8::Handle<v8::Object>, const WrapperTypeInfo*);
 
     static bool isDOMWrapper(v8::Handle<v8::Value>);
@@ -104,7 +104,7 @@ inline void V8DOMWrapper::setNativeInfoForHiddenWrapper(v8::Handle<v8::Object> w
     wrapper->SetAlignedPointerInInternalField(v8DOMWrapperTypeIndex, const_cast<WrapperTypeInfo*>(wrapperTypeInfo));
 }
 
-inline void V8DOMWrapper::setNativeInfoWithPersistentHandle(v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* wrapperTypeInfo, ScriptWrappableBase* internalPointer, PersistentNode* handle)
+inline void V8DOMWrapper::setNativeInfoWithPersistentHandle(v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* wrapperTypeInfo, ScriptWrappableBase* internalPointer, WrapperPersistentNode* handle)
 {
     ASSERT(wrapper->InternalFieldCount() >= 3);
     ASSERT(internalPointer);
@@ -142,7 +142,7 @@ inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapper(PassRefPt
 template<typename V8T, typename T>
 inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapper(T* object, const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
 {
-    setNativeInfoWithPersistentHandle(wrapper, wrapperTypeInfo, V8T::toInternalPointer(object), new Persistent<T>(object));
+    setNativeInfoWithPersistentHandle(wrapper, wrapperTypeInfo, V8T::toInternalPointer(object), new WrapperPersistent<T>(object));
     ASSERT(isDOMWrapper(wrapper));
     DOMDataStore::setWrapper<V8T>(object, wrapper, isolate, wrapperTypeInfo);
     return wrapper;

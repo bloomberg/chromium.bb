@@ -52,7 +52,7 @@ static const int v8PrototypeInternalFieldcount = 1;
 typedef v8::Handle<v8::FunctionTemplate> (*DomTemplateFunction)(v8::Isolate*);
 typedef void (*RefObjectFunction)(ScriptWrappableBase* internalPointer);
 typedef void (*DerefObjectFunction)(ScriptWrappableBase* internalPointer);
-typedef PersistentNode* (*CreatePersistentHandleFunction)(ScriptWrappableBase* internalPointer);
+typedef WrapperPersistentNode* (*CreatePersistentHandleFunction)(ScriptWrappableBase* internalPointer);
 typedef ActiveDOMObject* (*ToActiveDOMObjectFunction)(v8::Handle<v8::Object>);
 typedef EventTarget* (*ToEventTargetFunction)(v8::Handle<v8::Object>);
 typedef void (*ResolveWrapperReachabilityFunction)(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>&, v8::Isolate*);
@@ -128,7 +128,7 @@ struct WrapperTypeInfo {
         refObjectFunction(internalPointer);
     }
 
-    PersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer) const
+    WrapperPersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer) const
     {
         ASSERT(createPersistentHandleFunction);
         return createPersistentHandleFunction(internalPointer);
@@ -220,23 +220,23 @@ inline const WrapperTypeInfo* toWrapperTypeInfo(v8::Handle<v8::Object> wrapper)
     return getInternalField<WrapperTypeInfo, v8DOMWrapperTypeIndex>(wrapper);
 }
 
-inline const PersistentNode* toPersistentHandle(const v8::Handle<v8::Object>& wrapper)
+inline const WrapperPersistentNode* toPersistentHandle(const v8::Handle<v8::Object>& wrapper)
 {
     // Persistent handle is stored in the last internal field.
-    return static_cast<PersistentNode*>(wrapper->GetAlignedPointerFromInternalField(wrapper->InternalFieldCount() - 1));
+    return static_cast<WrapperPersistentNode*>(wrapper->GetAlignedPointerFromInternalField(wrapper->InternalFieldCount() - 1));
 }
 
 inline void releaseObject(v8::Handle<v8::Object> wrapper)
 {
     const WrapperTypeInfo* typeInfo = toWrapperTypeInfo(wrapper);
     if (typeInfo->gcType == WrapperTypeInfo::GarbageCollectedObject) {
-        const PersistentNode* handle = toPersistentHandle(wrapper);
+        const WrapperPersistentNode* handle = toPersistentHandle(wrapper);
         // This will be null iff a wrapper for a hidden wrapper object,
         // see V8DOMWrapper::setNativeInfoForHiddenWrapper().
         delete handle;
     } else if (typeInfo->gcType == WrapperTypeInfo::WillBeGarbageCollectedObject) {
 #if ENABLE(OILPAN)
-        const PersistentNode* handle = toPersistentHandle(wrapper);
+        const WrapperPersistentNode* handle = toPersistentHandle(wrapper);
         // This will be null iff a wrapper for a hidden wrapper object,
         // see V8DOMWrapper::setNativeInfoForHiddenWrapper().
         delete handle;

@@ -42,6 +42,13 @@
 
 namespace blink {
 
+#if ENABLE(OILPAN)
+InjectedScriptManager::CallbackData::~CallbackData()
+{
+    delete hostPtr;
+}
+#endif
+
 PassOwnPtrWillBeRawPtr<InjectedScriptManager> InjectedScriptManager::createForPage()
 {
     return adoptPtrWillBeNoop(new InjectedScriptManager(&InjectedScriptManager::canAccessInspectedWindow));
