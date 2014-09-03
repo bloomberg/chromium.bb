@@ -331,8 +331,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_preload(MediaPlayer::Auto)
     , m_displayMode(Unknown)
     , m_cachedTime(MediaPlayer::invalidTime())
-    , m_cachedTimeWallClockUpdateTime(0)
-    , m_minimumWallClockTimeToCacheMediaTime(0)
     , m_fragmentStartTime(MediaPlayer::invalidTime())
     , m_fragmentEndTime(MediaPlayer::invalidTime())
     , m_pendingActionFlags(0)
@@ -790,9 +788,7 @@ void HTMLMediaElement::prepareForLoad()
         // FIXME: Add support for firing this event.
 
         // 4.8 - Set the initial playback position to 0.
-        // FIXME: Make this less subtle. The position only becomes 0 because of the createMediaPlayer() call
-        // above.
-        refreshCachedTime();
+        // FIXME: Make this less subtle. The position only becomes 0 because the ready state is HAVE_NOTHING.
         invalidateCachedTime();
 
         // 4.9 - Set the timeline offset to Not-a-Number (NaN).
@@ -2047,33 +2043,21 @@ bool HTMLMediaElement::seeking() const
 
 void HTMLMediaElement::refreshCachedTime() const
 {
-    if (!webMediaPlayer())
+    if (!webMediaPlayer() || m_readyState < HAVE_METADATA)
         return;
 
     m_cachedTime = webMediaPlayer()->currentTime();
-    m_cachedTimeWallClockUpdateTime = WTF::currentTime();
 }
 
 void HTMLMediaElement::invalidateCachedTime()
 {
     WTF_LOG(Media, "HTMLMediaElement::invalidateCachedTime");
-
-    // Don't try to cache movie time when playback first starts as the time reported by the engine
-    // sometimes fluctuates for a short amount of time, so the cached time will be off if we take it
-    // too early.
-    static const double minimumTimePlayingBeforeCacheSnapshot = 0.5;
-
-    m_minimumWallClockTimeToCacheMediaTime = WTF::currentTime() + minimumTimePlayingBeforeCacheSnapshot;
     m_cachedTime = MediaPlayer::invalidTime();
 }
 
 // playback state
 double HTMLMediaElement::currentTime() const
 {
-#if LOG_CACHED_TIME_WARNINGS
-    static const double minCachedDeltaForWarning = 0.01;
-#endif
-
     if (m_readyState == HAVE_NOTHING)
         return 0;
 
@@ -2084,6 +2068,7 @@ double HTMLMediaElement::currentTime() const
 
     if (m_cachedTime != MediaPlayer::invalidTime() && m_paused) {
 #if LOG_CACHED_TIME_WARNINGS
+        static const double minCachedDeltaForWarning = 0.01;
         double delta = m_cachedTime - webMediaPlayer()->currentTime();
         if (delta > minCachedDeltaForWarning)
             WTF_LOG(Media, "HTMLMediaElement::currentTime - WARNING, cached time is %f seconds off of media time when paused", delta);
@@ -3416,6 +3401,7 @@ void HTMLMediaElement::userCancelledLoad()
 
     // Reset m_readyState since m_player is gone.
     m_readyState = HAVE_NOTHING;
+    invalidateCachedTime();
     updateMediaController();
     updateActiveTextTrackCues(0);
 }

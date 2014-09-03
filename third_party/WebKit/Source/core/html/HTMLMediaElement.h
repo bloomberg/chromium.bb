@@ -540,9 +540,9 @@ private:
 
     RefPtrWillBeMember<HTMLMediaSource> m_mediaSource;
 
+    // Cached time value. Only valid when ready state is HAVE_METADATA or
+    // higher, otherwise the current time is assumed to be zero.
     mutable double m_cachedTime;
-    mutable double m_cachedTimeWallClockUpdateTime;
-    mutable double m_minimumWallClockTimeToCacheMediaTime;
 
     double m_fragmentStartTime;
     double m_fragmentEndTime;
