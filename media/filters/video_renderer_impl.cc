@@ -68,6 +68,7 @@ VideoRendererImpl::~VideoRendererImpl() {
 }
 
 void VideoRendererImpl::Flush(const base::Closure& callback) {
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kPlaying);
@@ -90,6 +91,7 @@ void VideoRendererImpl::Flush(const base::Closure& callback) {
 }
 
 void VideoRendererImpl::StartPlaying() {
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kFlushed);

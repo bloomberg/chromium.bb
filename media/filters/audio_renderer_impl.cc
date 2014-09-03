@@ -152,7 +152,7 @@ void AudioRendererImpl::SetMediaTime(base::TimeDelta time) {
 }
 
 base::TimeDelta AudioRendererImpl::CurrentMediaTime() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // TODO(scherkus): Finish implementing when ready to switch Pipeline to using
