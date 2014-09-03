@@ -58,10 +58,8 @@ void DriSurface::ResizeCanvas(const gfx::Size& viewport_size) {
 
   // For the display buffers use the mode size since a |viewport_size| smaller
   // than the display size will not scanout.
-  gfx::Size mode_size(controller->get_mode().hdisplay,
-                      controller->get_mode().vdisplay);
   for (size_t i = 0; i < arraysize(buffers_); ++i)
-    buffers_[i] = AllocateBuffer(dri_, mode_size);
+    buffers_[i] = AllocateBuffer(dri_, controller->GetModeSize());
 }
 
 void DriSurface::PresentCanvas(const gfx::Rect& damage) {

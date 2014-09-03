@@ -167,6 +167,7 @@ class HardwareDisplayController
   bool HasCrtc(uint32_t crtc) const;
   bool IsMirrored() const;
   bool IsDisabled() const;
+  gfx::Size GetModeSize() const;
 
   gfx::Point origin() const { return origin_; }
   void set_origin(const gfx::Point& origin) { origin_ = origin; }

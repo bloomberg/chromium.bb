@@ -100,8 +100,7 @@ bool GbmSurface::Initialize() {
   // creation doesn't fail.
   gfx::Size size(1, 1);
   if (window_delegate_->GetController()) {
-    const drmModeModeInfo& mode = window_delegate_->GetController()->get_mode();
-    size.SetSize(mode.hdisplay, mode.vdisplay);
+    size = window_delegate_->GetController()->GetModeSize();
   }
   // TODO(dnicoara) Check underlying system support for pixel format.
   native_surface_ =

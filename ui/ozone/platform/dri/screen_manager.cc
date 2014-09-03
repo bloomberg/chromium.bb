@@ -16,14 +16,6 @@
 
 namespace ui {
 
-namespace {
-
-gfx::Size GetModeSize(const drmModeModeInfo& mode) {
-  return gfx::Size(mode.hdisplay, mode.vdisplay);
-}
-
-}  // namespace
-
 ScreenManager::ScreenManager(DriWrapper* dri,
                              ScanoutBufferGenerator* buffer_generator)
     : dri_(dri), buffer_generator_(buffer_generator) {
@@ -46,7 +38,8 @@ bool ScreenManager::ConfigureDisplayController(uint32_t crtc,
                                                uint32_t connector,
                                                const gfx::Point& origin,
                                                const drmModeModeInfo& mode) {
-  gfx::Rect modeset_bounds(origin, GetModeSize(mode));
+  gfx::Rect modeset_bounds(
+      origin.x(), origin.y(), mode.hdisplay, mode.vdisplay);
   HardwareDisplayControllers::iterator it = FindDisplayController(crtc);
   HardwareDisplayController* controller = NULL;
   if (it != controllers_.end()) {
@@ -143,8 +136,7 @@ ScreenManager::FindActiveDisplayControllerByLocation(const gfx::Rect& bounds) {
   for (HardwareDisplayControllers::iterator it = controllers_.begin();
        it != controllers_.end();
        ++it) {
-    gfx::Rect controller_bounds((*it)->origin(),
-                                GetModeSize((*it)->get_mode()));
+    gfx::Rect controller_bounds((*it)->origin(), (*it)->GetModeSize());
     // We don't perform a strict check since content_shell will have windows
     // smaller than the display size.
     if (controller_bounds.Contains(bounds) && !(*it)->IsDisabled())

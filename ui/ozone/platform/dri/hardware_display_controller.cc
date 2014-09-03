@@ -258,6 +258,10 @@ bool HardwareDisplayController::IsDisabled() const {
   return is_disabled_;
 }
 
+gfx::Size HardwareDisplayController::GetModeSize() const {
+  return gfx::Size(mode_.hdisplay, mode_.vdisplay);
+}
+
 bool HardwareDisplayController::ModesetCrtc(
     const scoped_refptr<ScanoutBuffer>& buffer,
     drmModeModeInfo mode,
