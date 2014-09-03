@@ -40,7 +40,7 @@ bool WriteFile::Execute(int request_id) {
   scoped_ptr<base::DictionaryValue> values(new base::DictionaryValue);
   values->SetInteger("openRequestId", file_handle_);
   values->SetDouble("offset", offset_);
-  values->SetInteger("length", length_);
+  // Length is not passed directly since it can be accessed via data.byteLength.
 
   DCHECK(buffer_.get());
   values->Set(

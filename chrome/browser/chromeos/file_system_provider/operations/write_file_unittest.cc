@@ -29,8 +29,8 @@ const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kFileSystemId[] = "testing-file-system";
 const int kRequestId = 2;
 const int kFileHandle = 3;
+const char kWriteData[] = "Welcome to my world!";
 const int kOffset = 10;
-const int kLength = 5;
 
 }  // namespace
 
@@ -46,11 +46,11 @@ class FileSystemProviderOperationsWriteFileTest : public testing::Test {
                                "" /* display_name */,
                                true /* writable */,
                                base::FilePath() /* mount_path */);
-    io_buffer_ = make_scoped_refptr(new net::IOBuffer(kOffset + kLength));
+    io_buffer_ = make_scoped_refptr(new net::StringIOBuffer(kWriteData));
   }
 
   ProvidedFileSystemInfo file_system_info_;
-  scoped_refptr<net::IOBuffer> io_buffer_;
+  scoped_refptr<net::StringIOBuffer> io_buffer_;
 };
 
 TEST_F(FileSystemProviderOperationsWriteFileTest, Execute) {
@@ -62,7 +62,7 @@ TEST_F(FileSystemProviderOperationsWriteFileTest, Execute) {
                        kFileHandle,
                        io_buffer_.get(),
                        kOffset,
-                       kLength,
+                       io_buffer_->size(),
                        base::Bind(&util::LogStatusCallback, &callback_log));
   write_file.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -97,9 +97,13 @@ TEST_F(FileSystemProviderOperationsWriteFileTest, Execute) {
   EXPECT_TRUE(options->GetDouble("offset", &event_offset));
   EXPECT_EQ(kOffset, static_cast<double>(event_offset));
 
-  int event_length = -1;
-  EXPECT_TRUE(options->GetInteger("length", &event_length));
-  EXPECT_EQ(kLength, event_length);
+  base::BinaryValue* event_data = NULL;
+  ASSERT_TRUE(options->GetBinary("data", &event_data));
+  EXPECT_EQ(static_cast<size_t>(io_buffer_->size()), event_data->GetSize());
+  char* const event_data_buffer = event_data->GetBuffer();
+  ASSERT_TRUE(event_data_buffer);
+  EXPECT_EQ(std::string(kWriteData),
+            std::string(event_data_buffer, event_data->GetSize()));
 }
 
 TEST_F(FileSystemProviderOperationsWriteFileTest, Execute_NoListener) {
@@ -111,7 +115,7 @@ TEST_F(FileSystemProviderOperationsWriteFileTest, Execute_NoListener) {
                        kFileHandle,
                        io_buffer_.get(),
                        kOffset,
-                       kLength,
+                       io_buffer_->size(),
                        base::Bind(&util::LogStatusCallback, &callback_log));
   write_file.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -136,7 +140,7 @@ TEST_F(FileSystemProviderOperationsWriteFileTest, Execute_ReadOnly) {
                        kFileHandle,
                        io_buffer_.get(),
                        kOffset,
-                       kLength,
+                       io_buffer_->size(),
                        base::Bind(&util::LogStatusCallback, &callback_log));
   write_file.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -154,7 +158,7 @@ TEST_F(FileSystemProviderOperationsWriteFileTest, OnSuccess) {
                        kFileHandle,
                        io_buffer_.get(),
                        kOffset,
-                       kLength,
+                       io_buffer_->size(),
                        base::Bind(&util::LogStatusCallback, &callback_log));
   write_file.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -178,7 +182,7 @@ TEST_F(FileSystemProviderOperationsWriteFileTest, OnError) {
                        kFileHandle,
                        io_buffer_.get(),
                        kOffset,
-                       kLength,
+                       io_buffer_->size(),
                        base::Bind(&util::LogStatusCallback, &callback_log));
   write_file.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,

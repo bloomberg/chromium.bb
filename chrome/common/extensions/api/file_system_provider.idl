@@ -176,7 +176,6 @@ namespace fileSystemProvider {
     long requestId;
     long openRequestId;
     double offset;
-    double length;
     ArrayBuffer data;
   };
 
