@@ -9,3 +9,4 @@ PipelineIntegrationTest.MediaSource_Opus_Seeking_WebM
 # exclude the test now
 AudioInputTest.Record
 MacAudioInputTest.AUAudioInputStreamVerifyStereoRecording
+AUHALStreamTest.CreateOpenStartStopClose
