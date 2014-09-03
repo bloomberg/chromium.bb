@@ -73,18 +73,20 @@ ScopedPPVarArray::~ScopedPPVarArray() {
 
 }
 
-PP_Var* ScopedPPVarArray::Release(const PassPPBMemoryAllocatedArray&) {
+PP_Var* ScopedPPVarArray::Release(const PassPPBMemoryAllocatedArray&,
+                                  size_t* size) {
   PP_Var* result = array_;
+  *size = size_;
   array_ = NULL;
   size_ = 0;
   return result;
 }
 
-void ScopedPPVarArray::Set(size_t index, const ScopedPPVar& var) {
+void ScopedPPVarArray::Set(size_t index, PP_Var var) {
   DCHECK(index < size_);
-  CallAddRef(var.get());
+  CallAddRef(var);
   CallRelease(array_[index]);
-  array_[index] = var.get();
+  array_[index] = var;
 }
 
 }  // namespace ppapi

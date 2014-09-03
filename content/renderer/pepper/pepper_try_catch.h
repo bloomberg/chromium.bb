@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
-#include "content/renderer/pepper/v8_var_converter.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/scoped_pp_var.h"
 #include "v8/include/v8.h"
@@ -20,7 +19,7 @@ class PepperPluginInstanceImpl;
 class CONTENT_EXPORT PepperTryCatch {
  public:
   PepperTryCatch(PepperPluginInstanceImpl* instance,
-                 V8VarConverter::AllowObjectVars convert_objects);
+                 bool convert_objects);
   virtual ~PepperTryCatch();
 
   virtual void SetException(const char* message) = 0;
@@ -35,17 +34,16 @@ class CONTENT_EXPORT PepperTryCatch {
  protected:
   PepperPluginInstanceImpl* instance_;
 
-  // Whether To/FromV8 should convert object vars. If set to
-  // kDisallowObjectVars, an exception should be set if they are encountered
-  // during conversion.
-  V8VarConverter::AllowObjectVars convert_objects_;
+  // Whether To/FromV8 should convert object vars. If set to false, an exception
+  // should be set if they are encountered during conversion.
+  bool convert_objects_;
 };
 
 // Catches var exceptions and emits a v8 exception.
 class PepperTryCatchV8 : public PepperTryCatch {
  public:
   PepperTryCatchV8(PepperPluginInstanceImpl* instance,
-                   V8VarConverter::AllowObjectVars convert_objects,
+                   bool convert_objects,
                    v8::Isolate* isolate);
   virtual ~PepperTryCatchV8();
 
@@ -70,6 +68,7 @@ class PepperTryCatchVar : public PepperTryCatch {
   // is responsible for managing the lifetime of the exception. It is valid to
   //  pass NULL for |exception| in which case no exception will be set.
   PepperTryCatchVar(PepperPluginInstanceImpl* instance,
+                    bool convert_objects,
                     PP_Var* exception);
   virtual ~PepperTryCatchVar();
 
