@@ -1,7 +1,21 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection">
   <head>
+    <meta charset=utf-8>
+    <title></title>
+    <link type="text/css" rel="stylesheet" href="style.css">
+    <script src="chrome://resources/js/util.js"></script>
+    <script src="flow.js"></script>
+    <script src="main.js"></script>
   </head>
   <body>
+    <div id="steps">
+      <!-- TODO(kcarattini): Localize the strings in the following files. -->
+      <include src="steps/hotword_only_step.html">
+      <include src="steps/audio_history_step.html">
+      <include src="steps/hotword_audio_history_step.html">
+      <include src="steps/speech_training_step.html">
+      <include src="steps/finished_step.html">
+    </div>
   </body>
 </html>

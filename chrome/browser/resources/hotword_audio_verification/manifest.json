@@ -8,6 +8,11 @@
     "background": {
       "scripts": ["event_page.js"],
       "persistent": false
-    }
-  }
+    },
+    "content_security_policy": "default-src 'self'; script-src 'self' chrome://resources"
+  },
+  "permissions": [
+    "chrome://resources/"
+  ],
+  "display_in_launcher": false
 }

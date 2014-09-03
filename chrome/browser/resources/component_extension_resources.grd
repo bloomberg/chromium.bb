@@ -62,6 +62,22 @@
       <if expr="enable_extensions">
         <!-- Hotword Audio Verification extension -->
         <include name="IDR_HOTWORD_AUDIO_VERIFICATION_BACKGROUND_JS" file="hotword_audio_verification/event_page.js" type="BINDATA" />
+        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_MAIN_JS" file="hotword_audio_verification/main.js" type="BINDATA" />
+        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_FLOW_JS" file="hotword_audio_verification/flow.js" type="BINDATA" />
+        <include name="IDR_HOTWORD_ONLY_STEP_HTML" file="hotword_audio_verification/steps/hotword_only_step.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_AUDIO_HISTORY_STEP_HTML" file="hotword_audio_verification/steps/audio_history_step.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_HOTWORD_AUDIO_HISTORY_STEP_HTML" file="hotword_audio_verification/steps/hotword_audio_history_step.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_SPEECH_TRAINING_STEP_HTML" file="hotword_audio_verification/steps/speech_training_step.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_FINISHED_STEP_HTML" file="hotword_audio_verification/steps/finished_step.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_STYLE_CSS" file="hotword_audio_verification/style.css" type="BINDATA" />
+        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_CLOSE" file="hotword_audio_verification/images/bt-close-1x.png" type="BINDATA" />
+        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_HEADER" file="hotword_audio_verification/images/header-optin-1x.png" type="BINDATA" />
+        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_CHECK_BLUE" file="hotword_audio_verification/images/ic-check-blue-1x.png" type="BINDATA" />
+        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_CHECK_GRAY" file="hotword_audio_verification/images/ic-check-gray-1x.png" type="BINDATA" />
+        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_ERROR" file="hotword_audio_verification/images/ic-error-1x.png" type="BINDATA" />
+        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_MIC" file="hotword_audio_verification/images/mic-1x.png" type="BINDATA" />
+        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_LOADER" file="hotword_audio_verification/images/placeholder-loader-1x.png" type="BINDATA" />
+        <include name="IDR_HOTWORD_AUDIO_VERIFICATION_IMAGE_LOADER_ERROR" file="hotword_audio_verification/images/placeholder-loader-error-1x.png" type="BINDATA" />
 
         <!-- Hotword Helper extension -->
         <include name="IDR_HOTWORD_HELPER_AUDIO_CLIENT_JS" file="hotword_helper/audio_client.js" type="BINDATA" />

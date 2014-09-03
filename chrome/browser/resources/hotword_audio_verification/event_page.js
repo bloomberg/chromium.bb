@@ -7,8 +7,8 @@ chrome.app.runtime.onLaunched.addListener(function() {
     'frame': 'none',
     'resizable': false,
     'bounds': {
-      'width': 710,
-      'height': 535
+      'width': 800,
+      'height': 600
     }
   });
 });

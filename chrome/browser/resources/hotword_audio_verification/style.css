@@ -1,0 +1,229 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+* {
+  box-sizing: border-box;
+  color: rgba(0, 0, 0, .87);
+  font-family: Helvetica, sans-serif;
+  font-size: 14px;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  color: rgb(67, 133, 244);
+  text-decoration: none;
+}
+
+body {
+  background: #ddd;
+}
+
+h1 {
+  font-size: 34px;
+  font-weight: normal;
+  line-height: 40px;
+}
+
+h2 {
+  font-size: 16px;
+  font-weight: normal;
+}
+
+h4 {
+  font-size: 14px;
+}
+
+div.container {
+  background: #fff;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+  height: 600px;
+  width: 800px;
+}
+
+div.header {
+  background: url(../images/header-optin-1x.png) no-repeat;
+  height: 240px;
+  vertical-align: bottom;
+}
+
+div.header-text {
+  height: 240px;
+  padding: 60px;
+}
+
+div.header-text h1 {
+  color: #fff;
+  margin-top: 44px;
+}
+
+div.header-text h2 {
+  color: #fff;
+  margin-top: 20px;
+}
+
+div.content {
+  height: 240px;
+  margin: 60px 60px auto 60px;
+}
+
+.close {
+  background: url(../images/bt-close-1x.png);
+  float: right;
+  height: 60px;
+  width: 60px;
+}
+
+
+button.grayed-out {
+  color: rgba(0, 0, 0, .28);
+}
+
+.col-3 {
+  color: rgba(0, 0, 0, .54);
+  line-height: 24px;
+  width: 504px;
+}
+
+.col-3 h4 {
+  line-height: 100%;
+  margin-bottom: 27px;
+}
+
+.col-2 {
+  color: rgba(0, 0, 0, .54);
+  float: left;
+  line-height: 24px;
+  width: 332px;
+}
+
+.col-2 h4 {
+  line-height: 100%;
+  margin-top: 27px;
+}
+
+.col-spacing {
+  float: left;
+  height: 160px;
+  width: 16px;
+}
+
+a.link-button {
+  display: inline-block;
+  font-size: 14px;
+  margin-top: 22px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+div.buttonbar {
+  background: rgba(0, 0, 0, .06);
+  height: 60px;
+  padding: 12px 60px;
+}
+
+.buttonbar button {
+  background: none;
+  border: none;
+  border-radius: 2px;
+  float: right;
+  height: 36px;
+  margin-left: 8px;
+  min-width: 88px;
+  padding: 8px;
+  text-transform: uppercase;
+}
+
+button.primary {
+  color: rgb(67, 133, 244);
+}
+
+.v-spacing-for-no-subheading {
+  height: 43px;
+}
+
+.train {
+  clear: both;
+  margin-bottom: 24px;
+  white-space: nowrap;
+}
+
+.train .icon {
+  display: inline-block;
+  height: 24px;
+  margin-right: 16px;
+  vertical-align: top;
+  width: 24px;
+}
+
+.train .text {
+  display: inline-block;
+  line-height: 24px;
+  vertical-align: top;
+  width: 292px;
+}
+
+.train.listening .text {
+  color: rgba(0, 0, 0, .87);
+}
+
+.train.not-started .text {
+  color: rgba(0, 0, 0, .54);
+}
+
+.train.recorded .text {
+  color: rgba(66, 133, 244, 1);
+}
+
+.train.error .text {
+  color: rgb(213, 0, 0);
+}
+
+.train.listening .icon {
+  background: url(../images/placeholder-loader-1x.png) no-repeat;
+}
+
+.train.not-started .icon {
+  background: url(../images/ic-check-gray-1x.png) no-repeat;
+}
+
+.train.recorded .icon {
+  background: url(../images/ic-check-blue-1x.png) no-repeat;
+}
+
+.train.error .icon {
+  background: url(../images/placeholder-loader-error-1x.png) no-repeat;
+}
+
+.mic {
+  background: url(../images/mic-1x.png) no-repeat;
+  height: 80px;
+  left: 666px;
+  position: absolute;
+  top: 200px;
+  width: 80px;
+}
+
+.check {
+  clear: both;
+  height: 24px;
+  margin-bottom: 24px;
+}
+
+.check .icon {
+  background: url(../images/ic-check-blue-1x.png) no-repeat;
+  display: inline-block;
+  height: 24px;
+  margin-right: 16px;
+  vertical-align: top;
+  width: 24px;
+}
+
+.check .text {
+  color: rgba(0, 0, 0, .54);
+  display: inline-block;
+  height: 24px;
+  line-height: 24px;
+  vertical-align: top;
+}
