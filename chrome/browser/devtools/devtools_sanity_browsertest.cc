@@ -573,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 
 // Times out on Win and Linux
 // @see http://crbug.com/410327
-#if defined(OS_WIN) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #define MAYBE_TestUndockedDevToolsUnresponsive DISABLED_TestUndockedDevToolsUnresponsive
 #else
 #define MAYBE_TestUndockedDevToolsUnresponsive TestUndockedDevToolsUnresponsive
