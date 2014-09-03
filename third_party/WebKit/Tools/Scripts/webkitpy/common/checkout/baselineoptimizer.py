@@ -333,6 +333,8 @@ class BaselineOptimizer(object):
         #
         # So, we can optimize the virtual path, then the virtual root and then the regular path.
 
+        self._files_to_delete = []
+        self._files_to_add = []
         _log.debug("Optimizing regular fallback path.")
         result = self._optimize_subtree(baseline_name)
         non_virtual_baseline_name = self._port_factory.get().lookup_virtual_test_base(baseline_name)

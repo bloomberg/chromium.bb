@@ -242,12 +242,16 @@ class OptimizeBaselines(AbstractRebaseliningCommand):
             ] + self.platform_options)
 
     def _optimize_baseline(self, optimizer, test_name):
+        files_to_delete = []
+        files_to_add = []
         for suffix in self._baseline_suffix_list:
             baseline_name = _baseline_name(self._tool.filesystem, test_name, suffix)
-            succeeded, files_to_delete, files_to_add = optimizer.optimize(baseline_name)
+            succeeded, more_files_to_delete, more_files_to_add = optimizer.optimize(baseline_name)
             if not succeeded:
                 print "Heuristics failed to optimize %s" % baseline_name
-            return files_to_delete, files_to_add
+            files_to_delete.extend(more_files_to_delete)
+            files_to_add.extend(more_files_to_add)
+        return files_to_delete, files_to_add
 
     def execute(self, options, args, tool):
         self._baseline_suffix_list = options.suffixes.split(',')

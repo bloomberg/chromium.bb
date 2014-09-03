@@ -769,12 +769,12 @@ class TestOptimizeBaselines(_BaseTestCase):
     def setUp(self):
         super(TestOptimizeBaselines, self).setUp()
 
-    def test_modify_scm(self):
         # FIXME: This is a hack to get the unittest and the BaselineOptimize to both use /mock-checkout
         # instead of one using /mock-checkout and one using /test-checkout.
         default_port = self.tool.port_factory.get()
         self.tool.port_factory.get = lambda port_name=None: default_port
 
+    def test_modify_scm(self):
         test_port = self.tool.port_factory.get('test')
         self._write_test_file(test_port, 'another/test.html', "Dummy test contents")
         self._write_test_file(test_port, 'platform/mac-snowleopard/another/test-expected.txt', "result A")
@@ -797,11 +797,6 @@ class TestOptimizeBaselines(_BaseTestCase):
         self.assertTrue(self.tool.filesystem.exists(self.tool.filesystem.join(test_port.layout_tests_dir(), 'another/test-expected.txt')))
 
     def test_no_modify_scm(self):
-        # FIXME: This is a hack to get the unittest and the BaselineOptimize to both use /mock-checkout
-        # instead of one using /mock-checkout and one using /test-checkout.
-        default_port = self.tool.port_factory.get()
-        self.tool.port_factory.get = lambda port_name=None: default_port
-
         test_port = self.tool.port_factory.get('test')
         self._write_test_file(test_port, 'another/test.html', "Dummy test contents")
         self._write_test_file(test_port, 'platform/mac-snowleopard/another/test-expected.txt', "result A")
@@ -822,6 +817,34 @@ class TestOptimizeBaselines(_BaseTestCase):
 
         self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(test_port.layout_tests_dir(), 'platform/mac/another/test-expected.txt')))
         self.assertTrue(self.tool.filesystem.exists(self.tool.filesystem.join(test_port.layout_tests_dir(), 'another/test-expected.txt')))
+
+    def test_optimize_all_suffixes_by_default(self):
+        test_port = self.tool.port_factory.get('test')
+        self._write_test_file(test_port, 'another/test.html', "Dummy test contents")
+        self._write_test_file(test_port, 'platform/mac-snowleopard/another/test-expected.txt', "result A")
+        self._write_test_file(test_port, 'platform/mac-snowleopard/another/test-expected.png', "result A png")
+        self._write_test_file(test_port, 'another/test-expected.txt', "result A")
+        self._write_test_file(test_port, 'another/test-expected.png', "result A png")
+
+        old_exact_matches = builders._exact_matches
+        try:
+            builders._exact_matches = {
+                "MOCK Leopard Debug": {"port_name": "test-mac-snowleopard", "specifiers": set(["mock-specifier"])},
+            }
+            oc = OutputCapture()
+            oc.capture_output()
+            self.command.execute(MockOptions(suffixes='txt,wav,png', no_modify_scm=True, platform='test-mac-snowleopard'),
+                                 ['another/test.html'],
+                                 self.tool)
+        finally:
+            out, err, logs = oc.restore_output()
+            builders._exact_matches = old_exact_matches
+
+        self.assertEquals(out, '{"add": [], "remove-lines": [], "delete": ["/mock-checkout/third_party/WebKit/LayoutTests/platform/mac-snowleopard/another/test-expected.txt", "/mock-checkout/third_party/WebKit/LayoutTests/platform/mac-snowleopard/another/test-expected.png"]}\n')
+        self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(test_port.layout_tests_dir(), 'platform/mac/another/test-expected.txt')))
+        self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(test_port.layout_tests_dir(), 'platform/mac/another/test-expected.png')))
+        self.assertTrue(self.tool.filesystem.exists(self.tool.filesystem.join(test_port.layout_tests_dir(), 'another/test-expected.txt')))
+        self.assertTrue(self.tool.filesystem.exists(self.tool.filesystem.join(test_port.layout_tests_dir(), 'another/test-expected.png')))
 
 
 class TestAnalyzeBaselines(_BaseTestCase):
