@@ -515,17 +515,17 @@ PortForwardingStatusSerializer::PortForwardingStatusSerializer(
     const Callback& callback, Profile* profile)
       : callback_(callback),
         profile_(profile) {
-  PortForwardingController* port_forwarding_controller =
-      PortForwardingController::Factory::GetForProfile(profile_);
-  if (port_forwarding_controller)
-    port_forwarding_controller->AddListener(this);
+  DevToolsAndroidBridge* android_bridge =
+      DevToolsAndroidBridge::Factory::GetForProfile(profile_);
+  if (android_bridge)
+    android_bridge->AddPortForwardingListener(this);
 }
 
 PortForwardingStatusSerializer::~PortForwardingStatusSerializer() {
-  PortForwardingController* port_forwarding_controller =
-      PortForwardingController::Factory::GetForProfile(profile_);
-  if (port_forwarding_controller)
-    port_forwarding_controller->RemoveListener(this);
+  DevToolsAndroidBridge* android_bridge =
+      DevToolsAndroidBridge::Factory::GetForProfile(profile_);
+  if (android_bridge)
+    android_bridge->RemovePortForwardingListener(this);
 }
 
 void PortForwardingStatusSerializer::PortStatusChanged(

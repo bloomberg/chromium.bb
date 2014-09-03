@@ -7,7 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/devtools/browser_list_tabcontents_provider.h"
-#include "chrome/browser/devtools/device/port_forwarding_controller.h"
+#include "chrome/browser/devtools/device/devtools_android_bridge.h"
 #include "chrome/browser/devtools/device/self_device_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -35,18 +35,18 @@ class PortForwardingTest: public InProcessBrowserTest {
   }
 
  protected:
-  class Listener : public PortForwardingController::Listener {
+  class Listener : public DevToolsAndroidBridge::PortForwardingListener {
    public:
     explicit Listener(Profile* profile)
         : profile_(profile),
           skip_empty_devices_(true) {
-      PortForwardingController::Factory::GetForProfile(profile_)->
-          AddListener(this);
+      DevToolsAndroidBridge::Factory::GetForProfile(profile_)->
+          AddPortForwardingListener(this);
     }
 
     virtual ~Listener() {
-      PortForwardingController::Factory::GetForProfile(profile_)->
-          RemoveListener(this);
+      DevToolsAndroidBridge::Factory::GetForProfile(profile_)->
+          RemovePortForwardingListener(this);
     }
 
     virtual void PortStatusChanged(const DevicesStatus& status) OVERRIDE {

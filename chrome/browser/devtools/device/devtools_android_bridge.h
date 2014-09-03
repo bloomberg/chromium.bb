@@ -33,6 +33,7 @@ class BrowserContext;
 }
 
 class DevToolsTargetImpl;
+class PortForwardingController;
 class Profile;
 
 class DevToolsAndroidBridge
@@ -208,6 +209,23 @@ class DevToolsAndroidBridge
   void AddDeviceCountListener(DeviceCountListener* listener);
   void RemoveDeviceCountListener(DeviceCountListener* listener);
 
+  typedef int PortStatus;
+  typedef std::map<int, PortStatus> PortStatusMap;
+  typedef std::map<std::string, PortStatusMap> DevicesStatus;
+
+  class PortForwardingListener {
+   public:
+    typedef DevToolsAndroidBridge::PortStatusMap PortStatusMap;
+    typedef DevToolsAndroidBridge::DevicesStatus DevicesStatus;
+
+    virtual void PortStatusChanged(const DevicesStatus&) = 0;
+   protected:
+    virtual ~PortForwardingListener() {}
+  };
+
+  void AddPortForwardingListener(PortForwardingListener* listener);
+  void RemovePortForwardingListener(PortForwardingListener* listener);
+
   void set_device_providers_for_test(
       const AndroidDeviceManager::DeviceProviders& device_providers) {
     device_manager_->SetDeviceProviders(device_providers);
@@ -229,6 +247,7 @@ class DevToolsAndroidBridge
 
   void StartDeviceListPolling();
   void StopDeviceListPolling();
+  bool NeedsDeviceListPolling();
   void RequestDeviceList(
       const base::Callback<void(const RemoteDevices&)>& callback);
   void ReceivedDeviceList(const RemoteDevices& devices);
@@ -253,6 +272,10 @@ class DevToolsAndroidBridge
   DeviceCountListeners device_count_listeners_;
   base::CancelableCallback<void(int)> device_count_callback_;
   base::Callback<void(const base::Closure&)> task_scheduler_;
+
+  typedef std::vector<PortForwardingListener*> PortForwardingListeners;
+  PortForwardingListeners port_forwarding_listeners_;
+  scoped_ptr<PortForwardingController> port_forwarding_controller_;
 
   PrefChangeRegistrar pref_change_registrar_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsAndroidBridge);

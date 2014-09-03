@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/devtools/device/port_forwarding_controller.h"
+#include "chrome/browser/devtools/device/devtools_android_bridge.h"
 
 namespace base {
 class ListValue;
@@ -64,7 +64,7 @@ class DevToolsTargetsUIHandler {
 };
 
 class PortForwardingStatusSerializer
-    : private PortForwardingController::Listener {
+    : private DevToolsAndroidBridge::PortForwardingListener {
  public:
   typedef base::Callback<void(const base::Value&)> Callback;
 

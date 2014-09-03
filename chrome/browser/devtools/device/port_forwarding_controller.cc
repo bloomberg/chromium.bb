@@ -531,8 +531,7 @@ void PortForwardingController::Connection::OnFrameRead(
 
 PortForwardingController::PortForwardingController(Profile* profile)
     : profile_(profile),
-      pref_service_(profile->GetPrefs()),
-      listening_(false) {
+      pref_service_(profile->GetPrefs()) {
   pref_change_registrar_.Init(pref_service_);
   base::Closure callback = base::Bind(
       &PortForwardingController::OnPrefsChange, base::Unretained(this));
@@ -541,29 +540,14 @@ PortForwardingController::PortForwardingController(Profile* profile)
   OnPrefsChange();
 }
 
-
 PortForwardingController::~PortForwardingController() {}
 
-void PortForwardingController::Shutdown() {
-  // Existing connection will not be shut down. This might be confusing for
-  // some users, but the opposite is more confusing.
-  StopListening();
-}
-
-void PortForwardingController::AddListener(Listener* listener) {
-  listeners_.push_back(listener);
-}
-
-void PortForwardingController::RemoveListener(Listener* listener) {
-  Listeners::iterator it =
-      std::find(listeners_.begin(), listeners_.end(), listener);
-  DCHECK(it != listeners_.end());
-  listeners_.erase(it);
-}
-
-void PortForwardingController::DeviceListChanged(
+PortForwardingController::DevicesStatus
+PortForwardingController::DeviceListChanged(
     const DevToolsAndroidBridge::RemoteDevices& devices) {
   DevicesStatus status;
+  if (forwarding_map_.empty())
+    return status;
 
   for (DevToolsAndroidBridge::RemoteDevices::const_iterator it =
       devices.begin(); it != devices.end(); ++it) {
@@ -582,7 +566,7 @@ void PortForwardingController::DeviceListChanged(
     }
   }
 
-  NotifyListeners(status);
+  return status;
 }
 
 void PortForwardingController::OnPrefsChange() {
@@ -602,34 +586,10 @@ void PortForwardingController::OnPrefsChange() {
   }
 
   if (!forwarding_map_.empty()) {
-    StartListening();
     UpdateConnections();
   } else {
-    StopListening();
     ShutdownConnections();
-    NotifyListeners(DevicesStatus());
   }
-}
-
-void PortForwardingController::StartListening() {
-  if (listening_)
-    return;
-  listening_ = true;
-  DevToolsAndroidBridge* android_bridge =
-      DevToolsAndroidBridge::Factory::GetForProfile(profile_);
-  if (android_bridge)
-    android_bridge->AddDeviceListListener(this);
-
-}
-
-void PortForwardingController::StopListening() {
-  if (!listening_)
-    return;
-  listening_ = false;
-  DevToolsAndroidBridge* android_bridge =
-      DevToolsAndroidBridge::Factory::GetForProfile(profile_);
-  if (android_bridge)
-    android_bridge->RemoveDeviceListListener(this);
 }
 
 void PortForwardingController::UpdateConnections() {
@@ -641,37 +601,4 @@ void PortForwardingController::ShutdownConnections() {
   for (Registry::iterator it = registry_.begin(); it != registry_.end(); ++it)
     it->second->Shutdown();
   registry_.clear();
-}
-
-void PortForwardingController::NotifyListeners(
-    const DevicesStatus& status) const {
-  Listeners copy(listeners_);  // Iterate over copy.
-  for (Listeners::const_iterator it = copy.begin(); it != copy.end(); ++it)
-    (*it)->PortStatusChanged(status);
-}
-
-// static
-PortForwardingController::Factory*
-PortForwardingController::Factory::GetInstance() {
-  return Singleton<PortForwardingController::Factory>::get();
-}
-
-// static
-PortForwardingController* PortForwardingController::Factory::GetForProfile(
-    Profile* profile) {
-  return static_cast<PortForwardingController*>(GetInstance()->
-          GetServiceForBrowserContext(profile, true));
-}
-
-PortForwardingController::Factory::Factory()
-    : BrowserContextKeyedServiceFactory(
-          "PortForwardingController",
-          BrowserContextDependencyManager::GetInstance()) {}
-
-PortForwardingController::Factory::~Factory() {}
-
-KeyedService* PortForwardingController::Factory::BuildServiceInstanceFor(
-    content::BrowserContext* context) const {
-  Profile* profile = Profile::FromBrowserContext(context);
-  return new PortForwardingController(profile);
 }
