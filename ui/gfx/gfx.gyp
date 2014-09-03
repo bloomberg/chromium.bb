@@ -309,6 +309,9 @@
       ],
       'conditions': [
         ['OS=="ios"', {
+          'dependencies': [
+            '<(DEPTH)/ui/ios/ui_ios.gyp:ui_ios',
+          ],
           # iOS only uses a subset of UI.
           'sources/': [
             ['exclude', '^codec/jpeg_codec\\.cc$'],

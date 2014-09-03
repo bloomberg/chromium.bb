@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_render_params.h"
+#include "ui/ios/NSString+CrStringDrawing.h"
 
 namespace gfx {
 
@@ -112,12 +113,7 @@ void PlatformFontIOS::CalculateMetrics() {
   height_ = font.lineHeight;
   ascent_ = font.ascender;
   cap_height_ = font.capHeight;
-  if (font) {
-    NSDictionary* attributes = @{ NSFontAttributeName : font };
-    average_width_ = std::ceil([@"x" sizeWithAttributes:attributes].width);
-  } else {
-    average_width_ = 0;
-  }
+  average_width_ = [@"x" cr_sizeWithFont:font].width;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -3,4 +3,5 @@ include_rules = [
   "+skia/ext",
   "+third_party/harfbuzz-ng",
   "+third_party/skia",
+  "+ui/ios",
 ]

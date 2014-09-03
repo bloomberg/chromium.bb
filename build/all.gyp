@@ -40,6 +40,7 @@
           'dependencies': [
             '../ios/ios.gyp:*',
             '../ui/base/ui_base_tests.gyp:ui_unittests',
+            '../ui/ios/ui_ios_tests.gyp:ui_ios_unittests',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests',
           ],
         }],
