@@ -268,12 +268,8 @@ void ServiceWorkerDispatcher::OnUnregistered(
   DCHECK(callbacks);
   if (!callbacks)
     return;
-#ifdef DISABLE_SERVICEWORKER_UNREGISTER_RESOLVE_TO_BOOLEAN
-  callbacks->onSuccess(NULL);
-#else
   bool is_success = true;
   callbacks->onSuccess(&is_success);
-#endif
   pending_unregistration_callbacks_.Remove(request_id);
 }
 
