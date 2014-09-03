@@ -6,8 +6,7 @@
 #define REMOTING_CODEC_VIDEO_ENCODER_VERBATIM_H_
 
 #include "remoting/codec/video_encoder.h"
-#include "remoting/proto/video.pb.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "remoting/codec/video_encoder_helper.h"
 
 namespace remoting {
 
@@ -23,12 +22,9 @@ class VideoEncoderVerbatim : public VideoEncoder {
       const webrtc::DesktopFrame& frame) OVERRIDE;
 
  private:
-  // Allocates a buffer of the specified |size| inside |packet| and returns the
-  // pointer to it.
-  uint8* GetOutputBuffer(VideoPacket* packet, size_t size);
+  VideoEncoderHelper helper_;
 
-  // The most recent screen size. Used to detect screen size changes.
-  webrtc::DesktopSize screen_size_;
+  DISALLOW_COPY_AND_ASSIGN(VideoEncoderVerbatim);
 };
 
 }  // namespace remoting

@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "remoting/codec/video_encoder_verbatim.h"
+#include "remoting/proto/video.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"

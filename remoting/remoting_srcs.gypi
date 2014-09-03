@@ -62,6 +62,8 @@
       'codec/video_decoder_vpx.cc',
       'codec/video_decoder_vpx.h',
       'codec/video_encoder.h',
+      'codec/video_encoder_helper.cc',
+      'codec/video_encoder_helper.h',
       'codec/video_encoder_verbatim.cc',
       'codec/video_encoder_verbatim.h',
       'codec/video_encoder_vpx.cc',

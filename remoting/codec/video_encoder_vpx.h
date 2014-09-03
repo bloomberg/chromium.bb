@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "remoting/codec/scoped_vpx_codec.h"
 #include "remoting/codec/video_encoder.h"
+#include "remoting/codec/video_encoder_helper.h"
 
 typedef struct vpx_image vpx_image_t;
 
@@ -67,6 +68,9 @@ class VideoEncoderVpx : public VideoEncoder {
   scoped_ptr<uint8[]> active_map_;
   int active_map_width_;
   int active_map_height_;
+
+  // Used to help initialize VideoPackets from DesktopFrames.
+  VideoEncoderHelper helper_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoEncoderVpx);
 };

@@ -10,8 +10,15 @@
 #include "remoting/base/util.h"
 #include "remoting/proto/video.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
 namespace remoting {
+
+static uint8_t* GetPacketOutputBuffer(VideoPacket* packet, size_t size) {
+  packet->mutable_data()->resize(size);
+  return reinterpret_cast<uint8_t*>(string_as_array(packet->mutable_data()));
+}
 
 VideoEncoderVerbatim::VideoEncoderVerbatim() {}
 VideoEncoderVerbatim::~VideoEncoderVerbatim() {}
@@ -21,15 +28,10 @@ scoped_ptr<VideoPacket> VideoEncoderVerbatim::Encode(
   CHECK(frame.data());
 
   base::Time encode_start_time = base::Time::Now();
-  scoped_ptr<VideoPacket> packet(new VideoPacket());
 
-  VideoPacketFormat* format = packet->mutable_format();
-  format->set_encoding(VideoPacketFormat::ENCODING_VERBATIM);
-  if (!frame.size().equals(screen_size_)) {
-    screen_size_ = frame.size();
-    format->set_screen_width(screen_size_.width());
-    format->set_screen_height(screen_size_.height());
-  }
+  // Create a VideoPacket with common fields (e.g. DPI, rects, shape) set.
+  scoped_ptr<VideoPacket> packet(helper_.CreateVideoPacket(frame));
+  packet->mutable_format()->set_encoding(VideoPacketFormat::ENCODING_VERBATIM);
 
   // Calculate output size.
   size_t output_size = 0;
@@ -40,10 +42,10 @@ scoped_ptr<VideoPacket> VideoEncoderVerbatim::Encode(
         webrtc::DesktopFrame::kBytesPerPixel;
   }
 
-  uint8_t* out = GetOutputBuffer(packet.get(), output_size);
+  uint8_t* out = GetPacketOutputBuffer(packet.get(), output_size);
   const int in_stride = frame.stride();
 
-  // Store all changed rectangles in the packet.
+  // Encode pixel data for all changed rectangles into the packet.
   for (webrtc::DesktopRegion::Iterator iter(frame.updated_region());
        !iter.IsAtEnd(); iter.Advance()) {
     const webrtc::DesktopRect& rect = iter.rect();
@@ -55,29 +57,13 @@ scoped_ptr<VideoPacket> VideoEncoderVerbatim::Encode(
       out += row_size;
       in += in_stride;
     }
-
-    Rect* dirty_rect = packet->add_dirty_rects();
-    dirty_rect->set_x(rect.left());
-    dirty_rect->set_y(rect.top());
-    dirty_rect->set_width(rect.width());
-    dirty_rect->set_height(rect.height());
   }
 
-  packet->set_capture_time_ms(frame.capture_time_ms());
+  // Note the time taken to encode the pixel data.
   packet->set_encode_time_ms(
       (base::Time::Now() - encode_start_time).InMillisecondsRoundedUp());
-  if (!frame.dpi().is_zero()) {
-    packet->mutable_format()->set_x_dpi(frame.dpi().x());
-    packet->mutable_format()->set_y_dpi(frame.dpi().y());
-  }
 
   return packet.Pass();
-}
-
-uint8_t* VideoEncoderVerbatim::GetOutputBuffer(VideoPacket* packet,
-                                               size_t size) {
-  packet->mutable_data()->resize(size);
-  return reinterpret_cast<uint8_t*>(string_as_array(packet->mutable_data()));
 }
 
 }  // namespace remoting

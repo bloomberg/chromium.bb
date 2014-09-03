@@ -124,6 +124,7 @@
         'codec/codec_test.cc',
         'codec/codec_test.h',
         'codec/video_decoder_vpx_unittest.cc',
+        'codec/video_encoder_helper_unittest.cc',
         'codec/video_encoder_verbatim_unittest.cc',
         'codec/video_encoder_vpx_unittest.cc',
         'host/audio_silence_detector_unittest.cc',
