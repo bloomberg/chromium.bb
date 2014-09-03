@@ -180,8 +180,20 @@ class ExternalPopupMenuDisplayNoneTest : public ExternalPopupMenuTest {
 };
 
 TEST_F(ExternalPopupMenuDisplayNoneTest, SelectItem) {
+  IPC::TestSink& sink = render_thread_->sink();
+
   // Click the text field once to show the popup.
   EXPECT_TRUE(SimulateElementClick(kSelectID));
+
+  // Read the message sent to browser to show the popup menu.
+  const IPC::Message* message =
+      sink.GetUniqueMessageMatching(FrameHostMsg_ShowPopup::ID);
+  ASSERT_TRUE(message != NULL);
+  Tuple1<FrameHostMsg_ShowPopup_Params> param;
+  FrameHostMsg_ShowPopup::Read(message, &param);
+  // Number of items should match item count minus the number
+  // of "display: none" items.
+  ASSERT_EQ(5U, param.a.popup_items.size());
 
   // Select index 1 item. This should select item with index 2,
   // skipping the item with 'display: none'
