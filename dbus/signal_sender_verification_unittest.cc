@@ -8,6 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -65,7 +66,8 @@ class SignalSenderVerificationTest : public testing::Test {
         base::Bind(&SignalSenderVerificationTest::OnConnected,
                    base::Unretained(this)));
     // Wait until the object proxy is connected to the signal.
-    message_loop_.Run();
+    run_loop_.reset(new base::RunLoop);
+    run_loop_->Run();
 
     // Start the test service, using the D-Bus thread.
     TestService::Options options;
@@ -85,8 +87,10 @@ class SignalSenderVerificationTest : public testing::Test {
     ASSERT_FALSE(test_service2_->has_ownership());
 
     // The name should be owned and known at this point.
-    if (!on_name_owner_changed_called_)
-      message_loop_.Run();
+    if (!on_name_owner_changed_called_) {
+      run_loop_.reset(new base::RunLoop);
+      run_loop_->Run();
+    }
     ASSERT_FALSE(latest_name_owner_.empty());
   }
 
@@ -117,7 +121,7 @@ class SignalSenderVerificationTest : public testing::Test {
 
   void OnOwnershipInternal() {
     on_ownership_called_ = true;
-    message_loop_.Quit();
+    run_loop_->Quit();
   }
 
   void OnNameOwnerChanged(bool* called_flag,
@@ -125,7 +129,7 @@ class SignalSenderVerificationTest : public testing::Test {
                           const std::string& new_owner) {
     latest_name_owner_ = new_owner;
     *called_flag = true;
-    message_loop_.Quit();
+    run_loop_->Quit();
   }
 
   // Called when the "Test" signal is received, in the main thread.
@@ -133,7 +137,7 @@ class SignalSenderVerificationTest : public testing::Test {
   void OnTestSignal(Signal* signal) {
     MessageReader reader(signal);
     ASSERT_TRUE(reader.PopString(&test_signal_string_));
-    message_loop_.Quit();
+    run_loop_->Quit();
   }
 
   // Called when connected to the signal.
@@ -141,14 +145,15 @@ class SignalSenderVerificationTest : public testing::Test {
                    const std::string& signal_name,
                    bool success) {
     ASSERT_TRUE(success);
-    message_loop_.Quit();
+    run_loop_->Quit();
   }
 
  protected:
   // Wait for the hey signal to be received.
   void WaitForTestSignal() {
     // OnTestSignal() will quit the message loop.
-    message_loop_.Run();
+    run_loop_.reset(new base::RunLoop);
+    run_loop_->Run();
   }
 
   // Stopping a thread is considered an IO operation, so we need to fiddle with
@@ -160,6 +165,7 @@ class SignalSenderVerificationTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
+  scoped_ptr<base::RunLoop> run_loop_;
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<Bus> bus_;
   ObjectProxy* object_proxy_;
@@ -224,7 +230,8 @@ TEST_F(SignalSenderVerificationTest, TestOwnerChanged) {
   ASSERT_FALSE(latest_name_owner_.empty());
   test_service_->ShutdownAndBlock();
   // OnNameOwnerChanged will PostTask to quit the message loop.
-  message_loop_.Run();
+  run_loop_.reset(new base::RunLoop);
+  run_loop_->Run();
   // latest_name_owner_ should be empty as the owner is gone.
   ASSERT_TRUE(latest_name_owner_.empty());
 
@@ -236,9 +243,12 @@ TEST_F(SignalSenderVerificationTest, TestOwnerChanged) {
                  base::Unretained(this), true));
   // Both of OnNameOwnerChanged() and OnOwnership() should quit the MessageLoop,
   // but there's no expected order of those 2 event.
-  message_loop_.Run();
-  if (!on_name_owner_changed_called_ || !on_ownership_called_)
-    message_loop_.Run();
+  run_loop_.reset(new base::RunLoop);
+  run_loop_->Run();
+  if (!on_name_owner_changed_called_ || !on_ownership_called_) {
+    run_loop_.reset(new base::RunLoop);
+    run_loop_->Run();
+  }
   ASSERT_TRUE(on_name_owner_changed_called_);
   ASSERT_TRUE(on_ownership_called_);
 
@@ -259,7 +269,8 @@ TEST_F(SignalSenderVerificationTest, TestOwnerStealing) {
   ASSERT_FALSE(latest_name_owner_.empty());
   test_service_->ShutdownAndBlock();
   // OnNameOwnerChanged will PostTask to quit the message loop.
-  message_loop_.Run();
+  run_loop_.reset(new base::RunLoop);
+  run_loop_->Run();
   // latest_name_owner_ should be empty as the owner is gone.
   ASSERT_TRUE(latest_name_owner_.empty());
   // Reset the flag as NameOwnerChanged is already received in setup.
@@ -276,7 +287,8 @@ TEST_F(SignalSenderVerificationTest, TestOwnerStealing) {
   ASSERT_TRUE(stealable_test_service.has_ownership());
 
   // OnNameOwnerChanged will PostTask to quit the message loop.
-  message_loop_.Run();
+  run_loop_.reset(new base::RunLoop);
+  run_loop_->Run();
 
   // Send a signal to check that the service is correctly owned.
   const char kMessage[] = "hello, world";
@@ -295,9 +307,12 @@ TEST_F(SignalSenderVerificationTest, TestOwnerStealing) {
                  base::Unretained(this), true));
   // Both of OnNameOwnerChanged() and OnOwnership() should quit the MessageLoop,
   // but there's no expected order of those 2 event.
-  message_loop_.Run();
-  if (!on_name_owner_changed_called_ || !on_ownership_called_)
-    message_loop_.Run();
+  run_loop_.reset(new base::RunLoop);
+  run_loop_->Run();
+  if (!on_name_owner_changed_called_ || !on_ownership_called_) {
+    run_loop_.reset(new base::RunLoop);
+    run_loop_->Run();
+  }
   ASSERT_TRUE(on_name_owner_changed_called_);
   ASSERT_TRUE(on_ownership_called_);
 
@@ -335,7 +350,8 @@ TEST_F(SignalSenderVerificationTest, DISABLED_TestMultipleObjects) {
       base::Bind(&SignalSenderVerificationTest::OnConnected,
                  base::Unretained(this)));
   // Wait until the object proxy is connected to the signal.
-  message_loop_.Run();
+  run_loop_.reset(new base::RunLoop);
+  run_loop_->Run();
 
   // Send the test signal from the exported object.
   test_service_->SendTestSignal(kMessage);
@@ -349,7 +365,8 @@ TEST_F(SignalSenderVerificationTest, DISABLED_TestMultipleObjects) {
   ASSERT_FALSE(latest_name_owner_.empty());
   test_service_->ShutdownAndBlock();
   // OnNameOwnerChanged will PostTask to quit the message loop.
-  message_loop_.Run();
+  run_loop_.reset(new base::RunLoop);
+  run_loop_->Run();
   // latest_name_owner_ should be empty as the owner is gone.
   ASSERT_TRUE(latest_name_owner_.empty());
 
@@ -362,8 +379,10 @@ TEST_F(SignalSenderVerificationTest, DISABLED_TestMultipleObjects) {
   // Both of OnNameOwnerChanged() and OnOwnership() should quit the MessageLoop,
   // but there's no expected order of those 2 event.
   while (!on_name_owner_changed_called_ || !second_name_owner_changed_called ||
-         !on_ownership_called_)
-    message_loop_.Run();
+         !on_ownership_called_) {
+    run_loop_.reset(new base::RunLoop);
+    run_loop_->Run();
+  }
   ASSERT_TRUE(on_name_owner_changed_called_);
   ASSERT_TRUE(second_name_owner_changed_called);
   ASSERT_TRUE(on_ownership_called_);

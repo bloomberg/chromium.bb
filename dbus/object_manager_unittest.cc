@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "dbus/bus.h"
@@ -105,11 +106,13 @@ class ObjectManagerTest
     // Stopping a thread is considered an IO operation, so do this after
     // allowing IO.
     test_service_->Stop();
+
+    base::RunLoop().RunUntilIdle();
   }
 
   void MethodCallback(Response* response) {
     method_callback_called_ = true;
-    message_loop_.Quit();
+    run_loop_->Quit();
   }
 
  protected:
@@ -117,21 +120,21 @@ class ObjectManagerTest
   virtual void ObjectAdded(const ObjectPath& object_path,
                            const std::string& interface_name) OVERRIDE {
     added_objects_.push_back(std::make_pair(object_path, interface_name));
-    message_loop_.Quit();
+    run_loop_->Quit();
   }
 
   // Called when an object is removed.
   virtual void ObjectRemoved(const ObjectPath& object_path,
                              const std::string& interface_name) OVERRIDE {
     removed_objects_.push_back(std::make_pair(object_path, interface_name));
-    message_loop_.Quit();
+    run_loop_->Quit();
   }
 
   // Called when a property value is updated.
   void OnPropertyChanged(const ObjectPath& object_path,
                          const std::string& name) {
     updated_properties_.push_back(name);
-    message_loop_.Quit();
+    run_loop_->Quit();
   }
 
   static const size_t kExpectedObjects = 1;
@@ -139,8 +142,10 @@ class ObjectManagerTest
 
   void WaitForObject() {
     while (added_objects_.size() < kExpectedObjects ||
-           updated_properties_.size() < kExpectedProperties)
-      message_loop_.Run();
+           updated_properties_.size() < kExpectedProperties) {
+      run_loop_.reset(new base::RunLoop);
+      run_loop_->Run();
+    }
     for (size_t i = 0; i < kExpectedObjects; ++i)
       added_objects_.erase(added_objects_.begin());
     for (size_t i = 0; i < kExpectedProperties; ++i)
@@ -148,14 +153,17 @@ class ObjectManagerTest
   }
 
   void WaitForRemoveObject() {
-    while (removed_objects_.size() < kExpectedObjects)
-      message_loop_.Run();
+    while (removed_objects_.size() < kExpectedObjects) {
+      run_loop_.reset(new base::RunLoop);
+      run_loop_->Run();
+    }
     for (size_t i = 0; i < kExpectedObjects; ++i)
       removed_objects_.erase(removed_objects_.begin());
   }
 
   void WaitForMethodCallback() {
-    message_loop_.Run();
+    run_loop_.reset(new base::RunLoop);
+    run_loop_->Run();
     method_callback_called_ = false;
   }
 
@@ -177,6 +185,7 @@ class ObjectManagerTest
   }
 
   base::MessageLoop message_loop_;
+  scoped_ptr<base::RunLoop> run_loop_;
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<Bus> bus_;
   ObjectManager* object_manager_;

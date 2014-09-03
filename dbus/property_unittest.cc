@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "dbus/bus.h"
@@ -105,20 +106,22 @@ class PropertyTest : public testing::Test {
   // waited for.
   void PropertyCallback(const std::string& id, bool success) {
     last_callback_ = id;
-    message_loop_.Quit();
+    run_loop_->Quit();
   }
 
  protected:
   // Called when a property value is updated.
   void OnPropertyChanged(const std::string& name) {
     updated_properties_.push_back(name);
-    message_loop_.Quit();
+    run_loop_->Quit();
   }
 
   // Waits for the given number of updates.
   void WaitForUpdates(size_t num_updates) {
-    while (updated_properties_.size() < num_updates)
-      message_loop_.Run();
+    while (updated_properties_.size() < num_updates) {
+      run_loop_.reset(new base::RunLoop);
+      run_loop_->Run();
+    }
     for (size_t i = 0; i < num_updates; ++i)
       updated_properties_.erase(updated_properties_.begin());
   }
@@ -136,11 +139,13 @@ class PropertyTest : public testing::Test {
   // other; you can set this to whatever you wish.
   void WaitForCallback(const std::string& id) {
     while (last_callback_ != id) {
-      message_loop_.Run();
+      run_loop_.reset(new base::RunLoop);
+      run_loop_->Run();
     }
   }
 
   base::MessageLoop message_loop_;
+  scoped_ptr<base::RunLoop> run_loop_;
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<Bus> bus_;
   ObjectProxy* object_proxy_;

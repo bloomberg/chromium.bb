@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
@@ -77,7 +78,8 @@ class EndToEndAsyncTest : public testing::Test {
         base::Bind(&EndToEndAsyncTest::OnConnected,
                    base::Unretained(this)));
     // Wait until the object proxy is connected to the signal.
-    message_loop_.Run();
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
 
     // Connect to the "Test2" signal of "org.chromium.TestInterface" from
     // the remote object. There was a bug where we were emitting error
@@ -92,7 +94,8 @@ class EndToEndAsyncTest : public testing::Test {
         base::Bind(&EndToEndAsyncTest::OnConnected,
                    base::Unretained(this)));
     // Wait until the object proxy is connected to the signal.
-    message_loop_.Run();
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
 
     // Create a second object proxy for the root object.
     root_object_proxy_ = bus_->GetObjectProxy("org.chromium.TestService",
@@ -109,7 +112,8 @@ class EndToEndAsyncTest : public testing::Test {
         base::Bind(&EndToEndAsyncTest::OnConnected,
                    base::Unretained(this)));
     // Wait until the root object proxy is connected to the signal.
-    message_loop_.Run();
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
   }
 
   virtual void TearDown() {
@@ -172,7 +176,8 @@ class EndToEndAsyncTest : public testing::Test {
   // Wait for the give number of responses.
   void WaitForResponses(size_t num_responses) {
     while (response_strings_.size() < num_responses) {
-      message_loop_.Run();
+      run_loop_.reset(new base::RunLoop);
+      run_loop_->Run();
     }
   }
 
@@ -188,13 +193,14 @@ class EndToEndAsyncTest : public testing::Test {
     } else {
       response_strings_.push_back(std::string());
     }
-    message_loop_.Quit();
+    run_loop_->Quit();
   };
 
   // Wait for the given number of errors.
   void WaitForErrors(size_t num_errors) {
     while (error_names_.size() < num_errors) {
-      message_loop_.Run();
+      run_loop_.reset(new base::RunLoop);
+      run_loop_->Run();
     }
   }
 
@@ -208,7 +214,7 @@ class EndToEndAsyncTest : public testing::Test {
     } else {
       error_names_.push_back(std::string());
     }
-    message_loop_.Quit();
+    run_loop_->Quit();
   }
 
   // Called when the "Test" signal is received, in the main thread.
@@ -216,7 +222,7 @@ class EndToEndAsyncTest : public testing::Test {
   void OnTestSignal(Signal* signal) {
     MessageReader reader(signal);
     ASSERT_TRUE(reader.PopString(&test_signal_string_));
-    message_loop_.Quit();
+    run_loop_->Quit();
   }
 
   // Called when the "Test" signal is received, in the main thread, by
@@ -225,13 +231,13 @@ class EndToEndAsyncTest : public testing::Test {
   void OnRootTestSignal(Signal* signal) {
     MessageReader reader(signal);
     ASSERT_TRUE(reader.PopString(&root_test_signal_string_));
-    message_loop_.Quit();
+    run_loop_->Quit();
   }
 
   // Called when the "Test2" signal is received, in the main thread.
   void OnTest2Signal(Signal* signal) {
     MessageReader reader(signal);
-    message_loop_.Quit();
+    run_loop_->Quit();
   }
 
   // Called when connected to the signal.
@@ -239,22 +245,24 @@ class EndToEndAsyncTest : public testing::Test {
                    const std::string& signal_name,
                    bool success) {
     ASSERT_TRUE(success);
-    message_loop_.Quit();
+    run_loop_->Quit();
   }
 
   // Called when the connection with dbus-daemon is disconnected.
   void OnDisconnected() {
-    message_loop_.Quit();
+    run_loop_->Quit();
     ++on_disconnected_call_count_;
   }
 
   // Wait for the hey signal to be received.
   void WaitForTestSignal() {
     // OnTestSignal() will quit the message loop.
-    message_loop_.Run();
+    run_loop_.reset(new base::RunLoop);
+    run_loop_->Run();
   }
 
   base::MessageLoop message_loop_;
+  scoped_ptr<base::RunLoop> run_loop_;
   std::vector<std::string> response_strings_;
   std::vector<std::string> error_names_;
   scoped_ptr<base::Thread> dbus_thread_;
@@ -537,10 +545,11 @@ TEST_F(EndToEndAsyncTest, EmptyResponseCallback) {
                             timeout_ms,
                             ObjectProxy::EmptyResponseCallback());
   // Post a delayed task to quit the message loop.
+  run_loop_.reset(new base::RunLoop);
   message_loop_.PostDelayedTask(FROM_HERE,
-                                base::MessageLoop::QuitClosure(),
+                                run_loop_->QuitClosure(),
                                 TestTimeouts::tiny_timeout());
-  message_loop_.Run();
+  run_loop_->Run();
   // We cannot tell if the empty callback is called, but at least we can
   // check if the test does not crash.
 }
@@ -584,7 +593,8 @@ TEST_F(EndToEndAsyncTest, DisconnectedSignal) {
                                       base::Bind(&Bus::ClosePrivateConnection,
                                                  base::Unretained(bus_.get())));
   // OnDisconnected callback quits message loop.
-  message_loop_.Run();
+  run_loop_.reset(new base::RunLoop);
+  run_loop_->Run();
   EXPECT_EQ(1, on_disconnected_call_count_);
 }
 
@@ -608,7 +618,8 @@ class SignalMultipleHandlerTest : public EndToEndAsyncTest {
         base::Bind(&SignalMultipleHandlerTest::OnAdditionalConnected,
                    base::Unretained(this)));
     // Wait until the object proxy is connected to the signal.
-    message_loop_.Run();
+    run_loop_.reset(new base::RunLoop);
+    run_loop_->Run();
   }
 
  protected:
@@ -617,7 +628,7 @@ class SignalMultipleHandlerTest : public EndToEndAsyncTest {
   void OnAdditionalTestSignal(Signal* signal) {
     MessageReader reader(signal);
     ASSERT_TRUE(reader.PopString(&additional_test_signal_string_));
-    message_loop_.Quit();
+    run_loop_->Quit();
   }
 
   // Called when connected to the signal.
@@ -625,7 +636,7 @@ class SignalMultipleHandlerTest : public EndToEndAsyncTest {
                              const std::string& signal_name,
                              bool success) {
     ASSERT_TRUE(success);
-    message_loop_.Quit();
+    run_loop_->Quit();
   }
 
   // Text message from "Test" signal delivered to additional handler.

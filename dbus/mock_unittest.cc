@@ -7,6 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_exported_object.h"
@@ -72,12 +73,13 @@ class MockTest : public testing::Test {
       MessageReader reader(response);
       ASSERT_TRUE(reader.PopString(&response_string_));
     }
-    message_loop_.Quit();
+    run_loop_->Quit();
   };
 
  protected:
   std::string response_string_;
   base::MessageLoop message_loop_;
+  scoped_ptr<base::RunLoop> run_loop_;
   scoped_refptr<MockBus> mock_bus_;
   scoped_refptr<MockObjectProxy> mock_proxy_;
 
@@ -169,12 +171,13 @@ TEST_F(MockTest, CallMethod) {
   writer.AppendString(kHello);
 
   // Call the method.
+  run_loop_.reset(new base::RunLoop);
   proxy->CallMethod(&method_call,
                     ObjectProxy::TIMEOUT_USE_DEFAULT,
                     base::Bind(&MockTest::OnResponse,
                                base::Unretained(this)));
   // Run the message loop to let OnResponse be called.
-  message_loop_.Run();
+  run_loop_->Run();
 
   EXPECT_EQ(kHello, response_string_);
 }
