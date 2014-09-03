@@ -135,7 +135,9 @@ def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot, **kwargs):
     extra_args.extend(['--key', _FULL_BINHOST])
 
   if category == constants.CHROME_PFQ_TYPE:
-    extra_args.extend(['--packages=%s' % constants.CHROME_PN])
+    extra_args += ['--packages=%s' % x
+                   for x in [constants.CHROME_PN] +
+                            constants.OTHER_CHROME_PACKAGES]
 
   kwargs.setdefault('extra_args', []).extend(extra_args)
   return _UploadPrebuilts(buildroot=buildroot, **kwargs)
