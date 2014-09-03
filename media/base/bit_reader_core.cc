@@ -52,8 +52,9 @@ int BitReaderCore::PeekBitsMsbAligned(int num_bits, uint64* out) {
 }
 
 bool BitReaderCore::SkipBits(int num_bits) {
+  // TODO(dalecurtis): Rewrite to be efficient, see http://crbug.com/376450
   DCHECK_GE(num_bits, 0);
-  DVLOG_IF(0, num_bits > 100)
+  DVLOG_IF(1, num_bits > 100)
       << "BitReader::SkipBits inefficient for large skips";
 
   uint64 dummy;
