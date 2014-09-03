@@ -50,6 +50,15 @@ void AssertFileErrorEq(const tracked_objects::Location& from_here,
   ASSERT_EQ(expected, actual) << from_here.ToString();
 }
 
+void AssertFileErrorEqWithClosure(
+    const tracked_objects::Location& from_here,
+    base::File::Error expected,
+    base::Closure closure,
+    base::File::Error actual) {
+  ASSERT_EQ(expected, actual) << from_here.ToString();
+  closure.Run();
+}
+
 }  // namespace
 
 // Test class for FileSystemOperationImpl.
@@ -1285,6 +1294,36 @@ TEST_F(FileSystemOperationImplTest,
   EXPECT_EQ(2 * child_file_size + 3 * grandchild_file_size,
             GetDataSizeOnDisk());
   EXPECT_EQ(expected_usage, usage);
+}
+
+TEST_F(FileSystemOperationImplTest,
+       TestCopySuccessSrcFileWithDifferentFileSize) {
+  FileSystemURL src_file(CreateFile("src"));
+  FileSystemURL dest_file(CreateFile("dest"));
+
+  {
+    base::RunLoop run_loop;
+    operation_runner()->Truncate(
+        dest_file, 6,
+        base::Bind(&AssertFileErrorEqWithClosure,
+           FROM_HERE,
+           base::File::FILE_OK,
+           run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
+  {
+    base::RunLoop run_loop;
+    operation_runner()->Copy(
+        src_file, dest_file, FileSystemOperation::OPTION_NONE,
+        FileSystemOperationRunner::CopyProgressCallback(),
+        base::Bind(&AssertFileErrorEqWithClosure,
+                   FROM_HERE,
+                   base::File::FILE_OK,
+                   run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+  EXPECT_EQ(0, GetFileSize("dest"));
 }
 
 }  // namespace content

@@ -423,13 +423,42 @@ class StreamCopyOrMoveImpl
 
     // To use FileStreamWriter, we need to ensure the destination file exists.
     operation_runner_->CreateFile(
-        dest_url_, false /* exclusive */,
+        dest_url_,
+        true /* exclusive */,
         base::Bind(&StreamCopyOrMoveImpl::RunAfterCreateFileForDestination,
                    weak_factory_.GetWeakPtr(),
-                   callback, file_info.last_modified));
+                   callback,
+                   file_info.last_modified));
   }
 
   void RunAfterCreateFileForDestination(
+      const CopyOrMoveOperationDelegate::StatusCallback& callback,
+      const base::Time& last_modified,
+      base::File::Error error) {
+    if (cancel_requested_)
+      error = base::File::FILE_ERROR_ABORT;
+
+    if (error != base::File::FILE_OK &&
+        error != base::File::FILE_ERROR_EXISTS) {
+      callback.Run(error);
+      return;
+    }
+
+    if (error == base::File::FILE_ERROR_EXISTS) {
+      operation_runner_->Truncate(
+          dest_url_,
+          0 /* length */,
+          base::Bind(&StreamCopyOrMoveImpl::RunAfterTruncateForDestination,
+                     weak_factory_.GetWeakPtr(),
+                     callback,
+                     last_modified));
+      return;
+    }
+    RunAfterTruncateForDestination(
+        callback, last_modified, base::File::FILE_OK);
+  }
+
+  void RunAfterTruncateForDestination(
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
       const base::Time& last_modified,
       base::File::Error error) {
