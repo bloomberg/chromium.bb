@@ -262,7 +262,7 @@ class GitSourceControl(SourceControl):
     """
     commit_info = {}
 
-    formats = ['%cN', '%cE', '%s', '%cD', '%b']
+    formats = ['%aN', '%aE', '%s', '%cD', '%b']
     targets = ['author', 'email', 'subject', 'date', 'body']
 
     for i in xrange(len(formats)):
