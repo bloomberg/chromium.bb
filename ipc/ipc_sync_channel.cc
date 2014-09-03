@@ -448,7 +448,7 @@ SyncChannel::SyncChannel(
     : ChannelProxy(new SyncContext(listener, ipc_task_runner, shutdown_event)) {
   // The current (listener) thread must be distinct from the IPC thread, or else
   // sending synchronous messages will deadlock.
-  DCHECK_NE(ipc_task_runner, base::ThreadTaskRunnerHandle::Get().get());
+  DCHECK_NE(ipc_task_runner.get(), base::ThreadTaskRunnerHandle::Get().get());
   StartWatching();
 }
 

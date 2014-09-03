@@ -83,7 +83,7 @@ void IPCTestBase::CreateChannelFromChannelHandle(
 
 void IPCTestBase::CreateChannelProxy(
     IPC::Listener* listener,
-    base::SingleThreadTaskRunner* ipc_task_runner) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner) {
   CHECK(!channel_.get());
   CHECK(!channel_proxy_.get());
   channel_proxy_ = IPC::ChannelProxy::Create(GetChannelName(test_client_name_),

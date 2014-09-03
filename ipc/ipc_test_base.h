@@ -61,8 +61,9 @@ class IPCTestBase : public base::MultiProcessTest {
   // channel proxy will automatically create and connect a channel.) You must
   // (manually) destroy the channel proxy before the task runner's thread is
   // destroyed.
-  void CreateChannelProxy(IPC::Listener* listener,
-                          base::SingleThreadTaskRunner* ipc_task_runner);
+  void CreateChannelProxy(
+      IPC::Listener* listener,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
   void DestroyChannelProxy();
 
   // Starts the client process, returning true if successful; this should be
