@@ -637,52 +637,24 @@ void RenderText::SetCompositionRange(const Range& composition_range) {
 
 void RenderText::SetColor(SkColor value) {
   colors_.SetValue(value);
-
-#if defined(OS_WIN)
-  // TODO(msw): Windows applies colors and decorations in the layout process.
-  cached_bounds_and_offset_valid_ = false;
-  ResetLayout();
-#endif
 }
 
 void RenderText::ApplyColor(SkColor value, const Range& range) {
   colors_.ApplyValue(value, range);
-
-#if defined(OS_WIN)
-  // TODO(msw): Windows applies colors and decorations in the layout process.
-  cached_bounds_and_offset_valid_ = false;
-  ResetLayout();
-#endif
 }
 
 void RenderText::SetStyle(TextStyle style, bool value) {
   styles_[style].SetValue(value);
 
-  // Only invalidate the layout on font changes; not for colors or decorations.
-  bool invalidate = (style == BOLD) || (style == ITALIC);
-#if defined(OS_WIN)
-  // TODO(msw): Windows applies colors and decorations in the layout process.
-  invalidate = true;
-#endif
-  if (invalidate) {
-    cached_bounds_and_offset_valid_ = false;
-    ResetLayout();
-  }
+  cached_bounds_and_offset_valid_ = false;
+  ResetLayout();
 }
 
 void RenderText::ApplyStyle(TextStyle style, bool value, const Range& range) {
   styles_[style].ApplyValue(value, range);
 
-  // Only invalidate the layout on font changes; not for colors or decorations.
-  bool invalidate = (style == BOLD) || (style == ITALIC);
-#if defined(OS_WIN)
-  // TODO(msw): Windows applies colors and decorations in the layout process.
-  invalidate = true;
-#endif
-  if (invalidate) {
-    cached_bounds_and_offset_valid_ = false;
-    ResetLayout();
-  }
+  cached_bounds_and_offset_valid_ = false;
+  ResetLayout();
 }
 
 bool RenderText::GetStyle(TextStyle style) const {
