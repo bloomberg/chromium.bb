@@ -28,8 +28,11 @@ async_test(function(t) {
           return registration.unregister();
         })
       .then(function(value) {
-          assert_equals(value, undefined,
-                        'unregistering twice should resolve with no value');
+          // FIXME: This value must be false in spec,
+          // but this is not supported now.
+          // See: https://crbug.com/390894#c16
+          assert_equals(value, true,
+                        'unregistering twice should resolve with true');
           t.done();
         })
       .catch(unreached_rejection(t));
@@ -43,8 +46,8 @@ async_test(function(t) {
           return registration.unregister();
         })
       .then(function(value) {
-          assert_equals(value, undefined,
-                        'unregistration should resolve with no value');
+          assert_equals(value, true,
+                        'unregistration should resolve with true');
           t.done();
         })
       .catch(unreached_rejection(t));
@@ -65,7 +68,7 @@ async_test(function(t) {
           return navigator.serviceWorker.unregister();
         })
       .then(function(value) {
-          assert_equals(value, undefined,
+          assert_equals(value, true,
                         'unregister with default scope should succeed');
           return state_promise;
         })

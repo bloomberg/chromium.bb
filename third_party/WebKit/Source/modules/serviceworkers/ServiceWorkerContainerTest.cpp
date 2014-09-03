@@ -137,7 +137,7 @@ public:
         delete callbacks;
     }
 
-    virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerRegistrationCallbacks* callbacks) OVERRIDE
+    virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerUnregistrationCallbacks* callbacks) OVERRIDE
     {
         ADD_FAILURE() << "the provider should not be called to unregister a Service Worker";
         delete callbacks;
@@ -290,19 +290,20 @@ private:
             m_owner.m_registerCallCount++;
             m_owner.m_registerScope = pattern;
             m_owner.m_registerScriptURL = scriptURL;
-            m_callbacksToDelete.append(adoptPtr(callbacks));
+            m_registrationCallbacksToDelete.append(adoptPtr(callbacks));
         }
 
-        virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerRegistrationCallbacks* callbacks) OVERRIDE
+        virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerUnregistrationCallbacks* callbacks) OVERRIDE
         {
             m_owner.m_unregisterCallCount++;
             m_owner.m_unregisterScope = pattern;
-            m_callbacksToDelete.append(adoptPtr(callbacks));
+            m_unregistrationCallbacksToDelete.append(adoptPtr(callbacks));
         }
 
     private:
         StubWebServiceWorkerProvider& m_owner;
-        Vector<OwnPtr<WebServiceWorkerRegistrationCallbacks> > m_callbacksToDelete;
+        Vector<OwnPtr<WebServiceWorkerRegistrationCallbacks> > m_registrationCallbacksToDelete;
+        Vector<OwnPtr<WebServiceWorkerUnregistrationCallbacks> > m_unregistrationCallbacksToDelete;
     };
 
 private:

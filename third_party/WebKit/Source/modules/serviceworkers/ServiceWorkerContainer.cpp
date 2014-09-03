@@ -124,24 +124,6 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
     return promise;
 }
 
-#ifdef DISABLE_SERVICEWORKER_UNREGISTER_RESOLVE_TO_BOOLEAN
-class UndefinedValue {
-public:
-    typedef WebServiceWorkerRegistration WebType;
-    static V8UndefinedType take(ScriptPromiseResolver* resolver, WebType* registration)
-    {
-        ASSERT(!registration); // Anything passed here will be leaked.
-        return V8UndefinedType();
-    }
-    static void dispose(WebType* registration)
-    {
-        ASSERT(!registration); // Anything passed here will be leaked.
-    }
-
-private:
-    UndefinedValue();
-};
-#else
 class BooleanValue {
 public:
     typedef bool WebType;
@@ -154,7 +136,6 @@ public:
 private:
     BooleanValue();
 };
-#endif
 
 ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ScriptState* scriptState, const String& pattern)
 {
@@ -182,11 +163,7 @@ ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ScriptState* scrip
         resolver->reject(DOMException::create(SecurityError, "The scope must match the current origin."));
         return promise;
     }
-#ifdef DISABLE_SERVICEWORKER_UNREGISTER_RESOLVE_TO_BOOLEAN
-    m_provider->unregisterServiceWorker(patternURL, new CallbackPromiseAdapter<UndefinedValue, ServiceWorkerError>(resolver));
-#else
     m_provider->unregisterServiceWorker(patternURL, new CallbackPromiseAdapter<BooleanValue, ServiceWorkerError>(resolver));
-#endif
     return promise;
 }
 
