@@ -374,4 +374,24 @@ TEST_F(NativeViewHostAuraTest, Attach) {
   DestroyHost();
 }
 
+// Ensure the clipping window is hidden with the native view. This is a
+// regression test for https://crbug.com/408877.
+TEST_F(NativeViewHostAuraTest, SimpleShowAndHide) {
+  CreateHost();
+
+  toplevel()->SetBounds(gfx::Rect(20, 20, 100, 100));
+  toplevel()->Show();
+
+  host()->SetBounds(10, 10, 80, 80);
+  EXPECT_TRUE(clipping_window()->IsVisible());
+  EXPECT_TRUE(child()->IsVisible());
+
+  host()->SetVisible(false);
+  EXPECT_FALSE(clipping_window()->IsVisible());
+  EXPECT_FALSE(child()->IsVisible());
+
+  DestroyHost();
+  DestroyTopLevel();
+}
+
 }  // namespace views

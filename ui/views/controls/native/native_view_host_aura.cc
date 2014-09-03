@@ -165,6 +165,7 @@ void NativeViewHostAura::ShowWidget(int x, int y, int w, int h) {
 
 void NativeViewHostAura::HideWidget() {
   host_->native_view()->Hide();
+  clipping_window_.Hide();
 }
 
 void NativeViewHostAura::SetFocus() {
