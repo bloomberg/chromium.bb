@@ -56,7 +56,7 @@ public class AwBrowserContext {
 
     public HttpAuthDatabase getHttpAuthDatabase(Context context) {
         if (mHttpAuthDatabase == null) {
-            mHttpAuthDatabase = new HttpAuthDatabase(context, HTTP_AUTH_DATABASE_FILE);
+            mHttpAuthDatabase = HttpAuthDatabase.newInstance(context, HTTP_AUTH_DATABASE_FILE);
         }
         return mHttpAuthDatabase;
     }

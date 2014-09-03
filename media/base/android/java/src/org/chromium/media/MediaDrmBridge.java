@@ -205,7 +205,6 @@ public class MediaDrmBridge {
             if (MediaCrypto.isCryptoSchemeSupported(mSchemeUUID)) {
                 final byte[] mediaCryptoSession = mMediaCryptoSession.array();
                 mMediaCrypto = new MediaCrypto(mSchemeUUID, mediaCryptoSession);
-                assert mMediaCrypto != null;
                 Log.d(TAG, "MediaCrypto successfully created!");
                 mSessionIds.put(mMediaCryptoSession, INVALID_SESSION_ID);
                 // Notify the native code that MediaCrypto is ready.

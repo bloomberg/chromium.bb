@@ -23,15 +23,15 @@ public class NetStringUtil {
      * Attempts to convert text in a given character set to a Unicode string.
      * Returns null on failure.
      * @param text ByteBuffer containing the character array to convert.
-     * @param charset Character set it's in encoded in.
+     * @param charsetName Character set it's in encoded in.
      * @return: Unicode string on success, null on failure.
      */
     @CalledByNative
     private static String convertToUnicode(
             ByteBuffer text,
-            String charset_name) {
+            String charsetName) {
         try {
-            Charset charset = Charset.forName(charset_name);
+            Charset charset = Charset.forName(charsetName);
             CharsetDecoder decoder = charset.newDecoder();
             // On invalid characters, this will throw an exception.
             return decoder.decode(text).toString();
@@ -44,16 +44,15 @@ public class NetStringUtil {
      * Attempts to convert text in a given character set to a Unicode string,
      * and normalize it.  Returns null on failure.
      * @param text ByteBuffer containing the character array to convert.
-     * @param charset Character set it's in encoded in.
+     * @param charsetName Character set it's in encoded in.
      * @return: Unicode string on success, null on failure.
      */
     @CalledByNative
     private static String convertToUnicodeAndNormalize(
             ByteBuffer text,
-            String charset_name) {
-        String unicodeString = convertToUnicode(text, charset_name);
-        if (unicodeString == null)
-            return unicodeString;
+            String charsetName) {
+        String unicodeString = convertToUnicode(text, charsetName);
+        if (unicodeString == null) return null;
         return Normalizer.normalize(unicodeString, Normalizer.Form.NFC);
     }
 
@@ -62,15 +61,15 @@ public class NetStringUtil {
      * characters are replaced with U+FFFD.  Returns null if the character set
      * is not recognized.
      * @param text ByteBuffer containing the character array to convert.
-     * @param charset Character set it's in encoded in.
+     * @param charsetName Character set it's in encoded in.
      * @return: Unicode string on success, null on failure.
      */
     @CalledByNative
     private static String convertToUnicodeWithSubstitutions(
             ByteBuffer text,
-            String charset_name) {
+            String charsetName) {
         try {
-            Charset charset = Charset.forName(charset_name);
+            Charset charset = Charset.forName(charsetName);
 
             // TODO(mmenke):  Investigate if Charset.decode() can be used
             // instead.  The question is whether it uses the proper replace

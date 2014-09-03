@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 
+import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.SecureRandom;
@@ -153,7 +154,10 @@ public class CipherFactory {
                 try {
                     seed = mRandomNumberProvider.getBytes(NUM_BYTES);
                     iv = mRandomNumberProvider.getBytes(NUM_BYTES);
-                } catch (Exception e) {
+                } catch (IOException e) {
+                    Log.e(TAG, "Couldn't get generator data.");
+                    return null;
+                } catch (GeneralSecurityException e) {
                     Log.e(TAG, "Couldn't get generator data.");
                     return null;
                 }

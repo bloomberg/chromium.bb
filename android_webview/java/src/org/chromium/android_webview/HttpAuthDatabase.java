@@ -55,20 +55,25 @@ public class HttpAuthDatabase {
     private final Object mInitializedLock = new Object();
 
     /**
-     * Create an instance of HttpAuthDatabase for the named file, and kick-off background
-     * initialization of that database.
+     * Creates and returns an instance of HttpAuthDatabase for the named file, and kicks-off
+     * background initialization of that database.
      *
      * @param context the Context to use for opening the database
      * @param databaseFile Name of the file to be initialized.
      */
-    public HttpAuthDatabase(final Context context, final String databaseFile) {
+    public static HttpAuthDatabase newInstance(final Context context, final String databaseFile) {
+        final HttpAuthDatabase httpAuthDatabase = new HttpAuthDatabase();
         new Thread() {
             @Override
             public void run() {
-                initOnBackgroundThread(context, databaseFile);
+                httpAuthDatabase.initOnBackgroundThread(context, databaseFile);
             }
         }.start();
+        return httpAuthDatabase;
     }
+
+    // Prevent instantiation. Callers should use newInstance().
+    private HttpAuthDatabase() {}
 
     /**
      * Initializes the databases and notifies any callers waiting on waitForInit.

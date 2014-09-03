@@ -32,7 +32,7 @@ public class HttpAuthDatabaseTest extends AndroidTestCase {
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testAccessHttpAuthUsernamePassword() throws Exception {
-        HttpAuthDatabase instance = new HttpAuthDatabase(getContext(), TEST_DATABASE);
+        HttpAuthDatabase instance = HttpAuthDatabase.newInstance(getContext(), TEST_DATABASE);
 
         String host = "http://localhost:8080";
         String realm = "testrealm";

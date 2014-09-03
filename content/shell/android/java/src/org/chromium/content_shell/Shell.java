@@ -194,7 +194,7 @@ public class Shell extends LinearLayout {
      * @return The sanitized URL.
      */
     public static String sanitizeUrl(String url) {
-        if (url == null) return url;
+        if (url == null) return null;
         if (url.startsWith("www.") || url.indexOf(":") == -1) url = "http://" + url;
         return url;
     }
