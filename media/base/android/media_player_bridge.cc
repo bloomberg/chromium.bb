@@ -31,13 +31,11 @@ MediaPlayerBridge::MediaPlayerBridge(
     bool hide_url_log,
     MediaPlayerManager* manager,
     const RequestMediaResourcesCB& request_media_resources_cb,
-    const ReleaseMediaResourcesCB& release_media_resources_cb,
     const GURL& frame_url,
     bool allow_credentials)
     : MediaPlayerAndroid(player_id,
                          manager,
                          request_media_resources_cb,
-                         release_media_resources_cb,
                          frame_url),
       prepared_(false),
       pending_play_(false),
@@ -386,7 +384,6 @@ void MediaPlayerBridge::Release() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_MediaPlayerBridge_release(env, j_media_player_bridge_.obj());
   j_media_player_bridge_.Reset();
-  release_media_resources_cb_.Run(player_id());
   listener_->ReleaseMediaPlayerListenerResources();
 }
 

@@ -37,9 +37,6 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   // Callback when the player needs decoding resources.
   typedef base::Callback<void(int player_id)> RequestMediaResourcesCB;
 
-  // Callback when the player releases decoding resources.
-  typedef base::Callback<void(int player_id)> ReleaseMediaResourcesCB;
-
   // Passing an external java surface object to the player.
   virtual void SetVideoSurface(gfx::ScopedJavaSurface surface) = 0;
 
@@ -87,14 +84,11 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   MediaPlayerAndroid(int player_id,
                      MediaPlayerManager* manager,
                      const RequestMediaResourcesCB& request_media_resources_cb,
-                     const ReleaseMediaResourcesCB& release_media_resources_cb,
                      const GURL& frame_url);
 
   MediaPlayerManager* manager() { return manager_; }
 
   RequestMediaResourcesCB request_media_resources_cb_;
-
-  ReleaseMediaResourcesCB release_media_resources_cb_;
 
  private:
   // Player ID assigned to this player.

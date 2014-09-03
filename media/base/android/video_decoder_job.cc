@@ -28,7 +28,6 @@ base::LazyInstance<VideoDecoderThread>::Leaky
 VideoDecoderJob::VideoDecoderJob(
     const base::Closure& request_data_cb,
     const base::Closure& request_resources_cb,
-    const base::Closure& release_resources_cb,
     const base::Closure& on_demuxer_config_changed_cb)
     : MediaDecoderJob(g_video_decoder_thread.Pointer()->message_loop_proxy(),
                       request_data_cb,
@@ -37,7 +36,6 @@ VideoDecoderJob::VideoDecoderJob(
       width_(0),
       height_(0),
       request_resources_cb_(request_resources_cb),
-      release_resources_cb_(release_resources_cb),
       next_video_data_is_iframe_(true) {
 }
 
@@ -147,10 +145,6 @@ bool VideoDecoderJob::CreateMediaCodecBridgeInternal() {
 
 void VideoDecoderJob::CurrentDataConsumed(bool is_config_change) {
   next_video_data_is_iframe_ = is_config_change;
-}
-
-void VideoDecoderJob::OnMediaCodecBridgeReleased() {
-  release_resources_cb_.Run();
 }
 
 bool VideoDecoderJob::IsProtectedSurfaceRequired() {

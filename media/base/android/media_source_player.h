@@ -41,7 +41,6 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   MediaSourcePlayer(int player_id,
                     MediaPlayerManager* manager,
                     const RequestMediaResourcesCB& request_media_resources_cb,
-                    const ReleaseMediaResourcesCB& release_media_resources_cb,
                     scoped_ptr<DemuxerAndroid> demuxer,
                     const GURL& frame_url);
   virtual ~MediaSourcePlayer();
@@ -258,9 +257,6 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
 
   // Test-only callback for hooking the completion of the next decode cycle.
   base::Closure decode_callback_for_testing_;
-
-  // Whether |surface_| is currently used by the player.
-  bool is_surface_in_use_;
 
   // Weak pointer passed to media decoder jobs for callbacks.
   // NOTE: Weak pointers must be invalidated before all other member variables.

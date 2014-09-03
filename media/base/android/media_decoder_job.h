@@ -217,9 +217,6 @@ class MediaDecoderJob {
   // true, the next access unit is guarateed to be an I-frame.
   virtual void CurrentDataConsumed(bool is_config_change) {}
 
-  // Called when |media_codec_bridge_| is released
-  virtual void OnMediaCodecBridgeReleased() {}
-
   // Implemented by the child class to create |media_codec_bridge_| for a
   // particular stream. Returns true if it is created, or false otherwise.
   virtual bool CreateMediaCodecBridgeInternal() = 0;

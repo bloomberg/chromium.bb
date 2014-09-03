@@ -39,9 +39,8 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
 
   // Construct a MediaPlayerBridge object. This object needs to call |manager|'s
   // RequestMediaResources() before decoding the media stream. This allows
-  // |manager| to track unused resources and free them when needed. On the other
-  // hand, it needs to call ReleaseMediaResources() when it is done with
-  // decoding. MediaPlayerBridge also forwards Android MediaPlayer callbacks to
+  // |manager| to track unused resources and free them when needed.
+  // MediaPlayerBridge also forwards Android MediaPlayer callbacks to
   // the |manager| when needed.
   MediaPlayerBridge(int player_id,
                     const GURL& url,
@@ -50,7 +49,6 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
                     bool hide_url_log,
                     MediaPlayerManager* manager,
                     const RequestMediaResourcesCB& request_media_resources_cb,
-                    const ReleaseMediaResourcesCB& release_media_resources_cb,
                     const GURL& frame_url,
                     bool allow_credentials);
   virtual ~MediaPlayerBridge();

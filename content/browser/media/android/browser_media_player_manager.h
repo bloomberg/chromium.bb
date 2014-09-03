@@ -161,9 +161,11 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // constrained by hardware and memory limits.
   virtual void OnMediaResourcesRequested(int player_id);
 
-  // Similar to the above call, MediaPlayerAndroid must call this method when
-  // releasing all the decoding resources.
-  virtual void OnMediaResourcesReleased(int player_id);
+  // Called when a player releases all decoding resources.
+  void ReleaseMediaResources(int player_id);
+
+  // Releases the player. However, don't remove it from |players_|.
+  void ReleasePlayer(media::MediaPlayerAndroid* player);
 
 #if defined(VIDEO_HOLE)
   void OnRequestExternalSurface(int player_id, const gfx::RectF& rect);

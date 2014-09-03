@@ -83,8 +83,6 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
           manager,
           base::Bind(&BrowserMediaPlayerManager::OnMediaResourcesRequested,
                      weak_ptr_factory_.GetWeakPtr()),
-          base::Bind(&BrowserMediaPlayerManager::OnMediaResourcesReleased,
-                     weak_ptr_factory_.GetWeakPtr()),
           media_player_params.frame_url,
           media_player_params.allow_credentials);
       BrowserMediaPlayerManager* browser_media_player_manager =
@@ -111,8 +109,6 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
           media_player_params.player_id,
           manager,
           base::Bind(&BrowserMediaPlayerManager::OnMediaResourcesRequested,
-                     weak_ptr_factory_.GetWeakPtr()),
-          base::Bind(&BrowserMediaPlayerManager::OnMediaResourcesReleased,
                      weak_ptr_factory_.GetWeakPtr()),
           demuxer->CreateDemuxer(media_player_params.demuxer_client_id),
           media_player_params.frame_url);
@@ -508,7 +504,7 @@ void BrowserMediaPlayerManager::OnSetPoster(int player_id, const GURL& url) {
 void BrowserMediaPlayerManager::OnReleaseResources(int player_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
-    player->Release();
+    ReleasePlayer(player);
   if (player_id == fullscreen_player_id_)
     fullscreen_player_is_released_ = true;
 }
@@ -527,8 +523,8 @@ void BrowserMediaPlayerManager::AddPlayer(MediaPlayerAndroid* player) {
 void BrowserMediaPlayerManager::RemovePlayer(int player_id) {
   for (ScopedVector<MediaPlayerAndroid>::iterator it = players_.begin();
       it != players_.end(); ++it) {
-    MediaPlayerAndroid* player = *it;
-    if (player->player_id() == player_id) {
+    if ((*it)->player_id() == player_id) {
+      ReleaseMediaResources(player_id);
       players_.erase(it);
       break;
     }
@@ -542,6 +538,7 @@ scoped_ptr<media::MediaPlayerAndroid> BrowserMediaPlayerManager::SwapPlayer(
       it != players_.end(); ++it) {
     if ((*it)->player_id() == player_id) {
       previous_player = *it;
+      ReleaseMediaResources(player_id);
       players_.weak_erase(it);
       players_.push_back(player);
       break;
@@ -560,7 +557,7 @@ bool BrowserMediaPlayerManager::Send(IPC::Message* msg) {
 
 void BrowserMediaPlayerManager::ReleaseFullscreenPlayer(
     MediaPlayerAndroid* player) {
-    player->Release();
+  ReleasePlayer(player);
 }
 
 void BrowserMediaPlayerManager::OnMediaResourcesRequested(int player_id) {
@@ -584,14 +581,14 @@ void BrowserMediaPlayerManager::OnMediaResourcesRequested(int player_id) {
   for (it = players_.begin(); it != players_.end(); ++it) {
     if ((*it)->IsPlayerReady() && !(*it)->IsPlaying() &&
         fullscreen_player_id_ != (*it)->player_id()) {
-      (*it)->Release();
+      ReleasePlayer(*it);
       Send(new MediaPlayerMsg_MediaPlayerReleased(RoutingID(),
                                                   (*it)->player_id()));
     }
   }
 }
 
-void BrowserMediaPlayerManager::OnMediaResourcesReleased(int player_id) {
+void BrowserMediaPlayerManager::ReleaseMediaResources(int player_id) {
 #if defined(VIDEO_HOLE)
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player && player->IsSurfaceInUse())
@@ -599,6 +596,11 @@ void BrowserMediaPlayerManager::OnMediaResourcesReleased(int player_id) {
   if (external_video_surface_container_)
     external_video_surface_container_->ReleaseExternalVideoSurface(player_id);
 #endif  // defined(VIDEO_HOLE)
+}
+
+void BrowserMediaPlayerManager::ReleasePlayer(MediaPlayerAndroid* player) {
+  player->Release();
+  ReleaseMediaResources(player->player_id());
 }
 
 }  // namespace content

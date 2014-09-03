@@ -27,13 +27,11 @@ MediaSourcePlayer::MediaSourcePlayer(
     int player_id,
     MediaPlayerManager* manager,
     const RequestMediaResourcesCB& request_media_resources_cb,
-    const ReleaseMediaResourcesCB& release_media_resources_cb,
     scoped_ptr<DemuxerAndroid> demuxer,
     const GURL& frame_url)
     : MediaPlayerAndroid(player_id,
                          manager,
                          request_media_resources_cb,
-                         release_media_resources_cb,
                          frame_url),
       demuxer_(demuxer.Pass()),
       pending_event_(NO_EVENT_PENDING),
@@ -58,7 +56,6 @@ MediaSourcePlayer::MediaSourcePlayer(
                  base::Unretained(demuxer_.get()),
                  DemuxerStream::VIDEO),
       base::Bind(request_media_resources_cb_, player_id),
-      base::Bind(release_media_resources_cb_, player_id),
       base::Bind(&MediaSourcePlayer::OnDemuxerConfigsChanged,
                  weak_factory_.GetWeakPtr())));
   demuxer_->Initialize(this);
@@ -189,7 +186,6 @@ base::TimeDelta MediaSourcePlayer::GetDuration() {
 void MediaSourcePlayer::Release() {
   DVLOG(1) << __FUNCTION__;
 
-  is_surface_in_use_ = false;
   audio_decoder_job_->ReleaseDecoderResources();
   video_decoder_job_->ReleaseDecoderResources();
 
@@ -204,7 +200,7 @@ void MediaSourcePlayer::SetVolume(double volume) {
 }
 
 bool MediaSourcePlayer::IsSurfaceInUse() const {
-  return is_surface_in_use_;
+  return video_decoder_job_ && video_decoder_job_->is_decoding();
 }
 
 bool MediaSourcePlayer::CanPause() {

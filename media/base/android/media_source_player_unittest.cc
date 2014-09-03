@@ -45,7 +45,6 @@ class MockMediaPlayerManager : public MediaPlayerManager {
       : message_loop_(message_loop),
         playback_completed_(false),
         num_resources_requested_(0),
-        num_resources_released_(0),
         timestamp_updated_(false) {}
   virtual ~MockMediaPlayerManager() {}
 
@@ -92,16 +91,8 @@ class MockMediaPlayerManager : public MediaPlayerManager {
     return num_resources_requested_;
   }
 
-  int num_resources_released() const {
-    return num_resources_released_;
-  }
-
   void OnMediaResourcesRequested(int player_id) {
     num_resources_requested_++;
-  }
-
-  void OnMediaResourcesReleased(int player_id) {
-    num_resources_released_++;
   }
 
   bool timestamp_updated() const {
@@ -117,8 +108,6 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   bool playback_completed_;
   // The number of resource requests this object has seen.
   int num_resources_requested_;
-  // The number of released resources.
-  int num_resources_released_;
   // Playback timestamp was updated.
   bool timestamp_updated_;
 
@@ -173,8 +162,6 @@ class MediaSourcePlayerTest : public testing::Test {
         demuxer_(new MockDemuxerAndroid(&message_loop_)),
         player_(0, &manager_,
                 base::Bind(&MockMediaPlayerManager::OnMediaResourcesRequested,
-                           base::Unretained(&manager_)),
-                base::Bind(&MockMediaPlayerManager::OnMediaResourcesReleased,
                            base::Unretained(&manager_)),
                 scoped_ptr<DemuxerAndroid>(demuxer_),
                 GURL()),
@@ -1038,7 +1025,6 @@ TEST_F(MediaSourcePlayerTest, ReleaseVideoDecoderResourcesWhileDecoding) {
   // No resource is requested since there is no data to decode.
   EXPECT_EQ(0, manager_.num_resources_requested());
   ReleasePlayer();
-  EXPECT_EQ(0, manager_.num_resources_released());
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
 
   // Recreate the video decoder.
@@ -1049,10 +1035,8 @@ TEST_F(MediaSourcePlayerTest, ReleaseVideoDecoderResourcesWhileDecoding) {
   EXPECT_EQ(0, demuxer_->num_browser_seek_requests());
   EXPECT_EQ(1, manager_.num_resources_requested());
   ReleasePlayer();
-  // The resource is still held by the video decoder until it finishes decoding.
-  EXPECT_EQ(0, manager_.num_resources_released());
   // Wait for the media codec bridge to finish decoding and be reset.
-  while (manager_.num_resources_released() != 1)
+  while (GetMediaDecoderJob(false)->is_decoding())
     message_loop_.RunUntilIdle();
 }
 
@@ -1803,7 +1787,6 @@ TEST_F(MediaSourcePlayerTest, VideoDemuxerConfigChange) {
   // 2 codecs should have been created, one before the config change, and one
   // after it.
   EXPECT_EQ(2, manager_.num_resources_requested());
-  EXPECT_EQ(1, manager_.num_resources_released());
 }
 
 TEST_F(MediaSourcePlayerTest, VideoDemuxerConfigChangeWithAdaptivePlayback) {
