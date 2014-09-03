@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-PASS Tests calc() with time units. 
-PASS Tests calc() with angle units. 
-PASS Tests calc() with frequency units. 
-PASS Tests unit conversion of single values in calc(). 
-Harness: the test ran to completion.
-

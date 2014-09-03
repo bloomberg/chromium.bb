@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS createElement is case insensitive for custom tags 
-PASS createElement is case insensitive for type extensions 
-Harness: the test ran to completion.
-
