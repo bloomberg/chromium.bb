@@ -84,6 +84,9 @@ int GetIsolatedWorldIdForExtension(const Extension* extension,
   frame->setIsolatedWorldContentSecurityPolicy(
       id,
       blink::WebString::fromUTF8(CSPInfo::GetContentSecurityPolicy(extension)));
+  frame->setIsolatedWorldHumanReadableName(
+      id,
+      blink::WebString::fromUTF8(extension->name()));
 
   return id;
 }
