@@ -5,9 +5,11 @@
 #include "base/bind.h"
 #include "mojo/examples/wm_flow/app/embedder.mojom.h"
 #include "mojo/examples/wm_flow/embedded/embeddee.mojom.h"
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/public/cpp/application/service_provider_impl.h"
@@ -135,11 +137,7 @@ class WMFlowApp : public mojo::ApplicationDelegate,
 
 }  // namespace examples
 
-namespace mojo {
-
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new examples::WMFlowApp;
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunnerChromium runner(new examples::WMFlowApp);
+  return runner.Run(shell_handle);
 }
-
-}  // namespace
