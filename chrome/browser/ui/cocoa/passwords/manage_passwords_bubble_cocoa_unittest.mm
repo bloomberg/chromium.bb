@@ -34,8 +34,7 @@ class ManagePasswordsBubbleCocoaTest : public CocoaProfileTest {
 
     // Create the WebContents.
     siteInstance_ = content::SiteInstance::Create(profile());
-    webContents_ = content::WebContents::Create(
-        content::WebContents::CreateParams(profile(), siteInstance_.get()));
+    webContents_ = CreateWebContents();
     browser()->tab_strip_model()->AppendWebContents(
         webContents_, /*foreground=*/true);
 
@@ -49,19 +48,19 @@ class ManagePasswordsBubbleCocoaTest : public CocoaProfileTest {
 
   content::WebContents* webContents() { return webContents_; }
 
-  void ShowBubble() {
-    NSWindow* nativeWindow = browser()->window()->GetNativeWindow();
-    BrowserWindowController* bwc =
-        [BrowserWindowController browserWindowControllerForWindow:nativeWindow];
-    ManagePasswordsIcon* icon =
-        [bwc locationBarBridge]->manage_passwords_decoration()->icon();
+  content::WebContents* CreateWebContents() {
+    return content::WebContents::Create(
+        content::WebContents::CreateParams(profile(), siteInstance_.get()));
+  }
 
-    ManagePasswordsBubbleCocoa::ShowBubble(
-        webContents(), ManagePasswordsBubble::DisplayReason::AUTOMATIC, icon);
-    // Disable animations so that closing happens immediately.
-    InfoBubbleWindow* bubbleWindow = base::mac::ObjCCast<InfoBubbleWindow>(
-        [ManagePasswordsBubbleCocoa::instance()->controller_ window]);
-    [bubbleWindow setAllowedAnimations:info_bubble::kAnimateNone];
+  void ShowBubble() {
+    chrome::ShowManagePasswordsBubble(webContents());
+    if (ManagePasswordsBubbleCocoa::instance()) {
+      // Disable animations so that closing happens immediately.
+      InfoBubbleWindow* bubbleWindow = base::mac::ObjCCast<InfoBubbleWindow>(
+          [ManagePasswordsBubbleCocoa::instance()->controller_ window]);
+      [bubbleWindow setAllowedAnimations:info_bubble::kAnimateNone];
+    }
   }
 
   void CloseBubble() {
@@ -103,4 +102,20 @@ TEST_F(ManagePasswordsBubbleCocoaTest, BackgroundCloseShouldDeleteBubble) {
   [bubbleWindow() close];
   EXPECT_FALSE(ManagePasswordsBubbleCocoa::instance());
   EXPECT_FALSE([bubbleWindow() isVisible]);
+}
+
+TEST_F(ManagePasswordsBubbleCocoaTest, ShowBubbleOnInactiveTabShouldDoNothing) {
+  // Start in the tab that we'll try to show the bubble on.
+  EXPECT_TRUE(webContents()->GetTopLevelNativeWindow());
+
+  // Open a second tab and make it active.
+  content::WebContents* webContents2 = CreateWebContents();
+  browser()->tab_strip_model()->AppendWebContents(webContents2,
+                                                  /*foreground=*/true);
+  EXPECT_FALSE(webContents()->GetTopLevelNativeWindow());
+  EXPECT_TRUE(webContents2->GetTopLevelNativeWindow());
+
+  // Try to show the bubble on the inactive tab. Nothing should happen.
+  ShowBubble();
+  EXPECT_FALSE(ManagePasswordsBubbleCocoa::instance());
 }

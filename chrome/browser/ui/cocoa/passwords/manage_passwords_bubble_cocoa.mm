@@ -51,6 +51,10 @@ void ShowManagePasswordsBubble(content::WebContents* webContents) {
   ManagePasswordsUIController* controller =
       ManagePasswordsUIController::FromWebContents(webContents);
   NSWindow* window = webContents->GetTopLevelNativeWindow();
+  if (!window) {
+    // The tab isn't active right now.
+    return;
+  }
   BrowserWindowController* bwc =
       [BrowserWindowController browserWindowControllerForWindow:window];
   ManagePasswordsBubbleCocoa::ShowBubble(
