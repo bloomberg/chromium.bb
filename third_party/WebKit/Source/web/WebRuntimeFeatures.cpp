@@ -217,11 +217,6 @@ void WebRuntimeFeatures::enableTouchIconLoading(bool enable)
     RuntimeEnabledFeatures::setTouchIconLoadingEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableWebAnimationsSVG(bool enable)
-{
-    RuntimeEnabledFeatures::setWebAnimationsSVGEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableWebAudio(bool enable)
 {
     RuntimeEnabledFeatures::setWebAudioEnabled(enable);

@@ -144,7 +144,6 @@ TextBlob
 TouchIconLoading
 ThreadedParserDataReceiver status=experimental
 UserSelectAll status=experimental
-WebAnimationsSVG
 WebAnimationsAPI status=experimental
 WebAudio condition=WEB_AUDIO, status=stable
 WebGLDraftExtensions status=experimental

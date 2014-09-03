@@ -104,8 +104,6 @@ public:
 
     BLINK_EXPORT static void enableTouchIconLoading(bool);
 
-    BLINK_EXPORT static void enableWebAnimationsSVG(bool);
-
     BLINK_EXPORT static void enableWebAudio(bool);
 
     BLINK_EXPORT static void enableWebGLDraftExtensions(bool);
