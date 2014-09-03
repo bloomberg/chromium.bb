@@ -494,6 +494,7 @@
             'svg/SVGURIReference.idl',
             'svg/SVGZoomAndPan.idl',
             'workers/AbstractWorker.idl',
+            'xml/DocumentXMLTreeViewer.idl',
             'xml/DocumentXPathEvaluator.idl',
         ],
         # interfaces that inherit from Event, including Event itself
@@ -1873,8 +1874,6 @@
             'xml/XMLHttpRequestUpload.h',
             'xml/XMLSerializer.cpp',
             'xml/XMLSerializer.h',
-            'xml/XMLTreeViewer.cpp',
-            'xml/XMLTreeViewer.h',
             'xml/XPathEvaluator.cpp',
             'xml/XPathEvaluator.h',
             'xml/XPathExpression.cpp',

@@ -28,7 +28,7 @@
         function onload()
         {
             xmlWindow = window.open('resources/sample.xml', "XMLViewerTestWindow");
-            xmlWindow.onAfterWebkitXMLViewerLoaded = checkSourceXML;
+            xmlWindow.onload = checkSourceXML;
         }
 
     </script>
