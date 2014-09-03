@@ -1306,7 +1306,7 @@ crbug.com/409579 http/tests/security/javascriptURL/xss-DENIED-to-javascript-url-
 crbug.com/409715 [ Win ] svg/W3C-SVG-1.1/text-intro-04-t.svg [ Crash Pass ]
 crbug.com/409713 [ Linux Win Release ] fast/dom/Window/window-early-properties-xhr.html [ Pass Timeout ]
 crbug.com/409712 http/tests/filesystem/workers/resolve-url.html [ Pass Timeout ]
-crbug.com/409767 [ Win ] crypto/worker-subtle-crypto-concurrent.html [ Crash Pass Timeout ]
+crbug.com/409767 crypto/worker-subtle-crypto-concurrent.html [ Crash Pass Timeout ]
 
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-cross-none-block.html [ Failure Pass Timeout ]
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-cross-self-block.html [ Failure Pass Timeout ]
