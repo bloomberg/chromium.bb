@@ -6,6 +6,7 @@
 #define BASE_SEQUENCED_TASK_RUNNER_HELPERS_H_
 
 #include "base/basictypes.h"
+#include "base/debug/alias.h"
 
 // TODO(akalin): Investigate whether it's possible to just have
 // SequencedTaskRunner use these helpers (instead of MessageLoop).
@@ -36,6 +37,10 @@ class DeleteHelper {
   template <class T2, class R> friend class subtle::DeleteHelperInternal;
 
   static void DoDelete(const void* object) {
+    // TODO(tzik): Remove this after http://crbug.com/393634 is fixed.
+    const char* function_name = __FUNCTION__;
+    debug::Alias(&function_name);
+
     delete reinterpret_cast<const T*>(object);
   }
 
