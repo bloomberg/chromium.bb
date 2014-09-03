@@ -87336,7 +87336,12 @@
         "gs_path": "default",
         "health_alert_recipients": [],
         "health_threshold": 0,
-        "hw_tests": [],
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+        ],
         "hwqual": true,
         "image_test": true,
         "images": [

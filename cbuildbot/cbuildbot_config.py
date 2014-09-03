@@ -2326,11 +2326,6 @@ _arm_release.add_config('nyan_blaze-release',
   useflags=_release['useflags'] + ['highdpi'],
 )
 
-_arm_release.add_config('veyron_pinky-release',
-  boards=['veyron_pinky'],
-  hw_tests=[],
-)
-
 # Now generate generic release configs if we haven't created anything more
 # specific above already.
 def _AddReleaseConfigs():
