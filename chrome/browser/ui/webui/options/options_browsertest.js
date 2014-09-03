@@ -99,7 +99,8 @@ GEN('#endif  // defined(OS_MACOSX)');
 
 TEST_F('OptionsWebUITest', 'MAYBE_testSetBooleanPrefTriggers', function() {
   // TODO(dtseng): make generic to click all buttons.
-  var showHomeButton = $('show-home-button');
+  var showHomeButton =
+      document.querySelector('input[pref="browser.show_home_button"]');
   var trueListValue = [
     'browser.show_home_button',
     true,

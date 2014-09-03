@@ -256,7 +256,7 @@ input:disabled:-webkit-any([type='password'],
    * Resolve this by using 'inherit'. */
   font: inherit;
   margin: 0;
-  padding: 0 4px;
+  padding: 0;
 }
 
 .link-button:hover {
@@ -295,7 +295,9 @@ input:disabled:-webkit-any([type='password'],
 }
 
 :-webkit-any(.checkbox, .radio) label input ~ span {
+  -webkit-margin-end: 0.3em;
   -webkit-margin-start: 0.6em;
+  -webkit-user-select: none;
   /* Make sure long spans wrap at the same horizontal position they start. */
   display: block;
 }

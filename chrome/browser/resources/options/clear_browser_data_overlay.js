@@ -120,8 +120,8 @@ cr.define('options', function() {
 
         if (buttonId != '') {
           var button = document.createElement('button');
-          button.setAttribute('id', buttonId);
-          button.setAttribute('class', 'link-button');
+          button.id = buttonId;
+          button.className = 'link-button';
           button.textContent = footerFragments[i + 1];
           footer.appendChild(button);
           i += 3;
