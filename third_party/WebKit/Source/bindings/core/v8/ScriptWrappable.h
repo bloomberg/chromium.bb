@@ -351,19 +351,16 @@ private:
 // the definition is given by the IDL code generator.
 //
 // Every DOM Class T must meet either of the following conditions:
-// - T.idl inherits from [NotScriptWrappable] or has [NoInterfaceObject].
+// - T.idl inherits from [NotScriptWrappable].
 // - T inherits from ScriptWrappable and has DEFINE_WRAPPERTYPEINFO().
-//
-// All the derived classes of ScriptWrappable, regardless of directly or
-// indirectly, must write this macro in the class definition except for the case
-// that the class is [NoInterfaceObject]. In the case of [NoInterfaceObject],
-// the IDL code generator does not generate V8T.cpp, so the definition of
-// T::s_wrapperTypeInfo will not be generated, either.
 //
 // If a DOM class T does not inherit from ScriptWrappable, you have to write
 // [NotScriptWrappable] in the IDL file as an extended attribute in order to let
 // IDL code generator know that T does not inherit from ScriptWrappable. Note
 // that [NotScriptWrappable] is inheritable.
+//
+// All the derived classes of ScriptWrappable, regardless of directly or
+// indirectly, must write this macro in the class definition.
 #define DEFINE_WRAPPERTYPEINFO() \
 public: \
     virtual const WrapperTypeInfo* wrapperTypeInfo() const OVERRIDE \
