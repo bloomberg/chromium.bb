@@ -20,6 +20,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
+#include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -56,9 +57,12 @@ const GURL ManifestURL::GetHomepageURL(const Extension* extension) {
   const GURL& homepage_url = GetManifestURL(extension, keys::kHomepageURL);
   if (homepage_url.is_valid())
     return homepage_url;
-  return UpdatesFromGallery(extension) ?
-      GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + extension->id()) :
-      GURL::EmptyGURL();
+  bool use_webstore_url = UpdatesFromGallery(extension) &&
+                          !SharedModuleInfo::IsSharedModule(extension);
+  return use_webstore_url
+             ? GURL(extension_urls::GetWebstoreItemDetailURLPrefix() +
+                    extension->id())
+             : GURL::EmptyGURL();
 }
 
 // static
