@@ -118,16 +118,10 @@ Value RunGetTargetOutputs(Scope* scope,
 
   // Compute the output list.
   std::vector<SourceFile> files;
-  if (target->output_type() == Target::ACTION) {
-    // Actions just use the output list with no substitution.
-    SubstitutionWriter::GetListAsSourceFiles(
-        target->action_values().outputs(), &files);
-  } else if (target->output_type() == Target::COPY_FILES ||
-             target->output_type() == Target::ACTION_FOREACH) {
-    // Copy and foreach appllies the outputs to the sources.
-    SubstitutionWriter::ApplyListToSources(
-        target->settings(), target->action_values().outputs(),
-        target->sources(), &files);
+  if (target->output_type() == Target::ACTION ||
+      target->output_type() == Target::COPY_FILES ||
+      target->output_type() == Target::ACTION_FOREACH) {
+    target->action_values().GetOutputsAsSourceFiles(target, &files);
   } else {
     // Other types of targets are not supported.
     *err = Err(args[0], "Target is not an action, action_foreach, or copy.",

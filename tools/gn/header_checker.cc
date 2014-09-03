@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "tools/gn/build_settings.h"
 #include "tools/gn/builder.h"
@@ -22,6 +23,24 @@
 #include "tools/gn/trace.h"
 
 namespace {
+
+struct PublicGeneratedPair {
+  PublicGeneratedPair() : is_public(false), is_generated(false) {}
+  bool is_public;
+  bool is_generated;
+};
+
+// If the given file is in the "gen" folder, trims this so it treats the gen
+// directory as the source root:
+//   //out/Debug/gen/foo/bar.h -> //foo/bar.h
+// If the file isn't in the generated root, returns the input unchanged.
+SourceFile RemoveRootGenDirFromFile(const Target* target,
+                                    const SourceFile& file) {
+  const SourceDir& gen = target->settings()->toolchain_gen_dir();
+  if (StartsWithASCII(file.value(), gen.value(), true))
+    return SourceFile("//" + file.value().substr(gen.value().size()));
+  return file;
+}
 
 // This class makes InputFiles on the stack as it reads files to check. When
 // we throw an error, the Err indicates a locatin which has a pointer to
@@ -166,11 +185,14 @@ void HeaderChecker::RunCheckOverFiles(const FileMap& files, bool force_check) {
       continue;
 
     // Do a first pass to find if this should be skipped. All targets including
-    // this source file must exclude it from checking.
+    // this source file must exclude it from checking, or it must be generated.
     if (!force_check) {
       bool check_includes = false;
-      for (size_t vect_i = 0; vect_i < vect.size(); ++vect_i)
-        check_includes |= vect[vect_i].target->check_includes();
+      for (size_t vect_i = 0; vect_i < vect.size(); ++vect_i) {
+        check_includes |=
+            vect[vect_i].target->check_includes() &&
+            !vect[vect_i].is_generated;
+      }
       if (!check_includes)
         continue;
     }
@@ -202,10 +224,10 @@ void HeaderChecker::AddTargetToFileMap(const Target* target, FileMap* dest) {
   bool default_public = target->all_headers_public();
 
   // First collect the normal files, they get the default visibility.
-  std::map<SourceFile, bool> files_to_public;
+  std::map<SourceFile, PublicGeneratedPair> files_to_public;
   const Target::FileList& sources = target->sources();
   for (size_t i = 0; i < sources.size(); i++)
-    files_to_public[sources[i]] = default_public;
+    files_to_public[sources[i]].is_public = default_public;
 
   // Add in the public files, forcing them to public. This may overwrite some
   // entries, and it may add new ones.
@@ -213,12 +235,30 @@ void HeaderChecker::AddTargetToFileMap(const Target* target, FileMap* dest) {
   if (default_public)
     DCHECK(public_list.empty());  // List only used when default is not public.
   for (size_t i = 0; i < public_list.size(); i++)
-    files_to_public[public_list[i]] = true;
+    files_to_public[public_list[i]].is_public = true;
+
+  // Add in outputs from actions. These are treated as public (since if other
+  // targets can't use them, then there wouldn't be any point in outputting).
+  std::vector<SourceFile> outputs;
+  target->action_values().GetOutputsAsSourceFiles(target, &outputs);
+  for (size_t i = 0; i < outputs.size(); i++) {
+    // For generated files in the "gen" directory, add the filename to the
+    // map assuming "gen" is the source root. This means that when files include
+    // the generated header relative to there (the recommended practice), we'll
+    // find the file.
+    SourceFile output_file = RemoveRootGenDirFromFile(target, outputs[i]);
+    PublicGeneratedPair* pair = &files_to_public[output_file];
+    pair->is_public = true;
+    pair->is_generated = true;
+  }
 
   // Add the merged list to the master list of all files.
-  for (std::map<SourceFile, bool>::const_iterator i = files_to_public.begin();
-       i != files_to_public.end(); ++i)
-    (*dest)[i->first].push_back(TargetInfo(target, i->second));
+  for (std::map<SourceFile, PublicGeneratedPair>::const_iterator i =
+           files_to_public.begin();
+       i != files_to_public.end(); ++i) {
+    (*dest)[i->first].push_back(TargetInfo(
+        target, i->second.is_public, i->second.is_generated));
+  }
 }
 
 bool HeaderChecker::IsFileInOuputDir(const SourceFile& file) const {

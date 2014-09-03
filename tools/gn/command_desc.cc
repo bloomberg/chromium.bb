@@ -17,6 +17,7 @@
 #include "tools/gn/standard_out.h"
 #include "tools/gn/substitution_writer.h"
 #include "tools/gn/target.h"
+#include "tools/gn/variables.h"
 
 namespace commands {
 
@@ -225,11 +226,42 @@ void PrintPublic(const Target* target, bool display_header) {
     OutputString("  " + public_headers[i].value() + "\n");
 }
 
+void PrintCheckIncludes(const Target* target, bool display_header) {
+  if (display_header)
+    OutputString("\ncheck_includes:\n");
+
+  if (target->check_includes())
+    OutputString("  true\n");
+  else
+    OutputString("  false\n");
+}
+
+void PrintAllowCircularIncludesFrom(const Target* target, bool display_header) {
+  if (display_header)
+    OutputString("\nallow_circular_includes_from:\n");
+
+  Label toolchain_label = target->label().GetToolchainLabel();
+  const std::set<Label>& allow = target->allow_circular_includes_from();
+  for (std::set<Label>::const_iterator iter = allow.begin();
+       iter != allow.end(); ++iter)
+    OutputString("  " + iter->GetUserVisibleName(toolchain_label) + "\n");
+}
+
 void PrintVisibility(const Target* target, bool display_header) {
   if (display_header)
     OutputString("\nvisibility:\n");
 
   OutputString(target->visibility().Describe(2, false));
+}
+
+void PrintTestonly(const Target* target, bool display_header) {
+  if (display_header)
+    OutputString("\ntestonly:\n");
+
+  if (target->testonly())
+    OutputString("  true\n");
+  else
+    OutputString("  false\n");
 }
 
 void PrintConfigsVector(const Target* target,
@@ -454,8 +486,17 @@ const char kDesc_Help[] =
     "  public\n"
     "      Public header files.\n"
     "\n"
+    "  check_includes\n"
+    "      Whether \"gn check\" checks this target for include usage.\n"
+    "\n"
+    "  allow_circular_includes_from\n"
+    "      Permit includes from these targets.\n"
+    "\n"
     "  visibility\n"
     "      Prints which targets can depend on this one.\n"
+    "\n"
+    "  testonly\n"
+    "      Whether this target may only be used in tests.\n"
     "\n"
     "  configs\n"
     "      Shows configs applied to the given target, sorted in the order\n"
@@ -553,35 +594,41 @@ int RunDesc(const std::vector<std::string>& args) {
   if (args.size() == 3) {
     // User specified one thing to display.
     const std::string& what = args[2];
-    if (what == "configs") {
+    if (what == variables::kConfigs) {
       PrintConfigs(target, false);
-    } else if (what == "direct_dependent_configs") {
+    } else if (what == variables::kDirectDependentConfigs) {
       PrintDirectDependentConfigs(target, false);
-    } else if (what == "all_dependent_configs") {
+    } else if (what == variables::kAllDependentConfigs) {
       PrintAllDependentConfigs(target, false);
-    } else if (what == "forward_dependent_configs_from") {
+    } else if (what == variables::kForwardDependentConfigsFrom) {
       PrintForwardDependentConfigsFrom(target, false);
-    } else if (what == "sources") {
+    } else if (what == variables::kSources) {
       PrintSources(target, false);
-    } else if (what == "public") {
+    } else if (what == variables::kPublic) {
       PrintPublic(target, false);
-    } else if (what == "visibility") {
+    } else if (what == variables::kCheckIncludes) {
+      PrintCheckIncludes(target, false);
+    } else if (what == variables::kAllowCircularIncludesFrom) {
+      PrintAllowCircularIncludesFrom(target, false);
+    } else if (what == variables::kVisibility) {
       PrintVisibility(target, false);
-    } else if (what == "inputs") {
+    } else if (what == variables::kTestonly) {
+      PrintTestonly(target, false);
+    } else if (what == variables::kInputs) {
       PrintInputs(target, false);
-    } else if (what == "script") {
+    } else if (what == variables::kScript) {
       PrintScript(target, false);
-    } else if (what == "args") {
+    } else if (what == variables::kArgs) {
       PrintArgs(target, false);
-    } else if (what == "depfile") {
+    } else if (what == variables::kDepfile) {
       PrintDepfile(target, false);
-    } else if (what == "outputs") {
+    } else if (what == variables::kOutputs) {
       PrintOutputs(target, false);
-    } else if (what == "deps") {
+    } else if (what == variables::kDeps) {
       PrintDeps(target, false);
-    } else if (what == "lib_dirs") {
+    } else if (what == variables::kLibDirs) {
       PrintLibDirs(target, false);
-    } else if (what == "libs") {
+    } else if (what == variables::kLibs) {
       PrintLibs(target, false);
 
     CONFIG_VALUE_HANDLER(defines, std::string)
@@ -626,11 +673,16 @@ int RunDesc(const std::vector<std::string>& args) {
   OutputString(target_toolchain.GetUserVisibleName(false) + "\n");
 
   PrintSources(target, true);
-  if (is_binary_output)
+  if (is_binary_output) {
     PrintPublic(target, true);
+    PrintCheckIncludes(target, true);
+    PrintAllowCircularIncludesFrom(target, true);
+  }
   PrintVisibility(target, true);
-  if (is_binary_output)
+  if (is_binary_output) {
+    PrintTestonly(target, true);
     PrintConfigs(target, true);
+  }
 
   PrintDirectDependentConfigs(target, true);
   PrintAllDependentConfigs(target, true);

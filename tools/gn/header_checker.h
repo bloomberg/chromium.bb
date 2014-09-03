@@ -58,11 +58,20 @@ class HeaderChecker : public base::RefCountedThreadSafe<HeaderChecker> {
   ~HeaderChecker();
 
   struct TargetInfo {
-    TargetInfo() : target(NULL), is_public(false) {}
-    TargetInfo(const Target* t, bool p) : target(t), is_public(p) {}
+    TargetInfo() : target(NULL), is_public(false), is_generated(false) {}
+    TargetInfo(const Target* t, bool is_pub, bool is_gen)
+        : target(t),
+          is_public(is_pub),
+          is_generated(is_gen) {
+    }
 
     const Target* target;
+
+    // True if the file is public in the given target.
     bool is_public;
+
+    // True if this file is generated and won't actually exist on disk.
+    bool is_generated;
   };
 
   typedef std::vector<TargetInfo> TargetVector;
