@@ -45,8 +45,10 @@ template("mojom") {
     "$generator_root/generators/js_templates/interface_definition.tmpl",
     "$generator_root/generators/js_templates/module.js.tmpl",
     "$generator_root/generators/js_templates/struct_definition.tmpl",
+    "$generator_root/generators/python_templates/module.py.tmpl",
     "$generator_root/generators/mojom_cpp_generator.py",
     "$generator_root/generators/mojom_js_generator.py",
+    "$generator_root/generators/mojom_python_generator.py",
     "$generator_root/pylib/mojom/__init__.py",
     "$generator_root/pylib/mojom/error.py",
     "$generator_root/pylib/mojom/generate/__init__.py",
@@ -69,6 +71,9 @@ template("mojom") {
   generator_js_outputs = [
     "{{source_gen_dir}}/{{source_name_part}}.mojom.js",
   ]
+  generator_python_outputs = [
+    "{{source_gen_dir}}/{{source_name_part}}_mojom.py",
+  ]
 
   target_visibility = ":$target_name"
 
@@ -78,7 +83,9 @@ template("mojom") {
     script = generator_script
     inputs = generator_sources
     sources = invoker.sources
-    outputs = generator_cpp_outputs + generator_js_outputs
+    outputs = generator_cpp_outputs +
+              generator_js_outputs +
+              generator_python_outputs
     args = [
       "{{source}}",
       "--use_chromium_bundled_pylibs",

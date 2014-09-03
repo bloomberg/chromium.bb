@@ -95,11 +95,8 @@ def NameToComponent(name):
   name = re.sub('([^A-Z_])([A-Z])', r'\1_\2', name)
   return [x.lower() for x in name.split('_')]
 
-def CapitalizeFirst(string):
-  return string[0].upper() + string[1:]
-
 def UpperCamelCase(name):
-  return ''.join([CapitalizeFirst(x) for x in NameToComponent(name)])
+  return ''.join([x.capitalize() for x in NameToComponent(name)])
 
 def CamelCase(name):
   uccc = UpperCamelCase(name)

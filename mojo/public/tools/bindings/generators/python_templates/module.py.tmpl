@@ -1,0 +1,16 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+{% if imports %}
+
+{% for import in imports %}
+import {{import.python_module}}
+{% endfor %}
+{% endif %}
+{#--- Constants #}
+{% if module.constants %}
+
+{% for constant in module.constants %}
+{{constant|name}} = {{constant.value|expression_to_text}}
+{% endfor %}
+{% endif %}

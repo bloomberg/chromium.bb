@@ -23,6 +23,12 @@ class PythonBindingsTestRunner(MojoPythonTestRunner):
       python_build_dir = os.path.join(args.build_dir, 'python')
       if python_build_dir not in sys.path:
         sys.path.append(python_build_dir)
+      python_gen_dir = os.path.join(
+          args.build_dir,
+          'gen', 'mojo', 'public', 'interfaces', 'bindings', 'tests')
+      print python_gen_dir
+      if python_gen_dir not in sys.path:
+        sys.path.append(python_gen_dir)
 
 
 def main():
