@@ -224,17 +224,22 @@ Visit.prototype.getResultDOM = function(propertyBag) {
 
   entryBox.appendChild(time);
 
-  var bookmarkSection = createElementWithClassName('div', 'bookmark-section');
+  var bookmarkSection = createElementWithClassName(
+      'button', 'bookmark-section custom-appearance');
   if (this.starred_) {
     bookmarkSection.title = loadTimeData.getString('removeBookmark');
     bookmarkSection.classList.add('starred');
     bookmarkSection.addEventListener('click', function f(e) {
       recordUmaAction('HistoryPage_BookmarkStarClicked');
-      bookmarkSection.classList.remove('starred');
       chrome.send('removeBookmark', [self.url_]);
+
+      this.model_.getView().onBeforeUnstarred(this);
+      bookmarkSection.classList.remove('starred');
+      this.model_.getView().onAfterUnstarred(this);
+
       bookmarkSection.removeEventListener('click', f);
       e.preventDefault();
-    });
+    }.bind(this));
   }
   entryBox.appendChild(bookmarkSection);
 
@@ -1147,6 +1152,21 @@ HistoryView.prototype.onBeforeRemove = function(visit) {
             this.focusGrid_.rows[pos.row - 1];
   if (row)
     row.focusIndex(Math.min(pos.col, row.items.length - 1));
+};
+
+/** @param {Visit} visit The visit about to be unstarred. */
+HistoryView.prototype.onBeforeUnstarred = function(visit) {
+  assert(this.currentVisits_.indexOf(visit) >= 0);
+  assert(visit.bookmarkStar == document.activeElement);
+
+  var pos = this.focusGrid_.getPositionForTarget(document.activeElement);
+  var row = this.focusGrid_.rows[pos.row];
+  row.focusIndex(Math.min(pos.col + 1, row.items.length - 1));
+};
+
+/** @param {Visit} visit The visit that was just unstarred. */
+HistoryView.prototype.onAfterUnstarred = function(visit) {
+  this.updateFocusGrid_();
 };
 
 /**

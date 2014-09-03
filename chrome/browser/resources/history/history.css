@@ -494,6 +494,7 @@ html .expand .site-domain-arrow {
   -webkit-margin-start: 8px;
   background:
       url(../../../../ui/webui/resources/images/star_small.png) no-repeat;
+  border: none;
   display: inline-block;
   height: 11px;
   min-width: 15px;
