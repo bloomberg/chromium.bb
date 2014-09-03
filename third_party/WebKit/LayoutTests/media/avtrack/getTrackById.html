@@ -12,6 +12,8 @@
             async_test(function(t)
             {
                 var e = document.createElement('video');
+                // add to body to prevent GC pending http://crbug.com/400659
+                document.body.appendChild(e);
 
                 assert_equals(e.audioTracks.length, 0);
                 assert_equals(e.audioTracks.getTrackById(''), null);
