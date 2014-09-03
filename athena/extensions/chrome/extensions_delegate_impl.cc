@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/extension_urls.h"
 #include "net/base/url_util.h"
@@ -59,7 +60,7 @@ class ChromeExtensionsDelegate : public ExtensionsDelegate {
                            chrome::HOST_DESKTOP_TYPE_ASH);
     // TODO(oshima): rename HOST_DESTOP_TYPE_ASH to non native desktop.
 
-    if (app_id == extension_misc::kWebStoreAppId) {
+    if (app_id == extensions::kWebStoreAppId) {
       std::string source_value =
           std::string(extension_urls::kLaunchSourceAppList);
       // Set an override URL to include the source.
