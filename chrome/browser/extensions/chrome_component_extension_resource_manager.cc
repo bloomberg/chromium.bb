@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "chrome/app/theme/grit/chrome_unscaled_resources.h"
 #include "chrome/common/chrome_paths.h"
+#include "grit/chrome_unscaled_resources.h"
 #include "grit/component_extension_resources_map.h"
 #include "grit/theme_resources.h"
 

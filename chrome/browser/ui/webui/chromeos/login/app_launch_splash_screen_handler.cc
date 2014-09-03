@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 
-#include "chrome/app/theme/grit/chrome_unscaled_resources.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -12,6 +11,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "grit/chrome_unscaled_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
