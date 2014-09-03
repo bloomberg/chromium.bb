@@ -189,15 +189,10 @@ PP_Var NPObjectToPPVar(PepperPluginInstanceImpl* instance, NPObject* object) {
 
 PP_Var NPObjectToPPVarForTest(PepperPluginInstanceImpl* instance,
                               NPObject* object) {
-  v8::Isolate* test_isolate = v8::Isolate::New();
   PP_Var result = PP_MakeUndefined();
-  {
-    v8::HandleScope scope(test_isolate);
-    v8::Isolate::Scope isolate_scope(test_isolate);
-    v8::Local<v8::Context> context = v8::Context::New(test_isolate);
-    result = NPObjectToPPVarImpl(instance, object, context);
-  }
-  test_isolate->Dispose();
+  v8::HandleScope scope(instance->GetIsolate());
+  v8::Local<v8::Context> context = v8::Context::New(instance->GetIsolate());
+  result = NPObjectToPPVarImpl(instance, object, context);
   return result;
 }
 
