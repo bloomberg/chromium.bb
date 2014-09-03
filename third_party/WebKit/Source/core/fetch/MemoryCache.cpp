@@ -664,7 +664,7 @@ void MemoryCache::prune(Resource* justReleasedResource)
 
     // To avoid burdening the current thread with repetitive pruning jobs,
     // pruning is postponed until the end of the current task. If it has
-    // been more that m_maxPruneDeferralDelay since the last prune,
+    // been more than m_maxPruneDeferralDelay since the last prune,
     // then we prune immediately.
     // If the current thread's run loop is not active, then pruning will happen
     // immediately only if it has been over m_maxPruneDeferralDelay

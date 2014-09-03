@@ -2484,7 +2484,7 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
         updateAnnotatedRegions();
 
     if (isTopLevelPainter) {
-        // Everythin that happens after paintContents completions is considered
+        // Everything that happens after paintContents completions is considered
         // to be part of the next frame.
         s_currentFrameTimeStamp = currentTime();
         s_inPaintContents = false;
