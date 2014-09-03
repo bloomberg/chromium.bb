@@ -7,10 +7,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream.h"
-#include "content/renderer/media/media_stream_impl.h"
 #include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/mock_media_stream_dispatcher.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
+#include "content/renderer/media/user_media_client_impl.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaDeviceInfo.h"
@@ -34,7 +34,7 @@ class MockMediaStreamVideoCapturerSource : public MockMediaStreamVideoSource {
   }
 };
 
-class MediaStreamImplUnderTest : public MediaStreamImpl {
+class UserMediaClientImplUnderTest : public UserMediaClientImpl {
  public:
   enum RequestState {
     REQUEST_NOT_STARTED,
@@ -43,10 +43,10 @@ class MediaStreamImplUnderTest : public MediaStreamImpl {
     REQUEST_FAILED,
   };
 
-  MediaStreamImplUnderTest(
+  UserMediaClientImplUnderTest(
       PeerConnectionDependencyFactory* dependency_factory,
       scoped_ptr<MediaStreamDispatcher> media_stream_dispatcher)
-      : MediaStreamImpl(
+      : UserMediaClientImpl(
             NULL, dependency_factory, media_stream_dispatcher.Pass()),
         state_(REQUEST_NOT_STARTED),
         result_(NUM_MEDIA_REQUEST_RESULTS),
@@ -138,27 +138,27 @@ class MediaStreamImplUnderTest : public MediaStreamImpl {
   MockMediaStreamVideoCapturerSource* video_source_;
 };
 
-class MediaStreamImplTest : public ::testing::Test {
+class UserMediaClientImplTest : public ::testing::Test {
  public:
   virtual void SetUp() {
     // Create our test object.
     child_process_.reset(new ChildProcess());
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
     ms_dispatcher_ = new MockMediaStreamDispatcher();
-    ms_impl_.reset(new MediaStreamImplUnderTest(
+    used_media_impl_.reset(new UserMediaClientImplUnderTest(
         dependency_factory_.get(),
         scoped_ptr<MediaStreamDispatcher>(ms_dispatcher_).Pass()));
   }
 
   blink::WebMediaStream RequestLocalMediaStream() {
-    ms_impl_->RequestUserMedia();
+    used_media_impl_->RequestUserMedia();
     FakeMediaStreamDispatcherRequestUserMediaComplete();
     StartMockedVideoSource();
 
-    EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_SUCCEEDED,
-              ms_impl_->request_state());
+    EXPECT_EQ(UserMediaClientImplUnderTest::REQUEST_SUCCEEDED,
+              used_media_impl_->request_state());
 
-    blink::WebMediaStream desc = ms_impl_->last_generated_stream();
+    blink::WebMediaStream desc = used_media_impl_->last_generated_stream();
     content::MediaStream* native_stream =
         content::MediaStream::GetMediaStream(desc);
     if (!native_stream) {
@@ -179,31 +179,35 @@ class MediaStreamImplTest : public ::testing::Test {
 
   void FakeMediaStreamDispatcherRequestUserMediaComplete() {
     // Audio request ID is used as the shared request ID.
-    ms_impl_->OnStreamGenerated(ms_dispatcher_->audio_input_request_id(),
-                                ms_dispatcher_->stream_label(),
-                                ms_dispatcher_->audio_input_array(),
-                                ms_dispatcher_->video_array());
+    used_media_impl_->OnStreamGenerated(
+        ms_dispatcher_->audio_input_request_id(),
+        ms_dispatcher_->stream_label(),
+        ms_dispatcher_->audio_input_array(),
+        ms_dispatcher_->video_array());
   }
 
   void FakeMediaStreamDispatcherRequestMediaDevicesComplete() {
-    ms_impl_->OnDevicesEnumerated(ms_dispatcher_->audio_input_request_id(),
-                                  ms_dispatcher_->audio_input_array());
-    ms_impl_->OnDevicesEnumerated(ms_dispatcher_->audio_output_request_id(),
-                                  ms_dispatcher_->audio_output_array());
-    ms_impl_->OnDevicesEnumerated(ms_dispatcher_->video_request_id(),
-                                  ms_dispatcher_->video_array());
+    used_media_impl_->OnDevicesEnumerated(
+        ms_dispatcher_->audio_input_request_id(),
+        ms_dispatcher_->audio_input_array());
+    used_media_impl_->OnDevicesEnumerated(
+        ms_dispatcher_->audio_output_request_id(),
+        ms_dispatcher_->audio_output_array());
+    used_media_impl_->OnDevicesEnumerated(
+        ms_dispatcher_->video_request_id(),
+        ms_dispatcher_->video_array());
   }
 
   void StartMockedVideoSource() {
     MockMediaStreamVideoCapturerSource* video_source =
-        ms_impl_->last_created_video_source();
+        used_media_impl_->last_created_video_source();
     if (video_source->SourceHasAttemptedToStart())
       video_source->StartMockedSource();
   }
 
   void FailToStartMockedVideoSource() {
     MockMediaStreamVideoCapturerSource* video_source =
-        ms_impl_->last_created_video_source();
+        used_media_impl_->last_created_video_source();
     if (video_source->SourceHasAttemptedToStart())
       video_source->FailToStartMockedSource();
   }
@@ -215,19 +219,19 @@ class MediaStreamImplTest : public ::testing::Test {
  protected:
   base::MessageLoop message_loop_;
   scoped_ptr<ChildProcess> child_process_;
-  MockMediaStreamDispatcher* ms_dispatcher_;  // Owned my |ms_impl_|.
-  scoped_ptr<MediaStreamImplUnderTest> ms_impl_;
+  MockMediaStreamDispatcher* ms_dispatcher_;  // Owned by |used_media_impl_|.
+  scoped_ptr<UserMediaClientImplUnderTest> used_media_impl_;
   scoped_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
 };
 
-TEST_F(MediaStreamImplTest, GenerateMediaStream) {
+TEST_F(UserMediaClientImplTest, GenerateMediaStream) {
   // Generate a stream with both audio and video.
   blink::WebMediaStream mixed_desc = RequestLocalMediaStream();
 }
 
 // Test that the same source object is used if two MediaStreams are generated
 // using the same source.
-TEST_F(MediaStreamImplTest, GenerateTwoMediaStreamsWithSameSource) {
+TEST_F(UserMediaClientImplTest, GenerateTwoMediaStreamsWithSameSource) {
   blink::WebMediaStream desc1 = RequestLocalMediaStream();
   blink::WebMediaStream desc2 = RequestLocalMediaStream();
 
@@ -254,7 +258,7 @@ TEST_F(MediaStreamImplTest, GenerateTwoMediaStreamsWithSameSource) {
 
 // Test that the same source object is not used if two MediaStreams are
 // generated using different sources.
-TEST_F(MediaStreamImplTest, GenerateTwoMediaStreamsWithDifferentSources) {
+TEST_F(UserMediaClientImplTest, GenerateTwoMediaStreamsWithDifferentSources) {
   blink::WebMediaStream desc1 = RequestLocalMediaStream();
   // Make sure another device is selected (another |session_id|) in  the next
   // gUM request.
@@ -282,7 +286,7 @@ TEST_F(MediaStreamImplTest, GenerateTwoMediaStreamsWithDifferentSources) {
             desc2_audio_tracks[0].source().extraData());
 }
 
-TEST_F(MediaStreamImplTest, StopLocalTracks) {
+TEST_F(UserMediaClientImplTest, StopLocalTracks) {
   // Generate a stream with both audio and video.
   blink::WebMediaStream mixed_desc = RequestLocalMediaStream();
 
@@ -303,7 +307,7 @@ TEST_F(MediaStreamImplTest, StopLocalTracks) {
 // MediaStream is stopped if there are two MediaStreams with tracks using the
 // same device. The source is stopped
 // if there are no more MediaStream tracks using the device.
-TEST_F(MediaStreamImplTest, StopLocalTracksWhenTwoStreamUseSameDevices) {
+TEST_F(UserMediaClientImplTest, StopLocalTracksWhenTwoStreamUseSameDevices) {
   // Generate a stream with both audio and video.
   blink::WebMediaStream desc1 = RequestLocalMediaStream();
   blink::WebMediaStream desc2 = RequestLocalMediaStream();
@@ -333,12 +337,12 @@ TEST_F(MediaStreamImplTest, StopLocalTracksWhenTwoStreamUseSameDevices) {
   EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
 }
 
-TEST_F(MediaStreamImplTest, StopSourceWhenMediaStreamGoesOutOfScope) {
+TEST_F(UserMediaClientImplTest, StopSourceWhenMediaStreamGoesOutOfScope) {
   // Generate a stream with both audio and video.
   RequestLocalMediaStream();
   // Makes sure the test itself don't hold a reference to the created
   // MediaStream.
-  ms_impl_->ClearLastGeneratedStream();
+  used_media_impl_->ClearLastGeneratedStream();
 
   // Expect the sources to be stopped when the MediaStream goes out of scope.
   EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
@@ -347,86 +351,86 @@ TEST_F(MediaStreamImplTest, StopSourceWhenMediaStreamGoesOutOfScope) {
 
 // Test that the MediaStreams are deleted if the owning WebFrame is closing.
 // In the unit test the owning frame is NULL.
-TEST_F(MediaStreamImplTest, FrameWillClose) {
+TEST_F(UserMediaClientImplTest, FrameWillClose) {
   // Test a stream with both audio and video.
   blink::WebMediaStream mixed_desc = RequestLocalMediaStream();
   blink::WebMediaStream desc2 = RequestLocalMediaStream();
-  ms_impl_->FrameWillClose();
+  used_media_impl_->FrameWillClose();
   EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
 }
 
 // This test what happens if a video source to a MediaSteam fails to start.
-TEST_F(MediaStreamImplTest, MediaVideoSourceFailToStart) {
-  ms_impl_->RequestUserMedia();
+TEST_F(UserMediaClientImplTest, MediaVideoSourceFailToStart) {
+  used_media_impl_->RequestUserMedia();
   FakeMediaStreamDispatcherRequestUserMediaComplete();
   FailToStartMockedVideoSource();
-  EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_FAILED,
-            ms_impl_->request_state());
+  EXPECT_EQ(UserMediaClientImplUnderTest::REQUEST_FAILED,
+            used_media_impl_->request_state());
   EXPECT_EQ(MEDIA_DEVICE_TRACK_START_FAILURE,
-            ms_impl_->error_reason());
+            used_media_impl_->error_reason());
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
 }
 
 // This test what happens if an audio source fail to initialize.
-TEST_F(MediaStreamImplTest, MediaAudioSourceFailToInitialize) {
+TEST_F(UserMediaClientImplTest, MediaAudioSourceFailToInitialize) {
   FailToCreateNextAudioCapturer();
-  ms_impl_->RequestUserMedia();
+  used_media_impl_->RequestUserMedia();
   FakeMediaStreamDispatcherRequestUserMediaComplete();
   StartMockedVideoSource();
-  EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_FAILED,
-            ms_impl_->request_state());
+  EXPECT_EQ(UserMediaClientImplUnderTest::REQUEST_FAILED,
+            used_media_impl_->request_state());
   EXPECT_EQ(MEDIA_DEVICE_TRACK_START_FAILURE,
-            ms_impl_->error_reason());
+            used_media_impl_->error_reason());
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
 }
 
-// This test what happens if MediaStreamImpl is deleted before a source has
+// This test what happens if UserMediaClientImpl is deleted before a source has
 // started.
-TEST_F(MediaStreamImplTest, MediaStreamImplShutDown) {
-  ms_impl_->RequestUserMedia();
+TEST_F(UserMediaClientImplTest, MediaStreamImplShutDown) {
+  used_media_impl_->RequestUserMedia();
   FakeMediaStreamDispatcherRequestUserMediaComplete();
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
-  EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_NOT_COMPLETE,
-            ms_impl_->request_state());
-  ms_impl_.reset();
+  EXPECT_EQ(UserMediaClientImplUnderTest::REQUEST_NOT_COMPLETE,
+            used_media_impl_->request_state());
+  used_media_impl_.reset();
 }
 
 // This test what happens if the WebFrame is closed while the MediaStream is
 // being generated by the MediaStreamDispatcher.
-TEST_F(MediaStreamImplTest, ReloadFrameWhileGeneratingStream) {
-  ms_impl_->RequestUserMedia();
-  ms_impl_->FrameWillClose();
+TEST_F(UserMediaClientImplTest, ReloadFrameWhileGeneratingStream) {
+  used_media_impl_->RequestUserMedia();
+  used_media_impl_->FrameWillClose();
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
   EXPECT_EQ(0, ms_dispatcher_->stop_audio_device_counter());
   EXPECT_EQ(0, ms_dispatcher_->stop_video_device_counter());
-  EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_NOT_COMPLETE,
-            ms_impl_->request_state());
+  EXPECT_EQ(UserMediaClientImplUnderTest::REQUEST_NOT_COMPLETE,
+            used_media_impl_->request_state());
 }
 
 // This test what happens if the WebFrame is closed while the sources are being
 // started.
-TEST_F(MediaStreamImplTest, ReloadFrameWhileGeneratingSources) {
-  ms_impl_->RequestUserMedia();
+TEST_F(UserMediaClientImplTest, ReloadFrameWhileGeneratingSources) {
+  used_media_impl_->RequestUserMedia();
   FakeMediaStreamDispatcherRequestUserMediaComplete();
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
-  ms_impl_->FrameWillClose();
+  used_media_impl_->FrameWillClose();
   EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
-  EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_NOT_COMPLETE,
-            ms_impl_->request_state());
+  EXPECT_EQ(UserMediaClientImplUnderTest::REQUEST_NOT_COMPLETE,
+            used_media_impl_->request_state());
 }
 
 // This test what happens if stop is called on a track after the frame has
 // been reloaded.
-TEST_F(MediaStreamImplTest, StopTrackAfterReload) {
+TEST_F(UserMediaClientImplTest, StopTrackAfterReload) {
   blink::WebMediaStream mixed_desc = RequestLocalMediaStream();
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
-  ms_impl_->FrameWillClose();
+  used_media_impl_->FrameWillClose();
   EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
 
@@ -443,46 +447,46 @@ TEST_F(MediaStreamImplTest, StopTrackAfterReload) {
   EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
 }
 
-TEST_F(MediaStreamImplTest, EnumerateMediaDevices) {
-  ms_impl_->RequestMediaDevices();
+TEST_F(UserMediaClientImplTest, EnumerateMediaDevices) {
+  used_media_impl_->RequestMediaDevices();
   FakeMediaStreamDispatcherRequestMediaDevicesComplete();
 
-  EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_SUCCEEDED,
-            ms_impl_->request_state());
+  EXPECT_EQ(UserMediaClientImplUnderTest::REQUEST_SUCCEEDED,
+            used_media_impl_->request_state());
 
   // Audio input device with matched output ID.
-  EXPECT_FALSE(ms_impl_->last_devices()[0].deviceId().isEmpty());
+  EXPECT_FALSE(used_media_impl_->last_devices()[0].deviceId().isEmpty());
   EXPECT_EQ(blink::WebMediaDeviceInfo::MediaDeviceKindAudioInput,
-            ms_impl_->last_devices()[0].kind());
-  EXPECT_FALSE(ms_impl_->last_devices()[0].label().isEmpty());
-  EXPECT_FALSE(ms_impl_->last_devices()[0].groupId().isEmpty());
+            used_media_impl_->last_devices()[0].kind());
+  EXPECT_FALSE(used_media_impl_->last_devices()[0].label().isEmpty());
+  EXPECT_FALSE(used_media_impl_->last_devices()[0].groupId().isEmpty());
 
   // Audio input device without matched output ID.
-  EXPECT_FALSE(ms_impl_->last_devices()[1].deviceId().isEmpty());
+  EXPECT_FALSE(used_media_impl_->last_devices()[1].deviceId().isEmpty());
   EXPECT_EQ(blink::WebMediaDeviceInfo::MediaDeviceKindAudioInput,
-            ms_impl_->last_devices()[1].kind());
-  EXPECT_FALSE(ms_impl_->last_devices()[1].label().isEmpty());
-  EXPECT_FALSE(ms_impl_->last_devices()[1].groupId().isEmpty());
+            used_media_impl_->last_devices()[1].kind());
+  EXPECT_FALSE(used_media_impl_->last_devices()[1].label().isEmpty());
+  EXPECT_FALSE(used_media_impl_->last_devices()[1].groupId().isEmpty());
 
   // Video input device.
-  EXPECT_FALSE(ms_impl_->last_devices()[2].deviceId().isEmpty());
+  EXPECT_FALSE(used_media_impl_->last_devices()[2].deviceId().isEmpty());
   EXPECT_EQ(blink::WebMediaDeviceInfo::MediaDeviceKindVideoInput,
-            ms_impl_->last_devices()[2].kind());
-  EXPECT_FALSE(ms_impl_->last_devices()[2].label().isEmpty());
-  EXPECT_TRUE(ms_impl_->last_devices()[2].groupId().isEmpty());
+            used_media_impl_->last_devices()[2].kind());
+  EXPECT_FALSE(used_media_impl_->last_devices()[2].label().isEmpty());
+  EXPECT_TRUE(used_media_impl_->last_devices()[2].groupId().isEmpty());
 
   // Audio output device.
-  EXPECT_FALSE(ms_impl_->last_devices()[3].deviceId().isEmpty());
+  EXPECT_FALSE(used_media_impl_->last_devices()[3].deviceId().isEmpty());
   EXPECT_EQ(blink::WebMediaDeviceInfo::MediaDeviceKindAudioOutput,
-            ms_impl_->last_devices()[3].kind());
-  EXPECT_FALSE(ms_impl_->last_devices()[3].label().isEmpty());
-  EXPECT_FALSE(ms_impl_->last_devices()[3].groupId().isEmpty());
+            used_media_impl_->last_devices()[3].kind());
+  EXPECT_FALSE(used_media_impl_->last_devices()[3].label().isEmpty());
+  EXPECT_FALSE(used_media_impl_->last_devices()[3].groupId().isEmpty());
 
   // Verfify group IDs.
-  EXPECT_TRUE(ms_impl_->last_devices()[0].groupId().equals(
-                  ms_impl_->last_devices()[3].groupId()));
-  EXPECT_FALSE(ms_impl_->last_devices()[1].groupId().equals(
-                   ms_impl_->last_devices()[3].groupId()));
+  EXPECT_TRUE(used_media_impl_->last_devices()[0].groupId().equals(
+                  used_media_impl_->last_devices()[3].groupId()));
+  EXPECT_FALSE(used_media_impl_->last_devices()[1].groupId().equals(
+                   used_media_impl_->last_devices()[3].groupId()));
 }
 
 }  // namespace content

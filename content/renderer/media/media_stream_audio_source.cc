@@ -53,10 +53,10 @@ void MediaStreamAudioSource::AddTrack(
                                                     constraints,
                                                     this)) {
       // The source failed to start.
-      // MediaStreamImpl rely on the |stop_callback| to be triggered when the
-      // last track is removed from the source. But in this case, the source is
-      // is not even started. So we need to fail both adding the track and
-      // trigger |stop_callback|.
+      // UserMediaClientImpl rely on the |stop_callback| to be triggered when
+      // the last track is removed from the source. But in this case, the
+      // source is is not even started. So we need to fail both adding the
+      // track and trigger |stop_callback|.
       callback.Run(this, MEDIA_DEVICE_TRACK_START_FAILURE, "");
       StopSource();
       return;

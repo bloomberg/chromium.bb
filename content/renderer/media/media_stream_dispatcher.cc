@@ -208,7 +208,7 @@ void MediaStreamDispatcher::CloseDevice(const std::string& label) {
 }
 
 void MediaStreamDispatcher::OnDestruct() {
-  // Do not self-destruct.  MediaStreamImpl owns |this|.
+  // Do not self-destruct. UserMediaClientImpl owns |this|.
 }
 
 bool MediaStreamDispatcher::Send(IPC::Message* message) {

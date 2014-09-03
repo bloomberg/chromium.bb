@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_MEDIA_STREAM_IMPL_H_
-#define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_IMPL_H_
+#ifndef CONTENT_RENDERER_MEDIA_USER_MEDIA_CLIENT_IMPL_H_
+#define CONTENT_RENDERER_MEDIA_USER_MEDIA_CLIENT_IMPL_H_
 
 #include <string>
 #include <vector>
@@ -33,23 +33,23 @@ class MediaStreamDispatcher;
 class MediaStreamVideoSource;
 class VideoCapturerDelegate;
 
-// MediaStreamImpl is a delegate for the Media Stream GetUserMedia API.
+// UserMediaClientImpl is a delegate for the Media Stream GetUserMedia API.
 // It ties together WebKit and MediaStreamManager
 // (via MediaStreamDispatcher and MediaStreamDispatcherHost)
 // in the browser process. It must be created, called and destroyed on the
 // render thread.
-class CONTENT_EXPORT MediaStreamImpl
+class CONTENT_EXPORT UserMediaClientImpl
     : public RenderFrameObserver,
       NON_EXPORTED_BASE(public blink::WebUserMediaClient),
       public MediaStreamDispatcherEventHandler,
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   // |render_frame| and |dependency_factory| must outlive this instance.
-  MediaStreamImpl(
+  UserMediaClientImpl(
       RenderFrame* render_frame,
       PeerConnectionDependencyFactory* dependency_factory,
       scoped_ptr<MediaStreamDispatcher> media_stream_dispatcher);
-  virtual ~MediaStreamImpl();
+  virtual ~UserMediaClientImpl();
 
   MediaStreamDispatcher* media_stream_dispatcher() const {
     return media_stream_dispatcher_.get();
@@ -230,7 +230,7 @@ class CONTENT_EXPORT MediaStreamImpl
   // audio.
   PeerConnectionDependencyFactory* const dependency_factory_;
 
-  // MediaStreamImpl owns MediaStreamDispatcher instead of RenderFrameImpl
+  // UserMediaClientImpl owns MediaStreamDispatcher instead of RenderFrameImpl
   // (or RenderFrameObserver) to ensure tear-down occurs in the right order.
   const scoped_ptr<MediaStreamDispatcher> media_stream_dispatcher_;
 
@@ -243,11 +243,11 @@ class CONTENT_EXPORT MediaStreamImpl
 
   // Note: This member must be the last to ensure all outstanding weak pointers
   // are invalidated first.
-  base::WeakPtrFactory<MediaStreamImpl> weak_factory_;
+  base::WeakPtrFactory<UserMediaClientImpl> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaStreamImpl);
+  DISALLOW_COPY_AND_ASSIGN(UserMediaClientImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_MEDIA_STREAM_IMPL_H_
+#endif  // CONTENT_RENDERER_MEDIA_USER_MEDIA_CLIENT_IMPL_H_

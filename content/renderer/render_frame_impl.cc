@@ -68,10 +68,10 @@
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/crypto/encrypted_media_player_support_impl.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
-#include "content/renderer/media/media_stream_impl.h"
 #include "content/renderer/media/media_stream_renderer_factory.h"
 #include "content/renderer/media/midi_dispatcher.h"
 #include "content/renderer/media/render_media_log.h"
+#include "content/renderer/media/user_media_client_impl.h"
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "content/renderer/media/webmediaplayer_impl.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
@@ -3754,7 +3754,7 @@ void RenderFrameImpl::InitializeUserMediaClient() {
 
 #if defined(ENABLE_WEBRTC)
   DCHECK(!web_user_media_client_);
-  web_user_media_client_ = new MediaStreamImpl(
+  web_user_media_client_ = new UserMediaClientImpl(
       this,
       RenderThreadImpl::current()->GetPeerConnectionDependencyFactory(),
       make_scoped_ptr(new MediaStreamDispatcher(this)).Pass());

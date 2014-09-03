@@ -62,7 +62,6 @@ class ChildFrameCompositingHelper;
 class ExternalPopupMenu;
 class GeolocationDispatcher;
 class MediaStreamDispatcher;
-class MediaStreamImpl;
 class MediaStreamRendererFactory;
 class MidiDispatcher;
 class NotificationPermissionDispatcher;
@@ -78,6 +77,7 @@ class RenderViewImpl;
 class RenderWidget;
 class RenderWidgetFullscreenPepper;
 class ScreenOrientationDispatcher;
+class UserMediaClientImpl;
 struct CustomContextMenuContext;
 
 class CONTENT_EXPORT RenderFrameImpl
@@ -681,7 +681,7 @@ class CONTENT_EXPORT RenderFrameImpl
   NotificationProvider* notification_provider_;
 
   // Destroyed via the RenderFrameObserver::OnDestruct() mechanism.
-  MediaStreamImpl* web_user_media_client_;
+  UserMediaClientImpl* web_user_media_client_;
 
   // MidiClient attached to this frame; lazily initialized.
   MidiDispatcher* midi_dispatcher_;
