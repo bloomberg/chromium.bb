@@ -47,51 +47,6 @@ const int kValidOutputRates[] = {48000, 44100, 16000};
 const int kValidOutputRates[] = {44100};
 #endif
 
-// TODO(xians): Merge the following code to WebRtcAudioCapturer, or remove.
-enum AudioFramesPerBuffer {
-  k160,
-  k320,
-  k440,
-  k480,
-  k640,
-  k880,
-  k960,
-  k1440,
-  k1920,
-  kUnexpectedAudioBufferSize  // Must always be last!
-};
-
-// Helper method to convert integral values to their respective enum values
-// above, or kUnexpectedAudioBufferSize if no match exists.
-// We map 441 to k440 to avoid changes in the XML part for histograms.
-// It is still possible to map the histogram result to the actual buffer size.
-// See http://crbug.com/243450 for details.
-AudioFramesPerBuffer AsAudioFramesPerBuffer(int frames_per_buffer) {
-  switch (frames_per_buffer) {
-    case 160: return k160;
-    case 320: return k320;
-    case 441: return k440;
-    case 480: return k480;
-    case 640: return k640;
-    case 880: return k880;
-    case 960: return k960;
-    case 1440: return k1440;
-    case 1920: return k1920;
-  }
-  return kUnexpectedAudioBufferSize;
-}
-
-void AddHistogramFramesPerBuffer(int param) {
-  AudioFramesPerBuffer afpb = AsAudioFramesPerBuffer(param);
-  if (afpb != kUnexpectedAudioBufferSize) {
-    UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioOutputFramesPerBuffer",
-                              afpb, kUnexpectedAudioBufferSize);
-  } else {
-    // Report unexpected sample rates using a unique histogram name.
-    UMA_HISTOGRAM_COUNTS("WebRTC.AudioOutputFramesPerBufferUnexpected", param);
-  }
-}
-
 // This is a simple wrapper class that's handed out to users of a shared
 // WebRtcAudioRenderer instance.  This class maintains the per-user 'playing'
 // and 'started' states to avoid problems related to incorrect usage which
@@ -198,6 +153,39 @@ int GetCurrentDuckingFlag(int render_frame_id) {
   return media::AudioParameters::NO_EFFECTS;
 }
 
+// Helper method to get platform specific optimal buffer size.
+int GetOptimalBufferSize(int sample_rate, int hardware_buffer_size) {
+  // Use native hardware buffer size as default. On Windows, we strive to open
+  // up using this native hardware buffer size to achieve best
+  // possible performance and to ensure that no FIFO is needed on the browser
+  // side to match the client request. That is why there is no #if case for
+  // Windows below.
+  int frames_per_buffer = hardware_buffer_size;
+
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+  // On Linux and MacOS, the low level IO implementations on the browser side
+  // supports all buffer size the clients want. We use the native peer
+  // connection buffer size (10ms) to achieve best possible performance.
+  frames_per_buffer = sample_rate / 100;
+#elif defined(OS_ANDROID)
+  // TODO(henrika): Keep tuning this scheme and espcicially for low-latency
+  // cases. Might not be possible to come up with the perfect solution using
+  // the render side only.
+  int frames_per_10ms = sample_rate / 100;
+  if (frames_per_buffer < 2 * frames_per_10ms) {
+    // Examples of low-latency frame sizes and the resulting |buffer_size|:
+    //  Nexus 7     : 240 audio frames => 2*480 = 960
+    //  Nexus 10    : 256              => 2*441 = 882
+    //  Galaxy Nexus: 144              => 2*441 = 882
+    frames_per_buffer = 2 * frames_per_10ms;
+    DVLOG(1) << "Low-latency output detected on Android";
+  }
+#endif
+
+  DVLOG(1) << "Using sink output buffer size: " << frames_per_buffer;
+  return frames_per_buffer;
+}
+
 }  // namespace
 
 WebRtcAudioRenderer::WebRtcAudioRenderer(
@@ -288,28 +276,8 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
                       sink_params_.channel_layout(), sink_params_.channels(),
                       sample_rate, 16, frames_per_10ms);
 
-  // Update audio parameters for the sink, i.e., the native audio output stream.
-  // We strive to open up using native parameters to achieve best possible
-  // performance and to ensure that no FIFO is needed on the browser side to
-  // match the client request. Any mismatch between the source and the sink is
-  // taken care of in this class instead using a pull FIFO.
-
-  // Use native output size as default.
-  int frames_per_buffer = sink_params_.frames_per_buffer();
-#if defined(OS_ANDROID)
-  // TODO(henrika): Keep tuning this scheme and espcicially for low-latency
-  // cases. Might not be possible to come up with the perfect solution using
-  // the render side only.
-  if (frames_per_buffer < 2 * frames_per_10ms) {
-    // Examples of low-latency frame sizes and the resulting |buffer_size|:
-    //  Nexus 7     : 240 audio frames => 2*480 = 960
-    //  Nexus 10    : 256              => 2*441 = 882
-    //  Galaxy Nexus: 144              => 2*441 = 882
-    frames_per_buffer = 2 * frames_per_10ms;
-    DVLOG(1) << "Low-latency output detected on Android";
-  }
-#endif
-  DVLOG(1) << "Using sink output buffer size: " << frames_per_buffer;
+  const int frames_per_buffer =
+      GetOptimalBufferSize(sample_rate, sink_params_.frames_per_buffer());
 
   sink_params_.Reset(sink_params_.format(), sink_params_.channel_layout(),
                      sink_params_.channels(), sample_rate, 16,
@@ -350,11 +318,6 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
 
   // User must call Play() before any audio can be heard.
   state_ = PAUSED;
-
-  UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioOutputFramesPerBuffer",
-                            source_params.frames_per_buffer(),
-                            kUnexpectedAudioBufferSize);
-  AddHistogramFramesPerBuffer(source_params.frames_per_buffer());
 
   return true;
 }

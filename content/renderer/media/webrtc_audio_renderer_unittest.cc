@@ -24,6 +24,9 @@ namespace content {
 
 namespace {
 
+const int kHardwareSampleRate = 44100;
+const int kHardwareBufferSize = 512;
+
 class MockAudioOutputIPC : public media::AudioOutputIPC {
  public:
   MockAudioOutputIPC() {}
@@ -88,7 +91,8 @@ class WebRtcAudioRendererTest : public testing::Test {
         factory_(new MockAudioDeviceFactory()),
         source_(new MockAudioRendererSource()),
         stream_(new rtc::RefCountedObject<MockMediaStream>("label")),
-        renderer_(new WebRtcAudioRenderer(stream_, 1, 1, 1, 44100, 441)) {
+        renderer_(new WebRtcAudioRenderer(stream_, 1, 1, 1, 44100,
+                                          kHardwareBufferSize)) {
     EXPECT_CALL(*factory_.get(), CreateOutputDevice(1))
         .WillOnce(Return(mock_output_device_.get()));
     EXPECT_CALL(*mock_output_device_.get(), Start());
@@ -149,6 +153,27 @@ TEST_F(WebRtcAudioRendererTest, MultipleRenderers) {
     }
     renderer_proxies_[i]->Stop();
   }
+}
+
+// Verify that the sink of the renderer is using the expected sample rate and
+// buffer size.
+TEST_F(WebRtcAudioRendererTest, VerifySinkParameters) {
+  renderer_proxy_->Start();
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+  static const int kExpectedBufferSize = kHardwareSampleRate / 100;
+#elif defined(OS_ANDROID)
+  static const int kExpectedBufferSize = 2 * kHardwareSampleRate / 100;
+#else
+  // Windows.
+  static const int kExpectedBufferSize = kHardwareBufferSize;
+#endif
+  EXPECT_EQ(kExpectedBufferSize, renderer_->frames_per_buffer());
+  EXPECT_EQ(kHardwareSampleRate, renderer_->sample_rate());
+  EXPECT_EQ(2, renderer_->channels());
+
+  EXPECT_CALL(*mock_output_device_.get(), Stop());
+  EXPECT_CALL(*source_.get(), RemoveAudioRenderer(renderer_.get()));
+  renderer_proxy_->Stop();
 }
 
 }  // namespace content

@@ -99,6 +99,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   // Accessors to the sink audio parameters.
   int channels() const { return sink_params_.channels(); }
   int sample_rate() const { return sink_params_.sample_rate(); }
+  int frames_per_buffer() const { return sink_params_.frames_per_buffer(); }
 
  private:
   // MediaStreamAudioRenderer implementation.  This is private since we want
