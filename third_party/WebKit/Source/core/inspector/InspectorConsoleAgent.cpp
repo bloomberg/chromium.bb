@@ -116,7 +116,7 @@ void InspectorConsoleAgent::enable(ErrorString*)
 
     size_t messageCount = storage->size();
     for (size_t i = 0; i < messageCount; ++i)
-        sendConsoleMessageToFrontend(storage->at(i).get(), false);
+        sendConsoleMessageToFrontend(storage->at(i), false);
 }
 
 void InspectorConsoleAgent::disable(ErrorString*)

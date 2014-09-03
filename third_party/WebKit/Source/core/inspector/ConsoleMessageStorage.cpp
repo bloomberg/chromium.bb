@@ -11,8 +11,7 @@
 
 namespace blink {
 
-static const unsigned maximumConsoleMessages = 1000;
-static const int expireConsoleMessagesStep = 100;
+static const unsigned maxConsoleMessageCount = 1000;
 
 ConsoleMessageStorage::ConsoleMessageStorage(ExecutionContext* context)
     : m_expiredCount(0)
@@ -38,11 +37,12 @@ void ConsoleMessageStorage::reportMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>
 
     InspectorInstrumentation::addMessageToConsole(executionContext(), message.get());
 
-    m_messages.append(message);
-    if (m_messages.size() >= maximumConsoleMessages) {
-        m_expiredCount += expireConsoleMessagesStep;
-        m_messages.remove(0, expireConsoleMessagesStep);
+    ASSERT(m_messages.size() <= maxConsoleMessageCount);
+    if (m_messages.size() == maxConsoleMessageCount) {
+        ++m_expiredCount;
+        m_messages.removeFirst();
     }
+    m_messages.append(message);
 }
 
 void ConsoleMessageStorage::clear()
@@ -55,15 +55,23 @@ void ConsoleMessageStorage::clear()
 Vector<unsigned> ConsoleMessageStorage::argumentCounts() const
 {
     Vector<unsigned> result(m_messages.size());
-    for (size_t i = 0; i < size(); ++i)
-        result[i] = at(i)->argumentCount();
+    for (size_t i = 0; i < m_messages.size(); ++i)
+        result[i] = m_messages[i]->argumentCount();
     return result;
+}
+
+void ConsoleMessageStorage::adoptWorkerMessagesAfterTermination(WorkerGlobalScopeProxy* workerGlobalScopeProxy)
+{
+    for (size_t i = 0; i < m_messages.size(); ++i) {
+        if (m_messages[i]->workerGlobalScopeProxy() == workerGlobalScopeProxy)
+            m_messages[i]->setWorkerGlobalScopeProxy(nullptr);
+    }
 }
 
 void ConsoleMessageStorage::frameWindowDiscarded(LocalDOMWindow* window)
 {
-    for (size_t i = 0; i < size(); ++i)
-        at(i)->frameWindowDiscarded(window);
+    for (size_t i = 0; i < m_messages.size(); ++i)
+        m_messages[i]->frameWindowDiscarded(window);
 }
 
 size_t ConsoleMessageStorage::size() const
@@ -71,9 +79,9 @@ size_t ConsoleMessageStorage::size() const
     return m_messages.size();
 }
 
-PassRefPtrWillBeRawPtr<ConsoleMessage> ConsoleMessageStorage::at(size_t index) const
+ConsoleMessage* ConsoleMessageStorage::at(size_t index) const
 {
-    return m_messages[index];
+    return m_messages[index].get();
 }
 
 int ConsoleMessageStorage::expiredCount() const
