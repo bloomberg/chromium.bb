@@ -47,15 +47,6 @@
 
 namespace base {
 
-// Launches a child process using |command_line|. If the child process is still
-// running after |timeout|, it is terminated and |*was_timeout| is set to true.
-// Returns exit code of the process.
-int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
-                                      const LaunchOptions& options,
-                                      int flags,
-                                      base::TimeDelta timeout,
-                                      bool* was_timeout);
-
 // See https://groups.google.com/a/chromium.org/d/msg/chromium-dev/nkdTP7sstSc/uT3FaE_sgkAJ .
 using ::operator<<;
 
@@ -213,6 +204,137 @@ bool BotModeEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kTestLauncherBotMode) ||
       env->HasVar("CHROMIUM_TEST_LAUNCHER_BOT_MODE");
+}
+
+// Returns command line command line after gtest-specific processing
+// and applying |wrapper|.
+CommandLine PrepareCommandLineForGTest(const CommandLine& command_line,
+                                       const std::string& wrapper) {
+  CommandLine new_command_line(command_line.GetProgram());
+  CommandLine::SwitchMap switches = command_line.GetSwitches();
+
+  // Strip out gtest_repeat flag - this is handled by the launcher process.
+  switches.erase(kGTestRepeatFlag);
+
+  // Don't try to write the final XML report in child processes.
+  switches.erase(kGTestOutputFlag);
+
+  for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
+       iter != switches.end(); ++iter) {
+    new_command_line.AppendSwitchNative((*iter).first, (*iter).second);
+  }
+
+  // Prepend wrapper after last CommandLine quasi-copy operation. CommandLine
+  // does not really support removing switches well, and trying to do that
+  // on a CommandLine with a wrapper is known to break.
+  // TODO(phajdan.jr): Give it a try to support CommandLine removing switches.
+#if defined(OS_WIN)
+  new_command_line.PrependWrapper(ASCIIToWide(wrapper));
+#elif defined(OS_POSIX)
+  new_command_line.PrependWrapper(wrapper);
+#endif
+
+  return new_command_line;
+}
+
+// Launches a child process using |command_line|. If the child process is still
+// running after |timeout|, it is terminated and |*was_timeout| is set to true.
+// Returns exit code of the process.
+int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
+                                      const LaunchOptions& options,
+                                      int flags,
+                                      base::TimeDelta timeout,
+                                      bool* was_timeout) {
+#if defined(OS_POSIX)
+  // Make sure an option we rely on is present - see LaunchChildGTestProcess.
+  DCHECK(options.new_process_group);
+#endif
+
+  LaunchOptions new_options(options);
+
+#if defined(OS_WIN)
+  DCHECK(!new_options.job_handle);
+
+  win::ScopedHandle job_handle;
+  if (flags & TestLauncher::USE_JOB_OBJECTS) {
+    job_handle.Set(CreateJobObject(NULL, NULL));
+    if (!job_handle.IsValid()) {
+      LOG(ERROR) << "Could not create JobObject.";
+      return -1;
+    }
+
+    DWORD job_flags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+
+    // Allow break-away from job since sandbox and few other places rely on it
+    // on Windows versions prior to Windows 8 (which supports nested jobs).
+    if (win::GetVersion() < win::VERSION_WIN8 &&
+        flags & TestLauncher::ALLOW_BREAKAWAY_FROM_JOB) {
+      job_flags |= JOB_OBJECT_LIMIT_BREAKAWAY_OK;
+    }
+
+    if (!SetJobObjectLimitFlags(job_handle.Get(), job_flags)) {
+      LOG(ERROR) << "Could not SetJobObjectLimitFlags.";
+      return -1;
+    }
+
+    new_options.job_handle = job_handle.Get();
+  }
+#endif  // defined(OS_WIN)
+
+#if defined(OS_LINUX)
+  // To prevent accidental privilege sharing to an untrusted child, processes
+  // are started with PR_SET_NO_NEW_PRIVS. Do not set that here, since this
+  // new child will be privileged and trusted.
+  new_options.allow_new_privs = true;
+#endif
+
+  base::ProcessHandle process_handle;
+
+  {
+    // Note how we grab the lock before the process possibly gets created.
+    // This ensures that when the lock is held, ALL the processes are registered
+    // in the set.
+    AutoLock lock(g_live_processes_lock.Get());
+
+    if (!base::LaunchProcess(command_line, new_options, &process_handle))
+      return -1;
+
+    g_live_processes.Get().insert(std::make_pair(process_handle, command_line));
+  }
+
+  int exit_code = 0;
+  if (!base::WaitForExitCodeWithTimeout(process_handle,
+                                        &exit_code,
+                                        timeout)) {
+    *was_timeout = true;
+    exit_code = -1;  // Set a non-zero exit code to signal a failure.
+
+    // Ensure that the process terminates.
+    base::KillProcess(process_handle, -1, true);
+  }
+
+  {
+    // Note how we grab the log before issuing a possibly broad process kill.
+    // Other code parts that grab the log kill processes, so avoid trying
+    // to do that twice and trigger all kinds of log messages.
+    AutoLock lock(g_live_processes_lock.Get());
+
+#if defined(OS_POSIX)
+    if (exit_code != 0) {
+      // On POSIX, in case the test does not exit cleanly, either due to a crash
+      // or due to it timing out, we need to clean up any child processes that
+      // it might have created. On Windows, child processes are automatically
+      // cleaned up using JobObjects.
+      base::KillProcessGroup(process_handle);
+    }
+#endif
+
+    g_live_processes.Get().erase(process_handle);
+  }
+
+  base::CloseProcessHandle(process_handle);
+
+  return exit_code;
 }
 
 void RunCallback(
@@ -972,133 +1094,6 @@ std::string GetTestOutputSnippet(const TestResult& result,
     snippet = full_output.substr(run_pos, end_pos - run_pos);
 
   return snippet;
-}
-
-CommandLine PrepareCommandLineForGTest(const CommandLine& command_line,
-                                       const std::string& wrapper) {
-  CommandLine new_command_line(command_line.GetProgram());
-  CommandLine::SwitchMap switches = command_line.GetSwitches();
-
-  // Strip out gtest_repeat flag - this is handled by the launcher process.
-  switches.erase(kGTestRepeatFlag);
-
-  // Don't try to write the final XML report in child processes.
-  switches.erase(kGTestOutputFlag);
-
-  for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
-       iter != switches.end(); ++iter) {
-    new_command_line.AppendSwitchNative((*iter).first, (*iter).second);
-  }
-
-  // Prepend wrapper after last CommandLine quasi-copy operation. CommandLine
-  // does not really support removing switches well, and trying to do that
-  // on a CommandLine with a wrapper is known to break.
-  // TODO(phajdan.jr): Give it a try to support CommandLine removing switches.
-#if defined(OS_WIN)
-  new_command_line.PrependWrapper(ASCIIToWide(wrapper));
-#elif defined(OS_POSIX)
-  new_command_line.PrependWrapper(wrapper);
-#endif
-
-  return new_command_line;
-}
-
-// TODO(phajdan.jr): Move to anonymous namespace.
-int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
-                                      const LaunchOptions& options,
-                                      int flags,
-                                      base::TimeDelta timeout,
-                                      bool* was_timeout) {
-#if defined(OS_POSIX)
-  // Make sure an option we rely on is present - see LaunchChildGTestProcess.
-  DCHECK(options.new_process_group);
-#endif
-
-  LaunchOptions new_options(options);
-
-#if defined(OS_WIN)
-  DCHECK(!new_options.job_handle);
-
-  win::ScopedHandle job_handle;
-  if (flags & TestLauncher::USE_JOB_OBJECTS) {
-    job_handle.Set(CreateJobObject(NULL, NULL));
-    if (!job_handle.IsValid()) {
-      LOG(ERROR) << "Could not create JobObject.";
-      return -1;
-    }
-
-    DWORD job_flags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-
-    // Allow break-away from job since sandbox and few other places rely on it
-    // on Windows versions prior to Windows 8 (which supports nested jobs).
-    if (win::GetVersion() < win::VERSION_WIN8 &&
-        flags & TestLauncher::ALLOW_BREAKAWAY_FROM_JOB) {
-      job_flags |= JOB_OBJECT_LIMIT_BREAKAWAY_OK;
-    }
-
-    if (!SetJobObjectLimitFlags(job_handle.Get(), job_flags)) {
-      LOG(ERROR) << "Could not SetJobObjectLimitFlags.";
-      return -1;
-    }
-
-    new_options.job_handle = job_handle.Get();
-  }
-#endif  // defined(OS_WIN)
-
-#if defined(OS_LINUX)
-  // To prevent accidental privilege sharing to an untrusted child, processes
-  // are started with PR_SET_NO_NEW_PRIVS. Do not set that here, since this
-  // new child will be privileged and trusted.
-  new_options.allow_new_privs = true;
-#endif
-
-  base::ProcessHandle process_handle;
-
-  {
-    // Note how we grab the lock before the process possibly gets created.
-    // This ensures that when the lock is held, ALL the processes are registered
-    // in the set.
-    AutoLock lock(g_live_processes_lock.Get());
-
-    if (!base::LaunchProcess(command_line, new_options, &process_handle))
-      return -1;
-
-    g_live_processes.Get().insert(std::make_pair(process_handle, command_line));
-  }
-
-  int exit_code = 0;
-  if (!base::WaitForExitCodeWithTimeout(process_handle,
-                                        &exit_code,
-                                        timeout)) {
-    *was_timeout = true;
-    exit_code = -1;  // Set a non-zero exit code to signal a failure.
-
-    // Ensure that the process terminates.
-    base::KillProcess(process_handle, -1, true);
-  }
-
-  {
-    // Note how we grab the log before issuing a possibly broad process kill.
-    // Other code parts that grab the log kill processes, so avoid trying
-    // to do that twice and trigger all kinds of log messages.
-    AutoLock lock(g_live_processes_lock.Get());
-
-#if defined(OS_POSIX)
-    if (exit_code != 0) {
-      // On POSIX, in case the test does not exit cleanly, either due to a crash
-      // or due to it timing out, we need to clean up any child processes that
-      // it might have created. On Windows, child processes are automatically
-      // cleaned up using JobObjects.
-      base::KillProcessGroup(process_handle);
-    }
-#endif
-
-    g_live_processes.Get().erase(process_handle);
-  }
-
-  base::CloseProcessHandle(process_handle);
-
-  return exit_code;
 }
 
 }  // namespace base

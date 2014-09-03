@@ -201,11 +201,6 @@ class TestLauncher {
 std::string GetTestOutputSnippet(const TestResult& result,
                                  const std::string& full_output);
 
-// Returns command line command line after gtest-specific processing
-// and applying |wrapper|.
-CommandLine PrepareCommandLineForGTest(const CommandLine& command_line,
-                                       const std::string& wrapper);
-
 }  // namespace base
 
 #endif  // BASE_TEST_LAUNCHER_TEST_LAUNCHER_H_
