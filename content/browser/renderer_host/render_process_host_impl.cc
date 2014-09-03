@@ -1282,6 +1282,16 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   if (IsImplSidePaintingEnabled() &&
       !browser_cmd.HasSwitch(switches::kEnableDeferredImageDecoding))
     renderer_cmd->AppendSwitch(switches::kEnableDeferredImageDecoding);
+
+  // Add kWaitForDebugger to let renderer process wait for a debugger.
+  if (browser_cmd.HasSwitch(switches::kWaitForDebuggerChildren)) {
+    // Look to pass-on the kWaitForDebugger flag.
+    std::string value =
+        browser_cmd.GetSwitchValueASCII(switches::kWaitForDebuggerChildren);
+    if (value.empty() || value == switches::kRendererProcess) {
+      renderer_cmd->AppendSwitch(switches::kWaitForDebugger);
+    }
+  }
 }
 
 base::ProcessHandle RenderProcessHostImpl::GetHandle() const {
