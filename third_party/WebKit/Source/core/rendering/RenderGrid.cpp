@@ -206,6 +206,7 @@ void RenderGrid::addChild(RenderObject* newChild, RenderObject* beforeChild)
     if (beforeChild && beforeChild->parent() != this) {
         ASSERT(beforeChild->parent()->isAnonymous());
         beforeChild = splitAnonymousBoxesAroundChild(beforeChild);
+        dirtyGrid();
     }
 
     RenderBlock::addChild(newChild, beforeChild);
