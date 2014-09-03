@@ -12,8 +12,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/memory/linked_ptr.h"
-#include "chrome/browser/extensions/location_bar_controller.h"
+#include "base/scoped_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -64,12 +63,9 @@ class ActiveScriptController : public content::WebContentsObserver,
   // been clicked, running any pending tasks that were previously shelved.
   void OnClicked(const Extension* extension);
 
-  // Returns true if there is an active script injection action for |extension|.
-  bool HasActiveScriptAction(const Extension* extension);
-
-  // Returns the action to display for the given |extension|, or NULL if no
-  // action should be displayed.
-  ExtensionAction* GetActionForExtension(const Extension* extension);
+  // Returns true if the given |extension| has a pending script that wants to
+  // run.
+  bool WantsToRun(const Extension* extension);
 
 #if defined(UNIT_TEST)
   // Only used in tests.
@@ -140,12 +136,6 @@ class ActiveScriptController : public content::WebContentsObserver,
   // have been permitted to run on the page via this interface. Instead, it
   // should incorporate more fully with ActiveTab.
   std::set<std::string> permitted_extensions_;
-
-  // Script badges that have been generated for extensions. This is both those
-  // with actions already declared that are copied and normalised, and actions
-  // that get generated for extensions that haven't declared anything.
-  typedef std::map<std::string, linked_ptr<ExtensionAction> > ActiveScriptMap;
-  ActiveScriptMap active_script_actions_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;

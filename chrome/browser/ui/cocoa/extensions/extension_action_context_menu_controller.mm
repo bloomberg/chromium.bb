@@ -120,7 +120,7 @@ class AsyncUninstaller : public extensions::ExtensionUninstallDialog::Delegate {
       browser_->tab_strip_model()->GetActiveWebContents();
   if (activeTab &&
       extensions::ActiveScriptController::GetForWebContents(activeTab)
-          ->HasActiveScriptAction(extension_)) {
+          ->WantsToRun(extension_)) {
     item = [menu addItemWithTitle:
                 l10n_util::GetNSStringWithFixup(IDS_EXTENSIONS_ALWAYS_RUN)
                            action:@selector(onAlwaysRun:)

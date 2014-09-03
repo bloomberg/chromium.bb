@@ -283,7 +283,7 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension) {
   WebContents* web_contents = GetActiveWebContents();
   if (web_contents &&
       extensions::ActiveScriptController::GetForWebContents(web_contents)
-          ->HasActiveScriptAction(extension)) {
+          ->WantsToRun(extension)) {
     AddItemWithStringId(ALWAYS_RUN, IDS_EXTENSIONS_ALWAYS_RUN);
   }
 

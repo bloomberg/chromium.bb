@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
-#include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/ui/browser.h"
@@ -171,14 +170,12 @@ class ActiveScriptTester {
   testing::AssertionResult Verify();
 
  private:
-  // Returns the location bar controller, or NULL if one does not exist.
-  LocationBarController* GetLocationBarController();
-
   // Returns the active script controller, or NULL if one does not exist.
   ActiveScriptController* GetActiveScriptController();
 
-  // Get the ExtensionAction for this extension, or NULL if one does not exist.
-  ExtensionAction* GetAction();
+  // Returns true if the extension has a pending request with the active script
+  // controller.
+  bool WantsToRun();
 
   // The name of the extension, and also the message it sends.
   std::string name_;
@@ -237,26 +234,19 @@ testing::AssertionResult ActiveScriptTester::Verify() {
   // Make sure all running tasks are complete.
   content::RunAllPendingInMessageLoop();
 
-  LocationBarController* location_bar_controller = GetLocationBarController();
-  if (!location_bar_controller) {
-    return testing::AssertionFailure()
-        << "Could not find location bar controller";
-  }
-
-  ActiveScriptController* controller =
-      location_bar_controller->active_script_controller();
+  ActiveScriptController* controller = GetActiveScriptController();
   if (!controller)
     return testing::AssertionFailure() << "Could not find controller.";
 
-  ExtensionAction* action = GetAction();
-  bool has_action = action != NULL;
+  bool wants_to_run = WantsToRun();
 
   // An extension should have an action displayed iff it requires user consent.
-  if ((requires_consent_ == REQUIRES_CONSENT && !has_action) ||
-      (requires_consent_ == DOES_NOT_REQUIRE_CONSENT && has_action)) {
+  if ((requires_consent_ == REQUIRES_CONSENT && !wants_to_run) ||
+      (requires_consent_ == DOES_NOT_REQUIRE_CONSENT && wants_to_run)) {
     return testing::AssertionFailure()
-        << "Improper action status for " << name_ << ": expected "
-        << (requires_consent_ == REQUIRES_CONSENT) << ", found " << has_action;
+        << "Improper wants to run for " << name_ << ": expected "
+        << (requires_consent_ == REQUIRES_CONSENT) << ", found "
+        << wants_to_run;
   }
 
   // If the extension has permission, we should be able to simply wait for it
@@ -273,8 +263,8 @@ testing::AssertionResult ActiveScriptTester::Verify() {
         name_ << "'s script ran without permission.";
   }
 
-  // If we reach this point, we should always have an action.
-  DCHECK(action);
+  // If we reach this point, we should always want to run.
+  DCHECK(wants_to_run);
 
   // Grant permission by clicking on the extension action.
   controller->OnClicked(extension_);
@@ -282,17 +272,17 @@ testing::AssertionResult ActiveScriptTester::Verify() {
   // Now, the extension should be able to inject the script.
   inject_success_listener_->WaitUntilSatisfied();
 
-  // The Action should have disappeared.
-  has_action = GetAction() != NULL;
-  if (has_action) {
+  // The extension should no longer want to run.
+  wants_to_run = WantsToRun();
+  if (wants_to_run) {
     return testing::AssertionFailure()
-        << "Extension " << name_ << " has lingering action.";
+        << "Extension " << name_ << " still wants to run after injecting.";
   }
 
   return testing::AssertionSuccess();
 }
 
-LocationBarController* ActiveScriptTester::GetLocationBarController() {
+ActiveScriptController* ActiveScriptTester::GetActiveScriptController() {
   content::WebContents* web_contents =
       browser_ ? browser_->tab_strip_model()->GetActiveWebContents() : NULL;
 
@@ -300,18 +290,12 @@ LocationBarController* ActiveScriptTester::GetLocationBarController() {
     return NULL;
 
   TabHelper* tab_helper = TabHelper::FromWebContents(web_contents);
-  return tab_helper ? tab_helper->location_bar_controller() : NULL;
+  return tab_helper ? tab_helper->active_script_controller() : NULL;
 }
 
-ActiveScriptController* ActiveScriptTester::GetActiveScriptController() {
-  LocationBarController* location_bar_controller = GetLocationBarController();
-  return location_bar_controller ?
-      location_bar_controller->active_script_controller() : NULL;
-}
-
-ExtensionAction* ActiveScriptTester::GetAction() {
+bool ActiveScriptTester::WantsToRun() {
   ActiveScriptController* controller = GetActiveScriptController();
-  return controller ? controller->GetActionForExtension(extension_) : NULL;
+  return controller ? controller->WantsToRun(extension_) : false;
 }
 
 IN_PROC_BROWSER_TEST_F(ActiveScriptControllerBrowserTest,
@@ -396,8 +380,8 @@ IN_PROC_BROWSER_TEST_F(ActiveScriptControllerBrowserTest,
       browser(), embedded_test_server()->GetURL("/extensions/test_file.html"));
 
   // Both extensions should have pending requests.
-  EXPECT_TRUE(active_script_controller->GetActionForExtension(extension1));
-  EXPECT_TRUE(active_script_controller->GetActionForExtension(extension2));
+  EXPECT_TRUE(active_script_controller->WantsToRun(extension1));
+  EXPECT_TRUE(active_script_controller->WantsToRun(extension2));
 
   // Unload one of the extensions.
   UnloadExtension(extension2->id());
@@ -406,8 +390,8 @@ IN_PROC_BROWSER_TEST_F(ActiveScriptControllerBrowserTest,
 
   // We should have pending requests for extension1, but not the removed
   // extension2.
-  EXPECT_TRUE(active_script_controller->GetActionForExtension(extension1));
-  EXPECT_FALSE(active_script_controller->GetActionForExtension(extension2));
+  EXPECT_TRUE(active_script_controller->WantsToRun(extension1));
+  EXPECT_FALSE(active_script_controller->WantsToRun(extension2));
 
   // We should still be able to run the request for extension1.
   ExtensionTestMessageListener inject_success_listener(

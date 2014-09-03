@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -78,13 +77,7 @@ ActiveScriptController* ActiveScriptController::GetForWebContents(
   if (!web_contents)
     return NULL;
   TabHelper* tab_helper = TabHelper::FromWebContents(web_contents);
-  if (!tab_helper)
-    return NULL;
-  LocationBarController* location_bar_controller =
-      tab_helper->location_bar_controller();
-  // This should never be NULL.
-  DCHECK(location_bar_controller);
-  return location_bar_controller->active_script_controller();
+  return tab_helper ? tab_helper->active_script_controller() : NULL;
 }
 
 void ActiveScriptController::OnActiveTabPermissionGranted(
@@ -149,27 +142,8 @@ void ActiveScriptController::OnClicked(const Extension* extension) {
   RunPendingForExtension(extension);
 }
 
-bool ActiveScriptController::HasActiveScriptAction(const Extension* extension) {
+bool ActiveScriptController::WantsToRun(const Extension* extension) {
   return enabled_ && pending_requests_.count(extension->id()) > 0;
-}
-
-ExtensionAction* ActiveScriptController::GetActionForExtension(
-    const Extension* extension) {
-  if (!enabled_ || pending_requests_.count(extension->id()) == 0)
-    return NULL;  // No action for this extension.
-
-  ActiveScriptMap::iterator existing =
-      active_script_actions_.find(extension->id());
-  if (existing != active_script_actions_.end())
-    return existing->second.get();
-
-  linked_ptr<ExtensionAction> action(ExtensionActionManager::Get(
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext()))
-      ->GetBestFitAction(*extension, ActionInfo::TYPE_PAGE).release());
-  action->SetIsVisible(ExtensionAction::kDefaultTabId, true);
-
-  active_script_actions_[extension->id()] = action;
-  return action.get();
 }
 
 PermissionsData::AccessType

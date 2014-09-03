@@ -20,7 +20,6 @@ LocationBarController::LocationBarController(
       action_manager_(ExtensionActionManager::Get(browser_context_)),
       should_show_page_actions_(
           !FeatureSwitch::extension_action_redesign()->IsEnabled()),
-      active_script_controller_(new ActiveScriptController(web_contents_)),
       extension_registry_observer_(this) {
   if (should_show_page_actions_)
     extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
@@ -36,6 +35,8 @@ std::vector<ExtensionAction*> LocationBarController::GetCurrentActions() {
   if (!should_show_page_actions_)
     return current_actions;
 
+  ActiveScriptController* active_script_controller =
+      ActiveScriptController::GetForWebContents(web_contents_);
   for (ExtensionSet::const_iterator iter = extensions.begin();
        iter != extensions.end();
        ++iter) {
@@ -43,8 +44,22 @@ std::vector<ExtensionAction*> LocationBarController::GetCurrentActions() {
     // one action per extension. If clicking on an active script action ever
     // has a response, then we will need to split the actions.
     ExtensionAction* action = action_manager_->GetPageAction(**iter);
-    if (!action)
-      action = active_script_controller_->GetActionForExtension(iter->get());
+    if (!action && active_script_controller->WantsToRun(*iter)) {
+      ExtensionActionMap::iterator existing =
+          active_script_actions_.find((*iter)->id());
+      if (existing != active_script_actions_.end()) {
+        action = existing->second.get();
+      } else {
+        linked_ptr<ExtensionAction> active_script_action(
+            ExtensionActionManager::Get(browser_context_)->
+                GetBestFitAction(**iter, ActionInfo::TYPE_PAGE).release());
+        active_script_action->SetIsVisible(
+            ExtensionAction::kDefaultTabId, true);
+        active_script_actions_[(*iter)->id()] = active_script_action;
+        action = active_script_action.get();
+      }
+    }
+
     if (action)
       current_actions.push_back(action);
   }
@@ -55,8 +70,7 @@ std::vector<ExtensionAction*> LocationBarController::GetCurrentActions() {
 void LocationBarController::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
-  if (action_manager_->GetPageAction(*extension) ||
-      active_script_controller_->GetActionForExtension(extension)) {
+  if (action_manager_->GetPageAction(*extension)) {
     ExtensionActionAPI::Get(browser_context)->
         NotifyPageActionsChanged(web_contents_);
   }

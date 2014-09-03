@@ -88,6 +88,7 @@ TabHelper::TabHelper(content::WebContents* web_contents)
       script_executor_(
           new ScriptExecutor(web_contents, &script_execution_observers_)),
       location_bar_controller_(new LocationBarController(web_contents)),
+      active_script_controller_(new ActiveScriptController(web_contents)),
       image_loader_ptr_factory_(this),
       webstore_inline_installer_factory_(new WebstoreInlineInstallerFactory()) {
   // The ActiveTabPermissionManager requires a session ID; ensure this

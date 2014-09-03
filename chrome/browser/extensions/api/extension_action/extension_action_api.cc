@@ -175,7 +175,7 @@ ExtensionAction::ShowAction ExtensionActionAPI::ExecuteExtensionAction(
       ActiveScriptController::GetForWebContents(web_contents);
   bool has_pending_scripts = false;
   if (active_script_controller &&
-      active_script_controller->GetActionForExtension(extension)) {
+      active_script_controller->WantsToRun(extension)) {
     has_pending_scripts = true;
   }
 
