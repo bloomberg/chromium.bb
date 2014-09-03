@@ -203,7 +203,7 @@ private:
     // This mirrors the known compositor state. It is created when a compositor
     // animation is started. Updated once the start time is known and each time
     // modifications are pushed to the compositor.
-    OwnPtrWillBeMember<CompositorState> m_compositorState;
+    OwnPtr<CompositorState> m_compositorState;
     bool m_compositorPending;
     bool m_currentTimePending;
 };
