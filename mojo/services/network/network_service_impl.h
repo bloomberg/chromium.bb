@@ -23,6 +23,7 @@ class NetworkServiceImpl : public InterfaceImpl<NetworkService> {
   // NetworkService methods:
   virtual void CreateURLLoader(InterfaceRequest<URLLoader> loader) OVERRIDE;
   virtual void GetCookieStore(InterfaceRequest<CookieStore> store) OVERRIDE;
+  virtual void CreateWebSocket(InterfaceRequest<WebSocket> socket) OVERRIDE;
 
  private:
   NetworkContext* context_;

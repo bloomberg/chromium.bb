@@ -7,6 +7,7 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/services/network/cookie_store_impl.h"
 #include "mojo/services/network/url_loader_impl.h"
+#include "mojo/services/network/web_socket_impl.h"
 
 namespace mojo {
 
@@ -26,6 +27,10 @@ void NetworkServiceImpl::CreateURLLoader(InterfaceRequest<URLLoader> loader) {
 
 void NetworkServiceImpl::GetCookieStore(InterfaceRequest<CookieStore> store) {
   BindToRequest(new CookieStoreImpl(context_, origin_), &store);
+}
+
+void NetworkServiceImpl::CreateWebSocket(InterfaceRequest<WebSocket> socket) {
+  BindToRequest(new WebSocketImpl(context_), &socket);
 }
 
 }  // namespace mojo

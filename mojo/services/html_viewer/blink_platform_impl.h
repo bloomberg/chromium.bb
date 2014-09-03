@@ -38,6 +38,7 @@ class BlinkPlatformImpl : public blink::Platform {
   virtual void stopSharedTimer();
   virtual void callOnMainThread(void (*func)(void*), void* context);
   virtual blink::WebURLLoader* createURLLoader();
+  virtual blink::WebSocketHandle* createWebSocketHandle();
   virtual blink::WebString userAgent();
   virtual blink::WebData parseDataURL(
       const blink::WebURL& url, blink::WebString& mime_type,

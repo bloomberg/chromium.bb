@@ -40,6 +40,8 @@
         'services/html_viewer/webcookiejar_impl.h',
         'services/html_viewer/webmimeregistry_impl.cc',
         'services/html_viewer/webmimeregistry_impl.h',
+        'services/html_viewer/websockethandle_impl.cc',
+        'services/html_viewer/websockethandle_impl.h',
         'services/html_viewer/webstoragenamespace_impl.cc',
         'services/html_viewer/webstoragenamespace_impl.h',
         'services/html_viewer/webthemeengine_impl.cc',
@@ -365,6 +367,7 @@
         'services/public/interfaces/network/network_error.mojom',
         'services/public/interfaces/network/network_service.mojom',
         'services/public/interfaces/network/url_loader.mojom',
+        'services/public/interfaces/network/web_socket.mojom',
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
@@ -398,6 +401,8 @@
         'services/network/network_service_impl.h',
         'services/network/url_loader_impl.cc',
         'services/network/url_loader_impl.h',
+        'services/network/web_socket_impl.cc',
+        'services/network/web_socket_impl.h',
       ],
     },
     {

@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/services/html_viewer/webcookiejar_impl.h"
+#include "mojo/services/html_viewer/websockethandle_impl.h"
 #include "mojo/services/html_viewer/webthread_impl.h"
 #include "mojo/services/html_viewer/weburlloader_impl.h"
 #include "net/base/data_url.h"
@@ -148,6 +149,10 @@ const unsigned char* BlinkPlatformImpl::getTraceCategoryEnabledFlag(
 
 blink::WebURLLoader* BlinkPlatformImpl::createURLLoader() {
   return new WebURLLoaderImpl(network_service_.get());
+}
+
+blink::WebSocketHandle* BlinkPlatformImpl::createWebSocketHandle() {
+  return new WebSocketHandleImpl(network_service_.get());
 }
 
 blink::WebString BlinkPlatformImpl::userAgent() {

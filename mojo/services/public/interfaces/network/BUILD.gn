@@ -11,5 +11,6 @@ mojom("network") {
     "network_error.mojom",
     "network_service.mojom",
     "url_loader.mojom",
+    "web_socket.mojom",
   ]
 }

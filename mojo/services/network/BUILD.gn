@@ -38,5 +38,7 @@ source_set("lib") {
     "network_service_impl.h",
     "url_loader_impl.cc",
     "url_loader_impl.h",
+    "web_socket_impl.cc",
+    "web_socket_impl.h",
   ]
 }

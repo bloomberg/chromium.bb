@@ -1,0 +1,46 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import "mojo/services/public/interfaces/network/network_error.mojom"
+
+module mojo {
+
+interface WebSocket {
+  enum MessageType {
+    CONTINUATION,
+    TEXT,
+    BINARY
+  };
+  const int16 kAbnormalCloseCode = 1006;  // stolen from websocket_bridge
+
+  Connect(
+      string url, string[] protocols, string origin, WebSocketClient client);
+  Send(bool fin, MessageType type, handle<data_pipe_consumer> data);
+  FlowControl(int64 quota);
+  Close(int16 code, string reason);
+};
+
+interface WebSocketClient {
+  DidConnect(bool fail, string selected_subprotocol, string extensions);
+  DidReceiveData(
+      bool fin, WebSocket.MessageType type, handle<data_pipe_consumer> data);
+  DidReceiveFlowControl(int64 quota);
+
+  // TODO(mpcomplete): add these methods from blink:
+  // void didStartOpeningHandshake(WebSocketHandle*, const
+  //    WebSocketHandshakeRequestInfo&) = 0;
+  //
+  // void didFinishOpeningHandshake(WebSocketHandle*, const
+  //    WebSocketHandshakeResponseInfo&) = 0;
+  //
+  // void didFail(WebSocketHandle* /* handle */, const WebString&
+  //    message) = 0;
+  //
+  // void didClose(WebSocketHandle* /* handle */, bool wasClean,
+  //    unsigned short code, const WebString& reason) = 0;
+  //
+  // void didStartClosingHandshake(WebSocketHandle*) = 0;
+};
+
+}
