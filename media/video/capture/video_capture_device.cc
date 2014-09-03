@@ -28,7 +28,10 @@ VideoCaptureDevice::Name::Name(const std::string& name, const std::string& id)
 VideoCaptureDevice::Name::Name(const std::string& name,
                                const std::string& id,
                                const CaptureApiType api_type)
-    : device_name_(name), unique_id_(id), capture_api_class_(api_type) {}
+    : device_name_(name),
+      unique_id_(id),
+      capture_api_class_(api_type),
+      capabilities_id_(id) {}
 #endif
 
 #if defined(OS_MACOSX)

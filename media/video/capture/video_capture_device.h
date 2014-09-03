@@ -46,7 +46,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
     enum CaptureApiType {
       MEDIA_FOUNDATION,
       DIRECT_SHOW,
-      DIRECT_SHOW_WDM,
+      DIRECT_SHOW_WDM_CROSSBAR,
       API_TYPE_UNKNOWN
     };
 #endif
@@ -106,6 +106,16 @@ class MEDIA_EXPORT VideoCaptureDevice {
       return capture_api_class_.capture_api_type();
     }
 #endif
+#if defined(OS_WIN)
+    // Certain devices need an ID different from the |unique_id_| for
+    // capabilities retrieval.
+    const std::string& capabilities_id() const {
+      return capabilities_id_;
+    }
+    void set_capabilities_id(const std::string& id) {
+      capabilities_id_ = id;
+    }
+#endif
 #if defined(OS_MACOSX)
     TransportType transport_type() const {
       return transport_type_;
@@ -138,6 +148,10 @@ class MEDIA_EXPORT VideoCaptureDevice {
     };
 
     CaptureApiClass capture_api_class_;
+#endif
+#if defined(OS_WIN)
+    // ID used for capabilities retrieval. By default is equal to |unique_id|.
+    std::string capabilities_id_;
 #endif
 #if defined(OS_MACOSX)
     TransportType transport_type_;

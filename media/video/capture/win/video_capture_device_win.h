@@ -53,7 +53,7 @@ class VideoCaptureDeviceWin
     AM_MEDIA_TYPE* media_type_;
   };
 
-  static HRESULT GetDeviceFilter(const Name& device_name,
+  static HRESULT GetDeviceFilter(const std::string& device_id,
                                  IBaseFilter** filter);
   static bool PinMatchesCategory(IPin* pin, REFGUID category);
   static base::win::ScopedComPtr<IPin> GetPin(IBaseFilter* filter,

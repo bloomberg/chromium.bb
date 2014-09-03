@@ -23,9 +23,8 @@ namespace media {
 
 // Finds and creates a DirectShow Video Capture filter matching the device_name.
 // static
-HRESULT VideoCaptureDeviceWin::GetDeviceFilter(
-    const VideoCaptureDevice::Name& device_name,
-    IBaseFilter** filter) {
+HRESULT VideoCaptureDeviceWin::GetDeviceFilter(const std::string& device_id,
+                                               IBaseFilter** filter) {
   DCHECK(filter);
 
   ScopedComPtr<ICreateDevEnum> dev_enum;
@@ -65,7 +64,7 @@ HRESULT VideoCaptureDeviceWin::GetDeviceFilter(
     }
     if (name.type() == VT_BSTR) {
       std::string device_path(base::SysWideToUTF8(V_BSTR(&name)));
-      if (device_path.compare(device_name.id()) == 0) {
+      if (device_path.compare(device_id) == 0) {
         // We have found the requested device
         hr = moniker->BindToObject(0, 0, IID_IBaseFilter,
                                    capture_filter.ReceiveVoid());
@@ -224,7 +223,7 @@ VideoCaptureDeviceWin::~VideoCaptureDeviceWin() {
 
 bool VideoCaptureDeviceWin::Init() {
   DCHECK(CalledOnValidThread());
-  HRESULT hr = GetDeviceFilter(device_name_, capture_filter_.Receive());
+  HRESULT hr = GetDeviceFilter(device_name_.id(), capture_filter_.Receive());
   if (!capture_filter_) {
     DLOG(ERROR) << "Failed to create capture filter: "
                 << logging::SystemErrorCodeToString(hr);
