@@ -387,15 +387,10 @@ StyleDifference RenderStyle::visualInvalidationDiff(const RenderStyle& other) co
 
     if (!diff.needsFullLayout() && position() != StaticPosition && surround->offset != other.surround->offset) {
         // Optimize for the case where a positioned layer is moving but not changing size.
-        if ((position() == AbsolutePosition || position() == FixedPosition)
-            && positionedObjectMovedOnly(surround->offset, other.surround->offset, m_box->width())) {
+        if (positionedObjectMovedOnly(surround->offset, other.surround->offset, m_box->width()))
             diff.setNeedsPositionedMovementLayout();
-        } else {
-            // FIXME: We would like to use SimplifiedLayout for relative positioning, but we can't quite do that yet.
-            // We need to make sure SimplifiedLayout can operate correctly on RenderInlines (we will need
-            // to add a selfNeedsSimplifiedLayout bit in order to not get confused and taint every line).
+        else
             diff.setNeedsFullLayout();
-        }
     }
 
     if (diffNeedsPaintInvalidationLayer(other))

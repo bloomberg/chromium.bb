@@ -1,0 +1,19 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [68, 10],
+          "bounds": [402, 62],
+          "drawsContent": true,
+          "backfaceVisibility": "hidden"
+        }
+      ]
+    }
+  ]
+}
+
