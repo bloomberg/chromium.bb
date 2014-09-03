@@ -10,6 +10,7 @@
 #include "base/debug/trace_event.h"
 #include "base/stl_util.h"
 #include "base/task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_manager.h"
@@ -198,7 +199,7 @@ void EventFactoryEvdev::OnDeviceEvent(const DeviceEvent& event) {
 
 void EventFactoryEvdev::OnDispatcherListChanged() {
   if (!ui_task_runner_) {
-    ui_task_runner_ = base::MessageLoopProxy::current();
+    ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     // Scan & monitor devices.
     device_manager_->AddObserver(this);
     device_manager_->ScanDevices(this);

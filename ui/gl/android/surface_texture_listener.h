@@ -11,7 +11,7 @@
 #include "ui/gl/gl_export.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace gfx {
@@ -37,7 +37,7 @@ class GL_EXPORT SurfaceTextureListener {
 
   base::Closure callback_;
 
-  scoped_refptr<base::MessageLoopProxy> browser_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> browser_loop_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(SurfaceTextureListener);
 };

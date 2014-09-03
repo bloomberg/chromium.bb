@@ -7,7 +7,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "ui/events/event.h"
 #include "ui/events/event_source.h"
@@ -589,7 +590,7 @@ void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
       return;
     }
     if (pending_events_.empty()) {
-      base::MessageLoopProxy::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&EventGenerator::DispatchNextPendingEvent,
                      base::Unretained(this)));
@@ -611,7 +612,7 @@ void EventGenerator::DispatchNextPendingEvent() {
   pending_events_.pop_front();
   delete event;
   if (!pending_events_.empty()) {
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&EventGenerator::DispatchNextPendingEvent,
                    base::Unretained(this)));

@@ -15,8 +15,10 @@ extern "C" {
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -128,7 +130,7 @@ class SGIVideoSyncProviderThreadShim {
   explicit SGIVideoSyncProviderThreadShim(XID window)
       : window_(window),
         context_(NULL),
-        message_loop_(base::MessageLoopProxy::current()),
+        task_runner_(base::ThreadTaskRunnerHandle::Get()),
         cancel_vsync_flag_(),
         vsync_lock_() {
     // This ensures that creation of |window_| has occured when this shim
@@ -204,7 +206,7 @@ class SGIVideoSyncProviderThreadShim {
     const base::TimeDelta kDefaultInterval =
         base::TimeDelta::FromSeconds(1) / 60;
 
-    message_loop_->PostTask(
+    task_runner_->PostTask(
         FROM_HERE, base::Bind(callback, now, kDefaultInterval));
   }
 
@@ -218,7 +220,7 @@ class SGIVideoSyncProviderThreadShim {
   XID window_;
   GLXContext context_;
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::CancellationFlag cancel_vsync_flag_;
   base::Lock vsync_lock_;

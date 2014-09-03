@@ -5,14 +5,15 @@
 #include "ui/gl/android/surface_texture_listener.h"
 
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "jni/SurfaceTextureListener_jni.h"
 
 namespace gfx {
 
 SurfaceTextureListener::SurfaceTextureListener(const base::Closure& callback)
     : callback_(callback),
-      browser_loop_(base::MessageLoopProxy::current()) {
+      browser_loop_(base::ThreadTaskRunnerHandle::Get()) {
 }
 
 SurfaceTextureListener::~SurfaceTextureListener() {

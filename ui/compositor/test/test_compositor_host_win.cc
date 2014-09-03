@@ -6,7 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/win/window_impl.h"
 
@@ -20,7 +20,7 @@ class TestCompositorHostWin : public TestCompositorHost,
     Init(NULL, bounds);
     compositor_.reset(new ui::Compositor(hwnd(),
                                          context_factory,
-                                         base::MessageLoopProxy::current()));
+                                         base::ThreadTaskRunnerHandle::Get()));
     compositor_->SetScaleAndSize(1.0f, GetSize());
   }
 

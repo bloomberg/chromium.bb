@@ -4,7 +4,7 @@
 
 #include "ui/app_list/views/top_icon_animation_view.h"
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -84,7 +84,7 @@ void TopIconAnimationView::OnImplicitAnimationsCompleted() {
   FOR_EACH_OBSERVER(TopIconAnimationObserver,
                     observers_,
                     OnTopIconAnimationsComplete());
-  base::MessageLoopProxy::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 bool TopIconAnimationView::RequiresNotificationWhenAnimatorDestroyed() const {
