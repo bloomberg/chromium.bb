@@ -666,20 +666,8 @@ void MetricsService::GetUptimes(PrefService* pref,
   }
 }
 
-void MetricsService::AddObserver(MetricsServiceObserver* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  observers_.AddObserver(observer);
-}
-
-void MetricsService::RemoveObserver(MetricsServiceObserver* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  observers_.RemoveObserver(observer);
-}
-
 void MetricsService::NotifyOnDidCreateMetricsLog() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(
-      MetricsServiceObserver, observers_, OnDidCreateMetricsLog());
+  DCHECK(IsSingleThreaded());
   for (size_t i = 0; i < metrics_providers_.size(); ++i)
     metrics_providers_[i]->OnDidCreateMetricsLog();
 }

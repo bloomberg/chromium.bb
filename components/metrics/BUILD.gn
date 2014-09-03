@@ -30,8 +30,6 @@ source_set("metrics") {
     "metrics_service.cc",
     "metrics_service.h",
     "metrics_service_client.h",
-    "metrics_service_observer.cc",
-    "metrics_service_observer.h",
     "metrics_state_manager.cc",
     "metrics_state_manager.h",
     "metrics_switches.cc",

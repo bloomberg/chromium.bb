@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "chrome/browser/metrics/metrics_service_accessor.h"
 
-class ChromeBrowserMetricsServiceObserver;
 class Profile;
 
 namespace {
@@ -40,7 +39,6 @@ class ChromeInternalLogSource;
 class ChromeMetricsServiceAccessor : public MetricsServiceAccessor {
  private:
   friend bool prerender::IsOmniboxEnabled(Profile* profile);
-  friend class ::ChromeBrowserMetricsServiceObserver;
   friend class ChromeRenderMessageFilter;
   friend class ::CrashesDOMHandler;
   friend class DataReductionProxyChromeSettings;

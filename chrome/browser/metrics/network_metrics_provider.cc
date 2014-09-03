@@ -4,6 +4,9 @@
 
 #include "chrome/browser/metrics/network_metrics_provider.h"
 
+#include <string>
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -30,6 +33,11 @@ NetworkMetricsProvider::NetworkMetricsProvider()
 
 NetworkMetricsProvider::~NetworkMetricsProvider() {
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+}
+
+void NetworkMetricsProvider::OnDidCreateMetricsLog() {
+  net::NetworkChangeNotifier::LogOperatorCodeHistogram(
+      net::NetworkChangeNotifier::GetConnectionType());
 }
 
 void NetworkMetricsProvider::ProvideSystemProfileMetrics(

@@ -244,8 +244,6 @@
       'browser/chrome_browser_main_mac.mm',
       'browser/chrome_browser_main_win.cc',
       'browser/chrome_browser_main_win.h',
-      'browser/chrome_browser_metrics_service_observer.cc',
-      'browser/chrome_browser_metrics_service_observer.h',
       'browser/chrome_content_browser_client.cc',
       'browser/chrome_content_browser_client.h',
       'browser/chrome_content_browser_client_parts.h',

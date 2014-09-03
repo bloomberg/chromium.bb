@@ -21,14 +21,10 @@
 #include "base/metrics/histogram_flattener.h"
 #include "base/metrics/histogram_snapshot_manager.h"
 #include "base/metrics/user_metrics.h"
-#include "base/observer_list.h"
-#include "base/strings/string16.h"
-#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
 #include "components/metrics/metrics_provider.h"
-#include "components/metrics/metrics_service_observer.h"
 #include "components/variations/active_field_trials.h"
 
 class MetricsServiceAccessor;
@@ -283,9 +279,7 @@ class MetricsService : public base::HistogramFlattener {
   // Set up client ID, session ID, etc.
   void InitializeMetricsState();
 
-  // Registers/unregisters |observer| to receive MetricsLog notifications.
-  void AddObserver(MetricsServiceObserver* observer);
-  void RemoveObserver(MetricsServiceObserver* observer);
+  // Notifies providers when a new metrics log is created.
   void NotifyOnDidCreateMetricsLog();
 
   // Schedule the next save of LocalState information.  This is called
@@ -446,6 +440,9 @@ class MetricsService : public base::HistogramFlattener {
   // Stores the time of the last call to |GetUptimes()|.
   base::TimeTicks last_updated_time_;
 
+  // Field trial groups that map to Chrome configuration states.
+  SyntheticTrialGroups synthetic_trial_groups_;
+
   // Execution phase the browser is in.
   static ExecutionPhase execution_phase_;
 
@@ -453,18 +450,9 @@ class MetricsService : public base::HistogramFlattener {
   // exited-cleanly bit in the prefs.
   static ShutdownCleanliness clean_shutdown_status_;
 
-  // Field trial groups that map to Chrome configuration states.
-  SyntheticTrialGroups synthetic_trial_groups_;
-
-  ObserverList<MetricsServiceObserver> observers_;
-
-  // Confirms single-threaded access to |observers_| in debug builds.
-  base::ThreadChecker thread_checker_;
-
   friend class ::MetricsServiceAccessor;
 
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, IsPluginProcess);
-  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, MetricsServiceObserver);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest,
                            PermutedEntropyCacheClearedWhenLowEntropyReset);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, RegisterSyntheticTrial);

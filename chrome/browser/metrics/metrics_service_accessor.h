@@ -6,13 +6,11 @@
 #define CHROME_BROWSER_METRICS_METRICS_SERVICE_ACCESSOR_H_
 
 #include <stdint.h>
-#include <string>
 
 #include "base/macros.h"
 
 namespace metrics {
 class MetricsService;
-class MetricsServiceObserver;
 }
 
 // This class limits and documents access to metrics service helper methods.
@@ -23,13 +21,6 @@ class MetricsServiceAccessor {
   // Constructor declared as protected to enable inheritance. Descendants should
   // disallow instantiation.
   MetricsServiceAccessor() {}
-
-  // Registers/unregisters |observer| to receive MetricsLog notifications
-  // from metrics service.
-  static void AddMetricsServiceObserver(
-      metrics::MetricsServiceObserver* observer);
-  static void RemoveMetricsServiceObserver(
-      metrics::MetricsServiceObserver* observer);
 
   // Registers the specified synthetic field trial (identified by a hash of the
   // trial name and group name) with |metrics_service|, if the service is not

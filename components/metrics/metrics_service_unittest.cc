@@ -15,7 +15,6 @@
 #include "components/metrics/compression_utils.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_pref_names.h"
-#include "components/metrics/metrics_service_observer.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/test_metrics_service_client.h"
 #include "components/variations/metrics_util.h"
@@ -128,22 +127,6 @@ class MetricsServiceTest : public testing::Test {
   base::MessageLoop message_loop;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsServiceTest);
-};
-
-class TestMetricsServiceObserver : public MetricsServiceObserver {
- public:
-  TestMetricsServiceObserver(): observed_(0) {}
-  virtual ~TestMetricsServiceObserver() {}
-
-  virtual void OnDidCreateMetricsLog() OVERRIDE {
-    ++observed_;
-  }
-  int observed() const { return observed_; }
-
- private:
-  int observed_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestMetricsServiceObserver);
 };
 
 }  // namespace
@@ -281,38 +264,6 @@ TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial2", "Group2"));
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial3", "Group3"));
   service.log_manager_.FinishCurrentLog();
-}
-
-TEST_F(MetricsServiceTest, MetricsServiceObserver) {
-  metrics::TestMetricsServiceClient client;
-  MetricsService service(GetMetricsStateManager(), &client, GetLocalState());
-  TestMetricsServiceObserver observer1;
-  TestMetricsServiceObserver observer2;
-
-  service.AddObserver(&observer1);
-  EXPECT_EQ(0, observer1.observed());
-  EXPECT_EQ(0, observer2.observed());
-
-  service.OpenNewLog();
-  EXPECT_EQ(1, observer1.observed());
-  EXPECT_EQ(0, observer2.observed());
-  service.log_manager_.FinishCurrentLog();
-
-  service.AddObserver(&observer2);
-
-  service.OpenNewLog();
-  EXPECT_EQ(2, observer1.observed());
-  EXPECT_EQ(1, observer2.observed());
-  service.log_manager_.FinishCurrentLog();
-
-  service.RemoveObserver(&observer1);
-
-  service.OpenNewLog();
-  EXPECT_EQ(2, observer1.observed());
-  EXPECT_EQ(2, observer2.observed());
-  service.log_manager_.FinishCurrentLog();
-
-  service.RemoveObserver(&observer2);
 }
 
 }  // namespace metrics

@@ -23,7 +23,9 @@ class NetworkMetricsProvider
   NetworkMetricsProvider();
   virtual ~NetworkMetricsProvider();
 
+ private:
   // metrics::MetricsProvider:
+  virtual void OnDidCreateMetricsLog() OVERRIDE;
   virtual void ProvideSystemProfileMetrics(
       metrics::SystemProfileProto* system_profile) OVERRIDE;
 
@@ -31,7 +33,6 @@ class NetworkMetricsProvider
   virtual void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
- private:
   metrics::SystemProfileProto::Network::ConnectionType
   GetConnectionType() const;
   metrics::SystemProfileProto::Network::WifiPHYLayerProtocol
