@@ -75,6 +75,12 @@ test('urljoin(url, opt_param) should urlencode |opt_param|',
         '&escapist=%3A%2F%3F%23%5B%5D%40%24%26%2B%2C%3B%3D');
 });
 
+test('escapeHTML(str) should escape special characters', function() {
+  QUnit.equal(
+    base.escapeHTML('<script>alert("hello")</script>'),
+    '&lt;script&gt;alert("hello")&lt;/script&gt;');
+});
+
 QUnit.asyncTest('Promise.sleep(delay) should fulfill the promise after |delay|',
   function() {
     var isCalled = false;

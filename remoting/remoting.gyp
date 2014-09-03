@@ -171,6 +171,7 @@
           'host/win/version.rc.jinja2',
           'resources/play_store_resources.cc',
           'webapp/background/background.js',
+          'webapp/background/it2me_helpee_channel.js',
           'webapp/butter_bar.js',
           'webapp/client_screen.js',
           'webapp/error.js',

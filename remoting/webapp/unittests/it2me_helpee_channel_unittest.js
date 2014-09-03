@@ -82,7 +82,7 @@ QUnit.asyncTest(
 
 QUnit.asyncTest('isHostInstalled() should return true if host is installed',
     function() {
-  sinon.stub(hostInstaller, "isInstalled").returns(Promise.resolve(true));
+  sinon.stub(hostInstaller, 'isInstalled').returns(Promise.resolve(true));
 
   var MessageTypes = remoting.It2MeHelpeeChannel.HangoutMessageTypes;
   hangoutPort.onMessage.mock$fire({
@@ -100,7 +100,7 @@ QUnit.asyncTest('isHostInstalled() should return true if host is installed',
 
 test('downloadHost() should trigger a host download',
     function() {
-  sinon.stub(hostInstaller, "download").returns(Promise.resolve(true));
+  sinon.stub(hostInstaller, 'download').returns(Promise.resolve(true));
 
   hangoutPort.onMessage.mock$fire({
     method: remoting.It2MeHelpeeChannel.HangoutMessageTypes.DOWNLOAD_HOST
@@ -125,14 +125,16 @@ test('connect() should return error if email is missing',
 QUnit.asyncTest('connect() should return access code',
     function() {
   // Stubs authentication.
-  sinon.stub(base, "isAppsV2").returns(true);
-  sinon.stub(chrome.identity, "getAuthToken")
+  sinon.stub(base, 'isAppsV2').returns(true);
+  sinon.stub(remoting.MessageWindow, 'showConfirmWindow')
+      .callsArgWith(4, 1 /* 1 for OK. */);
+  sinon.stub(chrome.identity, 'getAuthToken')
       .callsArgWith(1, 'token');
   // Stubs Host behavior.
-  sinon.stub(host, "initialized").returns(true);
-  sinon.stub(host, "connect")
+  sinon.stub(host, 'initialized').returns(true);
+  sinon.stub(host, 'connect')
       .callsArgWith(2, remoting.HostSession.State.RECEIVED_ACCESS_CODE);
-  sinon.stub(host, "getAccessCode").returns('accessCode');
+  sinon.stub(host, 'getAccessCode').returns('accessCode');
 
   var MessageTypes = remoting.It2MeHelpeeChannel.HangoutMessageTypes;
   hangoutPort.onMessage.mock$fire({
@@ -149,12 +151,13 @@ QUnit.asyncTest('connect() should return access code',
 
     chrome.identity.getAuthToken.restore();
     base.isAppsV2.restore();
+    remoting.MessageWindow.showConfirmWindow.restore();
     QUnit.start();
   });
 });
 
 test('should disconnect the session if Hangout crashes', function() {
-  sinon.spy(host, "disconnect");
+  sinon.spy(host, 'disconnect');
   hangoutPort.onDisconnect.mock$fire();
 
   sinon.assert.called(onDisposedCallback);

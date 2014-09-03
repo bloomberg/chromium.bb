@@ -200,6 +200,7 @@
       'webapp/host_installer.js',
       'webapp/host_session.js',
       'webapp/it2me_host_facade.js',
+      'webapp/l10n.js',
       'webapp/plugin_settings.js',
       'webapp/typecheck.js',
       'webapp/background/app_launcher.js',

@@ -150,6 +150,18 @@ base.urlJoin = function(url, opt_params) {
 };
 
 /**
+ * Convert special characters (e.g. &, < and >) to HTML entities.
+ *
+ * @param {string} str
+ * @return {string}
+ */
+base.escapeHTML = function(str) {
+  var div = document.createElement('div');
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+};
+
+/**
  * Promise is a great tool for writing asynchronous code. However, the construct
  *   var p = new promise(function init(resolve, reject) {
  *     ... // code that fulfills the Promise.

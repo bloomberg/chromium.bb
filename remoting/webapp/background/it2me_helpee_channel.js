@@ -275,27 +275,80 @@ remoting.It2MeHelpeeChannel.prototype.handleConnect_ =
  * ensures that even if Hangouts is compromised, an attacker cannot start the
  * host without explicit user confirmation.
  *
- * @return {Promise} A promise that resolves when the user clicks accept on the
- *     dialog.
+ * @return {Promise} A promise that resolves to a boolean value, indicating
+ *     whether the user accepts the remote assistance or not.
  * @private
  */
 remoting.It2MeHelpeeChannel.prototype.showConfirmDialog_ = function() {
+  if (base.isAppsV2()) {
+    return this.showConfirmDialogV2_();
+  } else {
+    return this.showConfirmDialogV1_();
+  }
+};
+
+/**
+ * @return {Promise} A promise that resolves to a boolean value, indicating
+ *     whether the user accepts the remote assistance or not.
+ * @private
+ */
+remoting.It2MeHelpeeChannel.prototype.showConfirmDialogV1_ = function() {
+  var messageHeader = l10n.getTranslationOrError(
+      /*i18n-content*/'HANGOUTS_CONFIRM_DIALOG_MESSAGE_1');
+  var message1 = l10n.getTranslationOrError(
+      /*i18n-content*/'HANGOUTS_CONFIRM_DIALOG_MESSAGE_2');
+  var message2 = l10n.getTranslationOrError(
+      /*i18n-content*/'HANGOUTS_CONFIRM_DIALOG_MESSAGE_3');
+  var message = base.escapeHTML(messageHeader) + '\n' +
+                '- ' + base.escapeHTML(message1) + '\n' +
+                '- ' + base.escapeHTML(message2) + '\n';
+
+  if(window.confirm(message)) {
+    return Promise.resolve();
+  } else {
+    return Promise.reject(new Error(remoting.Error.CANCELLED));
+  }
+};
+
+/**
+ * @return {Promise} A promise that resolves to a boolean value, indicating
+ *     whether the user accepts the remote assistance or not.
+ * @private
+ */
+remoting.It2MeHelpeeChannel.prototype.showConfirmDialogV2_ = function() {
+  var messageHeader = l10n.getTranslationOrError(
+      /*i18n-content*/'HANGOUTS_CONFIRM_DIALOG_MESSAGE_1');
+  var message1 = l10n.getTranslationOrError(
+      /*i18n-content*/'HANGOUTS_CONFIRM_DIALOG_MESSAGE_2');
+  var message2 = l10n.getTranslationOrError(
+      /*i18n-content*/'HANGOUTS_CONFIRM_DIALOG_MESSAGE_3');
+  var message = '<div>' + base.escapeHTML(messageHeader) + '</div>' +
+                '<ul class="insetList">' +
+                  '<li>' + base.escapeHTML(message1) + '</li>' +
+                  '<li>' + base.escapeHTML(message2) + '</li>' +
+                '</ul>';
   /**
    * @param {function(*=):void} resolve
    * @param {function(*=):void} reject
    */
   return new Promise(function(resolve, reject) {
-    // TODO(kelvinp): The existing implementation doesn't work in the v2 app as
-    // window.confirm is blacklisted. Implement the dialog using
-    // chrome.app.window instead (crbug.com/405139).
-    if (base.isAppsV2()) {
-      resolve();
-    // The unlocalized string will be replaced in (crbug.com/405139).
-    } else if (window.confirm('Accept help?')) {
-      resolve();
-    } else {
-      reject(new Error(remoting.Error.CANCELLED));
+    /** @param {number} result */
+    function confirmDialogCallback(result) {
+      if (result === 1) {
+        resolve();
+      } else {
+        reject(new Error(remoting.Error.CANCELLED));
+      }
     }
+    remoting.MessageWindow.showConfirmWindow(
+        '', // Empty string to use the package name as the dialog title.
+        message,
+        l10n.getTranslationOrError(
+            /*i18n-content*/'HANGOUTS_CONFIRM_DIALOG_ACCEPT'),
+        l10n.getTranslationOrError(
+            /*i18n-content*/'HANGOUTS_CONFIRM_DIALOG_DECLINE'),
+        confirmDialogCallback
+    );
   });
 };
 

@@ -105,9 +105,11 @@ MessageWindowImpl.prototype.onMessage_ = function(event) {
       var cancelButton = document.getElementById('button-secondary');
       var messageDiv = document.getElementById('message');
       var infoboxDiv = document.getElementById('infobox');
+
       document.getElementById('title').innerText = title;
       document.querySelector('title').innerText = title;
-      messageDiv.innerText = message;
+      messageDiv.innerHTML = message;
+
       if (showSpinner) {
         messageDiv.classList.add('waiting');
         messageDiv.classList.add('prominent');
