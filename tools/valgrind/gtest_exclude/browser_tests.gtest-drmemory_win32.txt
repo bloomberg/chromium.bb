@@ -153,6 +153,8 @@ Reg*
 Rem*De*
 Rem*Ad*
 Res*
+# RequestContentScriptAPITest.PermissionMatcherAgreementInjection
+Req*.Per*ion
 # S*
 Sa*
 Sea*Pr*
