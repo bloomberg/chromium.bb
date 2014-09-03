@@ -5,7 +5,8 @@
 
 """
 This script runs every build as the first hook (See DEPS). If it detects that
-the build should be clobbered, it will remove the build directory.
+the build should be clobbered, it will delete the contents of the build
+directory.
 
 A landmine is tripped when a builder checks out a different revision, and the
 diff between the new landmines and the old ones is non-null. At this point, the
@@ -70,8 +71,14 @@ def clobber_if_necessary(new_landmines):
       sys.stdout.write('Clobbering due to:\n')
       sys.stdout.writelines(diff)
 
-      # Clobber.
-      shutil.rmtree(out_dir)
+      # Clobber contents of build directory but not directory itself: some
+      # checkouts have the build directory mounted.
+      for f in os.listdir(out_dir):
+        path = os.path.join(out_dir, f)
+        if os.path.isfile(path):
+          os.unlink(path)
+        elif os.path.isdir(path):
+          shutil.rmtree(path)
 
   # Save current set of landmines for next time.
   with open(landmines_path, 'w') as f:
