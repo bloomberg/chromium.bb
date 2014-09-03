@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "athena/screen/public/screen_manager.h"
 #include "athena/wm/public/window_list_provider.h"
 #include "athena/wm/public/window_manager.h"
 #include "base/bind.h"
@@ -31,6 +32,11 @@ gfx::Transform GetTargetTransformForBoundsAnimation(const gfx::Rect& from,
   transform.Scale(to.width() / static_cast<float>(from.width()),
                   to.height() / static_cast<float>(from.height()));
   return transform;
+}
+
+bool IsLandscapeOrientation(gfx::Display::Rotation rotation) {
+  return rotation == gfx::Display::ROTATE_0 ||
+         rotation == gfx::Display::ROTATE_180;
 }
 
 }  // namespace
@@ -88,7 +94,7 @@ void SplitViewController::ActivateSplitMode(aura::Window* left,
     }
   }
 
-  state_ = ACTIVE;
+  SetState(ACTIVE);
   if (right_window_ != right) {
     right_window_ = right;
     container_->StackChildAtTop(right_window_);
@@ -124,7 +130,7 @@ void SplitViewController::ReplaceWindow(aura::Window* window,
 
 void SplitViewController::DeactivateSplitMode() {
   CHECK_EQ(ACTIVE, state_);
-  state_ = INACTIVE;
+  SetState(INACTIVE);
   UpdateLayout(false);
   left_window_ = right_window_ = NULL;
 }
@@ -143,10 +149,21 @@ gfx::Rect SplitViewController::GetRightTargetBounds() {
       container_width / 2, 0, container_width / 2, work_area.height());
 }
 
+void SplitViewController::SetState(SplitViewController::State state) {
+  if (state_ == state)
+    return;
+
+  state_ = state;
+  ScreenManager::Get()->SetRotationLocked(state_ != INACTIVE);
+}
+
 void SplitViewController::UpdateLayout(bool animate) {
   CHECK(left_window_);
   CHECK(right_window_);
 
+  // Splitview can be activated from SplitViewController::ActivateSplitMode or
+  // SplitViewController::ScrollEnd. Additionally we don't want to rotate the
+  // screen while engaging splitview (i.e. state_ == SCROLLING).
   if (state_ == INACTIVE && !animate) {
     if (!wm::IsActiveWindow(left_window_))
       left_window_->Hide();
@@ -238,7 +255,7 @@ void SplitViewController::ScrollBegin(BezelController::Bezel bezel,
                                       float delta) {
   if (!CanScroll())
     return;
-  state_ = SCROLLING;
+  SetState(SCROLLING);
 
   aura::Window::Windows windows = window_list_provider_->GetWindowList();
   CHECK(windows.size() >= 2);
@@ -271,15 +288,15 @@ void SplitViewController::ScrollEnd() {
   int container_width = container_->GetBoundsInScreen().width();
   if (std::abs(container_width / 2 - separator_position_) <=
       kMaxDistanceFromMiddle) {
-    state_ = ACTIVE;
+    SetState(ACTIVE);
     separator_position_ = container_width / 2;
   } else if (separator_position_ < container_width / 2) {
     separator_position_ = 0;
-    state_ = INACTIVE;
+    SetState(INACTIVE);
     wm::ActivateWindow(right_window_);
   } else {
     separator_position_ = container_width;
-    state_ = INACTIVE;
+    SetState(INACTIVE);
     wm::ActivateWindow(left_window_);
   }
   UpdateLayout(true);
@@ -293,9 +310,11 @@ void SplitViewController::ScrollUpdate(float delta) {
 }
 
 bool SplitViewController::CanScroll() {
-  // TODO(mfomitchev): return false in vertical orientation, in full screen.
+  // TODO(mfomitchev): return false in full screen.
   bool result = (!IsSplitViewModeActive() &&
-                 window_list_provider_->GetWindowList().size() >= 2);
+                 window_list_provider_->GetWindowList().size() >= 2 &&
+                 IsLandscapeOrientation(gfx::Screen::GetNativeScreen()->
+                     GetDisplayNearestWindow(container_).rotation()));
   return result;
 }
 

@@ -203,6 +203,7 @@ class ScreenManagerImpl : public ScreenManager {
   virtual aura::Window* CreateContainer(const ContainerParams& params) OVERRIDE;
   virtual aura::Window* GetContext() OVERRIDE { return root_window_; }
   virtual void SetRotation(gfx::Display::Rotation rotation) OVERRIDE;
+  virtual void SetRotationLocked(bool rotation_locked) OVERRIDE;
   virtual ui::LayerAnimator* GetScreenAnimator() OVERRIDE;
 
   // Not owned.
@@ -214,11 +215,16 @@ class ScreenManagerImpl : public ScreenManager {
   scoped_ptr< ::wm::ScopedCaptureClient> capture_client_;
   scoped_ptr<aura::client::ScreenPositionClient> screen_position_client_;
 
+  gfx::Display::Rotation last_requested_rotation_;
+  bool rotation_locked_;
+
   DISALLOW_COPY_AND_ASSIGN(ScreenManagerImpl);
 };
 
 ScreenManagerImpl::ScreenManagerImpl(aura::Window* root_window)
-    : root_window_(root_window) {
+    : root_window_(root_window),
+      last_requested_rotation_(gfx::Display::ROTATE_0),
+      rotation_locked_(false) {
   DCHECK(root_window_);
   DCHECK(!instance);
   instance = this;
@@ -329,7 +335,8 @@ aura::Window* ScreenManagerImpl::CreateContainer(
 }
 
 void ScreenManagerImpl::SetRotation(gfx::Display::Rotation rotation) {
-  if (rotation ==
+  last_requested_rotation_ = rotation;
+  if (rotation_locked_ || rotation ==
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().rotation()) {
     return;
   }
@@ -338,6 +345,12 @@ void ScreenManagerImpl::SetRotation(gfx::Display::Rotation rotation) {
   // http://crbug.com/401044.
   static_cast<aura::TestScreen*>(gfx::Screen::GetNativeScreen())->
       SetDisplayRotation(rotation);
+}
+
+void ScreenManagerImpl::SetRotationLocked(bool rotation_locked) {
+  rotation_locked_ = rotation_locked;
+  if (!rotation_locked_)
+    SetRotation(last_requested_rotation_);
 }
 
 ui::LayerAnimator* ScreenManagerImpl::GetScreenAnimator() {

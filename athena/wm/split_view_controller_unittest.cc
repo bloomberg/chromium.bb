@@ -4,16 +4,47 @@
 
 #include "athena/wm/split_view_controller.h"
 
+#include "athena/screen/public/screen_manager.h"
 #include "athena/test/athena_test_base.h"
 #include "athena/wm/public/window_list_provider.h"
 #include "athena/wm/test/window_manager_impl_test_api.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
 
 namespace athena {
 
-typedef test::AthenaTestBase SplitViewControllerTest;
+class SplitViewControllerTest : public test::AthenaTestBase {
+ public:
+  SplitViewControllerTest() {}
+  virtual ~SplitViewControllerTest() {}
+
+  // test::AthenaTestBase:
+  virtual void SetUp() OVERRIDE {
+    test::AthenaTestBase::SetUp();
+    api_.reset(new test::WindowManagerImplTestApi);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    api_.reset();
+    test::AthenaTestBase::TearDown();
+  }
+
+  bool IsSplitViewAllowed() const {
+    return api_->GetSplitViewController()->CanScroll();
+  }
+
+  test::WindowManagerImplTestApi* api() {
+    return api_.get();
+  }
+
+ private:
+  scoped_ptr<test::WindowManagerImplTestApi> api_;
+
+  DISALLOW_COPY_AND_ASSIGN(SplitViewControllerTest);
+};
 
 // Tests that when split mode is activated, the windows on the left and right
 // are selected correctly.
@@ -26,9 +57,8 @@ TEST_F(SplitViewControllerTest, SplitModeActivation) {
     windows.push_back(window.release());
   }
 
-  test::WindowManagerImplTestApi api;
-  SplitViewController* controller = api.GetSplitViewController();
-  WindowListProvider* list_provider = api.GetWindowListProvider();
+  SplitViewController* controller = api()->GetSplitViewController();
+  WindowListProvider* list_provider = api()->GetWindowListProvider();
   ASSERT_FALSE(controller->IsSplitViewModeActive());
 
   controller->ActivateSplitMode(NULL, NULL);
@@ -64,6 +94,43 @@ TEST_F(SplitViewControllerTest, SplitModeActivation) {
   EXPECT_EQ(windows[5], controller->right_window());
   EXPECT_EQ(windows[4], *list_provider->GetWindowList().rbegin());
   EXPECT_EQ(windows[5], *(list_provider->GetWindowList().rbegin() + 1));
+}
+
+TEST_F(SplitViewControllerTest, LandscapeOnly) {
+  aura::test::TestWindowDelegate delegate;
+  ScopedVector<aura::Window> windows;
+  const int kNumWindows = 2;
+  for (size_t i = 0; i < kNumWindows; ++i) {
+    scoped_ptr<aura::Window> window = CreateTestWindow(NULL, gfx::Rect());
+    windows.push_back(window.release());
+  }
+  ASSERT_EQ(gfx::Display::ROTATE_0,
+            gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().rotation());
+
+  SplitViewController* controller = api()->GetSplitViewController();
+  ASSERT_TRUE(IsSplitViewAllowed());
+  ASSERT_FALSE(controller->IsSplitViewModeActive());
+
+  controller->ActivateSplitMode(NULL, NULL);
+  ASSERT_TRUE(controller->IsSplitViewModeActive());
+
+  // Screen rotation should be locked while in splitview.
+  ScreenManager::Get()->SetRotation(gfx::Display::ROTATE_90);
+  EXPECT_EQ(gfx::Display::ROTATE_0,
+            gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().rotation());
+
+  // Screen is rotated on exiting splitview.
+  controller->DeactivateSplitMode();
+  ASSERT_EQ(gfx::Display::ROTATE_90,
+            gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().rotation());
+
+  // Entering splitview should now be disabled now that the screen is in a
+  // portrait orientation.
+  EXPECT_FALSE(IsSplitViewAllowed());
+
+  // Rotating back to 0 allows splitview again.
+  ScreenManager::Get()->SetRotation(gfx::Display::ROTATE_0);
+  EXPECT_TRUE(IsSplitViewAllowed());
 }
 
 }  // namespace athena
