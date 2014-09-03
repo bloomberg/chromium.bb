@@ -45,6 +45,7 @@ const size_t kTotalImages = 2;
 const char* kImageURLs[kTotalImages] = {"http://a.com/img1.jpg",
                                         "http://a.com/img2.jpg"};
 const char* kImageData[kTotalImages] = {"abcde", "12345"};
+const char kDebugLog[] = "Debug Log";
 
 const string GetImageName(int page_num, int image_num) {
   return base::IntToString(page_num) + "_" + base::IntToString(image_num);
@@ -339,6 +340,20 @@ TEST_F(DistillerTest, DistillPage) {
   const DistilledPageProto& first_page = article_proto_->pages(0);
   EXPECT_EQ(kContent, first_page.html());
   EXPECT_EQ(kURL, first_page.url());
+}
+
+TEST_F(DistillerTest, DistillPageWithDebugInfo) {
+  base::MessageLoopForUI loop;
+  DomDistillerResult dd_result;
+  dd_result.mutable_debug_info()->set_log(kDebugLog);
+  scoped_ptr<base::Value> result =
+      dom_distiller::proto::json::DomDistillerResult::WriteToValue(dd_result);
+  distiller_.reset(
+      new DistillerImpl(url_fetcher_factory_, DomDistillerOptions()));
+  DistillPage(kURL, CreateMockDistillerPage(result.get(), GURL(kURL)).Pass());
+  base::MessageLoop::current()->RunUntilIdle();
+  const DistilledPageProto& first_page = article_proto_->pages(0);
+  EXPECT_EQ(kDebugLog, first_page.debug_info().log());
 }
 
 TEST_F(DistillerTest, DistillPageWithImages) {

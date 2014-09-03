@@ -155,6 +155,11 @@ void DistillerImpl::OnPageDistillationFinished(
       page_data->distilled_page_proto->data.set_html(
           distiller_result->distilled_content().html());
     }
+    if (distiller_result->has_debug_info() &&
+        distiller_result->debug_info().has_log()) {
+      page_data->distilled_page_proto->data.mutable_debug_info()->set_log(
+          distiller_result->debug_info().log());
+    }
 
     if (distiller_result->has_pagination_info()) {
       proto::PaginationInfo pagination_info =

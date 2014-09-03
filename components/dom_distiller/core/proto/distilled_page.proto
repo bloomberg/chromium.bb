@@ -31,4 +31,12 @@ message DistilledPageProto {
 
   // Title for the current page.
   optional string title = 5;
+
+  message DebugInfo {
+    // Contains the log from the JS distiller.
+    optional string log = 1;
+  }
+
+  // Debug information about this page.
+  optional DebugInfo debug_info = 6;
 }

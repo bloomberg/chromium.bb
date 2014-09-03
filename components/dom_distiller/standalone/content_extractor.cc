@@ -143,6 +143,8 @@ std::string GetReadableArticleString(
     output << "Page " << i << std::endl;
     output << "URL: " << page.url() << std::endl;
     output << "Content: " << page.html() << std::endl;
+    if (page.has_debug_info() && page.debug_info().has_log())
+      output << "Log: " << page.debug_info().log() << std::endl;
   }
   return output.str();
 }
