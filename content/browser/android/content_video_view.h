@@ -72,6 +72,14 @@ class ContentVideoView {
   void OnPlaybackComplete();
   void OnExitFullscreen();
 
+  // Functions called to record fullscreen playback UMA metrics.
+  void RecordFullscreenPlayback(
+      JNIEnv*, jobject, bool is_portrait_video, bool is_orientation_portrait);
+  void RecordExitFullscreenPlayback(
+      JNIEnv*, jobject, bool is_portrait_video,
+      long playback_duration_in_milliseconds_before_orientation_change,
+      long playback_duration_in_milliseconds_after_orientation_change);
+
   // Return the corresponing ContentVideoView Java object if any.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject(JNIEnv* env);
 

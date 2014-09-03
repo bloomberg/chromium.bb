@@ -7,16 +7,20 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/browser/power_save_blocker_impl.h"
 #include "content/common/android/surface_texture_peer.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "jni/ContentVideoView_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
 using base::android::ScopedJavaGlobalRef;
+using base::UserMetricsAction;
+using content::RecordAction;
 
 namespace content {
 
@@ -115,6 +119,40 @@ void ContentVideoView::OnExitFullscreen() {
   ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
   if (!content_video_view.is_null())
     Java_ContentVideoView_onExitFullscreen(env, content_video_view.obj());
+}
+
+void ContentVideoView::RecordFullscreenPlayback(
+    JNIEnv*, jobject, bool is_portrait_video, bool is_orientation_portrait) {
+  UMA_HISTOGRAM_BOOLEAN("MobileFullscreenVideo.OrientationPortrait",
+                        is_orientation_portrait);
+  UMA_HISTOGRAM_BOOLEAN("MobileFullscreenVideo.VideoPortrait",
+                        is_portrait_video);
+}
+
+void ContentVideoView::RecordExitFullscreenPlayback(
+    JNIEnv*, jobject, bool is_portrait_video,
+    long playback_duration_in_milliseconds_before_orientation_change,
+    long playback_duration_in_milliseconds_after_orientation_change) {
+  bool orientation_changed = (
+      playback_duration_in_milliseconds_after_orientation_change != 0);
+  if (is_portrait_video) {
+    UMA_HISTOGRAM_COUNTS(
+        "MobileFullscreenVideo.PortraitDuration",
+        playback_duration_in_milliseconds_before_orientation_change);
+    UMA_HISTOGRAM_COUNTS(
+        "MobileFullscreenVideo.PortraitRotation", orientation_changed);
+    if (orientation_changed) {
+      UMA_HISTOGRAM_COUNTS(
+          "MobileFullscreenVideo.DurationAfterPotraitRotation",
+          playback_duration_in_milliseconds_after_orientation_change);
+    }
+  } else {
+    UMA_HISTOGRAM_COUNTS(
+        "MobileFullscreenVideo.LandscapeDuration",
+        playback_duration_in_milliseconds_before_orientation_change);
+    UMA_HISTOGRAM_COUNTS(
+        "MobileFullscreenVideo.LandscapeRotation", orientation_changed);
+  }
 }
 
 void ContentVideoView::UpdateMediaMetadata() {
@@ -237,4 +275,5 @@ void ContentVideoView::CreatePowerSaveBlocker() {
   static_cast<PowerSaveBlockerImpl*>(power_save_blocker_.get())->
       InitDisplaySleepBlocker(GetNativeView());
 }
+
 }  // namespace content
