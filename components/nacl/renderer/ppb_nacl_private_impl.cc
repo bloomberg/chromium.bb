@@ -1162,25 +1162,6 @@ PP_Var GetCpuFeatureAttrs() {
   return ppapi::StringVar::StringToPPVar(GetCpuFeatures());
 }
 
-void PostMessageToJavaScriptMainThread(PP_Instance instance,
-                                       const std::string& message) {
-  content::PepperPluginInstance* plugin_instance =
-      content::PepperPluginInstance::Get(instance);
-  if (plugin_instance) {
-    PP_Var message_var = ppapi::StringVar::StringToPPVar(message);
-    plugin_instance->PostMessageToJavaScript(message_var);
-    ppapi::PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(message_var);
-  }
-}
-
-void PostMessageToJavaScript(PP_Instance instance, const char* message) {
-  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
-      FROM_HERE,
-      base::Bind(&PostMessageToJavaScriptMainThread,
-                 instance,
-                 std::string(message)));
-}
-
 // Encapsulates some of the state for a call to DownloadNexe to prevent
 // argument lists from getting too long.
 struct DownloadNexeRequest {
@@ -1702,7 +1683,6 @@ const PPB_NaCl_Private nacl_interface = {
   &ManifestGetProgramURL,
   &GetPNaClResourceInfo,
   &GetCpuFeatureAttrs,
-  &PostMessageToJavaScript,
   &DownloadNexe,
   &ReportSelLdrStatus,
   &LogTranslateTime,

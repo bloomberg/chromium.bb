@@ -121,13 +121,6 @@ static void PppMessagingHandleMessage(PP_Instance instance,
     result = g_browser_var->VarFromUtf8(kFailed, strlen(kFailed));
   }
 
-  /*
-   * This is a workaround for the problem that the messages sent by
-   * the "dev://postmessage" are unsynchronized.  The Javascript code
-   * looks for this message before finishing the test.
-   */
-  fprintf(stderr, "\nEND_OF_LOG\n");
-
   g_browser_messaging->PostMessage(instance, result);
 }
 

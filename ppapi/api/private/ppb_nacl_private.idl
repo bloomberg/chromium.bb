@@ -344,12 +344,6 @@ interface PPB_NaCl_Private {
   //   http://llvm.org/docs/CommandGuide/llc.html#cmdoption-mattr
   PP_Var GetCpuFeatureAttrs();
 
-  /* Posts a message to the JavaScript object for the given instance.
-   * This method may be called on any thread.
-   */
-  void PostMessageToJavaScript([in] PP_Instance instance,
-                               [in] str_t message);
-
   /* Downloads the .nexe file at the given URL to a file, and sets |file_info|
    * to information for a handle to a file containing its contents.
    * If metadata for identity-based validation caching is available

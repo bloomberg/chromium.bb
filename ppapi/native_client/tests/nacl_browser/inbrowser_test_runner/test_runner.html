@@ -44,58 +44,11 @@ function addTest(tester, url) {
       document.getElementById('scratch_space').removeChild(div);
     };
 
-    // This is the prefix prepended by NaCl's unofficial
-    // "dev://postmessage" feature.
-    var stdout_prefix = 'DEBUG_POSTMESSAGE:';
-
-    // NaCl's "dev://postmessage" feature is unsynchronized, in the
-    // sense that the DEBUG_POSTMESSAGE messages can arrive after the
-    // test result event.  As a workaround, we look for an
-    // "END_OF_LOG" string that the nexe prints.
-    var saw_end_of_log = false;
-    var end_of_log_callbacks = [];
-
-    var runEndOfLogCallbacks = function() {
-      if (!saw_end_of_log) {
-        saw_end_of_log = true;
-        for (var i = 0; i < end_of_log_callbacks.length; i++) {
-          end_of_log_callbacks[i]();
-        }
-        end_of_log_callbacks = [];
-      }
-    };
-
-    var callAtEndOfLog = function(func) {
-      if (saw_end_of_log) {
-        func();
-      } else {
-        end_of_log_callbacks.push(func);
-        // If we do not see the end of the log soon, end the test
-        // anyway.  This will happen if the nexe crashes or exits.
-        window.setTimeout(status.wrap(function() {
-          status.log('Did not see the END_OF_LOG message after timeout; ' +
-                     'continuing anyway');
-          runEndOfLogCallbacks();
-        }), 500);
-      }
-    };
-
     // Set up an event listener for success messages.
     div.addEventListener('message', status.wrap(function(message_event) {
-      if (message_event.data.substr(0, stdout_prefix.length) == stdout_prefix) {
-        var msg = message_event.data.substr(stdout_prefix.length);
-        if (msg == '\nEND_OF_LOG\n') {
-          runEndOfLogCallbacks();
-        } else {
-          status.log(msg.replace(/\n/g, '\\n'));
-        }
-      } else {
-        callAtEndOfLog(function() {
-          status.assertEqual(message_event.data, 'passed');
-          cleanup();
-          status.pass();
-        });
-      }
+      status.assertEqual(message_event.data, 'passed');
+      cleanup();
+      status.pass();
     }), true);
 
     // Wait for the load event, which indicates successful loading.
@@ -106,10 +59,8 @@ function addTest(tester, url) {
     }), true);
 
     var onError = status.wrap(function(e) {
-      callAtEndOfLog(function() {
-        cleanup();
-        status.fail(embed.lastError);
-      });
+      cleanup();
+      status.fail(embed.lastError);
     });
 
     div.addEventListener('error', onError, true);

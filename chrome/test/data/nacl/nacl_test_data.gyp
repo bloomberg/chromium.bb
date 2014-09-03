@@ -498,35 +498,6 @@
       ],
     },
     {
-      'target_name': 'pm_redir_test',
-      'type': 'none',
-      'variables': {
-        'nexe_target': 'pm_redir_test',
-        'build_newlib': 1,
-        'build_glibc': 1,
-        'build_pnacl_newlib': 1,
-        'nexe_destination_dir': 'nacl_test_data',
-        'link_flags': [
-          '-lppapi',
-          '-lplatform',
-          '-lgio',
-        ],
-        'sources': [
-          'postmessage_redir/pm_redir_test.cc',
-        ],
-        'test_files': [
-          'postmessage_redir/pm_redir_test.html',
-        ],
-      },
-      'dependencies': [
-        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform_lib',
-        '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
-        '<(DEPTH)/ppapi/native_client/native_client.gyp:ppapi_lib',
-        '<(DEPTH)/ppapi/ppapi_nacl.gyp:ppapi_cpp_lib',
-      ],
-    },
-    {
       'target_name': 'pm_manifest_file',
       'type': 'none',
       'variables': {

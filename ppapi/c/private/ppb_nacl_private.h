@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Thu Aug 21 11:14:10 2014. */
+/* From private/ppb_nacl_private.idl modified Wed Aug 27 13:55:13 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -354,10 +354,6 @@ struct PPB_NaCl_Private_1_0 {
    * of attributes supported by LLVM in its -mattr= option:
    *   http://llvm.org/docs/CommandGuide/llc.html#cmdoption-mattr */
   struct PP_Var (*GetCpuFeatureAttrs)(void);
-  /* Posts a message to the JavaScript object for the given instance.
-   * This method may be called on any thread.
-   */
-  void (*PostMessageToJavaScript)(PP_Instance instance, const char* message);
   /* Downloads the .nexe file at the given URL to a file, and sets |file_info|
    * to information for a handle to a file containing its contents.
    * If metadata for identity-based validation caching is available

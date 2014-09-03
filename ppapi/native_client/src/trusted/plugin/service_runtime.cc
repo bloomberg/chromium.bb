@@ -84,9 +84,8 @@ void PluginReverseInterface::ShutDown() {
 }
 
 void PluginReverseInterface::DoPostMessage(nacl::string message) {
-  std::string full_message = std::string("DEBUG_POSTMESSAGE:") + message;
-  GetNaClInterface()->PostMessageToJavaScript(pp_instance_,
-                                              full_message.c_str());
+  // This feature is no longer used.
+  // TODO(teravest): Remove this once this is gone from nacl::ReverseInterface.
 }
 
 void PluginReverseInterface::StartupInitializationComplete() {

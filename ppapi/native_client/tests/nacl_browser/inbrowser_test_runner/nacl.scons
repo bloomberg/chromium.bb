@@ -38,9 +38,7 @@ def AddTest(env, test_name, exe_list, parallel=False):
       nmf_names=exe_list,
       files=[env.File('test_runner.html')] + test_files,
       map_files=[('nmf_test_list.js', nmf_list_js)],
-      test_args=[('parallel', int(parallel))],
-      osenv=['NACL_EXE_STDOUT=DEBUG_ONLY:dev://postmessage',
-             'NACL_EXE_STDERR=DEBUG_ONLY:dev://postmessage'])
+      test_args=[('parallel', int(parallel))])
 
   # Disabled on Valgrind because of multiple nexes.
   # TODO(eugenis): enable when Valgrind learns to autodetect the nexe name

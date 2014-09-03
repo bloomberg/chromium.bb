@@ -3577,11 +3577,6 @@ static void Pnacl_M25_PPB_NaCl_Private_GetCpuFeatureAttrs(struct PP_Var* _struct
   *_struct_result = iface->GetCpuFeatureAttrs();
 }
 
-static void Pnacl_M25_PPB_NaCl_Private_PostMessageToJavaScript(PP_Instance instance, const char* message) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->PostMessageToJavaScript(instance, message);
-}
-
 static void Pnacl_M25_PPB_NaCl_Private_DownloadNexe(PP_Instance instance, const char* url, struct PP_NaClFileInfo* file_info, struct PP_CompletionCallback* callback) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   iface->DownloadNexe(instance, url, file_info, *callback);
@@ -5430,7 +5425,6 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .GetManifestProgramURL = (PP_Bool (*)(PP_Instance instance, struct PP_Var* full_url, struct PP_PNaClOptions* pnacl_options, PP_Bool* uses_nonsfi_mode))&Pnacl_M25_PPB_NaCl_Private_GetManifestProgramURL,
     .GetPnaclResourceInfo = (PP_Bool (*)(PP_Instance instance, struct PP_Var* llc_tool_name, struct PP_Var* ld_tool_name))&Pnacl_M25_PPB_NaCl_Private_GetPnaclResourceInfo,
     .GetCpuFeatureAttrs = (struct PP_Var (*)(void))&Pnacl_M25_PPB_NaCl_Private_GetCpuFeatureAttrs,
-    .PostMessageToJavaScript = (void (*)(PP_Instance instance, const char* message))&Pnacl_M25_PPB_NaCl_Private_PostMessageToJavaScript,
     .DownloadNexe = (void (*)(PP_Instance instance, const char* url, struct PP_NaClFileInfo* file_info, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_DownloadNexe,
     .ReportSelLdrStatus = (void (*)(PP_Instance instance, int32_t load_status, int32_t max_status))&Pnacl_M25_PPB_NaCl_Private_ReportSelLdrStatus,
     .LogTranslateTime = (void (*)(const char* histogram_name, int64_t time_us))&Pnacl_M25_PPB_NaCl_Private_LogTranslateTime,
