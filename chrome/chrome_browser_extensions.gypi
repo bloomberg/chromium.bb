@@ -684,6 +684,8 @@
       'browser/extensions/extension_install_ui_util.h',
       'browser/extensions/extension_keybinding_registry.cc',
       'browser/extensions/extension_keybinding_registry.h',
+      'browser/extensions/extension_management.cc',
+      'browser/extensions/extension_management.h',
       'browser/extensions/extension_message_bubble_controller.cc',
       'browser/extensions/extension_message_bubble_controller.h',
       'browser/extensions/extension_renderer_state.cc',
