@@ -366,6 +366,38 @@ void AnimationPlayer::setSource(AnimationNode* newSource)
     setCurrentTimeInternal(storedCurrentTime, TimingUpdateOnDemand);
 }
 
+String AnimationPlayer::playState()
+{
+    switch (playStateInternal()) {
+    case Idle:
+        return "idle";
+    case Pending:
+        return "pending";
+    case Running:
+        return "running";
+    case Paused:
+        return "paused";
+    case Finished:
+        return "finished";
+    default:
+        ASSERT_NOT_REACHED();
+        return "";
+    }
+}
+
+AnimationPlayer::AnimationPlayState AnimationPlayer::playStateInternal()
+{
+    // FIXME(shanestephens): Add clause for in-idle-state here.
+    if (m_currentTimePending || (isNull(m_startTime) && !m_paused && m_playbackRate != 0))
+        return Pending;
+    // FIXME(shanestephens): Add idle handling here.
+    if (m_paused)
+        return Paused;
+    if (finished())
+        return Finished;
+    return Running;
+}
+
 void AnimationPlayer::pause()
 {
     if (m_paused)

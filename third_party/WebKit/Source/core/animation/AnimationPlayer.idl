@@ -39,6 +39,7 @@
     [RuntimeEnabled=WebAnimationsAPI]          attribute double     playbackRate;
     [RuntimeEnabled=WebAnimationsAPI] readonly attribute boolean    paused;
     [RuntimeEnabled=WebAnimationsAPI] readonly attribute boolean    finished;
+    [RuntimeEnabled=WebAnimationsAPI] readonly attribute DOMString  playState;
     [RuntimeEnabled=WebAnimationsAPI, RaisesException] void finish();
     [RuntimeEnabled=WebAnimationsAPI] void play();
     [RuntimeEnabled=WebAnimationsAPI] void pause();

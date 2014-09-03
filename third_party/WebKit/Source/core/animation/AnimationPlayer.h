@@ -48,6 +48,13 @@ class AnimationPlayer FINAL : public RefCountedWillBeGarbageCollectedFinalized<A
     REFCOUNTED_EVENT_TARGET(AnimationPlayer);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AnimationPlayer);
 public:
+    enum AnimationPlayState {
+        Idle,
+        Pending,
+        Running,
+        Paused,
+        Finished
+    };
 
     ~AnimationPlayer();
     static PassRefPtrWillBeRawPtr<AnimationPlayer> create(ExecutionContext*, AnimationTimeline&, AnimationNode*);
@@ -71,6 +78,9 @@ public:
     void setCurrentTimeInternal(double newCurrentTime, TimingUpdateReason = TimingUpdateOnDemand);
 
     bool paused() const { return m_paused && !m_isPausedForTesting; }
+    String playState();
+    AnimationPlayState playStateInternal();
+
     void pause();
     void play();
     void reverse();
