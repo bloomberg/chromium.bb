@@ -33,7 +33,7 @@ import java.util.List;
  * a set of accepted file types. The path of the selected file is passed to the native dialog.
  */
 @JNINamespace("ui")
-class SelectFileDialog implements WindowAndroid.IntentCallback{
+class SelectFileDialog implements WindowAndroid.IntentCallback {
     private static final String TAG = "SelectFileDialog";
     private static final String IMAGE_TYPE = "image/";
     private static final String VIDEO_TYPE = "video/";
@@ -296,16 +296,32 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
         protected String[] doInBackground(Uri...uris) {
             mFilePaths = new String[uris.length];
             String[] displayNames = new String[uris.length];
-            for (int i = 0; i < uris.length; i++) {
-                mFilePaths[i] = uris[i].toString();
-                displayNames[i] = ContentUriUtils.getDisplayName(
-                        uris[i], mContentResolver, MediaStore.MediaColumns.DISPLAY_NAME);
+            try {
+                for (int i = 0; i < uris.length; i++) {
+                    mFilePaths[i] = uris[i].toString();
+                    displayNames[i] = ContentUriUtils.getDisplayName(
+                            uris[i], mContentResolver, MediaStore.MediaColumns.DISPLAY_NAME);
+                }
+            }  catch (SecurityException e) {
+                // Some third party apps will present themselves as being able
+                // to handle the ACTION_GET_CONTENT intent but then declare themselves
+                // as exported=false (or more often omit the exported keyword in
+                // the manifest which defaults to false after JB).
+                // In those cases trying to access the contents raises a security exception
+                // which we should not crash on. See crbug.com/382367 for details.
+                Log.w(TAG, "Unable to extract results from the content provider");
+                return null;
             }
+
             return displayNames;
         }
 
         @Override
         protected void onPostExecute(String[] result) {
+            if (result == null) {
+                onFileNotSelected();
+                return;
+            }
             if (mIsMultiple) {
                 nativeOnMultipleFilesSelected(mNativeSelectFileDialog, mFilePaths, result);
             } else {
