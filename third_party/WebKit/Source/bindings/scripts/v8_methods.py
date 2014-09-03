@@ -119,7 +119,7 @@ def method_context(interface, method):
         includes.add('bindings/core/v8/BindingSecurity.h')
     is_custom_element_callbacks = 'CustomElementCallbacks' in extended_attributes
     if is_custom_element_callbacks:
-        includes.add('core/dom/custom/CustomElementCallbackDispatcher.h')
+        includes.add('core/dom/custom/CustomElementProcessingStack.h')
 
     is_do_not_check_security = 'DoNotCheckSecurity' in extended_attributes
 

@@ -44,10 +44,10 @@
 #include "core/V8HTMLElementWrapperFactory.h" // FIXME: should be bindings/core/v8
 #include "core/V8SVGElementWrapperFactory.h" // FIXME: should be bindings/core/v8
 #include "core/dom/Document.h"
-#include "core/dom/custom/CustomElementCallbackDispatcher.h"
 #include "core/dom/custom/CustomElementDefinition.h"
 #include "core/dom/custom/CustomElementDescriptor.h"
 #include "core/dom/custom/CustomElementException.h"
+#include "core/dom/custom/CustomElementProcessingStack.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
@@ -293,7 +293,7 @@ static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>& in
     TOSTRING_VOID(V8StringResource<>, type, maybeType);
 
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "CustomElement", info.Holder(), info.GetIsolate());
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     RefPtrWillBeRawPtr<Element> element = document->createElementNS(namespaceURI, tagName, maybeType->IsNull() ? nullAtom : type, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;

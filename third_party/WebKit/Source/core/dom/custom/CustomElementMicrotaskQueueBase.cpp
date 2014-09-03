@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/dom/custom/CustomElementMicrotaskQueueBase.h"
 
-#include "core/dom/custom/CustomElementCallbackDispatcher.h"
+#include "core/dom/custom/CustomElementProcessingStack.h"
 
 namespace blink {
 

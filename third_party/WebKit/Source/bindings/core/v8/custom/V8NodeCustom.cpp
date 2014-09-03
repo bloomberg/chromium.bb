@@ -48,7 +48,6 @@
 #include "bindings/core/v8/V8ShadowRoot.h"
 #include "bindings/core/v8/V8Text.h"
 #include "core/dom/Document.h"
-#include "core/dom/custom/CustomElementCallbackDispatcher.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/EventListener.h"
 #include "wtf/RefPtr.h"

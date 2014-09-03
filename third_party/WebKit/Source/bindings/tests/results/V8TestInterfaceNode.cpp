@@ -17,7 +17,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
-#include "core/dom/custom/CustomElementCallbackDispatcher.h"
+#include "core/dom/custom/CustomElementProcessingStack.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
@@ -175,7 +175,7 @@ static void reflectStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
 static void reflectStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestInterfaceNodeV8Internal::reflectStringAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -205,7 +205,7 @@ static void reflectUrlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
 static void reflectUrlStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestInterfaceNodeV8Internal::reflectUrlStringAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }

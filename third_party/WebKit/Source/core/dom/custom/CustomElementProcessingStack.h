@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementCallbackDispatcher_h
-#define CustomElementCallbackDispatcher_h
+#ifndef CustomElementProcessingStack_h
+#define CustomElementProcessingStack_h
 
 #include "core/dom/custom/CustomElementCallbackQueue.h"
 #include "wtf/Vector.h"
@@ -38,10 +38,8 @@ namespace blink {
 
 class CustomElementScheduler;
 
-// FIXME: Rename this CustomElementProcessingStack. It only handles
-// the processing stack.
-class CustomElementCallbackDispatcher {
-    WTF_MAKE_NONCOPYABLE(CustomElementCallbackDispatcher);
+class CustomElementProcessingStack {
+    WTF_MAKE_NONCOPYABLE(CustomElementProcessingStack);
 public:
     // This is stack allocated in many DOM callbacks. Make it cheap.
     class CallbackDeliveryScope {
@@ -67,11 +65,11 @@ public:
 
 protected:
     friend class CustomElementScheduler;
-    static CustomElementCallbackDispatcher& instance();
+    static CustomElementProcessingStack& instance();
     void enqueue(CustomElementCallbackQueue*);
 
 private:
-    CustomElementCallbackDispatcher()
+    CustomElementProcessingStack()
     {
         // Add a null element as a sentinel. This makes it possible to
         // identify elements queued when there is no
@@ -106,4 +104,4 @@ private:
 
 }
 
-#endif // CustomElementCallbackDispatcher_h
+#endif // CustomElementProcessingStack_h

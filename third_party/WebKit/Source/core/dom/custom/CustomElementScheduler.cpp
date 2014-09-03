@@ -33,13 +33,13 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/custom/CustomElementCallbackDispatcher.h"
 #include "core/dom/custom/CustomElementCallbackInvocation.h"
 #include "core/dom/custom/CustomElementLifecycleCallbacks.h"
 #include "core/dom/custom/CustomElementMicrotaskDispatcher.h"
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
 #include "core/dom/custom/CustomElementMicrotaskResolutionStep.h"
 #include "core/dom/custom/CustomElementMicrotaskRunQueue.h"
+#include "core/dom/custom/CustomElementProcessingStack.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/dom/custom/CustomElementSyncMicrotaskQueue.h"
 #include "core/html/imports/HTMLImportChild.h"
@@ -71,7 +71,7 @@ void CustomElementScheduler::scheduleAttributeChangedCallback(PassRefPtr<CustomE
 
 void CustomElementScheduler::resolveOrScheduleResolution(PassRefPtrWillBeRawPtr<CustomElementRegistrationContext> context, PassRefPtrWillBeRawPtr<Element> element, const CustomElementDescriptor& descriptor)
 {
-    if (CustomElementCallbackDispatcher::inCallbackDeliveryScope()) {
+    if (CustomElementProcessingStack::inCallbackDeliveryScope()) {
         context->resolve(element.get(), descriptor);
         return;
     }
@@ -122,7 +122,7 @@ void CustomElementScheduler::callbackDispatcherDidFinish()
 
 void CustomElementScheduler::microtaskDispatcherDidFinish()
 {
-    ASSERT(!CustomElementCallbackDispatcher::inCallbackDeliveryScope());
+    ASSERT(!CustomElementProcessingStack::inCallbackDeliveryScope());
     instance().clearElementCallbackQueueMap();
 }
 
@@ -146,9 +146,9 @@ CustomElementCallbackQueue& CustomElementScheduler::schedule(PassRefPtrWillBeRaw
         return callbackQueue;
     }
 
-    if (CustomElementCallbackDispatcher::inCallbackDeliveryScope()) {
+    if (CustomElementProcessingStack::inCallbackDeliveryScope()) {
         // The processing stack is active.
-        CustomElementCallbackDispatcher::instance().enqueue(&callbackQueue);
+        CustomElementProcessingStack::instance().enqueue(&callbackQueue);
         return callbackQueue;
     }
 

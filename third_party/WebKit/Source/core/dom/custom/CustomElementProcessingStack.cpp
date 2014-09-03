@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/dom/custom/CustomElementCallbackDispatcher.h"
+#include "core/dom/custom/CustomElementProcessingStack.h"
 
 #include "core/dom/custom/CustomElementCallbackQueue.h"
 #include "core/dom/custom/CustomElementScheduler.h"
@@ -37,29 +37,29 @@
 
 namespace blink {
 
-size_t CustomElementCallbackDispatcher::s_elementQueueStart = 0;
+size_t CustomElementProcessingStack::s_elementQueueStart = 0;
 
 // The base of the stack has a null sentinel value.
-size_t CustomElementCallbackDispatcher::s_elementQueueEnd = kNumSentinels;
+size_t CustomElementProcessingStack::s_elementQueueEnd = kNumSentinels;
 
-CustomElementCallbackDispatcher& CustomElementCallbackDispatcher::instance()
+CustomElementProcessingStack& CustomElementProcessingStack::instance()
 {
-    DEFINE_STATIC_LOCAL(CustomElementCallbackDispatcher, instance, ());
+    DEFINE_STATIC_LOCAL(CustomElementProcessingStack, instance, ());
     return instance;
 }
 
 // Dispatches callbacks when popping the processing stack.
-void CustomElementCallbackDispatcher::processElementQueueAndPop()
+void CustomElementProcessingStack::processElementQueueAndPop()
 {
     instance().processElementQueueAndPop(s_elementQueueStart, s_elementQueueEnd);
 }
 
-void CustomElementCallbackDispatcher::processElementQueueAndPop(size_t start, size_t end)
+void CustomElementProcessingStack::processElementQueueAndPop(size_t start, size_t end)
 {
     ASSERT(isMainThread());
     CustomElementCallbackQueue::ElementQueueId thisQueue = currentElementQueue();
 
-    for (size_t i = start; i < end; i++) {
+    for (size_t i = start; i < end; ++i) {
         {
             // The created callback may schedule entered document
             // callbacks.
@@ -79,7 +79,7 @@ void CustomElementCallbackDispatcher::processElementQueueAndPop(size_t start, si
         CustomElementScheduler::callbackDispatcherDidFinish();
 }
 
-void CustomElementCallbackDispatcher::enqueue(CustomElementCallbackQueue* callbackQueue)
+void CustomElementProcessingStack::enqueue(CustomElementCallbackQueue* callbackQueue)
 {
     ASSERT(inCallbackDeliveryScope());
 

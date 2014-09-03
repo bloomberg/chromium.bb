@@ -35,7 +35,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/NamedNodeMap.h"
-#include "core/dom/custom/CustomElementCallbackDispatcher.h"
+#include "core/dom/custom/CustomElementProcessingStack.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderObject.h"
@@ -80,7 +80,7 @@ void WebElement::removeAttribute(const WebString& attrName)
 {
     // TODO: Custom element callbacks need to be called on WebKit API methods that
     // mutate the DOM in any way.
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliverCustomElementCallbacks;
+    CustomElementProcessingStack::CallbackDeliveryScope deliverCustomElementCallbacks;
     unwrap<Element>()->removeAttribute(attrName);
 }
 
@@ -93,7 +93,7 @@ bool WebElement::setAttribute(const WebString& attrName, const WebString& attrVa
 {
     // TODO: Custom element callbacks need to be called on WebKit API methods that
     // mutate the DOM in any way.
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliverCustomElementCallbacks;
+    CustomElementProcessingStack::CallbackDeliveryScope deliverCustomElementCallbacks;
     TrackExceptionState exceptionState;
     unwrap<Element>()->setAttribute(attrName, attrValue, exceptionState);
     return !exceptionState.hadException();

@@ -6,9 +6,9 @@
 #include "core/dom/custom/CustomElementMicrotaskDispatcher.h"
 
 #include "core/dom/Microtask.h"
-#include "core/dom/custom/CustomElementCallbackDispatcher.h"
 #include "core/dom/custom/CustomElementCallbackQueue.h"
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
+#include "core/dom/custom/CustomElementProcessingStack.h"
 #include "core/dom/custom/CustomElementScheduler.h"
 #include "wtf/MainThread.h"
 
@@ -66,14 +66,14 @@ void CustomElementMicrotaskDispatcher::doDispatch()
     // Finishing microtask work deletes all
     // CustomElementCallbackQueues. Being in a callback delivery scope
     // implies those queues could still be in use.
-    ASSERT_WITH_SECURITY_IMPLICATION(!CustomElementCallbackDispatcher::inCallbackDeliveryScope());
+    ASSERT_WITH_SECURITY_IMPLICATION(!CustomElementProcessingStack::inCallbackDeliveryScope());
 
     m_phase = Resolving;
 
     m_phase = DispatchingCallbacks;
     for (WillBeHeapVector<RawPtrWillBeMember<CustomElementCallbackQueue> >::iterator it = m_elements.begin(); it != m_elements.end(); ++it) {
         // Created callback may enqueue an attached callback.
-        CustomElementCallbackDispatcher::CallbackDeliveryScope scope;
+        CustomElementProcessingStack::CallbackDeliveryScope scope;
         (*it)->processInElementQueue(kMicrotaskQueueId);
     }
 

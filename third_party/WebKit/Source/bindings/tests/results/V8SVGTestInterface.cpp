@@ -14,7 +14,7 @@
 #include "core/SVGNames.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
-#include "core/dom/custom/CustomElementCallbackDispatcher.h"
+#include "core/dom/custom/CustomElementProcessingStack.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
@@ -66,14 +66,14 @@ static void typeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Property
     v8::Handle<v8::Object> holder = info.Holder();
     SVGTestInterface* impl = V8SVGTestInterface::toNative(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(SVGNames::typeAttr, cppValue);
 }
 
 static void typeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     SVGTestInterfaceV8Internal::typeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }

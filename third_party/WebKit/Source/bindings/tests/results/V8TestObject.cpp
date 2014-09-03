@@ -53,7 +53,7 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/TagCollection.h"
-#include "core/dom/custom/CustomElementCallbackDispatcher.h"
+#include "core/dom/custom/CustomElementProcessingStack.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLCollection.h"
@@ -3300,14 +3300,14 @@ static void reflectTestInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TONATIVE_VOID(TestInterfaceImplementation*, cppValue, V8TestInterface::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::reflecttestinterfaceattributeAttr, WTF::getPtr(cppValue));
 }
 
 static void reflectTestInterfaceAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestObjectV8Internal::reflectTestInterfaceAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -3331,14 +3331,14 @@ static void reflectReflectedNameAttributeTestAttributeAttributeSetter(v8::Local<
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TONATIVE_VOID(TestInterfaceImplementation*, cppValue, V8TestInterface::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::reflectedNameAttributeAttr, WTF::getPtr(cppValue));
 }
 
 static void reflectReflectedNameAttributeTestAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestObjectV8Internal::reflectReflectedNameAttributeTestAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -3362,14 +3362,14 @@ static void reflectBooleanAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TONATIVE_VOID(bool, cppValue, v8Value->BooleanValue());
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setBooleanAttribute(HTMLNames::reflectbooleanattributeAttr, cppValue);
 }
 
 static void reflectBooleanAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestObjectV8Internal::reflectBooleanAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -3394,14 +3394,14 @@ static void reflectLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
     ExceptionState exceptionState(ExceptionState::SetterContext, "reflectLongAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(holder);
     TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setIntegralAttribute(HTMLNames::reflectlongattributeAttr, cppValue);
 }
 
 static void reflectLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestObjectV8Internal::reflectLongAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -3426,14 +3426,14 @@ static void reflectUnsignedShortAttributeAttributeSetter(v8::Local<v8::Value> v8
     ExceptionState exceptionState(ExceptionState::SetterContext, "reflectUnsignedShortAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(holder);
     TONATIVE_VOID_EXCEPTIONSTATE(unsigned, cppValue, toUInt16(v8Value, exceptionState), exceptionState);
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::reflectunsignedshortattributeAttr, cppValue);
 }
 
 static void reflectUnsignedShortAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestObjectV8Internal::reflectUnsignedShortAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -3458,14 +3458,14 @@ static void reflectUnsignedLongAttributeAttributeSetter(v8::Local<v8::Value> v8V
     ExceptionState exceptionState(ExceptionState::SetterContext, "reflectUnsignedLongAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(holder);
     TONATIVE_VOID_EXCEPTIONSTATE(unsigned, cppValue, toUInt32(v8Value, exceptionState), exceptionState);
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setUnsignedIntegralAttribute(HTMLNames::reflectunsignedlongattributeAttr, cppValue);
 }
 
 static void reflectUnsignedLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestObjectV8Internal::reflectUnsignedLongAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -3489,14 +3489,14 @@ static void idAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCa
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::idAttr, cppValue);
 }
 
 static void idAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestObjectV8Internal::idAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -3520,14 +3520,14 @@ static void nameAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Property
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::nameAttr, cppValue);
 }
 
 static void nameAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestObjectV8Internal::nameAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -3551,14 +3551,14 @@ static void classAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Propert
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::classAttr, cppValue);
 }
 
 static void classAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestObjectV8Internal::classAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -3582,14 +3582,14 @@ static void reflectedIdAttributeSetter(v8::Local<v8::Value> v8Value, const v8::P
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::idAttr, cppValue);
 }
 
 static void reflectedIdAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestObjectV8Internal::reflectedIdAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -3613,14 +3613,14 @@ static void reflectedNameAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::nameAttr, cppValue);
 }
 
 static void reflectedNameAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestObjectV8Internal::reflectedNameAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -3644,14 +3644,14 @@ static void reflectedClassAttributeSetter(v8::Local<v8::Value> v8Value, const v8
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::classAttr, cppValue);
 }
 
 static void reflectedClassAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestObjectV8Internal::reflectedClassAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -3683,14 +3683,14 @@ static void limitedToOnlyOneAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::limitedtoonlyoneattributeAttr, cppValue);
 }
 
 static void limitedToOnlyOneAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestObjectV8Internal::limitedToOnlyOneAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -3726,14 +3726,14 @@ static void limitedToOnlyAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::limitedtoonlyattributeAttr, cppValue);
 }
 
 static void limitedToOnlyAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestObjectV8Internal::limitedToOnlyAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -3767,14 +3767,14 @@ static void limitedToOnlyOtherAttributeAttributeSetter(v8::Local<v8::Value> v8Va
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::otherAttr, cppValue);
 }
 
 static void limitedToOnlyOtherAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestObjectV8Internal::limitedToOnlyOtherAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -3808,14 +3808,14 @@ static void limitedWithMissingDefaultAttributeAttributeSetter(v8::Local<v8::Valu
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::limitedwithmissingdefaultattributeAttr, cppValue);
 }
 
 static void limitedWithMissingDefaultAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestObjectV8Internal::limitedWithMissingDefaultAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -3851,14 +3851,14 @@ static void limitedWithInvalidMissingDefaultAttributeAttributeSetter(v8::Local<v
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::limitedwithinvalidmissingdefaultattributeAttr, cppValue);
 }
 
 static void limitedWithInvalidMissingDefaultAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestObjectV8Internal::limitedWithInvalidMissingDefaultAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -4516,14 +4516,14 @@ static void urlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::urlstringattributeAttr, cppValue);
 }
 
 static void urlStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestObjectV8Internal::urlStringAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -4547,14 +4547,14 @@ static void urlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::reflectUrlAttributeAttr, cppValue);
 }
 
 static void urlStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     TestObjectV8Internal::urlStringAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
@@ -8877,7 +8877,7 @@ static void conditionalConditionCustomVoidMethodMethodCallback(const v8::Functio
 static void customElementCallbacksVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->customElementCallbacksVoidMethod();
 }
 
