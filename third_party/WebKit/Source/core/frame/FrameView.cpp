@@ -156,6 +156,7 @@ FrameView::~FrameView()
         m_didScrollTimer.stop();
 
     removeFromAXObjectCache();
+    resetScrollbars();
 
     // Custom scrollbars should already be destroyed at this point
     ASSERT(!horizontalScrollbar() || !horizontalScrollbar()->isCustomScrollbar());
@@ -210,6 +211,18 @@ void FrameView::removeFromAXObjectCache()
 {
     if (AXObjectCache* cache = axObjectCache())
         cache->remove(this);
+}
+
+void FrameView::resetScrollbars()
+{
+    // Reset the document's scrollbars back to our defaults before we yield the floor.
+    m_firstLayout = true;
+    setScrollbarsSuppressed(true);
+    if (m_canHaveScrollbars)
+        setScrollbarModes(ScrollbarAuto, ScrollbarAuto);
+    else
+        setScrollbarModes(ScrollbarAlwaysOff, ScrollbarAlwaysOff);
+    setScrollbarsSuppressed(false);
 }
 
 void FrameView::init()
