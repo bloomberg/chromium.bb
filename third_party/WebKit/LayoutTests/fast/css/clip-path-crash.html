@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<style>
+.box {
+  -webkit-animation: inset-anim 2s linear
+}
+
+@-webkit-keyframes inset-anim {
+from { -webkit-clip-path: inset(0); }
+to   { -webkit-clip-path: inset(20%);</style>
+</style>
+<script src="../../resources/run-after-display.js"></script>
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+onload = function() {
+    runAfterDisplay(function() {
+        if (window.testRunner)
+            testRunner.notifyDone();
+    });
+};
+</script>
+<div class="box"></div>
+This test passes if it doesn't crash.
