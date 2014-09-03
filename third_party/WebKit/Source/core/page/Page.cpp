@@ -608,12 +608,12 @@ void Page::trace(Visitor* visitor)
 
 void Page::willBeDestroyed()
 {
+    // Destroy inspector first, since it uses frame and view during destruction.
+    m_inspectorController->willBeDestroyed();
+
     RefPtr<Frame> mainFrame = m_mainFrame;
 
     mainFrame->detach();
-
-    // Disable all agents prior to resetting the frame view.
-    m_inspectorController->willBeDestroyed();
 
     if (mainFrame->isLocalFrame()) {
         toLocalFrame(mainFrame.get())->setView(nullptr);

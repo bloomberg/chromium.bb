@@ -210,6 +210,12 @@ void InspectorController::initializeDeferredAgents()
 
 void InspectorController::willBeDestroyed()
 {
+#if ENABLE(ASSERT)
+    ASSERT(m_page->mainFrame());
+    if (m_page->mainFrame()->isLocalFrame())
+        ASSERT(m_page->deprecatedLocalMainFrame()->view());
+#endif
+
     disconnectFrontend();
     m_injectedScriptManager->disconnect();
     m_inspectorClient = 0;
