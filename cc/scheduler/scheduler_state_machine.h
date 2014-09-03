@@ -237,6 +237,10 @@ class CC_EXPORT SchedulerStateMachine {
 
   bool CouldSendBeginMainFrame() const;
 
+  // TODO(zmo): This is temporary for debugging crbug.com/393331.
+  // We should remove it afterwards.
+  std::string GetStatesForDebugging() const;
+
  protected:
   bool BeginFrameNeededToAnimateOrDraw() const;
   bool ProactiveBeginFrameWanted() const;

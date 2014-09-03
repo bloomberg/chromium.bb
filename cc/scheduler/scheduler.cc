@@ -632,6 +632,9 @@ void Scheduler::ProcessScheduledActions() {
                  "SchedulerStateMachine",
                  "state",
                  AsValue());
+    VLOG(2) << "Scheduler::ProcessScheduledActions: "
+            << SchedulerStateMachine::ActionToString(action) << " "
+            << state_machine_.GetStatesForDebugging();
     state_machine_.UpdateState(action);
     base::AutoReset<SchedulerStateMachine::Action>
         mark_inside_action(&inside_action_, action);
@@ -642,8 +645,6 @@ void Scheduler::ProcessScheduledActions() {
         client_->ScheduledActionAnimate();
         break;
       case SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME:
-        VLOG(2) << "Scheduler::ProcessScheduledActions: "
-                   "ACTION_SEND_BEGIN_MAIN_FRAME";
         client_->ScheduledActionSendBeginMainFrame();
         break;
       case SchedulerStateMachine::ACTION_COMMIT:

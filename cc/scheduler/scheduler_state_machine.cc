@@ -1086,4 +1086,17 @@ bool SchedulerStateMachine::HasInitializedOutputSurface() const {
   return false;
 }
 
+std::string SchedulerStateMachine::GetStatesForDebugging() const {
+  return base::StringPrintf("%c %d %d %d %c %c %c %d %d",
+      needs_commit_ ? 'T' : 'F',
+      static_cast<int>(output_surface_state_),
+      static_cast<int>(begin_impl_frame_state_),
+      static_cast<int>(commit_state_),
+      has_pending_tree_ ? 'T' : 'F',
+      pending_tree_is_ready_for_activation_ ? 'T' : 'F',
+      active_tree_needs_first_draw_ ? 'T' : 'F',
+      max_pending_swaps_,
+      pending_swaps_);
+}
+
 }  // namespace cc
