@@ -231,7 +231,7 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
     int provider_id,
     const GURL& pattern) {
   if (!GetContext()) {
-    Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
+    Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
         thread_id,
         request_id,
         blink::WebServiceWorkerError::ErrorTypeAbort,
@@ -246,7 +246,7 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
     return;
   }
   if (!provider_host->IsContextAlive()) {
-    Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
+    Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
         thread_id,
         request_id,
         blink::WebServiceWorkerError::ErrorTypeAbort,
@@ -535,7 +535,7 @@ void ServiceWorkerDispatcherHost::UnregistrationComplete(
     int request_id,
     ServiceWorkerStatusCode status) {
   if (status != SERVICE_WORKER_OK) {
-    SendRegistrationError(thread_id, request_id, status);
+    SendUnregistrationError(thread_id, request_id, status);
     return;
   }
 
@@ -551,6 +551,18 @@ void ServiceWorkerDispatcherHost::SendRegistrationError(
   GetServiceWorkerRegistrationStatusResponse(
       status, &error_type, &error_message);
   Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
+      thread_id, request_id, error_type, error_message));
+}
+
+void ServiceWorkerDispatcherHost::SendUnregistrationError(
+    int thread_id,
+    int request_id,
+    ServiceWorkerStatusCode status) {
+  base::string16 error_message;
+  blink::WebServiceWorkerError::ErrorType error_type;
+  GetServiceWorkerRegistrationStatusResponse(
+      status, &error_type, &error_message);
+  Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
       thread_id, request_id, error_type, error_message));
 }
 

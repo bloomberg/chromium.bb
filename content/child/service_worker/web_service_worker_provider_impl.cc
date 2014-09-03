@@ -78,7 +78,7 @@ void WebServiceWorkerProviderImpl::registerServiceWorker(
 
 void WebServiceWorkerProviderImpl::unregisterServiceWorker(
     const WebURL& pattern,
-    WebServiceWorkerRegistrationCallbacks* callbacks) {
+    WebServiceWorkerUnregistrationCallbacks* callbacks) {
   GetDispatcher()->UnregisterServiceWorker(
       provider_id_, pattern, callbacks);
 }

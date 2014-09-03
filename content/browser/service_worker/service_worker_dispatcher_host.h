@@ -122,6 +122,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                              int request_id,
                              ServiceWorkerStatusCode status);
 
+  void SendUnregistrationError(int thread_id,
+                               int request_id,
+                               ServiceWorkerStatusCode status);
+
   ServiceWorkerContextCore* GetContext();
 
   int render_process_id_;

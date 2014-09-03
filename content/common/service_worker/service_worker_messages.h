@@ -197,8 +197,16 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_ServiceWorkerUnregistered,
                      int /* request_id */)
 
 // Sent when any kind of registration error occurs during a
-// RegisterServiceWorker / UnregisterServiceWorker handler above.
+// RegisterServiceWorker handler above.
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerRegistrationError,
+                     int /* thread_id */,
+                     int /* request_id */,
+                     blink::WebServiceWorkerError::ErrorType /* code */,
+                     base::string16 /* message */)
+
+// Sent when any kind of registration error occurs during a
+// UnregisterServiceWorker handler above.
+IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerUnregistrationError,
                      int /* thread_id */,
                      int /* request_id */,
                      blink::WebServiceWorkerError::ErrorType /* code */,

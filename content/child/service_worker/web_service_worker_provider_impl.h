@@ -36,8 +36,9 @@ class WebServiceWorkerProviderImpl
                                      const blink::WebURL& script_url,
                                      WebServiceWorkerRegistrationCallbacks*);
 
-  virtual void unregisterServiceWorker(const blink::WebURL& pattern,
-                                       WebServiceWorkerRegistrationCallbacks*);
+  virtual void unregisterServiceWorker(
+      const blink::WebURL& pattern,
+      WebServiceWorkerUnregistrationCallbacks*);
 
   ServiceWorkerProviderContext* context() { return context_.get(); }
 

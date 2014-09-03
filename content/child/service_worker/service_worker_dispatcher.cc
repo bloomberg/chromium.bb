@@ -58,6 +58,8 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnUnregistered)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerRegistrationError,
                         OnRegistrationError)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUnregistrationError,
+                        OnUnregistrationError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerStateChanged,
                         OnServiceWorkerStateChanged)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetVersionAttributes,
@@ -94,7 +96,7 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
     return;
   }
 
-  int request_id = pending_callbacks_.Add(callbacks);
+  int request_id = pending_registration_callbacks_.Add(callbacks);
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_RegisterServiceWorker(
       CurrentWorkerId(), request_id, provider_id, pattern, script_url));
 }
@@ -102,11 +104,11 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
 void ServiceWorkerDispatcher::UnregisterServiceWorker(
     int provider_id,
     const GURL& pattern,
-    WebServiceWorkerRegistrationCallbacks* callbacks) {
+    WebServiceWorkerUnregistrationCallbacks* callbacks) {
   DCHECK(callbacks);
 
   if (pattern.possibly_invalid_spec().size() > GetMaxURLChars()) {
-    scoped_ptr<WebServiceWorkerRegistrationCallbacks>
+    scoped_ptr<WebServiceWorkerUnregistrationCallbacks>
         owned_callbacks(callbacks);
     scoped_ptr<WebServiceWorkerError> error(new WebServiceWorkerError(
         WebServiceWorkerError::ErrorTypeSecurity, "URL too long"));
@@ -114,7 +116,7 @@ void ServiceWorkerDispatcher::UnregisterServiceWorker(
     return;
   }
 
-  int request_id = pending_callbacks_.Add(callbacks);
+  int request_id = pending_unregistration_callbacks_.Add(callbacks);
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_UnregisterServiceWorker(
       CurrentWorkerId(), request_id, provider_id, pattern));
 }
@@ -243,7 +245,7 @@ void ServiceWorkerDispatcher::OnRegistered(
     const ServiceWorkerRegistrationObjectInfo& info,
     const ServiceWorkerVersionAttributes& attrs) {
   WebServiceWorkerRegistrationCallbacks* callbacks =
-      pending_callbacks_.Lookup(request_id);
+      pending_registration_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
   if (!callbacks)
     return;
@@ -255,20 +257,24 @@ void ServiceWorkerDispatcher::OnRegistered(
   registration->SetActive(GetServiceWorker(attrs.active, true));
 
   callbacks->onSuccess(registration);
-  pending_callbacks_.Remove(request_id);
+  pending_registration_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerDispatcher::OnUnregistered(
     int thread_id,
     int request_id) {
-  WebServiceWorkerRegistrationCallbacks* callbacks =
-      pending_callbacks_.Lookup(request_id);
+  WebServiceWorkerUnregistrationCallbacks* callbacks =
+      pending_unregistration_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
   if (!callbacks)
     return;
-
+#ifdef DISABLE_SERVICEWORKER_UNREGISTER_RESOLVE_TO_BOOLEAN
   callbacks->onSuccess(NULL);
-  pending_callbacks_.Remove(request_id);
+#else
+  bool is_success = true;
+  callbacks->onSuccess(&is_success);
+#endif
+  pending_unregistration_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerDispatcher::OnRegistrationError(
@@ -277,7 +283,7 @@ void ServiceWorkerDispatcher::OnRegistrationError(
     WebServiceWorkerError::ErrorType error_type,
     const base::string16& message) {
   WebServiceWorkerRegistrationCallbacks* callbacks =
-      pending_callbacks_.Lookup(request_id);
+      pending_registration_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
   if (!callbacks)
     return;
@@ -285,7 +291,24 @@ void ServiceWorkerDispatcher::OnRegistrationError(
   scoped_ptr<WebServiceWorkerError> error(
       new WebServiceWorkerError(error_type, message));
   callbacks->onError(error.release());
-  pending_callbacks_.Remove(request_id);
+  pending_registration_callbacks_.Remove(request_id);
+}
+
+void ServiceWorkerDispatcher::OnUnregistrationError(
+    int thread_id,
+    int request_id,
+    WebServiceWorkerError::ErrorType error_type,
+    const base::string16& message) {
+  WebServiceWorkerUnregistrationCallbacks* callbacks =
+      pending_unregistration_callbacks_.Lookup(request_id);
+  DCHECK(callbacks);
+  if (!callbacks)
+    return;
+
+  scoped_ptr<WebServiceWorkerError> error(
+      new WebServiceWorkerError(error_type, message));
+  callbacks->onError(error.release());
+  pending_unregistration_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerDispatcher::OnServiceWorkerStateChanged(

@@ -44,6 +44,9 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
  public:
   typedef blink::WebServiceWorkerProvider::WebServiceWorkerRegistrationCallbacks
       WebServiceWorkerRegistrationCallbacks;
+  typedef
+      blink::WebServiceWorkerProvider::WebServiceWorkerUnregistrationCallbacks
+      WebServiceWorkerUnregistrationCallbacks;
 
   explicit ServiceWorkerDispatcher(ThreadSafeSender* thread_safe_sender);
   virtual ~ServiceWorkerDispatcher();
@@ -61,7 +64,7 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   void UnregisterServiceWorker(
       int provider_id,
       const GURL& pattern,
-      WebServiceWorkerRegistrationCallbacks* callbacks);
+      WebServiceWorkerUnregistrationCallbacks* callbacks);
 
   // Called when a new provider context for a document is created. Usually
   // this happens when a new document is being loaded, and is called much
@@ -113,7 +116,9 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
 
  private:
   typedef IDMap<WebServiceWorkerRegistrationCallbacks,
-      IDMapOwnPointer> CallbackMap;
+      IDMapOwnPointer> RegistrationCallbackMap;
+  typedef IDMap<WebServiceWorkerUnregistrationCallbacks,
+      IDMapOwnPointer> UnregistrationCallbackMap;
   typedef std::map<int, blink::WebServiceWorkerProviderClient*> ScriptClientMap;
   typedef std::map<int, ServiceWorkerProviderContext*> ProviderContextMap;
   typedef std::map<int, WebServiceWorkerImpl*> WorkerObjectMap;
@@ -137,6 +142,10 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
                            int request_id,
                            blink::WebServiceWorkerError::ErrorType error_type,
                            const base::string16& message);
+  void OnUnregistrationError(int thread_id,
+                             int request_id,
+                             blink::WebServiceWorkerError::ErrorType error_type,
+                             const base::string16& message);
   void OnServiceWorkerStateChanged(int thread_id,
                                    int handle_id,
                                    blink::WebServiceWorkerState state);
@@ -180,7 +189,8 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   void RemoveServiceWorkerRegistration(
       int registration_handle_id);
 
-  CallbackMap pending_callbacks_;
+  RegistrationCallbackMap pending_registration_callbacks_;
+  UnregistrationCallbackMap pending_unregistration_callbacks_;
   ScriptClientMap script_clients_;
   ProviderContextMap provider_contexts_;
   WorkerObjectMap service_workers_;
