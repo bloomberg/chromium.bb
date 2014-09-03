@@ -64,7 +64,7 @@ public:
         , scrollbarRelevancy(relevancy)
         , cacheSlot(slot)
         , subPixelAccumulation(accumulation)
-        , respectOverflowClip(RespectOverflowClip)
+        , respectOverflowClip(slot == PaintingClipRectsIgnoringOverflowClip ? IgnoreOverflowClip : RespectOverflowClip)
     {
     }
 
@@ -72,7 +72,8 @@ public:
     {
         ASSERT(!usesCache() || cacheSlot == PaintingClipRects);
         ASSERT(respectOverflowClip == RespectOverflowClip);
-        cacheSlot = PaintingClipRectsIgnoringOverflowClip;
+        if (usesCache())
+            cacheSlot = PaintingClipRectsIgnoringOverflowClip;
         respectOverflowClip = IgnoreOverflowClip;
     }
 

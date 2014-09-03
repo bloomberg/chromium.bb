@@ -102,15 +102,6 @@ void GraphicsLayerUpdater::updateRecursive(RenderLayer& layer, UpdateType update
                 updateType = ForceUpdate;
             }
 
-            // Note carefully: here we assume that the compositing state of all descendants have been updated already,
-            // so it is legitimate to compute and cache the composited bounds for this layer.
-            mapping->updateCompositedBounds();
-
-            if (RenderLayerReflectionInfo* reflection = layer.reflectionInfo()) {
-                if (reflection->reflectionLayer()->hasCompositedLayerMapping())
-                    reflection->reflectionLayer()->compositedLayerMapping()->updateCompositedBounds();
-            }
-
             if (mapping->updateGraphicsLayerConfiguration())
                 m_needsRebuildTree = true;
 

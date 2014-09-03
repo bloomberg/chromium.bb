@@ -140,7 +140,6 @@ public:
 
     LayoutRect compositedBounds() const { return m_compositedBounds; }
     IntRect pixelSnappedCompositedBounds() const;
-    void updateCompositedBounds();
 
     void positionOverflowControlsLayers(const IntSize& offsetFromRoot);
     bool hasUnpositionedOverflowControlsLayers() const;
@@ -214,7 +213,7 @@ private:
     // Helper methods to updateGraphicsLayerGeometry:
     void computeGraphicsLayerParentLocation(const RenderLayer* compositingContainer, const IntRect& ancestorCompositingBounds, IntPoint& graphicsLayerParentLocation);
     void updateSquashingLayerGeometry(const LayoutPoint& offsetFromCompositedAncestor, const IntPoint& graphicsLayerParentLocation, const RenderLayer& referenceLayer, Vector<GraphicsLayerPaintInfo>& layers, GraphicsLayer*, LayoutPoint* offsetFromTransformedAncestor, Vector<RenderLayer*>& layersNeedingPaintInvalidation);
-    void updateMainGraphicsLayerGeometry(const IntRect& relativeCompositingBounds, const IntRect& localCompositingBounds, IntPoint& graphicsLayerParentLocation);
+    void updateMainGraphicsLayerGeometry(const IntRect& relativeCompositingBounds, const IntRect& localCompositingBounds, const IntPoint& graphicsLayerParentLocation);
     void updateAncestorClippingLayerGeometry(const RenderLayer* compositingContainer, const IntPoint& snappedOffsetFromCompositedAncestor, IntPoint& graphicsLayerParentLocation);
     void updateOverflowControlsHostLayerGeometry(const RenderLayer* compositingStackingContext);
     void updateChildContainmentLayerGeometry(const IntRect& clippingBox, const IntRect& localCompositingBounds);
@@ -254,6 +253,7 @@ private:
     bool updateSquashingLayers(bool needsSquashingLayers);
     void updateDrawsContent();
     void updateChildrenTransform();
+    void updateCompositedBounds();
     void registerScrollingLayers();
 
     // Also sets subpixelAccumulation on the layer.
@@ -286,6 +286,7 @@ private:
     Color rendererBackgroundColor() const;
     void updateBackgroundColor();
     void updateContentsRect();
+    void updateContentsOffsetInCompositingLayer(const IntPoint& snappedOffsetFromCompositedAncestor, const IntPoint& graphicsLayerParentLocation);
     void updateAfterWidgetResize();
     void updateCompositingReasons();
 
@@ -417,6 +418,9 @@ private:
     LayoutPoint m_squashingLayerOffsetFromTransformedAncestor;
 
     LayoutRect m_compositedBounds;
+
+    LayoutSize m_contentOffsetInCompositingLayer;
+    unsigned m_contentOffsetInCompositingLayerDirty : 1;
 
     unsigned m_pendingUpdateScope : 2;
     unsigned m_isMainFrameRenderViewLayer : 1;
