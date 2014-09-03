@@ -571,11 +571,19 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
       &chrome::CloseAllBrowsers));
 }
 
+// Times out on Win and Linux
+// @see http://crbug.com/410327
+#if defined(OS_WIN) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#define MAYBE_TestUndockedDevToolsUnresponsive DISABLED_TestUndockedDevToolsUnresponsive
+#else
+#define MAYBE_TestUndockedDevToolsUnresponsive TestUndockedDevToolsUnresponsive
+#endif
+
 // Tests that inspected tab gets closed if devtools renderer
 // becomes unresponsive during beforeunload event interception.
 // @see http://crbug.com/322380
 IN_PROC_BROWSER_TEST_F(DevToolsUnresponsiveBeforeUnloadTest,
-                       TestUndockedDevToolsUnresponsive) {
+                       MAYBE_TestUndockedDevToolsUnresponsive) {
   ASSERT_TRUE(test_server()->Start());
   LoadTestPage(kDebuggerTestPage);
   DevToolsWindow* devtools_window = OpenDevToolWindowOnWebContents(
