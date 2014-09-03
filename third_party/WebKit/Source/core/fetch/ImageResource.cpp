@@ -32,6 +32,7 @@
 #include "core/frame/FrameView.h"
 #include "core/rendering/RenderObject.h"
 #include "core/svg/graphics/SVGImage.h"
+#include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
@@ -48,6 +49,7 @@ ImageResource::ImageResource(const ResourceRequest& resourceRequest)
     , m_loadingMultipartContent(false)
     , m_hasDevicePixelRatioHeaderValue(false)
 {
+    WTF_LOG(Timers, "new ImageResource(ResourceRequest) %p", this);
     setStatus(Unknown);
     setCustomAcceptHeader();
 }
@@ -56,6 +58,7 @@ ImageResource::ImageResource(blink::Image* image)
     : Resource(ResourceRequest(""), Image)
     , m_image(image)
 {
+    WTF_LOG(Timers, "new ImageResource(Image) %p", this);
     setStatus(Cached);
     setLoading(false);
     setCustomAcceptHeader();
@@ -65,6 +68,7 @@ ImageResource::ImageResource(const ResourceRequest& resourceRequest, blink::Imag
     : Resource(resourceRequest, Image)
     , m_image(image)
 {
+    WTF_LOG(Timers, "new ImageResource(ResourceRequest, Image) %p", this);
     setStatus(Cached);
     setLoading(false);
     setCustomAcceptHeader();
@@ -72,6 +76,7 @@ ImageResource::ImageResource(const ResourceRequest& resourceRequest, blink::Imag
 
 ImageResource::~ImageResource()
 {
+    WTF_LOG(Timers, "~ImageResource %p", this);
     clearImage();
 }
 

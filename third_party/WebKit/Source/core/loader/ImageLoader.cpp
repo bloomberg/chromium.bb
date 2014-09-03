@@ -39,6 +39,7 @@
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/svg/RenderSVGImage.h"
+#include "platform/Logging.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"
 
@@ -121,10 +122,14 @@ ImageLoader::ImageLoader(Element* element)
     , m_elementIsProtected(false)
     , m_highPriorityClientCount(0)
 {
+    WTF_LOG(Timers, "new ImageLoader %p", this);
 }
 
 ImageLoader::~ImageLoader()
 {
+    WTF_LOG(Timers, "~ImageLoader %p; m_hasPendingLoadEvent=%d, m_hasPendingErrorEvent=%d",
+        this, m_hasPendingLoadEvent, m_hasPendingErrorEvent);
+
     if (m_pendingTask)
         m_pendingTask->clearLoader();
 
@@ -360,6 +365,9 @@ bool ImageLoader::shouldLoadImmediately(const KURL& url, LoadType loadType) cons
 
 void ImageLoader::notifyFinished(Resource* resource)
 {
+    WTF_LOG(Timers, "ImageLoader::notifyFinished %p; m_hasPendingLoadEvent=%d",
+        this, m_hasPendingLoadEvent);
+
     ASSERT(m_failedLoadURL.isEmpty());
     ASSERT(resource == m_image.get());
 
@@ -456,6 +464,7 @@ void ImageLoader::timerFired(Timer<ImageLoader>*)
 
 void ImageLoader::dispatchPendingEvent(ImageEventSender* eventSender)
 {
+    WTF_LOG(Timers, "ImageLoader::dispatchPendingEvent %p", this);
     ASSERT(eventSender == &loadEventSender() || eventSender == &errorEventSender());
     const AtomicString& eventType = eventSender->eventType();
     if (eventType == EventTypeNames::load)
