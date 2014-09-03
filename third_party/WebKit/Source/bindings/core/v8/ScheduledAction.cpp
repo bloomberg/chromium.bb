@@ -41,6 +41,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/Logging.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {
@@ -71,28 +72,37 @@ void ScheduledAction::execute(ExecutionContext* context)
 {
     if (context->isDocument()) {
         LocalFrame* frame = toDocument(context)->frame();
-        if (!frame)
+        if (!frame) {
+            WTF_LOG(Timers, "ScheduledAction::execute %p: no frame", this);
             return;
-        if (!frame->script().canExecuteScripts(AboutToExecuteScript))
+        }
+        if (!frame->script().canExecuteScripts(AboutToExecuteScript)) {
+            WTF_LOG(Timers, "ScheduledAction::execute %p: frame can not execute scripts", this);
             return;
+        }
         execute(frame);
     } else {
+        WTF_LOG(Timers, "ScheduledAction::execute %p: worker scope", this);
         execute(toWorkerGlobalScope(context));
     }
 }
 
 void ScheduledAction::execute(LocalFrame* frame)
 {
-    if (m_scriptState->contextIsEmpty())
+    if (m_scriptState->contextIsEmpty()) {
+        WTF_LOG(Timers, "ScheduledAction::execute %p: context is empty", this);
         return;
+    }
 
     TRACE_EVENT0("v8", "ScheduledAction::execute");
     ScriptState::Scope scope(m_scriptState.get());
     if (!m_function.isEmpty()) {
+        WTF_LOG(Timers, "ScheduledAction::execute %p: have function", this);
         Vector<v8::Handle<v8::Value> > info;
         createLocalHandlesForArgs(&info);
         frame->script().callFunction(m_function.newLocal(m_scriptState->isolate()), m_scriptState->context()->Global(), info.size(), info.data());
     } else {
+        WTF_LOG(Timers, "ScheduledAction::execute %p: executing from source", this);
         frame->script().executeScriptAndReturnValue(m_scriptState->context(), ScriptSourceCode(m_code));
     }
 
