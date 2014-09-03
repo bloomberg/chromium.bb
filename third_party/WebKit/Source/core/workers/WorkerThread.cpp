@@ -207,6 +207,7 @@ WorkerThread::WorkerThread(WorkerLoaderProxy& workerLoaderProxy, WorkerReporting
     , m_workerReportingProxy(workerReportingProxy)
     , m_startupData(startupData)
     , m_shutdownEvent(adoptPtr(blink::Platform::current()->createWaitableEvent()))
+    , m_terminationEvent(adoptPtr(blink::Platform::current()->createWaitableEvent()))
 {
     MutexLocker lock(threadSetMutex());
     workerThreads().add(this);
@@ -320,6 +321,8 @@ void WorkerThread::cleanup()
     // This can free this thread object, hence it must not be touched afterwards.
     workerReportingProxy().workerThreadTerminated();
 
+    m_terminationEvent->signal();
+
     // Clean up PlatformThreadData before WTF::WTFThreadData goes away!
     PlatformThreadData::current().destroy();
 }
@@ -373,7 +376,16 @@ void WorkerThread::stop()
 {
     // Prevent the deadlock between GC and an attempt to stop a thread.
     ThreadState::SafePointScope safePointScope(ThreadState::HeapPointersOnStack);
+    stopInternal();
+}
 
+void WorkerThread::stopInShutdownSequence()
+{
+    stopInternal();
+}
+
+void WorkerThread::stopInternal()
+{
     // Protect against this method and initialize() racing each other.
     MutexLocker lock(m_threadCreationMutex);
 
@@ -395,6 +407,18 @@ void WorkerThread::stop()
     InspectorInstrumentation::didKillAllExecutionContextTasks(m_workerGlobalScope.get());
     m_debuggerMessageQueue.kill();
     postTask(WorkerThreadShutdownStartTask::create());
+}
+
+void WorkerThread::terminateAndWaitForAllWorkers()
+{
+    // Keep this lock to prevent WorkerThread instances from being destroyed.
+    MutexLocker lock(threadSetMutex());
+    HashSet<WorkerThread*> threads = workerThreads();
+    for (HashSet<WorkerThread*>::iterator itr = threads.begin(); itr != threads.end(); ++itr)
+        (*itr)->stopInShutdownSequence();
+
+    for (HashSet<WorkerThread*>::iterator itr = threads.begin(); itr != threads.end(); ++itr)
+        (*itr)->terminationEvent()->wait();
 }
 
 bool WorkerThread::isCurrentThread() const

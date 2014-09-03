@@ -48,6 +48,7 @@
 #include "core/dom/Document.h"
 #include "core/events/EventFactory.h"
 #include "core/html/parser/HTMLParserThread.h"
+#include "core/workers/WorkerThread.h"
 #include "platform/EventTracer.h"
 #include "platform/FontFamilyNames.h"
 #include "platform/Partitions.h"
@@ -113,6 +114,9 @@ void CoreInitializer::shutdown()
 {
     // Make sure we stop the HTMLParserThread before Platform::current() is cleared.
     HTMLParserThread::shutdown();
+
+    // Make sure we stop WorkerThreads before Partition::shutdown() which frees ExecutionContext.
+    WorkerThread::terminateAndWaitForAllWorkers();
 
     Partitions::shutdown();
 }

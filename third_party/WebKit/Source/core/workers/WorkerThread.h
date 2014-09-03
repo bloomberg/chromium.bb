@@ -71,6 +71,9 @@ namespace blink {
         // (This is signalled on the main thread, so it's assumed to be waited on the worker context thread)
         blink::WebWaitableEvent* shutdownEvent() { return m_shutdownEvent.get(); }
 
+        blink::WebWaitableEvent* terminationEvent() { return m_terminationEvent.get(); }
+        static void terminateAndWaitForAllWorkers();
+
         bool isCurrentThread() const;
         WorkerLoaderProxy& workerLoaderProxy() const { return m_workerLoaderProxy; }
         WorkerReportingProxy& workerReportingProxy() const { return m_workerReportingProxy; }
@@ -107,6 +110,9 @@ namespace blink {
         friend class WorkerSharedTimer;
         friend class WorkerThreadShutdownFinishTask;
 
+        void stopInShutdownSequence();
+        void stopInternal();
+
         void initialize();
         void cleanup();
         void idleHandler();
@@ -131,6 +137,9 @@ namespace blink {
 
         // Used to signal thread shutdown.
         OwnPtr<blink::WebWaitableEvent> m_shutdownEvent;
+
+        // Used to signal thread termination.
+        OwnPtr<blink::WebWaitableEvent> m_terminationEvent;
 
         // FIXME: This has to be last because of crbug.com/401397 - the
         // WorkerThread might get deleted before it had a chance to properly
