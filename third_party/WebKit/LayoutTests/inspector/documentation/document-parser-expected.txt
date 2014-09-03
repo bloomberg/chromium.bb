@@ -71,7 +71,7 @@ Running: testJS
                 _children : [
                     {
                         _isHighlighted : false
-                        _text : "If no arguments are provided, the return value is equal to "
+                        _text : "If no arguments are provided, the return value is equal to"
                         _type : "PlainText"
                     }
                     {
@@ -187,7 +187,7 @@ Running: testHighlightAndLink
                     }
                     {
                         _isHighlighted : false
-                        _text : " is a shorthand property comprised of the "
+                        _text : " is a shorthand property comprised of the"
                         _type : "PlainText"
                     }
                     {
@@ -208,7 +208,7 @@ Running: testHighlightAndLink
                     }
                     {
                         _isHighlighted : false
-                        _text : ", "
+                        _text : ","
                         _type : "PlainText"
                     }
                     {
@@ -229,7 +229,7 @@ Running: testHighlightAndLink
                     }
                     {
                         _isHighlighted : false
-                        _text : ", and "
+                        _text : ", and"
                         _type : "PlainText"
                     }
                     {
@@ -561,7 +561,7 @@ Running: testLinkInsideCode
                             }
                             {
                                 _isHighlighted : false
-                                _text : "  "
+                                _text : " "
                                 _type : "PlainText"
                             }
                         ]
@@ -642,8 +642,8 @@ Running: testJsMethod
     examples : [
     ]
     methods : {
-        dataType : "DOM Node"
-        returnValue : "insertedNode"
+        returnValueDescription : "The inserted node."
+        returnValueName : "DOM Node"
     }
     parameters : [
         {
@@ -666,7 +666,7 @@ Running: testJsMethod
                 _type : "Block"
             }
             name : "newNode"
-            optional : "No"
+            optional : false
         }
         {
             dataType : "DOM Node"
@@ -688,8 +688,18 @@ Running: testJsMethod
                 _type : "Block"
             }
             name : "refChild"
-            optional : "Yes"
+            optional : true
         }
     ]
+}
+
+Running: testLinkWithoutSpace
+error: Can't parse summary
+{
+    examples : [
+    ]
+    parameters : [
+    ]
+    summary : null
 }
 
