@@ -47,8 +47,7 @@ void ContentsView::InitNamedPages(AppListModel* model,
 
   if (app_list::switches::IsExperimentalAppListEnabled()) {
     start_page_view_ = new StartPageView(app_list_main_view_, view_delegate);
-    AddLauncherPage(
-        start_page_view_, IDR_APP_LIST_SEARCH_ICON, NAMED_PAGE_START);
+    AddLauncherPage(start_page_view_, 0, NAMED_PAGE_START);
   } else {
     search_results_view_ =
         new SearchResultListView(app_list_main_view_, view_delegate);
@@ -245,7 +244,7 @@ int ContentsView::AddLauncherPage(views::View* view, int resource_id) {
   int page_index = view_model_->view_size();
   AddChildView(view);
   view_model_->Add(view, page_index);
-  if (contents_switcher_view_)
+  if (contents_switcher_view_ && resource_id)
     contents_switcher_view_->AddSwitcherButton(resource_id, page_index);
   pagination_model_.SetTotalPages(view_model_->view_size());
   return page_index;
