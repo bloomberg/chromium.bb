@@ -6,11 +6,14 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
@@ -31,6 +34,7 @@
 #include "chromeos/cryptohome/mock_homedir_methods.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cros_disks_client.h"
+#include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/login/auth/key.h"
@@ -52,11 +56,18 @@
 
 using ::testing::Invoke;
 using ::testing::Return;
+using ::testing::WithArg;
 using ::testing::_;
 
 namespace chromeos {
 
 namespace {
+
+// Label under which the user's key is stored.
+const char kCryptohomeGAIAKeyLabel[] = "gaia";
+
+// Salt used by pre-hashed key.
+const char kSalt[] = "SALT $$";
 
 // An owner key in PKCS#8 PrivateKeyInfo for testing owner checks.
 const uint8 kOwnerPrivateKey[] = {
@@ -132,10 +143,9 @@ class CryptohomeAuthenticatorTest : public testing::Test {
 
     ProfileHelper::Get()->SetUserToProfileMappingForTesting(user, &profile_);
 
-    transformed_key_ = *user_context_.GetKey();
-    transformed_key_.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
-                               SystemSaltGetter::ConvertRawSaltToHexString(
-                                   FakeCryptohomeClient::GetStubSystemSalt()));
+    CreateTransformedKey(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
+                         SystemSaltGetter::ConvertRawSaltToHexString(
+                             FakeCryptohomeClient::GetStubSystemSalt()));
   }
 
   virtual ~CryptohomeAuthenticatorTest() {}
@@ -171,6 +181,12 @@ class CryptohomeAuthenticatorTest : public testing::Test {
     mock_caller_ = NULL;
     cryptohome::HomedirMethods::Shutdown();
     mock_homedir_methods_ = NULL;
+  }
+
+  void CreateTransformedKey(Key::KeyType type, const std::string& salt) {
+    user_context_with_transformed_key_ = user_context_;
+    user_context_with_transformed_key_.GetKey()->Transform(type, salt);
+    transformed_key_ = *user_context_with_transformed_key_.GetKey();
   }
 
   base::FilePath PopulateTempFile(const char* data, int data_len) {
@@ -240,6 +256,57 @@ class CryptohomeAuthenticatorTest : public testing::Test {
         .RetiresOnSaturation();
   }
 
+  void ExpectGetKeyDataExCall(scoped_ptr<int64> key_type,
+                              scoped_ptr<std::string> salt) {
+    key_data_.clear();
+    key_data_.push_back(new cryptohome::RetrievedKeyData(
+       cryptohome::RetrievedKeyData::TYPE_PASSWORD,
+       kCryptohomeGAIAKeyLabel,
+       1));
+    key_data_.front()->privileges = cryptohome::PRIV_DEFAULT;
+    key_data_.front()->authorization_types.push_back(
+        cryptohome::RetrievedKeyData::AUTHORIZATION_TYPE_HMACSHA256);
+    if (key_type) {
+      scoped_ptr<cryptohome::RetrievedKeyData::ProviderData> provider_data(
+          new cryptohome::RetrievedKeyData::ProviderData("type"));
+      provider_data->number = key_type.Pass();
+      key_data_.front()->provider_data.push_back(provider_data.release());
+    }
+    if (salt) {
+      scoped_ptr<cryptohome::RetrievedKeyData::ProviderData> provider_data(
+          new cryptohome::RetrievedKeyData::ProviderData("salt"));
+      provider_data->bytes = salt.Pass();
+      key_data_.front()->provider_data.push_back(provider_data.release());
+    }
+    EXPECT_CALL(*mock_homedir_methods_, GetKeyDataEx(
+        cryptohome::Identification(user_context_.GetUserID()),
+        kCryptohomeGAIAKeyLabel,
+        _))
+        .WillOnce(WithArg<2>(Invoke(
+            this,
+            &CryptohomeAuthenticatorTest::InvokeGetDataExCallback)));
+  }
+
+  void ExpectMountExCall(bool expect_create_attempt) {
+    const cryptohome::KeyDefinition auth_key(transformed_key_.GetSecret(),
+                                             std::string(),
+                                             cryptohome::PRIV_DEFAULT);
+    cryptohome::MountParameters mount(false /* ephemeral */);
+    if (expect_create_attempt) {
+      mount.create_keys.push_back(cryptohome::KeyDefinition(
+          transformed_key_.GetSecret(),
+          kCryptohomeGAIAKeyLabel,
+          cryptohome::PRIV_DEFAULT));
+    }
+    EXPECT_CALL(*mock_homedir_methods_,
+                MountEx(cryptohome::Identification(user_context_.GetUserID()),
+                        cryptohome::Authorization(auth_key),
+                        mount,
+                        _))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+
   void RunResolve(CryptohomeAuthenticator* auth) {
     auth->Resolve();
     base::MessageLoop::current()->RunUntilIdle();
@@ -263,7 +330,10 @@ class CryptohomeAuthenticatorTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
 
   UserContext user_context_;
+  UserContext user_context_with_transformed_key_;
   Key transformed_key_;
+
+  ScopedVector<cryptohome::RetrievedKeyData> key_data_;
 
   ScopedDeviceSettingsTestHelper device_settings_test_helper_;
   ScopedTestCrosSettings test_cros_settings_;
@@ -283,6 +353,14 @@ class CryptohomeAuthenticatorTest : public testing::Test {
   FakeCryptohomeClient* fake_cryptohome_client_;
 
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
+
+ private:
+  void InvokeGetDataExCallback(
+      const cryptohome::HomedirMethods::GetKeyDataCallback& callback) {
+    callback.Run(true /* success */,
+                 cryptohome::MOUNT_ERROR_NONE,
+                 key_data_.Pass());
+  }
 };
 
 TEST_F(CryptohomeAuthenticatorTest, OnAuthSuccess) {
@@ -533,7 +611,7 @@ TEST_F(CryptohomeAuthenticatorTest, DriveRetailModeLoginButFail) {
 }
 
 TEST_F(CryptohomeAuthenticatorTest, DriveDataResync) {
-  UserContext expected_user_context(user_context_);
+  UserContext expected_user_context(user_context_with_transformed_key_);
   expected_user_context.SetUserIDHash(
       cryptohome::MockAsyncMethodCaller::kFakeSanitizedUsername);
   ExpectLoginSuccess(expected_user_context);
@@ -548,20 +626,8 @@ TEST_F(CryptohomeAuthenticatorTest, DriveDataResync) {
 
   // Set up mock homedir methods to respond successfully to a cryptohome create
   // attempt.
-  const cryptohome::KeyDefinition auth_key(transformed_key_.GetSecret(),
-                                           std::string(),
-                                           cryptohome::PRIV_DEFAULT);
-  cryptohome::MountParameters mount(false /* ephemeral */);
-  mount.create_keys.push_back(cryptohome::KeyDefinition(
-      transformed_key_.GetSecret(),
-      "gaia",
-      cryptohome::PRIV_DEFAULT));
-  EXPECT_CALL(*mock_homedir_methods_,
-              MountEx(cryptohome::Identification(user_context_.GetUserID()),
-                      cryptohome::Authorization(auth_key),
-                      mount,
-                      _))
-      .Times(1);
+  ExpectGetKeyDataExCall(scoped_ptr<int64>(), scoped_ptr<std::string>());
+  ExpectMountExCall(true /* expect_create_attempt */);
 
   state_->PresetOnlineLoginStatus(AuthFailure::AuthFailureNone());
   SetAttemptState(auth_.get(), state_.release());
@@ -598,7 +664,7 @@ TEST_F(CryptohomeAuthenticatorTest, DriveRequestOldPassword) {
 }
 
 TEST_F(CryptohomeAuthenticatorTest, DriveDataRecover) {
-  UserContext expected_user_context(user_context_);
+  UserContext expected_user_context(user_context_with_transformed_key_);
   expected_user_context.SetUserIDHash(
       cryptohome::MockAsyncMethodCaller::kFakeSanitizedUsername);
   ExpectLoginSuccess(expected_user_context);
@@ -615,14 +681,8 @@ TEST_F(CryptohomeAuthenticatorTest, DriveDataRecover) {
 
   // Set up mock homedir methods to respond successfully to a cryptohome mount
   // attempt.
-  const cryptohome::KeyDefinition auth_key(transformed_key_.GetSecret(),
-                                           std::string(),
-                                           cryptohome::PRIV_DEFAULT);
-  EXPECT_CALL(*mock_homedir_methods_,
-              MountEx(cryptohome::Identification(user_context_.GetUserID()),
-                      cryptohome::Authorization(auth_key),
-                      cryptohome::MountParameters(false /* ephemeral */),
-                      _));
+  ExpectGetKeyDataExCall(scoped_ptr<int64>(), scoped_ptr<std::string>());
+  ExpectMountExCall(false /* expect_create_attempt */);
 
   state_->PresetOnlineLoginStatus(AuthFailure::AuthFailureNone());
   SetAttemptState(auth_.get(), state_.release());
@@ -676,7 +736,7 @@ TEST_F(CryptohomeAuthenticatorTest, ResolveCreateNew) {
 }
 
 TEST_F(CryptohomeAuthenticatorTest, DriveCreateForNewUser) {
-  UserContext expected_user_context(user_context_);
+  UserContext expected_user_context(user_context_with_transformed_key_);
   expected_user_context.SetUserIDHash(
       cryptohome::MockAsyncMethodCaller::kFakeSanitizedUsername);
   ExpectLoginSuccess(expected_user_context);
@@ -684,19 +744,8 @@ TEST_F(CryptohomeAuthenticatorTest, DriveCreateForNewUser) {
 
   // Set up mock homedir methods to respond successfully to a cryptohome create
   // attempt.
-  const cryptohome::KeyDefinition auth_key(transformed_key_.GetSecret(),
-                                           std::string(),
-                                           cryptohome::PRIV_DEFAULT);
-  cryptohome::MountParameters mount(false /* ephemeral */);
-  mount.create_keys.push_back(cryptohome::KeyDefinition(
-      transformed_key_.GetSecret(),
-      "gaia",
-      cryptohome::PRIV_DEFAULT));
-  EXPECT_CALL(*mock_homedir_methods_,
-              MountEx(cryptohome::Identification(user_context_.GetUserID()),
-                      cryptohome::Authorization(auth_key),
-                      mount,
-                      _));
+  ExpectGetKeyDataExCall(scoped_ptr<int64>(), scoped_ptr<std::string>());
+  ExpectMountExCall(true /* expect_create_attempt */);
 
   // Set up state as though a cryptohome mount attempt has occurred
   // and been rejected because the user doesn't exist; additionally,
@@ -747,6 +796,45 @@ TEST_F(CryptohomeAuthenticatorTest, DriveUnlock) {
 
   auth_->AuthenticateToUnlock(user_context_);
   base::MessageLoop::current()->Run();
+}
+
+TEST_F(CryptohomeAuthenticatorTest, DriveLoginWithPreHashedPassword) {
+  CreateTransformedKey(Key::KEY_TYPE_SALTED_SHA256, kSalt);
+
+  UserContext expected_user_context(user_context_with_transformed_key_);
+  expected_user_context.SetUserIDHash(
+      cryptohome::MockAsyncMethodCaller::kFakeSanitizedUsername);
+  ExpectLoginSuccess(expected_user_context);
+  FailOnLoginFailure();
+
+  // Set up mock homedir methods to respond with key metadata indicating that a
+  // pre-hashed key was used to create the cryptohome and allow a successful
+  // mount when this pre-hashed key is used.
+
+  ExpectGetKeyDataExCall(
+      make_scoped_ptr(new int64(Key::KEY_TYPE_SALTED_SHA256)),
+      make_scoped_ptr(new std::string(kSalt)));
+  ExpectMountExCall(false /* expect_create_attempt */);
+
+  auth_->AuthenticateToLogin(NULL, user_context_);
+  base::RunLoop().Run();
+}
+
+TEST_F(CryptohomeAuthenticatorTest, FailLoginWithMissingSalt) {
+  CreateTransformedKey(Key::KEY_TYPE_SALTED_SHA256, kSalt);
+
+  FailOnLoginSuccess();
+  ExpectLoginFailure(AuthFailure(AuthFailure::COULD_NOT_MOUNT_CRYPTOHOME));
+
+  // Set up mock homedir methods to respond with key metadata indicating that a
+  // pre-hashed key was used to create the cryptohome but without the required
+  // salt.
+  ExpectGetKeyDataExCall(
+      make_scoped_ptr(new int64(Key::KEY_TYPE_SALTED_SHA256)),
+      scoped_ptr<std::string>());
+
+  auth_->AuthenticateToLogin(NULL, user_context_);
+  base::RunLoop().Run();
 }
 
 }  // namespace chromeos
