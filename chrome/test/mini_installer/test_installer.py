@@ -305,7 +305,7 @@ def main():
     RunCleanCommand(args.force_clean, variable_expander)
     for test in config.tests:
       # If tests were specified via |tests|, their names are formatted like so:
-      test_name = '%s.%s.%s' % (InstallerTest.__module__,
+      test_name = '%s/%s/%s' % (InstallerTest.__module__,
                                 InstallerTest.__name__,
                                 test['name'])
       if not args.test or test_name in args.test:
