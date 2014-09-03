@@ -544,11 +544,11 @@
           'action_name': 'generate_chrome_unscaled_resources',
           'variables': {
             'grit_grd_file': 'app/theme/chrome_unscaled_resources.grd',
+            'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome/app/theme/',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
       ],
-      'includes': [ '../build/grit_target.gypi' ],
     },
     {
       # GN version: //chrome/browser:about_credits

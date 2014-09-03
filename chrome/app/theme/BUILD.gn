@@ -24,6 +24,7 @@ grit("theme_resources") {
 # GYP version: chrome/chrome_resources.gyp:chrome_unscaled_resources
 grit("chrome_unscaled_resources") {
   source = "chrome_unscaled_resources.grd"
+  use_qualified_include = true
   outputs = [
     "grit/chrome_unscaled_resources.h",
     "chrome_unscaled_resources.pak",
