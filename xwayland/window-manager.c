@@ -1648,12 +1648,14 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 		weston_wm_window_schedule_repaint(window);
 
 	if (frame_status(window->frame) & FRAME_STATUS_MOVE) {
-		shell_interface->move(window->shsurf, seat);
+		if (seat != NULL)
+			shell_interface->move(window->shsurf, seat);
 		frame_status_clear(window->frame, FRAME_STATUS_MOVE);
 	}
 
 	if (frame_status(window->frame) & FRAME_STATUS_RESIZE) {
-		shell_interface->resize(window->shsurf, seat, location);
+		if (seat != NULL)
+			shell_interface->resize(window->shsurf, seat, location);
 		frame_status_clear(window->frame, FRAME_STATUS_RESIZE);
 	}
 
