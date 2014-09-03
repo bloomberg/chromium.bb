@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "media/audio/mac/audio_manager_mac.h"
-#include "media/base/audio_block_fifo.h"
 #include "media/base/audio_bus.h"
 #include "media/base/data_buffer.h"
 
@@ -32,23 +31,6 @@ static std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-static void WrapBufferList(AudioBufferList* buffer_list,
-                           AudioBus* bus,
-                           int frames) {
-  DCHECK(buffer_list);
-  DCHECK(bus);
-  const int channels = bus->channels();
-  const int buffer_list_channels = buffer_list->mNumberBuffers;
-  CHECK_EQ(channels, buffer_list_channels);
-
-  // Copy pointers from AudioBufferList.
-  for (int i = 0; i < channels; ++i)
-    bus->SetChannelData(i, static_cast<float*>(buffer_list->mBuffers[i].mData));
-
-  // Finally set the actual length.
-  bus->set_frames(frames);
-}
-
 // See "Technical Note TN2091 - Device input using the HAL Output Audio Unit"
 // http://developer.apple.com/library/mac/#technotes/tn2091/_index.html
 // for more details and background regarding this implementation.
@@ -64,46 +46,43 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
       started_(false),
       hardware_latency_frames_(0),
       number_of_channels_in_frame_(0),
-      audio_wrapper_(AudioBus::CreateWrapper(input_params.channels())) {
+      fifo_(input_params.channels(),
+            number_of_frames_,
+            kNumberOfBlocksBufferInFifo) {
   DCHECK(manager_);
 
   // Set up the desired (output) format specified by the client.
   format_.mSampleRate = input_params.sample_rate();
   format_.mFormatID = kAudioFormatLinearPCM;
-  format_.mFormatFlags =
-      kAudioFormatFlagsNativeFloatPacked | kLinearPCMFormatFlagIsNonInterleaved;
-  size_t bytes_per_sample = sizeof(Float32);
-  format_.mBitsPerChannel = bytes_per_sample * 8;
+  format_.mFormatFlags = kLinearPCMFormatFlagIsPacked |
+                         kLinearPCMFormatFlagIsSignedInteger;
+  format_.mBitsPerChannel = input_params.bits_per_sample();
   format_.mChannelsPerFrame = input_params.channels();
-  format_.mFramesPerPacket = 1;
-  format_.mBytesPerFrame = bytes_per_sample;
-  format_.mBytesPerPacket = format_.mBytesPerFrame * format_.mFramesPerPacket;
+  format_.mFramesPerPacket = 1;  // uncompressed audio
+  format_.mBytesPerPacket = (format_.mBitsPerChannel *
+                             input_params.channels()) / 8;
+  format_.mBytesPerFrame = format_.mBytesPerPacket;
   format_.mReserved = 0;
 
   DVLOG(1) << "Desired ouput format: " << format_;
 
-  // Allocate AudioBufferList based on the number of channels.
-  audio_buffer_list_.reset(static_cast<AudioBufferList*>(
-      malloc(sizeof(AudioBufferList) * input_params.channels())));
-  audio_buffer_list_->mNumberBuffers = input_params.channels();
+  // Derive size (in bytes) of the buffers that we will render to.
+  UInt32 data_byte_size = number_of_frames_ * format_.mBytesPerFrame;
+  DVLOG(1) << "Size of data buffer in bytes : " << data_byte_size;
 
   // Allocate AudioBuffers to be used as storage for the received audio.
   // The AudioBufferList structure works as a placeholder for the
   // AudioBuffer structure, which holds a pointer to the actual data buffer.
-  UInt32 data_byte_size = number_of_frames_ * format_.mBytesPerFrame;
-  audio_data_buffer_.reset(static_cast<float*>(base::AlignedAlloc(
-      data_byte_size * audio_buffer_list_->mNumberBuffers,
-      AudioBus::kChannelAlignment)));
-  AudioBuffer* audio_buffer = audio_buffer_list_->mBuffers;
-  for (UInt32 i = 0; i < audio_buffer_list_->mNumberBuffers; ++i) {
-    audio_buffer[i].mNumberChannels = 1;
-    audio_buffer[i].mDataByteSize = data_byte_size;
-    audio_buffer[i].mData = audio_data_buffer_.get() + i * data_byte_size;
-  }
+  audio_data_buffer_.reset(new uint8[data_byte_size]);
+  audio_buffer_list_.mNumberBuffers = 1;
+
+  AudioBuffer* audio_buffer = audio_buffer_list_.mBuffers;
+  audio_buffer->mNumberChannels = input_params.channels();
+  audio_buffer->mDataByteSize = data_byte_size;
+  audio_buffer->mData = audio_data_buffer_.get();
 }
 
-AUAudioInputStream::~AUAudioInputStream() {
-}
+AUAudioInputStream::~AUAudioInputStream() {}
 
 // Obtain and open the AUHAL AudioOutputUnit for recording.
 bool AUAudioInputStream::Open() {
@@ -186,6 +165,23 @@ bool AUAudioInputStream::Open() {
     return false;
   }
 
+  // Register the input procedure for the AUHAL.
+  // This procedure will be called when the AUHAL has received new data
+  // from the input device.
+  AURenderCallbackStruct callback;
+  callback.inputProc = InputProc;
+  callback.inputProcRefCon = this;
+  result = AudioUnitSetProperty(audio_unit_,
+                                kAudioOutputUnitProperty_SetInputCallback,
+                                kAudioUnitScope_Global,
+                                0,
+                                &callback,
+                                sizeof(callback));
+  if (result) {
+    HandleError(result);
+    return false;
+  }
+
   // Set up the the desired (output) format.
   // For obtaining input from a device, the device format is always expressed
   // on the output scope of the AUHAL's Element 1.
@@ -231,23 +227,6 @@ bool AUAudioInputStream::Open() {
       HandleError(result);
       return false;
     }
-  }
-
-  // Register the input procedure for the AUHAL.
-  // This procedure will be called when the AUHAL has received new data
-  // from the input device.
-  AURenderCallbackStruct callback;
-  callback.inputProc = InputProc;
-  callback.inputProcRefCon = this;
-  result = AudioUnitSetProperty(audio_unit_,
-                                kAudioOutputUnitProperty_SetInputCallback,
-                                kAudioUnitScope_Global,
-                                0,
-                                &callback,
-                                sizeof(callback));
-  if (result) {
-    HandleError(result);
-    return false;
   }
 
   // Finally, initialize the audio unit and ensure that it is ready to render.
@@ -363,9 +342,9 @@ void AUAudioInputStream::SetVolume(double volume) {
 
   Float32 volume_float32 = static_cast<Float32>(volume);
   AudioObjectPropertyAddress property_address = {
-      kAudioDevicePropertyVolumeScalar,
-      kAudioDevicePropertyScopeInput,
-      kAudioObjectPropertyElementMaster
+    kAudioDevicePropertyVolumeScalar,
+    kAudioDevicePropertyScopeInput,
+    kAudioObjectPropertyElementMaster
   };
 
   // Try to set the volume for master volume channel.
@@ -411,15 +390,15 @@ void AUAudioInputStream::SetVolume(double volume) {
 
 double AUAudioInputStream::GetVolume() {
   // Verify that we have a valid device.
-  if (input_device_id_ == kAudioObjectUnknown) {
+  if (input_device_id_ == kAudioObjectUnknown){
     NOTREACHED() << "Device ID is unknown";
     return 0.0;
   }
 
   AudioObjectPropertyAddress property_address = {
-      kAudioDevicePropertyVolumeScalar,
-      kAudioDevicePropertyScopeInput,
-      kAudioObjectPropertyElementMaster
+    kAudioDevicePropertyVolumeScalar,
+    kAudioDevicePropertyScopeInput,
+    kAudioObjectPropertyElementMaster
   };
 
   if (AudioObjectHasProperty(input_device_id_, &property_address)) {
@@ -427,8 +406,12 @@ double AUAudioInputStream::GetVolume() {
     // master channel.
     Float32 volume_float32 = 0.0;
     UInt32 size = sizeof(volume_float32);
-    OSStatus result = AudioObjectGetPropertyData(
-        input_device_id_, &property_address, 0, NULL, &size, &volume_float32);
+    OSStatus result = AudioObjectGetPropertyData(input_device_id_,
+                                                 &property_address,
+                                                 0,
+                                                 NULL,
+                                                 &size,
+                                                 &volume_float32);
     if (result == noErr)
       return static_cast<double>(volume_float32);
   } else {
@@ -489,8 +472,9 @@ OSStatus AUAudioInputStream::InputProc(void* user_data,
     return result;
 
   // Deliver recorded data to the consumer as a callback.
-  return audio_input->Provide(
-      number_of_frames, audio_input->audio_buffer_list(), time_stamp);
+  return audio_input->Provide(number_of_frames,
+                              audio_input->audio_buffer_list(),
+                              time_stamp);
 }
 
 OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
@@ -507,42 +491,22 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
 
   AudioBuffer& buffer = io_data->mBuffers[0];
   uint8* audio_data = reinterpret_cast<uint8*>(buffer.mData);
-  uint32 capture_delay_bytes = static_cast<uint32>(
-      (capture_latency_frames + 0.5) * format_.mBytesPerFrame);
+  uint32 capture_delay_bytes = static_cast<uint32>
+      ((capture_latency_frames + 0.5) * format_.mBytesPerFrame);
   DCHECK(audio_data);
   if (!audio_data)
     return kAudioUnitErr_InvalidElement;
 
-  // Wrap the output AudioBufferList to |audio_wrapper_|.
-  WrapBufferList(io_data, audio_wrapper_.get(), number_of_frames);
+  // Copy captured (and interleaved) data into FIFO.
+  fifo_.Push(audio_data, number_of_frames, format_.mBitsPerChannel / 8);
 
-  // If the stream parameters change for any reason, we need to insert a FIFO
-  // since the OnMoreData() pipeline can't handle frame size changes.
-  if (number_of_frames != number_of_frames_) {
-    // Create a FIFO on the fly to handle any discrepancies in callback rates.
-    if (!fifo_) {
-      fifo_.reset(new AudioBlockFifo(audio_wrapper_->channels(),
-                                     number_of_frames_,
-                                     kNumberOfBlocksBufferInFifo));
-    }
-  }
-
-  // When FIFO does not kick in, data will be directly passed to the callback.
-  if (!fifo_) {
-    CHECK_EQ(audio_wrapper_->frames(), static_cast<int>(number_of_frames_));
-    sink_->OnData(
-        this, audio_wrapper_.get(), capture_delay_bytes, normalized_volume);
-    return noErr;
-  }
-
-  // Compensate the audio delay caused by the FIFO.
-  capture_delay_bytes += fifo_->GetAvailableFrames() * format_.mBytesPerFrame;
-
-  fifo_->Push(audio_wrapper_.get());
   // Consume and deliver the data when the FIFO has a block of available data.
-  while (fifo_->available_blocks()) {
-    const AudioBus* audio_bus = fifo_->Consume();
+  while (fifo_.available_blocks()) {
+    const AudioBus* audio_bus = fifo_.Consume();
     DCHECK_EQ(audio_bus->frames(), static_cast<int>(number_of_frames_));
+
+    // Compensate the audio delay caused by the FIFO.
+    capture_delay_bytes += fifo_.GetAvailableFrames() * format_.mBytesPerFrame;
     sink_->OnData(this, audio_bus, capture_delay_bytes, normalized_volume);
   }
 
@@ -555,9 +519,9 @@ int AUAudioInputStream::HardwareSampleRate() {
   UInt32 info_size = sizeof(device_id);
 
   AudioObjectPropertyAddress default_input_device_address = {
-      kAudioHardwarePropertyDefaultInputDevice,
-      kAudioObjectPropertyScopeGlobal,
-      kAudioObjectPropertyElementMaster
+    kAudioHardwarePropertyDefaultInputDevice,
+    kAudioObjectPropertyScopeGlobal,
+    kAudioObjectPropertyElementMaster
   };
   OSStatus result = AudioObjectGetPropertyData(kAudioObjectSystemObject,
                                                &default_input_device_address,
@@ -572,8 +536,10 @@ int AUAudioInputStream::HardwareSampleRate() {
   info_size = sizeof(nominal_sample_rate);
 
   AudioObjectPropertyAddress nominal_sample_rate_address = {
-      kAudioDevicePropertyNominalSampleRate, kAudioObjectPropertyScopeGlobal,
-      kAudioObjectPropertyElementMaster};
+    kAudioDevicePropertyNominalSampleRate,
+    kAudioObjectPropertyScopeGlobal,
+    kAudioObjectPropertyElementMaster
+  };
   result = AudioObjectGetPropertyData(device_id,
                                       &nominal_sample_rate_address,
                                       0,
@@ -606,9 +572,9 @@ double AUAudioInputStream::GetHardwareLatency() {
 
   // Get input audio device latency.
   AudioObjectPropertyAddress property_address = {
-      kAudioDevicePropertyLatency,
-      kAudioDevicePropertyScopeInput,
-      kAudioObjectPropertyElementMaster
+    kAudioDevicePropertyLatency,
+    kAudioDevicePropertyScopeInput,
+    kAudioObjectPropertyElementMaster
   };
   UInt32 device_latency_frames = 0;
   size = sizeof(device_latency_frames);
@@ -620,19 +586,19 @@ double AUAudioInputStream::GetHardwareLatency() {
                                       &device_latency_frames);
   DLOG_IF(WARNING, result != noErr) << "Could not get audio device latency.";
 
-  return static_cast<double>((audio_unit_latency_sec * format_.mSampleRate) +
-                             device_latency_frames);
+  return static_cast<double>((audio_unit_latency_sec *
+      format_.mSampleRate) + device_latency_frames);
 }
 
 double AUAudioInputStream::GetCaptureLatency(
     const AudioTimeStamp* input_time_stamp) {
   // Get the delay between between the actual recording instant and the time
   // when the data packet is provided as a callback.
-  UInt64 capture_time_ns =
-      AudioConvertHostTimeToNanos(input_time_stamp->mHostTime);
+  UInt64 capture_time_ns = AudioConvertHostTimeToNanos(
+      input_time_stamp->mHostTime);
   UInt64 now_ns = AudioConvertHostTimeToNanos(AudioGetCurrentHostTime());
-  double delay_frames = static_cast<double>(1e-9 * (now_ns - capture_time_ns) *
-                                            format_.mSampleRate);
+  double delay_frames = static_cast<double>
+      (1e-9 * (now_ns - capture_time_ns) * format_.mSampleRate);
 
   // Total latency is composed by the dynamic latency and the fixed
   // hardware latency.
@@ -642,14 +608,18 @@ double AUAudioInputStream::GetCaptureLatency(
 int AUAudioInputStream::GetNumberOfChannelsFromStream() {
   // Get the stream format, to be able to read the number of channels.
   AudioObjectPropertyAddress property_address = {
-      kAudioDevicePropertyStreamFormat,
-      kAudioDevicePropertyScopeInput,
-      kAudioObjectPropertyElementMaster
+    kAudioDevicePropertyStreamFormat,
+    kAudioDevicePropertyScopeInput,
+    kAudioObjectPropertyElementMaster
   };
   AudioStreamBasicDescription stream_format;
   UInt32 size = sizeof(stream_format);
-  OSStatus result = AudioObjectGetPropertyData(
-      input_device_id_, &property_address, 0, NULL, &size, &stream_format);
+  OSStatus result = AudioObjectGetPropertyData(input_device_id_,
+                                               &property_address,
+                                               0,
+                                               NULL,
+                                               &size,
+                                               &stream_format);
   if (result != noErr) {
     DLOG(WARNING) << "Could not get stream format";
     return 0;
@@ -659,8 +629,8 @@ int AUAudioInputStream::GetNumberOfChannelsFromStream() {
 }
 
 void AUAudioInputStream::HandleError(OSStatus err) {
-  NOTREACHED() << "error " << GetMacOSStatusErrorString(err) << " (" << err
-               << ")";
+  NOTREACHED() << "error " << GetMacOSStatusErrorString(err)
+               << " (" << err << ")";
   if (sink_)
     sink_->OnError(this);
 }
@@ -668,12 +638,13 @@ void AUAudioInputStream::HandleError(OSStatus err) {
 bool AUAudioInputStream::IsVolumeSettableOnChannel(int channel) {
   Boolean is_settable = false;
   AudioObjectPropertyAddress property_address = {
-      kAudioDevicePropertyVolumeScalar,
-      kAudioDevicePropertyScopeInput,
-      static_cast<UInt32>(channel)
+    kAudioDevicePropertyVolumeScalar,
+    kAudioDevicePropertyScopeInput,
+    static_cast<UInt32>(channel)
   };
-  OSStatus result = AudioObjectIsPropertySettable(
-      input_device_id_, &property_address, &is_settable);
+  OSStatus result = AudioObjectIsPropertySettable(input_device_id_,
+                                                  &property_address,
+                                                  &is_settable);
   return (result == noErr) ? is_settable : false;
 }
 
