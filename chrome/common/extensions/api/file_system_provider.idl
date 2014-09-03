@@ -8,7 +8,7 @@
  implemented_in="chrome/browser/chromeos/extensions/file_system_provider/file_system_provider_api.h"]
 namespace fileSystemProvider {
   // Error codes used by providing extensions in response to requests. For
-  // success, <code>OK</code> should be used.
+  // success, <code>OK</code> must be used.
   enum ProviderError {
     OK,
     FAILED,
@@ -59,33 +59,53 @@ namespace fileSystemProvider {
 
   // Represents a mounted file system.
   dictionary FileSystemInfo {
+    // The identifier of the file system.
     DOMString fileSystemId;
+
+    // A human-readable name for the file system. 
     DOMString displayName;
+
+    // Whether the file system supports operations which may change contents
+    // of the file system (such as creating, deleting or writing to files).
     [nodoc] boolean writable;
   };
 
   // Options for the <code>mount()</code> method.
   dictionary MountOptions {
+    // The string indentifier of the file system. Must be unique per each
+    // extension.
     DOMString fileSystemId;
+
+    // A human-readable name for the file system. 
     DOMString displayName;
+
+    // Whether the file system supports operations which may change contents
+    // of the file system (such as creating, deleting or writing to files).
     [nodoc] boolean? writable;
   };
 
   // Options for the <code>unmount()</code> method.
   dictionary UnmountOptions {
+    // The identifier of the file system to be unmounted.
     DOMString fileSystemId;
   };
 
   // Options for the <code>onUnmountRequested()</code> event.
   dictionary UnmountRequestedOptions {
+    // The identifier of the file system to be unmounted.
     DOMString fileSystemId;
     long requestId;
   };
 
   // Options for the <code>onGetMetadataRequested()</code> event.
   dictionary GetMetadataRequestedOptions {
+    // The identifier of the file system related to this operation.
     DOMString fileSystemId;
+
+    // The unique identifier of this request.
     long requestId;
+
+    // The path of the entry to fetch metadata about.
     DOMString entryPath;
 
     // Set to <code>true</code> if the thumbnail is requested.
@@ -94,95 +114,176 @@ namespace fileSystemProvider {
 
   // Options for the <code>onReadDirectoryRequested()</code> event.
   dictionary ReadDirectoryRequestedOptions {
+    // The identifier of the file system related to this operation.
     DOMString fileSystemId;
+
+    // The unique identifier of this request.
     long requestId;
+
+    // The path of the directory which contents are requested. 
     DOMString directoryPath;
   };
 
   // Options for the <code>onOpenFileRequested()</code> event.
   dictionary OpenFileRequestedOptions {
+    // The identifier of the file system related to this operation.
     DOMString fileSystemId;
+
+    // A request ID which will be used by consecutive read/write and close
+    // requests.
     long requestId;
+
+    // The path of the file to be opened.
     DOMString filePath;
+
+    // Whether the file will be used for reading or writing.
     OpenFileMode mode;
   };
 
   // Options for the <code>onCloseFileRequested()</code> event.
   dictionary CloseFileRequestedOptions {
+    // The identifier of the file system related to this operation.
     DOMString fileSystemId;
+
+    // The unique identifier of this request.
     long requestId;
+
+    // A request ID used to open the file.
     long openRequestId;
   };
 
   // Options for the <code>onReadFileRequested()</code> event.
   dictionary ReadFileRequestedOptions {
+    // The identifier of the file system related to this operation.
     DOMString fileSystemId;
+
+    // The unique identifier of this request.
     long requestId;
+
+    // A request ID used to open the file.
     long openRequestId;
+
+    // Position in the file (in bytes) to start reading from.
     double offset;
+
+    // Number of bytes to be returned.
     double length;
   };
 
   // Options for the <code>onCreateDirectoryRequested()</code> event.
   dictionary CreateDirectoryRequestedOptions {
+    // The identifier of the file system related to this operation.
     DOMString fileSystemId;
+
+    // The unique identifier of this request.
     long requestId;
+
+    // The path of the directory to be created.
     DOMString directoryPath;
+
+    // Whether the operation is recursive (for directories only).
     boolean recursive;
   };
 
   // Options for the <code>onDeleteEntryRequested()</code> event.
   dictionary DeleteEntryRequestedOptions {
+    // The identifier of the file system related to this operation.
     DOMString fileSystemId;
+
+    // The unique identifier of this request.
     long requestId;
+
+    // The path of the entry to be deleted.
     DOMString entryPath;
+
+    // Whether the operation is recursive (for directories only).
     boolean recursive;
   };
 
   // Options for the <code>onCreateFileRequested()</code> event.
   dictionary CreateFileRequestedOptions {
+    // The identifier of the file system related to this operation.
     DOMString fileSystemId;
+
+    // The unique identifier of this request.
     long requestId;
+
+    // The path of the file to be created.
     DOMString filePath;
   };
 
   // Options for the <code>onCopyEntryRequested()</code> event.
   dictionary CopyEntryRequestedOptions {
+    // The identifier of the file system related to this operation.
     DOMString fileSystemId;
+
+    // The unique identifier of this request.
     long requestId;
+
+    // The source path of the entry to be copied.
     DOMString sourcePath;
+
+    // The destination path for the copy operation.
     DOMString targetPath;
   };
 
   // Options for the <code>onMoveEntryRequested()</code> event.
   dictionary MoveEntryRequestedOptions {
+    // The identifier of the file system related to this operation.
     DOMString fileSystemId;
+
+    // The unique identifier of this request.
     long requestId;
+
+    // The source path of the entry to be moved into a new place.
     DOMString sourcePath;
+
+    // The destination path for the copy operation.
     DOMString targetPath;
   };
 
   // Options for the <code>onTruncateRequested()</code> event.
   dictionary TruncateRequestedOptions {
+    // The identifier of the file system related to this operation.
     DOMString fileSystemId;
+
+    // The unique identifier of this request.
     long requestId;
+
+    // The path of the file to be truncated.
     DOMString filePath;
+
+    // Number of bytes to be retained after the operation completes.
     double length;
   };
 
   // Options for the <code>onWriteFileRequested()</code> event.
   dictionary WriteFileRequestedOptions {
+    // The identifier of the file system related to this operation.
     DOMString fileSystemId;
+
+    // The unique identifier of this request.
     long requestId;
+
+    // A request ID used to open the file.
     long openRequestId;
+
+    // Position in the file (in bytes) to start writing the bytes from.
     double offset;
+
+    // Buffer of bytes to be written to the file.
     ArrayBuffer data;
   };
 
   // Options for the <code>onAbortRequested()</code> event.
   dictionary AbortRequestedOptions {
+    // The identifier of the file system related to this operation.
     DOMString fileSystemId;
+
+    // The unique identifier of this request.
     long requestId;
+
+    // An ID of the request to be aborted.
     long operationRequestId;
   };
 
@@ -224,7 +325,7 @@ namespace fileSystemProvider {
     // displayName</code>. <code>displayName</code> will be shown in the left
     // panel of Files.app. <code>displayName</code> can contain any characters
     // including '/', but cannot be an empty string. <code>displayName</code>
-    // should be descriptive but doesn't have to be unique. Duplicate display
+    // must be descriptive but doesn't have to be unique. Duplicate display
     // names are uniquified by adding suffix like "(1)" in the Files app UI.
     //
     // If a file system with the passed <code>fileSystemId</code> is already
@@ -236,7 +337,7 @@ namespace fileSystemProvider {
                       [nocompile] ErrorCallback errorCallback);
 
     // Unmounts a file system with the given <code>fileSystemId</code>. It
-    // should be called after <code>onUnmountRequested</code> is invoked. Also,
+    // must be called after <code>onUnmountRequested</code> is invoked. Also,
     // the providing extension can decide to perform unmounting if not requested
     // (eg. in case of lost connection, or a file error). If there is no file
     // system with the requested id, or unmounting fails, then the
@@ -252,7 +353,7 @@ namespace fileSystemProvider {
   interface Events {
     // Raised when unmounting for the file system with the <code>fileSystemId
     // </code> identifier is requested. In the response, the <code>unmount
-    // </code> API method should be called together with <code>successCallback
+    // </code> API method must be called together with <code>successCallback
     // </code>. If unmounting is not possible (eg. due to a pending operation),
     // then <code>errorCallback</code> must be called.
     [maxListeners=1] static void onUnmountRequested(
@@ -261,7 +362,7 @@ namespace fileSystemProvider {
         ProviderErrorCallback errorCallback);
 
     // Raised when metadata of a file or a directory at <code>entryPath</code>
-    // is requested. The metadata should be returned with the <code>
+    // is requested. The metadata must be returned with the <code>
     // successCallback</code> call. In case of an error, <code>errorCallback
     // </code> must be called.
     [maxListeners=1] static void onGetMetadataRequested(
@@ -270,7 +371,7 @@ namespace fileSystemProvider {
         ProviderErrorCallback errorCallback);
 
     // Raised when contents of a directory at <code>directoryPath</code> are
-    // requested. The results should be returned in chunks by calling the <code>
+    // requested. The results must be returned in chunks by calling the <code>
     // successCallback</code> several times. In case of an error, <code>
     // errorCallback</code> must be called.
     [maxListeners=1] static void onReadDirectoryRequested(
@@ -293,7 +394,7 @@ namespace fileSystemProvider {
         ProviderErrorCallback errorCallback);
 
     // Raised when reading contents of a file opened previously with <code>
-    // openRequestId</code> is requested. The results should be returned in
+    // openRequestId</code> is requested. The results must be returned in
     // chunks by calling <code>successCallback</code> several times. In case of
     // an error, <code>errorCallback</code> must be called.
     [maxListeners=1] static void onReadFileRequested(
@@ -356,10 +457,10 @@ namespace fileSystemProvider {
 
     // Raised when aborting an operation with <code>operationRequestId</code>
     // is requested. The operation executed with <code>operationRequestId</code>
-    // should be immediately stopped and <code>successCallback</code> of this
+    // must be immediately stopped and <code>successCallback</code> of this
     // abort request executed. If aborting fails, then <code>errorCallback
     // </code> must be called. Note, that callbacks of the aborted operation
-    // should not be called, as they will be ignored. Despite calling <code>
+    // must not be called, as they will be ignored. Despite calling <code>
     // errorCallback</code>, the request may be forcibly aborted. 
     [maxListeners=1, nodoc] static void onAbortRequested(
         AbortRequestedOptions options,
