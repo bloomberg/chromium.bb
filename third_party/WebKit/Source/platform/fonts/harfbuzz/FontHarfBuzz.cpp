@@ -48,11 +48,6 @@
 
 namespace blink {
 
-bool FontPlatformFeatures::canReturnFallbackFontsForComplexText()
-{
-    return false;
-}
-
 bool FontPlatformFeatures::canExpandAroundIdeographsInComplexText()
 {
     return false;
@@ -269,9 +264,9 @@ float Font::getGlyphsAndAdvancesForComplexText(const TextRunPaintInfo& runInfo, 
     return 0;
 }
 
-float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* /* fallbackFonts */, IntRectExtent* glyphBounds) const
+float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, IntRectExtent* glyphBounds) const
 {
-    HarfBuzzShaper shaper(this, run);
+    HarfBuzzShaper shaper(this, run, HarfBuzzShaper::NotForTextEmphasis, fallbackFonts);
     if (!shaper.shape())
         return 0;
 

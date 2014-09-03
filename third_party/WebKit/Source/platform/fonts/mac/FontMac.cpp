@@ -44,11 +44,6 @@
 
 namespace blink {
 
-bool FontPlatformFeatures::canReturnFallbackFontsForComplexText()
-{
-    return true;
-}
-
 bool FontPlatformFeatures::canExpandAroundIdeographsInComplexText()
 {
     return true;

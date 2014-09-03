@@ -154,9 +154,6 @@ float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFo
 {
     CodePath codePathToUse = codePath(run);
     if (codePathToUse != ComplexPath) {
-        // The complex path is more restrictive about returning fallback fonts than the simple path, so we need an explicit test to make their behaviors match.
-        if (!FontPlatformFeatures::canReturnFallbackFontsForComplexText())
-            fallbackFonts = 0;
         // The simple path can optimize the case where glyph overflow is not observable.
         if (codePathToUse != SimpleWithGlyphOverflowPath && (glyphOverflow && !glyphOverflow->computeBounds))
             glyphOverflow = 0;

@@ -37,7 +37,6 @@ namespace blink {
 
 class FontPlatformFeatures {
 public:
-    static bool canReturnFallbackFontsForComplexText();
     static bool canExpandAroundIdeographsInComplexText();
 
 private:

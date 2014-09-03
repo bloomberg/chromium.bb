@@ -56,7 +56,7 @@ public:
         ForTextEmphasis
     };
 
-    HarfBuzzShaper(const Font*, const TextRun&, ForTextEmphasisOrNot = NotForTextEmphasis);
+    HarfBuzzShaper(const Font*, const TextRun&, ForTextEmphasisOrNot = NotForTextEmphasis, HashSet<const SimpleFontData*>* fallbackFonts = 0);
 
     void setDrawRange(int from, int to);
     bool shape(GlyphBuffer* = 0);
@@ -158,6 +158,7 @@ private:
 
     float m_totalWidth;
     FloatBoxExtent m_glyphBoundingBox;
+    HashSet<const SimpleFontData*>* m_fallbackFonts;
 
     friend struct CachedShapingResults;
 };
