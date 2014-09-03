@@ -6,6 +6,8 @@
 #include "public/platform/WebServiceWorkerRequest.h"
 
 #include "platform/blob/BlobData.h"
+#include "platform/weborigin/KURL.h"
+#include "public/platform/WebHTTPHeaderVisitor.h"
 
 namespace blink {
 
@@ -63,6 +65,12 @@ void WebServiceWorkerRequest::setHeader(const WebString& key, const WebString& v
     m_private->m_headers.add(key, value);
 }
 
+void WebServiceWorkerRequest::visitHTTPHeaderFields(WebHTTPHeaderVisitor* headerVisitor) const
+{
+    for (HTTPHeaderMap::const_iterator i = m_private->m_headers.begin(), end = m_private->m_headers.end(); i != end; ++i)
+        headerVisitor->visitHeader(i->key, i->value);
+}
+
 const HTTPHeaderMap& WebServiceWorkerRequest::headers() const
 {
     return m_private->m_headers;
@@ -81,6 +89,16 @@ PassRefPtr<BlobDataHandle> WebServiceWorkerRequest::blobDataHandle() const
 void WebServiceWorkerRequest::setReferrer(const WebString& referrer, WebReferrerPolicy referrerPolicy)
 {
     m_private->m_referrer = Referrer(referrer, static_cast<ReferrerPolicy>(referrerPolicy));
+}
+
+WebURL WebServiceWorkerRequest::referrerUrl() const
+{
+    return KURL(ParsedURLString, m_private->m_referrer.referrer);
+}
+
+WebReferrerPolicy WebServiceWorkerRequest::referrerPolicy() const
+{
+    return static_cast<WebReferrerPolicy>(m_private->m_referrer.referrerPolicy);
 }
 
 const Referrer& WebServiceWorkerRequest::referrer() const

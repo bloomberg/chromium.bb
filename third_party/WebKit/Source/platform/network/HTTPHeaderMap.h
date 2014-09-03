@@ -64,7 +64,8 @@ public:
     AddResult set(const AtomicString& k, const AtomicString& v) { return m_headers.set(k, v); }
     AddResult add(const AtomicString& k, const AtomicString& v) { return m_headers.add(k, v); }
     void remove(const AtomicString& k) { m_headers.remove(k); }
-    bool operator!=(const HTTPHeaderMap &rhs) const { return m_headers != rhs.m_headers; }
+    bool operator!=(const HTTPHeaderMap& rhs) const { return m_headers != rhs.m_headers; }
+    bool operator==(const HTTPHeaderMap& rhs) const { return m_headers == rhs.m_headers; }
 
     // Alternate accessors that are faster than converting the char* to AtomicString first.
     bool contains(const char*) const;

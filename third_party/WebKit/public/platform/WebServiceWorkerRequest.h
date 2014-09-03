@@ -22,15 +22,15 @@
 namespace blink {
 
 class BlobDataHandle;
+class WebHTTPHeaderVisitor;
 class WebServiceWorkerRequestPrivate;
 
-// Represents a request of a fetch operation. FetchEvent dispatched by the
-// browser contains this. The plan is for the Cache and fetch() API to also use
-// it.
+// Represents a request for a web resource.
 class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
 public:
     ~WebServiceWorkerRequest() { reset(); }
     WebServiceWorkerRequest();
+    WebServiceWorkerRequest(const WebServiceWorkerRequest& other) { assign(other); }
     WebServiceWorkerRequest& operator=(const WebServiceWorkerRequest& other)
     {
         assign(other);
@@ -47,10 +47,13 @@ public:
     WebString method() const;
 
     void setHeader(const WebString& key, const WebString& value);
+    void visitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
 
     void setBlob(const WebString& uuid, long long size);
 
     void setReferrer(const WebString&, WebReferrerPolicy);
+    WebURL referrerUrl() const;
+    WebReferrerPolicy referrerPolicy() const;
 
     void setIsReload(bool);
     bool isReload() const;

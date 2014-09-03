@@ -32,9 +32,7 @@ public:
     static PassRefPtrWillBeRawPtr<Request> create(ExecutionContext*, const String&, const Dictionary&, ExceptionState&);
     static PassRefPtrWillBeRawPtr<Request> create(ExecutionContext*, Request*, ExceptionState&);
     static PassRefPtrWillBeRawPtr<Request> create(ExecutionContext*, Request*, const Dictionary&, ExceptionState&);
-
     static PassRefPtrWillBeRawPtr<Request> create(PassRefPtrWillBeRawPtr<FetchRequestData>);
-
     static PassRefPtrWillBeRawPtr<Request> create(const WebServiceWorkerRequest&);
 
     PassRefPtrWillBeRawPtr<FetchRequestData> request() { return m_request; }
@@ -46,6 +44,8 @@ public:
     String referrer() const;
     String mode() const;
     String credentials() const;
+
+    void populateWebServiceWorkerRequest(WebServiceWorkerRequest&);
 
     void setBodyBlobHandle(PassRefPtr<BlobDataHandle>);
 

@@ -12,6 +12,7 @@
 #include "core/loader/ThreadableLoader.h"
 #include "core/xml/XMLHttpRequest.h"
 #include "modules/serviceworkers/FetchManager.h"
+#include "modules/serviceworkers/HeadersForEachCallback.h"
 #include "modules/serviceworkers/RequestInit.h"
 #include "platform/NotImplemented.h"
 #include "platform/network/HTTPParsers.h"
@@ -22,6 +23,26 @@
 namespace blink {
 
 namespace {
+
+class FillWebRequestHeaders : public HeadersForEachCallback {
+public:
+    FillWebRequestHeaders(WebServiceWorkerRequest* webRequest) : m_webRequest(webRequest) { }
+
+    virtual bool handleItem(ScriptValue, const String&, const String&, Headers*)
+    {
+        ASSERT_NOT_REACHED();
+        return false;
+    }
+
+    virtual bool handleItem(const String& value, const String& key, Headers*)
+    {
+        m_webRequest->setHeader(key, value);
+        return true;
+    }
+
+private:
+    WebServiceWorkerRequest* m_webRequest;
+};
 
 PassRefPtrWillBeRawPtr<Request> createRequestWithRequestData(PassRefPtrWillBeRawPtr<FetchRequestData> request, const RequestInit& init, FetchRequestData::Mode mode, FetchRequestData::Credentials credentials, ExceptionState& exceptionState)
 {
@@ -281,6 +302,16 @@ String Request::credentials() const
     }
     ASSERT_NOT_REACHED();
     return "";
+}
+
+void Request::populateWebServiceWorkerRequest(WebServiceWorkerRequest& webRequest)
+{
+    webRequest.setMethod(method());
+    webRequest.setURL(m_request->url());
+    m_headers->forEach(adoptPtr(new FillWebRequestHeaders(&webRequest)));
+    webRequest.setReferrer(m_request->referrer().referrer().referrer, static_cast<WebReferrerPolicy>(m_request->referrer().referrer().referrerPolicy));
+    // FIXME: How can we set isReload properly? What is the correct place to load it in to the Request object? We should investigate the right way
+    // to plumb this information in to here.
 }
 
 void Request::setBodyBlobHandle(PassRefPtr<BlobDataHandle>blobHandle)
