@@ -35,19 +35,4 @@ static INLINE intptr_t NaClXlateSysRet(intptr_t rv) {
   return (rv != -1) ? rv : -NaClXlateErrno(errno);
 }
 
-
-/*
- * TODO(bsy): NaClXlateSysRetDesc to register returned descriptor in the
- * app's open descriptor table, wrapping it in a native descriptor
- * object.
- */
-
-static INLINE intptr_t NaClXlateSysRetAddr(struct NaClApp *nap,
-                                           intptr_t       rv) {
-  /* if rv is a bad address, we abort */
-  return ((rv != -1)
-          ? (int32_t) NaClSysToUser(nap, rv)
-          : -NaClXlateErrno(errno));
-}
-
 #endif
