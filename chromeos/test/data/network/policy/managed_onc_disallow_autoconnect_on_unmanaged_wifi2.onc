@@ -1,0 +1,21 @@
+{
+   "Name": {
+      "Active": "wifi2"
+   },
+   "Type": {
+      "Active": "WiFi"
+   },
+   "WiFi": {
+      "AutoConnect": {
+         "Active": false,
+         "Effective": "UserPolicy",
+         "UserPolicy": false
+      },
+      "SSID": {
+         "Active": "wifi2"
+      },
+      "Security": {
+         "Active": "WPA-PSK"
+      }
+   }
+}

@@ -172,8 +172,11 @@ void PolicyApplicator::GetEntryCallback(
       const base::DictionaryValue* user_settings =
           ui_data ? ui_data->user_settings() : NULL;
       scoped_ptr<base::DictionaryValue> new_shill_properties =
-          policy_util::CreateShillConfiguration(
-              profile_, new_guid, new_policy, user_settings);
+          policy_util::CreateShillConfiguration(profile_,
+                                                new_guid,
+                                                &global_network_config_,
+                                                new_policy,
+                                                user_settings);
       // A new policy has to be applied to this profile entry. In order to keep
       // implicit state of Shill like "connected successfully before", keep the
       // entry if a policy is reapplied (e.g. after reboot) or is updated.
@@ -204,7 +207,8 @@ void PolicyApplicator::GetEntryCallback(
       // At first ENTRY1 and ENTRY2 should be removed, then the new config be
       // written and the result should be:
       // { {GUID=X, SSID=Y, USER_SETTINGS=X} }
-      WriteNewShillConfiguration(*new_shill_properties, *new_policy, true);
+      WriteNewShillConfiguration(
+          *new_shill_properties, *new_policy, true /* write later */);
       remaining_policies_.erase(new_guid);
     }
   } else if (was_managed) {
@@ -219,8 +223,8 @@ void PolicyApplicator::GetEntryCallback(
     // The entry wasn't managed and doesn't match any current policy. Global
     // network settings have to be applied.
     base::DictionaryValue shill_properties_to_update;
-    GetPropertiesForUnmanagedEntry(entry_properties,
-                                   &shill_properties_to_update);
+    policy_util::SetShillPropertiesForGlobalPolicy(
+        entry_properties, global_network_config_, &shill_properties_to_update);
     if (shill_properties_to_update.empty()) {
       VLOG(2) << "Ignore unmanaged entry.";
       // Calling a SetProperties of Shill with an empty dictionary is a no op.
@@ -266,37 +270,6 @@ void PolicyApplicator::WriteNewShillConfiguration(
     handler_->CreateConfigurationFromPolicy(shill_dictionary);
 }
 
-void PolicyApplicator::GetPropertiesForUnmanagedEntry(
-    const base::DictionaryValue& entry_properties,
-    base::DictionaryValue* properties_to_update) const {
-  // kAllowOnlyPolicyNetworksToAutoconnect is currently the only global config.
-
-  std::string type;
-  entry_properties.GetStringWithoutPathExpansion(shill::kTypeProperty, &type);
-  if (NetworkTypePattern::Ethernet().MatchesType(type))
-    return;  // Autoconnect for Ethernet cannot be configured.
-
-  // By default all networks are allowed to autoconnect.
-  bool only_policy_autoconnect = false;
-  global_network_config_.GetBooleanWithoutPathExpansion(
-      ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
-      &only_policy_autoconnect);
-  if (!only_policy_autoconnect)
-    return;
-
-  bool old_autoconnect = false;
-  if (entry_properties.GetBooleanWithoutPathExpansion(
-          shill::kAutoConnectProperty, &old_autoconnect) &&
-      !old_autoconnect) {
-    // Autoconnect is already explictly disabled. No need to set it again.
-    return;
-  }
-  // If autconnect is not explicitly set yet, it might automatically be enabled
-  // by Shill. To prevent that, disable it explicitly.
-  properties_to_update->SetBooleanWithoutPathExpansion(
-      shill::kAutoConnectProperty, false);
-}
-
 PolicyApplicator::~PolicyApplicator() {
   ApplyRemainingPolicies();
   STLDeleteValues(&all_policies_);
@@ -331,16 +304,20 @@ void PolicyApplicator::ApplyRemainingPolicies() {
   // remaining policies, new configurations have to be created.
   for (std::set<std::string>::iterator it = remaining_policies_.begin();
        it != remaining_policies_.end(); ++it) {
-    const base::DictionaryValue* policy = GetByGUID(all_policies_, *it);
-    DCHECK(policy);
+    const base::DictionaryValue* network_policy = GetByGUID(all_policies_, *it);
+    DCHECK(network_policy);
 
     VLOG(1) << "Creating new configuration managed by policy " << *it
             << " in profile " << profile_.ToDebugString() << ".";
 
     scoped_ptr<base::DictionaryValue> shill_dictionary =
-        policy_util::CreateShillConfiguration(
-            profile_, *it, policy, NULL /* no user settings */);
-    WriteNewShillConfiguration(*shill_dictionary, *policy, false);
+        policy_util::CreateShillConfiguration(profile_,
+                                              *it,
+                                              &global_network_config_,
+                                              network_policy,
+                                              NULL /* no user settings */);
+    WriteNewShillConfiguration(
+        *shill_dictionary, *network_policy, false /* write now */);
   }
 }
 

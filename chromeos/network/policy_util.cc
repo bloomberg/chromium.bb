@@ -125,26 +125,172 @@ bool IsPolicyMatching(const base::DictionaryValue& policy,
   return false;
 }
 
+base::DictionaryValue* GetOrCreateDictionary(const std::string& key,
+                                             base::DictionaryValue* dict) {
+  base::DictionaryValue* inner_dict = NULL;
+  if (!dict->GetDictionaryWithoutPathExpansion(key, &inner_dict)) {
+    inner_dict = new base::DictionaryValue;
+    dict->SetWithoutPathExpansion(key, inner_dict);
+  }
+  return inner_dict;
+}
+
+base::DictionaryValue* GetOrCreateNestedDictionary(
+    const std::string& key1,
+    const std::string& key2,
+    base::DictionaryValue* dict) {
+  base::DictionaryValue* inner_dict = GetOrCreateDictionary(key1, dict);
+  return GetOrCreateDictionary(key2, inner_dict);
+}
+
+void ApplyGlobalAutoconnectPolicy(
+    NetworkProfile::Type profile_type,
+    base::DictionaryValue* augmented_onc_network) {
+  base::DictionaryValue* type_dictionary = NULL;
+  augmented_onc_network->GetDictionaryWithoutPathExpansion(
+      ::onc::network_config::kType, &type_dictionary);
+  std::string type;
+  if (!type_dictionary ||
+      !type_dictionary->GetStringWithoutPathExpansion(
+          ::onc::kAugmentationActiveSetting, &type) ||
+      type.empty()) {
+    LOG(ERROR) << "ONC dictionary with no Type.";
+    return;
+  }
+
+  // Managed dictionaries don't contain empty dictionaries (see onc_merger.cc),
+  // so add the Autoconnect dictionary in case Shill didn't report a value.
+  base::DictionaryValue* auto_connect_dictionary = NULL;
+  if (type == ::onc::network_type::kWiFi) {
+    auto_connect_dictionary =
+        GetOrCreateNestedDictionary(::onc::network_config::kWiFi,
+                                    ::onc::wifi::kAutoConnect,
+                                    augmented_onc_network);
+  } else if (type == ::onc::network_type::kVPN) {
+    auto_connect_dictionary =
+        GetOrCreateNestedDictionary(::onc::network_config::kVPN,
+                                    ::onc::vpn::kAutoConnect,
+                                    augmented_onc_network);
+  } else {
+    return;  // Network type without auto-connect property.
+  }
+
+  std::string policy_source;
+  if (profile_type == NetworkProfile::TYPE_USER)
+    policy_source = ::onc::kAugmentationUserPolicy;
+  else if(profile_type == NetworkProfile::TYPE_SHARED)
+    policy_source = ::onc::kAugmentationDevicePolicy;
+  else
+    NOTREACHED();
+
+  auto_connect_dictionary->SetBooleanWithoutPathExpansion(policy_source, false);
+  auto_connect_dictionary->SetStringWithoutPathExpansion(
+      ::onc::kAugmentationEffectiveSetting, policy_source);
+}
+
 }  // namespace
+
+scoped_ptr<base::DictionaryValue> CreateManagedONC(
+    const base::DictionaryValue* global_policy,
+    const base::DictionaryValue* network_policy,
+    const base::DictionaryValue* user_settings,
+    const base::DictionaryValue* active_settings,
+    const NetworkProfile* profile) {
+  const base::DictionaryValue* user_policy = NULL;
+  const base::DictionaryValue* device_policy = NULL;
+  const base::DictionaryValue* nonshared_user_settings = NULL;
+  const base::DictionaryValue* shared_user_settings = NULL;
+
+  if (profile) {
+    if (profile->type() == NetworkProfile::TYPE_SHARED) {
+      device_policy = network_policy;
+      shared_user_settings = user_settings;
+    } else if (profile->type() == NetworkProfile::TYPE_USER) {
+      user_policy = network_policy;
+      nonshared_user_settings = user_settings;
+    } else {
+      NOTREACHED();
+    }
+  }
+
+  // This call also removes credentials from policies.
+  scoped_ptr<base::DictionaryValue> augmented_onc_network =
+      onc::MergeSettingsAndPoliciesToAugmented(
+          onc::kNetworkConfigurationSignature,
+          user_policy,
+          device_policy,
+          nonshared_user_settings,
+          shared_user_settings,
+          active_settings);
+
+  // If present, apply the Autoconnect policy only to networks that are not
+  // managed by policy.
+  if (!network_policy && global_policy && profile) {
+    bool allow_only_policy_autoconnect = false;
+    global_policy->GetBooleanWithoutPathExpansion(
+        ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
+        &allow_only_policy_autoconnect);
+    if (allow_only_policy_autoconnect) {
+      ApplyGlobalAutoconnectPolicy(profile->type(),
+                                   augmented_onc_network.get());
+    }
+  }
+
+  return augmented_onc_network.Pass();
+}
+
+void SetShillPropertiesForGlobalPolicy(
+    const base::DictionaryValue& shill_dictionary,
+    const base::DictionaryValue& global_network_policy,
+    base::DictionaryValue* shill_properties_to_update) {
+  // kAllowOnlyPolicyNetworksToAutoconnect is currently the only global config.
+
+  std::string type;
+  shill_dictionary.GetStringWithoutPathExpansion(shill::kTypeProperty, &type);
+  if (NetworkTypePattern::Ethernet().MatchesType(type))
+    return;  // Autoconnect for Ethernet cannot be configured.
+
+  // By default all networks are allowed to autoconnect.
+  bool only_policy_autoconnect = false;
+  global_network_policy.GetBooleanWithoutPathExpansion(
+      ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
+      &only_policy_autoconnect);
+  if (!only_policy_autoconnect)
+    return;
+
+  bool old_autoconnect = false;
+  if (shill_dictionary.GetBooleanWithoutPathExpansion(
+          shill::kAutoConnectProperty, &old_autoconnect) &&
+      !old_autoconnect) {
+    // Autoconnect is already explictly disabled. No need to set it again.
+    return;
+  }
+
+  // If autconnect is not explicitly set yet, it might automatically be enabled
+  // by Shill. To prevent that, disable it explicitly.
+  shill_properties_to_update->SetBooleanWithoutPathExpansion(
+      shill::kAutoConnectProperty, false);
+}
 
 scoped_ptr<base::DictionaryValue> CreateShillConfiguration(
     const NetworkProfile& profile,
     const std::string& guid,
-    const base::DictionaryValue* policy,
+    const base::DictionaryValue* global_policy,
+    const base::DictionaryValue* network_policy,
     const base::DictionaryValue* user_settings) {
   scoped_ptr<base::DictionaryValue> effective;
   ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_NONE;
-  if (policy) {
+  if (network_policy) {
     if (profile.type() == NetworkProfile::TYPE_SHARED) {
       effective = onc::MergeSettingsAndPoliciesToEffective(
           NULL,  // no user policy
-          policy,  // device policy
+          network_policy,  // device policy
           NULL,  // no user settings
           user_settings);  // shared settings
       onc_source = ::onc::ONC_SOURCE_DEVICE_POLICY;
     } else if (profile.type() == NetworkProfile::TYPE_USER) {
       effective = onc::MergeSettingsAndPoliciesToEffective(
-          policy,  // user policy
+          network_policy,  // user policy
           NULL,  // no device policy
           user_settings,  // user settings
           NULL);  // no shared settings
@@ -177,6 +323,12 @@ scoped_ptr<base::DictionaryValue> CreateShillConfiguration(
 
   shill_dictionary->SetStringWithoutPathExpansion(shill::kProfileProperty,
                                                   profile.path);
+
+  if (!network_policy && global_policy) {
+    // The network isn't managed. Global network policies have to be applied.
+    SetShillPropertiesForGlobalPolicy(
+        *shill_dictionary, *global_policy, shill_dictionary.get());
+  }
 
   scoped_ptr<NetworkUIData> ui_data(NetworkUIData::CreateFromONC(onc_source));
 

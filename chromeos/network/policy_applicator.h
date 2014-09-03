@@ -80,14 +80,6 @@ class PolicyApplicator : public base::RefCounted<PolicyApplicator> {
                                   const base::DictionaryValue& policy,
                                   bool write_later);
 
-  // Adds properties to |properties_to_update|, which are enforced on an
-  // unamaged network by the global network config of the policy.
-  // |entry_properties| are the network's current properties read from its
-  // profile entry.
-  void GetPropertiesForUnmanagedEntry(
-      const base::DictionaryValue& entry_properties,
-      base::DictionaryValue* properties_to_update) const;
-
   // Called once all Profile entries are processed. Calls
   // ApplyRemainingPolicies.
   virtual ~PolicyApplicator();

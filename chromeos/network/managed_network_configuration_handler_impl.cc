@@ -149,15 +149,9 @@ void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
       shill_property_util::GetUIDataFromProperties(*shill_properties);
 
   const base::DictionaryValue* user_settings = NULL;
-  const base::DictionaryValue* shared_settings = NULL;
 
   if (ui_data && profile) {
-    if (profile->type() == NetworkProfile::TYPE_SHARED)
-      shared_settings = ui_data->user_settings();
-    else if (profile->type() == NetworkProfile::TYPE_USER)
-      user_settings = ui_data->user_settings();
-    else
-      NOTREACHED();
+    user_settings = ui_data->user_settings();
   } else if (profile) {
     NET_LOG_ERROR("Service contains empty or invalid UIData", service_path);
     // TODO(pneubeck): add a conversion of user configured entries of old
@@ -174,34 +168,26 @@ void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
   active_settings->GetStringWithoutPathExpansion(::onc::network_config::kGUID,
                                                  &guid);
 
-  const base::DictionaryValue* user_policy = NULL;
-  const base::DictionaryValue* device_policy = NULL;
-  if (!guid.empty() && profile) {
+  const base::DictionaryValue* network_policy = NULL;
+  const base::DictionaryValue* global_policy = NULL;
+  if (profile) {
     const Policies* policies = GetPoliciesForProfile(*profile);
     if (!policies) {
       InvokeErrorCallback(
           service_path, error_callback, kPoliciesNotInitialized);
       return;
     }
-    const base::DictionaryValue* policy =
-        GetByGUID(policies->per_network_config, guid);
-    if (profile->type() == NetworkProfile::TYPE_SHARED)
-      device_policy = policy;
-    else if (profile->type() == NetworkProfile::TYPE_USER)
-      user_policy = policy;
-    else
-      NOTREACHED();
+    if (!guid.empty())
+      network_policy = GetByGUID(policies->per_network_config, guid);
+    global_policy = &policies->global_network_config;
   }
 
-  // This call also removes credentials from policies.
-  scoped_ptr<base::DictionaryValue> augmented_properties =
-      onc::MergeSettingsAndPoliciesToAugmented(
-          onc::kNetworkConfigurationSignature,
-          user_policy,
-          device_policy,
-          user_settings,
-          shared_settings,
-          active_settings.get());
+  scoped_ptr<base::DictionaryValue> augmented_properties(
+      policy_util::CreateManagedONC(global_policy,
+                                    network_policy,
+                                    user_settings,
+                                    active_settings.get(),
+                                    profile));
   callback.Run(service_path, *augmented_properties);
 }
 
@@ -297,13 +283,17 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
   if (validation_result == onc::Validator::VALID_WITH_WARNINGS)
     LOG(WARNING) << "Validation of ONC user settings produced warnings.";
 
-  const base::DictionaryValue* policy =
+  const base::DictionaryValue* network_policy =
       GetByGUID(policies->per_network_config, guid);
-  VLOG(2) << "This configuration is " << (policy ? "" : "not ") << "managed.";
+  VLOG(2) << "This configuration is " << (network_policy ? "" : "not ")
+          << "managed.";
 
   scoped_ptr<base::DictionaryValue> shill_dictionary(
-      policy_util::CreateShillConfiguration(
-          *profile, guid, policy, validated_user_settings.get()));
+      policy_util::CreateShillConfiguration(*profile,
+                                            guid,
+                                            &policies->global_network_config,
+                                            network_policy,
+                                            validated_user_settings.get()));
 
   network_configuration_handler_->SetProperties(
       service_path, *shill_dictionary, callback, error_callback);
@@ -341,8 +331,11 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
   // in |properties| as it is not our own and from an untrusted source.
   std::string guid = base::GenerateGUID();
   scoped_ptr<base::DictionaryValue> shill_dictionary(
-      policy_util::CreateShillConfiguration(
-          *profile, guid, NULL /*no policy*/, &properties));
+      policy_util::CreateShillConfiguration(*profile,
+                                            guid,
+                                            NULL,  // no global policy
+                                            NULL,  // no network policy
+                                            &properties));
 
   network_configuration_handler_->CreateConfiguration(
       *shill_dictionary, callback, error_callback);

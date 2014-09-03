@@ -14,6 +14,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/mock_shill_manager_client.h"
 #include "chromeos/dbus/mock_shill_profile_client.h"
+#include "chromeos/dbus/mock_shill_service_client.h"
 #include "chromeos/dbus/shill_client_helper.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_configuration_handler.h"
@@ -130,6 +131,27 @@ class ShillProfileTestClient {
   std::map<std::string, std::string> profile_to_user_;
 };
 
+class ShillServiceTestClient {
+ public:
+  typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;
+  void SetFakeProperties(const base::DictionaryValue& service_properties) {
+    service_properties_.Clear();
+    service_properties_.MergeDictionary(&service_properties);
+  }
+
+  void GetProperties(const dbus::ObjectPath& service_path,
+                     const DictionaryValueCallback& callback) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   DBUS_METHOD_CALL_SUCCESS,
+                   base::ConstRef(service_properties_)));
+  }
+
+ protected:
+  base::DictionaryValue service_properties_;
+};
+
 class TestNetworkProfileHandler : public NetworkProfileHandler {
  public:
   TestNetworkProfileHandler() {
@@ -151,7 +173,8 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
  public:
   ManagedNetworkConfigurationHandlerTest()
       : mock_manager_client_(NULL),
-        mock_profile_client_(NULL) {
+        mock_profile_client_(NULL),
+        mock_service_client_(NULL) {
   }
 
   virtual ~ManagedNetworkConfigurationHandlerTest() {
@@ -162,10 +185,13 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
         DBusThreadManager::GetSetterForTesting();
     mock_manager_client_ = new StrictMock<MockShillManagerClient>();
     mock_profile_client_ = new StrictMock<MockShillProfileClient>();
+    mock_service_client_ = new StrictMock<MockShillServiceClient>();
     dbus_setter->SetShillManagerClient(
         scoped_ptr<ShillManagerClient>(mock_manager_client_).Pass());
     dbus_setter->SetShillProfileClient(
         scoped_ptr<ShillProfileClient>(mock_profile_client_).Pass());
+    dbus_setter->SetShillServiceClient(
+        scoped_ptr<ShillServiceClient>(mock_service_client_).Pass());
 
     SetNetworkConfigurationHandlerExpectations();
 
@@ -176,6 +202,10 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     ON_CALL(*mock_profile_client_, GetEntry(_,_,_,_))
         .WillByDefault(Invoke(&profiles_stub_,
                               &ShillProfileTestClient::GetEntry));
+
+    ON_CALL(*mock_service_client_, GetProperties(_,_))
+        .WillByDefault(Invoke(&services_stub_,
+                              &ShillServiceTestClient::GetProperties));
 
     network_profile_handler_.reset(new TestNetworkProfileHandler());
     network_configuration_handler_.reset(
@@ -209,9 +239,12 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     profiles_stub_.AddProfile(kUser1ProfilePath, kUser1);
     network_profile_handler_->
         AddProfileForTest(NetworkProfile(kUser1ProfilePath, kUser1));
-    network_profile_handler_->
-        AddProfileForTest(NetworkProfile(
-            NetworkProfileHandler::GetSharedProfilePath(), std::string()));
+
+    profiles_stub_.AddProfile(NetworkProfileHandler::GetSharedProfilePath(),
+                              std::string() /* no userhash */);
+    network_profile_handler_->AddProfileForTest(
+        NetworkProfile(NetworkProfileHandler::GetSharedProfilePath(),
+                       std::string() /* no userhash */));
   }
 
   void SetUpEntry(const std::string& path_to_shill_json,
@@ -259,15 +292,43 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     return managed_network_configuration_handler_.get();
   }
 
+  void GetManagedProperties(const std::string& userhash,
+                            const std::string& service_path) {
+    managed_handler()->GetManagedProperties(
+        userhash,
+        service_path,
+        base::Bind(
+            &ManagedNetworkConfigurationHandlerTest::GetPropertiesCallback,
+            base::Unretained(this)),
+        base::Bind(&ManagedNetworkConfigurationHandlerTest::UnexpectedError));
+  }
+
+  void GetPropertiesCallback(const std::string& service_path,
+                             const base::DictionaryValue& dictionary) {
+    get_properties_service_path_ = service_path;
+    get_properties_result_.Clear();
+    get_properties_result_.MergeDictionary(&dictionary);
+  }
+
+  static void UnexpectedError(const std::string& error_name,
+                              scoped_ptr<base::DictionaryValue> error_data) {
+    ASSERT_FALSE(true);
+  }
+
  protected:
   MockShillManagerClient* mock_manager_client_;
   MockShillProfileClient* mock_profile_client_;
+  MockShillServiceClient* mock_service_client_;
   ShillProfileTestClient profiles_stub_;
+  ShillServiceTestClient services_stub_;
   scoped_ptr<TestNetworkProfileHandler> network_profile_handler_;
   scoped_ptr<NetworkConfigurationHandler> network_configuration_handler_;
   scoped_ptr<ManagedNetworkConfigurationHandlerImpl>
         managed_network_configuration_handler_;
   base::MessageLoop message_loop_;
+
+  std::string get_properties_service_path_;
+  base::DictionaryValue get_properties_result_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ManagedNetworkConfigurationHandlerTest);
@@ -660,10 +721,13 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmanaged) {
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, AutoConnectDisallowed) {
   InitializeStandardProfiles();
+  // Setup an unmanaged network.
   SetUpEntry("policy/shill_unmanaged_wifi2.json",
              kUser1ProfilePath,
              "wifi2_entry_path");
 
+  // Apply the user policy with global autoconnect config and expect that
+  // autoconnect is disabled in the network's profile entry.
   EXPECT_CALL(*mock_profile_client_,
               GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
 
@@ -685,6 +749,38 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, AutoConnectDisallowed) {
             kUser1,
             "policy/policy_disallow_autoconnect.onc");
   message_loop_.RunUntilIdle();
+
+  // Verify that GetManagedProperties correctly augments the properties with the
+  // global config from the user policy.
+
+  // GetManagedProperties requires the device policy to be set or explicitly
+  // unset.
+  EXPECT_CALL(*mock_profile_client_,
+              GetProperties(dbus::ObjectPath(
+                                NetworkProfileHandler::GetSharedProfilePath()),
+                            _,
+                            _));
+  managed_handler()->SetPolicy(
+      ::onc::ONC_SOURCE_DEVICE_POLICY,
+      std::string(),             // no userhash
+      base::ListValue(),         // no device network policy
+      base::DictionaryValue());  // no device global config
+
+  services_stub_.SetFakeProperties(*expected_shill_properties);
+  EXPECT_CALL(*mock_service_client_,
+              GetProperties(dbus::ObjectPath(
+                                "wifi2"),_));
+
+  GetManagedProperties(kUser1, "wifi2");
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ("wifi2", get_properties_service_path_);
+
+  scoped_ptr<base::DictionaryValue> expected_managed_onc =
+      test_utils::ReadTestDictionary(
+          "policy/managed_onc_disallow_autoconnect_on_unmanaged_wifi2.onc");
+  EXPECT_TRUE(onc::test_utils::Equals(expected_managed_onc.get(),
+                                      &get_properties_result_));
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, LateProfileLoading) {
