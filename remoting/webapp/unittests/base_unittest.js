@@ -232,4 +232,45 @@ test('removeEventListener() should work even if the listener ' +
     sinon.assert.calledOnce(sink.listener);
 });
 
+test('encodeUtf8() can encode UTF8 strings', function() {
+  function toJsArray(arrayBuffer) {
+    var result = [];
+    var array = new Uint8Array(arrayBuffer);
+    for (var i = 0; i < array.length; ++i) {
+      result.push(array[i]);
+    }
+    return result;
+  }
+
+  // ASCII.
+  QUnit.deepEqual(toJsArray(base.encodeUtf8("ABC")), [0x41, 0x42, 0x43]);
+
+  // Some arbitrary characters from the basic Unicode plane.
+  QUnit.deepEqual(
+      toJsArray(base.encodeUtf8("挂Ѓф")),
+      [/* 挂 */ 0xE6, 0x8C, 0x82, /* Ѓ */ 0xD0, 0x83, /* ф */ 0xD1, 0x84]);
+
+  // Unicode surrogate pair for U+1F603.
+  QUnit.deepEqual(toJsArray(base.encodeUtf8("😃")),
+                  [0xF0, 0x9F, 0x98, 0x83]);
+});
+
+test('decodeUtf8() can decode UTF8 strings', function() {
+  // ASCII.
+  QUnit.equal(base.decodeUtf8(new Uint8Array([0x41, 0x42, 0x43]).buffer),
+              "ABC");
+
+  // Some arbitrary characters from the basic Unicode plane.
+  QUnit.equal(
+      base.decodeUtf8(
+          new Uint8Array([/* 挂 */ 0xE6, 0x8C, 0x82,
+                          /* Ѓ */ 0xD0, 0x83,
+                          /* ф */ 0xD1, 0x84]).buffer),
+      "挂Ѓф");
+
+  // Unicode surrogate pair for U+1F603.
+  QUnit.equal(base.decodeUtf8(new Uint8Array([0xF0, 0x9F, 0x98, 0x83]).buffer),
+              "😃");
+});
+
 })();

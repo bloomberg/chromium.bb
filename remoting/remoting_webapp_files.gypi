@@ -108,6 +108,12 @@
       'webapp/host_settings.js',
       'webapp/host_table_entry.js',
     ],
+    # Remoting XMPP JavaScript files.
+    'remoting_webapp_js_xmpp_files': [
+      'webapp/xmpp_connection.js',
+      'webapp/xmpp_login_handler.js',
+      'webapp/xmpp_stream_parser.js',
+    ],
     # Remoting WCS container JavaScript files.
     'remoting_webapp_js_wcs_container_files': [
       'webapp/wcs_sandbox_container.js',
@@ -149,11 +155,14 @@
       'webapp/js_proto/chrome_proto.js',
       'webapp/unittests/chrome_mocks.js',
       'webapp/unittests/base_unittest.js',
-      'webapp/unittests/l10n_unittest.js',
-      'webapp/unittests/menu_button_unittest.js',
       'webapp/unittests/it2me_helpee_channel_unittest.js',
       'webapp/unittests/it2me_helper_channel_unittest.js',
-      'webapp/unittests/it2me_service_unittest.js'
+      'webapp/unittests/it2me_service_unittest.js',
+      'webapp/unittests/l10n_unittest.js',
+      'webapp/unittests/menu_button_unittest.js',
+      'webapp/unittests/xmpp_connection_unittest.js',
+      'webapp/unittests/xmpp_login_handler_unittest.js',
+      'webapp/unittests/xmpp_stream_parser_unittest.js',
     ],
     'remoting_webapp_unittest_additional_files': [
       'webapp/menu_button.css',
@@ -177,6 +186,7 @@
       '<@(remoting_webapp_js_ui_host_control_files)',
       '<@(remoting_webapp_js_ui_host_display_files)',
       '<@(remoting_webapp_js_wcs_container_files)',
+      '<@(remoting_webapp_js_xmpp_files)',
       # Uncomment this line to include browser test files in the web app
       # to expedite debugging or local development.
       # '<@(remoting_webapp_js_browser_test_files)'
