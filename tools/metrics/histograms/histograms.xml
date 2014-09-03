@@ -12615,6 +12615,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="MPArch.IIR_InputEventDelta" units="milliseconds">
+  <owner>rvargas@chromium.org</owner>
+  <summary>
+    The time spent waiting for the renderer to acknowledge an input event.
+  </summary>
+</histogram>
+
 <histogram name="MPArch.RendererLaunchFirst">
   <obsolete>
     Deprecated 2/2013, renamed.
@@ -12648,6 +12655,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="MPArch.RWH_InputEventDelta" units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    renamed MPArch.IIR_InputEventDelta.
+  </obsolete>
   <summary>
     The time spent waiting for the renderer to acknowledge an input event.
   </summary>
