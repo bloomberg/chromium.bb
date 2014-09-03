@@ -45,10 +45,8 @@ void SetPostContentType(JNIEnv* env,
   request->SetMethod(method_post);
 
   std::string content_type_header("Content-Type");
-
-  const char* content_type_utf8 = env->GetStringUTFChars(content_type, NULL);
-  std::string content_type_string(content_type_utf8);
-  env->ReleaseStringUTFChars(content_type, content_type_utf8);
+  std::string content_type_string(
+      base::android::ConvertJavaStringToUTF8(env, content_type));
 
   request->AddHeader(content_type_header, content_type_string);
 }
@@ -120,13 +118,9 @@ static jlong CreateRequestAdapter(JNIEnv* env,
       reinterpret_cast<URLRequestContextAdapter*>(urlRequestContextAdapter);
   DCHECK(context != NULL);
 
-  const char* url_utf8 = env->GetStringUTFChars(url_string, NULL);
+  GURL url(base::android::ConvertJavaStringToUTF8(env, url_string));
 
-  VLOG(1) << "New chromium network request. URL:" << url_utf8;
-
-  GURL url(url_utf8);
-
-  env->ReleaseStringUTFChars(url_string, url_utf8);
+  VLOG(1) << "New chromium network request: " << url.possibly_invalid_spec();
 
   URLRequestAdapter* adapter =
       new URLRequestAdapter(context,

@@ -10,6 +10,7 @@
 #include "components/cronet/android/chromium_url_request_context.h"
 #include "net/android/net_jni_registrar.h"
 #include "url/android/url_jni_registrar.h"
+#include "url/url_util.h"
 
 #if !defined(USE_ICU_ALTERNATIVES_ON_ANDROID)
 #include "base/i18n/icu_util.h"
@@ -48,6 +49,8 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved) {
 #if !defined(USE_ICU_ALTERNATIVES_ON_ANDROID)
   base::i18n::InitializeICU();
 #endif
+
+  url::Initialize();
 
   return JNI_VERSION_1_6;
 }
