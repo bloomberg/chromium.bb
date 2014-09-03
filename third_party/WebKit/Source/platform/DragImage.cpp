@@ -189,11 +189,11 @@ PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, 
     TextRun textRun = textRunWithDirectionality(label, hasStrongDirectionality);
     IntPoint textPos(kDragLabelBorderX, kDragLabelBorderY + labelFont.fontDescription().computedPixelSize());
     if (hasStrongDirectionality && textRun.direction() == RTL) {
-        float textWidth = urlFont.width(textRun);
+        float textWidth = labelFont.width(textRun);
         int availableWidth = imageSize.width() - kDragLabelBorderX * 2;
         textPos.setX(availableWidth - ceilf(textWidth));
     }
-    buffer->context()->drawBidiText(urlFont, TextRunPaintInfo(textRun), textPos);
+    buffer->context()->drawBidiText(labelFont, TextRunPaintInfo(textRun), textPos);
 
     RefPtr<Image> image = buffer->copyImage();
     return DragImage::create(image.get(), DoNotRespectImageOrientation, deviceScaleFactor);
