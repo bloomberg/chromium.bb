@@ -60,6 +60,7 @@ class HTMLMediaElement;
 class InternalProfilers;
 class InternalRuntimeFlags;
 class InternalSettings;
+class Iterator;
 class LayerRectList;
 class LocalFrame;
 class Node;
@@ -317,6 +318,8 @@ public:
     unsigned countHitRegions(CanvasRenderingContext2D*);
 
     void forcePluginPlaceholder(HTMLElement* plugin, const String& htmlSource, ExceptionState&);
+
+    Iterator* iterator(ScriptState*, ExceptionState&);
 
 private:
     explicit Internals(Document*);

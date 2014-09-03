@@ -10,6 +10,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/PrivateScriptRunner.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
@@ -20,6 +21,7 @@
 #include "bindings/tests/idls/TestImplements3Implementation.h"
 #include "bindings/tests/idls/TestPartialInterface.h"
 #include "bindings/tests/idls/TestPartialInterfaceImplementation.h"
+#include "bindings/tests/v8/V8Iterator.h"
 #include "bindings/tests/v8/V8Node.h"
 #include "bindings/tests/v8/V8TestInterface.h"
 #include "bindings/tests/v8/V8TestInterfaceEmpty.h"
@@ -1418,6 +1420,26 @@ static void toStringMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& in
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "iterator", "TestInterface", info.Holder(), info.GetIsolate());
+    TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    RawPtr<Iterator> result = impl->iterator(scriptState, exceptionState);
+    if (exceptionState.hadException()) {
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    v8SetReturnValue(info, result.release());
+}
+
+static void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestInterfaceImplementationV8Internal::iteratorMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementation* impl = V8TestInterface::toNative(info.Holder());
@@ -1679,6 +1701,8 @@ static void installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> func
     }
     functionTemplate->InstanceTemplate()->SetIndexedPropertyHandler(TestInterfaceImplementationV8Internal::indexedPropertyGetterCallback, TestInterfaceImplementationV8Internal::indexedPropertySetterCallback, 0, TestInterfaceImplementationV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestInterfaceImplementation>);
     functionTemplate->InstanceTemplate()->SetNamedPropertyHandler(TestInterfaceImplementationV8Internal::namedPropertyGetterCallback, TestInterfaceImplementationV8Internal::namedPropertySetterCallback, TestInterfaceImplementationV8Internal::namedPropertyQueryCallback, TestInterfaceImplementationV8Internal::namedPropertyDeleterCallback, TestInterfaceImplementationV8Internal::namedPropertyEnumeratorCallback);
+    static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterfaceImplementationV8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
+    V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::DontDelete, symbolKeyedIteratorConfiguration, isolate);
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler(V8TestInterface::legacyCallCustom);
     static const V8DOMConfiguration::MethodConfiguration alwaysExposedStaticMethodMethodConfiguration = {
         "alwaysExposedStaticMethod", TestInterfaceImplementationV8Internal::alwaysExposedStaticMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,

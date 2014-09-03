@@ -49,6 +49,7 @@
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/Iterator.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/Range.h"
@@ -68,10 +69,10 @@
 #include "core/editing/TextIterator.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLContentElement.h"
@@ -143,6 +144,37 @@
 #include <v8.h>
 
 namespace blink {
+
+namespace {
+
+class InternalsIterator FINAL : public Iterator {
+public:
+    InternalsIterator() : m_current(0) { }
+
+    virtual ScriptValue next(ScriptState* scriptState, ExceptionState& exceptionState) OVERRIDE
+    {
+        v8::Isolate* isolate = scriptState->isolate();
+        v8::Local<v8::Value> value = v8::Integer::New(isolate, m_current * m_current);
+        bool done = (m_current >= 5);
+        ++m_current;
+
+        v8::Local<v8::Object> result = v8::Object::New(isolate);
+        result->Set(v8String(isolate, "value"), value);
+        result->Set(v8String(isolate, "done"), v8Boolean(done, isolate));
+        return ScriptValue(scriptState, result);
+    }
+
+    virtual ScriptValue next(ScriptState* scriptState, ScriptValue value, ExceptionState& exceptionState) OVERRIDE
+    {
+        exceptionState.throwTypeError("Not implemented");
+        return ScriptValue();
+    }
+
+private:
+    int m_current;
+};
+
+} // namespace
 
 // FIXME: oilpan: These will be removed soon.
 static MockPagePopupDriver* s_pagePopupDriver = 0;
@@ -2229,6 +2261,11 @@ void Internals::forcePluginPlaceholder(HTMLElement* element, const String& htmlS
     }
     element->ensureUserAgentShadowRoot().setInnerHTML(htmlSource, exceptionState);
     toHTMLPlugInElement(element)->setUsePlaceholderContent(true);
+}
+
+Iterator* Internals::iterator(ScriptState* scriptState, ExceptionState& exceptionState)
+{
+    return new InternalsIterator;
 }
 
 } // namespace blink

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description('Test ES6 iterator works with DOM objects.');
+
+shouldBeUndefined('internals.iterator');
+for (var value of internals) {
+    debug('value = ' + value);
+}
+
+for (var value of internals[Symbol.iterator]()) {
+    debug('value = ' + value);
+}
+
+</script>
+</body>
+</html>

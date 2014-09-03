@@ -27,6 +27,7 @@
 [
     DoNotCheckConstants,
     WillBeGarbageCollected,
+    Iterable,
 ] interface Internals {
     DOMString address(Node node);
 

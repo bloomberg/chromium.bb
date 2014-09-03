@@ -103,6 +103,17 @@ def interface_context(interface):
     # [DependentLifetime]
     is_dependent_lifetime = 'DependentLifetime' in extended_attributes
 
+    # [Iterable]
+    iterator_method = None
+    if 'Iterable' in extended_attributes:
+        iterator_operation = IdlOperation(interface.idl_name)
+        iterator_operation.name = 'iterator'
+        iterator_operation.idl_type = IdlType('Iterator')
+        iterator_operation.extended_attributes['RaisesException'] = None
+        iterator_operation.extended_attributes['CallWith'] = 'ScriptState'
+        iterator_method = v8_methods.method_context(interface,
+                                                    iterator_operation)
+
     # [MeasureAs]
     is_measure_as = 'MeasureAs' in extended_attributes
     if is_measure_as:
@@ -172,6 +183,7 @@ def interface_context(interface):
         'is_exception': interface.is_exception,
         'is_node': inherits_interface(interface.name, 'Node'),
         'is_script_wrappable': is_script_wrappable,
+        'iterator_method': iterator_method,
         'lifetime': 'Dependent'
             if (has_visit_dom_wrapper or
                 is_active_dom_object or

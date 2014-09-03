@@ -1,0 +1,20 @@
+Test ES6 iterator works with DOM objects.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS internals.iterator is undefined.
+value = 0
+value = 1
+value = 4
+value = 9
+value = 16
+value = 0
+value = 1
+value = 4
+value = 9
+value = 16
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

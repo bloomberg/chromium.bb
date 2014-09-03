@@ -37,6 +37,7 @@
     Custom=(LegacyCallAsFunction,ToV8),
     DoNotCheckConstants,
     ImplementedAs=TestInterfaceImplementation,
+    Iterable,
     RuntimeEnabled=FeatureName,
     SetWrapperReferenceTo(TestInterface referencedName),
     TypeChecking=(Interface,Unrestricted),

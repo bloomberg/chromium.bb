@@ -107,12 +107,9 @@ void V8DOMConfiguration::installMethods(v8::Handle<v8::ObjectTemplate> prototype
         installMethod(prototype, signature, attributes, callbacks[i], isolate);
 }
 
-v8::Handle<v8::FunctionTemplate> V8DOMConfiguration::functionTemplateForMethod(v8::Handle<v8::Signature> signature, const MethodConfiguration& callback, v8::Isolate* isolate)
+v8::Handle<v8::FunctionTemplate> V8DOMConfiguration::functionTemplateForCallback(v8::Handle<v8::Signature> signature, v8::FunctionCallback callback, int length, v8::Isolate* isolate)
 {
-    v8::FunctionCallback functionCallback = callback.callback;
-    if (DOMWrapperWorld::current(isolate).isMainWorld() && callback.callbackForMainWorld)
-        functionCallback = callback.callbackForMainWorld;
-    v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, functionCallback, v8Undefined(), signature, callback.length);
+    v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, callback, v8Undefined(), signature, length);
     functionTemplate->RemovePrototype();
     return functionTemplate;
 }

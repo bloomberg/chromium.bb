@@ -62,6 +62,7 @@ Immutable
 ImplementedAs=*
 ImplementedInPrivateScript
 InitializedByEventConstructor
+Iterable
 LegacyTreatAsPartialInterface
 LogActivity=|GetterOnly|SetterOnly
 LogAllWorlds

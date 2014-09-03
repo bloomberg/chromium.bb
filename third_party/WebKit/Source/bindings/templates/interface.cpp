@@ -919,6 +919,10 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
            if named_property_getter.is_enumerable else '0' %}
     functionTemplate->{{set_on_template}}()->SetNamedPropertyHandler({{named_property_getter_callback}}, {{named_property_setter_callback}}, {{named_property_query_callback}}, {{named_property_deleter_callback}}, {{named_property_enumerator_callback}});
     {% endif %}
+    {% if iterator_method %}
+    static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{cpp_class}}V8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
+    V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::DontDelete, symbolKeyedIteratorConfiguration, isolate);
+    {% endif %}
     {# End special operations #}
     {% if has_custom_legacy_call_as_function %}
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler({{v8_class}}::legacyCallCustom);

@@ -134,6 +134,12 @@ public:
     // object's callbacks. It sets the method on both the FunctionTemplate or
     // the ObjectTemplate.
     struct MethodConfiguration {
+        v8::Local<v8::Name> methodName(v8::Isolate* isolate) const { return v8AtomicString(isolate, name); }
+        v8::FunctionCallback callbackForWorld(const DOMWrapperWorld& world) const
+        {
+            return world.isMainWorld() && callbackForMainWorld ? callbackForMainWorld : callback;
+        }
+
         const char* const name;
         v8::FunctionCallback callback;
         v8::FunctionCallback callbackForMainWorld;
@@ -141,27 +147,31 @@ public:
         ExposeConfiguration exposeConfiguration;
     };
 
+    struct SymbolKeyedMethodConfiguration {
+        v8::Local<v8::Name> methodName(v8::Isolate* isolate) const { return getSymbol(isolate); }
+        v8::FunctionCallback callbackForWorld(const DOMWrapperWorld&) const
+        {
+            return callback;
+        }
+
+        v8::Local<v8::Symbol> (*getSymbol)(v8::Isolate*);
+        v8::FunctionCallback callback;
+        // SymbolKeyedMethodConfiguration doesn't support per-world bindings.
+        int length;
+        ExposeConfiguration exposeConfiguration;
+    };
+
     static void installMethods(v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::Signature>, v8::PropertyAttribute, const MethodConfiguration*, size_t callbackCount, v8::Isolate*);
 
-    template <class Template>
-    static void installMethod(v8::Handle<Template> prototype, v8::Handle<v8::Signature> signature, v8::PropertyAttribute attribute, const MethodConfiguration& callback, v8::Isolate* isolate)
+    template <class ObjectOrTemplate, class Configuration>
+    static void installMethod(v8::Handle<ObjectOrTemplate> objectOrTemplate, v8::Handle<v8::Signature> signature, v8::PropertyAttribute attribute, const Configuration& callback, v8::Isolate* isolate)
     {
         DOMWrapperWorld& world = DOMWrapperWorld::current(isolate);
         if (callback.exposeConfiguration == OnlyExposedToPrivateScript && !world.isPrivateScriptIsolatedWorld())
             return;
 
-        v8::Local<v8::FunctionTemplate> functionTemplate = functionTemplateForMethod(signature, callback, isolate);
-        prototype->Set(v8AtomicString(isolate, callback.name), functionTemplate, attribute);
-    }
-
-    static void installMethod(v8::Handle<v8::Object> object, v8::Handle<v8::Signature> signature, v8::PropertyAttribute, const MethodConfiguration& callback, v8::Isolate* isolate)
-    {
-        DOMWrapperWorld& world = DOMWrapperWorld::current(isolate);
-        if (callback.exposeConfiguration == OnlyExposedToPrivateScript && !world.isPrivateScriptIsolatedWorld())
-            return;
-
-        v8::Local<v8::FunctionTemplate> functionTemplate = functionTemplateForMethod(signature, callback, isolate);
-        object->Set(v8AtomicString(isolate, callback.name), functionTemplate->GetFunction());
+        v8::Local<v8::FunctionTemplate> functionTemplate = functionTemplateForCallback(signature, callback.callbackForWorld(world), callback.length, isolate);
+        setMethod(objectOrTemplate, callback.methodName(isolate), functionTemplate, attribute);
     }
 
     static void installAccessors(v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::Signature>, const AccessorConfiguration*, size_t accessorCount, v8::Isolate*);
@@ -175,7 +185,20 @@ public:
     static v8::Handle<v8::FunctionTemplate> domClassTemplate(v8::Isolate*, WrapperTypeInfo*, void (*)(v8::Handle<v8::FunctionTemplate>, v8::Isolate*));
 
 private:
-    static v8::Handle<v8::FunctionTemplate> functionTemplateForMethod(v8::Handle<v8::Signature>, const MethodConfiguration&, v8::Isolate*);
+    static void setMethod(v8::Handle<v8::Object> target, v8::Handle<v8::Name> name, v8::Handle<v8::FunctionTemplate> functionTemplate, v8::PropertyAttribute attribute)
+    {
+        target->Set(name, functionTemplate->GetFunction());
+    }
+    static void setMethod(v8::Handle<v8::FunctionTemplate> target, v8::Handle<v8::Name> name, v8::Handle<v8::FunctionTemplate> functionTemplate, v8::PropertyAttribute attribute)
+    {
+        target->Set(name, functionTemplate, attribute);
+    }
+    static void setMethod(v8::Handle<v8::ObjectTemplate> target, v8::Handle<v8::Name> name, v8::Handle<v8::FunctionTemplate> functionTemplate, v8::PropertyAttribute attribute)
+    {
+        target->Set(name, functionTemplate, attribute);
+    }
+
+    static v8::Handle<v8::FunctionTemplate> functionTemplateForCallback(v8::Handle<v8::Signature>, v8::FunctionCallback, int length, v8::Isolate*);
 };
 
 } // namespace blink

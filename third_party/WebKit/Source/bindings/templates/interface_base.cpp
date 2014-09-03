@@ -116,6 +116,10 @@ template <typename T> void V8_USE(T) { }
 {% endfor %}
 {% endif %}
 {% endfor %}
+{% if iterator_method %}
+{{generate_method(iterator_method)}}
+{{method_callback(iterator_method)}}
+{% endif %}
 {% block origin_safe_method_setter %}{% endblock %}
 {# Constructors #}
 {% for constructor in constructors %}
