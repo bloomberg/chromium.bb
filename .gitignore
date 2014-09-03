@@ -215,7 +215,6 @@ v8.log
 /third_party/adobe/flash/binaries
 /third_party/adobe/flash/symbols
 /third_party/amd/
-/third_party/android_protobuf/src
 /third_party/android_tools/
 /third_party/android_tools_internal/
 /third_party/angle

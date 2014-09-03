@@ -3,11 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Generate java source files from protobuf files.
+"""Generate java source files from protobufs
 
 Usage:
-    protoc_java.py {protoc} {proto_path} {java_out} {proto_runtime} \
-        {stamp_file} {proto_files}
+    protoc_java.py {protoc} {proto_path} {java_out} {stamp_file} {proto_files}
 
 This is a helper file for the genproto_java action in protoc_java.gypi.
 
@@ -16,8 +15,6 @@ It performs the following steps:
 2. Creates source directory.
 3. Generates Java files using protoc.
 4. Creates a new stamp file.
-
-proto_runtime must be one of 'nano' and 'lite'.
 """
 
 import os
@@ -26,36 +23,27 @@ import subprocess
 import sys
 
 def main(argv):
-  if len(argv) < 6:
+  if len(argv) < 5:
     usage()
     return 1
 
-  protoc_path, proto_path, java_out, proto_runtime, stamp_file = argv[1:6]
-  proto_files = argv[6:]
+  protoc_path, proto_path, java_out, stamp_file = argv[1:5]
+  proto_files = argv[5:]
 
-  # Delete all old sources.
+  # Delete all old sources
   if os.path.exists(java_out):
     shutil.rmtree(java_out)
 
-  # Create source directory.
+  # Create source directory
   os.makedirs(java_out)
 
-  # Figure out which runtime to use.
-  if proto_runtime == 'nano':
-    out_arg = '--javanano_out=optional_field_style=reftypes,' + \
-        'store_unknown_fields=true:' + java_out
-  elif proto_runtime == 'lite':
-    out_arg = '--java_out=' + java_out
-  else:
-    usage()
-    return 1
-
-  # Generate Java files using protoc.
+  # Generate Java files using protoc
   ret = subprocess.call(
-      [protoc_path, '--proto_path', proto_path, out_arg] + proto_files)
+      [protoc_path, '--proto_path', proto_path, '--java_out', java_out]
+      + proto_files)
 
   if ret == 0:
-    # Create a new stamp file.
+    # Create a new stamp file
     with file(stamp_file, 'a'):
       os.utime(stamp_file, None)
 
