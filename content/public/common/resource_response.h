@@ -20,8 +20,6 @@ namespace content {
 
 // Parameters for a resource response header.
 struct ResourceResponseHead : ResourceResponseInfo {
-  // The response error_code.
-  int error_code;
   // TimeTicks::Now() when the browser received the request from the renderer.
   base::TimeTicks request_start;
   // TimeTicks::Now() when the browser sent the response to the renderer.
@@ -30,6 +28,8 @@ struct ResourceResponseHead : ResourceResponseInfo {
 
 // Parameters for a synchronous resource response.
 struct SyncLoadResult : ResourceResponseHead {
+  // The response error_code.
+  int error_code;
   // The final URL after any redirects.
   GURL final_url;
 

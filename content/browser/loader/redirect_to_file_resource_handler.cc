@@ -157,11 +157,8 @@ void RedirectToFileResourceHandler::
 bool RedirectToFileResourceHandler::OnResponseStarted(
     ResourceResponse* response,
     bool* defer) {
-  if (response->head.error_code == net::OK ||
-      response->head.error_code == net::ERR_IO_PENDING) {
-    DCHECK(writer_);
-    response->head.download_file_path = writer_->path();
-  }
+  DCHECK(writer_);
+  response->head.download_file_path = writer_->path();
   return next_handler_->OnResponseStarted(response, defer);
 }
 

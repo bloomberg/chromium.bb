@@ -250,7 +250,6 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     std::string raw_headers(kTestRedirectHeaders);
     std::replace(raw_headers.begin(), raw_headers.end(), '\n', '\0');
     head.headers = new net::HttpResponseHeaders(raw_headers);
-    head.error_code = net::OK;
     net::RedirectInfo redirect_info;
     redirect_info.status_code = 302;
     redirect_info.new_method = "GET";
@@ -267,7 +266,6 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     head.headers = new net::HttpResponseHeaders(raw_headers);
     head.mime_type = kTestPageMimeType;
     head.charset = kTestPageCharset;
-    head.error_code = net::OK;
     EXPECT_EQ(true,
               dispatcher_.OnMessageReceived(
                   ResourceMsg_ReceivedResponse(request_id, head)));
@@ -760,7 +758,6 @@ class TimeConversionTest : public ResourceDispatcherTest,
 // TODO(simonjam): Enable this when 10829031 lands.
 TEST_F(TimeConversionTest, DISABLED_ProperlyInitialized) {
   ResourceResponseHead response_head;
-  response_head.error_code = net::OK;
   response_head.request_start = base::TimeTicks::FromInternalValue(5);
   response_head.response_start = base::TimeTicks::FromInternalValue(15);
   response_head.load_timing.request_start_time = base::Time::Now();
@@ -780,7 +777,6 @@ TEST_F(TimeConversionTest, DISABLED_ProperlyInitialized) {
 
 TEST_F(TimeConversionTest, PartiallyInitialized) {
   ResourceResponseHead response_head;
-  response_head.error_code = net::OK;
   response_head.request_start = base::TimeTicks::FromInternalValue(5);
   response_head.response_start = base::TimeTicks::FromInternalValue(15);
 
@@ -793,7 +789,6 @@ TEST_F(TimeConversionTest, PartiallyInitialized) {
 
 TEST_F(TimeConversionTest, NotInitialized) {
   ResourceResponseHead response_head;
-  response_head.error_code = net::OK;
 
   PerformTest(response_head);
 

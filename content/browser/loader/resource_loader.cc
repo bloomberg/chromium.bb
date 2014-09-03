@@ -42,7 +42,6 @@ namespace {
 void PopulateResourceResponse(ResourceRequestInfoImpl* info,
                               net::URLRequest* request,
                               ResourceResponse* response) {
-  response->head.error_code = request->status().error();
   response->head.request_time = request->request_time();
   response->head.response_time = request->response_time();
   response->head.headers = request->response_headers();
