@@ -65,7 +65,6 @@ class URLRequestContextGetter;
 
 namespace prerender {
 
-class PrerenderCondition;
 class PrerenderHandle;
 class PrerenderHistory;
 class PrerenderLocalPredictor;
@@ -299,9 +298,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   PrerenderTracker* prerender_tracker() { return prerender_tracker_; }
 
   bool cookie_store_loaded() { return cookie_store_loaded_; }
-
-  // Adds a condition. This is owned by the PrerenderManager.
-  void AddCondition(const PrerenderCondition* condition);
 
   // Records that some visible tab navigated (or was redirected) to the
   // provided URL.
@@ -717,8 +713,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   ScopedVector<OnCloseWebContentsDeleter> on_close_web_contents_deleters_;
 
   scoped_ptr<PrerenderHistory> prerender_history_;
-
-  std::list<const PrerenderCondition*> prerender_conditions_;
 
   scoped_ptr<PrerenderHistograms> histograms_;
 

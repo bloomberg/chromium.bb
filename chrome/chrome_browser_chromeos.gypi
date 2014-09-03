@@ -908,8 +908,6 @@
         'browser/chromeos/power/session_state_controller_delegate_chromeos.h',
         'browser/chromeos/preferences.cc',
         'browser/chromeos/preferences.h',
-        'browser/chromeos/prerender_condition_network.cc',
-        'browser/chromeos/prerender_condition_network.h',
         'browser/chromeos/profiles/avatar_menu_actions_chromeos.cc',
         'browser/chromeos/profiles/avatar_menu_actions_chromeos.h',
         'browser/chromeos/profiles/avatar_menu_chromeos.cc',

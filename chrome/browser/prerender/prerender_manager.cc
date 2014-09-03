@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
@@ -27,7 +26,6 @@
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
-#include "chrome/browser/prerender/prerender_condition.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
@@ -317,7 +315,6 @@ PrerenderManager::~PrerenderManager() {
 
 void PrerenderManager::Shutdown() {
   DestroyAllContents(FINAL_STATUS_MANAGER_SHUTDOWN);
-  STLDeleteElements(&prerender_conditions_);
   on_close_web_contents_deleters_.clear();
   // Must happen before |profile_| is set to NULL as
   // |local_predictor_| accesses it.
@@ -967,10 +964,6 @@ void PrerenderManager::RecordFinalStatusWithMatchCompleteStatus(
                                  experiment_id,
                                  mc_status,
                                  final_status);
-}
-
-void PrerenderManager::AddCondition(const PrerenderCondition* condition) {
-  prerender_conditions_.push_back(condition);
 }
 
 void PrerenderManager::RecordNavigation(const GURL& url) {
