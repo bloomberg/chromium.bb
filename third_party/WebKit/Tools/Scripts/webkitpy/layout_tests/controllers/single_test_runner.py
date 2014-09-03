@@ -37,6 +37,7 @@ from webkitpy.layout_tests.port.driver import DeviceFailure, DriverInput, Driver
 from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.models import test_failures
 from webkitpy.layout_tests.models.test_results import TestResult
+from webkitpy.layout_tests.models import testharness_results
 
 
 _log = logging.getLogger(__name__)
@@ -273,29 +274,11 @@ class SingleTestRunner(object):
         if driver_output.image or driver_output.audio or self._is_render_tree(driver_output.text):
             return False, []
 
-        failures = []
-        found_a_pass = False
         text = driver_output.text or ''
-        lines = text.strip().splitlines()
-        lines = [line.strip() for line in lines]
-        header = 'This is a testharness.js-based test.'
-        footer = 'Harness: the test ran to completion.'
-        if not lines or not header in lines:
+
+        if not testharness_results.is_testharness_output(text):
             return False, []
-        if not footer in lines:
-            return True, [test_failures.FailureTestHarnessAssertion()]
-
-        for line in lines:
-            if line == header or line == footer or line.startswith('PASS'):
-                continue
-            # CONSOLE output can happen during tests and shouldn't break them.
-            if line.startswith('CONSOLE'):
-                continue
-
-            if line.startswith('FAIL') or line.startswith('TIMEOUT'):
-                return True, [test_failures.FailureTestHarnessAssertion()]
-
-            # Fail the test if there is any unrecognized output.
+        if not testharness_results.is_testharness_output_passing(text):
             return True, [test_failures.FailureTestHarnessAssertion()]
         return True, []
 
