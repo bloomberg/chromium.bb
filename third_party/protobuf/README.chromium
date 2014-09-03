@@ -33,6 +33,7 @@ Revision 517 was cherry-picked from upstream.
 Revision 522 was cherry-picked from upstream.
 Revision 523 was cherry-picked from upstream.
 Revision 524 was cherry-picked from upstream.
+Revision 573 was cherry-picked from upstream.
 The `&file->options() != NULL &&` was removed from descriptor.cc
 
 Notes about Java:
