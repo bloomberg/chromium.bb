@@ -35,8 +35,9 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   static void RegisterUtilityMainThreadFactory(
       UtilityMainThreadFactoryFunction create);
 
-  UtilityProcessHostImpl(UtilityProcessHostClient* client,
-                         base::SequencedTaskRunner* client_task_runner);
+  UtilityProcessHostImpl(
+      const scoped_refptr<UtilityProcessHostClient>& client,
+      const scoped_refptr<base::SequencedTaskRunner>& client_task_runner);
   virtual ~UtilityProcessHostImpl();
 
   // UtilityProcessHost implementation:

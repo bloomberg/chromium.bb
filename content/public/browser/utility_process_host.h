@@ -39,8 +39,8 @@ class UtilityProcessHost : public IPC::Sender,
   // |client_task_runner| is required if |client| is supplied and is the task
   // runner upon which |client| will be invoked.
   CONTENT_EXPORT static UtilityProcessHost* Create(
-      UtilityProcessHostClient* client,
-      base::SequencedTaskRunner* client_task_runner);
+      const scoped_refptr<UtilityProcessHostClient>& client,
+      const scoped_refptr<base::SequencedTaskRunner>& client_task_runner);
 
   virtual ~UtilityProcessHost() {}
 

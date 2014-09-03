@@ -276,7 +276,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
   }
 
   database_map_[unique_identifier] = database.get();
-  origin_dbs_.insert(std::make_pair(origin_url, database));
+  origin_dbs_.insert(std::make_pair(origin_url, database.get()));
   database->DeleteDatabase(callbacks);
   RemoveDatabaseFromMaps(unique_identifier);
   database = NULL;
@@ -482,7 +482,7 @@ void IndexedDBFactoryImpl::Open(const base::string16& name,
 
   if (!was_open && database->ConnectionCount() > 0) {
     database_map_[unique_identifier] = database.get();
-    origin_dbs_.insert(std::make_pair(origin_url, database));
+    origin_dbs_.insert(std::make_pair(origin_url, database.get()));
   }
 }
 

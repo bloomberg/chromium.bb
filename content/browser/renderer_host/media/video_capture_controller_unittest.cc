@@ -412,7 +412,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   }
   // ReserveOutputBuffer ought to fail now, because the pool is depleted.
   ASSERT_FALSE(device_->ReserveOutputBuffer(media::VideoFrame::I420,
-                                            capture_resolution));
+                                            capture_resolution).get());
 
   // The new client needs to be told of 3 buffers; the old clients only 2.
   EXPECT_CALL(*client_b_, DoBufferCreated(client_b_route_2)).Times(kPoolSize);
@@ -525,9 +525,9 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   // ReserveOutputBuffers ought to fail now regardless of buffer format, because
   // the pool is depleted.
   ASSERT_FALSE(device_->ReserveOutputBuffer(media::VideoFrame::I420,
-                                            capture_resolution));
+                                            capture_resolution).get());
   ASSERT_FALSE(device_->ReserveOutputBuffer(media::VideoFrame::NATIVE_TEXTURE,
-                                            gfx::Size(0, 0)));
+                                            gfx::Size(0, 0)).get());
   EXPECT_CALL(*client_b_, DoBufferReady(client_b_route_2)).Times(shm_buffers);
   EXPECT_CALL(*client_b_, DoMailboxBufferReady(client_b_route_2))
       .Times(mailbox_buffers);

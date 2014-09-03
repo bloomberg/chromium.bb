@@ -171,7 +171,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   DCHECK(encrypted_media_support_);
 
   // Threaded compositing isn't enabled universally yet.
-  if (!compositor_task_runner_)
+  if (!compositor_task_runner_.get())
     compositor_task_runner_ = base::MessageLoopProxy::current();
 
   media_log_->AddEvent(

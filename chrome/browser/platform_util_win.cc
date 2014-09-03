@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_utility_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
+#include "content/public/browser/utility_process_host_client.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
