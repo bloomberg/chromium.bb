@@ -141,6 +141,10 @@ void WebPluginContainerImpl::invalidateRect(const IntRect& rect)
     IntRect dirtyRect = rect;
     dirtyRect.move(renderer->borderLeft() + renderer->paddingLeft(),
                    renderer->borderTop() + renderer->paddingTop());
+
+    // For querying RenderLayer::compositingState().
+    // This code should be correct.
+    DisableCompositingQueryAsserts disabler;
     renderer->invalidatePaintRectangle(dirtyRect);
 }
 

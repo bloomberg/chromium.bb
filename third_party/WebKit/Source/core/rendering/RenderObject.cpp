@@ -1495,9 +1495,6 @@ void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* p
         "object", this->debugName().ascii(),
         "info", jsonObjectForPaintInvalidationInfo(r, invalidationReasonToString(invalidationReason)));
 
-    // For querying RenderLayer::compositingState()
-    DisableCompositingQueryAsserts disabler;
-
     if (paintInvalidationContainer->isRenderFlowThread()) {
         toRenderFlowThread(paintInvalidationContainer)->paintInvalidationRectangleInRegions(r);
         return;
