@@ -602,17 +602,13 @@ void ProfileChooserView::Init() {
 
 void ProfileChooserView::OnAvatarMenuChanged(
     AvatarMenu* avatar_menu) {
-  // Do not refresh the avatar menu if the user is on a signin related view.
-  if (view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
-      view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
-      view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH) {
-    return;
+  if (view_mode_ == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER ||
+      view_mode_ == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT) {
+    // Refresh the view with the new menu. We can't just update the local copy
+    // as this may have been triggered by a sign out action, in which case
+    // the view is being destroyed.
+    ShowView(view_mode_, avatar_menu);
   }
-
-  // Refresh the view with the new menu. We can't just update the local copy
-  // as this may have been triggered by a sign out action, in which case
-  // the view is being destroyed.
-  ShowView(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu);
 }
 
 void ProfileChooserView::OnRefreshTokenAvailable(

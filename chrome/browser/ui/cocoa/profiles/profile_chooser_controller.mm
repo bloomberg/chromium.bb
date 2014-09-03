@@ -312,18 +312,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   // AvatarMenuObserver:
   virtual void OnAvatarMenuChanged(AvatarMenu* avatar_menu) OVERRIDE {
-    // Do not refresh the avatar menu if the user is on a signin related view.
     profiles::BubbleViewMode viewMode = [controller_ viewMode];
-    if (viewMode == profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
-        viewMode == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
-        viewMode == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH) {
-      return;
+    if (viewMode == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER ||
+        viewMode == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT) {
+      [controller_ initMenuContentsWithView:viewMode];
     }
-
-    // While the bubble is open, the avatar menu can only change from the
-    // profile chooser view by modifying the current profile's photo or name.
-    [controller_
-        initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
   }
 
   // content::NotificationObserver:
