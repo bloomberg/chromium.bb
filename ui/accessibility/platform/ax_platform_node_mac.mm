@@ -49,6 +49,7 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_DOCUMENT, NSAccessibilityGroupRole},
       {ui::AX_ROLE_DRAWER, NSAccessibilityDrawerRole},
       {ui::AX_ROLE_EDITABLE_TEXT, NSAccessibilityTextFieldRole},
+      {ui::AX_ROLE_FIGURE, NSAccessibilityGroupRole},
       {ui::AX_ROLE_FOOTER, NSAccessibilityGroupRole},
       {ui::AX_ROLE_FORM, NSAccessibilityGroupRole},
       {ui::AX_ROLE_GRID, NSAccessibilityGridRole},

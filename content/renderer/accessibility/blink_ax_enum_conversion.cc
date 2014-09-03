@@ -140,6 +140,8 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_EDITABLE_TEXT;
     case blink::WebAXRoleEmbeddedObject:
       return ui::AX_ROLE_EMBEDDED_OBJECT;
+    case blink::WebAXRoleFigure:
+        return ui::AX_ROLE_FIGURE;
     case blink::WebAXRoleFooter:
       return ui::AX_ROLE_FOOTER;
     case blink::WebAXRoleForm:
