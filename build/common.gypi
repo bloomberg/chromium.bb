@@ -5509,7 +5509,6 @@
                   '-Wno-unused-private-field',
                   '-Wno-unused-value',
                   '-Wno-unused-variable',
-                  '-ferror-limit=1',
                 ],
               },
             }],
