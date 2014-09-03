@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/renderer/test_runner/TestPlugin.h"
@@ -153,6 +154,10 @@ void BlockRequest(blink::WebURLRequest& request) {
 
 bool IsLocalHost(const std::string& host) {
   return host == "127.0.0.1" || host == "localhost";
+}
+
+bool IsTestHost(const std::string& host) {
+  return EndsWith(host, ".test", false);
 }
 
 bool HostIsUsedBySomeTestsToGenerateError(const std::string& host) {
@@ -1082,7 +1087,7 @@ void WebTestProxyBase::WillSendRequest(
 
   std::string host = url.host();
   if (!host.empty() && (url.SchemeIs("http") || url.SchemeIs("https"))) {
-    if (!IsLocalHost(host) && !HostIsUsedBySomeTestsToGenerateError(host) &&
+    if (!IsLocalHost(host) && !IsTestHost(host) && !HostIsUsedBySomeTestsToGenerateError(host) &&
         ((!main_document_url.SchemeIs("http") &&
           !main_document_url.SchemeIs("https")) ||
          IsLocalHost(main_document_url.host())) &&
