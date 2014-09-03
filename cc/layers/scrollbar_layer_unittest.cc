@@ -192,6 +192,50 @@ TEST(PaintedScrollbarLayerTest, ScrollOffsetSynchronization) {
     scrollbar_layer_impl->ScrollbarParametersDidChange();           \
   } while (false)
 
+TEST(ScrollbarLayerTest, UpdatePropertiesOfScrollBarWhenThumbRemoved) {
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  scoped_refptr<Layer> root_clip_layer = Layer::Create();
+  scoped_refptr<Layer> root_layer = Layer::Create();
+  scoped_refptr<Layer> content_layer = Layer::Create();
+  scoped_refptr<FakePaintedScrollbarLayer> scrollbar_layer =
+      FakePaintedScrollbarLayer::Create(false, true, root_layer->id());
+
+  root_layer->SetScrollClipLayerId(root_clip_layer->id());
+  // Give the root-clip a size that will result in MaxScrollOffset = (80, 0).
+  root_clip_layer->SetBounds(gfx::Size(20, 50));
+  root_layer->SetBounds(gfx::Size(100, 50));
+  content_layer->SetBounds(gfx::Size(100, 50));
+
+  host->SetRootLayer(root_clip_layer);
+  root_clip_layer->AddChild(root_layer);
+  root_layer->AddChild(content_layer);
+  root_layer->AddChild(scrollbar_layer);
+
+  root_layer->SetScrollOffset(gfx::Vector2d(0, 0));
+  scrollbar_layer->SetBounds(gfx::Size(70, 10));
+  scrollbar_layer->SetScrollLayer(root_layer->id());
+  scrollbar_layer->SetClipLayer(root_clip_layer->id());
+  scrollbar_layer->fake_scrollbar()->set_location(gfx::Point(20, 10));
+  scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(30, 10, 50, 10));
+  scrollbar_layer->fake_scrollbar()->set_thumb_thickness(10);
+  scrollbar_layer->fake_scrollbar()->set_thumb_length(4);
+
+  scrollbar_layer->UpdateThumbAndTrackGeometry();
+  LayerImpl* root_clip_layer_impl = NULL;
+  LayerImpl* root_layer_impl = NULL;
+  PaintedScrollbarLayerImpl* scrollbar_layer_impl = NULL;
+
+  UPDATE_AND_EXTRACT_LAYER_POINTERS();
+  EXPECT_EQ(gfx::Rect(10, 0, 4, 10).ToString(),
+            scrollbar_layer_impl->ComputeThumbQuadRect().ToString());
+
+  scrollbar_layer->fake_scrollbar()->set_has_thumb(false);
+
+  UPDATE_AND_EXTRACT_LAYER_POINTERS();
+  EXPECT_EQ(gfx::Rect(10, 0, 0, 0).ToString(),
+            scrollbar_layer_impl->ComputeThumbQuadRect().ToString());
+}
+
 TEST(ScrollbarLayerTest, ThumbRect) {
   scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
   scoped_refptr<Layer> root_clip_layer = Layer::Create();

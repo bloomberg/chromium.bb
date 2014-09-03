@@ -192,6 +192,9 @@ void PaintedScrollbarLayer::UpdateThumbAndTrackGeometry() {
   if (has_thumb_) {
     UpdateProperty(scrollbar_->ThumbThickness(), &thumb_thickness_);
     UpdateProperty(scrollbar_->ThumbLength(), &thumb_length_);
+  } else {
+    UpdateProperty(0, &thumb_thickness_);
+    UpdateProperty(0, &thumb_length_);
   }
 }
 

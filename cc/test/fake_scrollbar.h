@@ -36,6 +36,7 @@ class FakeScrollbar : public Scrollbar {
       thumb_thickness_ = thumb_thickness;
   }
   void set_thumb_length(int thumb_length) { thumb_length_ = thumb_length; }
+  void set_has_thumb(bool has_thumb) { has_thumb_ = has_thumb; }
   SkColor paint_fill_color() const { return SK_ColorBLACK | fill_color_; }
 
  private:
