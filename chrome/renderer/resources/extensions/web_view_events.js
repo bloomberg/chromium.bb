@@ -171,12 +171,11 @@ function DeclarativeWebRequestEvent(opt_eventName,
   EventBindings.Event.call(this, subEventName, opt_argSchemas, opt_eventOptions,
       opt_webViewInstanceId);
 
-  var self = this;
   // TODO(lazyboy): When do we dispose this listener?
   WebRequestMessageEvent.addListener(function() {
     // Re-dispatch to subEvent's listeners.
-    $Function.apply(self.dispatch, self, $Array.slice(arguments));
-  }, {instanceId: opt_webViewInstanceId || 0});
+    $Function.apply(this.dispatch, this, $Array.slice(arguments));
+  }.bind(this), {instanceId: opt_webViewInstanceId || 0});
 }
 
 DeclarativeWebRequestEvent.prototype = {
@@ -216,40 +215,39 @@ WebViewEvents.prototype.setupPluginDestroyedEvent = function() {
 };
 
 WebViewEvents.prototype.setupWebRequestEvents = function() {
-  var self = this;
   var request = {};
   var createWebRequestEvent = function(webRequestEvent) {
     return function() {
-      if (!self[webRequestEvent.name]) {
-        self[webRequestEvent.name] =
+      if (!this[webRequestEvent.name]) {
+        this[webRequestEvent.name] =
             new WebRequestEvent(
                 'webViewInternal.' + webRequestEvent.name,
                 webRequestEvent.parameters,
                 webRequestEvent.extraParameters, webRequestEvent.options,
-                self.viewInstanceId);
+                this.viewInstanceId);
       }
-      return self[webRequestEvent.name];
-    };
-  };
+      return this[webRequestEvent.name];
+    }.bind(this);
+  }.bind(this);
 
   var createDeclarativeWebRequestEvent = function(webRequestEvent) {
     return function() {
-      if (!self[webRequestEvent.name]) {
+      if (!this[webRequestEvent.name]) {
         // The onMessage event gets a special event type because we want
         // the listener to fire only for messages targeted for this particular
         // <webview>.
         var EventClass = webRequestEvent.name === 'onMessage' ?
             DeclarativeWebRequestEvent : EventBindings.Event;
-        self[webRequestEvent.name] =
+        this[webRequestEvent.name] =
             new EventClass(
                 'webViewInternal.' + webRequestEvent.name,
                 webRequestEvent.parameters,
                 webRequestEvent.options,
-                self.viewInstanceId);
+                this.viewInstanceId);
       }
-      return self[webRequestEvent.name];
-    };
-  };
+      return this[webRequestEvent.name];
+    }.bind(this);
+  }.bind(this);
 
   for (var i = 0; i < DeclarativeWebRequestSchema.events.length; ++i) {
     var eventSchema = DeclarativeWebRequestSchema.events[i];
@@ -289,23 +287,23 @@ WebViewEvents.prototype.getEvents = function() {
 };
 
 WebViewEvents.prototype.setupEvent = function(name, info) {
-  var self = this;
   info.evt.addListener(function(e) {
     var details = {bubbles:true};
-    if (info.cancelable)
+    if (info.cancelable) {
       details.cancelable = true;
+    }
     var webViewEvent = new Event(name, details);
     $Array.forEach(info.fields, function(field) {
       if (e[field] !== undefined) {
         webViewEvent[field] = e[field];
       }
-    });
+    }.bind(this));
     if (info.customHandler) {
-      info.customHandler(self, e, webViewEvent);
+      info.customHandler(this, e, webViewEvent);
       return;
     }
-    self.webViewInternal.dispatchEvent(webViewEvent);
-  }, {instanceId: self.viewInstanceId});
+    this.webViewInternal.dispatchEvent(webViewEvent);
+  }.bind(this), {instanceId: this.viewInstanceId});
 
   this.webViewInternal.setupEventProperty(name);
 };
@@ -326,7 +324,6 @@ WebViewEvents.prototype.handleDialogEvent = function(event, webViewEvent) {
     window.console.warn(output);
   };
 
-  var self = this;
   var requestId = event.requestId;
   var actionTaken = false;
 
@@ -341,8 +338,8 @@ WebViewEvents.prototype.handleDialogEvent = function(event, webViewEvent) {
   };
 
   var getGuestInstanceId = function() {
-    return self.webViewInternal.getGuestInstanceId();
-  };
+    return this.webViewInternal.getGuestInstanceId();
+  }.bind(this);
 
   var dialog = {
     ok: function(user_input) {
@@ -358,7 +355,7 @@ WebViewEvents.prototype.handleDialogEvent = function(event, webViewEvent) {
   };
   webViewEvent.dialog = dialog;
 
-  var defaultPrevented = !self.webViewInternal.dispatchEvent(webViewEvent);
+  var defaultPrevented = !this.webViewInternal.dispatchEvent(webViewEvent);
   if (actionTaken) {
     return;
   }
@@ -426,10 +423,9 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
 
   var requestId = event.requestId;
   var actionTaken = false;
-  var self = this;
   var getGuestInstanceId = function() {
-    return self.webViewInternal.getGuestInstanceId();
-  };
+    return this.webViewInternal.getGuestInstanceId();
+  }.bind(this);
 
   var validateCall = function () {
     if (actionTaken) {
@@ -475,7 +471,7 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
   };
   webViewEvent.window = windowObj;
 
-  var defaultPrevented = !self.webViewInternal.dispatchEvent(webViewEvent);
+  var defaultPrevented = !this.webViewInternal.dispatchEvent(webViewEvent);
   if (actionTaken) {
     return;
   }
@@ -533,10 +529,9 @@ WebViewEvents.prototype.handlePermissionEvent =
   };
 
   var requestId = event.requestId;
-  var self = this;
   var getGuestInstanceId = function() {
-    return self.webViewInternal.getGuestInstanceId();
-  };
+    return this.webViewInternal.getGuestInstanceId();
+  }.bind(this);
 
   if (this.getPermissionTypes().indexOf(event.permission) < 0) {
     // The permission type is not allowed. Trigger the default response.
@@ -571,7 +566,7 @@ WebViewEvents.prototype.handlePermissionEvent =
   };
   webViewEvent.request = request;
 
-  var defaultPrevented = !self.webViewInternal.dispatchEvent(webViewEvent);
+  var defaultPrevented = !this.webViewInternal.dispatchEvent(webViewEvent);
   if (decisionMade) {
     return;
   }

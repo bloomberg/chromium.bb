@@ -47,12 +47,11 @@ function ContextMenusOnClickedEvent(opt_eventName,
   EventBindings.Event.call(this, subEventName, opt_argSchemas, opt_eventOptions,
       opt_webViewInstanceId);
 
-  var self = this;
   // TODO(lazyboy): When do we dispose this listener?
   ContextMenusEvent.addListener(function() {
     // Re-dispatch to subEvent's listeners.
-    $Function.apply(self.dispatch, self, $Array.slice(arguments));
-  }, {instanceId: opt_webViewInstanceId || 0});
+    $Function.apply(this.dispatch, this, $Array.slice(arguments));
+  }.bind(this), {instanceId: opt_webViewInstanceId || 0});
 }
 
 ContextMenusOnClickedEvent.prototype = {
@@ -94,7 +93,6 @@ var WebViewContextMenus = utils.expose(
 /** @private */
 WebViewInternal.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
   var requestId = e.requestId;
-  var self = this;
   // Construct the event.menu object.
   var actionTaken = false;
   var validateCall = function() {
@@ -111,8 +109,8 @@ WebViewInternal.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
       validateCall();
       // TODO(lazyboy): WebViewShowContextFunction doesn't do anything useful
       // with |items|, implement.
-      WebView.showContextMenu(self.guestInstanceId, requestId, items);
-    }
+      WebView.showContextMenu(this.guestInstanceId, requestId, items);
+    }.bind(this)
   };
   webViewEvent.menu = menu;
   var webviewNode = this.webviewNode;
@@ -123,7 +121,7 @@ WebViewInternal.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
   if (!defaultPrevented) {
     actionTaken = true;
     // The default action is equivalent to just showing the context menu as is.
-    WebView.showContextMenu(self.guestInstanceId, requestId, undefined);
+    WebView.showContextMenu(this.guestInstanceId, requestId, undefined);
 
     // TODO(lazyboy): Figure out a way to show warning message only when
     // listeners are registered for this event.
@@ -152,39 +150,38 @@ WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {
 
 /** @private */
 WebViewInternal.prototype.setupExperimentalContextMenus = function() {
-  var self = this;
   var createContextMenus = function() {
     return function() {
-      if (self.contextMenus_) {
-        return self.contextMenus_;
+      if (this.contextMenus_) {
+        return this.contextMenus_;
       }
 
-      self.contextMenus_ = new WebViewContextMenus(self.viewInstanceId);
+      this.contextMenus_ = new WebViewContextMenus(this.viewInstanceId);
 
-      // Define 'onClicked' event property on |self.contextMenus_|.
+      // Define 'onClicked' event property on |this.contextMenus_|.
       var getOnClickedEvent = function() {
         return function() {
-          if (!self.contextMenusOnClickedEvent_) {
+          if (!this.contextMenusOnClickedEvent_) {
             var eventName = 'webViewInternal.onClicked';
             // TODO(lazyboy): Find event by name instead of events[0].
             var eventSchema = WebViewSchema.events[0];
             var eventOptions = {supportsListeners: true};
             var onClickedEvent = new ContextMenusOnClickedEvent(
-                eventName, eventSchema, eventOptions, self.viewInstanceId);
-            self.contextMenusOnClickedEvent_ = onClickedEvent;
+                eventName, eventSchema, eventOptions, this.viewInstanceId);
+            this.contextMenusOnClickedEvent_ = onClickedEvent;
             return onClickedEvent;
           }
-          return self.contextMenusOnClickedEvent_;
-        }
-      };
+          return this.contextMenusOnClickedEvent_;
+        }.bind(this);
+      }.bind(this);
       Object.defineProperty(
-          self.contextMenus_,
+          this.contextMenus_,
           'onClicked',
           {get: getOnClickedEvent(), enumerable: true});
 
-      return self.contextMenus_;
-    };
-  };
+      return this.contextMenus_;
+    }.bind(this);
+  }.bind(this);
 
   // Expose <webview>.contextMenus object.
   Object.defineProperty(

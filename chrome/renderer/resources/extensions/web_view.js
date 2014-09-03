@@ -444,18 +444,17 @@ WebViewInternal.prototype.setupWebViewSrcAttributeMutationObserver =
   // attribute without any changes to its value. This is useful in the case
   // where the webview guest has crashed and navigating to the same address
   // spawns off a new process.
-  var self = this;
   this.srcAndPartitionObserver = new MutationObserver(function(mutations) {
     $Array.forEach(mutations, function(mutation) {
       var oldValue = mutation.oldValue;
-      var newValue = self.webviewNode.getAttribute(mutation.attributeName);
+      var newValue = this.webviewNode.getAttribute(mutation.attributeName);
       if (oldValue != newValue) {
         return;
       }
-      self.handleWebviewAttributeMutation(
+      this.handleWebviewAttributeMutation(
           mutation.attributeName, oldValue, newValue);
-    });
-  });
+    }.bind(this));
+  }.bind(this));
   var params = {
     attributes: true,
     attributeOldValue: true,
@@ -756,19 +755,17 @@ WebViewInternal.prototype.dispatchEvent = function(webViewEvent) {
  */
 WebViewInternal.prototype.setupEventProperty = function(eventName) {
   var propertyName = 'on' + eventName.toLowerCase();
-  var self = this;
-  var webviewNode = this.webviewNode;
-  Object.defineProperty(webviewNode, propertyName, {
+  Object.defineProperty(this.webviewNode, propertyName, {
     get: function() {
-      return self.on[propertyName];
-    },
+      return this.on[propertyName];
+    }.bind(this),
     set: function(value) {
-      if (self.on[propertyName])
-        webviewNode.removeEventListener(eventName, self.on[propertyName]);
-      self.on[propertyName] = value;
+      if (this.on[propertyName])
+        this.webviewNode.removeEventListener(eventName, self.on[propertyName]);
+      this.on[propertyName] = value;
       if (value)
-        webviewNode.addEventListener(eventName, value);
-    },
+        this.webviewNode.addEventListener(eventName, value);
+    }.bind(this),
     enumerable: true
   });
 };
