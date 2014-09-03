@@ -52,6 +52,7 @@
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/timezone/timezone_provider.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -103,11 +104,6 @@ const char *kResumableScreens[] = {
 bool CanShowHIDDetectionScreen() {
   return !CommandLine::ForCurrentProcess()->HasSwitch(
         chromeos::switches::kDisableHIDDetectionOnOOBE);
-}
-
-bool ShouldShowControllerPairingScreen() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kShowControllerPairingDemo);
 }
 
 bool ShouldShowHostPairingScreen() {
@@ -632,7 +628,11 @@ void WizardController::OnConnectionFailed() {
 
 void WizardController::OnUpdateCompleted() {
   // TODO(dzhioev): place checks related to pairing in a proper place.
-  if (ShouldShowControllerPairingScreen()) {
+  const bool is_shark =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos()->
+      GetDeviceCloudPolicyManager()->IsSharkRequisition();
+
+  if (is_shark) {
     ShowControllerPairingScreen();
   } else if (ShouldShowHostPairingScreen()) {
     ShowHostPairingScreen();

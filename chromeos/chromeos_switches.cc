@@ -218,10 +218,6 @@ const char kShillStub[] = "shill-stub";
 
 // If this switch is set, controller pairing process is displayed after update
 // stage of OOBE.
-const char kShowControllerPairingDemo[] = "show-controller-pairing-demo";
-
-// If this switch is set, controller pairing process is displayed after update
-// stage of OOBE.
 const char kShowHostPairingDemo[] = "show-host-pairing-demo";
 
 // Sends test messages on first call to RequestUpdate (stub only).
