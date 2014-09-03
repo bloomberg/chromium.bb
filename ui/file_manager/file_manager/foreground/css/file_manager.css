@@ -690,7 +690,7 @@ html[dir='rtl'] .breadcrumbs .separator {
   flex: none;
   flex-direction: row;
   font-size: 13px;
-  height: 57px;
+  height: 44px;
   overflow: hidden;
   padding-left: 57px;  /* Make space for the icon. */
   transition: height 70ms linear;
