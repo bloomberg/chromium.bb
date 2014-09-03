@@ -207,6 +207,8 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
       self.repo.run(self.gc.hash_one, 'branch_D'),
       self.repo['D']
     )
+    self.assertTrue(self.repo['D'].startswith(
+        self.repo.run(self.gc.hash_one, 'branch_D', short=True)))
 
   def testStream(self):
     items = set(self.repo.commit_map.itervalues())
@@ -365,6 +367,55 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
     self.repo.git('checkout', '-tb', 'happybranch', 'master')
     self.assertEquals(self.repo.run(self.gc.upstream, 'happybranch'),
                       'master')
+
+  def testNormalizedVersion(self):
+    self.assertTrue(all(
+        isinstance(x, int) for x in self.repo.run(self.gc.get_git_version)))
+
+  def testGetAllTrackingInfo(self):
+    self.repo.git('commit', '--allow-empty', '-am', 'foooooo')
+    self.repo.git('checkout', '-tb', 'happybranch', 'master')
+    self.repo.git('commit', '--allow-empty', '-am', 'foooooo')
+    self.repo.git('checkout', '-tb', 'child', 'happybranch')
+
+    self.repo.git('checkout', '-tb', 'to_delete', 'master')
+    self.repo.git('checkout', '-tb', 'parent_gone', 'to_delete')
+    self.repo.git('branch', '-D', 'to_delete')
+
+    actual = self.repo.run(self.gc.get_all_tracking_info)
+    supports_track = (
+        self.repo.run(self.gc.get_git_version)
+        >= self.gc.MIN_UPSTREAM_TRACK_GIT_VERSION)
+
+    expected = {
+        'happybranch': (
+            self.repo.run(self.gc.hash_one, 'happybranch', short=True),
+            'master',
+            1 if supports_track else None,
+            None
+        ),
+        'child': (
+            self.repo.run(self.gc.hash_one, 'child', short=True),
+            'happybranch',
+            None,
+            None
+        ),
+        'master': (
+            self.repo.run(self.gc.hash_one, 'master', short=True),
+            '',
+            None,
+            None
+        ),
+        '': None,
+        'parent_gone': (
+            self.repo.run(self.gc.hash_one, 'parent_gone', short=True),
+            'to_delete',
+            1 if supports_track else None,
+            None
+        ),
+        'to_delete': None
+    }
+    self.assertEquals(expected, actual)
 
 
 class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,

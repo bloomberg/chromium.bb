@@ -3,10 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""
-Provides a short mapping of all the branches in your local repo, organized by
-their upstream ('tracking branch') layout. Example:
+"""Provides a short mapping of all the branches in your local repo, organized
+by their upstream ('tracking branch') layout.
 
+Example:
 origin/master
   cool_feature
     dependent_feature
@@ -24,80 +24,234 @@ Branches are colorized as follows:
     upstream, then you will see this.
 """
 
+import argparse
 import collections
 import sys
 
 from third_party import colorama
 from third_party.colorama import Fore, Style
 
-from git_common import current_branch, branches, upstream, hash_one, hash_multi
-from git_common import tags
+from git_common import current_branch, upstream, tags, get_all_tracking_info
+from git_common import get_git_version, MIN_UPSTREAM_TRACK_GIT_VERSION
 
-NO_UPSTREAM = '{NO UPSTREAM}'
+import git_cl
 
-def color_for_branch(branch, branch_hash, cur_hash, tag_set):
-  if branch.startswith('origin'):
-    color = Fore.RED
-  elif branch == NO_UPSTREAM or branch in tag_set:
-    color = Fore.MAGENTA
-  elif branch_hash == cur_hash:
-    color = Fore.CYAN
-  else:
-    color = Fore.GREEN
-
-  if branch_hash == cur_hash:
-    color += Style.BRIGHT
-  else:
-    color += Style.NORMAL
-
-  return color
+DEFAULT_SEPARATOR = ' ' * 4
 
 
-def print_branch(cur, cur_hash, branch, branch_hashes, par_map, branch_map,
-                 tag_set, depth=0):
-  branch_hash = branch_hashes[branch]
+class OutputManager(object):
+  """Manages a number of OutputLines and formats them into aligned columns."""
 
-  color = color_for_branch(branch, branch_hash, cur_hash, tag_set)
+  def __init__(self):
+    self.lines = []
+    self.nocolor = False
+    self.max_column_lengths = []
+    self.num_columns = None
 
-  suffix = ''
-  if cur == 'HEAD':
-    if branch_hash == cur_hash:
+  def append(self, line):
+    # All lines must have the same number of columns.
+    if not self.num_columns:
+      self.num_columns = len(line.columns)
+      self.max_column_lengths = [0] * self.num_columns
+    assert self.num_columns == len(line.columns)
+
+    if self.nocolor:
+      line.colors = [''] * self.num_columns
+
+    self.lines.append(line)
+
+    # Update maximum column lengths.
+    for i, col in enumerate(line.columns):
+      self.max_column_lengths[i] = max(self.max_column_lengths[i], len(col))
+
+  def as_formatted_string(self):
+    return '\n'.join(
+        l.as_padded_string(self.max_column_lengths) for l in self.lines)
+
+
+class OutputLine(object):
+  """A single line of data.
+
+  This consists of an equal number of columns, colors and separators."""
+
+  def __init__(self):
+    self.columns = []
+    self.separators = []
+    self.colors = []
+
+  def append(self, data, separator=DEFAULT_SEPARATOR, color=Fore.WHITE):
+    self.columns.append(data)
+    self.separators.append(separator)
+    self.colors.append(color)
+
+  def as_padded_string(self, max_column_lengths):
+    """"Returns the data as a string with each column padded to
+    |max_column_lengths|."""
+    output_string = ''
+    for i, (color, data, separator) in enumerate(
+        zip(self.colors, self.columns, self.separators)):
+      if max_column_lengths[i] == 0:
+        continue
+
+      padding = (max_column_lengths[i] - len(data)) * ' '
+      output_string += color + data + padding + separator
+
+    return output_string.rstrip()
+
+
+class BranchMapper(object):
+  """A class which constructs output representing the tree's branch structure.
+
+  Attributes:
+    __tracking_info: a map of branches to their TrackingInfo objects which
+      consist of the branch hash, upstream and ahead/behind status.
+    __gone_branches: a set of upstreams which are not fetchable by git"""
+
+  def __init__(self):
+    self.verbosity = 0
+    self.output = OutputManager()
+    self.__tracking_info = get_all_tracking_info()
+    self.__gone_branches = set()
+    self.__roots = set()
+
+    # A map of parents to a list of their children.
+    self.parent_map = collections.defaultdict(list)
+    for branch, branch_info in self.__tracking_info.iteritems():
+      if not branch_info:
+        continue
+
+      parent = branch_info.upstream
+      if parent and not self.__tracking_info[parent]:
+        branch_upstream = upstream(branch)
+        # If git can't find the upstream, mark the upstream as gone.
+        if branch_upstream:
+          parent = branch_upstream
+        else:
+          self.__gone_branches.add(parent)
+        # A parent that isn't in the tracking info is a root.
+        self.__roots.add(parent)
+
+      self.parent_map[parent].append(branch)
+
+    self.__current_branch = current_branch()
+    self.__current_hash = self.__tracking_info[self.__current_branch].hash
+    self.__tag_set = tags()
+
+  def start(self):
+    for root in sorted(self.__roots):
+      self.__append_branch(root)
+
+  def __is_invalid_parent(self, parent):
+    return not parent or parent in self.__gone_branches
+
+  def __color_for_branch(self, branch, branch_hash):
+    if branch.startswith('origin'):
+      color = Fore.RED
+    elif self.__is_invalid_parent(branch) or branch in self.__tag_set:
+      color = Fore.MAGENTA
+    elif branch_hash == self.__current_hash:
+      color = Fore.CYAN
+    else:
+      color = Fore.GREEN
+
+    if branch_hash == self.__current_hash:
+      color += Style.BRIGHT
+    else:
+      color += Style.NORMAL
+
+    return color
+
+  def __append_branch(self, branch, depth=0):
+    """Recurses through the tree structure and appends an OutputLine to the
+    OutputManager for each branch."""
+    branch_info = self.__tracking_info[branch]
+    branch_hash = branch_info.hash if branch_info else None
+
+    line = OutputLine()
+
+    # The branch name with appropriate indentation.
+    suffix = ''
+    if branch == self.__current_branch or (
+        self.__current_branch == 'HEAD' and branch == self.__current_hash):
       suffix = ' *'
-  elif branch == cur:
-    suffix = ' *'
+    branch_string = branch
+    if branch in self.__gone_branches:
+      branch_string = '{%s:GONE}' % branch
+    if not branch:
+      branch_string = '{NO_UPSTREAM}'
+    main_string = '  ' * depth + branch_string + suffix
+    line.append(
+        main_string,
+        color=self.__color_for_branch(branch, branch_hash))
 
-  print color + "  "*depth + branch + suffix
-  for child in par_map.pop(branch, ()):
-    print_branch(cur, cur_hash, child, branch_hashes, par_map, branch_map,
-                 tag_set, depth=depth+1)
+    # The branch hash.
+    if self.verbosity >= 2:
+      line.append(branch_hash or '', separator=' ', color=Fore.RED)
+
+    # The branch tracking status.
+    if self.verbosity >= 1:
+      ahead_string = ''
+      behind_string = ''
+      front_separator = ''
+      center_separator = ''
+      back_separator = ''
+      if branch_info and not self.__is_invalid_parent(branch_info.upstream):
+        ahead = branch_info.ahead
+        behind = branch_info.behind
+
+        if ahead:
+          ahead_string = 'ahead %d' % ahead
+        if behind:
+          behind_string = 'behind %d' % behind
+
+        if ahead or behind:
+          front_separator = '['
+          back_separator = ']'
+
+        if ahead and behind:
+          center_separator = '|'
+
+      line.append(front_separator, separator=' ')
+      line.append(ahead_string, separator=' ', color=Fore.MAGENTA)
+      line.append(center_separator, separator=' ')
+      line.append(behind_string, separator=' ', color=Fore.MAGENTA)
+      line.append(back_separator)
+
+    # The Rietveld issue associated with the branch.
+    if self.verbosity >= 2:
+      none_text = '' if self.__is_invalid_parent(branch) else 'None'
+      url = git_cl.Changelist(branchref=branch).GetIssueURL()
+      line.append(url or none_text, color=Fore.BLUE if url else Fore.WHITE)
+
+    self.output.append(line)
+
+    for child in sorted(self.parent_map.pop(branch, ())):
+      self.__append_branch(child, depth=depth + 1)
 
 
 def main(argv):
   colorama.init()
-  assert len(argv) == 1, "No arguments expected"
-  branch_map = {}
-  par_map = collections.defaultdict(list)
-  for branch in branches():
-    par = upstream(branch) or NO_UPSTREAM
-    branch_map[branch] = par
-    par_map[par].append(branch)
+  if get_git_version() < MIN_UPSTREAM_TRACK_GIT_VERSION:
+    print >> sys.stderr, (
+        'This tool will not show all tracking information for git version '
+        'earlier than ' +
+        '.'.join(str(x) for x in MIN_UPSTREAM_TRACK_GIT_VERSION) +
+        '. Please consider upgrading.')
 
-  current = current_branch()
-  hashes = hash_multi(current, *branch_map.keys())
-  current_hash = hashes[0]
-  par_hashes = {k: hashes[i+1] for i, k in enumerate(branch_map.iterkeys())}
-  par_hashes[NO_UPSTREAM] = 0
-  tag_set = tags()
-  while par_map:
-    for parent in par_map:
-      if parent not in branch_map:
-        if parent not in par_hashes:
-          par_hashes[parent] = hash_one(parent)
-        print_branch(current, current_hash, parent, par_hashes, par_map,
-                     branch_map, tag_set)
-        break
+  parser = argparse.ArgumentParser(
+      description='Print a a tree of all branches parented by their upstreams')
+  parser.add_argument('-v', action='count',
+                      help='Display branch hash and Rietveld URL')
+  parser.add_argument('--no-color', action='store_true', dest='nocolor',
+                      help='Turn off colors.')
 
+  opts = parser.parse_args(argv[1:])
+
+  mapper = BranchMapper()
+  mapper.verbosity = opts.v
+  mapper.output.nocolor = opts.nocolor
+  mapper.start()
+  print mapper.output.as_formatted_string()
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
-
