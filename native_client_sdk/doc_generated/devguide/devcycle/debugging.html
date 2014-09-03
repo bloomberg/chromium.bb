@@ -19,23 +19,22 @@ and measure your application&#8217;s performance.</p>
 <li><p class="first"><a class="reference internal" href="#debugging-with-printf" id="id7">Debugging with printf</a></p>
 <ul class="small-gap">
 <li><a class="reference internal" href="#redirecting-output-to-log-files" id="id8">Redirecting output to log files</a></li>
-<li><a class="reference internal" href="#redirecting-output-to-the-javascript-console" id="id9">Redirecting output to the JavaScript console</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#logging-calls-to-pepper-interfaces" id="id10">Logging calls to Pepper interfaces</a></li>
-<li><a class="reference internal" href="#debugging-with-visual-studio" id="id11">Debugging with Visual Studio</a></li>
-<li><p class="first"><a class="reference internal" href="#debugging-with-nacl-gdb" id="id12">Debugging with nacl-gdb</a></p>
+<li><a class="reference internal" href="#logging-calls-to-pepper-interfaces" id="id9">Logging calls to Pepper interfaces</a></li>
+<li><a class="reference internal" href="#debugging-with-visual-studio" id="id10">Debugging with Visual Studio</a></li>
+<li><p class="first"><a class="reference internal" href="#debugging-with-nacl-gdb" id="id11">Debugging with nacl-gdb</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#debugging-pnacl-pexes-pepper-35-or-later" id="id13">Debugging PNaCl pexes (Pepper 35 or later)</a></li>
-<li><a class="reference internal" href="#debugging-pnacl-pexes-with-older-pepper-toolchains" id="id14">Debugging PNaCl pexes (with older Pepper toolchains)</a></li>
-<li><a class="reference internal" href="#running-nacl-gdb" id="id15">Running nacl-gdb</a></li>
+<li><a class="reference internal" href="#debugging-pnacl-pexes-pepper-35-or-later" id="id12">Debugging PNaCl pexes (Pepper 35 or later)</a></li>
+<li><a class="reference internal" href="#debugging-pnacl-pexes-with-older-pepper-toolchains" id="id13">Debugging PNaCl pexes (with older Pepper toolchains)</a></li>
+<li><a class="reference internal" href="#running-nacl-gdb" id="id14">Running nacl-gdb</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><p class="first"><a class="reference internal" href="#debugging-with-other-tools" id="id16">Debugging with other tools</a></p>
+<li><p class="first"><a class="reference internal" href="#debugging-with-other-tools" id="id15">Debugging with other tools</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#open-source-profiling-tools" id="id17">Open source profiling tools</a></li>
+<li><a class="reference internal" href="#open-source-profiling-tools" id="id16">Open source profiling tools</a></li>
 </ul>
 </li>
 </ul>
@@ -116,58 +115,6 @@ variable as follows:</p>
 the <code>--no-sandbox</code> flag.  You must also be careful that each variable points
 to a different file.
 </aside>
-<h4 id="redirecting-output-to-the-javascript-console">Redirecting output to the JavaScript console</h4>
-<p>You can also cause output from printf statements in your C/C++ code to be
-relayed to the JavaScript side of your application through the Pepper messaging
-system, where you can then write the output to the JavaScript console. Follow
-these steps:</p>
-<ol class="arabic">
-<li><p class="first">Set the <code>NACL_EXE_STDOUT</code> and <code>NACL_EXE_STDERR</code> environment variables as
-follows:</p>
-<ul class="small-gap">
-<li><p class="first"><code>NACL_EXE_STDOUT=DEBUG_ONLY:dev://postmessage</code></p>
-</li>
-<li><p class="first"><code>NACL_EXE_STDERR=DEBUG_ONLY:dev://postmessage</code></p>
-</li>
-</ul>
-<p>These settings tell Native Client to use <code>PostMessage()</code> to send output
-that your Native Client module writes to stdout and stderr to the JavaScript
-side of your application.</p>
-</li>
-<li><p class="first">Register a JavaScript handler to receive messages from your Native Client
-module:</p>
-<pre class="prettyprint">
-&lt;div id=&quot;nacl_container&quot;&gt;
-  &lt;script type=&quot;text/javascript&quot;&gt;
-    var container = document.getElementById('nacl_container');
-    container.addEventListener('message', handleMessage, true);
-  &lt;/script&gt;
-  &lt;embed id=&quot;nacl_module&quot;
-         src=&quot;my_application.nmf&quot;
-         type=&quot;application/x-nacl&quot; /&gt;
-&lt;/div&gt;
-</pre>
-</li>
-<li><p class="first">Implement a simple JavaScript handler that logs the messages it receives to
-the JavaScript console:</p>
-<pre class="prettyprint">
-function handleMessage(message_event) {
-  console.log(message_event.data);
-}
-</pre>
-<p>This handler works in the simple case where the only messages your Native
-Client module sends to JavaScript are messages with the output from stdout
-and stderr. If your Native Client module also sends other messages to
-JavaScript, your handler will need to be more complex.</p>
-<p>Once you&#8217;ve implemented a message handler and set up the environment
-variables as described above, you can check the JavaScript console to see
-output that your Native Client module prints to stdout and stderr. Keep in
-mind that your module makes a call to <code>PostMessage()</code> every time it flushes
-stdout or stderr.  Your application&#8217;s performance will degrade considerably
-if your module prints and flushes frequently, or if it makes frequent Pepper
-calls to begin with (e.g., to render).</p>
-</li>
-</ol>
 <h3 id="logging-calls-to-pepper-interfaces">Logging calls to Pepper interfaces</h3>
 <p>You can log all Pepper calls your module makes by passing the following flags
 to Chrome on startup:</p>
