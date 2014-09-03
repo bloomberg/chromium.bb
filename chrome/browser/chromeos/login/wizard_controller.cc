@@ -273,143 +273,110 @@ void WizardController::Init(
 }
 
 chromeos::NetworkScreen* WizardController::GetNetworkScreen() {
-  if (!network_screen_.get())
-    network_screen_.reset(new chromeos::NetworkScreen(
-        this, oobe_display_->GetNetworkScreenActor()));
-  return network_screen_.get();
+  return static_cast<chromeos::NetworkScreen*>(GetScreen(kNetworkScreenName));
 }
 
 chromeos::UpdateScreen* WizardController::GetUpdateScreen() {
-  if (!update_screen_.get()) {
-    update_screen_.reset(new chromeos::UpdateScreen(
-        this, oobe_display_->GetUpdateScreenActor()));
-    update_screen_->SetRebootCheckDelay(kWaitForRebootTimeSec);
-  }
-  return update_screen_.get();
+  return static_cast<chromeos::UpdateScreen*>(GetScreen(kUpdateScreenName));
 }
 
 chromeos::UserImageScreen* WizardController::GetUserImageScreen() {
-  if (!user_image_screen_.get())
-    user_image_screen_.reset(
-        new chromeos::UserImageScreen(
-            this, oobe_display_->GetUserImageScreenActor()));
-  return user_image_screen_.get();
+  return static_cast<chromeos::UserImageScreen*>(
+      GetScreen(kUserImageScreenName));
 }
 
-chromeos::EulaScreen* WizardController::GetEulaScreen() {
-  if (!eula_screen_.get())
-    eula_screen_.reset(new chromeos::EulaScreen(
-        this, oobe_display_->GetEulaScreenActor()));
-  return eula_screen_.get();
-}
-
-chromeos::EnrollmentScreen*
-    WizardController::GetEnrollmentScreen() {
-  if (!enrollment_screen_.get()) {
-    enrollment_screen_.reset(
-        new chromeos::EnrollmentScreen(
-            this, oobe_display_->GetEnrollmentScreenActor()));
-  }
-  return enrollment_screen_.get();
-}
-
-chromeos::ResetScreen* WizardController::GetResetScreen() {
-  if (!reset_screen_.get()) {
-    reset_screen_.reset(
-        new chromeos::ResetScreen(this, oobe_display_->GetResetScreenActor()));
-  }
-  return reset_screen_.get();
-}
-
-chromeos::KioskEnableScreen* WizardController::GetKioskEnableScreen() {
-  if (!kiosk_enable_screen_.get()) {
-    kiosk_enable_screen_.reset(
-        new chromeos::KioskEnableScreen(
-            this,
-            oobe_display_->GetKioskEnableScreenActor()));
-  }
-  return kiosk_enable_screen_.get();
-}
-
-chromeos::KioskAutolaunchScreen* WizardController::GetKioskAutolaunchScreen() {
-  if (!autolaunch_screen_.get()) {
-    autolaunch_screen_.reset(
-        new chromeos::KioskAutolaunchScreen(
-            this, oobe_display_->GetKioskAutolaunchScreenActor()));
-  }
-  return autolaunch_screen_.get();
-}
-
-chromeos::TermsOfServiceScreen* WizardController::GetTermsOfServiceScreen() {
-  if (!terms_of_service_screen_.get()) {
-    terms_of_service_screen_.reset(
-        new chromeos::TermsOfServiceScreen(
-            this, oobe_display_->GetTermsOfServiceScreenActor()));
-  }
-  return terms_of_service_screen_.get();
-}
-
-chromeos::WrongHWIDScreen* WizardController::GetWrongHWIDScreen() {
-  if (!wrong_hwid_screen_.get()) {
-    wrong_hwid_screen_.reset(
-        new chromeos::WrongHWIDScreen(
-            this, oobe_display_->GetWrongHWIDScreenActor()));
-  }
-  return wrong_hwid_screen_.get();
+chromeos::EnrollmentScreen* WizardController::GetEnrollmentScreen() {
+  return static_cast<chromeos::EnrollmentScreen*>(
+      GetScreen(kEnrollmentScreenName));
 }
 
 chromeos::AutoEnrollmentCheckScreen*
     WizardController::GetAutoEnrollmentCheckScreen() {
-  if (!auto_enrollment_check_screen_.get()) {
-    auto_enrollment_check_screen_.reset(
-        new chromeos::AutoEnrollmentCheckScreen(
-            this,
-            oobe_display_->GetAutoEnrollmentCheckScreenActor()));
-  }
-  return auto_enrollment_check_screen_.get();
+  return static_cast<chromeos::AutoEnrollmentCheckScreen*>(
+      GetScreen(kAutoEnrollmentCheckScreenName));
 }
 
 chromeos::SupervisedUserCreationScreen*
     WizardController::GetSupervisedUserCreationScreen() {
-  if (!supervised_user_creation_screen_.get()) {
-    supervised_user_creation_screen_.reset(
-        new chromeos::SupervisedUserCreationScreen(
-            this, oobe_display_->GetSupervisedUserCreationScreenActor()));
-  }
-  return supervised_user_creation_screen_.get();
+  return static_cast<chromeos::SupervisedUserCreationScreen*>(
+      GetScreen(kSupervisedUserCreationScreenName));
 }
 
-chromeos::HIDDetectionScreen* WizardController::GetHIDDetectionScreen() {
-  if (!hid_detection_screen_.get()) {
-    hid_detection_screen_.reset(
-        new chromeos::HIDDetectionScreen(
-            this, oobe_display_->GetHIDDetectionScreenActor()));
-  }
-  return hid_detection_screen_.get();
+chromeos::ErrorScreen* WizardController::GetErrorScreen() {
+  return static_cast<chromeos::ErrorScreen*>(GetScreen(kErrorScreenName));
 }
 
-ControllerPairingScreen* WizardController::GetControllerPairingScreen() {
-  if (!controller_pairing_screen_) {
-    controller_pairing_screen_.reset(new ControllerPairingScreen(
-        this, oobe_display_->GetControllerPairingScreenActor()));
+WizardScreen* WizardController::GetScreen(const std::string& screen_name) {
+  ScreenMap::const_iterator iter = screens_.find(screen_name);
+  if (iter != screens_.end()) {
+    return iter->second.get();
   }
-  return controller_pairing_screen_.get();
+  WizardScreen* result = CreateScreen(screen_name);
+  DCHECK(result) << "Can not create screen named " << screen_name;
+  screens_[screen_name] = make_linked_ptr(result);
+  return result;
 }
 
-HostPairingScreen* WizardController::GetHostPairingScreen() {
-  if (!host_pairing_screen_) {
-    host_pairing_screen_.reset(new HostPairingScreen(
-        this, oobe_display_->GetHostPairingScreenActor()));
+WizardScreen* WizardController::CreateScreen(const std::string& screen_name) {
+  if (screen_name == kNetworkScreenName) {
+    return new chromeos::NetworkScreen(this,
+                                       oobe_display_->GetNetworkScreenActor());
+  } else if (screen_name == kErrorScreenName) {
+    return new chromeos::ErrorScreen(this,
+                                     oobe_display_->GetErrorScreenActor());
+  } else if (screen_name == kUpdateScreenName) {
+    chromeos::UpdateScreen* result =
+        new chromeos::UpdateScreen(this, oobe_display_->GetUpdateScreenActor());
+    result->SetRebootCheckDelay(kWaitForRebootTimeSec);
+    return result;
+  } else if (screen_name == kUserImageScreenName) {
+    return new chromeos::UserImageScreen(
+        this, oobe_display_->GetUserImageScreenActor());
+  } else if (screen_name == kEulaScreenName) {
+    return new chromeos::EulaScreen(this, oobe_display_->GetEulaScreenActor());
+  } else if (screen_name == kEnrollmentScreenName) {
+    return new chromeos::EnrollmentScreen(
+        this, oobe_display_->GetEnrollmentScreenActor());
+  } else if (screen_name == kResetScreenName) {
+    return new chromeos::ResetScreen(this,
+                                     oobe_display_->GetResetScreenActor());
+  } else if (screen_name == kKioskEnableScreenName) {
+    return new chromeos::KioskEnableScreen(
+        this, oobe_display_->GetKioskEnableScreenActor());
+  } else if (screen_name == kKioskAutolaunchScreenName) {
+    return new chromeos::KioskAutolaunchScreen(
+        this, oobe_display_->GetKioskAutolaunchScreenActor());
+  } else if (screen_name == kTermsOfServiceScreenName) {
+    return new chromeos::TermsOfServiceScreen(
+        this, oobe_display_->GetTermsOfServiceScreenActor());
+  } else if (screen_name == kWrongHWIDScreenName) {
+    return new chromeos::WrongHWIDScreen(
+        this, oobe_display_->GetWrongHWIDScreenActor());
+  } else if (screen_name == kSupervisedUserCreationScreenName) {
+    return new chromeos::SupervisedUserCreationScreen(
+        this, oobe_display_->GetSupervisedUserCreationScreenActor());
+  } else if (screen_name == kHIDDetectionScreenName) {
+    return new chromeos::HIDDetectionScreen(
+        this, oobe_display_->GetHIDDetectionScreenActor());
+  } else if (screen_name == kAutoEnrollmentCheckScreenName) {
+    return new chromeos::AutoEnrollmentCheckScreen(
+        this, oobe_display_->GetAutoEnrollmentCheckScreenActor());
+  } else if (screen_name == kControllerPairingScreenName) {
+    return new ControllerPairingScreen(
+        this, oobe_display_->GetControllerPairingScreenActor());
+  } else if (screen_name == kHostPairingScreenName) {
+    return new HostPairingScreen(this,
+                                 oobe_display_->GetHostPairingScreenActor());
   }
-  return host_pairing_screen_.get();
+  return NULL;
 }
 
 void WizardController::ShowNetworkScreen() {
   VLOG(1) << "Showing network screen.";
   // Hide the status area initially; it only appears after OOBE first animates
   // in. Keep it visible if the user goes back to the existing network screen.
-  SetStatusAreaVisible(network_screen_.get());
-  SetCurrentScreen(GetNetworkScreen());
+  SetStatusAreaVisible(screens_.count(kNetworkScreenName) > 0);
+  SetCurrentScreen(GetScreen(kNetworkScreenName));
 }
 
 void WizardController::ShowLoginScreen(const LoginScreenContext& context) {
@@ -436,7 +403,7 @@ void WizardController::ResumeLoginScreen() {
 void WizardController::ShowUpdateScreen() {
   VLOG(1) << "Showing update screen.";
   SetStatusAreaVisible(true);
-  SetCurrentScreen(GetUpdateScreen());
+  SetCurrentScreen(GetScreen(kUpdateScreenName));
 }
 
 void WizardController::ShowUserImageScreen() {
@@ -455,13 +422,13 @@ void WizardController::ShowUserImageScreen() {
   // this produces undesired UX transitions.
   SetStatusAreaVisible(true);
 
-  SetCurrentScreen(GetUserImageScreen());
+  SetCurrentScreen(GetScreen(kUserImageScreenName));
 }
 
 void WizardController::ShowEulaScreen() {
   VLOG(1) << "Showing EULA screen.";
   SetStatusAreaVisible(true);
-  SetCurrentScreen(GetEulaScreen());
+  SetCurrentScreen(GetScreen(kEulaScreenName));
 }
 
 void WizardController::ShowEnrollmentScreen() {
@@ -496,19 +463,19 @@ void WizardController::ShowEnrollmentScreen() {
 void WizardController::ShowResetScreen() {
   VLOG(1) << "Showing reset screen.";
   SetStatusAreaVisible(false);
-  SetCurrentScreen(GetResetScreen());
+  SetCurrentScreen(GetScreen(kResetScreenName));
 }
 
 void WizardController::ShowKioskEnableScreen() {
   VLOG(1) << "Showing kiosk enable screen.";
   SetStatusAreaVisible(false);
-  SetCurrentScreen(GetKioskEnableScreen());
+  SetCurrentScreen(GetScreen(kKioskEnableScreenName));
 }
 
 void WizardController::ShowKioskAutolaunchScreen() {
   VLOG(1) << "Showing kiosk autolaunch screen.";
   SetStatusAreaVisible(false);
-  SetCurrentScreen(GetKioskAutolaunchScreen());
+  SetCurrentScreen(GetScreen(kKioskAutolaunchScreenName));
 }
 
 void WizardController::ShowTermsOfServiceScreen() {
@@ -524,13 +491,13 @@ void WizardController::ShowTermsOfServiceScreen() {
 
   VLOG(1) << "Showing Terms of Service screen.";
   SetStatusAreaVisible(true);
-  SetCurrentScreen(GetTermsOfServiceScreen());
+  SetCurrentScreen(GetScreen(kTermsOfServiceScreenName));
 }
 
 void WizardController::ShowWrongHWIDScreen() {
   VLOG(1) << "Showing wrong HWID screen.";
   SetStatusAreaVisible(false);
-  SetCurrentScreen(GetWrongHWIDScreen());
+  SetCurrentScreen(GetScreen(kWrongHWIDScreenName));
 }
 
 void WizardController::ShowAutoEnrollmentCheckScreen() {
@@ -544,27 +511,25 @@ void WizardController::ShowAutoEnrollmentCheckScreen() {
 void WizardController::ShowSupervisedUserCreationScreen() {
   VLOG(1) << "Showing Locally managed user creation screen screen.";
   SetStatusAreaVisible(true);
-  SupervisedUserCreationScreen* screen =
-      GetSupervisedUserCreationScreen();
-  SetCurrentScreen(screen);
+  SetCurrentScreen(GetScreen(kSupervisedUserCreationScreenName));
 }
 
 void WizardController::ShowHIDDetectionScreen() {
   VLOG(1) << "Showing HID discovery screen.";
   SetStatusAreaVisible(true);
-  SetCurrentScreen(GetHIDDetectionScreen());
+  SetCurrentScreen(GetScreen(kHIDDetectionScreenName));
 }
 
 void WizardController::ShowControllerPairingScreen() {
   VLOG(1) << "Showing controller pairing screen.";
   SetStatusAreaVisible(false);
-  SetCurrentScreen(GetControllerPairingScreen());
+  SetCurrentScreen(GetScreen(kControllerPairingScreenName));
 }
 
 void WizardController::ShowHostPairingScreen() {
   VLOG(1) << "Showing host pairing screen.";
   SetStatusAreaVisible(false);
-  SetCurrentScreen(GetHostPairingScreen());
+  SetCurrentScreen(GetScreen(kHostPairingScreenName));
 }
 
 void WizardController::SkipToLoginForTesting(
@@ -801,7 +766,7 @@ void WizardController::OnHostPairingFinished() {
 
 void WizardController::InitiateOOBEUpdate() {
   PerformPostEulaActions();
-  SetCurrentScreenSmooth(GetUpdateScreen(), true);
+  SetCurrentScreenSmooth(GetScreen(kUpdateScreenName), true);
   GetUpdateScreen()->StartNetworkCheck();
 }
 
@@ -1063,17 +1028,9 @@ bool WizardController::GetUsageStatisticsReporting() const {
   return usage_statistics_reporting_;
 }
 
-chromeos::ErrorScreen* WizardController::GetErrorScreen() {
-  if (!error_screen_.get()) {
-    error_screen_.reset(
-        new chromeos::ErrorScreen(this, oobe_display_->GetErrorScreenActor()));
-  }
-  return error_screen_.get();
-}
-
 void WizardController::ShowErrorScreen() {
   VLOG(1) << "Showing error screen.";
-  SetCurrentScreen(GetErrorScreen());
+  SetCurrentScreen(GetScreen(kErrorScreenName));
 }
 
 void WizardController::HideErrorScreen(WizardScreen* parent_screen) {

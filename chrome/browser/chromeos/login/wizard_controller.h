@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_CONTROLLER_H_
 
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -29,29 +31,19 @@ class DictionaryValue;
 namespace chromeos {
 
 class AutoEnrollmentCheckScreen;
-class ControllerPairingScreen;
 class EnrollmentScreen;
 class ErrorScreen;
-class EulaScreen;
 struct Geoposition;
-class HIDDetectionScreen;
-class HostPairingScreen;
-class KioskAutolaunchScreen;
-class KioskEnableScreen;
 class LoginDisplayHost;
 class LoginScreenContext;
 class NetworkScreen;
 class OobeDisplay;
-class ResetScreen;
 class SimpleGeolocationProvider;
 class SupervisedUserCreationScreen;
-class TermsOfServiceScreen;
 class TimeZoneProvider;
 struct TimeZoneResponseData;
 class UpdateScreen;
 class UserImageScreen;
-class WizardScreen;
-class WrongHWIDScreen;
 
 // Class that manages control flow between wizard screens. Wizard controller
 // interacts with screen controllers to move the user between screens.
@@ -130,21 +122,16 @@ class WizardController : public ScreenObserver {
   void EnableUserImageScreenReturnToPreviousHack();
 
   // Lazy initializers and getters for screens.
+  WizardScreen* GetScreen(const std::string& screen_name);
+  WizardScreen* CreateScreen(const std::string& screen_name);
+
+  // Typed getters for the screens.
   NetworkScreen* GetNetworkScreen();
   UpdateScreen* GetUpdateScreen();
   UserImageScreen* GetUserImageScreen();
-  EulaScreen* GetEulaScreen();
   EnrollmentScreen* GetEnrollmentScreen();
-  ResetScreen* GetResetScreen();
-  KioskAutolaunchScreen* GetKioskAutolaunchScreen();
-  KioskEnableScreen* GetKioskEnableScreen();
-  TermsOfServiceScreen* GetTermsOfServiceScreen();
-  WrongHWIDScreen* GetWrongHWIDScreen();
   AutoEnrollmentCheckScreen* GetAutoEnrollmentCheckScreen();
   SupervisedUserCreationScreen* GetSupervisedUserCreationScreen();
-  HIDDetectionScreen* GetHIDDetectionScreen();
-  ControllerPairingScreen* GetControllerPairingScreen();
-  HostPairingScreen* GetHostPairingScreen();
 
   // Returns a pointer to the current screen or NULL if there's no such
   // screen.
@@ -322,22 +309,9 @@ class WizardController : public ScreenObserver {
   static bool zero_delay_enabled_;
 
   // Screens.
-  scoped_ptr<NetworkScreen> network_screen_;
-  scoped_ptr<UpdateScreen> update_screen_;
-  scoped_ptr<UserImageScreen> user_image_screen_;
-  scoped_ptr<EulaScreen> eula_screen_;
-  scoped_ptr<ResetScreen> reset_screen_;
-  scoped_ptr<KioskAutolaunchScreen> autolaunch_screen_;
-  scoped_ptr<KioskEnableScreen> kiosk_enable_screen_;
-  scoped_ptr<EnrollmentScreen> enrollment_screen_;
-  scoped_ptr<ErrorScreen> error_screen_;
-  scoped_ptr<TermsOfServiceScreen> terms_of_service_screen_;
-  scoped_ptr<WrongHWIDScreen> wrong_hwid_screen_;
-  scoped_ptr<AutoEnrollmentCheckScreen> auto_enrollment_check_screen_;
-  scoped_ptr<SupervisedUserCreationScreen> supervised_user_creation_screen_;
-  scoped_ptr<HIDDetectionScreen> hid_detection_screen_;
-  scoped_ptr<ControllerPairingScreen> controller_pairing_screen_;
-  scoped_ptr<HostPairingScreen> host_pairing_screen_;
+
+  typedef std::map<std::string, linked_ptr<WizardScreen> > ScreenMap;
+  ScreenMap screens_;
 
   // Screen that's currently active.
   WizardScreen* current_screen_;
