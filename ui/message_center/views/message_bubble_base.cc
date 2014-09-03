@@ -26,8 +26,8 @@ MessageBubbleBase::MessageBubbleBase(MessageCenter* message_center,
     : message_center_(message_center),
       tray_(tray),
       bubble_view_(NULL),
-      weak_ptr_factory_(this),
-      max_height_(kMessageBubbleBaseDefaultMaxHeight) {
+      max_height_(kMessageBubbleBaseDefaultMaxHeight),
+      weak_ptr_factory_(this) {
 }
 
 MessageBubbleBase::~MessageBubbleBase() {

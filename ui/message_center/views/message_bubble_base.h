@@ -70,8 +70,8 @@ class MESSAGE_CENTER_EXPORT MessageBubbleBase {
   MessageCenter* message_center_;
   MessageCenterTray* tray_;
   views::TrayBubbleView* bubble_view_;
-  base::WeakPtrFactory<MessageBubbleBase> weak_ptr_factory_;
   int max_height_;
+  base::WeakPtrFactory<MessageBubbleBase> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageBubbleBase);
 };
