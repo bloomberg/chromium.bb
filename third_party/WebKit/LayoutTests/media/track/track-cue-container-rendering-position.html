@@ -20,6 +20,7 @@
 
             consoleWrite("");
             cueDisplayElement = textTrackDisplayElement(video, 'display', 0);
+            document.body.offsetTop; // Force layout.
             testExpected("cueDisplayElement.offsetTop > (video.videoHeight * .75)", true);
             endTest();
         }
