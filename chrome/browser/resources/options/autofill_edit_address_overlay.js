@@ -325,6 +325,15 @@ cr.define('options', function() {
     },
 
     /**
+     * Called to prepare the overlay when a new address is being added.
+     * @private
+     */
+    prepForNewAddress_: function() {
+      // Focus the first element.
+      this.pageDiv.querySelector('input').focus();
+    },
+
+    /**
      * Loads the address data from |address|, sets the input fields based on
      * this data, and stores the GUID and language code of the address.
      * @param {!Object} address Lots of info about an address from the browser.
@@ -405,6 +414,10 @@ cr.define('options', function() {
         }
       }
     },
+  };
+
+  AutofillEditAddressOverlay.prepForNewAddress = function() {
+    AutofillEditAddressOverlay.getInstance().prepForNewAddress_();
   };
 
   AutofillEditAddressOverlay.loadAddress = function(address) {

@@ -104,6 +104,7 @@ cr.define('options', function() {
       var title = loadTimeData.getString('addAddressTitle');
       AutofillEditAddressOverlay.setTitle(title);
       PageManager.showPageByName('autofillEditAddress');
+      AutofillEditAddressOverlay.prepForNewAddress();
     },
 
     /**
@@ -115,6 +116,7 @@ cr.define('options', function() {
       var title = loadTimeData.getString('addCreditCardTitle');
       AutofillEditCreditCardOverlay.setTitle(title);
       PageManager.showPageByName('autofillEditCreditCard');
+      AutofillEditCreditCardOverlay.prepForNewCard();
     },
 
     /**
@@ -181,8 +183,8 @@ cr.define('options', function() {
 
     /**
      * Shows the 'Edit credit card' overlay, using the data in |credit_card| to
-     * fill the input fields. |address| is a list with one item, an associative
-     * array that contains the credit card data.
+     * fill the input fields. |creditCard| is a list with one item, an
+     * associative array that contains the credit card data.
      * @private
      */
     showEditCreditCardOverlay_: function(creditCard) {

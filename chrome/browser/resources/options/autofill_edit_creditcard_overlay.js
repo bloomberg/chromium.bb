@@ -179,6 +179,15 @@ cr.define('options', function() {
     },
 
     /**
+     * Called to prepare the overlay when a new card is being added.
+     * @private
+     */
+    prepForNewCard_: function() {
+      // Focus the first element.
+      this.pageDiv.querySelector('input').focus();
+    },
+
+    /**
      * Loads the credit card data from |creditCard|, sets the input fields based
      * on this data and stores the GUID of the credit card.
      * @private
@@ -188,6 +197,10 @@ cr.define('options', function() {
       this.inputFieldChanged_();
       this.guid_ = creditCard.guid;
     },
+  };
+
+  AutofillEditCreditCardOverlay.prepForNewCard = function() {
+    AutofillEditCreditCardOverlay.getInstance().prepForNewCard_();
   };
 
   AutofillEditCreditCardOverlay.loadCreditCard = function(creditCard) {
