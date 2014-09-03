@@ -483,6 +483,7 @@ class GSContext(object):
           'ResumableUploadAbortException',
           'ResumableDownloadException',
           'ssl.SSLError: The read operation timed out',
+          'Unable to find the server',
       )
       if any(x in error for x in RESUMABLE_ERROR_MESSAGE):
         # Only remove the tracker files if we try to upload/download a file.
