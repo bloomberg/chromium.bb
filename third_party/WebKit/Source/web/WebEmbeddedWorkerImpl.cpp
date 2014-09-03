@@ -50,6 +50,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/web/WebDevToolsAgent.h"
 #include "public/web/WebServiceWorkerContextClient.h"
@@ -379,6 +380,8 @@ void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
         m_workerContextClient->workerContextFailedToStart();
         return;
     }
+
+    Platform::current()->histogramCustomCounts("ServiceWorker.ScriptSize", m_mainScriptLoader->script().length(), 1000, 5000000, 50);
 
     if (m_pauseAfterDownloadState == DoPauseAfterDownload) {
         m_pauseAfterDownloadState = IsPausedAfterDownload;
