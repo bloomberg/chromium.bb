@@ -10,17 +10,9 @@ fun:ff_get_cpu_flags_x86
 # Uninit in zlib. http://crbug.com/116277
 fun:*MOZ_Z_deflate*
 
-# Uninit in Mesa. http://crbug.com/347967
+# Uninit in OSMesa. http://crbug.com/347967
 fun:unpack_RGBA8888
 fun:unpack_RGB888
-
-# Bug in MSan, fixed in clang r210020. http://crbug.com/378909
-fun:*convolveVertically_SSE2*
-
-# MSan issue, http://crbug.com/381233
-# (Both functions call __mm_maddubs_epi16()).
-fun:*ProcessPixelPairHelper*
-fun:*ProcessOnePixel*
 
 # An actual Chromium bug which is blocking our progress. http://crbug.com/334448
 fun:*UTF8GenericReplaceInternal*
@@ -28,6 +20,3 @@ fun:*UTF8GenericReplaceInternal*
 # False positives due to use of linux_syscall_support. http://crbug.com/394028
 src:*/breakpad/src/*
 src:*/components/crash/app/breakpad_linux.cc
-
-# Bug in MSan, fixed in clang r211022. http://crbug.com/385074
-fun:*TEST_SeccompRetTrace*
