@@ -11067,6 +11067,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Media.AudioRendererAudioGlitches" enum="AudioGlitchResult">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Captures if render-side audio glitches are detected or not. Sampled when a
+    low-latency output audio stream is destructed.
+  </summary>
+</histogram>
+
 <histogram name="Media.AudioRendererEvents" enum="AudioRendererEvents">
   <owner>scherkus@chromium.org</owner>
   <summary>Captures statistics for various AudioRendererImpl events.</summary>
@@ -37777,6 +37785,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="6" label="k960"/>
   <int value="7" label="k1440"/>
   <int value="8" label="k1920"/>
+</enum>
+
+<enum name="AudioGlitchResult" type="int">
+  <int value="0" label="No audio glitches"/>
+  <int value="1" label="Audio glitches"/>
 </enum>
 
 <enum name="AudioInputSilenceReport" type="int">

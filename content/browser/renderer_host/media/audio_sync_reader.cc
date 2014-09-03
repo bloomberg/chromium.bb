@@ -9,11 +9,31 @@
 #include "base/command_line.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/stringprintf.h"
+#include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/common/content_switches.h"
 #include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_parameters.h"
 
 using media::AudioBus;
+
+namespace {
+
+// Used to log if any audio glitches have been detected during an audio session.
+// Elements in this enum should not be added, deleted or rearranged.
+enum AudioGlitchResult {
+  AUDIO_RENDERER_NO_AUDIO_GLITCHES = 0,
+  AUDIO_RENDERER_AUDIO_GLITCHES = 1,
+  AUDIO_RENDERER_AUDIO_GLITCHES_MAX = AUDIO_RENDERER_AUDIO_GLITCHES
+};
+
+void LogAudioGlitchResult(AudioGlitchResult result) {
+  UMA_HISTOGRAM_ENUMERATION("Media.AudioRendererAudioGlitches",
+                            result,
+                            AUDIO_RENDERER_AUDIO_GLITCHES_MAX + 1);
+}
+
+}  // namespace
 
 namespace content {
 
@@ -47,6 +67,18 @@ AudioSyncReader::~AudioSyncReader() {
       100.0 * renderer_missed_callback_count_ / renderer_callback_count_;
   UMA_HISTOGRAM_PERCENTAGE(
       "Media.AudioRendererMissedDeadline", percentage_missed);
+
+  // Add more detailed information regarding detected audio glitches where
+  // a non-zero value of |renderer_missed_callback_count_| is added to the
+  // AUDIO_RENDERER_AUDIO_GLITCHES bin.
+  renderer_missed_callback_count_ > 0 ?
+      LogAudioGlitchResult(AUDIO_RENDERER_AUDIO_GLITCHES) :
+      LogAudioGlitchResult(AUDIO_RENDERER_NO_AUDIO_GLITCHES);
+  std::string log_string =
+      base::StringPrintf("ASR: number of detected audio glitches=%d",
+                         static_cast<int>(renderer_missed_callback_count_));
+  MediaStreamManager::SendMessageToNativeLog(log_string);
+  DVLOG(1) << log_string;
 }
 
 // media::AudioOutputController::SyncReader implementations.
