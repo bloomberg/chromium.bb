@@ -106,6 +106,13 @@ int SocketLibevent::AdoptConnectedSocket(SocketDescriptor socket,
   return OK;
 }
 
+SocketDescriptor SocketLibevent::ReleaseConnectedSocket() {
+  StopWatchingAndCleanUp();
+  SocketDescriptor socket_fd = socket_fd_;
+  socket_fd_ = kInvalidSocket;
+  return socket_fd;
+}
+
 int SocketLibevent::Bind(const SockaddrStorage& address) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(kInvalidSocket, socket_fd_);
@@ -326,38 +333,13 @@ bool SocketLibevent::HasPeerAddress() const {
 void SocketLibevent::Close() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  bool ok = accept_socket_watcher_.StopWatchingFileDescriptor();
-  DCHECK(ok);
-  ok = read_socket_watcher_.StopWatchingFileDescriptor();
-  DCHECK(ok);
-  ok = write_socket_watcher_.StopWatchingFileDescriptor();
-  DCHECK(ok);
+  StopWatchingAndCleanUp();
 
   if (socket_fd_ != kInvalidSocket) {
     if (IGNORE_EINTR(close(socket_fd_)) < 0)
       PLOG(ERROR) << "close() returned an error, errno=" << errno;
     socket_fd_ = kInvalidSocket;
   }
-
-  if (!accept_callback_.is_null()) {
-    accept_socket_ = NULL;
-    accept_callback_.Reset();
-  }
-
-  if (!read_callback_.is_null()) {
-    read_buf_ = NULL;
-    read_buf_len_ = 0;
-    read_callback_.Reset();
-  }
-
-  if (!write_callback_.is_null()) {
-    write_buf_ = NULL;
-    write_buf_len_ = 0;
-    write_callback_.Reset();
-  }
-
-  waiting_connect_ = false;
-  peer_address_.reset();
 }
 
 void SocketLibevent::OnFileCanReadWithoutBlocking(int fd) {
@@ -466,6 +448,35 @@ void SocketLibevent::WriteCompleted() {
   write_buf_ = NULL;
   write_buf_len_ = 0;
   base::ResetAndReturn(&write_callback_).Run(rv);
+}
+
+void SocketLibevent::StopWatchingAndCleanUp() {
+  bool ok = accept_socket_watcher_.StopWatchingFileDescriptor();
+  DCHECK(ok);
+  ok = read_socket_watcher_.StopWatchingFileDescriptor();
+  DCHECK(ok);
+  ok = write_socket_watcher_.StopWatchingFileDescriptor();
+  DCHECK(ok);
+
+  if (!accept_callback_.is_null()) {
+    accept_socket_ = NULL;
+    accept_callback_.Reset();
+  }
+
+  if (!read_callback_.is_null()) {
+    read_buf_ = NULL;
+    read_buf_len_ = 0;
+    read_callback_.Reset();
+  }
+
+  if (!write_callback_.is_null()) {
+    write_buf_ = NULL;
+    write_buf_len_ = 0;
+    write_callback_.Reset();
+  }
+
+  waiting_connect_ = false;
+  peer_address_.reset();
 }
 
 }  // namespace net

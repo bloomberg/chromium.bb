@@ -59,11 +59,23 @@ class NET_EXPORT UnixDomainServerSocket : public ServerSocket {
   virtual int Accept(scoped_ptr<StreamSocket>* socket,
                      const CompletionCallback& callback) OVERRIDE;
 
+  // Accepts an incoming connection on |listen_socket_|, but passes back
+  // a raw SocketDescriptor instead of a StreamSocket.
+  int AcceptSocketDescriptor(SocketDescriptor* socket_descriptor,
+                             const CompletionCallback& callback);
+
  private:
-  void AcceptCompleted(scoped_ptr<StreamSocket>* socket,
+  // A callback to wrap the setting of the out-parameter to Accept().
+  // This allows the internal machinery of that call to be implemented in
+  // a manner that's agnostic to the caller's desired output.
+  typedef base::Callback<void(scoped_ptr<SocketLibevent>)> SetterCallback;
+
+  int DoAccept(const SetterCallback& setter_callback,
+               const CompletionCallback& callback);
+  void AcceptCompleted(const SetterCallback& setter_callback,
                        const CompletionCallback& callback,
                        int rv);
-  bool AuthenticateAndGetStreamSocket(scoped_ptr<StreamSocket>* socket);
+  bool AuthenticateAndGetStreamSocket(const SetterCallback& setter_callback);
 
   scoped_ptr<SocketLibevent> listen_socket_;
   const AuthCallback auth_callback_;

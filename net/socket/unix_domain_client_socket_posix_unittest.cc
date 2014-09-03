@@ -10,9 +10,11 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/posix/eintr_wrapper.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/socket/socket_libevent.h"
 #include "net/socket/unix_domain_server_socket_posix.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -146,6 +148,54 @@ TEST_F(UnixDomainClientSocketTest, Connect) {
   EXPECT_EQ(OK, accept_callback.WaitForResult());
   EXPECT_TRUE(accepted_socket);
   EXPECT_TRUE(accepted_socket->IsConnected());
+}
+
+TEST_F(UnixDomainClientSocketTest, ConnectWithSocketDescriptor) {
+  const bool kUseAbstractNamespace = false;
+
+  UnixDomainServerSocket server_socket(CreateAuthCallback(true),
+                                       kUseAbstractNamespace);
+  EXPECT_EQ(OK, server_socket.ListenWithAddressAndPort(socket_path_, 0, 1));
+
+  SocketDescriptor accepted_socket_fd = kInvalidSocket;
+  TestCompletionCallback accept_callback;
+  EXPECT_EQ(ERR_IO_PENDING,
+            server_socket.AcceptSocketDescriptor(&accepted_socket_fd,
+                                                 accept_callback.callback()));
+  EXPECT_EQ(kInvalidSocket, accepted_socket_fd);
+
+  UnixDomainClientSocket client_socket(socket_path_, kUseAbstractNamespace);
+  EXPECT_FALSE(client_socket.IsConnected());
+
+  EXPECT_EQ(OK, ConnectSynchronously(&client_socket));
+  EXPECT_TRUE(client_socket.IsConnected());
+  // Server has not yet been notified of the connection.
+  EXPECT_EQ(kInvalidSocket, accepted_socket_fd);
+
+  EXPECT_EQ(OK, accept_callback.WaitForResult());
+  EXPECT_NE(kInvalidSocket, accepted_socket_fd);
+
+  SocketDescriptor client_socket_fd = client_socket.ReleaseConnectedSocket();
+  EXPECT_NE(kInvalidSocket, client_socket_fd);
+
+  // Now, re-wrap client_socket_fd in a UnixDomainClientSocket and try a read
+  // to be sure it hasn't gotten accidentally closed.
+  SockaddrStorage addr;
+  ASSERT_TRUE(UnixDomainClientSocket::FillAddress(socket_path_, false, &addr));
+  scoped_ptr<SocketLibevent> adopter(new SocketLibevent);
+  adopter->AdoptConnectedSocket(client_socket_fd, addr);
+  UnixDomainClientSocket rewrapped_socket(adopter.Pass());
+  EXPECT_TRUE(rewrapped_socket.IsConnected());
+
+  // Try to read data.
+  const int kReadDataSize = 10;
+  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadDataSize));
+  TestCompletionCallback read_callback;
+  EXPECT_EQ(ERR_IO_PENDING,
+            rewrapped_socket.Read(
+                read_buffer.get(), kReadDataSize, read_callback.callback()));
+
+  EXPECT_EQ(0, IGNORE_EINTR(close(accepted_socket_fd)));
 }
 
 TEST_F(UnixDomainClientSocketTest, ConnectWithAbstractNamespace) {

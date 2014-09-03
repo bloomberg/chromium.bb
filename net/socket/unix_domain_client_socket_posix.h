@@ -13,6 +13,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
+#include "net/socket/socket_descriptor.h"
 #include "net/socket/stream_socket.h"
 
 namespace net {
@@ -62,6 +63,11 @@ class NET_EXPORT UnixDomainClientSocket : public StreamSocket {
                     const CompletionCallback& callback) OVERRIDE;
   virtual int SetReceiveBufferSize(int32 size) OVERRIDE;
   virtual int SetSendBufferSize(int32 size) OVERRIDE;
+
+  // Releases ownership of underlying SocketDescriptor to caller.
+  // Internal state is reset so that this object can be used again.
+  // Socket must be connected in order to release it.
+  SocketDescriptor ReleaseConnectedSocket();
 
  private:
   const std::string socket_path_;

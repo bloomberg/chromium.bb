@@ -16,6 +16,21 @@
 
 namespace net {
 
+namespace {
+
+// Intended for use as SetterCallbacks in Accept() helper methods.
+void SetStreamSocket(scoped_ptr<StreamSocket>* socket,
+                     scoped_ptr<SocketLibevent> accepted_socket) {
+  socket->reset(new UnixDomainClientSocket(accepted_socket.Pass()));
+}
+
+void SetSocketDescriptor(SocketDescriptor* socket,
+                         scoped_ptr<SocketLibevent> accepted_socket) {
+  *socket = accepted_socket->ReleaseConnectedSocket();
+}
+
+}  // anonymous namespace
+
 UnixDomainServerSocket::UnixDomainServerSocket(
     const AuthCallback& auth_callback,
     bool use_abstract_namespace)
@@ -95,6 +110,23 @@ int UnixDomainServerSocket::GetLocalAddress(IPEndPoint* address) const {
 int UnixDomainServerSocket::Accept(scoped_ptr<StreamSocket>* socket,
                                    const CompletionCallback& callback) {
   DCHECK(socket);
+
+  SetterCallback setter_callback = base::Bind(&SetStreamSocket, socket);
+  return DoAccept(setter_callback, callback);
+}
+
+int UnixDomainServerSocket::AcceptSocketDescriptor(
+    SocketDescriptor* socket,
+    const CompletionCallback& callback) {
+  DCHECK(socket);
+
+  SetterCallback setter_callback = base::Bind(&SetSocketDescriptor, socket);
+  return DoAccept(setter_callback, callback);
+}
+
+int UnixDomainServerSocket::DoAccept(const SetterCallback& setter_callback,
+                                     const CompletionCallback& callback) {
+  DCHECK(!setter_callback.is_null());
   DCHECK(!callback.is_null());
   DCHECK(listen_socket_);
   DCHECK(!accept_socket_);
@@ -103,38 +135,41 @@ int UnixDomainServerSocket::Accept(scoped_ptr<StreamSocket>* socket,
     int rv = listen_socket_->Accept(
         &accept_socket_,
         base::Bind(&UnixDomainServerSocket::AcceptCompleted,
-                   base::Unretained(this), socket, callback));
+                   base::Unretained(this),
+                   setter_callback,
+                   callback));
     if (rv != OK)
       return rv;
-    if (AuthenticateAndGetStreamSocket(socket))
+    if (AuthenticateAndGetStreamSocket(setter_callback))
       return OK;
     // Accept another socket because authentication error should be transparent
     // to the caller.
   }
 }
 
-void UnixDomainServerSocket::AcceptCompleted(scoped_ptr<StreamSocket>* socket,
-                                             const CompletionCallback& callback,
-                                             int rv) {
+void UnixDomainServerSocket::AcceptCompleted(
+    const SetterCallback& setter_callback,
+    const CompletionCallback& callback,
+    int rv) {
   if (rv != OK) {
     callback.Run(rv);
     return;
   }
 
-  if (AuthenticateAndGetStreamSocket(socket)) {
+  if (AuthenticateAndGetStreamSocket(setter_callback)) {
     callback.Run(OK);
     return;
   }
 
   // Accept another socket because authentication error should be transparent
   // to the caller.
-  rv = Accept(socket, callback);
+  rv = DoAccept(setter_callback, callback);
   if (rv != ERR_IO_PENDING)
     callback.Run(rv);
 }
 
 bool UnixDomainServerSocket::AuthenticateAndGetStreamSocket(
-    scoped_ptr<StreamSocket>* socket) {
+    const SetterCallback& setter_callback) {
   DCHECK(accept_socket_);
 
   Credentials credentials;
@@ -144,7 +179,7 @@ bool UnixDomainServerSocket::AuthenticateAndGetStreamSocket(
     return false;
   }
 
-  socket->reset(new UnixDomainClientSocket(accept_socket_.Pass()));
+  setter_callback.Run(accept_socket_.Pass());
   return true;
 }
 

@@ -159,4 +159,13 @@ int UnixDomainClientSocket::SetSendBufferSize(int32 size) {
   return ERR_NOT_IMPLEMENTED;
 }
 
+SocketDescriptor UnixDomainClientSocket::ReleaseConnectedSocket() {
+  DCHECK(socket_);
+  DCHECK(socket_->IsConnected());
+
+  SocketDescriptor socket_fd = socket_->ReleaseConnectedSocket();
+  socket_.reset();
+  return socket_fd;
+}
+
 }  // namespace net
