@@ -38,8 +38,6 @@
         'app_restore_service.h',
         'app_restore_service_factory.cc',
         'app_restore_service_factory.h',
-        'app_window_contents.cc',
-        'app_window_contents.h',
         'browser_context_keyed_service_factories.cc',
         'browser_context_keyed_service_factories.h',
         'custom_launcher_page_contents.cc',

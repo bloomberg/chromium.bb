@@ -430,6 +430,8 @@
         'browser/app_window/app_web_contents_helper.h',
         'browser/app_window/app_window.cc',
         'browser/app_window/app_window.h',
+        'browser/app_window/app_window_contents.cc',
+        'browser/app_window/app_window_contents.h',
         'browser/app_window/app_window_geometry_cache.cc',
         'browser/app_window/app_window_geometry_cache.h',
         'browser/app_window/app_window_registry.cc',

@@ -166,6 +166,8 @@ source_set("browser") {
       "app_window/app_web_contents_helper.h",
       "app_window/app_window.cc",
       "app_window/app_window.h",
+      "app_window/app_window_contents.cc",
+      "app_window/app_window_contents.h",
       "app_window/app_window_geometry_cache.cc",
       "app_window/app_window_geometry_cache.h",
       "app_window/app_window_registry.cc",

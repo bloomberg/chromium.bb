@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/app_window_contents.h"
+#include "extensions/browser/app_window/app_window_contents.h"
 
 #include <string>
 #include <utility>
 
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/common/extensions/api/app_window.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -20,10 +18,7 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension_messages.h"
 
-namespace app_window = extensions::api::app_window;
-using extensions::AppWindow;
-
-namespace apps {
+namespace extensions {
 
 AppWindowContentsImpl::AppWindowContentsImpl(AppWindow* host) : host_(host) {}
 
@@ -34,7 +29,7 @@ void AppWindowContentsImpl::Initialize(content::BrowserContext* context,
   url_ = url;
 
   extension_function_dispatcher_.reset(
-      new extensions::ExtensionFunctionDispatcher(context, this));
+      new ExtensionFunctionDispatcher(context, this));
 
   web_contents_.reset(
       content::WebContents::Create(content::WebContents::CreateParams(
@@ -66,7 +61,7 @@ void AppWindowContentsImpl::LoadContents(int32 creator_process_id) {
 }
 
 void AppWindowContentsImpl::NativeWindowChanged(
-    extensions::NativeAppWindow* native_app_window) {
+    NativeAppWindow* native_app_window) {
   base::ListValue args;
   base::DictionaryValue* dictionary = new base::DictionaryValue();
   args.Append(dictionary);
@@ -112,8 +107,7 @@ bool AppWindowContentsImpl::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-extensions::WindowController*
-AppWindowContentsImpl::GetExtensionWindowController() const {
+WindowController* AppWindowContentsImpl::GetExtensionWindowController() const {
   return NULL;
 }
 
@@ -128,7 +122,7 @@ void AppWindowContentsImpl::OnRequest(
 }
 
 void AppWindowContentsImpl::UpdateDraggableRegions(
-    const std::vector<extensions::DraggableRegion>& regions) {
+    const std::vector<DraggableRegion>& regions) {
   host_->UpdateDraggableRegions(regions);
 }
 
@@ -142,4 +136,4 @@ void AppWindowContentsImpl::SuspendRenderViewHost(
                  rvh->GetProcess()->GetID(), rvh->GetRoutingID()));
 }
 
-}  // namespace apps
+}  // namespace extensions

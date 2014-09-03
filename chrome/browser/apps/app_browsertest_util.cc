@@ -4,7 +4,6 @@
 
 #include "chrome/browser/apps/app_browsertest_util.h"
 
-#include "apps/app_window_contents.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
@@ -16,6 +15,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/app_window/app_window_contents.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/switches.h"
@@ -201,8 +201,7 @@ AppWindow* PlatformAppBrowserTest::CreateAppWindowFromParams(
     const AppWindow::CreateParams& params) {
   AppWindow* window =
       new AppWindow(browser()->profile(), new ChromeAppDelegate(), extension);
-  window->Init(
-      GURL(std::string()), new apps::AppWindowContentsImpl(window), params);
+  window->Init(GURL(std::string()), new AppWindowContentsImpl(window), params);
   return window;
 }
 

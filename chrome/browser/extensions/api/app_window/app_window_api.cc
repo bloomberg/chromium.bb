@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/app_window/app_window_api.h"
 
-#include "apps/app_window_contents.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -18,6 +17,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_contents.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/apps_client.h"
 #include "extensions/browser/app_window/native_app_window.h"
@@ -280,8 +280,7 @@ bool AppWindowCreateFunction::RunAsync() {
 
   AppWindow* app_window =
       AppsClient::Get()->CreateAppWindow(browser_context(), extension());
-  app_window->Init(
-      url, new apps::AppWindowContentsImpl(app_window), create_params);
+  app_window->Init(url, new AppWindowContentsImpl(app_window), create_params);
 
   if (ExtensionsBrowserClient::Get()->IsRunningInForcedAppMode())
     app_window->ForcedFullscreen();
