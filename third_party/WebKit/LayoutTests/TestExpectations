@@ -1192,9 +1192,6 @@ crbug.com/400978 [ SnowLeopard Debug ] fast/transforms/shadows.html [ Pass Image
 
 crbug.com/404728 virtual/gpu/compositedscrolling/scrollbars/custom-scrollbars-paint-outside-iframe.html [ ImageOnlyFailure ]
 
-crbug.com/396372 virtual/threaded/animations/keyframe-multiple-timing-functions-transform.html [ NeedsRebaseline ]
-crbug.com/396372 virtual/threaded/transitions/opacity-transform-transitions-inside-iframe.html [ NeedsRebaseline ]
-
 crbug.com/394208 [ Win ] http/tests/security/link-crossorigin-stylesheet-use-credentials.html [ Timeout Pass ]
 crbug.com/394210 [ Win ] inspector/profiler/webgl/webgl-profiler-api-changes.html [ Timeout Pass ]
 crbug.com/394762 inspector/timeline/timeline-flame-chart-automatically-size-window.html [ Skip ]
