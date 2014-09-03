@@ -559,7 +559,7 @@
   }],
   "fileSystemProvider": {
     "channel": "dev",
-    "extension_types": ["platform_app"]
+    "extension_types": ["extension", "platform_app"]
   },
   "firstRunPrivate": {
     "channel": "stable",
