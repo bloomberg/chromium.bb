@@ -264,6 +264,14 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
 
   scoped_ptr<aura::client::ScopedTooltipDisabler> tooltip_disabler_;
 
+  // This flag is set to true in cases where we need to force a synchronous
+  // paint via the compositor. Cases include restoring/resizing/maximizing the
+  // window. Defaults to false.
+  bool need_synchronous_paint_;
+
+  // Set to true if we are about to enter a sizing loop.
+  bool in_sizing_loop_;
+
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostWin);
 };
 

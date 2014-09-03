@@ -83,7 +83,9 @@ DesktopWindowTreeHostWin::DesktopWindowTreeHostWin(
       should_animate_window_close_(false),
       pending_close_(false),
       has_non_client_view_(false),
-      tooltip_(NULL) {
+      tooltip_(NULL),
+      need_synchronous_paint_(false),
+      in_sizing_loop_(false) {
 }
 
 DesktopWindowTreeHostWin::~DesktopWindowTreeHostWin() {
@@ -696,6 +698,22 @@ void DesktopWindowTreeHostWin::HandleClose() {
 }
 
 bool DesktopWindowTreeHostWin::HandleCommand(int command) {
+  // Windows uses the 4 lower order bits of |notification_code| for type-
+  // specific information so we must exclude this when comparing.
+  static const int sc_mask = 0xFFF0;
+  switch (command & sc_mask) {
+    case SC_RESTORE:
+    case SC_MAXIMIZE:
+      need_synchronous_paint_ = true;
+      break;
+
+    case SC_SIZE:
+      in_sizing_loop_ = true;
+      break;
+
+    default:
+      break;
+  }
   return GetWidget()->widget_delegate()->ExecuteWindowsCommand(command);
 }
 
@@ -731,10 +749,16 @@ void DesktopWindowTreeHostWin::HandleDisplayChange() {
 }
 
 void DesktopWindowTreeHostWin::HandleBeginWMSizeMove() {
+  if (in_sizing_loop_)
+    need_synchronous_paint_ = true;
   native_widget_delegate_->OnNativeWidgetBeginUserBoundsChange();
 }
 
 void DesktopWindowTreeHostWin::HandleEndWMSizeMove() {
+  if (in_sizing_loop_) {
+    need_synchronous_paint_ = false;
+    in_sizing_loop_ = false;
+  }
   native_widget_delegate_->OnNativeWidgetEndUserBoundsChange();
 }
 
@@ -891,8 +915,15 @@ bool DesktopWindowTreeHostWin::HandleScrollEvent(
 }
 
 void DesktopWindowTreeHostWin::HandleWindowSizeChanging() {
-  if (compositor())
+  if (compositor() && need_synchronous_paint_) {
     compositor()->FinishAllRendering();
+    // If we received the window size changing notification due to a restore or
+    // maximize operation, then we can reset the need_synchronous_paint_ flag
+    // here. For a sizing operation, the flag will be reset at the end of the
+    // operation.
+    if (!in_sizing_loop_)
+      need_synchronous_paint_ = false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
