@@ -427,16 +427,6 @@ const Experiment::Choice kAnswersInSuggestChoices[] = {
 };
 #endif
 
-#if defined(OS_CHROMEOS)
-const Experiment::Choice kEnableFileManagerMTPChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
-    chromeos::switches::kEnableFileManagerMTP, "true" },
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    chromeos::switches::kEnableFileManagerMTP, "false" }
-};
-#endif
-
 const Experiment::Choice kEnableSettingsWindowChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
@@ -1760,15 +1750,6 @@ const Experiment kExperiments[] = {
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSavePasswordBubble,
                               switches::kDisableSavePasswordBubble)
   },
-#if defined(OS_CHROMEOS)
-  {
-    "enable-filemanager-mtp",
-    IDS_FLAGS_ENABLE_FILE_MANAGER_MTP_NAME,
-    IDS_FLAGS_ENABLE_FILE_MANAGER_MTP_DESCRIPTION,
-    kOsCrOS,
-    MULTI_VALUE_TYPE(kEnableFileManagerMTPChoices)
-  },
-#endif
   // TODO(tyoshino): Remove this temporary flag and command line switch. See
   // crbug.com/366483 for the target milestone.
   {

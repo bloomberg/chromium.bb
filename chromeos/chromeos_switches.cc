@@ -87,9 +87,6 @@ const char kEnableEmbeddedSignin[] = "enable-embedded-signin";
 // Enabled sharing assets for installed default apps.
 const char kEnableExtensionAssetsSharing[]  = "enable-extension-assets-sharing";
 
-// Enables MTP support in Files.app.
-const char kEnableFileManagerMTP[] = "enable-filemanager-mtp";
-
 // Enables notifications about captive portals in session.
 const char kEnableNetworkPortalNotification[] =
     "enable-network-portal-notification";

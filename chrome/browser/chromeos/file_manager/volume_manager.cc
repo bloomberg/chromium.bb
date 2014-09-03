@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -24,9 +23,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_context.h"
@@ -318,10 +315,7 @@ void VolumeManager::Initialize() {
                  weak_ptr_factory_.GetWeakPtr()));
 
   // Subscribe to storage monitor for MTP notifications.
-  const bool disable_mtp =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          chromeos::switches::kEnableFileManagerMTP) == "false";
-  if (!disable_mtp && storage_monitor::StorageMonitor::GetInstance()) {
+  if (storage_monitor::StorageMonitor::GetInstance()) {
     storage_monitor::StorageMonitor::GetInstance()->EnsureInitialized(
         base::Bind(&VolumeManager::OnStorageMonitorInitialized,
                    weak_ptr_factory_.GetWeakPtr()));
