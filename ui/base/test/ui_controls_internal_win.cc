@@ -215,7 +215,7 @@ bool SendKeyPressImpl(HWND window,
   }
 
   if (alt) {
-    if (!FillKeyboardInput(ui::VKEY_MENU, &input[i], false))
+    if (!FillKeyboardInput(ui::VKEY_LMENU, &input[i], false))
       return false;
     i++;
   }
@@ -229,7 +229,7 @@ bool SendKeyPressImpl(HWND window,
   i++;
 
   if (alt) {
-    if (!FillKeyboardInput(ui::VKEY_MENU, &input[i], true))
+    if (!FillKeyboardInput(ui::VKEY_LMENU, &input[i], true))
       return false;
     i++;
   }
