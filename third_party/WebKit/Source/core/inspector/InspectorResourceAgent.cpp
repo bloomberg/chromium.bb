@@ -316,9 +316,6 @@ void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentL
     if (initiatorInfo.name == FetchInitiatorTypeNames::internal)
         return;
 
-    if (!m_hostId.isEmpty())
-        request.addHTTPHeaderField(kDevToolsEmulateNetworkConditionsClientId, AtomicString(m_hostId));
-
     String requestId = IdentifiersFactory::requestId(identifier);
     m_resourcesData->resourceCreated(requestId, m_pageAgent->loaderId(loader));
 
@@ -347,7 +344,12 @@ void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentL
             initiatorObject = it->value;
     }
 
-    m_frontend->requestWillBeSent(requestId, frameId, m_pageAgent->loaderId(loader), urlWithoutFragment(loader->url()).string(), buildObjectForResourceRequest(request), currentTime(), initiatorObject, buildObjectForResourceResponse(redirectResponse, loader));
+    RefPtr<TypeBuilder::Network::Request> requestInfo(buildObjectForResourceRequest(request));
+
+    if (!m_hostId.isEmpty())
+        request.addHTTPHeaderField(kDevToolsEmulateNetworkConditionsClientId, AtomicString(m_hostId));
+
+    m_frontend->requestWillBeSent(requestId, frameId, m_pageAgent->loaderId(loader), urlWithoutFragment(loader->url()).string(), requestInfo.release(), currentTime(), initiatorObject, buildObjectForResourceResponse(redirectResponse, loader));
 }
 
 void InspectorResourceAgent::markResourceAsCached(unsigned long identifier)
