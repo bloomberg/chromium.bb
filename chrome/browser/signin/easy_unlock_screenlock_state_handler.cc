@@ -52,7 +52,7 @@ bool HasAnimation(EasyUnlockScreenlockStateHandler::State state) {
 }
 
 bool HardlockOnClick(EasyUnlockScreenlockStateHandler::State state) {
-  return state == EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED;
+  return state != EasyUnlockScreenlockStateHandler::STATE_INACTIVE;
 }
 
 size_t GetTooltipResourceId(EasyUnlockScreenlockStateHandler::State state) {
