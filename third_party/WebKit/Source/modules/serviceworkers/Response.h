@@ -30,8 +30,8 @@ public:
     static PassRefPtrWillBeRawPtr<Response> create(Blob*, const Dictionary&, ExceptionState&);
     static PassRefPtrWillBeRawPtr<Response> create(const String&, const Dictionary&, ExceptionState&);
     static PassRefPtrWillBeRawPtr<Response> create(Blob*, const ResponseInit&, ExceptionState&);
-
     static PassRefPtrWillBeRawPtr<Response> create(PassRefPtrWillBeRawPtr<FetchResponseData>);
+    static PassRefPtrWillBeRawPtr<Response> create(const WebServiceWorkerResponse&);
 
     String type() const;
     String url() const;
@@ -48,6 +48,7 @@ public:
 private:
     Response();
     explicit Response(PassRefPtrWillBeRawPtr<FetchResponseData>);
+    explicit Response(const WebServiceWorkerResponse&);
 
     RefPtrWillBeMember<FetchResponseData> m_response;
     RefPtrWillBeMember<Headers> m_headers;

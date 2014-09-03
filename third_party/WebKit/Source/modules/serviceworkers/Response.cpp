@@ -6,11 +6,43 @@
 #include "Response.h"
 
 #include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/fileapi/Blob.h"
 #include "modules/serviceworkers/FetchBodyStream.h"
 #include "modules/serviceworkers/ResponseInit.h"
+#include "public/platform/WebServiceWorkerResponse.h"
 
 namespace blink {
+
+namespace {
+
+PassRefPtrWillBeRawPtr<FetchResponseData> createFetchResponseDataFromWebResponse(const WebServiceWorkerResponse& webResponse)
+{
+    RefPtrWillBeRawPtr<FetchResponseData> response;
+    if (200 <= webResponse.status() && webResponse.status() < 300)
+        response = FetchResponseData::create();
+    else
+        response = FetchResponseData::createNetworkErrorResponse();
+
+    response->setURL(webResponse.url());
+    response->setStatus(webResponse.status());
+    response->setStatusMessage(webResponse.statusText());
+    return response;
+}
+
+PassRefPtrWillBeRawPtr<Headers> createHeadersFromWebResponse(const WebServiceWorkerResponse& webResponse)
+{
+    RefPtrWillBeRawPtr<Headers> headers = Headers::create();
+    TrackExceptionState exceptionState;
+    for (HashMap<String, String>::const_iterator i = webResponse.headers().begin(), end = webResponse.headers().end(); i != end; ++i) {
+        headers->append(i->key, i->value, exceptionState);
+        if (exceptionState.hadException())
+            return PassRefPtrWillBeRawPtr<Headers>();
+    }
+    return headers;
+}
+
+}
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Response);
 
@@ -94,6 +126,11 @@ PassRefPtrWillBeRawPtr<Response> Response::create(PassRefPtrWillBeRawPtr<FetchRe
     return adoptRefWillBeNoop(new Response(response));
 }
 
+PassRefPtrWillBeRawPtr<Response> Response::create(const WebServiceWorkerResponse& webResponse)
+{
+    return adoptRefWillBeNoop(new Response(webResponse));
+}
+
 String Response::type() const
 {
     // "The type attribute's getter must return response's type."
@@ -168,6 +205,15 @@ Response::Response()
 Response::Response(PassRefPtrWillBeRawPtr<FetchResponseData> response)
     : m_response(response)
     , m_headers(Headers::create(m_response->headerList()))
+{
+    m_headers->setGuard(Headers::ResponseGuard);
+    ScriptWrappable::init(this);
+}
+
+// FIXME: Handle response body data.
+Response::Response(const WebServiceWorkerResponse& webResponse)
+    : m_response(createFetchResponseDataFromWebResponse(webResponse))
+    , m_headers(createHeadersFromWebResponse(webResponse))
 {
     m_headers->setGuard(Headers::ResponseGuard);
     ScriptWrappable::init(this);

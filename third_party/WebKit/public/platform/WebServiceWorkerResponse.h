@@ -20,6 +20,7 @@
 namespace blink {
 
 class BlobDataHandle;
+class WebHTTPHeaderVisitor;
 class WebServiceWorkerResponsePrivate;
 
 // Represents a response to a fetch operation. ServiceWorker uses this to
@@ -29,6 +30,7 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerResponse {
 public:
     ~WebServiceWorkerResponse() { reset(); }
     WebServiceWorkerResponse();
+    WebServiceWorkerResponse(const WebServiceWorkerResponse& other) { assign(other); }
     WebServiceWorkerResponse& operator=(const WebServiceWorkerResponse& other)
     {
         assign(other);
@@ -50,6 +52,7 @@ public:
     void setHeader(const WebString& key, const WebString& value);
     WebVector<WebString> getHeaderKeys() const;
     WebString getHeader(const WebString& key) const;
+    void visitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
 
     WebString blobUUID() const;
 

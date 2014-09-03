@@ -6,6 +6,8 @@
 #include "public/platform/WebServiceWorkerResponse.h"
 
 #include "platform/blob/BlobData.h"
+#include "public/platform/WebHTTPHeaderVisitor.h"
+#include "wtf/HashMap.h"
 
 namespace blink {
 
@@ -14,6 +16,7 @@ public:
     WebURL url;
     unsigned short status;
     WebString statusText;
+    // FIXME: change headers to a data type that preserves order.
     HashMap<String, String> headers;
     RefPtr<BlobDataHandle> blobDataHandle;
 };
@@ -78,6 +81,12 @@ WebVector<WebString> WebServiceWorkerResponse::getHeaderKeys() const
 WebString WebServiceWorkerResponse::getHeader(const WebString& key) const
 {
     return m_private->headers.get(key);
+}
+
+void WebServiceWorkerResponse::visitHTTPHeaderFields(WebHTTPHeaderVisitor* headerVisitor) const
+{
+    for (HashMap<String, String>::const_iterator i = m_private->headers.begin(), end = m_private->headers.end(); i != end; ++i)
+        headerVisitor->visitHeader(i->key, i->value);
 }
 
 WebString WebServiceWorkerResponse::blobUUID() const
