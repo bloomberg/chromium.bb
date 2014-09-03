@@ -1187,7 +1187,6 @@ crbug.com/30536 [ Win ] http/tests/htmlimports/import-async-grandchild-not-child
 crbug.com/30536 [ Win ] http/tests/encoding/meta-switch-mid-parse.html [ Timeout Pass ]
 crbug.com/30536 [ Win ] http/tests/encoding/meta-switch-mid-parse-with-title.html [ Timeout Pass ]
 crbug.com/30536 [ Win ] http/tests/htmlimports/csp-import-block-but-domain-nested.html [ Timeout Pass ]
-crbug.com/30536 [ Win ] http/tests/ssl/referer-301.html [ Timeout Pass ]
 
 crbug.com/399430 [ Mac ] fast/transforms/transformed-focused-text-input.html [ Pass ImageOnlyFailure ]
 
