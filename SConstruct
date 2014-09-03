@@ -3468,7 +3468,8 @@ nacl_env.AddMethod(RawSyscallObjects)
 nacl_irt_env.ClearBits('nacl_glibc')
 nacl_irt_env.ClearBits('nacl_pic')
 # We build the IRT using the nnacl TC even when the pnacl TC is used otherwise.
-if nacl_irt_env.Bit('target_mips32') or nacl_irt_env.Bit('target_x86_64'):
+if (nacl_irt_env.Bit('target_mips32') or nacl_irt_env.Bit('target_x86_64') or
+    nacl_irt_env.Bit('target_x86_32')):
   nacl_irt_env.SetBits('bitcode')
 else:
   nacl_irt_env.ClearBits('bitcode')
@@ -3493,6 +3494,14 @@ if nacl_irt_env.Bit('bitcode'):
     nacl_irt_env.Append(LINKFLAGS=['--target=x86_64-unknown-nacl',
                                    '--pnacl-allow-translate',
                                    '-arch', 'x86-64'])
+  elif nacl_irt_env.Bit('target_x86_32'):
+    nacl_irt_env.Append(CCFLAGS=['--target=i686-unknown-nacl'])
+    # X86-32 IRT needs to be callable with an under-aligned stack: see
+    # https://code.google.com/p/nativeclient/issues/detail?id=3935
+    nacl_irt_env.Append(LINKFLAGS=['--target=i686-unknown-nacl',
+                                   '--pnacl-allow-translate',
+                                   '-arch', 'x86-32',
+                                   '-Wt,-force-align-stack'])
   elif nacl_irt_env.Bit('target_mips32'):
     # Disable the PNaCl IRT verifier since it will complain about
     # __executable_start symbol not being a valid external symbol.
