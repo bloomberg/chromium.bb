@@ -828,6 +828,8 @@ void HTMLDocumentParser::end()
 
     // Informs the the rest of WebCore that parsing is really finished (and deletes this).
     m_treeBuilder->finished();
+
+    DocumentParser::stopParsing();
 }
 
 void HTMLDocumentParser::attemptToRunDeferredScriptsAndEnd()
