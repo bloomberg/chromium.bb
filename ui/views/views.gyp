@@ -438,6 +438,8 @@
       'widget/desktop_aura/desktop_window_tree_host_win.h',
     ],
     'views_desktop_aura_ozone_sources': [
+      'widget/desktop_aura/desktop_cursor_loader_updater_auralinux.cc',
+      'widget/desktop_aura/desktop_cursor_loader_updater_auralinux.h',
       'widget/desktop_aura/desktop_factory_ozone.cc',
       'widget/desktop_aura/desktop_factory_ozone.h',
       'widget/desktop_aura/desktop_screen_ozone.cc',
