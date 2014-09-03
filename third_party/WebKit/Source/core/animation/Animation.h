@@ -76,7 +76,7 @@ public:
 
     bool isCandidateForAnimationOnCompositor() const;
     // Must only be called once.
-    bool maybeStartAnimationOnCompositor(double startTime);
+    bool maybeStartAnimationOnCompositor(double startTime, double timeOffset);
     bool hasActiveAnimationsOnCompositor() const;
     bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
     void cancelAnimationOnCompositor();

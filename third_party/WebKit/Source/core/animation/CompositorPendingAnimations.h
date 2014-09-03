@@ -31,12 +31,12 @@
 #ifndef CompositorPendingAnimations_h
 #define CompositorPendingAnimations_h
 
+#include "core/animation/AnimationPlayer.h"
+#include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
 namespace blink {
-
-class AnimationPlayer;
 
 // Manages the starting of pending animations on the compositor following a
 // compositing update.
@@ -46,17 +46,25 @@ class AnimationPlayer;
 class CompositorPendingAnimations FINAL {
     DISALLOW_ALLOCATION();
 public:
+
+    CompositorPendingAnimations()
+        : m_timer(this, &CompositorPendingAnimations::timerFired)
+    { }
+
     void add(AnimationPlayer*);
     // Returns whether we are waiting for an animation to start and should
     // service again on the next frame.
-    bool startPendingAnimations();
+    bool update(bool startOnCompositor = true);
     void notifyCompositorAnimationStarted(double monotonicAnimationStartTime);
 
     void trace(Visitor*);
 
 private:
+    void timerFired(Timer<CompositorPendingAnimations>*) { update(false); }
+
     WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > m_pending;
     WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > m_waitingForCompositorAnimationStart;
+    Timer<CompositorPendingAnimations> m_timer;
 };
 
 } // namespace blink

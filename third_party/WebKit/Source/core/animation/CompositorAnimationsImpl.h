@@ -48,9 +48,9 @@ private:
         double adjustedIterationCount;
     };
 
-    static bool convertTimingForCompositor(const Timing&, CompositorTiming& out);
+    static bool convertTimingForCompositor(const Timing&, double timeOffset, CompositorTiming& out);
 
-    static void getAnimationOnCompositor(const Timing&, double startTime, const KeyframeEffectModelBase&, Vector<OwnPtr<WebCompositorAnimation> >& animations);
+    static void getAnimationOnCompositor(const Timing&, double startTime, double timeOffset, const KeyframeEffectModelBase&, Vector<OwnPtr<WebCompositorAnimation> >& animations);
 
     static void addKeyframesToCurve(WebCompositorAnimationCurve&, const AnimatableValuePropertySpecificKeyframeVector&, const Timing&, bool reverse);
 

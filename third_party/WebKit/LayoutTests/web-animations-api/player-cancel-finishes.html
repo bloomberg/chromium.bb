@@ -65,7 +65,7 @@ function animate() {
     var timing = {
         fill: 'none',
         iterations: Infinity,
-        duration: 99
+        duration: 9001
     };
 
     playerTop = document.getElementById('top').animate(keyframes, timing);
@@ -81,10 +81,10 @@ function animate() {
     playerBottom.onfinish = onFinishBottom;
 
     // Finish event does not fire while currentTime is negative.
-    playerBottom.currentTime = -99;
+    playerBottom.currentTime = -9001;
     playerBottom.source = null;
 
-    playerTop.currentTime = -0.1;
+    playerTop.currentTime = 100;
     playerTop.source = null;
 
     if (window.testRunner) {

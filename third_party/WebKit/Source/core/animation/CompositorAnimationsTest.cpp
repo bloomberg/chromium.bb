@@ -101,7 +101,7 @@ public:
 
     bool convertTimingForCompositor(const Timing& t, CompositorAnimationsImpl::CompositorTiming& out)
     {
-        return CompositorAnimationsImpl::convertTimingForCompositor(t, out);
+        return CompositorAnimationsImpl::convertTimingForCompositor(t, 0, out);
     }
     bool isCandidateForAnimationOnCompositor(const Timing& timing, const AnimationEffect& effect)
     {
@@ -109,7 +109,7 @@ public:
     }
     void getAnimationOnCompositor(Timing& timing, AnimatableValueKeyframeEffectModel& effect, Vector<OwnPtr<WebCompositorAnimation> >& animations)
     {
-        return CompositorAnimationsImpl::getAnimationOnCompositor(timing, std::numeric_limits<double>::quiet_NaN(), effect, animations);
+        return CompositorAnimationsImpl::getAnimationOnCompositor(timing, std::numeric_limits<double>::quiet_NaN(), 0, effect, animations);
     }
     bool getAnimationBounds(FloatBox& boundingBox, const AnimationEffect& effect, double minValue, double maxValue)
     {

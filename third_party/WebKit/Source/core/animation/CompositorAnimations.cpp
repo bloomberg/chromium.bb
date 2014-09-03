@@ -229,7 +229,7 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
     }
 
     CompositorAnimationsImpl::CompositorTiming out;
-    if (!CompositorAnimationsImpl::convertTimingForCompositor(timing, out))
+    if (!CompositorAnimationsImpl::convertTimingForCompositor(timing, 0, out))
         return false;
 
     if (timing.timingFunction->type() != TimingFunction::LinearFunction) {
@@ -251,7 +251,7 @@ bool CompositorAnimations::canStartAnimationOnCompositor(const Element& element)
     return element.renderer() && element.renderer()->compositingState() == PaintsIntoOwnBacking;
 }
 
-bool CompositorAnimations::startAnimationOnCompositor(const Element& element, double startTime, const Timing& timing, const AnimationEffect& effect, Vector<int>& startedAnimationIds)
+bool CompositorAnimations::startAnimationOnCompositor(const Element& element, double startTime, double timeOffset, const Timing& timing, const AnimationEffect& effect, Vector<int>& startedAnimationIds)
 {
     ASSERT(startedAnimationIds.isEmpty());
     ASSERT(isCandidateForAnimationOnCompositor(timing, effect));
@@ -263,7 +263,7 @@ bool CompositorAnimations::startAnimationOnCompositor(const Element& element, do
     ASSERT(layer);
 
     Vector<OwnPtr<WebCompositorAnimation> > animations;
-    CompositorAnimationsImpl::getAnimationOnCompositor(timing, startTime, keyframeEffect, animations);
+    CompositorAnimationsImpl::getAnimationOnCompositor(timing, startTime, timeOffset, keyframeEffect, animations);
     ASSERT(!animations.isEmpty());
     for (size_t i = 0; i < animations.size(); ++i) {
         int id = animations[i]->id();
@@ -310,7 +310,7 @@ void CompositorAnimations::pauseAnimationForTestingOnCompositor(const Element& e
 // CompositorAnimationsImpl
 // -----------------------------------------------------------------------
 
-bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, CompositorTiming& out)
+bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, double timeOffset, CompositorTiming& out)
 {
     timing.assertValid();
 
@@ -353,7 +353,7 @@ bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, 
     }
 
     // Compositor's time offset is positive for seeking into the animation.
-    out.scaledTimeOffset = -scaledStartDelay;
+    out.scaledTimeOffset = -scaledStartDelay + timeOffset;
     return true;
 }
 
@@ -474,11 +474,11 @@ void CompositorAnimationsImpl::addKeyframesToCurve(WebCompositorAnimationCurve& 
     }
 }
 
-void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, double startTime, const KeyframeEffectModelBase& effect, Vector<OwnPtr<WebCompositorAnimation> >& animations)
+void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, double startTime, double timeOffset, const KeyframeEffectModelBase& effect, Vector<OwnPtr<WebCompositorAnimation> >& animations)
 {
     ASSERT(animations.isEmpty());
     CompositorTiming compositorTiming;
-    bool timingValid = convertTimingForCompositor(timing, compositorTiming);
+    bool timingValid = convertTimingForCompositor(timing, timeOffset, compositorTiming);
     ASSERT_UNUSED(timingValid, timingValid);
 
     PropertySet properties = effect.properties();

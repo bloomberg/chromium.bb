@@ -48,6 +48,7 @@ class AnimationPlayer FINAL : public RefCountedWillBeGarbageCollectedFinalized<A
     REFCOUNTED_EVENT_TARGET(AnimationPlayer);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AnimationPlayer);
 public:
+
     ~AnimationPlayer();
     static PassRefPtrWillBeRawPtr<AnimationPlayer> create(ExecutionContext*, AnimationTimeline&, AnimationNode*);
 
@@ -67,7 +68,7 @@ public:
 
     double calculateCurrentTime() const;
     double currentTimeInternal();
-    void setCurrentTimeInternal(double newCurrentTime);
+    void setCurrentTimeInternal(double newCurrentTime, TimingUpdateReason = TimingUpdateOnDemand);
 
     bool paused() const { return m_paused && !m_isPausedForTesting; }
     void pause();
@@ -75,6 +76,7 @@ public:
     void reverse();
     void finish(ExceptionState&);
     bool finished() { return limited(currentTimeInternal()); }
+    bool playing() { return !(finished() || m_paused || m_isPausedForTesting); }
     // FIXME: Resolve whether finished() should just return the flag, and
     // remove this method.
     bool finishedInternal() const { return m_finished; }
@@ -96,11 +98,12 @@ public:
     void timelineDestroyed() { m_timeline = nullptr; }
 #endif
 
+    double calculateStartTime(double currentTime) const;
     bool hasStartTime() const { return !isNull(m_startTime); }
-    double startTime() const { return m_startTime * 1000; }
+    double startTime() const;
     double startTimeInternal() const { return m_startTime; }
-    void setStartTime(double startTime) { setStartTimeInternal(startTime / 1000); }
-    void setStartTimeInternal(double, bool isUpdateFromCompositor = false);
+    void setStartTime(double);
+    void setStartTimeInternal(double);
 
     const AnimationNode* source() const { return m_content.get(); }
     AnimationNode* source() { return m_content.get(); }
@@ -118,8 +121,13 @@ public:
     bool canStartAnimationOnCompositor();
     bool maybeStartAnimationOnCompositor();
     void cancelAnimationOnCompositor();
-    void schedulePendingAnimationOnCompositor();
     bool hasActiveAnimationsOnCompositor();
+    void setCompositorPending(bool sourceChanged = false);
+    void notifyCompositorStartTime(double timelineTime);
+
+
+    void preCommit(bool startOnCompositor);
+    void postCommit(double timelineTime);
 
     unsigned sequenceNumber() const { return m_sequenceNumber; }
 
@@ -142,9 +150,11 @@ private:
     AnimationPlayer(ExecutionContext*, AnimationTimeline&, AnimationNode*);
     double sourceEnd() const;
     bool limited(double currentTime) const;
-    void updateCurrentTimingState();
+    void updateCurrentTimingState(TimingUpdateReason);
+    void unpauseInternal();
 
     double m_playbackRate;
+
     double m_startTime;
     double m_holdTime;
 
@@ -166,6 +176,36 @@ private:
     // ScriptedAnimationController. This object remains active until the
     // event is actually dispatched.
     RefPtrWillBeMember<Event> m_pendingFinishedEvent;
+
+    enum CompositorAction {
+        None,
+        Pause,
+        Start,
+        PauseThenStart
+    };
+
+    class CompositorState {
+    public:
+        CompositorState(AnimationPlayer& player)
+            : startTime(player.m_startTime)
+            , holdTime(player.m_holdTime)
+            , playbackRate(player.m_playbackRate)
+            , sourceChanged(false)
+            , pendingAction(Start)
+        { }
+        double startTime;
+        double holdTime;
+        double playbackRate;
+        bool sourceChanged;
+        CompositorAction pendingAction;
+    };
+
+    // This mirrors the known compositor state. It is created when a compositor
+    // animation is started. Updated once the start time is known and each time
+    // modifications are pushed to the compositor.
+    OwnPtrWillBeMember<CompositorState> m_compositorState;
+    bool m_compositorPending;
+    bool m_currentTimePending;
 };
 
 } // namespace blink

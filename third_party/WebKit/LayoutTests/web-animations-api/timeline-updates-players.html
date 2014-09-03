@@ -22,6 +22,7 @@ test(function() {
 
 test(function() {
     var player = document.timeline.play(animation);
+    assert_equals(getComputedStyle(element).left, '0px');
     var source = player.source
     player.source = null;
     assert_equals(getComputedStyle(element).left, 'auto');

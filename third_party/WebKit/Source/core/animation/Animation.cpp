@@ -129,11 +129,10 @@ void Animation::detach()
 
 void Animation::specifiedTimingChanged()
 {
-    cancelAnimationOnCompositor();
     if (player()) {
         // FIXME: Needs to consider groups when added.
         ASSERT(player()->source() == this);
-        player()->schedulePendingAnimationOnCompositor();
+        player()->setCompositorPending(true);
     }
 }
 
@@ -253,14 +252,14 @@ bool Animation::isCandidateForAnimationOnCompositor() const
     return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(specifiedTiming(), *effect());
 }
 
-bool Animation::maybeStartAnimationOnCompositor(double startTime)
+bool Animation::maybeStartAnimationOnCompositor(double startTime, double currentTime)
 {
     ASSERT(!hasActiveAnimationsOnCompositor());
     if (!isCandidateForAnimationOnCompositor())
         return false;
     if (!CompositorAnimations::instance()->canStartAnimationOnCompositor(*m_target))
         return false;
-    if (!CompositorAnimations::instance()->startAnimationOnCompositor(*m_target, startTime, specifiedTiming(), *effect(), m_compositorAnimationIds))
+    if (!CompositorAnimations::instance()->startAnimationOnCompositor(*m_target, startTime, currentTime, specifiedTiming(), *effect(), m_compositorAnimationIds))
         return false;
     ASSERT(!m_compositorAnimationIds.isEmpty());
     return true;
@@ -294,6 +293,7 @@ void Animation::cancelAnimationOnCompositor()
     for (size_t i = 0; i < m_compositorAnimationIds.size(); ++i)
         CompositorAnimations::instance()->cancelAnimationOnCompositor(*m_target, m_compositorAnimationIds[i]);
     m_compositorAnimationIds.clear();
+    player()->setCompositorPending(true);
 }
 
 void Animation::pauseAnimationForTestingOnCompositor(double pauseTime)

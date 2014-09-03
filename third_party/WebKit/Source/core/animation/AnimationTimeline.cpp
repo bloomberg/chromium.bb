@@ -93,7 +93,6 @@ AnimationPlayer* AnimationTimeline::play(AnimationNode* child)
     if (!m_document)
         return 0;
     AnimationPlayer* player = createAnimationPlayer(child);
-    m_document->compositorPendingAnimations().add(player);
     return player;
 }
 
