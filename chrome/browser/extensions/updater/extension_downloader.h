@@ -166,9 +166,7 @@ class ExtensionDownloader
                         Manifest::Type extension_type,
                         const GURL& extension_update_url,
                         const std::string& update_url_data,
-                        int request_id,
-                        bool force_update,
-                        const std::string& install_source_override);
+                        int request_id);
 
   // Adds all recorded stats taken so far to histogram counts.
   void ReportStats() const;

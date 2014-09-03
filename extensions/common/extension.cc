@@ -4,14 +4,10 @@
 
 #include "extensions/common/extension.h"
 
-#include <algorithm>
-
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -67,26 +63,6 @@ bool ContainsReservedCharacters(const base::FilePath& path) {
   if (path.value().find('\\') != path.value().npos)
     return true;
   return !net::IsSafePortableRelativePath(path);
-}
-
-void CollectPlatformSpecificResourceArchs(const base::FilePath& extension_path,
-                                          std::set<std::string>* archs) {
-  archs->clear();
-  base::FilePath platform_specific_path = extension_path.Append(
-      kPlatformSpecificFolder);
-  if (!base::PathExists(platform_specific_path)) {
-    return;
-  }
-
-  base::FileEnumerator all_archs(platform_specific_path,
-                                 false,
-                                 base::FileEnumerator::DIRECTORIES);
-  base::FilePath arch;
-  while (!(arch = all_archs.Next()).empty()) {
-    std::string arch_name = arch.BaseName().AsUTF8Unsafe();
-    std::replace(arch_name.begin(), arch_name.end(), '_', '-');
-    archs->insert(arch_name);
-  }
 }
 
 }  // namespace
@@ -459,15 +435,6 @@ void Extension::AddWebExtentPattern(const URLPattern& pattern) {
   extent_.AddPattern(pattern);
 }
 
-bool Extension::HasPlatformSpecificResources() const {
-  return !platform_specific_resource_archs_.empty();
-}
-
-bool Extension::HasResourcesForPlatform(const std::string& arch) const {
-  return platform_specific_resource_archs_.find(arch) !=
-      platform_specific_resource_archs_.end();
-}
-
 // static
 bool Extension::InitExtensionID(extensions::Manifest* manifest,
                                 const base::FilePath& path,
@@ -568,9 +535,6 @@ bool Extension::InitFromValue(int flags, base::string16* error) {
   finished_parsing_manifest_ = true;
 
   permissions_data_.reset(new PermissionsData(this));
-
-  CollectPlatformSpecificResourceArchs(path_,
-                                       &platform_specific_resource_archs_);
 
   return true;
 }
