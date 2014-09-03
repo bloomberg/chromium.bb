@@ -47,14 +47,18 @@ class OverviewToolbar {
   void ShowActionButtons();
   void HideActionButtons();
 
+  void DisableAction(ActionType action);
+
  private:
   void ToggleActionButtonsVisibility();
+  bool IsActionEnabled(ActionType action) const;
   bool IsEventOverButton(ActionButton* button,
                          const ui::GestureEvent& event) const;
   gfx::Transform ComputeTransformFor(ActionButton* button) const;
   void TransformButton(ActionButton* button);
 
   bool shown_;
+  uint64_t disabled_action_bitfields_;
   scoped_ptr<ActionButton> close_;
   scoped_ptr<ActionButton> split_;
   ActionType current_action_;

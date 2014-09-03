@@ -98,6 +98,7 @@ class ActionButton : public ui::LayerDelegate {
 
 OverviewToolbar::OverviewToolbar(aura::Window* container)
     : shown_(false),
+      disabled_action_bitfields_(0),
       close_(new ActionButton(IDR_ATHENA_OVERVIEW_TRASH, "Close")),
       split_(new ActionButton(IDR_ATHENA_OVERVIEW_SPLIT, "Split")),
       current_action_(ACTION_TYPE_NONE),
@@ -128,14 +129,17 @@ OverviewToolbar::~OverviewToolbar() {
 
 OverviewToolbar::ActionType OverviewToolbar::GetHighlightAction(
     const ui::GestureEvent& event) const {
-  if (IsEventOverButton(split_.get(), event))
+  if (IsActionEnabled(ACTION_TYPE_SPLIT) &&
+      IsEventOverButton(split_.get(), event))
     return ACTION_TYPE_SPLIT;
-  if (IsEventOverButton(close_.get(), event))
+  if (IsActionEnabled(ACTION_TYPE_CLOSE) &&
+      IsEventOverButton(close_.get(), event))
     return ACTION_TYPE_CLOSE;
   return ACTION_TYPE_NONE;
 }
 
 void OverviewToolbar::SetHighlightAction(ActionType action) {
+  CHECK(IsActionEnabled(action));
   if (current_action_ == action)
     return;
   current_action_ = action;
@@ -157,10 +161,19 @@ void OverviewToolbar::HideActionButtons() {
     ToggleActionButtonsVisibility();
 }
 
+void OverviewToolbar::DisableAction(ActionType action) {
+  CHECK_NE(current_action_, action);
+  disabled_action_bitfields_ |= (1u << action);
+}
+
 void OverviewToolbar::ToggleActionButtonsVisibility() {
   shown_ = !shown_;
   TransformButton(close_.get());
   TransformButton(split_.get());
+}
+
+bool OverviewToolbar::IsActionEnabled(ActionType action) const {
+  return !(disabled_action_bitfields_ & (1u << action));
 }
 
 bool OverviewToolbar::IsEventOverButton(ActionButton* button,
@@ -193,7 +206,10 @@ void OverviewToolbar::TransformButton(ActionButton* button) {
       button->layer()->GetAnimator());
   split_settings.SetTweenType(gfx::Tween::SMOOTH_IN_OUT);
   button->layer()->SetTransform(ComputeTransformFor(button));
-  button->layer()->SetOpacity(shown_ ? 1 : 0);
+  bool button_is_enabled =
+      (button == close_.get() && IsActionEnabled(ACTION_TYPE_CLOSE)) ||
+      (button == split_.get() && IsActionEnabled(ACTION_TYPE_SPLIT));
+  button->layer()->SetOpacity((button_is_enabled && shown_) ? 1 : 0);
 }
 
 }  // namespace athena

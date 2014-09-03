@@ -98,6 +98,32 @@ void RestoreWindowState(aura::Window* window,
   wm::SetShadowType(window, wm::SHADOW_TYPE_NONE);
 }
 
+gfx::RectF GetTransformedBounds(aura::Window* window) {
+  gfx::Transform transform;
+  gfx::RectF bounds = window->bounds();
+  transform.Translate(bounds.x(), bounds.y());
+  transform.PreconcatTransform(window->layer()->transform());
+  transform.Translate(-bounds.x(), -bounds.y());
+  transform.TransformRect(&bounds);
+  return bounds;
+}
+
+gfx::Transform GetTransformForSplitWindow(aura::Window* window, float scale) {
+  int x_translate = window->bounds().width() * (1 - scale) / 2;
+  gfx::Transform transform;
+  transform.Translate(x_translate, window->bounds().height() * 0.65);
+  transform.Scale(scale, scale);
+  return transform;
+}
+
+void TransformSplitWindowScale(aura::Window* window, float scale) {
+  gfx::Transform transform = window->layer()->GetTargetTransform();
+  if (transform.Scale2d() == gfx::Vector2dF(scale, scale))
+    return;
+  ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+  window->SetTransform(GetTransformForSplitWindow(window, scale));
+}
+
 // Always returns the same target.
 class StaticWindowTargeter : public aura::WindowTargeter {
  public:
@@ -178,9 +204,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
           (window == split_view_controller_->left_window() ||
            window == split_view_controller_->right_window())) {
         // Do not let the left/right windows be scrolled.
-        int x_translate = window->bounds().width() * (1 - kMaxScale) / 2;
-        state->top.Translate(x_translate, window->bounds().height() * 0.65);
-        state->top.Scale(kMaxScale, kMaxScale);
+        state->top = GetTransformForSplitWindow(window, kMaxScale);
         state->bottom = state->top;
         --index;
         continue;
@@ -347,6 +371,21 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
       compositor->RemoveAnimationObserver(this);
   }
 
+  aura::Window* GetSplitWindowDropTarget(const ui::GestureEvent& event) const {
+    if (!split_view_controller_->IsSplitViewModeActive())
+      return NULL;
+    CHECK(dragged_window_);
+    CHECK_NE(split_view_controller_->left_window(), dragged_window_);
+    CHECK_NE(split_view_controller_->right_window(), dragged_window_);
+    aura::Window* window = split_view_controller_->left_window();
+    if (GetTransformedBounds(window).Contains(event.location()))
+      return window;
+    window = split_view_controller_->right_window();
+    if (GetTransformedBounds(window).Contains(event.location()))
+      return window;
+    return NULL;
+  }
+
   void DragWindow(const ui::GestureEvent& event) {
     CHECK(dragged_window_);
     CHECK_EQ(ui::ET_GESTURE_SCROLL_UPDATE, event.type());
@@ -384,6 +423,8 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
         overview_toolbar_->current_action();
     overview_toolbar_->SetHighlightAction(new_action);
 
+    aura::Window* split_drop = GetSplitWindowDropTarget(event);
+
     // If the user has selected to get into split-view mode, then show the
     // window with full opacity. Otherwise, fade it out as it closes. Animate
     // the opacity if transitioning to/from the split-view button.
@@ -394,7 +435,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     float ratio = std::min(
         1.f, std::abs(dragged_distance.x()) / kMinDistanceForDismissal);
     float opacity =
-        (new_action == OverviewToolbar::ACTION_TYPE_SPLIT)
+        (new_action == OverviewToolbar::ACTION_TYPE_SPLIT || split_drop)
             ? 1
             : gfx::Tween::FloatValueBetween(ratio, kMaxOpacity, kMinOpacity);
     if (animate_opacity) {
@@ -403,6 +444,18 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
       dragged_window_->layer()->SetOpacity(opacity);
     } else {
       dragged_window_->layer()->SetOpacity(opacity);
+    }
+
+    if (split_view_controller_->IsSplitViewModeActive()) {
+      float scale = kMaxScale;
+      if (split_drop == split_view_controller_->left_window())
+        scale = kMaxScaleForSplitTarget;
+      TransformSplitWindowScale(split_view_controller_->left_window(), scale);
+
+      scale = kMaxScale;
+      if (split_drop == split_view_controller_->right_window())
+        scale = kMaxScaleForSplitTarget;
+      TransformSplitWindowScale(split_view_controller_->right_window(), scale);
     }
   }
 
@@ -513,9 +566,26 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     CHECK(overview_toolbar_);
     OverviewToolbar::ActionType action = overview_toolbar_->current_action();
     overview_toolbar_.reset();
-    if (action == OverviewToolbar::ACTION_TYPE_SPLIT)
+    if (action == OverviewToolbar::ACTION_TYPE_SPLIT) {
       delegate_->OnSplitViewMode(NULL, dragged_window_);
-    else if (ShouldCloseDragWindow(gesture))
+      return;
+    }
+
+    // If the window is dropped on one of the left/right windows in split-mode,
+    // then switch that window.
+    aura::Window* split_drop = GetSplitWindowDropTarget(gesture);
+    if (split_drop) {
+      aura::Window* left = split_view_controller_->left_window();
+      aura::Window* right = split_view_controller_->right_window();
+      if (left == split_drop)
+        left = dragged_window_;
+      else
+        right = dragged_window_;
+      delegate_->OnSplitViewMode(left, right);
+      return;
+    }
+
+    if (ShouldCloseDragWindow(gesture))
       CloseDragWindow(gesture);
     else
       RestoreDragWindow();
@@ -567,8 +637,26 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
           std::abs(gesture->details().scroll_y_hint()) * 2) {
         dragged_start_location_ = gesture->location();
         dragged_window_ = SelectWindowAt(gesture);
-        if (dragged_window_)
+        if (split_view_controller_->IsSplitViewModeActive() &&
+            (dragged_window_ == split_view_controller_->left_window() ||
+             dragged_window_ == split_view_controller_->right_window())) {
+          // TODO(sad): Allow closing the left/right window. Closing one of
+          // these windows will terminate the split-view mode. Until then, do
+          // not allow closing these (since otherwise it gets into an undefined
+          // state).
+          dragged_window_ = NULL;
+        }
+
+        if (dragged_window_) {
+          // Show the toolbar (for closing a window, or going into split-view
+          // mode). If already in split-view mode, then do not show the 'Split'
+          // option.
           overview_toolbar_.reset(new OverviewToolbar(container_));
+          if (split_view_controller_->IsSplitViewModeActive()) {
+            overview_toolbar_->DisableAction(
+                OverviewToolbar::ACTION_TYPE_SPLIT);
+          }
+        }
       }
     } else if (gesture->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
       if (dragged_window_)
@@ -617,6 +705,7 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
   const float kMaxScale = 0.75f;
   const float kMaxOpacity = 1.0f;
   const float kMinOpacity = 0.2f;
+  const float kMaxScaleForSplitTarget = 0.9f;
 
   aura::Window* container_;
   // Provider of the stack of windows to show in the overview mode. Not owned.
