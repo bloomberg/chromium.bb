@@ -213,7 +213,7 @@ namespace usb {
     //
     // On Chrome OS, you can specify the interface ID. In that case the method
     // will request access from permission broker in the same way as
-    // $(ref:requestUsbAccess).
+    // $(ref:requestAccess).
     //
     // If the access request is rejected or the device fails to be opened a
     // connection handle will not be created or returned.
