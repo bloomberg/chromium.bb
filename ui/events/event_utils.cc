@@ -63,9 +63,8 @@ scoped_ptr<Event> EventFromNative(const base::NativeEvent& native_event) {
   return event.Pass();
 }
 
-#if defined(OS_LINUX)
 // From third_party/WebKit/Source/web/gtk/WebInputEventFactory.cpp:
-uint16 GetControlCharacterForKeycode(int windows_key_code, bool shift) {
+base::char16 GetControlCharacterForKeycode(int windows_key_code, bool shift) {
   if (windows_key_code >= ui::VKEY_A &&
     windows_key_code <= ui::VKEY_Z) {
     // ctrl-A ~ ctrl-Z map to \x01 ~ \x1A
@@ -108,7 +107,6 @@ uint16 GetControlCharacterForKeycode(int windows_key_code, bool shift) {
   }
   return 0;
 }
-#endif
 
 int RegisterCustomEventType() {
   return ++g_custom_event_types;

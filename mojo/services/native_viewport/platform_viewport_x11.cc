@@ -104,9 +104,9 @@ class PlatformViewportX11 : public PlatformViewport,
 
       char_event.SetExtendedKeyEventData(scoped_ptr<ui::ExtendedKeyEventData>(
           new MojoExtendedKeyEventData(
-              ui::WindowsKeycodeFromNative(key_press_event->native_event()),
-              ui::TextFromNative(key_press_event->native_event()),
-              ui::UnmodifiedTextFromNative(key_press_event->native_event()))));
+              key_press_event->GetLocatedWindowsKeyboardCode(),
+              key_press_event->GetText(),
+              key_press_event->GetUnmodifiedText())));
       char_event.set_platform_keycode(key_press_event->platform_keycode());
 
       delegate_->OnEvent(&char_event);

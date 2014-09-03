@@ -19,29 +19,30 @@
 namespace ash {
 namespace {
 
-void DispatchPressedEvent(XEvent native_event,
+void DispatchPressedEvent(const ui::KeyEvent& key_event,
                           scoped_ptr<aura::WindowTracker> tracker) {
   // The target window may be gone.
   if (tracker->windows().empty())
     return;
+  ui::KeyEvent event(key_event);
   aura::Window* target = *(tracker->windows().begin());
-  ui::KeyEvent event(&native_event);
-  event.set_flags(event.flags() | ui::EF_IS_SYNTHESIZED);
   ui::EventDispatchDetails result ALLOW_UNUSED =
       target->GetHost()->event_processor()->OnEventFromSource(&event);
 }
 
 void PostPressedEvent(ui::KeyEvent* event) {
   // Modify RELEASED event to PRESSED event.
-  XEvent xkey = *(event->native_event());
-  xkey.xkey.type = KeyPress;
-  xkey.xkey.state |= ShiftMask;
+  const ui::KeyEvent pressed_event(
+      ui::ET_KEY_PRESSED,
+      event->key_code(),
+      event->code(),
+      event->flags() | ui::EF_SHIFT_DOWN | ui::EF_IS_SYNTHESIZED);
   scoped_ptr<aura::WindowTracker> tracker(new aura::WindowTracker);
   tracker->Add(static_cast<aura::Window*>(event->target()));
 
   base::MessageLoopForUI::current()->PostTask(
       FROM_HERE,
-      base::Bind(&DispatchPressedEvent, xkey, base::Passed(&tracker)));
+      base::Bind(&DispatchPressedEvent, pressed_event, base::Passed(&tracker)));
 }
 
 }  // namespace
