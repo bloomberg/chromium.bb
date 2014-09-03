@@ -72,7 +72,7 @@ class CONTENT_EXPORT BrowserPlugin :
 
   // Embedder's device scale factor changed, we need to update the guest
   // renderer.
-  void UpdateDeviceScaleFactor(float device_scale_factor);
+  void UpdateDeviceScaleFactor();
 
   // A request to enable hardware compositing.
   void EnableCompositing(bool enable);
@@ -181,15 +181,8 @@ class CONTENT_EXPORT BrowserPlugin :
 
   // Populates BrowserPluginHostMsg_ResizeGuest_Params with resize state.
   void PopulateResizeGuestParameters(
-      BrowserPluginHostMsg_ResizeGuest_Params* params,
       const gfx::Size& view_size,
-      bool needs_repaint);
-
-  // Populates ResizeGuest parameters based on the current
-  // autosize state.
-  void GetSizeParams(
-      BrowserPluginHostMsg_ResizeGuest_Params* resize_guest_params,
-      bool needs_repaint);
+      BrowserPluginHostMsg_ResizeGuest_Params* params);
 
   // IPC message handlers.
   // Please keep in alphabetical order.

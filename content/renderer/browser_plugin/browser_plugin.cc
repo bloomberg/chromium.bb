@@ -175,8 +175,12 @@ void BrowserPlugin::Attach() {
   attach_params.visible = visible_;
   attach_params.opaque = !GetAllowTransparencyAttribute();
   attach_params.origin = plugin_rect().origin();
-  GetSizeParams(&attach_params.resize_guest_params, false);
-
+  gfx::Size view_size(width(), height());
+  if (!view_size.IsEmpty()) {
+    paint_ack_received_ = false;
+    PopulateResizeGuestParameters(view_size,
+                                  &attach_params.resize_guest_params);
+  }
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_Attach(
       render_view_routing_id_,
       browser_plugin_instance_id_,
@@ -192,7 +196,7 @@ void BrowserPlugin::DidCommitCompositorFrame() {
 
 void BrowserPlugin::OnAdvanceFocus(int browser_plugin_instance_id,
                                    bool reverse) {
-  DCHECK(render_view_.get());
+  DCHECK(render_view_);
   render_view_->GetWebView()->advanceFocus(reverse);
 }
 
@@ -317,7 +321,7 @@ void BrowserPlugin::OnUpdateRect(
   }
 
   BrowserPluginHostMsg_ResizeGuest_Params resize_params;
-  PopulateResizeGuestParameters(&resize_params, plugin_size(), false);
+  PopulateResizeGuestParameters(plugin_size(), &resize_params);
   paint_ack_received_ = false;
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
       render_view_routing_id_,
@@ -344,17 +348,19 @@ void BrowserPlugin::ShowSadGraphic() {
 }
 
 float BrowserPlugin::GetDeviceScaleFactor() const {
-  if (!render_view_.get())
+  if (!render_view_)
     return 1.0f;
   return render_view_->GetWebView()->deviceScaleFactor();
 }
 
-void BrowserPlugin::UpdateDeviceScaleFactor(float device_scale_factor) {
-  if (last_device_scale_factor_ == device_scale_factor || !paint_ack_received_)
+void BrowserPlugin::UpdateDeviceScaleFactor() {
+  if (!paint_ack_received_ ||
+      last_device_scale_factor_ == GetDeviceScaleFactor()) {
     return;
+  }
 
   BrowserPluginHostMsg_ResizeGuest_Params params;
-  PopulateResizeGuestParameters(&params, plugin_size(), true);
+  PopulateResizeGuestParameters(plugin_size(), &params);
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
       render_view_routing_id_,
       browser_plugin_instance_id_,
@@ -373,7 +379,7 @@ void BrowserPlugin::UpdateGuestFocusState() {
 
 bool BrowserPlugin::ShouldGuestBeFocused() const {
   bool embedder_focused = false;
-  if (render_view_.get())
+  if (render_view_)
     embedder_focused = render_view_->has_focus();
   return plugin_focused_ && embedder_focused;
 }
@@ -437,7 +443,7 @@ void BrowserPlugin::destroy() {
     compositing_helper_->OnContainerDestroy();
   container_ = NULL;
   // Will be a no-op if the mouse is not currently locked.
-  if (render_view_.get())
+  if (render_view_)
     render_view_->mouse_lock_dispatcher()->OnLockTargetDestroyed(this);
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
@@ -548,7 +554,7 @@ void BrowserPlugin::updateGeometry(
   }
 
   BrowserPluginHostMsg_ResizeGuest_Params params;
-  PopulateResizeGuestParameters(&params, plugin_size(), false);
+  PopulateResizeGuestParameters(plugin_size(), &params);
   paint_ack_received_ = false;
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
       render_view_routing_id_,
@@ -557,27 +563,15 @@ void BrowserPlugin::updateGeometry(
 }
 
 void BrowserPlugin::PopulateResizeGuestParameters(
-    BrowserPluginHostMsg_ResizeGuest_Params* params,
     const gfx::Size& view_size,
-    bool needs_repaint) {
+    BrowserPluginHostMsg_ResizeGuest_Params* params) {
   params->size_changed = true;
   params->view_size = view_size;
-  params->repaint = needs_repaint;
   params->scale_factor = GetDeviceScaleFactor();
   if (last_device_scale_factor_ != params->scale_factor) {
-    DCHECK(params->repaint);
     last_device_scale_factor_ = params->scale_factor;
+    params->repaint = true;
   }
-}
-
-void BrowserPlugin::GetSizeParams(
-    BrowserPluginHostMsg_ResizeGuest_Params* resize_guest_params,
-    bool needs_repaint) {
-  gfx::Size view_size(width(), height());
-  if (view_size.IsEmpty())
-    return;
-  paint_ack_received_ = false;
-  PopulateResizeGuestParameters(resize_guest_params, view_size, needs_repaint);
 }
 
 void BrowserPlugin::updateFocus(bool focused) {
