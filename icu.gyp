@@ -253,11 +253,6 @@
                   'include_dirs': [
                     '<(android_src)/abi/cpp/include',
                   ],
-                  'link_settings': {
-                    'libraries': [
-                      '-lgabi++',
-                    ],
-                  },
                 }],
               ],
             }],
@@ -365,11 +360,6 @@
                   'include_dirs': [
                     '<(android_src)/abi/cpp/include',
                   ],
-                  'link_settings': {
-                    'libraries': [
-                      '-lgabi++',
-                    ],
-                  },
                 }],
               ],
             }],
