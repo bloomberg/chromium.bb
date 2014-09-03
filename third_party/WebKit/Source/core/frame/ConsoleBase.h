@@ -83,6 +83,9 @@ protected:
 
 private:
     void internalAddMessage(MessageType, MessageLevel, ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>, bool acceptNoArguments = false, bool printTrace = false);
+
+    HashCountedSet<String> m_counts;
+    HashMap<String, double> m_times;
 };
 
 } // namespace blink

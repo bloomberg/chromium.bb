@@ -340,7 +340,7 @@ interface InspectorInstrumentation {
     [Canvas, Page]
     void frameDetachedFromParent([Keep] LocalFrame*);
 
-    [Console, Resource, DOM, Canvas, Page, PageDebugger]
+    [Resource, DOM, Canvas, Page, PageDebugger]
     void didCommitLoad([Keep] LocalFrame*, DocumentLoader*);
 
     [DOM, Inline=FastReturn]
@@ -483,13 +483,10 @@ class ConsoleMessage;
     [Console, Debugger]
     void addMessageToConsole(ExecutionContext* context, ConsoleMessage* consoleMessage);
 
-    [Console]
-    void consoleCount(ExecutionContext* context, ScriptState* state, PassRefPtrWillBeRawPtr<ScriptArguments> arguments);
-
-    [Console, Timeline]
+    [Timeline]
     void consoleTime([Keep] ExecutionContext* context, const String& title);
 
-    [Console, Timeline]
+    [Timeline]
     void consoleTimeEnd([Keep] ExecutionContext* context, const String& title, ScriptState* state);
 
     [Timeline, Inline=FastReturn]

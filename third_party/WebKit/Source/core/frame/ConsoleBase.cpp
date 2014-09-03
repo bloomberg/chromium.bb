@@ -103,7 +103,22 @@ void ConsoleBase::assertCondition(ScriptState* scriptState, PassRefPtrWillBeRawP
 
 void ConsoleBase::count(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
-    InspectorInstrumentation::consoleCount(context(), scriptState, arguments);
+    RefPtrWillBeRawPtr<ScriptCallStack> callStack(createScriptCallStack(1));
+    const ScriptCallFrame& lastCaller = callStack->at(0);
+    // Follow Firebug's behavior of counting with null and undefined title in
+    // the same bucket as no argument
+    String title;
+    arguments->getFirstArgumentAsString(title);
+    String identifier = title.isEmpty() ? String(lastCaller.sourceURL() + ':' + String::number(lastCaller.lineNumber()))
+        : String(title + '@');
+
+    HashCountedSet<String>::AddResult result = m_counts.add(identifier);
+    String message = title + ": " + String::number(result.storedValue->value);
+
+    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, DebugMessageLevel, message);
+    consoleMessage->setType(CountMessageType);
+    consoleMessage->setScriptState(scriptState);
+    reportMessageToConsole(consoleMessage.release());
 }
 
 void ConsoleBase::markTimeline(const String& title)
@@ -125,12 +140,37 @@ void ConsoleBase::time(const String& title)
 {
     InspectorInstrumentation::consoleTime(context(), title);
     TRACE_EVENT_COPY_ASYNC_BEGIN0("blink.console", title.utf8().data(), this);
+
+    if (title.isNull())
+        return;
+
+    m_times.add(title, monotonicallyIncreasingTime());
 }
 
 void ConsoleBase::timeEnd(ScriptState* scriptState, const String& title)
 {
     TRACE_EVENT_COPY_ASYNC_END0("blink.console", title.utf8().data(), this);
     InspectorInstrumentation::consoleTimeEnd(context(), title, scriptState);
+
+    // Follow Firebug's behavior of requiring a title that is not null or
+    // undefined for timing functions
+    if (title.isNull())
+        return;
+
+    HashMap<String, double>::iterator it = m_times.find(title);
+    if (it == m_times.end())
+        return;
+
+    double startTime = it->value;
+    m_times.remove(it);
+
+    double elapsed = monotonicallyIncreasingTime() - startTime;
+    String message = title + String::format(": %.3fms", elapsed * 1000);
+
+    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, DebugMessageLevel, message);
+    consoleMessage->setType(TimeEndMessageType);
+    consoleMessage->setScriptState(scriptState);
+    reportMessageToConsole(consoleMessage.release());
 }
 
 void ConsoleBase::timeStamp(const String& title)

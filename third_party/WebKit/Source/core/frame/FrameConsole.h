@@ -66,6 +66,7 @@ public:
     static void unmute();
 
     ConsoleMessageStorage* messageStorage();
+    void clearMessages();
 
     void trace(Visitor*);
 

@@ -45,6 +45,21 @@
 
 namespace blink {
 
+static const HashSet<int>& allClientReportingMessageTypes()
+{
+    DEFINE_STATIC_LOCAL(HashSet<int>, types, ());
+    if (types.isEmpty()) {
+        types.add(LogMessageType);
+        types.add(DirMessageType);
+        types.add(DirXMLMessageType);
+        types.add(TableMessageType);
+        types.add(TraceMessageType);
+        types.add(ClearMessageType);
+        types.add(AssertMessageType);
+    }
+    return types;
+}
+
 namespace {
 
 int muteCount = 0;
@@ -93,8 +108,7 @@ void FrameConsole::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleM
         if (!m_frame.host() || (consoleMessage->scriptArguments() && consoleMessage->scriptArguments()->argumentCount() == 0))
             return;
 
-        MessageType type = consoleMessage->type();
-        if (type == StartGroupMessageType || type == EndGroupMessageType || type == StartGroupCollapsedMessageType)
+        if (!allClientReportingMessageTypes().contains(consoleMessage->type()))
             return;
 
         if (m_frame.chromeClient().shouldReportDetailedMessageForSource(messageURL))
@@ -159,6 +173,11 @@ ConsoleMessageStorage* FrameConsole::messageStorage()
     if (!m_consoleMessageStorage)
         m_consoleMessageStorage = ConsoleMessageStorage::createForFrame(&m_frame);
     return m_consoleMessageStorage.get();
+}
+
+void FrameConsole::clearMessages()
+{
+    messageStorage()->clear();
 }
 
 void FrameConsole::adoptWorkerMessagesAfterTermination(WorkerGlobalScopeProxy* proxy)

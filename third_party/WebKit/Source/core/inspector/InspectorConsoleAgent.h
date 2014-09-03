@@ -75,7 +75,6 @@ public:
     virtual void disable(ErrorString*) OVERRIDE FINAL;
     virtual void clearMessages(ErrorString*) OVERRIDE;
     bool enabled() { return m_enabled; }
-    void reset();
 
     virtual void setFrontend(InspectorFrontend*) OVERRIDE FINAL;
     virtual void clearFrontend() OVERRIDE FINAL;
@@ -84,13 +83,9 @@ public:
     void addMessageToConsole(ConsoleMessage*);
     void consoleMessagesCleared();
 
-    void consoleTime(ExecutionContext*, const String& title);
-    void consoleTimeEnd(ExecutionContext*, const String& title, ScriptState*);
     void setTracingBasedTimeline(ErrorString*, bool enabled);
     void consoleTimeline(ExecutionContext*, const String& title, ScriptState*);
     void consoleTimelineEnd(ExecutionContext*, const String& title, ScriptState*);
-
-    void consoleCount(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);
 
     void frameWindowDiscarded(LocalDOMWindow*);
     void didCommitLoad(LocalFrame*, DocumentLoader*);
@@ -113,8 +108,6 @@ protected:
     RawPtrWillBeMember<InspectorTracingAgent> m_tracingAgent;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     InspectorFrontend::Console* m_frontend;
-    HashCountedSet<String> m_counts;
-    HashMap<String, double> m_times;
     bool m_enabled;
 private:
     static int s_enabledAgentCount;

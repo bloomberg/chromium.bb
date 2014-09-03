@@ -29,9 +29,10 @@
 #include "core/events/Event.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMTimer.h"
-#include "core/frame/LocalDOMWindow.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameView.h"
@@ -559,6 +560,7 @@ void Page::didCommitLoad(LocalFrame* frame)
 {
     lifecycleNotifier().notifyDidCommitLoad(frame);
     if (m_mainFrame == frame) {
+        frame->console().clearMessages();
         useCounter().didCommitLoad();
         m_inspectorController->didCommitLoadForMainFrame();
     }

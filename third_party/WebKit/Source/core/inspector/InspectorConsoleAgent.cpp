@@ -135,14 +135,6 @@ void InspectorConsoleAgent::clearMessages(ErrorString*)
     messageStorage()->clear();
 }
 
-void InspectorConsoleAgent::reset()
-{
-    ErrorString error;
-    clearMessages(&error);
-    m_times.clear();
-    m_counts.clear();
-}
-
 void InspectorConsoleAgent::restore()
 {
     if (m_state->getBoolean(ConsoleAgentState::consoleMessagesEnabled)) {
@@ -177,39 +169,6 @@ void InspectorConsoleAgent::consoleMessagesCleared()
         m_frontend->messagesCleared();
 }
 
-void InspectorConsoleAgent::consoleTime(ExecutionContext*, const String& title)
-{
-    // Follow Firebug's behavior of requiring a title that is not null or
-    // undefined for timing functions
-    if (title.isNull())
-        return;
-
-    m_times.add(title, monotonicallyIncreasingTime());
-}
-
-void InspectorConsoleAgent::consoleTimeEnd(ExecutionContext*, const String& title, ScriptState* scriptState)
-{
-    // Follow Firebug's behavior of requiring a title that is not null or
-    // undefined for timing functions
-    if (title.isNull())
-        return;
-
-    HashMap<String, double>::iterator it = m_times.find(title);
-    if (it == m_times.end())
-        return;
-
-    double startTime = it->value;
-    m_times.remove(it);
-
-    double elapsed = monotonicallyIncreasingTime() - startTime;
-    String message = title + String::format(": %.3fms", elapsed * 1000);
-
-    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, DebugMessageLevel, message);
-    consoleMessage->setType(LogMessageType);
-    consoleMessage->setScriptState(scriptState);
-    messageStorage()->reportMessage(consoleMessage.release());
-}
-
 void InspectorConsoleAgent::setTracingBasedTimeline(ErrorString*, bool enabled)
 {
     m_state->setBoolean(ConsoleAgentState::tracingBasedTimeline, enabled);
@@ -232,36 +191,9 @@ void InspectorConsoleAgent::consoleTimelineEnd(ExecutionContext* context, const 
         m_timelineAgent->consoleTimelineEnd(context, title, scriptState);
 }
 
-void InspectorConsoleAgent::consoleCount(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
-{
-    RefPtrWillBeRawPtr<ScriptCallStack> callStack(createScriptCallStack(1));
-    const ScriptCallFrame& lastCaller = callStack->at(0);
-    // Follow Firebug's behavior of counting with null and undefined title in
-    // the same bucket as no argument
-    String title;
-    arguments->getFirstArgumentAsString(title);
-    String identifier = title.isEmpty() ? String(lastCaller.sourceURL() + ':' + String::number(lastCaller.lineNumber()))
-                                        : String(title + '@');
-
-    HashCountedSet<String>::AddResult result = m_counts.add(identifier);
-    String message = title + ": " + String::number(result.storedValue->value);
-
-    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, DebugMessageLevel, message);
-    consoleMessage->setType(LogMessageType);
-    consoleMessage->setScriptState(scriptState);
-    messageStorage()->reportMessage(consoleMessage.release());
-}
-
 void InspectorConsoleAgent::frameWindowDiscarded(LocalDOMWindow* window)
 {
     m_injectedScriptManager->discardInjectedScriptsFor(window);
-}
-
-void InspectorConsoleAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)
-{
-    if (loader->frame() != frame->page()->mainFrame())
-        return;
-    reset();
 }
 
 void InspectorConsoleAgent::didFinishXHRLoading(XMLHttpRequest*, ThreadableLoaderClient*, unsigned long requestIdentifier, ScriptString, const AtomicString& method, const String& url, const String& sendURL, unsigned sendLineNumber)
@@ -326,6 +258,8 @@ static TypeBuilder::Console::ConsoleMessage::Type::Enum messageTypeValue(Message
     case StartGroupCollapsedMessageType: return TypeBuilder::Console::ConsoleMessage::Type::StartGroupCollapsed;
     case EndGroupMessageType: return TypeBuilder::Console::ConsoleMessage::Type::EndGroup;
     case AssertMessageType: return TypeBuilder::Console::ConsoleMessage::Type::Assert;
+    case TimeEndMessageType: return TypeBuilder::Console::ConsoleMessage::Type::Log;
+    case CountMessageType: return TypeBuilder::Console::ConsoleMessage::Type::Log;
     }
     return TypeBuilder::Console::ConsoleMessage::Type::Log;
 }

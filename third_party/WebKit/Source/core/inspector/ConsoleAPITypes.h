@@ -28,7 +28,7 @@
 namespace blink {
 
 enum MessageType {
-    LogMessageType,
+    LogMessageType = 1,
     DirMessageType,
     DirXMLMessageType,
     TableMessageType,
@@ -37,7 +37,9 @@ enum MessageType {
     StartGroupCollapsedMessageType,
     EndGroupMessageType,
     ClearMessageType,
-    AssertMessageType
+    AssertMessageType,
+    TimeEndMessageType,
+    CountMessageType
 };
 
 } // namespace blink
