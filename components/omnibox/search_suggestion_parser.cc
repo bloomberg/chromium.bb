@@ -50,6 +50,7 @@ SearchSuggestionParser::Result::Result(bool from_keyword_provider,
       type_(type),
       relevance_(relevance),
       relevance_from_server_(relevance_from_server),
+      received_after_last_keystroke_(true),
       deletion_url_(deletion_url) {}
 
 SearchSuggestionParser::Result::~Result() {}

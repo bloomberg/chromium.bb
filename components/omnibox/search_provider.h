@@ -75,10 +75,11 @@ class SearchProvider : public BaseSearchProvider,
  private:
   friend class SearchProviderTest;
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, CanSendURL);
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest,
+                           DontInlineAutocompleteAsynchronously);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInline);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInlineDomainClassify);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInlineSchemeSubstring);
-  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, RemoveStaleResultsTest);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, SuggestRelevanceExperiment);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, TestDeleteMatch);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, SuggestQueryUsesToken);
@@ -139,19 +140,18 @@ class SearchProvider : public BaseSearchProvider,
 
   typedef std::vector<history::KeywordSearchTermVisit> HistoryResults;
 
-  // Removes non-inlineable results until either the top result can inline
-  // autocomplete the current input or verbatim outscores the top result.
-  static void RemoveStaleResults(
-      const base::string16& input,
-      int verbatim_relevance,
-      SearchSuggestionParser::SuggestResults* suggest_results,
-      SearchSuggestionParser::NavigationResults* navigation_results);
-
   // Calculates the relevance score for the keyword verbatim result (if the
   // input matches one of the profile's keyword).
   static int CalculateRelevanceForKeywordVerbatim(
       metrics::OmniboxInputType::Type type,
       bool prefer_keyword);
+
+  // A helper function for UpdateAllOldResults().
+  static void UpdateOldResults(bool minimal_changes,
+                               SearchSuggestionParser::Results* results);
+
+  // Returns the first match in |matches| which might be chosen as default.
+  static ACMatches::iterator FindTopMatch(ACMatches* matches);
 
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
@@ -207,12 +207,16 @@ class SearchProvider : public BaseSearchProvider,
   // potentially private data, etc.
   bool IsQuerySuitableForSuggest() const;
 
-  // Removes stale results for both default and keyword providers.  See comments
-  // on RemoveStaleResults().
-  void RemoveAllStaleResults();
+  // Remove existing keyword results if the user is no longer in keyword mode,
+  // and, if |minimal_changes| is false, revise the existing results to
+  // indicate they were received before the last keystroke.
+  void UpdateAllOldResults(bool minimal_changes);
+
+  // Given new asynchronous results, ensure that we don't clobber the current
+  // top results, which were determined synchronously on the last keystroke.
+  void PersistTopSuggestions(SearchSuggestionParser::Results* results);
 
   // Apply calculated relevance scores to the current results.
-  void ApplyCalculatedRelevance();
   void ApplyCalculatedSuggestRelevance(
       SearchSuggestionParser::SuggestResults* list);
   void ApplyCalculatedNavigationRelevance(
@@ -350,6 +354,11 @@ class SearchProvider : public BaseSearchProvider,
   // Results from the default and keyword search providers.
   SearchSuggestionParser::Results default_results_;
   SearchSuggestionParser::Results keyword_results_;
+
+  // The top query suggestion, left blank if none.
+  base::string16 top_query_suggestion_match_contents_;
+  // The top navigation suggestion, left blank/invalid if none.
+  GURL top_navigation_suggestion_;
 
   GURL current_page_url_;
 

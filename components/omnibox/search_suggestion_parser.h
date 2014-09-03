@@ -55,6 +55,13 @@ class SearchSuggestionParser {
     AutocompleteMatchType::Type type() const { return type_; }
     int relevance() const { return relevance_; }
     void set_relevance(int relevance) { relevance_ = relevance; }
+    bool received_after_last_keystroke() const {
+      return received_after_last_keystroke_;
+    }
+    void set_received_after_last_keystroke(
+        bool received_after_last_keystroke) {
+      received_after_last_keystroke_ = received_after_last_keystroke;
+    }
 
     bool relevance_from_server() const { return relevance_from_server_; }
     void set_relevance_from_server(bool relevance_from_server) {
@@ -90,6 +97,11 @@ class SearchSuggestionParser {
     // SearchProvider::ConvertResultsToAutocompleteMatches(), see comments
     // there.
     bool relevance_from_server_;
+
+    // Whether this result was received asynchronously after the last
+    // keystroke, otherwise it must have come from prior cached results
+    // or from a synchronous provider.
+    bool received_after_last_keystroke_;
 
     // Optional deletion URL provided with suggestions. Fetching this URL
     // should result in some reasonable deletion behaviour on the server,

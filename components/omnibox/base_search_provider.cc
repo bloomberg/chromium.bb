@@ -105,14 +105,17 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
     bool from_keyword_provider,
     const TemplateURL* template_url,
     const SearchTermsData& search_terms_data) {
-  // This call uses a number of default values.  For instance, it assumes that
-  // if this match is from a keyword provider than the user is in keyword mode.
+  // These calls use a number of default values.  For instance, they assume
+  // that if this match is from a keyword provider, then the user is in keyword
+  // mode.  They also assume the caller knows what it's doing and we set
+  // this match to look as if it was received/created synchronously.
+  SearchSuggestionParser::SuggestResult suggest_result(
+      suggestion, type, suggestion, base::string16(), base::string16(),
+      base::string16(), base::string16(), std::string(), std::string(),
+      from_keyword_provider, 0, false, false, base::string16());
+  suggest_result.set_received_after_last_keystroke(false);
   return CreateSearchSuggestion(
-      NULL, AutocompleteInput(), from_keyword_provider,
-      SearchSuggestionParser::SuggestResult(
-          suggestion, type, suggestion, base::string16(), base::string16(),
-          base::string16(), base::string16(), std::string(), std::string(),
-          from_keyword_provider, 0, false, false, base::string16()),
+      NULL, AutocompleteInput(), from_keyword_provider, suggest_result,
       template_url, search_terms_data, 0, false);
 }
 
@@ -233,7 +236,10 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
     match.fill_into_edit.assign(base::ASCIIToUTF16("?"));
   if (suggestion.from_keyword_provider())
     match.fill_into_edit.append(match.keyword + base::char16(' '));
+  // We only allow inlinable navsuggestions that were received before the
+  // last keystroke because we don't want asynchronous inline autocompletions.
   if (!input.prevent_inline_autocomplete() &&
+      !suggestion.received_after_last_keystroke() &&
       (!in_keyword_mode || suggestion.from_keyword_provider()) &&
       StartsWith(suggestion.suggestion(), input.text(), false)) {
     match.inline_autocompletion =
