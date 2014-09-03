@@ -577,7 +577,6 @@ void RenderFrameHostManager::OnBeginNavigation(
   info.is_main_frame = frame_tree_node_->IsMainFrame();
   info.parent_is_main_frame = !frame_tree_node_->parent() ?
       false : frame_tree_node_->parent()->IsMainFrame();
-  info.is_showing = GetRenderWidgetHostView()->IsShowing();
 
   // TODO(clamy): Check if the current RFH should be initialized (in case it has
   // crashed) not to display a sad tab while navigating.

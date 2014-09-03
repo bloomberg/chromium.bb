@@ -12,8 +12,7 @@ NavigationRequestInfo::NavigationRequestInfo(
     const FrameHostMsg_BeginNavigation_Params& params)
     : navigation_params(params),
       is_main_frame(true),
-      parent_is_main_frame(false),
-      is_showing(true) {
+      parent_is_main_frame(false) {
 }
 
 }  // namespace content

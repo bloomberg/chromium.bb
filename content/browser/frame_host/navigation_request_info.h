@@ -32,9 +32,6 @@ struct NavigationRequestInfo {
   GURL first_party_for_cookies;
   bool is_main_frame;
   bool parent_is_main_frame;
-
-  // True if the frame is visible.
-  bool is_showing;
 };
 
 }  // namespace content
