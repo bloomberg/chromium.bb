@@ -214,7 +214,7 @@ AXObject* AXScrollView::parentObject() const
     if (owner && owner->renderer())
         return axObjectCache()->getOrCreate(owner);
 
-    return 0;
+    return axObjectCache()->getOrCreate(toFrameView(m_scrollView)->frame().pagePopupOwner());
 }
 
 AXObject* AXScrollView::parentObjectIfExists() const
@@ -226,7 +226,7 @@ AXObject* AXScrollView::parentObjectIfExists() const
     if (owner && owner->renderer())
         return axObjectCache()->get(owner);
 
-    return 0;
+    return axObjectCache()->get(toFrameView(m_scrollView)->frame().pagePopupOwner());
 }
 
 ScrollableArea* AXScrollView::getScrollableAreaIfScrollable() const

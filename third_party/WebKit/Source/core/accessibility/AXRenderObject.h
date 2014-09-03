@@ -220,6 +220,7 @@ private:
     void addImageMapChildren();
     void addCanvasChildren();
     void addAttachmentChildren();
+    void addPopupChildren();
     void addRemoteSVGChildren();
     void addInlineTextBoxChildren();
 

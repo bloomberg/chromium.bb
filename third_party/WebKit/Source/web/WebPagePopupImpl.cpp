@@ -45,9 +45,12 @@
 #include "core/page/PagePopupClient.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/WebCursorInfo.h"
+#include "public/web/WebAXObject.h"
+#include "public/web/WebFrameClient.h"
 #include "public/web/WebViewClient.h"
 #include "public/web/WebWidgetClient.h"
 #include "web/WebInputEventConversion.h"
+#include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
 
@@ -79,6 +82,13 @@ private:
     {
         m_popup->m_windowRectInScreen = IntRect(rect);
         m_popup->widgetClient()->setWindowRect(m_popup->m_windowRectInScreen);
+    }
+
+    virtual IntRect rootViewToScreen(const IntRect& rect) const OVERRIDE
+    {
+        IntRect rectInScreen(rect);
+        rectInScreen.move(m_popup->m_windowRectInScreen.x, m_popup->m_windowRectInScreen.y);
+        return rectInScreen;
     }
 
     virtual void addMessageToConsole(LocalFrame*, MessageSource, MessageLevel, const String& message, unsigned lineNumber, const String&, const String&) OVERRIDE
@@ -146,6 +156,17 @@ private:
         m_popup->setRootGraphicsLayer(graphicsLayer);
     }
 
+    virtual void postAccessibilityNotification(AXObject* obj, AXObjectCache::AXNotification notification) OVERRIDE
+    {
+        WebLocalFrameImpl* frame = WebLocalFrameImpl::fromFrame(m_popup->m_popupClient->ownerElement().document().frame());
+        if (obj && frame && frame->client())
+            frame->client()->postAccessibilityEvent(WebAXObject(obj), static_cast<WebAXEvent>(notification));
+
+        // FIXME: Delete these lines once Chromium only uses the frame client interface, above.
+        if (obj && m_popup->m_webView->client())
+            m_popup->m_webView->client()->postAccessibilityEvent(WebAXObject(obj), static_cast<WebAXEvent>(notification));
+    }
+
     WebPagePopupImpl* m_popup;
 };
 
@@ -207,18 +228,23 @@ bool WebPagePopupImpl::initializePage()
     m_page->settings().setAllowScriptsToCloseWindows(true);
     m_page->setDeviceScaleFactor(m_webView->deviceScaleFactor());
     m_page->settings().setDeviceSupportsTouch(m_webView->page()->settings().deviceSupportsTouch());
+    // FIXME: Should we support enabling a11y while a popup is shown?
+    m_page->settings().setAccessibilityEnabled(m_webView->page()->settings().accessibilityEnabled());
 
     provideContextFeaturesTo(*m_page, adoptPtr(new PagePopupFeaturesClient()));
     static FrameLoaderClient* emptyFrameLoaderClient =  new EmptyFrameLoaderClient();
     RefPtr<LocalFrame> frame = LocalFrame::create(emptyFrameLoaderClient, &m_page->frameHost(), 0);
-    // FIXME: Call frame->setPagePopupOwner with m_popupClient->ownerElement().
+    frame->setPagePopupOwner(m_popupClient->ownerElement());
     frame->setView(FrameView::create(frame.get()));
     frame->init();
     frame->view()->resize(m_popupClient->contentSize());
     frame->view()->setTransparent(false);
+    if (AXObjectCache* cache = m_popupClient->ownerElement().document().existingAXObjectCache())
+        cache->childrenChanged(&m_popupClient->ownerElement());
 
     ASSERT(frame->domWindow());
     DOMWindowPagePopup::install(*frame->domWindow(), m_popupClient);
+    ASSERT(m_popupClient->ownerElement().document().existingAXObjectCache() == frame->document()->existingAXObjectCache());
 
     RefPtr<SharedBuffer> data = SharedBuffer::create();
     m_popupClient->writeDocument(data.get());
@@ -237,8 +263,14 @@ void WebPagePopupImpl::destroyPage()
 
 AXObject* WebPagePopupImpl::rootAXObject()
 {
-    // FIXME: Implement this.
-    return 0;
+    if (!m_page || !m_page->mainFrame())
+        return 0;
+    Document* document = toLocalFrame(m_page->mainFrame())->document();
+    if (!document)
+        return 0;
+    AXObjectCache* cache = document->axObjectCache();
+    ASSERT(cache);
+    return cache->getOrCreate(document->view());
 }
 
 void WebPagePopupImpl::setRootGraphicsLayer(GraphicsLayer* layer)

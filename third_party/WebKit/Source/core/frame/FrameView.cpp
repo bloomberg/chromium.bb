@@ -209,8 +209,10 @@ void FrameView::reset()
 
 void FrameView::removeFromAXObjectCache()
 {
-    if (AXObjectCache* cache = axObjectCache())
+    if (AXObjectCache* cache = axObjectCache()) {
         cache->remove(this);
+        cache->childrenChanged(m_frame->pagePopupOwner());
+    }
 }
 
 void FrameView::resetScrollbars()

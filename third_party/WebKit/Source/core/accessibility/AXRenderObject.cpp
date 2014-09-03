@@ -1438,6 +1438,7 @@ void AXRenderObject::addChildren()
 
     addHiddenChildren();
     addAttachmentChildren();
+    addPopupChildren();
     addImageMapChildren();
     addTextFieldChildren();
     addCanvasChildren();
@@ -2206,6 +2207,14 @@ void AXRenderObject::addAttachmentChildren()
         m_children.append(axWidget);
 }
 
+void AXRenderObject::addPopupChildren()
+{
+    if (!isHTMLInputElement(node()))
+        return;
+    if (AXObject* axPopup = toHTMLInputElement(node())->popupRootAXObject())
+        m_children.append(axPopup);
+}
+
 void AXRenderObject::addRemoteSVGChildren()
 {
     AXSVGRoot* root = remoteSVGRootElement();
@@ -2316,6 +2325,11 @@ LayoutRect AXRenderObject::computeElementRect() const
     Document* document = this->document();
     if (document && document->isSVGDocument())
         offsetBoundingBoxForRemoteSVGElement(result);
+    if (document && document->frame() && document->frame()->pagePopupOwner()) {
+        IntPoint popupOrigin = document->view()->contentsToScreen(IntRect()).location();
+        IntPoint mainOrigin = axObjectCache()->rootObject()->documentFrameView()->contentsToScreen(IntRect()).location();
+        result.moveBy(IntPoint(popupOrigin - mainOrigin));
+    }
 
     // The size of the web area should be the content size, not the clipped size.
     if (isWebArea() && obj->frame()->view())
