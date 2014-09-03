@@ -16,11 +16,10 @@ namespace athena {
 
 class BackgroundView : public views::View {
  public:
-  BackgroundView()
-      : time_view_(SystemUI::Get()->CreateTimeView()),
-        status_icon_view_(SystemUI::Get()->CreateStatusIconView()) {
-    AddChildView(time_view_);
-    AddChildView(status_icon_view_);
+  BackgroundView() : system_info_view_(NULL) {
+    system_info_view_ =
+        SystemUI::Get()->CreateSystemInfoView(SystemUI::COLOR_SCHEME_LIGHT);
+    AddChildView(system_info_view_);
   }
   virtual ~BackgroundView() {}
 
@@ -31,18 +30,8 @@ class BackgroundView : public views::View {
 
   // views::View:
   virtual void Layout() OVERRIDE {
-    time_view_->SetBoundsRect(gfx::Rect(time_view_->GetPreferredSize()));
-    gfx::Size status_icon_preferred_size =
-        status_icon_view_->GetPreferredSize();
-    status_icon_view_->SetBounds(width() - status_icon_preferred_size.width(),
-                                 0,
-                                 status_icon_preferred_size.width(),
-                                 status_icon_preferred_size.height());
-  }
-
-  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE {
-    // Relayout when |status_icon_view_| changes its preferred size.
-    Layout();
+    system_info_view_->SetBounds(
+        0, 0, width(), system_info_view_->GetPreferredSize().height());
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
@@ -60,8 +49,7 @@ class BackgroundView : public views::View {
 
  private:
   gfx::ImageSkia image_;
-  views::View* time_view_;
-  views::View* status_icon_view_;
+  views::View* system_info_view_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundView);
 };

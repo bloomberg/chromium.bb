@@ -17,11 +17,14 @@ const int kTimerSlopSeconds = 1;
 
 }  // namespace
 
-TimeView::TimeView() {
+TimeView::TimeView(SystemUI::ColorScheme color_scheme) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  SetEnabledColor(SK_ColorWHITE);
+  SetEnabledColor((color_scheme == SystemUI::COLOR_SCHEME_LIGHT)
+                      ? SK_ColorWHITE
+                      : SK_ColorDKGRAY);
   SetAutoColorReadabilityEnabled(false);
   SetFontList(gfx::FontList().DeriveWithStyle(gfx::Font::BOLD));
+  SetSubpixelRenderingEnabled(false);
 
   const int kHorizontalSpacing = 10;
   const int kVerticalSpacing = 3;

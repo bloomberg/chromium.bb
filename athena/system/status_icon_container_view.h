@@ -18,7 +18,8 @@ namespace athena {
 // View which displays the system tray icons.
 class StatusIconContainerView : public views::View {
  public:
-  explicit StatusIconContainerView(aura::Window* system_modal_container);
+  StatusIconContainerView(SystemUI::ColorScheme color_scheme,
+                          aura::Window* popup_container);
   virtual ~StatusIconContainerView();
 
  private:

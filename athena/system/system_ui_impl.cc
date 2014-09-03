@@ -17,11 +17,61 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window.h"
+#include "ui/views/view.h"
 
 namespace athena {
 namespace {
 
 SystemUI* instance = NULL;
+
+// View which positions the TimeView on the left and the StatusIconView on the
+// right.
+class SystemInfoView : public views::View {
+ public:
+  SystemInfoView(SystemUI::ColorScheme color_scheme,
+                 aura::Window* system_modal_container)
+      : time_view_(new TimeView(color_scheme)),
+        status_icon_view_(
+            new StatusIconContainerView(color_scheme, system_modal_container)) {
+    AddChildView(time_view_);
+    AddChildView(status_icon_view_);
+  }
+
+  virtual ~SystemInfoView() {
+  }
+
+  // views::View:
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+    // The view should be as wide as its parent view.
+    return gfx::Size(0,
+                     std::max(time_view_->GetPreferredSize().height(),
+                              status_icon_view_->GetPreferredSize().height()));
+  }
+
+  virtual void Layout() OVERRIDE {
+    time_view_->SetBoundsRect(gfx::Rect(time_view_->GetPreferredSize()));
+    gfx::Size status_icon_preferred_size =
+        status_icon_view_->GetPreferredSize();
+    status_icon_view_->SetBoundsRect(
+        gfx::Rect(width() - status_icon_preferred_size.width(),
+                  0,
+                  status_icon_preferred_size.width(),
+                  status_icon_preferred_size.height()));
+  }
+
+  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE {
+    // Relayout to take into account changes in |status_icon_view_|'s width.
+    // Assume that |time_view_|'s and |status_icon_view_|'s preferred height
+    // does not change.
+    Layout();
+  }
+
+ private:
+  views::View* time_view_;
+  views::View* status_icon_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(SystemInfoView);
+};
 
 class SystemUIImpl : public SystemUI {
  public:
@@ -58,12 +108,8 @@ class SystemUIImpl : public SystemUI {
     background_controller_->SetImage(image);
   }
 
-  virtual views::View* CreateTimeView() OVERRIDE {
-    return new TimeView;
-  }
-
-  virtual views::View* CreateStatusIconView() OVERRIDE {
-    return new StatusIconContainerView(system_modal_container_);
+  virtual views::View* CreateSystemInfoView(ColorScheme color_scheme) OVERRIDE {
+    return new SystemInfoView(color_scheme, system_modal_container_);
   }
 
  private:

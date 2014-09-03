@@ -31,10 +31,14 @@
 namespace athena {
 namespace {
 
-views::Label* CreateLabel(const std::string& text) {
+views::Label* CreateLabel(SystemUI::ColorScheme color_scheme,
+                          const std::string& text) {
   views::Label* label = new views::Label(base::UTF8ToUTF16(text));
-  label->SetEnabledColor(SK_ColorWHITE);
+  label->SetEnabledColor((color_scheme == SystemUI::COLOR_SCHEME_LIGHT)
+                             ? SK_ColorWHITE
+                             : SK_ColorDKGRAY);
   label->SetAutoColorReadabilityEnabled(false);
+  label->SetSubpixelRenderingEnabled(false);
   label->SetFontList(gfx::FontList().DeriveWithStyle(gfx::Font::BOLD));
   return label;
 }
@@ -44,7 +48,10 @@ views::Label* CreateLabel(const std::string& text) {
 class StatusIconContainerView::PowerStatus
     : public chromeos::PowerManagerClient::Observer {
  public:
-  explicit PowerStatus(views::ImageView* icon) : icon_(icon) {
+  PowerStatus(SystemUI::ColorScheme color_scheme,
+              views::ImageView* icon)
+      : color_scheme_(color_scheme),
+        icon_(icon) {
     chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
         this);
     chromeos::DBusThreadManager::Get()
@@ -68,7 +75,9 @@ class StatusIconContainerView::PowerStatus
     const int kNumPowerImages = 15;
 
     gfx::Image all = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        IDR_AURA_UBER_TRAY_POWER_SMALL);
+        (color_scheme_ == SystemUI::COLOR_SCHEME_LIGHT)
+            ? IDR_AURA_UBER_TRAY_POWER_SMALL
+            : IDR_AURA_UBER_TRAY_POWER_SMALL_DARK);
     int horiz_offset = IsCharging(proto) ? 1 : 0;
     int vert_offset = -1;
     if (proto.battery_percent() >= 100) {
@@ -96,6 +105,7 @@ class StatusIconContainerView::PowerStatus
     icon_->SetImage(GetPowerIcon(proto));
   }
 
+  SystemUI::ColorScheme color_scheme_;
   views::ImageView* icon_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerStatus);
@@ -162,7 +172,9 @@ void StartUpdateCallback(
 class StatusIconContainerView::UpdateStatus
     : public chromeos::UpdateEngineClient::Observer {
  public:
-  explicit UpdateStatus(views::ImageView* icon) : icon_(icon) {
+  UpdateStatus(SystemUI::ColorScheme color_scheme, views::ImageView* icon)
+      : color_scheme_(color_scheme),
+        icon_(icon) {
     chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(
         this);
     chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->
@@ -181,17 +193,22 @@ class StatusIconContainerView::UpdateStatus
         chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
       return;
     }
-    icon_->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IDR_AURA_UBER_TRAY_UPDATE));
+    int image_id = (color_scheme_ == SystemUI::COLOR_SCHEME_LIGHT)
+                       ? IDR_AURA_UBER_TRAY_UPDATE
+                       : IDR_AURA_UBER_TRAY_UPDATE_DARK;
+    icon_->SetImage(
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(image_id));
   }
 
  private:
+  SystemUI::ColorScheme color_scheme_;
   views::ImageView* icon_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateStatus);
 };
 
 StatusIconContainerView::StatusIconContainerView(
+    SystemUI::ColorScheme color_scheme,
     aura::Window* system_modal_container)
     : system_modal_container_(system_modal_container) {
   const int kHorizontalSpacing = 10;
@@ -204,20 +221,20 @@ StatusIconContainerView::StatusIconContainerView(
 
   std::string version_text =
       base::StringPrintf("%s (Build %s)", PRODUCT_VERSION, LAST_CHANGE);
-  AddChildView(CreateLabel(version_text));
+  AddChildView(CreateLabel(color_scheme, version_text));
 
-  AddChildView(CreateLabel("Network:"));
-  views::Label* network_label = CreateLabel(std::string());
+  AddChildView(CreateLabel(color_scheme, "Network:"));
+  views::Label* network_label = CreateLabel(color_scheme, std::string());
   AddChildView(network_label);
   network_status_.reset(new NetworkStatus(network_label));
 
   views::ImageView* battery_view = new views::ImageView();
   AddChildView(battery_view);
-  power_status_.reset(new PowerStatus(battery_view));
+  power_status_.reset(new PowerStatus(color_scheme, battery_view));
 
   views::ImageView* update_view = new views::ImageView();
   AddChildView(update_view);
-  update_status_.reset(new UpdateStatus(update_view));
+  update_status_.reset(new UpdateStatus(color_scheme, update_view));
 }
 
 StatusIconContainerView::~StatusIconContainerView() {

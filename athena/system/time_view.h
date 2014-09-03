@@ -15,7 +15,7 @@ namespace athena {
 // View which displays the current time.
 class TimeView : public views::Label {
  public:
-  TimeView();
+  explicit TimeView(SystemUI::ColorScheme color_scheme);
   virtual ~TimeView();
 
  private:

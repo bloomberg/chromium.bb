@@ -5,7 +5,7 @@
 #include "athena/home/athena_start_page_view.h"
 
 #include "athena/home/home_card_constants.h"
-#include "base/command_line.h"
+#include "athena/test/athena_test_base.h"
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -16,7 +16,6 @@
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/test/views_test_base.h"
 
 namespace athena {
 
@@ -41,16 +40,14 @@ class AthenaTestViewDelegate : public app_list::test::AppListTestViewDelegate {
   DISALLOW_COPY_AND_ASSIGN(AthenaTestViewDelegate);
 };
 
-class AthenaStartPageViewTest : public views::ViewsTestBase {
+class AthenaStartPageViewTest : public test::AthenaTestBase {
  public:
   AthenaStartPageViewTest() {}
   virtual ~AthenaStartPageViewTest() {}
 
   // testing::Test:
   virtual void SetUp() OVERRIDE {
-    views::ViewsTestBase::SetUp();
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        app_list::switches::kEnableExperimentalAppList);
+    test::AthenaTestBase::SetUp();
     app_list::test::AppListTestModel* model = view_delegate_.GetTestModel();
     for (size_t i = 0; i < kNumApps; ++i) {
       model->AddItem(new app_list::test::AppListTestModel::AppListTestItem(
@@ -62,7 +59,7 @@ class AthenaStartPageViewTest : public views::ViewsTestBase {
   }
   virtual void TearDown() OVERRIDE {
     view_.reset();
-    views::ViewsTestBase::TearDown();
+    test::AthenaTestBase::TearDown();
   }
 
  protected:
