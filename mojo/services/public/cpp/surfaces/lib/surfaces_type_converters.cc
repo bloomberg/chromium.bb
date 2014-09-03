@@ -36,9 +36,8 @@ ASSERT_ENUM_VALUES_EQUAL(YUV_VIDEO_CONTENT);
 
 namespace {
 
-cc::SharedQuadState* ConvertToSharedQuadState(
-    const SharedQuadStatePtr& input,
-    cc::RenderPass* render_pass) {
+cc::SharedQuadState* ConvertSharedQuadState(const SharedQuadStatePtr& input,
+                                            cc::RenderPass* render_pass) {
   cc::SharedQuadState* state = render_pass->CreateAndAppendSharedQuadState();
   state->SetAll(input->content_to_target_transform.To<gfx::Transform>(),
                 input->content_bounds.To<gfx::Size>(),
@@ -51,9 +50,9 @@ cc::SharedQuadState* ConvertToSharedQuadState(
   return state;
 }
 
-bool ConvertToDrawQuad(const QuadPtr& input,
-                       cc::SharedQuadState* sqs,
-                       cc::RenderPass* render_pass) {
+bool ConvertDrawQuad(const QuadPtr& input,
+                     cc::SharedQuadState* sqs,
+                     cc::RenderPass* render_pass) {
   switch (input->material) {
     case MATERIAL_SOLID_COLOR: {
       if (input->solid_color_quad_state.is_null())
@@ -118,8 +117,7 @@ bool ConvertToDrawQuad(const QuadPtr& input,
 }  // namespace
 
 // static
-SurfaceIdPtr
-TypeConverter<SurfaceIdPtr, cc::SurfaceId>::ConvertFrom(
+SurfaceIdPtr TypeConverter<SurfaceIdPtr, cc::SurfaceId>::Convert(
     const cc::SurfaceId& input) {
   SurfaceIdPtr id(SurfaceId::New());
   id->id = input.id;
@@ -127,27 +125,25 @@ TypeConverter<SurfaceIdPtr, cc::SurfaceId>::ConvertFrom(
 }
 
 // static
-cc::SurfaceId TypeConverter<SurfaceIdPtr, cc::SurfaceId>::ConvertTo(
+cc::SurfaceId TypeConverter<cc::SurfaceId, SurfaceIdPtr>::Convert(
     const SurfaceIdPtr& input) {
   return cc::SurfaceId(input->id);
 }
 
 // static
-ColorPtr TypeConverter<ColorPtr, SkColor>::ConvertFrom(
-    const SkColor& input) {
+ColorPtr TypeConverter<ColorPtr, SkColor>::Convert(const SkColor& input) {
   ColorPtr color(Color::New());
   color->rgba = input;
   return color.Pass();
 }
 
 // static
-SkColor TypeConverter<ColorPtr, SkColor>::ConvertTo(
-    const ColorPtr& input) {
+SkColor TypeConverter<SkColor, ColorPtr>::Convert(const ColorPtr& input) {
   return input->rgba;
 }
 
 // static
-QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::ConvertFrom(
+QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
     const cc::DrawQuad& input) {
   QuadPtr quad = Quad::New();
   quad->material = static_cast<Material>(input.material);
@@ -208,7 +204,7 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::ConvertFrom(
 
 // static
 SharedQuadStatePtr
-TypeConverter<SharedQuadStatePtr, cc::SharedQuadState>::ConvertFrom(
+TypeConverter<SharedQuadStatePtr, cc::SharedQuadState>::Convert(
     const cc::SharedQuadState& input) {
   SharedQuadStatePtr state = SharedQuadState::New();
   state->content_to_target_transform =
@@ -224,7 +220,7 @@ TypeConverter<SharedQuadStatePtr, cc::SharedQuadState>::ConvertFrom(
 }
 
 // static
-PassPtr TypeConverter<PassPtr, cc::RenderPass>::ConvertFrom(
+PassPtr TypeConverter<PassPtr, cc::RenderPass>::Convert(
     const cc::RenderPass& input) {
   PassPtr pass = Pass::New();
   pass->id = input.id.index;
@@ -257,7 +253,9 @@ PassPtr TypeConverter<PassPtr, cc::RenderPass>::ConvertFrom(
 }
 
 // static
-scoped_ptr<cc::RenderPass> ConvertTo(const PassPtr& input) {
+scoped_ptr<cc::RenderPass>
+TypeConverter<scoped_ptr<cc::RenderPass>, PassPtr>::Convert(
+    const PassPtr& input) {
   scoped_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   pass->SetAll(cc::RenderPassId(1, input->id),
                input->output_rect.To<gfx::Rect>(),
@@ -267,12 +265,12 @@ scoped_ptr<cc::RenderPass> ConvertTo(const PassPtr& input) {
   cc::SharedQuadStateList& sqs_list = pass->shared_quad_state_list;
   sqs_list.reserve(input->shared_quad_states.size());
   for (size_t i = 0; i < input->shared_quad_states.size(); ++i) {
-    ConvertToSharedQuadState(input->shared_quad_states[i], pass.get());
+    ConvertSharedQuadState(input->shared_quad_states[i], pass.get());
   }
   pass->quad_list.reserve(input->quads.size());
   for (size_t i = 0; i < input->quads.size(); ++i) {
     QuadPtr quad = input->quads[i].Pass();
-    if (!ConvertToDrawQuad(
+    if (!ConvertDrawQuad(
             quad, sqs_list[quad->shared_quad_state_index], pass.get()))
       return scoped_ptr<cc::RenderPass>();
   }
@@ -280,7 +278,7 @@ scoped_ptr<cc::RenderPass> ConvertTo(const PassPtr& input) {
 }
 
 // static
-MailboxPtr TypeConverter<MailboxPtr, gpu::Mailbox>::ConvertFrom(
+MailboxPtr TypeConverter<MailboxPtr, gpu::Mailbox>::Convert(
     const gpu::Mailbox& input) {
   Array<int8_t> name(64);
   for (int i = 0; i < 64; ++i) {
@@ -292,7 +290,7 @@ MailboxPtr TypeConverter<MailboxPtr, gpu::Mailbox>::ConvertFrom(
 }
 
 // static
-gpu::Mailbox TypeConverter<MailboxPtr, gpu::Mailbox>::ConvertTo(
+gpu::Mailbox TypeConverter<gpu::Mailbox, MailboxPtr>::Convert(
     const MailboxPtr& input) {
   gpu::Mailbox mailbox;
   if (!input->name.is_null())
@@ -301,8 +299,7 @@ gpu::Mailbox TypeConverter<MailboxPtr, gpu::Mailbox>::ConvertTo(
 }
 
 // static
-MailboxHolderPtr
-TypeConverter<MailboxHolderPtr, gpu::MailboxHolder>::ConvertFrom(
+MailboxHolderPtr TypeConverter<MailboxHolderPtr, gpu::MailboxHolder>::Convert(
     const gpu::MailboxHolder& input) {
   MailboxHolderPtr holder(MailboxHolder::New());
   holder->mailbox = Mailbox::From<gpu::Mailbox>(input.mailbox);
@@ -312,8 +309,7 @@ TypeConverter<MailboxHolderPtr, gpu::MailboxHolder>::ConvertFrom(
 }
 
 // static
-gpu::MailboxHolder
-TypeConverter<MailboxHolderPtr, gpu::MailboxHolder>::ConvertTo(
+gpu::MailboxHolder TypeConverter<gpu::MailboxHolder, MailboxHolderPtr>::Convert(
     const MailboxHolderPtr& input) {
   gpu::MailboxHolder holder;
   holder.mailbox = input->mailbox.To<gpu::Mailbox>();
@@ -323,10 +319,9 @@ TypeConverter<MailboxHolderPtr, gpu::MailboxHolder>::ConvertTo(
 }
 
 // static
-TransferableResourcePtr TypeConverter<
-    TransferableResourcePtr,
-    cc::TransferableResource>::ConvertFrom(const cc::TransferableResource&
-                                               input) {
+TransferableResourcePtr
+TypeConverter<TransferableResourcePtr, cc::TransferableResource>::Convert(
+    const cc::TransferableResource& input) {
   TransferableResourcePtr transferable = TransferableResource::New();
   transferable->id = input.id;
   transferable->format = static_cast<ResourceFormat>(input.format);
@@ -340,8 +335,8 @@ TransferableResourcePtr TypeConverter<
 
 // static
 cc::TransferableResource
-TypeConverter<TransferableResourcePtr, cc::TransferableResource>::
-    ConvertTo(const TransferableResourcePtr& input) {
+TypeConverter<cc::TransferableResource, TransferableResourcePtr>::Convert(
+    const TransferableResourcePtr& input) {
   cc::TransferableResource transferable;
   transferable.id = input->id;
   transferable.format = static_cast<cc::ResourceFormat>(input->format);
@@ -354,10 +349,10 @@ TypeConverter<TransferableResourcePtr, cc::TransferableResource>::
 }
 
 // static
-Array<TransferableResourcePtr>
-TypeConverter<Array<TransferableResourcePtr>,
-              cc::TransferableResourceArray>::
-    ConvertFrom(const cc::TransferableResourceArray& input) {
+Array<TransferableResourcePtr> TypeConverter<
+    Array<TransferableResourcePtr>,
+    cc::TransferableResourceArray>::Convert(const cc::TransferableResourceArray&
+                                                input) {
   Array<TransferableResourcePtr> resources(input.size());
   for (size_t i = 0; i < input.size(); ++i) {
     resources[i] = TransferableResource::From(input[i]);
@@ -367,9 +362,8 @@ TypeConverter<Array<TransferableResourcePtr>,
 
 // static
 cc::TransferableResourceArray
-TypeConverter<Array<TransferableResourcePtr>,
-              cc::TransferableResourceArray>::
-    ConvertTo(const Array<TransferableResourcePtr>& input) {
+TypeConverter<cc::TransferableResourceArray, Array<TransferableResourcePtr> >::
+    Convert(const Array<TransferableResourcePtr>& input) {
   cc::TransferableResourceArray resources(input.size());
   for (size_t i = 0; i < input.size(); ++i) {
     resources[i] = input[i].To<cc::TransferableResource>();
@@ -379,7 +373,7 @@ TypeConverter<Array<TransferableResourcePtr>,
 
 // static
 ReturnedResourcePtr
-TypeConverter<ReturnedResourcePtr, cc::ReturnedResource>::ConvertFrom(
+TypeConverter<ReturnedResourcePtr, cc::ReturnedResource>::Convert(
     const cc::ReturnedResource& input) {
   ReturnedResourcePtr returned = ReturnedResource::New();
   returned->id = input.id;
@@ -391,7 +385,7 @@ TypeConverter<ReturnedResourcePtr, cc::ReturnedResource>::ConvertFrom(
 
 // static
 cc::ReturnedResource
-TypeConverter<ReturnedResourcePtr, cc::ReturnedResource>::ConvertTo(
+TypeConverter<cc::ReturnedResource, ReturnedResourcePtr>::Convert(
     const ReturnedResourcePtr& input) {
   cc::ReturnedResource returned;
   returned.id = input->id;
@@ -402,10 +396,9 @@ TypeConverter<ReturnedResourcePtr, cc::ReturnedResource>::ConvertTo(
 }
 
 // static
-Array<ReturnedResourcePtr> TypeConverter<
-    Array<ReturnedResourcePtr>,
-    cc::ReturnedResourceArray>::ConvertFrom(const cc::ReturnedResourceArray&
-                                                input) {
+Array<ReturnedResourcePtr>
+TypeConverter<Array<ReturnedResourcePtr>, cc::ReturnedResourceArray>::Convert(
+    const cc::ReturnedResourceArray& input) {
   Array<ReturnedResourcePtr> resources(input.size());
   for (size_t i = 0; i < input.size(); ++i) {
     resources[i] = ReturnedResource::From(input[i]);
@@ -414,7 +407,7 @@ Array<ReturnedResourcePtr> TypeConverter<
 }
 
 // static
-FramePtr TypeConverter<FramePtr, cc::CompositorFrame>::ConvertFrom(
+FramePtr TypeConverter<FramePtr, cc::CompositorFrame>::Convert(
     const cc::CompositorFrame& input) {
   FramePtr frame = Frame::New();
   DCHECK(input.delegated_frame_data);
@@ -430,14 +423,17 @@ FramePtr TypeConverter<FramePtr, cc::CompositorFrame>::ConvertFrom(
 }
 
 // static
-scoped_ptr<cc::CompositorFrame> ConvertTo(const FramePtr& input) {
+scoped_ptr<cc::CompositorFrame>
+TypeConverter<scoped_ptr<cc::CompositorFrame>, FramePtr>::Convert(
+    const FramePtr& input) {
   scoped_ptr<cc::DelegatedFrameData> frame_data(new cc::DelegatedFrameData);
   frame_data->device_scale_factor = 1.f;
   frame_data->resource_list =
       input->resources.To<cc::TransferableResourceArray>();
   frame_data->render_pass_list.reserve(input->passes.size());
   for (size_t i = 0; i < input->passes.size(); ++i) {
-    scoped_ptr<cc::RenderPass> pass = ConvertTo(input->passes[i]);
+    scoped_ptr<cc::RenderPass> pass =
+        input->passes[i].To<scoped_ptr<cc::RenderPass> >();
     if (!pass)
       return scoped_ptr<cc::CompositorFrame>();
     frame_data->render_pass_list.push_back(pass.Pass());

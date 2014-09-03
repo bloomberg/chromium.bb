@@ -15,39 +15,49 @@
 
 namespace mojo {
 
-template<>
-class MOJO_GEOMETRY_EXPORT TypeConverter<PointPtr, gfx::Point> {
- public:
-  static PointPtr ConvertFrom(const gfx::Point& input);
-  static gfx::Point ConvertTo(const PointPtr& input);
+template <>
+struct MOJO_GEOMETRY_EXPORT TypeConverter<PointPtr, gfx::Point> {
+  static PointPtr Convert(const gfx::Point& input);
+};
+template <>
+struct MOJO_GEOMETRY_EXPORT TypeConverter<gfx::Point, PointPtr> {
+  static gfx::Point Convert(const PointPtr& input);
 };
 
 template <>
-class MOJO_GEOMETRY_EXPORT TypeConverter<PointFPtr, gfx::PointF> {
- public:
-  static PointFPtr ConvertFrom(const gfx::PointF& input);
-  static gfx::PointF ConvertTo(const PointFPtr& input);
+struct MOJO_GEOMETRY_EXPORT TypeConverter<PointFPtr, gfx::PointF> {
+  static PointFPtr Convert(const gfx::PointF& input);
+};
+template <>
+struct MOJO_GEOMETRY_EXPORT TypeConverter<gfx::PointF, PointFPtr> {
+  static gfx::PointF Convert(const PointFPtr& input);
 };
 
 template <>
-class MOJO_GEOMETRY_EXPORT TypeConverter<SizePtr, gfx::Size> {
- public:
-  static SizePtr ConvertFrom(const gfx::Size& input);
-  static gfx::Size ConvertTo(const SizePtr& input);
+struct MOJO_GEOMETRY_EXPORT TypeConverter<SizePtr, gfx::Size> {
+  static SizePtr Convert(const gfx::Size& input);
 };
-
-template<>
-class MOJO_GEOMETRY_EXPORT TypeConverter<RectPtr, gfx::Rect> {
- public:
-  static RectPtr ConvertFrom(const gfx::Rect& input);
-  static gfx::Rect ConvertTo(const RectPtr& input);
+template <>
+struct MOJO_GEOMETRY_EXPORT TypeConverter<gfx::Size, SizePtr> {
+  static gfx::Size Convert(const SizePtr& input);
 };
 
 template <>
-class MOJO_GEOMETRY_EXPORT TypeConverter<TransformPtr, gfx::Transform> {
- public:
-  static TransformPtr ConvertFrom(const gfx::Transform& input);
-  static gfx::Transform ConvertTo(const TransformPtr& input);
+struct MOJO_GEOMETRY_EXPORT TypeConverter<RectPtr, gfx::Rect> {
+  static RectPtr Convert(const gfx::Rect& input);
+};
+template <>
+struct MOJO_GEOMETRY_EXPORT TypeConverter<gfx::Rect, RectPtr> {
+  static gfx::Rect Convert(const RectPtr& input);
+};
+
+template <>
+struct MOJO_GEOMETRY_EXPORT TypeConverter<TransformPtr, gfx::Transform> {
+  static TransformPtr Convert(const gfx::Transform& input);
+};
+template <>
+struct MOJO_GEOMETRY_EXPORT TypeConverter<gfx::Transform, TransformPtr> {
+  static gfx::Transform Convert(const TransformPtr& input);
 };
 
 }  // namespace mojo

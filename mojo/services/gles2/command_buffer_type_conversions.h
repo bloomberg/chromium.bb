@@ -14,12 +14,13 @@ namespace mojo {
 class CommandBufferState;
 
 template <>
-class TypeConverter<CommandBufferStatePtr, gpu::CommandBuffer::State> {
- public:
-  static CommandBufferStatePtr ConvertFrom(
-      const gpu::CommandBuffer::State& input);
-  static gpu::CommandBuffer::State ConvertTo(
-      const CommandBufferStatePtr& input);
+struct TypeConverter<CommandBufferStatePtr, gpu::CommandBuffer::State> {
+  static CommandBufferStatePtr Convert(const gpu::CommandBuffer::State& input);
+};
+
+template <>
+struct TypeConverter<gpu::CommandBuffer::State, CommandBufferStatePtr> {
+  static gpu::CommandBuffer::State Convert(const CommandBufferStatePtr& input);
 };
 
 }  // namespace mojo

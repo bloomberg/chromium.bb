@@ -59,9 +59,7 @@ COMPILE_ASSERT(static_cast<int32>(EVENT_FLAGS_MOD3_DOWN) ==
 
 
 // static
-EventType TypeConverter<EventType, ui::EventType>::ConvertFrom(
-    ui::EventType type) {
-
+EventType TypeConverter<EventType, ui::EventType>::Convert(ui::EventType type) {
 #define MOJO_INPUT_EVENT_NAME(name) case ui::ET_##name: return EVENT_TYPE_##name
 
   switch (type) {
@@ -78,9 +76,7 @@ EventType TypeConverter<EventType, ui::EventType>::ConvertFrom(
 }
 
 // static
-ui::EventType TypeConverter<EventType, ui::EventType>::ConvertTo(
-  EventType type) {
-
+ui::EventType TypeConverter<ui::EventType, EventType>::Convert(EventType type) {
 #define MOJO_INPUT_EVENT_NAME(name) case EVENT_TYPE_##name: return ui::ET_##name
 
   switch (type) {
@@ -94,11 +90,9 @@ ui::EventType TypeConverter<EventType, ui::EventType>::ConvertTo(
 }
 
 // static
-EventPtr TypeConverter<EventPtr, ui::Event>::ConvertFrom(
-    const ui::Event& input) {
+EventPtr TypeConverter<EventPtr, ui::Event>::Convert(const ui::Event& input) {
   EventPtr event(Event::New());
-  event->action = TypeConverter<EventType, ui::EventType>::ConvertFrom(
-      input.type());
+  event->action = ConvertTo<EventType>(input.type());
   event->flags = EventFlags(input.flags());
   event->time_stamp = input.time_stamp().ToInternalValue();
 
@@ -107,13 +101,10 @@ EventPtr TypeConverter<EventPtr, ui::Event>::ConvertFrom(
         static_cast<const ui::LocatedEvent*>(&input);
 
     LocationDataPtr location_data(LocationData::New());
-    location_data->in_view_location =
-        TypeConverter<PointPtr, gfx::Point>::ConvertFrom(
-            located_event->location());
+    location_data->in_view_location = Point::From(located_event->location());
     if (input.HasNativeEvent()) {
       location_data->screen_location =
-          TypeConverter<PointPtr, gfx::Point>::ConvertFrom(
-              ui::EventSystemLocationFromNative(input.native_event()));
+          Point::From(ui::EventSystemLocationFromNative(input.native_event()));
     }
 
     event->location_data = location_data.Pass();
@@ -165,24 +156,21 @@ EventPtr TypeConverter<EventPtr, ui::Event>::ConvertFrom(
 }
 
 // static
-EventPtr TypeConverter<EventPtr, ui::KeyEvent>::ConvertFrom(
+EventPtr TypeConverter<EventPtr, ui::KeyEvent>::Convert(
     const ui::KeyEvent& input) {
   return Event::From(static_cast<const ui::Event&>(input));
 }
 
 // static
-scoped_ptr<ui::Event>
-TypeConverter<EventPtr, scoped_ptr<ui::Event> >::ConvertTo(
+scoped_ptr<ui::Event> TypeConverter<scoped_ptr<ui::Event>, EventPtr>::Convert(
     const EventPtr& input) {
   scoped_ptr<ui::Event> ui_event;
-  ui::EventType ui_event_type =
-      TypeConverter<EventType, ui::EventType>::ConvertTo(input->action);
+  ui::EventType ui_event_type = ConvertTo<ui::EventType>(input->action);
 
   gfx::Point location;
   if (!input->location_data.is_null() &&
       !input->location_data->in_view_location.is_null()) {
-    location = TypeConverter<PointPtr, gfx::Point>::ConvertTo(
-        input->location_data->in_view_location);
+    location = input->location_data->in_view_location.To<gfx::Point>();
   }
 
   switch (input->action) {

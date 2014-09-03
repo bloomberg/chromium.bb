@@ -28,106 +28,118 @@ namespace mojo {
 
 // Types from surface_id.mojom
 template <>
-class MOJO_SURFACES_EXPORT
-TypeConverter<SurfaceIdPtr, cc::SurfaceId> {
- public:
-  static SurfaceIdPtr ConvertFrom(const cc::SurfaceId& input);
-  static cc::SurfaceId ConvertTo(const SurfaceIdPtr& input);
+struct MOJO_SURFACES_EXPORT TypeConverter<SurfaceIdPtr, cc::SurfaceId> {
+  static SurfaceIdPtr Convert(const cc::SurfaceId& input);
+};
+template <>
+struct MOJO_SURFACES_EXPORT TypeConverter<cc::SurfaceId, SurfaceIdPtr> {
+  static cc::SurfaceId Convert(const SurfaceIdPtr& input);
 };
 
 // Types from quads.mojom
 template <>
-class MOJO_SURFACES_EXPORT TypeConverter<ColorPtr, SkColor> {
- public:
-  static ColorPtr ConvertFrom(const SkColor& input);
-  static SkColor ConvertTo(const ColorPtr& input);
+struct MOJO_SURFACES_EXPORT TypeConverter<ColorPtr, SkColor> {
+  static ColorPtr Convert(const SkColor& input);
+};
+template <>
+struct MOJO_SURFACES_EXPORT TypeConverter<SkColor, ColorPtr> {
+  static SkColor Convert(const ColorPtr& input);
 };
 
 template <>
-class MOJO_SURFACES_EXPORT TypeConverter<QuadPtr, cc::DrawQuad> {
- public:
-  static QuadPtr ConvertFrom(const cc::DrawQuad& input);
+struct MOJO_SURFACES_EXPORT TypeConverter<QuadPtr, cc::DrawQuad> {
+  static QuadPtr Convert(const cc::DrawQuad& input);
 };
 
 template <>
-class MOJO_SURFACES_EXPORT
+struct MOJO_SURFACES_EXPORT
 TypeConverter<SharedQuadStatePtr, cc::SharedQuadState> {
- public:
-  static SharedQuadStatePtr ConvertFrom(const cc::SharedQuadState& input);
+  static SharedQuadStatePtr Convert(const cc::SharedQuadState& input);
 };
 
 template <>
-class MOJO_SURFACES_EXPORT TypeConverter<PassPtr, cc::RenderPass> {
- public:
-  static PassPtr ConvertFrom(const cc::RenderPass& input);
+struct MOJO_SURFACES_EXPORT TypeConverter<PassPtr, cc::RenderPass> {
+  static PassPtr Convert(const cc::RenderPass& input);
 };
 
-// This can't use the TypeConverter since cc::RenderPass must be heap allocated
-// and isn't copyable.
-MOJO_SURFACES_EXPORT scoped_ptr<cc::RenderPass> ConvertTo(
-    const PassPtr& input);
+template <>
+struct MOJO_SURFACES_EXPORT TypeConverter<scoped_ptr<cc::RenderPass>, PassPtr> {
+  static scoped_ptr<cc::RenderPass> Convert(const PassPtr& input);
+};
 
 // Types from surfaces.mojom
 template <>
-class MOJO_SURFACES_EXPORT TypeConverter<MailboxPtr, gpu::Mailbox> {
- public:
-  static MailboxPtr ConvertFrom(const gpu::Mailbox& input);
-  static gpu::Mailbox ConvertTo(const MailboxPtr& input);
+struct MOJO_SURFACES_EXPORT TypeConverter<MailboxPtr, gpu::Mailbox> {
+  static MailboxPtr Convert(const gpu::Mailbox& input);
+};
+template <>
+struct MOJO_SURFACES_EXPORT TypeConverter<gpu::Mailbox, MailboxPtr> {
+  static gpu::Mailbox Convert(const MailboxPtr& input);
 };
 
 template <>
-class MOJO_SURFACES_EXPORT
+struct MOJO_SURFACES_EXPORT
 TypeConverter<MailboxHolderPtr, gpu::MailboxHolder> {
- public:
-  static MailboxHolderPtr ConvertFrom(const gpu::MailboxHolder& input);
-  static gpu::MailboxHolder ConvertTo(const MailboxHolderPtr& input);
+  static MailboxHolderPtr Convert(const gpu::MailboxHolder& input);
+};
+template <>
+struct MOJO_SURFACES_EXPORT
+TypeConverter<gpu::MailboxHolder, MailboxHolderPtr> {
+  static gpu::MailboxHolder Convert(const MailboxHolderPtr& input);
 };
 
 template <>
-class MOJO_SURFACES_EXPORT
+struct MOJO_SURFACES_EXPORT
 TypeConverter<TransferableResourcePtr, cc::TransferableResource> {
- public:
-  static TransferableResourcePtr ConvertFrom(
-      const cc::TransferableResource& input);
-  static cc::TransferableResource ConvertTo(
-      const TransferableResourcePtr& input);
+  static TransferableResourcePtr Convert(const cc::TransferableResource& input);
+};
+template <>
+struct MOJO_SURFACES_EXPORT
+TypeConverter<cc::TransferableResource, TransferableResourcePtr> {
+  static cc::TransferableResource Convert(const TransferableResourcePtr& input);
 };
 
 template <>
-class MOJO_SURFACES_EXPORT
+struct MOJO_SURFACES_EXPORT
 TypeConverter<Array<TransferableResourcePtr>, cc::TransferableResourceArray> {
- public:
-  static Array<TransferableResourcePtr> ConvertFrom(
+  static Array<TransferableResourcePtr> Convert(
       const cc::TransferableResourceArray& input);
-  static cc::TransferableResourceArray ConvertTo(
+};
+template <>
+struct MOJO_SURFACES_EXPORT
+TypeConverter<cc::TransferableResourceArray, Array<TransferableResourcePtr> > {
+  static cc::TransferableResourceArray Convert(
       const Array<TransferableResourcePtr>& input);
 };
 
 template <>
-class MOJO_SURFACES_EXPORT
+struct MOJO_SURFACES_EXPORT
 TypeConverter<ReturnedResourcePtr, cc::ReturnedResource> {
- public:
-  static ReturnedResourcePtr ConvertFrom(const cc::ReturnedResource& input);
-  static cc::ReturnedResource ConvertTo(const ReturnedResourcePtr& input);
+  static ReturnedResourcePtr Convert(const cc::ReturnedResource& input);
+};
+template <>
+struct MOJO_SURFACES_EXPORT
+TypeConverter<cc::ReturnedResource, ReturnedResourcePtr> {
+  static cc::ReturnedResource Convert(const ReturnedResourcePtr& input);
 };
 
 template <>
-class MOJO_SURFACES_EXPORT
+struct MOJO_SURFACES_EXPORT
 TypeConverter<Array<ReturnedResourcePtr>, cc::ReturnedResourceArray> {
- public:
-  static Array<ReturnedResourcePtr> ConvertFrom(
+  static Array<ReturnedResourcePtr> Convert(
       const cc::ReturnedResourceArray& input);
 };
 
 template <>
-class MOJO_SURFACES_EXPORT
-TypeConverter<FramePtr, cc::CompositorFrame> {
- public:
-  static FramePtr ConvertFrom(const cc::CompositorFrame& input);
+struct MOJO_SURFACES_EXPORT TypeConverter<FramePtr, cc::CompositorFrame> {
+  static FramePtr Convert(const cc::CompositorFrame& input);
 };
 
-MOJO_SURFACES_EXPORT scoped_ptr<cc::CompositorFrame> ConvertTo(
-    const FramePtr& input);
+template <>
+struct MOJO_SURFACES_EXPORT
+TypeConverter<scoped_ptr<cc::CompositorFrame>, FramePtr> {
+  static scoped_ptr<cc::CompositorFrame> Convert(const FramePtr& input);
+};
 
 }  // namespace mojo
 

@@ -7,8 +7,7 @@
 namespace mojo {
 
 // static
-PointPtr TypeConverter<PointPtr, gfx::Point>::ConvertFrom(
-    const gfx::Point& input) {
+PointPtr TypeConverter<PointPtr, gfx::Point>::Convert(const gfx::Point& input) {
   PointPtr point(Point::New());
   point->x = input.x();
   point->y = input.y();
@@ -16,15 +15,14 @@ PointPtr TypeConverter<PointPtr, gfx::Point>::ConvertFrom(
 }
 
 // static
-gfx::Point TypeConverter<PointPtr, gfx::Point>::ConvertTo(
-    const PointPtr& input) {
+gfx::Point TypeConverter<gfx::Point, PointPtr>::Convert(const PointPtr& input) {
   if (input.is_null())
     return gfx::Point();
   return gfx::Point(input->x, input->y);
 }
 
 // static
-PointFPtr TypeConverter<PointFPtr, gfx::PointF>::ConvertFrom(
+PointFPtr TypeConverter<PointFPtr, gfx::PointF>::Convert(
     const gfx::PointF& input) {
   PointFPtr point(PointF::New());
   point->x = input.x();
@@ -33,7 +31,7 @@ PointFPtr TypeConverter<PointFPtr, gfx::PointF>::ConvertFrom(
 }
 
 // static
-gfx::PointF TypeConverter<PointFPtr, gfx::PointF>::ConvertTo(
+gfx::PointF TypeConverter<gfx::PointF, PointFPtr>::Convert(
     const PointFPtr& input) {
   if (input.is_null())
     return gfx::PointF();
@@ -41,7 +39,7 @@ gfx::PointF TypeConverter<PointFPtr, gfx::PointF>::ConvertTo(
 }
 
 // static
-SizePtr TypeConverter<SizePtr, gfx::Size>::ConvertFrom(const gfx::Size& input) {
+SizePtr TypeConverter<SizePtr, gfx::Size>::Convert(const gfx::Size& input) {
   SizePtr size(Size::New());
   size->width = input.width();
   size->height = input.height();
@@ -49,14 +47,14 @@ SizePtr TypeConverter<SizePtr, gfx::Size>::ConvertFrom(const gfx::Size& input) {
 }
 
 // static
-gfx::Size TypeConverter<SizePtr, gfx::Size>::ConvertTo(const SizePtr& input) {
+gfx::Size TypeConverter<gfx::Size, SizePtr>::Convert(const SizePtr& input) {
   if (input.is_null())
     return gfx::Size();
   return gfx::Size(input->width, input->height);
 }
 
 // static
-RectPtr TypeConverter<RectPtr, gfx::Rect>::ConvertFrom(const gfx::Rect& input) {
+RectPtr TypeConverter<RectPtr, gfx::Rect>::Convert(const gfx::Rect& input) {
   RectPtr rect(Rect::New());
   rect->x = input.x();
   rect->y = input.y();
@@ -66,14 +64,14 @@ RectPtr TypeConverter<RectPtr, gfx::Rect>::ConvertFrom(const gfx::Rect& input) {
 }
 
 // static
-gfx::Rect TypeConverter<RectPtr, gfx::Rect>::ConvertTo(const RectPtr& input) {
+gfx::Rect TypeConverter<gfx::Rect, RectPtr>::Convert(const RectPtr& input) {
   if (input.is_null())
     return gfx::Rect();
   return gfx::Rect(input->x, input->y, input->width, input->height);
 }
 
 // static
-TransformPtr TypeConverter<TransformPtr, gfx::Transform>::ConvertFrom(
+TransformPtr TypeConverter<TransformPtr, gfx::Transform>::Convert(
     const gfx::Transform& input) {
   std::vector<float> storage(16);
   input.matrix().asRowMajorf(&storage[0]);
@@ -85,7 +83,7 @@ TransformPtr TypeConverter<TransformPtr, gfx::Transform>::ConvertFrom(
 }
 
 // static
-gfx::Transform TypeConverter<TransformPtr, gfx::Transform>::ConvertTo(
+gfx::Transform TypeConverter<gfx::Transform, TransformPtr>::Convert(
     const TransformPtr& input) {
   if (input.is_null())
     return gfx::Transform();

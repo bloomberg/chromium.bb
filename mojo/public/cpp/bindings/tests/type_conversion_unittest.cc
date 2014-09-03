@@ -41,9 +41,8 @@ bool AreEqualRectArrays(const Array<test::RectPtr>& rects1,
 }  // namespace
 
 template <>
-class TypeConverter<test::RectPtr, RedmondRect> {
- public:
-  static test::RectPtr ConvertFrom(const RedmondRect& input) {
+struct TypeConverter<test::RectPtr, RedmondRect> {
+  static test::RectPtr Convert(const RedmondRect& input) {
     test::RectPtr rect(test::Rect::New());
     rect->x = input.left;
     rect->y = input.top;
@@ -51,7 +50,11 @@ class TypeConverter<test::RectPtr, RedmondRect> {
     rect->height = input.bottom - input.top;
     return rect.Pass();
   }
-  static RedmondRect ConvertTo(const test::RectPtr& input) {
+};
+
+template <>
+struct TypeConverter<RedmondRect, test::RectPtr> {
+  static RedmondRect Convert(const test::RectPtr& input) {
     RedmondRect rect;
     rect.left = input->x;
     rect.top = input->y;
@@ -62,15 +65,18 @@ class TypeConverter<test::RectPtr, RedmondRect> {
 };
 
 template <>
-class TypeConverter<test::NamedRegionPtr, RedmondNamedRegion> {
- public:
-  static test::NamedRegionPtr ConvertFrom(const RedmondNamedRegion& input) {
+struct TypeConverter<test::NamedRegionPtr, RedmondNamedRegion> {
+  static test::NamedRegionPtr Convert(const RedmondNamedRegion& input) {
     test::NamedRegionPtr region(test::NamedRegion::New());
     region->name = input.name;
     region->rects = Array<test::RectPtr>::From(input.rects);
     return region.Pass();
   }
-  static RedmondNamedRegion ConvertTo(const test::NamedRegionPtr& input) {
+};
+
+template <>
+struct TypeConverter<RedmondNamedRegion, test::NamedRegionPtr> {
+  static RedmondNamedRegion Convert(const test::NamedRegionPtr& input) {
     RedmondNamedRegion region;
     region.name = input->name;
     region.rects = input->rects.To<std::vector<RedmondRect> >();

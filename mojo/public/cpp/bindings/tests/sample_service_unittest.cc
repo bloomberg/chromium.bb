@@ -14,9 +14,8 @@
 namespace mojo {
 
 template <>
-class TypeConverter<sample::BarPtr, int32_t> {
- public:
-  static int32_t ConvertTo(const sample::BarPtr& bar) {
+struct TypeConverter<int32_t, sample::BarPtr> {
+  static int32_t Convert(const sample::BarPtr& bar) {
     return static_cast<int32_t>(bar->alpha) << 16 |
            static_cast<int32_t>(bar->beta) << 8 |
            static_cast<int32_t>(bar->gamma);

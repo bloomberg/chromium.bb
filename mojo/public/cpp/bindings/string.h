@@ -32,12 +32,12 @@ class String {
 
   template <typename U>
   static String From(const U& other) {
-    return TypeConverter<String, U>::ConvertFrom(other);
+    return TypeConverter<String, U>::Convert(other);
   }
 
   template <typename U>
   U To() const {
-    return TypeConverter<String, U>::ConvertTo(*this);
+    return TypeConverter<U, String>::Convert(*this);
   }
 
   String& operator=(const std::string& str) {
@@ -113,20 +113,18 @@ inline std::ostream& operator<<(std::ostream& out, const String& s) {
 // TODO(darin): Add similar variants of operator<,<=,>,>=
 
 template <>
-class TypeConverter<String, std::string> {
- public:
-  static String ConvertFrom(const std::string& input) {
-    return String(input);
-  }
-  static std::string ConvertTo(const String& input) {
-    return input;
-  }
+struct TypeConverter<String, std::string> {
+  static String Convert(const std::string& input) { return String(input); }
+};
+
+template <>
+struct TypeConverter<std::string, String> {
+  static std::string Convert(const String& input) { return input; }
 };
 
 template <size_t N>
-class TypeConverter<String, char[N]> {
- public:
-  static String ConvertFrom(const char input[N]) {
+struct TypeConverter<String, char[N]> {
+  static String Convert(const char input[N]) {
     MOJO_DCHECK(input);
     return String(input, N-1);
   }
@@ -134,21 +132,17 @@ class TypeConverter<String, char[N]> {
 
 // Appease MSVC.
 template <size_t N>
-class TypeConverter<String, const char[N]> {
- public:
-  static String ConvertFrom(const char input[N]) {
+struct TypeConverter<String, const char[N]> {
+  static String Convert(const char input[N]) {
     MOJO_DCHECK(input);
     return String(input, N-1);
   }
 };
 
 template <>
-class TypeConverter<String, const char*> {
- public:
+struct TypeConverter<String, const char*> {
   // |input| may be null, in which case a null String will be returned.
-  static String ConvertFrom(const char* input) {
-    return String(input);
-  }
+  static String Convert(const char* input) { return String(input); }
 };
 
 }  // namespace mojo

@@ -91,7 +91,7 @@ void AddRequestBody(URLRequest* url_request,
 
 } // namespace
 
-URLRequestPtr TypeConverter<URLRequestPtr, blink::WebURLRequest>::ConvertFrom(
+URLRequestPtr TypeConverter<URLRequestPtr, blink::WebURLRequest>::Convert(
     const blink::WebURLRequest& request) {
   URLRequestPtr url_request(URLRequest::New());
   url_request->url = request.url().string().utf8();

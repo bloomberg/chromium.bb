@@ -12,7 +12,7 @@
 namespace mojo {
 
 // static
-String TypeConverter<String, base::StringPiece>::ConvertFrom(
+String TypeConverter<String, base::StringPiece>::Convert(
     const base::StringPiece& input) {
   if (input.empty()) {
     char c = 0;
@@ -21,29 +21,28 @@ String TypeConverter<String, base::StringPiece>::ConvertFrom(
   return String(input.data(), input.size());
 }
 // static
-base::StringPiece TypeConverter<String, base::StringPiece>::ConvertTo(
+base::StringPiece TypeConverter<base::StringPiece, String>::Convert(
     const String& input) {
   return input.get();
 }
 
 // static
-String TypeConverter<String, base::string16>::ConvertFrom(
+String TypeConverter<String, base::string16>::Convert(
     const base::string16& input) {
-  return TypeConverter<String, base::StringPiece>::ConvertFrom(
+  return TypeConverter<String, base::StringPiece>::Convert(
       base::UTF16ToUTF8(input));
 }
 // static
-base::string16 TypeConverter<String, base::string16>::ConvertTo(
+base::string16 TypeConverter<base::string16, String>::Convert(
     const String& input) {
-  return base::UTF8ToUTF16(TypeConverter<String, base::StringPiece>::ConvertTo(
-      input));
+  return base::UTF8ToUTF16(input.To<base::StringPiece>());
 }
 
-String TypeConverter<String, GURL>::ConvertFrom(const GURL& input) {
+String TypeConverter<String, GURL>::Convert(const GURL& input) {
   return String(input.spec());
 }
 
-GURL TypeConverter<String, GURL>::ConvertTo(const String& input) {
+GURL TypeConverter<GURL, String>::Convert(const String& input) {
   return GURL(input.get());
 }
 

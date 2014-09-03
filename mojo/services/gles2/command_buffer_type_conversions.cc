@@ -9,7 +9,7 @@
 namespace mojo {
 
 CommandBufferStatePtr
-TypeConverter<CommandBufferStatePtr, gpu::CommandBuffer::State>::ConvertFrom(
+TypeConverter<CommandBufferStatePtr, gpu::CommandBuffer::State>::Convert(
     const gpu::CommandBuffer::State& input) {
   CommandBufferStatePtr result(CommandBufferState::New());
   result->num_entries = input.num_entries;
@@ -23,7 +23,7 @@ TypeConverter<CommandBufferStatePtr, gpu::CommandBuffer::State>::ConvertFrom(
 }
 
 gpu::CommandBuffer::State
-TypeConverter<CommandBufferStatePtr, gpu::CommandBuffer::State>::ConvertTo(
+TypeConverter<gpu::CommandBuffer::State, CommandBufferStatePtr>::Convert(
     const CommandBufferStatePtr& input) {
   gpu::CommandBuffer::State state;
   state.num_entries = input->num_entries;

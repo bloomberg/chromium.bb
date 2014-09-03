@@ -13,10 +13,9 @@ class WebURLRequest;
 
 namespace mojo {
 
-template<>
-class TypeConverter<URLRequestPtr, blink::WebURLRequest> {
- public:
-  static URLRequestPtr ConvertFrom(const blink::WebURLRequest& request);
+template <>
+struct TypeConverter<URLRequestPtr, blink::WebURLRequest> {
+  static URLRequestPtr Convert(const blink::WebURLRequest& request);
 };
 
 }  // namespace mojo

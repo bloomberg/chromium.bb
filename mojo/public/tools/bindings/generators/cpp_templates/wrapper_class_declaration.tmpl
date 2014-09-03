@@ -16,7 +16,7 @@ class {{struct.name}} {
 
   template <typename U>
   static {{struct.name}}Ptr From(const U& u) {
-    return mojo::TypeConverter<{{struct.name}}Ptr, U>::ConvertFrom(u);
+    return mojo::TypeConverter<{{struct.name}}Ptr, U>::Convert(u);
   }
 
   {{struct.name}}();

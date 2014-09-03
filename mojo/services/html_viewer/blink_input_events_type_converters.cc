@@ -180,7 +180,7 @@ scoped_ptr<blink::WebInputEvent> BuildWebMouseWheelEventFrom(
 
 // static
 scoped_ptr<blink::WebInputEvent>
-TypeConverter<EventPtr, scoped_ptr<blink::WebInputEvent> >::ConvertTo(
+TypeConverter<scoped_ptr<blink::WebInputEvent>, EventPtr>::Convert(
     const EventPtr& event) {
   if (event->action == EVENT_TYPE_MOUSE_PRESSED ||
       event->action == EVENT_TYPE_MOUSE_RELEASED ||

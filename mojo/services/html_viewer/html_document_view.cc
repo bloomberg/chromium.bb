@@ -214,8 +214,7 @@ void HTMLDocumentView::OnViewDestroyed(View* view) {
 
 void HTMLDocumentView::OnViewInputEvent(View* view, const EventPtr& event) {
   scoped_ptr<blink::WebInputEvent> web_event =
-      TypeConverter<EventPtr, scoped_ptr<blink::WebInputEvent> >::ConvertTo(
-          event);
+      event.To<scoped_ptr<blink::WebInputEvent> >();
   if (web_event)
     web_view_->handleInputEvent(*web_event);
 }

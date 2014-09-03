@@ -237,8 +237,7 @@ void WindowManagerApp::Embed(
 }
 
 void WindowManagerApp::DispatchEvent(EventPtr event) {
-  scoped_ptr<ui::Event> ui_event =
-      TypeConverter<EventPtr, scoped_ptr<ui::Event> >::ConvertTo(event);
+  scoped_ptr<ui::Event> ui_event = event.To<scoped_ptr<ui::Event> >();
   if (ui_event)
     window_tree_host_->SendEventToProcessor(ui_event.get());
 }
@@ -301,9 +300,7 @@ void WindowManagerApp::CompositorContentsChanged(const SkBitmap& bitmap) {
 
 void WindowManagerApp::OnEvent(ui::Event* event) {
   aura::Window* window = static_cast<aura::Window*>(event->target());
-  view_manager_->DispatchEvent(
-      GetViewForWindow(window),
-      TypeConverter<EventPtr, ui::Event>::ConvertFrom(*event));
+  view_manager_->DispatchEvent(GetViewForWindow(window), Event::From(*event));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

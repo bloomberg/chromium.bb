@@ -8,18 +8,19 @@
 namespace mojo {
 
 // Specialize the following class:
-//   template <typename T, typename U> class TypeConverter;
+//   template <typename T, typename U> struct TypeConverter;
 // to perform type conversion for Mojom-defined structs and arrays. Here, T is
-// the Mojom-defined struct or array, and U is some other non-Mojom
-// struct or array type.
+// the target type; U is the input type.
 //
-// Specializations should implement the following interface:
+// Specializations should implement the following interfaces:
 //   namespace mojo {
 //   template <>
-//   class TypeConverter<T, U> {
-//    public:
-//     static T ConvertFrom(const U& input);
-//     static U ConvertTo(const T& input);
+//   struct TypeConverter<X, Y> {
+//     static X Convert(const Y& input);
+//   };
+//   template <>
+//   struct TypeConverter<Y, X> {
+//     static Y Convert(const X& input);
 //   };
 //   }
 //
@@ -39,15 +40,17 @@ namespace mojo {
 //
 //   namespace mojo {
 //   template <>
-//   class TypeConverter<geometry::PointPtr, gfx::Point> {
-//    public:
-//     static geometry::PointPtr ConvertFrom(const gfx::Point& input) {
+//   struct TypeConverter<geometry::PointPtr, gfx::Point> {
+//     static geometry::PointPtr Convert(const gfx::Point& input) {
 //       geometry::PointPtr result;
 //       result->x = input.x();
 //       result->y = input.y();
 //       return result.Pass();
 //     }
-//     static gfx::Point ConvertTo(const geometry::PointPtr& input) {
+//   };
+//   template <>
+//   struct TypeConverter<gfx::Point, geometry::PointPtr> {
+//     static gfx::Point Convert(const geometry::PointPtr& input) {
 //       return input ? gfx::Point(input->x, input->y) : gfx::Point();
 //     }
 //   };
@@ -61,20 +64,27 @@ namespace mojo {
 //
 //     // With an explicit cast using the static From() method.
 //     geometry::PointPtr output = geometry::Point::From(pt);
+//
+//     // Inferring the input type using the ConvertTo helper function.
+//     gfx::Point pt2 = ConvertTo<gfx::Point>(input);
 //   }
 //
-template <typename T, typename U> class TypeConverter;
+template <typename T, typename U>
+struct TypeConverter;
 
 // The following specialization is useful when you are converting between
 // Array<POD> and std::vector<POD>.
-template <typename T> class TypeConverter<T, T> {
- public:
-  static T ConvertFrom(const T& obj) {
-    return obj;
-  }
-  static T ConvertTo(const T& obj) {
-    return obj;
-  }
+template <typename T>
+struct TypeConverter<T, T> {
+  static T Convert(const T& obj) { return obj; }
+};
+
+// The following helper function is useful for shorthand. The compiler can infer
+// the input type, so you can write:
+//   OutputType out = ConvertTo<OutputType>(input);
+template <typename T, typename U>
+inline T ConvertTo(const U& obj) {
+  return TypeConverter<T, U>::Convert(obj);
 };
 
 }  // namespace mojo

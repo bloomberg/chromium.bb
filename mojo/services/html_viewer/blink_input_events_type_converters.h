@@ -14,10 +14,9 @@ class WebInputEvent;
 
 namespace mojo {
 
-template<>
-class TypeConverter<EventPtr, scoped_ptr<blink::WebInputEvent> > {
- public:
-  static scoped_ptr<blink::WebInputEvent> ConvertTo(const EventPtr& input);
+template <>
+struct TypeConverter<scoped_ptr<blink::WebInputEvent>, EventPtr> {
+  static scoped_ptr<blink::WebInputEvent> Convert(const EventPtr& input);
 };
 
 }  // namespace mojo

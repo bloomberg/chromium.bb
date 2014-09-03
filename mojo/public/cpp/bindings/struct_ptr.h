@@ -41,7 +41,7 @@ class StructPtr {
 
   template <typename U>
   U To() const {
-    return TypeConverter<StructPtr, U>::ConvertTo(*this);
+    return TypeConverter<U, StructPtr>::Convert(*this);
   }
 
   void reset() {
@@ -106,7 +106,7 @@ class InlinedStructPtr {
 
   template <typename U>
   U To() const {
-    return TypeConverter<InlinedStructPtr, U>::ConvertTo(*this);
+    return TypeConverter<U, InlinedStructPtr>::Convert(*this);
   }
 
   void reset() {

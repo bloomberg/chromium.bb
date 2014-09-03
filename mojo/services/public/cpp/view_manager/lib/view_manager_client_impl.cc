@@ -301,7 +301,7 @@ void ViewManagerClientImpl::OnEmbed(
   if (!connected_) {
     connected_ = true;
     connection_id_ = connection_id;
-    creator_url_ = TypeConverter<String, std::string>::ConvertFrom(creator_url);
+    creator_url_ = String::From(creator_url);
   } else {
     DCHECK_EQ(connection_id_, connection_id);
     DCHECK_EQ(creator_url_, creator_url);

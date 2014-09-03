@@ -401,7 +401,7 @@ namespace mojo {
 device::serial::HostControlSignalsPtr
 TypeConverter<device::serial::HostControlSignalsPtr,
               extensions::core_api::serial::HostControlSignals>::
-    ConvertFrom(const extensions::core_api::serial::HostControlSignals& input) {
+    Convert(const extensions::core_api::serial::HostControlSignals& input) {
   device::serial::HostControlSignalsPtr output(
       device::serial::HostControlSignals::New());
   if (input.dtr.get()) {
@@ -419,7 +419,7 @@ TypeConverter<device::serial::HostControlSignalsPtr,
 device::serial::ConnectionOptionsPtr
 TypeConverter<device::serial::ConnectionOptionsPtr,
               extensions::core_api::serial::ConnectionOptions>::
-    ConvertFrom(const extensions::core_api::serial::ConnectionOptions& input) {
+    Convert(const extensions::core_api::serial::ConnectionOptions& input) {
   device::serial::ConnectionOptionsPtr output(
       device::serial::ConnectionOptions::New());
   if (input.bitrate.get() && *input.bitrate > 0)

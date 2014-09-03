@@ -16,24 +16,33 @@ class GURL;
 namespace mojo {
 
 template <>
-class MOJO_COMMON_EXPORT TypeConverter<String, base::StringPiece> {
- public:
-  static String ConvertFrom(const base::StringPiece& input);
-  static base::StringPiece ConvertTo(const String& input);
+struct MOJO_COMMON_EXPORT TypeConverter<String, base::StringPiece> {
+  static String Convert(const base::StringPiece& input);
 };
 
 template <>
-class MOJO_COMMON_EXPORT TypeConverter<String, base::string16> {
- public:
-  static String ConvertFrom(const base::string16& input);
-  static base::string16 ConvertTo(const String& input);
+struct MOJO_COMMON_EXPORT TypeConverter<base::StringPiece, String> {
+  static base::StringPiece Convert(const String& input);
 };
 
 template <>
-class MOJO_COMMON_EXPORT TypeConverter<String, GURL> {
- public:
-  static String ConvertFrom(const GURL& input);
-  static GURL ConvertTo(const String& input);
+struct MOJO_COMMON_EXPORT TypeConverter<String, base::string16> {
+  static String Convert(const base::string16& input);
+};
+
+template <>
+struct MOJO_COMMON_EXPORT TypeConverter<base::string16, String> {
+  static base::string16 Convert(const String& input);
+};
+
+template <>
+struct MOJO_COMMON_EXPORT TypeConverter<String, GURL> {
+  static String Convert(const GURL& input);
+};
+
+template <>
+struct MOJO_COMMON_EXPORT TypeConverter<GURL, String> {
+  static GURL Convert(const String& input);
 };
 
 }  // namespace mojo

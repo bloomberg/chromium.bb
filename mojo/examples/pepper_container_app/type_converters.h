@@ -14,16 +14,18 @@
 namespace mojo {
 
 template <>
-class TypeConverter<PointPtr, PP_Point> {
- public:
-  static PointPtr ConvertFrom(const PP_Point& input) {
+struct TypeConverter<PointPtr, PP_Point> {
+  static PointPtr Convert(const PP_Point& input) {
     PointPtr point(Point::New());
     point->x = input.x;
     point->y = input.y;
     return point.Pass();
   }
+};
 
-  static PP_Point ConvertTo(const PointPtr& input) {
+template <>
+struct TypeConverter<PP_Point, PointPtr> {
+  static PP_Point Convert(const PointPtr& input) {
     if (!input)
       return PP_MakePoint(0, 0);
     return PP_MakePoint(static_cast<int32_t>(input->x),
@@ -32,16 +34,18 @@ class TypeConverter<PointPtr, PP_Point> {
 };
 
 template <>
-class TypeConverter<SizePtr, PP_Size> {
- public:
-  static SizePtr ConvertFrom(const PP_Size& input) {
+struct TypeConverter<SizePtr, PP_Size> {
+  static SizePtr Convert(const PP_Size& input) {
     SizePtr size(Size::New());
     size->width = input.width;
     size->height = input.height;
     return size.Pass();
   }
+};
 
-  static PP_Size ConvertTo(const SizePtr& input) {
+template <>
+struct TypeConverter<PP_Size, SizePtr> {
+  static PP_Size Convert(const SizePtr& input) {
     if (!input)
       return PP_MakeSize(0, 0);
     return PP_MakeSize(static_cast<int32_t>(input->width),
@@ -50,9 +54,8 @@ class TypeConverter<SizePtr, PP_Size> {
 };
 
 template <>
-class TypeConverter<RectPtr, PP_Rect> {
- public:
-  static RectPtr ConvertFrom(const PP_Rect& input) {
+struct TypeConverter<RectPtr, PP_Rect> {
+  static RectPtr Convert(const PP_Rect& input) {
     RectPtr rect(Rect::New());
     rect->x = input.point.x;
     rect->y = input.point.y;
@@ -60,8 +63,11 @@ class TypeConverter<RectPtr, PP_Rect> {
     rect->height = input.size.height;
     return rect.Pass();
   }
+};
 
-  static PP_Rect ConvertTo(const RectPtr& input) {
+template <>
+struct TypeConverter<PP_Rect, RectPtr> {
+  static PP_Rect Convert(const RectPtr& input) {
     if (!input)
       return PP_MakeRectFromXYWH(0, 0, 0, 0);
     return PP_MakeRectFromXYWH(input->x, input->y,

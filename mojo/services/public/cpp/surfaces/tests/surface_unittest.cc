@@ -149,7 +149,8 @@ TEST_F(SurfaceLibQuadTest, TextureQuadEmptyVertexOpacity) {
   SharedQuadStatePtr mojo_sqs = SharedQuadState::New();
   mojo_pass->shared_quad_states.push_back(mojo_sqs.Pass());
 
-  scoped_ptr<cc::RenderPass> pass = ConvertTo(mojo_pass.Pass());
+  scoped_ptr<cc::RenderPass> pass = mojo_pass.To<scoped_ptr<cc::RenderPass> >();
+
   EXPECT_FALSE(pass);
 }
 
@@ -164,7 +165,7 @@ TEST_F(SurfaceLibQuadTest, TextureQuadEmptyBackgroundColor) {
   SharedQuadStatePtr mojo_sqs = SharedQuadState::New();
   mojo_pass->shared_quad_states.push_back(mojo_sqs.Pass());
 
-  scoped_ptr<cc::RenderPass> pass = ConvertTo(mojo_pass.Pass());
+  scoped_ptr<cc::RenderPass> pass = mojo_pass.To<scoped_ptr<cc::RenderPass> >();
   EXPECT_FALSE(pass);
 }
 
@@ -291,7 +292,8 @@ TEST(SurfaceLibTest, RenderPass) {
   ASSERT_EQ(3u, mojo_pass->quads.size());
   EXPECT_EQ(0, mojo_pass->quads[0]->shared_quad_state_index);
 
-  scoped_ptr<cc::RenderPass> round_trip_pass = ConvertTo(mojo_pass.Pass());
+  scoped_ptr<cc::RenderPass> round_trip_pass =
+      mojo_pass.To<scoped_ptr<cc::RenderPass> >();
   EXPECT_EQ(pass_id, round_trip_pass->id);
   EXPECT_EQ(output_rect, round_trip_pass->output_rect);
   EXPECT_EQ(damage_rect, round_trip_pass->damage_rect);

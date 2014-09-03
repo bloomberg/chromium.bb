@@ -433,10 +433,10 @@ void SerialSetControlSignalsFunction::Work() {
 namespace mojo {
 
 // static
-linked_ptr<extensions::core_api::serial::DeviceInfo>
-TypeConverter<device::serial::DeviceInfoPtr,
-              linked_ptr<extensions::core_api::serial::DeviceInfo> >::
-    ConvertTo(const device::serial::DeviceInfoPtr& device) {
+linked_ptr<extensions::core_api::serial::DeviceInfo> TypeConverter<
+    linked_ptr<extensions::core_api::serial::DeviceInfo>,
+    device::serial::DeviceInfoPtr>::Convert(const device::serial::DeviceInfoPtr&
+                                                device) {
   linked_ptr<extensions::core_api::serial::DeviceInfo> info(
       new extensions::core_api::serial::DeviceInfo);
   info->path = device->path;

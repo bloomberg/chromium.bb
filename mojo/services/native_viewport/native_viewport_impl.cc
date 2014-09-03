@@ -118,9 +118,8 @@ bool NativeViewportImpl::OnEvent(ui::Event* ui_event) {
     return false;
 
   client()->OnEvent(
-      TypeConverter<EventPtr, ui::Event>::ConvertFrom(*ui_event),
-      base::Bind(&NativeViewportImpl::AckEvent,
-                 weak_factory_.GetWeakPtr()));
+      Event::From(*ui_event),
+      base::Bind(&NativeViewportImpl::AckEvent, weak_factory_.GetWeakPtr()));
   waiting_for_event_ack_ = true;
   return false;
 }

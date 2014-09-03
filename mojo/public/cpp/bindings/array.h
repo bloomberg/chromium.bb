@@ -50,12 +50,12 @@ class Array {
 
   template <typename U>
   static Array From(const U& other) {
-    return TypeConverter<Array, U>::ConvertFrom(other);
+    return TypeConverter<Array, U>::Convert(other);
   }
 
   template <typename U>
   U To() const {
-    return TypeConverter<Array, U>::ConvertTo(*this);
+    return TypeConverter<U, Array>::Convert(*this);
   }
 
   void reset() {
@@ -119,20 +119,23 @@ class Array {
 };
 
 template <typename T, typename E>
-class TypeConverter<Array<T>, std::vector<E> > {
- public:
-  static Array<T> ConvertFrom(const std::vector<E>& input) {
+struct TypeConverter<Array<T>, std::vector<E> > {
+  static Array<T> Convert(const std::vector<E>& input) {
     Array<T> result(input.size());
     for (size_t i = 0; i < input.size(); ++i)
-      result[i] = TypeConverter<T, E>::ConvertFrom(input[i]);
+      result[i] = TypeConverter<T, E>::Convert(input[i]);
     return result.Pass();
   }
-  static std::vector<E> ConvertTo(const Array<T>& input) {
+};
+
+template <typename E, typename T>
+struct TypeConverter<std::vector<E>, Array<T> > {
+  static std::vector<E> Convert(const Array<T>& input) {
     std::vector<E> result;
     if (!input.is_null()) {
       result.resize(input.size());
       for (size_t i = 0; i < input.size(); ++i)
-        result[i] = TypeConverter<T, E>::ConvertTo(input[i]);
+        result[i] = TypeConverter<E, T>::Convert(input[i]);
     }
     return result;
   }
