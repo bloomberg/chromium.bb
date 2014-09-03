@@ -50,11 +50,11 @@ public:
     virtual void enable(ErrorString*) OVERRIDE;
     virtual void disable(ErrorString*) OVERRIDE;
 
-    virtual void requestFileSystemRoot(ErrorString*, const String& origin, const String& typeString, PassRefPtr<RequestFileSystemRootCallback>) OVERRIDE;
-    virtual void requestDirectoryContent(ErrorString*, const String& url, PassRefPtr<RequestDirectoryContentCallback>) OVERRIDE;
-    virtual void requestMetadata(ErrorString*, const String& url, PassRefPtr<RequestMetadataCallback>) OVERRIDE;
-    virtual void requestFileContent(ErrorString*, const String& url, bool readAsText, const int* start, const int* end, const String* charset, PassRefPtr<RequestFileContentCallback>) OVERRIDE;
-    virtual void deleteEntry(ErrorString*, const String& url, PassRefPtr<DeleteEntryCallback>) OVERRIDE;
+    virtual void requestFileSystemRoot(ErrorString*, const String& origin, const String& typeString, PassRefPtrWillBeRawPtr<RequestFileSystemRootCallback>) OVERRIDE;
+    virtual void requestDirectoryContent(ErrorString*, const String& url, PassRefPtrWillBeRawPtr<RequestDirectoryContentCallback>) OVERRIDE;
+    virtual void requestMetadata(ErrorString*, const String& url, PassRefPtrWillBeRawPtr<RequestMetadataCallback>) OVERRIDE;
+    virtual void requestFileContent(ErrorString*, const String& url, bool readAsText, const int* start, const int* end, const String* charset, PassRefPtrWillBeRawPtr<RequestFileContentCallback>) OVERRIDE;
+    virtual void deleteEntry(ErrorString*, const String& url, PassRefPtrWillBeRawPtr<DeleteEntryCallback>) OVERRIDE;
 
     virtual void clearFrontend() OVERRIDE;
     virtual void restore() OVERRIDE;

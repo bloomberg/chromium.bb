@@ -66,7 +66,7 @@ public:
     virtual void enable(ErrorString*) OVERRIDE;
     virtual void disable(ErrorString*) OVERRIDE;
     virtual void getDatabaseTableNames(ErrorString*, const String& databaseId, RefPtr<TypeBuilder::Array<String> >& names) OVERRIDE;
-    virtual void executeSQL(ErrorString*, const String& databaseId, const String& query, PassRefPtr<ExecuteSQLCallback>) OVERRIDE;
+    virtual void executeSQL(ErrorString*, const String& databaseId, const String& query, PassRefPtrWillBeRawPtr<ExecuteSQLCallback>) OVERRIDE;
 
     void didOpenDatabase(PassRefPtrWillBeRawPtr<Database>, const String& domain, const String& name, const String& version);
 private:

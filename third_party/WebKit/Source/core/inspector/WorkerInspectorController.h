@@ -79,7 +79,7 @@ private:
     InspectorAgentRegistry m_agents;
     OwnPtr<InspectorFrontendChannel> m_frontendChannel;
     OwnPtr<InspectorFrontend> m_frontend;
-    RefPtr<InspectorBackendDispatcher> m_backendDispatcher;
+    RefPtrWillBeMember<InspectorBackendDispatcher> m_backendDispatcher;
     RawPtrWillBeMember<WorkerDebuggerAgent> m_workerDebuggerAgent;
 };
 

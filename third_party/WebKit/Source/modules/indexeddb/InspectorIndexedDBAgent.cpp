@@ -90,7 +90,7 @@ namespace {
 class GetDatabaseNamesCallback FINAL : public EventListener {
     WTF_MAKE_NONCOPYABLE(GetDatabaseNamesCallback);
 public:
-    static PassRefPtr<GetDatabaseNamesCallback> create(PassRefPtr<RequestDatabaseNamesCallback> requestCallback, const String& securityOrigin)
+    static PassRefPtr<GetDatabaseNamesCallback> create(PassRefPtrWillBeRawPtr<RequestDatabaseNamesCallback> requestCallback, const String& securityOrigin)
     {
         return adoptRef(new GetDatabaseNamesCallback(requestCallback, securityOrigin));
     }
@@ -126,11 +126,11 @@ public:
     }
 
 private:
-    GetDatabaseNamesCallback(PassRefPtr<RequestDatabaseNamesCallback> requestCallback, const String& securityOrigin)
+    GetDatabaseNamesCallback(PassRefPtrWillBeRawPtr<RequestDatabaseNamesCallback> requestCallback, const String& securityOrigin)
         : EventListener(EventListener::CPPEventListenerType)
         , m_requestCallback(requestCallback)
         , m_securityOrigin(securityOrigin) { }
-    RefPtr<RequestDatabaseNamesCallback> m_requestCallback;
+    RefPtrWillBePersistent<RequestDatabaseNamesCallback> m_requestCallback;
     String m_securityOrigin;
 };
 
@@ -257,7 +257,7 @@ static PassRefPtr<KeyPath> keyPathFromIDBKeyPath(const IDBKeyPath& idbKeyPath)
 
 class DatabaseLoader FINAL : public ExecutableWithDatabase {
 public:
-    static PassRefPtr<DatabaseLoader> create(ScriptState* scriptState, PassRefPtr<RequestDatabaseCallback> requestCallback)
+    static PassRefPtr<DatabaseLoader> create(ScriptState* scriptState, PassRefPtrWillBeRawPtr<RequestDatabaseCallback> requestCallback)
     {
         return adoptRef(new DatabaseLoader(scriptState, requestCallback));
     }
@@ -307,10 +307,10 @@ public:
 
     virtual RequestCallback* requestCallback() OVERRIDE { return m_requestCallback.get(); }
 private:
-    DatabaseLoader(ScriptState* scriptState, PassRefPtr<RequestDatabaseCallback> requestCallback)
+    DatabaseLoader(ScriptState* scriptState, PassRefPtrWillBeRawPtr<RequestDatabaseCallback> requestCallback)
         : ExecutableWithDatabase(scriptState)
         , m_requestCallback(requestCallback) { }
-    RefPtr<RequestDatabaseCallback> m_requestCallback;
+    RefPtrWillBePersistent<RequestDatabaseCallback> m_requestCallback;
 };
 
 static IDBKey* idbKeyFromInspectorObject(JSONObject* key)
@@ -388,7 +388,7 @@ class DataLoader;
 
 class OpenCursorCallback FINAL : public EventListener {
 public:
-    static PassRefPtr<OpenCursorCallback> create(ScriptState* scriptState, PassRefPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
+    static PassRefPtr<OpenCursorCallback> create(ScriptState* scriptState, PassRefPtrWillBeRawPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
     {
         return adoptRef(new OpenCursorCallback(scriptState, requestCallback, skipCount, pageSize));
     }
@@ -461,7 +461,7 @@ public:
     }
 
 private:
-    OpenCursorCallback(ScriptState* scriptState, PassRefPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
+    OpenCursorCallback(ScriptState* scriptState, PassRefPtrWillBeRawPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
         : EventListener(EventListener::CPPEventListenerType)
         , m_scriptState(scriptState)
         , m_requestCallback(requestCallback)
@@ -472,7 +472,7 @@ private:
     }
 
     RefPtr<ScriptState> m_scriptState;
-    RefPtr<RequestDataCallback> m_requestCallback;
+    RefPtrWillBePersistent<RequestDataCallback> m_requestCallback;
     int m_skipCount;
     unsigned m_pageSize;
     RefPtr<Array<DataEntry> > m_result;
@@ -480,7 +480,7 @@ private:
 
 class DataLoader FINAL : public ExecutableWithDatabase {
 public:
-    static PassRefPtr<DataLoader> create(ScriptState* scriptState, PassRefPtr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, IDBKeyRange* idbKeyRange, int skipCount, unsigned pageSize)
+    static PassRefPtr<DataLoader> create(ScriptState* scriptState, PassRefPtrWillBeRawPtr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, IDBKeyRange* idbKeyRange, int skipCount, unsigned pageSize)
     {
         return adoptRef(new DataLoader(scriptState, requestCallback, objectStoreName, indexName, idbKeyRange, skipCount, pageSize));
     }
@@ -520,7 +520,7 @@ public:
     }
 
     virtual RequestCallback* requestCallback() OVERRIDE { return m_requestCallback.get(); }
-    DataLoader(ScriptState* scriptState, PassRefPtr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, IDBKeyRange* idbKeyRange, int skipCount, unsigned pageSize)
+    DataLoader(ScriptState* scriptState, PassRefPtrWillBeRawPtr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, IDBKeyRange* idbKeyRange, int skipCount, unsigned pageSize)
         : ExecutableWithDatabase(scriptState)
         , m_requestCallback(requestCallback)
         , m_objectStoreName(objectStoreName)
@@ -531,7 +531,7 @@ public:
     {
     }
 
-    RefPtr<RequestDataCallback> m_requestCallback;
+    RefPtrWillBePersistent<RequestDataCallback> m_requestCallback;
     String m_objectStoreName;
     String m_indexName;
     Persistent<IDBKeyRange> m_idbKeyRange;
@@ -617,7 +617,7 @@ static IDBFactory* assertIDBFactory(ErrorString* errorString, Document* document
     return idbFactory;
 }
 
-void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, const String& securityOrigin, PassRefPtr<RequestDatabaseNamesCallback> requestCallback)
+void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, const String& securityOrigin, PassRefPtrWillBeRawPtr<RequestDatabaseNamesCallback> requestCallback)
 {
     LocalFrame* frame = findFrameWithSecurityOrigin(m_page, securityOrigin);
     Document* document = assertDocument(errorString, frame);
@@ -638,7 +638,7 @@ void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, con
     idbRequest->addEventListener(EventTypeNames::success, GetDatabaseNamesCallback::create(requestCallback, document->securityOrigin()->toRawString()), false);
 }
 
-void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const String& securityOrigin, const String& databaseName, PassRefPtr<RequestDatabaseCallback> requestCallback)
+void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const String& securityOrigin, const String& databaseName, PassRefPtrWillBeRawPtr<RequestDatabaseCallback> requestCallback)
 {
     LocalFrame* frame = findFrameWithSecurityOrigin(m_page, securityOrigin);
     Document* document = assertDocument(errorString, frame);
@@ -654,7 +654,7 @@ void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const St
     databaseLoader->start(idbFactory, document->securityOrigin(), databaseName);
 }
 
-void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, const RefPtr<JSONObject>* keyRange, PassRefPtr<RequestDataCallback> requestCallback)
+void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, const RefPtr<JSONObject>* keyRange, const PassRefPtrWillBeRawPtr<RequestDataCallback> requestCallback)
 {
     LocalFrame* frame = findFrameWithSecurityOrigin(m_page, securityOrigin);
     Document* document = assertDocument(errorString, frame);
@@ -679,7 +679,7 @@ void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String
 class ClearObjectStoreListener FINAL : public EventListener {
     WTF_MAKE_NONCOPYABLE(ClearObjectStoreListener);
 public:
-    static PassRefPtr<ClearObjectStoreListener> create(PassRefPtr<ClearObjectStoreCallback> requestCallback)
+    static PassRefPtr<ClearObjectStoreListener> create(PassRefPtrWillBeRawPtr<ClearObjectStoreCallback> requestCallback)
     {
         return adoptRef(new ClearObjectStoreListener(requestCallback));
     }
@@ -703,24 +703,24 @@ public:
         m_requestCallback->sendSuccess();
     }
 private:
-    ClearObjectStoreListener(PassRefPtr<ClearObjectStoreCallback> requestCallback)
+    ClearObjectStoreListener(PassRefPtrWillBeRawPtr<ClearObjectStoreCallback> requestCallback)
         : EventListener(EventListener::CPPEventListenerType)
         , m_requestCallback(requestCallback)
     {
     }
 
-    RefPtr<ClearObjectStoreCallback> m_requestCallback;
+    RefPtrWillBePersistent<ClearObjectStoreCallback> m_requestCallback;
 };
 
 
 class ClearObjectStore FINAL : public ExecutableWithDatabase {
 public:
-    static PassRefPtr<ClearObjectStore> create(ScriptState* scriptState, const String& objectStoreName, PassRefPtr<ClearObjectStoreCallback> requestCallback)
+    static PassRefPtr<ClearObjectStore> create(ScriptState* scriptState, const String& objectStoreName, PassRefPtrWillBeRawPtr<ClearObjectStoreCallback> requestCallback)
     {
         return adoptRef(new ClearObjectStore(scriptState, objectStoreName, requestCallback));
     }
 
-    ClearObjectStore(ScriptState* scriptState, const String& objectStoreName, PassRefPtr<ClearObjectStoreCallback> requestCallback)
+    ClearObjectStore(ScriptState* scriptState, const String& objectStoreName, PassRefPtrWillBeRawPtr<ClearObjectStoreCallback> requestCallback)
         : ExecutableWithDatabase(scriptState)
         , m_objectStoreName(objectStoreName)
         , m_requestCallback(requestCallback)
@@ -756,10 +756,10 @@ public:
     virtual RequestCallback* requestCallback() OVERRIDE { return m_requestCallback.get(); }
 private:
     const String m_objectStoreName;
-    RefPtr<ClearObjectStoreCallback> m_requestCallback;
+    RefPtrWillBePersistent<ClearObjectStoreCallback> m_requestCallback;
 };
 
-void InspectorIndexedDBAgent::clearObjectStore(ErrorString* errorString, const String& securityOrigin, const String& databaseName, const String& objectStoreName, PassRefPtr<ClearObjectStoreCallback> requestCallback)
+void InspectorIndexedDBAgent::clearObjectStore(ErrorString* errorString, const String& securityOrigin, const String& databaseName, const String& objectStoreName, PassRefPtrWillBeRawPtr<ClearObjectStoreCallback> requestCallback)
 {
     LocalFrame* frame = findFrameWithSecurityOrigin(m_page, securityOrigin);
     Document* document = assertDocument(errorString, frame);

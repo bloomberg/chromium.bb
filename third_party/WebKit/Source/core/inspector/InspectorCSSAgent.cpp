@@ -130,18 +130,26 @@ public:
 
 class InspectorCSSAgent::InspectorResourceContentLoaderCallback FINAL : public VoidCallback {
 public:
-    InspectorResourceContentLoaderCallback(InspectorCSSAgent*, PassRefPtr<EnableCallback>);
+    InspectorResourceContentLoaderCallback(InspectorCSSAgent*, PassRefPtrWillBeRawPtr<EnableCallback>);
+    virtual void trace(Visitor*) OVERRIDE;
     virtual void handleEvent() OVERRIDE;
 
 private:
-    InspectorCSSAgent* m_cssAgent;
-    RefPtr<EnableCallback> m_callback;
+    RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
+    RefPtrWillBeMember<EnableCallback> m_callback;
 };
 
-InspectorCSSAgent::InspectorResourceContentLoaderCallback::InspectorResourceContentLoaderCallback(InspectorCSSAgent* cssAgent, PassRefPtr<EnableCallback> callback)
+InspectorCSSAgent::InspectorResourceContentLoaderCallback::InspectorResourceContentLoaderCallback(InspectorCSSAgent* cssAgent, PassRefPtrWillBeRawPtr<EnableCallback> callback)
     : m_cssAgent(cssAgent)
     , m_callback(callback)
 {
+}
+
+void InspectorCSSAgent::InspectorResourceContentLoaderCallback::trace(Visitor* visitor)
+{
+    visitor->trace(m_cssAgent);
+    visitor->trace(m_callback);
+    VoidCallback::trace(visitor);
 }
 
 void InspectorCSSAgent::InspectorResourceContentLoaderCallback::handleEvent()
@@ -445,7 +453,7 @@ void InspectorCSSAgent::resetNonPersistentData()
     resetPseudoStates();
 }
 
-void InspectorCSSAgent::enable(ErrorString*, PassRefPtr<EnableCallback> prpCallback)
+void InspectorCSSAgent::enable(ErrorString*, PassRefPtrWillBeRawPtr<EnableCallback> prpCallback)
 {
     m_state->setBoolean(CSSAgentState::cssAgentEnabled, true);
     if (!m_pageAgent->resourceContentLoader()) {

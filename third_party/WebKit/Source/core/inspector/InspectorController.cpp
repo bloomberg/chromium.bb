@@ -143,6 +143,7 @@ void InspectorController::trace(Visitor* visitor)
     visitor->trace(m_resourceAgent);
     visitor->trace(m_layerTreeAgent);
     visitor->trace(m_tracingAgent);
+    visitor->trace(m_inspectorBackendDispatcher);
     visitor->trace(m_page);
     visitor->trace(m_agents);
 }

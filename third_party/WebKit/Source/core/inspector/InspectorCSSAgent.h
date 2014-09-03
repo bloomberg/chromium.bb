@@ -114,7 +114,7 @@ public:
     virtual void didCommitLoadForMainFrame() OVERRIDE;
     virtual void restore() OVERRIDE;
     virtual void flushPendingFrontendMessages() OVERRIDE;
-    virtual void enable(ErrorString*, PassRefPtr<EnableCallback>) OVERRIDE;
+    virtual void enable(ErrorString*, PassRefPtrWillBeRawPtr<EnableCallback>) OVERRIDE;
     virtual void disable(ErrorString*) OVERRIDE;
     void reset();
     void mediaQueryResultChanged();

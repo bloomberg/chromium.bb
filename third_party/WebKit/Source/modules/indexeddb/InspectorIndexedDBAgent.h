@@ -54,10 +54,10 @@ public:
     // Called from the front-end.
     virtual void enable(ErrorString*) OVERRIDE;
     virtual void disable(ErrorString*) OVERRIDE;
-    virtual void requestDatabaseNames(ErrorString*, const String& securityOrigin, PassRefPtr<RequestDatabaseNamesCallback>) OVERRIDE;
-    virtual void requestDatabase(ErrorString*, const String& securityOrigin, const String& databaseName, PassRefPtr<RequestDatabaseCallback>) OVERRIDE;
-    virtual void requestData(ErrorString*, const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, const RefPtr<JSONObject>* keyRange, PassRefPtr<RequestDataCallback>) OVERRIDE;
-    virtual void clearObjectStore(ErrorString*, const String& in_securityOrigin, const String& in_databaseName, const String& in_objectStoreName, PassRefPtr<ClearObjectStoreCallback>) OVERRIDE;
+    virtual void requestDatabaseNames(ErrorString*, const String& securityOrigin, PassRefPtrWillBeRawPtr<RequestDatabaseNamesCallback>) OVERRIDE;
+    virtual void requestDatabase(ErrorString*, const String& securityOrigin, const String& databaseName, PassRefPtrWillBeRawPtr<RequestDatabaseCallback>) OVERRIDE;
+    virtual void requestData(ErrorString*, const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, const RefPtr<JSONObject>* keyRange, PassRefPtrWillBeRawPtr<RequestDataCallback>) OVERRIDE;
+    virtual void clearObjectStore(ErrorString*, const String& in_securityOrigin, const String& in_databaseName, const String& in_objectStoreName, PassRefPtrWillBeRawPtr<ClearObjectStoreCallback>) OVERRIDE;
 
 private:
     explicit InspectorIndexedDBAgent(Page*);

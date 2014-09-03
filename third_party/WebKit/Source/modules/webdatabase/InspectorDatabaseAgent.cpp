@@ -69,12 +69,18 @@ void reportTransactionFailed(ExecuteSQLCallback* requestCallback, SQLError* erro
 
 class StatementCallback FINAL : public SQLStatementCallback {
 public:
-    static PassOwnPtrWillBeRawPtr<StatementCallback> create(PassRefPtr<ExecuteSQLCallback> requestCallback)
+    static PassOwnPtrWillBeRawPtr<StatementCallback> create(PassRefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback)
     {
         return adoptPtrWillBeNoop(new StatementCallback(requestCallback));
     }
 
     virtual ~StatementCallback() { }
+
+    virtual void trace(Visitor* visitor)
+    {
+        visitor->trace(m_requestCallback);
+        SQLStatementCallback::trace(visitor);
+    }
 
     virtual bool handleEvent(SQLTransaction*, SQLResultSet* resultSet) OVERRIDE
     {
@@ -100,19 +106,25 @@ public:
     }
 
 private:
-    StatementCallback(PassRefPtr<ExecuteSQLCallback> requestCallback)
+    StatementCallback(PassRefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback)
         : m_requestCallback(requestCallback) { }
-    RefPtr<ExecuteSQLCallback> m_requestCallback;
+    RefPtrWillBeMember<ExecuteSQLCallback> m_requestCallback;
 };
 
 class StatementErrorCallback FINAL : public SQLStatementErrorCallback {
 public:
-    static PassOwnPtrWillBeRawPtr<StatementErrorCallback> create(PassRefPtr<ExecuteSQLCallback> requestCallback)
+    static PassOwnPtrWillBeRawPtr<StatementErrorCallback> create(PassRefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback)
     {
         return adoptPtrWillBeNoop(new StatementErrorCallback(requestCallback));
     }
 
     virtual ~StatementErrorCallback() { }
+
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_requestCallback);
+        SQLStatementErrorCallback::trace(visitor);
+    }
 
     virtual bool handleEvent(SQLTransaction*, SQLError* error) OVERRIDE
     {
@@ -121,19 +133,25 @@ public:
     }
 
 private:
-    StatementErrorCallback(PassRefPtr<ExecuteSQLCallback> requestCallback)
+    StatementErrorCallback(PassRefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback)
         : m_requestCallback(requestCallback) { }
-    RefPtr<ExecuteSQLCallback> m_requestCallback;
+    RefPtrWillBeMember<ExecuteSQLCallback> m_requestCallback;
 };
 
 class TransactionCallback FINAL : public SQLTransactionCallback {
 public:
-    static PassOwnPtrWillBeRawPtr<TransactionCallback> create(const String& sqlStatement, PassRefPtr<ExecuteSQLCallback> requestCallback)
+    static PassOwnPtrWillBeRawPtr<TransactionCallback> create(const String& sqlStatement, PassRefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback)
     {
         return adoptPtrWillBeNoop(new TransactionCallback(sqlStatement, requestCallback));
     }
 
     virtual ~TransactionCallback() { }
+
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_requestCallback);
+        SQLTransactionCallback::trace(visitor);
+    }
 
     virtual bool handleEvent(SQLTransaction* transaction) OVERRIDE
     {
@@ -147,21 +165,27 @@ public:
         return true;
     }
 private:
-    TransactionCallback(const String& sqlStatement, PassRefPtr<ExecuteSQLCallback> requestCallback)
+    TransactionCallback(const String& sqlStatement, PassRefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback)
         : m_sqlStatement(sqlStatement)
         , m_requestCallback(requestCallback) { }
     String m_sqlStatement;
-    RefPtr<ExecuteSQLCallback> m_requestCallback;
+    RefPtrWillBeMember<ExecuteSQLCallback> m_requestCallback;
 };
 
 class TransactionErrorCallback FINAL : public SQLTransactionErrorCallback {
 public:
-    static PassOwnPtrWillBeRawPtr<TransactionErrorCallback> create(PassRefPtr<ExecuteSQLCallback> requestCallback)
+    static PassOwnPtrWillBeRawPtr<TransactionErrorCallback> create(PassRefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback)
     {
         return adoptPtrWillBeNoop(new TransactionErrorCallback(requestCallback));
     }
 
     virtual ~TransactionErrorCallback() { }
+
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_requestCallback);
+        SQLTransactionErrorCallback::trace(visitor);
+    }
 
     virtual bool handleEvent(SQLError* error) OVERRIDE
     {
@@ -169,9 +193,9 @@ public:
         return true;
     }
 private:
-    TransactionErrorCallback(PassRefPtr<ExecuteSQLCallback> requestCallback)
+    TransactionErrorCallback(PassRefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback)
         : m_requestCallback(requestCallback) { }
-    RefPtr<ExecuteSQLCallback> m_requestCallback;
+    RefPtrWillBeMember<ExecuteSQLCallback> m_requestCallback;
 };
 
 class TransactionSuccessCallback FINAL : public VoidCallback {
@@ -275,9 +299,9 @@ void InspectorDatabaseAgent::getDatabaseTableNames(ErrorString* error, const Str
     }
 }
 
-void InspectorDatabaseAgent::executeSQL(ErrorString*, const String& databaseId, const String& query, PassRefPtr<ExecuteSQLCallback> prpRequestCallback)
+void InspectorDatabaseAgent::executeSQL(ErrorString*, const String& databaseId, const String& query, PassRefPtrWillBeRawPtr<ExecuteSQLCallback> prpRequestCallback)
 {
-    RefPtr<ExecuteSQLCallback> requestCallback = prpRequestCallback;
+    RefPtrWillBeRawPtr<ExecuteSQLCallback> requestCallback = prpRequestCallback;
 
     if (!m_enabled) {
         requestCallback->sendFailure("Database agent is not enabled");

@@ -146,21 +146,29 @@ static float calculateFontScaleFactor(int width, int height, float deviceScaleFa
 
 class InspectorPageAgent::GetResourceContentLoadListener FINAL : public VoidCallback {
 public:
-    GetResourceContentLoadListener(InspectorPageAgent*, const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback>);
+    GetResourceContentLoadListener(InspectorPageAgent*, const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback>);
+    virtual void trace(Visitor*) OVERRIDE;
     virtual void handleEvent() OVERRIDE;
 private:
-    InspectorPageAgent* m_pageAgent;
+    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     String m_frameId;
     String m_url;
-    RefPtr<GetResourceContentCallback> m_callback;
+    RefPtrWillBeMember<GetResourceContentCallback> m_callback;
 };
 
-InspectorPageAgent::GetResourceContentLoadListener::GetResourceContentLoadListener(InspectorPageAgent* pageAgent, const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback> callback)
+InspectorPageAgent::GetResourceContentLoadListener::GetResourceContentLoadListener(InspectorPageAgent* pageAgent, const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback> callback)
     : m_pageAgent(pageAgent)
     , m_frameId(frameId)
     , m_url(url)
     , m_callback(callback)
 {
+}
+
+void InspectorPageAgent::GetResourceContentLoadListener::trace(Visitor* visitor)
+{
+    visitor->trace(m_pageAgent);
+    visitor->trace(m_callback);
+    VoidCallback::trace(visitor);
 }
 
 void InspectorPageAgent::GetResourceContentLoadListener::handleEvent()
@@ -700,7 +708,7 @@ void InspectorPageAgent::getResourceTree(ErrorString*, RefPtr<TypeBuilder::Page:
     object = buildObjectForFrameTree(m_page->deprecatedLocalMainFrame());
 }
 
-void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback> callback)
+void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback> callback)
 {
     ErrorString errorString;
     LocalFrame* frame = assertFrame(&errorString, frameId);
@@ -718,7 +726,7 @@ void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const Str
     callback->sendSuccess(content, base64Encoded);
 }
 
-void InspectorPageAgent::getResourceContent(ErrorString* errorString, const String& frameId, const String& url, PassRefPtr<GetResourceContentCallback> callback)
+void InspectorPageAgent::getResourceContent(ErrorString* errorString, const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback> callback)
 {
     String content;
     if (getEditedResourceContent(url, &content)) {
