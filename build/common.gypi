@@ -1797,9 +1797,6 @@
 
         # When building as part of the Android system, use system libraries
         # where possible to reduce ROM size.
-        # TODO(steveblock): Investigate using the system version of sqlite.
-        'use_system_sqlite%': 0,  # '<(android_webview_build)',
-        'use_system_expat%': '<(android_webview_build)',
         'use_system_icu%': '<(android_webview_build)',
         'use_system_stlport%': '<(android_webview_build)',
 
