@@ -30,6 +30,9 @@ class DriWrapper {
   DriWrapper(const char* device_path);
   virtual ~DriWrapper();
 
+  // Open device.
+  virtual void Initialize();
+
   // Get the CRTC state. This is generally used to save state before using the
   // CRTC. When the user finishes using the CRTC, the user should restore the
   // CRTC to it's initial state. Use |SetCrtc| to restore the state.
@@ -135,6 +138,9 @@ class DriWrapper {
   int fd_;
 
  private:
+  // Path to DRM device.
+  const char* device_path_;
+
   DISALLOW_COPY_AND_ASSIGN(DriWrapper);
 };
 

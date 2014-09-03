@@ -89,6 +89,7 @@ class OzonePlatformDri : public OzonePlatform {
   }
 #endif
   virtual void InitializeUI() OVERRIDE {
+    dri_->Initialize();
     surface_factory_ozone_.reset(new DriSurfaceFactory(
         dri_.get(), screen_manager_.get(), &window_manager_));
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);

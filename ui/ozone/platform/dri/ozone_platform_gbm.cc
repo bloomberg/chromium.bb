@@ -50,7 +50,10 @@ class GbmBufferGenerator : public ScanoutBufferGenerator {
   GbmBufferGenerator(DriWrapper* dri)
       : dri_(dri),
         glapi_lib_(dlopen("libglapi.so.0", RTLD_LAZY | RTLD_GLOBAL)),
-        device_(gbm_create_device(dri_->get_fd())) {}
+        device_(gbm_create_device(dri_->get_fd())) {
+    if (!device_)
+      LOG(FATAL) << "Unable to initialize gbm for " << kDefaultGraphicsCardPath;
+  }
   virtual ~GbmBufferGenerator() {
     gbm_device_destroy(device_);
     if (glapi_lib_)
@@ -138,6 +141,7 @@ class OzonePlatformGbm : public OzonePlatform {
 
   virtual void InitializeGPU() OVERRIDE {
     dri_.reset(new DriWrapper(kDefaultGraphicsCardPath));
+    dri_->Initialize();
     buffer_generator_.reset(new GbmBufferGenerator(dri_.get()));
     screen_manager_.reset(new ScreenManager(dri_.get(),
                                             buffer_generator_.get()));
