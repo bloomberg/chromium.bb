@@ -24,9 +24,10 @@ public class HttpUrlRequestFactoryTest extends InstrumentationTestCase {
         HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(
                 getInstrumentation().getContext(), config);
         assertNotNull("Factory should be created", factory);
-        assertTrue("Factory should be Chromium/n.n.n.n@r",
+        assertTrue("Factory should be Chromium/n.n.n.n@r but is " +
+                           factory.getName(),
                    Pattern.matches("Chromium/\\d+\\.\\d+\\.\\d+\\.\\d+@\\w+",
-                   factory.getName()));
+                           factory.getName()));
     }
 
     @SmallTest
@@ -38,9 +39,10 @@ public class HttpUrlRequestFactoryTest extends InstrumentationTestCase {
         HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(
                 getInstrumentation().getContext(), config);
         assertNotNull("Factory should be created", factory);
-        assertTrue("Factory should be HttpUrlConnection/n.n.n.n@r",
+        assertTrue("Factory should be HttpUrlConnection/n.n.n.n@r but is " +
+                           factory.getName(),
                    Pattern.matches(
                            "HttpUrlConnection/\\d+\\.\\d+\\.\\d+\\.\\d+@\\w+",
-                   factory.getName()));
+                           factory.getName()));
     }
 }

@@ -10,6 +10,6 @@ public class Version {
     public static final String LAST_CHANGE = "@LASTCHANGE@";
 
     public static String getVersion() {
-        return CRONET_VERSION + "@" + LAST_CHANGE;
+        return CRONET_VERSION + "@" + LAST_CHANGE.substring(0, 8);
     }
 }
