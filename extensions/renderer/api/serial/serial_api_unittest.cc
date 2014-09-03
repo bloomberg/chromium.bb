@@ -8,6 +8,11 @@
 #include "extensions/renderer/api_test_base.h"
 #include "grit/extensions_renderer_resources.h"
 
+// A test launcher for tests for the serial API defined in
+// extensions/test/data/serial_unittest.js. Each C++ test function sets up a
+// fake DeviceEnumerator or SerialIoHandler expecting or returning particular
+// values for that test.
+
 namespace extensions {
 
 namespace {
@@ -298,6 +303,91 @@ class FailToGetInfoTestIoHandler : public TestIoHandlerBase {
   DISALLOW_COPY_AND_ASSIGN(FailToGetInfoTestIoHandler);
 };
 
+class SendErrorTestIoHandler : public TestIoHandlerBase {
+ public:
+  explicit SendErrorTestIoHandler(device::serial::SendError error)
+      : error_(error) {}
+
+  virtual void WriteImpl() OVERRIDE { QueueWriteCompleted(0, error_); }
+
+ private:
+  virtual ~SendErrorTestIoHandler() {}
+
+  device::serial::SendError error_;
+
+  DISALLOW_COPY_AND_ASSIGN(SendErrorTestIoHandler);
+};
+
+class FixedDataReceiveTestIoHandler : public TestIoHandlerBase {
+ public:
+  explicit FixedDataReceiveTestIoHandler(const std::string& data)
+      : data_(data) {}
+
+  virtual void ReadImpl() OVERRIDE {
+    if (pending_read_buffer_len() < data_.size())
+      return;
+    memcpy(pending_read_buffer(), data_.c_str(), data_.size());
+    QueueReadCompleted(static_cast<uint32_t>(data_.size()),
+                       device::serial::RECEIVE_ERROR_NONE);
+  }
+
+ private:
+  virtual ~FixedDataReceiveTestIoHandler() {}
+
+  const std::string data_;
+
+  DISALLOW_COPY_AND_ASSIGN(FixedDataReceiveTestIoHandler);
+};
+
+class ReceiveErrorTestIoHandler : public TestIoHandlerBase {
+ public:
+  explicit ReceiveErrorTestIoHandler(device::serial::ReceiveError error)
+      : error_(error) {}
+
+  virtual void ReadImpl() OVERRIDE { QueueReadCompleted(0, error_); }
+
+ private:
+  virtual ~ReceiveErrorTestIoHandler() {}
+
+  device::serial::ReceiveError error_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReceiveErrorTestIoHandler);
+};
+
+class SendDataWithErrorIoHandler : public TestIoHandlerBase {
+ public:
+  SendDataWithErrorIoHandler() : sent_error_(false) {}
+  virtual void WriteImpl() OVERRIDE {
+    if (sent_error_) {
+      WriteCompleted(pending_write_buffer_len(),
+                     device::serial::SEND_ERROR_NONE);
+      return;
+    }
+    sent_error_ = true;
+    // We expect the JS test code to send a 4 byte buffer.
+    ASSERT_LT(2u, pending_write_buffer_len());
+    WriteCompleted(2, device::serial::SEND_ERROR_SYSTEM_ERROR);
+  }
+
+ private:
+  virtual ~SendDataWithErrorIoHandler() {}
+
+  bool sent_error_;
+
+  DISALLOW_COPY_AND_ASSIGN(SendDataWithErrorIoHandler);
+};
+
+class BlockSendsForeverSendIoHandler : public TestIoHandlerBase {
+ public:
+  BlockSendsForeverSendIoHandler() {}
+  virtual void WriteImpl() OVERRIDE {}
+
+ private:
+  virtual ~BlockSendsForeverSendIoHandler() {}
+
+  DISALLOW_COPY_AND_ASSIGN(BlockSendsForeverSendIoHandler);
+};
+
 }  // namespace
 
 class SerialApiTest : public ApiTestBase {
@@ -306,6 +396,9 @@ class SerialApiTest : public ApiTestBase {
 
   virtual void SetUp() OVERRIDE {
     ApiTestBase::SetUp();
+    env()->RegisterModule("async_waiter", IDR_ASYNC_WAITER_JS);
+    env()->RegisterModule("data_receiver", IDR_DATA_RECEIVER_JS);
+    env()->RegisterModule("data_sender", IDR_DATA_SENDER_JS);
     env()->RegisterModule("serial", IDR_SERIAL_CUSTOM_BINDINGS_JS);
     env()->RegisterModule("serial_service", IDR_SERIAL_SERVICE_JS);
     env()->RegisterModule("device/serial/data_stream.mojom",
@@ -418,6 +511,82 @@ TEST_F(SerialApiTest, SetPaused) {
   RunTest("serial_unittest.js", "testSetPaused");
 }
 
+TEST_F(SerialApiTest, Echo) {
+  RunTest("serial_unittest.js", "testEcho");
+}
+
+TEST_F(SerialApiTest, SendDuringExistingSend) {
+  RunTest("serial_unittest.js", "testSendDuringExistingSend");
+}
+
+TEST_F(SerialApiTest, SendAfterSuccessfulSend) {
+  RunTest("serial_unittest.js", "testSendAfterSuccessfulSend");
+}
+
+TEST_F(SerialApiTest, SendPartialSuccessWithError) {
+  io_handler_ = new SendDataWithErrorIoHandler();
+  RunTest("serial_unittest.js", "testSendPartialSuccessWithError");
+}
+
+TEST_F(SerialApiTest, SendTimeout) {
+  io_handler_ = new BlockSendsForeverSendIoHandler();
+  RunTest("serial_unittest.js", "testSendTimeout");
+}
+
+TEST_F(SerialApiTest, DisableSendTimeout) {
+  io_handler_ = new BlockSendsForeverSendIoHandler();
+  RunTest("serial_unittest.js", "testDisableSendTimeout");
+}
+
+TEST_F(SerialApiTest, PausedReceive) {
+  io_handler_ = new FixedDataReceiveTestIoHandler("data");
+  RunTest("serial_unittest.js", "testPausedReceive");
+}
+
+TEST_F(SerialApiTest, PausedReceiveError) {
+  io_handler_ =
+      new ReceiveErrorTestIoHandler(device::serial::RECEIVE_ERROR_DEVICE_LOST);
+  RunTest("serial_unittest.js", "testPausedReceiveError");
+}
+
+TEST_F(SerialApiTest, ReceiveTimeout) {
+  RunTest("serial_unittest.js", "testReceiveTimeout");
+}
+
+TEST_F(SerialApiTest, DisableReceiveTimeout) {
+  RunTest("serial_unittest.js", "testDisableReceiveTimeout");
+}
+
+TEST_F(SerialApiTest, ReceiveErrorDisconnected) {
+  io_handler_ =
+      new ReceiveErrorTestIoHandler(device::serial::RECEIVE_ERROR_DISCONNECTED);
+  RunTest("serial_unittest.js", "testReceiveErrorDisconnected");
+}
+
+TEST_F(SerialApiTest, ReceiveErrorDeviceLost) {
+  io_handler_ =
+      new ReceiveErrorTestIoHandler(device::serial::RECEIVE_ERROR_DEVICE_LOST);
+  RunTest("serial_unittest.js", "testReceiveErrorDeviceLost");
+}
+
+TEST_F(SerialApiTest, ReceiveErrorSystemError) {
+  io_handler_ =
+      new ReceiveErrorTestIoHandler(device::serial::RECEIVE_ERROR_SYSTEM_ERROR);
+  RunTest("serial_unittest.js", "testReceiveErrorSystemError");
+}
+
+TEST_F(SerialApiTest, SendErrorDisconnected) {
+  io_handler_ =
+      new SendErrorTestIoHandler(device::serial::SEND_ERROR_DISCONNECTED);
+  RunTest("serial_unittest.js", "testSendErrorDisconnected");
+}
+
+TEST_F(SerialApiTest, SendErrorSystemError) {
+  io_handler_ =
+      new SendErrorTestIoHandler(device::serial::SEND_ERROR_SYSTEM_ERROR);
+  RunTest("serial_unittest.js", "testSendErrorSystemError");
+}
+
 TEST_F(SerialApiTest, DisconnectUnknownConnectionId) {
   RunTest("serial_unittest.js", "testDisconnectUnknownConnectionId");
 }
@@ -444,6 +613,10 @@ TEST_F(SerialApiTest, FlushUnknownConnectionId) {
 
 TEST_F(SerialApiTest, SetPausedUnknownConnectionId) {
   RunTest("serial_unittest.js", "testSetPausedUnknownConnectionId");
+}
+
+TEST_F(SerialApiTest, SendUnknownConnectionId) {
+  RunTest("serial_unittest.js", "testSendUnknownConnectionId");
 }
 
 }  // namespace extensions

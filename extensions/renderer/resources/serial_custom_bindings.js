@@ -13,6 +13,7 @@
 
 var binding = require('binding').Binding.create('serial');
 var context = requireNative('v8_context');
+var eventBindings = require('event_bindings');
 var utils = require('utils');
 
 var serialServicePromise = function() {
@@ -48,13 +49,22 @@ binding.registerCustomHook(function(bindingsAPI) {
   apiFunctions.setHandleRequestWithPromise('getDevices', function() {
     return serialServicePromise.then(function(serialService) {
       return serialService.getDevices();
-    })
+    });
   });
 
   apiFunctions.setHandleRequestWithPromise('connect', function(path, options) {
     return serialServicePromise.then(function(serialService) {
       return serialService.createConnection(path, options);
     }).then(function(result) {
+      var id = result.info.connectionId;
+      result.connection.onData = function(data) {
+        eventBindings.dispatchEvent(
+            'serial.onReceive', [{connectionId: id, data: data}]);
+      };
+      result.connection.onError = function(error) {
+        eventBindings.dispatchEvent(
+            'serial.onReceiveError', [{connectionId: id, error: error}]);
+      };
       return result.info;
     }).catch (function(e) {
       throw new Error('Failed to connect to the port.');
@@ -75,6 +85,8 @@ binding.registerCustomHook(function(bindingsAPI) {
       'flush', forwardToConnection('flush'));
   apiFunctions.setHandleRequestWithPromise(
       'setPaused', forwardToConnection('setPaused'));
+  apiFunctions.setHandleRequestWithPromise(
+      'send', forwardToConnection('send'));
 
   apiFunctions.setHandleRequestWithPromise('getConnections', function() {
     return serialServicePromise.then(function(serialService) {
