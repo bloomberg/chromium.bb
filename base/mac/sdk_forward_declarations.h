@@ -70,6 +70,7 @@ typedef NSUInteger NSWindowButton;
 
 - (NSEventPhase)momentumPhase;
 - (NSEventPhase)phase;
+- (BOOL)hasPreciseScrollingDeltas;
 - (CGFloat)scrollingDeltaX;
 - (CGFloat)scrollingDeltaY;
 - (void)trackSwipeEventWithOptions:(NSEventSwipeTrackingOptions)options

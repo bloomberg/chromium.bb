@@ -149,7 +149,11 @@
 }
 
 - (void)scrollWheel:(NSEvent*)theEvent {
-  [self handleMouseEvent:theEvent];
+  if (!hostedView_)
+    return;
+
+  ui::MouseWheelEvent event(theEvent);
+  hostedView_->GetWidget()->OnMouseEvent(&event);
 }
 
 - (void)deleteBackward:(id)sender {

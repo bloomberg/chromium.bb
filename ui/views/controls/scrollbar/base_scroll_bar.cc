@@ -194,7 +194,7 @@ bool BaseScrollBar::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 bool BaseScrollBar::OnMouseWheel(const ui::MouseWheelEvent& event) {
-  ScrollByContentsOffset(event.y_offset());
+  OnScroll(event.x_offset(), event.y_offset());
   return true;
 }
 

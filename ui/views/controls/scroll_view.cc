@@ -354,12 +354,12 @@ bool ScrollView::OnKeyPressed(const ui::KeyEvent& event) {
 
 bool ScrollView::OnMouseWheel(const ui::MouseWheelEvent& e) {
   bool processed = false;
-  // Give vertical scrollbar priority
+
   if (vert_sb_->visible())
     processed = vert_sb_->OnMouseWheel(e);
 
-  if (!processed && horiz_sb_->visible())
-    processed = horiz_sb_->OnMouseWheel(e);
+  if (horiz_sb_->visible())
+    processed = horiz_sb_->OnMouseWheel(e) || processed;
 
   return processed;
 }

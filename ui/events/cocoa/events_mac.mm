@@ -6,6 +6,8 @@
 
 #include <Cocoa/Cocoa.h>
 
+#import "base/mac/mac_util.h"
+#import "base/mac/sdk_forward_declarations.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -130,14 +132,24 @@ int GetChangedMouseButtonFlagsFromNative(
 }
 
 gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& event) {
-  // Empirically, a value of 0.1 is typical for one mousewheel click. Positive
-  // values when scrolling up or to the left. Scrolling quickly results in a
-  // higher delta per click, up to about 15.0. (Quartz documentation suggests
-  // +/-10).
-  // Multiply by 1000 to vaguely approximate WHEEL_DELTA on Windows (120).
-  const CGFloat kWheelDeltaMultiplier = 1000;
-  return gfx::Vector2d(kWheelDeltaMultiplier * [event deltaX],
-                       kWheelDeltaMultiplier * [event deltaY]);
+  if ([event respondsToSelector:@selector(hasPreciseScrollingDeltas)] &&
+      [event hasPreciseScrollingDeltas]) {
+    // Handle continuous scrolling devices such as a Magic Mouse or a trackpad.
+    // -scrollingDelta{X|Y} have float return types but they return values that
+    // are already rounded to integers.
+    // The values are the same as the values returned from calling
+    // CGEventGetIntegerValueField(kCGScrollWheelEventPointDeltaAxis{1|2}).
+    return gfx::Vector2d([event scrollingDeltaX], [event scrollingDeltaY]);
+  } else {
+    // Empirically, a value of 0.1 is typical for one mousewheel click. Positive
+    // values when scrolling up or to the left. Scrolling quickly results in a
+    // higher delta per click, up to about 15.0. (Quartz documentation suggests
+    // +/-10).
+    // Multiply by 1000 to vaguely approximate WHEEL_DELTA on Windows (120).
+    const CGFloat kWheelDeltaMultiplier = 1000;
+    return gfx::Vector2d(kWheelDeltaMultiplier * [event deltaX],
+                         kWheelDeltaMultiplier * [event deltaY]);
+  }
 }
 
 base::NativeEvent CopyNativeEvent(const base::NativeEvent& event) {
