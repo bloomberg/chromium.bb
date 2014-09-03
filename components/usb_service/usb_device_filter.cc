@@ -6,7 +6,6 @@
 
 #include "base/values.h"
 #include "components/usb_service/usb_device.h"
-#include "components/usb_service/usb_device_handle.h"
 #include "components/usb_service/usb_interface.h"
 
 namespace usb_service {
@@ -57,7 +56,7 @@ void UsbDeviceFilter::SetInterfaceProtocol(uint8 interface_protocol) {
   interface_protocol_ = interface_protocol;
 }
 
-bool UsbDeviceFilter::Matches(scoped_refptr<UsbDevice> device) {
+bool UsbDeviceFilter::Matches(scoped_refptr<UsbDevice> device) const {
   if (vendor_id_set_) {
     if (device->vendor_id() != vendor_id_) {
       return false;
@@ -123,6 +122,19 @@ base::Value* UsbDeviceFilter::ToValue() const {
   }
 
   return obj.release();
+}
+
+// static
+bool UsbDeviceFilter::MatchesAny(scoped_refptr<UsbDevice> device,
+                                 const std::vector<UsbDeviceFilter>& filters) {
+  for (std::vector<UsbDeviceFilter>::const_iterator i = filters.begin();
+       i != filters.end();
+       ++i) {
+    if (i->Matches(device)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace usb_service

@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/usb_service/usb_device.h"
+#include "components/usb_service/usb_device_filter.h"
 #include "components/usb_service/usb_device_handle.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/async_api_function.h"
@@ -31,7 +32,13 @@ class UsbAsyncApiFunction : public AsyncApiFunction {
   virtual bool PrePrepare() OVERRIDE;
   virtual bool Respond() OVERRIDE;
 
-  scoped_refptr<usb_service::UsbDevice> GetDeviceOrOrCompleteWithError(
+  static void CreateDeviceFilter(
+      const extensions::core_api::usb::DeviceFilter& input,
+      usb_service::UsbDeviceFilter* output);
+
+  bool HasDevicePermission(scoped_refptr<usb_service::UsbDevice> device);
+
+  scoped_refptr<usb_service::UsbDevice> GetDeviceOrCompleteWithError(
       const extensions::core_api::usb::Device& input_device);
 
   scoped_refptr<usb_service::UsbDeviceHandle>

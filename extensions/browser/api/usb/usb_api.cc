@@ -52,6 +52,7 @@ using usb::TransferType;
 using usb::UsageType;
 using usb_service::UsbConfigDescriptor;
 using usb_service::UsbDevice;
+using usb_service::UsbDeviceFilter;
 using usb_service::UsbDeviceHandle;
 using usb_service::UsbEndpointDescriptor;
 using usb_service::UsbEndpointDirection;
@@ -417,35 +418,51 @@ bool UsbAsyncApiFunction::Respond() {
   return error_.empty();
 }
 
-scoped_refptr<UsbDevice> UsbAsyncApiFunction::GetDeviceOrOrCompleteWithError(
-    const Device& input_device) {
-  const uint16_t vendor_id = input_device.vendor_id;
-  const uint16_t product_id = input_device.product_id;
-  UsbDevicePermission::CheckParam param(
-      vendor_id, product_id, UsbDevicePermissionData::UNSPECIFIED_INTERFACE);
-  if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
-          APIPermission::kUsbDevice, &param)) {
-    LOG(WARNING) << "Insufficient permissions to access device.";
-    CompleteWithError(kErrorPermissionDenied);
-    return NULL;
+// static
+void UsbAsyncApiFunction::CreateDeviceFilter(const usb::DeviceFilter& input,
+                                             UsbDeviceFilter* output) {
+  if (input.vendor_id) {
+    output->SetVendorId(*input.vendor_id);
   }
+  if (input.product_id) {
+    output->SetProductId(*input.product_id);
+  }
+  if (input.interface_class) {
+    output->SetInterfaceClass(*input.interface_class);
+  }
+  if (input.interface_subclass) {
+    output->SetInterfaceSubclass(*input.interface_subclass);
+  }
+  if (input.interface_protocol) {
+    output->SetInterfaceProtocol(*input.interface_protocol);
+  }
+}
 
+bool UsbAsyncApiFunction::HasDevicePermission(
+    scoped_refptr<usb_service::UsbDevice> device) {
+  UsbDevicePermission::CheckParam param(
+      device->vendor_id(),
+      device->product_id(),
+      UsbDevicePermissionData::UNSPECIFIED_INTERFACE);
+  return extension()->permissions_data()->CheckAPIPermissionWithParam(
+      APIPermission::kUsbDevice, &param);
+}
+
+scoped_refptr<UsbDevice> UsbAsyncApiFunction::GetDeviceOrCompleteWithError(
+    const Device& input_device) {
   UsbService* service = device::DeviceClient::Get()->GetUsbService();
   if (!service) {
     CompleteWithError(kErrorInitService);
     return NULL;
   }
-  scoped_refptr<UsbDevice> device;
 
-  device = service->GetDeviceById(input_device.device);
-
+  scoped_refptr<UsbDevice> device = service->GetDeviceById(input_device.device);
   if (!device.get()) {
     CompleteWithError(kErrorNoDevice);
     return NULL;
   }
 
-  if (device->vendor_id() != input_device.vendor_id ||
-      device->product_id() != input_device.product_id) {
+  if (!HasDevicePermission(device)) {
     // Must act as if there is no such a device.
     // Otherwise can be used to finger print unauthorized devices.
     CompleteWithError(kErrorNoDevice);
@@ -624,17 +641,20 @@ bool UsbGetDevicesFunction::Prepare() {
 }
 
 void UsbGetDevicesFunction::AsyncWorkStart() {
-  scoped_ptr<base::ListValue> result(new base::ListValue());
-
-  const uint16_t vendor_id = parameters_->options.vendor_id;
-  const uint16_t product_id = parameters_->options.product_id;
-  UsbDevicePermission::CheckParam param(
-      vendor_id, product_id, UsbDevicePermissionData::UNSPECIFIED_INTERFACE);
-  if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
-          APIPermission::kUsbDevice, &param)) {
-    LOG(WARNING) << "Insufficient permissions to access device.";
-    CompleteWithError(kErrorPermissionDenied);
-    return;
+  std::vector<UsbDeviceFilter> filters;
+  if (parameters_->options.filters) {
+    filters.resize(parameters_->options.filters->size());
+    for (size_t i = 0; i < parameters_->options.filters->size(); ++i) {
+      CreateDeviceFilter(*parameters_->options.filters->at(i).get(),
+                         &filters[i]);
+    }
+  }
+  if (parameters_->options.vendor_id) {
+    filters.resize(filters.size() + 1);
+    filters.back().SetVendorId(*parameters_->options.vendor_id);
+    if (parameters_->options.product_id) {
+      filters.back().SetProductId(*parameters_->options.product_id);
+    }
   }
 
   UsbService* service = device::DeviceClient::Get()->GetUsbService();
@@ -646,16 +666,13 @@ void UsbGetDevicesFunction::AsyncWorkStart() {
   DeviceVector devices;
   service->GetDevices(&devices);
 
-  for (DeviceVector::iterator it = devices.begin(); it != devices.end();) {
-    if ((*it)->vendor_id() != vendor_id || (*it)->product_id() != product_id) {
-      it = devices.erase(it);
-    } else {
-      ++it;
+  scoped_ptr<base::ListValue> result(new base::ListValue());
+  for (DeviceVector::iterator it = devices.begin(); it != devices.end(); ++it) {
+    scoped_refptr<UsbDevice> device = *it;
+    if ((filters.empty() || UsbDeviceFilter::MatchesAny(device, filters)) &&
+        HasDevicePermission(device)) {
+      result->Append(PopulateDevice(it->get()));
     }
-  }
-
-  for (size_t i = 0; i < devices.size(); ++i) {
-    result->Append(PopulateDevice(devices[i].get()));
   }
 
   SetResult(result.release());
@@ -677,7 +694,7 @@ bool UsbRequestAccessFunction::Prepare() {
 void UsbRequestAccessFunction::AsyncWorkStart() {
 #if defined(OS_CHROMEOS)
   scoped_refptr<UsbDevice> device =
-      GetDeviceOrOrCompleteWithError(parameters_->device);
+      GetDeviceOrCompleteWithError(parameters_->device);
   if (!device)
     return;
 
@@ -709,7 +726,7 @@ bool UsbOpenDeviceFunction::Prepare() {
 
 void UsbOpenDeviceFunction::AsyncWorkStart() {
   scoped_refptr<UsbDevice> device =
-      GetDeviceOrOrCompleteWithError(parameters_->device);
+      GetDeviceOrCompleteWithError(parameters_->device);
   if (!device.get())
     return;
 

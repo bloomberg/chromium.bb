@@ -16,6 +16,7 @@
 #include "device/usb/usb_ids.h"
 #include "extensions/common/api/usb_private.h"
 
+namespace usb = extensions::core_api::usb;
 namespace usb_private = extensions::core_api::usb_private;
 namespace GetDevices = usb_private::GetDevices;
 namespace GetDeviceInfo = usb_private::GetDeviceInfo;
@@ -25,6 +26,8 @@ using usb_service::UsbDevice;
 using usb_service::UsbDeviceFilter;
 using usb_service::UsbDeviceHandle;
 using usb_service::UsbService;
+
+typedef std::vector<scoped_refptr<UsbDevice> > DeviceVector;
 
 namespace {
 
@@ -58,46 +61,16 @@ void UsbPrivateGetDevicesFunction::AsyncWorkStart() {
   std::vector<UsbDeviceFilter> filters;
   filters.resize(parameters_->filters.size());
   for (size_t i = 0; i < parameters_->filters.size(); ++i) {
-    UsbDeviceFilter& filter = filters[i];
-    const usb_private::DeviceFilter* filter_param =
-        parameters_->filters[i].get();
-
-    if (filter_param->vendor_id) {
-      filter.SetVendorId(*filter_param->vendor_id);
-    }
-    if (filter_param->product_id) {
-      filter.SetProductId(*filter_param->product_id);
-    }
-    if (filter_param->interface_class) {
-      filter.SetInterfaceClass(*filter_param->interface_class);
-    }
-    if (filter_param->interface_subclass) {
-      filter.SetInterfaceSubclass(*filter_param->interface_subclass);
-    }
-    if (filter_param->interface_protocol) {
-      filter.SetInterfaceProtocol(*filter_param->interface_protocol);
-    }
+    CreateDeviceFilter(*parameters_->filters[i].get(), &filters[i]);
   }
 
-  std::vector<scoped_refptr<UsbDevice> > devices;
+  DeviceVector devices;
   service->GetDevices(&devices);
 
   scoped_ptr<base::ListValue> result(new base::ListValue());
-  for (size_t i = 0; i < devices.size(); ++i) {
-    scoped_refptr<UsbDevice> device = devices[i];
-    bool matched = false;
-
-    if (filters.empty()) {
-      matched = true;
-    } else {
-      for (size_t j = 0; !matched && j < filters.size(); ++j) {
-        if (filters[j].Matches(device)) {
-          matched = true;
-        }
-      }
-    }
-
-    if (matched) {
+  for (DeviceVector::iterator it = devices.begin(); it != devices.end(); ++it) {
+    scoped_refptr<UsbDevice> device = *it;
+    if (filters.empty() || UsbDeviceFilter::MatchesAny(device, filters)) {
       result->Append(new base::FundamentalValue((int)device->unique_id()));
     }
   }

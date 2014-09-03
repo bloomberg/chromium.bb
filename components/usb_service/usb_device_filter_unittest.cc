@@ -237,3 +237,20 @@ TEST_F(UsbFilterTest, MatchInterfaceProtocolNegative) {
   filter.SetInterfaceProtocol(0x02);
   ASSERT_FALSE(filter.Matches(android_phone_));
 }
+
+TEST_F(UsbFilterTest, MatchAnyEmptyListNegative) {
+  std::vector<UsbDeviceFilter> filters;
+  ASSERT_FALSE(UsbDeviceFilter::MatchesAny(android_phone_, filters));
+}
+
+TEST_F(UsbFilterTest, MatchesAnyVendorId) {
+  std::vector<UsbDeviceFilter> filters(1);
+  filters.back().SetVendorId(0x18d1);
+  ASSERT_TRUE(UsbDeviceFilter::MatchesAny(android_phone_, filters));
+}
+
+TEST_F(UsbFilterTest, MatchesAnyVendorIdNegative) {
+  std::vector<UsbDeviceFilter> filters(1);
+  filters.back().SetVendorId(0x1d6b);
+  ASSERT_FALSE(UsbDeviceFilter::MatchesAny(android_phone_, filters));
+}

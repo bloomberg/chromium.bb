@@ -7,22 +7,6 @@
 // API which should only be available to trusted pages.
 namespace usbPrivate {
 
-  // Properties for matching devices. A device matches of any of its interfaces
-  // match the given properties. An empty dictionary matches any device.
-  dictionary DeviceFilter {
-    // Device-level matching criteria:
-    long? vendorId;
-    // Checked only if the vendorId matches.
-    long? productId;
-
-    // Per-interface matching criteria:
-    long? interfaceClass;
-    // Checked only if the interfaceClass matches.
-    long? interfaceSubclass;
-    // Checked only if the interfaceSubclass matches.
-    long? interfaceProtocol;
-  };
-
   dictionary DeviceInfo {
     long vendorId;  // idVendor from the device
     long productId;  // idProduct from the device
@@ -44,7 +28,7 @@ namespace usbPrivate {
     // Lists USB devices matching any of the given filters.
     // |filters|: The properties to search for on target devices.
     // |callback|: Invoked with a list of device IDs on complete.
-    static void getDevices(DeviceFilter[] filters,
+    static void getDevices(usb.DeviceFilter[] filters,
                            GetDevicesCallback callback);
 
     // Gets basic display information about a device.

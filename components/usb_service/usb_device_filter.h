@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_USB_SERVICE_USB_DEVICE_FILTER_H_
 #define COMPONENTS_USB_SERVICE_USB_DEVICE_FILTER_H_
 
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "components/usb_service/usb_service_export.h"
 
@@ -27,8 +29,11 @@ class USB_SERVICE_EXPORT UsbDeviceFilter {
   void SetInterfaceSubclass(uint8 interface_subclass);
   void SetInterfaceProtocol(uint8 interface_protocol);
 
-  bool Matches(scoped_refptr<UsbDevice> device);
+  bool Matches(scoped_refptr<UsbDevice> device) const;
   base::Value* ToValue() const;
+
+  static bool MatchesAny(scoped_refptr<UsbDevice> device,
+                         const std::vector<UsbDeviceFilter>& filters);
 
  private:
   uint16 vendor_id_;
