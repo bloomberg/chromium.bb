@@ -127,8 +127,8 @@ public class ContentVideoViewLegacy extends ContentVideoView {
                     } else {
                         toggleMediaControlsVisiblity();
                     }
-                } else if (keyCode == KeyEvent.KEYCODE_BACK &&
-                        event.getAction() == KeyEvent.ACTION_UP) {
+                } else if ((keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_ESCAPE)
+                        && event.getAction() == KeyEvent.ACTION_UP) {
                     exitFullscreen(false);
                     return true;
                 } else if (keyCode == KeyEvent.KEYCODE_MENU || keyCode == KeyEvent.KEYCODE_SEARCH) {
