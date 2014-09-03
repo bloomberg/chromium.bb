@@ -1,27 +1,8 @@
 {
     "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
-        "tough_energy_cases_001.wpr": [
-            "http://codepen.io/testificate364/debug/paJhg", 
-            "http://codepen.io/testificate364/debug/iwAfJ", 
-            "https://mail.google.com/mail/", 
-            "http://codepen.io/testificate364/debug/cFEaD", 
-            "http://codepen.io/testificate364/debug/DLbxg", 
-            "http://codepen.io/testificate364/debug/zcDdv", 
-            "http://codepen.io/testificate364/debug/HdIgr", 
-            "http://codepen.io/testificate364/debug/zhgBD", 
-            "http://codepen.io/testificate364/debug/EFceH", 
-            "http://codepen.io/testificate364/debug/pgBHu", 
-            "http://codepen.io/testificate364/debug/nrbDc", 
-            "http://codepen.io/testificate364/debug/lJAiH", 
-            "http://codepen.io/testificate364/debug/kFvpd", 
-            "http://codepen.io/testificate364/debug/lEhyw", 
-            "http://codepen.io/testificate364/debug/jetyn", 
-            "http://codepen.io/testificate364/debug/ckItK", 
-            "http://codepen.io/testificate364/debug/yaosK", 
-            "http://codepen.io/testificate364/debug/fhKCg", 
-            "http://codepen.io/testificate364/debug/Kvdxs", 
-            "http://codepen.io/testificate364/debug/eIutG"
+        "tough_energy_cases_000.wpr": [
+            "https://mail.google.com/mail/"
         ]
     }
 }
