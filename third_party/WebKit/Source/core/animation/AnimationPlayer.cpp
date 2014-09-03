@@ -228,6 +228,7 @@ void AnimationPlayer::notifyCompositorStartTime(double timelineTime)
         ASSERT(m_compositorState->pendingAction == Start);
         ASSERT(std::isnan(m_compositorState->startTime));
 
+        double initialCompositorHoldTime = m_compositorState->holdTime;
         m_compositorState->pendingAction = None;
         m_compositorState->startTime = timelineTime;
 
@@ -245,7 +246,7 @@ void AnimationPlayer::notifyCompositorStartTime(double timelineTime)
             return;
         }
 
-        if (!std::isnan(m_startTime) || currentTimeInternal() != m_compositorState->holdTime) {
+        if (!std::isnan(m_startTime) || currentTimeInternal() != initialCompositorHoldTime) {
             // A new start time or current time was set while starting.
             setCompositorPending();
             return;
