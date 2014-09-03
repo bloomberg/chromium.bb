@@ -82,6 +82,9 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
 
 void FetchManager::Loader::didFinishLoading(unsigned long, double)
 {
+    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        return;
+
     OwnPtr<BlobData> blobData = BlobData::create();
     String filePath = m_response.downloadedFilePath();
     if (!filePath.isEmpty() && m_downloadedBlobLength) {
@@ -310,6 +313,8 @@ void FetchManager::Loader::performHTTPFetch()
 void FetchManager::Loader::failed()
 {
     if (m_failed)
+        return;
+    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
         return;
     m_failed = true;
     ScriptState* state = m_resolver->scriptState();
