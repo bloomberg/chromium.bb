@@ -584,6 +584,7 @@ willPositionSheet:(NSWindow*)sheet
   // or view manipulation Cocoa calls.  Stack added to suppressions_mac.txt.
   [contentView setAutoresizesSubviews:YES];
   [destWindow setContentView:contentView];
+  [self moveContentViewToBack:contentView];
 
   // Move the incognito badge if present.
   if ([self shouldShowAvatar]) {
@@ -597,7 +598,7 @@ willPositionSheet:(NSWindow*)sheet
   // Add the tab strip after setting the content view and moving the incognito
   // badge (if any), so that the tab strip will be on top (in the z-order).
   if ([self hasTabStrip])
-    [[destWindow cr_windowView] addSubview:tabStripView];
+    [self insertTabStripView:tabStripView intoWindow:[self window]];
 
   [sourceWindow setWindowController:nil];
   [self setWindow:destWindow];

@@ -141,6 +141,20 @@
 // during a drag.
 - (void)deferPerformClose;
 
+// There are 2 view hierarchy constraints that must be enforced:
+//  - The tab strip must be above the content view.
+//  - The tab strip must be below the traffic lights.
+// AppKit does not enforce these constraints, because it assumes that Chrome
+// does not mess with the NSThemeFrame. Chrome must manually enforce these
+// constraints.
+//
+// Immediately after creation of the window, or after the window's content view
+// is changed, the content view must be moved to the back.
+- (void)moveContentViewToBack:(NSView*)contentView;
+
+// The tab strip should always be inserted directly above the content view.
+- (void)insertTabStripView:(NSView*)tabStripView intoWindow:(NSWindow*)window;
+
 @end
 
 @interface TabWindowController(ProtectedMethods)

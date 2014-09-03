@@ -31,6 +31,7 @@
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
@@ -212,6 +213,19 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
     info_bar_top = [[info_bar_container_controller view]
         convertPoint:info_bar_top toView:nil];
     return icon_bottom.y - info_bar_top.y;
+  }
+  // The traffic lights should always be in front of the content view and the
+  // tab strip view. Since the traffic lights change across OSX versions, this
+  // test verifies that the contentView is in the back, and if the tab strip
+  // view is a sibling, it is directly in front of the content view.
+  void VerifyTrafficLightZOrder() const {
+    NSView* contentView = [[controller() window] contentView];
+    NSView* rootView = [contentView superview];
+    EXPECT_EQ(contentView, [[rootView subviews] objectAtIndex:0]);
+
+    NSView* tabStripView = [controller() tabStripView];
+    if ([[rootView subviews] containsObject:tabStripView])
+      EXPECT_EQ(tabStripView, [[rootView subviews] objectAtIndex:1]);
   }
 
  private:
@@ -461,4 +475,19 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   EXPECT_FALSE([controller() isBookmarkBarVisible]);
   EXPECT_EQ(std::min(GetExpectedTopInfoBarTipHeight(), max_tip_height),
             [[controller() infoBarContainerController] overlappingTipHeight]);
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, TrafficLightZOrder) {
+  // Verify z order immediately after creation.
+  VerifyTrafficLightZOrder();
+
+  // Toggle overlay, then verify z order.
+  [controller() showOverlay];
+  [controller() removeOverlay];
+  VerifyTrafficLightZOrder();
+
+  // Toggle immersive fullscreen, then verify z order.
+  [controller() enterImmersiveFullscreen];
+  [controller() exitImmersiveFullscreen];
+  VerifyTrafficLightZOrder();
 }
