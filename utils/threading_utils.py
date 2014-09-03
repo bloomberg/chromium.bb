@@ -15,6 +15,12 @@ import time
 import traceback
 
 
+# Priorities for tasks in AutoRetryThreadPool, particular values are important.
+PRIORITY_HIGH = 1 << 8
+PRIORITY_MED = 2 << 8
+PRIORITY_LOW = 3 << 8
+
+
 class LockWithAssert(object):
   """Wrapper around (non recursive) Lock that tracks its owner."""
 
@@ -319,8 +325,8 @@ class ThreadPool(object):
 
 class AutoRetryThreadPool(ThreadPool):
   """Automatically retries enqueued operations on exception."""
+  # See also PRIORITY_* module-level constants.
   INTERNAL_PRIORITY_BITS = (1<<8) - 1
-  HIGH, MED, LOW = (1<<8, 2<<8, 3<<8)
 
   def __init__(self, exceptions, retries, *args, **kwargs):
     """
@@ -394,6 +400,27 @@ class AutoRetryThreadPool(ThreadPool):
       if channel is None:
         raise
       channel.send_exception()
+
+
+class IOAutoRetryThreadPool(AutoRetryThreadPool):
+  """Thread pool that automatically retries on IOError.
+
+  Supposed to be used for IO bound tasks, and thus default maximum number of
+  worker threads is independent of number of CPU cores.
+  """
+  # Initial and maximum number of worker threads.
+  INITIAL_WORKERS = 2
+  MAX_WORKERS = 16
+  RETRIES = 5
+
+  def __init__(self):
+    super(IOAutoRetryThreadPool, self).__init__(
+        [IOError],
+        self.RETRIES,
+        self.INITIAL_WORKERS,
+        self.MAX_WORKERS,
+        0,
+        'io')
 
 
 class Progress(object):

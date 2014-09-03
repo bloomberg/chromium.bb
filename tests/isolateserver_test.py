@@ -241,7 +241,7 @@ class StorageTest(TestCase):
         with self.assertRaises(IOError):
           channel.pull()
         # First initial attempt + all retries.
-        attempts = 1 + isolated_format.WorkerPool.RETRIES
+        attempts = 1 + storage.net_thread_pool.RETRIES
         # Single push attempt call arguments.
         expected_push = (
             item, 'push_state', item.zipped if use_zip else item.data)

@@ -25,17 +25,6 @@ ISOLATED_FILE_VERSION = '1.4'
 DISK_FILE_CHUNK = 1024 * 1024
 
 
-# The file size to be used when we don't know the correct file size,
-# generally used for .isolated files.
-UNKNOWN_FILE_SIZE = None
-
-
-# Maximum expected delay (in seconds) between successive file fetches
-# in run_tha_test. If it takes longer than that, a deadlock might be happening
-# and all stack frames for all threads are dumped to log.
-DEADLOCK_TIMEOUT = 5 * 60
-
-
 # Sadly, hashlib uses 'sha1' instead of the standard 'sha-1' so explicitly
 # specify the names here.
 SUPPORTED_ALGOS = {
@@ -89,78 +78,6 @@ def hash_file(filepath, algo):
         break
       digest.update(chunk)
   return digest.hexdigest()
-
-
-class WorkerPool(threading_utils.AutoRetryThreadPool):
-  """Thread pool that automatically retries on IOError and runs a preconfigured
-  function.
-  """
-  # Initial and maximum number of worker threads.
-  INITIAL_WORKERS = 2
-  MAX_WORKERS = 16
-  RETRIES = 5
-
-  def __init__(self):
-    super(WorkerPool, self).__init__(
-        [IOError],
-        self.RETRIES,
-        self.INITIAL_WORKERS,
-        self.MAX_WORKERS,
-        0,
-        'remote')
-
-
-class LocalCache(object):
-  """Local cache that stores objects fetched via Storage.
-
-  It can be accessed concurrently from multiple threads, so it should protect
-  its internal state with some lock.
-  """
-  cache_dir = None
-
-  def __enter__(self):
-    """Context manager interface."""
-    return self
-
-  def __exit__(self, _exc_type, _exec_value, _traceback):
-    """Context manager interface."""
-    return False
-
-  def cached_set(self):
-    """Returns a set of all cached digests (always a new object)."""
-    raise NotImplementedError()
-
-  def touch(self, digest, size):
-    """Ensures item is not corrupted and updates its LRU position.
-
-    Arguments:
-      digest: hash digest of item to check.
-      size: expected size of this item.
-
-    Returns:
-      True if item is in cache and not corrupted.
-    """
-    raise NotImplementedError()
-
-  def evict(self, digest):
-    """Removes item from cache if it's there."""
-    raise NotImplementedError()
-
-  def read(self, digest):
-    """Returns contents of the cached item as a single str."""
-    raise NotImplementedError()
-
-  def write(self, digest, content):
-    """Reads data from |content| generator and stores it in cache."""
-    raise NotImplementedError()
-
-  def hardlink(self, digest, dest, file_mode):
-    """Ensures file at |dest| has same content as cached |digest|.
-
-    If file_mode is provided, it is used to set the executable bit if
-    applicable.
-    """
-    raise NotImplementedError()
 
 
 class IsolatedFile(object):
@@ -218,104 +135,9 @@ class IsolatedFile(object):
         if 'h' in properties:
           # Preemptively request files.
           logging.debug('fetching %s' % filepath)
-          fetch_queue.add(properties['h'], properties['s'], WorkerPool.MED)
+          fetch_queue.add(
+              properties['h'], properties['s'], threading_utils.PRIORITY_MED)
     self.files_fetched = True
-
-
-class Settings(object):
-  """Results of a completely parsed .isolated file."""
-  def __init__(self):
-    self.command = []
-    self.files = {}
-    self.read_only = None
-    self.relative_cwd = None
-    # The main .isolated file, a IsolatedFile instance.
-    self.root = None
-
-  def load(self, fetch_queue, root_isolated_hash, algo):
-    """Loads the .isolated and all the included .isolated asynchronously.
-
-    It enables support for "included" .isolated files. They are processed in
-    strict order but fetched asynchronously from the cache. This is important so
-    that a file in an included .isolated file that is overridden by an embedding
-    .isolated file is not fetched needlessly. The includes are fetched in one
-    pass and the files are fetched as soon as all the ones on the left-side
-    of the tree were fetched.
-
-    The prioritization is very important here for nested .isolated files.
-    'includes' have the highest priority and the algorithm is optimized for both
-    deep and wide trees. A deep one is a long link of .isolated files referenced
-    one at a time by one item in 'includes'. A wide one has a large number of
-    'includes' in a single .isolated file. 'left' is defined as an included
-    .isolated file earlier in the 'includes' list. So the order of the elements
-    in 'includes' is important.
-    """
-    self.root = IsolatedFile(root_isolated_hash, algo)
-
-    # Isolated files being retrieved now: hash -> IsolatedFile instance.
-    pending = {}
-    # Set of hashes of already retrieved items to refuse recursive includes.
-    seen = set()
-
-    def retrieve(isolated_file):
-      h = isolated_file.obj_hash
-      if h in seen:
-        raise IsolatedError('IsolatedFile %s is retrieved recursively' % h)
-      assert h not in pending
-      seen.add(h)
-      pending[h] = isolated_file
-      fetch_queue.add(h, priority=WorkerPool.HIGH)
-
-    retrieve(self.root)
-
-    while pending:
-      item_hash = fetch_queue.wait(pending)
-      item = pending.pop(item_hash)
-      item.load(fetch_queue.cache.read(item_hash))
-      if item_hash == root_isolated_hash:
-        # It's the root item.
-        item.can_fetch = True
-
-      for new_child in item.children:
-        retrieve(new_child)
-
-      # Traverse the whole tree to see if files can now be fetched.
-      self._traverse_tree(fetch_queue, self.root)
-
-    def check(n):
-      return all(check(x) for x in n.children) and n.files_fetched
-    assert check(self.root)
-
-    self.relative_cwd = self.relative_cwd or ''
-
-  def _traverse_tree(self, fetch_queue, node):
-    if node.can_fetch:
-      if not node.files_fetched:
-        self._update_self(fetch_queue, node)
-      will_break = False
-      for i in node.children:
-        if not i.can_fetch:
-          if will_break:
-            break
-          # Automatically mark the first one as fetcheable.
-          i.can_fetch = True
-          will_break = True
-        self._traverse_tree(fetch_queue, i)
-
-  def _update_self(self, fetch_queue, node):
-    node.fetch_files(fetch_queue, self.files)
-    # Grabs properties.
-    if not self.command and node.data.get('command'):
-      # Ensure paths are correctly separated on windows.
-      self.command = node.data['command']
-      if self.command:
-        self.command[0] = self.command[0].replace('/', os.path.sep)
-        self.command = tools.fix_python_path(self.command)
-    if self.read_only is None and node.data.get('read_only') is not None:
-      self.read_only = node.data['read_only']
-    if (self.relative_cwd is None and
-        node.data.get('relative_cwd') is not None):
-      self.relative_cwd = node.data['relative_cwd']
 
 
 def expand_symlinks(indir, relfile):

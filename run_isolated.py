@@ -499,7 +499,7 @@ class DiskCache(isolateserver.LocalCache):
   def evict(self, digest):
     with self._lock:
       self._lru.pop(digest)
-      self._delete_file(digest, isolated_format.UNKNOWN_FILE_SIZE)
+      self._delete_file(digest, isolateserver.UNKNOWN_FILE_SIZE)
 
   def read(self, digest):
     with open(self._path(digest), 'rb') as f:
@@ -654,10 +654,10 @@ class DiskCache(isolateserver.LocalCache):
     self._delete_file(digest, size)
     return size
 
-  def _add(self, digest, size=isolated_format.UNKNOWN_FILE_SIZE):
+  def _add(self, digest, size=isolateserver.UNKNOWN_FILE_SIZE):
     """Adds an item into LRU cache marking it as a newest one."""
     self._lock.assert_locked()
-    if size == isolated_format.UNKNOWN_FILE_SIZE:
+    if size == isolateserver.UNKNOWN_FILE_SIZE:
       size = os.stat(self._path(digest)).st_size
     self._added.append(size)
     self._lru.add(digest, size)
@@ -672,11 +672,11 @@ class DiskCache(isolateserver.LocalCache):
       pairs.append((digest, size))
     self._lru.batch_insert_oldest(pairs)
 
-  def _delete_file(self, digest, size=isolated_format.UNKNOWN_FILE_SIZE):
+  def _delete_file(self, digest, size=isolateserver.UNKNOWN_FILE_SIZE):
     """Deletes cache file from the file system."""
     self._lock.assert_locked()
     try:
-      if size == isolated_format.UNKNOWN_FILE_SIZE:
+      if size == isolateserver.UNKNOWN_FILE_SIZE:
         size = os.stat(self._path(digest)).st_size
       try_remove(self._path(digest))
       self._removed.append(size)

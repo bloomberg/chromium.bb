@@ -38,6 +38,17 @@ import isolated_format
 ISOLATE_PROTOCOL_VERSION = '1.0'
 
 
+# The file size to be used when we don't know the correct file size,
+# generally used for .isolated files.
+UNKNOWN_FILE_SIZE = None
+
+
+# Maximum expected delay (in seconds) between successive file fetches or uploads
+# in Storage. If it takes longer than that, a deadlock might be happening
+# and all stack frames for all threads are dumped to log.
+DEADLOCK_TIMEOUT = 5 * 60
+
+
 # The number of files to check the isolate server per /pre-upload query.
 # All files are sorted by likelihood of a change in the file content
 # (currently file size is used to estimate this: larger the file -> larger the
@@ -220,7 +231,7 @@ def is_valid_file(filepath, size):
 
   Currently it just checks the file's size.
   """
-  if size == isolated_format.UNKNOWN_FILE_SIZE:
+  if size == UNKNOWN_FILE_SIZE:
     return os.path.isfile(filepath)
   actual_size = os.stat(filepath).st_size
   if size != actual_size:
@@ -359,7 +370,7 @@ class Storage(object):
   def net_thread_pool(self):
     """AutoRetryThreadPool for IO-bound tasks, retries IOError."""
     if self._net_thread_pool is None:
-      self._net_thread_pool = isolated_format.WorkerPool()
+      self._net_thread_pool = threading_utils.IOAutoRetryThreadPool()
     return self._net_thread_pool
 
   def close(self):
@@ -424,8 +435,7 @@ class Storage(object):
 
     # No need to spawn deadlock detector thread if there's nothing to upload.
     if missing:
-      with threading_utils.DeadlockDetector(
-          isolated_format.DEADLOCK_TIMEOUT) as detector:
+      with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT) as detector:
         # Wait for all started uploads to finish.
         while len(uploaded) != len(missing):
           detector.ping()
@@ -493,8 +503,8 @@ class Storage(object):
     """
     # Thread pool task priority.
     priority = (
-        isolated_format.WorkerPool.HIGH if item.high_priority
-        else isolated_format.WorkerPool.MED)
+        threading_utils.PRIORITY_HIGH if item.high_priority
+        else threading_utils.PRIORITY_MED)
 
     def push(content):
       """Pushes an Item and returns it to |channel|."""
@@ -537,7 +547,7 @@ class Storage(object):
       Pushed item (same object as |item|).
     """
     channel = threading_utils.TaskChannel()
-    with threading_utils.DeadlockDetector(isolated_format.DEADLOCK_TIMEOUT):
+    with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT):
       self.async_push(channel, item, push_state)
       pushed = channel.pull()
       assert pushed is item
@@ -598,7 +608,7 @@ class Storage(object):
     # Enqueue all requests.
     for batch in batch_items_for_check(items):
       self.net_thread_pool.add_task_with_channel(
-          channel, isolated_format.WorkerPool.HIGH,
+          channel, threading_utils.PRIORITY_HIGH,
           self._storage_api.contains, batch)
       pending += 1
 
@@ -653,8 +663,10 @@ class FetchQueue(object):
     self._fetched = cache.cached_set()
 
   def add(
-      self, digest, size=isolated_format.UNKNOWN_FILE_SIZE,
-      priority=isolated_format.WorkerPool.MED):
+      self,
+      digest,
+      size=UNKNOWN_FILE_SIZE,
+      priority=threading_utils.PRIORITY_MED):
     """Starts asynchronous fetch of item |digest|."""
     # Fetching it now?
     if digest in self._pending:
@@ -773,7 +785,7 @@ class FetchStreamVerifier(object):
     """Called for each fetched chunk before passing it to consumer."""
     self.current_size += len(chunk)
     if (is_last and
-        (self.expected_size != isolated_format.UNKNOWN_FILE_SIZE) and
+        (self.expected_size != UNKNOWN_FILE_SIZE) and
         (self.expected_size != self.current_size)):
       raise IOError('Incorrect file size: expected %d, got %d' % (
           self.expected_size, self.current_size))
@@ -1266,6 +1278,103 @@ class MemoryCache(LocalCache):
       os.chmod(dest, file_mode & self._file_mode_mask)
 
 
+class Settings(object):
+  """Results of a completely parsed .isolated file."""
+  def __init__(self):
+    self.command = []
+    self.files = {}
+    self.read_only = None
+    self.relative_cwd = None
+    # The main .isolated file, a IsolatedFile instance.
+    self.root = None
+
+  def load(self, fetch_queue, root_isolated_hash, algo):
+    """Loads the .isolated and all the included .isolated asynchronously.
+
+    It enables support for "included" .isolated files. They are processed in
+    strict order but fetched asynchronously from the cache. This is important so
+    that a file in an included .isolated file that is overridden by an embedding
+    .isolated file is not fetched needlessly. The includes are fetched in one
+    pass and the files are fetched as soon as all the ones on the left-side
+    of the tree were fetched.
+
+    The prioritization is very important here for nested .isolated files.
+    'includes' have the highest priority and the algorithm is optimized for both
+    deep and wide trees. A deep one is a long link of .isolated files referenced
+    one at a time by one item in 'includes'. A wide one has a large number of
+    'includes' in a single .isolated file. 'left' is defined as an included
+    .isolated file earlier in the 'includes' list. So the order of the elements
+    in 'includes' is important.
+    """
+    self.root = isolated_format.IsolatedFile(root_isolated_hash, algo)
+
+    # Isolated files being retrieved now: hash -> IsolatedFile instance.
+    pending = {}
+    # Set of hashes of already retrieved items to refuse recursive includes.
+    seen = set()
+
+    def retrieve(isolated_file):
+      h = isolated_file.obj_hash
+      if h in seen:
+        raise isolated_format.IsolatedError(
+            'IsolatedFile %s is retrieved recursively' % h)
+      assert h not in pending
+      seen.add(h)
+      pending[h] = isolated_file
+      fetch_queue.add(h, priority=threading_utils.PRIORITY_HIGH)
+
+    retrieve(self.root)
+
+    while pending:
+      item_hash = fetch_queue.wait(pending)
+      item = pending.pop(item_hash)
+      item.load(fetch_queue.cache.read(item_hash))
+      if item_hash == root_isolated_hash:
+        # It's the root item.
+        item.can_fetch = True
+
+      for new_child in item.children:
+        retrieve(new_child)
+
+      # Traverse the whole tree to see if files can now be fetched.
+      self._traverse_tree(fetch_queue, self.root)
+
+    def check(n):
+      return all(check(x) for x in n.children) and n.files_fetched
+    assert check(self.root)
+
+    self.relative_cwd = self.relative_cwd or ''
+
+  def _traverse_tree(self, fetch_queue, node):
+    if node.can_fetch:
+      if not node.files_fetched:
+        self._update_self(fetch_queue, node)
+      will_break = False
+      for i in node.children:
+        if not i.can_fetch:
+          if will_break:
+            break
+          # Automatically mark the first one as fetcheable.
+          i.can_fetch = True
+          will_break = True
+        self._traverse_tree(fetch_queue, i)
+
+  def _update_self(self, fetch_queue, node):
+    node.fetch_files(fetch_queue, self.files)
+    # Grabs properties.
+    if not self.command and node.data.get('command'):
+      # Ensure paths are correctly separated on windows.
+      self.command = node.data['command']
+      if self.command:
+        self.command[0] = self.command[0].replace('/', os.path.sep)
+        self.command = tools.fix_python_path(self.command)
+    if self.read_only is None and node.data.get('read_only') is not None:
+      self.read_only = node.data['read_only']
+    if (self.relative_cwd is None and
+        node.data.get('relative_cwd') is not None):
+      self.relative_cwd = node.data['relative_cwd']
+
+
 def get_storage_api(file_or_url, namespace):
   """Returns an object that implements low-level StorageApi interface.
 
@@ -1334,6 +1443,8 @@ def upload_tree(base_url, indir, infiles, namespace):
   with get_storage(base_url, namespace) as storage:
     storage.upload_items(items)
   return 0
+
+
 def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
   """Aggressively downloads the .isolated file(s), then download all the files.
 
@@ -1354,7 +1465,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
   algo = storage.hash_algo
   with cache:
     fetch_queue = FetchQueue(storage, cache)
-    settings = isolated_format.Settings()
+    settings = Settings()
 
     with tools.Profiler('GetIsolateds'):
       # Optionally support local files by manually adding them to cache.
@@ -1396,8 +1507,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
       logging.info('Retrieving remaining files (%d of them)...',
           fetch_queue.pending_count)
       last_update = time.time()
-      with threading_utils.DeadlockDetector(
-          isolated_format.DEADLOCK_TIMEOUT) as detector:
+      with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT) as detector:
         while remaining:
           detector.ping()
 
@@ -1600,9 +1710,9 @@ def CMDdownload(parser, args):
         pending[digest] = dest
         storage.async_fetch(
             channel,
-            isolated_format.WorkerPool.MED,
+            threading_utils.PRIORITY_MED,
             digest,
-            isolated_format.UNKNOWN_FILE_SIZE,
+            UNKNOWN_FILE_SIZE,
             functools.partial(file_write, os.path.join(options.target, dest)))
       while pending:
         fetched = channel.pull()

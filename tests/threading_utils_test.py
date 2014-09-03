@@ -337,9 +337,9 @@ class AutoRetryThreadPoolTest(unittest.TestCase):
         return x
 
       with lock:
-        pool.add_task(pool.HIGH, wait_and_return, 'a')
-        pool.add_task(pool.LOW, return_x, 'b')
-        pool.add_task(pool.MED, return_x, 'c')
+        pool.add_task(threading_utils.PRIORITY_HIGH, wait_and_return, 'a')
+        pool.add_task(threading_utils.PRIORITY_LOW, return_x, 'b')
+        pool.add_task(threading_utils.PRIORITY_MED, return_x, 'c')
 
       actual = pool.join()
     self.assertEqual(['a', 'c', 'b'], actual)
@@ -355,7 +355,8 @@ class AutoRetryThreadPoolTest(unittest.TestCase):
         raise to_throw.pop(0)
       return x
     with threading_utils.AutoRetryThreadPool([IOError], 1, 1, 1, 0) as pool:
-      pool.add_task(pool.MED, throw, [CustomException('a')], 'yay')
+      pool.add_task(
+          threading_utils.PRIORITY_MED, throw, [CustomException('a')], 'yay')
       actual = pool.join()
     self.assertEqual(['yay'], actual)
     self.assertEqual(['yay', 'yay'], ran)
@@ -368,7 +369,7 @@ class AutoRetryThreadPoolTest(unittest.TestCase):
         raise to_throw.pop(0)
       return x
     with threading_utils.AutoRetryThreadPool(exceptions, 2, 1, 1, 0) as pool:
-      pool.add_task(pool.MED, throw, 'yay')
+      pool.add_task(threading_utils.PRIORITY_MED, throw, 'yay')
       actual = pool.join()
     self.assertEqual(['yay'], actual)
 
@@ -380,7 +381,7 @@ class AutoRetryThreadPoolTest(unittest.TestCase):
         raise to_throw.pop(0)
       return x
     with threading_utils.AutoRetryThreadPool(exceptions, 1, 1, 1, 0) as pool:
-      pool.add_task(pool.MED, throw, 'yay')
+      pool.add_task(threading_utils.PRIORITY_MED, throw, 'yay')
       with self.assertRaises(IOError):
         pool.join()
 
@@ -392,7 +393,11 @@ class AutoRetryThreadPoolTest(unittest.TestCase):
       return x
     exceptions = [IOError, OSError]
     with threading_utils.AutoRetryThreadPool(exceptions, 1, 1, 1, 0) as pool:
-      pool.add_task(pool.MED, throw, [OSError('a'), IOError('b')], 'yay')
+      pool.add_task(
+          threading_utils.PRIORITY_MED,
+          throw,
+          [OSError('a'), IOError('b')],
+          'yay')
       with self.assertRaises(IOError):
         pool.join()
 
@@ -404,7 +409,11 @@ class AutoRetryThreadPoolTest(unittest.TestCase):
       return x
     exceptions = [IOError, OSError]
     with threading_utils.AutoRetryThreadPool(exceptions, 2, 1, 1, 0) as pool:
-      pool.add_task(pool.MED, throw, [OSError('a'), IOError('b')], 'yay')
+      pool.add_task(
+          threading_utils.PRIORITY_MED,
+          throw,
+          [OSError('a'), IOError('b')],
+          'yay')
       actual = pool.join()
     self.assertEqual(['yay'], actual)
 
@@ -423,9 +432,15 @@ class AutoRetryThreadPoolTest(unittest.TestCase):
           return x
       with lock:
         pool.add_task(
-            pool.MED, lock_and_throw, [OSError('a'), IOError('b')], 'A')
+            threading_utils.PRIORITY_MED,
+            lock_and_throw,
+            [OSError('a'), IOError('b')],
+            'A')
         pool.add_task(
-            pool.MED, lock_and_throw, [OSError('a'), IOError('b')], 'B')
+            threading_utils.PRIORITY_MED,
+            lock_and_throw,
+            [OSError('a'), IOError('b')],
+            'B')
 
       actual = pool.join()
     self.assertEqual(['A', 'B'], actual)
