@@ -260,7 +260,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // Kicks off initialization for each media object, executing |done_cb| with
   // the result when completed.
   void InitializeDemuxer(const PipelineStatusCB& done_cb);
-  void InitializeRenderer(const PipelineStatusCB& done_cb);
+  void InitializeRenderer(const base::Closure& done_cb);
 
   void OnStateTransition(PipelineStatus status);
   void StateTransitionTask(PipelineStatus status);

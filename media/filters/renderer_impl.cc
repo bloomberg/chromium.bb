@@ -52,7 +52,7 @@ RendererImpl::~RendererImpl() {
   FireAllPendingCallbacks();
 }
 
-void RendererImpl::Initialize(const PipelineStatusCB& init_cb,
+void RendererImpl::Initialize(const base::Closure& init_cb,
                               const StatisticsCB& statistics_cb,
                               const base::Closure& ended_cb,
                               const PipelineStatusCB& error_cb,
@@ -221,8 +221,7 @@ void RendererImpl::OnAudioRendererInitializeDone(PipelineStatus status) {
 
   if (status != PIPELINE_OK) {
     audio_renderer_.reset();
-    state_ = STATE_ERROR;
-    base::ResetAndReturn(&init_cb_).Run(status);
+    OnError(status);
     return;
   }
 
@@ -270,14 +269,13 @@ void RendererImpl::OnVideoRendererInitializeDone(PipelineStatus status) {
   if (status != PIPELINE_OK) {
     audio_renderer_.reset();
     video_renderer_.reset();
-    state_ = STATE_ERROR;
-    base::ResetAndReturn(&init_cb_).Run(status);
+    OnError(status);
     return;
   }
 
   state_ = STATE_PLAYING;
   DCHECK(audio_renderer_ || video_renderer_);
-  base::ResetAndReturn(&init_cb_).Run(PIPELINE_OK);
+  base::ResetAndReturn(&init_cb_).Run();
 }
 
 void RendererImpl::FlushAudioRenderer() {
@@ -564,7 +562,7 @@ void RendererImpl::FireAllPendingCallbacks() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!init_cb_.is_null())
-    base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_ABORT);
+    base::ResetAndReturn(&init_cb_).Run();
 
   if (!flush_cb_.is_null())
     base::ResetAndReturn(&flush_cb_).Run();

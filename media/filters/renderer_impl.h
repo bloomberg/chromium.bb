@@ -44,7 +44,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   virtual ~RendererImpl();
 
   // Renderer implementation.
-  virtual void Initialize(const PipelineStatusCB& init_cb,
+  virtual void Initialize(const base::Closure& init_cb,
                           const StatisticsCB& statistics_cb,
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb,
@@ -140,7 +140,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   BufferingStateCB buffering_state_cb_;
 
   // Temporary callback used for Initialize() and Flush().
-  PipelineStatusCB init_cb_;
+  base::Closure init_cb_;
   base::Closure flush_cb_;
 
   scoped_ptr<AudioRenderer> audio_renderer_;

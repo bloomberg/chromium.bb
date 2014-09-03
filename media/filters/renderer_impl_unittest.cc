@@ -56,7 +56,7 @@ class RendererImplTest : public ::testing::Test {
     CallbackHelper() {}
     virtual ~CallbackHelper() {}
 
-    MOCK_METHOD1(OnInitialize, void(PipelineStatus));
+    MOCK_METHOD0(OnInitialize, void());
     MOCK_METHOD0(OnFlushed, void());
     MOCK_METHOD0(OnEnded, void());
     MOCK_METHOD1(OnError, void(PipelineStatus));
@@ -125,7 +125,10 @@ class RendererImplTest : public ::testing::Test {
   }
 
   void InitializeAndExpect(PipelineStatus start_status) {
-    EXPECT_CALL(callbacks_, OnInitialize(start_status));
+    if (start_status != PIPELINE_OK)
+      EXPECT_CALL(callbacks_, OnError(start_status));
+
+    EXPECT_CALL(callbacks_, OnInitialize());
 
     renderer_impl_->Initialize(
         base::Bind(&CallbackHelper::OnInitialize,

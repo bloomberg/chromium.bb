@@ -25,15 +25,15 @@ class MEDIA_EXPORT Renderer {
   virtual ~Renderer();
 
   // Initializes the Renderer, executing |init_cb| upon completion.
+  // If initialization failed, fires |error_cb| before |init_cb|.
   // TODO(xhwang): Provide a set of DemuxerStreams in Initialize().
-  // TODO(xhwang): Replace |init_cb| with a Closure.
   //
   // Permanent callbacks:
   // - |statistics_cb|: Executed periodically with rendering statistics.
   // - |time_cb|: Executed whenever time has advanced through rendering.
   // - |ended_cb|: Executed when rendering has reached the end of stream.
   // - |error_cb|: Executed if any error was encountered during rendering.
-  virtual void Initialize(const PipelineStatusCB& init_cb,
+  virtual void Initialize(const base::Closure& init_cb,
                           const StatisticsCB& statistics_cb,
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb,
