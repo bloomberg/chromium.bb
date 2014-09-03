@@ -31,7 +31,7 @@
 #ifndef DummyPageHolder_h
 #define DummyPageHolder_h
 
-#include "core/loader/EmptyClients.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/page/Page.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
@@ -60,7 +60,10 @@ class DummyPageHolder {
     WTF_MAKE_NONCOPYABLE(DummyPageHolder);
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<DummyPageHolder> create(const IntSize& initialViewSize = IntSize(), Page::PageClients* = 0);
+    static PassOwnPtr<DummyPageHolder> create(
+        const IntSize& initialViewSize = IntSize(),
+        Page::PageClients* = 0,
+        PassOwnPtr<FrameLoaderClient> = PassOwnPtr<FrameLoaderClient>());
     ~DummyPageHolder();
 
     Page& page() const;
@@ -69,13 +72,16 @@ public:
     Document& document() const;
 
 private:
-    explicit DummyPageHolder(const IntSize& initialViewSize, Page::PageClients*);
+    explicit DummyPageHolder(
+        const IntSize& initialViewSize,
+        Page::PageClients*,
+        PassOwnPtr<FrameLoaderClient>);
 
     OwnPtrWillBePersistent<Page> m_page;
     RefPtr<LocalFrame> m_frame;
 
     Page::PageClients m_pageClients;
-    EmptyFrameLoaderClient m_frameLoaderClient;
+    OwnPtr<FrameLoaderClient> m_frameLoaderClient;
 };
 
 } // namespace blink

@@ -5,6 +5,8 @@
 #include "config.h"
 #include "public/web/WebNode.h"
 
+#include "core/dom/Document.h"
+#include "core/dom/Element.h"
 #include "core/testing/DummyPageHolder.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebElementCollection.h"

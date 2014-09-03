@@ -35,16 +35,22 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/loader/EmptyClients.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
 
-PassOwnPtr<DummyPageHolder> DummyPageHolder::create(const IntSize& initialViewSize, Page::PageClients* pageClients)
-{
-    return adoptPtr(new DummyPageHolder(initialViewSize, pageClients));
+PassOwnPtr<DummyPageHolder> DummyPageHolder::create(
+    const IntSize& initialViewSize,
+    Page::PageClients* pageClients,
+    PassOwnPtr<FrameLoaderClient> frameLoaderClient) {
+    return adoptPtr(new DummyPageHolder(initialViewSize, pageClients, frameLoaderClient));
 }
 
-DummyPageHolder::DummyPageHolder(const IntSize& initialViewSize, Page::PageClients* pageClients)
+DummyPageHolder::DummyPageHolder(
+    const IntSize& initialViewSize,
+    Page::PageClients* pageClients,
+    PassOwnPtr<FrameLoaderClient> frameLoaderClient)
 {
     if (!pageClients) {
         fillWithEmptyClients(m_pageClients);
@@ -64,7 +70,11 @@ DummyPageHolder::DummyPageHolder(const IntSize& initialViewSize, Page::PageClien
     // not create graphics layers.
     settings.setAcceleratedCompositingEnabled(false);
 
-    m_frame = LocalFrame::create(&m_frameLoaderClient, &m_page->frameHost(), 0);
+    m_frameLoaderClient = frameLoaderClient;
+    if (!m_frameLoaderClient)
+        m_frameLoaderClient = adoptPtr(new EmptyFrameLoaderClient);
+
+    m_frame = LocalFrame::create(m_frameLoaderClient.get(), &m_page->frameHost(), 0);
     m_frame->setView(FrameView::create(m_frame.get(), initialViewSize));
     m_frame->init();
 }

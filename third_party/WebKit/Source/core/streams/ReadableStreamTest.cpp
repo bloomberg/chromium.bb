@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/streams/ReadableStreamImpl.h"
 #include "core/streams/UnderlyingSource.h"

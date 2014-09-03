@@ -5,6 +5,7 @@
 #include "config.h"
 #include "modules/websockets/WebSocketChannel.h"
 
+#include "core/dom/Document.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/testing/DummyPageHolder.h"

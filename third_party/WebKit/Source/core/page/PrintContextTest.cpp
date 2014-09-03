@@ -6,6 +6,7 @@
 #include "core/page/PrintContext.h"
 
 #include "core/dom/Document.h"
+#include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/testing/SkiaForCoreTesting.h"

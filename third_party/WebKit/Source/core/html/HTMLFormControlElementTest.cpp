@@ -8,6 +8,7 @@
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
 #include <gtest/gtest.h>
 

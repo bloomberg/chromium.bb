@@ -162,7 +162,7 @@ public:
     virtual String acceptLanguages() OVERRIDE;
 };
 
-class EmptyFrameLoaderClient FINAL : public FrameLoaderClient {
+class EmptyFrameLoaderClient : public FrameLoaderClient {
     WTF_MAKE_NONCOPYABLE(EmptyFrameLoaderClient); WTF_MAKE_FAST_ALLOCATED;
 public:
     EmptyFrameLoaderClient() { }
