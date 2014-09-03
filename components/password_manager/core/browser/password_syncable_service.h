@@ -34,14 +34,17 @@ namespace password_manager {
 
 class PasswordStoreSync;
 
+// The implementation of the SyncableService API for passwords.
 class PasswordSyncableService : public syncer::SyncableService,
                                 public base::NonThreadSafe {
  public:
-  // |PasswordSyncableService| is owned by |PasswordStore|.
+  // Since the constructed |PasswordSyncableService| is typically owned by the
+  // |password_store|, the constructor doesn't take ownership of the
+  // |password_store|.
   explicit PasswordSyncableService(PasswordStoreSync* password_store);
   virtual ~PasswordSyncableService();
 
-  // syncer::SyncableServiceImplementations
+  // syncer::SyncableService:
   virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
@@ -54,11 +57,11 @@ class PasswordSyncableService : public syncer::SyncableService,
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE;
 
-  // Notifies sync of changes to the password database.
+  // Notifies the Sync engine of changes to the password database.
   void ActOnPasswordStoreChanges(const PasswordStoreChangeList& changes);
 
   // Provides a StartSyncFlare to the SyncableService. See
-  // sync_start_util for more.
+  // chrome/browser/sync/glue/sync_start_util.h for more.
   void InjectStartSyncFlare(
       const syncer::SyncableService::StartSyncFlare& flare);
 
@@ -67,49 +70,49 @@ class PasswordSyncableService : public syncer::SyncableService,
   // Map from password sync tag to password form.
   typedef std::map<std::string, autofill::PasswordForm*> PasswordEntryMap;
 
-  // Helper function to retrieve the entries from password db and fill both
-  // |password_entries| and |passwords_entry_map|. |passwords_entry_map| can be
-  // NULL.
+  // The type of PasswordStoreSync::AddLoginImpl,
+  // PasswordStoreSync::UpdateLoginImpl and PasswordStoreSync::RemoveLoginImpl.
+  typedef PasswordStoreChangeList(PasswordStoreSync::*DatabaseOperation)(
+      const autofill::PasswordForm& form);
+
+  struct SyncEntries;
+
+  // Retrieves the entries from password db and fills both |password_entries|
+  // and |passwords_entry_map|. |passwords_entry_map| can be NULL.
   bool ReadFromPasswordStore(
       ScopedVector<autofill::PasswordForm>* password_entries,
       PasswordEntryMap* passwords_entry_map) const;
 
   // Uses the |PasswordStore| APIs to change entries.
-  void WriteToPasswordStore(const PasswordForms& new_entries,
-                            const PasswordForms& updated_entries,
-                            const PasswordForms& deleted_entries);
+  void WriteToPasswordStore(const SyncEntries& entries);
 
-  // Notifies password store of a change that was performed by sync.
-  // Virtual so tests can override.
-  virtual void NotifyPasswordStoreOfLoginChanges(
-      const PasswordStoreChangeList& changes);
-
-  // Checks if |data|, the entry in sync db, needs to be created or updated
-  // in the passwords db. Depending on what action needs to be performed, the
-  // entry may be added to |new_sync_entries| or to |updated_sync_entries|. If
-  // the item is identical to an entry in the passwords db, no action is
-  // performed. If an item needs to be updated in the sync db, then the item is
-  // also added to |updated_db_entries| list. If |data|'s tag is identical to
-  // an entry's tag in |umatched_data_from_password_db| then that entry will be
-  // removed from |umatched_data_from_password_db|.
+  // Examines |data|, an entry in sync db, and updates |sync_entries| or
+  // |updated_db_entries| accordingly. An element is removed from
+  // |unmatched_data_from_password_db| if its tag is identical to |data|'s.
   void CreateOrUpdateEntry(
       const syncer::SyncData& data,
-      PasswordEntryMap* umatched_data_from_password_db,
-      ScopedVector<autofill::PasswordForm>* new_sync_entries,
-      ScopedVector<autofill::PasswordForm>* updated_sync_entries,
+      PasswordEntryMap* unmatched_data_from_password_db,
+      SyncEntries* sync_entries,
       syncer::SyncChangeList* updated_db_entries);
+
+  // Calls |operation| for each element in |entries| and appends the changes to
+  // |all_changes|.
+  void WriteEntriesToDatabase(
+      DatabaseOperation operation,
+      const PasswordForms& entries,
+      PasswordStoreChangeList* all_changes);
 
   // The factory that creates sync errors. |SyncError| has rich data
   // suitable for debugging.
   scoped_ptr<syncer::SyncErrorFactory> sync_error_factory_;
 
-  // |SyncProcessor| will mirror the |PasswordStore| changes in the sync db.
+  // |sync_processor_| will mirror the |PasswordStore| changes in the sync db.
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
 
-  // The password store that adds/updates/deletes password entries.
+  // The password store that adds/updates/deletes password entries. Not owned.
   PasswordStoreSync* const password_store_;
 
-  // A signal to start sync as soon as possible.
+  // A signal activated by this class to start sync as soon as possible.
   syncer::SyncableService::StartSyncFlare flare_;
 
   // True if processing sync changes is in progress.
@@ -117,17 +120,6 @@ class PasswordSyncableService : public syncer::SyncableService,
 
   DISALLOW_COPY_AND_ASSIGN(PasswordSyncableService);
 };
-
-// Converts the |password| into a SyncData object.
-syncer::SyncData SyncDataFromPassword(const autofill::PasswordForm& password);
-
-// Extracts the |PasswordForm| data from sync's protobuffer format.
-void PasswordFromSpecifics(const sync_pb::PasswordSpecificsData& password,
-                           autofill::PasswordForm* new_password);
-
-// Returns the unique tag that will serve as the sync identifier for the
-// |password| entry.
-std::string MakePasswordSyncTag(const sync_pb::PasswordSpecificsData& password);
 
 }  // namespace password_manager
 

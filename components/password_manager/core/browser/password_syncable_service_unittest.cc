@@ -23,12 +23,24 @@ using syncer::SyncChange;
 using syncer::SyncData;
 using syncer::SyncDataList;
 using syncer::SyncError;
+using testing::AnyNumber;
+using testing::ElementsAre;
 using testing::Invoke;
+using testing::IsEmpty;
+using testing::Matches;
 using testing::Return;
 using testing::SetArgPointee;
+using testing::UnorderedElementsAre;
 using testing::_;
 
 namespace password_manager {
+
+// Defined in the implementation file corresponding to this test.
+syncer::SyncData SyncDataFromPassword(const autofill::PasswordForm& password);
+autofill::PasswordForm PasswordFromSpecifics(
+    const sync_pb::PasswordSpecificsData& password);
+std::string MakePasswordSyncTag(const sync_pb::PasswordSpecificsData& password);
+std::string MakePasswordSyncTag(const autofill::PasswordForm& password);
 
 namespace {
 
@@ -36,30 +48,59 @@ typedef std::vector<SyncChange> SyncChangeList;
 
 const sync_pb::PasswordSpecificsData& GetPasswordSpecifics(
     const syncer::SyncData& sync_data) {
-  const sync_pb::EntitySpecifics& specifics = sync_data.GetSpecifics();
-  return specifics.password().client_only_encrypted_data();
+  return sync_data.GetSpecifics().password().client_only_encrypted_data();
 }
 
-void PasswordsEqual(const sync_pb::PasswordSpecificsData& expected_password,
-                    const sync_pb::PasswordSpecificsData& actual_password) {
-  EXPECT_EQ(expected_password.scheme(), actual_password.scheme());
-  EXPECT_EQ(expected_password.signon_realm(), actual_password.signon_realm());
-  EXPECT_EQ(expected_password.origin(), actual_password.origin());
-  EXPECT_EQ(expected_password.action(), actual_password.action());
-  EXPECT_EQ(expected_password.username_element(),
-            actual_password.username_element());
-  EXPECT_EQ(expected_password.password_element(),
-            actual_password.password_element());
-  EXPECT_EQ(expected_password.username_value(),
-            actual_password.username_value());
-  EXPECT_EQ(expected_password.password_value(),
-            actual_password.password_value());
-  EXPECT_EQ(expected_password.ssl_valid(), actual_password.ssl_valid());
-  EXPECT_EQ(expected_password.preferred(), actual_password.preferred());
-  EXPECT_EQ(expected_password.date_created(), actual_password.date_created());
-  EXPECT_EQ(expected_password.blacklisted(), actual_password.blacklisted());
-  EXPECT_EQ(expected_password.type(), actual_password.type());
-  EXPECT_EQ(expected_password.times_used(), actual_password.times_used());
+MATCHER(HasDateSynced, "") {
+  return !arg.date_synced.is_null() && !arg.date_synced.is_max();
+}
+
+MATCHER_P(PasswordIs, form, "") {
+  sync_pb::PasswordSpecificsData actual_password =
+      GetPasswordSpecifics(SyncDataFromPassword(arg));
+  sync_pb::PasswordSpecificsData expected_password =
+      GetPasswordSpecifics(SyncDataFromPassword(form));
+  if (expected_password.scheme() == actual_password.scheme() &&
+      expected_password.signon_realm() == actual_password.signon_realm() &&
+      expected_password.origin() == actual_password.origin() &&
+      expected_password.action() == actual_password.action() &&
+      expected_password.username_element() ==
+          actual_password.username_element() &&
+      expected_password.password_element() ==
+          actual_password.password_element() &&
+      expected_password.username_value() == actual_password.username_value() &&
+      expected_password.password_value() == actual_password.password_value() &&
+      expected_password.ssl_valid() == actual_password.ssl_valid() &&
+      expected_password.preferred() == actual_password.preferred() &&
+      expected_password.date_created() == actual_password.date_created() &&
+      expected_password.blacklisted() == actual_password.blacklisted() &&
+      expected_password.type() == actual_password.type() &&
+      expected_password.times_used() == actual_password.times_used())
+    return true;
+
+  *result_listener << "Password protobuf does not match; expected:\n"
+                   << form << '\n'
+                   << "actual:" << '\n'
+                   << arg;
+  return false;
+}
+
+MATCHER_P2(SyncChangeIs, change_type, password, "") {
+  const SyncData& data = arg.sync_data();
+  autofill::PasswordForm form = PasswordFromSpecifics(
+      GetPasswordSpecifics(data));
+  return (arg.change_type() == change_type &&
+          syncer::SyncDataLocal(data).GetTag() ==
+              MakePasswordSyncTag(password) &&
+          (change_type == SyncChange::ACTION_DELETE ||
+           Matches(PasswordIs(password))(form)));
+}
+
+// The argument is std::vector<autofill::PasswordForm*>*. The caller is
+// responsible for the lifetime of all the password forms.
+ACTION_P(AppendForm, form) {
+  arg0->push_back(new autofill::PasswordForm(form));
+  return true;
 }
 
 // Creates a sync data consisting of password specifics. The sign on realm is
@@ -82,229 +123,51 @@ SyncChange CreateSyncChange(const autofill::PasswordForm& password,
   return SyncChange(FROM_HERE, type, data);
 }
 
-class FormFinder {
- public:
-  explicit FormFinder(const autofill::PasswordForm& form) : form_(form) {}
-  ~FormFinder() {}
-
-  bool operator()(const autofill::PasswordForm& form) const;
-
- private:
-  const autofill::PasswordForm form_;
-};
-
-bool FormFinder::operator()(const autofill::PasswordForm& form) const {
-  return form.origin == form_.origin &&
-         form.username_element == form_.username_element &&
-         form.username_value == form_.username_value &&
-         form.password_element == form_.password_element &&
-         form.signon_realm == form_.signon_realm;
-}
-
 // A testable implementation of the |PasswordSyncableService| that mocks
 // out all interaction with the password database.
 class MockPasswordSyncableService : public PasswordSyncableService {
  public:
   explicit MockPasswordSyncableService(PasswordStoreSync* password_store)
       : PasswordSyncableService(password_store) {}
-  virtual ~MockPasswordSyncableService() {}
-
-  MOCK_METHOD1(NotifyPasswordStoreOfLoginChanges,
-               void (const PasswordStoreChangeList&));
 
   MOCK_METHOD1(StartSyncFlare, void(syncer::ModelType));
-};
-
-// Class to verify the arguments passed to |PasswordStore|.
-class PasswordStoreDataVerifier {
- public:
-  PasswordStoreDataVerifier() {}
-  ~PasswordStoreDataVerifier() {
-    EXPECT_TRUE(expected_db_add_changes_.empty());
-    EXPECT_TRUE(expected_db_update_changes_.empty());
-    EXPECT_TRUE(expected_db_delete_changes_.empty());
-  }
-
-  class TestSyncChangeProcessor;
-
-  // Sets expected changes to the password database.
-  void SetExpectedDBChanges(
-      const SyncDataList& add_forms,
-      const std::vector<autofill::PasswordForm*>& update_forms,
-      const std::vector<autofill::PasswordForm*>& delete_forms,
-      MockPasswordStore* password_store);
-  // Sets expected changes to TestSyncChangeProcessor.
-  void SetExpectedSyncChanges(SyncChangeList list);
 
  private:
-  // Checks that |change_list| matches |expected_sync_change_list_|.
-  SyncError TestSyncChanges(const SyncChangeList& change_list);
-
-  // Verifies that the |password| is present in the |expected_db_add_changes_|
-  // list. If found, |password| would be removed from
-  // |expected_db_add_changes_| list.
-  PasswordStoreChangeList VerifyAdd(const autofill::PasswordForm& password) {
-    return VerifyChange(PasswordStoreChange::ADD, password,
-                        &expected_db_add_changes_);
-  }
-
-  // Verifies that the |password| is present in the
-  // |expected_db_update_changes_| list. If found, |password| would be removed
-  // from |expected_db_update_changes_| list.
-  PasswordStoreChangeList VerifyUpdate(const autofill::PasswordForm& password) {
-    return VerifyChange(PasswordStoreChange::UPDATE, password,
-                        &expected_db_update_changes_);
-  }
-
-  // Verifies that the |password| is present in the
-  // |expected_db_delete_changes_| list. If found, |password| would be removed
-  // from |expected_db_delete_changes_| list.
-  PasswordStoreChangeList VerifyDelete(const autofill::PasswordForm& password) {
-    return VerifyChange(PasswordStoreChange::REMOVE, password,
-                        &expected_db_delete_changes_);
-  }
-
-  static PasswordStoreChangeList VerifyChange(
-      PasswordStoreChange::Type type,
-      const autofill::PasswordForm& password,
-      std::vector<autofill::PasswordForm>* password_list);
-
-  std::vector<autofill::PasswordForm> expected_db_add_changes_;
-  std::vector<autofill::PasswordForm> expected_db_update_changes_;
-  std::vector<autofill::PasswordForm> expected_db_delete_changes_;
-  SyncChangeList expected_sync_change_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordStoreDataVerifier);
+  DISALLOW_COPY_AND_ASSIGN(MockPasswordSyncableService);
 };
 
-class PasswordStoreDataVerifier::TestSyncChangeProcessor
-    : public syncer::SyncChangeProcessor {
+// Mock implementation of SyncChangeProcessor.
+class MockSyncChangeProcessor : public syncer::SyncChangeProcessor {
  public:
-  explicit TestSyncChangeProcessor(PasswordStoreDataVerifier* verifier)
-      : verifier_(verifier) {
-  }
-  virtual ~TestSyncChangeProcessor() {}
+  MockSyncChangeProcessor() {}
 
-  virtual SyncError ProcessSyncChanges(const tracked_objects::Location&,
-                                       const SyncChangeList& list) OVERRIDE {
-    return verifier_->TestSyncChanges(list);
-  }
-
+  MOCK_METHOD2(ProcessSyncChanges,
+               SyncError(const tracked_objects::Location&,
+                         const SyncChangeList& list));
   virtual SyncDataList GetAllSyncData(syncer::ModelType type) const OVERRIDE {
+    NOTREACHED();
     return SyncDataList();
   }
- private:
-  PasswordStoreDataVerifier* verifier_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestSyncChangeProcessor);
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockSyncChangeProcessor);
 };
 
-void PasswordStoreDataVerifier::SetExpectedDBChanges(
-    const SyncDataList& add_forms,
-    const std::vector<autofill::PasswordForm*>& update_forms,
-    const std::vector<autofill::PasswordForm*>& delete_forms,
-    MockPasswordStore* password_store) {
-  DCHECK(expected_db_add_changes_.empty());
-  DCHECK(expected_db_update_changes_.empty());
-  DCHECK(password_store);
-
-  for (SyncDataList::const_iterator it = add_forms.begin();
-       it != add_forms.end(); ++it) {
-    autofill::PasswordForm form;
-    PasswordFromSpecifics(GetPasswordSpecifics(*it), &form);
-    expected_db_add_changes_.push_back(form);
-  }
-  if (expected_db_add_changes_.empty()) {
-    EXPECT_CALL(*password_store, AddLoginImpl(_)).Times(0);
-  } else {
-    EXPECT_CALL(*password_store, AddLoginImpl(_))
-        .Times(expected_db_add_changes_.size())
-        .WillRepeatedly(Invoke(this, &PasswordStoreDataVerifier::VerifyAdd));
-  }
-
-  for (std::vector<autofill::PasswordForm*>::const_iterator it =
-           update_forms.begin();
-       it != update_forms.end(); ++it) {
-    expected_db_update_changes_.push_back(**it);
-  }
-  if (expected_db_update_changes_.empty()) {
-    EXPECT_CALL(*password_store, UpdateLoginImpl(_)).Times(0);
-  } else {
-    EXPECT_CALL(*password_store, UpdateLoginImpl(_))
-        .Times(expected_db_update_changes_.size())
-        .WillRepeatedly(Invoke(this, &PasswordStoreDataVerifier::VerifyUpdate));
-  }
-
-  for (std::vector<autofill::PasswordForm*>::const_iterator it =
-           delete_forms.begin();
-       it != delete_forms.end(); ++it) {
-    expected_db_delete_changes_.push_back(**it);
-  }
-  if (expected_db_delete_changes_.empty()) {
-    EXPECT_CALL(*password_store, RemoveLoginImpl(_)).Times(0);
-  } else {
-    EXPECT_CALL(*password_store, RemoveLoginImpl(_))
-        .Times(expected_db_delete_changes_.size())
-        .WillRepeatedly(Invoke(this, &PasswordStoreDataVerifier::VerifyDelete));
-  }
-}
-
-void PasswordStoreDataVerifier::SetExpectedSyncChanges(SyncChangeList list) {
-  expected_sync_change_list_.swap(list);
-}
-
-SyncError PasswordStoreDataVerifier::TestSyncChanges(
-    const SyncChangeList& change_list) {
-  for (SyncChangeList::const_iterator it = change_list.begin();
-      it != change_list.end(); ++it) {
-    SyncData data = it->sync_data();
-    std::string actual_tag = syncer::SyncDataLocal(data).GetTag();
-
-    bool matched = false;
-    for (SyncChangeList::iterator expected_it =
-             expected_sync_change_list_.begin();
-         expected_it != expected_sync_change_list_.end();
-         ++expected_it) {
-      const sync_pb::PasswordSpecificsData& expected_password(
-          GetPasswordSpecifics(expected_it->sync_data()));
-      if (actual_tag == MakePasswordSyncTag(expected_password)) {
-        EXPECT_EQ(expected_it->change_type(), it->change_type());
-        matched = true;
-        if (it->change_type() != SyncChange::ACTION_DELETE)
-          PasswordsEqual(expected_password, GetPasswordSpecifics(data));
-        break;
-      }
-    }
-    EXPECT_TRUE(matched) << actual_tag;
-  }
-  EXPECT_EQ(expected_sync_change_list_.size(), change_list.size());
-  return SyncError();
-}
-
-// static
-PasswordStoreChangeList PasswordStoreDataVerifier::VerifyChange(
-    PasswordStoreChange::Type type,
-    const autofill::PasswordForm& password,
-    std::vector<autofill::PasswordForm>* password_list) {
-  std::vector<autofill::PasswordForm>::iterator it = std::find_if(
-      password_list->begin(), password_list->end(), FormFinder(password));
-  EXPECT_NE(password_list->end(), it);
-  PasswordsEqual(GetPasswordSpecifics(SyncDataFromPassword(*it)),
-                 GetPasswordSpecifics(SyncDataFromPassword(password)));
-  if (type != PasswordStoreChange::REMOVE) {
-    EXPECT_FALSE(password.date_synced.is_null()) << password.signon_realm;
-    EXPECT_FALSE(password.date_synced.is_max()) << password.signon_realm;
-  }
-  password_list->erase(it);
-  return PasswordStoreChangeList(1, PasswordStoreChange(type, password));
-}
-
+// Convenience wrapper around a PasswordSyncableService and PasswordStore
+// pair.
 class PasswordSyncableServiceWrapper {
  public:
   PasswordSyncableServiceWrapper() {
-    password_store_ = new MockPasswordStore;
+    password_store_ = new testing::StrictMock<MockPasswordStore>;
     service_.reset(new MockPasswordSyncableService(
         password_store_->GetSyncInterface()));
+    ON_CALL(*password_store_, AddLoginImpl(HasDateSynced()))
+        .WillByDefault(Return(PasswordStoreChangeList()));
+    ON_CALL(*password_store_, RemoveLoginImpl(_))
+        .WillByDefault(Return(PasswordStoreChangeList()));
+    ON_CALL(*password_store_, UpdateLoginImpl(HasDateSynced()))
+        .WillByDefault(Return(PasswordStoreChangeList()));
+    EXPECT_CALL(*password_store(), NotifyLoginsChanged(_)).Times(AnyNumber());
   }
 
   ~PasswordSyncableServiceWrapper() {
@@ -313,208 +176,165 @@ class PasswordSyncableServiceWrapper {
 
   MockPasswordStore* password_store() { return password_store_.get(); }
 
-  MockPasswordSyncableService* service() {
-    return service_.get();
-  }
+  MockPasswordSyncableService* service() { return service_.get(); }
 
   // Returnes the scoped_ptr to |service_| thus NULLing out it.
   scoped_ptr<syncer::SyncChangeProcessor> ReleaseSyncableService() {
     return service_.PassAs<syncer::SyncChangeProcessor>();
   }
 
-  PasswordStoreDataVerifier* verifier() {
-    return &verifier_;
-  }
-
-  scoped_ptr<syncer::SyncChangeProcessor> CreateSyncChangeProcessor() {
-    return make_scoped_ptr<syncer::SyncChangeProcessor>(
-        new PasswordStoreDataVerifier::TestSyncChangeProcessor(verifier()));
-  }
-
-  // Sets the data that will be returned to the caller accessing password store.
-  void SetPasswordStoreData(
-      const std::vector<autofill::PasswordForm*>& forms,
-      const std::vector<autofill::PasswordForm*>& blacklist_forms) {
-    EXPECT_CALL(*password_store_.get(), FillAutofillableLogins(_))
-        .WillOnce(Invoke(AppendVector(forms)))
-        .RetiresOnSaturation();
-    EXPECT_CALL(*password_store_.get(), FillBlacklistLogins(_))
-        .WillOnce(Invoke(AppendVector(blacklist_forms)))
-        .RetiresOnSaturation();
-  }
-
- protected:
+ private:
   scoped_refptr<MockPasswordStore> password_store_;
   scoped_ptr<MockPasswordSyncableService> service_;
-  PasswordStoreDataVerifier verifier_;
-
- private:
-  struct AppendVector {
-    explicit AppendVector(
-        const std::vector<autofill::PasswordForm*>& append_forms)
-        : append_forms_(append_forms) {
-    }
-
-    ~AppendVector() {}
-
-    bool operator()(std::vector<autofill::PasswordForm*>* forms) const {
-      forms->insert(forms->end(), append_forms_.begin(), append_forms_.end());
-      return true;
-    }
-
-    std::vector<autofill::PasswordForm*> append_forms_;
-  };
 
   DISALLOW_COPY_AND_ASSIGN(PasswordSyncableServiceWrapper);
 };
 
-class PasswordSyncableServiceTest : public testing::Test,
-                                    public PasswordSyncableServiceWrapper {
+class PasswordSyncableServiceTest : public testing::Test {
  public:
-  PasswordSyncableServiceTest() {}
-  virtual ~PasswordSyncableServiceTest() {}
+  PasswordSyncableServiceTest()
+      : processor_(new testing::StrictMock<MockSyncChangeProcessor>) {
+    ON_CALL(*processor_, ProcessSyncChanges(_, _))
+        .WillByDefault(Return(SyncError()));
+  }
+  MockPasswordStore* password_store() { return wrapper_.password_store(); }
+  MockPasswordSyncableService* service() { return wrapper_.service(); }
+
+ protected:
+  scoped_ptr<MockSyncChangeProcessor> processor_;
+
+ private:
+  PasswordSyncableServiceWrapper wrapper_;
 };
 
 
 // Both sync and password db have data that are not present in the other.
 TEST_F(PasswordSyncableServiceTest, AdditionsInBoth) {
-  scoped_ptr<autofill::PasswordForm> form1(new autofill::PasswordForm);
-  form1->signon_realm = "abc";
-  std::vector<autofill::PasswordForm*> forms;
-  forms.push_back(form1.release());
-  SetPasswordStoreData(forms, std::vector<autofill::PasswordForm*>());
+  autofill::PasswordForm form;
+  form.signon_realm = "abc";
 
-  SyncData sync_data = CreateSyncData("def");
   SyncDataList list;
-  list.push_back(sync_data);
+  list.push_back(CreateSyncData("def"));
+  autofill::PasswordForm new_from_sync = PasswordFromSpecifics(
+      GetPasswordSpecifics(list.back()));
 
-  verifier()->SetExpectedDBChanges(list,
-                                   std::vector<autofill::PasswordForm*>(),
-                                   std::vector<autofill::PasswordForm*>(),
-                                   password_store());
-  verifier()->SetExpectedSyncChanges(
-      SyncChangeList(1, CreateSyncChange(*forms[0], SyncChange::ACTION_ADD)));
-  EXPECT_CALL(*service(), NotifyPasswordStoreOfLoginChanges(_));
+  EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
+      .WillOnce(AppendForm(form));
+  EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*password_store(), AddLoginImpl(PasswordIs(new_from_sync)));
+  EXPECT_CALL(*processor_, ProcessSyncChanges(_, ElementsAre(
+      SyncChangeIs(SyncChange::ACTION_ADD, form))));
 
-  service()->MergeDataAndStartSyncing(syncer::PASSWORDS,
-                                      list,
-                                      CreateSyncChangeProcessor(),
-                                      scoped_ptr<syncer::SyncErrorFactory>());
+  service()->MergeDataAndStartSyncing(
+      syncer::PASSWORDS,
+      list,
+      processor_.PassAs<syncer::SyncChangeProcessor>(),
+      scoped_ptr<syncer::SyncErrorFactory>());
 }
 
 // Sync has data that is not present in the password db.
 TEST_F(PasswordSyncableServiceTest, AdditionOnlyInSync) {
-  SetPasswordStoreData(std::vector<autofill::PasswordForm*>(),
-                       std::vector<autofill::PasswordForm*>());
-
-  SyncData sync_data = CreateSyncData("def");
   SyncDataList list;
-  list.push_back(sync_data);
+  list.push_back(CreateSyncData("def"));
+  autofill::PasswordForm new_from_sync = PasswordFromSpecifics(
+      GetPasswordSpecifics(list.back()));
 
-  verifier()->SetExpectedDBChanges(list,
-                                   std::vector<autofill::PasswordForm*>(),
-                                   std::vector<autofill::PasswordForm*>(),
-                                   password_store());
-  verifier()->SetExpectedSyncChanges(SyncChangeList());
-  EXPECT_CALL(*service(), NotifyPasswordStoreOfLoginChanges(_));
+  EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*password_store(), AddLoginImpl(PasswordIs(new_from_sync)));
+  EXPECT_CALL(*processor_, ProcessSyncChanges(_, IsEmpty()));
 
-  service()->MergeDataAndStartSyncing(syncer::PASSWORDS,
-                                      list,
-                                      CreateSyncChangeProcessor(),
-                                      scoped_ptr<syncer::SyncErrorFactory>());
+  service()->MergeDataAndStartSyncing(
+      syncer::PASSWORDS,
+      list,
+      processor_.PassAs<syncer::SyncChangeProcessor>(),
+      scoped_ptr<syncer::SyncErrorFactory>());
 }
 
 // Passwords db has data that is not present in sync.
 TEST_F(PasswordSyncableServiceTest, AdditionOnlyInPasswordStore) {
-  scoped_ptr<autofill::PasswordForm> form1(new autofill::PasswordForm);
-  form1->signon_realm = "abc";
-  form1->times_used = 2;
-  form1->type = autofill::PasswordForm::TYPE_GENERATED;
-  std::vector<autofill::PasswordForm*> forms;
-  forms.push_back(form1.release());
-  SetPasswordStoreData(forms, std::vector<autofill::PasswordForm*>());
+  autofill::PasswordForm form;
+  form.signon_realm = "abc";
+  form.times_used = 2;
+  form.type = autofill::PasswordForm::TYPE_GENERATED;
+  EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
+      .WillOnce(AppendForm(form));
+  EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
+      .WillOnce(Return(true));
 
-  verifier()->SetExpectedDBChanges(SyncDataList(),
-                                   std::vector<autofill::PasswordForm*>(),
-                                   std::vector<autofill::PasswordForm*>(),
-                                   password_store());
-  verifier()->SetExpectedSyncChanges(
-      SyncChangeList(1, CreateSyncChange(*forms[0], SyncChange::ACTION_ADD)));
-  EXPECT_CALL(*service_,
-              NotifyPasswordStoreOfLoginChanges(PasswordStoreChangeList()));
+  EXPECT_CALL(*processor_, ProcessSyncChanges(_, ElementsAre(
+      SyncChangeIs(SyncChange::ACTION_ADD, form))));
 
-  service()->MergeDataAndStartSyncing(syncer::PASSWORDS,
-                                      SyncDataList(),
-                                      CreateSyncChangeProcessor(),
-                                      scoped_ptr<syncer::SyncErrorFactory>());
+  service()->MergeDataAndStartSyncing(
+      syncer::PASSWORDS,
+      SyncDataList(),
+      processor_.PassAs<syncer::SyncChangeProcessor>(),
+      scoped_ptr<syncer::SyncErrorFactory>());
 }
 
 // Both passwords db and sync contain the same data.
 TEST_F(PasswordSyncableServiceTest, BothInSync) {
-  scoped_ptr<autofill::PasswordForm> form1(new autofill::PasswordForm);
-  form1->signon_realm = "abc";
-  form1->times_used = 3;
-  form1->type = autofill::PasswordForm::TYPE_GENERATED;
-  std::vector<autofill::PasswordForm*> forms;
-  forms.push_back(form1.release());
-  SetPasswordStoreData(forms, std::vector<autofill::PasswordForm*>());
+  autofill::PasswordForm form;
+  form.signon_realm = "abc";
+  form.times_used = 3;
+  form.type = autofill::PasswordForm::TYPE_GENERATED;
+  EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
+      .WillOnce(AppendForm(form));
+  EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
+      .WillOnce(Return(true));
 
-  verifier()->SetExpectedDBChanges(SyncDataList(),
-                                   std::vector<autofill::PasswordForm*>(),
-                                   std::vector<autofill::PasswordForm*>(),
-                                   password_store());
-  verifier()->SetExpectedSyncChanges(SyncChangeList());
-  EXPECT_CALL(*service_,
-              NotifyPasswordStoreOfLoginChanges(PasswordStoreChangeList()));
+  EXPECT_CALL(*processor_, ProcessSyncChanges(_, IsEmpty()));
 
-  service()->MergeDataAndStartSyncing(syncer::PASSWORDS,
-                                      SyncDataList(1, CreateSyncData("abc")),
-                                      CreateSyncChangeProcessor(),
-                                      scoped_ptr<syncer::SyncErrorFactory>());
+  service()->MergeDataAndStartSyncing(
+      syncer::PASSWORDS,
+      SyncDataList(1, CreateSyncData("abc")),
+      processor_.PassAs<syncer::SyncChangeProcessor>(),
+      scoped_ptr<syncer::SyncErrorFactory>());
 }
 
 // Both passwords db and sync have the same data but they need to be merged
 // as some fields of the data differ.
 TEST_F(PasswordSyncableServiceTest, Merge) {
-  scoped_ptr<autofill::PasswordForm> form1(new autofill::PasswordForm);
-  form1->signon_realm = "abc";
-  form1->action = GURL("http://pie.com");
-  form1->date_created = base::Time::Now();
-  form1->preferred = true;
-  std::vector<autofill::PasswordForm*> forms;
-  forms.push_back(form1.release());
-  SetPasswordStoreData(forms, std::vector<autofill::PasswordForm*>());
+  autofill::PasswordForm form1;
+  form1.signon_realm = "abc";
+  form1.action = GURL("http://pie.com");
+  form1.date_created = base::Time::Now();
+  form1.preferred = true;
 
-  autofill::PasswordForm form2(*forms[0]);
+  autofill::PasswordForm form2(form1);
   form2.preferred = false;
-  verifier()->SetExpectedDBChanges(SyncDataList(),
-                                   std::vector<autofill::PasswordForm*>(1,
-                                                                        &form2),
-                                   std::vector<autofill::PasswordForm*>(),
-                                   password_store());
-  verifier()->SetExpectedSyncChanges(SyncChangeList());
+  EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
+      .WillOnce(AppendForm(form1));
+  EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*password_store(), UpdateLoginImpl(PasswordIs(form2)));
+  EXPECT_CALL(*processor_, ProcessSyncChanges(_, IsEmpty()));
 
-  EXPECT_CALL(*service(), NotifyPasswordStoreOfLoginChanges(_));
-
-  service()->MergeDataAndStartSyncing(syncer::PASSWORDS,
-                                      SyncDataList(1,
-                                                   SyncDataFromPassword(form2)),
-                                      CreateSyncChangeProcessor(),
-                                      scoped_ptr<syncer::SyncErrorFactory>());
+  service()->MergeDataAndStartSyncing(
+      syncer::PASSWORDS,
+      SyncDataList(1, SyncDataFromPassword(form2)),
+      processor_.PassAs<syncer::SyncChangeProcessor>(),
+      scoped_ptr<syncer::SyncErrorFactory>());
 }
 
 // Initiate sync due to local DB changes.
 TEST_F(PasswordSyncableServiceTest, PasswordStoreChanges) {
-  // Set the sync change processor first.
-  SetPasswordStoreData(std::vector<autofill::PasswordForm*>(),
-                       std::vector<autofill::PasswordForm*>());
-  verifier()->SetExpectedSyncChanges(SyncChangeList());
-  EXPECT_CALL(*service_,
-              NotifyPasswordStoreOfLoginChanges(PasswordStoreChangeList()));
-  service_->MergeDataAndStartSyncing(syncer::PASSWORDS,
-                                     SyncDataList(),
-                                     CreateSyncChangeProcessor(),
-                                     scoped_ptr<syncer::SyncErrorFactory>());
+  // Save the reference to the processor because |processor_| is NULL after
+  // MergeDataAndStartSyncing().
+  MockSyncChangeProcessor& weak_processor = *processor_;
+  EXPECT_CALL(weak_processor, ProcessSyncChanges(_, IsEmpty()));
+  EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
+      .WillOnce(Return(true));
+  service()->MergeDataAndStartSyncing(
+      syncer::PASSWORDS,
+      SyncDataList(),
+      processor_.PassAs<syncer::SyncChangeProcessor>(),
+      scoped_ptr<syncer::SyncErrorFactory>());
 
   autofill::PasswordForm form1;
   form1.signon_realm = "abc";
@@ -528,16 +348,14 @@ TEST_F(PasswordSyncableServiceTest, PasswordStoreChanges) {
   sync_list.push_back(CreateSyncChange(form2, SyncChange::ACTION_UPDATE));
   sync_list.push_back(CreateSyncChange(form3, SyncChange::ACTION_DELETE));
 
-  verifier()->SetExpectedDBChanges(SyncDataList(),
-                                   std::vector<autofill::PasswordForm*>(),
-                                   std::vector<autofill::PasswordForm*>(),
-                                   password_store());
-  verifier()->SetExpectedSyncChanges(sync_list);
-
   PasswordStoreChangeList list;
   list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form1));
   list.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form2));
   list.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form3));
+  EXPECT_CALL(weak_processor, ProcessSyncChanges(_, ElementsAre(
+      SyncChangeIs(SyncChange::ACTION_ADD, form1),
+      SyncChangeIs(SyncChange::ACTION_UPDATE, form2),
+      SyncChangeIs(SyncChange::ACTION_DELETE, form3))));
   service()->ActOnPasswordStoreChanges(list);
 }
 
@@ -553,12 +371,8 @@ TEST_F(PasswordSyncableServiceTest, ProcessSyncChanges) {
   deleted_form.blacklisted_by_user = true;
 
   SyncData add_data = CreateSyncData("def");
-  std::vector<autofill::PasswordForm*> updated_passwords(1, &updated_form);
-  std::vector<autofill::PasswordForm*> deleted_passwords(1, &deleted_form);
-  verifier()->SetExpectedDBChanges(SyncDataList(1, add_data),
-                                   updated_passwords,
-                                   deleted_passwords,
-                                   password_store());
+  autofill::PasswordForm new_from_sync = PasswordFromSpecifics(
+      GetPasswordSpecifics(add_data));
 
   SyncChangeList list;
   list.push_back(SyncChange(FROM_HERE,
@@ -568,72 +382,62 @@ TEST_F(PasswordSyncableServiceTest, ProcessSyncChanges) {
                                   syncer::SyncChange::ACTION_UPDATE));
   list.push_back(CreateSyncChange(deleted_form,
                                   syncer::SyncChange::ACTION_DELETE));
-  EXPECT_CALL(*service(), NotifyPasswordStoreOfLoginChanges(_));
+  EXPECT_CALL(*password_store(), AddLoginImpl(PasswordIs(new_from_sync)));
+  EXPECT_CALL(*password_store(), UpdateLoginImpl(PasswordIs(updated_form)));
+  EXPECT_CALL(*password_store(), RemoveLoginImpl(PasswordIs(deleted_form)));
   service()->ProcessSyncChanges(FROM_HERE, list);
 }
 
 // Retrives sync data from the model.
 TEST_F(PasswordSyncableServiceTest, GetAllSyncData) {
-  scoped_ptr<autofill::PasswordForm> form1(new autofill::PasswordForm);
-  form1->signon_realm = "abc";
-  form1->action = GURL("http://foo.com");
-  form1->times_used = 5;
-  form1->type = autofill::PasswordForm::TYPE_GENERATED;
-  scoped_ptr<autofill::PasswordForm> form2(new autofill::PasswordForm);
-  form2->signon_realm = "xyz";
-  form2->action = GURL("http://bar.com");
-  form2->blacklisted_by_user = true;
-  std::vector<autofill::PasswordForm*> forms(1, form1.release());
-  std::vector<autofill::PasswordForm*> blacklist_forms(1, form2.release());
-  SetPasswordStoreData(forms, blacklist_forms);
-
-  SyncDataList expected_list;
-  expected_list.push_back(SyncDataFromPassword(*forms[0]));
-  expected_list.push_back(SyncDataFromPassword(*blacklist_forms[0]));
-
-  verifier()->SetExpectedDBChanges(SyncDataList(),
-                                   std::vector<autofill::PasswordForm*>(),
-                                   std::vector<autofill::PasswordForm*>(),
-                                   password_store());
+  autofill::PasswordForm form1;
+  form1.signon_realm = "abc";
+  form1.action = GURL("http://foo.com");
+  form1.times_used = 5;
+  form1.type = autofill::PasswordForm::TYPE_GENERATED;
+  autofill::PasswordForm form2;
+  form2.signon_realm = "xyz";
+  form2.action = GURL("http://bar.com");
+  form2.blacklisted_by_user = true;
+  EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
+      .WillOnce(AppendForm(form1));
+  EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
+      .WillOnce(AppendForm(form2));
 
   SyncDataList actual_list = service()->GetAllSyncData(syncer::PASSWORDS);
-  EXPECT_EQ(expected_list.size(), actual_list.size());
-  for (SyncDataList::iterator i(actual_list.begin()), j(expected_list.begin());
-       i != actual_list.end() && j != expected_list.end(); ++i, ++j) {
-    PasswordsEqual(GetPasswordSpecifics(*j), GetPasswordSpecifics(*i));
+  std::vector<autofill::PasswordForm> actual_form_list;
+  for (SyncDataList::iterator it = actual_list.begin();
+       it != actual_list.end(); ++it) {
+    actual_form_list.push_back(
+        PasswordFromSpecifics(GetPasswordSpecifics(*it)));
   }
+  EXPECT_THAT(actual_form_list, UnorderedElementsAre(PasswordIs(form1),
+                                                     PasswordIs(form2)));
 }
 
 // Creates 2 PasswordSyncableService instances, merges the content of the first
 // one to the second one and back.
 TEST_F(PasswordSyncableServiceTest, MergeDataAndPushBack) {
-  scoped_ptr<autofill::PasswordForm> form1(new autofill::PasswordForm);
-  form1->signon_realm = "abc";
-  form1->action = GURL("http://foo.com");
-  std::vector<autofill::PasswordForm*> forms(1, form1.release());
-  SetPasswordStoreData(forms, std::vector<autofill::PasswordForm*>());
+  autofill::PasswordForm form1;
+  form1.signon_realm = "abc";
+  form1.action = GURL("http://foo.com");
 
   PasswordSyncableServiceWrapper other_service_wrapper;
-  scoped_ptr<autofill::PasswordForm> form2(new autofill::PasswordForm);
-  form2->signon_realm = "xyz";
-  form2->action = GURL("http://bar.com");
-  syncer::SyncData form2_sync_data = SyncDataFromPassword(*form2);
-  other_service_wrapper.SetPasswordStoreData(
-      std::vector<autofill::PasswordForm*>(1, form2.release()),
-      std::vector<autofill::PasswordForm*>());
+  autofill::PasswordForm form2;
+  form2.signon_realm = "xyz";
+  form2.action = GURL("http://bar.com");
+  EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
+      .WillOnce(AppendForm(form1));
+  EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*other_service_wrapper.password_store(),
+              FillAutofillableLogins(_)).WillOnce(AppendForm(form2));
+  EXPECT_CALL(*other_service_wrapper.password_store(),
+              FillBlacklistLogins(_)).WillOnce(Return(true));
 
-  verifier()->SetExpectedDBChanges(SyncDataList(1, form2_sync_data),
-                                   std::vector<autofill::PasswordForm*>(),
-                                   std::vector<autofill::PasswordForm*>(),
-                                   password_store());
-  other_service_wrapper.verifier()->SetExpectedDBChanges(
-      SyncDataList(1, SyncDataFromPassword(*forms[0])),
-      std::vector<autofill::PasswordForm*>(),
-      std::vector<autofill::PasswordForm*>(),
-      other_service_wrapper.password_store());
-  EXPECT_CALL(*service(), NotifyPasswordStoreOfLoginChanges(_));
-  EXPECT_CALL(*other_service_wrapper.service(),
-              NotifyPasswordStoreOfLoginChanges(_));
+  EXPECT_CALL(*password_store(), AddLoginImpl(PasswordIs(form2)));
+  EXPECT_CALL(*other_service_wrapper.password_store(),
+              AddLoginImpl(PasswordIs(form1)));
 
   syncer::SyncDataList other_service_data =
       other_service_wrapper.service()->GetAllSyncData(syncer::PASSWORDS);

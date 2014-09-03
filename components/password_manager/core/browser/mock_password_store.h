@@ -48,6 +48,7 @@ class MockPasswordStore : public PasswordStore {
       bool(std::vector<autofill::PasswordForm*>*));
   MOCK_METHOD1(FillBlacklistLogins,
       bool(std::vector<autofill::PasswordForm*>*));
+  MOCK_METHOD1(NotifyLoginsChanged, void(const PasswordStoreChangeList&));
 
   PasswordStoreSync* GetSyncInterface() { return this; }
 
