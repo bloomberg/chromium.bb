@@ -162,20 +162,9 @@ def GetArrayNullabilityFlags(kind):
     return " | ".join(flags_to_set)
 
 
-@contextfilter
-def DecodeMethod(context, kind, offset, bit):
-  def _DecodeMethodName(kind):
-    if mojom.IsAnyArrayKind(kind):
-      return _DecodeMethodName(kind.kind) + 's'
-    if mojom.IsEnumKind(kind):
-      return _DecodeMethodName(mojom.INT32)
-    if mojom.IsInterfaceRequestKind(kind):
-      return "readInterfaceRequest"
-    if mojom.IsInterfaceKind(kind):
-      return "readServiceInterface"
-    return _spec_to_decode_method[kind.spec]
-  methodName = _DecodeMethodName(kind)
-  params = [ str(offset) ]
+def AppendEncodeDecodeParams(initial_params, context, kind, bit):
+  """ Appends standard parameters shared between encode and decode calls. """
+  params = list(initial_params)
   if (kind == mojom.BOOL):
     params.append(str(bit))
   if mojom.IsReferenceKind(kind):
@@ -193,23 +182,29 @@ def DecodeMethod(context, kind, offset, bit):
     params.append('%s.MANAGER' % GetJavaType(context, kind))
   if mojom.IsAnyArrayKind(kind) and mojom.IsInterfaceKind(kind.kind):
     params.append('%s.MANAGER' % GetJavaType(context, kind.kind))
+  return params
+
+
+@contextfilter
+def DecodeMethod(context, kind, offset, bit):
+  def _DecodeMethodName(kind):
+    if mojom.IsAnyArrayKind(kind):
+      return _DecodeMethodName(kind.kind) + 's'
+    if mojom.IsEnumKind(kind):
+      return _DecodeMethodName(mojom.INT32)
+    if mojom.IsInterfaceRequestKind(kind):
+      return "readInterfaceRequest"
+    if mojom.IsInterfaceKind(kind):
+      return "readServiceInterface"
+    return _spec_to_decode_method[kind.spec]
+  methodName = _DecodeMethodName(kind)
+  params = AppendEncodeDecodeParams([ str(offset) ], context, kind, bit)
   return '%s(%s)' % (methodName, ', '.join(params))
 
 @contextfilter
 def EncodeMethod(context, kind, variable, offset, bit):
-  params = [ variable, str(offset) ]
-  if (kind == mojom.BOOL):
-    params.append(str(bit))
-  if mojom.IsAnyArrayKind(kind):
-    if mojom.IsFixedArrayKind(kind):
-      params.append(str(kind.length))
-    else:
-      params.append(
-        "org.chromium.mojo.bindings.BindingsHelper.UNSPECIFIED_ARRAY_LENGTH");
-  if mojom.IsInterfaceKind(kind):
-    params.append('%s.MANAGER' % GetJavaType(context, kind))
-  if mojom.IsAnyArrayKind(kind) and mojom.IsInterfaceKind(kind.kind):
-    params.append('%s.MANAGER' % GetJavaType(context, kind.kind))
+  params = AppendEncodeDecodeParams(
+      [ variable, str(offset) ], context, kind, bit)
   return 'encode(%s)' % ', '.join(params)
 
 def GetPackage(module):

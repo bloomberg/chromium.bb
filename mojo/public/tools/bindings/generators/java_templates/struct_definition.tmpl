@@ -13,7 +13,7 @@ org.chromium.mojo.bindings.BindingsHelper.UNSPECIFIED_ARRAY_LENGTH
 {% if kind|is_pointer_array_kind %}
 {% set sub_kind = kind.kind %}
 if ({{variable}} == null) {
-    encoder{{level}}.encodeNullPointer({{offset}});
+    encoder{{level}}.encodeNullPointer({{offset}}, {{kind|is_nullable_kind|java_true_false}});
 } else {
     org.chromium.mojo.bindings.Encoder encoder{{level + 1}} = encoder{{level}}.encodePointerArray({{variable}}.length, {{offset}}, {{array_expected_length(kind)}});
     for (int i{{level}} = 0; i{{level}} < {{variable}}.length; ++i{{level}}) {

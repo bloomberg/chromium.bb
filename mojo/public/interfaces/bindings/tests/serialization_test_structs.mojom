@@ -29,4 +29,10 @@ struct Struct6 {
   string str;
 };
 
+struct StructOfNullables {
+  handle? hdl;
+  Struct1? struct_1;
+  string? str;
+};
+
 }
