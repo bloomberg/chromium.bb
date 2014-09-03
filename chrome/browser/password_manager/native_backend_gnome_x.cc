@@ -404,7 +404,6 @@ void GKRMethod::RemoveLogin(const PasswordForm& form, const char* app_string) {
       this,  // data
       NULL,  // destroy_data
       "origin_url", form.origin.spec().c_str(),
-      "action_url", form.action.spec().c_str(),
       "username_element", UTF16ToUTF8(form.username_element).c_str(),
       "username_value", UTF16ToUTF8(form.username_value).c_str(),
       "password_element", UTF16ToUTF8(form.password_element).c_str(),

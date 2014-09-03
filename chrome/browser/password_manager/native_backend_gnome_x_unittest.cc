@@ -912,6 +912,35 @@ TEST_F(NativeBackendGnomeTest, BasicRemoveLogin) {
   EXPECT_EQ(0u, mock_keyring_items.size());
 }
 
+// Verify fix for http://crbug.com/408783.
+TEST_F(NativeBackendGnomeTest, RemoveLoginActionMismatch) {
+  NativeBackendGnome backend(42);
+  backend.Init();
+
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                 base::Unretained(&backend), form_google_));
+
+  RunBothThreads();
+
+  EXPECT_EQ(1u, mock_keyring_items.size());
+  if (mock_keyring_items.size() > 0)
+    CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome-42");
+
+  // Action url match not required for removal.
+  form_google_.action = GURL("https://some.other.url.com/path");
+
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendGnome::RemoveLogin),
+                 base::Unretained(&backend), form_google_));
+
+  RunBothThreads();
+
+  EXPECT_EQ(0u, mock_keyring_items.size());
+}
+
 TEST_F(NativeBackendGnomeTest, RemoveNonexistentLogin) {
   NativeBackendGnome backend(42);
   backend.Init();
