@@ -1261,6 +1261,9 @@ class TLSConnection(TLSRecordLayer):
                 return # Handshake was resumed, we're done 
             else: break
         (clientHello, cipherSuite) = result
+
+        # Save the ClientHello for external code to query.
+        self.clientHello = clientHello
         
         #If not a resumption...
 

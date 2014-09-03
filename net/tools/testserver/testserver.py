@@ -335,6 +335,7 @@ class TestPageHandler(testserver_base.BasePageHandler):
       self.GetSSLSessionCacheHandler,
       self.SSLManySmallRecords,
       self.GetChannelID,
+      self.ClientCipherListHandler,
       self.CloseSocketHandler,
       self.RangeResetHandler,
       self.DefaultResponseHandler]
@@ -1490,6 +1491,23 @@ class TestPageHandler(testserver_base.BasePageHandler):
     self.end_headers()
     channel_id = bytes(self.server.tlsConnection.channel_id)
     self.wfile.write(hashlib.sha256(channel_id).digest().encode('base64'))
+    return True
+
+  def ClientCipherListHandler(self):
+    """Send a reply containing the cipher suite list that the client
+    provided. Each cipher suite value is serialized in decimal, followed by a
+    newline."""
+
+    if not self._ShouldHandleRequest('/client-cipher-list'):
+      return False
+
+    self.send_response(200)
+    self.send_header('Content-Type', 'text/plain')
+    self.end_headers()
+
+    for cipher_suite in self.server.tlsConnection.clientHello.cipher_suites:
+      self.wfile.write(str(cipher_suite))
+      self.wfile.write('\n')
     return True
 
   def CloseSocketHandler(self):

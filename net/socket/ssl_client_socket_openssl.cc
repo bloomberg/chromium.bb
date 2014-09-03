@@ -30,6 +30,10 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 #if defined(USE_OPENSSL_CERTS)
 #include "net/ssl/openssl_client_key_store.h"
 #else
@@ -786,6 +790,15 @@ int SSLClientSocketOpenSSL::Init() {
        command.append(name);
      }
   }
+
+  // Disable ECDSA cipher suites on platforms that do not support ECDSA
+  // signed certificates, as servers may use the presence of such
+  // ciphersuites as a hint to send an ECDSA certificate.
+#if defined(OS_WIN)
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    command.append(":!ECDSA");
+#endif
+
   int rv = SSL_set_cipher_list(ssl_, command.c_str());
   // If this fails (rv = 0) it means there are no ciphers enabled on this SSL.
   // This will almost certainly result in the socket failing to complete the

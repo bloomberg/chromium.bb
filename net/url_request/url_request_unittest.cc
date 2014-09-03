@@ -61,6 +61,7 @@
 #include "net/ocsp/nss_ocsp.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -6930,6 +6931,57 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
     }
   }
 }
+
+#if defined(OS_WIN)
+
+namespace {
+
+bool IsECDSACipherSuite(uint16_t cipher_suite) {
+  const char* key_exchange;
+  const char* cipher;
+  const char* mac;
+  bool is_aead;
+  SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead, cipher_suite);
+  return std::string(key_exchange).find("ECDSA") != std::string::npos;
+}
+
+}  // namespace
+
+// Test that ECDSA is disabled on Windows XP, where ECDSA certificates cannot be
+// verified.
+TEST_F(HTTPSRequestTest, DisableECDSAOnXP) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    LOG(INFO) << "Skipping test on this version.";
+    return;
+  }
+
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS,
+      SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  ASSERT_TRUE(test_server.Start());
+
+  TestDelegate d;
+  scoped_ptr<URLRequest> r(default_context_.CreateRequest(
+      test_server.GetURL("client-cipher-list"), DEFAULT_PRIORITY, &d, NULL));
+  r->Start();
+  EXPECT_TRUE(r->is_pending());
+
+  base::RunLoop().Run();
+
+  EXPECT_EQ(1, d.response_started_count());
+  std::vector<std::string> lines;
+  base::SplitString(d.data_received(), '\n', &lines);
+
+  for (size_t i = 0; i < lines.size(); i++) {
+    int cipher_suite;
+    ASSERT_TRUE(base::StringToInt(lines[i], &cipher_suite));
+    EXPECT_FALSE(IsECDSACipherSuite(cipher_suite))
+        << "ClientHello advertised " << cipher_suite;
+  }
+}
+
+#endif  // OS_WIN
 
 class HTTPSFallbackTest : public testing::Test {
  public:
