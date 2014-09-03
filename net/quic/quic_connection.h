@@ -204,6 +204,9 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
 
   // Called when the connection is closed.
   virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) {}
+
+  // Called when the version negotiation is successful.
+  virtual void OnSuccessfulVersionNegotiation(const QuicVersion& version) {}
 };
 
 class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
@@ -228,12 +231,6 @@ class NET_EXPORT_PRIVATE QuicConnection
       public QuicPacketGenerator::DelegateInterface,
       public QuicSentPacketManager::NetworkChangeVisitor {
  public:
-  enum PacketType {
-    NORMAL,
-    QUEUED,
-    CONNECTION_CLOSE
-  };
-
   enum AckBundling {
     NO_ACK = 0,
     SEND_ACK = 1,
@@ -567,27 +564,22 @@ class NET_EXPORT_PRIVATE QuicConnection
                  EncryptionLevel level,
                  TransmissionType transmission_type);
 
-    QuicPacketSequenceNumber sequence_number;
-    QuicPacket* packet;
+    SerializedPacket serialized_packet;
     const EncryptionLevel encryption_level;
     TransmissionType transmission_type;
-    HasRetransmittableData retransmittable;
-    IsHandshake handshake;
-    PacketType type;
-    QuicByteCount length;
   };
 
   typedef std::list<QueuedPacket> QueuedPacketList;
   typedef std::map<QuicFecGroupNumber, QuicFecGroup*> FecGroupMap;
 
   // Writes the given packet to socket, encrypted with packet's
-  // encryption_level. Returns true on successful write. Behavior is undefined
-  // if connection is not established or broken. A return value of true means
-  // the packet was transmitted and may be destroyed. If the packet is
-  // retransmittable, WritePacket sets up retransmission for a successful write.
-  // If packet is FORCE, then it will be sent immediately and the send scheduler
-  // will not be consulted.
-  bool WritePacket(QueuedPacket packet);
+  // encryption_level. Returns true on successful write, and false if the writer
+  // was blocked and the write needs to be tried again.  Behavior is undefined
+  // if connection is not established or broken. Notifies the SentPacketManager
+  // when the write is successful.
+  // Saves the connection close packet for later transmission, even if the
+  // writer is write blocked.
+  bool WritePacket(const QueuedPacket& packet);
 
   // Make sure an ack we got from our peer is sane.
   bool ValidateAckFrame(const QuicAckFrame& incoming_ack);
@@ -665,6 +657,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   void CheckForAddressMigration(const IPEndPoint& self_address,
                                 const IPEndPoint& peer_address);
 
+  HasRetransmittableData IsRetransmittable(QueuedPacket packet);
+  bool IsConnectionClose(QueuedPacket packet);
+
   QuicFramer framer_;
   QuicConnectionHelperInterface* helper_;  // Not owned.
   QuicPacketWriter* writer_;  // Owned or not depending on |owns_writer_|.
@@ -693,6 +688,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   std::vector<QuicGoAwayFrame> last_goaway_frames_;
   std::vector<QuicWindowUpdateFrame> last_window_update_frames_;
   std::vector<QuicBlockedFrame> last_blocked_frames_;
+  std::vector<QuicPingFrame> last_ping_frames_;
   std::vector<QuicConnectionCloseFrame> last_close_frames_;
 
   QuicCongestionFeedbackFrame outgoing_congestion_feedback_;

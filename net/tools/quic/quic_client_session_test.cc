@@ -13,6 +13,7 @@
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
+#include "net/tools/quic/test_tools/quic_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::test::CryptoTestUtils;
@@ -20,7 +21,11 @@ using net::test::DefaultQuicConfig;
 using net::test::PacketSavingConnection;
 using net::test::QuicSessionPeer;
 using net::test::SupportedVersions;
+using net::test::TestPeerIPAddress;
 using net::test::ValueRestore;
+using net::test::kTestPort;
+using net::tools::test::MockConnection;
+using testing::Invoke;
 using testing::_;
 
 namespace net {
@@ -107,6 +112,39 @@ TEST_P(ToolsQuicClientSessionTest, SetFecProtectionFromConfig) {
   QuicSpdyClientStream* stream = session_->CreateOutgoingDataStream();
   ASSERT_TRUE(stream);
   EXPECT_EQ(FEC_PROTECT_OPTIONAL, stream->fec_policy());
+}
+
+TEST_P(ToolsQuicClientSessionTest, EmptyPacketReceived) {
+  // This test covers broken behavior that empty packets cause QUIC connection
+  // broken.
+
+  // Create Packet with 0 length.
+  QuicEncryptedPacket invalid_packet(nullptr, 0, false);
+  IPEndPoint server_address(TestPeerIPAddress(), kTestPort);
+  IPEndPoint client_address(TestPeerIPAddress(), kTestPort);
+
+  EXPECT_CALL(*reinterpret_cast<MockConnection*>(session_->connection()),
+              ProcessUdpPacket(server_address, client_address, _))
+      .WillRepeatedly(
+          Invoke(reinterpret_cast<MockConnection*>(session_->connection()),
+                 &MockConnection::ReallyProcessUdpPacket));
+
+  // Expect call to close connection with error QUIC_INVALID_PACKET_HEADER.
+  // TODO(b/17206611): Correct behavior: packet should get dropped and
+  // connection should remain open.
+  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
+      QUIC_INVALID_PACKET_HEADER, _)).Times(1);
+  session_->connection()->ProcessUdpPacket(client_address, server_address,
+                                           invalid_packet);
+
+  // Create a packet that causes DecryptPacket failed. The packet will get
+  // dropped without closing connection. This is a correct behavior.
+  char buf[2] = {0x00, 0x01};
+  QuicEncryptedPacket valid_packet(buf, 2, false);
+  // Close connection shouldn't be called.
+  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(_, _)).Times(0);
+  session_->connection()->ProcessUdpPacket(client_address, server_address,
+                                           valid_packet);
 }
 
 }  // namespace
