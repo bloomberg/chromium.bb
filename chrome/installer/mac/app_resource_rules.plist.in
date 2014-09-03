@@ -68,8 +68,6 @@
 		</dict>
 		<key>^Versions/@VERSION_REGEX@/</key>
 		<dict>
-			<key>nested</key>
-			<true/>
 			<key>weight</key>
 			<real>20</real>
 		</dict>
@@ -79,6 +77,20 @@
 			<true/>
 			<key>weight</key>
 			<real>30</real>
+		</dict>
+		<key>^Versions/@VERSION_REGEX@/.+/Resources/.+\.lproj/</key>
+		<dict>
+			<key>optional</key>
+			<true/>
+			<key>weight</key>
+			<real>30</real>
+		</dict>
+		<key>^Versions/@VERSION_REGEX@/.+/Resources Disabled/</key>
+		<dict>
+			<key>omit</key>
+			<true/>
+			<key>weight</key>
+			<real>40</real>
 		</dict>
 		<key>/\.DS_Store$</key>
 		<dict>
