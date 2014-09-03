@@ -2977,16 +2977,16 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty()
     // Since all is valid css property keyword, cssPropertyID for all
     // returns non-null value. We need to check "all" before
     // cssPropertyID check.
-    if (equalIgnoringCase(value, "all"))
+    if (value->id == CSSValueAll)
         return cssValuePool().createIdentifierValue(CSSValueAll);
     CSSPropertyID property = cssPropertyID(value->string);
     if (property) {
         ASSERT(CSSPropertyMetadata::isEnabledProperty(property));
         return cssValuePool().createIdentifierValue(property);
     }
-    if (equalIgnoringCase(value, "none"))
+    if (value->id == CSSValueNone)
         return cssValuePool().createIdentifierValue(CSSValueNone);
-    if (equalIgnoringCase(value, "inherit") || equalIgnoringCase(value, "initial"))
+    if (value->id == CSSValueInitial || value->id == CSSValueInherit)
         return nullptr;
     return createPrimitiveStringValue(value);
 }
@@ -4038,7 +4038,7 @@ PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeInset(CS
     bool hasRoundedInset = false;
 
     while (argument) {
-        if (argument->unit == CSSPrimitiveValue::CSS_IDENT && equalIgnoringCase(argument->string, "round")) {
+        if (argument->unit == CSSPrimitiveValue::CSS_IDENT && argument->id == CSSValueRound) {
             hasRoundedInset = true;
             break;
         }
@@ -6229,13 +6229,13 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseDeprecatedGradientPoint(CS
 {
     RefPtrWillBeRawPtr<CSSPrimitiveValue> result = nullptr;
     if (a->unit == CSSPrimitiveValue::CSS_IDENT) {
-        if ((equalIgnoringCase(a, "left") && horizontal)
-            || (equalIgnoringCase(a, "top") && !horizontal))
+        if ((a->id == CSSValueLeft && horizontal)
+            || (a->id == CSSValueTop && !horizontal))
             result = cssValuePool().createValue(0., CSSPrimitiveValue::CSS_PERCENTAGE);
-        else if ((equalIgnoringCase(a, "right") && horizontal)
-                 || (equalIgnoringCase(a, "bottom") && !horizontal))
+        else if ((a->id == CSSValueRight && horizontal)
+            || (a->id == CSSValueBottom && !horizontal))
             result = cssValuePool().createValue(100., CSSPrimitiveValue::CSS_PERCENTAGE);
-        else if (equalIgnoringCase(a, "center"))
+        else if (a->id == CSSValueCenter)
             result = cssValuePool().createValue(50., CSSPrimitiveValue::CSS_PERCENTAGE);
     } else if (a->unit == CSSPrimitiveValue::CSS_NUMBER || a->unit == CSSPrimitiveValue::CSS_PERCENTAGE) {
         result = cssValuePool().createValue(a->fValue, static_cast<CSSPrimitiveValue::UnitType>(a->unit));
@@ -6319,7 +6319,7 @@ bool CSSPropertyParser::parseDeprecatedGradient(CSSParserValueList* valueList, R
     CSSParserValue* a = args->current();
     if (!a || a->unit != CSSPrimitiveValue::CSS_IDENT)
         return false;
-    if (equalIgnoringCase(a, "linear"))
+    if (a->id == CSSValueLinear)
         gradientType = CSSDeprecatedLinearGradient;
     else if (equalIgnoringCase(a, "radial"))
         gradientType = CSSDeprecatedRadialGradient;
@@ -6818,7 +6818,7 @@ bool CSSPropertyParser::parseRadialGradient(CSSParserValueList* valueList, RefPt
     // at <position>
     RefPtrWillBeRawPtr<CSSValue> centerX = nullptr;
     RefPtrWillBeRawPtr<CSSValue> centerY = nullptr;
-    if (a->unit == CSSPrimitiveValue::CSS_IDENT && equalIgnoringCase(a, "at")) {
+    if (a->unit == CSSPrimitiveValue::CSS_IDENT && a->id == CSSValueAt) {
         a = args->next();
         if (!a)
             return false;
