@@ -78,6 +78,11 @@ public interface TabObserver {
      */
     void onContextMenuShown(Tab tab, ContextMenu menu);
 
+    /**
+     * Called when the WebContents Instant support is disabled.
+     */
+    void onWebContentsInstantSupportDisabled();
+
     // WebContentsDelegateAndroid methods ---------------------------------------------------------
 
     /**

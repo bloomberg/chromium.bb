@@ -39,6 +39,9 @@ public class EmptyTabObserver implements TabObserver {
     public void onContextMenuShown(Tab tab, ContextMenu menu) { }
 
     @Override
+    public void onWebContentsInstantSupportDisabled() { }
+
+    @Override
     public void onLoadStarted(Tab tabBase) { }
 
     @Override
