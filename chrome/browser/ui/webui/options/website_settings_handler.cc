@@ -32,6 +32,7 @@ using power::OriginPowerMapFactory;
 
 namespace {
 
+const char kBattery[] = "battery";
 const int kHttpPort = 80;
 const int kHttpsPort = 443;
 const char kPreferencesSource[] = "preference";
@@ -42,12 +43,14 @@ const ContentSettingsType kValidTypes[] = {
     CONTENT_SETTINGS_TYPE_MEDIASTREAM,
     CONTENT_SETTINGS_TYPE_COOKIES};
 const size_t kValidTypesLength = arraysize(kValidTypes);
+
 }  // namespace
 
 namespace options {
 
 WebsiteSettingsHandler::WebsiteSettingsHandler()
-    : observer_(this), weak_ptr_factory_(this) {
+    : observer_(this),
+      weak_ptr_factory_(this) {
 }
 
 WebsiteSettingsHandler::~WebsiteSettingsHandler() {
@@ -87,6 +90,14 @@ void WebsiteSettingsHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
   HostContentSettingsMap* settings = profile->GetHostContentSettingsMap();
   observer_.Add(settings);
+
+  power::OriginPowerMap* origin_power_map =
+      power::OriginPowerMapFactory::GetForBrowserContext(profile);
+  // OriginPowerMap may not be available in tests.
+  if (origin_power_map) {
+    subscription_ = origin_power_map->AddPowerConsumptionUpdatedCallback(
+        base::Bind(&WebsiteSettingsHandler::Update, base::Unretained(this)));
+  }
 }
 
 void WebsiteSettingsHandler::RegisterMessages() {
@@ -217,6 +228,8 @@ void WebsiteSettingsHandler::Update() {
   DCHECK(!last_setting_.empty());
   if (last_setting_ == kStorage)
     UpdateLocalStorage();
+  else if (last_setting_ == kBattery)
+    UpdateBatteryUsage();
   else
     UpdateOrigins();
 }
@@ -378,30 +391,8 @@ void WebsiteSettingsHandler::HandleSetOriginPermission(
 
 void WebsiteSettingsHandler::HandleUpdateBatteryUsage(
     const base::ListValue* args) {
-  base::DictionaryValue power_map;
-  OriginPowerMap* origins =
-      OriginPowerMapFactory::GetForBrowserContext(Profile::FromWebUI(web_ui()));
-  OriginPowerMap::PercentOriginMap percent_map = origins->GetPercentOriginMap();
-  for (std::map<GURL, int>::iterator it = percent_map.begin();
-       it != percent_map.end();
-       ++it) {
-    std::string origin = it->first.spec();
-
-    if (origin.find(last_filter_) == base::string16::npos)
-      continue;
-
-    base::DictionaryValue* origin_entry = new base::DictionaryValue();
-    origin_entry->SetInteger("usage", it->second);
-    origin_entry->SetString(
-        "usageString",
-        l10n_util::GetStringFUTF16Int(IDS_WEBSITE_SETTINGS_BATTERY_PERCENT,
-                                      it->second));
-    origin_entry->SetStringWithoutPathExpansion(
-        "readableName", GetReadableName(it->first));
-    power_map.SetWithoutPathExpansion(origin, origin_entry);
-  }
-  web_ui()->CallJavascriptFunction("WebsiteSettingsManager.populateOrigins",
-                                   power_map);
+  last_setting_ = kBattery;
+  UpdateBatteryUsage();
 }
 
 void WebsiteSettingsHandler::HandleDeleteLocalStorage(
@@ -527,6 +518,33 @@ void WebsiteSettingsHandler::UpdateLocalStorage() {
   }
   web_ui()->CallJavascriptFunction("WebsiteSettingsManager.populateOrigins",
                                    local_storage_map);
+}
+
+void WebsiteSettingsHandler::UpdateBatteryUsage() {
+  base::DictionaryValue power_map;
+  OriginPowerMap* origins =
+      OriginPowerMapFactory::GetForBrowserContext(Profile::FromWebUI(web_ui()));
+  OriginPowerMap::PercentOriginMap percent_map = origins->GetPercentOriginMap();
+  for (std::map<GURL, int>::iterator it = percent_map.begin();
+       it != percent_map.end();
+       ++it) {
+    std::string origin = it->first.spec();
+
+    if (origin.find(last_filter_) == base::string16::npos)
+      continue;
+
+    base::DictionaryValue* origin_entry = new base::DictionaryValue();
+    origin_entry->SetInteger("usage", it->second);
+    origin_entry->SetString(
+        "usageString",
+        l10n_util::GetStringFUTF16Int(IDS_WEBSITE_SETTINGS_BATTERY_PERCENT,
+                                      it->second));
+    origin_entry->SetStringWithoutPathExpansion("readableName",
+                                                GetReadableName(it->first));
+    power_map.SetWithoutPathExpansion(origin, origin_entry);
+  }
+  web_ui()->CallJavascriptFunction("WebsiteSettingsManager.populateOrigins",
+                                   power_map);
 }
 
 void WebsiteSettingsHandler::StopOrigin(const GURL& site_url) {

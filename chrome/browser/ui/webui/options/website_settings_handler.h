@@ -15,6 +15,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "components/power/origin_power_map.h"
 
 namespace options {
 
@@ -92,6 +93,10 @@ class WebsiteSettingsHandler : public content_settings::Observer,
   // and update the page.
   void UpdateLocalStorage();
 
+  // Get all origins with power consumption, filter them by |last_filter_|,
+  // and update the page.
+  void UpdateBatteryUsage();
+
   // Kill all tabs and app windows which have the same origin as |site_url|.
   void StopOrigin(const GURL& site_url);
 
@@ -117,6 +122,9 @@ class WebsiteSettingsHandler : public content_settings::Observer,
 
   // Observer to watch for content settings changes.
   ScopedObserver<HostContentSettingsMap, content_settings::Observer> observer_;
+
+  // Subscription to watch for power consumption updates.
+  scoped_ptr<power::OriginPowerMap::Subscription> subscription_;
 
   base::WeakPtrFactory<WebsiteSettingsHandler> weak_ptr_factory_;
 

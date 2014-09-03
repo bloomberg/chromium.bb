@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/callback_list.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
@@ -17,6 +18,7 @@ namespace power {
 class OriginPowerMap : public KeyedService {
  public:
   typedef std::map<GURL, int> PercentOriginMap;
+  typedef base::CallbackList<void(void)>::Subscription Subscription;
 
   OriginPowerMap();
   virtual ~OriginPowerMap();
@@ -33,6 +35,14 @@ class OriginPowerMap : public KeyedService {
   // consumed.
   PercentOriginMap GetPercentOriginMap();
 
+  // Adds a callback for the completion of a round of updates to |origin_map_|.
+  scoped_ptr<Subscription> AddPowerConsumptionUpdatedCallback(
+      const base::Closure& callback);
+
+  // Notifies observers to let them know that the origin power map has finished
+  // updating for all origins this cycle.
+  void OnAllOriginsUpdated();
+
  private:
   // OriginMap maps a URL to the amount of power consumed by the URL using the
   // same units as |total_consumed_|.
@@ -42,6 +52,8 @@ class OriginPowerMap : public KeyedService {
   // Total amount of power consumed using units determined by
   // the power heuristics available to the platform.
   double total_consumed_;
+
+  base::CallbackList<void(void)> callback_list_;
 
   DISALLOW_COPY_AND_ASSIGN(OriginPowerMap);
 };

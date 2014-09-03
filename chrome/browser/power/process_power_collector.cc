@@ -174,6 +174,17 @@ void ProcessPowerCollector::RecordCpuUsageByOrigin(double total_cpu_percent) {
     DCHECK(origin_power_map);
     origin_power_map->AddPowerForOrigin(origin, last_process_power_usage);
   }
+
+  // Iterate over all profiles to let them know we've finished updating.
+  ProfileManager* pm = g_browser_process->profile_manager();
+  std::vector<Profile*> open_profiles = pm->GetLoadedProfiles();
+  for (std::vector<Profile*>::const_iterator it = open_profiles.begin();
+       it != open_profiles.end();
+       ++it) {
+    power::OriginPowerMap* origin_power_map =
+        power::OriginPowerMapFactory::GetForBrowserContext(*it);
+    origin_power_map->OnAllOriginsUpdated();
+  }
 }
 
 void ProcessPowerCollector::UpdateProcessInMap(

@@ -49,4 +49,14 @@ OriginPowerMap::PercentOriginMap OriginPowerMap::GetPercentOriginMap() {
   return percent_map;
 }
 
+scoped_ptr<OriginPowerMap::Subscription>
+OriginPowerMap::AddPowerConsumptionUpdatedCallback(
+    const base::Closure& callback) {
+  return callback_list_.Add(callback);
+}
+
+void OriginPowerMap::OnAllOriginsUpdated() {
+  callback_list_.Notify();
+}
+
 }  // namespace power
