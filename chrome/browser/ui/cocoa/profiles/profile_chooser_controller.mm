@@ -85,7 +85,6 @@ const CGFloat kProfileButtonHeight = 30;
 const int kBezelThickness = 3;  // Width of the bezel on an NSButton.
 const int kImageTitleSpacing = 10;
 const int kBlueButtonHeight = 30;
-const CGFloat kFocusRingLineWidth = 2;
 
 // Fixed size for embedded sign in pages as defined in Gaia.
 const CGFloat kFixedGaiaViewWidth = 360;
@@ -404,34 +403,22 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   return buttonSize;
 }
 
-- (NSFocusRingType)focusRingType {
-  // This is taken care of by the custom drawing code.
-  return NSFocusRingTypeNone;
-}
+@end
 
-- (void)drawWithFrame:(NSRect)frame inView:(NSView *)controlView {
-  [super drawInteriorWithFrame:frame inView:controlView];
+// A custom button that has a transparent backround.
+@interface TransparentBackgroundButton : NSButton
+@end
 
-  // Focus ring.
-  if ([self showsFirstResponder]) {
-    NSRect focusRingRect =
-        NSInsetRect(frame, kFocusRingLineWidth, kFocusRingLineWidth);
-    // TODO(noms): When we are targetting 10.7, we should change this to use
-    // -drawFocusRingMaskWithFrame instead.
-    [[[NSColor keyboardFocusIndicatorColor] colorWithAlphaComponent:1] set];
-    NSBezierPath* path = [NSBezierPath bezierPathWithRect:focusRingRect];
-    [path setLineWidth:kFocusRingLineWidth];
-    [path stroke];
+@implementation TransparentBackgroundButton
+- (id)initWithFrame:(NSRect)frameRect {
+  if ((self = [super initWithFrame:frameRect])) {
+    [self setBordered:NO];
+    [self setFont:[NSFont labelFontOfSize:kTextFontSize]];
+    [self setButtonType:NSMomentaryChangeButton];
   }
+  return self;
 }
 
-@end
-
-// A custom image view that has a transparent backround.
-@interface TransparentBackgroundImageView : NSImageView
-@end
-
-@implementation TransparentBackgroundImageView
 - (void)drawRect:(NSRect)dirtyRect {
   NSColor* backgroundColor = [NSColor colorWithCalibratedWhite:1 alpha:0.6f];
   [backgroundColor setFill];
@@ -440,31 +427,13 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 @end
 
-@interface CustomCircleImageCell : NSButtonCell
-@end
-
-@implementation CustomCircleImageCell
-- (void)drawWithFrame:(NSRect)frame inView:(NSView *)controlView {
-  // Display everything as a circle that spans the entire control.
-  NSBezierPath* path = [NSBezierPath bezierPathWithOvalInRect:frame];
-  [path addClip];
-
-  [super drawImage:[self image] withFrame:frame inView:controlView];
-
-  // Focus ring.
-  if ([self showsFirstResponder]) {
-    [[[NSColor keyboardFocusIndicatorColor] colorWithAlphaComponent:1] set];
-    [path setLineWidth:kFocusRingLineWidth];
-    [path stroke];
-  }
-}
-@end
-
 // A custom image control that shows a "Change" button when moused over.
-@interface EditableProfilePhoto : HoverImageButton {
+@interface EditableProfilePhoto : NSImageView {
  @private
   AvatarMenu* avatarMenu_;  // Weak; Owned by ProfileChooserController.
-  base::scoped_nsobject<TransparentBackgroundImageView> changePhotoImage_;
+  base::scoped_nsobject<TransparentBackgroundButton> changePhotoButton_;
+  // Used to display the "Change" button on hover.
+  ui::ScopedCrTrackingArea trackingArea_;
   ProfileChooserController* controller_;
 }
 
@@ -477,6 +446,16 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 // Called when the "Change" button is clicked.
 - (void)editPhoto:(id)sender;
 
+// When hovering over the profile photo, show the "Change" button.
+- (void)mouseEntered:(NSEvent*)event;
+
+// When hovering away from the profile photo, hide the "Change" button.
+- (void)mouseExited:(NSEvent*)event;
+@end
+
+@interface EditableProfilePhoto (Private)
+// Create the "Change" avatar photo button.
+- (TransparentBackgroundButton*)changePhotoButtonWithRect:(NSRect)rect;
 @end
 
 @implementation EditableProfilePhoto
@@ -488,29 +467,24 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   if ((self = [super initWithFrame:frameRect])) {
     avatarMenu_ = avatarMenu;
     controller_ = controller;
-
-    [self setBordered:NO];
-
-    base::scoped_nsobject<CustomCircleImageCell> cell(
-        [[CustomCircleImageCell alloc] init]);
-    [self setCell:cell.get()];
-
-    [self setDefaultImage:CreateProfileImage(
+    [self setImage:CreateProfileImage(
         profileIcon, kLargeImageSide).ToNSImage()];
-    [self setImagePosition:NSImageOnly];
+
+    // Add a tracking area so that we can show/hide the button when hovering.
+    trackingArea_.reset([[CrTrackingArea alloc]
+        initWithRect:[self bounds]
+             options:NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways
+               owner:self
+            userInfo:nil]);
+    [self addTrackingArea:trackingArea_.get()];
 
     NSRect bounds = NSMakeRect(0, 0, kLargeImageSide, kLargeImageSide);
     if (editingAllowed) {
-      [self setTarget:self];
-      [self setAction:@selector(editPhoto:)];
-      changePhotoImage_.reset([[TransparentBackgroundImageView alloc]
-          initWithFrame:bounds]);
-      [changePhotoImage_ setImage:ui::ResourceBundle::GetSharedInstance().
-          GetNativeImageNamed(IDR_ICON_PROFILES_EDIT_CAMERA).AsNSImage()];
-      [self addSubview:changePhotoImage_];
+      changePhotoButton_.reset([self changePhotoButtonWithRect:bounds]);
+      [self addSubview:changePhotoButton_];
 
-      // Hide the image until the button is hovered over.
-      [changePhotoImage_ setHidden:YES];
+      // Hide the button until the image is hovered over.
+      [changePhotoButton_ setHidden:YES];
     }
 
     // Set the image cell's accessibility strings to be the same as the
@@ -542,15 +516,36 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   return self;
 }
 
+- (void)drawRect:(NSRect)dirtyRect {
+  NSRect bounds = [self bounds];
+
+  // Display the profile picture as a circle.
+  NSBezierPath* path = [NSBezierPath bezierPathWithOvalInRect:bounds];
+  [path addClip];
+  [self.image drawAtPoint:bounds.origin
+                 fromRect:bounds
+                operation:NSCompositeSourceOver
+                 fraction:1.0];
+
+}
+
 - (void)editPhoto:(id)sender {
   avatarMenu_->EditProfile(avatarMenu_->GetActiveProfileIndex());
   [controller_
       postActionPerformed:ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_IMAGE];
 }
 
-- (void)setHoverState:(HoverState)state {
-  [super setHoverState:state];
-  [changePhotoImage_ setHidden:([self hoverState] == kHoverStateNone)];
+- (void)mouseEntered:(NSEvent*)event {
+  [changePhotoButton_ setHidden:NO];
+}
+
+- (void)mouseExited:(NSEvent*)event {
+  [changePhotoButton_ setHidden:YES];
+}
+
+// Make sure the element is focusable for accessibility.
+- (BOOL)canBecomeKeyView {
+  return YES;
 }
 
 - (BOOL)accessibilityIsIgnored {
@@ -570,6 +565,16 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [super accessibilityPerformAction:action];
 }
 
+- (TransparentBackgroundButton*)changePhotoButtonWithRect:(NSRect)rect {
+  TransparentBackgroundButton* button =
+      [[TransparentBackgroundButton alloc] initWithFrame:rect];
+  [button setImage:ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_ICON_PROFILES_EDIT_CAMERA).AsNSImage()];
+  [button setImagePosition:NSImageOnly];
+  [button setTarget:self];
+  [button setAction:@selector(editPhoto:)];
+  return button;
+}
 @end
 
 // A custom text control that turns into a textfield for editing when clicked.
@@ -759,26 +764,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   NSRectFill(dirtyRect);
   [super drawRect:dirtyRect];
 }
-@end
-
-// A custom dummy button that is used to clear focus from the bubble's controls.
-@interface DummyWindowFocusButton : NSButton
-@end
-
-@implementation DummyWindowFocusButton
-// Ignore accessibility, as this is a placeholder button.
-- (BOOL)accessibilityIsIgnored {
-  return YES;
-}
-
-- (id)accessibilityAttributeValue:(NSString*)attribute {
-  return @[];
-}
-
-- (BOOL)canBecomeKeyView {
-  return false;
-}
-
 @end
 
 @interface ProfileChooserController ()
@@ -1135,15 +1120,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   if (viewMode_ != profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER)
     tutorialMode_ = profiles::TUTORIAL_MODE_NONE;
 
-  // Add a dummy, empty element so that we don't initially display any
-  // focus rings.
-  NSButton* dummyFocusButton =
-      [[[DummyWindowFocusButton alloc] initWithFrame:NSZeroRect] autorelease];
-  [dummyFocusButton setNextKeyView:subView];
-  [[self window] makeFirstResponder:dummyFocusButton];
-
   [contentView addSubview:subView];
-  [contentView addSubview:dummyFocusButton];
   SetWindowSize([self window],
       NSMakeSize(NSWidth([subView frame]), NSHeight([subView frame])));
 }
@@ -1687,8 +1664,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (NSButton*)createOtherProfileView:(int)itemIndex {
   const AvatarMenu::Item& item = avatarMenu_->GetItemAt(itemIndex);
 
-  NSRect rect = NSMakeRect(
-      0, 0, kFixedMenuWidth, kBlueButtonHeight + kSmallVerticalSpacing);
+  NSRect rect = NSMakeRect(0, 0, kFixedMenuWidth, kBlueButtonHeight);
   base::scoped_nsobject<BackgroundColorHoverButton> profileButton(
       [[BackgroundColorHoverButton alloc]
           initWithFrame:rect
