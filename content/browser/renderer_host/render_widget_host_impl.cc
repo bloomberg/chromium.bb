@@ -1779,9 +1779,13 @@ void RenderWidgetHostImpl::IncrementInFlightEventCount() {
 
 void RenderWidgetHostImpl::DecrementInFlightEventCount() {
   DCHECK_GE(in_flight_event_count_, 0);
-  // Cancel pending hung renderer checks since the renderer is responsive.
-  if (decrement_in_flight_event_count() <= 0)
+  if (decrement_in_flight_event_count() <= 0) {
+    // Cancel pending hung renderer checks since the renderer is responsive.
     StopHangMonitorTimeout();
+  } else {
+    // The renderer is responsive, but there are in-flight events to wait for.
+    RestartHangMonitorTimeout();
+  }
 }
 
 void RenderWidgetHostImpl::OnHasTouchEventHandlers(bool has_handlers) {
