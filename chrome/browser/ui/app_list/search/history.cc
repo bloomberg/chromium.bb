@@ -4,12 +4,10 @@
 
 #include "chrome/browser/ui/app_list/search/history.h"
 
-#include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/search/history_data.h"
 #include "chrome/browser/ui/app_list/search/history_data_store.h"
-#include "content/public/browser/browser_context.h"
 #include "ui/app_list/search/tokenized_string.h"
 
 namespace app_list {
@@ -24,16 +22,12 @@ std::string NormalizeString(const std::string& utf8) {
 
 }  // namespace
 
-History::History(content::BrowserContext* context)
-    : browser_context_(context),
+History::History(scoped_refptr<HistoryDataStore> store)
+    : store_(store),
       data_loaded_(false) {
-  const char kStoreDataFileName[] = "App Launcher Search";
   const size_t kMaxQueryEntries = 1000;
   const size_t kMaxSecondaryQueries = 5;
 
-  const base::FilePath data_file =
-      browser_context_->GetPath().AppendASCII(kStoreDataFileName);
-  store_ = new HistoryDataStore(data_file);
   data_.reset(
       new HistoryData(store_.get(), kMaxQueryEntries, kMaxSecondaryQueries));
   data_->AddObserver(this);

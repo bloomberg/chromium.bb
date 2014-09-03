@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "chrome/browser/ui/app_list/search/common/dictionary_data_store.h"
 #include "chrome/browser/ui/app_list/search/history_data.h"
 #include "chrome/browser/ui/app_list/search/history_data_store.h"
 #include "content/public/test/test_browser_thread.h"
@@ -54,7 +55,8 @@ class HistoryDataStoreTest : public testing::Test {
 
   void OpenStore(const std::string& file_name) {
     data_file_ = temp_dir_.path().AppendASCII(file_name);
-    store_ = new HistoryDataStore(data_file_);
+    store_ = new HistoryDataStore(scoped_refptr<DictionaryDataStore>(
+        new DictionaryDataStore(data_file_)));
     Load();
   }
 

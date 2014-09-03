@@ -4,9 +4,13 @@
 
 #include "chrome/browser/ui/app_list/search/history_factory.h"
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
+#include "chrome/browser/ui/app_list/search/common/dictionary_data_store.h"
 #include "chrome/browser/ui/app_list/search/history.h"
+#include "chrome/browser/ui/app_list/search/history_data_store.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "content/public/browser/browser_context.h"
 
 namespace app_list {
 
@@ -31,7 +35,14 @@ HistoryFactory::~HistoryFactory() {}
 
 KeyedService* HistoryFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new History(context);
+  const char kStoreDataFileName[] = "App Launcher Search";
+  const base::FilePath data_file =
+      context->GetPath().AppendASCII(kStoreDataFileName);
+  scoped_refptr<DictionaryDataStore> dictionary_data_store(
+      new DictionaryDataStore(data_file));
+  scoped_refptr<HistoryDataStore> history_data_store(
+      new HistoryDataStore(dictionary_data_store));
+  return new History(history_data_store);
 }
 
 }  // namespace app_list

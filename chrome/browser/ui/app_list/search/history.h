@@ -15,10 +15,6 @@
 #include "chrome/browser/ui/app_list/search/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace app_list {
 
 class HistoryData;
@@ -36,7 +32,7 @@ class SearchHistoryTest;
 // have been launched before.
 class History : public KeyedService, public HistoryDataObserver {
  public:
-  explicit History(content::BrowserContext* context);
+  explicit History(scoped_refptr<HistoryDataStore> store);
   virtual ~History();
 
   // Returns true if the service is ready.
@@ -55,7 +51,6 @@ class History : public KeyedService, public HistoryDataObserver {
   // HistoryDataObserver overrides:
   virtual void OnHistoryDataLoadedFromStore() OVERRIDE;
 
-  content::BrowserContext* browser_context_;
   scoped_ptr<HistoryData> data_;
   scoped_refptr<HistoryDataStore> store_;
   bool data_loaded_;

@@ -9,10 +9,12 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
+#include "chrome/browser/ui/app_list/search/common/dictionary_data_store.h"
 #include "chrome/browser/ui/app_list/search/history.h"
 #include "chrome/browser/ui/app_list/search/history_data.h"
 #include "chrome/browser/ui/app_list/search/history_data_observer.h"
 #include "chrome/browser/ui/app_list/search/history_data_store.h"
+#include "chrome/browser/ui/app_list/search/history_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -101,7 +103,13 @@ class SearchHistoryTest : public testing::Test {
   }
 
   void CreateHistory() {
-    history_.reset(new History(profile_.get()));
+    const char kStoreDataFileName[] = "app-launcher-test";
+    const base::FilePath data_file =
+        profile_->GetPath().AppendASCII(kStoreDataFileName);
+    scoped_refptr<DictionaryDataStore> dictionary_data_store(
+        new DictionaryDataStore(data_file));
+    history_.reset(new History(scoped_refptr<HistoryDataStore>(
+        new HistoryDataStore(dictionary_data_store))));
 
     // Replace |data_| with test params.
     history_->data_->RemoveObserver(history_.get());

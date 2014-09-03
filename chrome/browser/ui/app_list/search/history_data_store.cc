@@ -7,14 +7,8 @@
 #include "base/callback.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace app_list {
 
@@ -111,27 +105,44 @@ scoped_ptr<HistoryData::Associations> Parse(
 
 }  // namespace
 
-HistoryDataStore::HistoryDataStore(const base::FilePath& data_file)
-    : data_store_(new DictionaryDataStore(data_file)) {
-  base::DictionaryValue* dict = data_store_->cached_dict();
-  DCHECK(dict);
-  dict->SetString(kKeyVersion, kCurrentVersion);
-  dict->Set(kKeyAssociations, new base::DictionaryValue);
+HistoryDataStore::HistoryDataStore()
+    : cached_dict_(new base::DictionaryValue()) {
+  Init(cached_dict_.get());
+}
+
+HistoryDataStore::HistoryDataStore(
+    scoped_refptr<DictionaryDataStore> data_store)
+    : data_store_(data_store) {
+  Init(data_store_->cached_dict());
 }
 
 HistoryDataStore::~HistoryDataStore() {
 }
 
+void HistoryDataStore::Init(base::DictionaryValue* cached_dict) {
+  DCHECK(cached_dict);
+  cached_dict->SetString(kKeyVersion, kCurrentVersion);
+  cached_dict->Set(kKeyAssociations, new base::DictionaryValue);
+}
+
 void HistoryDataStore::Flush(
     const DictionaryDataStore::OnFlushedCallback& on_flushed) {
-  data_store_->Flush(on_flushed);
+  if (data_store_)
+    data_store_->Flush(on_flushed);
+  else
+    on_flushed.Run();
 }
 
 void HistoryDataStore::Load(
     const HistoryDataStore::OnLoadedCallback& on_loaded) {
-  data_store_->Load(base::Bind(&HistoryDataStore::OnDictionaryLoadedCallback,
-                               this,
-                               on_loaded));
+  if (data_store_) {
+    data_store_->Load(base::Bind(&HistoryDataStore::OnDictionaryLoadedCallback,
+                                 this,
+                                 on_loaded));
+  } else {
+    OnDictionaryLoadedCallback(
+        on_loaded, make_scoped_ptr(cached_dict_->DeepCopy()));
+  }
 }
 
 void HistoryDataStore::SetPrimary(const std::string& query,
@@ -139,7 +150,8 @@ void HistoryDataStore::SetPrimary(const std::string& query,
   base::DictionaryValue* entry_dict = GetEntryDict(query);
   entry_dict->SetWithoutPathExpansion(kKeyPrimary,
                                       new base::StringValue(result));
-  data_store_->ScheduleWrite();
+  if (data_store_)
+    data_store_->ScheduleWrite();
 }
 
 void HistoryDataStore::SetSecondary(
@@ -151,7 +163,8 @@ void HistoryDataStore::SetSecondary(
 
   base::DictionaryValue* entry_dict = GetEntryDict(query);
   entry_dict->SetWithoutPathExpansion(kKeySecondary, results_list.release());
-  data_store_->ScheduleWrite();
+  if (data_store_)
+    data_store_->ScheduleWrite();
 }
 
 void HistoryDataStore::SetUpdateTime(const std::string& query,
@@ -160,17 +173,20 @@ void HistoryDataStore::SetUpdateTime(const std::string& query,
   entry_dict->SetWithoutPathExpansion(kKeyUpdateTime,
                                       new base::StringValue(base::Int64ToString(
                                           update_time.ToInternalValue())));
-  data_store_->ScheduleWrite();
+  if (data_store_)
+    data_store_->ScheduleWrite();
 }
 
 void HistoryDataStore::Delete(const std::string& query) {
   base::DictionaryValue* assoc_dict = GetAssociationDict();
   assoc_dict->RemoveWithoutPathExpansion(query, NULL);
-  data_store_->ScheduleWrite();
+  if (data_store_)
+    data_store_->ScheduleWrite();
 }
 
 base::DictionaryValue* HistoryDataStore::GetAssociationDict() {
-  base::DictionaryValue* cached_dict = data_store_->cached_dict();
+  base::DictionaryValue* cached_dict =
+      cached_dict_ ? cached_dict_.get() : data_store_->cached_dict();
   DCHECK(cached_dict);
 
   base::DictionaryValue* assoc_dict = NULL;

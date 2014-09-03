@@ -10,8 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
-#include "base/files/file_path.h"
-#include "base/files/important_file_writer.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/search/common/dictionary_data_store.h"
@@ -34,7 +32,11 @@ class HistoryDataStore : public base::RefCountedThreadSafe<HistoryDataStore> {
   typedef base::Callback<void(scoped_ptr<HistoryData::Associations>)>
       OnLoadedCallback;
 
-  explicit HistoryDataStore(const base::FilePath& data_file);
+  // A data store with no storage backend.
+  HistoryDataStore();
+
+  // |data_store| stores the history into the file.
+  explicit HistoryDataStore(scoped_refptr<DictionaryDataStore> data_store);
 
   // Flushes pending writes. |on_flushed| is invoked when disk write is
   // finished.
@@ -58,6 +60,8 @@ class HistoryDataStore : public base::RefCountedThreadSafe<HistoryDataStore> {
 
   virtual ~HistoryDataStore();
 
+  void Init(base::DictionaryValue* cached_dict);
+
   // Gets the dictionary for "associations" key.
   base::DictionaryValue* GetAssociationDict();
 
@@ -67,6 +71,10 @@ class HistoryDataStore : public base::RefCountedThreadSafe<HistoryDataStore> {
   void OnDictionaryLoadedCallback(OnLoadedCallback callback,
                                   scoped_ptr<base::DictionaryValue> dict);
 
+  // |cached_dict_| and |data_store_| is mutually exclusive. |data_store_| is
+  // used if it's backed by a file storage, otherwise |cache_dict_| keeps
+  // on-memory data.
+  scoped_ptr<base::DictionaryValue> cached_dict_;
   scoped_refptr<DictionaryDataStore> data_store_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryDataStore);
