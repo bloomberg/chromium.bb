@@ -165,9 +165,9 @@ class DataSeries0Test(CIDBIntegrationTest):
   """Simulate a set of 630 master/slave CQ builds."""
 
   def testCQWithSchema11(self):
-    """Run the CQ test with schema version 12."""
-    # Run the CQ test at schema version 12
-    self._PrepareFreshDatabase(12)
+    """Run the CQ test with schema version 13."""
+    # Run the CQ test at schema version 13
+    self._PrepareFreshDatabase(13)
     self._runCQTest()
 
   def _runCQTest(self):
@@ -224,7 +224,7 @@ class DataSeries0Test(CIDBIntegrationTest):
     # least 100 distinct last_updated times.
     distinct_last_updated = db._GetEngine().execute(
         'select count(distinct last_updated) from buildTable').fetchall()[0][0]
-    self.assertTrue(distinct_last_updated > 100)
+    self.assertTrue(distinct_last_updated > 80)
 
     ids_by_last_updated = db._GetEngine().execute(
         'select id from buildTable order by last_updated').fetchall()
