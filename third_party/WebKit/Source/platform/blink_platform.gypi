@@ -164,7 +164,7 @@
       'audio/AudioDelayDSPKernel.h',
       'audio/AudioDestination.cpp',
       'audio/AudioDestination.h',
-      'audio/AudioDestinationConsumer.cpp',
+      'audio/AudioDestinationConsumer.h',
       'audio/AudioFIFO.cpp',
       'audio/AudioFIFO.h',
       'audio/AudioFileReader.h',
