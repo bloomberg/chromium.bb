@@ -17,10 +17,6 @@
 #ifndef SkUserConfig_DEFINED
 #define SkUserConfig_DEFINED
 
-// Turns SkPicture::clone() into a simple "return SkRef(this);" as a way to
-// test the threadsafety of SkPicture playback.
-#define SK_PICTURE_CLONE_NOOP 1
-
 /*  SkTypes.h, the root of the public header files, does the following trick:
 
     #include <SkPreConfig.h>
@@ -264,6 +260,13 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #ifndef SK_SUPPORT_LEGACY_ALLOCPIXELS_BOOL
     #define SK_SUPPORT_LEGACY_ALLOCPIXELS_BOOL
 #endif
+
+// Turns SkPicture::clone() into a simple "return SkRef(this);" as a way to
+// test the threadsafety of SkPicture playback.
+#define SK_PICTURE_CLONE_NOOP 1
+
+// Turns on new (nicer, hopefully faster) SkPicture backend.
+#define SK_PICTURE_USE_SK_RECORD 1
 
 // ===== End Chrome-specific definitions =====
 
