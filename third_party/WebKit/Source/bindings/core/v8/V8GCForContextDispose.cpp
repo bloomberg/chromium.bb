@@ -45,15 +45,15 @@ V8GCForContextDispose::V8GCForContextDispose()
 
 void V8GCForContextDispose::notifyContextDisposed(bool isMainFrame)
 {
-    m_didDisposeContextForMainFrame = m_didDisposeContextForMainFrame || isMainFrame;
+    m_didDisposeContextForMainFrame = isMainFrame;
     V8PerIsolateData::mainThreadIsolate()->ContextDisposedNotification();
-    if (!m_pseudoIdleTimer.isActive())
+    if (!m_didDisposeContextForMainFrame && !m_pseudoIdleTimer.isActive())
         m_pseudoIdleTimer.startOneShot(0.8, FROM_HERE);
 }
 
 void V8GCForContextDispose::notifyIdleSooner(double maximumFireInterval)
 {
-    if (m_pseudoIdleTimer.isActive()) {
+    if (!m_didDisposeContextForMainFrame && m_pseudoIdleTimer.isActive()) {
         double nextFireInterval = m_pseudoIdleTimer.nextFireInterval();
         if (nextFireInterval > maximumFireInterval) {
             m_pseudoIdleTimer.stop();
@@ -70,11 +70,9 @@ V8GCForContextDispose& V8GCForContextDispose::instanceTemplate()
 
 void V8GCForContextDispose::pseudoIdleTimerFired(Timer<V8GCForContextDispose>*)
 {
-    const int longIdlePauseInMs = 100;
-    const int shortIdlePauseInMs = 10;
-    int hint = m_didDisposeContextForMainFrame ? longIdlePauseInMs : shortIdlePauseInMs;
-    V8PerIsolateData::mainThreadIsolate()->IdleNotification(hint);
-    m_didDisposeContextForMainFrame = false;
+    const int idlePauseInMs = 10;
+    if (!m_didDisposeContextForMainFrame)
+        V8PerIsolateData::mainThreadIsolate()->IdleNotification(idlePauseInMs);
 }
 
 } // namespace blink
