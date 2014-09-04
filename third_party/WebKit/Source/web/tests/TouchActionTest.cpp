@@ -328,7 +328,8 @@ void TouchActionTest::sendTouchEvent(WebView* webView, WebInputEvent::Type type,
     runPendingTasks();
 }
 
-TEST_F(TouchActionTest, Simple)
+// crbug.com/411038
+TEST_F(TouchActionTest, DISABLED_Simple)
 {
     runTouchActionTest("touch-action-simple.html");
 }
