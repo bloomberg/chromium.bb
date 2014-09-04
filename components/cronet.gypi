@@ -162,6 +162,11 @@
           'variables': {
             'java_in_dir': 'cronet/android/java',
             'javac_includes': [
+              '**/AsyncUrlRequest.java',
+              '**/AsyncUrlRequestException.java',
+              '**/AsyncUrlRequestFactory.java',
+              '**/AsyncUrlRequestListener.java',
+              '**/ResponseInfo.java',
               '**/ChunkedWritableByteChannel.java',
               '**/HttpUrlConnection*.java',
               '**/HttpUrlRequest*.java',
@@ -188,6 +193,7 @@
           'variables': {
             'java_in_dir': 'cronet/android/java',
             'javac_includes': [
+              '**/ChromiumAsyncUrlRequest.java',
               '**/ChromiumUrlRequest.java',
               '**/ChromiumUrlRequestContext.java',
               '**/ChromiumUrlRequestError.java',
