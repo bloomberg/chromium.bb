@@ -500,6 +500,9 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_SYNC_FILE_NAME" desc="File Manager status message.">
     Syncing <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
   </message>
+  <message name="IDS_FILE_BROWSER_SYNC_FILE_NUMBER" desc="File Manager status message.">
+    Syncing <ph name="NUMBER_OF_FILES">$1<ex>7</ex></ph> items...
+  </message>
   <message name="IDS_FILE_BROWSER_SYNC_DELETE_WITHOUT_PERMISSION_ERROR" desc="File Manager status message shown when the drive sync is failed because a user try to remove shared files that the user does not own.">
     "<ph name="FILENAME">$1<ex>photo.jpg</ex></ph>" has been shared with you. You cannot delete it because you do not own it.
   </message>

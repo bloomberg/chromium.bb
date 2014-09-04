@@ -100,14 +100,6 @@ std::string JobInfo::ToString() const {
 bool IsActiveFileTransferJobInfo(const JobInfo& job_info) {
   // Using switch statement so that compiler can warn when new states or types
   // are added.
-  switch (job_info.state) {
-    case STATE_NONE:
-      return false;
-    case STATE_RUNNING:
-    case STATE_RETRY:
-      break;
-  }
-
   switch (job_info.job_type) {
     case TYPE_GET_ABOUT_RESOURCE:
     case TYPE_GET_APP_LIST:

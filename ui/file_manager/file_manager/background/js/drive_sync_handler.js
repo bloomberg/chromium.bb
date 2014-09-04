@@ -19,18 +19,26 @@ function DriveSyncHandler(progressCenter) {
   this.progressCenter_ = progressCenter;
 
   /**
-   * Counter for progress ID.
+   * Counter for error ID.
    * @type {number}
    * @private
    */
-  this.idCounter_ = 0;
+  this.errorIdCounter_ = 0;
 
   /**
-   * Map of file urls and progress center items.
-   * @type {Object.<string, ProgressCenterItem>}
+   * Progress center item.
+   * @type {ProgressCenterItem}
    * @private
    */
-  this.items_ = {};
+  this.item_ = new ProgressCenterItem();
+  this.item_.id = 'drive-sync';
+
+   /**
+    * If the property is true, this item is syncing.
+    * @type {boolean}
+    * @private
+    */
+  this.syncing_ = false;
 
   /**
    * Async queue.
@@ -54,11 +62,11 @@ function DriveSyncHandler(progressCenter) {
 DriveSyncHandler.COMPLETED_EVENT = 'completed';
 
 /**
- * Progress ID of the drive sync.
+ * Progress ID of the drive sync error.
  * @type {string}
  * @const
  */
-DriveSyncHandler.PROGRESS_ITEM_ID_PREFIX = 'drive-sync-';
+DriveSyncHandler.DRIVE_SYNC_ERROR_PREFIX = 'drive-sync-error-';
 
 DriveSyncHandler.prototype = {
   __proto__: cr.EventTarget.prototype,
@@ -67,11 +75,7 @@ DriveSyncHandler.prototype = {
    * @return {boolean} Whether the handler is having syncing items or not.
    */
   get syncing() {
-    // Check if this.items_ has properties or not.
-    for (var url in this.items_) {
-      return true;
-    }
-    return false;
+    return this.syncing_;
   }
 };
 
@@ -85,15 +89,15 @@ DriveSyncHandler.prototype.onFileTransfersUpdated_ = function(statusList) {
   for (var i = 0; i < statusList.length; i++) {
     var status = statusList[i];
     switch (status.transferState) {
+      case 'added':
       case 'in_progress':
       case 'started':
         this.updateItem_(status);
         break;
       case 'completed':
       case 'failed':
-        this.removeItem_(status);
-        if (!this.syncing)
-          this.dispatchEvent(new Event(DriveSyncHandler.COMPLETED_EVENT));
+        if (status.num_total_jobs === 1)
+          this.removeItem_(status);
         break;
       default:
         throw new Error(
@@ -109,35 +113,26 @@ DriveSyncHandler.prototype.onFileTransfersUpdated_ = function(statusList) {
  */
 DriveSyncHandler.prototype.updateItem_ = function(status) {
   this.queue_.run(function(callback) {
-    if (this.items_[status.fileUrl]) {
-      callback();
-      return;
-    }
     webkitResolveLocalFileSystemURL(status.fileUrl, function(entry) {
-      var item = new ProgressCenterItem();
-      item.id =
-          DriveSyncHandler.PROGRESS_ITEM_ID_PREFIX + (this.idCounter_++);
-      item.type = ProgressItemType.SYNC;
-      item.quiet = true;
-      item.message = strf('SYNC_FILE_NAME', entry.name);
-      item.cancelCallback = this.requestCancel_.bind(this, entry);
-      this.items_[status.fileUrl] = item;
+      this.item_.state = ProgressItemState.PROGRESSING;
+      this.item_.type = ProgressItemType.SYNC;
+      this.item_.quiet = true;
+      this.syncing_ = true;
+      if (status.num_total_jobs > 1)
+        this.item_.message = strf('SYNC_FILE_NUMBER', status.num_total_jobs);
+      else
+        this.item_.message = strf('SYNC_FILE_NAME', entry.name);
+      this.item_.cancelCallback = this.requestCancel_.bind(this, entry);
+      // status.processed does not show the process of whole of sync.
+      this.item_.progressValue = 0;
+      // status.total does not show the total of whole of sync.
+      this.item_.progressMax = 1;
+      this.progressCenter_.updateItem(this.item_);
       callback();
     }.bind(this), function(error) {
       console.warn('Resolving URL ' + status.fileUrl + ' is failed: ', error);
       callback();
     });
-  }.bind(this));
-  this.queue_.run(function(callback) {
-    var item = this.items_[status.fileUrl];
-    if (!item) {
-      callback();
-      return;
-    }
-    item.progressValue = status.processed || 0;
-    item.progressMax = status.total || 1;
-    this.progressCenter_.updateItem(item);
-    callback();
   }.bind(this));
 };
 
@@ -148,15 +143,11 @@ DriveSyncHandler.prototype.updateItem_ = function(status) {
  */
 DriveSyncHandler.prototype.removeItem_ = function(status) {
   this.queue_.run(function(callback) {
-    var item = this.items_[status.fileUrl];
-    if (!item) {
-      callback();
-      return;
-    }
-    item.state = status.transferState === 'completed' ?
+    this.item_.state = status.transferState === 'completed' ?
         ProgressItemState.COMPLETED : ProgressItemState.CANCELED;
-    this.progressCenter_.updateItem(item);
-    delete this.items_[status.fileUrl];
+    this.progressCenter_.updateItem(this.item_);
+    this.syncing_ = false;
+    this.dispatchEvent(new Event(DriveSyncHandler.COMPLETED_EVENT));
     callback();
   }.bind(this));
 };
@@ -177,9 +168,9 @@ DriveSyncHandler.prototype.requestCancel_ = function(entry) {
  */
 DriveSyncHandler.prototype.onDriveSyncError_ = function(event) {
   webkitResolveLocalFileSystemURL(event.fileUrl, function(entry) {
-    var item;
-    item = new ProgressCenterItem();
-    item.id = DriveSyncHandler.PROGRESS_ITEM_ID_PREFIX + (this.idCounter_++);
+    var item = new ProgressCenterItem();
+    item.id =
+        DriveSyncHandler.DRIVE_SYNC_ERROR_PREFIX + (this.errorIdCounter_++);
     item.type = ProgressItemType.SYNC;
     item.quiet = true;
     item.state = ProgressItemState.ERROR;

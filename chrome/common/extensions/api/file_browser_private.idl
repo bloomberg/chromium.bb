@@ -46,7 +46,7 @@ enum MountCompletedStatus {
 };
 
 // File transfer progress state.
-enum TransferState { started, in_progress, completed, failed };
+enum TransferState { added, started, in_progress, completed, failed };
 
 // Defines file transfer direction.
 enum TransferType { upload, download };
@@ -320,6 +320,9 @@ dictionary FileTransferStatus {
 
   // Approximated total size of transfer operation.
   double? total;
+
+  // Total number of jobs.
+  long num_total_jobs;
 };
 
 // Error during the drive sync.

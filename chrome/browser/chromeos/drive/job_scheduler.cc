@@ -715,7 +715,7 @@ void JobScheduler::QueueJob(JobID job_id) {
   DCHECK(job_entry);
   const JobInfo& job_info = job_entry->job_info;
 
-  QueueType queue_type = GetJobQueueType(job_info.job_type);
+  const QueueType queue_type = GetJobQueueType(job_info.job_type);
   queue_[queue_type]->Push(job_id, job_entry->context.type);
 
   const std::string retry_prefix = job_entry->retry_count > 0 ?

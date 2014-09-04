@@ -164,11 +164,6 @@ class EventRouter : public chromeos::NetworkStateHandlerObserver,
   void ShowRemovableDeviceInFileManager(VolumeType type,
                                         const base::FilePath& mount_path);
 
-  // Sends onFileTranferUpdated to extensions if needed. If |always| is true,
-  // it sends the event always. Otherwise, it sends the event if enough time has
-  // passed from the previous event so as not to make extension busy.
-  void SendDriveFileTransferEvent(bool always);
-
   // Manages the list of currently active Drive file transfer jobs.
   struct DriveJobInfoWithStatus {
     DriveJobInfoWithStatus();
@@ -177,9 +172,26 @@ class EventRouter : public chromeos::NetworkStateHandlerObserver,
     drive::JobInfo job_info;
     std::string status;
   };
+
+  // Sends onFileTransferUpdate event right now if |immediate| is set. Otherwise
+  // it refrains from sending for a short while, and after that it sends the
+  // most recently scheduled event once.
+  // The delay is for waiting subsequent 'added' events to come after the first
+  // one when multiple tasks are added. This way, we can avoid frequent UI
+  // update caused by differences between singular and plural cases.
+  void ScheduleDriveFileTransferEvent(const drive::JobInfo& job_info,
+                                      const std::string& status,
+                                      bool immediate);
+
+  // Sends the most recently scheduled onFileTransferUpdated event to
+  // extensions.
+  // This is used for implementing ScheduledDriveFileTransferEvent().
+  void SendDriveFileTransferEvent();
+
   std::map<drive::JobID, DriveJobInfoWithStatus> drive_jobs_;
-  base::Time last_file_transfer_event_;
+  scoped_ptr<DriveJobInfoWithStatus> drive_job_info_for_scheduled_event_;
   base::Time last_copy_progress_event_;
+  base::Time next_send_file_transfer_event_;
 
   WatcherMap file_watchers_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
