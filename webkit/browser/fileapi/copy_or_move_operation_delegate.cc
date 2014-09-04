@@ -10,6 +10,7 @@
 #include "net/base/net_errors.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
+#include "webkit/browser/fileapi/file_observers.h"
 #include "webkit/browser/fileapi/file_stream_writer.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
@@ -366,6 +367,7 @@ class StreamCopyOrMoveImpl
  public:
   StreamCopyOrMoveImpl(
       FileSystemOperationRunner* operation_runner,
+      FileSystemContext* file_system_context,
       CopyOrMoveOperationDelegate::OperationType operation_type,
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
@@ -375,6 +377,7 @@ class StreamCopyOrMoveImpl
       const FileSystemOperation::CopyFileProgressCallback&
           file_progress_callback)
       : operation_runner_(operation_runner),
+        file_system_context_(file_system_context),
         operation_type_(operation_type),
         src_url_(src_url),
         dest_url_(dest_url),
@@ -403,6 +406,27 @@ class StreamCopyOrMoveImpl
   }
 
  private:
+  void NotifyOnStartUpdate(const FileSystemURL& url) {
+    if (file_system_context_->GetUpdateObservers(url.type())) {
+      file_system_context_->GetUpdateObservers(url.type())
+          ->Notify(&FileUpdateObserver::OnStartUpdate, MakeTuple(url));
+    }
+  }
+
+  void NotifyOnModifyFile(const FileSystemURL& url) {
+    if (file_system_context_->GetChangeObservers(url.type())) {
+      file_system_context_->GetChangeObservers(url.type())
+          ->Notify(&FileChangeObserver::OnModifyFile, MakeTuple(url));
+    }
+  }
+
+  void NotifyOnEndUpdate(const FileSystemURL& url) {
+    if (file_system_context_->GetUpdateObservers(url.type())) {
+      file_system_context_->GetUpdateObservers(url.type())
+          ->Notify(&FileUpdateObserver::OnEndUpdate, MakeTuple(url));
+    }
+  }
+
   void RunAfterGetMetadataForSource(
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
       base::File::Error error,
@@ -437,6 +461,10 @@ class StreamCopyOrMoveImpl
       base::File::Error error) {
     if (cancel_requested_)
       error = base::File::FILE_ERROR_ABORT;
+    // This conversion is to return the consistent status code with
+    // FileSystemFileUtil::Copy.
+    if (error == base::File::FILE_ERROR_NOT_A_FILE)
+      error = base::File::FILE_ERROR_INVALID_OPERATION;
 
     if (error != base::File::FILE_OK &&
         error != base::File::FILE_ERROR_EXISTS) {
@@ -473,6 +501,7 @@ class StreamCopyOrMoveImpl
     const bool need_flush = dest_url_.mount_option().copy_sync_option() ==
                             storage::COPY_SYNC_OPTION_SYNC;
 
+    NotifyOnStartUpdate(dest_url_);
     DCHECK(!copy_helper_);
     copy_helper_.reset(
         new CopyOrMoveOperationDelegate::StreamCopyHelper(
@@ -491,6 +520,8 @@ class StreamCopyOrMoveImpl
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
       const base::Time& last_modified,
       base::File::Error error) {
+    NotifyOnModifyFile(dest_url_);
+    NotifyOnEndUpdate(dest_url_);
     if (cancel_requested_)
       error = base::File::FILE_ERROR_ABORT;
 
@@ -544,6 +575,7 @@ class StreamCopyOrMoveImpl
   }
 
   FileSystemOperationRunner* operation_runner_;
+  scoped_refptr<FileSystemContext> file_system_context_;
   CopyOrMoveOperationDelegate::OperationType operation_type_;
   FileSystemURL src_url_;
   FileSystemURL dest_url_;
@@ -791,10 +823,17 @@ void CopyOrMoveOperationDelegate::ProcessFile(
           file_system_context()->CreateFileStreamWriter(dest_url, 0);
       if (reader && writer) {
         impl = new StreamCopyOrMoveImpl(
-            operation_runner(), operation_type_, src_url, dest_url, option_,
-            reader.Pass(), writer.Pass(),
+            operation_runner(),
+            file_system_context(),
+            operation_type_,
+            src_url,
+            dest_url,
+            option_,
+            reader.Pass(),
+            writer.Pass(),
             base::Bind(&CopyOrMoveOperationDelegate::OnCopyFileProgress,
-                       weak_factory_.GetWeakPtr(), src_url));
+                       weak_factory_.GetWeakPtr(),
+                       src_url));
       }
     }
 

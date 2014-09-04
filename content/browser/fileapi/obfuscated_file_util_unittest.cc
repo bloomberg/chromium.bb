@@ -796,7 +796,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
  protected:
   base::ScopedTempDir data_dir_;
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
   scoped_refptr<MockSpecialStoragePolicy> storage_policy_;
   scoped_refptr<storage::QuotaManager> quota_manager_;
   scoped_refptr<FileSystemContext> file_system_context_;

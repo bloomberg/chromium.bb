@@ -50,11 +50,10 @@ void AssertFileErrorEq(const tracked_objects::Location& from_here,
   ASSERT_EQ(expected, actual) << from_here.ToString();
 }
 
-void AssertFileErrorEqWithClosure(
-    const tracked_objects::Location& from_here,
-    base::File::Error expected,
-    base::Closure closure,
-    base::File::Error actual) {
+void AssertFileErrorEqWithClosure(const tracked_objects::Location& from_here,
+                                  base::File::Error expected,
+                                  base::Closure closure,
+                                  base::File::Error actual) {
   ASSERT_EQ(expected, actual) << from_here.ToString();
   closure.Run();
 }
@@ -286,7 +285,7 @@ class FileSystemOperationImplTest
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
   scoped_refptr<QuotaManager> quota_manager_;
   scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
 
@@ -614,8 +613,8 @@ TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcFileAndOverwrite) {
   EXPECT_EQ(base::File::FILE_OK, status());
   EXPECT_TRUE(FileExists("dest"));
   EXPECT_EQ(2, quota_manager_proxy()->notify_storage_accessed_count());
-
   EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
+
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
@@ -651,8 +650,8 @@ TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcDirAndOverwrite) {
   EXPECT_FALSE(DirectoryExists("dest/src"));
   EXPECT_GE(quota_manager_proxy()->notify_storage_accessed_count(), 3);
 
-  EXPECT_EQ(1, change_observer()->get_and_reset_remove_directory_count());
   EXPECT_EQ(1, change_observer()->get_and_reset_create_directory_count());
+  EXPECT_EQ(1, change_observer()->get_and_reset_remove_directory_count());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
@@ -1266,12 +1265,19 @@ TEST_F(FileSystemOperationImplTest,
   EXPECT_EQ(all_file_size, GetDataSizeOnDisk());
   EXPECT_EQ(expected_usage, usage);
 
-  // Copy src to dest1.
-  operation_runner()->Copy(
-      src, dest1, FileSystemOperation::OPTION_NONE,
-      FileSystemOperationRunner::CopyProgressCallback(),
-      base::Bind(&AssertFileErrorEq, FROM_HERE, base::File::FILE_OK));
-  base::RunLoop().RunUntilIdle();
+  {
+    base::RunLoop run_loop;
+    // Copy src to dest1.
+    operation_runner()->Copy(src,
+                             dest1,
+                             FileSystemOperation::OPTION_NONE,
+                             FileSystemOperationRunner::CopyProgressCallback(),
+                             base::Bind(&AssertFileErrorEqWithClosure,
+                                        FROM_HERE,
+                                        base::File::FILE_OK,
+                                        run_loop.QuitClosure()));
+    run_loop.Run();
+  }
 
   expected_usage += all_file_size + child_path_cost + grandchild_path_cost;
   EXPECT_TRUE(DirectoryExists("src/dir"));
@@ -1282,12 +1288,19 @@ TEST_F(FileSystemOperationImplTest,
   EXPECT_EQ(2 * all_file_size, GetDataSizeOnDisk());
   EXPECT_EQ(expected_usage, GetUsage());
 
-  // Copy src/dir to dest2.
-  operation_runner()->Copy(
-      child_dir, dest2, FileSystemOperation::OPTION_NONE,
-      FileSystemOperationRunner::CopyProgressCallback(),
-      base::Bind(&AssertFileErrorEq, FROM_HERE, base::File::FILE_OK));
-  base::RunLoop().RunUntilIdle();
+  {
+    base::RunLoop run_loop;
+    // Copy src/dir to dest2.
+    operation_runner()->Copy(child_dir,
+                             dest2,
+                             FileSystemOperation::OPTION_NONE,
+                             FileSystemOperationRunner::CopyProgressCallback(),
+                             base::Bind(&AssertFileErrorEqWithClosure,
+                                        FROM_HERE,
+                                        base::File::FILE_OK,
+                                        run_loop.QuitClosure()));
+    run_loop.Run();
+  }
 
   expected_usage += grandchild_file_size + grandchild_path_cost;
   usage = GetUsage();

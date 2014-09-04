@@ -176,6 +176,7 @@ class STORAGE_EXPORT FileSystemContext
 
   // Returns observers for the given filesystem type.
   const UpdateObserverList* GetUpdateObservers(FileSystemType type) const;
+  const ChangeObserverList* GetChangeObservers(FileSystemType type) const;
   const AccessObserverList* GetAccessObservers(FileSystemType type) const;
 
   // Returns all registered filesystem types.

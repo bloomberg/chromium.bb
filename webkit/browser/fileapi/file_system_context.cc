@@ -298,6 +298,14 @@ const UpdateObserverList* FileSystemContext::GetUpdateObservers(
   return NULL;
 }
 
+const ChangeObserverList* FileSystemContext::GetChangeObservers(
+    FileSystemType type) const {
+  FileSystemBackend* backend = GetFileSystemBackend(type);
+  if (backend->GetQuotaUtil())
+    return backend->GetQuotaUtil()->GetChangeObservers(type);
+  return NULL;
+}
+
 const AccessObserverList* FileSystemContext::GetAccessObservers(
     FileSystemType type) const {
   FileSystemBackend* backend = GetFileSystemBackend(type);
