@@ -42,16 +42,16 @@ NUM_SLOW_TESTS_TO_LOG = 10
 
 def print_options():
     return [
+        optparse.make_option('--debug-rwt-logging', action='store_true', default=False,
+                             help='print timestamps and debug information for run-webkit-tests itself'),
+        optparse.make_option('--details', action='store_true', default=False,
+                             help='print detailed results for every test'),
         optparse.make_option('-q', '--quiet', action='store_true', default=False,
                              help='run quietly (errors, warnings, and progress only)'),
         optparse.make_option('--timing', action='store_true', default=False,
                              help='display test times (summary plus per-test w/ --verbose)'),
         optparse.make_option('-v', '--verbose', action='store_true', default=False,
                              help='print a summarized result for every test (one line per test)'),
-        optparse.make_option('--details', action='store_true', default=False,
-                             help='print detailed results for every test'),
-        optparse.make_option('--debug-rwt-logging', action='store_true', default=False,
-                             help='print timestamps and debug information for run-webkit-tests itself'),
     ]
 
 

@@ -37,26 +37,26 @@ from webkitpy.layout_tests.port import builders
 
 def platform_options(use_globs=False):
     return [
-        optparse.make_option('--platform', action='store',
-            help=('Glob-style list of platform/ports to use (e.g., "mac*")' if use_globs else 'Platform to use (e.g., "mac-lion")')),
+        optparse.make_option('--android', action='store_const', dest='platform',
+            const=('android*' if use_globs else 'android'),
+            help=('Alias for --platform=android*' if use_globs else 'Alias for --platform=android')),
 
         # FIXME: Update run_webkit_tests.sh, any other callers to no longer pass --chromium, then remove this flag.
         optparse.make_option('--chromium', action='store_const', dest='platform',
             const=('chromium*' if use_globs else 'chromium'),
             help=('Alias for --platform=chromium*' if use_globs else 'Alias for --platform=chromium')),
 
-        optparse.make_option('--android', action='store_const', dest='platform',
-            const=('android*' if use_globs else 'android'),
-            help=('Alias for --platform=android*' if use_globs else 'Alias for --platform=android')),
+        optparse.make_option('--platform', action='store',
+            help=('Glob-style list of platform/ports to use (e.g., "mac*")' if use_globs else 'Platform to use (e.g., "mac-lion")')),
         ]
 
 
 def configuration_options():
     return [
-        optparse.make_option("-t", "--target", dest="configuration",
-                             help="specify the target configuration to use (Debug/Release)"),
         optparse.make_option('--debug', action='store_const', const='Debug', dest="configuration",
             help='Set the configuration to Debug'),
+        optparse.make_option("-t", "--target", dest="configuration",
+                             help="specify the target configuration to use (Debug/Release)"),
         optparse.make_option('--release', action='store_const', const='Release', dest="configuration",
             help='Set the configuration to Release'),
         ]
