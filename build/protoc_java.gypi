@@ -23,6 +23,9 @@
 # The 'proto_in_dir' variable must be the relative path to the
 # directory containing the .proto files.  If left out, it defaults to '.'.
 #
+# You can optionally set a variable 'proto_runtime' to either 'lite' or 'nano'.
+# The default runtime is 'lite'.
+#
 # The 'output_java_files' variable specifies a list of output files that will
 # be generated. It is based on the package and java_outer_classname fields in
 # the proto. All the values must be prefixed with >(java_out_dir), since that
@@ -38,7 +41,7 @@
 
 {
   'variables': {
-    'protoc': '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+    'proto_runtime%': 'lite',
     'java_out_dir': '<(PRODUCT_DIR)/java_proto/<(_target_name)/src',
     'proto_in_dir%': '.',
     'stamp_file': '<(java_out_dir).stamp',
@@ -68,15 +71,32 @@
         '<(protoc)',
         '<(proto_in_dir)',
         '<(java_out_dir)',
+        '<(proto_runtime)',
         '<(stamp_file)',
         '<@(_sources)',
       ],
-      'message': 'Generating Java code from <(proto_in_dir)',
+      'message': 'Generating <(proto_runtime) Java code from protobuf files in <(proto_in_dir)',
     },
   ],
-  'dependencies': [
-    '<(DEPTH)/third_party/protobuf/protobuf.gyp:protoc#host',
-    '<(DEPTH)/third_party/protobuf/protobuf.gyp:protobuf_lite_javalib',
+  'conditions': [
+    ['proto_runtime=="lite"', {
+      'variables': {
+        'protoc': '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+      },
+      'dependencies': [
+        '<(DEPTH)/third_party/protobuf/protobuf.gyp:protoc#host',
+        '<(DEPTH)/third_party/protobuf/protobuf.gyp:protobuf_lite_javalib',
+      ],
+    }],
+    ['proto_runtime=="nano"', {
+      'variables': {
+        'protoc': '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)android_protoc<(EXECUTABLE_SUFFIX)',
+      },
+      'dependencies': [
+        '<(DEPTH)/third_party/android_protobuf/android_protobuf.gyp:android_protoc#host',
+        '<(DEPTH)/third_party/android_protobuf/android_protobuf.gyp:protobuf_nano_javalib',
+      ],
+    }],
   ],
   'includes': [ 'java.gypi' ],
 }

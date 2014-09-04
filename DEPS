@@ -465,6 +465,9 @@ deps_os = {
      Var('chromium_git') + '/external/fontconfig.git' + '@' + 'f16c3118e25546c1b749f9823c51827a60aeb5c1',
   },
   'android': {
+    'src/third_party/android_protobuf/src':
+     Var('chromium_git') + '/external/android_protobuf.git' + '@' + '48ee66d295979372ed0234cefda42385daae8312',
+
     'src/third_party/android_tools':
      Var('chromium_git') + '/android_tools.git' + '@' + '31869996507de16812bb53a3d0aaa15cd6194c16',
 
