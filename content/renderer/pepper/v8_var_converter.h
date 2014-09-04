@@ -21,8 +21,14 @@ class ResourceConverter;
 
 class CONTENT_EXPORT V8VarConverter {
  public:
+  // Whether or not to allow converting object vars. If they are not allowed
+  // and they are passed in, conversion will fail.
+  enum AllowObjectVars {
+    kDisallowObjectVars,
+    kAllowObjectVars
+  };
   explicit V8VarConverter(PP_Instance instance);
-  V8VarConverter(PP_Instance instance, bool object_vars_allowed);
+  V8VarConverter(PP_Instance instance, AllowObjectVars object_vars_allowed);
 
   // Constructor for testing.
   V8VarConverter(PP_Instance instance,
@@ -76,7 +82,7 @@ class CONTENT_EXPORT V8VarConverter {
   PP_Instance instance_;
 
   // Whether or not to support conversion to PP_VARTYPE_OBJECT.
-  bool object_vars_allowed_;
+  AllowObjectVars object_vars_allowed_;
 
   // The message loop to run the callback to |FromV8Value| from.
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;

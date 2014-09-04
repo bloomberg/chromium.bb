@@ -11,9 +11,9 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/message_channel.h"
-#include "content/renderer/pepper/npobject_var.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
+#include "content/renderer/pepper/v8object_var.h"
 #include "content/renderer/render_frame_impl.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var_tracker.h"
@@ -31,7 +31,7 @@
 #include "third_party/WebKit/public/web/WebPrintScalingOption.h"
 #include "url/gurl.h"
 
-using ppapi::NPObjectVar;
+using ppapi::V8ObjectVar;
 using blink::WebCanvas;
 using blink::WebPlugin;
 using blink::WebPluginContainer;
@@ -126,29 +126,30 @@ void PepperWebPluginImpl::destroy() {
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
-NPObject* PepperWebPluginImpl::scriptableObject() {
+v8::Local<v8::Object> PepperWebPluginImpl::v8ScriptableObject(
+      v8::Isolate* isolate) {
   // Call through the plugin to get its instance object. The plugin should pass
   // us a reference which we release in destroy().
   if (instance_object_.type == PP_VARTYPE_UNDEFINED)
-    instance_object_ = instance_->GetInstanceObject();
+    instance_object_ = instance_->GetInstanceObject(isolate);
   // GetInstanceObject talked to the plugin which may have removed the instance
   // from the DOM, in which case instance_ would be NULL now.
   if (!instance_.get())
-    return NULL;
+    return v8::Local<v8::Object>();
 
-  scoped_refptr<NPObjectVar> object(NPObjectVar::FromPPVar(instance_object_));
+  scoped_refptr<V8ObjectVar> object_var(
+      V8ObjectVar::FromPPVar(instance_object_));
   // If there's an InstanceObject, tell the Instance's MessageChannel to pass
   // any non-postMessage calls to it.
-  if (object.get()) {
-    instance_->message_channel().SetPassthroughObject(object->np_object());
+  if (object_var.get()) {
+    MessageChannel* message_channel = instance_->message_channel();
+    if (message_channel)
+      message_channel->SetPassthroughObject(object_var->GetHandle());
   }
-  NPObject* message_channel_np_object(instance_->message_channel().np_object());
-  // The object is expected to be retained before it is returned.
-  blink::WebBindings::retainObject(message_channel_np_object);
-  return message_channel_np_object;
-}
 
-NPP PepperWebPluginImpl::pluginNPP() { return instance_->instanceNPP(); }
+  v8::Handle<v8::Object> result = instance_->GetMessageChannelObject();
+  return result;
+}
 
 bool PepperWebPluginImpl::getFormValue(WebString& value) { return false; }
 
