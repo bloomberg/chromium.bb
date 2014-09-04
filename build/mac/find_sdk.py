@@ -3,17 +3,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
-import re
-import subprocess
-import sys
-
 """Prints the lowest locally available SDK version greater than or equal to a
 given minimum sdk version to standard output.
 
 Usage:
   python find_sdk.py 10.6  # Ignores SDKs < 10.6
 """
+
+import os
+import re
+import subprocess
+import sys
+
 
 from optparse import OptionParser
 
@@ -42,8 +43,8 @@ def main():
                          stderr=subprocess.STDOUT)
   out, err = job.communicate()
   if job.returncode != 0:
-    print >>sys.stderr, out
-    print >>sys.stderr, err
+    print >> sys.stderr, out
+    print >> sys.stderr, err
     raise Exception(('Error %d running xcode-select, you might have to run '
       '|sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer| '
       'if you are using Xcode 4.') % job.returncode)
@@ -63,17 +64,17 @@ def main():
   best_sdk = sorted(sdks, key=parse_version)[0]
 
   if options.verify and best_sdk != min_sdk_version and not options.sdk_path:
-    print >>sys.stderr, ''
-    print >>sys.stderr, '                                           vvvvvvv'
-    print >>sys.stderr, ''
-    print >>sys.stderr, \
+    print >> sys.stderr, ''
+    print >> sys.stderr, '                                           vvvvvvv'
+    print >> sys.stderr, ''
+    print >> sys.stderr, \
         'This build requires the %s SDK, but it was not found on your system.' \
         % min_sdk_version
-    print >>sys.stderr, \
+    print >> sys.stderr, \
         'Either install it, or explicitly set mac_sdk in your GYP_DEFINES.'
-    print >>sys.stderr, ''
-    print >>sys.stderr, '                                           ^^^^^^^'
-    print >>sys.stderr, ''
+    print >> sys.stderr, ''
+    print >> sys.stderr, '                                           ^^^^^^^'
+    print >> sys.stderr, ''
     return min_sdk_version
 
   if options.print_sdk_path:
