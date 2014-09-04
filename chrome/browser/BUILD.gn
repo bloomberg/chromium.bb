@@ -447,8 +447,8 @@ static_library("browser") {
     sources += rebase_path(gypi_values.chrome_browser_non_mobile_sources,
                            ".", "//chrome")
     deps += [
-      "//components/usb_service",
       "//device/core",
+      "//device/usb",
     ]
   }
 

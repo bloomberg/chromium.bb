@@ -1,3 +1,8 @@
 include_rules = [
-  "+components/usb_service",
+  "+chromeos",
+
+  "-net",
+  "+net/base",
+
+  "+third_party/libusb",
 ]

@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_USB_SERVICE_USB_CONTEXT_H_
-#define COMPONENTS_USB_SERVICE_USB_CONTEXT_H_
+#ifndef DEVICE_USB_USB_CONTEXT_H_
+#define DEVICE_USB_USB_CONTEXT_H_
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "components/usb_service/usb_service_export.h"
 
 struct libusb_context;
 
-namespace usb_service {
+namespace device {
 
 typedef libusb_context* PlatformUsbContext;
 
@@ -21,8 +20,7 @@ typedef libusb_context* PlatformUsbContext;
 // It also manages the life-cycle of UsbEventHandler.
 // It is a blocking operation to delete UsbContext.
 // Destructor must be called on FILE thread.
-class USB_SERVICE_EXPORT UsbContext
-    : public base::RefCountedThreadSafe<UsbContext> {
+class UsbContext : public base::RefCountedThreadSafe<UsbContext> {
  public:
   PlatformUsbContext context() const { return context_; }
 
@@ -42,6 +40,6 @@ class USB_SERVICE_EXPORT UsbContext
   DISALLOW_COPY_AND_ASSIGN(UsbContext);
 };
 
-}  // namespace usb_service
+}  // namespace device
 
-#endif  // COMPONENTS_USB_SERVICE_USB_CONTEXT_H_
+#endif  // DEVICE_USB_USB_CONTEXT_H_

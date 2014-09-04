@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_USB_SERVICE_USB_DEVICE_HANDLE_H_
-#define COMPONENTS_USB_SERVICE_USB_DEVICE_HANDLE_H_
+#ifndef DEVICE_USB_USB_DEVICE_HANDLE_H_
+#define DEVICE_USB_USB_DEVICE_HANDLE_H_
 
 #include <map>
 #include <vector>
@@ -12,11 +12,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
-#include "components/usb_service/usb_interface.h"
-#include "components/usb_service/usb_service_export.h"
+#include "device/usb/usb_interface.h"
 #include "net/base/io_buffer.h"
 
-namespace usb_service {
+namespace device {
 
 class UsbDevice;
 
@@ -36,8 +35,7 @@ typedef base::Callback<
     UsbTransferCallback;
 
 // UsbDeviceHandle class provides basic I/O related functionalities.
-class USB_SERVICE_EXPORT UsbDeviceHandle
-    : public base::RefCountedThreadSafe<UsbDeviceHandle> {
+class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
  public:
   enum TransferRequestType { STANDARD, CLASS, VENDOR, RESERVED };
   enum TransferRecipient { DEVICE, INTERFACE, ENDPOINT, OTHER };
@@ -107,6 +105,6 @@ class USB_SERVICE_EXPORT UsbDeviceHandle
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceHandle);
 };
 
-}  // namespace usb_service
+}  // namespace device
 
-#endif  // COMPONENTS_USB_SERVICE_USB_DEVICE_HANDLE_H_
+#endif  // DEVICE_USB_USB_DEVICE_HANDLE_H_

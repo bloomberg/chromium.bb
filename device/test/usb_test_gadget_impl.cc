@@ -23,9 +23,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
-#include "components/usb_service/usb_device.h"
-#include "components/usb_service/usb_device_handle.h"
-#include "components/usb_service/usb_service.h"
+#include "device/usb/usb_device.h"
+#include "device/usb/usb_device_handle.h"
+#include "device/usb/usb_service.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -36,9 +36,6 @@
 
 using ::base::PlatformThread;
 using ::base::TimeDelta;
-using ::usb_service::UsbDevice;
-using ::usb_service::UsbDeviceHandle;
-using ::usb_service::UsbService;
 
 namespace device {
 

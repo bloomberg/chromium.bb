@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/usb_service/usb_device_handle_impl.h"
+#include "device/usb/usb_device_handle_impl.h"
 
 #include <algorithm>
 #include <vector>
@@ -14,18 +14,18 @@
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_task_runner_handle.h"
-#include "components/usb_service/usb_context.h"
-#include "components/usb_service/usb_device_impl.h"
-#include "components/usb_service/usb_error.h"
-#include "components/usb_service/usb_interface.h"
-#include "components/usb_service/usb_service.h"
+#include "device/usb/usb_context.h"
+#include "device/usb/usb_device_impl.h"
+#include "device/usb/usb_error.h"
+#include "device/usb/usb_interface.h"
+#include "device/usb/usb_service.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
-namespace usb_service {
+namespace device {
 
 typedef libusb_device* PlatformUsbDevice;
 
-void HandleTransferCompletion(usb_service::PlatformUsbTransferHandle transfer);
+void HandleTransferCompletion(PlatformUsbTransferHandle transfer);
 
 namespace {
 
@@ -145,7 +145,8 @@ UsbDeviceHandleImpl::InterfaceClaimer::~InterfaceClaimer() {
 bool UsbDeviceHandleImpl::InterfaceClaimer::Claim() const {
   const int rv = libusb_claim_interface(handle_->handle(), interface_number_);
   if (rv != LIBUSB_SUCCESS) {
-    VLOG(1) << "Failed to claim interface: " << ConvertErrorToString(rv);
+    VLOG(1) << "Failed to claim interface: "
+            << ConvertPlatformUsbErrorToString(rv);
   }
   return rv == LIBUSB_SUCCESS;
 }
@@ -357,7 +358,8 @@ bool UsbDeviceHandleImpl::SetInterfaceAlternateSetting(
     RefreshEndpointMap();
   } else {
     VLOG(1) << "Failed to set interface (" << interface_number << ", "
-            << alternate_setting << "): " << ConvertErrorToString(rv);
+            << alternate_setting
+            << "): " << ConvertPlatformUsbErrorToString(rv);
   }
   return rv == LIBUSB_SUCCESS;
 }
@@ -369,7 +371,8 @@ bool UsbDeviceHandleImpl::ResetDevice() {
 
   const int rv = libusb_reset_device(handle_);
   if (rv != LIBUSB_SUCCESS) {
-    VLOG(1) << "Failed to reset device: " << ConvertErrorToString(rv);
+    VLOG(1) << "Failed to reset device: "
+            << ConvertPlatformUsbErrorToString(rv);
   }
   return rv == LIBUSB_SUCCESS;
 }
@@ -389,12 +392,12 @@ bool UsbDeviceHandleImpl::GetSupportedLanguages() {
       sizeof(languages));
   if (size < 0) {
     VLOG(1) << "Failed to get list of supported languages: "
-            << ConvertErrorToString(size);
+            << ConvertPlatformUsbErrorToString(size);
     return false;
   } else if (size < 2) {
     VLOG(1) << "String descriptor zero has no header.";
     return false;
-  // The first 2 bytes of the descriptor are the total length and type tag.
+    // The first 2 bytes of the descriptor are the total length and type tag.
   } else if ((languages[0] & 0xff) != size) {
     VLOG(1) << "String descriptor zero size mismatch: " << (languages[0] & 0xff)
             << " != " << size;
@@ -433,13 +436,13 @@ bool UsbDeviceHandleImpl::GetStringDescriptor(uint8 string_id,
                                      sizeof(text));
     if (size < 0) {
       VLOG(1) << "Failed to get string descriptor " << string_id << " (langid "
-              << language_id << "): " << ConvertErrorToString(size);
+              << language_id << "): " << ConvertPlatformUsbErrorToString(size);
       continue;
     } else if (size < 2) {
       VLOG(1) << "String descriptor " << string_id << " (langid " << language_id
               << ") has no header.";
       continue;
-    // The first 2 bytes of the descriptor are the total length and type tag.
+      // The first 2 bytes of the descriptor are the total length and type tag.
     } else if ((text[0] & 0xff) != size) {
       VLOG(1) << "String descriptor " << string_id << " (langid " << language_id
               << ") size mismatch: " << (text[0] & 0xff) << " != " << size;
@@ -466,7 +469,8 @@ bool UsbDeviceHandleImpl::GetManufacturer(base::string16* manufacturer) {
   // This is a non-blocking call as libusb has the descriptor in memory.
   const int rv = libusb_get_device_descriptor(device, &desc);
   if (rv != LIBUSB_SUCCESS) {
-    VLOG(1) << "Failed to read device descriptor: " << ConvertErrorToString(rv);
+    VLOG(1) << "Failed to read device descriptor: "
+            << ConvertPlatformUsbErrorToString(rv);
     return false;
   }
 
@@ -485,7 +489,8 @@ bool UsbDeviceHandleImpl::GetProduct(base::string16* product) {
   // This is a non-blocking call as libusb has the descriptor in memory.
   const int rv = libusb_get_device_descriptor(device, &desc);
   if (rv != LIBUSB_SUCCESS) {
-    VLOG(1) << "Failed to read device descriptor: " << ConvertErrorToString(rv);
+    VLOG(1) << "Failed to read device descriptor: "
+            << ConvertPlatformUsbErrorToString(rv);
     return false;
   }
 
@@ -504,7 +509,8 @@ bool UsbDeviceHandleImpl::GetSerial(base::string16* serial) {
   // This is a non-blocking call as libusb has the descriptor in memory.
   const int rv = libusb_get_device_descriptor(device, &desc);
   if (rv != LIBUSB_SUCCESS) {
-    VLOG(1) << "Failed to read device descriptor: " << ConvertErrorToString(rv);
+    VLOG(1) << "Failed to read device descriptor: "
+            << ConvertPlatformUsbErrorToString(rv);
     return false;
   }
 
@@ -729,7 +735,8 @@ void UsbDeviceHandleImpl::SubmitTransfer(
   if (rv == LIBUSB_SUCCESS) {
     transfers_[handle] = transfer;
   } else {
-    VLOG(1) << "Failed to submit transfer: " << ConvertErrorToString(rv);
+    VLOG(1) << "Failed to submit transfer: "
+            << ConvertPlatformUsbErrorToString(rv);
     transfer.Complete(USB_TRANSFER_ERROR, 0);
   }
 }
@@ -755,4 +762,4 @@ void UsbDeviceHandleImpl::InternalClose() {
   device_ = NULL;
 }
 
-}  // namespace usb_service
+}  // namespace device

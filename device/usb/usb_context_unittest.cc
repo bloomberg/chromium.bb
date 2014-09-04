@@ -4,12 +4,11 @@
 
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
-#include "components/usb_service/usb_context.h"
+#include "device/usb/usb_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
-using usb_service::UsbContext;
-using usb_service::PlatformUsbContext;
+namespace device {
 
 namespace {
 
@@ -51,3 +50,5 @@ TEST_F(UsbContextTest, MAYBE_GracefulShutdown) {
     FAIL();
   }
 }
+
+}  // namespace device

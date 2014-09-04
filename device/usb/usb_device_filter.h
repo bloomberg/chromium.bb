@@ -2,23 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_USB_SERVICE_USB_DEVICE_FILTER_H_
-#define COMPONENTS_USB_SERVICE_USB_DEVICE_FILTER_H_
+#ifndef DEVICE_USB_USB_DEVICE_FILTER_H_
+#define DEVICE_USB_USB_DEVICE_FILTER_H_
 
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "components/usb_service/usb_service_export.h"
 
 namespace base {
 class Value;
 }
 
-namespace usb_service {
+namespace device {
 
 class UsbDevice;
 
-class USB_SERVICE_EXPORT UsbDeviceFilter {
+class UsbDeviceFilter {
  public:
   UsbDeviceFilter();
   ~UsbDeviceFilter();
@@ -48,6 +47,6 @@ class USB_SERVICE_EXPORT UsbDeviceFilter {
   bool interface_protocol_set_ : 1;
 };
 
-}  // namespace usb_service
+}  // namespace device
 
-#endif  // COMPONENTS_USB_SERVICE_USB_DEVICE_FILTER_H_
+#endif  // DEVICE_USB_USB_DEVICE_FILTER_H_

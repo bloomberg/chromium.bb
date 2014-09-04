@@ -8,9 +8,10 @@
 #include <map>
 #include <queue>
 #include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "components/usb_service/usb_device_handle.h"
+#include "device/usb/usb_device_handle.h"
 
 namespace base {
 class MessageLoop;
@@ -73,7 +74,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
   static void CountDevices(const base::Callback<void(int)>& callback);
 
   AndroidUsbDevice(crypto::RSAPrivateKey* rsa_key,
-                   scoped_refptr<usb_service::UsbDeviceHandle> device,
+                   scoped_refptr<device::UsbDeviceHandle> device,
                    const std::string& serial,
                    int inbound_address,
                    int outbound_address,
@@ -89,9 +90,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
             uint32 arg1,
             const std::string& body);
 
-  scoped_refptr<usb_service::UsbDeviceHandle> usb_device() {
-    return usb_handle_;
-  }
+  scoped_refptr<device::UsbDeviceHandle> usb_device() { return usb_handle_; }
 
   std::string serial() { return serial_; }
 
@@ -103,12 +102,12 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
 
   void Queue(scoped_refptr<AdbMessage> message);
   void ProcessOutgoing();
-  void OutgoingMessageSent(usb_service::UsbTransferStatus status,
+  void OutgoingMessageSent(device::UsbTransferStatus status,
                            scoped_refptr<net::IOBuffer> buffer,
                            size_t result);
 
   void ReadHeader();
-  void ParseHeader(usb_service::UsbTransferStatus status,
+  void ParseHeader(device::UsbTransferStatus status,
                    scoped_refptr<net::IOBuffer> buffer,
                    size_t result);
 
@@ -118,16 +117,15 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
   void ParseBody(scoped_refptr<AdbMessage> message,
                  uint32 data_length,
                  uint32 data_check,
-                 usb_service::UsbTransferStatus status,
+                 device::UsbTransferStatus status,
                  scoped_refptr<net::IOBuffer> buffer,
                  size_t result);
 
   void HandleIncoming(scoped_refptr<AdbMessage> message);
 
-  void TransferError(usb_service::UsbTransferStatus status);
+  void TransferError(device::UsbTransferStatus status);
 
-  void TerminateIfReleased(
-      scoped_refptr<usb_service::UsbDeviceHandle> usb_handle);
+  void TerminateIfReleased(scoped_refptr<device::UsbDeviceHandle> usb_handle);
   void Terminate();
 
   void SocketDeleted(uint32 socket_id);
@@ -137,7 +135,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
   scoped_ptr<crypto::RSAPrivateKey> rsa_key_;
 
   // Device info
-  scoped_refptr<usb_service::UsbDeviceHandle> usb_handle_;
+  scoped_refptr<device::UsbDeviceHandle> usb_handle_;
   std::string serial_;
   int inbound_address_;
   int outbound_address_;

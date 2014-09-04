@@ -5,15 +5,15 @@
 #include "chrome/browser/chrome_device_client.h"
 
 #include "base/logging.h"
-#include "components/usb_service/usb_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "device/usb/usb_service.h"
 
 ChromeDeviceClient::ChromeDeviceClient() {}
 
 ChromeDeviceClient::~ChromeDeviceClient() {}
 
-usb_service::UsbService* ChromeDeviceClient::GetUsbService() {
-  return usb_service::UsbService::GetInstance(
+device::UsbService* ChromeDeviceClient::GetUsbService() {
+  return device::UsbService::GetInstance(
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::UI));
 }

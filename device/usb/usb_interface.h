@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_USB_SERVICE_USB_INTERFACE_H_
-#define COMPONENTS_USB_SERVICE_USB_INTERFACE_H_
+#ifndef DEVICE_USB_USB_INTERFACE_H_
+#define DEVICE_USB_USB_INTERFACE_H_
 
 #include "base/memory/ref_counted.h"
-#include "components/usb_service/usb_service_export.h"
 
-namespace usb_service {
+namespace device {
 
 enum UsbTransferType {
   USB_TRANSFER_CONTROL = 0,
@@ -35,7 +34,7 @@ enum UsbUsageType {
   USB_USAGE_EXPLICIT_FEEDBACK
 };
 
-class USB_SERVICE_EXPORT UsbEndpointDescriptor
+class UsbEndpointDescriptor
     : public base::RefCounted<const UsbEndpointDescriptor> {
  public:
   virtual int GetAddress() const = 0;
@@ -55,7 +54,7 @@ class USB_SERVICE_EXPORT UsbEndpointDescriptor
   DISALLOW_COPY_AND_ASSIGN(UsbEndpointDescriptor);
 };
 
-class USB_SERVICE_EXPORT UsbInterfaceAltSettingDescriptor
+class UsbInterfaceAltSettingDescriptor
     : public base::RefCounted<const UsbInterfaceAltSettingDescriptor> {
  public:
   virtual size_t GetNumEndpoints() const = 0;
@@ -77,7 +76,7 @@ class USB_SERVICE_EXPORT UsbInterfaceAltSettingDescriptor
   DISALLOW_COPY_AND_ASSIGN(UsbInterfaceAltSettingDescriptor);
 };
 
-class USB_SERVICE_EXPORT UsbInterfaceDescriptor
+class UsbInterfaceDescriptor
     : public base::RefCounted<const UsbInterfaceDescriptor> {
  public:
   virtual size_t GetNumAltSettings() const = 0;
@@ -93,8 +92,7 @@ class USB_SERVICE_EXPORT UsbInterfaceDescriptor
   DISALLOW_COPY_AND_ASSIGN(UsbInterfaceDescriptor);
 };
 
-class USB_SERVICE_EXPORT UsbConfigDescriptor
-    : public base::RefCounted<UsbConfigDescriptor> {
+class UsbConfigDescriptor : public base::RefCounted<UsbConfigDescriptor> {
  public:
   virtual size_t GetNumInterfaces() const = 0;
   virtual scoped_refptr<const UsbInterfaceDescriptor> GetInterface(
@@ -109,6 +107,6 @@ class USB_SERVICE_EXPORT UsbConfigDescriptor
   DISALLOW_COPY_AND_ASSIGN(UsbConfigDescriptor);
 };
 
-}  // namespace usb_service;
+}  // namespace device
 
-#endif  // COMPONENTS_USB_SERVICE_USB_INTERFACE_H_
+#endif  // DEVICE_USB_USB_INTERFACE_H_

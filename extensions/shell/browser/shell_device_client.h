@@ -20,7 +20,7 @@ class ShellDeviceClient : device::DeviceClient {
   virtual ~ShellDeviceClient();
 
   // device::DeviceClient implementation
-  virtual usb_service::UsbService* GetUsbService() OVERRIDE;
+  virtual device::UsbService* GetUsbService() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellDeviceClient);

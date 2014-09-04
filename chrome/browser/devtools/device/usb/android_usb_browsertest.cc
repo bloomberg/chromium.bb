@@ -10,16 +10,27 @@
 #include "chrome/browser/devtools/device/usb/usb_device_provider.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/usb_service/usb_device.h"
-#include "components/usb_service/usb_device_handle.h"
-#include "components/usb_service/usb_interface.h"
-#include "components/usb_service/usb_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "device/usb/usb_device.h"
+#include "device/usb/usb_device_handle.h"
+#include "device/usb/usb_interface.h"
+#include "device/usb/usb_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
-using namespace usb_service;
+using device::UsbConfigDescriptor;
+using device::UsbDevice;
+using device::UsbDeviceHandle;
+using device::UsbEndpointDescriptor;
+using device::UsbEndpointDirection;
+using device::UsbInterfaceDescriptor;
+using device::UsbInterfaceAltSettingDescriptor;
+using device::UsbService;
+using device::UsbSynchronizationType;
+using device::UsbTransferCallback;
+using device::UsbTransferType;
+using device::UsbUsageType;
 
 namespace {
 
@@ -147,9 +158,9 @@ class MockUsbInterfaceAltSettingDescriptor
     EXPECT_GT(static_cast<size_t>(2), index);
     MockUsbEndpointDescriptor* result = new MockUsbEndpointDescriptor();
     result->address_ = index + 1;
-    result->usb_transfer_type_ = USB_TRANSFER_BULK;
-    result->direction_ =
-        ((index == 0) ? USB_DIRECTION_INBOUND : USB_DIRECTION_OUTBOUND);
+    result->usb_transfer_type_ = device::USB_TRANSFER_BULK;
+    result->direction_ = ((index == 0) ? device::USB_DIRECTION_INBOUND
+                                       : device::USB_DIRECTION_OUTBOUND);
     result->maximum_packet_size_ = 1 << 20;  // 1Mb maximum packet size
     return result;
   }
@@ -288,7 +299,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                             const size_t length,
                             const unsigned int timeout,
                             const UsbTransferCallback& callback) OVERRIDE {
-    if (direction == USB_DIRECTION_OUTBOUND) {
+    if (direction == device::USB_DIRECTION_OUTBOUND) {
       if (remaining_body_length_ == 0) {
         std::vector<uint32> header(6);
         memcpy(&header[0], buffer->data(), length);
@@ -312,11 +323,11 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(callback,
-                     usb_service::USB_TRANSFER_COMPLETED,
+                     device::USB_TRANSFER_COMPLETED,
                      scoped_refptr<net::IOBuffer>(),
                      0));
 
-    } else if (direction == USB_DIRECTION_INBOUND) {
+    } else if (direction == device::USB_DIRECTION_INBOUND) {
       queries_.push(Query(callback, make_scoped_refptr(buffer), length));
       ProcessQueries();
     }
@@ -408,7 +419,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(query.callback,
-                   usb_service::USB_TRANSFER_COMPLETED,
+                   device::USB_TRANSFER_COMPLETED,
                    query.buffer,
                    query.size));
   }

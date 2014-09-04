@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_USB_SERVICE_USB_DEVICE_H_
-#define COMPONENTS_USB_SERVICE_USB_DEVICE_H_
+#ifndef DEVICE_USB_USB_DEVICE_H_
+#define DEVICE_USB_USB_DEVICE_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "components/usb_service/usb_service_export.h"
 
-namespace usb_service {
+namespace device {
 
 class UsbDeviceHandle;
 class UsbConfigDescriptor;
@@ -18,8 +17,7 @@ class UsbConfigDescriptor;
 // A UsbDevice object represents a detected USB device, providing basic
 // information about it. For further manipulation of the device, a
 // UsbDeviceHandle must be created from Open() method.
-class USB_SERVICE_EXPORT UsbDevice
-    : public base::RefCountedThreadSafe<UsbDevice> {
+class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
  public:
   // Accessors to basic information.
   uint16 vendor_id() const { return vendor_id_; }
@@ -67,6 +65,6 @@ class USB_SERVICE_EXPORT UsbDevice
   DISALLOW_COPY_AND_ASSIGN(UsbDevice);
 };
 
-}  // namespace usb_service
+}  // namespace device
 
-#endif  // COMPONENTS_USB_SERVICE_USB_DEVICE_H_
+#endif  // DEVICE_USB_USB_DEVICE_H_

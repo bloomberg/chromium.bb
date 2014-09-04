@@ -36,7 +36,6 @@ group("root") {
     "//crypto",
     "//device/bluetooth",
     "//device/nfc",
-    "//device/usb",
     "//extensions/browser",
     "//extensions/common",
     "//extensions/common/api",
@@ -235,6 +234,13 @@ group("root") {
     deps += [
       "//ui/ozone",
       "//ui/ozone/demo",
+    ]
+  }
+
+  # Non-mobile builds.
+  if (!is_android && !is_ios) {
+    deps += [
+      "//device/usb",
     ]
   }
 }

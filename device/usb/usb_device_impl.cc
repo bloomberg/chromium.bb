@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/usb_service/usb_device_impl.h"
+#include "device/usb/usb_device_impl.h"
 
 #include <algorithm>
 
@@ -11,10 +11,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
-#include "components/usb_service/usb_context.h"
-#include "components/usb_service/usb_device_handle_impl.h"
-#include "components/usb_service/usb_error.h"
-#include "components/usb_service/usb_interface_impl.h"
+#include "device/usb/usb_context.h"
+#include "device/usb/usb_device_handle_impl.h"
+#include "device/usb/usb_error.h"
+#include "device/usb/usb_interface_impl.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
 #if defined(OS_CHROMEOS)
@@ -36,7 +36,7 @@ void OnRequestUsbAccessReplied(
 
 }  // namespace
 
-namespace usb_service {
+namespace device {
 
 UsbDeviceImpl::UsbDeviceImpl(
     scoped_refptr<UsbContext> context,
@@ -109,7 +109,7 @@ scoped_refptr<UsbDeviceHandle> UsbDeviceImpl::Open() {
     handles_.push_back(device_handle);
     return device_handle;
   } else {
-    VLOG(1) << "Failed to open device: " << ConvertErrorToString(rv);
+    VLOG(1) << "Failed to open device: " << ConvertPlatformUsbErrorToString(rv);
     return NULL;
   }
 }
@@ -137,7 +137,8 @@ scoped_refptr<UsbConfigDescriptor> UsbDeviceImpl::ListInterfaces() {
   if (rv == LIBUSB_SUCCESS) {
     return new UsbConfigDescriptorImpl(platform_config);
   } else {
-    VLOG(1) << "Failed to get config descriptor: " << ConvertErrorToString(rv);
+    VLOG(1) << "Failed to get config descriptor: "
+            << ConvertPlatformUsbErrorToString(rv);
     return NULL;
   }
 }
@@ -150,4 +151,4 @@ void UsbDeviceImpl::OnDisconnect() {
     (*it)->InternalClose();
 }
 
-}  // namespace usb_service
+}  // namespace device

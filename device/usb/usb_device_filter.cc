@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/usb_service/usb_device_filter.h"
+#include "device/usb/usb_device_filter.h"
 
 #include "base/values.h"
-#include "components/usb_service/usb_device.h"
-#include "components/usb_service/usb_interface.h"
+#include "device/usb/usb_device.h"
+#include "device/usb/usb_interface.h"
 
-namespace usb_service {
+namespace device {
 
 namespace {
 
@@ -137,4 +137,4 @@ bool UsbDeviceFilter::MatchesAny(scoped_refptr<UsbDevice> device,
   return false;
 }
 
-}  // namespace usb_service
+}  // namespace device

@@ -433,8 +433,6 @@
                 'autofill/content/renderer/renderer_save_password_progress_logger_unittest.cc',
                 'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
                 'power/origin_power_map_unittest.cc',
-                'usb_service/usb_context_unittest.cc',
-                'usb_service/usb_device_filter_unittest.cc',
               ],
               'dependencies': [
                 # Dependencies of autofill
@@ -475,10 +473,6 @@
 
                 # Dependencies of url_matcher.
                 'components.gyp:url_matcher',
-
-                # Dependencies of usb_service tests.
-                'components.gyp:usb_service',
-                '../third_party/libusb/libusb.gyp:libusb',
 
                 # Dependencies of visitedlink
                 'components.gyp:visitedlink_browser',
@@ -593,8 +587,6 @@
                 'storage_monitor/media_storage_util_unittest.cc',
                 'storage_monitor/storage_info_unittest.cc',
                 'storage_monitor/storage_monitor_unittest.cc',
-                'usb_service/usb_context_unittest.cc',
-                'usb_service/usb_device_filter_unittest.cc',
                 'web_modal/web_contents_modal_dialog_manager_unittest.cc',
               ],
               'dependencies': [
@@ -604,10 +596,8 @@
                 'components.gyp:feedback_component',
                 'components.gyp:storage_monitor',
                 'components.gyp:storage_monitor_test_support',
-                'components.gyp:usb_service',
                 'components.gyp:web_modal',
                 'components.gyp:web_modal_test_support',
-                '../third_party/libusb/libusb.gyp:libusb',
               ],
             }],
             ['OS != "android"', {
@@ -668,13 +658,11 @@
             }],
             ['OS=="linux" and use_udev==0', {
               'dependencies!': [
-                '../third_party/libusb/libusb.gyp:libusb',
                 'components.gyp:storage_monitor',
                 'components.gyp:storage_monitor_test_support',
               ],
               'sources/': [
                 ['exclude', '^storage_monitor/'],
-                ['exclude', '^usb_service/'],
               ],
             }],
             ['OS=="win" and win_use_allocator_shim==1', {

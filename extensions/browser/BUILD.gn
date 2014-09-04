@@ -349,11 +349,11 @@ source_set("browser") {
     ]
 
     deps += [
-      "//components/usb_service",
       "//crypto:platform",
       "//device/bluetooth",
       "//device/hid",
       "//device/serial",
+      "//device/usb",
       "//extensions/browser/api/cast_channel:cast_channel_proto",
     ]
 

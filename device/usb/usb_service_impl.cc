@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/usb_service/usb_service.h"
+#include "device/usb/usb_service.h"
 
 #include <map>
 #include <set>
@@ -11,12 +11,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "components/usb_service/usb_context.h"
-#include "components/usb_service/usb_device_impl.h"
-#include "components/usb_service/usb_error.h"
+#include "device/usb/usb_context.h"
+#include "device/usb/usb_device_impl.h"
+#include "device/usb/usb_error.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
-namespace usb_service {
+namespace device {
 
 namespace {
 
@@ -28,9 +28,8 @@ base::LazyInstance<scoped_ptr<UsbService> >::Leaky g_usb_service_instance =
 typedef struct libusb_device* PlatformUsbDevice;
 typedef struct libusb_context* PlatformUsbContext;
 
-class UsbServiceImpl
-    : public UsbService,
-      private base::MessageLoop::DestructionObserver {
+class UsbServiceImpl : public UsbService,
+                       private base::MessageLoop::DestructionObserver {
  public:
   explicit UsbServiceImpl(
       PlatformUsbContext context,
@@ -38,7 +37,7 @@ class UsbServiceImpl
   virtual ~UsbServiceImpl();
 
  private:
-  // usb_service::UsbService implementation
+  // device::UsbService implementation
   virtual scoped_refptr<UsbDevice> GetDeviceById(uint32 unique_id) OVERRIDE;
   virtual void GetDevices(
       std::vector<scoped_refptr<UsbDevice> >* devices) OVERRIDE;
@@ -113,7 +112,7 @@ void UsbServiceImpl::RefreshDevices() {
       libusb_get_device_list(context_->context(), &platform_devices);
   if (device_count < 0) {
     VLOG(1) << "Failed to get device list: "
-            << ConvertErrorToString(device_count);
+            << ConvertPlatformUsbErrorToString(device_count);
   }
 
   std::set<UsbDevice*> connected_devices;
@@ -128,7 +127,7 @@ void UsbServiceImpl::RefreshDevices() {
       // This test is needed. A valid vendor/produce pair is required.
       if (rv != LIBUSB_SUCCESS) {
         VLOG(1) << "Failed to get device descriptor: "
-                << ConvertErrorToString(rv);
+                << ConvertPlatformUsbErrorToString(rv);
         continue;
       }
       UsbDeviceImpl* new_device = new UsbDeviceImpl(context_,
@@ -170,7 +169,8 @@ UsbService* UsbService::GetInstance(
 
     const int rv = libusb_init(&context);
     if (rv != LIBUSB_SUCCESS) {
-      VLOG(1) << "Failed to initialize libusb: " << ConvertErrorToString(rv);
+      VLOG(1) << "Failed to initialize libusb: "
+              << ConvertPlatformUsbErrorToString(rv);
       return NULL;
     }
     if (!context)
@@ -187,4 +187,4 @@ void UsbService::SetInstanceForTest(UsbService* instance) {
   g_usb_service_instance.Get().reset(instance);
 }
 
-}  // namespace usb_service
+}  // namespace device

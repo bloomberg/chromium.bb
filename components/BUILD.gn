@@ -88,7 +88,6 @@ group("all_components") {
     "//components/translate/core/common",
     "//components/url_fixer",
     "//components/url_matcher",
-    "//components/usb_service",
     "//components/user_manager",
     "//components/user_prefs",
     "//components/variations",
@@ -167,7 +166,6 @@ group("all_components") {
       "//components/translate/content/browser",  # Blocked on content.
       "//components/translate/content/common",  # Blocked on content.
       "//components/translate/content/renderer",  # Blocked on content.
-      "//components/usb_service",  # Blocked on content.
       "//components/user_prefs",  # Blocked on content.
       "//components/visitedlink/browser",  # Blocked on content.
       "//components/visitedlink/common",  # Blocked on content.

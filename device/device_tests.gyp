@@ -12,7 +12,6 @@
       'type': '<(gtest_target_type)',
       'dependencies': [
         '../base/base.gyp:test_support_base',
-        '../components/components.gyp:usb_service',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
         '../mojo/mojo_base.gyp:mojo_system_impl',
         '../testing/gmock.gyp:gmock',
@@ -41,6 +40,8 @@
         'bluetooth/bluetooth_uuid_unittest.cc',
         'nfc/nfc_chromeos_unittest.cc',
         'nfc/nfc_ndef_record_unittest.cc',
+        'usb/usb_context_unittest.cc',
+        'usb/usb_device_filter_unittest.cc',
         'usb/usb_ids_unittest.cc',
         'usb/usb_service_unittest.cc',
         'hid/hid_connection_unittest.cc',

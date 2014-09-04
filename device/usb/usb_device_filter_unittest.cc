@@ -5,19 +5,13 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "components/usb_service/usb_device.h"
-#include "components/usb_service/usb_device_filter.h"
-#include "components/usb_service/usb_device_handle.h"
-#include "components/usb_service/usb_interface.h"
+#include "device/usb/usb_device.h"
+#include "device/usb/usb_device_filter.h"
+#include "device/usb/usb_device_handle.h"
+#include "device/usb/usb_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using usb_service::UsbConfigDescriptor;
-using usb_service::UsbDevice;
-using usb_service::UsbDeviceFilter;
-using usb_service::UsbDeviceHandle;
-using usb_service::UsbEndpointDescriptor;
-using usb_service::UsbInterfaceAltSettingDescriptor;
-using usb_service::UsbInterfaceDescriptor;
+namespace device {
 
 namespace {
 
@@ -163,8 +157,6 @@ class UsbFilterTest : public testing::Test {
   scoped_refptr<UsbDevice> android_phone_;
 };
 
-}  // namespace
-
 TEST_F(UsbFilterTest, MatchAny) {
   UsbDeviceFilter filter;
   ASSERT_TRUE(filter.Matches(android_phone_));
@@ -254,3 +246,7 @@ TEST_F(UsbFilterTest, MatchesAnyVendorIdNegative) {
   filters.back().SetVendorId(0x1d6b);
   ASSERT_FALSE(UsbDeviceFilter::MatchesAny(android_phone_, filters));
 }
+
+}  // namespace
+
+}  // namespace device

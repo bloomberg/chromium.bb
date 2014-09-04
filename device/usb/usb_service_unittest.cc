@@ -4,12 +4,10 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/usb_service/usb_device.h"
-#include "components/usb_service/usb_device_handle.h"
 #include "device/test/usb_test_gadget.h"
+#include "device/usb/usb_device.h"
+#include "device/usb/usb_device_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using ::usb_service::UsbDeviceHandle;
 
 namespace device {
 

@@ -29,7 +29,7 @@ DeviceClient* DeviceClient::Get() {
   return g_instance;
 }
 
-usb_service::UsbService* DeviceClient::GetUsbService() {
+UsbService* DeviceClient::GetUsbService() {
   // This should never be called by clients which do not support the USB API.
   NOTREACHED();
   return NULL;

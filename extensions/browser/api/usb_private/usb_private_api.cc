@@ -9,11 +9,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/usb_service/usb_device_filter.h"
-#include "components/usb_service/usb_device_handle.h"
-#include "components/usb_service/usb_service.h"
 #include "device/core/device_client.h"
+#include "device/usb/usb_device_filter.h"
+#include "device/usb/usb_device_handle.h"
 #include "device/usb/usb_ids.h"
+#include "device/usb/usb_service.h"
 #include "extensions/common/api/usb_private.h"
 
 namespace usb = extensions::core_api::usb;
@@ -22,10 +22,10 @@ namespace GetDevices = usb_private::GetDevices;
 namespace GetDeviceInfo = usb_private::GetDeviceInfo;
 
 using content::BrowserThread;
-using usb_service::UsbDevice;
-using usb_service::UsbDeviceFilter;
-using usb_service::UsbDeviceHandle;
-using usb_service::UsbService;
+using device::UsbDevice;
+using device::UsbDeviceFilter;
+using device::UsbDeviceHandle;
+using device::UsbService;
 
 typedef std::vector<scoped_refptr<UsbDevice> > DeviceVector;
 

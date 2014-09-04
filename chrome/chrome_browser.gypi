@@ -3239,8 +3239,8 @@
         }, {  # OS!="android" and OS!="ios"
           'sources': [ '<@(chrome_browser_non_mobile_sources)' ],
           'dependencies': [
-            '../components/components.gyp:usb_service',
             '../device/core/core.gyp:device_core',
+            '../device/usb/usb.gyp:device_usb',
           ]
         }],
         ['OS=="android"', {

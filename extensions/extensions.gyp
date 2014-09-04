@@ -270,7 +270,6 @@
         '../components/components.gyp:keyed_service_core',
         '../components/components.gyp:pref_registry',
         '../components/components.gyp:sessions',
-        '../components/components.gyp:usb_service',
         '../components/components.gyp:web_modal',
         '../content/content.gyp:content_browser',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth',
@@ -623,7 +622,6 @@
             ['exclude', '^browser/'],
           ],
           'dependencies!': [
-            '../components/components.gyp:usb_service',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../device/serial/serial.gyp:device_serial',
           ],

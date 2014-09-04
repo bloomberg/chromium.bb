@@ -10,12 +10,32 @@
     {
       'target_name': 'device_usb',
       'type': 'static_library',
+      'dependencies': [
+        '../../third_party/libusb/libusb.gyp:libusb',
+      ],
       'include_dirs': [
         '../..',
       ],
       'sources': [
+        'usb_context.cc',
+        'usb_context.h',
+        'usb_device_impl.cc',
+        'usb_device_impl.h',
+        'usb_device.h',
+        'usb_device_filter.cc',
+        'usb_device_filter.h',
+        'usb_device_handle_impl.cc',
+        'usb_device_handle_impl.h',
+        'usb_device_handle.h',
+        'usb_error.cc',
+        'usb_error.h',
         'usb_ids.cc',
         'usb_ids.h',
+        'usb_interface.h',
+        'usb_interface_impl.cc',
+        'usb_interface_impl.h',
+        'usb_service.h',
+        'usb_service_impl.cc',
       ],
       'actions': [
         {
@@ -40,6 +60,18 @@
           'process_outputs_as_sources': 1,
         },
       ],
+      'conditions': [
+        ['use_udev == 1', {
+          'dependencies': [
+            '../../build/linux/system.gyp:udev',
+          ],
+        }],
+        ['chromeos==1', {
+          'dependencies': [
+            '../../chromeos/chromeos.gyp:chromeos',
+          ],
+        }],
+      ]
     },
   ],
 }

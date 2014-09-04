@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/usb_service/usb_interface_impl.h"
+#include "device/usb/usb_interface_impl.h"
 
 #include "base/logging.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
-namespace usb_service {
+namespace device {
 
 UsbEndpointDescriptorImpl::UsbEndpointDescriptorImpl(
     scoped_refptr<const UsbConfigDescriptor> config,
@@ -38,8 +38,8 @@ int UsbEndpointDescriptorImpl::GetMaximumPacketSize() const {
   return descriptor_->wMaxPacketSize;
 }
 
-UsbSynchronizationType
-    UsbEndpointDescriptorImpl::GetSynchronizationType() const {
+UsbSynchronizationType UsbEndpointDescriptorImpl::GetSynchronizationType()
+    const {
   switch (descriptor_->bmAttributes & LIBUSB_ISO_SYNC_TYPE_MASK) {
     case LIBUSB_ISO_SYNC_TYPE_NONE:
       return USB_SYNCHRONIZATION_NONE;
@@ -161,8 +161,8 @@ size_t UsbConfigDescriptorImpl::GetNumInterfaces() const {
 }
 
 scoped_refptr<const UsbInterfaceDescriptor>
-    UsbConfigDescriptorImpl::GetInterface(size_t index) const {
+UsbConfigDescriptorImpl::GetInterface(size_t index) const {
   return new UsbInterfaceDescriptorImpl(this, &config_->interface[index]);
 }
 
-}  // namespace usb_service
+}  // namespace device

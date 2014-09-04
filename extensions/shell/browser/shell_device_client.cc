@@ -5,8 +5,8 @@
 #include "extensions/shell/browser/shell_device_client.h"
 
 #include "base/logging.h"
-#include "components/usb_service/usb_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "device/usb/usb_service.h"
 
 namespace extensions {
 
@@ -14,8 +14,8 @@ ShellDeviceClient::ShellDeviceClient() {}
 
 ShellDeviceClient::~ShellDeviceClient() {}
 
-usb_service::UsbService* ShellDeviceClient::GetUsbService() {
-  return usb_service::UsbService::GetInstance(
+device::UsbService* ShellDeviceClient::GetUsbService() {
+  return device::UsbService::GetInstance(
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::UI));
 }

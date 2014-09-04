@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_USB_SERVICE_USB_DEVICE_HANDLE_IMPL_H_
-#define COMPONENTS_USB_SERVICE_USB_DEVICE_HANDLE_IMPL_H_
+#ifndef DEVICE_USB_USB_DEVICE_HANDLE_IMPL_H_
+#define DEVICE_USB_USB_DEVICE_HANDLE_IMPL_H_
 
 #include <map>
 #include <vector>
@@ -12,8 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
-#include "components/usb_service/usb_device_handle.h"
-#include "components/usb_service/usb_interface.h"
+#include "device/usb/usb_device_handle.h"
+#include "device/usb/usb_interface.h"
 #include "net/base/io_buffer.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
@@ -21,7 +21,7 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace usb_service {
+namespace device {
 
 class UsbContext;
 class UsbConfigDescriptor;
@@ -169,6 +169,6 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceHandleImpl);
 };
 
-}  // namespace usb_service
+}  // namespace device
 
-#endif  // COMPONENTS_USB_SERVICE_USB_DEVICE_HANDLE_IMPL_H_
+#endif  // DEVICE_USB_USB_DEVICE_HANDLE_IMPL_H_

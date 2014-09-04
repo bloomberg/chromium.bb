@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_USB_SERVICE_USB_INTERFACE_IMPL_H_
-#define COMPONENTS_USB_SERVICE_USB_INTERFACE_IMPL_H_
+#ifndef DEVICE_USB_USB_INTERFACE_IMPL_H_
+#define DEVICE_USB_USB_INTERFACE_IMPL_H_
 
 #include "base/memory/ref_counted.h"
-#include "components/usb_service/usb_interface.h"
-#include "components/usb_service/usb_service_export.h"
+#include "device/usb/usb_interface.h"
 
 struct libusb_config_descriptor;
 struct libusb_endpoint_descriptor;
 struct libusb_interface;
 struct libusb_interface_descriptor;
 
-namespace usb_service {
+namespace device {
 
 typedef libusb_config_descriptor* PlatformUsbConfigDescriptor;
 typedef const libusb_endpoint_descriptor* PlatformUsbEndpointDescriptor;
@@ -39,7 +38,7 @@ class UsbEndpointDescriptorImpl : public UsbEndpointDescriptor {
   friend class UsbInterfaceAltSettingDescriptorImpl;
 
   UsbEndpointDescriptorImpl(scoped_refptr<const UsbConfigDescriptor> config,
-                        PlatformUsbEndpointDescriptor descriptor);
+                            PlatformUsbEndpointDescriptor descriptor);
   virtual ~UsbEndpointDescriptorImpl();
 
   scoped_refptr<const UsbConfigDescriptor> config_;
@@ -113,6 +112,6 @@ class UsbConfigDescriptorImpl : public UsbConfigDescriptor {
   DISALLOW_COPY_AND_ASSIGN(UsbConfigDescriptorImpl);
 };
 
-}  // namespace usb_service;
+}  // namespace device
 
-#endif  // COMPONENTS_USB_SERVICE_USB_INTERFACE_IMPL_H_
+#endif  // DEVICE_USB_USB_INTERFACE_IMPL_H_

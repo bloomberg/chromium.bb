@@ -10,11 +10,9 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
-namespace usb_service {
-class UsbDevice;
-}  // namespace usb_service
-
 namespace device {
+
+class UsbDevice;
 
 class UsbTestGadget {
  public:
@@ -35,7 +33,7 @@ class UsbTestGadget {
   virtual bool Reconnect() = 0;
   virtual bool SetType(Type type) = 0;
 
-  virtual usb_service::UsbDevice* GetDevice() const = 0;
+  virtual UsbDevice* GetDevice() const = 0;
   virtual std::string GetSerial() const = 0;
 
  protected:
