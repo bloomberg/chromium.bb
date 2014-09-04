@@ -191,10 +191,17 @@ virtual void HandleMessage(const pp::Var&amp; var_message) {
 and <a class="reference external" href="/native-client/pepper_stable/cpp/classpp_1_1_instance.html#a67e888a4e4e23effe7a09625e73ecae9">pp::Instance.PostMessage</a>
 member functions.</p>
 <h2 id="step-8-compile-the-native-client-module-and-run-the-application-again">Step 8: Compile the Native Client module and run the application again</h2>
-<p>Compile the Native Client module by running the <code>make</code> command again.</p>
-<p>Re-run the application by reloading <code>http://localhost:5103/part1</code> in Chrome.</p>
-<p>After Chrome loads the Native Client module, you should see an alert panel
-appear with the message sent from the module.</p>
+<ol class="arabic">
+<li><p class="first">Compile the Native Client module by running the <code>make</code> command again.</p>
+</li>
+<li><p class="first">Start the SDK web server by running <code>make server</code>.</p>
+</li>
+<li><p class="first">Re-run the application by reloading <code>http://localhost:5103/part1</code> in
+Chrome.</p>
+<p>After Chrome loads the Native Client module, you should see the message sent
+from the module.</p>
+</li>
+</ol>
 <h2 id="troubleshooting"><span id="tutorial-troubleshooting"></span>Troubleshooting</h2>
 <p>If your application doesn&#8217;t run, see <a class="reference internal" href="#tutorial-step-3"><em>Step 3</em></a> above to
 verify that you&#8217;ve set up your environment correctly, including both the Chrome

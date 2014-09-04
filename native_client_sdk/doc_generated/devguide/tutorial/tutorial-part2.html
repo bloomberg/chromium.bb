@@ -26,6 +26,7 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#example-specific-behavior-with-example-js" id="id13">Example-specific behavior with example.js</a></li>
+<li><a class="reference internal" href="#compile-the-native-client-module-and-run-the-application-again" id="id14">Compile the Native Client module and run the application again</a></li>
 </ul>
 
 </div><h2 id="overview">Overview</h2>
@@ -252,7 +253,9 @@ configurations, and path to the <code>.nmf</code> file:</p>
 <p><code>common.js</code> will read these data attributes to allow you to load the same
 example with different toolchains by changing the URL&#8217;s <a class="reference external" href="http://en.wikipedia.org/wiki/Query_string">query string</a>. For example, you can load the
 glibc Debug version of this example by navigating to
-<code>index.html?tc=glibc&amp;config=Debug</code>.</p>
+<code>index.html?tc=glibc&amp;config=Debug</code>.  Path URI&#8217;s such as <code>../</code>, for example
+do not work for either the data-path parameter or its corresponding query
+string.</p>
 <p>Next, we remove the <code>embed</code> element that is described in HTML. This will be
 automatically added for us by <code>common.js</code>, based on the current
 toolchain/configuration combination:</p>
@@ -423,6 +426,18 @@ function handleMessage(message) {
   logEl.textContent += message.data;
 }
 </pre>
+<h2 id="compile-the-native-client-module-and-run-the-application-again">Compile the Native Client module and run the application again</h2>
+<ol class="arabic">
+<li><p class="first">Compile the Native Client module by running the <code>make</code> command again.</p>
+</li>
+<li><p class="first">Start the SDK web server by running <code>make server</code>.</p>
+</li>
+<li><p class="first">Re-run the application by reloading <code>http://localhost:5103/part2</code> in
+Chrome.</p>
+<p>After Chrome loads the Native Client module, you should see the message sent
+from the module.</p>
+</li>
+</ol>
 </section>
 
 {{/partials.standard_nacl_article}}

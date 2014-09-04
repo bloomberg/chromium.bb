@@ -246,12 +246,13 @@ member functions.
 Step 8: Compile the Native Client module and run the application again
 ======================================================================
 
-Compile the Native Client module by running the ``make`` command again.
-
-Re-run the application by reloading ``http://localhost:5103/part1`` in Chrome.
-
-After Chrome loads the Native Client module, you should see an alert panel
-appear with the message sent from the module.
+#. Compile the Native Client module by running the ``make`` command again.
+#. Start the SDK web server by running ``make server``.
+#. Re-run the application by reloading ``http://localhost:5103/part1`` in 
+   Chrome.
+   
+   After Chrome loads the Native Client module, you should see the message sent
+   from the module.
 
 .. _tutorial_troubleshooting:
 

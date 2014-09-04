@@ -301,7 +301,9 @@ configurations, and path to the ``.nmf`` file:
 example with different toolchains by changing the URL's `query string
 <http://en.wikipedia.org/wiki/Query_string>`_. For example, you can load the
 glibc Debug version of this example by navigating to
-``index.html?tc=glibc&config=Debug``.
+``index.html?tc=glibc&config=Debug``.  Path URI's such as ``../``, for example
+do not work for either the data-path parameter or its corresponding query
+string.
 
 Next, we remove the ``embed`` element that is described in HTML. This will be
 automatically added for us by ``common.js``, based on the current
@@ -496,3 +498,14 @@ during the module loading process. This example only needs to respond to two:
       var logEl = document.getElementById('log');
       logEl.textContent += message.data;
     }
+    
+Compile the Native Client module and run the application again
+==============================================================
+
+#. Compile the Native Client module by running the ``make`` command again.
+#. Start the SDK web server by running ``make server``.
+#. Re-run the application by reloading ``http://localhost:5103/part2`` in 
+   Chrome.
+   
+   After Chrome loads the Native Client module, you should see the message sent
+   from the module.
