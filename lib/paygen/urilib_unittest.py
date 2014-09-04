@@ -17,7 +17,6 @@ from chromite.lib.paygen import filelib
 from chromite.lib.paygen import gslib
 from chromite.lib.paygen import unittest_lib
 from chromite.lib.paygen import urilib
-from chromite.lib.paygen import utils
 
 
 # We access private members to test them.
@@ -58,12 +57,6 @@ class TestFileManipulation(unittest_lib.TestCase):
 
   GS_DIR = 'gs://chromeos-releases-public/unittest'
 
-  def setUp(self):
-    unittest_lib.TestCase.setUp(self)
-
-    # Integration tests require access to /cns, which requires prodaccess.
-    self.loas = utils.CheckLoas()
-
   def _SetUpDirs(self):
     self.file1_local = os.path.join(self.tempdir, self.FILE1)
     self.file2_local = os.path.join(self.tempdir, self.FILE2)
@@ -94,11 +87,6 @@ class TestFileManipulation(unittest_lib.TestCase):
   @cros_test_lib.NetworkTest()
   @osutils.TempDirDecorator
   def testIntegration(self):
-    # Succeed quickly if LOAS is not available.
-    if not self.loas:
-      print('WARNING: Skipping urilib integration tests without prodaccess.')
-      return
-
     self._SetUpDirs()
 
     self.assertTrue(urilib.Exists(self.tempdir, as_dir=True))

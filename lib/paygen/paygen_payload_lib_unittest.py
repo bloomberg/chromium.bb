@@ -198,7 +198,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
                                 au_generator_uri_override=override)
     self.assertEqual(gen._GeneratorUri(), override)
 
-
+  @cros_test_lib.NetworkTest()
   @osutils.TempDirDecorator
   def testPrepareGenerator(self):
     """Validate that we can download an unzip a generator artifact."""

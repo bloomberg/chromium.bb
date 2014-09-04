@@ -118,6 +118,7 @@ def _InProcessDataUpdate(lock_uri_data_uri):
 class GSLockTest(mox.MoxTestBase):
   """This test suite covers the GSLock file."""
 
+  @cros_test_lib.NetworkTest()
   def setUp(self):
     self.mox = mox.Mox()
 
@@ -134,6 +135,7 @@ class GSLockTest(mox.MoxTestBase):
     # To make certain we don't self update while running tests.
     os.environ['CROSTOOLS_NO_SOURCE_UPDATE'] = '1'
 
+  @cros_test_lib.NetworkTest()
   def tearDown(self):
     self.assertFalse(gslib.Exists(self.lock_uri))
     self.assertFalse(gslib.Exists(self.data_uri))

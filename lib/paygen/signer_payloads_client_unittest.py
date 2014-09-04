@@ -195,7 +195,6 @@ class SignerPayloadsClientGoogleStorageTest(mox.MoxTestBase):
 
     self.mox.VerifyAll()
 
-
   def testCreateInstructionsUri(self):
     """Test that the expected instructions URI is correct."""
 
@@ -358,6 +357,7 @@ versionrev = foo-version
 
     self.mox.VerifyAll()
 
+  @cros_test_lib.NetworkTest()
   def testDownloadSignatures(self):
     """Test that we can correctly download a list of URIs."""
 
