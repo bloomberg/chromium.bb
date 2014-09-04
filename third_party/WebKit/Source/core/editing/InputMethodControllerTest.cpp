@@ -128,4 +128,15 @@ TEST_F(InputMethodControllerTest, SetCompositionFromExistingTextWithCollapsedWhi
     EXPECT_EQ(5u, plainTextRange.end());
 }
 
+TEST_F(InputMethodControllerTest, SetCompositionFromExistingTextWithInvalidOffsets)
+{
+    insertHTMLElement("<div id='sample' contenteditable='true'>test</div>", "sample");
+
+    Vector<CompositionUnderline> underlines;
+    underlines.append(CompositionUnderline(7, 8, Color(255, 0, 0), false, 0));
+    controller().setCompositionFromExistingText(underlines, 7, 8);
+
+    EXPECT_FALSE(controller().compositionRange());
+}
+
 } // namespace

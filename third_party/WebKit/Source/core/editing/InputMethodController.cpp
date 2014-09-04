@@ -331,6 +331,9 @@ void InputMethodController::setCompositionFromExistingText(const Vector<Composit
 
         m_compositionNode = toText(baseNode);
         RefPtrWillBeRawPtr<Range> range = PlainTextRange(compositionStart, compositionEnd).createRange(*editable);
+        if (!range)
+            return;
+
         m_compositionStart = range->startOffset();
         m_compositionEnd = range->endOffset();
         m_customCompositionUnderlines = underlines;
