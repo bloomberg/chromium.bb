@@ -282,7 +282,28 @@ gfx::Rect DesktopWindowTreeHostWin::GetWorkAreaBoundsInScreen() const {
 
 void DesktopWindowTreeHostWin::SetShape(gfx::NativeRegion native_region) {
   if (native_region) {
-    message_handler_->SetRegion(gfx::CreateHRGNFromSkRegion(*native_region));
+    // TODO(wez): This would be a lot simpler if we were passed an SkPath.
+    // See crbug.com/410593.
+    gfx::NativeRegion shape = native_region;
+    SkRegion device_region;
+    if (gfx::IsInHighDPIMode()) {
+      shape = &device_region;
+      const float& scale = gfx::GetDPIScale();
+      std::vector<SkIRect> rects;
+      for (SkRegion::Iterator it(*native_region); !it.done(); it.next()) {
+        const SkIRect& rect = it.rect();
+        SkRect scaled_rect =
+            SkRect::MakeLTRB(rect.left() * scale, rect.top() * scale,
+                             rect.right() * scale, rect.bottom() * scale);
+        SkIRect rounded_scaled_rect;
+        scaled_rect.roundOut(&rounded_scaled_rect);
+        rects.push_back(rounded_scaled_rect);
+      }
+      if (!rects.empty())
+        device_region.setRects(&rects[0], rects.size());
+    }
+
+    message_handler_->SetRegion(gfx::CreateHRGNFromSkRegion(*shape));
   } else {
     message_handler_->SetRegion(NULL);
   }
