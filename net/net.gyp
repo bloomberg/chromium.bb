@@ -643,8 +643,6 @@
             # TODO(bulach): Add equivalent tests when the underlying
             #               functionality is ported to OpenSSL.
             'sources!': [
-              'cert/ct_objects_extractor_unittest.cc',
-              'cert/multi_log_ct_verifier_unittest.cc',
               'cert/nss_cert_database_unittest.cc',
               'cert/nss_cert_database_chromeos_unittest.cc',
               'cert/nss_profile_filter_chromeos_unittest.cc',
