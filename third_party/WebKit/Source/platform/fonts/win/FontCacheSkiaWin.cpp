@@ -43,13 +43,13 @@
 
 namespace blink {
 
-HashMap<String, SkTypeface*>* FontCache::s_sideloadedFonts = 0;
+HashMap<String, RefPtr<SkTypeface> >* FontCache::s_sideloadedFonts = 0;
 
 // static
 void FontCache::addSideloadedFontForTesting(SkTypeface* typeface)
 {
     if (!s_sideloadedFonts)
-        s_sideloadedFonts = new HashMap<String, SkTypeface*>;
+        s_sideloadedFonts = new HashMap<String, RefPtr<SkTypeface> >;
     SkString name;
     typeface->getFamilyName(&name);
     s_sideloadedFonts->set(name.c_str(), typeface);

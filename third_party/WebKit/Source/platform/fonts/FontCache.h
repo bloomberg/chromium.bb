@@ -163,7 +163,7 @@ private:
     static bool s_useDirectWrite;
     static IDWriteFactory* s_directWriteFactory;
     static bool s_useSubpixelPositioning;
-    static HashMap<String, SkTypeface*>* s_sideloadedFonts;
+    static HashMap<String, RefPtr<SkTypeface> >* s_sideloadedFonts;
 #endif
 
 #if OS(MACOSX) || OS(ANDROID)
