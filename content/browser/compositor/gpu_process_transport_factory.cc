@@ -181,23 +181,25 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
     // associated with this context, then return a SurfaceDisplayOutputSurface
     // set up to draw to the display's surface.
     cc::SurfaceManager* manager = surface_manager_.get();
-    scoped_ptr<cc::OutputSurface> software_surface;
+    scoped_ptr<cc::OutputSurface> display_surface;
     if (!context_provider.get()) {
-      software_surface =
+      display_surface =
           make_scoped_ptr(new SoftwareBrowserCompositorOutputSurface(
               output_surface_proxy_,
               CreateSoftwareOutputDevice(compositor),
               per_compositor_data_[compositor]->surface_id,
               &output_surface_map_,
               compositor->vsync_manager()));
+    } else {
+      display_surface = make_scoped_ptr(new GpuBrowserCompositorOutputSurface(
+          context_provider,
+          per_compositor_data_[compositor]->surface_id,
+          &output_surface_map_,
+          compositor->vsync_manager(),
+          CreateOverlayCandidateValidator(compositor->widget())));
     }
-    scoped_ptr<OnscreenDisplayClient> display_client(
-        new OnscreenDisplayClient(context_provider,
-                                  software_surface.Pass(),
-                                  manager,
-                                  compositor->task_runner()));
-    // TODO(jamesr): Need to set up filtering for the
-    // GpuHostMsg_UpdateVSyncParameters message.
+    scoped_ptr<OnscreenDisplayClient> display_client(new OnscreenDisplayClient(
+        display_surface.Pass(), manager, compositor->task_runner()));
 
     scoped_refptr<cc::ContextProvider> offscreen_context_provider;
     if (context_provider.get()) {

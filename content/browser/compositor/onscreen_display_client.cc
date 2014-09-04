@@ -13,12 +13,10 @@
 namespace content {
 
 OnscreenDisplayClient::OnscreenDisplayClient(
-    const scoped_refptr<cc::ContextProvider>& onscreen_context_provider,
-    scoped_ptr<cc::OutputSurface> software_surface,
+    scoped_ptr<cc::OutputSurface> output_surface,
     cc::SurfaceManager* manager,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : onscreen_context_provider_(onscreen_context_provider),
-      software_surface_(software_surface.Pass()),
+    : output_surface_(output_surface.Pass()),
       display_(
           new cc::Display(this, manager, HostSharedBitmapManager::current())),
       task_runner_(task_runner),
@@ -30,10 +28,8 @@ OnscreenDisplayClient::~OnscreenDisplayClient() {
 }
 
 scoped_ptr<cc::OutputSurface> OnscreenDisplayClient::CreateOutputSurface() {
-  if (!onscreen_context_provider_.get())
-    return software_surface_.Pass();
-  return make_scoped_ptr(new cc::OutputSurface(onscreen_context_provider_))
-      .Pass();
+  DCHECK(output_surface_.get());
+  return output_surface_.Pass();
 }
 
 void OnscreenDisplayClient::DisplayDamaged() {

@@ -24,8 +24,7 @@ namespace content {
 class OnscreenDisplayClient : cc::DisplayClient {
  public:
   OnscreenDisplayClient(
-      const scoped_refptr<cc::ContextProvider>& onscreen_context_provider,
-      scoped_ptr<cc::OutputSurface> software_surface,
+      scoped_ptr<cc::OutputSurface> output_surface,
       cc::SurfaceManager* manager,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual ~OnscreenDisplayClient();
@@ -39,8 +38,7 @@ class OnscreenDisplayClient : cc::DisplayClient {
  private:
   void Draw();
 
-  scoped_refptr<cc::ContextProvider> onscreen_context_provider_;
-  scoped_ptr<cc::OutputSurface> software_surface_;
+  scoped_ptr<cc::OutputSurface> output_surface_;
   scoped_ptr<cc::Display> display_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool scheduled_draw_;
