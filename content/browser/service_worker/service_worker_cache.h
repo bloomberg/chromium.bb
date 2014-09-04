@@ -25,6 +25,7 @@ class BlobStorageContext;
 
 namespace content {
 class ChromeBlobStorageContext;
+class ServiceWorkerRequestResponseHeaders;
 
 // TODO(jkarlin): Unload cache backend from memory once the cache object is no
 // longer referenced in javascript.
@@ -46,6 +47,10 @@ class CONTENT_EXPORT ServiceWorkerCache {
                               scoped_ptr<ServiceWorkerResponse>,
                               scoped_ptr<storage::BlobDataHandle>)>
       ResponseCallback;
+  typedef std::vector<ServiceWorkerFetchRequest> Requests;
+  typedef base::Callback<void(ErrorType, scoped_ptr<Requests>)>
+      RequestsCallback;
+
   static scoped_ptr<ServiceWorkerCache> CreateMemoryCache(
       net::URLRequestContext* request_context,
       base::WeakPtr<storage::BlobStorageContext> blob_context);
@@ -80,6 +85,11 @@ class CONTENT_EXPORT ServiceWorkerCache {
   void Delete(ServiceWorkerFetchRequest* request,
               const ErrorCallback& callback);
 
+  // TODO(jkarlin): Have keys take an optional ServiceWorkerFetchRequest.
+  // Returns ErrorTypeOK and a vector of requests if there are no errors. The
+  // callback will always be called.
+  void Keys(const RequestsCallback& callback);
+
   // Call to determine if CreateBackend must be called.
   bool HasCreatedBackend() const;
 
@@ -90,9 +100,22 @@ class CONTENT_EXPORT ServiceWorkerCache {
   base::WeakPtr<ServiceWorkerCache> AsWeakPtr();
 
  private:
+  struct KeysContext;
+  typedef std::vector<disk_cache::Entry*> Entries;
+
   ServiceWorkerCache(const base::FilePath& path,
                      net::URLRequestContext* request_context,
                      base::WeakPtr<storage::BlobStorageContext> blob_context);
+
+  // Static callbacks for the Keys function.
+  static void KeysDidOpenNextEntry(scoped_ptr<KeysContext> keys_context,
+                                   int rv);
+  static void KeysProcessNextEntry(scoped_ptr<KeysContext> keys_context,
+                                   const Entries::iterator& iter);
+  static void KeysDidReadHeaders(
+      scoped_ptr<KeysContext> keys_context,
+      const Entries::iterator& iter,
+      scoped_ptr<ServiceWorkerRequestResponseHeaders> headers);
 
   scoped_ptr<disk_cache::Backend> backend_;
   base::FilePath path_;

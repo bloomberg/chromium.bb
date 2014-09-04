@@ -27,6 +27,9 @@ typedef scoped_ptr<disk_cache::Backend> ScopedBackendPtr;
 typedef base::Callback<void(bool)> BoolCallback;
 typedef base::Callback<void(disk_cache::ScopedEntryPtr, bool)>
     EntryBoolCallback;
+typedef base::Callback<void(scoped_ptr<ServiceWorkerRequestResponseHeaders>)>
+    HeadersCallback;
+
 enum EntryIndex { INDEX_HEADERS = 0, INDEX_RESPONSE_BODY };
 
 // The maximum size of an individual cache. Ultimately cache size is controlled
@@ -189,8 +192,7 @@ void MatchDidReadHeaderData(
     const ServiceWorkerCache::ResponseCallback& callback,
     base::WeakPtr<storage::BlobStorageContext> blob_storage,
     disk_cache::ScopedEntryPtr entry,
-    const scoped_refptr<net::IOBufferWithSize>& buffer,
-    int rv);
+    scoped_ptr<ServiceWorkerRequestResponseHeaders> headers);
 void MatchDidReadResponseBodyData(
     ServiceWorkerFetchRequest* request,
     const ServiceWorkerCache::ResponseCallback& callback,
@@ -210,6 +212,15 @@ void DeleteDidOpenEntry(ServiceWorkerFetchRequest* request,
                         const ServiceWorkerCache::ErrorCallback& callback,
                         scoped_ptr<disk_cache::Entry*> entryptr,
                         int rv);
+
+// Copy headers out of a cache entry and into a protobuf. The callback is
+// guaranteed to be run.
+void ReadHeaders(disk_cache::Entry* entry, const HeadersCallback& callback);
+void ReadHeadersDidReadHeaderData(
+    disk_cache::Entry* entry,
+    const HeadersCallback& callback,
+    const scoped_refptr<net::IOBufferWithSize>& buffer,
+    int rv);
 
 // CreateBackend callbacks
 void CreateBackendDidCreate(const ServiceWorkerCache::ErrorCallback& callback,
@@ -350,25 +361,16 @@ void MatchDidOpenEntry(ServiceWorkerFetchRequest* request,
   DCHECK(entryptr);
   disk_cache::ScopedEntryPtr entry(*entryptr);
 
-  scoped_refptr<net::IOBufferWithSize> buffer(
-      new net::IOBufferWithSize(entry->GetDataSize(INDEX_HEADERS)));
-
   // Copy the entry pointer before passing it in base::Bind.
   disk_cache::Entry* tmp_entry_ptr = entry.get();
 
-  net::CompletionCallback read_header_callback =
-      base::Bind(MatchDidReadHeaderData,
-                 request,
-                 callback,
-                 blob_storage,
-                 base::Passed(entry.Pass()),
-                 buffer);
+  HeadersCallback headers_callback = base::Bind(MatchDidReadHeaderData,
+                                                request,
+                                                callback,
+                                                blob_storage,
+                                                base::Passed(entry.Pass()));
 
-  int read_rv = tmp_entry_ptr->ReadData(
-      INDEX_HEADERS, 0, buffer.get(), buffer->size(), read_header_callback);
-
-  if (read_rv != net::ERR_IO_PENDING)
-    read_header_callback.Run(read_rv);
+  ReadHeaders(tmp_entry_ptr, headers_callback);
 }
 
 void MatchDidReadHeaderData(
@@ -376,36 +378,24 @@ void MatchDidReadHeaderData(
     const ServiceWorkerCache::ResponseCallback& callback,
     base::WeakPtr<storage::BlobStorageContext> blob_storage,
     disk_cache::ScopedEntryPtr entry,
-    const scoped_refptr<net::IOBufferWithSize>& buffer,
-    int rv) {
-  if (rv != buffer->size()) {
+    scoped_ptr<ServiceWorkerRequestResponseHeaders> headers) {
+  if (!headers) {
     callback.Run(ServiceWorkerCache::ErrorTypeStorage,
                  scoped_ptr<ServiceWorkerResponse>(),
                  scoped_ptr<storage::BlobDataHandle>());
-
-    return;
-  }
-
-  ServiceWorkerRequestResponseHeaders headers;
-
-  if (!headers.ParseFromArray(buffer->data(), buffer->size())) {
-    callback.Run(ServiceWorkerCache::ErrorTypeStorage,
-                 scoped_ptr<ServiceWorkerResponse>(),
-                 scoped_ptr<storage::BlobDataHandle>());
-
     return;
   }
 
   scoped_ptr<ServiceWorkerResponse> response(
       new ServiceWorkerResponse(request->url,
-                                headers.status_code(),
-                                headers.status_text(),
+                                headers->status_code(),
+                                headers->status_text(),
                                 std::map<std::string, std::string>(),
                                 ""));
 
-  for (int i = 0; i < headers.response_headers_size(); ++i) {
+  for (int i = 0; i < headers->response_headers_size(); ++i) {
     const ServiceWorkerRequestResponseHeaders::HeaderMap header =
-        headers.response_headers(i);
+        headers->response_headers(i);
     response->headers.insert(std::make_pair(header.name(), header.value()));
   }
 
@@ -423,7 +413,6 @@ void MatchDidReadHeaderData(
     callback.Run(ServiceWorkerCache::ErrorTypeStorage,
                  scoped_ptr<ServiceWorkerResponse>(),
                  scoped_ptr<storage::BlobDataHandle>());
-
     return;
   }
 
@@ -549,6 +538,43 @@ void DeleteDidOpenEntry(ServiceWorkerFetchRequest* request,
   callback.Run(ServiceWorkerCache::ErrorTypeOK);
 }
 
+void ReadHeaders(disk_cache::Entry* entry, const HeadersCallback& callback) {
+  DCHECK(entry);
+
+  scoped_refptr<net::IOBufferWithSize> buffer(
+      new net::IOBufferWithSize(entry->GetDataSize(INDEX_HEADERS)));
+
+  net::CompletionCallback read_header_callback =
+      base::Bind(ReadHeadersDidReadHeaderData, entry, callback, buffer);
+
+  int read_rv = entry->ReadData(
+      INDEX_HEADERS, 0, buffer.get(), buffer->size(), read_header_callback);
+
+  if (read_rv != net::ERR_IO_PENDING)
+    read_header_callback.Run(read_rv);
+}
+
+void ReadHeadersDidReadHeaderData(
+    disk_cache::Entry* entry,
+    const HeadersCallback& callback,
+    const scoped_refptr<net::IOBufferWithSize>& buffer,
+    int rv) {
+  if (rv != buffer->size()) {
+    callback.Run(scoped_ptr<ServiceWorkerRequestResponseHeaders>());
+    return;
+  }
+
+  scoped_ptr<ServiceWorkerRequestResponseHeaders> headers(
+      new ServiceWorkerRequestResponseHeaders());
+
+  if (!headers->ParseFromArray(buffer->data(), buffer->size())) {
+    callback.Run(scoped_ptr<ServiceWorkerRequestResponseHeaders>());
+    return;
+  }
+
+  callback.Run(headers.Pass());
+}
+
 void CreateBackendDidCreate(const ServiceWorkerCache::ErrorCallback& callback,
                             scoped_ptr<ScopedBackendPtr> backend_ptr,
                             base::WeakPtr<ServiceWorkerCache> cache,
@@ -557,11 +583,48 @@ void CreateBackendDidCreate(const ServiceWorkerCache::ErrorCallback& callback,
     callback.Run(ServiceWorkerCache::ErrorTypeStorage);
     return;
   }
+
   cache->set_backend(backend_ptr->Pass());
   callback.Run(ServiceWorkerCache::ErrorTypeOK);
 }
 
 }  // namespace
+
+// The state needed to pass between ServiceWorkerCache::Keys callbacks.
+struct ServiceWorkerCache::KeysContext {
+  KeysContext(const ServiceWorkerCache::RequestsCallback& callback,
+              base::WeakPtr<ServiceWorkerCache> cache)
+      : original_callback(callback),
+        cache(cache),
+        out_keys(new ServiceWorkerCache::Requests()),
+        backend_iterator(NULL),
+        enumerated_entry(NULL) {}
+
+  ~KeysContext() {
+    for (size_t i = 0, max = entries.size(); i < max; ++i)
+      entries[i]->Close();
+    if (enumerated_entry)
+      enumerated_entry->Close();
+    if (cache && backend_iterator)
+      cache->backend_->EndEnumeration(&backend_iterator);
+  }
+
+  // The callback passed to the Keys() function.
+  ServiceWorkerCache::RequestsCallback original_callback;
+
+  // The ServiceWorkerCache that Keys was called on.
+  base::WeakPtr<ServiceWorkerCache> cache;
+
+  // The vector of open entries in the backend.
+  Entries entries;
+
+  // The output of the Keys function.
+  scoped_ptr<ServiceWorkerCache::Requests> out_keys;
+
+  // Used for enumerating cache entries.
+  void* backend_iterator;
+  disk_cache::Entry* enumerated_entry;
+};
 
 // static
 scoped_ptr<ServiceWorkerCache> ServiceWorkerCache::CreateMemoryCache(
@@ -611,7 +674,7 @@ void ServiceWorkerCache::CreateBackend(const ErrorCallback& callback) {
   // debugging why the QuickStressBody unittest fails with it.
   int rv = disk_cache::CreateCacheBackend(
       cache_type,
-      net::CACHE_BACKEND_DEFAULT,
+      net::CACHE_BACKEND_SIMPLE,
       path_,
       kMaxCacheBytes,
       false, /* force */
@@ -701,6 +764,35 @@ void ServiceWorkerCache::Delete(ServiceWorkerFetchRequest* request,
     open_entry_callback.Run(rv);
 }
 
+void ServiceWorkerCache::Keys(const RequestsCallback& callback) {
+  DCHECK(backend_);
+
+  // 1. Iterate through all of the entries, open them, and add them to a vector.
+  // 2. For each open entry:
+  //  2.1. Read the headers into a protobuf.
+  //  2.2. Copy the protobuf into a ServiceWorkerFetchRequest (a "key").
+  //  2.3. Push the response into a vector of requests to be returned.
+  // 3. Return the vector of requests (keys).
+
+  // The entries have to be loaded into a vector first because enumeration loops
+  // forever if you read data from a cache entry while enumerating.
+
+  scoped_ptr<KeysContext> keys_context(
+      new KeysContext(callback, weak_ptr_factory_.GetWeakPtr()));
+
+  void** backend_iterator = &keys_context->backend_iterator;
+  disk_cache::Entry** enumerated_entry = &keys_context->enumerated_entry;
+
+  net::CompletionCallback open_entry_callback =
+      base::Bind(KeysDidOpenNextEntry, base::Passed(keys_context.Pass()));
+
+  int rv = backend_->OpenNextEntry(
+      backend_iterator, enumerated_entry, open_entry_callback);
+
+  if (rv != net::ERR_IO_PENDING)
+    open_entry_callback.Run(rv);
+}
+
 bool ServiceWorkerCache::HasCreatedBackend() const {
   return backend_;
 }
@@ -713,6 +805,89 @@ ServiceWorkerCache::ServiceWorkerCache(
       request_context_(request_context),
       blob_storage_context_(blob_context),
       weak_ptr_factory_(this) {
+}
+
+// static
+void ServiceWorkerCache::KeysDidOpenNextEntry(
+    scoped_ptr<KeysContext> keys_context,
+    int rv) {
+  if (rv == net::ERR_FAILED) {
+    DCHECK(!keys_context->enumerated_entry);
+    // Enumeration is complete, extract the requests from the entries.
+    Entries::iterator iter = keys_context->entries.begin();
+    KeysProcessNextEntry(keys_context.Pass(), iter);
+    return;
+  }
+
+  base::WeakPtr<ServiceWorkerCache> cache = keys_context->cache;
+  if (rv < 0 || !cache) {
+    keys_context->original_callback.Run(ErrorTypeStorage,
+                                        scoped_ptr<Requests>());
+    return;
+  }
+
+  // Store the entry.
+  keys_context->entries.push_back(keys_context->enumerated_entry);
+  keys_context->enumerated_entry = NULL;
+
+  // Enumerate the next entry.
+  void** backend_iterator = &keys_context->backend_iterator;
+  disk_cache::Entry** enumerated_entry = &keys_context->enumerated_entry;
+
+  net::CompletionCallback open_entry_callback =
+      base::Bind(KeysDidOpenNextEntry, base::Passed(keys_context.Pass()));
+
+  rv = cache->backend_->OpenNextEntry(
+      backend_iterator, enumerated_entry, open_entry_callback);
+
+  if (rv != net::ERR_IO_PENDING)
+    open_entry_callback.Run(rv);
+}
+
+// static
+void ServiceWorkerCache::KeysProcessNextEntry(
+    scoped_ptr<KeysContext> keys_context,
+    const Entries::iterator& iter) {
+  if (iter == keys_context->entries.end()) {
+    // All done. Return all of the keys.
+    keys_context->original_callback.Run(ErrorTypeOK,
+                                        keys_context->out_keys.Pass());
+    return;
+  }
+
+  ReadHeaders(
+      *iter,
+      base::Bind(KeysDidReadHeaders, base::Passed(keys_context.Pass()), iter));
+}
+
+// static
+void ServiceWorkerCache::KeysDidReadHeaders(
+    scoped_ptr<KeysContext> keys_context,
+    const Entries::iterator& iter,
+    scoped_ptr<ServiceWorkerRequestResponseHeaders> headers) {
+  disk_cache::Entry* entry = *iter;
+
+  if (headers) {
+    keys_context->out_keys->push_back(
+        ServiceWorkerFetchRequest(GURL(entry->GetKey()),
+                                  headers->method(),
+                                  std::map<std::string, std::string>(),
+                                  GURL(),
+                                  false));
+
+    std::map<std::string, std::string>& req_headers =
+        keys_context->out_keys->back().headers;
+
+    for (int i = 0; i < headers->request_headers_size(); ++i) {
+      const ServiceWorkerRequestResponseHeaders::HeaderMap header =
+          headers->request_headers(i);
+      req_headers.insert(std::make_pair(header.name(), header.value()));
+    }
+  } else {
+    entry->Doom();
+  }
+
+  KeysProcessNextEntry(keys_context.Pass(), iter + 1);
 }
 
 }  // namespace content
