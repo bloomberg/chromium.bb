@@ -211,7 +211,7 @@ void VideoSender::SendEncodedVideoFrame(
     encoded_frame->new_playout_delay_ms =
         target_playout_delay_.InMilliseconds();
   }
-  transport_sender_->InsertCodedVideoFrame(*encoded_frame);
+  transport_sender_->InsertFrame(ssrc_, *encoded_frame);
 }
 
 void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {

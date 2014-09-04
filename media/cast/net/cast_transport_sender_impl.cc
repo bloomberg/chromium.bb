@@ -178,16 +178,15 @@ void EncryptAndSendFrame(const EncodedFrame& frame,
 }
 }  // namespace
 
-void CastTransportSenderImpl::InsertCodedAudioFrame(
-    const EncodedFrame& audio_frame) {
-  DCHECK(audio_sender_) << "Audio sender uninitialized";
-  EncryptAndSendFrame(audio_frame, &audio_encryptor_, audio_sender_.get());
-}
-
-void CastTransportSenderImpl::InsertCodedVideoFrame(
-    const EncodedFrame& video_frame) {
-  DCHECK(video_sender_) << "Video sender uninitialized";
-  EncryptAndSendFrame(video_frame, &video_encryptor_, video_sender_.get());
+void CastTransportSenderImpl::InsertFrame(uint32 ssrc,
+                                          const EncodedFrame& frame) {
+  if (audio_sender_ && ssrc == audio_sender_->ssrc()) {
+    EncryptAndSendFrame(frame, &audio_encryptor_, audio_sender_.get());
+  } else if (video_sender_ && ssrc == video_sender_->ssrc()) {
+    EncryptAndSendFrame(frame, &video_encryptor_, video_sender_.get());
+  } else {
+    NOTREACHED() << "Invalid InsertFrame call.";
+  }
 }
 
 void CastTransportSenderImpl::SendSenderReport(

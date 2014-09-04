@@ -50,14 +50,9 @@ void CastTransportSenderIPC::InitializeVideo(
   Send(new CastHostMsg_InitializeVideo(channel_id_, config));
 }
 
-void CastTransportSenderIPC::InsertCodedAudioFrame(
-    const media::cast::EncodedFrame& audio_frame) {
-  Send(new CastHostMsg_InsertCodedAudioFrame(channel_id_, audio_frame));
-}
-
-void CastTransportSenderIPC::InsertCodedVideoFrame(
-    const media::cast::EncodedFrame& video_frame) {
-  Send(new CastHostMsg_InsertCodedVideoFrame(channel_id_, video_frame));
+void CastTransportSenderIPC::InsertFrame(uint32 ssrc,
+    const media::cast::EncodedFrame& frame) {
+  Send(new CastHostMsg_InsertFrame(channel_id_, ssrc, frame));
 }
 
 void CastTransportSenderIPC::SendSenderReport(

@@ -31,10 +31,7 @@ bool CastTransportHostFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(CastHostMsg_Delete, OnDelete)
     IPC_MESSAGE_HANDLER(CastHostMsg_InitializeAudio, OnInitializeAudio)
     IPC_MESSAGE_HANDLER(CastHostMsg_InitializeVideo, OnInitializeVideo)
-    IPC_MESSAGE_HANDLER(CastHostMsg_InsertCodedAudioFrame,
-                        OnInsertCodedAudioFrame)
-    IPC_MESSAGE_HANDLER(CastHostMsg_InsertCodedVideoFrame,
-                        OnInsertCodedVideoFrame)
+    IPC_MESSAGE_HANDLER(CastHostMsg_InsertFrame, OnInsertFrame)
     IPC_MESSAGE_HANDLER(CastHostMsg_SendSenderReport,
                         OnSendSenderReport)
     IPC_MESSAGE_HANDLER(CastHostMsg_ResendFrameForKickstart,
@@ -172,31 +169,17 @@ void CastTransportHostFilter::OnInitializeVideo(
   }
 }
 
-void CastTransportHostFilter::OnInsertCodedAudioFrame(
+void CastTransportHostFilter::OnInsertFrame(
     int32 channel_id,
-    const media::cast::EncodedFrame& audio_frame) {
+    uint32 ssrc,
+    const media::cast::EncodedFrame& frame) {
   media::cast::CastTransportSender* sender =
       id_map_.Lookup(channel_id);
   if (sender) {
-    sender->InsertCodedAudioFrame(audio_frame);
+    sender->InsertFrame(ssrc, frame);
   } else {
     DVLOG(1)
-        << "CastTransportHostFilter::OnInsertCodedAudioFrame "
-        << "on non-existing channel";
-  }
-}
-
-void CastTransportHostFilter::OnInsertCodedVideoFrame(
-    int32 channel_id,
-    const media::cast::EncodedFrame& video_frame) {
-  media::cast::CastTransportSender* sender =
-      id_map_.Lookup(channel_id);
-  if (sender) {
-    sender->InsertCodedVideoFrame(video_frame);
-  } else {
-    DVLOG(1)
-        << "CastTransportHostFilter::OnInsertCodedVideoFrame "
-        << "on non-existing channel";
+        << "CastTransportHostFilter::OnInsertFrame on non-existing channel";
   }
 }
 

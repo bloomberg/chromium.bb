@@ -105,9 +105,8 @@ TEST_F(CastTransportHostFilterTest, SimpleMessages) {
   const int kBytesPerSample = 2;
   const int kChannels = 2;
   audio_frame.data = std::string(kSamples * kBytesPerSample * kChannels, 'q');
-  CastHostMsg_InsertCodedAudioFrame insert_coded_audio_frame(
-      kChannelId, audio_frame);
-  FakeSend(insert_coded_audio_frame);
+  CastHostMsg_InsertFrame insert_audio_frame(1, kChannelId, audio_frame);
+  FakeSend(insert_audio_frame);
 
   media::cast::EncodedFrame video_frame;
   video_frame.dependency = media::cast::EncodedFrame::KEY;
@@ -117,9 +116,8 @@ TEST_F(CastTransportHostFilterTest, SimpleMessages) {
   // are generated.
   const int kVideoDataSize = 4711;
   video_frame.data = std::string(kVideoDataSize, 'p');
-  CastHostMsg_InsertCodedVideoFrame insert_coded_video_frame(
-      kChannelId, video_frame);
-  FakeSend(insert_coded_video_frame);
+  CastHostMsg_InsertFrame insert_video_frame(11, kChannelId, video_frame);
+  FakeSend(insert_video_frame);
 
   CastHostMsg_SendSenderReport rtcp_msg(
       kChannelId, 1, base::TimeTicks(), 2);

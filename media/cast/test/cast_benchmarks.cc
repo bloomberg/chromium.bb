@@ -112,6 +112,7 @@ class CastTransportSenderWrapper : public CastTransportSender {
       const CastTransportRtpConfig& config,
       const RtcpCastMessageCallback& cast_message_cb,
       const RtcpRttCallback& rtt_cb) OVERRIDE {
+    audio_ssrc_ = config.ssrc;
     transport_->InitializeAudio(config, cast_message_cb, rtt_cb);
   }
 
@@ -119,19 +120,18 @@ class CastTransportSenderWrapper : public CastTransportSender {
       const CastTransportRtpConfig& config,
       const RtcpCastMessageCallback& cast_message_cb,
       const RtcpRttCallback& rtt_cb) OVERRIDE {
+    video_ssrc_ = config.ssrc;
     transport_->InitializeVideo(config, cast_message_cb, rtt_cb);
   }
 
-  virtual void InsertCodedAudioFrame(
-      const EncodedFrame& audio_frame) OVERRIDE {
-    *encoded_audio_bytes_ += audio_frame.data.size();
-    transport_->InsertCodedAudioFrame(audio_frame);
-  }
-
-  virtual void InsertCodedVideoFrame(
-      const EncodedFrame& video_frame) OVERRIDE {
-    *encoded_video_bytes_ += video_frame.data.size();
-    transport_->InsertCodedVideoFrame(video_frame);
+  virtual void InsertFrame(uint32 ssrc,
+                           const EncodedFrame& frame) OVERRIDE {
+    if (ssrc == audio_ssrc_) {
+      *encoded_audio_bytes_ += frame.data.size();
+    } else if (ssrc == video_ssrc_) {
+      *encoded_video_bytes_ += frame.data.size();
+    }
+    transport_->InsertFrame(ssrc, frame);
   }
 
   virtual void SendSenderReport(
@@ -160,6 +160,7 @@ class CastTransportSenderWrapper : public CastTransportSender {
 
  private:
   scoped_ptr<CastTransportSender> transport_;
+  uint32 audio_ssrc_, video_ssrc_;
   uint64* encoded_video_bytes_;
   uint64* encoded_audio_bytes_;
 };

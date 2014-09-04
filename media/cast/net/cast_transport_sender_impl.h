@@ -72,8 +72,7 @@ class CastTransportSenderImpl : public CastTransportSender {
   virtual void InitializeVideo(const CastTransportRtpConfig& config,
                                const RtcpCastMessageCallback& cast_message_cb,
                                const RtcpRttCallback& rtt_cb) OVERRIDE;
-  virtual void InsertCodedAudioFrame(const EncodedFrame& audio_frame) OVERRIDE;
-  virtual void InsertCodedVideoFrame(const EncodedFrame& video_frame) OVERRIDE;
+  virtual void InsertFrame(uint32 ssrc, const EncodedFrame& frame) OVERRIDE;
 
   virtual void SendSenderReport(
       uint32 ssrc,

@@ -70,11 +70,9 @@ class CastTransportSender : public base::NonThreadSafe {
                                const RtcpCastMessageCallback& cast_message_cb,
                                const RtcpRttCallback& rtt_cb) = 0;
 
-  // The following two functions handle the encoded media frames (audio and
-  // video) to be processed.
-  // Frames will be encrypted, packetized and transmitted to the network.
-  virtual void InsertCodedAudioFrame(const EncodedFrame& audio_frame) = 0;
-  virtual void InsertCodedVideoFrame(const EncodedFrame& video_frame) = 0;
+  // Encrypt, packetize and transmit |frame|. |ssrc| must refer to a
+  // a channel already established with InitializeAudio / InitializeVideo.
+  virtual void InsertFrame(uint32 ssrc, const EncodedFrame& frame) = 0;
 
   // Sends a RTCP sender report to the receiver.
   // |ssrc| is the SSRC for this report.

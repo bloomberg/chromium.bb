@@ -138,7 +138,7 @@ void AudioSender::SendEncodedAudioFrame(
     encoded_frame->new_playout_delay_ms =
         target_playout_delay_.InMilliseconds();
   }
-  transport_sender_->InsertCodedAudioFrame(*encoded_frame);
+  transport_sender_->InsertFrame(ssrc_, *encoded_frame);
 }
 
 void AudioSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {

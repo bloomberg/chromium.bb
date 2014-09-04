@@ -36,10 +36,8 @@ class CastTransportSenderIPC
       const media::cast::CastTransportRtpConfig& config,
       const media::cast::RtcpCastMessageCallback& cast_message_cb,
       const media::cast::RtcpRttCallback& rtt_cb) OVERRIDE;
-  virtual void InsertCodedAudioFrame(
-      const media::cast::EncodedFrame& audio_frame) OVERRIDE;
-  virtual void InsertCodedVideoFrame(
-      const media::cast::EncodedFrame& video_frame) OVERRIDE;
+  virtual void InsertFrame(uint32 ssrc,
+      const media::cast::EncodedFrame& frame) OVERRIDE;
   virtual void SendSenderReport(
       uint32 ssrc,
       base::TimeTicks current_time,

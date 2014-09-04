@@ -54,12 +54,10 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   void OnInitializeVideo(
       int32 channel_id,
       const media::cast::CastTransportRtpConfig& config);
-  void OnInsertCodedAudioFrame(
+  void OnInsertFrame(
       int32 channel_id,
-      const media::cast::EncodedFrame& audio_frame);
-  void OnInsertCodedVideoFrame(
-      int32 channel_id,
-      const media::cast::EncodedFrame& video_frame);
+      uint32 ssrc,
+      const media::cast::EncodedFrame& frame);
   void OnSendSenderReport(
       int32 channel_id,
       uint32 ssrc,

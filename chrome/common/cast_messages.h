@@ -123,15 +123,11 @@ IPC_MESSAGE_CONTROL2(
   int32 /*channel_id*/,
   media::cast::CastTransportRtpConfig /*config*/)
 
-IPC_MESSAGE_CONTROL2(
-    CastHostMsg_InsertCodedAudioFrame,
+IPC_MESSAGE_CONTROL3(
+    CastHostMsg_InsertFrame,
     int32 /* channel_id */,
-    media::cast::EncodedFrame /* audio_frame */)
-
-IPC_MESSAGE_CONTROL2(
-    CastHostMsg_InsertCodedVideoFrame,
-    int32 /* channel_id */,
-    media::cast::EncodedFrame /* video_frame */)
+    uint32 /* ssrc */,
+    media::cast::EncodedFrame /* audio/video frame */)
 
 IPC_MESSAGE_CONTROL4(
     CastHostMsg_SendSenderReport,

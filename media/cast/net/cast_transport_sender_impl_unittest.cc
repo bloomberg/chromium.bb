@@ -164,7 +164,7 @@ TEST_F(CastTransportSenderImplTest, NacksCancelRetransmits) {
   fake_frame.dependency = EncodedFrame::KEY;
   fake_frame.data.resize(5000, ' ');
 
-  transport_sender_->InsertCodedVideoFrame(fake_frame);
+  transport_sender_->InsertFrame(kVideoSsrc, fake_frame);
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(10));
   EXPECT_EQ(4, transport_.packets_sent());
 
@@ -209,7 +209,7 @@ TEST_F(CastTransportSenderImplTest, CancelRetransmits) {
   fake_frame.dependency = EncodedFrame::KEY;
   fake_frame.data.resize(5000, ' ');
 
-  transport_sender_->InsertCodedVideoFrame(fake_frame);
+  transport_sender_->InsertFrame(kVideoSsrc, fake_frame);
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(10));
   EXPECT_EQ(4, transport_.packets_sent());
 
@@ -248,7 +248,7 @@ TEST_F(CastTransportSenderImplTest, Kickstart) {
   fake_frame.data.resize(5000, ' ');
 
   transport_.SetPaused(true);
-  transport_sender_->InsertCodedVideoFrame(fake_frame);
+  transport_sender_->InsertFrame(kVideoSsrc, fake_frame);
   transport_sender_->ResendFrameForKickstart(kVideoSsrc, 1);
   transport_.SetPaused(false);
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(10));
@@ -285,11 +285,11 @@ TEST_F(CastTransportSenderImplTest, DedupRetransmissionWithAudio) {
   fake_audio.reference_time = testing_clock_.NowTicks();
   fake_audio.dependency = EncodedFrame::KEY;
   fake_audio.data.resize(100, ' ');
-  transport_sender_->InsertCodedAudioFrame(fake_audio);
+  transport_sender_->InsertFrame(kAudioSsrc, fake_audio);
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(2));
   fake_audio.frame_id = 2;
   fake_audio.reference_time = testing_clock_.NowTicks();
-  transport_sender_->InsertCodedAudioFrame(fake_audio);
+  transport_sender_->InsertFrame(kAudioSsrc, fake_audio);
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(2));
   EXPECT_EQ(2, transport_.packets_sent());
 
@@ -308,7 +308,7 @@ TEST_F(CastTransportSenderImplTest, DedupRetransmissionWithAudio) {
   fake_video.frame_id = 1;
   fake_video.dependency = EncodedFrame::KEY;
   fake_video.data.resize(5000, ' ');
-  transport_sender_->InsertCodedVideoFrame(fake_video);
+  transport_sender_->InsertFrame(kVideoSsrc, fake_video);
   task_runner_->RunTasks();
   EXPECT_EQ(6, transport_.packets_sent());
 
