@@ -102,8 +102,11 @@ void ContentAppModelBuilder::PopulateApps(app_list::AppListModel* model) {
   for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
        iter != extensions.end();
        ++iter) {
-    model->AddItem(scoped_ptr<app_list::AppListItem>(
-        new AppItem(*iter, browser_context_)));
+    // TODO(mukai): use chrome/browser/extension_ui_util.
+    if ((*iter)->ShouldDisplayInAppLauncher()) {
+      model->AddItem(scoped_ptr<app_list::AppListItem>(
+          new AppItem(*iter, browser_context_)));
+    }
   }
 
   model->AddItem(scoped_ptr<app_list::AppListItem>(new DummyItem(
