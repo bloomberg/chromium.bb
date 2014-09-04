@@ -711,8 +711,7 @@ void FrameView::performPreLayoutTasks()
     }
 
     Document* document = m_frame->document();
-    if (wasViewportResized())
-        document->notifyResizeForViewportUnits();
+    document->notifyResizeForViewportUnits();
 
     // Viewport-dependent media queries may cause us to need completely different style information.
     if (!document->styleResolver() || document->styleResolver()->mediaQueryAffectedByViewportChange()) {
@@ -1982,15 +1981,6 @@ void FrameView::performPostLayoutTasks()
     sendResizeEventIfNeeded();
 }
 
-bool FrameView::wasViewportResized()
-{
-    ASSERT(m_frame);
-    RenderView* renderView = this->renderView();
-    if (!renderView)
-        return false;
-    return (layoutSize(IncludeScrollbars) != m_lastViewportSize || renderView->style()->zoom() != m_lastZoomFactor);
-}
-
 void FrameView::sendResizeEventIfNeeded()
 {
     ASSERT(m_frame);
@@ -1999,11 +1989,16 @@ void FrameView::sendResizeEventIfNeeded()
     if (!renderView || renderView->document().printing())
         return;
 
-    if (!wasViewportResized())
-        return;
+    IntSize currentSize = layoutSize(IncludeScrollbars);
+    float currentZoomFactor = renderView->style()->zoom();
 
-    m_lastViewportSize = layoutSize(IncludeScrollbars);
-    m_lastZoomFactor = renderView->style()->zoom();
+    bool shouldSendResizeEvent = currentSize != m_lastViewportSize || currentZoomFactor != m_lastZoomFactor;
+
+    m_lastViewportSize = currentSize;
+    m_lastZoomFactor = currentZoomFactor;
+
+    if (!shouldSendResizeEvent)
+        return;
 
     m_frame->document()->enqueueResizeEvent();
 

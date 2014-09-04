@@ -228,11 +228,6 @@ inline void ImageLoader::enqueueImageLoadingMicroTask(UpdateFromElementBehavior 
 
 void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, UpdateFromElementBehavior updateBehavior)
 {
-    // FIXME: According to
-    // http://www.whatwg.org/specs/web-apps/current-work/multipage/embedded-content.html#the-img-element:the-img-element-55
-    // When "update image" is called due to environment changes and the load fails, onerror should not be called.
-    // That is currently not the case.
-    //
     // We don't need to call clearLoader here: Either we were called from the
     // task, or our caller updateFromElement cleared the task's loader (and set
     // m_pendingTask to null).
