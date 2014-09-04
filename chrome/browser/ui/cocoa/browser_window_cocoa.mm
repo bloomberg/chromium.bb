@@ -355,22 +355,11 @@ void BrowserWindowCocoa::Restore() {
 
 void BrowserWindowCocoa::EnterFullscreen(
       const GURL& url, FullscreenExitBubbleType bubble_type) {
-  // When simplified fullscreen is enabled, always enter normal fullscreen.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableSimplifiedFullscreen)) {
-    if (url.is_empty())
-      [controller_ enterFullscreen];
-    else
-      [controller_ enterFullscreenForURL:url bubbleType:bubble_type];
-    return;
-  }
-
-  [controller_ enterPresentationModeForURL:url
-                                bubbleType:bubble_type];
+  [controller_ enterHTML5FullscreenForURL:url bubbleType:bubble_type];
 }
 
 void BrowserWindowCocoa::ExitFullscreen() {
-  [controller_ exitFullscreen];
+  [controller_ exitAnyFullscreen];
 }
 
 void BrowserWindowCocoa::UpdateFullscreenExitBubbleContent(
@@ -385,9 +374,7 @@ bool BrowserWindowCocoa::ShouldHideUIForFullscreen() const {
 }
 
 bool BrowserWindowCocoa::IsFullscreen() const {
-  if ([controller_ inPresentationMode])
-    CHECK([controller_ isFullscreen]);  // Presentation mode must be fullscreen.
-  return [controller_ isFullscreen];
+  return [controller_ isInAnyFullscreenMode];
 }
 
 bool BrowserWindowCocoa::IsFullscreenBubbleVisible() const {
@@ -624,10 +611,7 @@ void BrowserWindowCocoa::EnterFullscreenWithChrome() {
   DCHECK(!command_line->HasSwitch(switches::kEnableSimplifiedFullscreen));
 
   CHECK(chrome::mac::SupportsSystemFullscreen());
-  if ([controller_ inPresentationMode])
-    [controller_ exitPresentationMode];
-  else
-    [controller_ enterFullscreen];
+  [controller_ enterFullscreenWithChrome];
 }
 
 bool BrowserWindowCocoa::IsFullscreenWithChrome() {
@@ -651,7 +635,7 @@ bool BrowserWindowCocoa::IsFullscreenWithoutChrome() {
 WindowOpenDisposition BrowserWindowCocoa::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
   // When using Cocoa's System Fullscreen mode, convert popups into tabs.
-  if ([controller_ isInSystemFullscreen])
+  if ([controller_ isInAppKitFullscreen])
     return NEW_FOREGROUND_TAB;
   return NEW_POPUP;
 }

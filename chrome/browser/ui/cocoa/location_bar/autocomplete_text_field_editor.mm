@@ -486,7 +486,7 @@ BOOL ThePasteboardIsTooDamnBig() {
   if (cmd == @selector(cancelOperation:)) {
     BrowserWindowController* windowController =
         [BrowserWindowController browserWindowControllerForView:self];
-    if ([windowController isFullscreen]) {
+    if ([windowController isInAnyFullscreenMode]) {
       [windowController focusTabContents];
       textChangedByKeyEvents_ = NO;
       return;

@@ -23,7 +23,6 @@
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/floating_bar_backing_view.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
-#import "chrome/browser/ui/cocoa/fullscreen_mode_controller.h"
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
@@ -90,7 +89,8 @@ const CGFloat kLocBarBottomInset = 1;
 
   // If we're in fullscreen mode, save the position of the regular window
   // instead.
-  NSWindow* window = [self isFullscreen] ? savedRegularWindow_ : [self window];
+  NSWindow* window =
+      [self isInAnyFullscreenMode] ? savedRegularWindow_ : [self window];
 
   // Window positions are stored relative to the origin of the primary monitor.
   NSRect monitorFrame = [[[NSScreen screens] objectAtIndex:0] frame];
@@ -105,7 +105,7 @@ const CGFloat kLocBarBottomInset = 1;
   ui::WindowShowState show_state = ui::SHOW_STATE_NORMAL;
   if ([window isMiniaturized])
     show_state = ui::SHOW_STATE_MINIMIZED;
-  else if ([self isFullscreen])
+  else if ([self isInAnyFullscreenMode])
     show_state = ui::SHOW_STATE_FULLSCREEN;
   chrome::SaveWindowPlacement(browser_.get(), bounds, show_state);
 
@@ -188,23 +188,42 @@ willPositionSheet:(NSWindow*)sheet
   CGFloat minY = NSMinY(contentBounds);
   CGFloat width = NSWidth(contentBounds);
 
-  BOOL useSimplifiedFullscreen = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSimplifiedFullscreen);
-
   // Suppress title drawing if necessary.
   if ([window respondsToSelector:@selector(setShouldHideTitle:)])
     [(id)window setShouldHideTitle:![self hasTitleBar]];
 
   // Update z-order. The code below depends on this.
-  [self updateSubviewZOrder:[self inPresentationMode]];
+  [self updateSubviewZOrder:[self isInFullscreenWithOmniboxSliding]];
 
-  BOOL inPresentationMode = [self inPresentationMode];
   CGFloat floatingBarHeight = [self floatingBarHeight];
-  // In presentation mode, |yOffset| accounts for the sliding position of the
-  // floating bar and the extra offset needed to dodge the menu bar.
-  CGFloat yOffset = inPresentationMode && !useSimplifiedFullscreen ?
-      (std::floor((1 - floatingBarShownFraction_) * floatingBarHeight) -
-          [presentationModeController_ floatingBarVerticalOffset]) : 0;
+  CGFloat yOffset = 0;
+  if ([self isInFullscreenWithOmniboxSliding]) {
+    yOffset += [presentationModeController_ menubarOffset];
+    switch (presentationModeController_.get().slidingStyle) {
+      case fullscreen_mac::OMNIBOX_TABS_PRESENT:
+        break;
+      case fullscreen_mac::OMNIBOX_PRESENT: {
+        // At rest: omnibox showing. yOffset should be tabstrip height
+        // When cursor is at top: everything shows. yOffset should be -menubar
+        // height.
+        CGFloat tabStripHeight = 0;
+        if ([self hasTabStrip])
+          tabStripHeight = NSHeight([[self tabStripView] frame]);
+        yOffset +=
+            std::floor((1 - presentationModeController_.get().toolbarFraction) *
+                       tabStripHeight);
+        break;
+      }
+      case fullscreen_mac::OMNIBOX_TABS_HIDDEN:
+        // In presentation mode, |yOffset| accounts for the sliding position of
+        // the floating bar and the extra offset needed to dodge the menu bar.
+        yOffset +=
+            std::floor((1 - presentationModeController_.get().toolbarFraction) *
+                       floatingBarHeight);
+        break;
+    }
+  }
+
   CGFloat maxY = NSMaxY(contentBounds) + yOffset;
 
   if ([self hasTabStrip]) {
@@ -212,20 +231,9 @@ willPositionSheet:(NSWindow*)sheet
     // value, and then lay out the tab strip.
     NSRect windowFrame = [contentView convertRect:[window frame] fromView:nil];
     maxY = NSHeight(windowFrame) + yOffset;
-    if (useSimplifiedFullscreen && [self isFullscreen]) {
-      CGFloat tabStripHeight = NSHeight([[self tabStripView] frame]);
-      CGFloat revealAmount = (1 - floatingBarShownFraction_) * tabStripHeight;
-      // In simplified fullscreen, only the toolbar is visible by default, and
-      // the tabstrip and menu bar come down (each separately) when the user
-      // mouses near the top of the window. Push the maxY of the toolbar up by
-      // the amount of the tabstrip that is revealed, while removing the amount
-      // of space needed by the menu bar.
-      maxY += std::floor(
-          revealAmount - [fullscreenModeController_ menuBarHeight]);
-    }
     maxY = [self layoutTabStripAtMaxY:maxY
                                 width:width
-                           fullscreen:[self isFullscreen]];
+                           fullscreen:[self isInAnyFullscreenMode]];
   }
 
   // Sanity-check |maxY|.
@@ -245,7 +253,7 @@ willPositionSheet:(NSWindow*)sheet
   NSRect floatingBarBackingRect =
       NSMakeRect(minX, maxY, width, floatingBarHeight);
   [self layoutFloatingBarBackingView:floatingBarBackingRect
-                    presentationMode:inPresentationMode];
+                    presentationMode:[self isInFullscreenWithOmniboxSliding]];
 
   // Place the find bar immediately below the toolbar/attached bookmark bar. In
   // presentation mode, it hangs off the top of the screen when the bar is
@@ -253,11 +261,20 @@ willPositionSheet:(NSWindow*)sheet
   [findBarCocoaController_ positionFindBarViewAtMaxY:maxY maxWidth:width];
   [fullscreenExitBubbleController_ positionInWindowAtTop:maxY width:width];
 
-  // If in presentation mode, reset |maxY| to top of screen, so that the
-  // floating bar slides over the things which appear to be in the content area.
-  if (inPresentationMode ||
-      (useSimplifiedFullscreen && !fullscreenUrl_.is_empty())) {
-    maxY = NSMaxY(contentBounds);
+  if ([self isInFullscreenWithOmniboxSliding]) {
+    switch (presentationModeController_.get().slidingStyle) {
+      case fullscreen_mac::OMNIBOX_TABS_PRESENT:
+      case fullscreen_mac::OMNIBOX_PRESENT:
+        // Do nothing in Canonical Fullscreen and Simplified Fullscreen. All
+        // content slides.
+        break;
+      case fullscreen_mac::OMNIBOX_TABS_HIDDEN:
+        // If in presentation mode, reset |maxY| to top of screen, so that the
+        // floating bar slides over the things which appear to be in the content
+        // area.
+        maxY = NSMaxY(contentBounds);
+        break;
+    }
   }
 
   // Also place the info bar container immediate below the toolbar, except in
@@ -281,10 +298,12 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (CGFloat)floatingBarHeight {
-  if (![self inPresentationMode])
+  if (![self isInFullscreenWithOmniboxSliding])
     return 0;
 
-  CGFloat totalHeight = [presentationModeController_ floatingBarVerticalOffset];
+  CGFloat totalHeight = 0;
+  if (presentationModeController_)
+    totalHeight = [presentationModeController_ floatingBarVerticalOffset];
 
   if ([self hasTabStrip])
     totalHeight += NSHeight([[self tabStripView] frame]);
@@ -328,7 +347,7 @@ willPositionSheet:(NSWindow*)sheet
 
     if ([self shouldUseNewAvatarButton]) {
       // The fullscreen icon is displayed to the right of the avatar button.
-      if (![self isFullscreen])
+      if (![self isInAnyFullscreenMode])
         badgeXOffset -= kFullscreenIconWidth;
       // Center the button vertically on the tabstrip.
       badgeYOffset = (tabStripHeight - buttonHeight) / 2;
@@ -364,7 +383,7 @@ willPositionSheet:(NSWindow*)sheet
 
       // When the fullscreen icon is not displayed, return its width to the
       // tabstrip.
-      if ([self isFullscreen])
+      if ([self isInAnyFullscreenMode])
         rightIndent -= kFullscreenIconWidth;
     }
   } else if ([self shouldShowAvatar]) {
@@ -517,7 +536,7 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)updateRoundedBottomCorners {
-  [[self tabContentArea] setRoundedBottomCorners:![self isFullscreen]];
+  [[self tabContentArea] setRoundedBottomCorners:![self isInAnyFullscreenMode]];
 }
 
 - (void)adjustToolbarAndBookmarkBarForCompression:(CGFloat)compression {
@@ -646,64 +665,82 @@ willPositionSheet:(NSWindow*)sheet
                                delay:YES];
 }
 
-- (void)setPresentationModeInternal:(BOOL)presentationMode
-                      forceDropdown:(BOOL)forceDropdown {
-  if (presentationMode == [self inPresentationMode])
-    return;
-
-  if (presentationMode) {
-    BOOL fullscreen_for_tab =
-        browser_->fullscreen_controller()->IsWindowFullscreenForTabOrPending();
-    BOOL kiosk_mode =
-        CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
-    BOOL showDropdown = !fullscreen_for_tab &&
-        !kiosk_mode &&
-        (forceDropdown || [self floatingBarHasFocus]);
-    presentationModeController_.reset(
-        [[PresentationModeController alloc] initWithBrowserController:self]);
-
-    if (permissionBubbleCocoa_ && permissionBubbleCocoa_->IsVisible()) {
-      DCHECK(permissionBubbleCocoa_->window());
-      // A visible permission bubble will force the dropdown to remain visible.
-      [self lockBarVisibilityForOwner:permissionBubbleCocoa_->window()
-                        withAnimation:NO
-                                delay:NO];
-      showDropdown = YES;
-      // Register to be notified when the permission bubble is closed, to
-      // allow fullscreen to hide the dropdown.
-      NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-      [center addObserver:self
-                 selector:@selector(permissionBubbleWindowWillClose:)
-                     name:NSWindowWillCloseNotification
-                   object:permissionBubbleCocoa_->window()];
-    }
-    if (showDropdown) {
-      // Turn on layered mode for the window's root view for the entry
-      // animation.  Without this, the OS fullscreen animation for entering
-      // fullscreen mode does not correctly draw the tab strip.
-      // It will be turned off (set back to NO) when the animation finishes,
-      // in -windowDidEnterFullScreen:.
-      // Leaving wantsLayer on for the duration of presentation mode causes
-      // performance issues when the dropdown is animated in/out.  It also does
-      // not seem to be required for the exit animation.
-      windowViewWantsLayer_ = [[[self window] cr_windowView] wantsLayer];
-      [[[self window] cr_windowView] setWantsLayer:YES];
-    }
-    NSView* contentView = [[self window] contentView];
-    [presentationModeController_ enterPresentationModeForContentView:contentView
-                                 showDropdown:showDropdown];
-  } else {
-    [presentationModeController_ exitPresentationMode];
-    presentationModeController_.reset();
+- (void)configurePresentationModeController {
+  BOOL fullscreen_for_tab =
+      browser_->fullscreen_controller()->IsWindowFullscreenForTabOrPending();
+  BOOL kiosk_mode =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
+  BOOL showDropdown =
+      !fullscreen_for_tab && !kiosk_mode && ([self floatingBarHasFocus]);
+  if (permissionBubbleCocoa_ && permissionBubbleCocoa_->IsVisible()) {
+    DCHECK(permissionBubbleCocoa_->window());
+    // A visible permission bubble will force the dropdown to remain visible.
+    [self lockBarVisibilityForOwner:permissionBubbleCocoa_->window()
+                      withAnimation:NO
+                              delay:NO];
+    showDropdown = YES;
+    // Register to be notified when the permission bubble is closed, to
+    // allow fullscreen to hide the dropdown.
+    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self
+               selector:@selector(permissionBubbleWindowWillClose:)
+                   name:NSWindowWillCloseNotification
+                 object:permissionBubbleCocoa_->window()];
+  }
+  if (showDropdown) {
+    // Turn on layered mode for the window's root view for the entry
+    // animation.  Without this, the OS fullscreen animation for entering
+    // fullscreen mode does not correctly draw the tab strip.
+    // It will be turned off (set back to NO) when the animation finishes,
+    // in -windowDidEnterFullScreen:.
+    // Leaving wantsLayer on for the duration of presentation mode causes
+    // performance issues when the dropdown is animated in/out.  It also does
+    // not seem to be required for the exit animation.
+    windowViewWantsLayer_ = [[[self window] cr_windowView] wantsLayer];
+    [[[self window] cr_windowView] setWantsLayer:YES];
   }
 
-  [self adjustUIForPresentationMode:presentationMode];
+  NSView* contentView = [[self window] contentView];
+  [presentationModeController_
+      enterPresentationModeForContentView:contentView
+                             showDropdown:showDropdown];
+}
+
+- (void)adjustUIForExitingFullscreenAndStopOmniboxSliding {
+  [presentationModeController_ exitPresentationMode];
+  presentationModeController_.reset();
+
+  // Force the bookmark bar z-order to update.
+  [[bookmarkBarController_ view] removeFromSuperview];
+  [self layoutSubviews];
+}
+
+- (void)adjustUIForSlidingFullscreenStyle:(fullscreen_mac::SlidingStyle)style {
+  if (!presentationModeController_) {
+    presentationModeController_.reset(
+        [[PresentationModeController alloc] initWithBrowserController:self
+                                                                style:style]);
+    [self configurePresentationModeController];
+  } else {
+    presentationModeController_.get().slidingStyle = style;
+  }
+
+  if (!floatingBarBackingView_.get() &&
+      ([self hasTabStrip] || [self hasToolbar] || [self hasLocationBar])) {
+    floatingBarBackingView_.reset(
+        [[FloatingBarBackingView alloc] initWithFrame:NSZeroRect]);
+    [floatingBarBackingView_
+        setAutoresizingMask:(NSViewWidthSizable | NSViewMinYMargin)];
+  }
+
+  // Force the bookmark bar z-order to update.
+  [[bookmarkBarController_ view] removeFromSuperview];
   [self layoutSubviews];
 }
 
 - (void)enterImmersiveFullscreen {
-  // |-isFullscreen:| will return YES from here onwards.
-  enteringFullscreen_ = YES;  // Set to NO by |-windowDidEnterFullScreen:|.
+  // Set to NO by |-windowDidEnterFullScreen:|.
+  enteringImmersiveFullscreen_ = YES;
 
   // Fade to black.
   const CGDisplayReservationInterval kFadeDurationSeconds = 0.6;
@@ -727,12 +764,13 @@ willPositionSheet:(NSWindow*)sheet
 
   // When simplified fullscreen is enabled, do not enter presentation mode.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  fullscreen_mac::SlidingStyle style;
   if (command_line->HasSwitch(switches::kEnableSimplifiedFullscreen)) {
-    // TODO(rohitrao): Add code to manage the menubar here.
+    style = fullscreen_mac::OMNIBOX_PRESENT;
   } else {
-    [self adjustUIForPresentationMode:YES];
-    [self setPresentationModeInternal:YES forceDropdown:NO];
+    style = fullscreen_mac::OMNIBOX_TABS_HIDDEN;
   }
+  [self adjustUIForSlidingFullscreenStyle:style];
 
   // AppKit is helpful and prevents NSWindows from having the same height as
   // the screen while the menu bar is showing. This only applies to windows on
@@ -802,32 +840,14 @@ willPositionSheet:(NSWindow*)sheet
   }
 }
 
-// TODO(rohitrao): This function has shrunk into uselessness, and
-// |-setFullscreen:| has grown rather large.  Find a good way to break up
-// |-setFullscreen:| into smaller pieces.  http://crbug.com/36449
-- (void)adjustUIForPresentationMode:(BOOL)fullscreen {
-  // Create the floating bar backing view if necessary.
-  if (fullscreen && !floatingBarBackingView_.get() &&
-      ([self hasTabStrip] || [self hasToolbar] || [self hasLocationBar])) {
-    floatingBarBackingView_.reset(
-        [[FloatingBarBackingView alloc] initWithFrame:NSZeroRect]);
-    [floatingBarBackingView_ setAutoresizingMask:(NSViewWidthSizable |
-                                                  NSViewMinYMargin)];
-  }
-
-  // Force the bookmark bar z-order to update.
-  [[bookmarkBarController_ view] removeFromSuperview];
-  [self updateSubviewZOrder:fullscreen];
-}
-
 - (void)showFullscreenExitBubbleIfNecessary {
   // This method is called in response to
   // |-updateFullscreenExitBubbleURL:bubbleType:|. If we're in the middle of the
-  // transition into fullscreen (i.e., using the System Fullscreen API), do not
+  // transition into fullscreen (i.e., using the AppKit Fullscreen API), do not
   // show the bubble because it will cause visual jank
   // (http://crbug.com/130649). This will be called again as part of
   // |-windowDidEnterFullScreen:|, so arrange to do that work then instead.
-  if (enteringFullscreen_)
+  if (enteringAppKitFullscreen_)
     return;
 
   [self hideOverlayIfPossibleWithAnimation:NO delay:NO];
@@ -892,8 +912,18 @@ willPositionSheet:(NSWindow*)sheet
   savedRegularWindowFrame_ = [window frame];
   BOOL mode = enteringPresentationMode_ ||
        browser_->fullscreen_controller()->IsWindowFullscreenForTabOrPending();
-  enteringFullscreen_ = YES;
-  [self setPresentationModeInternal:mode forceDropdown:NO];
+  enteringAppKitFullscreen_ = YES;
+
+  fullscreen_mac::SlidingStyle style;
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableSimplifiedFullscreen))
+    style = fullscreen_mac::OMNIBOX_PRESENT;
+  else if (mode)
+    style = fullscreen_mac::OMNIBOX_TABS_HIDDEN;
+  else
+    style = fullscreen_mac::OMNIBOX_TABS_PRESENT;
+
+  [self adjustUIForSlidingFullscreenStyle:style];
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification*)notification {
@@ -912,15 +942,9 @@ willPositionSheet:(NSWindow*)sheet
 
   if (notification)  // For System Fullscreen when non-nil.
     [self deregisterForContentViewResizeNotifications];
-  enteringFullscreen_ = NO;
+  enteringAppKitFullscreen_ = NO;
+  enteringImmersiveFullscreen_ = NO;
   enteringPresentationMode_ = NO;
-
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableSimplifiedFullscreen) &&
-      fullscreenUrl_.is_empty()) {
-    fullscreenModeController_.reset([[FullscreenModeController alloc]
-        initWithBrowserWindowController:self]);
-  }
 
   [self showFullscreenExitBubbleIfNecessary];
   browser_->WindowFullscreenStateChanged();
@@ -931,9 +955,8 @@ willPositionSheet:(NSWindow*)sheet
 - (void)windowWillExitFullScreen:(NSNotification*)notification {
   if (notification)  // For System Fullscreen when non-nil.
     [self registerForContentViewResizeNotifications];
-  fullscreenModeController_.reset();
   [self destroyFullscreenExitBubbleIfNecessary];
-  [self setPresentationModeInternal:NO forceDropdown:NO];
+  [self adjustUIForExitingFullscreenAndStopOmniboxSliding];
 }
 
 - (void)windowDidExitFullScreen:(NSNotification*)notification {
@@ -945,11 +968,8 @@ willPositionSheet:(NSWindow*)sheet
 
 - (void)windowDidFailToEnterFullScreen:(NSWindow*)window {
   [self deregisterForContentViewResizeNotifications];
-  enteringFullscreen_ = NO;
-  [self setPresentationModeInternal:NO forceDropdown:NO];
-
-  // Force a relayout to try and get the window back into a reasonable state.
-  [self layoutSubviews];
+  enteringAppKitFullscreen_ = NO;
+  [self adjustUIForExitingFullscreenAndStopOmniboxSliding];
 }
 
 - (void)windowDidFailToExitFullScreen:(NSWindow*)window {
@@ -992,11 +1012,17 @@ willPositionSheet:(NSWindow*)sheet
   return [bookmarkBarController_ toolbarDividerOpacity];
 }
 
-- (void)updateSubviewZOrder:(BOOL)inPresentationMode {
+// TODO(erikchen): The implementation of this method is quite fragile. The
+// method cr_ensureSubview:... does not check that the subview is /directly/
+// above/below the given view. e.g. There are 3 subviews: A, B, C, in that
+// order.  The method cr_ensureSubview:A isPositioned:NSWindowBelow
+// relativeTo:C will have no effect, even though the desired result may have
+// been: B, A, C.  Consider changing it?
+- (void)updateSubviewZOrder:(BOOL)inAnyFullscreen {
   NSView* contentView = [[self window] contentView];
   NSView* toolbarView = [toolbarController_ view];
 
-  if (inPresentationMode) {
+  if (inAnyFullscreen) {
     // Toolbar is above tab contents so that it can slide down from top of
     // screen.
     [contentView cr_ensureSubview:toolbarView
@@ -1015,7 +1041,7 @@ willPositionSheet:(NSWindow*)sheet
                    isPositioned:NSWindowBelow
                      relativeTo:toolbarView];
 
-  if (inPresentationMode) {
+  if (inAnyFullscreen) {
     // In presentation mode the info bar is below all other views.
     [contentView cr_ensureSubview:[infoBarContainerController_ view]
                      isPositioned:NSWindowBelow
@@ -1031,7 +1057,7 @@ willPositionSheet:(NSWindow*)sheet
   // The find bar is above everything.
   if (findBarCocoaController_) {
     NSView* relativeView = nil;
-    if (inPresentationMode)
+    if (inAnyFullscreen)
       relativeView = toolbarView;
     else
       relativeView = [self tabContentArea];
@@ -1052,6 +1078,59 @@ willPositionSheet:(NSWindow*)sheet
                        isPositioned:NSWindowBelow
                          relativeTo:[bookmarkBarController_ view]];
     }
+
+    // TODO(erikchen): This constraint is necessary. See comment at the
+    // beginning of the method.
+    [contentView cr_ensureSubview:floatingBarBackingView_
+                     isPositioned:NSWindowAbove
+                       relativeTo:[self tabContentArea]];
+  }
+
+  // TODO(erikchen): Remove and then add the tabStripView to the root NSView.
+  // This fixes a layer ordering problem that occurs between the contentView
+  // and the tabStripView. This is a hack required because NSThemeFrame is not
+  // layer backed, and because Chrome adds subviews directly to the
+  // NSThemeFrame.
+  // http://crbug.com/407921
+  if (enteringAppKitFullscreen_) {
+    // The tabstrip frequently lies outside the bounds of its superview.
+    // Repeatedly adding/removing the tabstrip from its superview during the
+    // AppKit Fullscreen transition causes graphical glitches on 10.10. The
+    // correct solution is to use the AppKit fullscreen transition APIs added
+    // in 10.7+.
+    // http://crbug.com/408791
+    if (!hasAdjustedTabStripWhileEnteringAppKitFullscreen_) {
+      // Disable implicit animations.
+      [CATransaction begin];
+      [CATransaction setDisableActions:YES];
+
+      // Get the current position of the tabStripView.
+      NSView* superview = [[self tabStripView] superview];
+      NSArray* subviews = [superview subviews];
+      NSInteger index = [subviews indexOfObject:[self tabStripView]];
+      NSView* siblingBelow = nil;
+      if (index > 0)
+        siblingBelow = [subviews objectAtIndex:index - 1];
+
+      // Remove the tabStripView.
+      [[self tabStripView] removeFromSuperview];
+
+      // Add it to the same position.
+      if (siblingBelow) {
+        [superview addSubview:[self tabStripView]
+                   positioned:NSWindowAbove
+                   relativeTo:siblingBelow];
+      } else {
+        [superview addSubview:[self tabStripView]
+                   positioned:NSWindowBelow
+                   relativeTo:nil];
+      }
+
+      [CATransaction commit];
+      hasAdjustedTabStripWhileEnteringAppKitFullscreen_ = YES;
+    }
+  } else {
+    hasAdjustedTabStripWhileEnteringAppKitFullscreen_ = NO;
   }
 }
 
@@ -1076,6 +1155,22 @@ willPositionSheet:(NSWindow*)sheet
 
   topArrowHeight = iconBottom.y - infoBarTop.y;
   return topArrowHeight;
+}
+
+- (void)enterAppKitFullscreen {
+  DCHECK(base::mac::IsOSLionOrLater());
+  if (FramedBrowserWindow* framedBrowserWindow =
+          base::mac::ObjCCast<FramedBrowserWindow>([self window])) {
+    [framedBrowserWindow toggleSystemFullScreen];
+  }
+}
+
+- (void)exitAppKitFullscreen {
+  DCHECK(base::mac::IsOSLionOrLater());
+  if (FramedBrowserWindow* framedBrowserWindow =
+          base::mac::ObjCCast<FramedBrowserWindow>([self window])) {
+    [framedBrowserWindow toggleSystemFullScreen];
+  }
 }
 
 @end  // @implementation BrowserWindowController(Private)

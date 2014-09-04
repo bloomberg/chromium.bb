@@ -20,7 +20,17 @@ NSString* const kWillEnterFullscreenNotification =
 NSString* const kWillLeaveFullscreenNotification =
     @"WillLeaveFullscreenNotification";
 
+@interface PresentationModeController ()
+// Sets a new current floating bar shown fraction.  NOTE: This function has side
+// effects, such as modifying the system fullscreen mode (menu bar shown state).
+- (void)changeToolbarFraction:(CGFloat)fraction;
+
+// Callback for menu bar animations.
+- (void)setMenuBarRevealProgress:(CGFloat)progress;
+@end
+
 namespace {
+
 // The activation zone for the main menu is 4 pixels high; if we make it any
 // smaller, then the menu can be made to appear without the bar sliding down.
 const CGFloat kDropdownActivationZoneHeight = 4;
@@ -35,11 +45,27 @@ const NSTimeInterval kDropdownHideDelay = 0.2;
 // returns 0 when the menu bar is hidden.)
 const CGFloat kFloatingBarVerticalOffset = 22;
 
+OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
+                              EventRef event,
+                              void* context) {
+  PresentationModeController* self =
+      static_cast<PresentationModeController*>(context);
+  CGFloat revealFraction = 0;
+  GetEventParameter(event,
+                    FOUR_CHAR_CODE('rvlf'),
+                    typeCGFloat,
+                    NULL,
+                    sizeof(CGFloat),
+                    NULL,
+                    &revealFraction);
+  [self setMenuBarRevealProgress:revealFraction];
+  return CallNextEventHandler(handler, event);
+}
+
 }  // end namespace
 
-
 // Helper class to manage animations for the dropdown bar.  Calls
-// [PresentationModeController changeFloatingBarShownFraction] once per
+// [PresentationModeController changeToolbarFraction] once per
 // animation step.
 @interface DropdownAnimation : NSAnimation {
  @private
@@ -72,7 +98,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
             controller:(PresentationModeController*)controller {
   // Calculate the effective duration, based on the current shown fraction.
   DCHECK(controller);
-  CGFloat fromFraction = [controller floatingBarShownFraction];
+  CGFloat fromFraction = controller.toolbarFraction;
   CGFloat effectiveDuration = fabs(fullDuration * (fromFraction - toFraction));
 
   if ((self = [super gtm_initWithDuration:effectiveDuration
@@ -90,7 +116,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 - (void)setCurrentProgress:(NSAnimationProgress)progress {
   CGFloat fraction =
       startFraction_ + (progress * (endFraction_ - startFraction_));
-  [controller_ changeFloatingBarShownFraction:fraction];
+  [controller_ changeToolbarFraction:fraction];
 }
 
 @end
@@ -163,17 +189,25 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 - (void)showActiveWindowUI;
 - (void)hideActiveWindowUI;
 
+// In Immersive Fullscreen, the menubar is visible iff. toolbarFraction_ >=
+// 1.0.
+- (BOOL)shouldShowMenubarInImmersiveFullscreen;
+
 @end
 
 
 @implementation PresentationModeController
 
 @synthesize inPresentationMode = inPresentationMode_;
+@synthesize slidingStyle = slidingStyle_;
+@synthesize toolbarFraction = toolbarFraction_;
 
-- (id)initWithBrowserController:(BrowserWindowController*)controller {
+- (id)initWithBrowserController:(BrowserWindowController*)controller
+                          style:(fullscreen_mac::SlidingStyle)style {
   if ((self = [super init])) {
     browserController_ = controller;
     systemFullscreenMode_ = base::mac::kFullScreenModeNormal;
+    slidingStyle_ = style;
   }
 
   // Let the world know what we're up to.
@@ -181,10 +215,19 @@ const CGFloat kFloatingBarVerticalOffset = 22;
     postNotificationName:kWillEnterFullscreenNotification
                   object:nil];
 
+  // Install the Carbon event handler for the undocumented menu bar show/hide
+  // event.
+  EventTypeSpec eventSpec = {kEventClassMenu, 2004};
+  InstallApplicationEventHandler(NewEventHandlerUPP(&MenuBarRevealHandler),
+                                 1,
+                                 &eventSpec,
+                                 self,
+                                 &menuBarTrackingHandler_);
   return self;
 }
 
 - (void)dealloc {
+  RemoveEventHandler(menuBarTrackingHandler_);
   DCHECK(!inPresentationMode_);
   DCHECK(!trackingArea_);
   [super dealloc];
@@ -196,7 +239,8 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   enteringPresentationMode_ = YES;
   inPresentationMode_ = YES;
   contentView_ = contentView;
-  [self changeFloatingBarShownFraction:(showDropdown ? 1 : 0)];
+  [self changeToolbarFraction:(showDropdown ? 1 : 0)];
+  [self updateMenuBarAndDockVisibility];
 
   // Register for notifications.  Self is removed as an observer in |-cleanup|.
   NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
@@ -302,6 +346,9 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
     return;
 
+  if (self.slidingStyle == fullscreen_mac::OMNIBOX_TABS_PRESENT)
+    return;
+
   if (animate) {
     if (delay) {
       [self startShowTimer];
@@ -318,6 +365,9 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 
 - (void)ensureOverlayHiddenWithAnimation:(BOOL)animate delay:(BOOL)delay {
   if (!inPresentationMode_)
+    return;
+
+  if (self.slidingStyle == fullscreen_mac::OMNIBOX_TABS_PRESENT)
     return;
 
   if (animate) {
@@ -340,10 +390,6 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   currentAnimation_.reset();
 }
 
-- (CGFloat)floatingBarShownFraction {
-  return [browserController_ floatingBarShownFraction];
-}
-
 - (void)setSystemFullscreenModeTo:(base::mac::FullScreenMode)mode {
   if (mode == systemFullscreenMode_)
     return;
@@ -356,10 +402,34 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   systemFullscreenMode_ = mode;
 }
 
-- (void)changeFloatingBarShownFraction:(CGFloat)fraction {
-  [browserController_ setFloatingBarShownFraction:fraction];
+- (void)changeToolbarFraction:(CGFloat)fraction {
+  toolbarFraction_ = fraction;
+  [browserController_ layoutSubviews];
 
-  [self updateMenuBarAndDockVisibility];
+  // In AppKit fullscreen, moving the mouse to the top of the screen toggles
+  // menu visibility. Replicate the same effect for immersive fullscreen.
+  if ([browserController_ isInImmersiveFullscreen])
+    [self updateMenuBarAndDockVisibility];
+}
+
+// This method works, but is fragile.
+//
+// It gets used during view layout, which sometimes needs to be done at the
+// beginning of an animation. As such, this method needs to reflect the
+// menubarOffset expected at the end of the animation. This information is not
+// readily available. (The layout logic needs a refactor).
+//
+// For AppKit Fullscreen, the menubar always starts hidden, and
+// menubarFraction_ always starts at 0, so the logic happens to work. For
+// Immersive Fullscreen, this class controls the visibility of the menu bar, so
+// the logic is correct and not fragile.
+- (CGFloat)menubarOffset {
+  if ([browserController_ isInAppKitFullscreen])
+    return -std::floor(menubarFraction_ * [self floatingBarVerticalOffset]);
+
+  return [self shouldShowMenubarInImmersiveFullscreen]
+             ? -[self floatingBarVerticalOffset]
+             : 0;
 }
 
 // Used to activate the floating bar in presentation mode.
@@ -426,6 +496,18 @@ const CGFloat kFloatingBarVerticalOffset = 22;
     [self scheduleHideForMouse];
 }
 
+- (void)setMenuBarRevealProgress:(CGFloat)progress {
+  menubarFraction_ = progress;
+
+  // If an animation is not running, then -layoutSubviews will not be called
+  // for each tick of the menu bar reveal. Do that manually.
+  // TODO(erikchen): The animation is janky. layoutSubviews need a refactor so
+  // that it calls setFrameOffset: instead of setFrame: if the frame's size has
+  // not changed.
+  if (!currentAnimation_.get())
+    [browserController_ layoutSubviews];
+}
+
 @end
 
 
@@ -463,7 +545,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 }
 
 - (base::mac::FullScreenMode)desiredSystemFullscreenMode {
-  if ([browserController_ floatingBarShownFraction] >= 1.0)
+  if ([self shouldShowMenubarInImmersiveFullscreen])
     return base::mac::kFullScreenModeHideDock;
   return base::mac::kFullScreenModeHideAll;
 }
@@ -473,7 +555,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   // The non-animated case is really simple, so do it and return.
   if (!animate) {
     [currentAnimation_ stopAnimation];
-    [self changeFloatingBarShownFraction:fraction];
+    [self changeToolbarFraction:fraction];
     return;
   }
 
@@ -485,11 +567,6 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   // In all other cases, we want to cancel any running animation (which may be
   // to show or to hide).
   [currentAnimation_ stopAnimation];
-
-  // Now, if it happens to already be in the right state, there's nothing more
-  // to do.
-  if ([browserController_ floatingBarShownFraction] == fraction)
-    return;
 
   // Create the animation and set it up.
   currentAnimation_.reset(
@@ -674,6 +751,10 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   [self updateMenuBarAndDockVisibility];
 
   // TODO(rohitrao): Remove the Exit Fullscreen button.  http://crbug.com/35956
+}
+
+- (BOOL)shouldShowMenubarInImmersiveFullscreen {
+  return toolbarFraction_ >= 1.0;
 }
 
 @end

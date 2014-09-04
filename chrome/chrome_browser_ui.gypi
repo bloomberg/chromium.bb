@@ -470,8 +470,6 @@
       'browser/ui/cocoa/fullscreen_exit_bubble_controller.mm',
       'browser/ui/cocoa/fullscreen_exit_bubble_view.h',
       'browser/ui/cocoa/fullscreen_exit_bubble_view.mm',
-      'browser/ui/cocoa/fullscreen_mode_controller.h',
-      'browser/ui/cocoa/fullscreen_mode_controller.mm',
       'browser/ui/cocoa/fullscreen_window.h',
       'browser/ui/cocoa/fullscreen_window.mm',
       'browser/ui/cocoa/global_error_bubble_controller.h',

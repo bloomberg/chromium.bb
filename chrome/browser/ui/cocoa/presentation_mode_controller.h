@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_PRESENTATION_MODE_CONTROLLER_H_
 #define CHROME_BROWSER_UI_COCOA_PRESENTATION_MODE_CONTROLLER_H_
 
+#include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/mac_util.h"
@@ -12,6 +13,17 @@
 
 @class BrowserWindowController;
 @class DropdownAnimation;
+
+namespace fullscreen_mac {
+enum SlidingStyle {
+  OMNIBOX_TABS_PRESENT = 0,  // Tab strip and omnibox both visible.
+  OMNIBOX_PRESENT,           // Tab strip hidden.
+  OMNIBOX_TABS_HIDDEN,       // Tab strip and omnibox both hidden.
+};
+}  // namespace fullscreen_mac
+
+// TODO(erikchen): This controller is misnamed. It manages the sliding tab
+// strip and omnibox in all fullscreen modes.
 
 // Provides a controller to manage presentation mode for a single browser
 // window.  This class handles running animations, showing and hiding the
@@ -71,12 +83,29 @@
   // Used to track the current state and make sure we properly restore the menu
   // bar when this controller is destroyed.
   base::mac::FullScreenMode systemFullscreenMode_;
+
+  // Whether the omnibox is hidden in fullscreen.
+  fullscreen_mac::SlidingStyle slidingStyle_;
+
+  // The fraction of the AppKit Menubar that is showing. Ranges from 0 to 1.
+  // Only used in AppKit Fullscreen.
+  CGFloat menubarFraction_;
+
+  // The fraction of the omnibox/tabstrip that is showing. Ranges from 0 to 1.
+  // Used in both AppKit and Immersive Fullscreen.
+  CGFloat toolbarFraction_;
+
+  // A Carbon event handler that tracks the revealed fraction of the menu bar.
+  EventHandlerRef menuBarTrackingHandler_;
 }
 
 @property(readonly, nonatomic) BOOL inPresentationMode;
+@property(nonatomic, assign) fullscreen_mac::SlidingStyle slidingStyle;
+@property(nonatomic, assign) CGFloat toolbarFraction;
 
 // Designated initializer.
-- (id)initWithBrowserController:(BrowserWindowController*)controller;
+- (id)initWithBrowserController:(BrowserWindowController*)controller
+                          style:(fullscreen_mac::SlidingStyle)style;
 
 // Informs the controller that the browser has entered or exited presentation
 // mode. |-enterPresentationModeForContentView:showDropdown:| should be called
@@ -107,12 +136,10 @@
 // Cancels any running animation and timers.
 - (void)cancelAnimationAndTimers;
 
-// Gets the current floating bar shown fraction.
-- (CGFloat)floatingBarShownFraction;
-
-// Sets a new current floating bar shown fraction.  NOTE: This function has side
-// effects, such as modifying the system fullscreen mode (menu bar shown state).
-- (void)changeFloatingBarShownFraction:(CGFloat)fraction;
+// In any fullscreen mode, the y offset to use for the content at the top of
+// the screen (tab strip, omnibox, bookmark bar, etc).
+// Ranges from 0 to -22.
+- (CGFloat)menubarOffset;
 
 @end
 

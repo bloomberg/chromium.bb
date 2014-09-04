@@ -831,15 +831,15 @@ void WaitForFullScreenTransition() {
 // http://crbug.com/53586
 TEST_F(BrowserWindowFullScreenControllerTest, DISABLED_TestFullscreen) {
   [controller_ showWindow:nil];
-  EXPECT_FALSE([controller_ isFullscreen]);
+  EXPECT_FALSE([controller_ isInAnyFullscreenMode]);
 
-  [controller_ enterFullscreen];
+  [controller_ enterFullscreenWithChrome];
   WaitForFullScreenTransition();
-  EXPECT_TRUE([controller_ isFullscreen]);
+  EXPECT_TRUE([controller_ isInAnyFullscreenMode]);
 
-  [controller_ exitFullscreen];
+  [controller_ exitAnyFullscreen];
   WaitForFullScreenTransition();
-  EXPECT_FALSE([controller_ isFullscreen]);
+  EXPECT_FALSE([controller_ isInAnyFullscreenMode]);
 }
 
 // If this test fails, it is usually a sign that the bots have some sort of
@@ -850,12 +850,12 @@ TEST_F(BrowserWindowFullScreenControllerTest, DISABLED_TestFullscreen) {
 TEST_F(BrowserWindowFullScreenControllerTest, DISABLED_TestActivate) {
   [controller_ showWindow:nil];
 
-  EXPECT_FALSE([controller_ isFullscreen]);
+  EXPECT_FALSE([controller_ isInAnyFullscreenMode]);
 
   [controller_ activate];
   EXPECT_TRUE(IsFrontWindow([controller_ window]));
 
-  [controller_ enterFullscreen];
+  [controller_ enterFullscreenWithChrome];
   WaitForFullScreenTransition();
   [controller_ activate];
 
@@ -864,7 +864,7 @@ TEST_F(BrowserWindowFullScreenControllerTest, DISABLED_TestActivate) {
     EXPECT_TRUE(IsFrontWindow([controller_ createFullscreenWindow]));
 
   // We have to cleanup after ourselves by unfullscreening.
-  [controller_ exitFullscreen];
+  [controller_ exitAnyFullscreen];
   WaitForFullScreenTransition();
 }
 

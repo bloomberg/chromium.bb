@@ -311,7 +311,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   if (hitView == self) {
     BrowserWindowController* windowController =
         [BrowserWindowController browserWindowControllerForView:self];
-    if (![windowController isFullscreen]) {
+    if (![windowController isInAnyFullscreenMode]) {
       [self trackClickForWindowMove:event];
       return;
     }

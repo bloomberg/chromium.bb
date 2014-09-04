@@ -614,7 +614,7 @@ using content::WebContents;
   [[self window] setViewsNeedDisplay:YES];
 
   // TODO(viettrungluu): For some reason, the above doesn't suffice.
-  if ([self isFullscreen])
+  if ([self isInAnyFullscreenMode])
     [floatingBarBackingView_ setNeedsDisplay:YES];  // Okay even if nil.
 }
 
@@ -624,7 +624,7 @@ using content::WebContents;
   [[self window] setViewsNeedDisplay:YES];
 
   // TODO(viettrungluu): For some reason, the above doesn't suffice.
-  if ([self isFullscreen])
+  if ([self isInAnyFullscreenMode])
     [floatingBarBackingView_ setNeedsDisplay:YES];  // Okay even if nil.
 }
 
@@ -845,7 +845,7 @@ using content::WebContents;
 - (BOOL)adjustWindowHeightBy:(CGFloat)deltaH {
   // By not adjusting the window height when initializing, we can ensure that
   // the window opens with the same size that was saved on close.
-  if (initializing_ || [self isFullscreen] || deltaH == 0)
+  if (initializing_ || [self isInAnyFullscreenMode] || deltaH == 0)
     return NO;
 
   NSWindow* window = [self window];
@@ -1087,9 +1087,9 @@ using content::WebContents;
         case IDC_FULLSCREEN: {
           if (NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item)) {
             NSString* menuTitle = l10n_util::GetNSString(
-                [self isFullscreen] && ![self inPresentationMode] ?
-                    IDS_EXIT_FULLSCREEN_MAC :
-                    IDS_ENTER_FULLSCREEN_MAC);
+                [self isInAppKitFullscreen] && ![self inPresentationMode]
+                    ? IDS_EXIT_FULLSCREEN_MAC
+                    : IDS_ENTER_FULLSCREEN_MAC);
             [menuItem setTitle:menuTitle];
 
             if (!chrome::mac::SupportsSystemFullscreen())
@@ -1491,11 +1491,11 @@ using content::WebContents;
 }
 
 - (BOOL)tabTearingAllowed {
-  return ![self isFullscreen];
+  return ![self isInAnyFullscreenMode];
 }
 
 - (BOOL)windowMovementAllowed {
-  return ![self isFullscreen];
+  return ![self isInAnyFullscreenMode];
 }
 
 - (BOOL)isTabFullyVisible:(TabView*)tab {
@@ -1564,7 +1564,7 @@ using content::WebContents;
   // Create a controller for the findbar.
   findBarCocoaController_.reset([findBarCocoaController retain]);
   [self layoutSubviews];
-  [self updateSubviewZOrder:[self inPresentationMode]];
+  [self updateSubviewZOrder:[self isInFullscreenWithOmniboxSliding]];
 }
 
 - (NSWindow*)createFullscreenWindow {
@@ -1587,8 +1587,8 @@ using content::WebContents;
 }
 
 - (NSRect)regularWindowFrame {
-  return [self isFullscreen] ? savedRegularWindowFrame_ :
-                               [[self window] frame];
+  return [self isInAnyFullscreenMode] ? savedRegularWindowFrame_
+                                      : [[self window] frame];
 }
 
 // (Override of |TabWindowController| method.)
@@ -2032,7 +2032,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
 @end  // @implementation BrowserWindowController
 
-
 @implementation BrowserWindowController(Fullscreen)
 
 - (void)handleLionToggleFullscreen {
@@ -2040,45 +2039,16 @@ willAnimateFromState:(BookmarkBar::State)oldState
   chrome::ExecuteCommand(browser_.get(), IDC_FULLSCREEN);
 }
 
-// Called to transition into or out of fullscreen mode. Only use System
-// Fullscreen mode if the system supports it and we aren't trying to go
-// fullscreen for the renderer-initiated use cases.
-// Discussion: http://crbug.com/179181 and http:/crbug.com/351252
-- (void)setFullscreen:(BOOL)fullscreen {
-  if (fullscreen == [self isFullscreen])
+- (void)enterFullscreenWithChrome {
+  if (![self isInAppKitFullscreen]) {
+    // Invoking the AppKitFullscreen API by default uses Canonical Fullscreen.
+    [self enterAppKitFullscreen];
     return;
-
-  if (fullscreen) {
-    const BOOL shouldUseSystemFullscreen =
-        chrome::mac::SupportsSystemFullscreen() && !fullscreenWindow_ &&
-        !browser_->fullscreen_controller()->IsWindowFullscreenForTabOrPending();
-    if (shouldUseSystemFullscreen) {
-      if (FramedBrowserWindow* framedBrowserWindow =
-          base::mac::ObjCCast<FramedBrowserWindow>([self window])) {
-        [framedBrowserWindow toggleSystemFullScreen];
-      }
-    } else {
-      [self enterImmersiveFullscreen];
-    }
-  } else {
-    if ([self isInSystemFullscreen]) {
-      if (FramedBrowserWindow* framedBrowserWindow =
-          base::mac::ObjCCast<FramedBrowserWindow>([self window])) {
-        [framedBrowserWindow toggleSystemFullScreen];
-      }
-    } else {
-      DCHECK(fullscreenWindow_.get());
-      [self exitImmersiveFullscreen];
-    }
   }
-}
 
-- (void)enterFullscreen {
-  [self setFullscreen:YES];
-}
-
-- (void)exitFullscreen {
-  [self setFullscreen:NO];
+  // If AppKitFullscreen is already enabled, then just switch to Canonical
+  // Fullscreen.
+  [self adjustUIForSlidingFullscreenStyle:fullscreen_mac::OMNIBOX_TABS_PRESENT];
 }
 
 - (void)updateFullscreenExitBubbleURL:(const GURL&)url
@@ -2089,120 +2059,78 @@ willAnimateFromState:(BookmarkBar::State)oldState
   [self showFullscreenExitBubbleIfNecessary];
 }
 
-- (BOOL)isFullscreen {
-  return [self isInImmersiveFullscreen] ||
-         [self isInSystemFullscreen] ||
-         enteringFullscreen_;
+- (BOOL)isInAnyFullscreenMode {
+  return [self isInImmersiveFullscreen] || [self isInAppKitFullscreen];
 }
 
 - (BOOL)isInImmersiveFullscreen {
-  return fullscreenWindow_.get() != nil;
+  return fullscreenWindow_.get() != nil || enteringImmersiveFullscreen_;
 }
 
-- (BOOL)isInSystemFullscreen {
+- (BOOL)isInAppKitFullscreen {
   return ([[self window] styleMask] & NSFullScreenWindowMask) ==
-      NSFullScreenWindowMask;
+             NSFullScreenWindowMask ||
+         enteringAppKitFullscreen_;
 }
 
-// On Lion, this function is called by either the presentation mode toggle
-// button or the "Enter Presentation Mode" menu item.  In the latter case, this
-// function also triggers the Lion machinery to enter fullscreen mode as well as
-// set presentation mode.  On Snow Leopard, this function is called by the
-// "Enter Presentation Mode" menu item, and triggering presentation mode always
-// moves the user into fullscreen mode.
-- (void)setPresentationMode:(BOOL)presentationMode
-                        url:(const GURL&)url
-                 bubbleType:(FullscreenExitBubbleType)bubbleType {
-  fullscreenUrl_ = url;
-  fullscreenBubbleType_ = bubbleType;
-
-  // Presentation mode on systems without fullscreen support maps directly to
-  // fullscreen mode.
-  if (!chrome::mac::SupportsSystemFullscreen()) {
-    [self setFullscreen:presentationMode];
-    return;
-  }
-
-  if (presentationMode) {
-    BOOL fullscreen = [self isFullscreen];
-    enteringPresentationMode_ = YES;
-
-    if (fullscreen) {
-      // If already in fullscreen mode, just toggle the presentation mode
-      // setting.  Go through an elaborate dance to force the overlay to show,
-      // then animate out once the mouse moves away.  This helps draw attention
-      // to the fact that the UI is in an overlay.  Focus the tab contents
-      // because the omnibox is the most likely source of bar visibility locks,
-      // and taking focus away from the omnibox releases its lock.
-      [self lockBarVisibilityForOwner:self withAnimation:NO delay:NO];
-      [self focusTabContents];
-      [self setPresentationModeInternal:YES forceDropdown:YES];
-      [self releaseBarVisibilityForOwner:self withAnimation:YES delay:YES];
-      // Since -windowDidEnterFullScreen: won't be called in the
-      // fullscreen --> presentation mode case, manually show the exit bubble
-      // and notify the change happened with WindowFullscreenStateChanged().
-      [self showFullscreenExitBubbleIfNecessary];
-      browser_->WindowFullscreenStateChanged();
-    } else {
-      // Need to transition into fullscreen mode.  Presentation mode will
-      // automatically be enabled in |-windowWillEnterFullScreen:|.
-      [self setFullscreen:YES];
-    }
-  } else {
-    // Exiting presentation mode does not exit system fullscreen; it merely
-    // switches from presentation mode to normal fullscreen.
-    [self setPresentationModeInternal:NO forceDropdown:NO];
-
-    // Since -windowDidExitFullScreen: won't be called in the
-    // presentation mode --> normal fullscreen case, manually show the exit
-    // bubble and notify the change happened with
-    // WindowFullscreenStateChanged().
-    [self showFullscreenExitBubbleIfNecessary];
-    browser_->WindowFullscreenStateChanged();
-  }
+- (BOOL)isInFullscreenWithOmniboxSliding {
+  return presentationModeController_.get() != nil;
 }
 
 - (void)enterPresentationModeForURL:(const GURL&)url
                          bubbleType:(FullscreenExitBubbleType)bubbleType {
-  [self setPresentationMode:YES url:url bubbleType:bubbleType];
+  DCHECK(chrome::mac::SupportsSystemFullscreen());
+  fullscreenUrl_ = url;
+  fullscreenBubbleType_ = bubbleType;
+
+  if ([self isInAppKitFullscreen]) {
+    // Already in AppKit Fullscreen. Adjust the UI to use Presentation Mode.
+    [self
+        adjustUIForSlidingFullscreenStyle:fullscreen_mac::OMNIBOX_TABS_HIDDEN];
+  } else {
+    // Need to invoke AppKit Fullscreen API. Presentation mode will
+    // automatically be enabled in |-windowWillEnterFullScreen:|.
+    enteringPresentationMode_ = YES;
+    [self enterAppKitFullscreen];
+  }
 }
 
-- (void)exitPresentationMode {
-  // url: and bubbleType: are ignored when leaving presentation mode.
-  [self setPresentationMode:NO url:GURL() bubbleType:FEB_TYPE_NONE];
-}
-
-- (void)enterFullscreenForURL:(const GURL&)url
-                   bubbleType:(FullscreenExitBubbleType)bubbleType {
-  // This method may only be called in simplified fullscreen mode.
+- (void)enterHTML5FullscreenForURL:(const GURL&)url
+                        bubbleType:(FullscreenExitBubbleType)bubbleType {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  DCHECK(command_line->HasSwitch(switches::kEnableSimplifiedFullscreen));
+  if (command_line->HasSwitch(switches::kEnableSimplifiedFullscreen) ||
+      !chrome::mac::SupportsSystemFullscreen()) {
+    [self enterImmersiveFullscreen];
+    if (!url.is_empty())
+      [self updateFullscreenExitBubbleURL:url bubbleType:bubbleType];
+  } else {
+    [self enterPresentationModeForURL:url bubbleType:bubbleType];
+  }
+}
 
-  [self enterImmersiveFullscreen];
-  [self updateFullscreenExitBubbleURL:url bubbleType:bubbleType];
+- (void)exitAnyFullscreen {
+  // TODO(erikchen): Fullscreen modes should stack. Should be able to exit
+  // Immersive Fullscreen and still be in AppKit Fullscreen.
+  if ([self isInAppKitFullscreen])
+    [self exitAppKitFullscreen];
+  if ([self isInImmersiveFullscreen])
+    [self exitImmersiveFullscreen];
 }
 
 - (BOOL)inPresentationMode {
   return presentationModeController_.get() &&
-      [presentationModeController_ inPresentationMode];
+         [presentationModeController_ inPresentationMode] &&
+         presentationModeController_.get().slidingStyle ==
+             fullscreen_mac::OMNIBOX_TABS_HIDDEN;
 }
 
 - (void)resizeFullscreenWindow {
-  DCHECK([self isFullscreen]);
-  if (![self isFullscreen])
+  DCHECK([self isInAnyFullscreenMode]);
+  if (![self isInAnyFullscreenMode])
     return;
 
   NSWindow* window = [self window];
   [window setFrame:[[window screen] frame] display:YES];
-  [self layoutSubviews];
-}
-
-- (CGFloat)floatingBarShownFraction {
-  return floatingBarShownFraction_;
-}
-
-- (void)setFloatingBarShownFraction:(CGFloat)fraction {
-  floatingBarShownFraction_ = fraction;
   [self layoutSubviews];
 }
 

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_CONTROLLER_PRIVATE_H_
 
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/presentation_mode_controller.h"
 
 // Private methods for the |BrowserWindowController|. This category should
 // contain the private methods used by different parts of the BWC; private
@@ -112,14 +113,6 @@
 // hidden while a permissions bubble is visible.)
 - (void)permissionBubbleWindowWillClose:(NSNotification*)notification;
 
-// Sets presentation mode, creating the PresentationModeController if needed and
-// forcing a relayout.  If |forceDropdown| is YES, this method will always
-// initially show the floating bar when entering presentation mode, even if the
-// floating bar does not have focus.  This method is safe to call on all OS
-// versions.
-- (void)setPresentationModeInternal:(BOOL)presentationMode
-                      forceDropdown:(BOOL)forceDropdown;
-
 // Enter or exit fullscreen without using Cocoa's System Fullscreen API.  These
 // methods are internal implementations of |-setFullscreen:|.
 - (void)enterImmersiveFullscreen;
@@ -130,10 +123,6 @@
 // System Fullscreen API.
 - (void)registerForContentViewResizeNotifications;
 - (void)deregisterForContentViewResizeNotifications;
-
-// Adjust the UI when entering or leaving presentation mode.  This method is
-// safe to call on all OS versions.
-- (void)adjustUIForPresentationMode:(BOOL)fullscreen;
 
 // Allows/prevents bar visibility locks and releases from updating the visual
 // state. Enabling makes changes instantaneously; disabling cancels any
@@ -156,6 +145,24 @@
 
 // Returns the max top arrow height for infobar.
 - (NSInteger)infoBarMaxTopArrowHeight;
+
+// Configures the presentationModeController_ right after it is constructed.
+- (void)configurePresentationModeController;
+
+// Allows the omnibox to slide. Also prepares UI for several fullscreen modes.
+// This method gets called when entering AppKit fullscren, or when entering
+// Immersive fullscreen. Expects fullscreenStyle_ to be set.
+- (void)adjustUIForSlidingFullscreenStyle:(fullscreen_mac::SlidingStyle)style;
+
+// This method gets called when exiting AppKit fullscreen, or when exiting
+// Immersive fullscreen. It performs some common UI changes, and stops the
+// omnibox from sliding.
+- (void)adjustUIForExitingFullscreenAndStopOmniboxSliding;
+
+// Toggles the AppKit Fullscreen API. By default, doing so enters Canonical
+// Fullscreen.
+- (void)enterAppKitFullscreen;
+- (void)exitAppKitFullscreen;
 
 @end  // @interface BrowserWindowController(Private)
 
