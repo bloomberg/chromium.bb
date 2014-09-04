@@ -1580,8 +1580,9 @@ internal_pfq = internal.derive(official_chrome, pfq,
 
 # Because branch directories may be shared amongst builders on multiple
 # branches, they must delete the chroot every time they run.
+# They also potentially need to build [new] Chrome.
 internal_pfq_branch = internal_pfq.derive(branch=True, chroot_replace=True,
-                                          trybot_list=False)
+                                          trybot_list=False, sync_chrome=True)
 
 internal_paladin = internal.derive(official_chrome, paladin,
   manifest=constants.OFFICIAL_MANIFEST,

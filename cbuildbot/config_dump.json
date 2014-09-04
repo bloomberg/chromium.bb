@@ -41646,7 +41646,7 @@
         "sanity_check_slaves": null,
         "shared_user_password": null,
         "signer_tests": false,
-        "sync_chrome": null,
+        "sync_chrome": true,
         "tests_supported": true,
         "trybot_list": false,
         "unittest_blacklist": [],
