@@ -74,7 +74,8 @@ public:
 
     // This can return an empty handle if the v8::Context is gone.
     v8::Handle<v8::Context> context() const { return m_context.newLocal(m_isolate); }
-    bool contextIsEmpty() const { return m_context.isEmpty(); }
+    bool contextIsValid() const { return m_context.isEmpty() || m_globalObjectDetached; }
+    void detachGlobalObject();
     void clearContext() { return m_context.clear(); }
 
     V8PerContextData* perContextData() const { return m_perContextData.get(); }
@@ -100,6 +101,8 @@ private:
     // So you must explicitly clear the OwnPtr by calling disposePerContextData()
     // once you no longer need V8PerContextData. Otherwise, the v8::Context will leak.
     OwnPtr<V8PerContextData> m_perContextData;
+
+    bool m_globalObjectDetached;
 };
 
 class ScriptStateForTesting : public ScriptState {

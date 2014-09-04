@@ -170,7 +170,7 @@ void PageRuntimeAgent::frameWindowDiscarded(LocalDOMWindow* window)
     Vector<RefPtr<ScriptState> > scriptStatesToRemove;
     for (ScriptStateToId::iterator it = m_scriptStateToId.begin(); it != m_scriptStateToId.end(); ++it) {
         RefPtr<ScriptState> scriptState = it->key;
-        if (scriptState->contextIsEmpty() || window == scriptState->domWindow()) {
+        if (scriptState->contextIsValid() || window == scriptState->domWindow()) {
             scriptStatesToRemove.append(scriptState);
             m_frontend->executionContextDestroyed(it->value);
         }

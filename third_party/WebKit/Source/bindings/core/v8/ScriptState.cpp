@@ -32,6 +32,7 @@ ScriptState::ScriptState(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperW
     , m_context(m_isolate, context)
     , m_world(world)
     , m_perContextData(V8PerContextData::create(context))
+    , m_globalObjectDetached(false)
 {
     ASSERT(m_world);
     m_context.setWeak(this, &weakCallback);
@@ -42,6 +43,13 @@ ScriptState::~ScriptState()
 {
     ASSERT(!m_perContextData);
     ASSERT(m_context.isEmpty());
+}
+
+void ScriptState::detachGlobalObject()
+{
+    ASSERT(!m_context.isEmpty());
+    context()->DetachGlobal();
+    m_globalObjectDetached = true;
 }
 
 bool ScriptState::evalEnabled() const

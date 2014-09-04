@@ -158,7 +158,7 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
 
     element->setCustomElementState(Element::Upgraded);
 
-    if (m_scriptState->contextIsEmpty())
+    if (m_scriptState->contextIsValid())
         return;
     ScriptState::Scope scope(m_scriptState.get());
     v8::Isolate* isolate = m_scriptState->isolate();
@@ -208,7 +208,7 @@ void V8CustomElementLifecycleCallbacks::attributeChanged(Element* element, const
     if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
         return;
 
-    if (m_scriptState->contextIsEmpty())
+    if (m_scriptState->contextIsValid())
         return;
     ScriptState::Scope scope(m_scriptState.get());
     v8::Isolate* isolate = m_scriptState->isolate();
@@ -241,7 +241,7 @@ void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function
     if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
         return;
 
-    if (m_scriptState->contextIsEmpty())
+    if (m_scriptState->contextIsValid())
         return;
     ScriptState::Scope scope(m_scriptState.get());
     v8::Isolate* isolate = m_scriptState->isolate();

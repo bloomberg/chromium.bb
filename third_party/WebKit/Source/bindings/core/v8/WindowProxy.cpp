@@ -97,7 +97,7 @@ void WindowProxy::disposeContext(GlobalDetachmentBehavior behavior)
     m_frame->loader().client()->willReleaseScriptContext(context, m_world->worldId());
 
     if (behavior == DetachGlobal)
-        context->DetachGlobal();
+        m_scriptState->detachGlobalObject();
 
     m_scriptState->disposePerContextData();
 

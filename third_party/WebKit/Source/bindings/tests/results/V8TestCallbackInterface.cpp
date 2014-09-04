@@ -34,7 +34,7 @@ void V8TestCallbackInterface::voidMethod()
     if (!canInvokeCallback())
         return;
 
-    if (m_scriptState->contextIsEmpty())
+    if (m_scriptState->contextIsValid())
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
@@ -48,7 +48,7 @@ bool V8TestCallbackInterface::booleanMethod()
     if (!canInvokeCallback())
         return true;
 
-    if (m_scriptState->contextIsEmpty())
+    if (m_scriptState->contextIsValid())
         return true;
 
     ScriptState::Scope scope(m_scriptState.get());
@@ -65,7 +65,7 @@ void V8TestCallbackInterface::voidMethodBooleanArg(bool boolArg)
     if (!canInvokeCallback())
         return;
 
-    if (m_scriptState->contextIsEmpty())
+    if (m_scriptState->contextIsValid())
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
@@ -85,7 +85,7 @@ void V8TestCallbackInterface::voidMethodSequenceArg(const Vector<RefPtr<TestInte
     if (!canInvokeCallback())
         return;
 
-    if (m_scriptState->contextIsEmpty())
+    if (m_scriptState->contextIsValid())
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
@@ -105,7 +105,7 @@ void V8TestCallbackInterface::voidMethodFloatArg(float floatArg)
     if (!canInvokeCallback())
         return;
 
-    if (m_scriptState->contextIsEmpty())
+    if (m_scriptState->contextIsValid())
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
@@ -125,7 +125,7 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty
     if (!canInvokeCallback())
         return;
 
-    if (m_scriptState->contextIsEmpty())
+    if (m_scriptState->contextIsValid())
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
@@ -145,7 +145,7 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(TestInterfac
     if (!canInvokeCallback())
         return;
 
-    if (m_scriptState->contextIsEmpty())
+    if (m_scriptState->contextIsValid())
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
@@ -171,7 +171,7 @@ void V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptVal
     if (!canInvokeCallback())
         return;
 
-    if (m_scriptState->contextIsEmpty())
+    if (m_scriptState->contextIsValid())
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
@@ -197,7 +197,7 @@ void V8TestCallbackInterface::voidMethodWillBeGarbageCollectedSequenceArg(const 
     if (!canInvokeCallback())
         return;
 
-    if (m_scriptState->contextIsEmpty())
+    if (m_scriptState->contextIsValid())
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
@@ -217,7 +217,7 @@ void V8TestCallbackInterface::voidMethodWillBeGarbageCollectedArrayArg(const Wil
     if (!canInvokeCallback())
         return;
 
-    if (m_scriptState->contextIsEmpty())
+    if (m_scriptState->contextIsValid())
         return;
 
     ScriptState::Scope scope(m_scriptState.get());

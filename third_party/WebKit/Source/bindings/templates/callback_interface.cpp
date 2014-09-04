@@ -33,7 +33,7 @@ namespace blink {
     if (!canInvokeCallback())
         {{return_default}};
 
-    if (m_scriptState->contextIsEmpty())
+    if (m_scriptState->contextIsValid())
         {{return_default}};
 
     ScriptState::Scope scope(m_scriptState.get());

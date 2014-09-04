@@ -76,7 +76,7 @@ bool ScriptValue::toString(String& result) const
 
 PassRefPtr<JSONValue> ScriptValue::toJSONValue(ScriptState* scriptState) const
 {
-    ASSERT(!scriptState->contextIsEmpty());
+    ASSERT(!scriptState->contextIsValid());
     ScriptState::Scope scope(scriptState);
     return v8ToJSONValue(scriptState->isolate(), v8Value(), JSONValue::maxDepth);
 }
