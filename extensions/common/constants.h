@@ -101,6 +101,10 @@ extern const char kRulesStoreName[];
 // The URL query parameter key corresponding to multi-login user index.
 extern const char kAuthUserQueryKey[];
 
+// Mime type strings
+extern const char kMimeTypeJpeg[];
+extern const char kMimeTypePng[];
+
 // The extension id of the Web Store component application.
 extern const char kWebStoreAppId[];
 

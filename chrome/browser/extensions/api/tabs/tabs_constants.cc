@@ -51,10 +51,6 @@ const char kWindowTypeLongKey[] = "windowType";
 const char kZoomSettingsMode[] = "mode";
 const char kZoomSettingsScope[] = "scope";
 
-const char kFormatValueJpeg[] = "jpeg";
-const char kFormatValuePng[] = "png";
-const char kMimeTypeJpeg[] = "image/jpeg";
-const char kMimeTypePng[] = "image/png";
 const char kShowStateValueNormal[] = "normal";
 const char kShowStateValueMinimized[] = "minimized";
 const char kShowStateValueMaximized[] = "maximized";

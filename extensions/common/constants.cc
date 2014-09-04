@@ -54,6 +54,9 @@ const char kStateStoreName[] = "Extension State";
 const char kRulesStoreName[] = "Extension Rules";
 const char kWebStoreAppId[] = "ahfgeienlihckogmohjhadlkjgocpleb";
 
+const char kMimeTypeJpeg[] = "image/jpeg";
+const char kMimeTypePng[] = "image/png";
+
 }  // namespace extensions
 
 namespace extension_misc {

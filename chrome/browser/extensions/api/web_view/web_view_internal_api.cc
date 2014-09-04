@@ -16,6 +16,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/stop_find_action.h"
+#include "extensions/browser/api/capture_web_contents_function_impl.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/common/error_utils.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"

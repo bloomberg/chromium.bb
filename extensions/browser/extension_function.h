@@ -53,7 +53,7 @@ class Sender;
 #define EXTENSION_FUNCTION_VALIDATE(test) \
   do {                                    \
     if (!(test)) {                        \
-      bad_message_ = true;                \
+      this->bad_message_ = true;          \
       return ValidationFailure(this);     \
     }                                     \
   } while (0)
@@ -64,7 +64,7 @@ class Sender;
 #define EXTENSION_FUNCTION_ERROR(error) \
   do {                                  \
     error_ = error;                     \
-    bad_message_ = true;                \
+    this->bad_message_ = true;          \
     return ValidationFailure(this);     \
   } while (0)
 

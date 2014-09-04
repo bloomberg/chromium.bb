@@ -136,8 +136,6 @@
       'browser/extensions/api/browser/browser_api.h',
       'browser/extensions/api/browsing_data/browsing_data_api.cc',
       'browser/extensions/api/browsing_data/browsing_data_api.h',
-      'browser/extensions/api/capture_web_contents_function.cc',
-      'browser/extensions/api/capture_web_contents_function.h',
       'browser/extensions/api/chrome_extensions_api_client.cc',
       'browser/extensions/api/chrome_extensions_api_client.h',
       'browser/extensions/api/cloud_print_private/cloud_print_private_api.cc',

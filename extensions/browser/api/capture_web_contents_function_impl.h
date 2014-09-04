@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/capture_web_contents_function.h"
+#include "extensions/browser/api/capture_web_contents_function.h"
 
 #include "base/base64.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -22,26 +21,22 @@ using content::WebContents;
 
 namespace extensions {
 
-CaptureWebContentsFunction::CaptureWebContentsFunction() {
-}
-
-CaptureWebContentsFunction::~CaptureWebContentsFunction() {
-}
-
-bool CaptureWebContentsFunction::HasPermission() {
+template <typename T>
+bool CaptureWebContentsFunction<T>::HasPermission() {
   return true;
 }
 
-bool CaptureWebContentsFunction::RunAsync() {
-  EXTENSION_FUNCTION_VALIDATE(args_);
+template <typename T>
+bool CaptureWebContentsFunction<T>::RunAsync() {
+  EXTENSION_FUNCTION_VALIDATE(T::args_);
 
   context_id_ = extension_misc::kCurrentWindowId;
-  args_->GetInteger(0, &context_id_);
+  T::args_->GetInteger(0, &context_id_);
 
   scoped_ptr<ImageDetails> image_details;
-  if (args_->GetSize() > 1) {
+  if (T::args_->GetSize() > 1) {
     base::Value* spec = NULL;
-    EXTENSION_FUNCTION_VALIDATE(args_->Get(1, &spec) && spec);
+    EXTENSION_FUNCTION_VALIDATE(T::args_->Get(1, &spec) && spec);
     image_details = ImageDetails::FromValue(*spec);
   }
 
@@ -81,7 +76,8 @@ bool CaptureWebContentsFunction::RunAsync() {
   return true;
 }
 
-void CaptureWebContentsFunction::CopyFromBackingStoreComplete(
+template <typename T>
+void CaptureWebContentsFunction<T>::CopyFromBackingStoreComplete(
     bool succeeded,
     const SkBitmap& bitmap) {
   if (succeeded) {
@@ -91,7 +87,8 @@ void CaptureWebContentsFunction::CopyFromBackingStoreComplete(
   OnCaptureFailure(FAILURE_REASON_UNKNOWN);
 }
 
-void CaptureWebContentsFunction::OnCaptureSuccess(const SkBitmap& bitmap) {
+template <typename T>
+void CaptureWebContentsFunction<T>::OnCaptureSuccess(const SkBitmap& bitmap) {
   std::vector<unsigned char> data;
   SkAutoLockPixels screen_capture_lock(bitmap);
   bool encoded = false;
@@ -106,14 +103,14 @@ void CaptureWebContentsFunction::OnCaptureSuccess(const SkBitmap& bitmap) {
           static_cast<int>(bitmap.rowBytes()),
           image_quality_,
           &data);
-      mime_type = tabs_constants::kMimeTypeJpeg;
+      mime_type = kMimeTypeJpeg;
       break;
     case ImageDetails::FORMAT_PNG:
-      encoded = gfx::PNGCodec::EncodeBGRASkBitmap(
-          bitmap,
-          true,  // Discard transparency.
-          &data);
-      mime_type = tabs_constants::kMimeTypePng;
+      encoded =
+          gfx::PNGCodec::EncodeBGRASkBitmap(bitmap,
+                                            true,  // Discard transparency.
+                                            &data);
+      mime_type = kMimeTypePng;
       break;
     default:
       NOTREACHED() << "Invalid image format.";
@@ -129,10 +126,17 @@ void CaptureWebContentsFunction::OnCaptureSuccess(const SkBitmap& bitmap) {
       reinterpret_cast<const char*>(vector_as_array(&data)), data.size());
 
   base::Base64Encode(stream_as_string, &base64_result);
-  base64_result.insert(0, base::StringPrintf("data:%s;base64,",
-                                             mime_type.c_str()));
-  SetResult(new base::StringValue(base64_result));
-  SendResponse(true);
+  base64_result.insert(
+      0, base::StringPrintf("data:%s;base64,", mime_type.c_str()));
+  T::SetResult(new base::StringValue(base64_result));
+  T::SendResponse(true);
+}
+
+template <typename T>
+bool CaptureWebContentsFunction<T>::ValidationFailure(
+    CaptureWebContentsFunction<T>* function) {
+  return T::ValidationFailure(function);
 }
 
 }  // namespace extensions
+

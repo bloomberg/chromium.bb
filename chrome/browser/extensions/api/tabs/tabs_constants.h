@@ -58,10 +58,6 @@ extern const char kZoomSettingsScope[];
 // Value consts.
 extern const char kCanOnlyMoveTabsWithinNormalWindowsError[];
 extern const char kCanOnlyMoveTabsWithinSameProfileError[];
-extern const char kFormatValueJpeg[];
-extern const char kFormatValuePng[];
-extern const char kMimeTypeJpeg[];
-extern const char kMimeTypePng[];
 extern const char kShowStateValueNormal[];
 extern const char kShowStateValueMinimized[];
 extern const char kShowStateValueMaximized[];

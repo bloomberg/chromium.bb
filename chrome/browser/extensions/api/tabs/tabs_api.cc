@@ -64,6 +64,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/api/capture_web_contents_function_impl.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_function_util.h"
@@ -104,6 +105,8 @@ namespace keys = tabs_constants;
 namespace tabs = api::tabs;
 
 using api::tabs::InjectDetails;
+
+template class CaptureWebContentsFunction<ChromeAsyncExtensionFunction>;
 
 namespace {
 

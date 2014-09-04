@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_WEB_VIEW_WEB_VIEW_INTERNAL_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_WEB_VIEW_WEB_VIEW_INTERNAL_API_H_
 
-#include "chrome/browser/extensions/api/capture_web_contents_function.h"
 #include "chrome/browser/extensions/api/execute_code_function.h"
 #include "chrome/browser/guest_view/web_view/web_view_find_helper.h"
+#include "extensions/browser/api/capture_web_contents_function.h"
+#include "extensions/browser/extension_function.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 
 // WARNING: WebViewInternal could be loaded in an unblessed context, thus any
@@ -214,7 +215,7 @@ class WebViewInternalInsertCSSFunction
 };
 
 class WebViewInternalCaptureVisibleRegionFunction
-    : public extensions::CaptureWebContentsFunction {
+    : public extensions::CaptureWebContentsFunction<AsyncExtensionFunction> {
   DECLARE_EXTENSION_FUNCTION("webViewInternal.captureVisibleRegion",
                              WEBVIEWINTERNAL_CAPTUREVISIBLEREGION);
 
