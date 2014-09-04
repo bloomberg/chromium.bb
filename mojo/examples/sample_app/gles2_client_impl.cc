@@ -9,6 +9,7 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "mojo/public/c/gles2/gles2.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/utility/run_loop.h"
@@ -45,6 +46,10 @@ void GLES2ClientImpl::SetSize(const mojo::Size& size) {
   size_ = size;
   if (size_.width == 0 || size_.height == 0)
     return;
+  static_cast<gpu::gles2::GLES2Interface*>(
+      MojoGLES2GetGLES2Interface(context_))->ResizeCHROMIUM(size_.width,
+                                                            size_.height,
+                                                            1);
   cube_.Init(size_.width, size_.height);
   WantToDraw();
 }

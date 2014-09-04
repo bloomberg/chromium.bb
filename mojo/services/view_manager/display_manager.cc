@@ -57,8 +57,8 @@ void PaintViewTree(gfx::Canvas* canvas,
 
 class DisplayManager::RootWindowDelegateImpl : public aura::WindowDelegate {
  public:
-  explicit RootWindowDelegateImpl(const ServerView* root_view)
-      : root_view_(root_view) {}
+  explicit RootWindowDelegateImpl(ConnectionManager* connection_manager)
+      : connection_manager_(connection_manager) {}
   virtual ~RootWindowDelegateImpl() {}
 
   // aura::WindowDelegate:
@@ -70,6 +70,9 @@ class DisplayManager::RootWindowDelegateImpl : public aura::WindowDelegate {
   }
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) OVERRIDE {
+    connection_manager_->ProcessViewBoundsChanged(connection_manager_->root(),
+                                                  old_bounds,
+                                                  new_bounds);
   }
   virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE {
     return gfx::kNullCursor;
@@ -88,7 +91,7 @@ class DisplayManager::RootWindowDelegateImpl : public aura::WindowDelegate {
   virtual void OnCaptureLost() OVERRIDE {
   }
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    PaintViewTree(canvas, root_view_, gfx::Point());
+    PaintViewTree(canvas, connection_manager_->root(), gfx::Point());
   }
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
   }
@@ -105,7 +108,7 @@ class DisplayManager::RootWindowDelegateImpl : public aura::WindowDelegate {
   }
 
  private:
-  const ServerView* root_view_;
+  ConnectionManager* connection_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowDelegateImpl);
 };
@@ -203,7 +206,7 @@ void DisplayManager::OnCompositorCreated() {
   window_tree_host_->InitHost();
 
   window_delegate_.reset(
-      new RootWindowDelegateImpl(connection_manager_->root()));
+      new RootWindowDelegateImpl(connection_manager_));
   root_window_ = new aura::Window(window_delegate_.get());
   root_window_->Init(aura::WINDOW_LAYER_TEXTURED);
   root_window_->Show();
