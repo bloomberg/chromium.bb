@@ -584,7 +584,6 @@ void CompositorImpl::PopulateGpuCapabilities(
 
 void CompositorImpl::OnLostResources() {
   client_->DidLoseResources();
-  ui_resource_provider_.UIResourcesAreInvalid();
 }
 
 void CompositorImpl::ScheduleComposite() {
