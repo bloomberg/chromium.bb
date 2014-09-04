@@ -17,6 +17,7 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -266,6 +267,9 @@ bool FontCollectionLoader::LoadFontListFromRegistry() {
     return false;
   }
 
+  base::FilePath system_font_path;
+  PathService::Get(base::DIR_WINDOWS_FONTS, &system_font_path);
+
   std::wstring name;
   std::wstring value;
   for (DWORD idx = 0; idx < regkey.GetValueCount(); idx++) {
@@ -276,11 +280,16 @@ bool FontCollectionLoader::LoadFontListFromRegistry() {
       // we will ignore all other registry entries.
       std::vector<base::FilePath::StringType> components;
       path.GetComponents(&components);
-      if (components.size() == 1) {
-        reg_fonts_.push_back(value.c_str());
+      if (components.size() == 1 ||
+          base::FilePath::CompareEqualIgnoreCase(system_font_path.value(),
+                                                 path.DirName().value())) {
+        reg_fonts_.push_back(path.BaseName().value());
       }
     }
   }
+  UMA_HISTOGRAM_COUNTS("DirectWrite.Fonts.Loaded", reg_fonts_.size());
+  UMA_HISTOGRAM_COUNTS("DirectWrite.Fonts.Ignored",
+                       regkey.GetValueCount() - reg_fonts_.size());
   return true;
 }
 
@@ -365,6 +374,8 @@ IDWriteFontCollection* GetCustomFontCollection(IDWriteFactory* factory) {
 
   CHECK(SUCCEEDED(hr));
   CHECK(g_font_collection.Get() != NULL);
+
+  UMA_HISTOGRAM_TIMES("DirectWrite.Fonts.LoadTime", time_delta);
 
   base::debug::ClearCrashKey(kFontKeyName);
 
