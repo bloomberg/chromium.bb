@@ -55,14 +55,14 @@ static_library("core") {
     "//net",
     "//skia",
     "//sync",
-    "//third_party/dom_distiller_js/package/proto",
+    "//third_party/dom_distiller_js:proto",
     "//ui/base",
     "//url",
   ]
 
   forward_dependent_configs_from = [
     "//components/dom_distiller/core/proto",
-    "//third_party/dom_distiller_js/package/proto",
+    "//third_party/dom_distiller_js:proto",
   ]
 
   if (is_android) {

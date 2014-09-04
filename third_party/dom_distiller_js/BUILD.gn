@@ -16,6 +16,6 @@ source_set("proto") {
 
 proto_library("dom_distiller_proto") {
   visibility = ":*"
-  sources = [ "dom_distiller.proto" ]
+  sources = [ "package/proto/dom_distiller.proto" ]
   proto_out_dir = "third_party/dom_distiller_js"
 }

@@ -15,8 +15,7 @@ namespace dom_distiller {
     namespace json {
       class DistilledContent {
        public:
-        static dom_distiller::proto::DistilledContent ReadFromValue(const base::Value* json) {
-          dom_distiller::proto::DistilledContent message;
+        static bool ReadFromValue(const base::Value* json, dom_distiller::proto::DistilledContent* message) {
           const base::DictionaryValue* dict;
           if (!json->GetAsDictionary(&dict)) goto error;
           if (dict->HasKey("1")) {
@@ -24,12 +23,12 @@ namespace dom_distiller {
             if (!dict->GetString("1", &field_value)) {
               goto error;
             }
-            message.set_html(field_value);
+            message->set_html(field_value);
           }
-          return message;
+          return true;
 
         error:
-          return dom_distiller::proto::DistilledContent();
+          return false;
         }
 
         static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::DistilledContent& message) {
@@ -43,8 +42,7 @@ namespace dom_distiller {
 
       class PaginationInfo {
        public:
-        static dom_distiller::proto::PaginationInfo ReadFromValue(const base::Value* json) {
-          dom_distiller::proto::PaginationInfo message;
+        static bool ReadFromValue(const base::Value* json, dom_distiller::proto::PaginationInfo* message) {
           const base::DictionaryValue* dict;
           if (!json->GetAsDictionary(&dict)) goto error;
           if (dict->HasKey("1")) {
@@ -52,26 +50,26 @@ namespace dom_distiller {
             if (!dict->GetString("1", &field_value)) {
               goto error;
             }
-            message.set_next_page(field_value);
+            message->set_next_page(field_value);
           }
           if (dict->HasKey("2")) {
             std::string field_value;
             if (!dict->GetString("2", &field_value)) {
               goto error;
             }
-            message.set_prev_page(field_value);
+            message->set_prev_page(field_value);
           }
           if (dict->HasKey("3")) {
             std::string field_value;
             if (!dict->GetString("3", &field_value)) {
               goto error;
             }
-            message.set_canonical_page(field_value);
+            message->set_canonical_page(field_value);
           }
-          return message;
+          return true;
 
         error:
-          return dom_distiller::proto::PaginationInfo();
+          return false;
         }
 
         static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::PaginationInfo& message) {
@@ -91,8 +89,7 @@ namespace dom_distiller {
 
       class MarkupArticle {
        public:
-        static dom_distiller::proto::MarkupArticle ReadFromValue(const base::Value* json) {
-          dom_distiller::proto::MarkupArticle message;
+        static bool ReadFromValue(const base::Value* json, dom_distiller::proto::MarkupArticle* message) {
           const base::DictionaryValue* dict;
           if (!json->GetAsDictionary(&dict)) goto error;
           if (dict->HasKey("1")) {
@@ -100,28 +97,28 @@ namespace dom_distiller {
             if (!dict->GetString("1", &field_value)) {
               goto error;
             }
-            message.set_published_time(field_value);
+            message->set_published_time(field_value);
           }
           if (dict->HasKey("2")) {
             std::string field_value;
             if (!dict->GetString("2", &field_value)) {
               goto error;
             }
-            message.set_modified_time(field_value);
+            message->set_modified_time(field_value);
           }
           if (dict->HasKey("3")) {
             std::string field_value;
             if (!dict->GetString("3", &field_value)) {
               goto error;
             }
-            message.set_expiration_time(field_value);
+            message->set_expiration_time(field_value);
           }
           if (dict->HasKey("4")) {
             std::string field_value;
             if (!dict->GetString("4", &field_value)) {
               goto error;
             }
-            message.set_section(field_value);
+            message->set_section(field_value);
           }
           if (dict->HasKey("5")) {
             const base::ListValue* field_list;
@@ -133,13 +130,13 @@ namespace dom_distiller {
               if (!field_list->GetString(i, &field_value)) {
                 goto error;
               }
-              message.add_authors(field_value);
+              message->add_authors(field_value);
             }
           }
-          return message;
+          return true;
 
         error:
-          return dom_distiller::proto::MarkupArticle();
+          return false;
         }
 
         static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::MarkupArticle& message) {
@@ -167,8 +164,7 @@ namespace dom_distiller {
 
       class MarkupImage {
        public:
-        static dom_distiller::proto::MarkupImage ReadFromValue(const base::Value* json) {
-          dom_distiller::proto::MarkupImage message;
+        static bool ReadFromValue(const base::Value* json, dom_distiller::proto::MarkupImage* message) {
           const base::DictionaryValue* dict;
           if (!json->GetAsDictionary(&dict)) goto error;
           if (dict->HasKey("1")) {
@@ -176,47 +172,47 @@ namespace dom_distiller {
             if (!dict->GetString("1", &field_value)) {
               goto error;
             }
-            message.set_url(field_value);
+            message->set_url(field_value);
           }
           if (dict->HasKey("2")) {
             std::string field_value;
             if (!dict->GetString("2", &field_value)) {
               goto error;
             }
-            message.set_secure_url(field_value);
+            message->set_secure_url(field_value);
           }
           if (dict->HasKey("3")) {
             std::string field_value;
             if (!dict->GetString("3", &field_value)) {
               goto error;
             }
-            message.set_type(field_value);
+            message->set_type(field_value);
           }
           if (dict->HasKey("4")) {
             std::string field_value;
             if (!dict->GetString("4", &field_value)) {
               goto error;
             }
-            message.set_caption(field_value);
+            message->set_caption(field_value);
           }
           if (dict->HasKey("5")) {
             int field_value;
             if (!dict->GetInteger("5", &field_value)) {
               goto error;
             }
-            message.set_width(field_value);
+            message->set_width(field_value);
           }
           if (dict->HasKey("6")) {
             int field_value;
             if (!dict->GetInteger("6", &field_value)) {
               goto error;
             }
-            message.set_height(field_value);
+            message->set_height(field_value);
           }
-          return message;
+          return true;
 
         error:
-          return dom_distiller::proto::MarkupImage();
+          return false;
         }
 
         static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::MarkupImage& message) {
@@ -245,8 +241,7 @@ namespace dom_distiller {
 
       class MarkupInfo {
        public:
-        static dom_distiller::proto::MarkupInfo ReadFromValue(const base::Value* json) {
-          dom_distiller::proto::MarkupInfo message;
+        static bool ReadFromValue(const base::Value* json, dom_distiller::proto::MarkupInfo* message) {
           const base::DictionaryValue* dict;
           if (!json->GetAsDictionary(&dict)) goto error;
           if (dict->HasKey("1")) {
@@ -254,57 +249,58 @@ namespace dom_distiller {
             if (!dict->GetString("1", &field_value)) {
               goto error;
             }
-            message.set_title(field_value);
+            message->set_title(field_value);
           }
           if (dict->HasKey("2")) {
             std::string field_value;
             if (!dict->GetString("2", &field_value)) {
               goto error;
             }
-            message.set_type(field_value);
+            message->set_type(field_value);
           }
           if (dict->HasKey("3")) {
             std::string field_value;
             if (!dict->GetString("3", &field_value)) {
               goto error;
             }
-            message.set_url(field_value);
+            message->set_url(field_value);
           }
           if (dict->HasKey("4")) {
             std::string field_value;
             if (!dict->GetString("4", &field_value)) {
               goto error;
             }
-            message.set_description(field_value);
+            message->set_description(field_value);
           }
           if (dict->HasKey("5")) {
             std::string field_value;
             if (!dict->GetString("5", &field_value)) {
               goto error;
             }
-            message.set_publisher(field_value);
+            message->set_publisher(field_value);
           }
           if (dict->HasKey("6")) {
             std::string field_value;
             if (!dict->GetString("6", &field_value)) {
               goto error;
             }
-            message.set_copyright(field_value);
+            message->set_copyright(field_value);
           }
           if (dict->HasKey("7")) {
             std::string field_value;
             if (!dict->GetString("7", &field_value)) {
               goto error;
             }
-            message.set_author(field_value);
+            message->set_author(field_value);
           }
           if (dict->HasKey("8")) {
             const base::Value* inner_message_value;
             if (!dict->Get("8", &inner_message_value)) {
               goto error;
             }
-            *message.mutable_article() =
-                dom_distiller::proto::json::MarkupArticle::ReadFromValue(inner_message_value);
+            if (!dom_distiller::proto::json::MarkupArticle::ReadFromValue(inner_message_value, message->mutable_article())) {
+              goto error;
+            }
           }
           if (dict->HasKey("9")) {
             const base::ListValue* field_list;
@@ -316,14 +312,15 @@ namespace dom_distiller {
               if (!field_list->Get(i, &inner_message_value)) {
                 goto error;
               }
-              *message.add_images() =
-                  dom_distiller::proto::json::MarkupImage::ReadFromValue(inner_message_value);
+              if (!dom_distiller::proto::json::MarkupImage::ReadFromValue(inner_message_value, message->add_images())) {
+                goto error;
+              }
             }
           }
-          return message;
+          return true;
 
         error:
-          return dom_distiller::proto::MarkupInfo();
+          return false;
         }
 
         static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::MarkupInfo& message) {
@@ -367,8 +364,7 @@ namespace dom_distiller {
 
       class TimingInfo {
        public:
-        static dom_distiller::proto::TimingInfo ReadFromValue(const base::Value* json) {
-          dom_distiller::proto::TimingInfo message;
+        static bool ReadFromValue(const base::Value* json, dom_distiller::proto::TimingInfo* message) {
           const base::DictionaryValue* dict;
           if (!json->GetAsDictionary(&dict)) goto error;
           if (dict->HasKey("1")) {
@@ -376,40 +372,40 @@ namespace dom_distiller {
             if (!dict->GetDouble("1", &field_value)) {
               goto error;
             }
-            message.set_markup_parsing_time(field_value);
+            message->set_markup_parsing_time(field_value);
           }
           if (dict->HasKey("2")) {
             double field_value;
             if (!dict->GetDouble("2", &field_value)) {
               goto error;
             }
-            message.set_document_construction_time(field_value);
+            message->set_document_construction_time(field_value);
           }
           if (dict->HasKey("3")) {
             double field_value;
             if (!dict->GetDouble("3", &field_value)) {
               goto error;
             }
-            message.set_article_processing_time(field_value);
+            message->set_article_processing_time(field_value);
           }
           if (dict->HasKey("4")) {
             double field_value;
             if (!dict->GetDouble("4", &field_value)) {
               goto error;
             }
-            message.set_formatting_time(field_value);
+            message->set_formatting_time(field_value);
           }
           if (dict->HasKey("5")) {
             double field_value;
             if (!dict->GetDouble("5", &field_value)) {
               goto error;
             }
-            message.set_total_time(field_value);
+            message->set_total_time(field_value);
           }
-          return message;
+          return true;
 
         error:
-          return dom_distiller::proto::TimingInfo();
+          return false;
         }
 
         static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::TimingInfo& message) {
@@ -435,8 +431,7 @@ namespace dom_distiller {
 
       class DebugInfo {
        public:
-        static dom_distiller::proto::DebugInfo ReadFromValue(const base::Value* json) {
-          dom_distiller::proto::DebugInfo message;
+        static bool ReadFromValue(const base::Value* json, dom_distiller::proto::DebugInfo* message) {
           const base::DictionaryValue* dict;
           if (!json->GetAsDictionary(&dict)) goto error;
           if (dict->HasKey("1")) {
@@ -444,12 +439,12 @@ namespace dom_distiller {
             if (!dict->GetString("1", &field_value)) {
               goto error;
             }
-            message.set_log(field_value);
+            message->set_log(field_value);
           }
-          return message;
+          return true;
 
         error:
-          return dom_distiller::proto::DebugInfo();
+          return false;
         }
 
         static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::DebugInfo& message) {
@@ -463,8 +458,7 @@ namespace dom_distiller {
 
       class DomDistillerResult {
        public:
-        static dom_distiller::proto::DomDistillerResult ReadFromValue(const base::Value* json) {
-          dom_distiller::proto::DomDistillerResult message;
+        static bool ReadFromValue(const base::Value* json, dom_distiller::proto::DomDistillerResult* message) {
           const base::DictionaryValue* dict;
           if (!json->GetAsDictionary(&dict)) goto error;
           if (dict->HasKey("1")) {
@@ -472,23 +466,25 @@ namespace dom_distiller {
             if (!dict->GetString("1", &field_value)) {
               goto error;
             }
-            message.set_title(field_value);
+            message->set_title(field_value);
           }
           if (dict->HasKey("2")) {
             const base::Value* inner_message_value;
             if (!dict->Get("2", &inner_message_value)) {
               goto error;
             }
-            *message.mutable_distilled_content() =
-                dom_distiller::proto::json::DistilledContent::ReadFromValue(inner_message_value);
+            if (!dom_distiller::proto::json::DistilledContent::ReadFromValue(inner_message_value, message->mutable_distilled_content())) {
+              goto error;
+            }
           }
           if (dict->HasKey("3")) {
             const base::Value* inner_message_value;
             if (!dict->Get("3", &inner_message_value)) {
               goto error;
             }
-            *message.mutable_pagination_info() =
-                dom_distiller::proto::json::PaginationInfo::ReadFromValue(inner_message_value);
+            if (!dom_distiller::proto::json::PaginationInfo::ReadFromValue(inner_message_value, message->mutable_pagination_info())) {
+              goto error;
+            }
           }
           if (dict->HasKey("4")) {
             const base::ListValue* field_list;
@@ -500,7 +496,7 @@ namespace dom_distiller {
               if (!field_list->GetString(i, &field_value)) {
                 goto error;
               }
-              message.add_image_urls(field_value);
+              message->add_image_urls(field_value);
             }
           }
           if (dict->HasKey("5")) {
@@ -508,29 +504,32 @@ namespace dom_distiller {
             if (!dict->Get("5", &inner_message_value)) {
               goto error;
             }
-            *message.mutable_markup_info() =
-                dom_distiller::proto::json::MarkupInfo::ReadFromValue(inner_message_value);
+            if (!dom_distiller::proto::json::MarkupInfo::ReadFromValue(inner_message_value, message->mutable_markup_info())) {
+              goto error;
+            }
           }
           if (dict->HasKey("6")) {
             const base::Value* inner_message_value;
             if (!dict->Get("6", &inner_message_value)) {
               goto error;
             }
-            *message.mutable_timing_info() =
-                dom_distiller::proto::json::TimingInfo::ReadFromValue(inner_message_value);
+            if (!dom_distiller::proto::json::TimingInfo::ReadFromValue(inner_message_value, message->mutable_timing_info())) {
+              goto error;
+            }
           }
           if (dict->HasKey("7")) {
             const base::Value* inner_message_value;
             if (!dict->Get("7", &inner_message_value)) {
               goto error;
             }
-            *message.mutable_debug_info() =
-                dom_distiller::proto::json::DebugInfo::ReadFromValue(inner_message_value);
+            if (!dom_distiller::proto::json::DebugInfo::ReadFromValue(inner_message_value, message->mutable_debug_info())) {
+              goto error;
+            }
           }
-          return message;
+          return true;
 
         error:
-          return dom_distiller::proto::DomDistillerResult();
+          return false;
         }
 
         static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::DomDistillerResult& message) {
@@ -574,8 +573,7 @@ namespace dom_distiller {
 
       class DomDistillerOptions {
        public:
-        static dom_distiller::proto::DomDistillerOptions ReadFromValue(const base::Value* json) {
-          dom_distiller::proto::DomDistillerOptions message;
+        static bool ReadFromValue(const base::Value* json, dom_distiller::proto::DomDistillerOptions* message) {
           const base::DictionaryValue* dict;
           if (!json->GetAsDictionary(&dict)) goto error;
           if (dict->HasKey("1")) {
@@ -583,19 +581,19 @@ namespace dom_distiller {
             if (!dict->GetBoolean("1", &field_value)) {
               goto error;
             }
-            message.set_extract_text_only(field_value);
+            message->set_extract_text_only(field_value);
           }
           if (dict->HasKey("2")) {
             int field_value;
             if (!dict->GetInteger("2", &field_value)) {
               goto error;
             }
-            message.set_debug_level(field_value);
+            message->set_debug_level(field_value);
           }
-          return message;
+          return true;
 
         error:
-          return dom_distiller::proto::DomDistillerOptions();
+          return false;
         }
 
         static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::DomDistillerOptions& message) {

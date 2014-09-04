@@ -73,16 +73,18 @@ void DistillerPage::OnDistillationDone(const GURL& page_url,
   DCHECK(!ready_);
   ready_ = true;
 
-  scoped_ptr<dom_distiller::proto::DomDistillerResult> distiller_result;
-
+  scoped_ptr<dom_distiller::proto::DomDistillerResult> distiller_result(
+      new dom_distiller::proto::DomDistillerResult());
   bool found_content;
   if (value->IsType(base::Value::TYPE_NULL)) {
     found_content = false;
   } else {
-    found_content = true;
-    distiller_result.reset(new dom_distiller::proto::DomDistillerResult(
-        dom_distiller::proto::json::DomDistillerResult::ReadFromValue(value)));
-    if (distiller_result->has_timing_info()) {
+    found_content =
+        dom_distiller::proto::json::DomDistillerResult::ReadFromValue(
+            value, distiller_result.get());
+    if (!found_content) {
+      DVLOG(1) << "Unable to parse DomDistillerResult.";
+    } else if (distiller_result->has_timing_info()) {
       const dom_distiller::proto::TimingInfo& timing =
           distiller_result->timing_info();
       if (timing.has_markup_parsing_time()) {
