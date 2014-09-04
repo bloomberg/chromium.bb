@@ -29,6 +29,8 @@
 
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformWheelEvent.h"
+#include "platform/Timer.h"
+#include "platform/animation/TimingFunction.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/mac/BlockExceptions.h"
@@ -292,9 +294,75 @@ enum FeatureToAnimate {
     ExpansionTransition
 };
 
-@interface WebScrollbarPartAnimation : NSAnimation
-{
+@class WebScrollbarPartAnimation;
+
+namespace blink {
+
+// This class is used to drive the animation timer for WebScrollbarPartAnimation
+// objects. This is used instead of NSAnimation because CoreAnimation
+// establishes connections to the WindowServer, which should not be done in a
+// sandboxed renderer process.
+class WebScrollbarPartAnimationTimer {
+public:
+    WebScrollbarPartAnimationTimer(WebScrollbarPartAnimation* animation,
+                                   CFTimeInterval duration)
+        : m_timer(this, &WebScrollbarPartAnimationTimer::timerFired)
+        , m_startTime(0.0)
+        , m_duration(duration)
+        , m_animation(animation)
+        , m_timingFunction(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseInOut))
+    {
+    }
+
+    ~WebScrollbarPartAnimationTimer() {}
+
+    void start()
+    {
+        m_startTime = WTF::currentTime();
+        // Set the framerate of the animation. NSAnimation uses a default
+        // framerate of 60 Hz, so use that here.
+        m_timer.startRepeating(1.0 / 60.0, FROM_HERE);
+    }
+
+    void stop()
+    {
+        m_timer.stop();
+        [m_animation setCurrentProgress:1];
+    }
+
+    void setDuration(CFTimeInterval duration)
+    {
+        m_duration = duration;
+    }
+
+private:
+    void timerFired(Timer<WebScrollbarPartAnimationTimer>*)
+    {
+        double currentTime = WTF::currentTime();
+        double delta = currentTime - m_startTime;
+
+        if (delta >= m_duration) {
+            stop();
+            return;
+        }
+
+        double fraction = delta / m_duration;
+        double progress = m_timingFunction->evaluate(fraction, 0.001);
+        [m_animation setCurrentProgress:progress];
+    }
+
+    Timer<WebScrollbarPartAnimationTimer> m_timer;
+    double m_startTime;  // In seconds.
+    double m_duration;   // In seconds.
+    WebScrollbarPartAnimation* m_animation;  // Weak, owns this.
+    RefPtr<CubicBezierTimingFunction> m_timingFunction;
+};
+
+}  // namespace blink
+
+@interface WebScrollbarPartAnimation : NSObject {
     Scrollbar* _scrollbar;
+    OwnPtr<WebScrollbarPartAnimationTimer> _timer;
     RetainPtr<ScrollbarPainter> _scrollbarPainter;
     FeatureToAnimate _featureToAnimate;
     CGFloat _startValue;
@@ -307,16 +375,15 @@ enum FeatureToAnimate {
 
 - (id)initWithScrollbar:(Scrollbar*)scrollbar featureToAnimate:(FeatureToAnimate)featureToAnimate animateFrom:(CGFloat)startValue animateTo:(CGFloat)endValue duration:(NSTimeInterval)duration
 {
-    self = [super initWithDuration:duration animationCurve:NSAnimationEaseInOut];
+    self = [super init];
     if (!self)
         return nil;
 
+    _timer = adoptPtr(new WebScrollbarPartAnimationTimer(self, duration));
     _scrollbar = scrollbar;
     _featureToAnimate = featureToAnimate;
     _startValue = startValue;
     _endValue = endValue;
-
-    [self setAnimationBlockingMode:NSAnimationNonblocking];
 
     return self;
 }
@@ -326,8 +393,17 @@ enum FeatureToAnimate {
     ASSERT(_scrollbar);
 
     _scrollbarPainter = scrollbarPainterForScrollbar(_scrollbar);
+    _timer->start();
+}
 
-    [super startAnimation];
+- (void)stopAnimation
+{
+    _timer->stop();
+}
+
+- (void)setDuration:(CFTimeInterval)duration
+{
+    _timer->setDuration(duration);
 }
 
 - (void)setStartValue:(CGFloat)startValue
@@ -342,8 +418,6 @@ enum FeatureToAnimate {
 
 - (void)setCurrentProgress:(NSAnimationProgress)progress
 {
-    [super setCurrentProgress:progress];
-
     ASSERT(_scrollbar);
 
     CGFloat currentValue;
