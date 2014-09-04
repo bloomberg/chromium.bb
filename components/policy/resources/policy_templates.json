@@ -744,7 +744,7 @@
       'name': 'PrintingEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:8-', 'chrome_os:11-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:11-', 'android:39-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
