@@ -53,7 +53,7 @@ describe('tree status', function() {
     };
 
     simulator.runTest(function() {
-      Promise.all([
+      return Promise.all([
         opentree.update().then(function() {
           assert.equal(opentree.status, 'open');
         }),
@@ -68,7 +68,7 @@ describe('tree status', function() {
           assert.equal(closedtree.status, "closed");
         })
       ]);
-    }).then(done);
+    });
   });
 });
 

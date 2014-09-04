@@ -77,60 +77,64 @@ describe('results script', function() {
         return Promise.reject();
     };
     simulator.runTest(function() {
-      results.fetchResultsURLs({
-        'builderName': 'Mock Builder',
-        'testName': 'userscripts/another-test.html',
-        'failureTypeList': ['IMAGE', 'CRASH'],
-      }).then(function(resultURLs) {
-        assert.deepEqual(resultURLs, [
-          MockResultsBaseURL + '/userscripts/another-test-crash-log.txt'
-        ]);
-      });
-      results.fetchResultsURLs({
-        'builderName': 'Mock Builder',
-        'testName': 'userscripts/another-test.html',
-        'failureTypeList': ['TIMEOUT'],
-      }).then(function(resultURLs) {
-        assert.deepEqual(resultURLs, []);
-      });
-      results.fetchResultsURLs({
-        'builderName': 'Mock Builder',
-        'testName': 'userscripts/taco.html',
-        'failureTypeList': ['IMAGE', 'IMAGE+TEXT'],
-      }).then(function(resultURLs) {
-        assert.deepEqual(resultURLs, [
+      return Promise.resolve().then(function() {
+        return results.fetchResultsURLs({
+          'builderName': 'Mock Builder',
+          'testName': 'userscripts/another-test.html',
+          'failureTypeList': ['IMAGE', 'CRASH'],
+        }).then(function(resultURLs) {
+          assert.deepEqual(resultURLs, [
+            MockResultsBaseURL + '/userscripts/another-test-crash-log.txt'
+          ]);
+        });
+      }).then(function() {
+        return results.fetchResultsURLs({
+          'builderName': 'Mock Builder',
+          'testName': 'userscripts/another-test.html',
+          'failureTypeList': ['TIMEOUT'],
+        }).then(function(resultURLs) {
+          assert.deepEqual(resultURLs, []);
+        });
+      }).then(function() {
+        return results.fetchResultsURLs({
+          'builderName': 'Mock Builder',
+          'testName': 'userscripts/taco.html',
+          'failureTypeList': ['IMAGE', 'IMAGE+TEXT'],
+        }).then(function(resultURLs) {
+          assert.deepEqual(resultURLs, [
+            MockResultsBaseURL + '/userscripts/taco-expected.png',
+            MockResultsBaseURL + '/userscripts/taco-actual.png',
+            MockResultsBaseURL + '/userscripts/taco-diff.png',
+            MockResultsBaseURL + '/userscripts/taco-expected.txt',
+            MockResultsBaseURL + '/userscripts/taco-actual.txt',
+            MockResultsBaseURL + '/userscripts/taco-diff.txt',
+          ]);
+        });
+      }).then(function() {
+        return results.fetchResultsURLs({
+          'builderName': 'Mock Builder',
+          'testName': 'userscripts/another-test.html',
+          'failureTypeList': ['LEAK'],
+        }).then(function(resultURLs) {
+          assert.deepEqual(resultURLs, [
+            MockResultsBaseURL + '/userscripts/another-test-leak-log.txt'
+          ]);
+        });
+      }).then(function() {
+        assert.deepEqual(probedURLs, [
+          MockResultsBaseURL + '/userscripts/another-test-expected.png',
+          MockResultsBaseURL + '/userscripts/another-test-actual.png',
+          MockResultsBaseURL + '/userscripts/another-test-diff.png',
+          MockResultsBaseURL + '/userscripts/another-test-crash-log.txt',
           MockResultsBaseURL + '/userscripts/taco-expected.png',
           MockResultsBaseURL + '/userscripts/taco-actual.png',
           MockResultsBaseURL + '/userscripts/taco-diff.png',
-          MockResultsBaseURL + '/userscripts/taco-expected.txt',
           MockResultsBaseURL + '/userscripts/taco-actual.txt',
+          MockResultsBaseURL + '/userscripts/taco-expected.txt',
           MockResultsBaseURL + '/userscripts/taco-diff.txt',
+          MockResultsBaseURL + '/userscripts/another-test-leak-log.txt',
         ]);
       });
-      results.fetchResultsURLs({
-        'builderName': 'Mock Builder',
-        'testName': 'userscripts/another-test.html',
-        'failureTypeList': ['LEAK'],
-      }).then(function(resultURLs) {
-        assert.deepEqual(resultURLs, [
-          MockResultsBaseURL + '/userscripts/another-test-leak-log.txt'
-        ]);
-      });
-    }).then(function() {
-      assert.deepEqual(probedURLs, [
-        MockResultsBaseURL + '/userscripts/another-test-expected.png',
-        MockResultsBaseURL + '/userscripts/another-test-actual.png',
-        MockResultsBaseURL + '/userscripts/another-test-diff.png',
-        MockResultsBaseURL + '/userscripts/another-test-crash-log.txt',
-        MockResultsBaseURL + '/userscripts/taco-expected.png',
-        MockResultsBaseURL + '/userscripts/taco-actual.png',
-        MockResultsBaseURL + '/userscripts/taco-diff.png',
-        MockResultsBaseURL + '/userscripts/taco-actual.txt',
-        MockResultsBaseURL + '/userscripts/taco-expected.txt',
-        MockResultsBaseURL + '/userscripts/taco-diff.txt',
-        MockResultsBaseURL + '/userscripts/another-test-leak-log.txt',
-      ]);
-      done();
     });
   });
 });
