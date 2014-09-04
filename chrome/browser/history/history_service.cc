@@ -620,15 +620,15 @@ void HistoryService::MergeFavicon(
 void HistoryService::SetFavicons(
     const GURL& page_url,
     favicon_base::IconType icon_type,
-    const std::vector<favicon_base::FaviconRawBitmapData>&
-        favicon_bitmap_data) {
+    const GURL& icon_url,
+    const std::vector<SkBitmap>& bitmaps) {
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!CanAddURL(page_url))
     return;
 
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::SetFavicons, page_url,
-      icon_type, favicon_bitmap_data);
+      icon_type, icon_url, bitmaps);
 }
 
 void HistoryService::SetFaviconsOutOfDateForPage(const GURL& page_url) {

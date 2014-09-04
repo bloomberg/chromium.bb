@@ -31,6 +31,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -54,6 +55,14 @@ struct BookmarkCacheRow {
   bool bookmark_;
   favicon_base::FaviconID favicon_id_;
 };
+
+// Creates a 16x16 bitmap.
+SkBitmap CreateBitmap() {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(16, 16);
+  bitmap.eraseColor(SK_ColorBLUE);
+  return bitmap;
+}
 
 }  // namespace
 
@@ -256,17 +265,8 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
   url_id2 = url_row.id();
 
   // Set favicon to url2.
-  std::vector<unsigned char> data;
-  data.push_back('1');
-  favicon_base::FaviconRawBitmapData bitmap_data_element;
-  bitmap_data_element.bitmap_data = new base::RefCountedBytes(data);
-  bitmap_data_element.pixel_size = gfx::Size();
-  bitmap_data_element.icon_url = GURL();
-  std::vector<favicon_base::FaviconRawBitmapData> favicon_bitmap_data;
-  favicon_bitmap_data.push_back(bitmap_data_element);
-
-  history_backend->SetFavicons(
-      url2, favicon_base::FAVICON, favicon_bitmap_data);
+  std::vector<SkBitmap> bitmaps(1u, CreateBitmap());
+  history_backend->SetFavicons(url2, favicon_base::FAVICON, GURL(), bitmaps);
   history_backend->Closing();
   }
 
@@ -403,17 +403,8 @@ TEST_F(AndroidProviderBackendTest, QueryHistoryAndBookmarks) {
   ASSERT_EQ(2u, history_backend->UpdateURLs(url_rows));
 
   // Set favicon to url2.
-  std::vector<unsigned char> data;
-  data.push_back('1');
-  favicon_base::FaviconRawBitmapData bitmap_data_element;
-  bitmap_data_element.bitmap_data = new base::RefCountedBytes(data);
-  bitmap_data_element.pixel_size = gfx::Size();
-  bitmap_data_element.icon_url = GURL();
-  std::vector<favicon_base::FaviconRawBitmapData> favicon_bitmap_data;
-  favicon_bitmap_data.push_back(bitmap_data_element);
-
-  history_backend->SetFavicons(
-      url2, favicon_base::FAVICON, favicon_bitmap_data);
+  std::vector<SkBitmap> bitmaps(1u, CreateBitmap());
+  history_backend->SetFavicons(url2, favicon_base::FAVICON, GURL(), bitmaps);
   history_backend->Closing();
   }
 
@@ -1849,17 +1840,8 @@ TEST_F(AndroidProviderBackendTest, QueryWithoutThumbnailDB) {
   ASSERT_EQ(2u, history_backend->UpdateURLs(url_rows));
 
   // Set favicon to url2.
-  std::vector<unsigned char> data;
-  data.push_back('1');
-  favicon_base::FaviconRawBitmapData bitmap_data_element;
-  bitmap_data_element.bitmap_data = new base::RefCountedBytes(data);
-  bitmap_data_element.pixel_size = gfx::Size();
-  bitmap_data_element.icon_url = GURL();
-  std::vector<favicon_base::FaviconRawBitmapData> favicon_bitmap_data;
-  favicon_bitmap_data.push_back(bitmap_data_element);
-
-  history_backend->SetFavicons(
-      url2, favicon_base::FAVICON, favicon_bitmap_data);
+  std::vector<SkBitmap> bitmaps(1u, CreateBitmap());
+  history_backend->SetFavicons(url2, favicon_base::FAVICON, GURL(), bitmaps);
   history_backend->Closing();
   }
 

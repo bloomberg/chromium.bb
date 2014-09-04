@@ -311,32 +311,18 @@ void FaviconService::SetFavicons(const GURL& page_url,
   gfx::ImageSkia image_skia = image.AsImageSkia();
   image_skia.EnsureRepsForSupportedScales();
   const std::vector<gfx::ImageSkiaRep>& image_reps = image_skia.image_reps();
-  std::vector<favicon_base::FaviconRawBitmapData> favicon_bitmap_data;
+  std::vector<SkBitmap> bitmaps;
   const std::vector<float> favicon_scales = favicon_base::GetFaviconScales();
   for (size_t i = 0; i < image_reps.size(); ++i) {
-    // Don't save if the scale isn't one of supported favicon scale.
+    // Don't save if the scale isn't one of supported favicon scales.
     if (std::find(favicon_scales.begin(),
                   favicon_scales.end(),
                   image_reps[i].scale()) == favicon_scales.end()) {
       continue;
     }
-
-    scoped_refptr<base::RefCountedBytes> bitmap_data(
-        new base::RefCountedBytes());
-    if (gfx::PNGCodec::EncodeBGRASkBitmap(image_reps[i].sk_bitmap(),
-                                          false,
-                                          &bitmap_data->data())) {
-      gfx::Size pixel_size(image_reps[i].pixel_width(),
-                           image_reps[i].pixel_height());
-      favicon_base::FaviconRawBitmapData bitmap_data_element;
-      bitmap_data_element.bitmap_data = bitmap_data;
-      bitmap_data_element.pixel_size = pixel_size;
-      bitmap_data_element.icon_url = icon_url;
-
-      favicon_bitmap_data.push_back(bitmap_data_element);
-    }
+    bitmaps.push_back(image_reps[i].sk_bitmap());
   }
-  history_service_->SetFavicons(page_url, icon_type, favicon_bitmap_data);
+  history_service_->SetFavicons(page_url, icon_type, icon_url, bitmaps);
 }
 
 void FaviconService::UnableToDownloadFavicon(const GURL& icon_url) {

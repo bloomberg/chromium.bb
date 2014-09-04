@@ -44,6 +44,8 @@
 #include "components/history/core/browser/page_usage_data.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sql/error_delegate_util.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -1774,50 +1776,30 @@ void HistoryBackend::MergeFavicon(
   ScheduleCommit();
 }
 
-void HistoryBackend::SetFavicons(
-    const GURL& page_url,
-    favicon_base::IconType icon_type,
-    const std::vector<favicon_base::FaviconRawBitmapData>&
-        favicon_bitmap_data) {
+void HistoryBackend::SetFavicons(const GURL& page_url,
+                                 favicon_base::IconType icon_type,
+                                 const GURL& icon_url,
+                                 const std::vector<SkBitmap>& bitmaps) {
   if (!thumbnail_db_ || !db_)
     return;
 
-  DCHECK(ValidateSetFaviconsParams(favicon_bitmap_data));
-
-  // Build map of FaviconRawBitmapData for each icon url.
-  typedef std::map<GURL, std::vector<favicon_base::FaviconRawBitmapData> >
-      BitmapDataByIconURL;
-  BitmapDataByIconURL grouped_by_icon_url;
-  for (size_t i = 0; i < favicon_bitmap_data.size(); ++i) {
-    const GURL& icon_url = favicon_bitmap_data[i].icon_url;
-    grouped_by_icon_url[icon_url].push_back(favicon_bitmap_data[i]);
-  }
+  DCHECK_GE(kMaxFaviconBitmapsPerIconURL, bitmaps.size());
 
   // Track whether the method modifies or creates any favicon bitmaps, favicons
   // or icon mappings.
   bool data_modified = false;
 
-  std::vector<favicon_base::FaviconID> icon_ids;
-  for (BitmapDataByIconURL::const_iterator it = grouped_by_icon_url.begin();
-       it != grouped_by_icon_url.end(); ++it) {
-    const GURL& icon_url = it->first;
-    favicon_base::FaviconID icon_id =
-        thumbnail_db_->GetFaviconIDForFaviconURL(icon_url, icon_type, NULL);
+  favicon_base::FaviconID icon_id =
+      thumbnail_db_->GetFaviconIDForFaviconURL(icon_url, icon_type, NULL);
 
-    if (!icon_id) {
-      // TODO(pkotwicz): Remove the favicon sizes attribute from
-      // ThumbnailDatabase::AddFavicon().
-      icon_id = thumbnail_db_->AddFavicon(icon_url, icon_type);
-      data_modified = true;
-    }
-    icon_ids.push_back(icon_id);
-
-    if (!data_modified)
-      SetFaviconBitmaps(icon_id, it->second, &data_modified);
-    else
-      SetFaviconBitmaps(icon_id, it->second, NULL);
+  if (!icon_id) {
+    icon_id = thumbnail_db_->AddFavicon(icon_url, icon_type);
+    data_modified = true;
   }
 
+  data_modified |= SetFaviconBitmaps(icon_id, bitmaps);
+
+  std::vector<favicon_base::FaviconID> icon_ids(1u, icon_id);
   data_modified |=
     SetFaviconMappingsForPageAndRedirects(page_url, icon_type, icon_ids);
 
@@ -1984,27 +1966,33 @@ void HistoryBackend::UpdateFaviconMappingsAndFetchImpl(
       bitmap_results);
 }
 
-void HistoryBackend::SetFaviconBitmaps(
-    favicon_base::FaviconID icon_id,
-    const std::vector<favicon_base::FaviconRawBitmapData>& favicon_bitmap_data,
-    bool* favicon_bitmaps_changed) {
-  if (favicon_bitmaps_changed)
-    *favicon_bitmaps_changed = false;
-
+bool HistoryBackend::SetFaviconBitmaps(favicon_base::FaviconID icon_id,
+                                       const std::vector<SkBitmap>& bitmaps) {
   std::vector<FaviconBitmapIDSize> bitmap_id_sizes;
   thumbnail_db_->GetFaviconBitmapIDSizes(icon_id, &bitmap_id_sizes);
 
-  std::vector<favicon_base::FaviconRawBitmapData> to_add = favicon_bitmap_data;
+  typedef std::pair<scoped_refptr<base::RefCountedBytes>, gfx::Size>
+      PNGEncodedBitmap;
+  std::vector<PNGEncodedBitmap> to_add;
+  for (size_t i = 0; i < bitmaps.size(); ++i) {
+    scoped_refptr<base::RefCountedBytes> bitmap_data(
+        new base::RefCountedBytes);
+    if (!gfx::PNGCodec::EncodeBGRASkBitmap(
+            bitmaps[i], false, &bitmap_data->data())) {
+      continue;
+    }
+    to_add.push_back(std::make_pair(
+        bitmap_data, gfx::Size(bitmaps[i].width(), bitmaps[i].height())));
+  }
 
+  bool favicon_bitmaps_changed = false;
   for (size_t i = 0; i < bitmap_id_sizes.size(); ++i) {
     const gfx::Size& pixel_size = bitmap_id_sizes[i].pixel_size;
-    std::vector<favicon_base::FaviconRawBitmapData>::iterator match_it =
-        to_add.end();
-    for (std::vector<favicon_base::FaviconRawBitmapData>::iterator it =
-             to_add.begin();
+    std::vector<PNGEncodedBitmap>::iterator match_it = to_add.end();
+    for (std::vector<PNGEncodedBitmap>::iterator it = to_add.begin();
          it != to_add.end();
          ++it) {
-      if (it->pixel_size == pixel_size) {
+      if (it->second == pixel_size) {
         match_it = it;
         break;
       }
@@ -2014,58 +2002,28 @@ void HistoryBackend::SetFaviconBitmaps(
     if (match_it == to_add.end()) {
       thumbnail_db_->DeleteFaviconBitmap(bitmap_id);
 
-      if (favicon_bitmaps_changed)
-        *favicon_bitmaps_changed = true;
+      favicon_bitmaps_changed = true;
     } else {
-      if (favicon_bitmaps_changed &&
-          !*favicon_bitmaps_changed &&
-          IsFaviconBitmapDataEqual(bitmap_id, match_it->bitmap_data)) {
+      if (!favicon_bitmaps_changed &&
+          IsFaviconBitmapDataEqual(bitmap_id, match_it->first)) {
         thumbnail_db_->SetFaviconBitmapLastUpdateTime(
             bitmap_id, base::Time::Now());
       } else {
-        thumbnail_db_->SetFaviconBitmap(bitmap_id, match_it->bitmap_data,
+        thumbnail_db_->SetFaviconBitmap(bitmap_id, match_it->first,
             base::Time::Now());
-
-        if (favicon_bitmaps_changed)
-          *favicon_bitmaps_changed = true;
+        favicon_bitmaps_changed = true;
       }
       to_add.erase(match_it);
     }
   }
 
   for (size_t i = 0; i < to_add.size(); ++i) {
-    thumbnail_db_->AddFaviconBitmap(icon_id, to_add[i].bitmap_data,
-        base::Time::Now(), to_add[i].pixel_size);
+    thumbnail_db_->AddFaviconBitmap(icon_id, to_add[i].first,
+        base::Time::Now(), to_add[i].second);
 
-    if (favicon_bitmaps_changed)
-      *favicon_bitmaps_changed = true;
+    favicon_bitmaps_changed = true;
   }
-}
-
-bool HistoryBackend::ValidateSetFaviconsParams(const std::vector<
-    favicon_base::FaviconRawBitmapData>& favicon_bitmap_data) const {
-  typedef std::map<GURL, size_t> BitmapsPerIconURL;
-  BitmapsPerIconURL num_bitmaps_per_icon_url;
-  for (size_t i = 0; i < favicon_bitmap_data.size(); ++i) {
-    if (!favicon_bitmap_data[i].bitmap_data.get())
-      return false;
-
-    const GURL& icon_url = favicon_bitmap_data[i].icon_url;
-    if (!num_bitmaps_per_icon_url.count(icon_url))
-      num_bitmaps_per_icon_url[icon_url] = 1u;
-    else
-      ++num_bitmaps_per_icon_url[icon_url];
-  }
-
-  if (num_bitmaps_per_icon_url.size() > kMaxFaviconsPerPage)
-    return false;
-
-  for (BitmapsPerIconURL::const_iterator it = num_bitmaps_per_icon_url.begin();
-       it != num_bitmaps_per_icon_url.end(); ++it) {
-    if (it->second > kMaxFaviconBitmapsPerIconURL)
-      return false;
-  }
-  return true;
+  return favicon_bitmaps_changed;
 }
 
 bool HistoryBackend::IsFaviconBitmapDataEqual(

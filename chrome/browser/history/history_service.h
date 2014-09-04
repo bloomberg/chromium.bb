@@ -45,6 +45,7 @@ class PageUsageData;
 class PageUsageRequest;
 class Profile;
 struct ImportedFaviconUsage;
+class SkBitmap;
 
 namespace base {
 class FilePath;
@@ -696,21 +697,16 @@ class HistoryService : public content::NotificationObserver,
                     scoped_refptr<base::RefCountedMemory> bitmap_data,
                     const gfx::Size& pixel_size);
 
-  // Used by the FaviconService to set the favicons for a page on the history
-  // backend.
-  // |favicon_bitmap_data| replaces all the favicon bitmaps mapped to
-  // |page_url|.
-  // |expired| and |icon_type| fields in FaviconBitmapData are ignored.
-  // Use MergeFavicon() if |favicon_bitmap_data| is incomplete, and favicon
-  // bitmaps in the database should be preserved if possible. For instance,
-  // favicon bitmaps from sync are 1x only. MergeFavicon() is used to avoid
-  // deleting the 2x favicon bitmap if it is present in the history backend.
-  // See HistoryBackend::ValidateSetFaviconsParams() for more details on the
-  // criteria for |favicon_bitmap_data| to be valid.
+  // Used by the FaviconService to replace all of the favicon bitmaps mapped to
+  // |page_url| for |icon_type|.
+  // Use MergeFavicon() if |bitmaps| is incomplete, and favicon bitmaps in the
+  // database should be preserved if possible. For instance, favicon bitmaps
+  // from sync are 1x only. MergeFavicon() is used to avoid deleting the 2x
+  // favicon bitmap if it is present in the history backend.
   void SetFavicons(const GURL& page_url,
                    favicon_base::IconType icon_type,
-                   const std::vector<favicon_base::FaviconRawBitmapData>&
-                       favicon_bitmap_data);
+                   const GURL& icon_url,
+                   const std::vector<SkBitmap>& bitmaps);
 
   // Used by the FaviconService to mark the favicon for the page as being out
   // of date.
