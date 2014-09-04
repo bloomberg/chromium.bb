@@ -79,9 +79,11 @@ inline bool skipOptionalSVGSpacesOrDelimiter(const CharType*& ptr, const CharTyp
     return ptr < end;
 }
 
+#if ENABLE(SVG_FONTS)
 Vector<String> parseDelimitedString(const String& input, const char seperator);
 bool parseKerningUnicodeString(const String& input, UnicodeRanges&, HashSet<String>& stringList);
 bool parseGlyphName(const String& input, HashSet<String>& values);
+#endif
 
 template<typename CharType>
 bool parseAndSkipTransformType(const CharType*& ptr, const CharType* end, SVGTransformType&);
