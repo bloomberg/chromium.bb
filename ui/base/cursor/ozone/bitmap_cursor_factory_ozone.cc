@@ -20,6 +20,14 @@ PlatformCursor ToPlatformCursor(BitmapCursorOzone* cursor) {
   return static_cast<PlatformCursor>(cursor);
 }
 
+scoped_refptr<BitmapCursorOzone> CreateDefaultBitmapCursor(int type) {
+  SkBitmap bitmap;
+  gfx::Point hotspot;
+  if (GetCursorBitmap(type, &bitmap, &hotspot))
+    return new BitmapCursorOzone(bitmap, hotspot);
+  return NULL;
+}
+
 }  // namespace
 
 BitmapCursorFactoryOzone::BitmapCursorFactoryOzone() {}
@@ -33,19 +41,7 @@ scoped_refptr<BitmapCursorOzone> BitmapCursorFactoryOzone::GetBitmapCursor(
 }
 
 PlatformCursor BitmapCursorFactoryOzone::GetDefaultCursor(int type) {
-  if (type == kCursorNone)
-    return NULL;  // NULL is used for hidden cursor.
-
-  if (!default_cursors_.count(type)) {
-    // Create new owned image cursor from default aura bitmap for this type.
-    SkBitmap bitmap;
-    gfx::Point hotspot;
-    CHECK(GetCursorBitmap(type, &bitmap, &hotspot));
-    default_cursors_[type] = new BitmapCursorOzone(bitmap, hotspot);
-  }
-
-  // Returned owned default cursor for this type.
-  return default_cursors_[type];
+  return GetDefaultCursorInternal(type);
 }
 
 PlatformCursor BitmapCursorFactoryOzone::CreateImageCursor(
@@ -62,6 +58,25 @@ void BitmapCursorFactoryOzone::RefImageCursor(PlatformCursor cursor) {
 
 void BitmapCursorFactoryOzone::UnrefImageCursor(PlatformCursor cursor) {
   ToBitmapCursorOzone(cursor)->Release();
+}
+
+scoped_refptr<BitmapCursorOzone>
+BitmapCursorFactoryOzone::GetDefaultCursorInternal(int type) {
+  if (type == kCursorNone)
+    return NULL;  // NULL is used for hidden cursor.
+
+  if (!default_cursors_.count(type)) {
+    // Create new image cursor from default aura bitmap for this type. We hold a
+    // ref forever because clients do not do refcounting for default cursors.
+    scoped_refptr<BitmapCursorOzone> cursor = CreateDefaultBitmapCursor(type);
+    if (!cursor && type != kCursorPointer)
+      cursor = GetDefaultCursorInternal(kCursorPointer);
+    DCHECK(cursor) << "Failed to load default cursor bitmap";
+    default_cursors_[type] = cursor;
+  }
+
+  // Returned owned default cursor for this type.
+  return default_cursors_[type];
 }
 
 }  // namespace ui

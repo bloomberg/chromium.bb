@@ -60,6 +60,9 @@ class UI_BASE_EXPORT BitmapCursorFactoryOzone : public CursorFactoryOzone {
   virtual void UnrefImageCursor(PlatformCursor cursor) OVERRIDE;
 
  private:
+  // Get cached BitmapCursorOzone for a default cursor.
+  scoped_refptr<BitmapCursorOzone> GetDefaultCursorInternal(int type);
+
   // Default cursors are cached & owned by the factory.
   typedef std::map<int, scoped_refptr<BitmapCursorOzone> > DefaultCursorMap;
   DefaultCursorMap default_cursors_;
