@@ -28,6 +28,10 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace pairing_chromeos {
+class ControllerPairingController;
+}
+
 namespace chromeos {
 
 class AutoEnrollmentCheckScreen;
@@ -387,6 +391,10 @@ class WizardController : public ScreenObserver {
 
   scoped_ptr<SimpleGeolocationProvider> geolocation_provider_;
   scoped_ptr<TimeZoneProvider> timezone_provider_;
+
+  // Pairing controller for shark devices.
+  scoped_ptr<pairing_chromeos::ControllerPairingController>
+      controller_pairing_controller_;
 
   // Maps screen ids to last time of their shows.
   base::hash_map<std::string, base::Time> screen_show_times_;

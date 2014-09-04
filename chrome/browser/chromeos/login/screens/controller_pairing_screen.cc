@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "components/pairing/bluetooth_controller_pairing_controller.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 using namespace chromeos::controller_pairing;
@@ -21,13 +20,14 @@ namespace chromeos {
 
 ControllerPairingScreen::ControllerPairingScreen(
     ScreenObserver* observer,
-    ControllerPairingScreenActor* actor)
+    ControllerPairingScreenActor* actor,
+    ControllerPairingController* controller)
     : WizardScreen(observer),
       actor_(actor),
+      controller_(controller),
       current_stage_(ControllerPairingController::STAGE_NONE),
       device_preselected_(false) {
   actor_->SetDelegate(this);
-  controller_.reset(new BluetoothControllerPairingController());
   controller_->AddObserver(this);
 }
 

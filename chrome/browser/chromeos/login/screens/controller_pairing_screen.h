@@ -19,8 +19,10 @@ class ControllerPairingScreen :
   public pairing_chromeos::ControllerPairingController::Observer,
   public ControllerPairingScreenActor::Delegate {
  public:
-  ControllerPairingScreen(ScreenObserver* observer,
-                          ControllerPairingScreenActor* actor);
+  ControllerPairingScreen(
+      ScreenObserver* observer,
+      ControllerPairingScreenActor* actor,
+      pairing_chromeos::ControllerPairingController* controller);
   virtual ~ControllerPairingScreen();
 
  private:
@@ -51,9 +53,8 @@ class ControllerPairingScreen :
 
   ControllerPairingScreenActor* actor_;
 
-  // Controller performing pairing. Owned by the screen for now.
-  // TODO(dzhioev): move to proper place later.
-  scoped_ptr<pairing_chromeos::ControllerPairingController> controller_;
+  // Controller performing pairing. Owned by the wizard controller.
+  pairing_chromeos::ControllerPairingController* controller_;
 
   // Current stage of pairing process.
   Stage current_stage_;
