@@ -26,7 +26,8 @@ const base::FilePath::CharType kFeedbackReportPath[] =
 }  // namespace
 
 bool FeedbackUploader::ReportsUploadTimeComparator::operator()(
-    FeedbackReport* a, FeedbackReport* b) const {
+    const scoped_refptr<FeedbackReport>& a,
+    const scoped_refptr<FeedbackReport>& b) const {
   return a->upload_at() > b->upload_at();
 }
 

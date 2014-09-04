@@ -255,7 +255,7 @@ void PasswordStore::Schedule(
     PasswordStoreConsumer* consumer) {
   GetLoginsRequest* request = new GetLoginsRequest(consumer);
   consumer->cancelable_task_tracker()->PostTask(
-      GetBackgroundTaskRunner(),
+      GetBackgroundTaskRunner().get(),
       FROM_HERE,
       base::Bind(func, this, base::Owned(request)));
 }

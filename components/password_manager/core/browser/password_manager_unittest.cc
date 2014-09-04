@@ -100,7 +100,8 @@ class PasswordManagerTest : public testing::Test {
         .WillRepeatedly(Return(true));
     EXPECT_CALL(client_, IsSyncAccountCredential(_, _))
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(client_, GetPasswordStore()).WillRepeatedly(Return(store_));
+    EXPECT_CALL(client_, GetPasswordStore())
+        .WillRepeatedly(Return(store_.get()));
     EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(&prefs_));
     EXPECT_CALL(client_, GetDriver()).WillRepeatedly(Return(&driver_));
 

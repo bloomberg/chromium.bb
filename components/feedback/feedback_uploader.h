@@ -45,7 +45,8 @@ class FeedbackUploader : public base::SupportsWeakPtr<FeedbackUploader> {
   friend class FeedbackUploaderTest;
 
   struct ReportsUploadTimeComparator {
-    bool operator()(FeedbackReport* a, FeedbackReport* b) const;
+    bool operator()(const scoped_refptr<FeedbackReport>& a,
+                    const scoped_refptr<FeedbackReport>& b) const;
   };
 
   void Init();

@@ -564,8 +564,11 @@ void UsbDeviceHandleImpl::ControlTransfer(
                                this,
                                timeout);
 
-  PostOrSubmitTransfer(
-      transfer, USB_TRANSFER_CONTROL, resized_buffer, resized_length, callback);
+  PostOrSubmitTransfer(transfer,
+                       USB_TRANSFER_CONTROL,
+                       resized_buffer.get(),
+                       resized_length,
+                       callback);
 }
 
 void UsbDeviceHandleImpl::BulkTransfer(const UsbEndpointDirection direction,

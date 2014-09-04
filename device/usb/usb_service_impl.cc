@@ -145,7 +145,7 @@ void UsbServiceImpl::RefreshDevices() {
 
   // Find disconnected devices.
   for (DeviceMap::iterator it = devices_.begin(); it != devices_.end(); ++it) {
-    if (!ContainsKey(connected_devices, it->second)) {
+    if (!ContainsKey(connected_devices, it->second.get())) {
       disconnected_devices.push_back(it->first);
     }
   }
