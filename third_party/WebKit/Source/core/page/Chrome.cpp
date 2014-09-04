@@ -366,7 +366,6 @@ void Chrome::setCursor(const Cursor& cursor)
 
 void Chrome::scheduleAnimation()
 {
-    WTF_LOG(ScriptedAnimationController, "Chrome::scheduleAnimation");
     m_page->animator().setAnimationFramePending();
     m_client->scheduleAnimation();
 }
