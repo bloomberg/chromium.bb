@@ -20,7 +20,8 @@ namespace {
 
 class ServiceWorkerRequestTest : public ::testing::Test {
 public:
-    ServiceWorkerRequestTest() : m_page(DummyPageHolder::create(IntSize(1, 1))) { }
+    ServiceWorkerRequestTest()
+        : m_page(DummyPageHolder::create(IntSize(1, 1))) { }
 
     ScriptState* scriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
     ExecutionContext* executionContext() { return scriptState()->executionContext(); }

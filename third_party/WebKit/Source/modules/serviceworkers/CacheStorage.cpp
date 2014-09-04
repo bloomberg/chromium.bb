@@ -25,7 +25,8 @@ PassRefPtrWillBeRawPtr<DOMException> createNoImplementationException()
 class CacheStorageCallbacks : public WebServiceWorkerCacheStorage::CacheStorageCallbacks {
     WTF_MAKE_NONCOPYABLE(CacheStorageCallbacks);
 public:
-    explicit CacheStorageCallbacks(PassRefPtr<ScriptPromiseResolver> resolver) : m_resolver(resolver) { }
+    explicit CacheStorageCallbacks(PassRefPtr<ScriptPromiseResolver> resolver)
+        : m_resolver(resolver) { }
     virtual ~CacheStorageCallbacks() { }
 
     virtual void onSuccess() OVERRIDE
@@ -51,7 +52,8 @@ private:
 class CacheStorageWithCacheCallbacks : public WebServiceWorkerCacheStorage::CacheStorageWithCacheCallbacks {
     WTF_MAKE_NONCOPYABLE(CacheStorageWithCacheCallbacks);
 public:
-    explicit CacheStorageWithCacheCallbacks(PassRefPtr<ScriptPromiseResolver> resolver) : m_resolver(resolver) { }
+    explicit CacheStorageWithCacheCallbacks(PassRefPtr<ScriptPromiseResolver> resolver)
+        : m_resolver(resolver) { }
     virtual ~CacheStorageWithCacheCallbacks() { }
 
     virtual void onSuccess(WebServiceWorkerCache* cache) OVERRIDE
@@ -77,7 +79,8 @@ private:
 class CacheStorageKeysCallbacks : public WebServiceWorkerCacheStorage::CacheStorageKeysCallbacks {
     WTF_MAKE_NONCOPYABLE(CacheStorageKeysCallbacks);
 public:
-    explicit CacheStorageKeysCallbacks(PassRefPtr<ScriptPromiseResolver> resolver) : m_resolver(resolver) { }
+    explicit CacheStorageKeysCallbacks(PassRefPtr<ScriptPromiseResolver> resolver)
+        : m_resolver(resolver) { }
     virtual ~CacheStorageKeysCallbacks() { }
 
     virtual void onSuccess(WebVector<WebString>* keys) OVERRIDE
@@ -171,7 +174,8 @@ ScriptPromise CacheStorage::keys(ScriptState* scriptState)
     return promise;
 }
 
-CacheStorage::CacheStorage(WebServiceWorkerCacheStorage* webCacheStorage) : m_webCacheStorage(webCacheStorage)
+CacheStorage::CacheStorage(WebServiceWorkerCacheStorage* webCacheStorage)
+    : m_webCacheStorage(webCacheStorage)
 {
     ScriptWrappable::init(this);
 }
