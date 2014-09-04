@@ -607,11 +607,6 @@ void Scheduler::PollToAdvanceCommitState() {
   ProcessScheduledActions();
 }
 
-bool Scheduler::IsBeginMainFrameSent() const {
-  return state_machine_.commit_state() ==
-         SchedulerStateMachine::COMMIT_STATE_BEGIN_MAIN_FRAME_SENT;
-}
-
 void Scheduler::DrawAndSwapIfPossible() {
   DrawResult result = client_->ScheduledActionDrawAndSwapIfPossible();
   state_machine_.DidDrawIfPossibleCompleted(result);

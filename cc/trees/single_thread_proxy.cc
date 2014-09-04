@@ -432,7 +432,7 @@ void SingleThreadProxy::DidSwapBuffersCompleteOnImplThread() {
 void SingleThreadProxy::BeginFrame(const BeginFrameArgs& args) {
   TRACE_EVENT0("cc", "SingleThreadProxy::BeginFrame");
   if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->BeginImplFrame(args);
+    scheduler_on_impl_thread_->BeginFrame(args);
 }
 
 void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {

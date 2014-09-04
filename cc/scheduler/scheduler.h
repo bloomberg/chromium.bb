@@ -124,28 +124,11 @@ class CC_EXPORT Scheduler {
   void NotifyBeginMainFrameStarted();
 
   base::TimeTicks LastBeginImplFrameTime();
-  base::TimeDelta VSyncInterval() { return vsync_interval_; }
-  base::TimeDelta EstimatedParentDrawTime() {
-    return estimated_parent_draw_time_;
-  }
 
   void BeginFrame(const BeginFrameArgs& args);
-  void PostBeginRetroFrame();
-  void BeginRetroFrame();
-  void BeginUnthrottledFrame();
-
-  void BeginImplFrame(const BeginFrameArgs& args);
-  void OnBeginImplFrameDeadline();
-  void PollForAnticipatedDrawTriggers();
-  void PollToAdvanceCommitState();
 
   scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;
 
-  bool IsInsideAction(SchedulerStateMachine::Action action) {
-    return inside_action_ == action;
-  }
-
-  bool IsBeginMainFrameSent() const;
   void SetContinuousPainting(bool continuous_painting) {
     state_machine_.SetContinuousPainting(continuous_painting);
   }
@@ -231,6 +214,22 @@ class CC_EXPORT Scheduler {
   void AdvanceCommitStateIfPossible();
   bool IsBeginMainFrameSentOrStarted() const;
   void SetupSyntheticBeginFrames();
+  void BeginRetroFrame();
+  void BeginUnthrottledFrame();
+  void BeginImplFrame(const BeginFrameArgs& args);
+  void OnBeginImplFrameDeadline();
+  void PollForAnticipatedDrawTriggers();
+  void PollToAdvanceCommitState();
+
+  base::TimeDelta VSyncInterval() { return vsync_interval_; }
+
+  base::TimeDelta EstimatedParentDrawTime() {
+    return estimated_parent_draw_time_;
+  }
+
+  bool IsInsideAction(SchedulerStateMachine::Action action) {
+    return inside_action_ == action;
+  }
 
   base::WeakPtrFactory<Scheduler> weak_factory_;
 
