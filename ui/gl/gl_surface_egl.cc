@@ -8,6 +8,7 @@
 #include <android/native_window_jni.h>
 #endif
 
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -35,6 +36,19 @@ extern "C" {
 #if !defined(EGL_FIXED_SIZE_ANGLE)
 #define EGL_FIXED_SIZE_ANGLE 0x3201
 #endif
+
+#if defined(OS_WIN)
+// From ANGLE's egl/eglext.h.
+#if !defined(EGL_PLATFORM_ANGLE_ANGLE)
+#define EGL_PLATFORM_ANGLE_ANGLE 0x3201
+#endif
+#if !defined(EGL_PLATFORM_ANGLE_TYPE_ANGLE)
+#define EGL_PLATFORM_ANGLE_TYPE_ANGLE 0x3202
+#endif
+#if !defined(EGL_PLATFORM_ANGLE_TYPE_D3D11_WARP_ANGLE)
+#define EGL_PLATFORM_ANGLE_TYPE_D3D11_WARP_ANGLE 0x3206
+#endif
+#endif  // defined(OS_WIN)
 
 using ui::GetLastEGLErrorString;
 
@@ -98,7 +112,13 @@ bool GLSurfaceEGL::InitializeOneOff() {
     return true;
 
   g_native_display = GetPlatformDefaultEGLNativeDisplay();
+
+#if defined(OS_WIN)
+  g_display = GetPlatformDisplay(g_native_display);
+#else
   g_display = eglGetDisplay(g_native_display);
+#endif
+
   if (!g_display) {
     LOG(ERROR) << "eglGetDisplay failed with error " << GetLastEGLErrorString();
     return false;
@@ -227,6 +247,39 @@ bool GLSurfaceEGL::IsEGLSurfacelessContextSupported() {
 }
 
 GLSurfaceEGL::~GLSurfaceEGL() {}
+
+#if defined(OS_WIN)
+static const EGLint kDisplayAttribsWarp[] {
+  EGL_PLATFORM_ANGLE_TYPE_ANGLE,
+  EGL_PLATFORM_ANGLE_TYPE_D3D11_WARP_ANGLE,
+  EGL_NONE
+};
+
+// static
+EGLDisplay GLSurfaceEGL::GetPlatformDisplay(
+    EGLNativeDisplayType native_display) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseWarp)) {
+    // Check for availability of WARP via ANGLE extension.
+    bool supports_warp = false;
+    const char* no_display_extensions = eglQueryString(EGL_NO_DISPLAY,
+        EGL_EXTENSIONS);
+    // If EGL_EXT_client_extensions not supported this call to eglQueryString
+    // will return NULL.
+    if (no_display_extensions)
+      supports_warp =
+          ExtensionsContain(no_display_extensions, "ANGLE_platform_angle") &&
+          ExtensionsContain(no_display_extensions, "ANGLE_platform_angle_d3d");
+
+    if (!supports_warp)
+      return NULL;
+
+    return eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, native_display,
+        kDisplayAttribsWarp);
+  }
+
+  return eglGetDisplay(native_display);
+}
+#endif
 
 NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(EGLNativeWindowType window)
     : window_(window),

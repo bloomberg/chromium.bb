@@ -44,4 +44,8 @@ const char kLang[] = "lang";
 // do not have a user interface.
 const char kNoMessageBox[] = "no-message-box";
 
+// On Windows only: requests that Chrome connect to the running Metro viewer
+// process.
+const char kViewerConnect[] = "connect-to-metro-viewer";
+
 }  // namespace switches

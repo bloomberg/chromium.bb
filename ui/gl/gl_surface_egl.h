@@ -47,6 +47,10 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   virtual ~GLSurfaceEGL();
 
  private:
+#if defined(OS_WIN)
+  static EGLDisplay GetPlatformDisplay(EGLNativeDisplayType native_display);
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceEGL);
 };
 

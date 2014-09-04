@@ -14,6 +14,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 #define LONG_STRING_CONST(...) #__VA_ARGS__
 
 namespace content {
@@ -282,6 +286,22 @@ TEST_F(GpuDataManagerImplPrivateTest, SwiftShaderRendering2) {
   EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->IsFeatureBlacklisted(
       gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
+}
+
+TEST_F(GpuDataManagerImplPrivateTest, WarpEnabledOverridesSwiftShader) {
+  // If WARP fallback is enabled on Windows 8 it should not allow SwiftShader
+  // to be enabled.
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    ScopedGpuDataManagerImplPrivate manager;
+    manager->ForceWarpModeForTesting();
+    const base::FilePath test_path(FILE_PATH_LITERAL("AnyPath"));
+    manager->RegisterSwiftShaderPath(test_path);
+    manager->DisableHardwareAcceleration();
+    EXPECT_TRUE(manager->ShouldUseWarp());
+    EXPECT_FALSE(manager->ShouldUseSwiftShader());
+  }
+#endif
 }
 
 TEST_F(GpuDataManagerImplPrivateTest, GpuInfoUpdate) {

@@ -15,6 +15,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/aura/env.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/native_widget_aura.h"
 

@@ -71,6 +71,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
   virtual void RequestVideoMemoryUsageStatsUpdate() const OVERRIDE;
   virtual bool ShouldUseSwiftShader() const OVERRIDE;
   virtual void RegisterSwiftShaderPath(const base::FilePath& path) OVERRIDE;
+  virtual bool ShouldUseWarp() const OVERRIDE;
   virtual void AddObserver(GpuDataManagerObserver* observer) OVERRIDE;
   virtual void RemoveObserver(GpuDataManagerObserver* observer) OVERRIDE;
   virtual void UnblockDomainFrom3DAPIs(const GURL& url) OVERRIDE;

@@ -560,8 +560,11 @@ void WrenchMenuModel::Build() {
   }
 
 #if defined(OS_WIN)
- if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
-     content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor()) {
+  // Windows 8 can support ASH mode using WARP, but Windows 7 requires a working
+  // GPU compositor.
+  if ((base::win::GetVersion() >= base::win::VERSION_WIN7 &&
+      content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor()) ||
+      (base::win::GetVersion() >= base::win::VERSION_WIN8)) {
     if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH) {
       // ASH/Metro mode, add the 'Relaunch Chrome in desktop mode'.
       AddSeparator(ui::NORMAL_SEPARATOR);

@@ -916,6 +916,12 @@ EGL_FUNCTIONS = [
 { 'return_type': 'EGLDisplay',
   'names': ['eglGetDisplay'],
   'arguments': 'EGLNativeDisplayType display_id', },
+{ 'return_type': 'EGLDisplay',
+  'known_as': 'eglGetPlatformDisplayEXT',
+  'versions': [{ 'name': 'eglGetPlatformDisplayEXT',
+                 'extensions': ['EGL_ANGLE_platform_angle'] }],
+  'arguments': 'EGLenum platform, void* native_display, '
+               'const EGLint* attrib_list', },
 { 'return_type': 'EGLBoolean',
   'names': ['eglInitialize'],
   'arguments': 'EGLDisplay dpy, EGLint* major, EGLint* minor', },

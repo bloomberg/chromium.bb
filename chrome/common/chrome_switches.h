@@ -374,7 +374,6 @@ extern const char kEnableProfileShortcutManager[];
 extern const char kForceDesktop[];
 extern const char kForceImmersive[];
 extern const char kRelaunchShortcut[];
-extern const char kViewerConnect[];
 extern const char kViewerLaunchViaAppId[];
 extern const char kWaitForMutex[];
 extern const char kWindows8Search[];

@@ -346,7 +346,7 @@ bool LaunchChromeBrowserProcess(const wchar_t* additional_parameters,
   if (!PathService::Get(base::FILE_EXE, &chrome_exe_path))
     return false;
 
-  base::string16 parameters = L"--silent-launch --viewer-connect ";
+  base::string16 parameters = L"--silent-launch --connect-to-metro-viewer ";
   if (additional_parameters)
     parameters += additional_parameters;
 

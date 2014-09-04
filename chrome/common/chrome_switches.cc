@@ -1312,9 +1312,6 @@ const char kForceDesktop[]                  = "force-desktop";
 // Relaunches metro Chrome on Windows 8 and higher using a given shortcut.
 const char kRelaunchShortcut[]              = "relaunch-shortcut";
 
-// Requests that Chrome connect to the running Metro viewer process.
-const char kViewerConnect[]                 = "viewer-connect";
-
 // Requests that Chrome launch the Metro viewer process via the given appid
 // (which is assumed to be registered as default browser) and synchronously
 // connect to it.

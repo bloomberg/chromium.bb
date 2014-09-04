@@ -20,6 +20,7 @@
 #include "content/public/browser/notification_service.h"
 
 #include "ui/aura/remote_window_tree_host_win.h"
+#include "ui/base/ui_base_switches.h"
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart() {
   if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
