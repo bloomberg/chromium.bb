@@ -214,7 +214,7 @@ class GoogleURLTrackerTest : public testing::Test {
   void MockSearchDomainCheckResponse(const std::string& domain);
   void RequestServerCheck();
   void FinishSleep();
-  void NotifyIPAddressChanged();
+  void NotifyNetworkChanged();
   GURL fetched_google_url() const {
     return google_url_tracker_->fetched_google_url();
   }
@@ -248,7 +248,7 @@ class GoogleURLTrackerTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
 
   // Creating this allows us to call
-  // net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests().
+  // net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests().
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   net::TestURLFetcherFactory fetcher_factory_;
   GoogleURLTrackerClient* client_;
@@ -314,8 +314,9 @@ void GoogleURLTrackerTest::FinishSleep() {
   google_url_tracker_->FinishSleep();
 }
 
-void GoogleURLTrackerTest::NotifyIPAddressChanged() {
-  net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
+void GoogleURLTrackerTest::NotifyNetworkChanged() {
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
   // For thread safety, the NCN queues tasks to do the actual notifications, so
   // we need to spin the message loop so the tracker will actually be notified.
   base::MessageLoop::current()->RunUntilIdle();
@@ -493,7 +494,7 @@ TEST_F(GoogleURLTrackerTest, DontPromptOnBadReplies) {
   EXPECT_TRUE(GetMapEntry(&infobar_manager) == NULL);
 
   // Bad subdomain.
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   MockSearchDomainCheckResponse("http://mail.google.com/");
   EXPECT_EQ(GURL(), fetched_google_url());
   EXPECT_EQ(GURL(GoogleURLTracker::kDefaultGoogleHomepage), google_url());
@@ -503,7 +504,7 @@ TEST_F(GoogleURLTrackerTest, DontPromptOnBadReplies) {
   EXPECT_TRUE(GetMapEntry(&infobar_manager) == NULL);
 
   // Non-empty path.
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   MockSearchDomainCheckResponse("http://www.google.com/search");
   EXPECT_EQ(GURL(), fetched_google_url());
   EXPECT_EQ(GURL(GoogleURLTracker::kDefaultGoogleHomepage), google_url());
@@ -513,7 +514,7 @@ TEST_F(GoogleURLTrackerTest, DontPromptOnBadReplies) {
   EXPECT_TRUE(GetMapEntry(&infobar_manager) == NULL);
 
   // Non-empty query.
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   MockSearchDomainCheckResponse("http://www.google.com/?q=foo");
   EXPECT_EQ(GURL(), fetched_google_url());
   EXPECT_EQ(GURL(GoogleURLTracker::kDefaultGoogleHomepage), google_url());
@@ -523,7 +524,7 @@ TEST_F(GoogleURLTrackerTest, DontPromptOnBadReplies) {
   EXPECT_TRUE(GetMapEntry(&infobar_manager) == NULL);
 
   // Non-empty ref.
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   MockSearchDomainCheckResponse("http://www.google.com/#anchor");
   EXPECT_EQ(GURL(), fetched_google_url());
   EXPECT_EQ(GURL(GoogleURLTracker::kDefaultGoogleHomepage), google_url());
@@ -533,7 +534,7 @@ TEST_F(GoogleURLTrackerTest, DontPromptOnBadReplies) {
   EXPECT_TRUE(GetMapEntry(&infobar_manager) == NULL);
 
   // Complete garbage.
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   MockSearchDomainCheckResponse("HJ)*qF)_*&@f1");
   EXPECT_EQ(GURL(), fetched_google_url());
   EXPECT_EQ(GURL(GoogleURLTracker::kDefaultGoogleHomepage), google_url());
@@ -568,7 +569,7 @@ TEST_F(GoogleURLTrackerTest, SilentlyAcceptSchemeChange) {
   EXPECT_EQ(GURL("https://www.google.co.uk/"), GetLastPromptedGoogleURL());
   EXPECT_TRUE(listener_notified());
 
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   MockSearchDomainCheckResponse("http://www.google.co.uk/");
   EXPECT_EQ(GURL("http://www.google.co.uk/"), fetched_google_url());
   EXPECT_EQ(GURL("http://www.google.co.uk/"), google_url());
@@ -576,7 +577,7 @@ TEST_F(GoogleURLTrackerTest, SilentlyAcceptSchemeChange) {
   EXPECT_TRUE(listener_notified());
 }
 
-TEST_F(GoogleURLTrackerTest, RefetchOnIPAddressChange) {
+TEST_F(GoogleURLTrackerTest, RefetchOnNetworkChange) {
   RequestServerCheck();
   FinishSleep();
   MockSearchDomainCheckResponse("http://www.google.co.uk/");
@@ -585,7 +586,7 @@ TEST_F(GoogleURLTrackerTest, RefetchOnIPAddressChange) {
   EXPECT_TRUE(listener_notified());
   clear_listener_notified();
 
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   MockSearchDomainCheckResponse("http://www.google.co.in/");
   EXPECT_EQ(GURL("http://www.google.co.in/"), fetched_google_url());
   // Just fetching a new URL shouldn't reset things without a prompt.
@@ -595,7 +596,7 @@ TEST_F(GoogleURLTrackerTest, RefetchOnIPAddressChange) {
 
 TEST_F(GoogleURLTrackerTest, DontRefetchWhenNoOneRequestsCheck) {
   FinishSleep();
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   // No one called RequestServerCheck() so nothing should have happened.
   EXPECT_FALSE(GetFetcher());
   MockSearchDomainCheckResponse("http://www.google.co.uk/");
@@ -605,7 +606,7 @@ TEST_F(GoogleURLTrackerTest, DontRefetchWhenNoOneRequestsCheck) {
 
 TEST_F(GoogleURLTrackerTest, FetchOnLateRequest) {
   FinishSleep();
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   MockSearchDomainCheckResponse("http://www.google.co.jp/");
 
   RequestServerCheck();
@@ -619,7 +620,7 @@ TEST_F(GoogleURLTrackerTest, FetchOnLateRequest) {
 
 TEST_F(GoogleURLTrackerTest, DontFetchTwiceOnLateRequests) {
   FinishSleep();
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   MockSearchDomainCheckResponse("http://www.google.co.jp/");
 
   RequestServerCheck();
@@ -772,23 +773,23 @@ TEST_F(GoogleURLTrackerTest, FetchesCanAutomaticallyCloseInfoBars) {
 
   // Re-fetching the accepted URL after showing an infobar for another URL
   // should close the infobar.
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   MockSearchDomainCheckResponse("http://www.google.co.uk/");
   SetNavigationPending(&infobar_manager, true);
   CommitSearch(&infobar_manager, GURL("http://www.google.com/search?q=test"));
   EXPECT_FALSE(GetInfoBarDelegate(&infobar_manager) == NULL);
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   MockSearchDomainCheckResponse(google_url().spec());
   EXPECT_EQ(google_url(), GetLastPromptedGoogleURL());
   EXPECT_TRUE(GetMapEntry(&infobar_manager) == NULL);
 
   // As should fetching a URL that differs from the accepted only by the scheme.
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   MockSearchDomainCheckResponse("http://www.google.co.uk/");
   SetNavigationPending(&infobar_manager, true);
   CommitSearch(&infobar_manager, GURL("http://www.google.com/search?q=test"));
   EXPECT_FALSE(GetInfoBarDelegate(&infobar_manager) == NULL);
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   url::Replacements<char> replacements;
   const std::string& scheme("https");
   replacements.SetScheme(scheme.data(), url::Component(0, scheme.length()));
@@ -799,36 +800,36 @@ TEST_F(GoogleURLTrackerTest, FetchesCanAutomaticallyCloseInfoBars) {
 
   // As should re-fetching the last prompted URL.
   SetLastPromptedGoogleURL(GURL("http://www.google.co.uk/"));
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   MockSearchDomainCheckResponse("http://www.google.co.jp/");
   SetNavigationPending(&infobar_manager, true);
   CommitSearch(&infobar_manager, GURL("http://www.google.com/search?q=test"));
   EXPECT_FALSE(GetInfoBarDelegate(&infobar_manager) == NULL);
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   MockSearchDomainCheckResponse("http://www.google.co.uk/");
   EXPECT_EQ(new_google_url, google_url());
   EXPECT_EQ(GURL("http://www.google.co.uk/"), GetLastPromptedGoogleURL());
   EXPECT_TRUE(GetMapEntry(&infobar_manager) == NULL);
 
   // And one that differs from the last prompted URL only by the scheme.
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   MockSearchDomainCheckResponse("http://www.google.co.jp/");
   SetNavigationPending(&infobar_manager, true);
   CommitSearch(&infobar_manager, GURL("http://www.google.com/search?q=test"));
   EXPECT_FALSE(GetInfoBarDelegate(&infobar_manager) == NULL);
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   MockSearchDomainCheckResponse("https://www.google.co.uk/");
   EXPECT_EQ(new_google_url, google_url());
   EXPECT_EQ(GURL("https://www.google.co.uk/"), GetLastPromptedGoogleURL());
   EXPECT_TRUE(GetMapEntry(&infobar_manager) == NULL);
 
   // And fetching a different URL entirely.
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   MockSearchDomainCheckResponse("http://www.google.co.jp/");
   SetNavigationPending(&infobar_manager, true);
   CommitSearch(&infobar_manager, GURL("http://www.google.com/search?q=test"));
   EXPECT_FALSE(GetInfoBarDelegate(&infobar_manager) == NULL);
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   MockSearchDomainCheckResponse("https://www.google.co.in/");
   EXPECT_EQ(new_google_url, google_url());
   EXPECT_EQ(GURL("https://www.google.co.uk/"), GetLastPromptedGoogleURL());
@@ -841,7 +842,7 @@ TEST_F(GoogleURLTrackerTest, ResetInfoBarGoogleURLs) {
   FinishSleep();
   MockSearchDomainCheckResponse(google_url().spec());
 
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   MockSearchDomainCheckResponse("http://www.google.co.uk/");
   SetNavigationPending(&infobar_manager, true);
   CommitSearch(&infobar_manager, GURL("http://www.google.com/search?q=test"));
@@ -852,7 +853,7 @@ TEST_F(GoogleURLTrackerTest, ResetInfoBarGoogleURLs) {
 
   // If while an infobar is showing we fetch a new URL that differs from the
   // infobar's only by scheme, the infobar should stay showing.
-  NotifyIPAddressChanged();
+  NotifyNetworkChanged();
   MockSearchDomainCheckResponse("https://www.google.co.uk/");
   EXPECT_EQ(delegate, GetInfoBarDelegate(&infobar_manager));
   EXPECT_EQ(GURL("https://www.google.co.uk/"), fetched_google_url());

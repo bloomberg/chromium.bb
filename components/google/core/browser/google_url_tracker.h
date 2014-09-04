@@ -40,9 +40,10 @@ class InfoBar;
 // To protect users' privacy and reduce server load, no updates will be
 // performed (ever) unless at least one consumer registers interest by calling
 // RequestServerCheck().
-class GoogleURLTracker : public net::URLFetcherDelegate,
-                         public net::NetworkChangeNotifier::IPAddressObserver,
-                         public KeyedService {
+class GoogleURLTracker
+    : public net::URLFetcherDelegate,
+      public net::NetworkChangeNotifier::NetworkChangeObserver,
+      public KeyedService {
  public:
   // Callback that is called when the Google URL is updated. The arguments are
   // the old and new URLs.
@@ -130,7 +131,8 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // NetworkChangeNotifier::IPAddressObserver:
-  virtual void OnIPAddressChanged() OVERRIDE;
+  virtual void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
   // KeyedService:
   virtual void Shutdown() OVERRIDE;

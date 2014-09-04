@@ -39,7 +39,7 @@ GoogleURLTracker::GoogleURLTracker(scoped_ptr<GoogleURLTrackerClient> client,
       need_to_prompt_(false),
       search_committed_(false),
       weak_ptr_factory_(this) {
-  net::NetworkChangeNotifier::AddIPAddressObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   client_->set_google_url_tracker(this);
 
   // Because this function can be called during startup, when kicking off a URL
@@ -179,7 +179,11 @@ void GoogleURLTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 }
 
-void GoogleURLTracker::OnIPAddressChanged() {
+void GoogleURLTracker::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  // Ignore destructive signals.
+  if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
+    return;
   already_fetched_ = false;
   StartFetchIfDesirable();
 }
@@ -188,7 +192,7 @@ void GoogleURLTracker::Shutdown() {
   client_.reset();
   fetcher_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
-  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 void GoogleURLTracker::DeleteMapEntryForManager(

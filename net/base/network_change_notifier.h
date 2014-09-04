@@ -215,6 +215,7 @@ class NET_EXPORT NetworkChangeNotifier {
   static void NotifyObserversOfIPAddressChangeForTests();
   static void NotifyObserversOfConnectionTypeChangeForTests(
       ConnectionType type);
+  static void NotifyObserversOfNetworkChangeForTests(ConnectionType type);
 
   // Enable or disable notifications from the host. After setting to true, be
   // sure to pump the RunLoop until idle to finish any preexisting

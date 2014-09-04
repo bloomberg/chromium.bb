@@ -724,6 +724,13 @@ void NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
 }
 
 // static
+void NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+    ConnectionType type) {
+  if (g_network_change_notifier)
+    g_network_change_notifier->NotifyObserversOfNetworkChangeImpl(type);
+}
+
+// static
 void NetworkChangeNotifier::SetTestNotificationsOnly(bool test_only) {
   if (g_network_change_notifier)
     g_network_change_notifier->test_notifications_only_ = test_only;
