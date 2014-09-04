@@ -116,7 +116,7 @@ TEST_F(GLCopyTextureCHROMIUMTest, InternalFormatNotSupported) {
 
   // Check unsupported format reports error.
   GLint unsupported_dest_formats[] = {GL_ALPHA, GL_LUMINANCE,
-                                      GL_LUMINANCE_ALPHA, GL_BGRA_EXT};
+                                      GL_LUMINANCE_ALPHA};
   for (size_t dest_index = 0; dest_index < arraysize(unsupported_dest_formats);
        dest_index++) {
     glCopyTextureCHROMIUM(GL_TEXTURE_2D,

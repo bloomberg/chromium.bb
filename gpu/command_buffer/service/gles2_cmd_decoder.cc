@@ -10066,8 +10066,9 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   // The destination format should be GL_RGB, or GL_RGBA. GL_ALPHA,
   // GL_LUMINANCE, and GL_LUMINANCE_ALPHA are not supported because they are not
   // renderable on some platforms.
-  bool valid_dest_format =
-      internal_format == GL_RGB || internal_format == GL_RGBA;
+  bool valid_dest_format = internal_format == GL_RGB ||
+                           internal_format == GL_RGBA ||
+                           internal_format == GL_BGRA_EXT;
   bool valid_source_format = source_internal_format == GL_ALPHA ||
                              source_internal_format == GL_RGB ||
                              source_internal_format == GL_RGBA ||
