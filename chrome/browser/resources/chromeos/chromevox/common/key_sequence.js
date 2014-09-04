@@ -387,8 +387,7 @@ cvox.KeySequence.prototype.isKeyModifierActive = function(keyEvent, modifier) {
       return (keyEvent.shiftKey || (keyEvent.keyCode == 16));
       break;
     case 'metaKey':
-      return (keyEvent.metaKey ||
-          (!cvox.ChromeVox.isChromeOS && keyEvent.keyCode == 91));
+      return (keyEvent.metaKey || (keyEvent.keyCode == 91));
       break;
     case 'searchKeyHeld':
       return ((cvox.ChromeVox.isChromeOS && keyEvent.keyCode == 91) ||
