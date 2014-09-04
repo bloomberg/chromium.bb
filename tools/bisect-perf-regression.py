@@ -2242,23 +2242,25 @@ class BisectPerformanceMetrics(object):
       # CrOS and SVN use integers.
       return int(good_revision) <= int(bad_revision)
 
-  def CanPerformBisect(self, revision_to_check):
+  def CanPerformBisect(self, good_revision, bad_revision):
     """Checks whether a given revision is bisectable.
 
-    Note: At present it checks whether a given revision is bisectable on
-    android bots(refer crbug.com/385324).
+    Checks for following:
+    1. Non-bisectable revsions for android bots (refer to crbug.com/385324).
+    2. Non-bisectable revsions for Windows bots (refer to crbug.com/405274).
 
     Args:
-      revision_to_check: Known good revision.
+      good_revision: Known good revision.
+      bad_revision: Known bad revision.
 
     Returns:
       A dictionary indicating the result. If revision is not bisectable,
       this will contain the field "error", otherwise None.
     """
     if self.opts.target_platform == 'android':
-      revision_to_check = self.source_control.SVNFindRev(revision_to_check)
-      if (bisect_utils.IsStringInt(revision_to_check)
-          and revision_to_check < 265549):
+      revision_to_check = self.source_control.SVNFindRev(good_revision)
+      if (bisect_utils.IsStringInt(good_revision)
+          and good_revision < 265549):
         return {'error': (
             'Bisect cannot continue for the given revision range.\n'
             'It is impossible to bisect Android regressions '
@@ -2266,6 +2268,18 @@ class BisectPerformanceMetrics(object):
             'rely on Telemetry to do apk installation of the most recently '
             'built local ChromeShell(refer to crbug.com/385324).\n'
             'Please try bisecting revisions greater than or equal to r265549.')}
+
+    if bisect_utils.IsWindowsHost():
+      good_revision = self.source_control.SVNFindRev(good_revision)
+      bad_revision = self.source_control.SVNFindRev(bad_revision)
+      if (bisect_utils.IsStringInt(good_revision) and
+          bisect_utils.IsStringInt(bad_revision)):
+        if (289987 <= good_revision < 290716 or
+            289987 <= bad_revision < 290716):
+          return {'error': ('Oops! Revision between r289987 and r290716 are '
+                            'marked as dead zone for Windows due to '
+                            'crbug.com/405274. Please try another range.')}
+
     return None
 
   def Run(self, command_to_run, bad_revision_in, good_revision_in, metric):
@@ -2352,7 +2366,7 @@ class BisectPerformanceMetrics(object):
     if self.opts.output_buildbot_annotations:
       bisect_utils.OutputAnnotationStepStart('Gathering Revisions')
 
-    cannot_bisect = self.CanPerformBisect(good_revision)
+    cannot_bisect = self.CanPerformBisect(good_revision, bad_revision)
     if cannot_bisect:
       results['error'] = cannot_bisect.get('error')
       return results
