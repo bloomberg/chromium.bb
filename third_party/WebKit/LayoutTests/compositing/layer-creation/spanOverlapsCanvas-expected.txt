@@ -10,8 +10,7 @@
           "children": [
             {
               "position": [8, 8],
-              "bounds": [100, 50],
-              "drawsContent": true
+              "bounds": [100, 50]
             },
             {
               "position": [8, 8],
