@@ -32,6 +32,9 @@ class Stubs {
   static int getpgid(pid_t pid) { return Syscall::Call(__NR_getpgid, pid); }
   static int setuid(uid_t uid) { return Syscall::Call(__NR_setuid, uid); }
   static int setgid(gid_t gid) { return Syscall::Call(__NR_setgid, gid); }
+  static int setpgid(pid_t pid, pid_t pgid) {
+    return Syscall::Call(__NR_setpgid, pid, pgid);
+  }
 
   static int uname(struct utsname* buf) {
     return Syscall::Call(__NR_uname, buf);
@@ -212,6 +215,10 @@ class MaskingPolicy : public SandboxBPFDSLPolicy {
       const Arg<gid_t> gid(0);
       return If((gid & 0xf0) == 0xf0, Error(EINVAL)).Else(Error(EACCES));
     }
+    if (sysno == __NR_setpgid) {
+      const Arg<pid_t> pid(0);
+      return If((pid & 0xa5) == 0xa0, Error(EINVAL)).Else(Error(EACCES));
+    }
     return Allow();
   }
 
@@ -228,6 +235,11 @@ BPF_TEST_C(BPFDSL, MaskTest, MaskingPolicy) {
   for (gid_t gid = 0; gid < 0x100; ++gid) {
     const int expect_errno = (gid & 0xf0) == 0xf0 ? EINVAL : EACCES;
     ASSERT_SYSCALL_RESULT(-expect_errno, setgid, gid);
+  }
+
+  for (pid_t pid = 0; pid < 0x100; ++pid) {
+    const int expect_errno = (pid & 0xa5) == 0xa0 ? EINVAL : EACCES;
+    ASSERT_SYSCALL_RESULT(-expect_errno, setpgid, pid, 0);
   }
 }
 

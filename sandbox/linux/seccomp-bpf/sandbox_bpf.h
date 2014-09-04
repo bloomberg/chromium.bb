@@ -147,13 +147,21 @@ class SANDBOX_EXPORT SandboxBPF {
   // We can also use ErrorCode to request evaluation of a conditional
   // statement based on inspection of system call parameters.
   // This method wrap an ErrorCode object around the conditional statement.
-  // Argument "argno" (1..6) will be compared to "value" using comparator
-  // "op". If the condition is true "passed" will be returned, otherwise
-  // "failed".
+  // Argument "argno" (1..6) will be bitwise-AND'd with "mask" and compared
+  // to "value"; if equal, then "passed" will be returned, otherwise "failed".
   // If "is32bit" is set, the argument must in the range of 0x0..(1u << 32 - 1)
   // If it is outside this range, the sandbox treats the system call just
   // the same as any other ABI violation (i.e. it aborts with an error
   // message).
+  ErrorCode CondMaskedEqual(int argno,
+                            ErrorCode::ArgType is_32bit,
+                            uint64_t mask,
+                            uint64_t value,
+                            const ErrorCode& passed,
+                            const ErrorCode& failed);
+
+  // Legacy variant of CondMaskedEqual that supports a few comparison
+  // operations, which get converted into masked-equality comparisons.
   ErrorCode Cond(int argno,
                  ErrorCode::ArgType is_32bit,
                  ErrorCode::Operation op,
@@ -209,6 +217,13 @@ class SANDBOX_EXPORT SandboxBPF {
   typedef std::map<uint32_t, ErrorCode> ErrMap;
   typedef std::set<ErrorCode, struct ErrorCode::LessThan> Conds;
 
+  // Used by CondExpressionHalf to track which half of the argument it's
+  // emitting instructions for.
+  enum ArgHalf {
+    LowerHalf,
+    UpperHalf,
+  };
+
   // Get a file descriptor pointing to "/proc", if currently available.
   int proc_fd() { return proc_fd_; }
 
@@ -260,6 +275,14 @@ class SANDBOX_EXPORT SandboxBPF {
   // This function recursively calls RetExpression(); it should only ever be
   // called from RetExpression().
   Instruction* CondExpression(CodeGen* gen, const ErrorCode& cond);
+
+  // Returns a BPF program that evaluates half of a conditional expression;
+  // it should only ever be called from CondExpression().
+  Instruction* CondExpressionHalf(CodeGen* gen,
+                                  const ErrorCode& cond,
+                                  ArgHalf half,
+                                  Instruction* passed,
+                                  Instruction* failed);
 
   static SandboxStatus status_;
 

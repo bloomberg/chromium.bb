@@ -94,14 +94,15 @@ class PrimitiveBoolExprImpl : public internal::BoolExprImpl {
  public:
   PrimitiveBoolExprImpl(int argno,
                         ErrorCode::ArgType is_32bit,
-                        ErrorCode::Operation op,
+                        uint64_t mask,
                         uint64_t value)
-      : argno_(argno), is_32bit_(is_32bit), op_(op), value_(value) {}
+      : argno_(argno), is_32bit_(is_32bit), mask_(mask), value_(value) {}
 
   virtual ErrorCode Compile(SandboxBPF* sb,
                             ErrorCode true_ec,
                             ErrorCode false_ec) const OVERRIDE {
-    return sb->Cond(argno_, is_32bit_, op_, value_, true_ec, false_ec);
+    return sb->CondMaskedEqual(
+        argno_, is_32bit_, mask_, value_, true_ec, false_ec);
   }
 
  private:
@@ -109,7 +110,7 @@ class PrimitiveBoolExprImpl : public internal::BoolExprImpl {
 
   int argno_;
   ErrorCode::ArgType is_32bit_;
-  ErrorCode::Operation op_;
+  uint64_t mask_;
   uint64_t value_;
 
   DISALLOW_COPY_AND_ASSIGN(PrimitiveBoolExprImpl);
@@ -177,37 +178,26 @@ class OrBoolExprImpl : public internal::BoolExprImpl {
 
 namespace internal {
 
+uint64_t DefaultMask(size_t size) {
+  switch (size) {
+    case 4:
+      return std::numeric_limits<uint32_t>::max();
+    case 8:
+      return std::numeric_limits<uint64_t>::max();
+    default:
+      CHECK(false) << "Unimplemented DefaultMask case";
+      return 0;
+  }
+}
+
 BoolExpr ArgEq(int num, size_t size, uint64_t mask, uint64_t val) {
-  CHECK(num >= 0 && num < 6);
-  CHECK(size >= 1 && size <= 8);
-  CHECK_NE(0U, mask) << "zero mask doesn't make sense";
-  CHECK_EQ(val, val & mask) << "val contains masked out bits";
+  CHECK(size == 4 || size == 8);
 
   // TODO(mdempsky): Should we just always use TP_64BIT?
   const ErrorCode::ArgType arg_type =
-      (size <= 4) ? ErrorCode::TP_32BIT : ErrorCode::TP_64BIT;
+      (size == 4) ? ErrorCode::TP_32BIT : ErrorCode::TP_64BIT;
 
-  if (mask == std::numeric_limits<uint64_t>::max()) {
-    // Arg == Val
-    return BoolExpr(new const PrimitiveBoolExprImpl(
-        num, arg_type, ErrorCode::OP_EQUAL, val));
-  }
-
-  if (mask == val) {
-    // (Arg & Mask) == Mask
-    return BoolExpr(new const PrimitiveBoolExprImpl(
-        num, arg_type, ErrorCode::OP_HAS_ALL_BITS, mask));
-  }
-
-  if (val == 0) {
-    // (Arg & Mask) == 0, which is semantically equivalent to !((arg & mask) !=
-    // 0).
-    return !BoolExpr(new const PrimitiveBoolExprImpl(
-        num, arg_type, ErrorCode::OP_HAS_ANY_BITS, mask));
-  }
-
-  CHECK(false) << "Unimplemented ArgEq case";
-  return BoolExpr();
+  return BoolExpr(new const PrimitiveBoolExprImpl(num, arg_type, mask, val));
 }
 
 }  // namespace internal

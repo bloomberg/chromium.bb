@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <limits>
 #include <utility>
 
 #include "base/macros.h"
@@ -62,7 +61,7 @@ class SandboxBPF;
 //
 //   result = Allow() | Error(errno) | Trap(trap_func, arg)
 //          | If(bool, result)[.ElseIf(bool, result)].Else(result)
-//   bool   = arg == val | (arg & mask) == mask | (arg & mask) == 0
+//   bool   = arg == val | (arg & mask) == val
 //          | !bool | bool && bool | bool || bool
 //
 // The semantics of each function and operator are intended to be
@@ -135,8 +134,7 @@ class SANDBOX_EXPORT Arg {
  public:
   // Initializes the Arg to represent the |num|th system call
   // argument (indexed from 0), which is of type |T|.
-  explicit Arg(int num)
-      : num_(num), mask_(std::numeric_limits<uint64_t>::max()) {}
+  explicit Arg(int num);
 
   Arg(const Arg& arg) : num_(arg.num_), mask_(arg.mask_) {}
 
@@ -211,6 +209,9 @@ namespace internal {
 SANDBOX_EXPORT BoolExpr
     ArgEq(int num, size_t size, uint64_t mask, uint64_t val);
 
+// Returns the default mask for a system call argument of the specified size.
+SANDBOX_EXPORT uint64_t DefaultMask(size_t size);
+
 // Internal interface implemented by BoolExpr implementations.
 class SANDBOX_EXPORT BoolExprImpl : public base::RefCounted<BoolExprImpl> {
  public:
@@ -242,6 +243,11 @@ class SANDBOX_EXPORT ResultExprImpl : public base::RefCounted<ResultExprImpl> {
 };
 
 }  // namespace internal
+
+template <typename T>
+Arg<T>::Arg(int num)
+    : num_(num), mask_(internal::DefaultMask(sizeof(T))) {
+}
 
 // Definition requires ArgEq to have been declared.  Moved out-of-line
 // to minimize how much internal clutter users have to ignore while

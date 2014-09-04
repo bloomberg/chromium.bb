@@ -1733,6 +1733,115 @@ BPF_TEST_C(SandboxBPF, AnyBitTests, AnyBitTestPolicy) {
   BITMASK_TEST( 10,                -1L, ANYBITS64,0x100000001, EXPECT_SUCCESS);
 }
 
+class MaskedEqualTestPolicy : public SandboxBPFPolicy {
+ public:
+  MaskedEqualTestPolicy() {}
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
+                                    int sysno) const OVERRIDE;
+
+ private:
+  struct Rule {
+    ErrorCode::ArgType arg_type;
+    uint64_t mask;
+    uint64_t value;
+  };
+
+  static Rule rules[];
+
+  DISALLOW_COPY_AND_ASSIGN(MaskedEqualTestPolicy);
+};
+
+MaskedEqualTestPolicy::Rule MaskedEqualTestPolicy::rules[] = {
+    /* 0 = */ {ErrorCode::TP_32BIT, 0x0000000000ff00ff, 0x00000000005500aa},
+
+#if __SIZEOF_POINTER__ > 4
+    /* 1 = */ {ErrorCode::TP_64BIT, 0x00ff00ff00000000, 0x005500aa00000000},
+    /* 2 = */ {ErrorCode::TP_64BIT, 0x00ff00ff00ff00ff, 0x005500aa005500aa},
+#endif
+};
+
+ErrorCode MaskedEqualTestPolicy::EvaluateSyscall(SandboxBPF* sandbox,
+                                                 int sysno) const {
+  DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
+
+  if (sysno == __NR_uname) {
+    ErrorCode err = sandbox->Kill("Invalid test case number");
+    for (size_t i = 0; i < arraysize(rules); i++) {
+      err = sandbox->Cond(0,
+                          ErrorCode::TP_32BIT,
+                          ErrorCode::OP_EQUAL,
+                          i,
+                          sandbox->CondMaskedEqual(1,
+                                                   rules[i].arg_type,
+                                                   rules[i].mask,
+                                                   rules[i].value,
+                                                   ErrorCode(1),
+                                                   ErrorCode(0)),
+                          err);
+    }
+    return err;
+  }
+  return ErrorCode(ErrorCode::ERR_ALLOWED);
+}
+
+#define MASKEQ_TEST(rulenum, arg, expected_result) \
+  BPF_ASSERT(Syscall::Call(__NR_uname, (rulenum), (arg)) == (expected_result))
+
+BPF_TEST_C(SandboxBPF, MaskedEqualTests, MaskedEqualTestPolicy) {
+  // Allowed:    0x__55__aa
+  MASKEQ_TEST(0, 0x00000000, EXPECT_FAILURE);
+  MASKEQ_TEST(0, 0x00000001, EXPECT_FAILURE);
+  MASKEQ_TEST(0, 0x00000003, EXPECT_FAILURE);
+  MASKEQ_TEST(0, 0x00000100, EXPECT_FAILURE);
+  MASKEQ_TEST(0, 0x00000300, EXPECT_FAILURE);
+  MASKEQ_TEST(0, 0x005500aa, EXPECT_SUCCESS);
+  MASKEQ_TEST(0, 0x005500ab, EXPECT_FAILURE);
+  MASKEQ_TEST(0, 0x005600aa, EXPECT_FAILURE);
+  MASKEQ_TEST(0, 0x005501aa, EXPECT_SUCCESS);
+  MASKEQ_TEST(0, 0x005503aa, EXPECT_SUCCESS);
+  MASKEQ_TEST(0, 0x555500aa, EXPECT_SUCCESS);
+  MASKEQ_TEST(0, 0xaa5500aa, EXPECT_SUCCESS);
+
+#if __SIZEOF_POINTER__ > 4
+  // Allowed:    0x__55__aa________
+  MASKEQ_TEST(1, 0x0000000000000000, EXPECT_FAILURE);
+  MASKEQ_TEST(1, 0x0000000000000010, EXPECT_FAILURE);
+  MASKEQ_TEST(1, 0x0000000000000050, EXPECT_FAILURE);
+  MASKEQ_TEST(1, 0x0000000100000000, EXPECT_FAILURE);
+  MASKEQ_TEST(1, 0x0000000300000000, EXPECT_FAILURE);
+  MASKEQ_TEST(1, 0x0000010000000000, EXPECT_FAILURE);
+  MASKEQ_TEST(1, 0x0000030000000000, EXPECT_FAILURE);
+  MASKEQ_TEST(1, 0x005500aa00000000, EXPECT_SUCCESS);
+  MASKEQ_TEST(1, 0x005500ab00000000, EXPECT_FAILURE);
+  MASKEQ_TEST(1, 0x005600aa00000000, EXPECT_FAILURE);
+  MASKEQ_TEST(1, 0x005501aa00000000, EXPECT_SUCCESS);
+  MASKEQ_TEST(1, 0x005503aa00000000, EXPECT_SUCCESS);
+  MASKEQ_TEST(1, 0x555500aa00000000, EXPECT_SUCCESS);
+  MASKEQ_TEST(1, 0xaa5500aa00000000, EXPECT_SUCCESS);
+  MASKEQ_TEST(1, 0xaa5500aa00000000, EXPECT_SUCCESS);
+  MASKEQ_TEST(1, 0xaa5500aa0000cafe, EXPECT_SUCCESS);
+
+  // Allowed:    0x__55__aa__55__aa
+  MASKEQ_TEST(2, 0x0000000000000000, EXPECT_FAILURE);
+  MASKEQ_TEST(2, 0x0000000000000010, EXPECT_FAILURE);
+  MASKEQ_TEST(2, 0x0000000000000050, EXPECT_FAILURE);
+  MASKEQ_TEST(2, 0x0000000100000000, EXPECT_FAILURE);
+  MASKEQ_TEST(2, 0x0000000300000000, EXPECT_FAILURE);
+  MASKEQ_TEST(2, 0x0000010000000000, EXPECT_FAILURE);
+  MASKEQ_TEST(2, 0x0000030000000000, EXPECT_FAILURE);
+  MASKEQ_TEST(2, 0x00000000005500aa, EXPECT_FAILURE);
+  MASKEQ_TEST(2, 0x005500aa00000000, EXPECT_FAILURE);
+  MASKEQ_TEST(2, 0x005500aa005500aa, EXPECT_SUCCESS);
+  MASKEQ_TEST(2, 0x005500aa005700aa, EXPECT_FAILURE);
+  MASKEQ_TEST(2, 0x005700aa005500aa, EXPECT_FAILURE);
+  MASKEQ_TEST(2, 0x005500aa004500aa, EXPECT_FAILURE);
+  MASKEQ_TEST(2, 0x004500aa005500aa, EXPECT_FAILURE);
+  MASKEQ_TEST(2, 0x005512aa005500aa, EXPECT_SUCCESS);
+  MASKEQ_TEST(2, 0x005500aa005534aa, EXPECT_SUCCESS);
+  MASKEQ_TEST(2, 0xff5500aa0055ffaa, EXPECT_SUCCESS);
+#endif
+}
+
 intptr_t PthreadTrapHandler(const struct arch_seccomp_data& args, void* aux) {
   if (args.args[0] != (CLONE_CHILD_CLEARTID | CLONE_CHILD_SETTID | SIGCHLD)) {
     // We expect to get called for an attempt to fork(). No need to log that

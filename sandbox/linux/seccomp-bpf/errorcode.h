@@ -87,18 +87,10 @@ class SANDBOX_EXPORT ErrorCode {
     TP_64BIT,
   };
 
+  // Deprecated.
   enum Operation {
     // Test whether the system call argument is equal to the operand.
     OP_EQUAL,
-
-    // Test whether the system call argument is greater (or equal) to the
-    // operand. Please note that all tests always operate on unsigned
-    // values. You can generally emulate signed tests, if that's what you
-    // need.
-    // TODO(markus): Check whether we should automatically emulate signed
-    //               operations.
-    OP_GREATER_UNSIGNED,
-    OP_GREATER_EQUAL_UNSIGNED,
 
     // Tests a system call argument against a bit mask.
     // The "ALL_BITS" variant performs this test: "arg & mask == mask"
@@ -107,9 +99,6 @@ class SANDBOX_EXPORT ErrorCode {
     // This implies that a mask of zero always results in a failing test.
     OP_HAS_ALL_BITS,
     OP_HAS_ANY_BITS,
-
-    // Total number of operations.
-    OP_NUM_OPS,
   };
 
   enum ErrorType {
@@ -145,10 +134,10 @@ class SANDBOX_EXPORT ErrorCode {
 
   bool safe() const { return safe_; }
 
+  uint64_t mask() const { return mask_; }
   uint64_t value() const { return value_; }
   int argno() const { return argno_; }
   ArgType width() const { return width_; }
-  Operation op() const { return op_; }
   const ErrorCode* passed() const { return passed_; }
   const ErrorCode* failed() const { return failed_; }
 
@@ -172,7 +161,7 @@ class SANDBOX_EXPORT ErrorCode {
   // allows us to specify additional constraints.
   ErrorCode(int argno,
             ArgType width,
-            Operation op,
+            uint64_t mask,
             uint64_t value,
             const ErrorCode* passed,
             const ErrorCode* failed);
@@ -189,10 +178,10 @@ class SANDBOX_EXPORT ErrorCode {
 
     // Fields needed when inspecting additional arguments.
     struct {
+      uint64_t mask_;            // Mask that we are comparing under.
       uint64_t value_;           // Value that we are comparing with.
       int argno_;                // Syscall arg number that we are inspecting.
       ArgType width_;            // Whether we are looking at a 32/64bit value.
-      Operation op_;             // Comparison operation.
       const ErrorCode* passed_;  // Value to be returned if comparison passed,
       const ErrorCode* failed_;  //   or if it failed.
     };

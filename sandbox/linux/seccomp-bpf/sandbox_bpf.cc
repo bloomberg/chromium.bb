@@ -20,6 +20,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <limits>
+
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -38,8 +40,9 @@ namespace {
 
 const int kExpectedExitCode = 100;
 
-int popcount(uint32_t x) {
-  return __builtin_popcount(x);
+bool HasExactlyOneBit(uint64_t x) {
+  // Common trick; e.g., see http://stackoverflow.com/a/108329.
+  return x != 0 && (x & (x - 1)) == 0;
 }
 
 #if !defined(NDEBUG)
@@ -862,186 +865,154 @@ Instruction* SandboxBPF::RetExpression(CodeGen* gen, const ErrorCode& err) {
 }
 
 Instruction* SandboxBPF::CondExpression(CodeGen* gen, const ErrorCode& cond) {
-  // We can only inspect the six system call arguments that are passed in
-  // CPU registers.
+  // Sanity check that |cond| makes sense.
   if (cond.argno_ < 0 || cond.argno_ >= 6) {
-    SANDBOX_DIE(
-        "Internal compiler error; invalid argument number "
-        "encountered");
+    SANDBOX_DIE("sandbox_bpf: invalid argument number");
   }
-
-  // BPF programs operate on 32bit entities. Load both halfs of the 64bit
-  // system call argument and then generate suitable conditional statements.
-  Instruction* msb_head = gen->MakeInstruction(
-      BPF_LD + BPF_W + BPF_ABS, SECCOMP_ARG_MSB_IDX(cond.argno_));
-  Instruction* msb_tail = msb_head;
-  Instruction* lsb_head = gen->MakeInstruction(
-      BPF_LD + BPF_W + BPF_ABS, SECCOMP_ARG_LSB_IDX(cond.argno_));
-  Instruction* lsb_tail = lsb_head;
-
-  // Emit a suitable comparison statement.
-  switch (cond.op_) {
-    case ErrorCode::OP_EQUAL:
-      // Compare the least significant bits for equality
-      lsb_tail = gen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K,
-                                      static_cast<uint32_t>(cond.value_),
-                                      RetExpression(gen, *cond.passed_),
-                                      RetExpression(gen, *cond.failed_));
-      gen->JoinInstructions(lsb_head, lsb_tail);
-
-      // If we are looking at a 64bit argument, we need to also compare the
-      // most significant bits.
-      if (cond.width_ == ErrorCode::TP_64BIT) {
-        msb_tail =
-            gen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K,
-                                 static_cast<uint32_t>(cond.value_ >> 32),
-                                 lsb_head,
-                                 RetExpression(gen, *cond.failed_));
-        gen->JoinInstructions(msb_head, msb_tail);
-      }
-      break;
-    case ErrorCode::OP_HAS_ALL_BITS:
-      // Check the bits in the LSB half of the system call argument. Our
-      // OP_HAS_ALL_BITS operator passes, iff all of the bits are set. This is
-      // different from the kernel's BPF_JSET operation which passes, if any of
-      // the bits are set.
-      // Of course, if there is only a single set bit (or none at all), then
-      // things get easier.
-      {
-        uint32_t lsb_bits = static_cast<uint32_t>(cond.value_);
-        int lsb_bit_count = popcount(lsb_bits);
-        if (lsb_bit_count == 0) {
-          // No bits are set in the LSB half. The test will always pass.
-          lsb_head = RetExpression(gen, *cond.passed_);
-          lsb_tail = NULL;
-        } else if (lsb_bit_count == 1) {
-          // Exactly one bit is set in the LSB half. We can use the BPF_JSET
-          // operator.
-          lsb_tail = gen->MakeInstruction(BPF_JMP + BPF_JSET + BPF_K,
-                                          lsb_bits,
-                                          RetExpression(gen, *cond.passed_),
-                                          RetExpression(gen, *cond.failed_));
-          gen->JoinInstructions(lsb_head, lsb_tail);
-        } else {
-          // More than one bit is set in the LSB half. We need to combine
-          // BPF_AND and BPF_JEQ to test whether all of these bits are in fact
-          // set in the system call argument.
-          gen->JoinInstructions(
-              lsb_head,
-              gen->MakeInstruction(BPF_ALU + BPF_AND + BPF_K,
-                                   lsb_bits,
-                                   lsb_tail = gen->MakeInstruction(
-                                       BPF_JMP + BPF_JEQ + BPF_K,
-                                       lsb_bits,
-                                       RetExpression(gen, *cond.passed_),
-                                       RetExpression(gen, *cond.failed_))));
-        }
-      }
-
-      // If we are looking at a 64bit argument, we need to also check the bits
-      // in the MSB half of the system call argument.
-      if (cond.width_ == ErrorCode::TP_64BIT) {
-        uint32_t msb_bits = static_cast<uint32_t>(cond.value_ >> 32);
-        int msb_bit_count = popcount(msb_bits);
-        if (msb_bit_count == 0) {
-          // No bits are set in the MSB half. The test will always pass.
-          msb_head = lsb_head;
-        } else if (msb_bit_count == 1) {
-          // Exactly one bit is set in the MSB half. We can use the BPF_JSET
-          // operator.
-          msb_tail = gen->MakeInstruction(BPF_JMP + BPF_JSET + BPF_K,
-                                          msb_bits,
-                                          lsb_head,
-                                          RetExpression(gen, *cond.failed_));
-          gen->JoinInstructions(msb_head, msb_tail);
-        } else {
-          // More than one bit is set in the MSB half. We need to combine
-          // BPF_AND and BPF_JEQ to test whether all of these bits are in fact
-          // set in the system call argument.
-          gen->JoinInstructions(
-              msb_head,
-              gen->MakeInstruction(
-                  BPF_ALU + BPF_AND + BPF_K,
-                  msb_bits,
-                  gen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K,
-                                       msb_bits,
-                                       lsb_head,
-                                       RetExpression(gen, *cond.failed_))));
-        }
-      }
-      break;
-    case ErrorCode::OP_HAS_ANY_BITS:
-      // Check the bits in the LSB half of the system call argument. Our
-      // OP_HAS_ANY_BITS operator passes, iff any of the bits are set. This maps
-      // nicely to the kernel's BPF_JSET operation.
-      {
-        uint32_t lsb_bits = static_cast<uint32_t>(cond.value_);
-        if (!lsb_bits) {
-          // No bits are set in the LSB half. The test will always fail.
-          lsb_head = RetExpression(gen, *cond.failed_);
-          lsb_tail = NULL;
-        } else {
-          lsb_tail = gen->MakeInstruction(BPF_JMP + BPF_JSET + BPF_K,
-                                          lsb_bits,
-                                          RetExpression(gen, *cond.passed_),
-                                          RetExpression(gen, *cond.failed_));
-          gen->JoinInstructions(lsb_head, lsb_tail);
-        }
-      }
-
-      // If we are looking at a 64bit argument, we need to also check the bits
-      // in the MSB half of the system call argument.
-      if (cond.width_ == ErrorCode::TP_64BIT) {
-        uint32_t msb_bits = static_cast<uint32_t>(cond.value_ >> 32);
-        if (!msb_bits) {
-          // No bits are set in the MSB half. The test will always fail.
-          msb_head = lsb_head;
-        } else {
-          msb_tail = gen->MakeInstruction(BPF_JMP + BPF_JSET + BPF_K,
-                                          msb_bits,
-                                          RetExpression(gen, *cond.passed_),
-                                          lsb_head);
-          gen->JoinInstructions(msb_head, msb_tail);
-        }
-      }
-      break;
-    default:
-      // TODO(markus): Need to add support for OP_GREATER
-      SANDBOX_DIE("Not implemented");
-      break;
+  if (cond.width_ != ErrorCode::TP_32BIT &&
+      cond.width_ != ErrorCode::TP_64BIT) {
+    SANDBOX_DIE("sandbox_bpf: invalid argument width");
   }
+  if (cond.mask_ == 0) {
+    SANDBOX_DIE("sandbox_bpf: zero mask is invalid");
+  }
+  if ((cond.value_ & cond.mask_) != cond.value_) {
+    SANDBOX_DIE("sandbox_bpf: value contains masked out bits");
+  }
+  if (cond.width_ == ErrorCode::TP_32BIT &&
+      ((cond.mask_ >> 32) != 0 || (cond.value_ >> 32) != 0)) {
+    SANDBOX_DIE("sandbox_bpf: test exceeds argument size");
+  }
+  // TODO(mdempsky): Reject TP_64BIT on 32-bit platforms. For now we allow it
+  // because some SandboxBPF unit tests exercise it.
 
-  // Ensure that we never pass a 64bit value, when we only expect a 32bit
-  // value. This is somewhat complicated by the fact that on 64bit systems,
-  // callers could legitimately pass in a non-zero value in the MSB, iff the
-  // LSB has been sign-extended into the MSB.
-  if (cond.width_ == ErrorCode::TP_32BIT) {
-    if (cond.value_ >> 32) {
-      SANDBOX_DIE(
-          "Invalid comparison of a 32bit system call argument "
-          "against a 64bit constant; this test is always false.");
+  Instruction* passed = RetExpression(gen, *cond.passed_);
+  Instruction* failed = RetExpression(gen, *cond.failed_);
+
+  // We want to emit code to check "(arg & mask) == value" where arg, mask, and
+  // value are 64-bit values, but the BPF machine is only 32-bit. We implement
+  // this by independently testing the upper and lower 32-bits and continuing to
+  // |passed| if both evaluate true, or to |failed| if either evaluate false.
+  return CondExpressionHalf(
+      gen,
+      cond,
+      UpperHalf,
+      CondExpressionHalf(gen, cond, LowerHalf, passed, failed),
+      failed);
+}
+
+Instruction* SandboxBPF::CondExpressionHalf(CodeGen* gen,
+                                            const ErrorCode& cond,
+                                            ArgHalf half,
+                                            Instruction* passed,
+                                            Instruction* failed) {
+  if (cond.width_ == ErrorCode::TP_32BIT && half == UpperHalf) {
+    // Special logic for sanity checking the upper 32-bits of 32-bit system
+    // call arguments.
+
+    // TODO(mdempsky): Compile Unexpected64bitArgument() just per program.
+    Instruction* invalid_64bit = RetExpression(gen, Unexpected64bitArgument());
+
+    const uint32_t upper = SECCOMP_ARG_MSB_IDX(cond.argno_);
+    const uint32_t lower = SECCOMP_ARG_LSB_IDX(cond.argno_);
+
+    if (sizeof(void*) == 4) {
+      // On 32-bit platforms, the upper 32-bits should always be 0:
+      //   LDW  [upper]
+      //   JEQ  0, passed, invalid
+      return gen->MakeInstruction(
+          BPF_LD + BPF_W + BPF_ABS,
+          upper,
+          gen->MakeInstruction(
+              BPF_JMP + BPF_JEQ + BPF_K, 0, passed, invalid_64bit));
     }
 
-    Instruction* invalid_64bit = RetExpression(gen, Unexpected64bitArgument());
-#if __SIZEOF_POINTER__ > 4
-    invalid_64bit = gen->MakeInstruction(
-        BPF_JMP + BPF_JEQ + BPF_K,
-        0xFFFFFFFF,
-        gen->MakeInstruction(BPF_LD + BPF_W + BPF_ABS,
-                             SECCOMP_ARG_LSB_IDX(cond.argno_),
-                             gen->MakeInstruction(BPF_JMP + BPF_JGE + BPF_K,
-                                                  0x80000000,
-                                                  lsb_head,
-                                                  invalid_64bit)),
-        invalid_64bit);
-#endif
-    gen->JoinInstructions(
-        msb_tail,
+    // On 64-bit platforms, the upper 32-bits may be 0 or ~0; but we only allow
+    // ~0 if the sign bit of the lower 32-bits is set too:
+    //   LDW  [upper]
+    //   JEQ  0, passed, (next)
+    //   JEQ  ~0, (next), invalid
+    //   LDW  [lower]
+    //   JSET (1<<31), passed, invalid
+    //
+    // TODO(mdempsky): The JSET instruction could perhaps jump to passed->next
+    // instead, as the first instruction of passed should be "LDW [lower]".
+    return gen->MakeInstruction(
+        BPF_LD + BPF_W + BPF_ABS,
+        upper,
         gen->MakeInstruction(
-            BPF_JMP + BPF_JEQ + BPF_K, 0, lsb_head, invalid_64bit));
+            BPF_JMP + BPF_JEQ + BPF_K,
+            0,
+            passed,
+            gen->MakeInstruction(
+                BPF_JMP + BPF_JEQ + BPF_K,
+                std::numeric_limits<uint32_t>::max(),
+                gen->MakeInstruction(
+                    BPF_LD + BPF_W + BPF_ABS,
+                    lower,
+                    gen->MakeInstruction(BPF_JMP + BPF_JSET + BPF_K,
+                                         1U << 31,
+                                         passed,
+                                         invalid_64bit)),
+                invalid_64bit)));
   }
 
-  return msb_head;
+  const uint32_t idx = (half == UpperHalf) ? SECCOMP_ARG_MSB_IDX(cond.argno_)
+                                           : SECCOMP_ARG_LSB_IDX(cond.argno_);
+  const uint32_t mask = (half == UpperHalf) ? cond.mask_ >> 32 : cond.mask_;
+  const uint32_t value = (half == UpperHalf) ? cond.value_ >> 32 : cond.value_;
+
+  // Emit a suitable instruction sequence for (arg & mask) == value.
+
+  // For (arg & 0) == 0, just return passed.
+  if (mask == 0) {
+    CHECK_EQ(0U, value);
+    return passed;
+  }
+
+  // For (arg & ~0) == value, emit:
+  //   LDW  [idx]
+  //   JEQ  value, passed, failed
+  if (mask == std::numeric_limits<uint32_t>::max()) {
+    return gen->MakeInstruction(
+        BPF_LD + BPF_W + BPF_ABS,
+        idx,
+        gen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, value, passed, failed));
+  }
+
+  // For (arg & mask) == 0, emit:
+  //   LDW  [idx]
+  //   JSET mask, failed, passed
+  // (Note: failed and passed are intentionally swapped.)
+  if (value == 0) {
+    return gen->MakeInstruction(
+        BPF_LD + BPF_W + BPF_ABS,
+        idx,
+        gen->MakeInstruction(BPF_JMP + BPF_JSET + BPF_K, mask, failed, passed));
+  }
+
+  // For (arg & x) == x where x is a single-bit value, emit:
+  //   LDW  [idx]
+  //   JSET mask, passed, failed
+  if (mask == value && HasExactlyOneBit(mask)) {
+    return gen->MakeInstruction(
+        BPF_LD + BPF_W + BPF_ABS,
+        idx,
+        gen->MakeInstruction(BPF_JMP + BPF_JSET + BPF_K, mask, passed, failed));
+  }
+
+  // Generic fallback:
+  //   LDW  [idx]
+  //   AND  mask
+  //   JEQ  value, passed, failed
+  return gen->MakeInstruction(
+      BPF_LD + BPF_W + BPF_ABS,
+      idx,
+      gen->MakeInstruction(
+          BPF_ALU + BPF_AND + BPF_K,
+          mask,
+          gen->MakeInstruction(
+              BPF_JMP + BPF_JEQ + BPF_K, value, passed, failed)));
 }
 
 ErrorCode SandboxBPF::Unexpected64bitArgument() {
@@ -1079,18 +1050,59 @@ intptr_t SandboxBPF::ForwardSyscall(const struct arch_seccomp_data& args) {
                        static_cast<intptr_t>(args.args[5]));
 }
 
+ErrorCode SandboxBPF::CondMaskedEqual(int argno,
+                                      ErrorCode::ArgType width,
+                                      uint64_t mask,
+                                      uint64_t value,
+                                      const ErrorCode& passed,
+                                      const ErrorCode& failed) {
+  return ErrorCode(argno,
+                   width,
+                   mask,
+                   value,
+                   &*conds_->insert(passed).first,
+                   &*conds_->insert(failed).first);
+}
+
 ErrorCode SandboxBPF::Cond(int argno,
                            ErrorCode::ArgType width,
                            ErrorCode::Operation op,
                            uint64_t value,
                            const ErrorCode& passed,
                            const ErrorCode& failed) {
-  return ErrorCode(argno,
-                   width,
-                   op,
-                   value,
-                   &*conds_->insert(passed).first,
-                   &*conds_->insert(failed).first);
+  // CondExpression() currently rejects mask==0 as invalid, but there are
+  // SandboxBPF unit tests that (questionably) expect OP_HAS_{ANY,ALL}_BITS to
+  // work with value==0. To keep those tests working for now, we specially
+  // convert value==0 here.
+
+  switch (op) {
+    case ErrorCode::OP_EQUAL: {
+      // Convert to "(arg & ~0) == value".
+      const uint64_t mask = (width == ErrorCode::TP_64BIT)
+                                ? std::numeric_limits<uint64_t>::max()
+                                : std::numeric_limits<uint32_t>::max();
+      return CondMaskedEqual(argno, width, mask, value, passed, failed);
+    }
+
+    case ErrorCode::OP_HAS_ALL_BITS:
+      if (value == 0) {
+        // Always passes.
+        return passed;
+      }
+      // Convert to "(arg & value) == value".
+      return CondMaskedEqual(argno, width, value, value, passed, failed);
+
+    case ErrorCode::OP_HAS_ANY_BITS:
+      if (value == 0) {
+        // Always fails.
+        return failed;
+      }
+      // Convert to "(arg & value) == 0", but swap passed and failed.
+      return CondMaskedEqual(argno, width, value, 0, failed, passed);
+
+    default:
+      SANDBOX_DIE("Not implemented");
+  }
 }
 
 ErrorCode SandboxBPF::Kill(const char* msg) {
