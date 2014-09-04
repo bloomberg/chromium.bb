@@ -262,6 +262,10 @@ enum WindowManagerName {
 // determine it for one reason or another.
 UI_BASE_EXPORT WindowManagerName GuessWindowManager();
 
+// The same as GuessWindowManager(), but returns the raw string.  If we
+// can't determine it, return "Unknown".
+UI_BASE_EXPORT std::string GuessWindowManagerName();
+
 // Enable the default X error handlers. These will log the error and abort
 // the process if called. Use SetX11ErrorHandlers() from x11_util_internal.h
 // to set your own error handlers.

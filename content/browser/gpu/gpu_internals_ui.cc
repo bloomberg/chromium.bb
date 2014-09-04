@@ -34,6 +34,10 @@
 #include "ui/base/win/shell.h"
 #endif
 
+#if defined(OS_LINUX) && defined(USE_X11)
+#include "ui/base/x/x11_util.h"
+#endif
+
 namespace content {
 namespace {
 
@@ -161,6 +165,10 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
                                              gpu_info.gl_ws_version));
   basic_info->Append(NewDescriptionValuePair("Window system binding extensions",
                                              gpu_info.gl_ws_extensions));
+#if defined(OS_LINUX) && defined(USE_X11)
+  basic_info->Append(NewDescriptionValuePair("Window manager",
+                                             ui::GuessWindowManagerName()));
+#endif
   std::string direct_rendering = gpu_info.direct_rendering ? "Yes" : "No";
   basic_info->Append(
       NewDescriptionValuePair("Direct rendering", direct_rendering));
