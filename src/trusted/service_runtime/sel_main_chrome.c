@@ -39,11 +39,15 @@
 #include "native_client/src/trusted/service_runtime/sel_main_common.h"
 #include "native_client/src/trusted/service_runtime/sel_qualify.h"
 #include "native_client/src/trusted/service_runtime/win/exception_patch/ntdll_patch.h"
+#include "native_client/src/trusted/validator/rich_file_info.h"
 #include "native_client/src/trusted/validator/validation_metadata.h"
 
 static int g_initialized = 0;
 
 static void (*g_fatal_error_handler)(const char *data, size_t bytes) = NULL;
+
+static const int default_argc = 1;
+static const char *const default_argv[1] = {"NaClMain"};
 
 #if NACL_LINUX || NACL_OSX
 void NaClChromeMainSetUrandomFd(int urandom_fd) {
@@ -82,10 +86,14 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
     return NULL;
   args->imc_bootstrap_handle = NACL_INVALID_HANDLE;
   args->irt_fd = -1;
+  args->irt_desc = NULL;
   args->enable_exception_handling = 0;
   args->enable_debug_stub = 0;
   args->enable_dyncode_syscalls = 1;
   args->pnacl_mode = 0;
+  /* TODO(ncbray): default to 0. */
+  args->skip_qualification =
+      getenv("NACL_DANGEROUS_SKIP_QUALIFICATION_TEST") != NULL;
   args->initial_nexe_max_code_bytes = 0;  /* No limit */
 #if NACL_LINUX || NACL_OSX
   args->debug_stub_server_bound_socket_fd = NACL_INVALID_SOCKET;
@@ -106,42 +114,56 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
   args->prereserved_sandbox_size = 0;
 #endif
   args->nexe_desc = NULL;
+
+  args->argc = default_argc;
+  args->argv = (char **) default_argv;
   return args;
 }
 
-static char kFakeIrtName[] = "\0IRT";
-
-static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
-  int file_desc;
-  struct NaClDesc *nd;
-  struct NaClValidationMetadata metadata;
-  NaClErrorCode errcode;
+static struct NaClDesc *IrtDescFromFd(int irt_fd) {
+  struct NaClDesc *irt_desc;
 
   if (irt_fd == -1) {
     NaClLog(LOG_FATAL, "NaClLoadIrt: Integrated runtime (IRT) not present.\n");
   }
 
-  file_desc = DUP(irt_fd);
-  if (file_desc < 0) {
-    NaClLog(LOG_FATAL, "NaClLoadIrt: Failed to dup() file descriptor\n");
-  }
-
-  /*
-   * For the IRT use a fake file name with null characters at the begining and
-   * the end of the name.
-   */
-  /* TODO(ncbray) plumb the real filename in from Chrome. */
-  NaClMetadataFromFDCtor(&metadata, file_desc,
-                         kFakeIrtName, sizeof(kFakeIrtName));
-
-  nd = NaClDescIoDescFromDescAllocCtor(file_desc, NACL_ABI_O_RDONLY);
-  if (NULL == nd) {
+  /* Takes ownership of the FD. */
+  irt_desc = NaClDescIoDescFromDescAllocCtor(irt_fd, NACL_ABI_O_RDONLY);
+  if (NULL == irt_desc) {
     NaClLog(LOG_FATAL,
             "NaClLoadIrt: failed to construct NaClDesc object from"
             " descriptor\n");
   }
 
-  errcode = NaClMainLoadIrt(nap, nd, &metadata);
+  return irt_desc;
+}
+
+static char kFakeIrtName[] = "\0IRT";
+
+static void NaClLoadIrt(struct NaClApp *nap, struct NaClDesc *irt_desc) {
+  struct NaClRichFileInfo info;
+  struct NaClValidationMetadata metadata;
+  NaClErrorCode errcode;
+
+  /* Attach file origin info to the IRT's NaClDesc. */
+  NaClRichFileInfoCtor(&info);
+  /*
+   * For the IRT use a fake file name with null characters at the begining and
+   * the end of the name.
+   * TODO(ncbray): plumb the real filename in from Chrome.
+   * Note that when the file info is attached to the NaClDesc, information from
+   * stat is incorporated into the metadata.  There is no functional reason to
+   * attach the info to the NaClDesc other than to create the final metadata.
+   * TODO(ncbray): API for deriving metadata from a NaClDesc without attaching.
+   */
+  info.known_file = 1;
+  info.file_path = kFakeIrtName;
+  info.file_path_length = sizeof(kFakeIrtName);
+  NaClSetFileOriginInfo(irt_desc, &info);
+  /* Don't free the info struct because we don't own the file path string. */
+
+  NaClMetadataFromNaClDescCtor(&metadata, irt_desc);
+  errcode = NaClMainLoadIrt(nap, irt_desc, &metadata);
   if (errcode != LOAD_OK) {
     NaClLog(LOG_FATAL,
             "NaClLoadIrt: Failed to load the integrated runtime (IRT): %s\n",
@@ -149,19 +171,18 @@ static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
   }
 
   NaClMetadataDtor(&metadata);
-  NaClDescUnref(nd);
 }
 
 static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
   NaClErrorCode errcode = LOAD_OK;
-  int skip_qualification;
+  int has_bootstrap_channel = args->imc_bootstrap_handle != NACL_INVALID_HANDLE;
 
   CHECK(g_initialized);
 
   /*
    * TODO(teravest): Remove this once Chromium uses NaClSetFatalErrorCallback.
    */
-  if (g_fatal_error_handler == NULL) {
+  if (has_bootstrap_channel && g_fatal_error_handler == NULL) {
     NaClBootstrapChannelErrorReporterInit();
     NaClErrorLogHookInit(NaClBootstrapChannelErrorReporter, nap);
   }
@@ -215,8 +236,7 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
   /*
    * Ensure this operating system platform is supported.
    */
-  skip_qualification = getenv("NACL_DANGEROUS_SKIP_QUALIFICATION_TEST") != NULL;
-  if (skip_qualification) {
+  if (args->skip_qualification) {
     fprintf(stderr, "PLATFORM QUALIFICATION DISABLED - "
         "Native Client's sandbox will be unreliable!\n");
   } else {
@@ -263,19 +283,21 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
   /* Give debuggers a well known point at which xlate_base is known.  */
   NaClGdbHook(nap);
 
-  NaClCreateServiceSocket(nap);
-  /*
-   * LOG_FATAL errors that occur before NaClSetUpBootstrapChannel will
-   * not be reported via the crash log mechanism (for Chromium
-   * embedding of NaCl, shown in the JavaScript console).
-   *
-   * Some errors, such as due to NaClRunSelQualificationTests, do not
-   * trigger a LOG_FATAL but instead set module_load_status to be sent
-   * in the start_module RPC reply.  Log messages associated with such
-   * errors would be seen, since NaClSetUpBootstrapChannel will get
-   * called.
-   */
-  NaClSetUpBootstrapChannel(nap, args->imc_bootstrap_handle);
+  if (has_bootstrap_channel) {
+    NaClCreateServiceSocket(nap);
+    /*
+     * LOG_FATAL errors that occur before NaClSetUpBootstrapChannel will
+     * not be reported via the crash log mechanism (for Chromium
+     * embedding of NaCl, shown in the JavaScript console).
+     *
+     * Some errors, such as due to NaClRunSelQualificationTests, do not
+     * trigger a LOG_FATAL but instead set module_load_status to be sent
+     * in the start_module RPC reply.  Log messages associated with such
+     * errors would be seen, since NaClSetUpBootstrapChannel will get
+     * called.
+     */
+    NaClSetUpBootstrapChannel(nap, args->imc_bootstrap_handle);
+  }
 
   if (args->nexe_desc) {
     NaClAppLoadModule(nap, args->nexe_desc, NULL, NULL);
@@ -283,27 +305,29 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
     args->nexe_desc = NULL;
   }
 
-  NACL_FI_FATAL("BeforeSecureCommandChannel");
-  /*
-   * Spawns a thread that uses the command channel.
-   * Hereafter any changes to nap should be done while holding locks.
-   */
-  NaClSecureCommandChannel(nap);
-
-  NaClLog(4, "NaClSecureCommandChannel has spawned channel\n");
-
-  NaClLog(4, "secure service = %"NACL_PRIxPTR"\n",
-          (uintptr_t) nap->secure_service);
-  NACL_FI_FATAL("BeforeWaitForStartModule");
-
-  if (NULL != nap->secure_service) {
-    NaClErrorCode start_result;
+  if (has_bootstrap_channel) {
+    NACL_FI_FATAL("BeforeSecureCommandChannel");
     /*
-     * wait for start_module RPC call on secure channel thread.
+     * Spawns a thread that uses the command channel.
+     * Hereafter any changes to nap should be done while holding locks.
      */
-    start_result = NaClWaitForStartModuleCommand(nap);
-    if (LOAD_OK == errcode) {
-      errcode = start_result;
+    NaClSecureCommandChannel(nap);
+
+    NaClLog(4, "NaClSecureCommandChannel has spawned channel\n");
+
+    NaClLog(4, "secure service = %"NACL_PRIxPTR"\n",
+            (uintptr_t) nap->secure_service);
+    NACL_FI_FATAL("BeforeWaitForStartModule");
+
+    if (NULL != nap->secure_service) {
+      NaClErrorCode start_result;
+      /*
+       * wait for start_module RPC call on secure channel thread.
+       */
+      start_result = NaClWaitForStartModuleCommand(nap);
+      if (LOAD_OK == errcode) {
+        errcode = start_result;
+      }
     }
   }
 
@@ -320,12 +344,21 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
    * Load the integrated runtime (IRT) library.
    */
   if (args->irt_fd != -1) {
-    NaClLoadIrt(nap, args->irt_fd);
+    CHECK(args->irt_desc == NULL);
+    args->irt_desc = IrtDescFromFd(args->irt_fd);
+    args->irt_fd = -1;
+  }
+  if (args->irt_desc != NULL) {
+    NaClLoadIrt(nap, args->irt_desc);
+    NaClDescUnref(args->irt_desc);
+    args->irt_desc = NULL;
   }
 
-  if (NACL_FI_ERROR_COND("LaunchServiceThreads",
-                         !NaClAppLaunchServiceThreads(nap))) {
-    NaClLog(LOG_FATAL, "Launch service threads failed\n");
+  if (has_bootstrap_channel) {
+    if (NACL_FI_ERROR_COND("LaunchServiceThreads",
+                           !NaClAppLaunchServiceThreads(nap))) {
+      NaClLog(LOG_FATAL, "Launch service threads failed\n");
+    }
   }
 
   if (args->enable_debug_stub) {
@@ -344,7 +377,6 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
 #endif
   }
 
-  free(args);
   return LOAD_OK;
 
 done:
@@ -369,9 +401,7 @@ done:
   return errcode;
 }
 
-static int StartApp(struct NaClApp *nap) {
-  int ac = 1;
-  char *av[1];
+static int StartApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
   int ret_code;
   struct NaClEnvCleanser env_cleanser;
   char const *const *envp;
@@ -384,12 +414,9 @@ static int StartApp(struct NaClApp *nap) {
   }
   envp = NaClEnvCleanserEnvironment(&env_cleanser);
 
-  /* to be passed to NaClMain, eventually... */
-  av[0] = "NaClMain";
-
   if (NACL_FI_ERROR_COND(
           "CreateMainThread",
-          !NaClCreateMainThread(nap, ac, av, envp))) {
+          !NaClCreateMainThread(nap, args->argc, args->argv, envp))) {
     NaClLog(LOG_FATAL, "creating main thread failed\n");
   }
   NACL_FI_FATAL("BeforeEnvCleanserDtor");
@@ -416,22 +443,23 @@ static int StartApp(struct NaClApp *nap) {
 
 void NaClChromeMainStartApp(struct NaClApp *nap,
                             struct NaClChromeMainArgs *args) {
-  if (LoadApp(nap, args) != 0)
-    NaClExit(1);
-
+  int status = 1;
+  NaClChromeMainStart(nap, args, &status);
   /*
    * exit_group or equiv kills any still running threads while module
    * addr space is still valid.  otherwise we'd have to kill threads
    * before we clean up the address space.
    */
-  NaClExit(StartApp(nap));
+  NaClExit(status);
 }
 
 int NaClChromeMainStart(struct NaClApp *nap,
                         struct NaClChromeMainArgs *args,
                         int *exit_status) {
-  if (LoadApp(nap, args) != 0)
-    return 0;
-  *exit_status = StartApp(nap);
-  return 1;
+  int load_ok = LOAD_OK == LoadApp(nap, args);
+  if (load_ok) {
+    *exit_status = StartApp(nap, args);
+  }
+  free(args);
+  return load_ok;
 }

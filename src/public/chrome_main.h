@@ -56,18 +56,29 @@ struct NaClValidationCache;
 struct NaClChromeMainArgs {
   /*
    * Handle for bootstrapping a NaCl IMC connection to the trusted
-   * PPAPI plugin.  Required.
+   * PPAPI plugin.  This is optional.
    */
   NaClHandle imc_bootstrap_handle;
 
   /*
+   * DEPRECATED: superseded by irt_desc.
+   * TODO(ncbray): remove
    * File descriptor for the NaCl integrated runtime (IRT) library.
    * Note that this is a file descriptor even on Windows (where file
    * descriptors are emulated by the C runtime library).
    * Optional; may be -1.  Optional when loading nexes that don't follow
    * NaCl's stable ABI, such as the PNaCl translator.
+   * Callee assumes ownership.
    */
   int irt_fd;
+
+  /*
+   * File descriptor for the NaCl integrated runtime (IRT) library.
+   * Optional; may be NULL.  Optional when loading nexes that don't follow
+   * NaCl's stable ABI, such as the PNaCl translator.
+   * Callee assumes ownership.
+   */
+  struct NaClDesc *irt_desc;
 
   /* Whether to enable untrusted hardware exception handling.  Boolean. */
   int enable_exception_handling;
@@ -80,6 +91,9 @@ struct NaClChromeMainArgs {
 
   /* Whether or not the app is a PNaCl app. Boolean. */
   int pnacl_mode;
+
+  /* Whether to skip NaCl's platform qualification check.  Boolean. */
+  int skip_qualification;
 
   /*
    * Maximum size of the initially loaded nexe's code segment, in
@@ -174,8 +188,15 @@ struct NaClChromeMainArgs {
   /*
    * Descriptor for the user nexe module to load and run. This is optional and
    * may be NULL if SRPC is used for module loading.
+   * Callee assumes ownership.
    */
   struct NaClDesc *nexe_desc;
+
+  /*
+   * The command line to be passed to the nexe.
+   */
+  int argc;
+  char **argv;
 };
 
 #if NACL_LINUX || NACL_OSX
