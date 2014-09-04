@@ -4,6 +4,7 @@
 
 #include "remoting/client/plugin/delegating_signal_strategy.h"
 
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
@@ -13,8 +14,7 @@ DelegatingSignalStrategy::DelegatingSignalStrategy(
     std::string local_jid,
     const SendIqCallback& send_iq_callback)
     : local_jid_(local_jid),
-      send_iq_callback_(send_iq_callback),
-      last_id_(0) {
+      send_iq_callback_(send_iq_callback) {
 }
 
 DelegatingSignalStrategy::~DelegatingSignalStrategy() {
@@ -67,8 +67,7 @@ bool DelegatingSignalStrategy::SendStanza(scoped_ptr<buzz::XmlElement> stanza) {
 }
 
 std::string DelegatingSignalStrategy::GetNextId() {
-  ++last_id_;
-  return base::IntToString(last_id_);
+  return base::Uint64ToString(base::RandUint64());
 }
 
 }  // namespace remoting

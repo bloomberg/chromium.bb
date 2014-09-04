@@ -14,14 +14,15 @@ var remoting = remoting || {};
 
 /**
  * @param {HTMLElement} clientContainer Container element for the client view.
- * @param {function(remoting.ClientSession):void} onOk Callback on success.
+ * @param {function(remoting.ClientSession):void} onConnected Callback on
+ *     success.
  * @param {function(remoting.Error):void} onError Callback on error.
  * @param {function(string, string):boolean} onExtensionMessage The handler for
  *     protocol extension messages. Returns true if a message is recognized;
  *     false otherwise.
  * @constructor
  */
-remoting.SessionConnector = function(clientContainer, onOk, onError,
+remoting.SessionConnector = function(clientContainer, onConnected, onError,
                                      onExtensionMessage) {
   /**
    * @type {HTMLElement}
@@ -33,7 +34,7 @@ remoting.SessionConnector = function(clientContainer, onOk, onError,
    * @type {function(remoting.ClientSession):void}
    * @private
    */
-  this.onOk_ = onOk;
+  this.onConnected_ = onConnected;
 
   /**
    * @type {function(remoting.Error):void}
@@ -58,6 +59,12 @@ remoting.SessionConnector = function(clientContainer, onOk, onError,
    * @private
    */
   this.connectionMode_ = remoting.ClientSession.Mode.ME2ME;
+
+  /**
+   * @type {remoting.SignalStrategy}
+   * @private
+   */
+  this.signalStrategy_ = null;
 
   /**
    * @type {remoting.SmartReconnector}
@@ -256,8 +263,9 @@ remoting.SessionConnector.prototype.connectMe2MeInternal_ =
   this.connectionMode_ = remoting.ClientSession.Mode.ME2ME;
   this.refreshHostJidIfOffline_ = refreshHostJidIfOffline;
   this.updatePairingInfo(clientPairingId, clientPairedSecret);
-  this.createSession_();
-};
+
+  this.connectSignaling_();
+}
 
 /**
  * Initiate an IT2Me connection.
@@ -336,6 +344,64 @@ remoting.SessionConnector.prototype.getHostId = function() {
 };
 
 /**
+ * @private
+ */
+remoting.SessionConnector.prototype.connectSignaling_ = function() {
+  base.dispose(this.signalStrategy_);
+  this.signalStrategy_ = null;
+
+  /** @type {remoting.SessionConnector} */
+  var that = this;
+
+  /** @param {string} token */
+  function connectSignalingWithToken(token) {
+    remoting.identity.getEmail(
+        connectSignalingWithTokenAndEmail.bind(null, token), that.onError_);
+  }
+
+  /**
+   * @param {string} token
+   * @param {string} email
+   */
+  function connectSignalingWithTokenAndEmail(token, email) {
+    that.signalStrategy_.connect(
+        remoting.settings.XMPP_SERVER_ADDRESS, email, token);
+  }
+
+  // Only use XMPP when TCP API is available and TLS support is enabled. That's
+  // not the case for V1 app (socket API is available only to platform apps)
+  // and for Chrome releases before 38.
+  if (chrome.socket.secure) {
+    this.signalStrategy_ = /** @type {remoting.SignalStrategy} */
+        (new remoting.XmppConnection(this.onSignalingState_.bind(this)));
+  } else {
+    this.signalStrategy_ = /** @type {remoting.SignalStrategy} */
+        (new remoting.WcsAdapter(this.onSignalingState_.bind(this)));
+  }
+
+  remoting.identity.callWithToken(connectSignalingWithToken, this.onError_);
+};
+
+/**
+ * @private
+ * @param {remoting.SignalStrategy.State} state
+ */
+remoting.SessionConnector.prototype.onSignalingState_ = function(state) {
+  switch (state) {
+    case remoting.SignalStrategy.State.CONNECTED:
+      // Proceed only if the connection hasn't been canceled.
+      if (this.hostJid_) {
+        this.createSession_();
+      }
+      break;
+
+    case remoting.SignalStrategy.State.FAILED:
+      this.onError_(this.signalStrategy_.getError());
+      break;
+  }
+};
+
+/**
  * Continue an IT2Me connection once an access token has been obtained.
  *
  * @param {string} token An OAuth2 access token.
@@ -393,10 +459,10 @@ remoting.SessionConnector.prototype.createSession_ = function() {
   var authenticationMethods =
      'third_party,spake2_pair,spake2_hmac,spake2_plain';
   this.clientSession_ = new remoting.ClientSession(
-      this.clientContainer_, this.hostDisplayName_, this.passPhrase_,
-      this.fetchPin_, this.fetchThirdPartyToken_, authenticationMethods,
-      this.hostId_, this.hostJid_, this.hostPublicKey_, this.connectionMode_,
-      this.clientPairingId_, this.clientPairedSecret_);
+      this.signalStrategy_, this.clientContainer_, this.hostDisplayName_,
+      this.passPhrase_, this.fetchPin_, this.fetchThirdPartyToken_,
+      authenticationMethods, this.hostId_, this.hostJid_, this.hostPublicKey_,
+      this.connectionMode_, this.clientPairingId_, this.clientPairedSecret_);
   this.clientSession_.logHostOfflineErrors(!this.refreshHostJidIfOffline_);
   this.clientSession_.addEventListener(
       remoting.ClientSession.Events.stateChanged,
@@ -418,8 +484,8 @@ remoting.SessionConnector.prototype.onStateChange_ = function(event) {
   switch (event.current) {
     case remoting.ClientSession.State.CONNECTED:
       // When the connection succeeds, deregister for state-change callbacks
-      // and pass the session to the onOk callback. It is expected that it
-      // will register a new state-change callback to handle disconnect
+      // and pass the session to the onConnected callback. It is expected that
+      // it will register a new state-change callback to handle disconnect
       // or error conditions.
       this.clientSession_.removeEventListener(
           remoting.ClientSession.Events.stateChanged,
@@ -430,7 +496,7 @@ remoting.SessionConnector.prototype.onStateChange_ = function(event) {
         this.reconnector_ =
             new remoting.SmartReconnector(this, this.clientSession_);
       }
-      this.onOk_(this.clientSession_);
+      this.onConnected_(this.clientSession_);
       break;
 
     case remoting.ClientSession.State.CREATED:

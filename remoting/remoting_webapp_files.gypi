@@ -108,15 +108,14 @@
       'webapp/host_settings.js',
       'webapp/host_table_entry.js',
     ],
-    # Remoting XMPP JavaScript files.
-    'remoting_webapp_js_xmpp_files': [
+    # Remoting signaling files.
+    'remoting_webapp_js_signaling_files': [
+      'webapp/signal_strategy.js',
+      'webapp/wcs_adapter.js',
+      'webapp/wcs_sandbox_container.js',
       'webapp/xmpp_connection.js',
       'webapp/xmpp_login_handler.js',
       'webapp/xmpp_stream_parser.js',
-    ],
-    # Remoting WCS container JavaScript files.
-    'remoting_webapp_js_wcs_container_files': [
-      'webapp/wcs_sandbox_container.js',
     ],
     # Remoting WCS sandbox JavaScript files.
     'remoting_webapp_js_wcs_sandbox_files': [
@@ -185,8 +184,7 @@
       '<@(remoting_webapp_js_ui_files)',
       '<@(remoting_webapp_js_ui_host_control_files)',
       '<@(remoting_webapp_js_ui_host_display_files)',
-      '<@(remoting_webapp_js_wcs_container_files)',
-      '<@(remoting_webapp_js_xmpp_files)',
+      '<@(remoting_webapp_js_signaling_files)',
       # Uncomment this line to include browser test files in the web app
       # to expedite debugging or local development.
       # '<@(remoting_webapp_js_browser_test_files)'

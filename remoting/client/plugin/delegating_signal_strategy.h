@@ -42,8 +42,6 @@ class DelegatingSignalStrategy : public SignalStrategy {
 
   ObserverList<Listener> listeners_;
 
-  int last_id_;
-
   DISALLOW_COPY_AND_ASSIGN(DelegatingSignalStrategy);
 };
 

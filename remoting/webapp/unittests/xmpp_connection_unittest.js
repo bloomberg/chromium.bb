@@ -29,7 +29,8 @@ module('XmppConnection', {
     sinon.stub(chrome.socket, 'destroy');
     sinon.stub(chrome.socket, 'secure');
 
-    connection = new remoting.XmppConnection(onStateChange, onStanza);
+    connection = new remoting.XmppConnection(onStateChange);
+    connection.setIncomingStanzaCallback(onStanza);
   },
 
   teardown: function() {
@@ -46,7 +47,7 @@ test('should go to FAILED state when failed to connect', function() {
   connection.connect(
       'xmpp.example.com:123', 'testUsername@gmail.com', 'testToken');
   sinon.assert.calledWith(onStateChange,
-                          remoting.XmppConnection.State.CONNECTING);
+                          remoting.SignalStrategy.State.CONNECTING);
   sinon.assert.calledWith(chrome.socket.create, "tcp", {});
   chrome.socket.create.getCall(0).args[2]({socketId: socketId});
 
@@ -62,7 +63,7 @@ test('should use XmppLoginHandler to complete handshake and read data',
   connection.connect(
       'xmpp.example.com:123', 'testUsername@gmail.com', 'testToken');
   sinon.assert.calledWith(onStateChange,
-                          remoting.XmppConnection.State.CONNECTING);
+                          remoting.SignalStrategy.State.CONNECTING);
   sinon.assert.calledWith(chrome.socket.create, "tcp", {});
   chrome.socket.create.getCall(0).args[2]({socketId: socketId});
 
@@ -71,7 +72,7 @@ test('should use XmppLoginHandler to complete handshake and read data',
   chrome.socket.connect.getCall(0).args[3](0);
 
   sinon.assert.calledWith(onStateChange,
-                          remoting.XmppConnection.State.HANDSHAKE);
+                          remoting.SignalStrategy.State.HANDSHAKE);
 
   var parser = new remoting.XmppStreamParser();
   var parserMock = sinon.mock(parser);
@@ -79,7 +80,7 @@ test('should use XmppLoginHandler to complete handshake and read data',
   connection.loginHandler_.onHandshakeDoneCallback_('test@example.com/123123',
                                                     parser);
   sinon.assert.calledWith(onStateChange,
-                          remoting.XmppConnection.State.CONNECTED);
+                          remoting.SignalStrategy.State.CONNECTED);
   setCallbacksCalled.verify();
 
   // Simulate read() callback with |data|. It should be passed to the parser.

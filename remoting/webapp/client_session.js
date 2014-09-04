@@ -30,6 +30,7 @@ var remoting = remoting || {};
 remoting.enableCast = false;
 
 /**
+ * @param {remoting.SignalStrategy} signalStrategy Signal strategy.
  * @param {HTMLElement} container Container element for the client view.
  * @param {string} hostDisplayName A human-readable name for the host.
  * @param {string} accessCode The IT2Me access code. Blank for Me2Me.
@@ -55,8 +56,8 @@ remoting.enableCast = false;
  * @constructor
  * @extends {base.EventSource}
  */
-remoting.ClientSession = function(container, hostDisplayName, accessCode,
-                                  fetchPin, fetchThirdPartyToken,
+remoting.ClientSession = function(signalStrategy, container, hostDisplayName,
+                                  accessCode, fetchPin, fetchThirdPartyToken,
                                   authenticationMethods, hostId, hostJid,
                                   hostPublicKey, mode, clientPairingId,
                                   clientPairedSecret) {
@@ -106,6 +107,14 @@ remoting.ClientSession = function(container, hostDisplayName, accessCode,
   /** @private */
   this.hasReceivedFrame_ = false;
   this.logToServer = new remoting.LogToServer();
+
+  /** @private */
+  this.signalStrategy_ = signalStrategy;
+  base.debug.assert(this.signalStrategy_.getState() ==
+                    remoting.SignalStrategy.State.CONNECTED);
+  this.signalStrategy_.setIncomingStanzaCallback(
+      this.onIncomingMessage_.bind(this));
+  remoting.formatIq.setJids(this.signalStrategy_.getJid(), hostJid);
 
   /** @type {number?} @private */
   this.notifyClientResolutionTimer_ = null;
@@ -490,6 +499,7 @@ remoting.ClientSession.prototype.setFocusHandlers_ = function() {
  * @param {remoting.Error} error
  */
 remoting.ClientSession.prototype.resetWithError_ = function(error) {
+  this.signalStrategy_.setIncomingStanzaCallback(null);
   this.plugin_.cleanup();
   this.plugin_ = null;
   this.error_ = error;
@@ -526,7 +536,6 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
   if (this.plugin_.hasFeature(remoting.ClientPlugin.Feature.REMAP_KEY)) {
     this.applyRemapKeys_(true);
   }
-
 
   // Enable MediaSource-based rendering on Chrome 37 and above.
   var chromeVersionMajor =
@@ -639,7 +648,6 @@ remoting.ClientSession.prototype.disconnect = function(error) {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.cleanup = function() {
-  remoting.wcsSandbox.setOnIq(null);
   this.sendIq_(
       '<cli:iq ' +
           'to="' + this.hostJid_ + '" ' +
@@ -832,16 +840,16 @@ remoting.ClientSession.prototype.hasReceivedFrame = function() {
 };
 
 /**
- * Sends an IQ stanza via the http xmpp proxy.
+ * Sends a signaling message.
  *
  * @private
- * @param {string} msg XML string of IQ stanza to send to server.
+ * @param {string} message XML string of IQ stanza to send to server.
  * @return {void} Nothing.
  */
-remoting.ClientSession.prototype.sendIq_ = function(msg) {
+remoting.ClientSession.prototype.sendIq_ = function(message) {
   // Extract the session id, so we can close the session later.
   var parser = new DOMParser();
-  var iqNode = parser.parseFromString(msg, 'text/xml').firstChild;
+  var iqNode = parser.parseFromString(message, 'text/xml').firstChild;
   var jingleNode = iqNode.firstChild;
   if (jingleNode) {
     var action = jingleNode.getAttribute('action');
@@ -850,76 +858,46 @@ remoting.ClientSession.prototype.sendIq_ = function(msg) {
     }
   }
 
-  // HACK: Add 'x' prefix to the IDs of the outgoing messages to make sure that
-  // stanza IDs used by host and client do not match. This is necessary to
-  // workaround bug in the signaling endpoint used by chromoting.
-  // TODO(sergeyu): Remove this hack once the server-side bug is fixed.
-  var type = iqNode.getAttribute('type');
-  if (type == 'set') {
-    var id = iqNode.getAttribute('id');
-    iqNode.setAttribute('id', 'x' + id);
-    msg = (new XMLSerializer()).serializeToString(iqNode);
+  console.log(remoting.timestamp(), remoting.formatIq.prettifySendIq(message));
+  if (this.signalStrategy_.getState() !=
+      remoting.SignalStrategy.State.CONNECTED) {
+    console.log("Message above is dropped because signaling is not connected.");
+    return;
   }
 
-  console.log(remoting.timestamp(), remoting.formatIq.prettifySendIq(msg));
-
-  // Send the stanza.
-  remoting.wcsSandbox.sendIq(msg);
+  this.signalStrategy_.sendMessage(message);
 };
 
+/**
+ * @private
+ * @param {Element} message
+ */
+remoting.ClientSession.prototype.onIncomingMessage_ = function(message) {
+  if (!this.plugin_) {
+    return;
+  }
+  var formatted = new XMLSerializer().serializeToString(message);
+  console.log(remoting.timestamp(),
+              remoting.formatIq.prettifyReceiveIq(formatted));
+  this.plugin_.onIncomingIq(formatted);
+}
+
+/**
+ * @private
+ */
 remoting.ClientSession.prototype.initiateConnection_ = function() {
   /** @type {remoting.ClientSession} */
   var that = this;
 
-  remoting.wcsSandbox.connect(onWcsConnected, this.resetWithError_.bind(this));
-
-  /** @param {string} localJid Local JID. */
-  function onWcsConnected(localJid) {
-    that.connectPluginToWcs_(localJid);
-    that.getSharedSecret_(onSharedSecretReceived.bind(null, localJid));
-  }
-
-  /** @param {string} localJid Local JID.
-    * @param {string} sharedSecret Shared secret. */
-  function onSharedSecretReceived(localJid, sharedSecret) {
+  /** @param {string} sharedSecret Shared secret. */
+  function onSharedSecretReceived(sharedSecret) {
     that.plugin_.connect(
-        that.hostJid_, that.hostPublicKey_, localJid, sharedSecret,
-        that.authenticationMethods_, that.hostId_, that.clientPairingId_,
-        that.clientPairedSecret_);
+        that.hostJid_, that.hostPublicKey_, that.signalStrategy_.getJid(),
+        sharedSecret, that.authenticationMethods_, that.hostId_,
+        that.clientPairingId_, that.clientPairedSecret_);
   };
-}
 
-/**
- * Connects the plugin to WCS.
- *
- * @private
- * @param {string} localJid Local JID.
- * @return {void} Nothing.
- */
-remoting.ClientSession.prototype.connectPluginToWcs_ = function(localJid) {
-  remoting.formatIq.setJids(localJid, this.hostJid_);
-  var forwardIq = this.plugin_.onIncomingIq.bind(this.plugin_);
-  /** @param {string} stanza The IQ stanza received. */
-  var onIncomingIq = function(stanza) {
-    // HACK: Remove 'x' prefix added to the id in sendIq_().
-    try {
-      var parser = new DOMParser();
-      var iqNode = parser.parseFromString(stanza, 'text/xml').firstChild;
-      var type = iqNode.getAttribute('type');
-      var id = iqNode.getAttribute('id');
-      if (type != 'set' && id.charAt(0) == 'x') {
-        iqNode.setAttribute('id', id.substr(1));
-        stanza = (new XMLSerializer()).serializeToString(iqNode);
-      }
-    } catch (err) {
-      // Pass message as is when it is malformed.
-    }
-
-    console.log(remoting.timestamp(),
-                remoting.formatIq.prettifyReceiveIq(stanza));
-    forwardIq(stanza);
-  };
-  remoting.wcsSandbox.setOnIq(onIncomingIq);
+  this.getSharedSecret_(onSharedSecretReceived);
 }
 
 /**

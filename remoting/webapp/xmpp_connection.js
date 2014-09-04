@@ -15,27 +15,24 @@ var remoting = remoting || {};
  * because TLS support in chrome.sockets.tcp is currently broken, see
  * crbug.com/403076 .
  *
- * @param {function(remoting.XmppConnection.State):void} onStateChangedCallback
+ * @param {function(remoting.SignalStrategy.State):void} onStateChangedCallback
  *   Callback to call on state change.
- * @param {function(Element):void} onIncomingStanzaCallback Callback to call to
- *   handle incoming messages.
  * @constructor
- * @implements {base.Disposable}
+ * @implements {remoting.SignalStrategy}
  */
-remoting.XmppConnection =
-    function(onStateChangedCallback, onIncomingStanzaCallback) {
+remoting.XmppConnection = function(onStateChangedCallback) {
   /** @private */
   this.server_ = '';
   /** @private */
   this.port_ = 0;
   /** @private */
   this.onStateChangedCallback_ = onStateChangedCallback;
-  /** @private */
-  this.onIncomingStanzaCallback_ = onIncomingStanzaCallback;
+  /** @type {?function(Element):void} @private */
+  this.onIncomingStanzaCallback_ = null;
   /** @private */
   this.socketId_ = -1;
   /** @private */
-  this.state_ = remoting.XmppConnection.State.NOT_CONNECTED;
+  this.state_ = remoting.SignalStrategy.State.NOT_CONNECTED;
   /** @private */
   this.readPending_ = false;
   /** @private */
@@ -55,21 +52,12 @@ remoting.XmppConnection =
 };
 
 /**
- * @enum {number} XmppConnection states. Possible state transitions:
- *    NOT_CONNECTED -> CONNECTING (connect() called).
- *    CONNECTING -> HANDSHAKE (connected successfully).
- *    HANDSHAKE -> CONNECTED (authenticated successfully).
- *    CONNECTING -> FAILED (connection failed).
- *    HANDSHAKE -> FAILED (authentication failed).
- *    * -> CLOSED (dispose() called).
+ * @param {?function(Element):void} onIncomingStanzaCallback Callback to call on
+ *     incoming messages.
  */
-remoting.XmppConnection.State = {
-  NOT_CONNECTED: 0,
-  CONNECTING: 1,
-  HANDSHAKE: 2,
-  CONNECTED: 3,
-  FAILED: 4,
-  CLOSED: 5
+remoting.XmppConnection.prototype.setIncomingStanzaCallback =
+    function(onIncomingStanzaCallback) {
+  this.onIncomingStanzaCallback_ = onIncomingStanzaCallback;
 };
 
 /**
@@ -79,7 +67,7 @@ remoting.XmppConnection.State = {
  */
 remoting.XmppConnection.prototype.connect =
     function(server, username, authToken) {
-  base.debug.assert(this.state_ == remoting.XmppConnection.State.NOT_CONNECTED);
+  base.debug.assert(this.state_ == remoting.SignalStrategy.State.NOT_CONNECTED);
 
   this.error_ = remoting.Error.NONE;
   var hostnameAndPort = server.split(':', 2);
@@ -108,16 +96,16 @@ remoting.XmppConnection.prototype.connect =
                                     this.onHandshakeDone_.bind(this),
                                     this.onError_.bind(this));
   chrome.socket.create("tcp", {}, this.onSocketCreated_.bind(this));
-  this.setState_(remoting.XmppConnection.State.CONNECTING);
+  this.setState_(remoting.SignalStrategy.State.CONNECTING);
 };
 
 /** @param {string} message */
 remoting.XmppConnection.prototype.sendMessage = function(message) {
-  base.debug.assert(this.state_ == remoting.XmppConnection.State.CONNECTED);
+  base.debug.assert(this.state_ == remoting.SignalStrategy.State.CONNECTED);
   this.sendInternal_(message);
 };
 
-/** @return {remoting.XmppConnection.State} Current state */
+/** @return {remoting.SignalStrategy.State} Current state */
 remoting.XmppConnection.prototype.getState = function() {
   return this.state_;
 };
@@ -134,7 +122,7 @@ remoting.XmppConnection.prototype.getJid = function() {
 
 remoting.XmppConnection.prototype.dispose = function() {
   this.closeSocket_();
-  this.setState_(remoting.XmppConnection.State.CLOSED);
+  this.setState_(remoting.SignalStrategy.State.CLOSED);
 };
 
 /**
@@ -143,7 +131,7 @@ remoting.XmppConnection.prototype.dispose = function() {
  */
 remoting.XmppConnection.prototype.onSocketCreated_ = function(createInfo) {
   // Check if connection was destroyed.
-  if (this.state_ != remoting.XmppConnection.State.CONNECTING) {
+  if (this.state_ != remoting.SignalStrategy.State.CONNECTING) {
     chrome.socket.destroy(createInfo.socketId);
     return;
   }
@@ -162,7 +150,7 @@ remoting.XmppConnection.prototype.onSocketCreated_ = function(createInfo) {
  */
 remoting.XmppConnection.prototype.onSocketConnected_ = function(result) {
   // Check if connection was destroyed.
-  if (this.state_ != remoting.XmppConnection.State.CONNECTING) {
+  if (this.state_ != remoting.SignalStrategy.State.CONNECTING) {
     return;
   }
 
@@ -172,7 +160,7 @@ remoting.XmppConnection.prototype.onSocketConnected_ = function(result) {
     return;
   }
 
-  this.setState_(remoting.XmppConnection.State.HANDSHAKE);
+  this.setState_(remoting.SignalStrategy.State.HANDSHAKE);
 
   this.tryRead_();
   this.loginHandler_.start();
@@ -183,8 +171,8 @@ remoting.XmppConnection.prototype.onSocketConnected_ = function(result) {
  */
 remoting.XmppConnection.prototype.tryRead_ = function() {
   base.debug.assert(!this.readPending_);
-  base.debug.assert(this.state_ == remoting.XmppConnection.State.HANDSHAKE ||
-                    this.state_ == remoting.XmppConnection.State.CONNECTED);
+  base.debug.assert(this.state_ == remoting.SignalStrategy.State.HANDSHAKE ||
+                    this.state_ == remoting.SignalStrategy.State.CONNECTED);
   base.debug.assert(!this.startTlsPending_);
 
   this.readPending_ = true;
@@ -200,10 +188,11 @@ remoting.XmppConnection.prototype.onRead_ = function(readInfo) {
   this.readPending_ = false;
 
   // Check if the socket was closed while reading.
-  if (this.state_ != remoting.XmppConnection.State.HANDSHAKE &&
-      this.state_ != remoting.XmppConnection.State.CONNECTED) {
+  if (this.state_ != remoting.SignalStrategy.State.HANDSHAKE &&
+      this.state_ != remoting.SignalStrategy.State.CONNECTED) {
     return;
   }
+
 
   if (readInfo.resultCode < 0) {
     this.onError_(remoting.Error.NETWORK_FAILURE,
@@ -211,9 +200,9 @@ remoting.XmppConnection.prototype.onRead_ = function(readInfo) {
     return;
   }
 
-  if (this.state_ == remoting.XmppConnection.State.HANDSHAKE) {
+  if (this.state_ == remoting.SignalStrategy.State.HANDSHAKE) {
     this.loginHandler_.onDataReceived(readInfo.data);
-  } else if (this.state_ == remoting.XmppConnection.State.CONNECTED) {
+  } else if (this.state_ == remoting.SignalStrategy.State.CONNECTED) {
     this.streamParser_.appendData(readInfo.data);
   }
 
@@ -253,8 +242,8 @@ remoting.XmppConnection.prototype.onWrite_ = function(writeInfo) {
   this.sendPending_ = false;
 
   // Ignore write() result if the socket was closed.
-  if (this.state_ != remoting.XmppConnection.State.HANDSHAKE &&
-      this.state_ != remoting.XmppConnection.State.CONNECTED) {
+  if (this.state_ != remoting.SignalStrategy.State.HANDSHAKE &&
+      this.state_ != remoting.SignalStrategy.State.CONNECTED) {
     return;
   }
 
@@ -316,9 +305,19 @@ remoting.XmppConnection.prototype.onHandshakeDone_ =
     function(jid, streamParser) {
   this.jid_ = jid;
   this.streamParser_ = streamParser;
-  this.streamParser_.setCallbacks(this.onIncomingStanzaCallback_,
+  this.streamParser_.setCallbacks(this.onIncomingStanza_.bind(this),
                                   this.onParserError_.bind(this));
-  this.setState_(remoting.XmppConnection.State.CONNECTED);
+  this.setState_(remoting.SignalStrategy.State.CONNECTED);
+};
+
+/**
+ * @param {Element} stanza
+ * @private
+ */
+remoting.XmppConnection.prototype.onIncomingStanza_ = function(stanza) {
+  if (this.onIncomingStanzaCallback_) {
+    this.onIncomingStanzaCallback_(stanza);
+  }
 };
 
 /**
@@ -338,7 +337,7 @@ remoting.XmppConnection.prototype.onError_ = function(error, text) {
   console.error(text);
   this.error_ = error;
   this.closeSocket_();
-  this.setState_(remoting.XmppConnection.State.FAILED);
+  this.setState_(remoting.SignalStrategy.State.FAILED);
 };
 
 /**
@@ -352,7 +351,7 @@ remoting.XmppConnection.prototype.closeSocket_ = function() {
 };
 
 /**
- * @param {remoting.XmppConnection.State} newState
+ * @param {remoting.SignalStrategy.State} newState
  * @private
  */
 remoting.XmppConnection.prototype.setState_ = function(newState) {
