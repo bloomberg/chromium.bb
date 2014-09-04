@@ -49,7 +49,9 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/ct_known_logs.h"
+#include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_verifier.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/host_cache.h"
@@ -86,11 +88,6 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/event_router_forwarder.h"
-#endif
-
-#if !defined(USE_OPENSSL)
-#include "net/cert/ct_log_verifier.h"
-#include "net/cert/multi_log_ct_verifier.h"
 #endif
 
 #if defined(USE_NSS) || defined(OS_IOS)
@@ -593,10 +590,8 @@ void IOThread::InitAsync() {
       net::CertVerifyProc::CreateDefault()));
 #endif
 
-    globals_->transport_security_state.reset(new net::TransportSecurityState());
-#if !defined(USE_OPENSSL)
-  // For now, Certificate Transparency is only implemented for platforms
-  // that use NSS.
+  globals_->transport_security_state.reset(new net::TransportSecurityState());
+
   net::MultiLogCTVerifier* ct_verifier = new net::MultiLogCTVerifier();
   globals_->cert_transparency_verifier.reset(ct_verifier);
 
@@ -628,12 +623,7 @@ void IOThread::InitAsync() {
       ct_verifier->AddLog(external_log_verifier.Pass());
     }
   }
-#else
-  if (command_line.HasSwitch(switches::kCertificateTransparencyLog)) {
-    LOG(DFATAL) << "Certificate Transparency is not yet supported in Chrome "
-                   "builds using OpenSSL.";
-  }
-#endif
+
   globals_->ssl_config_service = GetSSLConfigService();
 
 #if defined(SPDY_PROXY_AUTH_ORIGIN)

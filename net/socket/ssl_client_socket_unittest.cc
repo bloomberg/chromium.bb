@@ -15,6 +15,8 @@
 #include "net/base/net_log_unittest.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_data_directory.h"
+#include "net/cert/asn1_util.h"
+#include "net/cert/ct_verifier.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/test_root_certs.h"
 #include "net/dns/host_resolver.h"
@@ -29,10 +31,15 @@
 #include "net/ssl/ssl_config_service.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
 //-----------------------------------------------------------------------------
+
+using testing::_;
+using testing::Return;
+using testing::Truly;
 
 namespace net {
 
@@ -656,6 +663,17 @@ class AsyncFailingChannelIDStore : public ChannelIDStore {
   virtual void SetForceKeepSessionState() OVERRIDE {}
 };
 
+// A mock CTVerifier that records every call to Verify but doesn't verify
+// anything.
+class MockCTVerifier : public CTVerifier {
+ public:
+  MOCK_METHOD5(Verify, int(X509Certificate*,
+                           const std::string&,
+                           const std::string&,
+                           ct::CTVerifyResult*,
+                           const BoundNetLog&));
+};
+
 class SSLClientSocketTest : public PlatformTest {
  public:
   SSLClientSocketTest()
@@ -676,6 +694,10 @@ class SSLClientSocketTest : public PlatformTest {
 
   // The SpawnedTestServer object, after calling StartTestServer().
   const SpawnedTestServer* test_server() const { return test_server_.get(); }
+
+  void SetCTVerifier(CTVerifier* ct_verifier) {
+    context_.cert_transparency_verifier = ct_verifier;
+  }
 
   // Starts the test server with SSL configuration |ssl_options|. Returns true
   // on success.
@@ -2483,44 +2505,44 @@ TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnabledTLSExtension) {
   ASSERT_TRUE(test_server.GetAddressList(&addr));
 
   TestCompletionCallback callback;
-  CapturingNetLog log;
   scoped_ptr<StreamSocket> transport(
-      new TCPClientSocket(addr, &log, NetLog::Source()));
-  int rv = transport->Connect(callback.callback());
-  if (rv == ERR_IO_PENDING)
-    rv = callback.WaitForResult();
+      new TCPClientSocket(addr, &log_, NetLog::Source()));
+  int rv = callback.GetResult(transport->Connect(callback.callback()));
   EXPECT_EQ(OK, rv);
 
   SSLConfig ssl_config;
   ssl_config.signed_cert_timestamps_enabled = true;
 
+  MockCTVerifier ct_verifier;
+  SetCTVerifier(&ct_verifier);
+
+  // Check that the SCT list is extracted as expected.
+  EXPECT_CALL(ct_verifier, Verify(_, "", "test", _, _)).WillRepeatedly(
+      Return(ERR_CT_NO_SCTS_VERIFIED_OK));
+
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
       transport.Pass(), test_server.host_port_pair(), ssl_config));
-
-  EXPECT_FALSE(sock->IsConnected());
-
-  rv = sock->Connect(callback.callback());
-
-  CapturingNetLog::CapturedEntryList entries;
-  log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsBeginEvent(entries, 5, NetLog::TYPE_SSL_CONNECT));
-  if (rv == ERR_IO_PENDING)
-    rv = callback.WaitForResult();
+  rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_EQ(OK, rv);
-  EXPECT_TRUE(sock->IsConnected());
-  log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsSSLConnectEndEvent(entries, -1));
 
-#if !defined(USE_OPENSSL)
   EXPECT_TRUE(sock->signed_cert_timestamps_received_);
-#else
-  // Enabling CT for OpenSSL is currently a noop.
-  EXPECT_FALSE(sock->signed_cert_timestamps_received_);
-#endif
-
-  sock->Disconnect();
-  EXPECT_FALSE(sock->IsConnected());
 }
+
+namespace {
+
+bool IsValidOCSPResponse(const base::StringPiece& input) {
+  base::StringPiece ocsp_response = input;
+  base::StringPiece sequence, response_status, response_bytes;
+  return asn1::GetElement(&ocsp_response, asn1::kSEQUENCE, &sequence) &&
+      ocsp_response.empty() &&
+      asn1::GetElement(&sequence, asn1::kENUMERATED, &response_status) &&
+      asn1::GetElement(&sequence,
+                       asn1::kContextSpecific | asn1::kConstructed | 0,
+                       &response_status) &&
+      sequence.empty();
+}
+
+}  // namespace
 
 // Test that enabling Signed Certificate Timestamps enables OCSP stapling.
 TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnabledOCSP) {
@@ -2539,12 +2561,9 @@ TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnabledOCSP) {
   ASSERT_TRUE(test_server.GetAddressList(&addr));
 
   TestCompletionCallback callback;
-  CapturingNetLog log;
   scoped_ptr<StreamSocket> transport(
-      new TCPClientSocket(addr, &log, NetLog::Source()));
-  int rv = transport->Connect(callback.callback());
-  if (rv == ERR_IO_PENDING)
-    rv = callback.WaitForResult();
+      new TCPClientSocket(addr, &log_, NetLog::Source()));
+  int rv = callback.GetResult(transport->Connect(callback.callback()));
   EXPECT_EQ(OK, rv);
 
   SSLConfig ssl_config;
@@ -2553,32 +2572,24 @@ TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnabledOCSP) {
   // is able to process the OCSP status itself.
   ssl_config.signed_cert_timestamps_enabled = true;
 
+  MockCTVerifier ct_verifier;
+  SetCTVerifier(&ct_verifier);
+
+  // Check that the OCSP response is extracted and well-formed. It should be the
+  // DER encoding of an OCSPResponse (RFC 2560), so check that it consists of a
+  // SEQUENCE of an ENUMERATED type and an element tagged with [0] EXPLICIT. In
+  // particular, it should not include the overall two-byte length prefix from
+  // TLS.
+  EXPECT_CALL(ct_verifier,
+              Verify(_, Truly(IsValidOCSPResponse), "", _, _)).WillRepeatedly(
+                  Return(ERR_CT_NO_SCTS_VERIFIED_OK));
+
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
       transport.Pass(), test_server.host_port_pair(), ssl_config));
-
-  EXPECT_FALSE(sock->IsConnected());
-
-  rv = sock->Connect(callback.callback());
-
-  CapturingNetLog::CapturedEntryList entries;
-  log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsBeginEvent(entries, 5, NetLog::TYPE_SSL_CONNECT));
-  if (rv == ERR_IO_PENDING)
-    rv = callback.WaitForResult();
+  rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_EQ(OK, rv);
-  EXPECT_TRUE(sock->IsConnected());
-  log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsSSLConnectEndEvent(entries, -1));
 
-#if !defined(USE_OPENSSL)
   EXPECT_TRUE(sock->stapled_ocsp_response_received_);
-#else
-  // OCSP stapling isn't currently supported in the OpenSSL socket.
-  EXPECT_FALSE(sock->stapled_ocsp_response_received_);
-#endif
-
-  sock->Disconnect();
-  EXPECT_FALSE(sock->IsConnected());
 }
 
 TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsDisabled) {
@@ -2594,12 +2605,9 @@ TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsDisabled) {
   ASSERT_TRUE(test_server.GetAddressList(&addr));
 
   TestCompletionCallback callback;
-  CapturingNetLog log;
   scoped_ptr<StreamSocket> transport(
-      new TCPClientSocket(addr, &log, NetLog::Source()));
-  int rv = transport->Connect(callback.callback());
-  if (rv == ERR_IO_PENDING)
-    rv = callback.WaitForResult();
+      new TCPClientSocket(addr, &log_, NetLog::Source()));
+  int rv = callback.GetResult(transport->Connect(callback.callback()));
   EXPECT_EQ(OK, rv);
 
   SSLConfig ssl_config;
@@ -2607,25 +2615,10 @@ TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsDisabled) {
 
   scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
       transport.Pass(), test_server.host_port_pair(), ssl_config));
-
-  EXPECT_FALSE(sock->IsConnected());
-
-  rv = sock->Connect(callback.callback());
-
-  CapturingNetLog::CapturedEntryList entries;
-  log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsBeginEvent(entries, 5, NetLog::TYPE_SSL_CONNECT));
-  if (rv == ERR_IO_PENDING)
-    rv = callback.WaitForResult();
+  rv = callback.GetResult(sock->Connect(callback.callback()));
   EXPECT_EQ(OK, rv);
-  EXPECT_TRUE(sock->IsConnected());
-  log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsSSLConnectEndEvent(entries, -1));
 
   EXPECT_FALSE(sock->signed_cert_timestamps_received_);
-
-  sock->Disconnect();
-  EXPECT_FALSE(sock->IsConnected());
 }
 
 // Tests that IsConnectedAndIdle and WasEverUsed behave as expected.

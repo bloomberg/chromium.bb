@@ -21,6 +21,7 @@
 #include "crypto/scoped_openssl_types.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/ct_verifier.h"
 #include "net/cert/single_request_cert_verifier.h"
 #include "net/cert/x509_certificate_net_log_param.h"
 #include "net/http/transport_security_state.h"
@@ -350,6 +351,7 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       was_ever_used_(false),
       client_auth_cert_needed_(false),
       cert_verifier_(context.cert_verifier),
+      cert_transparency_verifier_(context.cert_transparency_verifier),
       channel_id_service_(context.channel_id_service),
       ssl_(NULL),
       transport_bio_(NULL),
@@ -603,6 +605,8 @@ bool SSLClientSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->channel_id_sent = WasChannelIDSent();
   ssl_info->pinning_failure_log = pinning_failure_log_;
 
+  AddSCTInfoToSSLInfo(ssl_info);
+
   const SSL_CIPHER* cipher = SSL_get_current_cipher(ssl_);
   CHECK(cipher);
   ssl_info->security_bits = SSL_CIPHER_get_bits(cipher, NULL);
@@ -821,6 +825,14 @@ int SSLClientSocketOpenSSL::Init() {
                         wire_protos.size());
   }
 
+  if (ssl_config_.signed_cert_timestamps_enabled) {
+    SSL_enable_signed_cert_timestamps(ssl_);
+    SSL_enable_ocsp_stapling(ssl_);
+  }
+
+  // TODO(davidben): Enable OCSP stapling on platforms which support it and pass
+  // into the certificate verifier. https://crbug.com/398677
+
   return OK;
 }
 
@@ -915,6 +927,16 @@ int SSLClientSocketOpenSSL::DoHandshake() {
                            channel_id_xtn_negotiated_,
                            ssl_config_.channel_id_enabled,
                            crypto::ECPrivateKey::IsSupported());
+
+    uint8_t* ocsp_response;
+    size_t ocsp_response_len;
+    SSL_get0_ocsp_response(ssl_, &ocsp_response, &ocsp_response_len);
+    set_stapled_ocsp_response_received(ocsp_response_len != 0);
+
+    uint8_t* sct_list;
+    size_t sct_list_len;
+    SSL_get0_signed_cert_timestamp_list(ssl_, &sct_list, &sct_list_len);
+    set_signed_cert_timestamps_received(sct_list_len != 0);
 
     // Verify the certificate.
     const bool got_cert = !!UpdateServerCert();
@@ -1072,6 +1094,10 @@ int SSLClientSocketOpenSSL::DoVerifyCertComplete(int result) {
   }
 
   if (result == OK) {
+    // Only check Certificate Transparency if there were no other errors with
+    // the connection.
+    VerifyCT();
+
     // TODO(joth): Work out if we need to remember the intermediate CA certs
     // when the server sends them to us, and do so here.
     SSLContext::GetInstance()->session_cache()->MarkSSLSessionAsGood(ssl_);
@@ -1107,6 +1133,40 @@ X509Certificate* SSLClientSocketOpenSSL::UpdateServerCert() {
     DVLOG(1) << "UpdateServerCert received invalid certificate chain from peer";
 
   return server_cert_.get();
+}
+
+void SSLClientSocketOpenSSL::VerifyCT() {
+  if (!cert_transparency_verifier_)
+    return;
+
+  uint8_t* ocsp_response_raw;
+  size_t ocsp_response_len;
+  SSL_get0_ocsp_response(ssl_, &ocsp_response_raw, &ocsp_response_len);
+  std::string ocsp_response;
+  if (ocsp_response_len > 0) {
+    ocsp_response.assign(reinterpret_cast<const char*>(ocsp_response_raw),
+                         ocsp_response_len);
+  }
+
+  uint8_t* sct_list_raw;
+  size_t sct_list_len;
+  SSL_get0_signed_cert_timestamp_list(ssl_, &sct_list_raw, &sct_list_len);
+  std::string sct_list;
+  if (sct_list_len > 0)
+    sct_list.assign(reinterpret_cast<const char*>(sct_list_raw), sct_list_len);
+
+  // Note that this is a completely synchronous operation: The CT Log Verifier
+  // gets all the data it needs for SCT verification and does not do any
+  // external communication.
+  int result = cert_transparency_verifier_->Verify(
+      server_cert_verify_result_.verified_cert.get(),
+      ocsp_response, sct_list, &ct_verify_result_, net_log_);
+
+  VLOG(1) << "CT Verification complete: result " << result
+          << " Invalid scts: " << ct_verify_result_.invalid_scts.size()
+          << " Verified scts: " << ct_verify_result_.verified_scts.size()
+          << " scts from unknown logs: "
+          << ct_verify_result_.unknown_logs_scts.size();
 }
 
 void SSLClientSocketOpenSSL::OnHandshakeIOComplete(int result) {
@@ -1668,6 +1728,28 @@ void SSLClientSocketOpenSSL::InfoCallback(const SSL* ssl,
 void SSLClientSocketOpenSSL::CheckIfHandshakeFinished() {
   if (handshake_succeeded_ && marked_session_as_good_)
     OnHandshakeCompletion();
+}
+
+void SSLClientSocketOpenSSL::AddSCTInfoToSSLInfo(SSLInfo* ssl_info) const {
+  for (ct::SCTList::const_iterator iter =
+       ct_verify_result_.verified_scts.begin();
+       iter != ct_verify_result_.verified_scts.end(); ++iter) {
+    ssl_info->signed_certificate_timestamps.push_back(
+        SignedCertificateTimestampAndStatus(*iter, ct::SCT_STATUS_OK));
+  }
+  for (ct::SCTList::const_iterator iter =
+       ct_verify_result_.invalid_scts.begin();
+       iter != ct_verify_result_.invalid_scts.end(); ++iter) {
+    ssl_info->signed_certificate_timestamps.push_back(
+        SignedCertificateTimestampAndStatus(*iter, ct::SCT_STATUS_INVALID));
+  }
+  for (ct::SCTList::const_iterator iter =
+       ct_verify_result_.unknown_logs_scts.begin();
+       iter != ct_verify_result_.unknown_logs_scts.end(); ++iter) {
+    ssl_info->signed_certificate_timestamps.push_back(
+        SignedCertificateTimestampAndStatus(*iter,
+                                            ct::SCT_STATUS_LOG_UNKNOWN));
+  }
 }
 
 scoped_refptr<X509Certificate>

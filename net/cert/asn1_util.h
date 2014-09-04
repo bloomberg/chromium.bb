@@ -20,6 +20,7 @@ static const unsigned kINTEGER = 0x02;
 static const unsigned kBITSTRING = 0x03;
 static const unsigned kOCTETSTRING = 0x04;
 static const unsigned kOID = 0x06;
+static const unsigned kENUMERATED = 0x0A;
 static const unsigned kSEQUENCE = 0x30;
 
 // These are flags that can be ORed with the above tag numbers.
@@ -53,9 +54,9 @@ bool ParseElement(base::StringPiece* in,
 //
 // If |tag_value & kOptional| is true then this function cannot distinguish
 // between a missing optional element and an empty one.
-bool GetElement(base::StringPiece* in,
-                unsigned tag_value,
-                base::StringPiece* out);
+NET_EXPORT_PRIVATE bool GetElement(base::StringPiece* in,
+                                   unsigned tag_value,
+                                   base::StringPiece* out);
 
 // ExtractSPKIFromDERCert parses the DER encoded certificate in |cert| and
 // extracts the bytes of the SubjectPublicKeyInfo. On successful return,
