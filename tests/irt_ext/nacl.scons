@@ -12,12 +12,14 @@ if env.Bit('bitcode') or env.Bit('nacl_glibc'):
   Return()
 
 IRT_EXT_TEST_SRCS = [
+    'basic_calls.c',
     'error_report.c',
     'file_desc.c',
     'mem_calls.c',
     ]
 
 IRT_EXT_LIBC_TEST_SRCS = [
+    'libc/basic_tests.c',
     'libc/file_tests.c',
     'libc/libc_test.c',
     'libc/mem_tests.c',

@@ -24,6 +24,10 @@ static const struct nacl_irt_ext_struct nacl_irt_ext_structs[] = {
     .tablesize = sizeof(__libnacl_irt_fdio),
   },
   {
+    .interface_ident = NACL_IRT_BASIC_v0_1,
+    .table = &__libnacl_irt_basic,
+    .tablesize = sizeof(__libnacl_irt_basic)
+  }, {
     .interface_ident = NACL_IRT_DEV_FDIO_v0_3,
     .table = &__libnacl_irt_dev_fdio,
     .tablesize = sizeof(__libnacl_irt_dev_fdio),

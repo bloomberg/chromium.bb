@@ -7,6 +7,7 @@
 #ifndef NATIVE_CLIENT_TESTS_IRT_EXT_LIBC_TEST_H
 #define NATIVE_CLIENT_TESTS_IRT_EXT_LIBC_TEST_H
 
+int run_basic_tests(void);
 int run_file_tests(void);
 int run_mem_tests(void);
 
