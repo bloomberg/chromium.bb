@@ -95,14 +95,15 @@ void SyncInternalsMessageHandler::HandleRegisterForPerTypeCounters(
     const base::ListValue* args) {
   DCHECK(args->empty());
 
-  ProfileSyncService* service = GetProfileSyncService();
-  if (service && !is_registered_for_counters_) {
-    service->AddTypeDebugInfoObserver(this);
-    is_registered_for_counters_ = true;
-  } else {
-    // Re-register to ensure counters get re-emitted.
-    service->RemoveTypeDebugInfoObserver(this);
-    service->AddTypeDebugInfoObserver(this);
+  if (ProfileSyncService* service = GetProfileSyncService()) {
+    if (!is_registered_for_counters_) {
+      service->AddTypeDebugInfoObserver(this);
+      is_registered_for_counters_ = true;
+    } else {
+      // Re-register to ensure counters get re-emitted.
+      service->RemoveTypeDebugInfoObserver(this);
+      service->AddTypeDebugInfoObserver(this);
+    }
   }
 }
 
