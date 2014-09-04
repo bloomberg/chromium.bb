@@ -3549,8 +3549,9 @@ void HTMLMediaElement::setClosedCaptionsVisible(bool closedCaptionVisible)
 
     m_closedCaptionsVisible = closedCaptionVisible;
 
-    m_processingPreferenceChange = true;
     markCaptionAndSubtitleTracksAsUnconfigured();
+    m_processingPreferenceChange = true;
+    configureTextTracks();
     m_processingPreferenceChange = false;
 
     updateTextTrackDisplay();
@@ -3694,7 +3695,6 @@ void HTMLMediaElement::markCaptionAndSubtitleTracksAsUnconfigured()
         if (kind == TextTrack::subtitlesKeyword() || kind == TextTrack::captionsKeyword())
             textTrack->setHasBeenConfigured(false);
     }
-    configureTextTracks();
 }
 
 void* HTMLMediaElement::preDispatchEventHandler(Event* event)
