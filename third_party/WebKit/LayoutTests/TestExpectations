@@ -1083,8 +1083,6 @@ crbug.com/394216 media/video-seek-to-duration-with-playbackrate-zero.html [ Pass
 crbug.com/394225 [ Win ] fast/text/sub-pixel/text-scaling-webfont.html [ Crash Pass ]
 crbug.com/394230 [ Debug ] inspector/sources/debugger/debugger-script-preprocessor.html [ Crash Pass ]
 
-crbug.com/392853 fast/css/css-selector-deeply-nested.html [ Crash Pass ]
-
 # Failures that need further investigation.
 crbug.com/247716 [ Mac ] fast/frames/iframe-scaling-with-scroll.html [ NeedsManualRebaseline ]
 crbug.com/247716 [ Mac ] editing/spelling/inline-spelling-markers-hidpi-composited.html [ NeedsManualRebaseline ]
