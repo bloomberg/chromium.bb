@@ -49,6 +49,10 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
                             jboolean get_normal,
                             jobject j_result_obj);
 
+  void GetUncategorizedBookmarkIDs(JNIEnv* env,
+                                   jobject obj,
+                                   jobject j_result_obj);
+
   void GetChildIDs(JNIEnv* env,
                    jobject obj,
                    jlong id,

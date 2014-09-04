@@ -204,6 +204,17 @@ public class BookmarksBridge {
     }
 
     /**
+     * @return The uncategorized bookmark IDs. They are direct descendant bookmarks of mobile and
+     *         other folders.
+     */
+    public List<BookmarkId> getUncategorizedBookmarkIDs() {
+        assert mIsNativeBookmarkModelLoaded;
+        List<BookmarkId> result = new ArrayList<BookmarkId>();
+        nativeGetUncategorizedBookmarkIDs(mNativeBookmarksBridge, result);
+        return result;
+    }
+
+    /**
      * Reads sub-folder IDs, sub-bookmark IDs, or both of the given folder.
      *
      * @param getFolders   Whether sub-folders should be returned.
@@ -442,6 +453,8 @@ public class BookmarksBridge {
             List<BookmarkId> bookmarksList);
     private native void nativeGetTopLevelFolderIDs(long nativeBookmarksBridge, boolean getSpecial,
             boolean getNormal, List<BookmarkId> bookmarksList);
+    private native void nativeGetUncategorizedBookmarkIDs(long nativeBookmarksBridge,
+            List<BookmarkId> bookmarksList);
     private native void nativeGetChildIDs(long nativeBookmarksBridge, long id, int type,
             boolean getFolders, boolean getBookmarks, List<BookmarkId> bookmarksList);
     private native void nativeGetAllBookmarkIDsOrderedByCreationDate(long nativeBookmarksBridge,

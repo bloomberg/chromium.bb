@@ -245,6 +245,32 @@ void BookmarksBridge::GetTopLevelFolderIDs(JNIEnv* env,
   }
 }
 
+void BookmarksBridge::GetUncategorizedBookmarkIDs(JNIEnv* env,
+                                                  jobject obj,
+                                                  jobject j_result_obj) {
+  const BookmarkNode* mobile_node = bookmark_model_->mobile_node();
+  for (int i = 0; i < mobile_node->child_count(); ++i) {
+    const BookmarkNode* node = mobile_node->GetChild(i);
+    if (!node->is_folder()) {
+      Java_BookmarksBridge_addToBookmarkIdList(env,
+                                               j_result_obj,
+                                               node->id(),
+                                               GetBookmarkType(node));
+    }
+  }
+
+  const BookmarkNode* other_node = bookmark_model_->other_node();
+  for (int i = 0; i < other_node->child_count(); ++i) {
+    const BookmarkNode* node = other_node->GetChild(i);
+    if (!node->is_folder()) {
+      Java_BookmarksBridge_addToBookmarkIdList(env,
+                                               j_result_obj,
+                                               node->id(),
+                                               GetBookmarkType(node));
+    }
+  }
+}
+
 void BookmarksBridge::GetChildIDs(JNIEnv* env,
                                   jobject obj,
                                   jlong id,
