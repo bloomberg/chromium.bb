@@ -117,6 +117,8 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   // updated to match.
   InsertDataListValues(&values, &labels, &icons, &ids);
 
+// Temporarily disabled. See http://crbug.com/408695
+#if 0
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   if (values.empty() &&
       manager_->ShouldShowAccessAddressBookSuggestion(query_form_,
@@ -130,6 +132,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     EmitHistogram(SHOWED_ACCESS_ADDRESS_BOOK_ENTRY);
   }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif
 
   if (values.empty()) {
     // No suggestions, any popup currently showing is obsolete.
