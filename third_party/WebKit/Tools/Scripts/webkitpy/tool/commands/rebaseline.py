@@ -259,11 +259,10 @@ class OptimizeBaselines(AbstractRebaseliningCommand):
         if not port_names:
             print "No port names match '%s'" % options.platform
             return
-
-        optimizer = BaselineOptimizer(tool, port_names, skip_scm_commands=options.no_modify_scm)
         port = tool.port_factory.get(port_names[0])
-        for test_name in port.tests(args):
-            _log.info("Optimizing %s" % test_name)
+        optimizer = BaselineOptimizer(tool, port, port_names, skip_scm_commands=options.no_modify_scm)
+        tests = port.tests(args)
+        for test_name in tests:
             files_to_delete, files_to_add = self._optimize_baseline(optimizer, test_name)
             for path in files_to_delete:
                 self._delete_from_scm_later(path)
@@ -307,9 +306,8 @@ class AnalyzeBaselines(AbstractRebaseliningCommand):
         if not port_names:
             print "No port names match '%s'" % options.platform
             return
-
-        self._baseline_optimizer = self._optimizer_class(tool, port_names, skip_scm_commands=False)
         self._port = tool.port_factory.get(port_names[0])
+        self._baseline_optimizer = self._optimizer_class(tool, self._port, port_names, skip_scm_commands=False)
         for test_name in self._port.tests(args):
             self._analyze_baseline(options, test_name)
 

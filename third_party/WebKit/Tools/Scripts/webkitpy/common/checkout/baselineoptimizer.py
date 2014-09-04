@@ -48,34 +48,46 @@ def _invert_dictionary(dictionary):
 class BaselineOptimizer(object):
     ROOT_LAYOUT_TESTS_DIRECTORY = 'LayoutTests'
 
-    def __init__(self, host, port_names, skip_scm_commands):
+    def __init__(self, host, port, port_names, skip_scm_commands):
         self._filesystem = host.filesystem
-        self._port_factory = host.port_factory
         self._skip_scm_commands = skip_scm_commands
         self._files_to_delete = []
         self._files_to_add = []
         self._scm = host.scm()
-        self._port_names = port_names
+        self._default_port = port
+        self._ports = {}
+        for port_name in port_names:
+            self._ports[port_name] = host.port_factory.get(port_name)
+
+        self._webkit_base = port.webkit_base()
+        self._layout_tests_dir = port.layout_tests_dir()
+
         # Only used by unittests.
         self.new_results_by_directory = []
 
-    def _baseline_root(self, port, baseline_name):
-        virtual_suite = port.lookup_virtual_suite(baseline_name)
+    def _baseline_root(self, baseline_name):
+        virtual_suite = self._virtual_suite(baseline_name)
         if virtual_suite:
             return self._filesystem.join(self.ROOT_LAYOUT_TESTS_DIRECTORY, virtual_suite.name)
         return self.ROOT_LAYOUT_TESTS_DIRECTORY
 
     def _baseline_search_path(self, port, baseline_name):
-        virtual_suite = port.lookup_virtual_suite(baseline_name)
+        virtual_suite = self._virtual_suite(baseline_name)
         if virtual_suite:
             return port.virtual_baseline_search_path(baseline_name)
         return port.baseline_search_path()
 
-    @memoized
-    def _relative_baseline_search_paths(self, port_name, baseline_name):
-        port = self._port_factory.get(port_name)
-        relative_paths = [self._filesystem.relpath(path, port.webkit_base()) for path in self._baseline_search_path(port, baseline_name)]
-        return relative_paths + [self._baseline_root(port, baseline_name)]
+    def _virtual_suite(self, baseline_name):
+        return self._default_port.lookup_virtual_suite(baseline_name)
+
+    def _virtual_base(self, baseline_name):
+        return self._default_port.lookup_virtual_test_base(baseline_name)
+
+    def _relative_baseline_search_paths(self, port, baseline_name):
+        baseline_search_path = self._baseline_search_path(port, baseline_name)
+        baseline_root = self._baseline_root(baseline_name)
+        relative_paths = [self._filesystem.relpath(path, self._webkit_base) for path in baseline_search_path]
+        return relative_paths + [baseline_root]
 
     def _join_directory(self, directory, baseline_name):
         # This code is complicated because both the directory name and the baseline_name have the virtual
@@ -83,7 +95,7 @@ class BaselineOptimizer(object):
         # For example, virtual/gpu/fast/canvas/foo-expected.png corresponds to fast/canvas/foo-expected.png and
         # the baseline directories are like platform/mac/virtual/gpu/fast/canvas. So, to get the path
         # to the baseline in the platform directory, we need to append jsut foo-expected.png to the directory.
-        virtual_suite = self._port_factory.get().lookup_virtual_suite(baseline_name)
+        virtual_suite = self._virtual_suite(baseline_name)
         if virtual_suite:
             baseline_name_without_virtual = baseline_name[len(virtual_suite.name) + 1:]
         else:
@@ -92,7 +104,7 @@ class BaselineOptimizer(object):
 
     def read_results_by_directory(self, baseline_name):
         results_by_directory = {}
-        directories = reduce(set.union, map(set, [self._relative_baseline_search_paths(port_name, baseline_name) for port_name in self._port_names]))
+        directories = reduce(set.union, map(set, [self._relative_baseline_search_paths(port, baseline_name) for port in self._ports.values()]))
 
         for directory in directories:
             path = self._join_directory(directory, baseline_name)
@@ -102,8 +114,8 @@ class BaselineOptimizer(object):
 
     def _results_by_port_name(self, results_by_directory, baseline_name):
         results_by_port_name = {}
-        for port_name in self._port_names:
-            for directory in self._relative_baseline_search_paths(port_name, baseline_name):
+        for port_name, port in self._ports.items():
+            for directory in self._relative_baseline_search_paths(port, baseline_name):
                 if directory in results_by_directory:
                     results_by_port_name[port_name] = results_by_directory[directory]
                     break
@@ -112,9 +124,8 @@ class BaselineOptimizer(object):
     @memoized
     def _directories_immediately_preceding_root(self, baseline_name):
         directories = set()
-        for port_name in self._port_names:
-            port = self._port_factory.get(port_name)
-            directory = self._filesystem.relpath(self._baseline_search_path(port, baseline_name)[-1], port.webkit_base())
+        for port in self._ports.values():
+            directory = self._filesystem.relpath(self._baseline_search_path(port, baseline_name)[-1], self._webkit_base)
             directories.add(directory)
         return directories
 
@@ -141,7 +152,7 @@ class BaselineOptimizer(object):
             elif shared_result != this_result:
                 root_baseline_unused = True
 
-        baseline_root = self._baseline_root(self._port_factory.get(), baseline_name)
+        baseline_root = self._baseline_root(baseline_name)
 
         # The root baseline is unused if all the directories immediately preceding the root
         # have a baseline, but have different baselines, so the baselines can't be promoted up.
@@ -166,14 +177,14 @@ class BaselineOptimizer(object):
 
     def _remove_redundant_results(self, results_by_directory, results_by_port_name, port_names_by_result, baseline_name):
         new_results_by_directory = copy.copy(results_by_directory)
-        for port_name in self._port_names:
+        for port_name, port in self._ports.items():
             current_result = results_by_port_name.get(port_name)
 
             # This happens if we're missing baselines for a port.
             if not current_result:
                 continue;
 
-            fallback_path = self._relative_baseline_search_paths(port_name, baseline_name)
+            fallback_path = self._relative_baseline_search_paths(port, baseline_name)
             current_index, current_directory = self._find_in_fallbackpath(fallback_path, current_result, new_results_by_directory)
             for index in range(current_index + 1, len(fallback_path)):
                 new_directory = fallback_path[index]
@@ -296,16 +307,15 @@ class BaselineOptimizer(object):
         return True
 
     def _optimize_virtual_root(self, baseline_name, non_virtual_baseline_name):
-        default_port = self._port_factory.get()
-        virtual_root_expected_baseline_path = self._filesystem.join(default_port.layout_tests_dir(), baseline_name)
+        virtual_root_expected_baseline_path = self._filesystem.join(self._layout_tests_dir, baseline_name)
         if not self._filesystem.exists(virtual_root_expected_baseline_path):
             return
         root_sha1 = self._filesystem.sha1(virtual_root_expected_baseline_path)
 
         results_by_directory = self.read_results_by_directory(non_virtual_baseline_name)
         # See if all the immediate predecessors of the virtual root have the same expected result.
-        for port_name in self._port_names:
-            directories = self._relative_baseline_search_paths(port_name, non_virtual_baseline_name)
+        for port in self._ports.values():
+            directories = self._relative_baseline_search_paths(port, non_virtual_baseline_name)
             for directory in directories:
                 if directory not in results_by_directory:
                     continue
@@ -337,7 +347,7 @@ class BaselineOptimizer(object):
         self._files_to_add = []
         _log.debug("Optimizing regular fallback path.")
         result = self._optimize_subtree(baseline_name)
-        non_virtual_baseline_name = self._port_factory.get().lookup_virtual_test_base(baseline_name)
+        non_virtual_baseline_name = self._virtual_base(baseline_name)
         if not non_virtual_baseline_name:
             return result, self._files_to_delete, self._files_to_add
 
