@@ -3534,7 +3534,7 @@ void HTMLMediaElement::updateTextTrackDisplay()
 {
     WTF_LOG(Media, "HTMLMediaElement::updateTextTrackDisplay");
 
-    if (!hasMediaControls() && !createMediaControls())
+    if (!createMediaControls())
         return;
 
     mediaControls()->updateTextTrackDisplay();
@@ -3635,7 +3635,7 @@ void HTMLMediaElement::configureMediaControls()
         return;
     }
 
-    if (!hasMediaControls() && !createMediaControls())
+    if (!createMediaControls())
         return;
 
     mediaControls()->reset();
@@ -3668,7 +3668,7 @@ void HTMLMediaElement::configureTextTrackDisplay(VisibilityChangeAssumption assu
 
     if (!m_haveVisibleTextTrack && !hasMediaControls())
         return;
-    if (!hasMediaControls() && !createMediaControls())
+    if (!createMediaControls())
         return;
 
     mediaControls()->changedClosedCaptionsVisibility();
