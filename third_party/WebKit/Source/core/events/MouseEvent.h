@@ -61,13 +61,11 @@ public:
         int movementX, int movementY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
         PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<DataTransfer>,
-        PlatformMouseEvent::SyntheticEventType = PlatformMouseEvent::RealOrIndistinguishable);
+        bool isSimulated = false, PlatformMouseEvent::SyntheticEventType = PlatformMouseEvent::RealOrIndistinguishable);
 
     static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView>, const PlatformMouseEvent&, int detail, PassRefPtrWillBeRawPtr<Node> relatedTarget);
 
     static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& eventType, const MouseEventInit&);
-
-    static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView>, PassRefPtrWillBeRawPtr<Event> underlyingEvent);
 
     virtual ~MouseEvent();
 
@@ -89,7 +87,6 @@ public:
     DataTransfer* dataTransfer() const { return isDragEvent() ? m_dataTransfer.get() : 0; }
 
     bool fromTouch() const { return m_syntheticEventType == PlatformMouseEvent::FromTouch; }
-    bool hasPosition() const OVERRIDE { return m_syntheticEventType != PlatformMouseEvent::Positionless; }
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
@@ -105,7 +102,7 @@ protected:
         int movementX, int movementY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
         PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<DataTransfer>,
-        PlatformMouseEvent::SyntheticEventType);
+        bool isSimulated, PlatformMouseEvent::SyntheticEventType);
 
     MouseEvent(const AtomicString& type, const MouseEventInit&);
 
@@ -117,6 +114,17 @@ private:
     RefPtrWillBeMember<EventTarget> m_relatedTarget;
     RefPtrWillBeMember<DataTransfer> m_dataTransfer;
     PlatformMouseEvent::SyntheticEventType m_syntheticEventType;
+};
+
+class SimulatedMouseEvent FINAL : public MouseEvent {
+public:
+    static PassRefPtrWillBeRawPtr<SimulatedMouseEvent> create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView>, PassRefPtrWillBeRawPtr<Event> underlyingEvent);
+    virtual ~SimulatedMouseEvent();
+
+    virtual void trace(Visitor*) OVERRIDE;
+
+private:
+    SimulatedMouseEvent(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView>, PassRefPtrWillBeRawPtr<Event> underlyingEvent);
 };
 
 class MouseEventDispatchMediator FINAL : public EventDispatchMediator {

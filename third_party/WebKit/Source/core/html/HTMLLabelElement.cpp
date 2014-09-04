@@ -126,16 +126,17 @@ void HTMLLabelElement::defaultEventHandler(Event* evt)
     static bool processingClick = false;
 
     if (evt->type() == EventTypeNames::click && !processingClick) {
-        // If the click has a position and the text of label element is
+        // If the click is not simulated and the text of label element is
         // selected, do not pass the event to control element.
-        // Note: check if it is a MouseEvent because a click event may
-        // not be an instance of a MouseEvent if created by document.createEvent().
-        if (evt->isMouseEvent() && toMouseEvent(evt)->hasPosition()) {
+        // Note: a click event may be not a mouse event if created by
+        // document.createEvent().
+        if (evt->isMouseEvent() && !toMouseEvent(evt)->isSimulated()) {
             if (LocalFrame* frame = document().frame()) {
                 if (frame->selection().selection().isRange())
                     return;
             }
         }
+
 
         RefPtrWillBeRawPtr<HTMLElement> element = control();
 
