@@ -917,6 +917,11 @@ class CONTENT_EXPORT RenderViewImpl
   // See documentation in RenderView.
   int32 page_id_;
 
+  // TEMPORARY <http://crbug.com/407376>. If true, then |page_id_| has been
+  // changed but not yet reported to the browser process. No IPCs should be sent
+  // with a page_id_ while this is true.
+  bool page_id_not_yet_reported_;
+
   // Indicates the ID of the last page that we sent a FrameNavigate to the
   // browser for. This is used to determine if the most recent transition
   // generated a history entry (less than page_id_), or not (equal to or

@@ -166,6 +166,13 @@ size_t RegisterChromeCrashKeys() {
     { "channel_error_bt", kMediumSize },
     { "remove_route_bt", kMediumSize },
     { "rwhvm_window", kMediumSize },
+    // The following keys are for diagnosing crashes in http://crbug.com/369661.
+    // They will not be permanent.
+    { "url1", kLargeSize },
+    { "url2", kLargeSize },
+    { "id1", kSmallSize },
+    { "id2", kSmallSize },
+    // End http://crbug.com/369661
     // media/:
     { "VideoCaptureDeviceQTKit", kSmallSize },
 #endif
