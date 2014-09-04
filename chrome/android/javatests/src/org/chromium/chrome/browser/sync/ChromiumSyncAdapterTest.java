@@ -98,8 +98,7 @@ public class ChromiumSyncAdapterTest extends ChromeShellTestBase {
         if (withObjectSource) {
             assertEquals(61, mSyncAdapter.mObjectSource);
         } else {
-            assertEquals(Types.ObjectSource.Type.CHROME_SYNC.getNumber(),
-                    mSyncAdapter.mObjectSource);
+            assertEquals(Types.ObjectSource.CHROME_SYNC, mSyncAdapter.mObjectSource);
         }
         assertEquals("objectid_value", mSyncAdapter.mObjectId);
         assertEquals(42, mSyncAdapter.mVersion);

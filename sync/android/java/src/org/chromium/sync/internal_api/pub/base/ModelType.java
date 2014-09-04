@@ -117,8 +117,7 @@ public enum ModelType {
      */
     @VisibleForTesting
     public ObjectId toObjectId() {
-        return ObjectId.newInstance(Types.ObjectSource.Type.CHROME_SYNC.getNumber(),
-                mModelType.getBytes());
+        return ObjectId.newInstance(Types.ObjectSource.CHROME_SYNC, mModelType.getBytes());
     }
 
     public static ModelType fromObjectId(ObjectId objectId) {

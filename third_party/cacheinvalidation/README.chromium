@@ -1,7 +1,7 @@
 Name: Google Cache Invalidation API
 Short Name: google-cache-invalidation-api
 URL: http://code.google.com/p/google-cache-invalidation-api/
-Version: r330
+Version: r339
 License: Apache 2.0
 License File: src/google/cacheinvalidation/COPYING
 Security Critical: no

@@ -94,7 +94,7 @@ public class InvalidationIntentProtocol {
         ArrayList<Integer> sources = new ArrayList<Integer>();
         ArrayList<String> names = new ArrayList<String>();
         for (int i = 0; i < objectSources.length; i++) {
-            if (objectSources[i] != Types.ObjectSource.Type.CHROME_SYNC.getNumber()) {
+            if (objectSources[i] != Types.ObjectSource.CHROME_SYNC) {
                 sources.add(objectSources[i]);
                 names.add(objectNames[i]);
             }

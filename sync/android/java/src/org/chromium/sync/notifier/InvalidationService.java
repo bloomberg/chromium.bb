@@ -55,7 +55,7 @@ public class InvalidationService extends AndroidListener {
 
     /** Notification client typecode. */
     @VisibleForTesting
-    static final int CLIENT_TYPE = ClientType.Type.CHROME_SYNC_ANDROID_VALUE;
+    static final int CLIENT_TYPE = ClientType.CHROME_SYNC_ANDROID;
 
     private static final String TAG = "InvalidationService";
 

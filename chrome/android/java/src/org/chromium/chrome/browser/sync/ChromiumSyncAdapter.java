@@ -147,7 +147,7 @@ public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
                     // invalidations can be expected to have the objectSource.
                     int resolvedSource = objectSource;
                     if (resolvedSource == 0) {
-                        resolvedSource = Types.ObjectSource.Type.CHROME_SYNC.getNumber();
+                        resolvedSource = Types.ObjectSource.CHROME_SYNC;
                     }
                     Log.v(TAG, "Received sync tickle for " + resolvedSource + " " + objectId + ".");
                     requestSync(resolvedSource, objectId, version, payload);
