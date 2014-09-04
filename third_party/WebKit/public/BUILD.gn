@@ -37,6 +37,9 @@ group("test_support") {
 
 # GYP version: WebKit/public/all.gyp:all_blink
 group("all_blink") {
+  # This includes some test targets. Don't link into production!
+  testonly = true
+
   deps = [
     "//third_party/WebKit/Source/core",
     "//third_party/WebKit/Source/modules",
