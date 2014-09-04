@@ -120,4 +120,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, WriteFile) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Extension) {
+  ASSERT_TRUE(RunComponentExtensionTest("file_system_provider/extension"))
+      << message_;
+}
+
 }  // namespace extensions
