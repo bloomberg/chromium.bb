@@ -22,6 +22,7 @@ class WaitableEvent;
 
 namespace content {
 class ContextProviderCommandBuffer;
+class GLHelper;
 class GpuChannelHost;
 class WebGraphicsContext3DCommandBufferImpl;
 
@@ -78,10 +79,12 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   // Helper to get a pointer to the WebGraphicsContext3DCommandBufferImpl,
   // if it has not been lost yet.
   WebGraphicsContext3DCommandBufferImpl* GetContext3d();
+  GLHelper* GetGLHelper();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<GpuChannelHost> gpu_channel_host_;
   scoped_refptr<ContextProviderCommandBuffer> context_provider_;
+  scoped_ptr<GLHelper> gl_helper_;
 
   // For sending requests to allocate shared memory in the Browser process.
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
