@@ -201,8 +201,6 @@ class CONTENT_EXPORT BrowserPlugin :
   void OnSetCursor(int instance_id, const WebCursor& cursor);
   void OnSetMouseLock(int instance_id, bool enable);
   void OnShouldAcceptTouchEvents(int instance_id, bool accept);
-  void OnUpdateRect(int instance_id,
-                    const BrowserPluginMsg_UpdateRect_Params& params);
 
   // This indicates whether this BrowserPlugin has been attached to a
   // WebContents.
@@ -215,7 +213,6 @@ class CONTENT_EXPORT BrowserPlugin :
   const int render_view_routing_id_;
   blink::WebPluginContainer* container_;
   scoped_ptr<BrowserPluginBindings> bindings_;
-  bool paint_ack_received_;
   gfx::Rect plugin_rect_;
   float last_device_scale_factor_;
   // Bitmap for crashed plugin. Lazily initialized, non-owning pointer.

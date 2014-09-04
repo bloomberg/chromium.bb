@@ -50,7 +50,6 @@ BrowserPlugin::BrowserPlugin(RenderViewImpl* render_view,
       render_view_(render_view->AsWeakPtr()),
       render_view_routing_id_(render_view->GetRoutingID()),
       container_(NULL),
-      paint_ack_received_(true),
       last_device_scale_factor_(GetDeviceScaleFactor()),
       sad_guest_(NULL),
       guest_crashed_(false),
@@ -92,7 +91,6 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetMouseLock, OnSetMouseLock)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
                         OnShouldAcceptTouchEvents)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -177,7 +175,6 @@ void BrowserPlugin::Attach() {
   attach_params.origin = plugin_rect().origin();
   gfx::Size view_size(width(), height());
   if (!view_size.IsEmpty()) {
-    paint_ack_received_ = false;
     PopulateResizeGuestParameters(view_size,
                                   &attach_params.resize_guest_params);
   }
@@ -222,6 +219,11 @@ void BrowserPlugin::OnCompositorFrameSwapped(const IPC::Message& message) {
   BrowserPluginMsg_CompositorFrameSwapped::Param param;
   if (!BrowserPluginMsg_CompositorFrameSwapped::Read(&message, &param))
     return;
+
+  // Note that there is no need to send ACK for this message.
+  // If the guest has updated pixels then it is no longer crashed.
+  guest_crashed_ = false;
+
   scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
   param.b.frame.AssignTo(frame.get());
 
@@ -302,33 +304,6 @@ void BrowserPlugin::OnShouldAcceptTouchEvents(int browser_plugin_instance_id,
   }
 }
 
-void BrowserPlugin::OnUpdateRect(
-    int browser_plugin_instance_id,
-    const BrowserPluginMsg_UpdateRect_Params& params) {
-  // Note that there is no need to send ACK for this message.
-  // If the guest has updated pixels then it is no longer crashed.
-  guest_crashed_ = false;
-
-  // We receive a resize ACK in regular mode, but not in autosize.
-  // In Compositing mode, we need to do it here so we can continue sending
-  // resize messages when needed.
-  if (params.is_resize_ack)
-    paint_ack_received_ = true;
-
-  if (params.view_size.width() == width() &&
-      params.view_size.height() == height()) {
-    return;
-  }
-
-  BrowserPluginHostMsg_ResizeGuest_Params resize_params;
-  PopulateResizeGuestParameters(plugin_size(), &resize_params);
-  paint_ack_received_ = false;
-  browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
-      render_view_routing_id_,
-      browser_plugin_instance_id_,
-      resize_params));
-}
-
 NPObject* BrowserPlugin::GetContentWindow() const {
   if (content_window_routing_id_ == MSG_ROUTING_NONE)
     return NULL;
@@ -354,10 +329,8 @@ float BrowserPlugin::GetDeviceScaleFactor() const {
 }
 
 void BrowserPlugin::UpdateDeviceScaleFactor() {
-  if (!paint_ack_received_ ||
-      last_device_scale_factor_ == GetDeviceScaleFactor()) {
+  if (last_device_scale_factor_ == GetDeviceScaleFactor())
     return;
-  }
 
   BrowserPluginHostMsg_ResizeGuest_Params params;
   PopulateResizeGuestParameters(plugin_size(), &params);
@@ -520,7 +493,6 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
     case BrowserPluginMsg_SetCursor::ID:
     case BrowserPluginMsg_SetMouseLock::ID:
     case BrowserPluginMsg_ShouldAcceptTouchEvents::ID:
-    case BrowserPluginMsg_UpdateRect::ID:
       return true;
     default:
       break;
@@ -539,14 +511,7 @@ void BrowserPlugin::updateGeometry(
   if (!attached())
     return;
 
-  // In AutoSize mode, guests don't care when the BrowserPlugin container is
-  // resized. If |!paint_ack_received_|, then we are still waiting on a
-  // previous resize to be ACK'ed and so we don't issue additional resizes
-  // until the previous one is ACK'ed.
-  // TODO(mthiesse): Assess the performance of calling GetAutoSizeAttribute() on
-  // resize.
-  if (!paint_ack_received_ ||
-      (old_width == window_rect.width && old_height == window_rect.height)) {
+  if (old_width == window_rect.width && old_height == window_rect.height) {
     // Let the browser know about the updated view rect.
     browser_plugin_manager()->Send(new BrowserPluginHostMsg_UpdateGeometry(
         render_view_routing_id_, browser_plugin_instance_id_, plugin_rect_));
@@ -555,7 +520,6 @@ void BrowserPlugin::updateGeometry(
 
   BrowserPluginHostMsg_ResizeGuest_Params params;
   PopulateResizeGuestParameters(plugin_size(), &params);
-  paint_ack_received_ = false;
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
       render_view_routing_id_,
       browser_plugin_instance_id_,
@@ -565,7 +529,6 @@ void BrowserPlugin::updateGeometry(
 void BrowserPlugin::PopulateResizeGuestParameters(
     const gfx::Size& view_size,
     BrowserPluginHostMsg_ResizeGuest_Params* params) {
-  params->size_changed = true;
   params->view_size = view_size;
   params->scale_factor = GetDeviceScaleFactor();
   if (last_device_scale_factor_ != params->scale_factor) {

@@ -25,6 +25,7 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/drag_messages.h"
 #include "content/common/frame_messages.h"
+#include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -310,6 +311,54 @@ void BrowserPluginGuest::PointerLockPermissionResponse(bool allow) {
       new BrowserPluginMsg_SetMouseLock(browser_plugin_instance_id(), allow));
 }
 
+void BrowserPluginGuest::SwapCompositorFrame(
+    uint32 output_surface_id,
+    int host_process_id,
+    int host_routing_id,
+    scoped_ptr<cc::CompositorFrame> frame) {
+  if (!attached()) {
+    // If the guest doesn't have an embedder then there's nothing to give the
+    // the frame to.
+    return;
+  }
+
+  gfx::Size view_size(frame->metadata.root_layer_size.width(),
+                      frame->metadata.root_layer_size.height());
+  if (last_seen_view_size_ != view_size) {
+    delegate_->GuestSizeChanged(last_seen_view_size_, view_size);
+    last_seen_view_size_ = view_size;
+  }
+
+  base::SharedMemoryHandle software_frame_handle =
+      base::SharedMemory::NULLHandle();
+  if (frame->software_frame_data) {
+    cc::SoftwareFrameData* frame_data = frame->software_frame_data.get();
+    scoped_ptr<cc::SharedBitmap> bitmap =
+        HostSharedBitmapManager::current()->GetSharedBitmapFromId(
+            frame_data->size, frame_data->bitmap_id);
+    if (!bitmap)
+      return;
+
+    RenderWidgetHostView* embedder_rwhv =
+        GetEmbedderRenderWidgetHostView();
+    base::ProcessHandle embedder_pid =
+        embedder_rwhv->GetRenderWidgetHost()->GetProcess()->GetHandle();
+
+    bitmap->memory()->ShareToProcess(embedder_pid, &software_frame_handle);
+  }
+
+  FrameMsg_CompositorFrameSwapped_Params guest_params;
+  frame->AssignTo(&guest_params.frame);
+  guest_params.output_surface_id = output_surface_id;
+  guest_params.producing_route_id = host_routing_id;
+  guest_params.producing_host_id = host_process_id;
+  guest_params.shared_memory_handle = software_frame_handle;
+
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_CompositorFrameSwapped(
+          browser_plugin_instance_id(), guest_params));
+}
+
 WebContentsImpl* BrowserPluginGuest::GetWebContents() const {
   return static_cast<WebContentsImpl*>(web_contents());
 }
@@ -451,7 +500,6 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
                         OnTextInputStateChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UnlockMouse, OnUnlockMouse)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -683,21 +731,14 @@ void BrowserPluginGuest::OnPluginDestroyed(int browser_plugin_instance_id) {
 void BrowserPluginGuest::OnResizeGuest(
     int browser_plugin_instance_id,
     const BrowserPluginHostMsg_ResizeGuest_Params& params) {
-  if (!params.size_changed)
-    return;
-  // BrowserPlugin manages resize flow control itself and does not depend
-  // on RenderWidgetHost's mechanisms for flow control, so we reset those flags
-  // here. If we are setting the size for the first time before navigating then
+  // If we are setting the size for the first time before navigating then
   // BrowserPluginGuest does not yet have a RenderViewHost.
-  if (GetWebContents()->GetRenderViewHost()) {
+  if (guest_device_scale_factor_ != params.scale_factor &&
+      GetWebContents()->GetRenderViewHost()) {
     RenderWidgetHostImpl* render_widget_host =
         RenderWidgetHostImpl::From(GetWebContents()->GetRenderViewHost());
-    render_widget_host->ResetSizeAndRepaintPendingFlags();
-
-    if (guest_device_scale_factor_ != params.scale_factor) {
-      guest_device_scale_factor_ = params.scale_factor;
-      render_widget_host->NotifyScreenInfoChanged();
-    }
+    guest_device_scale_factor_ = params.scale_factor;
+    render_widget_host->NotifyScreenInfoChanged();
   }
 
   if (last_seen_browser_plugin_size_ != params.view_size) {
@@ -828,23 +869,6 @@ void BrowserPluginGuest::OnShowWidget(int route_id,
 void BrowserPluginGuest::OnTakeFocus(bool reverse) {
   SendMessageToEmbedder(
       new BrowserPluginMsg_AdvanceFocus(browser_plugin_instance_id(), reverse));
-}
-
-void BrowserPluginGuest::OnUpdateRect(
-    const ViewHostMsg_UpdateRect_Params& params) {
-  BrowserPluginMsg_UpdateRect_Params relay_params;
-  relay_params.view_size = params.view_size;
-  relay_params.is_resize_ack = ViewHostMsg_UpdateRect_Flags::is_resize_ack(
-      params.flags);
-
-  if (last_seen_view_size_ != params.view_size) {
-    delegate_->GuestSizeChanged(last_seen_view_size_, params.view_size);
-    last_seen_view_size_ = params.view_size;
-  }
-
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_UpdateRect(browser_plugin_instance_id(),
-                                      relay_params));
 }
 
 void BrowserPluginGuest::OnTextInputStateChanged(

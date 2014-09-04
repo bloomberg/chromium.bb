@@ -37,8 +37,6 @@
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebDragStatus, blink::WebDragStatusLast)
 
 IPC_STRUCT_BEGIN(BrowserPluginHostMsg_ResizeGuest_Params)
-  // Indicates whether the parameters have been populated or not.
-  IPC_STRUCT_MEMBER(bool, size_changed)
   // The new size of guest view.
   IPC_STRUCT_MEMBER(gfx::Size, view_size)
   // Indicates the scale factor of the embedder WebView.
@@ -56,18 +54,6 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_Attach_Params)
   IPC_STRUCT_MEMBER(BrowserPluginHostMsg_ResizeGuest_Params,
                     resize_guest_params)
   IPC_STRUCT_MEMBER(gfx::Point, origin)
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(BrowserPluginMsg_UpdateRect_Params)
-  // The size of the RenderView when this message was generated.  This is
-  // included so the host knows how large the view is from the perspective of
-  // the renderer process.  This is necessary in case a resize operation is in
-  // progress. If auto-resize is enabled, this should update the corresponding
-  // view size.
-  IPC_STRUCT_MEMBER(gfx::Size, view_size)
-
-  // Is this UpdateRect an ACK to a resize request?
-  IPC_STRUCT_MEMBER(bool, is_resize_ack)
 IPC_STRUCT_END()
 
 // Browser plugin messages
@@ -172,7 +158,7 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_LockMouse_ACK,
 IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_UnlockMouse_ACK,
                     int /* browser_plugin_instance_id */)
 
-// Sent when plugin's position has changed without UpdateRect.
+// Sent when plugin's position has changed.
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_UpdateGeometry,
                     int /* browser_plugin_instance_id */,
                     gfx::Rect /* view_rect */)
@@ -222,12 +208,6 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_ShouldAcceptTouchEvents,
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetCursor,
                      int /* browser_plugin_instance_id */,
                      content::WebCursor /* cursor */)
-
-// The guest has damage it wants to convey to the embedder so that it can
-// update its backing store.
-IPC_MESSAGE_CONTROL2(BrowserPluginMsg_UpdateRect,
-                     int /* browser_plugin_instance_id */,
-                     BrowserPluginMsg_UpdateRect_Params)
 
 IPC_MESSAGE_CONTROL4(BrowserPluginMsg_CopyFromCompositingSurface,
                      int /* browser_plugin_instance_id */,

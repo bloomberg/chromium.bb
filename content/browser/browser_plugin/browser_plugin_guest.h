@@ -50,11 +50,15 @@ struct ViewHostMsg_UpdateRect_Params;
 
 namespace blink {
 class WebInputEvent;
-}
+}  // namespace blink
+
+namespace cc {
+class CompositorFrame;
+}  // namespace cc
 
 namespace gfx {
 class Range;
-}
+}  // namespace gfx
 
 namespace content {
 
@@ -193,6 +197,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
 
   void PointerLockPermissionResponse(bool allow);
 
+  void SwapCompositorFrame(uint32 output_surface_id,
+                           int host_process_id,
+                           int host_routing_id,
+                           scoped_ptr<cc::CompositorFrame> frame);
+
  private:
   class EmbedderWebContentsObserver;
 
@@ -317,7 +326,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   void OnUpdateFrameName(int frame_id,
                          bool is_top_level,
                          const std::string& name);
-  void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
 
   // Forwards all messages from the |pending_messages_| queue to the embedder.
   void SendQueuedMessages();
@@ -351,7 +359,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   // maintains a JavaScript reference to its opener.
   bool has_render_view_;
 
-  // Last seen size of guest contents (by OnUpdateRect).
+  // Last seen size of guest contents (by SwapCompositorFrame).
   gfx::Size last_seen_view_size_;
   // Last seen size of BrowserPlugin (by OnResizeGuest).
   gfx::Size last_seen_browser_plugin_size_;

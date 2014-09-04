@@ -12,7 +12,6 @@
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "content/common/view_messages.h"
 #include "content/common/webplugin_geometry.h"
@@ -192,41 +191,11 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
   if (!guest_)
     return;
 
-  if (!guest_->attached()) {
-    // If the guest doesn't have an embedder then there's nothing to give the
-    // the frame to.
-    return;
-  }
-
   last_scroll_offset_ = frame->metadata.root_scroll_offset;
-  base::SharedMemoryHandle software_frame_handle =
-      base::SharedMemory::NULLHandle();
-  if (frame->software_frame_data) {
-    cc::SoftwareFrameData* frame_data = frame->software_frame_data.get();
-    scoped_ptr<cc::SharedBitmap> bitmap =
-        HostSharedBitmapManager::current()->GetSharedBitmapFromId(
-            frame_data->size, frame_data->bitmap_id);
-    if (!bitmap)
-      return;
-
-    RenderWidgetHostView* embedder_rwhv =
-        guest_->GetEmbedderRenderWidgetHostView();
-    base::ProcessHandle embedder_pid =
-        embedder_rwhv->GetRenderWidgetHost()->GetProcess()->GetHandle();
-
-    bitmap->memory()->ShareToProcess(embedder_pid, &software_frame_handle);
-  }
-
-  FrameMsg_CompositorFrameSwapped_Params guest_params;
-  frame->AssignTo(&guest_params.frame);
-  guest_params.output_surface_id = output_surface_id;
-  guest_params.producing_route_id = host_->GetRoutingID();
-  guest_params.producing_host_id = host_->GetProcess()->GetID();
-  guest_params.shared_memory_handle = software_frame_handle;
-
-  guest_->SendMessageToEmbedder(
-      new BrowserPluginMsg_CompositorFrameSwapped(
-          guest_->browser_plugin_instance_id(), guest_params));
+  guest_->SwapCompositorFrame(output_surface_id,
+                              host_->GetProcess()->GetID(),
+                              host_->GetRoutingID(),
+                              frame.Pass());
 }
 
 bool RenderWidgetHostViewGuest::OnMessageReceived(const IPC::Message& msg) {
