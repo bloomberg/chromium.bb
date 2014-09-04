@@ -12,6 +12,9 @@ import("//build/config/ui.gni")
 
 # In GN, a "group" is a dummy target that just lists other targets.
 group("root") {
+  # This should not be linked into production and depends on test targets.
+  testonly = true
+
   # Note that some dependencies are commented out. These are things that are
   # currently written but not hooked up to the build yet. They may need to be
   # completed or possibly just tested and then re-enabled.
