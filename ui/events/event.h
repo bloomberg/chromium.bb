@@ -587,7 +587,7 @@ class EVENTS_EXPORT ExtendedKeyEventData {
 // -- character_ is a UTF-16 character value.
 // -- key_code_ is conflated with character_ by some code, because both
 //    arrive in the wParam field of a Windows event.
-// -- code_ is the empty string.
+// -- code_ is "".
 //
 class EVENTS_EXPORT KeyEvent : public Event {
  public:
@@ -636,24 +636,9 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // BMP characters.
   base::char16 GetCharacter() const;
 
-  // If this is a keystroke event with key_code_ VKEY_RETURN, returns '\r';
-  // otherwise returns the same as GetCharacter().
-  base::char16 GetUnmodifiedText() const;
-
-  // If the Control key is down in the event, returns a layout-independent
-  // character (corresponding to US layout); otherwise returns the same
-  // as GetUnmodifiedText().
-  base::char16 GetText() const;
-
   // Gets the platform key code. For XKB, this is the xksym value.
   void set_platform_keycode(uint32 keycode) { platform_keycode_ = keycode; }
   uint32 platform_keycode() const { return platform_keycode_; }
-
-  // Gets the associated (Windows-based) KeyboardCode for this key event.
-  // Historically, this has also been used to obtain the character associated
-  // with a character event, because both use the Window message 'wParam' field.
-  // This should be avoided; if necessary for backwards compatibility, use
-  // GetConflatedWindowsKeyCode().
   KeyboardCode key_code() const { return key_code_; }
 
   // True if this is a character event, false if this is a keystroke event.
@@ -662,17 +647,6 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // This is only intended to be used externally by classes that are modifying
   // events in an EventRewriter.
   void set_key_code(KeyboardCode key_code) { key_code_ = key_code; }
-
-  // Returns the same value as key_code(), except that located codes are
-  // returned in place of non-located ones (e.g. VKEY_LSHIFT or VKEY_RSHIFT
-  // instead of VKEY_SHIFT). This is a hybrid of semantic and physical
-  // for legacy DOM reasons.
-  KeyboardCode GetLocatedWindowsKeyboardCode() const;
-
-  // For a keystroke event, returns the same value as key_code().
-  // For a character event, returns the same value as GetCharacter().
-  // This exists for backwards compatibility with Windows key events.
-  uint16 GetConflatedWindowsKeyCode() const;
 
   // Returns true for [Alt]+<num-pad digit> Unicode alt key codes used by Win.
   // TODO(msw): Additional work may be needed for analogues on other platforms.
@@ -697,9 +671,6 @@ class EVENTS_EXPORT KeyEvent : public Event {
   void set_is_char(bool is_char) { is_char_ = is_char; }
 
  private:
-  // True if the key press originated from a 'right' key (VKEY_RSHIFT, etc.).
-  bool IsRightSideKey() const;
-
   KeyboardCode key_code_;
 
   // String of 'code' defined in DOM KeyboardEvent (e.g. 'KeyA', 'Space')
@@ -722,7 +693,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // This value represents the text that the key event will insert to input
   // field. For key with modifier key, it may have specifial text.
   // e.g. CTRL+A has '\x01'.
-  mutable base::char16 character_;
+  base::char16 character_;
 
   // Parts of our event handling require raw native events (see both the
   // windows and linux implementations of web_input_event in content/). Because

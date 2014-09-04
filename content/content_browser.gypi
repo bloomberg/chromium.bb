@@ -1098,6 +1098,7 @@
       'browser/renderer_host/web_input_event_aura.cc',
       'browser/renderer_host/web_input_event_aura.h',
       'browser/renderer_host/web_input_event_aurawin.cc',
+      'browser/renderer_host/web_input_event_aurax11.cc',
       'browser/renderer_host/webmenurunner_mac.h',
       'browser/renderer_host/webmenurunner_mac.mm',
       'browser/renderer_host/websocket_dispatcher_host.cc',
