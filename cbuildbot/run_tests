@@ -35,9 +35,6 @@ special_tests=(
   ['scripts/check_gdata_token_unittest.py']=skip
   ['scripts/merge_package_status_unittest.py']=skip
   ['scripts/upload_package_status_unittest.py']=skip
-  # TODO(akeshet): skip only test004GetLatestSHA1ForBranch
-  # crbug.com/352297
-  ['lib/gerrit_unittest.py']=skip
 
   # Tests that take >2 minutes to run.  All the slow tests are
   # disabled atm though ...
