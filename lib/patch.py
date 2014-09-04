@@ -217,11 +217,11 @@ class EbuildConflict(ApplyPatchException):
             '%s' % (self._StringifyFilenames()))
 
 
-class PatchAlreadyApplied(ApplyPatchException):
-  """Exception thrown if we fail to apply an already applied patch"""
+class PatchIsEmpty(ApplyPatchException):
+  """Exception thrown if we try to apply an empty patch"""
 
   def ShortExplanation(self):
-    return 'conflicted with %s because it\'s already committed.' % (
+    return 'had no changes after rebasing to %s.' % (
         self._StringifyInflight(),)
 
 
@@ -806,7 +806,7 @@ class GitRepoPatch(PatchQuery):
         if not conflicts:
           # No conflicts means the git repo is in a pristine state.
           reset_target = None
-          raise PatchAlreadyApplied(self, inflight=inflight)
+          raise PatchIsEmpty(self, inflight=inflight)
 
         # Making it here means that it wasn't trivial, nor was it already
         # applied.

@@ -225,10 +225,10 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
   def testAlreadyApplied(self):
     git1 = self._MakeRepo('git1', self.source)
     patch1 = self._MkPatch(git1, self._GetSha1(git1, 'HEAD'))
-    self.assertRaises2(cros_patch.PatchAlreadyApplied, patch1.Apply, git1,
+    self.assertRaises2(cros_patch.PatchIsEmpty, patch1.Apply, git1,
                        self.DEFAULT_TRACKING, check_attrs={'inflight':False})
     patch2 = self.CommitFile(git1, 'monkeys', 'rule')
-    self.assertRaises2(cros_patch.PatchAlreadyApplied, patch2.Apply, git1,
+    self.assertRaises2(cros_patch.PatchIsEmpty, patch2.Apply, git1,
                        self.DEFAULT_TRACKING, check_attrs={'inflight':True})
 
   def testDeleteEbuildTwice(self):
@@ -297,7 +297,7 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     self.CommitFile(git2, 'monkeys',
                     '%sblah' % content.replace('not', 'bot'))
 
-    self.assertRaises2(cros_patch.PatchAlreadyApplied,
+    self.assertRaises2(cros_patch.PatchIsEmpty,
                        patch1.Apply, git2, self.DEFAULT_TRACKING, trivial=True,
                        check_attrs={'inflight':False, 'trivial':False})
 
@@ -310,7 +310,7 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
 
     # Now test trivial conflict; this would've merged fine were it not for
     # trivial.
-    self.assertRaises2(cros_patch.PatchAlreadyApplied,
+    self.assertRaises2(cros_patch.PatchIsEmpty,
                        patch4.Apply, git2, self.DEFAULT_TRACKING, trivial=True,
                        check_attrs={'inflight':False, 'trivial':False},
                        exact_kls=True)
@@ -319,7 +319,7 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     patch2.Apply(git2, self.DEFAULT_TRACKING, trivial=True)
 
     # Repeat the tests from above; should still be the same.
-    self.assertRaises2(cros_patch.PatchAlreadyApplied,
+    self.assertRaises2(cros_patch.PatchIsEmpty,
                        patch4.Apply, git2, self.DEFAULT_TRACKING, trivial=True,
                        check_attrs={'inflight':False, 'trivial':False})
 
@@ -329,7 +329,7 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
                        check_attrs={'inflight':True, 'trivial':False},
                        exact_kls=True)
 
-    self.assertRaises2(cros_patch.PatchAlreadyApplied,
+    self.assertRaises2(cros_patch.PatchIsEmpty,
                        patch1.Apply, git2, self.DEFAULT_TRACKING, trivial=True,
                        check_attrs={'inflight':False})
 
