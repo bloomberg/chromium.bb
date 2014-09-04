@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/power_monitor/power_monitor.h"
+#include "base/logging.h"
 #include "base/power_monitor/power_monitor_source.h"
 
 namespace base {
@@ -27,11 +28,17 @@ PowerMonitor* PowerMonitor::Get() {
 }
 
 void PowerMonitor::AddObserver(PowerObserver* obs) {
+  DCHECK(!obs->power_monitor_thread_checker_);
+  obs->power_monitor_thread_checker_.reset(new base::ThreadChecker());
   observers_->AddObserver(obs);
 }
 
 void PowerMonitor::RemoveObserver(PowerObserver* obs) {
+  // PowerObservers must be removed on the same thread on which they were added.
+  DCHECK(obs->power_monitor_thread_checker_);
+  DCHECK(obs->power_monitor_thread_checker_->CalledOnValidThread());
   observers_->RemoveObserver(obs);
+  obs->power_monitor_thread_checker_.reset();
 }
 
 PowerMonitorSource* PowerMonitor::Source() {
