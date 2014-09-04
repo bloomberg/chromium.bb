@@ -219,6 +219,8 @@ void QuicHttpStream::Close(bool not_reusable) {
     stream_->SetDelegate(NULL);
     stream_->Reset(QUIC_STREAM_CANCELLED);
     stream_ = NULL;
+    response_status_ = was_handshake_confirmed_ ?
+        ERR_CONNECTION_CLOSED : ERR_QUIC_HANDSHAKE_FAILED;
   }
 }
 
