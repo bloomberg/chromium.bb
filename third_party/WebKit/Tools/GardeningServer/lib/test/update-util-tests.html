@@ -1,0 +1,152 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../update-util.html">
+
+<script>
+
+(function () {
+'use strict';
+
+var assert = chai.assert;
+
+describe('update-util', function() {
+  describe('.updateLeft', function() {
+    it('updates an array', function() {
+      var x = {key: 'x', val: 0};
+      var y1 = {key: 'y', val: 1};
+      var y2 = {key: 'y', val: 2};
+      var z = {key: 'z', val: 3};
+      var target = [x, y1];
+      var source = [y2, z];
+      target = updateUtil.updateLeft(target, source);
+      assert.strictEqual(target[0], y1);
+      assert.strictEqual(target[1], z);
+      assert.equal(target[0].val, 2);
+    });
+
+    it('updates and reorders an array', function() {
+      var x = {key: 'x', val: 0};
+      var y1 = {key: 'y', val: 1};
+      var y2 = {key: 'y', val: 2};
+      var z = {key: 'z', val: 3};
+      var target = [x, y1];
+      var source = [z, y2];
+      target = updateUtil.updateLeft(target, source);
+      assert.strictEqual(target[0], z);
+      assert.strictEqual(target[1], y1);
+      assert.equal(target[1].val, 2);
+    });
+
+    it('updates an array to empty', function() {
+      var x = {key: 'x', val: 0};
+      var target = [x];
+      var source = [];
+      assert.deepEqual(updateUtil.updateLeft(target, source), []);
+
+      // Try without a key.
+      var x = {val: 0};
+      var target = [x];
+      var source = [];
+      assert.deepEqual(updateUtil.updateLeft(target, source), []);
+    });
+
+
+    it('calls custom updateLeft members', function() {
+      var y1 = {key: 'y', val: 1,
+                updateLeft: function(right) {
+                  this.val += right.val;
+                  return this;
+                }};
+      var y2 = {key: 'y', val: 2};
+      var target = [y1];
+      var source = [y2];
+      target = updateUtil.updateLeft(target, source);
+      assert.strictEqual(target[0], y1);
+      assert.propertyVal(target[0], 'val', 3);
+      assert.property(target[0], 'updateLeft');
+    });
+
+    it('calls custom updateLeft members in custom types', function() {
+      function Updatable(val) {
+        this.key = 'x';
+        this.val = val;
+      };
+      Updatable.prototype.updateLeft = function(right) {
+        this.val += right.val;
+        return this;
+      };
+
+      var y1 = new Updatable(1);
+      var y2 = new Updatable(2);
+      var target = [y1];
+      var source = [y2];
+      target = updateUtil.updateLeft(target, source);
+      assert.strictEqual(target[0], y1);
+      assert.propertyVal(target[0], 'val', 3);
+      assert.property(target[0], 'updateLeft');
+    });
+
+    it('skips transient properties', function() {
+      function Updatable(val, visible) {
+        this.val = val;
+        if (visible !== undefined)
+          this.visible = visible
+      };
+      Updatable.transientProperties = ['visible'];
+
+      var target = new Updatable(1, true);
+      var source = new Updatable(2, false);
+      assert.strictEqual(updateUtil.updateLeft(target, source), target);
+      assert.propertyVal(target, 'val', 2);
+      assert.propertyVal(target, 'visible', true);
+
+      var target = new Updatable(1, undefined);
+      var source = new Updatable(2, true);
+      updateUtil.updateLeft(target, source);
+      assert.notProperty(target, 'visible');
+
+      var target = new Updatable(1, true);
+      var source = new Updatable(2, undefined);
+      updateUtil.updateLeft(target, source);
+      assert.propertyVal(target, 'visible', true);
+    });
+
+    it('updates array containing null', function() {
+      var target = [{key: 'x', a: {b:1}}];
+      var source = [{key: 'x', a: null}];
+      target = updateUtil.updateLeft(target, source);
+      assert.propertyVal(target[0], 'a', null);
+
+      var target = [{key: 'x', a: null}];
+      var source = [{key: 'x', a: {b:1}}];
+      target = updateUtil.updateLeft(target, source);
+      assert.deepEqual(target[0].a, {b:1});
+    });
+
+    it('updates object containing null', function() {
+      var target = {x: {a: 1}};
+      var source = {x: null};
+      assert.strictEqual(updateUtil.updateLeft(target, source), target);
+      assert.propertyVal(target, 'x', null);
+
+      var target = {x: null};
+      var source = {x: {a: 1}};
+      assert.strictEqual(updateUtil.updateLeft(target, source), target);
+      assert.deepEqual(target.x, {a: 1});
+    });
+
+    it('returns source on badly typed arguments', function() {
+      assert.strictEqual(updateUtil.updateLeft(1, 2), 2);
+      var source = [2];
+      assert.strictEqual(updateUtil.updateLeft([1], source), source);
+    });
+  });
+});
+
+})();
+
+</script>

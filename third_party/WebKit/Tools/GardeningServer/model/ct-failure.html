@@ -6,9 +6,12 @@ found in the LICENSE file.
 
 <script>
 function CTFailure(step, reason, resultsByBuilder) {
+  this.key = step + '::' + reason;
   this.step = step;
   // FIXME: Rename this to reason.
   this.testName = reason;
+  // Maps a builder_name (e.g. "Mac ASan Tests (1)")
+  // to the details of the failure on that builder.
   this.resultNodesByBuilder = resultsByBuilder;
 }
 

@@ -1,0 +1,105 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="sugar.html">
+
+<script>
+
+var updateUtil = updateUtil || {};
+
+(function () {
+'use strict';
+
+// Returns true if |updateLeft| can do a field-wise merge from |source| to |target|.
+// We assume |target| and |source| have the same type.
+// If they're arrays, true if the elements have a |key| property.
+// If they're objects, true if they're not null. (null should be assigned).
+// Otherwise, false.
+function canUpdateLeft(target, source) {
+  if (Array.isArray(target)) {
+    // If |source| is empty, we'll return an empty array regardless.
+    return source.length !== 0 && source[0].key !== undefined;
+  } else if (target === null || source === null) {
+    return false;
+  } else if (typeof target === 'object') {
+    return true;
+  }
+  return false;
+};
+
+// |target| and |source| must have the same type, which must return true from
+// canUpdateLeft() (see above). An array is treated like a dictionary where the
+// key of an object is its |key| property, except that no effort is made to
+// preserve the object identity of arrays. This function will:
+//
+//  * Ignore elements listed in an object's constructor's |transientProperties| array.
+//  * Remove elements from |target| whose key isn't in |source|.
+//  * Copy elements from |source| whose key isn't in |target| or which are !canUpdateLeft().
+//    In particular, we copy |null| rather than trying to merge it.
+//  * If a matching element defines an |updateLeft| method, call that to let types customize the update process.
+//    This method must return the updated object.
+//  * Call updateLeft recursively for other matching elements.
+//
+// You have to call this as "target = updateLeft(target, source);" because it
+// won't always update |target| in-place.
+updateUtil.updateLeft = function(target, source)
+{
+  if (!canUpdateLeft(target, source)) {
+    return source;
+  }
+
+  if (target.updateLeft) {
+    return target.updateLeft(source);
+  }
+
+  if (Array.isArray(target)) {
+    return updateLeftArray(target, source);
+  } else {
+    return updateLeftObject(target, source);
+  }
+};
+
+// |target| and |source| must be arrays of objects with a |key| property.
+function updateLeftArray(target, source) {
+  var oldElemByKey = {};
+  target.forEach(function(elem) {
+    oldElemByKey[elem.key] = elem;
+  })
+  // Polymer doesn't pay attention to array identity when deciding to recreate
+  // elements, just object identity.
+  return source.map(function(value) {
+    return updateUtil.updateLeft(oldElemByKey[value.key], value);
+  });
+};
+
+// |target| and |source| must be objects. |target|'s properties will be updated
+// to match |source|'s except for properties listed in its constructor's
+// |transientProperties| array.
+function updateLeftObject(target, source) {
+  // Prepare to filter out properties that reflect local UI
+  // state that wasn't loaded from the server.
+  var transientProperties = target.constructor.transientProperties;
+  function isTransientProperty(name) {
+    return transientProperties && transientProperties.indexOf(name) !== -1;
+  };
+
+  // Remove elements from |target| that aren't in |source|.
+  Object.keys(target, function(key) {
+    if (!source.hasOwnProperty(key) && !isTransientProperty(key))
+      delete target[key];
+  });
+
+  // Recursively update or assign properties that are in |source|.
+  Object.keys(source, function(key, sourceValue) {
+    if (!isTransientProperty(key))
+      target[key] = updateUtil.updateLeft(target[key], source[key]);
+  });
+  return target;
+};
+
+})();
+
+</script>

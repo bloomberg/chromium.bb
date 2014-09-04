@@ -5,6 +5,7 @@ found in the LICENSE file.
 -->
 
 <link rel="import" href="../lib/net.html">
+<link rel="import" href="../lib/update-util.html">
 <link rel="import" href="ct-builder-revisions.html">
 <link rel="import" href="ct-failure.html">
 <link rel="import" href="ct-failure-group.html">
@@ -14,7 +15,8 @@ found in the LICENSE file.
 function CTFailures(commitLog) {
   this.commitLog = commitLog;
   this.builderLatestRevisions = null;
-  this.failures = null;
+  // Maps a tree id to an array of CTFailureGroups within that tree.
+  this.failures = {};
   this.lastUpdateDate = null;
 
   // FIXME: Get this from
@@ -77,22 +79,24 @@ CTFailures.prototype._failureByTreeListComparator = function(tree, a, b) {
 
 CTFailures.prototype.update = function() {
   var annotationPromise = CTFailureGroup.fetchAnnotations();
-  net.json('http://sheriff-o-matic.appspot.com/alerts').then(function(data) {
-    annotationPromise.then(function(annotations) {
+
+  return net.json('http://sheriff-o-matic.appspot.com/alerts').then(function(data) {
+    return annotationPromise.then(function(annotations) {
       // FIXME: Don't special-case the blink master.
       this.builderLatestRevisions = new CTBuilderRevisions(data.latest_builder_info['chromium.webkit']);
-      this.failures = {};
+      var newFailures = {};
       this.lastUpdateDate = new Date(data.date * 1000);
       // Update |failures| with the appropriate CTFailureGroup's for each
       // tree.
       data.range_groups.forEach(function(rangeGroup) {
-        this._processFailuresForRangeGroup(rangeGroup, data.alerts, annotations);
+        this._processFailuresForRangeGroup(newFailures, rangeGroup, data.alerts, annotations);
       }.bind(this));
       // Sort failure groups so that newer failures are shown at the top
       // of the UI.
-      Object.keys(this.failures, function (tree, failuresByTree) {
-        this.failures[tree].sort(this._failureByTreeListComparator.bind(this, tree));
+      Object.keys(newFailures, function (tree, failuresByTree) {
+        failuresByTree.sort(this._failureByTreeListComparator.bind(this, tree));
       }.bind(this));
+      this.failures = updateUtil.updateLeft(this.failures, newFailures);
     }.bind(this));
   }.bind(this));
 };
@@ -109,7 +113,7 @@ CTFailures.prototype._failureComparator = function(a, b) {
   return 0;
 };
 
-CTFailures.prototype._processFailuresForRangeGroup = function(rangeGroup, alerts, annotations) {
+CTFailures.prototype._processFailuresForRangeGroup = function(newFailures, rangeGroup, alerts, annotations) {
   var masterToTree = {};
   Object.keys(this._trees, function(tree, masters) {
     masters.forEach(function(master) {
@@ -166,6 +170,7 @@ CTFailures.prototype._processFailuresForRangeGroup = function(rangeGroup, alerts
   if (!Object.keys(failuresByReason).length)
     return;
 
+  // Maps a tree id to a list of CTFailures in that tree.
   var groupedFailures = {};
   Object.keys(failuresByReason, function(reasonKey, resultsByTree) {
     var failure = JSON.parse(reasonKey);
@@ -180,10 +185,10 @@ CTFailures.prototype._processFailuresForRangeGroup = function(rangeGroup, alerts
   Object.keys(groupedFailures, function(tree, failures) {
     failures.sort(this._failureComparator);
 
-    if (!this.failures[tree])
-      this.failures[tree] = [];
+    if (!newFailures[tree])
+      newFailures[tree] = [];
     var commitList = new CTCommitList(this.commitLog, rangeGroup.likely_revisions);
-    this.failures[tree].push(new CTFailureGroup(failures, commitList));
+    newFailures[tree].push(new CTFailureGroup(rangeGroup.sort_key, failures, commitList));
   }.bind(this));
 };
 

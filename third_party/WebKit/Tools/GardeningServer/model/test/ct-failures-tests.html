@@ -6,6 +6,12 @@ found in the LICENSE file.
 
 <link rel="import" href="../ct-failures.html">
 
+<link rel="import" href="../../lib/network-simulator.html">
+<link rel="import" href="../ct-commit-list.html">
+<link rel="import" href="../ct-commit-log-mock.html">
+<link rel="import" href="../ct-failure-group.html">
+<link rel="import" href="../ct-failure.html">
+
 <script>
 (function () {
 
@@ -36,10 +42,10 @@ describe('ct-failures', function() {
       var cl2 = new CTCommitList(undefined, ['chromium:2', 'blink:1']);
       var cl3 = new CTCommitList(undefined, ['chromium:2', 'blink:2']);
       var cl4 = new CTCommitList(undefined, []);
-      var group1 = new CTFailureGroup([], cl1);
-      var group2 = new CTFailureGroup([], cl2);
-      var group3 = new CTFailureGroup([], cl3);
-      var group4 = new CTFailureGroup([], cl4);
+      var group1 = new CTFailureGroup('', [], cl1);
+      var group2 = new CTFailureGroup('', [], cl2);
+      var group3 = new CTFailureGroup('', [], cl3);
+      var group4 = new CTFailureGroup('', [], cl4);
 
       // Sort by last revision first.
       assert(analyzer._failureByTreeListComparator('chromium', group1, group2) > 0);
@@ -60,6 +66,158 @@ describe('ct-failures', function() {
       assert(analyzer._failureByTreeListComparator('chromium', group4, group1) > 0);
     });
   });
+
+  describe('.update', function() {
+    it('should update everything', function(done) {
+      var simulator = new NetworkSimulator(assert, done);
+      var netData = {
+        alerts: {
+          latest_builder_info: {
+            'chromium.webkit': {
+              'Linux Tests': {
+                state: "building",
+                lastUpdateTime: 1409697816.726562,
+                revisions: {
+                  v8: 50,
+                  chromium: 293001,
+                  nacl: 50,
+                  blink: 181262
+                },
+              },
+            },
+            'chromium.linux': {
+              "Linux Tests (dbg)(1)": {
+                state: "building",
+                lastUpdateTime: 1409696812.7248161,
+                revisions: {
+                  v8: 50,
+                  chromium: 292984,
+                  nacl: 50,
+                  blink: 181241
+                }
+              },
+            }
+          },
+          range_groups: [
+            {
+              sort_key: 'linux: Linux Tests (dbg)(1)',
+              failure_keys: [ 'f1', ],
+              likely_revisions: [
+                'chromium: 100',
+                'chromium: 101',
+              ],
+              merged_first_failing: {
+                blink: 50,
+                nacl: 50,
+                v8: 50,
+                chromium: 101,
+              },
+              merged_last_passing: {
+                blink: 50,
+                nacl: 50,
+                v8: 50,
+                chromium: 99,
+              },
+            },
+          ],
+          alerts: [
+            {
+              last_result_time: 1409697347.089103,
+              failing_build_count: 4,
+              passing_build: 2485,
+              last_failing_build: 2489,
+              failing_build: 2486,
+              latest_revisions: {
+                v8: 50,
+                chromium: 103,
+                nacl: 50,
+                blink: 51
+              },
+              master_url: "https://build.chromium.org/p/chromium.linux",
+              reason: null,
+              failing_revisions: {
+                v8: 50,
+                chromium: 101,
+                nacl: 50,
+                blink: 50
+              },
+              builder_name: "Linux Tests (dbg)(1)",
+              key: "f1",
+              step_name: "compile",
+              tree_name: null,
+              passing_revisions: {
+                v8: 50,
+                chromium: 99,
+                nacl: 50,
+                blink: 50
+              },
+              would_close_tree: true
+            },
+          ],
+        }
+      }
+      simulator.json = function(url) {
+        var matched = Object.find(netData, function(key) {
+          return url.indexOf(key) != -1;
+        });
+        if (matched) {
+          return Promise.resolve(netData[matched]);
+        } else {
+          return Promise.reject('Unexpected url: ' + url);
+        }
+      };
+      simulator.runTest(function() {
+        var analyzer = new CTFailures(CTCommitLogMock());
+        return analyzer.update().then(function() {
+          assert.property(analyzer.failures, 'chromium');
+          assert.lengthOf(analyzer.failures.chromium, 1);
+          var group = analyzer.failures.chromium[0];
+          assert.equal(group.constructor, CTFailureGroup);
+          assert.equal(group.key, 'linux: Linux Tests (dbg)(1)');
+          assert.lengthOf(group.failures, 1);
+          var failure = group.failures[0];
+          assert.equal(failure.constructor, CTFailure);
+          assert.equal(failure.key, 'compile::null');
+          assert.equal(failure.step, 'compile');
+          assert.equal(failure.testName, null);
+          var resultNodesByBuilder = failure.resultNodesByBuilder;
+          assert.property(resultNodesByBuilder, 'Linux Tests (dbg)(1)');
+          var dbgBuilder = resultNodesByBuilder['Linux Tests (dbg)(1)'];
+          assert.propertyVal(dbgBuilder, 'actual', 'UNKNOWN');
+          assert.propertyVal(dbgBuilder, 'lastFailingBuild', 2489);
+          assert.propertyVal(dbgBuilder, 'earliestFailingBuild', 2486);
+          assert.propertyVal(dbgBuilder, 'masterUrl', 'https://build.chromium.org/p/chromium.linux');
+          assert.propertyVal(dbgBuilder, 'failingBuildCount', 4);
+
+          var commitList = group.commitList;
+          assert.equal(commitList.constructor, CTCommitList);
+          assert.lengthOf(commitList.repositories, 1);
+          var repositoryCommitList = commitList.repositories[0];
+          assert.propertyVal(repositoryCommitList, 'range', '100 : 101');
+          assert.propertyVal(repositoryCommitList, 'expanded', false);
+
+          // Flip |expanded| to true to check that it's preserved across updates.
+          repositoryCommitList.expanded = true;
+
+          // Update |netData| to make sure it's propagated into the updated values.
+          netData.alerts.alerts[0].last_failing_build = 2490;
+
+          return analyzer.update().then(function() {
+            assert.strictEqual(analyzer.failures.chromium[0], group)
+            assert.strictEqual(group.failures[0], failure)
+            assert.strictEqual(failure.resultNodesByBuilder, resultNodesByBuilder);
+            assert.strictEqual(resultNodesByBuilder['Linux Tests (dbg)(1)'], dbgBuilder);
+            assert.propertyVal(dbgBuilder, 'lastFailingBuild', 2490);
+
+            assert.strictEqual(group.commitList, commitList);
+            assert.strictEqual(commitList.repositories[0], repositoryCommitList);
+            assert.propertyVal(repositoryCommitList, 'expanded', true);
+          });
+        });
+      });
+    });
+  });
+
 });
 
 })()

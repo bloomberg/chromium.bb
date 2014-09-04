@@ -5,6 +5,7 @@ found in the LICENSE file.
 -->
 
 <link rel="import" href="ct-commit-log.html">
+<link rel="import" href="ct-repository-commit-list.html">
 
 <script>
 function CTCommitList(commitLog, revisions) {
@@ -27,12 +28,7 @@ CTCommitList.prototype.update = function(commitLog) {
     if (!commits.length)
       continue;
 
-    this.repositories.push({
-      name: repository,
-      range: this._displayRange(commits, repository),
-      commits: commits,
-      expanded: false
-    });
+    this.repositories.push(new CTRepositoryCommitList(repository, commits));
   }
 };
 
@@ -50,10 +46,6 @@ CTCommitList.prototype._initRevisions = function(repoRevisions) {
       }
     }
   }.bind(this));
-};
-
-CTCommitList.prototype._displayRange = function(commits) {
-  return commits.first().revision + " : " + commits.last().revision;
 };
 
 </script>
