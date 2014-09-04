@@ -201,5 +201,33 @@ async_test(function(t) {
         }))
       .catch(unreached_rejection(t));
   }, 'Service Worker responds to fetch event with POST form', properties);
+
+async_test(function(t) {
+    var scope = 'resources/simple.html?multiple-respond-with';
+    service_worker_unregister_and_register(t, worker, scope)
+      .then(function(registration) {
+          return wait_for_update(t, registration);
+        })
+      .then(function(sw) { return wait_for_state(t, sw, 'activated'); })
+      .then(function() { return with_iframe(scope); })
+      .then(function(frame) {
+          assert_equals(
+            frame.contentDocument.body.textContent,
+            '(0)',
+            'Response should be the argument of the first respondWith() call.');
+          unload_iframe(frame);
+          return with_iframe(scope);
+        })
+      .then(function(frame) {
+          assert_equals(
+            frame.contentDocument.body.textContent,
+            '(0)(1)[InvalidStateError](2)[InvalidStateError](0)',
+            'Multiple calls of respondWith must throw InvalidStateErrors.');
+          unload_iframe(frame);
+          return service_worker_unregister_and_done(t, scope);
+        })
+      .catch(unreached_rejection(t));
+  }, 'Multiple calls of respondWith must throw InvalidStateErrors', properties);
+
 </script>
 </body>

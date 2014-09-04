@@ -34,6 +34,19 @@ function handleFormPost(event) {
     }));
 }
 
+var logForMultipleRespondWith = '';
+
+function handleMultipleRespondWith(event) {
+  for (var i = 0; i < 3; ++i) {
+    logForMultipleRespondWith += '(' + i + ')';
+    try {
+      event.respondWith(new Response(logForMultipleRespondWith));
+    } catch (e) {
+      logForMultipleRespondWith += '[' + e.name + ']';
+    }
+  }
+}
+
 self.addEventListener('fetch', function(event) {
     var url = event.request.url;
     var handlers = [
@@ -44,7 +57,8 @@ self.addEventListener('fetch', function(event) {
       { pattern: '?null', fn: handleNullBody },
       { pattern: '?reject', fn: handleReject },
       { pattern: '?fetch', fn: handleFetch },
-      { pattern: '?form-post', fn: handleFormPost }
+      { pattern: '?form-post', fn: handleFormPost },
+      { pattern: '?multiple-respond-with', fn: handleMultipleRespondWith }
     ];
 
     var handler = null;

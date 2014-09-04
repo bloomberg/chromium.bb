@@ -10,5 +10,5 @@
     readonly attribute Request request;
     readonly attribute boolean isReload;
 
-    [CallWith=ScriptState] void respondWith(any value);
+    [CallWith=ScriptState, RaisesException] void respondWith(any value);
 };

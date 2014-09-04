@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class ExecutionContext;
 class Request;
 class RespondWithObserver;
@@ -27,7 +28,7 @@ public:
     PassRefPtrWillBeRawPtr<Request> request() const;
     bool isReload() const;
 
-    void respondWith(ScriptState*, const ScriptValue&);
+    void respondWith(ScriptState*, const ScriptValue&, ExceptionState&);
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
 

@@ -78,10 +78,12 @@ void RespondWithObserver::didDispatchEvent()
         sendResponse(nullptr);
 }
 
-void RespondWithObserver::respondWith(ScriptState* scriptState, const ScriptValue& value)
+void RespondWithObserver::respondWith(ScriptState* scriptState, const ScriptValue& value, ExceptionState& exceptionState)
 {
-    if (m_state != Initial)
+    if (m_state != Initial) {
+        exceptionState.throwDOMException(InvalidStateError, "respondWith is already called.");
         return;
+    }
 
     m_state = Pending;
     ScriptPromise::cast(scriptState, value).then(

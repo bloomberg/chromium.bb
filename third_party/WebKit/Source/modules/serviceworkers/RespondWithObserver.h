@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class ExecutionContext;
 class Response;
 class ScriptState;
@@ -29,7 +30,7 @@ public:
 
     // Observes the promise and delays calling didHandleFetchEvent() until the
     // given promise is resolved or rejected.
-    void respondWith(ScriptState*, const ScriptValue&);
+    void respondWith(ScriptState*, const ScriptValue&, ExceptionState&);
 
     void responseWasRejected();
     void responseWasFulfilled(const ScriptValue&);
