@@ -23,9 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    RuntimeEnabled=DialogElement
-] interface HTMLDialogElement : HTMLElement {
+interface HTMLDialogElement : HTMLElement {
     [Reflect] attribute boolean open;
     attribute DOMString returnValue;
     [RaisesException] void close(optional DOMString returnValue = null);

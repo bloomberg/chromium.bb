@@ -108,7 +108,7 @@ FormSubmission::Method FormSubmission::Attributes::parseMethodType(const String&
 {
     if (equalIgnoringCase(type, "post"))
         return FormSubmission::PostMethod;
-    if (RuntimeEnabledFeatures::dialogElementEnabled() && equalIgnoringCase(type, "dialog"))
+    if (equalIgnoringCase(type, "dialog"))
         return FormSubmission::DialogMethod;
     return FormSubmission::GetMethod;
 }

@@ -178,8 +178,7 @@ void RenderView::layoutContent()
 
     RenderBlockFlow::layout();
 
-    if (RuntimeEnabledFeatures::dialogElementEnabled())
-        positionDialogs();
+    positionDialogs();
 
 #if ENABLE(ASSERT)
     checkLayoutState();

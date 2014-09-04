@@ -50,7 +50,6 @@ CompositedSelectionUpdates
 CustomSchemeHandler depends_on=NavigatorContentUtils, status=experimental
 Database status=stable
 DeviceLight status=experimental
-DialogElement status=stable
 DisplayList2dCanvas
 SVGFontsOnNonGDIPlatforms
 EncodingAPI status=stable
