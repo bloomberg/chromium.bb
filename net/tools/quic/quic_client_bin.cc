@@ -6,7 +6,7 @@
 // Connects to a host using QUIC, and sends requests to the provided URLS.
 //
 // Example usage:
-//  quic_client --address=127.0.0.1 --port=6122 --hostname=www.google.com \
+//  quic_client --address=127.0.0.1 --port=6122 --hostname=www.google.com
 //      http://www.google.com/index.html http://www.google.com/favicon.ico
 
 #include <iostream>
