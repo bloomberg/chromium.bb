@@ -48,8 +48,9 @@ def CommonChecks(input_api, output_api):
       white_list=[r'gyp/.*\.py$', r'gn/.*\.py'],
       extra_paths_list=[J('gyp'), J('gn')]))
 
-  output.extend(input_api.canned_checks.RunUnitTestsInDirectory(
-      input_api, output_api, J('buildbot', 'tests')))
+  # Disabled due to http://crbug.com/410936
+  #output.extend(input_api.canned_checks.RunUnitTestsInDirectory(
+  #input_api, output_api, J('buildbot', 'tests')))
 
   pylib_test_env = dict(input_api.environ)
   pylib_test_env.update({
