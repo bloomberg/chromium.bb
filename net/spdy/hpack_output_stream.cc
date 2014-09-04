@@ -49,7 +49,7 @@ void HpackOutputStream::AppendBytes(StringPiece buffer) {
 }
 
 void HpackOutputStream::AppendUint32(uint32 I) {
-  // The algorithm below is adapted from the pseudocode in 4.1.1.
+  // The algorithm below is adapted from the pseudocode in 6.1.
   size_t N = 8 - bit_offset_;
   uint8 max_first_byte = static_cast<uint8>((1 << N) - 1);
   if (I < max_first_byte) {

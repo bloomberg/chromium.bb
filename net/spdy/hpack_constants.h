@@ -73,6 +73,9 @@ NET_EXPORT_PRIVATE std::vector<HpackHuffmanSymbol> HpackHuffmanCode();
 // threads. This function is thread-safe.
 NET_EXPORT_PRIVATE const HpackHuffmanTable& ObtainHpackHuffmanTable();
 
+// Pseudo-headers start with a colon.  (HTTP2 8.1.2.1., HPACK 3.1.)
+const char kPseudoHeaderPrefix = ':';
+
 }  // namespace net
 
 #endif  // NET_SPDY_HPACK_CONSTANTS_H_

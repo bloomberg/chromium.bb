@@ -27,31 +27,63 @@ HpackEncoder::~HpackEncoder() {}
 
 bool HpackEncoder::EncodeHeaderSet(const std::map<string, string>& header_set,
                                    string* output) {
-  // Flatten & crumble headers into an ordered list of representations.
-  Representations full_set;
+  // Separate header set into pseudo-headers and regular headers.
+  Representations pseudo_headers;
+  Representations regular_headers;
   for (std::map<string, string>::const_iterator it = header_set.begin();
        it != header_set.end(); ++it) {
     if (it->first == "cookie") {
-      // |CookieToCrumbs()| produces ordered crumbs.
-      CookieToCrumbs(*it, &full_set);
+      // Note that there can only be one "cookie" header, because header_set is
+      // a map.
+      CookieToCrumbs(*it, &regular_headers);
+    } else if (it->first[0] == kPseudoHeaderPrefix) {
+      pseudo_headers.push_back(make_pair(
+          StringPiece(it->first), StringPiece(it->second)));
     } else {
-      // Note std::map guarantees representations are ordered.
-      full_set.push_back(make_pair(
+      regular_headers.push_back(make_pair(
           StringPiece(it->first), StringPiece(it->second)));
     }
   }
 
-  // Walk this ordered list and encode entries.
-  for (Representations::const_iterator it = full_set.begin();
-       it != full_set.end(); ++it) {
+  // Encode pseudo-headers.
+  for (Representations::const_iterator it = pseudo_headers.begin();
+       it != pseudo_headers.end(); ++it) {
     HpackEntry* entry = header_table_.GetByNameAndValue(it->first, it->second);
     if (entry != NULL) {
       EmitIndex(entry);
     } else {
-      // TODO(bnc): if another entry in the header table is about to be evicted
-      // but it appears in the header list, emit that by index first.
-      EmitIndexedLiteral(*it);
+      if (it->first == ":authority") {
+        // :authority is always present and rarely changes, and has moderate
+        // length, therefore it makes a lot of sense to index (insert in the
+        // header table).
+        EmitIndexedLiteral(*it);
+      } else {
+        // Most common pseudo-header fields are represented in the static table,
+        // while uncommon ones are small, so do not index them.
+        EmitNonIndexedLiteral(*it);
+      }
     }
+  }
+
+  // Encode regular headers that are already in the header table first,
+  // save the rest into another vector.  This way we avoid evicting an entry
+  // from the header table before it can be used.
+  Representations literal_headers;
+  for (Representations::const_iterator it = regular_headers.begin();
+       it != regular_headers.end(); ++it) {
+    HpackEntry* entry = header_table_.GetByNameAndValue(it->first, it->second);
+    if (entry != NULL) {
+      EmitIndex(entry);
+    } else {
+      literal_headers.push_back(*it);
+    }
+  }
+
+  // Encode the remaining header fields, while inserting them in the header
+  // table.
+  for (Representations::const_iterator it = literal_headers.begin();
+       it != literal_headers.end(); ++it) {
+    EmitIndexedLiteral(*it);
   }
 
   output_stream_.TakeString(output);
@@ -140,8 +172,8 @@ void HpackEncoder::CookieToCrumbs(const Representation& cookie,
                                   Representations* out) {
   size_t prior_size = out->size();
 
-  // See Section 8.1.3.4 "Compressing the Cookie Header Field" in the HTTP/2
-  // specification at http://tools.ietf.org/html/draft-ietf-httpbis-http2-11
+  // See Section 8.1.2.5. "Compressing the Cookie Header Field" in the HTTP/2
+  // specification at https://tools.ietf.org/html/draft-ietf-httpbis-http2-14.
   // Cookie values are split into individually-encoded HPACK representations.
   for (size_t pos = 0;;) {
     size_t end = cookie.second.find(";", pos);

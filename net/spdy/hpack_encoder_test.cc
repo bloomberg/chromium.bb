@@ -311,20 +311,20 @@ TEST_F(HpackEncoderTest, MultipleEncodingPasses) {
     headers["cookie"] = "c=dd; e=ff";
 
     ExpectIndex(IndexOf(cookie_c_));
+    // key1 by index.
+    ExpectIndex(65);
+    // key2 by index.
+    ExpectIndex(64);
     // This cookie evicts |key1| from the header table.
     ExpectIndexedLiteral(peer_.table()->GetByName("cookie"), "e=ff");
-    // |key1| is inserted to the header table, which evicts |key2|.
-    ExpectIndexedLiteral("key1", "value1");
-    // |key2| is inserted to the header table, which evicts |cookie_a|.
-    ExpectIndexedLiteral("key2", "value2");
 
     CompareWithExpectedEncoding(headers);
   }
   // Header table is:
-  // 65: cookie: c=dd
-  // 64: cookie: e=ff
-  // 63: key1: value1
-  // 62: key2: value2
+  // 65: key2: value2
+  // 64: cookie: a=bb
+  // 63: cookie: c=dd
+  // 62: cookie: e=ff
   // Pass 3.
   {
     map<string, string> headers;
@@ -332,12 +332,37 @@ TEST_F(HpackEncoderTest, MultipleEncodingPasses) {
     headers["key3"] = "value3";
     headers["cookie"] = "e=ff";
 
-    ExpectIndex(64);
-    ExpectIndex(63);
+    // cookie: e=ff by index.
+    ExpectIndex(62);
+    ExpectIndexedLiteral("key1", "value1");
     ExpectIndexedLiteral("key3", "value3");
 
     CompareWithExpectedEncoding(headers);
   }
+}
+
+TEST_F(HpackEncoderTest, PseudoHeadersFirst) {
+  map<string, string> headers;
+  // A pseudo-header to be indexed.
+  headers[":authority"] = "www.example.com";
+  // A pseudo-header that should not be indexed.
+  headers[":path"] = "/spam/eggs.html";
+  // A regular header which precedes ":" alphabetically, should still be encoded
+  // after pseudo-headers.
+  headers["-foo"] = "bar";
+  headers["foo"] = "bar";
+  headers["cookie"] = "c=dd";
+
+  // Pseudo-headers are encoded in alphabetical order.
+  ExpectIndexedLiteral(peer_.table()->GetByName(":authority"),
+                       "www.example.com");
+  ExpectNonIndexedLiteral(":path", "/spam/eggs.html");
+  // Regular headers in the header table are encoded first.
+  ExpectIndex(IndexOf(cookie_a_));
+  // Regular headers not in the header table are encoded, in alphabetical order.
+  ExpectIndexedLiteral("-foo", "bar");
+  ExpectIndexedLiteral("foo", "bar");
+  CompareWithExpectedEncoding(headers);
 }
 
 TEST_F(HpackEncoderTest, CookieToCrumbs) {
