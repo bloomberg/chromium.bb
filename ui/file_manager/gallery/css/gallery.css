@@ -1175,6 +1175,7 @@ input[type='checkbox']:checked {
   /* Tile's zoom factor is animated on hover. We apply the transform to
   the entire tile so that the image outline is included into the animation. */
   transition: -webkit-transform 150ms linear;
+  z-index: 50;
 }
 
 /* Mosaic tile's opacity is controlled by |visible| attribute which changes
