@@ -107,17 +107,17 @@ void ExtensionOptionsGuest::CreateWebContents(
 
 void ExtensionOptionsGuest::DidAttachToEmbedder() {
   SetUpAutoSize();
-  guest_web_contents()->GetController().LoadURL(options_page_,
-                                                content::Referrer(),
-                                                content::PAGE_TRANSITION_LINK,
-                                                std::string());
+  web_contents()->GetController().LoadURL(options_page_,
+                                          content::Referrer(),
+                                          content::PAGE_TRANSITION_LINK,
+                                          std::string());
 }
 
 void ExtensionOptionsGuest::DidInitialize() {
   extension_function_dispatcher_.reset(
       new extensions::ExtensionFunctionDispatcher(browser_context(), this));
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
-      guest_web_contents());
+      web_contents());
 }
 
 void ExtensionOptionsGuest::DidStopLoading() {
@@ -152,7 +152,7 @@ bool ExtensionOptionsGuest::IsAutoSizeSupported() const {
 }
 
 content::WebContents* ExtensionOptionsGuest::GetAssociatedWebContents() const {
-  return guest_web_contents();
+  return web_contents();
 }
 
 void ExtensionOptionsGuest::CloseContents(content::WebContents* source) {
@@ -164,11 +164,11 @@ void ExtensionOptionsGuest::CloseContents(content::WebContents* source) {
 bool ExtensionOptionsGuest::HandleContextMenu(
     const content::ContextMenuParams& params) {
   ContextMenuDelegate* menu_delegate =
-      ContextMenuDelegate::FromWebContents(guest_web_contents());
+      ContextMenuDelegate::FromWebContents(web_contents());
   DCHECK(menu_delegate);
 
   scoped_ptr<RenderViewContextMenu> menu =
-      menu_delegate->BuildMenu(guest_web_contents(), params);
+      menu_delegate->BuildMenu(web_contents(), params);
   menu_delegate->ShowMenu(menu.Pass());
   return true;
 }
@@ -211,7 +211,7 @@ bool ExtensionOptionsGuest::OnMessageReceived(const IPC::Message& message) {
 void ExtensionOptionsGuest::OnRequest(
     const ExtensionHostMsg_Request_Params& params) {
   extension_function_dispatcher_->Dispatch(
-      params, guest_web_contents()->GetRenderViewHost());
+      params, web_contents()->GetRenderViewHost());
 }
 
 void ExtensionOptionsGuest::SetUpAutoSize() {

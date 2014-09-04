@@ -1304,10 +1304,6 @@ const base::FilePath::CharType* SavePackage::ExtensionForMimeType(
   return FILE_PATH_LITERAL("");
 }
 
-WebContents* SavePackage::web_contents() const {
-  return WebContentsObserver::web_contents();
-}
-
 void SavePackage::GetSaveInfo() {
   // Can't use web_contents_ in the file thread, so get the data that we need
   // before calling to it.

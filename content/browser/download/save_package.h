@@ -117,7 +117,6 @@ class CONTENT_EXPORT SavePackage
   SavePageType save_type() const { return save_type_; }
   int contents_id() const { return contents_id_; }
   int id() const { return unique_id_; }
-  WebContents* web_contents() const;
 
   void GetSaveInfo();
 

@@ -193,7 +193,7 @@ void GuestViewBase::SetAutoSize(bool enabled,
   if (!attached())
     return;
 
-  content::RenderViewHost* rvh = guest_web_contents()->GetRenderViewHost();
+  content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
   if (auto_size_enabled_) {
     rvh->EnableAutoResize(min_auto_size_, max_auto_size_);
   } else {
@@ -289,7 +289,7 @@ void GuestViewBase::RenderProcessExited(content::RenderProcessHost* host,
 }
 
 void GuestViewBase::Destroy() {
-  DCHECK(guest_web_contents());
+  DCHECK(web_contents());
   content::RenderProcessHost* host =
       content::RenderProcessHost::FromID(embedder_render_process_id());
   if (host)
@@ -298,12 +298,12 @@ void GuestViewBase::Destroy() {
   if (!destruction_callback_.is_null())
     destruction_callback_.Run();
 
-  webcontents_guestview_map.Get().erase(guest_web_contents());
+  webcontents_guestview_map.Get().erase(web_contents());
   GuestViewManager::FromBrowserContext(browser_context_)->
       RemoveGuest(guest_instance_id_);
   pending_events_.clear();
 
-  delete guest_web_contents();
+  delete web_contents();
 }
 
 void GuestViewBase::DidAttach() {
@@ -370,7 +370,7 @@ void GuestViewBase::DidStopLoading(content::RenderViewHost* render_view_host) {
 
 void GuestViewBase::RenderViewReady() {
   GuestReady();
-  content::RenderViewHost* rvh = guest_web_contents()->GetRenderViewHost();
+  content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
   if (auto_size_enabled_) {
     rvh->EnableAutoResize(min_auto_size_, max_auto_size_);
   } else {

@@ -62,9 +62,6 @@ class ContentAutofillDriver : public AutofillDriver,
   virtual void RendererShouldPreviewFieldWithValue(
       const base::string16& value) OVERRIDE;
 
-  // Returns the WebContents with which this instance is associated.
-  content::WebContents* GetWebContents();
-
   AutofillExternalDelegate* autofill_external_delegate() {
     return &autofill_external_delegate_;
   }

@@ -354,7 +354,7 @@ WebContents* WebViewInternalCaptureVisibleRegionFunction::GetWebContentsForID(
     int instance_id) {
   WebViewGuest* guest = WebViewGuest::From(
       render_view_host()->GetProcess()->GetID(), instance_id);
-  return guest ? guest->guest_web_contents() : NULL;
+  return guest ? guest->web_contents() : NULL;
 }
 
 void WebViewInternalCaptureVisibleRegionFunction::OnCaptureFailure(
@@ -526,7 +526,7 @@ bool WebViewInternalSetPermissionFunction::RunAsyncSafe(WebViewGuest* guest) {
     user_input = *params->user_input;
 
   WebViewPermissionHelper* web_view_permission_helper =
-      WebViewPermissionHelper:: FromWebContents(guest->guest_web_contents());
+      WebViewPermissionHelper::FromWebContents(guest->web_contents());
 
   WebViewPermissionHelper::SetPermissionResult result =
       web_view_permission_helper->SetPermission(

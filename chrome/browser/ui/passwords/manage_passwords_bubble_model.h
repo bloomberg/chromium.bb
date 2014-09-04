@@ -86,9 +86,6 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
     return save_confirmation_link_range_;
   }
 
-  // Make the accessor public.
-  using WebContentsObserver::web_contents;
-
 #if defined(UNIT_TEST)
   // Gets and sets the reason the bubble was displayed.
   password_manager::metrics_util::UIDisplayDisposition display_disposition()

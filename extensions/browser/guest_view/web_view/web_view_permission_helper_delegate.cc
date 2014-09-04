@@ -11,7 +11,7 @@ namespace extensions {
 WebViewPermissionHelperDelegate::WebViewPermissionHelperDelegate(
     WebViewPermissionHelper* web_view_permission_helper)
     : content::WebContentsObserver(
-        web_view_permission_helper->web_view_guest()->guest_web_contents()),
+          web_view_permission_helper->web_view_guest()->web_contents()),
       web_view_permission_helper_(web_view_permission_helper) {
 }
 

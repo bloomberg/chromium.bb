@@ -33,7 +33,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
    public:
     explicit ObserverWithAccessor(content::WebContents* web_contents);
     virtual ~ObserverWithAccessor();
-    content::WebContents* GetWebContents();
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ObserverWithAccessor);

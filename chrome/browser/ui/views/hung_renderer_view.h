@@ -65,10 +65,6 @@ class HungPagesTableModel : public ui::TableModel, public views::TableGrouper {
     WebContentsObserverImpl(HungPagesTableModel* model,
                             content::WebContents* tab);
 
-    content::WebContents* web_contents() const {
-      return content::WebContentsObserver::web_contents();
-    }
-
     FaviconTabHelper* favicon_tab_helper() {
       return FaviconTabHelper::FromWebContents(web_contents());
     }

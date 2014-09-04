@@ -56,9 +56,6 @@ class InstantPage : public content::WebContentsObserver,
 
   virtual ~InstantPage();
 
-  // The WebContents corresponding to the page we're talking to. May be NULL.
-  content::WebContents* contents() const { return web_contents(); }
-
   // Returns the Instant URL that was loaded for this page. Returns the empty
   // string if no URL was explicitly loaded as is the case for InstantTab.
   virtual const std::string& instant_url() const;

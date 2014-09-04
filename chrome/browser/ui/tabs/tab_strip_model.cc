@@ -68,9 +68,6 @@ class CloseTracker {
           parent_(parent) {
     }
 
-    // Expose web_contents() publicly.
-    using content::WebContentsObserver::web_contents;
-
    private:
     // WebContentsObserver:
     virtual void WebContentsDestroyed() OVERRIDE {

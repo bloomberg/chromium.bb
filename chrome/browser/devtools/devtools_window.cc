@@ -159,7 +159,7 @@ void DevToolsToolboxDelegate::WebContentsDestroyed() {
 
 BrowserWindow* DevToolsToolboxDelegate::GetInspectedBrowserWindow() {
   WebContents* inspected_contents =
-      inspected_contents_observer_->GetWebContents();
+      inspected_contents_observer_->web_contents();
   if (!inspected_contents)
     return NULL;
   Browser* browser = NULL;
@@ -290,10 +290,6 @@ DevToolsWindow::ObserverWithAccessor::ObserverWithAccessor(
 }
 
 DevToolsWindow::ObserverWithAccessor::~ObserverWithAccessor() {
-}
-
-WebContents* DevToolsWindow::ObserverWithAccessor::GetWebContents() {
-  return web_contents();
 }
 
 // DevToolsWindow -------------------------------------------------------------
@@ -1217,8 +1213,9 @@ void DevToolsWindow::UpdateBrowserWindow() {
 }
 
 WebContents* DevToolsWindow::GetInspectedWebContents() {
-  return inspected_contents_observer_ ?
-      inspected_contents_observer_->GetWebContents() : NULL;
+  return inspected_contents_observer_
+             ? inspected_contents_observer_->web_contents()
+             : NULL;
 }
 
 void DevToolsWindow::LoadCompleted() {

@@ -192,11 +192,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
     return embedder_web_contents_;
   }
 
-  // Returns the guest WebContents.
-  content::WebContents* guest_web_contents() const {
-    return web_contents();
-  }
-
   // Returns the parameters associated with the element hosting this GuestView
   // passed in from JavaScript.
   base::DictionaryValue* attach_params() const { return attach_params_.get(); }

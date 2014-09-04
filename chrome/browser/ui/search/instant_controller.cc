@@ -42,7 +42,7 @@ namespace {
 
 bool IsContentsFrom(const InstantPage* page,
                     const content::WebContents* contents) {
-  return page && (page->contents() == contents);
+  return page && (page->web_contents() == contents);
 }
 
 // Adds a transient NavigationEntry to the supplied |contents|'s
@@ -87,10 +87,10 @@ bool InstantController::SubmitQuery(const base::string16& search_terms) {
       search_mode_.is_origin_search()) {
     // Use |instant_tab_| to run the query if we're already on a search results
     // page. (NOTE: in particular, we do not send the query to NTPs.)
-    SearchTabHelper::FromWebContents(instant_tab_->contents())->Submit(
+    SearchTabHelper::FromWebContents(instant_tab_->web_contents())->Submit(
         search_terms);
-    instant_tab_->contents()->Focus();
-    EnsureSearchTermsAreSet(instant_tab_->contents(), search_terms);
+    instant_tab_->web_contents()->Focus();
+    EnsureSearchTermsAreSet(instant_tab_->web_contents(), search_terms);
     return true;
   }
   return false;
@@ -178,7 +178,7 @@ void InstantController::InstantPageAboutToNavigateMainFrame(
 void InstantController::ResetInstantTab() {
   if (!search_mode_.is_origin_default()) {
     content::WebContents* active_tab = browser_->GetActiveWebContents();
-    if (!instant_tab_ || active_tab != instant_tab_->contents()) {
+    if (!instant_tab_ || active_tab != instant_tab_->web_contents()) {
       instant_tab_.reset(new InstantTab(this, browser_->profile()));
       instant_tab_->Init(active_tab);
       UpdateInfoForInstantTab();

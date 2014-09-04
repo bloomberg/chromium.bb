@@ -77,10 +77,6 @@ net::URLRequestContextGetter* ContentAutofillDriver::GetURLRequestContext() {
   return web_contents()->GetBrowserContext()->GetRequestContext();
 }
 
-content::WebContents* ContentAutofillDriver::GetWebContents() {
-  return web_contents();
-}
-
 base::SequencedWorkerPool* ContentAutofillDriver::GetBlockingPool() {
   return content::BrowserThread::GetBlockingPool();
 }

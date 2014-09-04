@@ -101,11 +101,6 @@ class DownloadRequestLimiter
       return download_count_;
     }
 
-    // Promote protected accessor to public.
-    content::WebContents* web_contents() const {
-      return content::WebContentsObserver::web_contents();
-    }
-
     // content::WebContentsObserver overrides.
     virtual void AboutToNavigateRenderView(
         content::RenderViewHost* render_view_host) OVERRIDE;

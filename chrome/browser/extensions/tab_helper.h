@@ -98,10 +98,6 @@ class TabHelper : public content::WebContentsObserver,
   // extension_misc::EXTENSION_ICON_SMALLISH).
   SkBitmap* GetExtensionAppIcon();
 
-  content::WebContents* web_contents() const {
-    return content::WebContentsObserver::web_contents();
-  }
-
   ScriptExecutor* script_executor() {
     return script_executor_.get();
   }

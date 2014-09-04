@@ -468,7 +468,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
                 bool should_replace_current_entry);
     virtual ~PendingSwap();
 
-    content::WebContents* target_contents() const;
     void set_swap_successful(bool swap_successful) {
       swap_successful_ = swap_successful;
     }

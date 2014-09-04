@@ -54,10 +54,6 @@ class WEBVIEW_EXPORT WebView : public View,
   // widget or restore the normal WebContentsView.
   void SetEmbedFullscreenWidgetMode(bool mode);
 
-  content::WebContents* web_contents() const {
-    return content::WebContentsObserver::web_contents();
-  }
-
   content::BrowserContext* browser_context() { return browser_context_; }
 
   // Loads the initial URL to display in the attached WebContents. Creates the

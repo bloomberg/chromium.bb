@@ -1055,16 +1055,12 @@ PrerenderManager::PendingSwap::~PendingSwap() {
       target_route_id_, swap_successful_);
 }
 
-WebContents* PrerenderManager::PendingSwap::target_contents() const {
-  return web_contents();
-}
-
 void PrerenderManager::PendingSwap::BeginSwap() {
   if (g_hang_session_storage_merges_for_testing)
     return;
 
   SessionStorageNamespace* target_namespace =
-      target_contents()->GetController().GetDefaultSessionStorageNamespace();
+      web_contents()->GetController().GetDefaultSessionStorageNamespace();
   SessionStorageNamespace* prerender_namespace =
       prerender_data_->contents()->GetSessionStorageNamespace();
 
@@ -1185,9 +1181,11 @@ void PrerenderManager::PendingSwap::OnMergeCompleted(
   // TODO(davidben): Can we make this less fragile?
   PrerenderManager* manager = manager_;
   PrerenderData* prerender_data = prerender_data_;
-  WebContents* new_web_contents = manager_->SwapInternal(
-        GURL(url_), target_contents(), prerender_data_,
-        should_replace_current_entry_);
+  WebContents* new_web_contents =
+      manager_->SwapInternal(GURL(url_),
+                             web_contents(),
+                             prerender_data_,
+                             should_replace_current_entry_);
   if (!new_web_contents) {
     manager->RecordEvent(prerender_data->contents(),
                          PRERENDER_EVENT_MERGE_RESULT_SWAPIN_FAILED);
@@ -1489,7 +1487,7 @@ PrerenderManager::FindPrerenderDataForTargetContents(
   for (ScopedVector<PrerenderData>::iterator it = active_prerenders_.begin();
        it != active_prerenders_.end(); ++it) {
     if ((*it)->pending_swap() &&
-        (*it)->pending_swap()->target_contents() == target_contents)
+        (*it)->pending_swap()->web_contents() == target_contents)
       return *it;
   }
   return NULL;

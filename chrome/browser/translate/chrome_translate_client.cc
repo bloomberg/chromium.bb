@@ -167,10 +167,6 @@ translate::TranslateManager* ChromeTranslateClient::GetTranslateManager() {
   return translate_manager_.get();
 }
 
-content::WebContents* ChromeTranslateClient::GetWebContents() {
-  return web_contents();
-}
-
 void ChromeTranslateClient::ShowTranslateUI(
     translate::TranslateStep step,
     const std::string source_language,

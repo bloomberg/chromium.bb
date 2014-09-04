@@ -23,13 +23,15 @@ InstantPage::Delegate::~Delegate() {
 }
 
 InstantPage::~InstantPage() {
-  if (contents())
-    SearchTabHelper::FromWebContents(contents())->model()->RemoveObserver(this);
+  if (web_contents()) {
+    SearchTabHelper::FromWebContents(web_contents())->model()->RemoveObserver(
+        this);
+  }
 }
 
 bool InstantPage::supports_instant() const {
-  return contents() ?
-      SearchTabHelper::FromWebContents(contents())->SupportsInstant() : false;
+  return web_contents() &&
+      SearchTabHelper::FromWebContents(web_contents())->SupportsInstant();
 }
 
 const std::string& InstantPage::instant_url() const {
@@ -37,8 +39,8 @@ const std::string& InstantPage::instant_url() const {
 }
 
 bool InstantPage::IsLocal() const {
-  return contents() &&
-      contents()->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl);
+  return web_contents() &&
+      web_contents()->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl);
 }
 
 InstantPage::InstantPage(Delegate* delegate, const std::string& instant_url,
@@ -49,14 +51,15 @@ InstantPage::InstantPage(Delegate* delegate, const std::string& instant_url,
       is_incognito_(is_incognito) {
 }
 
-void InstantPage::SetContents(content::WebContents* web_contents) {
+void InstantPage::SetContents(content::WebContents* new_web_contents) {
   ClearContents();
 
-  if (!web_contents)
+  if (!new_web_contents)
     return;
 
-  Observe(web_contents);
-  SearchModel* model = SearchTabHelper::FromWebContents(contents())->model();
+  Observe(new_web_contents);
+  SearchModel* model =
+      SearchTabHelper::FromWebContents(web_contents())->model();
   model->AddObserver(this);
 
   // Already know whether the page supports instant.
@@ -74,7 +77,7 @@ void InstantPage::DidCommitProvisionalLoadForFrame(
     content::PageTransition /* transition_type */) {
   if (!render_frame_host->GetParent() &&
       ShouldProcessAboutToNavigateMainFrame())
-    delegate_->InstantPageAboutToNavigateMainFrame(contents(), url);
+    delegate_->InstantPageAboutToNavigateMainFrame(web_contents(), url);
 }
 
 void InstantPage::ModelChanged(const SearchModel::State& old_state,
@@ -84,7 +87,7 @@ void InstantPage::ModelChanged(const SearchModel::State& old_state,
 }
 
 void InstantPage::InstantSupportDetermined(bool supports_instant) {
-  delegate_->InstantSupportDetermined(contents(), supports_instant);
+  delegate_->InstantSupportDetermined(web_contents(), supports_instant);
 
   // If the page doesn't support Instant, stop listening to it.
   if (!supports_instant)
@@ -92,8 +95,10 @@ void InstantPage::InstantSupportDetermined(bool supports_instant) {
 }
 
 void InstantPage::ClearContents() {
-  if (contents())
-    SearchTabHelper::FromWebContents(contents())->model()->RemoveObserver(this);
+  if (web_contents()) {
+    SearchTabHelper::FromWebContents(web_contents())->model()->RemoveObserver(
+        this);
+  }
 
   Observe(NULL);
 }

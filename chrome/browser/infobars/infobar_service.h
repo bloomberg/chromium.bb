@@ -37,11 +37,6 @@ class InfoBarService : public infobars::InfoBarManager,
   static content::WebContents* WebContentsFromInfoBar(
       infobars::InfoBar* infobar);
 
-  // Retrieve the WebContents for the tab this service is associated with.
-  content::WebContents* web_contents() {
-    return content::WebContentsObserver::web_contents();
-  }
-
  private:
   friend class content::WebContentsUserData<InfoBarService>;
 

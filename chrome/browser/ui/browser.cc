@@ -310,8 +310,6 @@ class Browser::InterstitialObserver : public content::WebContentsObserver {
         browser_(browser) {
   }
 
-  using content::WebContentsObserver::web_contents;
-
   virtual void DidAttachInterstitialPage() OVERRIDE {
     browser_->UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
   }

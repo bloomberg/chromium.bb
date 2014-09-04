@@ -844,8 +844,6 @@ class BrowserCommandController::InterstitialObserver
         controller_(controller) {
   }
 
-  using content::WebContentsObserver::web_contents;
-
   virtual void DidAttachInterstitialPage() OVERRIDE {
     controller_->UpdateCommandsForTabState();
   }

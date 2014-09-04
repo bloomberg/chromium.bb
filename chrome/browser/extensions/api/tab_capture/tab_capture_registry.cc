@@ -48,9 +48,6 @@ class TabCaptureRegistry::LiveRequest : public content::WebContentsObserver {
   virtual ~LiveRequest() {}
 
   // Accessors.
-  const content::WebContents* target_contents() const {
-    return content::WebContentsObserver::web_contents();
-  }
   const std::string& extension_id() const {
     return extension_id_;
   }
@@ -327,7 +324,7 @@ TabCaptureRegistry::LiveRequest* TabCaptureRegistry::FindRequest(
     const content::WebContents* target_contents) const {
   for (ScopedVector<LiveRequest>::const_iterator it = requests_.begin();
        it != requests_.end(); ++it) {
-    if ((*it)->target_contents() == target_contents)
+    if ((*it)->web_contents() == target_contents)
       return *it;
   }
   return NULL;

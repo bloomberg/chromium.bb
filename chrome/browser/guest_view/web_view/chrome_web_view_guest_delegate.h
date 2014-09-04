@@ -61,7 +61,7 @@ class ChromeWebViewGuestDelegate : public extensions::WebViewGuestDelegate {
       bool final_update);
 
   content::WebContents* guest_web_contents() const {
-    return web_view_guest()->guest_web_contents();
+    return web_view_guest()->web_contents();
   }
 
   // Returns the top level items (ignoring submenus) as Value.

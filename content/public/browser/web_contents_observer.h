@@ -336,6 +336,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   virtual bool Send(IPC::Message* message) OVERRIDE;
   int routing_id() const;
 
+  WebContents* web_contents() const;
+
  protected:
   // Use this constructor when the object is tied to a single WebContents for
   // its entire lifetime.
@@ -350,8 +352,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // Start observing a different WebContents; used with the default constructor.
   void Observe(WebContents* web_contents);
-
-  WebContents* web_contents() const;
 
  private:
   friend class WebContentsImpl;
