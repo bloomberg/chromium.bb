@@ -74,61 +74,6 @@ DEFAULT_DEST_DIR = os.path.join(NACL_DIR, 'toolchain')
 DEFAULT_CLOUD_BUCKET = 'nativeclient-archive2'
 
 
-def RemoveOldToolchainFiles(toolchain_dir):
-  """Temporary code to delete old toolchain files."""
-  if not os.path.isdir(toolchain_dir):
-    return
-
-  # Delete old tar files
-  tars_dir = os.path.join(toolchain_dir, '.tars')
-  if os.path.isdir(tars_dir):
-    for tar_item in os.listdir(tars_dir):
-      tar_path = os.path.join(tars_dir, tar_item)
-      if os.path.isfile(tar_path):
-        print 'Removing stale tar file:', tar_path
-        os.unlink(tar_path)
-
-  # Delete any top level directories that do not conform to $OS_$ARCH.
-  valid_top_level_dirs = set()
-  for os_name in pynacl.platform.OS_LIST:
-    for arch_name in pynacl.platform.ARCH_LIST:
-      valid_top_level_dirs.add('%s_%s' % (os_name, arch_name))
-
-  # Delete any files and directories that do not conform to the standard.
-  # Do not touch any system files that begin with '.', including ".tars".
-  top_level_dirs = []
-  for dir_item in os.listdir(toolchain_dir):
-    if dir_item.startswith('.'):
-      continue
-
-    full_path = os.path.join(toolchain_dir, dir_item)
-    if dir_item in valid_top_level_dirs:
-      top_level_dirs.append(full_path)
-      continue
-    print 'Removing stale toolchain item:', full_path
-    if os.path.isfile(full_path):
-      os.unlink(full_path)
-    else:
-      pynacl.file_tools.RemoveDir(full_path)
-
-  # Delete any second level dirs that do not conform one of the following:
-  #  1. It must be of the format "nacl_*".
-  #  2. It must be of the format "pnacl_*".
-  #  3. It must be of the format "*_trusted".
-  for top_level_dir in top_level_dirs:
-    for dir_item in os.listdir(top_level_dir):
-      if (dir_item.startswith('nacl_') or
-          dir_item.startswith('pnacl_') or
-          dir_item.endswith('_trusted')):
-        continue
-
-      full_path = os.path.join(top_level_dir, dir_item)
-      print 'Removing stale toolchain item:', full_path
-      if os.path.isfile(full_path):
-        os.unlink(full_path)
-      else:
-        pynacl.file_tools.RemoveDir(full_path)
-
 #
 # These are helper functions that help each command.
 #
@@ -325,7 +270,8 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
       os.unlink(archive_log)
 
   # Save the package file so we know what we currently have.
-  package_desc.SavePackageFile(local_package_file)
+  if update_archives or old_archives:
+    package_desc.SavePackageFile(local_package_file)
 
   return downloaded_files
 
@@ -789,10 +735,6 @@ def _SyncCmdArgParser(subparser):
 
 
 def _DoSyncCmd(arguments):
-  # TODO(dyen): remove this section eventually.
-  # Before syncing, remove any old toolchain files temporarily.
-  RemoveOldToolchainFiles(arguments.dest_dir)
-
   for package_target, package_name in arguments.package_target_packages:
     if arguments.sync__revision is None:
       # When the sync revision number is not specified, use the set
