@@ -151,6 +151,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       paused_(true),
       seeking_(false),
       playback_rate_(0.0f),
+      ended_(false),
       pending_seek_(false),
       pending_seek_seconds_(0.0f),
       should_notify_time_changed_(false),
@@ -310,6 +311,8 @@ void WebMediaPlayerImpl::seek(double seconds) {
   DVLOG(1) << __FUNCTION__ << "(" << seconds << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
+  ended_ = false;
+
   if (ready_state_ > WebMediaPlayer::ReadyStateHaveMetadata)
     SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
 
@@ -443,6 +446,13 @@ double WebMediaPlayerImpl::timelineOffset() const {
 
 double WebMediaPlayerImpl::currentTime() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK_NE(ready_state_, WebMediaPlayer::ReadyStateHaveNothing);
+
+  // TODO(scherkus): Replace with an explicit ended signal to HTMLMediaElement,
+  // see http://crbug.com/409280
+  if (ended_)
+    return duration();
+
   return (paused_ ? paused_time_ : pipeline_.GetMediaTime()).InSecondsF();
 }
 
@@ -698,6 +708,12 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_changed,
 void WebMediaPlayerImpl::OnPipelineEnded() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  // Ignore state changes until we've completed all outstanding seeks.
+  if (seeking_ || pending_seek_)
+    return;
+
+  ended_ = true;
   client_->timeChanged();
 }
 

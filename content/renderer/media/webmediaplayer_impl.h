@@ -265,6 +265,10 @@ class WebMediaPlayerImpl
   double playback_rate_;
   base::TimeDelta paused_time_;
 
+  // TODO(scherkus): Replace with an explicit ended signal to HTMLMediaElement,
+  // see http://crbug.com/409280
+  bool ended_;
+
   // Seek gets pending if another seek is in progress. Only last pending seek
   // will have effect.
   bool pending_seek_;
