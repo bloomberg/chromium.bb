@@ -4444,10 +4444,14 @@ fullscreen_binding(struct weston_seat *seat, uint32_t time, uint32_t button, voi
 static void
 touch_move_binding(struct weston_seat *seat, uint32_t time, void *data)
 {
-	struct weston_surface *focus = seat->touch->focus->surface;
+	struct weston_surface *focus;
 	struct weston_surface *surface;
 	struct shell_surface *shsurf;
 
+	if (seat->touch->focus == NULL)
+		return;
+
+	focus = seat->touch->focus->surface;
 	surface = weston_surface_get_main_surface(focus);
 	if (surface == NULL)
 		return;

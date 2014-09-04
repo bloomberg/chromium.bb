@@ -1471,8 +1471,14 @@ weston_touch_set_focus(struct weston_seat *seat, struct weston_view *view)
 	}
 
 	if (view) {
-		struct wl_client *surface_client =
-			wl_resource_get_client(view->surface->resource);
+		struct wl_client *surface_client;
+
+		if (!view->surface->resource) {
+			seat->touch->focus = NULL;
+			return;
+		}
+
+		surface_client = wl_resource_get_client(view->surface->resource);
 		move_resources_for_client(focus_resource_list,
 					  &seat->touch->resource_list,
 					  surface_client);
