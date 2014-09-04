@@ -66,9 +66,9 @@ public class VideoTestWebServer {
     }
 
     private void initFullScreenVideoTest(Context context) throws IOException {
-        final String FULL_SCREEN_VIDEO_PATH = "full_screen_video_test.html";
-        String data = loadAssetData(context, FULL_SCREEN_VIDEO_PATH);
-        mFullScreenVideoTestURL = mTestWebServer.setResponse("/" + FULL_SCREEN_VIDEO_PATH,
+        final String fullScreenVideoPath = "full_screen_video_test.html";
+        String data = loadAssetData(context, fullScreenVideoPath);
+        mFullScreenVideoTestURL = mTestWebServer.setResponse("/" + fullScreenVideoPath,
                 data.replace("VIDEO_FILE_URL", getOnePixelOneFrameWebmURL()),
                 getHTMLHeaders(false));
     }

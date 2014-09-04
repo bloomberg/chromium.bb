@@ -282,18 +282,18 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
      */
     @DisabledTest
     public void testBookmarksTable() {
-        final String[] BOOKMARKS_PROJECTION = new String[] {
+        final String[] bookmarksProjection = new String[] {
                 BookmarkColumns._ID, BookmarkColumns.URL, BookmarkColumns.VISITS,
                 BookmarkColumns.DATE, BookmarkColumns.CREATED, BookmarkColumns.BOOKMARK,
                 BookmarkColumns.TITLE, BookmarkColumns.FAVICON };
-        final int ID_INDEX = 0;
-        final int URL_INDEX = 1;
-        final int VISITS_INDEX = 2;
-        final int DATE_INDEX = 3;
-        final int CREATED_INDEX = 4;
-        final int BOOKMARK_INDEX = 5;
-        final int TITLE_INDEX = 6;
-        final int FAVICON_INDEX = 7;
+        final int idIndex = 0;
+        final int urlIndex = 1;
+        final int visitsIndex = 2;
+        final int dataIndex = 3;
+        final int createdIndex = 4;
+        final int bookmarkIndex = 5;
+        final int titleIndex = 6;
+        final int faviconIndex = 7;
 
         final String insertBookmarkTitle = "bookmark_insert";
         final String insertBookmarkUrl = "www.bookmark_insert.com";
@@ -314,21 +314,21 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
         Uri insertUri = getContentResolver().insert(mBookmarksUri, value);
         Cursor cursor = getContentResolver().query(
                 mBookmarksUri,
-                BOOKMARKS_PROJECTION,
+                bookmarksProjection,
                 BookmarkColumns.TITLE + " = ?",
                 new String[] { insertBookmarkTitle },
                 BookmarkColumns.DATE);
         assertTrue(cursor.moveToNext());
-        assertEquals(insertBookmarkTitle, cursor.getString(TITLE_INDEX));
-        assertEquals(insertBookmarkUrl, cursor.getString(URL_INDEX));
-        assertEquals(0, cursor.getInt(VISITS_INDEX));
-        assertEquals(createDate, cursor.getLong(DATE_INDEX));
-        assertEquals(createDate, cursor.getLong(CREATED_INDEX));
-        assertEquals(0, cursor.getInt(BOOKMARK_INDEX));
+        assertEquals(insertBookmarkTitle, cursor.getString(titleIndex));
+        assertEquals(insertBookmarkUrl, cursor.getString(urlIndex));
+        assertEquals(0, cursor.getInt(visitsIndex));
+        assertEquals(createDate, cursor.getLong(dataIndex));
+        assertEquals(createDate, cursor.getLong(createdIndex));
+        assertEquals(0, cursor.getInt(bookmarkIndex));
         // TODO(michaelbai): according to the test this should be null instead of an empty byte[].
         // BUG 6288508
         // assertTrue(cursor.isNull(FAVICON_INDEX));
-        int Id = cursor.getInt(ID_INDEX);
+        int Id = cursor.getInt(idIndex);
         cursor.close();
 
         // Test: update.
@@ -344,26 +344,26 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
                 new String[] { insertBookmarkTitle });
         cursor = getContentResolver().query(
                 mBookmarksUri,
-                BOOKMARKS_PROJECTION,
+                bookmarksProjection,
                 BookmarkColumns._ID + " = " + Id,
                 null, null);
         assertTrue(cursor.moveToNext());
-        assertEquals(updateBookmarkTitle, cursor.getString(TITLE_INDEX));
-        assertEquals(updateBookmarkUrl, cursor.getString(URL_INDEX));
-        assertEquals(1, cursor.getInt(VISITS_INDEX));
-        assertEquals(updateDate, cursor.getLong(DATE_INDEX));
-        assertEquals(createDate, cursor.getLong(CREATED_INDEX));
-        assertEquals(0, cursor.getInt(BOOKMARK_INDEX));
+        assertEquals(updateBookmarkTitle, cursor.getString(titleIndex));
+        assertEquals(updateBookmarkUrl, cursor.getString(urlIndex));
+        assertEquals(1, cursor.getInt(visitsIndex));
+        assertEquals(updateDate, cursor.getLong(dataIndex));
+        assertEquals(createDate, cursor.getLong(createdIndex));
+        assertEquals(0, cursor.getInt(bookmarkIndex));
         // TODO(michaelbai): according to the test this should be null instead of an empty byte[].
         // BUG 6288508
         // assertTrue(cursor.isNull(FAVICON_INDEX));
-        assertEquals(Id, cursor.getInt(ID_INDEX));
+        assertEquals(Id, cursor.getInt(idIndex));
 
         // Test: delete.
         getContentResolver().delete(insertUri, null, null);
         cursor = getContentResolver().query(
                 mBookmarksUri,
-                BOOKMARKS_PROJECTION,
+                bookmarksProjection,
                 BookmarkColumns._ID + " = " + Id,
                 null, null);
         assertEquals(0, cursor.getCount());

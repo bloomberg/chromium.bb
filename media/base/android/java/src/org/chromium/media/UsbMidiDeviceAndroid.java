@@ -208,8 +208,8 @@ class UsbMidiDeviceAndroid {
             //  https://code.google.com/p/android/issues/detail?id=59467
             //
             // TODO(yhirano): Delete this block once the problem is fixed.
-            final int TIMEOUT = 100;
-            mConnection.bulkTransfer(endpoint, bs, 0, bs.length, TIMEOUT);
+            final int timeout = 100;
+            mConnection.bulkTransfer(endpoint, bs, 0, bs.length, timeout);
         } else {
             UsbRequest request = mRequestMap.get(endpoint);
             if (request == null) {

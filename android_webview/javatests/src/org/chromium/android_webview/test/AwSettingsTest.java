@@ -1485,11 +1485,11 @@ public class AwSettingsTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
     public void testJavaScriptDisabledByDefault() throws Throwable {
-        final String JS_ENABLED_STRING = "JS has run";
-        final String JS_DISABLED_STRING = "JS has not run";
-        final String TEST_PAGE_HTML =
-                "<html><head><title>" + JS_DISABLED_STRING + "</title>"
-                + "</head><body onload=\"document.title='" + JS_ENABLED_STRING
+        final String jsEnabledString = "JS has run";
+        final String jsDisabledString = "JS has not run";
+        final String testPageHtml =
+                "<html><head><title>" + jsDisabledString + "</title>"
+                + "</head><body onload=\"document.title='" + jsEnabledString
                 + "';\"></body></html>";
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -1498,10 +1498,10 @@ public class AwSettingsTest extends AwTestBase {
         loadDataSync(
             awContents,
             contentClient.getOnPageFinishedHelper(),
-            TEST_PAGE_HTML,
+            testPageHtml,
             "text/html",
             false);
-        assertEquals(JS_DISABLED_STRING, getTitleOnUiThread(awContents));
+        assertEquals(jsDisabledString, getTitleOnUiThread(awContents));
     }
 
     @SmallTest
@@ -2729,12 +2729,12 @@ public class AwSettingsTest extends AwTestBase {
     @Feature({"AndroidWebView", "Preferences"})
     public void testDefaultVideoPosterURL() throws Throwable {
         final CallbackHelper videoPosterAccessedCallbackHelper = new CallbackHelper();
-        final String DEFAULT_VIDEO_POSTER_URL = "http://default_video_poster/";
+        final String defaultVideoPosterUrl = "http://default_video_poster/";
         TestAwContentsClient client = new TestAwContentsClient() {
             @Override
             public AwWebResourceResponse shouldInterceptRequest(
                     ShouldInterceptRequestParams params) {
-                if (params.url.equals(DEFAULT_VIDEO_POSTER_URL)) {
+                if (params.url.equals(defaultVideoPosterUrl)) {
                     videoPosterAccessedCallbackHelper.notifyCalled();
                 }
                 return null;
@@ -2745,7 +2745,7 @@ public class AwSettingsTest extends AwTestBase {
             @Override
             public void run() {
                 AwSettings awSettings = awContents.getSettings();
-                awSettings.setDefaultVideoPosterURL(DEFAULT_VIDEO_POSTER_URL);
+                awSettings.setDefaultVideoPosterURL(defaultVideoPosterUrl);
             }
         });
         VideoTestWebServer webServer = new VideoTestWebServer(
@@ -2784,36 +2784,36 @@ public class AwSettingsTest extends AwTestBase {
             httpsServer = new TestWebServer(true);
             httpServer = new TestWebServer(false);
 
-            final String JS_URL = "/insecure.js";
-            final String IMG_URL = "/insecure.png";
-            final String SECURE_URL = "/secure.html";
-            httpServer.setResponse(JS_URL, "window.loaded_js = 42;", null);
-            httpServer.setResponseBase64(IMG_URL, CommonResources.FAVICON_DATA_BASE64, null);
+            final String jsUrl = "/insecure.js";
+            final String imageUrl = "/insecure.png";
+            final String secureUrl = "/secure.html";
+            httpServer.setResponse(jsUrl, "window.loaded_js = 42;", null);
+            httpServer.setResponseBase64(imageUrl, CommonResources.FAVICON_DATA_BASE64, null);
 
-            final String JS_HTML = "<script src=\"" + httpServer.getResponseUrl(JS_URL) +
+            final String jsHtml = "<script src=\"" + httpServer.getResponseUrl(jsUrl) +
                 "\"></script>";
-            final String IMG_HTML = "<img src=\"" + httpServer.getResponseUrl(IMG_URL) + "\" />";
-            final String SECURE_HTML = "<body>" + IMG_HTML + " " + JS_HTML + "</body>";
+            final String imageHtml = "<img src=\"" + httpServer.getResponseUrl(imageUrl) + "\" />";
+            final String secureHtml = "<body>" + imageHtml + " " + jsHtml + "</body>";
 
-            String secureUrl = httpsServer.setResponse(SECURE_URL, SECURE_HTML, null);
+            String fullSecureUrl = httpsServer.setResponse(secureUrl, secureHtml, null);
 
             awSettings.setMixedContentMode(AwSettings.MIXED_CONTENT_NEVER_ALLOW);
-            loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), secureUrl);
-            assertEquals(1, httpsServer.getRequestCount(SECURE_URL));
-            assertEquals(0, httpServer.getRequestCount(JS_URL));
-            assertEquals(0, httpServer.getRequestCount(IMG_URL));
+            loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), fullSecureUrl);
+            assertEquals(1, httpsServer.getRequestCount(secureUrl));
+            assertEquals(0, httpServer.getRequestCount(jsUrl));
+            assertEquals(0, httpServer.getRequestCount(imageUrl));
 
             awSettings.setMixedContentMode(AwSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-            loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), secureUrl);
-            assertEquals(2, httpsServer.getRequestCount(SECURE_URL));
-            assertEquals(1, httpServer.getRequestCount(JS_URL));
-            assertEquals(1, httpServer.getRequestCount(IMG_URL));
+            loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), fullSecureUrl);
+            assertEquals(2, httpsServer.getRequestCount(secureUrl));
+            assertEquals(1, httpServer.getRequestCount(jsUrl));
+            assertEquals(1, httpServer.getRequestCount(imageUrl));
 
             awSettings.setMixedContentMode(AwSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
-            loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), secureUrl);
-            assertEquals(3, httpsServer.getRequestCount(SECURE_URL));
-            assertEquals(1, httpServer.getRequestCount(JS_URL));
-            assertEquals(2, httpServer.getRequestCount(IMG_URL));
+            loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), fullSecureUrl);
+            assertEquals(3, httpsServer.getRequestCount(secureUrl));
+            assertEquals(1, httpServer.getRequestCount(jsUrl));
+            assertEquals(2, httpServer.getRequestCount(imageUrl));
         } finally {
             if (httpServer != null) {
                 httpServer.shutdown();

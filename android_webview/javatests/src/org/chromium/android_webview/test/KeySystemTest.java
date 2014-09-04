@@ -40,7 +40,7 @@ public class KeySystemTest extends AwTestBase {
                 "</script> </html>";
     }
 
-    private String IsKeySystemSupported(String keySystem) throws Exception {
+    private String isKeySystemSupported(String keySystem) throws Exception {
         return executeJavaScriptAndWaitForResult(mAwContents, mContentsClient,
                   "isKeySystemSupported('" + keySystem + "')");
     }
@@ -48,7 +48,7 @@ public class KeySystemTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testSupportClearKeySystem() throws Throwable {
-        assertEquals("\"maybe\"", IsKeySystemSupported("webkit-org.w3.clearkey"));
+        assertEquals("\"maybe\"", isKeySystemSupported("webkit-org.w3.clearkey"));
     }
 
     @Feature({"AndroidWebView"})
@@ -57,13 +57,13 @@ public class KeySystemTest extends AwTestBase {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             return;  // MediaDrm/Crypto is supported from KitKat.
         }
-        assertEquals("\"maybe\"", IsKeySystemSupported("com.widevine.alpha"));
+        assertEquals("\"maybe\"", isKeySystemSupported("com.widevine.alpha"));
     }
 
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testNotSupportFooKeySystem() throws Throwable {
-        assertEquals("\"\"", IsKeySystemSupported("com.foo.keysystem"));
+        assertEquals("\"\"", isKeySystemSupported("com.foo.keysystem"));
     }
 
     @Feature({"AndroidWebView"})
@@ -72,6 +72,6 @@ public class KeySystemTest extends AwTestBase {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             return;  // MediaDrm/Crypto is supported from KitKat.
         }
-        assertEquals("\"maybe\"", IsKeySystemSupported("com.oem.test-keysystem"));
+        assertEquals("\"maybe\"", isKeySystemSupported("com.oem.test-keysystem"));
     }
 }

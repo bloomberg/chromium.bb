@@ -33,7 +33,7 @@ public class ChromeWebContentsDelegateAndroid extends WebContentsDelegateAndroid
     }
 
     @CalledByNative
-    public void webContentsCreated(long sourceWebContents, long opener_render_frame_id,
+    public void webContentsCreated(long sourceWebContents, long openerRenderFrameId,
             String frameName, String targetUrl, long newWebContents) {
     }
 

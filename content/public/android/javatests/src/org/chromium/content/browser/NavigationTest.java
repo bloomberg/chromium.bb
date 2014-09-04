@@ -100,12 +100,12 @@ public class NavigationTest extends ContentShellTestBase {
     @MediumTest
     @Feature({"Navigation"})
     public void testPageReload() throws Throwable {
-        final String HTML_LOADTIME = "<html><head>" +
+        final String htmlLoadTime = "<html><head>" +
                 "<script type=\"text/javascript\">var loadTimestamp = new Date().getTime();" +
                 "function getLoadtime() { return loadTimestamp; }</script></head></html>";
-        final String URL_LOADTIME = UrlUtils.encodeHtmlDataUri(HTML_LOADTIME);
+        final String urlLoadTime = UrlUtils.encodeHtmlDataUri(htmlLoadTime);
 
-        ContentShellActivity activity = launchContentShellWithUrl(URL_LOADTIME);
+        ContentShellActivity activity = launchContentShellWithUrl(urlLoadTime);
         waitForActiveShellToBeDoneLoading();
         ContentViewCore contentViewCore = activity.getActiveContentViewCore();
         TestCallbackHelperContainer testCallbackHelperContainer =

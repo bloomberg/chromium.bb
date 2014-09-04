@@ -56,10 +56,10 @@ public class PastePopupMenu implements OnClickListener {
         mContainer.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
         mContainer.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        final int[] POPUP_LAYOUT_ATTRS = { android.R.attr.textEditPasteWindowLayout, };
+        final int[] popupLayoutAttrs = { android.R.attr.textEditPasteWindowLayout, };
 
         mPasteView = null;
-        TypedArray attrs = mContext.getTheme().obtainStyledAttributes(POPUP_LAYOUT_ATTRS);
+        TypedArray attrs = mContext.getTheme().obtainStyledAttributes(popupLayoutAttrs);
         mPasteViewLayout = attrs.getResourceId(attrs.getIndex(0), 0);
 
         attrs.recycle();

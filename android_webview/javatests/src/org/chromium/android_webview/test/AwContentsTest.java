@@ -66,8 +66,7 @@ public class AwContentsTest extends AwTestBase {
     @LargeTest
     @Feature({"AndroidWebView"})
     public void testCreateLoadDestroyManyTimes() throws Throwable {
-        final int CREATE_AND_DESTROY_REPEAT_COUNT = 10;
-        for (int i = 0; i < CREATE_AND_DESTROY_REPEAT_COUNT; ++i) {
+        for (int i = 0; i < 10; ++i) {
             AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
             AwContents awContents = testView.getAwContents();
 
@@ -79,8 +78,7 @@ public class AwContentsTest extends AwTestBase {
     @LargeTest
     @Feature({"AndroidWebView"})
     public void testCreateLoadDestroyManyAtOnce() throws Throwable {
-        final int CREATE_AND_DESTROY_REPEAT_COUNT = 10;
-        AwTestContainerView views[] = new AwTestContainerView[CREATE_AND_DESTROY_REPEAT_COUNT];
+        AwTestContainerView views[] = new AwTestContainerView[10];
 
         for (int i = 0; i < views.length; ++i) {
             views[i] = createAwTestContainerViewOnMainSync(mContentsClient);
@@ -97,27 +95,27 @@ public class AwContentsTest extends AwTestBase {
     @LargeTest
     @Feature({"AndroidWebView"})
     public void testCreateAndGcManyTimes() throws Throwable {
-        final int CONCURRENT_INSTANCES = 4;
-        final int REPETITIONS = 16;
+        final int concurrentInstances = 4;
+        final int repetitions = 16;
         // The system retains a strong ref to the last focused view (in InputMethodManager)
         // so allow for 1 'leaked' instance.
-        final int MAX_IDLE_INSTANCES = 1;
+        final int maxIdleInstances = 1;
 
         System.gc();
 
         pollOnUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                return AwContents.getNativeInstanceCount() <= MAX_IDLE_INSTANCES;
+                return AwContents.getNativeInstanceCount() <= maxIdleInstances;
             }
         });
-        for (int i = 0; i < REPETITIONS; ++i) {
-            for (int j = 0; j < CONCURRENT_INSTANCES; ++j) {
+        for (int i = 0; i < repetitions; ++i) {
+            for (int j = 0; j < concurrentInstances; ++j) {
                 AwTestContainerView view = createAwTestContainerViewOnMainSync(mContentsClient);
                 loadUrlAsync(view.getAwContents(), "about:blank");
             }
-            assertTrue(AwContents.getNativeInstanceCount() >= CONCURRENT_INSTANCES);
-            assertTrue(AwContents.getNativeInstanceCount() <= (i + 1) * CONCURRENT_INSTANCES);
+            assertTrue(AwContents.getNativeInstanceCount() >= concurrentInstances);
+            assertTrue(AwContents.getNativeInstanceCount() <= (i + 1) * concurrentInstances);
             runTestOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -131,7 +129,7 @@ public class AwContentsTest extends AwTestBase {
         pollOnUiThread(new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                return AwContents.getNativeInstanceCount() <= MAX_IDLE_INSTANCES;
+                return AwContents.getNativeInstanceCount() <= maxIdleInstances;
             }
         });
     }
@@ -356,24 +354,24 @@ public class AwContentsTest extends AwTestBase {
     public void testSetNetworkAvailable() throws Throwable {
         AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
-        String SCRIPT = "navigator.onLine";
+        String script = "navigator.onLine";
 
         enableJavaScriptOnUiThread(awContents);
         loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), "about:blank");
 
         // Default to "online".
         assertEquals("true", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
-              SCRIPT));
+              script));
 
         // Forcing "offline".
         setNetworkAvailableOnUiThread(awContents, false);
         assertEquals("false", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
-              SCRIPT));
+              script));
 
         // Forcing "online".
         setNetworkAvailableOnUiThread(awContents, true);
         assertEquals("true", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
-              SCRIPT));
+              script));
     }
 
 
@@ -414,7 +412,7 @@ public class AwContentsTest extends AwTestBase {
     public void testEscapingOfErrorPage() throws Throwable {
         AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
-        String SCRIPT = "window.failed == true";
+        String script = "window.failed == true";
 
         enableJavaScriptOnUiThread(awContents);
         CallbackHelper onPageFinishedHelper = mContentsClient.getOnPageFinishedHelper();
@@ -425,7 +423,7 @@ public class AwContentsTest extends AwTestBase {
                                              TimeUnit.MILLISECONDS);
 
         assertEquals("false", executeJavaScriptAndWaitForResult(awContents, mContentsClient,
-                SCRIPT));
+                script));
     }
 
     @Feature({"AndroidWebView"})

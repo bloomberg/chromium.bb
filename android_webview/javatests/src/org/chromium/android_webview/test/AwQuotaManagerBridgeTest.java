@@ -140,20 +140,20 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
     }
 
     private void useAppCache() throws Exception {
-        final String CACHED_FILE_PATH = "/foo.js";
-        final String CACHED_FILE_CONTENTS = "1 + 1;";
-        mWebServer.setResponse(CACHED_FILE_PATH, CACHED_FILE_CONTENTS, null);
+        final String cachedFilePath = "/foo.js";
+        final String cachedFileContents = "1 + 1;";
+        mWebServer.setResponse(cachedFilePath, cachedFileContents, null);
 
-        final String MANIFEST_PATH = "/foo.manifest";
-        final String MANIFEST_CONTENTS = "CACHE MANIFEST\nCACHE:\n" + CACHED_FILE_PATH;
+        final String manifestPath = "/foo.manifest";
+        final String manifestContents = "CACHE MANIFEST\nCACHE:\n" + cachedFilePath;
         List<Pair<String, String>> manifestHeaders = new ArrayList<Pair<String, String>>();
         manifestHeaders.add(Pair.create("Content-Disposition", "text/cache-manifest"));
-        mWebServer.setResponse(MANIFEST_PATH, MANIFEST_CONTENTS, manifestHeaders);
+        mWebServer.setResponse(manifestPath, manifestContents, manifestHeaders);
 
-        final String PAGE_PATH = "/appcache.html";
-        final String PAGE_CONTENTS = "<html manifest=\"" + MANIFEST_PATH + "\">" +
-                "<head><script src=\"" + CACHED_FILE_PATH + "\"></script></head></html>";
-        String url = mWebServer.setResponse(PAGE_PATH, PAGE_CONTENTS, null);
+        final String pagePath = "/appcache.html";
+        final String pageContents = "<html manifest=\"" + manifestPath + "\">" +
+                "<head><script src=\"" + cachedFilePath + "\"></script></head></html>";
+        String url = mWebServer.setResponse(pagePath, pageContents, null);
 
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
         executeJavaScriptAndWaitForResult(mAwContents, mContentsClient,

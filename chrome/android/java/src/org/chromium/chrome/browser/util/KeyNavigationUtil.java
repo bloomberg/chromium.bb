@@ -14,7 +14,7 @@ public class KeyNavigationUtil {
     /**
      * This is a helper class with no instance.
      */
-    private void KeyNavigationUtil() {
+    private KeyNavigationUtil() {
     }
 
     /**

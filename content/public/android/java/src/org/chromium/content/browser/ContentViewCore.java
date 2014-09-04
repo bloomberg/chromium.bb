@@ -2804,8 +2804,8 @@ public class ContentViewCore
         event.setScrollable(maxScrollXPix > 0 || maxScrollYPix > 0);
 
         // Setting the maximum scroll values requires API level 15 or higher.
-        final int SDK_VERSION_REQUIRED_TO_SET_SCROLL = 15;
-        if (Build.VERSION.SDK_INT >= SDK_VERSION_REQUIRED_TO_SET_SCROLL) {
+        final int sdkVersionRequiredToSetScroll = 15;
+        if (Build.VERSION.SDK_INT >= sdkVersionRequiredToSetScroll) {
             event.setMaxScrollX(maxScrollXPix);
             event.setMaxScrollY(maxScrollYPix);
         }

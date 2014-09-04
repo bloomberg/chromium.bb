@@ -74,10 +74,10 @@ public class CleanupReferenceTest extends InstrumentationTestCase {
     public void testCreateMany() throws Throwable {
         assertEquals(0, sObjectCount.get());
 
-        final int INSTANCE_COUNT = 20;
-        ReferredObject[] instances = new ReferredObject[INSTANCE_COUNT];
+        final int instanceCount = 20;
+        ReferredObject[] instances = new ReferredObject[instanceCount];
 
-        for (int i = 0; i < INSTANCE_COUNT; ++i) {
+        for (int i = 0; i < instanceCount; ++i) {
             instances[i] = new ReferredObject();
             assertEquals(i + 1, sObjectCount.get());
         }

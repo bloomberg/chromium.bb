@@ -145,7 +145,7 @@ public class ProviderSearchesUriTest extends ProviderTestBase {
      */
     @DisabledTest
     public void testSearchesTable() {
-        final int ID_INDEX = 0;
+        final int idIndex = 0;
         String insertSearch = "search_insert";
         String updateSearch = "search_update";
 
@@ -164,7 +164,7 @@ public class ProviderSearchesUriTest extends ProviderTestBase {
                 cursor.getString(Browser.SEARCHES_PROJECTION_SEARCH_INDEX));
         assertEquals(createDate,
                 cursor.getLong(Browser.SEARCHES_PROJECTION_DATE_INDEX));
-        int id = cursor.getInt(ID_INDEX);
+        int id = cursor.getInt(idIndex);
         cursor.close();
 
         // Test: update
@@ -183,7 +183,7 @@ public class ProviderSearchesUriTest extends ProviderTestBase {
                 cursor.getString(Browser.SEARCHES_PROJECTION_SEARCH_INDEX));
         assertEquals(updateDate,
                 cursor.getLong(Browser.SEARCHES_PROJECTION_DATE_INDEX));
-        assertEquals(id, cursor.getInt(ID_INDEX));
+        assertEquals(id, cursor.getInt(idIndex));
 
         // Test: delete
         getContentResolver().delete(insertUri, null, null);

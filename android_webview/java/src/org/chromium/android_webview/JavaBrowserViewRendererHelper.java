@@ -44,11 +44,9 @@ public class JavaBrowserViewRendererHelper {
      * Used for convenience from the native side and other static helper methods.
      */
     @CalledByNative
-    private static void drawBitmapIntoCanvas(Bitmap bitmap,
-                                             Canvas canvas,
-                                             int scroll_x,
-                                             int scroll_y) {
-        canvas.translate(scroll_x, scroll_y);
+    private static void drawBitmapIntoCanvas(
+            Bitmap bitmap, Canvas canvas, int scrollX, int scrollY) {
+        canvas.translate(scrollX, scrollY);
         canvas.drawBitmap(bitmap, 0, 0, null);
     }
 

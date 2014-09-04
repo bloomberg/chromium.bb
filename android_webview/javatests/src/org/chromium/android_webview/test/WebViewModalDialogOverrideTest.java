@@ -35,7 +35,7 @@ public class WebViewModalDialogOverrideTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testOverrideAlertHandling() throws Throwable {
-        final String ALERT_TEXT = "Hello World!";
+        final String alertText = "Hello World!";
 
         final AtomicBoolean callbackCalled = new AtomicBoolean(false);
         // Returning true from the callback should not show a dialog.
@@ -44,7 +44,7 @@ public class WebViewModalDialogOverrideTest extends AwTestBase {
             public void handleJsAlert(String url, String message, JsResultReceiver res) {
                 callbackCalled.set(true);
                 res.confirm();
-                assertEquals(ALERT_TEXT, message);
+                assertEquals(alertText, message);
             }
         };
         AwTestContainerView view = createAwTestContainerViewOnMainSync(client);
@@ -54,7 +54,7 @@ public class WebViewModalDialogOverrideTest extends AwTestBase {
         loadDataSync(awContents, client.getOnPageFinishedHelper(),
                 EMPTY_PAGE, "text/html", false);
         executeJavaScriptAndWaitForResult(awContents, client,
-                "alert('" + ALERT_TEXT + "')");
+                "alert('" + alertText + "')");
         assertTrue(callbackCalled.get());
     }
 
@@ -64,9 +64,9 @@ public class WebViewModalDialogOverrideTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testOverridePromptHandling() throws Throwable {
-        final String PROMPT_TEXT = "How do you like your eggs in the morning?";
-        final String PROMPT_DEFAULT = "Scrambled";
-        final String PROMPT_RESULT = "I like mine with a kiss";
+        final String promtText = "How do you like your eggs in the morning?";
+        final String promptDefault = "Scrambled";
+        final String promptResult = "I like mine with a kiss";
 
         final AtomicBoolean called = new AtomicBoolean(false);
         // Returning true from the callback should not show a dialog.
@@ -74,9 +74,9 @@ public class WebViewModalDialogOverrideTest extends AwTestBase {
             @Override
             public void handleJsPrompt(String url, String message, String defaultValue,
                                       JsPromptResultReceiver res) {
-                assertEquals(PROMPT_TEXT, message);
-                assertEquals(PROMPT_DEFAULT, defaultValue);
-                res.confirm(PROMPT_RESULT);
+                assertEquals(promtText, message);
+                assertEquals(promptDefault, defaultValue);
+                res.confirm(promptResult);
                 called.set(true);
             }
         };
@@ -87,9 +87,9 @@ public class WebViewModalDialogOverrideTest extends AwTestBase {
         loadDataSync(awContents, client.getOnPageFinishedHelper(),
                 EMPTY_PAGE, "text/html", false);
         String result = executeJavaScriptAndWaitForResult(awContents, client,
-                "prompt('" + PROMPT_TEXT + "','" + PROMPT_DEFAULT + "')");
+                "prompt('" + promtText + "','" + promptDefault + "')");
         assertTrue(called.get());
-        assertEquals("\"" + PROMPT_RESULT + "\"", result);
+        assertEquals("\"" + promptResult + "\"", result);
     }
 
     /*
@@ -98,14 +98,14 @@ public class WebViewModalDialogOverrideTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testOverrideConfirmHandlingConfirmed() throws Throwable {
-        final String CONFIRM_TEXT = "Would you like a cookie?";
+        final String confirmText = "Would you like a cookie?";
 
         final AtomicBoolean called = new AtomicBoolean(false);
         // Returning true from the callback should not show a dialog.
         TestAwContentsClient client = new TestAwContentsClient() {
             @Override
             public void handleJsConfirm(String url, String message, JsResultReceiver res) {
-                assertEquals(CONFIRM_TEXT, message);
+                assertEquals(confirmText, message);
                 res.confirm();
                 called.set(true);
             }
@@ -117,7 +117,7 @@ public class WebViewModalDialogOverrideTest extends AwTestBase {
         loadDataSync(awContents, client.getOnPageFinishedHelper(),
                 EMPTY_PAGE, "text/html", false);
         String result = executeJavaScriptAndWaitForResult(awContents, client,
-                "confirm('" + CONFIRM_TEXT + "')");
+                "confirm('" + confirmText + "')");
         assertTrue(called.get());
         assertEquals("true", result);
     }
@@ -128,14 +128,14 @@ public class WebViewModalDialogOverrideTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testOverrideConfirmHandlingCancelled() throws Throwable {
-        final String CONFIRM_TEXT = "Would you like a cookie?";
+        final String confirmText = "Would you like a cookie?";
 
         final AtomicBoolean called = new AtomicBoolean(false);
         // Returning true from the callback should not show a dialog.
         TestAwContentsClient client = new TestAwContentsClient() {
             @Override
             public void handleJsConfirm(String url, String message, JsResultReceiver res) {
-                assertEquals(CONFIRM_TEXT, message);
+                assertEquals(confirmText, message);
                 res.cancel();
                 called.set(true);
             }
@@ -147,7 +147,7 @@ public class WebViewModalDialogOverrideTest extends AwTestBase {
         loadDataSync(awContents, client.getOnPageFinishedHelper(),
                 EMPTY_PAGE, "text/html", false);
         String result = executeJavaScriptAndWaitForResult(awContents, client,
-                "confirm('" + CONFIRM_TEXT + "')");
+                "confirm('" + confirmText + "')");
         assertTrue(called.get());
         assertEquals("false", result);
     }

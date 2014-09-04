@@ -105,15 +105,15 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
             @Override
             public boolean isSatisfied() {
                 // Scrolling and flinging don't result in exact coordinates.
-                final int MIN_THRESHOLD = 5;
-                final int MAX_THRESHOLD = 100;
+                final int minThreshold = 5;
+                final int maxThreshold = 100;
 
                 boolean xCorrect = hugLeft ?
-                        getContentViewCore().getNativeScrollXForTest() < MIN_THRESHOLD :
-                        getContentViewCore().getNativeScrollXForTest() > MAX_THRESHOLD;
+                        getContentViewCore().getNativeScrollXForTest() < minThreshold :
+                        getContentViewCore().getNativeScrollXForTest() > maxThreshold;
                 boolean yCorrect = hugTop ?
-                        getContentViewCore().getNativeScrollYForTest() < MIN_THRESHOLD :
-                        getContentViewCore().getNativeScrollYForTest() > MAX_THRESHOLD;
+                        getContentViewCore().getNativeScrollYForTest() < minThreshold :
+                        getContentViewCore().getNativeScrollYForTest() > maxThreshold;
                 return xCorrect && yCorrect;
             }
         }));

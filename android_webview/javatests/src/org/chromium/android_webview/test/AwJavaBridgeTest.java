@@ -27,7 +27,7 @@ public class AwJavaBridgeTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testDestroyFromJavaObject() throws Throwable {
-        final String HTML = "<html>Hello World</html>";
+        final String html = "<html>Hello World</html>";
         final TestAwContentsClient client2 = new TestAwContentsClient();
         final AwTestContainerView view2 = createAwTestContainerViewOnMainSync(client2);
         final AwContents awContents = mTestContainerView.getAwContents();
@@ -45,7 +45,7 @@ public class AwJavaBridgeTest extends AwTestBase {
                     // Destroying one AwContents from within the JS callback should still
                     // leave others functioning.
                     loadDataSync(view2.getAwContents(), client2.getOnPageFinishedHelper(),
-                            HTML, "text/html", false);
+                            html, "text/html", false);
                 } catch (Throwable t) {
                     throw new RuntimeException(t);
                 }
@@ -60,7 +60,7 @@ public class AwJavaBridgeTest extends AwTestBase {
             }
         });
 
-        loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(), HTML,
+        loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(), html,
                 "text/html", false);
 
         // Ensure the JS interface object is there, and invoke the test method.

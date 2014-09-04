@@ -60,7 +60,7 @@ int WebAudioMediaCodecBridge::SaveEncodedAudioToFile(
   std::string temporaryFile =
       base::android::ConvertJavaStringToUTF8(
           env,
-          Java_WebAudioMediaCodecBridge_CreateTempFile(env, context).obj());
+          Java_WebAudioMediaCodecBridge_createTempFile(env, context).obj());
 
   // Open the file and unlink it, so that it will be actually removed
   // when we close the file.

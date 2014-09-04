@@ -192,26 +192,26 @@ public class ResourceExtractor {
         // android.content.Intent#ACTION_PACKAGE_CHANGED as that causes process churn
         // on (re)installation of *all* APK files.
         private String checkPakTimestamp(File outputDir) {
-            final String TIMESTAMP_PREFIX = "pak_timestamp-";
+            final String timestampPrefix = "pak_timestamp-";
             PackageManager pm = mContext.getPackageManager();
             PackageInfo pi = null;
 
             try {
                 pi = pm.getPackageInfo(mContext.getPackageName(), 0);
             } catch (PackageManager.NameNotFoundException e) {
-                return TIMESTAMP_PREFIX;
+                return timestampPrefix;
             }
 
             if (pi == null) {
-                return TIMESTAMP_PREFIX;
+                return timestampPrefix;
             }
 
-            String expectedTimestamp = TIMESTAMP_PREFIX + pi.versionCode + "-" + pi.lastUpdateTime;
+            String expectedTimestamp = timestampPrefix + pi.versionCode + "-" + pi.lastUpdateTime;
 
             String[] timestamps = outputDir.list(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
-                    return name.startsWith(TIMESTAMP_PREFIX);
+                    return name.startsWith(timestampPrefix);
                 }
             });
 
