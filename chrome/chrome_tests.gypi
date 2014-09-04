@@ -1460,7 +1460,6 @@
         'browser/ui/fullscreen/fullscreen_controller_browsertest.cc',
         'browser/ui/global_error/global_error_service_browsertest.cc',
         'browser/ui/login/login_prompt_browsertest.cc',
-        'browser/ui/location_bar/location_bar_browsertest.cc',
         'browser/ui/panels/panel_extension_browsertest.cc',
         'browser/ui/passwords/manage_passwords_test.cc',
         'browser/ui/pdf/pdf_browsertest.cc',
