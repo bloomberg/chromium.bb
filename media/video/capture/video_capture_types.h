@@ -46,6 +46,7 @@ class MEDIA_EXPORT VideoCaptureFormat {
                      float frame_rate,
                      VideoPixelFormat pixel_format);
 
+  std::string ToString() const;
   static std::string PixelFormatToString(VideoPixelFormat format);
 
   // Checks that all values are in the expected range. All limits are specified

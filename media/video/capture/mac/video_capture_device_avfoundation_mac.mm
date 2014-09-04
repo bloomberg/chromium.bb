@@ -81,10 +81,7 @@
           frameRate.maxFrameRate,
           pixelFormat);
       formats->push_back(format);
-      DVLOG(2) << name.name() << " resolution: "
-               << format.frame_size.ToString() << ", fps: "
-               << format.frame_rate << ", pixel format: "
-               << format.pixel_format;
+      DVLOG(2) << name.name() << " " << format.ToString();
     }
   }
 

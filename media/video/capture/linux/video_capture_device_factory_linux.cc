@@ -175,10 +175,7 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceSupportedFormats(
           break;
         }
         supported_formats->push_back(supported_format);
-        DVLOG(1) << device.name()
-                 << " resolution: " << supported_format.frame_size.ToString()
-                 << ", fps: " << supported_format.frame_rate
-                 << ", pixel format: " << supported_format.pixel_format;
+        DVLOG(1) << device.name() << " " << supported_format.ToString();
         ++frame_interval.index;
       }
       ++frame_size.index;

@@ -120,10 +120,7 @@ void VideoCaptureDeviceFactoryAndroid::GetDeviceSupportedFormats(
                                                                   format.obj()),
         pixel_format);
     capture_formats->push_back(capture_format);
-    DVLOG(1) << device.name() << " resolution: "
-        << capture_format.frame_size.ToString() << ", fps: "
-        << capture_format.frame_rate << ", pixel format: "
-        << capture_format.pixel_format;
+    DVLOG(1) << device.name() << " " << capture_format.ToString();
   }
 }
 

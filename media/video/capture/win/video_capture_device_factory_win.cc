@@ -273,9 +273,7 @@ static void GetDeviceSupportedFormatsDirectShow(const Name& device,
           kSecondsToReferenceTime / static_cast<float>(h->AvgTimePerFrame) :
           0.0f;
       formats->push_back(format);
-      DVLOG(1) << device.name() << " resolution: "
-          << format.frame_size.ToString() << ", fps: " << format.frame_rate
-          << ", pixel format: " << format.pixel_format;
+      DVLOG(1) << device.name() << " " << format.ToString();
     }
   }
 }
@@ -336,10 +334,7 @@ static void GetDeviceSupportedFormatsMediaFoundation(
     formats->push_back(capture_format);
     ++stream_index;
 
-    DVLOG(1) << device.name() << " resolution: "
-             << capture_format.frame_size.ToString() << ", fps: "
-             << capture_format.frame_rate << ", pixel format: "
-             << capture_format.pixel_format;
+    DVLOG(1) << device.name() << " " << capture_format.ToString();
   }
 }
 

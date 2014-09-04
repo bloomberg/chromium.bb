@@ -480,13 +480,7 @@ void MediaStreamVideoSource::OnSupportedFormats(
   }
 
   state_ = STARTING;
-  DVLOG(3) << "Starting the capturer with"
-           << " width = " << current_format_.frame_size.width()
-           << " height = " << current_format_.frame_size.height()
-           << " frame rate = " << current_format_.frame_rate
-           << " pixel format = "
-           << media::VideoCaptureFormat::PixelFormatToString(
-               current_format_.pixel_format);
+  DVLOG(3) << "Starting the capturer with " << current_format_.ToString();
 
   media::VideoCaptureParams params;
   params.requested_format = current_format_;
