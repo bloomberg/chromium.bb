@@ -749,7 +749,7 @@ def run_tha_test(isolated_hash, storage, cache, extra_args):
   result = 0
   try:
     try:
-      settings = isolateserver.fetch_isolated(
+      bundle = isolateserver.fetch_isolated(
           isolated_hash=isolated_hash,
           storage=storage,
           cache=cache,
@@ -759,9 +759,9 @@ def run_tha_test(isolated_hash, storage, cache, extra_args):
       on_error.report(None)
       return 1
 
-    change_tree_read_only(run_dir, settings.read_only)
-    cwd = os.path.normpath(os.path.join(run_dir, settings.relative_cwd))
-    command = settings.command + extra_args
+    change_tree_read_only(run_dir, bundle.read_only)
+    cwd = os.path.normpath(os.path.join(run_dir, bundle.relative_cwd))
+    command = bundle.command + extra_args
 
     # subprocess.call doesn't consider 'cwd' when searching for executable.
     # Yet isolate can specify command relative to 'cwd'. Convert it to absolute

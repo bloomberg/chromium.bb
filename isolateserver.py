@@ -1278,8 +1278,9 @@ class MemoryCache(LocalCache):
       os.chmod(dest, file_mode & self._file_mode_mask)
 
 
-class Settings(object):
-  """Results of a completely parsed .isolated file."""
+class IsolatedBundle(object):
+  """Fetched and parsed .isolated file with all dependencies."""
+
   def __init__(self):
     self.command = []
     self.files = {}
@@ -1288,8 +1289,8 @@ class Settings(object):
     # The main .isolated file, a IsolatedFile instance.
     self.root = None
 
-  def load(self, fetch_queue, root_isolated_hash, algo):
-    """Loads the .isolated and all the included .isolated asynchronously.
+  def fetch(self, fetch_queue, root_isolated_hash, algo):
+    """Fetches the .isolated and all the included .isolated.
 
     It enables support for "included" .isolated files. They are processed in
     strict order but fetched asynchronously from the cache. This is important so
@@ -1305,6 +1306,10 @@ class Settings(object):
     'includes' in a single .isolated file. 'left' is defined as an included
     .isolated file earlier in the 'includes' list. So the order of the elements
     in 'includes' is important.
+
+    As a side effect this method starts asynchronous fetch of all data files
+    by adding them to |fetch_queue|. It doesn't wait for data files to finish
+    fetching though.
     """
     self.root = isolated_format.IsolatedFile(root_isolated_hash, algo)
 
@@ -1312,8 +1317,10 @@ class Settings(object):
     pending = {}
     # Set of hashes of already retrieved items to refuse recursive includes.
     seen = set()
+    # Set of IsolatedFile's whose data files have already being fetched.
+    processed = set()
 
-    def retrieve(isolated_file):
+    def retrieve_async(isolated_file):
       h = isolated_file.obj_hash
       if h in seen:
         raise isolated_format.IsolatedError(
@@ -1323,44 +1330,63 @@ class Settings(object):
       pending[h] = isolated_file
       fetch_queue.add(h, priority=threading_utils.PRIORITY_HIGH)
 
-    retrieve(self.root)
+    # Start fetching root *.isolated file (single file, not the whole bundle).
+    retrieve_async(self.root)
 
     while pending:
+      # Wait until some *.isolated file is fetched, parse it.
       item_hash = fetch_queue.wait(pending)
       item = pending.pop(item_hash)
       item.load(fetch_queue.cache.read(item_hash))
-      if item_hash == root_isolated_hash:
-        # It's the root item.
-        item.can_fetch = True
 
+      # Start fetching included *.isolated files.
       for new_child in item.children:
-        retrieve(new_child)
+        retrieve_async(new_child)
 
-      # Traverse the whole tree to see if files can now be fetched.
-      self._traverse_tree(fetch_queue, self.root)
+      # Always fetch *.isolated files in traversal order, waiting if necessary
+      # until next to-be-processed node loads. "Waiting" is done by yielding
+      # back to the outer loop, that waits until some *.isolated is loaded.
+      for node in isolated_format.walk_includes(self.root):
+        if node not in processed:
+          # Not visited, and not yet loaded -> wait for it to load.
+          if not node.is_loaded:
+            break
+          # Not visited and loaded -> process it and continue the traversal.
+          self._start_fetching_files(node, fetch_queue)
+          processed.add(node)
 
-    def check(n):
-      return all(check(x) for x in n.children) and n.files_fetched
-    assert check(self.root)
+    # All *.isolated files should be processed by now and only them.
+    all_isolateds = set(isolated_format.walk_includes(self.root))
+    assert all_isolateds == processed, (all_isolateds, processed)
 
+    # Extract 'command' and other bundle properties.
+    for node in isolated_format.walk_includes(self.root):
+      self._update_self(node)
     self.relative_cwd = self.relative_cwd or ''
 
-  def _traverse_tree(self, fetch_queue, node):
-    if node.can_fetch:
-      if not node.files_fetched:
-        self._update_self(fetch_queue, node)
-      will_break = False
-      for i in node.children:
-        if not i.can_fetch:
-          if will_break:
-            break
-          # Automatically mark the first one as fetcheable.
-          i.can_fetch = True
-          will_break = True
-        self._traverse_tree(fetch_queue, i)
+  def _start_fetching_files(self, isolated, fetch_queue):
+    """Starts fetching files from |isolated| that are not yet being fetched.
 
-  def _update_self(self, fetch_queue, node):
-    node.fetch_files(fetch_queue, self.files)
+    Modifies self.files.
+    """
+    logging.debug('fetch_files(%s)', isolated.obj_hash)
+    for filepath, properties in isolated.data.get('files', {}).iteritems():
+      # Root isolated has priority on the files being mapped. In particular,
+      # overridden files must not be fetched.
+      if filepath not in self.files:
+        self.files[filepath] = properties
+        if 'h' in properties:
+          # Preemptively request files.
+          logging.debug('fetching %s', filepath)
+          fetch_queue.add(
+              properties['h'], properties['s'], threading_utils.PRIORITY_MED)
+
+  def _update_self(self, node):
+    """Extracts bundle global parameters from loaded *.isolated file.
+
+    Will be called with each loaded *.isolated file in order of traversal of
+    isolated include graph (see isolated_format.walk_includes).
+    """
     # Grabs properties.
     if not self.command and node.data.get('command'):
       # Ensure paths are correctly separated on windows.
@@ -1456,7 +1482,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
     require_command: Ensure *.isolated specifies a command to run.
 
   Returns:
-    Settings object that holds details about loaded *.isolated file.
+    IsolatedBundle object that holds details about loaded *.isolated file.
   """
   logging.debug(
       'fetch_isolated(%s, %s, %s, %s, %s)',
@@ -1465,7 +1491,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
   algo = storage.hash_algo
   with cache:
     fetch_queue = FetchQueue(storage, cache)
-    settings = Settings()
+    bundle = IsolatedBundle()
 
     with tools.Profiler('GetIsolateds'):
       # Optionally support local files by manually adding them to cache.
@@ -1479,8 +1505,8 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
               'valid hash?' % isolated_hash)
 
       # Load all *.isolated and start loading rest of the files.
-      settings.load(fetch_queue, isolated_hash, algo)
-      if require_command and not settings.command:
+      bundle.fetch(fetch_queue, isolated_hash, algo)
+      if require_command and not bundle.command:
         # TODO(vadimsh): All fetch operations are already enqueue and there's no
         # easy way to cancel them.
         raise isolated_format.IsolatedError('No command to run')
@@ -1489,17 +1515,17 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
       # Create file system hierarchy.
       if not os.path.isdir(outdir):
         os.makedirs(outdir)
-      create_directories(outdir, settings.files)
-      create_symlinks(outdir, settings.files.iteritems())
+      create_directories(outdir, bundle.files)
+      create_symlinks(outdir, bundle.files.iteritems())
 
       # Ensure working directory exists.
-      cwd = os.path.normpath(os.path.join(outdir, settings.relative_cwd))
+      cwd = os.path.normpath(os.path.join(outdir, bundle.relative_cwd))
       if not os.path.isdir(cwd):
         os.makedirs(cwd)
 
       # Multimap: digest -> list of pairs (path, props).
       remaining = {}
-      for filepath, props in settings.files.iteritems():
+      for filepath, props in bundle.files.iteritems():
         if 'h' in props:
           remaining.setdefault(props['h'], []).append((filepath, props))
 
@@ -1531,7 +1557,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, require_command):
   if not fetch_queue.verify_all_cached():
     raise isolated_format.MappingError(
         'Cache is too small to hold all requested files')
-  return settings
+  return bundle
 
 
 def directory_to_metadata(root, algo, blacklist):
@@ -1721,16 +1747,16 @@ def CMDdownload(parser, args):
 
     # Fetching whole isolated tree.
     if options.isolated:
-      settings = fetch_isolated(
+      bundle = fetch_isolated(
           isolated_hash=options.isolated,
           storage=storage,
           cache=MemoryCache(),
           outdir=options.target,
           require_command=False)
-      rel = os.path.join(options.target, settings.relative_cwd)
+      rel = os.path.join(options.target, bundle.relative_cwd)
       print('To run this test please run from the directory %s:' %
             os.path.join(options.target, rel))
-      print('  ' + ' '.join(settings.command))
+      print('  ' + ' '.join(bundle.command))
 
   return 0
 

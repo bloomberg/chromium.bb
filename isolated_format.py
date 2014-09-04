@@ -13,7 +13,6 @@ import stat
 import sys
 
 from utils import file_path
-from utils import threading_utils
 from utils import tools
 
 
@@ -82,17 +81,11 @@ def hash_file(filepath, algo):
 
 class IsolatedFile(object):
   """Represents a single parsed .isolated file."""
+
   def __init__(self, obj_hash, algo):
     """|obj_hash| is really the sha-1 of the file."""
-    logging.debug('IsolatedFile(%s)' % obj_hash)
     self.obj_hash = obj_hash
     self.algo = algo
-    # Set once all the left-side of the tree is parsed. 'Tree' here means the
-    # .isolate and all the .isolated files recursively included by it with
-    # 'includes' key. The order of each sha-1 in 'includes', each representing a
-    # .isolated file in the hash table, is important, as the later ones are not
-    # processed until the firsts are retrieved and read.
-    self.can_fetch = False
 
     # Raw data.
     self.data = {}
@@ -100,44 +93,39 @@ class IsolatedFile(object):
     self.children = []
 
     # Set once the .isolated file is loaded.
-    self._is_parsed = False
-    # Set once the files are fetched.
-    self.files_fetched = False
+    self._is_loaded = False
+
+  def __repr__(self):
+    return 'IsolatedFile(%s, loaded: %s)' % (self.obj_hash, self._is_loaded)
 
   def load(self, content):
     """Verifies the .isolated file is valid and loads this object with the json
     data.
     """
     logging.debug('IsolatedFile.load(%s)' % self.obj_hash)
-    assert not self._is_parsed
+    assert not self._is_loaded
     self.data = load_isolated(content, self.algo)
     self.children = [
         IsolatedFile(i, self.algo) for i in self.data.get('includes', [])
     ]
-    self._is_parsed = True
+    self._is_loaded = True
 
-  def fetch_files(self, fetch_queue, files):
-    """Adds files in this .isolated file not present in |files| dictionary.
+  @property
+  def is_loaded(self):
+    """Returns True if 'load' was already called."""
+    return self._is_loaded
 
-    Preemptively request files.
 
-    Note that |files| is modified by this function.
-    """
-    assert self.can_fetch
-    if not self._is_parsed or self.files_fetched:
-      return
-    logging.debug('fetch_files(%s)' % self.obj_hash)
-    for filepath, properties in self.data.get('files', {}).iteritems():
-      # Root isolated has priority on the files being mapped. In particular,
-      # overriden files must not be fetched.
-      if filepath not in files:
-        files[filepath] = properties
-        if 'h' in properties:
-          # Preemptively request files.
-          logging.debug('fetching %s' % filepath)
-          fetch_queue.add(
-              properties['h'], properties['s'], threading_utils.PRIORITY_MED)
-    self.files_fetched = True
+def walk_includes(isolated):
+  """Walks IsolatedFile include graph and yields IsolatedFile objects.
+
+  Visits root node first, then recursively all children, left to right.
+  Not yet loaded nodes are considered childless.
+  """
+  yield isolated
+  for child in isolated.children:
+    for x in walk_includes(child):
+      yield x
 
 
 def expand_symlinks(indir, relfile):
