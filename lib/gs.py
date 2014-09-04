@@ -108,6 +108,30 @@ class GSNoSuchKey(GSContextException):
   """Thrown when google storage returns code=NoSuchKey."""
 
 
+# Detailed results of GSContext.Stat.
+#
+# The fields directory correspond to gsutil stat results.
+#
+#  Field name        Type         Example
+#   creation_time     datetime     Sat, 23 Aug 2014 06:53:20 GMT
+#   content_length    int          74
+#   content_type      string       application/octet-stream
+#   hash_crc32c       string       BBPMPA==
+#   hash_md5          string       ms+qSYvgI9SjXn8tW/5UpQ==
+#   etag              string       CNCgocbmqMACEAE=
+#   generation        int          1408776800850000
+#   metageneration    int          1
+#
+# Note: We omit a few stat fields as they are not always available, and we
+# have no callers that want this currently.
+#
+#   content_language  string/None  en   # This field may be None.
+GSStatResult = collections.namedtuple(
+    'GSStatResult',
+    ('creation_time', 'content_length', 'content_type', 'hash_crc32c',
+     'hash_md5', 'etag', 'generation', 'metageneration'))
+
+
 # Detailed results of GSContext.List.
 GSListResult = collections.namedtuple(
     'GSListResult',
@@ -811,27 +835,19 @@ class GSContext(object):
 
     Args:
       path: Full gs:// url of the path to check.
+      kwargs: Flags to pass to DoCommand.
 
     Returns:
       True if the path exists; otherwise returns False.
     """
     try:
-      # Use 'gsutil stat' command to check for existence.  It is not
-      # subject to caching behavior of 'gsutil ls', and it only requires
-      # read access to the file, unlike 'gsutil acl get'.
-      self.DoCommand(['stat', path], redirect_stdout=True, **kwargs)
-    except cros_build_lib.RunCommandError as e:
-      if e.result.output and 'No URLs matched' in e.result.output:
-        # A path that does not exist will result in output on stdout like:
-        # No URLs matched gs://foo/bar
-        # That behavior is different from any other command and is handled
-        # here specially. See b/16020252.
-        return False
-      else:
-        raise
+      self.Stat(path, **kwargs)
+    except GSNoSuchKey:
+      return False
+
     return True
 
-  def Remove(self, path, recurse=False, ignore_missing=False):
+  def Remove(self, path, recurse=False, ignore_missing=False, **kwargs):
     """Remove the specified file.
 
     Args:
@@ -839,13 +855,14 @@ class GSContext(object):
       recurse: Remove recursively starting at path. Same as rm -R. Defaults
         to False.
       ignore_missing: Whether to suppress errors about missing files.
+      kwargs: Flags to pass to DoCommand.
     """
     cmd = ['rm']
     if recurse:
       cmd.append('-R')
     cmd.append(path)
     try:
-      self.DoCommand(cmd)
+      self.DoCommand(cmd, **kwargs)
     except GSNoSuchKey:
       if not ignore_missing:
         raise
@@ -856,24 +873,88 @@ class GSContext(object):
     Returns:
       A tuple of the generation and metageneration.
     """
-    def _Field(name):
-      if res and res.returncode == 0 and res.output is not None:
-        # Search for a field that looks like this:
-        # Generation: 1378856506589000
-        m = re.search(r'%s:\s*(\d+)' % name, res.output)
-        if m:
-          return int(m.group(1))
-      return 0
-
     try:
-      res = self.DoCommand(['stat', path],
-                           error_code_ok=True, redirect_stdout=True)
+      res = self.Stat(path)
     except GSNoSuchKey:
-      # If a DoCommand throws an error, 'res' will be None, so _Header(...)
-      # will return 0 in both of the cases below.
-      pass
+      return 0, 0
 
-    return (_Field('Generation'), _Field('Metageneration'))
+    return res.generation, res.metageneration
+
+  def Stat(self, path, **kwargs):
+    """Stat a GS file, and get detailed information.
+
+    Args:
+      path: A GS path for files to Stat. Wildcards are NOT supported.
+      kwargs: Flags to pass to DoCommand.
+
+    Returns:
+      A GSStatResult object with all fields populated.
+
+    Raises:
+      Assorted GSContextException exceptions.
+    """
+    try:
+      res = self.DoCommand(['stat', path], redirect_stdout=True, **kwargs)
+    except GSCommandError as e:
+      # Because the 'gsutil stat' command returns errors on stdout (unlike other
+      # commands), we have to look for standard errors ourselves.
+      # That behavior is different from any other command and is handled
+      # here specially. See b/16020252.
+      if e.result.output.startswith('No URLs matched'):
+        raise GSNoSuchKey(path)
+
+      # No idea what this is, so just choke.
+      raise
+
+    # In dryrun mode, DoCommand doesn't return an object, so we need to fake
+    # out the behavior ourselves.
+    if self.dry_run:
+      return GSStatResult(
+          creation_time=datetime.datetime.now(),
+          content_length=0,
+          content_type='application/octet-stream',
+          hash_crc32c='AAAAAA==',
+          hash_md5='',
+          etag='',
+          generation=0,
+          metageneration=0)
+
+    # We expect Stat output like the following. However, the Content-Language
+    # line appears to be optional based on how the file in question was
+    # created.
+    #
+    # gs://bucket/path/file:
+    #     Creation time:      Sat, 23 Aug 2014 06:53:20 GMT
+    #     Content-Language:   en
+    #     Content-Length:     74
+    #     Content-Type:       application/octet-stream
+    #     Hash (crc32c):      BBPMPA==
+    #     Hash (md5):         ms+qSYvgI9SjXn8tW/5UpQ==
+    #     ETag:               CNCgocbmqMACEAE=
+    #     Generation:         1408776800850000
+    #     Metageneration:     1
+
+    if not res.output.startswith('gs://'):
+      raise GSContextException('Unexpected stat output: %s' % res.output)
+
+    def _GetField(name):
+      m = re.search(r'%s:\s*(.+)' % re.escape(name), res.output)
+      if m:
+        return m.group(1)
+      else:
+        raise GSContextException('Field "%s" missing in "%s"' %
+                                 (name, res.output))
+
+    return GSStatResult(
+        creation_time=datetime.datetime.strptime(
+            _GetField('Creation time'), '%a, %d %b %Y %H:%M:%S %Z'),
+        content_length=int(_GetField('Content-Length')),
+        content_type=_GetField('Content-Type'),
+        hash_crc32c=_GetField('Hash (crc32c)'),
+        hash_md5=_GetField('Hash (md5)'),
+        etag=_GetField('ETag'),
+        generation=int(_GetField('Generation')),
+        metageneration=int(_GetField('Metageneration')))
 
   def Counter(self, path):
     """Return a GSCounter object pointing at a |path| in Google Storage.

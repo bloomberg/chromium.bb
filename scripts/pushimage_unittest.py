@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import logging
+import mock
 import os
 import sys
 
@@ -16,6 +17,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
+from chromite.lib import gs
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
 from chromite.lib import partial_mock
@@ -28,10 +30,11 @@ class InputInsnsTest(cros_test_lib.MockTestCase):
 
   def testBasic(self):
     """Simple smoke test"""
-    insns = pushimage.InputInsns('test.board')
-    insns.GetInsnFile('recovery')
-    self.assertEqual(insns.GetChannels(), ['dev', 'canary'])
-    self.assertEqual(insns.GetKeysets(), ['stumpy-mp-v3'])
+    with mock.patch.object(gs.GSContext, 'Exists', return_value=False):
+      insns = pushimage.InputInsns('test.board')
+      insns.GetInsnFile('recovery')
+      self.assertEqual(insns.GetChannels(), ['dev', 'canary'])
+      self.assertEqual(insns.GetKeysets(), ['stumpy-mp-v3'])
 
   def testGetInsnFile(self):
     """Verify various inputs result in right insns path"""
@@ -182,15 +185,17 @@ class PushImageTests(gs_unittest.AbstractGSContextTest):
             'gs://chromeos-releases/dev-channel/test.board-hi/5126.0.0/'
               'ChromeOS-recovery-R34-5126.0.0-test.board-hi.instructions'],
     }
-    urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
-                               profile='hi')
+    with mock.patch.object(gs.GSContext, 'Exists', return_value=True):
+      urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
+                                 profile='hi')
 
     self.assertEqual(urls, EXPECTED)
 
   def testBasicMock(self):
     """Simple smoke test in mock mode"""
-    pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
-                        dry_run=True, mock=True)
+    with mock.patch.object(gs.GSContext, 'Exists', return_value=True):
+      pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
+                          dry_run=True, mock=True)
 
   def testBadVersion(self):
     """Make sure we barf on bad version strings"""

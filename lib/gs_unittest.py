@@ -733,11 +733,16 @@ class GSContextTest(AbstractGSContextTest):
   def testIncrement(self):
     """Test ability to atomically increment a counter."""
     ctx = gs.GSContext()
-    ctx.Counter('gs://abc/1').Increment()
+
+    with mock.patch.object(ctx, 'GetGeneration', return_value=(0, 0)):
+      ctx.Counter('gs://abc/1').Increment()
+
     self.gs_mock.assertCommandContains(['cp', 'gs://abc/1'])
 
   def testGetGeneration(self):
     """Test ability to get the generation of a file."""
+    self.gs_mock.AddCmdResult(['stat', 'gs://abc/1'],
+                              output=StatTest.STAT_OUTPUT)
     ctx = gs.GSContext()
     ctx.GetGeneration('gs://abc/1')
     self.gs_mock.assertCommandContains(['stat', 'gs://abc/1'])
@@ -754,28 +759,36 @@ class GSContextTest(AbstractGSContextTest):
 
   def testUnknownError(self):
     """Test that when gsutil fails in an unknown way, we do the right thing."""
-    self.gs_mock.AddCmdResult(['stat', '/asdf'], returncode=1)
+    self.gs_mock.AddCmdResult(['cat', '/asdf'], returncode=1)
 
     ctx = gs.GSContext()
-    self.assertRaises(gs.GSCommandError, ctx.Exists, '/asdf')
+    self.assertRaises(gs.GSCommandError, ctx.DoCommand, ['cat', '/asdf'])
 
   def testWaitForGsPathsAllPresent(self):
     """Test for waiting when all paths exist already."""
     ctx = gs.GSContext()
-    ctx.WaitForGsPaths(['/path1', '/path2'], 20)
 
-  # TODO(dgarrett): We should add a test that first fails then succeeds finding
-  # GS files, but I can't figure out how to make the Mock do that.
+    with mock.patch.object(ctx, 'Exists', return_value=True):
+      ctx.WaitForGsPaths(['/path1', '/path2'], 20)
+
+  def testWaitForGsPathsDelayedSuccess(self):
+    """Test for waiting, but not all paths exist so we timeout."""
+    ctx = gs.GSContext()
+
+    # First they both don't exist, then one does, then remaining does.
+    exists = [False, False, True, False, True]
+    with mock.patch.object(ctx, 'Exists', side_effect=exists):
+      ctx.WaitForGsPaths(['/path1', '/path2'], 20, period=0.02)
 
   def testWaitForGsPathsTimeout(self):
     """Test for waiting, but not all paths exist so we timeout."""
-    self.gs_mock.AddCmdResult(['stat', '/path1'],
-                              returncode=1,
-                              output='No URLs matched')
     ctx = gs.GSContext()
-    self.assertRaises(gs.timeout_util.TimeoutError,
-                      ctx.WaitForGsPaths, ['/path1', '/path2'],
-                      timeout=1, period=0.02)
+
+    exists = {'/path1': True, '/path2': False}
+    with mock.patch.object(ctx, 'Exists', side_effect=lambda p: exists[p]):
+      self.assertRaises(gs.timeout_util.TimeoutError,
+                        ctx.WaitForGsPaths, ['/path1', '/path2'],
+                        timeout=1, period=0.02)
 
   def testParallelFalse(self):
     """Tests that "-m" is not used by default."""
@@ -808,6 +821,117 @@ class UnmockedGSContextTest(cros_test_lib.TempDirTestCase):
       for i in xrange(1, 4):
         self.assertEqual(i, counter.Increment())
         self.assertEqual(i, counter.Get())
+
+
+class StatTest(AbstractGSContextTest):
+  """Tests Stat functionality."""
+
+  # Convenient constant for mocking Stat results.
+  STAT_OUTPUT = """gs://abc/1:
+        Creation time:    Sat, 23 Aug 2014 06:53:20 GMT
+        Content-Language: en
+        Content-Length:   74
+        Content-Type:   application/octet-stream
+        Hash (crc32c):    BBPMPA==
+        Hash (md5):   ms+qSYvgI9SjXn8tW/5UpQ==
+        ETag:     CNCgocbmqMACEAE=
+        Generation:   1408776800850000
+        Metageneration:   1
+      """
+
+  # Stat output can vary based on how/when the file was created.
+  STAT_OUTPUT_OLDER = """gs://abc/1:
+        Creation time:    Sat, 23 Aug 2014 06:53:20 GMT
+        Content-Length:   74
+        Content-Type:   application/octet-stream
+        Hash (crc32c):    BBPMPA==
+        Hash (md5):   ms+qSYvgI9SjXn8tW/5UpQ==
+        ETag:     CNCgocbmqMACEAE=
+        Generation:   1408776800850000
+        Metageneration:   1
+      """
+
+  def testStat(self):
+    """Test ability to get the generation of a file."""
+    self.gs_mock.AddCmdResult(['stat', 'gs://abc/1'],
+                              output=self.STAT_OUTPUT)
+    ctx = gs.GSContext()
+    result = ctx.Stat('gs://abc/1')
+    self.gs_mock.assertCommandContains(['stat', 'gs://abc/1'])
+
+    self.assertEqual(result.creation_time,
+                     datetime.datetime(2014, 8, 23, 6, 53, 20))
+    self.assertEqual(result.content_length, 74)
+    self.assertEqual(result.content_type, 'application/octet-stream')
+    self.assertEqual(result.hash_crc32c, 'BBPMPA==')
+    self.assertEqual(result.hash_md5, 'ms+qSYvgI9SjXn8tW/5UpQ==')
+    self.assertEqual(result.etag, 'CNCgocbmqMACEAE=')
+    self.assertEqual(result.generation, 1408776800850000)
+    self.assertEqual(result.metageneration, 1)
+
+  def testStatOlderOutput(self):
+    """Test ability to get the generation of a file."""
+    self.gs_mock.AddCmdResult(['stat', 'gs://abc/1'],
+                              output=self.STAT_OUTPUT_OLDER)
+    ctx = gs.GSContext()
+    result = ctx.Stat('gs://abc/1')
+    self.gs_mock.assertCommandContains(['stat', 'gs://abc/1'])
+
+    self.assertEqual(result.creation_time,
+                     datetime.datetime(2014, 8, 23, 6, 53, 20))
+    self.assertEqual(result.content_length, 74)
+    self.assertEqual(result.content_type, 'application/octet-stream')
+    self.assertEqual(result.hash_crc32c, 'BBPMPA==')
+    self.assertEqual(result.hash_md5, 'ms+qSYvgI9SjXn8tW/5UpQ==')
+    self.assertEqual(result.etag, 'CNCgocbmqMACEAE=')
+    self.assertEqual(result.generation, 1408776800850000)
+    self.assertEqual(result.metageneration, 1)
+
+  def testStatNoExist(self):
+    """Test ability to get the generation of a file."""
+    self.gs_mock.AddCmdResult(['stat', 'gs://abc/1'],
+                              output='No URLs matched gs://abc/1',
+                              returncode=1)
+    ctx = gs.GSContext()
+    self.assertRaises(gs.GSNoSuchKey, ctx.Stat, 'gs://abc/1')
+    self.gs_mock.assertCommandContains(['stat', 'gs://abc/1'])
+
+
+class UnmockedStatTest(cros_test_lib.TempDirTestCase):
+  """Tests Stat functionality w/out mocks."""
+
+  @cros_test_lib.NetworkTest()
+  def testStat(self):
+    """Test ability to get the generation of a file."""
+    ctx = gs.GSContext()
+    with gs.TemporaryURL('testStat') as url:
+
+      # The URL doesn't exist. Test Stat for this case.
+      self.assertRaises(gs.GSNoSuchKey, ctx.Stat, url)
+
+      # Populate the URL.
+      ctx.Copy('-', url, input='test file contents')
+
+      # Stat a URL that exists.
+      result = ctx.Stat(url)
+
+    # Verify the Stat results.
+    self.assertIsInstance(result.creation_time, datetime.datetime)
+    self.assertEqual(result.content_length, 18)
+    self.assertEqual(result.content_type, 'application/octet-stream')
+    self.assertEqual(result.hash_crc32c, 'wUc4sQ==')
+    self.assertEqual(result.hash_md5, 'iRvNNwBhmvUVG/lbg2/5sQ==')
+    self.assertIsInstance(result.etag, str)
+    self.assertIsInstance(result.generation, int)
+    self.assertEqual(result.metageneration, 1)
+
+  @cros_test_lib.NetworkTest()
+  def testMissing(self):
+    """Test exceptions when the file doesn't exist."""
+    ctx = gs.GSContext()
+    with gs.TemporaryURL('testStat') as url:
+      self.assertRaises(gs.GSNoSuchKey, ctx.Stat, url)
+      self.assertFalse(ctx.Exists(url))
 
 
 class CatTest(cros_test_lib.TempDirTestCase):
@@ -923,6 +1047,12 @@ class DryRunTest(cros_build_lib_unittest.RunCommandTestCase):
   def testSetACL(self):
     """Test SetACL in dry_run mode."""
     self.assertEqual(self.ctx.SetACL('gs://foo/bar', 'bad-acl'), None)
+
+  def testStat(self):
+    """Test Stat in dry_run mode."""
+    result = self.ctx.Stat('gs://foo/bar')
+    self.assertEqual(result.content_length, 0)
+    self.assertNotEqual(result.creation_time, None)
 
   def testVersion(self):
     """Test gsutil_version in dry_run mode."""
