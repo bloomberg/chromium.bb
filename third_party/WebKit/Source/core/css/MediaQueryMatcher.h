@@ -46,8 +46,8 @@ public:
     void addMediaQueryList(MediaQueryList*);
     void removeMediaQueryList(MediaQueryList*);
 
-    void addViewportListener(MediaQueryListListener*);
-    void removeViewportListener(MediaQueryListListener*);
+    void addViewportListener(PassRefPtrWillBeRawPtr<MediaQueryListListener>);
+    void removeViewportListener(PassRefPtrWillBeRawPtr<MediaQueryListListener>);
 
     PassRefPtrWillBeRawPtr<MediaQueryList> matchMedia(const String&);
 
@@ -68,7 +68,7 @@ private:
     typedef WillBeHeapLinkedHashSet<RawPtrWillBeWeakMember<MediaQueryList> > MediaQueryListSet;
     MediaQueryListSet m_mediaLists;
 
-    typedef WillBeHeapLinkedHashSet<RawPtrWillBeWeakMember<MediaQueryListListener> > ViewportListenerSet;
+    typedef WillBeHeapLinkedHashSet<RefPtrWillBeMember<MediaQueryListListener> > ViewportListenerSet;
     ViewportListenerSet m_viewportListeners;
 };
 

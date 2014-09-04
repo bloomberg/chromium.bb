@@ -25,7 +25,7 @@ public:
         return adoptRefWillBeNoop(new MediaQueryListEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<MediaQueryListEvent> create(MediaQueryList* list)
+    static PassRefPtrWillBeRawPtr<MediaQueryListEvent> create(PassRefPtrWillBeRawPtr<MediaQueryList> list)
     {
         return adoptRefWillBeNoop(new MediaQueryListEvent(list));
     }
@@ -66,7 +66,7 @@ private:
         ScriptWrappable::init(this);
     }
 
-    explicit MediaQueryListEvent(MediaQueryList* list)
+    explicit MediaQueryListEvent(PassRefPtrWillBeRawPtr<MediaQueryList> list)
         : Event(EventTypeNames::change, false, false)
         , m_mediaQueryList(list)
         , m_matches(false)

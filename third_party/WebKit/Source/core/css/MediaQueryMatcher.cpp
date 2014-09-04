@@ -102,14 +102,14 @@ void MediaQueryMatcher::removeMediaQueryList(MediaQueryList* query)
     m_mediaLists.remove(query);
 }
 
-void MediaQueryMatcher::addViewportListener(MediaQueryListListener* listener)
+void MediaQueryMatcher::addViewportListener(PassRefPtrWillBeRawPtr<MediaQueryListListener> listener)
 {
     if (!m_document)
         return;
     m_viewportListeners.add(listener);
 }
 
-void MediaQueryMatcher::removeViewportListener(MediaQueryListListener* listener)
+void MediaQueryMatcher::removeViewportListener(PassRefPtrWillBeRawPtr<MediaQueryListListener> listener)
 {
     if (!m_document)
         return;

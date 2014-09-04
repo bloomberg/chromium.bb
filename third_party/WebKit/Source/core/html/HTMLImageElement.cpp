@@ -357,7 +357,7 @@ Node::InsertionNotificationRequest HTMLImageElement::insertedInto(ContainerNode*
     if (!m_formWasSetByParser || NodeTraversal::highestAncestorOrSelf(*insertionPoint) != NodeTraversal::highestAncestorOrSelf(*m_form.get()))
         resetFormOwner();
     if (m_listener)
-        document().mediaQueryMatcher().addViewportListener(m_listener.get());
+        document().mediaQueryMatcher().addViewportListener(m_listener);
 
     bool imageWasModified = false;
     if (RuntimeEnabledFeatures::pictureEnabled()) {
@@ -381,7 +381,7 @@ void HTMLImageElement::removedFrom(ContainerNode* insertionPoint)
     if (!m_form || NodeTraversal::highestAncestorOrSelf(*m_form.get()) != NodeTraversal::highestAncestorOrSelf(*this))
         resetFormOwner();
     if (m_listener)
-        document().mediaQueryMatcher().removeViewportListener(m_listener.get());
+        document().mediaQueryMatcher().removeViewportListener(m_listener);
     HTMLElement::removedFrom(insertionPoint);
 }
 
@@ -643,9 +643,9 @@ void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior be
         ImageCandidate candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), effectiveSize, fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr));
         setBestFitURLAndDPRFromImageCandidate(candidate);
     }
-    if (m_intrinsicSizingViewportDependant && m_effectiveSizeViewportDependant && !m_listener.get()) {
+    if (m_intrinsicSizingViewportDependant && m_effectiveSizeViewportDependant && !m_listener) {
         m_listener = ViewportChangeListener::create(this);
-        document().mediaQueryMatcher().addViewportListener(m_listener.get());
+        document().mediaQueryMatcher().addViewportListener(m_listener);
     }
     imageLoader().updateFromElement(behavior);
 }
