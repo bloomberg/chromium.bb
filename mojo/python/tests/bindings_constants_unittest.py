@@ -12,7 +12,7 @@ import sample_service_mojom
 
 class ConstantBindingsTest(unittest.TestCase):
 
-  def test_constant_generation(self):
+  def testConstantGeneration(self):
     self.assertEquals(sample_service_mojom.TWELVE, 12)
     self.assertEquals(sample_service_mojom.TOO_BIG_FOR_SIGNED_INT64,
                       9999999999999999999)
