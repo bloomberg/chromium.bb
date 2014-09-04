@@ -295,7 +295,7 @@ Instance::Instance(PP_Instance instance)
   loader_factory_.Initialize(this);
   timer_factory_.Initialize(this);
   form_factory_.Initialize(this);
-  print_callback_factory_.Initialize(this);
+  callback_factory_.Initialize(this);
   engine_.reset(PDFEngine::Create(this));
   pp::Module::Get()->AddPluginInterface(kPPPPdfInterface, &ppp_private);
   AddPerInstanceObject(kPPPPdfInterface, this);
@@ -1132,8 +1132,12 @@ void Instance::Scroll(const pp::Point& point) {
   if (page_indicator_.visible())
     paint_manager_.InvalidateRect(page_indicator_.rect());
 
-  if (on_scroll_callback_.is_string())
-    ExecuteScript(on_scroll_callback_);
+  // Run the scroll callback asynchronously. This function can be invoked by a
+  // layout change which should not re-enter into JS synchronously.
+  pp::CompletionCallback callback =
+      callback_factory_.NewCallback(&Instance::RunCallback,
+                                    on_scroll_callback_);
+  pp::Module::Get()->core()->CallOnMainThread(0, callback);
 }
 
 void Instance::ScrollToX(int position) {
@@ -1374,7 +1378,7 @@ void Instance::Print() {
   }
 
   pp::CompletionCallback callback =
-      print_callback_factory_.NewCallback(&Instance::OnPrint);
+      callback_factory_.NewCallback(&Instance::OnPrint);
   pp::Module::Get()->core()->CallOnMainThread(0, callback);
 }
 
@@ -2117,8 +2121,17 @@ void Instance::OnGeometryChanged(double old_zoom, float old_device_scale) {
     return;
   paint_manager_.InvalidateRect(pp::Rect(pp::Point(), plugin_size_));
 
-  if (on_plugin_size_changed_callback_.is_string())
-    ExecuteScript(on_plugin_size_changed_callback_);
+  // Run the plugin size change callback asynchronously. This function can be
+  // invoked by a layout change which should not re-enter into JS synchronously.
+  pp::CompletionCallback callback =
+      callback_factory_.NewCallback(&Instance::RunCallback,
+                                    on_plugin_size_changed_callback_);
+  pp::Module::Get()->core()->CallOnMainThread(0, callback);
+}
+
+void Instance::RunCallback(int32_t, pp::Var callback) {
+  if (callback.is_string())
+    ExecuteScript(callback);
 }
 
 void Instance::CreateHorizontalScrollbar() {

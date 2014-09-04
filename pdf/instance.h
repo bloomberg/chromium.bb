@@ -202,6 +202,9 @@ class Instance : public pp::InstancePrivate,
   // scrollbars, background parts, and notifies the pdf engine.
   void OnGeometryChanged(double old_zoom, float old_device_scale);
 
+  // Runs the given JS callback given in |callback|.
+  void RunCallback(int32_t, pp::Var callback);
+
   void CreateHorizontalScrollbar();
   void CreateVerticalScrollbar();
   void DestroyHorizontalScrollbar();
@@ -456,8 +459,10 @@ class Instance : public pp::InstancePrivate,
   pp::CompletionCallbackFactory<Instance> form_factory_;
   pp::URLLoader form_loader_;
 
-  // Used for printing without re-entrancy issues.
-  pp::CompletionCallbackFactory<Instance> print_callback_factory_;
+  // Used for generating callbacks.
+  // TODO(raymes): We don't really need other callback factories we can just
+  // fold them into this one.
+  pp::CompletionCallbackFactory<Instance> callback_factory_;
 
   // True if we haven't painted the plugin viewport yet.
   bool first_paint_;
