@@ -177,10 +177,12 @@ class CC_EXPORT SchedulerStateMachine {
   // Notification from the OutputSurface that a swap has been consumed.
   void DidSwapBuffersComplete();
 
-  // Indicates whether to prioritize animation smoothness over new content
-  // activation.
-  void SetSmoothnessTakesPriority(bool smoothness_takes_priority);
-  bool smoothness_takes_priority() const { return smoothness_takes_priority_; }
+  // Indicates whether to prioritize impl thread latency (i.e., animation
+  // smoothness) over new content activation.
+  void SetImplLatencyTakesPriority(bool impl_latency_takes_priority);
+  bool impl_latency_takes_priority() const {
+    return impl_latency_takes_priority_;
+  }
 
   // Indicates whether ACTION_DRAW_AND_SWAP_IF_POSSIBLE drew to the screen.
   void DidDrawIfPossibleCompleted(DrawResult result);
@@ -307,7 +309,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool pending_tree_is_ready_for_activation_;
   bool active_tree_needs_first_draw_;
   bool did_create_and_initialize_first_output_surface_;
-  bool smoothness_takes_priority_;
+  bool impl_latency_takes_priority_;
   bool skip_next_begin_main_frame_to_reduce_latency_;
   bool skip_begin_main_frame_to_reduce_latency_;
   bool continuous_painting_;

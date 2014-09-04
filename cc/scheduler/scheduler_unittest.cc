@@ -1046,7 +1046,7 @@ class SchedulerClientWithFixedEstimates : public FakeSchedulerClient {
 
 void MainFrameInHighLatencyMode(int64 begin_main_frame_to_commit_estimate_in_ms,
                                 int64 commit_to_activate_estimate_in_ms,
-                                bool smoothness_takes_priority,
+                                bool impl_latency_takes_priority,
                                 bool should_send_begin_main_frame) {
   // Set up client with specified estimates (draw duration is set to 1).
   SchedulerClientWithFixedEstimates client(
@@ -1059,7 +1059,7 @@ void MainFrameInHighLatencyMode(int64 begin_main_frame_to_commit_estimate_in_ms,
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
-  scheduler->SetSmoothnessTakesPriority(smoothness_takes_priority);
+  scheduler->SetImplLatencyTakesPriority(impl_latency_takes_priority);
   InitializeOutputSurfaceAndFirstCommit(scheduler, &client);
 
   // Impl thread hits deadline before commit finishes.
@@ -1106,9 +1106,9 @@ TEST(SchedulerTest, NotSkipMainFrameIfHighLatencyAndCanActivateTooLong) {
   MainFrameInHighLatencyMode(1, 10, false, true);
 }
 
-TEST(SchedulerTest, NotSkipMainFrameInPreferSmoothnessMode) {
+TEST(SchedulerTest, NotSkipMainFrameInPreferImplLatencyMode) {
   // Set up client so that estimates indicate that we can commit and activate
-  // before the deadline (~8ms by default), but also enable smoothness takes
+  // before the deadline (~8ms by default), but also enable impl latency takes
   // priority mode.
   MainFrameInHighLatencyMode(1, 1, true, true);
 }

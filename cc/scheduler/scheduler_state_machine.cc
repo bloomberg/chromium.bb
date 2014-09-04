@@ -44,7 +44,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       pending_tree_is_ready_for_activation_(false),
       active_tree_needs_first_draw_(false),
       did_create_and_initialize_first_output_surface_(false),
-      smoothness_takes_priority_(false),
+      impl_latency_takes_priority_(false),
       skip_next_begin_main_frame_to_reduce_latency_(false),
       skip_begin_main_frame_to_reduce_latency_(false),
       continuous_painting_(false) {
@@ -229,7 +229,8 @@ void SchedulerStateMachine::AsValueInto(base::debug::TracedValue* state) const {
                     active_tree_needs_first_draw_);
   state->SetBoolean("did_create_and_initialize_first_output_surface",
                     did_create_and_initialize_first_output_surface_);
-  state->SetBoolean("smoothness_takes_priority", smoothness_takes_priority_);
+  state->SetBoolean("impl_latency_takes_priority",
+                    impl_latency_takes_priority_);
   state->SetBoolean("main_thread_is_in_high_latency_mode",
                     MainThreadIsInHighLatencyMode());
   state->SetBoolean("skip_begin_main_frame_to_reduce_latency",
@@ -438,8 +439,8 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
     return false;
 
   // Don't send BeginMainFrame early if we are prioritizing the active tree
-  // because of smoothness_takes_priority.
-  if (smoothness_takes_priority_ &&
+  // because of impl_latency_takes_priority_.
+  if (impl_latency_takes_priority_ &&
       (has_pending_tree_ || active_tree_needs_first_draw_)) {
     return false;
   }
@@ -869,8 +870,8 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineEarly() const {
   if (commit_state_ == COMMIT_STATE_IDLE && !has_pending_tree_)
     return true;
 
-  // Prioritize impl-thread draws in smoothness mode.
-  if (smoothness_takes_priority_)
+  // Prioritize impl-thread draws in impl_latency_takes_priority_ mode.
+  if (impl_latency_takes_priority_)
     return true;
 
   return false;
@@ -965,9 +966,9 @@ void SchedulerStateMachine::DidSwapBuffersComplete() {
   pending_swaps_--;
 }
 
-void SchedulerStateMachine::SetSmoothnessTakesPriority(
-    bool smoothness_takes_priority) {
-  smoothness_takes_priority_ = smoothness_takes_priority;
+void SchedulerStateMachine::SetImplLatencyTakesPriority(
+    bool impl_latency_takes_priority) {
+  impl_latency_takes_priority_ = impl_latency_takes_priority;
 }
 
 void SchedulerStateMachine::DidDrawIfPossibleCompleted(DrawResult result) {

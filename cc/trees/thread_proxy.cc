@@ -1336,8 +1336,7 @@ void ThreadProxy::RenewTreePriority() {
   bool smoothness_takes_priority =
       impl().layer_tree_host_impl->pinch_gesture_active() ||
       impl().layer_tree_host_impl->page_scale_animation_active() ||
-      (impl().layer_tree_host_impl->IsCurrentlyScrolling() &&
-       !impl().layer_tree_host_impl->scroll_affects_scroll_handler());
+      impl().layer_tree_host_impl->IsCurrentlyScrolling();
 
   // Schedule expiration if smoothness currently takes priority.
   if (smoothness_takes_priority)
@@ -1364,8 +1363,14 @@ void ThreadProxy::RenewTreePriority() {
   }
 
   impl().layer_tree_host_impl->SetTreePriority(priority);
-  impl().scheduler->SetSmoothnessTakesPriority(priority ==
-                                               SMOOTHNESS_TAKES_PRIORITY);
+
+  // Only put the scheduler in impl latency prioritization mode if we don't
+  // have a scroll listener. This gives the scroll listener a better chance of
+  // handling scroll updates within the same frame. The tree itself is still
+  // kept in prefer smoothness mode to allow checkerboarding.
+  impl().scheduler->SetImplLatencyTakesPriority(
+      priority == SMOOTHNESS_TAKES_PRIORITY &&
+      !impl().layer_tree_host_impl->scroll_affects_scroll_handler());
 
   // Notify the the client of this compositor via the output surface.
   // TODO(epenner): Route this to compositor-thread instead of output-surface

@@ -211,8 +211,8 @@ void Scheduler::DidSwapBuffersComplete() {
   ProcessScheduledActions();
 }
 
-void Scheduler::SetSmoothnessTakesPriority(bool smoothness_takes_priority) {
-  state_machine_.SetSmoothnessTakesPriority(smoothness_takes_priority);
+void Scheduler::SetImplLatencyTakesPriority(bool impl_latency_takes_priority) {
+  state_machine_.SetImplLatencyTakesPriority(impl_latency_takes_priority);
   ProcessScheduledActions();
 }
 
@@ -512,7 +512,7 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
   begin_impl_frame_args_ = args;
   begin_impl_frame_args_.deadline -= draw_duration_estimate;
 
-  if (!state_machine_.smoothness_takes_priority() &&
+  if (!state_machine_.impl_latency_takes_priority() &&
       state_machine_.MainThreadIsInHighLatencyMode() &&
       CanCommitAndActivateBeforeDeadline()) {
     state_machine_.SetSkipNextBeginMainFrameToReduceLatency();

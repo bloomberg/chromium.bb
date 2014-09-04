@@ -1747,7 +1747,7 @@ void FinishPreviousCommitAndDrawWithoutExitingDeadline(
   state.DidSwapBuffers();
 }
 
-TEST(SchedulerStateMachineTest, TestSmoothnessTakesPriority) {
+TEST(SchedulerStateMachineTest, TestImplLatencyTakesPriority) {
   SchedulerSettings settings;
   settings.impl_side_painting = true;
   StateMachine state(settings);
@@ -1758,7 +1758,7 @@ TEST(SchedulerStateMachineTest, TestSmoothnessTakesPriority) {
   state.SetCanDraw(true);
 
   // This test ensures that impl-draws are prioritized over main thread updates
-  // in prefer smoothness mode.
+  // in prefer impl latency mode.
   state.SetNeedsRedraw(true);
   state.SetNeedsCommit();
   state.OnBeginImplFrame(CreateBeginFrameArgsForTesting());
@@ -1768,9 +1768,9 @@ TEST(SchedulerStateMachineTest, TestSmoothnessTakesPriority) {
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Verify the deadline is not triggered early until we enter
-  // prefer smoothness mode.
+  // prefer impl latency mode.
   EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineEarly());
-  state.SetSmoothnessTakesPriority(true);
+  state.SetImplLatencyTakesPriority(true);
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineEarly());
 
   // Trigger the deadline.

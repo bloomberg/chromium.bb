@@ -89,7 +89,7 @@ class CC_EXPORT Scheduler {
   void SetSwapUsedIncompleteTile(bool used_incomplete_tile);
   void DidSwapBuffersComplete();
 
-  void SetSmoothnessTakesPriority(bool smoothness_takes_priority);
+  void SetImplLatencyTakesPriority(bool impl_latency_takes_priority);
 
   void NotifyReadyToCommit();
   void BeginMainFrameAborted(bool did_handle);
