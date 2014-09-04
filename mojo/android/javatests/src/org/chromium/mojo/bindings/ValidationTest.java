@@ -8,12 +8,12 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
 
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.mojo.HandleMock;
 import org.chromium.mojo.MojoTestCase;
 import org.chromium.mojo.bindings.test.mojom.mojo.ConformanceTestInterface;
 import org.chromium.mojo.bindings.test.mojom.mojo.IntegrationTestInterface1;
 import org.chromium.mojo.bindings.test.mojom.mojo.IntegrationTestInterface2TestHelper;
 import org.chromium.mojo.system.Handle;
-import org.chromium.mojo.system.InvalidHandle;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -100,7 +100,7 @@ public class ValidationTest extends MojoTestCase {
             assertNull(test.inputData.getErrorMessage());
             List<Handle> handles = new ArrayList<Handle>();
             for (int i = 0; i < test.inputData.getHandlesCount(); ++i) {
-                handles.add(InvalidHandle.INSTANCE);
+                handles.add(new HandleMock());
             }
             Message message = new SimpleMessage(test.inputData.getData(), handles);
             boolean passed = messageReceiver.accept(message);
@@ -175,7 +175,7 @@ public class ValidationTest extends MojoTestCase {
      * Testing the conformance suite.
      */
     @SmallTest
-    public void DisabledTestConformance() throws FileNotFoundException {
+    public void testConformance() throws FileNotFoundException {
         runTest("conformance_", ConformanceTestInterface.MANAGER.buildStub(null,
                 ConformanceTestInterface.MANAGER.buildProxy(null, new SinkMessageReceiver())));
     }
@@ -184,7 +184,7 @@ public class ValidationTest extends MojoTestCase {
      * Testing the integration suite.
      */
     @SmallTest
-    public void DisabledTestIntegration() throws FileNotFoundException {
+    public void testIntegration() throws FileNotFoundException {
         runTest("integration_",
                 new RoutingMessageReceiver(IntegrationTestInterface1.MANAGER.buildStub(null,
                         IntegrationTestInterface1.MANAGER.buildProxy(null,
