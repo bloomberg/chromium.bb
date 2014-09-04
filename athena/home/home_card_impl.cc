@@ -157,10 +157,7 @@ class HomeCardView : public views::WidgetDelegateView {
                         HomeCard::State to_state,
                         float progress) {
     // TODO(mukai): not clear the focus, but simply close the virtual keyboard.
-    if (from_state != HomeCard::VISIBLE_CENTERED ||
-        to_state != HomeCard::VISIBLE_CENTERED) {
-      GetFocusManager()->ClearFocus();
-    }
+    GetFocusManager()->ClearFocus();
     if (from_state == HomeCard::VISIBLE_CENTERED)
       main_view_->SetLayoutState(1.0f - progress);
     else if (to_state == HomeCard::VISIBLE_CENTERED)

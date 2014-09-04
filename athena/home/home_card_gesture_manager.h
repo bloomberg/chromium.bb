@@ -24,13 +24,13 @@ class ATHENA_EXPORT HomeCardGestureManager {
     // end up with |final_state|.
     virtual void OnGestureEnded(HomeCard::State final_state) = 0;
 
-    // Called when the gesture position is updated so that |delegate| should
-    // update the visual. The arguments represent the state of the current
-    // gesture position is switching from |from_state| to |to_state|, and
-    // the level of the progress is at |progress|, which is 0 to 1.
-    // |from_state| and |to_state| could be same. For example, if the user moves
-    // the finger down to the bottom of the screen, both states are MINIMIZED.
-    // In that case |progress| is 0.
+    // Called when the gesture position is updated so that |delegate| updates
+    // the visual. The arguments indicate that the gesture is switching between
+    // |from_state| and |to_state|, and that the level of progress is at
+    // |progress|, which is in the range (0, 1]. The home card was previously
+    // at either |from_state| or |to_state|. In particular, the home card may
+    // never have been at |from_state|. |from_state| is never equal to
+    // |to_state|.
     virtual void OnGestureProgressed(
         HomeCard::State from_state,
         HomeCard::State to_state,
@@ -51,7 +51,6 @@ class ATHENA_EXPORT HomeCardGestureManager {
   void UpdateScrollState(const ui::GestureEvent& event);
 
   Delegate* delegate_;  // Not owned.
-  HomeCard::State last_state_;
 
   // The offset from the top edge of the home card and the initial position of
   // gesture.

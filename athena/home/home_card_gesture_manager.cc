@@ -12,7 +12,6 @@ namespace athena {
 HomeCardGestureManager::HomeCardGestureManager(Delegate* delegate,
                                                const gfx::Rect& screen_bounds)
     : delegate_(delegate),
-      last_state_(HomeCard::Get()->GetState()),
       y_offset_(0),
       last_estimated_height_(0),
       screen_bounds_(screen_bounds) {}
@@ -75,16 +74,15 @@ void HomeCardGestureManager::UpdateScrollState(const ui::GestureEvent& event) {
 
   if (last_estimated_height_ <= kHomeCardMinimizedHeight) {
     delegate_->OnGestureProgressed(
-        last_state_, HomeCard::VISIBLE_MINIMIZED, 1.0f);
-    last_state_ = HomeCard::VISIBLE_MINIMIZED;
+        HomeCard::VISIBLE_BOTTOM, HomeCard::VISIBLE_MINIMIZED, 1.0f);
     return;
   }
 
-  HomeCard::State state = HomeCard::VISIBLE_BOTTOM;
+  HomeCard::State bigger_state = HomeCard::VISIBLE_BOTTOM;
   float smaller_height = kHomeCardMinimizedHeight;
   float bigger_height = kHomeCardHeight;
   if (last_estimated_height_ > kHomeCardHeight) {
-    state = HomeCard::VISIBLE_CENTERED;
+    bigger_state = HomeCard::VISIBLE_CENTERED;
     smaller_height = kHomeCardHeight;
     bigger_height = screen_bounds_.height();
   }
@@ -94,16 +92,10 @@ void HomeCardGestureManager::UpdateScrollState(const ui::GestureEvent& event) {
       (bigger_height - smaller_height);
   progress = std::min(1.0f, std::max(0.0f, progress));
 
-  if (last_state_ == state) {
-    if (event.details().scroll_y() > 0) {
-      state = static_cast<HomeCard::State>(state + 1);
-      progress = 1.0f - progress;
-    } else {
-      last_state_ = static_cast<HomeCard::State>(last_state_ + 1);
-    }
-  }
-  delegate_->OnGestureProgressed(last_state_, state, progress);
-  last_state_ = state;
+  delegate_->OnGestureProgressed(
+      static_cast<HomeCard::State>(bigger_state + 1),
+      bigger_state,
+      progress);
 }
 
 }  // namespace athena
