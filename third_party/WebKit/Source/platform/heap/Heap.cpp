@@ -665,8 +665,10 @@ void ThreadHeap<Header>::ensureCurrentAllocation(size_t minSize, const GCInfo* g
     if (remainingAllocationSize() >= minSize)
         return;
 
-    if (remainingAllocationSize() > 0)
+    if (remainingAllocationSize() > 0) {
         addToFreeList(currentAllocationPoint(), remainingAllocationSize());
+        setAllocationPoint(0, 0);
+    }
     if (allocateFromFreeList(minSize))
         return;
     if (coalesce(minSize) && allocateFromFreeList(minSize))
