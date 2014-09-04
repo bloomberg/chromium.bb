@@ -1238,8 +1238,6 @@ crbug.com/389594 svg/filters/feBlend-all-modes.html [ NeedsManualRebaseline ]
 # V8 3.28.19
 crbug.com/392762 fast/js/nested-object-gc.html [ Pass Crash ]
 
-crbug.com/313562 [ Win Mac ] fast/repaint/relative-inline-positioned-movement-repaint.html [ NeedsRebaseline ]
-
 # Flaky
 crbug.com/395127 http/tests/w3c/webperf/approved/UserTiming/test_user_timing_measure_navigation_timing.htm [ Failure Pass ]
 
