@@ -578,9 +578,20 @@ void WalletClient::OnURLFetchComplete(
       HandleWalletError(BAD_REQUEST);
       return;
     }
-    // HTTP_OK holds a valid response and HTTP_INTERNAL_SERVER_ERROR holds an
-    // error code and message for the user.
-    case net::HTTP_OK:
+
+    // Valid response.
+    case net::HTTP_OK: {
+      scoped_ptr<base::Value> message_value(base::JSONReader::Read(data));
+      if (message_value.get() &&
+          message_value->IsType(base::Value::TYPE_DICTIONARY)) {
+        response_dict.reset(
+            static_cast<base::DictionaryValue*>(message_value.release()));
+      }
+      break;
+    }
+
+    // Response contains an error to show the user.
+    case net::HTTP_FORBIDDEN:
     case net::HTTP_INTERNAL_SERVER_ERROR: {
       scoped_ptr<base::Value> message_value(base::JSONReader::Read(data));
       if (message_value.get() &&
@@ -588,35 +599,32 @@ void WalletClient::OnURLFetchComplete(
         response_dict.reset(
             static_cast<base::DictionaryValue*>(message_value.release()));
       }
-      if (response_code == net::HTTP_INTERNAL_SERVER_ERROR) {
-        request_type_ = NO_REQUEST;
 
-        std::string error_type_string;
-        if (!response_dict->GetString(kErrorTypeKey, &error_type_string)) {
-          HandleWalletError(UNKNOWN_ERROR);
-          return;
-        }
-        WalletClient::ErrorType error_type =
-            StringToErrorType(error_type_string);
-        if (error_type == BUYER_ACCOUNT_ERROR) {
-          // If the error_type is |BUYER_ACCOUNT_ERROR|, then
-          // message_type_for_buyer field contains more specific information
-          // about the error.
-          std::string message_type_for_buyer_string;
-          if (response_dict->GetString(kMessageTypeForBuyerKey,
-                                       &message_type_for_buyer_string)) {
-            error_type = BuyerErrorStringToErrorType(
-                message_type_for_buyer_string);
-          }
-        }
+      request_type_ = NO_REQUEST;
 
-        HandleWalletError(error_type);
+      std::string error_type_string;
+      if (!response_dict->GetString(kErrorTypeKey, &error_type_string)) {
+        HandleWalletError(UNKNOWN_ERROR);
         return;
       }
-      break;
+      WalletClient::ErrorType error_type = StringToErrorType(error_type_string);
+      if (error_type == BUYER_ACCOUNT_ERROR) {
+        // If the error_type is |BUYER_ACCOUNT_ERROR|, then
+        // message_type_for_buyer field contains more specific information
+        // about the error.
+        std::string message_type_for_buyer_string;
+        if (response_dict->GetString(kMessageTypeForBuyerKey,
+                                     &message_type_for_buyer_string)) {
+          error_type =
+              BuyerErrorStringToErrorType(message_type_for_buyer_string);
+        }
+      }
+
+      HandleWalletError(error_type);
+      return;
     }
 
-    // Anything else is an error.
+    // Handle anything else as a generic error.
     default:
       request_type_ = NO_REQUEST;
       HandleWalletError(NETWORK_ERROR);
