@@ -20,6 +20,10 @@
         'cma/base/buffering_state.cc',
         'cma/base/buffering_state.h',
         'cma/base/cma_logging.h',
+        'cma/base/decoder_buffer_adapter.cc',
+        'cma/base/decoder_buffer_adapter.h',
+        'cma/base/decoder_buffer_base.cc',
+        'cma/base/decoder_buffer_base.h',
       ],
     },
     {
