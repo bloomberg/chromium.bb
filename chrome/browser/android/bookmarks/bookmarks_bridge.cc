@@ -6,6 +6,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/containers/stack_container.h"
+#include "base/i18n/string_compare.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
@@ -40,6 +41,35 @@ class BookmarkNodeCreationTimeCompareFunctor {
     return lhs->date_added().ToJavaTime() > rhs->date_added().ToJavaTime();
   }
 };
+
+class BookmarkTitleComparer {
+ public:
+  explicit BookmarkTitleComparer(const icu::Collator* collator)
+      : collator_(collator) {}
+
+  bool operator()(const BookmarkNode* lhs, const BookmarkNode* rhs) {
+    if (collator_) {
+      return base::i18n::CompareString16WithCollator(
+          collator_, lhs->GetTitle(), rhs->GetTitle()) == UCOL_LESS;
+    } else {
+      return lhs->GetTitle() < rhs->GetTitle();
+    }
+  }
+
+private:
+  const icu::Collator* collator_;
+};
+
+scoped_ptr<icu::Collator> GetICUCollator() {
+  UErrorCode error = U_ZERO_ERROR;
+  scoped_ptr<icu::Collator> collator_;
+  collator_.reset(icu::Collator::createInstance(error));
+  if (U_FAILURE(error))
+    collator_.reset(NULL);
+
+  return collator_.Pass();
+}
+
 }  // namespace
 
 BookmarksBridge::BookmarksBridge(JNIEnv* env,
@@ -119,6 +149,7 @@ ScopedJavaLocalRef<jobject> BookmarksBridge::GetBookmarkByID(JNIEnv* env,
 void BookmarksBridge::GetPermanentNodeIDs(JNIEnv* env,
                                           jobject obj,
                                           jobject j_result_obj) {
+  // TODO(kkimlabs): Remove this function.
   DCHECK(IsLoaded());
 
   base::StackVector<const BookmarkNode*, 8> permanent_nodes;
@@ -141,6 +172,76 @@ void BookmarksBridge::GetPermanentNodeIDs(JNIEnv* env,
       Java_BookmarksBridge_addToBookmarkIdList(
           env, j_result_obj, (*it)->id(), GetBookmarkType(*it));
     }
+  }
+}
+
+void BookmarksBridge::GetTopLevelFolderParentIDs(JNIEnv* env,
+                                                 jobject obj,
+                                                 jobject j_result_obj) {
+  Java_BookmarksBridge_addToBookmarkIdList(
+      env, j_result_obj, bookmark_model_->root_node()->id(),
+      GetBookmarkType(bookmark_model_->root_node()));
+  Java_BookmarksBridge_addToBookmarkIdList(
+      env, j_result_obj, bookmark_model_->mobile_node()->id(),
+      GetBookmarkType(bookmark_model_->mobile_node()));
+  Java_BookmarksBridge_addToBookmarkIdList(
+      env, j_result_obj, bookmark_model_->other_node()->id(),
+      GetBookmarkType(bookmark_model_->other_node()));
+}
+
+void BookmarksBridge::GetTopLevelFolderIDs(JNIEnv* env,
+                                           jobject obj,
+                                           jboolean get_special,
+                                           jboolean get_normal,
+                                           jobject j_result_obj) {
+  DCHECK(IsLoaded());
+  std::vector<const BookmarkNode*> top_level_folders;
+
+  if (get_special) {
+    if (client_->managed_node() &&
+        client_->managed_node()->child_count() > 0) {
+      top_level_folders.push_back(client_->managed_node());
+    }
+    if (partner_bookmarks_shim_->HasPartnerBookmarks()) {
+      top_level_folders.push_back(
+          partner_bookmarks_shim_->GetPartnerBookmarksRoot());
+    }
+  }
+  std::size_t special_count = top_level_folders.size();
+
+  if (get_normal) {
+    DCHECK_EQ(bookmark_model_->root_node()->child_count(), 4);
+
+    top_level_folders.push_back(bookmark_model_->bookmark_bar_node());
+
+    const BookmarkNode* mobile_node = bookmark_model_->mobile_node();
+    for (int i = 0; i < mobile_node->child_count(); ++i) {
+      const BookmarkNode* node = mobile_node->GetChild(i);
+      if (node->is_folder()) {
+        top_level_folders.push_back(node);
+      }
+    }
+
+    const BookmarkNode* other_node = bookmark_model_->other_node();
+    for (int i = 0; i < other_node->child_count(); ++i) {
+      const BookmarkNode* node = other_node->GetChild(i);
+      if (node->is_folder()) {
+        top_level_folders.push_back(node);
+      }
+    }
+
+    scoped_ptr<icu::Collator> collator = GetICUCollator();
+    std::stable_sort(top_level_folders.begin() + special_count,
+                     top_level_folders.end(),
+                     BookmarkTitleComparer(collator.get()));
+  }
+
+  for (std::vector<const BookmarkNode*>::const_iterator it =
+      top_level_folders.begin(); it != top_level_folders.end(); ++it) {
+    Java_BookmarksBridge_addToBookmarkIdList(env,
+                                             j_result_obj,
+                                             (*it)->id(),
+                                             GetBookmarkType(*it));
   }
 }
 

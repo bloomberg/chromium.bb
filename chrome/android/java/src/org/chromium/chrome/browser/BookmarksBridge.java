@@ -179,6 +179,31 @@ public class BookmarksBridge {
     }
 
     /**
+     * @return The top level folder's parents, which are root node, mobile node, and other node.
+     */
+    public List<BookmarkId> getTopLevelFolderParentIDs() {
+        assert mIsNativeBookmarkModelLoaded;
+        List<BookmarkId> result = new ArrayList<BookmarkId>();
+        nativeGetTopLevelFolderParentIDs(mNativeBookmarksBridge, result);
+        return result;
+    }
+
+    /**
+     * @param getSpecial Whether special top folders should be returned.
+     * @param getNormal  Whether normal top folders should be returned.
+     * @return The top level folders. Note that special folders come first and normal top folders
+     *         will be in the alphabetical order. Special top folders are managed bookmark and
+     *         partner bookmark. Normal top folders are desktop permanent folder, and the
+     *         sub-folders of mobile permanent folder and others permanent folder.
+     */
+    public List<BookmarkId> getTopLevelFolderIDs(boolean getSpecial, boolean getNormal) {
+        assert mIsNativeBookmarkModelLoaded;
+        List<BookmarkId> result = new ArrayList<BookmarkId>();
+        nativeGetTopLevelFolderIDs(mNativeBookmarksBridge, getSpecial, getNormal, result);
+        return result;
+    }
+
+    /**
      * Reads sub-folder IDs, sub-bookmark IDs, or both of the given folder.
      *
      * @param getFolders   Whether sub-folders should be returned.
@@ -413,6 +438,10 @@ public class BookmarksBridge {
             int type);
     private native void nativeGetPermanentNodeIDs(long nativeBookmarksBridge,
             List<BookmarkId> bookmarksList);
+    private native void nativeGetTopLevelFolderParentIDs(long nativeBookmarksBridge,
+            List<BookmarkId> bookmarksList);
+    private native void nativeGetTopLevelFolderIDs(long nativeBookmarksBridge, boolean getSpecial,
+            boolean getNormal, List<BookmarkId> bookmarksList);
     private native void nativeGetChildIDs(long nativeBookmarksBridge, long id, int type,
             boolean getFolders, boolean getBookmarks, List<BookmarkId> bookmarksList);
     private native void nativeGetAllBookmarkIDsOrderedByCreationDate(long nativeBookmarksBridge,

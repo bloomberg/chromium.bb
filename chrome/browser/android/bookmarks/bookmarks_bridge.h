@@ -39,6 +39,16 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
                            jobject obj,
                            jobject j_result_obj);
 
+  void GetTopLevelFolderParentIDs(JNIEnv* env,
+                                  jobject obj,
+                                  jobject j_result_obj);
+
+  void GetTopLevelFolderIDs(JNIEnv* env,
+                            jobject obj,
+                            jboolean get_special,
+                            jboolean get_normal,
+                            jobject j_result_obj);
+
   void GetChildIDs(JNIEnv* env,
                    jobject obj,
                    jlong id,
