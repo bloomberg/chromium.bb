@@ -24,6 +24,8 @@ function MediaControls(containerElement, onMediaError) {
   this.onMediaDurationBound_ = this.onMediaDuration_.bind(this);
   this.onMediaProgressBound_ = this.onMediaProgress_.bind(this);
   this.onMediaError_ = onMediaError || function() {};
+
+  this.savedVolume_ = 1;  // 100% volume.
 }
 
 /**
@@ -133,6 +135,9 @@ MediaControls.prototype.enableControls_ = function(selector, on) {
  * Play the media.
  */
 MediaControls.prototype.play = function() {
+  if (!this.media_)
+    return;  // Media is detached.
+
   this.media_.play();
 };
 
@@ -140,6 +145,9 @@ MediaControls.prototype.play = function() {
  * Pause the media.
  */
 MediaControls.prototype.pause = function() {
+  if (!this.media_)
+    return;  // Media is detached.
+
   this.media_.pause();
 };
 
@@ -230,6 +238,9 @@ MediaControls.prototype.displayProgress_ = function(current, duration) {
  * @private
  */
 MediaControls.prototype.onProgressChange_ = function(value) {
+  if (!this.media_)
+    return;  // Media is detached.
+
   if (!this.media_.seekable || !this.media_.duration) {
     console.error('Inconsistent media state');
     return;
@@ -246,7 +257,7 @@ MediaControls.prototype.onProgressChange_ = function(value) {
  */
 MediaControls.prototype.onProgressDrag_ = function(on) {
   if (!this.media_)
-    return;
+    return;  // Media is detached.
 
   if (on) {
     this.resumeAfterDrag_ = this.isPlaying();
@@ -315,6 +326,9 @@ MediaControls.getVolumeLevel_ = function(value) {
  * @private
  */
 MediaControls.prototype.onVolumeChange_ = function(value) {
+  if (!this.media_)
+    return;  // Media is detached.
+
   this.media_.volume = value;
   this.soundButton_.setAttribute('level', MediaControls.getVolumeLevel_(value));
 };
@@ -353,7 +367,7 @@ MediaControls.prototype.attachMedia = function(mediaElement) {
   this.onMediaProgress_();
   if (this.volume_) {
     /* Copy the user selected volume to the new media element. */
-    this.media_.volume = this.volume_.getValue();
+    this.savedVolume_ = this.media_.volume = this.volume_.getValue();
   }
 };
 
@@ -419,6 +433,7 @@ MediaControls.prototype.onMediaDuration_ = function() {
     sliderContainer.classList.add('readonly');
 
   var valueToString = function(value) {
+    var duration = this.media_ ? this.media_.duration : 0;
     return MediaControls.formatTime_(this.media_.duration * value);
   }.bind(this);
 

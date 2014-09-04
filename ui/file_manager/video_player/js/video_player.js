@@ -594,8 +594,10 @@ VideoPlayer.prototype.updateCheckOnCastMenu_ = function() {
  */
 VideoPlayer.prototype.onCurrentCastDisappear_ = function() {
   this.currentCast_ = null;
-  this.currentSession_.removeUpdateListener(this.onCastSessionUpdateBound_);
-  this.currentSession_ = null;
+  if (this.currentSession_) {
+    this.currentSession_.removeUpdateListener(this.onCastSessionUpdateBound_);
+    this.currentSession_ = null;
+  }
   this.controls.showErrorMessage('GALLERY_VIDEO_DECODING_ERROR');
   this.unloadVideo();
 };

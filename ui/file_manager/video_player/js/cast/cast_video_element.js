@@ -261,8 +261,8 @@ CastVideoElement.prototype = {
       this.mediaManager_.getThumbnail()]).
         then(function(results) {
           var url = results[1];
-          var mime = results[2];
-          var thumbnailUrl = results[3];
+          var mime = results[2];  // maybe empty
+          var thumbnailUrl = results[3];  // maybe empty
 
           this.mediaInfo_ = new chrome.cast.media.MediaInfo(url);
           this.mediaInfo_.contentType = mime;

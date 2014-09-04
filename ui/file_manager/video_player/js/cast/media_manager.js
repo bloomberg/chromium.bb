@@ -102,15 +102,18 @@ MediaManager.prototype.getUrl = function() {
  */
 MediaManager.prototype.getMime = function() {
   if (this.cachedDriveProp_)
-    return Promise.resolve(this.cachedDriveProp_.thumbnailUrl);
+    return Promise.resolve(this.cachedDriveProp_.contentMimeType || '');
 
   return new Promise(function(fulfill, reject) {
     chrome.fileBrowserPrivate.getEntryProperties(
         [this.entry_.toURL()], fulfill);
   }.bind(this)).then(function(props) {
-    if (!props || !props[0] || !props[0].contentMimeType) {
-      // TODO(yoshiki): Adds a logic to guess the mime.
+    if (!props || !props[0]) {
       return Promise.reject('Mime fetch failed.');
+    } else if (!props[0].contentMimeType) {
+      // TODO(yoshiki): Adds a logic to guess the mime.
+      this.cachedDriveProp_ = props[0];
+      return '';
     } else {
       this.cachedDriveProp_ = props[0];
       return props[0].contentMimeType;
@@ -125,18 +128,17 @@ MediaManager.prototype.getMime = function() {
  */
 MediaManager.prototype.getThumbnail = function() {
   if (this.cachedDriveProp_)
-    return Promise.resolve(this.cachedDriveProp_.thumbnailUrl);
+    return Promise.resolve(this.cachedDriveProp_.thumbnailUrl || '');
 
   return new Promise(function(fulfill, reject) {
     chrome.fileBrowserPrivate.getEntryProperties(
         [this.entry_.toURL()], fulfill);
   }.bind(this)).then(function(props) {
-    if (!props || !props[0] || !props[0].thumbnailUrl) {
-      // TODO(yoshiki): Adds a logic to guess the mime.
+    if (!props || !props[0]) {
       return Promise.reject('Thumbnail fetch failed.');
     } else {
       this.cachedDriveProp_ = props[0];
-      return props[0].thumbnailUrl;
+      return props[0].thumbnailUrl || '';
     }
   }.bind(this));
 };
