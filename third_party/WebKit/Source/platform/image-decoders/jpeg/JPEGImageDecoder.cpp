@@ -737,7 +737,7 @@ unsigned JPEGImageDecoder::desiredScaleNumerator() const
 
 bool JPEGImageDecoder::canDecodeToYUV() const
 {
-    ASSERT(const_cast<JPEGImageDecoder*>(this)->isSizeAvailable() && m_reader);
+    ASSERT(ImageDecoder::isSizeAvailable() && m_reader);
 
     return m_reader->info()->out_color_space == JCS_YCbCr;
 }
