@@ -784,7 +784,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
 }
 
 // Crashy on mac.  http://crbug.com/38522  Crashy on win too (after 3 years).
-#if defined(OS_MACOSX) || defined(OS_WIN)
+// Flaky timeouts on a MemorySanitizer bot. http://crbug.com/410891
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(MEMORY_SANITIZER)
 #define MAYBE_SingleBeforeUnloadAfterWindowClose \
         DISABLED_SingleBeforeUnloadAfterWindowClose
 #else
