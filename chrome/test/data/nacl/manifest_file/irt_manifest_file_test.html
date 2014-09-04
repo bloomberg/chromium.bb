@@ -40,8 +40,8 @@ function setupTests(tester, plugin) {
   tester.addAsyncTest('Test_00_Init', function(status) {
     plugin.addEventListener('message', function(message_event) {
       this.removeEventListener('message', arguments.callee, false);
-      // When a test succeeds, 'Pass' is returned. We have now three test cases.
-      var golden = ['Pass', 'Pass', 'Pass'];
+      // When a test succeeds, 'Pass' is returned. There are six test cases.
+      var golden = ['Pass', 'Pass', 'Pass', 'Pass', 'Pass', 'Pass'];
       status.assertEqual(message_event.data, golden);
       status.pass();
     }, false);

@@ -18,6 +18,7 @@
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
@@ -26,6 +27,8 @@
 
 
 std::vector<std::string> result;
+
+pp::Instance* g_instance = NULL;
 
 std::string LoadManifestSuccess(TYPE_nacl_irt_query *query_func) {
   struct nacl_irt_resource_open nacl_irt_resource_open;
@@ -112,9 +115,32 @@ std::string LoadManifestNonExistentFile(
   return "Pass";
 }
 
+void RunTests() {
+  result.push_back(LoadManifestSuccess(&__nacl_irt_query));
+  result.push_back(LoadManifestNonExistentEntry(&__nacl_irt_query));
+  result.push_back(LoadManifestNonExistentFile(&__nacl_irt_query));
+}
+
+void PostReply(void* user_data, int32_t status) {
+  pp::VarArray reply = pp::VarArray();
+  for (size_t i = 0; i < result.size(); ++i)
+    reply.Set(i, pp::Var(result[i]));
+  g_instance->PostMessage(reply);
+}
+
+void* RunTestsOnBackgroundThread(void *thread_id) {
+  RunTests();
+  pp::Module::Get()->core()->CallOnMainThread(
+      0, pp::CompletionCallback(&PostReply, NULL));
+  return NULL;
+}
+
 class TestInstance : public pp::Instance {
  public:
-  explicit TestInstance(PP_Instance instance) : pp::Instance(instance) {}
+  explicit TestInstance(PP_Instance instance) : pp::Instance(instance) {
+    g_instance = this;
+  }
+
   virtual ~TestInstance() {}
   virtual void HandleMessage(const pp::Var& var_message) {
     if (!var_message.is_string()) {
@@ -123,12 +149,16 @@ class TestInstance : public pp::Instance {
     if (var_message.AsString() != "hello") {
       return;
     }
-    pp::VarArray reply = pp::VarArray();
-    for (size_t i = 0; i < result.size(); ++i) {
-      reply.Set(i, pp::Var(result[i]));
-    }
-    PostMessage(reply);
+
+    // We test the manifest routines again after PPAPI has initialized to
+    // ensure that they still work.
+    //
+    // irt_open_resource() isn't allowed to be called on the main thread once
+    // pepper starts, so these tests must happen on a background thread.
+    pthread_create(&thread_, NULL, &RunTestsOnBackgroundThread, NULL);
   }
+ private:
+  pthread_t thread_;
 };
 
 class TestModule : public pp::Module {
@@ -148,8 +178,6 @@ Module* CreateModule() {
 }
 
 int main() {
-  result.push_back(LoadManifestSuccess(&__nacl_irt_query));
-  result.push_back(LoadManifestNonExistentEntry(&__nacl_irt_query));
-  result.push_back(LoadManifestNonExistentFile(&__nacl_irt_query));
+  RunTests();
   return PpapiPluginMain();
 }
