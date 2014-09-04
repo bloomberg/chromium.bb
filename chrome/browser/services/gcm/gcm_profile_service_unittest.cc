@@ -61,6 +61,7 @@ class GCMProfileServiceTest : public testing::Test {
 
   void CreateGCMProfileService();
   void SignIn();
+  void SignOut();
 
   void RegisterAndWaitForCompletion(const std::vector<std::string>& sender_ids);
   void UnregisterAndWaitForCompletion();
@@ -141,6 +142,13 @@ void GCMProfileServiceTest::SignIn() {
   base::RunLoop().RunUntilIdle();
 }
 
+void GCMProfileServiceTest::SignOut() {
+  FakeSigninManager* signin_manager = static_cast<FakeSigninManager*>(
+      SigninManagerFactory::GetInstance()->GetForProfile(profile_.get()));
+  signin_manager->SignOut(signin_metrics::SIGNOUT_TEST);
+  base::RunLoop().RunUntilIdle();
+}
+
 void GCMProfileServiceTest::RegisterAndWaitForCompletion(
     const std::vector<std::string>& sender_ids) {
   base::RunLoop run_loop;
@@ -215,6 +223,18 @@ TEST_F(GCMProfileServiceTest, CreateGCMProfileServiceAfterSignIn) {
   // GCMProfileService that hosts the GCMDriver is not created yet.
 
   CreateGCMProfileService();
+  EXPECT_TRUE(driver()->IsStarted());
+}
+
+TEST_F(GCMProfileServiceTest, SignInAgain) {
+  CreateGCMProfileService();
+  SignIn();
+  EXPECT_TRUE(driver()->IsStarted());
+
+  SignOut();
+  EXPECT_FALSE(driver()->IsStarted());
+
+  SignIn();
   EXPECT_TRUE(driver()->IsStarted());
 }
 

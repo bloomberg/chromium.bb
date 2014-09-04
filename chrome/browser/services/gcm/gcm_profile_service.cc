@@ -111,6 +111,8 @@ void GCMProfileService::IdentityObserver::OnActiveAccountLogin() {
 }
 
 void GCMProfileService::IdentityObserver::OnActiveAccountLogout() {
+  account_id_.clear();
+
   // Check is necessary to not crash browser_tests.
   if (gcm_account_tracker_)
     gcm_account_tracker_->Stop();
