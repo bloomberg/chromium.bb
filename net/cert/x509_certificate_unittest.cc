@@ -323,6 +323,22 @@ TEST(X509CertificateTest, SerialNumbers) {
                      paypal_null_serial, sizeof(paypal_null_serial)) == 0);
 }
 
+TEST(X509CertificateTest, SHA256FingerprintsCorrectly) {
+  scoped_refptr<X509Certificate> google_cert(X509Certificate::CreateFromBytes(
+      reinterpret_cast<const char*>(google_der), sizeof(google_der)));
+
+  static const uint8 google_sha256_fingerprint[32] = {
+      0x21, 0xaf, 0x58, 0x74, 0xea, 0x6b, 0xad, 0xbd, 0xe4, 0xb3, 0xb1,
+      0xaa, 0x53, 0x32, 0x80, 0x8f, 0xbf, 0x8a, 0x24, 0x7d, 0x98, 0xec,
+      0x7f, 0x77, 0x49, 0x38, 0x42, 0x81, 0x26, 0x7f, 0xed, 0x38};
+
+  SHA256HashValue fingerprint =
+      X509Certificate::CalculateFingerprint256(google_cert->os_cert_handle());
+
+  for (size_t i = 0; i < 32; ++i)
+    EXPECT_EQ(google_sha256_fingerprint[i], fingerprint.data[i]);
+}
+
 TEST(X509CertificateTest, CAFingerprints) {
   base::FilePath certs_dir = GetTestCertsDirectory();
 

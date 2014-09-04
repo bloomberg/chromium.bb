@@ -313,6 +313,27 @@ SHA1HashValue X509Certificate::CalculateFingerprint(
   return sha1;
 }
 
+// static
+SHA256HashValue X509Certificate::CalculateFingerprint256(OSCertHandle cert) {
+  DCHECK(NULL != cert->pbCertEncoded);
+  DCHECK_NE(static_cast<DWORD>(0), cert->cbCertEncoded);
+
+  BOOL rv;
+  SHA256HashValue sha256;
+  DWORD sha256_size = sizeof(sha256.data);
+  rv = CryptHashCertificate(NULL,
+                            CALG_SHA_256,
+                            0,
+                            cert->pbCertEncoded,
+                            cert->cbCertEncoded,
+                            sha256.data,
+                            &sha256_size);
+  DCHECK(rv && sha256_size == sizeof(sha256.data));
+  if (!rv)
+    memset(sha256.data, 0, sizeof(sha256.data));
+  return sha256;
+}
+
 // TODO(wtc): This function is implemented with NSS low-level hash
 // functions to ensure it is fast.  Reimplement this function with
 // CryptoAPI.  May need to cache the HCRYPTPROV to reduce the overhead.

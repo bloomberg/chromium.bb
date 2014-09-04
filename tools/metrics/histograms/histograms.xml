@@ -14188,7 +14188,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.CertificateTransparency.MainFrameValidSCTCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>eranm@chromium.org</owner>
   <summary>
     Number of valid Signed Certificate Timestamps (SCTs) present for the
     main-frame resource. Emitted every time a main-frame resource is fetched.
@@ -14196,7 +14196,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.CertificateTransparency.SCTOrigin" enum="SCTOrigin">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>eranm@chromium.org</owner>
   <summary>
     The origin breakdown of Signed Certificate Timestamps (SCTs). Emitted once
     for every SCT when first validated, which means 0 or more times during every
@@ -14205,7 +14205,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.CertificateTransparency.SCTsPerConnection">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>eranm@chromium.org</owner>
   <summary>
     The number of Signed Certificate Timestamps (SCTs) that were available for
     each SSL connection, including SCTs embedded in the certificate. This metric
@@ -14215,7 +14215,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.CertificateTransparency.SCTStatus" enum="SCTVerifyStatus">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>eranm@chromium.org</owner>
   <summary>
     Breakdown of Signed Certificate Timestamps (SCTs) validation status. Emitted
     once for every SCT when first validated, which means 0 or more times during
@@ -17356,6 +17356,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Time from when the Connect() starts until it completes for google.com and
     any subdomain of it. This only includes users not in a 50% field trail that
     disables revocation for certificate pinned sites.
+  </summary>
+</histogram>
+
+<histogram name="Net.SSL_EVCertificateInWhitelist" enum="Boolean">
+  <owner>eranm@chromium.org</owner>
+  <owner>rsleevi@chromium.org</owner>
+  <summary>
+    Whether an EV certificate is present in the Certificate Transparency
+    whitelist. Emitted once for every EV certificate encountered (during SSL
+    connection establishment), but only if the client has a valid whitelist.
   </summary>
 </histogram>
 

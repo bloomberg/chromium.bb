@@ -374,6 +374,24 @@ SHA1HashValue X509Certificate::CalculateFingerprint(
 }
 
 // static
+SHA256HashValue X509Certificate::CalculateFingerprint256(OSCertHandle cert) {
+  SHA256HashValue sha256;
+  memset(sha256.data, 0, sizeof(sha256.data));
+
+  CSSM_DATA cert_data;
+  OSStatus status = SecCertificateGetData(cert, &cert_data);
+  if (status)
+    return sha256;
+
+  DCHECK(cert_data.Data);
+  DCHECK_NE(cert_data.Length, 0U);
+
+  CC_SHA256(cert_data.Data, cert_data.Length, sha256.data);
+
+  return sha256;
+}
+
+// static
 SHA1HashValue X509Certificate::CalculateCAFingerprint(
     const OSCertHandles& intermediates) {
   SHA1HashValue sha1;
