@@ -1150,22 +1150,17 @@ void CompositedLayerMapping::updateScrollingBlockSelection()
 
 void CompositedLayerMapping::updateDrawsContent()
 {
+    bool hasPaintedContent = containsPaintedContent();
+    m_graphicsLayer->setDrawsContent(hasPaintedContent);
+
     if (m_scrollingLayer) {
-        // We don't have to consider overflow controls, because we know that the scrollbars are drawn elsewhere.
-        // m_graphicsLayer only needs backing store if the non-scrolling parts (background, outlines, borders, shadows etc) need to paint.
         // m_scrollingLayer never has backing store.
         // m_scrollingContentsLayer only needs backing store if the scrolled contents need to paint.
-        bool hasNonScrollingPaintedContent = m_owningLayer.hasVisibleContent() && m_owningLayer.hasBoxDecorationsOrBackground();
-        m_graphicsLayer->setDrawsContent(hasNonScrollingPaintedContent);
-
         m_scrollingContentsAreEmpty = !m_owningLayer.hasVisibleContent() || !(renderer()->hasBackground() || paintsChildren());
         m_scrollingContentsLayer->setDrawsContent(!m_scrollingContentsAreEmpty);
-
         updateScrollingBlockSelection();
-        return;
     }
 
-    bool hasPaintedContent = containsPaintedContent();
     if (hasPaintedContent && isAcceleratedCanvas(renderer())) {
         CanvasRenderingContext* context = toHTMLCanvasElement(renderer()->node())->renderingContext();
         // Content layer may be null if context is lost.
@@ -1179,7 +1174,6 @@ void CompositedLayerMapping::updateDrawsContent()
     }
 
     // FIXME: we could refine this to only allocate backings for one of these layers if possible.
-    m_graphicsLayer->setDrawsContent(hasPaintedContent);
     if (m_foregroundLayer)
         m_foregroundLayer->setDrawsContent(hasPaintedContent);
 

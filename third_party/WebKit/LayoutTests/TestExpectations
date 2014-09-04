@@ -1,3 +1,20 @@
+crbug.com/409593 compositing/overflow/selection-gaps-after-removing-scrolling-contents.html [ NeedsRebaseline ]
+crbug.com/409593 compositing/overflow/selection-gaps-toggling.html [ NeedsRebaseline ]
+crbug.com/409593 compositing/overflow/selection-gaps-toggling-with-scrolling-contents.html [ NeedsRebaseline ]
+crbug.com/409593 virtual/gpu/compositedscrolling/overflow/selection-gaps-after-removing-scrolling-contents.html [ NeedsRebaseline ]
+crbug.com/409593 virtual/gpu/compositedscrolling/overflow/selection-gaps-toggling.html [ NeedsRebaseline ]
+crbug.com/409593 virtual/gpu/compositedscrolling/overflow/selection-gaps-toggling-with-scrolling-contents.html  [ NeedsRebaseline ]
+crbug.com/409593 virtual/gpu/compositedscrolling/overflow/content-gains-scrollbars.html [ NeedsRebaseline ]
+crbug.com/409593 virtual/gpu/compositedscrolling/overflow/overflow-auto-with-touch.html [ NeedsRebaseline ]
+crbug.com/409593 virtual/gpu/compositedscrolling/overflow/overflow-auto-with-touch-toggle.html [ NeedsRebaseline ]
+crbug.com/409593 virtual/gpu/compositedscrolling/overflow/overflow-overlay-with-touch.html [ NeedsRebaseline ]
+crbug.com/409593 virtual/gpu/compositedscrolling/overflow/overflow-scrollbar-layers.html [ NeedsRebaseline ]
+crbug.com/409593 virtual/gpu/compositedscrolling/overflow/scrolling-content-clip-to-viewport.html [ NeedsRebaseline ]
+crbug.com/409593 virtual/gpu/compositedscrolling/overflow/updating-scrolling-content.html  [ NeedsRebaseline ]
+crbug.com/409593 compositing/overflow/scrolling-content-clip-to-viewport.html [ NeedsRebaseline ]
+crbug.com/409593 compositing/overflow/updating-scrolling-content.html [ NeedsRebaseline ]
+crbug.com/409593 compositing/squashing/composited-bounds-for-negative-z.html [ NeedsRebaseline ]
+
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
 
