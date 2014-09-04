@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import datetime
 import mox
 import multiprocessing
 import os
@@ -22,6 +21,8 @@ from chromite.lib.paygen import gslib
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import unittest_lib
 
+# We access a lot of protected members during testing.
+# pylint: disable-msg=W0212
 
 class GSLockMockNotLocked(unittest_lib.ContextManagerObj):
   """This is a helper class for mocking out GSLocks which get the lock."""
@@ -98,7 +99,6 @@ def _InProcessDataUpdate(lock_uri_data_uri):
   Returns:
     boolean describing if this method got the lock.
   """
-
   lock_uri, data_uri = lock_uri_data_uri
 
   # Keep trying until the lock is acquired.
@@ -152,31 +152,17 @@ class GSLockTest(mox.MoxTestBase):
     socket.gethostname().MultipleTimes().AndReturn('TestHost')
     self.mox.ReplayAll()
 
-    # We want to make sure that probing the lock's last modified time does not
-    # have detrimental effect on the internal state of the lock object, hence
-    # testing w/ and w/o probing.
-    for probe_last_modified in (False, True):
-      lock = gslock.Lock(self.lock_uri)
+    lock = gslock.Lock(self.lock_uri)
 
-      self.assertFalse(gslib.Exists(self.lock_uri))
-      if probe_last_modified:
-        self.assertRaises(gslock.LockProbeError, lock.LastModified)
-      time_before = datetime.datetime.utcnow()
-      lock.Acquire()
-      time_after = datetime.datetime.utcnow()
-      self.assertTrue(gslib.Exists(self.lock_uri))
-      if probe_last_modified:
-        modified = lock.LastModified()
-        self.assertGreater(modified, time_before)
-        self.assertLess(modified, time_after)
+    self.assertFalse(gslib.Exists(self.lock_uri))
+    lock.Acquire()
+    self.assertTrue(gslib.Exists(self.lock_uri))
 
-      contents = gslib.Cat(self.lock_uri)
-      self.assertTrue(contents.startswith("('TestHost', "))
+    contents = gslib.Cat(self.lock_uri)
+    self.assertTrue(contents.startswith("('TestHost', "))
 
-      lock.Release()
-      self.assertFalse(gslib.Exists(self.lock_uri))
-      if probe_last_modified:
-        self.assertRaises(gslock.LockProbeError, lock.LastModified)
+    lock.Release()
+    self.assertFalse(gslib.Exists(self.lock_uri))
 
     self.mox.VerifyAll()
 
@@ -209,52 +195,25 @@ class GSLockTest(mox.MoxTestBase):
   def testLockConflict(self):
     """Test lock conflict."""
 
-    for probe_last_modified in (False, True):
-      lock1 = gslock.Lock(self.lock_uri)
-      lock2 = gslock.Lock(self.lock_uri)
+    lock1 = gslock.Lock(self.lock_uri)
+    lock2 = gslock.Lock(self.lock_uri)
 
-      if probe_last_modified:
-        self.assertRaises(gslock.LockProbeError, lock1.LastModified)
-        self.assertRaises(gslock.LockProbeError, lock2.LastModified)
+    # Manually lock 1, and ensure lock2 can't lock.
+    lock1.Acquire()
+    self.assertRaises(gslock.LockNotAcquired, lock2.Acquire)
+    lock1.Release()
 
-      # Manually lock 1, and ensure lock2 can't lock
-      time_before = datetime.datetime.utcnow()
-      lock1.Acquire()
-      time_after = datetime.datetime.utcnow()
-      if probe_last_modified:
-        modified1 = lock1.LastModified()
-        modified2 = lock2.LastModified()
-        self.assertEqual(modified1, modified2)
-        self.assertGreater(modified1, time_before)
-        self.assertLess(modified1, time_after)
-      self.assertRaises(gslock.LockNotAcquired, lock2.Acquire)
-      lock1.Release()
+    # Use a with clause on 2, and ensure 1 can't lock.
+    with lock2:
+      self.assertRaises(gslock.LockNotAcquired, lock1.Acquire)
 
-      # Use a with clause on 2, and ensure 1 can't lock
-      time_before = datetime.datetime.utcnow()
-      with lock2:
-        time_after = datetime.datetime.utcnow()
-        if probe_last_modified:
-          modified1 = lock1.LastModified()
-          modified2 = lock2.LastModified()
-          self.assertEqual(modified1, modified2)
-          self.assertGreater(modified2, time_before)
-          self.assertLess(modified2, time_after)
-        self.assertRaises(gslock.LockNotAcquired, lock1.Acquire)
+    # Ensure we can renew a given lock.
+    lock1.Acquire()
+    lock1.Renew()
+    lock1.Release()
 
-      # Ensure we can renew a given lock
-      lock1.Acquire()
-      time_before = datetime.datetime.utcnow()
-      lock1.Renew()
-      time_after = datetime.datetime.utcnow()
-      if probe_last_modified:
-        modified1 = lock1.LastModified()
-        self.assertGreater(modified1, time_before)
-        self.assertLess(modified1, time_after)
-      lock1.Release()
-
-      # Ensure we get an error renewing a lock we don't hold
-      self.assertRaises(gslock.LockNotAcquired, lock1.Renew)
+    # Ensure we get an error renewing a lock we don't hold.
+    self.assertRaises(gslock.LockNotAcquired, lock1.Renew)
 
   @cros_test_lib.NetworkTest()
   def testLockTimeout(self):
