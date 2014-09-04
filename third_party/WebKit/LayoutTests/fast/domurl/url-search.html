@@ -16,9 +16,11 @@ test(function() {
 
     url.search = '';
     assert_equals(url.search, '');
+    assert_equals(url.toString(), 'http://www.domain.com/');
 
     url.search = '?';
     assert_equals(url.search, '');
+    assert_equals(url.toString(), 'http://www.domain.com/');
 
     url.search = 'a';
     assert_equals(url.search, '?a');

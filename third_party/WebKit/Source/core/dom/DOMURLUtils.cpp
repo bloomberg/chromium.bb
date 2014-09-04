@@ -121,7 +121,15 @@ void DOMURLUtils::setSearch(const String& value)
     KURL kurl = url();
     if (!kurl.isValid())
         return;
-    kurl.setQuery(value);
+
+    // FIXME: have KURL do this clearing of the query component
+    // instead, if practical. Will require addressing
+    // http://crbug.com/108690, for one.
+    if (value[0] == '?')
+        kurl.setQuery(value.length() == 1 ? String() : value.substring(1));
+    else
+        kurl.setQuery(value.isEmpty() ? String() : value);
+
     setURL(kurl);
 }
 
@@ -131,10 +139,12 @@ void DOMURLUtils::setHash(const String& value)
     if (kurl.isNull())
         return;
 
+    // FIXME: have KURL handle the clearing of the fragment component
+    // on the same input.
     if (value[0] == '#')
-        kurl.setFragmentIdentifier(value.substring(1));
+        kurl.setFragmentIdentifier(value.length() == 1 ? String() : value.substring(1));
     else
-        kurl.setFragmentIdentifier(value);
+        kurl.setFragmentIdentifier(value.isEmpty() ? String() : value);
 
     setURL(kurl);
 }

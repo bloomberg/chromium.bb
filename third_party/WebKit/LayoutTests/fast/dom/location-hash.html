@@ -79,6 +79,11 @@
             shouldBe('window.location.hash', '#foo');
             shouldBe("window.location == originalLocation + '#foo'", true);
             window.location.hash = '';
+            shouldBe('window.location.hash', '');
+            shouldBe("window.location == originalLocation + '#'", true);
+            window.location.hash = '#';
+            shouldBe('window.location.hash', '');
+            shouldBe("window.location == originalLocation + '#'", true);
             if (numErrors == 0)
                 print("SUCCESS!", "green")
             else
