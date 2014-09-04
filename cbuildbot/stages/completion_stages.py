@@ -46,6 +46,8 @@ def CreateBuildFailureMessage(overlays, builder_name, dashboard_url):
       ex_str = x.exception.ToSummaryString()
     else:
       ex_str = str(x.exception)
+    # Truncate displayed failure reason to 1000 characters.
+    ex_str = ex_str[:200]
     details.append('The %s stage failed: %s' % (x.failed_stage, ex_str))
   if not details:
     details = ['cbuildbot failed']
