@@ -48,8 +48,8 @@ void V8DeviceOrientationEvent::initDeviceOrientationEventMethodCustom(const v8::
     double gamma = info[5]->NumberValue();
     bool absoluteProvided = !isUndefinedOrNull(info[6]);
     bool absolute = info[6]->BooleanValue();
-    RefPtrWillBeRawPtr<DeviceOrientationData> orientation = DeviceOrientationData::create(alphaProvided, alpha, betaProvided, beta, gammaProvided, gamma, absoluteProvided, absolute);
-    impl->initDeviceOrientationEvent(type, bubbles, cancelable, orientation.get());
+    DeviceOrientationData* orientation = DeviceOrientationData::create(alphaProvided, alpha, betaProvided, beta, gammaProvided, gamma, absoluteProvided, absolute);
+    impl->initDeviceOrientationEvent(type, bubbles, cancelable, orientation);
 }
 
 } // namespace blink

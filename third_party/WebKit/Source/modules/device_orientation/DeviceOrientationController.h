@@ -44,7 +44,7 @@ private:
 
     DeviceOrientationData* lastData() const;
 
-    RefPtrWillBeMember<DeviceOrientationData> m_overrideOrientationData;
+    PersistentWillBeMember<DeviceOrientationData> m_overrideOrientationData;
 };
 
 } // namespace blink

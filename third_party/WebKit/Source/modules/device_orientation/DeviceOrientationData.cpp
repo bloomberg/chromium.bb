@@ -29,17 +29,17 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<DeviceOrientationData> DeviceOrientationData::create()
+DeviceOrientationData* DeviceOrientationData::create()
 {
-    return adoptRefWillBeNoop(new DeviceOrientationData);
+    return new DeviceOrientationData;
 }
 
-PassRefPtrWillBeRawPtr<DeviceOrientationData> DeviceOrientationData::create(bool canProvideAlpha, double alpha, bool canProvideBeta, double beta, bool canProvideGamma, double gamma, bool canProvideAbsolute, bool absolute)
+DeviceOrientationData* DeviceOrientationData::create(bool canProvideAlpha, double alpha, bool canProvideBeta, double beta, bool canProvideGamma, double gamma, bool canProvideAbsolute, bool absolute)
 {
-    return adoptRefWillBeNoop(new DeviceOrientationData(canProvideAlpha, alpha, canProvideBeta, beta, canProvideGamma, gamma, canProvideAbsolute, absolute));
+    return new DeviceOrientationData(canProvideAlpha, alpha, canProvideBeta, beta, canProvideGamma, gamma, canProvideAbsolute, absolute);
 }
 
-PassRefPtrWillBeRawPtr<DeviceOrientationData> DeviceOrientationData::create(const WebDeviceOrientationData& data)
+DeviceOrientationData* DeviceOrientationData::create(const WebDeviceOrientationData& data)
 {
     return DeviceOrientationData::create(data.hasAlpha, data.alpha, data.hasBeta, data.beta, data.hasGamma, data.gamma, data.hasAbsolute, data.absolute);
 }

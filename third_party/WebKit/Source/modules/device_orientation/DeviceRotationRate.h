@@ -29,16 +29,15 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/device_orientation/DeviceMotionData.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
-class DeviceRotationRate : public RefCountedWillBeGarbageCollected<DeviceRotationRate>, public ScriptWrappable {
+class DeviceRotationRate FINAL : public GarbageCollected<DeviceRotationRate>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<DeviceRotationRate> create(PassRefPtrWillBeRawPtr<DeviceMotionData::RotationRate> rotationRate)
+    static DeviceRotationRate* create(DeviceMotionData::RotationRate* rotationRate)
     {
-        return adoptRefWillBeNoop(new DeviceRotationRate(rotationRate));
+        return new DeviceRotationRate(rotationRate);
     }
     void trace(Visitor*);
 
@@ -47,9 +46,9 @@ public:
     double gamma(bool& isNull) const;
 
 private:
-    DeviceRotationRate(PassRefPtrWillBeRawPtr<DeviceMotionData::RotationRate>);
+    explicit DeviceRotationRate(DeviceMotionData::RotationRate*);
 
-    RefPtrWillBeMember<DeviceMotionData::RotationRate> m_rotationRate;
+    Member<DeviceMotionData::RotationRate> m_rotationRate;
 };
 
 } // namespace blink

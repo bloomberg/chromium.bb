@@ -34,7 +34,7 @@ namespace blink {
 
 namespace {
 
-PassRefPtrWillBeRawPtr<DeviceMotionData::Acceleration> readAccelerationArgument(v8::Local<v8::Value> value, v8::Isolate* isolate)
+DeviceMotionData::Acceleration* readAccelerationArgument(v8::Local<v8::Value> value, v8::Isolate* isolate)
 {
     if (isUndefinedOrNull(value))
         return nullptr;
@@ -66,7 +66,7 @@ PassRefPtrWillBeRawPtr<DeviceMotionData::Acceleration> readAccelerationArgument(
     return DeviceMotionData::Acceleration::create(canProvideX, x, canProvideY, y, canProvideZ, z);
 }
 
-PassRefPtrWillBeRawPtr<DeviceMotionData::RotationRate> readRotationRateArgument(v8::Local<v8::Value> value, v8::Isolate* isolate)
+DeviceMotionData::RotationRate* readRotationRateArgument(v8::Local<v8::Value> value, v8::Isolate* isolate)
 {
     if (isUndefinedOrNull(value))
         return nullptr;
@@ -107,13 +107,13 @@ void V8DeviceMotionEvent::initDeviceMotionEventMethodCustom(const v8::FunctionCa
     TOSTRING_VOID(V8StringResource<>, type, info[0]);
     bool bubbles = info[1]->BooleanValue();
     bool cancelable = info[2]->BooleanValue();
-    RefPtrWillBeRawPtr<DeviceMotionData::Acceleration> acceleration = readAccelerationArgument(info[3], isolate);
-    RefPtrWillBeRawPtr<DeviceMotionData::Acceleration> accelerationIncludingGravity = readAccelerationArgument(info[4], isolate);
-    RefPtrWillBeRawPtr<DeviceMotionData::RotationRate> rotationRate = readRotationRateArgument(info[5], isolate);
+    DeviceMotionData::Acceleration* acceleration = readAccelerationArgument(info[3], isolate);
+    DeviceMotionData::Acceleration* accelerationIncludingGravity = readAccelerationArgument(info[4], isolate);
+    DeviceMotionData::RotationRate* rotationRate = readRotationRateArgument(info[5], isolate);
     bool intervalProvided = !isUndefinedOrNull(info[6]);
     double interval = info[6]->NumberValue();
-    RefPtrWillBeRawPtr<DeviceMotionData> deviceMotionData = DeviceMotionData::create(acceleration.release(), accelerationIncludingGravity.release(), rotationRate.release(), intervalProvided, interval);
-    impl->initDeviceMotionEvent(type, bubbles, cancelable, deviceMotionData.get());
+    DeviceMotionData* deviceMotionData = DeviceMotionData::create(acceleration, accelerationIncludingGravity, rotationRate, intervalProvided, interval);
+    impl->initDeviceMotionEvent(type, bubbles, cancelable, deviceMotionData);
 }
 
 } // namespace blink

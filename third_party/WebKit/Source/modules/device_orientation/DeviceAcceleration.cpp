@@ -28,7 +28,7 @@
 
 namespace blink {
 
-DeviceAcceleration::DeviceAcceleration(PassRefPtrWillBeRawPtr<DeviceMotionData::Acceleration> acceleration)
+DeviceAcceleration::DeviceAcceleration(DeviceMotionData::Acceleration* acceleration)
     : m_acceleration(acceleration)
 {
     ScriptWrappable::init(this);

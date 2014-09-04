@@ -27,19 +27,17 @@
 #define DeviceMotionData_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
 class WebDeviceMotionData;
 
-class DeviceMotionData : public RefCountedWillBeGarbageCollected<DeviceMotionData> {
+class DeviceMotionData FINAL : public GarbageCollected<DeviceMotionData> {
 public:
 
-    class Acceleration : public RefCountedWillBeGarbageCollected<DeviceMotionData::Acceleration> {
+    class Acceleration FINAL : public GarbageCollected<DeviceMotionData::Acceleration> {
     public:
-        static PassRefPtrWillBeRawPtr<Acceleration> create(bool canProvideX, double x, bool canProvideY, double y, bool canProvideZ, double z);
+        static Acceleration* create(bool canProvideX, double x, bool canProvideY, double y, bool canProvideZ, double z);
         void trace(Visitor*) { }
 
         bool canProvideX() const { return m_canProvideX; }
@@ -62,9 +60,9 @@ public:
         bool m_canProvideZ;
     };
 
-    class RotationRate : public RefCountedWillBeGarbageCollected<DeviceMotionData::RotationRate> {
+    class RotationRate FINAL : public GarbageCollected<DeviceMotionData::RotationRate> {
     public:
-        static PassRefPtrWillBeRawPtr<RotationRate> create(bool canProvideAlpha, double alpha, bool canProvideBeta,  double beta, bool canProvideGamma, double gamma);
+        static RotationRate* create(bool canProvideAlpha, double alpha, bool canProvideBeta,  double beta, bool canProvideGamma, double gamma);
         void trace(Visitor*) { }
 
         bool canProvideAlpha() const { return m_canProvideAlpha; }
@@ -87,14 +85,14 @@ public:
         bool m_canProvideGamma;
     };
 
-    static PassRefPtrWillBeRawPtr<DeviceMotionData> create();
-    static PassRefPtrWillBeRawPtr<DeviceMotionData> create(
-        PassRefPtrWillBeRawPtr<Acceleration>,
-        PassRefPtrWillBeRawPtr<Acceleration> accelerationIncludingGravity,
-        PassRefPtrWillBeRawPtr<RotationRate>,
+    static DeviceMotionData* create();
+    static DeviceMotionData* create(
+        Acceleration*,
+        Acceleration* accelerationIncludingGravity,
+        RotationRate*,
         bool canProvideInterval,
         double interval);
-    static PassRefPtrWillBeRawPtr<DeviceMotionData> create(const WebDeviceMotionData&);
+    static DeviceMotionData* create(const WebDeviceMotionData&);
     void trace(Visitor*);
 
     Acceleration* acceleration() const { return m_acceleration.get(); }
@@ -108,11 +106,11 @@ public:
 
 private:
     DeviceMotionData();
-    DeviceMotionData(PassRefPtrWillBeRawPtr<Acceleration>, PassRefPtrWillBeRawPtr<Acceleration> accelerationIncludingGravity, PassRefPtrWillBeRawPtr<RotationRate>, bool canProvideInterval, double interval);
+    DeviceMotionData(Acceleration*, Acceleration* accelerationIncludingGravity, RotationRate*, bool canProvideInterval, double interval);
 
-    RefPtrWillBeMember<Acceleration> m_acceleration;
-    RefPtrWillBeMember<Acceleration> m_accelerationIncludingGravity;
-    RefPtrWillBeMember<RotationRate> m_rotationRate;
+    Member<Acceleration> m_acceleration;
+    Member<Acceleration> m_accelerationIncludingGravity;
+    Member<RotationRate> m_rotationRate;
     bool m_canProvideInterval;
     double m_interval;
 };

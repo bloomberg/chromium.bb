@@ -63,7 +63,7 @@ private:
     DeviceOrientationEvent();
     DeviceOrientationEvent(const AtomicString& eventType, DeviceOrientationData*);
 
-    RefPtrWillBeMember<DeviceOrientationData> m_orientation;
+    PersistentWillBeMember<DeviceOrientationData> m_orientation;
 };
 
 DEFINE_TYPE_CASTS(DeviceOrientationEvent, Event, event, event->interfaceName() == EventNames::DeviceOrientationEvent, event.interfaceName() == EventNames::DeviceOrientationEvent);

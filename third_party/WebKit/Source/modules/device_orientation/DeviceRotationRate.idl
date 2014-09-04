@@ -24,7 +24,7 @@
  */
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
     NoInterfaceObject
 ] interface DeviceRotationRate {
     readonly attribute double? alpha;

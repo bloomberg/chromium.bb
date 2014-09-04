@@ -65,10 +65,10 @@ private:
     DeviceMotionEvent();
     DeviceMotionEvent(const AtomicString& eventType, DeviceMotionData*);
 
-    RefPtrWillBeMember<DeviceMotionData> m_deviceMotionData;
-    RefPtrWillBeMember<DeviceAcceleration> m_acceleration;
-    RefPtrWillBeMember<DeviceAcceleration> m_accelerationIncludingGravity;
-    RefPtrWillBeMember<DeviceRotationRate> m_rotationRate;
+    PersistentWillBeMember<DeviceMotionData> m_deviceMotionData;
+    PersistentWillBeMember<DeviceAcceleration> m_acceleration;
+    PersistentWillBeMember<DeviceAcceleration> m_accelerationIncludingGravity;
+    PersistentWillBeMember<DeviceRotationRate> m_rotationRate;
 };
 
 DEFINE_TYPE_CASTS(DeviceMotionEvent, Event, event, event->interfaceName() == EventNames::DeviceMotionEvent, event.interfaceName() == EventNames::DeviceMotionEvent);

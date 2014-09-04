@@ -62,7 +62,7 @@ private:
     virtual void startListening() OVERRIDE;
     virtual void stopListening() OVERRIDE;
 
-    RefPtrWillBePersistent<DeviceMotionData> m_lastDeviceMotionData;
+    Persistent<DeviceMotionData> m_lastDeviceMotionData;
 };
 
 } // namespace blink
