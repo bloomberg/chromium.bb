@@ -4,6 +4,7 @@ Version: 1.3.1
 License: Custom license
 License File: LICENSE.txt
 Security Critical: yes
+License Android Compatible: yes
 
 Description:
 This consists of the components:
