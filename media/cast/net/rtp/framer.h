@@ -49,6 +49,9 @@ class Framer {
                        bool* next_frame,
                        bool* have_multiple_complete_frames);
 
+  // TODO(hubbe): Move this elsewhere.
+  void AckFrame(uint32 frame_id);
+
   void ReleaseFrame(uint32 frame_id);
 
   // Reset framer state to original state and flush all pending buffers.

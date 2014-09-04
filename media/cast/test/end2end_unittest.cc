@@ -210,7 +210,7 @@ class LoopBackTransport : public PacketSender {
                           const base::Closure& cb) OVERRIDE {
     DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
     if (!send_packets_)
-      return false;
+      return true;
 
     bytes_sent_ += packet->data.size();
     if (drop_packets_belonging_to_odd_frames_) {
@@ -406,7 +406,9 @@ class TestReceiverVideoCallback
     PopulateVideoFrame(expected_I420_frame.get(),
                        expected_video_frame.start_value);
 
-    EXPECT_GE(I420PSNR(expected_I420_frame, video_frame), kVideoAcceptedPSNR);
+    if (expected_video_frame.should_be_continuous) {
+      EXPECT_GE(I420PSNR(expected_I420_frame, video_frame), kVideoAcceptedPSNR);
+    }
 
     EXPECT_NEAR(
         (playout_time - expected_video_frame.playout_time).InMillisecondsF(),
@@ -988,79 +990,14 @@ TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
   EXPECT_EQ(10, test_receiver_video_callback_->number_times_called());
 }
 
-// This tests a network glitch lasting for 10 video frames.
-// Flaky. See crbug.com/351596.
-TEST_F(End2EndTest, DISABLED_GlitchWith3Buffers) {
-  Configure(CODEC_VIDEO_VP8, CODEC_AUDIO_OPUS,
-            kDefaultAudioSamplingRate, 3);
+TEST_F(End2EndTest, DropEveryOtherFrame3Buffers) {
+  Configure(CODEC_VIDEO_VP8, CODEC_AUDIO_OPUS, kDefaultAudioSamplingRate, 3);
+  int target_delay = 300;
   video_sender_config_.target_playout_delay =
-      base::TimeDelta::FromMilliseconds(67);
-  video_receiver_config_.rtp_max_delay_ms = 67;
-  Create();
-
-  int video_start = kVideoStart;
-  base::TimeTicks capture_time;
-  // Frames will rendered on completion until the render time stabilizes, i.e.
-  // we got enough data.
-  const int frames_before_glitch = 20;
-  for (int i = 0; i < frames_before_glitch; ++i) {
-    capture_time = testing_clock_sender_->NowTicks();
-    SendVideoFrame(video_start, capture_time);
-    test_receiver_video_callback_->AddExpectedResult(
-        video_start,
-        video_sender_config_.width,
-        video_sender_config_.height,
-        capture_time + base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs),
-        true);
-    cast_receiver_->RequestDecodedVideoFrame(
-        base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
-                   test_receiver_video_callback_));
-    RunTasks(kFrameTimerMs);
-    video_start++;
-  }
-
-  // Introduce a glitch lasting for 10 frames.
-  sender_to_receiver_.SetSendPackets(false);
-  for (int i = 0; i < 10; ++i) {
-    capture_time = testing_clock_sender_->NowTicks();
-    // First 3 will be sent and lost.
-    SendVideoFrame(video_start, capture_time);
-    RunTasks(kFrameTimerMs);
-    video_start++;
-  }
-  sender_to_receiver_.SetSendPackets(true);
-  RunTasks(100);
-  capture_time = testing_clock_sender_->NowTicks();
-
-  // Frame 1 should be acked by now and we should have an opening to send 4.
-  SendVideoFrame(video_start, capture_time);
-  RunTasks(kFrameTimerMs);
-
-  // Frames 1-3 are old frames by now, and therefore should be decoded, but
-  // not rendered. The next frame we expect to render is frame #4.
-  test_receiver_video_callback_->AddExpectedResult(
-      video_start,
-      video_sender_config_.width,
-      video_sender_config_.height,
-      capture_time + base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs),
-      true);
-
-  cast_receiver_->RequestDecodedVideoFrame(
-      base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
-                 test_receiver_video_callback_));
-
-  RunTasks(2 * kFrameTimerMs + 1);  // Empty the receiver pipeline.
-  EXPECT_EQ(frames_before_glitch + 1,
-            test_receiver_video_callback_->number_times_called());
-}
-
-// Disabled due to flakiness and crashiness.  http://crbug.com/360951
-TEST_F(End2EndTest, DISABLED_DropEveryOtherFrame3Buffers) {
-  Configure(CODEC_VIDEO_VP8, CODEC_AUDIO_OPUS,
-            kDefaultAudioSamplingRate, 3);
-  video_sender_config_.target_playout_delay =
-      base::TimeDelta::FromMilliseconds(67);
-  video_receiver_config_.rtp_max_delay_ms = 67;
+      base::TimeDelta::FromMilliseconds(target_delay);
+  audio_sender_config_.target_playout_delay =
+      base::TimeDelta::FromMilliseconds(target_delay);
+  video_receiver_config_.rtp_max_delay_ms = target_delay;
   Create();
   sender_to_receiver_.DropAllPacketsBelongingToOddFrames();
 
@@ -1078,7 +1015,7 @@ TEST_F(End2EndTest, DISABLED_DropEveryOtherFrame3Buffers) {
           video_sender_config_.width,
           video_sender_config_.height,
           capture_time +
-              base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs),
+              base::TimeDelta::FromMilliseconds(target_delay),
           i == 0);
 
       // GetRawVideoFrame will not return the frame until we are close in
@@ -1091,7 +1028,7 @@ TEST_F(End2EndTest, DISABLED_DropEveryOtherFrame3Buffers) {
     video_start++;
   }
 
-  RunTasks(2 * kFrameTimerMs + 1);  // Empty the pipeline.
+  RunTasks(2 * kFrameTimerMs + target_delay);  // Empty the pipeline.
   EXPECT_EQ(i / 2, test_receiver_video_callback_->number_times_called());
 }
 

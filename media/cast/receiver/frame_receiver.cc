@@ -216,9 +216,10 @@ void FrameReceiver::EmitAvailableEncodedFrames() {
     // skipping one or more frames.  Skip if the missing frame wouldn't complete
     // playing before the start of playback of the available frame.
     if (!is_consecutively_next_frame) {
-      // TODO(miu): Also account for expected decode time here?
+      // This assumes that decoding takes as long as playing, which might
+      // not be true.
       const base::TimeTicks earliest_possible_end_time_of_missing_frame =
-          now + expected_frame_duration_;
+          now + expected_frame_duration_ * 2;
       if (earliest_possible_end_time_of_missing_frame < playout_time) {
         VLOG(1) << "Wait for next consecutive frame instead of skipping.";
         if (!is_waiting_for_consecutive_frame_) {
@@ -233,6 +234,11 @@ void FrameReceiver::EmitAvailableEncodedFrames() {
         return;
       }
     }
+
+    // At this point, we have the complete next frame, or a decodable
+    // frame from somewhere later in the stream, AND we have given up
+    // on waiting for any frames in between, so now we can ACK the frame.
+    framer_.AckFrame(encoded_frame->frame_id);
 
     // Decrypt the payload data in the frame, if crypto is being used.
     if (decryptor_.is_activated()) {

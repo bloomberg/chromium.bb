@@ -17,32 +17,18 @@ namespace cast {
 
 static const uint32 kMinIntra = 300;
 
-static int ComputeMaxNumOfRepeatedBuffers(int max_unacked_frames) {
-  if (max_unacked_frames > kNumberOfVp8VideoBuffers)
-    return (max_unacked_frames - 1) / kNumberOfVp8VideoBuffers;
-
-  return 0;
-}
-
 Vp8Encoder::Vp8Encoder(const VideoSenderConfig& video_config,
                        int max_unacked_frames)
     : cast_config_(video_config),
       use_multiple_video_buffers_(
           cast_config_.max_number_of_video_buffers_used ==
           kNumberOfVp8VideoBuffers),
-      max_number_of_repeated_buffers_in_a_row_(
-          ComputeMaxNumOfRepeatedBuffers(max_unacked_frames)),
       key_frame_requested_(true),
       first_frame_received_(false),
       last_encoded_frame_id_(kStartFrameId),
-      number_of_repeated_buffers_(0) {
-  // TODO(pwestin): we need to figure out how to synchronize the acking with the
-  // internal state of the encoder, ideally the encoder will tell if we can
-  // send another frame.
-  DCHECK(!use_multiple_video_buffers_ ||
-         max_number_of_repeated_buffers_in_a_row_ == 0)
-      << "Invalid config";
-
+      last_acked_frame_id_(kStartFrameId),
+      frame_id_to_reference_(kStartFrameId - 1),
+      undroppable_frames_(0) {
   // VP8 have 3 buffers available for prediction, with
   // max_number_of_video_buffers_used set to 1 we maximize the coding efficiency
   // however in this mode we can not skip frames in the receiver to catch up
@@ -74,8 +60,8 @@ void Vp8Encoder::Initialize() {
       NULL, IMG_FMT_I420, cast_config_.width, cast_config_.height, 1, NULL);
 
   for (int i = 0; i < kNumberOfVp8VideoBuffers; ++i) {
-    acked_frame_buffers_[i] = true;
-    used_buffers_frame_id_[i] = kStartFrameId;
+    buffer_state_[i].frame_id = kStartFrameId;
+    buffer_state_[i].state = kBufferStartState;
   }
   InitEncode(cast_config_.number_of_encode_threads);
 }
@@ -160,8 +146,7 @@ bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
     buffer_to_update = kLastBuffer;
   } else {
     // Reference all acked frames (buffers).
-    latest_frame_id_to_reference = GetLatestFrameIdToReference();
-    GetCodecReferenceFlags(&flags);
+    latest_frame_id_to_reference = GetCodecReferenceFlags(&flags);
     buffer_to_update = GetNextBufferToUpdate();
     GetCodecUpdateFlags(buffer_to_update, &flags);
   }
@@ -214,6 +199,7 @@ bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
   // Populate the encoded frame.
   encoded_image->frame_id = ++last_encoded_frame_id_;
   if (is_key_frame) {
+    // TODO(Hubbe): Replace "dependency" with a "bool is_key_frame".
     encoded_image->dependency = EncodedFrame::KEY;
     encoded_image->referenced_frame_id = encoded_image->frame_id;
   } else {
@@ -228,108 +214,130 @@ bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
     key_frame_requested_ = false;
 
     for (int i = 0; i < kNumberOfVp8VideoBuffers; ++i) {
-      used_buffers_frame_id_[i] = encoded_image->frame_id;
+      buffer_state_[i].state = kBufferSent;
+      buffer_state_[i].frame_id = encoded_image->frame_id;
     }
-    // We can pick any buffer as last_used_vp8_buffer_ since we update
-    // them all.
-    last_used_vp8_buffer_ = buffer_to_update;
   } else {
     if (buffer_to_update != kNoBuffer) {
-      acked_frame_buffers_[buffer_to_update] = false;
-      used_buffers_frame_id_[buffer_to_update] = encoded_image->frame_id;
-      last_used_vp8_buffer_ = buffer_to_update;
+      buffer_state_[buffer_to_update].state = kBufferSent;
+      buffer_state_[buffer_to_update].frame_id = encoded_image->frame_id;
     }
   }
   return true;
 }
 
-void Vp8Encoder::GetCodecReferenceFlags(vpx_codec_flags_t* flags) {
+uint32 Vp8Encoder::GetCodecReferenceFlags(vpx_codec_flags_t* flags) {
   if (!use_multiple_video_buffers_)
-    return;
+    return last_encoded_frame_id_ + 1;
 
-  // We need to reference something.
-  DCHECK(acked_frame_buffers_[kAltRefBuffer] ||
-         acked_frame_buffers_[kGoldenBuffer] ||
-         acked_frame_buffers_[kLastBuffer])
-      << "Invalid state";
+  const uint32 kMagicFrameOffset = 512;
+  // We set latest_frame_to_reference to an old frame so that
+  // IsNewerFrameId will work correctly.
+  uint32 latest_frame_to_reference =
+      last_encoded_frame_id_ - kMagicFrameOffset;
 
-  if (!acked_frame_buffers_[kAltRefBuffer]) {
-    *flags |= VP8_EFLAG_NO_REF_ARF;
-  }
-  if (!acked_frame_buffers_[kGoldenBuffer]) {
-    *flags |= VP8_EFLAG_NO_REF_GF;
-  }
-  if (!acked_frame_buffers_[kLastBuffer]) {
-    *flags |= VP8_EFLAG_NO_REF_LAST;
-  }
-}
-
-uint32 Vp8Encoder::GetLatestFrameIdToReference() {
-  if (!use_multiple_video_buffers_)
-    return last_encoded_frame_id_;
-
-  int latest_frame_id_to_reference = -1;
-  if (acked_frame_buffers_[kAltRefBuffer]) {
-    latest_frame_id_to_reference = used_buffers_frame_id_[kAltRefBuffer];
-  }
-  if (acked_frame_buffers_[kGoldenBuffer]) {
-    if (latest_frame_id_to_reference == -1) {
-      latest_frame_id_to_reference = used_buffers_frame_id_[kGoldenBuffer];
+  // Reference all acked frames.
+  // TODO(hubbe): We may also want to allow references to the
+  // last encoded frame, if that frame was assigned to a buffer.
+  for (int i = 0; i < kNumberOfVp8VideoBuffers; ++i) {
+    if (buffer_state_[i].state == kBufferAcked) {
+      if (IsNewerFrameId(buffer_state_[i].frame_id,
+                         latest_frame_to_reference)) {
+        latest_frame_to_reference = buffer_state_[i].frame_id;
+      }
     } else {
-      if (IsNewerFrameId(used_buffers_frame_id_[kGoldenBuffer],
-                         latest_frame_id_to_reference)) {
-        latest_frame_id_to_reference = used_buffers_frame_id_[kGoldenBuffer];
+      switch (i) {
+        case kAltRefBuffer:
+          *flags |= VP8_EFLAG_NO_REF_ARF;
+          break;
+        case kGoldenBuffer:
+          *flags |= VP8_EFLAG_NO_REF_GF;
+          break;
+        case kLastBuffer:
+          *flags |= VP8_EFLAG_NO_REF_LAST;
+          break;
       }
     }
   }
-  if (acked_frame_buffers_[kLastBuffer]) {
-    if (latest_frame_id_to_reference == -1) {
-      latest_frame_id_to_reference = used_buffers_frame_id_[kLastBuffer];
-    } else {
-      if (IsNewerFrameId(used_buffers_frame_id_[kLastBuffer],
-                         latest_frame_id_to_reference)) {
-        latest_frame_id_to_reference = used_buffers_frame_id_[kLastBuffer];
-      }
-    }
+
+  if (latest_frame_to_reference ==
+      last_encoded_frame_id_ - kMagicFrameOffset) {
+    // We have nothing to reference, it's kind of like a key frame,
+    // but doesn't reset buffers.
+    latest_frame_to_reference = last_encoded_frame_id_ + 1;
   }
-  DCHECK(latest_frame_id_to_reference != -1) << "Invalid state";
-  return static_cast<uint32>(latest_frame_id_to_reference);
+
+  return latest_frame_to_reference;
 }
 
 Vp8Encoder::Vp8Buffers Vp8Encoder::GetNextBufferToUpdate() {
   if (!use_multiple_video_buffers_)
     return kNoBuffer;
 
-  // Update at most one buffer, except for key-frames.
+  // The goal here is to make sure that we always keep one ACKed
+  // buffer while trying to get an ACK for a newer buffer as we go.
+  // Here are the rules for which buffer to select for update:
+  // 1. If there is a buffer in state kStartState, use it.
+  // 2. If there is a buffer other than the oldest buffer
+  //    which is Acked, use the oldest buffer.
+  // 3. If there are Sent buffers which are older than
+  //    latest_acked_frame_, use the oldest one.
+  // 4. If all else fails, just overwrite the newest buffer,
+  //    but no more than 3 times in a row.
+  //    TODO(hubbe): Figure out if 3 is optimal.
+  // Note, rule 1-3 describe cases where there is a "free" buffer
+  // that we can use. Rule 4 describes what happens when there is
+  // no free buffer available.
 
-  Vp8Buffers buffer_to_update = kNoBuffer;
-  if (number_of_repeated_buffers_ < max_number_of_repeated_buffers_in_a_row_) {
-    // TODO(pwestin): experiment with this. The issue with only this change is
-    // that we can end up with only 4 frames in flight when we expect 6.
-    // buffer_to_update = last_used_vp8_buffer_;
-    buffer_to_update = kNoBuffer;
-    ++number_of_repeated_buffers_;
-  } else {
-    number_of_repeated_buffers_ = 0;
-    switch (last_used_vp8_buffer_) {
-      case kAltRefBuffer:
-        buffer_to_update = kLastBuffer;
-        VLOG(1) << "VP8 update last buffer";
-        break;
-      case kLastBuffer:
-        buffer_to_update = kGoldenBuffer;
-        VLOG(1) << "VP8 update golden buffer";
-        break;
-      case kGoldenBuffer:
-        buffer_to_update = kAltRefBuffer;
-        VLOG(1) << "VP8 update alt-ref buffer";
-        break;
-      case kNoBuffer:
-        DCHECK(false) << "Invalid state";
-        break;
+  // Buffers, sorted from oldest frame to newest.
+  Vp8Encoder::Vp8Buffers buffers[kNumberOfVp8VideoBuffers];
+
+  for (int i = 0; i < kNumberOfVp8VideoBuffers; ++i) {
+    Vp8Encoder::Vp8Buffers buffer = static_cast<Vp8Encoder::Vp8Buffers>(i);
+
+    // Rule 1
+    if (buffer_state_[buffer].state == kBufferStartState) {
+      undroppable_frames_ = 0;
+      return buffer;
+    }
+    buffers[buffer] = buffer;
+  }
+
+  // Sorting three elements with selection sort.
+  for (int i = 0; i < kNumberOfVp8VideoBuffers - 1; i++) {
+    for (int j = i + 1; j < kNumberOfVp8VideoBuffers; j++) {
+      if (IsOlderFrameId(buffer_state_[buffers[j]].frame_id,
+                         buffer_state_[buffers[i]].frame_id)) {
+        std::swap(buffers[i], buffers[j]);
+      }
     }
   }
-  return buffer_to_update;
+
+  // Rule 2
+  if (buffer_state_[buffers[1]].state == kBufferAcked ||
+      buffer_state_[buffers[2]].state == kBufferAcked) {
+    undroppable_frames_ = 0;
+    return buffers[0];
+  }
+
+  // Rule 3
+  for (int i = 0; i < kNumberOfVp8VideoBuffers; i++) {
+    if (buffer_state_[buffers[i]].state == kBufferSent &&
+        IsOlderFrameId(buffer_state_[buffers[i]].frame_id,
+                       last_acked_frame_id_)) {
+      undroppable_frames_ = 0;
+      return buffers[i];
+    }
+  }
+
+  // Rule 4
+  if (undroppable_frames_ >= 3) {
+    undroppable_frames_ = 0;
+    return kNoBuffer;
+  } else {
+    undroppable_frames_++;
+    return buffers[kNumberOfVp8VideoBuffers - 1];
+  }
 }
 
 void Vp8Encoder::GetCodecUpdateFlags(Vp8Buffers buffer_to_update,
@@ -381,9 +389,13 @@ void Vp8Encoder::LatestFrameIdToReference(uint32 frame_id) {
 
   VLOG(1) << "VP8 ok to reference frame:" << static_cast<int>(frame_id);
   for (int i = 0; i < kNumberOfVp8VideoBuffers; ++i) {
-    if (frame_id == used_buffers_frame_id_[i]) {
-      acked_frame_buffers_[i] = true;
+    if (frame_id == buffer_state_[i].frame_id) {
+      buffer_state_[i].state = kBufferAcked;
+      break;
     }
+  }
+  if (IsOlderFrameId(last_acked_frame_id_, frame_id)) {
+    last_acked_frame_id_ = frame_id;
   }
 }
 

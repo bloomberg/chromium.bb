@@ -83,17 +83,17 @@ bool Framer::GetEncodedFrame(EncodedFrame* frame,
     *next_frame = false;
   }
 
-  if (*next_frame) {
-    VLOG(2) << "ACK frame " << frame_id;
-    cast_msg_builder_->CompleteFrameReceived(frame_id);
-  }
-
   ConstFrameIterator it = frames_.find(frame_id);
   DCHECK(it != frames_.end());
   if (it == frames_.end())
     return false;
 
   return it->second->AssembleEncodedFrame(frame);
+}
+
+void Framer::AckFrame(uint32 frame_id) {
+  VLOG(2) << "ACK frame " << frame_id;
+  cast_msg_builder_->CompleteFrameReceived(frame_id);
 }
 
 void Framer::Reset() {

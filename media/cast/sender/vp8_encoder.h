@@ -55,6 +55,16 @@ class Vp8Encoder : public SoftwareVideoEncoder {
     kNoBuffer = 3  // Note: must be last.
   };
 
+  enum Vp8BufferState {
+    kBufferStartState,
+    kBufferSent,
+    kBufferAcked
+  };
+  struct BufferState {
+    uint32 frame_id;
+    Vp8BufferState state;
+  };
+
   void InitEncode(int number_of_cores);
 
   // Calculate the max target in % for a keyframe.
@@ -63,11 +73,9 @@ class Vp8Encoder : public SoftwareVideoEncoder {
   // Calculate which next Vp8 buffers to update with the next frame.
   Vp8Buffers GetNextBufferToUpdate();
 
-  // Calculate which previous frame to reference.
-  uint32 GetLatestFrameIdToReference();
-
   // Get encoder flags for our referenced encoder buffers.
-  void GetCodecReferenceFlags(vpx_codec_flags_t* flags);
+  // Return which previous frame to reference.
+  uint32 GetCodecReferenceFlags(vpx_codec_flags_t* flags);
 
   // Get encoder flags for our encoder buffers to update with next frame.
   void GetCodecUpdateFlags(Vp8Buffers buffer_to_update,
@@ -75,7 +83,6 @@ class Vp8Encoder : public SoftwareVideoEncoder {
 
   const VideoSenderConfig cast_config_;
   const bool use_multiple_video_buffers_;
-  const int max_number_of_repeated_buffers_in_a_row_;
 
   // VP8 internal objects.
   scoped_ptr<vpx_codec_enc_cfg_t> config_;
@@ -86,10 +93,10 @@ class Vp8Encoder : public SoftwareVideoEncoder {
   bool first_frame_received_;
   base::TimeDelta first_frame_timestamp_;
   uint32 last_encoded_frame_id_;
-  uint32 used_buffers_frame_id_[kNumberOfVp8VideoBuffers];
-  bool acked_frame_buffers_[kNumberOfVp8VideoBuffers];
-  Vp8Buffers last_used_vp8_buffer_;
-  int number_of_repeated_buffers_;
+  uint32 last_acked_frame_id_;
+  uint32 frame_id_to_reference_;
+  uint32 undroppable_frames_;
+  BufferState buffer_state_[kNumberOfVp8VideoBuffers];
 
   // This is bound to the thread where Initialize() is called.
   base::ThreadChecker thread_checker_;

@@ -36,15 +36,14 @@ class TestVideoEncoderCallback
 
   void DeliverEncodedVideoFrame(
       scoped_ptr<EncodedFrame> encoded_frame) {
-    if (expected_frame_id_ == expected_last_referenced_frame_id_) {
-      EXPECT_EQ(EncodedFrame::KEY, encoded_frame->dependency);
-    } else {
+    if (expected_frame_id_ != expected_last_referenced_frame_id_) {
       EXPECT_EQ(EncodedFrame::DEPENDENT,
                 encoded_frame->dependency);
     }
     EXPECT_EQ(expected_frame_id_, encoded_frame->frame_id);
     EXPECT_EQ(expected_last_referenced_frame_id_,
-              encoded_frame->referenced_frame_id);
+              encoded_frame->referenced_frame_id)
+        << "frame id: " << expected_frame_id_;
     EXPECT_EQ(expected_capture_time_, encoded_frame->reference_time);
   }
 
