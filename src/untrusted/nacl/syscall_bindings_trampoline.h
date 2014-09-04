@@ -258,6 +258,8 @@ typedef int (*TYPE_nacl_futex_wait_abs) (volatile int *addr, int value,
 
 typedef int (*TYPE_nacl_futex_wake) (volatile int *addr, int nwake);
 
+typedef int (*TYPE_nacl_get_random_bytes) (void *buf, size_t buf_size);
+
 #if defined(__cplusplus)
 }
 #endif

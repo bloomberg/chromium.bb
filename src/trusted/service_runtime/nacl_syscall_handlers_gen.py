@@ -38,6 +38,7 @@ AUTOGEN_HEADER = """\
 #include "native_client/src/trusted/service_runtime/sys_list_mappings.h"
 #include "native_client/src/trusted/service_runtime/sys_memory.h"
 #include "native_client/src/trusted/service_runtime/sys_parallel_io.h"
+#include "native_client/src/trusted/service_runtime/sys_random.h"
 
 """
 
@@ -214,6 +215,8 @@ SYSCALL_LIST = [
      ['uint32_t addr', 'uint32_t value', 'uint32_t abstime_ptr']),
     ('NACL_sys_futex_wake', 'NaClSysFutexWake',
      ['uint32_t addr', 'uint32_t nwake']),
+    ('NACL_sys_get_random_bytes', 'NaClSysGetRandomBytes',
+     ['uint32_t buf_addr', 'uint32_t buf_size']),
     ]
 
 

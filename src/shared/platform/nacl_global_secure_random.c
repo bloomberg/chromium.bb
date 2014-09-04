@@ -55,6 +55,12 @@ uint32_t NaClGlobalSecureRngUint32(void) {
   return rv;
 }
 
+void NaClGlobalSecureRngGenerateBytes(uint8_t *buf, size_t buf_size) {
+  NaClXMutexLock(&nacl_global_rng_mu);
+  (*nacl_grngp->base.vtbl->GenBytes)(&nacl_grngp->base, buf, buf_size);
+  NaClXMutexUnlock(&nacl_global_rng_mu);
+}
+
 void NaClGenerateRandomPath(char *path, int length) {
   /*
    * This function is used for generating random paths and names,

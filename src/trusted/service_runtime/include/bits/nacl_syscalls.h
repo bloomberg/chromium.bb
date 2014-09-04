@@ -126,6 +126,8 @@
 #define NACL_sys_readlink               146
 #define NACL_sys_utimes                 147
 
-#define NACL_MAX_SYSCALLS               148
+#define NACL_sys_get_random_bytes       150
+
+#define NACL_MAX_SYSCALLS               151
 
 #endif

@@ -75,6 +75,7 @@
           'sys_list_mappings.c',
           'sys_memory.c',
           'sys_parallel_io.c',
+          'sys_random.c',
           'thread_suspension_common.c',
           'thread_suspension_unwind.c',
         ],

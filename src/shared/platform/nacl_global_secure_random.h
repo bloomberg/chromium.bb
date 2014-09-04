@@ -24,6 +24,8 @@ int32_t NaClGlobalSecureRngUniform(int32_t range_max);
 
 uint32_t NaClGlobalSecureRngUint32(void);
 
+void NaClGlobalSecureRngGenerateBytes(uint8_t *buf, size_t buf_size);
+
 /*
  * Generate a random alpha-numeric name for a socket, a semaphore or some
  * other device.
