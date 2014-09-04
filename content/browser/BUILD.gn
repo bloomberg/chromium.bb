@@ -256,7 +256,6 @@ source_set("browser") {
   } else {
     sources -= [
       "power_save_blocker_x11.cc",
-      "renderer_host/web_input_event_aurax11.cc",
     ]
   }
 

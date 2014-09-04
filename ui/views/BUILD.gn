@@ -245,7 +245,7 @@ if (is_mac) {
       "//ui/compositor",
       "//ui/resources",
       "//ui/resources:ui_test_pak",
-      "//ui/string",
+      "//ui/strings",
       "//ui/wm",
     ]
   }
