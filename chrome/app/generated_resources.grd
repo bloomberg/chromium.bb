@@ -14546,7 +14546,7 @@ Do you accept?
     </message>
     <!-- Strings for notification shown when the Chromebook is added to Easy Unlock -->
     <message name="IDS_EASY_UNLOCK_CHROMEBOOK_ADDED_NOTIFICATION_TITLE" desc="Title for notification shown when this Chromebook is added to Easy Unlock as an additional Easy Unlock device.">
-      Easy unock is now enabled
+      Easy unlock is now enabled
     </message>
     <message name="IDS_EASY_UNLOCK_CHROMEBOOK_ADDED_NOTIFICATION_MESSAGE" desc="Message for the notification shown when this Chromebook is added to Easy Unlock as an additional Easy Unlock device.">
       You can start using your Android phone to unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>, too - no additional setup necessary.
