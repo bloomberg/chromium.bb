@@ -33,6 +33,7 @@ import cgi
 import difflib
 import errno
 import itertools
+import json
 import logging
 import os
 import operator
@@ -1522,91 +1523,13 @@ class Port(object):
             ]
 
     def virtual_test_suites(self):
-        return [
-            VirtualTestSuite('gpu',
-                             'fast/canvas',
-                             ['--enable-accelerated-2d-canvas']),
-            VirtualTestSuite('gpu',
-                             'canvas/philip',
-                             ['--enable-accelerated-2d-canvas']),
-            VirtualTestSuite('threaded',
-                             'compositing/visibility',
-                             ['--enable-threaded-compositing']),
-            VirtualTestSuite('threaded',
-                             'compositing/webgl',
-                             ['--enable-threaded-compositing']),
-            VirtualTestSuite('deferred',
-                             'fast/images',
-                             ['--enable-deferred-image-decoding',
-                              '--enable-per-tile-painting']),
-            VirtualTestSuite('deferred',
-                             'inspector/timeline',
-                             ['--enable-deferred-image-decoding',
-                              '--enable-per-tile-painting']),
-            VirtualTestSuite('deferred',
-                             'inspector/tracing',
-                             ['--enable-deferred-image-decoding',
-                              '--enable-per-tile-painting']),
-            VirtualTestSuite('gpu/compositedscrolling/overflow',
-                             'compositing/overflow',
-                             ['--enable-prefer-compositing-to-lcd-text'],
-                             use_legacy_naming=True),
-            VirtualTestSuite('gpu/compositedscrolling/scrollbars',
-                             'scrollbars',
-                             ['--enable-prefer-compositing-to-lcd-text'],
-                             use_legacy_naming=True),
-            VirtualTestSuite('threaded',
-                             'animations',
-                             ['--enable-threaded-compositing']),
-            VirtualTestSuite('threaded',
-                             'transitions',
-                             ['--enable-threaded-compositing']),
-            VirtualTestSuite('stable',
-                             'webexposed',
-                             ['--stable-release-mode']),
-            VirtualTestSuite('stable',
-                             'animations-unprefixed',
-                             ['--stable-release-mode']),
-            VirtualTestSuite('stable',
-                             'media/stable',
-                             ['--stable-release-mode']),
-            VirtualTestSuite('android',
-                             'fullscreen',
-                             ['--enable-threaded-compositing',
-                              '--enable-fixed-position-compositing', '--enable-prefer-compositing-to-lcd-text',
-                              '--enable-composited-scrolling-for-frames', '--enable-gesture-tap-highlight', '--enable-pinch',
-                              '--enable-overlay-fullscreen-video', '--enable-overlay-scrollbars', '--enable-overscroll-notifications',
-                              '--enable-fixed-layout', '--enable-viewport', '--disable-canvas-aa',
-                              '--disable-composited-antialiasing']),
-            VirtualTestSuite('implsidepainting',
-                             'inspector/timeline',
-                             ['--enable-threaded-compositing', '--enable-impl-side-painting']),
-            VirtualTestSuite('implsidepainting',
-                             'inspector/tracing',
-                             ['--enable-threaded-compositing', '--enable-impl-side-painting']),
-            VirtualTestSuite('stable',
-                             'fast/css3-text/css3-text-decoration/stable',
-                             ['--stable-release-mode']),
-            VirtualTestSuite('stable',
-                             'web-animations-api',
-                             ['--stable-release-mode']),
-            VirtualTestSuite('linux-subpixel',
-                             'platform/linux/fast/text/subpixel',
-                             ['--enable-webkit-text-subpixel-positioning']),
-            VirtualTestSuite('antialiasedtext',
-                             'fast/text',
-                             ['--enable-direct-write',
-                              '--enable-font-antialiasing']),
-            VirtualTestSuite('threaded',
-                             'printing',
-                             ['--enable-threaded-compositing']),
-            VirtualTestSuite('regionbasedmulticol',
-                             'fast/multicol',
-                             ['--enable-region-based-columns']),
-            VirtualTestSuite('regionbasedmulticol',
-                             'fast/pagination',
-                             ['--enable-region-based-columns']),
-        ]
+        path_to_virtual_test_suites = self._filesystem.join(self.layout_tests_dir(), 'VirtualTestSuites')
+        assert self._filesystem.exists(path_to_virtual_test_suites), 'LayoutTests/VirtualTestSuites not found'
+        try:
+            test_suite_json = json.loads(self._filesystem.read_text_file(path_to_virtual_test_suites))
+            return [VirtualTestSuite(**d) for d in test_suite_json]
+        except ValueError as e:
+            raise ValueError("LayoutTests/VirtualTestSuites is not a valid JSON file: %s" % str(e))
 
     @memoized
     def populated_virtual_test_suites(self):
@@ -1765,17 +1688,18 @@ class Port(object):
         return self.path_from_webkit_base('LayoutTests', 'platform', platform)
 
 class VirtualTestSuite(object):
-    def __init__(self, name, base, args, use_legacy_naming=False, tests=None):
-        if use_legacy_naming:
+    def __init__(self, prefix=None, name=None, base=None, args=None):
+        assert base
+        assert args
+        # TODO(dpranke): Rename the legacy virtual test suites and update the expectations.
+        if name:
             self.name = 'virtual/' + name
         else:
-            if name.find('/') != -1:
-                _log.error("Virtual test suites names cannot contain /'s: %s" % name)
-                return
-            self.name = 'virtual/' + name + '/' + base
+            assert prefix.find('/') == -1, "Virtual test suites prefixes cannot contain /'s: %s" % prefix
+            self.name = 'virtual/' + prefix + '/' + base
         self.base = base
         self.args = args
-        self.tests = tests or set()
+        self.tests = {}
 
     def __repr__(self):
         return "VirtualTestSuite('%s', '%s', %s)" % (self.name, self.base, self.args)

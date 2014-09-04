@@ -62,6 +62,7 @@ class ExcludingMockSCM(MockSCM):
 class BaselineOptimizerTest(unittest.TestCase):
     def test_move_baselines(self):
         host = MockHost(scm=ExcludingMockSCM(['/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/another/test-expected.txt']))
+        host.filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/VirtualTestSuites', '[]')
         host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/platform/win/another/test-expected.txt', 'result A')
         host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/another/test-expected.txt', 'result A')
         host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt', 'result B')
@@ -77,6 +78,7 @@ class BaselineOptimizerTest(unittest.TestCase):
 
     def test_move_baselines_skip_scm_commands(self):
         host = MockHost(scm=ExcludingMockSCM(['/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/another/test-expected.txt']))
+        host.filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/VirtualTestSuites', '[]')
         host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/platform/win/another/test-expected.txt', 'result A')
         host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/another/test-expected.txt', 'result A')
         host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt', 'result B')
@@ -106,6 +108,8 @@ class BaselineOptimizerTest(unittest.TestCase):
         fs = host.filesystem
         webkit_base = WebKitFinder(fs).webkit_base()
         baseline_name = 'mock-baseline-expected.txt'
+        fs.write_text_file(fs.join(webkit_base, 'LayoutTests', 'VirtualTestSuites'),
+                           '[{"prefix": "gpu", "base": "fast/canvas", "args": ["--foo"]}]')
 
         for dirname, contents in results_by_directory.items():
             path = fs.join(webkit_base, 'LayoutTests', dirname, baseline_name)

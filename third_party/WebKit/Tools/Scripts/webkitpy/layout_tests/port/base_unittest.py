@@ -39,6 +39,7 @@ from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.common.system.path import abspath_to_uri
 from webkitpy.tool.mocktool import MockOptions
 from webkitpy.common.system.executive_mock import MockExecutive, MockExecutive2
+from webkitpy.common.system.systemhost import SystemHost
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 
 from webkitpy.layout_tests.port import Port, Driver, DriverOutput
@@ -411,6 +412,33 @@ class PortTest(unittest.TestCase):
         port = self.make_port()
         self.assertEqual(port.requires_http_server(), False)
 
+    def test_can_load_actual_virtual_test_suite_file(self):
+        port = Port(SystemHost(), 'baseport')
+
+        # If this call returns successfully, we found and loaded the LayoutTests/VirtualTestSuites.
+        _ = port.virtual_test_suites()
+
+    def test_good_virtual_test_suite_file(self):
+        port = self.make_port()
+        fs = port._filesystem
+        fs.write_text_file(fs.join(port.layout_tests_dir(), 'VirtualTestSuites'),
+                           '[{"prefix": "foo", "base": "fast/foo", "args": ["--foo"]},'
+                           '{"name": "bar", "base": "fast/bar", "args": ["--bar"]}]')
+
+        # If this call returns successfully, we found and loaded the LayoutTests/VirtualTestSuites.
+        _ = port.virtual_test_suites()
+
+    def test_virtual_test_suite_file_is_not_json(self):
+        port = self.make_port()
+        fs = port._filesystem
+        fs.write_text_file(fs.join(port.layout_tests_dir(), 'VirtualTestSuites'),
+                           '{[{[')
+        self.assertRaises(ValueError, port.virtual_test_suites)
+
+    def test_missing_virtual_test_suite_file(self):
+        port = self.make_port()
+        self.assertRaises(AssertionError, port.virtual_test_suites)
+
 
 class NaturalCompareTest(unittest.TestCase):
     def setUp(self):
@@ -457,19 +485,16 @@ class KeyCompareTest(unittest.TestCase):
 
 class VirtualTestSuiteTest(unittest.TestCase):
     def test_basic(self):
-        suite = VirtualTestSuite('suite', 'base/foo', ['--args'])
+        suite = VirtualTestSuite(prefix='suite', base='base/foo', args=['--args'])
         self.assertEqual(suite.name, 'virtual/suite/base/foo')
         self.assertEqual(suite.base, 'base/foo')
         self.assertEqual(suite.args, ['--args'])
 
     def test_no_slash(self):
-        suite = VirtualTestSuite('suite/bar', 'base/foo', ['--args'])
-        self.assertFalse(hasattr(suite, 'name'))
-        self.assertFalse(hasattr(suite, 'base'))
-        self.assertFalse(hasattr(suite, 'args'))
+        self.assertRaises(AssertionError, VirtualTestSuite, prefix='suite/bar', base='base/foo', args=['--args'])
 
     def test_legacy(self):
-        suite = VirtualTestSuite('suite/bar', 'base/foo', ['--args'], use_legacy_naming=True)
+        suite = VirtualTestSuite(name='suite/bar', base='base/foo', args=['--args'])
         self.assertEqual(suite.name, 'virtual/suite/bar')
         self.assertEqual(suite.base, 'base/foo')
         self.assertEqual(suite.args, ['--args'])

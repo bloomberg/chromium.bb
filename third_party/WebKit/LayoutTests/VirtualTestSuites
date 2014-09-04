@@ -1,0 +1,133 @@
+[
+  {
+    "prefix": "gpu",
+    "base": "fast/canvas",
+    "args": ["--enable-accelerated-2d-canvas"]
+  },
+  {
+    "prefix": "gpu",
+    "base": "canvas/philip",
+    "args": ["--enable-accelerated-2d-canvas"]
+  },
+  {
+    "prefix": "threaded",
+    "base": "compositing/visibility",
+    "args": ["--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "threaded",
+    "base": "compositing/webgl",
+    "args": ["--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "deferred",
+    "base": "fast/images",
+    "args": ["--enable-deferred-image-decoding",
+             "--enable-per-tile-painting"]
+  },
+  {
+    "prefix": "deferred",
+    "base": "inspector/timeline",
+    "args": ["--enable-deferred-image-decoding",
+             "--enable-per-tile-painting"]
+  },
+  {
+    "prefix": "deferred",
+    "base": "inspector/tracing",
+    "args": ["--enable-deferred-image-decoding",
+             "--enable-per-tile-painting"]
+  },
+  {
+    "name": "gpu/compositedscrolling/overflow",
+    "base": "compositing/overflow",
+    "args": ["--enable-prefer-compositing-to-lcd-text"]
+  },
+  {
+    "name": "gpu/compositedscrolling/scrollbars",
+    "base": "scrollbars",
+    "args": ["--enable-prefer-compositing-to-lcd-text"]
+  },
+  {
+    "prefix": "threaded",
+    "base": "animations",
+    "args": ["--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "threaded",
+    "base": "transitions",
+    "args": ["--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "stable",
+    "base": "webexposed",
+    "args": ["--stable-release-mode"]
+  },
+  {
+    "prefix": "stable",
+    "base": "animations-unprefixed",
+    "args": ["--stable-release-mode"]
+  },
+  {
+    "prefix": "stable",
+    "base": "media/stable",
+    "args": ["--stable-release-mode"]
+  },
+  {
+    "prefix": "android",
+    "base": "fullscreen",
+    "args": ["--enable-threaded-compositing",
+             "--enable-fixed-position-compositing", "--enable-prefer-compositing-to-lcd-text",
+             "--enable-composited-scrolling-for-frames", "--enable-gesture-tap-highlight", "--enable-pinch",
+             "--enable-overlay-fullscreen-video", "--enable-overlay-scrollbars", "--enable-overscroll-notifications",
+             "--enable-fixed-layout", "--enable-viewport", "--disable-canvas-aa",
+             "--disable-composited-antialiasing"]
+  },
+  {
+    "prefix": "implsidepainting",
+    "base": "inspector/timeline",
+    "args": ["--enable-threaded-compositing", "--enable-impl-side-painting"]
+  },
+  {
+    "prefix": "implsidepainting",
+    "base": "inspector/tracing",
+    "args": ["--enable-threaded-compositing", "--enable-impl-side-painting"]
+  },
+  {
+    "prefix": "stable",
+    "base": "fast/css3-text/css3-text-decoration/stable",
+    "args": ["--stable-release-mode"]
+  },
+  {
+    "prefix": "stable",
+    "base": "web-animations-api",
+    "args": ["--stable-release-mode"]
+  },
+  {
+    "prefix": "linux-subpixel",
+    "base": "platform/linux/fast/text/subpixel",
+    "args": ["--enable-webkit-text-subpixel-positioning"]
+  },
+  {
+    "prefix": "antialiasedtext",
+    "base": "fast/text",
+    "args": ["--enable-direct-write",
+             "--enable-font-antialiasing"]
+  },
+  {
+    "prefix": "threaded",
+    "base": "printing",
+    "args": ["--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "regionbasedmulticol",
+    "base": "fast/multicol",
+    "args": ["--enable-region-based-columns"]
+  },
+  {
+    "prefix": "regionbasedmulticol",
+    "base": "fast/pagination",
+    "args": ["--enable-region-based-columns"]
+  }
+]
+
+ 
