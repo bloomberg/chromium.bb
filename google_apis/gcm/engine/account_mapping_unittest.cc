@@ -17,66 +17,91 @@ TEST(AccountMappingTest, SerializeAccountMapping) {
   account_mapping.account_id = "acc_id";
   account_mapping.email = "test@example.com";
   account_mapping.access_token = "access_token";
-  account_mapping.status = AccountMapping::ADDING;
+  account_mapping.status = AccountMapping::NEW;
   account_mapping.status_change_timestamp = base::Time();
-  account_mapping.last_message_id = "last_message_id_1";
-  account_mapping.last_message_type = AccountMapping::MSG_ADD;
+  account_mapping.last_message_id.clear();
 
-  EXPECT_EQ("test@example.com&0&add&last_message_id_1",
+  EXPECT_EQ("test@example.com&new&0", account_mapping.SerializeAsString());
+
+  account_mapping.status = AccountMapping::ADDING;
+  account_mapping.status_change_timestamp =
+      base::Time::FromInternalValue(1305797421259977LL);
+  account_mapping.last_message_id = "last_message_id_1";
+
+  EXPECT_EQ("test@example.com&adding&1305797421259977&last_message_id_1",
+            account_mapping.SerializeAsString());
+
+  account_mapping.status = AccountMapping::MAPPED;
+
+  EXPECT_EQ("test@example.com&mapped&1305797421259977&last_message_id_1",
+            account_mapping.SerializeAsString());
+
+  account_mapping.last_message_id.clear();
+
+  EXPECT_EQ("test@example.com&mapped&1305797421259977",
             account_mapping.SerializeAsString());
 
   account_mapping.account_id = "acc_id2";
   account_mapping.email = "test@gmail.com";
   account_mapping.access_token = "access_token";  // should be ignored.
-  account_mapping.status = AccountMapping::MAPPED;  // should be ignored.
-  account_mapping.status_change_timestamp =
-      base::Time::FromInternalValue(1305797421259977LL);
+  account_mapping.status = AccountMapping::REMOVING;
   account_mapping.last_message_id = "last_message_id_2";
-  account_mapping.last_message_type = AccountMapping::MSG_REMOVE;
 
-  EXPECT_EQ("test@gmail.com&1305797421259977&remove&last_message_id_2",
-            account_mapping.SerializeAsString());
-
-  account_mapping.last_message_type = AccountMapping::MSG_NONE;
-
-  EXPECT_EQ("test@gmail.com&1305797421259977&none",
+  EXPECT_EQ("test@gmail.com&removing&1305797421259977&last_message_id_2",
             account_mapping.SerializeAsString());
 }
 
 TEST(AccountMappingTest, DeserializeAccountMapping) {
   AccountMapping account_mapping;
   account_mapping.account_id = "acc_id";
-  EXPECT_TRUE(account_mapping.ParseFromString(
-      "test@example.com&0&add&last_message_id_1"));
+
+  EXPECT_TRUE(account_mapping.ParseFromString("test@example.com&new&0"));
   EXPECT_EQ("acc_id", account_mapping.account_id);
   EXPECT_EQ("test@example.com", account_mapping.email);
   EXPECT_TRUE(account_mapping.access_token.empty());
-  EXPECT_EQ(AccountMapping::ADDING, account_mapping.status);
+  EXPECT_EQ(AccountMapping::NEW, account_mapping.status);
   EXPECT_EQ(base::Time(), account_mapping.status_change_timestamp);
-  EXPECT_EQ(AccountMapping::MSG_ADD, account_mapping.last_message_type);
-  EXPECT_EQ("last_message_id_1", account_mapping.last_message_id);
+  EXPECT_TRUE(account_mapping.last_message_id.empty());
 
   EXPECT_TRUE(account_mapping.ParseFromString(
-      "test@gmail.com&1305797421259977&remove&last_message_id_2"));
+      "test@gmail.com&adding&1305797421259977&last_message_id_1"));
   EXPECT_EQ("acc_id", account_mapping.account_id);
   EXPECT_EQ("test@gmail.com", account_mapping.email);
   EXPECT_TRUE(account_mapping.access_token.empty());
-  EXPECT_EQ(AccountMapping::REMOVING, account_mapping.status);
+  EXPECT_EQ(AccountMapping::ADDING, account_mapping.status);
   EXPECT_EQ(base::Time::FromInternalValue(1305797421259977LL),
             account_mapping.status_change_timestamp);
-  EXPECT_EQ(AccountMapping::MSG_REMOVE, account_mapping.last_message_type);
-  EXPECT_EQ("last_message_id_2", account_mapping.last_message_id);
+  EXPECT_EQ("last_message_id_1", account_mapping.last_message_id);
 
   EXPECT_TRUE(account_mapping.ParseFromString(
-      "test@gmail.com&1305797421259977&none"));
+      "test@example.com&mapped&1305797421259977"));
+  EXPECT_EQ("acc_id", account_mapping.account_id);
+  EXPECT_EQ("test@example.com", account_mapping.email);
+  EXPECT_TRUE(account_mapping.access_token.empty());
+  EXPECT_EQ(AccountMapping::MAPPED, account_mapping.status);
+  EXPECT_EQ(base::Time::FromInternalValue(1305797421259977LL),
+            account_mapping.status_change_timestamp);
+  EXPECT_TRUE(account_mapping.last_message_id.empty());
+
+  EXPECT_TRUE(account_mapping.ParseFromString(
+      "test@gmail.com&mapped&1305797421259977&last_message_id_1"));
   EXPECT_EQ("acc_id", account_mapping.account_id);
   EXPECT_EQ("test@gmail.com", account_mapping.email);
   EXPECT_TRUE(account_mapping.access_token.empty());
   EXPECT_EQ(AccountMapping::MAPPED, account_mapping.status);
   EXPECT_EQ(base::Time::FromInternalValue(1305797421259977LL),
             account_mapping.status_change_timestamp);
-  EXPECT_EQ(AccountMapping::MSG_NONE, account_mapping.last_message_type);
-  EXPECT_EQ("", account_mapping.last_message_id);
+  EXPECT_EQ("last_message_id_1", account_mapping.last_message_id);
+
+  EXPECT_TRUE(account_mapping.ParseFromString(
+      "test@gmail.com&removing&1305797421259977&last_message_id_2"));
+  EXPECT_EQ("acc_id", account_mapping.account_id);
+  EXPECT_EQ("test@gmail.com", account_mapping.email);
+  EXPECT_TRUE(account_mapping.access_token.empty());
+  EXPECT_EQ(AccountMapping::REMOVING, account_mapping.status);
+  EXPECT_EQ(base::Time::FromInternalValue(1305797421259977LL),
+            account_mapping.status_change_timestamp);
+  EXPECT_EQ("last_message_id_2", account_mapping.last_message_id);
 }
 
 TEST(AccountMappingTest, DeserializeAccountMappingInvalidInput) {
@@ -84,38 +109,37 @@ TEST(AccountMappingTest, DeserializeAccountMappingInvalidInput) {
   account_mapping.account_id = "acc_id";
   // Too many agruments.
   EXPECT_FALSE(account_mapping.ParseFromString(
-      "test@example.com&1305797421259935"
-      "&add&last_message_id_1&stuff_here"));
+      "test@example.com&adding&1305797421259935&last_message_id_1&stuff_here"));
   // Too few arguments.
   EXPECT_FALSE(account_mapping.ParseFromString(
-      "test@example.com&1305797421259935&remove"));
+      "test@example.com&removing&1305797421259935"));
   // Too few arguments.
   EXPECT_FALSE(account_mapping.ParseFromString(
-      "test@example.com&1305797421259935"));
+      "test@example.com&adding&1305797421259935"));
+  // Too few arguments.
+  EXPECT_FALSE(account_mapping.ParseFromString(
+      "test@example.com&new"));
+  // Too few arguments.
+  EXPECT_FALSE(account_mapping.ParseFromString(
+      "test@example.com&mapped"));
   // Missing email.
   EXPECT_FALSE(account_mapping.ParseFromString(
-      "&1305797421259935&remove&last_message_id_2"));
+      "&remove&1305797421259935&last_message_id_2"));
+  // Missing mapping status.
+  EXPECT_FALSE(account_mapping.ParseFromString(
+      "test@example.com&&1305797421259935&last_message_id_2"));
+  // Unkown mapping status.
+  EXPECT_FALSE(account_mapping.ParseFromString(
+      "test@example.com&random&1305797421259935&last_message_id_2"));
   // Missing mapping status change timestamp.
   EXPECT_FALSE(account_mapping.ParseFromString(
-      "test@gmail.com&&remove&last_message_id_2"));
+      "test@gmail.com&removing&&last_message_id_2"));
   // Last mapping status change timestamp not parseable.
   EXPECT_FALSE(account_mapping.ParseFromString(
-      "test@gmail.com&remove&asdfjkl&last_message_id_2"));
-  // Missing message type.
-  EXPECT_FALSE(account_mapping.ParseFromString(
-      "test@example.com&1305797421259935&&last_message_id_2"));
-  // Unkown message type.
-  EXPECT_FALSE(account_mapping.ParseFromString(
-      "test@example.com&1305797421259935&random&last_message_id_2"));
-  // Message type is none when message details specified.
-  EXPECT_FALSE(account_mapping.ParseFromString(
-      "test@example.com&1305797421259935&none&last_message_id_2"));
-  // Message type is messed up.
-  EXPECT_FALSE(account_mapping.ParseFromString(
-      "test@example.com&1305797421259935&random"));
+      "test@gmail.com&removing&asdfjkl&last_message_id_2"));
   // Missing last message ID.
   EXPECT_FALSE(account_mapping.ParseFromString(
-      "test@example.com&1305797421259935&remove&"));
+      "test@example.com&removing&1305797421259935&"));
 }
 
 }  // namespace

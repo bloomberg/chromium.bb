@@ -141,6 +141,13 @@ class GCMClient {
     RecordedActivities recorded_activities;
   };
 
+  // Information about account.
+  struct AccountTokenInfo {
+    std::string account_id;
+    std::string email;
+    std::string access_token;
+  };
+
   // A delegate interface that allows the GCMClient instance to interact with
   // its caller, i.e. notifying asynchronous event.
   class Delegate {

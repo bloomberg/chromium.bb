@@ -12,39 +12,44 @@ namespace gcm {
 namespace {
 
 const char kSeparator[] = "&";
-uint32 kEmailIndex = 0;
-uint32 kMappingChangeTimestampIndex = 1;
-uint32 kMessageTypeIndex = 2;
-uint32 kMessageIdIndex = 3;
-uint32 kSizeWithNoMessage = kMessageTypeIndex + 1;
-uint32 kSizeWithMessage = kMessageIdIndex + 1;
+const uint32 kEmailIndex = 0;
+const uint32 kStatusIndex = 1;
+const uint32 kStatusChangeTimestampIndex = 2;
+const uint32 kSizeWithNoMessage = kStatusChangeTimestampIndex + 1;
+const uint32 kMessageIdIndex = 3;
+const uint32 kSizeWithMessage = kMessageIdIndex + 1;
 
-const char kMessageTypeNoneString[] = "none";
-const char kMessageTypeAddString[] = "add";
-const char kMessageTypeRemoveString[] = "remove";
+const char kStatusNew[] = "new";
+const char kStatusAdding[] = "adding";
+const char kStatusMapped[] = "mapped";
+const char kStatusRemoving[] = "removing";
 
-std::string MessageTypeToString(AccountMapping::MessageType type) {
-  switch (type) {
-    case AccountMapping::MSG_NONE:
-      return kMessageTypeNoneString;
-    case AccountMapping::MSG_ADD:
-      return kMessageTypeAddString;
-    case AccountMapping::MSG_REMOVE:
-      return kMessageTypeRemoveString;
+std::string StatusToString(AccountMapping::MappingStatus status) {
+  switch (status) {
+    case AccountMapping::NEW:
+      return kStatusNew;
+    case AccountMapping::ADDING:
+      return kStatusAdding;
+    case AccountMapping::MAPPED:
+      return kStatusMapped;
+    case AccountMapping::REMOVING:
+      return kStatusRemoving;
     default:
       NOTREACHED();
   }
   return std::string();
 }
 
-bool StringToMessageType(const std::string& type_str,
-                         AccountMapping::MessageType* type) {
-  if (type_str.compare(kMessageTypeAddString) == 0)
-    *type = AccountMapping::MSG_ADD;
-  else if (type_str.compare(kMessageTypeRemoveString) == 0)
-    *type = AccountMapping::MSG_REMOVE;
-  else if (type_str.compare(kMessageTypeNoneString) == 0)
-    *type = AccountMapping::MSG_NONE;
+bool StringToStatus(const std::string& status_str,
+                    AccountMapping::MappingStatus* status) {
+  if (status_str.compare(kStatusAdding) == 0)
+    *status = AccountMapping::ADDING;
+  else if (status_str.compare(kStatusMapped) == 0)
+    *status = AccountMapping::MAPPED;
+  else if (status_str.compare(kStatusRemoving) == 0)
+    *status = AccountMapping::REMOVING;
+  else if (status_str.compare(kStatusNew) == 0)
+    *status = AccountMapping::NEW;
   else
     return false;
 
@@ -53,7 +58,7 @@ bool StringToMessageType(const std::string& type_str,
 
 }  // namespace
 
-AccountMapping::AccountMapping() {
+AccountMapping::AccountMapping() : status(NEW) {
 }
 
 AccountMapping::~AccountMapping() {
@@ -63,10 +68,10 @@ std::string AccountMapping::SerializeAsString() const {
   std::string value;
   value.append(email);
   value.append(kSeparator);
-  value.append(base::Int64ToString(status_change_timestamp.ToInternalValue()));
+  value.append(StatusToString(status));
   value.append(kSeparator);
-  value.append(MessageTypeToString(last_message_type));
-  if (last_message_type != MSG_NONE) {
+  value.append(base::Int64ToString(status_change_timestamp.ToInternalValue()));
+  if (!last_message_id.empty()) {
     value.append(kSeparator);
     value.append(last_message_id);
   }
@@ -83,48 +88,39 @@ bool AccountMapping::ParseFromString(const std::string& value) {
   }
 
   if (values[kEmailIndex].empty() ||
-      values[kMappingChangeTimestampIndex].empty() ||
-      values[kMessageTypeIndex].empty()) {
+      values[kStatusChangeTimestampIndex].empty() ||
+      values[kStatusIndex].empty()) {
     return false;
   }
 
-  if (values.size() == kSizeWithMessage && values[kMessageIdIndex].empty()) {
+  if (values.size() == kSizeWithMessage && values[kMessageIdIndex].empty())
+    return false;
+
+  MappingStatus temp_status;
+  if (!StringToStatus(values[kStatusIndex], &temp_status))
+    return false;
+
+  if (values.size() == kSizeWithNoMessage &&
+      (temp_status == REMOVING || temp_status == ADDING)) {
     return false;
   }
-
-  MessageType message_type;
-  if (!StringToMessageType(values[kMessageTypeIndex], &message_type))
-    return false;
-
-  if ((message_type == MSG_NONE && values.size() == kSizeWithMessage) ||
-      (message_type != MSG_NONE && values.size() != kSizeWithMessage)) {
-    return false;
-  }
-
-  last_message_type = message_type;
 
   int64 status_change_ts_internal = 0LL;
-  if (!base::StringToInt64(values[kMappingChangeTimestampIndex],
+  if (!base::StringToInt64(values[kStatusChangeTimestampIndex],
                            &status_change_ts_internal)) {
     return false;
   }
 
-  if (status_change_ts_internal == 0LL)
-    status = ADDING;
-  else if (last_message_type == MSG_REMOVE)
-    status = REMOVING;
-  else
-    status = MAPPED;
+  status_change_timestamp =
+      base::Time::FromInternalValue(status_change_ts_internal);
+  status = temp_status;
+  email = values[kEmailIndex];
+  access_token.clear();
 
   if (values.size() == kSizeWithMessage)
     last_message_id = values[kMessageIdIndex];
   else
     last_message_id.clear();
-
-  email = values[kEmailIndex];
-  status_change_timestamp =
-      base::Time::FromInternalValue(status_change_ts_internal);
-  access_token.clear();
 
   return true;
 }

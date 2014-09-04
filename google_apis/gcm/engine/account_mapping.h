@@ -25,16 +25,6 @@ struct GCM_EXPORT AccountMapping {
                // reached the GCM.
     REMOVING,  // Account is removed, but a message removing the mapping has not
                // been confirmed yet.
-    REMOVED,   // Account is removed, and at least one message has been
-               // confirmed to have reached the GCM.
-  };
-
-  // Indicates whether a message, if sent, was adding or removing account
-  // mapping.
-  enum MessageType {
-    MSG_NONE,    // No message has been sent.
-    MSG_ADD,     // Account was mapped to device by the message.
-    MSG_REMOVE,  // Account mapping to device was removed by the message.
   };
 
   AccountMapping();
@@ -57,8 +47,6 @@ struct GCM_EXPORT AccountMapping {
   MappingStatus status;
   // Time of the mapping status change.
   base::Time status_change_timestamp;
-  // Type of the last mapping message sent to GCM.
-  MessageType last_message_type;
   // ID of the last mapping message sent to GCM.
   std::string last_message_id;
 };

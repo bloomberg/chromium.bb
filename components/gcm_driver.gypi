@@ -23,6 +23,8 @@
         'gcm_driver/android/component_jni_registrar.h',
         'gcm_driver/default_gcm_app_handler.cc',
         'gcm_driver/default_gcm_app_handler.h',
+        'gcm_driver/gcm_account_mapper.cc',
+        'gcm_driver/gcm_account_mapper.h',
         'gcm_driver/gcm_activity.cc',
         'gcm_driver/gcm_activity.h',
         'gcm_driver/gcm_app_handler.cc',
@@ -55,6 +57,8 @@
             '../google_apis/gcm/gcm.gyp:gcm',
           ],
           'sources!': [
+            'gcm_driver/gcm_account_mapper.cc',
+            'gcm_driver/gcm_account_mapper.h',
             'gcm_driver/gcm_client_factory.cc',
             'gcm_driver/gcm_client_factory.h',
             'gcm_driver/gcm_client_impl.cc',

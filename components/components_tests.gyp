@@ -119,6 +119,7 @@
             'feedback/feedback_common_unittest.cc',
             'feedback/feedback_data_unittest.cc',
             'feedback/feedback_uploader_unittest.cc',
+            'gcm_driver/gcm_account_mapper_unittest.cc',
             'gcm_driver/gcm_client_impl_unittest.cc',
             'gcm_driver/gcm_driver_desktop_unittest.cc',
             'gcm_driver/gcm_stats_recorder_impl_unittest.cc',
@@ -439,7 +440,7 @@
                 'components.gyp:autofill_content_browser',
                 'components.gyp:autofill_content_renderer',
                 'components.gyp:autofill_content_test_support',
-                
+
                 # Dependencies of component_updater
                 'components.gyp:component_updater',
                 'components.gyp:component_updater_test_support',
@@ -577,6 +578,7 @@
             }],
             ['OS == "android"', {
               'sources!': [
+                'gcm_driver/gcm_account_mapper_unittest.cc',
                 'gcm_driver/gcm_client_impl_unittest.cc',
                 'gcm_driver/gcm_driver_desktop_unittest.cc',
                 'feedback/feedback_common_unittest.cc',
