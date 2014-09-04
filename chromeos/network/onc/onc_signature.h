@@ -47,6 +47,8 @@ CHROMEOS_EXPORT extern const OncValueSignature kVerifyX509Signature;
 CHROMEOS_EXPORT extern const OncValueSignature kVPNSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kEthernetSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kIPConfigSignature;
+CHROMEOS_EXPORT extern const OncValueSignature kSavedIPConfigSignature;
+CHROMEOS_EXPORT extern const OncValueSignature kStaticIPConfigSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kProxyLocationSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kProxyManualSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kProxySettingsSignature;

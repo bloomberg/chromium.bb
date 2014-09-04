@@ -152,8 +152,10 @@ void NetworkConfigMessageHandler::GetPropertiesSuccess(
   return_arg_list.AppendInteger(callback_id);
 
   base::DictionaryValue* network_properties = dictionary.DeepCopy();
+  // Set the 'ServicePath' property for debugging.
   network_properties->SetStringWithoutPathExpansion(
-      ::onc::network_config::kGUID, service_path);
+      "ServicePath", service_path);
+
   return_arg_list.Append(network_properties);
   InvokeCallback(return_arg_list);
 }
@@ -185,6 +187,8 @@ void NetworkConfigMessageHandler::GetShillPropertiesSuccess(
     const std::string& service_path,
     const base::DictionaryValue& dictionary) const {
   scoped_ptr<base::DictionaryValue> dictionary_copy(dictionary.DeepCopy());
+  // Set the 'ServicePath' property for debugging.
+  dictionary_copy->SetStringWithoutPathExpansion("ServicePath", service_path);
 
   // Get the device properties for debugging.
   std::string device;
@@ -196,8 +200,21 @@ void NetworkConfigMessageHandler::GetShillPropertiesSuccess(
     base::DictionaryValue* device_dictionary =
         device_state->properties().DeepCopy();
     dictionary_copy->Set(shill::kDeviceProperty, device_dictionary);
+
+    // Convert IPConfig dictionary to a ListValue.
+    base::ListValue* ip_configs = new base::ListValue;
+    for (base::DictionaryValue::Iterator iter(device_state->ip_configs());
+         !iter.IsAtEnd(); iter.Advance()) {
+      ip_configs->Append(iter.value().DeepCopy());
+    }
+    device_dictionary->SetWithoutPathExpansion(
+        shill::kIPConfigsProperty, ip_configs);
   }
-  GetPropertiesSuccess(callback_id, service_path, *dictionary_copy);
+
+  base::ListValue return_arg_list;
+  return_arg_list.AppendInteger(callback_id);
+  return_arg_list.Append(dictionary_copy.release());
+  InvokeCallback(return_arg_list);
 }
 
 void NetworkConfigMessageHandler::InvokeCallback(

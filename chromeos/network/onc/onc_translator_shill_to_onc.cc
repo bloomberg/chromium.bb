@@ -10,6 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_util.h"
@@ -77,6 +78,9 @@ class ShillToONCTranslator {
   void TranslateCellularDevice();
   void TranslateNetworkWithState();
   void TranslateIPConfig();
+  void TranslateSavedOrStaticIPConfig(const std::string& nameserver_property);
+  void TranslateSavedIPConfig();
+  void TranslateStaticIPConfig();
 
   // Creates an ONC object from |dictionary| according to the signature
   // associated to |onc_field_name| and adds it to |onc_object_| at
@@ -157,6 +161,10 @@ ShillToONCTranslator::CreateTranslatedONCObject() {
       TranslateCellularWithState();
   } else if (onc_signature_ == &kIPConfigSignature) {
     TranslateIPConfig();
+  } else if (onc_signature_ == &kSavedIPConfigSignature) {
+    TranslateSavedIPConfig();
+  } else if (onc_signature_ == &kStaticIPConfigSignature) {
+    TranslateStaticIPConfig();
   } else {
     CopyPropertiesAccordingToSignature();
   }
@@ -371,8 +379,7 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
   // Since Name is a read only field in Shill unless it's a VPN, it is copied
   // here, but not when going the other direction (if it's not a VPN).
   std::string name;
-  shill_dictionary_->GetStringWithoutPathExpansion(shill::kNameProperty,
-                                                   &name);
+  shill_dictionary_->GetStringWithoutPathExpansion(shill::kNameProperty, &name);
   onc_object_->SetStringWithoutPathExpansion(::onc::network_config::kName,
                                              name);
 
@@ -410,6 +417,9 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
     TranslateAndAddListOfObjects(::onc::network_config::kIPConfigs,
                                  *shill_ipconfigs);
   }
+
+  TranslateAndAddNestedObject(::onc::network_config::kSavedIPConfig);
+  TranslateAndAddNestedObject(::onc::network_config::kStaticIPConfig);
 }
 
 void ShillToONCTranslator::TranslateIPConfig() {
@@ -429,6 +439,34 @@ void ShillToONCTranslator::TranslateIPConfig() {
   }
 
   onc_object_->SetStringWithoutPathExpansion(::onc::ipconfig::kType, type);
+}
+
+void ShillToONCTranslator::TranslateSavedOrStaticIPConfig(
+    const std::string& nameserver_property) {
+  CopyPropertiesAccordingToSignature();
+  // Saved/Static IP config nameservers are stored as a comma separated list.
+  std::string shill_nameservers;
+  shill_dictionary_->GetStringWithoutPathExpansion(
+      nameserver_property, &shill_nameservers);
+  std::vector<std::string> onc_nameserver_vector;
+  if (Tokenize(shill_nameservers, ",", &onc_nameserver_vector) > 0) {
+    scoped_ptr<base::ListValue> onc_nameservers(new base::ListValue);
+    for (std::vector<std::string>::iterator iter =
+             onc_nameserver_vector.begin();
+         iter != onc_nameserver_vector.end(); ++iter) {
+      onc_nameservers->AppendString(*iter);
+    }
+    onc_object_->SetWithoutPathExpansion(::onc::ipconfig::kNameServers,
+                                         onc_nameservers.release());
+  }
+}
+
+void ShillToONCTranslator::TranslateSavedIPConfig() {
+  TranslateSavedOrStaticIPConfig(shill::kSavedIPNameServersProperty);
+}
+
+void ShillToONCTranslator::TranslateStaticIPConfig() {
+  TranslateSavedOrStaticIPConfig(shill::kStaticIPNameServersProperty);
 }
 
 void ShillToONCTranslator::TranslateAndAddNestedObject(
@@ -509,6 +547,8 @@ void ShillToONCTranslator::CopyPropertiesAccordingToSignature(
     const OncValueSignature* value_signature) {
   if (value_signature->base_signature)
     CopyPropertiesAccordingToSignature(value_signature->base_signature);
+  if (!value_signature->fields)
+    return;
   for (const OncFieldSignature* field_signature = value_signature->fields;
        field_signature->onc_field_name != NULL; ++field_signature) {
     CopyProperty(field_signature);

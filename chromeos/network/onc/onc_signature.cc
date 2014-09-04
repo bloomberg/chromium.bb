@@ -178,6 +178,7 @@ const OncFieldSignature ipconfig_fields[] = {
     { ::onc::ipconfig::kRoutingPrefix, &kIntegerSignature},
     { ::onc::network_config::kSearchDomains, &kStringListSignature},
     { ::onc::ipconfig::kType, &kStringSignature},
+    { ::onc::ipconfig::kWebProxyAutoDiscoveryUrl, &kStringSignature},
     {NULL}};
 
 const OncFieldSignature proxy_location_fields[] = {
@@ -284,23 +285,32 @@ const OncFieldSignature cellular_with_state_fields[] = {
     {NULL}};
 
 const OncFieldSignature network_configuration_fields[] = {
-    { ::onc::kRecommended, &kRecommendedSignature},
+    { ::onc::network_config::kCellular, &kCellularSignature},
     { ::onc::network_config::kEthernet, &kEthernetSignature},
     { ::onc::network_config::kGUID, &kStringSignature},
+
     // Not supported for policy but for reading network state.
+    // TODO(pneubeck@): Resolve IPConfigs vs. StaticIPConfig, crbug.com/410877
     { ::onc::network_config::kIPConfigs, &kIPConfigListSignature},
+
     { ::onc::network_config::kName, &kStringSignature},
+
     // Not supported, yet.
     { ::onc::network_config::kNameServers, &kStringListSignature},
+
     { ::onc::network_config::kPriority, &kIntegerSignature},
     { ::onc::network_config::kProxySettings, &kProxySettingsSignature},
+    { ::onc::kRecommended, &kRecommendedSignature},
     { ::onc::kRemove, &kBoolSignature},
+
     // Not supported, yet.
     { ::onc::network_config::kSearchDomains, &kStringListSignature},
+
+    { ::onc::network_config::kSavedIPConfig, &kSavedIPConfigSignature},
+    { ::onc::network_config::kStaticIPConfig, &kStaticIPConfigSignature},
     { ::onc::network_config::kType, &kStringSignature},
     { ::onc::network_config::kVPN, &kVPNSignature},
     { ::onc::network_config::kWiFi, &kWiFiSignature},
-    { ::onc::network_config::kCellular, &kCellularSignature},
     {NULL}};
 
 const OncFieldSignature network_with_state_fields[] = {
@@ -378,6 +388,12 @@ const OncValueSignature kEthernetSignature = {
   base::Value::TYPE_DICTIONARY, ethernet_fields, NULL
 };
 const OncValueSignature kIPConfigSignature = {
+  base::Value::TYPE_DICTIONARY, ipconfig_fields, NULL
+};
+const OncValueSignature kSavedIPConfigSignature = {
+  base::Value::TYPE_DICTIONARY, ipconfig_fields, NULL
+};
+const OncValueSignature kStaticIPConfigSignature = {
   base::Value::TYPE_DICTIONARY, ipconfig_fields, NULL
 };
 const OncValueSignature kProxyLocationSignature = {

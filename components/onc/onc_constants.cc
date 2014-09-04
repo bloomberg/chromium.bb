@@ -38,6 +38,8 @@ const char kDevice[] = "Device";
 const char kEthernet[] = "Ethernet";
 const char kGUID[] = "GUID";
 const char kIPConfigs[] = "IPConfigs";
+const char kSavedIPConfig[] = "SavedIPConfig";
+const char kStaticIPConfig[] = "StaticIPConfig";
 const char kMacAddress[] = "MacAddress";
 const char kName[] = "Name";
 const char kNameServers[] = "NameServers";
@@ -159,6 +161,7 @@ const char kIPv6[] = "IPv6";
 const char kNameServers[] = "NameServers";
 const char kRoutingPrefix[] = "RoutingPrefix";
 const char kType[] = "Type";
+const char kWebProxyAutoDiscoveryUrl[] = "WebProxyAutoDiscoveryUrl";
 }  // namespace ipconfig
 
 namespace wifi {

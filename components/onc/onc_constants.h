@@ -62,6 +62,8 @@ ONC_EXPORT extern const char kDevice[];
 ONC_EXPORT extern const char kEthernet[];
 ONC_EXPORT extern const char kGUID[];
 ONC_EXPORT extern const char kIPConfigs[];
+ONC_EXPORT extern const char kSavedIPConfig[];
+ONC_EXPORT extern const char kStaticIPConfig[];
 ONC_EXPORT extern const char kMacAddress[];
 ONC_EXPORT extern const char kName[];
 ONC_EXPORT extern const char kNameServers[];
@@ -169,6 +171,7 @@ ONC_EXPORT extern const char kIPv6[];
 ONC_EXPORT extern const char kNameServers[];
 ONC_EXPORT extern const char kRoutingPrefix[];
 ONC_EXPORT extern const char kType[];
+ONC_EXPORT extern const char kWebProxyAutoDiscoveryUrl[];
 }  // namespace ipconfig
 
 namespace ethernet {

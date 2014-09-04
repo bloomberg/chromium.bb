@@ -254,11 +254,31 @@
     <dt class="field">IPConfigs</dt>
     <dd>
       <span class="field_meta">
-        (optional if <span class="field">Remove</span> is
-        <span class="value">false</span>, otherwise ignored)
+        (optional for connected networks, read-only)
         <span class="type">array of IPConfig</span>
       </span>
-      Static IPv4 or IPv6 parameters to associate with this connection.
+      Array of IPConfig properties associated with this connection.
+    </dd>
+
+    <dt class="field">StaticIPConfig</dt>
+    <dd>
+      <span class="field_meta">
+        (optional if <span class="field">Remove</span> is
+        <span class="value">false</span>, otherwise ignored)
+        <span class="type">IPConfig</span>
+      </span>
+      Each property set in this IPConfig object overrides the respective
+      parameter received over DHCP.
+    </dd>
+
+    <dt class="field">SavedIPConfig</dt>
+    <dd>
+      <span class="field_meta">
+        (optional for connected networks, read-only)
+        <span class="type">IPConfig</span>
+      </span>
+      IPConfig property containing the configuration that was received from the
+      DHCP server prior to applying any StaticIPConfig parameters.
     </dd>
 
     <dt class="field">Name</dt>
@@ -532,6 +552,16 @@
       SearchDomains field for this configuration. If not specified, top level
       values will be used.
     </dd>
+
+    <dt class="field">WebProxyAutoDiscoveryUrl</dt>
+    <dd>
+      <span class="field_meta">
+        (optional if part of <span class="field">IPConfigs</span>)
+        <span class="type">string</span>
+      </span>
+      The Web Proxy Auto-Discovery URL for this network as reported over DHCP.
+    </dd>
+
   </dl>
 </section>
 

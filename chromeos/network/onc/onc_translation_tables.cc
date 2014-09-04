@@ -185,6 +185,24 @@ const FieldTranslationEntry ipconfig_fields[] = {
     // This field is converted during translation, see ShillToONCTranslator::
     // TranslateIPConfig. It is only converted from Shill->ONC.
     // { ::onc::ipconfig::kType, shill::kMethodProperty},
+    { ::onc::ipconfig::kWebProxyAutoDiscoveryUrl,
+      shill::kWebProxyAutoDiscoveryUrlProperty},
+    {NULL}};
+
+const FieldTranslationEntry saved_ipconfig_fields[] = {
+    { ::onc::ipconfig::kIPAddress, shill::kSavedIPAddressProperty},
+    { ::onc::ipconfig::kGateway, shill::kSavedIPGatewayProperty},
+    { ::onc::ipconfig::kRoutingPrefix, shill::kSavedIPPrefixlenProperty},
+    // NameServers are converted during translation, see onc_translator_*.
+    // { ::onc::ipconfig::kNameServers, shill::kSavedIPNameServersProperty},
+    {NULL}};
+
+const FieldTranslationEntry static_ipconfig_fields[] = {
+    { ::onc::ipconfig::kIPAddress, shill::kStaticIPAddressProperty},
+    { ::onc::ipconfig::kGateway, shill::kStaticIPGatewayProperty},
+    { ::onc::ipconfig::kRoutingPrefix, shill::kStaticIPPrefixlenProperty},
+    // NameServers are converted during translation, see onc_translator_*.
+    // { ::onc::ipconfig::kNameServers, shill::kStaticIPNameServersProperty},
     {NULL}};
 
 struct OncValueTranslationEntry {
@@ -211,6 +229,8 @@ const OncValueTranslationEntry onc_value_translation_table[] = {
   { &kNetworkWithStateSignature, network_fields },
   { &kNetworkConfigurationSignature, network_fields },
   { &kIPConfigSignature, ipconfig_fields },
+  { &kSavedIPConfigSignature, saved_ipconfig_fields },
+  { &kStaticIPConfigSignature, static_ipconfig_fields },
   { NULL }
 };
 
