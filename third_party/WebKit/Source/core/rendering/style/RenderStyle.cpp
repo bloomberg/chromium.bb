@@ -436,9 +436,6 @@ bool RenderStyle::diffNeedsFullLayoutAndPaintInvalidation(const RenderStyle& oth
             || rareNonInheritedData->m_wrapThrough != other.rareNonInheritedData->m_wrapThrough
             || rareNonInheritedData->m_shapeMargin != other.rareNonInheritedData->m_shapeMargin
             || rareNonInheritedData->m_order != other.rareNonInheritedData->m_order
-            || rareNonInheritedData->m_alignContent != other.rareNonInheritedData->m_alignContent
-            || rareNonInheritedData->m_alignItems != other.rareNonInheritedData->m_alignItems
-            || rareNonInheritedData->m_alignSelf != other.rareNonInheritedData->m_alignSelf
             || rareNonInheritedData->m_justifyContent != other.rareNonInheritedData->m_justifyContent
             || rareNonInheritedData->m_grid.get() != other.rareNonInheritedData->m_grid.get()
             || rareNonInheritedData->m_gridItem.get() != other.rareNonInheritedData->m_gridItem.get()
@@ -610,6 +607,13 @@ bool RenderStyle::diffNeedsFullLayout(const RenderStyle& other) const
             return true;
 
         if (surround->padding != other.surround->padding)
+            return true;
+    }
+
+    if (rareNonInheritedData.get() != other.rareNonInheritedData.get()) {
+        if (rareNonInheritedData->m_alignContent != other.rareNonInheritedData->m_alignContent
+            || rareNonInheritedData->m_alignItems != other.rareNonInheritedData->m_alignItems
+            || rareNonInheritedData->m_alignSelf != other.rareNonInheritedData->m_alignSelf)
             return true;
     }
 
