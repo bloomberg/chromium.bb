@@ -36,6 +36,7 @@ import clang_format
 import fix_encoding
 import gclient_utils
 import git_common
+import owners
 import owners_finder
 import presubmit_support
 import rietveld
@@ -959,10 +960,10 @@ class ChangeDescription(object):
       lines.pop(-1)
     self._description_lines = lines
 
-  def update_reviewers(self, reviewers):
+  def update_reviewers(self, reviewers, add_owners_tbr=False, change=None):
     """Rewrites the R=/TBR= line(s) as a single line each."""
     assert isinstance(reviewers, list), reviewers
-    if not reviewers:
+    if not reviewers and not add_owners_tbr:
       return
     reviewers = reviewers[:]
 
@@ -987,6 +988,14 @@ class ChangeDescription(object):
     for name in r_names:
       if name not in reviewers:
         reviewers.append(name)
+    if add_owners_tbr:
+      owners_db = owners.Database(change.RepositoryRoot(),
+        fopen=file, os_path=os.path, glob=glob.glob)
+      all_reviewers = set(tbr_names + reviewers)
+      missing_files = owners_db.files_not_covered_by(change.LocalPaths(),
+                                                     all_reviewers)
+      tbr_names.extend(owners_db.reviewers_for(missing_files,
+                                               change.author_email))
     new_r_line = 'R=' + ', '.join(reviewers) if reviewers else None
     new_tbr_line = 'TBR=' + ', '.join(tbr_names) if tbr_names else None
 
@@ -1525,7 +1534,7 @@ def AddChangeIdToCommitMessage(options, args):
     print >> sys.stderr, 'ERROR: Gerrit commit-msg hook not available.'
 
 
-def GerritUpload(options, args, cl):
+def GerritUpload(options, args, cl, change):
   """upload the current branch to gerrit."""
   # We assume the remote called "origin" is the one we want.
   # It is probably not worthwhile to support different workflows.
@@ -1551,8 +1560,8 @@ def GerritUpload(options, args, cl):
           'commit.')
     ask_for_data('About to upload; enter to confirm.')
 
-  if options.reviewers:
-    change_desc.update_reviewers(options.reviewers)
+  if options.reviewers or options.tbr_owners:
+    change_desc.update_reviewers(options.reviewers, options.tbr_owners, change)
 
   receive_options = []
   cc = cl.GetCCList().split(',')
@@ -1575,7 +1584,7 @@ def GerritUpload(options, args, cl):
   return 0
 
 
-def RietveldUpload(options, args, cl):
+def RietveldUpload(options, args, cl, change):
   """upload the patch to rietveld."""
   upload_args = ['--assume_yes']  # Don't ask about untracked files.
   upload_args.extend(['--server', cl.GetRietveldServer()])
@@ -1600,8 +1609,10 @@ def RietveldUpload(options, args, cl):
       upload_args.extend(['--title', options.title])
     message = options.title or options.message or CreateDescriptionFromLog(args)
     change_desc = ChangeDescription(message)
-    if options.reviewers:
-      change_desc.update_reviewers(options.reviewers)
+    if options.reviewers or options.tbr_owners:
+      change_desc.update_reviewers(options.reviewers,
+                                   options.tbr_owners,
+                                   change)
     if not options.force:
       change_desc.prompt()
 
@@ -1735,6 +1746,8 @@ def CMDupload(parser, args):
                          'use for CL.  Default: master')
   parser.add_option('--email', default=None,
                     help='email address to use to connect to Rietveld')
+  parser.add_option('--tbr-owners', dest='tbr_owners', action='store_true',
+                    help='add a set of OWNERS to TBR')
 
   add_git_similarity(parser)
   (options, args) = parser.parse_args(args)
@@ -1765,10 +1778,12 @@ def CMDupload(parser, args):
     cl.SetWatchers(watchlist.GetWatchersForPaths(files))
 
   if not options.bypass_hooks:
-    if options.reviewers:
+    if options.reviewers or options.tbr_owners:
       # Set the reviewer list now so that presubmit checks can access it.
       change_description = ChangeDescription(change.FullDescriptionText())
-      change_description.update_reviewers(options.reviewers)
+      change_description.update_reviewers(options.reviewers,
+                                          options.tbr_owners,
+                                          change)
       change.SetDescriptionText(change_description.description)
     hook_results = cl.RunHook(committing=False,
                               may_prompt=not options.force,
@@ -1793,8 +1808,8 @@ def CMDupload(parser, args):
 
   print_stats(options.similarity, options.find_copies, args)
   if settings.GetIsGerrit():
-    return GerritUpload(options, args, cl)
-  ret = RietveldUpload(options, args, cl)
+    return GerritUpload(options, args, cl, change)
+  ret = RietveldUpload(options, args, cl, change)
   if not ret:
     git_set_branch_value('last-upload-hash',
                          RunGit(['rev-parse', 'HEAD']).strip())
