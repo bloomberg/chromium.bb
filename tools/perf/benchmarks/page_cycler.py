@@ -105,8 +105,9 @@ class PageCyclerToughLayoutCases(benchmark.Benchmark):
   options = {'pageset_repeat': 10}
 
 
+# crbug.com/273986: This test is really flakey on xp.
 # cabug.com/341843: This test is always timing out on Android.
-@benchmark.Disabled('android')
+@benchmark.Disabled('android', 'win')
 class PageCyclerTypical25(benchmark.Benchmark):
   test = page_cycler.PageCycler
   page_set = page_sets.Typical25PageSet
