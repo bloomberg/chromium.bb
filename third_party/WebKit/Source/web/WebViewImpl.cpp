@@ -2556,6 +2556,7 @@ void WebViewImpl::didNotAcquirePointerLock()
 
 void WebViewImpl::didLosePointerLock()
 {
+    m_pointerLockGestureToken.clear();
     if (page())
         page()->pointerLockController().didLosePointerLock();
 }
@@ -4237,13 +4238,17 @@ bool WebViewImpl::isPointerLocked()
 
 void WebViewImpl::pointerLockMouseEvent(const WebInputEvent& event)
 {
+    OwnPtr<UserGestureIndicator> gestureIndicator;
     AtomicString eventType;
     switch (event.type) {
     case WebInputEvent::MouseDown:
         eventType = EventTypeNames::mousedown;
+        gestureIndicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingNewUserGesture));
+        m_pointerLockGestureToken = gestureIndicator->currentToken();
         break;
     case WebInputEvent::MouseUp:
         eventType = EventTypeNames::mouseup;
+        gestureIndicator = adoptPtr(new UserGestureIndicator(m_pointerLockGestureToken.release()));
         break;
     case WebInputEvent::MouseMove:
         eventType = EventTypeNames::mousemove;

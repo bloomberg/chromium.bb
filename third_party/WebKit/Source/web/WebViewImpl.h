@@ -680,6 +680,8 @@ private:
     RefPtrWillBePersistent<Node> m_mouseCaptureNode;
     RefPtr<UserGestureToken> m_mouseCaptureGestureToken;
 
+    RefPtr<UserGestureToken> m_pointerLockGestureToken;
+
     IntRect m_rootLayerScrollDamage;
     WebLayerTreeView* m_layerTreeView;
     WebLayer* m_rootLayer;
