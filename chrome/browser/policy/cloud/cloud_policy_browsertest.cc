@@ -142,6 +142,11 @@ void GetExpectedDefaultPolicy(PolicyMap* policy_map) {
                   POLICY_SCOPE_USER,
                   new base::StringValue("primary-only"),
                   NULL);
+  policy_map->Set(key::kEasyUnlockAllowed,
+                  POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_USER,
+                  new base::FundamentalValue(false),
+                  NULL);
 #endif
 }
 
@@ -177,6 +182,11 @@ void GetExpectedTestPolicy(PolicyMap* expected, const char* homepage) {
                 POLICY_LEVEL_MANDATORY,
                 POLICY_SCOPE_USER,
                 new base::StringValue("primary-only"),
+                NULL);
+  expected->Set(key::kEasyUnlockAllowed,
+                POLICY_LEVEL_MANDATORY,
+                POLICY_SCOPE_USER,
+                new base::FundamentalValue(false),
                 NULL);
 #endif
 }

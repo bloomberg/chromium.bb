@@ -289,6 +289,16 @@ void UserCloudPolicyManagerChromeOS::GetChromePolicy(PolicyMap* policy_map) {
                     new base::StringValue("primary-only"),
                     NULL);
   }
+
+  // Set EasyUnlockAllowed policy to false by default for managed accounts.
+  if (store()->has_policy() &&
+      !policy_map->Get(key::kEasyUnlockAllowed)) {
+    policy_map->Set(key::kEasyUnlockAllowed,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_USER,
+                    new base::FundamentalValue(false),
+                    NULL);
+  }
 }
 
 void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthTokenUsingSigninProfile() {

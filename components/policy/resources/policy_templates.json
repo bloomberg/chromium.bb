@@ -6612,8 +6612,7 @@
 
       If you disable this setting, users will not be allowed to use EasyUnlock.
 
-      If this policy is left not set, EasyUnlock is allowed if the requirements for the feature are satified.
-      ''',
+      If this policy is left not set, the default is not allowed for enterprise-managed users and allowed for non-managed users.''',
     },
     {
       'name': 'SessionLocales',
