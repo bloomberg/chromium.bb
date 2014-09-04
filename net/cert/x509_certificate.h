@@ -395,10 +395,6 @@ class NET_EXPORT X509Certificate
   // the same.
   static SHA1HashValue CalculateFingerprint(OSCertHandle cert_handle);
 
-  // Calculates the SHA-256 fingerprint of the certificate.  Returns an empty
-  // (all zero) fingerprint on failure.
-  static SHA256HashValue CalculateFingerprint256(OSCertHandle cert_handle);
-
   // Calculates the SHA-1 fingerprint of the intermediate CA certificates.
   // Returns an empty (all zero) fingerprint on failure.
   //

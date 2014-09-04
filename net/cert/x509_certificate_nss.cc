@@ -225,21 +225,6 @@ SHA1HashValue X509Certificate::CalculateFingerprint(
 }
 
 // static
-SHA256HashValue X509Certificate::CalculateFingerprint256(OSCertHandle cert) {
-  SHA256HashValue sha256;
-  memset(sha256.data, 0, sizeof(sha256.data));
-
-  DCHECK(NULL != cert->derCert.data);
-  DCHECK_NE(0U, cert->derCert.len);
-
-  SECStatus rv = HASH_HashBuf(
-      HASH_AlgSHA256, sha256.data, cert->derCert.data, cert->derCert.len);
-  DCHECK_EQ(SECSuccess, rv);
-
-  return sha256;
-}
-
-// static
 SHA1HashValue X509Certificate::CalculateCAFingerprint(
     const OSCertHandles& intermediates) {
   SHA1HashValue sha1;
