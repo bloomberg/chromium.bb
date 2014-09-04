@@ -41,7 +41,7 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
   SSLClientCertificateSelector(
       content::WebContents* web_contents,
       const net::HttpNetworkSession* network_session,
-      net::SSLCertRequestInfo* cert_request_info,
+      const scoped_refptr<net::SSLCertRequestInfo>& cert_request_info,
       const chrome::SelectCertificateCallback& callback);
   virtual ~SSLClientCertificateSelector();
 

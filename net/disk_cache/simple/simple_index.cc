@@ -135,10 +135,11 @@ bool EntryMetadata::Deserialize(PickleIterator* it) {
   return true;
 }
 
-SimpleIndex::SimpleIndex(base::SingleThreadTaskRunner* io_thread,
-                         SimpleIndexDelegate* delegate,
-                         net::CacheType cache_type,
-                         scoped_ptr<SimpleIndexFile> index_file)
+SimpleIndex::SimpleIndex(
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_thread,
+    SimpleIndexDelegate* delegate,
+    net::CacheType cache_type,
+    scoped_ptr<SimpleIndexFile> index_file)
     : delegate_(delegate),
       cache_type_(cache_type),
       cache_size_(0),
@@ -152,7 +153,8 @@ SimpleIndex::SimpleIndex(base::SingleThreadTaskRunner* io_thread,
       // Creating the callback once so it is reused every time
       // write_to_disk_timer_.Start() is called.
       write_to_disk_cb_(base::Bind(&SimpleIndex::WriteToDisk, AsWeakPtr())),
-      app_on_background_(false) {}
+      app_on_background_(false) {
+}
 
 SimpleIndex::~SimpleIndex() {
   DCHECK(io_thread_checker_.CalledOnValidThread());

@@ -20,7 +20,7 @@ class SSLClientAuthObserver : public content::NotificationObserver {
  public:
   SSLClientAuthObserver(
       const net::HttpNetworkSession* network_session,
-      net::SSLCertRequestInfo* cert_request_info,
+      const scoped_refptr<net::SSLCertRequestInfo>& cert_request_info,
       const base::Callback<void(net::X509Certificate*)>& callback);
   virtual ~SSLClientAuthObserver();
 

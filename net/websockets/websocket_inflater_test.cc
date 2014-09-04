@@ -93,7 +93,7 @@ TEST(WebSocketInflaterTest, ChokedInvalidData) {
   EXPECT_TRUE(inflater.AddBytes("\xf2\x48\xcd\xc9INVALID DATA", 16));
   EXPECT_TRUE(inflater.Finish());
   EXPECT_EQ(1u, inflater.CurrentOutputSize());
-  EXPECT_FALSE(inflater.GetOutput(1024));
+  EXPECT_FALSE(inflater.GetOutput(1024).get());
 }
 
 TEST(WebSocketInflaterTest, MultipleAddBytesCalls) {
