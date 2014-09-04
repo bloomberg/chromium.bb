@@ -169,12 +169,18 @@ scoped_ptr<ServiceMetadata> InitializeServiceMetadata(LevelDBWrapper* db) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(db);
 
+  scoped_ptr<ServiceMetadata> service_metadata;
+
   std::string value;
   leveldb::Status status = db->Get(kServiceMetadataKey, &value);
-
-  scoped_ptr<ServiceMetadata> service_metadata(new ServiceMetadata);
-  if (!status.ok() || !service_metadata->ParseFromString(value))
+  if (status.ok()) {
+    service_metadata.reset(new ServiceMetadata);
+    if (!service_metadata->ParseFromString(value))
+      service_metadata.reset();
+  } else if (status.IsNotFound()) {
+    service_metadata.reset(new ServiceMetadata);
     service_metadata->set_next_tracker_id(1);
+  }
 
   return service_metadata.Pass();
 }

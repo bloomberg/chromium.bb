@@ -641,6 +641,15 @@ TEST_F(MetadataDatabaseTest, InitializationTest_Empty) {
   EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
   DropDatabase();
   EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
+
+  DropDatabase();
+
+  scoped_ptr<LevelDBWrapper> db = InitializeLevelDB();
+  db->Put(kServiceMetadataKey, "Unparsable string");
+  EXPECT_TRUE(db->Commit().ok());
+  db.reset();
+
+  EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
 }
 
 TEST_F(MetadataDatabaseTest, InitializationTest_SimpleTree) {

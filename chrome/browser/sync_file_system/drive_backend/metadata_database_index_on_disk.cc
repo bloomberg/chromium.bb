@@ -144,7 +144,7 @@ std::string GenerateDemotedDirtyIDKey(int64 tracker_id) {
   return kDemotedDirtyIDKeyPrefix + base::Int64ToString(tracker_id);
 }
 
-void RemoveUnreachableItems(LevelDBWrapper* db) {
+void RemoveUnreachableItems(LevelDBWrapper* db, int64 sync_root_tracker_id) {
   DCHECK(db);
 
   typedef std::map<int64, std::set<int64> > ChildTrackersByParent;
@@ -181,9 +181,6 @@ void RemoveUnreachableItems(LevelDBWrapper* db) {
   // Traverse tracker tree from sync-root.
   std::set<int64> visited_trackers;
   {
-    scoped_ptr<ServiceMetadata> service_metadata =
-        InitializeServiceMetadata(db);
-    int64 sync_root_tracker_id = service_metadata->sync_root_tracker_id();
     std::vector<int64> pending;
     if (sync_root_tracker_id != kInvalidTrackerID)
       pending.push_back(sync_root_tracker_id);
@@ -255,10 +252,12 @@ scoped_ptr<MetadataDatabaseIndexOnDisk>
 MetadataDatabaseIndexOnDisk::Create(LevelDBWrapper* db) {
   DCHECK(db);
 
+  scoped_ptr<ServiceMetadata> service_metadata = InitializeServiceMetadata(db);
+  if (!service_metadata)
+    return scoped_ptr<MetadataDatabaseIndexOnDisk>();
+
   PutVersionToDB(kDatabaseOnDiskVersion, db);
-  // TODO(peria): It is not good to call RemoveUnreachableItems on every
-  // creation.
-  RemoveUnreachableItems(db);
+  RemoveUnreachableItems(db, service_metadata->sync_root_tracker_id());
   scoped_ptr<MetadataDatabaseIndexOnDisk>
       index(new MetadataDatabaseIndexOnDisk(db));
 

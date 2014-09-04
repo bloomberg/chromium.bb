@@ -1424,11 +1424,25 @@ void MetadataDatabase::CreateOnWorkerTaskRunner(
       new MetadataDatabase(create_param->worker_task_runner,
                            create_param->database_path,
                            create_param->env_override));
+
   SyncStatusCode status = metadata_database->Initialize();
+  if (status == SYNC_DATABASE_ERROR_FAILED) {
+    // Delete the previous instance to avoid creating a LevelDB instance for
+    // the same path.
+    metadata_database.reset();
+
+    metadata_database.reset(
+        new MetadataDatabase(create_param->worker_task_runner,
+                             create_param->database_path,
+                             create_param->env_override));
+    status = metadata_database->Initialize();
+  }
+
   if (status != SYNC_STATUS_OK)
     metadata_database.reset();
 
-  metadata_database->DetachFromSequence();
+  if (metadata_database)
+    metadata_database->DetachFromSequence();
   create_param->worker_task_runner->PostTask(
       FROM_HERE,
       base::Bind(
@@ -1459,6 +1473,16 @@ SyncStatusCode MetadataDatabase::Initialize() {
     index_ = MetadataDatabaseIndexOnDisk::Create(db_.get());
   } else {
     index_ = MetadataDatabaseIndex::Create(db_.get());
+  }
+  if (!index_) {
+    // Delete all entries in |db_| to reset it.
+    // TODO(peria): Make LevelDBWrapper::DestroyDB() to avoid a full scan.
+    scoped_ptr<LevelDBWrapper::Iterator> itr = db_->NewIterator();
+    for (itr->SeekToFirst(); itr->Valid();)
+      itr->Delete();
+    db_->Commit();
+
+    return SYNC_DATABASE_ERROR_FAILED;
   }
 
   status = LevelDBStatusToSyncStatusCode(db_->Commit());
