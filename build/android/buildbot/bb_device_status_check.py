@@ -149,14 +149,16 @@ def CheckForMissingDevices(options, adb_online_devs):
     bb_annotations.PrintSummaryText(devices_missing_msg)
 
     from_address = 'chrome-bot@chromium.org'
-    to_addresses = ['chrome-labs-tech-ticket@google.com']
+    to_addresses = ['chrome-labs-tech-ticket@google.com',
+                    'chrome-android-device-alert@google.com']
+    cc_addresses = ['chrome-android-device-alert@google.com']
     subject = 'Devices offline on %s, %s, %s' % (
       os.environ.get('BUILDBOT_SLAVENAME'),
       os.environ.get('BUILDBOT_BUILDERNAME'),
       os.environ.get('BUILDBOT_BUILDNUMBER'))
     msg = ('Please reboot the following devices:\n%s' %
            '\n'.join(map(str,new_missing_devs)))
-    SendEmail(from_address, to_addresses, subject, msg)
+    SendEmail(from_address, to_addresses, cc_addresses, subject, msg)
 
   all_known_devices = list(set(adb_online_devs) | set(last_devices))
   device_list.WritePersistentDeviceList(last_devices_path, all_known_devices)
@@ -198,9 +200,10 @@ def CheckForMissingDevices(options, adb_online_devs):
              'regularly scheduled program.' % list(new_devs))
 
 
-def SendEmail(from_address, to_addresses, subject, msg):
+def SendEmail(from_address, to_addresses, cc_addresses, subject, msg):
   msg_body = '\r\n'.join(['From: %s' % from_address,
                           'To: %s' % ', '.join(to_addresses),
+                          'CC: %s' % ', '.join(cc_addresses),
                           'Subject: %s' % subject, '', msg])
   try:
     server = smtplib.SMTP('localhost')
@@ -351,7 +354,7 @@ def main():
     bot_name = os.environ.get('BUILDBOT_BUILDERNAME')
     slave_name = os.environ.get('BUILDBOT_SLAVENAME')
     subject = 'Device status check errors on %s, %s.' % (slave_name, bot_name)
-    SendEmail(from_address, to_addresses, subject, msg)
+    SendEmail(from_address, to_addresses, [], subject, msg)
 
   if options.device_status_dashboard:
     perf_tests_results_helper.PrintPerfResult('BotDevices', 'OnlineDevices',
