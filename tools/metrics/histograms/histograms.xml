@@ -18653,6 +18653,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.Cellular.IPv6ConnectivityStatus"
+    enum="IPv6ConnectivityStatus">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network metric that tracks the presence of complete IPv6
+    configuration at the time when cellular connection is established.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.NetworkConnectionIPType"
+    enum="NetworkConnectionIPType">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network metric that tracks the types of IP configuration used for
+    establishing cellular connections.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.Cellular.OutOfCreditsReason"
     enum="NetworkCellularOutOfCreditsReason">
   <owner>quiche@chromium.org</owner>
@@ -19219,6 +19237,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.Wifi.IPv6ConnectivityStatus"
+    enum="IPv6ConnectivityStatus">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network metric that tracks the presence of complete IPv6
+    configuration at the time when WiFi connection is established.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.Wifi.LinkMonitorBroadcastErrorsAtFailure">
   <owner>quiche@chromium.org</owner>
   <summary>
@@ -19261,6 +19288,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Chrome OS network performance metric that tracks the number of LinkMonitor
     unicast errors that were accrued on an 802.11 wireless network at the time
     that the link was declaired to be failed.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.NetworkConnectionIPType"
+    enum="NetworkConnectionIPType">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network metric that tracks the types of IP configuration used for
+    establishing WiFi connections.
   </summary>
 </histogram>
 
@@ -43412,6 +43448,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="GCMNetworkChannel"/>
 </enum>
 
+<enum name="IPv6ConnectivityStatus" type="int">
+  <int value="0" label="Incomplete IPv6 Configuration"/>
+  <int value="1" label="Complete IPv6 Configuration"/>
+</enum>
+
 <enum name="IPV6ProbeResult" type="int">
   <int value="0" label="IPV6_CANNOT_CREATE_SOCKETS"/>
   <int value="1" label="IPV6_CAN_CREATE_SOCKETS"/>
@@ -45958,6 +45999,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="40" label="5190"/>
   <int value="41" label="5210"/>
   <int value="42" label="5230"/>
+</enum>
+
+<enum name="NetworkConnectionIPType" type="int">
+  <int value="0" label="IPv4"/>
+  <int value="1" label="IPv6"/>
 </enum>
 
 <enum name="NetworkCorruptedProfile" type="int">
