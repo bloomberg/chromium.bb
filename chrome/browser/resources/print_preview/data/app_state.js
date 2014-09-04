@@ -48,7 +48,8 @@ cr.define('print_preview', function() {
     IS_HEADER_FOOTER_ENABLED: 'isHeaderFooterEnabled',
     IS_LANDSCAPE_ENABLED: 'isLandscapeEnabled',
     IS_COLLATE_ENABLED: 'isCollateEnabled',
-    IS_CSS_BACKGROUND_ENABLED: 'isCssBackgroundEnabled'
+    IS_CSS_BACKGROUND_ENABLED: 'isCssBackgroundEnabled',
+    VENDOR_OPTIONS: 'vendorOptions'
   };
 
   /**

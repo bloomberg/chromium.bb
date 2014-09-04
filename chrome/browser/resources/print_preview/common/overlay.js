@@ -40,11 +40,21 @@ cr.define('print_preview', function() {
 
       this.getElement().addEventListener('keydown', function f(e) {
         // Escape pressed -> cancel the dialog.
-        if (e.keyCode == 27 && !e.shiftKey && !e.ctrlKey && !e.altKey &&
-            !e.metaKey) {
-          e.stopPropagation();
-          e.preventDefault();
-          this.cancel();
+        if (!e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+          if (e.keyCode == 27) {
+            e.stopPropagation();
+            e.preventDefault();
+            this.cancel();
+          } else if (e.keyCode == 13) {
+            var activeElementTag = document.activeElement ?
+                document.activeElement.tagName.toUpperCase() : '';
+            if (activeElementTag != 'BUTTON' && activeElementTag != 'SELECT') {
+              if (this.onEnterPressedInternal()) {
+                e.stopPropagation();
+                e.preventDefault();
+              }
+            }
+          }
         }
       }.bind(this));
 
@@ -95,6 +105,14 @@ cr.define('print_preview', function() {
 
     /** @protected */
     onCancelInternal: function() {},
+
+    /**
+     * @return {boolean} Whether the event was handled.
+     * @protected
+     */
+    onEnterPressedInternal: function() {
+      return false;
+    },
 
     /**
      * Called when the overlay is clicked. Pulses the page.

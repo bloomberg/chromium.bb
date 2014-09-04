@@ -33,24 +33,27 @@ cr.define('print_preview', function() {
     this.printTicketStore_ = printTicketStore;
 
     /**
-     * Capability that the list item renders.
+     * Capability this component renders.
      * @private {!Object}
      */
     this.capability_ = capability;
+
+    /**
+     * Value selected by user. {@code null}, if user has not changed the default
+     * value yet (still, the value can be the default one, if it is what user
+     * selected).
+     * @private {?string}
+     */
+    this.selectedValue_ = null;
 
     /**
      * Active filter query text.
      * @private {RegExp}
      */
     this.query_ = null;
-  };
 
-  /**
-   * Event types dispatched by this class.
-   * @enum {string}
-   */
-  AdvancedSettingsItem.EventType = {
-    CHANGED: 'print_preview.AdvancedSettingsItem.CHANGED'
+    /** @private {!EventTracker} */
+    this.tracker_ = new EventTracker();
   };
 
   AdvancedSettingsItem.prototype = {
@@ -69,7 +72,27 @@ cr.define('print_preview', function() {
         nameEl.textContent = textContent;
       nameEl.title = textContent;
 
+      this.tracker_.add(
+          this.select_, 'change', this.onSelectChange_.bind(this));
+      this.tracker_.add(this.text_, 'input', this.onTextInput_.bind(this));
+
       this.initializeValue_();
+    },
+
+    /**
+     * ID of the corresponding vendor capability.
+     * @return {string}
+     */
+    get id() {
+      return this.capability_.id;
+    },
+
+    /**
+     * Currently selected value.
+     * @return {string}
+     */
+    get selectedValue() {
+      return this.selectedValue_ || '';
     },
 
     /**
@@ -77,7 +100,45 @@ cr.define('print_preview', function() {
      * @return {boolean}
      */
     isModified: function() {
-      return false;
+      return !!this.selectedValue_;
+    },
+
+    /**
+     * @return {HTMLSelectElement} Select element.
+     * @private
+     */
+    get select_() {
+      return this.getChildElement(
+          '.advanced-settings-item-value-select-control');
+    },
+
+    /**
+     * @return {HTMLSelectElement} Text element.
+     * @private
+     */
+    get text_() {
+      return this.getChildElement('.advanced-settings-item-value-text-control');
+    },
+
+    /**
+     * Called when the select element value is changed.
+     * @private
+     */
+    onSelectChange_: function() {
+      this.selectedValue_ = this.select_.value;
+      this.capability_.select_cap.option.some(function(option) {
+        if (this.select_.value == option.value && option.is_default)
+          this.selectedValue_ = null;
+        return this.select_.value == option.value || option.is_default;
+      }.bind(this));
+    },
+
+    /**
+     * Called when the text element value is changed.
+     * @private
+     */
+    onTextInput_: function() {
+      this.selectedValue_ = this.text_.value || null;
     },
 
     /**
@@ -85,6 +146,9 @@ cr.define('print_preview', function() {
      * @private
      */
     initializeValue_: function() {
+      this.selectedValue_ =
+          this.printTicketStore_.vendorItems.ticketItems[this.id] || null;
+
       if (this.capability_.type == 'SELECT')
         this.initializeSelectValue_();
       else
@@ -96,10 +160,9 @@ cr.define('print_preview', function() {
      * @private
      */
     initializeSelectValue_: function() {
-      var selectEl = this.getChildElement(
-          '.advanced-settings-item-value-select-control');
       setIsVisible(
-          this.getChildElement('.advanced-settings-item-value-select'), true);
+        this.getChildElement('.advanced-settings-item-value-select'), true);
+      var selectEl = this.select_;
       var indexToSelect = 0;
       this.capability_.select_cap.option.forEach(function(option, index) {
         var item = document.createElement('option');
@@ -109,10 +172,8 @@ cr.define('print_preview', function() {
           indexToSelect = index;
         selectEl.add(item);
       });
-      // TODO: Try to select current ticket item.
-      var valueToSelect = '';
       for (var i = 0, option; option = selectEl.options[i]; i++) {
-        if (option.value == valueToSelect) {
+        if (option.value == this.selectedValue_) {
           indexToSelect = i;
           break;
         }
@@ -125,10 +186,9 @@ cr.define('print_preview', function() {
      * @private
      */
     initializeTextValue_: function() {
-      var textEl = this.getChildElement(
-          '.advanced-settings-item-value-text-control');
       setIsVisible(
           this.getChildElement('.advanced-settings-item-value-text'), true);
+      this.text_.value = this.selectedValue;
     },
 
     /**

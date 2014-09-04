@@ -1243,6 +1243,7 @@ cr.define('print_preview', function() {
 <include src="data/ticket_items/fit_to_page.js"/>
 <include src="data/ticket_items/css_background.js"/>
 <include src="data/ticket_items/selection_only.js"/>
+<include src="data/ticket_items/vendor_items.js"/>
 
 <include src="native_layer.js"/>
 <include src="print_preview_animations.js"/>

@@ -177,6 +177,14 @@ cr.define('print_preview', function() {
         new print_preview.ticket_items.SelectionOnly(this.documentInfo_);
 
     /**
+     * Vendor ticket items.
+     * @type {!print_preview.ticket_items.VendorItems}
+     * @private
+     */
+    this.vendorItems_ = new print_preview.ticket_items.VendorItems(
+        this.appState_, this.destinationStore_);
+
+    /**
      * Keeps track of event listeners for the print ticket store.
      * @type {!EventTracker}
      * @private
@@ -267,6 +275,10 @@ cr.define('print_preview', function() {
       return this.selectionOnly_;
     },
 
+    get vendorItems() {
+      return this.vendorItems_;
+    },
+
     /**
      * @return {!print_preview.MeasurementSystem} Measurement system of the
      *     local system.
@@ -335,6 +347,11 @@ cr.define('print_preview', function() {
         this.cssBackground_.updateValue(this.appState_.getField(
             print_preview.AppState.Field.IS_CSS_BACKGROUND_ENABLED));
       }
+      if (this.appState_.hasField(
+          print_preview.AppState.Field.VENDOR_OPTIONS)) {
+        this.vendorItems_.updateValue(this.appState_.getField(
+            print_preview.AppState.Field.VENDOR_OPTIONS));
+    }
     },
 
     /**
@@ -408,6 +425,17 @@ cr.define('print_preview', function() {
         cjt.print.page_orientation =
             {type: this.landscape.getValue() ? 'LANDSCAPE' : 'PORTRAIT'};
       }
+      if (this.vendorItems.isCapabilityAvailable() &&
+          this.vendorItems.isUserEdited()) {
+        var items = this.vendorItems.ticketItems;
+        cjt.print.vendor_ticket_item = [];
+        for (var itemId in items) {
+          if (items.hasOwnProperty(itemId)) {
+            cjt.print.vendor_ticket_item.push(
+                {id: itemId, value: items[itemId]});
+          }
+        }
+      }
       return JSON.stringify(cjt);
     },
 
@@ -456,6 +484,7 @@ cr.define('print_preview', function() {
           this.marginsType_.updateValue(
               print_preview.ticket_items.MarginsType.Value.DEFAULT);
         }
+        this.vendorItems_.updateValue({});
       }
     },
 

@@ -66,6 +66,11 @@ cr.define('print_preview', function() {
           this.cancel.bind(this));
 
       this.tracker.add(
+          this.getChildElement('#done-button'),
+          'click',
+          this.onApplySettings_.bind(this));
+
+      this.tracker.add(
           this.searchBox_,
           print_preview.SearchBox.EventType.SEARCH,
           this.onSearch_.bind(this));
@@ -93,6 +98,14 @@ cr.define('print_preview', function() {
     onCancelInternal: function() {
       this.metrics_.record(print_preview.Metrics.PrintSettingsUiBucket.
           ADVANCED_SETTINGS_DIALOG_CANCELED);
+    },
+
+    /** @override */
+    onEnterPressedInternal: function() {
+      var doneButton = this.getChildElement('#done-button');
+      if (!doneButton.disabled)
+        doneButton.click();
+      return !doneButton.disabled;
     },
 
     /**
@@ -136,11 +149,7 @@ cr.define('print_preview', function() {
       }.bind(this));
       this.items_ = [];
 
-      var vendorCapabilities =
-          this.destination_ &&
-          this.destination_.capabilities &&
-          this.destination_.capabilities.printer &&
-          this.destination_.capabilities.printer.vendor_capability;
+      var vendorCapabilities = this.printTicketStore_.vendorItems.capability;
       if (!vendorCapabilities)
         return;
 
@@ -165,6 +174,22 @@ cr.define('print_preview', function() {
      */
     onSearch_: function(evt) {
       this.filterLists_(evt.query);
+    },
+
+    /**
+     * Called when current settings selection need to be stored in the ticket.
+     * @private
+     */
+    onApplySettings_: function(evt) {
+      this.setIsVisible(false);
+
+      var values = {};
+      this.items_.forEach(function(item) {
+        if (item.isModified())
+          values[item.id] = item.selectedValue;
+      }.bind(this));
+
+      this.printTicketStore_.vendorItems.updateValue(values);
     }
   };
 
