@@ -1,0 +1,46 @@
+{
+  "Linux MSan Tests": {
+    "gtest_tests": [
+      "accessibility_unittests",
+      "app_shell_browsertests",
+      "base_unittests",
+      "cacheinvalidation_unittests",
+      "cc_unittests",
+      "content_browsertests",
+      "content_unittests",
+      "crypto_unittests",
+      "device_unittests",
+      "extensions_unittests",
+      "gpu_unittests",
+      "interactive_ui_tests",
+      "ipc_tests",
+      "jingle_unittests",
+      "media_unittests",
+      "net_unittests",
+      "ppapi_unittests",
+      "printing_unittests",
+      "remoting_unittests",
+      "sandbox_linux_unittests",
+      "sql_unittests",
+      "sync_unit_tests",
+      "ui_unittests",
+      "unit_tests",
+      "url_unittests"
+    ]
+  },
+  "Linux MSan Browser (1)": {
+    "gtest_tests": [
+      {"test": "browser_tests", "shard_index": 0, "total_shards": 3}
+    ]
+  },
+  "Linux MSan Browser (2)": {
+    "gtest_tests": [
+      {"test": "browser_tests", "shard_index": 1, "total_shards": 3}
+    ]
+  },
+  "Linux MSan Browser (3)": {
+    "gtest_tests": [
+      {"test": "browser_tests", "shard_index": 2, "total_shards": 3}
+    ]
+  }
+}
