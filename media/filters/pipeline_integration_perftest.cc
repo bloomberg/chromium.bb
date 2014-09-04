@@ -68,10 +68,7 @@ TEST(PipelineIntegrationPerfTest, AudioPlaybackBenchmark) {
 }
 
 TEST(PipelineIntegrationPerfTest, VP8PlaybackBenchmark) {
-  RunVideoPlaybackBenchmark("bear-640x360.webm",
-                            "clockless_video_playback_vp8");
-  RunVideoPlaybackBenchmark("bear-320x240.webm",
-                            "clockless_video_playback_vp8");
+  RunVideoPlaybackBenchmark("bear_silent.webm", "clockless_video_playback_vp8");
 }
 
 TEST(PipelineIntegrationPerfTest, VP9PlaybackBenchmark) {
@@ -79,13 +76,13 @@ TEST(PipelineIntegrationPerfTest, VP9PlaybackBenchmark) {
 }
 
 TEST(PipelineIntegrationPerfTest, TheoraPlaybackBenchmark) {
-  RunVideoPlaybackBenchmark("bear.ogv", "clockless_video_playback_theora");
+  RunVideoPlaybackBenchmark("bear_silent.ogv",
+                            "clockless_video_playback_theora");
 }
 
 #if defined(USE_PROPRIETARY_CODECS)
 TEST(PipelineIntegrationPerfTest, MP4PlaybackBenchmark) {
-  RunVideoPlaybackBenchmark("bear-1280x720.mp4",
-                            "clockless_video_playback_mp4");
+  RunVideoPlaybackBenchmark("bear_silent.mp4", "clockless_video_playback_mp4");
 }
 #endif
 
