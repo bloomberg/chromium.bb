@@ -28,7 +28,7 @@
   'sources': [
     # this should likely be moved into src/utils in skia
     '../third_party/skia/src/core/SkFlate.cpp',
-    
+
     '../third_party/skia/src/ports/SkImageDecoder_empty.cpp',
     '../third_party/skia/src/images/SkScaledBitmapSampler.cpp',
     '../third_party/skia/src/images/SkScaledBitmapSampler.h',
@@ -89,12 +89,9 @@
 
   # Exclude all unused files in skia utils.gypi file
   'sources!': [
-  '../third_party/skia/include/utils/SkCondVar.h',
-  '../third_party/skia/include/utils/SkCountdown.h',
-  '../third_party/skia/include/utils/SkRunnable.h',
-  '../third_party/skia/include/utils/SkThreadPool.h',
   '../third_party/skia/src/utils/SkCondVar.cpp',
-  '../third_party/skia/src/utils/SkCountdown.cpp',
+  '../third_party/skia/src/utils/SkCondVar.h',
+  '../third_party/skia/src/utils/SkRunnable.h',
 
   '../third_party/skia/include/utils/SkBoundaryPatch.h',
   '../third_party/skia/include/utils/SkFrontBufferedStream.h',

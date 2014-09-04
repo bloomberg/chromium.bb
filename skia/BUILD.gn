@@ -325,10 +325,9 @@ component("skia") {
 
   # Remove unused util files include in utils.gypi
   sources -= [
+  "//third_party/skia/src/utils/SkCondVar.cpp",
   "//third_party/skia/src/utils/SkCondVar.h",
   "//third_party/skia/src/utils/SkRunnable.h",
-  "//third_party/skia/src/utils/SkThreadPool.h",
-  "//third_party/skia/src/utils/SkCondVar.cpp",
 
   "//third_party/skia/include/utils/SkBoundaryPatch.h",
   "//third_party/skia/include/utils/SkFrontBufferedStream.h",
@@ -477,7 +476,7 @@ component("skia") {
       "ext/bitmap_platform_device_win.h",
     ]
   } else if (is_mac) {
-    sources += [ 
+    sources += [
       "ext/bitmap_platform_device_mac.cc",
       "ext/bitmap_platform_device_mac.h",
     ]
