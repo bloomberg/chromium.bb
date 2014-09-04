@@ -2597,17 +2597,17 @@ void HTMLMediaElement::mediaPlayerDidRemoveTextTrack(WebInbandTextTrack* webTrac
     removeTextTrack(textTrack.get());
 }
 
-void HTMLMediaElement::closeCaptionTracksChanged()
+void HTMLMediaElement::textTracksChanged()
 {
     if (hasMediaControls())
-        mediaControls()->closedCaptionTracksChanged();
+        mediaControls()->textTracksChanged();
 }
 
 void HTMLMediaElement::addTextTrack(TextTrack* track)
 {
     textTracks()->append(track);
 
-    closeCaptionTracksChanged();
+    textTracksChanged();
 }
 
 void HTMLMediaElement::removeTextTrack(TextTrack* track)
@@ -2615,7 +2615,7 @@ void HTMLMediaElement::removeTextTrack(TextTrack* track)
     TrackDisplayUpdateScope scope(this);
     m_textTracks->remove(track);
 
-    closeCaptionTracksChanged();
+    textTracksChanged();
 }
 
 void HTMLMediaElement::forgetResourceSpecificTracks()
@@ -2626,7 +2626,7 @@ void HTMLMediaElement::forgetResourceSpecificTracks()
     if (m_textTracks) {
         TrackDisplayUpdateScope scope(this);
         m_textTracks->removeAllInbandTracks();
-        closeCaptionTracksChanged();
+        textTracksChanged();
     }
 
     m_audioTracks->removeAll();
@@ -2693,9 +2693,6 @@ void HTMLMediaElement::didAddTrackElement(HTMLTrackElement* trackElement)
     // in the markup have been added.
     if (isFinishedParsingChildren())
         scheduleDelayedAction(LoadTextTrackResource);
-
-    if (hasMediaControls())
-        mediaControls()->closedCaptionTracksChanged();
 }
 
 void HTMLMediaElement::didRemoveTrackElement(HTMLTrackElement* trackElement)
@@ -2874,8 +2871,7 @@ void HTMLMediaElement::configureTextTracks()
     if (otherTracks.tracks.size())
         configureTextTrackGroup(otherTracks);
 
-    if (hasMediaControls())
-        mediaControls()->closedCaptionTracksChanged();
+    textTracksChanged();
 }
 
 bool HTMLMediaElement::havePotentialSourceChild()

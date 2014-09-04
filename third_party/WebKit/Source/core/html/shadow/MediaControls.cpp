@@ -346,7 +346,7 @@ void MediaControls::refreshClosedCaptionsButtonVisibility()
         m_toggleClosedCaptionsButton->hide();
 }
 
-void MediaControls::closedCaptionTracksChanged()
+void MediaControls::textTracksChanged()
 {
     refreshClosedCaptionsButtonVisibility();
 }
