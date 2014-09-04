@@ -263,7 +263,6 @@ bool parseNumberOrPercentage(const String& string, float& number)
     return genericParseNumberOrPercentage(ptr, end, number);
 }
 
-#if ENABLE(SVG_FONTS)
 template<typename CharType>
 static bool parseGlyphName(const CharType*& ptr, const CharType* end, HashSet<String>& values)
 {
@@ -455,7 +454,6 @@ Vector<String> parseDelimitedString(const String& input, const char seperator)
     const UChar* end = ptr + input.length();
     return genericParseDelimitedString(ptr, end, seperator);
 }
-#endif
 
 template <typename CharType>
 bool parseFloatPoint(const CharType*& current, const CharType* end, FloatPoint& point)
