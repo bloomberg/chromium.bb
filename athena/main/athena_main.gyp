@@ -26,7 +26,6 @@
         '../../pdf/pdf.gyp:pdf',
         '../../skia/skia.gyp:skia',
         '../../ui/app_list/app_list.gyp:app_list',
-        '../../ui/chromeos/ui_chromeos.gyp:ui_chromeos',
         '../../ui/native_theme/native_theme.gyp:native_theme',
         '../../ui/views/views.gyp:views',
         '../../url/url.gyp:url_lib',
