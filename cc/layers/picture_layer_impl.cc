@@ -936,7 +936,10 @@ bool PictureLayerImpl::MarkVisibleTilesAsRequired(
     if (optional_twin_tiling) {
       Tile* twin_tile = optional_twin_tiling->TileAt(iter.i(), iter.j());
       if (!twin_tile || twin_tile == tile) {
-        twin_had_missing_tile = true;
+        // However if the shared tile is being used on the active tree, then
+        // there's no missing content in this place, and low res is not needed.
+        if (!twin_tile || !twin_tile->IsReadyToDraw())
+          twin_had_missing_tile = true;
         continue;
       }
     }

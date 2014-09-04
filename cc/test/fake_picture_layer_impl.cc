@@ -140,11 +140,15 @@ void FakePictureLayerImpl::SetAllTilesReadyInTiling(
   std::vector<Tile*> tiles = tiling->AllTilesForTesting();
   for (size_t tile_idx = 0; tile_idx < tiles.size(); ++tile_idx) {
     Tile* tile = tiles[tile_idx];
-    ManagedTileState& state = tile->managed_state();
-    for (size_t mode_idx = 0; mode_idx < NUM_RASTER_MODES; ++mode_idx)
-      state.tile_versions[mode_idx].SetSolidColorForTesting(true);
-    DCHECK(tile->IsReadyToDraw());
+    SetTileReady(tile);
   }
+}
+
+void FakePictureLayerImpl::SetTileReady(Tile* tile) {
+  ManagedTileState& state = tile->managed_state();
+  for (size_t mode_idx = 0; mode_idx < NUM_RASTER_MODES; ++mode_idx)
+    state.tile_versions[mode_idx].SetSolidColorForTesting(true);
+  DCHECK(tile->IsReadyToDraw());
 }
 
 void FakePictureLayerImpl::CreateDefaultTilingsAndTiles() {

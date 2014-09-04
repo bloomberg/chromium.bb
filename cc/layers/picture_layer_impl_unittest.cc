@@ -2822,7 +2822,7 @@ TEST_F(PictureLayerImplTest, LowResReadyToDrawNotEnoughToActivate) {
   EXPECT_TRUE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
 }
 
-TEST_F(PictureLayerImplTest, HighResReadyToDrawNotEnoughToActivate) {
+TEST_F(PictureLayerImplTest, HighResReadyToDrawEnoughToActivate) {
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(1000, 1000);
 
@@ -2841,12 +2841,58 @@ TEST_F(PictureLayerImplTest, HighResReadyToDrawNotEnoughToActivate) {
   // Initialize all high-res tiles.
   pending_layer_->SetAllTilesReadyInTiling(pending_layer_->HighResTiling());
 
-  // High-res tiles should not be enough.
+  // High-res tiles should be enough, since they cover everything visible.
+  EXPECT_TRUE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
+}
+
+TEST_F(PictureLayerImplTest,
+       SharedActiveHighResReadyAndPendingLowResReadyNotEnoughToActivate) {
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(1000, 1000);
+
+  SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size);
+
+  // Make sure some tiles are not shared.
+  pending_layer_->set_invalidation(gfx::Rect(gfx::Point(50, 50), tile_size));
+
+  CreateHighLowResAndSetAllTilesVisible();
+
+  // Initialize all high-res tiles in the active layer.
+  active_layer_->SetAllTilesReadyInTiling(active_layer_->HighResTiling());
+  // And all the low-res tiles in the pending layer.
+  pending_layer_->SetAllTilesReadyInTiling(pending_layer_->LowResTiling());
+
+  pending_layer_->MarkVisibleResourcesAsRequired();
+
+  // The unshared high-res tiles are not ready, so we cannot activate.
   EXPECT_FALSE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
 
-  // Initialize remaining tiles.
-  pending_layer_->SetAllTilesReady();
+  // When the unshared pending high-res tiles are ready, we can activate.
+  pending_layer_->SetAllTilesReadyInTiling(pending_layer_->HighResTiling());
+  EXPECT_TRUE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
+}
 
+TEST_F(PictureLayerImplTest, SharedActiveHighResReadyNotEnoughToActivate) {
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(1000, 1000);
+
+  SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size);
+
+  // Make sure some tiles are not shared.
+  pending_layer_->set_invalidation(gfx::Rect(gfx::Point(50, 50), tile_size));
+
+  CreateHighLowResAndSetAllTilesVisible();
+
+  // Initialize all high-res tiles in the active layer.
+  active_layer_->SetAllTilesReadyInTiling(active_layer_->HighResTiling());
+
+  pending_layer_->MarkVisibleResourcesAsRequired();
+
+  // The unshared high-res tiles are not ready, so we cannot activate.
+  EXPECT_FALSE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
+
+  // When the unshared pending high-res tiles are ready, we can activate.
+  pending_layer_->SetAllTilesReadyInTiling(pending_layer_->HighResTiling());
   EXPECT_TRUE(pending_layer_->AllTilesRequiredForActivationAreReadyToDraw());
 }
 
