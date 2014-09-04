@@ -15,6 +15,8 @@
         '../..',
       ],
       'sources': [
+        'cma/base/balanced_media_task_runner_factory.cc',
+        'cma/base/balanced_media_task_runner_factory.h',
         'cma/base/buffering_controller.cc',
         'cma/base/buffering_controller.h',
         'cma/base/buffering_state.cc',
@@ -24,6 +26,8 @@
         'cma/base/decoder_buffer_adapter.h',
         'cma/base/decoder_buffer_base.cc',
         'cma/base/decoder_buffer_base.h',
+        'cma/base/media_task_runner.cc',
+        'cma/base/media_task_runner.h',
       ],
     },
     {
@@ -46,6 +50,7 @@
         '../../testing/gtest.gyp:gtest_main',
       ],
       'sources': [
+        'cma/base/balanced_media_task_runner_unittest.cc',
         'cma/base/buffering_controller_unittest.cc',
         'cma/base/run_all_unittests.cc',
       ],
