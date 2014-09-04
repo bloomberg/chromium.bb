@@ -230,6 +230,11 @@ define([
         testInterface.ConformanceTestInterfaceStub.prototype.validator]);
   }
 
+  function testNotImplementedMessageValidation() {
+    testMessageValidation("not_implemented_", [
+        testInterface.ConformanceTestInterfaceStub.prototype.validator]);
+  }
+
   function testIntegrationMessageValidation() {
     testMessageValidation("integration_", [
         testInterface.IntegrationTestInterface1Stub.prototype.validator,

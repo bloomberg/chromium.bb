@@ -12,8 +12,8 @@ import java.io.Closeable;
 public interface MessageReceiver extends Closeable {
 
     /**
-     * Receive a {@link MessageWithHeader}. The {@link MessageReceiver} is allowed to mutable the
-     * message. Returns |true| if the message has been handled, |false| otherwise.
+     * Receive a {@link Message}. The {@link MessageReceiver} is allowed to mutate the message.
+     * Returns |true| if the message has been handled, |false| otherwise.
      */
     boolean accept(Message message);
 

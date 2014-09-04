@@ -80,9 +80,9 @@ public class BindingsTestUtils {
     }
 
     /**
-     * Creates a new valid {@link MessageWithHeader}.
+     * Creates a new valid {@link Message}. The message will have a valid header.
      */
-    public static MessageWithHeader newRandomMessageWithHeader(int size) {
+    public static Message newRandomMessageWithHeader(int size) {
         assert size > 16;
         ByteBuffer message = TestUtils.newRandomBuffer(size);
         int[] headerAsInts = { 16, 2, 0, 0 };
@@ -90,6 +90,6 @@ public class BindingsTestUtils {
             message.putInt(4 * i, headerAsInts[i]);
         }
         message.position(0);
-        return new SimpleMessage(message, new ArrayList<Handle>()).asMojoMessage();
+        return new SimpleMessage(message, new ArrayList<Handle>());
     }
 }

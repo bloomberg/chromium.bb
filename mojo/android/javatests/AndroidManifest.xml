@@ -16,6 +16,7 @@
     <instrumentation android:name="android.test.InstrumentationTestRunner"
         android:targetPackage="org.chromium.mojo.tests"
         android:label="Tests for org.chromium.mojo"/>
-    <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
     <uses-permission android:name="android.permission.INJECT_EVENTS" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
 </manifest>
