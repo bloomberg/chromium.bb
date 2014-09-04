@@ -107,7 +107,7 @@ bool ImageFrame::setSize(int newWidth, int newHeight)
     ASSERT(!width() && !height());
 
     m_bitmap.setInfo(SkImageInfo::MakeN32Premul(newWidth, newHeight));
-    if (!m_bitmap.allocPixels(m_allocator, 0))
+    if (!m_bitmap.tryAllocPixels(m_allocator, 0))
         return false;
 
     zeroFillPixelData();

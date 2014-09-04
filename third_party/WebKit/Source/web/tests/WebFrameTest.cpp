@@ -2194,7 +2194,7 @@ TEST_F(WebFrameTest, pageScaleFactorScalesPaintClip)
     webViewHelper.webView()->setPageScaleFactor(0.5);
 
     SkBitmap bitmap;
-    ASSERT_TRUE(bitmap.allocN32Pixels(200, 200));
+    bitmap.allocN32Pixels(200, 200);
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
@@ -5824,7 +5824,7 @@ static void nodeImageTestValidation(const blink::IntSize& referenceBitmapSize, b
 {
     // Prepare the reference bitmap.
     SkBitmap bitmap;
-    ASSERT_TRUE(bitmap.allocN32Pixels(referenceBitmapSize.width(), referenceBitmapSize.height()));
+    bitmap.allocN32Pixels(referenceBitmapSize.width(), referenceBitmapSize.height());
     SkCanvas canvas(bitmap);
     canvas.drawColor(SK_ColorGREEN);
 

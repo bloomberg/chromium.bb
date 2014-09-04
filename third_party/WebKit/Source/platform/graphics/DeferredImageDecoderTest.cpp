@@ -166,7 +166,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPicture)
     EXPECT_EQ(0, m_frameBufferRequestCount);
 
     SkBitmap canvasBitmap;
-    ASSERT_TRUE(canvasBitmap.allocN32Pixels(100, 100));
+    canvasBitmap.allocN32Pixels(100, 100);
     ASSERT_TRUE(m_canvas->readPixels(&canvasBitmap, 0, 0));
     SkAutoLockPixels autoLock(canvasBitmap);
     EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));
@@ -194,7 +194,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive)
     m_canvas->drawPicture(picture.get());
 
     SkBitmap canvasBitmap;
-    ASSERT_TRUE(canvasBitmap.allocN32Pixels(100, 100));
+    canvasBitmap.allocN32Pixels(100, 100);
     ASSERT_TRUE(m_canvas->readPixels(&canvasBitmap, 0, 0));
     SkAutoLockPixels autoLock(canvasBitmap);
     EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));
@@ -227,7 +227,7 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
     EXPECT_EQ(0, m_frameBufferRequestCount);
 
     SkBitmap canvasBitmap;
-    ASSERT_TRUE(canvasBitmap.allocN32Pixels(100, 100));
+    canvasBitmap.allocN32Pixels(100, 100);
     ASSERT_TRUE(m_canvas->readPixels(&canvasBitmap, 0, 0));
     SkAutoLockPixels autoLock(canvasBitmap);
     EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));

@@ -798,7 +798,7 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt, float widt
         const int rowPixels = 4 * deviceScaleFactor;
         const int colPixels = 3 * deviceScaleFactor;
         SkBitmap bitmap;
-        if (!bitmap.allocN32Pixels(rowPixels, colPixels))
+        if (!bitmap.tryAllocN32Pixels(rowPixels, colPixels))
             return;
 
         bitmap.eraseARGB(0, 0, 0, 0);
@@ -856,7 +856,7 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt, float widt
         const int rowPixels = 32 * deviceScaleFactor; // Must be multiple of 4 for pattern below.
         const int colPixels = 2 * deviceScaleFactor;
         SkBitmap bitmap;
-        if (!bitmap.allocN32Pixels(rowPixels, colPixels))
+        if (!bitmap.tryAllocN32Pixels(rowPixels, colPixels))
             return;
 
         bitmap.eraseARGB(0, 0, 0, 0);

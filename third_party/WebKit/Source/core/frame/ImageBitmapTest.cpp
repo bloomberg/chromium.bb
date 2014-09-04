@@ -54,10 +54,10 @@ class ImageBitmapTest : public ::testing::Test {
 protected:
     virtual void SetUp()
     {
-        ASSERT_TRUE(m_bitmap.allocN32Pixels(10, 10));
+        m_bitmap.allocN32Pixels(10, 10);
         m_bitmap.eraseColor(0xFFFFFFFF);
 
-        ASSERT_TRUE(m_bitmap2.allocN32Pixels(5, 5));
+        m_bitmap2.allocN32Pixels(5, 5);
         m_bitmap2.eraseColor(0xAAAAAAAA);
 
         // Save the global memory cache to restore it upon teardown.

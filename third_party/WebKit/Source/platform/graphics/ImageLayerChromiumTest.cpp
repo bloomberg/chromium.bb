@@ -56,7 +56,7 @@ public:
         , m_size(size)
     {
         SkBitmap bitmap;
-        EXPECT_TRUE(bitmap.allocN32Pixels(size.width(), size.height(), isOpaque));
+        bitmap.allocN32Pixels(size.width(), size.height(), isOpaque);
         m_nativeImage = NativeImageSkia::create(bitmap);
     }
 

@@ -953,7 +953,7 @@ void DrawingBuffer::paintFramebufferToCanvas(int framebuffer, int width, int hei
         // pixel data. We will then use Skia to rescale this bitmap to
         // the size of the canvas's backing store.
         if (m_resizingBitmap.width() != width || m_resizingBitmap.height() != height) {
-            if (!m_resizingBitmap.allocN32Pixels(width, height))
+            if (!m_resizingBitmap.tryAllocN32Pixels(width, height))
                 return;
         }
         readbackBitmap = &m_resizingBitmap;
