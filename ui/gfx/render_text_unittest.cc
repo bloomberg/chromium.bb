@@ -1614,7 +1614,6 @@ TEST_F(RenderTextTest, SetDisplayOffset) {
   }
 }
 
-// TODO(ckocagil): Enable for RenderTextHarfBuzz. http://crbug.com/396776
 TEST_F(RenderTextTest, SameFontForParentheses) {
   struct {
     const base::char16 left_char;
@@ -1654,7 +1653,7 @@ TEST_F(RenderTextTest, SameFontForParentheses) {
     { WideToUTF16(L"Hello World(\x05e0\x05b8)Hello World") },
   };
 
-  scoped_ptr<RenderText> render_text(RenderText::CreateNativeInstance());
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     base::string16 text = cases[i].text;
     const size_t start_paren_char_index = text.find('(');

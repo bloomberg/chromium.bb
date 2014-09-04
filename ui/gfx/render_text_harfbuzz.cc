@@ -303,22 +303,31 @@ bool IsUnusualBlockCode(UBlockCode block_code) {
          block_code == UBLOCK_MISCELLANEOUS_SYMBOLS;
 }
 
-// Returns the index of the first unusual character after a usual character or
-// vice versa. Unusual characters are defined by |IsUnusualBlockCode|.
-size_t FindUnusualCharacter(const base::string16& text,
-                            size_t run_start,
-                            size_t run_break) {
+bool IsBracket(UChar32 character) {
+  static const char kBrackets[] = { '(', ')', '{', '}', '<', '>', };
+  static const char* kBracketsEnd = kBrackets + arraysize(kBrackets);
+  return std::find(kBrackets, kBracketsEnd, character) != kBracketsEnd;
+}
+
+// Returns the boundary between a special and a regular character. Special
+// characters are brackets or characters that satisfy |IsUnusualBlockCode|.
+size_t FindRunBreakingCharacter(const base::string16& text,
+                                size_t run_start,
+                                size_t run_break) {
   const int32 run_length = static_cast<int32>(run_break - run_start);
-  base::i18n::UTF16CharIterator iter(text.c_str() + run_start,
-                                     run_length);
-  const UBlockCode first_block_code = ublock_getCode(iter.get());
-  const bool first_block_unusual = IsUnusualBlockCode(first_block_code);
+  base::i18n::UTF16CharIterator iter(text.c_str() + run_start, run_length);
+  const UChar32 first_char = iter.get();
+  const UBlockCode first_block = ublock_getCode(first_char);
+  const bool first_block_unusual = IsUnusualBlockCode(first_block);
+  const bool first_bracket = IsBracket(first_char);
+
   while (iter.Advance() && iter.array_pos() < run_length) {
-    const UBlockCode current_block_code = ublock_getCode(iter.get());
-    if (current_block_code != first_block_code &&
-        (first_block_unusual || IsUnusualBlockCode(current_block_code))) {
+    const UChar32 current_char = iter.get();
+    const UBlockCode current_block = ublock_getCode(current_char);
+    const bool block_break = current_block != first_block &&
+        (first_block_unusual || IsUnusualBlockCode(current_block));
+    if (block_break || first_bracket != IsBracket(current_char))
       return run_start + iter.array_pos();
-    }
   }
   return run_break;
 }
@@ -607,8 +616,19 @@ SelectionModel RenderTextHarfBuzz::FindCursorPosition(const Point& point) {
 }
 
 std::vector<RenderText::FontSpan> RenderTextHarfBuzz::GetFontSpansForTesting() {
-  NOTIMPLEMENTED();
-  return std::vector<RenderText::FontSpan>();
+  EnsureLayout();
+
+  std::vector<RenderText::FontSpan> spans;
+  for (size_t i = 0; i < runs_.size(); ++i) {
+    SkString family_name;
+    runs_[i]->skia_face->getFamilyName(&family_name);
+    Font font(family_name.c_str(), runs_[i]->font_size);
+    spans.push_back(RenderText::FontSpan(font,
+        Range(LayoutIndexToTextIndex(runs_[i]->range.start()),
+              LayoutIndexToTextIndex(runs_[i]->range.end()))));
+  }
+
+  return spans;
 }
 
 Range RenderTextHarfBuzz::GetGlyphBounds(size_t index) {
@@ -1017,11 +1037,12 @@ void RenderTextHarfBuzz::ItemizeText() {
     run_break = std::min(static_cast<size_t>(script_item_break),
                          TextIndexToLayoutIndex(style.GetRange().end()));
 
-    // Break runs adjacent to character substrings in certain code blocks.
-    // This avoids using their fallback fonts for more characters than needed,
-    // in cases like "\x25B6 Media Title", etc. http://crbug.com/278913
+    // Break runs at certain characters that need to be rendered separately to
+    // prevent either an unusual character from forcing a fallback font on the
+    // entire run, or brackets from being affected by a fallback font.
+    // http://crbug.com/278913, http://crbug.com/396776
     if (run_break > run->range.start())
-      run_break = FindUnusualCharacter(text, run->range.start(), run_break);
+      run_break = FindRunBreakingCharacter(text, run->range.start(), run_break);
 
     DCHECK(IsValidCodePointIndex(text, run_break));
     style.UpdatePosition(LayoutIndexToTextIndex(run_break));
