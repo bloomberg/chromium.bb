@@ -443,9 +443,13 @@ FontTraits FontFace::traits() const
         case CSSValue200:
             weight = FontWeight200;
             break;
-        case CSSValueLighter:
         case CSSValue100:
             weight = FontWeight100;
+            break;
+        // Although 'lighter' and 'bolder' are valid keywords for font-weights, they are invalid
+        // inside font-face rules so they are ignored. Reference: http://www.w3.org/TR/css3-fonts/#descdef-font-weight.
+        case CSSValueLighter:
+        case CSSValueBolder:
             break;
         default:
             ASSERT_NOT_REACHED();
