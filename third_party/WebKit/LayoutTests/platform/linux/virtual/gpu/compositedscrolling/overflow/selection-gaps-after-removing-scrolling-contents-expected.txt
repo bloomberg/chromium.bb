@@ -282,7 +282,6 @@ Lorem Ipsum
         {
           "position": [8, 68],
           "bounds": [300, 500],
-          "drawsContent": true,
           "children": [
             {
               "bounds": [285, 485],
@@ -401,17 +400,16 @@ Lorem Ipsum
 *** iteration 4: ***
 
 {
-  "bounds": [785, 6786],
+  "bounds": [785, 6770],
   "children": [
     {
-      "bounds": [785, 6786],
+      "bounds": [785, 6770],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
           "position": [8, 68],
           "bounds": [300, 500],
-          "drawsContent": true,
           "children": [
             {
               "bounds": [285, 485],

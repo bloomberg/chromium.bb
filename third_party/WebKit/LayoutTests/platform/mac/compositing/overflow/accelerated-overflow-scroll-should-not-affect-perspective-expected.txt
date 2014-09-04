@@ -1,0 +1,85 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [200, 200],
+          "children": [
+            {
+              "bounds": [185, 185],
+              "shouldFlattenTransform": false,
+              "transform": [
+                [1, 0, 0, 0],
+                [0, 1, 0, 0],
+                [0, 0, 1, -0.01],
+                [0, 0, 0, 1]
+              ],
+              "children": [
+                {
+                  "bounds": [185, 265],
+                  "shouldFlattenTransform": false,
+                  "children": [
+                    {
+                      "shouldFlattenTransform": false,
+                      "children": [
+                        {
+                          "position": [0, 65],
+                          "bounds": [60, 200],
+                          "contentsOpaque": true,
+                          "drawsContent": true,
+                          "backgroundColor": "#008000",
+                          "transform": [
+                            [1, 0, 0, 0],
+                            [0, 1, 0, 0],
+                            [0, 0, 1, 0],
+                            [0, 0, 10, 1]
+                          ]
+                        },
+                        {
+                          "position": [65, 65],
+                          "bounds": [60, 200],
+                          "contentsOpaque": true,
+                          "drawsContent": true,
+                          "backgroundColor": "#0000FF",
+                          "transform": [
+                            [1, 0, 0, 0],
+                            [0, 1, 0, 0],
+                            [0, 0, 1, 0],
+                            [0, 0, 20, 1]
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "children": [
+                {
+                  "position": [0, 185],
+                  "bounds": [185, 15]
+                },
+                {
+                  "position": [185, 0],
+                  "bounds": [15, 185]
+                },
+                {
+                  "position": [185, 185],
+                  "bounds": [15, 15],
+                  "drawsContent": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

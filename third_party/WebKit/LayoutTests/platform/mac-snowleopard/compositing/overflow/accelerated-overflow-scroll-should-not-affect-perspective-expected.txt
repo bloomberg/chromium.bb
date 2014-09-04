@@ -9,7 +9,6 @@
         {
           "position": [8, 8],
           "bounds": [200, 200],
-          "drawsContent": true,
           "children": [
             {
               "bounds": [185, 185],

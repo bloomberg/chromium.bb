@@ -8,7 +8,6 @@
       "children": [
         {
           "bounds": [320, 340],
-          "drawsContent": true,
           "children": [
             {
               "bounds": [305, 325],
