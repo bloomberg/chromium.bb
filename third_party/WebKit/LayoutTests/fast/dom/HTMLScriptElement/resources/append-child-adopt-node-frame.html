@@ -7,9 +7,8 @@ function init()
     var script = document.createElement("script");
     script.src = "should-load.js";
     document.body.appendChild(script);
-    window.top.document.adoptNode(document.documentElement);
-
-    window.top.done();
+    var contextDoc = window.top.document.implementation.createDocument("", null);
+    contextDoc.adoptNode(document.documentElement);
 }
 
 init();

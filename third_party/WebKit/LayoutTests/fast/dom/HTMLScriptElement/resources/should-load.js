@@ -1,1 +1,1 @@
-console.log('PASS');
+window.top.done();
