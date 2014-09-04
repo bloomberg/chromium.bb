@@ -175,7 +175,7 @@ public class ValidationTest extends MojoTestCase {
      * Testing the conformance suite.
      */
     @SmallTest
-    public void testConformance() throws FileNotFoundException {
+    public void DisabledTestConformance() throws FileNotFoundException {
         runTest("conformance_", ConformanceTestInterface.MANAGER.buildStub(null,
                 ConformanceTestInterface.MANAGER.buildProxy(null, new SinkMessageReceiver())));
     }
@@ -184,7 +184,7 @@ public class ValidationTest extends MojoTestCase {
      * Testing the integration suite.
      */
     @SmallTest
-    public void testIntegration() throws FileNotFoundException {
+    public void DisabledTestIntegration() throws FileNotFoundException {
         runTest("integration_",
                 new RoutingMessageReceiver(IntegrationTestInterface1.MANAGER.buildStub(null,
                         IntegrationTestInterface1.MANAGER.buildProxy(null,
