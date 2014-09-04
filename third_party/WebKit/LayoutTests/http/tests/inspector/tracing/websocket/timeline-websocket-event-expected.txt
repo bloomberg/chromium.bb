@@ -1,4 +1,4 @@
-CONSOLE WARNING: 'WebSocket.URL' is deprecated. Please use 'WebSocket.url' instead.
+CONSOLE WARNING: line 3: 'WebSocket.URL' is deprecated. Please use 'WebSocket.url' instead.
 Tests the Timeline events for WebSocket
 
 WebSocketCreate Properties:

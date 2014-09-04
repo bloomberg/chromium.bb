@@ -1,4 +1,4 @@
-CONSOLE WARNING: <shadow> doesn't work for INPUT element host.
+CONSOLE WARNING: line 13: <shadow> doesn't work for INPUT element host.
 
 Make sure that mouse click on an input button with shadow nodes works.
 

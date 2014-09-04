@@ -1,4 +1,4 @@
-CONSOLE WARNING: Setting 'XMLHttpRequest.withCredentials' for synchronous requests is deprecated.
+CONSOLE WARNING: line 26: Setting 'XMLHttpRequest.withCredentials' for synchronous requests is deprecated.
 Start
 Cross-origin XMLHttpRequest (sync), testing that cookies are not set when not sending credentials.
 PASS: Finished sync xhr.

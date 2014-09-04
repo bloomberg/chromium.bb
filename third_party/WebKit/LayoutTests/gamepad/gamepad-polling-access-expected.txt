@@ -1,4 +1,4 @@
-CONSOLE WARNING: 'navigator.webkitGetGamepads' is deprecated. Please use 'navigator.getGamepads' instead.
+CONSOLE WARNING: line 1: 'navigator.webkitGetGamepads' is deprecated. Please use 'navigator.getGamepads' instead.
 PASS navigator.webkitGetGamepads().length is 4
 PASS navigator.webkitGetGamepads().item(0) is null
 PASS navigator.webkitGetGamepads().item(1) is null

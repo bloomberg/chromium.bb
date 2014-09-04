@@ -1,4 +1,4 @@
-CONSOLE ERROR: Discontiguous selection is not supported.
+CONSOLE ERROR: line 29: Discontiguous selection is not supported.
 The _before_selection_ word is before the selection, so we shouldn't be able to find it if span_to_select is selected. 
 The _in_selection_ word is in the selection and we should always be able to find it. 
 The _after_selection_ word is after the selection and we should always be able to find that too.

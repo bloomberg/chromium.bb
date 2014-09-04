@@ -1,4 +1,4 @@
-CONSOLE ERROR: Discontiguous selection is not supported.
+CONSOLE ERROR: line 53: Discontiguous selection is not supported.
 PASS repainted when expected
 PASS repainted when expected
 PASS repainted when expected

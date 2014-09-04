@@ -1,9 +1,9 @@
-CONSOLE WARNING: <shadow> doesn't work for APPLET element host.
-CONSOLE WARNING: <shadow> doesn't work for DETAILS element host.
-CONSOLE WARNING: <shadow> doesn't work for EMBED element host.
-CONSOLE WARNING: <shadow> doesn't work for INPUT element host.
-CONSOLE WARNING: <shadow> doesn't work for OBJECT element host.
-CONSOLE WARNING: <shadow> doesn't work for SUMMARY element host.
+CONSOLE WARNING: line 14: <shadow> doesn't work for APPLET element host.
+CONSOLE WARNING: line 14: <shadow> doesn't work for DETAILS element host.
+CONSOLE WARNING: line 14: <shadow> doesn't work for EMBED element host.
+CONSOLE WARNING: line 14: <shadow> doesn't work for INPUT element host.
+CONSOLE WARNING: line 14: <shadow> doesn't work for OBJECT element host.
+CONSOLE WARNING: line 14: <shadow> doesn't work for SUMMARY element host.
 We should not expose UA shadow nodes.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

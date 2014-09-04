@@ -1,4 +1,4 @@
-CONSOLE ERROR: Error: Invalid value for <polyline> attribute points="undefined"
+CONSOLE ERROR: line 9: Error: Invalid value for <polyline> attribute points="undefined"
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600

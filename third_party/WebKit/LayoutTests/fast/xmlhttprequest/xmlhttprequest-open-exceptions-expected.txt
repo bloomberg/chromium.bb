@@ -1,4 +1,4 @@
-CONSOLE ERROR: Refused to connect to 'http://not.example.com/' because it violates the following Content Security Policy directive: "connect-src http://example.com".
+CONSOLE ERROR: line 23: Refused to connect to 'http://not.example.com/' because it violates the following Content Security Policy directive: "connect-src http://example.com".
 
 This tests that exceptions thrown by XHR.open() have reasonable messages.
 

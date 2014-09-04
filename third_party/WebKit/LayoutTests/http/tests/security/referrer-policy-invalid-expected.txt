@@ -1,4 +1,4 @@
-CONSOLE ERROR: Failed to set referrer policy: The value 'invalid' is not one of 'always', 'default', 'never', or 'origin'. Defaulting to 'never'.
+CONSOLE ERROR: line 8: Failed to set referrer policy: The value 'invalid' is not one of 'always', 'default', 'never', or 'origin'. Defaulting to 'never'.
 This test checks the never referrer policy when navigating from an insecure URL to another insecure URL. The test passes if the printed referrer is empty.
 
 

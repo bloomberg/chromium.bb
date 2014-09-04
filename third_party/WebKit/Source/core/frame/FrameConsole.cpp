@@ -85,40 +85,22 @@ void FrameConsole::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleM
     if (!context)
         return;
 
-    String messageURL;
-    unsigned lineNumber = 0;
-    if (consoleMessage->callStack() && consoleMessage->callStack()->size()) {
-        lineNumber = consoleMessage->callStack()->at(0).lineNumber();
-        messageURL = consoleMessage->callStack()->at(0).sourceURL();
-    } else {
-        lineNumber = consoleMessage->lineNumber();
-        messageURL = consoleMessage->url();
-    }
-
     messageStorage()->reportMessage(consoleMessage);
 
     if (consoleMessage->source() == CSSMessageSource || consoleMessage->source() == NetworkMessageSource)
         return;
 
-    RefPtrWillBeRawPtr<ScriptCallStack> reportedCallStack = nullptr;
-    if (consoleMessage->source() != ConsoleAPIMessageSource) {
-        if (consoleMessage->callStack() && m_frame.chromeClient().shouldReportDetailedMessageForSource(messageURL))
-            reportedCallStack = consoleMessage->callStack();
-    } else {
+    if (consoleMessage->source() == ConsoleAPIMessageSource) {
         if (!m_frame.host() || (consoleMessage->scriptArguments() && consoleMessage->scriptArguments()->argumentCount() == 0))
             return;
-
         if (!allClientReportingMessageTypes().contains(consoleMessage->type()))
             return;
-
-        if (m_frame.chromeClient().shouldReportDetailedMessageForSource(messageURL))
-            reportedCallStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
     }
 
     String stackTrace;
-    if (reportedCallStack)
-        stackTrace = FrameConsole::formatStackTraceString(consoleMessage->message(), reportedCallStack);
-    m_frame.chromeClient().addMessageToConsole(&m_frame, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), lineNumber, messageURL, stackTrace);
+    if (consoleMessage->callStack() && m_frame.chromeClient().shouldReportDetailedMessageForSource(consoleMessage->url()))
+        stackTrace = FrameConsole::formatStackTraceString(consoleMessage->message(), consoleMessage->callStack());
+    m_frame.chromeClient().addMessageToConsole(&m_frame, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->lineNumber(), consoleMessage->url(), stackTrace);
 }
 
 void FrameConsole::reportResourceResponseReceived(DocumentLoader* loader, unsigned long requestIdentifier, const ResourceResponse& response)

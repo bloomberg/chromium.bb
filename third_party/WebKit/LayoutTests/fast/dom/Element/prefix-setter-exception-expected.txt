@@ -1,4 +1,4 @@
-CONSOLE WARNING: Setting 'Element.prefix' is deprecated, as it is read-only per DOM (http://dom.spec.whatwg.org/#element).
+CONSOLE WARNING: line 15: Setting 'Element.prefix' is deprecated, as it is read-only per DOM (http://dom.spec.whatwg.org/#element).
 Test for the implementation of DOM Level 3 Core API on Node Interface: prefix setter. INVALID_CHARACTER_ERR: Raised if the specified prefix contains an illegal character according to the XML version in use specified in the Document.xmlVersion attribute. http://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-NodeNSPrefix
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

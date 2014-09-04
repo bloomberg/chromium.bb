@@ -1,4 +1,4 @@
-CONSOLE ERROR: Refused to load media from 'test.ogv' because it violates the following Content Security Policy directive: "media-src 'none'".
+CONSOLE ERROR: line 14: Refused to load media from 'test.ogv' because it violates the following Content Security Policy directive: "media-src 'none'".
 
 END OF TEST
 This test passes if it doesn't alert failure.
