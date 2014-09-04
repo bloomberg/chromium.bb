@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/file_util.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/hash.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"

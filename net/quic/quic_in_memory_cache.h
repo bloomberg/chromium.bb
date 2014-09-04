@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/containers/hash_tables.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_piece.h"
 #include "net/http/http_response_headers.h"

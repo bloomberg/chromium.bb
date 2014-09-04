@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/hash.h"
 #include "base/location.h"
 #include "base/sha1.h"

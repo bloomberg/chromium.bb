@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"

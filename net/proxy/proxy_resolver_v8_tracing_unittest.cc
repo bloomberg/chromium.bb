@@ -4,7 +4,7 @@
 
 #include "net/proxy/proxy_resolver_v8_tracing.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"

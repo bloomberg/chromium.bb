@@ -4,7 +4,7 @@
 
 #include "net/disk_cache/disk_cache_test_base.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"

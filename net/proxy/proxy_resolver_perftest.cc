@@ -4,7 +4,7 @@
 
 #include "base/base_paths.h"
 #include "base/compiler_specific.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/test/perf_time_logger.h"

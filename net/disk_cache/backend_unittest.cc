@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/port.h"
 #include "base/strings/string_util.h"

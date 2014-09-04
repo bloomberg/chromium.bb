@@ -4,7 +4,7 @@
 
 #include "net/tools/dump_cache/cache_dumper.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"

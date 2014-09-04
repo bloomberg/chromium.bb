@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"
