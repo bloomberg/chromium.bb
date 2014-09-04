@@ -48,13 +48,6 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(const base::Time& install_time,
 }
 
 void ChromeBrowserFieldTrials::InstantiateDynamicTrials() {
-  // Call |FindValue()| on the trials below, which may come from the server, to
-  // ensure they get marked as "used" for the purposes of data reporting.
-  base::FieldTrialList::FindValue("UMA-Dynamic-Binary-Uniformity-Trial");
-  base::FieldTrialList::FindValue("UMA-Dynamic-Uniformity-Trial");
-  base::FieldTrialList::FindValue("InstantDummy");
-  base::FieldTrialList::FindValue("InstantChannel");
-  base::FieldTrialList::FindValue("Test0PercentDefault");
   // The following trials are used from renderer process.
   // Mark here so they will be sync-ed.
   base::FieldTrialList::FindValue("CLD1VsCLD2");
