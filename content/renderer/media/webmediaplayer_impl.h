@@ -212,12 +212,6 @@ class WebMediaPlayerImpl
   // painted.
   void FrameReady(const scoped_refptr<media::VideoFrame>& frame);
 
-  // Called when the ContentDecryptionModule has been attached to the
-  // pipeline/decoders.
-  void ContentDecryptionModuleAttached(
-      blink::WebContentDecryptionModuleResult result,
-      bool success);
-
   // Returns the current video frame from |compositor_|. Blocks until the
   // compositor can return the frame.
   scoped_refptr<media::VideoFrame> GetCurrentFrameFromCompositor();
