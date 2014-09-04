@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Wed Aug 27 13:55:13 2014. */
+/* From private/ppb_nacl_private.idl modified Thu Sep  4 07:46:02 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -304,8 +304,6 @@ struct PPB_NaCl_Private_1_0 {
                           const char* error_message);
   /* Reports that loading a nexe was aborted. */
   void (*ReportLoadAbort)(PP_Instance instance);
-  /* Reports that the nexe has crashed. */
-  void (*NexeDidCrash)(PP_Instance instance);
   /* Performs internal setup when an instance is created. */
   void (*InstanceCreated)(PP_Instance instance);
   /* Performs internal cleanup when an instance is destroyed. */

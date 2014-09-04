@@ -107,9 +107,6 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, BadNative) {
 #if defined(OS_WIN)
 // crbug.com/98721
 #  define MAYBE_Crash DISABLED_Crash
-#elif defined(OS_LINUX)
-// crbug.com/366334
-#  define MAYBE_Crash DISABLED_Crash
 #else
 #  define MAYBE_Crash Crash
 #endif

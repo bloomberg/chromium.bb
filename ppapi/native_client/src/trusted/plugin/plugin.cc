@@ -72,7 +72,6 @@ bool Plugin::LoadHelperNaClModuleInternal(NaClSubprocess* subprocess,
                          pp_instance(),
                          false,  // No main_service_runtime.
                          false,  // No non-SFI mode (i.e. in SFI-mode).
-                         pp::BlockUntilComplete(),
                          pp::BlockUntilComplete());
   subprocess->set_service_runtime(service_runtime);
 
@@ -128,8 +127,7 @@ void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
                             bool enable_dyncode_syscalls,
                             bool enable_exception_handling,
                             bool enable_crash_throttling,
-                            const pp::CompletionCallback& init_done_cb,
-                            const pp::CompletionCallback& crash_cb) {
+                            const pp::CompletionCallback& init_done_cb) {
   CHECK(pp::Module::Get()->core()->IsMainThread());
   // Before forking a new sel_ldr process, ensure that we do not leak
   // the ServiceRuntime object for an existing subprocess, and that any
@@ -149,7 +147,7 @@ void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
                            enable_crash_throttling);
   ErrorInfo error_info;
   ServiceRuntime* service_runtime = new ServiceRuntime(
-      this, pp_instance(), true, uses_nonsfi_mode, init_done_cb, crash_cb);
+      this, pp_instance(), true, uses_nonsfi_mode, init_done_cb);
   main_subprocess_.set_service_runtime(service_runtime);
   if (NULL == service_runtime) {
     error_info.SetReport(
@@ -336,8 +334,7 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
       true, /* enable_dyncode_syscalls */
       true, /* enable_exception_handling */
       false, /* enable_crash_throttling */
-      callback_factory_.NewCallback(&Plugin::NexeFileDidOpenContinuation),
-      callback_factory_.NewCallback(&Plugin::NexeDidCrash));
+      callback_factory_.NewCallback(&Plugin::NexeFileDidOpenContinuation));
 }
 
 void Plugin::NexeFileDidOpenContinuation(int32_t pp_error) {
@@ -353,12 +350,6 @@ void Plugin::NexeFileDidOpenContinuation(int32_t pp_error) {
     NaClLog(4, "NexeFileDidOpenContinuation: failed.");
   }
   NaClLog(4, "Leaving NexeFileDidOpenContinuation\n");
-}
-
-void Plugin::NexeDidCrash(int32_t pp_error) {
-  PLUGIN_PRINTF(("Plugin::NexeDidCrash (pp_error=%" NACL_PRId32 ")\n",
-                 pp_error));
-  nacl_interface_->NexeDidCrash(pp_instance());
 }
 
 void Plugin::BitcodeDidTranslate(int32_t pp_error) {
@@ -382,8 +373,7 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
       false, /* enable_dyncode_syscalls */
       false, /* enable_exception_handling */
       true, /* enable_crash_throttling */
-      callback_factory_.NewCallback(&Plugin::BitcodeDidTranslateContinuation),
-      callback_factory_.NewCallback(&Plugin::NexeDidCrash));
+      callback_factory_.NewCallback(&Plugin::BitcodeDidTranslateContinuation));
 }
 
 void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {

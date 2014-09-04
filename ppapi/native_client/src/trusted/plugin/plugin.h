@@ -93,8 +93,7 @@ class Plugin : public pp::Instance {
                       bool enable_dyncode_syscalls,
                       bool enable_exception_handling,
                       bool enable_crash_throttling,
-                      const pp::CompletionCallback& init_done_cb,
-                      const pp::CompletionCallback& crash_cb);
+                      const pp::CompletionCallback& init_done_cb);
 
   // Finish hooking interfaces up, after low-level initialization is
   // complete.
@@ -172,18 +171,6 @@ class Plugin : public pp::Instance {
   // with the sandbox on.
   void NexeFileDidOpen(int32_t pp_error);
   void NexeFileDidOpenContinuation(int32_t pp_error);
-
-  // Callback used when the reverse channel closes.  This is an
-  // asynchronous event that might turn into a JavaScript error or
-  // crash event -- this is controlled by the two state variables
-  // nacl_ready_state_ and nexe_error_reported_: If an error or crash
-  // had already been reported, no additional crash event is
-  // generated.  If no error has been reported but nacl_ready_state_
-  // is not DONE, then the loadend event has not been reported, and we
-  // enqueue an error event followed by loadend.  If nacl_ready_state_
-  // is DONE, then we are in the post-loadend (we need temporal
-  // predicate symbols), and we enqueue a crash event.
-  void NexeDidCrash(int32_t pp_error);
 
   // Callback used when a .nexe is translated from bitcode.  If the translation
   // is successful, the file descriptor is opened and can be passed to sel_ldr

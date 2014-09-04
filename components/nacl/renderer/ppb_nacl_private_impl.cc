@@ -749,12 +749,6 @@ void ReportLoadAbort(PP_Instance instance) {
     load_manager->ReportLoadAbort();
 }
 
-void NexeDidCrash(PP_Instance instance) {
-  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
-  if (load_manager)
-    load_manager->NexeDidCrash();
-}
-
 void InstanceCreated(PP_Instance instance) {
   NexeLoadManager::Create(instance);
 }
@@ -1666,7 +1660,6 @@ const PPB_NaCl_Private nacl_interface = {
   &ReportLoadSuccess,
   &ReportLoadError,
   &ReportLoadAbort,
-  &NexeDidCrash,
   &InstanceCreated,
   &InstanceDestroyed,
   &NaClDebugEnabledForURL,

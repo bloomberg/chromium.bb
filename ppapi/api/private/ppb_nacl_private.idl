@@ -275,9 +275,6 @@ interface PPB_NaCl_Private {
   /* Reports that loading a nexe was aborted. */
   void ReportLoadAbort([in] PP_Instance instance);
 
-  /* Reports that the nexe has crashed. */
-  void NexeDidCrash([in] PP_Instance instance);
-
   /* Performs internal setup when an instance is created. */
   void InstanceCreated([in] PP_Instance instance);
 

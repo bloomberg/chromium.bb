@@ -58,14 +58,12 @@ PluginReverseInterface::PluginReverseInterface(
     nacl::WeakRefAnchor* anchor,
     PP_Instance pp_instance,
     ServiceRuntime* service_runtime,
-    pp::CompletionCallback init_done_cb,
-    pp::CompletionCallback crash_cb)
+    pp::CompletionCallback init_done_cb)
       : anchor_(anchor),
         pp_instance_(pp_instance),
         service_runtime_(service_runtime),
         shutting_down_(false),
-        init_done_cb_(init_done_cb),
-        crash_cb_(crash_cb) {
+        init_done_cb_(init_done_cb) {
   NaClXMutexCtor(&mu_);
   NaClXCondVarCtor(&cv_);
 }
@@ -222,18 +220,7 @@ void PluginReverseInterface::StreamAsFile_MainThreadContinuation(
 }
 
 void PluginReverseInterface::ReportCrash() {
-  NaClLog(4, "PluginReverseInterface::ReportCrash\n");
-
-  if (crash_cb_.pp_completion_callback().func != NULL) {
-    NaClLog(4, "PluginReverseInterface::ReportCrash: invoking CB\n");
-    pp::Module::Get()->core()->CallOnMainThread(0, crash_cb_, PP_OK);
-    // Clear the callback to avoid it gets invoked twice.
-    crash_cb_ = pp::CompletionCallback();
-  } else {
-    NaClLog(1,
-            "PluginReverseInterface::ReportCrash:"
-            " crash_cb_ not valid, skipping\n");
-  }
+  // This is now handled through Chromium IPC.
 }
 
 void PluginReverseInterface::ReportExitStatus(int exit_status) {
@@ -250,8 +237,7 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
                                PP_Instance pp_instance,
                                bool main_service_runtime,
                                bool uses_nonsfi_mode,
-                               pp::CompletionCallback init_done_cb,
-                               pp::CompletionCallback crash_cb)
+                               pp::CompletionCallback init_done_cb)
     : plugin_(plugin),
       pp_instance_(pp_instance),
       main_service_runtime_(main_service_runtime),
@@ -259,7 +245,7 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
       reverse_service_(NULL),
       anchor_(new nacl::WeakRefAnchor()),
       rev_interface_(new PluginReverseInterface(anchor_, pp_instance, this,
-                                                init_done_cb, crash_cb)),
+                                                init_done_cb)),
       start_sel_ldr_done_(false),
       start_nexe_done_(false),
       nexe_started_ok_(false),
@@ -487,24 +473,21 @@ bool ServiceRuntime::StartNexeInternal() {
 }
 
 void ServiceRuntime::ReapLogs() {
-  // On a load failure the service runtime does not crash itself to
+  // TODO(teravest): We should allow the NaCl process to crash itself when a
+  // module fails to start, and remove the call to RemoteLog() here. The
+  // reverse channel is no longer needed for crash reporting.
+  //
+  // The reasoning behind the current code behavior follows:
+  // On a load failure the NaCl process does not crash itself to
   // avoid a race where the no-more-senders error on the reverse
   // channel service thread might cause the crash-detection logic to
   // kick in before the start_module RPC reply has been received. So
-  // we induce a service runtime crash here. We do not release
-  // subprocess_ since it's needed to collect crash log output after
-  // the error is reported.
+  // we induce a NaCl process crash here.
   RemoteLog(LOG_FATAL, "reap logs\n");
-  if (NULL == reverse_service_) {
-    // No crash detector thread.
-    NaClLog(LOG_ERROR, "scheduling to get crash log\n");
-    // Invoking rev_interface's method is workaround to avoid crash_cb
-    // gets called twice or more. We should clean this up later.
-    rev_interface_->ReportCrash();
-    NaClLog(LOG_ERROR, "should fire soon\n");
-  } else {
-    NaClLog(LOG_ERROR, "Reverse service thread will pick up crash log\n");
-  }
+
+  // TODO(teravest): Release subprocess_ here since it's no longer needed. It
+  // was previously kept around to collect crash log output from the bootstrap
+  // channel.
 }
 
 void ServiceRuntime::ReportLoadError(const ErrorInfo& error_info) {

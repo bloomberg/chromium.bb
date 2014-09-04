@@ -46,6 +46,11 @@ bool TrustedPluginChannel::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
+void TrustedPluginChannel::OnChannelError() {
+  if (report_exit_status_)
+    nexe_load_manager_->NexeDidCrash();
+}
+
 void TrustedPluginChannel::OnReportExitStatus(int exit_status) {
   if (report_exit_status_)
     nexe_load_manager_->set_exit_status(exit_status);

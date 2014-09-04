@@ -35,6 +35,7 @@ class TrustedPluginChannel : public IPC::Listener {
 
   // Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
   void OnReportExitStatus(int exit_status);
 

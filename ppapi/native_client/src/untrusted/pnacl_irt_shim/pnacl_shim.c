@@ -3492,11 +3492,6 @@ static void Pnacl_M25_PPB_NaCl_Private_ReportLoadAbort(PP_Instance instance) {
   iface->ReportLoadAbort(instance);
 }
 
-static void Pnacl_M25_PPB_NaCl_Private_NexeDidCrash(PP_Instance instance) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->NexeDidCrash(instance);
-}
-
 static void Pnacl_M25_PPB_NaCl_Private_InstanceCreated(PP_Instance instance) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   iface->InstanceCreated(instance);
@@ -5408,7 +5403,6 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .ReportLoadSuccess = (void (*)(PP_Instance instance, uint64_t loaded_bytes, uint64_t total_bytes))&Pnacl_M25_PPB_NaCl_Private_ReportLoadSuccess,
     .ReportLoadError = (void (*)(PP_Instance instance, PP_NaClError error, const char* error_message))&Pnacl_M25_PPB_NaCl_Private_ReportLoadError,
     .ReportLoadAbort = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_ReportLoadAbort,
-    .NexeDidCrash = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_NexeDidCrash,
     .InstanceCreated = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_InstanceCreated,
     .InstanceDestroyed = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_InstanceDestroyed,
     .NaClDebugEnabledForURL = (PP_Bool (*)(const char* alleged_nmf_url))&Pnacl_M25_PPB_NaCl_Private_NaClDebugEnabledForURL,
