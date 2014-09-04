@@ -1,14 +1,10 @@
-# Documentation is built with publican
-# https://fedorahosted.org/publican/
-# Publican takes docbook-style input files and compiles them to various
-# output formats.
+# Documentation is built with xmlto, but some of the recipes in here are
+# leftovers from building with Publican (https://fedorahosted.org/publican/)
 #
 # How this build works:
 # * the main target is Wayland, documentation ends up in $(builddir)/Wayland/
-# * hand-written chapters are located in sources
-#   Publican does not take a source path, so to support out-of-tree builds
-#   these are copied to $(builddir)/en-US which is the actual directory
-#   Publican uses.
+# * hand-written chapters and CSS files are located in sources. These are
+#   copied into $(builddir)/en-US/
 # * ProtocolSpec.xml is generated from $(top_srcdir)/protocol/wayland.xml,
 #   changed into docbook via XSLT and saved in $(builddir)/en-US/
 # * ProtocolInterfaces.xml, same as above, uses a different XSLT
@@ -16,7 +12,7 @@
 #   $(builddir)/en-US
 # * WaylandServerAPI.xml is generated from the doxygen output and saved in
 #   $(builddir)/en-US
-# * run Publican on en-US
+# * run xmlto on $(builddir)/en-US, output to $(builddir)/Wayland/en-US
 publican_sources = \
 	$(srcdir)/sources/Wayland.ent \
 	$(srcdir)/sources/Wayland.xml \
@@ -35,9 +31,36 @@ publican_sources = \
 	$(srcdir)/sources/images/wayland.png  \
 	$(srcdir)/sources/images/x-architecture.png
 
-if HAVE_PUBLICAN
+css_sources = \
+	$(srcdir)/sources/css/brand.css \
+	$(srcdir)/sources/css/common.css \
+	$(srcdir)/sources/css/default.css \
+	$(srcdir)/sources/css/epub.css \
+	$(srcdir)/sources/css/print.css
+img_sources = \
+	$(srcdir)/sources/images/icon.svg \
+	$(srcdir)/sources/images/wayland-architecture.png \
+	$(srcdir)/sources/images/wayland.png \
+	$(srcdir)/sources/images/x-architecture.png
+
+if HAVE_XMLTO
 if HAVE_XSLTPROC
 noinst_DATA = Wayland $(publican_targets)
+XMLTO_PARAM = \
+	--stringparam chunk.section.depth=0 \
+	--stringparam toc.section.depth=1 \
+	--stringparam html.stylesheet=css/default.css
+
+html_destdir = $(builddir)/Wayland/en-US/html
+
+Wayland: $(publican_targets)
+	$(AM_V_GEN)$(MKDIR_P) -p $(html_destdir)/css
+	$(AM_V_GEN)cp -f $(css_sources) $(html_destdir)/css/
+	$(AM_V_GEN)$(MKDIR_P) -p $(html_destdir)/images
+	$(AM_V_GEN)cp -f $(img_sources) $(html_destdir)/images/
+	$(AM_V_GEN)$(XMLTO) $(XMLTO_PARAM) html en-US/Wayland.xml -o $(html_destdir)
+	@touch Wayland
+
 pubdir = $(docdir)/Wayland/en-US
 
 publican_targets = $(publican_sources:$(srcdir)/sources%=$(builddir)/en-US%) \
@@ -85,37 +108,16 @@ $(builddir)/en-US/%: $(srcdir)/sources/% en-US/ProtocolSpec.xml en-US/ProtocolIn
 	$(AM_V_GEN)cp -f $< $@
 	$(AM_V_GEN)chmod a+w $@
 
-# Run publican for the builddir on the generated (or copied) source
-# The output formats are generated in the Wayland sub directory. Also, we need
-# to use a tmp publican.cfg cause 'publican rename' modifies the original.
-Wayland: $(publican_targets)
-	$(AM_V_GEN)cp -f $(srcdir)/publican.cfg $(builddir)/publican-copy.cfg
-	$(AM_V_GEN)$(PUBLICAN) rename --name Wayland \
-		--version "$(WAYLAND_VERSION_MAJOR).$(WAYLAND_VERSION_MINOR)" \
-		--config $(builddir)/publican-copy.cfg
-	$(AM_V_GEN)$(PUBLICAN) build --quiet --langs en-US --pdftool fop --formats html,pdf \
-		--config $(builddir)/publican-copy.cfg
-	@touch Wayland
-
 CLEANFILES = en-US/ProtocolSpec.xml en-US/ProtocolInterfaces.xml en-US/WaylandClientAPI.xml $(publican_targets)
 
 clean-local:
 	$(AM_V_at)rm -fr $(builddir)/en-US
 	$(AM_V_at)rm -fr $(builddir)/Wayland
-	$(AM_V_at)rm -fr $(builddir)/publican-copy.cfg
 
 install-data-local:
-	test -z "$(pubdir)/html/Common_Content/css" || $(mkdir_p) "$(DESTDIR)$(pubdir)/html/Common_Content/css"
-	test -z "$(pubdir)/html/Common_Content/images" || $(mkdir_p) "$(DESTDIR)$(pubdir)/html/Common_Content/images"
+	test -z "$(pubdir)/html/css" || $(mkdir_p) "$(DESTDIR)$(pubdir)/html/css"
 	test -z "$(pubdir)/html/images" || $(mkdir_p) "$(DESTDIR)$(pubdir)/html/images"
-	test -z "$(pubdir)/html-pdf/Common_Content/css" || $(mkdir_p) "$(DESTDIR)$(pubdir)/html-pdf/Common_Content/css"
-	test -z "$(pubdir)/html-pdf/Common_Content/images" || $(mkdir_p) "$(DESTDIR)$(pubdir)/html-pdf/Common_Content/images"
-	test -z "$(pubdir)/html-pdf/images" || $(mkdir_p) "$(DESTDIR)$(pubdir)/html-pdf/images"
-	test -z "$(pubdir)/pdf" || $(mkdir_p) "$(DESTDIR)$(pubdir)/pdf"
-	test -z "$(pubdir)/xml/Common_Content/css" || $(mkdir_p) "$(DESTDIR)$(pubdir)/xml/Common_Content/css"
-	test -z "$(pubdir)/xml/Common_Content/images" || $(mkdir_p) "$(DESTDIR)$(pubdir)/xml/Common_Content/images"
-	test -z "$(pubdir)/xml/images" || $(mkdir_p) "$(DESTDIR)$(pubdir)/xml/images"
-	list=`find $(builddir)/Wayland/en-US -type f -not -path '$(builddir)/Wayland/en-US/xml_tmp*'`; \
+	list=`find $(builddir)/Wayland/en-US -type f`; \
 	for p in $$list; do \
 	  echo " $(INSTALL_DATA) '$$p' '$(DESTDIR)$(docdir)/$$p'"; \
 	  $(INSTALL_DATA) "$$p" "$(DESTDIR)$(docdir)/$$p"; \
@@ -132,4 +134,4 @@ uninstall-local:
 endif
 endif
 
-EXTRA_DIST = $(publican_sources) publican.cfg protocol-to-docbook.xsl protocol-interfaces-to-docbook.xsl doxygen-to-publican.xsl
+EXTRA_DIST = $(publican_sources) $(css_sources) $(img_sources) protocol-to-docbook.xsl protocol-interfaces-to-docbook.xsl doxygen-to-publican.xsl

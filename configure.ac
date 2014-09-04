@@ -109,14 +109,10 @@ if test "x$enable_documentation" = "xyes"; then
 		AC_MSG_ERROR([Documentation build requested but doxygen not found. Install doxygen or disable the documentation using --disable-documentation])
 	fi
 
-	AC_PATH_PROG(PUBLICAN, publican)
+	AC_PATH_PROG(XMLTO, xmlto)
 
-	if test "x$PUBLICAN" != "x"; then
-		PUBLICAN_VERSION=[`$PUBLICAN -v | sed -e 's/version=v\?\([0-9]*\.[0-9]*\).*/\1/'`]
-
-		if test [ 1 -eq `echo "${PUBLICAN_VERSION} < 2.8" | bc` ]; then
-			AC_MSG_ERROR([Publican version is not supported. Install publican >= 2.8 or disable the documentation using --disable-documentation])
-		fi
+	if test "x$XMLTO" = "x"; then
+		AC_MSG_ERROR([Documentation build requested but xmlto not found. Install xmlto or disable the documentation using --disable-documentation])
 	fi
 
 	AC_CONFIG_FILES([
@@ -124,7 +120,7 @@ if test "x$enable_documentation" = "xyes"; then
 	])
 
 fi
-AM_CONDITIONAL([HAVE_PUBLICAN], [test "x$PUBLICAN" != "x"])
+AM_CONDITIONAL([HAVE_XMLTO], [test "x$XMLTO" != "x"])
 
 AC_CONFIG_FILES([Makefile
 		 cursor/wayland-cursor.pc
