@@ -10,14 +10,17 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_link_manager.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_origin.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/prerender_types.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -391,6 +394,12 @@ class PrerenderTest : public testing::Test {
         kDefaultChildId, GetNextPrerenderID(), url, kDefaultRelTypes,
         content::Referrer(), kSize, kDefaultRenderViewRouteId);
     return LauncherHasRunningPrerender(kDefaultChildId, last_prerender_id());
+  }
+
+  void DisablePrerender() {
+    profile_.GetPrefs()->SetInteger(
+        prefs::kNetworkPredictionOptions,
+        chrome_browser_net::NETWORK_PREDICTION_NEVER);
   }
 
  private:
@@ -1030,13 +1039,13 @@ TEST_F(PrerenderTest, CancelAllTest) {
 }
 
 TEST_F(PrerenderTest, OmniboxNotAllowedWhenDisabled) {
-  prerender_manager()->set_enabled(false);
+  DisablePrerender();
   EXPECT_FALSE(prerender_manager()->AddPrerenderFromOmnibox(
       GURL("http://www.example.com"), NULL, gfx::Size()));
 }
 
 TEST_F(PrerenderTest, LinkRelNotAllowedWhenDisabled) {
-  prerender_manager()->set_enabled(false);
+  DisablePrerender();
   EXPECT_FALSE(AddSimplePrerender(
       GURL("http://www.example.com")));
 }
@@ -1544,7 +1553,7 @@ TEST_F(PrerenderTest, InstantSearchNotAllowedWhenDisabled) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch",
       "Group82 espv:8 use_cacheable_ntp:1 prefetch_results:1"));
-  prerender_manager()->set_enabled(false);
+  DisablePrerender();
   EXPECT_FALSE(prerender_manager()->AddPrerenderForInstant(
       GURL("http://www.example.com/instant_search"), NULL, gfx::Size()));
 }

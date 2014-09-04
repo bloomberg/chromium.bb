@@ -236,8 +236,7 @@ struct PrerenderManager::NavigationRecord {
 
 PrerenderManager::PrerenderManager(Profile* profile,
                                    PrerenderTracker* prerender_tracker)
-    : enabled_(true),
-      profile_(profile),
+    : profile_(profile),
       prerender_tracker_(prerender_tracker),
       prerender_contents_factory_(PrerenderContents::CreateFactory()),
       last_prerender_start_time_(GetCurrentTimeTicks() -
@@ -738,11 +737,6 @@ void PrerenderManager::RecordPerceivedPageLoadTime(
   }
 }
 
-void PrerenderManager::set_enabled(bool enabled) {
-  DCHECK(CalledOnValidThread());
-  enabled_ = enabled;
-}
-
 // static
 PrerenderManager::PrerenderManagerMode PrerenderManager::GetMode() {
   return mode_;
@@ -930,7 +924,7 @@ base::DictionaryValue* PrerenderManager::GetAsValue() const {
   base::DictionaryValue* dict_value = new base::DictionaryValue();
   dict_value->Set("history", prerender_history_->GetEntriesAsValue());
   dict_value->Set("active", GetActivePrerendersAsValue());
-  dict_value->SetBoolean("enabled", enabled_);
+  dict_value->SetBoolean("enabled", IsEnabled());
   dict_value->SetBoolean("omnibox_enabled", IsOmniboxEnabled(profile_));
   // If prerender is disabled via a flag this method is not even called.
   std::string enabled_note;
@@ -1854,8 +1848,6 @@ void PrerenderManager::RecordNetworkBytes(Origin origin,
 bool PrerenderManager::IsEnabled() const {
   DCHECK(CalledOnValidThread());
 
-  if (!enabled_)
-    return false;
   return chrome_browser_net::CanPrefetchAndPrerenderUI(profile_->GetPrefs());
 }
 

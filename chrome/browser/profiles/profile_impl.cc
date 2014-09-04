@@ -984,10 +984,7 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
   DCHECK(!net_pref_observer_);
   {
     TRACE_EVENT0("browser", "ProfileImpl::OnPrefsLoaded:NetPrefObserver")
-    net_pref_observer_.reset(new NetPrefObserver(
-        prefs_.get(),
-        prerender::PrerenderManagerFactory::GetForProfile(this),
-        predictor_));
+    net_pref_observer_.reset(new NetPrefObserver(prefs_.get()));
   }
 
   chrome_prefs::SchedulePrefsFilePathVerification(path_);

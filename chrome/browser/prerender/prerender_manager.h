@@ -193,12 +193,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       double fraction_plt_elapsed_at_swap_in,
       const GURL& url);
 
-  // Set whether prerendering is currently enabled for this manager.
-  // Must be called on the UI thread.
-  // If |enabled| is false, existing prerendered pages will still persist until
-  // they time out, but new ones will not be generated.
-  void set_enabled(bool enabled);
-
   static PrerenderManagerMode GetMode();
   static void SetMode(PrerenderManagerMode mode);
   static const char* GetModeString();
@@ -672,11 +666,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // The configuration.
   Config config_;
-
-  // Specifies whether prerendering is currently enabled for this
-  // manager. The value can change dynamically during the lifetime
-  // of the PrerenderManager.
-  bool enabled_;
 
   // The profile that owns this PrerenderManager.
   Profile* profile_;
