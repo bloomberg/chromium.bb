@@ -15,10 +15,10 @@ layer at (0,0) size 800x600
             text run at (214,0) width 565: "When a webfont is missing a glyph, synthesization from the fallback font isn't happening"
         RenderText {#text} at (779,0) size 4x19
           text run at (779,0) width 4: "."
-      RenderBlock {P} at (0,36) size 784x32
-        RenderText {#text} at (0,11) size 174x19
-          text run at (0,11) width 174: "A synthesized oblique bullet: "
+      RenderBlock {P} at (0,36) size 784x37
+        RenderText {#text} at (0,14) size 174x19
+          text run at (0,14) width 174: "A synthesized oblique bullet: "
         RenderInline {SPAN} at (0,0) size 19x32
-          RenderText {#text} at (174,0) size 19x32
-            text run at (174,0) width 19: "\x{25CF}"
+          RenderText {#text} at (174,3) size 19x32
+            text run at (174,3) width 19: "\x{25CF}"
         RenderText {#text} at (0,0) size 0x0

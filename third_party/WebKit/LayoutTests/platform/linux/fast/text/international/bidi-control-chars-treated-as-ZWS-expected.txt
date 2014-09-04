@@ -6,10 +6,10 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,0) size 784x20
         RenderText {#text} at (0,0) size 756x19
           text run at (0,0) width 756: "This tests that Unicode bidi control characters are not rendered and have zero width. The next two lines should look the same."
-      RenderBlock {DIV} at (0,20) size 784x40
-        RenderText {#text} at (0,0) size 14x19
-          text run at (0,0) width 7: "a"
-          text run at (7,0) width 7 LTR override: "\x{202D}e\x{300}"
-        RenderBR {BR} at (14,15) size 0x0
-        RenderText {#text} at (0,20) size 14x19
-          text run at (0,20) width 14: "ae\x{300}"
+      RenderBlock {DIV} at (0,20) size 784x50
+        RenderText {#text} at (0,6) size 14x19
+          text run at (0,6) width 7: "a"
+          text run at (7,6) width 7 LTR override: "\x{202D}e\x{300}"
+        RenderBR {BR} at (14,21) size 0x0
+        RenderText {#text} at (0,30) size 14x19
+          text run at (0,30) width 14: "ae\x{300}"

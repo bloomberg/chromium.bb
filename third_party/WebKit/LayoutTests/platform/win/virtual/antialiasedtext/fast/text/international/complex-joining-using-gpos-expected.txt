@@ -9,20 +9,20 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,34) size 784x18
         RenderText {#text} at (0,0) size 723x17
           text run at (0,0) width 723: "The backslash-looking mark should connect into the the character on the center, not be positioned off to the side."
-      RenderBlock {DIV} at (0,68) size 784x80
-        RenderText {#text} at (0,1) size 268x77
-          text run at (0,1) width 268: "\x{915}+\x{947} = \x{915}\x{947}"
-      RenderBlock {DIV} at (0,148) size 784x34
-        RenderText {#text} at (0,0) size 115x33
-          text run at (0,0) width 115: "\x{915}+\x{947} = \x{915}\x{947}"
-      RenderBlock {P} at (0,198) size 784x18
+      RenderBlock {DIV} at (0,68) size 784x118
+        RenderText {#text} at (0,25) size 268x77
+          text run at (0,25) width 268: "\x{915}+\x{947} = \x{915}\x{947}"
+      RenderBlock {DIV} at (0,186) size 784x50
+        RenderText {#text} at (0,10) size 115x33
+          text run at (0,10) width 115: "\x{915}+\x{947} = \x{915}\x{947}"
+      RenderBlock {P} at (0,252) size 784x18
         RenderText {#text} at (0,0) size 612x17
           text run at (0,0) width 612: "The three words should be separated by spaces, and there should be no marks above the spaces."
-      RenderBlock {DIV} at (0,232) size 784x80
-        RenderText {#text} at (0,1) size 755x77
-          text run at (0,1) width 419: "\x{E40}\x{E01}\x{E21}\x{E2A}\x{E4C} \x{E1F}\x{E31}\x{E07}\x{E40}\x{E1E}\x{E25}\x{E07} "
-          text run at (418,1) width 337: "\x{E42}\x{E1B}\x{E23}\x{E42}\x{E21}\x{E17}\x{E40}\x{E27}\x{E47}\x{E1A}"
-      RenderBlock {DIV} at (0,312) size 784x34
-        RenderText {#text} at (0,0) size 324x33
-          text run at (0,0) width 180: "\x{E40}\x{E01}\x{E21}\x{E2A}\x{E4C} \x{E1F}\x{E31}\x{E07}\x{E40}\x{E1E}\x{E25}\x{E07} "
-          text run at (179,0) width 145: "\x{E42}\x{E1B}\x{E23}\x{E42}\x{E21}\x{E17}\x{E40}\x{E27}\x{E47}\x{E1A}"
+      RenderBlock {DIV} at (0,286) size 784x87
+        RenderText {#text} at (0,8) size 755x77
+          text run at (0,8) width 419: "\x{E40}\x{E01}\x{E21}\x{E2A}\x{E4C} \x{E1F}\x{E31}\x{E07}\x{E40}\x{E1E}\x{E25}\x{E07} "
+          text run at (418,8) width 337: "\x{E42}\x{E1B}\x{E23}\x{E42}\x{E21}\x{E17}\x{E40}\x{E27}\x{E47}\x{E1A}"
+      RenderBlock {DIV} at (0,373) size 784x37
+        RenderText {#text} at (0,3) size 324x33
+          text run at (0,3) width 180: "\x{E40}\x{E01}\x{E21}\x{E2A}\x{E4C} \x{E1F}\x{E31}\x{E07}\x{E40}\x{E1E}\x{E25}\x{E07} "
+          text run at (179,3) width 145: "\x{E42}\x{E1B}\x{E23}\x{E42}\x{E21}\x{E17}\x{E40}\x{E27}\x{E47}\x{E1A}"

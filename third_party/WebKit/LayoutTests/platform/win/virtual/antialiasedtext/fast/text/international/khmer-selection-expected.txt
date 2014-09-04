@@ -1,9 +1,9 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x120
-  RenderBlock {HTML} at (0,0) size 800x120
-    RenderBody {BODY} at (8,16) size 784x88
-      RenderBlock {P} at (0,0) size 784x18
+layer at (0,0) size 800x127
+  RenderBlock {HTML} at (0,0) size 800x127
+    RenderBody {BODY} at (8,16) size 784x95
+      RenderBlock {P} at (0,0) size 784x25
         RenderInline {NOBR} at (0,0) size 112x17
           RenderInline {B} at (0,0) size 18x17
             RenderText {#text} at (0,0) size 18x17
@@ -24,7 +24,7 @@ layer at (0,0) size 800x120
             RenderText {#text} at (71,0) size 41x17
               text run at (71,0) width 41: "\x{1790}\x{178F}\x{17AF}\x{1780}\x{179F}\x{17B6}\x{179A}"
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,34) size 784x54
+      RenderBlock {P} at (0,41) size 784x54
         RenderText {#text} at (0,0) size 542x17
           text run at (0,0) width 542: "Some Harfbuzz shapers will output cluster logs which suggest that some glyphs had "
         RenderInline {I} at (0,0) size 17x17

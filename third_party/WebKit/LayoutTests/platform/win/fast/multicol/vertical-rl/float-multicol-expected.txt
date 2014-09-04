@@ -130,11 +130,11 @@ layer at (431,8) size 346x1500
           text run at (18,331) width 33: "Bugs"
       RenderBlock {DD} at (52,40) size 470.28x438.66
         RenderBlock {P} at (0,0) size 470.28x438.66
-          RenderText {#text} at (0,291) size 325x142
+          RenderText {#text} at (0,291) size 326x142
             text run at (0,291) width 46: "You've"
             text run at (18,291) width 48: "already"
             text run at (200,291) width 131: "downloaded a build."
-            text run at (218,291) width 134: "All you have to do is"
+            text run at (218,291) width 135: "All you have to do is"
             text run at (236,291) width 39: "use it "
             text run at (236,329) width 18: "as "
             text run at (236,347) width 30: "your"
@@ -144,12 +144,12 @@ layer at (431,8) size 346x1500
             text run at (308,291) width 70: "build with "
             text run at (308,360) width 64: "Talkback,"
           RenderInline {EM} at (0,0) size 17x106
-            RenderText {#text} at (326,291) size 17x106
-              text run at (326,291) width 45: "please "
+            RenderText {#text} at (326,291) size 18x106
+              text run at (326,291) width 46: "please "
               text run at (326,336) width 60: "turn it on"
-          RenderText {#text} at (326,396) size 125x435
+          RenderText {#text} at (326,396) size 126x435
             text run at (326,396) width 39: " when"
-            text run at (344,208) width 192: "it asks. Talkback reports give "
+            text run at (344,208) width 193: "it asks. Talkback reports give "
             text run at (344,400) width 15: "us"
             text run at (362,208) width 130: "really valuable data "
             text run at (362,338) width 60: "on which"
@@ -160,17 +160,17 @@ layer at (431,8) size 346x1500
             text run at (416,284) width 140: "If you find something"
             text run at (434,0) width 317: "you think is a bug, check to see if it's not already "
           RenderInline {A} at (0,0) size 17x84 [color=#0000EE]
-            RenderText {#text} at (434,316) size 17x84
+            RenderText {#text} at (434,316) size 18x84
               text run at (434,316) width 84: "known about"
-          RenderText {#text} at (434,399) size 35x431
+          RenderText {#text} at (434,399) size 36x431
             text run at (434,399) width 32: ", and"
             text run at (452,0) width 76: "then please "
             text run at (452,75) width 70: "follow the "
           RenderInline {A} at (0,0) size 17x169 [color=#0000EE]
-            RenderText {#text} at (452,144) size 17x169
-              text run at (452,144) width 168: "bug submission procedure"
-          RenderText {#text} at (452,312) size 17x5
-            text run at (452,312) width 4: "."
+            RenderText {#text} at (452,144) size 18x169
+              text run at (452,144) width 169: "bug submission procedure"
+          RenderText {#text} at (452,312) size 18x5
+            text run at (452,312) width 5: "."
       RenderBlock (floating) {DIV} at (538.28,0) size 399.91x82.66 [bgcolor=#008000]
         RenderBlock {P} at (16,0) size 18x82.66
           RenderText {#text} at (0,0) size 17x75
@@ -224,15 +224,15 @@ layer at (431,8) size 346x1500
             text run at (0,194) width 215: "dedicated to ways to get involved"
             text run at (25,42) width 223: "with helping. This doesn't involve "
             text run at (25,264) width 144: "knowing how to code,"
-            text run at (44,42) width 352: "although a little knowledge of HTML is helpful. Being"
-            text run at (62,42) width 135: "involved with QA is "
-            text run at (62,176) width 234: "good for people wanting to get more"
-            text run at (80,42) width 88: "familiar with "
-            text run at (80,129) width 278: "Mozilla, and there's a strong community. A"
-            text run at (98,42) width 245: "particularly good way to get involved "
-            text run at (98,287) width 80: "is to join the"
+            text run at (43,42) width 353: "although a little knowledge of HTML is helpful. Being"
+            text run at (61,42) width 136: "involved with QA is "
+            text run at (61,176) width 235: "good for people wanting to get more"
+            text run at (79,42) width 88: "familiar with "
+            text run at (79,129) width 279: "Mozilla, and there's a strong community. A"
+            text run at (97,42) width 246: "particularly good way to get involved "
+            text run at (97,287) width 81: "is to join the"
           RenderInline {A} at (0,0) size 17x73 [color=#0000EE]
-            RenderText {#text} at (116,42) size 17x73
-              text run at (116,42) width 72: "BugAThon"
-          RenderText {#text} at (116,114) size 17x5
-            text run at (116,114) width 4: "."
+            RenderText {#text} at (115,42) size 18x73
+              text run at (115,42) width 73: "BugAThon"
+          RenderText {#text} at (115,114) size 18x5
+            text run at (115,114) width 5: "."

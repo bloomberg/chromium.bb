@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x489
-  RenderBlock {HTML} at (0,0) size 800x488.63
-    RenderBody {BODY} at (8,8) size 784x459.30
+layer at (0,0) size 800x491
+  RenderBlock {HTML} at (0,0) size 800x490.63
+    RenderBody {BODY} at (8,8) size 784x461.30
       RenderBlock (anonymous) at (0,0) size 784x20
         RenderText {#text} at (0,0) size 76x19
           text run at (0,0) width 76: "This is good:"
@@ -14,7 +14,7 @@ layer at (0,0) size 800x489
       RenderBlock (anonymous) at (0,112.66) size 784x20
         RenderText {#text} at (0,0) size 264x19
           text run at (0,0) width 264: "The following three should look like \x{201C}good\x{201D}:"
-      RenderBlock {DIV} at (0,153.98) size 100x192.66
+      RenderBlock {DIV} at (0,153.98) size 100x194.66
         RenderBlock {P} at (0,0) size 100x50 [border: (1px solid #0000FF)]
           RenderText {#text} at (44,1) size 55x47
             text run at (44,1) width 55: "Lorem"
@@ -23,14 +23,14 @@ layer at (0,0) size 800x489
           RenderText {#text} at (44,1) size 55x47
             text run at (44,1) width 55: "Lorem"
             text run at (48,25) width 51: "\x{131}psum"
-        RenderBlock {P} at (0,142.66) size 100x50 [border: (1px solid #0000FF)]
-          RenderText {#text} at (40,1) size 59x47
-            text run at (40,1) width 59: "Lore\x{1E3F}"
-            text run at (48,25) width 51: "ipsum"
-      RenderBlock (anonymous) at (0,367.97) size 784x20
+        RenderBlock {P} at (0,142.66) size 100x52 [border: (1px solid #0000FF)]
+          RenderText {#text} at (40,3) size 59x47
+            text run at (40,3) width 59: "Lore\x{1E3F}"
+            text run at (48,27) width 51: "ipsum"
+      RenderBlock (anonymous) at (0,369.97) size 784x20
         RenderText {#text} at (0,0) size 68x19
           text run at (0,0) width 68: "This is bad:"
-      RenderBlock {DIV} at (0,409.30) size 100x50
+      RenderBlock {DIV} at (0,411.30) size 100x50
         RenderBlock {P} at (0,0) size 100x50 [border: (1px solid #FF0000)]
           RenderText {#text} at (39,1) size 60x47
             text run at (39,1) width 60: "Lorem "

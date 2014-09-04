@@ -1,15 +1,15 @@
-layer at (0,0) size 785x781
+layer at (0,0) size 785x805
   RenderView at (0,0) size 785x600
-layer at (0,0) size 785x781
-  RenderBlock {HTML} at (0,0) size 785x781
-    RenderBody {BODY} at (8,32) size 769x717
-      RenderBlock {P} at (32,0) size 705x111 [color=#000080]
-        RenderText {#text} at (0,0) size 671x110
-          text run at (0,0) width 671: "\x{21E9} The following blue box should be exactly half the"
-          text run at (0,37) width 81: "width "
-          text run at (80,37) width 559: "of the viewport, on the left of the 50% ruler"
-          text run at (0,74) width 74: "mark."
-      RenderBlock (floating) {DIV} at (0,143) size 384.50x342 [color=#FFFFFF] [bgcolor=#0000FF]
+layer at (0,0) size 785x805
+  RenderBlock {HTML} at (0,0) size 785x805
+    RenderBody {BODY} at (8,32) size 769x741
+      RenderBlock {P} at (32,0) size 705x123 [color=#000080]
+        RenderText {#text} at (0,6) size 671x116
+          text run at (0,6) width 671: "\x{21E9} The following blue box should be exactly half the"
+          text run at (0,49) width 81: "width "
+          text run at (80,49) width 559: "of the viewport, on the left of the 50% ruler"
+          text run at (0,86) width 74: "mark."
+      RenderBlock (floating) {DIV} at (0,155) size 384.50x342 [color=#FFFFFF] [bgcolor=#0000FF]
         RenderText {#text} at (0,0) size 385x341
           text run at (0,0) width 385: "ignore this float text ignore this float text ignore this"
           text run at (0,18) width 42: "float "
@@ -45,7 +45,7 @@ layer at (0,0) size 785x781
           text run at (0,306) width 235: "float text ignore this float text "
           text run at (234,306) width 150: "ignore this float text"
           text run at (0,324) width 255: "ignore this float text ignore this float"
-      RenderBlock {DIV} at (0,143) size 769x468 [color=#C0C0C0]
+      RenderBlock {DIV} at (0,155) size 769x468 [color=#C0C0C0]
         RenderText {#text} at (384,0) size 769x467
           text run at (384,0) width 385: "this is some dummy text this is some dummy text this is"
           text run at (384,18) width 97: "some dummy "
@@ -99,7 +99,7 @@ layer at (0,0) size 785x781
           text run at (648,432) width 121: "dummy text this is"
           text run at (0,450) width 321: "some dummy text this is some dummy text this is "
           text run at (320,450) width 276: "some dummy text this is some dummy text"
-      RenderBlock {P} at (32,643) size 705x74 [color=#000080]
-        RenderText {#text} at (18,0) size 687x73
+      RenderBlock {P} at (32,655) size 705x86 [color=#000080]
+        RenderText {#text} at (18,0) size 687x79
           text run at (18,0) width 687: "The above gray text should flow around the blue box."
-          text run at (680,37) width 25: "\x{21E7}"
+          text run at (680,43) width 25: "\x{21E7}"
