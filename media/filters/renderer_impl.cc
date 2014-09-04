@@ -501,14 +501,6 @@ void RendererImpl::OnAudioRendererEnded() {
   DCHECK(!audio_ended_);
   audio_ended_ = true;
 
-  // Start clock since there is no more audio to trigger clock updates.
-  {
-    base::TimeDelta duration = get_duration_cb_.Run();
-    base::AutoLock auto_lock(interpolator_lock_);
-    interpolator_->SetUpperBound(duration);
-    StartClockIfWaitingForTimeUpdate_Locked();
-  }
-
   RunEndedCallbackIfNeeded();
 }
 
@@ -536,10 +528,8 @@ void RendererImpl::RunEndedCallbackIfNeeded() {
     return;
 
   {
-    base::TimeDelta duration = get_duration_cb_.Run();
     base::AutoLock auto_lock(interpolator_lock_);
     PauseClockAndStopTicking_Locked();
-    interpolator_->SetBounds(duration, duration);
   }
 
   ended_cb_.Run();

@@ -401,34 +401,6 @@ TEST_F(RendererImplTest, GetMediaTime) {
   EXPECT_EQ(kAudioUpdateMaxTimeMs, GetMediaTimeMs());
 }
 
-TEST_F(RendererImplTest, AudioStreamShorterThanVideo) {
-  // Replace what's used for interpolating to simulate wall clock time.
-  renderer_impl_->SetTimeDeltaInterpolatorForTesting(
-      new TimeDeltaInterpolator(&test_tick_clock_));
-
-  InitializeWithAudioAndVideo();
-  Play();
-
-  EXPECT_EQ(kStartPlayingTimeInMs, GetMediaTimeMs());
-
-  // Verify that the clock doesn't advance since it hasn't been started by
-  // a time update from the audio stream.
-  EXPECT_FALSE(IsMediaTimeAdvancing());
-
-  // Signal end of audio stream.
-  audio_ended_cb_.Run();
-  base::RunLoop().RunUntilIdle();
-
-  // Verify that the clock advances.
-  EXPECT_TRUE(IsMediaTimeAdvancing());
-
-  // Signal end of video stream and make sure OnEnded() callback occurs.
-  EXPECT_CALL(time_source_, StopTicking());
-  EXPECT_CALL(callbacks_, OnEnded());
-  video_ended_cb_.Run();
-  base::RunLoop().RunUntilIdle();
-}
-
 TEST_F(RendererImplTest, AudioTimeUpdateDuringFlush) {
   // Replace what's used for interpolating to simulate wall clock time.
   renderer_impl_->SetTimeDeltaInterpolatorForTesting(

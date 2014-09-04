@@ -148,6 +148,7 @@ void AudioRendererImpl::SetMediaTime(base::TimeDelta time) {
   DCHECK_EQ(state_, kFlushed);
 
   start_timestamp_ = time;
+  ended_timestamp_ = kInfiniteDuration();
   audio_clock_.reset(new AudioClock(time, audio_parameters_.sample_rate()));
 }
 
@@ -547,7 +548,6 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
   const int delay_frames = static_cast<int>(playback_delay.InSecondsF() *
                                             audio_parameters_.sample_rate());
   int frames_written = 0;
-  base::Closure time_cb;
   {
     base::AutoLock auto_lock(lock_);
 
@@ -587,21 +587,32 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
       frames_written =
           algorithm_->FillBuffer(audio_bus, requested_frames, playback_rate_);
     }
-    audio_clock_->WroteAudio(
-        frames_written, requested_frames, delay_frames, playback_rate_);
 
+    // Per the TimeSource API the media time should always increase even after
+    // we've rendered all known audio data. Doing so simplifies scenarios where
+    // we have other sources of media data that need to be scheduled after audio
+    // data has ended.
+    //
+    // That being said, we don't want to advance time when underflowed as we
+    // know more decoded frames will eventually arrive. If we did, we would
+    // throw things out of sync when said decoded frames arrive.
+    int frames_after_end_of_stream = 0;
     if (frames_written == 0) {
-      if (received_end_of_stream_ && !rendered_end_of_stream_ &&
-          !audio_clock_->audio_data_buffered()) {
-        rendered_end_of_stream_ = true;
-        task_runner_->PostTask(FROM_HERE, ended_cb_);
-      } else if (!received_end_of_stream_ && state_ == kPlaying) {
-        if (buffering_state_ != BUFFERING_HAVE_NOTHING) {
-          algorithm_->IncreaseQueueCapacity();
-          SetBufferingState_Locked(BUFFERING_HAVE_NOTHING);
-        }
+      if (received_end_of_stream_) {
+        if (ended_timestamp_ == kInfiniteDuration())
+          ended_timestamp_ = audio_clock_->back_timestamp();
+        frames_after_end_of_stream = requested_frames;
+      } else if (state_ == kPlaying &&
+                 buffering_state_ != BUFFERING_HAVE_NOTHING) {
+        algorithm_->IncreaseQueueCapacity();
+        SetBufferingState_Locked(BUFFERING_HAVE_NOTHING);
       }
     }
+
+    audio_clock_->WroteAudio(frames_written + frames_after_end_of_stream,
+                             requested_frames,
+                             delay_frames,
+                             playback_rate_);
 
     if (CanRead_Locked()) {
       task_runner_->PostTask(FROM_HERE,
@@ -609,23 +620,25 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
                                         weak_factory_.GetWeakPtr()));
     }
 
-    // Firing |ended_cb_| means we no longer need to run |time_cb_|.
-    if (!rendered_end_of_stream_ &&
-        last_timestamp_update_ != audio_clock_->current_media_timestamp()) {
+    if (last_timestamp_update_ != audio_clock_->front_timestamp()) {
       // Since |max_time| uses linear interpolation, only provide an upper bound
       // that is for audio data at the same playback rate. Failing to do so can
       // make time jump backwards when the linear interpolated time advances
       // past buffered regions of audio at different rates.
-      last_timestamp_update_ = audio_clock_->current_media_timestamp();
+      last_timestamp_update_ = audio_clock_->front_timestamp();
       base::TimeDelta max_time =
           last_timestamp_update_ +
           audio_clock_->contiguous_audio_data_buffered_at_same_rate();
-      time_cb = base::Bind(time_cb_, last_timestamp_update_, max_time);
+      task_runner_->PostTask(
+          FROM_HERE, base::Bind(time_cb_, last_timestamp_update_, max_time));
+
+      if (last_timestamp_update_ >= ended_timestamp_ &&
+          !rendered_end_of_stream_) {
+        rendered_end_of_stream_ = true;
+        task_runner_->PostTask(FROM_HERE, ended_cb_);
+      }
     }
   }
-
-  if (!time_cb.is_null())
-    task_runner_->PostTask(FROM_HERE, time_cb);
 
   DCHECK_LE(frames_written, requested_frames);
   return frames_written;

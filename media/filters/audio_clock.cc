@@ -18,8 +18,8 @@ AudioClock::AudioClock(base::TimeDelta start_timestamp, int sample_rate)
           static_cast<double>(base::Time::kMicrosecondsPerSecond) /
           sample_rate),
       total_buffered_frames_(0),
-      current_media_timestamp_(start_timestamp),
-      audio_data_buffered_(0) {
+      front_timestamp_(start_timestamp),
+      back_timestamp_(start_timestamp) {
 }
 
 AudioClock::~AudioClock() {
@@ -35,7 +35,7 @@ void AudioClock::WroteAudio(int frames_written,
   DCHECK_GE(playback_rate, 0);
 
   // First write: initialize buffer with silence.
-  if (start_timestamp_ == current_media_timestamp_ && buffered_.empty())
+  if (start_timestamp_ == front_timestamp_ && buffered_.empty())
     PushBufferedAudioData(delay_frames, 0.0f);
 
   // Move frames from |buffered_| into the computed timestamp based on
@@ -45,23 +45,23 @@ void AudioClock::WroteAudio(int frames_written,
   // reallocations in cases where |buffered_| gets emptied.
   int64_t frames_played =
       std::max(INT64_C(0), total_buffered_frames_ - delay_frames);
-  current_media_timestamp_ += ComputeBufferedMediaTime(frames_played);
+  front_timestamp_ += ComputeBufferedMediaTime(frames_played);
   PushBufferedAudioData(frames_written, playback_rate);
   PushBufferedAudioData(frames_requested - frames_written, 0.0f);
   PopBufferedAudioData(frames_played);
+
+  back_timestamp_ += base::TimeDelta::FromMicroseconds(
+      frames_written * playback_rate * microseconds_per_frame_);
 
   // Update cached values.
   double scaled_frames = 0;
   double scaled_frames_at_same_rate = 0;
   bool found_silence = false;
-  audio_data_buffered_ = false;
   for (size_t i = 0; i < buffered_.size(); ++i) {
     if (buffered_[i].playback_rate == 0) {
       found_silence = true;
       continue;
     }
-
-    audio_data_buffered_ = true;
 
     // Any buffered silence breaks our contiguous stretch of audio data.
     if (found_silence)
@@ -80,12 +80,12 @@ void AudioClock::WroteAudio(int frames_written,
                                         microseconds_per_frame_);
 }
 
-base::TimeDelta AudioClock::CurrentMediaTimestampSinceWriting(
+base::TimeDelta AudioClock::TimestampSinceWriting(
     base::TimeDelta time_since_writing) const {
   int64_t frames_played_since_writing = std::min(
       total_buffered_frames_,
       static_cast<int64_t>(time_since_writing.InSecondsF() * sample_rate_));
-  return current_media_timestamp_ +
+  return front_timestamp_ +
          ComputeBufferedMediaTime(frames_played_since_writing);
 }
 
