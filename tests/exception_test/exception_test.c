@@ -351,9 +351,9 @@ void test_get_x86_direction_flag(void) {
    * work.
    */
   assert(get_x86_direction_flag() == 0);
-  asm("std");
+  __asm__("std");
   int flag = get_x86_direction_flag();
-  asm("cld");
+  __asm__("cld");
   assert(flag == 1);
 }
 
@@ -375,7 +375,7 @@ void test_unsetting_x86_direction_flag(void) {
   assert(rc == 0);
   if (!setjmp(g_jmp_buf)) {
     /* Cause a crash with the direction flag set. */
-    asm("std");
+    __asm__("std");
     *((volatile int *) 0) = 0;
     /* Should not reach here. */
     exit(1);
