@@ -48,9 +48,9 @@ class UtilityThreadImpl : public UtilityThread,
   void OnBatchModeStarted();
   void OnBatchModeFinished();
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && defined(ENABLE_PLUGINS)
   void OnLoadPlugins(const std::vector<base::FilePath>& plugin_paths);
-#endif  // OS_POSIX
+#endif
 
   // True when we're running in batch mode.
   bool batch_mode_;

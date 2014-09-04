@@ -44,7 +44,6 @@
 #include "content/browser/loader/sync_resource_handler.h"
 #include "content/browser/loader/throttling_resource_handler.h"
 #include "content/browser/loader/upload_data_stream_builder.h"
-#include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/resource_context_impl.h"
@@ -94,6 +93,10 @@
 #include "webkit/browser/fileapi/file_permission_policy.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/common/blob/shareable_file_reference.h"
+
+#if defined(ENABLE_PLUGINS)
+#include "content/browser/plugin_service_impl.h"
+#endif
 
 using base::Time;
 using base::TimeDelta;

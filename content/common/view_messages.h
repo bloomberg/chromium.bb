@@ -16,7 +16,6 @@
 #include "content/common/cookie_data.h"
 #include "content/common/date_time_suggestion.h"
 #include "content/common/navigation_gesture.h"
-#include "content/common/pepper_renderer_instance_data.h"
 #include "content/common/view_message_enums.h"
 #include "content/common/webplugin_geometry.h"
 #include "content/public/common/common_param_traits.h"
@@ -61,6 +60,10 @@
 #if defined(OS_MACOSX)
 #include "content/common/mac/font_descriptor.h"
 #include "third_party/WebKit/public/web/mac/WebScrollbarTheme.h"
+#endif
+
+#if defined(ENABLE_PLUGINS)
+#include "content/common/pepper_renderer_instance_data.h"
 #endif
 
 #undef IPC_MESSAGE_EXPORT
@@ -170,12 +173,14 @@ IPC_STRUCT_TRAITS_BEGIN(content::FileChooserParams)
 #endif
 IPC_STRUCT_TRAITS_END()
 
+#if defined(ENABLE_PLUGINS)
 IPC_STRUCT_TRAITS_BEGIN(content::PepperRendererInstanceData)
   IPC_STRUCT_TRAITS_MEMBER(render_process_id)
   IPC_STRUCT_TRAITS_MEMBER(render_frame_id)
   IPC_STRUCT_TRAITS_MEMBER(document_url)
   IPC_STRUCT_TRAITS_MEMBER(plugin_url)
 IPC_STRUCT_TRAITS_END()
+#endif
 
 IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(can_accept_load_drops)
@@ -803,6 +808,7 @@ IPC_MESSAGE_ROUTED0(ViewMsg_WorkerConnected)
 IPC_MESSAGE_CONTROL1(ViewMsg_NetworkTypeChanged,
                      net::NetworkChangeNotifier::ConnectionType /* type */)
 
+#if defined(ENABLE_PLUGINS)
 // Reply to ViewHostMsg_OpenChannelToPpapiBroker
 // Tells the renderer that the channel to the broker has been created.
 IPC_MESSAGE_ROUTED2(ViewMsg_PpapiBrokerChannelCreated,
@@ -819,6 +825,7 @@ IPC_MESSAGE_ROUTED1(ViewMsg_PpapiBrokerPermissionResult,
 // pages containing plugins.
 IPC_MESSAGE_CONTROL1(ViewMsg_PurgePluginListCache,
                      bool /* reload_pages */)
+#endif
 
 // Used to instruct the RenderView to go into "view source" mode.
 IPC_MESSAGE_ROUTED0(ViewMsg_EnableViewSourceMode)
@@ -1236,6 +1243,7 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_WebUISend,
                     std::string  /* message */,
                     base::ListValue /* args */)
 
+#if defined(ENABLE_PLUGINS)
 // A renderer sends this to the browser process when it wants to create a ppapi
 // plugin.  The browser will create the plugin process if necessary, and will
 // return a handle to the channel on success.
@@ -1308,6 +1316,7 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_RequestPpapiBrokerPermission,
                     int /* routing_id */,
                     GURL /* document_url */,
                     base::FilePath /* plugin_path */)
+#endif  // defined(ENABLE_PLUGINS)
 
 // Send the tooltip text for the current mouse position to the browser.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_SetTooltipText,

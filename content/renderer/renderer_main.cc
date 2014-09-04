@@ -27,7 +27,6 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager_impl.h"
-#include "content/renderer/pepper/pepper_plugin_registry.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
@@ -47,6 +46,10 @@
 #include "base/message_loop/message_pump_mac.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #endif  // OS_MACOSX
+
+#if defined(ENABLE_PLUGINS)
+#include "content/renderer/pepper/pepper_plugin_registry.h"
+#endif
 
 #if defined(ENABLE_WEBRTC)
 #include "third_party/libjingle/overrides/init_webrtc.h"

@@ -20,7 +20,6 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "cc/resources/shared_bitmap_manager.h"
-#include "content/common/pepper_renderer_instance_data.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/common/three_d_api_types.h"
 #include "ipc/message_filter.h"
@@ -37,6 +36,10 @@
 
 #if defined(OS_ANDROID)
 #include "base/threading/worker_pool.h"
+#endif
+
+#if defined(ENABLE_PLUGINS)
+#include "content/common/pepper_renderer_instance_data.h"
 #endif
 
 struct FontDescriptor;
@@ -158,6 +161,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
                                 const base::string16& characters);
 #endif
 
+#if defined(ENABLE_PLUGINS)
   void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
   void GetPluginsCallback(IPC::Message* reply_msg,
                           const std::vector<WebPluginInfo>& plugins);
@@ -185,6 +189,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
                                              bool is_external);
   void OnOpenChannelToPpapiBroker(int routing_id,
                                   const base::FilePath& path);
+#endif  // defined(ENABLE_PLUGINS)
   void OnGenerateRoutingID(int* route_id);
   void OnDownloadUrl(int render_view_id,
                      const GURL& url,

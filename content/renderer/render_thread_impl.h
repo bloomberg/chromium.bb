@@ -431,7 +431,9 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
                                    double zoom_level);
   void OnCreateNewView(const ViewMsg_New_Params& params);
   void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
+#if defined(ENABLE_PLUGINS)
   void OnPurgePluginListCache(bool reload_pages);
+#endif
   void OnNetworkTypeChanged(net::NetworkChangeNotifier::ConnectionType type);
   void OnGetAccessibilityTree();
   void OnTempCrashWithData(const GURL& data);

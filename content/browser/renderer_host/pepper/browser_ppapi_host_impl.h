@@ -22,6 +22,10 @@
 #include "ipc/message_filter.h"
 #include "ppapi/host/ppapi_host.h"
 
+#if !defined(ENABLE_PLUGINS)
+#error "Plugins should be enabled"
+#endif
+
 namespace content {
 
 class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {

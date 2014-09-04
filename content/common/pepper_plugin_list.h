@@ -7,7 +7,12 @@
 
 #include <vector>
 
+#if !defined(ENABLE_PLUGINS)
+#error "Plugins should be enabled"
+#endif
+
 namespace content {
+
 struct PepperPluginInfo;
 struct WebPluginInfo;
 

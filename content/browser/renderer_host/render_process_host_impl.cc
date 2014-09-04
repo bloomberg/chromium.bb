@@ -70,7 +70,6 @@
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/mojo/mojo_application_host.h"
-#include "content/browser/plugin_service_impl.h"
 #include "content/browser/profiler_message_filter.h"
 #include "content/browser/push_messaging_message_filter.h"
 #include "content/browser/quota_dispatcher_host.h"
@@ -166,6 +165,10 @@
 #include "content/common/font_cache_dispatcher_win.h"
 #include "content/common/sandbox_win.h"
 #include "ui/gfx/win/dpi.h"
+#endif
+
+#if defined(ENABLE_PLUGINS)
+#include "content/browser/plugin_service_impl.h"
 #endif
 
 #if defined(ENABLE_WEBRTC)
@@ -301,7 +304,7 @@ SiteProcessMap* GetSiteProcessMapForBrowserContext(BrowserContext* context) {
 
 // NOTE: changes to this class need to be reviewed by the security team.
 class RendererSandboxedProcessLauncherDelegate
-    : public content::SandboxedProcessLauncherDelegate {
+    : public SandboxedProcessLauncherDelegate {
  public:
   explicit RendererSandboxedProcessLauncherDelegate(IPC::ChannelProxy* channel)
 #if defined(OS_POSIX)
@@ -1026,10 +1029,10 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
         base::IntToString(NumberOfRendererRasterThreads()));
   }
 
-  if (content::IsGpuRasterizationEnabled())
+  if (IsGpuRasterizationEnabled())
     command_line->AppendSwitch(switches::kEnableGpuRasterization);
 
-  if (content::IsForceGpuRasterizationEnabled())
+  if (IsForceGpuRasterizationEnabled())
     command_line->AppendSwitch(switches::kForceGpuRasterization);
 
   // Appending disable-gpu-feature switches due to software rendering list.
@@ -1067,7 +1070,7 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(
       command_line, GetID());
 
-  if (content::IsPinchToZoomEnabled())
+  if (IsPinchToZoomEnabled())
     command_line->AppendSwitch(switches::kEnablePinch);
 
 #if defined(OS_WIN)

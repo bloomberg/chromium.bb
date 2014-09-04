@@ -14,11 +14,13 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
-#include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/public/common/webplugininfo.h"
+
+#if !defined(ENABLE_PLUGINS)
+#error "Plugins should be enabled"
+#endif
 
 class GURL;
 

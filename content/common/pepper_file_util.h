@@ -8,6 +8,10 @@
 #include "ppapi/c/pp_file_info.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
+#if !defined(ENABLE_PLUGINS)
+#error "Plugins should be enabled"
+#endif
+
 namespace content {
 
 storage::FileSystemType PepperFileSystemTypeToFileSystemType(

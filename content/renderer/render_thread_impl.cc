@@ -1334,7 +1334,6 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
     // TODO(port): removed from render_messages_internal.h;
     // is there a new non-windows message I should add here?
     IPC_MESSAGE_HANDLER(ViewMsg_New, OnCreateNewView)
-    IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache, OnPurgePluginListCache)
     IPC_MESSAGE_HANDLER(ViewMsg_NetworkTypeChanged, OnNetworkTypeChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_TempCrashWithData, OnTempCrashWithData)
     IPC_MESSAGE_HANDLER(WorkerProcessMsg_CreateWorker, OnCreateNewSharedWorker)
@@ -1345,6 +1344,9 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
 #endif
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateScrollbarTheme, OnUpdateScrollbarTheme)
+#endif
+#if defined(ENABLE_PLUGINS)
+    IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache, OnPurgePluginListCache)
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -1472,6 +1474,7 @@ GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
   return gpu_channel_.get();
 }
 
+#if defined(ENABLE_PLUGINS)
 void RenderThreadImpl::OnPurgePluginListCache(bool reload_pages) {
   EnsureWebKitInitialized();
   // The call below will cause a GetPlugins call with refresh=true, but at this
@@ -1484,6 +1487,7 @@ void RenderThreadImpl::OnPurgePluginListCache(bool reload_pages) {
 
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, PluginListChanged());
 }
+#endif
 
 void RenderThreadImpl::OnNetworkTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
@@ -1603,7 +1607,6 @@ void RenderThreadImpl::SetFlingCurveParameters(
     const std::vector<float>& new_touchscreen) {
   webkit_platform_support_->SetFlingCurveParameters(new_touchpad,
                                                     new_touchscreen);
-
 }
 
 void RenderThreadImpl::SampleGamepads(blink::WebGamepads* data) {

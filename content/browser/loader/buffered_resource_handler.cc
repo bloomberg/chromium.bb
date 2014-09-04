@@ -16,7 +16,6 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/stream_resource_handler.h"
-#include "content/browser/plugin_service_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_save_info.h"
@@ -31,6 +30,10 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_response_headers.h"
+
+#if defined(ENABLE_PLUGINS)
+#include "content/browser/plugin_service_impl.h"
+#endif
 
 namespace content {
 
@@ -348,7 +351,7 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
           request(),
           true,  // is_content_initiated
           must_download,
-          content::DownloadItem::kInvalidId,
+          DownloadItem::kInvalidId,
           scoped_ptr<DownloadSaveInfo>(new DownloadSaveInfo()),
           DownloadUrlParameters::OnStartedCallback()));
   return UseAlternateNextHandler(handler.Pass(), std::string());

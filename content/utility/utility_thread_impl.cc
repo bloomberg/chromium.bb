@@ -7,17 +7,20 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
-#include "base/files/file_path.h"
 #include "base/memory/scoped_vector.h"
 #include "content/child/blink_platform_impl.h"
 #include "content/child/child_process.h"
 #include "content/common/child_process_messages.h"
-#include "content/common/plugin_list.h"
 #include "content/common/utility_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/utility/content_utility_client.h"
 #include "ipc/ipc_sync_channel.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+
+#if defined(OS_POSIX) && defined(ENABLE_PLUGINS)
+#include "base/files/file_path.h"
+#include "content/common/plugin_list.h"
+#endif
 
 namespace content {
 
@@ -105,9 +108,9 @@ bool UtilityThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(UtilityThreadImpl, msg)
     IPC_MESSAGE_HANDLER(UtilityMsg_BatchMode_Started, OnBatchModeStarted)
     IPC_MESSAGE_HANDLER(UtilityMsg_BatchMode_Finished, OnBatchModeFinished)
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && defined(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(UtilityMsg_LoadPlugins, OnLoadPlugins)
-#endif  // OS_POSIX
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -122,7 +125,7 @@ void UtilityThreadImpl::OnBatchModeFinished() {
   ReleaseProcessIfNeeded();
 }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && defined(ENABLE_PLUGINS)
 void UtilityThreadImpl::OnLoadPlugins(
     const std::vector<base::FilePath>& plugin_paths) {
   PluginList* plugin_list = PluginList::Singleton();

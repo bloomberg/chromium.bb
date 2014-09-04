@@ -8,6 +8,10 @@
 #ifndef CONTENT_BROWSER_PLUGIN_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_PLUGIN_SERVICE_IMPL_H_
 
+#if !defined(ENABLE_PLUGINS)
+#error "Plugins should be enabled"
+#endif
+
 #include <map>
 #include <set>
 #include <vector>

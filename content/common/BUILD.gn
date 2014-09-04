@@ -175,8 +175,16 @@ source_set("common") {
     ]
   } else {
     sources -= [
+      "pepper_file_util.cc",
+      "pepper_file_util.h",
+      "pepper_messages.h",
       "pepper_plugin_list.cc",
       "pepper_plugin_list.h",
+      "pepper_renderer_instance_data.cc",
+      "pepper_renderer_instance_data.h",
+      "plugin_list.cc",
+      "plugin_list.h",
+      "plugin_list_posix.cc",
       "sandbox_util.cc",
     ]
   }

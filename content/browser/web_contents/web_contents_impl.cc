@@ -180,7 +180,7 @@ const char kWebContentsAndroidKey[] = "web_contents_android";
 base::LazyInstance<std::vector<WebContentsImpl::CreatedCallback> >
 g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
 
-static int StartDownload(content::RenderFrameHost* rfh,
+static int StartDownload(RenderFrameHost* rfh,
                          const GURL& url,
                          bool is_favicon,
                          uint32_t max_bitmap_size) {
@@ -576,10 +576,12 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnFindReply)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
+#if defined(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestPpapiBrokerPermission,
                         OnRequestPpapiBrokerPermission)
     IPC_MESSAGE_HANDLER_GENERIC(BrowserPluginHostMsg_Attach,
                                 OnBrowserPluginMessage(message))
+#endif
     IPC_MESSAGE_HANDLER(ImageHostMsg_DidDownloadImage, OnDidDownloadImage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowValidationMessage,
@@ -728,13 +730,11 @@ void WebContentsImpl::SetAccessibilityMode(AccessibilityMode mode) {
 }
 
 void WebContentsImpl::AddAccessibilityMode(AccessibilityMode mode) {
-  SetAccessibilityMode(
-      content::AddAccessibilityModeTo(accessibility_mode_, mode));
+  SetAccessibilityMode(AddAccessibilityModeTo(accessibility_mode_, mode));
 }
 
 void WebContentsImpl::RemoveAccessibilityMode(AccessibilityMode mode) {
-  SetAccessibilityMode(
-      content::RemoveAccessibilityModeFrom(accessibility_mode_, mode));
+  SetAccessibilityMode(RemoveAccessibilityModeFrom(accessibility_mode_, mode));
 }
 
 WebUI* WebContentsImpl::CreateWebUI(const GURL& url) {
@@ -1459,7 +1459,7 @@ void WebContentsImpl::CreateNewWindow(
     if (process_handle != base::kNullProcessHandle) {
       RecordAction(
           base::UserMetricsAction("Terminate_ProcessMismatch_CreateNewWindow"));
-      base::KillProcess(process_handle, content::RESULT_CODE_KILLED, false);
+      base::KillProcess(process_handle, RESULT_CODE_KILLED, false);
     }
     return;
   }
@@ -1593,7 +1593,7 @@ void WebContentsImpl::CreateNewWidget(int render_process_id,
     if (process_handle != base::kNullProcessHandle) {
       RecordAction(
           base::UserMetricsAction("Terminate_ProcessMismatch_CreateNewWidget"));
-      base::KillProcess(process_handle, content::RESULT_CODE_KILLED, false);
+      base::KillProcess(process_handle, RESULT_CODE_KILLED, false);
     }
     return;
   }
@@ -2937,6 +2937,7 @@ void WebContentsImpl::OnWebUISend(const GURL& source_url,
     delegate_->WebUISend(this, source_url, name, args);
 }
 
+#if defined(ENABLE_PLUGINS)
 void WebContentsImpl::OnRequestPpapiBrokerPermission(
     int routing_id,
     const GURL& url,
@@ -2970,6 +2971,7 @@ void WebContentsImpl::OnBrowserPluginMessage(const IPC::Message& message) {
   browser_plugin_embedder_.reset(BrowserPluginEmbedder::Create(this));
   browser_plugin_embedder_->OnMessageReceived(message);
 }
+#endif
 
 void WebContentsImpl::OnDidDownloadImage(
     int id,
@@ -3666,7 +3668,7 @@ void WebContentsImpl::DidAccessInitialDocument() {
     controller_.DiscardPendingEntry();
 
   // Update the URL display.
-  NotifyNavigationStateChanged(content::INVALIDATE_TYPE_URL);
+  NotifyNavigationStateChanged(INVALIDATE_TYPE_URL);
 }
 
 void WebContentsImpl::DidDisownOpener(RenderFrameHost* render_frame_host) {

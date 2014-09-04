@@ -846,6 +846,9 @@
     }],
     ['enable_pepper_cdms != 1', {
       'sources!': [
+        'renderer/media/crypto/pepper_cdm_wrapper.h',
+        'renderer/media/crypto/pepper_cdm_wrapper_impl.cc',
+        'renderer/media/crypto/pepper_cdm_wrapper_impl.h',
         'renderer/media/crypto/ppapi_decryptor.cc',
         'renderer/media/crypto/ppapi_decryptor.h',
       ],

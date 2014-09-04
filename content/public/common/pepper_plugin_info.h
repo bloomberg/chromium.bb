@@ -14,6 +14,10 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"
 
+#if !defined(ENABLE_PLUGINS)
+#error "Plugins should be enabled"
+#endif
+
 namespace content {
 
 struct CONTENT_EXPORT PepperPluginInfo {

@@ -702,9 +702,19 @@
       ],
     }, {  # enable_plugins == 0
       'sources!': [
+        'common/pepper_file_util.cc',
+        'common/pepper_file_util.h',
+        'common/pepper_messages.h',
         'common/pepper_plugin_list.cc',
         'common/pepper_plugin_list.h',
+        'common/pepper_renderer_instance_data.cc',
+        'common/pepper_renderer_instance_data.h',
+        'common/plugin_list.cc',
+        'common/plugin_list.h',
+        'common/plugin_list_posix.cc',
         'common/sandbox_util.cc',
+        'public/common/pepper_plugin_info.cc',
+        'public/common/pepper_plugin_info.h',
       ],
     }],
     ['OS=="android"', {

@@ -12,12 +12,15 @@
 #include "base/strings/utf_string_conversions.h"
 #include "cc/base/switches.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
-#include "content/browser/ppapi_plugin_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "url/gurl.h"
+
+#if defined(ENABLE_PLUGINS)
+#include "content/browser/ppapi_plugin_process_host.h"
+#endif
 
 namespace content {
 

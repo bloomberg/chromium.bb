@@ -26,7 +26,6 @@
 #include "components/dom_distiller/core/url_constants.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/pepper_plugin_info.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/user_agent.h"
 #include "extensions/common/constants.h"
@@ -53,6 +52,7 @@
 
 #if defined(ENABLE_PLUGINS)
 #include "chrome/common/pepper_flash.h"
+#include "content/public/common/pepper_plugin_info.h"
 #include "flapper_version.h"  // In SHARED_INTERMEDIATE_DIR.
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #endif

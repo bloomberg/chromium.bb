@@ -7,6 +7,10 @@
 
 #include "url/gurl.h"
 
+#if !defined(ENABLE_PLUGINS)
+#error "Plugins should be enabled"
+#endif
+
 namespace content {
 
 // This struct contains data which is associated with a particular plugin

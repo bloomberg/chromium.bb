@@ -23,8 +23,6 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/plugin_process_host.h"
-#include "content/browser/plugin_service_impl.h"
-#include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/renderer_host/pepper/pepper_security_helper.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -89,6 +87,11 @@
 #include "media/base/android/webaudio_media_codec_bridge.h"
 #endif
 
+#if defined(ENABLE_PLUGINS)
+#include "content/browser/plugin_service_impl.h"
+#include "content/browser/ppapi_plugin_process_host.h"
+#endif
+
 using net::CookieStore;
 
 namespace content {
@@ -145,6 +148,7 @@ class RenderMessageCompletionCallback {
   IPC::Message* reply_msg_;
 };
 
+#if defined(ENABLE_PLUGINS)
 class OpenChannelToPpapiPluginCallback
     : public RenderMessageCompletionCallback,
       public PpapiPluginProcessHost::PluginClient {
@@ -216,6 +220,7 @@ class OpenChannelToPpapiBrokerCallback
   scoped_refptr<RenderMessageFilter> filter_;
   int routing_id_;
 };
+#endif  // defined(ENABLE_PLUGINS)
 
 }  // namespace
 
@@ -555,7 +560,7 @@ void RenderMessageFilter::OnGetProcessMemorySizes(size_t* private_bytes,
       PeerHandle()));
 #else
   scoped_ptr<ProcessMetrics> metrics(ProcessMetrics::CreateProcessMetrics(
-      PeerHandle(), content::BrowserChildProcessHost::GetPortProvider()));
+      PeerHandle(), BrowserChildProcessHost::GetPortProvider()));
 #endif
   if (!metrics->GetMemoryBytes(private_bytes, shared_bytes)) {
     *private_bytes = 0;
@@ -889,7 +894,7 @@ void RenderMessageFilter::OnDownloadUrl(int render_view_id,
       render_view_id,
       false,
       save_info.Pass(),
-      content::DownloadItem::kInvalidId,
+      DownloadItem::kInvalidId,
       ResourceDispatcherHostImpl::DownloadStartedCallback());
 }
 
