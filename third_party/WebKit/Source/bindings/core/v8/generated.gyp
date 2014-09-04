@@ -78,7 +78,6 @@
       # Update that regex if command line changes (other than changing flags)
       'action': [
         'python',
-        '-S',  # skip 'import site' to speed up startup
         '<(bindings_scripts_dir)/idl_compiler.py',
         '--cache-dir',
         '<(bindings_scripts_output_dir)',
