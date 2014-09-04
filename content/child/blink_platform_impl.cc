@@ -808,8 +808,6 @@ const DataResource kDataResources[] = {
   { "xhtmlmp.css", IDR_UASTYLE_XHTMLMP_CSS, ui::SCALE_FACTOR_NONE},
   { "viewportAndroid.css", IDR_UASTYLE_VIEWPORT_ANDROID_CSS,
     ui::SCALE_FACTOR_NONE},
-  { "XMLViewer.js", IDR_XML_VIEWER_JS, ui::SCALE_FACTOR_NONE },
-  { "XMLViewer.css", IDR_XML_VIEWER_CSS, ui::SCALE_FACTOR_NONE },
   { "InspectorOverlayPage.html", IDR_INSPECTOR_OVERLAY_PAGE_HTML,
     ui::SCALE_FACTOR_NONE },
   { "InjectedScriptCanvasModuleSource.js",
