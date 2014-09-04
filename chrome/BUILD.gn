@@ -3,7 +3,9 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//build/config/locales.gni")
 import("//build/config/ui.gni")
+import("//chrome/chrome_repack_locales.gni")
 import("//chrome/version.gni")
 
 # TODO(GYP) for Windows need to the the reorder-imports step which probably
@@ -16,6 +18,7 @@ executable("chrome") {
     "app/chrome_exe_resource.h",
   ]
   deps = []
+  datadeps = []
 
   # TODO(GYP) mac_bundle_resources, xcode_settings
 
@@ -79,9 +82,34 @@ executable("chrome") {
     sources += [
       "app/chrome_exe_main_mac.cc",
     ]
-  }
-  # TODO(GYP) is_mac
+    # TODO(GYP) lots more stuff in the is_mac block.
+  } else {  # Non-Mac.
+    deps += [
+      ":packed_extra_resources",
+      ":packed_resources",
 
+      # Copy Flash Player files to PRODUCT_DIR if applicable. Let the .gyp
+      # file decide what to do on a per-OS basis; on Mac, internal plugins
+      # go inside the framework, so this dependency is in chrome_dll.gypi.
+      #'../third_party/adobe/flash/flash_player.gyp:flapper_binaries',  TODO(GYP)
+
+      # Copy CDM files to PRODUCT_DIR if applicable. Let the .gyp
+      # file decide what to do on a per-OS basis; on Mac, internal plugins
+      # go inside the framework, so this dependency is in chrome_dll.gypi.
+      #'../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',  TODO(GYP)
+    ]
+
+    # TODO(GYP) some stuff from GYP including chrome_multiple_dll.
+
+  }
+
+
+  if (!is_mac && !is_android) {
+    # On Mac this is done in chrome_dll.gypi. Android doesn't use pdfium.
+    datadeps += [ "//pdf" ]
+
+    # TODO(GYP) pdf linux symbols
+  }
 }
 
 shared_library("main_dll") {
@@ -270,6 +298,206 @@ group("extra_resources") {
       "//chrome/browser/resources:quota_internals_resources",
       "//chrome/browser/resources:sync_file_system_internals_resources",
     ]
+  }
+}
+
+group("packed_resources") {
+  deps = [
+    ":repack_locales_pack",
+    ":repack_pseudo_locales_pack",
+    ":repack_chrome_100_percent",
+  ]
+
+  # TODO(GYP) if (is_chrome_branded) {
+  # ... copy default_apps from default_apps_list
+
+  if (enable_hidpi) {
+    deps += [ ":repack_chrome_200_percent" ]
+  }
+}
+
+repack("packed_extra_resources") {
+  visibility = ":*"
+  sources = [
+    "$root_gen_dir/chrome/browser_resources.pak",
+    "$root_gen_dir/chrome/app/theme/chrome_unscaled_resources.pak",
+    "$root_gen_dir/chrome/common_resources.pak",
+    "$root_gen_dir/chrome/browser/resources/invalidations_resources.pak",
+    "$root_gen_dir/chrome/browser/resources/memory_internals_resources.pak",
+    "$root_gen_dir/chrome/browser/resources/net_internals_resources.pak",
+    "$root_gen_dir/chrome/browser/resources/password_manager_internals_resources.pak",
+    "$root_gen_dir/chrome/browser/resources/signin_internals_resources.pak",
+    "$root_gen_dir/chrome/browser/resources/sync_internals_resources.pak",
+    "$root_gen_dir/chrome/browser/resources/translate_internals_resources.pak",
+    "$root_gen_dir/components/resources/component_resources.pak",
+    "$root_gen_dir/net/net_resources.pak",
+    "$root_gen_dir/ui/resources/webui_resources.pak",
+  ]
+  deps = [
+    "//chrome/browser:resources",
+    "//chrome/app/theme:chrome_unscaled_resources",
+    "//chrome/common:resources",
+    "//chrome/browser/resources:invalidations_resources",
+    "//chrome/browser/resources:memory_internals_resources",
+    "//chrome/browser/resources:net_internals_resources",
+    "//chrome/browser/resources:password_manager_internals_resources",
+    "//chrome/browser/resources:signin_internals_resources",
+    "//chrome/browser/resources:sync_internals_resources",
+    "//chrome/browser/resources:translate_internals_resources",
+    "//components/resources",
+    "//net:net_resources",
+    "//ui/resources",
+  ]
+
+  if (!is_ios && !is_android) {
+    # New paks should be added here by default.
+    sources += [
+      "$root_gen_dir/webkit/devtools_resources.pak",
+      "$root_gen_dir/chrome/browser/resources/component_extension_resources.pak",
+      "$root_gen_dir/chrome/browser/resources/options_resources.pak",
+      "$root_gen_dir/chrome/browser/resources/quota_internals_resources.pak",
+      "$root_gen_dir/chrome/browser/resources/sync_file_system_internals_resources.pak",
+    ]
+    deps += [
+      "//content/browser/devtools:devtools_resources",
+      "//chrome/browser/resources:component_extension_resources",
+      "//chrome/browser/resources:options_resources",
+      "//chrome/browser/resources:quota_internals_resources",
+      "//chrome/browser/resources:sync_file_system_internals_resources",
+    ]
+  }
+  if (!is_ios) {
+    sources += [
+      "$root_gen_dir/blink/public/resources/blink_resources.pak",
+      "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
+      "$root_gen_dir/content/content_resources.pak",
+      "$root_gen_dir/extensions/extensions_renderer_resources.pak", 
+      "$root_gen_dir/extensions/extensions_resources.pak",
+    ]
+  }
+  if (is_chromeos) {
+    sources += [ "$root_gen_dir/ui/file_manager/file_manager_resources.pak" ]
+    deps += [ "//ui/file_manager:resources" ]
+  }
+  if (enable_extensions) {
+    sources += [ "$root_gen_dir/chrome/extensions_api_resources.pak" ]
+    deps += [ "//chrome/common:extensions_api_resources" ]
+  }
+
+  # GYP outputs the file in the gen/repack directory. On non-Mac/iOS platforms
+  # it them copies it. This skipes the copy step and writes it to the final
+  # location.
+  if (is_mac || is_ios) {
+    output = "$root_gen_dir/repack/resources.pak"
+  } else {
+    output = "$root_out_dir/resources.pak"
+  }
+}
+
+# Collects per-locale grit files from many sources into global per-locale files.
+chrome_repack_locales("repack_locales_pack") {
+  visibility = ":*"
+
+  input_locales = locales
+
+  if (is_mac) {
+    output_locales = locales_as_mac_outputs
+  } else {
+    output_locales = locales
+  }
+}
+
+chrome_repack_locales("repack_pseudo_locales_pack") {
+  visibility = ":*"
+
+  input_locales = [ "fake-bidi" ]
+
+  if (is_mac) {
+    output_locales = [ "fake_bidi" ]  # Mac uses underscores.
+  } else {
+    output_locales = [ "fake-bidi" ]
+  }
+}
+
+# Generates a rule to repack a set of resources, substituting a given string
+# in for the percentage (e.g. "100", "200"). It generates the repacked files in
+# the "gen" directory, and then introduces a copy rule to copy it to the root
+# build directory.
+#
+# It's not clear why this two-step dance is necessary as opposed to just
+# generating the file in the destination. However, this is what the GYP build
+# does, and for maintenance purposes, this keeps the same files in the same
+# place between the two builds when possible.
+#
+# Argument:
+#   percent [required]
+#      String to substitute for the percentage.
+template("chrome_repack_percent") {
+  percent = invoker.percent
+
+  repack_name = "${target_name}_repack"
+  repack_output_file = "$root_gen_dir/repack/chrome_${percent}_percent.pak"
+
+  copy_name = target_name
+
+  repack(repack_name) {
+    visibility = ":$copy_name"
+    # All sources should also have deps for completeness.
+    sources = [
+      "$root_gen_dir/components/resources/component_resources_${percent}_percent.pak",
+      "$root_gen_dir/ui/resources/ui_resources_${percent}_percent.pak",
+      "$root_gen_dir/chrome/renderer_resources_${percent}_percent.pak",
+      "$root_gen_dir/chrome/app/theme/theme_resources_${percent}_percent.pak",
+    ]
+
+    deps = [
+      "//chrome/app/theme:theme_resources",
+      "//chrome/renderer:resources",
+      "//components/strings",
+      "//net:net_resources",
+    ]
+
+    if (!is_ios) {
+      sources += [
+        "$root_gen_dir/content/app/resources/content_resources_${percent}_percent.pak",
+      ]
+      deps += [ "//content:resources" ]
+    }
+    if (use_ash) {
+      sources += [ "$root_gen_dir/ash/resources/ash_resources_${percent}_percent.pak" ]
+      deps += [ "//ash/resources" ]
+    }
+    if (use_athena) {
+      sources += [
+        "$root_gen_dir/athena/resources/athena_resources_${percent}_percent.pak",
+      ]
+      deps += [ "//athena/resources" ]
+    }
+    if (is_chromeos) {
+      sources += [
+        "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_${percent}_percent.pak",
+      ]
+      deps += [ "//ui/chromeos/resources" ]
+    }
+
+    output = repack_output_file
+  }
+
+  copy(copy_name) {
+    visibility = ":*"
+    deps = [ ":$repack_name" ]
+    sources = [ repack_output_file ]
+    outputs = [ "$root_build_dir/chrome_${percent}_percent.pak" ]
+  }
+}
+
+chrome_repack_percent("repack_chrome_100_percent") {
+  percent = "100"
+}
+
+if (enable_hidpi) {
+  chrome_repack_percent("repack_chrome_200_percent") {
+    percent = "200"
   }
 }
 

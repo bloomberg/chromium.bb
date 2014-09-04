@@ -61,3 +61,7 @@ use_ozone_evdev = use_ozone
 use_glib = is_linux
 
 use_clipboard_aurax11 = is_linux && use_aura && use_x11
+
+use_athena = false
+
+enable_hidpi = is_mac || is_chromeos || is_win

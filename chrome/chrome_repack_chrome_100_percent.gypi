@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
+  # GN version: //chrome:repack_chrome_100_percent
   'action_name': 'repack_chrome_resources_100_percent',
   'variables': {
     'pak_inputs': [

@@ -16,6 +16,8 @@ group("resources") {
 grit("devtools_resources") {
   source = "$root_gen_dir/devtools/devtools_resources.grd"
 
+  # TOOD(brettw) remove this so the output file goes into the target_gen_dir,
+  # but keep this for not for GYP compat.
   output_dir = "$root_gen_dir/webkit"
   outputs = [
     "grit/devtools_resources.h",

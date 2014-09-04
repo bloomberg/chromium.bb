@@ -117,7 +117,6 @@ static_library("bluetooth") {
 }
 
 grit("strings") {
-  visibility = ":*"
   source = "bluetooth_strings.grd"
   outputs = [
     "grit/device_bluetooth_strings.h",

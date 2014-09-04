@@ -378,6 +378,7 @@
       'includes': [ '../build/grit_target.gypi' ],
     },
     {
+      # GN version: //chrome:packed_extra_resources
       'target_name': 'packed_extra_resources',
       'type': 'none',
       'dependencies': [
@@ -405,6 +406,7 @@
       ],
     },
     {
+      # GN version: //chrome:packed_resources
       'target_name': 'packed_resources',
       'type': 'none',
       'dependencies': [
@@ -421,6 +423,7 @@
       ],
       'actions': [
         {
+          # GN version: //chrome:repack_locales_pack
           'action_name': 'repack_locales_pack',
           'variables': {
             'pak_locales': '<(locales)',
@@ -428,6 +431,7 @@
           'includes': ['chrome_repack_locales.gypi']
         },
         {
+          # GN version: //chrome:repack_pseudo_locales_pack
           'action_name': 'repack_pseudo_locales_pack',
           'variables': {
             'pak_locales': '<(pseudo_locales)',
