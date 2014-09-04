@@ -43,6 +43,7 @@
         'usb/usb_context_unittest.cc',
         'usb/usb_device_filter_unittest.cc',
         'usb/usb_ids_unittest.cc',
+        'usb/usb_device_handle_unittest.cc',
         'usb/usb_service_unittest.cc',
         'hid/hid_connection_unittest.cc',
         'hid/hid_device_filter_unittest.cc',

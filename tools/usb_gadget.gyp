@@ -8,6 +8,7 @@
       'usb_gadget/__init__.py',
       'usb_gadget/__main__.py',
       'usb_gadget/default_gadget.py',
+      'usb_gadget/echo_gadget.py',
       'usb_gadget/gadget.py',
       'usb_gadget/hid_constants.py',
       'usb_gadget/hid_descriptors.py',
