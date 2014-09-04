@@ -288,9 +288,6 @@ public:
     bool inProgrammaticScroll() const { return m_inProgrammaticScroll; }
     void setInProgrammaticScroll(bool programmaticScroll) { m_inProgrammaticScroll = programmaticScroll; }
 
-    void setHasSoftwareFilters(bool hasSoftwareFilters) { m_hasSoftwareFilters = hasSoftwareFilters; }
-    bool hasSoftwareFilters() const { return m_hasSoftwareFilters; }
-
     virtual bool isActive() const OVERRIDE;
 
     // DEPRECATED: Use viewportConstrainedVisibleContentRect() instead.
@@ -480,8 +477,6 @@ private:
     OwnPtr<ResizerAreaSet> m_resizerAreas;
     OwnPtr<ViewportConstrainedObjectSet> m_viewportConstrainedObjects;
     OwnPtr<FrameViewAutoSizeInfo> m_autoSizeInfo;
-
-    bool m_hasSoftwareFilters;
 
     float m_visibleContentScaleFactor;
     IntSize m_inputEventsOffsetForEmulation;

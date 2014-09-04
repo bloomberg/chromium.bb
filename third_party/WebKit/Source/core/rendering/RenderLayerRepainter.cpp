@@ -121,48 +121,4 @@ void RenderLayerRepainter::setBackingNeedsPaintInvalidationInRect(const LayoutRe
     }
 }
 
-void RenderLayerRepainter::setFilterBackendNeedsPaintInvalidationInRect(const LayoutRect& rect)
-{
-    if (rect.isEmpty())
-        return;
-    LayoutRect rectForPaintInvalidation = rect;
-
-    ASSERT(m_renderer.layer()->filterInfo());
-
-    RenderLayer* parentLayer = enclosingFilterPaintInvalidationLayer();
-    ASSERT(parentLayer);
-    FloatQuad paintInvalidationQuad(rectForPaintInvalidation);
-    LayoutRect parentLayerRect = m_renderer.localToContainerQuad(paintInvalidationQuad, parentLayer->renderer()).enclosingBoundingBox();
-
-    if (parentLayerRect.isEmpty())
-        return;
-
-    if (parentLayer->hasCompositedLayerMapping()) {
-        parentLayer->paintInvalidator().setBackingNeedsPaintInvalidationInRect(parentLayerRect);
-        return;
-    }
-
-    if (parentLayer->paintsWithFilters()) {
-        parentLayer->paintInvalidator().setFilterBackendNeedsPaintInvalidationInRect(parentLayerRect);
-        return;
-    }
-
-    if (parentLayer->isRootLayer()) {
-        RenderView* view = toRenderView(parentLayer->renderer());
-        view->invalidatePaintForRectangle(parentLayerRect);
-        return;
-    }
-
-    ASSERT_NOT_REACHED();
-}
-
-RenderLayer* RenderLayerRepainter::enclosingFilterPaintInvalidationLayer() const
-{
-    for (const RenderLayer* curr = m_renderer.layer(); curr; curr = curr->parent()) {
-        if ((curr != m_renderer.layer() && curr->requiresFullLayerImageForFilters()) || curr->compositingState() == PaintsIntoOwnBacking || curr->isRootLayer())
-            return const_cast<RenderLayer*>(curr);
-    }
-    return 0;
-}
-
 } // namespace blink

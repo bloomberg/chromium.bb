@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<style>
+div {
+    width: 200px;
+    height: 200px;
+}
+
+.blur {
+    -webkit-filter: blur(10px);
+}
+
+.drop-shadow {
+    -webkit-filter: drop-shadow(16px 16px 10px black);
+}
+
+.accelerated {
+    -webkit-transform: translateZ(0);
+}
+
+#resize {
+    background-color: green;
+}
+</style>
+
+<div class="blur accelerated">
+    <div class="drop-shadow accelerated" id="resize"></div>
+</div>
+
+<script src="resources/text-based-repaint.js"></script>
+<script src="../../resources/run-after-display.js"></script>
+<script>
+window.testIsAsync = true;
+
+function repaintTest() {
+    var resizeElement = document.getElementById("resize");
+    resizeElement.style.width = "100px";
+    finishRepaintTest();
+}
+window.onload = runRepaintTest;
+</script>

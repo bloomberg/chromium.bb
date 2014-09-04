@@ -212,7 +212,6 @@ public:
 
     RenderLayer* enclosingLayerForPaintInvalidationCrossingFrameBoundaries() const;
 
-    RenderLayer* enclosingFilterLayer(IncludeSelfOrNot = IncludeSelf) const;
     bool hasAncestorWithFilterOutsets() const;
 
     bool canUseConvertToLayerCoords() const
@@ -348,7 +347,6 @@ public:
 
     FilterOperations computeFilterOperations(const RenderStyle*);
     bool paintsWithFilters() const;
-    bool requiresFullLayerImageForFilters() const;
     FilterEffectRenderer* filterRenderer() const
     {
         RenderLayerFilterInfo* filterInfo = this->filterInfo();

@@ -226,14 +226,6 @@ bool RenderLayer::paintsWithFilters() const
     return !m_compositedLayerMapping || compositingState() != PaintsIntoOwnBacking;
 }
 
-bool RenderLayer::requiresFullLayerImageForFilters() const
-{
-    if (!paintsWithFilters())
-        return false;
-    FilterEffectRenderer* filter = filterRenderer();
-    return filter ? filter->hasFilterThatMovesPixels() : false;
-}
-
 LayoutSize RenderLayer::subpixelAccumulation() const
 {
     return m_subpixelAccumulation;
@@ -978,17 +970,6 @@ RenderLayer* RenderLayer::enclosingLayerForPaintInvalidation() const
 
     for (const RenderLayer* curr = parent(); curr; curr = curr->parent()) {
         if (curr->isPaintInvalidationContainer())
-            return const_cast<RenderLayer*>(curr);
-    }
-
-    return 0;
-}
-
-RenderLayer* RenderLayer::enclosingFilterLayer(IncludeSelfOrNot includeSelf) const
-{
-    const RenderLayer* curr = (includeSelf == IncludeSelf) ? this : parent();
-    for (; curr; curr = curr->parent()) {
-        if (curr->requiresFullLayerImageForFilters())
             return const_cast<RenderLayer*>(curr);
     }
 
@@ -3616,9 +3597,6 @@ void RenderLayer::updateOrRemoveFilterEffectRenderer()
     if (!filterInfo->renderer()) {
         RefPtr<FilterEffectRenderer> filterRenderer = FilterEffectRenderer::create();
         filterInfo->setRenderer(filterRenderer.release());
-
-        // We can optimize away code paths in other places if we know that there are no software filters.
-        renderer()->document().view()->setHasSoftwareFilters(true);
     }
 
     // If the filter fails to build, remove it from the layer. It will still attempt to

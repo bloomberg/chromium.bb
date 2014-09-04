@@ -1500,11 +1500,6 @@ void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* p
         return;
     }
 
-    if (paintInvalidationContainer->hasFilter() && paintInvalidationContainer->layer()->requiresFullLayerImageForFilters()) {
-        paintInvalidationContainer->layer()->paintInvalidator().setFilterBackendNeedsPaintInvalidationInRect(r);
-        return;
-    }
-
     if (paintInvalidationContainer->isRenderView()) {
         toRenderView(paintInvalidationContainer)->invalidatePaintForRectangle(r);
         return;

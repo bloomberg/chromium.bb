@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<style>
+div {
+    width: 200px;
+    height: 200px;
+}
+
+.blur {
+    -webkit-filter: blur(10px);
+}
+
+.accelerated {
+    -webkit-transform: translateZ(0);
+}
+
+#resize {
+    background-color: green;
+}
+</style>
+
+<div class="blur">
+    <div class="accelerated" id="resize"></div>
+</div>
+
+<script src="resources/text-based-repaint.js"></script>
+<script src="../../resources/run-after-display.js"></script>
+<script>
+function repaintTest() {
+    var resizeElement = document.getElementById("resize");
+    resizeElement.style.width = "100px";
+}
+window.onload = runRepaintTest;
+</script>
