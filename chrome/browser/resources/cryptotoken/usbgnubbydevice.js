@@ -374,26 +374,29 @@ UsbGnubbyDevice.prototype.queueCommand = function(cid, cmd, data) {
 };
 
 /**
+ * @const
+ */
+UsbGnubbyDevice.WINUSB_VID_PIDS = [
+  {'vendorId': 4176, 'productId': 529}  // Yubico WinUSB
+];
+
+/**
  * @param {function(Array)} cb Enumerate callback
  */
 UsbGnubbyDevice.enumerate = function(cb) {
-  var permittedDevs;
   var numEnumerated = 0;
   var allDevs = [];
 
   function enumerated(devs) {
     allDevs = allDevs.concat(devs);
-    if (++numEnumerated == permittedDevs.length) {
+    if (++numEnumerated == UsbGnubbyDevice.WINUSB_VID_PIDS.length) {
       cb(allDevs);
     }
   }
 
-  GnubbyDevice.getPermittedUsbDevices(function(devs) {
-    permittedDevs = devs;
-    for (var i = 0; i < devs.length; i++) {
-      chrome.usb.getDevices(devs[i], enumerated);
-    }
-  });
+  for (var i = 0; i < UsbGnubbyDevice.WINUSB_VID_PIDS.length; i++) {
+    chrome.usb.getDevices(UsbGnubbyDevice.WINUSB_VID_PIDS[i], enumerated);
+  }
 };
 
 /**
