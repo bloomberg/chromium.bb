@@ -39,6 +39,7 @@ public:
     static PassRefPtrWillBeRawPtr<GestureEvent> create(PassRefPtrWillBeRawPtr<AbstractView>, const PlatformGestureEvent&);
 
     virtual bool isGestureEvent() const OVERRIDE;
+    bool hasPosition() const OVERRIDE { return true; };
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
 

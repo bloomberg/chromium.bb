@@ -39,8 +39,11 @@ public:
     enum SyntheticEventType {
         // Real mouse input events or synthetic events that behave just like real events
         RealOrIndistinguishable,
-        // Mouse events derived from touch input
+        // Synthetic mouse events derived from touch input
         FromTouch,
+        // Synthetic mouse events generated without a position, for example those generated
+        // from keyboard input.
+        Positionless,
     };
 
     PlatformMouseEvent()
