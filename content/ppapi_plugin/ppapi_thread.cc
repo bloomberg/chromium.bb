@@ -125,6 +125,8 @@ PpapiThread::~PpapiThread() {
 }
 
 void PpapiThread::Shutdown() {
+  ChildThread::Shutdown();
+
   ppapi::proxy::PluginGlobals::Get()->set_plugin_proxy_delegate(NULL);
   if (plugin_entry_points_.shutdown_module)
     plugin_entry_points_.shutdown_module();
