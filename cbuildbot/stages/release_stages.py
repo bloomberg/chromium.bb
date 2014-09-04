@@ -10,7 +10,6 @@ import os
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import failures_lib
-from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
@@ -82,9 +81,6 @@ class PaygenStage(artifact_stages.ArchivingStage):
 
   # Poll for new results every 30 seconds.
   SIGNING_PERIOD = 30
-
-  # Timeout for PushImage to finish uploading images. 2.5 hours in seconds.
-  PUSHIMAGE_TIMEOUT = (2 * 60 + 30) * 60
 
   # Timeout for the signing process. 2 hours in seconds.
   SIGNING_TIMEOUT = 2 * 60 * 60
@@ -237,13 +233,11 @@ class PaygenStage(artifact_stages.ArchivingStage):
     Raises:
       MissingInstructionException: If push_image sent us an error, or timed out.
     """
-    try:
-      instruction_urls_per_channel = self.board_runattrs.GetParallel(
-          'instruction_urls_per_channel', timeout=self.PUSHIMAGE_TIMEOUT)
-    except cbuildbot_run.AttrTimeoutError:
-      instruction_urls_per_channel = None
+    # This call will NEVER time out.
+    instruction_urls_per_channel = self.board_runattrs.GetParallel(
+        'instruction_urls_per_channel', timeout=None)
 
-    # A value of None signals an error, either in PushImage, or a timeout.
+    # A value of None signals an error in PushImage.
     if instruction_urls_per_channel is None:
       raise MissingInstructionException('PushImage results not available.')
 

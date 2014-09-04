@@ -60,16 +60,6 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
 
     self.assertEqual(stage._WaitForPushImage(), self.INSNS_URLS_PER_CHANNEL)
 
-  def testWaitForPushImageTimeout(self):
-    """Test that WaitForPushImage times out, if pushimage never runs."""
-    stage = self.ConstructStage()
-
-    # Shorten the timeout so the tests finish in a reasonable period of time.
-    stage.PUSHIMAGE_TIMEOUT = 0.01
-
-    self.assertRaises(release_stages.MissingInstructionException,
-                      stage._WaitForPushImage)
-
   def testWaitForPushImageError(self):
     """Test WaitForPushImageError with an error output from pushimage."""
     stage = self.ConstructStage()
