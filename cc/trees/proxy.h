@@ -29,7 +29,7 @@ class Vector2d;
 }
 
 namespace cc {
-
+class BlockingTaskRunner;
 class LayerTreeDebugState;
 class OutputSurface;
 struct RendererCapabilities;
@@ -103,6 +103,10 @@ class CC_EXPORT Proxy {
   // Testing hooks
   virtual bool MainFrameWillHappenForTesting() = 0;
 
+  BlockingTaskRunner* blocking_main_thread_task_runner() const {
+    return blocking_main_thread_task_runner_.get();
+  }
+
  protected:
   Proxy(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
         scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
@@ -113,6 +117,8 @@ class CC_EXPORT Proxy {
  private:
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner_;
+  scoped_ptr<BlockingTaskRunner> blocking_main_thread_task_runner_;
+
 #if DCHECK_IS_ON
   const base::PlatformThreadId main_thread_id_;
   bool impl_thread_is_overridden_;

@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer.h"
 #include "cc/resources/texture_mailbox.h"
@@ -16,6 +17,7 @@
 namespace cc {
 class BlockingTaskRunner;
 class SingleReleaseCallback;
+class SingleReleaseCallbackImpl;
 class TextureLayerClient;
 
 // A Layer containing a the rendered output of a plugin instance.
@@ -40,7 +42,7 @@ class CC_EXPORT TextureLayer : public Layer {
 
     // Gets a ReleaseCallback that can be called from another thread. Note: the
     // caller must ensure the callback is called.
-    scoped_ptr<SingleReleaseCallback> GetCallbackForImplThread();
+    scoped_ptr<SingleReleaseCallbackImpl> GetCallbackForImplThread();
 
    protected:
     friend class TextureLayer;
@@ -60,10 +62,10 @@ class CC_EXPORT TextureLayer : public Layer {
 
     void InternalAddRef();
     void InternalRelease();
-    void ReturnAndReleaseOnImplThread(uint32 sync_point, bool is_lost);
-
-    // This member is thread safe, and is accessed on main and impl threads.
-    const scoped_refptr<BlockingTaskRunner> message_loop_;
+    void ReturnAndReleaseOnImplThread(
+        uint32 sync_point,
+        bool is_lost,
+        BlockingTaskRunner* main_thread_task_runner);
 
     // These members are only accessed on the main thread, or on the impl thread
     // during commit where the main thread is blocked.
@@ -78,6 +80,7 @@ class CC_EXPORT TextureLayer : public Layer {
     base::Lock arguments_lock_;
     uint32 sync_point_;
     bool is_lost_;
+    base::ThreadChecker main_thread_checker_;
     DISALLOW_COPY_AND_ASSIGN(TextureMailboxHolder);
   };
 

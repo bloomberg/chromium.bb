@@ -202,7 +202,8 @@ void ThreadProxy::DidLoseOutputSurface() {
     DebugScopedSetMainThreadBlocked main_thread_blocked(this);
 
     // Return lost resources to their owners immediately.
-    BlockingTaskRunner::CapturePostTasks blocked;
+    BlockingTaskRunner::CapturePostTasks blocked(
+        blocking_main_thread_task_runner());
 
     CompletionEvent completion;
     Proxy::ImplThreadTaskRunner()->PostTask(
@@ -860,7 +861,8 @@ void ThreadProxy::BeginMainFrame(
     // This CapturePostTasks should be destroyed before CommitComplete() is
     // called since that goes out to the embedder, and we want the embedder
     // to receive its callbacks before that.
-    BlockingTaskRunner::CapturePostTasks blocked;
+    BlockingTaskRunner::CapturePostTasks blocked(
+        blocking_main_thread_task_runner());
 
     CompletionEvent completion;
     Proxy::ImplThreadTaskRunner()->PostTask(

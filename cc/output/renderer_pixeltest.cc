@@ -499,23 +499,23 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
     ResourceProvider::ResourceId y_resource =
         resource_provider_->CreateResourceFromTextureMailbox(
             resources.mailboxes[media::VideoFrame::kYPlane],
-            SingleReleaseCallback::Create(
+            SingleReleaseCallbackImpl::Create(
                 resources.release_callbacks[media::VideoFrame::kYPlane]));
     ResourceProvider::ResourceId u_resource =
         resource_provider_->CreateResourceFromTextureMailbox(
             resources.mailboxes[media::VideoFrame::kUPlane],
-            SingleReleaseCallback::Create(
+            SingleReleaseCallbackImpl::Create(
                 resources.release_callbacks[media::VideoFrame::kUPlane]));
     ResourceProvider::ResourceId v_resource =
         resource_provider_->CreateResourceFromTextureMailbox(
             resources.mailboxes[media::VideoFrame::kVPlane],
-            SingleReleaseCallback::Create(
+            SingleReleaseCallbackImpl::Create(
                 resources.release_callbacks[media::VideoFrame::kVPlane]));
     ResourceProvider::ResourceId a_resource = 0;
     if (with_alpha) {
       a_resource = resource_provider_->CreateResourceFromTextureMailbox(
           resources.mailboxes[media::VideoFrame::kAPlane],
-          SingleReleaseCallback::Create(
+          SingleReleaseCallbackImpl::Create(
               resources.release_callbacks[media::VideoFrame::kAPlane]));
     }
 

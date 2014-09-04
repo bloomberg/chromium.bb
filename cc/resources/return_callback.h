@@ -9,8 +9,11 @@
 #include "cc/resources/returned_resource.h"
 
 namespace cc {
+class BlockingTaskRunner;
 
-typedef base::Callback<void(const ReturnedResourceArray&)> ReturnCallback;
+typedef base::Callback<void(const ReturnedResourceArray&,
+                            BlockingTaskRunner* main_thread_task_runner)>
+    ReturnCallback;
 
 }  // namespace cc
 

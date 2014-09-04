@@ -125,9 +125,13 @@ class ResourceUpdateControllerTest : public Test {
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
-    resource_provider_ = ResourceProvider::Create(
-        output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1,
-        false);
+    resource_provider_ = ResourceProvider::Create(output_surface_.get(),
+                                                  shared_bitmap_manager_.get(),
+                                                  NULL,
+                                                  0,
+                                                  false,
+                                                  1,
+                                                  false);
   }
 
   void AppendFullUploadsOfIndexedTextureToUpdateQueue(int count,

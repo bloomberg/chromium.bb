@@ -1424,4 +1424,8 @@ void LayerTreeImpl::InputScrollAnimationFinished() {
   layer_tree_host_impl_->ScrollEnd();
 }
 
+BlockingTaskRunner* LayerTreeImpl::BlockingMainThreadTaskRunner() const {
+  return proxy()->blocking_main_thread_task_runner();
+}
+
 }  // namespace cc

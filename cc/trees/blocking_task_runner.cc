@@ -6,49 +6,16 @@
 
 #include <utility>
 
+#include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/singleton.h"
 #include "base/message_loop/message_loop_proxy.h"
 
 namespace cc {
 
-struct TaskRunnerPairs {
-  static TaskRunnerPairs* GetInstance() {
-    return Singleton<TaskRunnerPairs>::get();
-  }
-
-  base::Lock lock;
-  std::vector<scoped_refptr<BlockingTaskRunner> > runners;
-
- private:
-  friend struct DefaultSingletonTraits<TaskRunnerPairs>;
-};
-
 // static
-scoped_refptr<BlockingTaskRunner> BlockingTaskRunner::current() {
-  TaskRunnerPairs* task_runners = TaskRunnerPairs::GetInstance();
-  base::PlatformThreadId thread_id = base::PlatformThread::CurrentId();
-
-  base::AutoLock lock(task_runners->lock);
-
-  scoped_refptr<BlockingTaskRunner> current_task_runner;
-
-  for (size_t i = 0; i < task_runners->runners.size(); ++i) {
-    if (task_runners->runners[i]->thread_id_ == thread_id) {
-      current_task_runner = task_runners->runners[i];
-    } else if (task_runners->runners[i]->HasOneRef()) {
-      task_runners->runners.erase(task_runners->runners.begin() + i);
-      i--;
-    }
-  }
-
-  if (current_task_runner.get())
-    return current_task_runner;
-
-  scoped_refptr<BlockingTaskRunner> runner =
-      new BlockingTaskRunner(base::MessageLoopProxy::current());
-  task_runners->runners.push_back(runner);
-  return runner;
+scoped_ptr<BlockingTaskRunner> BlockingTaskRunner::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  return make_scoped_ptr(new BlockingTaskRunner(task_runner));
 }
 
 BlockingTaskRunner::BlockingTaskRunner(
@@ -94,8 +61,9 @@ void BlockingTaskRunner::SetCapture(bool capture) {
     tasks[i].Run();
 }
 
-BlockingTaskRunner::CapturePostTasks::CapturePostTasks()
-    : blocking_runner_(BlockingTaskRunner::current()) {
+BlockingTaskRunner::CapturePostTasks::CapturePostTasks(
+    BlockingTaskRunner* blocking_runner)
+    : blocking_runner_(blocking_runner) {
   blocking_runner_->SetCapture(true);
 }
 

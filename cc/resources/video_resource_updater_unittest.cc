@@ -10,6 +10,7 @@
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
+#include "cc/trees/blocking_task_runner.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,9 +28,14 @@ class VideoResourceUpdaterTest : public testing::Test {
         FakeOutputSurface::Create3d(context3d.Pass());
     CHECK(output_surface3d_->BindToClient(&client_));
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
-    resource_provider3d_ = ResourceProvider::Create(
-        output_surface3d_.get(), shared_bitmap_manager_.get(), 0, false, 1,
-        false);
+    resource_provider3d_ =
+        ResourceProvider::Create(output_surface3d_.get(),
+                                 shared_bitmap_manager_.get(),
+                                 NULL,
+                                 0,
+                                 false,
+                                 1,
+                                 false);
   }
 
   scoped_refptr<media::VideoFrame> CreateTestYUVVideoFrame() {

@@ -33,7 +33,10 @@ const gfx::Rect kOverlayBottomRightRect(64, 64, 64, 64);
 const gfx::PointF kUVTopLeft(0.1f, 0.2f);
 const gfx::PointF kUVBottomRight(1.0f, 1.0f);
 
-void MailboxReleased(unsigned sync_point, bool lost_resource) {}
+void MailboxReleased(unsigned sync_point,
+                     bool lost_resource,
+                     BlockingTaskRunner* main_thread_task_runner) {
+}
 
 class SingleOverlayValidator : public OverlayCandidateValidator {
  public:
@@ -127,8 +130,8 @@ ResourceProvider::ResourceId CreateResource(
   TextureMailbox mailbox =
       TextureMailbox(gpu::Mailbox::Generate(), GL_TEXTURE_2D, sync_point);
   mailbox.set_allow_overlay(true);
-  scoped_ptr<SingleReleaseCallback> release_callback =
-      SingleReleaseCallback::Create(base::Bind(&MailboxReleased));
+  scoped_ptr<SingleReleaseCallbackImpl> release_callback =
+      SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
 
   return resource_provider->CreateResourceFromTextureMailbox(
       mailbox, release_callback.Pass());
@@ -233,7 +236,7 @@ TEST(OverlayTest, OverlaysProcessorHasStrategy) {
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      &output_surface, shared_bitmap_manager.get(), 0, false, 1, false));
+      &output_surface, shared_bitmap_manager.get(), NULL, 0, false, 1, false));
 
   scoped_ptr<DefaultOverlayProcessor> overlay_processor(
       new DefaultOverlayProcessor(&output_surface, resource_provider.get()));
@@ -251,9 +254,13 @@ class SingleOverlayOnTopTest : public testing::Test {
     EXPECT_TRUE(output_surface_->overlay_candidate_validator() != NULL);
 
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
-    resource_provider_ = ResourceProvider::Create(
-        output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1,
-        false);
+    resource_provider_ = ResourceProvider::Create(output_surface_.get(),
+                                                  shared_bitmap_manager_.get(),
+                                                  NULL,
+                                                  0,
+                                                  false,
+                                                  1,
+                                                  false);
 
     overlay_processor_.reset(new SingleOverlayProcessor(
         output_surface_.get(), resource_provider_.get()));
@@ -563,9 +570,8 @@ class GLRendererWithOverlaysTest : public testing::Test {
     provider_ = TestContextProvider::Create();
     output_surface_.reset(new OverlayOutputSurface(provider_));
     CHECK(output_surface_->BindToClient(&output_surface_client_));
-    resource_provider_ =
-        ResourceProvider::Create(output_surface_.get(), NULL, 0, false, 1,
-        false);
+    resource_provider_ = ResourceProvider::Create(
+        output_surface_.get(), NULL, NULL, 0, false, 1, false);
 
     provider_->support()->SetScheduleOverlayPlaneCallback(base::Bind(
         &MockOverlayScheduler::Schedule, base::Unretained(&scheduler_)));

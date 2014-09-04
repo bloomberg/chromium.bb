@@ -16,11 +16,14 @@
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "cc/resources/resource_provider.h"
+#include "cc/trees/blocking_task_runner.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
 
-static void EmptyReleaseCallback(uint32 sync_point, bool lost_resource) {
+static void EmptyReleaseCallback(uint32 sync_point,
+                                 bool lost_resource,
+                                 BlockingTaskRunner* main_thread_task_runner) {
 }
 
 void TestRenderPass::AppendOneOfEveryQuadType(
@@ -77,8 +80,8 @@ void TestRenderPass::AppendOneOfEveryQuadType(
   unsigned target = GL_TEXTURE_2D;
   gpu::Mailbox gpu_mailbox;
   memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
-  scoped_ptr<SingleReleaseCallback> callback =
-      SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback));
+  scoped_ptr<SingleReleaseCallbackImpl> callback =
+      SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback));
   TextureMailbox mailbox(gpu_mailbox, target, kSyncPointForMailboxTextureQuad);
   ResourceProvider::ResourceId resource8 =
       resource_provider->CreateResourceFromTextureMailbox(mailbox,

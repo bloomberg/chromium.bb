@@ -48,7 +48,9 @@ ResourceProvider::ResourceIdSet FakeDelegatedRendererLayerImpl::Resources()
   return set;
 }
 
-void NoopReturnCallback(const ReturnedResourceArray& returned) {}
+void NoopReturnCallback(const ReturnedResourceArray& returned,
+                        BlockingTaskRunner* main_thread_task_runner) {
+}
 
 void FakeDelegatedRendererLayerImpl::SetFrameDataForRenderPasses(
     float device_scale_factor,

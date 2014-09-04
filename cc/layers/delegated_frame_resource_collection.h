@@ -15,7 +15,6 @@
 #include "cc/resources/transferable_resource.h"
 
 namespace cc {
-class BlockingTaskRunner;
 
 class CC_EXPORT DelegatedFrameResourceCollectionClient {
  public:
@@ -48,7 +47,6 @@ class CC_EXPORT DelegatedFrameResourceCollection
   ~DelegatedFrameResourceCollection();
 
   DelegatedFrameResourceCollectionClient* client_;
-  scoped_refptr<BlockingTaskRunner> main_thread_runner_;
 
   ReturnedResourceArray returned_resources_for_child_compositor_;
   bool lost_all_resources_;

@@ -36,6 +36,7 @@ class PictureLayerTilingPerfTest : public testing::Test {
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ = ResourceProvider::Create(output_surface_.get(),
                                                   shared_bitmap_manager_.get(),
+                                                  NULL,
                                                   0,
                                                   false,
                                                   1,

@@ -15,13 +15,18 @@
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_aggregator.h"
 #include "cc/surfaces/surface_manager.h"
+#include "cc/trees/blocking_task_runner.h"
 
 namespace cc {
 
 Display::Display(DisplayClient* client,
                  SurfaceManager* manager,
                  SharedBitmapManager* bitmap_manager)
-    : client_(client), manager_(manager), bitmap_manager_(bitmap_manager) {
+    : client_(client),
+      manager_(manager),
+      bitmap_manager_(bitmap_manager),
+      blocking_main_thread_task_runner_(
+          BlockingTaskRunner::Create(base::MessageLoopProxy::current())) {
   manager_->AddObserver(this);
 }
 
@@ -49,6 +54,7 @@ void Display::InitializeOutputSurface() {
   scoped_ptr<ResourceProvider> resource_provider =
       ResourceProvider::Create(output_surface.get(),
                                bitmap_manager_,
+                               blocking_main_thread_task_runner_.get(),
                                highp_threshold_min,
                                use_rgba_4444_texture_format,
                                id_allocation_chunk_size,
@@ -89,6 +95,8 @@ bool Display::Draw() {
   if (!output_surface_)
     return false;
 
+  // TODO(skyostil): We should hold a BlockingTaskRunner::CapturePostTasks
+  // while Aggregate is called to immediately run release callbacks afterward.
   scoped_ptr<CompositorFrame> frame =
       aggregator_->Aggregate(current_surface_id_);
   if (!frame)

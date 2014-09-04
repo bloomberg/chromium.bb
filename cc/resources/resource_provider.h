@@ -21,11 +21,11 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/resources/raster_buffer.h"
-#include "cc/resources/release_callback.h"
+#include "cc/resources/release_callback_impl.h"
 #include "cc/resources/resource_format.h"
 #include "cc/resources/return_callback.h"
 #include "cc/resources/shared_bitmap.h"
-#include "cc/resources/single_release_callback.h"
+#include "cc/resources/single_release_callback_impl.h"
 #include "cc/resources/texture_mailbox.h"
 #include "cc/resources/transferable_resource.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -48,6 +48,7 @@ class Vector2d;
 }
 
 namespace cc {
+class BlockingTaskRunner;
 class IdAllocator;
 class SharedBitmap;
 class SharedBitmapManager;
@@ -77,6 +78,7 @@ class CC_EXPORT ResourceProvider {
   static scoped_ptr<ResourceProvider> Create(
       OutputSurface* output_surface,
       SharedBitmapManager* shared_bitmap_manager,
+      BlockingTaskRunner* blocking_main_thread_task_runner,
       int highp_threshold_min,
       bool use_rgba_4444_texture_format,
       size_t id_allocation_chunk_size,
@@ -137,7 +139,7 @@ class CC_EXPORT ResourceProvider {
   // Wraps an external texture mailbox into a GL resource.
   ResourceId CreateResourceFromTextureMailbox(
       const TextureMailbox& mailbox,
-      scoped_ptr<SingleReleaseCallback> release_callback);
+      scoped_ptr<SingleReleaseCallbackImpl> release_callback_impl);
 
   void DeleteResource(ResourceId id);
 
@@ -412,7 +414,7 @@ class CC_EXPORT ResourceProvider {
     // Query used to determine when read lock fence has passed.
     unsigned gl_read_lock_query_id;
     TextureMailbox mailbox;
-    ReleaseCallback release_callback;
+    ReleaseCallbackImpl release_callback_impl;
     uint8_t* pixels;
     int lock_for_read_count;
     int imported_count;
@@ -536,6 +538,7 @@ class CC_EXPORT ResourceProvider {
 
   ResourceProvider(OutputSurface* output_surface,
                    SharedBitmapManager* shared_bitmap_manager,
+                   BlockingTaskRunner* blocking_main_thread_task_runner,
                    int highp_threshold_min,
                    bool use_rgba_4444_texture_format,
                    size_t id_allocation_chunk_size,
@@ -599,6 +602,7 @@ class CC_EXPORT ResourceProvider {
 
   OutputSurface* output_surface_;
   SharedBitmapManager* shared_bitmap_manager_;
+  BlockingTaskRunner* blocking_main_thread_task_runner_;
   bool lost_output_surface_;
   int highp_threshold_min_;
   ResourceId next_id_;

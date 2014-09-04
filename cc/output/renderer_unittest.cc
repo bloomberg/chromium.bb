@@ -61,9 +61,8 @@ class RendererTest : public ::testing::Test {
         new MockContextProvider(TestWebGraphicsContext3D::Create());
     output_surface_.reset(new OutputSurface(context_provider_));
     output_surface_->BindToClient(&output_surface_client_);
-    resource_provider_ =
-        ResourceProvider::Create(output_surface_.get(), NULL, 0, false, 1,
-        false);
+    resource_provider_ = ResourceProvider::Create(
+        output_surface_.get(), NULL, NULL, 0, false, 1, false);
     renderer_ = CreateRenderer<T>(&renderer_client_,
                                   &tree_settings_,
                                   output_surface_.get(),

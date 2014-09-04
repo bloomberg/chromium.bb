@@ -102,6 +102,7 @@ class CC_EXPORT LayerTreeImpl {
   void InputScrollAnimationFinished();
   bool use_gpu_rasterization() const;
   bool create_low_res_tiling() const;
+  BlockingTaskRunner* BlockingMainThreadTaskRunner() const;
 
   // Tree specific methods exposed to layer-impl tree.
   // ---------------------------------------------------------------------------

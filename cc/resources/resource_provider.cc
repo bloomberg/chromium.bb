@@ -601,6 +601,7 @@ ResourceProvider::Child::~Child() {}
 scoped_ptr<ResourceProvider> ResourceProvider::Create(
     OutputSurface* output_surface,
     SharedBitmapManager* shared_bitmap_manager,
+    BlockingTaskRunner* blocking_main_thread_task_runner,
     int highp_threshold_min,
     bool use_rgba_4444_texture_format,
     size_t id_allocation_chunk_size,
@@ -608,6 +609,7 @@ scoped_ptr<ResourceProvider> ResourceProvider::Create(
   scoped_ptr<ResourceProvider> resource_provider(
       new ResourceProvider(output_surface,
                            shared_bitmap_manager,
+                           blocking_main_thread_task_runner,
                            highp_threshold_min,
                            use_rgba_4444_texture_format,
                            id_allocation_chunk_size,
@@ -777,7 +779,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateResourceFromIOSurface(
 
 ResourceProvider::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
     const TextureMailbox& mailbox,
-    scoped_ptr<SingleReleaseCallback> release_callback) {
+    scoped_ptr<SingleReleaseCallbackImpl> release_callback_impl) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Just store the information. Mailbox will be consumed in LockForRead().
   ResourceId id = next_id_++;
@@ -813,9 +815,9 @@ ResourceProvider::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
   }
   resource.allocated = true;
   resource.mailbox = mailbox;
-  resource.release_callback =
-      base::Bind(&SingleReleaseCallback::Run,
-                 base::Owned(release_callback.release()));
+  resource.release_callback_impl =
+      base::Bind(&SingleReleaseCallbackImpl::Run,
+                 base::Owned(release_callback_impl.release()));
   resource.allow_overlay = mailbox.allow_overlay();
   return id;
 }
@@ -899,7 +901,8 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
         resource->shared_bitmap = NULL;
       }
     }
-    resource->release_callback.Run(sync_point, lost_resource);
+    resource->release_callback_impl.Run(
+        sync_point, lost_resource, blocking_main_thread_task_runner_);
   }
   if (resource->gl_id) {
     GLES2Interface* gl = ContextGL();
@@ -1226,14 +1229,17 @@ ResourceProvider::ScopedWriteLockSoftware::~ScopedWriteLockSoftware() {
   resource_provider_->UnlockForWrite(resource_id_);
 }
 
-ResourceProvider::ResourceProvider(OutputSurface* output_surface,
-                                   SharedBitmapManager* shared_bitmap_manager,
-                                   int highp_threshold_min,
-                                   bool use_rgba_4444_texture_format,
-                                   size_t id_allocation_chunk_size,
-                                   bool use_distance_field_text)
+ResourceProvider::ResourceProvider(
+    OutputSurface* output_surface,
+    SharedBitmapManager* shared_bitmap_manager,
+    BlockingTaskRunner* blocking_main_thread_task_runner,
+    int highp_threshold_min,
+    bool use_rgba_4444_texture_format,
+    size_t id_allocation_chunk_size,
+    bool use_distance_field_text)
     : output_surface_(output_surface),
       shared_bitmap_manager_(shared_bitmap_manager),
+      blocking_main_thread_task_runner_(blocking_main_thread_task_runner),
       lost_output_surface_(false),
       highp_threshold_min_(highp_threshold_min),
       next_id_(1),
@@ -1421,7 +1427,8 @@ void ResourceProvider::ReceiveFromChild(
       TRACE_EVENT0("cc", "ResourceProvider::ReceiveFromChild dropping invalid");
       ReturnedResourceArray to_return;
       to_return.push_back(it->ToReturnedResource());
-      child_info.return_callback.Run(to_return);
+      child_info.return_callback.Run(to_return,
+                                     blocking_main_thread_task_runner_);
       continue;
     }
 
@@ -1736,7 +1743,8 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   }
 
   if (!to_return.empty())
-    child_info->return_callback.Run(to_return);
+    child_info->return_callback.Run(to_return,
+                                    blocking_main_thread_task_runner_);
 
   if (child_info->marked_for_deletion &&
       child_info->parent_to_child_map.empty()) {

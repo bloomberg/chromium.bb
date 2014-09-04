@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/location.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
@@ -25,38 +25,43 @@ namespace cc {
 // to when they were posted.
 //
 // To use this class, post tasks to the task runner returned by
-// BlockingTaskRunner::current() on the thread you want the tasks to run.
-// Hold a reference to the BlockingTaskRunner as long as you intend to
-// post tasks to it.
+// BlockingTaskRunner::Create(). The thread it is created on identifies the
+// thread you want the tasks to run on. The SingleThreadTaskRunner which is
+// passed into Create() is used to run tasks that are posted when not in a
+// capturing state.
 //
-// Then, on the thread from which the BlockingTaskRunner was created, you
-// may instantiate a BlockingTaskRunner::CapturePostTasks. While this object
+// Then, on the thread that the given task runner belongs to, you may
+// instantiate a BlockingTaskRunner::CapturePostTasks. While this object
 // exists, the task runner will collect any PostTasks called on it, posting
 // tasks to that thread from anywhere. This CapturePostTasks object provides
 // a window in time where tasks can shortcut past the MessageLoop. As soon
 // as the CapturePostTasks object is destroyed (goes out of scope), all
-// tasks that had been posted to the thread during the window will be exectuted
+// tasks that had been posted to the thread during the window will be executed
 // immediately.
 //
 // Beware of re-entrancy, make sure the CapturePostTasks object is destroyed at
 // a time when it makes sense for the embedder to call arbitrary things.
-class CC_EXPORT BlockingTaskRunner
-    : public base::RefCountedThreadSafe<BlockingTaskRunner> {
+class CC_EXPORT BlockingTaskRunner {
  public:
-  // Returns the BlockingTaskRunner for the current thread, creating one if
-  // necessary.
-  static scoped_refptr<BlockingTaskRunner> current();
+  // Creates a BlockingTaskRunner for a given SingleThreadTaskRunner.
+  // |task_runner| will be used to run the tasks which are posted while we are
+  // not capturing. |task_runner| should belong to same the thread on which
+  // capturing is done.
+  static scoped_ptr<BlockingTaskRunner> Create(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  ~BlockingTaskRunner();
 
   // While an object of this type is held alive on a thread, any tasks
   // posted to the thread will be captured and run as soon as the object
-  // is destroyed, shortcutting past the MessageLoop.
+  // is destroyed, shortcutting past the task runner.
   class CC_EXPORT CapturePostTasks {
    public:
-    CapturePostTasks();
+    explicit CapturePostTasks(BlockingTaskRunner* blocking_runner);
     ~CapturePostTasks();
 
    private:
-    scoped_refptr<BlockingTaskRunner> blocking_runner_;
+    BlockingTaskRunner* blocking_runner_;
 
     DISALLOW_COPY_AND_ASSIGN(CapturePostTasks);
   };
@@ -73,11 +78,8 @@ class CC_EXPORT BlockingTaskRunner
                 const base::Closure& task);
 
  private:
-  friend class base::RefCountedThreadSafe<BlockingTaskRunner>;
-
   explicit BlockingTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  virtual ~BlockingTaskRunner();
 
   void SetCapture(bool capture);
 
@@ -87,6 +89,8 @@ class CC_EXPORT BlockingTaskRunner
   base::Lock lock_;
   int capture_;
   std::vector<base::Closure> captured_tasks_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlockingTaskRunner);
 };
 
 }  // namespace cc

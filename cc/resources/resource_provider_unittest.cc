@@ -22,6 +22,7 @@
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_texture.h"
 #include "cc/test/test_web_graphics_context_3d.h"
+#include "cc/trees/blocking_task_runner.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,18 +40,28 @@ using testing::_;
 namespace cc {
 namespace {
 
-static void EmptyReleaseCallback(uint32 sync_point, bool lost_resource) {}
+static void EmptyReleaseCallback(uint32 sync_point,
+                                 bool lost_resource,
+                                 BlockingTaskRunner* main_thread_task_runner) {
+}
 
-static void SharedMemoryReleaseCallback(scoped_ptr<base::SharedMemory> memory,
-                                        uint32 sync_point,
-                                        bool lost_resource) {}
-
-static void ReleaseTextureMailbox(uint32* release_sync_point,
-                                  bool* release_lost_resource,
-                                  uint32 sync_point,
-                                  bool lost_resource) {
+static void ReleaseCallback(
+    uint32* release_sync_point,
+    bool* release_lost_resource,
+    BlockingTaskRunner** release_main_thread_task_runner,
+    uint32 sync_point,
+    bool lost_resource,
+    BlockingTaskRunner* main_thread_task_runner) {
   *release_sync_point = sync_point;
   *release_lost_resource = lost_resource;
+  *release_main_thread_task_runner = main_thread_task_runner;
+}
+
+static void SharedMemoryReleaseCallback(
+    scoped_ptr<base::SharedMemory> memory,
+    uint32 sync_point,
+    bool lost_resource,
+    BlockingTaskRunner* main_thread_task_runner) {
 }
 
 static void ReleaseSharedMemoryCallback(
@@ -59,7 +70,8 @@ static void ReleaseSharedMemoryCallback(
     uint32* release_sync_point,
     bool* lost_resource_result,
     uint32 sync_point,
-    bool lost_resource) {
+    bool lost_resource,
+    BlockingTaskRunner* main_thread_task_runner) {
   *release_called = true;
   *release_sync_point = sync_point;
   *lost_resource_result = lost_resource;
@@ -368,7 +380,8 @@ class ResourceProviderTest
   ResourceProviderTest()
       : shared_data_(ContextSharedData::Create()),
         context3d_(NULL),
-        child_context_(NULL) {
+        child_context_(NULL),
+        main_thread_task_runner_(BlockingTaskRunner::Create(NULL)) {
     switch (GetParam()) {
       case ResourceProvider::GLTexture: {
         scoped_ptr<ResourceProviderContext> context3d(
@@ -403,20 +416,27 @@ class ResourceProviderTest
 
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
 
-    resource_provider_ = ResourceProvider::Create(
-        output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1,
-        false);
-    child_resource_provider_ = ResourceProvider::Create(
-        child_output_surface_.get(),
-        shared_bitmap_manager_.get(),
-        0,
-        false,
-        1,
-        false);
+    resource_provider_ =
+        ResourceProvider::Create(output_surface_.get(),
+                                 shared_bitmap_manager_.get(),
+                                 main_thread_task_runner_.get(),
+                                 0,
+                                 false,
+                                 1,
+                                 false);
+    child_resource_provider_ =
+        ResourceProvider::Create(child_output_surface_.get(),
+                                 shared_bitmap_manager_.get(),
+                                 main_thread_task_runner_.get(),
+                                 0,
+                                 false,
+                                 1,
+                                 false);
   }
 
   static void CollectResources(ReturnedResourceArray* array,
-                               const ReturnedResourceArray& returned) {
+                               const ReturnedResourceArray& returned,
+                               BlockingTaskRunner* main_thread_task_runner) {
     array->insert(array->end(), returned.begin(), returned.end());
   }
 
@@ -447,12 +467,13 @@ class ResourceProviderTest
       EXPECT_LT(0u, *sync_point);
 
       scoped_ptr<base::SharedMemory> shared_memory;
-      scoped_ptr<SingleReleaseCallback> callback =
-          SingleReleaseCallback::Create(base::Bind(ReleaseSharedMemoryCallback,
-                                                   base::Passed(&shared_memory),
-                                                   release_called,
-                                                   release_sync_point,
-                                                   lost_resource));
+      scoped_ptr<SingleReleaseCallbackImpl> callback =
+          SingleReleaseCallbackImpl::Create(
+              base::Bind(ReleaseSharedMemoryCallback,
+                         base::Passed(&shared_memory),
+                         release_called,
+                         release_sync_point,
+                         lost_resource));
       return child_resource_provider_->CreateResourceFromTextureMailbox(
           TextureMailbox(gpu_mailbox, GL_TEXTURE_2D, *sync_point),
           callback.Pass());
@@ -462,12 +483,13 @@ class ResourceProviderTest
           CreateAndFillSharedMemory(size, 0));
 
       base::SharedMemory* shared_memory_ptr = shared_memory.get();
-      scoped_ptr<SingleReleaseCallback> callback =
-          SingleReleaseCallback::Create(base::Bind(ReleaseSharedMemoryCallback,
-                                                   base::Passed(&shared_memory),
-                                                   release_called,
-                                                   release_sync_point,
-                                                   lost_resource));
+      scoped_ptr<SingleReleaseCallbackImpl> callback =
+          SingleReleaseCallbackImpl::Create(
+              base::Bind(ReleaseSharedMemoryCallback,
+                         base::Passed(&shared_memory),
+                         release_called,
+                         release_sync_point,
+                         lost_resource));
       return child_resource_provider_->CreateResourceFromTextureMailbox(
           TextureMailbox(shared_memory_ptr, size), callback.Pass());
     }
@@ -481,6 +503,7 @@ class ResourceProviderTest
   FakeOutputSurfaceClient child_output_surface_client_;
   scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<OutputSurface> child_output_surface_;
+  scoped_ptr<BlockingTaskRunner> main_thread_task_runner_;
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<ResourceProvider> child_resource_provider_;
   scoped_ptr<TestSharedBitmapManager> shared_bitmap_manager_;
@@ -625,7 +648,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
       child_resource_provider_->CreateResourceFromTextureMailbox(
           TextureMailbox(
               external_mailbox, GL_TEXTURE_EXTERNAL_OES, external_sync_point),
-          SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback)));
+          SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback)));
 
   ReturnedResourceArray returned_to_child;
   int child_id =
@@ -892,16 +915,16 @@ TEST_P(ResourceProviderTest, AllowOverlayTransfersToParent) {
   uint32 sync_point = 0;
   TextureMailbox mailbox(gpu::Mailbox::Generate(), GL_TEXTURE_2D, sync_point);
   mailbox.set_allow_overlay(true);
-  scoped_ptr<SingleReleaseCallback> release_callback =
-      SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback));
+  scoped_ptr<SingleReleaseCallbackImpl> release_callback =
+      SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback));
   ResourceProvider::ResourceId id1 =
       child_resource_provider_->CreateResourceFromTextureMailbox(
           mailbox, release_callback.Pass());
 
   TextureMailbox mailbox2(gpu::Mailbox::Generate(), GL_TEXTURE_2D, sync_point);
   mailbox2.set_allow_overlay(false);
-  scoped_ptr<SingleReleaseCallback> release_callback2 =
-      SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback));
+  scoped_ptr<SingleReleaseCallbackImpl> release_callback2 =
+      SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback));
   ResourceProvider::ResourceId id2 =
       child_resource_provider_->CreateResourceFromTextureMailbox(
           mailbox2, release_callback2.Pass());
@@ -973,7 +996,7 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
   ResourceProvider::ResourceId id4 =
       child_resource_provider_->CreateResourceFromTextureMailbox(
           TextureMailbox(shared_memory_ptr, gfx::Size(1, 1)),
-          SingleReleaseCallback::Create(base::Bind(
+          SingleReleaseCallbackImpl::Create(base::Bind(
               &SharedMemoryReleaseCallback, base::Passed(&shared_memory))));
 
   ReturnedResourceArray returned_to_child;
@@ -1175,9 +1198,14 @@ TEST_P(ResourceProviderTest, TransferGLToSoftware) {
       child_context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(child_output_surface->BindToClient(&child_output_surface_client));
 
-  scoped_ptr<ResourceProvider> child_resource_provider(ResourceProvider::Create(
-      child_output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1,
-      false));
+  scoped_ptr<ResourceProvider> child_resource_provider(
+      ResourceProvider::Create(child_output_surface.get(),
+                               shared_bitmap_manager_.get(),
+                               NULL,
+                               0,
+                               false,
+                               1,
+                               false));
 
   gfx::Size size(1, 1);
   ResourceFormat format = RGBA_8888;
@@ -1655,6 +1683,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
     scoped_ptr<ResourceProvider> child_resource_provider(
         ResourceProvider::Create(child_output_surface.get(),
                                  shared_bitmap_manager.get(),
+                                 NULL,
                                  0,
                                  false,
                                  1,
@@ -1672,6 +1701,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
     scoped_ptr<ResourceProvider> parent_resource_provider(
         ResourceProvider::Create(parent_output_surface.get(),
                                  shared_bitmap_manager.get(),
+                                 NULL,
                                  0,
                                  false,
                                  1,
@@ -1842,12 +1872,15 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
 
   uint32 release_sync_point = 0;
   bool lost_resource = false;
-  ReleaseCallback callback =
-      base::Bind(ReleaseTextureMailbox, &release_sync_point, &lost_resource);
+  BlockingTaskRunner* main_thread_task_runner = NULL;
+  ReleaseCallbackImpl callback = base::Bind(ReleaseCallback,
+                                            &release_sync_point,
+                                            &lost_resource,
+                                            &main_thread_task_runner);
   ResourceProvider::ResourceId resource =
       resource_provider_->CreateResourceFromTextureMailbox(
           TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point),
-          SingleReleaseCallback::Create(callback));
+          SingleReleaseCallbackImpl::Create(callback));
   EXPECT_EQ(1u, context()->NumTextures());
   EXPECT_EQ(0u, release_sync_point);
   {
@@ -1888,6 +1921,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     resource_provider_->DeleteResource(resource);
     EXPECT_LE(list[0].mailbox_holder.sync_point, release_sync_point);
     EXPECT_FALSE(lost_resource);
+    EXPECT_EQ(main_thread_task_runner_.get(), main_thread_task_runner);
   }
 
   // We're going to do the same thing as above, but testing the case where we
@@ -1897,7 +1931,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
   release_sync_point = 0;
   resource = resource_provider_->CreateResourceFromTextureMailbox(
       TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point),
-      SingleReleaseCallback::Create(callback));
+      SingleReleaseCallbackImpl::Create(callback));
   EXPECT_EQ(1u, context()->NumTextures());
   EXPECT_EQ(0u, release_sync_point);
   {
@@ -1939,6 +1973,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     resource_provider_->ReceiveReturnsFromParent(returned);
     EXPECT_LE(list[0].mailbox_holder.sync_point, release_sync_point);
     EXPECT_FALSE(lost_resource);
+    EXPECT_EQ(main_thread_task_runner_.get(), main_thread_task_runner);
   }
 
   context()->waitSyncPoint(release_sync_point);
@@ -2260,19 +2295,25 @@ TEST_P(ResourceProviderTest, LostContext) {
 
   uint32 release_sync_point = 0;
   bool lost_resource = false;
-  scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
-      base::Bind(ReleaseTextureMailbox, &release_sync_point, &lost_resource));
+  BlockingTaskRunner* main_thread_task_runner = NULL;
+  scoped_ptr<SingleReleaseCallbackImpl> callback =
+      SingleReleaseCallbackImpl::Create(base::Bind(ReleaseCallback,
+                                                   &release_sync_point,
+                                                   &lost_resource,
+                                                   &main_thread_task_runner));
   resource_provider_->CreateResourceFromTextureMailbox(
       TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point), callback.Pass());
 
   EXPECT_EQ(0u, release_sync_point);
   EXPECT_FALSE(lost_resource);
+  EXPECT_EQ(NULL, main_thread_task_runner);
 
   resource_provider_->DidLoseOutputSurface();
   resource_provider_.reset();
 
   EXPECT_LE(sync_point, release_sync_point);
   EXPECT_TRUE(lost_resource);
+  EXPECT_EQ(main_thread_task_runner_.get(), main_thread_task_runner);
 }
 
 TEST_P(ResourceProviderTest, ScopedSampler) {
@@ -2289,8 +2330,14 @@ TEST_P(ResourceProviderTest, ScopedSampler) {
       context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager_.get(),
+                               NULL,
+                               0,
+                               false,
+                               1,
+                               false));
 
   gfx::Size size(1, 1);
   ResourceFormat format = RGBA_8888;
@@ -2370,8 +2417,14 @@ TEST_P(ResourceProviderTest, ManagedResource) {
       context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager_.get(),
+                               NULL,
+                               0,
+                               false,
+                               1,
+                               false));
 
   gfx::Size size(1, 1);
   ResourceFormat format = RGBA_8888;
@@ -2419,8 +2472,14 @@ TEST_P(ResourceProviderTest, TextureWrapMode) {
       context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager_.get(),
+                               NULL,
+                               0,
+                               false,
+                               1,
+                               false));
 
   gfx::Size size(1, 1);
   ResourceFormat format = RGBA_8888;
@@ -2472,8 +2531,14 @@ TEST_P(ResourceProviderTest, TextureHint) {
       context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager_.get(),
+                               NULL,
+                               0,
+                               false,
+                               1,
+                               false));
 
   gfx::Size size(1, 1);
   ResourceFormat format = RGBA_8888;
@@ -2539,11 +2604,23 @@ TEST_P(ResourceProviderTest, TextureMailbox_SharedMemory) {
           new SoftwareOutputDevice)));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager_.get(),
+                               main_thread_task_runner_.get(),
+                               0,
+                               false,
+                               1,
+                               false));
 
-  scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
-      base::Bind(&EmptyReleaseCallback));
+  uint32 release_sync_point = 0;
+  bool lost_resource = false;
+  BlockingTaskRunner* main_thread_task_runner = NULL;
+  scoped_ptr<SingleReleaseCallbackImpl> callback =
+      SingleReleaseCallbackImpl::Create(base::Bind(&ReleaseCallback,
+                                                   &release_sync_point,
+                                                   &lost_resource,
+                                                   &main_thread_task_runner));
   TextureMailbox mailbox(shared_memory.get(), size);
 
   ResourceProvider::ResourceId id =
@@ -2558,6 +2635,11 @@ TEST_P(ResourceProviderTest, TextureMailbox_SharedMemory) {
     EXPECT_EQ(sk_bitmap->height(), size.height());
     EXPECT_EQ(*sk_bitmap->getAddr32(16, 16), kBadBeef);
   }
+
+  resource_provider->DeleteResource(id);
+  EXPECT_EQ(0u, release_sync_point);
+  EXPECT_FALSE(lost_resource);
+  EXPECT_EQ(main_thread_task_runner_.get(), main_thread_task_runner);
 }
 
 TEST_P(ResourceProviderTest, TextureMailbox_GLTexture2D) {
@@ -2574,8 +2656,14 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTexture2D) {
       context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager_.get(),
+                               main_thread_task_runner_.get(),
+                               0,
+                               false,
+                               1,
+                               false));
 
   unsigned texture_id = 1;
   uint32 sync_point = 30;
@@ -2589,8 +2677,14 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTexture2D) {
 
   gpu::Mailbox gpu_mailbox;
   memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
-  scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
-      base::Bind(&EmptyReleaseCallback));
+  uint32 release_sync_point = 0;
+  bool lost_resource = false;
+  BlockingTaskRunner* main_thread_task_runner = NULL;
+  scoped_ptr<SingleReleaseCallbackImpl> callback =
+      SingleReleaseCallbackImpl::Create(base::Bind(&ReleaseCallback,
+                                                   &release_sync_point,
+                                                   &lost_resource,
+                                                   &main_thread_task_runner));
 
   TextureMailbox mailbox(gpu_mailbox, target, sync_point);
 
@@ -2626,6 +2720,11 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTexture2D) {
     EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
     EXPECT_CALL(*context, consumeTextureCHROMIUM(_, _)).Times(0);
   }
+
+  resource_provider->DeleteResource(id);
+  EXPECT_EQ(0u, release_sync_point);
+  EXPECT_FALSE(lost_resource);
+  EXPECT_EQ(main_thread_task_runner_.get(), main_thread_task_runner);
 }
 
 TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
@@ -2642,8 +2741,14 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
       context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager_.get(),
+                               NULL,
+                               0,
+                               false,
+                               1,
+                               false));
 
   unsigned texture_id = 1;
   uint32 sync_point = 30;
@@ -2657,8 +2762,8 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
 
   gpu::Mailbox gpu_mailbox;
   memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
-  scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
-      base::Bind(&EmptyReleaseCallback));
+  scoped_ptr<SingleReleaseCallbackImpl> callback =
+      SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback));
 
   TextureMailbox mailbox(gpu_mailbox, target, sync_point);
 
@@ -2711,8 +2816,14 @@ TEST_P(ResourceProviderTest,
       context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager_.get(),
+                               NULL,
+                               0,
+                               false,
+                               1,
+                               false));
 
   uint32 sync_point = 30;
   unsigned target = GL_TEXTURE_2D;
@@ -2725,8 +2836,8 @@ TEST_P(ResourceProviderTest,
 
   gpu::Mailbox gpu_mailbox;
   memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
-  scoped_ptr<SingleReleaseCallback> callback =
-      SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback));
+  scoped_ptr<SingleReleaseCallbackImpl> callback =
+      SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback));
 
   TextureMailbox mailbox(gpu_mailbox, target, sync_point);
 
@@ -2764,8 +2875,14 @@ TEST_P(ResourceProviderTest, TextureMailbox_WaitSyncPointIfNeeded_NoSyncPoint) {
       context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager_.get(),
+                               NULL,
+                               0,
+                               false,
+                               1,
+                               false));
 
   uint32 sync_point = 0;
   unsigned target = GL_TEXTURE_2D;
@@ -2778,8 +2895,8 @@ TEST_P(ResourceProviderTest, TextureMailbox_WaitSyncPointIfNeeded_NoSyncPoint) {
 
   gpu::Mailbox gpu_mailbox;
   memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
-  scoped_ptr<SingleReleaseCallback> callback =
-      SingleReleaseCallback::Create(base::Bind(&EmptyReleaseCallback));
+  scoped_ptr<SingleReleaseCallbackImpl> callback =
+      SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback));
 
   TextureMailbox mailbox(gpu_mailbox, target, sync_point);
 
@@ -2886,8 +3003,14 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
       context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager_.get(),
+                               NULL,
+                               0,
+                               false,
+                               1,
+                               false));
 
   gfx::Size size(2, 2);
   gfx::Vector2d offset(0, 0);
@@ -2963,8 +3086,14 @@ TEST_P(ResourceProviderTest, TextureAllocationHint) {
       context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager_.get(),
+                               NULL,
+                               0,
+                               false,
+                               1,
+                               false));
 
   gfx::Size size(2, 2);
 
@@ -3017,8 +3146,14 @@ TEST_P(ResourceProviderTest, TextureAllocationHint_BGRA) {
       context_owned.PassAs<TestWebGraphicsContext3D>()));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager_.get(),
+                               NULL,
+                               0,
+                               false,
+                               1,
+                               false));
 
   gfx::Size size(2, 2);
   const ResourceFormat formats[2] = {RGBA_8888, BGRA_8888};
@@ -3070,8 +3205,14 @@ TEST_P(ResourceProviderTest, PixelBuffer_GLTexture) {
   ResourceProvider::ResourceId id = 0;
   int texture_id = 123;
 
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager_.get(),
+                               NULL,
+                               0,
+                               false,
+                               1,
+                               false));
 
   id = resource_provider->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
@@ -3114,8 +3255,14 @@ TEST_P(ResourceProviderTest, ForcingAsyncUploadToComplete) {
   ResourceProvider::ResourceId id = 0;
   int texture_id = 123;
 
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager_.get(),
+                               NULL,
+                               0,
+                               false,
+                               1,
+                               false));
 
   id = resource_provider->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
@@ -3158,8 +3305,14 @@ TEST_P(ResourceProviderTest, PixelBufferLostContext) {
   ResourceProvider::ResourceId id = 0;
   int texture_id = 123;
 
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager_.get(),
+                               NULL,
+                               0,
+                               false,
+                               1,
+                               false));
 
   EXPECT_CALL(*context, NextTextureId()).WillRepeatedly(Return(texture_id));
 
@@ -3198,8 +3351,14 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
   const unsigned kTextureId = 123u;
   const unsigned kImageId = 234u;
 
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager_.get(),
+                               NULL,
+                               0,
+                               false,
+                               1,
+                               false));
 
   id = resource_provider->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
@@ -3284,8 +3443,14 @@ TEST_P(ResourceProviderTest, Image_Bitmap) {
   ResourceProvider::ResourceId id = 0;
   const uint32_t kBadBeef = 0xbadbeef;
 
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager_.get(),
+                               NULL,
+                               0,
+                               false,
+                               1,
+                               false));
 
   id = resource_provider->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
@@ -3335,8 +3500,14 @@ TEST_P(ResourceProviderTest, CopyResource_GLTexture) {
   const unsigned kDestTextureId = 321u;
   const unsigned kImageId = 234u;
 
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager_.get(),
+                               NULL,
+                               0,
+                               false,
+                               1,
+                               false));
 
   source_id = resource_provider->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
@@ -3408,8 +3579,14 @@ TEST_P(ResourceProviderTest, CopyResource_Bitmap) {
   ResourceProvider::ResourceId dest_id = 0;
   const uint32_t kBadBeef = 0xbadbeef;
 
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager_.get(),
+                               NULL,
+                               0,
+                               false,
+                               1,
+                               false));
 
   source_id = resource_provider->CreateResource(
       size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
@@ -3471,8 +3648,14 @@ TEST(ResourceProviderTest, BasicInitializeGLSoftware) {
   EXPECT_TRUE(output_surface->BindToClient(&client));
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager.get(), 0, false, 1, false));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(),
+                               shared_bitmap_manager.get(),
+                               NULL,
+                               0,
+                               false,
+                               1,
+                               false));
 
   CheckCreateResource(ResourceProvider::Bitmap, resource_provider.get(), NULL);
 
@@ -3507,6 +3690,7 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Allocate) {
   scoped_ptr<ResourceProvider> resource_provider(
       ResourceProvider::Create(output_surface.get(),
                                shared_bitmap_manager_.get(),
+                               NULL,
                                0,
                                false,
                                1,
@@ -3542,6 +3726,7 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1SetPixels) {
   scoped_ptr<ResourceProvider> resource_provider(
       ResourceProvider::Create(output_surface.get(),
                                shared_bitmap_manager_.get(),
+                               NULL,
                                0,
                                false,
                                1,
@@ -3602,6 +3787,7 @@ TEST(ResourceProviderTest, TextureAllocationChunkSize) {
     scoped_ptr<ResourceProvider> resource_provider(
         ResourceProvider::Create(output_surface.get(),
                                  shared_bitmap_manager.get(),
+                                 NULL,
                                  0,
                                  false,
                                  kTextureAllocationChunkSize,
@@ -3621,6 +3807,7 @@ TEST(ResourceProviderTest, TextureAllocationChunkSize) {
     scoped_ptr<ResourceProvider> resource_provider(
         ResourceProvider::Create(output_surface.get(),
                                  shared_bitmap_manager.get(),
+                                 NULL,
                                  0,
                                  false,
                                  kTextureAllocationChunkSize,

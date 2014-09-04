@@ -202,8 +202,14 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
 
     scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
         new TestSharedBitmapManager());
-    scoped_ptr<ResourceProvider> resource_provider = ResourceProvider::Create(
-        output_surface.get(), shared_bitmap_manager.get(), 0, false, 1, false);
+    scoped_ptr<ResourceProvider> resource_provider =
+        ResourceProvider::Create(output_surface.get(),
+                                 shared_bitmap_manager.get(),
+                                 NULL,
+                                 0,
+                                 false,
+                                 1,
+                                 false);
 
     FakePictureLayerTilingClient client(resource_provider.get());
     client.SetTileSize(gfx::Size(256, 256));

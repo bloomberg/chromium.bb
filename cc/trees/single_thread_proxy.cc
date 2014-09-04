@@ -192,7 +192,8 @@ void SingleThreadProxy::DoCommit(const BeginFrameArgs& begin_frame_args) {
     // This CapturePostTasks should be destroyed before CommitComplete() is
     // called since that goes out to the embedder, and we want the embedder
     // to receive its callbacks before that.
-    BlockingTaskRunner::CapturePostTasks blocked;
+    BlockingTaskRunner::CapturePostTasks blocked(
+        blocking_main_thread_task_runner());
 
     layer_tree_host_impl_->BeginCommit();
 
@@ -308,7 +309,8 @@ void SingleThreadProxy::Stop() {
     DebugScopedSetMainThreadBlocked main_thread_blocked(this);
     DebugScopedSetImplThread impl(this);
 
-    BlockingTaskRunner::CapturePostTasks blocked;
+    BlockingTaskRunner::CapturePostTasks blocked(
+        blocking_main_thread_task_runner());
     layer_tree_host_->DeleteContentsTexturesOnImplThread(
         layer_tree_host_impl_->resource_provider());
     scheduler_on_impl_thread_.reset();
@@ -534,7 +536,8 @@ DrawResult SingleThreadProxy::DoComposite(base::TimeTicks frame_begin_time,
     // the swap buffers will execute first.
     DebugScopedSetMainThreadBlocked main_thread_blocked(this);
 
-    BlockingTaskRunner::CapturePostTasks blocked;
+    BlockingTaskRunner::CapturePostTasks blocked(
+        blocking_main_thread_task_runner());
     layer_tree_host_impl_->SwapBuffers(*frame);
   }
   DidCommitAndDrawFrame();

@@ -9,6 +9,7 @@
 #include "cc/layers/delegated_frame_resource_collection.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/transferable_resource.h"
+#include "cc/trees/blocking_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -80,8 +81,9 @@ TEST_F(DelegatedFrameResourceCollectionTest, NoRef) {
 
 void ReturnResourcesOnThread(ReturnCallback callback,
                              const ReturnedResourceArray& resources,
-                             base::WaitableEvent* event) {
-  callback.Run(resources);
+                             base::WaitableEvent* event,
+                             BlockingTaskRunner* main_thread_task_runner) {
+  callback.Run(resources, main_thread_task_runner);
   if (event)
     event->Wait();
 }
@@ -92,6 +94,8 @@ void ReturnResourcesOnThread(ReturnCallback callback,
 TEST_F(DelegatedFrameResourceCollectionTest, Thread) {
   base::Thread thread("test thread");
   thread.Start();
+  scoped_ptr<BlockingTaskRunner> main_thread_task_runner(
+      BlockingTaskRunner::Create(base::MessageLoopProxy::current()));
 
   TransferableResourceArray resources = CreateResourceArray();
   resource_collection_->ReceivedResources(resources);
@@ -112,7 +116,8 @@ TEST_F(DelegatedFrameResourceCollectionTest, Thread) {
             &ReturnResourcesOnThread,
             resource_collection_->GetReturnResourcesCallbackForImplThread(),
             returned_resources,
-            &event));
+            &event,
+            main_thread_task_runner.get()));
 
     run_loop.Run();
   }
@@ -151,7 +156,8 @@ TEST_F(DelegatedFrameResourceCollectionTest, Thread) {
                                   base::Bind(&ReturnResourcesOnThread,
                                              return_callback,
                                              returned_resources,
-                                             null_event));
+                                             null_event,
+                                             main_thread_task_runner.get()));
 
   thread.Stop();
 }

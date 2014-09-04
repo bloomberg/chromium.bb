@@ -18,6 +18,7 @@
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_manager.h"
+#include "cc/trees/blocking_task_runner.h"
 
 namespace cc {
 
@@ -54,6 +55,12 @@ class SurfaceAggregator::RenderPassIdAllocator {
   DISALLOW_COPY_AND_ASSIGN(RenderPassIdAllocator);
 };
 
+static void UnrefHelper(base::WeakPtr<SurfaceFactory> surface_factory,
+                        const ReturnedResourceArray& resources,
+                        BlockingTaskRunner* main_thread_task_runner) {
+  surface_factory->UnrefResources(resources);
+}
+
 RenderPassId SurfaceAggregator::RemapPassId(RenderPassId surface_local_pass_id,
                                             SurfaceId surface_id) {
   RenderPassIdAllocator* allocator = render_pass_allocator_map_.get(surface_id);
@@ -69,8 +76,8 @@ int SurfaceAggregator::ChildIdForSurface(Surface* surface) {
   SurfaceToResourceChildIdMap::iterator it =
       surface_id_to_resource_child_id_.find(surface->surface_id());
   if (it == surface_id_to_resource_child_id_.end()) {
-    int child_id = provider_->CreateChild(base::Bind(
-        &SurfaceFactory::UnrefResources, surface->factory()->AsWeakPtr()));
+    int child_id = provider_->CreateChild(
+        base::Bind(&UnrefHelper, surface->factory()->AsWeakPtr()));
     surface_id_to_resource_child_id_[surface->surface_id()] = child_id;
     return child_id;
   } else {

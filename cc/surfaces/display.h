@@ -20,6 +20,7 @@ class Size;
 
 namespace cc {
 
+class BlockingTaskRunner;
 class DirectRenderer;
 class DisplayClient;
 class OutputSurface;
@@ -88,6 +89,7 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<SurfaceAggregator> aggregator_;
   scoped_ptr<DirectRenderer> renderer_;
+  scoped_ptr<BlockingTaskRunner> blocking_main_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(Display);
 };

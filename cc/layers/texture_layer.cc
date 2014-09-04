@@ -12,6 +12,7 @@
 #include "cc/layers/texture_layer_client.h"
 #include "cc/layers/texture_layer_impl.h"
 #include "cc/resources/single_release_callback.h"
+#include "cc/resources/single_release_callback_impl.h"
 #include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/layer_tree_host.h"
 
@@ -244,13 +245,14 @@ void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
   texture_layer->SetBlendBackgroundColor(blend_background_color_);
   if (needs_set_mailbox_) {
     TextureMailbox texture_mailbox;
-    scoped_ptr<SingleReleaseCallback> release_callback;
+    scoped_ptr<SingleReleaseCallbackImpl> release_callback_impl;
     if (holder_ref_) {
       TextureMailboxHolder* holder = holder_ref_->holder();
       texture_mailbox = holder->mailbox();
-      release_callback = holder->GetCallbackForImplThread();
+      release_callback_impl = holder->GetCallbackForImplThread();
     }
-    texture_layer->SetTextureMailbox(texture_mailbox, release_callback.Pass());
+    texture_layer->SetTextureMailbox(texture_mailbox,
+                                     release_callback_impl.Pass());
     needs_set_mailbox_ = false;
   }
 }
@@ -279,12 +281,12 @@ TextureLayer::TextureMailboxHolder::MainThreadReference::
 TextureLayer::TextureMailboxHolder::TextureMailboxHolder(
     const TextureMailbox& mailbox,
     scoped_ptr<SingleReleaseCallback> release_callback)
-    : message_loop_(BlockingTaskRunner::current()),
-      internal_references_(0),
+    : internal_references_(0),
       mailbox_(mailbox),
       release_callback_(release_callback.Pass()),
       sync_point_(mailbox.sync_point()),
-      is_lost_(false) {}
+      is_lost_(false) {
+}
 
 TextureLayer::TextureMailboxHolder::~TextureMailboxHolder() {
   DCHECK_EQ(0u, internal_references_);
@@ -305,13 +307,13 @@ void TextureLayer::TextureMailboxHolder::Return(uint32 sync_point,
   is_lost_ = is_lost;
 }
 
-scoped_ptr<SingleReleaseCallback>
+scoped_ptr<SingleReleaseCallbackImpl>
 TextureLayer::TextureMailboxHolder::GetCallbackForImplThread() {
   // We can't call GetCallbackForImplThread if we released the main thread
   // reference.
   DCHECK_GT(internal_references_, 0u);
   InternalAddRef();
-  return SingleReleaseCallback::Create(
+  return SingleReleaseCallbackImpl::Create(
       base::Bind(&TextureMailboxHolder::ReturnAndReleaseOnImplThread, this));
 }
 
@@ -320,7 +322,7 @@ void TextureLayer::TextureMailboxHolder::InternalAddRef() {
 }
 
 void TextureLayer::TextureMailboxHolder::InternalRelease() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   if (!--internal_references_) {
     release_callback_->Run(sync_point_, is_lost_);
     mailbox_ = TextureMailbox();
@@ -330,9 +332,10 @@ void TextureLayer::TextureMailboxHolder::InternalRelease() {
 
 void TextureLayer::TextureMailboxHolder::ReturnAndReleaseOnImplThread(
     uint32 sync_point,
-    bool is_lost) {
+    bool is_lost,
+    BlockingTaskRunner* main_thread_task_runner) {
   Return(sync_point, is_lost);
-  message_loop_->PostTask(
+  main_thread_task_runner->PostTask(
       FROM_HERE, base::Bind(&TextureMailboxHolder::InternalRelease, this));
 }
 

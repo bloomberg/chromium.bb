@@ -45,6 +45,7 @@ class PixelTest : public testing::Test, RendererClient {
   scoped_ptr<FakeOutputSurfaceClient> output_surface_client_;
   scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  scoped_ptr<BlockingTaskRunner> main_thread_task_runner_;
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;
   scoped_ptr<DirectRenderer> renderer_;

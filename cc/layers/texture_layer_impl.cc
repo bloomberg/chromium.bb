@@ -11,7 +11,7 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/platform_color.h"
 #include "cc/resources/scoped_resource.h"
-#include "cc/resources/single_release_callback.h"
+#include "cc/resources/single_release_callback_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion_tracker.h"
 
@@ -37,7 +37,7 @@ TextureLayerImpl::~TextureLayerImpl() { FreeTextureMailbox(); }
 
 void TextureLayerImpl::SetTextureMailbox(
     const TextureMailbox& mailbox,
-    scoped_ptr<SingleReleaseCallback> release_callback) {
+    scoped_ptr<SingleReleaseCallbackImpl> release_callback) {
   DCHECK_EQ(mailbox.IsValid(), !!release_callback);
   FreeTextureMailbox();
   texture_mailbox_ = mailbox;
@@ -240,8 +240,11 @@ const char* TextureLayerImpl::LayerTypeAsString() const {
 void TextureLayerImpl::FreeTextureMailbox() {
   if (own_mailbox_) {
     DCHECK(!external_texture_resource_);
-    if (release_callback_)
-      release_callback_->Run(texture_mailbox_.sync_point(), false);
+    if (release_callback_) {
+      release_callback_->Run(texture_mailbox_.sync_point(),
+                             false,
+                             layer_tree_impl()->BlockingMainThreadTaskRunner());
+    }
     texture_mailbox_ = TextureMailbox();
     release_callback_.reset();
   } else if (external_texture_resource_) {

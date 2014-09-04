@@ -9,7 +9,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/resources/release_callback.h"
+#include "cc/resources/release_callback_impl.h"
 #include "cc/resources/video_resource_updater.h"
 #include "media/base/video_rotation.h"
 
@@ -70,7 +70,7 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
   // ExternalResource (aka TextureMailbox) classes.
   std::vector<unsigned> software_resources_;
   // Called once for each software resource.
-  ReleaseCallback software_release_callback_;
+  ReleaseCallbackImpl software_release_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoLayerImpl);
 };

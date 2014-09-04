@@ -18,6 +18,7 @@
 #include "cc/layers/video_layer.h"
 #include "cc/layers/video_layer_impl.h"
 #include "cc/output/filter_operations.h"
+#include "cc/resources/single_release_callback.h"
 #include "cc/test/fake_content_layer.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_content_layer_impl.h"
@@ -689,9 +690,14 @@ class LayerTreeHostContextTestDontUseLostResources
     child_output_surface_ = FakeOutputSurface::Create3d();
     child_output_surface_->BindToClient(&output_surface_client_);
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
-    child_resource_provider_ = ResourceProvider::Create(
-        child_output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1,
-        false);
+    child_resource_provider_ =
+        ResourceProvider::Create(child_output_surface_.get(),
+                                 shared_bitmap_manager_.get(),
+                                 NULL,
+                                 0,
+                                 false,
+                                 1,
+                                 false);
   }
 
   static void EmptyReleaseCallback(unsigned sync_point, bool lost) {}

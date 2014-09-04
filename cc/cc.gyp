@@ -428,6 +428,8 @@
         'resources/shared_bitmap_manager.h',
         'resources/single_release_callback.cc',
         'resources/single_release_callback.h',
+        'resources/single_release_callback_impl.cc',
+        'resources/single_release_callback_impl.h',
         'resources/skpicture_content_layer_updater.cc',
         'resources/skpicture_content_layer_updater.h',
         'resources/task_graph_runner.cc',

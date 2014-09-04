@@ -24,7 +24,6 @@ DelegatedRendererLayer::DelegatedRendererLayer(
       frame_provider_(frame_provider),
       should_collect_new_frame_(true),
       frame_data_(NULL),
-      main_thread_runner_(BlockingTaskRunner::current()),
       weak_ptrs_(this) {
   frame_provider_->AddObserver(this);
 }
