@@ -2150,6 +2150,10 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   # objects.
   target_short_names = {}
 
+  # short name of targets that were skipped because they didn't contain anything
+  # interesting.
+  empty_target_names = []
+
   for qualified_target in target_list:
     # qualified_target is like: third_party/icu/icu.gyp:icui18n#target
     build_file, name, toolset = \
@@ -2193,6 +2197,8 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       target_outputs[qualified_target] = target
       if qualified_target in all_targets:
         all_outputs.add(target.FinalOutput())
+    else:
+      empty_target_names.append(name)
 
   if target_short_names:
     # Write a short name to build this target.  This benefits both the
@@ -2203,6 +2209,15 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     for short_name in target_short_names:
       master_ninja.build(short_name, 'phony', [x.FinalOutput() for x in
                                                target_short_names[short_name]])
+
+  if empty_target_names:
+    # Write out any targets that were skipped because they didn't contain
+    # anything interesting. This way the targets can still be built without
+    # causing build errors.
+    master_ninja.newline()
+    master_ninja.comment('Empty targets (output for completeness).')
+    for name in sorted(empty_target_names):
+      master_ninja.build(name, 'phony')
 
   if all_outputs:
     master_ninja.newline()
