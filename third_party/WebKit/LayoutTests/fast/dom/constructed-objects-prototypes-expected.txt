@@ -1,13 +1,13 @@
-CONSOLE WARNING: line 26: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
-CONSOLE WARNING: line 26: 'webkitIDBTransaction' is deprecated. Please use 'IDBTransaction' instead.
-CONSOLE WARNING: line 26: 'webkitIDBRequest' is deprecated. Please use 'IDBRequest' instead.
-CONSOLE WARNING: line 26: 'webkitIDBObjectStore' is deprecated. Please use 'IDBObjectStore' instead.
-CONSOLE WARNING: line 26: 'webkitIDBKeyRange' is deprecated. Please use 'IDBKeyRange' instead.
-CONSOLE WARNING: line 26: 'webkitIDBIndex' is deprecated. Please use 'IDBIndex' instead.
-CONSOLE WARNING: line 26: 'webkitIDBFactory' is deprecated. Please use 'IDBFactory' instead.
-CONSOLE WARNING: line 26: 'webkitIDBDatabase' is deprecated. Please use 'IDBDatabase' instead.
-CONSOLE WARNING: line 26: 'webkitIDBCursor' is deprecated. Please use 'IDBCursor' instead.
-CONSOLE WARNING: line 26: 'webkitIndexedDB' is deprecated. Please use 'indexedDB' instead.
+CONSOLE WARNING: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: 'webkitIDBTransaction' is deprecated. Please use 'IDBTransaction' instead.
+CONSOLE WARNING: 'webkitIDBRequest' is deprecated. Please use 'IDBRequest' instead.
+CONSOLE WARNING: 'webkitIDBObjectStore' is deprecated. Please use 'IDBObjectStore' instead.
+CONSOLE WARNING: 'webkitIDBKeyRange' is deprecated. Please use 'IDBKeyRange' instead.
+CONSOLE WARNING: 'webkitIDBIndex' is deprecated. Please use 'IDBIndex' instead.
+CONSOLE WARNING: 'webkitIDBFactory' is deprecated. Please use 'IDBFactory' instead.
+CONSOLE WARNING: 'webkitIDBDatabase' is deprecated. Please use 'IDBDatabase' instead.
+CONSOLE WARNING: 'webkitIDBCursor' is deprecated. Please use 'IDBCursor' instead.
+CONSOLE WARNING: 'webkitIndexedDB' is deprecated. Please use 'indexedDB' instead.
 Make sure prototypes are set up using the window a property came from, instead of the lexical global object.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

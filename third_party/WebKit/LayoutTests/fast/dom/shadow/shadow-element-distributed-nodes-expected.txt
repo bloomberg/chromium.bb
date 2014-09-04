@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 17: <shadow> doesn't work for DETAILS element host.
+CONSOLE WARNING: <shadow> doesn't work for DETAILS element host.
 Tests for a shadow element's getDistributedNodes().
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 1: 'NodeIterator.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-nodeiterator-detach).
+CONSOLE WARNING: 'NodeIterator.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-nodeiterator-detach).
 This test checks that NodeIterator.detach() is a no-op.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

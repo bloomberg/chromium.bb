@@ -1,32 +1,32 @@
-CONSOLE DEBUG: line 11: Timeline 'one' started.
-CONSOLE DEBUG: line 13: Timeline 'one' finished.
-CONSOLE DEBUG: line 20: Timeline 'one' started.
-CONSOLE DEBUG: line 22: Timeline 'one' started.
-CONSOLE DEBUG: line 23: Timeline 'two' started.
-CONSOLE DEBUG: line 24: Timeline 'two' started.
-CONSOLE DEBUG: line 25: Timeline 'two' finished.
-CONSOLE DEBUG: line 27: Timeline 'one' finished.
-CONSOLE DEBUG: line 29: Timeline 'two' finished.
-CONSOLE DEBUG: line 31: Timeline 'one' finished.
-CONSOLE DEBUG: line 38: Timeline 'one' started.
-CONSOLE DEBUG: line 40: Timeline 'two' started.
-CONSOLE DEBUG: line 47: Timeline 'two' finished.
-CONSOLE DEBUG: line 54: Timeline 'one' finished.
-CONSOLE DEBUG: line 61: Timeline 'one' started.
-CONSOLE DEBUG: line 63: Timeline 'two' was not started.
-CONSOLE DEBUG: line 65: Timeline 'one' finished.
-CONSOLE DEBUG: line 11: Timeline 'one' started.
-CONSOLE DEBUG: line 13: Timeline 'one' finished.
-CONSOLE DEBUG: line 72: Timeline 'one' started.
-CONSOLE DEBUG: line 74: Timeline 'two' started.
+CONSOLE DEBUG: Timeline 'one' started.
+CONSOLE DEBUG: Timeline 'one' finished.
+CONSOLE DEBUG: Timeline 'one' started.
+CONSOLE DEBUG: Timeline 'one' started.
+CONSOLE DEBUG: Timeline 'two' started.
+CONSOLE DEBUG: Timeline 'two' started.
+CONSOLE DEBUG: Timeline 'two' finished.
+CONSOLE DEBUG: Timeline 'one' finished.
+CONSOLE DEBUG: Timeline 'two' finished.
+CONSOLE DEBUG: Timeline 'one' finished.
+CONSOLE DEBUG: Timeline 'one' started.
+CONSOLE DEBUG: Timeline 'two' started.
+CONSOLE DEBUG: Timeline 'two' finished.
+CONSOLE DEBUG: Timeline 'one' finished.
+CONSOLE DEBUG: Timeline 'one' started.
+CONSOLE DEBUG: Timeline 'two' was not started.
+CONSOLE DEBUG: Timeline 'one' finished.
+CONSOLE DEBUG: Timeline 'one' started.
+CONSOLE DEBUG: Timeline 'one' finished.
+CONSOLE DEBUG: Timeline 'one' started.
+CONSOLE DEBUG: Timeline 'two' started.
 CONSOLE DEBUG: Timeline 'one' terminated.
 CONSOLE DEBUG: Timeline 'two' terminated.
-CONSOLE DEBUG: line 72: Timeline 'one' started.
-CONSOLE DEBUG: line 74: Timeline 'two' started.
+CONSOLE DEBUG: Timeline 'one' started.
+CONSOLE DEBUG: Timeline 'two' started.
 CONSOLE DEBUG: Timeline 'one' terminated.
 CONSOLE DEBUG: Timeline 'two' terminated.
-CONSOLE DEBUG: line 72: Timeline 'one' started.
-CONSOLE DEBUG: line 74: Timeline 'two' started.
+CONSOLE DEBUG: Timeline 'one' started.
+CONSOLE DEBUG: Timeline 'two' started.
 CONSOLE DEBUG: Timeline 'one' terminated.
 CONSOLE DEBUG: Timeline 'two' terminated.
 Tests console.timeline and timelineEnd commands.

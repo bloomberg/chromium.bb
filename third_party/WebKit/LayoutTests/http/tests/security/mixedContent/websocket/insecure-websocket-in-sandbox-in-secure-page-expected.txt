@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 12: [blocked] The page at 'https://127.0.0.1:8443/security/mixedContent/websocket/resources/sandboxed-expect-throw-on-construction.html' was loaded over HTTPS, but ran insecure content from 'ws://127.0.0.1:8880/echo': this content should also be loaded over HTTPS.
+CONSOLE ERROR: [blocked] The page at 'https://127.0.0.1:8443/security/mixedContent/websocket/resources/sandboxed-expect-throw-on-construction.html' was loaded over HTTPS, but ran insecure content from 'ws://127.0.0.1:8880/echo': this content should also be loaded over HTTPS.
 
 This is a testharness.js-based test.
 PASS Test that when a HTTPS window that creates an insecure WebSocket connection is opened, the mixed content callback is triggered because the main frame in the window is HTTPS but is trying connecting to an insecure WebSocket server. 

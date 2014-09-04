@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 118: 'Range.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-range-detach).
+CONSOLE WARNING: 'Range.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-range-detach).
 test 1 passed: start before range, end before range
 test 2 passed: start before range, end on range start
 test 3 passed: start before range, end in range

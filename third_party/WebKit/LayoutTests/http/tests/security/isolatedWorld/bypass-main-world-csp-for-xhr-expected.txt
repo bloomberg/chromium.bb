@@ -1,10 +1,10 @@
-CONSOLE ERROR: line 95: Refused to connect to 'http://localhost:8000/security/isolatedWorld/resources/cross-origin-xhr.txt' because it violates the following Content Security Policy directive: "connect-src 'none'".
+CONSOLE ERROR: Refused to connect to 'http://localhost:8000/security/isolatedWorld/resources/cross-origin-xhr.txt' because it violates the following Content Security Policy directive: "connect-src 'none'".
 
-CONSOLE ERROR: line 13: Refused to connect to 'http://localhost:8000/security/isolatedWorld/resources/cross-origin-xhr.txt' because it violates the following Content Security Policy directive: "connect-src 'none'".
+CONSOLE ERROR: Refused to connect to 'http://localhost:8000/security/isolatedWorld/resources/cross-origin-xhr.txt' because it violates the following Content Security Policy directive: "connect-src 'none'".
 
-CONSOLE ERROR: line 13: Refused to connect to 'http://localhost:8000/security/isolatedWorld/resources/cross-origin-xhr.txt' because it violates the following Content Security Policy directive: "connect-src 'none'".
+CONSOLE ERROR: Refused to connect to 'http://localhost:8000/security/isolatedWorld/resources/cross-origin-xhr.txt' because it violates the following Content Security Policy directive: "connect-src 'none'".
 
-CONSOLE ERROR: line 95: Refused to connect to 'http://localhost:8000/security/isolatedWorld/resources/cross-origin-xhr.txt' because it violates the following Content Security Policy directive: "connect-src 'none'".
+CONSOLE ERROR: Refused to connect to 'http://localhost:8000/security/isolatedWorld/resources/cross-origin-xhr.txt' because it violates the following Content Security Policy directive: "connect-src 'none'".
 
 Tests that isolated worlds can have XHRs that the page's CSP wouldn't allow.
 

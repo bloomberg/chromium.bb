@@ -1,11 +1,11 @@
-CONSOLE ERROR: line 1: Error: Invalid value for <rect> attribute x=" "
-CONSOLE ERROR: line 1: Error: Invalid value for <rect> attribute x="foo"
-CONSOLE ERROR: line 1: Error: Invalid value for <rect> attribute x="10foo"
-CONSOLE ERROR: line 1: Error: Invalid value for <rect> attribute x="px"
-CONSOLE ERROR: line 1: Error: Invalid value for <rect> attribute x="10 % "
-CONSOLE ERROR: line 1: Error: Invalid value for <rect> attribute x="10 %"
-CONSOLE ERROR: line 1: Error: Invalid value for <rect> attribute x="10 px "
-CONSOLE ERROR: line 1: Error: Invalid value for <rect> attribute x="10 px"
+CONSOLE ERROR: Error: Invalid value for <rect> attribute x=" "
+CONSOLE ERROR: Error: Invalid value for <rect> attribute x="foo"
+CONSOLE ERROR: Error: Invalid value for <rect> attribute x="10foo"
+CONSOLE ERROR: Error: Invalid value for <rect> attribute x="px"
+CONSOLE ERROR: Error: Invalid value for <rect> attribute x="10 % "
+CONSOLE ERROR: Error: Invalid value for <rect> attribute x="10 %"
+CONSOLE ERROR: Error: Invalid value for <rect> attribute x="10 px "
+CONSOLE ERROR: Error: Invalid value for <rect> attribute x="10 px"
 Tests handling of invalid SVG length units.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

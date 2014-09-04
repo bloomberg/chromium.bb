@@ -1,834 +1,834 @@
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="E"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e+"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="E-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="E "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e+ "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="E- "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="- "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+ "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-. "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".- "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=". "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+. "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e1 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".1 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="E   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e+   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="E-   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-.   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".-   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+.   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e1   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".1   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e+"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e+ "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+ "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-. "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=". "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+. "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e+   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-.   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+.   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="E
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e+
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e+
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="E-
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E-
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-.
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-.
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".-
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".-
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+.
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+.
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e1
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e1
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".1
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".1
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="E"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e+"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="E-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".1"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="-47a"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="0a"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="+32a"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245a"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="-47e"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="0e"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="+32e"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245e"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="-47foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="0foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="+32foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="-47)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="0)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="+32)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245)90"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" NaN"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" Infinity"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" -Infinity"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" fnord"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" E"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" e"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" e+"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" E-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" -"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" +"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" -."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" .-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" ."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" +."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" .E0"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" e1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" +17E-1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" 17e+2"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0.35"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1e-10"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" .1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" NaN "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" Infinity "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" -Infinity "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" fnord "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" E "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" e "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" e+ "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" E- "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" - "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" + "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" -. "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" .- "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" . "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" +. "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" .E0 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" e1 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" +17E-1 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" 17e+2 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0.35 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1e-10 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" .1 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" NaN   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" Infinity   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" -Infinity   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" fnord   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" E   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" e   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" e+   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" E-   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" -   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" +   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" -.   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" .-   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" .   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" +.   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" .E0   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" e1   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" +17E-1   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" 17e+2   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0.35   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1e-10   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" .1   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" NaN
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e+"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-47a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+32a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-47e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+32e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-47foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+32foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-47)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+32)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" NaN"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" fnord"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" E"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e+"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" E-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" ."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .E0"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +17E-1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 17e+2"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0.35"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1e-10"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" NaN "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" Infinity "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -Infinity "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" fnord "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" E "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e+ "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" E- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" - "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" + "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -. "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" . "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +. "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .E0 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +17E-1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 17e+2 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0.35 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1e-10 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" NaN   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" Infinity   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -Infinity   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" fnord   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" E   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e+   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" E-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -.   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +.   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .E0   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +17E-1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 17e+2   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0.35   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1e-10   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" NaN
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" Infinity
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" Infinity
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" -Infinity
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -Infinity
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" fnord
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" fnord
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" E
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" E
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" e
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" e+
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e+
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" E-
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" E-
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" -
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" +
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" -.
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -.
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" .-
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .-
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" .
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" +.
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +.
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" .E0
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .E0
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" e1
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e1
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" +17E-1
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +17E-1
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" 17e+2
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 17e+2
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0.35
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0.35
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1e-10
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1e-10
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" .1
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .1
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" NaN"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" Infinity"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" -Infinity"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" fnord"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" E"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" e"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" e+"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" E-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" -"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" +"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" -."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" .-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" ."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" +."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" .E0"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" e1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" +17E-1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" 17e+2"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0.35"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1e-10"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=" .1"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves=" -47a"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0a"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves=" +32a"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1241245a"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves=" -47e"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0e"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves=" +32e"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1241245e"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves=" -47foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves=" +32foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1241245foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves=" -47)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves=" +32)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1241245)90"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   NaN"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   Infinity"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   -Infinity"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   fnord"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   E"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   e"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   e+"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   E-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   -"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   +"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   -."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   .-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   ."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   +."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   .E0"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   e1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   +17E-1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   17e+2"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   0.35"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   1e-10"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   .1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   NaN "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   Infinity "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   -Infinity "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   fnord "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   E "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   e "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   e+ "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   E- "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   - "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   + "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   -. "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   .- "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   . "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   +. "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   .E0 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   e1 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   +17E-1 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   17e+2 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   0.35 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   1e-10 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   .1 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   NaN   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   Infinity   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   -Infinity   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   fnord   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   E   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   e   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   e+   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   E-   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   -   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   +   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   -.   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   .-   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   .   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   +.   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   .E0   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   e1   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   +17E-1   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   17e+2   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   0.35   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   1e-10   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   .1   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   NaN
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" NaN"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" fnord"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" E"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e+"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" E-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" ."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .E0"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +17E-1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 17e+2"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0.35"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1e-10"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -47a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +32a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1241245a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -47e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +32e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1241245e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -47foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +32foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1241245foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -47)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +32)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1241245)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   NaN"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   fnord"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   E"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e+"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   E-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   ."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .E0"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +17E-1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   17e+2"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   0.35"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   1e-10"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   NaN "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   Infinity "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -Infinity "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   fnord "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   E "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e+ "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   E- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   - "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   + "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -. "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   . "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +. "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .E0 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +17E-1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   17e+2 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   0.35 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   1e-10 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   NaN   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   Infinity   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -Infinity   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   fnord   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   E   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e+   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   E-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -.   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +.   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .E0   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +17E-1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   17e+2   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   0.35   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   1e-10   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   NaN
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   Infinity
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   Infinity
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   -Infinity
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -Infinity
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   fnord
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   fnord
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   E
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   E
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   e
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   e+
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e+
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   E-
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   E-
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   -
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   +
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   -.
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -.
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   .-
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .-
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   .
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   +.
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +.
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   .E0
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .E0
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   e1
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e1
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   +17E-1
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +17E-1
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   17e+2
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   17e+2
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   0.35
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   0.35
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   1e-10
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   1e-10
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   .1
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .1
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   NaN"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   Infinity"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   -Infinity"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   fnord"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   E"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   e"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   e+"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   E-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   -"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   +"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   -."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   .-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   ."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   +."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   .E0"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   e1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   +17E-1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   17e+2"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   0.35"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   1e-10"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="   .1"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="   -47a"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="   0a"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="   +32a"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="   1241245a"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="   -47e"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="   0e"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="   +32e"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="   1241245e"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="   -47foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="   0foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="   +32foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="   1241245foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="   -47)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="   0)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="   +32)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="   1241245)90"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   NaN"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   fnord"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   E"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e+"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   E-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   ."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .E0"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +17E-1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   17e+2"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   0.35"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   1e-10"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -47a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   0a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +32a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   1241245a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -47e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   0e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +32e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   1241245e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -47foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   0foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +32foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   1241245foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -47)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   0)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +32)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   1241245)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 NaN"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 Infinity"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 -Infinity"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 fnord"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 E"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 e"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 e+"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 E-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 -"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 +"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 -."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 .-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 ."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 +."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 .E0"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 e1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 +17E-1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 17e+2"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 0.35"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 1e-10"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 .1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 NaN "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 Infinity "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 -Infinity "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 fnord "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 E "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 e "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 e+ "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 E- "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 - "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 + "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 -. "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 .- "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 . "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 +. "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 .E0 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 e1 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 +17E-1 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 17e+2 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 0.35 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 1e-10 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 .1 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 NaN   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 Infinity   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 -Infinity   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 fnord   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 E   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 e   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 e+   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 E-   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 -   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 +   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 -.   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 .-   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 .   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 +.   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 .E0   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 e1   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 +17E-1   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 17e+2   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 0.35   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 1e-10   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 .1   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 NaN
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 Infinity
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 -Infinity
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 fnord
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 E
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 e
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 e+
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 E-
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 -
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 +
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 -.
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 .-
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 .
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 +.
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 .E0
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 e1
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 +17E-1
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 17e+2
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 0.35
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 1e-10
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 .1
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 NaN"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 Infinity"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 -Infinity"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 fnord"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 E"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 e"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 e+"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 E-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 -"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 +"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 -."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 .-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 ."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 +."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 .E0"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 e1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 +17E-1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 17e+2"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 0.35"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 1e-10"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 .1"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 -47a"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 0a"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 +32a"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 1241245a"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 -47e"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 0e"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 +32e"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 1241245e"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 -47foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 0foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 +32foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 1241245foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 -47)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 0)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 +32)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="
 	 1241245)90"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="E"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e+"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="E-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="E "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e+ "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="E- "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="- "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+ "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-. "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".- "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=". "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+. "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e1 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".1 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="E   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e+   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="E-   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-.   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".-   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+.   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e1   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".1   "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e+"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e+ "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+ "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-. "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=". "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+. "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e+   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-.   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+.   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="E
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e+
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e+
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="E-
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E-
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-.
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-.
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".-
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".-
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+.
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+.
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e1
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e1
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".1
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".1
 	 "
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="E"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e+"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="E-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="-."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".-"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+."
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="e1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10"
-CONSOLE ERROR: line 42: Error: Invalid value for <feTurbulence> attribute numOctaves=".1"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="-47a"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="0a"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="+32a"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245a"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="-47e"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="0e"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="+32e"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245e"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="-47foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="0foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="+32foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="-47)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="0)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="+32)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e+"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-47a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+32a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-47e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+32e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-47foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+32foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-47)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+32)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245)90"
  This is a testharness.js-based test.
 PASS Test <integer> valid value: -47 
 PASS Test <integer> valid value: 0 

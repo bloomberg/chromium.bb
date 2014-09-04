@@ -1,5 +1,5 @@
-CONSOLE WARNING: line 38: <shadow> doesn't work for KEYGEN element host.
-CONSOLE WARNING: line 38: <shadow> doesn't work for FIELDSET element host.
+CONSOLE WARNING: <shadow> doesn't work for KEYGEN element host.
+CONSOLE WARNING: <shadow> doesn't work for FIELDSET element host.
 When a AuthorShadowRoot is added, UserAgentShadowRoot should exists as the oldest Shadow Root.
 
 PASS oldestShadowRoot is not shadowRoot

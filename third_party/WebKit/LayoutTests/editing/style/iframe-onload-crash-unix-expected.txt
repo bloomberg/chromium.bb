@@ -1,5 +1,5 @@
-CONSOLE WARNING: line 32: We don't execute document.execCommand() this time, because it is called recursively.
-CONSOLE WARNING: line 33: We don't execute document.execCommand() this time, because it is called recursively.
-CONSOLE WARNING: line 34: We don't execute document.execCommand() this time, because it is called recursively.
-CONSOLE WARNING: line 35: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: line 19: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: line 19: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: line 19: We don't execute document.execCommand() this time, because it is called recursively.
+CONSOLE WARNING: line 19: We don't execute document.execCommand() this time, because it is called recursively.
 PASS

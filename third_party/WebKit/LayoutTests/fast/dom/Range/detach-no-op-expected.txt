@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 1: 'Range.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-range-detach).
+CONSOLE WARNING: 'Range.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-range-detach).
 Tests that Range.detach() is a no-op.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 1: 'KeyboardEvent.keyLocation' is deprecated. Please use 'KeyboardEvent.location' instead.
+CONSOLE WARNING: 'KeyboardEvent.keyLocation' is deprecated. Please use 'KeyboardEvent.location' instead.
 This tests the constructor for the KeyboardEvent DOM class.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

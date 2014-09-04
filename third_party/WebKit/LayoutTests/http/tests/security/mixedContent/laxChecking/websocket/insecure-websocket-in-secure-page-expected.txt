@@ -1,6 +1,6 @@
-CONSOLE WARNING: line 12: The page at 'https://127.0.0.1:8443/security/mixedContent/websocket/resources/expect-throw-on-construction.html' was loaded over HTTPS, but ran insecure content from 'ws://127.0.0.1:8880/echo': this content should also be loaded over HTTPS.
+CONSOLE WARNING: The page at 'https://127.0.0.1:8443/security/mixedContent/websocket/resources/expect-throw-on-construction.html' was loaded over HTTPS, but ran insecure content from 'ws://127.0.0.1:8880/echo': this content should also be loaded over HTTPS.
 
-CONSOLE WARNING: line 12: Connecting to a non-secure WebSocket server from a secure origin is deprecated.
+CONSOLE WARNING: Connecting to a non-secure WebSocket server from a secure origin is deprecated.
 This is a testharness.js-based test.
 FAIL Test that when a HTTPS window that creates an insecure WebSocket connection is opened, the mixed content callback is triggered because the main frame in the window is HTTPS but is trying connecting to an insecure WebSocket server. assert_equals: evt.data expected "DONE" but got "FAIL: No exception was thrown"
 Harness: the test ran to completion.

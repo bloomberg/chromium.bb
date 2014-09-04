@@ -1,5 +1,5 @@
-CONSOLE WARNING: line 38: Setting 'Element.prefix' is deprecated, as it is read-only per DOM (http://dom.spec.whatwg.org/#element).
-CONSOLE WARNING: line 38: 'HTMLHeadElement.profile' is deprecated. The reflected attribute has no effect.
+CONSOLE WARNING: Setting 'Element.prefix' is deprecated, as it is read-only per DOM (http://dom.spec.whatwg.org/#element).
+CONSOLE WARNING: 'HTMLHeadElement.profile' is deprecated. The reflected attribute has no effect.
 This test setting various attributes of a elements to JavaScript null.
 
 TEST SUCCEEDED: The value was null. [tested Node.nodeValue]

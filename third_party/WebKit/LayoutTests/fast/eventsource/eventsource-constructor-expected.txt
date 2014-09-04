@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 40: Refused to connect to 'http://disallowed.example.com/' because it violates the following Content Security Policy directive: "connect-src http://invalid http://127.0.0.1".
+CONSOLE ERROR: Refused to connect to 'http://disallowed.example.com/' because it violates the following Content Security Policy directive: "connect-src http://invalid http://127.0.0.1".
 
 Test EventSource constructor functionality. Should print a series of PASS messages followed by DONE.
 

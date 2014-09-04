@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 16: XMLHttpRequest cannot load http://127.0.0.1:8000/xmlhttprequest/resources/access-control-sandboxed-iframe-denied-without-wildcard.cgi. The 'Access-Control-Allow-Origin' header has a value 'http://127.0.0.1:8000' that is not equal to the supplied origin. Origin 'null' is therefore not allowed access.
+CONSOLE ERROR: XMLHttpRequest cannot load http://127.0.0.1:8000/xmlhttprequest/resources/access-control-sandboxed-iframe-denied-without-wildcard.cgi. The 'Access-Control-Allow-Origin' header has a value 'http://127.0.0.1:8000' that is not equal to the supplied origin. Origin 'null' is therefore not allowed access.
 This test verifies that sandboxed iframe does not have XmlHttpRequest access to its server with "Access-Control-Allow-Origin" set to its own origin (127.0.0.1).
 
 This test will print "PASS" on success.

@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 1: XMLHttpRequest cannot load http://127.0.0.1:8000/xmlhttprequest/resources/access-control-allow-lists.php?origin=null. The 'Access-Control-Allow-Origin' header contains the invalid value 'null'. Origin 'http://localhost:8000' is therefore not allowed access.
+CONSOLE ERROR: XMLHttpRequest cannot load http://127.0.0.1:8000/xmlhttprequest/resources/access-control-allow-lists.php?origin=null. The 'Access-Control-Allow-Origin' header contains the invalid value 'null'. Origin 'http://localhost:8000' is therefore not allowed access.
 
 
 --------

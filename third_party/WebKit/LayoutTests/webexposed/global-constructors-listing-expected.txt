@@ -1,13 +1,13 @@
-CONSOLE WARNING: line 28: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
-CONSOLE WARNING: line 28: 'webkitIDBTransaction' is deprecated. Please use 'IDBTransaction' instead.
-CONSOLE WARNING: line 28: 'webkitIDBRequest' is deprecated. Please use 'IDBRequest' instead.
-CONSOLE WARNING: line 28: 'webkitIDBObjectStore' is deprecated. Please use 'IDBObjectStore' instead.
-CONSOLE WARNING: line 28: 'webkitIDBKeyRange' is deprecated. Please use 'IDBKeyRange' instead.
-CONSOLE WARNING: line 28: 'webkitIDBIndex' is deprecated. Please use 'IDBIndex' instead.
-CONSOLE WARNING: line 28: 'webkitIDBFactory' is deprecated. Please use 'IDBFactory' instead.
-CONSOLE WARNING: line 28: 'webkitIDBDatabase' is deprecated. Please use 'IDBDatabase' instead.
-CONSOLE WARNING: line 28: 'webkitIDBCursor' is deprecated. Please use 'IDBCursor' instead.
-CONSOLE WARNING: line 28: 'webkitIndexedDB' is deprecated. Please use 'indexedDB' instead.
+CONSOLE WARNING: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: 'webkitIDBTransaction' is deprecated. Please use 'IDBTransaction' instead.
+CONSOLE WARNING: 'webkitIDBRequest' is deprecated. Please use 'IDBRequest' instead.
+CONSOLE WARNING: 'webkitIDBObjectStore' is deprecated. Please use 'IDBObjectStore' instead.
+CONSOLE WARNING: 'webkitIDBKeyRange' is deprecated. Please use 'IDBKeyRange' instead.
+CONSOLE WARNING: 'webkitIDBIndex' is deprecated. Please use 'IDBIndex' instead.
+CONSOLE WARNING: 'webkitIDBFactory' is deprecated. Please use 'IDBFactory' instead.
+CONSOLE WARNING: 'webkitIDBDatabase' is deprecated. Please use 'IDBDatabase' instead.
+CONSOLE WARNING: 'webkitIDBCursor' is deprecated. Please use 'IDBCursor' instead.
+CONSOLE WARNING: 'webkitIndexedDB' is deprecated. Please use 'indexedDB' instead.
 This test documents the Constructor properties on the global window object.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

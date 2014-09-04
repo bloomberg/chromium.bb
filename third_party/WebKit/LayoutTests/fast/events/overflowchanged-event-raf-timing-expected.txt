@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 31: The 'overflowchanged' event is deprecated and may be removed. Please do not use it.
+CONSOLE WARNING: The 'overflowchanged' event is deprecated and may be removed. Please do not use it.
 Tests that overflowchanged events are deferred until raf.
 
 layout

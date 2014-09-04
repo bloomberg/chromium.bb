@@ -1,5 +1,5 @@
-CONSOLE ERROR: line 1: Uncaught SyntaxError: Unexpected token }
-CONSOLE ERROR: line 2: Uncaught SyntaxError: Unexpected token }
+CONSOLE ERROR: line 8: Uncaught SyntaxError: Unexpected token }
+CONSOLE ERROR: line 12: Uncaught SyntaxError: Unexpected token }
 Tests that syntax errors in eval are logged into console, contains correct link and doesn't cause browser crash.
 
 VM:1 Uncaught SyntaxError: Unexpected token }

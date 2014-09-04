@@ -1,5 +1,5 @@
-CONSOLE ERROR: line 25: Discontiguous selection is not supported.
-CONSOLE ERROR: line 30: Discontiguous selection is not supported.
+CONSOLE ERROR: Discontiguous selection is not supported.
+CONSOLE ERROR: Discontiguous selection is not supported.
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600

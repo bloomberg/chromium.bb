@@ -1,2 +1,2 @@
-CONSOLE ERROR: line 18: The given range does not belong to the current selection's document.
+CONSOLE ERROR: line 25: The given range does not belong to the current selection's document.
 Test passes if it does not crash. 

@@ -1,486 +1,486 @@
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="-47a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=".1a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="0.35a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="1e-10a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="+32a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="+17E-1a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="17e+2a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="-47e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=".1e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="0.35e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="1e-10e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="+32e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="+17E-1e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="17e+2e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="-47foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=".1foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="0.35foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="1e-10foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="+32foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="+17E-1foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="17e+2foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="-47)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=".1)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="0.35)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="1e-10)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="+32)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="+17E-1)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="17e+2)90"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47 em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1 em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35 em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10 em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32 em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1 em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2 em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47 ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1 ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35 ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10 ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32 ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1 ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2 ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47 px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1 px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35 px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10 px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32 px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1 px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2 px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47 in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1 in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35 in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10 in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32 in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1 in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2 in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47 cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1 cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35 cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10 cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32 cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1 cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2 cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47 mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1 mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35 mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10 mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32 mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1 mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2 mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47 pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1 pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35 pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10 pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32 pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1 pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2 pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47 pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1 pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35 pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10 pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32 pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1 pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2 pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47 %"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1 %"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35 %"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10 %"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32 %"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1 %"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2 %"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" -47a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" .1a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" 0.35a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" 1e-10a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" +32a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" +17E-1a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" 17e+2a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" -47e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" .1e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" 0.35e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" 1e-10e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" +32e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" +17E-1e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" 17e+2e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" -47foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" .1foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" 0.35foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" 1e-10foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" +32foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" +17E-1foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" 17e+2foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" -47)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" .1)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" 0.35)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" 1e-10)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" +32)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" +17E-1)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=" 17e+2)90"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47   em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1   em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35   em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10   em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32   em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1   em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2   em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47   ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1   ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35   ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10   ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32   ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1   ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2   ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47   px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1   px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35   px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10   px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32   px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1   px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2   px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47   in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1   in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35   in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10   in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32   in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1   in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2   in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47   cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1   cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35   cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10   cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32   cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1   cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2   cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47   mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1   mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35   mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10   mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32   mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1   mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2   mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47   pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1   pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35   pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10   pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32   pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1   pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2   pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47   pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1   pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35   pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10   pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32   pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1   pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2   pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47   %"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1   %"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35   %"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10   %"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32   %"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1   %"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2   %"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   -47a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   .1a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   0.35a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   1e-10a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   +32a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   +17E-1a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   17e+2a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   -47e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   .1e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   0.35e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   1e-10e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   +32e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   +17E-1e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   17e+2e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   -47foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   .1foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   0.35foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   1e-10foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   +32foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   +17E-1foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   17e+2foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   -47)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   .1)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   0.35)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   1e-10)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   +32)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   +17E-1)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="   17e+2)90"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47 em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1 em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35 em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10 em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32 em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1 em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2 em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47 ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1 ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35 ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10 ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32 ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1 ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2 ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47 px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1 px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35 px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10 px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32 px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1 px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2 px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47 in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1 in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35 in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10 in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32 in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1 in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2 in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47 cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1 cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35 cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10 cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32 cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1 cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2 cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47 mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1 mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35 mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10 mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32 mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1 mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2 mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47 pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1 pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35 pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10 pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32 pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1 pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2 pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47 pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1 pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35 pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10 pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32 pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1 pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2 pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47 %"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1 %"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35 %"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10 %"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32 %"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1 %"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2 %"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" -47a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" .1a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" 0.35a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" 1e-10a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" +32a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" +17E-1a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" 17e+2a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" -47e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" .1e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" 0.35e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" 1e-10e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" +32e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" +17E-1e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" 17e+2e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" -47foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" .1foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" 0.35foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" 1e-10foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" +32foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" +17E-1foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" 17e+2foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" -47)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" .1)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" 0.35)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" 1e-10)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" +32)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" +17E-1)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=" 17e+2)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47   em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1   em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35   em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10   em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32   em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1   em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2   em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47   ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1   ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35   ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10   ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32   ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1   ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2   ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47   px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1   px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35   px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10   px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32   px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1   px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2   px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47   in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1   in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35   in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10   in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32   in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1   in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2   in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47   cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1   cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35   cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10   cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32   cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1   cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2   cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47   mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1   mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35   mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10   mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32   mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1   mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2   mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47   pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1   pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35   pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10   pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32   pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1   pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2   pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47   pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1   pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35   pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10   pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32   pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1   pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2   pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47   %"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1   %"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35   %"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10   %"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32   %"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1   %"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2   %"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   -47a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   .1a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   0.35a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   1e-10a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   +32a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   +17E-1a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   17e+2a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   -47e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   .1e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   0.35e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   1e-10e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   +32e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   +17E-1e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   17e+2e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   -47foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   .1foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   0.35foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   1e-10foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   +32foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   +17E-1foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   17e+2foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   -47)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   .1)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   0.35)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   1e-10)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   +32)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   +17E-1)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="   17e+2)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47
 	 em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1
 	 em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35
 	 em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10
 	 em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32
 	 em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1
 	 em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2
 	 em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47
 	 ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1
 	 ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35
 	 ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10
 	 ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32
 	 ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1
 	 ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2
 	 ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47
 	 px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1
 	 px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35
 	 px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10
 	 px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32
 	 px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1
 	 px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2
 	 px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47
 	 in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1
 	 in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35
 	 in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10
 	 in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32
 	 in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1
 	 in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2
 	 in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47
 	 cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1
 	 cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35
 	 cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10
 	 cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32
 	 cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1
 	 cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2
 	 cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47
 	 mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1
 	 mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35
 	 mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10
 	 mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32
 	 mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1
 	 mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2
 	 mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47
 	 pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1
 	 pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35
 	 pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10
 	 pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32
 	 pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1
 	 pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2
 	 pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47
 	 pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1
 	 pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35
 	 pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10
 	 pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32
 	 pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1
 	 pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2
 	 pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47
 	 %"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1
 	 %"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35
 	 %"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10
 	 %"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32
 	 %"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1
 	 %"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2
 	 %"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 -47a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 .1a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 0.35a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 1e-10a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 +32a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 +17E-1a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 17e+2a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 -47e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 .1e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 0.35e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 1e-10e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 +32e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 +17E-1e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 17e+2e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 -47foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 .1foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 0.35foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 1e-10foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 +32foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 +17E-1foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 17e+2foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 -47)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 .1)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 0.35)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 1e-10)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 +32)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 +17E-1)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="
 	 17e+2)90"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2em"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2ex"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2px"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2in"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2cm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2mm"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2pt"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2pc"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="-47%"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x=".1%"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="0.35%"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="1e-10%"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+32%"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="+17E-1%"
-CONSOLE ERROR: line 63: Error: Invalid value for <svg> attribute x="17e+2%"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="-47a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=".1a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="0.35a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="1e-10a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="+32a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="+17E-1a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="17e+2a"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="-47e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=".1e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="0.35e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="1e-10e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="+32e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="+17E-1e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="17e+2e"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="-47foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=".1foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="0.35foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="1e-10foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="+32foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="+17E-1foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="17e+2foo"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="-47)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x=".1)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="0.35)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="1e-10)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="+32)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="+17E-1)90"
-CONSOLE ERROR: line 81: Error: Invalid value for <svg> attribute x="17e+2)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2em"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2ex"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2px"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2in"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2cm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2mm"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2pt"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2pc"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47%"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1%"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35%"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10%"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32%"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1%"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2%"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2a"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2e"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2foo"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="-47)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x=".1)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="0.35)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1)90"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2)90"
  This is a testharness.js-based test.
 PASS Test <length> valid value: -47 
 PASS Test <length> valid value: -47em 

@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 9: Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self' 'unsafe-inline'".
+CONSOLE ERROR: Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self' 'unsafe-inline'".
 
 CONSOLE MESSAGE: line 11: PASS: eval() blocked.
 CSP report received:

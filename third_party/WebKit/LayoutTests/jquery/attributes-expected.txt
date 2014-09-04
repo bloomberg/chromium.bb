@@ -1,3 +1,3 @@
-CONSOLE WARNING: line 336: 'Attr.nodeValue' is deprecated. Please use 'value' instead.
+CONSOLE WARNING: 'Attr.nodeValue' is deprecated. Please use 'value' instead.
 ALERT: 339 tests of 339 passed, 0 failed.
 

@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 43: 'Attr.nodeValue' is deprecated. Please use 'value' instead.
+CONSOLE WARNING: 'Attr.nodeValue' is deprecated. Please use 'value' instead.
 Test that different ways of changing an element's id all work properly.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

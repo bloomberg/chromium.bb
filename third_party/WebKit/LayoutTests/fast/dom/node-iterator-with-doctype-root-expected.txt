@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 15: 'NodeIterator.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-nodeiterator-detach).
+CONSOLE WARNING: 'NodeIterator.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-nodeiterator-detach).
 NodeIterator rooted at a DocumentType node not yet associated with a document:
 PASS iter.referenceNode.ownerDocument is document
 PASS iter.nextNode() is dt

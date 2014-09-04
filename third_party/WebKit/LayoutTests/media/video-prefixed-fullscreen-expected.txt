@@ -1,7 +1,7 @@
-CONSOLE WARNING: line 1: 'HTMLVideoElement.webkitSupportsFullscreen' is deprecated. Its value is true if the video is loaded.
-CONSOLE WARNING: line 1: 'HTMLVideoElement.webkitDisplayingFullscreen' is deprecated. Please use the 'fullscreenchange' and 'webkitfullscreenchange' events instead.
-CONSOLE WARNING: line 1: 'HTMLVideoElement.webkitEnterFullscreen()' is deprecated. Please use 'Element.requestFullscreen()' and 'Element.webkitRequestFullscreen()' instead.
-CONSOLE WARNING: line 1: 'HTMLVideoElement.webkitExitFullscreen()' is deprecated. Please use 'Document.exitFullscreen()' and 'Document.webkitExitFullscreen()' instead.
+CONSOLE WARNING: 'HTMLVideoElement.webkitSupportsFullscreen' is deprecated. Its value is true if the video is loaded.
+CONSOLE WARNING: 'HTMLVideoElement.webkitDisplayingFullscreen' is deprecated. Please use the 'fullscreenchange' and 'webkitfullscreenchange' events instead.
+CONSOLE WARNING: 'HTMLVideoElement.webkitEnterFullscreen()' is deprecated. Please use 'Element.requestFullscreen()' and 'Element.webkitRequestFullscreen()' instead.
+CONSOLE WARNING: 'HTMLVideoElement.webkitExitFullscreen()' is deprecated. Please use 'Document.exitFullscreen()' and 'Document.webkitExitFullscreen()' instead.
 Test the prefixed HTMLVideoElement fullscreen API
 
 EXPECTED (video.webkitSupportsFullscreen == 'false') OK

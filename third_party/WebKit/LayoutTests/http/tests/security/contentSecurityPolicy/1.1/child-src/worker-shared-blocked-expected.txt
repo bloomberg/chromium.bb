@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 1: Refused to create a child context containing 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/alert-fail.js' because it violates the following Content Security Policy directive: "child-src 'none'".
+CONSOLE ERROR: Refused to create a child context containing 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/alert-fail.js' because it violates the following Content Security Policy directive: "child-src 'none'".
 
 SharedWorkers should be governed by 'child-src'.
 

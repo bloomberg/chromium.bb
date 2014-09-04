@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 11: 'navigator.webkitGetGamepads' is deprecated. Please use 'navigator.getGamepads' instead.
+CONSOLE WARNING: 'navigator.webkitGetGamepads' is deprecated. Please use 'navigator.getGamepads' instead.
 Validates the exposed Gamepad API.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

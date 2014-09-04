@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 1: 'WebSocket.URL' is deprecated. Please use 'WebSocket.url' instead.
+CONSOLE WARNING: 'WebSocket.URL' is deprecated. Please use 'WebSocket.url' instead.
 Both .URL and .url attributes should work (for compatibility reasons).
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

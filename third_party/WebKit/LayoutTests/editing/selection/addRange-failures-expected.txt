@@ -1,8 +1,8 @@
-CONSOLE ERROR: line 15: The given range is null.
-CONSOLE WARNING: line 21: 'Range.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-range-detach).
-CONSOLE ERROR: line 22: Discontiguous selection is not supported.
-CONSOLE ERROR: line 31: The given range does not belong to the current selection's document.
-CONSOLE ERROR: line 44: The given range and the current selection belong to two different document fragments.
+CONSOLE ERROR: The given range is null.
+CONSOLE WARNING: 'Range.detach' is now a no-op, as per DOM (http://dom.spec.whatwg.org/#dom-range-detach).
+CONSOLE ERROR: Discontiguous selection is not supported.
+CONSOLE ERROR: The given range does not belong to the current selection's document.
+CONSOLE ERROR: The given range and the current selection belong to two different document fragments.
 Test error handling of Selection.addRange().
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

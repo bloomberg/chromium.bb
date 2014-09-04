@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 28: 'navigator.webkitGetGamepads' is deprecated. Please use 'navigator.getGamepads' instead.
+CONSOLE WARNING: 'navigator.webkitGetGamepads' is deprecated. Please use 'navigator.getGamepads' instead.
 Check if calling detached navigator's APIs is safe.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

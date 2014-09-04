@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 204: 'NodeIterator.expandEntityReferences' is deprecated and has been removed from DOM. It always returns false.
+CONSOLE WARNING: 'NodeIterator.expandEntityReferences' is deprecated and has been removed from DOM. It always returns false.
 This test checks the basic functionality of NodeIterator.
 
 This is a testharness.js-based test.

@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 1: console.markTimeline is deprecated. Please use the console.timeStamp instead.
+CONSOLE WARNING: console.markTimeline is deprecated. Please use the console.timeStamp instead.
 Tests the Timeline API instrumentation of a TimerFired events inside evaluated scripts.
 
 TimerFire fromEval.js:2

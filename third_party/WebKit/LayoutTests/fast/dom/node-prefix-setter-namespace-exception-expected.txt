@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 1: Setting 'Element.prefix' is deprecated, as it is read-only per DOM (http://dom.spec.whatwg.org/#element).
+CONSOLE WARNING: Setting 'Element.prefix' is deprecated, as it is read-only per DOM (http://dom.spec.whatwg.org/#element).
 Test how Node.prefix setter raises NAMESPACE_ERR.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 11: Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self' 'unsafe-inline'".
+CONSOLE ERROR: Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self' 'unsafe-inline'".
 
 This test attempts to evaluate script via setInterval. The resulting console error should contain a stack trace tied to line 11.
 
