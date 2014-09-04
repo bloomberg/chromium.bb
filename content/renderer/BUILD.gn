@@ -35,6 +35,7 @@ source_set("renderer") {
     "//mojo/public/interfaces/application",
     "//net",
     "//skia",
+    "//storage/common",
     "//third_party/icu",
     "//third_party/libjingle",
     "//third_party/npapi",
@@ -46,8 +47,6 @@ source_set("renderer") {
     "//ui/surface",
     "//v8",
     "//webkit/child",
-    "//webkit/common",
-    "//webkit/common:storage_common",
     "//webkit/common/gpu",
   ]
 

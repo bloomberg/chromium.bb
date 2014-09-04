@@ -32,7 +32,7 @@ static_library("test_support") {
     "//ui/gfx:test_support",
     "//ui/resources",
     "//url",
-    "//webkit/common",
+    "//storage/common",
   ]
 
   if (!is_ios) {
@@ -53,13 +53,13 @@ static_library("test_support") {
       "//ppapi:ppapi_proxy",
       "//ppapi:ppapi_shared",
       "//ppapi:ppapi_unittest_shared",
+      "//storage/common",
       "//third_party/WebKit/public:blink",
       "//ui/surface",
       "//v8",
       "//webkit/child",
       "//webkit/common/gpu",
       "//webkit/browser:storage",
-      "//webkit/common:storage_common",
     ]
 
     forward_dependent_configs_from = [

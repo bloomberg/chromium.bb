@@ -8,7 +8,7 @@
   },
   'targets': [
     {
-      # GN version: //webkit/common:storage_common
+      # GN version: //storage/common
       'target_name': 'storage_common',
       'type': '<(component)',
       'variables': { 'enable_wexit_time_destructors': 1, },
@@ -17,10 +17,11 @@
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/url/url.gyp:url_lib',
-        '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
       ],
       'defines': ['STORAGE_COMMON_IMPLEMENTATION'],
       'sources': [
+        'common/data_element.cc',
+        'common/data_element.h',
         'common/blob/blob_data.cc',
         'common/blob/blob_data.h',
         'common/blob/scoped_file.cc',

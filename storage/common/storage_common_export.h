@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_COMMON_STORAGE_COMMON_EXPORT_H_
-#define WEBKIT_COMMON_STORAGE_COMMON_EXPORT_H_
+#ifndef STORAGE_COMMON_STORAGE_COMMON_EXPORT_H_
+#define STORAGE_COMMON_STORAGE_COMMON_EXPORT_H_
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)
@@ -26,4 +26,4 @@
 #define STORAGE_COMMON_EXPORT
 #endif
 
-#endif  // WEBKIT_COMMON_STORAGE_COMMON_EXPORT_H_
+#endif  // STORAGE_COMMON_STORAGE_COMMON_EXPORT_H_

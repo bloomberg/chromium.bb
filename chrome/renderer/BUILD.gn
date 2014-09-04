@@ -65,7 +65,7 @@ static_library("renderer") {
     "//ui/surface",
     "//v8:v8",
     "//webkit/child",
-    "//webkit/common",
+    "//storage/common",
   ]
 
   if (enable_nacl) {

@@ -18,6 +18,7 @@
     '../mojo/mojo_base.gyp:mojo_js_bindings_lib',
     '../net/net.gyp:net',
     '../skia/skia.gyp:skia',
+    '../storage/storage_common.gyp:storage_common',
     '../third_party/WebKit/public/blink.gyp:blink',
     '../third_party/icu/icu.gyp:icui18n',
     '../third_party/icu/icu.gyp:icuuc',
@@ -32,7 +33,6 @@
     '../ui/surface/surface.gyp:surface',
     '../v8/tools/gyp/v8.gyp:v8',
     '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
-    '../webkit/storage_common.gyp:storage_common',
   ],
   'include_dirs': [
     '..',

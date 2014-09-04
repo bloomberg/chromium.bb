@@ -57,6 +57,7 @@ static_library("extensions") {
     "//extensions/strings",
     "//net",
     "//skia",
+    "//storage/common",
     "//sync",
     "//third_party/WebKit/public:resources",
     "//third_party/cacheinvalidation",
@@ -72,7 +73,6 @@ static_library("extensions") {
     "//ui/strings",
     "//url",
     "//webkit/browser:storage",
-    "//webkit/common:storage_common",
   ]
 
   forward_dependent_configs_from = [

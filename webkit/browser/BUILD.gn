@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# GYP version: webkit/storage_browser.gyp:storage
 component("storage") {
   output_name = "storage"
   sources = [
@@ -164,11 +165,10 @@ component("storage") {
     "//base/third_party/dynamic_annotations",
     "//net",
     "//sql",
+    "//storage/common",
     "//third_party/leveldatabase",
     "//third_party/sqlite",
     "//url",
-    "//webkit/common",
-    "//webkit/common:storage_common",
   ]
 
   # TODO(GYP) support chrome_multiple_dll
@@ -187,6 +187,6 @@ executable("dump_file_system") {
   deps = [
     ":storage",
     "//base",
-    "//webkit/common:storage_common",
+    "//storage/common",
   ]
 }

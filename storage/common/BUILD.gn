@@ -2,27 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: webkit/common/webkit_common.gyp:webkit_common
+# GYP version: storage/storage_common.gyp:storage_common
 component("common") {
-  output_name = "webkit_common"
-
+  output_name = "storage_common"
   sources = [
     "data_element.cc",
     "data_element.h",
-    "webkit_common_export.h",
-  ]
-
-  defines = [ "WEBKIT_COMMON_IMPLEMENTATION" ]
-
-  deps = [
-    "//base",
-    "//url",
-  ]
-}
-
-component("storage_common") {
-  output_name = "storage"
-  sources = [
     "storage_common_export.h",
     "blob/blob_data.cc",
     "blob/blob_data.h",
@@ -53,7 +38,6 @@ component("storage_common") {
   }
 
   deps = [
-    ":common",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//net",

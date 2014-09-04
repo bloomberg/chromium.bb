@@ -94,7 +94,7 @@ source_set("child") {
       "//third_party/WebKit/public:resources",
       "//third_party/npapi",
       "//webkit/child",
-      "//webkit/common",
+      "//storage/common",
     ]
   }
 

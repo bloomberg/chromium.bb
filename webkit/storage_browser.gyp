@@ -18,11 +18,10 @@
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/sql/sql.gyp:sql',
+        '<(DEPTH)/storage/storage_common.gyp:storage_common',
         '<(DEPTH)/third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
         '<(DEPTH)/url/url.gyp:url_lib',
-        '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
-        '<(DEPTH)/webkit/storage_common.gyp:storage_common',
       ],
       'defines': ['STORAGE_BROWSER_IMPLEMENTATION'],
       'sources': [
@@ -192,7 +191,7 @@
       ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/webkit/storage_common.gyp:storage_common',
+        '<(DEPTH)/storage/storage_common.gyp:storage_common',
         'storage',
       ],
     },

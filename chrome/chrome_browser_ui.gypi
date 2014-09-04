@@ -2627,6 +2627,7 @@
             '../media/media.gyp:media',
             '../mojo/mojo_base.gyp:mojo_system_impl',
             '../net/net.gyp:net_with_v8',
+            '../storage/storage_common.gyp:storage_common',
             '../third_party/expat/expat.gyp:expat',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/libjingle/libjingle.gyp:libjingle',
@@ -2637,7 +2638,6 @@
             '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
             '../v8/tools/gyp/v8.gyp:v8',
             '../webkit/storage_browser.gyp:storage',
-            '../webkit/storage_common.gyp:storage_common',
           ],
           'defines': [
             '<@(nacl_defines)',

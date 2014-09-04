@@ -98,6 +98,7 @@ source_set("browser") {
       "//mojo/public/interfaces/application",
       "//mojo/public/js/bindings",
       "//net:http_server",
+      "//storage/common",
       "//third_party/WebKit/public:resources",
       "//third_party/angle:commit_id",
       "//third_party/icu",
@@ -106,8 +107,6 @@ source_set("browser") {
       "//ui/resources",
       "//ui/surface",
       "//webkit/browser:storage",
-      "//webkit/common",
-      "//webkit/common:storage_common",
     ]
   }
 

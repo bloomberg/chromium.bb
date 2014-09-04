@@ -2926,6 +2926,7 @@
             '../mojo/mojo_base.gyp:mojo_system_impl',
             '../net/net.gyp:net_extras',
             '../net/net.gyp:net_with_v8',
+            '../storage/storage_common.gyp:storage_common',
             # TODO(tonyg): Remove this dependency (crbug.com/280157).
             '../testing/perf/perf_test.gyp:*',
             '../third_party/expat/expat.gyp:expat',
@@ -2940,7 +2941,6 @@
             '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
             '../v8/tools/gyp/v8.gyp:v8',
             '../webkit/storage_browser.gyp:storage',
-            '../webkit/storage_common.gyp:storage_common',
           ],
           'sources': [
             '<@(chrome_browser_non_ios_sources)',

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/common/data_element.h"
+#include "storage/common/data_element.h"
 
 namespace storage {
 
@@ -46,4 +46,4 @@ void DataElement::SetToFileSystemUrlRange(
   expected_modification_time_ = expected_modification_time;
 }
 
-}  // webkit_common
+}  // namespace storage

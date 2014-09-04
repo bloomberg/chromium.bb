@@ -564,12 +564,11 @@
         '../mojo/mojo_base.gyp:mojo_cpp_bindings',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
         '../mojo/mojo_base.gyp:mojo_system_impl',
+        '../storage/storage_common.gyp:storage_common',
         '../third_party/WebKit/public/blink.gyp:blink',
         '../ui/gl/gl.gyp:gl',
         '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
-        '../webkit/common/webkit_common.gyp:webkit_common',
         '../webkit/storage_browser.gyp:storage',
-        '../webkit/storage_common.gyp:storage_common',
       ],
       'actions': [
         {

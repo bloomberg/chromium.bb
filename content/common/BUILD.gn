@@ -64,8 +64,7 @@ source_set("common") {
       "//third_party/WebKit/public:blink",
       "//ui/gl",
       "//webkit/browser:storage",
-      "//webkit/common",
-      "//webkit/common:storage_common",
+      "//storage/common",
       "//webkit/common/gpu",
     ]
   }

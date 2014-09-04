@@ -24,6 +24,7 @@ include_rules = [
 
   # For databases/
   "+sql",
+  "+storage",
 
   # For gpu/
   "+ui/gfx",

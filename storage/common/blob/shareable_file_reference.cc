@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/common/blob/shareable_file_reference.h"
+#include "storage/common/blob/shareable_file_reference.h"
 
 #include <map>
 
@@ -84,7 +84,9 @@ scoped_refptr<ShareableFileReference> ShareableFileReference::GetOrCreate(
     return scoped_refptr<ShareableFileReference>();
 
   typedef std::pair<ShareableFileMap::iterator, bool> InsertResult;
-  // Required for VS2010: http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
+  // Required for VS2010:
+  // http://connect.microsoft.com/VisualStudio/feedback/
+  // details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
   storage::ShareableFileReference* null_reference = NULL;
   InsertResult result = g_file_map.Get().Insert(
       ShareableFileMap::value_type(scoped_file.path(), null_reference));

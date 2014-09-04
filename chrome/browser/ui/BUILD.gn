@@ -108,8 +108,7 @@ static_library("ui") {
       "//ui/web_dialogs",
       "//v8",
       "//webkit/browser:storage",
-      "//webkit/common",
-      "//webkit/common:storage_common",
+      "//storage/common",
     ]
     # TODO(GYP)
     #'defines': [

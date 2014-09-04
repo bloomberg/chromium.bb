@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "webkit/common/quota/quota_status_code.h"
+#include "storage/common/quota/quota_status_code.h"
 
 namespace storage {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/common/fileapi/file_system_util.h"
+#include "storage/common/fileapi/file_system_util.h"
 
 #include <algorithm>
 
@@ -13,8 +13,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
+#include "storage/common/database/database_identifier.h"
 #include "url/gurl.h"
-#include "webkit/common/database/database_identifier.h"
 
 namespace storage {
 

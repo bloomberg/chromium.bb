@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/common/blob/blob_data.h"
+#include "storage/common/blob/blob_data.h"
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
