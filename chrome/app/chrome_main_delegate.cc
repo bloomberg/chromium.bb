@@ -46,6 +46,7 @@
 #include <atlbase.h>
 #include <malloc.h>
 #include <algorithm>
+#include "chrome/app/close_handle_hook_win.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/terminate_on_heap_corruption_experiment_win.h"
 #include "sandbox/win/src/sandbox.h"
@@ -418,6 +419,8 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
     *exit_code = 1;
     return true;
   }
+
+  InstallCloseHandleHooks();
 #endif
 
   chrome::RegisterPathProvider();
@@ -839,6 +842,10 @@ void ChromeMainDelegate::ProcessExiting(const std::string& process_type) {
   // Android doesn't use InitChromeLogging, so we close the log file manually.
   logging::CloseLogFile();
 #endif  // !defined(OS_ANDROID)
+
+#if defined(OS_WIN)
+  RemoveCloseHandleHooks();
+#endif
 }
 
 #if defined(OS_MACOSX)

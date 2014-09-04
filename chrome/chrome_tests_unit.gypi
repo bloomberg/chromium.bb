@@ -55,6 +55,8 @@
       'sources': [
         'app/chrome_main_delegate.cc',
         'app/chrome_main_delegate.h',
+        'app/close_handle_hook_win.cc',
+        'app/close_handle_hook_win.h',
         'browser/browsing_data/mock_browsing_data_appcache_helper.cc',
         'browser/browsing_data/mock_browsing_data_appcache_helper.h',
         'browser/browsing_data/mock_browsing_data_channel_id_helper.cc',
