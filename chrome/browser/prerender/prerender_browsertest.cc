@@ -1632,7 +1632,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
     if (new_web_contents) {
       NewTabNavigationOrSwapObserver observer;
-      render_frame_host->ExecuteJavaScript(base::ASCIIToUTF16(javascript));
+      render_frame_host->
+          ExecuteJavaScriptForTests(base::ASCIIToUTF16(javascript));
       observer.Wait();
     } else {
       NavigationOrSwapObserver observer(current_browser()->tab_strip_model(),

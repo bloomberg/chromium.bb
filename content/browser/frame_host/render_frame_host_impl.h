@@ -80,6 +80,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   virtual void ExecuteJavaScript(
       const base::string16& javascript,
       const JavaScriptResultCallback& callback) OVERRIDE;
+  virtual void ExecuteJavaScriptForTests(
+      const base::string16& javascript) OVERRIDE;
   virtual RenderViewHost* GetRenderViewHost() OVERRIDE;
   virtual ServiceRegistry* GetServiceRegistry() OVERRIDE;
 

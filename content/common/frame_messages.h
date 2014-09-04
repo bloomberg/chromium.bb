@@ -422,6 +422,13 @@ IPC_MESSAGE_ROUTED3(FrameMsg_JavaScriptExecuteRequest,
                     int,  /* ID */
                     bool  /* if true, a reply is requested */)
 
+// ONLY FOR TESTS: Same as above but adds a fake UserGestureindicator around
+// execution. (crbug.com/408426)
+IPC_MESSAGE_ROUTED3(FrameMsg_JavaScriptExecuteRequestForTests,
+                    base::string16,  /* javascript */
+                    int,  /* ID */
+                    bool  /* if true, a reply is requested */)
+
 // Selects between the given start and end offsets in the currently focused
 // editable field.
 IPC_MESSAGE_ROUTED2(FrameMsg_SetEditableSelectionOffsets,

@@ -28,8 +28,8 @@ const char* g_event = "TheEvent";
 class TracingBrowserTest : public InProcessBrowserTest {
  protected:
   // Execute some no-op javascript on the current tab - this triggers a trace
-  // event in RenderFrameImpl::OnJavaScriptExecuteRequest (from the renderer
-  // process).
+  // event in RenderFrameImpl::OnJavaScriptExecuteRequestForTests (from the
+  // renderer process).
   void ExecuteJavascriptOnCurrentTab() {
     content::RenderViewHost* rvh = browser()->tab_strip_model()->
         GetActiveWebContents()->GetRenderViewHost();
@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(TracingBrowserTest, BeginTracingWithWatch) {
 
   // Child process events from same process.
   ASSERT_TRUE(BeginTracingWithWatch(g_category, g_category,
-                                    "OnJavaScriptExecuteRequest", 2));
+                                    "OnJavaScriptExecuteRequestForTests", 2));
   ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
   ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
   EXPECT_TRUE(WaitForWatchEvent(no_timeout));
@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(TracingBrowserTest, BeginTracingWithWatch) {
   GURL url1("chrome://tracing/");
   GURL url2("chrome://credits/");
   ASSERT_TRUE(BeginTracingWithWatch(g_category, g_category,
-                                    "OnJavaScriptExecuteRequest", 2));
+                                    "OnJavaScriptExecuteRequestForTests", 2));
   // Open two tabs to different URLs to encourage two separate renderer
   // processes. Each will fire an event that will be counted towards the total.
   ui_test_utils::NavigateToURLWithDisposition(browser(), url1,

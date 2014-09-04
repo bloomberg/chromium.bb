@@ -271,6 +271,13 @@ void RenderFrameHostImpl::ExecuteJavaScript(
   javascript_callbacks_.insert(std::make_pair(key, callback));
 }
 
+void RenderFrameHostImpl::ExecuteJavaScriptForTests(
+    const base::string16& javascript) {
+  Send(new FrameMsg_JavaScriptExecuteRequestForTests(routing_id_,
+                                                     javascript,
+                                                     0, false));
+}
+
 RenderViewHost* RenderFrameHostImpl::GetRenderViewHost() {
   return render_view_host_;
 }

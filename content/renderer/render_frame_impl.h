@@ -515,6 +515,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnJavaScriptExecuteRequest(const base::string16& javascript,
                                   int id,
                                   bool notify_result);
+  void OnJavaScriptExecuteRequestForTests(const base::string16& javascript,
+                                          int id,
+                                          bool notify_result);
   void OnSetEditableSelectionOffsets(int start, int end);
   void OnSetCompositionFromExistingText(
       int start, int end,
@@ -584,6 +587,11 @@ class CONTENT_EXPORT RenderFrameImpl
   void LoadNavigationErrorPage(const blink::WebURLRequest& failed_request,
                                const blink::WebURLError& error,
                                bool replace);
+
+  void HandleJavascriptExecutionResult(const base::string16& javascript,
+                                       int id,
+                                       bool notify_result,
+                                       v8::Handle<v8::Value> result);
 
   // Initializes |web_user_media_client_|. If this fails, because it wasn't
   // possible to create a MediaStreamClient (e.g., WebRTC is disabled), then
