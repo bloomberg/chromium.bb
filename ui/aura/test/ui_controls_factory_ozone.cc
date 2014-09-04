@@ -55,6 +55,11 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
       PostKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_MENU, flags);
     }
 
+    if (command) {
+      flags |= ui::EF_COMMAND_DOWN;
+      PostKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_LWIN, flags);
+    }
+
     PostKeyEvent(ui::ET_KEY_PRESSED, key, flags);
     PostKeyEvent(ui::ET_KEY_RELEASED, key, flags);
 
@@ -71,6 +76,11 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     if (control) {
       flags &= ~ui::EF_CONTROL_DOWN;
       PostKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_CONTROL, flags);
+    }
+
+    if (command) {
+      flags &= ~ui::EF_COMMAND_DOWN;
+      PostKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_LWIN, flags);
     }
 
     RunClosureAfterAllPendingUIEvents(closure);

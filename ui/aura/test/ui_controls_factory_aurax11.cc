@@ -56,7 +56,6 @@ class UIControlsX11 : public UIControlsAura {
                             bool shift,
                             bool alt,
                             bool command) OVERRIDE {
-    DCHECK(!command);  // No command key on Aura
     return SendKeyPressNotifyWhenDone(
         window, key, control, shift, alt, command, base::Closure());
   }
@@ -68,7 +67,6 @@ class UIControlsX11 : public UIControlsAura {
       bool alt,
       bool command,
       const base::Closure& closure) OVERRIDE {
-    DCHECK(!command);  // No command key on Aura
     XEvent xevent = {0};
     xevent.xkey.type = KeyPress;
     if (control)
@@ -77,6 +75,8 @@ class UIControlsX11 : public UIControlsAura {
       SetKeycodeAndSendThenMask(&xevent, XK_Shift_L, ShiftMask);
     if (alt)
       SetKeycodeAndSendThenMask(&xevent, XK_Alt_L, Mod1Mask);
+    if (command)
+      SetKeycodeAndSendThenMask(&xevent, XK_Super_L, Mod4Mask);
     xevent.xkey.keycode =
         XKeysymToKeycode(gfx::GetXDisplay(),
                          ui::XKeysymForWindowsKeyCode(key, shift));
@@ -91,6 +91,8 @@ class UIControlsX11 : public UIControlsAura {
       UnmaskAndSetKeycodeThenSend(&xevent, ShiftMask, XK_Shift_L);
     if (control)
       UnmaskAndSetKeycodeThenSend(&xevent, ControlMask, XK_Control_L);
+    if (command)
+      UnmaskAndSetKeycodeThenSend(&xevent, Mod4Mask, XK_Super_L);
     DCHECK(!xevent.xkey.state);
     RunClosureAfterAllPendingUIEvents(closure);
     return true;
