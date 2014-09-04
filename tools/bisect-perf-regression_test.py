@@ -3,12 +3,33 @@
 # found in the LICENSE file.
 
 import os
+import re
 import unittest
 
 from auto_bisect import source_control as source_control_module
 
 # Special import necessary because filename contains dash characters.
 bisect_perf_module = __import__('bisect-perf-regression')
+
+def _GetBisectPerformanceMetricsInstance():
+  """Returns an instance of the BisectPerformanceMetrics class."""
+  options_dict = {
+    'debug_ignore_build': True,
+    'debug_ignore_sync': True,
+    'debug_ignore_perf_test': True,
+    'command': 'fake_command',
+    'metric': 'fake/metric',
+    'good_revision': 280000,
+    'bad_revision': 280005,
+  }
+  bisect_options = bisect_perf_module.BisectOptions.FromDict(options_dict)
+  source_control = source_control_module.DetermineAndCreateSourceControl(
+      bisect_options)
+  bisect_instance = bisect_perf_module.BisectPerformanceMetrics(
+      source_control, bisect_options)
+  bisect_instance.src_cwd = os.path.abspath(
+      os.path.join(os.path.dirname(__file__), os.path.pardir))
+  return bisect_instance
 
 
 class BisectPerfRegressionTest(unittest.TestCase):
@@ -227,48 +248,42 @@ class BisectPerfRegressionTest(unittest.TestCase):
     This serves as a smoke test to catch errors in the basic execution of the
     script.
     """
-    options_dict = {
-      'debug_ignore_build': True,
-      'debug_ignore_sync': True,
-      'debug_ignore_perf_test': True,
-      'command': 'fake_command',
-      'metric': 'fake/metric',
-      'good_revision': 280000,
-      'bad_revision': 280005,
-    }
-    bisect_options = bisect_perf_module.BisectOptions.FromDict(options_dict)
-    source_control = source_control_module.DetermineAndCreateSourceControl(
-        bisect_options)
-    bisect_instance = bisect_perf_module.BisectPerformanceMetrics(
-        source_control, bisect_options)
-    bisect_instance.src_cwd = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), '..'))
-    results = bisect_instance.Run(bisect_options.command,
-                                  bisect_options.bad_revision,
-                                  bisect_options.good_revision,
-                                  bisect_options.metric)
+    bisect_instance = _GetBisectPerformanceMetricsInstance()
+    results = bisect_instance.Run(bisect_instance.opts.command,
+                                  bisect_instance.opts.bad_revision,
+                                  bisect_instance.opts.good_revision,
+                                  bisect_instance.opts.metric)
     bisect_instance.FormatAndPrintResults(results)
 
   def testSVNFindRev(self):
     """Determine numerical SVN revision or Commit Position."""
-    options_dict = {
-      'debug_ignore_build': True,
-      'debug_ignore_sync': True,
-      'debug_ignore_perf_test': True,
-      'command': 'fake_command',
-      'metric': 'fake/metric',
-      'good_revision': 280000,
-      'bad_revision': 280005,
-    }
-    bisect_options = bisect_perf_module.BisectOptions.FromDict(options_dict)
-    source_control = source_control_module.DetermineAndCreateSourceControl(
-        bisect_options)
-
+    bisect_instance = _GetBisectPerformanceMetricsInstance()
     cp_git_rev = '7017a81991de983e12ab50dfc071c70e06979531'
-    self.assertEqual(291765, source_control.SVNFindRev(cp_git_rev))
+    self.assertEqual(291765,
+                     bisect_instance.source_control.SVNFindRev(cp_git_rev))
 
     svn_git_rev = 'e6db23a037cad47299a94b155b95eebd1ee61a58'
-    self.assertEqual(291467, source_control.SVNFindRev(svn_git_rev))
+    self.assertEqual(291467,
+                     bisect_instance.source_control.SVNFindRev(svn_git_rev))
+
+  def testUpdateDepsContent(self):
+    bisect_instance = _GetBisectPerformanceMetricsInstance()
+    deps_file = 'DEPS'
+    # We are intentionally reading DEPS file contents instead of string literal
+    # with few lines from DEPS because to check if the format we are expecting
+    # to search is not changed in DEPS content.
+    # TODO (prasadv): Add a separate test to validate the DEPS contents with the
+    # format that bisect script expects.
+    deps_contents = bisect_perf_module.ReadStringFromFile(deps_file)
+    deps_key = 'v8_revision'
+    depot = 'v8'
+    git_revision = 'a12345789a23456789a123456789a123456789'
+    updated_content = bisect_instance.UpdateDepsContents(
+        deps_contents, depot, git_revision, deps_key)
+    self.assertIsNotNone(updated_content)
+    ss = re.compile('["\']%s["\']: ["\']%s["\']' % (deps_key, git_revision))
+    self.assertIsNotNone(re.search(ss, updated_content))
+
 
 if __name__ == '__main__':
   unittest.main()

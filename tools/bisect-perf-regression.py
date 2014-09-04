@@ -1389,6 +1389,48 @@ class BisectPerformanceMetrics(object):
               'v8' in DEPOT_DEPS_NAME[depot]['from'])
     return False
 
+  def UpdateDepsContents(self, deps_contents, depot, git_revision, deps_key):
+    """Returns modified version of DEPS file contents.
+
+    Args:
+      deps_contents: DEPS file content.
+      depot: Current depot being bisected.
+      git_revision: A git hash to be updated in DEPS.
+      deps_key: Key in vars section of DEPS file to be searched.
+
+    Returns:
+      Updated DEPS content as string if deps key is found, otherwise None.
+    """
+    # Check whether the depot and revision pattern in DEPS file vars
+    # e.g. for webkit the format is "webkit_revision": "12345".
+    deps_revision = re.compile(r'(?<="%s": ")([0-9]+)(?=")' % deps_key,
+                               re.MULTILINE)
+    new_data = None
+    if re.search(deps_revision, deps_contents):
+      svn_revision = self.source_control.SVNFindRev(
+          git_revision, self._GetDepotDirectory(depot))
+      if not svn_revision:
+        print 'Could not determine SVN revision for %s' % git_revision
+        return None
+      # Update the revision information for the given depot
+      new_data = re.sub(deps_revision, str(svn_revision), deps_contents)
+    else:
+      # Check whether the depot and revision pattern in DEPS file vars
+      # e.g. for webkit the format is "webkit_revision": "559a6d4ab7a84c539..".
+      deps_revision = re.compile(
+          r'(?<=["\']%s["\']: ["\'])([a-fA-F0-9]{40})(?=["\'])' % deps_key,
+          re.MULTILINE)
+      if re.search(deps_revision, deps_contents):
+        new_data = re.sub(deps_revision, git_revision, deps_contents)
+    if new_data:
+      # For v8_bleeding_edge revisions change V8 branch in order
+      # to fetch bleeding edge revision.
+      if depot == 'v8_bleeding_edge':
+        new_data = _UpdateV8Branch(new_data)
+        if not new_data:
+          return None
+    return new_data
+
   def UpdateDeps(self, revision, depot, deps_file):
     """Updates DEPS file with new revision of dependency repository.
 
@@ -1423,28 +1465,11 @@ class BisectPerformanceMetrics(object):
 
     try:
       deps_contents = ReadStringFromFile(deps_file)
-      # Check whether the depot and revision pattern in DEPS file vars
-      # e.g. for webkit the format is "webkit_revision": "12345".
-      deps_revision = re.compile(r'(?<="%s": ")([0-9]+)(?=")' % deps_var,
-                                 re.MULTILINE)
-      match = re.search(deps_revision, deps_contents)
-      if match:
-        svn_revision = self.source_control.SVNFindRev(
-            revision, self._GetDepotDirectory(depot))
-        if not svn_revision:
-          print 'Could not determine SVN revision for %s' % revision
-          return False
-        # Update the revision information for the given depot
-        new_data = re.sub(deps_revision, str(svn_revision), deps_contents)
-
-        # For v8_bleeding_edge revisions change V8 branch in order
-        # to fetch bleeding edge revision.
-        if depot == 'v8_bleeding_edge':
-          new_data = _UpdateV8Branch(new_data)
-          if not new_data:
-            return False
-        # Write changes to DEPS file
-        WriteStringToFile(new_data, deps_file)
+      updated_deps_content = self.UpdateDepsContents(
+          deps_contents, depot, revision, deps_var)
+      # Write changes to DEPS file
+      if updated_deps_content:
+        WriteStringToFile(updated_deps_content, deps_file)
         return True
     except IOError, e:
       print 'Something went wrong while updating DEPS file. [%s]' % e
@@ -2482,7 +2507,6 @@ class BisectPerformanceMetrics(object):
             # should bisect the changes there as well.
             external_depot = self._FindNextDepotToBisect(
                 current_depot, min_revision_data, max_revision_data)
-
             # If there was no change in any of the external depots, the search
             # is over.
             if not external_depot:
