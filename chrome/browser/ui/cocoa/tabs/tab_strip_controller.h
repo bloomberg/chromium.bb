@@ -139,6 +139,10 @@ class WebContents;
 
   // Helper for performing tab selection as a result of dragging over a tab.
   scoped_ptr<HoverTabSelector> hoverTabSelector_;
+
+  // A container view for the window controls, which must be manually added in
+  // fullscreen in 10.10+.
+  base::scoped_nsobject<NSView> fullscreenWindowControls_;
 }
 
 @property(nonatomic) CGFloat leftIndentForControls;
@@ -247,6 +251,12 @@ class WebContents;
 
 // Returns the currently active TabContentsController.
 - (TabContentsController*)activeTabContentsController;
+
+// Adds traffic lights to the tab strip. Idempotent.
+- (void)addWindowControls;
+
+// Removes traffic lights from the tab strip. Idempotent.
+- (void)removeWindowControls;
 
 @end
 

@@ -333,9 +333,21 @@ willPositionSheet:(NSWindow*)sheet
   maxY -= tabStripHeight;
   [tabStripView setFrame:NSMakeRect(0, maxY, width, tabStripHeight)];
 
+  // In Yosemite fullscreen, manually add the fullscreen controls to the tab
+  // strip.
+  BOOL addControlsInFullscreen =
+      [self isInAppKitFullscreen] && base::mac::IsOSYosemiteOrLater();
+
   // Set left indentation based on fullscreen mode status.
-  [tabStripController_ setLeftIndentForControls:(fullscreen ? 0 :
-      [[tabStripController_ class] defaultLeftIndentForControls])];
+  CGFloat leftIndent = 0;
+  if (!fullscreen || addControlsInFullscreen)
+    leftIndent = [[tabStripController_ class] defaultLeftIndentForControls];
+  [tabStripController_ setLeftIndentForControls:leftIndent];
+
+  if (addControlsInFullscreen)
+    [tabStripController_ addWindowControls];
+  else
+    [tabStripController_ removeWindowControls];
 
   // Lay out the icognito/avatar badge because calculating the indentation on
   // the right depends on it.

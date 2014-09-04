@@ -2172,6 +2172,56 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   return [tabContentsArray_ objectAtIndex:index];
 }
 
+- (void)addWindowControls {
+  if (!fullscreenWindowControls_) {
+    // Make the container view.
+    CGFloat height = NSHeight([tabStripView_ frame]);
+    NSRect frame = NSMakeRect(0, 0, [self leftIndentForControls], height);
+    fullscreenWindowControls_.reset([[NSView alloc] initWithFrame:frame]);
+    [fullscreenWindowControls_
+        setAutoresizingMask:NSViewMaxXMargin | NSViewHeightSizable];
+
+    // Add the traffic light buttons. The horizontal layout was determined by
+    // manual inspection on Yosemite.
+    CGFloat closeButtonX = 11;
+    CGFloat miniButtonX = 31;
+    CGFloat zoomButtonX = 51;
+
+    NSUInteger styleMask = [[tabStripView_ window] styleMask];
+    NSButton* closeButton = [NSWindow standardWindowButton:NSWindowCloseButton
+                                              forStyleMask:styleMask];
+
+    // Vertically center the buttons in the tab strip.
+    CGFloat buttonY = floor((height - NSHeight([closeButton bounds])) / 2);
+    [closeButton setFrameOrigin:NSMakePoint(closeButtonX, buttonY)];
+    [fullscreenWindowControls_ addSubview:closeButton];
+
+    NSButton* miniaturizeButton =
+        [NSWindow standardWindowButton:NSWindowMiniaturizeButton
+                          forStyleMask:styleMask];
+    [miniaturizeButton setFrameOrigin:NSMakePoint(miniButtonX, buttonY)];
+    [miniaturizeButton setEnabled:NO];
+    [fullscreenWindowControls_ addSubview:miniaturizeButton];
+
+    NSButton* zoomButton =
+        [NSWindow standardWindowButton:NSWindowZoomButton
+                          forStyleMask:styleMask];
+    [fullscreenWindowControls_ addSubview:zoomButton];
+    [zoomButton setFrameOrigin:NSMakePoint(zoomButtonX, buttonY)];
+  }
+
+  if (![permanentSubviews_ containsObject:fullscreenWindowControls_]) {
+    [self addSubviewToPermanentList:fullscreenWindowControls_];
+    [self regenerateSubviewList];
+  }
+}
+
+- (void)removeWindowControls {
+  if (fullscreenWindowControls_)
+    [permanentSubviews_ removeObject:fullscreenWindowControls_];
+  [self regenerateSubviewList];
+}
+
 - (void)themeDidChangeNotification:(NSNotification*)notification {
   [self setNewTabImages];
 }
