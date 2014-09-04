@@ -288,7 +288,7 @@ test_loop_speed_matrixvector(void)
 	}
 	t = read_timer();
 
-	printf("%lu iterations in %f seconds, avg. %.1f us/iter.\n",
+	printf("%lu iterations in %f seconds, avg. %.1f ns/iter.\n",
 	       count, t, 1e9 * t / count);
 }
 
@@ -315,7 +315,7 @@ test_loop_speed_inversetransform(void)
 	}
 	t = read_timer();
 
-	printf("%lu iterations in %f seconds, avg. %.1f us/iter.\n",
+	printf("%lu iterations in %f seconds, avg. %.1f ns/iter.\n",
 	       count, t, 1e9 * t / count);
 }
 
