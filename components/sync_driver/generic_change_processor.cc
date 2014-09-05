@@ -85,11 +85,6 @@ syncer::SyncData BuildRemoteSyncData(
                                             attachment_service_proxy);
 }
 
-const syncer::AttachmentId& AttachmentToAttachmentId(
-    const syncer::Attachment& attachment) {
-  return attachment.GetId();
-}
-
 }  // namespace
 
 GenericChangeProcessor::GenericChangeProcessor(
@@ -107,8 +102,7 @@ GenericChangeProcessor::GenericChangeProcessor(
       attachment_service_weak_ptr_factory_(attachment_service_.get()),
       attachment_service_proxy_(
           base::MessageLoopProxy::current(),
-          attachment_service_weak_ptr_factory_.GetWeakPtr()),
-      weak_ptr_factory_(this) {
+          attachment_service_weak_ptr_factory_.GetWeakPtr()) {
   DCHECK(CalledOnValidThread());
   DCHECK(attachment_service_);
 }
@@ -393,6 +387,25 @@ syncer::SyncError AttemptDelete(const syncer::SyncChange& change,
   return syncer::SyncError();
 }
 
+// A callback invoked on completion of AttachmentService::StoreAttachment.
+void IgnoreStoreResult(const syncer::AttachmentService::StoreResult&) {
+  // TODO(maniscalco): Here is where we're going to update the in-directory
+  // entry to indicate that the attachments have been successfully stored on
+  // disk.  Why do we care?  Because we might crash after persisting the
+  // directory to disk, but before we have persisted its attachments, leaving us
+  // with danging attachment ids.  Having a flag that indicates we've stored the
+  // entry will allow us to detect and filter entries with dangling attachment
+  // ids (bug 368353).
+}
+
+void StoreAttachments(syncer::AttachmentService* attachment_service,
+                      const syncer::AttachmentList& attachments) {
+  DCHECK(attachment_service);
+  syncer::AttachmentService::StoreCallback ignore_store_result =
+      base::Bind(&IgnoreStoreResult);
+  attachment_service->StoreAttachments(attachments, ignore_store_result);
+}
+
 }  // namespace
 
 syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
@@ -452,7 +465,7 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
   }
 
   if (!new_attachments.empty()) {
-    StoreAndUploadAttachments(new_attachments);
+    StoreAttachments(attachment_service_.get(), new_attachments);
   }
 
   return syncer::SyncError();
@@ -696,42 +709,6 @@ void GenericChangeProcessor::StartImpl() {
 syncer::UserShare* GenericChangeProcessor::share_handle() const {
   DCHECK(CalledOnValidThread());
   return share_handle_;
-}
-
-void GenericChangeProcessor::StoreAndUploadAttachments(
-    const syncer::AttachmentList& attachments) {
-  DCHECK(CalledOnValidThread());
-  attachment_service_->GetStore()->Write(
-      attachments,
-      base::Bind(&GenericChangeProcessor::WriteAttachmentsDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 attachments));
-}
-
-void GenericChangeProcessor::WriteAttachmentsDone(
-    const syncer::AttachmentList& attachments,
-    const syncer::AttachmentStore::Result& result) {
-  DCHECK(CalledOnValidThread());
-  if (result != syncer::AttachmentStore::SUCCESS) {
-    // TODO(maniscalco): Deal with case where an error occurred (bug 361251).
-    return;
-  }
-
-  // TODO(maniscalco): Here is where we're going to update the in-directory
-  // entry to indicate that the attachments have been successfully stored on
-  // disk.  Why do we care?  Because we might crash after persisting the
-  // directory to disk, but before we have persisted its attachments, leaving us
-  // with danging attachment ids.  Having a flag that indicates we've stored the
-  // entry will allow us to detect and filter entries with dangling attachment
-  // ids (bug 368353).
-
-  // Begin uploading the attachments now that they are safe on disk.
-  syncer::AttachmentIdSet attachment_ids;
-  std::transform(attachments.begin(),
-                 attachments.end(),
-                 std::inserter(attachment_ids, attachment_ids.end()),
-                 AttachmentToAttachmentId);
-  attachment_service_->UploadAttachments(attachment_ids);
 }
 
 }  // namespace sync_driver

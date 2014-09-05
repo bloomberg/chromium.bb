@@ -35,6 +35,15 @@ void ProxyDropCallback(
   task_runner->PostTask(FROM_HERE, base::Bind(callback, result));
 }
 
+// Invokes |callback| with |result| and |attachments| in the |task_runner|
+// thread.
+void ProxyStoreCallback(
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    const AttachmentService::StoreCallback& callback,
+    const AttachmentService::StoreResult& result) {
+  task_runner->PostTask(FROM_HERE, base::Bind(callback, result));
+}
+
 }  // namespace
 
 AttachmentServiceProxy::AttachmentServiceProxy() {
@@ -56,10 +65,6 @@ AttachmentServiceProxy::AttachmentServiceProxy(
 }
 
 AttachmentServiceProxy::~AttachmentServiceProxy() {
-}
-
-AttachmentStore* AttachmentServiceProxy::GetStore() {
-  return NULL;
 }
 
 void AttachmentServiceProxy::GetOrDownloadAttachments(
@@ -91,12 +96,17 @@ void AttachmentServiceProxy::DropAttachments(
                                             proxy_callback));
 }
 
-void AttachmentServiceProxy::UploadAttachments(
-    const AttachmentIdSet& attachment_ids) {
-  DCHECK(wrapped_task_runner_);
+void AttachmentServiceProxy::StoreAttachments(const AttachmentList& attachments,
+                                              const StoreCallback& callback) {
+  DCHECK(wrapped_task_runner_.get());
+  StoreCallback proxy_callback = base::Bind(
+      &ProxyStoreCallback, base::ThreadTaskRunnerHandle::Get(), callback);
   wrapped_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&AttachmentService::UploadAttachments, core_, attachment_ids));
+      base::Bind(&AttachmentService::StoreAttachments,
+                 core_,
+                 attachments,
+                 proxy_callback));
 }
 
 AttachmentServiceProxy::Core::Core(
@@ -105,10 +115,6 @@ AttachmentServiceProxy::Core::Core(
 }
 
 AttachmentServiceProxy::Core::~Core() {
-}
-
-AttachmentStore* AttachmentServiceProxy::Core::GetStore() {
-  return NULL;
 }
 
 void AttachmentServiceProxy::Core::GetOrDownloadAttachments(
@@ -129,12 +135,13 @@ void AttachmentServiceProxy::Core::DropAttachments(
   wrapped_->DropAttachments(attachment_ids, callback);
 }
 
-void AttachmentServiceProxy::Core::UploadAttachments(
-    const AttachmentIdSet& attachment_ids) {
+void AttachmentServiceProxy::Core::StoreAttachments(
+    const AttachmentList& attachments,
+    const StoreCallback& callback) {
   if (!wrapped_) {
     return;
   }
-  wrapped_->UploadAttachments(attachment_ids);
+  wrapped_->StoreAttachments(attachments, callback);
 }
 
 }  // namespace syncer

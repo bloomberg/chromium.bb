@@ -13,7 +13,6 @@
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_error_handler.h"
-#include "sync/api/attachments/attachment_store.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_merge_result.h"
 #include "sync/internal_api/public/attachments/attachment_service.h"
@@ -127,18 +126,6 @@ class GenericChangeProcessor : public ChangeProcessor,
                                        syncer::WriteNode* sync_node,
                                        syncer::AttachmentList* new_attachments);
 
-  // Store |attachments| locally then upload them to the sync server.
-  //
-  // Store and uploading are asynchronous operations.  |WriteAttachmentsDone|
-  // will be invoked once the attachments have been stored on the local device.
-  void StoreAndUploadAttachments(const syncer::AttachmentList& attachments);
-
-  // Invoked once attachments have been stored locally.
-  //
-  // See also AttachmentStore::WriteCallback.
-  void WriteAttachmentsDone(const syncer::AttachmentList& attachments,
-                            const syncer::AttachmentStore::Result& result);
-
   // The SyncableService this change processor will forward changes on to.
   const base::WeakPtr<syncer::SyncableService> local_service_;
 
@@ -167,8 +154,6 @@ class GenericChangeProcessor : public ChangeProcessor,
   base::WeakPtrFactory<syncer::AttachmentService>
       attachment_service_weak_ptr_factory_;
   syncer::AttachmentServiceProxy attachment_service_proxy_;
-
-  base::WeakPtrFactory<GenericChangeProcessor> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GenericChangeProcessor);
 };
