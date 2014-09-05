@@ -1141,9 +1141,21 @@ paladin.add_config('amd64-generic-paladin',
   paladin_builder_name='amd64-generic paladin',
 )
 
+paladin.add_config('amd64-generic_freon-paladin',
+  boards=['amd64-generic_freon'],
+  paladin_builder_name='amd64-generic_freon paladin',
+  important=False,
+)
+
 paladin.add_config('x32-generic-paladin',
   boards=['x32-generic'],
   paladin_builder_name='x32-generic paladin',
+  important=False,
+)
+
+paladin.add_config('arm-generic_freon-paladin',
+  boards=['arm-generic_freon'],
+  paladin_builder_name='arm-generic_freon paladin',
   important=False,
 )
 
@@ -1393,6 +1405,7 @@ _arm_release_boards = frozenset([
 ])
 _arm_full_boards = _arm_release_boards | frozenset([
   'arm-generic',
+  'arm-generic_freon',
   'arm64-generic',
 ])
 
@@ -1413,7 +1426,7 @@ _x86_release_boards = frozenset([
   'lemmings',
   'leon',
   'link',
-  'link-freon',
+  'link_freon',
   'lumpy',
   'mccloud',
   'monroe',
@@ -1441,6 +1454,7 @@ _x86_release_boards = frozenset([
 ])
 _x86_full_boards = _x86_release_boards | frozenset([
   'amd64-generic',
+  'amd64-generic_freon',
   'gizmo',
   'x32-generic',
   'x86-generic',
