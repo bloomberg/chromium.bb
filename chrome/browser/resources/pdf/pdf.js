@@ -147,7 +147,10 @@ function PDFViewer() {
       var MIN_ZOOM_DELTA = 0.01;
       var zoomDelta = Math.abs(this.viewport_.zoom -
                                zoomChangeInfo.newZoomFactor);
-      if (zoomDelta > MIN_ZOOM_DELTA)
+      // We should not change zoom level when we are responsible for initiating
+      // the zoom. onZoomChange() is called before setZoomComplete() callback
+      // when we initiate the zoom.
+      if ((zoomDelta > MIN_ZOOM_DELTA) && !this.setZoomInProgress_)
         this.viewport_.setZoom(zoomChangeInfo.newZoomFactor);
     }.bind(this));
   }
@@ -270,6 +273,26 @@ PDFViewer.prototype = {
 
   /**
    * @private
+   * Handle open pdf parameters. This function updates the viewport as per
+   * the parameters mentioned in the url while opening pdf. The order is
+   * important as later actions can override the effects of previous actions.
+   */
+  handleURLParams_: function() {
+    if (this.urlParams_.page)
+      this.viewport_.goToPage(this.urlParams_.page);
+    if (this.urlParams_.position) {
+      // Make sure we don't cancel effect of page parameter.
+      this.viewport_.position = {
+        x: this.viewport_.position.x + this.urlParams_.position.x,
+        y: this.viewport_.position.y + this.urlParams_.position.y
+      };
+    }
+    if (this.urlParams_.zoom)
+      this.viewport_.setZoom(this.urlParams_.zoom);
+  },
+
+  /**
+   * @private
    * Update the loading progress of the document in response to a progress
    * message being received from the plugin.
    * @param {number} progress the progress as a percentage.
@@ -287,19 +310,15 @@ PDFViewer.prototype = {
       }
     } else if (progress == 100) {
       // Document load complete.
+      if (this.lastViewportPosition_)
+        this.viewport_.position = this.lastViewportPosition_;
+      this.handleURLParams_();
       this.loaded = true;
       var loadEvent = new Event('pdfload');
       window.dispatchEvent(loadEvent);
       this.sendScriptingMessage_({
         type: 'documentLoaded'
       });
-      if (this.lastViewportPosition_)
-        this.viewport_.position = this.lastViewportPosition_;
-
-      // Handle open pdf params. Order is important as later actions can
-      // override the effects of previous actions.
-      if (this.urlParams_.page)
-        this.viewport_.goToPage(this.urlParams_.page);
     }
   },
 
