@@ -135,7 +135,8 @@ FileTasks.UMA_INDEX_KNOWN_EXTENSIONS_ = Object.freeze([
   '.m4a', '.m4v', '.mid', '.mkv', '.mov', '.mp3', '.mp4', '.mpg', '.odf',
   '.odp', '.ods', '.odt', '.oga', '.ogg', '.ogv', '.pdf', '.png', '.ppt',
   '.pptx', '.ra', '.ram', '.rar', '.rm', '.rtf', '.wav', '.webm', '.webp',
-  '.wma', '.wmv', '.xls', '.xlsx',
+  '.wma', '.wmv', '.xls', '.xlsx', '.crdownload', '.crx', '.dmg', '.exe',
+  '.html', 'htm', '.jar', '.ps', '.torrent', '.txt', '.zip',
 ]);
 
 /**

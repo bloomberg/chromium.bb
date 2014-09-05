@@ -51407,6 +51407,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="46" label=".wmv"/>
   <int value="47" label=".xls"/>
   <int value="48" label=".xlsx"/>
+  <int value="49" label=".crdownload"/>
+  <int value="50" label=".crx"/>
+  <int value="51" label=".dmg"/>
+  <int value="52" label=".exe"/>
+  <int value="53" label=".html"/>
+  <int value="54" label=".htm"/>
+  <int value="55" label=".jar"/>
+  <int value="56" label=".ps"/>
+  <int value="57" label=".torrent"/>
+  <int value="58" label=".txt"/>
+  <int value="59" label=".zip"/>
 </enum>
 
 <enum name="VPNDriver" type="int">
