@@ -32,8 +32,8 @@ class Ranges {
   size_t size() const;
 
   // Return the "i"'th range's start & end (0-based).
-  T start(int i) const;
-  T end(int i) const;
+  T start(size_t i) const;
+  T end(size_t i) const;
 
   // Clear all ranges.
   void clear();
@@ -119,12 +119,12 @@ size_t Ranges<T>::size() const {
 }
 
 template<class T>
-T Ranges<T>::start(int i) const {
+T Ranges<T>::start(size_t i) const {
   return ranges_[i].first;
 }
 
 template<class T>
-T Ranges<T>::end(int i) const {
+T Ranges<T>::end(size_t i) const {
   return ranges_[i].second;
 }
 
