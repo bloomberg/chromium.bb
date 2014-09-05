@@ -1700,6 +1700,8 @@
             'rendering/TableLayout.h',
             'rendering/TextAutosizer.cpp',
             'rendering/TextAutosizer.h',
+            'rendering/TextPainter.cpp',
+            'rendering/TextPainter.h',
             'rendering/TextRunConstructor.cpp',
             'rendering/TextRunConstructor.h',
             'rendering/TrailingFloatsRootInlineBox.h',
