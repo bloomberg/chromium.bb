@@ -200,7 +200,6 @@ struct weston_output {
 	int dirty;
 	struct wl_signal frame_signal;
 	struct wl_signal destroy_signal;
-	struct wl_signal move_signal;
 	int move_x, move_y;
 	uint32_t frame_time;
 	int disable_planes;
