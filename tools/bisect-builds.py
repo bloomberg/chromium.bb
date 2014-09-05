@@ -33,10 +33,7 @@ OFFICIAL_BASE_URL = 'http://%s/%s' % (GOOGLE_APIS_URL, GS_BUCKET_NAME)
 CHANGELOG_URL = ('https://chromium.googlesource.com/chromium/src/+log/%s..%s')
 
 # URL to convert SVN revision to git hash.
-CRREV_URL = ('http://crrev.com/')
-
-# Search pattern to match git hash.
-GITHASH_SEARCH_PATTERN = (r'<title>(\w+)\s')
+CRREV_URL = ('https://cr-rev.appspot.com/_ah/api/crrev/v1/redirect/')
 
 # URL template for viewing changelogs between official versions.
 OFFICIAL_CHANGELOG_URL = ('https://chromium.googlesource.com/chromium/'
@@ -955,8 +952,9 @@ def PrintChangeLog(min_chromium_rev, max_chromium_rev):
     crrev_url = CRREV_URL + str(svn_revision)
     url = urllib.urlopen(crrev_url)
     if url.getcode() == 200:
-      result = re.search(GITHASH_SEARCH_PATTERN, url.read())
-      return result.group(1)
+      data = json.loads(url.read())
+      if 'git_sha' in data:
+        return data['git_sha']
 
   print ('  ' + CHANGELOG_URL % (_GetGitHashFromSVNRevision(min_chromium_rev),
          _GetGitHashFromSVNRevision(max_chromium_rev)))
