@@ -106,6 +106,16 @@ RenderFrameHostManager::~RenderFrameHostManager() {
 
   // Delete any swapped out RenderFrameHosts.
   STLDeleteValues(&proxy_hosts_);
+
+  // PlzNavigate
+  // There is an active navigation request for this RFHM so it needs to be
+  // canceled.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation)) {
+    if (navigation_request_.get())
+      navigation_request_->CancelNavigation();
+  }
+
 }
 
 void RenderFrameHostManager::Init(BrowserContext* browser_context,
@@ -428,6 +438,14 @@ void RenderFrameHostManager::ResumeResponseDeferredAtStart() {
 
 void RenderFrameHostManager::DidNavigateFrame(
     RenderFrameHostImpl* render_frame_host) {
+  // PlzNavigate
+  // The navigation request has been committed so the browser process doesn't
+  // need to care about it anymore.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation)) {
+    navigation_request_.reset();
+  }
+
   if (!cross_navigation_pending_) {
     DCHECK(!pending_render_frame_host_);
 
@@ -582,6 +600,11 @@ void RenderFrameHostManager::OnBeginNavigation(
   // crashed) not to display a sad tab while navigating.
   // TODO(clamy): Spawn a speculative renderer process if we do not have one to
   // use for the navigation.
+
+  // If there is an ongoing request it must be canceled.
+  if (navigation_request_.get())
+    navigation_request_->CancelNavigation();
+
   navigation_request_.reset(new NavigationRequest(
       info, frame_tree_node_->frame_tree_node_id()));
   navigation_request_->BeginNavigation(params.request_body);
@@ -592,6 +615,14 @@ void RenderFrameHostManager::CommitNavigation(
     const NavigationBeforeCommitInfo& info) {
   CHECK(CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
+  DCHECK(navigation_request_.get());
+  // Ignores navigation commits if the request ID doesn't match the current
+  // active request.
+  if (navigation_request_->navigation_request_id() !=
+          info.navigation_request_id) {
+    return;
+  }
+
   // Pick the right RenderFrameHost to commit the navigation.
   SiteInstance* current_instance = render_frame_host_->GetSiteInstance();
   // TODO(clamy): Replace the default values by the right ones. This may require

@@ -1698,6 +1698,7 @@ TEST_F(RenderFrameHostManagerTest, BrowserSideNavigationBeginNavigation) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
   const GURL kUrl3("http://www.gmail.com/");
+  const int64 kFirstNavRequestID = 1;
 
   // TODO(clamy): we should be enabling browser side navigations here
   // when CommitNavigation is properly implemented.
@@ -1722,6 +1723,7 @@ TEST_F(RenderFrameHostManagerTest, BrowserSideNavigationBeginNavigation) {
       kUrl1, subframe_request->info().first_party_for_cookies);
   EXPECT_FALSE(subframe_request->info().is_main_frame);
   EXPECT_TRUE(subframe_request->info().parent_is_main_frame);
+  EXPECT_EQ(kFirstNavRequestID, subframe_request->navigation_request_id());
 
   // Simulate a BeginNavigation IPC on the main frame.
   contents()->GetMainFrame()->SendBeginNavigationWithURL(kUrl3);
@@ -1732,6 +1734,7 @@ TEST_F(RenderFrameHostManagerTest, BrowserSideNavigationBeginNavigation) {
   EXPECT_EQ(kUrl3, main_request->info().first_party_for_cookies);
   EXPECT_TRUE(main_request->info().is_main_frame);
   EXPECT_FALSE(main_request->info().parent_is_main_frame);
+  EXPECT_EQ(kFirstNavRequestID + 1, main_request->navigation_request_id());
 }
 
 // PlzNavigate: Test that RequestNavigation creates a NavigationRequest and that
@@ -1755,6 +1758,7 @@ TEST_F(RenderFrameHostManagerTest,
   // Now commit the same url.
   NavigationBeforeCommitInfo commit_info;
   commit_info.navigation_url = kUrl;
+  commit_info.navigation_request_id = main_request->navigation_request_id();
   render_manager->CommitNavigation(commit_info);
   main_request = GetNavigationRequestForRenderFrameManager(render_manager);
 
@@ -1790,10 +1794,60 @@ TEST_F(RenderFrameHostManagerTest,
 
   NavigationBeforeCommitInfo commit_info;
   commit_info.navigation_url = kUrl2;
+  commit_info.navigation_request_id = main_request->navigation_request_id();
   render_manager->CommitNavigation(commit_info);
-  main_request = GetNavigationRequestForRenderFrameManager(render_manager);
   EXPECT_NE(main_test_rfh(), rfh);
   EXPECT_TRUE(main_test_rfh()->render_view_host()->IsRenderViewLive());
+}
+
+// PlzNavigate: Test that a navigation commit is ignored if another request has
+// been issued in the meantime.
+// TODO(carlosk): add checks to assert that the cancel call was sent to
+// ResourceDispatcherHost in the IO thread by extending
+// ResourceDispatcherHostDelegate (like in cross_site_transfer_browsertest.cc
+// and plugin_browsertest.cc).
+TEST_F(RenderFrameHostManagerTest,
+       BrowserSideNavigationIgnoreStaleNavigationCommit) {
+  const GURL kUrl0("http://www.wikipedia.org/");
+  const GURL kUrl0_site = SiteInstance::GetSiteForURL(browser_context(), kUrl0);
+  const GURL kUrl1("http://www.chromium.org/");
+  const GURL kUrl2("http://www.google.com/");
+  const GURL kUrl2_site = SiteInstance::GetSiteForURL(browser_context(), kUrl2);
+
+  // Initialization.
+  contents()->NavigateAndCommit(kUrl0);
+  RenderFrameHostManager* render_manager =
+      main_test_rfh()->frame_tree_node()->render_manager();
+  EnableBrowserSideNavigation();
+  EXPECT_EQ(kUrl0_site, main_test_rfh()->GetSiteInstance()->GetSiteURL());
+
+  // Request navigation to the 1st URL and gather data.
+  main_test_rfh()->SendBeginNavigationWithURL(kUrl1);
+  NavigationRequest* request1 =
+      GetNavigationRequestForRenderFrameManager(render_manager);
+  ASSERT_TRUE(request1);
+  int64 request_id1 = request1->navigation_request_id();
+
+  // Request navigation to the 2nd URL and gather more data.
+  main_test_rfh()->SendBeginNavigationWithURL(kUrl2);
+  NavigationRequest* request2 =
+      GetNavigationRequestForRenderFrameManager(render_manager);
+  ASSERT_TRUE(request2);
+  int64 request_id2 = request2->navigation_request_id();
+  EXPECT_NE(request_id1, request_id2);
+
+  // Confirms that a stale commit is ignored by the RHFM.
+  NavigationBeforeCommitInfo nbc_info;
+  nbc_info.navigation_url = kUrl1;
+  nbc_info.navigation_request_id = request_id1;
+  render_manager->CommitNavigation(nbc_info);
+  EXPECT_EQ(kUrl0_site, main_test_rfh()->GetSiteInstance()->GetSiteURL());
+
+  // Confirms that a valid, request-matching commit is correctly processed.
+  nbc_info.navigation_url = kUrl2;
+  nbc_info.navigation_request_id = request_id2;
+  render_manager->CommitNavigation(nbc_info);
+  EXPECT_EQ(kUrl2_site, main_test_rfh()->GetSiteInstance()->GetSiteURL());
 }
 
 }  // namespace content

@@ -587,6 +587,7 @@
       'browser/frame_host/interstitial_page_impl.h',
       'browser/frame_host/interstitial_page_navigator_impl.cc',
       'browser/frame_host/interstitial_page_navigator_impl.h',
+      'browser/frame_host/navigation_before_commit_info.cc',
       'browser/frame_host/navigation_before_commit_info.h',
       'browser/frame_host/navigation_controller_android.cc',
       'browser/frame_host/navigation_controller_android.h',

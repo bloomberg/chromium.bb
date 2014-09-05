@@ -1660,9 +1660,16 @@ void ResourceDispatcherHostImpl::FinishedWithResourcesForRequest(
   IncrementOutstandingRequestsCount(-1, *info);
 }
 
-void ResourceDispatcherHostImpl::NavigationRequest(
+void ResourceDispatcherHostImpl::StartNavigationRequest(
     const NavigationRequestInfo& info,
     scoped_refptr<ResourceRequestBody> request_body,
+    int64 navigation_request_id,
+    int64 frame_node_id) {
+  NOTIMPLEMENTED();
+}
+
+void ResourceDispatcherHostImpl::CancelNavigationRequest(
+    int64 navigation_request_id,
     int64 frame_node_id) {
   NOTIMPLEMENTED();
 }

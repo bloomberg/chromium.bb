@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/time/time.h"
+#include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "url/gurl.h"
@@ -20,7 +22,7 @@ namespace content {
 // thread where it should be used to send a FrameMsg_CommitNavigation message to
 // the renderer.
 struct NavigationBeforeCommitInfo {
-  NavigationBeforeCommitInfo() {};
+  CONTENT_EXPORT NavigationBeforeCommitInfo();
 
   // The url that is actually being loaded.
   GURL navigation_url;
@@ -35,6 +37,9 @@ struct NavigationBeforeCommitInfo {
   // The navigationStart time to expose to JS for this navigation.
   // TODO(clamy): Add the other values that matter to the Navigation Timing API.
   base::TimeTicks browser_navigation_start;
+
+  // The unique ID of this navigation request.
+  int64 navigation_request_id;
 };
 
 }  // namespace content

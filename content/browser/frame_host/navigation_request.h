@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/frame_host/navigation_request_info.h"
+#include "content/common/content_export.h"
 
 namespace content {
 class ResourceRequestBody;
@@ -20,21 +21,30 @@ class ResourceRequestBody;
 // the navigation following its refactoring.
 class NavigationRequest {
  public:
-  NavigationRequest(const NavigationRequestInfo& info, int64 frame_node_id);
+  NavigationRequest(const NavigationRequestInfo& info,
+                    int64 frame_tree_node_id);
 
   ~NavigationRequest();
-
-  const NavigationRequestInfo& info() const { return info_; }
-  int64 frame_node_id() const { return frame_node_id_; }
 
   // Called on the UI thread by the RenderFrameHostManager which owns the
   // NavigationRequest. After calling this function, |body| can no longer be
   // manipulated on the UI thread.
   void BeginNavigation(scoped_refptr<ResourceRequestBody> body);
 
+  // Called on the UI thread by the RenderFrameHostManager which owns the
+  // NavigationRequest whenever this navigation request should be canceled.
+  void CancelNavigation();
+
+  const NavigationRequestInfo& info() const { return info_; }
+
+  int64 frame_tree_node_id() const { return frame_tree_node_id_; }
+
+  int64 navigation_request_id() const { return navigation_request_id_; }
+
  private:
+  const int64 navigation_request_id_;
   const NavigationRequestInfo info_;
-  const int64 frame_node_id_;
+  const int64 frame_tree_node_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationRequest);
 };
