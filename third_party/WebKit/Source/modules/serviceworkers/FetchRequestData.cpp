@@ -55,7 +55,7 @@ FetchRequestData* FetchRequestData::createRestrictedCopy(ExecutionContext* conte
     request->m_url = m_url;
     request->m_method = m_method;
     request->m_headerList = m_headerList->createCopy();
-    // FIXME: Support body.
+    request->m_blobDataHandle = m_blobDataHandle;
     request->m_origin = origin;
     if (context->isDocument())
         request->m_referrer.setClient(blink::Referrer(context->url().strippedForUseAsReferrer(), toDocument(context)->referrerPolicy()));
@@ -75,7 +75,7 @@ FetchRequestData* FetchRequestData::createCopy() const
     request->m_method = m_method;
     request->m_headerList = m_headerList->createCopy();
     request->m_unsafeRequestFlag = m_unsafeRequestFlag;
-    // FIXME: Support body.
+    request->m_blobDataHandle = m_blobDataHandle;
     request->m_origin = m_origin;
     request->m_sameOriginDataURLFlag = m_sameOriginDataURLFlag;
     request->m_context = m_context;

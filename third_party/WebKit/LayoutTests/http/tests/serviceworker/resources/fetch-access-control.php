@@ -44,10 +44,30 @@ if (isset($_COOKIE['cookie'])) {
     $cookie = $_COOKIE['cookie'];
 }
 
+$files = array();
+foreach ($_FILES as $key => $file) {
+    $content = '';
+    $fp = fopen($file['tmp_name'], 'r');
+    if ($fp) {
+        $content = $file['size'] > 0 ? fread($fp, $file['size']) : '';
+        fclose($fp);
+    }
+    $files[] = array('key' => $key,
+                     'name' => $file['name'],
+                     'type' => $file['type'],
+                     'error' => $file['error'],
+                     'size' => $file['size'],
+                     'content' => $content);
+}
+
 header('Content-Type: application/json');
 $arr = array('jsonpResult' => 'success',
              'method' => $_SERVER['REQUEST_METHOD'],
              'headers' => getallheaders(),
+             'body' => file_get_contents('php://input'),
+             'files' => $files,
+             'get' => $_GET,
+             'post' => $_POST,
              'username' => $username,
              'password' => $password,
              'cookie' => $cookie);

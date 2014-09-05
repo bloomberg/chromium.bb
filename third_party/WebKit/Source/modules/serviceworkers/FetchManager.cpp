@@ -258,6 +258,7 @@ void FetchManager::Loader::performNetworkError()
 
 void FetchManager::Loader::performHTTPFetch()
 {
+    ASSERT(m_request->url().protocolIsInHTTPFamily());
     // CORS preflight fetch procedure is implemented inside DocumentThreadableLoader.
 
     // "1. Let |HTTPRequest| be a copy of |request|, except that |HTTPRequest|'s
@@ -271,6 +272,15 @@ void FetchManager::Loader::performHTTPFetch()
     const Vector<OwnPtr<FetchHeaderList::Header> >& list = m_request->headerList()->list();
     for (size_t i = 0; i < list.size(); ++i) {
         request.addHTTPHeaderField(AtomicString(list[i]->first), AtomicString(list[i]->second));
+    }
+
+    if (m_request->method() != "GET" && m_request->method() != "HEAD") {
+        RefPtr<BlobDataHandle> blobDataHandle = m_request->blobDataHandle();
+        if (blobDataHandle.get()) {
+            RefPtr<FormData> httpBody(FormData::create());
+            httpBody->appendBlob(blobDataHandle->uuid(), blobDataHandle);
+            request.setHTTPBody(httpBody);
+        }
     }
 
     // "2. Append `Referer`/empty byte sequence, if |HTTPRequest|'s |referrer|
