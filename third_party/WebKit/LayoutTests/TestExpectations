@@ -1326,8 +1326,6 @@ crbug.com/409535 [ Win Release ] http/tests/xmlhttprequest/workers/close.html [ 
 crbug.com/409534 compositing/overflow/do-not-crash-use-after-free-update-widget-positions.html [ Failure Pass ]
 crbug.com/409534 virtual/gpu/compositedscrolling/overflow/do-not-crash-use-after-free-update-widget-positions.html [ Failure Pass ]
 
-Bug(jchaffraix) fast/layers/scroll-descendant-with-cached-cliprects.html [ NeedsRebaseline ]
-
 crbug.com/401902  [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-lose-restore-googol-size.html [ Pass Failure ]
 
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/cursor-continue-validity.html [ Pass Slow ]
