@@ -57,9 +57,16 @@ inline bool ImageDataContainsRect(const pp::ImageData& image_data,
       pp::Rect(image_data.size()).Contains(rect);
 }
 
-bool AlphaBlend(const pp::ImageData& src, const pp::Rect& src_rc,
+void AlphaBlend(const pp::ImageData& src, const pp::Rect& src_rc,
                 pp::ImageData* dest, const pp::Point& dest_origin,
                 uint8 alpha_adjustment) {
+  if (src_rc.IsEmpty() || !ImageDataContainsRect(src, src_rc))
+    return;
+
+  pp::Rect dest_rc(dest_origin, src_rc.size());
+  if (dest_rc.IsEmpty() || !ImageDataContainsRect(*dest, dest_rc))
+    return;
+
   const uint32_t* src_origin_pixel = src.GetAddr32(src_rc.point());
   uint32_t* dest_origin_pixel = dest->GetAddr32(dest_origin);
 
@@ -86,7 +93,6 @@ bool AlphaBlend(const pp::ImageData& src, const pp::Rect& src_rc,
     dest_origin_pixel = reinterpret_cast<uint32_t*>(
         reinterpret_cast<char*>(dest_origin_pixel) + dest->stride());
   }
-  return true;
 }
 
 void GradientFill(pp::ImageData* image, const pp::Rect& rc,

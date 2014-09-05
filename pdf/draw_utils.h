@@ -16,7 +16,7 @@ namespace chrome_pdf {
 const uint8 kOpaqueAlpha = 0xFF;
 const uint8 kTransparentAlpha = 0x00;
 
-bool AlphaBlend(const pp::ImageData& src, const pp::Rect& src_rc,
+void AlphaBlend(const pp::ImageData& src, const pp::Rect& src_rc,
                 pp::ImageData* dest, const pp::Point& dest_origin,
                 uint8 alpha_adjustment);
 
