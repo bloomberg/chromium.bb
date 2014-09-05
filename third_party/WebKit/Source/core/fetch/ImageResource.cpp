@@ -430,7 +430,11 @@ void ImageResource::didDraw(const blink::Image* image)
 {
     if (!image || image != m_image)
         return;
-    Resource::didAccessDecodedData();
+    // decodedSize() == 0 indicates that the image is decoded into DiscardableMemory,
+    // not in MemoryCache. So we don't need to call Resource::didAccessDecodedData()
+    // to update MemoryCache.
+    if (decodedSize() != 0)
+        Resource::didAccessDecodedData();
 }
 
 bool ImageResource::shouldPauseAnimation(const blink::Image* image)
