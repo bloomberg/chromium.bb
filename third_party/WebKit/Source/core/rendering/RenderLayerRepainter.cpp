@@ -91,20 +91,6 @@ void RenderLayerRepainter::paintInvalidationIncludingNonCompositingDescendantsIn
     }
 }
 
-LayoutRect RenderLayerRepainter::paintInvalidationRectIncludingNonCompositingDescendants() const
-{
-    LayoutRect paintInvalidationRect = m_renderer.previousPaintInvalidationRect();
-
-    for (RenderLayer* child = m_renderer.layer()->firstChild(); child; child = child->nextSibling()) {
-        // Don't include paint invalidation rects for composited child layers; they will paint themselves and have a different origin.
-        if (child->compositingState() == PaintsIntoOwnBacking || child->compositingState() == PaintsIntoGroupedBacking)
-            continue;
-
-        paintInvalidationRect.unite(child->paintInvalidator().paintInvalidationRectIncludingNonCompositingDescendants());
-    }
-    return paintInvalidationRect;
-}
-
 void RenderLayerRepainter::setBackingNeedsPaintInvalidationInRect(const LayoutRect& r)
 {
     // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,
