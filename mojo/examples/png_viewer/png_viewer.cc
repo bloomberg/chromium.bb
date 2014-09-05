@@ -4,21 +4,24 @@
 
 #include <algorithm>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_tokenizer.h"
 #include "mojo/examples/media_viewer/media_viewer.mojom.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
+#include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
-#include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
+#include "mojo/services/public/interfaces/content_handler/content_handler.mojom.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -32,46 +35,81 @@ namespace examples {
 
 class PNGViewer;
 
-class ZoomableMediaImpl : public InterfaceImpl<ZoomableMedia> {
+// TODO(aa): Hook up ZoomableMedia interface again.
+class PNGView : public ViewManagerDelegate, public ViewObserver {
  public:
-  explicit ZoomableMediaImpl(PNGViewer* viewer) : viewer_(viewer) {}
-  virtual ~ZoomableMediaImpl() {}
+  static void Spawn(URLResponsePtr response,
+                    ServiceProviderImpl* exported_services,
+                    scoped_ptr<ServiceProvider> imported_services,
+                    Shell* shell) {
+    // PNGView deletes itself when its View is destroyed.
+    new PNGView(
+        response.Pass(), exported_services, imported_services.Pass(), shell);
+  }
 
  private:
-  // Overridden from ZoomableMedia:
-  virtual void ZoomIn() OVERRIDE;
-  virtual void ZoomOut() OVERRIDE;
-  virtual void ZoomToActualSize() OVERRIDE;
+  static const uint16_t kMaxZoomPercentage = 400;
+  static const uint16_t kMinZoomPercentage = 20;
+  static const uint16_t kDefaultZoomPercentage = 100;
+  static const uint16_t kZoomStep = 20;
 
-  PNGViewer* viewer_;
+  PNGView(URLResponsePtr response,
+          ServiceProviderImpl* exported_services,
+          scoped_ptr<ServiceProvider> imported_services,
+          Shell* shell)
+      : imported_services_(imported_services.Pass()),
+        root_(NULL),
+        view_manager_client_factory_(shell, this),
+        zoom_percentage_(kDefaultZoomPercentage) {
+    exported_services->AddService(&view_manager_client_factory_);
+    DecodePNG(response.Pass());
+  }
 
-  DISALLOW_COPY_AND_ASSIGN(ZoomableMediaImpl);
-};
+  virtual ~PNGView() {
+    if (root_)
+      root_->RemoveObserver(this);
+  }
 
-class NavigatorImpl : public InterfaceImpl<Navigator> {
- public:
-  explicit NavigatorImpl(PNGViewer* viewer) : viewer_(viewer) {}
-  virtual ~NavigatorImpl() {}
+  // Overridden from ViewManagerDelegate:
+  virtual void OnEmbed(ViewManager* view_manager,
+                       View* root,
+                       ServiceProviderImpl* exported_services,
+                       scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
+    root_ = root;
+    root_->AddObserver(this);
+    root_->SetColor(SK_ColorGRAY);
+    if (!bitmap_.isNull())
+      DrawBitmap();
+  }
 
- private:
-  // Overridden from Navigator:
-  virtual void Navigate(
-      uint32_t view_id,
-      NavigationDetailsPtr navigation_details,
-      ResponseDetailsPtr response_details) OVERRIDE {
-    int content_length = GetContentLength(response_details->response->headers);
-    unsigned char* data = new unsigned char[content_length];
-    unsigned char* buf = data;
+  virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE {
+    // TODO(aa): Need to figure out how shutdown works.
+  }
+
+  // Overridden from ViewObserver:
+  virtual void OnViewBoundsChanged(View* view,
+                                   const gfx::Rect& old_bounds,
+                                   const gfx::Rect& new_bounds) OVERRIDE {
+    DCHECK_EQ(view, root_);
+    DrawBitmap();
+  }
+
+  virtual void OnViewDestroyed(View* view) OVERRIDE {
+    DCHECK_EQ(view, root_);
+    delete this;
+  }
+
+  void DecodePNG(URLResponsePtr response) {
+    int content_length = GetContentLength(response->headers);
+    scoped_ptr<unsigned char[]> data(new unsigned char[content_length]);
+    unsigned char* buf = data.get();
     uint32_t bytes_remaining = content_length;
     uint32_t num_bytes = bytes_remaining;
     while (bytes_remaining > 0) {
       MojoResult result = ReadDataRaw(
-          response_details->response->body.get(),
-          buf,
-          &num_bytes,
-          MOJO_READ_DATA_FLAG_NONE);
+          response->body.get(), buf, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
       if (result == MOJO_RESULT_SHOULD_WAIT) {
-        Wait(response_details->response->body.get(),
+        Wait(response->body.get(),
              MOJO_HANDLE_SIGNAL_READABLE,
              MOJO_DEADLINE_INDEFINITE);
       } else if (result == MOJO_RESULT_OK) {
@@ -82,56 +120,24 @@ class NavigatorImpl : public InterfaceImpl<Navigator> {
       }
     }
 
-    SkBitmap bitmap;
-    gfx::PNGCodec::Decode(static_cast<const unsigned char*>(data),
-                          content_length, &bitmap);
-    UpdateView(view_id, bitmap);
-
-    delete[] data;
+    gfx::PNGCodec::Decode(static_cast<const unsigned char*>(data.get()),
+                          content_length,
+                          &bitmap_);
   }
 
-  void UpdateView(Id view_id, const SkBitmap& bitmap);
+  void DrawBitmap() {
+    if (!root_)
+      return;
 
-  int GetContentLength(const Array<String>& headers) {
-    for (size_t i = 0; i < headers.size(); ++i) {
-      base::StringTokenizer t(headers[i], ": ;=");
-      while (t.GetNext()) {
-        if (!t.token_is_delim() && t.token() == "Content-Length") {
-          while (t.GetNext()) {
-            if (!t.token_is_delim())
-              return atoi(t.token().c_str());
-          }
-        }
-      }
-    }
-    return 0;
-  }
-
-  PNGViewer* viewer_;
-
-  DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
-};
-
-class PNGViewer
-    : public ApplicationDelegate,
-      public ViewManagerDelegate,
-      public ViewObserver {
- public:
-  PNGViewer()
-      : navigator_factory_(this),
-        zoomable_media_factory_(this),
-        view_manager_client_factory_(this),
-        root_(NULL),
-        zoom_percentage_(kDefaultZoomPercentage) {}
-  virtual ~PNGViewer() {
-    if (root_)
-      root_->RemoveObserver(this);
-  }
-
-  void UpdateView(Id view_id, const SkBitmap& bitmap) {
-    bitmap_ = bitmap;
-    zoom_percentage_ = kDefaultZoomPercentage;
-    DrawBitmap();
+    skia::RefPtr<SkCanvas> canvas(skia::AdoptRef(skia::CreatePlatformCanvas(
+        root_->bounds().width(), root_->bounds().height(), true)));
+    canvas->drawColor(SK_ColorGRAY);
+    SkPaint paint;
+    SkScalar scale =
+        SkFloatToScalar(zoom_percentage_ * 1.0f / kDefaultZoomPercentage);
+    canvas->scale(scale, scale);
+    canvas->drawBitmap(bitmap_, 0, 0, &paint);
+    root_->SetContents(skia::GetTopDevice(*canvas)->accessBitmap(true));
   }
 
   void ZoomIn() {
@@ -155,95 +161,76 @@ class PNGViewer
     DrawBitmap();
   }
 
+  int GetContentLength(const Array<String>& headers) {
+    for (size_t i = 0; i < headers.size(); ++i) {
+      base::StringTokenizer t(headers[i], ": ;=");
+      while (t.GetNext()) {
+        if (!t.token_is_delim() && t.token() == "Content-Length") {
+          while (t.GetNext()) {
+            if (!t.token_is_delim())
+              return atoi(t.token().c_str());
+          }
+        }
+      }
+    }
+    return 0;
+  }
+
+  SkBitmap bitmap_;
+  scoped_ptr<ServiceProvider> imported_services_;
+  View* root_;
+  ViewManagerClientFactory view_manager_client_factory_;
+  uint16_t zoom_percentage_;
+
+  DISALLOW_COPY_AND_ASSIGN(PNGView);
+};
+
+class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
+ public:
+  explicit ContentHandlerImpl(Shell* shell) : shell_(shell) {}
+  virtual ~ContentHandlerImpl() {}
+
  private:
-  static const uint16_t kMaxZoomPercentage = 400;
-  static const uint16_t kMinZoomPercentage = 20;
-  static const uint16_t kDefaultZoomPercentage = 100;
-  static const uint16_t kZoomStep = 20;
+  // Overridden from ContentHandler:
+  virtual void OnConnect(
+      const mojo::String& url,
+      URLResponsePtr response,
+      InterfaceRequest<ServiceProvider> service_provider) OVERRIDE {
+    ServiceProviderImpl* exported_services = new ServiceProviderImpl();
+    BindToRequest(exported_services, &service_provider);
+    scoped_ptr<ServiceProvider> remote(
+        exported_services->CreateRemoteServiceProvider());
+    PNGView::Spawn(response.Pass(), exported_services, remote.Pass(), shell_);
+  }
+
+  Shell* shell_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentHandlerImpl);
+};
+
+class PNGViewer : public ApplicationDelegate {
+ public:
+  PNGViewer() {}
+ private:
+  // Overridden from ApplicationDelegate:
+  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+    content_handler_factory_.reset(
+        new InterfaceFactoryImplWithContext<ContentHandlerImpl, Shell>(
+            app->shell()));
+  }
 
   // Overridden from ApplicationDelegate:
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE {
-    connection->AddService(&navigator_factory_);
-    connection->AddService(&zoomable_media_factory_);
-    connection->AddService(&view_manager_client_factory_);
+    connection->AddService(content_handler_factory_.get());
     return true;
   }
 
-  // Overridden from ViewManagerDelegate:
-  virtual void OnEmbed(ViewManager* view_manager,
-                       View* root,
-                       ServiceProviderImpl* exported_services,
-                       scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
-    root_ = root;
-    root_->AddObserver(this);
-    root_->SetColor(SK_ColorGRAY);
-    if (!bitmap_.isNull())
-      DrawBitmap();
-  }
-  virtual void OnViewManagerDisconnected(
-      ViewManager* view_manager) OVERRIDE {
-    base::MessageLoop::current()->Quit();
-  }
-
-  void DrawBitmap() {
-    if (!root_)
-      return;
-
-    skia::RefPtr<SkCanvas> canvas(skia::AdoptRef(skia::CreatePlatformCanvas(
-        root_->bounds().width(),
-        root_->bounds().height(),
-        true)));
-    canvas->drawColor(SK_ColorGRAY);
-    SkPaint paint;
-    SkScalar scale =
-        SkFloatToScalar(zoom_percentage_ * 1.0f / kDefaultZoomPercentage);
-    canvas->scale(scale, scale);
-    canvas->drawBitmap(bitmap_, 0, 0, &paint);
-    root_->SetContents(skia::GetTopDevice(*canvas)->accessBitmap(true));
-  }
-
-  // ViewObserver:
-  virtual void OnViewBoundsChanged(View* view,
-                                   const gfx::Rect& old_bounds,
-                                   const gfx::Rect& new_bounds) OVERRIDE {
-    DCHECK_EQ(view, root_);
-    DrawBitmap();
-  }
-  virtual void OnViewDestroyed(View* view) OVERRIDE {
-    DCHECK_EQ(view, root_);
-    view->RemoveObserver(this);
-    root_ = NULL;
-  }
-
-  InterfaceFactoryImplWithContext<NavigatorImpl, PNGViewer> navigator_factory_;
-  InterfaceFactoryImplWithContext<ZoomableMediaImpl, PNGViewer>
-      zoomable_media_factory_;
-  ViewManagerClientFactory view_manager_client_factory_;
-
-  View* root_;
-  SkBitmap bitmap_;
-  uint16_t zoom_percentage_;
+  scoped_ptr<InterfaceFactoryImplWithContext<ContentHandlerImpl, Shell> >
+      content_handler_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PNGViewer);
 };
-
-void ZoomableMediaImpl::ZoomIn() {
-  viewer_->ZoomIn();
-}
-
-void ZoomableMediaImpl::ZoomOut() {
-  viewer_->ZoomOut();
-}
-
-void ZoomableMediaImpl::ZoomToActualSize() {
-  viewer_->ZoomToActualSize();
-}
-
-void NavigatorImpl::UpdateView(Id view_id,
-                               const SkBitmap& bitmap) {
-  viewer_->UpdateView(view_id, bitmap);
-}
 
 }  // namespace examples
 }  // namespace mojo

@@ -53,13 +53,14 @@ class WMFlowApp : public mojo::ApplicationDelegate,
  public:
   WMFlowApp()
       : embed_count_(0),
-        view_manager_client_factory_(this),
         app_(NULL) {}
   virtual ~WMFlowApp() {}
 
  private:
   // Overridden from Application:
   virtual void Initialize(mojo::ApplicationImpl* app) MOJO_OVERRIDE {
+    view_manager_client_factory_.reset(
+        new mojo::ViewManagerClientFactory(app->shell(), this));
     app_ = app;
     OpenNewWindow();
     OpenNewWindow();
@@ -67,7 +68,7 @@ class WMFlowApp : public mojo::ApplicationDelegate,
   }
   virtual bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) MOJO_OVERRIDE {
-    connection->AddService(&view_manager_client_factory_);
+    connection->AddService(view_manager_client_factory_.get());
     return true;
   }
 
@@ -127,7 +128,7 @@ class WMFlowApp : public mojo::ApplicationDelegate,
   }
 
   int embed_count_;
-  mojo::ViewManagerClientFactory view_manager_client_factory_;
+  scoped_ptr<mojo::ViewManagerClientFactory> view_manager_client_factory_;
   mojo::InterfaceFactoryImpl<EmbedderImpl> embedder_factory_;
   EmbeddeePtr embeddee_;
   mojo::ApplicationImpl* app_;

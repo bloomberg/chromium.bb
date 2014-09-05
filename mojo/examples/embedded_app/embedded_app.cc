@@ -25,44 +25,27 @@
 
 namespace mojo {
 namespace examples {
+
+const SkColor kColors[] = {SK_ColorYELLOW, SK_ColorRED, SK_ColorGREEN,
+                           SK_ColorMAGENTA};
+
 class EmbeddedApp;
-
-class NavigatorImpl : public InterfaceImpl<Navigator> {
- public:
-  explicit NavigatorImpl(EmbeddedApp* app) : app_(app) {}
-
- private:
-  virtual void Navigate(
-      uint32 view_id,
-      NavigationDetailsPtr navigation_details,
-      ResponseDetailsPtr response_details) OVERRIDE;
-
-  EmbeddedApp* app_;
-  DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
-};
 
 class EmbeddedApp
     : public ApplicationDelegate,
       public ViewManagerDelegate,
       public ViewObserver {
  public:
-  EmbeddedApp()
-      : navigator_factory_(this),
-        view_manager_(NULL),
-        view_manager_client_factory_(this) {
-    url::AddStandardScheme("mojo");
-  }
+  EmbeddedApp() { url::AddStandardScheme("mojo"); }
   virtual ~EmbeddedApp() {}
-
-  void SetViewColor(uint32 view_id, SkColor color) {
-    pending_view_colors_[view_id] = color;
-    ProcessPendingViewColor(view_id);
-  }
 
  private:
 
   // Overridden from ApplicationDelegate:
   virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+    view_manager_client_factory_.reset(
+        new ViewManagerClientFactory(app->shell(), this));
+
     // TODO(aa): Weird for embeddee to talk to embedder by URL. Seems like
     // embedder should be able to specify the SP embeddee receives, then
     // communication can be anonymous.
@@ -71,8 +54,7 @@ class EmbeddedApp
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE {
-    connection->AddService(&view_manager_client_factory_);
-    connection->AddService(&navigator_factory_);
+    connection->AddService(view_manager_client_factory_.get());
     return true;
   }
 
@@ -83,7 +65,7 @@ class EmbeddedApp
                        scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
     root->AddObserver(this);
     roots_[root->id()] = root;
-    ProcessPendingViewColor(root->id());
+    root->SetColor(kColors[next_color_++ % arraysize(kColors)]);
   }
   virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE {
     base::MessageLoop::current()->Quit();
@@ -106,52 +88,16 @@ class EmbeddedApp
     }
   }
 
-  void ProcessPendingViewColor(uint32 view_id) {
-    RootMap::iterator root = roots_.find(view_id);
-    if (root == roots_.end())
-      return;
-
-    PendingViewColors::iterator color = pending_view_colors_.find(view_id);
-    if (color == pending_view_colors_.end())
-      return;
-
-    root->second->SetColor(color->second);
-    pending_view_colors_.erase(color);
-  }
-
-  InterfaceFactoryImplWithContext<NavigatorImpl, EmbeddedApp>
-      navigator_factory_;
-
-  ViewManager* view_manager_;
   NavigatorHostPtr navigator_host_;
-  ViewManagerClientFactory view_manager_client_factory_;
+  scoped_ptr<ViewManagerClientFactory> view_manager_client_factory_;
 
   typedef std::map<Id, View*> RootMap;
   RootMap roots_;
 
-  // We can receive navigations for views we don't have yet.
-  typedef std::map<uint32, SkColor> PendingViewColors;
-  PendingViewColors pending_view_colors_;
+  int next_color_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedApp);
 };
-
-void NavigatorImpl::Navigate(uint32 view_id,
-                             NavigationDetailsPtr navigation_details,
-                             ResponseDetailsPtr response_details) {
-  GURL url(navigation_details->request->url.To<std::string>());
-  if (!url.is_valid()) {
-    LOG(ERROR) << "URL is invalid.";
-    return;
-  }
-  // TODO(aa): Verify new URL is same origin as current origin.
-  SkColor color = 0x00;
-  if (!base::HexStringToUInt(url.path().substr(1), &color)) {
-    LOG(ERROR) << "Invalid URL, path not convertible to integer";
-    return;
-  }
-  app_->SetViewColor(view_id, color);
-}
 
 }  // namespace examples
 }  // namespace mojo

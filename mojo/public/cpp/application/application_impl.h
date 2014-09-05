@@ -58,6 +58,8 @@ class ApplicationImpl : public InterfaceImpl<Application> {
                   MojoHandle shell_handle);
   virtual ~ApplicationImpl();
 
+  Shell* shell() const { return shell_.get(); }
+
   // Establishes a new connection to an application. Caller does not own.
   ApplicationConnection* ConnectToApplication(const String& application_url);
 

@@ -35,7 +35,6 @@ DebugPanel::DebugPanel(Delegate* delegate, View* view)
           base::ASCIIToUTF16("Source window"), kNavigationTargetGroupId)),
       navigation_target_default_(new views::RadioButton(
           base::ASCIIToUTF16("Default"), kNavigationTargetGroupId)),
-      next_color_(0),
       colored_square_(new views::BlueButton(
           this, base::ASCIIToUTF16("Local nav test"))),
       close_last_(new views::BlueButton(
@@ -117,9 +116,7 @@ void DebugPanel::Layout(views::View* view) {
 
 void DebugPanel::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (sender == colored_square_) {
-    Navigate(base::StringPrintf("mojo://mojo_embedded_app/%x",
-                                kColors[next_color_ % arraysize(kColors)]));
-    next_color_++;
+    Navigate("mojo://mojo_embedded_app/");
   } else if (sender == close_last_) {
     delegate_->CloseTopWindow();
   } else if (sender == cross_app_) {

@@ -110,10 +110,6 @@ class MOJO_VIEW_MANAGER_EXPORT ConnectionManager : public ServerViewDelegate {
   // Returns true if OnConnectionMessagedClient() was invoked for id.
   bool DidConnectionMessageClient(ConnectionSpecificId id) const;
 
-  ViewManagerServiceImpl* GetConnectionByCreator(
-      ConnectionSpecificId creator_id,
-      const std::string& url) const;
-
   // Returns the ViewManagerServiceImpl that has |id| as a root.
   ViewManagerServiceImpl* GetConnectionWithRoot(const ViewId& id) {
     return const_cast<ViewManagerServiceImpl*>(

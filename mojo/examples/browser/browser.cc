@@ -155,7 +155,6 @@ class Browser : public ApplicationDelegate,
  public:
   Browser()
       : view_manager_(NULL),
-        view_manager_client_factory_(this),
         root_(NULL),
         widget_(NULL) {}
 
@@ -167,6 +166,8 @@ class Browser : public ApplicationDelegate,
  private:
   // Overridden from ApplicationDelegate:
   virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+    view_manager_client_factory_.reset(
+        new ViewManagerClientFactory(app->shell(), this));
     views_init_.reset(new ViewsInit);
     app->ConnectToService("mojo:mojo_window_manager", &navigator_host_);
     app->ConnectToService("mojo:mojo_window_manager", &window_manager_);
@@ -174,7 +175,7 @@ class Browser : public ApplicationDelegate,
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE {
-    connection->AddService(&view_manager_client_factory_);
+    connection->AddService(view_manager_client_factory_.get());
     return true;
   }
 
@@ -255,7 +256,7 @@ class Browser : public ApplicationDelegate,
   scoped_ptr<ViewsInit> views_init_;
 
   ViewManager* view_manager_;
-  ViewManagerClientFactory view_manager_client_factory_;
+  scoped_ptr<ViewManagerClientFactory> view_manager_client_factory_;
   View* root_;
   views::Widget* widget_;
   NavigatorHostPtr navigator_host_;

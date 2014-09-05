@@ -72,6 +72,11 @@ static base::LazyInstance<Setup>::Leaky setup = LAZY_INSTANCE_INITIALIZER;
 
 void InitContentHandlers(DynamicApplicationLoader* loader,
                          base::CommandLine* command_line) {
+  // Default content handlers.
+  loader->RegisterContentHandler("image/png", GURL("mojo://mojo_png_viewer/"));
+  loader->RegisterContentHandler("text/html", GURL("mojo://mojo_html_viewer/"));
+
+  // Command-line-specified content handlers.
   std::string handlers_spec = command_line->GetSwitchValueASCII(
       switches::kContentHandlers);
   if (handlers_spec.empty())

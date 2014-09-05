@@ -8,10 +8,10 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
-#include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
+#include "mojo/public/interfaces/application/shell.mojom.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
@@ -117,9 +117,8 @@ bool CreateMapAndDupSharedBuffer(size_t size,
   return true;
 }
 
-ViewManagerClientImpl::ViewManagerClientImpl(
-    ViewManagerDelegate* delegate,
-    ApplicationConnection* app_connection)
+ViewManagerClientImpl::ViewManagerClientImpl(ViewManagerDelegate* delegate,
+                                             Shell* shell)
     : connected_(false),
       connection_id_(0),
       next_id_(1),
@@ -133,7 +132,9 @@ ViewManagerClientImpl::ViewManagerClientImpl(
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             "window-manager");
   }
-  app_connection->ConnectToService(window_manager_url, &window_manager_);
+  InterfacePtr<ServiceProvider> sp;
+  shell->ConnectToApplication(window_manager_url, Get(&sp));
+  ConnectToService(sp.get(), &window_manager_);
   window_manager_.set_client(this);
 }
 

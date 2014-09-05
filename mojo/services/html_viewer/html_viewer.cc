@@ -9,108 +9,68 @@
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
+#include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/services/html_viewer/blink_platform_impl.h"
 #include "mojo/services/html_viewer/html_document_view.h"
-#include "mojo/services/public/cpp/view_manager/types.h"
-#include "mojo/services/public/cpp/view_manager/view.h"
-#include "mojo/services/public/cpp/view_manager/view_manager.h"
-#include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
-#include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
-#include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
+#include "mojo/services/public/interfaces/content_handler/content_handler.mojom.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 
 namespace mojo {
 
 class HTMLViewer;
 
-class NavigatorImpl : public InterfaceImpl<Navigator> {
+class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
  public:
-  explicit NavigatorImpl(HTMLViewer* viewer) : viewer_(viewer) {}
-  virtual ~NavigatorImpl() {}
+  explicit ContentHandlerImpl(Shell* shell) : shell_(shell) {}
+  virtual ~ContentHandlerImpl() {}
 
  private:
-  // Overridden from Navigator:
-  virtual void Navigate(
-      uint32_t view_id,
-      NavigationDetailsPtr navigation_details,
-      ResponseDetailsPtr response_details) OVERRIDE;
+  // Overridden from ContentHandler:
+  virtual void OnConnect(
+      const mojo::String& url,
+      URLResponsePtr response,
+      InterfaceRequest<ServiceProvider> service_provider) OVERRIDE {
+    ServiceProviderImpl* exported_services = new ServiceProviderImpl();
+    BindToRequest(exported_services, &service_provider);
+    scoped_ptr<ServiceProvider> remote(
+        exported_services->CreateRemoteServiceProvider());
+    new HTMLDocumentView(
+        response.Pass(), remote.Pass(), exported_services, shell_);
+  }
 
-  HTMLViewer* viewer_;
+  Shell* shell_;
 
-  DISALLOW_COPY_AND_ASSIGN(NavigatorImpl);
+  DISALLOW_COPY_AND_ASSIGN(ContentHandlerImpl);
 };
 
-class HTMLViewer : public ApplicationDelegate, public ViewManagerDelegate {
+class HTMLViewer : public ApplicationDelegate {
  public:
-  HTMLViewer()
-      : application_impl_(NULL),
-        document_view_(NULL),
-        navigator_factory_(this),
-        view_manager_client_factory_(this) {}
-  virtual ~HTMLViewer() {
-    blink::shutdown();
-  }
+  HTMLViewer() {}
 
-  void Load(ResponseDetailsPtr response_details) {
-    // Need to wait for OnEmbed.
-    response_details_ = response_details.Pass();
-    MaybeLoad();
-  }
+  virtual ~HTMLViewer() { blink::shutdown(); }
 
  private:
   // Overridden from ApplicationDelegate:
   virtual void Initialize(ApplicationImpl* app) OVERRIDE {
-    application_impl_ = app;
+    content_handler_factory_.reset(
+        new InterfaceFactoryImplWithContext<ContentHandlerImpl, Shell>(
+            app->shell()));
     blink_platform_impl_.reset(new BlinkPlatformImpl(app));
     blink::initialize(blink_platform_impl_.get());
   }
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       OVERRIDE {
-    connection->AddService(&navigator_factory_);
-    connection->AddService(&view_manager_client_factory_);
+    connection->AddService(content_handler_factory_.get());
     return true;
   }
 
-  // Overridden from ViewManagerDelegate:
-  virtual void OnEmbed(ViewManager* view_manager,
-                       View* root,
-                       ServiceProviderImpl* exported_services,
-                       scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
-    document_view_ = new HTMLDocumentView(
-        application_impl_->ConnectToApplication("mojo://mojo_window_manager/")->
-            GetServiceProvider(),
-        view_manager);
-    document_view_->AttachToView(root);
-    MaybeLoad();
-  }
-  virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE {
-    base::MessageLoop::current()->Quit();
-  }
-
-  void MaybeLoad() {
-    if (document_view_ && response_details_ && response_details_->response)
-      document_view_->Load(response_details_->response.Pass());
-  }
-
   scoped_ptr<BlinkPlatformImpl> blink_platform_impl_;
-  ApplicationImpl* application_impl_;
-
-  // TODO(darin): Figure out proper ownership of this instance.
-  HTMLDocumentView* document_view_;
-  ResponseDetailsPtr response_details_;
-  InterfaceFactoryImplWithContext<NavigatorImpl, HTMLViewer> navigator_factory_;
-  ViewManagerClientFactory view_manager_client_factory_;
+  scoped_ptr<InterfaceFactoryImplWithContext<ContentHandlerImpl, Shell> >
+      content_handler_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLViewer);
 };
-
-void NavigatorImpl::Navigate(
-    uint32_t view_id,
-    NavigationDetailsPtr navigation_details,
-    ResponseDetailsPtr response_details) {
-  viewer_->Load(response_details.Pass());
-}
 
 }  // namespace mojo
 

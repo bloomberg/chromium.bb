@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "mojo/aura/aura_init.h"
 #include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
@@ -119,7 +120,6 @@ WindowManagerApp::WindowManagerApp(
       wrapped_view_manager_delegate_(view_manager_delegate),
       wrapped_window_manager_delegate_(window_manager_delegate),
       view_manager_(NULL),
-      view_manager_client_factory_(this),
       root_(NULL),
       dummy_delegate_(new DummyDelegate) {
 }
@@ -168,12 +168,14 @@ bool WindowManagerApp::IsReady() const {
 
 void WindowManagerApp::Initialize(ApplicationImpl* impl) {
   aura_init_.reset(new AuraInit);
+  view_manager_client_factory_.reset(
+      new ViewManagerClientFactory(impl->shell(), this));
 }
 
 bool WindowManagerApp::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
   connection->AddService(&window_manager_service_factory_);
-  connection->AddService(&view_manager_client_factory_);
+  connection->AddService(view_manager_client_factory_.get());
   return true;
 }
 

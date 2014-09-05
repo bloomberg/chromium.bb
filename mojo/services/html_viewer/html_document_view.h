@@ -7,8 +7,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/application/lazy_interface_ptr.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
+#include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
+#include "mojo/services/public/interfaces/content_handler/content_handler.mojom.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
 #include "mojo/services/public/interfaces/network/url_loader.mojom.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
@@ -22,15 +24,24 @@ class View;
 // A view for a single HTML document.
 class HTMLDocumentView : public blink::WebViewClient,
                          public blink::WebFrameClient,
+                         public ViewManagerDelegate,
                          public ViewObserver {
  public:
-  HTMLDocumentView(ServiceProvider* service_provider,
-                   ViewManager* view_manager);
+  // Load a new HTMLDocument with |response|.
+  //
+  // |imported_from_connector| is used to request services of the connecting
+  // application (e.g., the application that called
+  // Shell::ConnectToApplication()).
+  //
+  // |exported_to_connector| is used to export services from this
+  // HTMLDocumentView to the connecting application.
+  //
+  // |shell| is the Shell connection for this mojo::Application.
+  HTMLDocumentView(URLResponsePtr response,
+                   scoped_ptr<ServiceProvider> imported_from_connector,
+                   ServiceProviderImpl* exported_to_connector,
+                   Shell* shell);
   virtual ~HTMLDocumentView();
-
-  void AttachToView(View* view);
-
-  void Load(URLResponsePtr response);
 
  private:
   // WebViewClient methods:
@@ -59,6 +70,14 @@ class HTMLDocumentView : public blink::WebViewClient,
       const blink::WebHistoryItem& history_item,
       blink::WebHistoryCommitType commit_type);
 
+  // ViewManagerDelegate methods:
+  virtual void OnEmbed(
+      ViewManager* view_manager,
+      View* root,
+      ServiceProviderImpl* exported_to_embedder,
+      scoped_ptr<ServiceProvider> exported_from_embedder) OVERRIDE;
+  virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE;
+
   // ViewObserver methods:
   virtual void OnViewBoundsChanged(View* view,
                                    const gfx::Rect& old_bounds,
@@ -66,12 +85,17 @@ class HTMLDocumentView : public blink::WebViewClient,
   virtual void OnViewDestroyed(View* view) OVERRIDE;
   virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE;
 
+  void Load(URLResponsePtr response);
   void Repaint();
+  NavigatorHost* GetNavigatorHost();
 
-  ViewManager* view_manager_;
-  LazyInterfacePtr<NavigatorHost> navigator_host_;
+  URLResponsePtr response_;
+  scoped_ptr<ServiceProvider> imported_services_;
+  Shell* shell_;
+  InterfacePtr<NavigatorHost> navigator_host_;
   blink::WebView* web_view_;
   View* root_;
+  ViewManagerClientFactory view_manager_client_factory_;
   bool repaint_pending_;
 
   base::WeakPtrFactory<HTMLDocumentView> weak_factory_;

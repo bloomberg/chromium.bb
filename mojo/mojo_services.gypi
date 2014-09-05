@@ -17,6 +17,7 @@
         'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_base.gyp:mojo_utility',
         'mojo_base.gyp:mojo_application_chromium',
+        'mojo_content_handler_bindings',
         'mojo_navigation_bindings',
         'mojo_network_bindings',
         'mojo_launcher_bindings',

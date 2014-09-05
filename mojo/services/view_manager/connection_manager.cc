@@ -130,18 +130,6 @@ bool ConnectionManager::DidConnectionMessageClient(
   return current_change_ && current_change_->DidMessageConnection(id);
 }
 
-ViewManagerServiceImpl* ConnectionManager::GetConnectionByCreator(
-    ConnectionSpecificId creator_id,
-    const std::string& url) const {
-  for (ConnectionMap::const_iterator i = connection_map_.begin();
-       i != connection_map_.end();
-       ++i) {
-    if (i->second->creator_id() == creator_id && i->second->url() == url)
-      return i->second;
-  }
-  return NULL;
-}
-
 const ViewManagerServiceImpl* ConnectionManager::GetConnectionWithRoot(
     const ViewId& id) const {
   for (ConnectionMap::const_iterator i = connection_map_.begin();

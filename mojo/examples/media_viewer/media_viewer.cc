@@ -211,7 +211,6 @@ class MediaViewer
  public:
   MediaViewer()
       : navigator_factory_(this),
-        view_manager_client_factory_(this),
         app_(NULL),
         view_manager_(NULL),
         root_view_(NULL),
@@ -271,6 +270,8 @@ class MediaViewer
 
   // Overridden from ApplicationDelegate:
   virtual void Initialize(ApplicationImpl* app) OVERRIDE {
+    view_manager_client_factory_.reset(
+        new ViewManagerClientFactory(app->shell(), this));
     app_ = app;
     views_init_.reset(new ViewsInit);
   }
@@ -278,7 +279,7 @@ class MediaViewer
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       OVERRIDE {
     connection->AddService(&navigator_factory_);
-    connection->AddService(&view_manager_client_factory_);
+    connection->AddService(view_manager_client_factory_.get());
     return true;
   }
 
@@ -361,7 +362,7 @@ class MediaViewer
 
   InterfaceFactoryImplWithContext<NavigatorImpl, MediaViewer>
       navigator_factory_;
-  ViewManagerClientFactory view_manager_client_factory_;
+  scoped_ptr<ViewManagerClientFactory> view_manager_client_factory_;
 
   ApplicationImpl* app_;
   scoped_ptr<ViewsInit> views_init_;

@@ -148,7 +148,7 @@ class WindowManagerApp
   WindowManagerDelegate* wrapped_window_manager_delegate_;
 
   ViewManager* view_manager_;
-  ViewManagerClientFactory view_manager_client_factory_;
+  scoped_ptr<ViewManagerClientFactory> view_manager_client_factory_;
   View* root_;
 
   scoped_ptr<AuraInit> aura_init_;

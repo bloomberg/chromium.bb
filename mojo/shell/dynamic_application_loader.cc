@@ -160,7 +160,6 @@ class DynamicApplicationLoader::NetworkLoader : public Loader {
         mime_type_to_url_->find(response->mime_type);
     if (iter != mime_type_to_url_->end()) {
       load_callbacks_->LoadWithContentHandler(iter->second, response.Pass());
-      LoaderComplete();
       return;
     }
 

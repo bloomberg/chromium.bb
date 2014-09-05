@@ -19,18 +19,17 @@
 class SkBitmap;
 
 namespace mojo {
-class ApplicationConnection;
 class ViewManager;
 class ViewManagerDelegate;
 class ViewManagerTransaction;
+class Shell;
 
 // Manages the connection with the View Manager service.
 class ViewManagerClientImpl : public ViewManager,
                               public InterfaceImpl<ViewManagerClient>,
                               public WindowManagerClient {
  public:
-  ViewManagerClientImpl(ViewManagerDelegate* delegate,
-                        ApplicationConnection* app_connection);
+  ViewManagerClientImpl(ViewManagerDelegate* delegate, Shell* shell);
   virtual ~ViewManagerClientImpl();
 
   bool connected() const { return connected_; }

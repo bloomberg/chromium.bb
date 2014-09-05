@@ -9,7 +9,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "mojo/public/cpp/application/connect.h"
+#include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "mojo/public/interfaces/application/shell.mojom.h"
 #include "mojo/services/html_viewer/blink_input_events_type_converters.h"
 #include "mojo/services/html_viewer/blink_url_request_type_converters.h"
 #include "mojo/services/html_viewer/webstoragenamespace_impl.h"
@@ -78,14 +81,20 @@ bool CanNavigateLocally(blink::WebFrame* frame,
 
 }  // namespace
 
-HTMLDocumentView::HTMLDocumentView(ServiceProvider* service_provider,
-                                   ViewManager* view_manager)
-    : view_manager_(view_manager),
-      navigator_host_(service_provider),
+HTMLDocumentView::HTMLDocumentView(
+    URLResponsePtr response,
+    scoped_ptr<ServiceProvider> imported_services,
+    ServiceProviderImpl* exported_services,
+    Shell* shell)
+    : imported_services_(imported_services.Pass()),
+      shell_(shell),
       web_view_(NULL),
       root_(NULL),
+      view_manager_client_factory_(shell, this),
       repaint_pending_(false),
       weak_factory_(this) {
+  exported_services->AddService(&view_manager_client_factory_);
+  Load(response.Pass());
 }
 
 HTMLDocumentView::~HTMLDocumentView() {
@@ -95,20 +104,24 @@ HTMLDocumentView::~HTMLDocumentView() {
     root_->RemoveObserver(this);
 }
 
-void HTMLDocumentView::AttachToView(View* view) {
-  root_ = view;
+void HTMLDocumentView::OnEmbed(ViewManager* view_manager,
+                               View* root,
+                               ServiceProviderImpl* exported_services,
+                               scoped_ptr<ServiceProvider> imported_services) {
+  root_ = root;
   root_->SetColor(SK_ColorCYAN);  // Dummy background color.
-
-  web_view_ = blink::WebView::create(this);
-  ConfigureSettings(web_view_->settings());
-  web_view_->setMainFrame(blink::WebLocalFrame::create(this));
   web_view_->resize(root_->bounds().size());
-
   root_->AddObserver(this);
 }
 
+void HTMLDocumentView::OnViewManagerDisconnected(ViewManager* view_manager) {
+  // TODO(aa): Need to figure out how shutdown works.
+}
+
 void HTMLDocumentView::Load(URLResponsePtr response) {
-  DCHECK(web_view_);
+  web_view_ = blink::WebView::create(this);
+  ConfigureSettings(web_view_->settings());
+  web_view_->setMainFrame(blink::WebLocalFrame::create(this));
 
   GURL url(response->url);
 
@@ -177,7 +190,7 @@ blink::WebNavigationPolicy HTMLDocumentView::decidePolicyForNavigation(
   NavigationDetailsPtr nav_details(NavigationDetails::New());
   nav_details->request = URLRequest::From(request);
 
-  navigator_host_->RequestNavigate(
+  GetNavigatorHost()->RequestNavigate(
       root_->id(),
       WebNavigationPolicyToNavigationTarget(default_policy),
       nav_details.Pass());
@@ -195,8 +208,8 @@ void HTMLDocumentView::didAddMessageToConsole(
 void HTMLDocumentView::didNavigateWithinPage(
     blink::WebLocalFrame* frame, const blink::WebHistoryItem& history_item,
     blink::WebHistoryCommitType commit_type) {
-  navigator_host_->DidNavigateLocally(root_->id(),
-                                      history_item.urlString().utf8());
+  GetNavigatorHost()->DidNavigateLocally(root_->id(),
+                                         history_item.urlString().utf8());
 }
 
 void HTMLDocumentView::OnViewBoundsChanged(View* view,
@@ -222,6 +235,9 @@ void HTMLDocumentView::OnViewInputEvent(View* view, const EventPtr& event) {
 void HTMLDocumentView::Repaint() {
   repaint_pending_ = false;
 
+  if (!root_)
+    return;
+
   web_view_->animate(0.0);
   web_view_->layout();
 
@@ -234,6 +250,16 @@ void HTMLDocumentView::Repaint() {
   web_view_->paint(canvas.get(), gfx::Rect(0, 0, width, height));
 
   root_->SetContents(canvas->getDevice()->accessBitmap(false));
+}
+
+NavigatorHost* HTMLDocumentView::GetNavigatorHost() {
+  if (!navigator_host_.get()) {
+    // TODO(aa): This should come via |imported_services| in OnEmbed().
+    InterfacePtr<ServiceProvider> sp;
+    shell_->ConnectToApplication("mojo:mojo_window_manager", Get(&sp));
+    ConnectToService(sp.get(), &navigator_host_);
+  }
+  return navigator_host_.get();
 }
 
 }  // namespace mojo

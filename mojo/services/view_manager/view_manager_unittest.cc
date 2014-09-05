@@ -1160,7 +1160,7 @@ TEST_F(ViewManagerTest, ConnectTwice) {
 
   // Try to connect again to 1,1, this should fail as already connected to that
   // root.
-  ASSERT_FALSE(connection_->Embed(BuildViewId(1, 1), kTestServiceURL));
+  ASSERT_TRUE(connection_->Embed(BuildViewId(1, 1), kTestServiceURL));
 
   // Connecting to 1,2 should succeed and end up in connection2.
   {
@@ -1168,9 +1168,7 @@ TEST_F(ViewManagerTest, ConnectTwice) {
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("OnEmbed creator=mojo:test_url", changes[0]);
-    EXPECT_EQ("[view=1,2 parent=null]",
-              ChangeViewDescription(connection2_->changes()));
+    EXPECT_EQ("ViewDeleted view=1,1", changes[0]);
   }
 }
 
@@ -1236,12 +1234,13 @@ TEST_F(ViewManagerTest, EmbedWithSameViewId2) {
               changes[0]);
   }
 
-  // Embed 1,1 back in connection 2.
+  // Embed 1,1 again.
   {
-    // 2 should be told about the new embed.
+    // We should get a new connection for the new embedding.
     ASSERT_TRUE(connection_->Embed(BuildViewId(1, 1), kTestServiceURL));
-    connection2_->DoRunLoopUntilChangesCount(1);
-    const std::vector<Change>& changes(connection2_->changes());
+    ViewManagerProxy* connection4 = ViewManagerProxy::WaitForInstance();
+    connection4->DoRunLoopUntilChangesCount(1);
+    const std::vector<Change>& changes(connection4->changes());
     ASSERT_EQ(1u, changes.size());
     EXPECT_EQ("OnEmbed creator=mojo:test_url",
               ChangesToDescription1(changes)[0]);

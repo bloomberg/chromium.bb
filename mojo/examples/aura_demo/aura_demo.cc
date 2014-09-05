@@ -13,6 +13,7 @@
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
@@ -109,11 +110,7 @@ class AuraDemo : public ApplicationDelegate,
                  public WindowTreeHostMojoDelegate,
                  public ViewManagerDelegate {
  public:
-  AuraDemo()
-      : window1_(NULL),
-        window2_(NULL),
-        window21_(NULL),
-        view_manager_client_factory_(this) {}
+  AuraDemo() : window1_(NULL), window2_(NULL), window21_(NULL) {}
   virtual ~AuraDemo() {}
 
  private:
@@ -165,6 +162,8 @@ class AuraDemo : public ApplicationDelegate,
   }
 
   virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+    view_manager_client_factory_.reset(
+        new ViewManagerClientFactory(app->shell(), this));
     aura::Env::CreateInstance(true);
     context_factory_.reset(new ContextFactoryMojo);
     aura::Env::GetInstance()->set_context_factory(context_factory_.get());
@@ -174,7 +173,7 @@ class AuraDemo : public ApplicationDelegate,
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE {
-    connection->AddService(&view_manager_client_factory_);
+    connection->AddService(view_manager_client_factory_.get());
     return true;
   }
 
@@ -194,7 +193,7 @@ class AuraDemo : public ApplicationDelegate,
 
   View* root_;
 
-  ViewManagerClientFactory view_manager_client_factory_;
+  scoped_ptr<ViewManagerClientFactory> view_manager_client_factory_;
 
   scoped_ptr<aura::WindowTreeHost> window_tree_host_;
 

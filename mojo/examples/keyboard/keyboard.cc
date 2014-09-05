@@ -11,6 +11,7 @@
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
@@ -52,7 +53,6 @@ class Keyboard : public ApplicationDelegate,
   Keyboard()
       : keyboard_service_factory_(this),
         view_manager_(NULL),
-        view_manager_client_factory_(this),
         keyboard_service_(NULL),
         target_(0) {}
 
@@ -67,10 +67,15 @@ class Keyboard : public ApplicationDelegate,
 
  private:
   // Overridden from ApplicationDelegate:
+  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+    view_manager_client_factory_.reset(
+        new ViewManagerClientFactory(app->shell(), this));
+  }
+
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       MOJO_OVERRIDE {
     views_init_.reset(new ViewsInit);
-    connection->AddService(&view_manager_client_factory_);
+    connection->AddService(view_manager_client_factory_.get());
     connection->AddService(&keyboard_service_factory_);
     return true;
   }
@@ -120,7 +125,7 @@ class Keyboard : public ApplicationDelegate,
   scoped_ptr<ViewsInit> views_init_;
 
   ViewManager* view_manager_;
-  ViewManagerClientFactory view_manager_client_factory_;
+  scoped_ptr<ViewManagerClientFactory> view_manager_client_factory_;
 
   KeyboardServiceImpl* keyboard_service_;
 

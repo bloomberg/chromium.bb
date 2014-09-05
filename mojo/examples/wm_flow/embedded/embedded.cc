@@ -40,17 +40,18 @@ class EmbeddeeImpl : public mojo::InterfaceImpl<Embeddee> {
 class WMFlowEmbedded : public mojo::ApplicationDelegate,
                        public mojo::ViewManagerDelegate {
  public:
-  WMFlowEmbedded()
-      : view_manager_client_factory_(this) {}
+  WMFlowEmbedded() {}
   virtual ~WMFlowEmbedded() {}
 
  private:
   // Overridden from Application:
   virtual void Initialize(mojo::ApplicationImpl* app) MOJO_OVERRIDE {
+    view_manager_client_factory_.reset(
+        new mojo::ViewManagerClientFactory(app->shell(), this));
   }
   virtual bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) MOJO_OVERRIDE {
-    connection->AddService(&view_manager_client_factory_);
+    connection->AddService(view_manager_client_factory_.get());
     return true;
   }
 
@@ -74,7 +75,7 @@ class WMFlowEmbedded : public mojo::ApplicationDelegate,
     printf("HelloWorld() ack'ed\n");
   }
 
-  mojo::ViewManagerClientFactory view_manager_client_factory_;
+  scoped_ptr<mojo::ViewManagerClientFactory> view_manager_client_factory_;
   EmbedderPtr embedder_;
   mojo::InterfaceFactoryImpl<EmbeddeeImpl> embeddee_factory_;
 

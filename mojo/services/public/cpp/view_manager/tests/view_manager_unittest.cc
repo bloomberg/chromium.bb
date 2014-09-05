@@ -48,10 +48,16 @@ class ConnectApplicationLoader : public ApplicationLoader,
   typedef base::Callback<void(ViewManager*, View*)> LoadedCallback;
 
   explicit ConnectApplicationLoader(const LoadedCallback& callback)
-      : callback_(callback), view_manager_client_factory_(this) {}
+      : callback_(callback) {}
   virtual ~ConnectApplicationLoader() {}
 
  private:
+  // Overridden from ApplicationDelegate:
+  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+    view_manager_client_factory_.reset(
+        new ViewManagerClientFactory(app->shell(), this));
+  }
+
   // Overridden from ApplicationLoader:
   virtual void Load(ApplicationManager* manager,
                     const GURL& url,
@@ -69,7 +75,7 @@ class ConnectApplicationLoader : public ApplicationLoader,
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       OVERRIDE {
-    connection->AddService(&view_manager_client_factory_);
+    connection->AddService(view_manager_client_factory_.get());
     return true;
   }
 
@@ -84,7 +90,7 @@ class ConnectApplicationLoader : public ApplicationLoader,
 
   ScopedVector<ApplicationImpl> apps_;
   LoadedCallback callback_;
-  ViewManagerClientFactory view_manager_client_factory_;
+  scoped_ptr<ViewManagerClientFactory> view_manager_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectApplicationLoader);
 };

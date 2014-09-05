@@ -321,18 +321,13 @@ class WindowManager
     uint32 source_view_id,
     Target target,
     NavigationDetailsPtr nav_details) OVERRIDE {
-    launcher_->Launch(nav_details.Pass(),
-                      base::Bind(&WindowManager::OnLaunch,
-                                 base::Unretained(this),
-                                 source_view_id,
-                                 target));
+    OnLaunch(source_view_id, target, nav_details->request->url);
   }
 
  private:
   // Overridden from ApplicationDelegate:
   virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
     app_ = app;
-    app->ConnectToService("mojo:mojo_launcher", &launcher_);
     views_init_.reset(new ViewsInit);
     window_manager_app_->Initialize(app);
   }
@@ -382,9 +377,7 @@ class WindowManager
   virtual void Embed(
       const String& url,
       InterfaceRequest<ServiceProvider> service_provider) OVERRIDE {
-    CreateWindow(url,
-                 NavigationDetailsPtr().Pass(),
-                 ResponseDetailsPtr().Pass());
+    CreateWindow(url);
   }
   virtual void DispatchEvent(EventPtr event) MOJO_OVERRIDE {}
 
@@ -398,18 +391,9 @@ class WindowManager
     }
   }
 
-  void OnLaunch(
-      uint32 source_view_id,
-      Target requested_target,
-      const mojo::String& handler_url,
-      const mojo::String& view_url,
-      ResponseDetailsPtr response) {
-    // TODO(mpcomplete): This seems to be unused in favor of |response|. We
-    // might need to use it (and fill it in properly, with method, etc) if we
-    // need to preserve that information.
-    NavigationDetailsPtr nav_details(NavigationDetails::New());
-    nav_details->request->url = view_url;
-
+  void OnLaunch(uint32 source_view_id,
+                Target requested_target,
+                const mojo::String& url) {
     Target target = debug_panel_->navigation_target();
     if (target == TARGET_DEFAULT) {
       if (requested_target != TARGET_DEFAULT) {
@@ -433,9 +417,9 @@ class WindowManager
     }
 
     if (dest_view)
-      Embed(dest_view, handler_url, nav_details.Pass(), response.Pass());
+      dest_view->Embed(url);
     else
-      CreateWindow(handler_url, nav_details.Pass(), response.Pass());
+      CreateWindow(url);
   }
 
   // TODO(beng): proper layout manager!!
@@ -446,14 +430,11 @@ class WindowManager
     gfx::Rect bounds = view->bounds();
     bounds.Inset(kBorderInset, kBorderInset);
     bounds.set_height(kTextfieldHeight);
-    launcher_ui_ = CreateChild(content_view_id_, "mojo:mojo_browser", bounds,
-                               nav_details.Pass(), response.Pass());
+    launcher_ui_ = CreateChild(content_view_id_, "mojo:mojo_browser", bounds);
     return launcher_ui_->id();
   }
 
-  void CreateWindow(const std::string& handler_url,
-                    NavigationDetailsPtr nav_details,
-                    ResponseDetailsPtr response) {
+  void CreateWindow(const std::string& url) {
     View* view = view_manager_->GetViewById(content_view_id_);
     gfx::Rect bounds(kBorderInset,
                      2 * kBorderInset + kTextfieldHeight,
@@ -466,33 +447,19 @@ class WindowManager
       position.Offset(35, 35);
       bounds.set_origin(position);
     }
-    windows_.push_back(CreateChild(content_view_id_, handler_url, bounds,
-                                   nav_details.Pass(), response.Pass()));
+    windows_.push_back(CreateChild(content_view_id_, url, bounds));
   }
 
   View* CreateChild(Id parent_id,
                     const std::string& url,
-                    const gfx::Rect& bounds,
-                    NavigationDetailsPtr nav_details,
-                    ResponseDetailsPtr response) {
+                    const gfx::Rect& bounds) {
     View* view = view_manager_->GetViewById(parent_id);
     View* embedded = View::Create(view_manager_);
     view->AddChild(embedded);
     embedded->SetBounds(bounds);
-    Embed(embedded, url, nav_details.Pass(), response.Pass());
+    embedded->Embed(url);
     embedded->SetFocus();
     return embedded;
-  }
-
-  void Embed(View* view, const std::string& app_url,
-             NavigationDetailsPtr nav_details,
-             ResponseDetailsPtr response) {
-    view->Embed(app_url);
-    if (nav_details) {
-      NavigatorPtr navigator;
-      app_->ConnectToService(app_url, &navigator);
-      navigator->Navigate(view->id(), nav_details.Pass(), response.Pass());
-    }
   }
 
   bool IsDescendantOfKeyboard(View* target) {
@@ -523,7 +490,6 @@ class WindowManager
 
   scoped_ptr<ViewsInit> views_init_;
   DebugPanel* debug_panel_;
-  LauncherPtr launcher_;
   View* launcher_ui_;
   std::vector<View*> windows_;
   ViewManager* view_manager_;

@@ -214,32 +214,6 @@ void ViewManagerServiceImpl::RemoveFromKnown(
     RemoveFromKnown(children[i], local_views);
 }
 
-void ViewManagerServiceImpl::AddRoot(
-    const ViewId& view_id,
-    InterfaceRequest<ServiceProvider> service_provider) {
-  const Id transport_view_id(ViewIdToTransportId(view_id));
-  CHECK(roots_.count(transport_view_id) == 0);
-
-  CHECK_EQ(creator_id_, view_id.connection_id);
-  roots_.insert(transport_view_id);
-  const ServerView* view = GetView(view_id);
-  CHECK(view);
-  std::vector<const ServerView*> to_send;
-  if (!IsViewKnown(view)) {
-    GetUnknownViewsFrom(view, &to_send);
-  } else {
-    // Even though the connection knows about the new root we need to tell it
-    // |view| is now a root.
-    to_send.push_back(view);
-  }
-
-  client()->OnEmbed(id_,
-                    creator_url_,
-                    ViewToViewData(to_send.front()),
-                    service_provider.Pass());
-  connection_manager_->OnConnectionMessagedClient(id_);
-}
-
 void ViewManagerServiceImpl::RemoveRoot(const ViewId& view_id) {
   const Id transport_view_id(ViewIdToTransportId(view_id));
   CHECK(roots_.count(transport_view_id) > 0);
@@ -464,33 +438,25 @@ void ViewManagerServiceImpl::Embed(
     return;
   }
   const ServerView* view = GetView(ViewIdFromTransportId(transport_view_id));
-  bool success = view && access_policy_->CanEmbed(view);
-  if (success) {
-    // Only allow a view to be the root for one connection.
-    const ViewId view_id(ViewIdFromTransportId(transport_view_id));
-    ViewManagerServiceImpl* connection_by_url =
-        connection_manager_->GetConnectionByCreator(id_, url.To<std::string>());
-    ViewManagerServiceImpl* connection_with_view_as_root =
-        connection_manager_->GetConnectionWithRoot(view_id);
-    if ((connection_by_url != connection_with_view_as_root ||
-         (!connection_by_url && !connection_with_view_as_root)) &&
-        (!connection_by_url || !connection_by_url->HasRoot(view_id))) {
-      ConnectionManager::ScopedChange change(this, connection_manager_, true);
-      RemoveChildrenAsPartOfEmbed(view_id);
-      // Never message the originating connection.
-      connection_manager_->OnConnectionMessagedClient(id_);
-      if (connection_with_view_as_root)
-        connection_with_view_as_root->RemoveRoot(view_id);
-      if (connection_by_url) {
-        connection_by_url->AddRoot(view_id, spir.Pass());
-      } else {
-        connection_manager_->Embed(id_, url, transport_view_id, spir.Pass());
-      }
-    } else {
-      success = false;
-    }
+  if (!view || !access_policy_->CanEmbed(view)) {
+    callback.Run(false);
+    return;
   }
-  callback.Run(success);
+
+  // Only allow a node to be the root for one connection.
+  const ViewId view_id(ViewIdFromTransportId(transport_view_id));
+  ViewManagerServiceImpl* existing_owner =
+      connection_manager_->GetConnectionWithRoot(view_id);
+
+  ConnectionManager::ScopedChange change(this, connection_manager_, true);
+  RemoveChildrenAsPartOfEmbed(view_id);
+  if (existing_owner) {
+    // Never message the originating connection.
+    connection_manager_->OnConnectionMessagedClient(id_);
+    existing_owner->RemoveRoot(view_id);
+  }
+  connection_manager_->Embed(id_, url, transport_view_id, spir.Pass());
+  callback.Run(true);
 }
 
 void ViewManagerServiceImpl::DispatchOnViewInputEvent(Id transport_view_id,

@@ -119,11 +119,6 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   void RemoveFromKnown(const ServerView* view,
                        std::vector<ServerView*>* local_views);
 
-  // Adds |view_id| to the set of roots this connection knows about. The caller
-  // should have verified |view_id| is not among the roots of this connection.
-  void AddRoot(const ViewId& view_id,
-               InterfaceRequest<ServiceProvider> service_provider);
-
   // Removes |view_id| from the set of roots this connection knows about.
   void RemoveRoot(const ViewId& view_id);
 

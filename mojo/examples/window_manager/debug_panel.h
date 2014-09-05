@@ -24,10 +24,6 @@ class View;
 namespace examples {
 
 namespace {
-const SkColor kColors[] = { SK_ColorYELLOW,
-                            SK_ColorRED,
-                            SK_ColorGREEN,
-                            SK_ColorMAGENTA };
 }
 
 // A panel of controls intended to demonstrate the functionality of the window
@@ -66,7 +62,6 @@ class DebugPanel : public views::LayoutManager, public views::ButtonListener {
   views::RadioButton* navigation_target_source_;
   views::RadioButton* navigation_target_default_;
 
-  size_t next_color_;
   views::Button* colored_square_;
   views::Button* close_last_;
   views::Button* cross_app_;

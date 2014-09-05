@@ -99,8 +99,7 @@ class TestApplicationLoader : public ApplicationLoader,
   typedef base::Callback<void(View*)> RootAddedCallback;
 
   explicit TestApplicationLoader(const RootAddedCallback& root_added_callback)
-      : root_added_callback_(root_added_callback),
-        view_manager_client_factory_(this) {}
+      : root_added_callback_(root_added_callback) {}
   virtual ~TestApplicationLoader() {}
 
  private:
@@ -119,9 +118,14 @@ class TestApplicationLoader : public ApplicationLoader,
                                   const GURL& url) MOJO_OVERRIDE {}
 
   // Overridden from ApplicationDelegate:
+  virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
+    view_manager_client_factory_.reset(
+        new ViewManagerClientFactory(app->shell(), this));
+  }
+
   virtual bool ConfigureIncomingConnection(
       ApplicationConnection* connection) MOJO_OVERRIDE {
-    connection->AddService(&view_manager_client_factory_);
+    connection->AddService(view_manager_client_factory_.get());
     return true;
   }
 
@@ -140,7 +144,7 @@ class TestApplicationLoader : public ApplicationLoader,
   RootAddedCallback root_added_callback_;
 
   ScopedVector<ApplicationImpl> apps_;
-  ViewManagerClientFactory view_manager_client_factory_;
+  scoped_ptr<ViewManagerClientFactory> view_manager_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestApplicationLoader);
 };
