@@ -41,67 +41,14 @@ Still reading?
   <issue id="HandlerLeak">
     <ignore path="remoting/android/java/src/org/chromium/chromoting/TapGestureDetector.java"/>
   </issue>
-  <issue id="InlinedApi">
-    <ignore path="base/android/java/src/org/chromium/base/ApiCompatibilityUtils.java"/>
-    <ignore path="base/android/java/src/org/chromium/base/MemoryPressureListener.java"/>
-    <ignore path="chrome/android/java/src/org/chromium/chrome/browser/printing/PrintingControllerFactory.java"/>
-    <ignore path="content/public/android/java/src/org/chromium/content/browser/DeviceUtils.java"/>
-    <ignore path="content/public/android/java/src/org/chromium/content/browser/ScreenOrientationListener.java"/>
-    <ignore path="content/public/android/java/src/org/chromium/content/browser/accessibility/BrowserAccessibilityManager.java"/>
-    <ignore path="content/public/android/java/src/org/chromium/content/browser/accessibility/JellyBeanAccessibilityInjector.java"/>
-    <ignore path="media/base/android/java/src/org/chromium/media/AudioManagerAndroid.java"/>
-    <ignore path="media/base/android/java/src/org/chromium/media/MediaCodecBridge.java"/>
-    <ignore path="media/base/android/java/src/org/chromium/media/MediaDrmBridge.java"/>
-    <ignore path="media/base/android/java/src/org/chromium/media/WebAudioMediaCodecBridge.java"/>
-    <ignore path="net/android/java/src/org/chromium/net/X509Util.java"/>
-    <ignore path="printing/android/java/src/org/chromium/printing/PrintingControllerImpl.java"/>
-    <ignore path="printing/android/java/src/org/chromium/printing/PrintManagerDelegateImpl.java"/>
-    <ignore path="ui/android/java/src/org/chromium/ui/base/LocalizationUtils.java"/>
-  </issue>
   <issue id="MissingApplicationIcon" severity="ignore"/>
   <issue id="MissingRegistered" severity="ignore"/>
   <issue id="MissingVersion">
     <ignore path="AndroidManifest.xml"/>
   </issue>
-  <issue id="NewApi">
-    <ignore path="PRODUCT_DIR/chrome_shell_test_apk/classes/org/chromium/printing/PrintingControllerTest$6.class"/>
-    <ignore path="PRODUCT_DIR/chrome_shell_test_apk/classes/org/chromium/printing/PrintingControllerTest$7.class"/>
-    <ignore path="PRODUCT_DIR/chrome_shell_test_apk/classes/org/chromium/printing/PrintingControllerTest.class"/>
-    <ignore path="PRODUCT_DIR/content_shell_test_apk/classes/org/chromium/content/browser/ClipboardTest.class"/>
-    <ignore path="android_webview/java/src/org/chromium/android_webview/AwPdfExporter.java"/>
-    <ignore path="android_webview/java/src/org/chromium/android_webview/AwPrintDocumentAdapter.java"/>
-    <ignore path="android_webview/java/src/org/chromium/android_webview/AwWebContentsDelegateAdapter.java"/>
-    <ignore path="android_webview/test/shell/src/org/chromium/android_webview/test/AwTestContainerView.java"/>
-    <ignore path="base/android/java/src/org/chromium/base/ApiCompatibilityUtils.java"/>
-    <ignore path="chrome/android/java/src/org/chromium/chrome/browser/BookmarkUtils.java"/>
-    <ignore path="chrome/android/java/src/org/chromium/chrome/browser/TtsPlatformImpl.java"/>
-    <ignore path="chrome/android/java/src/org/chromium/chrome/browser/infobar/AnimationHelper.java"/>
-    <ignore path="chrome/android/java/src/org/chromium/chrome/browser/signin/SigninManager.java"/>
-    <ignore path="chrome/test/chromedriver/test/webview_shell/java/src/org/chromium/chromedriver_webview_shell/Main.java"/>
-    <ignore path="content/public/android/java/src/org/chromium/content/browser/ContentViewCore.java"/>
-    <ignore path="content/public/android/java/src/org/chromium/content/browser/GenericTouchGesture.java"/>
-    <ignore path="content/public/android/java/src/org/chromium/content/browser/VSyncMonitor.java"/>
-    <ignore path="content/public/android/java/src/org/chromium/content/browser/accessibility/BrowserAccessibilityManager.java"/>
-    <ignore path="content/public/android/java/src/org/chromium/content/browser/accessibility/JellyBeanAccessibilityInjector.java"/>
-    <ignore path="content/public/android/java/src/org/chromium/content/browser/accessibility/JellyBeanBrowserAccessibilityManager.java"/>
-    <ignore path="content/public/android/java/src/org/chromium/content/browser/accessibility/KitKatBrowserAccessibilityManager.java"/>
-    <ignore path="content/public/android/java/src/org/chromium/content/browser/input/InputDialogContainer.java"/>
-    <ignore path="content/public/android/javatests/src/org/chromium/content/browser/ClipboardTest.java"/>
-    <ignore path="media/base/android/java/src/org/chromium/media/AudioManagerAndroid.java"/>
-    <ignore path="media/base/android/java/src/org/chromium/media/MediaCodecBridge.java"/>
-    <ignore path="media/base/android/java/src/org/chromium/media/MediaDrmBridge.java"/>
-    <ignore path="media/base/android/java/src/org/chromium/media/VideoCapture.java"/>
-    <ignore path="media/base/android/java/src/org/chromium/media/WebAudioMediaCodecBridge.java"/>
-    <ignore path="printing/android/java/src/org/chromium/printing/PrintDocumentAdapterWrapper.java"/>
-    <ignore path="printing/android/java/src/org/chromium/printing/PrintManagerDelegateImpl.java"/>
-    <ignore path="printing/android/java/src/org/chromium/printing/PrintingControllerImpl.java"/>
-    <ignore path="tools/android/memconsumer/java/src/org/chromium/memconsumer/ResidentService.java"/>
-    <ignore path="ui/android/java/src/org/chromium/ui/ColorPickerAdvancedComponent.java"/>
-    <ignore path="ui/android/java/src/org/chromium/ui/base/Clipboard.java"/>
-    <ignore path="ui/android/java/src/org/chromium/ui/base/LocalizationUtils.java"/>
-    <ignore path="ui/android/java/src/org/chromium/ui/gfx/DeviceDisplayInfo.java"/>
-    <ignore path="ui/android/java/src/org/chromium/ui/gl/SurfaceTexturePlatformWrapper.java"/>
-  </issue>
+  <!-- Disabling is InlinedApi and NewApi is bad but we have too many of these errors and nobody is fixing it. crbug.com/411461 -->
+  <issue id="InlinedApi" severity="ignore"/>
+  <issue id="NewApi" severity="ignore"/>
   <issue id="OldTargetApi">
     <ignore path="AndroidManifest.xml"/>
   </issue>
