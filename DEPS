@@ -367,7 +367,6 @@ deps_os = {
     'src/chrome/test/data/perf/frame_rate/content': None,
     'src/media/cdm/ppapi/api': None,
     'src/native_client': None,
-    'src/native_client/src/third_party/ppapi': None,
     'src/third_party/bidichecker': None,
     'src/third_party/brotli/src': None,
     'src/third_party/cld_2/src': None,
