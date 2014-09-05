@@ -575,6 +575,7 @@ template("android_java_prebuilt") {
 #   native_libs: List paths of native libraries to include in this apk. If these
 #     libraries depend on other shared_library targets, those dependencies will
 #     also be included in the apk.
+#   testonly: Marks this target as "test-only".
 #
 #   DEPRECATED_java_in_dir: Directory containing java files. All .java files in
 #     this directory will be included in the library. This is only supported to
@@ -646,6 +647,9 @@ template("android_apk") {
 
     if (defined(invoker.deps)) {
       deps = invoker.deps
+    }
+    if (defined(invoker.testonly)) {
+      testonly = invoker.testonly
     }
 
     native_libs = _native_libs
@@ -801,6 +805,7 @@ template("unittest_apk") {
     if (defined(invoker.deps)) {
       deps = invoker.deps
     }
+    testonly = true
   }
 }
 

@@ -79,6 +79,9 @@ template("write_build_config") {
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
+    if (defined(invoker.testonly)) {
+      testonly = invoker.testonly
+    }
 
     outputs = [
       depfile,

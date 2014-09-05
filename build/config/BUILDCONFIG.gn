@@ -570,8 +570,8 @@ template("component") {
 # TEST SETUP
 # ==============================================================================
 
-# Define a test as an executable. In the future, we'll set "test only" flags
-# on this (when such flags exist) and do something different for Android.
+# Define a test as an executable with the "testonly" flag set. In the future,
+# this will need to be enhanced for Android.
 template("test") {
   executable(target_name) {
     # Configs will always be defined since we set_defaults for a component
@@ -579,6 +579,8 @@ template("test") {
     # shared/static library inside the component.
     configs = []  # Prevent list overwriting warning.
     configs = invoker.configs
+
+    testonly = true
 
     # See above call.
     set_sources_assignment_filter([])
