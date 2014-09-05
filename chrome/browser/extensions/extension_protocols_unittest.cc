@@ -11,7 +11,6 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
-//#include "chrome/common/url_constants.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -29,6 +28,7 @@
 using content::ResourceType;
 
 namespace extensions {
+namespace {
 
 scoped_refptr<Extension> CreateTestExtension(const std::string& name,
                                              bool incognito_split_mode) {
@@ -89,6 +89,11 @@ scoped_refptr<Extension> CreateTestResponseHeaderExtension() {
   return extension;
 }
 
+}  // namespace
+
+// This test lives in src/chrome instead of src/extensions because it tests
+// functionality delegated back to Chrome via ChromeExtensionsBrowserClient.
+// See chrome/browser/extensions/url_request_util.cc.
 class ExtensionProtocolTest : public testing::Test {
  public:
   ExtensionProtocolTest()

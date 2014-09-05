@@ -21,7 +21,8 @@ namespace extensions {
 class Extension;
 class InfoMap;
 
-// Utilities related to URLRequest jobs for extension resources.
+// Utilities related to URLRequest jobs for extension resources. See
+// chrome/browser/extensions/extension_protocols_unittest.cc for related tests.
 namespace url_request_util {
 
 // Returns true to allow a chrome-extension:// resource request coming from
