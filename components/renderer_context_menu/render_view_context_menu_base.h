@@ -166,6 +166,9 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
 
   ui::SimpleMenuModel menu_model_;
 
+  // Renderer's frame id.
+  int render_frame_id_;
+
   // Our observers.
   mutable ObserverList<RenderViewContextMenuObserver> observers_;
 
@@ -180,7 +183,6 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
 
   // The RenderFrameHost's IDs.
   int render_process_id_;
-  int render_frame_id_;
 
   scoped_ptr<ToolkitDelegate> toolkit_delegate_;
 

@@ -1697,7 +1697,8 @@ void RenderViewContextMenu::NotifyURLOpened(
     content::WebContents* new_contents) {
   RetargetingDetails details;
   details.source_web_contents = source_web_contents_;
-  details.source_render_frame_id = GetRenderFrameHost()->GetRoutingID();
+  // Don't use GetRenderFrameHost() as it may be NULL. crbug.com/399789
+  details.source_render_frame_id = render_frame_id_;
   details.target_url = url;
   details.target_web_contents = new_contents;
   details.not_yet_in_tabstrip = false;
