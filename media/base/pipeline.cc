@@ -158,12 +158,11 @@ void Pipeline::SetVolume(float volume) {
 }
 
 TimeDelta Pipeline::GetMediaTime() const {
+  base::AutoLock auto_lock(lock_);
   if (!renderer_)
     return TimeDelta();
 
   TimeDelta media_time = renderer_->GetMediaTime();
-
-  base::AutoLock auto_lock(lock_);
   return std::min(media_time, duration_);
 }
 
@@ -406,7 +405,10 @@ void Pipeline::DoStop(const PipelineStatusCB& done_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!pending_callbacks_.get());
 
-  renderer_.reset();
+  {
+    base::AutoLock auto_lock(lock_);
+    renderer_.reset();
+  }
   text_renderer_.reset();
 
   if (demuxer_) {
@@ -670,7 +672,10 @@ void Pipeline::InitializeRenderer(const base::Closure& done_cb) {
 
   if (!demuxer_->GetStream(DemuxerStream::AUDIO) &&
       !demuxer_->GetStream(DemuxerStream::VIDEO)) {
-    renderer_.reset();
+    {
+      base::AutoLock auto_lock(lock_);
+      renderer_.reset();
+    }
     OnError(PIPELINE_ERROR_COULD_NOT_RENDER);
     return;
   }
