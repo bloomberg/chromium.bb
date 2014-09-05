@@ -437,8 +437,8 @@ int NaClIPCAdapter::BlockingReceive(NaClImcTypedMsgHdr* msg) {
       retval = LockedReceive(msg);
       DCHECK(retval > 0);
     }
+    cond_var_.Signal();
   }
-  cond_var_.Signal();
   return retval;
 }
 
@@ -446,8 +446,8 @@ void NaClIPCAdapter::CloseChannel() {
   {
     base::AutoLock lock(lock_);
     locked_data_.channel_closed_ = true;
+    cond_var_.Signal();
   }
-  cond_var_.Signal();
 
   task_runner_->PostTask(FROM_HERE,
       base::Bind(&NaClIPCAdapter::CloseChannelOnIOThread, this));
@@ -551,8 +551,8 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
       SaveMessage(*new_msg, rewritten_msg.get());
     else
       SaveMessage(msg, rewritten_msg.get());
+    cond_var_.Signal();
   }
-  cond_var_.Signal();
   return true;
 }
 
