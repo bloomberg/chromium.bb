@@ -15,6 +15,10 @@
 class Browser;
 class Profile;
 
+namespace base {
+class FilePath;
+}
+
 namespace chrome {
 class BrowserListObserver;
 }
@@ -72,7 +76,17 @@ class BrowserList {
   static void SetLastActive(Browser* browser);
 
   // Closes all browsers for |profile| across all desktops.
+  // TODO(mlerman): Move the Profile Deletion flow to use the overloaded
+  // version of this method with a callback, then remove this method.
   static void CloseAllBrowsersWithProfile(Profile* profile);
+
+  // Closes all browsers for |profile| across all desktops. Uses
+  // TryToCloseBrowserList() to do the actual closing and trigger any
+  // OnBeforeUnload events. If all OnBeforeUnload events are confirmed,
+  // |on_close_success| is called.
+  static void CloseAllBrowsersWithProfile(
+      Profile* profile,
+      const base::Callback<void(const base::FilePath&)>& on_close_success);
 
   // Returns true if at least one incognito session is active across all
   // desktops.
@@ -88,6 +102,28 @@ class BrowserList {
 
   // Helper method to remove a browser instance from a list of browsers
   static void RemoveBrowserFrom(Browser* browser, BrowserVector* browser_list);
+
+  // Attempts to close |browsers_to_close| while respecting OnBeforeUnload
+  // events. If there are no OnBeforeUnload events to be called,
+  // |on_close_confirmed| will be called, with a parameter of |profile_path|,
+  // and the Browsers will then be closed. If at least one unfired
+  // OnBeforeUnload event is found, handle it with a callback to
+  // PostBeforeUnloadHandlers, which upon success will recursively call this
+  // method to handle any other OnBeforeUnload events.
+  static void TryToCloseBrowserList(
+      const BrowserVector& browsers_to_close,
+      const base::Callback<void(const base::FilePath&)>& on_close_success,
+      const base::FilePath& profile_path);
+
+  // Called after handling an OnBeforeUnload event. If |tab_close_confirmed| is
+  // true, calls |TryToCloseBrowserList()|, passing the parameters
+  // |browsers_to_close|, |on_close_confirmed|, and |profile_path|. Otherwise,
+  // resets all the OnBeforeUnload event handlers.
+  static void PostBeforeUnloadHandlers(
+      const BrowserVector& browsers_to_close,
+      const base::Callback<void(const base::FilePath&)>& on_close_success,
+      const base::FilePath& profile_path,
+      bool tab_close_confirmed);
 
   // A vector of the browsers in this list, in the order they were added.
   BrowserVector browsers_;

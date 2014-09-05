@@ -259,25 +259,36 @@ void CreateAndSwitchToNewProfile(chrome::HostDesktopType desktop_type,
   ProfileMetrics::LogProfileAddNewUser(metric);
 }
 
+void GuestBrowserCloseSuccess(const base::FilePath& profile_path) {
+  chrome::ShowUserManager(profile_path);
+}
+
 void CloseGuestProfileWindows() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   Profile* profile = profile_manager->GetProfileByPath(
       ProfileManager::GetGuestProfilePath());
 
   if (profile) {
-    BrowserList::CloseAllBrowsersWithProfile(profile);
+    BrowserList::CloseAllBrowsersWithProfile(
+        profile, base::Bind(&GuestBrowserCloseSuccess));
   }
+}
+
+void LockBrowserCloseSuccess(const base::FilePath& profile_path) {
+  ProfileInfoCache* cache =
+      &g_browser_process->profile_manager()->GetProfileInfoCache();
+
+  cache->SetProfileSigninRequiredAtIndex(
+      cache->GetIndexOfProfileWithPath(profile_path), true);
+  chrome::ShowUserManager(profile_path);
 }
 
 void LockProfile(Profile* profile) {
   DCHECK(profile);
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-
-  size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
-  cache.SetProfileSigninRequiredAtIndex(index, true);
-  chrome::ShowUserManager(profile->GetPath());
-  BrowserList::CloseAllBrowsersWithProfile(profile);
+  if (profile) {
+    BrowserList::CloseAllBrowsersWithProfile(
+        profile, base::Bind(&LockBrowserCloseSuccess));
+  }
 }
 
 void CreateGuestProfileForUserManager(

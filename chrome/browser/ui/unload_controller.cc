@@ -300,7 +300,13 @@ void UnloadController::ProcessPendingTabs() {
       ClearUnloadState(web_contents, true);
     }
   } else if (is_calling_before_unload_handlers()) {
-    on_close_confirmed_.Run(true);
+    base::Callback<void(bool)> on_close_confirmed = on_close_confirmed_;
+    // Reset |on_close_confirmed_| in case the callback tests
+    // |is_calling_before_unload_handlers()|, we want to return that calling
+    // is complete.
+    if (tabs_needing_unload_fired_.empty())
+      on_close_confirmed_.Reset();
+    on_close_confirmed.Run(true);
   } else if (!tabs_needing_unload_fired_.empty()) {
     // We've finished firing all beforeunload events and can proceed with unload
     // events.

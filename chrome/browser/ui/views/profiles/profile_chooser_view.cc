@@ -706,13 +706,11 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     sender->SetEnabled(false);
 
   if (sender == users_button_) {
-    // If this is a guest session, also close all the guest browser windows.
-    if (browser_->profile()->IsGuestSession()) {
-      chrome::ShowUserManager(base::FilePath());
+    // If this is a guest session, close all the guest browser windows.
+    if (browser_->profile()->IsGuestSession())
       profiles::CloseGuestProfileWindows();
-    } else {
+    else
       chrome::ShowUserManager(browser_->profile()->GetPath());
-    }
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_OPEN_USER_MANAGER);
   } else if (sender == go_incognito_button_) {
     DCHECK(ShouldShowGoIncognito());
