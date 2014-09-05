@@ -6,13 +6,34 @@
 
 #include "base/rand_util.h"
 #include "sync/internal_api/public/base/unique_position.h"
+#include "sync/internal_api/public/test/test_entry_factory.h"
 #include "sync/protocol/sync.pb.h"
+#include "sync/syncable/mutable_entry.h"
+#include "sync/syncable/syncable_write_transaction.h"
+#include "sync/test/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
 
 class GetUpdatePositionTest : public ::testing::Test {
  public:
+  virtual void SetUp() {
+    dir_maker_.SetUp();
+    entry_factory_.reset(new TestEntryFactory(directory()));
+  }
+
+  virtual void TearDown() {
+    dir_maker_.TearDown();
+  }
+
+  syncable::Directory* directory() {
+    return dir_maker_.directory();
+  }
+
+  TestEntryFactory* entry_factory() {
+    return entry_factory_.get();
+  }
+
   GetUpdatePositionTest() {
     InitUpdate();
 
@@ -49,6 +70,9 @@ class GetUpdatePositionTest : public ::testing::Test {
 
   sync_pb::SyncEntity update;
   UniquePosition test_position;
+  base::MessageLoop message_loop_;
+  TestDirectorySetterUpper dir_maker_;
+  scoped_ptr<TestEntryFactory> entry_factory_;
 };
 
 // Generate a suffix from originator client GUID and client-assigned ID.  These
@@ -122,6 +146,61 @@ TEST_F(GetUpdatePositionTest, FromNothing) {
   std::string suffix = GetUniqueBookmarkTagFromUpdate(update);
   UniquePosition pos = GetUpdatePosition(update, suffix);
   EXPECT_TRUE(pos.IsValid());
+}
+
+namespace {
+
+sync_pb::EntitySpecifics DefaultBookmarkSpecifics() {
+  sync_pb::EntitySpecifics result;
+  AddDefaultFieldValue(BOOKMARKS, &result);
+  return result;
+}
+
+}  // namespace
+
+// Checks that whole cycle of unique_position updating from
+// server works fine and does not browser crash.
+TEST_F(GetUpdatePositionTest, UpdateServerFieldsFromUpdateTest) {
+  InitSuffixIngredients();  // Initialize update with valid data.
+
+  std::string root_server_id = syncable::GetNullId().GetServerId();
+  int64 handle = entry_factory()->CreateUnappliedNewBookmarkItemWithParent(
+      "I", DefaultBookmarkSpecifics(), root_server_id);
+
+  syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, directory());
+  syncable::MutableEntry target(&trans, syncable::GET_BY_HANDLE, handle);
+
+  // Before update, target has invalid bookmark tag and unique position.
+  EXPECT_FALSE(UniquePosition::IsValidSuffix(target.GetUniqueBookmarkTag()));
+  EXPECT_FALSE(target.GetServerUniquePosition().IsValid());
+  UpdateServerFieldsFromUpdate(&target, update, "name");
+
+  // After update, target has valid bookmark tag and unique position.
+  EXPECT_TRUE(UniquePosition::IsValidSuffix(target.GetUniqueBookmarkTag()));
+  EXPECT_TRUE(target.GetServerUniquePosition().IsValid());
+}
+
+// Checks that whole cycle of unique_position updating does not
+// browser crash even data from server is invalid.
+// It looks like server bug, but browser should not crash and work further.
+TEST_F(GetUpdatePositionTest, UpdateServerFieldsFromInvalidUpdateTest) {
+  // Do not initialize data in update, update is invalid.
+
+  std::string root_server_id = syncable::GetNullId().GetServerId();
+  int64 handle = entry_factory()->CreateUnappliedNewBookmarkItemWithParent(
+      "I", DefaultBookmarkSpecifics(), root_server_id);
+
+  syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, directory());
+  syncable::MutableEntry target(&trans, syncable::GET_BY_HANDLE, handle);
+
+  // Before update, target has invalid bookmark tag and unique position.
+  EXPECT_FALSE(UniquePosition::IsValidSuffix(target.GetUniqueBookmarkTag()));
+  EXPECT_FALSE(target.GetServerUniquePosition().IsValid());
+  UpdateServerFieldsFromUpdate(&target, update, "name");
+
+  // After update, target has valid bookmark tag and unique position.
+  EXPECT_TRUE(UniquePosition::IsValidSuffix(target.GetUniqueBookmarkTag()));
+  EXPECT_TRUE(target.GetServerUniquePosition().IsValid());
 }
 
 }  // namespace syncer

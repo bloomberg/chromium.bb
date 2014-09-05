@@ -69,7 +69,7 @@ SYNC_EXPORT_PRIVATE std::string GetUniqueBookmarkTagFromUpdate(
     const sync_pb::SyncEntity& update);
 
 // Pass in name to avoid redundant UTF8 conversion.
-void UpdateServerFieldsFromUpdate(
+SYNC_EXPORT_PRIVATE void UpdateServerFieldsFromUpdate(
     syncable::ModelNeutralMutableEntry* local_entry,
     const sync_pb::SyncEntity& server_entry,
     const std::string& name);
