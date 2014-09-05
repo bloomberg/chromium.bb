@@ -43,7 +43,7 @@ void GestureTouchUMAHistogram::RecordTouchEvent(const MotionEvent& event) {
           50);
 
       base::TimeDelta duration = event.GetEventTime() - start_time_;
-      UMA_HISTOGRAM_TIMES("Event.TouchDuration2", duration);
+      UMA_HISTOGRAM_TIMES("Event.TouchDuration", duration);
     }
     is_single_finger_ = false;
   }
