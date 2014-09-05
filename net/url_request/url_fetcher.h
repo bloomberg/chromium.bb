@@ -215,11 +215,15 @@ class NET_EXPORT URLFetcher {
   // server response code.
   virtual void SetStopOnRedirect(bool stop_on_redirect) = 0;
 
-  // If |retry| is false, 5xx responses will be propagated to the observer,
-  // if it is true URLFetcher will automatically re-execute the request,
-  // after backoff_delay() elapses. URLFetcher has it set to true by default.
+  // If |retry| is false, 5xx responses will be propagated to the observer.  If
+  // it is true URLFetcher will automatically re-execute the request, after
+  // backoff_delay() elapses, up to the maximum number of retries allowed by
+  // SetMaxRetriesOn5xx.  Defaults to true.
   virtual void SetAutomaticallyRetryOn5xx(bool retry) = 0;
 
+  // |max_retries| is the maximum number of times URLFetcher will retry a
+  // request that receives a 5XX response.  Depends on
+  // SetAutomaticallyRetryOn5xx.  Defaults to 0.
   virtual void SetMaxRetriesOn5xx(int max_retries) = 0;
   virtual int GetMaxRetriesOn5xx() const = 0;
 
