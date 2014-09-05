@@ -218,7 +218,7 @@ deps = {
     Var('chromium_git') + '/external/usrsctplib.git' + '@' + 'e6e18333da18c5bb7de7e9189e53403e2ffa7023',
 
   'src/third_party/libsrtp':
-   Var('chromium_git') + '/chromium/deps/libsrtp.git' + '@' + '662d81de5cbf3667f1baaafe051b8b4ab0b12fe2',
+   Var('chromium_git') + '/chromium/deps/libsrtp.git' + '@' + 'dcc1fc62771b4f25fa5f91cddec8e9a491d0ee6d',
 
   'src/third_party/speex':
    Var('chromium_git') + '/chromium/deps/speex.git' + '@' + '5260621c36c227209c7ba64ea71ca3418cf9e2b4',
