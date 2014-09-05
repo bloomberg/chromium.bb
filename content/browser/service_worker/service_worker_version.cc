@@ -29,7 +29,7 @@ namespace {
 const int64 kStopWorkerDelay = 30;  // 30 secs.
 
 // Default delay for scheduled update.
-const int kUpdateDelaySeconds = 10;
+const int kUpdateDelaySeconds = 1;
 
 void RunSoon(const base::Closure& callback) {
   if (!callback.is_null())
