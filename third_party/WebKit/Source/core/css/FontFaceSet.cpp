@@ -431,12 +431,6 @@ void FontFaceSet::fireDoneEventIfPossible()
     }
 }
 
-static const String& nullToSpace(const String& s)
-{
-    DEFINE_STATIC_LOCAL(String, space, (" "));
-    return s.isNull() ? space : s;
-}
-
 ScriptPromise FontFaceSet::load(ScriptState* scriptState, const String& fontString, const String& text)
 {
     if (!inActiveDocumentContext())
@@ -455,7 +449,7 @@ ScriptPromise FontFaceSet::load(ScriptState* scriptState, const String& fontStri
     for (const FontFamily* f = &font.fontDescription().family(); f; f = f->next()) {
         CSSSegmentedFontFace* segmentedFontFace = fontFaceCache->get(font.fontDescription(), f->family());
         if (segmentedFontFace)
-            segmentedFontFace->match(nullToSpace(text), faces);
+            segmentedFontFace->match(text, faces);
     }
 
     RefPtrWillBeRawPtr<LoadFontPromiseResolver> resolver = LoadFontPromiseResolver::create(faces, scriptState);
@@ -482,7 +476,7 @@ bool FontFaceSet::check(const String& fontString, const String& text, ExceptionS
     for (const FontFamily* f = &font.fontDescription().family(); f; f = f->next()) {
         CSSSegmentedFontFace* face = fontFaceCache->get(font.fontDescription(), f->family());
         if (face) {
-            if (!face->checkFont(nullToSpace(text)))
+            if (!face->checkFont(text))
                 return false;
             hasLoadedFaces = true;
         }
