@@ -31,10 +31,26 @@
       ],
     },
     {
+      'target_name': 'cma_ipc',
+      'type': '<(component)',
+      'dependencies': [
+        '../../base/base.gyp:base',
+      ],
+      'sources': [
+        'cma/ipc/media_memory_chunk.cc',
+        'cma/ipc/media_memory_chunk.h',
+        'cma/ipc/media_message.cc',
+        'cma/ipc/media_message.h',
+        'cma/ipc/media_message_fifo.cc',
+        'cma/ipc/media_message_fifo.h',
+      ],
+    },
+    {
       'target_name': 'cast_media',
       'type': 'none',
       'dependencies': [
         'cma_base',
+        'cma_ipc',
       ],
     },
     {
@@ -53,6 +69,8 @@
         'cma/base/balanced_media_task_runner_unittest.cc',
         'cma/base/buffering_controller_unittest.cc',
         'cma/base/run_all_unittests.cc',
+        'cma/ipc/media_message_fifo_unittest.cc',
+        'cma/ipc/media_message_unittest.cc',
       ],
     },
   ],
