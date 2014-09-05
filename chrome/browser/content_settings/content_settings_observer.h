@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 
 namespace content_settings {

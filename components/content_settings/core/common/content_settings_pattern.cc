@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "chrome/common/content_settings_pattern_parser.h"
+#include "components/content_settings/core/common/content_settings_pattern_parser.h"
 #include "net/base/dns_util.h"
 #include "net/base/net_util.h"
 #include "url/gurl.h"
@@ -53,8 +53,8 @@ int CompareDomainNames(const std::string& str1, const std::string& str2) {
   base::SplitString(str1, '.', &domain_name1);
   base::SplitString(str2, '.', &domain_name2);
 
-  int i1 = domain_name1.size() - 1;
-  int i2 = domain_name2.size() - 1;
+  int i1 = static_cast<int>(domain_name1.size()) - 1;
+  int i2 = static_cast<int>(domain_name2.size()) - 1;
   int rv;
   while (i1 >= 0 && i2 >= 0) {
     // domain names are stored in puny code. So it's fine to use the compare

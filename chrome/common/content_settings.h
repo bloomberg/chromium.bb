@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "chrome/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 
 // Different settings that can be assigned for a particular content type.  We
 // give the user the ability to set these on a global and per-origin basis.

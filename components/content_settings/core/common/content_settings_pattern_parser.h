@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_CONTENT_SETTINGS_PATTERN_PARSER_H_
-#define CHROME_COMMON_CONTENT_SETTINGS_PATTERN_PARSER_H_
+#ifndef COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_CONTENT_SETTINGS_PATTERN_PARSER_H_
+#define COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_CONTENT_SETTINGS_PATTERN_PARSER_H_
 
 #include <string>
 
-#include "base/basictypes.h"
-#include "chrome/common/content_settings_pattern.h"
+#include "base/macros.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 
 namespace content_settings {
 
@@ -19,8 +19,11 @@ class PatternParser {
 
   static std::string ToString(
       const ContentSettingsPattern::PatternParts& parts);
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(PatternParser);
 };
 
 }  // namespace content_settings
 
-#endif  // CHROME_COMMON_CONTENT_SETTINGS_PATTERN_PARSER_H_
+#endif  // COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_CONTENT_SETTINGS_PATTERN_PARSER_H_

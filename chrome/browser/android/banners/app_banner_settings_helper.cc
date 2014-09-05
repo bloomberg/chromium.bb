@@ -9,7 +9,7 @@
 
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 

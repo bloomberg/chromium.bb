@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "chrome/common/content_settings.h"
-#include "chrome/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "ppapi/c/private/ppp_flash_browser_operations.h"
 #include "ppapi/shared_impl/ppp_flash_browser_operations_shared.h"
 

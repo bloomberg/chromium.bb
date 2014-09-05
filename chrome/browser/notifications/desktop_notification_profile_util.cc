@@ -7,7 +7,7 @@
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 
 void DesktopNotificationProfileUtil::ResetToDefaultContentSetting(
     Profile* profile) {

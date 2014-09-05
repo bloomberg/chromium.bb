@@ -4,8 +4,8 @@
 
 #include <list>
 
-#include "chrome/common/content_settings_pattern.h"
 #include "chrome/browser/content_settings/content_settings_rule.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content_settings {

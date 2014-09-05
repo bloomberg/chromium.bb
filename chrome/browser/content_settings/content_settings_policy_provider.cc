@@ -12,8 +12,8 @@
 #include "base/values.h"
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
-#include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/pref_names.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 

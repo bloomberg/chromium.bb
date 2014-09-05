@@ -16,7 +16,7 @@
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "url/gurl.h"
 
 namespace {

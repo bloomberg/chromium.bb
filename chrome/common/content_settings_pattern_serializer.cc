@@ -4,8 +4,8 @@
 
 #include "chrome/common/content_settings_pattern_serializer.h"
 
-#include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/render_messages.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 
 // static
 void ContentSettingsPatternSerializer::WriteToMessage(

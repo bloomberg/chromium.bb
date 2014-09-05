@@ -4,6 +4,10 @@
 
 source_set("common") {
   sources = [
+    "content_settings_pattern.cc",
+    "content_settings_pattern.h",
+    "content_settings_pattern_parser.cc",
+    "content_settings_pattern_parser.h",
     "content_settings_types.h",
   ]
 }

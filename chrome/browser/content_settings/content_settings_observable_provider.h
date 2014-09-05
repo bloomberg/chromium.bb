@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/observer_list.h"
-#include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/content_settings_observer.h"
-#include "chrome/common/content_settings_pattern.h"
+#include "chrome/browser/content_settings/content_settings_provider.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 
 namespace content_settings {
 
