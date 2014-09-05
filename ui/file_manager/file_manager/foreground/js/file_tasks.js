@@ -63,7 +63,7 @@ FileTasks.VIDEO_PLAYER_ID = 'jcgeabjmjgoblfofpppfkcoakmfobdko';
  * @return {string} URL
  */
 FileTasks.createWebStoreLink = function(extension, mimeType) {
-  if (!extension)
+  if (!extension || FileTasks.EXECUTABLE_EXTENSIONS.indexOf(extension) !== -1)
     return FileTasks.CHROME_WEB_STORE_URL;
 
   if (extension[0] === '.')
@@ -327,6 +327,7 @@ FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
     var titleMessageId;
     switch (extension) {
       case '.exe':
+      case '.msi':
         textMessageId = 'NO_ACTION_FOR_EXECUTABLE';
         break;
       case '.dmg':
