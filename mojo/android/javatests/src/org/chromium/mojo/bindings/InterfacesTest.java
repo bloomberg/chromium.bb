@@ -277,6 +277,11 @@ public class InterfacesTest extends MojoTestCase {
     }
 
     @SmallTest
+    public void testName() {
+        assertEquals("sample::NamedObject", NamedObject.MANAGER.getName());
+    }
+
+    @SmallTest
     public void testProxyAndStub() {
         MockNamedObjectImpl impl = new MockNamedObjectImpl();
         NamedObject.Proxy proxy =

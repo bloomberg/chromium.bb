@@ -68,6 +68,10 @@ org.chromium.mojo.bindings.MessageHeader.MESSAGE_IS_RESPONSE_FLAG
 public static final {{manager_class(interface, client, True)}} MANAGER =
         new {{manager_class(interface, client, True)}}() {
 
+    public String getName() {
+        return "{{namespace|replace(".","::")}}::{{interface.name}}";
+    }
+
     public Proxy buildProxy(org.chromium.mojo.system.Core core,
                             org.chromium.mojo.bindings.MessageReceiverWithResponder messageReceiver) {
         return new Proxy(core, messageReceiver);
