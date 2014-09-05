@@ -369,6 +369,9 @@ class MEDIA_EXPORT AudioInputController
 
   size_t prev_key_down_count_;
 
+  // Time when a low-latency stream is created.
+  base::TimeTicks low_latency_create_time_;
+
   DISALLOW_COPY_AND_ASSIGN(AudioInputController);
 };
 

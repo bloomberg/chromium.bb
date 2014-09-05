@@ -11460,6 +11460,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Media.InputStreamDuration" units="ms">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Duration in milliseconds of low-latency audio input streams. Sampled when
+    the stream is closed by the AudioInputController.
+  </summary>
+</histogram>
+
 <histogram name="Media.LinuxAudioIO" enum="LinuxAudioIO">
   <owner>dalecurtis@chromium.org</owner>
   <summary>

@@ -5,6 +5,7 @@
 #include "media/audio/audio_input_controller.h"
 
 #include "base/bind.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -263,6 +264,7 @@ void AudioInputController::DoCreateForLowLatency(AudioManager* audio_manager,
     log_silence_state_ = true;
 #endif
 
+  low_latency_create_time_ = base::TimeTicks::Now();
   DoCreate(audio_manager, params, device_id);
 }
 
@@ -347,8 +349,20 @@ void AudioInputController::DoClose() {
   if (state_ == CLOSED)
     return;
 
-  if (handler_)
-    handler_->OnLog(this, "AIC::DoClose");
+  // If this is a low-latency stream, log the total duration (since DoCreate)
+  // and add it to a UMA histogram.
+  if (!low_latency_create_time_.is_null()) {
+    base::TimeDelta duration =
+        base::TimeTicks::Now() - low_latency_create_time_;
+    UMA_HISTOGRAM_LONG_TIMES("Media.InputStreamDuration", duration);
+    if (handler_) {
+      std::string log_string =
+          base::StringPrintf("AIC::DoClose: stream duration=");
+      log_string += base::Int64ToString(duration.InSeconds());
+      log_string += " seconds";
+      handler_->OnLog(this, log_string);
+    }
+  }
 
   // Delete the timer on the same thread that created it.
   no_data_timer_.reset();
