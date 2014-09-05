@@ -213,6 +213,10 @@ class FilteringOption(Option):
     parser.AddParsedArg(self, opt, [str(v) for v in value])
 
 
+# TODO: logging.Formatter is not a subclass of object in python
+# 2.6. Make ColoredFormatter explicitly inherit from object so that
+# functions such as super() will not fail. This should be removed
+# after python is upgraded to 2.7 on master2 (crbug.com/409273).
 class ColoredFormatter(logging.Formatter, object):
   """A logging formatter that can color the messages."""
 
