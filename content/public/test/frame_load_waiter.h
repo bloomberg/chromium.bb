@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_FRAME_LOAD_WAITER_H_
-#define CONTENT_TEST_FRAME_LOAD_WAITER_H_
+#ifndef CONTENT_PUBLIC_TEST_FRAME_LOAD_WAITER_H_
+#define CONTENT_PUBLIC_TEST_FRAME_LOAD_WAITER_H_
 
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -29,4 +29,4 @@ class FrameLoadWaiter : public RenderFrameObserver {
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_FRAME_LOAD_WAITER_H_
+#endif  // CONTENT_PUBLIC_TEST_FRAME_LOAD_WAITER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/frame_load_waiter.h"
+#include "content/public/test/frame_load_waiter.h"
 
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
