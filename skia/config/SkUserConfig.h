@@ -261,10 +261,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
     #define SK_SUPPORT_LEGACY_GETDEVICE
 #endif
 
-#ifdef SK_SUPPORT_LEGACY_ALLOCPIXELS_BOOL
-    #undef SK_SUPPORT_LEGACY_ALLOCPIXELS_BOOL
-#endif
-
 // Turns SkPicture::clone() into a simple "return SkRef(this);" as a way to
 // test the threadsafety of SkPicture playback.
 #define SK_PICTURE_CLONE_NOOP 1
