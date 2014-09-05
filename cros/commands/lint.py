@@ -129,7 +129,7 @@ class DocStringChecker(BaseChecker):
     #
     # Also check for multiple blank lines in a row.
     last_blank = False
-    for l, i in zip(lines[:-1], xrange(len(lines))):
+    for i, l in enumerate(lines[:-1]):
       margs = {'offset': i, 'line': l}
 
       if l.rstrip() != l:
@@ -172,7 +172,7 @@ class DocStringChecker(BaseChecker):
     )
 
     last = lines[0].strip()
-    for line, i in zip(lines[1:], xrange(len(lines))):
+    for i, line in enumerate(lines[1:]):
       margs = {'offset': i + 1, 'line': line}
       l = line.strip()
 

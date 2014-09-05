@@ -956,7 +956,7 @@ def GetChoice(prompt, options):
   """
   prompt = prompt[:]
 
-  for opt, i in zip(options, xrange(len(options))):
+  for i, opt in enumerate(options):
     prompt += '\n  [%d]: %s' % (i, opt)
 
   prompt = '%s\nEnter your choice to continue [0-%d]: ' % (

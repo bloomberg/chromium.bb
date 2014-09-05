@@ -333,8 +333,8 @@ HWTEST_VALID_PRIORITIES = ['Weekly',
                            HWTEST_CQ_PRIORITY]
 
 # Creates a mapping of priorities to make easy comparsions.
-HWTEST_PRIORITIES_MAP = dict(zip(HWTEST_VALID_PRIORITIES,
-                                 range(len(HWTEST_VALID_PRIORITIES))))
+HWTEST_PRIORITIES_MAP = dict(
+    (p, i) for i, p in enumerate(HWTEST_VALID_PRIORITIES))
 
 # Defines VM Test types.
 FULL_AU_TEST_TYPE = 'full_suite'
