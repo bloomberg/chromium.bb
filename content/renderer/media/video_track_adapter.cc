@@ -345,8 +345,6 @@ VideoTrackAdapter::VideoTrackAdapter(
 
 VideoTrackAdapter::~VideoTrackAdapter() {
   DCHECK(adapters_.empty());
-  UMA_HISTOGRAM_BOOLEAN("Media.VideoTrackAdapter.FramesReceived",
-                        frame_counter_ > 0);
 }
 
 void VideoTrackAdapter::AddTrack(

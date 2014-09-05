@@ -179,20 +179,19 @@ class VideoCaptureController::VideoCaptureDeviceClient
 
   // The pool of shared-memory buffers used for capturing.
   const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
-
-  bool first_frame_;
 };
 
 VideoCaptureController::VideoCaptureController(int max_buffers)
     : buffer_pool_(new VideoCaptureBufferPool(max_buffers)),
       state_(VIDEO_CAPTURE_STATE_STARTED),
+      frame_received_(false),
       weak_ptr_factory_(this) {
 }
 
 VideoCaptureController::VideoCaptureDeviceClient::VideoCaptureDeviceClient(
     const base::WeakPtr<VideoCaptureController>& controller,
     const scoped_refptr<VideoCaptureBufferPool>& buffer_pool)
-    : controller_(controller), buffer_pool_(buffer_pool), first_frame_(true) {}
+    : controller_(controller), buffer_pool_(buffer_pool) {}
 
 VideoCaptureController::VideoCaptureDeviceClient::~VideoCaptureDeviceClient() {}
 
@@ -479,22 +478,6 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
           format,
           frame,
           timestamp));
-
-  if (first_frame_) {
-    UMA_HISTOGRAM_COUNTS("Media.VideoCapture.Width",
-                         frame_format.frame_size.width());
-    UMA_HISTOGRAM_COUNTS("Media.VideoCapture.Height",
-                         frame_format.frame_size.height());
-    UMA_HISTOGRAM_ASPECT_RATIO("Media.VideoCapture.AspectRatio",
-                               frame_format.frame_size.width(),
-                               frame_format.frame_size.height());
-    UMA_HISTOGRAM_COUNTS("Media.VideoCapture.FrameRate",
-                         frame_format.frame_rate);
-    UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.PixelFormat",
-                              frame_format.pixel_format,
-                              media::PIXEL_FORMAT_MAX);
-    first_frame_ = false;
-  }
 }
 
 void
@@ -574,6 +557,7 @@ VideoCaptureController::VideoCaptureDeviceClient::DoReserveOutputBuffer(
 VideoCaptureController::~VideoCaptureController() {
   STLDeleteContainerPointers(controller_clients_.begin(),
                              controller_clients_.end());
+  UMA_HISTOGRAM_BOOLEAN("Media.VideoCapture.FramesReceived", frame_received_);
 }
 
 void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
@@ -620,6 +604,22 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
       DCHECK(inserted) << "Unexpected duplicate buffer: " << buffer->id();
       count++;
     }
+  }
+
+  if (!frame_received_) {
+    UMA_HISTOGRAM_COUNTS("Media.VideoCapture.Width",
+                         buffer_format.frame_size.width());
+    UMA_HISTOGRAM_COUNTS("Media.VideoCapture.Height",
+                         buffer_format.frame_size.height());
+    UMA_HISTOGRAM_ASPECT_RATIO("Media.VideoCapture.AspectRatio",
+                               buffer_format.frame_size.width(),
+                               buffer_format.frame_size.height());
+    UMA_HISTOGRAM_COUNTS("Media.VideoCapture.FrameRate",
+                         buffer_format.frame_rate);
+    UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.PixelFormat",
+                              buffer_format.pixel_format,
+                              media::PIXEL_FORMAT_MAX);
+    frame_received_ = true;
   }
 
   buffer_pool_->HoldForConsumers(buffer->id(), count);

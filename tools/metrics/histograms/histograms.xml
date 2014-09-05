@@ -11696,6 +11696,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Media.VideoCapture.FramesReceived" enum="BooleanReceived">
+  <owner>grunell@chromium.org</owner>
+  <owner>mcasas@chromium.org</owner>
+  <summary>
+    Whether any frames were received during a video capture session. This metric
+    is recorded when a video source is stopped.
+  </summary>
+</histogram>
+
 <histogram name="Media.VideoCapture.Height" units="pixels">
   <owner>mcasas@chromium.org</owner>
   <summary>
@@ -11769,6 +11778,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.VideoTrackAdapter.FramesReceived" enum="BooleanReceived">
+  <obsolete>
+    Replaced by Media.VideoCapture.FramesReceived 09/2014.
+  </obsolete>
   <owner>grunell@chromium.org</owner>
   <owner>mcasas@chromium.org</owner>
   <summary>

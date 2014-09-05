@@ -151,6 +151,9 @@ class CONTENT_EXPORT VideoCaptureController {
   // state which stops the flow of data to clients.
   VideoCaptureState state_;
 
+  // True if the controller has received a video frame from the device.
+  bool frame_received_;
+
   media::VideoCaptureFormat video_capture_format_;
 
   base::WeakPtrFactory<VideoCaptureController> weak_ptr_factory_;
