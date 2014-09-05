@@ -423,6 +423,12 @@ void KioskAppManager::OnKioskAppCacheUpdated(const std::string& app_id) {
       KioskAppManagerObserver, observers_, OnKioskAppCacheUpdated(app_id));
 }
 
+void KioskAppManager::OnKioskAppExternalUpdateComplete(bool success) {
+  FOR_EACH_OBSERVER(KioskAppManagerObserver,
+                    observers_,
+                    OnKioskAppExternalUpdateComplete(success));
+}
+
 void KioskAppManager::PutValidatedExternalExtension(
     const std::string& app_id,
     const base::FilePath& crx_path,

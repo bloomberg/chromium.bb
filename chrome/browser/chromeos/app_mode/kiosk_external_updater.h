@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_external_update_validator.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -88,6 +89,10 @@ class KioskExternalUpdater : public disks::DiskMountManager::Observer,
 
   // Returns true if there are any external updates pending.
   bool IsExternalUpdatePending();
+
+  // Returns true if all external updates specified in the manifest are
+  // completed successfully.
+  bool IsAllExternalUpdatesSucceeded();
 
   // Returns true if the app with |app_id| should be updated to
   // |external_extension|.

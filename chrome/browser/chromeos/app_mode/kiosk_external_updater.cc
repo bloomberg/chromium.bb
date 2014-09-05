@@ -242,11 +242,13 @@ void KioskExternalUpdater::ProcessParsedManifest(
     NotifyKioskUpdateProgress(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_KIOSK_EXTERNAL_UPDATE_NO_MANIFEST));
+    KioskAppManager::Get()->OnKioskAppExternalUpdateComplete(false);
     return;
   } else if (*parsing_error == ERROR_INVALID_MANIFEST) {
     NotifyKioskUpdateProgress(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_KIOSK_EXTERNAL_UPDATE_INVALID_MANIFEST));
+    KioskAppManager::Get()->OnKioskAppExternalUpdateComplete(false);
     return;
   }
 
@@ -301,6 +303,7 @@ void KioskExternalUpdater::ProcessParsedManifest(
     NotifyKioskUpdateProgress(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_KIOSK_EXTERNAL_UPDATE_NO_UPDATES));
+    KioskAppManager::Get()->OnKioskAppExternalUpdateComplete(false);
     return;
   }
 
@@ -345,6 +348,17 @@ bool KioskExternalUpdater::IsExternalUpdatePending() {
     }
   }
   return false;
+}
+
+bool KioskExternalUpdater::IsAllExternalUpdatesSucceeded() {
+  for (ExternalUpdateMap::iterator it = external_updates_.begin();
+       it != external_updates_.end();
+       ++it) {
+    if (it->second.update_status != SUCCESS) {
+      return false;
+    }
+  }
+  return true;
 }
 
 bool KioskExternalUpdater::ShouldDoExternalUpdate(
@@ -440,6 +454,8 @@ void KioskExternalUpdater::MayBeNotifyKioskAppUpdate() {
 
   NotifyKioskUpdateProgress(GetUpdateReportMessage());
   NotifyKioskAppUpdateAvailable();
+  KioskAppManager::Get()->OnKioskAppExternalUpdateComplete(
+      IsAllExternalUpdatesSucceeded());
 }
 
 void KioskExternalUpdater::NotifyKioskAppUpdateAvailable() {

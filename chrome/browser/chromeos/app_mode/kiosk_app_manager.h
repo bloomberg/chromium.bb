@@ -186,6 +186,10 @@ class KioskAppManager : public KioskAppDataDelegate,
   // Invoked when kiosk app cache has been updated.
   void OnKioskAppCacheUpdated(const std::string& app_id);
 
+  // Invoked when kiosk app updating from usb stick has been completed.
+  // |success| indicates if all the updates are completed successfully.
+  void OnKioskAppExternalUpdateComplete(bool success);
+
   // Installs the validated external extension into cache.
   void PutValidatedExternalExtension(
       const std::string& app_id,
