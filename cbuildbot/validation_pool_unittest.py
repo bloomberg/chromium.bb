@@ -646,20 +646,25 @@ class TestSubmitChange(MoxBase):
   def tearDown(self):
     validation_pool.SUBMITTED_WAIT_TIMEOUT = self.orig_timeout
 
-  def _TestSubmitChange(self, results):
+  def _TestSubmitChange(self, results, build_id=31337):
     """Test submitting a change with the given results."""
     results = [cros_test_lib.EasyAttr(status=r) for r in results]
     change = self.MockPatch(change_id=12345, patch_number=1)
     pool = self.mox.CreateMock(validation_pool.ValidationPool)
     pool.dryrun = False
     pool._metadata = metadata_lib.CBuildbotMetadata()
+    pool._metadata.UpdateWithDict({'build_id': build_id})
     pool._helper_pool = self.mox.CreateMock(validation_pool.HelperPool)
     helper = self.mox.CreateMock(validation_pool.gerrit.GerritHelper)
+
+    self.mox.StubOutWithMock(validation_pool.ValidationPool,
+                             '_InsertCLActionToDatabase')
 
     # Prepare replay script.
     pool._helper_pool.ForChange(change).AndReturn(helper)
     helper.SubmitChange(change, dryrun=False)
-    pool._InsertCLActionToDatabase(change, mox.IgnoreArg(), mox.IgnoreArg())
+    validation_pool.ValidationPool._InsertCLActionToDatabase(build_id, change,
+                                                             mox.IgnoreArg())
     for result in results:
       helper.QuerySingleRecord(change.gerrit_number).AndReturn(result)
     self.mox.ReplayAll()

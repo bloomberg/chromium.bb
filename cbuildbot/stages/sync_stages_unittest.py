@@ -321,7 +321,7 @@ class CLStatusMock(partial_mock.PartialMock):
     # pylint: disable=W0613
     return self.status_count.get(change, 0)
 
-  def UpdateCLStatus(self, _bot, change, status, dry_run):
+  def UpdateCLStatus(self, _bot, change, status, dry_run, build_id=None):
     # pylint: disable=W0613
     self.calls[status] = self.calls.get(status, 0) + 1
     self.status[change] = status

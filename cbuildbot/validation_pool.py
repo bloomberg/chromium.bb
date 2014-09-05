@@ -2142,14 +2142,15 @@ class ValidationPool(object):
     """
     if self._metadata:
       timestamp = int(time.time())
+      build_id = self._metadata.GetValue('build_id')
       for change in self.changes:
         self._metadata.RecordCLAction(change, constants.CL_ACTION_PICKED_UP,
                                       timestamp)
         # TODO(akeshet): If a separate query for each insert here becomes
         # a performance issue, consider batch inserting all the cl actions
         # with a single query.
-        self._InsertCLActionToDatabase(change, constants.CL_ACTION_PICKED_UP,
-                                       timestamp)
+        ValidationPool._InsertCLActionToDatabase(build_id, change,
+                                                 constants.CL_ACTION_PICKED_UP)
 
   @classmethod
   def FilterModifiedChanges(cls, changes):
@@ -2245,8 +2246,9 @@ class ValidationPool(object):
       else:
         action = constants.CL_ACTION_SUBMIT_FAILED
       timestamp = int(time.time())
+      build_id = self._metadata.GetValue('build_id')
       self._metadata.RecordCLAction(change, action, timestamp)
-      self._InsertCLActionToDatabase(change, action, timestamp)
+      ValidationPool._InsertCLActionToDatabase(build_id, change, action)
 
     return was_change_submitted
 
@@ -2255,16 +2257,19 @@ class ValidationPool(object):
     self._helper_pool.ForChange(change).RemoveCommitReady(change,
         dryrun=self.dryrun)
     if self._metadata:
+      build_id = self._metadata.GetValue('build_id')
       timestamp = int(time.time())
       self._metadata.RecordCLAction(change, constants.CL_ACTION_KICKED_OUT,
                                     timestamp)
-      self._InsertCLActionToDatabase(change, constants.CL_ACTION_KICKED_OUT,
-                                     timestamp)
+      ValidationPool._InsertCLActionToDatabase(build_id, change,
+                                               constants.CL_ACTION_KICKED_OUT)
 
-  def _InsertCLActionToDatabase(self, change, action, timestamp=None):
+  @classmethod
+  def _InsertCLActionToDatabase(cls, build_id, change, action, timestamp=None):
     """If cidb is set up and not None, insert given cl action to cidb.
 
     Args:
+      build_id: The build id of the build taking the action.
       change: A GerritPatch or GerritPatchTuple object.
       action: The action taken, should be one of constants.CL_ACTIONS
       timestamp: An integer timestamp such as int(time.time()) at which
@@ -2273,7 +2278,6 @@ class ValidationPool(object):
     if cidb.CIDBConnectionFactory.IsCIDBSetup():
       db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
       if db:
-        build_id = self._metadata.GetValue('build_id')
         db.InsertCLActions(build_id,
             [metadata_lib.GetCLActionTuple(change, action, timestamp)])
 
@@ -2476,10 +2480,11 @@ class ValidationPool(object):
         self.UpdateCLStatus(PRE_CQ, change, new_status, self.dryrun)
         if self._metadata:
           timestamp = int(time.time())
+          build_id = self._metadata.GetValue('build_id')
           self._metadata.RecordCLAction(change, constants.CL_ACTION_VERIFIED,
                                         timestamp)
-          self._InsertCLActionToDatabase(change, constants.CL_ACTION_VERIFIED,
-                                         timestamp)
+          ValidationPool._InsertCLActionToDatabase(build_id, change,
+                                                   constants.CL_ACTION_VERIFIED)
 
 
     # Set the new statuses in parallel.
@@ -2752,13 +2757,43 @@ class ValidationPool(object):
       return None
 
   @classmethod
-  def UpdateCLStatus(cls, bot, change, status, dry_run):
-    """Update the |status| of |change| on |bot|."""
+  def UpdateCLStatus(cls, bot, change, status, dry_run, build_id=None):
+    """Update the |status| of |change| on |bot|.
+
+    For the pre-cq-launcher bot, if |build_id| is specified, this also writes
+    a cl action indicating the status change to cidb (if cidb is in use).
+    """
     for latest_patchset_only in (False, True):
       url = cls.GetCLStatusURL(bot, change, latest_patchset_only)
       ctx = gs.GSContext(dry_run=dry_run)
       ctx.Copy('-', '%s/status' % url, input=status)
       ctx.Counter('%s/%s' % (url, status)).Increment()
+
+    # Currently only pre-cq status changes are translated into cl actions.
+    if bot == PRE_CQ and build_id is not None:
+      action = ValidationPool._TranslatePreCQStatusToAction(status)
+      ValidationPool._InsertCLActionToDatabase(build_id, change, action)
+
+  @classmethod
+  def _TranslatePreCQStatusToAction(cls, status):
+    """Translate a pre-cq |status| into a cl action.
+
+    Returns:
+      An action string suitable for use in cidb, for the given pre-cq status.
+
+    Raises:
+      KeyError if |status| is not a known pre-cq status.
+    """
+    status_translation = {
+        cls.STATUS_INFLIGHT:  constants.CL_ACTION_PRE_CQ_INFLIGHT,
+        cls.STATUS_PASSED:    constants.CL_ACTION_PRE_CQ_PASSED,
+        cls.STATUS_FAILED:    constants.CL_ACTION_PRE_CQ_FAILED,
+        cls.STATUS_LAUNCHING: constants.CL_ACTION_PRE_CQ_LAUNCHING,
+        cls.STATUS_WAITING:   constants.CL_ACTION_PRE_CQ_WAITING,
+        cls.STATUS_READY_TO_SUBMIT: constants.CL_ACTION_PRE_CQ_READY_TO_SUBMIT
+        }
+    return status_translation[status]
+
 
   @classmethod
   def GetCLStatusCount(cls, bot, change, status, latest_patchset_only=True):
