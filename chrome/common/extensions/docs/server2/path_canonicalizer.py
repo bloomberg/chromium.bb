@@ -38,16 +38,12 @@ class PathCanonicalizer(object):
     self._strip_extensions = strip_extensions
 
   def _LoadCache(self):
-    cached_future = self._cache.GetMulti(('canonical_paths',
-                                          'simplified_paths_map'))
-
-    def resolve():
+    def load(cached):
       # |canonical_paths| is the pre-calculated set of canonical paths.
       # |simplified_paths_map| is a lazily populated mapping of simplified file
       # names to a list of full paths that contain them. For example,
       #  - browseraction: [extensions/browserAction.html]
       #  - storage: [apps/storage.html, extensions/storage.html]
-      cached = cached_future.Get()
       canonical_paths, simplified_paths_map = (
           cached.get('canonical_paths'), cached.get('simplified_paths_map'))
 
@@ -77,8 +73,9 @@ class PathCanonicalizer(object):
         assert simplified_paths_map is not None
 
       return canonical_paths, simplified_paths_map
+    return self._cache.GetMulti(('canonical_paths',
+                                 'simplified_paths_map')).Then(load)
 
-    return Future(callback=resolve)
 
   def Canonicalize(self, path):
     '''Returns the canonical path for |path|.

@@ -176,11 +176,9 @@ class GithubFileSystem(FileSystem):
       fetched new from GitHub, then writes it to blobstore and |version| to the
       stat caches.
       '''
-      github_future = self._fetcher.FetchAsync(
-          'zipball', username=username, password=password)
-      def resolve():
+      def get_zip(github_zip):
         try:
-          blob = github_future.Get().content
+          blob = github_zip.content
         except urlfetch.DownloadError:
           raise FileSystemError('Failed to download repo %s file from %s' %
                                 (repo_key, repo_url))
@@ -194,7 +192,8 @@ class GithubFileSystem(FileSystem):
         self._up_to_date_cache.Set(repo_key, True)
         self._stat_cache.Set(repo_key, version)
         return repo_zip
-      return Future(callback=resolve)
+      return self._fetcher.FetchAsync(
+          'zipball', username=username, password=password).Then(get_zip)
 
     # To decide whether we need to re-stat, and from there whether to re-fetch,
     # make use of ObjectStore's start-empty configuration. If
@@ -246,8 +245,7 @@ class GithubFileSystem(FileSystem):
     a list of filenames in that directory.
     '''
     self._EnsureRepoZip()
-    def resolve():
-      repo_zip = self._repo_zip.Get()
+    def read(repo_zip):
       reads = {}
       for path in paths:
         if path not in repo_zip.Paths():
@@ -257,7 +255,7 @@ class GithubFileSystem(FileSystem):
         else:
           reads[path] = repo_zip.Read(path)
       return reads
-    return Future(callback=resolve)
+    return self._repo_zip.Then(read)
 
   def Stat(self, path):
     '''Stats |path| returning its version as as StatInfo object. If |path| ends

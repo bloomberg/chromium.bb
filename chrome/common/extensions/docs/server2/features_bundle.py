@@ -9,7 +9,7 @@ from compiled_file_system import SingleFile, Unicode
 from docs_server_utils import StringIdentity
 from extensions_paths import API_PATHS, JSON_TEMPLATES
 from file_system import FileNotFoundError
-from future import Future
+from future import All, Future
 from path_util import Join
 from platform_util import GetExtensionTypes, PlatformToExtensionType
 from third_party.json_schema_compiler.json_parse import Parse
@@ -308,66 +308,74 @@ class FeaturesBundle(object):
     '''Resolves all dependencies in the categories specified by |dependencies|.
     Returns the features in the |features_type| category.
     '''
-    features = self._object_store.Get(features_type).Get()
-    if features is not None:
-      return Future(value=features)
+    def next_(features):
+      if features is not None:
+        return Future(value=features)
 
-    futures = {}
-    for cache_type in dependencies:
-      dependency_features = self._object_store.Get(cache_type).Get()
-      if dependency_features is not None:
-        # Get cached dependencies if possible. If it has been cached, all
-        # of its features have been resolved, so the other fields are
-        # unnecessary.
-        futures[cache_type] = Future(value={'resolved': dependency_features})
-      else:
-        futures[cache_type] = self._caches[cache_type].GetFeatures()
+      dependency_futures = []
+      cache_types = []
+      for cache_type in dependencies:
+        cache_types.append(cache_type)
+        dependency_futures.append(self._object_store.Get(cache_type))
 
-    def resolve():
-      features_map = {}
-      for cache_type, future in futures.iteritems():
-        # Copy down to features_map level because the 'resolved' and
-        # 'unresolved' dicts will be modified.
-        features_map[cache_type] = dict((c, copy(d))
-                                        for c, d in future.Get().iteritems())
+      def load_features(dependency_features_list):
+        futures = []
+        for dependency_features, cache_type in zip(dependency_features_list,
+                                                   cache_types):
+          if dependency_features is not None:
+            # Get cached dependencies if possible. If it has been cached, all
+            # of its features have been resolved, so the other fields are
+            # unnecessary.
+            futures.append(Future(value={'resolved': dependency_features}))
+          else:
+            futures.append(self._caches[cache_type].GetFeatures())
 
-      def has_unresolved():
-        '''Determines if there are any unresolved features left over in any
-        of the categories in |dependencies|.
-        '''
-        return any(cache.get('unresolved')
-                   for cache in features_map.itervalues())
+        def resolve(features):
+          features_map = {}
+          for cache_type, feature in zip(cache_types, features):
+            # Copy down to features_map level because the 'resolved' and
+            # 'unresolved' dicts will be modified.
+            features_map[cache_type] = dict((c, copy(d))
+                                            for c, d in feature.iteritems())
 
-      # Iterate until everything is resolved. If dependencies are multiple
-      # levels deep, it might take multiple passes to inherit data to the
-      # topmost feature.
-      while has_unresolved():
-        for cache_type, cache in features_map.iteritems():
-          if 'unresolved' not in cache:
-            continue
-          to_remove = []
-          for feature_name, feature_values in cache['unresolved'].iteritems():
-            resolve_successful, feature = _ResolveFeature(
-                feature_name,
-                feature_values,
-                cache['extra'].get(feature_name, ()),
-                self._platform,
-                cache_type,
-                features_map)
-            if not resolve_successful:
-              continue  # Try again on the next iteration of the while loop
+          def has_unresolved():
+            '''Determines if there are any unresolved features left over in any
+            of the categories in |dependencies|.
+            '''
+            return any(cache.get('unresolved')
+                       for cache in features_map.itervalues())
 
-            # When successfully resolved, remove it from the unresolved dict.
-            # Add it to the resolved dict if it didn't get deleted.
-            to_remove.append(feature_name)
-            if feature is not None:
-              cache['resolved'][feature_name] = feature
+          # Iterate until everything is resolved. If dependencies are multiple
+          # levels deep, it might take multiple passes to inherit data to the
+          # topmost feature.
+          while has_unresolved():
+            for cache_type, cache in features_map.iteritems():
+              if 'unresolved' not in cache:
+                continue
+              to_remove = []
+              for name, values in cache['unresolved'].iteritems():
+                resolve_successful, feature = _ResolveFeature(
+                    name,
+                    values,
+                    cache['extra'].get(name, ()),
+                    self._platform,
+                    cache_type,
+                    features_map)
+                if not resolve_successful:
+                  continue  # Try again on the next iteration of the while loop
 
-          for key in to_remove:
-            del cache['unresolved'][key]
+                # When successfully resolved, remove it from the unresolved
+                # dict. Add it to the resolved dict if it didn't get deleted.
+                to_remove.append(name)
+                if feature is not None:
+                  cache['resolved'][name] = feature
 
-      for cache_type, cache in features_map.iteritems():
-        self._object_store.Set(cache_type, cache['resolved'])
-      return features_map[features_type]['resolved']
+              for key in to_remove:
+                del cache['unresolved'][key]
 
-    return Future(callback=resolve)
+          for cache_type, cache in features_map.iteritems():
+            self._object_store.Set(cache_type, cache['resolved'])
+          return features_map[features_type]['resolved']
+        return All(futures).Then(resolve)
+      return All(dependency_futures).Then(load_features)
+    return self._object_store.Get(features_type).Then(next_)
