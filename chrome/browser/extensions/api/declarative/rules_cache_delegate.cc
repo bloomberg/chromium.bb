@@ -8,7 +8,7 @@
 #include "chrome/browser/extensions/api/declarative/rules_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_prefs.h"
@@ -40,7 +40,7 @@ const char RulesCacheDelegate::kRulesStoredKey[] =
     "has_declarative_rules";
 
 RulesCacheDelegate::RulesCacheDelegate(bool log_storage_init_delay)
-    : profile_(NULL),
+    : browser_context_(NULL),
       log_storage_init_delay_(log_storage_init_delay),
       notified_registry_(false),
       weak_ptr_factory_(this) {
@@ -69,20 +69,20 @@ void RulesCacheDelegate::Init(RulesRegistry* registry) {
   // so don't use this here.
   registry_ = registry->GetWeakPtr();
 
-  profile_ = registry->profile();
+  browser_context_ = registry->browser_context();
   storage_key_ =
       GetDeclarativeRuleStorageKey(registry->event_name(),
-                                   profile_->IsOffTheRecord());
+                                   browser_context_->IsOffTheRecord());
   rules_stored_key_ = GetRulesStoredKey(registry->event_name(),
-                                        profile_->IsOffTheRecord());
+                                        browser_context_->IsOffTheRecord());
   rules_registry_thread_ = registry->owner_thread();
 
-  ExtensionSystem& system = *ExtensionSystem::Get(profile_);
+  ExtensionSystem& system = *ExtensionSystem::Get(browser_context_);
   StateStore* store = system.rules_store();
   if (store)
     store->RegisterKey(storage_key_);
 
-  if (profile_->IsOffTheRecord())
+  if (browser_context_->IsOffTheRecord())
     log_storage_init_delay_ = false;
 
   system.ready().Post(
@@ -97,7 +97,7 @@ void RulesCacheDelegate::Init(RulesRegistry* registry) {
 void RulesCacheDelegate::WriteToStorage(const std::string& extension_id,
                                      scoped_ptr<base::Value> value) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!profile_)
+  if (!browser_context_)
     return;
 
   const base::ListValue* rules = NULL;
@@ -108,7 +108,7 @@ void RulesCacheDelegate::WriteToStorage(const std::string& extension_id,
   if (!rules_stored_previously && !store_rules)
     return;
 
-  StateStore* store = ExtensionSystem::Get(profile_)->rules_store();
+  StateStore* store = ExtensionSystem::Get(browser_context_)->rules_store();
   if (store)
     store->SetExtensionValue(extension_id, storage_key_, value.Pass());
 }
@@ -127,12 +127,12 @@ void RulesCacheDelegate::CheckIfReady() {
 }
 
 void RulesCacheDelegate::ReadRulesForInstalledExtensions() {
-  ExtensionSystem& system = *ExtensionSystem::Get(profile_);
+  ExtensionSystem& system = *ExtensionSystem::Get(browser_context_);
   ExtensionService* extension_service = system.extension_service();
   DCHECK(extension_service);
-  // In an OTR profile, we start on top of a normal profile already, so the
+  // In an OTR context, we start on top of a normal context already, so the
   // extension service should be ready.
-  DCHECK(!profile_->IsOffTheRecord() || extension_service->is_ready());
+  DCHECK(!browser_context_->IsOffTheRecord() || extension_service->is_ready());
   if (extension_service->is_ready()) {
     const ExtensionSet* extensions = extension_service->extensions();
     for (ExtensionSet::const_iterator i = extensions->begin();
@@ -144,8 +144,8 @@ void RulesCacheDelegate::ReadRulesForInstalledExtensions() {
           (*i)->permissions_data()->HasAPIPermission(
               APIPermission::kDeclarativeWebRequest);
       bool respects_off_the_record =
-          !(profile_->IsOffTheRecord()) ||
-          util::IsIncognitoEnabled((*i)->id(), profile_);
+          !(browser_context_->IsOffTheRecord()) ||
+          util::IsIncognitoEnabled((*i)->id(), browser_context_);
       if (needs_apis_storing_rules && respects_off_the_record)
         ReadFromStorage((*i)->id());
     }
@@ -154,20 +154,20 @@ void RulesCacheDelegate::ReadRulesForInstalledExtensions() {
 
 void RulesCacheDelegate::ReadFromStorage(const std::string& extension_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!profile_)
+  if (!browser_context_)
     return;
 
   if (log_storage_init_delay_ && storage_init_time_.is_null())
     storage_init_time_ = base::Time::Now();
 
   if (!GetDeclarativeRulesStored(extension_id)) {
-    ExtensionSystem::Get(profile_)->ready().Post(
+    ExtensionSystem::Get(browser_context_)->ready().Post(
         FROM_HERE, base::Bind(&RulesCacheDelegate::CheckIfReady,
                               weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
-  StateStore* store = ExtensionSystem::Get(profile_)->rules_store();
+  StateStore* store = ExtensionSystem::Get(browser_context_)->rules_store();
   if (!store)
     return;
   waiting_for_extensions_.insert(extension_id);
@@ -194,15 +194,16 @@ void RulesCacheDelegate::ReadFromStorageCallback(
   waiting_for_extensions_.erase(extension_id);
 
   if (waiting_for_extensions_.empty())
-    ExtensionSystem::Get(profile_)->ready().Post(
+    ExtensionSystem::Get(browser_context_)->ready().Post(
         FROM_HERE, base::Bind(&RulesCacheDelegate::CheckIfReady,
                               weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool RulesCacheDelegate::GetDeclarativeRulesStored(
     const std::string& extension_id) const {
-  CHECK(profile_);
-  const ExtensionScopedPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
+  CHECK(browser_context_);
+  const ExtensionScopedPrefs* extension_prefs =
+      ExtensionPrefs::Get(browser_context_);
 
   bool rules_stored = true;
   if (extension_prefs->ReadPrefAsBoolean(
@@ -217,11 +218,11 @@ bool RulesCacheDelegate::GetDeclarativeRulesStored(
 void RulesCacheDelegate::SetDeclarativeRulesStored(
     const std::string& extension_id,
     bool rules_stored) {
-  CHECK(profile_);
-  DCHECK(ExtensionRegistry::Get(profile_)
+  CHECK(browser_context_);
+  DCHECK(ExtensionRegistry::Get(browser_context_)
              ->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING));
 
-  ExtensionScopedPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
+  ExtensionScopedPrefs* extension_prefs = ExtensionPrefs::Get(browser_context_);
   extension_prefs->UpdateExtensionPref(
       extension_id,
       rules_stored_key_,

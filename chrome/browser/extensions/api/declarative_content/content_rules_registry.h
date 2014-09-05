@@ -23,10 +23,10 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/info_map.h"
 
-class Profile;
 class ContentPermissions;
 
 namespace content {
+class BrowserContext;
 class RenderProcessHost;
 class WebContents;
 struct FrameNavigateParams;
@@ -64,7 +64,8 @@ class ContentRulesRegistry : public RulesRegistry,
  public:
   // For testing, |ui_part| can be NULL. In that case it constructs the
   // registry with storage functionality suspended.
-  ContentRulesRegistry(Profile* profile, RulesCacheDelegate* cache_delegate);
+  ContentRulesRegistry(content::BrowserContext* browser_context,
+                       RulesCacheDelegate* cache_delegate);
 
   // Applies all content rules given an update (CSS match change or
   // page navigation, for now) from the renderer.
@@ -109,7 +110,7 @@ class ContentRulesRegistry : public RulesRegistry,
 
   // Scans the rules for the set of conditions they're watching.  If the set has
   // changed, calls InstructRenderProcess() for each RenderProcessHost in the
-  // current profile.
+  // current browser_context.
   void UpdateConditionCache();
 
   // Tells a renderer what page attributes to watch for using an

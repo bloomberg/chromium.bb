@@ -453,12 +453,13 @@ bool ExtensionTabUtil::GetDefaultTab(Browser* browser,
 }
 
 bool ExtensionTabUtil::GetTabById(int tab_id,
-                                  Profile* profile,
+                                  content::BrowserContext* browser_context,
                                   bool include_incognito,
                                   Browser** browser,
                                   TabStripModel** tab_strip,
                                   WebContents** contents,
                                   int* tab_index) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
   Profile* incognito_profile =
       include_incognito && profile->HasOffTheRecordProfile() ?
           profile->GetOffTheRecordProfile() : NULL;

@@ -12,14 +12,13 @@
 #include "chrome/browser/extensions/api/declarative/declarative_rule.h"
 #include "chrome/browser/extensions/declarative_user_script_master.h"
 
-class Profile;
-
 namespace base {
 class Time;
 class Value;
 }
 
 namespace content {
+class BrowserContext;
 class WebContents;
 }
 
@@ -36,7 +35,7 @@ class ContentAction : public base::RefCounted<ContentAction> {
   };
 
   struct ApplyInfo {
-    Profile* profile;
+    content::BrowserContext* browser_context;
     content::WebContents* tab;
   };
 

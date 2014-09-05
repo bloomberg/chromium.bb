@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
-#include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
@@ -38,17 +37,17 @@ const char kAllURLsPermissionNeeded[] =
 namespace extensions {
 
 WebRequestRulesRegistry::WebRequestRulesRegistry(
-    Profile* profile,
+    content::BrowserContext* browser_context,
     RulesCacheDelegate* cache_delegate,
     const WebViewKey& webview_key)
-    : RulesRegistry(profile,
+    : RulesRegistry(browser_context,
                     declarative_webrequest_constants::kOnRequest,
                     content::BrowserThread::IO,
                     cache_delegate,
                     webview_key),
-      profile_id_(profile) {
-  if (profile)
-    extension_info_map_ = ExtensionSystem::Get(profile)->info_map();
+      browser_context_(browser_context) {
+  if (browser_context_)
+    extension_info_map_ = ExtensionSystem::Get(browser_context_)->info_map();
 }
 
 std::set<const WebRequestRule*> WebRequestRulesRegistry::GetMatches(
@@ -182,7 +181,7 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
 
     scoped_ptr<WebRequestRule> webrequest_rule(WebRequestRule::Create(
         url_matcher_.condition_factory(),
-        profile(), extension, extension_installation_time, *rule,
+        browser_context(), extension, extension_installation_time, *rule,
         base::Bind(&Checker, base::Unretained(extension)),
         &error));
     if (!error.empty()) {
@@ -230,11 +229,11 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
 
   ClearCacheOnNavigation();
 
-  if (profile_id_ && !registered_rules.empty()) {
+  if (browser_context_ && !registered_rules.empty()) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::Bind(&extension_web_request_api_helpers::NotifyWebRequestAPIUsed,
-                   profile_id_, make_scoped_refptr(extension)));
+                   browser_context_, make_scoped_refptr(extension)));
   }
 
   return std::string();

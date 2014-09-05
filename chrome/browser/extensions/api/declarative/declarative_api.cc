@@ -9,7 +9,6 @@
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/events.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -94,7 +93,7 @@ bool RulesFunction::RunAsync() {
       webview_instance_id ? embedder_process_id : 0, webview_instance_id);
 
   RulesRegistryService* rules_registry_service =
-      RulesRegistryService::Get(GetProfile());
+      RulesRegistryService::Get(browser_context());
   rules_registry_ = rules_registry_service->GetRulesRegistry(key, event_name);
   // Raw access to this function is not available to extensions, therefore
   // there should never be a request for a nonexisting rules registry.

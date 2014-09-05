@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/render_view_host.h"
@@ -71,10 +70,11 @@ class ShowPageAction : public ContentAction {
   virtual void Apply(const std::string& extension_id,
                      const base::Time& extension_install_time,
                      ApplyInfo* apply_info) const OVERRIDE {
-    ExtensionAction* action = GetPageAction(apply_info->profile, extension_id);
+    ExtensionAction* action =
+        GetPageAction(apply_info->browser_context, extension_id);
     action->DeclarativeShow(ExtensionTabUtil::GetTabId(apply_info->tab));
-    ExtensionActionAPI::Get(apply_info->profile)->NotifyChange(
-        action, apply_info->tab, apply_info->profile);
+    ExtensionActionAPI::Get(apply_info->browser_context)->NotifyChange(
+        action, apply_info->tab, apply_info->browser_context);
   }
   // The page action is already showing, so nothing needs to be done here.
   virtual void Reapply(const std::string& extension_id,
@@ -84,22 +84,24 @@ class ShowPageAction : public ContentAction {
                       const base::Time& extension_install_time,
                       ApplyInfo* apply_info) const OVERRIDE {
     if (ExtensionAction* action =
-            GetPageAction(apply_info->profile, extension_id)) {
+            GetPageAction(apply_info->browser_context, extension_id)) {
       action->UndoDeclarativeShow(ExtensionTabUtil::GetTabId(apply_info->tab));
-      ExtensionActionAPI::Get(apply_info->profile)->NotifyChange(
-          action, apply_info->tab, apply_info->profile);
+      ExtensionActionAPI::Get(apply_info->browser_context)->NotifyChange(
+          action, apply_info->tab, apply_info->browser_context);
     }
   }
 
  private:
-  static ExtensionAction* GetPageAction(Profile* profile,
-                                        const std::string& extension_id) {
+  static ExtensionAction* GetPageAction(
+      content::BrowserContext* browser_context,
+      const std::string& extension_id) {
     const Extension* extension =
-        ExtensionRegistry::Get(profile)
+        ExtensionRegistry::Get(browser_context)
             ->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
     if (!extension)
       return NULL;
-    return ExtensionActionManager::Get(profile)->GetPageAction(*extension);
+    return ExtensionActionManager::Get(browser_context)
+        ->GetPageAction(*extension);
   }
   virtual ~ShowPageAction() {}
 

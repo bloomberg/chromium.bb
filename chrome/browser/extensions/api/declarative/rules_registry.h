@@ -21,7 +21,9 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/one_shot_event.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace base {
 class Value;
@@ -54,10 +56,10 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   enum Defaults { DEFAULT_PRIORITY = 100 };
   // After the RulesCacheDelegate object (the part of the registry which runs on
   // the UI thread) is created, a pointer to it is passed to |*ui_part|.
-  // In tests, |profile| and |ui_part| can be NULL (at the same time). In that
-  // case the storage functionality disabled (no RulesCacheDelegate object
-  // created).
-  RulesRegistry(Profile* profile,
+  // In tests, |browser_context| and |ui_part| can be NULL (at the same time).
+  // In that case the storage functionality disabled (no RulesCacheDelegate
+  // object created).
+  RulesRegistry(content::BrowserContext* browser_context,
                 const std::string& event_name,
                 content::BrowserThread::ID owner_thread,
                 RulesCacheDelegate* cache_delegate,
@@ -133,8 +135,8 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
     return cache_delegate_.get();
   }
 
-  // Returns the profile where the rules registry lives.
-  Profile* profile() const { return profile_; }
+  // Returns the context where the rules registry lives.
+  content::BrowserContext* browser_context() { return browser_context_; }
 
   // Returns the ID of the thread on which the rules registry lives.
   // It is safe to call this function from any thread.
@@ -221,8 +223,8 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   void DeserializeAndAddRules(const std::string& extension_id,
                               scoped_ptr<base::Value> rules);
 
-  // The profile to which this rules registry belongs.
-  Profile* profile_;
+  // The context to which this rules registry belongs.
+  content::BrowserContext* browser_context_;
 
   // The ID of the thread on which the rules registry lives.
   const content::BrowserThread::ID owner_thread_;

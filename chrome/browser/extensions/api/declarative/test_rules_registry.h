@@ -16,7 +16,7 @@ class TestRulesRegistry : public RulesRegistry {
                     const std::string& event_name,
                     const WebViewKey& webview_key);
   TestRulesRegistry(
-      Profile* profile,
+      content::BrowserContext* browser_context,
       const std::string& event_name,
       content::BrowserThread::ID owner_thread,
       RulesCacheDelegate* cache_delegate,

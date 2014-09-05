@@ -14,13 +14,10 @@
 #include "base/memory/scoped_vector.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
-
-class Profile;
 
 namespace content {
 class BrowserContext;
@@ -68,7 +65,7 @@ class RulesRegistryService : public BrowserContextKeyedAPI,
   static BrowserContextKeyedAPIFactory<RulesRegistryService>*
       GetFactoryInstance();
 
-  // Convenience method to get the RulesRegistryService for a profile.
+  // Convenience method to get the RulesRegistryService for a context.
   static RulesRegistryService* Get(content::BrowserContext* context);
 
   // Registers the default RulesRegistries used in Chromium.
@@ -151,7 +148,7 @@ class RulesRegistryService : public BrowserContextKeyedAPI,
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesRegistryService);
 };

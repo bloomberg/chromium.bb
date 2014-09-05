@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -29,11 +28,11 @@ namespace {
 
 // Registers |web_request_rules_registry| on the IO thread.
 void RegisterToExtensionWebRequestEventRouterOnIO(
-    void* profile,
+    content::BrowserContext* browser_context,
     const RulesRegistryService::WebViewKey& webview_key,
     scoped_refptr<WebRequestRulesRegistry> web_request_rules_registry) {
   ExtensionWebRequestEventRouter::GetInstance()->RegisterRulesRegistry(
-      profile, webview_key, web_request_rules_registry);
+      browser_context, webview_key, web_request_rules_registry);
 }
 
 bool IsWebView(const RulesRegistryService::WebViewKey& webview_key) {
@@ -45,9 +44,9 @@ bool IsWebView(const RulesRegistryService::WebViewKey& webview_key) {
 RulesRegistryService::RulesRegistryService(content::BrowserContext* context)
     : content_rules_registry_(NULL),
       extension_registry_observer_(this),
-      profile_(Profile::FromBrowserContext(context)) {
-  if (profile_) {
-    extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
+      browser_context_(context) {
+  if (browser_context_) {
+    extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
     registrar_.Add(
         this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         content::NotificationService::AllBrowserContextsAndSources());
@@ -59,7 +58,7 @@ RulesRegistryService::~RulesRegistryService() {}
 
 void RulesRegistryService::EnsureDefaultRulesRegistriesRegistered(
     const WebViewKey& webview_key) {
-  if (!profile_)
+  if (!browser_context_)
     return;
 
   RulesRegistryKey key(declarative_webrequest_constants::kOnRequest,
@@ -77,7 +76,7 @@ void RulesRegistryService::EnsureDefaultRulesRegistriesRegistered(
     cache_delegates_.push_back(web_request_cache_delegate);
   }
   scoped_refptr<WebRequestRulesRegistry> web_request_rules_registry(
-      new WebRequestRulesRegistry(profile_,
+      new WebRequestRulesRegistry(browser_context_,
                                   web_request_cache_delegate,
                                   webview_key));
 
@@ -85,7 +84,7 @@ void RulesRegistryService::EnsureDefaultRulesRegistriesRegistered(
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&RegisterToExtensionWebRequestEventRouterOnIO,
-          profile_, webview_key, web_request_rules_registry));
+          browser_context_, webview_key, web_request_rules_registry));
 
   // Only create a ContentRulesRegistry for regular pages and not webviews.
   if (!IsWebView(webview_key)) {
@@ -93,7 +92,8 @@ void RulesRegistryService::EnsureDefaultRulesRegistriesRegistered(
         new RulesCacheDelegate(false /*log_storage_init_delay*/);
     cache_delegates_.push_back(content_rules_cache_delegate);
     scoped_refptr<ContentRulesRegistry> content_rules_registry(
-        new ContentRulesRegistry(profile_, content_rules_cache_delegate));
+        new ContentRulesRegistry(browser_context_,
+                                 content_rules_cache_delegate));
     RegisterRulesRegistry(content_rules_registry);
     content_rules_registry_ = content_rules_registry.get();
   }
@@ -110,7 +110,7 @@ void RulesRegistryService::Shutdown() {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&RegisterToExtensionWebRequestEventRouterOnIO,
-          profile_, WebViewKey(0, 0),
+          browser_context_, WebViewKey(0, 0),
           scoped_refptr<WebRequestRulesRegistry>(NULL)));
 }
 

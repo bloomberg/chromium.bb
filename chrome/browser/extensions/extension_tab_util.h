@@ -22,6 +22,7 @@ class ListValue;
 }
 
 namespace content {
+class BrowserContext;
 class WebContents;
 }
 
@@ -123,7 +124,9 @@ class ExtensionTabUtil {
                             int* tab_id);
   // Any out parameter (|browser|, |tab_strip|, |contents|, & |tab_index|) may
   // be NULL and will not be set within the function.
-  static bool GetTabById(int tab_id, Profile* profile, bool incognito_enabled,
+  static bool GetTabById(int tab_id,
+                         content::BrowserContext* browser_context,
+                         bool incognito_enabled,
                          Browser** browser,
                          TabStripModel** tab_strip,
                          content::WebContents** contents,

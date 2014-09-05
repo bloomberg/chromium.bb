@@ -24,8 +24,11 @@
 #include "components/url_matcher/url_matcher.h"
 #include "extensions/browser/info_map.h"
 
-class Profile;
 class WebRequestPermissions;
+
+namespace content {
+class BrowserContext;
+}
 
 namespace extension_web_request_api_helpers {
 struct EventResponseDelta;
@@ -75,7 +78,7 @@ class WebRequestRulesRegistry : public RulesRegistry {
  public:
   // |cache_delegate| can be NULL. In that case it constructs the registry with
   // storage functionality suspended.
-  WebRequestRulesRegistry(Profile* profile,
+  WebRequestRulesRegistry(content::BrowserContext* browser_context,
                           RulesCacheDelegate* cache_delegate,
                           const WebViewKey& webview_key);
 
@@ -183,7 +186,7 @@ class WebRequestRulesRegistry : public RulesRegistry {
 
   url_matcher::URLMatcher url_matcher_;
 
-  void* profile_id_;
+  content::BrowserContext* browser_context_;
   scoped_refptr<InfoMap> extension_info_map_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestRulesRegistry);

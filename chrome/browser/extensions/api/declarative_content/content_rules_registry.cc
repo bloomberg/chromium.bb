@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/api/declarative_content/content_condition.h"
 #include "chrome/browser/extensions/api/declarative_content/content_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -23,14 +22,15 @@ using url_matcher::URLMatcherConditionSet;
 
 namespace extensions {
 
-ContentRulesRegistry::ContentRulesRegistry(Profile* profile,
-                                           RulesCacheDelegate* cache_delegate)
-    : RulesRegistry(profile,
+ContentRulesRegistry::ContentRulesRegistry(
+    content::BrowserContext* browser_context,
+    RulesCacheDelegate* cache_delegate)
+    : RulesRegistry(browser_context,
                     declarative_content_constants::kOnPageChanged,
                     content::BrowserThread::UI,
                     cache_delegate,
                     WebViewKey(0, 0)) {
-  extension_info_map_ = ExtensionSystem::Get(profile)->info_map();
+  extension_info_map_ = ExtensionSystem::Get(browser_context)->info_map();
 
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -46,7 +46,7 @@ void ContentRulesRegistry::Observe(
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
       content::RenderProcessHost* process =
           content::Source<content::RenderProcessHost>(source).ptr();
-      if (process->GetBrowserContext() == profile())
+      if (process->GetBrowserContext() == browser_context())
         InstructRenderProcess(process);
       break;
     }
@@ -54,7 +54,7 @@ void ContentRulesRegistry::Observe(
       content::WebContents* tab =
           content::Source<content::WebContents>(source).ptr();
       // GetTabId() returns -1 for non-tab WebContents, which won't be
-      // in the map.  Similarly, tabs from other profiles won't be in
+      // in the map.  Similarly, tabs from other browser_contexts won't be in
       // the map.
       active_rules_.erase(ExtensionTabUtil::GetTabId(tab));
       break;
@@ -76,7 +76,7 @@ void ContentRulesRegistry::Apply(
 
   std::set<ContentRule*>& prev_matching_rules = active_rules_[tab_id];
   ContentAction::ApplyInfo apply_info = {
-    profile(), contents
+    browser_context(), contents
   };
   for (std::set<ContentRule*>::const_iterator it = matching_rules.begin();
        it != matching_rules.end(); ++it) {
@@ -143,7 +143,7 @@ std::string ContentRulesRegistry::AddRulesImpl(
     const std::string& extension_id,
     const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) {
   const Extension* extension =
-      ExtensionRegistry::Get(profile())
+      ExtensionRegistry::Get(browser_context())
           ->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
   DCHECK(extension) << "Must have extension with id " << extension_id;
 
@@ -160,7 +160,7 @@ std::string ContentRulesRegistry::AddRulesImpl(
 
     scoped_ptr<ContentRule> content_rule(
         ContentRule::Create(url_matcher_.condition_factory(),
-                            profile(),
+                            browser_context(),
                             extension,
                             extension_installation_time,
                             *rule,
@@ -236,12 +236,12 @@ std::string ContentRulesRegistry::RemoveRulesImpl(
       if (ContainsKey(it->second, rule)) {
         content::WebContents* tab;
         if (!ExtensionTabUtil::GetTabById(
-                 it->first, profile(), true, NULL, NULL, &tab, NULL)) {
+                 it->first, browser_context(), true, NULL, NULL, &tab, NULL)) {
           LOG(DFATAL) << "Tab id " << it->first
                       << " still in active_rules_, but tab has been destroyed";
           continue;
         }
-        ContentAction::ApplyInfo apply_info = {profile(), tab};
+        ContentAction::ApplyInfo apply_info = {browser_context(), tab};
         rule->actions().Revert(rule->extension_id(), base::Time(), &apply_info);
         it->second.erase(rule);
       }
@@ -297,7 +297,7 @@ void ContentRulesRegistry::UpdateConditionCache() {
              content::RenderProcessHost::AllHostsIterator());
          !it.IsAtEnd(); it.Advance()) {
       content::RenderProcessHost* process = it.GetCurrentValue();
-      if (process->GetBrowserContext() == profile())
+      if (process->GetBrowserContext() == browser_context())
         InstructRenderProcess(process);
     }
   }

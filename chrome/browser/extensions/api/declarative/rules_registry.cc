@@ -18,7 +18,6 @@
 #include "chrome/browser/extensions/api/declarative/rules_cache_delegate.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -73,18 +72,18 @@ namespace extensions {
 
 // RulesRegistry
 
-RulesRegistry::RulesRegistry(Profile* profile,
+RulesRegistry::RulesRegistry(content::BrowserContext* browser_context,
                              const std::string& event_name,
                              content::BrowserThread::ID owner_thread,
                              RulesCacheDelegate* cache_delegate,
                              const WebViewKey& webview_key)
-    : profile_(profile),
+    : browser_context_(browser_context),
       owner_thread_(owner_thread),
       event_name_(event_name),
       webview_key_(webview_key),
       ready_(/*signaled=*/!cache_delegate),  // Immediately ready if no cache
                                              // delegate to wait for.
-      weak_ptr_factory_(profile ? this : NULL),
+      weak_ptr_factory_(browser_context_ ? this : NULL),
       last_generated_rule_identifier_id_(0) {
   if (cache_delegate) {
     cache_delegate_ = cache_delegate->GetWeakPtr();
@@ -295,7 +294,7 @@ void RulesRegistry::MaybeProcessChangedRules(const std::string& extension_id) {
   std::pair<ProcessStateMap::iterator, bool> insertion =
       process_changed_rules_requested_.insert(std::make_pair(
           extension_id,
-          profile_ ? NOT_SCHEDULED_FOR_PROCESSING : NEVER_PROCESS));
+          browser_context_ ? NOT_SCHEDULED_FOR_PROCESSING : NEVER_PROCESS));
   if (insertion.first->second != NOT_SCHEDULED_FOR_PROCESSING)
     return;
 

@@ -18,12 +18,12 @@ TestRulesRegistry::TestRulesRegistry(content::BrowserThread::ID owner_thread,
                     webview_key) {}
 
 TestRulesRegistry::TestRulesRegistry(
-    Profile* profile,
+    content::BrowserContext* browser_context,
     const std::string& event_name,
     content::BrowserThread::ID owner_thread,
     RulesCacheDelegate* cache_delegate,
     const WebViewKey& webview_key)
-    : RulesRegistry(profile,
+    : RulesRegistry(browser_context,
                     event_name,
                     owner_thread,
                     cache_delegate,

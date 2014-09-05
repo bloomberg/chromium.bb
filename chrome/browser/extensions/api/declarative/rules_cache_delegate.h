@@ -12,7 +12,9 @@
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 
@@ -76,7 +78,7 @@ class RulesCacheDelegate {
   void SetDeclarativeRulesStored(const std::string& extension_id,
                                  bool rules_stored);
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
 
   // The key under which rules are stored.
   std::string storage_key_;
