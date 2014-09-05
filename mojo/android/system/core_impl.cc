@@ -13,8 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "jni/CoreImpl_jni.h"
-#include "mojo/embedder/embedder.h"
-#include "mojo/embedder/simple_platform_support.h"
 #include "mojo/public/c/environment/async_waiter.h"
 #include "mojo/public/c/system/core.h"
 #include "mojo/public/cpp/environment/environment.h"
@@ -50,11 +48,6 @@ void AsyncWaitCallback(void* data, MojoResult result) {
 
 namespace mojo {
 namespace android {
-
-static void Constructor(JNIEnv* env, jobject jcaller) {
-  embedder::Init(scoped_ptr<embedder::PlatformSupport>(
-      new embedder::SimplePlatformSupport()));
-}
 
 static jlong GetTimeTicksNow(JNIEnv* env, jobject jcaller) {
   return MojoGetTimeTicksNow();

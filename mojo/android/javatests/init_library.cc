@@ -9,6 +9,8 @@
 #include "mojo/android/javatests/mojo_test_case.h"
 #include "mojo/android/javatests/validation_test_util.h"
 #include "mojo/android/system/core_impl.h"
+#include "mojo/embedder/embedder.h"
+#include "mojo/embedder/simple_platform_support.h"
 
 namespace {
 
@@ -37,6 +39,9 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
 
   if (!RegisterMojoJni(env))
     return -1;
+
+  mojo::embedder::Init(scoped_ptr<mojo::embedder::PlatformSupport>(
+      new mojo::embedder::SimplePlatformSupport()));
 
   return JNI_VERSION_1_4;
 }

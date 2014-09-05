@@ -64,7 +64,6 @@ public class CoreImpl implements Core, AsyncWaiter {
     }
 
     private CoreImpl() {
-        nativeConstructor();
     }
 
     /**
@@ -611,8 +610,6 @@ public class CoreImpl implements Core, AsyncWaiter {
         result.setMojoHandle2(mojoHandle2);
         return result;
     }
-
-    private native void nativeConstructor();
 
     private native long nativeGetTimeTicksNow();
 
