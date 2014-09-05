@@ -14,7 +14,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/extensions/app_bindings.h"
-#include "chrome/renderer/extensions/app_window_custom_bindings.h"
 #include "chrome/renderer/extensions/automation_internal_custom_bindings.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/enterprise_platform_keys_natives.h"
@@ -98,10 +97,6 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
       scoped_ptr<NativeHandler>(
           new extensions::AppBindings(dispatcher, context)));
   module_system->RegisterNativeHandler(
-      "app_window_natives",
-      scoped_ptr<NativeHandler>(
-          new extensions::AppWindowCustomBindings(dispatcher, context)));
-  module_system->RegisterNativeHandler(
       "sync_file_system",
       scoped_ptr<NativeHandler>(
           new extensions::SyncFileSystemCustomBindings(context)));
@@ -151,7 +146,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
     extensions::ResourceBundleSourceMap* source_map) {
   // Custom bindings.
   source_map->RegisterSource("app", IDR_APP_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("app.window", IDR_APP_WINDOW_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("automation", IDR_AUTOMATION_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("automationEvent", IDR_AUTOMATION_EVENT_JS);
   source_map->RegisterSource("automationNode", IDR_AUTOMATION_NODE_JS);
@@ -224,7 +218,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
       IDR_CAST_STREAMING_UDP_TRANSPORT_CUSTOM_BINDINGS_JS);
 #endif
   source_map->RegisterSource("webstore", IDR_WEBSTORE_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("windowControls", IDR_WINDOW_CONTROLS_JS);
 
   // Custom types sources.
   source_map->RegisterSource("ChromeSetting", IDR_CHROME_SETTING_JS);
@@ -268,7 +261,7 @@ void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
       is_within_platform_app &&
       extensions::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV &&
       CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableAppWindowControls)) {
+          extensions::switches::kEnableAppWindowControls)) {
     module_system->Require("windowControls");
   }
 

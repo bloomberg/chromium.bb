@@ -15,6 +15,7 @@
     'main_schema_files': [
       'app_runtime.idl',
       'app_view_internal.json',
+      'app_window.idl',
       'bluetooth.idl',
       'bluetooth_low_energy.idl',
       'bluetooth_private.json',

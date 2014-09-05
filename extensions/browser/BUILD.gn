@@ -41,6 +41,8 @@ source_set("browser") {
       "api/app_runtime/app_runtime_api.h",
       "api/app_view/app_view_internal_api.cc",
       "api/app_view/app_view_internal_api.h",
+      "api/app_window/app_window_api.cc",
+      "api/app_window/app_window_api.h",
       "api/guest_view/guest_view_internal_api.cc",
       "api/guest_view/guest_view_internal_api.h",
       "api/async_api_function.cc",

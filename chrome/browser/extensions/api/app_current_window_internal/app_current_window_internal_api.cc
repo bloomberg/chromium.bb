@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/app_current_window_internal.h"
-#include "chrome/common/extensions/api/app_window.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"

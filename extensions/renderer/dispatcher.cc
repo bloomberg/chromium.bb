@@ -41,6 +41,7 @@
 #include "extensions/renderer/api_activity_logger.h"
 #include "extensions/renderer/api_definitions_natives.h"
 #include "extensions/renderer/app_runtime_custom_bindings.h"
+#include "extensions/renderer/app_window_custom_bindings.h"
 #include "extensions/renderer/binding_generating_native_handler.h"
 #include "extensions/renderer/blob_native_handler.h"
 #include "extensions/renderer/content_watcher.h"
@@ -502,6 +503,8 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(
       std::make_pair("app.runtime", IDR_APP_RUNTIME_CUSTOM_BINDINGS_JS));
   resources.push_back(
+      std::make_pair("app.window", IDR_APP_WINDOW_CUSTOM_BINDINGS_JS));
+  resources.push_back(
       std::make_pair("contextMenus", IDR_CONTEXT_MENUS_CUSTOM_BINDINGS_JS));
   resources.push_back(
       std::make_pair("extension", IDR_EXTENSION_CUSTOM_BINDINGS_JS));
@@ -510,6 +513,7 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
       std::make_pair("permissions", IDR_PERMISSIONS_CUSTOM_BINDINGS_JS));
   resources.push_back(
       std::make_pair("runtime", IDR_RUNTIME_CUSTOM_BINDINGS_JS));
+  resources.push_back(std::make_pair("windowControls", IDR_WINDOW_CONTROLS_JS));
   resources.push_back(std::make_pair("binding", IDR_BINDING_JS));
 
   // Custom types sources.
@@ -584,6 +588,10 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler(
       "app_runtime",
       scoped_ptr<NativeHandler>(new AppRuntimeCustomBindings(context)));
+  module_system->RegisterNativeHandler(
+      "app_window_natives",
+      scoped_ptr<NativeHandler>(
+          new AppWindowCustomBindings(dispatcher, context)));
   module_system->RegisterNativeHandler(
       "blob_natives",
       scoped_ptr<NativeHandler>(new BlobNativeHandler(context)));

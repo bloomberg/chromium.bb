@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/app_window/app_window_api.h"
+#include "extensions/browser/api/app_window/app_window_api.h"
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/common/extensions/api/app_window.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -23,6 +22,7 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/image_util.h"
+#include "extensions/common/api/app_window.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
@@ -31,7 +31,7 @@
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
 
-namespace app_window = extensions::api::app_window;
+namespace app_window = extensions::core_api::app_window;
 namespace Create = app_window::Create;
 
 namespace extensions {
@@ -83,9 +83,8 @@ bool CheckBoundsConflict(const scoped_ptr<int>& inner_property,
 
 // Copy over the bounds specification properties from the API to the
 // AppWindow::CreateParams.
-void CopyBoundsSpec(
-    const extensions::api::app_window::BoundsSpecification* input_spec,
-    AppWindow::BoundsSpecification* create_spec) {
+void CopyBoundsSpec(const app_window::BoundsSpecification* input_spec,
+                    AppWindow::BoundsSpecification* create_spec) {
   if (!input_spec)
     return;
 
@@ -195,7 +194,7 @@ bool AppWindowCreateFunction::RunAsync() {
 
     if (!AppsClient::Get()->IsCurrentChannelOlderThanDev() ||
         extension()->location() == extensions::Manifest::COMPONENT) {
-      if (options->type == extensions::api::app_window::WINDOW_TYPE_PANEL) {
+      if (options->type == app_window::WINDOW_TYPE_PANEL) {
         create_params.window_type = AppWindow::WINDOW_TYPE_PANEL;
       }
     }
@@ -257,18 +256,18 @@ bool AppWindowCreateFunction::RunAsync() {
     if (options->focused.get())
       create_params.focused = *options->focused.get();
 
-    if (options->type != extensions::api::app_window::WINDOW_TYPE_PANEL) {
+    if (options->type != app_window::WINDOW_TYPE_PANEL) {
       switch (options->state) {
-        case extensions::api::app_window::STATE_NONE:
-        case extensions::api::app_window::STATE_NORMAL:
+        case app_window::STATE_NONE:
+        case app_window::STATE_NORMAL:
           break;
-        case extensions::api::app_window::STATE_FULLSCREEN:
+        case app_window::STATE_FULLSCREEN:
           create_params.state = ui::SHOW_STATE_FULLSCREEN;
           break;
-        case extensions::api::app_window::STATE_MAXIMIZED:
+        case app_window::STATE_MAXIMIZED:
           create_params.state = ui::SHOW_STATE_MAXIMIZED;
           break;
-        case extensions::api::app_window::STATE_MINIMIZED:
+        case app_window::STATE_MINIMIZED:
           create_params.state = ui::SHOW_STATE_MINIMIZED;
           break;
       }
@@ -314,7 +313,7 @@ bool AppWindowCreateFunction::RunAsync() {
 }
 
 bool AppWindowCreateFunction::GetBoundsSpec(
-    const extensions::api::app_window::CreateWindowOptions& options,
+    const app_window::CreateWindowOptions& options,
     AppWindow::CreateParams* params,
     std::string* error) {
   DCHECK(params);
@@ -325,9 +324,9 @@ bool AppWindowCreateFunction::GetBoundsSpec(
     // new API, the deprecated fields will be ignored - do not attempt to merge
     // them.
 
-    const extensions::api::app_window::BoundsSpecification* inner_bounds =
+    const app_window::BoundsSpecification* inner_bounds =
         options.inner_bounds.get();
-    const extensions::api::app_window::BoundsSpecification* outer_bounds =
+    const app_window::BoundsSpecification* outer_bounds =
         options.outer_bounds.get();
     if (inner_bounds && outer_bounds) {
       if (!CheckBoundsConflict(

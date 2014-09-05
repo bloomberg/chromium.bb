@@ -6,6 +6,7 @@ include_rules = [
   "+components/omaha_query_params",
   "+components/pref_registry",
   "+components/user_prefs",
+  "+components/web_modal",
   "+content/public/browser",
 
   # Pieces of content_shell reused in app_shell.

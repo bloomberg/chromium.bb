@@ -94,6 +94,7 @@
         'browser/shell_runtime_api_delegate.h',
         'browser/shell_special_storage_policy.cc',
         'browser/shell_special_storage_policy.h',
+        'browser/shell_web_contents_modal_dialog_manager.cc',
         'common/shell_content_client.cc',
         'common/shell_content_client.h',
         'common/shell_extensions_client.cc',

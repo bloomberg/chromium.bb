@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_APP_WINDOW_CUSTOM_BINDINGS_H_
-#define CHROME_RENDERER_EXTENSIONS_APP_WINDOW_CUSTOM_BINDINGS_H_
+#ifndef EXTENSIONS_RENDERER_APP_WINDOW_CUSTOM_BINDINGS_H_
+#define EXTENSIONS_RENDERER_APP_WINDOW_CUSTOM_BINDINGS_H_
 
 #include "extensions/renderer/object_backed_native_handler.h"
 
@@ -31,4 +31,4 @@ class AppWindowCustomBindings : public ObjectBackedNativeHandler {
 
 }  // namespace extensions
 
-#endif  // CHROME_RENDERER_EXTENSIONS_APP_WINDOW_CUSTOM_BINDINGS_H_
+#endif  // EXTENSIONS_RENDERER_APP_WINDOW_CUSTOM_BINDINGS_H_

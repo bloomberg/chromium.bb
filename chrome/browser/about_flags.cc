@@ -684,7 +684,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_APP_WINDOW_CONTROLS_NAME,
     IDS_FLAGS_ENABLE_APP_WINDOW_CONTROLS_DESCRIPTION,
     kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableAppWindowControls)
+    SINGLE_VALUE_TYPE(extensions::switches::kEnableAppWindowControls)
   },
   {
     "disable-hyperlink-auditing",

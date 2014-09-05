@@ -26,11 +26,14 @@ const char kEmbeddedExtensionOptions[] = "embedded-extension-options";
 // Show apps windows after the first paint. Windows will be shown significantly
 // later for heavy apps loading resources synchronously but it will be
 // insignificant for apps that load most of their resources asynchronously.
-const char kEnableAppsShowOnFirstPaint[]    = "enable-apps-show-on-first-paint";
+const char kEnableAppsShowOnFirstPaint[] = "enable-apps-show-on-first-paint";
 
 // Hack so that feature switch can work with about_flags. See
 // kEnableScriptsRequireAction.
 const char kEnableAppView[] = "enable-app-view";
+
+// Enables the <window-controls> tag in platform apps.
+const char kEnableAppWindowControls[] = "enable-app-window-controls";
 
 // Hack so that feature switch can work with about_flags. See
 // kEnableScriptsRequireAction.

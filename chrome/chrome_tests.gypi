@@ -879,6 +879,7 @@
         '../components/autofill/content/renderer/test_password_generation_agent.h',
         '../components/autofill/content/renderer/test_password_generation_agent.cc',
         # TODO(rockot): Remove this once extensions_browsertests exists.
+        '../extensions/browser/api/app_window/app_window_apitest.cc',
         '../extensions/browser/api/bluetooth/bluetooth_apitest.cc',
         '../extensions/browser/api/bluetooth/bluetooth_private_apitest.cc',
         '../extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_apitest.cc',
@@ -1075,7 +1076,6 @@
         'browser/extensions/alert_apitest.cc',
         'browser/extensions/all_urls_apitest.cc',
         'browser/extensions/api/activity_log_private/activity_log_private_apitest.cc',
-        'browser/extensions/api/app_window/app_window_apitest.cc',
         'browser/extensions/api/audio/audio_apitest.cc',
         'browser/extensions/api/automation/automation_apitest.cc',
         'browser/extensions/api/autotest_private/autotest_private_apitest.cc',

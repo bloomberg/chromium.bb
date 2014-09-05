@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/app_window_custom_bindings.h"
+#include "extensions/renderer/app_window_custom_bindings.h"
 
 #include <string>
 
 #include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/grit/renderer_resources.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/switches.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/scoped_persistent.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
+#include "grit/extensions_renderer_resources.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/resource/resource_bundle.h"

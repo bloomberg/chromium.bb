@@ -19,7 +19,6 @@
       'activity_log_private.json',
       'alarms.idl',
       'app_current_window_internal.idl',
-      'app_window.idl',
       'audio.idl',
       'automation.idl',
       'automation_internal.idl',

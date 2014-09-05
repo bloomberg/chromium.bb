@@ -123,8 +123,6 @@
     'chrome_renderer_extensions_sources': [
       'renderer/extensions/app_bindings.cc',
       'renderer/extensions/app_bindings.h',
-      'renderer/extensions/app_window_custom_bindings.cc',
-      'renderer/extensions/app_window_custom_bindings.h',
       'renderer/extensions/automation_internal_custom_bindings.cc',
       'renderer/extensions/automation_internal_custom_bindings.h',
       'renderer/extensions/chrome_v8_extension_handler.cc',
@@ -149,7 +147,6 @@
       'renderer/extensions/webstore_bindings.h',
       'renderer/resources/extensions/app_custom_bindings.js',
       'renderer/resources/extensions/app_view.js',
-      'renderer/resources/extensions/app_window_custom_bindings.js',
       'renderer/resources/extensions/automation_custom_bindings.js',
       'renderer/resources/extensions/browser_action_custom_bindings.js',
       'renderer/resources/extensions/chrome_direct_setting.js',

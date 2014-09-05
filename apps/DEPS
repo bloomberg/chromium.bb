@@ -34,7 +34,6 @@ include_rules = [
   "+chrome/browser/extensions/api/file_system/file_system_api.h",
   "+chrome/browser/extensions/chrome_extension_web_contents_observer.h",
   "+chrome/browser/extensions/unpacked_installer.h",
-  "+chrome/common/extensions/api/app_window.h",
 ]
 
 specific_include_rules = {

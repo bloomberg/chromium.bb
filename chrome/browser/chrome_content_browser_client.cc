@@ -1331,6 +1331,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       extensions::switches::kAllowHTTPBackgroundPage,
       extensions::switches::kAllowLegacyExtensionManifests,
       extensions::switches::kEnableAppView,
+      extensions::switches::kEnableAppWindowControls,
       extensions::switches::kEnableEmbeddedExtensionOptions,
       extensions::switches::kEnableExperimentalExtensionApis,
       extensions::switches::kEnableScriptsRequireAction,
@@ -1341,7 +1342,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kCloudPrintURL,
       switches::kCloudPrintXmppEndpoint,
       switches::kDisableBundledPpapiFlash,
-      switches::kEnableAppWindowControls,
       switches::kEnableBenchmarking,
       switches::kEnableNaCl,
 #if !defined(DISABLE_NACL)

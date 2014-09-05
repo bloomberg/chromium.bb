@@ -399,9 +399,6 @@ extern const char kEasyUnlockAppPath[]      = "easy-unlock-app-path";
 // If set, the app list will be enabled as if enabled from CWS.
 const char kEnableAppList[]                 = "enable-app-list";
 
-// Enables the <window-controls> tag in platform apps.
-const char kEnableAppWindowControls[]       = "enable-app-window-controls";
-
 // Enable OS integration for Chrome app file associations.
 const char kEnableAppsFileAssociations[]    = "enable-apps-file-associations";
 

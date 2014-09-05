@@ -104,8 +104,6 @@
       'browser/extensions/api/alarms/alarms_api.h',
       'browser/extensions/api/app_current_window_internal/app_current_window_internal_api.cc',
       'browser/extensions/api/app_current_window_internal/app_current_window_internal_api.h',
-      'browser/extensions/api/app_window/app_window_api.cc',
-      'browser/extensions/api/app_window/app_window_api.h',
       'browser/extensions/api/audio/audio_api.cc',
       'browser/extensions/api/audio/audio_api.h',
       'browser/extensions/api/audio/audio_service.h',

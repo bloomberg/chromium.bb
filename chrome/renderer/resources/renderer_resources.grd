@@ -33,7 +33,6 @@
         <include name="IDR_APP_CUSTOM_BINDINGS_JS" file="extensions\app_custom_bindings.js" type="BINDATA" />
         <include name="IDR_APP_VIEW_DENY_JS" file="extensions\app_view_deny.js" type="BINDATA" />
         <include name="IDR_APP_VIEW_JS" file="extensions\app_view.js" type="BINDATA" />
-        <include name="IDR_APP_WINDOW_CUSTOM_BINDINGS_JS" file="extensions\app_window_custom_bindings.js" type="BINDATA" />
         <include name="IDR_AUTOMATION_CUSTOM_BINDINGS_JS" file="extensions\automation_custom_bindings.js" type="BINDATA" />
         <include name="IDR_AUTOMATION_EVENT_JS" file="extensions\automation\automation_event.js" type="BINDATA" />
         <include name="IDR_AUTOMATION_NODE_JS" file="extensions\automation\automation_node.js" type="BINDATA" />
@@ -82,8 +81,6 @@
         <include name="IDR_TAG_WATCHER_JS" file="extensions\tag_watcher.js" type="BINDATA" />
         <include name="IDR_TTS_CUSTOM_BINDINGS_JS" file="extensions\tts_custom_bindings.js" type="BINDATA" />
         <include name="IDR_TTS_ENGINE_CUSTOM_BINDINGS_JS" file="extensions\tts_engine_custom_bindings.js" type="BINDATA" />
-        <include name="IDR_WINDOW_CONTROLS_JS" file="extensions\window_controls.js" type="BINDATA" />
-        <include name="IDR_WINDOW_CONTROLS_TEMPLATE_HTML" file="extensions\window_controls_template.html" type="BINDATA" />
         <include name="IDR_WEB_REQUEST_CUSTOM_BINDINGS_JS" file="extensions\web_request_custom_bindings.js" type="BINDATA" />
         <include name="IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS" file="extensions\web_request_internal_custom_bindings.js" type="BINDATA" />
         <include name="IDR_WEBSTORE_CUSTOM_BINDINGS_JS" file="extensions\webstore_custom_bindings.js" type="BINDATA" />

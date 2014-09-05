@@ -34,12 +34,15 @@
 
       <!-- Custom bindings for APIs. -->
       <include name="IDR_APP_RUNTIME_CUSTOM_BINDINGS_JS" file="app_runtime_custom_bindings.js" type="BINDATA" />
+      <include name="IDR_APP_WINDOW_CUSTOM_BINDINGS_JS" file="app_window_custom_bindings.js" type="BINDATA" />
       <include name="IDR_CONTEXT_MENUS_CUSTOM_BINDINGS_JS" file="context_menus_custom_bindings.js" type="BINDATA" />
       <include name="IDR_EXTENSION_CUSTOM_BINDINGS_JS" file="extension_custom_bindings.js" type="BINDATA" />
       <include name="IDR_GREASEMONKEY_API_JS" file="greasemonkey_api.js" type="BINDATA" />
       <include name="IDR_I18N_CUSTOM_BINDINGS_JS" file="i18n_custom_bindings.js" type="BINDATA" />
       <include name="IDR_PERMISSIONS_CUSTOM_BINDINGS_JS" file="permissions_custom_bindings.js" type="BINDATA" />
       <include name="IDR_RUNTIME_CUSTOM_BINDINGS_JS" file="runtime_custom_bindings.js" type="BINDATA" />
+      <include name="IDR_WINDOW_CONTROLS_JS" file="window_controls.js" type="BINDATA" />
+      <include name="IDR_WINDOW_CONTROLS_TEMPLATE_HTML" file="window_controls_template.html" type="BINDATA" />
       <include name="IDR_BINDING_JS" file="binding.js" type="BINDATA" />
 
       <!-- Custom types for APIs. -->
