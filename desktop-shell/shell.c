@@ -575,6 +575,7 @@ shell_configuration(struct desktop_shell *shell)
 	struct weston_config_section *section;
 	int duration;
 	char *s, *client;
+	int ret;
 
 	section = weston_config_get_section(shell->compositor->config,
 					    "screensaver", NULL, NULL);
@@ -585,8 +586,10 @@ shell_configuration(struct desktop_shell *shell)
 
 	section = weston_config_get_section(shell->compositor->config,
 					    "shell", NULL, NULL);
-	asprintf(&client, "%s/%s", weston_config_get_libexec_dir(),
-				   WESTON_SHELL_CLIENT);
+	ret = asprintf(&client, "%s/%s", weston_config_get_libexec_dir(),
+		       WESTON_SHELL_CLIENT);
+	if (ret < 0)
+		client = NULL;
 	weston_config_section_get_string(section,
 					 "client", &s, client);
 	free(client);

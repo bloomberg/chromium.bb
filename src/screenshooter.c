@@ -287,9 +287,15 @@ screenshooter_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 {
 	struct screenshooter *shooter = data;
 	char *screenshooter_exe;
+	int ret;
 
-	asprintf(&screenshooter_exe, "%s/%s", weston_config_get_libexec_dir(),
-					      "/weston-screenshooter");
+	ret = asprintf(&screenshooter_exe, "%s/%s",
+		       weston_config_get_libexec_dir(),
+		       "/weston-screenshooter");
+	if (ret < 0) {
+		weston_log("Could not construct screenshooter path.\n");
+		return;
+	}
 
 	if (!shooter->client)
 		shooter->client = weston_client_launch(shooter->ec,
