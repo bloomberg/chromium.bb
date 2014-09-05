@@ -31,6 +31,7 @@
       '__STDC_LIMIT_MACROS=1',
       '__STDC_FORMAT_MACROS=1',
       '_GNU_SOURCE=1',
+      '_DEFAULT_SOURCE=1',
       '_BSD_SOURCE=1',
       '_POSIX_C_SOURCE=199506',
       '_XOPEN_SOURCE=600',

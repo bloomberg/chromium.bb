@@ -2824,6 +2824,7 @@ def MakeGenericLinuxEnv(platform=None):
                     ['NACL_OSX', '0'],
                     ['NACL_LINUX', '1'],
                     ['NACL_ANDROID', '0'],
+                    ['_DEFAULT_SOURCE', '1'],
                     ['_BSD_SOURCE', '1'],
                     ['_POSIX_C_SOURCE', '199506'],
                     ['_XOPEN_SOURCE', '600'],
@@ -3086,6 +3087,7 @@ nacl_env.Append(
         # _GNU_SOURCE ensures that strtof() gets declared.
         ['_GNU_SOURCE', 1],
         # strdup, and other common stuff
+        ['_DEFAULT_SOURCE', '1'],
         ['_BSD_SOURCE', '1'],
         ['_POSIX_C_SOURCE', '199506'],
         ['_XOPEN_SOURCE', '600'],
