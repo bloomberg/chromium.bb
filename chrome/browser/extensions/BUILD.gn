@@ -72,7 +72,7 @@ static_library("extensions") {
     "//ui/resources",
     "//ui/strings",
     "//url",
-    "//webkit/browser:storage",
+    "//storage/browser",
   ]
 
   forward_dependent_configs_from = [

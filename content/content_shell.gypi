@@ -54,6 +54,7 @@
         '../net/net.gyp:net',
         '../net/net.gyp:net_resources',
         '../skia/skia.gyp:skia',
+        '../storage/storage_browser.gyp:storage',
         '../third_party/WebKit/public/blink.gyp:blink',
         '../third_party/WebKit/public/blink.gyp:blink_test_support',
         '../ui/base/ui_base.gyp:ui_base',
@@ -64,7 +65,6 @@
         '../ui/gl/gl.gyp:gl',
         '../url/url.gyp:url_lib',
         '../v8/tools/gyp/v8.gyp:v8',
-        '../webkit/storage_browser.gyp:storage',
       ],
       'include_dirs': [
         '..',

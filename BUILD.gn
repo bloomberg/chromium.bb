@@ -61,6 +61,7 @@ group("root") {
     "//sandbox",
     "//sdch",
     "//skia",
+    "//storage/browser",
     "//sql",
     "//sync",
     "//third_party/WebKit/public:all_blink",
@@ -126,7 +127,6 @@ group("root") {
     "//ui/wm",
     "//url",
     "//v8:v8",
-    "//webkit/browser:storage",
   ]
 
   if (!is_win) {
@@ -221,6 +221,7 @@ group("root") {
       # Not tested on Android yet:
       "//google_apis/gcm",
       "//remoting/client/plugin",
+      "//storage/browser",
       "//third_party/cld_2",
       "//third_party/libaddressinput",
       "//third_party/ffmpeg",
@@ -228,7 +229,6 @@ group("root") {
       "//ui/app_list",
       "//ui/web_dialogs",
       "//ui/wm",
-      "//webkit/browser:storage",
     ]
   }
 

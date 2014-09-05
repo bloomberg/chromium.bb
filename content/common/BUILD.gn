@@ -61,10 +61,10 @@ source_set("common") {
       "//mojo/public/interfaces/application",
       "//mojo/system",
       "//sandbox",
+      "//storage/browser",
+      "//storage/common",
       "//third_party/WebKit/public:blink",
       "//ui/gl",
-      "//webkit/browser:storage",
-      "//storage/common",
       "//webkit/common/gpu",
     ]
   }

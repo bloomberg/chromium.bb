@@ -73,6 +73,7 @@
         '../net/net.gyp:net',
         '../ppapi/ppapi_internal.gyp:ppapi_ipc',  # For PpapiMsg_LoadPlugin
         '../skia/skia.gyp:skia',
+        '../storage/storage_browser.gyp:storage',
         '../storage/storage_common.gyp:storage_common',
         '../sync/sync.gyp:sync',
         '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
@@ -106,7 +107,6 @@
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
         '../url/url.gyp:url_lib',
         '../v8/tools/gyp/v8.gyp:v8',
-        '../webkit/storage_browser.gyp:storage',
         'chrome_resources.gyp:chrome_strings',
       ],
       'defines': [

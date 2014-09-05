@@ -227,6 +227,7 @@ static_library("content_shell_lib") {
     "//net",
     "//net:net_resources",
     "//skia",
+    "//storage/browser",
     "//third_party/WebKit/public:blink",
     "//third_party/WebKit/public:resources",
     "//third_party/WebKit/public:test_support",
@@ -239,7 +240,6 @@ static_library("content_shell_lib") {
     "//ui/gl",
     "//url",
     "//v8",
-    "//webkit/browser:storage",
     #'copy_test_netscape_plugin',  TODO(GYP)
   ]
 

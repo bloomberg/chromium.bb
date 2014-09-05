@@ -1598,11 +1598,11 @@
         '../mojo/mojo_base.gyp:mojo_cpp_bindings',
         '../mojo/mojo_base.gyp:mojo_js_bindings',
         '../net/net.gyp:http_server',
+        '../storage/storage_browser.gyp:storage',
         '../storage/storage_common.gyp:storage_common',
         '../third_party/angle/src/build_angle.gyp:commit_id',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../ui/surface/surface.gyp:surface',
-        '../webkit/storage_browser.gyp:storage',
       ],
     }],
     ['enable_printing!=0', {

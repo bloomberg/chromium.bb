@@ -166,6 +166,7 @@ static_library("browser") {
       "//mojo/system",
       "//net:extras",
       "//net:net_with_v8",
+      "//storage/browser",
       "//storage/common",
       "//third_party/WebKit/public:resources",
       "//third_party/expat",
@@ -180,7 +181,6 @@ static_library("browser") {
       "//ui/surface",
       "//ui/web_dialogs",
       "//v8",
-      "//webkit/browser:storage",
       ## TODO(tonyg): Remove this dependency (crbug.com/280157).
       #"../testing/perf/perf_test.gyp:*",  TODO(GYP)
     ]

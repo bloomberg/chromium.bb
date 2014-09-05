@@ -20,6 +20,7 @@ static_library("test_support") {
     "//content/public/common",
     "//net:test_support",
     "//skia",
+    "//storage/common",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/accessibility:ax_gen",
@@ -32,7 +33,6 @@ static_library("test_support") {
     "//ui/gfx:test_support",
     "//ui/resources",
     "//url",
-    "//storage/common",
   ]
 
   if (!is_ios) {
@@ -53,12 +53,12 @@ static_library("test_support") {
       "//ppapi:ppapi_proxy",
       "//ppapi:ppapi_shared",
       "//ppapi:ppapi_unittest_shared",
+      "//storage/browser",
       "//storage/common",
       "//third_party/WebKit/public:blink",
       "//ui/surface",
       "//v8",
       "//webkit/common/gpu",
-      "//webkit/browser:storage",
     ]
 
     forward_dependent_configs_from = [

@@ -936,6 +936,7 @@
         '../extensions/extensions_strings.gyp:extensions_strings',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
+        '../storage/storage_browser.gyp:storage',
         '../storage/storage_common.gyp:storage_common',
         '../sync/sync.gyp:sync',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
@@ -951,7 +952,6 @@
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/strings/ui_strings.gyp:ui_strings',
         '../url/url.gyp:url_lib',
-        '../webkit/storage_browser.gyp:storage',
       ],
       'include_dirs': [
         '..',
