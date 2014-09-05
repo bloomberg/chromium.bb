@@ -15,13 +15,7 @@
               "bounds": [160, 90],
               "contentsOpaque": true,
               "drawsContent": true,
-              "backgroundColor": "#FF0000",
-              "children": [
-                {
-                  "bounds": [160, 90],
-                  "drawsContent": true
-                }
-              ]
+              "backgroundColor": "#FF0000"
             },
             {
               "bounds": [800, 600],

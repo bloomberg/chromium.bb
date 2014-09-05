@@ -11,13 +11,7 @@
         {
           "transformOrigin": [50, 50],
           "bounds": [500, 250],
-          "drawsContent": true,
-          "children": [
-            {
-              "bounds": [500, 250],
-              "drawsContent": true
-            }
-          ]
+          "drawsContent": true
         },
         {
           "children": [
@@ -25,13 +19,7 @@
               "position": [0, 250],
               "transformOrigin": [50, 50],
               "bounds": [150, 150],
-              "drawsContent": true,
-              "children": [
-                {
-                  "bounds": [150, 150],
-                  "drawsContent": true
-                }
-              ]
+              "drawsContent": true
             },
             {
               "bounds": [792, 100],

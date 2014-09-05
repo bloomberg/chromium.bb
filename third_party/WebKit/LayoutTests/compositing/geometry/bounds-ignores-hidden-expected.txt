@@ -12,13 +12,7 @@
           "transformOrigin": [-10, -10],
           "bounds": [50, 50],
           "contentsOpaque": true,
-          "drawsContent": true,
-          "children": [
-            {
-              "bounds": [50, 50],
-              "drawsContent": true
-            }
-          ]
+          "drawsContent": true
         }
       ]
     }

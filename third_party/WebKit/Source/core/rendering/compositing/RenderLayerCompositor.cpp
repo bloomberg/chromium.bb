@@ -753,11 +753,13 @@ bool RenderLayerCompositor::clipsCompositingDescendants(const RenderLayer* layer
     return layer->hasCompositingDescendant() && layer->renderer()->hasClipOrOverflowClip();
 }
 
-// If an element has negative z-index children, those children render in front of the
+// If an element has composited negative z-index children, those children render in front of the
 // layer background, so we need an extra 'contents' layer for the foreground of the layer
 // object.
 bool RenderLayerCompositor::needsContentsCompositingLayer(const RenderLayer* layer) const
 {
+    if (!layer->hasCompositingDescendant())
+        return false;
     return layer->stackingNode()->hasNegativeZOrderList();
 }
 
