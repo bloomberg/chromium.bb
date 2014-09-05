@@ -325,14 +325,6 @@ class _PaygenPayload(object):
       cmd += self._BuildArg('--src_build_version', src_image, 'image_version',
                             default=src_image.version)
 
-    # IMPORTANT! When generating a test payload, we must instruct the payload
-    # generator to patch the kernel(s) for rebooting from HDD, otherwise the
-    # updated image will fail to reboot. This is not necessary with non-test
-    # payloads, whose images get resigned and whose kernel partitions need not
-    # be patched for HDD boot.
-    if not tgt_image.get('key'):
-      cmd += ['--patch_kernel']
-
     delta_log = self._RunGeneratorCmd(cmd)
     self._StoreDeltaLog(delta_log)
 
@@ -586,9 +578,6 @@ class _PaygenPayload(object):
       cmd += ['--src_image', self.src_image_file]
       part_files['old_kernel_part'] = self._DEFAULT_OLD_KERN_PART
       part_files['old_rootfs_part'] = self._DEFAULT_OLD_ROOT_PART
-
-    if not self.payload.tgt_image.get('key'):
-      cmd += ['--patch_kernel']
 
     self._RunGeneratorCmd(cmd)
 
