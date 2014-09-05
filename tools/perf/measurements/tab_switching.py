@@ -34,6 +34,8 @@ class TabSwitching(page_test.PageTest):
     options.AppendExtraBrowserArgs([
         '--enable-stats-collection-bindings'
     ])
+    # Enable background networking so we can test its impact on power usage.
+    options.disable_background_networking = False
     power.PowerMetric.CustomizeBrowserOptions(options)
 
   def WillStartBrowser(self, browser):
