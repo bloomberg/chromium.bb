@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import atexit
 import cgi
 import ConfigParser
 import json
@@ -20,10 +21,37 @@ MAX_THREAD_NUMBER = 10
 TASK_QUEUE = None
 
 
+def SignalWorkerThreads():
+  global TASK_QUEUE
+  if not TASK_QUEUE:
+    return
+
+  for i in range(MAX_THREAD_NUMBER):
+    TASK_QUEUE.put(None)
+
+  # Give worker threads a chance to exit.
+  # Workaround the harmless bug in python 2.7 below.
+  time.sleep(1)
+
+
+atexit.register(SignalWorkerThreads)
+
+
 def Worker():
   global TASK_QUEUE
   while True:
-    function, args, kwargs, result_semaphore = TASK_QUEUE.get()
+    try:
+      task = TASK_QUEUE.get()
+      if not task:
+        return
+    except TypeError:
+      # According to http://bugs.python.org/issue14623, this is a harmless bug
+      # in python 2.7 which won't be fixed.
+      # The exception is raised on daemon threads when python interpreter is
+      # shutting down.
+      return
+
+    function, args, kwargs, result_semaphore = task
     try:
       function(*args, **kwargs)
     except:

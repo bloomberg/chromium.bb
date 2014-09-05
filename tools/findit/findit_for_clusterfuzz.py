@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import sys
+
 import chromium_deps
 from common import utils
 import crash_utils
@@ -108,11 +110,20 @@ def FindCulpritCLs(stacktrace_string,
     if chrome_regression_start != '0':
       component_to_regression_dict = chromium_deps.GetChromiumComponentRange(
           chrome_regression_start, chrome_regression_end)
+      if not component_to_regression_dict:
+        print ('Failed to get component regression ranges for chromium '
+               'regression range %s:%s'
+               % (chrome_regression_start, chrome_regression_end))
+        sys.exit(1)
 
   # Parse crash revision.
   if chrome_crash_revision:
     component_to_crash_revision_dict = chromium_deps.GetChromiumComponents(
         chrome_crash_revision)
+    if not component_to_crash_revision_dict:
+      print ('Failed to get component dependencies for chromium revision "%s".'
+             % chrome_crash_revision)
+      sys.exit(1)
 
   # Check if component regression information is available.
   component_regression = crash_utils.SplitRange(component_regression)
@@ -207,7 +218,7 @@ def FindCulpritCLs(stacktrace_string,
     if 'mac_' in build_type:
       return ('No line information available in stacktrace.', [])
 
-    return ('Stacktrace is malformed.', [])
+    return ('Findit failed to find any stack trace. Is it in a new format?', [])
 
   # Run the algorithm on the parsed stacktrace, and return the result.
   stacktrace_list = [parsed_release_build_stacktrace,
