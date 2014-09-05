@@ -474,8 +474,6 @@
       'disk_cache/simple/simple_util.h',
       'disk_cache/simple/simple_version_upgrade.cc',
       'disk_cache/simple/simple_version_upgrade.h',
-      'disk_cache/tracing/tracing_cache_backend.cc',
-      'disk_cache/tracing/tracing_cache_backend.h',
       'dns/address_sorter.h',
       'dns/address_sorter_posix.cc',
       'dns/address_sorter_posix.h',

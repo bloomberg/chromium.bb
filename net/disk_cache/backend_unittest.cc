@@ -29,7 +29,6 @@
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_test_util.h"
 #include "net/disk_cache/simple/simple_util.h"
-#include "net/disk_cache/tracing/tracing_cache_backend.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -127,7 +126,6 @@ class DiskCacheBackendTest : public DiskCacheTestWithCache {
   void BackendDisable2();
   void BackendDisable3();
   void BackendDisable4();
-  void TracingBackendBasics();
 };
 
 int DiskCacheBackendTest::GeneratePendingIO(net::TestCompletionCallback* cb) {
@@ -3150,40 +3148,6 @@ TEST_F(DiskCacheBackendTest, ShaderCacheUpdateRankForExternalCacheHit) {
   entry->Close();
 }
 
-void DiskCacheBackendTest::TracingBackendBasics() {
-  InitCache();
-  cache_.reset(new disk_cache::TracingCacheBackend(cache_.Pass()));
-  cache_impl_ = NULL;
-  EXPECT_EQ(net::DISK_CACHE, cache_->GetCacheType());
-  if (!simple_cache_mode_) {
-    EXPECT_EQ(0, cache_->GetEntryCount());
-  }
-
-  net::TestCompletionCallback cb;
-  disk_cache::Entry* entry = NULL;
-  EXPECT_NE(net::OK, OpenEntry("key", &entry));
-  EXPECT_TRUE(NULL == entry);
-
-  ASSERT_EQ(net::OK, CreateEntry("key", &entry));
-  EXPECT_TRUE(NULL != entry);
-
-  disk_cache::Entry* same_entry = NULL;
-  ASSERT_EQ(net::OK, OpenEntry("key", &same_entry));
-  EXPECT_TRUE(NULL != same_entry);
-
-  if (!simple_cache_mode_) {
-    EXPECT_EQ(1, cache_->GetEntryCount());
-  }
-  entry->Close();
-  entry = NULL;
-  same_entry->Close();
-  same_entry = NULL;
-}
-
-TEST_F(DiskCacheBackendTest, TracingBackendBasics) {
-  TracingBackendBasics();
-}
-
 // The Simple Cache backend requires a few guarantees from the filesystem like
 // atomic renaming of recently open files. Those guarantees are not provided in
 // general on Windows.
@@ -3269,13 +3233,6 @@ TEST_F(DiskCacheBackendTest, SimpleCacheAppCacheOnlyDoomAll) {
   SetCacheType(net::APP_CACHE);
   SetSimpleCacheMode();
   BackendDoomAll();
-}
-
-TEST_F(DiskCacheBackendTest, SimpleCacheTracingBackendBasics) {
-  SetSimpleCacheMode();
-  TracingBackendBasics();
-  // TODO(pasko): implement integrity checking on the Simple Backend.
-  DisableIntegrityCheck();
 }
 
 TEST_F(DiskCacheBackendTest, SimpleCacheOpenMissingFile) {
