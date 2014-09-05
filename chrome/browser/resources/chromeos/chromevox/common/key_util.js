@@ -342,23 +342,6 @@ cvox.KeyUtil.getStickyKeyCode = function() {
   return stickyKeyCode;
 };
 
-/**
- * Get the platform specific sticky key KeySequence. Creates the KeySequence
- * object if it doesn't already exist.
- *
- * @return {cvox.KeySequence} The platform specific sticky key KeySequence.
- */
-cvox.KeyUtil.getStickyKeySequence = function() {
-  if (cvox.KeyUtil.stickyKeySequence == null) {
-    var stickyKeyCode = cvox.KeyUtil.getStickyKeyCode();
-    var stickyKeyObj = {keyCode: stickyKeyCode, stickyMode: true};
-    var stickyKeySequence = new cvox.KeySequence(stickyKeyObj);
-    stickyKeySequence.addKeyEvent(stickyKeyObj);
-    cvox.KeyUtil.stickyKeySequence = stickyKeySequence;
-  }
-  return cvox.KeyUtil.stickyKeySequence;
-};
-
 
 /**
  * Get readable string description for an internal string representation of a
