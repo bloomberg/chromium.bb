@@ -96,6 +96,8 @@ public:
     // We don't yet support multi-range selections, so we only ever have one range to return.
     PassRefPtrWillBeRawPtr<Range> firstRange() const;
 
+    bool intersectsNode(Node*) const;
+
     // FIXME: Most callers probably don't want this function, but are using it
     // for historical reasons.  toNormalizedRange contracts the range around
     // text, and moves the caret upstream before returning the range.

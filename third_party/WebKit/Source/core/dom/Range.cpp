@@ -470,19 +470,27 @@ void Range::deleteContents(ExceptionState& exceptionState)
     }
 }
 
-bool Range::intersectsNode(Node* refNode, ExceptionState& exceptionState)
+static bool nodeValidForIntersects(Node* refNode, Document* expectedDocument, ExceptionState& exceptionState)
 {
-    // http://developer.mozilla.org/en/docs/DOM:range.intersectsNode
-    // Returns a bool if the node intersects the range.
     if (!refNode) {
         exceptionState.throwDOMException(NotFoundError, "The node provided is null.");
         return false;
     }
 
-    if (!refNode->inActiveDocument() || refNode->document() != m_ownerDocument) {
+    if (!refNode->inActiveDocument() || refNode->document() != expectedDocument) {
         // Firefox doesn't throw an exception for these cases; it returns false.
         return false;
     }
+
+    return true;
+}
+
+bool Range::intersectsNode(Node* refNode, ExceptionState& exceptionState)
+{
+    // http://developer.mozilla.org/en/docs/DOM:range.intersectsNode
+    // Returns a bool if the node intersects the range.
+    if (!nodeValidForIntersects(refNode, m_ownerDocument.get(), exceptionState))
+        return false;
 
     ContainerNode* parentNode = refNode->parentNode();
     int nodeIndex = refNode->nodeIndex();
@@ -501,6 +509,44 @@ bool Range::intersectsNode(Node* refNode, ExceptionState& exceptionState)
 
     if (comparePoint(parentNode, nodeIndex, exceptionState) > 0 // starts after end
         && comparePoint(parentNode, nodeIndex + 1, exceptionState) > 0) { // ends after end
+        return false;
+    }
+
+    return true; // all other cases
+}
+
+bool Range::intersectsNode(Node* refNode, const Position& start, const Position& end, ExceptionState& exceptionState)
+{
+    // http://developer.mozilla.org/en/docs/DOM:range.intersectsNode
+    // Returns a bool if the node intersects the range.
+    if (!nodeValidForIntersects(refNode, start.document(), exceptionState))
+        return false;
+
+    ContainerNode* parentNode = refNode->parentNode();
+    int nodeIndex = refNode->nodeIndex();
+
+    if (!parentNode) {
+        // if the node is the top document we should return NODE_BEFORE_AND_AFTER
+        // but we throw to match firefox behavior
+        exceptionState.throwDOMException(NotFoundError, "The node provided has no parent.");
+        return false;
+    }
+
+    Node* startContainerNode = start.containerNode();
+    int startOffset = start.computeOffsetInContainerNode();
+
+    if (compareBoundaryPoints(parentNode, nodeIndex, startContainerNode, startOffset, exceptionState) < 0 // starts before start
+        && compareBoundaryPoints(parentNode, nodeIndex + 1, startContainerNode, startOffset, exceptionState) < 0) { // ends before start
+        ASSERT(!exceptionState.hadException());
+        return false;
+    }
+
+    Node* endContainerNode = end.containerNode();
+    int endOffset = end.computeOffsetInContainerNode();
+
+    if (compareBoundaryPoints(parentNode, nodeIndex, endContainerNode, endOffset, exceptionState) > 0 // starts after end
+        && compareBoundaryPoints(parentNode, nodeIndex + 1, endContainerNode, endOffset, exceptionState) > 0) { // ends after end
+        ASSERT(!exceptionState.hadException());
         return false;
     }
 

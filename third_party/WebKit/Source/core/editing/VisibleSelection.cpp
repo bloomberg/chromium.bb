@@ -192,6 +192,16 @@ PassRefPtrWillBeRawPtr<Range> VisibleSelection::firstRange() const
     return Range::create(*start.document(), start, end);
 }
 
+bool VisibleSelection::intersectsNode(Node* node) const
+{
+    if (isNone())
+        return false;
+    Position start = m_start.parentAnchoredEquivalent();
+    Position end = m_end.parentAnchoredEquivalent();
+    TrackExceptionState exceptionState;
+    return Range::intersectsNode(node, start, end, exceptionState) && !exceptionState.hadException();
+}
+
 PassRefPtrWillBeRawPtr<Range> VisibleSelection::toNormalizedRange() const
 {
     if (isNone())

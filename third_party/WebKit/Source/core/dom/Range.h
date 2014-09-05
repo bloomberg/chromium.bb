@@ -78,6 +78,7 @@ public:
     static short compareBoundaryPoints(const RangeBoundaryPoint& boundaryA, const RangeBoundaryPoint& boundaryB, ExceptionState&);
     bool boundaryPointsValid() const;
     bool intersectsNode(Node* refNode, ExceptionState&);
+    static bool intersectsNode(Node* refNode, const Position& start, const Position& end, ExceptionState&);
     void deleteContents(ExceptionState&);
     PassRefPtrWillBeRawPtr<DocumentFragment> extractContents(ExceptionState&);
     PassRefPtrWillBeRawPtr<DocumentFragment> cloneContents(ExceptionState&);
