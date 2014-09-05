@@ -32,6 +32,7 @@
 #include "content/public/common/sandbox_init.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "printing/emf_win.h"
+#include "sandbox/win/src/sandbox_policy_base.h"
 
 namespace {
 
@@ -47,6 +48,13 @@ class ServiceSandboxedProcessLauncherDelegate
   virtual void PreSandbox(bool* disable_default_policy,
                           base::FilePath* exposed_dir) OVERRIDE {
     *exposed_dir = exposed_dir_;
+  }
+
+  virtual void PreSpawnTarget(sandbox::TargetPolicy* policy,
+                              bool* success) OVERRIDE {
+    // Service process may run as windows service and it fails to create a
+    // window station.
+    policy->SetAlternateDesktop(false);
   }
 
  private:
