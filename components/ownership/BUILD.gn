@@ -4,6 +4,8 @@
 
 component("ownership") {
   sources = [
+    "mock_owner_key_util.cc",
+    "mock_owner_key_util.h",
     "owner_key_util.cc",
     "owner_key_util.h",
     "owner_key_util_impl.cc",
@@ -15,19 +17,6 @@ component("ownership") {
   ]
 
   deps = [
-    "//base",
-    "//crypto",
-  ]
-}
-
-component("test_support") {
-  sources = [
-    "mock_owner_key_util.cc",
-    "mock_owner_key_util.h",
-  ]
-
-  deps = [
-    ":ownership",
     "//base",
     "//crypto",
   ]

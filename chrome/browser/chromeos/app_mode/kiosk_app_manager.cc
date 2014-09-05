@@ -22,7 +22,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_external_loader.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_external_updater.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -59,7 +59,7 @@ void OnRemoveAppCryptohomeComplete(const std::string& app,
 // Check for presence of machine owner public key file.
 void CheckOwnerFilePresence(bool *present) {
   scoped_refptr<ownership::OwnerKeyUtil> util =
-      OwnerSettingsService::MakeOwnerKeyUtil();
+      OwnerSettingsServiceFactory::GetInstance()->GetOwnerKeyUtil();
   *present = util.get() && util->IsPublicKeyPresent();
 }
 

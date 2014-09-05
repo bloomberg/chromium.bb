@@ -71,14 +71,11 @@ class OwnerSettingsService : public DeviceSettingsService::PrivateKeyDelegate,
 
   // Checks if the user is the device owner, without the user profile having to
   // been initialized. Should be used only if login state is in safe mode.
-  static void IsOwnerForSafeModeAsync(const std::string& user_id,
-                                      const std::string& user_hash,
-                                      const IsOwnerCallback& callback);
-
-  static scoped_refptr<ownership::OwnerKeyUtil> MakeOwnerKeyUtil();
-
-  static void SetOwnerKeyUtilForTesting(
-      const scoped_refptr<ownership::OwnerKeyUtil>& owner_key_util);
+  static void IsOwnerForSafeModeAsync(
+      const std::string& user_id,
+      const std::string& user_hash,
+      const scoped_refptr<ownership::OwnerKeyUtil>& owner_key_util,
+      const IsOwnerCallback& callback);
 
   static void SetDeviceSettingsServiceForTesting(
       DeviceSettingsService* device_settings_service);
@@ -86,7 +83,9 @@ class OwnerSettingsService : public DeviceSettingsService::PrivateKeyDelegate,
  private:
   friend class OwnerSettingsServiceFactory;
 
-  explicit OwnerSettingsService(Profile* profile);
+  OwnerSettingsService(
+      Profile* profile,
+      const scoped_refptr<ownership::OwnerKeyUtil>& owner_key_util);
 
   // Reloads private key from profile's NSS slots. Responds via call
   // to OnPrivateKeyLoaded().

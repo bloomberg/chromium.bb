@@ -39,18 +39,18 @@ class SessionManagerOperationTest : public testing::Test {
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE, &message_loop_),
         owner_key_util_(new ownership::MockOwnerKeyUtil()),
-        validated_(false) {}
+        validated_(false) {
+    OwnerSettingsServiceFactory::GetInstance()->SetOwnerKeyUtilForTesting(
+        owner_key_util_);
+  }
 
   virtual void SetUp() OVERRIDE {
     policy_.payload().mutable_pinned_apps()->add_app_id("fake-app");
     policy_.Build();
 
     profile_.reset(new TestingProfile());
-    OwnerSettingsService::SetOwnerKeyUtilForTesting(owner_key_util_);
     service_ = OwnerSettingsServiceFactory::GetForProfile(profile_.get());
   }
-
-  void TearDown() { OwnerSettingsService::SetOwnerKeyUtilForTesting(NULL); }
 
   MOCK_METHOD2(OnOperationCompleted,
                void(SessionManagerOperation*, DeviceSettingsService::Status));

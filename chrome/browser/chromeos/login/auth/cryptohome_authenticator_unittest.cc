@@ -134,7 +134,9 @@ class CryptohomeAuthenticatorTest : public testing::Test {
         user_manager_enabler_(user_manager_),
         mock_caller_(NULL),
         mock_homedir_methods_(NULL),
-        owner_key_util_(new ownership::MockOwnerKeyUtil) {
+        owner_key_util_(new ownership::MockOwnerKeyUtil()) {
+    OwnerSettingsServiceFactory::GetInstance()->SetOwnerKeyUtilForTesting(
+        owner_key_util_);
     user_context_.SetKey(Key("fakepass"));
     user_context_.SetUserIDHash("me_nowhere_com_hash");
     const user_manager::User* user =
@@ -165,15 +167,12 @@ class CryptohomeAuthenticatorTest : public testing::Test {
 
     SystemSaltGetter::Initialize();
 
-    OwnerSettingsService::SetOwnerKeyUtilForTesting(owner_key_util_);
-
     auth_ = new ChromeCryptohomeAuthenticator(&consumer_);
     state_.reset(new TestAttemptState(user_context_, false));
   }
 
   // Tears down the test fixture.
   virtual void TearDown() {
-    OwnerSettingsService::SetOwnerKeyUtilForTesting(NULL);
     SystemSaltGetter::Shutdown();
     DBusThreadManager::Shutdown();
 

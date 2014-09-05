@@ -9,17 +9,13 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/ownership/owner_settings_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/session_manager_operation.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "components/ownership/owner_key_util_impl.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -43,7 +39,6 @@ namespace chromeos {
 
 namespace {
 
-scoped_refptr<OwnerKeyUtil>* g_owner_key_util_for_testing = NULL;
 DeviceSettingsService* g_device_settings_service_for_testing = NULL;
 
 bool IsOwnerInTests(const std::string& user_id) {
@@ -178,12 +173,8 @@ bool DoesPrivateKeyExistAsyncHelper(
 // Checks whether NSS slots with private key are mounted or
 // not. Responds via |callback|.
 void DoesPrivateKeyExistAsync(
+    const scoped_refptr<OwnerKeyUtil>& owner_key_util,
     const OwnerSettingsService::IsOwnerCallback& callback) {
-  scoped_refptr<OwnerKeyUtil> owner_key_util;
-  if (g_owner_key_util_for_testing)
-    owner_key_util = *g_owner_key_util_for_testing;
-  else
-    owner_key_util = OwnerSettingsService::MakeOwnerKeyUtil();
   if (!owner_key_util) {
     callback.Run(false);
     return;
@@ -241,9 +232,11 @@ bool CheckManagementModeTransition(em::PolicyData::ManagementMode current_mode,
 
 }  // namespace
 
-OwnerSettingsService::OwnerSettingsService(Profile* profile)
+OwnerSettingsService::OwnerSettingsService(
+    Profile* profile,
+    const scoped_refptr<OwnerKeyUtil>& owner_key_util)
     : profile_(profile),
-      owner_key_util_(MakeOwnerKeyUtil()),
+      owner_key_util_(owner_key_util),
       waiting_for_profile_creation_(true),
       waiting_for_tpm_token_(true),
       weak_factory_(this) {
@@ -385,6 +378,7 @@ void OwnerSettingsService::OwnerKeySet(bool success) {
 void OwnerSettingsService::IsOwnerForSafeModeAsync(
     const std::string& user_id,
     const std::string& user_hash,
+    const scoped_refptr<OwnerKeyUtil>& owner_key_util,
     const IsOwnerCallback& callback) {
   CHECK(chromeos::LoginState::Get()->IsInSafeMode());
 
@@ -397,30 +391,7 @@ void OwnerSettingsService::IsOwnerForSafeModeAsync(
                  user_id,
                  user_hash,
                  ProfileHelper::GetProfilePathByUserIdHash(user_hash)),
-      base::Bind(&DoesPrivateKeyExistAsync, callback));
-}
-
-// static
-scoped_refptr<ownership::OwnerKeyUtil>
-OwnerSettingsService::MakeOwnerKeyUtil() {
-  base::FilePath public_key_path;
-  if (!PathService::Get(chromeos::FILE_OWNER_KEY, &public_key_path))
-    return NULL;
-  return new ownership::OwnerKeyUtilImpl(public_key_path);
-}
-
-// static
-void OwnerSettingsService::SetOwnerKeyUtilForTesting(
-    const scoped_refptr<OwnerKeyUtil>& owner_key_util) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (g_owner_key_util_for_testing) {
-    delete g_owner_key_util_for_testing;
-    g_owner_key_util_for_testing = NULL;
-  }
-  if (owner_key_util.get()) {
-    g_owner_key_util_for_testing = new scoped_refptr<OwnerKeyUtil>();
-    *g_owner_key_util_for_testing = owner_key_util;
-  }
+      base::Bind(&DoesPrivateKeyExistAsync, owner_key_util, callback));
 }
 
 // static
@@ -532,8 +503,6 @@ void OwnerSettingsService::HandleError(DeviceSettingsService::Status status,
 
 scoped_refptr<OwnerKeyUtil> OwnerSettingsService::GetOwnerKeyUtil() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (g_owner_key_util_for_testing)
-    return *g_owner_key_util_for_testing;
   return owner_key_util_;
 }
 

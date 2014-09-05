@@ -207,6 +207,8 @@ DeviceSettingsTestBase::DeviceSettingsTestBase()
     : user_manager_(new FakeUserManager()),
       user_manager_enabler_(user_manager_),
       owner_key_util_(new ownership::MockOwnerKeyUtil()) {
+  OwnerSettingsServiceFactory::GetInstance()->SetOwnerKeyUtilForTesting(
+      owner_key_util_);
 }
 
 DeviceSettingsTestBase::~DeviceSettingsTestBase() {
@@ -226,14 +228,12 @@ void DeviceSettingsTestBase::SetUp() {
   device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
   device_settings_service_.SetSessionManager(&device_settings_test_helper_,
                                              owner_key_util_);
-  OwnerSettingsService::SetOwnerKeyUtilForTesting(owner_key_util_.get());
   OwnerSettingsService::SetDeviceSettingsServiceForTesting(
       &device_settings_service_);
   profile_.reset(new TestingProfile());
 }
 
 void DeviceSettingsTestBase::TearDown() {
-  OwnerSettingsService::SetOwnerKeyUtilForTesting(NULL);
   OwnerSettingsService::SetDeviceSettingsServiceForTesting(NULL);
   FlushDeviceSettings();
   device_settings_service_.UnsetSessionManager();

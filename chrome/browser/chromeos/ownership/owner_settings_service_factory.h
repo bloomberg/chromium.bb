@@ -9,11 +9,16 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class KeyedService;
 class Profile;
+
+namespace ownership {
+class OwnerKeyUtil;
+}
 
 namespace chromeos {
 
@@ -24,6 +29,11 @@ class OwnerSettingsServiceFactory : public BrowserContextKeyedServiceFactory {
   static OwnerSettingsService* GetForProfile(Profile* profile);
 
   static OwnerSettingsServiceFactory* GetInstance();
+
+  scoped_refptr<ownership::OwnerKeyUtil> GetOwnerKeyUtil();
+
+  void SetOwnerKeyUtilForTesting(
+      const scoped_refptr<ownership::OwnerKeyUtil>& owner_key_util);
 
  private:
   friend struct DefaultSingletonTraits<OwnerSettingsServiceFactory>;
@@ -39,6 +49,8 @@ class OwnerSettingsServiceFactory : public BrowserContextKeyedServiceFactory {
   // BrowserContextKeyedServiceFactory implementation:
   virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* browser_context) const OVERRIDE;
+
+  scoped_refptr<ownership::OwnerKeyUtil> owner_key_util_;
 
   DISALLOW_COPY_AND_ASSIGN(OwnerSettingsServiceFactory);
 };
