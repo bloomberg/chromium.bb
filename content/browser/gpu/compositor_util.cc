@@ -61,7 +61,7 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
       {
           kGpuCompositingFeatureName,
           manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING),
-          false,
+          command_line.HasSwitch(switches::kDisableGpuCompositing),
           "Gpu compositing has been disabled, either via about:flags or"
           " command line. The browser will fall back to software compositing"
           " and hardware acceleration will be unavailable.",

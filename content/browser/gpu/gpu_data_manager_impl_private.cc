@@ -838,6 +838,9 @@ bool GpuDataManagerImplPrivate::UpdateActiveGpu(
 }
 
 bool GpuDataManagerImplPrivate::CanUseGpuBrowserCompositor() const {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuCompositing))
+    return false;
   if (ShouldUseWarp())
     return true;
   if (ShouldUseSwiftShader())
