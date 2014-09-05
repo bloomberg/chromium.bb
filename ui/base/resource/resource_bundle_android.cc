@@ -8,8 +8,8 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"

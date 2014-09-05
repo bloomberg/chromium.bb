@@ -5,7 +5,7 @@
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/task_runner_util.h"

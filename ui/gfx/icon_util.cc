@@ -4,7 +4,7 @@
 
 #include "ui/gfx/icon_util.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"

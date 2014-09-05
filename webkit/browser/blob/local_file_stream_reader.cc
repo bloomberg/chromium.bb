@@ -4,7 +4,7 @@
 
 #include "webkit/browser/blob/local_file_stream_reader.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/files/file_util_proxy.h"
 #include "base/location.h"
 #include "base/logging.h"

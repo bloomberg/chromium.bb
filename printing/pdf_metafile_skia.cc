@@ -5,7 +5,7 @@
 #include "printing/pdf_metafile_skia.h"
 
 #include "base/containers/hash_tables.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"

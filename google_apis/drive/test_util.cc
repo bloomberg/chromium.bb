@@ -4,7 +4,7 @@
 
 #include "google_apis/drive/test_util.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"

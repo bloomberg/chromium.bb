@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"

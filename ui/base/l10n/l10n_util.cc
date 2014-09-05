@@ -11,7 +11,7 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/rtl.h"
 #include "base/i18n/string_compare.h"

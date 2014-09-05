@@ -7,9 +7,9 @@
 #include <iostream>
 
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"

@@ -7,8 +7,8 @@
 #include <set>
 #include <utility>
 
-#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/logging.h"

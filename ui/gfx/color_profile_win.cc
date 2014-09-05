@@ -4,10 +4,10 @@
 
 #include "ui/gfx/color_profile.h"
 
-#include <map>
 #include <windows.h>
+#include <map>
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
 

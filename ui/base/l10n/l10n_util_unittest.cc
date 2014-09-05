@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/environment.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
 #include "base/path_service.h"
