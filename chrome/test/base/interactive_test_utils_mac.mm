@@ -78,6 +78,14 @@ void ClickOnView(const Browser* browser, ViewID vid) {
   content::RunMessageLoop();
 }
 
+void FocusView(const Browser* browser, ViewID vid) {
+   NSWindow* window = browser->window()->GetNativeWindow();
+   DCHECK(window);
+   NSView* view = view_id_util::GetView(window, vid);
+   DCHECK(view);
+   [window makeFirstResponder:view];
+ }
+
 void HideNativeWindow(gfx::NativeWindow window) {
   [window orderOut:nil];
 }

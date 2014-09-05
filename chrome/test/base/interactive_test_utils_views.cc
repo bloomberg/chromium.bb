@@ -43,6 +43,13 @@ void ClickOnView(const Browser* browser, ViewID vid) {
   content::RunMessageLoop();
 }
 
+void FocusView(const Browser* browser, ViewID vid) {
+  views::View* view =
+      BrowserView::GetBrowserViewForBrowser(browser)->GetViewByID(vid);
+  DCHECK(view);
+  view->RequestFocus();
+}
+
 #endif  // defined(OS_MACOSX)
 
 void MoveMouseToCenterAndPress(views::View* view,
