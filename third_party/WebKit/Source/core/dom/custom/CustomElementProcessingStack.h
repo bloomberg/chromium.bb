@@ -63,8 +63,6 @@ public:
 
     static bool inCallbackDeliveryScope() { return s_elementQueueStart; }
 
-protected:
-    friend class CustomElementScheduler;
     static CustomElementProcessingStack& instance();
     void enqueue(CustomElementCallbackQueue*);
 
