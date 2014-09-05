@@ -22,6 +22,7 @@ const char kCookieKey[] = "cookie";
 
 HpackDecoder::HpackDecoder(const HpackHuffmanTable& table)
     : max_string_literal_size_(kDefaultMaxStringLiteralSize),
+      regular_header_seen_(false),
       huffman_table_(table) {}
 
 HpackDecoder::~HpackDecoder() {}
@@ -44,6 +45,7 @@ bool HpackDecoder::HandleControlFrameHeadersData(SpdyStreamId id,
 bool HpackDecoder::HandleControlFrameHeadersComplete(SpdyStreamId id) {
   HpackInputStream input_stream(max_string_literal_size_,
                                 headers_block_buffer_);
+  regular_header_seen_ = false;
   while (input_stream.HasMoreData()) {
     if (!DecodeNextOpcode(&input_stream)) {
       headers_block_buffer_.clear();
@@ -60,9 +62,18 @@ bool HpackDecoder::HandleControlFrameHeadersComplete(SpdyStreamId id) {
   return true;
 }
 
-void HpackDecoder::HandleHeaderRepresentation(StringPiece name,
+bool HpackDecoder::HandleHeaderRepresentation(StringPiece name,
                                               StringPiece value) {
   typedef std::pair<std::map<string, string>::iterator, bool> InsertResult;
+
+  // Fail if pseudo-header follows regular header.
+  if (name.size() > 0) {
+    if (name[0] == kPseudoHeaderPrefix) {
+      if (regular_header_seen_) return false;
+    } else {
+      regular_header_seen_ = true;
+    }
+  }
 
   if (name == kCookieKey) {
     if (cookie_value_.empty()) {
@@ -81,6 +92,7 @@ void HpackDecoder::HandleHeaderRepresentation(StringPiece name,
                                   value.end());
     }
   }
+  return true;
 }
 
 bool HpackDecoder::DecodeNextOpcode(HpackInputStream* input_stream) {
@@ -131,8 +143,7 @@ bool HpackDecoder::DecodeNextIndexedHeader(HpackInputStream* input_stream) {
   if (entry == NULL)
     return false;
 
-  HandleHeaderRepresentation(entry->name(), entry->value());
-  return true;
+  return HandleHeaderRepresentation(entry->name(), entry->value());
 }
 
 bool HpackDecoder::DecodeNextLiteralHeader(HpackInputStream* input_stream,
@@ -145,7 +156,7 @@ bool HpackDecoder::DecodeNextLiteralHeader(HpackInputStream* input_stream,
   if (!DecodeNextStringLiteral(input_stream, false, &value))
     return false;
 
-  HandleHeaderRepresentation(name, value);
+  if (!HandleHeaderRepresentation(name, value)) return false;
 
   if (!should_index)
     return true;

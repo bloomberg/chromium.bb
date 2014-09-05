@@ -77,9 +77,13 @@ class NET_EXPORT_PRIVATE HpackDecoder {
   //    Note that this may be too accomodating, as the sender's HTTP2 layer
   //    should have already joined and delimited these values.
   //
+  // Returns false if a pseudo-header field follows a regular header one, which
+  // MUST be treated as malformed, as per sections 8.1.2.1. of the HTTP2 draft
+  // specification.
+  //
   // TODO(jgraettinger): This method will eventually emit to the
   // SpdyHeadersHandlerInterface visitor.
-  void HandleHeaderRepresentation(base::StringPiece name,
+  bool HandleHeaderRepresentation(base::StringPiece name,
                                   base::StringPiece value);
 
   const uint32 max_string_literal_size_;
@@ -93,6 +97,9 @@ class NET_EXPORT_PRIVATE HpackDecoder {
   // SpdyHeadersHandlerInterface.
   std::string headers_block_buffer_;
   std::map<std::string, std::string> decoded_block_;
+
+  // Flag to keep track of having seen a regular header field.
+  bool regular_header_seen_;
 
   // Huffman table to be applied to decoded Huffman literals,
   // and scratch space for storing those decoded literals.

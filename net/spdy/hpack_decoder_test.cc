@@ -257,6 +257,23 @@ TEST_F(HpackDecoderTest, InvalidIndexedHeader) {
   EXPECT_FALSE(DecodeHeaderBlock(StringPiece("\xbe", 1)));
 }
 
+// Test that a header block with a pseudo-header field following a regular one
+// is treated as malformed.  (HTTP2 draft-14 8.1.2.1., HPACK draft-09 3.1.)
+
+TEST_F(HpackDecoderTest, InvalidPseudoHeaderPositionStatic) {
+  // Okay: ":path" (static entry 4) followed by "allow" (static entry 20).
+  EXPECT_TRUE(DecodeHeaderBlock(a2b_hex("8494")));
+  // Malformed: "allow" (static entry 20) followed by ":path" (static entry 4).
+  EXPECT_FALSE(DecodeHeaderBlock(a2b_hex("9484")));
+}
+
+TEST_F(HpackDecoderTest, InvalidPseudoHeaderPositionLiteral) {
+  // Okay: literal ":bar" followed by literal "foo".
+  EXPECT_TRUE(DecodeHeaderBlock(a2b_hex("40043a626172004003666f6f00")));
+  // Malformed: literal "foo" followed by literal ":bar".
+  EXPECT_FALSE(DecodeHeaderBlock(a2b_hex("4003666f6f0040043a62617200")));
+}
+
 TEST_F(HpackDecoderTest, ContextUpdateMaximumSize) {
   EXPECT_EQ(kDefaultHeaderTableSizeSetting,
             decoder_peer_.header_table()->max_size());
