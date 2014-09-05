@@ -102,6 +102,24 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
   DCHECK(client_);
   DCHECK(callback);
 
+  // Channel map to CRAS_CHANNEL, values in the same order of
+  // corresponding source in Chromium defined Channels.
+  static const int kChannelMap[] = {
+    CRAS_CH_FL,
+    CRAS_CH_FR,
+    CRAS_CH_FC,
+    CRAS_CH_LFE,
+    CRAS_CH_RL,
+    CRAS_CH_RR,
+    CRAS_CH_FLC,
+    CRAS_CH_FRC,
+    CRAS_CH_RC,
+    CRAS_CH_SL,
+    CRAS_CH_SR
+  };
+  COMPILE_ASSERT(arraysize(kChannelMap) == CHANNELS_MAX + 1,
+                 channel_map_size_do_not_match);
+
   // If already playing, stop before re-starting.
   if (started_)
     return;
@@ -120,6 +138,24 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
     DLOG(WARNING) << "Error setting up audio parameters.";
     callback_->OnError(this);
     callback_ = NULL;
+    return;
+  }
+
+  // Initialize channel layout to all -1 to indicate that none of
+  // the channels is set in the layout.
+  int8 layout[CRAS_CH_MAX];
+  for (size_t i = 0; i < arraysize(layout); ++i)
+    layout[i] = -1;
+
+  // Converts to CRAS defined channels. ChannelOrder will return -1
+  // for channels that are not present in params_.channel_layout().
+  for (size_t i = 0; i < arraysize(kChannelMap); ++i) {
+    layout[kChannelMap[i]] = ChannelOrder(params_.channel_layout(),
+                                          static_cast<Channels>(i));
+  }
+  if (cras_audio_format_set_channel_layout(audio_format, layout) != 0) {
+    DLOG(WARNING) << "Error setting channel layout.";
+    callback->OnError(this);
     return;
   }
 
