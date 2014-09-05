@@ -188,6 +188,9 @@ class TabTarget : public TargetBase {
     if (!web_contents) {
       // The tab has been pushed out of memory, pull it back.
       TabAndroid* tab = model->GetTabAt(index);
+      if (!tab)
+        return NULL;
+
       tab->LoadIfNeeded();
       web_contents = model->GetWebContentsAt(index);
       if (!web_contents)
@@ -231,7 +234,7 @@ class TabTarget : public TargetBase {
       TabModel* model = *iter;
       for (int i = 0; i < model->GetTabCount(); ++i) {
         TabAndroid* tab = model->GetTabAt(i);
-        if (tab->GetAndroidId() == tab_id_) {
+        if (tab && tab->GetAndroidId() == tab_id_) {
           *model_result = model;
           *index_result = i;
           return true;
@@ -363,6 +366,9 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
       TabModel* model = *iter;
       for (int i = 0; i < model->GetTabCount(); ++i) {
         TabAndroid* tab = model->GetTabAt(i);
+        if (!tab)
+          continue;
+
         WebContents* web_contents = model->GetWebContentsAt(i);
         if (web_contents) {
           tab_web_contents.insert(web_contents);
