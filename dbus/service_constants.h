@@ -766,6 +766,11 @@ const char kClearPropertiesFunction[] = "ClearProperties";
 const char kCompleteCellularActivationFunction[] = "CompleteCellularActivation";
 const char kConfigureServiceForProfileFunction[] = "ConfigureServiceForProfile";
 const char kConnectToBestServicesFunction[] = "ConnectToBestServices";
+const char kAddWakeOnPacketConnectionFunction[] = "AddWakeOnPacketConnection";
+const char kRemoveWakeOnPacketConnectionFunction[] =
+    "RemoveWakeOnPacketConnection";
+const char kRemoveAllWakeOnPacketConnectionsFunction[] =
+    "RemoveAllWakeOnPacketConnections";
 const char kGetLoadableProfileEntriesFunction[] = "GetLoadableProfileEntries";
 const char kGetNetworksForGeolocation[] = "GetNetworksForGeolocation";
 const char kPerformTDLSOperationFunction[] = "PerformTDLSOperation";
