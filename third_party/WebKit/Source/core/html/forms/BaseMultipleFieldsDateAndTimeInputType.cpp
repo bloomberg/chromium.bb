@@ -494,8 +494,8 @@ void BaseMultipleFieldsDateAndTimeInputType::setValue(const String& sanitizedVal
     InputType::setValue(sanitizedValue, valueChanged, eventBehavior);
     DateTimeEditElement* edit = dateTimeEditElement();
     if (valueChanged || (sanitizedValue.isEmpty() && edit && edit->anyEditableFieldsHaveValues())) {
-        element().updateView();
         element().setNeedsValidityCheck();
+        element().updateView();
     }
 }
 

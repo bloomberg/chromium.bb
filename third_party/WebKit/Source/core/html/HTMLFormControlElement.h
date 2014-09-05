@@ -181,6 +181,8 @@ private:
     // Cache of valid().
     // But "candidate for constraint validation" doesn't affect m_isValid.
     bool m_isValid : 1;
+    // Dirty flag that controls updating valid() cache.
+    bool m_validityIsDirty : 1;
 
     bool m_wasChangedSinceLastFormControlChangeEvent : 1;
     bool m_wasFocusedByMouse : 1;

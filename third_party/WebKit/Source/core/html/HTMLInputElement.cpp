@@ -454,6 +454,7 @@ void HTMLInputElement::updateType()
     }
 
     m_needsToUpdateViewValue = true;
+    setNeedsValidityCheck();
     m_inputTypeView->updateView();
 
     if (didRespectHeightAndWidth != m_inputType->shouldRespectHeightAndWidthAttributes()) {
@@ -474,7 +475,6 @@ void HTMLInputElement::updateType()
 
     addToRadioButtonGroup();
 
-    setNeedsValidityCheck();
     notifyFormStateChanged();
 }
 
