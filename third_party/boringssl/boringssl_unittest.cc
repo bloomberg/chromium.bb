@@ -219,3 +219,11 @@ TEST(BoringSSL, ExampleMul) {
 TEST(BoringSSL, ExampleSign) {
   TestSimple("example_sign");
 }
+
+TEST(BoringSSL, SSL) {
+  TestSimple("ssl_test");
+}
+
+TEST(BoringSSL, PQueue) {
+  TestSimple("pqueue_test");
+}

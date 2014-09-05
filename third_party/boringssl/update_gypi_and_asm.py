@@ -202,6 +202,7 @@ def main():
     gypi.write('  }\n}\n')
 
   test_c_files = FindCFiles(os.path.join('src', 'crypto'), OnlyTests)
+  test_c_files += FindCFiles(os.path.join('src', 'ssl'), OnlyTests)
 
   with open('boringssl_tests.gypi', 'w+') as test_gypi:
     test_gypi.write(FILE_HEADER + '{\n  \'targets\': [\n')
