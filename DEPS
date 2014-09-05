@@ -27,15 +27,12 @@ vars = {
   'libcxx_revision': '48198f9110397fff47fe7c37cbfa296be7d44d3d',
   'libcxxabi_revision': '4ad1009ab3a59fa7a6896d74d5e4de5885697f95',
   'webkit_trunk': 'http://src.chromium.org/blink/trunk',
-  'nacl_trunk': 'http://src.chromium.org/native_client/trunk',
   'webkit_revision': '9a051c526402aedfa6bc73e6699838c777b679cf', # from svn revision 181337
   'chromium_git': 'https://chromium.googlesource.com',
   'chromiumos_git': 'https://chromium.googlesource.com/chromiumos',
   'pdfium_git': 'https://pdfium.googlesource.com',
   'skia_git': 'https://skia.googlesource.com',
   'boringssl_git': 'https://boringssl.googlesource.com',
-  # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
-  # to update other nacl_*_revision's.
   'libvpx_revision': 'ceebbcc0cef1bbd2bb672576ccf1133168639346', # r291805
   'sfntly_revision': '1bdaae8fc788a5ac8936d68bf24f37d977a13dac',
   'skia_revision': '26abcf10a4994a0bb13a074d79baa85cd8d67b2c',
@@ -87,6 +84,10 @@ vars = {
   # the commit queue can handle CLs rolling lss
   # and whatever else without interference from each other.
   'lss_revision': '952107fa7cea0daaabead28c0e92d579bee517eb',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling NaCl
+  # and whatever else without interference from each other.
+  'nacl_revision': '61776de8bd9664c2186b08a36dacafddaa47896c', # from svn revision r13679
 }
 
 deps = {
@@ -166,7 +167,7 @@ deps = {
     Var('chromium_git') + '/external/v8.git' + '@' +  Var('v8_revision'),
 
   'src/native_client':
-   Var('chromium_git') + '/native_client/src/native_client.git' + '@' + '61776de8bd9664c2186b08a36dacafddaa47896c',
+   Var('chromium_git') + '/native_client/src/native_client.git' + '@' + Var('nacl_revision'),
 
   'src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin':
    Var('chromium_git') + '/native_client/src/native_client/tests/prebuilt.git' + '@' + '3e17365176c94624f46cace174f61834b7f3c35d',
