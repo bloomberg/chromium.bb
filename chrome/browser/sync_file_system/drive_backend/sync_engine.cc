@@ -358,7 +358,6 @@ void SyncEngine::InitializeInternal(
   drive_service_->AddObserver(this);
 
   service_state_ = REMOTE_SERVICE_TEMPORARY_UNAVAILABLE;
-  SetSyncEnabled(sync_enabled_);
   OnNetworkChanged(net::NetworkChangeNotifier::GetConnectionType());
   if (drive_service_->HasRefreshToken())
     OnReadyToSendRequests();
@@ -665,7 +664,7 @@ void SyncEngine::OnNotificationReceived() {
                  "Got push notification for Drive"));
 }
 
-void SyncEngine::OnPushNotificationEnabled(bool) {}
+void SyncEngine::OnPushNotificationEnabled(bool /* enabled */) {}
 
 void SyncEngine::OnReadyToSendRequests() {
   has_refresh_token_ = true;

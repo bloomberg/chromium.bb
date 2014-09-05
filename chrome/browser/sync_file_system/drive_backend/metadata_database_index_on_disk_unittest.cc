@@ -591,7 +591,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, DirtyTrackersTest) {
   index()->DemoteDirtyTracker(kPlaceholderTrackerID);
   WriteToDB();
   EXPECT_TRUE(index()->HasDemotedDirtyTracker());
-  EXPECT_EQ(1U, index()->CountDirtyTracker());
+  EXPECT_EQ(0U, index()->CountDirtyTracker());
 
   const int64 tracker_id = 13;
   scoped_ptr<FileTracker> app_root_tracker(new FileTracker);
@@ -604,7 +604,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, DirtyTrackersTest) {
                                           app_root_tracker.get());
   index()->StoreFileTracker(tracker.Pass());
   WriteToDB();
-  EXPECT_EQ(2U, index()->CountDirtyTracker());
+  EXPECT_EQ(1U, index()->CountDirtyTracker());
   EXPECT_EQ(tracker_id, index()->PickDirtyTracker());
 
   // Testing UpdateDirtyTrackerIndexes
@@ -614,7 +614,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, DirtyTrackersTest) {
   tracker->set_dirty(false);
   index()->StoreFileTracker(tracker.Pass());
   WriteToDB();
-  EXPECT_EQ(1U, index()->CountDirtyTracker());
+  EXPECT_EQ(0U, index()->CountDirtyTracker());
   EXPECT_EQ(kInvalidTrackerID, index()->PickDirtyTracker());
 
   tracker = test_util::CreatePlaceholderTracker("placeholder",
@@ -622,13 +622,13 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, DirtyTrackersTest) {
                                                 app_root_tracker.get());
   index()->StoreFileTracker(tracker.Pass());
   WriteToDB();
-  EXPECT_EQ(2U, index()->CountDirtyTracker());
+  EXPECT_EQ(1U, index()->CountDirtyTracker());
   EXPECT_EQ(tracker_id, index()->PickDirtyTracker());
 
   // Testing RemoveFromDirtyTrackerIndexes
   index()->RemoveFileTracker(tracker_id);
   WriteToDB();
-  EXPECT_EQ(1U, index()->CountDirtyTracker());
+  EXPECT_EQ(0U, index()->CountDirtyTracker());
   EXPECT_EQ(kInvalidTrackerID, index()->PickDirtyTracker());
 
   // Demoted trackers

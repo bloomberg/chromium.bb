@@ -392,9 +392,12 @@ void SyncWorker::DidInitialize(SyncEngineInitializer* initializer,
 
   scoped_ptr<MetadataDatabase> metadata_database =
       initializer->PassMetadataDatabase();
-  if (metadata_database)
+  if (metadata_database) {
     context_->SetMetadataDatabase(metadata_database.Pass());
+    return;
+  }
 
+  UpdateServiceState(REMOTE_SERVICE_OK, std::string());
   UpdateRegisteredApps();
 }
 
