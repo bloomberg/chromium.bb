@@ -944,6 +944,7 @@
         '../base/base.gyp:test_support_base',
         '../components/components.gyp:keyed_service_content',
         '../content/content_shell_and_tests.gyp:test_support_content',
+        '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
         '../device/serial/serial.gyp:device_serial',
         '../device/serial/serial.gyp:device_serial_test_util',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
@@ -967,6 +968,7 @@
       'sources': [
         'browser/admin_policy_unittest.cc',
         'browser/api/api_resource_manager_unittest.cc',
+        'browser/api/bluetooth/bluetooth_event_router_unittest.cc',
         'browser/api/declarative/deduping_factory_unittest.cc',
         'browser/api/sockets_tcp/sockets_tcp_api_unittest.cc',
         'browser/api/storage/settings_quota_unittest.cc',

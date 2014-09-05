@@ -17,7 +17,8 @@ TestExtensionsBrowserClient::TestExtensionsBrowserClient(
     BrowserContext* main_context)
     : main_context_(main_context),
       incognito_context_(NULL),
-      process_manager_delegate_(NULL) {
+      process_manager_delegate_(NULL),
+      extension_system_factory_(NULL) {
   DCHECK(main_context_);
   DCHECK(!main_context_->IsOffTheRecord());
 }

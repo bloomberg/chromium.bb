@@ -8,16 +8,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
-#include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "extensions/browser/api/bluetooth/bluetooth_event_router.h"
-#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extensions_test.h"
 #include "extensions/common/api/bluetooth.h"
 #include "extensions/common/extension_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,26 +33,21 @@ namespace extensions {
 
 namespace bluetooth = core_api::bluetooth;
 
-class BluetoothEventRouterTest : public testing::Test {
+class BluetoothEventRouterTest : public ExtensionsTest {
  public:
   BluetoothEventRouterTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         mock_adapter_(new testing::StrictMock<device::MockBluetoothAdapter>()),
-        test_profile_(new TestingProfile()),
-        router_(new BluetoothEventRouter(test_profile_.get())) {
+        notification_service_(content::NotificationService::Create()),
+        router_(new BluetoothEventRouter(browser_context())) {
     router_->SetAdapterForTest(mock_adapter_);
   }
 
   virtual void TearDown() OVERRIDE {
-    // Some profile-dependent services rely on UI thread to clean up. We make
-    // sure they are properly cleaned up by running the UI message loop until
-    // idle.
-    // It's important to destroy the router before the |test_profile_| so it
-    // removes itself as an observer.
+    // It's important to destroy the router before the browser context keyed
+    // services so it removes itself as an ExtensionRegistry observer.
     router_.reset(NULL);
-    test_profile_.reset(NULL);
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
+    ExtensionsTest::TearDown();
   }
 
  protected:
@@ -62,7 +55,7 @@ class BluetoothEventRouterTest : public testing::Test {
   // Note: |ui_thread_| must be declared before |router_|.
   content::TestBrowserThread ui_thread_;
   testing::StrictMock<device::MockBluetoothAdapter>* mock_adapter_;
-  scoped_ptr<TestingProfile> test_profile_;
+  scoped_ptr<content::NotificationService> notification_service_;
   scoped_ptr<BluetoothEventRouter> router_;
 };
 
@@ -83,16 +76,16 @@ TEST_F(BluetoothEventRouterTest, MultipleBluetoothEventListeners) {
 }
 
 TEST_F(BluetoothEventRouterTest, UnloadExtension) {
-  scoped_refptr<const extensions::Extension> extension =
-      extensions::ExtensionBuilder()
-          .SetManifest(extensions::DictionaryBuilder()
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(DictionaryBuilder()
               .Set("name", "BT event router test")
               .Set("version", "1.0")
               .Set("manifest_version", 2))
           .SetID(kTestExtensionId)
           .Build();
 
-  ExtensionRegistry::Get(test_profile_.get())->TriggerOnUnloaded(
+  ExtensionRegistry::Get(browser_context())->TriggerOnUnloaded(
       extension.get(), UnloadedExtensionInfo::REASON_DISABLE);
 
   EXPECT_CALL(*mock_adapter_, RemoveObserver(testing::_)).Times(1);

@@ -533,7 +533,6 @@
         # http://crbug.com/348066. They are duplicated here because we haven't
         # extensions_unittests running in the bots yet. Until that happens,
         # they should be kept here.
-        '../extensions/browser/api/bluetooth/bluetooth_event_router_unittest.cc',
         '../extensions/browser/api/cast_channel/cast_channel_api_unittest.cc',
         '../extensions/browser/api/cast_channel/cast_socket_unittest.cc',
         '../extensions/browser/api/cast_channel/logger_unittest.cc',
@@ -2513,9 +2512,6 @@
           ],
         }],
         ['OS!="android" and OS!="ios"', {
-          'dependencies': [
-            '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
-          ],
           'sources!': [
             'browser/metrics/variations/variations_request_scheduler_mobile_unittest.cc',
             'browser/net/spdyproxy/data_reduction_proxy_settings_unittest.cc',
