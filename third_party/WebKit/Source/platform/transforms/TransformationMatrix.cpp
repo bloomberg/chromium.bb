@@ -997,7 +997,68 @@ TransformationMatrix TransformationMatrix::rectToRect(const FloatRect& from, con
 // this = mat * this.
 TransformationMatrix& TransformationMatrix::multiply(const TransformationMatrix& mat)
 {
-#if CPU(APPLE_ARMV7S)
+#if CPU(ARM64)
+    double* rightMatrix = &(m_matrix[0][0]);
+    const double* leftMatrix = &(mat.m_matrix[0][0]);
+    asm volatile(
+        // Load mat.m_matrix to v16 - v23.
+        // Load this.m_matrix to v24 - v31.
+        // Result: this = mat * this
+        // | v0, v1 |   | v16, v17 |   | v24, v25 |
+        // | v2, v3 | = | v18, v19 | * | v26, v27 |
+        // | v4, v5 |   | v20, v21 |   | v28, v29 |
+        // | v6, v7 |   | v22, v23 |   | v30, v31 |
+        "mov x9, %[rightMatrix]   \t\n"
+        "ld1 {v16.2d - v19.2d}, [%[leftMatrix]], 64  \t\n"
+        "ld1 {v20.2d - v23.2d}, [%[leftMatrix]]      \t\n"
+        "ld1 {v24.2d - v27.2d}, [%[rightMatrix]], 64 \t\n"
+        "ld1 {v28.2d - v31.2d}, [%[rightMatrix]]     \t\n"
+
+        "fmul v0.2d, v24.2d, v16.d[0]  \t\n"
+        "fmul v1.2d, v25.2d, v16.d[0]  \t\n"
+        "fmul v2.2d, v24.2d, v18.d[0]  \t\n"
+        "fmul v3.2d, v25.2d, v18.d[0]  \t\n"
+        "fmul v4.2d, v24.2d, v20.d[0]  \t\n"
+        "fmul v5.2d, v25.2d, v20.d[0]  \t\n"
+        "fmul v6.2d, v24.2d, v22.d[0]  \t\n"
+        "fmul v7.2d, v25.2d, v22.d[0]  \t\n"
+
+        "fmla v0.2d, v26.2d, v16.d[1]  \t\n"
+        "fmla v1.2d, v27.2d, v16.d[1]  \t\n"
+        "fmla v2.2d, v26.2d, v18.d[1]  \t\n"
+        "fmla v3.2d, v27.2d, v18.d[1]  \t\n"
+        "fmla v4.2d, v26.2d, v20.d[1]  \t\n"
+        "fmla v5.2d, v27.2d, v20.d[1]  \t\n"
+        "fmla v6.2d, v26.2d, v22.d[1]  \t\n"
+        "fmla v7.2d, v27.2d, v22.d[1]  \t\n"
+
+        "fmla v0.2d, v28.2d, v17.d[0]  \t\n"
+        "fmla v1.2d, v29.2d, v17.d[0]  \t\n"
+        "fmla v2.2d, v28.2d, v19.d[0]  \t\n"
+        "fmla v3.2d, v29.2d, v19.d[0]  \t\n"
+        "fmla v4.2d, v28.2d, v21.d[0]  \t\n"
+        "fmla v5.2d, v29.2d, v21.d[0]  \t\n"
+        "fmla v6.2d, v28.2d, v23.d[0]  \t\n"
+        "fmla v7.2d, v29.2d, v23.d[0]  \t\n"
+
+        "fmla v0.2d, v30.2d, v17.d[1]  \t\n"
+        "fmla v1.2d, v31.2d, v17.d[1]  \t\n"
+        "fmla v2.2d, v30.2d, v19.d[1]  \t\n"
+        "fmla v3.2d, v31.2d, v19.d[1]  \t\n"
+        "fmla v4.2d, v30.2d, v21.d[1]  \t\n"
+        "fmla v5.2d, v31.2d, v21.d[1]  \t\n"
+        "fmla v6.2d, v30.2d, v23.d[1]  \t\n"
+        "fmla v7.2d, v31.2d, v23.d[1]  \t\n"
+
+        "st1 {v0.2d - v3.2d}, [x9], 64 \t\n"
+        "st1 {v4.2d - v7.2d}, [x9]     \t\n"
+        : [leftMatrix]"+r"(leftMatrix), [rightMatrix]"+r"(rightMatrix)
+        :
+        : "memory", "x9", "v16", "v17", "v18", "v19", "v20", "v21", "v22",
+            "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31",
+            "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7"
+    );
+#elif CPU(APPLE_ARMV7S)
     double* leftMatrix = &(m_matrix[0][0]);
     const double* rightMatrix = &(mat.m_matrix[0][0]);
     asm volatile (// First row of leftMatrix.
