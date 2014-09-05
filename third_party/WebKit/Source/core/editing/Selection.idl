@@ -45,7 +45,7 @@
     readonly attribute long focusOffset;
 
     readonly attribute boolean isCollapsed;
-    [RaisesException, TypeChecking=Interface] void collapse(Node node, optional long offset = 0);
+    [RaisesException] void collapse(Node? node, optional long offset = 0);
     [RaisesException] void collapseToStart();
     [RaisesException] void collapseToEnd();
 
@@ -85,8 +85,7 @@
                                                                                  [Default=Undefined] optional long baseOffset,
                                                                                  [Default=Undefined] optional Node extentNode,
                                                                                  [Default=Undefined] optional long extentOffset);
-    [ImplementedAs=collapse, MeasureAs=SelectionSetPosition, RaisesException, TypeChecking=Interface] void setPosition(Node node,
-                                                                                                                       optional long offset = 0);
+    [ImplementedAs=collapse, MeasureAs=SelectionSetPosition, RaisesException] void setPosition(Node? node, optional long offset = 0);
 
     // IE extensions
     // http://msdn.microsoft.com/en-us/library/ms535869(VS.85).aspx

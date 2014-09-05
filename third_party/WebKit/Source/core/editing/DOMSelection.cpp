@@ -197,9 +197,13 @@ int DOMSelection::rangeCount() const
 
 void DOMSelection::collapse(Node* node, int offset, ExceptionState& exceptionState)
 {
-    ASSERT(node);
     if (!m_frame)
         return;
+
+    if (!node) {
+        m_frame->selection().clear();
+        return;
+    }
 
     if (offset < 0) {
         exceptionState.throwDOMException(IndexSizeError, String::number(offset) + " is not a valid offset.");
