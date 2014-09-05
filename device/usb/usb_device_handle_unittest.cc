@@ -30,11 +30,11 @@ class UsbDeviceHandleTest : public ::testing::Test {
     ASSERT_TRUE(gadget_->SetType(UsbTestGadget::ECHO));
 
     handle_ = gadget_->GetDevice()->Open();
-    ASSERT_TRUE(handle_);
+    ASSERT_TRUE(handle_.get());
   }
 
   virtual void TearDown() {
-    if (handle_) {
+    if (handle_.get()) {
       handle_->Close();
     }
     gadget_.reset(NULL);
@@ -77,7 +77,7 @@ class TestCompletionCallback {
 };
 
 TEST_F(UsbDeviceHandleTest, InterruptTransfer) {
-  if (!handle_) {
+  if (!handle_.get()) {
     return;
   }
 
@@ -85,7 +85,7 @@ TEST_F(UsbDeviceHandleTest, InterruptTransfer) {
   TestCompletionCallback in_completion;
   handle_->InterruptTransfer(USB_DIRECTION_INBOUND,
                              0x81,
-                             in_buffer,
+                             in_buffer.get(),
                              in_buffer->size(),
                              5000,  // 5 second timeout
                              in_completion.callback());
@@ -99,7 +99,7 @@ TEST_F(UsbDeviceHandleTest, InterruptTransfer) {
 
   handle_->InterruptTransfer(USB_DIRECTION_OUTBOUND,
                              0x01,
-                             out_buffer,
+                             out_buffer.get(),
                              out_buffer->size(),
                              5000,  // 5 second timeout
                              out_completion.callback());
@@ -118,7 +118,7 @@ TEST_F(UsbDeviceHandleTest, InterruptTransfer) {
 }
 
 TEST_F(UsbDeviceHandleTest, BulkTransfer) {
-  if (!handle_) {
+  if (!handle_.get()) {
     return;
   }
 
@@ -127,7 +127,7 @@ TEST_F(UsbDeviceHandleTest, BulkTransfer) {
   TestCompletionCallback in_completion;
   handle_->BulkTransfer(USB_DIRECTION_INBOUND,
                         0x81,
-                        in_buffer,
+                        in_buffer.get(),
                         in_buffer->size(),
                         5000,  // 5 second timeout
                         in_completion.callback());
@@ -141,7 +141,7 @@ TEST_F(UsbDeviceHandleTest, BulkTransfer) {
 
   handle_->BulkTransfer(USB_DIRECTION_OUTBOUND,
                         0x01,
-                        out_buffer,
+                        out_buffer.get(),
                         out_buffer->size(),
                         5000,  // 5 second timeout
                         out_completion.callback());

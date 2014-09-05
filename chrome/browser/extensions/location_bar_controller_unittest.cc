@@ -80,7 +80,7 @@ class LocationBarControllerUnitTest : public ChromeRenderViewHostTestHarness {
                           .SetID(crx_file::id_util::GenerateId(name))
                           .Build();
     extension_service_->AddExtension(extension.get());
-    return extension;
+    return extension.get();
   }
 
   ExtensionService* extension_service_;

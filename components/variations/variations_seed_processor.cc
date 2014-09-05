@@ -115,7 +115,7 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
       // different group (e.g. via --force-fieldtrials). Break out of the loop,
       // but don't return, so that variation ids and params for the selected
       // group will still be picked up.
-      if (!trial)
+      if (!trial.get())
         break;
 
       RegisterExperimentParams(study, experiment);

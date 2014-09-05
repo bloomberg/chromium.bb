@@ -26,7 +26,7 @@ ScopedFile::ScopedFile(const base::FilePath& path,
   DCHECK(path.empty() || policy != DELETE_ON_SCOPE_OUT ||
          file_task_runner.get())
       << "path:" << path.value() << " policy:" << policy
-      << " runner:" << file_task_runner;
+      << " runner:" << file_task_runner.get();
 }
 
 ScopedFile::ScopedFile(RValue other) {

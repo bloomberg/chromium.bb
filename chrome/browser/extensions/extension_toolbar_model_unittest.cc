@@ -293,13 +293,13 @@ TEST_F(ExtensionToolbarModelUnitTest, BasicExtensionToolbarModelTest) {
   // We should now find our extension in the model.
   EXPECT_EQ(1u, observer()->inserted_count());
   EXPECT_EQ(1u, num_toolbar_items());
-  EXPECT_EQ(extension2, GetExtensionAtIndex(0u));
+  EXPECT_EQ(extension2.get(), GetExtensionAtIndex(0u));
 
   // Should be a no-op, but still fires the events.
   toolbar_model()->MoveExtensionIcon(extension2.get(), 0);
   EXPECT_EQ(1u, observer()->moved_count());
   EXPECT_EQ(1u, num_toolbar_items());
-  EXPECT_EQ(extension2, GetExtensionAtIndex(0u));
+  EXPECT_EQ(extension2.get(), GetExtensionAtIndex(0u));
 
   // Remove the extension and verify.
   ASSERT_TRUE(RemoveExtension(extension2));

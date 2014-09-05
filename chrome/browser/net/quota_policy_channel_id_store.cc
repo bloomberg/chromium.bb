@@ -23,11 +23,11 @@
 QuotaPolicyChannelIDStore::QuotaPolicyChannelIDStore(
     const base::FilePath& path,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
-    storage::SpecialStoragePolicy* special_storage_policy)
+    const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy)
     : special_storage_policy_(special_storage_policy),
       persistent_store_(
           new net::SQLiteChannelIDStore(path, background_task_runner)) {
-  DCHECK(background_task_runner);
+  DCHECK(background_task_runner.get());
 }
 
 QuotaPolicyChannelIDStore::~QuotaPolicyChannelIDStore() {

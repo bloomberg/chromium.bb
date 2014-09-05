@@ -268,7 +268,7 @@ bool InProcessCommandBuffer::Initialize(
     gfx::GpuPreference gpu_preference,
     const base::Closure& context_lost_callback,
     InProcessCommandBuffer* share_group) {
-  DCHECK(!share_group || service_ == share_group->service_);
+  DCHECK(!share_group || service_.get() == share_group->service_.get());
   context_lost_callback_ = WrapCallback(context_lost_callback);
 
   if (surface.get()) {

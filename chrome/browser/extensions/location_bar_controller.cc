@@ -44,7 +44,7 @@ std::vector<ExtensionAction*> LocationBarController::GetCurrentActions() {
     // one action per extension. If clicking on an active script action ever
     // has a response, then we will need to split the actions.
     ExtensionAction* action = action_manager_->GetPageAction(**iter);
-    if (!action && active_script_controller->WantsToRun(*iter)) {
+    if (!action && active_script_controller->WantsToRun(iter->get())) {
       ExtensionActionMap::iterator existing =
           active_script_actions_.find((*iter)->id());
       if (existing != active_script_actions_.end()) {

@@ -38,7 +38,8 @@ class QuotaPolicyChannelIDStore
   QuotaPolicyChannelIDStore(
       const base::FilePath& path,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
-      storage::SpecialStoragePolicy* special_storage_policy);
+      const scoped_refptr<storage::SpecialStoragePolicy>&
+          special_storage_policy);
 
   // net::DefaultChannelIDStore::PersistentStore:
   virtual void Load(const LoadedCallback& loaded_callback) OVERRIDE;

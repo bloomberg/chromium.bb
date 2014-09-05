@@ -127,7 +127,7 @@ void HistoryDataStore::Init(base::DictionaryValue* cached_dict) {
 
 void HistoryDataStore::Flush(
     const DictionaryDataStore::OnFlushedCallback& on_flushed) {
-  if (data_store_)
+  if (data_store_.get())
     data_store_->Flush(on_flushed);
   else
     on_flushed.Run();
@@ -135,7 +135,7 @@ void HistoryDataStore::Flush(
 
 void HistoryDataStore::Load(
     const HistoryDataStore::OnLoadedCallback& on_loaded) {
-  if (data_store_) {
+  if (data_store_.get()) {
     data_store_->Load(base::Bind(&HistoryDataStore::OnDictionaryLoadedCallback,
                                  this,
                                  on_loaded));
@@ -150,7 +150,7 @@ void HistoryDataStore::SetPrimary(const std::string& query,
   base::DictionaryValue* entry_dict = GetEntryDict(query);
   entry_dict->SetWithoutPathExpansion(kKeyPrimary,
                                       new base::StringValue(result));
-  if (data_store_)
+  if (data_store_.get())
     data_store_->ScheduleWrite();
 }
 
@@ -163,7 +163,7 @@ void HistoryDataStore::SetSecondary(
 
   base::DictionaryValue* entry_dict = GetEntryDict(query);
   entry_dict->SetWithoutPathExpansion(kKeySecondary, results_list.release());
-  if (data_store_)
+  if (data_store_.get())
     data_store_->ScheduleWrite();
 }
 
@@ -173,14 +173,14 @@ void HistoryDataStore::SetUpdateTime(const std::string& query,
   entry_dict->SetWithoutPathExpansion(kKeyUpdateTime,
                                       new base::StringValue(base::Int64ToString(
                                           update_time.ToInternalValue())));
-  if (data_store_)
+  if (data_store_.get())
     data_store_->ScheduleWrite();
 }
 
 void HistoryDataStore::Delete(const std::string& query) {
   base::DictionaryValue* assoc_dict = GetAssociationDict();
   assoc_dict->RemoveWithoutPathExpansion(query, NULL);
-  if (data_store_)
+  if (data_store_.get())
     data_store_->ScheduleWrite();
 }
 

@@ -208,7 +208,7 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     // letterboxed content region of mostly a solid color plus a small piece of
     // "something" that's animating to keep the tab capture pipeline generating
     // new frames.
-    const gfx::Rect region = FindLetterboxedContentRegion(video_frame);
+    const gfx::Rect region = FindLetterboxedContentRegion(video_frame.get());
     YUVColor current_color;
     current_color.y = ComputeMedianIntensityInRegionInPlane(
         region,

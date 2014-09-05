@@ -54,7 +54,7 @@ scoped_refptr<base::debug::ConvertableToTraceFormat> TestPendingTask::AsValue()
     const {
   scoped_refptr<base::debug::TracedValue> state =
       new base::debug::TracedValue();
-  AsValueInto(state);
+  AsValueInto(state.get());
   return state;
 }
 
