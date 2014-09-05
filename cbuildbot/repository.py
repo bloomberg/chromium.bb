@@ -129,7 +129,7 @@ class RepoRepository(object):
   """A Class that encapsulates a repo repository.
 
   Args:
-    repo_url: gitserver URL to fetch repo manifest from.
+    manifest_repo_url: URL to fetch repo manifest from.
     directory: local path where to checkout the repository.
     branch: Branch to check out the manifest at.
     referenced_repo: Repository to reference for git objects, if possible.
@@ -137,16 +137,21 @@ class RepoRepository(object):
       default.xml if not given.
     depth: Mutually exclusive option to referenced_repo; this limits the
       checkout to a max commit history of the given integer.
+    repo_url: URL to fetch repo tool from.
+    repo_branch: Branch to check out the repo tool at.
   """
   # Use our own repo, in case android.kernel.org (the default location) is down.
-  _INIT_CMD = ['repo', 'init', '--repo-url', constants.REPO_URL]
+  _INIT_CMD = ['repo', 'init']
 
   # If a repo hasn't been used in the last 5 runs, wipe it.
   LRU_THRESHOLD = 5
 
-  def __init__(self, repo_url, directory, branch=None, referenced_repo=None,
-               manifest=constants.DEFAULT_MANIFEST, depth=None):
+  def __init__(self, manifest_repo_url, directory, branch=None,
+               referenced_repo=None, manifest=constants.DEFAULT_MANIFEST,
+               depth=None, repo_url=constants.REPO_URL, repo_branch=None):
+    self.manifest_repo_url = manifest_repo_url
     self.repo_url = repo_url
+    self.repo_branch = repo_branch
     self.directory = directory
     self.branch = branch
 
@@ -224,7 +229,8 @@ class RepoRepository(object):
                       ignore_missing=True)
       self._repo_update_needed = False
 
-    init_cmd = self._INIT_CMD + ['--manifest-url', self.repo_url]
+    init_cmd = self._INIT_CMD + ['--repo-url', self.repo_url,
+                                 '--manifest-url', self.manifest_repo_url]
     if self._referenced_repo:
       init_cmd.extend(['--reference', self._referenced_repo])
     if self._manifest:
@@ -235,6 +241,8 @@ class RepoRepository(object):
     # Handle branch / manifest options.
     if self.branch:
       init_cmd.extend(['--manifest-branch', self.branch])
+    if self.repo_branch:
+      init_cmd.extend(['--repo-branch', self.repo_branch])
 
     cros_build_lib.RunCommand(init_cmd, cwd=self.directory, input='\n\ny\n')
     if local_manifest and local_manifest != self._manifest:

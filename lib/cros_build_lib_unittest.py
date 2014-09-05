@@ -27,6 +27,7 @@ import time
 import __builtin__
 
 from chromite.cbuildbot import constants
+from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import cros_test_lib
@@ -891,12 +892,25 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
 
   def setUp(self):
     self.manifest_dir = os.path.join(self.tempdir, '.repo', 'manifests')
-    # Initialize a repo intance here.
-    # TODO(vapier, ferringb):  mangle this so it inits from a local
-    # checkout if one is available, same for the git-repo fetch.
-    cmd = ['repo', 'init', '-u', constants.MANIFEST_URL]
-    cros_build_lib.RunCommand(cmd, cwd=self.tempdir, input='',
-                              capture_output=True)
+
+    # Initialize a repo instance here.
+    local_repo = os.path.join(constants.SOURCE_ROOT, '.repo/repo/.git')
+
+    # Create a copy of our existing manifests.git, but rewrite it so it
+    # looks like a remote manifests.git.  This is to avoid hitting the
+    # network, and speeds things up in general.
+    local_manifests = 'file://%s/.repo/manifests.git' % constants.SOURCE_ROOT
+    temp_manifests = os.path.join(self.tempdir, 'manifests.git')
+    git.RunGit(self.tempdir, ['clone', '-n', '--bare', local_manifests])
+    git.RunGit(temp_manifests,
+               ['fetch', '-f', '-u', local_manifests,
+                'refs/remotes/origin/*:refs/heads/*'])
+    git.RunGit(temp_manifests, ['branch', '-D', 'default'])
+    repo = repository.RepoRepository(
+        temp_manifests, self.tempdir,
+        repo_url='file://%s' % local_repo, repo_branch='default')
+    repo.Initialize()
+
     self.active_manifest = os.path.realpath(
         os.path.join(self.tempdir, '.repo', 'manifest.xml'))
 
