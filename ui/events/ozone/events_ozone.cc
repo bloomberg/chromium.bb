@@ -70,21 +70,6 @@ bool IsCharFromNative(const base::NativeEvent& native_event) {
   return event->is_char();
 }
 
-uint32 WindowsKeycodeFromNative(const base::NativeEvent& native_event) {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
-uint16 TextFromNative(const base::NativeEvent& native_event) {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
-uint16 UnmodifiedTextFromNative(const base::NativeEvent& native_event) {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
 gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& native_event) {
   const ui::MouseWheelEvent* event =
       static_cast<const ui::MouseWheelEvent*>(native_event);
