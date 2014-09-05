@@ -129,6 +129,8 @@ public class AwShellActivity extends Activity {
         }
         final AwSettings awSettings = new AwSettings(this /*context*/,
                 false /*isAccessFromFileURLsGrantedByDefault*/, true /*supportsLegacyQuirks*/);
+        // Required for WebGL conformance tests.
+        awSettings.setMediaPlaybackRequiresUserGesture(false);
         testContainerView.initialize(new AwContents(mBrowserContext, testContainerView,
                 testContainerView.getContext(), testContainerView.getInternalAccessDelegate(),
                 testContainerView.getNativeGLDelegate(), awContentsClient, awSettings));
