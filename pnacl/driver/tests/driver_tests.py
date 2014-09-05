@@ -22,6 +22,7 @@ MODULES = [
     'native_objects_test',
     'path_length_test',
     'pnacl_compress_test',
+    'pnacl_ld_options_test',
     'strip_test',
     'translate_options_test',
 ]

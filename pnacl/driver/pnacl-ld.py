@@ -38,11 +38,8 @@ EXTRA_ENV = {
                     # requested or not, since we don't want to propagate
                     # the value to TRANSLATE_FLAGS if it wasn't explicitly set.
   'OPT_LTO_FLAGS': '-std-link-opts -disable-internalize',
-  'OPT_FLAGS': '${#OPT_LEVEL && !OPT_LEVEL == 0 ? ${OPT_LTO_FLAGS}} ${OPT_STRIP_%STRIP_MODE%} ' +
+  'OPT_FLAGS': '${#OPT_LEVEL && !OPT_LEVEL == 0 ? ${OPT_LTO_FLAGS}} ' +
                '-inline-threshold=${OPT_INLINE_THRESHOLD} ',
-  'OPT_STRIP_none': '',
-  'OPT_STRIP_all': '-disable-opt --strip',
-  'OPT_STRIP_debug': '-disable-opt --strip-debug',
 
   'TRANSLATE_FLAGS': '${PIC ? -fPIC} ${!USE_STDLIB ? -nostdlib} ' +
                      '${#SONAME ? -Wl,--soname=${SONAME}} ' +
@@ -142,6 +139,7 @@ EXTRA_ENV = {
   'ALLOW_NEXE_BUILD_ID': '0',
   'DISABLE_ABI_CHECK': '0',
   'LLVM_PASSES_TO_DISABLE': '',
+  'RUN_PASSES_SEPARATELY': '0',
 }
 
 def AddToBCLinkFlags(*args):
@@ -176,6 +174,7 @@ LDPatterns = [
   # required for ABI-stable pexes but can be omitted when the PNaCl
   # toolchain is used for producing native nexes.
   ( '--pnacl-disable-pass=(.+)', "env.append('LLVM_PASSES_TO_DISABLE', $0)"),
+  ( '--pnacl-run-passes-separately', "env.set('RUN_PASSES_SEPARATELY', '1')"),
   ( ('-target', '(.+)'), SetLibTarget),
   ( ('--target=(.+)'), SetLibTarget),
 
@@ -392,13 +391,16 @@ def main(argv):
                     IsPortable())
     still_need_expand_byval = IsPortable()
 
-    abi_simplify_opts = []
-    if env.getone('CXX_EH_MODE') == 'sjlj':
-      abi_simplify_opts += ['-enable-pnacl-sjlj-eh']
-
-    preopt_passes = []
+    # A list of groups of args. Each group should contain a pass to run
+    # along with relevant flags that go with that pass.
+    opt_args = []
     if abi_simplify:
-      preopt_passes += ['-pnacl-abi-simplify-preopt'] + abi_simplify_opts
+      pre_simplify = ['-pnacl-abi-simplify-preopt']
+      if env.getone('CXX_EH_MODE') == 'sjlj':
+        pre_simplify += ['-enable-pnacl-sjlj-eh']
+      else:
+        assert env.getone('CXX_EH_MODE') == 'none'
+      opt_args.append(pre_simplify)
     elif env.getone('CXX_EH_MODE') != 'zerocost':
       # '-lowerinvoke' prevents use of C++ exception handling, which
       # is not yet supported in the PNaCl ABI.  '-simplifycfg' removes
@@ -407,31 +409,35 @@ def main(argv):
       # We run this in order to remove 'resume' instructions,
       # otherwise these are translated to calls to _Unwind_Resume(),
       # which will not be available at native link time.
-      preopt_passes += ['-lowerinvoke', '-simplifycfg']
-    if len(preopt_passes) != 0:
-      chain.add(DoLLVMPasses(preopt_passes), 'simplify_preopt.' + bitcode_type)
+      opt_args.append(['-lowerinvoke', '-simplifycfg'])
 
     if env.getone('OPT_LEVEL') != '' and env.getone('OPT_LEVEL') != '0':
-      chain.add(DoLTO, 'opt.' + bitcode_type)
-    elif env.getone('STRIP_MODE') != 'none':
-      chain.add(DoStrip, 'stripped.' + bitcode_type)
+      opt_args.append(env.get('OPT_FLAGS'))
+    if env.getone('STRIP_MODE') != 'none':
+      opt_args.append(env.get('STRIP_FLAGS'))
 
-    postopt_passes = []
     if abi_simplify:
-      postopt_passes = ['-pnacl-abi-simplify-postopt'] + abi_simplify_opts
+      post_simplify = ['-pnacl-abi-simplify-postopt']
       if not env.getbool('DISABLE_ABI_CHECK'):
-        postopt_passes += [
+        post_simplify += [
             '-verify-pnaclabi-module',
             '-verify-pnaclabi-functions',
             # A flag for the above -verify-pnaclabi-* passes.
             '-pnaclabi-allow-debug-metadata']
+      opt_args.append(post_simplify)
     elif still_need_expand_byval:
       # We may still need -expand-byval to match the PPAPI shim
       # calling convention.
-      postopt_passes = ['-expand-byval']
-    if len(postopt_passes) != 0:
-      chain.add(DoLLVMPasses(postopt_passes),
-                'simplify_postopt.' + bitcode_type)
+      opt_args.append(['-expand-byval'])
+    if len(opt_args) != 0:
+      if env.getbool('RUN_PASSES_SEPARATELY'):
+        for i, group in enumerate(opt_args):
+          chain.add(DoLLVMPasses(group),
+                    'simplify_%d.%s' % (i, bitcode_type))
+      else:
+        flattened_opt_args = [flag for group in opt_args for flag in group]
+        chain.add(DoLLVMPasses(flattened_opt_args),
+                  'simplify_and_opt.' + bitcode_type)
   else:
     chain = DriverChain('', output, tng)
 
@@ -553,14 +559,6 @@ def DoLLVMPasses(pass_list):
                      if pass_option not in env.get('LLVM_PASSES_TO_DISABLE')]
     RunDriver('pnacl-opt', filtered_list + [infile, '-o', outfile])
   return Func
-
-def DoLTO(infile, outfile):
-  opt_flags = env.get('OPT_FLAGS')
-  RunDriver('pnacl-opt', opt_flags + [ infile, '-o', outfile ])
-
-def DoStrip(infile, outfile):
-  strip_flags = env.get('STRIP_FLAGS')
-  RunDriver('pnacl-strip', strip_flags + [ infile, '-o', outfile ])
 
 def DoTranslate(infile, outfile):
   args = env.get('TRANSLATE_FLAGS')
