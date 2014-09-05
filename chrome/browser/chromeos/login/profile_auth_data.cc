@@ -286,31 +286,19 @@ void ProfileAuthDataTransferer::MaybeTransferCookiesAndChannelIDs() {
       to_context_->GetURLRequestContext()->cookie_store();
   net::CookieMonster* to_monster = to_store->GetCookieMonster();
   if (first_login_) {
-    to_monster->InitializeFrom(cookies_to_transfer_);
+    to_monster->ImportCookies(cookies_to_transfer_);
     net::ChannelIDService* to_cert_service =
         to_context_->GetURLRequestContext()->channel_id_service();
     to_cert_service->GetChannelIDStore()->InitializeFrom(
         channel_ids_to_transfer_);
   } else {
+    net::CookieList non_gaia_cookies;
     for (net::CookieList::const_iterator it = cookies_to_transfer_.begin();
          it != cookies_to_transfer_.end(); ++it) {
-      if (IsGAIACookie(*it))
-        continue;
-      // Although this method can be asynchronous, it will run synchronously in
-      // this case as the target cookie jar is guaranteed to be loaded and
-      // ready.
-      to_monster->SetCookieWithDetailsAsync(
-          GURL(it->Source()),
-          it->Name(),
-          it->Value(),
-          it->Domain(),
-          it->Path(),
-          it->ExpiryDate(),
-          it->IsSecure(),
-          it->IsHttpOnly(),
-          it->Priority(),
-          net::CookieStore::SetCookiesCallback());
+      if (!IsGAIACookie(*it))
+        non_gaia_cookies.push_back(*it);
     }
+    to_monster->ImportCookies(non_gaia_cookies);
   }
 
   Finish();

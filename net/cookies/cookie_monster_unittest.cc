@@ -1391,7 +1391,7 @@ TEST_F(CookieMonsterTest, DeleteCookieByName) {
   }
 }
 
-TEST_F(CookieMonsterTest, InitializeFromCookieMonster) {
+TEST_F(CookieMonsterTest, ImportCookiesFromCookieMonster) {
   scoped_refptr<CookieMonster> cm_1(new CookieMonster(NULL, NULL));
   CookieOptions options;
 
@@ -1407,7 +1407,7 @@ TEST_F(CookieMonsterTest, InitializeFromCookieMonster) {
 
   CookieList cookies_1 = GetAllCookies(cm_1.get());
   scoped_refptr<CookieMonster> cm_2(new CookieMonster(NULL, NULL));
-  ASSERT_TRUE(cm_2->InitializeFrom(cookies_1));
+  ASSERT_TRUE(cm_2->ImportCookies(cookies_1));
   CookieList cookies_2 = GetAllCookies(cm_2.get());
 
   size_t expected_size = 3;

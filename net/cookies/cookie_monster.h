@@ -146,8 +146,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
                 CookieMonsterDelegate* delegate,
                 int last_access_threshold_milliseconds);
 
-  // Helper function that adds all cookies from |list| into this instance.
-  bool InitializeFrom(const CookieList& list);
+  // Helper function that adds all cookies from |list| into this instance,
+  // overwriting any equivalent cookies.
+  bool ImportCookies(const CookieList& list);
 
   typedef base::Callback<void(const CookieList& cookies)> GetCookieListCallback;
   typedef base::Callback<void(bool success)> DeleteCookieCallback;

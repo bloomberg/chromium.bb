@@ -144,7 +144,7 @@ TEST_F(WalletSigninHelperTest, GetWalletCookieValueWhenPresent) {
 
   net::CookieList cookie_list;
   cookie_list.push_back(*cookie);
-  cookie_monster->InitializeFrom(cookie_list);
+  cookie_monster->ImportCookies(cookie_list);
   request_context_->GetURLRequestContext()
       ->set_cookie_store(cookie_monster);
   signin_helper_->StartWalletCookieValueFetch();
@@ -166,7 +166,7 @@ TEST_F(WalletSigninHelperTest, GetWalletCookieValueWhenMissing) {
 
   net::CookieList cookie_list;
   cookie_list.push_back(*cookie);
-  cookie_monster->InitializeFrom(cookie_list);
+  cookie_monster->ImportCookies(cookie_list);
   request_context_->GetURLRequestContext()
       ->set_cookie_store(cookie_monster);
   signin_helper_->StartWalletCookieValueFetch();

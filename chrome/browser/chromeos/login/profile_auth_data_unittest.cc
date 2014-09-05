@@ -47,8 +47,8 @@ const char kSAMLIdPCookieURL[] = "http://example.com/";
 const char kCookieName[] = "cookie";
 const char kCookieValue1[] = "value 1";
 const char kCookieValue2[] = "value 2";
-const char kGAIACookieDomain[] = ".google.com";
-const char kSAMLIdPCookieDomain[] = ".example.com";
+const char kGAIACookieDomain[] = "google.com";
+const char kSAMLIdPCookieDomain[] = "example.com";
 
 const char kChannelIDServerIdentifier[] = "server";
 const char kChannelIDPrivateKey1[] = "private key 1";
@@ -91,7 +91,7 @@ class ProfileAuthDataTest : public testing::Test {
   net::CookieMonster* GetCookies(content::BrowserContext* browser_context);
   net::ChannelIDStore* GetChannelIDs(content::BrowserContext* browser_context);
 
-  void QuitLoop(bool ignored);
+  void QuitLoop(const net::CookieList& ignored);
   void StoreCookieListAndQuitLoop(const net::CookieList& cookie_list);
   void StoreChannelIDListAndQuitLoop(
       const net::ChannelIDStore::ChannelIDList& channel_id_list);
@@ -178,13 +178,15 @@ void ProfileAuthDataTest::VerifyUserCookies(
   net::CookieList user_cookies = GetUserCookies();
   ASSERT_EQ(2u, user_cookies.size());
   net::CanonicalCookie* cookie = &user_cookies[0];
-  EXPECT_EQ(kGAIACookieURL, cookie->Source());
-  EXPECT_EQ(kCookieName, cookie->Name());
-  EXPECT_EQ(expected_gaia_cookie_value, cookie->Value());
-  cookie = &user_cookies[1];
   EXPECT_EQ(kSAMLIdPCookieURL, cookie->Source());
   EXPECT_EQ(kCookieName, cookie->Name());
   EXPECT_EQ(expected_saml_idp_cookie_value, cookie->Value());
+  EXPECT_EQ(kSAMLIdPCookieDomain, cookie->Domain());
+  cookie = &user_cookies[1];
+  EXPECT_EQ(kGAIACookieURL, cookie->Source());
+  EXPECT_EQ(kCookieName, cookie->Name());
+  EXPECT_EQ(expected_gaia_cookie_value, cookie->Value());
+  EXPECT_EQ(kGAIACookieDomain, cookie->Domain());
 }
 
 void ProfileAuthDataTest::VerifyUserChannelID(
@@ -214,32 +216,36 @@ void ProfileAuthDataTest::PopulateBrowserContext(
       std::string());
 
   net::CookieMonster* cookies = GetCookies(browser_context);
+  // Ensure |cookies| is fully initialized.
   run_loop_.reset(new base::RunLoop);
-  cookies->SetCookieWithDetailsAsync(
-      GURL(kGAIACookieURL),
-      kCookieName,
-      cookie_value,
-      kGAIACookieDomain,
-      std::string(),
-      base::Time(),
-      true,
-      false,
-      net::COOKIE_PRIORITY_DEFAULT,
-      base::Bind(&ProfileAuthDataTest::QuitLoop, base::Unretained(this)));
+  cookies->GetAllCookiesAsync(base::Bind(&ProfileAuthDataTest::QuitLoop,
+                                         base::Unretained(this)));
   run_loop_->Run();
-  run_loop_.reset(new base::RunLoop);
-  cookies->SetCookieWithDetailsAsync(
-      GURL(kSAMLIdPCookieURL),
-      kCookieName,
-      cookie_value,
-      kSAMLIdPCookieDomain,
-      std::string(),
-      base::Time(),
-      true,
-      false,
-      net::COOKIE_PRIORITY_DEFAULT,
-      base::Bind(&ProfileAuthDataTest::QuitLoop, base::Unretained(this)));
-  run_loop_->Run();
+
+  net::CookieList cookie_list;
+  cookie_list.push_back(net::CanonicalCookie(GURL(kGAIACookieURL),
+                                             kCookieName,
+                                             cookie_value,
+                                             kGAIACookieDomain,
+                                             std::string(),
+                                             base::Time(),
+                                             base::Time(),
+                                             base::Time(),
+                                             true,
+                                             false,
+                                             net::COOKIE_PRIORITY_DEFAULT));
+  cookie_list.push_back(net::CanonicalCookie(GURL(kSAMLIdPCookieURL),
+                                             kCookieName,
+                                             cookie_value,
+                                             kSAMLIdPCookieDomain,
+                                             std::string(),
+                                             base::Time(),
+                                             base::Time(),
+                                             base::Time(),
+                                             true,
+                                             false,
+                                             net::COOKIE_PRIORITY_DEFAULT));
+  cookies->ImportCookies(cookie_list);
 
   GetChannelIDs(browser_context)->SetChannelID(kChannelIDServerIdentifier,
                                                base::Time(),
@@ -270,7 +276,7 @@ net::ChannelIDStore* ProfileAuthDataTest::GetChannelIDs(
       GetChannelIDStore();
 }
 
-void ProfileAuthDataTest::QuitLoop(bool ignored) {
+void ProfileAuthDataTest::QuitLoop(const net::CookieList& ignored) {
   run_loop_->Quit();
 }
 

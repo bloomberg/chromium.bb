@@ -1101,7 +1101,7 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
   return SetCanonicalCookie(&cc, creation_time, options);
 }
 
-bool CookieMonster::InitializeFrom(const CookieList& list) {
+bool CookieMonster::ImportCookies(const CookieList& list) {
   base::AutoLock autolock(lock_);
   InitIfNecessary();
   for (net::CookieList::const_iterator iter = list.begin();
