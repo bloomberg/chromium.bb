@@ -329,7 +329,8 @@ CastVideoElement.prototype = {
     var message = JSON.parse(messageAsJson);
     if (message['message'] === 'request-token') {
       if (message['previousToken'] === this.token_) {
-          this.mediaManager_.getToken().then(function(token) {
+          this.mediaManager_.getToken(true).then(function(token) {
+            this.token_ = token;
             this.sendMessage_({message: 'push-token', token: token});
             // TODO(yoshiki): Revokes the previous token.
           }.bind(this)).catch(function(error) {
