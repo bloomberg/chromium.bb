@@ -16,7 +16,6 @@
       'type': 'none',
       'variables': {
         'apk_name': 'MemConsumer',
-        'package_name': 'memconsumer',
         'java_in_dir': 'java',
         'resource_dir': 'java/res',
         'native_lib_target': 'libmemconsumer',

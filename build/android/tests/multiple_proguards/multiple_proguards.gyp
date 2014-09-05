@@ -4,7 +4,6 @@
 {
   'variables': {
     'chromium_code': 1,
-    'package_name': 'multiple_proguard',
   },
   'targets': [
     {

@@ -2845,7 +2845,6 @@
           'target_name': 'chrome_java_test_support',
           'type': 'none',
           'variables': {
-            'package_name': 'chrome_java_test_support',
             'java_in_dir': '../chrome/test/android/javatests',
           },
           'dependencies': [

@@ -198,7 +198,7 @@
         # We generate R.java in package R_package (in addition to the package
         # listed in the AndroidManifest.xml, which is unavoidable).
         'additional_res_packages': ['<(R_package)'],
-        'additional_R_text_files': ['<(PRODUCT_DIR)/<(package_name)/R.txt'],
+        'additional_R_text_files': ['<(intermediate_dir)/R.txt'],
       },
     }],
     ['native_lib_target != "" and component == "shared_library"', {
