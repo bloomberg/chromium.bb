@@ -46,17 +46,12 @@
 #include "public/web/WebFrame.h"
 #include "public/web/WebView.h"
 #include "web/tests/FrameTestHelpers.h"
-
 #include <gtest/gtest.h>
 
-using namespace blink;
-using blink::Document;
-using blink::LocalFrame;
-using blink::Page;
-using blink::KURL;
-using blink::URLTestHelpers::toKURL;
-
 namespace {
+
+using blink::URLTestHelpers::toKURL;
+using namespace blink;
 
 class MHTMLTest : public testing::Test {
 public:
@@ -109,7 +104,7 @@ TEST_F(MHTMLTest, CheckDomain)
 
     EXPECT_STREQ(kFileURL, frame->domWindow()->location().href().ascii().data());
 
-    blink::SecurityOrigin* origin = document->securityOrigin();
+    SecurityOrigin* origin = document->securityOrigin();
     EXPECT_STRNE("localhost", origin->domain().ascii().data());
 }
 

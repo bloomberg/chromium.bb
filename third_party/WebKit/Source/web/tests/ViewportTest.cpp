@@ -55,18 +55,10 @@
 
 #include <vector>
 
-using namespace blink;
-using blink::LocalFrame;
-using blink::FrameView;
-using blink::IntPoint;
-using blink::IntRect;
-using blink::IntSize;
-using blink::Page;
-using blink::PageScaleConstraints;
-using blink::ViewportDescription;
-using blink::FrameTestHelpers::runPendingTasks;
-
 namespace {
+
+using blink::FrameTestHelpers::runPendingTasks;
+using namespace blink;
 
 class ViewportTest : public testing::Test {
 protected:
@@ -105,15 +97,15 @@ class UseMockScrollbarSettings {
 public:
     UseMockScrollbarSettings()
     {
-        blink::Settings::setMockScrollbarsEnabled(true);
-        blink::RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
-        EXPECT_TRUE(blink::ScrollbarTheme::theme()->usesOverlayScrollbars());
+        Settings::setMockScrollbarsEnabled(true);
+        RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
+        EXPECT_TRUE(ScrollbarTheme::theme()->usesOverlayScrollbars());
     }
 
     ~UseMockScrollbarSettings()
     {
-        blink::Settings::setMockScrollbarsEnabled(false);
-        blink::RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(false);
+        Settings::setMockScrollbarsEnabled(false);
+        RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(false);
     }
 };
 
@@ -129,7 +121,7 @@ static PageScaleConstraints runViewportTest(Page* page, int initialWidth, int in
     IntSize initialViewportSize(initialWidth, initialHeight);
     toLocalFrame(page->mainFrame())->view()->setFrameRect(IntRect(IntPoint::zero(), initialViewportSize));
     ViewportDescription description = page->viewportDescription();
-    PageScaleConstraints constraints = description.resolve(initialViewportSize, blink::Length(980, blink::Fixed));
+    PageScaleConstraints constraints = description.resolve(initialViewportSize, Length(980, blink::Fixed));
 
     constraints.fitToContentsWidth(constraints.layoutSize.width(), initialWidth);
     return constraints;

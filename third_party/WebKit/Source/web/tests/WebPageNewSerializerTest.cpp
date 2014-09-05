@@ -47,13 +47,12 @@
 #include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-using blink::Document;
+namespace {
+
 using blink::FrameTestHelpers::runPendingTasks;
 using blink::URLTestHelpers::toKURL;
 using blink::URLTestHelpers::registerMockedURLLoad;
-
-namespace {
+using namespace blink;
 
 class LineReader {
 public:

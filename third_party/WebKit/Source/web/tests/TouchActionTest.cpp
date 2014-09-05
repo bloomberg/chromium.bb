@@ -119,9 +119,9 @@ public:
 protected:
     void runTouchActionTest(std::string file);
     void runShadowDOMTest(std::string file);
-    void sendTouchEvent(WebView*, WebInputEvent::Type, blink::IntPoint clientPoint);
+    void sendTouchEvent(WebView*, WebInputEvent::Type, IntPoint clientPoint);
     WebView* setupTest(std::string file, TouchActionTrackingWebViewClient&);
-    void runTestOnTree(blink::ContainerNode* root, WebView*, TouchActionTrackingWebViewClient&);
+    void runTestOnTree(ContainerNode* root, WebView*, TouchActionTrackingWebViewClient&);
 
     std::string m_baseURL;
     FrameTestHelpers::WebViewHelper m_webViewHelper;
@@ -143,7 +143,7 @@ void TouchActionTest::runTouchActionTest(std::string file)
     // scenario.
     WebView* webView = setupTest(file, client);
 
-    RefPtrWillBePersistent<blink::Document> document = static_cast<PassRefPtrWillBeRawPtr<blink::Document> >(webView->mainFrame()->document());
+    RefPtrWillBePersistent<Document> document = static_cast<PassRefPtrWillBeRawPtr<Document> >(webView->mainFrame()->document());
     runTestOnTree(document.get(), webView, client);
 
     m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
@@ -155,16 +155,16 @@ void TouchActionTest::runShadowDOMTest(std::string file)
 
     WebView* webView = setupTest(file, client);
 
-    blink::TrackExceptionState es;
+    TrackExceptionState es;
 
     // Oilpan: see runTouchActionTest() comment why these are persistent references.
-    RefPtrWillBePersistent<blink::Document> document = static_cast<PassRefPtrWillBeRawPtr<blink::Document> >(webView->mainFrame()->document());
-    RefPtrWillBePersistent<blink::StaticElementList> hostNodes = document->querySelectorAll("[shadow-host]", es);
+    RefPtrWillBePersistent<Document> document = static_cast<PassRefPtrWillBeRawPtr<Document> >(webView->mainFrame()->document());
+    RefPtrWillBePersistent<StaticElementList> hostNodes = document->querySelectorAll("[shadow-host]", es);
     ASSERT_FALSE(es.hadException());
     ASSERT_GE(hostNodes->length(), 1u);
 
     for (unsigned index = 0; index < hostNodes->length(); index++) {
-        blink::ShadowRoot* shadowRoot = hostNodes->item(index)->shadowRoot();
+        ShadowRoot* shadowRoot = hostNodes->item(index)->shadowRoot();
         runTestOnTree(shadowRoot, webView, client);
     }
 
@@ -188,19 +188,19 @@ WebView* TouchActionTest::setupTest(std::string file, TouchActionTrackingWebView
 
     // Scroll to verify the code properly transforms windows to client co-ords.
     const int kScrollOffset = 100;
-    RefPtrWillBeRawPtr<blink::Document> document = static_cast<PassRefPtrWillBeRawPtr<blink::Document> >(webView->mainFrame()->document());
-    document->frame()->view()->setScrollOffset(blink::IntPoint(0, kScrollOffset));
+    RefPtrWillBeRawPtr<Document> document = static_cast<PassRefPtrWillBeRawPtr<Document> >(webView->mainFrame()->document());
+    document->frame()->view()->setScrollOffset(IntPoint(0, kScrollOffset));
 
     return webView;
 }
 
-void TouchActionTest::runTestOnTree(blink::ContainerNode* root, WebView* webView, TouchActionTrackingWebViewClient& client)
+void TouchActionTest::runTestOnTree(ContainerNode* root, WebView* webView, TouchActionTrackingWebViewClient& client)
 {
     // Find all elements to test the touch-action of in the document.
-    blink::TrackExceptionState es;
+    TrackExceptionState es;
 
     // Oilpan: see runTouchActionTest() comment why these are persistent references.
-    RefPtrWillBePersistent<blink::StaticElementList> elements = root->querySelectorAll("[expected-action]", es);
+    RefPtrWillBePersistent<StaticElementList> elements = root->querySelectorAll("[expected-action]", es);
     ASSERT_FALSE(es.hadException());
 
     for (unsigned index = 0; index < elements->length(); index++) {
@@ -222,13 +222,13 @@ void TouchActionTest::runTestOnTree(blink::ContainerNode* root, WebView* webView
         // Note that we don't want the bounding box because our tests sometimes have elements with
         // multiple border boxes with other elements in between. Use the first border box (which
         // we can easily visualize in a browser for debugging).
-        RefPtrWillBePersistent<blink::ClientRectList> rects = element->getClientRects();
+        RefPtrWillBePersistent<ClientRectList> rects = element->getClientRects();
         ASSERT_GE(rects->length(), 0u) << failureContext;
-        RefPtrWillBePersistent<blink::ClientRect> r = rects->item(0);
-        blink::FloatRect clientFloatRect = blink::FloatRect(r->left(), r->top(), r->width(), r->height());
-        blink::IntRect clientRect =  enclosedIntRect(clientFloatRect);
+        RefPtrWillBePersistent<ClientRect> r = rects->item(0);
+        FloatRect clientFloatRect = FloatRect(r->left(), r->top(), r->width(), r->height());
+        IntRect clientRect =  enclosedIntRect(clientFloatRect);
         for (int locIdx = 0; locIdx < 3; locIdx++) {
-            blink::IntPoint clientPoint;
+            IntPoint clientPoint;
             std::stringstream contextStream;
             contextStream << failureContext << " (";
             switch (locIdx) {
@@ -251,9 +251,9 @@ void TouchActionTest::runTestOnTree(blink::ContainerNode* root, WebView* webView
             contextStream << "=" << clientPoint.x() << "," << clientPoint.y() << ").";
             std::string failureContextPos = contextStream.str();
 
-            blink::LocalFrame* frame = root->document().frame();
-            blink::FrameView* frameView = frame->view();
-            blink::IntRect visibleRect = frameView->windowClipRect();
+            LocalFrame* frame = root->document().frame();
+            FrameView* frameView = frame->view();
+            IntRect visibleRect = frameView->windowClipRect();
             ASSERT_TRUE(visibleRect.contains(clientPoint)) << failureContextPos
                 << " Test point not contained in visible area: " << visibleRect.x() << "," << visibleRect.y()
                 << "-" << visibleRect.maxX() << "," << visibleRect.maxY();
@@ -262,8 +262,8 @@ void TouchActionTest::runTestOnTree(blink::ContainerNode* root, WebView* webView
             // we intended. This is the easiest way for a test to be broken, but has nothing really
             // to do with touch action.
             // Note that we can't use WebView's hit test API because it doesn't look into shadow DOM.
-            blink::IntPoint docPoint(frameView->windowToContents(clientPoint));
-            blink::HitTestResult result = frame->eventHandler().hitTestResultAtPoint(docPoint, blink::HitTestRequest::ReadOnly | blink::HitTestRequest::Active);
+            IntPoint docPoint(frameView->windowToContents(clientPoint));
+            HitTestResult result = frame->eventHandler().hitTestResultAtPoint(docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
             ASSERT_EQ(element, result.innerElement()) << "Unexpected hit test result " << failureContextPos
                 << "  Got element: \"" << result.innerElement()->outerHTML().stripWhiteSpace().left(80).ascii().data() << "\""
                 << std::endl << "Document render tree:" << std::endl << externalRepresentation(root->document().frame()).utf8().data();
@@ -304,7 +304,7 @@ void TouchActionTest::runTestOnTree(blink::ContainerNode* root, WebView* webView
         }
     }
 }
-void TouchActionTest::sendTouchEvent(WebView* webView, WebInputEvent::Type type, blink::IntPoint clientPoint)
+void TouchActionTest::sendTouchEvent(WebView* webView, WebInputEvent::Type type, IntPoint clientPoint)
 {
     ASSERT_TRUE(type == WebInputEvent::TouchStart || type == WebInputEvent::TouchCancel);
 

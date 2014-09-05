@@ -36,12 +36,11 @@
 #include "public/platform/WebThread.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-
 #include <gtest/gtest.h>
 
-using blink::Task;
-
 namespace {
+
+using namespace blink;
 
 static const size_t bufferSize = 16;
 
@@ -80,8 +79,8 @@ TEST(WTF_SpinLock, Torture)
 {
     char sharedBuffer[bufferSize];
 
-    OwnPtr<blink::WebThread> thread1 = adoptPtr(blink::Platform::current()->createThread("thread1"));
-    OwnPtr<blink::WebThread> thread2 = adoptPtr(blink::Platform::current()->createThread("thread2"));
+    OwnPtr<WebThread> thread1 = adoptPtr(Platform::current()->createThread("thread1"));
+    OwnPtr<WebThread> thread2 = adoptPtr(Platform::current()->createThread("thread2"));
 
     thread1->postTask(new Task(WTF::bind(&threadMain, static_cast<char*>(sharedBuffer))));
     thread2->postTask(new Task(WTF::bind(&threadMain, static_cast<char*>(sharedBuffer))));

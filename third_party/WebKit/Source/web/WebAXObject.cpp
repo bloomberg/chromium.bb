@@ -54,8 +54,6 @@
 #include "public/web/WebNode.h"
 #include "wtf/text/StringBuilder.h"
 
-using namespace blink;
-
 namespace blink {
 
 #if ENABLE(ASSERT)

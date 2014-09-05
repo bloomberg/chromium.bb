@@ -44,7 +44,8 @@
 #include "public/web/WebInputElement.h"
 #include "wtf/text/TextEncoding.h"
 
-using namespace blink;
+namespace blink {
+
 using namespace HTMLNames;
 
 namespace {
@@ -230,8 +231,6 @@ bool buildSearchString(const HTMLFormElement* form, Vector<char>* encodedString,
     return isElementFound;
 }
 } // namespace
-
-namespace blink {
 
 WebSearchableFormData::WebSearchableFormData(const WebFormElement& form, const WebInputElement& selectedInputElement)
 {

@@ -45,26 +45,26 @@ class WebURLResponse;
 
 class FakeWebPlugin : public WebPlugin {
 public:
-    FakeWebPlugin(blink::WebFrame*, const blink::WebPluginParams&);
+    FakeWebPlugin(WebFrame*, const WebPluginParams&);
 
     // WebPlugin methods:
-    virtual bool initialize(blink::WebPluginContainer*) OVERRIDE;
+    virtual bool initialize(WebPluginContainer*) OVERRIDE;
     virtual void destroy() OVERRIDE;
     virtual NPObject* scriptableObject() OVERRIDE { return 0; }
     virtual bool canProcessDrag() const OVERRIDE { return false; }
-    virtual void paint(blink::WebCanvas*, const blink::WebRect&) OVERRIDE { }
-    virtual void updateGeometry(const blink::WebRect& frameRect, const blink::WebRect& clipRect, const blink::WebVector<blink::WebRect>& cutOutsRects, bool isVisible) OVERRIDE { }
+    virtual void paint(WebCanvas*, const WebRect&) OVERRIDE { }
+    virtual void updateGeometry(const WebRect& frameRect, const WebRect& clipRect, const WebVector<WebRect>& cutOutsRects, bool isVisible) OVERRIDE { }
     virtual void updateFocus(bool) OVERRIDE { }
     virtual void updateVisibility(bool) OVERRIDE { }
     virtual bool acceptsInputEvents() OVERRIDE { return true; }
-    virtual bool handleInputEvent(const blink::WebInputEvent&, blink::WebCursorInfo&) OVERRIDE { return false; }
-    virtual bool handleDragStatusUpdate(blink::WebDragStatus, const blink::WebDragData&, blink::WebDragOperationsMask, const blink::WebPoint& position, const blink::WebPoint& screenPosition) OVERRIDE { return false; }
-    virtual void didReceiveResponse(const blink::WebURLResponse&) OVERRIDE { }
+    virtual bool handleInputEvent(const WebInputEvent&, WebCursorInfo&) OVERRIDE { return false; }
+    virtual bool handleDragStatusUpdate(WebDragStatus, const WebDragData&, WebDragOperationsMask, const WebPoint& position, const WebPoint& screenPosition) OVERRIDE { return false; }
+    virtual void didReceiveResponse(const WebURLResponse&) OVERRIDE { }
     virtual void didReceiveData(const char* data, int dataLength) OVERRIDE { }
     virtual void didFinishLoading() OVERRIDE { }
-    virtual void didFailLoading(const blink::WebURLError&) OVERRIDE { }
-    virtual void didFinishLoadingFrameRequest(const blink::WebURL&, void* notifyData) OVERRIDE { }
-    virtual void didFailLoadingFrameRequest(const blink::WebURL&, void* notifyData, const blink::WebURLError&) OVERRIDE { }
+    virtual void didFailLoading(const WebURLError&) OVERRIDE { }
+    virtual void didFinishLoadingFrameRequest(const WebURL&, void* notifyData) OVERRIDE { }
+    virtual void didFailLoadingFrameRequest(const WebURL&, void* notifyData, const WebURLError&) OVERRIDE { }
     virtual bool isPlaceholder() OVERRIDE { return false; }
 
 protected:

@@ -231,7 +231,7 @@ WebPluginContainer* WebNode::pluginContainer() const
     if (isHTMLObjectElement(coreNode) || isHTMLEmbedElement(coreNode)) {
         RenderObject* object = coreNode.renderer();
         if (object && object->isWidget()) {
-            Widget* widget = blink::toRenderWidget(object)->widget();
+            Widget* widget = toRenderWidget(object)->widget();
             if (widget && widget->isPluginContainer())
                 return toWebPluginContainerImpl(widget);
         }

@@ -51,7 +51,7 @@ int runHelper(TestSuite* testSuite, void (*preTestHook)(void), void (*postTestHo
     // Collect garbage in order to release mock objects referred from v8 or
     // Oilpan heap. Otherwise false mock leaks will be reported.
     v8::Isolate::GetCurrent()->RequestGarbageCollectionForTesting(v8::Isolate::kFullGarbageCollection);
-    blink::Heap::collectAllGarbage();
+    Heap::collectAllGarbage();
 
     postTestHook();
 

@@ -17,7 +17,7 @@ namespace {
 
 class FakePlaceholderWebPlugin : public FakeWebPlugin {
 public:
-    FakePlaceholderWebPlugin(blink::WebFrame* frame, const blink::WebPluginParams& params)
+    FakePlaceholderWebPlugin(WebFrame* frame, const WebPluginParams& params)
         : FakeWebPlugin(frame, params)
     {
     }

@@ -95,7 +95,7 @@ public:
     const WebString userAgent()
     {
         // The test always returns the same user agent, regardless of the URL passed in.
-        blink::KURL dummyURL(blink::ParsedURLString, "about:blank");
+        KURL dummyURL(ParsedURLString, "about:blank");
         WTF::CString userAgent = m_frameLoaderClientImpl->userAgent(dummyURL).utf8();
         return WebString::fromUTF8(userAgent.data(), userAgent.length());
     }

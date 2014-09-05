@@ -13,14 +13,11 @@
 #include <gtest/gtest.h>
 #include <v8.h>
 
-using blink::ScriptController;
-using blink::ScriptSourceCode;
-using blink::V8DOMActivityLogger;
-using blink::toCoreStringWithUndefinedOrNullCheck;
+namespace {
+
 using blink::FrameTestHelpers::WebViewHelper;
 using blink::FrameTestHelpers::pumpPendingRequestsDoNotUse;
-
-namespace {
+using namespace blink;
 
 class TestActivityLogger : public V8DOMActivityLogger {
 public:

@@ -556,7 +556,7 @@ TEST_F(PinchViewportTest, TestRestoredFromHistoryItem)
 
     WebHistoryItem item;
     item.initialize();
-    WebURL destinationURL(blink::URLTestHelpers::toKURL(m_baseURL + "200-by-300.html"));
+    WebURL destinationURL(URLTestHelpers::toKURL(m_baseURL + "200-by-300.html"));
     item.setURLString(destinationURL.string());
     item.setPinchViewportScrollOffset(WebFloatPoint(100, 120));
     item.setPageScaleFactor(2);
@@ -580,7 +580,7 @@ TEST_F(PinchViewportTest, TestRestoredFromLegacyHistoryItem)
 
     WebHistoryItem item;
     item.initialize();
-    WebURL destinationURL(blink::URLTestHelpers::toKURL(m_baseURL + "200-by-300-viewport.html"));
+    WebURL destinationURL(URLTestHelpers::toKURL(m_baseURL + "200-by-300-viewport.html"));
     item.setURLString(destinationURL.string());
     // (-1, -1) will be used if the HistoryItem is an older version prior to having
     // pinch viewport scroll offset.
@@ -694,7 +694,7 @@ TEST_F(PinchViewportTest, TestWebViewResizeCausesViewportConstrainedLayout)
     EXPECT_TRUE(navbar->needsLayout());
 }
 
-class MockWebFrameClient : public blink::WebFrameClient {
+class MockWebFrameClient : public WebFrameClient {
 public:
     MOCK_METHOD1(showContextMenu, void(const WebContextMenuData&));
 };

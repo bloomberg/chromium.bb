@@ -227,8 +227,8 @@ TEST_F(WebViewTest, CopyImageAt)
     webView->resize(WebSize(400, 400));
     webView->copyImageAt(WebPoint(50, 50));
 
-    blink::WebData data = blink::Platform::current()->clipboard()->readImage(blink::WebClipboard::Buffer());
-    blink::WebImage image = blink::WebImage::fromData(data, WebSize());
+    WebData data = Platform::current()->clipboard()->readImage(WebClipboard::Buffer());
+    WebImage image = WebImage::fromData(data, WebSize());
 
     SkAutoLockPixels autoLock(image.getSkBitmap());
     EXPECT_EQ(SkColorSetARGB(255, 255, 0, 0), image.getSkBitmap().getColor(0, 0));
@@ -265,14 +265,14 @@ TEST_F(WebViewTest, SetBaseBackgroundColor)
     // Expected: transparent on top of kTransparent will still be transparent.
     EXPECT_EQ(kTransparent, webView->backgroundColor());
 
-    blink::LocalFrame* frame = webView->mainFrameImpl()->frame();
+    LocalFrame* frame = webView->mainFrameImpl()->frame();
 
     // Creating a new frame view with the background color having 0 alpha.
-    frame->createView(blink::IntSize(1024, 768), blink::Color::transparent, true);
+    frame->createView(IntSize(1024, 768), Color::transparent, true);
     EXPECT_EQ(kTransparent, frame->view()->baseBackgroundColor());
 
-    blink::Color kTransparentRed(100, 0, 0, 0);
-    frame->createView(blink::IntSize(1024, 768), kTransparentRed, true);
+    Color kTransparentRed(100, 0, 0, 0);
+    frame->createView(IntSize(1024, 768), kTransparentRed, true);
     EXPECT_EQ(kTransparentRed, frame->view()->baseBackgroundColor());
 }
 
@@ -310,19 +310,19 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent)
     SkCanvas canvas(bitmap);
     canvas.clear(kAlphaRed);
 
-    blink::GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas);
 
     // Paint the root of the main frame in the way that CompositedLayerMapping would.
-    blink::FrameView* view = m_webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
-    blink::RenderLayer* rootLayer = view->renderView()->layer();
-    blink::IntRect paintRect(0, 0, kWidth, kHeight);
-    blink::LayerPaintingInfo paintingInfo(rootLayer, paintRect, blink::PaintBehaviorNormal, blink::LayoutSize());
-    rootLayer->paintLayerContents(&context, paintingInfo, blink::PaintLayerPaintingCompositingAllPhases);
+    FrameView* view = m_webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
+    RenderLayer* rootLayer = view->renderView()->layer();
+    IntRect paintRect(0, 0, kWidth, kHeight);
+    LayerPaintingInfo paintingInfo(rootLayer, paintRect, PaintBehaviorNormal, LayoutSize());
+    rootLayer->paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
 
     // The result should be a blend of red and green.
     SkColor color = bitmap.getColor(kWidth / 2, kHeight / 2);
-    EXPECT_TRUE(blink::redChannel(color));
-    EXPECT_TRUE(blink::greenChannel(color));
+    EXPECT_TRUE(redChannel(color));
+    EXPECT_TRUE(greenChannel(color));
 }
 
 TEST_F(WebViewTest, FocusIsInactive)
@@ -335,7 +335,7 @@ TEST_F(WebViewTest, FocusIsInactive)
     WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     EXPECT_TRUE(frame->frame()->document()->isHTMLDocument());
 
-    blink::HTMLDocument* document = blink::toHTMLDocument(frame->frame()->document());
+    HTMLDocument* document = toHTMLDocument(frame->frame()->document());
     EXPECT_TRUE(document->hasFocus());
     webView->setFocus(false);
     webView->setIsActive(false);
@@ -402,7 +402,7 @@ void WebViewTest::testAutoResize(const WebSize& minAutoResize, const WebSize& ma
     client.testData().setWebView(webView);
 
     WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
-    blink::FrameView* frameView = frame->frame()->view();
+    FrameView* frameView = frame->frame()->view();
     frameView->layout();
     EXPECT_FALSE(frameView->layoutPending());
     EXPECT_FALSE(frameView->needsLayout());
@@ -675,7 +675,7 @@ TEST_F(WebViewTest, SetCompositionFromExistingText)
     WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "input_field_populated.html");
     webView->setInitialFocus(false);
     WebVector<WebCompositionUnderline> underlines(static_cast<size_t>(1));
-    underlines[0] = blink::WebCompositionUnderline(0, 4, 0, false, 0);
+    underlines[0] = WebCompositionUnderline(0, 4, 0, false, 0);
     WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     frame->setEditableSelectionOffsets(4, 10);
     frame->setCompositionFromExistingText(8, 12, underlines);
@@ -702,7 +702,7 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextInTextArea)
     WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "text_area_populated.html");
     webView->setInitialFocus(false);
     WebVector<WebCompositionUnderline> underlines(static_cast<size_t>(1));
-    underlines[0] = blink::WebCompositionUnderline(0, 4, 0, false, 0);
+    underlines[0] = WebCompositionUnderline(0, 4, 0, false, 0);
     WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     frame->setEditableSelectionOffsets(27, 27);
     std::string newLineText("\n");
@@ -826,7 +826,7 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState)
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(116, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(84, webViewImpl->mainFrame()->scrollOffset().height);
-    blink::LocalFrame* mainFrameLocal = toLocalFrame(webViewImpl->page()->mainFrame());
+    LocalFrame* mainFrameLocal = toLocalFrame(webViewImpl->page()->mainFrame());
     mainFrameLocal->loader().saveScrollState();
     EXPECT_EQ(2.0f, mainFrameLocal->loader().currentItem()->pageScaleFactor());
     EXPECT_EQ(116, mainFrameLocal->loader().currentItem()->scrollPoint().x());
@@ -853,25 +853,25 @@ TEST_F(WebViewTest, BackForwardRestoreScroll)
 
     // Emulate a user scroll
     webViewImpl->setMainFrameScrollOffset(WebPoint(0, 900));
-    blink::LocalFrame* mainFrameLocal = toLocalFrame(webViewImpl->page()->mainFrame());
-    RefPtr<blink::HistoryItem> item1 = mainFrameLocal->loader().currentItem();
+    LocalFrame* mainFrameLocal = toLocalFrame(webViewImpl->page()->mainFrame());
+    RefPtr<HistoryItem> item1 = mainFrameLocal->loader().currentItem();
 
     // Click an anchor
-    mainFrameLocal->loader().load(blink::FrameLoadRequest(mainFrameLocal->document(), blink::ResourceRequest(mainFrameLocal->document()->completeURL("#a"))));
-    RefPtr<blink::HistoryItem> item2 = mainFrameLocal->loader().currentItem();
+    mainFrameLocal->loader().load(FrameLoadRequest(mainFrameLocal->document(), ResourceRequest(mainFrameLocal->document()->completeURL("#a"))));
+    RefPtr<HistoryItem> item2 = mainFrameLocal->loader().currentItem();
 
     // Go back, then forward, then back again.
-    mainFrameLocal->loader().loadHistoryItem(item1.get(), blink::HistorySameDocumentLoad);
-    mainFrameLocal->loader().loadHistoryItem(item2.get(), blink::HistorySameDocumentLoad);
-    mainFrameLocal->loader().loadHistoryItem(item1.get(), blink::HistorySameDocumentLoad);
+    mainFrameLocal->loader().loadHistoryItem(item1.get(), HistorySameDocumentLoad);
+    mainFrameLocal->loader().loadHistoryItem(item2.get(), HistorySameDocumentLoad);
+    mainFrameLocal->loader().loadHistoryItem(item1.get(), HistorySameDocumentLoad);
 
     // Click a different anchor
-    mainFrameLocal->loader().load(blink::FrameLoadRequest(mainFrameLocal->document(), blink::ResourceRequest(mainFrameLocal->document()->completeURL("#b"))));
-    RefPtr<blink::HistoryItem> item3 = mainFrameLocal->loader().currentItem();
+    mainFrameLocal->loader().load(FrameLoadRequest(mainFrameLocal->document(), ResourceRequest(mainFrameLocal->document()->completeURL("#b"))));
+    RefPtr<HistoryItem> item3 = mainFrameLocal->loader().currentItem();
 
     // Go back, then forward. The scroll position should be properly set on the forward navigation.
-    mainFrameLocal->loader().loadHistoryItem(item1.get(), blink::HistorySameDocumentLoad);
-    mainFrameLocal->loader().loadHistoryItem(item3.get(), blink::HistorySameDocumentLoad);
+    mainFrameLocal->loader().loadHistoryItem(item1.get(), HistorySameDocumentLoad);
+    mainFrameLocal->loader().loadHistoryItem(item3.get(), HistorySameDocumentLoad);
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_GT(webViewImpl->mainFrame()->scrollOffset().height, 2000);
 }
@@ -901,7 +901,7 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
     EXPECT_EQ(116, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(84, webViewImpl->mainFrame()->scrollOffset().height);
 
-    RefPtrWillBeRawPtr<blink::Element> element = static_cast<PassRefPtrWillBeRawPtr<blink::Element> >(webViewImpl->mainFrame()->document().body());
+    RefPtrWillBeRawPtr<Element> element = static_cast<PassRefPtrWillBeRawPtr<Element> >(webViewImpl->mainFrame()->document().body());
     webViewImpl->enterFullScreenForElement(element.get());
     webViewImpl->didEnterFullScreen();
 
@@ -910,7 +910,7 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
     EXPECT_EQ(1.0f, webViewImpl->pageScaleFactor());
 
     // Make sure fullscreen nesting doesn't disrupt scroll/scale saving.
-    RefPtrWillBeRawPtr<blink::Element> otherElement = static_cast<PassRefPtrWillBeRawPtr<blink::Element> >(webViewImpl->mainFrame()->document().head());
+    RefPtrWillBeRawPtr<Element> otherElement = static_cast<PassRefPtrWillBeRawPtr<Element> >(webViewImpl->mainFrame()->document().head());
     webViewImpl->enterFullScreenForElement(otherElement.get());
 
     // Confirm that exiting fullscreen restores the parameters.
@@ -948,7 +948,7 @@ TEST_F(WebViewTest, PrintWithXHRInFlight)
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("print_with_xhr_inflight.html"));
     WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(m_baseURL + "print_with_xhr_inflight.html", true, 0, &client);
 
-    ASSERT_EQ(blink::FrameStateComplete, toLocalFrame(webViewImpl->page()->mainFrame())->loader().state());
+    ASSERT_EQ(FrameStateComplete, toLocalFrame(webViewImpl->page()->mainFrame())->loader().state());
     EXPECT_TRUE(client.printCalled());
     m_webViewHelper.reset();
 }
@@ -971,7 +971,7 @@ private:
 };
 static void DragAndDropURL(WebViewImpl* webView, const std::string& url)
 {
-    blink::WebDragData dragData;
+    WebDragData dragData;
     dragData.initialize();
 
     WebDragData::Item item;
@@ -982,7 +982,7 @@ static void DragAndDropURL(WebViewImpl* webView, const std::string& url)
 
     const WebPoint clientPoint(0, 0);
     const WebPoint screenPoint(0, 0);
-    webView->dragTargetDragEnter(dragData, clientPoint, screenPoint, blink::WebDragOperationCopy, 0);
+    webView->dragTargetDragEnter(dragData, clientPoint, screenPoint, WebDragOperationCopy, 0);
     Platform::current()->currentThread()->postTask(new DropTask(webView));
     FrameTestHelpers::pumpPendingRequestsDoNotUse(webView->mainFrame());
 }
@@ -1058,12 +1058,12 @@ private:
 static bool tapElementById(WebView* webView, WebInputEvent::Type type, const WebString& id)
 {
     ASSERT(webView);
-    RefPtrWillBeRawPtr<blink::Element> element = static_cast<PassRefPtrWillBeRawPtr<blink::Element> >(webView->mainFrame()->document().getElementById(id));
+    RefPtrWillBeRawPtr<Element> element = static_cast<PassRefPtrWillBeRawPtr<Element> >(webView->mainFrame()->document().getElementById(id));
     if (!element)
         return false;
 
     element->scrollIntoViewIfNeeded();
-    blink::IntPoint center = element->screenRect().center();
+    IntPoint center = element->screenRect().center();
 
     WebGestureEvent event;
     event.type = type;
@@ -1445,7 +1445,7 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate)
     // Make a request that will open a new window
     WebURLRequest webURLRequest;
     webURLRequest.initialize();
-    blink::FrameLoadRequest request(0, webURLRequest.toResourceRequest(), "_blank");
+    FrameLoadRequest request(0, webURLRequest.toResourceRequest(), "_blank");
     toLocalFrame(webViewImpl->page()->mainFrame())->loader().load(request);
     ASSERT_TRUE(client.createdWebView());
     EXPECT_FALSE(client.didFocusCalled());
@@ -1453,7 +1453,7 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate)
     // Make a request from the new window that will navigate the original window. The original window should be focused.
     WebURLRequest webURLRequestWithTargetStart;
     webURLRequestWithTargetStart.initialize();
-    blink::FrameLoadRequest requestWithTargetStart(0, webURLRequestWithTargetStart.toResourceRequest(), "_start");
+    FrameLoadRequest requestWithTargetStart(0, webURLRequestWithTargetStart.toResourceRequest(), "_start");
     toLocalFrame(toWebViewImpl(client.createdWebView())->page()->mainFrame())->loader().load(requestWithTargetStart);
     EXPECT_TRUE(client.didFocusCalled());
 
@@ -1487,12 +1487,12 @@ TEST_F(WebViewTest, DispatchesDomFocusOutDomFocusInOnViewToggleFocus)
 }
 
 #if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-static void openDateTimeChooser(WebView* webView, blink::HTMLInputElement* inputElement)
+static void openDateTimeChooser(WebView* webView, HTMLInputElement* inputElement)
 {
     inputElement->focus();
 
     WebKeyboardEvent keyEvent;
-    keyEvent.windowsKeyCode = blink::VKEY_SPACE;
+    keyEvent.windowsKeyCode = VKEY_SPACE;
     keyEvent.type = WebInputEvent::RawKeyDown;
     keyEvent.setKeyIdentifierFromWindowsKeyCode();
     webView->handleInputEvent(keyEvent);
@@ -1508,9 +1508,9 @@ TEST_F(WebViewTest, ChooseValueFromDateTimeChooser)
     URLTestHelpers::registerMockedURLLoad(toKURL(url), "date_time_chooser.html");
     WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(url, true, 0, &client);
 
-    blink::Document* document = webViewImpl->mainFrameImpl()->frame()->document();
+    Document* document = webViewImpl->mainFrameImpl()->frame()->document();
 
-    blink::HTMLInputElement* inputElement;
+    HTMLInputElement* inputElement;
 
     inputElement = toHTMLInputElement(document->getElementById("date"));
     openDateTimeChooser(webViewImpl, inputElement);
@@ -1729,7 +1729,7 @@ TEST_F(WebViewTest, HasTouchEventHandlers)
     std::string url = m_baseURL + "has_touch_event_handlers.html";
     URLTestHelpers::registerMockedURLLoad(toKURL(url), "has_touch_event_handlers.html");
     WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(url, true, 0, &client);
-    const blink::EventHandlerRegistry::EventHandlerClass touchEvent = blink::EventHandlerRegistry::TouchEvent;
+    const EventHandlerRegistry::EventHandlerClass touchEvent = EventHandlerRegistry::TouchEvent;
 
     // The page is initialized with at least one no-handlers call.
     // In practice we get two such calls because WebViewHelper::initializeAndLoad first
@@ -1739,8 +1739,8 @@ TEST_F(WebViewTest, HasTouchEventHandlers)
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
 
     // Adding the first document handler results in a has-handlers call.
-    blink::Document* document = webViewImpl->mainFrameImpl()->frame()->document();
-    blink::EventHandlerRegistry* registry = &document->frameHost()->eventHandlerRegistry();
+    Document* document = webViewImpl->mainFrameImpl()->frame()->document();
+    EventHandlerRegistry* registry = &document->frameHost()->eventHandlerRegistry();
     registry->didAddEventHandler(*document, touchEvent);
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(false));
     EXPECT_EQ(1, client.getAndResetHasTouchEventHandlerCallCount(true));
@@ -1761,7 +1761,7 @@ TEST_F(WebViewTest, HasTouchEventHandlers)
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
 
     // Adding a handler on a div results in a has-handlers call.
-    blink::Element* parentDiv = document->getElementById("parentdiv");
+    Element* parentDiv = document->getElementById("parentdiv");
     ASSERT(parentDiv);
     registry->didAddEventHandler(*parentDiv, touchEvent);
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(false));
@@ -1794,10 +1794,10 @@ TEST_F(WebViewTest, HasTouchEventHandlers)
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
 
     // Adding a handler inside of a child iframe results in a has-handlers call.
-    blink::Element* childFrame = document->getElementById("childframe");
+    Element* childFrame = document->getElementById("childframe");
     ASSERT(childFrame);
-    blink::Document* childDocument = toHTMLIFrameElement(childFrame)->contentDocument();
-    blink::Element* childDiv = childDocument->getElementById("childdiv");
+    Document* childDocument = toHTMLIFrameElement(childFrame)->contentDocument();
+    Element* childDiv = childDocument->getElementById("childdiv");
     ASSERT(childDiv);
     registry->didAddEventHandler(*childDiv, touchEvent);
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(false));
@@ -1852,14 +1852,14 @@ TEST_F(WebViewTest, DeleteElementWithRegisteredHandler)
     URLTestHelpers::registerMockedURLLoad(toKURL(url), "simple_div.html");
     WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(url, true);
 
-    RefPtrWillBePersistent<blink::Document> document = webViewImpl->mainFrameImpl()->frame()->document();
-    blink::Element* div = document->getElementById("div");
-    blink::EventHandlerRegistry& registry = document->frameHost()->eventHandlerRegistry();
+    RefPtrWillBePersistent<Document> document = webViewImpl->mainFrameImpl()->frame()->document();
+    Element* div = document->getElementById("div");
+    EventHandlerRegistry& registry = document->frameHost()->eventHandlerRegistry();
 
-    registry.didAddEventHandler(*div, blink::EventHandlerRegistry::ScrollEvent);
-    EXPECT_TRUE(registry.hasEventHandlers(blink::EventHandlerRegistry::ScrollEvent));
+    registry.didAddEventHandler(*div, EventHandlerRegistry::ScrollEvent);
+    EXPECT_TRUE(registry.hasEventHandlers(EventHandlerRegistry::ScrollEvent));
 
-    blink::TrackExceptionState exceptionState;
+    TrackExceptionState exceptionState;
     div->remove(exceptionState);
 #if ENABLE(OILPAN)
     // For oilpan we have to force a GC to ensure the event handlers have been removed when
@@ -1868,20 +1868,20 @@ TEST_F(WebViewTest, DeleteElementWithRegisteredHandler)
     // since we want that to stay around.
     Heap::collectAllGarbage();
 #endif
-    EXPECT_FALSE(registry.hasEventHandlers(blink::EventHandlerRegistry::ScrollEvent));
+    EXPECT_FALSE(registry.hasEventHandlers(EventHandlerRegistry::ScrollEvent));
 }
 
-static WebRect ExpectedRootBounds(blink::Document* document, float scaleFactor)
+static WebRect ExpectedRootBounds(Document* document, float scaleFactor)
 {
-    blink::Element* element = document->getElementById("root");
+    Element* element = document->getElementById("root");
     if (!element)
         element = document->getElementById("target");
-    if (element->hasTagName(blink::HTMLNames::iframeTag))
+    if (element->hasTagName(HTMLNames::iframeTag))
         return ExpectedRootBounds(toHTMLIFrameElement(element)->contentDocument(), scaleFactor);
 
-    blink::IntRect boundingBox;
-    if (element->hasTagName(blink::HTMLNames::htmlTag))
-        boundingBox = blink::IntRect(blink::IntPoint(0, 0), document->frame()->view()->contentsSize());
+    IntRect boundingBox;
+    if (element->hasTagName(HTMLNames::htmlTag))
+        boundingBox = IntRect(IntPoint(0, 0), document->frame()->view()->contentsSize());
     else
         boundingBox = element->pixelSnappedBoundingBox();
     boundingBox = document->frame()->view()->contentsToWindow(boundingBox);
@@ -1901,7 +1901,7 @@ void WebViewTest::testSelectionRootBounds(const char* htmlFile, float pageScaleF
 
     WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
     EXPECT_TRUE(frame->frame()->document()->isHTMLDocument());
-    blink::HTMLDocument* document = blink::toHTMLDocument(frame->frame()->document());
+    HTMLDocument* document = toHTMLDocument(frame->frame()->document());
 
     WebRect expectedRootBounds = ExpectedRootBounds(document, webView->pageScaleFactor());
     WebRect actualRootBounds;
@@ -1910,7 +1910,7 @@ void WebViewTest::testSelectionRootBounds(const char* htmlFile, float pageScaleF
 
     WebRect anchor, focus;
     webView->selectionBounds(anchor, focus);
-    blink::IntRect expectedIntRect = expectedRootBounds;
+    IntRect expectedIntRect = expectedRootBounds;
     ASSERT_TRUE(expectedIntRect.contains(anchor));
     // The "overflow" tests have the focus boundary outside of the element box.
     ASSERT_EQ(url.find("overflow") == std::string::npos, expectedIntRect.contains(focus));
@@ -2019,17 +2019,17 @@ TEST_F(WebViewTest, NonUserInputTextUpdate)
     webViewImpl->setInitialFocus(false);
 
     WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewImpl->mainFrame());
-    blink::HTMLDocument* document = blink::toHTMLDocument(frame->frame()->document());
+    HTMLDocument* document = toHTMLDocument(frame->frame()->document());
 
     // (A) <input>
     // (A.1) Focused and value is changed by script.
     client.reset();
     EXPECT_FALSE(client.textIsUpdated());
 
-    blink::HTMLInputElement* inputElement = toHTMLInputElement(document->getElementById("input"));
+    HTMLInputElement* inputElement = toHTMLInputElement(document->getElementById("input"));
     document->setFocusedElement(inputElement);
     webViewImpl->setFocus(true);
-    EXPECT_EQ(document->focusedElement(), static_cast<blink::Element*>(inputElement));
+    EXPECT_EQ(document->focusedElement(), static_cast<Element*>(inputElement));
 
     // Emulate value change from script.
     inputElement->setValue("testA");
@@ -2053,7 +2053,7 @@ TEST_F(WebViewTest, NonUserInputTextUpdate)
     EXPECT_FALSE(client.textIsUpdated());
     document->setFocusedElement(nullptr);
     webViewImpl->setFocus(false);
-    EXPECT_NE(document->focusedElement(), static_cast<blink::Element*>(inputElement));
+    EXPECT_NE(document->focusedElement(), static_cast<Element*>(inputElement));
     inputElement->setValue("testA3");
     EXPECT_FALSE(client.textIsUpdated());
 
@@ -2061,10 +2061,10 @@ TEST_F(WebViewTest, NonUserInputTextUpdate)
     // (B.1) Focused and value is changed by script.
     client.reset();
     EXPECT_FALSE(client.textIsUpdated());
-    blink::HTMLTextAreaElement* textAreaElement = toHTMLTextAreaElement(document->getElementById("textarea"));
+    HTMLTextAreaElement* textAreaElement = toHTMLTextAreaElement(document->getElementById("textarea"));
     document->setFocusedElement(textAreaElement);
     webViewImpl->setFocus(true);
-    EXPECT_EQ(document->focusedElement(), static_cast<blink::Element*>(textAreaElement));
+    EXPECT_EQ(document->focusedElement(), static_cast<Element*>(textAreaElement));
     textAreaElement->setValue("testB");
     EXPECT_TRUE(client.textIsUpdated());
     info = webViewImpl->textInputInfo();
@@ -2083,7 +2083,7 @@ TEST_F(WebViewTest, NonUserInputTextUpdate)
     EXPECT_FALSE(client.textIsUpdated());
     document->setFocusedElement(nullptr);
     webViewImpl->setFocus(false);
-    EXPECT_NE(document->focusedElement(), static_cast<blink::Element*>(textAreaElement));
+    EXPECT_NE(document->focusedElement(), static_cast<Element*>(textAreaElement));
     inputElement->setValue("testB3");
     EXPECT_FALSE(client.textIsUpdated());
 
@@ -2104,7 +2104,7 @@ TEST_F(WebViewTest, FirstUserGestureObservedKeyEvent)
     EXPECT_EQ(0, client.getUserGestureNotificationsCount());
 
     WebKeyboardEvent keyEvent;
-    keyEvent.windowsKeyCode = blink::VKEY_SPACE;
+    keyEvent.windowsKeyCode = VKEY_SPACE;
     keyEvent.type = WebInputEvent::RawKeyDown;
     keyEvent.setKeyIdentifierFromWindowsKeyCode();
     webView->handleInputEvent(keyEvent);
@@ -2178,7 +2178,7 @@ TEST_F(WebViewTest, AutoResizeSubtreeLayout)
     webView->enableAutoResizeMode(WebSize(200, 200), WebSize(200, 200));
     loadFrame(webView->mainFrame(), url);
 
-    blink::FrameView* frameView = m_webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
+    FrameView* frameView = m_webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
 
     // Auto-resizing used to ASSERT(needsLayout()) in RenderBlockFlow::layout. This EXPECT is
     // merely a dummy. The real test is that we don't trigger asserts in debug builds.

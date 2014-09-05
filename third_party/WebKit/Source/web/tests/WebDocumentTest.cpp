@@ -16,19 +16,13 @@
 #include "core/testing/URLTestHelpers.h"
 #include "platform/graphics/Color.h"
 #include "web/tests/FrameTestHelpers.h"
-
 #include <gtest/gtest.h>
 
-using namespace blink;
-using blink::Color;
-using blink::Document;
-using blink::HTMLElement;
-using blink::RenderStyle;
+namespace {
+
 using blink::FrameTestHelpers::WebViewHelper;
 using blink::URLTestHelpers::toKURL;
-using blink::WebDocument;
-
-namespace {
+using namespace blink;
 
 TEST(WebDocumentTest, InsertStyleSheet)
 {
@@ -51,7 +45,7 @@ TEST(WebDocumentTest, InsertStyleSheet)
     ASSERT(style);
 
     // Inserted stylesheet not yet applied.
-    ASSERT_EQ(Color(0, 0, 0), style->visitedDependentColor(blink::CSSPropertyColor));
+    ASSERT_EQ(Color(0, 0, 0), style->visitedDependentColor(CSSPropertyColor));
 
     // Apply inserted stylesheet.
     coreDoc->updateRenderTreeIfNeeded();
@@ -60,7 +54,7 @@ TEST(WebDocumentTest, InsertStyleSheet)
     ASSERT(style);
 
     // Inserted stylesheet applied.
-    ASSERT_EQ(Color(0, 128, 0), style->visitedDependentColor(blink::CSSPropertyColor));
+    ASSERT_EQ(Color(0, 128, 0), style->visitedDependentColor(CSSPropertyColor));
 }
 
 TEST(WebDocumentTest, BeginExitTransition)
@@ -88,7 +82,7 @@ TEST(WebDocumentTest, BeginExitTransition)
     RenderStyle* bodyStyle = bodyElement->renderStyle();
     ASSERT(bodyStyle);
     // The transition_exit.css stylesheet should not have been applied at this point.
-    ASSERT_EQ(Color(0, 0, 0), bodyStyle->visitedDependentColor(blink::CSSPropertyColor));
+    ASSERT_EQ(Color(0, 0, 0), bodyStyle->visitedDependentColor(CSSPropertyColor));
 
     frame->document().beginExitTransition("#foo");
 
@@ -104,7 +98,7 @@ TEST(WebDocumentTest, BeginExitTransition)
     // The stylesheet should now have been applied.
     bodyStyle = bodyElement->renderStyle();
     ASSERT(bodyStyle);
-    ASSERT_EQ(Color(0, 128, 0), bodyStyle->visitedDependentColor(blink::CSSPropertyColor));
+    ASSERT_EQ(Color(0, 128, 0), bodyStyle->visitedDependentColor(CSSPropertyColor));
 }
 
 }

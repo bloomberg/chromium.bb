@@ -41,8 +41,6 @@
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebViewImpl.h"
 
-using namespace blink;
-
 namespace blink {
 
 WebPluginScrollbar* WebPluginScrollbar::createForPlugin(Orientation orientation,
@@ -67,7 +65,7 @@ WebPluginScrollbarImpl::WebPluginScrollbarImpl(Orientation orientation,
 {
     m_scrollbar = Scrollbar::create(
         static_cast<ScrollableArea*>(m_group),
-        static_cast<blink::ScrollbarOrientation>(orientation),
+        static_cast<ScrollbarOrientation>(orientation),
         blink::RegularScrollbar);
     m_group->scrollbarCreated(this);
 }
@@ -183,7 +181,7 @@ WebScrollbar::ScrollbarOverlayStyle WebPluginScrollbarImpl::scrollbarOverlayStyl
 
 WebScrollbar::Orientation WebPluginScrollbarImpl::orientation() const
 {
-    if (m_scrollbar->orientation() == blink::HorizontalScrollbar)
+    if (m_scrollbar->orientation() == HorizontalScrollbar)
         return WebScrollbar::Horizontal;
     return WebScrollbar::Vertical;
 }
