@@ -90,14 +90,6 @@ int BackendImplV3::Init(const CompletionCallback& callback) {
 
 // ------------------------------------------------------------------------
 
-#if defined(V3_NOT_JUST_YET_READY)
-int BackendImplV3::OpenPrevEntry(void** iter, Entry** prev_entry,
-                                 const CompletionCallback& callback) {
-  DCHECK(!callback.is_null());
-  return OpenFollowingEntry(true, iter, prev_entry, callback);
-}
-#endif  // defined(V3_NOT_JUST_YET_READY).
-
 bool BackendImplV3::SetMaxSize(int max_bytes) {
   COMPILE_ASSERT(sizeof(max_bytes) == sizeof(max_size_), unsupported_int_model);
   if (max_bytes < 0)
@@ -960,86 +952,6 @@ int BackendImplV3::NewEntry(Addr address, EntryImplV3** entry) {
   cache_entry->BeginLogging(net_log_, false);
   cache_entry.swap(entry);
   return 0;
-}
-
-// This is the actual implementation for OpenNextEntry and OpenPrevEntry.
-int BackendImplV3::OpenFollowingEntry(bool forward, void** iter,
-                                      Entry** next_entry,
-                                      const CompletionCallback& callback) {
-  if (disabled_)
-    return net::ERR_FAILED;
-
-  DCHECK(iter);
-
-  const int kListsToSearch = 3;
-  scoped_refptr<EntryImpl> entries[kListsToSearch];
-  scoped_ptr<Rankings::Iterator> iterator(
-      reinterpret_cast<Rankings::Iterator*>(*iter));
-  *iter = NULL;
-
-  if (!iterator.get()) {
-    iterator.reset(new Rankings::Iterator(&rankings_));
-    bool ret = false;
-
-    // Get an entry from each list.
-    for (int i = 0; i < kListsToSearch; i++) {
-      EntryImpl* temp = NULL;
-      ret |= OpenFollowingEntryFromList(forward, static_cast<Rankings::List>(i),
-                                        &iterator->nodes[i], &temp);
-      entries[i].swap(&temp);  // The entry was already addref'd.
-    }
-    if (!ret)
-      return NULL;
-  } else {
-    // Get the next entry from the last list, and the actual entries for the
-    // elements on the other lists.
-    for (int i = 0; i < kListsToSearch; i++) {
-      EntryImpl* temp = NULL;
-      if (iterator->list == i) {
-          OpenFollowingEntryFromList(forward, iterator->list,
-                                     &iterator->nodes[i], &temp);
-      } else {
-        temp = GetEnumeratedEntry(iterator->nodes[i],
-                                  static_cast<Rankings::List>(i));
-      }
-
-      entries[i].swap(&temp);  // The entry was already addref'd.
-    }
-  }
-
-  int newest = -1;
-  int oldest = -1;
-  Time access_times[kListsToSearch];
-  for (int i = 0; i < kListsToSearch; i++) {
-    if (entries[i].get()) {
-      access_times[i] = entries[i]->GetLastUsed();
-      if (newest < 0) {
-        DCHECK_LT(oldest, 0);
-        newest = oldest = i;
-        continue;
-      }
-      if (access_times[i] > access_times[newest])
-        newest = i;
-      if (access_times[i] < access_times[oldest])
-        oldest = i;
-    }
-  }
-
-  if (newest < 0 || oldest < 0)
-    return NULL;
-
-  EntryImpl* next_entry;
-  if (forward) {
-    next_entry = entries[newest].get();
-    iterator->list = static_cast<Rankings::List>(newest);
-  } else {
-    next_entry = entries[oldest].get();
-    iterator->list = static_cast<Rankings::List>(oldest);
-  }
-
-  *iter = iterator.release();
-  next_entry->AddRef();
-  return next_entry;
 }
 
 void BackendImplV3::AddStorageSize(int32 bytes) {

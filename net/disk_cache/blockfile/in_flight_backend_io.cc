@@ -122,12 +122,6 @@ void BackendIO::OpenNextEntry(void** iter, Entry** next_entry) {
   entry_ptr_ = next_entry;
 }
 
-void BackendIO::OpenPrevEntry(void** iter, Entry** prev_entry) {
-  operation_ = OP_OPEN_PREV;
-  iter_ptr_ = iter;
-  entry_ptr_ = prev_entry;
-}
-
 void BackendIO::EndEnumeration(void* iterator) {
   operation_ = OP_END_ENUMERATION;
   iter_ = iterator;
@@ -218,8 +212,8 @@ void BackendIO::ReadyForSparseIO(EntryImpl* entry) {
 BackendIO::~BackendIO() {}
 
 bool BackendIO::ReturnsEntry() {
-  return (operation_ == OP_OPEN || operation_ == OP_CREATE ||
-          operation_ == OP_OPEN_NEXT || operation_ == OP_OPEN_PREV);
+  return operation_ == OP_OPEN || operation_ == OP_CREATE ||
+      operation_ == OP_OPEN_NEXT;
 }
 
 base::TimeDelta BackendIO::ElapsedTime() const {
@@ -252,9 +246,6 @@ void BackendIO::ExecuteBackendOperation() {
       break;
     case OP_OPEN_NEXT:
       result_ = backend_->SyncOpenNextEntry(iter_ptr_, entry_ptr_);
-      break;
-    case OP_OPEN_PREV:
-      result_ = backend_->SyncOpenPrevEntry(iter_ptr_, entry_ptr_);
       break;
     case OP_END_ENUMERATION:
       backend_->SyncEndEnumeration(iter_);
@@ -395,13 +386,6 @@ void InFlightBackendIO::OpenNextEntry(void** iter, Entry** next_entry,
                                       const net::CompletionCallback& callback) {
   scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
   operation->OpenNextEntry(iter, next_entry);
-  PostOperation(operation.get());
-}
-
-void InFlightBackendIO::OpenPrevEntry(void** iter, Entry** prev_entry,
-                                      const net::CompletionCallback& callback) {
-  scoped_refptr<BackendIO> operation(new BackendIO(this, backend_, callback));
-  operation->OpenPrevEntry(iter, prev_entry);
   PostOperation(operation.get());
 }
 

@@ -56,7 +56,6 @@ class BackendIO : public BackgroundIO {
                           const base::Time end_time);
   void DoomEntriesSince(const base::Time initial_time);
   void OpenNextEntry(void** iter, Entry** next_entry);
-  void OpenPrevEntry(void** iter, Entry** prev_entry);
   void EndEnumeration(void* iterator);
   void OnExternalCacheHit(const std::string& key);
   void CloseEntryImpl(EntryImpl* entry);
@@ -91,7 +90,6 @@ class BackendIO : public BackgroundIO {
     OP_DOOM_BETWEEN,
     OP_DOOM_SINCE,
     OP_OPEN_NEXT,
-    OP_OPEN_PREV,
     OP_END_ENUMERATION,
     OP_ON_EXTERNAL_CACHE_HIT,
     OP_CLOSE_ENTRY,
@@ -167,8 +165,6 @@ class InFlightBackendIO : public InFlightIO {
   void DoomEntriesSince(const base::Time initial_time,
                         const net::CompletionCallback& callback);
   void OpenNextEntry(void** iter, Entry** next_entry,
-                     const net::CompletionCallback& callback);
-  void OpenPrevEntry(void** iter, Entry** prev_entry,
                      const net::CompletionCallback& callback);
   void EndEnumeration(void* iterator);
   void OnExternalCacheHit(const std::string& key);

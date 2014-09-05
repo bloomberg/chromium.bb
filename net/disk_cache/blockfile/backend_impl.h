@@ -66,10 +66,6 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   int SyncInit();
   void CleanupCache();
 
-  // Same behavior as OpenNextEntry but walks the list from back to front.
-  int OpenPrevEntry(void** iter, Entry** prev_entry,
-                    const CompletionCallback& callback);
-
   // Synchronous implementation of the asynchronous interface.
   int SyncOpenEntry(const std::string& key, Entry** entry);
   int SyncCreateEntry(const std::string& key, Entry** entry);
@@ -79,7 +75,6 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
                              base::Time end_time);
   int SyncDoomEntriesSince(base::Time initial_time);
   int SyncOpenNextEntry(void** iter, Entry** next_entry);
-  int SyncOpenPrevEntry(void** iter, Entry** prev_entry);
   void SyncEndEnumeration(void* iter);
   void SyncOnExternalCacheHit(const std::string& key);
 
@@ -87,7 +82,6 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   EntryImpl* OpenEntryImpl(const std::string& key);
   EntryImpl* CreateEntryImpl(const std::string& key);
   EntryImpl* OpenNextEntryImpl(void** iter);
-  EntryImpl* OpenPrevEntryImpl(void** iter);
 
   // Sets the maximum size for the total amount of data stored by this instance.
   bool SetMaxSize(int max_bytes);
@@ -314,13 +308,10 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   EntryImpl* MatchEntry(const std::string& key, uint32 hash, bool find_parent,
                         Addr entry_addr, bool* match_error);
 
-  // Opens the next or previous entry on a cache iteration.
-  EntryImpl* OpenFollowingEntry(bool forward, void** iter);
-
   // Opens the next or previous entry on a single list. If successful,
   // |from_entry| will be updated to point to the new entry, otherwise it will
   // be set to NULL; in other words, it is used as an explicit iterator.
-  bool OpenFollowingEntryFromList(bool forward, Rankings::List list,
+  bool OpenFollowingEntryFromList(Rankings::List list,
                                   CacheRankingsBlock** from_entry,
                                   EntryImpl** next_entry);
 
