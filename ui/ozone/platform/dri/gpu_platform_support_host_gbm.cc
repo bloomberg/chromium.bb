@@ -7,7 +7,6 @@
 #include "base/debug/trace_event.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
-#include "ui/ozone/platform/dri/channel_observer.h"
 
 namespace ui {
 
@@ -30,24 +29,9 @@ void GpuPlatformSupportHostGbm::UnregisterHandler(
     handlers_.erase(it);
 }
 
-void GpuPlatformSupportHostGbm::AddChannelObserver(ChannelObserver* observer) {
-  channel_observers_.AddObserver(observer);
-
-  if (sender_)
-    observer->OnChannelEstablished();
-}
-
-void GpuPlatformSupportHostGbm::RemoveChannelObserver(
-    ChannelObserver* observer) {
-  channel_observers_.RemoveObserver(observer);
-}
-
 void GpuPlatformSupportHostGbm::OnChannelEstablished(int host_id,
                                                      IPC::Sender* sender) {
-  TRACE_EVENT1("dri",
-               "GpuPlatformSupportHostGbm::OnChannelEstablished",
-               "host_id",
-               host_id);
+  TRACE_EVENT0("dri", "GpuPlatformSupportHostGbm::OnChannelEstablished");
   host_id_ = host_id;
   sender_ = sender;
 
@@ -58,22 +42,13 @@ void GpuPlatformSupportHostGbm::OnChannelEstablished(int host_id,
 
   for (size_t i = 0; i < handlers_.size(); ++i)
     handlers_[i]->OnChannelEstablished(host_id, sender);
-
-  FOR_EACH_OBSERVER(
-      ChannelObserver, channel_observers_, OnChannelEstablished());
 }
 
 void GpuPlatformSupportHostGbm::OnChannelDestroyed(int host_id) {
-  TRACE_EVENT1("dri",
-               "GpuPlatformSupportHostGbm::OnChannelDestroyed",
-               "host_id",
-               host_id);
+  TRACE_EVENT0("dri", "GpuPlatformSupportHostGbm::OnChannelDestroyed");
   if (host_id_ == host_id) {
     host_id_ = -1;
     sender_ = NULL;
-
-    FOR_EACH_OBSERVER(
-        ChannelObserver, channel_observers_, OnChannelDestroyed());
   }
 
   for (size_t i = 0; i < handlers_.size(); ++i)

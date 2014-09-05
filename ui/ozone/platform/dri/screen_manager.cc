@@ -24,21 +24,6 @@ ScreenManager::ScreenManager(DriWrapper* dri,
 ScreenManager::~ScreenManager() {
 }
 
-void ScreenManager::AddDisplayController(uint32_t crtc, uint32_t connector) {
-  HardwareDisplayControllers::iterator it = FindDisplayController(crtc);
-  // TODO(dnicoara): Turn this into a DCHECK when async display configuration is
-  // properly supported. (When there can't be a race between forcing initial
-  // display configuration in ScreenManager and NativeDisplayDelegate creating
-  // the display controllers.)
-  if (it != controllers_.end()) {
-    LOG(WARNING) << "Display controller (crtc=" << crtc << ") already present.";
-    return;
-  }
-
-  controllers_.push_back(new HardwareDisplayController(
-      dri_, scoped_ptr<CrtcState>(new CrtcState(dri_, crtc, connector))));
-}
-
 void ScreenManager::RemoveDisplayController(uint32_t crtc) {
   HardwareDisplayControllers::iterator it = FindDisplayController(crtc);
   if (it != controllers_.end()) {
@@ -56,33 +41,47 @@ bool ScreenManager::ConfigureDisplayController(uint32_t crtc,
   gfx::Rect modeset_bounds(
       origin.x(), origin.y(), mode.hdisplay, mode.vdisplay);
   HardwareDisplayControllers::iterator it = FindDisplayController(crtc);
-  DCHECK(controllers_.end() != it) << "Display controller (crtc=" << crtc
-                                   << ") doesn't exist.";
+  HardwareDisplayController* controller = NULL;
+  if (it != controllers_.end()) {
+    controller = *it;
+    // If nothing changed just enable the controller. Note, we perform an exact
+    // comparison on the mode since the refresh rate may have changed.
+    if (SameMode(mode, controller->get_mode()) &&
+        origin == controller->origin() && !controller->IsDisabled())
+      return controller->Enable();
 
-  HardwareDisplayController* controller = *it;
-  controller = *it;
-  // If nothing changed just enable the controller. Note, we perform an exact
-  // comparison on the mode since the refresh rate may have changed.
-  if (SameMode(mode, controller->get_mode()) &&
-      origin == controller->origin() && !controller->IsDisabled())
-    return controller->Enable();
+    // Either the mode or the location of the display changed, so exit mirror
+    // mode and configure the display independently. If the caller still wants
+    // mirror mode, subsequent calls configuring the other controllers will
+    // restore mirror mode.
+    if (controller->IsMirrored()) {
+      controller =
+          new HardwareDisplayController(dri_, controller->RemoveCrtc(crtc));
+      controllers_.push_back(controller);
+      it = --controllers_.end();
+    }
 
-  // Either the mode or the location of the display changed, so exit mirror
-  // mode and configure the display independently. If the caller still wants
-  // mirror mode, subsequent calls configuring the other controllers will
-  // restore mirror mode.
-  if (controller->IsMirrored()) {
-    controller =
-        new HardwareDisplayController(dri_, controller->RemoveCrtc(crtc));
-    controllers_.push_back(controller);
-    it = --controllers_.end();
+    HardwareDisplayControllers::iterator mirror =
+        FindActiveDisplayControllerByLocation(modeset_bounds);
+    // Handle mirror mode.
+    if (mirror != controllers_.end() && it != mirror)
+      return HandleMirrorMode(it, mirror, crtc, connector);
+  } else {
+    HardwareDisplayControllers::iterator mirror =
+        FindActiveDisplayControllerByLocation(modeset_bounds);
+    if (mirror != controllers_.end()) {
+      (*mirror)->AddCrtc(
+          scoped_ptr<CrtcState>(new CrtcState(dri_, crtc, connector)));
+      return (*mirror)->Enable();
+    }
   }
 
-  HardwareDisplayControllers::iterator mirror =
-      FindActiveDisplayControllerByLocation(modeset_bounds);
-  // Handle mirror mode.
-  if (mirror != controllers_.end() && it != mirror)
-    return HandleMirrorMode(it, mirror, crtc, connector);
+  if (!controller) {
+    controller = new HardwareDisplayController(
+        dri_,
+        scoped_ptr<CrtcState>(new CrtcState(dri_, crtc, connector)));
+    controllers_.push_back(controller);
+  }
 
   return ModesetDisplayController(controller, origin, mode);
 }
@@ -161,8 +160,6 @@ void ScreenManager::ForceInitializationOfPrimaryDisplay() {
                       dpms->prop_id,
                       DRM_MODE_DPMS_ON);
 
-  AddDisplayController(displays[0]->crtc()->crtc_id,
-                       displays[0]->connector()->connector_id);
   ConfigureDisplayController(displays[0]->crtc()->crtc_id,
                              displays[0]->connector()->connector_id,
                              gfx::Point(),

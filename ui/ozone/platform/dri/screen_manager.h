@@ -29,16 +29,13 @@ class ScreenManager {
   ScreenManager(DriWrapper* dri, ScanoutBufferGenerator* surface_generator);
   virtual ~ScreenManager();
 
-  // Register a display controller. This must be called before trying to
-  // configure it.
-  void AddDisplayController(uint32_t crtc, uint32_t connector);
-
   // Remove a display controller from the list of active controllers. The
   // controller is removed since it was disconnected.
   void RemoveDisplayController(uint32_t crtc);
 
-  // Configure a display controller. The display controller is identified by
-  // (|crtc|, |connector|) and the controller is modeset using |mode|.
+  // Configure (and add if not present) a display controller. The display
+  // controller is identified by (|crtc|, |connector|) and the controller is
+  // modeset using |mode|.
   bool ConfigureDisplayController(uint32_t crtc,
                                   uint32_t connector,
                                   const gfx::Point& origin,
