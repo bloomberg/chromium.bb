@@ -10,6 +10,20 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_POSIX)
+
+namespace {
+
+bool IsGUIDv4(const std::string& guid) {
+  // The format of GUID version 4 must be xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx,
+  // where y is one of [8, 9, A, B].
+  return base::IsValidGUID(guid) && guid[14] == '4' &&
+         (guid[19] == '8' || guid[19] == '9' || guid[19] == 'A' ||
+          guid[19] == 'a' || guid[19] == 'B' || guid[19] == 'b');
+}
+
+}  // namespace
+
+
 TEST(GUIDTest, GUIDGeneratesAllZeroes) {
   uint64 bytes[] = { 0, 0 };
   std::string clientid = base::RandomDataToGUIDString(bytes);
@@ -41,5 +55,9 @@ TEST(GUIDTest, GUIDBasicUniqueness) {
     EXPECT_EQ(36U, guid1.length());
     EXPECT_EQ(36U, guid2.length());
     EXPECT_NE(guid1, guid2);
+#if defined(OS_POSIX)
+    EXPECT_TRUE(IsGUIDv4(guid1));
+    EXPECT_TRUE(IsGUIDv4(guid2));
+#endif
   }
 }
