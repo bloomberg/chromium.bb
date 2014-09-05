@@ -138,7 +138,6 @@ BrowserActionsContainer::BrowserActionsContainer(
       suppress_chevron_(false),
       resize_amount_(0),
       animation_target_size_(0),
-      task_factory_(this),
       show_menu_task_factory_(this) {
   set_id(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 
@@ -197,12 +196,12 @@ void BrowserActionsContainer::Init() {
     SetContainerWidth();
 }
 
-BrowserActionView* BrowserActionsContainer::GetBrowserActionView(
-    ExtensionAction* action) {
-  for (BrowserActionViews::iterator i(browser_action_views_.begin());
-       i != browser_action_views_.end(); ++i) {
-    if ((*i)->extension_action() == action)
-      return *i;
+BrowserActionView* BrowserActionsContainer::GetViewForExtension(
+    const Extension* extension) {
+  for (BrowserActionViews::iterator view = browser_action_views_.begin();
+       view != browser_action_views_.end(); ++view) {
+    if ((*view)->extension() == extension)
+      return *view;
   }
   return NULL;
 }
@@ -418,10 +417,6 @@ bool BrowserActionsContainer::AreDropTypesRequired() {
 
 bool BrowserActionsContainer::CanDrop(const OSExchangeData& data) {
   return BrowserActionDragData::CanDrop(data, profile_);
-}
-
-void BrowserActionsContainer::OnDragEntered(
-    const ui::DropTargetEvent& event) {
 }
 
 int BrowserActionsContainer::OnDragUpdated(
@@ -670,14 +665,6 @@ extensions::ActiveTabPermissionGranter*
     return NULL;
   return extensions::TabHelper::FromWebContents(web_contents)->
       active_tab_permission_granter();
-}
-
-void BrowserActionsContainer::MoveBrowserAction(const std::string& extension_id,
-                                                size_t new_index) {
-  const Extension* extension = extensions::ExtensionRegistry::Get(profile_)->
-      enabled_extensions().GetByID(extension_id);
-  model_->MoveExtensionIcon(extension, new_index);
-  SchedulePaint();
 }
 
 size_t BrowserActionsContainer::GetFirstVisibleIconIndex() const {
@@ -1056,17 +1043,6 @@ bool BrowserActionsContainer::ShouldDisplayBrowserAction(
   // Only display incognito-enabled extensions while in incognito mode.
   return !profile_->IsOffTheRecord() ||
       extensions::util::IsIncognitoEnabled(extension->id(), profile_);
-}
-
-BrowserActionView* BrowserActionsContainer::GetViewForExtension(
-    const Extension* extension) {
-  for (BrowserActionViews::iterator view = browser_action_views_.begin();
-       view != browser_action_views_.end(); ++view) {
-    if ((*view)->extension() == extension)
-      return *view;
-  }
-
-  return NULL;
 }
 
 size_t BrowserActionsContainer::GetIconCount() const {

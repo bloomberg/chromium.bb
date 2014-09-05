@@ -7,19 +7,19 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_action.h"
-#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
+#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/toolbar/browser_action_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
-#include "ui/gfx/canvas.h"
+#include "extensions/common/extension_set.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/controls/menu/submenu_view.h"
-#include "ui/views/widget/widget.h"
 
 // In the browser actions container's chevron menu, a menu item view's icon
 // comes from BrowserActionView::GetIconWithBadge() when the menu item view is
@@ -68,7 +68,7 @@ BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
       observer_(NULL),
       menu_button_(menu_button),
       menu_(NULL),
-      views_(&views),
+      views_(views),
       start_index_(start_index),
       for_drop_(for_drop) {
   menu_ = new views::MenuItemView(this);
@@ -77,8 +77,8 @@ BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
   menu_->set_has_icons(true);
 
   size_t command_id = 1;  // Menu id 0 is reserved, start with 1.
-  for (size_t i = start_index; i < views_->size(); ++i) {
-    BrowserActionView* view = (*views_)[i];
+  for (size_t i = start_index; i < views_.size(); ++i) {
+    BrowserActionView* view = views_[i];
     views::MenuItemView* menu_item = menu_->AppendMenuItemWithIcon(
         command_id,
         base::UTF8ToUTF16(view->extension()->name()),
@@ -129,12 +129,12 @@ void BrowserActionOverflowMenuController::NotifyBrowserActionViewsDeleting() {
 }
 
 bool BrowserActionOverflowMenuController::IsCommandEnabled(int id) const {
-  BrowserActionView* view = (*views_)[start_index_ + id - 1];
+  BrowserActionView* view = views_[start_index_ + id - 1];
   return view->IsEnabled(view->view_controller()->GetCurrentTabId());
 }
 
 void BrowserActionOverflowMenuController::ExecuteCommand(int id) {
-  (*views_)[start_index_ + id - 1]->view_controller()->ExecuteActionByUser();
+  views_[start_index_ + id - 1]->view_controller()->ExecuteActionByUser();
 }
 
 bool BrowserActionOverflowMenuController::ShowContextMenu(
@@ -142,7 +142,7 @@ bool BrowserActionOverflowMenuController::ShowContextMenu(
     int id,
     const gfx::Point& p,
     ui::MenuSourceType source_type) {
-  BrowserActionView* view = (*views_)[start_index_ + id - 1];
+  BrowserActionView* view = views_[start_index_ + id - 1];
   if (!view->extension()->ShowConfigureContextMenus())
     return false;
 
@@ -219,8 +219,7 @@ int BrowserActionOverflowMenuController::OnPerformDrop(
   if (!drop_data.Read(event.data()))
     return ui::DragDropTypes::DRAG_NONE;
 
-  size_t drop_index;
-  ViewForId(menu->GetCommand(), &drop_index);
+  size_t drop_index = IndexForId(menu->GetCommand());
 
   // When not dragging within the overflow menu (dragging an icon into the menu)
   // subtract one to get the right index.
@@ -228,7 +227,11 @@ int BrowserActionOverflowMenuController::OnPerformDrop(
       drop_data.index() < owner_->VisibleBrowserActions())
     --drop_index;
 
-  owner_->MoveBrowserAction(drop_data.id(), drop_index);
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(browser_->profile())->
+          enabled_extensions().GetByID(drop_data.id());
+  extensions::ExtensionToolbarModel::Get(browser_->profile())->
+      MoveExtensionIcon(extension, drop_index);
 
   if (for_drop_)
     delete this;
@@ -241,9 +244,9 @@ bool BrowserActionOverflowMenuController::CanDrag(views::MenuItemView* menu) {
 
 void BrowserActionOverflowMenuController::WriteDragData(
     views::MenuItemView* sender, OSExchangeData* data) {
-  size_t drag_index;
-  BrowserActionView* view = ViewForId(sender->GetCommand(), &drag_index);
-  BrowserActionDragData drag_data(view->extension()->id(), drag_index);
+  size_t drag_index = IndexForId(sender->GetCommand());
+  const extensions::Extension* extension = views_[drag_index]->extension();
+  BrowserActionDragData drag_data(extension->id(), drag_index);
   drag_data.Write(owner_->profile(), data);
 }
 
@@ -252,12 +255,9 @@ int BrowserActionOverflowMenuController::GetDragOperations(
   return ui::DragDropTypes::DRAG_MOVE;
 }
 
-BrowserActionView* BrowserActionOverflowMenuController::ViewForId(
-    int id, size_t* index) {
+size_t BrowserActionOverflowMenuController::IndexForId(int id) const {
   // The index of the view being dragged (GetCommand gives a 1-based index into
   // the overflow menu).
-  size_t view_index = owner_->VisibleBrowserActions() + id - 1;
-  if (index)
-    *index = view_index;
-  return owner_->GetBrowserActionViewAt(view_index);
+  DCHECK_GT(owner_->VisibleBrowserActions() + id, 0u);
+  return owner_->VisibleBrowserActions() + id - 1;
 }

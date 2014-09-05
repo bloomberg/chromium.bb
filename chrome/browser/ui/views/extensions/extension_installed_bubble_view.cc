@@ -527,8 +527,6 @@ ExtensionInstalledBubbleView::~ExtensionInstalledBubbleView() {}
 bool ExtensionInstalledBubbleView::MaybeShowNow() {
   BrowserView* browser_view =
       BrowserView::GetBrowserViewForBrowser(bubble_.browser());
-  extensions::ExtensionActionManager* extension_action_manager =
-      extensions::ExtensionActionManager::Get(bubble_.browser()->profile());
 
   views::View* reference_view = NULL;
   if (bubble_.type() == bubble_.BROWSER_ACTION) {
@@ -537,8 +535,7 @@ bool ExtensionInstalledBubbleView::MaybeShowNow() {
     if (container->animating())
       return false;
 
-    reference_view = container->GetBrowserActionView(
-        extension_action_manager->GetBrowserAction(*bubble_.extension()));
+    reference_view = container->GetViewForExtension(bubble_.extension());
     // If the view is not visible then it is in the chevron, so point the
     // install bubble to the chevron instead. If this is an incognito window,
     // both could be invisible.
@@ -550,7 +547,8 @@ bool ExtensionInstalledBubbleView::MaybeShowNow() {
   } else if (bubble_.type() == bubble_.PAGE_ACTION) {
     LocationBarView* location_bar_view = browser_view->GetLocationBarView();
     ExtensionAction* page_action =
-        extension_action_manager->GetPageAction(*bubble_.extension());
+        extensions::ExtensionActionManager::Get(bubble_.browser()->profile())->
+            GetPageAction(*bubble_.extension());
     location_bar_view->SetPreviewEnabledPageAction(page_action,
                                                    true);  // preview_enabled
     reference_view = location_bar_view->GetPageActionView(page_action);

@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/views/extensions/browser_action_overflow_menu_controller.h"
 #include "chrome/browser/ui/views/toolbar/browser_action_view.h"
-#include "content/public/browser/notification_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -160,8 +159,10 @@ class BrowserActionsContainer
     return browser_action_views_[index];
   }
 
-  // Retrieve the BrowserActionView for a certain extension |action|.
-  BrowserActionView* GetBrowserActionView(ExtensionAction* action);
+  // Returns the BrowserActionView* associated with the given |extension|, or
+  // NULL if none exists.
+  BrowserActionView* GetViewForExtension(
+      const extensions::Extension* extension);
 
   // Update the views to reflect the state of the browser action icons.
   void RefreshBrowserActionViews();
@@ -198,7 +199,6 @@ class BrowserActionsContainer
       std::set<ui::OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
   virtual bool AreDropTypesRequired() OVERRIDE;
   virtual bool CanDrop(const ui::OSExchangeData& data) OVERRIDE;
-  virtual void OnDragEntered(const ui::DropTargetEvent& event) OVERRIDE;
   virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void OnDragExited() OVERRIDE;
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
@@ -241,9 +241,6 @@ class BrowserActionsContainer
   virtual extensions::ActiveTabPermissionGranter*
       GetActiveTabPermissionGranter() OVERRIDE;
 
-  // Moves a browser action with |id| to |new_index|.
-  void MoveBrowserAction(const std::string& extension_id, size_t new_index);
-
   // Retrieve the current popup.  This should only be used by unit tests.
   ExtensionPopup* TestGetPopup();
 
@@ -265,7 +262,6 @@ class BrowserActionsContainer
 
  private:
   friend class BrowserActionView;  // So it can access IconWidth().
-  friend class ShowFolderMenuTask;
 
   // A struct representing the position at which an action will be dropped.
   struct DropPosition;
@@ -342,11 +338,6 @@ class BrowserActionsContainer
   // Return the index of the first visible icon.
   size_t GetFirstVisibleIconIndex() const;
 
-  // Returns the BrowserActionView* associated with the given |extension|, or
-  // NULL if none exists.
-  BrowserActionView* GetViewForExtension(
-      const extensions::Extension* extension);
-
   // Returns the number of icons that this container should draw. This differs
   // from the model's GetVisibleIconCount if this container is for the overflow.
   size_t GetIconCount() const;
@@ -418,8 +409,6 @@ class BrowserActionsContainer
 
   // The class that registers for keyboard shortcuts for extension commands.
   scoped_ptr<ExtensionKeybindingRegistryViews> extension_keybinding_registry_;
-
-  base::WeakPtrFactory<BrowserActionsContainer> task_factory_;
 
   // Handles delayed showing of the overflow menu when hovering.
   base::WeakPtrFactory<BrowserActionsContainer> show_menu_task_factory_;
