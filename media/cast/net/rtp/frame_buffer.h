@@ -20,10 +20,12 @@ class FrameBuffer {
  public:
   FrameBuffer();
   ~FrameBuffer();
-  void InsertPacket(const uint8* payload_data,
+  bool InsertPacket(const uint8* payload_data,
                     size_t payload_size,
                     const RtpCastHeader& rtp_header);
   bool Complete() const;
+
+  void GetMissingPackets(bool newest_frame, PacketIdSet* missing_packets) const;
 
   // If a frame is complete, sets the frame IDs and RTP timestamp in |frame|,
   // and also copies the data from all packets into the data field in |frame|.
@@ -32,13 +34,14 @@ class FrameBuffer {
   bool AssembleEncodedFrame(EncodedFrame* frame) const;
 
   bool is_key_frame() const { return is_key_frame_; }
-
   uint32 last_referenced_frame_id() const { return last_referenced_frame_id_; }
+  uint32 frame_id() const { return frame_id_; }
 
  private:
   uint32 frame_id_;
   uint16 max_packet_id_;
   uint16 num_packets_received_;
+  uint16 max_seen_packet_id_;
   uint16 new_playout_delay_ms_;
   bool is_key_frame_;
   size_t total_data_size_;

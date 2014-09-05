@@ -5,6 +5,7 @@
 #include "media/cast/net/rtp/cast_message_builder.h"
 
 #include "media/cast/cast_defines.h"
+#include "media/cast/net/rtp/framer.h"
 
 namespace media {
 namespace cast {
@@ -12,13 +13,13 @@ namespace cast {
 CastMessageBuilder::CastMessageBuilder(
     base::TickClock* clock,
     RtpPayloadFeedback* incoming_payload_feedback,
-    FrameIdMap* frame_id_map,
+    const Framer* framer,
     uint32 media_ssrc,
     bool decoder_faster_than_max_frame_rate,
     int max_unacked_frames)
     : clock_(clock),
       cast_feedback_(incoming_payload_feedback),
-      frame_id_map_(frame_id_map),
+      framer_(framer),
       media_ssrc_(media_ssrc),
       decoder_faster_than_max_frame_rate_(decoder_faster_than_max_frame_rate),
       max_unacked_frames_(max_unacked_frames),
@@ -51,7 +52,7 @@ void CastMessageBuilder::CompleteFrameReceived(uint32 frame_id) {
 
 bool CastMessageBuilder::UpdateAckMessage(uint32 frame_id) {
   if (!decoder_faster_than_max_frame_rate_) {
-    int complete_frame_count = frame_id_map_->NumberOfCompleteFrames();
+    int complete_frame_count = framer_->NumberOfCompleteFrames();
     if (complete_frame_count > max_unacked_frames_) {
       // We have too many frames pending in our framer; slow down ACK.
       if (!slowing_down_ack_) {
@@ -95,7 +96,7 @@ bool CastMessageBuilder::UpdateAckMessage(uint32 frame_id) {
 bool CastMessageBuilder::TimeToSendNextCastMessage(
     base::TimeTicks* time_to_send) {
   // We haven't received any packets.
-  if (last_update_time_.is_null() && frame_id_map_->Empty())
+  if (last_update_time_.is_null() && framer_->Empty())
     return false;
 
   *time_to_send = last_update_time_ + base::TimeDelta::FromMilliseconds(
@@ -120,7 +121,7 @@ void CastMessageBuilder::Reset() {
 
 bool CastMessageBuilder::UpdateCastMessageInternal(RtcpCastMessage* message) {
   if (last_update_time_.is_null()) {
-    if (!frame_id_map_->Empty()) {
+    if (!framer_->Empty()) {
       // We have received packets.
       last_update_time_ = clock_->NowTicks();
     }
@@ -148,10 +149,10 @@ void CastMessageBuilder::BuildPacketList() {
   cast_msg_.missing_frames_and_packets.clear();
 
   // Are we missing packets?
-  if (frame_id_map_->Empty())
+  if (framer_->Empty())
     return;
 
-  uint32 newest_frame_id = frame_id_map_->NewestFrameId();
+  uint32 newest_frame_id = framer_->NewestFrameId();
   uint32 next_expected_frame_id = cast_msg_.ack_frame_id + 1;
 
   // Iterate over all frames.
@@ -169,9 +170,9 @@ void CastMessageBuilder::BuildPacketList() {
     }
 
     PacketIdSet missing;
-    if (frame_id_map_->FrameExists(next_expected_frame_id)) {
+    if (framer_->FrameExists(next_expected_frame_id)) {
       bool last_frame = (newest_frame_id == next_expected_frame_id);
-      frame_id_map_->GetMissingPackets(
+      framer_->GetMissingPackets(
           next_expected_frame_id, last_frame, &missing);
       if (!missing.empty()) {
         time_last_nacked_map_[next_expected_frame_id] = now;

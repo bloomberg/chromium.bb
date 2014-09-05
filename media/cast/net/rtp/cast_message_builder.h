@@ -11,12 +11,12 @@
 #include <map>
 
 #include "media/cast/net/rtcp/rtcp.h"
-#include "media/cast/net/rtp/frame_id_map.h"
 #include "media/cast/net/rtp/rtp_receiver_defines.h"
 
 namespace media {
 namespace cast {
 
+class Framer;
 class RtpPayloadFeedback;
 
 typedef std::map<uint32, base::TimeTicks> TimeLastNackMap;
@@ -25,7 +25,7 @@ class CastMessageBuilder {
  public:
   CastMessageBuilder(base::TickClock* clock,
                      RtpPayloadFeedback* incoming_payload_feedback,
-                     FrameIdMap* frame_id_map,
+                     const Framer* framer,
                      uint32 media_ssrc,
                      bool decoder_faster_than_max_frame_rate,
                      int max_unacked_frames);
@@ -44,8 +44,8 @@ class CastMessageBuilder {
   base::TickClock* const clock_;  // Not owned by this class.
   RtpPayloadFeedback* const cast_feedback_;
 
-  // CastMessageBuilder has only const access to the frame id mapper.
-  const FrameIdMap* const frame_id_map_;
+  // CastMessageBuilder has only const access to the framer.
+  const Framer* const framer_;
   const uint32 media_ssrc_;
   const bool decoder_faster_than_max_frame_rate_;
   const int max_unacked_frames_;

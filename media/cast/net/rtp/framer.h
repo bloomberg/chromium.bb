@@ -15,7 +15,6 @@
 #include "media/cast/net/rtcp/rtcp.h"
 #include "media/cast/net/rtp/cast_message_builder.h"
 #include "media/cast/net/rtp/frame_buffer.h"
-#include "media/cast/net/rtp/frame_id_map.h"
 #include "media/cast/net/rtp/rtp_receiver_defines.h"
 
 namespace media {
@@ -59,12 +58,34 @@ class Framer {
   bool TimeToSendNextCastMessage(base::TimeTicks* time_to_send);
   void SendCastMessage();
 
+  bool Empty() const;
+  bool FrameExists(uint32 frame_id) const;
+  uint32 NewestFrameId() const;
+
+  void RemoveOldFrames(uint32 frame_id);
+
+  // Identifies the next frame to be released (rendered).
+  bool NextContinuousFrame(uint32* frame_id) const;
+  uint32 LastContinuousFrame() const;
+
+  bool NextFrameAllowingSkippingFrames(uint32* frame_id) const;
+  bool HaveMultipleDecodableFrames() const;
+
+  int NumberOfCompleteFrames() const;
+  void GetMissingPackets(uint32 frame_id,
+                         bool last_frame,
+                         PacketIdSet* missing_packets) const;
+
  private:
+  bool ContinuousFrame(FrameBuffer* frame) const;
+  bool DecodableFrame(FrameBuffer* frame) const;
+
   const bool decoder_faster_than_max_frame_rate_;
   FrameList frames_;
-  FrameIdMap frame_id_map_;
-
   scoped_ptr<CastMessageBuilder> cast_msg_builder_;
+  bool waiting_for_key_;
+  uint32 last_released_frame_;
+  uint32 newest_frame_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Framer);
 };

@@ -8,6 +8,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/net/rtcp/rtcp.h"
 #include "media/cast/net/rtp/cast_message_builder.h"
+#include "media/cast/net/rtp/framer.h"
 #include "media/cast/net/rtp/rtp_receiver_defines.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -82,9 +83,14 @@ class NackFeedbackVerification : public RtpPayloadFeedback {
 class CastMessageBuilderTest : public ::testing::Test {
  protected:
   CastMessageBuilderTest()
-      : cast_msg_builder_(new CastMessageBuilder(&testing_clock_,
+      : framer_(&testing_clock_,
+                &feedback_,
+                kSsrc,
+                true,
+                10),
+        cast_msg_builder_(new CastMessageBuilder(&testing_clock_,
                                                  &feedback_,
-                                                 &frame_id_map_,
+                                                 &framer_,
                                                  kSsrc,
                                                  true,
                                                  0)) {
@@ -110,8 +116,9 @@ class CastMessageBuilderTest : public ::testing::Test {
   void SetKeyFrame(bool is_key) { rtp_header_.is_key_frame = is_key; }
 
   void InsertPacket() {
-    PacketType packet_type = frame_id_map_.InsertPacket(rtp_header_);
-    if (packet_type == kNewPacketCompletingFrame) {
+    bool duplicate;
+    uint8 payload = 0;
+    if (framer_.InsertPacket(&payload, 1, rtp_header_, &duplicate)) {
       cast_msg_builder_->CompleteFrameReceived(rtp_header_.frame_id);
     }
     cast_msg_builder_->UpdateCastMessage();
@@ -120,16 +127,16 @@ class CastMessageBuilderTest : public ::testing::Test {
   void SetDecoderSlowerThanMaxFrameRate(int max_unacked_frames) {
     cast_msg_builder_.reset(new CastMessageBuilder(&testing_clock_,
                                                    &feedback_,
-                                                   &frame_id_map_,
+                                                   &framer_,
                                                    kSsrc,
                                                    false,
                                                    max_unacked_frames));
   }
 
   NackFeedbackVerification feedback_;
+  Framer framer_;
   scoped_ptr<CastMessageBuilder> cast_msg_builder_;
   RtpCastHeader rtp_header_;
-  FrameIdMap frame_id_map_;
   base::SimpleTestTickClock testing_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMessageBuilderTest);
@@ -196,7 +203,7 @@ TEST_F(CastMessageBuilderTest, RemoveOldFrames) {
   InsertPacket();
   testing_clock_.Advance(
       base::TimeDelta::FromMilliseconds(kLongTimeIncrementMs));
-  frame_id_map_.RemoveOldFrames(5);  // Simulate 5 being pulled for rendering.
+  framer_.RemoveOldFrames(5);  // Simulate 5 being pulled for rendering.
   cast_msg_builder_->UpdateCastMessage();
   EXPECT_TRUE(feedback_.triggered());
   EXPECT_EQ(5u, feedback_.last_frame_acked());
@@ -283,7 +290,7 @@ TEST_F(CastMessageBuilderTest, Reset) {
   testing_clock_.Advance(
       base::TimeDelta::FromMilliseconds(kLongTimeIncrementMs));
   cast_msg_builder_->Reset();
-  frame_id_map_.Clear();
+  framer_.Reset();
   // Should reset nack list state and request a key frame.
   cast_msg_builder_->UpdateCastMessage();
   EXPECT_TRUE(feedback_.triggered());
@@ -325,7 +332,7 @@ TEST_F(CastMessageBuilderTest, BasicRps) {
   EXPECT_EQ(3u, feedback_.last_frame_acked());
   testing_clock_.Advance(
       base::TimeDelta::FromMilliseconds(kLongTimeIncrementMs));
-  frame_id_map_.RemoveOldFrames(3);  // Simulate 3 being pulled for rendering.
+  framer_.RemoveOldFrames(3);  // Simulate 3 being pulled for rendering.
   cast_msg_builder_->UpdateCastMessage();
   EXPECT_TRUE(feedback_.triggered());
   EXPECT_EQ(3u, feedback_.last_frame_acked());
@@ -357,7 +364,7 @@ TEST_F(CastMessageBuilderTest, InOrderRps) {
   InsertPacket();
   testing_clock_.Advance(
       base::TimeDelta::FromMilliseconds(kShortTimeIncrementMs));
-  frame_id_map_.RemoveOldFrames(3);  // Simulate 3 being pulled for rendering.
+  framer_.RemoveOldFrames(3);  // Simulate 3 being pulled for rendering.
   testing_clock_.Advance(
       base::TimeDelta::FromMilliseconds(kShortTimeIncrementMs));
   cast_msg_builder_->UpdateCastMessage();
@@ -414,7 +421,7 @@ TEST_F(CastMessageBuilderTest, SlowDownAck) {
   EXPECT_EQ(expected_frame_id, feedback_.last_frame_acked());
 
   // Simulate frame_id being pulled for rendering.
-  frame_id_map_.RemoveOldFrames(frame_id);
+  framer_.RemoveOldFrames(frame_id);
   // We should now leave the slowdown ACK state.
   ++frame_id;
   SetFrameIds(frame_id, frame_id - 1);

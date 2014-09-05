@@ -111,8 +111,6 @@
         'net/rtp/cast_message_builder.h',
         'net/rtp/frame_buffer.cc',
         'net/rtp/frame_buffer.h',
-        'net/rtp/frame_id_map.cc',
-        'net/rtp/frame_id_map.h',
         'net/rtp/framer.cc',
         'net/rtp/framer.h',
         'net/rtp/receiver_stats.cc',
