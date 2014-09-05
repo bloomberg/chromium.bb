@@ -1214,6 +1214,7 @@
             'renderer/render_widget_browsertest.cc',
             'renderer/resource_fetcher_browsertest.cc',
             'renderer/savable_resources_browsertest.cc',
+            'renderer/scheduler_proxy_task_runner_browsertest.cc',
             'test/accessibility_browser_test_utils.cc',
             'test/accessibility_browser_test_utils.h',
             'test/content_browser_test_test.cc',

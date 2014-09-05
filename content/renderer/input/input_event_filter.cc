@@ -10,6 +10,7 @@
 #include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "cc/input/input_handler.h"
 #include "content/common/input/did_overscroll_params.h"
 #include "content/common/input/web_input_event_traits.h"
@@ -41,8 +42,9 @@ namespace content {
 
 InputEventFilter::InputEventFilter(
     IPC::Listener* main_listener,
+    const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
     const scoped_refptr<base::MessageLoopProxy>& target_loop)
-    : main_loop_(base::MessageLoopProxy::current()),
+    : main_task_runner_(main_task_runner),
       main_listener_(main_listener),
       sender_(NULL),
       target_loop_(target_loop),
@@ -55,7 +57,7 @@ InputEventFilter::InputEventFilter(
 }
 
 void InputEventFilter::SetBoundHandler(const Handler& handler) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   handler_ = handler;
 }
 
@@ -148,10 +150,9 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
         "input",
         "InputEventFilter::ForwardToHandler::ForwardToMainListener",
         TRACE_EVENT_SCOPE_THREAD);
-    main_loop_->PostTask(
+    main_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&InputEventFilter::ForwardToMainListener,
-                   this, message));
+        base::Bind(&InputEventFilter::ForwardToMainListener, this, message));
     return;
   }
 
@@ -183,10 +184,9 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
         TRACE_EVENT_SCOPE_THREAD);
     IPC::Message new_msg = InputMsg_HandleInputEvent(
         routing_id, event, latency_info, is_keyboard_shortcut);
-    main_loop_->PostTask(
+    main_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&InputEventFilter::ForwardToMainListener,
-                   this, new_msg));
+        base::Bind(&InputEventFilter::ForwardToMainListener, this, new_msg));
     return;
   }
 
