@@ -4279,6 +4279,42 @@ handle_primary_client_destroyed(struct wl_listener *listener, void *data)
 	wl_display_terminate(wl_client_get_display(client));
 }
 
+static char *
+weston_choose_default_backend(void)
+{
+	char *backend = NULL;
+
+	if (getenv("WAYLAND_DISPLAY") || getenv("WAYLAND_SOCKET"))
+		backend = strdup("wayland-backend.so");
+	else if (getenv("DISPLAY"))
+		backend = strdup("x11-backend.so");
+	else
+		backend = strdup(WESTON_NATIVE_BACKEND);
+
+	return backend;
+}
+
+static int
+weston_create_listening_socket(struct wl_display *display, const char *socket_name)
+{
+	if (socket_name) {
+		if (wl_display_add_socket(display, socket_name)) {
+			weston_log("fatal: failed to add socket: %m\n");
+			return -1;
+		}
+	} else {
+		socket_name = wl_display_add_socket_auto(display);
+		if (!socket_name) {
+			weston_log("fatal: failed to add socket: %m\n");
+			return -1;
+		}
+	}
+
+	setenv("WAYLAND_DISPLAY", socket_name, 1);
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	int ret = EXIT_SUCCESS;
@@ -4379,14 +4415,8 @@ int main(int argc, char *argv[])
 		weston_config_section_get_string(section, "backend", &backend,
 						 NULL);
 
-	if (!backend) {
-		if (getenv("WAYLAND_DISPLAY") || getenv("WAYLAND_SOCKET"))
-			backend = strdup("wayland-backend.so");
-		else if (getenv("DISPLAY"))
-			backend = strdup("x11-backend.so");
-		else
-			backend = strdup(WESTON_NATIVE_BACKEND);
-	}
+	if (!backend)
+		backend = weston_choose_default_backend();
 
 	backend_init = weston_load_module(backend, "backend_init");
 	free(backend);
@@ -4438,23 +4468,9 @@ int main(int argc, char *argv[])
 			handle_primary_client_destroyed;
 		wl_client_add_destroy_listener(primary_client,
 					       &primary_client_destroyed);
-	} else {
-		if (socket_name) {
-			if (wl_display_add_socket(display, socket_name)) {
-				weston_log("fatal: failed to add socket: %m\n");
-				ret = EXIT_FAILURE;
-				goto out;
-			}
-		} else {
-			socket_name = wl_display_add_socket_auto(display);
-			if (!socket_name) {
-				weston_log("fatal: failed to add socket: %m\n");
-				ret = EXIT_FAILURE;
-				goto out;
-			}
-		}
-
-		setenv("WAYLAND_DISPLAY", socket_name, 1);
+	} else if (weston_create_listening_socket(display, socket_name)) {
+		ret = EXIT_FAILURE;
+		goto out;
 	}
 
 	if (option_shell)
