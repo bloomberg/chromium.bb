@@ -25,10 +25,10 @@ import sys
 import urlparse
 
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gob_util
+from chromite.lib import portage_util
 from chromite.lib import timeout_util
 from chromite.scripts import cros_mark_as_stable
 
@@ -189,17 +189,17 @@ def _GetStickyEBuild(stable_ebuilds):
   elif len(sticky_ebuilds) > 1:
     cros_build_lib.Warning('More than one sticky ebuild found')
 
-  return portage_utilities.BestEBuild(sticky_ebuilds)
+  return portage_util.BestEBuild(sticky_ebuilds)
 
 
-class ChromeEBuild(portage_utilities.EBuild):
+class ChromeEBuild(portage_util.EBuild):
   """Thin sub-class of EBuild that adds a chrome_version field."""
   chrome_version_re = re.compile(r'.*-(%s|9999).*' % (
       _CHROME_VERSION_REGEX))
   chrome_version = ''
 
   def __init__(self, path):
-    portage_utilities.EBuild.__init__(self, path)
+    portage_util.EBuild.__init__(self, path)
     re_match = self.chrome_version_re.match(self.ebuild_path_no_revision)
     if re_match:
       self.chrome_version = re_match.group(1)
@@ -240,7 +240,7 @@ def FindChromeCandidates(package_dir):
   if not stable_ebuilds:
     cros_build_lib.Warning('Missing stable ebuild for %s' % package_dir)
 
-  return portage_utilities.BestEBuild(unstable_ebuilds), stable_ebuilds
+  return portage_util.BestEBuild(unstable_ebuilds), stable_ebuilds
 
 
 def FindChromeUprevCandidate(stable_ebuilds, chrome_rev, sticky_branch):
@@ -284,7 +284,7 @@ def FindChromeUprevCandidate(stable_ebuilds, chrome_rev, sticky_branch):
         candidates.append(ebuild)
 
   if candidates:
-    return portage_utilities.BestEBuild(candidates)
+    return portage_util.BestEBuild(candidates)
   else:
     return None
 
@@ -397,7 +397,7 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_pn,
   if commit:
     chrome_variables[_CHROME_SVN_TAG] = commit
 
-  portage_utilities.EBuild.MarkAsStable(
+  portage_util.EBuild.MarkAsStable(
       unstable_ebuild.ebuild_path, new_ebuild_path,
       chrome_variables, make_stable=mark_stable)
   new_ebuild = ChromeEBuild(new_ebuild_path)
@@ -419,7 +419,7 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_pn,
   if stable_candidate and not stable_candidate.IsSticky():
     git.RunGit(package_dir, ['rm', stable_candidate.ebuild_path])
 
-  portage_utilities.EBuild.CommitChange(
+  portage_util.EBuild.CommitChange(
       _GIT_COMMIT_MESSAGE % {'chrome_pn': chrome_pn,
                              'chrome_rev': chrome_rev,
                              'chrome_version': chrome_version},

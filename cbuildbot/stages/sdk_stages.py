@@ -8,11 +8,11 @@ import json
 import os
 
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import portage_utilities
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
+from chromite.lib import portage_util
 
 
 class SDKPackageStage(generic_stages.BuilderStage):
@@ -90,7 +90,7 @@ class SDKPackageStage(generic_stages.BuilderStage):
       dest_manifest: Path to the manifest that should be generated.
     """
     package_data = {}
-    for key, version in portage_utilities.ListInstalledPackages(sdk_path):
+    for key, version in portage_util.ListInstalledPackages(sdk_path):
       package_data.setdefault(key, []).append((version, {}))
     self._WriteManifest(package_data, dest_manifest)
 

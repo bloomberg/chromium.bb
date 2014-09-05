@@ -23,7 +23,6 @@ from xml.dom import minidom
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import portage_utilities
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import metadata_lib
@@ -36,6 +35,7 @@ from chromite.lib import gob_util
 from chromite.lib import gs
 from chromite.lib import parallel
 from chromite.lib import patch as cros_patch
+from chromite.lib import portage_util
 from chromite.lib import timeout_util
 
 # Third-party libraries bundled with chromite need to be listed after the
@@ -1261,7 +1261,7 @@ class CalculateSuspects(object):
       if not config:
         return None
       for board in config.boards:
-        overlays = portage_utilities.FindOverlays(
+        overlays = portage_util.FindOverlays(
             constants.BOTH_OVERLAYS, board, build_root)
         responsible_overlays.update(overlays)
     return responsible_overlays
@@ -1317,7 +1317,7 @@ class CalculateSuspects(object):
     responsible_overlays = cls.GetResponsibleOverlays(build_root, messages)
     if responsible_overlays is None:
       return changes
-    all_overlays = set(portage_utilities.FindOverlays(
+    all_overlays = set(portage_util.FindOverlays(
         constants.BOTH_OVERLAYS, None, build_root))
     manifest = git.ManifestCheckout.Cached(build_root)
     candidates = []

@@ -8,10 +8,10 @@ from __future__ import print_function
 
 import os
 
+from chromite.cbuildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
-from chromite.cbuildbot import constants
-from chromite.cbuildbot import portage_utilities
+from chromite.lib import portage_util
 
 
 def _ParseArguments(argv):
@@ -41,15 +41,15 @@ def main(argv):
 
   # Verify that a primary overlay exists.
   try:
-    primary_overlay = portage_utilities.FindPrimaryOverlay(*args)
-  except portage_utilities.MissingOverlayException as ex:
+    primary_overlay = portage_util.FindPrimaryOverlay(*args)
+  except portage_util.MissingOverlayException as ex:
     cros_build_lib.Die(str(ex))
 
   # Get the overlays to print.
   if opts.primary_only:
     overlays = [primary_overlay]
   else:
-    overlays = portage_utilities.FindOverlays(*args)
+    overlays = portage_util.FindOverlays(*args)
 
   # Exclude any overlays in src/third_party, for backwards compatibility with
   # scripts that expected these to not be listed.

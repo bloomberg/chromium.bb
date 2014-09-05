@@ -6,10 +6,10 @@
 
 from chromite.cbuildbot import afdo
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import portage_utilities
 from chromite.lib import alerts
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
+from chromite.lib import portage_util
 from chromite.cbuildbot.stages import generic_stages
 
 
@@ -35,8 +35,8 @@ class AFDODataGenerateStage(generic_stages.BoardSpecificBuilderStage,
     arch = self._GetCurrentArch()
     buildroot = self._build_root
     gs_context = gs.GSContext()
-    cpv = portage_utilities.BestVisible(constants.CHROME_CP,
-                                        buildroot=buildroot)
+    cpv = portage_util.BestVisible(constants.CHROME_CP,
+                                   buildroot=buildroot)
     afdo_file = None
 
     # Generation of AFDO could fail for different reasons.
@@ -80,8 +80,8 @@ class AFDOUpdateEbuildStage(generic_stages.BuilderStage):
   def PerformStage(self):
     buildroot = self._build_root
     gs_context = gs.GSContext()
-    cpv = portage_utilities.BestVisible(constants.CHROME_CP,
-                                        buildroot=buildroot)
+    cpv = portage_util.BestVisible(constants.CHROME_CP,
+                                   buildroot=buildroot)
     version_number = cpv.version
 
     # We need the name of one board that has been setup in this

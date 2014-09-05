@@ -8,8 +8,8 @@ import collections
 import sys
 import traceback
 
-from chromite.cbuildbot import portage_utilities
 from chromite.lib import cros_build_lib
+from chromite.lib import portage_util
 
 
 class StepFailure(Exception):
@@ -357,7 +357,7 @@ class BuildFailureMessage(object):
     suspects = set()
     for tb in self.tracebacks:
       for package in tb.exception.failed_packages:
-        failed_projects = portage_utilities.FindWorkonProjects([package])
+        failed_projects = portage_util.FindWorkonProjects([package])
         blame_assigned = False
         for change in changes:
           if change.project in failed_projects:

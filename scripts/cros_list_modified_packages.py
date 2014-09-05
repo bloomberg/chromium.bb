@@ -34,11 +34,11 @@ except ImportError:
   import queue as Queue
 
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib import portage_util
 
 
 class WorkonProjectsMonitor(object):
@@ -159,13 +159,13 @@ def ListWorkonPackagesInfo(board, host):
   install_root = cros_build_lib.GetSysroot(board=board)
   vdb_path = os.path.join(install_root, portage.const.VDB_PATH)
   buildroot, both = constants.SOURCE_ROOT, constants.BOTH_OVERLAYS
-  for overlay in portage_utilities.FindOverlays(both, board, buildroot):
-    for filename, projects in portage_utilities.GetWorkonProjectMap(overlay,
-                                                                    packages):
+  for overlay in portage_util.FindOverlays(both, board, buildroot):
+    for filename, projects in portage_util.GetWorkonProjectMap(overlay,
+                                                               packages):
       # chromeos-base/power_manager/power_manager-9999
       # cp = chromeos-base/power_manager
       # cpv = chromeos-base/power_manager-9999
-      category, pn, p = portage_utilities.SplitEbuildPath(filename)
+      category, pn, p = portage_util.SplitEbuildPath(filename)
       cp = '%s/%s' % (category, pn)
       cpv = '%s/%s' % (category, p)
 

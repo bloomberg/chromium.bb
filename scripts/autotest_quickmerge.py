@@ -18,10 +18,10 @@ import sys
 from collections import namedtuple
 
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
+from chromite.lib import portage_util
 
 
 if cros_build_lib.IsInsideChroot():
@@ -185,7 +185,7 @@ def GetPackageAPI(portage_root, package_cp):
 
   # Convert string match to package dblink.
   package_cpv = matching_packages[0]
-  package_split = portage_utilities.SplitCPV(package_cpv)
+  package_split = portage_util.SplitCPV(package_cpv)
   # pylint: disable-msg=E1101
   package = portage.dblink(package_split.category,
                            package_split.pv, settings=vartree.settings,

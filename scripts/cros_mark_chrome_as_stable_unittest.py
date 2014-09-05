@@ -18,11 +18,11 @@ from textwrap import dedent
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import gob_util
+from chromite.lib import portage_util
 from chromite.scripts import cros_mark_chrome_as_stable
 
 # pylint: disable=W0212,R0904
@@ -280,7 +280,7 @@ class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
     """
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self.mox.StubOutWithMock(git, 'RunGit')
-    self.mox.StubOutWithMock(portage_utilities.EBuild, 'CommitChange')
+    self.mox.StubOutWithMock(portage_util.EBuild, 'CommitChange')
     stable_candidate = cros_mark_chrome_as_stable.ChromeEBuild(old_ebuild_path)
     unstable_ebuild = cros_mark_chrome_as_stable.ChromeEBuild(self.unstable)
     chrome_pn = 'chromeos-chrome'
@@ -290,7 +290,7 @@ class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
 
     git.RunGit(package_dir, ['add', new_ebuild_path])
     git.RunGit(package_dir, ['rm', old_ebuild_path])
-    portage_utilities.EBuild.CommitChange(
+    portage_util.EBuild.CommitChange(
         mox.StrContains(commit_string_indicator), package_dir)
 
     self.mox.ReplayAll()

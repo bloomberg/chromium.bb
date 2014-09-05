@@ -9,10 +9,10 @@ import json
 import os
 
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import portage_util
 
 if cros_build_lib.IsInsideChroot():
   # Only import portage after we've checked that we're inside the chroot.
@@ -89,7 +89,7 @@ def GetToolchainsForBoard(board, buildroot=constants.SOURCE_ROOT):
   Returns:
     The list of toolchain tuples for the given board
   """
-  overlays = portage_utilities.FindOverlays(
+  overlays = portage_util.FindOverlays(
       constants.BOTH_OVERLAYS, None if board in ('all', 'sdk') else board,
       buildroot=buildroot)
   toolchains = GetTuplesForOverlays(overlays)

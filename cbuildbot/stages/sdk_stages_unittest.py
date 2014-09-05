@@ -11,12 +11,12 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
-from chromite.cbuildbot import portage_utilities
 from chromite.cbuildbot.stages import sdk_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.lib import portage_util
 
 
 # pylint: disable=R0901
@@ -37,7 +37,7 @@ class SDKStageTest(generic_stages_unittest.AbstractStageTest):
     osutils.SafeMakedirs(self.fake_chroot)
     osutils.Touch(os.path.join(self.fake_chroot, 'file'))
     for package, v in self.fake_packages:
-      cpv = portage_utilities.SplitCPV('%s-%s' % (package, v))
+      cpv = portage_util.SplitCPV('%s-%s' % (package, v))
       key = '%s/%s' % (cpv.category, cpv.package)
       self.fake_json_data.setdefault(key, []).append([v, {}])
 
@@ -53,11 +53,11 @@ class SDKStageTest(generic_stages_unittest.AbstractStageTest):
     fake_tarball = os.path.join(self.build_root, 'built-sdk.tar.xz')
     fake_manifest = os.path.join(self.build_root,
                                  'built-sdk.tar.xz.Manifest')
-    self.mox.StubOutWithMock(portage_utilities, 'ListInstalledPackages')
+    self.mox.StubOutWithMock(portage_util, 'ListInstalledPackages')
     self.mox.StubOutWithMock(sdk_stages.SDKPackageStage,
                              'CreateRedistributableToolchains')
 
-    portage_utilities.ListInstalledPackages(self.fake_chroot).AndReturn(
+    portage_util.ListInstalledPackages(self.fake_chroot).AndReturn(
         self.fake_packages)
     # This code has its own unit tests, so no need to go testing it here.
     # pylint: disable=E1120

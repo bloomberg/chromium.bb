@@ -18,7 +18,6 @@ from chromite.cbuildbot import cbuildbot_config as config
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import cbuildbot_run
-from chromite.cbuildbot import portage_utilities
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
@@ -26,6 +25,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import partial_mock
+from chromite.lib import portage_util
 from chromite.scripts import cbuildbot
 
 # TODO(build): Finish test wrapper (http://crosbug.com/37517).
@@ -145,7 +145,7 @@ class StageTest(cros_test_lib.MockOutputTestCase,
     if self.RELEASE_TAG is not None:
       self._run.attrs.release_tag = self.RELEASE_TAG
 
-    portage_utilities._OVERLAY_LIST_CMD = '/bin/true'
+    portage_util._OVERLAY_LIST_CMD = '/bin/true'
 
   def tearDown(self):
     # Mimic exiting with statement for self._manager.

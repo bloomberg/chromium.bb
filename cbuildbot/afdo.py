@@ -140,7 +140,7 @@ def CheckAFDOPerfData(arch, cpv, buildroot, gs_context):
 
   Args:
     arch: architecture we're going to build Chrome for.
-    cpv: The portage_utilities.CPV object for chromeos-chrome.
+    cpv: The portage_util.CPV object for chromeos-chrome.
     buildroot: buildroot where AFDO data should be stored.
     gs_context: GS context to retrieve data.
 

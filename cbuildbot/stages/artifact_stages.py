@@ -16,13 +16,13 @@ from chromite.cbuildbot import commands
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import portage_utilities
 from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib import portage_util
 from chromite.scripts import cros_generate_breakpad_symbols
 
 
@@ -95,8 +95,8 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
     # If chrome is not installed, skip archiving.
     chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
     board_path = os.path.join(chroot_path, 'build', self._current_board)
-    if not portage_utilities.IsPackageInstalled(constants.CHROME_CP,
-                                                board_path):
+    if not portage_util.IsPackageInstalled(constants.CHROME_CP,
+                                           board_path):
       return
 
     cmd = ['strip_package', '--board', self._current_board,
@@ -137,7 +137,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
 
     See BuildStandaloneArchive in cbuildbot_commands.py for format docs.
     """
-    custom_artifacts_file = portage_utilities.ReadOverlayFile(
+    custom_artifacts_file = portage_util.ReadOverlayFile(
         'scripts/artifacts.json', board=board)
     artifacts = None
 

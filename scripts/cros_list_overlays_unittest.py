@@ -13,8 +13,8 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
-from chromite.cbuildbot import portage_utilities
 from chromite.lib import cros_test_lib
+from chromite.lib import portage_util
 from chromite.scripts import cros_list_overlays
 
 
@@ -22,8 +22,8 @@ class ListOverlaysTest(cros_test_lib.MockTestCase):
   """Tests for main()"""
 
   def setUp(self):
-    self.pfind_mock = self.PatchObject(portage_utilities, 'FindPrimaryOverlay')
-    self.find_mock = self.PatchObject(portage_utilities, 'FindOverlays')
+    self.pfind_mock = self.PatchObject(portage_util, 'FindPrimaryOverlay')
+    self.find_mock = self.PatchObject(portage_util, 'FindOverlays')
 
   def testSmoke(self):
     """Basic sanity check"""

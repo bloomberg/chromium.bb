@@ -26,13 +26,13 @@ from chromite.cbuildbot import commands
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import portage_utilities
 from chromite.cbuildbot import repository
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib import portage_util
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
 
@@ -145,9 +145,9 @@ class BuilderStage(object):
 
   def _ExtractOverlays(self):
     """Extracts list of overlays into class."""
-    overlays = portage_utilities.FindOverlays(
+    overlays = portage_util.FindOverlays(
         self._run.config.overlays, buildroot=self._build_root)
-    push_overlays = portage_utilities.FindOverlays(
+    push_overlays = portage_util.FindOverlays(
         self._run.config.push_overlays, buildroot=self._build_root)
 
     # Sanity checks.
@@ -698,7 +698,7 @@ class ArchivingStageMixin(object):
     if (not self._IsInUploadBlacklist(filename) and
         (hasattr(self, '_current_board') or board)):
       board = board or self._current_board
-      custom_artifacts_file = portage_utilities.ReadOverlayFile(
+      custom_artifacts_file = portage_util.ReadOverlayFile(
           'scripts/artifacts.json', board=board)
       if custom_artifacts_file is not None:
         json_file = json.loads(custom_artifacts_file)

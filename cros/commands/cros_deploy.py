@@ -9,8 +9,8 @@ import logging
 import urlparse
 
 from chromite import cros
-from chromite.cbuildbot import portage_utilities
 from chromite.lib import cros_build_lib
+from chromite.lib import portage_util
 from chromite.lib import remote_access
 
 
@@ -103,8 +103,7 @@ For more information of cros build usage:
   def GetLatestPackage(self, board, pkg):
     """Returns the path to the latest |pkg| for |board|."""
     sysroot = cros_build_lib.GetSysroot(board=board)
-    matches = portage_utilities.FindPackageNameMatches(
-        pkg, board=board)
+    matches = portage_util.FindPackageNameMatches(pkg, board=board)
     if not matches:
       raise ValueError('Package %s is not installed!' % pkg)
 
@@ -127,7 +126,7 @@ For more information of cros build usage:
         logging.error('Cannot strip package %s', pkg)
         raise
 
-    return portage_utilities.GetBinaryPackagePath(
+    return portage_util.GetBinaryPackagePath(
         cpv.category, cpv.package, cpv.version, sysroot=sysroot,
         packages_dir=packages_dir)
 
@@ -275,7 +274,7 @@ For more information of cros build usage:
 
         if self.clean_binpkg:
           logging.info('Cleaning outdated binary packages for %s', board)
-          portage_utilities.CleanOutdatedBinaryPackages(board)
+          portage_util.CleanOutdatedBinaryPackages(board)
 
         if not self._IsPathWritable(device, self.root):
           # Only remounts rootfs if the given root is not writable.

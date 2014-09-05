@@ -12,7 +12,6 @@ from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
-from chromite.cbuildbot import portage_utilities
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
@@ -20,6 +19,7 @@ from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import alerts
 from chromite.lib import cros_build_lib
 from chromite.lib import git
+from chromite.lib import portage_util
 
 
 
@@ -509,7 +509,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       # After submitting the pool, update the commit hashes for uprevved
       # ebuilds.
       manifest = git.ManifestCheckout.Cached(self._build_root)
-      portage_utilities.EBuild.UpdateCommitHashesForChanges(
+      portage_util.EBuild.UpdateCommitHashesForChanges(
           self.sync_stage.pool.changes, self._build_root, manifest)
       if cbuildbot_config.IsPFQType(self._run.config.build_type):
         super(CommitQueueCompletionStage, self).HandleSuccess()
