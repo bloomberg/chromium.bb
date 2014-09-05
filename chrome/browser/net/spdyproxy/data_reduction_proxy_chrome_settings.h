@@ -46,11 +46,6 @@ class DataReductionProxyChromeSettings
       PrefService* local_state_prefs,
       net::URLRequestContextGetter* request_context);
 
-  // Using the chrome::VersionInfo version, returns the build and patch portion
-  // of the string delimited by a period. If the chrome::VersionInfo version
-  // isn't of the form xx.xx.xx.xx returns an empty string.
-  static std::string GetBuildAndPatchNumber();
-
   // Gets the client type for the data reduction proxy.
   static std::string GetClient();
 

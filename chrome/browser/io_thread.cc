@@ -650,7 +650,7 @@ void IOThread::InitAsync() {
   globals_->data_reduction_proxy_auth_request_handler.reset(
       new data_reduction_proxy::DataReductionProxyAuthRequestHandler(
           DataReductionProxyChromeSettings::GetClient(),
-          DataReductionProxyChromeSettings::GetBuildAndPatchNumber(),
+          chrome::VersionInfo().Version(),
           globals_->data_reduction_proxy_params.get(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
   // This is the same as in ProfileImplIOData except that we do not collect

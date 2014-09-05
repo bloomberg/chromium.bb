@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -25,7 +26,7 @@ namespace data_reduction_proxy {
 // The empty version for the authentication protocol. Currently used by
 // Android webview.
 #if defined(OS_ANDROID)
-const char kAndroidWebViewProtocolVersion[] = "0";
+const char kAndroidWebViewProtocolVersion[] = "";
 #endif
 
 // The clients supported by the data reduction proxy.
@@ -48,8 +49,20 @@ DataReductionProxyAuthRequestHandler::DataReductionProxyAuthRequestHandler(
     : data_reduction_proxy_params_(params),
       network_task_runner_(network_task_runner) {
   client_ = client;
-  version_ = version;
+  GetChromiumBuildAndPatch(version, &build_number_, &patch_number_);
   Init();
+}
+
+void DataReductionProxyAuthRequestHandler::GetChromiumBuildAndPatch(
+    const std::string& version,
+    std::string* build,
+    std::string* patch) {
+  std::vector<std::string> version_parts;
+  base::SplitString(version, '.', &version_parts);
+  if (version_parts.size() != 4)
+    return;
+  *build = version_parts[2];
+  *patch = version_parts[3];
 }
 
 void DataReductionProxyAuthRequestHandler::Init() {
@@ -112,7 +125,9 @@ void DataReductionProxyAuthRequestHandler::AddAuthorizationHeader(
     header_value += ", ";
   }
   header_value +=
-      "ps=" + session_ + ", sid=" + credentials_ +  ", v=" + version_;
+      "ps=" + session_ + ", sid=" + credentials_;
+  if (!build_number_.empty() && !patch_number_.empty())
+    header_value += ", b=" + build_number_ + ", p=" + patch_number_;
   if (!client_.empty())
     header_value += ", c=" + client_;
   headers->SetHeader(kChromeProxyHeader, header_value);

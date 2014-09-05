@@ -38,6 +38,12 @@ class DataReductionProxyAuthRequestHandler {
  public:
   static bool IsKeySetOnCommandLine();
 
+  // Constructs a DataReductionProxyAuthRequestHandler object with the given
+  // client, version, params, and network task runner. The Chromium |version| is
+  // expected to be of the form "xx.xx.xx.xx". If it isn't of this form,
+  // |build_number_| and |patch_number_| are set to empty strings and not
+  // included in the header. http://crbug.com/410127 will change this so that
+  // the version is retrieved inside this constructor.
   DataReductionProxyAuthRequestHandler(
       const std::string& client,
       const std::string& version,
@@ -80,7 +86,15 @@ class DataReductionProxyAuthRequestHandler {
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyAuthRequestHandlerTest,
                            Authorization);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyAuthRequestHandlerTest,
+                           AuthorizationBogusVersion);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyAuthRequestHandlerTest,
                            AuthHashForSalt);
+
+  // Returns the build and patch numbers of |version|. If |version| isn't of the
+  // form xx.xx.xx.xx build and patch are not modified.
+  void GetChromiumBuildAndPatch(const std::string& version,
+                                std::string* build,
+                                std::string* patch);
 
   // Stores the supplied key and sets up credentials suitable for authenticating
   // with the data reduction proxy.
@@ -102,7 +116,8 @@ class DataReductionProxyAuthRequestHandler {
   // Name of the client and version of the data reduction proxy protocol to use.
   // Both live on the IO thread.
   std::string client_;
-  std::string version_;
+  std::string build_number_;
+  std::string patch_number_;
 
   // The last time the session was updated. Used to ensure that a session is
   // never used for more than twenty-four hours.

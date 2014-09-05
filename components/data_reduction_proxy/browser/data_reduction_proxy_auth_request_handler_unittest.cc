@@ -31,7 +31,10 @@ const char kOtherProxy[] = "testproxy:17";
 #else
   const char kClient[] = "";
 #endif
-const char kVersion[] = "0";
+const char kVersion[] = "0.1.2.3";
+const char kExpectedBuild[] = "2";
+const char kExpectedPatch[] = "3";
+const char kBogusVersion[] = "0.0";
 const char kTestKey[] = "test-key";
 const char kExpectedCredentials[] = "96bd72ec4a050ba60981743d41787768";
 const char kExpectedSession[] = "0-1633771873-1633771873-1633771873";
@@ -42,24 +45,33 @@ const char kExpectedSession2[] = "0-1633771873-1633771873-1633771873";
 #if defined(OS_ANDROID)
 const char kExpectedHeader2[] =
     "ps=0-1633771873-1633771873-1633771873, "
-    "sid=c911fdb402f578787562cf7f00eda972, v=0, c=android";
+    "sid=c911fdb402f578787562cf7f00eda972, b=2, p=3, c=android";
 const char kExpectedHeader3[] =
     "ps=86401-1633771873-1633771873-1633771873, "
-    "sid=d7c1c34ef6b90303b01c48a6c1db6419, v=0, c=android";
+    "sid=d7c1c34ef6b90303b01c48a6c1db6419, b=2, p=3, c=android";
+const char kExpectedHeader4[] =
+    "ps=0-1633771873-1633771873-1633771873, "
+    "sid=c911fdb402f578787562cf7f00eda972, c=android";
 #elif defined(OS_IOS)
 const char kExpectedHeader2[] =
     "ps=0-1633771873-1633771873-1633771873, "
-    "sid=c911fdb402f578787562cf7f00eda972, v=0, c=ios";
+    "sid=c911fdb402f578787562cf7f00eda972, b=2, p=3, c=ios";
 const char kExpectedHeader3[] =
     "ps=86401-1633771873-1633771873-1633771873, "
-    "sid=d7c1c34ef6b90303b01c48a6c1db6419, v=0, c=ios";
+    "sid=d7c1c34ef6b90303b01c48a6c1db6419, b=2, p=3, c=ios";
+const char kExpectedHeader4[] =
+    "ps=0-1633771873-1633771873-1633771873, "
+    "sid=c911fdb402f578787562cf7f00eda972, c=ios";
 #else
 const char kExpectedHeader2[] =
     "ps=0-1633771873-1633771873-1633771873, "
-    "sid=c911fdb402f578787562cf7f00eda972, v=0";
+    "sid=c911fdb402f578787562cf7f00eda972, b=2, p=3";
 const char kExpectedHeader3[] =
     "ps=86401-1633771873-1633771873-1633771873, "
-    "sid=d7c1c34ef6b90303b01c48a6c1db6419, v=0";
+    "sid=d7c1c34ef6b90303b01c48a6c1db6419, b=2, p=3";
+const char kExpectedHeader4[] =
+    "ps=0-1633771873-1633771873-1633771873, "
+    "sid=c911fdb402f578787562cf7f00eda972";
 #endif
 
 const char kDataReductionProxyKey[] = "12345";
@@ -131,7 +143,8 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, Authorization) {
   auth_handler.Init();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(auth_handler.client_, kClient);
-  EXPECT_EQ(kVersion, auth_handler.version_);
+  EXPECT_EQ(kExpectedBuild, auth_handler.build_number_);
+  EXPECT_EQ(kExpectedPatch, auth_handler.patch_number_);
   EXPECT_EQ(auth_handler.key_, kTestKey);
   EXPECT_EQ(kExpectedCredentials, auth_handler.credentials_);
   EXPECT_EQ(kExpectedSession, auth_handler.session_);
@@ -142,7 +155,6 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, Authorization) {
   EXPECT_EQ(kTestKey2, auth_handler.key_);
   EXPECT_EQ(kExpectedCredentials2, auth_handler.credentials_);
   EXPECT_EQ(kExpectedSession2, auth_handler.session_);
-
 
   // Don't write headers if the proxy is invalid.
   net::HttpRequestHeaders headers;
@@ -197,6 +209,43 @@ TEST_F(DataReductionProxyAuthRequestHandlerTest, Authorization) {
   std::string header_value3;
   headers3.GetHeader(kChromeProxyHeader, &header_value3);
   EXPECT_EQ(kExpectedHeader3, header_value3);
+}
+
+TEST_F(DataReductionProxyAuthRequestHandlerTest, AuthorizationBogusVersion) {
+  scoped_ptr<TestDataReductionProxyParams> params;
+  params.reset(
+      new TestDataReductionProxyParams(
+          DataReductionProxyParams::kAllowed |
+          DataReductionProxyParams::kFallbackAllowed |
+          DataReductionProxyParams::kPromoAllowed,
+          TestDataReductionProxyParams::HAS_EVERYTHING &
+          ~TestDataReductionProxyParams::HAS_DEV_ORIGIN));
+  TestDataReductionProxyAuthRequestHandler auth_handler(kClient,
+                                                        kBogusVersion,
+                                                        params.get(),
+                                                        loop_proxy_);
+  EXPECT_TRUE(auth_handler.build_number_.empty());
+  EXPECT_TRUE(auth_handler.patch_number_.empty());
+
+  // Now set a key.
+  auth_handler.SetKeyOnUI(kTestKey2);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(kTestKey2, auth_handler.key_);
+  EXPECT_EQ(kExpectedCredentials2, auth_handler.credentials_);
+  EXPECT_EQ(kExpectedSession2, auth_handler.session_);
+
+  net::HttpRequestHeaders headers;
+  // Write headers with a valid data reduction proxy;
+  auth_handler.MaybeAddRequestHeader(
+      NULL,
+      net::ProxyServer::FromURI(
+          net::HostPortPair::FromURL(GURL(params->DefaultOrigin())).ToString(),
+          net::ProxyServer::SCHEME_HTTP),
+      &headers);
+  EXPECT_TRUE(headers.HasHeader(kChromeProxyHeader));
+  std::string header_value;
+  headers.GetHeader(kChromeProxyHeader, &header_value);
+  EXPECT_EQ(kExpectedHeader4, header_value);
 }
 
 TEST_F(DataReductionProxyAuthRequestHandlerTest, AuthHashForSalt) {

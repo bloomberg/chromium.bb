@@ -31,6 +31,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/domain_reliability/monitor.h"
@@ -433,7 +434,7 @@ void ProfileImplIOData::InitializeInternal(
   data_reduction_proxy_auth_request_handler_.reset(
       new data_reduction_proxy::DataReductionProxyAuthRequestHandler(
           DataReductionProxyChromeSettings::GetClient(),
-          DataReductionProxyChromeSettings::GetBuildAndPatchNumber(),
+          chrome::VersionInfo().Version(),
           data_reduction_proxy_params_.get(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
   data_reduction_proxy_usage_stats_.reset(
