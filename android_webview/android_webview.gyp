@@ -54,6 +54,16 @@
             '-Wl,--fatal-warnings',
           ],
         }],
+        ['android_webview_build==1 and use_system_stlport==1', {
+          # ICU requires RTTI, which is not present in the system's stlport, so
+          # we have to include gabi++. We can't include it in icu.gyp because
+          # link_settings cannot be used inside target_conditions. This will be
+          # removed once we stop using the system stlport.
+          # http://crbug.com/409851
+          'libraries': [
+            '-lgabi++',
+          ],
+        }],
       ],
       'sources': [
         'lib/main/webview_entry_point.cc',

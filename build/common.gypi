@@ -1797,7 +1797,6 @@
 
         # When building as part of the Android system, use system libraries
         # where possible to reduce ROM size.
-        'use_system_icu%': '<(android_webview_build)',
         'use_system_stlport%': '<(android_webview_build)',
 
         # Copy it out one scope.
