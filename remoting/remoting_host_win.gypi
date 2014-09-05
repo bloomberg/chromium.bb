@@ -252,9 +252,9 @@
             },
             'conditions': [
               ['clang==1', {
-                # atlbase.h contains a global "using namespace WTL;".
+                # atlapp.h contains a global "using namespace WTL;".
                 # TODO: Remove once remoting/host/verify_config_window_win.h no
-                # longer depends on atlbase.h, http://crbug.com/5027
+                # longer depends on atlapp.h, http://crbug.com/5027
                 'VCCLCompilerTool': {
                   'AdditionalOptions': ['-Wno-header-hygiene'],
                 },

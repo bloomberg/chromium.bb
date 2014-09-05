@@ -35,11 +35,11 @@ void POCDLL_API TestThreadBombing(HANDLE log) {
                                    0,     // No creation flags
                                    &tid);
     if (thread) {
-      fprintf(output, "[GRANTED] Creating thread with tid 0x%X\r\n", tid);
+      fprintf(output, "[GRANTED] Creating thread with tid 0x%lX\r\n", tid);
       ::CloseHandle(thread);
       number_errors = 0;
     } else {
-      fprintf(output, "[BLOCKED] Creating thread. Error %d\r\n",
+      fprintf(output, "[BLOCKED] Creating thread. Error %ld\r\n",
               ::GetLastError());
       number_errors++;
     }
@@ -90,10 +90,10 @@ void POCDLL_API TestTakeAllCpu(HANDLE log) {
       ::SetThreadAffinityMask(thread, affinity_mask);
 
       if (::SetThreadPriority(thread, REALTIME_PRIORITY_CLASS)) {
-        fprintf(output, "[GRANTED] Set thread(%d) priority to Realtime\r\n",
+        fprintf(output, "[GRANTED] Set thread(%ld) priority to Realtime\r\n",
                 tid);
       } else {
-        fprintf(output, "[BLOCKED] Set thread(%d) priority to Realtime\r\n",
+        fprintf(output, "[BLOCKED] Set thread(%ld) priority to Realtime\r\n",
                 tid);
       }
 
@@ -103,7 +103,7 @@ void POCDLL_API TestTakeAllCpu(HANDLE log) {
       system_mask = system_mask >> 1;
     }
   } else {
-    fprintf(output, "[ERROR] Cannot get affinity mask. Error %d\r\n",
+    fprintf(output, "[ERROR] Cannot get affinity mask. Error %ld\r\n",
            ::GetLastError());
   }
 }

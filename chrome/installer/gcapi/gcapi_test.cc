@@ -25,7 +25,7 @@ void call_statically() {
   if (result_flag_off != result_flag_on)
       printf("Registry key flag is not being set properly.");
 
-  printf("Static call returned result as %d and reason as %d.\n",
+  printf("Static call returned result as %ld and reason as %ld.\n",
          result_flag_on, reason);
 }
 

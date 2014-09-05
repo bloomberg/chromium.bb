@@ -401,7 +401,7 @@ void MasterSM::DoGetKey(int bytes_read) {
 void MasterSM::DoCreateEntryComplete(int result) {
   std::string key(input_->buffer);
   if (result != net::OK) {
-    printf("Skipping entry \"%s\": %d\n", key.c_str(), GetLastError());
+    printf("Skipping entry \"%s\": %ld\n", key.c_str(), GetLastError());
     return SendGetPrevEntry();
   }
 

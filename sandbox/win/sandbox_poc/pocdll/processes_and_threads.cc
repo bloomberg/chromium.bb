@@ -17,7 +17,7 @@ void POCDLL_API TestProcesses(HANDLE log) {
   HANDLE snapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
   if (INVALID_HANDLE_VALUE == snapshot) {
     fprintf(output, "[BLOCKED] Cannot list all processes on the system. "
-                    "Error %d\r\n", ::GetLastError());
+                    "Error %ld\r\n", ::GetLastError());
     return;
   }
 
@@ -31,13 +31,13 @@ void POCDLL_API TestProcesses(HANDLE log) {
                                    FALSE,  // Do not inherit handle.
                                    process_entry.th32ProcessID);
     if (NULL == process) {
-      fprintf(output, "[BLOCKED] Found process %S:%d but cannot open it. "
-                      "Error %d\r\n",
+      fprintf(output, "[BLOCKED] Found process %S:%ld but cannot open it. "
+                      "Error %ld\r\n",
                       process_entry.szExeFile,
                       process_entry.th32ProcessID,
                       ::GetLastError());
     } else {
-      fprintf(output, "[GRANTED] Found process %S:%d and open succeeded.\r\n",
+      fprintf(output, "[GRANTED] Found process %S:%ld and open succeeded.\r\n",
                       process_entry.szExeFile, process_entry.th32ProcessID);
       ::CloseHandle(process);
     }
@@ -47,7 +47,7 @@ void POCDLL_API TestProcesses(HANDLE log) {
 
   DWORD err_code = ::GetLastError();
   if (ERROR_NO_MORE_FILES != err_code) {
-    fprintf(output, "[ERROR] Error %d while looking at the processes on "
+    fprintf(output, "[ERROR] Error %ld while looking at the processes on "
                     "the system\r\n", err_code);
   }
 
@@ -61,7 +61,7 @@ void POCDLL_API TestThreads(HANDLE log) {
   HANDLE snapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, NULL);
   if (INVALID_HANDLE_VALUE == snapshot) {
     fprintf(output, "[BLOCKED] Cannot list all threads on the system. "
-                    "Error %d\r\n", ::GetLastError());
+                    "Error %ld\r\n", ::GetLastError());
     return;
   }
 
@@ -80,7 +80,7 @@ void POCDLL_API TestThreads(HANDLE log) {
       nb_failure++;
     } else {
       nb_success++;
-      fprintf(output, "[GRANTED] Found thread %d:%d and able to open it.\r\n",
+      fprintf(output, "[GRANTED] Found thread %ld:%ld and able to open it.\r\n",
                       thread_entry.th32OwnerProcessID,
                       thread_entry.th32ThreadID);
       ::CloseHandle(thread);
@@ -91,7 +91,7 @@ void POCDLL_API TestThreads(HANDLE log) {
 
   DWORD err_code = ::GetLastError();
   if (ERROR_NO_MORE_FILES != err_code) {
-    fprintf(output, "[ERROR] Error %d while looking at the processes on "
+    fprintf(output, "[ERROR] Error %ld while looking at the processes on "
                     "the system\r\n", err_code);
   }
 

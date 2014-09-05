@@ -20,7 +20,7 @@ void POCDLL_API TestGetHandle(HANDLE log) {
   // Initialize the NTAPI functions we need
   HMODULE ntdll_handle = ::GetModuleHandle(L"ntdll.dll");
   if (!ntdll_handle) {
-    fprintf(output, "[ERROR] Cannot load ntdll.dll. Error %d\r\n",
+    fprintf(output, "[ERROR] Cannot load ntdll.dll. Error %ld\r\n",
             ::GetLastError());
     return;
   }
@@ -33,7 +33,7 @@ void POCDLL_API TestGetHandle(HANDLE log) {
                       GetProcAddress(ntdll_handle, "NtQuerySystemInformation"));
 
   if (!NtQueryObject || !NtQueryInformationFile || !NtQuerySystemInformation) {
-    fprintf(output, "[ERROR] Cannot load all NT functions. Error %d\r\n",
+    fprintf(output, "[ERROR] Cannot load all NT functions. Error %ld\r\n",
                     ::GetLastError());
     return;
   }
@@ -45,7 +45,7 @@ void POCDLL_API TestGetHandle(HANDLE log) {
       SystemHandleInformation, &temp_info, sizeof(temp_info),
       &buffer_size);
   if (!buffer_size) {
-    fprintf(output, "[ERROR] Get the number of handles. Error 0x%X\r\n",
+    fprintf(output, "[ERROR] Get the number of handles. Error 0x%lX\r\n",
                     status);
     return;
   }
@@ -56,7 +56,7 @@ void POCDLL_API TestGetHandle(HANDLE log) {
   status = NtQuerySystemInformation(SystemHandleInformation, system_handles,
                                     buffer_size, &buffer_size);
   if (STATUS_SUCCESS != status) {
-    fprintf(output, "[ERROR] Failed to get the handle list. Error 0x%X\r\n",
+    fprintf(output, "[ERROR] Failed to get the handle list. Error 0x%lX\r\n",
                     status);
     delete [] system_handles;
     return;
@@ -152,14 +152,14 @@ void POCDLL_API TestGetHandle(HANDLE log) {
       file_name_string.Buffer = file_name->FileName;
       file_name_string.Length = (USHORT)file_name->FileNameLength;
       file_name_string.MaximumLength = (USHORT)file_name->FileNameLength;
-      fprintf(output, "[GRANTED] Handle 0x%4.4X Access: 0x%8.8X "
+      fprintf(output, "[GRANTED] Handle 0x%4.4X Access: 0x%8.8lX "
                       "Type: %-13.13wZ Path: %wZ\r\n",
                       h,
                       system_handles->Information[i].GrantedAccess,
                       type ? &type->TypeName : NULL,
                       &file_name_string);
     } else {
-      fprintf(output, "[GRANTED] Handle 0x%4.4X Access: 0x%8.8X "
+      fprintf(output, "[GRANTED] Handle 0x%4.4X Access: 0x%8.8lX "
                       "Type: %-13.13wZ Path: %wZ\r\n",
                       h,
                       system_handles->Information[i].GrantedAccess,

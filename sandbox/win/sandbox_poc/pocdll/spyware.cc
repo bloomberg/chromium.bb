@@ -19,7 +19,7 @@ void POCDLL_API TestSpyKeys(HANDLE log) {
     fprintf(output, "[GRANTED] successfully registered hotkey\r\n");
     UnregisterHotKey(NULL, 1);
   } else {
-    fprintf(output, "[BLOCKED] Failed to register hotkey. Error = %d\r\n",
+    fprintf(output, "[BLOCKED] Failed to register hotkey. Error = %ld\r\n",
             ::GetLastError());
   }
 
@@ -63,6 +63,6 @@ void POCDLL_API TestSpyScreen(HANDLE log) {
     }
   }
 
-  fprintf(output, "[BLOCKED] Read pixel on screen. Error = %d\r\n",
+  fprintf(output, "[BLOCKED] Read pixel on screen. Error = %ld\r\n",
           ::GetLastError());
 }

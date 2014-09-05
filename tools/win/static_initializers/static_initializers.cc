@@ -26,7 +26,7 @@ static bool LoadDataFromPdb(const wchar_t* filename,
                         (void**)source);
 
   if (FAILED(hr)) {
-    printf("CoCreateInstance failed - HRESULT = %08X\n", hr);
+    printf("CoCreateInstance failed - HRESULT = %08lX\n", hr);
     return false;
   }
 
@@ -36,7 +36,7 @@ static bool LoadDataFromPdb(const wchar_t* filename,
   // Open and prepare the debug data associated with the executable.
   hr = (*source)->loadDataForExe(filename, search_path, NULL);
   if (FAILED(hr)) {
-    printf("loadDataForExe failed - HRESULT = %08X\n", hr);
+    printf("loadDataForExe failed - HRESULT = %08lX\n", hr);
     return false;
   }
 
@@ -44,7 +44,7 @@ static bool LoadDataFromPdb(const wchar_t* filename,
   hr = (*source)->openSession(session);
 
   if (FAILED(hr)) {
-    printf("openSession failed - HRESULT = %08X\n", hr);
+    printf("openSession failed - HRESULT = %08lX\n", hr);
     return false;
   }
 

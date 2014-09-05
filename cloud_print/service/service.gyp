@@ -121,6 +121,16 @@
               'secur32.lib',
           ],
         },
+        'conditions': [
+          ['clang==1', {
+            # atlapp.h contains a global "using namespace WTL;".
+            # TODO: Remove once cloud_print_service.cc no longer depends on
+            # atlapp.h, http://crbug.com/5027
+            'VCCLCompilerTool': {
+              'AdditionalOptions': ['-Wno-header-hygiene'],
+            },
+          }],
+        ],
       },
     },
     {
