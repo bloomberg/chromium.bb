@@ -2052,6 +2052,7 @@ def SendUpstream(parser, args, cmd):
     print 'Failed to push. If this persists, please file a bug.'
     return 1
 
+  killed = False
   if pushed_to_pending:
     try:
       revision = WaitForRealCommit(remote, revision, base_branch, branch)
@@ -2059,7 +2060,7 @@ def SendUpstream(parser, args, cmd):
       # real ref.
       pushed_to_pending = False
     except KeyboardInterrupt:
-      pass
+      killed = True
 
   if cl.GetIssue():
     to_pending = ' to pending queue' if pushed_to_pending else ''
@@ -2096,7 +2097,7 @@ def SendUpstream(parser, args, cmd):
   if os.path.isfile(hook):
     RunCommand([hook, merge_base], error_ok=True)
 
-  return 0
+  return 1 if killed else 0
 
 
 def WaitForRealCommit(remote, pushed_commit, local_base_ref, real_ref):
