@@ -847,6 +847,21 @@ TEST_F(LayerWithNullDelegateTest, SetBoundsSchedulesPaint) {
   WaitForDraw();
 }
 
+void ExpectRgba(int x, int y, SkColor expected_color, SkColor actual_color) {
+  EXPECT_EQ(expected_color, actual_color)
+      << "Pixel error at x=" << x << " y=" << y << "; "
+      << "actual RGBA=("
+      << SkColorGetR(actual_color) << ","
+      << SkColorGetG(actual_color) << ","
+      << SkColorGetB(actual_color) << ","
+      << SkColorGetA(actual_color) << "); "
+      << "expected RGBA=("
+      << SkColorGetR(expected_color) << ","
+      << SkColorGetG(expected_color) << ","
+      << SkColorGetB(expected_color) << ","
+      << SkColorGetA(expected_color) << ")";
+}
+
 // Checks that pixels are actually drawn to the screen with a read back.
 TEST_F(LayerWithRealCompositorTest, DrawPixels) {
   gfx::Size viewport_size = GetCompositor()->size();
@@ -877,18 +892,86 @@ TEST_F(LayerWithRealCompositorTest, DrawPixels) {
     for (int y = 0; y < viewport_size.height(); y++) {
       SkColor actual_color = bitmap.getColor(x, y);
       SkColor expected_color = y < blue_height ? SK_ColorBLUE : SK_ColorRED;
-      EXPECT_EQ(expected_color, actual_color)
-          << "Pixel error at x=" << x << " y=" << y << "; "
-          << "actual RGBA=("
-          << SkColorGetR(actual_color) << ","
-          << SkColorGetG(actual_color) << ","
-          << SkColorGetB(actual_color) << ","
-          << SkColorGetA(actual_color) << "); "
-          << "expected RGBA=("
-          << SkColorGetR(expected_color) << ","
-          << SkColorGetG(expected_color) << ","
-          << SkColorGetB(expected_color) << ","
-          << SkColorGetA(expected_color) << ")";
+      ExpectRgba(x, y, expected_color, actual_color);
+    }
+  }
+}
+
+// Checks that drawing a layer with transparent pixels is blended correctly
+// with the lower layer.
+TEST_F(LayerWithRealCompositorTest, DrawAlphaBlendedPixels) {
+  gfx::Size viewport_size = GetCompositor()->size();
+
+  int test_size = 200;
+  EXPECT_GE(viewport_size.width(), test_size);
+  EXPECT_GE(viewport_size.height(), test_size);
+
+  // Blue with a wee bit of transparency.
+  SkColor blue_with_alpha = SkColorSetARGBInline(40, 10, 20, 200);
+  SkColor blend_color = SkColorSetARGBInline(255, 216, 3, 32);
+
+  scoped_ptr<Layer> background_layer(
+      CreateColorLayer(SK_ColorRED, gfx::Rect(viewport_size)));
+  scoped_ptr<Layer> foreground_layer(
+      CreateColorLayer(blue_with_alpha, gfx::Rect(viewport_size)));
+
+  // This must be set to false for layers with alpha to be blended correctly.
+  foreground_layer->SetFillsBoundsOpaquely(false);
+
+  background_layer->Add(foreground_layer.get());
+  DrawTree(background_layer.get());
+
+  SkBitmap bitmap;
+  ASSERT_TRUE(ReadPixels(&bitmap, gfx::Rect(viewport_size)));
+  ASSERT_FALSE(bitmap.empty());
+
+  SkAutoLockPixels lock(bitmap);
+  for (int x = 0; x < test_size; x++) {
+    for (int y = 0; y < test_size; y++) {
+      SkColor actual_color = bitmap.getColor(x, y);
+      ExpectRgba(x, y, blend_color, actual_color);
+    }
+  }
+}
+
+// Checks that using the AlphaShape filter applied to a layer with
+// transparency, alpha-blends properly with the layer below.
+TEST_F(LayerWithRealCompositorTest, DrawAlphaThresholdFilterPixels) {
+  gfx::Size viewport_size = GetCompositor()->size();
+
+  int test_size = 200;
+  EXPECT_GE(viewport_size.width(), test_size);
+  EXPECT_GE(viewport_size.height(), test_size);
+
+  int blue_height = 10;
+  SkColor blue_with_alpha = SkColorSetARGBInline(40, 0, 0, 255);
+  SkColor blend_color = SkColorSetARGBInline(255, 215, 0, 40);
+
+  scoped_ptr<Layer> background_layer(
+      CreateColorLayer(SK_ColorRED, gfx::Rect(viewport_size)));
+  scoped_ptr<Layer> foreground_layer(
+      CreateColorLayer(blue_with_alpha, gfx::Rect(viewport_size)));
+
+  // Add a shape to restrict the visible part of the layer.
+  SkRegion shape;
+  shape.setRect(0, 0, viewport_size.width(), blue_height);
+  foreground_layer->SetAlphaShape(make_scoped_ptr(new SkRegion(shape)));
+
+  foreground_layer->SetFillsBoundsOpaquely(false);
+
+  background_layer->Add(foreground_layer.get());
+  DrawTree(background_layer.get());
+
+  SkBitmap bitmap;
+  ASSERT_TRUE(ReadPixels(&bitmap, gfx::Rect(viewport_size)));
+  ASSERT_FALSE(bitmap.empty());
+
+  SkAutoLockPixels lock(bitmap);
+  for (int x = 0; x < test_size; x++) {
+    for (int y = 0; y < test_size; y++) {
+      SkColor actual_color = bitmap.getColor(x, y);
+      ExpectRgba(x, y, actual_color,
+                 y < blue_height ? blend_color : SK_ColorRED);
     }
   }
 }
