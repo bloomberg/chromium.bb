@@ -466,7 +466,7 @@ deps_os = {
   },
   'android': {
     'src/third_party/android_protobuf/src':
-     Var('chromium_git') + '/external/android_protobuf.git' + '@' + '48ee66d295979372ed0234cefda42385daae8312',
+     Var('chromium_git') + '/external/android_protobuf.git' + '@' + '94f522f907e3f34f70d9e7816b947e62fddbb267',
 
     'src/third_party/android_tools':
      Var('chromium_git') + '/android_tools.git' + '@' + '7fc902d157a9aed7a2b68adc9c69181b3a43cd58',
