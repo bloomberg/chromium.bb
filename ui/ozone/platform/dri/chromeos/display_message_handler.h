@@ -32,7 +32,8 @@ class DisplayMessageHandler : public GpuPlatformSupport {
 
  private:
   void OnForceDPMSOn();
-  void OnRefreshNativeDisplays();
+  void OnRefreshNativeDisplays(
+      const std::vector<DisplaySnapshot_Params>& cached_displays);
   void OnConfigureNativeDisplay(int64_t id,
                                 const DisplayMode_Params& mode,
                                 const gfx::Point& origin);

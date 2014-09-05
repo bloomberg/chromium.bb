@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
 
+#include "base/debug/trace_event.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
 
 namespace ui {
@@ -17,9 +18,11 @@ DriWindowDelegateImpl::~DriWindowDelegateImpl() {
 }
 
 void DriWindowDelegateImpl::Initialize() {
+  TRACE_EVENT1("dri", "DriWindowDelegateImpl::Initialize", "widget", widget_);
 }
 
 void DriWindowDelegateImpl::Shutdown() {
+  TRACE_EVENT1("dri", "DriWindowDelegateImpl::Shutdown", "widget", widget_);
 }
 
 gfx::AcceleratedWidget DriWindowDelegateImpl::GetAcceleratedWidget() {
@@ -31,6 +34,12 @@ HardwareDisplayController* DriWindowDelegateImpl::GetController() {
 }
 
 void DriWindowDelegateImpl::OnBoundsChanged(const gfx::Rect& bounds) {
+  TRACE_EVENT2("dri",
+               "DriWindowDelegateImpl::OnBoundsChanged",
+               "widget",
+               widget_,
+               "bounds",
+               bounds.ToString());
   controller_ = screen_manager_->GetDisplayController(bounds);
 }
 

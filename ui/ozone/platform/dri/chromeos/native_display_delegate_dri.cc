@@ -52,6 +52,23 @@ uint32_t GetContentProtectionValue(drmModePropertyRes* property,
   return 0;
 }
 
+class DisplaySnapshotComparator {
+ public:
+  DisplaySnapshotComparator(const DisplaySnapshotDri* snapshot)
+      : snapshot_(snapshot) {}
+
+  bool operator()(const DisplaySnapshotDri* other) const {
+    if (snapshot_->connector() == other->connector() &&
+        snapshot_->crtc() == other->crtc())
+      return true;
+
+    return false;
+  }
+
+ private:
+  const DisplaySnapshotDri* snapshot_;
+};
+
 }  // namespace
 
 NativeDisplayDelegateDri::NativeDisplayDelegateDri(
@@ -288,17 +305,24 @@ void NativeDisplayDelegateDri::NotifyScreenManager(
     const std::vector<DisplaySnapshotDri*>& new_displays,
     const std::vector<DisplaySnapshotDri*>& old_displays) const {
   for (size_t i = 0; i < old_displays.size(); ++i) {
-    bool found = false;
-    for (size_t j = 0; j < new_displays.size(); ++j) {
-      if (old_displays[i]->connector() == new_displays[j]->connector() &&
-          old_displays[i]->crtc() == new_displays[j]->crtc()) {
-        found = true;
-        break;
-      }
-    }
+    const std::vector<DisplaySnapshotDri*>::const_iterator it =
+        std::find_if(new_displays.begin(),
+                     new_displays.end(),
+                     DisplaySnapshotComparator(old_displays[i]));
 
-    if (!found)
+    if (it == new_displays.end())
       screen_manager_->RemoveDisplayController(old_displays[i]->crtc());
+  }
+
+  for (size_t i = 0; i < new_displays.size(); ++i) {
+    const std::vector<DisplaySnapshotDri*>::const_iterator it =
+        std::find_if(old_displays.begin(),
+                     old_displays.end(),
+                     DisplaySnapshotComparator(new_displays[i]));
+
+    if (it == old_displays.end())
+      screen_manager_->AddDisplayController(new_displays[i]->crtc(),
+                                            new_displays[i]->connector());
   }
 }
 
