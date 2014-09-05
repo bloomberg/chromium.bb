@@ -80,9 +80,9 @@ FFTFrame::FFTFrame()
 FFTFrame::FFTFrame(const FFTFrame& frame)
     : m_FFTSize(frame.m_FFTSize)
     , m_log2FFTSize(frame.m_log2FFTSize)
-    , m_FFTSetup(frame.m_FFTSetup)
     , m_realData(frame.m_FFTSize)
     , m_imagData(frame.m_FFTSize)
+    , m_FFTSetup(frame.m_FFTSetup)
 {
     // Setup frame data
     m_frame.realp = m_realData.data();
@@ -151,16 +151,6 @@ void FFTFrame::cleanup()
 
     free(fftSetups);
     fftSetups = 0;
-}
-
-float* FFTFrame::realData() const
-{
-    return m_frame.realp;
-}
-
-float* FFTFrame::imagData() const
-{
-    return m_frame.imagp;
 }
 
 } // namespace blink

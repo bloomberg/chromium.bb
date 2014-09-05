@@ -33,15 +33,14 @@
 #include "platform/audio/FFTFrame.h"
 
 #include "platform/audio/VectorMath.h"
-
-#ifndef NDEBUG
-#include <stdio.h>
-#endif
-
 #include "platform/Logging.h"
 #include "wtf/Complex.h"
 #include "wtf/MathExtras.h"
 #include "wtf/OwnPtr.h"
+
+#ifndef NDEBUG
+#include <stdio.h>
+#endif
 
 namespace blink {
 

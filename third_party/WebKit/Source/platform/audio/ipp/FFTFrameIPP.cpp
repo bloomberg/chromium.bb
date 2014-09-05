@@ -45,9 +45,9 @@ const unsigned maximumFFTPower2Size = 24;
 FFTFrame::FFTFrame(unsigned fftSize)
     : m_FFTSize(fftSize)
     , m_log2FFTSize(static_cast<unsigned>(log2(fftSize)))
-    , m_complexData(fftSize)
     , m_realData(fftSize / 2)
     , m_imagData(fftSize / 2)
+    , m_complexData(fftSize)
 {
     // We only allow power of two.
     ASSERT(1UL << m_log2FFTSize == m_FFTSize);
@@ -70,9 +70,9 @@ FFTFrame::FFTFrame()
 FFTFrame::FFTFrame(const FFTFrame& frame)
     : m_FFTSize(frame.m_FFTSize)
     , m_log2FFTSize(frame.m_log2FFTSize)
-    , m_complexData(frame.m_FFTSize)
     , m_realData(frame.m_FFTSize / 2)
     , m_imagData(frame.m_FFTSize / 2)
+    , m_complexData(frame.m_FFTSize)
 {
     ippsDFTInitAlloc_R_32f(&m_DFTSpec, m_FFTSize, IPP_FFT_NODIV_BY_ANY, ippAlgHintFast);
     int bufferSize = 0;
@@ -122,16 +122,6 @@ void FFTFrame::doInverseFFT(float* data)
     const float scale = 1.0 / m_FFTSize;
 
     ippsMulC_32f_I(scale, reinterpret_cast<Ipp32f*>(data), m_FFTSize);
-}
-
-float* FFTFrame::realData() const
-{
-    return const_cast<float*>(m_realData.data());
-}
-
-float* FFTFrame::imagData() const
-{
-    return const_cast<float*>(m_imagData.data());
 }
 
 float* FFTFrame::getUpToDateComplexData()

@@ -45,11 +45,11 @@ const unsigned kMaxFFTPow2Size = 15;
 FFTFrame::FFTFrame(unsigned fftSize)
     : m_FFTSize(fftSize)
     , m_log2FFTSize(static_cast<unsigned>(log2(fftSize)))
+    , m_realData(fftSize / 2)
+    , m_imagData(fftSize / 2)
     , m_forwardContext(0)
     , m_inverseContext(0)
     , m_complexData(fftSize)
-    , m_realData(fftSize / 2)
-    , m_imagData(fftSize / 2)
 {
     // We only allow power of two.
     ASSERT(1UL << m_log2FFTSize == m_FFTSize);
@@ -71,11 +71,11 @@ FFTFrame::FFTFrame()
 FFTFrame::FFTFrame(const FFTFrame& frame)
     : m_FFTSize(frame.m_FFTSize)
     , m_log2FFTSize(frame.m_log2FFTSize)
+    , m_realData(frame.m_FFTSize / 2)
+    , m_imagData(frame.m_FFTSize / 2)
     , m_forwardContext(0)
     , m_inverseContext(0)
     , m_complexData(frame.m_FFTSize)
-    , m_realData(frame.m_FFTSize / 2)
-    , m_imagData(frame.m_FFTSize / 2)
 {
     m_forwardContext = contextForSize(m_log2FFTSize);
     m_inverseContext = contextForSize(m_log2FFTSize);
@@ -152,16 +152,6 @@ void FFTFrame::doInverseFFT(float* data)
 
         omxSP_FFTInv_CCSToR_F32(fftData, data, m_inverseContext);
     }
-}
-
-float* FFTFrame::realData() const
-{
-    return const_cast<float*>(m_realData.data());
-}
-
-float* FFTFrame::imagData() const
-{
-    return const_cast<float*>(m_imagData.data());
 }
 
 OMXFFTSpec_R_F32* FFTFrame::contextForSize(unsigned log2FFTSize)

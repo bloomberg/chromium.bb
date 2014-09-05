@@ -31,6 +31,9 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
+#include "wtf/Forward.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Threading.h"
 
 #if OS(MACOSX)
 #include <Accelerate/Accelerate.h>
@@ -38,15 +41,9 @@
 #include <dl/sp/api/omxSP.h>
 #elif USE(WEBAUDIO_FFMPEG)
 struct RDFTContext;
-#endif
-
-#if USE(WEBAUDIO_IPP)
+#elif USE(WEBAUDIO_IPP)
 #include <ipps.h>
-#endif // USE(WEBAUDIO_IPP)
-
-#include "wtf/Forward.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/Threading.h"
+#endif
 
 namespace blink {
 
@@ -67,80 +64,58 @@ public:
     void doFFT(const float* data);
     void doInverseFFT(float* data);
 
-    float* realData() const;
-    float* imagData() const;
+    float* realData() const { return const_cast<float*>(m_realData.data()); }
+    float* imagData() const { return const_cast<float*>(m_imagData.data()); }
 
-    void print(); // for debugging
+    unsigned fftSize() const { return m_FFTSize; }
+    unsigned log2FFTSize() const { return m_log2FFTSize; }
 
     // CROSS-PLATFORM
     // The remaining public methods have cross-platform implementations:
 
     // Interpolates from frame1 -> frame2 as x goes from 0.0 -> 1.0
     static PassOwnPtr<FFTFrame> createInterpolatedFrame(const FFTFrame& frame1, const FFTFrame& frame2, double x);
-
     void doPaddedFFT(const float* data, size_t dataSize); // zero-padding with dataSize <= fftSize
     double extractAverageGroupDelay();
     void addConstantGroupDelay(double sampleFrameDelay);
     void multiply(const FFTFrame&); // multiplies ourself with frame : effectively operator*=()
 
-    unsigned fftSize() const { return m_FFTSize; }
-    unsigned log2FFTSize() const { return m_log2FFTSize; }
+#ifndef NDEBUG
+    void print(); // for debugging
+#endif
 
 private:
+    void interpolateFrequencyComponents(const FFTFrame& frame1, const FFTFrame& frame2, double x);
+
     unsigned m_FFTSize;
     unsigned m_log2FFTSize;
-
-    void interpolateFrequencyComponents(const FFTFrame& frame1, const FFTFrame& frame2, double x);
+    AudioFloatArray m_realData;
+    AudioFloatArray m_imagData;
 
 #if OS(MACOSX)
     DSPSplitComplex& dspSplitComplex() { return m_frame; }
     DSPSplitComplex dspSplitComplex() const { return m_frame; }
-
     static FFTSetup fftSetupForSize(unsigned fftSize);
-
     static FFTSetup* fftSetups;
-
     FFTSetup m_FFTSetup;
-
     DSPSplitComplex m_frame;
-    AudioFloatArray m_realData;
-    AudioFloatArray m_imagData;
-#else // !OS(MACOSX)
-
-#if USE(WEBAUDIO_FFMPEG)
+#elif USE(WEBAUDIO_FFMPEG)
     static RDFTContext* contextForSize(unsigned fftSize, int trans);
-
     RDFTContext* m_forwardContext;
     RDFTContext* m_inverseContext;
-
     float* getUpToDateComplexData();
     AudioFloatArray m_complexData;
-    AudioFloatArray m_realData;
-    AudioFloatArray m_imagData;
-#endif // USE(WEBAUDIO_FFMPEG)
-
-#if USE(WEBAUDIO_IPP)
+#elif USE(WEBAUDIO_IPP)
     Ipp8u* m_buffer;
     IppsDFTSpec_R_32f* m_DFTSpec;
-
     float* getUpToDateComplexData();
     AudioFloatArray m_complexData;
-    AudioFloatArray m_realData;
-    AudioFloatArray m_imagData;
-#endif // USE(WEBAUDIO_IPP)
-
-#if USE(WEBAUDIO_OPENMAX_DL_FFT)
+#elif USE(WEBAUDIO_OPENMAX_DL_FFT)
     static OMXFFTSpec_R_F32* contextForSize(unsigned log2FFTSize);
-
     OMXFFTSpec_R_F32* m_forwardContext;
     OMXFFTSpec_R_F32* m_inverseContext;
-
     AudioFloatArray m_complexData;
-    AudioFloatArray m_realData;
-    AudioFloatArray m_imagData;
 #endif
-
-#endif // !OS(MACOSX)
 };
 
 } // namespace blink

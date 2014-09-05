@@ -83,18 +83,6 @@ void FFTFrame::cleanup()
     ASSERT_NOT_REACHED();
 }
 
-float* FFTFrame::realData() const
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-float* FFTFrame::imagData() const
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
 } // namespace blink
 
 #endif // !OS(MACOSX) && !USE(WEBAUDIO_FFMPEG) && !USE(WEBAUDIO_IPP) && !USE(WEBAUDIO_OPENMAX_DL_FFT)
