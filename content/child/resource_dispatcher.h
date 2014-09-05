@@ -32,13 +32,10 @@ namespace net {
 struct RedirectInfo;
 }
 
-namespace webkit_glue {
-class ResourceLoaderBridge;
-}
-
 namespace content {
 class RequestPeer;
 class ResourceDispatcherDelegate;
+class ResourceLoaderBridge;
 class ThreadedDataProvider;
 struct ResourceResponseInfo;
 struct RequestInfo;
@@ -59,8 +56,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // Creates a ResourceLoaderBridge for this type of dispatcher, this is so
   // this can be tested regardless of the ResourceLoaderBridge::Create
   // implementation.  Virtual for tests.
-  virtual webkit_glue::ResourceLoaderBridge* CreateBridge(
-      const RequestInfo& request_info);
+  virtual ResourceLoaderBridge* CreateBridge(const RequestInfo& request_info);
 
   // Adds a request from the |pending_requests_| list, returning the new
   // requests' ID.

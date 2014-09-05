@@ -57,7 +57,6 @@ static_library("test_support") {
       "//third_party/WebKit/public:blink",
       "//ui/surface",
       "//v8",
-      "//webkit/child",
       "//webkit/common/gpu",
       "//webkit/browser:storage",
     ]

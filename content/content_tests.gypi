@@ -369,7 +369,6 @@
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
-        '../webkit/child/webkit_child.gyp:webkit_child',
       ],
       'include_dirs': [
         '..',

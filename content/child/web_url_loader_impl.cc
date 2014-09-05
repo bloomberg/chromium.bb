@@ -17,6 +17,7 @@
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
 #include "content/child/resource_dispatcher.h"
+#include "content/child/resource_loader_bridge.h"
 #include "content/child/sync_load_response.h"
 #include "content/child/web_url_request_util.h"
 #include "content/child/weburlresponse_extradata_impl.h"
@@ -39,7 +40,6 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
-#include "webkit/child/resource_loader_bridge.h"
 
 using base::Time;
 using base::TimeTicks;
@@ -57,7 +57,6 @@ using blink::WebURLLoader;
 using blink::WebURLLoaderClient;
 using blink::WebURLRequest;
 using blink::WebURLResponse;
-using webkit_glue::ResourceLoaderBridge;
 
 namespace content {
 

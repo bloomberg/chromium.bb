@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
+#include "content/child/resource_loader_bridge.h"
 #include "content/child/site_isolation_policy.h"
 #include "content/child/sync_load_response.h"
 #include "content/child/threaded_data_provider.h"
@@ -30,9 +31,6 @@
 #include "net/base/net_util.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
-#include "webkit/child/resource_loader_bridge.h"
-
-using webkit_glue::ResourceLoaderBridge;
 
 namespace content {
 

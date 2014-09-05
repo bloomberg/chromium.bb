@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/child/resource_loader_bridge.h"
+#include "content/child/resource_loader_bridge.h"
 
-namespace webkit_glue {
+namespace content {
 
 ResourceLoaderBridge::ResourceLoaderBridge() {}
 
 ResourceLoaderBridge::~ResourceLoaderBridge() {}
 
-}  // namespace webkit_glue
+}  // namespace content

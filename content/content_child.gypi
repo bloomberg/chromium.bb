@@ -151,6 +151,8 @@
       'child/request_info.h',
       'child/resource_dispatcher.cc',
       'child/resource_dispatcher.h',
+      'child/resource_loader_bridge.cc',
+      'child/resource_loader_bridge.h',
       'child/runtime_features.cc',
       'child/runtime_features.h',
       'child/scoped_child_process_reference.cc',
@@ -328,7 +330,6 @@
         '../third_party/WebKit/public/blink.gyp:blink',
         '../third_party/WebKit/public/blink_resources.gyp:blink_resources',
         '../third_party/npapi/npapi.gyp:npapi',
-        '../webkit/child/webkit_child.gyp:webkit_child',
       ],
     }],
     ['use_aura==1', {

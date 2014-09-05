@@ -11,13 +11,10 @@
 #include "content/public/child/request_peer.h"
 #include "url/gurl.h"
 
-namespace webkit_glue {
-class ResourceLoaderBridge;
-}
-
 namespace content {
 class MultipartResponseDelegate;
 class PluginStreamUrl;
+class ResourceLoaderBridge;
 
 // Fetches URLS for a plugin using ResourceDispatcher.
 class PluginURLFetcher : public RequestPeer {
@@ -88,7 +85,7 @@ class PluginURLFetcher : public RequestPeer {
 
   scoped_ptr<MultipartResponseDelegate> multipart_delegate_;
 
-  scoped_ptr<webkit_glue::ResourceLoaderBridge> bridge_;
+  scoped_ptr<ResourceLoaderBridge> bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginURLFetcher);
 };

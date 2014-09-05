@@ -46,7 +46,6 @@ source_set("renderer") {
     "//ui/native_theme",
     "//ui/surface",
     "//v8",
-    "//webkit/child",
     "//webkit/common/gpu",
   ]
 

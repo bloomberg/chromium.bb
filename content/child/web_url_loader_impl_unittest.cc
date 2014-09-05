@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "content/child/resource_dispatcher.h"
+#include "content/child/resource_loader_bridge.h"
 #include "content/public/child/request_peer.h"
 #include "content/public/common/resource_response_info.h"
 #include "net/base/net_errors.h"
@@ -23,7 +24,6 @@
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "url/gurl.h"
-#include "webkit/child/resource_loader_bridge.h"
 
 namespace content {
 namespace {
@@ -54,7 +54,7 @@ const char kMultipartResponse[] =
     "Content-type: text/html\n\n"
     "ah!";
 
-class TestBridge : public webkit_glue::ResourceLoaderBridge,
+class TestBridge : public ResourceLoaderBridge,
                    public base::SupportsWeakPtr<TestBridge> {
  public:
   TestBridge() : peer_(NULL), canceled_(false) {}
@@ -104,7 +104,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
   virtual ~TestResourceDispatcher() {}
 
   // ResourceDispatcher implementation:
-  virtual webkit_glue::ResourceLoaderBridge* CreateBridge(
+  virtual ResourceLoaderBridge* CreateBridge(
       const RequestInfo& request_info) OVERRIDE {
     EXPECT_FALSE(bridge_.get());
     TestBridge* bridge = new TestBridge();

@@ -16,6 +16,7 @@
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
 #include "content/child/resource_dispatcher.h"
+#include "content/child/resource_loader_bridge.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/resource_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -24,9 +25,6 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/child/resource_loader_bridge.h"
-
-using webkit_glue::ResourceLoaderBridge;
 
 namespace content {
 

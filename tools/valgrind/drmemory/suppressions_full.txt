@@ -1258,7 +1258,7 @@ name=bug_108620
 *!blink::Timer<>::fired
 *!blink::ThreadTimers::sharedTimerFiredInternal
 *!blink::ThreadTimers::sharedTimerFired
-*!webkit_glue::WebKitPlatformSupportImpl::DoTimeout
+*!content::BlinkPlatformImpl::DoTimeout
 *!base::BaseTimer<>::TimerTask::Run
 
 UNINITIALIZED READ
@@ -1611,7 +1611,7 @@ name=bug_259789
 *!blink::Timer<>::fired
 *!blink::ThreadTimers::sharedTimerFiredInternal
 *!blink::ThreadTimers::sharedTimerFired
-*!webkit_glue::WebKitPlatformSupportImpl::DoTimeout
+*!content::BlinkPlatformImpl::DoTimeout
 
 UNINITIALIZED READ
 name=bug_290405
@@ -1687,7 +1687,7 @@ name=bug_327672
 *!blink::LinkStyle::setCSSStyleSheet
 *!blink::CSSStyleSheetResource::checkNotify
 ...
-*!webkit_glue::WebURLLoaderImpl::Context::OnCompletedRequest
+*!content::WebURLLoaderImpl::Context::OnCompletedRequest
 
 ###############################################################
 # Real issues in Chromium
