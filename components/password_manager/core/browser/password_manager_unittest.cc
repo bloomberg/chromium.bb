@@ -798,4 +798,31 @@ TEST_F(PasswordManagerTest,
   observed.clear();
 }
 
+// Create a form with a new_password_element. Submit the form with the empty
+// new password value. It shouldn't overwrite the existing password.
+TEST_F(PasswordManagerTest, DoNotUpdateWithEmptyPassword) {
+  std::vector<PasswordForm*> result;  // Empty password store.
+  EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
+      .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleForm());
+  form.new_password_element = ASCIIToUTF16("new_password_element");
+  form.new_password_value.clear();
+  observed.push_back(form);
+  manager()->OnPasswordFormsParsed(observed);    // The initial load.
+  manager()->OnPasswordFormsRendered(observed, true);  // The initial layout.
+
+  // And the form submit contract is to call ProvisionallySavePassword.
+  OnPasswordFormSubmitted(form);
+
+  scoped_ptr<PasswordFormManager> form_to_save;
+  EXPECT_CALL(client_, PromptUserToSavePasswordPtr(_)).Times(0);
+
+  // Now the password manager waits for the login to complete successfully.
+  observed.clear();
+  manager()->OnPasswordFormsParsed(observed);    // The post-navigation load.
+  manager()->OnPasswordFormsRendered(observed,
+                                     true);  // The post-navigation layout.
+}
+
 }  // namespace password_manager
