@@ -110,6 +110,9 @@ namespace {
 // when resizing a window using touchscreen.
 const int kScreenEdgeInsetForTouchDrag = 32;
 
+// Current instance for use by the WorkspaceWindowResizerTest.
+WorkspaceWindowResizer* instance = NULL;
+
 // Returns true if the window should stick to the edge.
 bool ShouldStickToEdge(int distance_from_edge, int sticky_size) {
   return distance_from_edge < sticky_size &&
@@ -256,8 +259,9 @@ const int WorkspaceWindowResizer::kMinOnscreenHeight = 32;
 // static
 const int WorkspaceWindowResizer::kScreenEdgeInset = 8;
 
-// static
-WorkspaceWindowResizer* WorkspaceWindowResizer::instance_ = NULL;
+WorkspaceWindowResizer* WorkspaceWindowResizer::GetInstanceForTest() {
+  return instance;
+}
 
 // Represents the width or height of a window with constraints on its minimum
 // and maximum size. 0 represents a lack of a constraint.
@@ -333,8 +337,8 @@ WorkspaceWindowResizer::~WorkspaceWindowResizer() {
     Shell* shell = Shell::GetInstance();
     shell->cursor_manager()->UnlockCursor();
   }
-  if (instance_ == this)
-    instance_ = NULL;
+  if (instance == this)
+    instance = NULL;
 }
 
 // static
@@ -555,7 +559,7 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
     total_initial_size_ += initial_size;
     total_available += std::max(min_size, initial_size) - min_size;
   }
-  instance_ = this;
+  instance = this;
 }
 
 void WorkspaceWindowResizer::LayoutAttachedWindows(

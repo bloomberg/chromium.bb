@@ -167,6 +167,9 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   const std::vector<aura::Window*> attached_windows_;
 
+  // Returns the currently used instance for test.
+  static WorkspaceWindowResizer* GetInstanceForTest();
+
   bool did_lock_cursor_;
 
   // Set to true once Drag() is invoked and the bounds of the window change.
@@ -220,9 +223,6 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // Used to determine if this has been deleted during a drag such as when a tab
   // gets dragged into another browser window.
   base::WeakPtrFactory<WorkspaceWindowResizer> weak_ptr_factory_;
-
-  // Current instance for use by the WorkspaceWindowResizerTest.
-  static WorkspaceWindowResizer* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizer);
 };

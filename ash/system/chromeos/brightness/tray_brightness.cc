@@ -174,10 +174,10 @@ void BrightnessView::SliderDragEnded(views::Slider* slider) {
 
 TrayBrightness::TrayBrightness(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
-      weak_ptr_factory_(this),
       brightness_view_(NULL),
       current_percent_(100.0),
-      got_current_percent_(false) {
+      got_current_percent_(false),
+      weak_ptr_factory_(this) {
   // Post a task to get the initial brightness; the BrightnessControlDelegate
   // isn't created yet.
   base::MessageLoopForUI::current()->PostTask(

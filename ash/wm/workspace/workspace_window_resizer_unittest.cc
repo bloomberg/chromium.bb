@@ -148,7 +148,7 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
         point_in_parent,
         window_component,
         aura::client::WINDOW_MOVE_SOURCE_MOUSE).release();
-    workspace_resizer_ = WorkspaceWindowResizer::instance_;
+    workspace_resizer_ = WorkspaceWindowResizer::GetInstanceForTest();
     return resizer;
   }
   WorkspaceWindowResizer* CreateWorkspaceResizerForTest(
