@@ -40,7 +40,6 @@ class Google(WebsiteTest):
 
   def Login(self):
     self.GoTo("https://accounts.google.com/ServiceLogin?sacu=1&continue=")
-    self.WaitUntilDisplayed("#Email")
     self.FillUsernameInto("#Email")
     self.FillPasswordInto("#Passwd")
     self.Submit("#Passwd")
@@ -106,7 +105,6 @@ class Twitter(WebsiteTest):
 
   def Login(self):
     self.GoTo("https:///twitter.com")
-    self.WaitUntilDisplayed("#signin-email")
     self.FillUsernameInto("#signin-email")
     self.FillPasswordInto("#signin-password")
     self.Submit("#signin-password")
@@ -173,7 +171,6 @@ class Baidu(WebsiteTest):
 
   def Login(self):
     self.GoTo("https://passport.baidu.com")
-    self.WaitUntilDisplayed("[name='userName']")
     self.FillUsernameInto("[name='userName']")
     self.FillPasswordInto("[name='password']")
     self.Submit("[name='password']")
@@ -202,7 +199,6 @@ class Ebay(WebsiteTest):
 
   def Login(self):
     self.GoTo("https://signin.ebay.com/")
-    self.WaitUntilDisplayed("[name='userid']")
     self.FillUsernameInto("[name='userid']")
     self.FillPasswordInto("[name='pass']")
     self.Submit("[name='pass']")
@@ -219,7 +215,6 @@ class Espn(WebsiteTest):
     frame = self.driver.find_element_by_css_selector("#cboxLoadedContent "
                                                      "iframe")
     self.driver.switch_to_frame(frame)
-    self.WaitUntilDisplayed("#username")
     self.FillUsernameInto("#username")
     self.FillPasswordInto("#password")
     while self.IsDisplayed("#password"):
@@ -232,7 +227,6 @@ class Live(WebsiteTest):
 
   def Login(self):
     self.GoTo("https://login.live.com")
-    self.WaitUntilDisplayed("[name='login']")
     self.FillUsernameInto("[name='login']")
     self.FillPasswordInto("[name='passwd']")
     self.Submit("[name='passwd']")
@@ -243,9 +237,7 @@ class One63(WebsiteTest):
 
   def Login(self):
     self.GoTo("http://www.163.com")
-    self.WaitUntilDisplayed("#js_N_navHighlight")
     self.HoverOver("#js_N_navHighlight")
-    self.WaitUntilDisplayed("#js_loginframe_username")
     self.FillUsernameInto("#js_loginframe_username")
     self.FillPasswordInto(".ntes-loginframe-label-ipt[type='password']")
     self.Click(".ntes-loginframe-btn")
@@ -256,9 +248,7 @@ class Vube(WebsiteTest):
 
   def Login(self):
     self.GoTo("https://vube.com")
-    self.WaitUntilDisplayed("[vube-login='']")
     self.Click("[vube-login='']")
-    self.WaitUntilDisplayed("[ng-model='login.user']")
     self.FillUsernameInto("[ng-model='login.user']")
     self.FillPasswordInto("[ng-model='login.pass']")
     while (self.IsDisplayed("[ng-model='login.pass']")

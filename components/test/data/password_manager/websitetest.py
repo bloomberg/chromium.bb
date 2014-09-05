@@ -83,6 +83,7 @@ class WebsiteTest:
       selector: The element CSS selector.
     """
     logging.info("action: Click %s" % selector)
+    self.WaitUntilDisplayed(selector)
     element = self.driver.find_element_by_css_selector(selector)
     element.click()
 
@@ -101,6 +102,7 @@ class WebsiteTest:
       False otherwise.
     """
     logging.info("action: ClickIfVisible %s" % selector)
+    self.WaitUntilDisplayed(selector)
     try:
       element = self.driver.find_element_by_css_selector(selector)
       element.click()
@@ -128,6 +130,7 @@ class WebsiteTest:
       selector: The element CSS selector.
     """
     logging.info("action: Hover %s" % selector)
+    self.WaitUntilDisplayed(selector)
     element = self.driver.find_element_by_css_selector(selector)
     hover = ActionChains(self.driver).move_to_element(element)
     hover.perform()
@@ -207,7 +210,7 @@ class WebsiteTest:
           different than the one we expected.
     """
     logging.info("action: FillPasswordInto %s" % selector)
-
+    self.WaitUntilDisplayed(selector)
     password_element = self.driver.find_element_by_css_selector(selector)
     # Chrome protects the password inputs and doesn't fill them until
     # the user interacts with the page. To be sure that such thing has
@@ -245,6 +248,7 @@ class WebsiteTest:
           different that the one we expected.
     """
     logging.info("action: FillUsernameInto %s" % selector)
+    self.WaitUntilDisplayed(selector)
     username_element = self.driver.find_element_by_css_selector(selector)
 
     if (self.mode == self.Mode.AUTOFILLED and not self.username_not_auto):
@@ -263,6 +267,7 @@ class WebsiteTest:
       selector: The input CSS selector.
     """
     logging.info("action: Submit %s" % selector)
+    self.WaitUntilDisplayed(selector)
     element = self.driver.find_element_by_css_selector(selector)
     element.submit()
 
