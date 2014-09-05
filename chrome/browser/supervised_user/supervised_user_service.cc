@@ -5,6 +5,7 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -714,6 +715,11 @@ void SupervisedUserService::SetActive(bool active) {
     UpdateSiteLists();
     UpdateManualHosts();
     UpdateManualURLs();
+    if (delegate_) {
+      base::FilePath blacklist_path = delegate_->GetBlacklistPath();
+      if (!blacklist_path.empty())
+        LoadBlacklist(blacklist_path);
+    }
 
 #if !defined(OS_ANDROID)
     // TODO(bauerb): Get rid of the platform-specific #ifdef here.

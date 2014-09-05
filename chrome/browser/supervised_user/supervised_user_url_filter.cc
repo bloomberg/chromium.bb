@@ -212,9 +212,9 @@ GURL SupervisedUserURLFilter::Normalize(const GURL& url) {
 // static
 bool SupervisedUserURLFilter::HasFilteredScheme(const GURL& url) {
   for (size_t i = 0; i < arraysize(kFilteredSchemes); ++i) {
-      if (url.scheme() == kFilteredSchemes[i])
-        return true;
-    }
+    if (url.scheme() == kFilteredSchemes[i])
+      return true;
+  }
   return false;
 }
 
@@ -355,8 +355,7 @@ void SupervisedUserURLFilter::LoadWhitelists(
       base::Bind(&SupervisedUserURLFilter::SetContents, this));
 }
 
-void SupervisedUserURLFilter::SetBlacklist(
-    SupervisedUserBlacklist* blacklist) {
+void SupervisedUserURLFilter::SetBlacklist(SupervisedUserBlacklist* blacklist) {
   blacklist_ = blacklist;
 }
 

@@ -37,6 +37,10 @@ class SupervisedUserSettingsService;
 class SupervisedUserSiteList;
 class SupervisedUserURLFilter;
 
+namespace base {
+class FilePath;
+}
+
 namespace extensions {
 class ExtensionRegistry;
 }
@@ -73,6 +77,9 @@ class SupervisedUserService : public KeyedService,
     // Returns true to indicate that the delegate handled the (de)activation, or
     // false to indicate that the SupervisedUserService itself should handle it.
     virtual bool SetActive(bool active) = 0;
+    // Returns the path to a blacklist file to load, or an empty path to
+    // indicate "none".
+    virtual base::FilePath GetBlacklistPath() const = 0;
   };
 
   virtual ~SupervisedUserService();
