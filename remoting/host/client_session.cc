@@ -235,12 +235,13 @@ void ClientSession::DeliverClientMessage(
       }
       return;
     } else {
-      extension_manager_->OnExtensionMessage(message);
-      return;
+      if (!extension_manager_->OnExtensionMessage(message))
+        return;
+
+      DLOG(INFO) << "Unexpected message received: "
+                 << message.type() << ": " << message.data();
     }
   }
-  HOST_LOG << "Unexpected message received: "
-            << message.type() << ": " << message.data();
 }
 
 void ClientSession::OnConnectionAuthenticating(

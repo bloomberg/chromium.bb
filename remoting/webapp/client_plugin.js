@@ -371,10 +371,8 @@ remoting.ClientPlugin.prototype.handleMessageMethod_ = function(message) {
         this.onCastExtensionHandler(extMsgData);
         break;
       default:
-        if (!this.onExtensionMessage_(extMsgType, extMsgData)) {
-          console.log('Unexpected message received: ' +
-                      extMsgType + ': ' + extMsgData);
-        }
+        this.onExtensionMessage_(extMsgType, extMsgData);
+        break;
     }
 
   } else if (message.method == 'mediaSourceReset') {
