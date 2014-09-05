@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_switches.h"
 #include "net/base/host_port_pair.h"
+#include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_retry_info.h"
 #include "net/proxy/proxy_server.h"
@@ -364,6 +365,21 @@ bool DataReductionProxyParams::IsDataReductionProxyEligible(
   if (result.proxy_server().is_direct())
     return false;
   return IsDataReductionProxy(result.proxy_server().host_port_pair(), NULL);
+}
+
+bool DataReductionProxyParams::IsBypassedByDataReductionProxyLocalRules(
+    const net::URLRequest& request,
+    const net::ProxyConfig& data_reduction_proxy_config) const {
+  DCHECK(request.context());
+  DCHECK(request.context()->proxy_service());
+  net::ProxyInfo result;
+  data_reduction_proxy_config.proxy_rules().Apply(
+      request.url(), &result);
+  if (!result.proxy_server().is_valid())
+    return true;
+  if (result.proxy_server().is_direct())
+    return true;
+  return !IsDataReductionProxy(result.proxy_server().host_port_pair(), NULL);
 }
 
 std::string DataReductionProxyParams::GetDefaultDevOrigin() const {

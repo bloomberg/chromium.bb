@@ -55,13 +55,14 @@ class DataReductionProxyUsageStats
   // cause the current bypass.
   void SetBypassType(DataReductionProxyBypassType type);
 
-  // Given the |content_length| and associated |request|, records the
-  // number of bypassed bytes for that |request| into UMAs based on bypass type.
-  // |data_reduction_proxy_enabled| tells us the state of the
-  // kDataReductionProxyEnabled preference.
+  // Given |data_reduction_proxy_enabled|, a |request|, and the
+  // |data_reduction_proxy_config| records the number of bypassed bytes for that
+  // |request| into UMAs based on bypass type. |data_reduction_proxy_enabled|
+  // tells us the state of the kDataReductionProxyEnabled preference.
   void RecordBypassedBytesHistograms(
       net::URLRequest& request,
-      const BooleanPrefMember& data_reduction_proxy_enabled);
+      const BooleanPrefMember& data_reduction_proxy_enabled,
+      const net::ProxyConfig& data_reduction_proxy_config);
 
   void RecordBypassEventHistograms(const net::ProxyServer& bypassed_proxy,
                                    int net_error) const;
@@ -71,6 +72,7 @@ class DataReductionProxyUsageStats
     NOT_BYPASSED = 0,         /* Not bypassed. */
     SSL,                      /* Bypass due to SSL. */
     LOCAL_BYPASS_RULES,       /* Bypass due to client-side bypass rules. */
+    MANAGED_PROXY_CONFIG,     /* Bypass due to managed config. */
     AUDIO_VIDEO,              /* Audio/Video bypass. */
     TRIGGERING_REQUEST,       /* Triggering request bypass. */
     NETWORK_ERROR,            /* Network error. */

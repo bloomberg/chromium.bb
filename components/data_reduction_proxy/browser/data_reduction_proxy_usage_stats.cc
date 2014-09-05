@@ -161,8 +161,24 @@ void DataReductionProxyUsageStats::SetBypassType(
 
 void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
     net::URLRequest& request,
-    const BooleanPrefMember& data_reduction_proxy_enabled) {
+    const BooleanPrefMember& data_reduction_proxy_enabled,
+    const net::ProxyConfig& data_reduction_proxy_config) {
   int64 content_length = request.received_response_content_length();
+
+  if (data_reduction_proxy_enabled.GetValue()) {
+  LOG(WARNING) << "managed pac: " << (!data_reduction_proxy_config.Equals(
+          request.context()->proxy_service()->config()) ? "true" : "false");
+  }
+
+  if (data_reduction_proxy_enabled.GetValue() &&
+      !data_reduction_proxy_config.Equals(
+          request.context()->proxy_service()->config())) {
+    RecordBypassedBytes(last_bypass_type_,
+                        DataReductionProxyUsageStats::MANAGED_PROXY_CONFIG,
+                        content_length);
+    return;
+  }
+
   if (data_reduction_proxy_params_->WasDataReductionProxyUsed(&request, NULL)) {
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyUsageStats::NOT_BYPASSED,
@@ -179,7 +195,8 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
   }
 
   if (data_reduction_proxy_enabled.GetValue() &&
-      !data_reduction_proxy_params_->IsDataReductionProxyEligible(&request)) {
+      data_reduction_proxy_params_->IsBypassedByDataReductionProxyLocalRules(
+          request, data_reduction_proxy_config)) {
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyUsageStats::LOCAL_BYPASS_RULES,
                         content_length);
@@ -187,11 +204,6 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
   }
 
   if (triggering_request_) {
-    RecordBypassedBytes(last_bypass_type_,
-                        DataReductionProxyUsageStats::TRIGGERING_REQUEST,
-                        content_length);
-    triggering_request_ = false;
-
     // We only record when audio or video triggers a bypass. We don't care
     // about audio and video bypassed as collateral damage.
     std::string mime_type;
@@ -203,7 +215,14 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
       RecordBypassedBytes(last_bypass_type_,
                           DataReductionProxyUsageStats::AUDIO_VIDEO,
                           content_length);
+      return;
     }
+
+    RecordBypassedBytes(last_bypass_type_,
+                        DataReductionProxyUsageStats::TRIGGERING_REQUEST,
+                        content_length);
+    triggering_request_ = false;
+    return;
   }
 
   if (last_bypass_type_ != BYPASS_EVENT_TYPE_MAX) {
@@ -263,6 +282,11 @@ void DataReductionProxyUsageStats::RecordBypassedBytes(
     case DataReductionProxyUsageStats::LOCAL_BYPASS_RULES:
       UMA_HISTOGRAM_COUNTS(
           "DataReductionProxy.BypassedBytes.LocalBypassRules",
+          content_length);
+      break;
+    case DataReductionProxyUsageStats::MANAGED_PROXY_CONFIG:
+      UMA_HISTOGRAM_COUNTS(
+          "DataReductionProxy.BypassedBytes.ManagedProxyConfig",
           content_length);
       break;
     case DataReductionProxyUsageStats::AUDIO_VIDEO:

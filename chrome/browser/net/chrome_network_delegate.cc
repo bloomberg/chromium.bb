@@ -583,9 +583,13 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
       RecordContentLengthHistograms(received_content_length,
                                     original_content_length,
                                     freshness_lifetime);
-      if (data_reduction_proxy_enabled_ && data_reduction_proxy_usage_stats_) {
+      if (data_reduction_proxy_enabled_ &&
+          data_reduction_proxy_usage_stats_ &&
+          !proxy_config_getter_.is_null()) {
         data_reduction_proxy_usage_stats_->RecordBypassedBytesHistograms(
-            *request, *data_reduction_proxy_enabled_);
+            *request,
+            *data_reduction_proxy_enabled_,
+            proxy_config_getter_.Run());
       }
       DVLOG(2) << __FUNCTION__
           << " received content length: " << received_content_length

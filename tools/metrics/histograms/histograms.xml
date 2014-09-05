@@ -52074,6 +52074,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="SSL" label="Bypass due to SSL"/>
   <suffix name="LocalBypassRules"
       label="Bypass due to client-side bypass rules"/>
+  <suffix name="ManagedProxyConfig" label="Bypass due to a managed config"/>
   <suffix name="Current" label="Bypass due to explicit instruction"/>
   <suffix name="ShortAll" label="Short bypass"/>
   <suffix name="ShortTriggeringRequest"
