@@ -50,7 +50,7 @@ public:
         AttributeChangedCallback = 1 << 3
     };
 
-    bool hasCallback(CallbackType type) const { return m_which & type; }
+    bool hasCallback(CallbackType type) const { return m_callbackType & type; }
 
     virtual void created(Element*) = 0;
     virtual void attached(Element*) = 0;
@@ -58,10 +58,10 @@ public:
     virtual void attributeChanged(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue) = 0;
 
 protected:
-    CustomElementLifecycleCallbacks(CallbackType which) : m_which(which) { }
+    CustomElementLifecycleCallbacks(CallbackType type) : m_callbackType(type) { }
 
 private:
-    CallbackType m_which;
+    CallbackType m_callbackType;
 };
 
 }
