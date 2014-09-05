@@ -124,6 +124,11 @@ class DocStringChecker(BaseChecker):
 
   def _check_whitespace(self, node, lines):
     """Verify whitespace is sane"""
+    # Make sure first line doesn't have leading whitespace.
+    if lines[0].lstrip() != lines[0]:
+      margs = {'offset': 0, 'line': lines[0]}
+      self.add_message('C9004', node=node, line=node.fromlineno, args=margs)
+
     # Verify no trailing whitespace.
     # We skip the last line since it's supposed to be pure whitespace.
     #
@@ -140,11 +145,9 @@ class DocStringChecker(BaseChecker):
         self.add_message('C9013', node=node, line=node.fromlineno, args=margs)
       last_blank = curr_blank
 
-    # Now specially handle the last line.  Note: if there's just one line,
-    # then we can check leading & trailing whitespace.
+    # Now specially handle the last line.
     l = lines[-1]
-    if ((len(lines) == 1 and l.strip() != l) or
-        (l.strip() != '' and l.rstrip() != l)):
+    if l.strip() != '' and l.rstrip() != l:
       margs = {'offset': len(lines), 'line': l}
       self.add_message('C9003', node=node, line=node.fromlineno, args=margs)
 

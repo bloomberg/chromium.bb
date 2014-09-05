@@ -1,11 +1,9 @@
 #!/usr/bin/python
-
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-""" A library for managing file locks.
-"""
+"""A library for managing file locks."""
 
 import errno
 import fcntl
@@ -38,14 +36,14 @@ class LockNotAcquired(Exception):
 class Lock(object):
   """This class grabs an exclusive flock on a file in a specified directory.
 
-     This class can be used in combination with the "with" statement.
+  This class can be used in combination with the "with" statement.
 
-     Because the lock is associated with a file descriptor, the lock will
-     continue to be held for as long as the file descriptor is open (even
-     in subprocesses, exec'd executables, etc).
+  Because the lock is associated with a file descriptor, the lock will
+  continue to be held for as long as the file descriptor is open (even
+  in subprocesses, exec'd executables, etc).
 
-     For informational purposes only, the pid of the current process is
-     written into the lock file when it is held, but it's never removed.
+  For informational purposes only, the pid of the current process is
+  written into the lock file when it is held, but it's never removed.
   """
 
   def __init__(self, lock_name, lock_dir=None, blocking=False, shared=False):
@@ -75,8 +73,8 @@ class Lock(object):
   def Acquire(self):
     """Acquire the flock.
 
-       It's safe to call this multiple times, though the first Unlock will
-       release the lock.
+    It's safe to call this multiple times, though the first Unlock will
+    release the lock.
     """
     # Create the directory for our lock files if it doesn't already exist
     try:
@@ -145,10 +143,14 @@ class Lock(object):
 def ExecWithLock(cmd, lock_name=None, lock_dir=None, blocking=False):
   """Helper method that execs another program with an flock.
 
-     If the lock wasn't acquired, raises LockNotAcquired
+  Args:
+    cmd: The command to run through flock.
+    lock_name: defaults to the name of the command.
+    lock_dir: defaults to LOCK_DIR.
+    blocking: Whether to take a blocking lock.
 
-     lock_name defaults to the name of the command.
-     lock_dir defaults to LOCK_DIR.
+  Raises:
+    LockNotAcquired: If the lock wasn't acquired
   """
   if not lock_name:
     lock_name = os.path.basename(cmd[0])

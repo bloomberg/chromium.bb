@@ -73,6 +73,10 @@ class DocStringCheckerTest(cros_test_lib.TestCase):
       """,
       """ whitespace is wrong""",
       """whitespace is wrong	""",
+      """ whitespace is wrong
+
+      Multiline tickles differently.
+      """,
       """Should be no trailing blank lines
 
       Returns:

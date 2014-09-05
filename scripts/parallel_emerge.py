@@ -1801,7 +1801,7 @@ def main(argv):
 
 
 def get_db(config, root):
-  """ Return the dbapi.
+  """Return the dbapi.
   Handles both portage 2.1.11 and 2.2.10 (where mydbapi has been removed).
 
   TODO(bsimonnet): Remove this once portage has been uprevd.
