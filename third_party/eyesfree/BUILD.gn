@@ -1,0 +1,18 @@
+import("//build/config/android/config.gni")
+import("//build/config/android/rules.gni")
+
+android_library("eyesfree_java") {
+  srcjar_deps = [ ":eyesfree_aidl" ]
+  DEPRECATED_java_in_dir = "src/android/java/src"
+}
+
+android_aidl("eyesfree_aidl") {
+  import_include = "src/android/java/src"
+  sources = [
+    "src/android/java/src/com/googlecode/eyesfree/braille/display/IBrailleService.aidl",
+    "src/android/java/src/com/googlecode/eyesfree/braille/display/IBrailleServiceCallback.aidl",
+    "src/android/java/src/com/googlecode/eyesfree/braille/selfbraille/ISelfBrailleService.aidl",
+    "src/android/java/src/com/googlecode/eyesfree/braille/translate/ITranslatorService.aidl",
+    "src/android/java/src/com/googlecode/eyesfree/braille/translate/ITranslatorServiceCallback.aidl",
+  ]
+}

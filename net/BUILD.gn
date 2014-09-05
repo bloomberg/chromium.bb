@@ -1054,6 +1054,12 @@ if (is_android) {
     ]
     jni_package = "net"
   }
+  generate_jni("net_test_jni_headers") {
+    sources = [
+      "android/javatests/src/org/chromium/net/AndroidKeyStoreTestUtil.java",
+    ]
+    jni_package = "net"
+  }
 }
 
 if (is_android || is_linux) {

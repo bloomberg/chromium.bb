@@ -111,7 +111,7 @@ def main(argv):
   unknown_deps = [
       c for c in possible_deps_config_paths if not os.path.exists(c)]
   if unknown_deps and not allow_unknown_deps:
-    raise Exception('Unknown deps: ' + unknown_deps)
+    raise Exception('Unknown deps: ' + str(unknown_deps))
 
   direct_deps_config_paths = [
       c for c in possible_deps_config_paths if not c in unknown_deps]

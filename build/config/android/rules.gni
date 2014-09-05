@@ -219,7 +219,7 @@ template("java_cpp_template") {
     if (defined(invoker.inputs)) {
       inputs = invoker.inputs + []
     }
-    depfile = "${target_gen_dir}/${target_name}.d"
+    depfile = "${target_gen_dir}/${target_name}_{{source_name_part}}.d"
 
     sources = invoker.sources
 
@@ -405,12 +405,16 @@ template("java_strings_grd") {
 #   java_files: List of .java files included in this library.
 #   srcjar_deps: List of srcjar dependencies. The .java files in the srcjars
 #     will be added to java_files and be included in this library.
-#   chromium_code: If true, extra static analysis warning/errors will be enabled.
+#   chromium_code: If true, extra analysis warning/errors will be enabled.
 #   jar_excluded_patterns: List of patterns of .class files to exclude from the
 #     final jar.
 #   proguard_preprocess: If true, proguard preprocessing will be run. This can
 #     be used to remove unwanted parts of the library.
 #   proguard_config: Path to the proguard config for preprocessing.
+#
+#   DEPRECATED_java_in_dir: Directory containing java files. All .java files in
+#     this directory will be included in the library. This is only supported to
+#     ease the gyp->gn conversion and will be removed in the future.
 #
 # Example
 #   android_library("foo_java") {
@@ -430,11 +434,11 @@ template("java_strings_grd") {
 #     ]
 #   }
 template("android_library") {
-  assert(defined(invoker.java_files))
-  base_path = "$target_gen_dir/$target_name"
-  build_config = base_path + ".build_config"
-  jar_path = base_path + ".jar"
-  dex_path = base_path + ".dex.jar"
+  assert(defined(invoker.java_files) || defined(invoker.DEPRECATED_java_in_dir))
+  _base_path = "$target_gen_dir/$target_name"
+  _build_config = _base_path + ".build_config"
+  _jar_path = _base_path + ".jar"
+  _dex_path = _base_path + ".dex.jar"
 
   write_build_config("${target_name}__build_config") {
     type = "android_library"
@@ -444,7 +448,9 @@ template("android_library") {
       deps += invoker.deps
     }
 
-    # base_path
+    build_config = _build_config
+    jar_path = _jar_path
+    dex_path = _dex_path
   }
 
   _chromium_code = true
@@ -454,8 +460,14 @@ template("android_library") {
 
   android_java_library(target_name) {
     chromium_code = _chromium_code
-    java_files = invoker.java_files
-    build_config = build_config
+    if (defined(invoker.java_files)) {
+      java_files = invoker.java_files
+    } else {
+      DEPRECATED_java_in_dir = invoker.DEPRECATED_java_in_dir
+    }
+    build_config = _build_config
+    jar_path = _jar_path
+    dex_path = _dex_path
 
     if (defined(invoker.proguard_preprocess) && invoker.proguard_preprocess) {
       proguard_preprocess = true
@@ -546,6 +558,9 @@ template("android_java_prebuilt") {
 #
 # Variables
 #   android_manifest: Path to AndroidManifest.xml.
+#   datadeps: List of dependencies needed at runtime. These will be built but
+#     won't change the generated .apk in any way (in fact they may be built
+#     after the .apk is).
 #   deps: List of dependencies. All Android java resources and libraries in the
 #     "transitive closure" of these dependencies will be included in the apk.
 #     Note: this "transitive closure" actually only includes such targets if
@@ -560,6 +575,10 @@ template("android_java_prebuilt") {
 #   native_libs: List paths of native libraries to include in this apk. If these
 #     libraries depend on other shared_library targets, those dependencies will
 #     also be included in the apk.
+#
+#   DEPRECATED_java_in_dir: Directory containing java files. All .java files in
+#     this directory will be included in the library. This is only supported to
+#     ease the gyp->gn conversion and will be removed in the future.
 #
 # Example
 #   android_apk("foo_apk") {
@@ -676,7 +695,11 @@ template("android_apk") {
   final_deps += [":${target_name}__java"]
   android_java_library("${target_name}__java") {
     android_manifest = invoker.android_manifest
-    java_files = invoker.java_files
+    if (defined(invoker.java_files)) {
+      java_files = invoker.java_files
+    } else {
+      DEPRECATED_java_in_dir = invoker.DEPRECATED_java_in_dir
+    }
     srcjar_deps = _srcjar_deps
     dex_path = base_path + ".dex.jar"
   }
@@ -726,6 +749,9 @@ template("android_apk") {
 
   group(target_name) {
     deps = final_deps
+    if (defined(invoker.datadeps)) {
+      datadeps = invoker.datadeps
+    }
   }
 }
 
@@ -775,5 +801,75 @@ template("unittest_apk") {
     if (defined(invoker.deps)) {
       deps = invoker.deps
     }
+  }
+}
+
+# Generate .java files from .aidl files.
+#
+# This target will store the .java files in a srcjar and should be included in
+# an android_library or android_apk's srcjar_deps.
+#
+# Variables
+#   sources: Paths to .aidl files to compile.
+#   import_include: Path to directory containing .java files imported by the
+#     .aidl files.
+#   interface_file: Preprocessed aidl file to import.
+#
+# Example
+#   android_aidl("foo_aidl") {
+#     import_include = "java/src"
+#     sources = [
+#       "java/src/com/foo/bar/FooBarService.aidl",
+#       "java/src/com/foo/bar/FooBarServiceCallback.aidl",
+#     ]
+#   }
+template("android_aidl") {
+  srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
+  aidl_path = "${android_sdk_build_tools}/aidl"
+  framework_aidl = "$android_sdk/framework.aidl"
+
+  action(target_name) {
+    script = "//build/android/gyp/aidl.py"
+    sources = invoker.sources
+
+    imports = [ framework_aidl ]
+    if (defined(invoker.interface_file)) {
+      assert(invoker.interface_file != "")
+      imports += [ invoker.interface_file ]
+    }
+
+    inputs = [
+      aidl_path,
+    ] + imports
+
+    depfile = "${target_gen_dir}/${target_name}.d"
+    outputs = [
+      depfile,
+      srcjar_path
+    ]
+    rebased_imports = rebase_path(imports, root_build_dir)
+    args = [
+      "--depfile", rebase_path(depfile, root_build_dir),
+      "--aidl-path", rebase_path(aidl_path, root_build_dir),
+      "--imports=$rebased_imports",
+      "--srcjar", rebase_path(srcjar_path, root_build_dir),
+    ]
+    if (defined(invoker.import_include) && invoker.import_include != "") {
+      # TODO(cjhopman): aidl supports creating a depfile. We should be able to
+      # switch to constructing a depfile for the overall action from that
+      # instead of having all the .java files in the include paths as inputs.
+      rebased_import_includes = rebase_path(
+          [invoker.import_include], root_build_dir)
+      args += [ "--includes=$rebased_import_includes" ]
+
+      _java_files_build_rel = exec_script(
+          "//build/android/gyp/find.py",
+          rebase_path([invoker.import_include], root_build_dir),
+          "list lines"
+          )
+      _java_files = rebase_path(_java_files_build_rel, ".", root_build_dir)
+      inputs += _java_files
+    }
+    args += rebase_path(sources, root_build_dir)
   }
 }

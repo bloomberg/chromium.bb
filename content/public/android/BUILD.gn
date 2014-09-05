@@ -1,0 +1,11 @@
+import("//build/config/android/config.gni")
+import("//build/config/android/rules.gni")
+
+android_aidl("common_aidl") {
+  interface_file = "java/src/org/chromium/content/common/common.aidl"
+  import_include = "java/src"
+  sources = [
+    "java/src/org/chromium/content/common/IChildProcessCallback.aidl",
+    "java/src/org/chromium/content/common/IChildProcessService.aidl",
+  ]
+}

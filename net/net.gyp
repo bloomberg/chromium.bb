@@ -1682,10 +1682,6 @@
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
-      ],
-    }],
-    ['OS == "android"', {
-      'targets': [
         {
           'target_name': 'net_unittests_apk',
           'type': 'none',
