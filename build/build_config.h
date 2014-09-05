@@ -14,10 +14,6 @@
 #ifndef BUILD_BUILD_CONFIG_H_
 #define BUILD_BUILD_CONFIG_H_
 
-#if defined(__APPLE__)
-#include <TargetConditionals.h>
-#endif
-
 // A set of macros to use for platform detection.
 #if defined(__native_client__)
 // __native_client__ must be first, so that other OS_ defines are not set.
@@ -25,6 +21,10 @@
 #elif defined(ANDROID)
 #define OS_ANDROID 1
 #elif defined(__APPLE__)
+// only include TargetConditions after testing ANDROID as some android builds
+// on mac don't have this header available and it's not needed unless the target
+// is really mac/ios.
+#include <TargetConditionals.h>
 #define OS_MACOSX 1
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #define OS_IOS 1
