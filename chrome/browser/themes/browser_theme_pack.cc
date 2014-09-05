@@ -43,7 +43,7 @@ namespace {
 // Version number of the current theme pack. We just throw out and rebuild
 // theme packs that aren't int-equal to this. Increment this number if you
 // change default theme assets.
-const int kThemePackVersion = 34;
+const int kThemePackVersion = 35;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16. kHeaderID should always have the maximum value because we want the
@@ -236,6 +236,24 @@ int GetPersistentIDByIDR(int idr) {
   }
   std::map<int,int>::iterator it = lookup_table->find(idr);
   return (it == lookup_table->end()) ? -1 : it->second;
+}
+
+// Returns the maximum persistent id.
+int GetMaxPersistentId() {
+  static int max_prs_id = -1;
+  if (max_prs_id == -1) {
+    for (size_t i = 0; i < kPersistingImagesLength; ++i) {
+      if (kPersistingImages[i].persistent_id > max_prs_id)
+        max_prs_id = kPersistingImages[i].persistent_id;
+    }
+#if defined(USE_ASH) && !defined(OS_CHROMEOS)
+    for (size_t i = 0; i < kPersistingImagesDesktopAuraLength; ++i) {
+      if (kPersistingImagesDesktopAura[i].persistent_id > max_prs_id)
+        max_prs_id = kPersistingImagesDesktopAura[i].persistent_id;
+    }
+#endif
+  }
+  return max_prs_id;
 }
 
 // Returns true if the scales in |input| match those in |expected|.
@@ -1526,7 +1544,7 @@ int BrowserThemePack::GetRawIDByPersistentID(
 
   for (size_t i = 0; i < scale_factors_.size(); ++i) {
     if (scale_factors_[i] == scale_factor)
-      return static_cast<int>(kPersistingImagesLength * i) + prs_id;
+      return ((GetMaxPersistentId() + 1) * i) + prs_id;
   }
   return -1;
 }
