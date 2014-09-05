@@ -173,4 +173,30 @@ TEST(GeneratePolicySource, PolicyDetails) {
   // than 0, once a type 'external' policy is added.
 }
 
+#if defined(OS_CHROMEOS)
+TEST(GeneratePolicySource, SetEnterpriseDefaults) {
+  PolicyMap policy_map;
+
+  // If policy not configured yet, set the enterprise default.
+  SetEnterpriseUsersDefaults(&policy_map);
+
+  const base::Value* multiprof_behavior =
+      policy_map.GetValue(key::kChromeOsMultiProfileUserBehavior);
+  base::StringValue expected("primary-only");
+  EXPECT_TRUE(expected.Equals(multiprof_behavior));
+
+  // If policy already configured, it's not changed to enterprise defaults.
+  policy_map.Set(key::kChromeOsMultiProfileUserBehavior,
+                 POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER,
+                 new base::StringValue("test_value"),
+                 NULL);
+  SetEnterpriseUsersDefaults(&policy_map);
+  multiprof_behavior =
+      policy_map.GetValue(key::kChromeOsMultiProfileUserBehavior);
+  expected = base::StringValue("test_value");
+  EXPECT_TRUE(expected.Equals(multiprof_behavior));
+}
+#endif
+
 }  // namespace policy

@@ -150,7 +150,7 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // IsInitializationComplete().
   bool wait_for_policy_fetch_;
 
-  // A timer that puts a hard limit on the maximum time to wait for the intial
+  // A timer that puts a hard limit on the maximum time to wait for the initial
   // policy fetch.
   base::Timer policy_fetch_timeout_;
 

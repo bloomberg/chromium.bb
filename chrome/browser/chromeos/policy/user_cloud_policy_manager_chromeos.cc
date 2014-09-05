@@ -280,25 +280,12 @@ void UserCloudPolicyManagerChromeOS::OnComponentCloudPolicyUpdated() {
 void UserCloudPolicyManagerChromeOS::GetChromePolicy(PolicyMap* policy_map) {
   CloudPolicyManager::GetChromePolicy(policy_map);
 
-  // Default multi-profile behavior for managed accounts to primary-only.
-  if (store()->has_policy() &&
-      !policy_map->Get(key::kChromeOsMultiProfileUserBehavior)) {
-    policy_map->Set(key::kChromeOsMultiProfileUserBehavior,
-                    POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_USER,
-                    new base::StringValue("primary-only"),
-                    NULL);
-  }
-
-  // Set EasyUnlockAllowed policy to false by default for managed accounts.
-  if (store()->has_policy() &&
-      !policy_map->Get(key::kEasyUnlockAllowed)) {
-    policy_map->Set(key::kEasyUnlockAllowed,
-                    POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_USER,
-                    new base::FundamentalValue(false),
-                    NULL);
-  }
+  // If the store has a verified policy blob received from the server then apply
+  // the defaults for policies that haven't been configured by the administrator
+  // given that this is an enterprise user.
+  if (!store()->has_policy())
+    return;
+  SetEnterpriseUsersDefaults(policy_map);
 }
 
 void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthTokenUsingSigninProfile() {

@@ -135,6 +135,10 @@
 #   In that case no entry in the UserPolicy Protobuf is generated and
 #   it is assumed that it will be added to the DevicePolicy Protobuf manually.
 #
+# Enterprise defaults:
+#   An optional key 'default_for_enterprise_users' contains value that's set for
+#   enterprise users as a default.
+#
   'policy_definitions': [
     {
       'name': 'Homepage',
@@ -3143,6 +3147,7 @@
         'per_profile': True,
       },
       'example_value': 'unrestricted',
+      'default_for_enterprise_users': 'primary-only',
       'id': 244,
       'caption': '''Control the user behavior in a multiprofile session''',
       'desc': '''Control the user behavior in a multiprofile session on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices.
@@ -6604,6 +6609,7 @@
         'per_profile': True,
       },
       'example_value': True,
+      'default_for_enterprise_users': False,
       'id': 272,
       'caption': '''Allows EasyUnlock to be used''',
       'desc': '''Allows EasyUnlock to be used on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices.
