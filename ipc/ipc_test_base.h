@@ -33,11 +33,17 @@ class IPCTestBase : public base::MultiProcessTest {
   IPCTestBase();
   virtual ~IPCTestBase();
 
-  virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  // Initializes the test to use the given client.
+  // Initializes the test to use the given client and creates an IO message loop
+  // on the current thread.
   void Init(const std::string& test_client_name);
+  // Some tests create separate thread for IO message loop and run non-IO
+  // message loop on the main thread. As IPCTestBase creates IO message loop by
+  // default, such tests need to provide a custom message loop for the main
+  // thread.
+  void InitWithCustomMessageLoop(const std::string& test_client_name,
+                                 scoped_ptr<base::MessageLoop> message_loop);
 
   // Creates a channel with the given listener and connects to the channel
   // (returning true if successful), respectively. Use these to use a channel
@@ -88,16 +94,6 @@ class IPCTestBase : public base::MultiProcessTest {
 
   const base::ProcessHandle& client_process() const { return client_process_; }
   scoped_refptr<base::TaskRunner> task_runner();
-
-  // Some tests creates separate thread for IO message loop and Run
-  // non-IO message loop on the main thread. As IPCTestBase creates IO
-  // message loop by default, such tests might want to replace it with
-  // non-IO one using set_message_loop().
-  //
-  // The replacement should be done at the beginning of the test.
-  // You should be careful not to replace "live" message loop that has
-  // started running.
-  void set_message_loop(scoped_ptr<base::MessageLoop> loop);
 
  private:
   std::string test_client_name_;

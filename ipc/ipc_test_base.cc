@@ -29,24 +29,26 @@ IPCTestBase::IPCTestBase()
 IPCTestBase::~IPCTestBase() {
 }
 
-void IPCTestBase::SetUp() {
-  MultiProcessTest::SetUp();
-
-  // Construct a fresh Message loop for the duration of each test.
-  DCHECK(!message_loop_.get());
-  message_loop_.reset(new base::MessageLoopForIO());
-}
-
 void IPCTestBase::TearDown() {
-  DCHECK(message_loop_.get());
   message_loop_.reset();
   MultiProcessTest::TearDown();
 }
 
 void IPCTestBase::Init(const std::string& test_client_name) {
+  InitWithCustomMessageLoop(
+      test_client_name,
+      scoped_ptr<base::MessageLoop>(new base::MessageLoopForIO()));
+}
+
+void IPCTestBase::InitWithCustomMessageLoop(
+    const std::string& test_client_name,
+    scoped_ptr<base::MessageLoop> message_loop) {
   DCHECK(!test_client_name.empty());
   DCHECK(test_client_name_.empty());
+  DCHECK(!message_loop_);
+
   test_client_name_ = test_client_name;
+  message_loop_ = message_loop.Pass();
 }
 
 void IPCTestBase::CreateChannel(IPC::Listener* listener) {
@@ -132,8 +134,4 @@ bool IPCTestBase::WaitForClientShutdown() {
 
 scoped_refptr<base::TaskRunner> IPCTestBase::task_runner() {
   return message_loop_->message_loop_proxy();
-}
-
-void IPCTestBase::set_message_loop(scoped_ptr<base::MessageLoop> loop) {
-  message_loop_ = loop.Pass();
 }

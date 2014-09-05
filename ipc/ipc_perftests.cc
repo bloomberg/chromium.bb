@@ -281,8 +281,8 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(PerformanceClient) {
 }
 
 TEST_F(IPCChannelPerfTest, ChannelProxyPingPong) {
-  set_message_loop(make_scoped_ptr(new base::MessageLoop()));
-  Init("PerformanceClient");
+  InitWithCustomMessageLoop("PerformanceClient",
+                            make_scoped_ptr(new base::MessageLoop()));
 
   base::TestIOThread io_thread(base::TestIOThread::kAutoStart);
 
