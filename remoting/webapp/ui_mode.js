@@ -139,9 +139,9 @@ remoting.setMode = function(mode) {
                                  remoting.onVisibilityChanged, false);
     // TODO(jamiewalch): crbug.com/252796: Remove this once crbug.com/240772
     // is fixed.
-    var htmlNode = /** @type {HTMLElement} */ (document.body.parentNode);
-    htmlNode.classList.remove('no-horizontal-scroll');
-    htmlNode.classList.remove('no-vertical-scroll');
+    var scroller = document.getElementById('scroller');
+    scroller.classList.remove('no-horizontal-scroll');
+    scroller.classList.remove('no-vertical-scroll');
   }
 
   remoting.testEvents.raiseEvent(remoting.testEvents.Names.uiModeChanged, mode);
