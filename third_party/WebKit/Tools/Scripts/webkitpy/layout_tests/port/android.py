@@ -171,7 +171,7 @@ class ContentShellDriverDetails():
         return 'libcontent_shell_content_view.so'
 
     def additional_resources(self):
-        return ['content_resources.pak', 'shell_resources.pak']
+        return ['content_resources.pak', 'content_shell.pak', 'shell_resources.pak']
 
     def command_line_file(self):
         return '/data/local/tmp/content-shell-command-line'
