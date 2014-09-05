@@ -16,6 +16,7 @@
 #include "chrome/browser/supervised_user/supervised_users.h"
 
 class GURL;
+class SupervisedUserBlacklist;
 
 // This class manages the filtering behavior for a given URL, i.e. it tells
 // callers if a given URL should be allowed, blocked or warned about. It uses
@@ -84,10 +85,12 @@ class SupervisedUserURLFilter
   // Sets the filtering behavior for pages not on a list (default is ALLOW).
   void SetDefaultFilteringBehavior(FilteringBehavior behavior);
 
-  // Asynchronously loads the specified site lists from disk and updates the
+  // Asynchronously loads the specified site lists and updates the
   // filter to recognize each site on them.
-  // Calls |continuation| when the filter has been updated.
   void LoadWhitelists(ScopedVector<SupervisedUserSiteList> site_lists);
+
+  // Sets the static blacklist of blocked hosts.
+  void SetBlacklist(SupervisedUserBlacklist* blacklist);
 
   // Set the list of matched patterns to the passed in list.
   // This method is only used for testing.
@@ -120,6 +123,9 @@ class SupervisedUserURLFilter
   // Maps from a hostname to whether it is manually allowed (true) or blocked
   // (false).
   std::map<std::string, bool> host_map_;
+
+  // Not owned.
+  SupervisedUserBlacklist* blacklist_;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserURLFilter);
 };

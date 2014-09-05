@@ -14,6 +14,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/supervised_user/experimental/supervised_user_blacklist.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
@@ -202,10 +203,13 @@ class SupervisedUserService : public KeyedService,
     void SetDefaultFilteringBehavior(
         SupervisedUserURLFilter::FilteringBehavior behavior);
     void LoadWhitelists(ScopedVector<SupervisedUserSiteList> site_lists);
+    void LoadBlacklist(const base::FilePath& path);
     void SetManualHosts(scoped_ptr<std::map<std::string, bool> > host_map);
     void SetManualURLs(scoped_ptr<std::map<GURL, bool> > url_map);
 
    private:
+    void OnBlacklistLoaded();
+
     // SupervisedUserURLFilter is refcounted because the IO thread filter is
     // used both by ProfileImplIOData and OffTheRecordProfileIOData (to filter
     // network requests), so they both keep a reference to it.
@@ -214,6 +218,8 @@ class SupervisedUserService : public KeyedService,
     // should not be used anymore either).
     scoped_refptr<SupervisedUserURLFilter> ui_url_filter_;
     scoped_refptr<SupervisedUserURLFilter> io_url_filter_;
+
+    SupervisedUserBlacklist blacklist_;
 
     DISALLOW_COPY_AND_ASSIGN(URLFilterContext);
   };
@@ -260,6 +266,10 @@ class SupervisedUserService : public KeyedService,
   void OnDefaultFilteringBehaviorChanged();
 
   void UpdateSiteLists();
+
+  // Asynchronously loads a static blacklist from a binary file at |path| and
+  // applies it to the URL filters.
+  void LoadBlacklist(const base::FilePath& path);
 
   // Updates the manual overrides for hosts in the URL filters when the
   // corresponding preference is changed.

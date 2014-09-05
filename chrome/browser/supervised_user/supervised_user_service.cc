@@ -111,6 +111,17 @@ void SupervisedUserService::URLFilterContext::LoadWhitelists(
                  io_url_filter_, base::Passed(&site_lists_copy)));
 }
 
+void SupervisedUserService::URLFilterContext::LoadBlacklist(
+    const base::FilePath& path) {
+  // For now, support loading only once. If we want to support re-load, we'll
+  // have to clear the blacklist pointer in the url filters first.
+  DCHECK_EQ(0u, blacklist_.GetEntryCount());
+  blacklist_.ReadFromFile(
+      path,
+      base::Bind(&SupervisedUserService::URLFilterContext::OnBlacklistLoaded,
+                 base::Unretained(this)));
+}
+
 void SupervisedUserService::URLFilterContext::SetManualHosts(
     scoped_ptr<std::map<std::string, bool> > host_map) {
   ui_url_filter_->SetManualHosts(host_map.get());
@@ -129,6 +140,16 @@ void SupervisedUserService::URLFilterContext::SetManualURLs(
       FROM_HERE,
       base::Bind(&SupervisedUserURLFilter::SetManualURLs,
                  io_url_filter_, base::Owned(url_map.release())));
+}
+
+void SupervisedUserService::URLFilterContext::OnBlacklistLoaded() {
+  ui_url_filter_->SetBlacklist(&blacklist_);
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&SupervisedUserURLFilter::SetBlacklist,
+                 io_url_filter_,
+                 &blacklist_));
 }
 
 SupervisedUserService::SupervisedUserService(Profile* profile)
@@ -517,6 +538,10 @@ void SupervisedUserService::UpdateSiteLists() {
 #if defined(ENABLE_EXTENSIONS)
   url_filter_context_.LoadWhitelists(GetActiveSiteLists());
 #endif
+}
+
+void SupervisedUserService::LoadBlacklist(const base::FilePath& path) {
+  url_filter_context_.LoadBlacklist(path);
 }
 
 bool SupervisedUserService::AccessRequestsEnabled() {

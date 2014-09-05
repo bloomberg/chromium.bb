@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/supervised_user/experimental/supervised_user_blacklist.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/url_fixer/url_fixer.h"
 #include "components/url_matcher/url_matcher.h"
@@ -177,7 +178,8 @@ LoadWhitelistsOnBlockingPoolThread(
 
 SupervisedUserURLFilter::SupervisedUserURLFilter()
     : default_behavior_(ALLOW),
-      contents_(new Contents()) {
+      contents_(new Contents()),
+      blacklist_(NULL) {
   // Detach from the current thread so we can be constructed on a different
   // thread than the one where we're used.
   DetachFromThread();
@@ -288,6 +290,9 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(const GURL& url) const {
     }
   }
 
+  if (blacklist_ && blacklist_->HasURL(url))
+    return BLOCK;
+
   // If the default behavior is to allow, we don't need to check anything else.
   if (default_behavior_ == ALLOW)
     return ALLOW;
@@ -348,6 +353,11 @@ void SupervisedUserURLFilter::LoadWhitelists(
       base::Bind(&LoadWhitelistsOnBlockingPoolThread,
                  base::Passed(&site_lists)),
       base::Bind(&SupervisedUserURLFilter::SetContents, this));
+}
+
+void SupervisedUserURLFilter::SetBlacklist(
+    SupervisedUserBlacklist* blacklist) {
+  blacklist_ = blacklist;
 }
 
 void SupervisedUserURLFilter::SetFromPatterns(
