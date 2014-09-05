@@ -15,6 +15,7 @@
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebLayerTreeView.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
@@ -32,9 +33,10 @@ class LayerTreeHost;
 namespace content {
 class RenderWidget;
 
-class RenderWidgetCompositor : public blink::WebLayerTreeView,
-                               public cc::LayerTreeHostClient,
-                               public cc::LayerTreeHostSingleThreadClient {
+class CONTENT_EXPORT RenderWidgetCompositor
+    : NON_EXPORTED_BASE(public blink::WebLayerTreeView),
+      NON_EXPORTED_BASE(public cc::LayerTreeHostClient),
+      NON_EXPORTED_BASE(public cc::LayerTreeHostSingleThreadClient) {
  public:
   // Attempt to construct and initialize a compositor instance for the widget
   // with the given settings. Returns NULL if initialization fails.

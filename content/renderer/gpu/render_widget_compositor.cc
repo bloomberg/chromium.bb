@@ -759,8 +759,11 @@ void RenderWidgetCompositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
   VLOG(2) << "RenderWidgetCompositor::BeginMainFrame";
   begin_main_frame_time_ = args.frame_time;
   begin_main_frame_interval_ = args.interval;
-  double frame_time = (args.frame_time - base::TimeTicks()).InSecondsF();
-  WebBeginFrameArgs web_begin_frame_args = WebBeginFrameArgs(frame_time);
+  double frame_time_sec = (args.frame_time - base::TimeTicks()).InSecondsF();
+  double deadline_sec = (args.deadline - base::TimeTicks()).InSecondsF();
+  double interval_sec = args.interval.InSecondsF();
+  WebBeginFrameArgs web_begin_frame_args =
+      WebBeginFrameArgs(frame_time_sec, deadline_sec, interval_sec);
   widget_->webwidget()->beginFrame(web_begin_frame_args);
 }
 
@@ -801,6 +804,7 @@ void RenderWidgetCompositor::DidCommit() {
 
   widget_->DidCommitCompositorFrame();
   widget_->didBecomeReadyForAdditionalInput();
+  widget_->webwidget()->didCommitFrameToCompositor();
 }
 
 void RenderWidgetCompositor::DidCommitAndDrawFrame() {
