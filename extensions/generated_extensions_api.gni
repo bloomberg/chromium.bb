@@ -109,7 +109,11 @@ template("generated_extensions_api") {
         "--namespace=$root_namespace",
         "--generator=cpp",
         "--include-rules=$schema_include_rules" ]
-      visibility = target_visibility
+
+      if (defined(invoker.visibility)) {
+        # If visibility is restricted, add our own target to it.
+        visibility = [ invoker.visibility, target_visibility ]
+      }
     }
   }
 

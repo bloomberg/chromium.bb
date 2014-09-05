@@ -41,6 +41,10 @@ component("keyboard") {
     "//ui/keyboard/webui",
     "//ui/wm",
   ]
+
+  # http://crbug.com/408651 Include cycle between this target and the "webui"
+  # sub-target.
+  allow_circular_includes_from = [ "//ui/keyboard/webui" ]
 }
 
 grit("resources_grit") {

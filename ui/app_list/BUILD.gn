@@ -58,6 +58,7 @@ component("app_list") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//skia",
+    "//sync",
     "//third_party/icu",
     "//ui/accessibility",
     "//ui/base",

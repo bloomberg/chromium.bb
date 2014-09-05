@@ -215,11 +215,20 @@ const ParseNode* InputFileManager::SyncLoadFile(
     }
   }
 
-  // The other load could have failed. In this case that error will be printed
-  // to the console, but we need to return something here, so make up a
+  // The other load could have failed. In this case that error was probably
+  // printed to the console, but we need to return something here, so make up a
   // dummy error.
-  if (!data->parsed_root)
-    *err = Err(origin, "File parse failed");
+  //
+  // There is a race condition. The other load could have failed, but if the
+  // other thread is delayed for some reason, this thread could end up
+  // reporting the error to the scheduler first (since first error report
+  // wins). The user will see this one and the "real" one will be discarded.
+  if (!data->parsed_root) {
+    *err = Err(origin, "File parse failed.",
+        "If you see this, I'm really sorry, but a race condition has caused\n"
+        "me to eat your error message. It was crunchy. If the parse error\n"
+        "in your imported file isn't obvious, try re-running GN.");
+  }
   return data->parsed_root.get();
 }
 
