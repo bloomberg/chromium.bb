@@ -313,11 +313,16 @@ blink::WebMouseEvent MakeWebMouseEventFromAuraEvent(ui::MouseEvent* event) {
   webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
 
   webkit_event.button = blink::WebMouseEvent::ButtonNone;
-  if (event->flags() & ui::EF_LEFT_MOUSE_BUTTON)
+  int button_flags = event->flags();
+  if (event->type() == ui::ET_MOUSE_PRESSED ||
+      event->type() == ui::ET_MOUSE_RELEASED) {
+    button_flags = event->changed_button_flags();
+  }
+  if (button_flags & ui::EF_LEFT_MOUSE_BUTTON)
     webkit_event.button = blink::WebMouseEvent::ButtonLeft;
-  if (event->flags() & ui::EF_MIDDLE_MOUSE_BUTTON)
+  if (button_flags & ui::EF_MIDDLE_MOUSE_BUTTON)
     webkit_event.button = blink::WebMouseEvent::ButtonMiddle;
-  if (event->flags() & ui::EF_RIGHT_MOUSE_BUTTON)
+  if (button_flags & ui::EF_RIGHT_MOUSE_BUTTON)
     webkit_event.button = blink::WebMouseEvent::ButtonRight;
 
   switch (event->type()) {
