@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content_public.browser;
+
+//import org.chromium.content_public.browser.NavigationEntry;
 
 import java.util.ArrayList;
 
@@ -16,11 +18,11 @@ public class NavigationHistory {
     private final ArrayList<NavigationEntry> mEntries = new ArrayList<NavigationEntry>();
     private int mCurrentEntryIndex;
 
-    protected void addEntry(NavigationEntry entry) {
+    public void addEntry(NavigationEntry entry) {
         mEntries.add(entry);
     }
 
-    /* package */ void setCurrentEntryIndex(int currentEntryIndex) {
+    public void setCurrentEntryIndex(int currentEntryIndex) {
         mCurrentEntryIndex = currentEntryIndex;
     }
 

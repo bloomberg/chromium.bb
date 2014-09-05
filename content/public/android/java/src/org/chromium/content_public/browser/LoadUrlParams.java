@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content_public.browser;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
@@ -12,7 +12,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Holds parameters for ContentViewCore.LoadUrl. Parameters should match
+ * Holds parameters for NavigationController.LoadUrl. Parameters should match
  * counterparts in NavigationController::LoadURLParams, including default
  * values.
  */
@@ -259,7 +259,7 @@ public class LoadUrlParams {
      * exploded form through setExtraHeaders(). Embedders that work with extra headers in opaque
      * collapsed form can use the setVerbatimHeaders() / getVerbatimHeaders() instead.
      */
-    String getExtraHeadersString() {
+    public String getExtraHeadersString() {
         return getExtraHeadersString("\n", false);
     }
 
@@ -314,6 +314,14 @@ public class LoadUrlParams {
     }
 
     /**
+     * Get user agent override option of this load. Defaults to UA_OVERRIDE_INHERIT.
+     * @param uaOption One of UA_OVERRIDE static constants above.
+     */
+    public int getUserAgentOverrideOption() {
+        return mUaOverrideOption;
+    }
+
+    /**
      * Set the post data of this load. This field is ignored unless load type is
      * LOAD_TYPE_BROWSER_INITIATED_HTTP_POST.
      * @param postData Post data for this http post load.
@@ -340,6 +348,15 @@ public class LoadUrlParams {
     }
 
     /**
+     * Get the virtual url for data load. It is the url displayed to the user.
+     * It is ignored unless load type is LOAD_TYPE_DATA.
+     * @return The virtual url for this data load.
+     */
+    public String getVirtualUrlForDataUrl() {
+        return mVirtualUrlForDataUrl;
+    }
+
+    /**
      * Set the virtual url for data load. It is the url displayed to the user.
      * It is ignored unless load type is LOAD_TYPE_DATA.
      * @param virtualUrl The virtual url for this data load.
@@ -354,6 +371,14 @@ public class LoadUrlParams {
      */
     public void setCanLoadLocalResources(boolean canLoad) {
         mCanLoadLocalResources = canLoad;
+    }
+
+    /**
+     * Get whether the load should be able to access local resources. This
+     * defaults to false.
+     */
+    public boolean getCanLoadLocalResources() {
+        return mCanLoadLocalResources;
     }
 
     public int getLoadUrlType() {

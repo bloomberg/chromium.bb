@@ -36,7 +36,7 @@ import org.chromium.android_webview.AwDevToolsServer;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.AwTestContainerView;
 import org.chromium.android_webview.test.NullContentsClient;
-import org.chromium.content.browser.LoadUrlParams;
+import org.chromium.content_public.browser.LoadUrlParams;
 
 /**
  * This is a lightweight activity for tests that only require WebView functionality.

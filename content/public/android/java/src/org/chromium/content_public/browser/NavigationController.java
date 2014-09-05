@@ -77,4 +77,59 @@ public interface NavigationController {
      * Continue the pending reload.
      */
     public void continuePendingReload();
+
+    /**
+     * Load url without fixing up the url string. Consumers of NavigationController are
+     * responsible for ensuring the URL passed in is properly formatted (i.e. the
+     * scheme has been added if left off during user input).
+     * @param params Parameters for this load.
+     */
+    public void loadUrl(LoadUrlParams params);
+
+    /**
+     * Clears NavigationController's page history in both backwards and
+     * forwards directions.
+     */
+    public void clearHistory();
+
+    /**
+     * Get a copy of the navigation history of NavigationController.
+     * @return navigation history of NavigationController.
+     */
+    public NavigationHistory getNavigationHistory();
+
+    /**
+    * Get the navigation history of NavigationController from current navigation entry index
+    * with direction (forward/backward)
+    * @param isForward determines forward or backward from current index
+    * @param itemLimit maximum number of entries to be retrieved in specified
+    * diection.
+    * @return navigation history by keeping above constraints.
+    */
+    public NavigationHistory getDirectedNavigationHistory(boolean isForward, int itemLimit);
+
+    /**
+     * Get Original URL for current Navigation entry of NavigationController.
+     * @return The original request URL for the current navigation entry, or null if there is no
+     *         current entry.
+     */
+    public String getOriginalUrlForVisibleNavigationEntry();
+
+    /**
+     * Clears SSL preferences for this NavigationController.
+     */
+    public void clearSslPreferences();
+
+    /**
+     * Get whether or not we're using a desktop user agent for the currently loaded page.
+     * @return true, if use a desktop user agent and false for a mobile one.
+     */
+    public boolean getUseDesktopUserAgent();
+
+    /**
+     * Set whether or not we're using a desktop user agent for the currently loaded page.
+     * @param override If true, use a desktop user agent.  Use a mobile one otherwise.
+     * @param reloadOnChange Reload the page if the UA has changed.
+     */
+    public void setUseDesktopUserAgent(boolean override, boolean reloadOnChange);
 }

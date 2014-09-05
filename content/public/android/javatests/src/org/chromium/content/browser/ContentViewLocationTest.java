@@ -12,6 +12,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.MockLocationProvider;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
 /**

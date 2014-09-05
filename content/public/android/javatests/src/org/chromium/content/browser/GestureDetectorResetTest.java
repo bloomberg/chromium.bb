@@ -15,10 +15,15 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Provides test environment for Gesture Detector Reset for Content Shell.
+ * This is a helper class for Content Shell tests.
+*/
 public class GestureDetectorResetTest extends ContentShellTestBase {
     private static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(2);
     private static final String CLICK_TEST_URL = UrlUtils.encodeHtmlDataUri(

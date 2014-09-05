@@ -76,6 +76,8 @@ import org.chromium.content.browser.input.SelectionEventType;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.JavaScriptCallback;
+import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.ViewAndroid;
@@ -855,21 +857,8 @@ public class ContentViewCore
      * @param params Parameters for this load.
      */
     public void loadUrl(LoadUrlParams params) {
-        if (mNativeContentViewCore == 0) return;
-
-        nativeLoadUrl(mNativeContentViewCore,
-                params.mUrl,
-                params.mLoadUrlType,
-                params.mTransitionType,
-                params.getReferrer() != null ? params.getReferrer().getUrl() : null,
-                params.getReferrer() != null ? params.getReferrer().getPolicy() : 0,
-                params.mUaOverrideOption,
-                params.getExtraHeadersString(),
-                params.mPostData,
-                params.mBaseUrlForDataUrl,
-                params.mVirtualUrlForDataUrl,
-                params.mCanLoadLocalResources,
-                params.mIsRendererInitiated);
+        assert mWebContents !=  null;
+        mWebContents.getNavigationController().loadUrl(params);
     }
 
     /**
@@ -977,14 +966,16 @@ public class ContentViewCore
      * @return Whether the current WebContents has a previous navigation entry.
      */
     public boolean canGoBack() {
-        return mWebContents != null && mWebContents.getNavigationController().canGoBack();
+        assert mWebContents != null;
+        return mWebContents.getNavigationController().canGoBack();
     }
 
     /**
      * @return Whether the current WebContents has a navigation entry after the current one.
      */
     public boolean canGoForward() {
-        return mWebContents != null && mWebContents.getNavigationController().canGoForward();
+        assert mWebContents != null;
+        return mWebContents.getNavigationController().canGoForward();
     }
 
     /**
@@ -992,8 +983,8 @@ public class ContentViewCore
      * @return Whether we can move in history by given offset
      */
     public boolean canGoToOffset(int offset) {
-        return mWebContents != null &&
-                mWebContents.getNavigationController().canGoToOffset(offset);
+        assert mWebContents != null;
+        return mWebContents.getNavigationController().canGoToOffset(offset);
     }
 
     /**
@@ -1003,58 +994,64 @@ public class ContentViewCore
      */
     @VisibleForTesting
     public void goToOffset(int offset) {
-        if (mWebContents != null) mWebContents.getNavigationController().goToOffset(offset);
+        assert mWebContents != null;
+        mWebContents.getNavigationController().goToOffset(offset);
     }
 
     @Override
     public void goToNavigationIndex(int index) {
-        if (mWebContents != null) {
-            mWebContents.getNavigationController().goToNavigationIndex(index);
-        }
+        assert mWebContents != null;
+        mWebContents.getNavigationController().goToNavigationIndex(index);
     }
 
     /**
      * Goes to the navigation entry before the current one.
      */
     public void goBack() {
-        if (mWebContents != null) mWebContents.getNavigationController().goBack();
+        assert mWebContents != null;
+        mWebContents.getNavigationController().goBack();
     }
 
     /**
      * Goes to the navigation entry following the current one.
      */
     public void goForward() {
-        if (mWebContents != null) mWebContents.getNavigationController().goForward();
+        assert mWebContents != null;
+        mWebContents.getNavigationController().goForward();
     }
 
     /**
      * Loads the current navigation if there is a pending lazy load (after tab restore).
      */
     public void loadIfNecessary() {
-        if (mWebContents != null) mWebContents.getNavigationController().loadIfNecessary();
+        assert mWebContents != null;
+        mWebContents.getNavigationController().loadIfNecessary();
     }
 
     /**
      * Requests the current navigation to be loaded upon the next call to loadIfNecessary().
      */
     public void requestRestoreLoad() {
-        if (mWebContents != null) mWebContents.getNavigationController().requestRestoreLoad();
+        assert mWebContents != null;
+        mWebContents.getNavigationController().requestRestoreLoad();
     }
 
     /**
      * Reload the current page.
      */
     public void reload(boolean checkForRepost) {
+        assert mWebContents != null;
         mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
-        if (mWebContents != null) mWebContents.getNavigationController().reload(checkForRepost);
+        mWebContents.getNavigationController().reload(checkForRepost);
     }
 
     /**
      * Reload the current page, ignoring the contents of the cache.
      */
     public void reloadIgnoringCache(boolean checkForRepost) {
+        assert mWebContents != null;
         mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
-        if (mWebContents != null) mWebContents.getNavigationController().reloadIgnoringCache(
+        mWebContents.getNavigationController().reloadIgnoringCache(
                 checkForRepost);
     }
 
@@ -1062,14 +1059,16 @@ public class ContentViewCore
      * Cancel the pending reload.
      */
     public void cancelPendingReload() {
-        if (mWebContents != null) mWebContents.getNavigationController().cancelPendingReload();
+        assert mWebContents != null;
+        mWebContents.getNavigationController().cancelPendingReload();
     }
 
     /**
      * Continue the pending reload.
      */
     public void continuePendingReload() {
-        if (mWebContents != null) mWebContents.getNavigationController().continuePendingReload();
+        assert mWebContents != null;
+        mWebContents.getNavigationController().continuePendingReload();
     }
 
     /**
@@ -1077,7 +1076,8 @@ public class ContentViewCore
      * forwards directions.
      */
     public void clearHistory() {
-        if (mNativeContentViewCore != 0) nativeClearHistory(mNativeContentViewCore);
+        assert mWebContents != null;
+        mWebContents.getNavigationController().clearHistory();
     }
 
     /**
@@ -2166,10 +2166,8 @@ public class ContentViewCore
     }
 
     public boolean getUseDesktopUserAgent() {
-        if (mNativeContentViewCore != 0) {
-            return nativeGetUseDesktopUserAgent(mNativeContentViewCore);
-        }
-        return false;
+        assert mWebContents != null;
+        return mWebContents.getNavigationController().getUseDesktopUserAgent();
     }
 
     /**
@@ -2178,13 +2176,14 @@ public class ContentViewCore
      * @param reloadOnChange Reload the page if the UA has changed.
      */
     public void setUseDesktopUserAgent(boolean override, boolean reloadOnChange) {
-        if (mNativeContentViewCore != 0) {
-            nativeSetUseDesktopUserAgent(mNativeContentViewCore, override, reloadOnChange);
-        }
+        assert mWebContents != null;
+        mWebContents.getNavigationController().setUseDesktopUserAgent(override,
+                reloadOnChange);
     }
 
     public void clearSslPreferences() {
-        if (mNativeContentViewCore != 0) nativeClearSslPreferences(mNativeContentViewCore);
+        assert mWebContents != null;
+        mWebContents.getNavigationController().clearSslPreferences();
     }
 
     private void hideTextHandles() {
@@ -2950,36 +2949,18 @@ public class ContentViewCore
     }
 
     /**
-     * Callback factory method for nativeGetNavigationHistory().
-     */
-    @CalledByNative
-    private void addToNavigationHistory(Object history, int index, String url, String virtualUrl,
-            String originalUrl, String title, Bitmap favicon) {
-        NavigationEntry entry = new NavigationEntry(
-                index, url, virtualUrl, originalUrl, title, favicon);
-        ((NavigationHistory) history).addEntry(entry);
-    }
-
-    /**
      * Get a copy of the navigation history of the view.
      */
     public NavigationHistory getNavigationHistory() {
-        NavigationHistory history = new NavigationHistory();
-        if (mNativeContentViewCore != 0) {
-            int currentIndex = nativeGetNavigationHistory(mNativeContentViewCore, history);
-            history.setCurrentEntryIndex(currentIndex);
-        }
-        return history;
+        assert mWebContents != null;
+        return mWebContents.getNavigationController().getNavigationHistory();
     }
 
     @Override
     public NavigationHistory getDirectedNavigationHistory(boolean isForward, int itemLimit) {
-        NavigationHistory history = new NavigationHistory();
-        if (mNativeContentViewCore != 0) {
-            nativeGetDirectedNavigationHistory(
-                mNativeContentViewCore, history, isForward, itemLimit);
-        }
-        return history;
+        assert mWebContents != null;
+        return mWebContents.getNavigationController().getDirectedNavigationHistory(
+                isForward, itemLimit);
     }
 
     /**
@@ -2987,10 +2968,9 @@ public class ContentViewCore
      *         current entry.
      */
     public String getOriginalUrlForActiveNavigationEntry() {
-        if (mNativeContentViewCore != 0) {
-            return nativeGetOriginalUrlForActiveNavigationEntry(mNativeContentViewCore);
-        }
-        return "";
+        assert mWebContents != null;
+        return mWebContents.getNavigationController().
+                getOriginalUrlForVisibleNavigationEntry();
     }
 
     /**
@@ -3120,21 +3100,6 @@ public class ContentViewCore
 
     private native void nativeOnJavaContentViewCoreDestroyed(long nativeContentViewCoreImpl);
 
-    private native void nativeLoadUrl(
-            long nativeContentViewCoreImpl,
-            String url,
-            int loadUrlType,
-            int transitionType,
-            String referrerUrl,
-            int referrerPolicy,
-            int uaOverrideOption,
-            String extraHeaders,
-            byte[] postData,
-            String baseUrlForDataUrl,
-            String virtualUrlForDataUrl,
-            boolean canLoadLocalResources,
-            boolean isRendererInitiated);
-
     private native void nativeSetFocus(long nativeContentViewCoreImpl, boolean focused);
 
     private native void nativeSendOrientationChangeEvent(
@@ -3209,7 +3174,6 @@ public class ContentViewCore
     private native void nativeSelectPopupMenuItems(long nativeContentViewCoreImpl,
             long nativeSelectPopupSourceFrame, int[] indices);
 
-    private native void nativeClearHistory(long nativeContentViewCoreImpl);
 
     private native void nativePostMessageToFrame(long nativeContentViewCoreImpl, String frameId,
             String message, String sourceOrigin, String targetOrigin);
@@ -3217,13 +3181,6 @@ public class ContentViewCore
     private native long nativeGetNativeImeAdapter(long nativeContentViewCoreImpl);
 
     private native int nativeGetCurrentRenderProcessId(long nativeContentViewCoreImpl);
-
-    private native void nativeSetUseDesktopUserAgent(long nativeContentViewCoreImpl,
-            boolean enabled, boolean reloadOnChange);
-
-    private native boolean nativeGetUseDesktopUserAgent(long nativeContentViewCoreImpl);
-
-    private native void nativeClearSslPreferences(long nativeContentViewCoreImpl);
 
     private native void nativeSetAllowJavascriptInterfacesInspection(
             long nativeContentViewCoreImpl, boolean allow);
@@ -3233,14 +3190,6 @@ public class ContentViewCore
 
     private native void nativeRemoveJavascriptInterface(long nativeContentViewCoreImpl,
             String name);
-
-    private native int nativeGetNavigationHistory(long nativeContentViewCoreImpl, Object context);
-
-    private native void nativeGetDirectedNavigationHistory(long nativeContentViewCoreImpl,
-            Object context, boolean isForward, int maxEntries);
-
-    private native String nativeGetOriginalUrlForActiveNavigationEntry(
-            long nativeContentViewCoreImpl);
 
     private native void nativeWasResized(long nativeContentViewCoreImpl);
 

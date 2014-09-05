@@ -52,7 +52,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   virtual ui::ViewAndroid* GetViewAndroid() const OVERRIDE;
   virtual ui::WindowAndroid* GetWindowAndroid() const OVERRIDE;
   virtual scoped_refptr<cc::Layer> GetLayer() const OVERRIDE;
-  virtual void LoadUrl(NavigationController::LoadURLParams& params) OVERRIDE;
   virtual void ShowPastePopup(int x, int y) OVERRIDE;
   virtual void GetScaledContentBitmap(
       float scale,
@@ -84,20 +83,6 @@ class ContentViewCoreImpl : public ContentViewCore,
                             jlong selectPopupSourceFrame,
                             jintArray indices);
 
-  void LoadUrl(
-      JNIEnv* env, jobject obj,
-      jstring url,
-      jint load_url_type,
-      jint transition_type,
-      jstring j_referrer_url,
-      jint referrer_policy,
-      jint ua_override_option,
-      jstring extra_headers,
-      jbyteArray post_data,
-      jstring base_url_for_data_url,
-      jstring virtual_url_for_data_url,
-      jboolean can_load_local_resources,
-      jboolean is_renderer_initiated);
   void SendOrientationChangeEvent(JNIEnv* env, jobject obj, jint orientation);
   jboolean OnTouchEvent(JNIEnv* env,
                         jobject obj,
@@ -166,7 +151,6 @@ class ContentViewCoreImpl : public ContentViewCore,
                                        jobject obj,
                                        jboolean enabled);
 
-  void ClearHistory(JNIEnv* env, jobject obj);
   void PostMessageToFrame(JNIEnv* env, jobject obj, jstring frame_id,
       jstring message, jstring source_origin, jstring target_origin);
   long GetNativeImeAdapter(JNIEnv* env, jobject obj);
@@ -174,12 +158,6 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   jint GetBackgroundColor(JNIEnv* env, jobject obj);
   void SetBackgroundColor(JNIEnv* env, jobject obj, jint color);
-  void ClearSslPreferences(JNIEnv* env, jobject /* obj */);
-  void SetUseDesktopUserAgent(JNIEnv* env,
-                              jobject /* obj */,
-                              jboolean state,
-                              jboolean reload_on_state_change);
-  bool GetUseDesktopUserAgent(JNIEnv* env, jobject /* obj */);
   void SetAllowJavascriptInterfacesInspection(JNIEnv* env,
                                               jobject obj,
                                               jboolean allow);
@@ -189,14 +167,6 @@ class ContentViewCoreImpl : public ContentViewCore,
                               jstring name,
                               jclass safe_annotation_clazz);
   void RemoveJavascriptInterface(JNIEnv* env, jobject obj, jstring name);
-  int GetNavigationHistory(JNIEnv* env, jobject obj, jobject history);
-  void GetDirectedNavigationHistory(JNIEnv* env,
-                                    jobject obj,
-                                    jobject history,
-                                    jboolean is_forward,
-                                    jint max_entries);
-  base::android::ScopedJavaLocalRef<jstring>
-      GetOriginalUrlForActiveNavigationEntry(JNIEnv* env, jobject obj);
   void WasResized(JNIEnv* env, jobject obj);
 
   void SetAccessibilityEnabled(JNIEnv* env, jobject obj, bool enabled);

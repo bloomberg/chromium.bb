@@ -42,7 +42,6 @@ LOCAL_GENERATED_SOURCES := \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/base/ApplicationState.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/base/MemoryPressureLevelList.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/GestureEventType.java \
-$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/PageTransitionTypes.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/SpeechRecognitionError.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/input/CanonicalAxisIndex.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/input/CanonicalButtonIndex.java \
@@ -50,6 +49,7 @@ $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/input/SelectionEventType.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/common/ResultCodes.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/common/ScreenOrientationValues.java \
+$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content_public/browser/PageTransitionTypes.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/media/ImageFormat.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/CertificateMimeType.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/CertVerifyStatusAndroid.java \

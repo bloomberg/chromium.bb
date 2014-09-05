@@ -28,7 +28,6 @@
     'public/android/java/src/org/chromium/content/browser/input/DateTimeChooserAndroid.java',
     'public/android/java/src/org/chromium/content/browser/input/PopupTouchHandleDrawable.java',
     'public/android/java/src/org/chromium/content/browser/InterstitialPageDelegateAndroid.java',
-    'public/android/java/src/org/chromium/content/browser/LoadUrlParams.java',
     'public/android/java/src/org/chromium/content/browser/LocationProviderAdapter.java',
     'public/android/java/src/org/chromium/content/browser/MediaDrmCredentialManager.java',
     'public/android/java/src/org/chromium/content/browser/MediaResourceGetter.java',
@@ -42,6 +41,7 @@
     'public/android/java/src/org/chromium/content/browser/WebContentsObserverAndroid.java',
     'public/android/java/src/org/chromium/content/browser/framehost/NavigationControllerImpl.java',
     'public/android/java/src/org/chromium/content/browser/webcontents/WebContentsImpl.java',
+    'public/android/java/src/org/chromium/content_public/browser/LoadUrlParams.java',
    ],
   'variables': {
     'jni_gen_package': 'content',

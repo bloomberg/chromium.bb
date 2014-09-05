@@ -26,7 +26,7 @@ import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewRenderView;
-import org.chromium.content.browser.LoadUrlParams;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.WindowAndroid;
 
 /**

@@ -48,7 +48,6 @@ class CONTENT_EXPORT ContentViewCore {
   virtual ui::ViewAndroid* GetViewAndroid() const = 0;
   virtual ui::WindowAndroid* GetWindowAndroid() const = 0;
   virtual scoped_refptr<cc::Layer> GetLayer() const = 0;
-  virtual void LoadUrl(NavigationController::LoadURLParams& params) = 0;
   virtual void ShowPastePopup(int x, int y) = 0;
 
   // Request a scaled content readback. The result is passed through the

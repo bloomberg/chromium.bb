@@ -14,10 +14,10 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.shell.ChromeShellActivity;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.NavigationClient;
-import org.chromium.content.browser.NavigationEntry;
-import org.chromium.content.browser.NavigationHistory;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.content_public.browser.NavigationHistory;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -41,7 +41,7 @@ public class NavigationPopupTest extends ChromeShellTestBase {
     // Exists solely to expose protected methods to this test.
     private static class TestNavigationHistory extends NavigationHistory {
         @Override
-        protected void addEntry(NavigationEntry entry) {
+        public void addEntry(NavigationEntry entry) {
             super.addEntry(entry);
         }
     }

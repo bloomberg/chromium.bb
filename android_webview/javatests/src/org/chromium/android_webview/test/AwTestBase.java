@@ -19,10 +19,10 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.content.browser.ContentSettings;
-import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.Map;
 import java.util.concurrent.Callable;

@@ -14,8 +14,8 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.infobar.AutoLoginProcessor;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content_public.Referrer;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.WindowAndroid;
 
 /**

@@ -4,6 +4,8 @@
 
 package org.chromium.content.browser;
 
+import org.chromium.content_public.browser.NavigationHistory;
+
 /**
  * Provides functionality needed to query and page history and the ability to access
  * items in the history.

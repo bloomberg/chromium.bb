@@ -24,8 +24,8 @@ import android.widget.TextView;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.NavigationClient;
-import org.chromium.content.browser.NavigationEntry;
-import org.chromium.content.browser.NavigationHistory;
+import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.ui.base.LocalizationUtils;
 
 import java.util.HashSet;

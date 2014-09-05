@@ -23,9 +23,6 @@
 #include "content/browser/android/load_url_params.h"
 #include "content/browser/android/popup_touch_handle_drawable.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
-#include "content/browser/frame_host/navigation_controller_impl.h"
-#include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
@@ -794,11 +791,6 @@ void ContentViewCoreImpl::SelectBetweenCoordinates(const gfx::PointF& start,
   web_contents_->SelectRange(start_point, end_point);
 }
 
-void ContentViewCoreImpl::LoadUrl(
-    NavigationController::LoadURLParams& params) {
-  GetWebContents()->GetController().LoadURLWithParams(params);
-}
-
 ui::ViewAndroid* ContentViewCoreImpl::GetViewAndroid() const {
   return view_android_;
 }
@@ -834,63 +826,6 @@ void ContentViewCoreImpl::SelectPopupMenuItems(JNIEnv* env,
     selected_indices.push_back(indices_ptr[i]);
   env->ReleaseIntArrayElements(indices, indices_ptr, JNI_ABORT);
   rfhi->DidSelectPopupMenuItems(selected_indices);
-}
-
-void ContentViewCoreImpl::LoadUrl(
-    JNIEnv* env, jobject obj,
-    jstring url,
-    jint load_url_type,
-    jint transition_type,
-    jstring j_referrer_url,
-    jint referrer_policy,
-    jint ua_override_option,
-    jstring extra_headers,
-    jbyteArray post_data,
-    jstring base_url_for_data_url,
-    jstring virtual_url_for_data_url,
-    jboolean can_load_local_resources,
-    jboolean is_renderer_initiated) {
-  DCHECK(url);
-  NavigationController::LoadURLParams params(
-      GURL(ConvertJavaStringToUTF8(env, url)));
-
-  params.load_type = static_cast<NavigationController::LoadURLType>(
-      load_url_type);
-  params.transition_type = PageTransitionFromInt(transition_type);
-  params.override_user_agent =
-      static_cast<NavigationController::UserAgentOverrideOption>(
-          ua_override_option);
-
-  if (extra_headers)
-    params.extra_headers = ConvertJavaStringToUTF8(env, extra_headers);
-
-  if (post_data) {
-    std::vector<uint8> http_body_vector;
-    base::android::JavaByteArrayToByteVector(env, post_data, &http_body_vector);
-    params.browser_initiated_post_data =
-        base::RefCountedBytes::TakeVector(&http_body_vector);
-  }
-
-  if (base_url_for_data_url) {
-    params.base_url_for_data_url =
-        GURL(ConvertJavaStringToUTF8(env, base_url_for_data_url));
-  }
-
-  if (virtual_url_for_data_url) {
-    params.virtual_url_for_data_url =
-        GURL(ConvertJavaStringToUTF8(env, virtual_url_for_data_url));
-  }
-
-  params.can_load_local_resources = can_load_local_resources;
-  if (j_referrer_url) {
-    params.referrer = content::Referrer(
-        GURL(ConvertJavaStringToUTF8(env, j_referrer_url)),
-        static_cast<blink::WebReferrerPolicy>(referrer_policy));
-  }
-
-  params.is_renderer_initiated = is_renderer_initiated;
-
-  LoadUrl(params);
 }
 
 WebContents* ContentViewCoreImpl::GetWebContents() const {
@@ -1181,12 +1116,6 @@ void ContentViewCoreImpl::SetMultiTouchZoomSupportEnabled(JNIEnv* env,
     rwhv->SetMultiTouchZoomSupportEnabled(enabled);
 }
 
-void ContentViewCoreImpl::ClearHistory(JNIEnv* env, jobject obj) {
-  // TODO(creis): Do callers of this need to know if it fails?
-  if (web_contents_->GetController().CanPruneAllButLastCommitted())
-    web_contents_->GetController().PruneAllButLastCommitted();
-}
-
 void ContentViewCoreImpl::SetAllowJavascriptInterfacesInspection(
     JNIEnv* env,
     jobject obj,
@@ -1228,79 +1157,6 @@ void ContentViewCoreImpl::WasResized(JNIEnv* env, jobject obj) {
   }
 }
 
-namespace {
-
-static void AddNavigationEntryToHistory(JNIEnv* env, jobject obj,
-                                        jobject history,
-                                        NavigationEntry* entry,
-                                        int index) {
-  // Get the details of the current entry
-  ScopedJavaLocalRef<jstring> j_url(
-      ConvertUTF8ToJavaString(env, entry->GetURL().spec()));
-  ScopedJavaLocalRef<jstring> j_virtual_url(
-      ConvertUTF8ToJavaString(env, entry->GetVirtualURL().spec()));
-  ScopedJavaLocalRef<jstring> j_original_url(
-      ConvertUTF8ToJavaString(env, entry->GetOriginalRequestURL().spec()));
-  ScopedJavaLocalRef<jstring> j_title(
-      ConvertUTF16ToJavaString(env, entry->GetTitle()));
-  ScopedJavaLocalRef<jobject> j_bitmap;
-  const FaviconStatus& status = entry->GetFavicon();
-  if (status.valid && status.image.ToSkBitmap()->getSize() > 0)
-    j_bitmap = gfx::ConvertToJavaBitmap(status.image.ToSkBitmap());
-
-  // Add the item to the list
-  Java_ContentViewCore_addToNavigationHistory(
-      env, obj, history, index, j_url.obj(), j_virtual_url.obj(),
-      j_original_url.obj(), j_title.obj(), j_bitmap.obj());
-}
-
-}  // namespace
-
-int ContentViewCoreImpl::GetNavigationHistory(JNIEnv* env,
-                                              jobject obj,
-                                              jobject history) {
-  // Iterate through navigation entries to populate the list
-  const NavigationController& controller = web_contents_->GetController();
-  int count = controller.GetEntryCount();
-  for (int i = 0; i < count; ++i) {
-    AddNavigationEntryToHistory(
-        env, obj, history, controller.GetEntryAtIndex(i), i);
-  }
-
-  return controller.GetCurrentEntryIndex();
-}
-
-void ContentViewCoreImpl::GetDirectedNavigationHistory(JNIEnv* env,
-                                                       jobject obj,
-                                                       jobject history,
-                                                       jboolean is_forward,
-                                                       jint max_entries) {
-  // Iterate through navigation entries to populate the list
-  const NavigationController& controller = web_contents_->GetController();
-  int count = controller.GetEntryCount();
-  int num_added = 0;
-  int increment_value = is_forward ? 1 : -1;
-  for (int i = controller.GetCurrentEntryIndex() + increment_value;
-       i >= 0 && i < count;
-       i += increment_value) {
-    if (num_added >= max_entries)
-      break;
-
-    AddNavigationEntryToHistory(
-        env, obj, history, controller.GetEntryAtIndex(i), i);
-    num_added++;
-  }
-}
-
-ScopedJavaLocalRef<jstring>
-ContentViewCoreImpl::GetOriginalUrlForActiveNavigationEntry(JNIEnv* env,
-                                                            jobject obj) {
-  NavigationEntry* entry = web_contents_->GetController().GetVisibleEntry();
-  if (entry == NULL)
-    return ScopedJavaLocalRef<jstring>(env, NULL);
-  return ConvertUTF8ToJavaString(env, entry->GetOriginalRequestURL().spec());
-}
-
 long ContentViewCoreImpl::GetNativeImeAdapter(JNIEnv* env, jobject obj) {
   RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
   if (!rwhva)
@@ -1325,13 +1181,6 @@ void ContentViewCoreImpl::PostMessageToFrame(JNIEnv* env, jobject obj,
   params.is_data_raw_string = true;
   params.source_routing_id = MSG_ROUTING_NONE;
   host->Send(new ViewMsg_PostMessageEvent(host->GetRoutingID(), params));
-}
-
-
-bool ContentViewCoreImpl::GetUseDesktopUserAgent(
-    JNIEnv* env, jobject obj) {
-  NavigationEntry* entry = web_contents_->GetController().GetVisibleEntry();
-  return entry && entry->GetIsOverridingUserAgent();
 }
 
 void ContentViewCoreImpl::UpdateImeAdapter(long native_ime_adapter,
@@ -1362,42 +1211,6 @@ void ContentViewCoreImpl::UpdateImeAdapter(long native_ime_adapter,
                                         composition_end,
                                         show_ime_if_needed,
                                         is_non_ime_change);
-}
-
-void ContentViewCoreImpl::ClearSslPreferences(JNIEnv* env, jobject obj) {
-  content::SSLHostStateDelegate* delegate =
-      web_contents_->
-      GetController().
-      GetBrowserContext()->
-      GetSSLHostStateDelegate();
-  if (delegate)
-    delegate->Clear();
-}
-
-void ContentViewCoreImpl::SetUseDesktopUserAgent(
-    JNIEnv* env,
-    jobject obj,
-    jboolean enabled,
-    jboolean reload_on_state_change) {
-  if (GetUseDesktopUserAgent(env, obj) == enabled)
-    return;
-
-  // Make sure the navigation entry actually exists.
-  NavigationEntry* entry = web_contents_->GetController().GetVisibleEntry();
-  if (!entry)
-    return;
-
-  // Set the flag in the NavigationEntry.
-  entry->SetIsOverridingUserAgent(enabled);
-
-  // Send the override to the renderer.
-  if (reload_on_state_change) {
-    // Reloading the page will send the override down as part of the
-    // navigation IPC message.
-    NavigationControllerImpl& controller =
-        static_cast<NavigationControllerImpl&>(web_contents_->GetController());
-    controller.ReloadOriginalRequestURL(false);
-  }
 }
 
 void ContentViewCoreImpl::SetAccessibilityEnabled(JNIEnv* env, jobject obj,

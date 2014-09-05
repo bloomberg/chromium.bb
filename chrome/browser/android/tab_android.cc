@@ -470,8 +470,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(JNIEnv* env,
                                               jstring j_referrer_url,
                                               jint referrer_policy,
                                               jboolean is_renderer_initiated) {
-  content::ContentViewCore* content_view = GetContentViewCore();
-  if (!content_view)
+  if (!web_contents())
     return PAGE_LOAD_FAILED;
 
   GURL gurl(base::android::ConvertJavaStringToUTF8(env, url));
@@ -564,7 +563,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(JNIEnv* env,
       return DEFAULT_PAGE_LOAD;
     }
     load_params.is_renderer_initiated = is_renderer_initiated;
-    content_view->LoadUrl(load_params);
+    web_contents()->GetController().LoadURLWithParams(load_params);
   }
   return DEFAULT_PAGE_LOAD;
 }

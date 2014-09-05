@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content_public.browser;
 
 import android.graphics.Bitmap;
 
@@ -21,7 +21,7 @@ public class NavigationEntry {
     /**
      * Default constructor.
      */
-    protected NavigationEntry(int index, String url, String virtualUrl, String originalUrl,
+    public NavigationEntry(int index, String url, String virtualUrl, String originalUrl,
             String title, Bitmap favicon) {
         mIndex = index;
         mUrl = url;
