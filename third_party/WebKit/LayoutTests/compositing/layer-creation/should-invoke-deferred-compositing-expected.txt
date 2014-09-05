@@ -10,7 +10,13 @@
           "bounds": [300, 300],
           "children": [
             {
-              "bounds": [200, 200]
+              "bounds": [200, 200],
+              "drawsContent": true,
+              "repaintRects": [
+                [0, 0, 200, 200],
+                [0, 0, 200, 200],
+                [0, 0, 200, 200]
+              ]
             }
           ]
         }
