@@ -555,24 +555,7 @@ bool MetadataDatabaseIndexOnDisk::PromoteDemotedDirtyTrackers() {
 }
 
 size_t MetadataDatabaseIndexOnDisk::CountDirtyTracker() const {
-  size_t num_dirty_trackers = 0;
-
-  // TODO(peria): Store the number of dirty trackers, and do not iterate
-  // everytime.
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
-  for (itr->Seek(kDirtyIDKeyPrefix); itr->Valid(); itr->Next()) {
-    if (!StartsWithASCII(itr->key().ToString(), kDirtyIDKeyPrefix, true))
-      break;
-    ++num_dirty_trackers;
-  }
-
-  for (itr->Seek(kDemotedDirtyIDKeyPrefix); itr->Valid(); itr->Next()) {
-    if (!StartsWithASCII(itr->key().ToString(), kDemotedDirtyIDKeyPrefix, true))
-      break;
-    ++num_dirty_trackers;
-  }
-
-  return num_dirty_trackers;
+  return num_dirty_trackers_;
 }
 
 size_t MetadataDatabaseIndexOnDisk::CountFileMetadata() const {
@@ -745,6 +728,8 @@ MetadataDatabaseIndexOnDisk::MetadataDatabaseIndexOnDisk(LevelDBWrapper* db)
     db_->Put(kLastValidationTimeKey,
              base::Int64ToString(base::Time::Now().ToInternalValue()));
   }
+
+  num_dirty_trackers_ = CountDirtyTrackerInternal();
 }
 
 void MetadataDatabaseIndexOnDisk::AddToAppIDIndex(const FileTracker& tracker) {
@@ -998,6 +983,7 @@ void MetadataDatabaseIndexOnDisk::AddToDirtyTrackerIndexes(
   if (new_tracker.dirty()) {
     DVLOG(1) << "  Add to dirty tracker IDs: " << new_tracker.tracker_id();
     db_->Put(dirty_key, std::string());
+    ++num_dirty_trackers_;
   }
 }
 
@@ -1016,6 +1002,7 @@ void MetadataDatabaseIndexOnDisk::UpdateInDirtyTrackerIndexes(
 
     db_->Delete(dirty_key);
     db_->Delete(demoted_key);
+    --num_dirty_trackers_;
   } else if (!old_tracker.dirty() && new_tracker.dirty()) {
     DCHECK(!DBHasKey(dirty_key));
     DCHECK(!DBHasKey(demoted_key));
@@ -1023,6 +1010,7 @@ void MetadataDatabaseIndexOnDisk::UpdateInDirtyTrackerIndexes(
     DVLOG(1) << "  Add to dirty tracker IDs: " << tracker_id;
 
     db_->Put(dirty_key, std::string());
+    ++num_dirty_trackers_;
   }
 }
 
@@ -1037,6 +1025,7 @@ void MetadataDatabaseIndexOnDisk::RemoveFromDirtyTrackerIndexes(
     DVLOG(1) << "  Remove from dirty tracker IDs: " << tracker_id;
     db_->Delete(dirty_key);
     db_->Delete(demoted_key);
+    --num_dirty_trackers_;
   }
 }
 
@@ -1136,6 +1125,25 @@ bool MetadataDatabaseIndexOnDisk::DBHasKey(const std::string& key) {
   scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   itr->Seek(key);
   return itr->Valid() && (itr->key() == key);
+}
+
+size_t MetadataDatabaseIndexOnDisk::CountDirtyTrackerInternal() const {
+  size_t num_dirty_trackers = 0;
+
+  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+  for (itr->Seek(kDirtyIDKeyPrefix); itr->Valid(); itr->Next()) {
+    if (!StartsWithASCII(itr->key().ToString(), kDirtyIDKeyPrefix, true))
+      break;
+    ++num_dirty_trackers;
+  }
+
+  for (itr->Seek(kDemotedDirtyIDKeyPrefix); itr->Valid(); itr->Next()) {
+    if (!StartsWithASCII(itr->key().ToString(), kDemotedDirtyIDKeyPrefix, true))
+      break;
+    ++num_dirty_trackers;
+  }
+
+  return num_dirty_trackers;
 }
 
 MetadataDatabaseIndexOnDisk::NumEntries

@@ -151,6 +151,9 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
   // Checks if |db_| has an entry whose key is |key|.
   bool DBHasKey(const std::string& key);
 
+  // Returns the number of dirty trackers, actually counting them.
+  size_t CountDirtyTrackerInternal() const;
+
   // Returns the number of entries starting with |prefix| in NumEntries format.
   // Entries for |ignored_id| are not counted in.
   NumEntries CountWithPrefix(const std::string& prefix, int64 ignored_id);
@@ -160,6 +163,8 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
 
   LevelDBWrapper* db_;  // Not owned.
   scoped_ptr<ServiceMetadata> service_metadata_;
+
+  size_t num_dirty_trackers_;
 
   DISALLOW_COPY_AND_ASSIGN(MetadataDatabaseIndexOnDisk);
 };
