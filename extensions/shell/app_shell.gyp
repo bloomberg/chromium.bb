@@ -74,6 +74,8 @@
         'browser/shell_desktop_controller.h',
         'browser/shell_device_client.cc',
         'browser/shell_device_client.h',
+        'browser/shell_display_info_provider.cc',
+        'browser/shell_display_info_provider.h',
         'browser/shell_extension_host_delegate.cc',
         'browser/shell_extension_host_delegate.h',
         'browser/shell_extension_system.cc',

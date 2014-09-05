@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/system_display/display_info_provider.h"
+#include "extensions/browser/api/system_display/display_info_provider.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "chrome/common/extensions/api/system_display.h"
+#include "extensions/common/api/system_display.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 
@@ -32,10 +32,11 @@ int RotationToDegrees(gfx::Display::Rotation rotation) {
 }
 
 // Creates new DisplayUnitInfo struct for |display|.
-extensions::api::system_display::DisplayUnitInfo*
-CreateDisplayUnitInfo(const gfx::Display& display, int64 primary_display_id) {
-  extensions::api::system_display::DisplayUnitInfo* unit =
-      new extensions::api::system_display::DisplayUnitInfo();
+core_api::system_display::DisplayUnitInfo* CreateDisplayUnitInfo(
+    const gfx::Display& display,
+    int64 primary_display_id) {
+  core_api::system_display::DisplayUnitInfo* unit =
+      new core_api::system_display::DisplayUnitInfo();
   const gfx::Rect& bounds = display.bounds();
   const gfx::Rect& work_area = display.work_area();
   unit->id = base::Int64ToString(display.id());
@@ -80,7 +81,7 @@ DisplayInfo DisplayInfoProvider::GetAllDisplaysInfo() {
   std::vector<gfx::Display> displays = screen->GetAllDisplays();
   DisplayInfo all_displays;
   for (int i = 0; i < screen->GetNumDisplays(); ++i) {
-    linked_ptr<extensions::api::system_display::DisplayUnitInfo> unit(
+    linked_ptr<core_api::system_display::DisplayUnitInfo> unit(
         CreateDisplayUnitInfo(displays[i], primary_id));
     UpdateDisplayUnitInfoForPlatform(displays[i], unit.get());
     all_displays.push_back(unit);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/system_cpu/cpu_info_provider.h"
+#include "extensions/browser/api/system_cpu/cpu_info_provider.h"
 
 #include <cstdio>
 #include <sstream>
@@ -19,7 +19,7 @@ const char kProcStat[] = "/proc/stat";
 }  // namespace
 
 bool CpuInfoProvider::QueryCpuTimePerProcessor(
-    std::vector<linked_ptr<api::system_cpu::ProcessorInfo> >* infos) {
+    std::vector<linked_ptr<core_api::system_cpu::ProcessorInfo> >* infos) {
   DCHECK(infos);
 
   // WARNING: this method may return incomplete data because some processors may
@@ -35,7 +35,7 @@ bool CpuInfoProvider::QueryCpuTimePerProcessor(
   //   cpu3 2033 32 1075 1400 52 0 1 0 0 0
   std::string contents;
   if (!base::ReadFileToString(base::FilePath(kProcStat), &contents))
-     return false;
+    return false;
 
   std::istringstream iss(contents);
   std::string line;
@@ -49,9 +49,14 @@ bool CpuInfoProvider::QueryCpuTimePerProcessor(
 
     uint64 user = 0, nice = 0, sys = 0, idle = 0;
     uint32 pindex = 0;
-    int vals = sscanf(line.c_str(),
-           "cpu%" PRIu32 " %" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64,
-           &pindex, &user, &nice, &sys, &idle);
+    int vals =
+        sscanf(line.c_str(),
+               "cpu%" PRIu32 " %" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64,
+               &pindex,
+               &user,
+               &nice,
+               &sys,
+               &idle);
     if (vals != 5 || pindex >= infos->size()) {
       NOTREACHED();
       return false;
@@ -60,8 +65,8 @@ bool CpuInfoProvider::QueryCpuTimePerProcessor(
     infos->at(pindex)->usage.kernel = static_cast<double>(sys);
     infos->at(pindex)->usage.user = static_cast<double>(user + nice);
     infos->at(pindex)->usage.idle = static_cast<double>(idle);
-    infos->at(pindex)->usage.total = static_cast<double>(sys + user +
-                                                         nice + idle);
+    infos->at(pindex)->usage.total =
+        static_cast<double>(sys + user + nice + idle);
   }
 
   return true;

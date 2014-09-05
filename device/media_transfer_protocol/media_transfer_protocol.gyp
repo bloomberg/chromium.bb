@@ -43,6 +43,7 @@
       'type': 'static_library',
       'dependencies': [
         '../../build/linux/system.gyp:dbus',
+        '../../dbus/dbus.gyp:dbus',
         'mtp_file_entry_proto',
         'mtp_storage_info_proto',
       ],

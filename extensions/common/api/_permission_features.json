@@ -116,6 +116,61 @@
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "min_manifest_version": 2
   },
+  "system.cpu": [
+    {
+      "channel": "stable",
+      "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["hosted_app"],
+      "whitelist": ["B44D08FD98F1523ED5837D78D0A606EA9D6206E5"]  // Web Store
+    }
+  ],
+  "system.memory": [
+    {
+      "channel": "stable",
+      "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["hosted_app"],
+      "whitelist": ["B44D08FD98F1523ED5837D78D0A606EA9D6206E5"]  // Web Store
+    }
+  ],
+  "system.network": [
+    {
+      "channel": "stable",
+      "extension_types": ["platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["hosted_app"],
+      "whitelist": ["B44D08FD98F1523ED5837D78D0A606EA9D6206E5"]  // Web Store
+    }
+  ],
+  "system.storage": [
+    {
+      "channel": "stable",
+      "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["hosted_app"],
+      "whitelist": ["B44D08FD98F1523ED5837D78D0A606EA9D6206E5"]  // Web Store
+    }
+  ],
+  "system.display": [
+    {
+      "channel": "stable",
+      "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["hosted_app"],
+      "whitelist": ["B44D08FD98F1523ED5837D78D0A606EA9D6206E5"]  // Web Store
+    }
+  ],
   "usb": [
     {
       "channel": "stable",

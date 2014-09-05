@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/system_display/system_display_api.h"
+#include "extensions/browser/api/system_display/system_display_api.h"
 
 #include <string>
 
-#include "chrome/browser/extensions/api/system_display/display_info_provider.h"
-#include "chrome/common/extensions/api/system_display.h"
+#include "extensions/browser/api/system_display/display_info_provider.h"
+#include "extensions/common/api/system_display.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/memory/scoped_ptr.h"
@@ -17,17 +17,18 @@
 
 namespace extensions {
 
-using api::system_display::DisplayUnitInfo;
+using core_api::system_display::DisplayUnitInfo;
 
-namespace SetDisplayProperties = api::system_display::SetDisplayProperties;
+namespace SetDisplayProperties = core_api::system_display::SetDisplayProperties;
 
-typedef std::vector<linked_ptr<
-    api::system_display::DisplayUnitInfo> > DisplayInfo;
+typedef std::vector<linked_ptr<core_api::system_display::DisplayUnitInfo> >
+    DisplayInfo;
 
 bool SystemDisplayGetInfoFunction::RunSync() {
   DisplayInfo all_displays_info =
       DisplayInfoProvider::Get()->GetAllDisplaysInfo();
-  results_ = api::system_display::GetInfo::Results::Create(all_displays_info);
+  results_ =
+      core_api::system_display::GetInfo::Results::Create(all_displays_info);
   return true;
 }
 
@@ -43,9 +44,8 @@ bool SystemDisplaySetDisplayPropertiesFunction::RunSync() {
   std::string error;
   scoped_ptr<SetDisplayProperties::Params> params(
       SetDisplayProperties::Params::Create(*args_));
-  bool success = DisplayInfoProvider::Get()->SetInfo(params->id,
-                                                     params->info,
-                                                     &error);
+  bool success =
+      DisplayInfoProvider::Get()->SetInfo(params->id, params->info, &error);
   if (!success)
     SetError(error);
   return true;

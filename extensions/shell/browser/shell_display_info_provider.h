@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_DISPLAY_INFO_PROVIDER_AURA_H_
-#define CHROME_BROWSER_EXTENSIONS_DISPLAY_INFO_PROVIDER_AURA_H_
+#ifndef EXTENSIONS_SHELL_BROWSER_SHELL_DISPLAY_INFO_PROVIDER_H_
+#define EXTENSIONS_SHELL_BROWSER_SHELL_DISPLAY_INFO_PROVIDER_H_
 
 #include "extensions/browser/api/system_display/display_info_provider.h"
 
 namespace extensions {
 
-class DisplayInfoProviderAura : public DisplayInfoProvider {
+class ShellDisplayInfoProvider : public DisplayInfoProvider {
  public:
-  DisplayInfoProviderAura();
-  virtual ~DisplayInfoProviderAura();
+  ShellDisplayInfoProvider();
+  virtual ~ShellDisplayInfoProvider();
 
   // DisplayInfoProvider implementation.
   virtual bool SetInfo(const std::string& display_id,
@@ -20,13 +20,13 @@ class DisplayInfoProviderAura : public DisplayInfoProvider {
                        std::string* error) OVERRIDE;
   virtual void UpdateDisplayUnitInfoForPlatform(
       const gfx::Display& display,
-      core_api::system_display::DisplayUnitInfo* unit) OVERRIDE;
+      extensions::core_api::system_display::DisplayUnitInfo* unit) OVERRIDE;
   virtual gfx::Screen* GetActiveScreen() OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DisplayInfoProviderAura);
+  DISALLOW_COPY_AND_ASSIGN(ShellDisplayInfoProvider);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_DISPLAY_INFO_PROVIDER_AURA_H_
+#endif  // EXTENSIONS_SHELL_BROWSER_SHELL_DISPLAY_INFO_PROVIDER_H_

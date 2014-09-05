@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_STORAGE_STORAGE_INFO_PROVIDER_H_
-#define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_STORAGE_STORAGE_INFO_PROVIDER_H_
+#ifndef EXTENSIONS_BROWSER_API_SYSTEM_STORAGE_STORAGE_INFO_PROVIDER_H_
+#define EXTENSIONS_BROWSER_API_SYSTEM_STORAGE_STORAGE_INFO_PROVIDER_H_
 
 #include <set>
 
@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/extensions/api/system_info/system_info_provider.h"
-#include "chrome/common/extensions/api/system_storage.h"
+#include "extensions/browser/api/system_info/system_info_provider.h"
+#include "extensions/common/api/system_storage.h"
 
 namespace storage_monitor {
 class StorageInfo;
@@ -25,13 +25,12 @@ namespace systeminfo {
 // Build StorageUnitInfo struct from StorageInfo instance. The |unit|
 // parameter is the output value.
 void BuildStorageUnitInfo(const storage_monitor::StorageInfo& info,
-                          api::system_storage::StorageUnitInfo* unit);
+                          core_api::system_storage::StorageUnitInfo* unit);
 
 }  // namespace systeminfo
 
-typedef std::vector<linked_ptr<
-    api::system_storage::StorageUnitInfo> >
-        StorageUnitInfoList;
+typedef std::vector<linked_ptr<core_api::system_storage::StorageUnitInfo> >
+    StorageUnitInfoList;
 
 class StorageInfoProvider : public SystemInfoProvider {
  public:
@@ -43,8 +42,8 @@ class StorageInfoProvider : public SystemInfoProvider {
 
   // SystemInfoProvider implementations
   virtual void PrepareQueryOnUIThread() OVERRIDE;
-  virtual void InitializeProvider(const base::Closure& do_query_info_callback)
-      OVERRIDE;
+  virtual void InitializeProvider(
+      const base::Closure& do_query_info_callback) OVERRIDE;
 
   virtual double GetStorageFreeSpaceFromTransientIdOnFileThread(
       const std::string& transient_id);
@@ -83,4 +82,4 @@ class StorageInfoProvider : public SystemInfoProvider {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_SYSTEM_STORAGE_STORAGE_INFO_PROVIDER_H_
+#endif  // EXTENSIONS_BROWSER_API_SYSTEM_STORAGE_STORAGE_INFO_PROVIDER_H_

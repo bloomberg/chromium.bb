@@ -2,24 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/system_memory/memory_info_provider.h"
+#include "extensions/browser/api/system_memory/memory_info_provider.h"
 
 #include "base/sys_info.h"
 
 namespace extensions {
 
-using api::system_memory::MemoryInfo;
+using core_api::system_memory::MemoryInfo;
 
 // Static member intialization.
 base::LazyInstance<scoped_refptr<MemoryInfoProvider> >
     MemoryInfoProvider::provider_ = LAZY_INSTANCE_INITIALIZER;
 
-MemoryInfoProvider::MemoryInfoProvider() {}
+MemoryInfoProvider::MemoryInfoProvider() {
+}
 
-MemoryInfoProvider::~MemoryInfoProvider() {}
-
-const MemoryInfo& MemoryInfoProvider::memory_info() const {
-  return info_;
+MemoryInfoProvider::~MemoryInfoProvider() {
 }
 
 void MemoryInfoProvider::InitializeForTesting(

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/system_cpu/cpu_info_provider.h"
+#include "extensions/browser/api/system_cpu/cpu_info_provider.h"
 
 #include <windows.h>
 #include <winternl.h>
@@ -17,15 +17,15 @@ const wchar_t kNtdll[] = L"ntdll.dll";
 const char kNtQuerySystemInformationName[] = "NtQuerySystemInformation";
 
 // See MSDN about NtQuerySystemInformation definition.
-typedef DWORD (WINAPI *NtQuerySystemInformationPF)(DWORD system_info_class,
-                                                   PVOID system_info,
-                                                   ULONG system_info_length,
-                                                   PULONG return_length);
+typedef DWORD(WINAPI* NtQuerySystemInformationPF)(DWORD system_info_class,
+                                                  PVOID system_info,
+                                                  ULONG system_info_length,
+                                                  PULONG return_length);
 
 }  // namespace
 
 bool CpuInfoProvider::QueryCpuTimePerProcessor(
-    std::vector<linked_ptr<api::system_cpu::ProcessorInfo> >* infos) {
+    std::vector<linked_ptr<core_api::system_cpu::ProcessorInfo> >* infos) {
   DCHECK(infos);
 
   HMODULE ntdll = GetModuleHandle(kNtdll);
@@ -40,11 +40,14 @@ bool CpuInfoProvider::QueryCpuTimePerProcessor(
   scoped_ptr<SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[]> processor_info(
       new SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION[num_of_processors]);
 
-  ULONG returned_bytes = 0, bytes =
-      sizeof(SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION) * num_of_processors;
-  if (!NT_SUCCESS(NtQuerySystemInformation(
-          SystemProcessorPerformanceInformation,
-          processor_info.get(), bytes, &returned_bytes)))
+  ULONG returned_bytes = 0,
+        bytes = sizeof(SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION) *
+                num_of_processors;
+  if (!NT_SUCCESS(
+          NtQuerySystemInformation(SystemProcessorPerformanceInformation,
+                                   processor_info.get(),
+                                   bytes,
+                                   &returned_bytes)))
     return false;
 
   int returned_num_of_processors =
@@ -56,8 +59,8 @@ bool CpuInfoProvider::QueryCpuTimePerProcessor(
   DCHECK_EQ(num_of_processors, static_cast<int>(infos->size()));
   for (int i = 0; i < returned_num_of_processors; ++i) {
     double kernel = static_cast<double>(processor_info[i].KernelTime.QuadPart),
-        user = static_cast<double>(processor_info[i].UserTime.QuadPart),
-        idle = static_cast<double>(processor_info[i].IdleTime.QuadPart);
+           user = static_cast<double>(processor_info[i].UserTime.QuadPart),
+           idle = static_cast<double>(processor_info[i].IdleTime.QuadPart);
 
     // KernelTime needs to be fixed-up, because it includes both idle time and
     // real kernel time.

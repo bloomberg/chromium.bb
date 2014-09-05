@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/system_storage/system_storage_api.h"
+#include "extensions/browser/api/system_storage/system_storage_api.h"
 
 using storage_monitor::StorageMonitor;
 
 namespace extensions {
 
-using api::system_storage::StorageUnitInfo;
-namespace EjectDevice = api::system_storage::EjectDevice;
-namespace GetAvailableCapacity = api::system_storage::GetAvailableCapacity;
+using core_api::system_storage::StorageUnitInfo;
+namespace EjectDevice = core_api::system_storage::EjectDevice;
+namespace GetAvailableCapacity = core_api::system_storage::GetAvailableCapacity;
 
 SystemStorageGetInfoFunction::SystemStorageGetInfoFunction() {
 }
@@ -19,15 +19,14 @@ SystemStorageGetInfoFunction::~SystemStorageGetInfoFunction() {
 }
 
 bool SystemStorageGetInfoFunction::RunAsync() {
-  StorageInfoProvider::Get()->StartQueryInfo(
-      base::Bind(&SystemStorageGetInfoFunction::OnGetStorageInfoCompleted,
-                 this));
+  StorageInfoProvider::Get()->StartQueryInfo(base::Bind(
+      &SystemStorageGetInfoFunction::OnGetStorageInfoCompleted, this));
   return true;
 }
 
 void SystemStorageGetInfoFunction::OnGetStorageInfoCompleted(bool success) {
   if (success) {
-    results_ = api::system_storage::GetInfo::Results::Create(
+    results_ = core_api::system_storage::GetInfo::Results::Create(
         StorageInfoProvider::Get()->storage_unit_info_list());
   } else {
     SetError("Error occurred when querying storage information.");
@@ -45,10 +44,10 @@ bool SystemStorageEjectDeviceFunction::RunAsync() {
   scoped_ptr<EjectDevice::Params> params(EjectDevice::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
-      &SystemStorageEjectDeviceFunction::OnStorageMonitorInit,
-      this,
-      params->id));
+  StorageMonitor::GetInstance()->EnsureInitialized(
+      base::Bind(&SystemStorageEjectDeviceFunction::OnStorageMonitorInit,
+                 this,
+                 params->id));
   return true;
 }
 
@@ -67,31 +66,29 @@ void SystemStorageEjectDeviceFunction::OnStorageMonitorInit(
 
   monitor->EjectDevice(
       device_id_str,
-      base::Bind(&SystemStorageEjectDeviceFunction::HandleResponse,
-                 this));
+      base::Bind(&SystemStorageEjectDeviceFunction::HandleResponse, this));
 }
 
 void SystemStorageEjectDeviceFunction::HandleResponse(
     StorageMonitor::EjectStatus status) {
-  api::system_storage:: EjectDeviceResultCode result =
-      api::system_storage::EJECT_DEVICE_RESULT_CODE_FAILURE;
+  core_api::system_storage::EjectDeviceResultCode result =
+      core_api::system_storage::EJECT_DEVICE_RESULT_CODE_FAILURE;
   switch (status) {
     case StorageMonitor::EJECT_OK:
-      result = api::system_storage::EJECT_DEVICE_RESULT_CODE_SUCCESS;
+      result = core_api::system_storage::EJECT_DEVICE_RESULT_CODE_SUCCESS;
       break;
     case StorageMonitor::EJECT_IN_USE:
-      result = api::system_storage::EJECT_DEVICE_RESULT_CODE_IN_USE;
+      result = core_api::system_storage::EJECT_DEVICE_RESULT_CODE_IN_USE;
       break;
     case StorageMonitor::EJECT_NO_SUCH_DEVICE:
-      result = api::system_storage::
-          EJECT_DEVICE_RESULT_CODE_NO_SUCH_DEVICE;
+      result =
+          core_api::system_storage::EJECT_DEVICE_RESULT_CODE_NO_SUCH_DEVICE;
       break;
     case StorageMonitor::EJECT_FAILURE:
-      result = api::system_storage::EJECT_DEVICE_RESULT_CODE_FAILURE;
+      result = core_api::system_storage::EJECT_DEVICE_RESULT_CODE_FAILURE;
   }
 
-  SetResult(new base::StringValue(
-      api::system_storage::ToString(result)));
+  SetResult(new base::StringValue(core_api::system_storage::ToString(result)));
   SendResponse(true);
 }
 
@@ -124,17 +121,19 @@ void SystemStorageGetAvailableCapacityFunction::OnStorageMonitorInit(
       FROM_HERE,
       base::Bind(
           &StorageInfoProvider::GetStorageFreeSpaceFromTransientIdOnFileThread,
-          StorageInfoProvider::Get(), transient_id),
-      base::Bind(
-          &SystemStorageGetAvailableCapacityFunction::OnQueryCompleted,
-          this, transient_id));
+          StorageInfoProvider::Get(),
+          transient_id),
+      base::Bind(&SystemStorageGetAvailableCapacityFunction::OnQueryCompleted,
+                 this,
+                 transient_id));
 }
 
 void SystemStorageGetAvailableCapacityFunction::OnQueryCompleted(
-    const std::string& transient_id, double available_capacity) {
+    const std::string& transient_id,
+    double available_capacity) {
   bool success = available_capacity >= 0;
   if (success) {
-    api::system_storage::StorageAvailableCapacityInfo result;
+    core_api::system_storage::StorageAvailableCapacityInfo result;
     result.id = transient_id;
     result.available_capacity = available_capacity;
     SetResult(result.ToValue().release());

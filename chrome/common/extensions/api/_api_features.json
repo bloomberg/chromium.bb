@@ -683,29 +683,6 @@
     "dependencies": ["manifest:system_indicator"],
     "contexts": ["blessed_extension"]
   },
-  "system.cpu": {
-    "dependencies": ["permission:system.cpu"],
-    "contexts": ["blessed_extension"]
-  },
-  "system.display": {
-    "dependencies": ["permission:system.display"],
-    "contexts": ["blessed_extension"]
-  },
-  "system.memory": {
-    "dependencies": ["permission:system.memory"],
-    "contexts": ["blessed_extension"]
-  },
-  "system.network": {
-    "dependencies": ["permission:system.network"],
-    "contexts": ["blessed_extension"]
-  },
-  "system.storage": {
-    "dependencies": ["permission:system.storage"],
-    "contexts": ["blessed_extension"]
-  },
-  "system.storage.getAvailableCapacity": {
-    "channel": "dev"
-  },
   "systemPrivate": {
     "dependencies": ["permission:systemPrivate"],
     "contexts": ["blessed_extension"]

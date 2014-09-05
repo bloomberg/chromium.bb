@@ -75,6 +75,9 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
       content::BrowserContext* context) const OVERRIDE;
   virtual ComponentExtensionResourceManager*
       GetComponentExtensionResourceManager() OVERRIDE;
+  virtual void BroadcastEventToRenderers(
+      const std::string& event_name,
+      scoped_ptr<base::ListValue> args) OVERRIDE;
   virtual net::NetLog* GetNetLog() OVERRIDE;
 
  private:

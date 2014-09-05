@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/system_memory/system_memory_api.h"
+#include "extensions/browser/api/system_memory/system_memory_api.h"
 
-#include "chrome/browser/extensions/api/system_memory/memory_info_provider.h"
+#include "extensions/browser/api/system_memory/memory_info_provider.h"
 
 namespace extensions {
 
-using api::system_memory::MemoryInfo;
+using core_api::system_memory::MemoryInfo;
 
-SystemMemoryGetInfoFunction::SystemMemoryGetInfoFunction() {}
+SystemMemoryGetInfoFunction::SystemMemoryGetInfoFunction() {
+}
 
-SystemMemoryGetInfoFunction::~SystemMemoryGetInfoFunction() {}
+SystemMemoryGetInfoFunction::~SystemMemoryGetInfoFunction() {
+}
 
 bool SystemMemoryGetInfoFunction::RunAsync() {
   MemoryInfoProvider::Get()->StartQueryInfo(

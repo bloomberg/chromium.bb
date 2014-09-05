@@ -9,9 +9,11 @@
 #include "base/prefs/testing_pref_store.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/generated_api_registration.h"
 #include "extensions/browser/app_sorting.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/shell/browser/api/generated_api_registration.h"
@@ -21,6 +23,7 @@
 #include "extensions/shell/browser/shell_runtime_api_delegate.h"
 
 using content::BrowserContext;
+using content::BrowserThread;
 
 namespace extensions {
 namespace {
@@ -194,6 +197,24 @@ ShellExtensionsBrowserClient::CreateRuntimeAPIDelegate(
 ComponentExtensionResourceManager*
 ShellExtensionsBrowserClient::GetComponentExtensionResourceManager() {
   return NULL;
+}
+
+void ShellExtensionsBrowserClient::BroadcastEventToRenderers(
+    const std::string& event_name,
+    scoped_ptr<base::ListValue> args) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&ShellExtensionsBrowserClient::BroadcastEventToRenderers,
+                   base::Unretained(this),
+                   event_name,
+                   base::Passed(&args)));
+    return;
+  }
+
+  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
+  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
 net::NetLog* ShellExtensionsBrowserClient::GetNetLog() {

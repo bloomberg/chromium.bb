@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_STORAGE_SYSTEM_STORAGE_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_STORAGE_SYSTEM_STORAGE_API_H_
+#ifndef EXTENSIONS_BROWSER_API_SYSTEM_STORAGE_SYSTEM_STORAGE_API_H_
+#define EXTENSIONS_BROWSER_API_SYSTEM_STORAGE_SYSTEM_STORAGE_API_H_
 
-#include "chrome/browser/extensions/api/system_storage/storage_info_provider.h"
 #include "components/storage_monitor/storage_monitor.h"
+#include "extensions/browser/api/system_storage/storage_info_provider.h"
 #include "extensions/browser/extension_function.h"
 
 namespace extensions {
@@ -25,8 +25,7 @@ class SystemStorageGetInfoFunction : public AsyncExtensionFunction {
   void OnGetStorageInfoCompleted(bool success);
 };
 
-class SystemStorageEjectDeviceFunction
-    : public AsyncExtensionFunction {
+class SystemStorageEjectDeviceFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.storage.ejectDevice",
                              SYSTEM_STORAGE_EJECTDEVICE);
@@ -61,4 +60,4 @@ class SystemStorageGetAvailableCapacityFunction
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_SYSTEM_STORAGE_SYSTEM_STORAGE_API_H_
+#endif  // EXTENSIONS_BROWSER_API_SYSTEM_STORAGE_SYSTEM_STORAGE_API_H_

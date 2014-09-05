@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_DISPLAY_SYSTEM_DISPLAY_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_DISPLAY_SYSTEM_DISPLAY_API_H_
+#ifndef EXTENSIONS_BROWSER_API_SYSTEM_DISPLAY_SYSTEM_DISPLAY_API_H_
+#define EXTENSIONS_BROWSER_API_SYSTEM_DISPLAY_SYSTEM_DISPLAY_API_H_
 
 #include <string>
 
@@ -13,16 +13,14 @@ namespace extensions {
 
 class SystemDisplayGetInfoFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("system.display.getInfo",
-                             SYSTEM_DISPLAY_GETINFO);
+  DECLARE_EXTENSION_FUNCTION("system.display.getInfo", SYSTEM_DISPLAY_GETINFO);
 
  protected:
   virtual ~SystemDisplayGetInfoFunction() {}
   virtual bool RunSync() OVERRIDE;
 };
 
-class SystemDisplaySetDisplayPropertiesFunction
-    : public SyncExtensionFunction {
+class SystemDisplaySetDisplayPropertiesFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.display.setDisplayProperties",
                              SYSTEM_DISPLAY_SETDISPLAYPROPERTIES);
@@ -34,4 +32,4 @@ class SystemDisplaySetDisplayPropertiesFunction
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_SYSTEM_DISPLAY_SYSTEM_DISPLAY_API_H_
+#endif  // EXTENSIONS_BROWSER_API_SYSTEM_DISPLAY_SYSTEM_DISPLAY_API_H_

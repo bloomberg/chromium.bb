@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/system_display/system_display_api.h"
-
 #include "base/debug/leak_annotations.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/extensions/api/system_display/display_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/common/extensions/api/system_display.h"
+#include "extensions/browser/api/system_display/display_info_provider.h"
+#include "extensions/browser/api/system_display/system_display_api.h"
+#include "extensions/common/api/system_display.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/screen.h"
@@ -23,8 +22,8 @@ namespace utils = extension_function_test_utils;
 
 namespace extensions {
 
-using api::system_display::Bounds;
-using api::system_display::DisplayUnitInfo;
+using core_api::system_display::Bounds;
+using core_api::system_display::DisplayUnitInfo;
 using gfx::Screen;
 
 #if defined(OS_CHROMEOS)
@@ -122,7 +121,7 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
 
   virtual bool SetInfo(
       const std::string& display_id,
-      const api::system_display::DisplayProperties& params,
+      const core_api::system_display::DisplayProperties& params,
       std::string* error) OVERRIDE {
     // Should get called only once per test case.
     EXPECT_FALSE(set_info_value_);
@@ -146,7 +145,7 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
   // platform specific method.
   virtual void UpdateDisplayUnitInfoForPlatform(
       const gfx::Display& display,
-      extensions::api::system_display::DisplayUnitInfo* unit) OVERRIDE {
+      extensions::core_api::system_display::DisplayUnitInfo* unit) OVERRIDE {
     int64 id = display.id();
     unit->name = "DISPLAY NAME FOR " + base::Int64ToString(id);
     if (id == 1)

@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "chrome/browser/extensions/api/system_cpu/cpu_info_provider.h"
-#include "chrome/browser/extensions/api/system_cpu/system_cpu_api.h"
-#include "chrome/common/chrome_switches.h"
+#include "extensions/browser/api/system_cpu/cpu_info_provider.h"
+#include "extensions/browser/api/system_cpu/system_cpu_api.h"
 #include "extensions/common/features/base_feature_provider.h"
 
 namespace extensions {
 
-using api::system_cpu::CpuInfo;
+using core_api::system_cpu::CpuInfo;
 
 SystemCpuGetInfoFunction::SystemCpuGetInfoFunction() {
 }

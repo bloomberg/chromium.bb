@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/system_cpu/cpu_info_provider.h"
+#include "extensions/browser/api/system_cpu/cpu_info_provider.h"
 
 #include <mach/mach_host.h>
 
@@ -12,7 +12,7 @@
 namespace extensions {
 
 bool CpuInfoProvider::QueryCpuTimePerProcessor(
-    std::vector<linked_ptr<api::system_cpu::ProcessorInfo> >* infos) {
+    std::vector<linked_ptr<core_api::system_cpu::ProcessorInfo> >* infos) {
   DCHECK(infos);
 
   natural_t num_of_processors;
@@ -26,14 +26,15 @@ bool CpuInfoProvider::QueryCpuTimePerProcessor(
                           reinterpret_cast<processor_info_array_t*>(&cpu_infos),
                           &type) == KERN_SUCCESS) {
     DCHECK_EQ(num_of_processors,
-        static_cast<natural_t>(base::SysInfo::NumberOfProcessors()));
+              static_cast<natural_t>(base::SysInfo::NumberOfProcessors()));
     DCHECK_EQ(num_of_processors, static_cast<natural_t>(infos->size()));
 
     for (natural_t i = 0; i < num_of_processors; ++i) {
       double user = static_cast<double>(cpu_infos[i].cpu_ticks[CPU_STATE_USER]),
-          sys = static_cast<double>(cpu_infos[i].cpu_ticks[CPU_STATE_SYSTEM]),
-          nice = static_cast<double>(cpu_infos[i].cpu_ticks[CPU_STATE_NICE]),
-          idle = static_cast<double>(cpu_infos[i].cpu_ticks[CPU_STATE_IDLE]);
+             sys =
+                 static_cast<double>(cpu_infos[i].cpu_ticks[CPU_STATE_SYSTEM]),
+             nice = static_cast<double>(cpu_infos[i].cpu_ticks[CPU_STATE_NICE]),
+             idle = static_cast<double>(cpu_infos[i].cpu_ticks[CPU_STATE_IDLE]);
 
       infos->at(i)->usage.kernel = sys;
       infos->at(i)->usage.user = user + nice;

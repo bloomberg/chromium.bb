@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/system_info/system_info_api.h"
+#include "extensions/browser/api/system_info/system_info_api.h"
 
 #include <set>
 
@@ -12,27 +12,26 @@
 #include "base/memory/singleton.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/system_display/display_info_provider.h"
-#include "chrome/browser/extensions/api/system_storage/storage_info_provider.h"
-#include "chrome/browser/extensions/event_router_forwarder.h"
-#include "chrome/common/extensions/api/system_display.h"
-#include "chrome/common/extensions/api/system_storage.h"
 #include "components/storage_monitor/removable_storage_observer.h"
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/system_display/display_info_provider.h"
+#include "extensions/browser/api/system_storage/storage_info_provider.h"
+#include "extensions/browser/extensions_browser_client.h"
+#include "extensions/common/api/system_display.h"
+#include "extensions/common/api/system_storage.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/screen.h"
 
 namespace extensions {
 
-using api::system_storage::StorageUnitInfo;
+using core_api::system_storage::StorageUnitInfo;
 using content::BrowserThread;
 using storage_monitor::StorageMonitor;
 
-namespace system_display = api::system_display;
-namespace system_storage = api::system_storage;
+namespace system_display = core_api::system_display;
+namespace system_storage = core_api::system_storage;
 
 namespace {
 
@@ -149,9 +148,9 @@ void SystemInfoEventRouter::RemoveEventListener(const std::string& event_name) {
 
   if (IsSystemStorageEvent(event_name)) {
     const std::string& other_event_name =
-        (event_name == system_storage::OnDetached::kEventName) ?
-            system_storage::OnAttached::kEventName :
-            system_storage::OnDetached::kEventName;
+        (event_name == system_storage::OnDetached::kEventName)
+            ? system_storage::OnAttached::kEventName
+            : system_storage::OnDetached::kEventName;
     if (watching_event_set_.count(other_event_name) == 0) {
       StorageMonitor::GetInstance()->RemoveObserver(this);
       has_storage_monitor_observer_ = false;
@@ -199,8 +198,8 @@ void SystemInfoEventRouter::OnDisplayChanged() {
 
 void SystemInfoEventRouter::DispatchEvent(const std::string& event_name,
                                           scoped_ptr<base::ListValue> args) {
-  g_browser_process->extension_event_router_forwarder()->
-      BroadcastEventToRenderers(event_name, args.Pass(), GURL());
+  ExtensionsBrowserClient::Get()->BroadcastEventToRenderers(event_name,
+                                                            args.Pass());
 }
 
 void AddEventListener(const std::string& event_name) {

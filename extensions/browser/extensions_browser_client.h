@@ -17,6 +17,7 @@ class PrefService;
 namespace base {
 class CommandLine;
 class FilePath;
+class ListValue;
 }
 
 namespace content {
@@ -181,6 +182,11 @@ class ExtensionsBrowserClient {
   // the manager doesn't exist.
   virtual ComponentExtensionResourceManager*
   GetComponentExtensionResourceManager() = 0;
+
+  // Propagate a event to all the renderers in every browser context. The
+  // implementation must be safe to call from any thread.
+  virtual void BroadcastEventToRenderers(const std::string& event_name,
+                                         scoped_ptr<base::ListValue> args) = 0;
 
   // Returns the embedder's net::NetLog.
   virtual net::NetLog* GetNetLog() = 0;

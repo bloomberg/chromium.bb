@@ -14,6 +14,7 @@
 #include "extensions/browser/api/sockets_tcp_server/tcp_server_socket_event_dispatcher.h"
 #include "extensions/browser/api/sockets_udp/udp_socket_event_dispatcher.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
+#include "extensions/browser/api/system_info/system_info_api.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/renderer_startup_helper.h"
 
@@ -33,6 +34,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   RendererStartupHelperFactory::GetInstance();
   RuntimeAPI::GetFactoryInstance();
   StorageFrontend::GetFactoryInstance();
+  SystemInfoAPI::GetFactoryInstance();
 }
 
 }  // namespace extensions

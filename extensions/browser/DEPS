@@ -2,6 +2,7 @@ include_rules = [
   "+components/keyed_service",
   "+components/pref_registry",
   "+components/sessions",
+  "+components/storage_monitor",
   "+components/web_modal",
   "+content/public/browser",
   "+device/bluetooth",

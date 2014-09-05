@@ -167,6 +167,11 @@ TestExtensionsBrowserClient::GetComponentExtensionResourceManager() {
   return NULL;
 }
 
+void TestExtensionsBrowserClient::BroadcastEventToRenderers(
+    const std::string& event_name,
+    scoped_ptr<base::ListValue> args) {
+}
+
 net::NetLog* TestExtensionsBrowserClient::GetNetLog() {
   return NULL;
 }

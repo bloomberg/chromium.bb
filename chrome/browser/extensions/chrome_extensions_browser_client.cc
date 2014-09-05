@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/chrome_component_extension_resource_manager.h"
 #include "chrome/browser/extensions/chrome_extension_host_delegate.h"
 #include "chrome/browser/extensions/chrome_process_manager_delegate.h"
+#include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/url_request_util.h"
@@ -245,6 +246,13 @@ ChromeExtensionsBrowserClient::GetComponentExtensionResourceManager() {
   if (!resource_manager_)
     resource_manager_.reset(new ChromeComponentExtensionResourceManager());
   return resource_manager_.get();
+}
+
+void ChromeExtensionsBrowserClient::BroadcastEventToRenderers(
+    const std::string& event_name,
+    scoped_ptr<base::ListValue> args) {
+  g_browser_process->extension_event_router_forwarder()
+      ->BroadcastEventToRenderers(event_name, args.Pass(), GURL());
 }
 
 net::NetLog* ChromeExtensionsBrowserClient::GetNetLog() {

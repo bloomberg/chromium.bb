@@ -2,27 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/system_info/system_info_provider.h"
+#include "extensions/browser/api/system_info/system_info_provider.h"
 
 #include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace extensions {
 
-SystemInfoProvider::SystemInfoProvider()
-    : is_waiting_for_completion_(false) {
+SystemInfoProvider::SystemInfoProvider() : is_waiting_for_completion_(false) {
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
   worker_pool_ = pool->GetSequencedTaskRunnerWithShutdownBehavior(
       pool->GetSequenceToken(),
       base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 }
 
-SystemInfoProvider::~SystemInfoProvider() {}
+SystemInfoProvider::~SystemInfoProvider() {
+}
 
-void SystemInfoProvider::PrepareQueryOnUIThread() {}
+void SystemInfoProvider::PrepareQueryOnUIThread() {
+}
 
-void SystemInfoProvider::InitializeProvider(const base::Closure&
-    do_query_info_callback) {
+void SystemInfoProvider::InitializeProvider(
+    const base::Closure& do_query_info_callback) {
   do_query_info_callback.Run();
 }
 
@@ -38,8 +39,8 @@ void SystemInfoProvider::StartQueryInfo(
 
   is_waiting_for_completion_ = true;
 
-  InitializeProvider(base::Bind(
-      &SystemInfoProvider::StartQueryInfoPostInitialization, this));
+  InitializeProvider(
+      base::Bind(&SystemInfoProvider::StartQueryInfoPostInitialization, this));
 }
 
 void SystemInfoProvider::OnQueryCompleted(bool success) {

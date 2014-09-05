@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/system_storage/storage_info_provider.h"
+#include "extensions/browser/api/system_storage/storage_info_provider.h"
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,20 +18,20 @@ using storage_monitor::StorageMonitor;
 namespace extensions {
 
 using content::BrowserThread;
-using api::system_storage::StorageUnitInfo;
-using api::system_storage::STORAGE_UNIT_TYPE_FIXED;
-using api::system_storage::STORAGE_UNIT_TYPE_REMOVABLE;
+using core_api::system_storage::StorageUnitInfo;
+using core_api::system_storage::STORAGE_UNIT_TYPE_FIXED;
+using core_api::system_storage::STORAGE_UNIT_TYPE_REMOVABLE;
 
 namespace systeminfo {
 
-void BuildStorageUnitInfo(const StorageInfo& info,
-                          StorageUnitInfo* unit) {
+void BuildStorageUnitInfo(const StorageInfo& info, StorageUnitInfo* unit) {
   unit->id = StorageMonitor::GetInstance()->GetTransientIdForDeviceId(
-                 info.device_id());
+      info.device_id());
   unit->name = base::UTF16ToUTF8(info.GetDisplayName(false));
   // TODO(hmin): Might need to take MTP device into consideration.
-  unit->type = StorageInfo::IsRemovableDevice(info.device_id()) ?
-      STORAGE_UNIT_TYPE_REMOVABLE : STORAGE_UNIT_TYPE_FIXED;
+  unit->type = StorageInfo::IsRemovableDevice(info.device_id())
+                   ? STORAGE_UNIT_TYPE_REMOVABLE
+                   : STORAGE_UNIT_TYPE_FIXED;
   unit->capacity = static_cast<double>(info.total_size_in_bytes());
 }
 
@@ -84,7 +84,8 @@ void StorageInfoProvider::GetAllStoragesIntoInfoList() {
       StorageMonitor::GetInstance()->GetAllAvailableStorages();
 
   for (std::vector<StorageInfo>::const_iterator it = storage_list.begin();
-       it != storage_list.end(); ++it) {
+       it != storage_list.end();
+       ++it) {
     linked_ptr<StorageUnitInfo> unit(new StorageUnitInfo());
     systeminfo::BuildStorageUnitInfo(*it, unit.get());
     info_.push_back(unit);
@@ -98,16 +99,15 @@ double StorageInfoProvider::GetStorageFreeSpaceFromTransientIdOnFileThread(
       StorageMonitor::GetInstance()->GetAllAvailableStorages();
 
   std::string device_id =
-      StorageMonitor::GetInstance()->GetDeviceIdForTransientId(
-          transient_id);
+      StorageMonitor::GetInstance()->GetDeviceIdForTransientId(transient_id);
 
   // Lookup the matched storage info by |device_id|.
-  for (std::vector<StorageInfo>::const_iterator it =
-       storage_list.begin();
-       it != storage_list.end(); ++it) {
+  for (std::vector<StorageInfo>::const_iterator it = storage_list.begin();
+       it != storage_list.end();
+       ++it) {
     if (device_id == it->device_id())
-      return static_cast<double>(base::SysInfo::AmountOfFreeDiskSpace(
-                                      base::FilePath(it->location())));
+      return static_cast<double>(
+          base::SysInfo::AmountOfFreeDiskSpace(base::FilePath(it->location())));
   }
 
   return -1;

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/display_info_provider_mac.h"
+#include "extensions/shell/browser/shell_display_info_provider.h"
 
 namespace extensions {
 
-DisplayInfoProviderMac::DisplayInfoProviderMac() {
+ShellDisplayInfoProvider::ShellDisplayInfoProvider() {
 }
 
-DisplayInfoProviderMac::~DisplayInfoProviderMac() {
+ShellDisplayInfoProvider::~ShellDisplayInfoProvider() {
 }
 
-bool DisplayInfoProviderMac::SetInfo(
+bool ShellDisplayInfoProvider::SetInfo(
     const std::string& display_id,
     const core_api::system_display::DisplayProperties& info,
     std::string* error) {
@@ -20,19 +20,19 @@ bool DisplayInfoProviderMac::SetInfo(
   return false;
 }
 
-void DisplayInfoProviderMac::UpdateDisplayUnitInfoForPlatform(
+void ShellDisplayInfoProvider::UpdateDisplayUnitInfoForPlatform(
     const gfx::Display& display,
     extensions::core_api::system_display::DisplayUnitInfo* unit) {
   NOTIMPLEMENTED();
 }
 
-gfx::Screen* DisplayInfoProviderMac::GetActiveScreen() {
+gfx::Screen* ShellDisplayInfoProvider::GetActiveScreen() {
   return NULL;
 }
 
 // static
 DisplayInfoProvider* DisplayInfoProvider::Create() {
-  return new DisplayInfoProviderMac();
+  return new ShellDisplayInfoProvider();
 }
 
 }  // namespace extensions

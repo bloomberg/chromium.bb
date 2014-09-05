@@ -9,7 +9,7 @@
 #include "ash/shell.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/common/extensions/api/system_display.h"
+#include "extensions/common/api/system_display.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -18,10 +18,10 @@ using ash::DisplayManager;
 
 namespace extensions {
 
-using api::system_display::Bounds;
-using api::system_display::DisplayUnitInfo;
-using api::system_display::DisplayProperties;
-using api::system_display::Insets;
+using core_api::system_display::Bounds;
+using core_api::system_display::DisplayUnitInfo;
+using core_api::system_display::DisplayProperties;
+using core_api::system_display::Insets;
 
 namespace {
 
@@ -359,7 +359,7 @@ bool DisplayInfoProviderChromeOS::SetInfo(const std::string& display_id_str,
 
 void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
     const gfx::Display& display,
-    extensions::api::system_display::DisplayUnitInfo* unit) {
+    extensions::core_api::system_display::DisplayUnitInfo* unit) {
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   unit->name = display_manager->GetDisplayNameForId(display.id());

@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/extensions/api/system_memory/memory_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "extensions/browser/api/system_memory/memory_info_provider.h"
 
 namespace extensions {
 
-using api::system_memory::MemoryInfo;
+using core_api::system_memory::MemoryInfo;
 
 class MockMemoryInfoProviderImpl : public MemoryInfoProvider {
  public:

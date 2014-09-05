@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_DISPLAY_INFO_PROVIDER_CHROMEOS_H_
 #define CHROME_BROWSER_EXTENSIONS_DISPLAY_INFO_PROVIDER_CHROMEOS_H_
 
-#include "chrome/browser/extensions/api/system_display/display_info_provider.h"
+#include "extensions/browser/api/system_display/display_info_provider.h"
 
 namespace extensions {
 
@@ -16,11 +16,11 @@ class DisplayInfoProviderChromeOS : public DisplayInfoProvider {
 
   // DisplayInfoProvider implementation.
   virtual bool SetInfo(const std::string& display_id,
-                       const api::system_display::DisplayProperties& info,
+                       const core_api::system_display::DisplayProperties& info,
                        std::string* error) OVERRIDE;
   virtual void UpdateDisplayUnitInfoForPlatform(
       const gfx::Display& display,
-      extensions::api::system_display::DisplayUnitInfo* unit) OVERRIDE;
+      core_api::system_display::DisplayUnitInfo* unit) OVERRIDE;
   virtual gfx::Screen* GetActiveScreen() OVERRIDE;
 
  private:

@@ -12,6 +12,10 @@ include_rules = [
   # the code you need to a shared location.
   "-chrome",
 
+  # The system.storage API expects the StorageMonitor to be initialized by
+  # the embedder before being used by the extension.
+  "+components/storage_monitor",
+
   # Only allow app_shell and extensions resources, not general Chrome ones.
   "-grit",
   "+grit/app_shell_resources.h",
