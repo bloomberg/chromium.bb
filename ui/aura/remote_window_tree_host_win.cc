@@ -377,8 +377,10 @@ void RemoteWindowTreeHostWin::OnChar(uint32 key_code,
                           scan_code, flags, true);
 }
 
-void RemoteWindowTreeHostWin::OnWindowActivated() {
+void RemoteWindowTreeHostWin::OnWindowActivated(bool repaint) {
   OnHostActivated();
+  if (repaint && compositor())
+    compositor()->ScheduleFullRedraw();
 }
 
 void RemoteWindowTreeHostWin::OnEdgeGesture() {

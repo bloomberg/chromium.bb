@@ -62,7 +62,8 @@ IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_Character,
                      uint32,       /* scan code */
                      uint32        /* key state */);
 // Informs the browser that the Metro window has been activated.
-IPC_MESSAGE_CONTROL0(MetroViewerHostMsg_WindowActivated);
+IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_WindowActivated,
+                     bool /* Whether the window should be repainted */);
 
 // Informs the browser that the user has completed an edge gesture.
 IPC_MESSAGE_CONTROL0(MetroViewerHostMsg_EdgeGesture)

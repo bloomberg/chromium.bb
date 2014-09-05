@@ -1280,19 +1280,25 @@ HRESULT ChromeAppViewAsh::OnCharacterReceived(
 HRESULT ChromeAppViewAsh::OnWindowActivated(
     winui::Core::ICoreWindow* sender,
     winui::Core::IWindowActivatedEventArgs* args) {
-  winui::Core::CoreWindowActivationState state;
-  HRESULT hr = args->get_WindowActivationState(&state);
-  if (FAILED(hr))
-    return hr;
+  if (args) {
+    winui::Core::CoreWindowActivationState state;
+    HRESULT hr = args->get_WindowActivationState(&state);
+    if (FAILED(hr))
+      return hr;
 
-  // Treat both full activation (Ash was reopened from the Start Screen or from
-  // any other Metro entry point in Windows) and pointer activation (user
-  // clicked back in Ash after using another app on another monitor) the same.
-  if (state == winui::Core::CoreWindowActivationState_CodeActivated ||
-      state == winui::Core::CoreWindowActivationState_PointerActivated) {
-    if (text_service_)
-      text_service_->OnWindowActivated();
-    ui_channel_->Send(new MetroViewerHostMsg_WindowActivated());
+    // Treat both full activation (Ash was reopened from the Start Screen or
+    // from any other Metro entry point in Windows) and pointer activation
+    // (user clicked back in Ash after using another app on another monitor)
+    // the same.
+    if (state == winui::Core::CoreWindowActivationState_CodeActivated ||
+        state == winui::Core::CoreWindowActivationState_PointerActivated) {
+      if (text_service_)
+        text_service_->OnWindowActivated();
+      ui_channel_->Send(new MetroViewerHostMsg_WindowActivated(false));
+    }
+  } else {
+    // On Windows 7, we force a repaint when the window is activated.
+    ui_channel_->Send(new MetroViewerHostMsg_WindowActivated(true));
   }
   return S_OK;
 }

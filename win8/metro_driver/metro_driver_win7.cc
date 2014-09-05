@@ -19,37 +19,10 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 int g_window_count = 0;
 
 const wchar_t kAshWin7AppId[] = L"Google.Chrome.AshWin7.1";
-
+const wchar_t kAshWin7CoreWindowHandler[] = L"CoreWindowHandler";
 extern float GetModernUIScale();
-
-LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
-                         WPARAM wparam, LPARAM lparam) {
-  PAINTSTRUCT ps;
-  HDC hdc;
-  switch (message) {
-    case WM_CREATE:
-      ++g_window_count;
-      break;
-    case WM_PAINT:
-      hdc = ::BeginPaint(hwnd, &ps);
-      ::EndPaint(hwnd, &ps);
-      break;
-    case WM_CLOSE:
-      ::DestroyWindow(hwnd);
-      break;
-    case WM_DESTROY:
-      --g_window_count;
-      if (!g_window_count)
-        ::PostQuitMessage(0);
-      break;
-    // Always allow Chrome to set the cursor.
-    case WM_SETCURSOR:
-      return 1;
-    default:
-      return ::DefWindowProc(hwnd, message, wparam, lparam);
-  }
-  return 0;
-}
+LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam,
+                         LPARAM lparam);
 
 HWND CreateMetroTopLevelWindow(const RECT& work_area) {
   HINSTANCE hInst = reinterpret_cast<HINSTANCE>(&__ImageBase);
@@ -66,8 +39,6 @@ HWND CreateMetroTopLevelWindow(const RECT& work_area) {
   wcex.lpszMenuName       = 0;
   wcex.lpszClassName      = L"Windows.UI.Core.CoreWindow";
   wcex.hIconSm            = LoadIcon(::GetModuleHandle(NULL), L"IDR_MAINFRAME");
-
-
 
   HWND hwnd = ::CreateWindowExW(0,
                                 MAKEINTATOM(::RegisterClassExW(&wcex)),
@@ -564,7 +535,7 @@ class CoreWindowEmulation
         winui::Core::ICoreWindow, ICoreWindowInterop>,
       public InputHandler {
  public:
-  CoreWindowEmulation()
+  CoreWindowEmulation(winapp::Core::IFrameworkView* app_view)
       : core_hwnd_(NULL),
         mouse_moved_handler_(NULL),
         mouse_capture_lost_handler_(NULL),
@@ -575,7 +546,9 @@ class CoreWindowEmulation
         mouse_wheel_changed_handler_(NULL),
         key_down_handler_(NULL),
         key_up_handler_(NULL),
-        character_received_handler_(NULL) {
+        character_received_handler_(NULL),
+        app_view_(app_view),
+        window_activated_handler_(NULL) {
     dispatcher_ = mswr::Make<CoreDispatcherEmulation>(this);
 
     // Unless we select our own AppUserModelID the shell might confuse us
@@ -592,11 +565,14 @@ class CoreWindowEmulation
     }
 
     core_hwnd_ = CreateMetroTopLevelWindow(work_area);
+    ::SetProp(core_hwnd_, kAshWin7CoreWindowHandler, this);
   }
 
   ~CoreWindowEmulation() {
-    if (core_hwnd_)
+    if (core_hwnd_) {
+      ::RemoveProp(core_hwnd_, kAshWin7CoreWindowHandler);
       ::DestroyWindow(core_hwnd_);
+    }
   }
 
   // ICoreWindow implementation:
@@ -699,12 +675,15 @@ class CoreWindowEmulation
   virtual HRESULT STDMETHODCALLTYPE add_Activated(
       WindowActivatedHandler* handler,
       EventRegistrationToken* pCookie) {
-    // TODO(cpu) implement this.
+    window_activated_handler_ = handler;
+    handler->AddRef();
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_Activated(
       EventRegistrationToken cookie) {
+    window_activated_handler_->Release();
+    window_activated_handler_ = NULL;
     return S_OK;
   }
 
@@ -1001,6 +980,11 @@ class CoreWindowEmulation
     return true;
   }
 
+  void OnWindowActivated() {
+    if (window_activated_handler_)
+      window_activated_handler_->Invoke(this, NULL);
+  }
+
  private:
    PointerEventHandler* mouse_moved_handler_;
    PointerEventHandler* mouse_capture_lost_handler_;
@@ -1014,7 +998,50 @@ class CoreWindowEmulation
    CharEventHandler* character_received_handler_;
    HWND core_hwnd_;
    mswr::ComPtr<winui::Core::ICoreDispatcher> dispatcher_;
+   mswr::ComPtr<winapp::Core::IFrameworkView> app_view_;
+   WindowActivatedHandler* window_activated_handler_;
 };
+
+LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
+                         WPARAM wparam, LPARAM lparam) {
+  PAINTSTRUCT ps;
+  HDC hdc;
+  switch (message) {
+    case WM_ACTIVATE: {
+      // HIWORD(wparam) is 1 if the window is minimized.
+      bool active = (LOWORD(wparam) != WA_INACTIVE) && !HIWORD(wparam);
+      if (active) {
+        CoreWindowEmulation* core_window_handler =
+            reinterpret_cast<CoreWindowEmulation*>(
+                ::GetProp(hwnd, kAshWin7CoreWindowHandler));
+        if (core_window_handler)
+          core_window_handler->OnWindowActivated();
+      }
+      return ::DefWindowProc(hwnd, message, wparam, lparam);
+    }
+    case WM_CREATE:
+      ++g_window_count;
+      break;
+    case WM_PAINT:
+      hdc = ::BeginPaint(hwnd, &ps);
+      ::EndPaint(hwnd, &ps);
+      break;
+    case WM_CLOSE:
+      ::DestroyWindow(hwnd);
+      break;
+    case WM_DESTROY:
+      --g_window_count;
+      if (!g_window_count)
+        ::PostQuitMessage(0);
+      break;
+    // Always allow Chrome to set the cursor.
+    case WM_SETCURSOR:
+      return 1;
+    default:
+      return ::DefWindowProc(hwnd, message, wparam, lparam);
+  }
+  return 0;
+}
 
 class ActivatedEvent
     : public mswr::RuntimeClass<winapp::Activation::IActivatedEventArgs> {
@@ -1047,8 +1074,8 @@ class ActivatedEvent
 class CoreApplicationViewEmulation
     : public mswr::RuntimeClass<winapp::Core::ICoreApplicationView> {
  public:
-   CoreApplicationViewEmulation() {
-      core_window_ = mswr::Make<CoreWindowEmulation>();
+   CoreApplicationViewEmulation(winapp::Core::IFrameworkView* app_view) {
+      core_window_ = mswr::Make<CoreWindowEmulation>(app_view);
    }
 
   HRESULT Activate() {
@@ -1152,7 +1179,8 @@ class CoreApplicationWin7Emulation
     HRESULT hr = viewSource->CreateView(app_view_.GetAddressOf());
     if (FAILED(hr))
       return hr;
-    view_emulation_ = mswr::Make<CoreApplicationViewEmulation>();
+    view_emulation_ = mswr::Make<CoreApplicationViewEmulation>(
+        app_view_.Get());
     hr = app_view_->Initialize(view_emulation_.Get());
     if (FAILED(hr))
       return hr;
