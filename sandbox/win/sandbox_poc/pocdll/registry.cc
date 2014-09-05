@@ -13,15 +13,15 @@
 // The return value is the string corresponding to the hive or "unknown"
 const wchar_t *HKEYToString(const HKEY key) {
   switch (reinterpret_cast<LONG_PTR>(key)) {
-    case HKEY_CLASSES_ROOT:
+    case reinterpret_cast<LONG_PTR>(HKEY_CLASSES_ROOT):
       return L"HKEY_CLASSES_ROOT";
-    case HKEY_CURRENT_CONFIG:
+    case reinterpret_cast<LONG_PTR>(HKEY_CURRENT_CONFIG):
       return L"HKEY_CURRENT_CONFIG";
-    case HKEY_CURRENT_USER:
+    case reinterpret_cast<LONG_PTR>(HKEY_CURRENT_USER):
       return L"HKEY_CURRENT_USER";
-    case HKEY_LOCAL_MACHINE:
+    case reinterpret_cast<LONG_PTR>(HKEY_LOCAL_MACHINE):
       return L"HKEY_LOCAL_MACHINE";
-    case HKEY_USERS:
+    case reinterpret_cast<LONG_PTR>(HKEY_USERS):
       return L"HKEY_USERS";
   }
   return L"unknown";
@@ -43,7 +43,7 @@ void TryOpenKey(const HKEY hive, const wchar_t *path, FILE *output) {
             key);
     ::RegCloseKey(key);
   } else {
-    fprintf(output, "[BLOCKED] Opening key \"%S\\%S\". Error %d\r\n",
+    fprintf(output, "[BLOCKED] Opening key \"%S\\%S\". Error %ld\r\n",
             HKEYToString(hive),
             path,
             err_code);
