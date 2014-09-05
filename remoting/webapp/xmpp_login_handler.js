@@ -66,53 +66,53 @@ remoting.XmppLoginHandler = function(server,
  *
  * Following messages are sent/received in each state:
  *    INIT
- *       client -> server: Stream header
- *    START_SENT
- *       client <- server: Stream header with list of supported features which
- *           should include starttls.
- *       client -> server: <starttls>
- *    STARTTLS_SENT
- *        client <- server: <proceed>
+ *      client -> server: Stream header
+ *      client -> server: <starttls>
+ *    WAIT_STREAM_HEADER
+ *      client <- server: Stream header with list of supported features which
+ *          should include starttls.
+ *    WAIT_STARTTLS_RESPONSE
+ *      client <- server: <proceed>
  *    STARTING_TLS
  *      TLS handshake
  *      client -> server: Stream header
- *    START_SENT_AFTER_TLS
+ *      client -> server: <auth> message with the OAuth2 token.
+ *    WAIT_STREAM_HEADER_AFTER_TLS
  *      client <- server: Stream header with list of supported authentication
  *          methods which is expected to include X-OAUTH2
- *      client -> server: <auth> message with the OAuth2 token.
- *    AUTH_SENT
+ *    WAIT_AUTH_RESULT
  *      client <- server: <success> or <failure>
  *      client -> server: Stream header
- *    AUTH_ACCEPTED
+ *      client -> server: <bind>
+ *      client -> server: <iq><session/></iq> to start the session
+ *    WAIT_STREAM_HEADER_AFTER_AUTH
  *      client <- server: Stream header with list of features that should
  *         include <bind>.
- *      client -> server: <bind>
- *    BIND_SENT
+ *    WAIT_BIND_RESULT
  *      client <- server: <bind> result with JID.
- *      client -> server: <iq><session/></iq> to start the session
- *    SESSION_IQ_SENT
- *      client <- server: iq result
+ *    WAIT_SESSION_IQ_RESULT
+ *      client <- server: result for <iq><session/></iq>
  *    DONE
  *
  * @enum {number}
  */
 remoting.XmppLoginHandler.State = {
   INIT: 0,
-  START_SENT: 1,
-  STARTTLS_SENT: 2,
+  WAIT_STREAM_HEADER: 1,
+  WAIT_STARTTLS_RESPONSE: 2,
   STARTING_TLS: 3,
-  START_SENT_AFTER_TLS: 4,
-  AUTH_SENT: 5,
-  AUTH_ACCEPTED: 6,
-  BIND_SENT: 7,
-  SESSION_IQ_SENT: 8,
+  WAIT_STREAM_HEADER_AFTER_TLS: 4,
+  WAIT_AUTH_RESULT: 5,
+  WAIT_STREAM_HEADER_AFTER_AUTH: 6,
+  WAIT_BIND_RESULT: 7,
+  WAIT_SESSION_IQ_RESULT: 8,
   DONE: 9,
   ERROR: 10
 };
 
 remoting.XmppLoginHandler.prototype.start = function() {
-  this.state_ = remoting.XmppLoginHandler.State.START_SENT;
-  this.startStream_();
+  this.state_ = remoting.XmppLoginHandler.State.WAIT_STREAM_HEADER;
+  this.startStream_('<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls"/>');
 }
 
 /** @param {ArrayBuffer} data */
@@ -130,17 +130,15 @@ remoting.XmppLoginHandler.prototype.onDataReceived = function(data) {
  */
 remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
   switch (this.state_) {
-    case remoting.XmppLoginHandler.State.START_SENT:
+    case remoting.XmppLoginHandler.State.WAIT_STREAM_HEADER:
       if (stanza.querySelector('features>starttls')) {
-        this.sendMessageCallback_(
-            '<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls"/>');
-        this.state_ = remoting.XmppLoginHandler.State.STARTTLS_SENT;
+        this.state_ = remoting.XmppLoginHandler.State.WAIT_STARTTLS_RESPONSE;
       } else {
         this.onError_(remoting.Error.UNEXPECTED, "Server doesn't support TLS.");
       }
       break;
 
-    case remoting.XmppLoginHandler.State.STARTTLS_SENT:
+    case remoting.XmppLoginHandler.State.WAIT_STARTTLS_RESPONSE:
       if (stanza.localName == "proceed") {
         this.state_ = remoting.XmppLoginHandler.State.STARTING_TLS;
         this.startTlsCallback_();
@@ -151,7 +149,7 @@ remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
       }
       break;
 
-    case remoting.XmppLoginHandler.State.START_SENT_AFTER_TLS:
+    case remoting.XmppLoginHandler.State.WAIT_STREAM_HEADER_AFTER_TLS:
       var mechanisms = Array.prototype.map.call(
           stanza.querySelectorAll('features>mechanisms>mechanism'),
           /** @param {Element} m */
@@ -162,24 +160,23 @@ remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
         return;
       }
 
-      var cookie = window.btoa("\0" + this.username_ + "\0" + this.authToken_);
+      this.state_ = remoting.XmppLoginHandler.State.WAIT_AUTH_RESULT;
 
-      this.state_ = remoting.XmppLoginHandler.State.AUTH_SENT;
-      this.sendMessageCallback_(
-          '<auth xmlns="urn:ietf:params:xml:ns:xmpp-sasl" ' +
-                 'mechanism="X-OAUTH2" auth:service="oauth2" ' +
-                 'auth:allow-generated-jid="true" ' +
-                 'auth:client-uses-full-bind-result="true" ' +
-                 'auth:allow-non-google-login="true" ' +
-                 'xmlns:auth="http://www.google.com/talk/protocol/auth">' +
-            cookie +
-          '</auth>');
       break;
 
-    case remoting.XmppLoginHandler.State.AUTH_SENT:
+    case remoting.XmppLoginHandler.State.WAIT_AUTH_RESULT:
       if (stanza.localName == 'success') {
-        this.state_ = remoting.XmppLoginHandler.State.AUTH_ACCEPTED;
-        this.startStream_();
+        this.state_ =
+            remoting.XmppLoginHandler.State.WAIT_STREAM_HEADER_AFTER_AUTH;
+        this.startStream_(
+            '<iq type="set" id="0">' +
+              '<bind xmlns="urn:ietf:params:xml:ns:xmpp-bind">' +
+                '<resource>chromoting</resource>'+
+              '</bind>' +
+            '</iq>' +
+            '<iq type="set" id="1">' +
+              '<session xmlns="urn:ietf:params:xml:ns:xmpp-session"/>' +
+            '</iq>');
       } else {
         this.onError_(remoting.Error.AUTHENTICATION_FAILED,
                       'Failed to authenticate: ' +
@@ -187,22 +184,16 @@ remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
       }
       break;
 
-    case remoting.XmppLoginHandler.State.AUTH_ACCEPTED:
+    case remoting.XmppLoginHandler.State.WAIT_STREAM_HEADER_AFTER_AUTH:
       if (stanza.querySelector('features>bind')) {
-        this.sendMessageCallback_(
-            '<iq type="set" id="0">' +
-              '<bind xmlns="urn:ietf:params:xml:ns:xmpp-bind">' +
-                '<resource>chromoting</resource>'+
-              '</bind>' +
-            '</iq>');
-        this.state_ = remoting.XmppLoginHandler.State.BIND_SENT;
+        this.state_ = remoting.XmppLoginHandler.State.WAIT_BIND_RESULT;
       } else {
         this.onError_(remoting.Error.UNEXPECTED,
                       "Server doesn't support bind after authentication.");
       }
       break;
 
-    case remoting.XmppLoginHandler.State.BIND_SENT:
+    case remoting.XmppLoginHandler.State.WAIT_BIND_RESULT:
       var jidElement = stanza.querySelector('iq>bind>jid');
       if (stanza.getAttribute('id') != '0' ||
           stanza.getAttribute('type') != 'result' || !jidElement) {
@@ -212,14 +203,10 @@ remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
         return;
       }
       this.jid_ = jidElement.textContent;
-      this.sendMessageCallback_(
-          '<iq type="set" id="1">' +
-            '<session xmlns="urn:ietf:params:xml:ns:xmpp-session"/>' +
-          '</iq>');
-      this.state_ = remoting.XmppLoginHandler.State.SESSION_IQ_SENT;
+      this.state_ = remoting.XmppLoginHandler.State.WAIT_SESSION_IQ_RESULT;
       break;
 
-    case remoting.XmppLoginHandler.State.SESSION_IQ_SENT:
+    case remoting.XmppLoginHandler.State.WAIT_SESSION_IQ_RESULT:
       if (stanza.getAttribute('id') != '1' ||
           stanza.getAttribute('type') != 'result') {
         this.onError_(remoting.Error.UNEXPECTED,
@@ -240,8 +227,18 @@ remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
 remoting.XmppLoginHandler.prototype.onTlsStarted = function() {
   base.debug.assert(this.state_ ==
                     remoting.XmppLoginHandler.State.STARTING_TLS);
-  this.state_ = remoting.XmppLoginHandler.State.START_SENT_AFTER_TLS;
-  this.startStream_();
+  this.state_ = remoting.XmppLoginHandler.State.WAIT_STREAM_HEADER_AFTER_TLS;
+  var cookie = window.btoa("\0" + this.username_ + "\0" + this.authToken_);
+
+  this.startStream_(
+      '<auth xmlns="urn:ietf:params:xml:ns:xmpp-sasl" ' +
+             'mechanism="X-OAUTH2" auth:service="oauth2" ' +
+             'auth:allow-generated-jid="true" ' +
+             'auth:client-uses-full-bind-result="true" ' +
+             'auth:allow-non-google-login="true" ' +
+             'xmlns:auth="http://www.google.com/talk/protocol/auth">' +
+        cookie +
+      '</auth>');
 };
 
 /**
@@ -253,12 +250,14 @@ remoting.XmppLoginHandler.prototype.onParserError_ = function(text) {
 }
 
 /**
+ * @param {string} firstMessage Message to send after stream header.
  * @private
  */
-remoting.XmppLoginHandler.prototype.startStream_ = function() {
+remoting.XmppLoginHandler.prototype.startStream_ = function(firstMessage) {
   this.sendMessageCallback_('<stream:stream to="' + this.server_ +
                             '" version="1.0" xmlns="jabber:client" ' +
-                            'xmlns:stream="http://etherx.jabber.org/streams">');
+                            'xmlns:stream="http://etherx.jabber.org/streams">' +
+                            firstMessage);
   this.streamParser_ = new remoting.XmppStreamParser();
   this.streamParser_.setCallbacks(this.onStanza_.bind(this),
                                   this.onParserError_.bind(this));

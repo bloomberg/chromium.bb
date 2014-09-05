@@ -38,20 +38,23 @@ function handshakeBase() {
   sinon.assert.calledWith(
       sendMessage,
       '<stream:stream to="google.com" version="1.0" xmlns="jabber:client" ' +
-          'xmlns:stream="http://etherx.jabber.org/streams">');
+          'xmlns:stream="http://etherx.jabber.org/streams">' +
+          '<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls"/>');
   sendMessage.reset();
 
   loginHandler.onDataReceived(base.encodeUtf8(
       '<stream:stream from="google.com" id="78A87C70559EF28A" version="1.0" ' +
-      'xmlns:stream="http://etherx.jabber.org/streams" xmlns="jabber:client">' +
-      '<stream:features><starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls">' +
-      '<required/></starttls><mechanisms ' +
-      'xmlns="urn:ietf:params:xml:ns:xmpp-sasl">' +
-      '<mechanism>X-OAUTH2</mechanism><mechanism>X-GOOGLE-TOKEN</mechanism>' +
-      '</mechanisms></stream:features>'));
-  sinon.assert.calledWith(
-      sendMessage, '<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls"/>');
-  sendMessage.reset();
+          'xmlns:stream="http://etherx.jabber.org/streams"' +
+          'xmlns="jabber:client">' +
+        '<stream:features>' +
+          '<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls">' +
+            '<required/>' +
+          '</starttls>' +
+          '<mechanisms xmlns="urn:ietf:params:xml:ns:xmpp-sasl">' +
+            '<mechanism>X-OAUTH2</mechanism>' +
+            '<mechanism>X-GOOGLE-TOKEN</mechanism>' +
+          '</mechanisms>' +
+        '</stream:features>'));
 
   loginHandler.onDataReceived(
       base.encodeUtf8('<proceed xmlns="urn:ietf:params:xml:ns:xmpp-tls"/>'));
@@ -59,29 +62,30 @@ function handshakeBase() {
   startTls.reset();
 
   loginHandler.onTlsStarted();
-  sinon.assert.calledWith(
-      sendMessage,
-      '<stream:stream to="google.com" version="1.0" xmlns="jabber:client" ' +
-          'xmlns:stream="http://etherx.jabber.org/streams">');
-  sendMessage.reset();
-
-  loginHandler.onDataReceived(base.encodeUtf8(
-      '<stream:stream from="google.com" id="DCDDE5171CB2154A" version="1.0" ' +
-      'xmlns:stream="http://etherx.jabber.org/streams" ' +
-      'xmlns="jabber:client"><stream:features>' +
-      '<mechanisms xmlns="urn:ietf:params:xml:ns:xmpp-sasl">' +
-      '<mechanism>X-OAUTH2</mechanism><mechanism>X-GOOGLE-TOKEN</mechanism>' +
-      '<mechanism>PLAIN</mechanism></mechanisms></stream:features>'));
   var cookie = window.btoa("\0" + testUsername + "\0" + testToken);
   sinon.assert.calledWith(
       sendMessage,
+      '<stream:stream to="google.com" version="1.0" xmlns="jabber:client" ' +
+          'xmlns:stream="http://etherx.jabber.org/streams">' +
       '<auth xmlns="urn:ietf:params:xml:ns:xmpp-sasl" mechanism="X-OAUTH2" ' +
           'auth:service="oauth2" auth:allow-generated-jid="true" ' +
           'auth:client-uses-full-bind-result="true" ' +
           'auth:allow-non-google-login="true" ' +
           'xmlns:auth="http://www.google.com/talk/protocol/auth">' + cookie +
-          '</auth>');
+      '</auth>');
   sendMessage.reset();
+
+  loginHandler.onDataReceived(base.encodeUtf8(
+      '<stream:stream from="google.com" id="DCDDE5171CB2154A" version="1.0" ' +
+          'xmlns:stream="http://etherx.jabber.org/streams" ' +
+          'xmlns="jabber:client">' +
+        '<stream:features>' +
+          '<mechanisms xmlns="urn:ietf:params:xml:ns:xmpp-sasl">' +
+            '<mechanism>X-OAUTH2</mechanism>' +
+            '<mechanism>X-GOOGLE-TOKEN</mechanism>' +
+            '<mechanism>PLAIN</mechanism>' +
+          '</mechanisms>' +
+        '</stream:features>'));
 }
 
 test('should authenticate', function() {
@@ -92,32 +96,32 @@ test('should authenticate', function() {
   sinon.assert.calledWith(
       sendMessage,
       '<stream:stream to="google.com" version="1.0" xmlns="jabber:client" ' +
-          'xmlns:stream="http://etherx.jabber.org/streams">');
+          'xmlns:stream="http://etherx.jabber.org/streams">' +
+        '<iq type="set" id="0">' +
+          '<bind xmlns="urn:ietf:params:xml:ns:xmpp-bind">' +
+            '<resource>chromoting</resource>' +
+          '</bind>' +
+        '</iq>' +
+        '<iq type="set" id="1">' +
+          '<session xmlns="urn:ietf:params:xml:ns:xmpp-session"/>' +
+        '</iq>');
   sendMessage.reset();
 
   loginHandler.onDataReceived(base.encodeUtf8(
       '<stream:stream from="google.com" id="104FA10576E2AA80" version="1.0" ' +
-      'xmlns:stream="http://etherx.jabber.org/streams" xmlns="jabber:client">' +
-      '<stream:features><bind xmlns="urn:ietf:params:xml:ns:xmpp-bind"/>' +
-      '<session xmlns="urn:ietf:params:xml:ns:xmpp-session"/>' +
-      '</stream:features>'));
-  sinon.assert.calledWith(
-      sendMessage,
-      '<iq type="set" id="0"><bind xmlns="urn:ietf:params:xml:ns:xmpp-bind">' +
-          '<resource>chromoting</resource></bind></iq>');
-  sendMessage.reset();
+          'xmlns:stream="http://etherx.jabber.org/streams" ' +
+          'xmlns="jabber:client">' +
+        '<stream:features>' +
+          '<bind xmlns="urn:ietf:params:xml:ns:xmpp-bind"/>' +
+          '<session xmlns="urn:ietf:params:xml:ns:xmpp-session"/>' +
+        '</stream:features>' +
+        '<iq id="0" type="result">' +
+          '<bind xmlns="urn:ietf:params:xml:ns:xmpp-bind">' +
+            '<jid>' + testUsername + '/chromoting52B4920E</jid>' +
+          '</bind>' +
+        '</iq>' +
+        '<iq type="result" id="1"/>'));
 
-  loginHandler.onDataReceived(
-      base.encodeUtf8('<iq id="0" type="result">' +
-                      '<bind xmlns="urn:ietf:params:xml:ns:xmpp-bind"><jid>' +
-                      testUsername + '/chromoting52B4920E</jid></bind></iq>'));
-  sinon.assert.calledWith(
-      sendMessage,
-      '<iq type="set" id="1"><session ' +
-          'xmlns="urn:ietf:params:xml:ns:xmpp-session"/></iq>');
-  sendMessage.reset();
-
-  loginHandler.onDataReceived(base.encodeUtf8('<iq type="result" id="1"/>'));
   sinon.assert.calledWith(onHandshakeDone);
 });
 
