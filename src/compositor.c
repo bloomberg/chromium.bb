@@ -4328,15 +4328,13 @@ int main(int argc, char *argv[])
 				 struct weston_config *config);
 	int i, fd;
 	char *backend = NULL;
-	char *option_backend = NULL;
 	char *shell = NULL;
-	char *option_shell = NULL;
 	char *modules, *option_modules = NULL;
 	char *log = NULL;
 	char *server_socket = NULL, *end;
 	int32_t idle_time = 300;
 	int32_t help = 0;
-	const char *socket_name = NULL;
+	char *socket_name = NULL;
 	int32_t version = 0;
 	int32_t noconfig = 0;
 	int32_t numlock_on;
@@ -4347,8 +4345,8 @@ int main(int argc, char *argv[])
 	struct weston_seat *seat;
 
 	const struct weston_option core_options[] = {
-		{ WESTON_OPTION_STRING, "backend", 'B', &option_backend },
-		{ WESTON_OPTION_STRING, "shell", 0, &option_shell },
+		{ WESTON_OPTION_STRING, "backend", 'B', &backend },
+		{ WESTON_OPTION_STRING, "shell", 0, &shell },
 		{ WESTON_OPTION_STRING, "socket", 'S', &socket_name },
 		{ WESTON_OPTION_INTEGER, "idle-time", 'i', &idle_time },
 		{ WESTON_OPTION_STRING, "modules", 0, &option_modules },
@@ -4409,17 +4407,14 @@ int main(int argc, char *argv[])
 	}
 	section = weston_config_get_section(config, "core", NULL, NULL);
 
-	if (option_backend)
-		backend = strdup(option_backend);
-	else
+	if (!backend) {
 		weston_config_section_get_string(section, "backend", &backend,
 						 NULL);
-
-	if (!backend)
-		backend = weston_choose_default_backend();
+		if (!backend)
+			backend = weston_choose_default_backend();
+	}
 
 	backend_init = weston_load_module(backend, "backend_init");
-	free(backend);
 	if (!backend_init) {
 		ret = EXIT_FAILURE;
 		goto out_signals;
@@ -4473,24 +4468,16 @@ int main(int argc, char *argv[])
 		goto out;
 	}
 
-	if (option_shell)
-		shell = strdup(option_shell);
-	else
+	if (!shell)
 		weston_config_section_get_string(section, "shell", &shell,
 						 "desktop-shell.so");
 
-	if (load_modules(ec, shell, &argc, argv) < 0) {
-		free(shell);
+	if (load_modules(ec, shell, &argc, argv) < 0)
 		goto out;
-	}
-	free(shell);
 
 	weston_config_section_get_string(section, "modules", &modules, "");
-	if (load_modules(ec, modules, &argc, argv) < 0) {
-		free(modules);
+	if (load_modules(ec, modules, &argc, argv) < 0)
 		goto out;
-	}
-	free(modules);
 
 	if (load_modules(ec, option_modules, &argc, argv) < 0)
 		goto out;
@@ -4510,7 +4497,7 @@ int main(int argc, char *argv[])
 
 	wl_display_run(display);
 
- out:
+out:
 	/* prevent further rendering while shutting down */
 	ec->state = WESTON_COMPOSITOR_OFFSCREEN;
 
@@ -4528,6 +4515,13 @@ out_signals:
 	wl_display_destroy(display);
 
 	weston_log_file_close();
+
+	free(backend);
+	free(shell);
+	free(socket_name);
+	free(option_modules);
+	free(log);
+	free(modules);
 
 	return ret;
 }
