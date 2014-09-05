@@ -334,8 +334,9 @@ size_t PictureLayerTilingSet::GPUMemoryUsageInBytes() const {
 
 PictureLayerTilingSet::TilingRange PictureLayerTilingSet::GetTilingRange(
     TilingRangeType type) const {
-  // TODO(reveman): Compute these ranges only when the tiling set has changed
-  // instead of each time GetTilingRange() is called.
+  // Doesn't seem to be the case right now but if it ever becomes a performance
+  // problem to compute these ranges each time this function is called, we can
+  // compute them only when the tiling set has changed instead.
   TilingRange high_res_range(0, 0);
   TilingRange low_res_range(tilings_.size(), tilings_.size());
   for (size_t i = 0; i < tilings_.size(); ++i) {
