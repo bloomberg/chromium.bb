@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/application_runner_chromium.h"
+#include "mojo/public/cpp/application/connect.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
@@ -29,7 +30,13 @@ namespace examples {
 const SkColor kColors[] = {SK_ColorYELLOW, SK_ColorRED, SK_ColorGREEN,
                            SK_ColorMAGENTA};
 
-class EmbeddedApp;
+struct Window {
+  Window(View* root, scoped_ptr<ServiceProvider> embedder_service_provider)
+      : root(root),
+        embedder_service_provider(embedder_service_provider.Pass()) {}
+  View* root;
+  scoped_ptr<ServiceProvider> embedder_service_provider;
+};
 
 class EmbeddedApp
     : public ApplicationDelegate,
@@ -45,11 +52,6 @@ class EmbeddedApp
   virtual void Initialize(ApplicationImpl* app) MOJO_OVERRIDE {
     view_manager_client_factory_.reset(
         new ViewManagerClientFactory(app->shell(), this));
-
-    // TODO(aa): Weird for embeddee to talk to embedder by URL. Seems like
-    // embedder should be able to specify the SP embeddee receives, then
-    // communication can be anonymous.
-    app->ConnectToService("mojo:mojo_window_manager", &navigator_host_);
   }
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
@@ -64,7 +66,7 @@ class EmbeddedApp
                        ServiceProviderImpl* exported_services,
                        scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
     root->AddObserver(this);
-    roots_[root->id()] = root;
+    windows_[root->id()] = new Window(root, imported_services.Pass());
     root->SetColor(kColors[next_color_++ % arraysize(kColors)]);
   }
   virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE {
@@ -73,8 +75,8 @@ class EmbeddedApp
 
   // Overridden from ViewObserver:
   virtual void OnViewDestroyed(View* view) OVERRIDE {
-    DCHECK(roots_.find(view->id()) != roots_.end());
-    roots_.erase(view->id());
+    DCHECK(windows_.find(view->id()) != windows_.end());
+    windows_.erase(view->id());
   }
   virtual void OnViewInputEvent(View* view, const EventPtr& event) OVERRIDE {
     if (event->action == EVENT_TYPE_MOUSE_RELEASED) {
@@ -82,17 +84,18 @@ class EmbeddedApp
         NavigationDetailsPtr nav_details(NavigationDetails::New());
         nav_details->request->url =
             "http://www.aaronboodman.com/z_dropbox/test.html";
-        navigator_host_->RequestNavigate(view->id(), TARGET_SOURCE_NODE,
-                                         nav_details.Pass());
+        NavigatorHostPtr navigator_host;
+        ConnectToService(windows_[view->id()]->embedder_service_provider.get(),
+                         &navigator_host);
+        navigator_host->RequestNavigate(TARGET_SOURCE_NODE, nav_details.Pass());
       }
     }
   }
 
-  NavigatorHostPtr navigator_host_;
   scoped_ptr<ViewManagerClientFactory> view_manager_client_factory_;
 
-  typedef std::map<Id, View*> RootMap;
-  RootMap roots_;
+  typedef std::map<Id, Window*> WindowMap;
+  WindowMap windows_;
 
   int next_color_;
 

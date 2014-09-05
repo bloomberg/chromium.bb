@@ -37,22 +37,11 @@ struct ResponseDetails {
 
 // Embedders that support navigation of implement this interface.
 interface NavigatorHost {
-  RequestNavigate(uint32 source_node_id, Target target,
-                  NavigationDetails? details);
+  RequestNavigate(Target target, NavigationDetails? details);
 
   // Applications call this to inform hosts of navigations they performed
   // locally. For example, pushState() navigations in an HTML application.
-  DidNavigateLocally(uint32 source_node_id, string? url);
-};
-
-// Applications implement this interface to support navigation of their views
-// by embedders.
-// |response_details| can be NULL when a navigation was not the result of a
-// network load.
-interface Navigator {
-  Navigate(uint32 node_id,
-           NavigationDetails? navigation_details,
-           ResponseDetails? response_details);
+  DidNavigateLocally(string? url);
 };
 
 }

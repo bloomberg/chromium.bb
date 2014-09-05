@@ -13,10 +13,19 @@
 namespace mojo {
 
 template<typename Interface>
-class LazyInterfacePtr : InterfacePtr<Interface> {
+class LazyInterfacePtr : public InterfacePtr<Interface> {
  public:
+  LazyInterfacePtr() : service_provider_(NULL) {}
+
   LazyInterfacePtr(ServiceProvider* service_provider)
       : service_provider_(service_provider) {
+  }
+
+  void set_service_provider(ServiceProvider* service_provider) {
+    if (service_provider != service_provider_) {
+      InterfacePtr<Interface>::reset();
+    }
+    service_provider_ = service_provider;
   }
 
   Interface* get() const {

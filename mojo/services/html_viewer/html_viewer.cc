@@ -9,7 +9,6 @@
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
-#include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/services/html_viewer/blink_platform_impl.h"
 #include "mojo/services/html_viewer/html_document_view.h"
 #include "mojo/services/public/interfaces/content_handler/content_handler.mojom.h"
@@ -29,13 +28,9 @@ class ContentHandlerImpl : public InterfaceImpl<ContentHandler> {
   virtual void OnConnect(
       const mojo::String& url,
       URLResponsePtr response,
-      InterfaceRequest<ServiceProvider> service_provider) OVERRIDE {
-    ServiceProviderImpl* exported_services = new ServiceProviderImpl();
-    BindToRequest(exported_services, &service_provider);
-    scoped_ptr<ServiceProvider> remote(
-        exported_services->CreateRemoteServiceProvider());
+      InterfaceRequest<ServiceProvider> service_provider_request) OVERRIDE {
     new HTMLDocumentView(
-        response.Pass(), remote.Pass(), exported_services, shell_);
+        response.Pass(), service_provider_request.Pass(), shell_);
   }
 
   Shell* shell_;

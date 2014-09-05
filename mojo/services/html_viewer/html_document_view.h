@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/public/cpp/application/lazy_interface_ptr.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
@@ -29,17 +30,14 @@ class HTMLDocumentView : public blink::WebViewClient,
  public:
   // Load a new HTMLDocument with |response|.
   //
-  // |imported_from_connector| is used to request services of the connecting
-  // application (e.g., the application that called
-  // Shell::ConnectToApplication()).
-  //
-  // |exported_to_connector| is used to export services from this
-  // HTMLDocumentView to the connecting application.
+  // |service_provider_request| should be used to implement a
+  // ServiceProvider which exposes services to the connecting application.
+  // Commonly, the connecting application is the ViewManager and it will
+  // request ViewManagerClient.
   //
   // |shell| is the Shell connection for this mojo::Application.
   HTMLDocumentView(URLResponsePtr response,
-                   scoped_ptr<ServiceProvider> imported_from_connector,
-                   ServiceProviderImpl* exported_to_connector,
+                   InterfaceRequest<ServiceProvider> service_provider_request,
                    Shell* shell);
   virtual ~HTMLDocumentView();
 
@@ -74,8 +72,8 @@ class HTMLDocumentView : public blink::WebViewClient,
   virtual void OnEmbed(
       ViewManager* view_manager,
       View* root,
-      ServiceProviderImpl* exported_to_embedder,
-      scoped_ptr<ServiceProvider> exported_from_embedder) OVERRIDE;
+      ServiceProviderImpl* embedee_service_provider_impl,
+      scoped_ptr<ServiceProvider> embedder_service_provider) OVERRIDE;
   virtual void OnViewManagerDisconnected(ViewManager* view_manager) OVERRIDE;
 
   // ViewObserver methods:
@@ -87,12 +85,11 @@ class HTMLDocumentView : public blink::WebViewClient,
 
   void Load(URLResponsePtr response);
   void Repaint();
-  NavigatorHost* GetNavigatorHost();
 
   URLResponsePtr response_;
-  scoped_ptr<ServiceProvider> imported_services_;
+  scoped_ptr<ServiceProvider> embedder_service_provider_;
   Shell* shell_;
-  InterfacePtr<NavigatorHost> navigator_host_;
+  LazyInterfacePtr<NavigatorHost> navigator_host_;
   blink::WebView* web_view_;
   View* root_;
   ViewManagerClientFactory view_manager_client_factory_;

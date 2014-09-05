@@ -83,17 +83,17 @@ bool CanNavigateLocally(blink::WebFrame* frame,
 
 HTMLDocumentView::HTMLDocumentView(
     URLResponsePtr response,
-    scoped_ptr<ServiceProvider> imported_services,
-    ServiceProviderImpl* exported_services,
+    InterfaceRequest<ServiceProvider> service_provider_request,
     Shell* shell)
-    : imported_services_(imported_services.Pass()),
-      shell_(shell),
+    : shell_(shell),
       web_view_(NULL),
       root_(NULL),
       view_manager_client_factory_(shell, this),
       repaint_pending_(false),
       weak_factory_(this) {
+  ServiceProviderImpl* exported_services = new ServiceProviderImpl();
   exported_services->AddService(&view_manager_client_factory_);
+  BindToRequest(exported_services, &service_provider_request);
   Load(response.Pass());
 }
 
@@ -104,11 +104,15 @@ HTMLDocumentView::~HTMLDocumentView() {
     root_->RemoveObserver(this);
 }
 
-void HTMLDocumentView::OnEmbed(ViewManager* view_manager,
-                               View* root,
-                               ServiceProviderImpl* exported_services,
-                               scoped_ptr<ServiceProvider> imported_services) {
+void HTMLDocumentView::OnEmbed(
+    ViewManager* view_manager,
+    View* root,
+    ServiceProviderImpl* embedee_service_provider_impl,
+    scoped_ptr<ServiceProvider> embedder_service_provider) {
   root_ = root;
+  embedder_service_provider_ = embedder_service_provider.Pass();
+  navigator_host_.set_service_provider(embedder_service_provider_.get());
+
   root_->SetColor(SK_ColorCYAN);  // Dummy background color.
   web_view_->resize(root_->bounds().size());
   root_->AddObserver(this);
@@ -190,8 +194,7 @@ blink::WebNavigationPolicy HTMLDocumentView::decidePolicyForNavigation(
   NavigationDetailsPtr nav_details(NavigationDetails::New());
   nav_details->request = URLRequest::From(request);
 
-  GetNavigatorHost()->RequestNavigate(
-      root_->id(),
+  navigator_host_->RequestNavigate(
       WebNavigationPolicyToNavigationTarget(default_policy),
       nav_details.Pass());
 
@@ -208,8 +211,7 @@ void HTMLDocumentView::didAddMessageToConsole(
 void HTMLDocumentView::didNavigateWithinPage(
     blink::WebLocalFrame* frame, const blink::WebHistoryItem& history_item,
     blink::WebHistoryCommitType commit_type) {
-  GetNavigatorHost()->DidNavigateLocally(root_->id(),
-                                         history_item.urlString().utf8());
+  navigator_host_->DidNavigateLocally(history_item.urlString().utf8());
 }
 
 void HTMLDocumentView::OnViewBoundsChanged(View* view,
@@ -250,16 +252,6 @@ void HTMLDocumentView::Repaint() {
   web_view_->paint(canvas.get(), gfx::Rect(0, 0, width, height));
 
   root_->SetContents(canvas->getDevice()->accessBitmap(false));
-}
-
-NavigatorHost* HTMLDocumentView::GetNavigatorHost() {
-  if (!navigator_host_.get()) {
-    // TODO(aa): This should come via |imported_services| in OnEmbed().
-    InterfacePtr<ServiceProvider> sp;
-    shell_->ConnectToApplication("mojo:mojo_window_manager", Get(&sp));
-    ConnectToService(sp.get(), &navigator_host_);
-  }
-  return navigator_host_.get();
 }
 
 }  // namespace mojo

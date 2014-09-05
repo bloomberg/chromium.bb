@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/application_runner_chromium.h"
+#include "mojo/public/cpp/application/connect.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
@@ -169,7 +170,6 @@ class Browser : public ApplicationDelegate,
     view_manager_client_factory_.reset(
         new ViewManagerClientFactory(app->shell(), this));
     views_init_.reset(new ViewsInit);
-    app->ConnectToService("mojo:mojo_window_manager", &navigator_host_);
     app->ConnectToService("mojo:mojo_window_manager", &window_manager_);
  }
 
@@ -209,6 +209,7 @@ class Browser : public ApplicationDelegate,
                        ServiceProviderImpl* exported_services,
                        scoped_ptr<ServiceProvider> imported_services) OVERRIDE {
     // TODO: deal with OnEmbed() being invoked multiple times.
+    ConnectToService(imported_services.get(), &navigator_host_);
     view_manager_ = view_manager;
     root_ = root;
     root_->AddObserver(this);
@@ -230,9 +231,7 @@ class Browser : public ApplicationDelegate,
       printf("User entered this URL: %s\n", url.spec().c_str());
       NavigationDetailsPtr nav_details(NavigationDetails::New());
       nav_details->request->url = String::From(url);
-      navigator_host_->RequestNavigate(view_manager_->GetRoots().front()->id(),
-                                       TARGET_NEW_NODE,
-                                       nav_details.Pass());
+      navigator_host_->RequestNavigate(TARGET_NEW_NODE, nav_details.Pass());
     }
     return false;
   }
