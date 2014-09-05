@@ -51,6 +51,7 @@ void AshPopupAlignmentDelegate::StartObserving(gfx::Screen* screen,
                                                const gfx::Display& display) {
   screen_ = screen;
   display_id_ = display.id();
+  work_area_ = display.work_area();
   root_window_ = ash::Shell::GetInstance()->display_controller()->
       GetRootWindowForDisplayId(display_id_);
   UpdateShelf();
