@@ -27,6 +27,7 @@
 #include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
+#include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "content/renderer/p2p/ipc_network_manager.h"
 #include "content/renderer/p2p/ipc_socket_factory.h"
@@ -216,8 +217,10 @@ bool PeerConnectionDependencyFactory::InitializeMediaStreamAudioSource(
       CreateAudioCapturer(render_view_id, device_info, audio_constraints,
                           source_data));
   if (!capturer.get()) {
-    DLOG(WARNING) << "Failed to create the capturer for device "
-        << device_info.device.id;
+    const std::string log_string =
+        "PCDF::InitializeMediaStreamAudioSource: fails to create capturer";
+    WebRtcLogMessage(log_string);
+    DVLOG(1) << log_string;
     // TODO(xians): Don't we need to check if source_observer is observing
     // something? If not, then it looks like we have a leak here.
     // OTOH, if it _is_ observing something, then the callback might
