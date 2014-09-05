@@ -4,9 +4,8 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<link rel="import" href="ct-builder-grid.html">
-<link rel="import" href="ct-commit-list.html">
-<link rel="import" href="ct-test-list.html">
+<link rel="import" href="ct-bot-failure-card.html">
+<link rel="import" href="ct-trooper-card.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog-transition.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
@@ -47,28 +46,27 @@ found in the LICENSE file.
         color: #222;
       }
 
-      ct-builder-grid {
-        margin-right: 10px;
-        width: 250px;
-      }
-
-      #failure {
-        flex: 1;
-      }
-
       #buttons {
         display: flex;
         flex-direction: column;
+      }
+
+      .card {
+        display: flex;
+        flex: 1;
       }
 
       .snoozed {
         opacity: 0.5;
       }
     </style>
-    <ct-builder-grid failures="{{ group.failures }}"></ct-builder-grid>
-    <div id="failure" class="{{ { snoozed: group.isSnoozed } | tokenList }}">
-      <ct-test-list tests="{{ group.failures }}" tree="{{ tree }}"></ct-test-list>
-      <ct-commit-list commitList="{{ group.commitList }}"></ct-commit-list>
+    <div class="card {{ { snoozed: group.isSnoozed } | tokenList }}">
+      <template if="{{ group.data.type == 'sheriff' }}">
+        <ct-bot-failure-card class='card' group="{{ group.data }}"></ct-bot-failure-card>
+      </template>
+      <template if="{{ group.data.type != 'sheriff' }}">
+        <ct-trooper-card class='card' group="{{ group.data }}"></ct-trooper-card>
+      </template>
     </div>
     <div id="buttons">
       <paper-button id="examine" on-tap="{{ examine }}" label="Examine"></paper-button>
@@ -117,7 +115,7 @@ found in the LICENSE file.
       },
 
       _updateCommitList: function() {
-        if (this.group && this.commitLog)
+        if (this.group && this.group.commitList && this.commitLog)
           this.group.commitList.update(this.commitLog);
       },
 

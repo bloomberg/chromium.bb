@@ -42,10 +42,10 @@ describe('ct-failures', function() {
       var cl2 = new CTCommitList(undefined, ['chromium:2', 'blink:1']);
       var cl3 = new CTCommitList(undefined, ['chromium:2', 'blink:2']);
       var cl4 = new CTCommitList(undefined, []);
-      var group1 = new CTFailureGroup('', [], cl1);
-      var group2 = new CTFailureGroup('', [], cl2);
-      var group3 = new CTFailureGroup('', [], cl3);
-      var group4 = new CTFailureGroup('', [], cl4);
+      var group1 = new CTFailureGroup('', new CTSheriffFailureGroupData([], cl1));
+      var group2 = new CTFailureGroup('', new CTSheriffFailureGroupData([], cl2));
+      var group3 = new CTFailureGroup('', new CTSheriffFailureGroupData([], cl3));
+      var group4 = new CTFailureGroup('', new CTSheriffFailureGroupData([], cl4));
 
       // Sort by last revision first.
       assert(analyzer._failureByTreeListComparator('chromium', group1, group2) > 0);
@@ -174,8 +174,8 @@ describe('ct-failures', function() {
           var group = analyzer.failures.chromium[0];
           assert.equal(group.constructor, CTFailureGroup);
           assert.equal(group.key, 'linux: Linux Tests (dbg)(1)');
-          assert.lengthOf(group.failures, 1);
-          var failure = group.failures[0];
+          assert.lengthOf(group.data.failures, 1);
+          var failure = group.data.failures[0];
           assert.equal(failure.constructor, CTFailure);
           assert.equal(failure.key, 'compile::null');
           assert.equal(failure.step, 'compile');
@@ -189,7 +189,7 @@ describe('ct-failures', function() {
           assert.propertyVal(dbgBuilder, 'masterUrl', 'https://build.chromium.org/p/chromium.linux');
           assert.propertyVal(dbgBuilder, 'failingBuildCount', 4);
 
-          var commitList = group.commitList;
+          var commitList = group.data.commitList;
           assert.equal(commitList.constructor, CTCommitList);
           assert.lengthOf(commitList.repositories, 1);
           var repositoryCommitList = commitList.repositories[0];
@@ -203,18 +203,35 @@ describe('ct-failures', function() {
           netData.alerts.alerts[0].last_failing_build = 2490;
 
           return analyzer.update().then(function() {
+            console.log(analyzer.failures.chromium[0].data.failures[0].resultNodesByBuilder["Linux Tests (dbg)(1)"].lastFailingBuild);
+            console.log(group.data.failures[0].resultNodesByBuilder["Linux Tests (dbg)(1)"].lastFailingBuild);
             assert.strictEqual(analyzer.failures.chromium[0], group)
-            assert.strictEqual(group.failures[0], failure)
+            assert.strictEqual(group.data.failures[0], failure)
             assert.strictEqual(failure.resultNodesByBuilder, resultNodesByBuilder);
             assert.strictEqual(resultNodesByBuilder['Linux Tests (dbg)(1)'], dbgBuilder);
             assert.propertyVal(dbgBuilder, 'lastFailingBuild', 2490);
 
-            assert.strictEqual(group.commitList, commitList);
+            assert.strictEqual(group.data.commitList, commitList);
             assert.strictEqual(commitList.repositories[0], repositoryCommitList);
             assert.propertyVal(repositoryCommitList, 'expanded', true);
           });
         });
       });
+    });
+  });
+
+  describe('processTrooperFailures', function() {
+    it('should filter out updates that are not alerts', function() {
+      var analyzer = new CTFailures(new CTCommitList(undefined, []));
+      analyzer._processTrooperFailures(
+          {'key_1': {'tree_1': {should_alert: true, should_appear: true},
+                     'tree_2': {should_alert: false, should_appear: false}},
+           'key_2': {'tree_3': {should_alert: false, should_appear: false},
+                     'tree_4': {should_alert: true, should_appear: true}}});
+      analyzer.failures['trooper'].forEach(function(failure) {
+        assert(failure.data.data.should_appear);
+      });
+      assert(analyzer.failures['trooper'].length == 2);
     });
   });
 

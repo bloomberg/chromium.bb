@@ -19,7 +19,10 @@ found in the LICENSE file.
 
 <script>
 mocha.checkLeaks();
-mocha.globals(['net']);
+mocha.globals(['net', 'scrolled', 'oCursor', 'availableWidth', 'topNotUsableSize',
+    'xLabelWidth', 'nblab', 'bottomNotUsableHeightWithoutXLabels',
+    'bottomNotUsableHeightWithXLabels', 'availableHeight', 'clrx', 'clrwidth',
+    'clry', 'clrheight']);
 mocha.setup('bdd');
 </script>
 

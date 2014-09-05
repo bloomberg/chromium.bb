@@ -1,0 +1,31 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="ct-commit-list.html">
+
+<script>
+function CTSheriffFailureGroupData(failures, commitList) {
+  this.failures = failures;
+  this.commitList = commitList;
+  this.type = 'sheriff';
+};
+
+CTSheriffFailureGroupData.prototype.getAnnotations = function() {
+  return this.failures.map(function(failure) {
+    return failure.annotations();
+  }).flatten();
+};
+
+CTSheriffFailureGroupData.prototype.dataToExamine = function() {
+  return this.failures;
+};
+
+CTSheriffFailureGroupData.prototype.failureKeys = function() {
+  return this.failures.map(function(failure) {
+    return failure.keys();
+  }).flatten();
+};
+</script>

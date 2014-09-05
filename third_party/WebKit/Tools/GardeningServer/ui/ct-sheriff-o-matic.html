@@ -112,12 +112,14 @@ found in the LICENSE file.
       },
 
       onExamine: function(event) {
+        var dataToExamine = event.detail.dataToExamine();
         window.history.pushState({
-          currentFailures: event.detail.failures,
+          currentFailures: dataToExamine,
           selected: 1,
         });
 
-        this.currentFailures = event.detail.failures;
+
+        this.currentFailures = dataToExamine;
         this.selected = 1;
       },
 

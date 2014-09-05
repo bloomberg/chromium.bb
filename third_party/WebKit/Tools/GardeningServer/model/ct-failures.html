@@ -9,6 +9,8 @@ found in the LICENSE file.
 <link rel="import" href="ct-builder-revisions.html">
 <link rel="import" href="ct-failure.html">
 <link rel="import" href="ct-failure-group.html">
+<link rel="import" href="ct-sheriff-failure-group-data.html">
+<link rel="import" href="ct-trooper-failure-group-data.html">
 <link rel="import" href="ct-commit-list.html">
 
 <script>
@@ -38,13 +40,15 @@ function CTFailures(commitLog) {
   };
 }
 
+// FIXME: This could potentially move onto CTSheriffFailureGroupData as it isn't relevant to
+// trooper failures.
 // Reverse sorting order, if a > b, return a negative number.
 CTFailures.prototype._failureByTreeListComparator = function(tree, a, b) {
   if (tree === undefined)
     tree = 'chromium';
 
-  var rev_a = a.commitList.revisions;
-  var rev_b = b.commitList.revisions;
+  var rev_a = a.data.commitList.revisions;
+  var rev_b = b.data.commitList.revisions;
 
   if (!rev_a || !Object.keys(rev_a).length) {
     if (!rev_b || !Object.keys(rev_b).length)
@@ -79,25 +83,28 @@ CTFailures.prototype._failureByTreeListComparator = function(tree, a, b) {
 
 CTFailures.prototype.update = function() {
   var annotationPromise = CTFailureGroup.fetchAnnotations();
+  return Promise.all([annotationPromise, net.json('http://sheriff-o-matic.appspot.com/alerts'),
+      net.json('http://trooper-o-matic.appspot.com/alerts')]).then(function(data_array) {
+    var annotations = data_array[0];
+    var sheriff_data = data_array[1];
+    var trooper_data = data_array[2];
 
-  return net.json('http://sheriff-o-matic.appspot.com/alerts').then(function(data) {
-    return annotationPromise.then(function(annotations) {
-      // FIXME: Don't special-case the blink master.
-      this.builderLatestRevisions = new CTBuilderRevisions(data.latest_builder_info['chromium.webkit']);
-      var newFailures = {};
-      this.lastUpdateDate = new Date(data.date * 1000);
-      // Update |failures| with the appropriate CTFailureGroup's for each
-      // tree.
-      data.range_groups.forEach(function(rangeGroup) {
-        this._processFailuresForRangeGroup(newFailures, rangeGroup, data.alerts, annotations);
-      }.bind(this));
-      // Sort failure groups so that newer failures are shown at the top
-      // of the UI.
-      Object.keys(newFailures, function (tree, failuresByTree) {
-        failuresByTree.sort(this._failureByTreeListComparator.bind(this, tree));
-      }.bind(this));
-      this.failures = updateUtil.updateLeft(this.failures, newFailures);
+    // FIXME: Don't special-case the blink master.
+    this.builderLatestRevisions = new CTBuilderRevisions(sheriff_data.latest_builder_info['chromium.webkit']);
+    var newFailures = {};
+    this.lastUpdateDate = new Date(sheriff_data.date * 1000);
+    // Update |failures| with the appropriate CTFailureGroup's for each
+    // tree.
+    sheriff_data.range_groups.forEach(function(rangeGroup) {
+      this._processFailuresForRangeGroup(newFailures, rangeGroup, sheriff_data.alerts, annotations);
     }.bind(this));
+    // Sort failure groups so that newer failures are shown at the top
+    // of the UI.
+    Object.keys(newFailures, function (tree, failuresByTree) {
+      failuresByTree.sort(this._failureByTreeListComparator.bind(this, tree));
+    }.bind(this));
+    this.failures = updateUtil.updateLeft(this.failures, newFailures);
+    this._processTrooperFailures(trooper_data);
   }.bind(this));
 };
 
@@ -111,6 +118,19 @@ CTFailures.prototype._failureComparator = function(a, b) {
   if (a.testName < b.testName)
     return -1
   return 0;
+};
+
+CTFailures.prototype._processTrooperFailures = function(data) {
+  var trooper_failures = [];
+  Object.keys(data, function(failureType, failuresByTree) {
+    Object.keys(failuresByTree, function(tree, failure) {
+      if (failure.should_alert) {
+        trooper_failures.push(new CTFailureGroup('',
+            new CTTrooperFailureGroupData(failure.details, failure.url, failure, failureType, tree)));
+      }
+    });
+  });
+  this.failures['trooper'] = trooper_failures;
 };
 
 CTFailures.prototype._processFailuresForRangeGroup = function(newFailures, rangeGroup, alerts, annotations) {
@@ -188,7 +208,7 @@ CTFailures.prototype._processFailuresForRangeGroup = function(newFailures, range
     if (!newFailures[tree])
       newFailures[tree] = [];
     var commitList = new CTCommitList(this.commitLog, rangeGroup.likely_revisions);
-    newFailures[tree].push(new CTFailureGroup(rangeGroup.sort_key, failures, commitList));
+    newFailures[tree].push(new CTFailureGroup(rangeGroup.sort_key, new CTSheriffFailureGroupData(failures, commitList)));
   }.bind(this));
 };
 

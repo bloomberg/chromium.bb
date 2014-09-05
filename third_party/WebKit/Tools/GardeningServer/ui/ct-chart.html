@@ -1,0 +1,30 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../lib/chart-loader.html">
+
+<polymer-element name="ct-chart" attributes="table options width height">
+  <template>
+    <canvas id='chart' width="{{ width }}" height="{{ height }}"></canvas>
+  </template>
+  <script>
+    Polymer({
+      table: null,
+      options: null,
+      observe: {
+        options: 'updateChart',
+        table: 'updateChart'
+      },
+      updateChart: function() {
+        if (this.table == null || this.options == null) {
+          return;
+        }
+        var ctx = this.$.chart.getContext("2d");
+        new Chart(ctx).Bar(this.table, this.options);
+      }
+    });
+  </script>
+</template>

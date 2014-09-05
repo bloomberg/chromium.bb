@@ -1,0 +1,109 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="ct-chart.html">
+
+<polymer-element name="ct-trooper-card" attributes="group">
+  <template>
+    <style>
+      #failure {
+        flex: 1;
+        margin-left: 10px;
+      }
+
+      #details {
+        font-weight: bold;
+      }
+
+      ::shadow #chart {
+        height: 100px;
+        width: 400px;
+      }
+    </style>
+    <div id="failure">
+      <div id="details">
+        {{ group.tree }}: {{ group.details }}
+      </div>
+      <ct-chart table="{{ table }}" options="{{ options }}" width=400 height=100></ct-chart>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      group: null,
+      table: null,
+      options: null,
+      fromPercent: function(v) {
+        return Number(v.substring(0, v.length - 1));
+      },
+      groupChanged: function() {
+        if (!this.group) {
+          return;
+        }
+        switch (this.group.type) {
+        case 'cq_latency':
+          this.table = {
+            labels: ["50th Percentile", "90th Percentile"],
+            datasets: [
+              {
+                title: 'Limit',
+                fillColor: 'grey',
+                data: [60, 180]
+              },
+              {
+                title: 'Actual',
+                fillColor: [this.group.data.p50 > 60 ? 'red' : 'green',
+                    this.group.data.p90 > 180 ? 'red' : 'green'],
+                data: [this.group.data.p50, this.group.data.p90]
+              }
+          ]};
+          break;
+        case 'tree_status':
+          this.table = {
+            labels: ["Tree Status"],
+            datasets: [
+              {
+                title: 'Minimum',
+                fillColor: 'grey',
+                data: [80]
+              },
+              {
+                title: 'Actual',
+                fillColor: 'red',
+                data: [this.group.data.percent_open]
+              }
+          ]};
+          break;
+        case 'cycle_time':
+          this.table = {
+            labels: ["Percent of Builds"],
+            datasets: [
+              {
+                title: 'Median',
+                fillColor: 'orange',
+                data: [this.fromPercent(this.group.data.percent_over_median_slo)]
+              },
+              {
+                title: 'Max',
+                fillColor: 'red',
+                data: [this.fromPercent(this.group.data.percent_over_max_slo)]
+              }
+            ]};
+          break;
+        default:
+          console.error('unknown trooper error type');
+          return;
+        }
+
+        this.options = {
+          scaleBeginAtZero: true,
+          legend: false,
+          annotateLabel: '<%=v1%>: <%=Math.round(v3)%>',
+          annotateDisplay: true
+        }
+     },
+    });
+  </script>
+</polymer-element>

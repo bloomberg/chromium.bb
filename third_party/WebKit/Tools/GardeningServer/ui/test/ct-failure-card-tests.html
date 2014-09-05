@@ -23,9 +23,9 @@ describe('ct-failure-card', function() {
   beforeEach(function(done) {
     card = document.createElement('ct-failure-card');
     var cl = new CTCommitListMock();
-    group = new CTFailureGroup('', [
+    group = new CTFailureGroup('', new CTSheriffFailureGroupData([
         new CTFailure('autobot', 'unknown', {someBuilder: {key: 'a'}}, {'blink':158547},
-                      {'blink':158544})], cl);
+                      {'blink':158544})], cl));
     card.group = group;
     card.commitLog = new CTCommitLogMock();
     setTimeout(done);
@@ -33,12 +33,35 @@ describe('ct-failure-card', function() {
 
   describe('failure card UI', function() {
 
+    it('should select the correct card type', function(done) {
+      assert(card.shadowRoot.querySelector('ct-bot-failure-card') != null,
+            'missing sheriff card');
+      card.group = new CTFailureGroup('', new CTTrooperFailureGroupData(
+          'details', 'url', {percent_over_median_slo: '6%',
+          percent_over_max_slo: '7%'}, 'cq_latency', ''));
+      setTimeout(function() {
+        assert(card.shadowRoot.querySelector('ct-trooper-card') != null,
+            'missing cq-latency card');
+        card.group.data.type = 'tree_status';
+        setTimeout(function() {
+          assert(card.shadowRoot.querySelector('ct-trooper-card') !=
+              null, 'missing tree-status card');
+          card.group.data.type = 'cycle_time';
+          setTimeout(function() {
+            assert(card.shadowRoot.querySelector('ct-trooper-card') !=
+                null, 'missing cycle-time card');
+            done();
+          });
+        });
+      });
+    });
+
     it('should have commit summaries', function(done) {
       // Expand the first repository so that the <ct-commit>'s are generated.
-      card.group.commitList.repositories[0].expanded = true;
+      card.group.data.commitList.repositories[0].expanded = true;
 
       setTimeout(function() {
-        var list = card.shadowRoot.querySelector('ct-commit-list');
+        var list = card.shadowRoot.querySelector('::shadow ct-commit-list');
         var commits = list.shadowRoot.querySelectorAll('ct-commit');
         assert(commits[1].data);
         assert(commits[1].data.summary);
@@ -48,10 +71,10 @@ describe('ct-failure-card', function() {
 
     it('removing a commit summary', function(done) {
       card.commitLog.commits['blink']['158545'].summary = undefined;
-      card.group.commitList.repositories[0].expanded = true;
+      card.group.data.commitList.repositories[0].expanded = true;
 
       setTimeout(function() {
-        var list = card.shadowRoot.querySelector('ct-commit-list');
+        var list = card.shadowRoot.querySelector('::shadow ct-commit-list');
         var commits = list.shadowRoot.querySelectorAll('ct-commit');
         assert.notOk(commits[0].data.summary);
         done();

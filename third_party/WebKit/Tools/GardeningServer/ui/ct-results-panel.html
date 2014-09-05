@@ -29,6 +29,10 @@ found in the LICENSE file.
         text-align: center;
       }
 
+      iframe {
+        height: 100%;
+      }
+
       core-menu {
         box-shadow: 0 3px 3px #ccc;
         flex: none;
@@ -47,8 +51,11 @@ found in the LICENSE file.
         padding-top: 6px;
       }
     </style>
-    <template if="{{ !failures.length }}">
+    <template if="{{ !failures.length && !failures.url }}">
       <div class="message">No results to display.</div>
+    </template>
+    <template if="{{ failures.url }}">
+      <iframe src='{{ failures.url }}'></iframe>
     </template>
     <template if="{{ failures.length }}">
       <core-menu selected="{{ selected }}">

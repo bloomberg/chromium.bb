@@ -26,8 +26,8 @@ describe('ct-failure-stream', function() {
       // ct-failure-stream will give these values to ct-commit-data,
       // which will hit the network unless we figure out how to mock
       // out ct-commit-data in a better way.
-      stream.groups = [new CTFailureGroup('', [], undefined),
-                       new CTFailureGroup('', [], undefined)];
+      stream.groups = [new CTFailureGroup('', new CTSheriffFailureGroupData([])),
+          new CTFailureGroup('', new CTSheriffFailureGroupData([]))];
       stream.category = 'default';
       setTimeout(function() {
         var cards = stream.shadowRoot.querySelectorAll('ct-failure-card');
@@ -40,8 +40,8 @@ describe('ct-failure-stream', function() {
   describe('category', function() {
     it('should only show failure groups for the specified category', function(done) {
       var failures = [new CTFailure('step', 'reason', [{key: 'a', annotation: {snoozeTime: Date.now() + 1000 * 1000}}])];
-      var snoozed = new CTFailureGroup('', failures, undefined);
-      stream.groups = [new CTFailureGroup('', [], undefined), snoozed];
+      var snoozed = new CTFailureGroup('', new CTSheriffFailureGroupData(failures));
+      stream.groups = [new CTFailureGroup('', new CTSheriffFailureGroupData([])), snoozed];
       stream.category = 'snoozed';
       setTimeout(function() {
         var cards = stream.shadowRoot.querySelectorAll('ct-failure-card');

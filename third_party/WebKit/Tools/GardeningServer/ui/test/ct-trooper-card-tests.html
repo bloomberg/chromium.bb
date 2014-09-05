@@ -1,0 +1,62 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-trooper-card.html">
+
+<link rel="import" href="../../model/ct-trooper-failure-group-data.html">
+
+<script>
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-trooper-card', function() {
+
+  var card;
+
+  beforeEach(function(done) {
+    card = document.createElement('ct-trooper-card');
+    setTimeout(done);
+  });
+
+  it('creates a chart for cq_latency data types', function(done) {
+    var data = new CTTrooperFailureGroupData('detail', 'url', {p50: 0, p90: 0}, 'cq_latency', 'blink');
+    card.group = data;
+    var chart = card.querySelector('::shadow ct-chart::shadow #chart');
+    var initialState = chart.toDataURL();
+    var initialChildren = chart.children.length;
+    setTimeout(function() {
+      assert(chart.toDataURL() != initialState, "setting card data didn't update chart");
+      done();
+    });
+  });
+
+  it('creates a chart for tree_status data types', function(done) {
+    var data = new CTTrooperFailureGroupData('detail', 'url', {percent_open: 0}, 'tree_status', 'blink');
+    card.group = data;
+    var chart = card.querySelector('::shadow ct-chart::shadow #chart');
+    var initialState = chart.toDataURL();
+    setTimeout(function() {
+      assert(chart.toDataURL() != initialState, "setting card data didn't update chart");
+      done();
+    });
+  });
+
+  it('creates a chart for cycle_time data types', function(done) {
+    var data = new CTTrooperFailureGroupData('detail', 'url', {percent_over_median_slo: '0%', percent_over_max_slo: '0%'},
+        'cycle_time', 'blink');
+    card.group = data;
+    var chart = card.querySelector('::shadow ct-chart::shadow #chart');
+    var initialState = chart.toDataURL();
+    setTimeout(function() {
+      assert(chart.toDataURL() != initialState, "setting card data didn't update chart");
+      done();
+    });
+  });
+});
+
+})();
+</script>

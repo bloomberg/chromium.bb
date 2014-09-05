@@ -16,7 +16,10 @@ module.exports = function(config) {
       mocha: {
         ui: 'bdd',
         checkLeaks: true,
-        globals: ['net']
+        globals: ['net', 'scrolled', 'oCursor', 'availableWidth', 'topNotUsableSize',
+            'xLabelWidth', 'nblab', 'bottomNotUsableHeightWithoutXLabels',
+            'bottomNotUsableHeightWithXLabels', 'availableHeight', 'clrx', 'clrwidth',
+            'clry', 'clrheight']
       },
       captureConsole: true
     },

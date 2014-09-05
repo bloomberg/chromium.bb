@@ -7,14 +7,15 @@ found in the LICENSE file.
 <link rel="import" href="ct-commit-list.html">
 
 <script>
-function CTFailureGroup(key, failures, commitList) {
+function CTFailureGroup(key, data) {
   this.key = key;
-  this.failures = failures;
-  this.commitList = commitList;
-  this._annotation = CTFailureGroup._mergeAnnotations(failures.map(function(failure) {
-    return failure.annotations();
-  }).flatten());
+  this.data = data;
+  this._annotation = CTFailureGroup._mergeAnnotations(data.getAnnotations());
   this._computeProperties();
+}
+
+CTFailureGroup.prototype.dataToExamine = function() {
+  return this.data.dataToExamine();
 }
 
 CTFailureGroup.prototype.snoozeUntil = function(time) {
@@ -60,12 +61,6 @@ CTFailureGroup.prototype._computeProperties = function() {
     this.bugLabel = undefined;
 };
 
-CTFailureGroup.prototype.failureKeys = function() {
-  return this.failures.map(function(failure) {
-    return failure.keys();
-  }).flatten();
-};
-
 CTFailureGroup._mergeAnnotations = function(failureAnnotations) {
   // FIXME: This should be a union of all bugs.
   var bug = failureAnnotations.map('bug').compact().first();
@@ -89,7 +84,7 @@ CTFailureGroup.prototype._annotate = function(newAnnotation) {
   var failureAnnotations = [];
   // FIXME: Post the new annotation to frontend rather than storing locally.
   return CTFailureGroup.fetchAnnotations().then(function(annotations) {
-    this.failureKeys().forEach(function(failureKey) {
+    this.data.failureKeys().forEach(function(failureKey) {
       var annotation = annotations[failureKey] || {};
 
       Object.keys(newAnnotation, function(key, value) {
