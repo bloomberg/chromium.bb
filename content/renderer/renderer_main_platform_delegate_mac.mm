@@ -18,6 +18,11 @@
 #include "content/public/common/content_switches.h"
 #include "content/common/sandbox_init_mac.h"
 
+extern "C" {
+void CGSSetDenyWindowServerConnections(bool);
+void CGSShutdownServerConnections();
+};
+
 namespace content {
 
 namespace {
@@ -136,6 +141,12 @@ void RendererMainPlatformDelegate::PlatformUninitialize() {
 }
 
 bool RendererMainPlatformDelegate::EnableSandbox() {
+  // Disconnect from WindowServer before entering the sandbox, after all
+  // objects have been warmed up. Shutting down the connection requires
+  // connecting to WindowServer, so do this before engaging the sandbox.
+  CGSSetDenyWindowServerConnections(true);
+  CGSShutdownServerConnections();
+
   // Enable the sandbox.
   bool sandbox_initialized = InitializeSandbox();
 
