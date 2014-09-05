@@ -36,7 +36,7 @@ vars = {
   'boringssl_git': 'https://boringssl.googlesource.com',
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
-  'libvpx_revision': '982d14793a8e42d2fa5e6e5e34bede17b4ba67e3', # r291730
+  'libvpx_revision': 'ceebbcc0cef1bbd2bb672576ccf1133168639346', # r291805
   'sfntly_revision': '1bdaae8fc788a5ac8936d68bf24f37d977a13dac',
   'skia_revision': '26abcf10a4994a0bb13a074d79baa85cd8d67b2c',
   # Three lines of non-changing comments so that
