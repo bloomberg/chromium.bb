@@ -43,8 +43,8 @@ readonly KERNEL_SHA1SUM="9b094e817a7a9b7c09b5bc268e23de642c6c407a"
 readonly GDB_URL="http://ftp.gnu.org/gnu/gdb/gdb-7.7.1.tar.bz2"
 readonly GDB_SHA1SUM="35228319f7c715074a80be42fff64c7645227a80"
 
-readonly EGLIBC_SVN_URL="svn://svn.eglibc.org/branches/eglibc-2_19"
-readonly EGLIBC_REVISION="25243"
+readonly GLIBC_URL="http://ftp.gnu.org/gnu/glibc/glibc-2.19.tar.bz2"
+readonly GLIBC_SHA1SUM="382f4438a7321dc29ea1a3da8e7852d2c2b3208c"
 
 readonly DOWNLOAD_QEMU_URL="http://wiki.qemu-project.org/download/qemu-2.0.0.tar.bz2"
 
@@ -81,29 +81,6 @@ Usage() {
   echo "nacl_sdk - Build nacl toolchain and package it"
   echo "chrome_sdk - Build chrome toolchain and package it"
   echo
-}
-
-CheckoutOrCopy() {
-  local url=$1
-  local revision=$2
-  local filename="${TMP}/${url##*/}"
-  local filetype="${url%%:*}"
-
-  if [ "${filename}" == "" ]; then
-    echo "Unknown error occured. Aborting."
-    exit 1
-  fi
-
-  if [ ! -f "${filename}/completed" ]; then
-    if [ "${filetype}" == "svn" ]; then
-      SubBanner "checkout from ${url} -> ${filename}"
-      svn --force export -r ${revision} ${url} ${filename}
-    else
-      SubBanner "copying from ${url}"
-      cp ${url} ${filename}
-    fi
-    touch ${filename}/completed
-  fi
 }
 
 DownloadOrCopy() {
@@ -256,15 +233,13 @@ DownloadOrCopyAndInstallToolchain() {
   SubBanner "extracting from ${tarball}"
   tar zxf ${tarball} -C ${TMP}
 
-  local eglibc_dir="${TMP}/${EGLIBC_SVN_URL##*/}"
-  CheckoutOrCopy ${EGLIBC_SVN_URL} ${EGLIBC_REVISION}
+  tarball="${TMP}/${GLIBC_URL##*/}"
+  DownloadOrCopyAndVerify ${GLIBC_URL} ${GLIBC_SHA1SUM}
+  SubBanner "extracting from ${tarball}"
+  tar jxf ${tarball} -C ${TMP}
 
 
   Banner "Preparing the code"
-
-  if [ ! -d "${TMP}/eglibc-2_19/libc/ports" ]; then
-    ln -s ${TMP}/eglibc-2_19/ports ${TMP}/eglibc-2_19/libc/ports
-  fi
 
   # Fix a minor syntax issue in tc-mips.c.
   local OLD_TEXT="as_warn_where (fragp->fr_file, fragp->fr_line, msg);"
@@ -336,91 +311,18 @@ DownloadOrCopyAndInstallToolchain() {
   make headers_install ARCH=mips INSTALL_HDR_PATH=${JAIL_MIPS32}/usr
   popd
 
+  Banner "Building GLIBC"
 
-  Banner "Building EGLIBC (initial)"
-
-  mkdir -p ${JAIL_MIPS32}/usr/lib
-
-  rm -rf ${BUILD_DIR}/eglibc/initial
-  mkdir -p ${BUILD_DIR}/eglibc/initial
-  pushd ${BUILD_DIR}/eglibc/initial
-
-  SubBanner "Configuring"
-  BUILD_CC=gcc                      \
-  AR=mipsel-linux-gnu-ar            \
-  RANLIB=mipsel-linux-gnu-ranlib    \
-  CC=mipsel-linux-gnu-gcc           \
-  CXX=mipsel-linux-gnu-g++          \
-  ${TMP}/eglibc-2_19/libc/configure \
-    --prefix=/usr                   \
-    --enable-add-ons                \
-    --build=i686-pc-linux-gnu       \
-    --host=mipsel-linux-gnu         \
-    --disable-profile               \
-    --without-gd                    \
-    --without-cvs                   \
-    --with-headers=${JAIL_MIPS32}/usr/include
-
-  SubBanner "Install"
-  make ${MAKE_OPTS} install-headers install_root=${JAIL_MIPS32} \
-                    install-bootstrap-headers=yes
-
-  make csu/subdir_lib  && \
-       cp csu/crt1.o csu/crti.o csu/crtn.o ${JAIL_MIPS32}/usr/lib
-
-  mipsel-linux-gnu-gcc -nostdlib      \
-                       -nostartfiles  \
-                       -shared        \
-                       -x c /dev/null \
-                       -o ${JAIL_MIPS32}/usr/lib/libc.so
-
-  popd
-
-
-  Banner "Building GCC (intermediate)"
-
-  rm -rf ${BUILD_DIR}/gcc/intermediate
-  mkdir -p ${BUILD_DIR}/gcc/intermediate
-  pushd ${BUILD_DIR}/gcc/intermediate
-
-  SubBanner "Configuring"
-  ${TMP}/gcc-4.9.0/configure  \
-    --prefix=${INSTALL_ROOT}  \
-    --disable-libssp          \
-    --disable-libgomp         \
-    --disable-libmudflap      \
-    --disable-fixed-point     \
-    --disable-decimal-float   \
-    --with-mips-plt           \
-    --with-endian=little      \
-    --with-arch=${ARCH}       \
-    --target=mipsel-linux-gnu \
-    --enable-languages=c      \
-    --disable-libquadmath     \
-    --disable-libatomic       \
-    --with-sysroot=${JAIL_MIPS32}
-
-  SubBanner "Make"
-  make ${MAKE_OPTS} all
-
-  SubBanner "Install"
-  make ${MAKE_OPTS} install
-
-  popd
-
-
-  Banner "Building EGLIBC (final)"
-
-  rm -rf ${BUILD_DIR}/eglibc/final
-  mkdir -p ${BUILD_DIR}/eglibc/final
-  pushd ${BUILD_DIR}/eglibc/final
+  rm -rf ${BUILD_DIR}/glibc/final
+  mkdir -p ${BUILD_DIR}/glibc/final
+  pushd ${BUILD_DIR}/glibc/final
 
   BUILD_CC=gcc                      \
   AR=mipsel-linux-gnu-ar            \
   RANLIB=mipsel-linux-gnu-ranlibi   \
   CC=mipsel-linux-gnu-gcc           \
   CXX=mipsel-linux-gnu-g++          \
-  ${TMP}/eglibc-2_19/libc/configure \
+  ${TMP}/glibc-2.19/configure       \
     --prefix=/usr                   \
     --enable-add-ons                \
     --host=mipsel-linux-gnu         \
