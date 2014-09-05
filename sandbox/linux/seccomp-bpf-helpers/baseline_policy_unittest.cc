@@ -271,6 +271,14 @@ BPF_DEATH_TEST_C(BaselinePolicy,
   syscall(__NR_futex, NULL, FUTEX_CMP_REQUEUE_PI_PRIVATE, 0, NULL, NULL, 0);
   _exit(1);
 }
+
+BPF_DEATH_TEST_C(BaselinePolicy,
+                 FutexWithUnlockPIPrivate,
+                 DEATH_MESSAGE(GetFutexErrorMessageContentForTests()),
+                 BaselinePolicy) {
+  syscall(__NR_futex, NULL, FUTEX_UNLOCK_PI_PRIVATE, 0, NULL, NULL, 0);
+  _exit(1);
+}
 #endif  // !defined(OS_ANDROID)
 
 BPF_TEST_C(BaselinePolicy, PrctlDumpable, BaselinePolicy) {

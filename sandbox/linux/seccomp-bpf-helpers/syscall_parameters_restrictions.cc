@@ -25,13 +25,16 @@
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
-#include "sandbox/linux/services/android_futex.h"
 
 #if defined(OS_ANDROID)
+
+#include "sandbox/linux/services/android_futex.h"
+
 #if !defined(F_DUPFD_CLOEXEC)
 #define F_DUPFD_CLOEXEC (F_LINUX_SPECIFIC_BASE + 6)
 #endif
-#endif
+
+#endif  // defined(OS_ANDROID)
 
 #if defined(__arm__) && !defined(MAP_STACK)
 #define MAP_STACK 0x20000  // Daisy build environment has old headers.
@@ -207,19 +210,20 @@ ResultExpr RestrictKillTarget(pid_t target_pid, int sysno) {
 }
 
 ResultExpr RestrictFutex() {
-  // In futex.c, the kernel does "int cmd = op & FUTEX_CMD_MASK;". We need to
-  // make sure that the combination below will cover every way to get
-  // FUTEX_CMP_REQUEUE_PI.
-  const int kBannedFutexBits =
-      ~(FUTEX_CMD_MASK | FUTEX_PRIVATE_FLAG | FUTEX_CLOCK_REALTIME);
-  COMPILE_ASSERT(0 == kBannedFutexBits,
-                 need_to_explicitly_blacklist_more_bits);
+  const int kAllowedFutexFlags = FUTEX_PRIVATE_FLAG | FUTEX_CLOCK_REALTIME;
+  const int kOperationMask = ~kAllowedFutexFlags;
+  const int kAllowedFutexOperations[] = {
+      FUTEX_WAIT,        FUTEX_WAKE,    FUTEX_FD,          FUTEX_REQUEUE,
+      FUTEX_CMP_REQUEUE, FUTEX_WAKE_OP, FUTEX_WAIT_BITSET, FUTEX_WAKE_BITSET};
 
   const Arg<int> op(1);
-  return If(op == FUTEX_CMP_REQUEUE_PI || op == FUTEX_CMP_REQUEUE_PI_PRIVATE ||
-                op == (FUTEX_CMP_REQUEUE_PI | FUTEX_CLOCK_REALTIME) ||
-                op == (FUTEX_CMP_REQUEUE_PI_PRIVATE | FUTEX_CLOCK_REALTIME),
-            CrashSIGSYSFutex()).Else(Allow());
+
+  BoolExpr IsAllowedOp = (op & kOperationMask) == kAllowedFutexOperations[0];
+  for (size_t i = 1; i < arraysize(kAllowedFutexOperations); ++i) {
+    IsAllowedOp =
+        IsAllowedOp || ((op & kOperationMask) == kAllowedFutexOperations[i]);
+  }
+  return If(IsAllowedOp, Allow()).Else(CrashSIGSYSFutex());
 }
 
 }  // namespace sandbox.
