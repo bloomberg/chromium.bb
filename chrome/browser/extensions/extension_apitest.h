@@ -69,6 +69,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // GetNextResult() and message() if GetNextResult() return false. If there
   // are no results, this method will pump the UI message loop until one is
   // received.
+  // DEPRECATED: Use extensions/test/result_catcher.h instead.
   class ResultCatcher : public content::NotificationObserver {
    public:
     ResultCatcher();

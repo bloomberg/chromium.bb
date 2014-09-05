@@ -5,26 +5,29 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/api/dns/dns_api.h"
 #include "extensions/browser/api/dns/host_resolver_wrapper.h"
 #include "extensions/browser/api/dns/mock_host_resolver_creator.h"
 #include "extensions/browser/api_test_utils.h"
+#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/test_util.h"
-#include "extensions/shell/test/shell_test.h"
+#include "extensions/shell/test/shell_apitest.h"
 #include "net/base/net_errors.h"
 
 using extensions::api_test_utils::RunFunctionAndReturnSingleResult;
 
 namespace extensions {
 
-class DnsApiTest : public AppShellTest {
+class DnsApiTest : public ShellApiTest {
  public:
   DnsApiTest() : resolver_creator_(new MockHostResolverCreator()) {}
 
  private:
   virtual void SetUpOnMainThread() OVERRIDE {
-    AppShellTest::SetUpOnMainThread();
+    ShellApiTest::SetUpOnMainThread();
     HostResolverWrapper::GetInstance()->SetHostResolverForTesting(
         resolver_creator_->CreateMockHostResolver());
   }
@@ -32,7 +35,7 @@ class DnsApiTest : public AppShellTest {
   virtual void TearDownOnMainThread() OVERRIDE {
     HostResolverWrapper::GetInstance()->SetHostResolverForTesting(NULL);
     resolver_creator_->DeleteMockHostResolver();
-    AppShellTest::TearDownOnMainThread();
+    ShellApiTest::TearDownOnMainThread();
   }
 
   // The MockHostResolver asserts that it's used on the same thread on which
@@ -84,6 +87,10 @@ IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveHostname) {
   std::string address;
   EXPECT_TRUE(dict->GetString("address", &address));
   EXPECT_EQ(MockHostResolverCreator::kAddress, address);
+}
+
+IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsExtension) {
+  ASSERT_TRUE(RunAppTest("api_test/dns/api")) << message_;
 }
 
 }  // namespace extensions

@@ -5,7 +5,6 @@
 #include "extensions/shell/test/shell_test.h"
 
 #include "base/command_line.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_system.h"
@@ -45,13 +44,6 @@ void AppShellTest::RunTestOnMainThreadLoop() {
 
   // Clean up the app window.
   ShellDesktopController::instance()->CloseAppWindows();
-}
-
-bool AppShellTest::LoadAndLaunchApp(const base::FilePath& app_dir) {
-  bool loaded = extension_system_->LoadApp(app_dir);
-  if (loaded)
-    extension_system_->LaunchApp();
-  return loaded;
 }
 
 }  // namespace extensions

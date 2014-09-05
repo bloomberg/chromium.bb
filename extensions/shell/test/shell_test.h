@@ -32,13 +32,9 @@ class AppShellTest : public content::BrowserTestBase {
   virtual void SetUpOnMainThread() OVERRIDE;
   virtual void RunTestOnMainThreadLoop() OVERRIDE;
 
-  // Loads an unpacked application from a directory using |extension_system_|
-  // and attempts to launch it. Returns true on success.
-  bool LoadAndLaunchApp(const base::FilePath& app_dir);
-
   content::BrowserContext* browser_context() { return browser_context_; }
 
- private:
+ protected:
   content::BrowserContext* browser_context_;
   ShellExtensionSystem* extension_system_;
 };

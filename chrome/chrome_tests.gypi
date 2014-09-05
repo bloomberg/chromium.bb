@@ -1101,7 +1101,6 @@
         'browser/extensions/api/desktop_capture/desktop_capture_apitest.cc',
         'browser/extensions/api/developer_private/developer_private_apitest.cc',
         'browser/extensions/api/dial/dial_apitest.cc',
-        'browser/extensions/api/dns/dns_apitest.cc',
         'browser/extensions/api/downloads/downloads_api_browsertest.cc',
         'browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_apitest_nss.cc',
         'browser/extensions/api/extension_action/browser_action_apitest.cc',
