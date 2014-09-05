@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "9.6",
+  "version": "9.7",
   "entries": [
     {
       "id": 1,
@@ -1106,6 +1106,18 @@ LONG_STRING_CONST(
       "gl_renderer": ".*Mali-T604.*",
       "features": [
         "gpu_rasterization"
+      ]
+    },
+    {
+      "id": 101,
+      "description": "Samsung Galaxy Tab is too buggy to use for video decoding",
+      "cr_bugs": [408353],
+      "os": {
+        "type": "android"
+      },
+      "machine_model_name": ["SM-.*"],
+      "features": [
+        "accelerated_video_decode"
       ]
     }
   ]
