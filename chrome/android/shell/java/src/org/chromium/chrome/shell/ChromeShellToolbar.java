@@ -52,6 +52,9 @@ public class ChromeShellToolbar extends LinearLayout {
 
     private SuggestionPopup mSuggestionPopup;
 
+    private ImageButton mStopButton;
+    private ImageButton mReloadButton;
+
     /**
      * @param context The Context the view is running in.
      * @param attrs   The attributes of the XML tag that is inflating the view.
@@ -87,7 +90,10 @@ public class ChromeShellToolbar extends LinearLayout {
     private void onLoadProgressChanged(int progress) {
         removeCallbacks(mClearProgressRunnable);
         mProgressDrawable.setLevel(100 * progress);
-        if (progress == 100) postDelayed(mClearProgressRunnable, COMPLETED_PROGRESS_TIMEOUT_MS);
+        boolean isLoading = progress != 100;
+        mStopButton.setVisibility(isLoading ? VISIBLE : GONE);
+        mReloadButton.setVisibility(isLoading ? GONE : VISIBLE);
+        if (!isLoading) postDelayed(mClearProgressRunnable, COMPLETED_PROGRESS_TIMEOUT_MS);
     }
 
     /**
@@ -104,6 +110,7 @@ public class ChromeShellToolbar extends LinearLayout {
         mProgressDrawable = (ClipDrawable) findViewById(R.id.toolbar).getBackground();
         initializeUrlField();
         initializeMenuButton();
+        initializeStopReloadButton();
     }
 
     void setMenuHandler(AppMenuHandler menuHandler) {
@@ -170,6 +177,23 @@ public class ChromeShellToolbar extends LinearLayout {
             @Override
             public boolean onTouch(View view, MotionEvent event) {
                 return mAppMenuButtonHelper != null && mAppMenuButtonHelper.onTouch(view, event);
+            }
+        });
+    }
+
+    private void initializeStopReloadButton() {
+        mStopButton = (ImageButton)findViewById(R.id.stop);
+        mStopButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mTab.getContentViewCore().stopLoading();
+            }
+        });
+        mReloadButton = (ImageButton)findViewById(R.id.reload);
+        mReloadButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mTab.getContentViewCore().reload(true);
             }
         });
     }
