@@ -269,9 +269,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 // test the threadsafety of SkPicture playback.
 #define SK_PICTURE_CLONE_NOOP 1
 
-// Turns on new (nicer, hopefully faster) SkPicture backend.
-#define SK_PICTURE_USE_SK_RECORD 1
-
 // ===== End Chrome-specific definitions =====
 
 #endif
