@@ -46,6 +46,7 @@ class FirefoxImporter : public Importer {
   // Import the user's home page, unless it is set to default home page as
   // defined in browserconfig.properties.
   void ImportHomepage();
+  void ImportAutofillFormData();
   void GetSearchEnginesXMLData(std::vector<std::string>* search_engine_data);
   void GetSearchEnginesXMLDataFromJSON(
       std::vector<std::string>* search_engine_data);

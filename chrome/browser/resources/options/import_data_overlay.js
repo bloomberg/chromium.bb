@@ -49,7 +49,8 @@ cr.define('options', function() {
             String($('import-history').checked),
             String($('import-favorites').checked),
             String($('import-passwords').checked),
-            String($('import-search').checked)]);
+            String($('import-search').checked),
+            String($('import-autofill-form-data').checked)]);
       };
 
       $('import-data-cancel').onclick = function() {
@@ -75,7 +76,8 @@ cr.define('options', function() {
     validateCommitButton_: function() {
       var somethingToImport =
           $('import-history').checked || $('import-favorites').checked ||
-          $('import-passwords').checked || $('import-search').checked;
+          $('import-passwords').checked || $('import-search').checked ||
+          $('import-autofill-form-data').checked;
       $('import-data-commit').disabled = !somethingToImport;
       $('import-choose-file').disabled = !$('import-favorites').checked;
     },
@@ -120,7 +122,11 @@ cr.define('options', function() {
       var browserProfile;
       if (this.browserProfiles.length > index)
         browserProfile = this.browserProfiles[index];
-      var importOptions = ['history', 'favorites', 'passwords', 'search'];
+      var importOptions = ['history',
+                           'favorites',
+                           'passwords',
+                           'search',
+                           'autofill-form-data'];
       for (var i = 0; i < importOptions.length; i++) {
         var checkbox = $('import-' + importOptions[i]);
         var enable = browserProfile && browserProfile[importOptions[i]];
@@ -186,7 +192,8 @@ cr.define('options', function() {
       var importPrefs = ['import_history',
                          'import_bookmarks',
                          'import_saved_passwords',
-                         'import_search_engine'];
+                         'import_search_engine',
+                         'import_autofill_form_data'];
       for (var i = 0; i < importPrefs.length; i++)
         Preferences.clearPref(importPrefs[i], true);
     },

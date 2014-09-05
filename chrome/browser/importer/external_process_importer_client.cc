@@ -106,6 +106,10 @@ bool ExternalProcessImporterClient::OnMessageReceived(
                         OnKeywordsImportReady)
     IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyFirefoxSearchEngData,
                         OnFirefoxSearchEngineDataReceived)
+    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_AutofillFormDataImportStart,
+                        OnAutofillFormDataImportStart)
+    IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_AutofillFormDataImportGroup,
+                        OnAutofillFormDataImportGroup)
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyIE7PasswordInfo,
                         OnIE7PasswordReceived)
@@ -248,6 +252,28 @@ void ExternalProcessImporterClient::OnFirefoxSearchEngineDataReceived(
   if (cancelled_)
     return;
   bridge_->SetFirefoxSearchEnginesXMLData(search_engine_data);
+}
+
+void ExternalProcessImporterClient::OnAutofillFormDataImportStart(
+    size_t total_autofill_form_data_entry_count) {
+  if (cancelled_)
+    return;
+
+  total_autofill_form_data_entry_count_ = total_autofill_form_data_entry_count;
+  autofill_form_data_.reserve(total_autofill_form_data_entry_count);
+}
+
+void ExternalProcessImporterClient::OnAutofillFormDataImportGroup(
+    const std::vector<ImporterAutofillFormDataEntry>&
+        autofill_form_data_entry_group) {
+  if (cancelled_)
+    return;
+
+  autofill_form_data_.insert(autofill_form_data_.end(),
+                             autofill_form_data_entry_group.begin(),
+                             autofill_form_data_entry_group.end());
+  if (autofill_form_data_.size() == total_autofill_form_data_entry_count_)
+    bridge_->SetAutofillFormData(autofill_form_data_);
 }
 
 #if defined(OS_WIN)

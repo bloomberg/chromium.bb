@@ -245,6 +245,17 @@ scoped_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetAutofillProfiles(
               base::Unretained(this))));
 }
 
+WebDatabase::State AutofillWebDataBackendImpl::UpdateAutofillEntries(
+    const std::vector<autofill::AutofillEntry>& autofill_entries,
+    WebDatabase* db) {
+  DCHECK(db_thread_->BelongsToCurrentThread());
+  if (!AutofillTable::FromWebDatabase(db)
+           ->UpdateAutofillEntries(autofill_entries))
+    return WebDatabase::COMMIT_NOT_NEEDED;
+
+  return WebDatabase::COMMIT_NEEDED;
+}
+
 WebDatabase::State AutofillWebDataBackendImpl::AddCreditCard(
     const CreditCard& credit_card, WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());

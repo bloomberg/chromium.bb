@@ -73,6 +73,9 @@ class ExternalProcessImporterBridge : public ImporterBridge {
   virtual void SetPasswordForm(
       const autofill::PasswordForm& form) OVERRIDE;
 
+  virtual void SetAutofillFormData(
+      const std::vector<ImporterAutofillFormDataEntry>& entries) OVERRIDE;
+
   virtual void NotifyStarted() OVERRIDE;
   virtual void NotifyItemStarted(importer::ImportItem item) OVERRIDE;
   virtual void NotifyItemEnded(importer::ImportItem item) OVERRIDE;

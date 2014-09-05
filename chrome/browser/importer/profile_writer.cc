@@ -22,9 +22,11 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/pref_names.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/search_engines/template_url.h"
@@ -327,6 +329,15 @@ void ProfileWriter::AddKeywords(ScopedVector<TemplateURL> template_urls,
       *i = NULL;  // Prevent the vector from deleting *i later.
     }
   }
+}
+
+void ProfileWriter::AddAutofillFormDataEntries(
+    const std::vector<autofill::AutofillEntry>& autofill_entries) {
+  scoped_refptr<autofill::AutofillWebDataService> web_data_service =
+      WebDataServiceFactory::GetAutofillWebDataForProfile(
+          profile_, Profile::EXPLICIT_ACCESS);
+  if (web_data_service.get())
+    web_data_service->UpdateAutofillEntries(autofill_entries);
 }
 
 ProfileWriter::~ProfileWriter() {}

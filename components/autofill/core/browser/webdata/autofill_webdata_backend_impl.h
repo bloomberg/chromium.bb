@@ -113,6 +113,11 @@ class AutofillWebDataBackendImpl
   // Returns all Autofill profiles from the web database.
   scoped_ptr<WDTypedResult> GetAutofillProfiles(WebDatabase* db);
 
+  // Updates Autofill entries in the web database.
+  WebDatabase::State UpdateAutofillEntries(
+      const std::vector<autofill::AutofillEntry>& autofill_entries,
+      WebDatabase* db);
+
   // Adds a credit card to the web database.
   WebDatabase::State AddCreditCard(const CreditCard& credit_card,
                                    WebDatabase* db);

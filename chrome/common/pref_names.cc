@@ -1107,6 +1107,10 @@ const char kGLRendererString[] = "gl_renderer_string";
 // GL_VERSION string.
 const char kGLVersionString[] = "gl_version_string";
 
+// Boolean that specifies whether to import the form data for autofill from the
+// default browser on first run.
+const char kImportAutofillFormData[] = "import_autofill_form_data";
+
 // Boolean that specifies whether to import bookmarks from the default browser
 // on first run.
 const char kImportBookmarks[] = "import_bookmarks";
@@ -1119,13 +1123,13 @@ const char kImportHistory[] = "import_history";
 // browser on first run.
 const char kImportHomepage[] = "import_home_page";
 
-// Boolean that specifies whether to import the search engine from the default
-// browser on first run.
-const char kImportSearchEngine[] = "import_search_engine";
-
 // Boolean that specifies whether to import the saved passwords from the default
 // browser on first run.
 const char kImportSavedPasswords[] = "import_saved_passwords";
+
+// Boolean that specifies whether to import the search engine from the default
+// browser on first run.
+const char kImportSearchEngine[] = "import_search_engine";
 
 // Profile avatar and name
 const char kProfileAvatarIndex[] = "profile.avatar_index";

@@ -20,6 +20,7 @@
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/importer/importer_data_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/search_engines/template_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,6 +50,11 @@ struct KeywordInfo {
   const wchar_t* keyword_in_sqlite;
   const wchar_t* keyword_in_json;
   const char* url;
+};
+
+struct AutofillFormDataInfo {
+  const char* name;
+  const char* value;
 };
 
 const BookmarkInfo kFirefoxBookmarks[] = {
@@ -92,6 +98,21 @@ const KeywordInfo kFirefoxKeywords[] = {
      "http://www.webster.com/cgi-bin/dictionary?va={searchTerms}"},
     // Search keywords.
     {L"\x4E2D\x6587", L"\x4E2D\x6587", "http://www.google.com/"},
+};
+
+const AutofillFormDataInfo kFirefoxAutofillEntries[] = {
+    {"name", "John"},
+    {"address", "#123 Cherry Ave"},
+    {"city", "Mountain View"},
+    {"zip", "94043"},
+    {"n300", "+1 (408) 871-4567"},
+    {"name", "john"},
+    {"name", "aguantó"},
+    {"address", "télévision@example.com"},
+    {"city", "&$%$$$ TESTO *&*&^&^& MOKO"},
+    {"zip", "WOHOOOO$$$$$$$$****"},
+    {"n300", "\xe0\xa4\x9f\xe2\x97\x8c\xe0\xa4\xbe\xe0\xa4\xaf\xe0\xa4\xb0"},
+    {"n300", "\xe4\xbb\xa5\xe7\x8e\xa9\xe4\xb8\xba\xe4\xb8\xbb"}
 };
 
 class FirefoxObserver : public ProfileWriter,
@@ -164,6 +185,17 @@ class FirefoxObserver : public ProfileWriter,
           TestEqualBookmarkEntry(bookmarks[i],
                                  kFirefoxBookmarks[bookmark_count_])) << i;
       ++bookmark_count_;
+    }
+  }
+
+  virtual void AddAutofillFormDataEntries(
+      const std::vector<autofill::AutofillEntry>& autofill_entries) OVERRIDE {
+    EXPECT_EQ(arraysize(kFirefoxAutofillEntries), autofill_entries.size());
+    for (size_t i = 0; i < arraysize(kFirefoxAutofillEntries); ++i) {
+      EXPECT_EQ(kFirefoxAutofillEntries[i].name,
+                base::UTF16ToUTF8(autofill_entries[i].key().name()));
+      EXPECT_EQ(kFirefoxAutofillEntries[i].value,
+                base::UTF16ToUTF8(autofill_entries[i].key().value()));
     }
   }
 
@@ -271,7 +303,7 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
     source_profile.locale = "en-US";
 
     int items = importer::HISTORY | importer::PASSWORDS | importer::FAVORITES |
-                importer::SEARCH_ENGINES;
+                importer::SEARCH_ENGINES | importer::AUTOFILL_FORM_DATA;
 
     // Deletes itself.
     ExternalProcessImporterHost* host = new ExternalProcessImporterHost;

@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/common/importer/importer_autofill_form_data_entry.h"
 #include "chrome/common/importer/importer_data_types.h"
 #include "chrome/common/importer/importer_url_row.h"
 #include "content/public/browser/browser_thread.h"
@@ -35,6 +36,7 @@ namespace importer {
 #if defined(OS_WIN)
 struct ImporterIE7PasswordInfo;
 #endif
+struct ImporterAutofillFormDataEntry;
 struct URLKeywordInfo;
 }
 
@@ -82,6 +84,10 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
       bool unique_on_host_and_path);
   void OnFirefoxSearchEngineDataReceived(
       const std::vector<std::string> search_engine_data);
+  void OnAutofillFormDataImportStart(
+      size_t total_autofill_form_data_entry_count);
+  void OnAutofillFormDataImportGroup(const std::vector<
+      ImporterAutofillFormDataEntry>& autofill_form_data_entry_group);
 #if defined(OS_WIN)
   void OnIE7PasswordReceived(
         const importer::ImporterIE7PasswordInfo& importer_password_info);
@@ -108,6 +114,7 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
   std::vector<ImporterURLRow> history_rows_;
   std::vector<ImportedBookmarkEntry> bookmarks_;
   std::vector<ImportedFaviconUsage> favicons_;
+  std::vector<ImporterAutofillFormDataEntry> autofill_form_data_;
 
   // Usually some variation on IDS_BOOKMARK_GROUP_...; the name of the folder
   // under which imported bookmarks will be placed.
@@ -121,6 +128,9 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
 
   // Total number of favicons to import.
   size_t total_favicons_count_;
+
+  // Total number of autofill form data entries to import.
+  size_t total_autofill_form_data_entry_count_;
 
   // Notifications received from the ProfileImportProcessHost are passed back
   // to process_importer_host_, which calls the ProfileWriter to record the

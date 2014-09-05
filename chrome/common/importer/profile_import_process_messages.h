@@ -12,6 +12,7 @@
 #include "chrome/common/common_param_traits_macros.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
+#include "chrome/common/importer/importer_autofill_form_data_entry.h"
 #include "chrome/common/importer/importer_data_types.h"
 #include "chrome/common/importer/importer_url_row.h"
 #include "components/autofill/content/common/autofill_param_traits_macros.h"
@@ -220,6 +221,40 @@ struct ParamTraits<importer::URLKeywordInfo> {
   }
 };  // ParamTraits<importer::URLKeywordInfo>
 
+// Traits for ImporterAutofillFormDataEntry to pack/unpack.
+template <>
+struct ParamTraits<ImporterAutofillFormDataEntry> {
+  typedef ImporterAutofillFormDataEntry param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.name);
+    WriteParam(m, p.value);
+    WriteParam(m, p.times_used);
+    WriteParam(m, p.first_used);
+    WriteParam(m, p.last_used);
+  }
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
+    return
+        (ReadParam(m, iter, &p->name)) &&
+        (ReadParam(m, iter, &p->value)) &&
+        (ReadParam(m, iter, &p->times_used)) &&
+        (ReadParam(m, iter, &p->first_used)) &&
+        (ReadParam(m, iter, &p->last_used));
+  }
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
+    LogParam(p.name, l);
+    l->append(", ");
+    LogParam(p.value, l);
+    l->append(", ");
+    LogParam(p.times_used, l);
+    l->append(", ");
+    LogParam(p.first_used, l);
+    l->append(", ");
+    LogParam(p.last_used, l);
+    l->append(")");
+  }
+}; // ParamTraits<ImporterAutofillFormDataEntry>
+
 #if defined(OS_WIN)
 // Traits for importer::ImporterIE7PasswordInfo
 template <>
@@ -321,6 +356,12 @@ IPC_MESSAGE_CONTROL2(ProfileImportProcessHostMsg_NotifyKeywordsReady,
 
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyFirefoxSearchEngData,
                      std::vector<std::string>) // search_engine_data
+
+IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_AutofillFormDataImportStart,
+                     int  /* total number of entries to be imported */)
+
+IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_AutofillFormDataImportGroup,
+                     std::vector<ImporterAutofillFormDataEntry>)
 
 #if defined(OS_WIN)
 IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyIE7PasswordInfo,

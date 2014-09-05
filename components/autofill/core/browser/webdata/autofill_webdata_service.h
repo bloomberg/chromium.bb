@@ -27,6 +27,7 @@ class MessageLoopProxy;
 namespace autofill {
 
 class AutofillChange;
+class AutofillEntry;
 class AutofillProfile;
 class AutofillWebDataBackend;
 class AutofillWebDataBackendImpl;
@@ -69,6 +70,8 @@ class AutofillWebDataService : public AutofillWebData,
   virtual void RemoveAutofillProfile(const std::string& guid) OVERRIDE;
   virtual WebDataServiceBase::Handle GetAutofillProfiles(
       WebDataServiceConsumer* consumer) OVERRIDE;
+  virtual void UpdateAutofillEntries(
+      const std::vector<AutofillEntry>& autofill_entries) OVERRIDE;
   virtual void AddCreditCard(const CreditCard& credit_card) OVERRIDE;
   virtual void UpdateCreditCard(const CreditCard& credit_card) OVERRIDE;
   virtual void RemoveCreditCard(const std::string& guid) OVERRIDE;

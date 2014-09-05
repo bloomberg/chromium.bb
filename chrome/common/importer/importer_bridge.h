@@ -18,6 +18,7 @@
 class GURL;
 struct ImportedBookmarkEntry;
 struct ImportedFaviconUsage;
+struct ImporterAutofillFormDataEntry;
 
 namespace autofill {
 struct PasswordForm;
@@ -62,6 +63,9 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
       const std::vector<std::string>& search_engine_data) = 0;
 
   virtual void SetPasswordForm(const autofill::PasswordForm& form) = 0;
+
+  virtual void SetAutofillFormData(
+      const std::vector<ImporterAutofillFormDataEntry>& entries) = 0;
 
   // Notifies the coordinator that the import operation has begun.
   virtual void NotifyStarted() = 0;

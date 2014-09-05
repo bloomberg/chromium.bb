@@ -12,6 +12,8 @@
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
+#include "chrome/common/importer/importer_autofill_form_data_entry.h"
+#include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_parser.h"
@@ -252,6 +254,23 @@ void InProcessImporterBridge::SetPasswordForm(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ProfileWriter::AddPasswordForm, writer_, form));
+}
+
+void InProcessImporterBridge::SetAutofillFormData(
+    const std::vector<ImporterAutofillFormDataEntry>& entries) {
+  std::vector<autofill::AutofillEntry> autofill_entries;
+  for (size_t i = 0; i < entries.size(); ++i) {
+    autofill_entries.push_back(autofill::AutofillEntry(
+        autofill::AutofillKey(entries[i].name, entries[i].value),
+        entries[i].first_used,
+        entries[i].last_used));
+  }
+
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&ProfileWriter::AddAutofillFormDataEntries,
+                                     writer_,
+                                     autofill_entries));
 }
 
 void InProcessImporterBridge::NotifyStarted() {

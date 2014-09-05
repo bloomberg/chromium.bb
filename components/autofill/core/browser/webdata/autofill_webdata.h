@@ -23,6 +23,7 @@ class WebDataServiceConsumer;
 
 namespace autofill {
 
+class AutofillEntry;
 class AutofillProfile;
 class CreditCard;
 struct FormFieldData;
@@ -74,6 +75,10 @@ class AutofillWebData {
   // consumer owns the profiles.
   virtual WebDataServiceBase::Handle GetAutofillProfiles(
       WebDataServiceConsumer* consumer) = 0;
+
+  // Schedules a task to update autofill entries in the web database.
+  virtual void UpdateAutofillEntries(
+      const std::vector<AutofillEntry>& autofill_entries) = 0;
 
   // Schedules a task to add credit card to the web database.
   virtual void AddCreditCard(const CreditCard& credit_card) = 0;

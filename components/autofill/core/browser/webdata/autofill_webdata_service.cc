@@ -129,6 +129,14 @@ WebDataServiceBase::Handle AutofillWebDataService::GetAutofillProfiles(
       consumer);
 }
 
+void AutofillWebDataService::UpdateAutofillEntries(
+    const std::vector<autofill::AutofillEntry>& autofill_entries) {
+  wdbs_->ScheduleDBTask(FROM_HERE,
+                        Bind(&AutofillWebDataBackendImpl::UpdateAutofillEntries,
+                             autofill_backend_,
+                             autofill_entries));
+}
+
 void AutofillWebDataService::AddCreditCard(const CreditCard& credit_card) {
   wdbs_->ScheduleDBTask(
       FROM_HERE,

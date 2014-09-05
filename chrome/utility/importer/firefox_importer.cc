@@ -18,6 +18,7 @@
 #include "chrome/common/importer/firefox_importer_utils.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
+#include "chrome/common/importer/importer_autofill_form_data_entry.h"
 #include "chrome/common/importer/importer_bridge.h"
 #include "chrome/common/importer/importer_url_row.h"
 #include "chrome/grit/generated_resources.h"
@@ -139,6 +140,11 @@ void FirefoxImporter::StartImport(
     bridge_->NotifyItemStarted(importer::PASSWORDS);
     ImportPasswords();
     bridge_->NotifyItemEnded(importer::PASSWORDS);
+  }
+  if ((items & importer::AUTOFILL_FORM_DATA) && !cancelled()) {
+    bridge_->NotifyItemStarted(importer::AUTOFILL_FORM_DATA);
+    ImportAutofillFormData();
+    bridge_->NotifyItemEnded(importer::AUTOFILL_FORM_DATA);
   }
   bridge_->NotifyEnded();
 }
@@ -380,6 +386,41 @@ void FirefoxImporter::ImportHomepage() {
   if (home_page.is_valid() && !IsDefaultHomepage(home_page, app_path_)) {
     bridge_->AddHomePage(home_page);
   }
+}
+
+void FirefoxImporter::ImportAutofillFormData() {
+  base::FilePath file = source_path_.AppendASCII("formhistory.sqlite");
+  if (!base::PathExists(file))
+    return;
+
+  sql::Connection db;
+  if (!db.Open(file))
+    return;
+
+  const char query[] =
+      "SELECT fieldname, value, timesUsed, firstUsed, lastUsed FROM "
+      "moz_formhistory";
+
+  sql::Statement s(db.GetUniqueStatement(query));
+
+  std::vector<ImporterAutofillFormDataEntry> form_entries;
+  while (s.Step() && !cancelled()) {
+    ImporterAutofillFormDataEntry form_entry;
+    form_entry.name = s.ColumnString16(0);
+    form_entry.value = s.ColumnString16(1);
+    form_entry.times_used = s.ColumnInt(2);
+    form_entry.first_used = base::Time::FromTimeT(s.ColumnInt64(3) / 1000000);
+    form_entry.last_used = base::Time::FromTimeT(s.ColumnInt64(4) / 1000000);
+
+    // Don't import search bar history.
+    if (base::UTF16ToUTF8(form_entry.name) == "searchbar-history")
+      continue;
+
+    form_entries.push_back(form_entry);
+  }
+
+  if (!form_entries.empty() && !cancelled())
+    bridge_->SetAutofillFormData(form_entries);
 }
 
 void FirefoxImporter::GetSearchEnginesXMLData(

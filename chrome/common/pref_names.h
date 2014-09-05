@@ -347,11 +347,12 @@ extern const char kEnableHyperlinkAuditing[];
 extern const char kEnableReferrers[];
 extern const char kEnableDoNotTrack[];
 
+extern const char kImportAutofillFormData[];
 extern const char kImportBookmarks[];
 extern const char kImportHistory[];
 extern const char kImportHomepage[];
-extern const char kImportSearchEngine[];
 extern const char kImportSavedPasswords[];
+extern const char kImportSearchEngine[];
 
 extern const char kProfileAvatarIndex[];
 extern const char kProfileUsingDefaultName[];

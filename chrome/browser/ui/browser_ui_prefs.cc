@@ -126,6 +126,10 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kBrowserWindowPlacementPopup,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
+      prefs::kImportAutofillFormData,
+      true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
       prefs::kImportBookmarks,
       true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
@@ -138,11 +142,11 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
       true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kImportSearchEngine,
+      prefs::kImportSavedPasswords,
       true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kImportSavedPasswords,
+      prefs::kImportSearchEngine,
       true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(

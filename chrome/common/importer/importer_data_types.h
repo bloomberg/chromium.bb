@@ -21,14 +21,15 @@ namespace importer {
 
 // An enumeration of the type of data that can be imported.
 enum ImportItem {
-  NONE           = 0,
-  HISTORY        = 1 << 0,
-  FAVORITES      = 1 << 1,
-  COOKIES        = 1 << 2,  // Not supported yet.
-  PASSWORDS      = 1 << 3,
-  SEARCH_ENGINES = 1 << 4,
-  HOME_PAGE      = 1 << 5,
-  ALL            = (1 << 6) - 1  // All the bits should be 1, hence the -1.
+  NONE               = 0,
+  HISTORY            = 1 << 0,
+  FAVORITES          = 1 << 1,
+  COOKIES            = 1 << 2,  // Not supported yet.
+  PASSWORDS          = 1 << 3,
+  SEARCH_ENGINES     = 1 << 4,
+  HOME_PAGE          = 1 << 5,
+  AUTOFILL_FORM_DATA = 1 << 6,
+  ALL                = (1 << 7) - 1  // All the bits should be 1, hence the -1.
 };
 
 // Information about a profile needed by an importer to do import work.

@@ -7364,6 +7364,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_IMPORT_SEARCH_ENGINES_CHKBOX" desc="Checkbox for importing search engines">
           Search engines
         </message>
+        <message name="IDS_IMPORT_AUTOFILL_FORM_DATA_CHKBOX" desc="Checkbox for importing form data for autofill">
+          Autofill form data
+        </message>
         <message name="IDS_IMPORT_LOADING_PROFILES" desc="Status text to notify the user that profiles are being loaded">
           Loading...
         </message>
