@@ -204,6 +204,9 @@ bool AppWindowCreateFunction::RunAsync() {
 
     if (options->alpha_enabled.get()) {
       const char* whitelist[] = {
+#if defined(OS_CHROMEOS)
+        "B58B99751225318C7EB8CF4688B5434661083E07",  // http://crbug.com/410550
+#endif
         "0F42756099D914A026DADFA182871C015735DD95",  // http://crbug.com/323773
         "2D22CDB6583FD0A13758AEBE8B15E45208B4E9A7",
         "E7E2461CE072DF036CF9592740196159E2D7C089",  // http://crbug.com/356200
