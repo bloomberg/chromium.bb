@@ -193,9 +193,8 @@ class LayerTreeHostPerfTestLeafInvalidates
     if (TestEnded())
       return;
 
-    static bool flip = true;
-    layer_to_invalidate_->SetOpacity(flip ? 1.f : 0.5f);
-    flip = !flip;
+    layer_to_invalidate_->SetOpacity(
+        layer_to_invalidate_->opacity() != 1.f ? 1.f : 0.5f);
   }
 
  protected:
