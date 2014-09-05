@@ -299,11 +299,11 @@ h2.timeframe {
 }
 
 .entry .domain {
+  -webkit-padding-end: 6px;
+  -webkit-padding-start: 2px;
   color: rgb(151, 156, 160);
   min-width: -webkit-min-content;
   overflow: hidden;
-  padding-left: 6px;
-  padding-right: 6px;
   white-space: nowrap;
 }
 
@@ -447,7 +447,7 @@ html[dir='rtl'] .site-domain {
 .entry .visit-entry,
 .site-domain {
   /* Make room for the favicon. */
-  -webkit-padding-start: 20px;
+  -webkit-padding-start: 16px;
 
   /* Control the favicon appearance. */
   background-position-y: center;
@@ -492,11 +492,11 @@ html .expand .site-domain-arrow {
 .entry .bookmark-section {
   -webkit-margin-end: 3px;
   -webkit-margin-start: 8px;
-  background:
-      url(../../../../ui/webui/resources/images/star_small.png) no-repeat;
+  background: no-repeat center
+      url(../../../../ui/webui/resources/images/star_small.png);
   border: none;
   display: inline-block;
-  height: 11px;
+  height: 15px;
   min-width: 15px;
   visibility: hidden;
 }
@@ -507,6 +507,8 @@ html .expand .site-domain-arrow {
 
 .entry .title > a {
   color: rgb(48, 57, 66);
+  margin: 2px;
+  padding: 2px;
   text-decoration: none;
 }
 
