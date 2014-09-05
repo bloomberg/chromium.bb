@@ -226,10 +226,15 @@ class ColoredFormatter(logging.Formatter, object):
   }
 
   def __init__(self, *args, **kwargs):
-    """Initializes the formatter."""
-    # If enable_color is None, termail.Color will determine whether to
-    # enable color based on the environment variable $NOCOLOR.
-    self.color = terminal.Color(enabled=kwargs.pop('enable_color'))
+    """Initializes the formatter.
+
+    Args:
+      args: See logging.Formatter for specifics.
+      kwargs: See logging.Formatter for specifics.
+      enable_color: Whether to enable colored logging. Defaults
+        to None, where terminal.Color will set to a sane default.
+    """
+    self.color = terminal.Color(enabled=kwargs.pop('enable_color', None))
     super(ColoredFormatter, self).__init__(*args, **kwargs)
 
   def format(self, record, **kwargs):
