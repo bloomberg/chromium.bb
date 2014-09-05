@@ -41,6 +41,7 @@
     },
     'dependencies': [
        '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib',
+       '<(DEPTH)/native_client/src/untrusted/pthread/pthread.gyp:pthread_lib',
        '<(DEPTH)/ppapi/ppapi_nacl.gyp:ppapi_cpp_lib',
        '<(DEPTH)/ppapi/native_client/native_client.gyp:ppapi_lib',
     ],

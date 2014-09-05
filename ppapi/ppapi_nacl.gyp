@@ -57,7 +57,9 @@
       'target_name': 'ppapi_nacl_tests',
       'type': 'none',
       'dependencies': [
+         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
          '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib',
+         '<(DEPTH)/native_client/src/untrusted/pthread/pthread.gyp:pthread_lib',
          'ppapi_cpp_lib',
          'native_client/native_client.gyp:ppapi_lib',
       ],
