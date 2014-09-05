@@ -49,6 +49,8 @@ crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ Ima
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
 
+crbug.com/411164 [ Win ] http/tests/serviceworker/registration-on-insecure-origin.html [ Pass Timeout Slow ]
+
 crbug.com/377013 [ Mac Debug ] fast/repaint/4776765.html [ Pass Failure ]
 
 crbug.com/304953 fast/css/font-face-download-error.html [ Pass Timeout ]
