@@ -63,7 +63,7 @@ private:
         delete this;
     }
 
-    RefPtrWillBePersistent<ExternalDateTimeChooser> m_chooser;
+    RefPtr<ExternalDateTimeChooser> m_chooser;
 };
 
 ExternalDateTimeChooser::~ExternalDateTimeChooser()

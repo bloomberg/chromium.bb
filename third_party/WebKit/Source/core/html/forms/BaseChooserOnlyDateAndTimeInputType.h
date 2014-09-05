@@ -35,7 +35,6 @@
 namespace blink {
 
 class BaseChooserOnlyDateAndTimeInputType : public BaseDateAndTimeInputType, public DateTimeChooserClient {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BaseChooserOnlyDateAndTimeInputType);
 protected:
     BaseChooserOnlyDateAndTimeInputType(HTMLInputElement& element) : BaseDateAndTimeInputType(element) { }
     virtual ~BaseChooserOnlyDateAndTimeInputType();
