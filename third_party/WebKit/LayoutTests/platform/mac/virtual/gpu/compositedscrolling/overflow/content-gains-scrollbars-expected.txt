@@ -9,6 +9,7 @@
         {
           "position": [8, 13],
           "bounds": [100, 100],
+          "drawsContent": true,
           "children": [
             {
               "bounds": [85, 100],
@@ -42,6 +43,7 @@
         {
           "position": [8, 13],
           "bounds": [100, 100],
+          "drawsContent": true,
           "children": [
             {
               "bounds": [100, 85],
@@ -75,6 +77,7 @@
         {
           "position": [8, 13],
           "bounds": [100, 100],
+          "drawsContent": true,
           "children": [
             {
               "bounds": [85, 85],
