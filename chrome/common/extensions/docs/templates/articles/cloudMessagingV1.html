@@ -2,8 +2,9 @@
 <h1>Google Cloud Messaging for Chrome V1</h1>
 
 <p class="note">
-Google Cloud Messaging for Chrome V1 will be legacy soon.
-Use the new <a href="cloudMessaging">Google Cloud Messaging API</a>.
+Google Cloud Messaging for Chrome V1 is deprecated since Chrome 38.
+It will be removed in Chrome 41.
+Use the new <a href="cloudMessaging">Google Cloud Messaging</a>.
 </p>
 
 <p>
@@ -116,14 +117,13 @@ to use the push messaging service
     </ul>
   </li>
   <li>Set up your app or extension to use the service:
-  	<ul>
-  	  <li>Add the permission to the manifest.</li>
-  	  <li>Include a call to <code>getChannelId</code>
-      for any user who is to receive a message.</li>
-  	  <li>Register a handler to receive the
-  	  <code>onMessage</code> event.</li>	
-  	</ul>
-   </li>
+    <ul>
+      <li>Add the permission to the manifest.</li>
+      <li>Include a call to <code>getChannelId</code>
+        for any user who is to receive a message.</li>
+      <li>Register a handler to receive the <code>onMessage</code> event.</li>
+    </ul>
+  </li>
   <li>Publish your app in the Chrome Web Store. </li>
   <li>Use refresh token to get a valid access token.</li>
   <li>Send message to user.</li>

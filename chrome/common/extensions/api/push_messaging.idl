@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Use <code>chrome.pushMessaging</code> to enable apps and extensions to
-// receive message data sent through
+// The <code>chrome.pushMessaging</code> API is deprecated since Chrome 38,
+// and will no longer be supported in Chrome 41.
+// Switch to <code>$(ref:gcm chrome.gcm)</code> to take advantage of
 // <a href="cloudMessaging.html">Google Cloud Messaging</a>.
+[deprecated="Use $(ref:gcm chrome.gcm) API"]
 namespace pushMessaging {
 
   dictionary Message {
@@ -31,6 +33,7 @@ namespace pushMessaging {
     // to trigger push messages back to the app or extension.
     // If the interactive flag is set, we will ask the user to log in
     // when they are not already logged in.
+    [deprecated="Use $(ref:gcm chrome.gcm) API"]
     static void getChannelId(optional boolean interactive,
                              ChannelIdCallback callback);
   };
@@ -38,6 +41,7 @@ namespace pushMessaging {
   interface Events {
     // Fired when a push message has been received.
     // |message| : The details associated with the message.
+    [deprecated="Use $(ref:gcm chrome.gcm) API"]
     static void onMessage(Message message);
   };
 };

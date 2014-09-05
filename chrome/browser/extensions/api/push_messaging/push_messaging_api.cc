@@ -48,7 +48,9 @@ const char kUserAccessTokenFailure[] =
 const char kAPINotAvailableForUser[] =
     "The API is not available for this user.";
 const int kObfuscatedGaiaIdTimeoutInDays = 30;
-}
+const char kDeprecationMessage[] =
+    "The chrome.pushMessaging API is deprecated. Use chrome.gcm API instead.";
+}  // namespace
 
 namespace glue = api::push_messaging;
 
@@ -94,6 +96,9 @@ PushMessagingGetChannelIdFunction::PushMessagingGetChannelIdFunction()
 PushMessagingGetChannelIdFunction::~PushMessagingGetChannelIdFunction() {}
 
 bool PushMessagingGetChannelIdFunction::RunAsync() {
+  // Issue a deprecation message.
+  WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_WARNING, kDeprecationMessage);
+
   // Fetch the function arguments.
   scoped_ptr<glue::GetChannelId::Params> params(
       glue::GetChannelId::Params::Create(*args_));
