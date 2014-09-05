@@ -894,7 +894,7 @@ class ExtensionServiceTest : public extensions::ExtensionServiceTestBase,
     // Verify uninstalled state.
     size_t new_pref_key_count = GetPrefKeyCount();
     if (new_pref_key_count == pref_key_count) {
-      ValidateIntegerPref(id, "location",
+      ValidateIntegerPref(id, "state",
                           Extension::EXTERNAL_EXTENSION_UNINSTALLED);
     } else {
       EXPECT_EQ(new_pref_key_count, pref_key_count - 1);
@@ -1555,7 +1555,7 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
 
   // Uninstall it and check that its killbit gets set.
   UninstallExtension(good_crx, false);
-  ValidateIntegerPref(good_crx, "location",
+  ValidateIntegerPref(good_crx, "state",
                       Extension::EXTERNAL_EXTENSION_UNINSTALLED);
 
   // Try to re-install it externally. This should fail because of the killbit.
@@ -1567,7 +1567,7 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
                                           false);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(NULL == service()->GetExtensionById(good_crx, false));
-  ValidateIntegerPref(good_crx, "location",
+  ValidateIntegerPref(good_crx, "state",
                       Extension::EXTERNAL_EXTENSION_UNINSTALLED);
 
   version = Version("1.0.0.1");
@@ -1581,7 +1581,7 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
                                           false);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(NULL == service()->GetExtensionById(good_crx, false));
-  ValidateIntegerPref(good_crx, "location",
+  ValidateIntegerPref(good_crx, "state",
                       Extension::EXTERNAL_EXTENSION_UNINSTALLED);
 
   // Try adding the same extension from an external update URL.
