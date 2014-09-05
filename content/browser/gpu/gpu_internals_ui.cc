@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -168,6 +169,16 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
 #if defined(OS_LINUX) && defined(USE_X11)
   basic_info->Append(NewDescriptionValuePair("Window manager",
                                              ui::GuessWindowManagerName()));
+  {
+    scoped_ptr<base::Environment> env(base::Environment::Create());
+    std::string value;
+    const char kXDGCurrentDesktop[] = "XDG_CURRENT_DESKTOP";
+    if (env->GetVar(kXDGCurrentDesktop, &value))
+      basic_info->Append(NewDescriptionValuePair(kXDGCurrentDesktop, value));
+    const char kGDMSession[] = "GDMSESSION";
+    if (env->GetVar(kGDMSession, &value))
+      basic_info->Append(NewDescriptionValuePair(kGDMSession, value));
+  }
 #endif
   std::string direct_rendering = gpu_info.direct_rendering ? "Yes" : "No";
   basic_info->Append(
