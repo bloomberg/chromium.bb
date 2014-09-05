@@ -9,6 +9,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
@@ -381,6 +382,7 @@ void ManageProfileHandler::SetProfileIconAndName(const base::ListValue* args) {
   if (!args->GetString(2, &new_profile_name))
     return;
 
+  base::TrimWhitespace(new_profile_name, base::TRIM_ALL, &new_profile_name);
   profiles::UpdateProfileName(profile, new_profile_name);
 }
 

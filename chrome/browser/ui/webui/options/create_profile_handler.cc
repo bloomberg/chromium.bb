@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_util.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -80,6 +81,7 @@ void CreateProfileHandler::CreateProfile(const base::ListValue* args) {
   bool create_shortcut = false;
   bool supervised_user = false;
   if (args->GetString(0, &name) && args->GetString(1, &icon)) {
+    base::TrimWhitespace(name, base::TRIM_ALL, &name);
     if (args->GetBoolean(2, &create_shortcut)) {
       bool success = args->GetBoolean(3, &supervised_user);
       DCHECK(success);
