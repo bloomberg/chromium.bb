@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/api/execute_code_function.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/extensions/api/tabs.h"
 #include "content/public/browser/notification_observer.h"
@@ -232,6 +233,8 @@ class ExecuteCodeInTabFunction : public ExecuteCodeFunction {
   virtual const GURL& GetWebViewSrc() const OVERRIDE;
 
  private:
+  const ChromeExtensionFunctionDetails chrome_details_;
+
   // Id of tab which executes code.
   int execute_tab_id_;
 };

@@ -1,10 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/chrome_extension_function.h"
-
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
+
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,30 +12,37 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 
-using content::RenderViewHost;
 using content::WebContents;
+using content::RenderViewHost;
+using extensions::WindowController;
 
-ChromeUIThreadExtensionFunction::ChromeUIThreadExtensionFunction() {
+ChromeExtensionFunctionDetails::ChromeExtensionFunctionDetails(
+    UIThreadExtensionFunction* function)
+    : function_(function) {
 }
 
-Profile* ChromeUIThreadExtensionFunction::GetProfile() const {
-  return Profile::FromBrowserContext(context_);
+ChromeExtensionFunctionDetails::~ChromeExtensionFunctionDetails() {
 }
 
-bool ChromeUIThreadExtensionFunction::CanOperateOnWindow(
+Profile* ChromeExtensionFunctionDetails::GetProfile() const {
+  return Profile::FromBrowserContext(function_->browser_context());
+}
+
+bool ChromeExtensionFunctionDetails::CanOperateOnWindow(
     const extensions::WindowController* window_controller) const {
   // |extension()| is NULL for unit tests only.
-  if (extension() != NULL &&
-      !window_controller->IsVisibleToExtension(extension())) {
+  if (function_->extension() != NULL &&
+      !window_controller->IsVisibleToExtension(function_->extension())) {
     return false;
   }
 
   if (GetProfile() == window_controller->profile())
     return true;
 
-  if (!include_incognito())
+  if (!function_->include_incognito())
     return false;
 
   return GetProfile()->HasOffTheRecordProfile() &&
@@ -44,11 +50,11 @@ bool ChromeUIThreadExtensionFunction::CanOperateOnWindow(
 }
 
 // TODO(stevenjb): Replace this with GetExtensionWindowController().
-Browser* ChromeUIThreadExtensionFunction::GetCurrentBrowser() {
+Browser* ChromeExtensionFunctionDetails::GetCurrentBrowser() const {
   // If the delegate has an associated browser, return it.
-  if (dispatcher()) {
+  if (function_->dispatcher()) {
     extensions::WindowController* window_controller =
-        dispatcher()->delegate()->GetExtensionWindowController();
+        function_->dispatcher()->delegate()->GetExtensionWindowController();
     if (window_controller) {
       Browser* browser = window_controller->GetBrowser();
       if (browser)
@@ -63,11 +69,11 @@ Browser* ChromeUIThreadExtensionFunction::GetCurrentBrowser() {
   // |include_incognito|. Look only for browsers on the active desktop as it is
   // preferable to pretend no browser is open then to return a browser on
   // another desktop.
-  if (render_view_host_) {
+  if (function_->render_view_host()) {
     Profile* profile = Profile::FromBrowserContext(
-        render_view_host_->GetProcess()->GetBrowserContext());
+        function_->render_view_host()->GetProcess()->GetBrowserContext());
     Browser* browser = chrome::FindAnyBrowser(
-        profile, include_incognito_, chrome::GetActiveDesktop());
+        profile, function_->include_incognito(), chrome::GetActiveDesktop());
     if (browser)
       return browser;
   }
@@ -83,23 +89,22 @@ Browser* ChromeUIThreadExtensionFunction::GetCurrentBrowser() {
 }
 
 extensions::WindowController*
-ChromeUIThreadExtensionFunction::GetExtensionWindowController() {
+ChromeExtensionFunctionDetails::GetExtensionWindowController() const {
   // If the delegate has an associated window controller, return it.
-  if (dispatcher()) {
+  if (function_->dispatcher()) {
     extensions::WindowController* window_controller =
-        dispatcher()->delegate()->GetExtensionWindowController();
+        function_->dispatcher()->delegate()->GetExtensionWindowController();
     if (window_controller)
       return window_controller;
   }
 
   return extensions::WindowControllerList::GetInstance()
-      ->CurrentWindowForFunction(ChromeExtensionFunctionDetails(this));
+      ->CurrentWindowForFunction(*this);
 }
 
 content::WebContents*
-ChromeUIThreadExtensionFunction::GetAssociatedWebContents() {
-  content::WebContents* web_contents =
-      UIThreadExtensionFunction::GetAssociatedWebContents();
+ChromeExtensionFunctionDetails::GetAssociatedWebContents() {
+  content::WebContents* web_contents = function_->GetAssociatedWebContents();
   if (web_contents)
     return web_contents;
 
@@ -107,37 +112,4 @@ ChromeUIThreadExtensionFunction::GetAssociatedWebContents() {
   if (!browser)
     return NULL;
   return browser->tab_strip_model()->GetActiveWebContents();
-}
-
-ChromeUIThreadExtensionFunction::~ChromeUIThreadExtensionFunction() {
-}
-
-ChromeAsyncExtensionFunction::ChromeAsyncExtensionFunction() {
-}
-
-ChromeAsyncExtensionFunction::~ChromeAsyncExtensionFunction() {}
-
-ExtensionFunction::ResponseAction ChromeAsyncExtensionFunction::Run() {
-  return RunAsync() ? RespondLater() : RespondNow(Error(error_));
-}
-
-// static
-bool ChromeAsyncExtensionFunction::ValidationFailure(
-    ChromeAsyncExtensionFunction* function) {
-  return false;
-}
-
-ChromeSyncExtensionFunction::ChromeSyncExtensionFunction() {
-}
-
-ChromeSyncExtensionFunction::~ChromeSyncExtensionFunction() {}
-
-ExtensionFunction::ResponseAction ChromeSyncExtensionFunction::Run() {
-  return RespondNow(RunSync() ? ArgumentList(results_.Pass()) : Error(error_));
-}
-
-// static
-bool ChromeSyncExtensionFunction::ValidationFailure(
-    ChromeSyncExtensionFunction* function) {
-  return false;
 }

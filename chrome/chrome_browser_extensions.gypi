@@ -562,6 +562,8 @@
       'browser/extensions/chrome_content_browser_client_extensions_part.h',
       'browser/extensions/chrome_extension_function.cc',
       'browser/extensions/chrome_extension_function.h',
+      'browser/extensions/chrome_extension_function_details.cc',
+      'browser/extensions/chrome_extension_function_details.h',
       'browser/extensions/chrome_extension_host_delegate.cc',
       'browser/extensions/chrome_extension_host_delegate.h',
       'browser/extensions/chrome_extension_web_contents_observer.cc',

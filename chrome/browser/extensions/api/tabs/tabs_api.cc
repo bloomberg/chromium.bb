@@ -1636,7 +1636,7 @@ void TabsDetectLanguageFunction::GotLanguage(const std::string& language) {
 }
 
 ExecuteCodeInTabFunction::ExecuteCodeInTabFunction()
-    : execute_tab_id_(-1) {
+    : chrome_details_(this), execute_tab_id_(-1) {
 }
 
 ExecuteCodeInTabFunction::~ExecuteCodeInTabFunction() {}
@@ -1650,6 +1650,39 @@ bool ExecuteCodeInTabFunction::HasPermission() {
   return ExtensionFunction::HasPermission();
 }
 
+bool ExecuteCodeInTabFunction::Init() {
+  if (details_.get())
+    return true;
+
+  // |tab_id| is optional so it's ok if it's not there.
+  int tab_id = -1;
+  if (args_->GetInteger(0, &tab_id))
+    EXTENSION_FUNCTION_VALIDATE(tab_id >= 0);
+
+  // |details| are not optional.
+  base::DictionaryValue* details_value = NULL;
+  if (!args_->GetDictionary(1, &details_value))
+    return false;
+  scoped_ptr<InjectDetails> details(new InjectDetails());
+  if (!InjectDetails::Populate(*details_value, details.get()))
+    return false;
+
+  // If the tab ID wasn't given then it needs to be converted to the
+  // currently active tab's ID.
+  if (tab_id == -1) {
+    Browser* browser = chrome_details_.GetCurrentBrowser();
+    if (!browser)
+      return false;
+    content::WebContents* web_contents = NULL;
+    if (!ExtensionTabUtil::GetDefaultTab(browser, &web_contents, &tab_id))
+      return false;
+  }
+
+  execute_tab_id_ = tab_id;
+  details_ = details.Pass();
+  return true;
+}
+
 bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage() {
   content::WebContents* contents = NULL;
 
@@ -1657,7 +1690,7 @@ bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage() {
   // tab in the current window.
   CHECK_GE(execute_tab_id_, 0);
   if (!GetTabById(execute_tab_id_,
-                  GetProfile(),
+                  chrome_details_.GetProfile(),
                   include_incognito(),
                   NULL,
                   NULL,
@@ -1690,7 +1723,7 @@ ScriptExecutor* ExecuteCodeInTabFunction::GetScriptExecutor() {
   content::WebContents* contents = NULL;
 
   bool success = GetTabById(execute_tab_id_,
-                            GetProfile(),
+                            chrome_details_.GetProfile(),
                             include_incognito(),
                             &browser,
                             NULL,
@@ -1724,39 +1757,6 @@ void TabsExecuteScriptFunction::OnExecuteCodeFinished(
   if (error.empty())
     SetResult(result.DeepCopy());
   ExecuteCodeInTabFunction::OnExecuteCodeFinished(error, on_url, result);
-}
-
-bool ExecuteCodeInTabFunction::Init() {
-  if (details_.get())
-    return true;
-
-  // |tab_id| is optional so it's ok if it's not there.
-  int tab_id = -1;
-  if (args_->GetInteger(0, &tab_id))
-    EXTENSION_FUNCTION_VALIDATE(tab_id >= 0);
-
-  // |details| are not optional.
-  base::DictionaryValue* details_value = NULL;
-  if (!args_->GetDictionary(1, &details_value))
-    return false;
-  scoped_ptr<InjectDetails> details(new InjectDetails());
-  if (!InjectDetails::Populate(*details_value, details.get()))
-    return false;
-
-  // If the tab ID wasn't given then it needs to be converted to the
-  // currently active tab's ID.
-  if (tab_id == -1) {
-    Browser* browser = GetCurrentBrowser();
-    if (!browser)
-      return false;
-    content::WebContents* web_contents = NULL;
-    if (!ExtensionTabUtil::GetDefaultTab(browser, &web_contents, &tab_id))
-      return false;
-  }
-
-  execute_tab_id_ = tab_id;
-  details_ = details.Pass();
-  return true;
 }
 
 bool TabsInsertCSSFunction::ShouldInsertCSS() const {

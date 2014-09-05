@@ -20,6 +20,10 @@ class WindowController;
 
 // A chrome specific analog to AsyncExtensionFunction. This has access to a
 // chrome Profile.
+//
+// DEPRECATED: Please consider inherting UIThreadExtensionFunction directly.
+// Then if you need access to Chrome details, you can construct a
+// ChromeExtensionFunctionDetails object within your function implementation.
 class ChromeUIThreadExtensionFunction : public UIThreadExtensionFunction {
  public:
   ChromeUIThreadExtensionFunction();
@@ -64,6 +68,11 @@ class ChromeUIThreadExtensionFunction : public UIThreadExtensionFunction {
 
 // A chrome specific analog to AsyncExtensionFunction. This has access to a
 // chrome Profile.
+//
+// DEPRECATED: Please consider inherting UIThreadExtensionFunction or
+// AsyncExtensionFunction directly. Then if you need access to Chrome details,
+// you can construct a ChromeExtensionFunctionDetails object within your
+// function implementation.
 class ChromeAsyncExtensionFunction : public ChromeUIThreadExtensionFunction {
  public:
   ChromeAsyncExtensionFunction();
@@ -83,6 +92,11 @@ class ChromeAsyncExtensionFunction : public ChromeUIThreadExtensionFunction {
 
 // A chrome specific analog to SyncExtensionFunction. This has access to a
 // chrome Profile.
+//
+// DEPRECATED: Please consider inherting UIThreadExtensionFunction or
+// SyncExtensionFunction directly. Then if you need access to Chrome details,
+// you can construct a ChromeExtensionFunctionDetails object within your
+// function implementation.
 class ChromeSyncExtensionFunction : public ChromeUIThreadExtensionFunction {
  public:
   ChromeSyncExtensionFunction();
