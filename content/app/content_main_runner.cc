@@ -666,8 +666,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       MachBroker::ChildSendTaskPortToParent();
     }
 #elif defined(OS_WIN)
-    base::TimeTicks::SetNowIsHighResNowIfSupported();
-
     bool init_device_scale_factor = true;
     if (command_line.HasSwitch(switches::kDeviceScaleFactor)) {
       std::string scale_factor_string = command_line.GetSwitchValueASCII(

@@ -376,21 +376,24 @@ bool IsBuggyAthlon(const base::CPU& cpu) {
 class HighResNowSingleton {
  public:
   HighResNowSingleton()
-    : ticks_per_second_(0),
-      skew_(0) {
-    InitializeClock();
+      : ticks_per_second_(0),
+        skew_(0) {
 
     base::CPU cpu;
     if (IsBuggyAthlon(cpu))
-      DisableHighResClock();
+      return;
+
+    // Synchronize the QPC clock with GetSystemTimeAsFileTime.
+    LARGE_INTEGER ticks_per_sec = {0};
+    if (!QueryPerformanceFrequency(&ticks_per_sec))
+      return; // QPC is not available.
+    ticks_per_second_ = ticks_per_sec.QuadPart;
+
+    skew_ = UnreliableNow() - ReliableNow();
   }
 
   bool IsUsingHighResClock() {
-    return ticks_per_second_ != 0.0;
-  }
-
-  void DisableHighResClock() {
-    ticks_per_second_ = 0.0;
+    return ticks_per_second_ != 0;
   }
 
   TimeDelta Now() {
@@ -425,16 +428,6 @@ class HighResNowSingleton {
   }
 
  private:
-  // Synchronize the QPC clock with GetSystemTimeAsFileTime.
-  void InitializeClock() {
-    LARGE_INTEGER ticks_per_sec = {0};
-    if (!QueryPerformanceFrequency(&ticks_per_sec))
-      return;  // Broken, we don't guarantee this function works.
-    ticks_per_second_ = ticks_per_sec.QuadPart;
-
-    skew_ = UnreliableNow() - ReliableNow();
-  }
-
   // Get the number of microseconds since boot in an unreliable fashion.
   int64 UnreliableNow() {
     LARGE_INTEGER now;
@@ -463,7 +456,6 @@ TimeDelta HighResNowWrapper() {
 }
 
 typedef TimeDelta (*NowFunction)(void);
-NowFunction now_function = RolloverProtectedNow;
 
 bool CPUReliablySupportsHighResTime() {
   base::CPU cpu;
@@ -477,6 +469,23 @@ bool CPUReliablySupportsHighResTime() {
   return true;
 }
 
+TimeDelta InitialNowFunction();
+
+volatile NowFunction now_function = InitialNowFunction;
+
+TimeDelta InitialNowFunction() {
+  if (!CPUReliablySupportsHighResTime()) {
+    InterlockedExchangePointer(
+        reinterpret_cast<void* volatile*>(&now_function),
+        &RolloverProtectedNow);
+    return RolloverProtectedNow();
+  }
+  InterlockedExchangePointer(
+        reinterpret_cast<void* volatile*>(&now_function),
+        &HighResNowWrapper);
+  return HighResNowWrapper();
+}
+
 }  // namespace
 
 // static
@@ -488,16 +497,6 @@ TimeTicks::TickFunctionType TimeTicks::SetMockTickFunction(
   rollover_ms = 0;
   last_seen_now = 0;
   return old;
-}
-
-// static
-bool TimeTicks::SetNowIsHighResNowIfSupported() {
-  if (!CPUReliablySupportsHighResTime()) {
-    return false;
-  }
-
-  now_function = HighResNowWrapper;
-  return true;
 }
 
 // static
