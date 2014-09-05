@@ -28,6 +28,8 @@ component("system") {
   sources = [
     "channel.cc",
     "channel.h",
+    "channel_endpoint.cc",
+    "channel_endpoint.h",
     "constants.h",
     "core.cc",
     "core.h",

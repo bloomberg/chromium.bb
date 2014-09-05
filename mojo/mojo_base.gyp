@@ -121,6 +121,8 @@
         'embedder/simple_platform_support.h',
         'system/channel.cc',
         'system/channel.h',
+        'system/channel_endpoint.cc',
+        'system/channel_endpoint.h',
         'system/constants.h',
         'system/core.cc',
         'system/core.h',
