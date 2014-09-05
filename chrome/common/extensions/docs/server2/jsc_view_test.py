@@ -20,6 +20,7 @@ from future import Future
 from host_file_system_iterator import HostFileSystemIterator
 from jsc_view import JSCView, _FormatValue
 from object_store_creator import ObjectStoreCreator
+from schema_processor import SchemaProcessorFactoryForTest
 from server_instance import ServerInstance
 from test_data.api_data_source.canned_trunk_fs import CANNED_TRUNK_FS_DATA
 from test_data.canned_data import CANNED_API_FILE_SYSTEM_DATA
@@ -311,7 +312,8 @@ class JSCViewWithNodeAvailabilityTest(unittest.TestCase):
         self._node_fs_iterator,
         self._node_fs_creator.GetTrunk(),
         test_object_store,
-        'extensions')
+        'extensions',
+        SchemaProcessorFactoryForTest())
 
     server_instance = ServerInstance.ForTest(
         file_system_provider=FakeHostFileSystemProvider(

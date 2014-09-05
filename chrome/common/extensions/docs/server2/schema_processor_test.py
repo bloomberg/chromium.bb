@@ -6,11 +6,25 @@
 import unittest
 from copy import deepcopy
 
-from schema_util import RemoveNoDocs, DetectInlineableTypes, InlineDocs
+from schema_processor import SchemaProcessor
+from future import Future
+from object_store_creator import ObjectStoreCreator
+from host_file_system_provider import HostFileSystemProvider
+from compiled_file_system import CompiledFileSystem
 
+class _FakeReferenceResolver():
+  def GetRefModel(self, ref, api_list):
+    return None, None
+
+class _FakeAPIModels():
+  def GetNames(self):
+    return []
+
+class _FakeFeaturesBundle():
+  def GetAPIFeatures(self):
+    return Future(value={})
 
 class SchemaUtilTest(unittest.TestCase):
-
   def testRemoveNoDocs(self):
     expected_nodoc = [
       {
@@ -106,7 +120,16 @@ class SchemaUtilTest(unittest.TestCase):
       }
     ]
 
-    RemoveNoDocs(nodoc_data)
+    object_store_creator = ObjectStoreCreator(start_empty=False)
+    host_file_system_provider = HostFileSystemProvider(object_store_creator)
+    schema_processor = SchemaProcessor(_FakeReferenceResolver(),
+                                       _FakeAPIModels(),
+                                       _FakeFeaturesBundle(),
+                                       CompiledFileSystem.Factory(
+                                           object_store_creator),
+                                       host_file_system_provider.GetTrunk(),
+                                       True)
+    schema_processor._RemoveNoDocs(nodoc_data)
     self.assertEquals(expected_nodoc, nodoc_data)
 
   def testInlineDocs(self):
@@ -169,8 +192,17 @@ class SchemaUtilTest(unittest.TestCase):
       ]
     }
 
+    object_store_creator = ObjectStoreCreator(start_empty=False)
+    host_file_system_provider = HostFileSystemProvider(object_store_creator)
+    schema_processor = SchemaProcessor(_FakeReferenceResolver(),
+                                       _FakeAPIModels(),
+                                       _FakeFeaturesBundle(),
+                                       CompiledFileSystem.Factory(
+                                           object_store_creator),
+                                       host_file_system_provider.GetTrunk(),
+                                       False)
     inlined_schema = deepcopy(schema)
-    InlineDocs(inlined_schema, False)
+    schema_processor._InlineDocs(inlined_schema)
     self.assertEqual(expected_schema, inlined_schema)
 
   def testDetectInline(self):
@@ -200,8 +232,17 @@ class SchemaUtilTest(unittest.TestCase):
       ]
     }
 
-    DetectInlineableTypes(schema)
-    InlineDocs(schema, False)
+    object_store_creator = ObjectStoreCreator(start_empty=False)
+    host_file_system_provider = HostFileSystemProvider(object_store_creator)
+    schema_processor = SchemaProcessor(_FakeReferenceResolver(),
+                                       _FakeAPIModels(),
+                                       _FakeFeaturesBundle(),
+                                       CompiledFileSystem.Factory(
+                                           object_store_creator),
+                                       host_file_system_provider.GetTrunk(),
+                                       False)
+    schema_processor._DetectInlineableTypes(schema)
+    schema_processor._InlineDocs(schema)
     self.assertEqual(expected_schema, schema)
 
 

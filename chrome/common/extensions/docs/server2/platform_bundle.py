@@ -12,6 +12,8 @@ from future import All
 from platform_util import GetPlatforms, PlatformToExtensionType
 from reference_resolver import ReferenceResolver
 from samples_model import SamplesModel
+from future import Future
+from schema_processor import SchemaProcessorFactory
 
 
 class _PlatformData(object):
@@ -82,7 +84,13 @@ class PlatformBundle(object):
           self._compiled_fs_factory,
           self._host_fs_at_trunk,
           self._object_store_creator,
-          platform)
+          platform,
+          SchemaProcessorFactory(
+              Future(callback=lambda: self.GetReferenceResolver(platform)),
+              Future(callback=lambda: self.GetAPIModels(platform)),
+              Future(callback=lambda: self.GetFeaturesBundle(platform)),
+              self._compiled_fs_factory,
+              self._host_fs_at_trunk))
     return self._platform_data[platform].api_models
 
   def GetReferenceResolver(self, platform):
@@ -101,7 +109,13 @@ class PlatformBundle(object):
           self._host_file_system_iterator,
           self._host_fs_at_trunk,
           self._object_store_creator,
-          platform)
+          platform,
+          SchemaProcessorFactory(
+              Future(callback=lambda: self.GetReferenceResolver(platform)),
+              Future(callback=lambda: self.GetAPIModels(platform)),
+              Future(callback=lambda: self.GetFeaturesBundle(platform)),
+              self._compiled_fs_factory,
+              self._host_fs_at_trunk))
     return self._platform_data[platform].availability_finder
 
   def GetAPICategorizer(self, platform):

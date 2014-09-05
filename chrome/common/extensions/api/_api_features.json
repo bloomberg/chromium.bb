@@ -387,13 +387,6 @@
   }],
   // This is not a real API, only here for documentation purposes.
   // See http://crbug.com/275944 for background.
-  "extensionTypes": {
-    "internal": true,
-    "channel": "stable",
-    "contexts": ["blessed_extension"]
-  },
-  // This is not a real API, only here for documentation purposes.
-  // See http://crbug.com/275944 for background.
   "extensionsManifestTypes": {
     "internal": true,
     "channel": "stable",
@@ -851,7 +844,6 @@
     "contexts": ["unblessed_extension"]
   }],
   "webviewTag": {
-    "internal": true,
     "channel": "stable",
     "dependencies": ["permission:webview"],
     "contexts": ["blessed_extension"]

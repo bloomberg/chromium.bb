@@ -11,7 +11,7 @@ from compiled_file_system import CompiledFileSystem, SingleFile, Unicode
 from extensions_paths import API_PATHS, JSON_TEMPLATES
 from features_bundle import FeaturesBundle
 from file_system import FileNotFoundError
-from schema_util import ProcessSchema
+from schema_processor import SchemaProcessor
 from third_party.json_schema_compiler.memoize import memoize
 from third_party.json_schema_compiler.model import UnixName
 
@@ -117,7 +117,8 @@ class AvailabilityFinder(object):
                file_system_iterator,
                host_file_system,
                object_store_creator,
-               platform):
+               platform,
+               schema_processor_factory):
     self._branch_utility = branch_utility
     self._compiled_fs_factory = compiled_fs_factory
     self._file_system_iterator = file_system_iterator
@@ -130,6 +131,10 @@ class AvailabilityFinder(object):
     self._node_level_object_store = create_object_store('node_level')
     self._json_fs = compiled_fs_factory.ForJson(self._host_file_system)
     self._platform = platform
+    # When processing the API schemas, we retain inlined types in the schema
+    # so that there are not missing nodes in the APISchemaGraphs when trying
+    # to lookup availability.
+    self._schema_processor = schema_processor_factory.Create(True)
 
   def _GetPredeterminedAvailability(self, api_name):
     '''Checks a configuration file for hardcoded (i.e. predetermined)
@@ -150,11 +155,8 @@ class AvailabilityFinder(object):
     '''Creates a CompiledFileSystem for parsing raw JSON or IDL API schema
     data and formatting it so that it can be used to create APISchemaGraphs.
     '''
-    # When processing the API schemas, we retain inlined types in the schema
-    # so that there are not missing nodes in the APISchemaGraphs when trying
-    # to lookup availability.
     def process_schema(path, data):
-      return ProcessSchema(path, data, retain_inlined_types=True)
+      return self._schema_processor.Process(path, data)
     return self._compiled_fs_factory.Create(file_system,
                                             SingleFile(Unicode(process_schema)),
                                             CompiledFileSystem,

@@ -40,6 +40,13 @@
     "dependencies": ["permission:dns"],
     "contexts": ["blessed_extension"]
   },
+  // This is not a real API, only here for documentation purposes.
+  // See http://crbug.com/275944 for background.
+  "extensionTypes": {
+    "channel": "stable",
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
+    "contexts": ["blessed_extension"]
+  },
   "hid": {
     "dependencies": ["permission:hid"],
     "contexts": ["blessed_extension"]

@@ -15,6 +15,8 @@ from mock_file_system import MockFileSystem
 from object_store_creator import ObjectStoreCreator
 from test_file_system import TestFileSystem
 from test_util import ReadFile
+from future import Future
+from schema_processor import SchemaProcessorFactoryForTest
 
 
 _TEST_DATA = {
@@ -67,7 +69,8 @@ class APIModelsTest(unittest.TestCase):
                                  compiled_fs_factory,
                                  self._mock_file_system,
                                  object_store_creator,
-                                 'extensions')
+                                 'extensions',
+                                 SchemaProcessorFactoryForTest())
 
   def testGetNames(self):
     # Both 'app' and 'app.runtime' appear here because 'app.runtime' has

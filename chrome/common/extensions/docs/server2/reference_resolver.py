@@ -107,6 +107,41 @@ class ReferenceResolver(object):
 
     return None
 
+  def GetRefModel(self, ref, api_list):
+    """Tries to resolve |ref| from the namespaces given in api_list. If ref
+    is found in one of those namespaces, return a tuple (api_model, node_info),
+    where api_model is a model.Namespace class and node info is a tuple
+    (group, name) where group is one of 'type', 'method', 'event', 'property'
+    describing the type of the reference, and name is the name of the reference
+    without the namespace.
+    """
+    # Check nodes within each API the ref might refer to.
+    parts = ref.split('.')
+    for i in xrange(1, len(parts)):
+      api_name = '.'.join(parts[:i])
+      if api_name not in api_list:
+        continue
+      try:
+        api_model = self._api_models.GetModel(api_name).Get()
+      except FileNotFoundError:
+        continue
+      name = '.'.join(parts[i:])
+      # Attempt to find |name| in the API.
+      node_info = _ClassifySchemaNode(name, api_model)
+      if node_info is None:
+        # Check to see if this ref is a property. If it is, we want the ref to
+        # the underlying type the property is referencing.
+        for prop in api_model.properties.itervalues():
+          # If the name of this property is in the ref text, replace the
+          # property with its type, and attempt to classify it.
+          if prop.name in name and prop.type_.property_type == PropertyType.REF:
+            name_as_prop_type = name.replace(prop.name, prop.type_.ref_type)
+            node_info = _ClassifySchemaNode(name_as_prop_type, api_model)
+        if node_info is None:
+          continue
+      return api_model, node_info
+    return None, None
+
   def GetLink(self, ref, namespace=None, title=None):
     """Resolve $ref |ref| in namespace |namespace| if not None, returning None
     if it cannot be resolved.

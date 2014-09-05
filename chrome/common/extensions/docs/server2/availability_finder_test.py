@@ -19,6 +19,7 @@ from platform_util import GetPlatforms
 from test_data.canned_data import (CANNED_API_FILE_SYSTEM_DATA, CANNED_BRANCHES)
 from test_data.object_level_availability.tabs import TABS_SCHEMA_BRANCHES
 from test_util import Server2Path
+from schema_processor import SchemaProcessorFactoryForTest
 
 
 TABS_UNMODIFIED_VERSIONS = (16, 20, 23, 24)
@@ -36,7 +37,8 @@ class AvailabilityFinderTest(unittest.TestCase):
         host_fs_iterator,
         host_fs_creator.GetTrunk(),
         test_object_store,
-        platform)
+        platform,
+        SchemaProcessorFactoryForTest())
 
   def setUp(self):
     self._branch_utility = BranchUtility(

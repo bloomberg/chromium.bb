@@ -5,7 +5,7 @@
 [
   {
     "namespace": "extensionTypes",
-    "description": "The <code>chrome.extension_types</code> API contains type declarations for Chrome extensions.",
+    "description": "The <code>chrome.extensionTypes</code> API contains type declarations for Chrome extensions.",
     "types": [
       {
         "id": "ImageDetails",
