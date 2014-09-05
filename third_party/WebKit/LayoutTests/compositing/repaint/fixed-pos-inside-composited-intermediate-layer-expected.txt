@@ -20,7 +20,7 @@
               "bounds": [100, 30000],
               "drawsContent": true,
               "repaintRects": [
-                [25, 25, 50, 150]
+                [25, 25, 50, 50]
               ]
             }
           ]
