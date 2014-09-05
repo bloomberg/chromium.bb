@@ -24,11 +24,11 @@ namespace content {
 // default strategy of not remembering decisions at all.
 class SSLHostStateDelegate {
  public:
-  // Records that |cert| is not permitted to be used for |host| in the future,
-  // for a specified |error| type.
-  virtual void DenyCert(const std::string& host,
-                        const net::X509Certificate& cert,
-                        net::CertStatus error) = 0;
+  // The judgements that can be reached by a user for invalid certificates.
+  enum CertJudgment {
+    DENIED,
+    ALLOWED
+  };
 
   // Records that |cert| is permitted to be used for |host| in the future, for
   // a specified |error| type.
@@ -36,17 +36,16 @@ class SSLHostStateDelegate {
                          const net::X509Certificate& cert,
                          net::CertStatus error) = 0;
 
-  // Clear all allow/deny preferences.
+  // Clear all allow preferences.
   virtual void Clear() = 0;
 
-  // Queries whether |cert| is allowed or denied for |host| and |error|. Returns
-  // true in |expired_previous_decision| if a previous user decision expired
-  // immediately prior to this query, otherwise false.
-  virtual net::CertPolicy::Judgment QueryPolicy(
-      const std::string& host,
-      const net::X509Certificate& cert,
-      net::CertStatus error,
-      bool* expired_previous_decision) = 0;
+  // Queries whether |cert| is allowed for |host| and |error|. Returns true in
+  // |expired_previous_decision| if a previous user decision expired immediately
+  // prior to this query, otherwise false.
+  virtual CertJudgment QueryPolicy(const std::string& host,
+                                   const net::X509Certificate& cert,
+                                   net::CertStatus error,
+                                   bool* expired_previous_decision) = 0;
 
   // Records that a host has run insecure content.
   virtual void HostRanInsecureContent(const std::string& host, int pid) = 0;

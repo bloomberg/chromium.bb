@@ -68,52 +68,6 @@ struct NET_EXPORT CertPrincipal {
   std::vector<std::string> domain_components;
 };
 
-// This class is useful for maintaining policies about which certificates are
-// permitted or forbidden for a particular purpose.
-class NET_EXPORT CertPolicy {
- public:
-  // The judgments this policy can reach.
-  enum Judgment {
-    // We don't have policy information for this certificate.
-    UNKNOWN,
-
-    // This certificate is allowed.
-    ALLOWED,
-
-    // This certificate is denied.
-    DENIED,
-  };
-
-  CertPolicy();
-  ~CertPolicy();
-
-  // Returns the judgment this policy makes about this certificate.
-  // For a certificate to be allowed, it must not have any *additional* errors
-  // from when it was allowed. For a certificate to be denied, it need only
-  // match *any* of the errors that caused it to be denied. We check denial
-  // first, before checking whether it's been allowed.
-  Judgment Check(X509Certificate* cert, CertStatus error) const;
-
-  // Causes the policy to allow this certificate for a given |error|.
-  void Allow(X509Certificate* cert, CertStatus error);
-
-  // Causes the policy to deny this certificate for a given |error|.
-  void Deny(X509Certificate* cert, CertStatus error);
-
-  // Returns true if this policy has allowed at least one certificate.
-  bool HasAllowedCert() const;
-
-  // Returns true if this policy has denied at least one certificate.
-  bool HasDeniedCert() const;
-
- private:
-  // The set of fingerprints of allowed certificates.
-  std::map<SHA1HashValue, CertStatus, SHA1HashValueLessThan> allowed_;
-
-  // The set of fingerprints of denied certificates.
-  std::map<SHA1HashValue, CertStatus, SHA1HashValueLessThan> denied_;
-};
-
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 // Compares two OIDs by value.
 inline bool CSSMOIDEqual(const CSSM_OID* oid1, const CSSM_OID* oid2) {

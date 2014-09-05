@@ -35,21 +35,19 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
   bool expired_previous_decision;
   // First we check if we know the policy for this error.
   DCHECK(handler->ssl_info().is_valid());
-  net::CertPolicy::Judgment judgment =
+  SSLHostStateDelegate::CertJudgment judgment =
       backend_->QueryPolicy(*handler->ssl_info().cert.get(),
                             handler->request_url().host(),
                             handler->cert_error(),
                             &expired_previous_decision);
 
-  if (judgment == net::CertPolicy::ALLOWED) {
+  if (judgment == SSLHostStateDelegate::ALLOWED) {
     handler->ContinueRequest();
     return;
   }
 
-  // The judgment is either DENIED or UNKNOWN.
-  // For now we handle the DENIED as the UNKNOWN, which means a blocking
-  // page is shown to the user every time he comes back to the page.
-
+  // For all other hosts, which must be DENIED, a blocking page is shown to the
+  // user every time they come back to the page.
   int options_mask = 0;
   switch (handler->cert_error()) {
     case net::ERR_CERT_COMMON_NAME_INVALID:
@@ -182,13 +180,6 @@ void SSLPolicy::OnAllowCertificate(scoped_refptr<SSLCertErrorHandler> handler,
     handler->ContinueRequest();
   } else {
     // Default behavior for rejecting a certificate.
-    //
-    // While DenyCertForHost() executes synchronously on this thread,
-    // CancelRequest() gets posted to a different thread. Calling
-    // DenyCertForHost() first ensures deterministic ordering.
-    backend_->DenyCertForHost(*handler->ssl_info().cert.get(),
-                              handler->request_url().host(),
-                              handler->cert_error());
     handler->CancelRequest();
   }
 }

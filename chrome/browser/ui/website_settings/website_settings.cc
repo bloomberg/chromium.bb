@@ -328,7 +328,8 @@ void WebsiteSettings::OnUIClosing() {
 
 void WebsiteSettings::OnRevokeSSLErrorBypassButtonPressed() {
   DCHECK(chrome_ssl_host_state_delegate_);
-  chrome_ssl_host_state_delegate_->RevokeUserDecisionsHard(site_url().host());
+  chrome_ssl_host_state_delegate_->RevokeUserAllowExceptionsHard(
+      site_url().host());
   did_revoke_user_ssl_decisions_ = true;
 }
 
@@ -582,8 +583,8 @@ void WebsiteSettings::Init(Profile* profile,
   // Only show an SSL decision revoke button if both the user has chosen to
   // bypass SSL host errors for this host in the past and the user is not using
   // the traditional "forget-at-session-restart" error decision memory.
-  show_ssl_decision_revoke_button_ = delegate->HasUserDecision(url.host()) &&
-      InRememberCertificateErrorDecisionsGroup();
+  show_ssl_decision_revoke_button_ = delegate->HasAllowException(url.host()) &&
+                                     InRememberCertificateErrorDecisionsGroup();
 
   // By default select the permissions tab that displays all the site
   // permissions. In case of a connection error or an issue with the

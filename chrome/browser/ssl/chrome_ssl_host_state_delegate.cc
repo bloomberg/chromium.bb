@@ -41,7 +41,7 @@ const char kRememberCertificateErrorDecisionsFieldTrialDefaultGroup[] =
     "Default";
 const char kRememberCertificateErrorDecisionsFieldTrialLengthParam[] = "length";
 
-// Keys for the per-site error + certificate finger to judgement content
+// Keys for the per-site error + certificate finger to judgment content
 // settings map.
 const char kSSLCertDecisionCertErrorMapKey[] = "cert_exceptions_map";
 const char kSSLCertDecisionExpirationTimeKey[] = "decision_expiration_time";
@@ -49,12 +49,6 @@ const char kSSLCertDecisionVersionKey[] = "version";
 
 const int kDefaultSSLCertDecisionVersion = 1;
 
-// Closes all idle network connections for the given URLRequestContext. This is
-// a big hammer and should be wielded with extreme caution as it can have a big,
-// negative impact on network performance. In this case, it is used by
-// RevokeUserDecisionsHard, which should only be called by rare, user initiated
-// events. See the comment before RevokeUserDecisionsHard implementation for
-// more information.
 void CloseIdleConnections(
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter) {
   url_request_context_getter->
@@ -267,151 +261,9 @@ ChromeSSLHostStateDelegate::~ChromeSSLHostStateDelegate() {
     Clear();
 }
 
-void ChromeSSLHostStateDelegate::DenyCert(const std::string& host,
-                                          const net::X509Certificate& cert,
-                                          net::CertStatus error) {
-  ChangeCertPolicy(host, cert, error, net::CertPolicy::DENIED);
-}
-
 void ChromeSSLHostStateDelegate::AllowCert(const std::string& host,
                                            const net::X509Certificate& cert,
                                            net::CertStatus error) {
-  ChangeCertPolicy(host, cert, error, net::CertPolicy::ALLOWED);
-}
-
-void ChromeSSLHostStateDelegate::Clear() {
-  profile_->GetHostContentSettingsMap()->ClearSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS);
-}
-
-net::CertPolicy::Judgment ChromeSSLHostStateDelegate::QueryPolicy(
-    const std::string& host,
-    const net::X509Certificate& cert,
-    net::CertStatus error,
-    bool* expired_previous_decision) {
-  HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
-  GURL url = GetSecureGURLForHost(host);
-  scoped_ptr<base::Value> value(map->GetWebsiteSetting(
-      url, url, CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, std::string(), NULL));
-
-  // Set a default value in case this method is short circuited and doesn't do a
-  // full query.
-  *expired_previous_decision = false;
-  if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY))
-    return net::CertPolicy::UNKNOWN;
-
-  base::DictionaryValue* dict;  // Owned by value
-  int policy_decision;
-  bool success = value->GetAsDictionary(&dict);
-  DCHECK(success);
-
-  base::DictionaryValue* cert_error_dict;  // Owned by value
-  cert_error_dict = GetValidCertDecisionsDict(
-      dict, DO_NOT_CREATE_DICTIONARY_ENTRIES, expired_previous_decision);
-  if (!cert_error_dict) {
-    // This revoke is necessary to clear any old expired setting that may be
-    // lingering in the case that an old decision expried.
-    RevokeUserDecisions(host);
-    return net::CertPolicy::UNKNOWN;
-  }
-
-  success = cert_error_dict->GetIntegerWithoutPathExpansion(GetKey(cert, error),
-                                                            &policy_decision);
-
-  // If a policy decision was successfully retrieved and it's a valid value of
-  // ALLOWED or DENIED, return the valid value. Otherwise, return UNKNOWN.
-  if (success && policy_decision == net::CertPolicy::Judgment::ALLOWED)
-    return net::CertPolicy::Judgment::ALLOWED;
-  else if (success && policy_decision == net::CertPolicy::Judgment::DENIED)
-    return net::CertPolicy::Judgment::DENIED;
-
-  return net::CertPolicy::Judgment::UNKNOWN;
-}
-
-void ChromeSSLHostStateDelegate::RevokeUserDecisions(const std::string& host) {
-  GURL url = GetSecureGURLForHost(host);
-  const ContentSettingsPattern pattern =
-      ContentSettingsPattern::FromURLNoWildcard(url);
-  HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
-
-  map->SetWebsiteSetting(pattern,
-                         pattern,
-                         CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
-                         std::string(),
-                         NULL);
-}
-
-// TODO(jww): This will revoke all of the decisions in the browser context.
-// However, the networking stack actually keeps track of its own list of
-// exceptions per-HttpNetworkTransaction in the SSLConfig structure (see the
-// allowed_bad_certs Vector in net/ssl/ssl_config.h). This dual-tracking of
-// exceptions introduces a problem where the browser context can revoke a
-// certificate, but if a transaction reuses a cached version of the SSLConfig
-// (probably from a pooled socket), it may bypass the intestitial layer.
-//
-// Over time, the cached versions should expire and it should converge on
-// showing the interstitial. We probably need to introduce into the networking
-// stack a way revoke SSLConfig's allowed_bad_certs lists per socket.
-//
-// For now, RevokeUserDecisionsHard is our solution for the rare case where it
-// is necessary to revoke the preferences immediately. It does so by flushing
-// idle sockets.
-void ChromeSSLHostStateDelegate::RevokeUserDecisionsHard(
-    const std::string& host) {
-  RevokeUserDecisions(host);
-  scoped_refptr<net::URLRequestContextGetter> getter(
-      profile_->GetRequestContext());
-  getter->GetNetworkTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&CloseIdleConnections, getter));
-}
-
-bool ChromeSSLHostStateDelegate::HasUserDecision(
-    const std::string& host) const {
-  GURL url = GetSecureGURLForHost(host);
-  const ContentSettingsPattern pattern =
-      ContentSettingsPattern::FromURLNoWildcard(url);
-  HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
-
-  scoped_ptr<base::Value> value(map->GetWebsiteSetting(
-      url, url, CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, std::string(), NULL));
-
-  if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY))
-    return false;
-
-  base::DictionaryValue* dict;  // Owned by value
-  bool success = value->GetAsDictionary(&dict);
-  DCHECK(success);
-
-  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
-    int policy_decision;  // Owned by dict
-    success = it.value().GetAsInteger(&policy_decision);
-    if (success && (static_cast<net::CertPolicy::Judgment>(policy_decision) !=
-                    net::CertPolicy::UNKNOWN))
-      return true;
-  }
-
-  return false;
-}
-
-void ChromeSSLHostStateDelegate::HostRanInsecureContent(const std::string& host,
-                                                        int pid) {
-  ran_insecure_content_hosts_.insert(BrokenHostEntry(host, pid));
-}
-
-bool ChromeSSLHostStateDelegate::DidHostRunInsecureContent(
-    const std::string& host,
-    int pid) const {
-  return !!ran_insecure_content_hosts_.count(BrokenHostEntry(host, pid));
-}
-void ChromeSSLHostStateDelegate::SetClock(scoped_ptr<base::Clock> clock) {
-  clock_.reset(clock.release());
-}
-
-void ChromeSSLHostStateDelegate::ChangeCertPolicy(
-    const std::string& host,
-    const net::X509Certificate& cert,
-    net::CertStatus error,
-    const net::CertPolicy::Judgment judgment) {
   GURL url = GetSecureGURLForHost(host);
   const ContentSettingsPattern pattern =
       ContentSettingsPattern::FromURLNoWildcard(url);
@@ -437,7 +289,7 @@ void ChromeSSLHostStateDelegate::ChangeCertPolicy(
 
   dict->SetIntegerWithoutPathExpansion(kSSLCertDecisionVersionKey,
                                        kDefaultSSLCertDecisionVersion);
-  cert_dict->SetIntegerWithoutPathExpansion(GetKey(cert, error), judgment);
+  cert_dict->SetIntegerWithoutPathExpansion(GetKey(cert, error), ALLOWED);
 
   // The map takes ownership of the value, so it is released in the call to
   // SetWebsiteSetting.
@@ -446,4 +298,131 @@ void ChromeSSLHostStateDelegate::ChangeCertPolicy(
                          CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
                          std::string(),
                          value.release());
+}
+
+void ChromeSSLHostStateDelegate::Clear() {
+  profile_->GetHostContentSettingsMap()->ClearSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS);
+}
+
+content::SSLHostStateDelegate::CertJudgment
+ChromeSSLHostStateDelegate::QueryPolicy(const std::string& host,
+                                        const net::X509Certificate& cert,
+                                        net::CertStatus error,
+                                        bool* expired_previous_decision) {
+  HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
+  GURL url = GetSecureGURLForHost(host);
+  scoped_ptr<base::Value> value(map->GetWebsiteSetting(
+      url, url, CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, std::string(), NULL));
+
+  // Set a default value in case this method is short circuited and doesn't do a
+  // full query.
+  *expired_previous_decision = false;
+  if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY))
+    return DENIED;
+
+  base::DictionaryValue* dict;  // Owned by value
+  int policy_decision;
+  bool success = value->GetAsDictionary(&dict);
+  DCHECK(success);
+
+  base::DictionaryValue* cert_error_dict;  // Owned by value
+  cert_error_dict = GetValidCertDecisionsDict(
+      dict, DO_NOT_CREATE_DICTIONARY_ENTRIES, expired_previous_decision);
+  if (!cert_error_dict) {
+    // This revoke is necessary to clear any old expired setting that may be
+    // lingering in the case that an old decision expried.
+    RevokeUserAllowExceptions(host);
+    return DENIED;
+  }
+
+  success = cert_error_dict->GetIntegerWithoutPathExpansion(GetKey(cert, error),
+                                                            &policy_decision);
+
+  // If a policy decision was successfully retrieved and it's a valid value of
+  // ALLOWED, return the valid value. Otherwise, return DENIED.
+  if (success && policy_decision == ALLOWED)
+    return ALLOWED;
+
+  return DENIED;
+}
+
+void ChromeSSLHostStateDelegate::RevokeUserAllowExceptions(
+    const std::string& host) {
+  GURL url = GetSecureGURLForHost(host);
+  const ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromURLNoWildcard(url);
+  HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
+
+  map->SetWebsiteSetting(pattern,
+                         pattern,
+                         CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
+                         std::string(),
+                         NULL);
+}
+
+// TODO(jww): This will revoke all of the decisions in the browser context.
+// However, the networking stack actually keeps track of its own list of
+// exceptions per-HttpNetworkTransaction in the SSLConfig structure (see the
+// allowed_bad_certs Vector in net/ssl/ssl_config.h). This dual-tracking of
+// exceptions introduces a problem where the browser context can revoke a
+// certificate, but if a transaction reuses a cached version of the SSLConfig
+// (probably from a pooled socket), it may bypass the intestitial layer.
+//
+// Over time, the cached versions should expire and it should converge on
+// showing the interstitial. We probably need to introduce into the networking
+// stack a way revoke SSLConfig's allowed_bad_certs lists per socket.
+//
+// For now, RevokeUserAllowExceptionsHard is our solution for the rare case
+// where it is necessary to revoke the preferences immediately. It does so by
+// flushing idle sockets, thus it is a big hammer and should be wielded with
+// extreme caution as it can have a big, negative impact on network performance.
+void ChromeSSLHostStateDelegate::RevokeUserAllowExceptionsHard(
+    const std::string& host) {
+  RevokeUserAllowExceptions(host);
+  scoped_refptr<net::URLRequestContextGetter> getter(
+      profile_->GetRequestContext());
+  getter->GetNetworkTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&CloseIdleConnections, getter));
+}
+
+bool ChromeSSLHostStateDelegate::HasAllowException(
+    const std::string& host) const {
+  GURL url = GetSecureGURLForHost(host);
+  const ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromURLNoWildcard(url);
+  HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
+
+  scoped_ptr<base::Value> value(map->GetWebsiteSetting(
+      url, url, CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, std::string(), NULL));
+
+  if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY))
+    return false;
+
+  base::DictionaryValue* dict;  // Owned by value
+  bool success = value->GetAsDictionary(&dict);
+  DCHECK(success);
+
+  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
+    int policy_decision;  // Owned by dict
+    success = it.value().GetAsInteger(&policy_decision);
+    if (success && (static_cast<CertJudgment>(policy_decision) == ALLOWED))
+      return true;
+  }
+
+  return false;
+}
+
+void ChromeSSLHostStateDelegate::HostRanInsecureContent(const std::string& host,
+                                                        int pid) {
+  ran_insecure_content_hosts_.insert(BrokenHostEntry(host, pid));
+}
+
+bool ChromeSSLHostStateDelegate::DidHostRunInsecureContent(
+    const std::string& host,
+    int pid) const {
+  return !!ran_insecure_content_hosts_.count(BrokenHostEntry(host, pid));
+}
+void ChromeSSLHostStateDelegate::SetClock(scoped_ptr<base::Clock> clock) {
+  clock_.reset(clock.release());
 }

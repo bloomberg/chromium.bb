@@ -17,45 +17,44 @@ class Clock;
 class DictionaryValue;
 }  //  namespace base
 
-// Implementation of the tracking of user decisions on SSL errors for sites.
-// Tracks if the user has allowed, denied, or not seen an exception for the
-// specified site, SSL fingerprint, and error. If the user makes a decision,
-// stores the decision until either the session ends or for a length of time
-// (across session restarts), based on command line flags.
+// Tracks whether the user has allowed a certificate error exception for a
+// specific site, SSL fingerprint, and error. Based on command-line flags and
+// experimental group, remembers this decision either until end-of-session or
+// for a particular length of time.
 class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
  public:
   explicit ChromeSSLHostStateDelegate(Profile* profile);
   virtual ~ChromeSSLHostStateDelegate();
 
   // SSLHostStateDelegate:
-  virtual void DenyCert(const std::string& host,
-                        const net::X509Certificate& cert,
-                        net::CertStatus error) OVERRIDE;
   virtual void AllowCert(const std::string& host,
                          const net::X509Certificate& cert,
                          net::CertStatus error) OVERRIDE;
   virtual void Clear() OVERRIDE;
-  virtual net::CertPolicy::Judgment QueryPolicy(
-      const std::string& host,
-      const net::X509Certificate& cert,
-      net::CertStatus error,
-      bool* expired_previous_decision) OVERRIDE;
+  virtual CertJudgment QueryPolicy(const std::string& host,
+                                   const net::X509Certificate& cert,
+                                   net::CertStatus error,
+                                   bool* expired_previous_decision) OVERRIDE;
   virtual void HostRanInsecureContent(const std::string& host,
                                       int pid) OVERRIDE;
   virtual bool DidHostRunInsecureContent(const std::string& host,
                                          int pid) const OVERRIDE;
 
-  // ChromeSSLHostStateDelegate implementation:
-  // Revoke all user decisions for |host| in the given Profile. The
-  // RevokeUserDecisionsHard version may close idle connections in the process.
-  // This version should be used *only* for rare events, such as a user
-  // controlled button, as it may be very disruptive to the networking stack.
-  virtual void RevokeUserDecisions(const std::string& host);
-  virtual void RevokeUserDecisionsHard(const std::string& host);
+  // Revokes all SSL certificate error allow exceptions made by the user for
+  // |host| in the given Profile.
+  virtual void RevokeUserAllowExceptions(const std::string& host);
 
-  // Returns true if any decisions has been recorded for |host| for the given
-  // Profile, otherwise false.
-  virtual bool HasUserDecision(const std::string& host) const;
+  // RevokeUserAllowExceptionsHard is the same as RevokeUserAllowExceptions but
+  // additionally may close idle connections in the process. This should be used
+  // *only* for rare events, such as a user controlled button, as it may be very
+  // disruptive to the networking stack.
+  virtual void RevokeUserAllowExceptionsHard(const std::string& host);
+
+  // Returns whether the user has allowed a certificate error exception for
+  // |host|. This does not mean that *all* certificate errors are allowed, just
+  // that there exists an exception. To see if a particular certificate and
+  // error combination exception is allowed, use QueryPolicy().
+  virtual bool HasAllowException(const std::string& host) const;
 
  protected:
   // SetClock takes ownership of the passed in clock.
@@ -85,18 +84,8 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
     REMEMBER_SSL_EXCEPTION_DECISIONS_FOR_DELTA
   };
 
-  // Modify the user's content settings to specify a judgement made for a
-  // specific site and certificate, where |url| is the site in question, |cert|
-  // is the certificate with an error, |error| is the error in the certificate,
-  // and |judgement| is the user decision to be recorded.
-  void ChangeCertPolicy(const std::string& host,
-                        const net::X509Certificate& cert,
-                        net::CertStatus error,
-                        net::CertPolicy::Judgment judgment);
-
-  // Query the content settings to retrieve a dictionary of certificate
-  // fingerprints and errors of certificates to user decisions, as set by
-  // ChangeCertPolicy. Returns NULL on a failure.
+  // Returns a dictionary of certificate fingerprints and errors that have been
+  // allowed as exceptions by the user.
   //
   // |dict| specifies the user's full exceptions dictionary for a specific site
   // in their content settings. Must be retrieved directly from a website
