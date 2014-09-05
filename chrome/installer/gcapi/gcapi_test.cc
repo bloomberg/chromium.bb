@@ -25,7 +25,7 @@ void call_statically() {
   if (result_flag_off != result_flag_on)
       printf("Registry key flag is not being set properly.");
 
-  printf("Static call returned result as %ld and reason as %ld.\n",
+  printf("Static call returned result as %d and reason as %ld.\n",
          result_flag_on, reason);
 }
 
@@ -50,7 +50,7 @@ void call_dynamically() {
     if (result_flag_off != result_flag_on)
       printf("Registry key flag is not being set properly.");
 
-    printf("Dynamic call returned result as %d and reason as %d.\n",
+    printf("Dynamic call returned result as %d and reason as %ld.\n",
            result_flag_on, reason);
   } else {
     printf("Couldn't find GoogleChromeCompatibilityCheck() in gcapi_dll.\n");
