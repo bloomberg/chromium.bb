@@ -20,8 +20,8 @@
             'base_target': 1,
             'nacl_untrusted_build': 1,
             'nlib_target': 'libbase_nacl.a',
-            'build_glibc': 1,
-            'build_newlib': 1,
+            'build_glibc': 0,
+            'build_newlib': 0,
             'build_irt': 1,
             'build_pnacl_newlib': 1,
             'sources': [
@@ -47,7 +47,7 @@
             'nacl_untrusted_build': 1,
             'nlib_target': 'libbase_i18n_nacl.a',
             'build_glibc': 0,
-            'build_newlib': 1,
+            'build_newlib': 0,
             'build_irt': 0,
             'build_pnacl_newlib': 1,
             'sources': [
