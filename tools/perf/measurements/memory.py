@@ -33,15 +33,3 @@ class Memory(page_test.PageTest):
     self._memory_metric.Stop(page, tab)
     self._memory_metric.AddResults(tab, results)
     self._power_metric.AddResults(tab, results)
-
-    if tab.browser.is_profiler_active('tcmalloc-heap'):
-      # The tcmalloc_heap_profiler dumps files at regular
-      # intervals (~20 secs).
-      # This is a minor optimization to ensure it'll dump the last file when
-      # the test completes.
-      tab.ExecuteJavaScript("""
-        if (chrome && chrome.memoryBenchmarking) {
-          chrome.memoryBenchmarking.heapProfilerDump('renderer', 'final');
-          chrome.memoryBenchmarking.heapProfilerDump('browser', 'final');
-        }
-      """)
