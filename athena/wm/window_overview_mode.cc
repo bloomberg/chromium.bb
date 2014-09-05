@@ -95,6 +95,10 @@ void RestoreWindowState(aura::Window* window,
       base::Bind(&HideWindowIfNotVisible, window, split_view_controller)));
 
   window->SetTransform(gfx::Transform());
+
+  // Reset the window opacity in case the user is dragging a window.
+  window->layer()->SetOpacity(1.0f);
+
   wm::SetShadowType(window, wm::SHADOW_TYPE_NONE);
 }
 
