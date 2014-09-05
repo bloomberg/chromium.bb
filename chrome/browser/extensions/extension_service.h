@@ -15,9 +15,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/blacklist.h"
+#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -175,7 +175,8 @@ class ExtensionService
     : public ExtensionServiceInterface,
       public extensions::ExternalProviderInterface::VisitorInterface,
       public content::NotificationObserver,
-      public extensions::Blacklist::Observer {
+      public extensions::Blacklist::Observer,
+      public extensions::ExtensionManagement::Observer {
  public:
   // Attempts to uninstall an extension from a given ExtensionService. Returns
   // true iff the target extension exists.
@@ -248,6 +249,9 @@ class ExtensionService
       bool mark_acknowledged) OVERRIDE;
   virtual void OnExternalProviderReady(
       const extensions::ExternalProviderInterface* provider) OVERRIDE;
+
+  // ExtensionManagement::Observer implementation:
+  virtual void OnExtensionManagementSettingsChanged() OVERRIDE;
 
   // Initialize and start all installed extensions.
   void Init();
@@ -497,9 +501,6 @@ class ExtensionService
   // external extensions.
   void OnAllExternalProvidersReady();
 
-  // Return true if the sync type of |extension| matches |type|.
-  void OnExtensionInstallPrefChanged();
-
   // Adds the given extension to the list of terminated extensions if
   // it is not already there and unloads it.
   void TrackTerminatedExtension(const extensions::Extension* extension);
@@ -645,7 +646,6 @@ class ExtensionService
   OrphanedDevTools orphaned_dev_tools_;
 
   content::NotificationRegistrar registrar_;
-  PrefChangeRegistrar pref_change_registrar_;
 
   // Keeps track of loading and unloading component extensions.
   scoped_ptr<extensions::ComponentLoader> component_loader_;

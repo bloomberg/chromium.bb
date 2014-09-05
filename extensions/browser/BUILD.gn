@@ -32,8 +32,6 @@ source_set("browser") {
     # TODO: Eventually the entire extensions module should not be built
     # when enable_extensions=false.
     sources += [
-      "admin_policy.cc",
-      "admin_policy.h",
       "api/api_resource.cc",
       "api/api_resource.h",
       "api/api_resource_manager.h",

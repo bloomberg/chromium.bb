@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
@@ -231,8 +232,8 @@ bool UnpackedInstaller::IsLoadingUnpackedAllowed() const {
     return true;
   // If there is a "*" in the extension blacklist, then no extensions should be
   // allowed at all (except explicitly whitelisted extensions).
-  ExtensionPrefs* prefs = ExtensionPrefs::Get(service_weak_->profile());
-  return !prefs->ExtensionsBlacklistedByDefault();
+  return !ExtensionManagementFactory::GetForBrowserContext(
+              service_weak_->profile())->BlacklistedByDefault();
 }
 
 void UnpackedInstaller::GetAbsolutePath() {

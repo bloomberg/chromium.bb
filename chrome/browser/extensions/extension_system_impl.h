@@ -19,7 +19,6 @@ class ExtensionSystemSharedFactory;
 class ExtensionWarningBadgeService;
 class NavigationObserver;
 class SharedUserScriptMaster;
-class StandardManagementPolicyProvider;
 class StateStoreNotificationObserver;
 
 // The ExtensionSystem for ProfileImpl and OffTheRecordProfileImpl.
@@ -132,9 +131,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
     // API is used by an extension to request content scripts.
     ScopedVector<DeclarativeUserScriptMaster> declarative_user_script_masters_;
     scoped_ptr<Blacklist> blacklist_;
-    // StandardManagementPolicyProvider depends on Blacklist.
-    scoped_ptr<StandardManagementPolicyProvider>
-        standard_management_policy_provider_;
     scoped_ptr<RuntimeData> runtime_data_;
     // ExtensionService depends on StateStore, Blacklist and RuntimeData.
     scoped_ptr<ExtensionService> extension_service_;

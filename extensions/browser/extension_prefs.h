@@ -347,11 +347,6 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // reset it. Don't call it unless you mean it!
   bool SetAlertSystemFirstRun();
 
-  // Checks if extensions are blacklisted by default, by policy.
-  // The ManagementPolicy::Provider methods also take this into account, and
-  // should be used instead when the extension ID is known.
-  bool ExtensionsBlacklistedByDefault() const;
-
   // Returns the last value set via SetLastPingDay. If there isn't such a
   // pref, the returned Time will return true for is_null().
   base::Time LastPingDay(const std::string& extension_id) const;

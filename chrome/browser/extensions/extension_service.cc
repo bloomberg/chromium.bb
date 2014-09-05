@@ -54,7 +54,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/crx_file/id_util.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -69,7 +68,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install_flag.h"
-#include "extensions/browser/pref_names.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/browser/update_observer.h"
@@ -298,15 +296,9 @@ ExtensionService::ExtensionService(Profile* profile,
   registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_DESTRUCTION_STARTED,
                  content::Source<Profile>(profile_));
-  pref_change_registrar_.Init(profile->GetPrefs());
-  base::Closure callback =
-      base::Bind(&ExtensionService::OnExtensionInstallPrefChanged,
-                 base::Unretained(this));
-  pref_change_registrar_.Add(extensions::pref_names::kInstallAllowList,
-                             callback);
-  pref_change_registrar_.Add(extensions::pref_names::kInstallDenyList,
-                             callback);
-  pref_change_registrar_.Add(extensions::pref_names::kAllowedTypes, callback);
+
+  extensions::ExtensionManagementFactory::GetForBrowserContext(profile_)
+      ->AddObserver(this);
 
   // Set up the ExtensionUpdater
   if (autoupdate_enabled) {
@@ -377,6 +369,9 @@ ExtensionService::~ExtensionService() {
 }
 
 void ExtensionService::Shutdown() {
+  extensions::ExtensionManagementFactory::GetInstance()
+      ->GetForBrowserContext(profile())
+      ->RemoveObserver(this);
   system_->management_policy()->UnregisterProvider(
       shared_module_policy_provider_.get());
 }
@@ -1732,6 +1727,11 @@ void ExtensionService::OnExtensionInstalled(
   }
 }
 
+void ExtensionService::OnExtensionManagementSettingsChanged() {
+  error_controller_->ShowErrorIfNeeded();
+  CheckManagementPolicy();
+}
+
 void ExtensionService::AddNewOrUpdatedExtension(
     const Extension* extension,
     Extension::State initial_state,
@@ -2116,11 +2116,6 @@ void ExtensionService::Observe(int type,
     default:
       NOTREACHED() << "Unexpected notification type.";
   }
-}
-
-void ExtensionService::OnExtensionInstallPrefChanged() {
-  error_controller_->ShowErrorIfNeeded();
-  CheckManagementPolicy();
 }
 
 bool ExtensionService::ShouldEnableOnInstall(const Extension* extension) {

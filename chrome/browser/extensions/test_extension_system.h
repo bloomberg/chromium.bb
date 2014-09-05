@@ -103,8 +103,6 @@ class TestExtensionSystem : public ExtensionSystem {
   TestingValueStore* value_store_;
   ScopedVector<DeclarativeUserScriptMaster> declarative_user_script_masters_;
   scoped_ptr<Blacklist> blacklist_;
-  scoped_ptr<StandardManagementPolicyProvider>
-      standard_management_policy_provider_;
   scoped_ptr<ManagementPolicy> management_policy_;
   scoped_ptr<RuntimeData> runtime_data_;
   scoped_ptr<ExtensionService> extension_service_;

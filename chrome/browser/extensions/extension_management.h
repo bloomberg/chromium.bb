@@ -10,20 +10,40 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
+#include "base/observer_list.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "base/values.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/core/keyed_service.h"
+#include "extensions/browser/management_policy.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/url_pattern_set.h"
 
 class PrefService;
 
+namespace content {
+class BrowserContext;
+}  // namespace content
+
 namespace extensions {
 
 // Tracks the management policies that affect extensions and provides interfaces
 // for observing and obtaining the global settings for all extensions, as well
 // as per-extension settings.
-class ExtensionManagement {
+class ExtensionManagement : public KeyedService {
  public:
+  // Observer class for extension management settings changes.
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Will be called when an extension management preference changes.
+    virtual void OnExtensionManagementSettingsChanged() = 0;
+  };
+
   // Installation mode for extensions, default is INSTALLATION_ALLOWED.
   // * INSTALLATION_ALLOWED: Extension can be installed.
   // * INSTALLATION_BLOCKED: Extension cannot be installed.
@@ -78,9 +98,17 @@ class ExtensionManagement {
   explicit ExtensionManagement(PrefService* pref_service);
   virtual ~ExtensionManagement();
 
-  // Load all extension management preferences from |pref_service|, and
-  // refresh the settings.
-  void Refresh();
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  // Get the ManagementPolicy::Provider controlled by extension management
+  // policy settings.
+  ManagementPolicy::Provider* GetProvider();
+
+  // Checks if extensions are blacklisted by default, by policy. When true,
+  // this means that even extensions without an ID should be blacklisted (e.g.
+  // from the command line, or when loaded as an unpacked extension).
+  bool BlacklistedByDefault();
 
   // Helper function to read |settings_by_id_| with |id| as key. Returns a
   // constant reference to default settings if |id| does not exist.
@@ -90,6 +118,10 @@ class ExtensionManagement {
   const GlobalSettings& ReadGlobalSettings() const;
 
  private:
+  // Load all extension management preferences from |pref_service|, and
+  // refresh the settings.
+  void Refresh();
+
   // Load preference with name |pref_name| and expected type |expected_type|.
   // If |force_managed| is true, only loading from the managed preference store
   // is allowed. Returns NULL if the preference is not present, not allowed to
@@ -97,6 +129,9 @@ class ExtensionManagement {
   const base::Value* LoadPreference(const char* pref_name,
                                     bool force_managed,
                                     base::Value::Type expected_type);
+
+  void OnExtensionPrefChanged();
+  void NotifyExtensionManagementPrefChanged();
 
   // Helper function to access |settings_by_id_| with |id| as key.
   // Adds a new IndividualSettings entry to |settings_by_id_| if none exists for
@@ -123,7 +158,30 @@ class ExtensionManagement {
 
   PrefService* pref_service_;
 
+  ObserverList<Observer, true> observer_list_;
+  PrefChangeRegistrar pref_change_registrar_;
+  scoped_ptr<ManagementPolicy::Provider> provider_;
+
   DISALLOW_COPY_AND_ASSIGN(ExtensionManagement);
+};
+
+class ExtensionManagementFactory : public BrowserContextKeyedServiceFactory {
+ public:
+  static ExtensionManagement* GetForBrowserContext(
+      content::BrowserContext* context);
+  static ExtensionManagementFactory* GetInstance();
+
+ private:
+  friend struct DefaultSingletonTraits<ExtensionManagementFactory>;
+
+  ExtensionManagementFactory();
+  virtual ~ExtensionManagementFactory();
+
+  // BrowserContextKeyedServiceExtensionManagementFactory:
+  virtual KeyedService* BuildServiceInstanceFor(
+      content::BrowserContext* context) const OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionManagementFactory);
 };
 
 }  // namespace extensions

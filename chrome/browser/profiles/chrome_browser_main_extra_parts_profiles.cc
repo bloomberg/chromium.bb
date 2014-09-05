@@ -14,6 +14,7 @@
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
@@ -140,6 +141,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(ENABLE_EXTENSIONS)
   apps::EnsureBrowserContextKeyedServiceFactoriesBuilt();
   extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
+  extensions::ExtensionManagementFactory::GetInstance();
   chrome_extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
   AppShortcutManagerFactory::GetInstance();
   EphemeralAppServiceFactory::GetInstance();

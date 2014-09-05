@@ -4,10 +4,15 @@
 
 #include "chrome/browser/extensions/extension_management.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
+#include "chrome/browser/extensions/standard_management_policy_provider.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/crx_file/id_util.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/url_pattern.h"
 
@@ -34,9 +39,53 @@ void ExtensionManagement::GlobalSettings::Reset() {
 
 ExtensionManagement::ExtensionManagement(PrefService* pref_service)
     : pref_service_(pref_service) {
+  pref_change_registrar_.Init(pref_service_);
+  base::Closure pref_change_callback = base::Bind(
+      &ExtensionManagement::OnExtensionPrefChanged, base::Unretained(this));
+  pref_change_registrar_.Add(pref_names::kInstallAllowList,
+                             pref_change_callback);
+  pref_change_registrar_.Add(pref_names::kInstallDenyList,
+                             pref_change_callback);
+  pref_change_registrar_.Add(pref_names::kInstallForceList,
+                             pref_change_callback);
+  pref_change_registrar_.Add(pref_names::kAllowedInstallSites,
+                             pref_change_callback);
+  pref_change_registrar_.Add(pref_names::kAllowedTypes, pref_change_callback);
+  Refresh();
+  provider_.reset(new StandardManagementPolicyProvider(this));
 }
 
 ExtensionManagement::~ExtensionManagement() {
+}
+
+void ExtensionManagement::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void ExtensionManagement::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+ManagementPolicy::Provider* ExtensionManagement::GetProvider() {
+  return provider_.get();
+}
+
+bool ExtensionManagement::BlacklistedByDefault() {
+  return default_settings_.installation_mode == INSTALLATION_BLOCKED;
+}
+
+const ExtensionManagement::IndividualSettings& ExtensionManagement::ReadById(
+    const ExtensionId& id) const {
+  DCHECK(crx_file::id_util::IdIsValid(id)) << "Invalid ID: " << id;
+  SettingsIdMap::const_iterator it = settings_by_id_.find(id);
+  if (it != settings_by_id_.end())
+    return it->second;
+  return default_settings_;
+}
+
+const ExtensionManagement::GlobalSettings&
+ExtensionManagement::ReadGlobalSettings() const {
+  return global_settings_;
 }
 
 void ExtensionManagement::Refresh() {
@@ -142,20 +191,6 @@ void ExtensionManagement::Refresh() {
   // new ExtensionManagement policy is added.
 }
 
-const ExtensionManagement::IndividualSettings& ExtensionManagement::ReadById(
-    const ExtensionId& id) const {
-  DCHECK(crx_file::id_util::IdIsValid(id)) << "Invalid ID: " << id;
-  SettingsIdMap::const_iterator it = settings_by_id_.find(id);
-  if (it != settings_by_id_.end())
-    return it->second;
-  return default_settings_;
-}
-
-const ExtensionManagement::GlobalSettings&
-ExtensionManagement::ReadGlobalSettings() const {
-  return global_settings_;
-}
-
 const base::Value* ExtensionManagement::LoadPreference(
     const char* pref_name,
     bool force_managed,
@@ -171,6 +206,16 @@ const base::Value* ExtensionManagement::LoadPreference(
   return NULL;
 }
 
+void ExtensionManagement::OnExtensionPrefChanged() {
+  Refresh();
+  NotifyExtensionManagementPrefChanged();
+}
+
+void ExtensionManagement::NotifyExtensionManagementPrefChanged() {
+  FOR_EACH_OBSERVER(
+      Observer, observer_list_, OnExtensionManagementSettingsChanged());
+}
+
 ExtensionManagement::IndividualSettings* ExtensionManagement::AccessById(
     const ExtensionId& id) {
   DCHECK(crx_file::id_util::IdIsValid(id)) << "Invalid ID: " << id;
@@ -178,6 +223,31 @@ ExtensionManagement::IndividualSettings* ExtensionManagement::AccessById(
   if (it == settings_by_id_.end())
     it = settings_by_id_.insert(std::make_pair(id, default_settings_)).first;
   return &it->second;
+}
+
+ExtensionManagement* ExtensionManagementFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return static_cast<ExtensionManagement*>(
+      GetInstance()->GetServiceForBrowserContext(context, true));
+}
+
+ExtensionManagementFactory* ExtensionManagementFactory::GetInstance() {
+  return Singleton<ExtensionManagementFactory>::get();
+}
+
+ExtensionManagementFactory::ExtensionManagementFactory()
+    : BrowserContextKeyedServiceFactory(
+          "ExtensionManagement",
+          BrowserContextDependencyManager::GetInstance()) {
+}
+
+ExtensionManagementFactory::~ExtensionManagementFactory() {
+}
+
+KeyedService* ExtensionManagementFactory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
+  return new ExtensionManagement(
+      Profile::FromBrowserContext(context)->GetPrefs());
 }
 
 }  // namespace extensions

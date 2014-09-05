@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_system_factory.h"
 
+#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
@@ -36,6 +37,7 @@ ExtensionSystemSharedFactory::ExtensionSystemSharedFactory()
         "ExtensionSystemShared",
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ExtensionPrefsFactory::GetInstance());
+  DependsOn(ExtensionManagementFactory::GetInstance());
   // This depends on ExtensionService which depends on ExtensionRegistry.
   DependsOn(ExtensionRegistryFactory::GetInstance());
   DependsOn(GlobalErrorServiceFactory::GetInstance());

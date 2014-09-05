@@ -14,7 +14,6 @@
 #include "base/value_conversions.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "extensions/browser/admin_policy.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_pref_store.h"
@@ -774,11 +773,6 @@ bool ExtensionPrefs::SetAlertSystemFirstRun() {
   }
   prefs_->SetBoolean(pref_names::kAlertsInitialized, true);
   return false;
-}
-
-bool ExtensionPrefs::ExtensionsBlacklistedByDefault() const {
-  return admin_policy::BlacklistedByDefault(
-      prefs_->GetList(pref_names::kInstallDenyList));
 }
 
 bool ExtensionPrefs::DidExtensionEscalatePermissions(

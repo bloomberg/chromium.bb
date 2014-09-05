@@ -31,6 +31,7 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
+#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
@@ -886,8 +887,9 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   }
   results.SetBoolean("promoteAppsDevTools", promote_apps_dev_tools);
 
-  bool load_unpacked_disabled =
-      ExtensionPrefs::Get(profile)->ExtensionsBlacklistedByDefault();
+  const bool load_unpacked_disabled =
+      ExtensionManagementFactory::GetForBrowserContext(profile)
+          ->BlacklistedByDefault();
   results.SetBoolean("loadUnpackedDisabled", load_unpacked_disabled);
 
   results.SetBoolean(

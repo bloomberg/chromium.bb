@@ -293,8 +293,6 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
-        'browser/admin_policy.cc',
-        'browser/admin_policy.h',
         # NOTE: When moving an API out of Chrome be sure to verify that the
         # Android build still compiles. See conditions below.
         'browser/api/api_resource.cc',
@@ -993,7 +991,6 @@
         '..',
       ],
       'sources': [
-        'browser/admin_policy_unittest.cc',
         'browser/api/api_resource_manager_unittest.cc',
         'browser/api/bluetooth/bluetooth_event_router_unittest.cc',
         'browser/api/declarative/deduping_factory_unittest.cc',

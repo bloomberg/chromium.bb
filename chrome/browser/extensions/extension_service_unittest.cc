@@ -72,6 +72,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/scoped_browser_locale.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -1085,6 +1086,13 @@ class ExtensionServiceTest : public extensions::ExtensionServiceTestBase,
   void InitializeExtensionSyncService() {
     extension_sync_service_.reset(new ExtensionSyncService(
         profile(), ExtensionPrefs::Get(browser_context()), service()));
+  }
+
+  void InitializeEmptyExtensionServiceWithTestingPrefs() {
+    ExtensionServiceTestBase::ExtensionServiceInitParams params =
+        CreateDefaultInitParams();
+    params.pref_file = base::FilePath();
+    InitializeExtensionService(params);
   }
 
   extensions::ManagementPolicy* GetManagementPolicy() {
@@ -3274,7 +3282,7 @@ TEST_F(ExtensionServiceTest, UnloadBlacklistedExtensionPolicy) {
   extensions::TestBlacklist test_blacklist;
 
   // A profile with no extensions installed.
-  InitializeEmptyExtensionService();
+  InitializeEmptyExtensionServiceWithTestingPrefs();
   test_blacklist.Attach(service()->blacklist_);
 
   base::FilePath path = data_dir().AppendASCII("good.crx");
@@ -3285,9 +3293,9 @@ TEST_F(ExtensionServiceTest, UnloadBlacklistedExtensionPolicy) {
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
 
   base::ListValue whitelist;
-  PrefService* prefs = ExtensionPrefs::Get(profile())->pref_service();
   whitelist.Append(new base::StringValue(good_crx));
-  prefs->Set(extensions::pref_names::kInstallAllowList, whitelist);
+  profile_->GetTestingPrefService()->SetManagedPref(
+      extensions::pref_names::kInstallAllowList, whitelist.DeepCopy());
 
   test_blacklist.SetBlacklistState(
       good_crx, extensions::BLACKLISTED_MALWARE, true);
@@ -3575,7 +3583,7 @@ TEST_F(ExtensionServiceTest, ReloadBlacklistedExtension) {
 
 // Will not install extension blacklisted by policy.
 TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
-  InitializeEmptyExtensionService();
+  InitializeEmptyExtensionServiceWithTestingPrefs();
 
   // Blacklist everything.
   {
@@ -3592,10 +3600,10 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
 
   // Now whitelist this particular extension.
   {
-    ListPrefUpdate update(profile()->GetPrefs(),
-                          extensions::pref_names::kInstallAllowList);
-    base::ListValue* whitelist = update.Get();
-    whitelist->Append(new base::StringValue(good_crx));
+    base::ListValue whitelist;
+    whitelist.Append(new base::StringValue(good_crx));
+    profile_->GetTestingPrefService()->SetManagedPref(
+        extensions::pref_names::kInstallAllowList, whitelist.DeepCopy());
   }
 
   // Ensure we can now install good_crx.
@@ -3674,7 +3682,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
 
 // Tests that policy-installed extensions are not blacklisted by policy.
 TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsWhitelisted) {
-  InitializeEmptyExtensionService();
+  InitializeEmptyExtensionServiceWithTestingPrefs();
 
   {
     // Blacklist everything.
@@ -3682,12 +3690,15 @@ TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsWhitelisted) {
                                     extensions::pref_names::kInstallDenyList);
     base::ListValue* blacklist = blacklist_update.Get();
     blacklist->AppendString("*");
+  }
 
+  {
     // Mark good.crx for force-installation.
-    DictionaryPrefUpdate forcelist_update(
-        profile()->GetPrefs(), extensions::pref_names::kInstallForceList);
+    base::DictionaryValue forcelist;
     extensions::ExternalPolicyLoader::AddExtension(
-        forcelist_update.Get(), good_crx, "http://example.com/update_url");
+        &forcelist, good_crx, "http://example.com/update_url");
+    profile_->GetTestingPrefService()->SetManagedPref(
+        extensions::pref_names::kInstallForceList, forcelist.DeepCopy());
   }
 
   // Have policy force-install an extension.
