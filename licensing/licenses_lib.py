@@ -284,8 +284,6 @@ class PackageInfo(object):
 
     if self.revision is not None:
       self.revision = str(self.revision).lstrip('r')
-      if self.revision == '0':
-        self.revision = None
 
     #
     # These fields hold license information used to generate the credits page.
@@ -584,41 +582,6 @@ being scraped currently).""",
 
     return path
 
-  def _ReadEbuildMetadata(self):
-    """Read package metadata retrieved via portageq.
-
-    Returns:
-      Tuple of: ([List of homepage URLs], [List of license names])
-    """
-    args = ['portageq-%s' % self.board, 'metadata',
-            cros_build_lib.GetSysroot(board=self.board), 'ebuild',
-            self.fullnamerev, 'HOMEPAGE', 'LICENSE']
-    tmp = cros_build_lib.RunCommand(args, print_cmd=debug,
-                                    redirect_stdout=True)
-    lines = tmp.output.splitlines()
-    # Runs:
-    # portageq metadata /build/x86-alex ebuild net-misc/wget-1.12-r2 \
-    #                                             HOMEPAGE LICENSE
-    # Returns:
-    # http://www.gnu.org/software/wget/
-    # GPL-3
-    return lines[0].split(), lines[1].split()
-
-  def _TestEbuildContents(self):
-    """Discover if the ebuild installed any files.
-
-    Returns:
-      bool which tells if any files were installed.
-    """
-    # Search for anything the ebuild might install, other than a directory.
-    args = ['equery-%s' % self.board, '-q', '-C', 'files', self.fullnamerev,
-            '-f', 'obj']
-    tmp = cros_build_lib.RunCommand(args, print_cmd=debug, redirect_stdout=True)
-    lines = tmp.output.splitlines()
-
-    # lines is an array of the file names installed by the ebuild.
-    return bool(lines)
-
   def GetLicenses(self, build_info_dir, src_dir):
     """Populate the license related fields.
 
@@ -633,8 +596,8 @@ being scraped currently).""",
     add licenses found there.
 
     Args:
-      build_info_dir: Path to the build_info working directory during the
-        emerge hook. Otherwise, None.
+      build_info_dir: Path to the build_info for the ebuild. This can be from
+        the working directory during the emerge hook, or in the portage pkg db.
       src_dir: Directory to the expanded source code for this package. If None,
         the source will be expanded, if needed (slow).
 
@@ -642,16 +605,13 @@ being scraped currently).""",
       AssertionError: on runtime errors
       PackageLicenseError: couldn't find license in ebuild and source.
     """
-    if build_info_dir:
-      # If the total size installed is zero, we installed no content to license.
-      if _BuildInfo(build_info_dir, 'SIZE').strip() == '0':
-        self.skip = True
-        return
-      self.homepages = _BuildInfo(build_info_dir, 'HOMEPAGE').split()
-      ebuild_license_names = _BuildInfo(build_info_dir, 'LICENSE').split()
-    else:
-      self.homepages, ebuild_license_names = self._ReadEbuildMetadata()
-      self.skip = self.skip or not self._TestEbuildContents()
+    # If the total size installed is zero, we installed no content to license.
+    if _BuildInfo(build_info_dir, 'SIZE').strip() == '0':
+      self.skip = True
+      return
+
+    self.homepages = _BuildInfo(build_info_dir, 'HOMEPAGE').split()
+    ebuild_license_names = _BuildInfo(build_info_dir, 'LICENSE').split()
 
     # If this ebuild only uses skipped licenses, skip it.
     if (ebuild_license_names and
@@ -869,28 +829,21 @@ class Licensing(object):
       if pkg.skip:
         if self.gen_licenses:
           logging.info('Package %s is in skip list', package_name)
-        else:
-          # If we do a licensing run expecting to get licensing objects from
-          # an image build, virtual packages will be missing such objects
-          # because virtual packages do not get the install hook run at build
-          # time. Because this script may not have permissions to write in the
-          # /var/db/ directory, we don't want it to generate useless license
-          # bits for virtual packages. As a result, ignore virtual packages
-          # here.
-          if pkg.category == 'virtual':
-            logging.debug('Ignoring %s virtual package', package_name)
-            continue
+        continue
 
       # Other skipped packages get dumped with incomplete info and the skip flag
       if not os.path.exists(pkg.license_dump_path) and not self.gen_licenses:
         logging.warning('>>> License for %s is missing, creating now <<<',
                         package_name)
       if not os.path.exists(pkg.license_dump_path) or self.gen_licenses:
-        if not pkg.skip:
-          try:
-            pkg.GetLicenses(None, None)
-          except PackageLicenseError:
-            pkg.licensing_failed = True
+        try:
+          build_info_path = os.path.join(
+              cros_build_lib.GetSysroot(pkg.board),
+              PER_PKG_LICENSE_DIR, pkg.fullnamerev)
+          pkg.GetLicenses(build_info_path, None)
+        except PackageLicenseError:
+          pkg.licensing_failed = True
+
         # We dump packages where licensing failed too.
         pkg.SaveLicenseDump(pkg.license_dump_path)
 
