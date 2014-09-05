@@ -6,6 +6,7 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 
 #include "core/fetch/ScriptResource.h"
+#include "platform/heap/Handle.h"
 #include <gtest/gtest.h>
 #include <v8.h>
 
@@ -80,18 +81,18 @@ public:
     void setEmptyResource()
     {
         m_resourceRequest = WTF::adoptPtr(new ResourceRequest);
-        m_resource = WTF::adoptPtr(new ScriptResource(*m_resourceRequest.get(), "text/utf-8"));
+        m_resource = adoptPtrWillBeNoop(new ScriptResource(*m_resourceRequest.get(), "text/utf-8"));
     }
 
     void setResource()
     {
         m_resourceRequest = WTF::adoptPtr(new ResourceRequest(url()));
-        m_resource = WTF::adoptPtr(new ScriptResource(*m_resourceRequest.get(), "text/utf-8"));
+        m_resource = adoptPtrWillBeNoop(new ScriptResource(*m_resourceRequest.get(), "text/utf-8"));
     }
 
 protected:
     WTF::OwnPtr<ResourceRequest> m_resourceRequest;
-    WTF::OwnPtr<ScriptResource> m_resource;
+    OwnPtrWillBePersistent<ScriptResource> m_resource;
 
     static unsigned cacheTagParser;
     static unsigned cacheTagCode;
