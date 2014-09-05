@@ -2729,6 +2729,7 @@
           'sources': [ '<@(chrome_browser_ui_non_ash_sources)' ],
         }],
         ['use_athena==1', {
+          'defines': ['USE_ATHENA=1'],
           'sources': [ '<@(chrome_browser_ui_athena_sources)' ],
           'dependencies': [
             '<(DEPTH)/athena/athena.gyp:athena_lib',

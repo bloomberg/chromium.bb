@@ -1034,6 +1034,9 @@
         'browser/supervised_user/chromeos/supervised_user_password_service_factory.h',
       ],
       'conditions': [
+        ['use_athena==1', {
+          'defines': ['USE_ATHENA=1'],
+        }],
         ['enable_extensions==1', {
           'dependencies': [
             '../ui/file_manager/file_manager.gyp:file_manager',

@@ -2956,6 +2956,11 @@
             # chrome/browser/metrics/variations/generate_resources_map.py
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/metrics/variations/generated_resources_map.cc',
           ],
+          'conditions': [
+            ['use_athena==1', {
+              'defines': ['USE_ATHENA=1'],
+            }],
+          ],
           'defines': [
             '<@(nacl_defines)',
           ],
