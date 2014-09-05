@@ -115,9 +115,6 @@ void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderSt
                 setChildNeedsLayout();
             createLayer(type);
             if (parent() && !needsLayout()) {
-                // FIXME: This invalidation is overly broad. We should update to
-                // do the correct invalidation at RenderStyle::diff time. crbug.com/349061
-                layer()->renderer()->setShouldDoFullPaintInvalidation(true);
                 // FIXME: We should call a specialized version of this function.
                 layer()->updateLayerPositionsAfterLayout();
             }
