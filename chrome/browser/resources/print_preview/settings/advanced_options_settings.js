@@ -41,7 +41,7 @@ cr.define('print_preview', function() {
           destination.capabilities &&
           destination.capabilities.printer &&
           destination.capabilities.printer.vendor_capability;
-      return false && !!vendorCapabilities;
+      return !!vendorCapabilities;
     },
 
     /** @override */

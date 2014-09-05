@@ -88,8 +88,7 @@ cr.define('print_preview', function() {
         this.metrics_.record(print_preview.Metrics.PrintSettingsUiBucket.
             ADVANCED_SETTINGS_DIALOG_SHOWN);
       } else {
-        this.searchBox_.setQuery(null);
-        this.filterLists_(null);
+        this.resetSearch_();
         this.destination_ = null;
       }
     },
@@ -127,6 +126,9 @@ cr.define('print_preview', function() {
      * @private
      */
     filterLists_: function(query) {
+      this.items_.forEach(function(item) {
+        item.updateSearchQuery(query);
+      });
     },
 
     /**
@@ -173,7 +175,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onSearch_: function(evt) {
-      this.filterLists_(evt.query);
+      this.filterLists_(evt.queryRegExp);
     },
 
     /**

@@ -264,7 +264,7 @@ cr.define('print_preview', function() {
 
     /**
      * Filters all destination lists with the given query.
-     * @param {?string} query Query to filter destination lists by.
+     * @param {RegExp} query Query to filter destination lists by.
      * @private
      */
     filterLists_: function(query) {
@@ -450,7 +450,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onSearch_: function(evt) {
-      this.filterLists_(evt.query);
+      this.filterLists_(evt.queryRegExp);
     },
 
     /**

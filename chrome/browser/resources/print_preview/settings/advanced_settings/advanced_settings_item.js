@@ -47,10 +47,16 @@ cr.define('print_preview', function() {
     this.selectedValue_ = null;
 
     /**
-     * Active filter query text.
+     * Active filter query.
      * @private {RegExp}
      */
     this.query_ = null;
+
+    /**
+     * Search hint for the control.
+     * @private {print_preview.SearchBubble}
+     */
+    this.searchBubble_ = null;
 
     /** @private {!EventTracker} */
     this.tracker_ = new EventTracker();
@@ -64,19 +70,13 @@ cr.define('print_preview', function() {
       this.setElementInternal(this.cloneTemplateInternal(
           'advanced-settings-item-template'));
 
-      var nameEl = this.getChildElement('.advanced-settings-item-label');
-      var textContent = this.capability_.display_name;
-      if (this.query_)
-        this.addTextWithHighlight_(nameEl, textContent);
-      else
-        nameEl.textContent = textContent;
-      nameEl.title = textContent;
-
       this.tracker_.add(
           this.select_, 'change', this.onSelectChange_.bind(this));
       this.tracker_.add(this.text_, 'input', this.onTextInput_.bind(this));
 
       this.initializeValue_();
+
+      this.renderCapability_();
     },
 
     /**
@@ -101,6 +101,12 @@ cr.define('print_preview', function() {
      */
     isModified: function() {
       return !!this.selectedValue_;
+    },
+
+    /** @param {RegExp} query Query to update the filter with. */
+    updateSearchQuery: function(query) {
+      this.query_ = query;
+      this.renderCapability_();
     },
 
     /**
@@ -139,6 +145,57 @@ cr.define('print_preview', function() {
      */
     onTextInput_: function() {
       this.selectedValue_ = this.text_.value || null;
+    },
+
+    /**
+     * Renders capability properties according to the current state.
+     * @private
+     */
+    renderCapability_: function() {
+      var textContent = this.capability_.display_name;
+      var nameMatches = this.query_ ? !!textContent.match(this.query_) : true;
+      var optionMatches = null;
+      if (false && this.query_) {
+        if (this.capability_.type == 'SELECT') {
+          this.capability_.select_cap.option.some(function(option) {
+            optionMatches = (option.display_name || '').match(this.query_);
+            return !!optionMatches;
+          }.bind(this));
+        } else {
+          optionMatches = (this.text_.value || '').match(this.query_);
+        }
+      }
+      var matches = nameMatches || optionMatches;
+
+      if ((!matches || !optionMatches) && this.searchBubble_) {
+        this.searchBubble_.dispose();
+        this.searchBubble_ = null;
+      }
+
+      setIsVisible(this.getElement(), matches);
+      if (!matches)
+        return;
+
+      var nameEl = this.getChildElement('.advanced-settings-item-label');
+      if (this.query_) {
+        nameEl.textContent = '';
+        this.addTextWithHighlight_(nameEl, textContent);
+      } else {
+        nameEl.textContent = textContent;
+      }
+      nameEl.title = textContent;
+
+      if (optionMatches) {
+        window.console.log(optionMatches[0]);
+        var element =
+            this.capability_.type == 'SELECT' ? this.select_ : this.text_;
+        if (!this.searchBubble_) {
+          this.searchBubble_ = new print_preview.SearchBubble(optionMatches[0]);
+          this.searchBubble_.attachTo(element);
+        } else {
+          this.searchBubble_.content = optionMatches[0];
+        }
+      }
     },
 
     /**

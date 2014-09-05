@@ -97,7 +97,11 @@ cr.define('print_preview', function() {
     dispatchSearchEvent_: function() {
       this.timeout_ = null;
       var searchEvent = new Event(SearchBox.EventType.SEARCH);
-      searchEvent.query = this.getQuery_();
+      var query = this.getQuery_();
+      searchEvent.query = query;
+      // Generate regexp-safe query by escaping metacharacters.
+      var safeQuery = query.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+      searchEvent.queryRegExp = new RegExp('(' + safeQuery + ')', 'ig');
       this.dispatchEvent(searchEvent);
     },
 

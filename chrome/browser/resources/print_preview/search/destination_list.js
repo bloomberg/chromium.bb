@@ -189,15 +189,9 @@ cr.define('print_preview', function() {
       this.renderDestinations_();
     },
 
-    /** @param {?string} query Query to update the filter with. */
+    /** @param {RegExp} query Query to update the filter with. */
     updateSearchQuery: function(query) {
-      if (!query) {
-        this.query_ = null;
-      } else {
-        // Generate regexp-safe query by escaping metacharacters.
-        var safeQuery = query.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-        this.query_ = new RegExp('(' + safeQuery + ')', 'ig');
-      }
+      this.query_ = query;
       this.renderDestinations_();
     },
 

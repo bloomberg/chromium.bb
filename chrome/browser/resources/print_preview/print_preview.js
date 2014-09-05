@@ -1211,6 +1211,7 @@ cr.define('print_preview', function() {
 // Pull in all other scripts in a single shot.
 <include src="common/overlay.js"/>
 <include src="common/search_box.js"/>
+<include src="common/search_bubble.js"/>
 
 <include src="data/page_number_set.js"/>
 <include src="data/destination.js"/>
