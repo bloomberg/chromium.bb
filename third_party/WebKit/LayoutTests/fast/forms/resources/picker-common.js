@@ -22,7 +22,7 @@ function openPicker(input, callback) {
 
 function popupOpenCallbackWrapper() {
     popupWindow.removeEventListener("didOpenPicker", popupOpenCallbackWrapper);
-    popupOpenCallback();
+    setTimeout(popupOpenCallback, 0);
 }
 
 function waitUntilClosing(callback) {

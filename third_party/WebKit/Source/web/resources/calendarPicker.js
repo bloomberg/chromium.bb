@@ -75,7 +75,7 @@ function hasInaccuratePointingDevice() {
  * @return {!string} lowercase locale name. e.g. "en-us"
  */
 function getLocale() {
-    return (global.params.locale || "en-us").toLowerCase();
+    return (global.params.locale || "en-us").toLowerCase().replace(/_/g, '-');
 }
 
 /**
@@ -1560,6 +1560,7 @@ ScrollView.prototype.contentPositionForContentOffset = function(offset) {
  */
 function ListCell() {
     View.call(this, createElement("div", ListCell.ClassNameListCell));
+    this.element.setAttribute("role", "gridcell");
     
     /**
      * @type {!number}
@@ -1659,6 +1660,7 @@ ListCell.prototype.setSelected = function(selected) {
 function ListView() {
     View.call(this, createElement("div", ListView.ClassNameListView));
     this.element.tabIndex = 0;
+    this.element.setAttribute("role", "grid");
 
     /**
      * @type {!number}
@@ -3069,10 +3071,13 @@ DayCell.prototype.throwAway = function() {
  * @param {!boolean} highlighted
  */
 DayCell.prototype.setHighlighted = function(highlighted) {
-    if (highlighted)
+    if (highlighted) {
         this.element.classList.add(DayCell.ClassNameHighlighted);
-    else
+        this.element.setAttribute("aria-selected", "true");
+    } else {
         this.element.classList.remove(DayCell.ClassNameHighlighted);
+        this.element.setAttribute("aria-selected", "false");
+    }
 };
 
 /**
@@ -3111,6 +3116,13 @@ DayCell.prototype.setIsToday = function(selected) {
 DayCell.prototype.reset = function(day) {
     this.day = day;
     this.element.textContent = localizeNumber(this.day.date.toString());
+    if (!DayCell.formatter) {
+        DayCell.formatter = new Intl.DateTimeFormat(getLocale(), {
+            weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "UTC"
+        });
+    }
+    this.element.setAttribute("aria-label", DayCell.formatter.format(this.day.startDate()));
+    this.element.id = this.day.toString();
     this.show();
 };
 
@@ -3226,6 +3238,7 @@ function CalendarRowCell() {
     ListCell.call(this);
     this.element.classList.add(CalendarRowCell.ClassNameCalendarRowCell);
     this.element.style.height = CalendarRowCell.Height + "px";
+    this.element.setAttribute("role", "row");
 
     /**
      * @type {!Array}
@@ -3511,7 +3524,10 @@ CalendarTableView.prototype.updateCells = function() {
         var day = dayCell.day;
         dayCell.setIsToday(Day.createFromToday().equals(day));
         dayCell.setSelected(day >= firstDayInSelection && day <= lastDayInSelection);
-        dayCell.setHighlighted(day >= firstDayInHighlight && day <= lastDayInHighlight);
+        var isHighlighted = day >= firstDayInHighlight && day <= lastDayInHighlight;
+        dayCell.setHighlighted(isHighlighted);
+        if (isHighlighted && firstDayInHighlight == lastDayInHighlight)
+            this.element.setAttribute("aria-activedescendant", dayCell.element.id);
         dayCell.setIsInCurrentMonth(day >= firstDayInCurrentMonth && day <= lastDayInCurrentMonth);
         dayCell.setDisabled(!this.calendarPicker.isValidDay(day));
     }
