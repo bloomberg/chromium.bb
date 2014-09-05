@@ -104,6 +104,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // changed since the last time.
   bool HasDisplayPropertyChanged(gfx::NativeView view);
 
+  base::WeakPtr<RenderWidgetHostViewBase> GetWeakPtr();
+
   //----------------------------------------------------------------------------
   // The following methods can be overridden by derived classes.
 
@@ -224,6 +226,13 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Notifies the View that the renderer has ceased to exist.
   virtual void RenderProcessGone(base::TerminationStatus status,
                                  int error_code) = 0;
+
+  // Notifies the View that the renderer's host has ceased to exist.
+  // The default implementation of this is a no-op. This hack exists to fix
+  // a crash on the branch.
+  // TODO(ccameron): Clean this up.
+  // http://crbug.com/404828
+  virtual void RenderWidgetHostGone() {}
 
   // Tells the View to destroy itself.
   virtual void Destroy() = 0;
@@ -423,6 +432,8 @@ protected:
   uint32 renderer_frame_number_;
 
   base::OneShotTimer<RenderWidgetHostViewBase> flush_input_timer_;
+
+  base::WeakPtrFactory<RenderWidgetHostViewBase> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewBase);
 };

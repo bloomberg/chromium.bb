@@ -979,6 +979,13 @@ void RenderWidgetHostViewMac::RenderProcessGone(base::TerminationStatus status,
   Destroy();
 }
 
+void RenderWidgetHostViewMac::RenderWidgetHostGone() {
+  // Destroy the DelegatedFrameHost, to prevent crashes when Destroy is never
+  // called on the view.
+  // http://crbug.com/404828
+  ShutdownBrowserCompositor();
+}
+
 void RenderWidgetHostViewMac::Destroy() {
   [[NSNotificationCenter defaultCenter]
       removeObserver:cocoa_view_

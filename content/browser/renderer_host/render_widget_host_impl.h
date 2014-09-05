@@ -560,6 +560,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // doing so).
   RenderWidgetHostViewBase* view_;
 
+  // A weak pointer to the view. The above pointer should be weak, but changing
+  // that to be weak causes crashes on Android.
+  // TODO(ccameron): Fix this.
+  // http://crbug.com/404828
+  base::WeakPtr<RenderWidgetHostViewBase> view_weak_;
+
   // true if a renderer has once been valid. We use this flag to display a sad
   // tab only when we lose our renderer and not if a paint occurs during
   // initialization.

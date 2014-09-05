@@ -374,7 +374,8 @@ RenderWidgetHostViewBase::RenderWidgetHostViewBase()
       current_device_scale_factor_(0),
       current_display_rotation_(gfx::Display::ROTATE_0),
       pinch_zoom_enabled_(content::IsPinchToZoomEnabled()),
-      renderer_frame_number_(0) {
+      renderer_frame_number_(0),
+      weak_factory_(this) {
 }
 
 RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {
@@ -533,6 +534,10 @@ bool RenderWidgetHostViewBase::HasDisplayPropertyChanged(gfx::NativeView view) {
   current_device_scale_factor_ = display.device_scale_factor();
   current_display_rotation_ = display.rotation();
   return true;
+}
+
+base::WeakPtr<RenderWidgetHostViewBase> RenderWidgetHostViewBase::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 scoped_ptr<SyntheticGestureTarget>
