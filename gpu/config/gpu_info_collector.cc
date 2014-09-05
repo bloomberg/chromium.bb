@@ -154,7 +154,7 @@ void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
   basic_gpu_info->can_lose_context = context_gpu_info.can_lose_context;
   basic_gpu_info->sandboxed = context_gpu_info.sandboxed;
   basic_gpu_info->direct_rendering = context_gpu_info.direct_rendering;
-  basic_gpu_info->finalized = context_gpu_info.finalized;
+  basic_gpu_info->context_info_state = context_gpu_info.context_info_state;
   basic_gpu_info->initialization_time = context_gpu_info.initialization_time;
 }
 

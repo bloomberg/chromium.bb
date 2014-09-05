@@ -62,7 +62,7 @@ GPUInfo::GPUDevice GetActiveGPU() {
 }
 
 // Scan IO registry for PCI video cards.
-bool CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
+CollectInfoResult CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
   GPUInfo::GPUDevice active_gpu = GetActiveGPU();
 
@@ -97,7 +97,7 @@ bool CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
 
   switch (gpu_list.size()) {
     case 0:
-      return false;
+      return kCollectInfoNonFatalFailure;
     case 1:
       gpu_info->gpu = gpu_list[0];
       break;
@@ -154,7 +154,9 @@ bool CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
       }
       break;
   }
-  return (gpu_info->gpu.vendor_id && gpu_info->gpu.device_id);
+  if (gpu_info->gpu.vendor_id == 0 || gpu_info->gpu.device_id == 0)
+    return kCollectInfoNonFatalFailure;
+  return kCollectInfoSuccess;
 }
 
 }  // namespace anonymous
@@ -166,11 +168,12 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
 
   gpu_info->can_lose_context =
       (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2);
-  gpu_info->finalized = true;
-  return CollectGraphicsInfoGL(gpu_info);
+  CollectInfoResult result = CollectGraphicsInfoGL(gpu_info);
+  gpu_info->context_info_state = result;
+  return result;
 }
 
-GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
+CollectInfoResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
   DCHECK(vendor_id && device_id);
 
   GPUInfo::GPUDevice gpu = GetActiveGPU();
@@ -178,8 +181,8 @@ GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
   *device_id = gpu.device_id;
 
   if (*vendor_id != 0 && *device_id != 0)
-    return kGpuIDSuccess;
-  return kGpuIDFailure;
+    return kCollectInfoSuccess;
+  return kCollectInfoNonFatalFailure;
 }
 
 CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
@@ -192,8 +195,9 @@ CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   gpu_info->machine_model_version =
       base::IntToString(model_major) + "." + base::IntToString(model_minor);
 
-  bool result = CollectPCIVideoCardInfo(gpu_info);
-  return result ? kCollectInfoSuccess : kCollectInfoNonFatalFailure;
+  CollectInfoResult result = CollectPCIVideoCardInfo(gpu_info);
+  gpu_info->basic_info_state = result;
+  return result;
 }
 
 CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {

@@ -10,7 +10,6 @@ namespace gpu {
 // Test that an empty GPUInfo has valid members
 TEST(GPUInfoBasicTest, EmptyGPUInfo) {
   GPUInfo gpu_info;
-  EXPECT_EQ(gpu_info.finalized, false);
   EXPECT_EQ(gpu_info.initialization_time.ToInternalValue(), 0);
   EXPECT_EQ(gpu_info.gpu.vendor_id, 0u);
   EXPECT_EQ(gpu_info.gpu.device_id, 0u);
@@ -28,6 +27,11 @@ TEST(GPUInfoBasicTest, EmptyGPUInfo) {
   EXPECT_EQ(gpu_info.gl_ws_version, "");
   EXPECT_EQ(gpu_info.gl_ws_extensions, "");
   EXPECT_EQ(gpu_info.can_lose_context, false);
+  EXPECT_EQ(gpu_info.basic_info_state, kCollectInfoNone);
+  EXPECT_EQ(gpu_info.context_info_state, kCollectInfoNone);
+#if defined(OS_WIN)
+  EXPECT_EQ(gpu_info.dx_diagnostics_info_state, kCollectInfoNone);
+#endif
 }
 
 }  // namespace gpu

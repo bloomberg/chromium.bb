@@ -67,6 +67,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
       const GetGpuProcessHandlesCallback& callback) const OVERRIDE;
   virtual bool GpuAccessAllowed(std::string* reason) const OVERRIDE;
   virtual void RequestCompleteGpuInfoIfNeeded() OVERRIDE;
+  virtual bool IsEssentialGpuInfoAvailable() const OVERRIDE;
   virtual bool IsCompleteGpuInfoAvailable() const OVERRIDE;
   virtual void RequestVideoMemoryUsageStatsUpdate() const OVERRIDE;
   virtual bool ShouldUseSwiftShader() const OVERRIDE;

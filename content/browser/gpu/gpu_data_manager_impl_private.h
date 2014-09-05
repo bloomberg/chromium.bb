@@ -38,6 +38,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
       const GpuDataManager::GetGpuProcessHandlesCallback& callback) const;
   bool GpuAccessAllowed(std::string* reason) const;
   void RequestCompleteGpuInfoIfNeeded();
+  bool IsEssentialGpuInfoAvailable() const;
   bool IsCompleteGpuInfoAvailable() const;
   void RequestVideoMemoryUsageStatsUpdate() const;
   bool ShouldUseSwiftShader() const;

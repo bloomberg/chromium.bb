@@ -88,16 +88,15 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   return CollectBasicGraphicsInfo(gpu_info);
 }
 
-GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
+CollectInfoResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
   DCHECK(vendor_id && device_id);
   *vendor_id = 0;
   *device_id = 0;
-  return kGpuIDNotSupported;
+  return kCollectInfoNonFatalFailure;
 }
 
 CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   gpu_info->can_lose_context = false;
-  gpu_info->finalized = true;
 
   gpu_info->machine_model_name =
       base::android::BuildInfo::GetInstance()->model();
@@ -105,7 +104,10 @@ CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   // Create a short-lived context on the UI thread to collect the GL strings.
   // Make sure we restore the existing context if there is one.
   ScopedRestoreNonOwnedEGLContext restore_context;
-  return CollectGraphicsInfoGL(gpu_info);
+  CollectInfoResult result = CollectGraphicsInfoGL(gpu_info);
+  gpu_info->basic_info_state = result;
+  gpu_info->context_info_state = result;
+  return result;
 }
 
 CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {

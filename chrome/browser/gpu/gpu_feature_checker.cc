@@ -41,7 +41,7 @@ void GPUFeatureChecker::CheckGPUFeatureAvailability() {
 #endif
 
   content::GpuDataManager* manager = content::GpuDataManager::GetInstance();
-  if (manager->IsCompleteGpuInfoAvailable())
+  if (manager->IsEssentialGpuInfoAvailable())
     finalized = true;
 
   bool feature_allowed = IsFeatureAllowed(manager, feature_);

@@ -233,10 +233,9 @@ bool GPUTestBotConfig::LoadCurrentConfig(const GPUInfo* gpu_info) {
   bool rt;
   if (gpu_info == NULL) {
     GPUInfo my_gpu_info;
-    GpuIDResult result;
-    result = CollectGpuID(&my_gpu_info.gpu.vendor_id,
-                          &my_gpu_info.gpu.device_id);
-    if (result == kGpuIDNotSupported) {
+    CollectInfoResult result = CollectGpuID(
+        &my_gpu_info.gpu.vendor_id, &my_gpu_info.gpu.device_id);
+    if (result != kCollectInfoSuccess) {
       LOG(ERROR) << "Fail to identify GPU";
       DisableGPUInfoValidation();
       rt = true;

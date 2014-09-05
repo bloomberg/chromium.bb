@@ -55,6 +55,11 @@ void GpuDataManagerImpl::RequestCompleteGpuInfoIfNeeded() {
   private_->RequestCompleteGpuInfoIfNeeded();
 }
 
+bool GpuDataManagerImpl::IsEssentialGpuInfoAvailable() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->IsEssentialGpuInfoAvailable();
+}
+
 bool GpuDataManagerImpl::IsCompleteGpuInfoAvailable() const {
   base::AutoLock auto_lock(lock_);
   return private_->IsCompleteGpuInfoAvailable();

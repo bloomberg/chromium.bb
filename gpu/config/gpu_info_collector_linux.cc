@@ -69,12 +69,12 @@ const uint32 kVendorIDIntel = 0x8086;
 const uint32 kVendorIDNVidia = 0x10de;
 const uint32 kVendorIDAMD = 0x1002;
 
-bool CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
+CollectInfoResult CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   if (IsPciSupported() == false) {
     VLOG(1) << "PCI bus scanning is not supported";
-    return false;
+    return kCollectInfoNonFatalFailure;
   }
 
   // TODO(zmo): be more flexible about library name.
@@ -82,7 +82,7 @@ bool CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
   if (!libpci_loader.Load("libpci.so.3") &&
       !libpci_loader.Load("libpci.so")) {
     VLOG(1) << "Failed to locate libpci";
-    return false;
+    return kCollectInfoNonFatalFailure;
   }
 
   pci_access* access = (libpci_loader.pci_alloc)();
@@ -106,6 +106,8 @@ bool CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
         break;
     }
     if (!is_gpu)
+      continue;
+    if (device->vendor_id == 0 || device->device_id == 0)
       continue;
 
     GPUInfo::GPUDevice gpu;
@@ -139,7 +141,9 @@ bool CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
   }
 
   (libpci_loader.pci_cleanup)(access);
-  return (primary_gpu_identified);
+  if (!primary_gpu_identified)
+    return kCollectInfoNonFatalFailure;
+  return kCollectInfoSuccess;
 }
 
 }  // namespace anonymous
@@ -164,29 +168,28 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   }
 
   CollectInfoResult result = CollectGraphicsInfoGL(gpu_info);
-  gpu_info->finalized = true;
+  gpu_info->context_info_state = result;
   return result;
 }
 
-GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
+CollectInfoResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
   DCHECK(vendor_id && device_id);
   *vendor_id = 0;
   *device_id = 0;
 
   GPUInfo gpu_info;
-  if (CollectPCIVideoCardInfo(&gpu_info)) {
+  CollectInfoResult result = CollectPCIVideoCardInfo(&gpu_info);
+  if (result == kCollectInfoSuccess) {
     *vendor_id = gpu_info.gpu.vendor_id;
     *device_id = gpu_info.gpu.device_id;
-    if (*vendor_id != 0 && *device_id != 0)
-      return kGpuIDSuccess;
   }
-  return kGpuIDFailure;
+  return result;
 }
 
 CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
-  bool rt = CollectPCIVideoCardInfo(gpu_info);
+  CollectInfoResult result = CollectPCIVideoCardInfo(gpu_info);
 
   std::string driver_version;
   switch (gpu_info->gpu.vendor_id) {
@@ -223,7 +226,8 @@ CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
       break;
   }
 
-  return rt ? kCollectInfoSuccess : kCollectInfoNonFatalFailure;
+  gpu_info->basic_info_state = result;
+  return result;
 }
 
 CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {

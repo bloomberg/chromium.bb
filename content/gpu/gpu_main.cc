@@ -405,6 +405,9 @@ bool CollectGraphicsInfo(gpu::GPUInfo& gpu_info) {
     case gpu::kCollectInfoNonFatalFailure:
       VLOG(1) << "gpu::CollectGraphicsInfo failed (non-fatal).";
       break;
+    case gpu::kCollectInfoNone:
+      NOTREACHED();
+      break;
     case gpu::kCollectInfoSuccess:
       break;
   }

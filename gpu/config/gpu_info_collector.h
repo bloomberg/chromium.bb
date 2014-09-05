@@ -12,26 +12,8 @@
 
 namespace gpu {
 
-enum GpuIDResult {
-  kGpuIDFailure,
-  kGpuIDSuccess,
-  kGpuIDNotSupported
-};
-
-// Result for the various Collect*Info* functions below.
-// Fatal failures are for cases where we can't create a context at all or
-// something, making the use of the GPU impossible.
-// Non-fatal failures are for cases where we could gather most info, but maybe
-// some is missing (e.g. unable to parse a version string or to detect the exact
-// model).
-enum CollectInfoResult {
-  kCollectInfoFatalFailure,
-  kCollectInfoNonFatalFailure,
-  kCollectInfoSuccess
-};
-
 // Collect GPU vendor_id and device ID.
-GPU_EXPORT GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id);
+GPU_EXPORT CollectInfoResult CollectGpuID(uint32* vendor_id, uint32* device_id);
 
 // Collects basic GPU info without creating a GL/DirectX context (and without
 // the danger of crashing), including vendor_id and device_id.

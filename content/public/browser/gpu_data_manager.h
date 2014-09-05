@@ -57,9 +57,15 @@ class GpuDataManager {
   // contains a description of the reason why GPU access is blocked.
   virtual bool GpuAccessAllowed(std::string* reason) const = 0;
 
-  // Requests complete GPUinfo if it has not already been requested
+  // Requests complete GPU info if it has not already been requested
   virtual void RequestCompleteGpuInfoIfNeeded() = 0;
 
+  // Check if basic and context GPU info have been collected.
+  virtual bool IsEssentialGpuInfoAvailable() const = 0;
+
+  // On Windows, besides basic and context GPU info, it also checks if
+  // DxDiagnostics have been collected.
+  // On other platforms, it's the same as IsEsentialGpuInfoAvailable().
   virtual bool IsCompleteGpuInfoAvailable() const = 0;
 
   // Requests that the GPU process report its current video memory usage stats,

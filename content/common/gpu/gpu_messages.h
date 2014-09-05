@@ -61,6 +61,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::VideoFrame::Format,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::VideoCodecProfile,
                               media::VIDEO_CODEC_PROFILE_MIN,
                               media::VIDEO_CODEC_PROFILE_MAX)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(gpu::CollectInfoResult,
+                              gpu::kCollectInfoNone,
+                              gpu::kCollectInfoFatalFailure)
 
 IPC_STRUCT_BEGIN(GPUCreateCommandBufferConfig)
   IPC_STRUCT_MEMBER(int32, share_group_id)
@@ -155,7 +158,6 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::GPUInfo::GPUDevice)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(gpu::GPUInfo)
-  IPC_STRUCT_TRAITS_MEMBER(finalized)
   IPC_STRUCT_TRAITS_MEMBER(initialization_time)
   IPC_STRUCT_TRAITS_MEMBER(optimus)
   IPC_STRUCT_TRAITS_MEMBER(amd_switchable)
@@ -184,7 +186,10 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::GPUInfo)
   IPC_STRUCT_TRAITS_MEMBER(direct_rendering)
   IPC_STRUCT_TRAITS_MEMBER(sandboxed)
   IPC_STRUCT_TRAITS_MEMBER(process_crash_count)
+  IPC_STRUCT_TRAITS_MEMBER(basic_info_state)
+  IPC_STRUCT_TRAITS_MEMBER(context_info_state)
 #if defined(OS_WIN)
+  IPC_STRUCT_TRAITS_MEMBER(dx_diagnostics_info_state)
   IPC_STRUCT_TRAITS_MEMBER(dx_diagnostics)
 #endif
 IPC_STRUCT_TRAITS_END()
