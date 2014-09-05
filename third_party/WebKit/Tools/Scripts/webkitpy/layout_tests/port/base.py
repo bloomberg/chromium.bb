@@ -216,6 +216,7 @@ class Port(object):
         self._test_configuration = None
         self._reftest_list = {}
         self._results_directory = None
+        self._virtual_test_suites = None
 
     def buildbot_archives_baselines(self):
         return True
@@ -729,7 +730,12 @@ class Port(object):
     def tests(self, paths):
         """Return the list of tests found matching paths."""
         tests = self._real_tests(paths)
-        tests.extend(self._virtual_tests(paths, self.populated_virtual_test_suites()))
+
+        suites = self.virtual_test_suites()
+        if paths:
+            tests.extend(self._virtual_tests_matching_paths(paths, suites))
+        else:
+            tests.extend(self._all_virtual_tests(suites))
         return tests
 
     def _real_tests(self, paths):
@@ -1523,46 +1529,45 @@ class Port(object):
             ]
 
     def virtual_test_suites(self):
-        path_to_virtual_test_suites = self._filesystem.join(self.layout_tests_dir(), 'VirtualTestSuites')
-        assert self._filesystem.exists(path_to_virtual_test_suites), 'LayoutTests/VirtualTestSuites not found'
-        try:
-            test_suite_json = json.loads(self._filesystem.read_text_file(path_to_virtual_test_suites))
-            return [VirtualTestSuite(**d) for d in test_suite_json]
-        except ValueError as e:
-            raise ValueError("LayoutTests/VirtualTestSuites is not a valid JSON file: %s" % str(e))
+        if self._virtual_test_suites is None:
+            path_to_virtual_test_suites = self._filesystem.join(self.layout_tests_dir(), 'VirtualTestSuites')
+            assert self._filesystem.exists(path_to_virtual_test_suites), 'LayoutTests/VirtualTestSuites not found'
+            try:
+                test_suite_json = json.loads(self._filesystem.read_text_file(path_to_virtual_test_suites))
+                self._virtual_test_suites = [VirtualTestSuite(**d) for d in test_suite_json]
+            except ValueError as e:
+                raise ValueError("LayoutTests/VirtualTestSuites is not a valid JSON file: %s" % str(e))
+        return self._virtual_test_suites
 
-    @memoized
-    def populated_virtual_test_suites(self):
-        suites = self.virtual_test_suites()
-
-        # Sanity-check the suites to make sure they don't point to other suites.
-        suite_dirs = [suite.name for suite in suites]
+    def _all_virtual_tests(self, suites):
+        tests = []
         for suite in suites:
-            assert suite.base not in suite_dirs
+            self._populate_virtual_suite(suite)
+            tests.extend(suite.tests.keys())
+        return tests
 
+    def _virtual_tests_matching_paths(self, paths, suites):
+        tests = []
         for suite in suites:
+            if any(p.startswith(suite.name) for p in paths):
+                self._populate_virtual_suite(suite)
+            for test in suite.tests:
+                if any(test.startswith(p) for p in paths):
+                    tests.append(test)
+        return tests
+
+    def _populate_virtual_suite(self, suite):
+        if not suite.tests:
             base_tests = self._real_tests([suite.base])
             suite.tests = {}
             for test in base_tests:
                 suite.tests[test.replace(suite.base, suite.name, 1)] = test
-        return suites
-
-    def _virtual_tests(self, paths, suites):
-        virtual_tests = list()
-        for suite in suites:
-            if paths:
-                for test in suite.tests:
-                    if any(test.startswith(p) for p in paths):
-                        virtual_tests.append(test)
-            else:
-                virtual_tests.extend(suite.tests.keys())
-        return virtual_tests
 
     def is_virtual_test(self, test_name):
         return bool(self.lookup_virtual_suite(test_name))
 
     def lookup_virtual_suite(self, test_name):
-        for suite in self.populated_virtual_test_suites():
+        for suite in self.virtual_test_suites():
             if test_name.startswith(suite.name):
                 return suite
         return None
@@ -1574,7 +1579,7 @@ class Port(object):
         return test_name.replace(suite.name, suite.base, 1)
 
     def lookup_virtual_test_args(self, test_name):
-        for suite in self.populated_virtual_test_suites():
+        for suite in self.virtual_test_suites():
             if test_name.startswith(suite.name):
                 return suite.args
         return []
