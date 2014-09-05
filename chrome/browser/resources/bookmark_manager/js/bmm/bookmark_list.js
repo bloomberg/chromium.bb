@@ -233,6 +233,7 @@ cr.define('bmm', function() {
         if (node && !bmm.isFolder(node))
           this.dispatchUrlClickedEvent_(node.url, e);
       }
+      e.preventDefault();
     },
 
     // Bookmark model update callbacks
