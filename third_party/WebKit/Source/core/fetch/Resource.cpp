@@ -413,7 +413,7 @@ void Resource::setSerializedCachedMetadata(const char* data, size_t size)
     m_cachedMetadata = CachedMetadata::deserialize(data, size);
 }
 
-void Resource::setCachedMetadata(unsigned dataTypeID, const char* data, size_t size)
+void Resource::setCachedMetadata(unsigned dataTypeID, const char* data, size_t size, MetadataCacheType cacheType)
 {
     // Currently, only one type of cached metadata per resource is supported.
     // If the need arises for multiple types of metadata per resource this could
@@ -421,8 +421,11 @@ void Resource::setCachedMetadata(unsigned dataTypeID, const char* data, size_t s
     ASSERT(!m_cachedMetadata);
 
     m_cachedMetadata = CachedMetadata::create(dataTypeID, data, size);
-    const Vector<char>& serializedData = m_cachedMetadata->serialize();
-    blink::Platform::current()->cacheMetadata(m_response.url(), m_response.responseTime(), serializedData.data(), serializedData.size());
+
+    if (cacheType == SendToPlatform) {
+        const Vector<char>& serializedData = m_cachedMetadata->serialize();
+        blink::Platform::current()->cacheMetadata(m_response.url(), m_response.responseTime(), serializedData.data(), serializedData.size());
+    }
 }
 
 void Resource::clearCachedMetadata()
