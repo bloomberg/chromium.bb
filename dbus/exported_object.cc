@@ -15,6 +15,7 @@
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/scoped_dbus_error.h"
+#include "dbus/util.h"
 
 namespace dbus {
 
@@ -22,15 +23,6 @@ namespace {
 
 // Used for success ratio histograms. 1 for success, 0 for failure.
 const int kSuccessRatioHistogramMaxValue = 2;
-
-// Gets the absolute method name by concatenating the interface name and
-// the method name. Used for building keys for method_table_ in
-// ExportedObject.
-std::string GetAbsoluteMethodName(
-    const std::string& interface_name,
-    const std::string& method_name) {
-  return interface_name + "." + method_name;
-}
 
 }  // namespace
 
@@ -53,7 +45,7 @@ bool ExportedObject::ExportMethodAndBlock(
 
   // Check if the method is already exported.
   const std::string absolute_method_name =
-      GetAbsoluteMethodName(interface_name, method_name);
+      GetAbsoluteMemberName(interface_name, method_name);
   if (method_table_.find(absolute_method_name) != method_table_.end()) {
     LOG(ERROR) << absolute_method_name << " is already exported";
     return false;
@@ -203,7 +195,7 @@ DBusHandlerResult ExportedObject::HandleMessage(
   }
 
   // Check if we know about the method.
-  const std::string absolute_method_name = GetAbsoluteMethodName(
+  const std::string absolute_method_name = GetAbsoluteMemberName(
       interface, member);
   MethodTable::const_iterator iter = method_table_.find(absolute_method_name);
   if (iter == method_table_.end()) {

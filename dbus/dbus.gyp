@@ -44,6 +44,8 @@
         'scoped_dbus_error.h',
         'string_util.cc',
         'string_util.h',
+        'util.cc',
+        'util.h',
         'values_util.cc',
         'values_util.h',
       ],

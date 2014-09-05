@@ -173,6 +173,10 @@ class TestService : public base::Thread {
   // Helper function for ReleaseOwnership().
   void ReleaseOwnershipInternal(base::Closure callback);
 
+  // Configures the test service to send a PropertiesChanged signal for the
+  // "Name" property immediately after a call to GetManagedObjects.
+  void SetSendImmediatePropertiesChanged();
+
   // Sends the response on completion of the performed action.
   void PerformActionResponse(
       MethodCall* method_call,
@@ -196,6 +200,10 @@ class TestService : public base::Thread {
   base::WaitableEvent on_name_obtained_;
   // The number of methods actually exported.
   int num_exported_methods_;
+
+  // True if a PropertiesChanged signal for the "Name" property should be sent
+  // immediately following a call to GetManagedObjects.
+  bool send_immediate_properties_changed_;
 
   // True iff this instance has successfully acquired the name ownership.
   bool has_ownership_;

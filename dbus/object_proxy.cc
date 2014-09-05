@@ -18,6 +18,7 @@
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "dbus/scoped_dbus_error.h"
+#include "dbus/util.h"
 
 namespace dbus {
 
@@ -40,15 +41,6 @@ const char kDBusSystemObjectAddress[] = "org.freedesktop.DBus";
 
 // The NameOwnerChanged member in |kDBusSystemObjectInterface|.
 const char kNameOwnerChangedMember[] = "NameOwnerChanged";
-
-// Gets the absolute signal name by concatenating the interface name and
-// the signal name. Used for building keys for method_table_ in
-// ObjectProxy.
-std::string GetAbsoluteSignalName(
-    const std::string& interface_name,
-    const std::string& signal_name) {
-  return interface_name + "." + signal_name;
-}
 
 // An empty function used for ObjectProxy::EmptyResponseCallback().
 void EmptyResponseCallbackBody(Response* /*response*/) {
@@ -421,7 +413,7 @@ bool ObjectProxy::ConnectToSignalInternal(const std::string& interface_name,
     return false;
 
   const std::string absolute_signal_name =
-      GetAbsoluteSignalName(interface_name, signal_name);
+      GetAbsoluteMemberName(interface_name, signal_name);
 
   // Add a match rule so the signal goes through HandleMessage().
   const std::string match_rule =
@@ -488,7 +480,7 @@ DBusHandlerResult ObjectProxy::HandleMessage(
   statistics::AddReceivedSignal(service_name_, interface, member);
 
   // Check if we know about the signal.
-  const std::string absolute_signal_name = GetAbsoluteSignalName(
+  const std::string absolute_signal_name = GetAbsoluteMemberName(
       interface, member);
   MethodTable::const_iterator iter = method_table_.find(absolute_signal_name);
   if (iter == method_table_.end()) {

@@ -30,6 +30,8 @@ component("dbus") {
     "string_util.h",
     "values_util.cc",
     "values_util.h",
+    "util.cc",
+    "util.h",
   ]
 
   defines = [

@@ -223,12 +223,47 @@ public:
   // a need to call this manually.
   void GetManagedObjects();
 
+  // Cleans up any match rules and filter functions added by this ObjectManager.
+  // The Bus object will take care of this so you don't have to do it manually.
+  //
+  // BLOCKING CALL.
+  void CleanUp();
+
  protected:
   virtual ~ObjectManager();
 
  private:
   friend class base::RefCountedThreadSafe<ObjectManager>;
 
+  // Connects the InterfacesAdded and InterfacesRemoved signals and calls
+  // GetManagedObjects. Called from OnSetupMatchRuleAndFilterComplete.
+  void InitializeObjects();
+
+  // Called from the constructor to add a match rule for PropertiesChanged
+  // signals on the DBus thread and set up a corresponding filter function.
+  bool SetupMatchRuleAndFilter();
+
+  // Called on the origin thread once the match rule and filter have been set
+  // up. |success| is false, if an error occurred during set up; it's true
+  // otherwise.
+  void OnSetupMatchRuleAndFilterComplete(bool success);
+
+  // Called by dbus:: when a message is received. This is used to filter
+  // PropertiesChanged signals from the correct sender and relay the event to
+  // the correct PropertySet.
+  static DBusHandlerResult HandleMessageThunk(DBusConnection* connection,
+                                              DBusMessage* raw_message,
+                                              void* user_data);
+  DBusHandlerResult HandleMessage(DBusConnection* connection,
+                                  DBusMessage* raw_message);
+
+  // Called when a PropertiesChanged signal is received from the sender.
+  // This method notifies the relevant PropertySet that it should update its
+  // properties based on the received signal. Called from HandleMessage.
+  void NotifyPropertiesChanged(const dbus::ObjectPath object_path,
+                               Signal* signal);
+  void NotifyPropertiesChangedHelper(const dbus::ObjectPath object_path,
+                                     Signal* signal);
 
   // Called by dbus:: in response to the GetManagedObjects() method call.
   void OnGetManagedObjects(Response* response);
@@ -281,8 +316,12 @@ public:
 
   Bus* bus_;
   std::string service_name_;
+  std::string service_name_owner_;
+  std::string match_rule_;
   ObjectPath object_path_;
   ObjectProxy* object_proxy_;
+  bool setup_success_;
+  bool cleanup_called_;
 
   // Maps the name of an interface to the implementation class used for
   // instantiating PropertySet structures for that interface's properties.

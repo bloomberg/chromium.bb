@@ -267,7 +267,7 @@ bool Bus::RemoveObjectProxyWithOptions(const std::string& service_name,
   if (iter != object_proxy_table_.end()) {
     scoped_refptr<ObjectProxy> object_proxy = iter->second;
     object_proxy_table_.erase(iter);
-    // Object is present. Remove it now and Detach in the DBus thread.
+    // Object is present. Remove it now and Detach on the DBus thread.
     GetDBusTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&Bus::RemoveObjectProxyInternal,
@@ -350,17 +350,54 @@ ObjectManager* Bus::GetObjectManager(const std::string& service_name,
   return object_manager.get();
 }
 
-void Bus::RemoveObjectManager(const std::string& service_name,
-                              const ObjectPath& object_path) {
+bool Bus::RemoveObjectManager(const std::string& service_name,
+                              const ObjectPath& object_path,
+                              const base::Closure& callback) {
   AssertOnOriginThread();
+  DCHECK(!callback.is_null());
 
   const ObjectManagerTable::key_type key(service_name + object_path.value());
   ObjectManagerTable::iterator iter = object_manager_table_.find(key);
   if (iter == object_manager_table_.end())
-    return;
+    return false;
 
+  // ObjectManager is present. Remove it now and CleanUp on the DBus thread.
   scoped_refptr<ObjectManager> object_manager = iter->second;
   object_manager_table_.erase(iter);
+
+  GetDBusTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&Bus::RemoveObjectManagerInternal,
+                 this, object_manager, callback));
+
+  return true;
+}
+
+void Bus::RemoveObjectManagerInternal(
+      scoped_refptr<dbus::ObjectManager> object_manager,
+      const base::Closure& callback) {
+  AssertOnDBusThread();
+  DCHECK(object_manager.get());
+
+  object_manager->CleanUp();
+
+  // The ObjectManager has to be deleted on the origin thread since it was
+  // created there.
+  GetOriginTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&Bus::RemoveObjectManagerInternalHelper,
+                 this, object_manager, callback));
+}
+
+void Bus::RemoveObjectManagerInternalHelper(
+      scoped_refptr<dbus::ObjectManager> object_manager,
+      const base::Closure& callback) {
+  AssertOnOriginThread();
+  DCHECK(object_manager.get());
+
+  // Release the object manager and run the callback.
+  object_manager = NULL;
+  callback.Run();
 }
 
 void Bus::GetManagedObjects() {
@@ -458,6 +495,12 @@ void Bus::ShutdownAndBlock() {
   for (ObjectProxyTable::iterator iter = object_proxy_table_.begin();
        iter != object_proxy_table_.end(); ++iter) {
     iter->second->Detach();
+  }
+
+  // Clean up the object managers.
+  for (ObjectManagerTable::iterator iter = object_manager_table_.begin();
+       iter != object_manager_table_.end(); ++iter) {
+    iter->second->CleanUp();
   }
 
   // Release object proxies and exported objects here. We should do this

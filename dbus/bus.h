@@ -354,9 +354,15 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   // will return a new object, method calls on any remaining copies of the
   // previous object are not permitted.
   //
+  // This method will asynchronously clean up any match rules that have been
+  // added for the object manager and invoke |callback| when the operation is
+  // complete. If this method returns false, then |callback| is never called.
+  // The |callback| argument must not be null.
+  //
   // Must be called in the origin thread.
-  virtual void RemoveObjectManager(const std::string& service_name,
-                                   const ObjectPath& object_path);
+  virtual bool RemoveObjectManager(const std::string& service_name,
+                                   const ObjectPath& object_path,
+                                   const base::Closure& callback);
 
   // Instructs all registered object managers to retrieve their set of managed
   // objects from their respective remote objects. There is no need to call this
@@ -600,6 +606,14 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   // Helper function used for RemoveObjectProxy().
   void RemoveObjectProxyInternal(scoped_refptr<dbus::ObjectProxy> object_proxy,
                                  const base::Closure& callback);
+
+  // Helper functions used for RemoveObjectManager().
+  void RemoveObjectManagerInternal(
+      scoped_refptr<dbus::ObjectManager> object_manager,
+      const base::Closure& callback);
+  void RemoveObjectManagerInternalHelper(
+      scoped_refptr<dbus::ObjectManager> object_manager,
+      const base::Closure& callback);
 
   // Helper function used for UnregisterExportedObject().
   void UnregisterExportedObjectInternal(
