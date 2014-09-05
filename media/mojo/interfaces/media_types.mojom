@@ -1,0 +1,47 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo {
+
+enum BufferingState {
+  // Indicates that there is no data buffered.
+  //
+  // Typical reason is data underflow and hence playback should be paused.
+  HAVE_NOTHING,
+
+  // Indicates that enough data has been buffered.
+  //
+  // Typical reason is enough data has been prerolled to start playback.
+  HAVE_ENOUGH,
+};
+
+// This defines a mojo transport format for media::DecoderBuffer.
+struct MediaDecoderBuffer {
+  // See media/base/buffers.h for details.
+  int64 timestamp_usec;
+  int64 duration_usec;
+
+  // The number of bytes in |data|.
+  uint32 data_size;
+
+  // This is backed by an std::vector and results in a few copies.
+  // Into the vector, onto and off the MessagePipe, back into a vector.
+  uint8[] side_data;
+  uint32 side_data_size;
+
+  // These fields indicate the amount of data to discard after decoding.
+  int64 front_discard_usec;
+  int64 back_discard_usec;
+
+  // Indicates this buffer is part of a splice around |splice_timestamp_usec|.
+  int64 splice_timestamp_usec;
+
+  // The payload.
+  // TODO(tim): This currently results in allocating a new, largeish DataPipe
+  // for each buffer. Remove this once framed data pipes exist, but using this
+  // for now for prototyping audio.
+  handle<data_pipe_consumer> data;
+};
+
+}  // module mojo

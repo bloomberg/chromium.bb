@@ -1,0 +1,36 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/system.gni")
+
+# GYP version: media/media.gyp:mojo_media_lib
+source_set("lib") {
+  deps = [
+    "//base",
+    "//media",
+    "//media/mojo/interfaces"
+    "//mojo/common",
+    "//mojo/environment:chromium",
+  ]
+
+  deps += mojo_system_for_component
+
+  sources = [
+    "media_type_converters.cc",
+    "media_type_converters.h",
+  ]
+}
+
+test("mojo_media_lib_unittests") {
+  sources = [
+    "media_type_converters_unittest.cc",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//mojo/environment:chromium",
+    "//testing/gtest",
+    ":lib"
+  ]
+}

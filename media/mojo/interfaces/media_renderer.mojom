@@ -1,0 +1,60 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import "media/mojo/interfaces/media_types.mojom"
+
+module mojo {
+
+[Client=MediaRendererClient]
+interface MediaRenderer {
+  // Initializes the Renderer, calling back upon completion.
+  // NOTE: If an error occurs, MediaRendererClient::OnError() will be called
+  // before the callback is executed.
+  Initialize() => ();
+
+  // Decodes and renders |buffer|, calling back when more data is required.
+  // NOTE: If an error occurs, MediaRendererClient::OnError() will be called
+  // before the callback is executed.
+  // TODO(tim): Switch decoding model to use framed data pipe when available.
+  // In that world, the signalling for more would be implicit by a writable
+  // pipe handle on the client side so this entire method + callback goes away.
+  DecodeAndRender(MediaDecoderBuffer buffer) => ();
+
+  // Discards any buffered data, executing callback when completed.
+  // NOTE: If an error occurs, MediaRendererClient::OnError() can be called
+  // before the callback is executed.
+  Flush() => ();
+
+  // Starts rendering from |time_usec|.
+  StartPlayingFrom(int64 time_usec);
+
+  // Updates the current playback rate. The default playback rate should be 1.
+  SetPlaybackRate(float playback_rate);
+  
+  // Sets the output volume. The default volume should be 1.
+  SetVolume(float volume);
+};
+
+interface MediaRendererClient {
+  // Called to report media time advancement by |time_usec|.
+  // |time_usec| and |max_time_usec| can be used to interpolate time between
+  // calls to OnTimeUpdate().
+  // |max_time_usec| is typically the media timestamp of the last audio frame
+  //     buffered by the audio hardware.
+  // |max_time_usec| must be greater or equal to |time_usec|.
+  OnTimeUpdate(int64 time_usec, int64 max_time_usec);
+
+  // Called to report buffering state changes, see media_types.mojom.
+  OnBufferingStateChange(BufferingState state);
+
+  // Executed when rendering has reached the end of stream.
+  OnEnded();
+
+  // Executed if any error was encountered during decode or rendering. If
+  // this error happens during an operation that has a completion callback,
+  // OnError() will be called before firing the completion callback.
+  OnError();
+};
+
+}  // module mojo

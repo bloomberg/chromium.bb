@@ -991,6 +991,62 @@
       ],
     },
     {
+      # GN version: //media/mojo/interfaces
+      'target_name': 'mojo_media_bindings',
+      'type': 'static_library',
+      'sources': [
+        'mojo/interfaces/media_types.mojom',
+        'mojo/interfaces/media_renderer.mojom',
+      ],
+      'includes': [ 
+        '../mojo/public/tools/bindings/mojom_bindings_generator.gypi'
+       ],
+      'export_dependent_settings': [
+        '../mojo/mojo_base.gyp:mojo_cpp_bindings',
+      ],
+      'dependencies': [
+        '../mojo/mojo_base.gyp:mojo_cpp_bindings',
+      ],
+    },
+    {
+      'target_name': 'mojo_media_lib',
+      'type': 'static_library',
+      'includes': [
+        '../mojo/mojo_variables.gypi',
+      ],
+      'dependencies': [
+        'media',
+        'mojo_media_bindings',
+        '../base/base.gyp:base',
+        '../mojo/mojo_base.gyp:mojo_environment_chromium',
+        '<(mojo_system_for_component)',
+      ],
+      'export_dependent_settings': [
+        'mojo_media_bindings',
+      ],
+      'sources': [
+        'mojo/services/media_type_converters.cc',
+        'mojo/services/media_type_converters.h',
+      ],
+    },
+    {
+      'target_name': 'mojo_media_lib_unittests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        'media',
+        'mojo_media_bindings',
+        'mojo_media_lib',
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        '../testing/gtest.gyp:gtest',
+        '../mojo/mojo_base.gyp:mojo_environment_chromium',
+        '../mojo/mojo_base.gyp:mojo_run_all_unittests',
+      ],
+      'sources': [
+        'mojo/services/media_type_converters_unittest.cc',
+      ],
+    }, 
+    {
       # GN version: //media:media_unittests
       'target_name': 'media_unittests',
       'type': '<(gtest_target_type)',
