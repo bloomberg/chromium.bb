@@ -4,7 +4,7 @@
 
 #include "content/public/common/content_paths.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/mac/bundle_locations.h"
 #include "base/path_service.h"
 

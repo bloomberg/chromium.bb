@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -30,7 +30,6 @@
 #include "content/public/browser/devtools_target.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/user_agent.h"
 #include "content/public/common/user_agent.h"
 #include "grit/devtools_resources_map.h"
 #include "net/base/escape.h"

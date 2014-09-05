@@ -13,7 +13,7 @@
 #include "ipc/ipc_sync_message.h"
 
 #if defined(OS_POSIX)
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "ipc/ipc_channel_posix.h"
 #endif
 

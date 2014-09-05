@@ -5,7 +5,7 @@
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 
 #include "base/callback.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"

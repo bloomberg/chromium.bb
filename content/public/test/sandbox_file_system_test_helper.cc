@@ -4,7 +4,7 @@
 
 #include "content/public/test/sandbox_file_system_test_helper.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "content/public/test/mock_special_storage_policy.h"

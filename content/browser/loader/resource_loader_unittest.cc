@@ -4,8 +4,8 @@
 
 #include "content/browser/loader/resource_loader.h"
 
-#include "base/file_util.h"
 #include "base/files/file.h"
+#include "base/files/file_util.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"

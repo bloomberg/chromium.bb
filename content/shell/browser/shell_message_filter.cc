@@ -4,7 +4,7 @@
 
 #include "content/shell/browser/shell_message_filter.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/shell/browser/shell_browser_context.h"

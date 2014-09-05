@@ -4,8 +4,8 @@
 
 #include "content/renderer/media/media_stream_audio_processor_options.h"
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"

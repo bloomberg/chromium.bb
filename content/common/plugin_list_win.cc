@@ -7,9 +7,9 @@
 #include <set>
 
 #include "base/basictypes.h"
-#include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/file_version_info_win.h"
+#include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"

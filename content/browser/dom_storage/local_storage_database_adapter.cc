@@ -4,7 +4,7 @@
 
 #include "content/browser/dom_storage/local_storage_database_adapter.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "content/browser/dom_storage/dom_storage_database.h"
 
 namespace content {

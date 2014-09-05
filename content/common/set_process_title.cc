@@ -19,8 +19,8 @@
 #if defined(OS_LINUX)
 #include <sys/prctl.h>
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"

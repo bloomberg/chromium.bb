@@ -4,8 +4,8 @@
 
 #include "content/shell/app/webkit_test_platform_support.h"
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "ui/gfx/test/fontconfig_util_linux.h"

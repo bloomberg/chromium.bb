@@ -5,7 +5,7 @@
 #include "content/browser/dom_storage/dom_storage_database.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"

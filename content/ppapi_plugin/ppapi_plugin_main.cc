@@ -30,7 +30,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #endif
 
 #if defined(OS_LINUX)

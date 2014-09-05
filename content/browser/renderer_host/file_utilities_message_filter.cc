@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/file_utilities_message_filter.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/common/file_utilities_messages.h"
 

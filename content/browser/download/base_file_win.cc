@@ -9,7 +9,7 @@
 #include <objbase.h>
 #include <shellapi.h>
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"

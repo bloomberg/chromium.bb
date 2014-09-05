@@ -4,7 +4,7 @@
 
 #include "content/test/weburl_loader_mock_factory.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "content/test/weburl_loader_mock.h"

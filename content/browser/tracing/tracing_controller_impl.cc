@@ -5,7 +5,7 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/json/string_escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/tracing/trace_message_filter.h"

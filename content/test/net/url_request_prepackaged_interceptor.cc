@@ -4,7 +4,7 @@
 
 #include "content/test/net/url_request_prepackaged_interceptor.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"

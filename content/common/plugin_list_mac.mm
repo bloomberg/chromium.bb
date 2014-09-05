@@ -7,8 +7,8 @@
 #import <Carbon/Carbon.h>
 #import <Foundation/Foundation.h>
 
-#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"

@@ -6,8 +6,8 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/files/file.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/render_process_host.h"
@@ -37,7 +37,6 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/path_utils.h"
-#include "base/path_service.h"
 #include "components/crash/browser/crash_dump_manager_android.h"
 #include "content/shell/android/shell_descriptors.h"
 #endif
