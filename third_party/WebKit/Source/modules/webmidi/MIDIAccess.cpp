@@ -37,7 +37,11 @@
 #include "modules/webmidi/MIDIAccessInitializer.h"
 #include "modules/webmidi/MIDIConnectionEvent.h"
 #include "modules/webmidi/MIDIController.h"
+#include "modules/webmidi/MIDIInput.h"
+#include "modules/webmidi/MIDIInputMap.h"
 #include "modules/webmidi/MIDIOptions.h"
+#include "modules/webmidi/MIDIOutput.h"
+#include "modules/webmidi/MIDIOutputMap.h"
 #include "modules/webmidi/MIDIPort.h"
 #include "platform/AsyncMethodRunner.h"
 #include <v8.h>
@@ -63,6 +67,34 @@ MIDIAccess::MIDIAccess(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, con
 
 MIDIAccess::~MIDIAccess()
 {
+}
+
+MIDIInputMap* MIDIAccess::inputs() const
+{
+    HeapHashMap<String, Member<MIDIInput> > inputs;
+    for (size_t i = 0; i < m_inputs.size(); ++i) {
+        MIDIInput* input = m_inputs[i];
+        inputs.add(input->id(), input);
+    }
+    if (inputs.size() != m_inputs.size()) {
+        // There is id duplication that violates the spec.
+        inputs.clear();
+    }
+    return new MIDIInputMap(inputs);
+}
+
+MIDIOutputMap* MIDIAccess::outputs() const
+{
+    HeapHashMap<String, Member<MIDIOutput> > outputs;
+    for (size_t i = 0; i < m_outputs.size(); ++i) {
+        MIDIOutput* output = m_outputs[i];
+        outputs.add(output->id(), output);
+    }
+    if (outputs.size() != m_outputs.size()) {
+        // There is id duplication that violates the spec.
+        outputs.clear();
+    }
+    return new MIDIOutputMap(outputs);
 }
 
 void MIDIAccess::didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version)

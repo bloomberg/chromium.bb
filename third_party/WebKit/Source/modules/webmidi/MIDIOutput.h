@@ -60,8 +60,6 @@ private:
     unsigned m_portIndex;
 };
 
-typedef HeapVector<Member<MIDIOutput> > MIDIOutputVector;
-
 } // namespace blink
 
 #endif // MIDIOutput_h

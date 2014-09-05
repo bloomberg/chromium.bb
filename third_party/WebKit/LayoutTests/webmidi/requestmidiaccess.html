@@ -8,44 +8,79 @@
 description("Tests navigator.requestMIDIAccess.");
 
 var access;
+var input;
 var output;
+
+function checkInputMap(inputs) {
+    window.inputs = inputs;
+    shouldBe("access.inputs.size", "1");
+    for (var input of inputs) {
+        window.input = input;
+        shouldBeEqualToString("input.id", "MockInputID");
+        shouldBeEqualToString("input.manufacturer", "MockInputManufacturer");
+        shouldBeEqualToString("input.name", "MockInputName");
+        shouldBeEqualToString("input.version", "MockInputVersion");
+    }
+    for (var key of inputs.keys()) {
+        window.inputKey = key;
+        shouldBeEqualToString("inputKey", "MockInputID");
+    }
+    for (var entry of inputs.entries()) {
+        window.entry = entry;
+        shouldBe("entry[0]", "inputKey");
+        shouldBe("entry[1]", "input");
+    }
+    for (var input of inputs.values()) {
+        window.inputValue = input;
+        shouldBe("inputValue", "input");
+    }
+    shouldBeTrue("inputs.has('MockInputID')");
+    shouldBeFalse("inputs.has('MockOutputID')");
+    shouldBe("inputs.get('MockInputID')", "input");
+    shouldBeUndefined("inputs.get('MockOutputID')");
+}
+
+function checkOutputMap(outputs) {
+    window.outputs = outputs;
+    for (var output of outputs.values()) {
+        window.output = output;
+        shouldBeEqualToString("output.id", "MockOutputID");
+        shouldBeEqualToString("output.manufacturer", "MockOutputManufacturer");
+        shouldBeEqualToString("output.name", "MockOutputName");
+        shouldBeEqualToString("output.version", "MockOutputVersion");
+    }
+    for (var key of outputs.keys()) {
+        window.outputKey = key;
+        shouldBeEqualToString("outputKey", "MockOutputID");
+    }
+    for (var entry of outputs.entries()) {
+        window.entry = entry;
+        shouldBe("entry[0]", "outputKey");
+        shouldBe("entry[1]", "output");
+    }
+    for (var output of outputs.values()) {
+        window.outputValue = output;
+        shouldBe("outputValue", "output");
+    }
+    shouldBeTrue("outputs.has('MockOutputID')");
+    shouldBeFalse("outputs.has('MockInputID')");
+    shouldBe("outputs.get('MockOutputID')", "output");
+    shouldBeUndefined("outputs.get('MockInputID')");
+}
+
 function successCallback1(a) {
     access = a;
 
     testPassed("requestMIDIAccess() succeeded with access " + access + ".");
 
-    // Validate that we have one mock input and one mock output.
-    shouldBe("access.inputs().length", "1");
-    shouldBe("access.outputs().length", "1");
-
     // Validate the values of the attributes on the access.
     shouldBeDefined("access.sysexEnabled");
     shouldBeFalse("access.sysexEnabled");
 
-    var inputs = access.inputs();
-    var outputs = access.outputs();
-    var input = inputs[0];
-    output = outputs[0];
+    checkInputMap(access.inputs);
+    checkOutputMap(access.outputs);
 
-    // Validate the values of the attributes on the input and output.
-    if (input.id == "MockInputID" &&
-        input.manufacturer == "MockInputManufacturer" &&
-        input.name == "MockInputName" &&
-        input.version == "MockInputVersion") {
-        testPassed("input attributes are correct");
-    } else {
-        testFailed("input attributes are not correct");
-    }
-
-    if (output.id == "MockOutputID" &&
-        output.manufacturer == "MockOutputManufacturer" &&
-        output.name == "MockOutputName" &&
-        output.version == "MockOutputVersion") {
-        testPassed("output attributes are correct");
-    } else {
-        testFailed("output attributes are not correct");
-    }
-
+    window.output = access.outputs[Symbol.iterator]().next().value;
     // Test sending of MIDI data with a Uint8Array.
     var typedArrayData = new Uint8Array([0x90, 0x45, 0x7f]);
     output.send(typedArrayData);

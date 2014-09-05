@@ -58,8 +58,6 @@ private:
     MIDIInput(MIDIAccess*, const String& id, const String& manufacturer, const String& name, const String& version);
 };
 
-typedef HeapVector<Member<MIDIInput> > MIDIInputVector;
-
 } // namespace blink
 
 #endif // MIDIInput_h

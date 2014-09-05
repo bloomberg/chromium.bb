@@ -910,4 +910,20 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(Executio
     return InspectorFunctionCallEvent::data(context, scriptId, resourceName, lineNumber);
 }
 
+v8::Local<v8::Value> v8DoneIteratorResult(v8::Isolate* isolate)
+{
+    v8::Local<v8::Object> result = v8::Object::New(isolate);
+    result->Set(v8String(isolate, "value"), v8::Undefined(isolate));
+    result->Set(v8String(isolate, "done"), v8Boolean(true, isolate));
+    return result;
+}
+
+v8::Local<v8::Value> v8IteratorResult(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    v8::Local<v8::Object> result = v8::Object::New(isolate);
+    result->Set(v8String(isolate, "value"), value);
+    result->Set(v8String(isolate, "done"), v8Boolean(false, isolate));
+    return result;
+}
+
 } // namespace blink

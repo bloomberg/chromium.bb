@@ -4,12 +4,33 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS requestMIDIAccess() succeeded with access [object MIDIAccess].
-PASS access.inputs().length is 1
-PASS access.outputs().length is 1
 PASS access.sysexEnabled is defined.
 PASS access.sysexEnabled is false
-PASS input attributes are correct
-PASS output attributes are correct
+PASS access.inputs.size is 1
+PASS input.id is "MockInputID"
+PASS input.manufacturer is "MockInputManufacturer"
+PASS input.name is "MockInputName"
+PASS input.version is "MockInputVersion"
+PASS inputKey is "MockInputID"
+PASS entry[0] is inputKey
+PASS entry[1] is input
+PASS inputValue is input
+PASS inputs.has('MockInputID') is true
+PASS inputs.has('MockOutputID') is false
+PASS inputs.get('MockInputID') is input
+PASS inputs.get('MockOutputID') is undefined.
+PASS output.id is "MockOutputID"
+PASS output.manufacturer is "MockOutputManufacturer"
+PASS output.name is "MockOutputName"
+PASS output.version is "MockOutputVersion"
+PASS outputKey is "MockOutputID"
+PASS entry[0] is outputKey
+PASS entry[1] is output
+PASS outputValue is output
+PASS outputs.has('MockOutputID') is true
+PASS outputs.has('MockInputID') is false
+PASS outputs.get('MockOutputID') is output
+PASS outputs.get('MockInputID') is undefined.
 PASS a note on message is sent without timestamp
 PASS a note on message is sent with timestamp
 PASS output.send([0xfff, 0x45, 0x7f]) threw exception TypeError: Failed to execute 'send' on 'MIDIOutput': The value at index 0 (4095) is greater than 0xFF..

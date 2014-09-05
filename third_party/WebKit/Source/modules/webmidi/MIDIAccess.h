@@ -37,14 +37,16 @@
 #include "modules/webmidi/MIDIAccessInitializer.h"
 #include "modules/webmidi/MIDIAccessor.h"
 #include "modules/webmidi/MIDIAccessorClient.h"
-#include "modules/webmidi/MIDIInput.h"
-#include "modules/webmidi/MIDIOutput.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
 class ExecutionContext;
+class MIDIInput;
+class MIDIInputMap;
+class MIDIOutput;
+class MIDIOutputMap;
 struct MIDIOptions;
 
 class MIDIAccess FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MIDIAccess>, public ActiveDOMObject, public EventTargetWithInlineData, public MIDIAccessorClient {
@@ -60,8 +62,8 @@ public:
     }
     virtual ~MIDIAccess();
 
-    MIDIInputVector inputs() const { return m_inputs; }
-    MIDIOutputVector outputs() const { return m_outputs; }
+    MIDIInputMap* inputs() const;
+    MIDIOutputMap* outputs() const;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
@@ -96,8 +98,8 @@ private:
 
     OwnPtr<MIDIAccessor> m_accessor;
     bool m_sysexEnabled;
-    MIDIInputVector m_inputs;
-    MIDIOutputVector m_outputs;
+    HeapVector<Member<MIDIInput> > m_inputs;
+    HeapVector<Member<MIDIOutput> > m_outputs;
 };
 
 } // namespace blink

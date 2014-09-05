@@ -32,8 +32,8 @@
     NoInterfaceObject,
     ActiveDOMObject
 ] interface MIDIAccess : EventTarget {
-    sequence<MIDIInput> inputs();
-    sequence<MIDIOutput> outputs();
+    readonly attribute MIDIInputMap inputs;
+    readonly attribute MIDIOutputMap outputs;
 
     readonly attribute boolean sysexEnabled;
 

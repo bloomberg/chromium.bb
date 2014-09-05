@@ -1,0 +1,22 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// FIXME: Implement forEach.
+// callback ForEachCallback = void(DOMString id, MIDIOutput port);
+
+[
+    Iterable,
+    NoInterfaceObject,
+    GarbageCollected,
+] interface MIDIOutputMap {
+    readonly attribute unsigned long size;
+    Iterator keys();
+    Iterator entries();
+    Iterator values();
+    // This function returns undefined if |!this->has(id)|.
+    [ImplementedAs=getForBinding, CallWith=ScriptState] any get(DOMString id);
+    boolean has(DOMString key);
+    // FIXME: Implement forEach.
+    // void forEach (ForEachCallback callback);
+};

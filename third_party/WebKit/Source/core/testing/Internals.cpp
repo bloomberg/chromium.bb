@@ -154,14 +154,11 @@ public:
     virtual ScriptValue next(ScriptState* scriptState, ExceptionState& exceptionState) OVERRIDE
     {
         v8::Isolate* isolate = scriptState->isolate();
-        v8::Local<v8::Value> value = v8::Integer::New(isolate, m_current * m_current);
-        bool done = (m_current >= 5);
+        int value = m_current * m_current;
+        if (m_current >= 5)
+            return ScriptValue(scriptState, v8DoneIteratorResult(isolate));
         ++m_current;
-
-        v8::Local<v8::Object> result = v8::Object::New(isolate);
-        result->Set(v8String(isolate, "value"), value);
-        result->Set(v8String(isolate, "done"), v8Boolean(done, isolate));
-        return ScriptValue(scriptState, result);
+        return ScriptValue(scriptState, v8IteratorResult(scriptState, value));
     }
 
     virtual ScriptValue next(ScriptState* scriptState, ScriptValue value, ExceptionState& exceptionState) OVERRIDE

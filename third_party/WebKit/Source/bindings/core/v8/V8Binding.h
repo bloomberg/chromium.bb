@@ -209,10 +209,14 @@ inline v8::Handle<v8::Value> v8Undefined()
     return v8::Handle<v8::Value>();
 }
 
-// Converts a DOM object to a v8 value.
-// This is a no-inline version of toV8(). If you want to call toV8()
-// without creating #include cycles, you can use this function instead.
-// Each specialized implementation will be generated.
+// Converts a DOM object to a v8 value. This function is intended to be used
+// internally. If you want to convert a DOM object to a V8 value,
+//  - Use toV8 if you can include V8X.h.
+//  - Use V8ValueTraits<T>::toV8Value if you cannot include V8X.h.
+// Note: Including bindings/{core, modules}/v8/V8*.h from core and modules
+// is fine. In such a case, perhaps toV8 is what you want.
+// Note: toV8NoInline is a non-inline toV8 and V8ValueTraits::toV8Value offers
+// more: You can handle value conversion generally with it.
 template<typename T>
 v8::Handle<v8::Value> toV8NoInline(T* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
@@ -959,6 +963,17 @@ public:
 private:
     v8::TryCatch& m_block;
 };
+
+// Returns an object representing {done: true, value: undefined}.
+v8::Local<v8::Value> v8DoneIteratorResult(v8::Isolate*);
+
+// Returns an object representing {done: false, value: |value|}.
+v8::Local<v8::Value> v8IteratorResult(v8::Isolate*, v8::Handle<v8::Value>);
+template <typename T>
+v8::Local<v8::Value> v8IteratorResult(ScriptState* scriptState, const T& value)
+{
+    return v8IteratorResult(scriptState->isolate(), V8ValueTraits<T>::toV8Value(value, scriptState->context()->Global(), scriptState->isolate()));
+}
 
 } // namespace blink
 
