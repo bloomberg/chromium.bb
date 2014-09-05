@@ -83,6 +83,7 @@ public:
     virtual bool currentFrameKnownToBeOpaque() OVERRIDE;
 
     ImageOrientation currentFrameOrientation();
+    void resetDecoder();
 
 #if ENABLE(ASSERT)
     virtual bool notSolidColor() OVERRIDE;
@@ -91,7 +92,6 @@ public:
 private:
     friend class BitmapImageTest;
 
-    void resetDecoder();
     void updateSize() const;
 
 protected:

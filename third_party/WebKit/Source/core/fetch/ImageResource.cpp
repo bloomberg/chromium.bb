@@ -385,6 +385,19 @@ void ImageResource::updateImage(bool allDataReceived)
     }
 }
 
+void ImageResource::updateBitmapImages(HashSet<ImageResource*>& images, bool redecodeImages)
+{
+    for (HashSet<ImageResource*>::iterator it = images.begin(); it != images.end(); ++it) {
+        ImageResource* imageResource = *it;
+        if (!imageResource->hasImage() || imageResource->image()->isNull())
+            continue;
+        BitmapImage* image = toBitmapImage(imageResource->image());
+        if (redecodeImages)
+            image->resetDecoder();
+        imageResource->updateImage(image->isAllDataReceived());
+    }
+}
+
 void ImageResource::finishOnePart()
 {
     if (m_loadingMultipartContent)

@@ -81,6 +81,8 @@ public:
     LayoutSize imageSizeForRenderer(const RenderObject*, float multiplier, SizeType = NormalSize); // returns the size of the complete image.
     void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio);
 
+    static void updateBitmapImages(HashSet<ImageResource*>&, bool redecodeImages = false);
+
     bool isAccessAllowed(SecurityOrigin*);
 
     virtual void didAddClient(ResourceClient*) OVERRIDE;
