@@ -82,6 +82,22 @@ function wait_for_state(test, worker, state) {
     }));
 }
 
+function wait_for_activated(test, registration) {
+  var expected_state = 'activated';
+  if (registration.active) {
+    if (registration.active.state === expected_state)
+      return Promise.resolve(registration.active);
+    else
+      return wait_for_state(test, registration.active, expected_state);
+  }
+  if (registration.waiting)
+    return wait_for_state(test, registration.waiting, expected_state);
+  if (registration.installing)
+    return wait_for_state(test, registration.installing, expected_state);
+  return Promise.reject(
+      new Error('registration must have at least one version'));
+}
+
 (function() {
   function fetch_tests_from_worker(worker) {
     return new Promise(function(resolve, reject) {
