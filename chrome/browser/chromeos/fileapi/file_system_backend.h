@@ -131,6 +131,9 @@ class FileSystemBackend : public storage::ExternalFileSystemBackend {
       const std::string& extension_id) OVERRIDE;
   virtual bool GetVirtualPath(const base::FilePath& filesystem_path,
                               base::FilePath* virtual_path) OVERRIDE;
+  virtual void GetRedirectURLForContents(
+      const storage::FileSystemURL& url,
+      const storage::URLCallback& callback) OVERRIDE;
 
  private:
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;

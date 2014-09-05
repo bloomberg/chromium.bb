@@ -387,4 +387,33 @@ bool FileSystemBackend::GetVirtualPath(
          system_mount_points_->GetVirtualPath(filesystem_path, virtual_path);
 }
 
+void FileSystemBackend::GetRedirectURLForContents(
+    const storage::FileSystemURL& url,
+    const storage::URLCallback& callback) {
+  DCHECK(url.is_valid());
+
+  if (!IsAccessAllowed(url))
+    return callback.Run(GURL());
+
+  switch (url.type()) {
+    case storage::kFileSystemTypeDrive:
+      drive_delegate_->GetRedirectURLForContents(url, callback);
+      return;
+    case storage::kFileSystemTypeProvided:
+      file_system_provider_delegate_->GetRedirectURLForContents(url,
+                                                                  callback);
+      return;
+    case storage::kFileSystemTypeDeviceMediaAsFileStorage:
+      mtp_delegate_->GetRedirectURLForContents(url, callback);
+      return;
+    case storage::kFileSystemTypeNativeLocal:
+    case storage::kFileSystemTypeRestrictedNativeLocal:
+      callback.Run(GURL());
+      return;
+    default:
+      NOTREACHED();
+  }
+  callback.Run(GURL());
+}
+
 }  // namespace chromeos

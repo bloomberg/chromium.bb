@@ -20,20 +20,20 @@
 class GURL;
 
 namespace storage {
-class FileStreamReader;
-}
-
-namespace storage {
 
 class AsyncFileUtil;
 class CopyOrMoveFileValidatorFactory;
 class FileSystemURL;
+class FileStreamReader;
 class FileStreamWriter;
 class FileSystemContext;
 class FileSystemFileUtil;
 class FileSystemOperation;
 class FileSystemQuotaUtil;
 class WatcherManager;
+
+// Callback to take GURL.
+typedef base::Callback<void(const GURL& url)> URLCallback;
 
 // An interface for defining a file system backend.
 //
@@ -157,6 +157,11 @@ class ExternalFileSystemBackend : public FileSystemBackend {
   // path is not exposed by this provider.
   virtual bool GetVirtualPath(const base::FilePath& file_system_path,
                               base::FilePath* virtual_path) = 0;
+  // Gets a redirect URL for contents. e.g. Google Drive URL for hosted
+  // documents. Returns empty URL if the entry does not have the redirect URL.
+  virtual void GetRedirectURLForContents(
+      const storage::FileSystemURL& url,
+      const storage::URLCallback& callback) = 0;
 };
 
 }  // namespace storage

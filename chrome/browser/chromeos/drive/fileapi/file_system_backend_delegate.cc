@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/fileapi/async_file_util.h"
 #include "chrome/browser/chromeos/drive/fileapi/fileapi_worker.h"
@@ -22,6 +23,46 @@
 using content::BrowserThread;
 
 namespace drive {
+namespace {
+
+// Called on the UI thread after GetRedirectURLForContentsOnUIThread. Obtains
+// the browser URL from |entry|. |callback| will be called on the IO thread.
+void GetRedirectURLForContentsOnUIThreadWithResourceEntry(
+    const storage::URLCallback& callback,
+    FileError error,
+    scoped_ptr<ResourceEntry> entry) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  GURL url;
+  if (error == FILE_ERROR_OK && entry->has_file_specific_info() &&
+      entry->file_specific_info().is_hosted_document()) {
+    url = GURL(entry->file_specific_info().alternate_url());
+  }
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE, base::Bind(callback, url));
+}
+
+// Called on the UI thread after
+// FileSystemBackendDelegate::GetRedirectURLForContents.  Requestes to obtain
+// ResourceEntry for the |url|.
+void GetRedirectURLForContentsOnUIThread(
+    const storage::FileSystemURL& url,
+    const storage::URLCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  FileSystemInterface* const file_system =
+      fileapi_internal::GetFileSystemFromUrl(url);
+  if (!file_system) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE, base::Bind(callback, GURL()));
+    return;
+  }
+  const base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
+  file_system->GetResourceEntry(
+      file_path,
+      base::Bind(&GetRedirectURLForContentsOnUIThreadWithResourceEntry,
+                 callback));
+}
+
+}  // namespace
 
 FileSystemBackendDelegate::FileSystemBackendDelegate()
     : async_file_util_(new internal::AsyncFileUtil) {
@@ -84,6 +125,16 @@ storage::WatcherManager* FileSystemBackendDelegate::GetWatcherManager(
     const storage::FileSystemURL& url) {
   NOTIMPLEMENTED();
   return NULL;
+}
+
+void FileSystemBackendDelegate::GetRedirectURLForContents(
+    const storage::FileSystemURL& url,
+    const storage::URLCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&GetRedirectURLForContentsOnUIThread, url, callback));
 }
 
 }  // namespace drive

@@ -41,6 +41,9 @@ class FileSystemBackendDelegate : public chromeos::FileSystemBackendDelegate {
       storage::FileSystemContext* context) OVERRIDE;
   virtual storage::WatcherManager* GetWatcherManager(
       const storage::FileSystemURL& url) OVERRIDE;
+  virtual void GetRedirectURLForContents(
+      const storage::FileSystemURL& url,
+      const storage::URLCallback& callback) OVERRIDE;
 
  private:
   scoped_ptr<storage::AsyncFileUtil> async_file_util_;

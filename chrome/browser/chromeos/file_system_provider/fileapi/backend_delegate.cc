@@ -69,5 +69,13 @@ storage::WatcherManager* BackendDelegate::GetWatcherManager(
   return NULL;
 }
 
+void BackendDelegate::GetRedirectURLForContents(
+    const storage::FileSystemURL& url,
+    const storage::URLCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_EQ(storage::kFileSystemTypeProvided, url.type());
+  callback.Run(GURL());
+}
+
 }  // namespace file_system_provider
 }  // namespace chromeos

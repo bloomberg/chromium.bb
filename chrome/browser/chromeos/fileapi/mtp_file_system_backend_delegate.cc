@@ -56,4 +56,12 @@ storage::WatcherManager* MTPFileSystemBackendDelegate::GetWatcherManager(
   return NULL;
 }
 
+void MTPFileSystemBackendDelegate::GetRedirectURLForContents(
+    const storage::FileSystemURL& url,
+    const storage::URLCallback& callback) {
+  DCHECK_EQ(storage::kFileSystemTypeDeviceMediaAsFileStorage, url.type());
+
+  callback.Run(GURL());
+}
+
 }  // namespace chromeos
