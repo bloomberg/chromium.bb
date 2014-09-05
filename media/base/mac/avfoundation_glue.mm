@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "media/video/capture/mac/avfoundation_glue.h"
+#import "media/base/mac/avfoundation_glue.h"
 
 #include <dlfcn.h>
 

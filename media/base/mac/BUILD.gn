@@ -1,0 +1,16 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(is_mac || is_ios)
+
+source_set("mac") {
+  set_sources_assignment_filter([])
+  sources = [
+    "avfoundation_glue.h",
+    "avfoundation_glue.mm",
+    "coremedia_glue.h",
+    "coremedia_glue.mm",
+  ]
+  set_sources_assignment_filter(sources_assignment_filter)
+}

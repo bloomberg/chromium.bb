@@ -14,7 +14,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/browser/browser_thread.h"
-#import "media/video/capture/mac/avfoundation_glue.h"
+#import "media/base/mac/avfoundation_glue.h"
 
 using content::BrowserThread;
 

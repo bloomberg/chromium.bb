@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_VIDEO_CAPTURE_MAC_COREMEDIA_GLUE_H_
-#define MEDIA_VIDEO_CAPTURE_MAC_COREMEDIA_GLUE_H_
+#ifndef MEDIA_BASE_MAC_COREMEDIA_GLUE_H_
+#define MEDIA_BASE_MAC_COREMEDIA_GLUE_H_
 
-#import <CoreVideo/CoreVideo.h>
-#import <Foundation/Foundation.h>
+#include <CoreVideo/CoreVideo.h>
 
 #include "base/basictypes.h"
 #include "media/base/media_export.h"
@@ -63,4 +62,4 @@ class MEDIA_EXPORT CoreMediaGlue {
   DISALLOW_IMPLICIT_CONSTRUCTORS(CoreMediaGlue);
 };
 
-#endif  // MEDIA_VIDEO_CAPTURE_MAC_COREMEDIA_GLUE_H_
+#endif  // MEDIA_BASE_MAC_COREMEDIA_GLUE_H_

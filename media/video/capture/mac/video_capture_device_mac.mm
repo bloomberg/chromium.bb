@@ -16,7 +16,7 @@
 #include "base/mac/scoped_ioplugininterface.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#import "media/video/capture/mac/avfoundation_glue.h"
+#import "media/base/mac/avfoundation_glue.h"
 #import "media/video/capture/mac/platform_video_capturing_mac.h"
 #import "media/video/capture/mac/video_capture_device_avfoundation_mac.h"
 #import "media/video/capture/mac/video_capture_device_qtkit_mac.h"

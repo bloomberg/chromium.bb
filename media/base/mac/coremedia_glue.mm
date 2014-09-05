@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/video/capture/mac/coremedia_glue.h"
+#include "media/base/mac/coremedia_glue.h"
 
 #include <dlfcn.h>
+#import <Foundation/Foundation.h>
 
 #include "base/logging.h"
 #include "base/lazy_instance.h"

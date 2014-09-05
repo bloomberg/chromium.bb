@@ -9,14 +9,14 @@
 // clients can use AVFoundation via the rest of the classes declared in this
 // file.
 
-#ifndef MEDIA_VIDEO_CAPTURE_MAC_AVFOUNDATION_GLUE_H_
-#define MEDIA_VIDEO_CAPTURE_MAC_AVFOUNDATION_GLUE_H_
+#ifndef MEDIA_BASE_MAC_AVFOUNDATION_GLUE_H_
+#define MEDIA_BASE_MAC_AVFOUNDATION_GLUE_H_
 
 #import <Foundation/Foundation.h>
 
 #include "base/basictypes.h"
+#include "media/base/mac/coremedia_glue.h"
 #include "media/base/media_export.h"
-#import "media/video/capture/mac/coremedia_glue.h"
 
 class MEDIA_EXPORT AVFoundationGlue {
  public:
@@ -168,4 +168,4 @@ MEDIA_EXPORT
 
 @end
 
-#endif  // MEDIA_VIDEO_CAPTURE_MAC_AVFOUNDATION_GLUE_H_
+#endif  // MEDIA_BASE_MAC_AVFOUNDATION_GLUE_H_

@@ -4,8 +4,8 @@
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop_proxy.h"
+#import "media/base/mac/avfoundation_glue.h"
 #include "media/base/media_switches.h"
-#import "media/video/capture/mac/avfoundation_glue.h"
 #include "media/video/capture/mac/video_capture_device_factory_mac.h"
 #include "media/video/capture/mac/video_capture_device_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"

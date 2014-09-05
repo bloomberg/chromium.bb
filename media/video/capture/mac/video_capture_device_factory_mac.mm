@@ -10,9 +10,9 @@
 #include "base/location.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
-#import "media/video/capture/mac/avfoundation_glue.h"
-#include "media/video/capture/mac/video_capture_device_mac.h"
+#import "media/base/mac/avfoundation_glue.h"
 #import "media/video/capture/mac/video_capture_device_avfoundation_mac.h"
+#include "media/video/capture/mac/video_capture_device_mac.h"
 #import "media/video/capture/mac/video_capture_device_qtkit_mac.h"
 
 namespace media {
