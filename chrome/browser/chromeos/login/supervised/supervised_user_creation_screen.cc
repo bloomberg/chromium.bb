@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/camera_detector.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
@@ -84,6 +85,13 @@ void ConfigureErrorScreen(ErrorScreen* screen,
 }
 
 } // namespace
+
+// static
+SupervisedUserCreationScreen* SupervisedUserCreationScreen::Get(
+    ScreenManager* manager) {
+  return static_cast<SupervisedUserCreationScreen*>(
+      manager->GetScreen(WizardController::kSupervisedUserCreationScreenName));
+}
 
 SupervisedUserCreationScreen::SupervisedUserCreationScreen(
     ScreenObserver* observer,

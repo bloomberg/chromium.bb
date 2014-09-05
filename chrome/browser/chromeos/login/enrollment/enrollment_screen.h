@@ -18,6 +18,7 @@
 
 namespace chromeos {
 
+class ScreenManager;
 class ScreenObserver;
 
 // The screen implementation that links the enterprise enrollment UI into the
@@ -29,6 +30,8 @@ class EnrollmentScreen
   EnrollmentScreen(ScreenObserver* observer,
                    EnrollmentScreenActor* actor);
   virtual ~EnrollmentScreen();
+
+  static EnrollmentScreen* Get(ScreenManager* manager);
 
   void SetParameters(EnrollmentScreenActor::EnrollmentMode enrollment_mode,
                      const std::string& management_domain,

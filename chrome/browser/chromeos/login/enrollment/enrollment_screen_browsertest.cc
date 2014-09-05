@@ -37,7 +37,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, TestCancel) {
   ASSERT_TRUE(WizardController::default_controller() != NULL);
 
   EnrollmentScreen* enrollment_screen =
-      WizardController::default_controller()->GetEnrollmentScreen();
+      EnrollmentScreen::Get(WizardController::default_controller());
   ASSERT_TRUE(enrollment_screen != NULL);
 
   base::RunLoop run_loop;
@@ -65,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, DISABLED_TestSuccess) {
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
 
   EnrollmentScreen* enrollment_screen =
-      WizardController::default_controller()->GetEnrollmentScreen();
+      EnrollmentScreen::Get(WizardController::default_controller());
   ASSERT_TRUE(enrollment_screen != NULL);
 
   base::RunLoop run_loop;
@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(ProvisionedEnrollmentScreenTest, TestBackButton) {
   ASSERT_TRUE(WizardController::default_controller() != NULL);
 
   EnrollmentScreen* enrollment_screen =
-      WizardController::default_controller()->GetEnrollmentScreen();
+      EnrollmentScreen::Get(WizardController::default_controller());
   ASSERT_TRUE(enrollment_screen != NULL);
 
   base::RunLoop run_loop;

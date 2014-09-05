@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 
 class PrefRegistrySimple;
@@ -51,7 +52,7 @@ class UserImageScreen;
 
 // Class that manages control flow between wizard screens. Wizard controller
 // interacts with screen controllers to move the user between screens.
-class WizardController : public ScreenObserver {
+class WizardController : public ScreenObserver, public ScreenManager {
  public:
   // Observes screen changes.
   class Observer {
@@ -125,17 +126,6 @@ class WizardController : public ScreenObserver {
   // reworked at hackaton.
   void EnableUserImageScreenReturnToPreviousHack();
 
-  // Lazy initializers and getters for screens.
-  WizardScreen* GetScreen(const std::string& screen_name);
-  WizardScreen* CreateScreen(const std::string& screen_name);
-
-  // Typed getters for the screens.
-  NetworkScreen* GetNetworkScreen();
-  UpdateScreen* GetUpdateScreen();
-  UserImageScreen* GetUserImageScreen();
-  EnrollmentScreen* GetEnrollmentScreen();
-  AutoEnrollmentCheckScreen* GetAutoEnrollmentCheckScreen();
-  SupervisedUserCreationScreen* GetSupervisedUserCreationScreen();
 
   // Returns a pointer to the current screen or NULL if there's no such
   // screen.
@@ -143,6 +133,9 @@ class WizardController : public ScreenObserver {
 
   // Returns true if the current wizard instance has reached the login screen.
   bool login_screen_started() const { return login_screen_started_; }
+
+  // ScreenManager implementation.
+  virtual WizardScreen* CreateScreen(const std::string& screen_name) OVERRIDE;
 
   static const char kNetworkScreenName[];
   static const char kLoginScreenName[];
@@ -311,11 +304,6 @@ class WizardController : public ScreenObserver {
   static bool skip_post_login_screens_;
 
   static bool zero_delay_enabled_;
-
-  // Screens.
-
-  typedef std::map<std::string, linked_ptr<WizardScreen> > ScreenMap;
-  ScreenMap screens_;
 
   // Screen that's currently active.
   WizardScreen* current_screen_;

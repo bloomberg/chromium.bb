@@ -740,7 +740,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerEnrollmentFlowTest,
   OnExit(ScreenObserver::UPDATE_INSTALLED);
 
   AutoEnrollmentCheckScreen* screen =
-      WizardController::default_controller()->GetAutoEnrollmentCheckScreen();
+      AutoEnrollmentCheckScreen::Get(WizardController::default_controller());
   EXPECT_EQ(screen,
             WizardController::default_controller()->current_screen());
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(1);

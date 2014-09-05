@@ -22,6 +22,7 @@ namespace chromeos {
 
 class ErrorScreen;
 class NetworkState;
+class ScreenManager;
 class ScreenObserver;
 
 // Controller for the update screen. It does not depend on the specific
@@ -34,6 +35,8 @@ class UpdateScreen: public UpdateEngineClient::Observer,
  public:
   UpdateScreen(ScreenObserver* screen_observer, UpdateScreenActor* actor);
   virtual ~UpdateScreen();
+
+  static UpdateScreen* Get(ScreenManager* manager);
 
   // Overridden from WizardScreen.
   virtual void PrepareToShow() OVERRIDE;

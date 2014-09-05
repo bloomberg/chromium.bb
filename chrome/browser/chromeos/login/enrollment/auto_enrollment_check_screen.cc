@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/chromeos_switches.h"
@@ -15,6 +16,13 @@
 #include "chromeos/network/network_state_handler.h"
 
 namespace chromeos {
+
+// static
+AutoEnrollmentCheckScreen* AutoEnrollmentCheckScreen::Get(
+    ScreenManager* manager) {
+  return static_cast<AutoEnrollmentCheckScreen*>(
+      manager->GetScreen(WizardController::kAutoEnrollmentCheckScreenName));
+}
 
 AutoEnrollmentCheckScreen::AutoEnrollmentCheckScreen(
     ScreenObserver* observer,

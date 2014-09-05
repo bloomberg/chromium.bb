@@ -23,6 +23,7 @@ class Profile;
 namespace chromeos {
 
 class NetworkState;
+class ScreenManager;
 
 // Class that controls screen showing ui for supervised user creation.
 class SupervisedUserCreationScreen
@@ -38,6 +39,8 @@ class SupervisedUserCreationScreen
       ScreenObserver* observer,
       SupervisedUserCreationScreenHandler* actor);
   virtual ~SupervisedUserCreationScreen();
+
+  static SupervisedUserCreationScreen* Get(ScreenManager* manager);
 
   // Makes screen to show message about inconsistency in manager login flow
   // (e.g. password change detected, invalid OAuth token, etc).

@@ -273,49 +273,8 @@ void WizardController::Init(
     ShowWrongHWIDScreen();
 }
 
-chromeos::NetworkScreen* WizardController::GetNetworkScreen() {
-  return static_cast<chromeos::NetworkScreen*>(GetScreen(kNetworkScreenName));
-}
-
-chromeos::UpdateScreen* WizardController::GetUpdateScreen() {
-  return static_cast<chromeos::UpdateScreen*>(GetScreen(kUpdateScreenName));
-}
-
-chromeos::UserImageScreen* WizardController::GetUserImageScreen() {
-  return static_cast<chromeos::UserImageScreen*>(
-      GetScreen(kUserImageScreenName));
-}
-
-chromeos::EnrollmentScreen* WizardController::GetEnrollmentScreen() {
-  return static_cast<chromeos::EnrollmentScreen*>(
-      GetScreen(kEnrollmentScreenName));
-}
-
-chromeos::AutoEnrollmentCheckScreen*
-    WizardController::GetAutoEnrollmentCheckScreen() {
-  return static_cast<chromeos::AutoEnrollmentCheckScreen*>(
-      GetScreen(kAutoEnrollmentCheckScreenName));
-}
-
-chromeos::SupervisedUserCreationScreen*
-    WizardController::GetSupervisedUserCreationScreen() {
-  return static_cast<chromeos::SupervisedUserCreationScreen*>(
-      GetScreen(kSupervisedUserCreationScreenName));
-}
-
 chromeos::ErrorScreen* WizardController::GetErrorScreen() {
   return static_cast<chromeos::ErrorScreen*>(GetScreen(kErrorScreenName));
-}
-
-WizardScreen* WizardController::GetScreen(const std::string& screen_name) {
-  ScreenMap::const_iterator iter = screens_.find(screen_name);
-  if (iter != screens_.end()) {
-    return iter->second.get();
-  }
-  WizardScreen* result = CreateScreen(screen_name);
-  DCHECK(result) << "Can not create screen named " << screen_name;
-  screens_[screen_name] = make_linked_ptr(result);
-  return result;
 }
 
 WizardScreen* WizardController::CreateScreen(const std::string& screen_name) {
@@ -381,7 +340,7 @@ void WizardController::ShowNetworkScreen() {
   VLOG(1) << "Showing network screen.";
   // Hide the status area initially; it only appears after OOBE first animates
   // in. Keep it visible if the user goes back to the existing network screen.
-  SetStatusAreaVisible(screens_.count(kNetworkScreenName) > 0);
+  SetStatusAreaVisible(HasScreen(kNetworkScreenName));
   SetCurrentScreen(GetScreen(kNetworkScreenName));
 }
 
@@ -451,7 +410,7 @@ void WizardController::ShowEnrollmentScreen() {
 
   EnrollmentScreenActor::EnrollmentMode mode =
       EnrollmentScreenActor::ENROLLMENT_MODE_MANUAL;
-  EnrollmentScreen* screen = GetEnrollmentScreen();
+  EnrollmentScreen* screen = EnrollmentScreen::Get(this);
   std::string enrollment_domain = GetForcedEnrollmentDomain();
   if (is_auto_enrollment) {
     mode = EnrollmentScreenActor::ENROLLMENT_MODE_AUTO;
@@ -509,7 +468,7 @@ void WizardController::ShowWrongHWIDScreen() {
 void WizardController::ShowAutoEnrollmentCheckScreen() {
   VLOG(1) << "Showing Auto-enrollment check screen.";
   SetStatusAreaVisible(true);
-  AutoEnrollmentCheckScreen* screen = GetAutoEnrollmentCheckScreen();
+  AutoEnrollmentCheckScreen* screen = AutoEnrollmentCheckScreen::Get(this);
   screen->set_auto_enrollment_controller(host_->GetAutoEnrollmentController());
   SetCurrentScreen(screen);
 }
@@ -773,7 +732,7 @@ void WizardController::OnHostPairingFinished() {
 void WizardController::InitiateOOBEUpdate() {
   PerformPostEulaActions();
   SetCurrentScreenSmooth(GetScreen(kUpdateScreenName), true);
-  GetUpdateScreen()->StartNetworkCheck();
+  UpdateScreen::Get(this)->StartNetworkCheck();
 }
 
 void WizardController::StartTimezoneResolve() {

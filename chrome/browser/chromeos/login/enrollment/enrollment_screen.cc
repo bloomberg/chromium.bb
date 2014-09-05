@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -28,6 +29,12 @@
 #include "policy/proto/device_management_backend.pb.h"
 
 namespace chromeos {
+
+// static
+EnrollmentScreen* EnrollmentScreen::Get(ScreenManager* manager) {
+  return static_cast<EnrollmentScreen*>(
+      manager->GetScreen(WizardController::kEnrollmentScreenName));
+}
 
 EnrollmentScreen::EnrollmentScreen(
     ScreenObserver* observer,

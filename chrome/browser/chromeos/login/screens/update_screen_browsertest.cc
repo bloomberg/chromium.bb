@@ -80,7 +80,7 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
         .WillRepeatedly(Return(mock_error_screen_.get()));
 
     ASSERT_TRUE(WizardController::default_controller() != NULL);
-    update_screen_ = WizardController::default_controller()->GetUpdateScreen();
+    update_screen_ = UpdateScreen::Get(WizardController::default_controller());
     ASSERT_TRUE(update_screen_ != NULL);
     ASSERT_EQ(WizardController::default_controller()->current_screen(),
               update_screen_);

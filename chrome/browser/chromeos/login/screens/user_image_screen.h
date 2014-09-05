@@ -28,6 +28,7 @@ class PolicyChangeRegistrar;
 namespace chromeos {
 
 class UserImageManager;
+class ScreenManager;
 
 class UserImageScreen: public WizardScreen,
                        public UserImageScreenActor::Delegate,
@@ -39,6 +40,8 @@ class UserImageScreen: public WizardScreen,
   UserImageScreen(ScreenObserver* screen_observer,
                   UserImageScreenActor* actor);
   virtual ~UserImageScreen();
+
+  static UserImageScreen* Get(ScreenManager* manager);
 
   // WizardScreen implementation:
   virtual void PrepareToShow() OVERRIDE;

@@ -15,6 +15,8 @@
 
 namespace chromeos {
 
+class ScreenManager;
+
 namespace login {
 class NetworkStateHelper;
 }  // namespace login
@@ -25,6 +27,8 @@ class NetworkScreen : public WizardScreen,
  public:
   NetworkScreen(ScreenObserver* screen_observer, NetworkScreenActor* actor);
   virtual ~NetworkScreen();
+
+  static NetworkScreen* Get(ScreenManager* manager);
 
   // WizardScreen implementation:
   virtual void PrepareToShow() OVERRIDE;

@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/grit/chromium_strings.h"
@@ -30,6 +31,12 @@ namespace chromeos {
 
 ///////////////////////////////////////////////////////////////////////////////
 // NetworkScreen, public:
+
+// static
+NetworkScreen* NetworkScreen::Get(ScreenManager* manager) {
+  return static_cast<NetworkScreen*>(
+      manager->GetScreen(WizardController::kNetworkScreenName));
+}
 
 NetworkScreen::NetworkScreen(ScreenObserver* screen_observer,
                              NetworkScreenActor* actor)

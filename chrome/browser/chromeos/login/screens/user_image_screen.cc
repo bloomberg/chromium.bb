@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/camera_presence_notifier.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -56,6 +57,12 @@ const char kProfileDownloadReason[] = "OOBE";
 const int kSyncTimeoutSeconds = 10;
 
 }  // namespace
+
+// static
+UserImageScreen* UserImageScreen::Get(ScreenManager* manager) {
+  return static_cast<UserImageScreen*>(
+      manager->GetScreen(WizardController::kUserImageScreenName));
+}
 
 UserImageScreen::UserImageScreen(ScreenObserver* screen_observer,
                                  UserImageScreenActor* actor)
