@@ -9,6 +9,12 @@
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
 #include "ui/views/widget/native_widget_aura.h"
 
+namespace aura {
+namespace client {
+class DefaultCaptureClient;
+}
+}
+
 namespace ui {
 namespace internal {
 class InputMethodDelegate;
@@ -17,7 +23,6 @@ class InputMethodDelegate;
 
 namespace wm {
 class FocusController;
-class ScopedCaptureClient;
 }
 
 namespace mojo {
@@ -55,7 +60,7 @@ class NativeWidgetViewManager : public views::NativeWidgetAura,
 
   View* view_;
 
-  scoped_ptr<wm::ScopedCaptureClient> capture_client_;
+  scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetViewManager);
 };

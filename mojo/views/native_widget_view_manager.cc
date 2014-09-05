@@ -113,8 +113,7 @@ NativeWidgetViewManager::NativeWidgetViewManager(
                                     focus_client_.get());
   window_tree_host_->window()->AddPreTargetHandler(focus_client_.get());
 
-  aura::client::SetCaptureClient(
-      window_tree_host_->window(),
+  capture_client_.reset(
       new aura::client::DefaultCaptureClient(window_tree_host_->window()));
 }
 
@@ -128,8 +127,6 @@ void NativeWidgetViewManager::InitNativeWidget(
   views::Widget::InitParams params(in_params);
   params.parent = window_tree_host_->window();
   NativeWidgetAura::InitNativeWidget(params);
-  capture_client_.reset(
-      new wm::ScopedCaptureClient(window_tree_host_->window()));
 }
 
 void NativeWidgetViewManager::CompositorContentsChanged(
