@@ -41,7 +41,14 @@ struct timeval;
 extern void IRT_pre_irtcall_hook(void);
 extern void IRT_post_irtcall_hook(void);
 
-#define NACL_GC_WRAP_SYSCALL(_expr) \
+#if defined(__GLIBC__)
+/*
+ * GC instrumentation is not supported when using nacl-glibc with direct
+ * NaCl syscalls.
+ */
+# define NACL_GC_WRAP_SYSCALL(_expr) (_expr)
+#else
+# define NACL_GC_WRAP_SYSCALL(_expr) \
   ({                                \
     __typeof__(_expr) __sysret;     \
     IRT_pre_irtcall_hook();        \
@@ -49,6 +56,7 @@ extern void IRT_post_irtcall_hook(void);
     IRT_post_irtcall_hook();       \
     __sysret;                       \
   })
+#endif
 
 /* ============================================================ */
 /* files */

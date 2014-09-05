@@ -8,12 +8,7 @@ Import('env')
 pagesize_test_nexe = env.ComponentProgram(
   'pagesize_test',
   'pagesize_test.c',
-  EXTRA_LIBS=['srpc',
-              'imc_syscalls',
-              'platform',
-              'gio',
-              '${PTHREAD_LIBS}',
-              '${NONIRT_LIBS}'])
+  EXTRA_LIBS=['${PTHREAD_LIBS}', '${RANDOM_LIBS}', '${NONIRT_LIBS}'])
 
 node = env.CommandSelLdrTestNacl(
   'pagesize_test.out',

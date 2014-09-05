@@ -2960,6 +2960,7 @@ nacl_env = nacl_env.Clone(
     DYNCODE_LIBS = ['nacl_dyncode_private'],
     EXCEPTION_LIBS = ['nacl_exception_private'],
     LIST_MAPPINGS_LIBS = ['nacl_list_mappings_private'],
+    RANDOM_LIBS = ['nacl_random_private'],
     )
 
 def UsesAbiNote(env):
@@ -3070,7 +3071,8 @@ def TestsUsePublicLibs(env):
   env.Replace(NONIRT_LIBS=['pthread'] if env.Bit('bitcode') else [],
               PTHREAD_LIBS=['pthread'],
               DYNCODE_LIBS=['nacl_dyncode', 'nacl'],
-              EXCEPTION_LIBS=['nacl_exception', 'nacl'])
+              EXCEPTION_LIBS=['nacl_exception', 'nacl'],
+              RANDOM_LIBS=['nacl'])
 
 # glibc is incompatible with libpthread_private and libnacl_sys_private.
 if nacl_env.Bit('nacl_glibc'):

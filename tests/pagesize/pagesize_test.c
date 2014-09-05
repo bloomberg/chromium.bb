@@ -22,9 +22,8 @@
 #include <sys/fcntl.h>
 #include <sys/mman.h>
 
-#include "native_client/src/public/imc_syscalls.h"
-#include "native_client/src/public/name_service.h"
-#include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/include/nacl_assert.h"
+#include "native_client/src/untrusted/nacl/nacl_random.h"
 
 /* globals */
 int g_verbosity = 0;
@@ -79,37 +78,11 @@ static const double   k_min_release_probability = 1.0e-4;
  */
 
 unsigned long get_good_seed(void) {
-  int               ns;
-  int               connected_socket;
-  NaClSrpcChannel   ns_channel;
-  NaClSrpcError     rpc_result;
-  int               status;
-  int               rng;
-  unsigned long     seed;
-
-  ns = -1;
-  if (-1 == nacl_nameservice(&ns)) {
-    fprintf(stderr, "nacl_nameservice failed\n");
-    abort();
-  }
-  connected_socket = imc_connect(ns);
-  assert(-1 != connected_socket);
-  if (!NaClSrpcClientCtor(&ns_channel, connected_socket)) {
-    fprintf(stderr, "SRPC client channel ctor failed\n");
-    abort();
-  }
-  (void) close(ns);
-
-  rpc_result = NaClSrpcInvokeBySignature(&ns_channel,
-                                         NACL_NAME_SERVICE_LOOKUP,
-                                         "SecureRandom", O_RDONLY,
-                                         &status, &rng);
-  assert(NACL_SRPC_RESULT_OK == rpc_result);
-  assert(NACL_NAME_SERVICE_SUCCESS == status);
-  assert(sizeof seed == read(rng, &seed, sizeof seed));
-  close(rng);
-  NaClSrpcDtor(&ns_channel);
-
+  unsigned long seed;
+  size_t got = 0;
+  int rc = nacl_secure_random(&seed, sizeof(seed), &got);
+  ASSERT_EQ(rc, 0);
+  ASSERT_EQ(got, sizeof(seed));
   return seed;
 }
 
@@ -373,10 +346,6 @@ int main(int ac, char **av) {
                 "       [-s seed]\n");
     }
   }
-  if (!NaClSrpcModuleInit()) {
-    fprintf(stderr, "SRPC module init failed\n");
-    return 1;
-  }
   if (!seed_provided) {
     seed = get_good_seed();
   }
@@ -407,6 +376,5 @@ int main(int ac, char **av) {
     printf("FAILED\n");
   }
 
-  NaClSrpcModuleFini();
   return num_failures;
 }
