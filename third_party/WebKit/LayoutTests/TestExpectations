@@ -101,8 +101,7 @@ crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign
 crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass Timeout ]
 
 # Crashing after V8 roll to 3.28.43.1.
-crbug.com/398306 [ Debug ] fast/events/before-unload-return-bad-value.html [ Crash Timeout Pass ]
-crbug.com/398306 [ Release ] fast/events/before-unload-return-bad-value.html [ Timeout Pass ]
+crbug.com/398306 fast/events/before-unload-return-bad-value.html [ Crash Timeout Pass ]
 
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]
 
@@ -680,7 +679,7 @@ crbug.com/328234 fast/css/mask-missing-image-crash.html [ Pass Failure ]
 crbug.com/326524 virtual/threaded/compositing/visibility/visibility-simple-video-layer.html [ Pass ImageOnlyFailure Timeout ]
 
 # ASSERT fails in debug since editing attempts to put a Position on a pseudo element.
-crbug.com/342574 [ Debug ] fast/css-generated-content/crash-selection-editing-removes-pseudo.html [ Crash ]
+crbug.com/342574 fast/css-generated-content/crash-selection-editing-removes-pseudo.html [ Crash ]
 
 crbug.com/346151 css3/filters/effect-reference-hidpi-hw.html [ Pass ImageOnlyFailure ]
 
@@ -880,7 +879,7 @@ crbug.com/368531 virtual/gpu/fast/canvas/canvas-path-addpath.html [ Failure Pass
 # Expectations changes due to switiching to In-renderer Shared Worker.
 crbug.com/327256 fast/workers/shared-worker-lifecycle.html [ Failure Pass ]
 
-crbug.com/366185 [ Debug ] inspector/split-view.html [ Slow Crash ]
+crbug.com/366185 inspector/split-view.html [ Slow Crash ]
 
 crbug.com/361729 fast/multicol/pagination-h-horizontal-bt.html [ Pass Failure ]
 crbug.com/361729 fast/multicol/pagination-h-horizontal-tb.html [ Pass Failure ]

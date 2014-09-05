@@ -46,12 +46,12 @@
 // Users must test "#if ENABLE(ASSERT)", which helps ensure that code
 // testing this macro has included this header.
 #ifndef ENABLE_ASSERT
-#ifdef NDEBUG
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
 /* Disable ASSERT* macros in release mode by default. */
 #define ENABLE_ASSERT 0
 #else
 #define ENABLE_ASSERT 1
-#endif /* NDEBUG */
+#endif /* defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON) */
 #endif
 
 #ifndef BACKTRACE_DISABLED
