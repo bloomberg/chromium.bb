@@ -190,6 +190,10 @@ void GLImageGLX::ReleaseTexImage(unsigned target) {
   glXReleaseTexImageEXT(gfx::GetXDisplay(), glx_pixmap_, GLX_FRONT_LEFT_EXT);
 }
 
+bool GLImageGLX::CopyTexImage(unsigned target) {
+  return false;
+}
+
 bool GLImageGLX::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                       int z_order,
                                       OverlayTransform transform,

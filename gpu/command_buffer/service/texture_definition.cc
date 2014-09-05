@@ -34,6 +34,7 @@ class GLImageSync : public gfx::GLImage {
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool BindTexImage(unsigned target) OVERRIDE;
   virtual void ReleaseTexImage(unsigned target) OVERRIDE;
+  virtual bool CopyTexImage(unsigned target) OVERRIDE;
   virtual void WillUseTexImage() OVERRIDE;
   virtual void WillModifyTexImage() OVERRIDE;
   virtual void DidModifyTexImage() OVERRIDE;
@@ -81,6 +82,11 @@ bool GLImageSync::BindTexImage(unsigned target) {
 
 void GLImageSync::ReleaseTexImage(unsigned target) {
   NOTREACHED();
+}
+
+bool GLImageSync::CopyTexImage(unsigned target) {
+  NOTREACHED();
+  return false;
 }
 
 void GLImageSync::WillUseTexImage() {

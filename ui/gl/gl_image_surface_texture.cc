@@ -77,6 +77,10 @@ bool GLImageSurfaceTexture::BindTexImage(unsigned target) {
   return true;
 }
 
+bool GLImageSurfaceTexture::CopyTexImage(unsigned target) {
+  return false;
+}
+
 bool GLImageSurfaceTexture::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                                  int z_order,
                                                  OverlayTransform transform,

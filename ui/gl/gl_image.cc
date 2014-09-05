@@ -12,6 +12,8 @@ GLImage::GLImage() {
 GLImage::~GLImage() {
 }
 
+bool GLImage::CopyTexImage(unsigned target) { return false; }
+
 void GLImage::SetReleaseAfterUse() {
   // Default no-op implementation for workaround.
 }

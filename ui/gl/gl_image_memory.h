@@ -26,8 +26,9 @@ class GL_EXPORT GLImageMemory : public GLImage {
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool BindTexImage(unsigned target) OVERRIDE;
   virtual void ReleaseTexImage(unsigned target) OVERRIDE {}
-  virtual void WillUseTexImage() OVERRIDE {}
-  virtual void DidUseTexImage() OVERRIDE {}
+  virtual bool CopyTexImage(unsigned target) OVERRIDE;
+  virtual void WillUseTexImage() OVERRIDE;
+  virtual void DidUseTexImage() OVERRIDE;
   virtual void WillModifyTexImage() OVERRIDE {}
   virtual void DidModifyTexImage() OVERRIDE {}
   virtual bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
@@ -43,9 +44,14 @@ class GL_EXPORT GLImageMemory : public GLImage {
   size_t Bytes() const;
 
  private:
+  void DoBindTexImage(unsigned target);
+
   const unsigned char* memory_;
   const gfx::Size size_;
   const unsigned internalformat_;
+  bool in_use_;
+  unsigned target_;
+  bool need_do_bind_tex_image_;
 #if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
     defined(USE_OZONE)
   unsigned egl_texture_id_;

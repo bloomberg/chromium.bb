@@ -50,6 +50,10 @@ bool GLImageEGL::BindTexImage(unsigned target) {
   return true;
 }
 
+bool GLImageEGL::CopyTexImage(unsigned target) {
+  return false;
+}
+
 bool GLImageEGL::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                       int z_order,
                                       OverlayTransform transform,

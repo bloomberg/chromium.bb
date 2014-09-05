@@ -27,6 +27,7 @@ class GLImageImpl : public gfx::GLImage {
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool BindTexImage(unsigned target) OVERRIDE;
   virtual void ReleaseTexImage(unsigned target) OVERRIDE;
+  virtual bool CopyTexImage(unsigned target) OVERRIDE;
   virtual void WillUseTexImage() OVERRIDE;
   virtual void DidUseTexImage() OVERRIDE {}
   virtual void WillModifyTexImage() OVERRIDE {}
@@ -70,6 +71,11 @@ bool GLImageImpl::BindTexImage(unsigned target) {
 
 void GLImageImpl::ReleaseTexImage(unsigned target) {
   NOTREACHED();
+}
+
+bool GLImageImpl::CopyTexImage(unsigned target) {
+  NOTREACHED();
+  return false;
 }
 
 void GLImageImpl::WillUseTexImage() {

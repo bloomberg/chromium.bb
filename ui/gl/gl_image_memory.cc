@@ -70,7 +70,10 @@ int BytesPerPixel(unsigned internalformat) {
 GLImageMemory::GLImageMemory(const gfx::Size& size, unsigned internalformat)
     : memory_(NULL),
       size_(size),
-      internalformat_(internalformat)
+      internalformat_(internalformat),
+      in_use_(false),
+      target_(0),
+      need_do_bind_tex_image_(false)
 #if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
     defined(USE_OZONE)
       ,
@@ -122,7 +125,80 @@ gfx::Size GLImageMemory::GetSize() {
 }
 
 bool GLImageMemory::BindTexImage(unsigned target) {
-  TRACE_EVENT0("gpu", "GLImageMemory::BindTexImage");
+  if (target_ && target_ != target) {
+    LOG(ERROR) << "GLImage can only be bound to one target";
+    return false;
+  }
+  target_ = target;
+
+  // Defer DoBindTexImage if not currently in use.
+  if (!in_use_) {
+    need_do_bind_tex_image_ = true;
+    return true;
+  }
+
+  DoBindTexImage(target);
+  return true;
+}
+
+bool GLImageMemory::CopyTexImage(unsigned target) {
+  TRACE_EVENT0("gpu", "GLImageMemory::CopyTexImage");
+
+  // GL_TEXTURE_EXTERNAL_OES is not a supported CopyTexImage target.
+  if (target == GL_TEXTURE_EXTERNAL_OES)
+    return false;
+
+  DCHECK(memory_);
+  glTexImage2D(target,
+               0,  // mip level
+               TextureFormat(internalformat_),
+               size_.width(),
+               size_.height(),
+               0,  // border
+               DataFormat(internalformat_),
+               DataType(internalformat_),
+               memory_);
+
+  return true;
+}
+
+void GLImageMemory::WillUseTexImage() {
+  DCHECK(!in_use_);
+  in_use_ = true;
+
+  if (!need_do_bind_tex_image_)
+    return;
+
+  DCHECK(target_);
+  DoBindTexImage(target_);
+}
+
+void GLImageMemory::DidUseTexImage() {
+  DCHECK(in_use_);
+  in_use_ = false;
+}
+
+bool GLImageMemory::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                                         int z_order,
+                                         OverlayTransform transform,
+                                         const Rect& bounds_rect,
+                                         const RectF& crop_rect) {
+  return false;
+}
+
+bool GLImageMemory::HasValidFormat() const {
+  return ValidFormat(internalformat_);
+}
+
+size_t GLImageMemory::Bytes() const {
+  return size_.GetArea() * BytesPerPixel(internalformat_);
+}
+
+void GLImageMemory::DoBindTexImage(unsigned target) {
+  TRACE_EVENT0("gpu", "GLImageMemory::DoBindTexImage");
+
+  DCHECK(need_do_bind_tex_image_);
+  need_do_bind_tex_image_ = false;
 
   DCHECK(memory_);
 #if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
@@ -176,8 +252,7 @@ bool GLImageMemory::BindTexImage(unsigned target) {
 
     glEGLImageTargetTexture2DOES(target, egl_image_);
     DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-
-    return true;
+    return;
   }
 #endif
 
@@ -191,24 +266,6 @@ bool GLImageMemory::BindTexImage(unsigned target) {
                DataFormat(internalformat_),
                DataType(internalformat_),
                memory_);
-
-  return true;
-}
-
-bool GLImageMemory::HasValidFormat() const {
-  return ValidFormat(internalformat_);
-}
-
-size_t GLImageMemory::Bytes() const {
-  return size_.GetArea() * BytesPerPixel(internalformat_);
-}
-
-bool GLImageMemory::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
-                                         int z_order,
-                                         OverlayTransform transform,
-                                         const Rect& bounds_rect,
-                                         const RectF& crop_rect) {
-  return false;
 }
 
 }  // namespace gfx

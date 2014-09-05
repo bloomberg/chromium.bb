@@ -10128,8 +10128,18 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
         dest_texture_ref, GL_TEXTURE_2D, level, true);
   }
 
-  DoWillUseTexImageIfNeeded(source_texture, source_texture->target());
   ScopedModifyPixels modify(dest_texture_ref);
+
+  // Try using GLImage::CopyTexImage when possible.
+  bool unpack_premultiply_alpha_change =
+      unpack_premultiply_alpha_ ^ unpack_unpremultiply_alpha_;
+  if (image && !unpack_flip_y_ && !unpack_premultiply_alpha_change && !level) {
+    glBindTexture(GL_TEXTURE_2D, dest_texture->service_id());
+    if (image->CopyTexImage(GL_TEXTURE_2D))
+      return;
+  }
+
+  DoWillUseTexImageIfNeeded(source_texture, source_texture->target());
 
   // GL_TEXTURE_EXTERNAL_OES texture requires apply a transform matrix
   // before presenting.

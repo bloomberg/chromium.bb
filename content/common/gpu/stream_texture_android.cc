@@ -202,6 +202,11 @@ void StreamTexture::ReleaseTexImage(unsigned target) {
   NOTREACHED();
 }
 
+bool StreamTexture::CopyTexImage(unsigned target) {
+  NOTREACHED();
+  return false;
+}
+
 bool StreamTexture::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                          int z_order,
                                          gfx::OverlayTransform transform,

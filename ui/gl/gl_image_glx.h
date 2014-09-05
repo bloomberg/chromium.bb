@@ -23,6 +23,7 @@ class GL_EXPORT GLImageGLX : public GLImage {
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool BindTexImage(unsigned target) OVERRIDE;
   virtual void ReleaseTexImage(unsigned target) OVERRIDE;
+  virtual bool CopyTexImage(unsigned target) OVERRIDE;
   virtual void WillUseTexImage() OVERRIDE {}
   virtual void DidUseTexImage() OVERRIDE {}
   virtual void WillModifyTexImage() OVERRIDE {}

@@ -33,6 +33,9 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   // Release image from texture currently bound to |target|.
   virtual void ReleaseTexImage(unsigned target) = 0;
 
+  // Copy image to texture currently bound to |target|.
+  virtual bool CopyTexImage(unsigned target) = 0;
+
   // Called before the texture is used for drawing.
   virtual void WillUseTexImage() = 0;
 

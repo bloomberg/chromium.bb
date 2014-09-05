@@ -14,6 +14,8 @@ gfx::Size GLImageStub::GetSize() { return gfx::Size(1, 1); }
 
 bool GLImageStub::BindTexImage(unsigned target) { return true; }
 
+bool GLImageStub::CopyTexImage(unsigned target) { return true; }
+
 bool GLImageStub::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                        int z_order,
                                        OverlayTransform transform,
