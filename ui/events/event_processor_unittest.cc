@@ -168,6 +168,91 @@ TEST_F(EventProcessorTest, Bounds) {
   EXPECT_TRUE(grandchild_r->DidReceiveEvent(ET_MOUSE_MOVED));
 }
 
+// ReDispatchEventHandler is used to receive mouse events and forward them
+// to a specified EventProcessor. Verifies that the event has the correct
+// target and phase both before and after the nested event processing.
+class ReDispatchEventHandler : public TestEventHandler {
+ public:
+  ReDispatchEventHandler(EventProcessor* processor, EventTarget* target)
+      : processor_(processor), expected_target_(target) {}
+  virtual ~ReDispatchEventHandler() {}
+
+  // TestEventHandler:
+  virtual void OnMouseEvent(MouseEvent* event) OVERRIDE {
+    TestEventHandler::OnMouseEvent(event);
+
+    EXPECT_EQ(expected_target_, event->target());
+    EXPECT_EQ(EP_TARGET, event->phase());
+
+    EventDispatchDetails details = processor_->OnEventFromSource(event);
+    EXPECT_FALSE(details.dispatcher_destroyed);
+    EXPECT_FALSE(details.target_destroyed);
+
+    // The nested event-processing should not have mutated the target or
+    // phase of |event|.
+    EXPECT_EQ(expected_target_, event->target());
+    EXPECT_EQ(EP_TARGET, event->phase());
+  }
+
+ private:
+  EventProcessor* processor_;
+  EventTarget* expected_target_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReDispatchEventHandler);
+};
+
+// Verifies that the phase and target information of an event is not mutated
+// as a result of sending the event to an event processor while it is still
+// being processed by another event processor.
+TEST_F(EventProcessorTest, NestedEventProcessing) {
+  // Add one child to the default event processor used in this test suite.
+  scoped_ptr<TestEventTarget> child(new TestEventTarget());
+  root()->AddChild(child.Pass());
+
+  // Define a second root target and child.
+  scoped_ptr<EventTarget> second_root_scoped(new TestEventTarget());
+  TestEventTarget* second_root =
+      static_cast<TestEventTarget*>(second_root_scoped.get());
+  second_root->SetEventTargeter(make_scoped_ptr(new EventTargeter()));
+  scoped_ptr<TestEventTarget> second_child(new TestEventTarget());
+  second_root->AddChild(second_child.Pass());
+
+  // Define a second event processor which owns the second root.
+  scoped_ptr<TestEventProcessor> second_processor(new TestEventProcessor());
+  second_processor->SetRoot(second_root_scoped.Pass());
+
+  // Indicate that an event which is dispatched to the child target owned by the
+  // first event processor should be handled by |target_handler| instead.
+  scoped_ptr<TestEventHandler> target_handler(
+      new ReDispatchEventHandler(second_processor.get(), root()->child_at(0)));
+  root()->child_at(0)->set_target_handler(target_handler.get());
+
+  // Dispatch a mouse event to the tree of event targets owned by the first
+  // event processor, checking in ReDispatchEventHandler that the phase and
+  // target information of the event is correct.
+  MouseEvent mouse(
+      ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10), EF_NONE, EF_NONE);
+  DispatchEvent(&mouse);
+
+  // Verify also that |mouse| was seen by the child nodes contained in both
+  // event processors and that the event was not handled.
+  EXPECT_TRUE(root()->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
+  EXPECT_TRUE(second_root->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
+  EXPECT_FALSE(mouse.handled());
+  second_root->child_at(0)->ResetReceivedEvents();
+  root()->child_at(0)->ResetReceivedEvents();
+
+  // Indicate that the child of the second root should handle events, and
+  // dispatch another mouse event to verify that it is marked as handled.
+  second_root->child_at(0)->set_mark_events_as_handled(true);
+  MouseEvent mouse2(
+      ET_MOUSE_MOVED, gfx::Point(10, 10), gfx::Point(10, 10), EF_NONE, EF_NONE);
+  DispatchEvent(&mouse2);
+  EXPECT_TRUE(root()->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
+  EXPECT_TRUE(second_root->child_at(0)->DidReceiveEvent(ET_MOUSE_MOVED));
+  EXPECT_TRUE(mouse2.handled());
+}
+
 class IgnoreEventTargeter : public EventTargeter {
  public:
   IgnoreEventTargeter() {}

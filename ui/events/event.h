@@ -29,6 +29,8 @@ class EventTarget;
 
 class EVENTS_EXPORT Event {
  public:
+  static scoped_ptr<Event> Clone(const Event& event);
+
   virtual ~Event();
 
   class DispatcherApi {

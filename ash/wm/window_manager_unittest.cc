@@ -199,6 +199,7 @@ TEST_F(WindowManagerTest, Focus) {
   EXPECT_EQ(w122.get(), focus_client->GetFocusedWindow());
 
   // The key press should be sent to the focused sub-window.
+  keyev = ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_E, ui::EF_NONE);
   details = dispatcher->OnEventFromSource(&keyev);
   ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_EQ(ui::VKEY_E, w122delegate->last_key_code());
@@ -237,6 +238,7 @@ TEST_F(WindowManagerTest, Focus) {
   EXPECT_EQ(aura::client::GetFocusClient(w12.get()),
             aura::client::GetFocusClient(w123.get()));
   EXPECT_EQ(NULL, aura::client::GetFocusClient(w12.get())->GetFocusedWindow());
+  keyev = ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_E, ui::EF_NONE);
   details = dispatcher->OnEventFromSource(&keyev);
   EXPECT_FALSE(keyev.handled() || details.dispatcher_destroyed);
 
@@ -252,6 +254,7 @@ TEST_F(WindowManagerTest, Focus) {
   // parent window is not focusable.
   w12->RemoveChild(w123.get());
   EXPECT_EQ(NULL, aura::client::GetFocusClient(w123.get()));
+  keyev = ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_E, ui::EF_NONE);
   details = dispatcher->OnEventFromSource(&keyev);
   EXPECT_FALSE(keyev.handled() || details.dispatcher_destroyed);
 }

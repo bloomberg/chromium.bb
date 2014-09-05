@@ -111,6 +111,40 @@ namespace ui {
 ////////////////////////////////////////////////////////////////////////////////
 // Event
 
+// static
+scoped_ptr<Event> Event::Clone(const Event& event) {
+  if (event.IsKeyEvent()) {
+    return scoped_ptr<Event>(new KeyEvent(static_cast<const KeyEvent&>(event)));
+  }
+
+  if (event.IsMouseEvent()) {
+    if (event.IsMouseWheelEvent()) {
+      return scoped_ptr<Event>(
+          new MouseWheelEvent(static_cast<const MouseWheelEvent&>(event)));
+    }
+
+    return scoped_ptr<Event>(
+        new MouseEvent(static_cast<const MouseEvent&>(event)));
+  }
+
+  if (event.IsTouchEvent()) {
+    return scoped_ptr<Event>(
+        new TouchEvent(static_cast<const TouchEvent&>(event)));
+  }
+
+  if (event.IsGestureEvent()) {
+    return scoped_ptr<Event>(
+        new GestureEvent(static_cast<const GestureEvent&>(event)));
+  }
+
+  if (event.IsScrollEvent()) {
+    return scoped_ptr<Event>(
+        new ScrollEvent(static_cast<const ScrollEvent&>(event)));
+  }
+
+  return scoped_ptr<Event>(new Event(event));
+}
+
 Event::~Event() {
   if (delete_native_event_)
     ReleaseCopiedNativeEvent(native_event_);

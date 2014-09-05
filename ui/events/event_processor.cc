@@ -18,8 +18,25 @@ EventDispatchDetails EventProcessor::OnEventFromSource(Event* event) {
   PrepareEventForDispatch(event);
   EventTarget* target = targeter->FindTargetForEvent(root, event);
 
+  // If the event is in the process of being dispatched or has already been
+  // dispatched, then dispatch a copy of the event instead.
+  scoped_ptr<Event> event_copy;
+  if (event->phase() != EP_PREDISPATCH)
+    event_copy = Event::Clone(*event);
+
   while (target) {
-    EventDispatchDetails details = DispatchEvent(target, event);
+    EventDispatchDetails details;
+    if (event_copy) {
+      details = DispatchEvent(target, event_copy.get());
+
+      if (event_copy->stopped_propagation())
+        event->StopPropagation();
+      else if (event_copy->handled())
+        event->SetHandled();
+    } else {
+      details = DispatchEvent(target, event);
+    }
+
     if (details.dispatcher_destroyed ||
         details.target_destroyed ||
         event->handled()) {
