@@ -202,7 +202,7 @@ void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::String> name
     if (!propInfo)
         return;
 
-    CSSStyleDeclaration* impl = V8CSSStyleDeclaration::toNative(info.Holder());
+    CSSStyleDeclaration* impl = V8CSSStyleDeclaration::toImpl(info.Holder());
     RefPtrWillBeRawPtr<CSSValue> cssValue = impl->getPropertyCSSValueInternal(static_cast<CSSPropertyID>(propInfo->propID));
     if (cssValue) {
         v8SetReturnValueStringOrNull(info, cssValue->cssText(), info.GetIsolate());
@@ -215,7 +215,7 @@ void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::String> name
 
 void V8CSSStyleDeclaration::namedPropertySetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    CSSStyleDeclaration* impl = V8CSSStyleDeclaration::toNative(info.Holder());
+    CSSStyleDeclaration* impl = V8CSSStyleDeclaration::toImpl(info.Holder());
     CSSPropertyInfo* propInfo = cssPropertyInfo(name);
     if (!propInfo)
         return;

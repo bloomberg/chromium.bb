@@ -21,24 +21,24 @@ public:
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::Object> findInstanceInPrototypeChain(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
-    static TestInterfaceNotScriptWrappable* toNative(v8::Handle<v8::Object> object)
+    static TestInterfaceNotScriptWrappable* toImpl(v8::Handle<v8::Object> object)
     {
-        return fromInternalPointer(blink::toInternalPointer(object));
+        return toImpl(blink::toScriptWrappableBase(object));
     }
-    static TestInterfaceNotScriptWrappable* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
+    static TestInterfaceNotScriptWrappable* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
     static WrapperPersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
-    static inline ScriptWrappableBase* toInternalPointer(TestInterfaceNotScriptWrappable* impl)
+    static inline ScriptWrappableBase* toScriptWrappableBase(TestInterfaceNotScriptWrappable* impl)
     {
-        return impl->toInternalPointer();
+        return impl->toScriptWrappableBase();
     }
 
-    static inline TestInterfaceNotScriptWrappable* fromInternalPointer(ScriptWrappableBase* internalPointer)
+    static inline TestInterfaceNotScriptWrappable* toImpl(ScriptWrappableBase* internalPointer)
     {
-        return ScriptWrappableBase::fromInternalPointer<TestInterfaceNotScriptWrappable>(internalPointer);
+        return internalPointer->toImpl<TestInterfaceNotScriptWrappable>();
     }
     static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }

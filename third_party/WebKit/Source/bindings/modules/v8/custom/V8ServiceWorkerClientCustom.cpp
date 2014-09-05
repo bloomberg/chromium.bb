@@ -13,7 +13,7 @@ namespace blink {
 // FIXME: This stub should be replaced by generated code.
 void V8ServiceWorkerClient::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    postMessageMethodCommon("ServiceWorkerClient", V8ServiceWorkerClient::toNative(info.Holder()), info);
+    postMessageMethodCommon("ServiceWorkerClient", V8ServiceWorkerClient::toImpl(info.Holder()), info);
 }
 
 } // namespace blink

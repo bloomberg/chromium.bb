@@ -21,24 +21,24 @@ public:
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::Object> findInstanceInPrototypeChain(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
-    static TestInterfaceCheckSecurity* toNative(v8::Handle<v8::Object> object)
+    static TestInterfaceCheckSecurity* toImpl(v8::Handle<v8::Object> object)
     {
-        return fromInternalPointer(blink::toInternalPointer(object));
+        return toImpl(blink::toScriptWrappableBase(object));
     }
-    static TestInterfaceCheckSecurity* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
+    static TestInterfaceCheckSecurity* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
     static WrapperPersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
-    static inline ScriptWrappableBase* toInternalPointer(TestInterfaceCheckSecurity* impl)
+    static inline ScriptWrappableBase* toScriptWrappableBase(TestInterfaceCheckSecurity* impl)
     {
-        return impl->toInternalPointer();
+        return impl->toScriptWrappableBase();
     }
 
-    static inline TestInterfaceCheckSecurity* fromInternalPointer(ScriptWrappableBase* internalPointer)
+    static inline TestInterfaceCheckSecurity* toImpl(ScriptWrappableBase* internalPointer)
     {
-        return ScriptWrappableBase::fromInternalPointer<TestInterfaceCheckSecurity>(internalPointer);
+        return internalPointer->toImpl<TestInterfaceCheckSecurity>();
     }
     static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }

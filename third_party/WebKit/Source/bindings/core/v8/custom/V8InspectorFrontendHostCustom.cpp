@@ -112,7 +112,7 @@ void V8InspectorFrontendHost::showContextMenuMethodCustom(const v8::FunctionCall
     if (!V8MouseEvent::wrapperTypeInfo.equals(toWrapperTypeInfo(eventWrapper)))
         return;
 
-    Event* event = V8Event::toNative(eventWrapper);
+    Event* event = V8Event::toImpl(eventWrapper);
     if (!info[1]->IsArray())
         return;
 
@@ -121,7 +121,7 @@ void V8InspectorFrontendHost::showContextMenuMethodCustom(const v8::FunctionCall
     if (!populateContextMenuItems(array, menu, info.GetIsolate()))
         return;
 
-    InspectorFrontendHost* frontendHost = V8InspectorFrontendHost::toNative(info.Holder());
+    InspectorFrontendHost* frontendHost = V8InspectorFrontendHost::toImpl(info.Holder());
     Vector<ContextMenuItem> items = menu.items();
     frontendHost->showContextMenu(event, items);
 }
@@ -150,11 +150,11 @@ void V8InspectorFrontendHost::showContextMenuAtPointMethodCustom(const v8::Funct
     v8::Handle<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(isolate->GetEnteredContext()->Global(), isolate);
     if (windowWrapper.IsEmpty())
         return;
-    LocalDOMWindow* window = V8Window::toNative(windowWrapper);
+    LocalDOMWindow* window = V8Window::toImpl(windowWrapper);
     if (!window->document() || !window->document()->page())
         return;
 
-    InspectorFrontendHost* frontendHost = V8InspectorFrontendHost::toNative(info.Holder());
+    InspectorFrontendHost* frontendHost = V8InspectorFrontendHost::toImpl(info.Holder());
     Vector<ContextMenuItem> items = menu.items();
     frontendHost->showContextMenu(window->document()->page(), static_cast<float>(x->NumberValue()), static_cast<float>(y->NumberValue()), items);
 }

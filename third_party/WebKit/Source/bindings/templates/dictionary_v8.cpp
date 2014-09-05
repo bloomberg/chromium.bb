@@ -13,7 +13,7 @@
 
 namespace blink {
 
-{{cpp_class}}* {{v8_class}}::toNative(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value)
+{{cpp_class}}* {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value)
 {
     {{cpp_class}}* impl = {{cpp_class}}::create();
     // FIXME: Do not use Dictionary and DictionaryHelper

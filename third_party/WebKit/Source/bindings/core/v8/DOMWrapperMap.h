@@ -70,7 +70,7 @@ public:
 
     void set(KeyType* key, v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* wrapperTypeInfo)
     {
-        ASSERT(reinterpret_cast<KeyType*>(toInternalPointer(wrapper)) == key);
+        ASSERT(reinterpret_cast<KeyType*>(toScriptWrappableBase(wrapper)) == key);
         RELEASE_ASSERT(!containsKey(key)); // See crbug.com/368095
         v8::UniquePersistent<v8::Object> unique(m_isolate, wrapper);
         wrapperTypeInfo->configureWrapper(&unique);
@@ -142,7 +142,7 @@ private:
         static KeyType* KeyFromWeakCallbackData(
             const v8::WeakCallbackData<v8::Object, WeakCallbackDataType>& data)
         {
-            return reinterpret_cast<KeyType*>(toInternalPointer(data.GetValue()));
+            return reinterpret_cast<KeyType*>(toScriptWrappableBase(data.GetValue()));
         }
 
         // Dispose traits:

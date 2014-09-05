@@ -102,7 +102,7 @@ DeviceMotionData::RotationRate* readRotationRateArgument(v8::Local<v8::Value> va
 
 void V8DeviceMotionEvent::initDeviceMotionEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    DeviceMotionEvent* impl = V8DeviceMotionEvent::toNative(info.Holder());
+    DeviceMotionEvent* impl = V8DeviceMotionEvent::toImpl(info.Holder());
     v8::Isolate* isolate = info.GetIsolate();
     TOSTRING_VOID(V8StringResource<>, type, info[0]);
     bool bubbles = info[1]->BooleanValue();

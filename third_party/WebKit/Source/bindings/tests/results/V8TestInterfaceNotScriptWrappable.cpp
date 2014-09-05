@@ -30,7 +30,7 @@ template <typename T> void V8_USE(T) { }
 static void attr1AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    TestInterfaceNotScriptWrappable* impl = V8TestInterfaceNotScriptWrappable::toNative(holder);
+    TestInterfaceNotScriptWrappable* impl = V8TestInterfaceNotScriptWrappable::toImpl(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->attr1()), impl);
 }
 
@@ -44,8 +44,8 @@ static void attr1AttributeGetterCallback(v8::Local<v8::String>, const v8::Proper
 static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    TestInterfaceNotScriptWrappable* impl = V8TestInterfaceNotScriptWrappable::toNative(holder);
-    TONATIVE_VOID(TestInterfaceNotScriptWrappable*, cppValue, V8TestInterfaceNotScriptWrappable::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterfaceNotScriptWrappable* impl = V8TestInterfaceNotScriptWrappable::toImpl(holder);
+    TONATIVE_VOID(TestInterfaceNotScriptWrappable*, cppValue, V8TestInterfaceNotScriptWrappable::toImplWithTypeCheck(info.GetIsolate(), v8Value));
     impl->setAttr1(WTF::getPtr(cppValue));
 }
 
@@ -62,12 +62,12 @@ static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("func", "TestInterfaceNotScriptWrappable", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
         return;
     }
-    TestInterfaceNotScriptWrappable* impl = V8TestInterfaceNotScriptWrappable::toNative(info.Holder());
+    TestInterfaceNotScriptWrappable* impl = V8TestInterfaceNotScriptWrappable::toImpl(info.Holder());
     TestInterfaceNotScriptWrappable* arg;
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(arg, V8TestInterfaceNotScriptWrappable::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+        TONATIVE_VOID_INTERNAL(arg, V8TestInterfaceNotScriptWrappable::toImplWithTypeCheck(info.GetIsolate(), info[0]));
     }
     impl->func(arg);
 }
@@ -121,9 +121,9 @@ v8::Handle<v8::Object> V8TestInterfaceNotScriptWrappable::findInstanceInPrototyp
     return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestInterfaceNotScriptWrappable* V8TestInterfaceNotScriptWrappable::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+TestInterfaceNotScriptWrappable* V8TestInterfaceNotScriptWrappable::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
+    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterfaceNotScriptWrappable>() : 0;
 }
 
 v8::Handle<v8::Object> wrap(TestInterfaceNotScriptWrappable* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -138,7 +138,7 @@ v8::Handle<v8::Object> V8TestInterfaceNotScriptWrappable::createWrapper(PassRefP
     ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<V8TestInterfaceNotScriptWrappable>(impl.get(), isolate));
 
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &wrapperTypeInfo, toInternalPointer(impl.get()), isolate);
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &wrapperTypeInfo, impl->toScriptWrappableBase(), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
@@ -150,12 +150,12 @@ v8::Handle<v8::Object> V8TestInterfaceNotScriptWrappable::createWrapper(PassRefP
 
 void V8TestInterfaceNotScriptWrappable::refObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->ref();
+    internalPointer->toImpl<TestInterfaceNotScriptWrappable>()->ref();
 }
 
 void V8TestInterfaceNotScriptWrappable::derefObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->deref();
+    internalPointer->toImpl<TestInterfaceNotScriptWrappable>()->deref();
 }
 
 WrapperPersistentNode* V8TestInterfaceNotScriptWrappable::createPersistentHandle(ScriptWrappableBase* internalPointer)

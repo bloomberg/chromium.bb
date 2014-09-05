@@ -40,7 +40,7 @@ namespace blink {
 void V8FileReader::resultAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    FileReader* impl = V8FileReader::toNative(holder);
+    FileReader* impl = V8FileReader::toImpl(holder);
     if (impl->readType() == FileReaderLoader::ReadAsArrayBuffer) {
         v8SetReturnValueFast(info, impl->arrayBufferResult(), impl);
         return;

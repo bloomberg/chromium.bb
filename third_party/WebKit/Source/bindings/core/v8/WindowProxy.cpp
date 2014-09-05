@@ -71,8 +71,8 @@ namespace blink {
 
 static void checkDocumentWrapper(v8::Handle<v8::Object> wrapper, Document* document)
 {
-    ASSERT(V8Document::toNative(wrapper) == document);
-    ASSERT(!document->isHTMLDocument() || (V8Document::toNative(v8::Handle<v8::Object>::Cast(wrapper->GetPrototype())) == document));
+    ASSERT(V8Document::toImpl(wrapper) == document);
+    ASSERT(!document->isHTMLDocument() || (V8Document::toImpl(v8::Handle<v8::Object>::Cast(wrapper->GetPrototype())) == document));
 }
 
 PassOwnPtr<WindowProxy> WindowProxy::create(LocalFrame* frame, DOMWrapperWorld& world, v8::Isolate* isolate)
@@ -285,7 +285,7 @@ bool WindowProxy::installDOMWindow()
     if (windowWrapper.IsEmpty())
         return false;
 
-    V8DOMWrapper::setNativeInfoForHiddenWrapper(v8::Handle<v8::Object>::Cast(windowWrapper->GetPrototype()), &V8Window::wrapperTypeInfo, V8Window::toInternalPointer(window));
+    V8DOMWrapper::setNativeInfoForHiddenWrapper(v8::Handle<v8::Object>::Cast(windowWrapper->GetPrototype()), &V8Window::wrapperTypeInfo, window->toScriptWrappableBase());
 
     // Install the windowWrapper as the prototype of the innerGlobalObject.
     // The full structure of the global object is as follows:
@@ -308,7 +308,7 @@ bool WindowProxy::installDOMWindow()
     //       views of the LocalDOMWindow will die together once that wrapper clears the persistent
     //       reference.
     v8::Handle<v8::Object> innerGlobalObject = toInnerGlobalObject(m_scriptState->context());
-    V8DOMWrapper::setNativeInfoForHiddenWrapper(innerGlobalObject, &V8Window::wrapperTypeInfo, V8Window::toInternalPointer(window));
+    V8DOMWrapper::setNativeInfoForHiddenWrapper(innerGlobalObject, &V8Window::wrapperTypeInfo, window->toScriptWrappableBase());
     innerGlobalObject->SetPrototype(windowWrapper);
     V8DOMWrapper::associateObjectWithWrapper<V8Window>(PassRefPtrWillBeRawPtr<LocalDOMWindow>(window), &V8Window::wrapperTypeInfo, windowWrapper, m_isolate);
     V8Window::installConditionallyEnabledProperties(windowWrapper, m_isolate);
@@ -437,7 +437,7 @@ static void getter(v8::Local<v8::String> property, const v8::PropertyCallbackInf
 {
     // FIXME: Consider passing StringImpl directly.
     AtomicString name = toCoreAtomicString(property);
-    HTMLDocument* htmlDocument = V8HTMLDocument::toNative(info.Holder());
+    HTMLDocument* htmlDocument = V8HTMLDocument::toImpl(info.Holder());
     ASSERT(htmlDocument);
     v8::Handle<v8::Value> result = getNamedProperty(htmlDocument, name, info.Holder(), info.GetIsolate());
     if (!result.IsEmpty()) {

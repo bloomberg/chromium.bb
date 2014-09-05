@@ -63,14 +63,14 @@ static LocalFrame* findFrame(v8::Local<v8::Object> host, v8::Local<v8::Value> da
         v8::Handle<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(host, isolate);
         if (windowWrapper.IsEmpty())
             return 0;
-        return V8Window::toNative(windowWrapper)->frame();
+        return V8Window::toImpl(windowWrapper)->frame();
     }
 
     if (V8History::wrapperTypeInfo.equals(type))
-        return V8History::toNative(host)->frame();
+        return V8History::toImpl(host)->frame();
 
     if (V8Location::wrapperTypeInfo.equals(type))
-        return V8Location::toNative(host)->frame();
+        return V8Location::toImpl(host)->frame();
 
     // This function can handle only those types listed above.
     ASSERT_NOT_REACHED();
@@ -127,7 +127,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
         v8::Handle<v8::Object> obj = v8::Handle<v8::Object>::Cast(data);
         const WrapperTypeInfo* type = toWrapperTypeInfo(obj);
         if (V8DOMException::wrapperTypeInfo.isSubclass(type)) {
-            DOMException* exception = V8DOMException::toNative(obj);
+            DOMException* exception = V8DOMException::toImpl(obj);
             if (exception && !exception->messageForConsole().isEmpty())
                 event->setUnsanitizedMessage("Uncaught " + exception->toStringForConsole());
         }

@@ -14,7 +14,7 @@
 
 namespace blink {
 
-TestDictionary* V8TestDictionary::toNative(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value)
+TestDictionary* V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value)
 {
     TestDictionary* impl = TestDictionary::create();
     // FIXME: Do not use Dictionary and DictionaryHelper

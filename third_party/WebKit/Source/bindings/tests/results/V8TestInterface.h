@@ -30,11 +30,11 @@ public:
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::Object> findInstanceInPrototypeChain(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
-    static TestInterfaceImplementation* toNative(v8::Handle<v8::Object> object)
+    static TestInterfaceImplementation* toImpl(v8::Handle<v8::Object> object)
     {
-        return fromInternalPointer(blink::toInternalPointer(object));
+        return toImpl(blink::toScriptWrappableBase(object));
     }
-    static TestInterfaceImplementation* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
+    static TestInterfaceImplementation* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
@@ -44,14 +44,14 @@ public:
     static void implementsCustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     static void legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
-    static inline ScriptWrappableBase* toInternalPointer(TestInterfaceImplementation* impl)
+    static inline ScriptWrappableBase* toScriptWrappableBase(TestInterfaceImplementation* impl)
     {
-        return impl->toInternalPointer();
+        return impl->toScriptWrappableBase();
     }
 
-    static inline TestInterfaceImplementation* fromInternalPointer(ScriptWrappableBase* internalPointer)
+    static inline TestInterfaceImplementation* toImpl(ScriptWrappableBase* internalPointer)
     {
-        return ScriptWrappableBase::fromInternalPointer<TestInterfaceImplementation>(internalPointer);
+        return internalPointer->toImpl<TestInterfaceImplementation>();
     }
     static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*);
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*);

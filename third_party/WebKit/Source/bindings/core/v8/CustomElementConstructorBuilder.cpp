@@ -286,7 +286,7 @@ static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>& in
         return;
     }
 
-    Document* document = V8Document::toNative(V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Callee(), V8HiddenValue::customElementDocument(isolate)).As<v8::Object>());
+    Document* document = V8Document::toImpl(V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Callee(), V8HiddenValue::customElementDocument(isolate)).As<v8::Object>());
     TOSTRING_VOID(V8StringResource<>, namespaceURI, V8HiddenValue::getHiddenValue(isolate, info.Callee(), V8HiddenValue::customElementNamespaceURI(isolate)));
     TOSTRING_VOID(V8StringResource<>, tagName, V8HiddenValue::getHiddenValue(isolate, info.Callee(), V8HiddenValue::customElementTagName(isolate)));
     v8::Handle<v8::Value> maybeType = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Callee(), V8HiddenValue::customElementType(isolate));

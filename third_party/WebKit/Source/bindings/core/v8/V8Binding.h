@@ -630,7 +630,7 @@ Vector<RefPtr<T> > toRefPtrNativeArrayUnchecked(v8::Local<v8::Value> v8Value, ui
         v8::Handle<v8::Value> element = object->Get(i);
         if (V8T::hasInstance(element, isolate)) {
             v8::Handle<v8::Object> elementObject = v8::Handle<v8::Object>::Cast(element);
-            result.uncheckedAppend(V8T::toNative(elementObject));
+            result.uncheckedAppend(V8T::toImpl(elementObject));
         } else {
             if (success)
                 *success = false;
@@ -697,7 +697,7 @@ WillBeHeapVector<RefPtrWillBeMember<T> > toRefPtrWillBeMemberNativeArray(v8::Han
         v8::Handle<v8::Value> element = object->Get(i);
         if (V8T::hasInstance(element, isolate)) {
             v8::Handle<v8::Object> elementObject = v8::Handle<v8::Object>::Cast(element);
-            result.uncheckedAppend(V8T::toNative(elementObject));
+            result.uncheckedAppend(V8T::toImpl(elementObject));
         } else {
             if (success)
                 *success = false;
@@ -730,7 +730,7 @@ WillBeHeapVector<RefPtrWillBeMember<T> > toRefPtrWillBeMemberNativeArray(v8::Han
         v8::Handle<v8::Value> element = object->Get(i);
         if (V8T::hasInstance(element, isolate)) {
             v8::Handle<v8::Object> elementObject = v8::Handle<v8::Object>::Cast(element);
-            result.uncheckedAppend(V8T::toNative(elementObject));
+            result.uncheckedAppend(V8T::toImpl(elementObject));
         } else {
             if (success)
                 *success = false;
@@ -763,7 +763,7 @@ HeapVector<Member<T> > toMemberNativeArray(v8::Handle<v8::Value> value, int argu
         v8::Handle<v8::Value> element = object->Get(i);
         if (V8T::hasInstance(element, isolate)) {
             v8::Handle<v8::Object> elementObject = v8::Handle<v8::Object>::Cast(element);
-            result.uncheckedAppend(V8T::toNative(elementObject));
+            result.uncheckedAppend(V8T::toImpl(elementObject));
         } else {
             if (success)
                 *success = false;
@@ -777,7 +777,7 @@ HeapVector<Member<T> > toMemberNativeArray(v8::Handle<v8::Value> value, int argu
 // Converts a JavaScript value to an array as per the Web IDL specification:
 // http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-array
 template <class T>
-Vector<T> toNativeArray(v8::Handle<v8::Value> value, int argumentIndex, v8::Isolate* isolate)
+Vector<T> toImplArray(v8::Handle<v8::Value> value, int argumentIndex, v8::Isolate* isolate)
 {
     v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
     uint32_t length = 0;
@@ -798,7 +798,7 @@ Vector<T> toNativeArray(v8::Handle<v8::Value> value, int argumentIndex, v8::Isol
 }
 
 template <class T>
-Vector<T> toNativeArguments(const v8::FunctionCallbackInfo<v8::Value>& info, int startIndex)
+Vector<T> toImplArguments(const v8::FunctionCallbackInfo<v8::Value>& info, int startIndex)
 {
     ASSERT(startIndex <= info.Length());
     Vector<T> result;
@@ -886,7 +886,7 @@ inline v8::Local<v8::Function> createClosure(v8::FunctionCallback function, v8::
 // FIXME: This will be soon embedded in the generated code.
 template<class Collection> static void indexedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    Collection* collection = ScriptWrappableBase::fromInternalPointer<Collection>(toInternalPointer(info.Holder()));
+    Collection* collection = toScriptWrappableBase(info.Holder())->toImpl<Collection>();
     int length = collection->length();
     v8::Handle<v8::Array> properties = v8::Array::New(info.GetIsolate(), length);
     for (int i = 0; i < length; ++i) {

@@ -114,20 +114,20 @@ v8::Handle<v8::Object> V8TestInterfaceConstructor3::findInstanceInPrototypeChain
     return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestInterfaceConstructor3* V8TestInterfaceConstructor3::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+TestInterfaceConstructor3* V8TestInterfaceConstructor3::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
+    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterfaceConstructor3>() : 0;
 }
 
 
 void V8TestInterfaceConstructor3::refObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->ref();
+    internalPointer->toImpl<TestInterfaceConstructor3>()->ref();
 }
 
 void V8TestInterfaceConstructor3::derefObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->deref();
+    internalPointer->toImpl<TestInterfaceConstructor3>()->deref();
 }
 
 WrapperPersistentNode* V8TestInterfaceConstructor3::createPersistentHandle(ScriptWrappableBase* internalPointer)

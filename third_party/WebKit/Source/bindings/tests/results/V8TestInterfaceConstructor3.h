@@ -21,25 +21,25 @@ public:
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::Object> findInstanceInPrototypeChain(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
-    static TestInterfaceConstructor3* toNative(v8::Handle<v8::Object> object)
+    static TestInterfaceConstructor3* toImpl(v8::Handle<v8::Object> object)
     {
-        return fromInternalPointer(blink::toInternalPointer(object));
+        return toImpl(blink::toScriptWrappableBase(object));
     }
-    static TestInterfaceConstructor3* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
+    static TestInterfaceConstructor3* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
     static WrapperPersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer);
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
-    static inline ScriptWrappableBase* toInternalPointer(TestInterfaceConstructor3* impl)
+    static inline ScriptWrappableBase* toScriptWrappableBase(TestInterfaceConstructor3* impl)
     {
-        return impl->toInternalPointer();
+        return impl->toScriptWrappableBase();
     }
 
-    static inline TestInterfaceConstructor3* fromInternalPointer(ScriptWrappableBase* internalPointer)
+    static inline TestInterfaceConstructor3* toImpl(ScriptWrappableBase* internalPointer)
     {
-        return ScriptWrappableBase::fromInternalPointer<TestInterfaceConstructor3>(internalPointer);
+        return internalPointer->toImpl<TestInterfaceConstructor3>();
     }
     static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }

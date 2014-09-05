@@ -58,7 +58,7 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         exceptionState.throwIfNeeded();
         return;
     }
-    TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
+    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     unsigned index;
     {
         v8::TryCatch block;
@@ -88,7 +88,7 @@ static void setItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         exceptionState.throwIfNeeded();
         return;
     }
-    TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
+    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     unsigned index;
     V8StringResource<> value;
     {
@@ -120,7 +120,7 @@ static void deleteItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         exceptionState.throwIfNeeded();
         return;
     }
-    TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
+    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     unsigned index;
     {
         v8::TryCatch block;
@@ -150,7 +150,7 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         exceptionState.throwIfNeeded();
         return;
     }
-    TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
+    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     V8StringResource<> name;
     {
         TOSTRING_VOID_INTERNAL(name, info[0]);
@@ -178,7 +178,7 @@ static void setNamedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         exceptionState.throwIfNeeded();
         return;
     }
-    TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
+    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     V8StringResource<> name;
     V8StringResource<> value;
     {
@@ -208,7 +208,7 @@ static void deleteNamedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& inf
         exceptionState.throwIfNeeded();
         return;
     }
-    TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
+    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     V8StringResource<> name;
     {
         TOSTRING_VOID_INTERNAL(name, info[0]);
@@ -230,7 +230,7 @@ static void deleteNamedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Val
 
 static void stringifierMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
+    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     v8SetReturnValueString(info, impl->stringifierMethod(), info.GetIsolate());
 }
 
@@ -243,7 +243,7 @@ static void stringifierMethodMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
+    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     v8SetReturnValueString(info, impl->stringifierMethod(), info.GetIsolate());
 }
 
@@ -263,7 +263,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
+    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     ExceptionState exceptionState(ExceptionState::IndexedGetterContext, "TestInterface2", info.Holder(), info.GetIsolate());
     RefPtr<TestInterfaceEmpty> result = impl->item(index, exceptionState);
     if (exceptionState.throwIfNeeded())
@@ -282,7 +282,7 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
+    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     TOSTRING_VOID(V8StringResource<>, propertyValue, v8Value);
     ExceptionState exceptionState(ExceptionState::IndexedSetterContext, "TestInterface2", info.Holder(), info.GetIsolate());
     bool result = impl->setItem(index, propertyValue, exceptionState);
@@ -302,7 +302,7 @@ static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v
 
 static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
+    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     ExceptionState exceptionState(ExceptionState::IndexedDeletionContext, "TestInterface2", info.Holder(), info.GetIsolate());
     DeleteResult result = impl->deleteItem(index, exceptionState);
     if (exceptionState.throwIfNeeded())
@@ -325,7 +325,7 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
-    TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
+    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "TestInterface2", info.Holder(), info.GetIsolate());
@@ -351,7 +351,7 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
-    TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
+    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     TOSTRING_VOID(V8StringResource<>, propertyName, name);
     TOSTRING_VOID(V8StringResource<>, propertyValue, v8Value);
     v8::String::Utf8Value namedProperty(name);
@@ -373,7 +373,7 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
 
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
-    TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
+    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "TestInterface2", info.Holder(), info.GetIsolate());
@@ -394,7 +394,7 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 
 static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
+    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::DeletionContext, *namedProperty, "TestInterface2", info.Holder(), info.GetIsolate());
@@ -414,7 +414,7 @@ static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::P
 
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    TestInterface2* impl = V8TestInterface2::toNative(info.Holder());
+    TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     Vector<String> names;
     ExceptionState exceptionState(ExceptionState::EnumerationContext, "TestInterface2", info.Holder(), info.GetIsolate());
     impl->namedPropertyEnumerator(names, exceptionState);
@@ -437,7 +437,7 @@ static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::A
 
 void V8TestInterface2::visitDOMWrapper(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
-    TestInterface2* impl = fromInternalPointer(internalPointer);
+    TestInterface2* impl = internalPointer->toImpl<TestInterface2>();
     // The ownerNode() method may return a reference or a pointer.
     if (Node* owner = WTF::getPtr(impl->ownerNode())) {
         Node* root = V8GCController::opaqueRootForGC(owner, isolate);
@@ -515,20 +515,20 @@ v8::Handle<v8::Object> V8TestInterface2::findInstanceInPrototypeChain(v8::Handle
     return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestInterface2* V8TestInterface2::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+TestInterface2* V8TestInterface2::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
+    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterface2>() : 0;
 }
 
 
 void V8TestInterface2::refObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->ref();
+    internalPointer->toImpl<TestInterface2>()->ref();
 }
 
 void V8TestInterface2::derefObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->deref();
+    internalPointer->toImpl<TestInterface2>()->deref();
 }
 
 WrapperPersistentNode* V8TestInterface2::createPersistentHandle(ScriptWrappableBase* internalPointer)

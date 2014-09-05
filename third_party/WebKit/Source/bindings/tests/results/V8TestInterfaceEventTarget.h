@@ -28,11 +28,11 @@ public:
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::Object> findInstanceInPrototypeChain(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
-    static TestInterfaceEventTarget* toNative(v8::Handle<v8::Object> object)
+    static TestInterfaceEventTarget* toImpl(v8::Handle<v8::Object> object)
     {
-        return fromInternalPointer(blink::toInternalPointer(object));
+        return toImpl(blink::toScriptWrappableBase(object));
     }
-    static TestInterfaceEventTarget* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
+    static TestInterfaceEventTarget* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
@@ -45,14 +45,14 @@ public:
 #else
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;
 #endif
-    static inline ScriptWrappableBase* toInternalPointer(TestInterfaceEventTarget* impl)
+    static inline ScriptWrappableBase* toScriptWrappableBase(TestInterfaceEventTarget* impl)
     {
-        return impl->toInternalPointer();
+        return impl->toScriptWrappableBase();
     }
 
-    static inline TestInterfaceEventTarget* fromInternalPointer(ScriptWrappableBase* internalPointer)
+    static inline TestInterfaceEventTarget* toImpl(ScriptWrappableBase* internalPointer)
     {
-        return ScriptWrappableBase::fromInternalPointer<TestInterfaceEventTarget>(internalPointer);
+        return internalPointer->toImpl<TestInterfaceEventTarget>();
     }
     static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }

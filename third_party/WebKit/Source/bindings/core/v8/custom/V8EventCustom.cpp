@@ -41,7 +41,7 @@ namespace blink {
 
 void V8Event::clipboardDataAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    Event* event = V8Event::toNative(info.Holder());
+    Event* event = V8Event::toImpl(info.Holder());
 
     if (event->isClipboardEvent()) {
         v8SetReturnValueFast(info, static_cast<ClipboardEvent*>(event)->clipboardData(), event);

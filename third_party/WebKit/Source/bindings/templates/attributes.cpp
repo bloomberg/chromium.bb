@@ -20,7 +20,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {# impl #}
     {% if attribute.cached_attribute_validation_method %}
     v8::Handle<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "{{attribute.name}}");
-    {{cpp_class}}* impl = {{v8_class}}::toNative(holder);
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
     if (!impl->{{attribute.cached_attribute_validation_method}}()) {
         v8::Handle<v8::Value> v8Value = V8HiddenValue::getHiddenValue(info.GetIsolate(), holder, propertyName);
         if (!v8Value.IsEmpty()) {
@@ -29,7 +29,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
         }
     }
     {% elif not attribute.is_static %}
-    {{cpp_class}}* impl = {{v8_class}}::toNative(holder);
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
     {% endif %}
     {% if interface_name == 'Window' and attribute.idl_type == 'EventHandler' %}
     if (!impl->document())
@@ -225,12 +225,12 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     {% endif %}
     {# impl #}
     {% if attribute.put_forwards %}
-    {{cpp_class}}* proxyImpl = {{v8_class}}::toNative(holder);
+    {{cpp_class}}* proxyImpl = {{v8_class}}::toImpl(holder);
     {{attribute.cpp_type}} impl = WTF::getPtr(proxyImpl->{{attribute.name}}());
     if (!impl)
         return;
     {% elif not attribute.is_static %}
-    {{cpp_class}}* impl = {{v8_class}}::toNative(holder);
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
     {% endif %}
     {% if attribute.idl_type == 'EventHandler' and interface_name == 'Window' %}
     if (!impl->document())
@@ -314,7 +314,7 @@ v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackI
     if (contextData && contextData->activityLogger()) {
     {% endif %}
         {% if attribute.activity_logging_include_old_value_for_setter %}
-        {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
+        {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
         {% if attribute.cpp_value_original %}
         {{attribute.cpp_type}} {{attribute.cpp_value}}({{attribute.cpp_value_original}});
         {% endif %}

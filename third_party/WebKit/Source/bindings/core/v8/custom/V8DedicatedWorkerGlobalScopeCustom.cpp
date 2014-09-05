@@ -39,7 +39,7 @@ namespace blink {
 // FIXME: This stub should be replaced by generated code.
 void V8DedicatedWorkerGlobalScope::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    postMessageMethodCommon("WorkerGlobalScope", V8DedicatedWorkerGlobalScope::toNative(info.Holder()), info);
+    postMessageMethodCommon("WorkerGlobalScope", V8DedicatedWorkerGlobalScope::toImpl(info.Holder()), info);
 }
 
 } // namespace blink

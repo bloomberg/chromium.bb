@@ -34,7 +34,7 @@ namespace blink {
 
 void V8DeviceOrientationEvent::initDeviceOrientationEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    DeviceOrientationEvent* impl = V8DeviceOrientationEvent::toNative(info.Holder());
+    DeviceOrientationEvent* impl = V8DeviceOrientationEvent::toImpl(info.Holder());
     TOSTRING_VOID(V8StringResource<>, type, info[0]);
     bool bubbles = info[1]->BooleanValue();
     bool cancelable = info[2]->BooleanValue();

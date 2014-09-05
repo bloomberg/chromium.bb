@@ -35,20 +35,20 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
     OwnPtr<BlobData> blobData = BlobData::create();
     v8::Isolate* isolate = toIsolate(context);
     if (body->IsArrayBuffer()) {
-        ArrayBuffer* arrayBuffer = V8ArrayBuffer::toNative(v8::Handle<v8::Object>::Cast(body));
+        ArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(v8::Handle<v8::Object>::Cast(body));
         ASSERT(arrayBuffer);
         blobData->appendArrayBuffer(arrayBuffer);
     } else if (body->IsArrayBufferView()) {
-        ArrayBufferView* arrayBufferView = V8ArrayBufferView::toNative(v8::Handle<v8::Object>::Cast(body));
+        ArrayBufferView* arrayBufferView = V8ArrayBufferView::toImpl(v8::Handle<v8::Object>::Cast(body));
         ASSERT(arrayBufferView);
         blobData->appendArrayBufferView(arrayBufferView);
     } else if (V8Blob::hasInstance(body, isolate)) {
-        Blob* blob = V8Blob::toNative(v8::Handle<v8::Object>::Cast(body));
+        Blob* blob = V8Blob::toImpl(v8::Handle<v8::Object>::Cast(body));
         ASSERT(blob);
         blob->appendTo(*blobData);
         blobData->setContentType(blob->type());
     } else if (V8FormData::hasInstance(body, isolate)) {
-        DOMFormData* domFormData = V8FormData::toNative(v8::Handle<v8::Object>::Cast(body));
+        DOMFormData* domFormData = V8FormData::toImpl(v8::Handle<v8::Object>::Cast(body));
         ASSERT(domFormData);
         RefPtr<FormData> httpBody = domFormData->createMultiPartFormData();
         for (size_t i = 0; i < httpBody->elements().size(); ++i) {

@@ -373,7 +373,7 @@ def v8_value_to_local_cpp_variadic_value(argument, index, return_promise):
     macro = 'TONATIVE_VOID'
     macro_args = [
       argument.name,
-      'toNativeArguments<%s>(info, %s)' % (idl_type.cpp_type, index),
+      'toImplArguments<%s>(info, %s)' % (idl_type.cpp_type, index),
     ]
 
     if return_promise:

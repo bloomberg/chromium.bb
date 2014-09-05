@@ -52,7 +52,7 @@ template <typename T> void V8_USE(T) { }
 static void uLongLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    TestTypedefs* impl = V8TestTypedefs::toNative(holder);
+    TestTypedefs* impl = V8TestTypedefs::toImpl(holder);
     v8SetReturnValue(info, static_cast<double>(impl->uLongLongAttribute()));
 }
 
@@ -67,7 +67,7 @@ static void uLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
 {
     v8::Handle<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "uLongLongAttribute", "TestTypedefs", holder, info.GetIsolate());
-    TestTypedefs* impl = V8TestTypedefs::toNative(holder);
+    TestTypedefs* impl = V8TestTypedefs::toImpl(holder);
     TONATIVE_VOID_EXCEPTIONSTATE(unsigned long long, cppValue, toUInt64(v8Value, exceptionState), exceptionState);
     impl->setULongLongAttribute(cppValue);
 }
@@ -102,7 +102,7 @@ static void TestTypedefsForceSetAttributeOnThisCallback(v8::Local<v8::String> na
 
 static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
+    TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
     Vector<int> arrayOfLongsArg;
     {
         v8::TryCatch block;
@@ -111,7 +111,7 @@ static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::V
             impl->voidMethodArrayOfLongsArg();
             return;
         }
-        TONATIVE_VOID_INTERNAL(arrayOfLongsArg, toNativeArray<int>(info[0], 1, info.GetIsolate()));
+        TONATIVE_VOID_INTERNAL(arrayOfLongsArg, toImplArray<int>(info[0], 1, info.GetIsolate()));
     }
     impl->voidMethodArrayOfLongsArg(arrayOfLongsArg);
 }
@@ -129,7 +129,7 @@ static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8:
         V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodFloatArgStringArg", "TestTypedefs", 2, info.Length(), info.GetIsolate()), info.GetIsolate());
         return;
     }
-    TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
+    TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
     float floatArg;
     V8StringResource<> stringArg;
     {
@@ -154,7 +154,7 @@ static void voidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallb
         V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("voidMethodTestCallbackInterfaceTypeArg", "TestTypedefs", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
         return;
     }
-    TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
+    TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
     OwnPtrWillBeRawPtr<TestCallbackInterface> testCallbackInterfaceTypeArg = nullptr;;
     {
         if (info.Length() <= 0 || !info[0]->IsFunction()) {
@@ -179,7 +179,7 @@ static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(const v8::Fun
         V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("uLongLongMethodTestInterfaceEmptyTypeSequenceArg", "TestTypedefs", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
         return;
     }
-    TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
+    TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
     Vector<RefPtr<TestInterfaceEmpty> > testInterfaceEmptyTypeSequenceArg;
     {
         v8::TryCatch block;
@@ -198,7 +198,7 @@ static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethodCallback(const
 
 static void testInterfaceOrTestInterfaceEmptyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
+    TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
     RefPtr<TestInterfaceImplementation> result0 = nullptr;
     RefPtr<TestInterfaceEmpty> result1 = nullptr;
     impl->testInterfaceOrTestInterfaceEmptyMethod(result0, result1);
@@ -222,7 +222,7 @@ static void testInterfaceOrTestInterfaceEmptyMethodMethodCallback(const v8::Func
 
 static void domStringOrDoubleMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
+    TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
     String result0;
     Nullable<double> result1;
     impl->domStringOrDoubleMethod(result0, result1);
@@ -250,12 +250,12 @@ static void arrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallba
         V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("arrayOfStringsMethodArrayOfStringsArg", "TestTypedefs", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
         return;
     }
-    TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
+    TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
     Vector<String> arrayOfStringsArg;
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(arrayOfStringsArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
+        TONATIVE_VOID_INTERNAL(arrayOfStringsArg, toImplArray<String>(info[0], 1, info.GetIsolate()));
     }
     v8SetReturnValue(info, v8Array(impl->arrayOfStringsMethodArrayOfStringsArg(arrayOfStringsArg), info.Holder(), info.GetIsolate()));
 }
@@ -273,12 +273,12 @@ static void stringArrayMethodStringArrayArgMethod(const v8::FunctionCallbackInfo
         V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("stringArrayMethodStringArrayArg", "TestTypedefs", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
         return;
     }
-    TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
+    TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
     Vector<String> stringArrayArg;
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(stringArrayArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
+        TONATIVE_VOID_INTERNAL(stringArrayArg, toImplArray<String>(info[0], 1, info.GetIsolate()));
     }
     v8SetReturnValue(info, v8Array(impl->stringArrayMethodStringArrayArg(stringArrayArg), info.Holder(), info.GetIsolate()));
 }
@@ -374,20 +374,20 @@ v8::Handle<v8::Object> V8TestTypedefs::findInstanceInPrototypeChain(v8::Handle<v
     return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestTypedefs* V8TestTypedefs::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+TestTypedefs* V8TestTypedefs::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
+    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestTypedefs>() : 0;
 }
 
 
 void V8TestTypedefs::refObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->ref();
+    internalPointer->toImpl<TestTypedefs>()->ref();
 }
 
 void V8TestTypedefs::derefObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->deref();
+    internalPointer->toImpl<TestTypedefs>()->deref();
 }
 
 WrapperPersistentNode* V8TestTypedefs::createPersistentHandle(ScriptWrappableBase* internalPointer)

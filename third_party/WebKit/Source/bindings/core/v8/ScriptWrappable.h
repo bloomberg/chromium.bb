@@ -78,18 +78,18 @@ __declspec(align(4))
 class ScriptWrappableBase {
 public:
     template<typename T>
-    static T* fromInternalPointer(ScriptWrappableBase* internalPointer)
+    T* toImpl()
     {
         // Check if T* is castable to ScriptWrappableBase*, which means T
         // doesn't have two or more ScriptWrappableBase as superclasses.
         // If T has two ScriptWrappableBase as superclasses, conversions
         // from T* to ScriptWrappableBase* are ambiguous.
-        ASSERT(static_cast<ScriptWrappableBase*>(static_cast<T*>(internalPointer)));
+        ASSERT(static_cast<ScriptWrappableBase*>(static_cast<T*>(this)));
         // The internal pointers must be aligned to at least 4 byte alignment.
-        ASSERT((reinterpret_cast<intptr_t>(internalPointer) & 0x3) == 0);
-        return static_cast<T*>(internalPointer);
+        ASSERT((reinterpret_cast<intptr_t>(this) & 0x3) == 0);
+        return static_cast<T*>(this);
     }
-    ScriptWrappableBase* toInternalPointer()
+    ScriptWrappableBase* toScriptWrappableBase()
     {
         // The internal pointers must be aligned to at least 4 byte alignment.
         ASSERT((reinterpret_cast<intptr_t>(this) & 0x3) == 0);
@@ -99,7 +99,7 @@ public:
     void assertWrapperSanity(v8::Local<v8::Object> object)
     {
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(object.IsEmpty()
-            || object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == toInternalPointer());
+            || object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == toScriptWrappableBase());
     }
 };
 
@@ -250,7 +250,7 @@ public:
     {
         ASSERT(objectAsT);
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(object.IsEmpty()
-            || object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toInternalPointer(objectAsT));
+            || object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toScriptWrappableBase(objectAsT));
     }
 
     template<typename V8T, typename T>
@@ -266,7 +266,7 @@ public:
         ASSERT(objectAsT);
         v8::Object* value = object->getRawValue();
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(value == 0
-            || value->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toInternalPointer(objectAsT));
+            || value->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toScriptWrappableBase(objectAsT));
     }
 
     using ScriptWrappableBase::assertWrapperSanity;

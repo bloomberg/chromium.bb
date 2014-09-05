@@ -328,7 +328,7 @@ PassRefPtrWillBeRawPtr<JavaScriptCallFrame> ScriptDebugServer::toJavaScriptCallF
     if (value.isEmpty())
         return nullptr;
     ASSERT(value.isObject());
-    return V8JavaScriptCallFrame::toNative(v8::Handle<v8::Object>::Cast(value.v8ValueUnsafe()));
+    return V8JavaScriptCallFrame::toImpl(v8::Handle<v8::Object>::Cast(value.v8ValueUnsafe()));
 }
 
 PassRefPtrWillBeRawPtr<JavaScriptCallFrame> ScriptDebugServer::wrapCallFrames(int maximumLimit, ScopeInfoDetails scopeDetails)

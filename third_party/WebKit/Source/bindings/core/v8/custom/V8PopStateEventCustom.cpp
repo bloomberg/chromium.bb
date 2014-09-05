@@ -55,7 +55,7 @@ void V8PopStateEvent::stateAttributeGetterCustom(const v8::PropertyCallbackInfo<
         return;
     }
 
-    PopStateEvent* event = V8PopStateEvent::toNative(info.Holder());
+    PopStateEvent* event = V8PopStateEvent::toImpl(info.Holder());
     History* history = event->history();
     if (!history || !event->serializedState()) {
         if (!event->serializedState()) {

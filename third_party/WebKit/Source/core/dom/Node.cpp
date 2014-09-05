@@ -2475,12 +2475,12 @@ v8::Handle<v8::Object> Node::wrap(v8::Handle<v8::Object> creationContext, v8::Is
 
     const WrapperTypeInfo* wrapperType = wrapperTypeInfo();
 
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, wrapperType, toInternalPointer(), isolate);
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, wrapperType, toScriptWrappableBase(), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
     wrapperType->installConditionallyEnabledProperties(wrapper, isolate);
-    wrapperType->refObject(toInternalPointer());
+    wrapperType->refObject(toScriptWrappableBase());
     V8DOMWrapper::associateObjectWithWrapperNonTemplate(this, wrapperType, wrapper, isolate);
     return wrapper;
 }

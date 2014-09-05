@@ -155,7 +155,7 @@ bool Dictionary::getWithUndefinedOrNullCheck(const String& key, RefPtrWillBeMemb
     if (!getKey(key, v8Value) || blink::isUndefinedOrNull(v8Value))
         return false;
 
-    value = V8Element::toNativeWithTypeCheck(m_isolate, v8Value);
+    value = V8Element::toImplWithTypeCheck(m_isolate, v8Value);
     return true;
 }
 
@@ -165,7 +165,7 @@ bool Dictionary::getWithUndefinedOrNullCheck(const String& key, RefPtrWillBeMemb
     if (!getKey(key, v8Value) || blink::isUndefinedOrNull(v8Value))
         return false;
 
-    value = V8Path2D::toNativeWithTypeCheck(m_isolate, v8Value);
+    value = V8Path2D::toImplWithTypeCheck(m_isolate, v8Value);
     return true;
 }
 

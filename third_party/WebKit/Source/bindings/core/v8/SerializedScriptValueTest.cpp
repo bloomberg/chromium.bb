@@ -44,7 +44,7 @@ TEST_F(SerializedScriptValueTest, UserSelectedFile)
     v8::Handle<v8::Value> v8File = serializedScriptValue->deserialize(isolate());
 
     ASSERT_TRUE(V8File::hasInstance(v8File, isolate()));
-    File* file = V8File::toNative(v8::Handle<v8::Object>::Cast(v8File));
+    File* file = V8File::toImpl(v8::Handle<v8::Object>::Cast(v8File));
     EXPECT_TRUE(file->hasBackingFile());
     EXPECT_EQ(File::IsUserVisible, file->userVisibility());
     EXPECT_EQ(filePath, file->path());
@@ -64,7 +64,7 @@ TEST_F(SerializedScriptValueTest, FileConstructorFile)
     v8::Handle<v8::Value> v8File = serializedScriptValue->deserialize(isolate());
 
     ASSERT_TRUE(V8File::hasInstance(v8File, isolate()));
-    File* file = V8File::toNative(v8::Handle<v8::Object>::Cast(v8File));
+    File* file = V8File::toImpl(v8::Handle<v8::Object>::Cast(v8File));
     EXPECT_FALSE(file->hasBackingFile());
     EXPECT_EQ(File::IsNotUserVisible, file->userVisibility());
     EXPECT_EQ("hello.txt", file->name());

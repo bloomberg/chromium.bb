@@ -47,7 +47,7 @@ namespace blink {
 
 static void setTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& info, bool singleShot)
 {
-    WorkerGlobalScope* workerGlobalScope = V8WorkerGlobalScope::toNative(info.Holder());
+    WorkerGlobalScope* workerGlobalScope = V8WorkerGlobalScope::toImpl(info.Holder());
     ASSERT(workerGlobalScope);
 
     int argumentCount = info.Length();

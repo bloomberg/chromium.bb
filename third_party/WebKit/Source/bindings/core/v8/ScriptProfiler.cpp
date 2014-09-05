@@ -247,7 +247,7 @@ static v8::RetainedObjectInfo* retainedDOMInfo(uint16_t classId, v8::Handle<v8::
     ASSERT(classId == WrapperTypeInfo::NodeClassId);
     if (!wrapper->IsObject())
         return 0;
-    Node* node = V8Node::toNative(wrapper.As<v8::Object>());
+    Node* node = V8Node::toImpl(wrapper.As<v8::Object>());
     return node ? new RetainedDOMInfo(node) : 0;
 }
 
@@ -283,7 +283,7 @@ void ScriptProfiler::visitNodeWrappers(WrappedNodeVisitor* visitor)
             v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
             ASSERT_UNUSED(m_isolate, V8Node::hasInstance(*wrapper, m_isolate));
             ASSERT((*wrapper)->IsObject());
-            m_visitor->visitNode(V8Node::toNative(*wrapper));
+            m_visitor->visitNode(V8Node::toImpl(*wrapper));
         }
 
     private:

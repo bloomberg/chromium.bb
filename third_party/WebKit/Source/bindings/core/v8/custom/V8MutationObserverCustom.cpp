@@ -69,7 +69,7 @@ void V8MutationObserver::constructorCustom(const v8::FunctionCallbackInfo<v8::Va
 
 void V8MutationObserver::visitDOMWrapper(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
-    MutationObserver* observer = fromInternalPointer(internalPointer);
+    MutationObserver* observer = internalPointer->toImpl<MutationObserver>();
     WillBeHeapHashSet<RawPtrWillBeMember<Node> > observedNodes = observer->getObservedNodes();
     for (WillBeHeapHashSet<RawPtrWillBeMember<Node> >::iterator it = observedNodes.begin(); it != observedNodes.end(); ++it) {
         v8::UniqueId id(reinterpret_cast<intptr_t>(V8GCController::opaqueRootForGC(*it, isolate)));

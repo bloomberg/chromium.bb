@@ -90,7 +90,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
         }
     }
 
-    SQLTransaction* transaction = V8SQLTransaction::toNative(info.Holder());
+    SQLTransaction* transaction = V8SQLTransaction::toImpl(info.Holder());
     OwnPtrWillBeRawPtr<SQLStatementCallback> callback = nullptr;
     if (info.Length() > 2 && !isUndefinedOrNull(info[2])) {
         if (!info[2]->IsFunction()) {

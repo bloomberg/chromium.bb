@@ -86,7 +86,7 @@ static v8::Handle<v8::Value> getItem(HTMLAllCollection* collection, v8::Handle<v
 
 void V8HTMLAllCollection::itemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    HTMLAllCollection* impl = V8HTMLAllCollection::toNative(info.Holder());
+    HTMLAllCollection* impl = V8HTMLAllCollection::toImpl(info.Holder());
     v8SetReturnValue(info, getItem(impl, info[0], info));
 }
 
@@ -95,7 +95,7 @@ void V8HTMLAllCollection::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Va
     if (info.Length() < 1)
         return;
 
-    HTMLAllCollection* impl = V8HTMLAllCollection::toNative(info.Holder());
+    HTMLAllCollection* impl = V8HTMLAllCollection::toImpl(info.Holder());
     Node& ownerNode = impl->ownerNode();
 
     UseCounter::count(ownerNode.document(), UseCounter::DocumentAllLegacyCall);

@@ -65,12 +65,12 @@ bool V8ArrayBuffer::hasInstance(v8::Handle<v8::Value> value, v8::Isolate*)
 
 void V8ArrayBuffer::refObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->ref();
+    toImpl(internalPointer)->ref();
 }
 
 void V8ArrayBuffer::derefObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->deref();
+    toImpl(internalPointer)->deref();
 }
 
 WrapperPersistentNode* V8ArrayBuffer::createPersistentHandle(ScriptWrappableBase* internalPointer)
@@ -91,13 +91,13 @@ v8::Handle<v8::Object> V8ArrayBuffer::createWrapper(PassRefPtr<ArrayBuffer> impl
     return wrapper;
 }
 
-ArrayBuffer* V8ArrayBuffer::toNative(v8::Handle<v8::Object> object)
+ArrayBuffer* V8ArrayBuffer::toImpl(v8::Handle<v8::Object> object)
 {
     ASSERT(object->IsArrayBuffer());
     v8::Local<v8::ArrayBuffer> v8buffer = object.As<v8::ArrayBuffer>();
     if (v8buffer->IsExternal()) {
         RELEASE_ASSERT(toWrapperTypeInfo(object)->ginEmbedder == gin::kEmbedderBlink);
-        return reinterpret_cast<ArrayBuffer*>(blink::toInternalPointer(object));
+        return reinterpret_cast<ArrayBuffer*>(blink::toScriptWrappableBase(object));
     }
 
     v8::ArrayBuffer::Contents v8Contents = v8buffer->Externalize();
@@ -106,12 +106,12 @@ ArrayBuffer* V8ArrayBuffer::toNative(v8::Handle<v8::Object> object)
     RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(contents);
     V8DOMWrapper::associateObjectWithWrapper<V8ArrayBuffer>(buffer.release(), &wrapperTypeInfo, object, v8::Isolate::GetCurrent());
 
-    return reinterpret_cast<ArrayBuffer*>(blink::toInternalPointer(object));
+    return reinterpret_cast<ArrayBuffer*>(blink::toScriptWrappableBase(object));
 }
 
-ArrayBuffer* V8ArrayBuffer::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+ArrayBuffer* V8ArrayBuffer::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return V8ArrayBuffer::hasInstance(value, isolate) ? V8ArrayBuffer::toNative(v8::Handle<v8::Object>::Cast(value)) : 0;
+    return V8ArrayBuffer::hasInstance(value, isolate) ? V8ArrayBuffer::toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
 }
 
 template<>

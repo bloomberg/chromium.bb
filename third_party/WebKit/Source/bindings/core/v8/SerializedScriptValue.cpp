@@ -1278,7 +1278,7 @@ private:
 
     StateBase* writeBlob(v8::Handle<v8::Value> value, StateBase* next)
     {
-        Blob* blob = V8Blob::toNative(value.As<v8::Object>());
+        Blob* blob = V8Blob::toImpl(value.As<v8::Object>());
         if (!blob)
             return 0;
         if (blob->hasBeenClosed())
@@ -1294,7 +1294,7 @@ private:
 
     StateBase* writeDOMFileSystem(v8::Handle<v8::Value> value, StateBase* next)
     {
-        DOMFileSystem* fs = V8DOMFileSystem::toNative(value.As<v8::Object>());
+        DOMFileSystem* fs = V8DOMFileSystem::toImpl(value.As<v8::Object>());
         if (!fs)
             return 0;
         if (!fs->clonable())
@@ -1305,7 +1305,7 @@ private:
 
     StateBase* writeFile(v8::Handle<v8::Value> value, StateBase* next)
     {
-        File* file = V8File::toNative(value.As<v8::Object>());
+        File* file = V8File::toImpl(value.As<v8::Object>());
         if (!file)
             return 0;
         if (file->hasBeenClosed())
@@ -1323,7 +1323,7 @@ private:
 
     StateBase* writeFileList(v8::Handle<v8::Value> value, StateBase* next)
     {
-        FileList* fileList = V8FileList::toNative(value.As<v8::Object>());
+        FileList* fileList = V8FileList::toImpl(value.As<v8::Object>());
         if (!fileList)
             return 0;
         unsigned length = fileList->length();
@@ -1349,7 +1349,7 @@ private:
 
     bool writeCryptoKey(v8::Handle<v8::Value> value)
     {
-        CryptoKey* key = V8CryptoKey::toNative(value.As<v8::Object>());
+        CryptoKey* key = V8CryptoKey::toImpl(value.As<v8::Object>());
         if (!key)
             return false;
         return m_writer.writeCryptoKey(key->key());
@@ -1357,7 +1357,7 @@ private:
 
     void writeImageData(v8::Handle<v8::Value> value)
     {
-        ImageData* imageData = V8ImageData::toNative(value.As<v8::Object>());
+        ImageData* imageData = V8ImageData::toImpl(value.As<v8::Object>());
         if (!imageData)
             return;
         Uint8ClampedArray* pixelArray = imageData->data();
@@ -1373,7 +1373,7 @@ private:
     StateBase* writeAndGreyArrayBufferView(v8::Handle<v8::Object> object, StateBase* next)
     {
         ASSERT(!object.IsEmpty());
-        ArrayBufferView* arrayBufferView = V8ArrayBufferView::toNative(object);
+        ArrayBufferView* arrayBufferView = V8ArrayBufferView::toImpl(object);
         if (!arrayBufferView)
             return 0;
         if (!arrayBufferView->buffer())
@@ -1401,7 +1401,7 @@ private:
 
     StateBase* writeArrayBuffer(v8::Handle<v8::Value> value, StateBase* next)
     {
-        ArrayBuffer* arrayBuffer = V8ArrayBuffer::toNative(value.As<v8::Object>());
+        ArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(value.As<v8::Object>());
         if (!arrayBuffer)
             return 0;
         if (arrayBuffer->isNeutered())
@@ -1413,7 +1413,7 @@ private:
 
     StateBase* writeTransferredArrayBuffer(v8::Handle<v8::Value> value, uint32_t index, StateBase* next)
     {
-        ArrayBuffer* arrayBuffer = V8ArrayBuffer::toNative(value.As<v8::Object>());
+        ArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(value.As<v8::Object>());
         if (!arrayBuffer)
             return 0;
         if (arrayBuffer->isNeutered())
@@ -2066,7 +2066,7 @@ private:
             return false;
         if (arrayBufferV8Value.IsEmpty())
             return false;
-        arrayBuffer = V8ArrayBuffer::toNative(arrayBufferV8Value.As<v8::Object>());
+        arrayBuffer = V8ArrayBuffer::toImpl(arrayBufferV8Value.As<v8::Object>());
         if (!arrayBuffer)
             return false;
 
@@ -3027,7 +3027,7 @@ bool SerializedScriptValue::extractTransferables(v8::Local<v8::Value> value, int
         }
         // Validation of Objects implementing an interface, per WebIDL spec 4.1.15.
         if (V8MessagePort::hasInstance(transferrable, isolate)) {
-            RefPtrWillBeRawPtr<MessagePort> port = V8MessagePort::toNative(v8::Handle<v8::Object>::Cast(transferrable));
+            RefPtrWillBeRawPtr<MessagePort> port = V8MessagePort::toImpl(v8::Handle<v8::Object>::Cast(transferrable));
             // Check for duplicate MessagePorts.
             if (ports.contains(port)) {
                 exceptionState.throwDOMException(DataCloneError, "Message port at index " + String::number(i) + " is a duplicate of an earlier port.");
@@ -3035,7 +3035,7 @@ bool SerializedScriptValue::extractTransferables(v8::Local<v8::Value> value, int
             }
             ports.append(port.release());
         } else if (V8ArrayBuffer::hasInstance(transferrable, isolate)) {
-            RefPtr<ArrayBuffer> arrayBuffer = V8ArrayBuffer::toNative(v8::Handle<v8::Object>::Cast(transferrable));
+            RefPtr<ArrayBuffer> arrayBuffer = V8ArrayBuffer::toImpl(v8::Handle<v8::Object>::Cast(transferrable));
             if (arrayBuffers.contains(arrayBuffer)) {
                 exceptionState.throwDOMException(DataCloneError, "ArrayBuffer at index " + String::number(i) + " is a duplicate of an earlier ArrayBuffer.");
                 return false;

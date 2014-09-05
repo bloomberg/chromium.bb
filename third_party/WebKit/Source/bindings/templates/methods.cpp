@@ -15,7 +15,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     }
     {% endif %}
     {% if not method.is_static %}
-    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
     {% endif %}
     {% if method.is_custom_element_callbacks %}
     CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
@@ -187,7 +187,7 @@ for (int i = {{argument.index}}; i < info.Length(); ++i) {
                                    (argument.index + 1, argument.idl_type)) | indent(8)}}
         return;
     }
-    {{argument.name}}.append(V8{{argument.idl_type}}::toNative(v8::Handle<v8::Object>::Cast(info[i])));
+    {{argument.name}}.append(V8{{argument.idl_type}}::toImpl(v8::Handle<v8::Object>::Cast(info[i])));
 }
 {% else %}{# argument.is_nullable #}
 {{argument.v8_value_to_local_cpp_value}};
@@ -458,7 +458,7 @@ static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCall
     {% else %}
     if (contextData && contextData->activityLogger()) {
     {% endif %}
-        Vector<v8::Handle<v8::Value> > loggerArgs = toNativeArguments<v8::Handle<v8::Value> >(info, 0);
+        Vector<v8::Handle<v8::Value> > loggerArgs = toImplArguments<v8::Handle<v8::Value> >(info, 0);
         contextData->activityLogger()->logMethod("{{interface_name}}.{{method.name}}", info.Length(), loggerArgs.data());
     }
     {% endif %}
@@ -492,7 +492,7 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
         v8SetReturnValue(info, privateTemplate->GetFunction());
         return;
     }
-    {{cpp_class}}* impl = {{v8_class}}::toNative(holder);
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateKey; // This address is used for a key to look up the dom template.
         v8::Handle<v8::FunctionTemplate> sharedTemplate = data->domTemplate(&sharedTemplateKey, {{cpp_class}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), {{signature}}, {{method.length}});

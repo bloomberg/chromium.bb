@@ -15,7 +15,7 @@ namespace blink {
 
 class V8TestDictionary {
 public:
-    static TestDictionary* toNative(v8::Isolate*, v8::Handle<v8::Value>);
+    static TestDictionary* toImpl(v8::Isolate*, v8::Handle<v8::Value>);
 };
 
 v8::Handle<v8::Value> toV8(TestDictionary*, v8::Handle<v8::Object>, v8::Isolate*);

@@ -37,39 +37,39 @@ namespace blink {
 
 void V8JavaScriptCallFrame::evaluateWithExceptionDetailsMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toNative(info.Holder());
+    JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toImpl(info.Holder());
     String expression = toCoreStringWithUndefinedOrNullCheck(info[0]);
     v8SetReturnValue(info, impl->evaluateWithExceptionDetails(expression));
 }
 
 void V8JavaScriptCallFrame::restartMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toNative(info.Holder());
+    JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toImpl(info.Holder());
     v8SetReturnValue(info, impl->restart());
 }
 
 void V8JavaScriptCallFrame::scopeChainAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toNative(info.Holder());
+    JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toImpl(info.Holder());
     v8SetReturnValue(info, impl->scopeChain());
 }
 
 void V8JavaScriptCallFrame::scopeTypeMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toNative(info.Holder());
+    JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toImpl(info.Holder());
     int scopeIndex = info[0]->Int32Value();
     v8SetReturnValue(info, impl->scopeType(scopeIndex));
 }
 
 void V8JavaScriptCallFrame::thisObjectAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toNative(info.Holder());
+    JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toImpl(info.Holder());
     v8SetReturnValue(info, impl->thisObject());
 }
 
 void V8JavaScriptCallFrame::returnValueAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toNative(info.Holder());
+    JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toImpl(info.Holder());
     v8SetReturnValue(info, impl->returnValue());
 }
 

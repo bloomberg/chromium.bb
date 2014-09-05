@@ -41,7 +41,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Poin
     if (!dictionary.get(key, v8Value))
         return false;
 
-    value = DictionaryHelperTraits<T>::type::toNativeWithTypeCheck(dictionary.isolate(), v8Value);
+    value = DictionaryHelperTraits<T>::type::toImplWithTypeCheck(dictionary.isolate(), v8Value);
     return true;
 }
 

@@ -47,12 +47,12 @@ public:
     {
         return value->IsArrayBufferView();
     }
-    static ArrayBufferView* toNative(v8::Handle<v8::Object>);
-    static ArrayBufferView* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
+    static ArrayBufferView* toImpl(v8::Handle<v8::Object>);
+    static ArrayBufferView* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
 
-    static inline void* toInternalPointer(ArrayBufferView* impl)
+    static inline ScriptWrappableBase* toScriptWrappableBase(ArrayBufferView* impl)
     {
-        return impl;
+        return reinterpret_cast<ScriptWrappableBase*>(impl);
     }
 };
 

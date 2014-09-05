@@ -178,7 +178,7 @@ static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Handle<v8::Value>
     if (value->IsUint8Array() && (allowExperimentalTypes || RuntimeEnabledFeatures::indexedDBExperimentalEnabled())) {
         // Per discussion in https://www.w3.org/Bugs/Public/show_bug.cgi?id=23332 the
         // input type is constrained to Uint8Array to match the output type.
-        ArrayBufferView* view = blink::V8ArrayBufferView::toNative(value->ToObject());
+        ArrayBufferView* view = blink::V8ArrayBufferView::toImpl(value->ToObject());
         const char* start = static_cast<const char*>(view->baseAddress());
         size_t length = view->byteLength();
         return IDBKey::createBinary(SharedBuffer::create(start, length));
@@ -428,7 +428,7 @@ IDBKeyRange* scriptValueToIDBKeyRange(v8::Isolate* isolate, const ScriptValue& s
 {
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> value(scriptValue.v8Value());
-    return V8IDBKeyRange::toNativeWithTypeCheck(isolate, value);
+    return V8IDBKeyRange::toImplWithTypeCheck(isolate, value);
 }
 
 ScriptValue deserializeScriptValue(ScriptState* scriptState, SerializedScriptValue* serializedValue, const Vector<blink::WebBlobInfo>* blobInfo)

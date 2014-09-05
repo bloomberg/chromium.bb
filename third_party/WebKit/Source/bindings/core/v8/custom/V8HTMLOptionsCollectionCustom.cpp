@@ -49,8 +49,8 @@ void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8:
     if (!V8HTMLOptionElement::hasInstance(info[0], info.GetIsolate())) {
         exceptionState.throwTypeError("The element provided was not an HTMLOptionElement.");
     } else {
-        HTMLOptionsCollection* impl = V8HTMLOptionsCollection::toNative(info.Holder());
-        HTMLOptionElement* option = V8HTMLOptionElement::toNative(v8::Handle<v8::Object>(v8::Handle<v8::Object>::Cast(info[0])));
+        HTMLOptionsCollection* impl = V8HTMLOptionsCollection::toImpl(info.Holder());
+        HTMLOptionElement* option = V8HTMLOptionElement::toImpl(v8::Handle<v8::Object>(v8::Handle<v8::Object>::Cast(info[0])));
 
         if (info.Length() < 2) {
             impl->add(option, exceptionState);
@@ -68,7 +68,7 @@ void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8:
 
 void V8HTMLOptionsCollection::lengthAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
-    HTMLOptionsCollection* impl = V8HTMLOptionsCollection::toNative(info.Holder());
+    HTMLOptionsCollection* impl = V8HTMLOptionsCollection::toImpl(info.Holder());
     double v = value->NumberValue();
     unsigned newLength = 0;
     ExceptionState exceptionState(ExceptionState::SetterContext, "length", "HTMLOptionsCollection", info.Holder(), info.GetIsolate());

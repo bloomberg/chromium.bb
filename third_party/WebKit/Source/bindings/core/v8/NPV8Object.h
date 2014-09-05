@@ -74,7 +74,7 @@ bool isWrappedNPObject(v8::Handle<v8::Object>);
 
 V8NPObject* npObjectToV8NPObject(NPObject*);
 
-ScriptWrappableBase* npObjectToInternalPointer(NPObject*);
+ScriptWrappableBase* npObjectToScriptWrappableBase(NPObject*);
 
 void disposeUnderlyingV8Object(NPObject*, v8::Isolate*);
 

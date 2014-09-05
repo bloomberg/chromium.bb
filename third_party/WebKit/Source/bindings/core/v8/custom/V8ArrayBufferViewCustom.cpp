@@ -41,50 +41,50 @@ namespace blink {
 
 using namespace WTF;
 
-ArrayBufferView* V8ArrayBufferView::toNative(v8::Handle<v8::Object> object)
+ArrayBufferView* V8ArrayBufferView::toImpl(v8::Handle<v8::Object> object)
 {
     ASSERT(object->IsArrayBufferView());
-    void* viewPtr = object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex);
+    ScriptWrappableBase* viewPtr = blink::toScriptWrappableBase(object);
     if (viewPtr)
         return reinterpret_cast<ArrayBufferView*>(viewPtr);
 
     if (object->IsUint8Array()) {
-        return V8Uint8Array::toNative(object);
+        return V8Uint8Array::toImpl(object);
     }
     if (object->IsInt8Array()) {
-        return V8Int8Array::toNative(object);
+        return V8Int8Array::toImpl(object);
     }
     if (object->IsUint16Array()) {
-        return V8Uint16Array::toNative(object);
+        return V8Uint16Array::toImpl(object);
     }
     if (object->IsInt16Array()) {
-        return V8Int16Array::toNative(object);
+        return V8Int16Array::toImpl(object);
     }
     if (object->IsUint32Array()) {
-        return V8Uint32Array::toNative(object);
+        return V8Uint32Array::toImpl(object);
     }
     if (object->IsInt32Array()) {
-        return V8Int32Array::toNative(object);
+        return V8Int32Array::toImpl(object);
     }
     if (object->IsFloat32Array()) {
-        return V8Float32Array::toNative(object);
+        return V8Float32Array::toImpl(object);
     }
     if (object->IsFloat64Array()) {
-        return V8Float64Array::toNative(object);
+        return V8Float64Array::toImpl(object);
     }
     if (object->IsUint8ClampedArray()) {
-        return V8Uint8ClampedArray::toNative(object);
+        return V8Uint8ClampedArray::toImpl(object);
     }
     if (object->IsDataView()) {
-        return V8DataView::toNative(object);
+        return V8DataView::toImpl(object);
     }
     ASSERT_NOT_REACHED();
     return 0;
 }
 
-ArrayBufferView* V8ArrayBufferView::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+ArrayBufferView* V8ArrayBufferView::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return V8ArrayBufferView::hasInstance(value, isolate) ? V8ArrayBufferView::toNative(v8::Handle<v8::Object>::Cast(value)) : 0;
+    return V8ArrayBufferView::hasInstance(value, isolate) ? V8ArrayBufferView::toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
 }
 
 } // namespace blink

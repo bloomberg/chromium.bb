@@ -112,7 +112,7 @@ public:
 
     virtual void operator()(ScriptValue value) const OVERRIDE
     {
-        DOMException* exception = V8DOMException::toNativeWithTypeCheck(value.isolate(), value.v8Value());
+        DOMException* exception = V8DOMException::toImplWithTypeCheck(value.isolate(), value.v8Value());
         EXPECT_TRUE(exception) << "the value should be a DOMException";
         if (!exception)
             return;

@@ -47,7 +47,7 @@ template <typename T> void V8_USE(T) { }
 
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestSpecialOperationsNotEnumerable* impl = V8TestSpecialOperationsNotEnumerable::toNative(info.Holder());
+    TestSpecialOperationsNotEnumerable* impl = V8TestSpecialOperationsNotEnumerable::toImpl(info.Holder());
     String result = impl->anonymousIndexedGetter(index);
     if (result.isNull())
         return;
@@ -68,7 +68,7 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
         return;
 
-    TestSpecialOperationsNotEnumerable* impl = V8TestSpecialOperationsNotEnumerable::toNative(info.Holder());
+    TestSpecialOperationsNotEnumerable* impl = V8TestSpecialOperationsNotEnumerable::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     String result = impl->anonymousNamedGetter(propertyName);
     if (result.isNull())
@@ -119,20 +119,20 @@ v8::Handle<v8::Object> V8TestSpecialOperationsNotEnumerable::findInstanceInProto
     return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestSpecialOperationsNotEnumerable* V8TestSpecialOperationsNotEnumerable::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+TestSpecialOperationsNotEnumerable* V8TestSpecialOperationsNotEnumerable::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
+    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestSpecialOperationsNotEnumerable>() : 0;
 }
 
 
 void V8TestSpecialOperationsNotEnumerable::refObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->ref();
+    internalPointer->toImpl<TestSpecialOperationsNotEnumerable>()->ref();
 }
 
 void V8TestSpecialOperationsNotEnumerable::derefObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->deref();
+    internalPointer->toImpl<TestSpecialOperationsNotEnumerable>()->deref();
 }
 
 WrapperPersistentNode* V8TestSpecialOperationsNotEnumerable::createPersistentHandle(ScriptWrappableBase* internalPointer)

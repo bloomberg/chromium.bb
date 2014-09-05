@@ -54,7 +54,7 @@ void V8SQLResultSetRowList::itemMethodCustom(const v8::FunctionCallbackInfo<v8::
         return;
     }
 
-    SQLResultSetRowList* rowList = V8SQLResultSetRowList::toNative(info.Holder());
+    SQLResultSetRowList* rowList = V8SQLResultSetRowList::toImpl(info.Holder());
 
     unsigned long index = info[0]->IntegerValue();
     if (index >= rowList->length()) {

@@ -45,7 +45,7 @@ WebDOMMediaStreamTrack WebDOMMediaStreamTrack::fromV8Value(v8::Handle<v8::Value>
 {
     if (V8MediaStreamTrack::hasInstance(value, v8::Isolate::GetCurrent())) {
         v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
-        return WebDOMMediaStreamTrack(V8MediaStreamTrack::toNative(object));
+        return WebDOMMediaStreamTrack(V8MediaStreamTrack::toImpl(object));
     }
     return WebDOMMediaStreamTrack(nullptr);
 }

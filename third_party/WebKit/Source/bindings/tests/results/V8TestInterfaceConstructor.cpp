@@ -80,22 +80,22 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         V8RethrowTryCatchScope rethrow(block);
         TONATIVE_VOID_INTERNAL(doubleArg, static_cast<double>(info[0]->NumberValue()));
         TOSTRING_VOID_INTERNAL(stringArg, info[1]);
-        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[2]));
+        TONATIVE_VOID_INTERNAL(testInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[2]));
         TONATIVE_VOID_INTERNAL(dictionaryArg, Dictionary(info[3], info.GetIsolate()));
         if (!dictionaryArg.isUndefinedOrNull() && !dictionaryArg.isObject()) {
             exceptionState.throwTypeError("parameter 4 ('dictionaryArg') is not an object.");
             exceptionState.throwIfNeeded();
             return;
         }
-        TONATIVE_VOID_INTERNAL(sequenceStringArg, toNativeArray<String>(info[4], 5, info.GetIsolate()));
-        TONATIVE_VOID_INTERNAL(sequenceDictionaryArg, toNativeArray<Dictionary>(info[5], 6, info.GetIsolate()));
+        TONATIVE_VOID_INTERNAL(sequenceStringArg, toImplArray<String>(info[4], 5, info.GetIsolate()));
+        TONATIVE_VOID_INTERNAL(sequenceDictionaryArg, toImplArray<Dictionary>(info[5], 6, info.GetIsolate()));
         TONATIVE_VOID_INTERNAL(optionalDictionaryArg, Dictionary(info[6], info.GetIsolate()));
         if (!optionalDictionaryArg.isUndefinedOrNull() && !optionalDictionaryArg.isObject()) {
             exceptionState.throwTypeError("parameter 7 ('optionalDictionaryArg') is not an object.");
             exceptionState.throwIfNeeded();
             return;
         }
-        TONATIVE_VOID_INTERNAL(optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[7]));
+        TONATIVE_VOID_INTERNAL(optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[7]));
     }
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
@@ -346,20 +346,20 @@ v8::Handle<v8::Object> V8TestInterfaceConstructor::findInstanceInPrototypeChain(
     return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestInterfaceConstructor* V8TestInterfaceConstructor::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+TestInterfaceConstructor* V8TestInterfaceConstructor::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
+    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterfaceConstructor>() : 0;
 }
 
 
 void V8TestInterfaceConstructor::refObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->ref();
+    internalPointer->toImpl<TestInterfaceConstructor>()->ref();
 }
 
 void V8TestInterfaceConstructor::derefObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->deref();
+    internalPointer->toImpl<TestInterfaceConstructor>()->deref();
 }
 
 WrapperPersistentNode* V8TestInterfaceConstructor::createPersistentHandle(ScriptWrappableBase* internalPointer)

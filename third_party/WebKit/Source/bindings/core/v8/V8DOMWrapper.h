@@ -133,7 +133,7 @@ inline void V8DOMWrapper::clearNativeInfo(v8::Handle<v8::Object> wrapper, const 
 template<typename V8T, typename T>
 inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapper(PassRefPtr<T> object, const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
 {
-    setNativeInfo(wrapper, wrapperTypeInfo, V8T::toInternalPointer(object.get()));
+    setNativeInfo(wrapper, wrapperTypeInfo, V8T::toScriptWrappableBase(object.get()));
     ASSERT(isDOMWrapper(wrapper));
     DOMDataStore::setWrapper<V8T>(object.leakRef(), wrapper, isolate, wrapperTypeInfo);
     return wrapper;
@@ -142,7 +142,7 @@ inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapper(PassRefPt
 template<typename V8T, typename T>
 inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapper(T* object, const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
 {
-    setNativeInfoWithPersistentHandle(wrapper, wrapperTypeInfo, V8T::toInternalPointer(object), new WrapperPersistent<T>(object));
+    setNativeInfoWithPersistentHandle(wrapper, wrapperTypeInfo, V8T::toScriptWrappableBase(object), new WrapperPersistent<T>(object));
     ASSERT(isDOMWrapper(wrapper));
     DOMDataStore::setWrapper<V8T>(object, wrapper, isolate, wrapperTypeInfo);
     return wrapper;
@@ -152,14 +152,14 @@ inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapperNonTemplat
 {
 #if ENABLE(OILPAN)
     if (wrapperTypeInfo->gcType == WrapperTypeInfo::RefCountedObject)
-        setNativeInfo(wrapper, wrapperTypeInfo, impl->toInternalPointer());
+        setNativeInfo(wrapper, wrapperTypeInfo, impl->toScriptWrappableBase());
     else
-        setNativeInfoWithPersistentHandle(wrapper, wrapperTypeInfo, impl->toInternalPointer(), wrapperTypeInfo->createPersistentHandle(impl));
+        setNativeInfoWithPersistentHandle(wrapper, wrapperTypeInfo, impl->toScriptWrappableBase(), wrapperTypeInfo->createPersistentHandle(impl));
 #else
     if (wrapperTypeInfo->gcType != WrapperTypeInfo::GarbageCollectedObject)
-        setNativeInfo(wrapper, wrapperTypeInfo, impl->toInternalPointer());
+        setNativeInfo(wrapper, wrapperTypeInfo, impl->toScriptWrappableBase());
     else
-        setNativeInfoWithPersistentHandle(wrapper, wrapperTypeInfo, impl->toInternalPointer(), wrapperTypeInfo->createPersistentHandle(impl));
+        setNativeInfoWithPersistentHandle(wrapper, wrapperTypeInfo, impl->toScriptWrappableBase(), wrapperTypeInfo->createPersistentHandle(impl));
 #endif
     ASSERT(isDOMWrapper(wrapper));
     DOMDataStore::setWrapperNonTemplate(impl, wrapper, isolate, wrapperTypeInfo);
@@ -170,14 +170,14 @@ inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapperNonTemplat
 {
 #if ENABLE(OILPAN)
     if (wrapperTypeInfo->gcType == WrapperTypeInfo::RefCountedObject)
-        setNativeInfo(wrapper, wrapperTypeInfo, ScriptWrappable::fromObject(node)->toInternalPointer());
+        setNativeInfo(wrapper, wrapperTypeInfo, ScriptWrappable::fromObject(node)->toScriptWrappableBase());
     else
-        setNativeInfoWithPersistentHandle(wrapper, wrapperTypeInfo, ScriptWrappable::fromObject(node)->toInternalPointer(), wrapperTypeInfo->createPersistentHandle(ScriptWrappable::fromObject(node)));
+        setNativeInfoWithPersistentHandle(wrapper, wrapperTypeInfo, ScriptWrappable::fromObject(node)->toScriptWrappableBase(), wrapperTypeInfo->createPersistentHandle(ScriptWrappable::fromObject(node)));
 #else
     if (wrapperTypeInfo->gcType != WrapperTypeInfo::GarbageCollectedObject)
-        setNativeInfo(wrapper, wrapperTypeInfo, ScriptWrappable::fromObject(node)->toInternalPointer());
+        setNativeInfo(wrapper, wrapperTypeInfo, ScriptWrappable::fromObject(node)->toScriptWrappableBase());
     else
-        setNativeInfoWithPersistentHandle(wrapper, wrapperTypeInfo, ScriptWrappable::fromObject(node)->toInternalPointer(), wrapperTypeInfo->createPersistentHandle(ScriptWrappable::fromObject(node)));
+        setNativeInfoWithPersistentHandle(wrapper, wrapperTypeInfo, ScriptWrappable::fromObject(node)->toScriptWrappableBase(), wrapperTypeInfo->createPersistentHandle(ScriptWrappable::fromObject(node)));
 #endif
     ASSERT(isDOMWrapper(wrapper));
     DOMDataStore::setWrapperNonTemplate(node, wrapper, isolate, wrapperTypeInfo);

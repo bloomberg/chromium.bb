@@ -52,20 +52,20 @@ protected:
 class V8ArrayBuffer {
 public:
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
-    static ArrayBuffer* toNative(v8::Handle<v8::Object>);
-    static ArrayBuffer* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
+    static ArrayBuffer* toImpl(v8::Handle<v8::Object>);
+    static ArrayBuffer* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
     static WrapperPersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer);
     static const WrapperTypeInfo wrapperTypeInfo;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount;
 
-    static inline ScriptWrappableBase* toInternalPointer(ArrayBuffer* impl)
+    static inline ScriptWrappableBase* toScriptWrappableBase(ArrayBuffer* impl)
     {
         return reinterpret_cast<ScriptWrappableBase*>(impl);
     }
 
-    static inline ArrayBuffer* fromInternalPointer(ScriptWrappableBase* internalPointer)
+    static inline ArrayBuffer* toImpl(ScriptWrappableBase* internalPointer)
     {
         return reinterpret_cast<ArrayBuffer*>(internalPointer);
     }

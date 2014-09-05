@@ -82,35 +82,35 @@ v8::Handle<v8::Object> V8TestInterfaceDocument::findInstanceInPrototypeChain(v8:
     return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestInterfaceDocument* V8TestInterfaceDocument::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+TestInterfaceDocument* V8TestInterfaceDocument::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
+    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterfaceDocument>() : 0;
 }
 
 EventTarget* V8TestInterfaceDocument::toEventTarget(v8::Handle<v8::Object> object)
 {
-    return toNative(object);
+    return toImpl(object);
 }
 
 
 void V8TestInterfaceDocument::refObject(ScriptWrappableBase* internalPointer)
 {
 #if !ENABLE(OILPAN)
-    fromInternalPointer(internalPointer)->ref();
+    internalPointer->toImpl<TestInterfaceDocument>()->ref();
 #endif
 }
 
 void V8TestInterfaceDocument::derefObject(ScriptWrappableBase* internalPointer)
 {
 #if !ENABLE(OILPAN)
-    fromInternalPointer(internalPointer)->deref();
+    internalPointer->toImpl<TestInterfaceDocument>()->deref();
 #endif
 }
 
 WrapperPersistentNode* V8TestInterfaceDocument::createPersistentHandle(ScriptWrappableBase* internalPointer)
 {
 #if ENABLE(OILPAN)
-    return new WrapperPersistent<TestInterfaceDocument>(fromInternalPointer(internalPointer));
+    return new WrapperPersistent<TestInterfaceDocument>(internalPointer->toImpl<TestInterfaceDocument>());
 #else
     ASSERT_NOT_REACHED();
     return 0;

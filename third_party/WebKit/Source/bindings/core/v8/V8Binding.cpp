@@ -618,7 +618,7 @@ PassRefPtrWillBeRawPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value> 
 {
     RefPtrWillBeRawPtr<XPathNSResolver> resolver = nullptr;
     if (V8XPathNSResolver::hasInstance(value, isolate))
-        resolver = V8XPathNSResolver::toNative(v8::Handle<v8::Object>::Cast(value));
+        resolver = V8XPathNSResolver::toImpl(v8::Handle<v8::Object>::Cast(value));
     else if (value->IsObject())
         resolver = V8CustomXPathNSResolver::create(value->ToObject(), isolate);
     return resolver;
@@ -631,7 +631,7 @@ LocalDOMWindow* toDOMWindow(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 
     v8::Handle<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(v8::Handle<v8::Object>::Cast(value), isolate);
     if (!windowWrapper.IsEmpty())
-        return V8Window::toNative(windowWrapper);
+        return V8Window::toImpl(windowWrapper);
     return 0;
 }
 
@@ -679,10 +679,10 @@ ExecutionContext* toExecutionContext(v8::Handle<v8::Context> context)
     v8::Handle<v8::Object> global = context->Global();
     v8::Handle<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(global, context->GetIsolate());
     if (!windowWrapper.IsEmpty())
-        return V8Window::toNative(windowWrapper)->executionContext();
+        return V8Window::toImpl(windowWrapper)->executionContext();
     v8::Handle<v8::Object> workerWrapper = V8WorkerGlobalScope::findInstanceInPrototypeChain(global, context->GetIsolate());
     if (!workerWrapper.IsEmpty())
-        return V8WorkerGlobalScope::toNative(workerWrapper)->executionContext();
+        return V8WorkerGlobalScope::toImpl(workerWrapper)->executionContext();
     // FIXME: Is this line of code reachable?
     return 0;
 }

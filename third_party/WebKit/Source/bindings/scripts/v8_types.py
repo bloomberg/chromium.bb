@@ -499,12 +499,12 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index, isolat
     elif idl_type.is_typed_array_element_type:
         cpp_expression_format = (
             '{v8_value}->Is{idl_type}() ? '
-            'V8{idl_type}::toNative(v8::Handle<v8::{idl_type}>::Cast({v8_value})) : 0')
+            'V8{idl_type}::toImpl(v8::Handle<v8::{idl_type}>::Cast({v8_value})) : 0')
     elif idl_type.is_dictionary:
-        cpp_expression_format = 'V8{idl_type}::toNative({isolate}, {v8_value})'
+        cpp_expression_format = 'V8{idl_type}::toImpl({isolate}, {v8_value})'
     else:
         cpp_expression_format = (
-            'V8{idl_type}::toNativeWithTypeCheck({isolate}, {v8_value})')
+            'V8{idl_type}::toImplWithTypeCheck({isolate}, {v8_value})')
 
     return cpp_expression_format.format(arguments=arguments, idl_type=base_idl_type, v8_value=v8_value, isolate=isolate)
 
@@ -525,7 +525,7 @@ def v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value,
     else:
         ref_ptr_type = None
         this_cpp_type = native_array_element_type.cpp_type
-        expression_format = 'toNativeArray<{cpp_type}>({v8_value}, {index}, {isolate})'
+        expression_format = 'toImplArray<{cpp_type}>({v8_value}, {index}, {isolate})'
     expression = expression_format.format(native_array_element_type=native_array_element_type.name, cpp_type=this_cpp_type, index=index, ref_ptr_type=ref_ptr_type, v8_value=v8_value, isolate=isolate)
     return expression
 

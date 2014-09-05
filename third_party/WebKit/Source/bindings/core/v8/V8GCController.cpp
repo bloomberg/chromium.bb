@@ -131,7 +131,7 @@ public:
         v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
         ASSERT(V8DOMWrapper::isDOMWrapper(*wrapper));
         ASSERT(V8Node::hasInstance(*wrapper, m_isolate));
-        Node* node = V8Node::toNative(*wrapper);
+        Node* node = V8Node::toImpl(*wrapper);
         // A minor DOM GC can handle only node wrappers in the main world.
         // Note that node->wrapper().IsEmpty() returns true for nodes that
         // do not have wrappers in the main world.
@@ -274,7 +274,7 @@ public:
 
         if (classId == WrapperTypeInfo::NodeClassId) {
             ASSERT(V8Node::hasInstance(*wrapper, m_isolate));
-            Node* node = V8Node::toNative(*wrapper);
+            Node* node = V8Node::toImpl(*wrapper);
             if (node->hasEventListeners())
                 addReferencesForNodeWithEventListeners(m_isolate, node, v8::Persistent<v8::Object>::Cast(*value));
             Node* root = V8GCController::opaqueRootForGC(node, m_isolate);
@@ -282,7 +282,7 @@ public:
             if (m_constructRetainedObjectInfos)
                 m_groupsWhichNeedRetainerInfo.append(root);
         } else if (classId == WrapperTypeInfo::ObjectClassId) {
-            type->visitDOMWrapper(toInternalPointer(*wrapper), v8::Persistent<v8::Object>::Cast(*value), m_isolate);
+            type->visitDOMWrapper(toScriptWrappableBase(*wrapper), v8::Persistent<v8::Object>::Cast(*value), m_isolate);
         } else {
             ASSERT_NOT_REACHED();
         }

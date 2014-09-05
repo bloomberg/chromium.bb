@@ -59,21 +59,21 @@ static v8::Handle<v8::Value> toV8Object(CanvasStyle* style, v8::Handle<v8::Objec
 
 static PassRefPtrWillBeRawPtr<CanvasStyle> toCanvasStyle(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
-    RefPtrWillBeRawPtr<CanvasStyle> canvasStyle = CanvasStyle::createFromGradient(V8CanvasGradient::toNativeWithTypeCheck(isolate, value));
+    RefPtrWillBeRawPtr<CanvasStyle> canvasStyle = CanvasStyle::createFromGradient(V8CanvasGradient::toImplWithTypeCheck(isolate, value));
     if (canvasStyle)
         return canvasStyle;
-    return CanvasStyle::createFromPattern(V8CanvasPattern::toNativeWithTypeCheck(isolate, value));
+    return CanvasStyle::createFromPattern(V8CanvasPattern::toImplWithTypeCheck(isolate, value));
 }
 
 void V8CanvasRenderingContext2D::strokeStyleAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    CanvasRenderingContext2D* impl = V8CanvasRenderingContext2D::toNative(info.Holder());
+    CanvasRenderingContext2D* impl = V8CanvasRenderingContext2D::toImpl(info.Holder());
     v8SetReturnValue(info, toV8Object(impl->strokeStyle(), info.Holder(), info.GetIsolate()));
 }
 
 void V8CanvasRenderingContext2D::strokeStyleAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
-    CanvasRenderingContext2D* impl = V8CanvasRenderingContext2D::toNative(info.Holder());
+    CanvasRenderingContext2D* impl = V8CanvasRenderingContext2D::toImpl(info.Holder());
     if (RefPtrWillBeRawPtr<CanvasStyle> canvasStyle = toCanvasStyle(value, info.GetIsolate())) {
         impl->setStrokeStyle(canvasStyle);
     } else {
@@ -84,13 +84,13 @@ void V8CanvasRenderingContext2D::strokeStyleAttributeSetterCustom(v8::Local<v8::
 
 void V8CanvasRenderingContext2D::fillStyleAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    CanvasRenderingContext2D* impl = V8CanvasRenderingContext2D::toNative(info.Holder());
+    CanvasRenderingContext2D* impl = V8CanvasRenderingContext2D::toImpl(info.Holder());
     v8SetReturnValue(info, toV8Object(impl->fillStyle(), info.Holder(), info.GetIsolate()));
 }
 
 void V8CanvasRenderingContext2D::fillStyleAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
-    CanvasRenderingContext2D* impl = V8CanvasRenderingContext2D::toNative(info.Holder());
+    CanvasRenderingContext2D* impl = V8CanvasRenderingContext2D::toImpl(info.Holder());
     if (RefPtrWillBeRawPtr<CanvasStyle> canvasStyle = toCanvasStyle(value, info.GetIsolate())) {
         impl->setFillStyle(canvasStyle);
     } else {

@@ -205,7 +205,7 @@ inline T* getInternalField(v8::Handle<v8::Object> wrapper)
     return static_cast<T*>(wrapper->GetAlignedPointerFromInternalField(offset));
 }
 
-inline ScriptWrappableBase* toInternalPointer(v8::Handle<v8::Object> wrapper)
+inline ScriptWrappableBase* toScriptWrappableBase(v8::Handle<v8::Object> wrapper)
 {
     return getInternalField<ScriptWrappableBase, v8DOMWrapperObjectIndex>(wrapper);
 }
@@ -242,11 +242,11 @@ inline void releaseObject(v8::Handle<v8::Object> wrapper)
         delete handle;
 #else
         ASSERT(typeInfo->derefObjectFunction);
-        typeInfo->derefObjectFunction(toInternalPointer(wrapper));
+        typeInfo->derefObjectFunction(toScriptWrappableBase(wrapper));
 #endif
     } else {
         ASSERT(typeInfo->derefObjectFunction);
-        typeInfo->derefObjectFunction(toInternalPointer(wrapper));
+        typeInfo->derefObjectFunction(toScriptWrappableBase(wrapper));
     }
 }
 

@@ -48,7 +48,7 @@ namespace blink {
 void V8Element::scrollLeftAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "scrollLeft", "Element", info.Holder(), info.GetIsolate());
-    Element* impl = V8Element::toNative(info.Holder());
+    Element* impl = V8Element::toImpl(info.Holder());
 
     if (RuntimeEnabledFeatures::cssomSmoothScrollEnabled() && value->IsObject()) {
         TONATIVE_VOID(Dictionary, scrollOptionsHorizontal, Dictionary(value, info.GetIsolate()));
@@ -64,7 +64,7 @@ void V8Element::scrollLeftAttributeSetterCustom(v8::Local<v8::Value> value, cons
 void V8Element::scrollTopAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "scrollTop", "Element", info.Holder(), info.GetIsolate());
-    Element* impl = V8Element::toNative(info.Holder());
+    Element* impl = V8Element::toImpl(info.Holder());
 
     if (RuntimeEnabledFeatures::cssomSmoothScrollEnabled() && value->IsObject()) {
         TONATIVE_VOID(Dictionary, scrollOptionsVertical, Dictionary(value, info.GetIsolate()));
@@ -85,8 +85,8 @@ void V8Element::scrollTopAttributeSetterCustom(v8::Local<v8::Value> value, const
 // AnimationPlayer animate(AnimationEffect? effect);
 void animate1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    Element* impl = V8Element::toNative(info.Holder());
-    TONATIVE_VOID(AnimationEffect*, effect, V8AnimationEffect::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    Element* impl = V8Element::toImpl(info.Holder());
+    TONATIVE_VOID(AnimationEffect*, effect, V8AnimationEffect::toImplWithTypeCheck(info.GetIsolate(), info[0]));
     v8SetReturnValueFast(info, WTF::getPtr(ElementAnimation::animate(*impl, effect)), impl);
 }
 
@@ -94,8 +94,8 @@ void animate1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 void animate2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "animate", "Element", info.Holder(), info.GetIsolate());
-    Element* impl = V8Element::toNative(info.Holder());
-    TONATIVE_VOID(Vector<Dictionary>, keyframes, toNativeArray<Dictionary>(info[0], 1, info.GetIsolate()));
+    Element* impl = V8Element::toImpl(info.Holder());
+    TONATIVE_VOID(Vector<Dictionary>, keyframes, toImplArray<Dictionary>(info[0], 1, info.GetIsolate()));
     RefPtrWillBeRawPtr<AnimationPlayer> result = ElementAnimation::animate(*impl, keyframes, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -105,8 +105,8 @@ void animate2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 // AnimationPlayer animate(AnimationEffect? effect, double timing);
 void animate3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    Element* impl = V8Element::toNative(info.Holder());
-    TONATIVE_VOID(AnimationEffect*, effect, V8AnimationEffect::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    Element* impl = V8Element::toImpl(info.Holder());
+    TONATIVE_VOID(AnimationEffect*, effect, V8AnimationEffect::toImplWithTypeCheck(info.GetIsolate(), info[0]));
     TONATIVE_VOID(double, duration, static_cast<double>(info[1]->NumberValue()));
     v8SetReturnValueFast(info, WTF::getPtr(ElementAnimation::animate(*impl, effect, duration)), impl);
 }
@@ -114,8 +114,8 @@ void animate3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 // AnimationPlayer animate(AnimationEffect? effect, Dictionary timing);
 void animate4Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    Element* impl = V8Element::toNative(info.Holder());
-    TONATIVE_VOID(AnimationEffect*, effect, V8AnimationEffect::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    Element* impl = V8Element::toImpl(info.Holder());
+    TONATIVE_VOID(AnimationEffect*, effect, V8AnimationEffect::toImplWithTypeCheck(info.GetIsolate(), info[0]));
     TONATIVE_VOID(Dictionary, timingInput, Dictionary(info[1], info.GetIsolate()));
     if (!timingInput.isUndefinedOrNull() && !timingInput.isObject()) {
         V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("animate", "Element", "parameter 2 ('timingInput') is not an object."), info.GetIsolate());
@@ -128,8 +128,8 @@ void animate4Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 void animate5Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "animate", "Element", info.Holder(), info.GetIsolate());
-    Element* impl = V8Element::toNative(info.Holder());
-    TONATIVE_VOID(Vector<Dictionary>, keyframes, toNativeArray<Dictionary>(info[0], 1, info.GetIsolate()));
+    Element* impl = V8Element::toImpl(info.Holder());
+    TONATIVE_VOID(Vector<Dictionary>, keyframes, toImplArray<Dictionary>(info[0], 1, info.GetIsolate()));
     TONATIVE_VOID(double, duration, static_cast<double>(info[1]->NumberValue()));
     RefPtrWillBeRawPtr<AnimationPlayer> result = ElementAnimation::animate(*impl, keyframes, duration, exceptionState);
     if (exceptionState.throwIfNeeded())
@@ -141,8 +141,8 @@ void animate5Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 void animate6Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "animate", "Element", info.Holder(), info.GetIsolate());
-    Element* impl = V8Element::toNative(info.Holder());
-    TONATIVE_VOID(Vector<Dictionary>, keyframes, toNativeArray<Dictionary>(info[0], 1, info.GetIsolate()));
+    Element* impl = V8Element::toImpl(info.Holder());
+    TONATIVE_VOID(Vector<Dictionary>, keyframes, toImplArray<Dictionary>(info[0], 1, info.GetIsolate()));
     TONATIVE_VOID(Dictionary, timingInput, Dictionary(info[1], info.GetIsolate()));
     if (!timingInput.isUndefinedOrNull() && !timingInput.isObject()) {
         exceptionState.throwTypeError("parameter 2 ('timingInput') is not an object.");

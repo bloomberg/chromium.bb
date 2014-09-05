@@ -43,7 +43,7 @@ namespace blink {
 
 void V8History::stateAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    History* history = V8History::toNative(info.Holder());
+    History* history = V8History::toImpl(info.Holder());
 
     v8::Handle<v8::Value> value = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::state(info.GetIsolate()));
 
@@ -69,7 +69,7 @@ void V8History::pushStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     TOSTRING_VOID(V8StringResource<TreatNullAndUndefinedAsNullString>, title, info[1]);
     TOSTRING_VOID(V8StringResource<TreatNullAndUndefinedAsNullString>, url, info[2]);
 
-    History* history = V8History::toNative(info.Holder());
+    History* history = V8History::toImpl(info.Holder());
     history->stateObjectAdded(historyState.release(), title, url, FrameLoadTypeStandard, exceptionState);
     V8HiddenValue::deleteHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::state(info.GetIsolate()));
     exceptionState.throwIfNeeded();
@@ -85,7 +85,7 @@ void V8History::replaceStateMethodCustom(const v8::FunctionCallbackInfo<v8::Valu
     TOSTRING_VOID(V8StringResource<TreatNullAndUndefinedAsNullString>, title, info[1]);
     TOSTRING_VOID(V8StringResource<TreatNullAndUndefinedAsNullString>, url, info[2]);
 
-    History* history = V8History::toNative(info.Holder());
+    History* history = V8History::toImpl(info.Holder());
     history->stateObjectAdded(historyState.release(), title, url, FrameLoadTypeRedirectWithLockedBackForwardList, exceptionState);
     V8HiddenValue::deleteHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::state(info.GetIsolate()));
     exceptionState.throwIfNeeded();

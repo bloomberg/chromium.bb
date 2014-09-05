@@ -53,7 +53,7 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testInterface4Arg, V8TestInterfaceConstructor4::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+        TONATIVE_VOID_INTERNAL(testInterface4Arg, V8TestInterfaceConstructor4::toImplWithTypeCheck(info.GetIsolate(), info[0]));
     }
     RefPtr<TestInterfaceConstructor4> impl = TestInterfaceConstructor4::create(testInterface4Arg);
     v8::Handle<v8::Object> wrapper = info.Holder();
@@ -151,20 +151,20 @@ v8::Handle<v8::Object> V8TestInterfaceConstructor4::findInstanceInPrototypeChain
     return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestInterfaceConstructor4* V8TestInterfaceConstructor4::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+TestInterfaceConstructor4* V8TestInterfaceConstructor4::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
+    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterfaceConstructor4>() : 0;
 }
 
 
 void V8TestInterfaceConstructor4::refObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->ref();
+    internalPointer->toImpl<TestInterfaceConstructor4>()->ref();
 }
 
 void V8TestInterfaceConstructor4::derefObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->deref();
+    internalPointer->toImpl<TestInterfaceConstructor4>()->deref();
 }
 
 WrapperPersistentNode* V8TestInterfaceConstructor4::createPersistentHandle(ScriptWrappableBase* internalPointer)

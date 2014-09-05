@@ -85,7 +85,7 @@ public:
                 ScriptWrappable::assertWrapperSanity<V8T, T>(object, object);
                 return ScriptWrappable::fromObject(object)->setReturnValue(returnValue);
             }
-            return DOMWrapperWorld::mainWorld().domDataStore().m_wrapperMap.setReturnValueFrom(returnValue, V8T::toInternalPointer(object));
+            return DOMWrapperWorld::mainWorld().domDataStore().m_wrapperMap.setReturnValueFrom(returnValue, V8T::toScriptWrappableBase(object));
         }
         return current(returnValue.GetIsolate()).template setReturnValueFrom<V8T>(returnValue, object);
     }
@@ -105,7 +105,7 @@ public:
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(object))
             return ScriptWrappable::fromObject(object)->setReturnValue(returnValue);
-        return DOMWrapperWorld::mainWorld().domDataStore().m_wrapperMap.setReturnValueFrom(returnValue, V8T::toInternalPointer(object));
+        return DOMWrapperWorld::mainWorld().domDataStore().m_wrapperMap.setReturnValueFrom(returnValue, V8T::toScriptWrappableBase(object));
     }
 
     template<typename V8T, typename T>
@@ -202,19 +202,19 @@ public:
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(object) && m_isMainWorld)
             return ScriptWrappable::fromObject(object)->newLocalWrapper(isolate);
-        return m_wrapperMap.newLocal(V8T::toInternalPointer(object), isolate);
+        return m_wrapperMap.newLocal(V8T::toScriptWrappableBase(object), isolate);
     }
 
     v8::Handle<v8::Object> getNonTemplate(ScriptWrappableBase* object, v8::Isolate* isolate)
     {
-        return m_wrapperMap.newLocal(object->toInternalPointer(), isolate);
+        return m_wrapperMap.newLocal(object->toScriptWrappableBase(), isolate);
     }
 
     v8::Handle<v8::Object> getNonTemplate(ScriptWrappable* object, v8::Isolate* isolate)
     {
         if (m_isMainWorld)
             return object->newLocalWrapper(isolate);
-        return m_wrapperMap.newLocal(object->toInternalPointer(), isolate);
+        return m_wrapperMap.newLocal(object->toScriptWrappableBase(), isolate);
     }
 
     template<typename V8T, typename T>
@@ -224,7 +224,7 @@ public:
             ScriptWrappable::fromObject(child)->setReference(parent, isolate);
             return;
         }
-        m_wrapperMap.setReference(parent, V8T::toInternalPointer(child), isolate);
+        m_wrapperMap.setReference(parent, V8T::toScriptWrappableBase(child), isolate);
     }
 
     template<typename V8T, typename T>
@@ -232,7 +232,7 @@ public:
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(object) && m_isMainWorld)
             return ScriptWrappable::fromObject(object)->setReturnValue(returnValue);
-        return m_wrapperMap.setReturnValueFrom(returnValue, V8T::toInternalPointer(object));
+        return m_wrapperMap.setReturnValueFrom(returnValue, V8T::toScriptWrappableBase(object));
     }
 
     template<typename V8T, typename T>
@@ -240,19 +240,19 @@ public:
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(object) && m_isMainWorld)
             return ScriptWrappable::fromObject(object)->containsWrapper();
-        return m_wrapperMap.containsKey(V8T::toInternalPointer(object));
+        return m_wrapperMap.containsKey(V8T::toScriptWrappableBase(object));
     }
 
     bool containsWrapperNonTemplate(ScriptWrappableBase* object)
     {
-        return m_wrapperMap.containsKey(object->toInternalPointer());
+        return m_wrapperMap.containsKey(object->toScriptWrappableBase());
     }
 
     bool containsWrapperNonTemplate(ScriptWrappable* object)
     {
         if (m_isMainWorld)
             return object->containsWrapper();
-        return m_wrapperMap.containsKey(object->toInternalPointer());
+        return m_wrapperMap.containsKey(object->toScriptWrappableBase());
     }
 
 private:
@@ -265,14 +265,14 @@ private:
             ScriptWrappable::fromObject(object)->setWrapper(wrapper, isolate, wrapperTypeInfo);
             return;
         }
-        m_wrapperMap.set(V8T::toInternalPointer(object), wrapper, wrapperTypeInfo);
+        m_wrapperMap.set(V8T::toScriptWrappableBase(object), wrapper, wrapperTypeInfo);
     }
 
     void setNonTemplate(ScriptWrappableBase* object, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo)
     {
         ASSERT(object);
         ASSERT(!wrapper.IsEmpty());
-        m_wrapperMap.set(object->toInternalPointer(), wrapper, wrapperTypeInfo);
+        m_wrapperMap.set(object->toScriptWrappableBase(), wrapper, wrapperTypeInfo);
     }
 
     void setNonTemplate(ScriptWrappable* object, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo)
@@ -283,7 +283,7 @@ private:
             ScriptWrappable::fromObject(object)->setWrapper(wrapper, isolate, wrapperTypeInfo);
             return;
         }
-        m_wrapperMap.set(object->toInternalPointer(), wrapper, wrapperTypeInfo);
+        m_wrapperMap.set(object->toScriptWrappableBase(), wrapper, wrapperTypeInfo);
     }
 
     static bool canExistInWorker(void*) { return true; }

@@ -50,7 +50,7 @@ template <typename T> void V8_USE(T) { }
 static void attr1AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toNative(holder);
+    TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->attr1()), impl);
 }
 
@@ -64,8 +64,8 @@ static void attr1AttributeGetterCallback(v8::Local<v8::String>, const v8::Proper
 static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toNative(holder);
-    TONATIVE_VOID(TestInterfaceGarbageCollected*, cppValue, V8TestInterfaceGarbageCollected::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(holder);
+    TONATIVE_VOID(TestInterfaceGarbageCollected*, cppValue, V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value));
     impl->setAttr1(WTF::getPtr(cppValue));
 }
 
@@ -82,12 +82,12 @@ static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("func", "TestInterfaceGarbageCollected", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
         return;
     }
-    TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toNative(info.Holder());
+    TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
     TestInterfaceGarbageCollected* arg;
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(arg, V8TestInterfaceGarbageCollected::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+        TONATIVE_VOID_INTERNAL(arg, V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), info[0]));
     }
     impl->func(arg);
 }
@@ -175,14 +175,14 @@ v8::Handle<v8::Object> V8TestInterfaceGarbageCollected::findInstanceInPrototypeC
     return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestInterfaceGarbageCollected* V8TestInterfaceGarbageCollected::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+TestInterfaceGarbageCollected* V8TestInterfaceGarbageCollected::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
+    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterfaceGarbageCollected>() : 0;
 }
 
 EventTarget* V8TestInterfaceGarbageCollected::toEventTarget(v8::Handle<v8::Object> object)
 {
-    return toNative(object);
+    return toImpl(object);
 }
 
 
@@ -196,7 +196,7 @@ void V8TestInterfaceGarbageCollected::derefObject(ScriptWrappableBase* internalP
 
 WrapperPersistentNode* V8TestInterfaceGarbageCollected::createPersistentHandle(ScriptWrappableBase* internalPointer)
 {
-    return new WrapperPersistent<TestInterfaceGarbageCollected>(fromInternalPointer(internalPointer));
+    return new WrapperPersistent<TestInterfaceGarbageCollected>(internalPointer->toImpl<TestInterfaceGarbageCollected>());
 }
 
 template<>

@@ -49,14 +49,14 @@ WebDOMFileSystem WebDOMFileSystem::fromV8Value(v8::Handle<v8::Value> value)
     if (!V8DOMFileSystem::hasInstance(value, v8::Isolate::GetCurrent()))
         return WebDOMFileSystem();
     v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
-    DOMFileSystem* domFileSystem = V8DOMFileSystem::toNative(object);
+    DOMFileSystem* domFileSystem = V8DOMFileSystem::toImpl(object);
     ASSERT(domFileSystem);
     return WebDOMFileSystem(domFileSystem);
 }
 
 WebURL WebDOMFileSystem::createFileSystemURL(v8::Handle<v8::Value> value)
 {
-    const FileEntry* const entry = V8FileEntry::toNativeWithTypeCheck(v8::Isolate::GetCurrent(), value);
+    const FileEntry* const entry = V8FileEntry::toImplWithTypeCheck(v8::Isolate::GetCurrent(), value);
     if (entry)
         return entry->filesystem()->createFileSystemURL(entry);
     return WebURL();

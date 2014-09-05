@@ -50,7 +50,7 @@ template <typename T> void V8_USE(T) { }
 static void typeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    SVGTestInterface* impl = V8SVGTestInterface::toNative(holder);
+    SVGTestInterface* impl = V8SVGTestInterface::toImpl(holder);
     v8SetReturnValueString(info, impl->fastGetAttribute(SVGNames::typeAttr), info.GetIsolate());
 }
 
@@ -64,7 +64,7 @@ static void typeAttributeGetterCallback(v8::Local<v8::String>, const v8::Propert
 static void typeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    SVGTestInterface* impl = V8SVGTestInterface::toNative(holder);
+    SVGTestInterface* impl = V8SVGTestInterface::toImpl(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(SVGNames::typeAttr, cppValue);
@@ -116,20 +116,20 @@ v8::Handle<v8::Object> V8SVGTestInterface::findInstanceInPrototypeChain(v8::Hand
     return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-SVGTestInterface* V8SVGTestInterface::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+SVGTestInterface* V8SVGTestInterface::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
+    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<SVGTestInterface>() : 0;
 }
 
 
 void V8SVGTestInterface::refObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->ref();
+    internalPointer->toImpl<SVGTestInterface>()->ref();
 }
 
 void V8SVGTestInterface::derefObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->deref();
+    internalPointer->toImpl<SVGTestInterface>()->deref();
 }
 
 WrapperPersistentNode* V8SVGTestInterface::createPersistentHandle(ScriptWrappableBase* internalPointer)

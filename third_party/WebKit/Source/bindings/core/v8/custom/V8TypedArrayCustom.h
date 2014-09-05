@@ -52,8 +52,8 @@ public:
         return TypedArrayTraits<TypedArray>::IsInstance(value);
     }
 
-    static TypedArray* toNative(v8::Handle<v8::Object>);
-    static TypedArray* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
+    static TypedArray* toImpl(v8::Handle<v8::Object>);
+    static TypedArray* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
     static WrapperPersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer);
@@ -117,12 +117,12 @@ public:
         info.GetReturnValue().Set(wrapper);
     }
 
-    static inline ScriptWrappableBase* toInternalPointer(TypedArray* impl)
+    static inline ScriptWrappableBase* toScriptWrappableBase(TypedArray* impl)
     {
         return reinterpret_cast<ScriptWrappableBase*>(static_cast<void*>(impl));
     }
 
-    static inline TypedArray* fromInternalPointer(ScriptWrappableBase* internalPointer)
+    static inline TypedArray* toImpl(ScriptWrappableBase* internalPointer)
     {
         return reinterpret_cast<TypedArray*>(static_cast<void*>(internalPointer));
     }
@@ -159,7 +159,7 @@ v8::Handle<v8::Object> V8TypedArray<TypedArray>::createWrapper(PassRefPtr<TypedA
 }
 
 template <typename TypedArray>
-TypedArray* V8TypedArray<TypedArray>::toNative(v8::Handle<v8::Object> object)
+TypedArray* V8TypedArray<TypedArray>::toImpl(v8::Handle<v8::Object> object)
 {
     ASSERT(Traits::IsInstance(object));
     void* typedarrayPtr = object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex);
@@ -167,7 +167,7 @@ TypedArray* V8TypedArray<TypedArray>::toNative(v8::Handle<v8::Object> object)
         return reinterpret_cast<TypedArray*>(typedarrayPtr);
 
     v8::Handle<V8Type> view = object.As<V8Type>();
-    RefPtr<ArrayBuffer> arrayBuffer = V8ArrayBuffer::toNative(view->Buffer());
+    RefPtr<ArrayBuffer> arrayBuffer = V8ArrayBuffer::toImpl(view->Buffer());
     RefPtr<TypedArray> typedArray = TypedArray::create(arrayBuffer, view->ByteOffset(), Traits::length(view));
     ASSERT(typedArray.get());
     V8DOMWrapper::associateObjectWithWrapper<Binding>(typedArray.release(), &wrapperTypeInfo, object, v8::Isolate::GetCurrent());
@@ -178,9 +178,9 @@ TypedArray* V8TypedArray<TypedArray>::toNative(v8::Handle<v8::Object> object)
 }
 
 template <typename TypedArray>
-TypedArray* V8TypedArray<TypedArray>::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+TypedArray* V8TypedArray<TypedArray>::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return V8TypedArray<TypedArray>::hasInstance(value, isolate) ? V8TypedArray<TypedArray>::toNative(v8::Handle<v8::Object>::Cast(value)) : 0;
+    return V8TypedArray<TypedArray>::hasInstance(value, isolate) ? V8TypedArray<TypedArray>::toImpl(v8::Handle<v8::Object>::Cast(value)) : 0;
 }
 
 template <typename TypedArray>
@@ -200,13 +200,13 @@ const WrapperTypeInfo V8TypedArray<TypedArray>::wrapperTypeInfo = {
 template <typename TypedArray>
 void V8TypedArray<TypedArray>::refObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->ref();
+    toImpl(internalPointer)->ref();
 }
 
 template <typename TypedArray>
 void V8TypedArray<TypedArray>::derefObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->deref();
+    toImpl(internalPointer)->deref();
 }
 
 template <typename TypedArray>

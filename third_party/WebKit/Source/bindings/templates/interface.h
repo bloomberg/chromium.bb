@@ -45,11 +45,11 @@ public:
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::Object> findInstanceInPrototypeChain(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
-    static {{cpp_class}}* toNative(v8::Handle<v8::Object> object)
+    static {{cpp_class}}* toImpl(v8::Handle<v8::Object> object)
     {
-        return fromInternalPointer(blink::toInternalPointer(object));
+        return toImpl(blink::toScriptWrappableBase(object));
     }
-    static {{cpp_class}}* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
+    static {{cpp_class}}* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
@@ -148,14 +148,14 @@ public:
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
     {% endif %}
     {# End custom internal fields #}
-    static inline ScriptWrappableBase* toInternalPointer({{cpp_class}}* impl)
+    static inline ScriptWrappableBase* toScriptWrappableBase({{cpp_class}}* impl)
     {
-        return impl->toInternalPointer();
+        return impl->toScriptWrappableBase();
     }
 
-    static inline {{cpp_class}}* fromInternalPointer(ScriptWrappableBase* internalPointer)
+    static inline {{cpp_class}}* toImpl(ScriptWrappableBase* internalPointer)
     {
-        return ScriptWrappableBase::fromInternalPointer<{{cpp_class}}>(internalPointer);
+        return internalPointer->toImpl<{{cpp_class}}>();
     }
     {% if interface_name == 'Window' %}
     static bool namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType, v8::Local<v8::Value> data);

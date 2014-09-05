@@ -51,7 +51,7 @@ static v8::Handle<v8::Value> cacheState(v8::Handle<v8::Object> customEvent, v8::
 
 void V8CustomEvent::detailAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    CustomEvent* event = V8CustomEvent::toNative(info.Holder());
+    CustomEvent* event = V8CustomEvent::toImpl(info.Holder());
 
     v8::Handle<v8::Value> result = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::detail(info.GetIsolate()));
 
@@ -79,7 +79,7 @@ void V8CustomEvent::detailAttributeGetterCustom(const v8::PropertyCallbackInfo<v
 
 void V8CustomEvent::initCustomEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    CustomEvent* event = V8CustomEvent::toNative(info.Holder());
+    CustomEvent* event = V8CustomEvent::toImpl(info.Holder());
     ASSERT(!event->serializedDetail());
 
     TOSTRING_VOID(V8StringResource<>, typeArg, info[0]);

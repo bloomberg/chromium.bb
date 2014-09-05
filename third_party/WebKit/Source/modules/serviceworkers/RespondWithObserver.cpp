@@ -114,7 +114,7 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
         return;
     }
     v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value.v8Value());
-    sendResponse(V8Response::toNative(object));
+    sendResponse(V8Response::toImpl(object));
 }
 
 RespondWithObserver::RespondWithObserver(ExecutionContext* context, int eventID)

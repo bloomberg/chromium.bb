@@ -44,7 +44,7 @@ namespace blink {
 
 void V8MessageEvent::dataAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    MessageEvent* event = V8MessageEvent::toNative(info.Holder());
+    MessageEvent* event = V8MessageEvent::toImpl(info.Holder());
 
     v8::Handle<v8::Value> result;
     switch (event->dataType()) {
@@ -104,7 +104,7 @@ void V8MessageEvent::dataAttributeGetterCustom(const v8::PropertyCallbackInfo<v8
 
 void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    MessageEvent* event = V8MessageEvent::toNative(info.Holder());
+    MessageEvent* event = V8MessageEvent::toImpl(info.Holder());
     TOSTRING_VOID(V8StringResource<>, typeArg, info[0]);
     TONATIVE_VOID(bool, canBubbleArg, info[1]->BooleanValue());
     TONATIVE_VOID(bool, cancelableArg, info[2]->BooleanValue());

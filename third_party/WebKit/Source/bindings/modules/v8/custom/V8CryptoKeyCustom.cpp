@@ -57,7 +57,7 @@ private:
 
 void V8CryptoKey::algorithmAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    CryptoKey* impl = V8CryptoKey::toNative(info.Holder());
+    CryptoKey* impl = V8CryptoKey::toImpl(info.Holder());
 
     DictionaryBuilder builder(info.Holder(), info.GetIsolate());
     impl->key().algorithm().writeToDictionary(&builder);

@@ -117,15 +117,15 @@ bool processBlobParts(v8::Local<v8::Object> blobParts, bool normalizeLineEndings
             return false;
 
         if (V8ArrayBuffer::hasInstance(item, isolate)) {
-            ArrayBuffer* arrayBuffer = V8ArrayBuffer::toNative(v8::Handle<v8::Object>::Cast(item));
+            ArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(v8::Handle<v8::Object>::Cast(item));
             ASSERT(arrayBuffer);
             blobData.appendArrayBuffer(arrayBuffer);
         } else if (V8ArrayBufferView::hasInstance(item, isolate)) {
-            ArrayBufferView* arrayBufferView = V8ArrayBufferView::toNative(v8::Handle<v8::Object>::Cast(item));
+            ArrayBufferView* arrayBufferView = V8ArrayBufferView::toImpl(v8::Handle<v8::Object>::Cast(item));
             ASSERT(arrayBufferView);
             blobData.appendArrayBufferView(arrayBufferView);
         } else if (V8Blob::hasInstance(item, isolate)) {
-            Blob* blob = V8Blob::toNative(v8::Handle<v8::Object>::Cast(item));
+            Blob* blob = V8Blob::toImpl(v8::Handle<v8::Object>::Cast(item));
             ASSERT(blob);
             blob->appendTo(blobData);
         } else {

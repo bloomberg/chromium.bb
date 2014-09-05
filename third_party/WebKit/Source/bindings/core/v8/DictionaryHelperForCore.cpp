@@ -338,7 +338,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, RefP
         // we add them.
         v8::Handle<v8::Object> track = V8TextTrack::findInstanceInPrototypeChain(wrapper, dictionary.isolate());
         if (!track.IsEmpty())
-            source = V8TextTrack::toNative(track);
+            source = V8TextTrack::toImpl(track);
     }
     value = source;
     return true;

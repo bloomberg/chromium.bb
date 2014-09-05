@@ -51,7 +51,7 @@ void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<
 {
     v8::Handle<v8::Object> holder = info.Holder();
     v8::Isolate* isolate = info.GetIsolate();
-    HTMLCanvasElement* impl = V8HTMLCanvasElement::toNative(holder);
+    HTMLCanvasElement* impl = V8HTMLCanvasElement::toImpl(holder);
     TOSTRING_VOID(V8StringResource<>, contextIdResource, info[0]);
     String contextId = contextIdResource;
     RefPtrWillBeRawPtr<CanvasContextAttributes> attributes = nullptr;
@@ -132,7 +132,7 @@ void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<
 void V8HTMLCanvasElement::toDataURLMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    HTMLCanvasElement* canvas = V8HTMLCanvasElement::toNative(holder);
+    HTMLCanvasElement* canvas = V8HTMLCanvasElement::toImpl(holder);
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "toDataURL", "HTMLCanvasElement", info.Holder(), info.GetIsolate());
 
     TOSTRING_VOID(V8StringResource<>, type, info[0]);

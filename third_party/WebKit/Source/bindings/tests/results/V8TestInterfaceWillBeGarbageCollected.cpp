@@ -50,7 +50,7 @@ template <typename T> void V8_USE(T) { }
 static void attr1AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    TestInterfaceWillBeGarbageCollected* impl = V8TestInterfaceWillBeGarbageCollected::toNative(holder);
+    TestInterfaceWillBeGarbageCollected* impl = V8TestInterfaceWillBeGarbageCollected::toImpl(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->attr1()), impl);
 }
 
@@ -64,8 +64,8 @@ static void attr1AttributeGetterCallback(v8::Local<v8::String>, const v8::Proper
 static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    TestInterfaceWillBeGarbageCollected* impl = V8TestInterfaceWillBeGarbageCollected::toNative(holder);
-    TONATIVE_VOID(TestInterfaceWillBeGarbageCollected*, cppValue, V8TestInterfaceWillBeGarbageCollected::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
+    TestInterfaceWillBeGarbageCollected* impl = V8TestInterfaceWillBeGarbageCollected::toImpl(holder);
+    TONATIVE_VOID(TestInterfaceWillBeGarbageCollected*, cppValue, V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value));
     impl->setAttr1(WTF::getPtr(cppValue));
 }
 
@@ -82,12 +82,12 @@ static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("func", "TestInterfaceWillBeGarbageCollected", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
         return;
     }
-    TestInterfaceWillBeGarbageCollected* impl = V8TestInterfaceWillBeGarbageCollected::toNative(info.Holder());
+    TestInterfaceWillBeGarbageCollected* impl = V8TestInterfaceWillBeGarbageCollected::toImpl(info.Holder());
     TestInterfaceWillBeGarbageCollected* arg;
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(arg, V8TestInterfaceWillBeGarbageCollected::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+        TONATIVE_VOID_INTERNAL(arg, V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), info[0]));
     }
     impl->func(arg);
 }
@@ -220,35 +220,35 @@ v8::Handle<v8::Object> V8TestInterfaceWillBeGarbageCollected::findInstanceInProt
     return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestInterfaceWillBeGarbageCollected* V8TestInterfaceWillBeGarbageCollected::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+TestInterfaceWillBeGarbageCollected* V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
+    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterfaceWillBeGarbageCollected>() : 0;
 }
 
 EventTarget* V8TestInterfaceWillBeGarbageCollected::toEventTarget(v8::Handle<v8::Object> object)
 {
-    return toNative(object);
+    return toImpl(object);
 }
 
 
 void V8TestInterfaceWillBeGarbageCollected::refObject(ScriptWrappableBase* internalPointer)
 {
 #if !ENABLE(OILPAN)
-    fromInternalPointer(internalPointer)->ref();
+    internalPointer->toImpl<TestInterfaceWillBeGarbageCollected>()->ref();
 #endif
 }
 
 void V8TestInterfaceWillBeGarbageCollected::derefObject(ScriptWrappableBase* internalPointer)
 {
 #if !ENABLE(OILPAN)
-    fromInternalPointer(internalPointer)->deref();
+    internalPointer->toImpl<TestInterfaceWillBeGarbageCollected>()->deref();
 #endif
 }
 
 WrapperPersistentNode* V8TestInterfaceWillBeGarbageCollected::createPersistentHandle(ScriptWrappableBase* internalPointer)
 {
 #if ENABLE(OILPAN)
-    return new WrapperPersistent<TestInterfaceWillBeGarbageCollected>(fromInternalPointer(internalPointer));
+    return new WrapperPersistent<TestInterfaceWillBeGarbageCollected>(internalPointer->toImpl<TestInterfaceWillBeGarbageCollected>());
 #else
     ASSERT_NOT_REACHED();
     return 0;

@@ -223,7 +223,7 @@ static bool getRangeImpl(NPObject* object, WebRange* webRange, v8::Isolate* isol
     if (!V8Range::wrapperTypeInfo.equals(toWrapperTypeInfo(v8Object)))
         return false;
 
-    Range* native = V8Range::hasInstance(v8Object, isolate) ? V8Range::toNative(v8Object) : 0;
+    Range* native = V8Range::hasInstance(v8Object, isolate) ? V8Range::toImpl(v8Object) : 0;
     if (!native)
         return false;
 
@@ -244,7 +244,7 @@ static bool getNodeImpl(NPObject* object, WebNode* webNode, v8::Isolate* isolate
     v8::Handle<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
     if (v8Object.IsEmpty())
         return false;
-    Node* native = V8Node::hasInstance(v8Object, isolate) ? V8Node::toNative(v8Object) : 0;
+    Node* native = V8Node::hasInstance(v8Object, isolate) ? V8Node::toImpl(v8Object) : 0;
     if (!native)
         return false;
 
@@ -265,7 +265,7 @@ static bool getElementImpl(NPObject* object, WebElement* webElement, v8::Isolate
     v8::Handle<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
     if (v8Object.IsEmpty())
         return false;
-    Element* native = V8Element::hasInstance(v8Object, isolate) ? V8Element::toNative(v8Object) : 0;
+    Element* native = V8Element::hasInstance(v8Object, isolate) ? V8Element::toImpl(v8Object) : 0;
     if (!native)
         return false;
 
@@ -286,7 +286,7 @@ static bool getArrayBufferImpl(NPObject* object, WebArrayBuffer* arrayBuffer, v8
     v8::Handle<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
     if (v8Object.IsEmpty())
         return false;
-    ArrayBuffer* native = V8ArrayBuffer::hasInstance(v8Object, isolate) ? V8ArrayBuffer::toNative(v8Object) : 0;
+    ArrayBuffer* native = V8ArrayBuffer::hasInstance(v8Object, isolate) ? V8ArrayBuffer::toImpl(v8Object) : 0;
     if (!native)
         return false;
 
@@ -307,7 +307,7 @@ static bool getArrayBufferViewImpl(NPObject* object, WebArrayBufferView* arrayBu
     v8::Handle<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
     if (v8Object.IsEmpty())
         return false;
-    ArrayBufferView* native = V8ArrayBufferView::hasInstance(v8Object, isolate) ? V8ArrayBufferView::toNative(v8Object) : 0;
+    ArrayBufferView* native = V8ArrayBufferView::hasInstance(v8Object, isolate) ? V8ArrayBufferView::toImpl(v8Object) : 0;
     if (!native)
         return false;
 

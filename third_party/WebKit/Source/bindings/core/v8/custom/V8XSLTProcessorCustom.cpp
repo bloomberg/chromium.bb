@@ -51,7 +51,7 @@ void V8XSLTProcessor::setParameterMethodCustom(const v8::FunctionCallbackInfo<v8
     TOSTRING_VOID(V8StringResource<>, localName, info[1]);
     TOSTRING_VOID(V8StringResource<>, value, info[2]);
 
-    XSLTProcessor* impl = V8XSLTProcessor::toNative(info.Holder());
+    XSLTProcessor* impl = V8XSLTProcessor::toImpl(info.Holder());
     impl->setParameter(namespaceURI, localName, value);
 }
 
@@ -63,7 +63,7 @@ void V8XSLTProcessor::getParameterMethodCustom(const v8::FunctionCallbackInfo<v8
     TOSTRING_VOID(V8StringResource<>, namespaceURI, info[0]);
     TOSTRING_VOID(V8StringResource<>, localName, info[1]);
 
-    XSLTProcessor* impl = V8XSLTProcessor::toNative(info.Holder());
+    XSLTProcessor* impl = V8XSLTProcessor::toImpl(info.Holder());
     String result = impl->getParameter(namespaceURI, localName);
     if (result.isNull())
         return;
@@ -79,7 +79,7 @@ void V8XSLTProcessor::removeParameterMethodCustom(const v8::FunctionCallbackInfo
     TOSTRING_VOID(V8StringResource<>, namespaceURI, info[0]);
     TOSTRING_VOID(V8StringResource<>, localName, info[1]);
 
-    XSLTProcessor* impl = V8XSLTProcessor::toNative(info.Holder());
+    XSLTProcessor* impl = V8XSLTProcessor::toImpl(info.Holder());
     impl->removeParameter(namespaceURI, localName);
 }
 

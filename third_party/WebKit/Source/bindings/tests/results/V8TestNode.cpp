@@ -49,7 +49,7 @@ template <typename T> void V8_USE(T) { }
 static void hrefAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    TestNode* impl = V8TestNode::toNative(holder);
+    TestNode* impl = V8TestNode::toImpl(holder);
     v8SetReturnValueString(info, impl->href(), info.GetIsolate());
 }
 
@@ -63,7 +63,7 @@ static void hrefAttributeGetterCallback(v8::Local<v8::String>, const v8::Propert
 static void hrefAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    TestNode* impl = V8TestNode::toNative(holder);
+    TestNode* impl = V8TestNode::toImpl(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     impl->setHref(cppValue);
 }
@@ -78,7 +78,7 @@ static void hrefAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Val
 static void hrefThrowsAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    TestNode* impl = V8TestNode::toNative(holder);
+    TestNode* impl = V8TestNode::toImpl(holder);
     v8SetReturnValueString(info, impl->hrefThrows(), info.GetIsolate());
 }
 
@@ -93,7 +93,7 @@ static void hrefThrowsAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Pr
 {
     v8::Handle<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "hrefThrows", "TestNode", holder, info.GetIsolate());
-    TestNode* impl = V8TestNode::toNative(holder);
+    TestNode* impl = V8TestNode::toImpl(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     impl->setHrefThrows(cppValue, exceptionState);
     exceptionState.throwIfNeeded();
@@ -109,7 +109,7 @@ static void hrefThrowsAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v
 static void hrefCallWithAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    TestNode* impl = V8TestNode::toNative(holder);
+    TestNode* impl = V8TestNode::toImpl(holder);
     v8SetReturnValueString(info, impl->hrefCallWith(), info.GetIsolate());
 }
 
@@ -123,7 +123,7 @@ static void hrefCallWithAttributeGetterCallback(v8::Local<v8::String>, const v8:
 static void hrefCallWithAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    TestNode* impl = V8TestNode::toNative(holder);
+    TestNode* impl = V8TestNode::toImpl(holder);
     TOSTRING_VOID(V8StringResource<>, cppValue, v8Value);
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     impl->setHrefCallWith(executionContext, callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
@@ -139,7 +139,7 @@ static void hrefCallWithAttributeSetterCallback(v8::Local<v8::String>, v8::Local
 static void hrefByteStringAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    TestNode* impl = V8TestNode::toNative(holder);
+    TestNode* impl = V8TestNode::toImpl(holder);
     v8SetReturnValueString(info, impl->hrefByteString(), info.GetIsolate());
 }
 
@@ -154,7 +154,7 @@ static void hrefByteStringAttributeSetter(v8::Local<v8::Value> v8Value, const v8
 {
     v8::Handle<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "hrefByteString", "TestNode", holder, info.GetIsolate());
-    TestNode* impl = V8TestNode::toNative(holder);
+    TestNode* impl = V8TestNode::toImpl(holder);
     TONATIVE_VOID_EXCEPTIONSTATE(V8StringResource<>, cppValue, toByteString(v8Value, exceptionState), exceptionState);
     impl->setHrefByteString(cppValue);
 }
@@ -233,35 +233,35 @@ v8::Handle<v8::Object> V8TestNode::findInstanceInPrototypeChain(v8::Handle<v8::V
     return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestNode* V8TestNode::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+TestNode* V8TestNode::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
+    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestNode>() : 0;
 }
 
 EventTarget* V8TestNode::toEventTarget(v8::Handle<v8::Object> object)
 {
-    return toNative(object);
+    return toImpl(object);
 }
 
 
 void V8TestNode::refObject(ScriptWrappableBase* internalPointer)
 {
 #if !ENABLE(OILPAN)
-    fromInternalPointer(internalPointer)->ref();
+    internalPointer->toImpl<TestNode>()->ref();
 #endif
 }
 
 void V8TestNode::derefObject(ScriptWrappableBase* internalPointer)
 {
 #if !ENABLE(OILPAN)
-    fromInternalPointer(internalPointer)->deref();
+    internalPointer->toImpl<TestNode>()->deref();
 #endif
 }
 
 WrapperPersistentNode* V8TestNode::createPersistentHandle(ScriptWrappableBase* internalPointer)
 {
 #if ENABLE(OILPAN)
-    return new WrapperPersistent<TestNode>(fromInternalPointer(internalPointer));
+    return new WrapperPersistent<TestNode>(internalPointer->toImpl<TestNode>());
 #else
     ASSERT_NOT_REACHED();
     return 0;

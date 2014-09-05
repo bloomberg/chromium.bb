@@ -41,7 +41,7 @@ namespace blink {
 
 void V8TrackEvent::trackAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TrackEvent* trackEvent = V8TrackEvent::toNative(info.Holder());
+    TrackEvent* trackEvent = V8TrackEvent::toImpl(info.Holder());
     TrackBase* track = trackEvent->track();
 
     if (!track) {

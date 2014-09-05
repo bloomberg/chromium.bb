@@ -48,7 +48,7 @@ WebArrayBuffer* WebArrayBufferConverter::createFromV8Value(v8::Handle<v8::Value>
 {
     if (!V8ArrayBuffer::hasInstance(value, isolate))
         return 0;
-    ArrayBuffer* buffer = V8ArrayBuffer::toNative(value->ToObject());
+    ArrayBuffer* buffer = V8ArrayBuffer::toImpl(value->ToObject());
     return new WebArrayBuffer(buffer);
 }
 

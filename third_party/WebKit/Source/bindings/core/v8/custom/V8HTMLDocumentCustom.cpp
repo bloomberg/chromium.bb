@@ -53,7 +53,7 @@ namespace blink {
 
 void V8HTMLDocument::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    HTMLDocument* htmlDocument = V8HTMLDocument::toNative(info.Holder());
+    HTMLDocument* htmlDocument = V8HTMLDocument::toImpl(info.Holder());
 
     if (info.Length() > 2) {
         if (RefPtr<LocalFrame> frame = htmlDocument->frame()) {

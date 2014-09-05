@@ -63,7 +63,7 @@ WebArrayBufferView* WebArrayBufferView::createFromV8Value(v8::Handle<v8::Value> 
 {
     if (!value->IsArrayBufferView())
         return 0;
-    ArrayBufferView* view = V8ArrayBufferView::toNative(value->ToObject());
+    ArrayBufferView* view = V8ArrayBufferView::toImpl(value->ToObject());
     return new WebArrayBufferView(view);
 }
 

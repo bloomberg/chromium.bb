@@ -48,7 +48,7 @@ template <typename T> void V8_USE(T) { }
 static void readonlyUnsignedShortAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    TestException* impl = V8TestException::toNative(holder);
+    TestException* impl = V8TestException::toImpl(holder);
     v8SetReturnValueUnsigned(info, impl->readonlyUnsignedShortAttribute());
 }
 
@@ -62,7 +62,7 @@ static void readonlyUnsignedShortAttributeAttributeGetterCallback(v8::Local<v8::
 static void readonlyStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    TestException* impl = V8TestException::toNative(holder);
+    TestException* impl = V8TestException::toImpl(holder);
     v8SetReturnValueString(info, impl->readonlyStringAttribute(), info.GetIsolate());
 }
 
@@ -75,7 +75,7 @@ static void readonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>
 
 static void toStringMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestException* impl = V8TestException::toNative(info.Holder());
+    TestException* impl = V8TestException::toImpl(info.Holder());
     v8SetReturnValueString(info, impl->toString(), info.GetIsolate());
 }
 
@@ -133,20 +133,20 @@ v8::Handle<v8::Object> V8TestException::findInstanceInPrototypeChain(v8::Handle<
     return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestException* V8TestException::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+TestException* V8TestException::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
+    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestException>() : 0;
 }
 
 
 void V8TestException::refObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->ref();
+    internalPointer->toImpl<TestException>()->ref();
 }
 
 void V8TestException::derefObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->deref();
+    internalPointer->toImpl<TestException>()->deref();
 }
 
 WrapperPersistentNode* V8TestException::createPersistentHandle(ScriptWrappableBase* internalPointer)

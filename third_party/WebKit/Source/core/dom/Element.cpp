@@ -3294,13 +3294,13 @@ v8::Handle<v8::Object> Element::wrapCustomElement(v8::Handle<v8::Object> creatio
 
     CustomElementBinding* binding = perContextData->customElementBinding(customElementDefinition());
     const WrapperTypeInfo* wrapperType = wrapperTypeInfo();
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, wrapperType, toInternalPointer(), isolate);
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, wrapperType, toScriptWrappableBase(), isolate);
     if (wrapper.IsEmpty())
         return v8::Handle<v8::Object>();
 
     wrapper->SetPrototype(binding->prototype());
 
-    wrapperType->refObject(toInternalPointer());
+    wrapperType->refObject(toScriptWrappableBase());
     V8DOMWrapper::associateObjectWithWrapperNonTemplate(this, wrapperType, wrapper, isolate);
     return wrapper;
 }

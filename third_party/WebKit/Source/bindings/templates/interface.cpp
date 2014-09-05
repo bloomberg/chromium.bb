@@ -24,7 +24,7 @@ static void {{cpp_class}}ConstructorGetter(v8::Local<v8::String>, const v8::Prop
 static void {{cpp_class}}ForceSetAttributeOnThis(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     {% if is_check_security %}
-    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
     v8::String::Utf8Value attributeName(name);
     ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "{{interface_name}}", info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
@@ -50,13 +50,13 @@ static void {{cpp_class}}ForceSetAttributeOnThisCallback(v8::Local<v8::String> n
 {% if has_access_check_callbacks %}
 bool indexedSecurityCheck(v8::Local<v8::Object> host, uint32_t index, v8::AccessType type, v8::Local<v8::Value>)
 {
-    {{cpp_class}}* impl = {{v8_class}}::toNative(host);
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(host);
     return BindingSecurity::shouldAllowAccessToFrame(v8::Isolate::GetCurrent(), impl->frame(), DoNotReportSecurityError);
 }
 
 bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType type, v8::Local<v8::Value>)
 {
-    {{cpp_class}}* impl = {{v8_class}}::toNative(host);
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(host);
     return BindingSecurity::shouldAllowAccessToFrame(v8::Isolate::GetCurrent(), impl->frame(), DoNotReportSecurityError);
 }
 
@@ -70,7 +70,7 @@ bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8
 {% set getter = indexed_property_getter %}
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
     {% if getter.is_raises_exception %}
     ExceptionState exceptionState(ExceptionState::IndexedGetterContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
@@ -116,7 +116,7 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 {% set setter = indexed_property_setter %}
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
     {{setter.v8_value_to_local_cpp_value}};
     {% if setter.has_exception_state %}
     ExceptionState exceptionState(ExceptionState::IndexedSetterContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
@@ -172,7 +172,7 @@ static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v
 {% set deleter = indexed_property_deleter %}
 static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
     {% if deleter.is_raises_exception %}
     ExceptionState exceptionState(ExceptionState::IndexedDeletionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
@@ -225,7 +225,7 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
         return;
 
     {% endif %}
-    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     {% if getter.is_raises_exception %}
     v8::String::Utf8Value namedProperty(name);
@@ -281,7 +281,7 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
         return;
 
     {% endif %}
-    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
     {# v8_value_to_local_cpp_value('DOMString', 'name', 'propertyName') #}
     TOSTRING_VOID(V8StringResource<>, propertyName, name);
     {{setter.v8_value_to_local_cpp_value}};
@@ -335,7 +335,7 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
    communicate property attributes. #}
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
-    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "{{interface_name}}", info.Holder(), info.GetIsolate());
@@ -376,7 +376,7 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 {% set deleter = named_property_deleter %}
 static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     {% if deleter.is_raises_exception %}
     v8::String::Utf8Value namedProperty(name);
@@ -423,7 +423,7 @@ static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::P
       not named_property_getter.is_custom_property_enumerator %}
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
     Vector<String> names;
     ExceptionState exceptionState(ExceptionState::EnumerationContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     impl->namedPropertyEnumerator(names, exceptionState);
@@ -466,7 +466,7 @@ static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::
     v8::Handle<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
     if (holder.IsEmpty())
         return;
-    {{cpp_class}}* impl = {{v8_class}}::toNative(holder);
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
     v8::String::Utf8Value attributeName(name);
     ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "{{interface_name}}", info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
@@ -635,7 +635,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {% if reachable_node_function or set_wrapper_reference_to_list %}
 void {{v8_class}}::visitDOMWrapper(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
-    {{cpp_class}}* impl = fromInternalPointer(internalPointer);
+    {{cpp_class}}* impl = internalPointer->toImpl<{{cpp_class}}>();
     {% if set_wrapper_reference_to_list %}
     v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
     V8WrapperInstantiationScope scope(creationContext, isolate);
@@ -1033,9 +1033,9 @@ v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8:
 
 {##############################################################################}
 {% block to_native_with_type_check %}
-{{cpp_class}}* {{v8_class}}::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{{cpp_class}}* {{v8_class}}::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
+    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<{{cpp_class}}>() : 0;
 }
 
 {% endblock %}
@@ -1092,7 +1092,7 @@ void {{v8_class}}::installConditionallyEnabledMethods(v8::Handle<v8::Object> pro
 {% if is_active_dom_object %}
 ActiveDOMObject* {{v8_class}}::toActiveDOMObject(v8::Handle<v8::Object> wrapper)
 {
-    return toNative(wrapper);
+    return toImpl(wrapper);
 }
 
 {% endif %}
@@ -1104,7 +1104,7 @@ ActiveDOMObject* {{v8_class}}::toActiveDOMObject(v8::Handle<v8::Object> wrapper)
 {% if is_event_target %}
 EventTarget* {{v8_class}}::toEventTarget(v8::Handle<v8::Object> object)
 {
-    return toNative(object);
+    return toImpl(object);
 }
 
 {% endif %}
@@ -1198,7 +1198,7 @@ v8::Handle<v8::Object> {{v8_class}}::createWrapper({{pass_cpp_type}} impl, v8::H
         }
     }
     {% endif %}
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &wrapperTypeInfo, toInternalPointer(impl.get()), isolate);
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &wrapperTypeInfo, impl->toScriptWrappableBase(), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
@@ -1228,10 +1228,10 @@ void {{v8_class}}::refObject(ScriptWrappableBase* internalPointer)
 {
 {% if gc_type == 'WillBeGarbageCollectedObject' %}
 #if !ENABLE(OILPAN)
-    fromInternalPointer(internalPointer)->ref();
+    internalPointer->toImpl<{{cpp_class}}>()->ref();
 #endif
 {% elif gc_type == 'RefCountedObject' %}
-    fromInternalPointer(internalPointer)->ref();
+    internalPointer->toImpl<{{cpp_class}}>()->ref();
 {% endif %}
 }
 
@@ -1239,20 +1239,20 @@ void {{v8_class}}::derefObject(ScriptWrappableBase* internalPointer)
 {
 {% if gc_type == 'WillBeGarbageCollectedObject' %}
 #if !ENABLE(OILPAN)
-    fromInternalPointer(internalPointer)->deref();
+    internalPointer->toImpl<{{cpp_class}}>()->deref();
 #endif
 {% elif gc_type == 'RefCountedObject' %}
-    fromInternalPointer(internalPointer)->deref();
+    internalPointer->toImpl<{{cpp_class}}>()->deref();
 {% endif %}
 }
 
 WrapperPersistentNode* {{v8_class}}::createPersistentHandle(ScriptWrappableBase* internalPointer)
 {
 {% if gc_type == 'GarbageCollectedObject' %}
-    return new WrapperPersistent<{{cpp_class}}>(fromInternalPointer(internalPointer));
+    return new WrapperPersistent<{{cpp_class}}>(internalPointer->toImpl<{{cpp_class}}>());
 {% elif gc_type == 'WillBeGarbageCollectedObject' %}
 #if ENABLE(OILPAN)
-    return new WrapperPersistent<{{cpp_class}}>(fromInternalPointer(internalPointer));
+    return new WrapperPersistent<{{cpp_class}}>(internalPointer->toImpl<{{cpp_class}}>());
 #else
     ASSERT_NOT_REACHED();
     return 0;

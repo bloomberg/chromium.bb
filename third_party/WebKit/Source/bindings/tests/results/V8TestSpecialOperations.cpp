@@ -57,7 +57,7 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
         V8ThrowException::throwException(createMinimumArityTypeErrorForMethod("namedItem", "TestSpecialOperations", 1, info.Length(), info.GetIsolate()), info.GetIsolate());
         return;
     }
-    TestSpecialOperations* impl = V8TestSpecialOperations::toNative(info.Holder());
+    TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
     V8StringResource<> name;
     {
         TOSTRING_VOID_INTERNAL(name, info[0]);
@@ -85,7 +85,7 @@ static void namedItemMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& i
 
 static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestSpecialOperations* impl = V8TestSpecialOperations::toNative(info.Holder());
+    TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     RefPtrWillBeRawPtr<Node> result0 = nullptr;
     RefPtrWillBeRawPtr<NodeList> result1 = nullptr;
@@ -112,9 +112,9 @@ static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::Pr
 
 static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestSpecialOperations* impl = V8TestSpecialOperations::toNative(info.Holder());
+    TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
     TOSTRING_VOID(V8StringResource<>, propertyName, name);
-    TONATIVE_VOID(Node*, propertyValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), v8Value));
+    TONATIVE_VOID(Node*, propertyValue, V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value));
     bool result = impl->anonymousNamedSetter(propertyName, propertyValue);
     if (!result)
         return;
@@ -130,7 +130,7 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
 
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
-    TestSpecialOperations* impl = V8TestSpecialOperations::toNative(info.Holder());
+    TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "TestSpecialOperations", info.Holder(), info.GetIsolate());
@@ -151,7 +151,7 @@ static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::Pro
 
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    TestSpecialOperations* impl = V8TestSpecialOperations::toNative(info.Holder());
+    TestSpecialOperations* impl = V8TestSpecialOperations::toImpl(info.Holder());
     Vector<String> names;
     ExceptionState exceptionState(ExceptionState::EnumerationContext, "TestSpecialOperations", info.Holder(), info.GetIsolate());
     impl->namedPropertyEnumerator(names, exceptionState);
@@ -209,20 +209,20 @@ v8::Handle<v8::Object> V8TestSpecialOperations::findInstanceInPrototypeChain(v8:
     return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
-TestSpecialOperations* V8TestSpecialOperations::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+TestSpecialOperations* V8TestSpecialOperations::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
+    return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestSpecialOperations>() : 0;
 }
 
 
 void V8TestSpecialOperations::refObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->ref();
+    internalPointer->toImpl<TestSpecialOperations>()->ref();
 }
 
 void V8TestSpecialOperations::derefObject(ScriptWrappableBase* internalPointer)
 {
-    fromInternalPointer(internalPointer)->deref();
+    internalPointer->toImpl<TestSpecialOperations>()->deref();
 }
 
 WrapperPersistentNode* V8TestSpecialOperations::createPersistentHandle(ScriptWrappableBase* internalPointer)
