@@ -764,6 +764,13 @@ crbug.com/350829 [ Win Debug ] virtual/threaded/animations/missing-keyframe-prop
 crbug.com/350829 [ Win Debug ] virtual/threaded/animations/duplicated-keyframes-name-unprefixed-03.html [ Timeout Pass ]
 crbug.com/350829 [ Win Debug ] virtual/threaded/animations/keyframes-unprefixed-03.html [ Timeout Pass ]
 
+Bug(jchaffraix) fast/repaint/scroll-inside-table-cell.html [ NeedsRebaseline ]
+Bug(jchaffraix) fast/repaint/scroll-relative-table-inside-table-cell.html [ NeedsRebaseline ]
+Bug(jchaffraix) fast/repaint/table-overflow-auto-in-overflow-auto-scrolled.html [ NeedsRebaseline ]
+Bug(jchaffraix) fast/repaint/table-overflow-scroll-in-overflow-scroll-scrolled.html [ NeedsRebaseline ]
+Bug(jchaffraix) fast/repaint/overflow-auto-in-overflow-auto-scrolled.html [ NeedsRebaseline ]
+Bug(jchaffraix) fast/repaint/overflow-scroll-in-overflow-scroll-scrolled.html [ NeedsRebaseline ]
+
 crbug.com/352377 svg/animations/repeatn-event-1c.svg [ ImageOnlyFailure Pass ]
 crbug.com/352385 [ Debug ] virtual/threaded/animations/3d/transform-perspective.html [ Timeout Pass ]
 crbug.com/352705 [ Win Debug ] virtual/threaded/animations/sample-on-last-keyframe.html [ Timeout Pass ]

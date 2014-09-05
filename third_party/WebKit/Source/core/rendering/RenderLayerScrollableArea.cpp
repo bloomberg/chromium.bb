@@ -402,15 +402,8 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
     }
 
     // Just schedule a full paint invalidation of our object.
-    if (requiresPaintInvalidation) {
-        // For querying RenderLayer::compositingState()
-        // This code appears correct, since scrolling outside of layout happens during activities that do not dirty compositing state.
-        DisableCompositingQueryAsserts disabler;
-        if (box().frameView()->isInPerformLayout())
-            box().setShouldDoFullPaintInvalidation(true);
-        else
-            box().invalidatePaintUsingContainer(paintInvalidationContainer, layer()->renderer()->previousPaintInvalidationRect(), InvalidationScroll);
-    }
+    if (requiresPaintInvalidation)
+        box().setShouldDoFullPaintInvalidation(true);
 
     // Schedule the scroll DOM event.
     if (box().node())
