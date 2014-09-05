@@ -8,6 +8,7 @@ import("//tools/grit/repack.gni")
 # GYP version: extensions/extensions_resources.gyp:extensions_resources
 group("extensions_resources") {
   deps = [
+    ":extensions_browser_resources",
     ":extensions_renderer_resources",
     ":extensions_resources_grd",
   ]
@@ -24,7 +25,21 @@ grit("extensions_resources_grd") {
 }
 
 # GYP version: extensions/extensions_resources.gyp:extensions_resources
-#              (exntensions_renderer_resources action)
+#              (extensions_browser_resources action)
+grit("extensions_browser_resources") {
+  source = "browser/resources/extensions_browser_resources.grd"
+  outputs = [
+    "grit/extensions_browser_resources.h",
+    "grit/extensions_browser_resources_map.cc",
+    "grit/extensions_browser_resources_map.h",
+    "extensions_browser_resources_100_percent.pak",
+    "extensions_browser_resources_200_percent.pak",
+  ]
+  grit_flags = [ "-E", "mojom_root=" + rebase_path(root_gen_dir) ]
+}
+
+# GYP version: extensions/extensions_resources.gyp:extensions_resources
+#              (extensions_renderer_resources action)
 grit("extensions_renderer_resources") {
   source = "renderer/resources/extensions_renderer_resources.grd"
   outputs = [

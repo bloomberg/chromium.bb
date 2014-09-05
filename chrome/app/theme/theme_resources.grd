@@ -35,7 +35,6 @@
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_NOTIFICATION" file="common/allowed_notifications.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_PLUGINS" file="common/allowed_plugins.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_POPUPS" file="common/allowed_popups.png" />
-      <structure type="chrome_scaled_image" name="IDR_APP_DEFAULT_ICON" file="common/app_default_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_APP_DROPARROW" file="common/app_droparrow.png" />
       <if expr="enable_app_list and is_win and not _google_chrome">
         <structure type="chrome_scaled_image" name="IDR_APP_LIST" file="chromium/app_list_48.png" />
@@ -250,7 +249,6 @@
         <structure type="chrome_scaled_image" name="IDR_EXTENSIONS_RATING_STAR_ON" file="common/extensions_rating_star_on.png" />
         <structure type="chrome_scaled_image" name="IDR_EXTENSIONS_SECTION" file="common/extensions_section.png" />
         <structure type="chrome_scaled_image" name="IDR_EXTENSION_COMMAND_CLOSE" file="common/extension_command_close.png" />
-        <structure type="chrome_scaled_image" name="IDR_EXTENSION_DEFAULT_ICON" file="common/extension_default_icon.png" />
       </if>
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_FATAL_ERROR" file="cros/fatal_error.png" />
@@ -426,7 +424,7 @@
              reserve a valid ID, so the Android code can map it to the
              appropriate Android resource.  So we just refer to a random
              image. -->
-        <structure type="chrome_scaled_image" name="IDR_INFOBAR_PROTECTED_MEDIA_IDENTIFIER" file="common/app_default_icon.png" />
+        <structure type="chrome_scaled_image" name="IDR_INFOBAR_PROTECTED_MEDIA_IDENTIFIER" file="chromium/product_logo_32.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_RESTORE_SESSION" file="common/infobar_restore_session.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_SAVE_PASSWORD" file="common/infobar_save_password.png" />

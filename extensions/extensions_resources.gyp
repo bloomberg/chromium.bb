@@ -19,6 +19,13 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
+          'action_name': 'generate_extensions_browser_resources',
+          'variables': {
+            'grit_grd_file': 'browser/resources/extensions_browser_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+        {
           'action_name': 'generate_extensions_renderer_resources',
           'variables': {
             'grit_grd_file': 'renderer/resources/extensions_renderer_resources.grd',

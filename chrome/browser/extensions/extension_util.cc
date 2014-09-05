@@ -27,7 +27,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "grit/theme_resources.h"
+#include "extensions/grit/extensions_browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace extensions {

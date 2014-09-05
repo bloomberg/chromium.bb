@@ -25,7 +25,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
-#include "grit/theme_resources.h"
+#include "extensions/grit/extensions_browser_resources.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"

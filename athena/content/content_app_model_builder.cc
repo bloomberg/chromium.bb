@@ -11,8 +11,10 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
+#include "extensions/grit/extensions_browser_resources.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace athena {
 
@@ -66,8 +68,8 @@ class AppItem : public app_list::AppListItem {
                     extension.get(),
                     extensions::IconsInfo::GetIcons(extension.get()),
                     extension_misc::EXTENSION_ICON_MEDIUM,
-                    // TODO(mukai): better default icon
-                    CreateFlatColorImage(SK_ColorBLACK),
+                    *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+                        IDR_APP_DEFAULT_ICON),
                     NULL) {
     icon_image_.image_skia().EnsureRepsForSupportedScales();
     SetIcon(icon_image_.image_skia(), false);

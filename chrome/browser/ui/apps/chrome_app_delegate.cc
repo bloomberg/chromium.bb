@@ -27,7 +27,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "extensions/common/constants.h"
-#include "grit/theme_resources.h"
+#include "extensions/grit/extensions_browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(USE_ASH)

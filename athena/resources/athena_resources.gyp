@@ -50,6 +50,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/components/strings/components_strings_en-US.pak',
             '<(SHARED_INTERMEDIATE_DIR)/content/app/resources/content_resources_100_percent.pak',
             '<(SHARED_INTERMEDIATE_DIR)/content/app/strings/content_strings_en-US.pak',
+            '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_browser_resources_100_percent.pak',
             '<(SHARED_INTERMEDIATE_DIR)/ui/chromeos/resources/ui_chromeos_resources_100_percent.pak',
             '<(SHARED_INTERMEDIATE_DIR)/ui/chromeos/strings/ui_chromeos_strings_en-US.pak',
           ],

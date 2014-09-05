@@ -174,8 +174,11 @@
   "extensions/extensions_resources.grd": {
     "includes": [26600],
   },
+  "extensions/browser/resources/extensions_browser_resources.grd": {
+    "structures": [26800],
+  },
   "extensions/renderer/resources/extensions_renderer_resources.grd": {
-    "includes": [26800],
+    "includes": [26850],
   },
   "extensions/extensions_strings.grd": {
     "messages": [27000],
