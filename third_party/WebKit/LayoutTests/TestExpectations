@@ -55,6 +55,8 @@ crbug.com/377013 [ Mac Debug ] fast/repaint/4776765.html [ Pass Failure ]
 
 crbug.com/304953 fast/css/font-face-download-error.html [ Pass Timeout ]
 
+crbug.com/411175 [ XP ] svg/custom/svg-fonts-without-missing-glyph.xhtml [ ImageOnlyFailure Pass ]
+
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
 crbug.com/310679 [ Mac ] compositing/fixed-body-background-positioned.html [ Failure Pass ]
 crbug.com/310679 [ Mac ] compositing/rubberbanding/transform-overhang-e.html [ ImageOnlyFailure Pass ]
