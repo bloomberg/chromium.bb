@@ -6,14 +6,11 @@
     'variables': {
         # Note: list duplicated in custom.gni.
         'bindings_modules_v8_custom_files': [
-            'V8AudioNodeCustom.cpp',
             'V8CryptoCustom.cpp',
             'V8CryptoKeyCustom.cpp',
             'V8CustomSQLStatementErrorCallback.cpp',
             'V8DeviceMotionEventCustom.cpp',
             'V8DeviceOrientationEventCustom.cpp',
-            'V8EntryCustom.cpp',
-            'V8EntrySyncCustom.cpp',
             'V8SQLResultSetRowListCustom.cpp',
             'V8SQLTransactionCustom.cpp',
             'V8SQLTransactionSyncCustom.cpp',

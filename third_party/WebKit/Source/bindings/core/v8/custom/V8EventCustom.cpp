@@ -31,11 +31,8 @@
 #include "config.h"
 #include "bindings/core/v8/V8Event.h"
 
-#include "bindings/core/v8/ModuleProxy.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DataTransfer.h"
-#include "core/EventHeaders.h"
-#include "core/EventInterfaces.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/events/ClipboardEvent.h"
 #include "core/events/Event.h"
@@ -50,25 +47,6 @@ void V8Event::clipboardDataAttributeGetterCustom(const v8::PropertyCallbackInfo<
         v8SetReturnValueFast(info, static_cast<ClipboardEvent*>(event)->clipboardData(), event);
         return;
     }
-}
-
-#define TRY_TO_WRAP_WITH_INTERFACE(interfaceName) \
-    if (EventNames::interfaceName == desiredInterface) \
-        return wrap(static_cast<interfaceName*>(event), creationContext, isolate);
-
-v8::Handle<v8::Object> wrap(Event* event, v8::Handle<v8::Object> creationContext, v8::Isolate *isolate)
-{
-    ASSERT(event);
-
-    String desiredInterface = event->interfaceName();
-
-    // We need to check Event first to avoid infinite recursion.
-    if (EventNames::Event == desiredInterface)
-        return V8Event::createWrapper(event, creationContext, isolate);
-
-    EVENT_INTERFACES_FOR_EACH(TRY_TO_WRAP_WITH_INTERFACE);
-
-    return ModuleProxy::moduleProxy().wrapForEvent(event, creationContext, isolate);
 }
 
 } // namespace blink

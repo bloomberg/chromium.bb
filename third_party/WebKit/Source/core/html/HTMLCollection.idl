@@ -20,7 +20,6 @@
  */
 
 [
-    Custom=Wrap,
     DependentLifetime,
     SetWrapperReferenceFrom=ownerNode,
     WillBeGarbageCollected,

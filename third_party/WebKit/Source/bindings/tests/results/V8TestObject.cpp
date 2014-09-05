@@ -10832,31 +10832,6 @@ void V8TestObject::installConditionallyEnabledMethods(v8::Handle<v8::Object> pro
     }
 }
 
-v8::Handle<v8::Object> wrap(TestObject* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<V8TestObject>(impl, isolate));
-    return V8TestObject::createWrapper(impl, creationContext, isolate);
-}
-
-v8::Handle<v8::Object> V8TestObject::createWrapper(PassRefPtr<TestObject> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<V8TestObject>(impl.get(), isolate));
-    const WrapperTypeInfo* actualInfo = impl->typeInfo();
-    // Might be a XXXConstructor::wrapperTypeInfo instead of an XXX::wrapperTypeInfo. These will both have
-    // the same object de-ref functions, though, so use that as the basis of the check.
-    RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == wrapperTypeInfo.derefObjectFunction);
-
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &wrapperTypeInfo, toInternalPointer(impl.get()), isolate);
-    if (UNLIKELY(wrapper.IsEmpty()))
-        return wrapper;
-
-    installConditionallyEnabledProperties(wrapper, isolate);
-    V8DOMWrapper::associateObjectWithWrapper<V8TestObject>(impl, &wrapperTypeInfo, wrapper, isolate);
-    return wrapper;
-}
-
 
 void V8TestObject::refObject(ScriptWrappableBase* internalPointer)
 {

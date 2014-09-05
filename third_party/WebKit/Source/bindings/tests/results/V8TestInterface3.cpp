@@ -143,31 +143,6 @@ TestInterface3* V8TestInterface3::toNativeWithTypeCheck(v8::Isolate* isolate, v8
     return hasInstance(value, isolate) ? fromInternalPointer(blink::toInternalPointer(v8::Handle<v8::Object>::Cast(value))) : 0;
 }
 
-v8::Handle<v8::Object> wrap(TestInterface3* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<V8TestInterface3>(impl, isolate));
-    return V8TestInterface3::createWrapper(impl, creationContext, isolate);
-}
-
-v8::Handle<v8::Object> V8TestInterface3::createWrapper(PassRefPtr<TestInterface3> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<V8TestInterface3>(impl.get(), isolate));
-    const WrapperTypeInfo* actualInfo = impl->typeInfo();
-    // Might be a XXXConstructor::wrapperTypeInfo instead of an XXX::wrapperTypeInfo. These will both have
-    // the same object de-ref functions, though, so use that as the basis of the check.
-    RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == wrapperTypeInfo.derefObjectFunction);
-
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &wrapperTypeInfo, toInternalPointer(impl.get()), isolate);
-    if (UNLIKELY(wrapper.IsEmpty()))
-        return wrapper;
-
-    installConditionallyEnabledProperties(wrapper, isolate);
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterface3>(impl, &wrapperTypeInfo, wrapper, isolate);
-    return wrapper;
-}
-
 
 void V8TestInterface3::refObject(ScriptWrappableBase* internalPointer)
 {

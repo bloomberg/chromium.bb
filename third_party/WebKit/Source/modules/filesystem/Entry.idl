@@ -29,7 +29,6 @@
  */
 
 [
-    Custom=Wrap,
     NoInterfaceObject,
     GarbageCollected,
 ] interface Entry {

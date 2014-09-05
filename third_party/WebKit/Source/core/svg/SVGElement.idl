@@ -20,9 +20,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-[
-    Custom=Wrap,
-] interface SVGElement : Element {
+interface SVGElement : Element {
     [Reflect] attribute DOMString xmlbase;
     readonly attribute SVGSVGElement? ownerSVGElement;
     readonly attribute SVGElement? viewportElement;

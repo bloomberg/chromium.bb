@@ -18,9 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-[
-    Custom=Wrap,
-] interface HTMLElement : Element {
+interface HTMLElement : Element {
     [Reflect] attribute DOMString title;
     [Reflect] attribute DOMString lang;
     attribute boolean translate;

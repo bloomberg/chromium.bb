@@ -100,8 +100,6 @@ public:
     HTMLMenuElement* contextMenu() const;
     void setContextMenu(HTMLMenuElement*);
 
-    virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) OVERRIDE;
-
 protected:
     HTMLElement(const QualifiedName& tagName, Document&, ConstructionType);
 

@@ -26,10 +26,12 @@
  */
 
 [
+    // FIXME: We should remove this Custom=Wrap attribute. This is used just for
+    // letting constructor callback functions call ScriptWrappable::wrap.
+    Custom=Wrap,
     EventConstructor,
     Exposed=(Window,Worker),
     RaisesException=Constructor,
-    Custom=Wrap,
 ] interface MessageEvent : Event {
     [InitializedByEventConstructor] readonly attribute DOMString origin;
     [InitializedByEventConstructor] readonly attribute DOMString lastEventId;

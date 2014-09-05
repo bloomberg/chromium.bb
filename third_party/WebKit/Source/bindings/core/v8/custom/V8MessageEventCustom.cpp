@@ -42,37 +42,6 @@
 
 namespace blink {
 
-// Ensures a wrapper is created for the data to return now so that V8 knows how
-// much memory is used via the wrapper. To keep the wrapper alive, it's set to
-// the wrapper of the MessageEvent as a hidden value.
-static void ensureWrapperCreatedAndAssociated(MessageEvent* eventImpl, v8::Handle<v8::Object> eventWrapper, v8::Isolate* isolate)
-{
-    switch (eventImpl->dataType()) {
-    case MessageEvent::DataTypeScriptValue:
-    case MessageEvent::DataTypeSerializedScriptValue:
-        break;
-    case MessageEvent::DataTypeString: {
-        String stringValue = eventImpl->dataAsString();
-        V8HiddenValue::setHiddenValue(isolate, eventWrapper, V8HiddenValue::stringData(isolate), v8String(isolate, stringValue));
-        break;
-    }
-    case MessageEvent::DataTypeBlob:
-        break;
-    case MessageEvent::DataTypeArrayBuffer:
-        V8HiddenValue::setHiddenValue(isolate, eventWrapper, V8HiddenValue::arrayBufferData(isolate), toV8(eventImpl->dataAsArrayBuffer(), eventWrapper, isolate));
-        break;
-    }
-}
-
-v8::Handle<v8::Object> wrap(MessageEvent* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<V8MessageEvent>(impl, isolate));
-    v8::Handle<v8::Object> wrapper = V8MessageEvent::createWrapper(impl, creationContext, isolate);
-    ensureWrapperCreatedAndAssociated(impl, wrapper, isolate);
-    return wrapper;
-}
-
 void V8MessageEvent::dataAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     MessageEvent* event = V8MessageEvent::toNative(info.Holder());

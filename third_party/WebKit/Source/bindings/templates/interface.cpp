@@ -1145,6 +1145,7 @@ v8::Handle<v8::ObjectTemplate> V8Window::getShadowObjectTemplate(v8::Isolate* is
 
 {##############################################################################}
 {% block wrap %}
+{% if not is_script_wrappable %}
 {% if special_wrap_for or is_document %}
 v8::Handle<v8::Object> wrap({{cpp_class}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -1175,22 +1176,17 @@ v8::Handle<v8::Object> wrap({{cpp_class}}* impl, v8::Handle<v8::Object> creation
 }
 
 {% endif %}
+{% endif %}
 {% endblock %}
 
 
 {##############################################################################}
 {% block create_wrapper %}
-{% if not has_custom_to_v8 %}
+{% if not has_custom_to_v8 and not is_script_wrappable %}
 v8::Handle<v8::Object> {{v8_class}}::createWrapper({{pass_cpp_type}} impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<{{v8_class}}>(impl.get(), isolate));
-    {% if is_script_wrappable %}
-    const WrapperTypeInfo* actualInfo = impl->typeInfo();
-    // Might be a XXXConstructor::wrapperTypeInfo instead of an XXX::wrapperTypeInfo. These will both have
-    // the same object de-ref functions, though, so use that as the basis of the check.
-    RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == wrapperTypeInfo.derefObjectFunction);
-    {% endif %}
 
     {% if is_document %}
     if (LocalFrame* frame = impl->frame()) {

@@ -44,11 +44,12 @@ public:
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
 
 private:
-    friend v8::Handle<v8::Object> wrap(TestSpecialOperations*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
-    static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestSpecialOperations>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
-v8::Handle<v8::Object> wrap(TestSpecialOperations* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+inline v8::Handle<v8::Object> wrap(TestSpecialOperations* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    return impl->wrap(creationContext, isolate);
+}
 
 inline v8::Handle<v8::Value> toV8(TestSpecialOperations* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

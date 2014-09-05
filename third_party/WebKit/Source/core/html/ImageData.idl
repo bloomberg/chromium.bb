@@ -31,6 +31,8 @@
 [
     Constructor(unsigned long width, unsigned long height),
     Constructor(Uint8ClampedArray data, unsigned long width, [Default=Undefined] optional unsigned long height),
+    // FIXME: We should remove this Custom=Wrap attribute. This is used just for
+    // letting constructor callback functions call ScriptWrappable::wrap.
     Custom=Wrap,
     Exposed=(Window,Worker),
     RaisesException=Constructor,

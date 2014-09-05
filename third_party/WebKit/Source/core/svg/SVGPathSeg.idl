@@ -25,7 +25,6 @@
  */
 
 [
-    Custom=Wrap,
     DependentLifetime,
 ] interface SVGPathSeg {
     // Path Segment Types

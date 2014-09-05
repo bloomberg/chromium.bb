@@ -990,11 +990,6 @@ const AtomicString& HTMLElement::eventParameterName()
     return eventString;
 }
 
-v8::Handle<v8::Object> HTMLElement::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return createV8HTMLWrapper(this, creationContext, isolate);
-}
-
 } // namespace blink
 
 #ifndef NDEBUG

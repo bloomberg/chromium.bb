@@ -199,6 +199,9 @@ v8::Handle<v8::Object> MessageEvent::wrap(v8::Handle<v8::Object> creationContext
 {
     v8::Handle<v8::Object> wrapper = Event::wrap(creationContext, isolate);
 
+    // Ensures a wrapper is created for the data to return now so that V8 knows how
+    // much memory is used via the wrapper. To keep the wrapper alive, it's set to
+    // the wrapper of the MessageEvent as a hidden value.
     switch (dataType()) {
     case MessageEvent::DataTypeScriptValue:
     case MessageEvent::DataTypeSerializedScriptValue:

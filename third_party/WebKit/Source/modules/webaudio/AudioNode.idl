@@ -37,7 +37,6 @@ enum ChannelInterpretation {
 
 [
     Conditional=WEB_AUDIO,
-    Custom=Wrap,
     GarbageCollected,
 ] interface AudioNode : EventTarget {
     // FIXME: AudioNode argument should not be nullable

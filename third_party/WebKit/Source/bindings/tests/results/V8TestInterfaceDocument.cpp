@@ -92,46 +92,6 @@ EventTarget* V8TestInterfaceDocument::toEventTarget(v8::Handle<v8::Object> objec
     return toNative(object);
 }
 
-v8::Handle<v8::Object> wrap(TestInterfaceDocument* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    v8::Handle<v8::Object> wrapper = V8TestInterfaceDocument::createWrapper(impl, creationContext, isolate);
-    if (wrapper.IsEmpty())
-        return wrapper;
-    DOMWrapperWorld& world = DOMWrapperWorld::current(isolate);
-    if (world.isMainWorld()) {
-        if (LocalFrame* frame = impl->frame())
-            frame->script().windowProxy(world)->updateDocumentWrapper(wrapper);
-    }
-    return wrapper;
-}
-
-v8::Handle<v8::Object> V8TestInterfaceDocument::createWrapper(PassRefPtrWillBeRawPtr<TestInterfaceDocument> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<V8TestInterfaceDocument>(impl.get(), isolate));
-    const WrapperTypeInfo* actualInfo = impl->typeInfo();
-    // Might be a XXXConstructor::wrapperTypeInfo instead of an XXX::wrapperTypeInfo. These will both have
-    // the same object de-ref functions, though, so use that as the basis of the check.
-    RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == wrapperTypeInfo.derefObjectFunction);
-
-    if (LocalFrame* frame = impl->frame()) {
-        if (frame->script().initializeMainWorld()) {
-            // initializeMainWorld may have created a wrapper for the object, retry from the start.
-            v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapper<V8TestInterfaceDocument>(impl.get(), isolate);
-            if (!wrapper.IsEmpty())
-                return wrapper;
-        }
-    }
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &wrapperTypeInfo, toInternalPointer(impl.get()), isolate);
-    if (UNLIKELY(wrapper.IsEmpty()))
-        return wrapper;
-
-    installConditionallyEnabledProperties(wrapper, isolate);
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceDocument>(impl, &wrapperTypeInfo, wrapper, isolate);
-    return wrapper;
-}
-
 
 void V8TestInterfaceDocument::refObject(ScriptWrappableBase* internalPointer)
 {

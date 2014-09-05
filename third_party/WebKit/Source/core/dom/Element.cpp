@@ -26,9 +26,12 @@
 #include "config.h"
 #include "core/dom/Element.h"
 
+#include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8DOMWrapper.h"
+#include "bindings/core/v8/V8PerContextData.h"
 #include "core/CSSValueKeywords.h"
 #include "core/SVGNames.h"
 #include "core/XLinkNames.h"
@@ -3266,6 +3269,40 @@ void Element::trace(Visitor* visitor)
     visitor->trace(m_elementData);
 #endif
     ContainerNode::trace(visitor);
+}
+
+v8::Handle<v8::Object> Element::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    if (isCustomElement())
+        return wrapCustomElement(creationContext, isolate);
+    return ContainerNode::wrap(creationContext, isolate);
+}
+
+v8::Handle<v8::Object> Element::wrapCustomElement(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    ASSERT(!DOMDataStore::containsWrapperNonTemplate(this, isolate));
+
+    ASSERT(!creationContext.IsEmpty());
+    v8::Handle<v8::Context> context = creationContext->CreationContext();
+
+    if (!isUpgradedCustomElement() || DOMWrapperWorld::world(context).isIsolatedWorld())
+        return ContainerNode::wrap(creationContext, isolate);
+
+    V8PerContextData* perContextData = V8PerContextData::from(context);
+    if (!perContextData)
+        return v8::Handle<v8::Object>();
+
+    CustomElementBinding* binding = perContextData->customElementBinding(customElementDefinition());
+    const WrapperTypeInfo* wrapperType = wrapperTypeInfo();
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, wrapperType, toInternalPointer(), isolate);
+    if (wrapper.IsEmpty())
+        return v8::Handle<v8::Object>();
+
+    wrapper->SetPrototype(binding->prototype());
+
+    wrapperType->refObject(toInternalPointer());
+    V8DOMWrapper::associateObjectWithWrapperNonTemplate(this, wrapperType, wrapper, isolate);
+    return wrapper;
 }
 
 } // namespace blink

@@ -19,7 +19,6 @@
  */
 
 [
-    Custom=Wrap,
     DependentLifetime,
 ] interface Node : EventTarget {
     // NodeType

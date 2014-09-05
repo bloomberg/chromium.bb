@@ -500,6 +500,8 @@ public:
 
     virtual void trace(Visitor*) OVERRIDE;
 
+    virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) OVERRIDE;
+
 protected:
     Element(const QualifiedName& tagName, Document*, ConstructionType);
 
@@ -642,6 +644,8 @@ private:
     void detachAttrNodeAtIndex(Attr*, size_t index);
 
     bool isJavaScriptURLAttribute(const Attribute&) const;
+
+    v8::Handle<v8::Object> wrapCustomElement(v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
     RefPtrWillBeMember<ElementData> m_elementData;
 };

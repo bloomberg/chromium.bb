@@ -1191,9 +1191,4 @@ const AtomicString& SVGElement::eventParameterName()
     return evtString;
 }
 
-v8::Handle<v8::Object> SVGElement::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return createV8SVGWrapper(this, creationContext, isolate);
-}
-
 } // namespace blink

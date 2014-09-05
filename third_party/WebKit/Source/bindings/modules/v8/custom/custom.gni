@@ -5,14 +5,11 @@
 # Make the files absolute so they can be imported to anywhere.
 bindings_modules_v8_custom_files = get_path_info(
   [
-    "V8AudioNodeCustom.cpp",
     "V8CryptoCustom.cpp",
     "V8CryptoKeyCustom.cpp",
     "V8CustomSQLStatementErrorCallback.cpp",
     "V8DeviceMotionEventCustom.cpp",
     "V8DeviceOrientationEventCustom.cpp",
-    "V8EntryCustom.cpp",
-    "V8EntrySyncCustom.cpp",
     "V8SQLResultSetRowListCustom.cpp",
     "V8SQLTransactionCustom.cpp",
     "V8SQLTransactionSyncCustom.cpp",
