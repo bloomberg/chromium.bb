@@ -24,8 +24,10 @@ bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
   error_msg->clear();
   switch (event.type) {
     case WebInputEvent::GestureScrollBegin:
-      if (scrolling_ || pinching_)
+      if (scrolling_)
         error_msg->append("Scroll begin during scroll\n");
+      if (pinching_)
+        error_msg->append("Scroll begin during pinch\n");
       scrolling_ = true;
       break;
     case WebInputEvent::GestureScrollUpdate:
@@ -42,18 +44,16 @@ bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
       scrolling_ = false;
       break;
     case WebInputEvent::GesturePinchBegin:
-      if (!scrolling_)
-        error_msg->append("Pinch begin outside of scroll\n");
       if (pinching_)
         error_msg->append("Pinch begin during pinch\n");
       pinching_ = true;
       break;
     case WebInputEvent::GesturePinchUpdate:
-      if (!pinching_ || !scrolling_)
+      if (!pinching_)
         error_msg->append("Pinch update outside of pinch\n");
       break;
     case WebInputEvent::GesturePinchEnd:
-      if (!pinching_ || !scrolling_)
+      if (!pinching_)
         error_msg->append("Pinch end outside of pinch\n");
       pinching_ = false;
       break;
@@ -64,9 +64,11 @@ bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
       break;
     case WebInputEvent::GestureTap:
     case WebInputEvent::GestureTapCancel:
-    case WebInputEvent::GestureDoubleTap:
       if (!waiting_for_tap_end_)
         error_msg->append("Missing GestureTapDown event\n");
+      waiting_for_tap_end_ = false;
+      break;
+    case WebInputEvent::GestureDoubleTap:
       waiting_for_tap_end_ = false;
       break;
     default:

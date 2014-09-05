@@ -58,6 +58,7 @@ void SetContentCommandLineFlags(bool single_process,
   parsed_command_line->AppendSwitch(switches::kEnableOverlayFullscreenVideo);
   parsed_command_line->AppendSwitch(switches::kEnableOverlayScrollbar);
   parsed_command_line->AppendSwitch(switches::kEnableOverscrollNotifications);
+  parsed_command_line->AppendSwitch(switches::kValidateInputEventStream);
 
   // Run the GPU service as a thread in the browser instead of as a
   // standalone process.

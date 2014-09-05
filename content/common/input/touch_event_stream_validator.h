@@ -8,12 +8,13 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace content {
 
 // Utility class for validating a stream of WebTouchEvents.
-class TouchEventStreamValidator {
+class CONTENT_EXPORT TouchEventStreamValidator {
  public:
   TouchEventStreamValidator();
   ~TouchEventStreamValidator();

@@ -38,6 +38,14 @@ bool TouchEventStreamValidator::Validate(const WebTouchEvent& event,
   WebTouchEvent previous_event = previous_event_;
   previous_event_ = event;
 
+  if (!event.touchesLength) {
+    error_msg->append("Touch event is empty.\n");
+    return false;
+  }
+
+  if (!WebInputEvent::isTouchEventType(event.type))
+    error_msg->append("Touch event has invalid type.\n");
+
   // Allow "hard" restarting of touch stream validation. This is necessary
   // in cases where touch event forwarding ceases in response to the event ack
   // or removal of touch handlers.
@@ -56,6 +64,7 @@ bool TouchEventStreamValidator::Validate(const WebTouchEvent& event,
       error_msg->append("Previously active touch point not in new event.\n");
   }
 
+  bool found_valid_state_for_type = false;
   for (unsigned i = 0; i < event.touchesLength; ++i) {
     const WebTouchPoint& point = event.touches[i];
     const WebTouchPoint* previous_point =
@@ -81,16 +90,22 @@ bool TouchEventStreamValidator::Validate(const WebTouchEvent& event,
       case WebTouchPoint::StateReleased:
         if (event.type != WebInputEvent::TouchEnd)
           error_msg->append("Released touch point outside touchend.\n");
+        else
+          found_valid_state_for_type = true;
         break;
 
       case WebTouchPoint::StatePressed:
         if (event.type != WebInputEvent::TouchStart)
           error_msg->append("Pressed touch point outside touchstart.\n");
+        else
+          found_valid_state_for_type = true;
         break;
 
       case WebTouchPoint::StateMoved:
         if (event.type != WebInputEvent::TouchMove)
           error_msg->append("Moved touch point outside touchmove.\n");
+        else
+          found_valid_state_for_type = true;
         break;
 
       case WebTouchPoint::StateStationary:
@@ -99,9 +114,15 @@ bool TouchEventStreamValidator::Validate(const WebTouchEvent& event,
       case WebTouchPoint::StateCancelled:
         if (event.type != WebInputEvent::TouchCancel)
           error_msg->append("Cancelled touch point outside touchcancel.\n");
+        else
+          found_valid_state_for_type = true;
         break;
     }
   }
+
+  if (!found_valid_state_for_type)
+    error_msg->append("No valid touch point corresponding to event type.");
+
   return error_msg->empty();
 }
 

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 
 namespace blink {
 class WebGestureEvent;
@@ -16,7 +17,7 @@ class WebGestureEvent;
 namespace content {
 
 // Utility class for validating a stream of WebGestureEvents.
-class GestureEventStreamValidator {
+class CONTENT_EXPORT GestureEventStreamValidator {
  public:
   GestureEventStreamValidator();
   ~GestureEventStreamValidator();
