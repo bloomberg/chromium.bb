@@ -208,7 +208,6 @@ void BrowserCompositorViewMacInternal::GotAcceleratedIOSurfaceFrame(
   // layer.
   bool needs_new_layer =
       !io_surface_layer_ ||
-      [io_surface_layer_ hasBeenPoisoned] ||
       [io_surface_layer_ scaleFactor] != scale_factor;
   if (needs_new_layer) {
     io_surface_layer_.reset(
@@ -221,28 +220,12 @@ void BrowserCompositorViewMacInternal::GotAcceleratedIOSurfaceFrame(
   }
 
   // Open the provided IOSurface.
-  if (io_surface_layer_) {
-    bool result = [io_surface_layer_ gotFrameWithIOSurface:io_surface_id
-                                             withPixelSize:pixel_size
-                                           withScaleFactor:scale_factor];
-    if (!result) {
-      DestroyIOSurfaceLayer(io_surface_layer_);
-      LOG(ERROR) << "Failed open IOSurface in IOSurfaceLayer";
-    }
-  }
-
-  // Give a final complaint if anything with the layer's creation went wrong.
-  // This frame will appear blank, the compositor will try to create another,
-  // and maybe that will go better.
-  if (!io_surface_layer_) {
-    LOG(ERROR) << "IOSurfaceLayer is nil, tab will be blank";
-    IOSurfaceLayerHitError();
-  }
+  [io_surface_layer_ gotFrameWithIOSurface:io_surface_id
+                             withPixelSize:pixel_size
+                           withScaleFactor:scale_factor];
 
   // Make the CALayer draw and set its size appropriately.
   if (io_surface_layer_) {
-    [io_surface_layer_ gotNewFrame];
-
     // Set the bounds of the accelerated layer to match the size of the frame.
     // If the bounds changed, force the content to be displayed immediately.
     CGRect new_layer_bounds = CGRectMake(
@@ -345,12 +328,8 @@ void BrowserCompositorViewMacInternal::IOSurfaceLayerDidDrawFrame() {
 }
 
 void BrowserCompositorViewMacInternal::IOSurfaceLayerHitError() {
-  // Perform all acks that would have been done if the frame had succeeded, to
-  // un-block the compositor and renderer.
-  IOSurfaceLayerDidDrawFrame();
-
   // Poison the context being used and request a mulligan.
-  [io_surface_layer_ poisonContextAndSharegroup];
+  DestroyIOSurfaceLayer(io_surface_layer_);
   compositor_->ScheduleFullRedraw();
 }
 
