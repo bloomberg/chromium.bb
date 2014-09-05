@@ -31,14 +31,14 @@ bool SSLPolicyBackend::DidHostRunInsecureContent(const std::string& host,
   return ssl_host_state_delegate_->DidHostRunInsecureContent(host, pid);
 }
 
-void SSLPolicyBackend::DenyCertForHost(net::X509Certificate* cert,
+void SSLPolicyBackend::DenyCertForHost(const net::X509Certificate& cert,
                                        const std::string& host,
                                        net::CertStatus error) {
   if (ssl_host_state_delegate_)
     ssl_host_state_delegate_->DenyCert(host, cert, error);
 }
 
-void SSLPolicyBackend::AllowCertForHost(net::X509Certificate* cert,
+void SSLPolicyBackend::AllowCertForHost(const net::X509Certificate& cert,
                                         const std::string& host,
                                         net::CertStatus error) {
   if (ssl_host_state_delegate_)
@@ -46,7 +46,7 @@ void SSLPolicyBackend::AllowCertForHost(net::X509Certificate* cert,
 }
 
 net::CertPolicy::Judgment SSLPolicyBackend::QueryPolicy(
-    net::X509Certificate* cert,
+    const net::X509Certificate& cert,
     const std::string& host,
     net::CertStatus error,
     bool* expired_previous_decision) {

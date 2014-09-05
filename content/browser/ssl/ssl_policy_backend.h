@@ -29,20 +29,20 @@ class SSLPolicyBackend {
 
   // Records that |cert| is not permitted to be used for |host| in the future,
   // for a specific error type.
-  void DenyCertForHost(net::X509Certificate* cert,
+  void DenyCertForHost(const net::X509Certificate& cert,
                        const std::string& host,
                        net::CertStatus error);
 
   // Records that |cert| is permitted to be used for |host| in the future, for
   // a specific error type.
-  void AllowCertForHost(net::X509Certificate* cert,
+  void AllowCertForHost(const net::X509Certificate& cert,
                         const std::string& host,
                         net::CertStatus error);
 
   // Queries whether |cert| is allowed or denied for |host|. Returns true in
   // |expired_previous_decision| if a user decision had been made previously but
   // that decision has expired, otherwise false.
-  net::CertPolicy::Judgment QueryPolicy(net::X509Certificate* cert,
+  net::CertPolicy::Judgment QueryPolicy(const net::X509Certificate& cert,
                                         const std::string& host,
                                         net::CertStatus error,
                                         bool* expired_previous_decision);

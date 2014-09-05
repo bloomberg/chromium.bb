@@ -27,13 +27,13 @@ class SSLHostStateDelegate {
   // Records that |cert| is not permitted to be used for |host| in the future,
   // for a specified |error| type.
   virtual void DenyCert(const std::string& host,
-                        net::X509Certificate* cert,
+                        const net::X509Certificate& cert,
                         net::CertStatus error) = 0;
 
   // Records that |cert| is permitted to be used for |host| in the future, for
   // a specified |error| type.
   virtual void AllowCert(const std::string&,
-                         net::X509Certificate* cert,
+                         const net::X509Certificate& cert,
                          net::CertStatus error) = 0;
 
   // Clear all allow/deny preferences.
@@ -44,7 +44,7 @@ class SSLHostStateDelegate {
   // immediately prior to this query, otherwise false.
   virtual net::CertPolicy::Judgment QueryPolicy(
       const std::string& host,
-      net::X509Certificate* cert,
+      const net::X509Certificate& cert,
       net::CertStatus error,
       bool* expired_previous_decision) = 0;
 

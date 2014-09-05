@@ -34,8 +34,9 @@ SSLPolicy::SSLPolicy(SSLPolicyBackend* backend)
 void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
   bool expired_previous_decision;
   // First we check if we know the policy for this error.
+  DCHECK(handler->ssl_info().is_valid());
   net::CertPolicy::Judgment judgment =
-      backend_->QueryPolicy(handler->ssl_info().cert.get(),
+      backend_->QueryPolicy(*handler->ssl_info().cert.get(),
                             handler->request_url().host(),
                             handler->cert_error(),
                             &expired_previous_decision);
@@ -163,6 +164,7 @@ void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,
 
 void SSLPolicy::OnAllowCertificate(scoped_refptr<SSLCertErrorHandler> handler,
                                    bool allow) {
+  DCHECK(handler->ssl_info().is_valid());
   if (allow) {
     // Default behavior for accepting a certificate.
     // Note that we should not call SetMaxSecurityStyle here, because the active
@@ -174,7 +176,7 @@ void SSLPolicy::OnAllowCertificate(scoped_refptr<SSLCertErrorHandler> handler,
     // While AllowCertForHost() executes synchronously on this thread,
     // ContinueRequest() gets posted to a different thread. Calling
     // AllowCertForHost() first ensures deterministic ordering.
-    backend_->AllowCertForHost(handler->ssl_info().cert.get(),
+    backend_->AllowCertForHost(*handler->ssl_info().cert.get(),
                                handler->request_url().host(),
                                handler->cert_error());
     handler->ContinueRequest();
@@ -184,7 +186,7 @@ void SSLPolicy::OnAllowCertificate(scoped_refptr<SSLCertErrorHandler> handler,
     // While DenyCertForHost() executes synchronously on this thread,
     // CancelRequest() gets posted to a different thread. Calling
     // DenyCertForHost() first ensures deterministic ordering.
-    backend_->DenyCertForHost(handler->ssl_info().cert.get(),
+    backend_->DenyCertForHost(*handler->ssl_info().cert.get(),
                               handler->request_url().host(),
                               handler->cert_error());
     handler->CancelRequest();

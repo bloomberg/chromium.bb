@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 
+#include <set>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -13,6 +15,7 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -72,7 +75,7 @@ GURL GetSecureGURLForHost(const std::string& host) {
 
 // This is a helper function that returns the length of time before a
 // certificate decision expires based on the command line flags. Returns a
-// non-negative value in seconds or a value of -1  indicating that decisions
+// non-negative value in seconds or a value of -1 indicating that decisions
 // should not be remembered after the current session has ended (but should be
 // remembered indefinitely as long as the session does not end), which is the
 // "old" style of certificate decision memory. Uses the experimental group
@@ -118,12 +121,12 @@ int64 GetExpirationDelta() {
   return kForgetAtSessionEndSwitchValue;
 }
 
-std::string GetKey(net::X509Certificate* cert, net::CertStatus error) {
+std::string GetKey(const net::X509Certificate& cert, net::CertStatus error) {
   // Since a security decision will be made based on the fingerprint, Chrome
   // should use the SHA-256 fingerprint for the certificate.
   net::SHA256HashValue fingerprint =
       net::X509Certificate::CalculateChainFingerprint256(
-          cert->os_cert_handle(), cert->GetIntermediateCertificates());
+          cert.os_cert_handle(), cert.GetIntermediateCertificates());
   std::string base64_fingerprint;
   base::Base64Encode(
       base::StringPiece(reinterpret_cast<const char*>(fingerprint.data),
@@ -139,12 +142,12 @@ std::string GetKey(net::X509Certificate* cert, net::CertStatus error) {
 // dictionary that has been passed in. The returned pointer is owned by the the
 // argument dict that is passed in.
 //
-// If create_entries is set to |DoNotCreateDictionaryEntries|,
+// If create_entries is set to |DO_NOT_CREATE_DICTIONARY_ENTRIES|,
 // GetValidCertDecisionsDict will return NULL if there is anything invalid about
 // the setting, such as an invalid version or invalid value types (in addition
-// to there not be any values in the dictionary). If create_entries is set to
-// |CreateDictionaryEntries|, if no dictionary is found or the decisions are
-// expired, a new dictionary will be created
+// to there not being any values in the dictionary). If create_entries is set to
+// |CREATE_DICTIONARY_ENTRIES|, if no dictionary is found or the decisions are
+// expired, a new dictionary will be created.
 base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
     base::DictionaryValue* dict,
     CreateDictionaryEntriesDisposition create_entries,
@@ -158,7 +161,7 @@ base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
   int version;
   bool success = dict->GetInteger(kSSLCertDecisionVersionKey, &version);
   if (!success) {
-    if (create_entries == DoNotCreateDictionaryEntries)
+    if (create_entries == DO_NOT_CREATE_DICTIONARY_ENTRIES)
       return NULL;
 
     dict->SetInteger(kSSLCertDecisionVersionKey,
@@ -200,16 +203,16 @@ base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
   }
 
   // Check to see if the user's certificate decision has expired.
-  // - Expired and |create_entries| is DoNotCreateDictionaryEntries, return
+  // - Expired and |create_entries| is DO_NOT_CREATE_DICTIONARY_ENTRIES, return
   // NULL.
-  // - Expired and |create_entries| is CreateDictionaryEntries, update the
+  // - Expired and |create_entries| is CREATE_DICTIONARY_ENTRIES, update the
   // expiration time.
   if (should_remember_ssl_decisions_ !=
-          ForgetSSLExceptionDecisionsAtSessionEnd &&
+          FORGET_SSL_EXCEPTION_DECISIONS_AT_SESSION_END &&
       decision_expiration.ToInternalValue() <= now.ToInternalValue()) {
     *expired_previous_decision = true;
 
-    if (create_entries == DoNotCreateDictionaryEntries)
+    if (create_entries == DO_NOT_CREATE_DICTIONARY_ENTRIES)
       return NULL;
 
     expired = true;
@@ -226,7 +229,7 @@ base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
   base::DictionaryValue* cert_error_dict = NULL;  // Will be owned by dict
   if (expired ||
       !dict->GetDictionary(kSSLCertDecisionCertErrorMapKey, &cert_error_dict)) {
-    if (create_entries == DoNotCreateDictionaryEntries)
+    if (create_entries == DO_NOT_CREATE_DICTIONARY_ENTRIES)
       return NULL;
 
     cert_error_dict = new base::DictionaryValue();
@@ -238,7 +241,7 @@ base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
 }
 
 // If |should_remember_ssl_decisions_| is
-// ForgetSSLExceptionDecisionsAtSessionEnd, that means that all invalid
+// FORGET_SSL_EXCEPTION_DECISIONS_AT_SESSION_END, that means that all invalid
 // certificate proceed decisions should be forgotten when the session ends. At
 // attempt is made in the destructor to remove the entries, but in the case that
 // things didn't shut down cleanly, on start, Clear is called to guarantee a
@@ -247,29 +250,31 @@ ChromeSSLHostStateDelegate::ChromeSSLHostStateDelegate(Profile* profile)
     : clock_(new base::DefaultClock()), profile_(profile) {
   int64 expiration_delta = GetExpirationDelta();
   if (expiration_delta == kForgetAtSessionEndSwitchValue) {
-    should_remember_ssl_decisions_ = ForgetSSLExceptionDecisionsAtSessionEnd;
+    should_remember_ssl_decisions_ =
+        FORGET_SSL_EXCEPTION_DECISIONS_AT_SESSION_END;
     expiration_delta = 0;
     Clear();
   } else {
-    should_remember_ssl_decisions_ = RememberSSLExceptionDecisionsForDelta;
+    should_remember_ssl_decisions_ = REMEMBER_SSL_EXCEPTION_DECISIONS_FOR_DELTA;
   }
   default_ssl_cert_decision_expiration_delta_ =
       base::TimeDelta::FromSeconds(expiration_delta);
 }
 
 ChromeSSLHostStateDelegate::~ChromeSSLHostStateDelegate() {
-  if (should_remember_ssl_decisions_ == ForgetSSLExceptionDecisionsAtSessionEnd)
+  if (should_remember_ssl_decisions_ ==
+      FORGET_SSL_EXCEPTION_DECISIONS_AT_SESSION_END)
     Clear();
 }
 
 void ChromeSSLHostStateDelegate::DenyCert(const std::string& host,
-                                          net::X509Certificate* cert,
+                                          const net::X509Certificate& cert,
                                           net::CertStatus error) {
   ChangeCertPolicy(host, cert, error, net::CertPolicy::DENIED);
 }
 
 void ChromeSSLHostStateDelegate::AllowCert(const std::string& host,
-                                           net::X509Certificate* cert,
+                                           const net::X509Certificate& cert,
                                            net::CertStatus error) {
   ChangeCertPolicy(host, cert, error, net::CertPolicy::ALLOWED);
 }
@@ -281,7 +286,7 @@ void ChromeSSLHostStateDelegate::Clear() {
 
 net::CertPolicy::Judgment ChromeSSLHostStateDelegate::QueryPolicy(
     const std::string& host,
-    net::X509Certificate* cert,
+    const net::X509Certificate& cert,
     net::CertStatus error,
     bool* expired_previous_decision) {
   HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
@@ -302,9 +307,9 @@ net::CertPolicy::Judgment ChromeSSLHostStateDelegate::QueryPolicy(
 
   base::DictionaryValue* cert_error_dict;  // Owned by value
   cert_error_dict = GetValidCertDecisionsDict(
-      dict, DoNotCreateDictionaryEntries, expired_previous_decision);
+      dict, DO_NOT_CREATE_DICTIONARY_ENTRIES, expired_previous_decision);
   if (!cert_error_dict) {
-    // This revoke is necessary to clear any old expired setting that may
+    // This revoke is necessary to clear any old expired setting that may be
     // lingering in the case that an old decision expried.
     RevokeUserDecisions(host);
     return net::CertPolicy::UNKNOWN;
@@ -356,11 +361,12 @@ void ChromeSSLHostStateDelegate::RevokeUserDecisionsHard(
   RevokeUserDecisions(host);
   scoped_refptr<net::URLRequestContextGetter> getter(
       profile_->GetRequestContext());
-  profile_->GetRequestContext()->GetNetworkTaskRunner()->PostTask(
+  getter->GetNetworkTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&CloseIdleConnections, getter));
 }
 
-bool ChromeSSLHostStateDelegate::HasUserDecision(const std::string& host) {
+bool ChromeSSLHostStateDelegate::HasUserDecision(
+    const std::string& host) const {
   GURL url = GetSecureGURLForHost(host);
   const ContentSettingsPattern pattern =
       ContentSettingsPattern::FromURLNoWildcard(url);
@@ -403,9 +409,9 @@ void ChromeSSLHostStateDelegate::SetClock(scoped_ptr<base::Clock> clock) {
 
 void ChromeSSLHostStateDelegate::ChangeCertPolicy(
     const std::string& host,
-    net::X509Certificate* cert,
+    const net::X509Certificate& cert,
     net::CertStatus error,
-    net::CertPolicy::Judgment judgment) {
+    const net::CertPolicy::Judgment judgment) {
   GURL url = GetSecureGURLForHost(host);
   const ContentSettingsPattern pattern =
       ContentSettingsPattern::FromURLNoWildcard(url);
@@ -422,7 +428,7 @@ void ChromeSSLHostStateDelegate::ChangeCertPolicy(
 
   bool expired_previous_decision;  // unused value in this function
   base::DictionaryValue* cert_dict = GetValidCertDecisionsDict(
-      dict, CreateDictionaryEntries, &expired_previous_decision);
+      dict, CREATE_DICTIONARY_ENTRIES, &expired_previous_decision);
   // If a a valid certificate dictionary cannot be extracted from the content
   // setting, that means it's in an unknown format. Unfortunately, there's
   // nothing to be done in that case, so a silent fail is the only option.

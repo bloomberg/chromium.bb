@@ -29,15 +29,15 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
 
   // SSLHostStateDelegate:
   virtual void DenyCert(const std::string& host,
-                        net::X509Certificate* cert,
+                        const net::X509Certificate& cert,
                         net::CertStatus error) OVERRIDE;
   virtual void AllowCert(const std::string& host,
-                         net::X509Certificate* cert,
+                         const net::X509Certificate& cert,
                          net::CertStatus error) OVERRIDE;
   virtual void Clear() OVERRIDE;
   virtual net::CertPolicy::Judgment QueryPolicy(
       const std::string& host,
-      net::X509Certificate* cert,
+      const net::X509Certificate& cert,
       net::CertStatus error,
       bool* expired_previous_decision) OVERRIDE;
   virtual void HostRanInsecureContent(const std::string& host,
@@ -55,10 +55,7 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
 
   // Returns true if any decisions has been recorded for |host| for the given
   // Profile, otherwise false.
-  virtual bool HasUserDecision(const std::string& host);
-
-  // Called on the UI thread when the profile is about to be destroyed.
-  void ShutdownOnUIThread() {}
+  virtual bool HasUserDecision(const std::string& host) const;
 
  protected:
   // SetClock takes ownership of the passed in clock.
@@ -74,8 +71,8 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
   // Used to specify whether new content setting entries should be created if
   // they don't already exist when querying the user's settings.
   enum CreateDictionaryEntriesDisposition {
-    CreateDictionaryEntries,
-    DoNotCreateDictionaryEntries
+    CREATE_DICTIONARY_ENTRIES,
+    DO_NOT_CREATE_DICTIONARY_ENTRIES
   };
 
   // Specifies whether user SSL error decisions should be forgetten at the end
@@ -84,8 +81,8 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
   // length of time, deteremined by
   // |default_ssl_cert_decision_expiration_delta_|.
   enum RememberSSLExceptionDecisionsDisposition {
-    ForgetSSLExceptionDecisionsAtSessionEnd,
-    RememberSSLExceptionDecisionsForDelta
+    FORGET_SSL_EXCEPTION_DECISIONS_AT_SESSION_END,
+    REMEMBER_SSL_EXCEPTION_DECISIONS_FOR_DELTA
   };
 
   // Modify the user's content settings to specify a judgement made for a
@@ -93,7 +90,7 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
   // is the certificate with an error, |error| is the error in the certificate,
   // and |judgement| is the user decision to be recorded.
   void ChangeCertPolicy(const std::string& host,
-                        net::X509Certificate* cert,
+                        const net::X509Certificate& cert,
                         net::CertStatus error,
                         net::CertPolicy::Judgment judgment);
 
