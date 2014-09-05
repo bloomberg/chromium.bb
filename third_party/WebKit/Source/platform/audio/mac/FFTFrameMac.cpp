@@ -117,7 +117,7 @@ void FFTFrame::doInverseFFT(float* data)
 
     // Do final scaling so that x == IFFT(FFT(x))
     float scale = 1.0f / m_FFTSize;
-    vDSP_vsmul(data, 1, &scale, data, 1, m_FFTSize);
+    VectorMath::vsmul(data, 1, &scale, data, 1, m_FFTSize);
 }
 
 FFTSetup FFTFrame::fftSetupForSize(unsigned fftSize)
