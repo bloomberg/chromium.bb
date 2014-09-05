@@ -20,7 +20,6 @@
 #include "net/proxy/proxy_server.h"
 
 namespace base {
-class MessageLoopForIO;
 class SingleThreadTaskRunner;
 }  // namespace base
 
@@ -47,11 +46,13 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
     // one, in the concrete implementations. Returns true on success. Must be
     // called before using other methods, and should be called on the thread
     // running the glib main loop.
-    // One of |glib_thread_task_runner| and |file_loop| will be used for
-    // gconf/gsettings calls or reading necessary files, depending on the
-    // implementation.
-    virtual bool Init(base::SingleThreadTaskRunner* glib_thread_task_runner,
-                      base::MessageLoopForIO* file_loop) = 0;
+    // One of |glib_task_runner| and |file_task_runner| will be
+    // used for gconf/gsettings calls or reading necessary files, depending on
+    // the implementation.
+    virtual bool Init(
+        const scoped_refptr<base::SingleThreadTaskRunner>& glib_task_runner,
+        const scoped_refptr<base::SingleThreadTaskRunner>&
+            file_task_runner) = 0;
 
     // Releases the gconf/gsettings client, which clears cached directories and
     // stops notifications.
@@ -64,7 +65,8 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
     // Returns the message loop for the thread on which this object
     // handles notifications, and also on which it must be destroyed.
     // Returns NULL if it does not matter.
-    virtual base::SingleThreadTaskRunner* GetNotificationTaskRunner() = 0;
+    virtual const scoped_refptr<base::SingleThreadTaskRunner>&
+        GetNotificationTaskRunner() = 0;
 
     // Returns the source of proxy settings.
     virtual ProxyConfigSource GetConfigSource() = 0;
@@ -180,9 +182,9 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
     // (and for assertions). The message loop for the file thread is
     // used to read any files needed to determine proxy settings.
     void SetUpAndFetchInitialConfig(
-        base::SingleThreadTaskRunner* glib_thread_task_runner,
-        base::SingleThreadTaskRunner* io_thread_task_runner,
-        base::MessageLoopForIO* file_loop);
+        const scoped_refptr<base::SingleThreadTaskRunner>& glib_task_runner,
+        const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+        const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner);
 
     // Handler for setting change notifications: fetches a new proxy
     // configuration from settings, and if this config is different
@@ -259,10 +261,10 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
     // other callbacks that will all be dispatched on this thread. Since gconf
     // is not thread safe, any use of gconf must be done on the thread running
     // this loop.
-    scoped_refptr<base::SingleThreadTaskRunner> glib_thread_task_runner_;
+    scoped_refptr<base::SingleThreadTaskRunner> glib_task_runner_;
     // Task runner for the IO thread. GetLatestProxyConfig() is called from
     // the thread running this loop.
-    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
     ObserverList<Observer> observers_;
 
@@ -281,11 +283,12 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
   virtual ~ProxyConfigServiceLinux();
 
   void SetupAndFetchInitialConfig(
-      base::SingleThreadTaskRunner* glib_thread_task_runner,
-      base::SingleThreadTaskRunner* io_thread_task_runner,
-      base::MessageLoopForIO* file_loop) {
-    delegate_->SetUpAndFetchInitialConfig(glib_thread_task_runner,
-                                          io_thread_task_runner, file_loop);
+      const scoped_refptr<base::SingleThreadTaskRunner>& glib_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner) {
+    delegate_->SetUpAndFetchInitialConfig(glib_task_runner,
+                                          io_task_runner,
+                                          file_task_runner);
   }
   void OnCheckProxyConfigSettings() {
     delegate_->OnCheckProxyConfigSettings();

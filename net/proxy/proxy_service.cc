@@ -1397,14 +1397,14 @@ void ProxyService::ForceReloadProxyConfig() {
 
 // static
 ProxyConfigService* ProxyService::CreateSystemProxyConfigService(
-    base::SingleThreadTaskRunner* io_thread_task_runner,
-    base::MessageLoop* file_loop) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner) {
 #if defined(OS_WIN)
   return new ProxyConfigServiceWin();
 #elif defined(OS_IOS)
   return new ProxyConfigServiceIOS();
 #elif defined(OS_MACOSX)
-  return new ProxyConfigServiceMac(io_thread_task_runner);
+  return new ProxyConfigServiceMac(io_task_runner);
 #elif defined(OS_CHROMEOS)
   LOG(ERROR) << "ProxyConfigService for ChromeOS should be created in "
              << "profile_io_data.cc::CreateProxyConfigService and this should "
@@ -1420,23 +1420,17 @@ ProxyConfigService* ProxyService::CreateSystemProxyConfigService(
   scoped_refptr<base::SingleThreadTaskRunner> glib_thread_task_runner =
       base::ThreadTaskRunnerHandle::Get();
 
-  // The file loop should be a MessageLoopForIO on Linux.
-  DCHECK_EQ(base::MessageLoop::TYPE_IO, file_loop->type());
-
-  // Synchronously fetch the current proxy config (since we are
-  // running on glib_default_loop). Additionally register for
-  // notifications (delivered in either |glib_default_loop| or
-  // |file_loop|) to keep us updated when the proxy config changes.
+  // Synchronously fetch the current proxy config (since we are running on
+  // glib_default_loop). Additionally register for notifications (delivered in
+  // either |glib_default_loop| or |file_task_runner|) to keep us updated when
+  // the proxy config changes.
   linux_config_service->SetupAndFetchInitialConfig(
-      glib_thread_task_runner.get(),
-      io_thread_task_runner,
-      static_cast<base::MessageLoopForIO*>(file_loop));
+      glib_thread_task_runner, io_task_runner, file_task_runner);
 
   return linux_config_service;
 #elif defined(OS_ANDROID)
   return new ProxyConfigServiceAndroid(
-      io_thread_task_runner,
-      base::MessageLoop::current()->message_loop_proxy());
+      io_task_runner, base::MessageLoop::current()->message_loop_proxy());
 #else
   LOG(WARNING) << "Failed to choose a system proxy settings fetcher "
                   "for this platform.";

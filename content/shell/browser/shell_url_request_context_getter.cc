@@ -84,7 +84,7 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
     proxy_config_service_.reset(
         net::ProxyService::CreateSystemProxyConfigService(
-            io_loop_->message_loop_proxy().get(), file_loop_));
+            io_loop_->message_loop_proxy(), file_loop_->message_loop_proxy()));
   }
 }
 

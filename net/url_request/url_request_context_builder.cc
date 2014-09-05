@@ -275,7 +275,7 @@ URLRequestContext* URLRequestContextBuilder::Build() {
       proxy_config_service =
           ProxyService::CreateSystemProxyConfigService(
               base::ThreadTaskRunnerHandle::Get().get(),
-              context->GetFileThread()->message_loop());
+              context->GetFileThread()->task_runner());
     }
   #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
     proxy_service_.reset(

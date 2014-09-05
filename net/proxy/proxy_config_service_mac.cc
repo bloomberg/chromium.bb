@@ -198,7 +198,7 @@ void ProxyConfigServiceMac::Forwarder::OnNetworkConfigChange(
 }
 
 ProxyConfigServiceMac::ProxyConfigServiceMac(
-    base::SingleThreadTaskRunner* io_thread_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_task_runner)
     : forwarder_(this),
       has_fetched_config_(false),
       helper_(new Helper(this)),

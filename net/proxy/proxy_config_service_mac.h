@@ -29,7 +29,7 @@ class NET_EXPORT ProxyConfigServiceMac : public ProxyConfigService {
   // This instance is expected to be operated and deleted on the same thread
   // (however it may be constructed from a different thread).
   explicit ProxyConfigServiceMac(
-      base::SingleThreadTaskRunner* io_thread_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_task_runner);
   virtual ~ProxyConfigServiceMac();
 
  public:

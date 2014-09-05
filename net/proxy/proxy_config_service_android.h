@@ -48,8 +48,9 @@ class NET_EXPORT ProxyConfigServiceAndroid : public ProxyConfigService {
     virtual void ProxySettingsChanged(JNIEnv*, jobject) = 0;
   };
 
-  ProxyConfigServiceAndroid(base::SequencedTaskRunner* network_task_runner,
-                            base::SequencedTaskRunner* jni_task_runner);
+  ProxyConfigServiceAndroid(
+      const scoped_refptr<base::SequencedTaskRunner>& network_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& jni_task_runner);
 
   virtual ~ProxyConfigServiceAndroid();
 
@@ -67,9 +68,10 @@ class NET_EXPORT ProxyConfigServiceAndroid : public ProxyConfigService {
   class Delegate;
 
   // For tests.
-  ProxyConfigServiceAndroid(base::SequencedTaskRunner* network_task_runner,
-                            base::SequencedTaskRunner* jni_task_runner,
-                            GetPropertyCallback get_property_callback);
+  ProxyConfigServiceAndroid(
+      const scoped_refptr<base::SequencedTaskRunner>& network_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& jni_task_runner,
+      GetPropertyCallback get_property_callback);
 
   // For tests.
   void ProxySettingsChanged();

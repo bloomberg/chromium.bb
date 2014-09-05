@@ -174,8 +174,8 @@ void CreateStaticProxyConfig(const std::string& host, int port,
 class ProxyConfigServiceAndroid::Delegate
     : public base::RefCountedThreadSafe<Delegate> {
  public:
-  Delegate(base::SequencedTaskRunner* network_task_runner,
-           base::SequencedTaskRunner* jni_task_runner,
+  Delegate(const scoped_refptr<base::SequencedTaskRunner>& network_task_runner,
+           const scoped_refptr<base::SequencedTaskRunner>& jni_task_runner,
            const GetPropertyCallback& get_property_callback)
       : jni_delegate_(this),
         network_task_runner_(network_task_runner),
@@ -319,8 +319,8 @@ class ProxyConfigServiceAndroid::Delegate
 };
 
 ProxyConfigServiceAndroid::ProxyConfigServiceAndroid(
-    base::SequencedTaskRunner* network_task_runner,
-    base::SequencedTaskRunner* jni_task_runner)
+    const scoped_refptr<base::SequencedTaskRunner>& network_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& jni_task_runner)
     : delegate_(new Delegate(
         network_task_runner, jni_task_runner, base::Bind(&GetJavaProperty))) {
   delegate_->SetupJNI();
@@ -350,8 +350,8 @@ ProxyConfigServiceAndroid::GetLatestProxyConfig(ProxyConfig* config) {
 }
 
 ProxyConfigServiceAndroid::ProxyConfigServiceAndroid(
-    base::SequencedTaskRunner* network_task_runner,
-    base::SequencedTaskRunner* jni_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& network_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& jni_task_runner,
     GetPropertyCallback get_property_callback)
     : delegate_(new Delegate(
         network_task_runner, jni_task_runner, get_property_callback)) {
