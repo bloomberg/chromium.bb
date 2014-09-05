@@ -452,6 +452,16 @@
             'browser/devtools/devtools_resources.gyp:devtools_resources',
           ],
         }],
+        ['OS=="android"', {
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)',
+              'files': [
+                '<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'
+              ],
+            },
+          ],
+        }],
       ],
       'actions': [
         {
