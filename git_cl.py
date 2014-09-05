@@ -2754,7 +2754,7 @@ def CMDformat(parser, args):
       sys.stdout.write(stdout)
   else:
     env = os.environ.copy()
-    env['PATH'] = os.path.dirname(clang_format_tool)
+    env['PATH'] = str(os.path.dirname(clang_format_tool))
     # diff_output is a patch to send to clang-format-diff.py
     try:
       script = clang_format.FindClangFormatScriptInChromiumTree(
