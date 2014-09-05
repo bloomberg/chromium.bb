@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_RENDERER_FREEZER_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_RENDERER_FREEZER_H_
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -26,9 +28,16 @@ class CHROMEOS_EXPORT RendererFreezer : public PowerManagerClient::Observer {
   virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE;
 
  private:
+  void OnReadyToSuspend();
+
   base::FilePath state_path_;
   bool enabled_;
   bool frozen_;
+
+  // Callback used to asynchronously report suspend readiness.
+  base::Closure suspend_readiness_callback_;
+
+  base::WeakPtrFactory<RendererFreezer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererFreezer);
 };

@@ -6,8 +6,10 @@
 
 #include <cstring>  // needed for strlen()
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace chromeos {
@@ -21,12 +23,14 @@ const char kThawCommand[] = "THAWED";
 }  // namespace
 
 void RendererFreezer::SuspendImminent() {
-  if (base::WriteFile(state_path_, kFreezeCommand, strlen(kFreezeCommand)) !=
-      static_cast<int>(strlen(kFreezeCommand))) {
-    PLOG(WARNING) << "Unable to freeze processes in the cgroup freezer.";
-  } else {
-    frozen_ = true;
-  }
+  suspend_readiness_callback_ = DBusThreadManager::Get()
+                                    ->GetPowerManagerClient()
+                                    ->GetSuspendReadinessCallback();
+
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&RendererFreezer::OnReadyToSuspend,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void RendererFreezer::SuspendDone(const base::TimeDelta& sleep_duration) {
@@ -44,11 +48,25 @@ void RendererFreezer::SuspendDone(const base::TimeDelta& sleep_duration) {
   frozen_ = false;
 }
 
+void RendererFreezer::OnReadyToSuspend() {
+  if (base::WriteFile(state_path_, kFreezeCommand, strlen(kFreezeCommand)) !=
+      static_cast<int>(strlen(kFreezeCommand))) {
+    PLOG(WARNING) << "Unable to freeze processes in the cgroup freezer.";
+  } else {
+    frozen_ = true;
+  }
+
+  DCHECK(!suspend_readiness_callback_.is_null());
+  suspend_readiness_callback_.Run();
+  suspend_readiness_callback_.Reset();
+}
+
 RendererFreezer::RendererFreezer()
     : state_path_(base::FilePath(kFreezerStatePath)),
       enabled_(base::PathExists(state_path_) &&
                base::PathIsWritable(state_path_)),
-      frozen_(false) {
+      frozen_(false),
+      weak_factory_(this) {
   if (enabled_) {
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
   } else {
