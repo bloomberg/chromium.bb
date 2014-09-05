@@ -2090,7 +2090,7 @@ def SendUpstream(parser, args, cmd):
     _, branch = cl.FetchUpstreamTuple(cl.GetBranch())
     print 'The commit is in the pending queue (%s).' % pending_ref
     print (
-        'It will show up on %s in ~1 min, once it gets Cr-Commit-Position '
+        'It will show up on %s in ~1 min, once it gets a Cr-Commit-Position '
         'footer.' % branch)
 
   hook = POSTUPSTREAM_HOOK_PATTERN % cmd
