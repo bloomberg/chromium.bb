@@ -43,12 +43,20 @@ void ForceFinchBookmarkExperimentIfNeeded(
     PrefService* local_state,
     BookmarksExperimentState bookmarks_experiment_state);
 
-// Returns true if enhanced bookmarks experiment is enabled.
-// Experiment could be enable from Chrome sync or from Finch.
+// Returns true if enhanced bookmarks experiment is running.
+// Experiment could run by Chrome sync or by Finch.
+// Note that this doesn't necessarily mean that enhanced bookmarks
+// is enabled, e.g., user can opt out using a flag.
 bool IsEnhancedBookmarksExperimentEnabled();
 
 #if defined(OS_ANDROID)
-bool IsEnhancedBookmarkImageFetchingEnabled();
+// Returns true if enhanced bookmark salient image prefetching is enabled.
+// This can be controlled by field trial.
+bool IsEnhancedBookmarkImageFetchingEnabled(const PrefService* user_prefs);
+
+// Returns true if enhanced bookmarks is enabled.
+bool IsEnhancedBookmarksEnabled(const PrefService* user_prefs);
+
 #endif
 
 // Returns true when flag enable-dom-distiller is set or enabled from Finch.

@@ -179,8 +179,8 @@ bool IsEnhancedBookmarksExperimentEnabled() {
 }
 
 #if defined(OS_ANDROID)
-bool IsEnhancedBookmarkImageFetchingEnabled() {
-  if (IsEnhancedBookmarksExperimentEnabled())
+bool IsEnhancedBookmarkImageFetchingEnabled(const PrefService* user_prefs) {
+  if (IsEnhancedBookmarksEnabled(user_prefs))
     return true;
 
   // Salient images are collected from visited bookmarked pages even if the
@@ -191,6 +191,14 @@ bool IsEnhancedBookmarkImageFetchingEnabled() {
   std::string disable_fetching = variations::GetVariationParamValue(
       kFieldTrialName, "DisableImagesFetching");
   return disable_fetching.empty();
+}
+
+bool IsEnhancedBookmarksEnabled(const PrefService* user_prefs) {
+  BookmarksExperimentState bookmarks_experiment_state =
+      static_cast<BookmarksExperimentState>(user_prefs->GetInteger(
+          sync_driver::prefs::kEnhancedBookmarksExperimentEnabled));
+  return bookmarks_experiment_state == BOOKMARKS_EXPERIMENT_ENABLED ||
+      bookmarks_experiment_state == BOOKMARKS_EXPERIMENT_ENABLED_FROM_FINCH;
 }
 #endif
 

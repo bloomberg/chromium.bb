@@ -1594,7 +1594,7 @@ const Experiment kExperiments[] = {
     "enhanced-bookmarks-experiment",
     IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_NAME,
     IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_DESCRIPTION,
-    kOsDesktop,
+    kOsDesktop | kOsAndroid,
     ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(
         switches::kEnhancedBookmarksExperiment, "1",
         switches::kEnhancedBookmarksExperiment, "0")
@@ -1603,14 +1603,14 @@ const Experiment kExperiments[] = {
     "manual-enhanced-bookmarks",
     IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_NAME,
     IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_DESCRIPTION,
-    kOsDesktop,
+    kOsDesktop | kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kManualEnhancedBookmarks)
   },
   {
     "manual-enhanced-bookmarks-optout",
     IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_NAME,
     IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_DESCRIPTION,
-    kOsDesktop,
+    kOsDesktop | kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kManualEnhancedBookmarksOptout)
   },
 #if defined(OS_ANDROID)

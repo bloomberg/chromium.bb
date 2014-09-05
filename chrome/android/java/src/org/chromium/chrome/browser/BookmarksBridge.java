@@ -344,6 +344,10 @@ public class BookmarksBridge {
         return nativeIsEditBookmarksEnabled();
     }
 
+    public static boolean isEnhancedBookmarksEnabled(Profile profile) {
+        return nativeIsEnhancedBookmarksFeatureEnabled(profile);
+    }
+
     @CalledByNative
     private void bookmarkModelLoaded() {
         mIsNativeBookmarkModelLoaded = true;
@@ -474,6 +478,7 @@ public class BookmarksBridge {
     private native void nativeMoveBookmark(long nativeBookmarksBridge, BookmarkId bookmarkId,
             BookmarkId newParentId, int index);
     private static native long nativeGetNativeBookmarkModel(Profile profile);
+    private static native boolean nativeIsEnhancedBookmarksFeatureEnabled(Profile profile);
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeBookmarksBridge);
     private static native boolean nativeIsEditBookmarksEnabled();

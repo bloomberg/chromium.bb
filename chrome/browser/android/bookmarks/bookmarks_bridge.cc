@@ -10,6 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
+#include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -124,9 +125,16 @@ static jlong Init(JNIEnv* env, jobject obj, jobject j_profile) {
 static jlong GetNativeBookmarkModel(JNIEnv* env,
                                     jclass caller,
                                     jobject j_profile) {
-  Profile *profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   BookmarkModel *bookmark_model_ = BookmarkModelFactory::GetForProfile(profile);
   return reinterpret_cast<jlong>(bookmark_model_);
+}
+
+static jboolean IsEnhancedBookmarksFeatureEnabled(JNIEnv* env,
+                                                  jclass clazz,
+                                                  jobject j_profile) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  return IsEnhancedBookmarksEnabled(profile->GetPrefs());
 }
 
 static bool IsEditBookmarksEnabled() {
