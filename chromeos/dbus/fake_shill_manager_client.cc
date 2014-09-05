@@ -778,10 +778,10 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     // Shill, "Provider.Type", etc keys are used, but when reading the values
     // "Provider" . "Type", etc keys are used. Here we are setting the values
     // that will be read (by the UI, tests, etc).
-    base::DictionaryValue provider_properties;
-    provider_properties.SetString(shill::kTypeProperty,
-                                  shill::kProviderOpenVpn);
-    provider_properties.SetString(shill::kHostProperty, "vpn_host");
+    base::DictionaryValue provider_properties_openvpn;
+    provider_properties_openvpn.SetString(shill::kTypeProperty,
+                                          shill::kProviderOpenVpn);
+    provider_properties_openvpn.SetString(shill::kHostProperty, "vpn_host");
 
     services->AddService("/service/vpn1",
                          "vpn1_guid",
@@ -790,8 +790,13 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                          state,
                          add_to_visible);
     services->SetServiceProperty(
-        "/service/vpn1", shill::kProviderProperty, provider_properties);
+        "/service/vpn1", shill::kProviderProperty, provider_properties_openvpn);
     profiles->AddService(shared_profile, "/service/vpn1");
+
+    base::DictionaryValue provider_properties_l2tp;
+    provider_properties_l2tp.SetString(shill::kTypeProperty,
+                                       shill::kProviderL2tpIpsec);
+    provider_properties_l2tp.SetString(shill::kHostProperty, "vpn_host2");
 
     services->AddService("/service/vpn2",
                          "vpn2_guid",
@@ -800,7 +805,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                          shill::kStateIdle,
                          add_to_visible);
     services->SetServiceProperty(
-        "/service/vpn2", shill::kProviderProperty, provider_properties);
+        "/service/vpn2", shill::kProviderProperty, provider_properties_l2tp);
   }
 
   // Additional device states

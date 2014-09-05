@@ -36,7 +36,7 @@ const FieldTranslationEntry eap_fields[] = {
     {NULL}};
 
 const FieldTranslationEntry ipsec_fields[] = {
-    // Ignored by Shill, not necessary to synchronize.
+    // This field is converted during translation, see onc_translator_*.
     // { ::onc::ipsec::kAuthenticationType, shill::kL2tpIpsecAuthenticationType
     // },
     { ::onc::ipsec::kGroup, shill::kL2tpIpsecTunnelGroupProperty},

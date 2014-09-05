@@ -385,7 +385,7 @@ cr.define('options.network', function() {
     decorate: function() {
       // TODO(kevers): Generalize method of setting default label.
       var policyManaged = false;
-      this.subtitle = loadTimeData.getString('OncStateNotConnected');
+      this.subtitle = loadTimeData.getString('OncConnectionStateNotConnected');
       var list = this.data_.networkList;
       var candidateURL = null;
       for (var i = 0; i < list.length; i++) {
@@ -955,11 +955,13 @@ cr.define('options.network', function() {
         chrome.send('networkCommand',
                     [type, path, 'options']);
       };
-      networkList.update({key: 'Ethernet',
-                          subtitle: loadTimeData.getString('OncStateConnected'),
-                          iconURL: ethernetConnection.iconURL,
-                          command: ethernetOptions,
-                          policyManaged: ethernetConnection.policyManaged});
+      networkList.update(
+          { key: 'Ethernet',
+            subtitle: loadTimeData.getString('OncConnectionStateConnected'),
+            iconURL: ethernetConnection.iconURL,
+            command: ethernetOptions,
+            policyManaged: ethernetConnection.policyManaged }
+          );
     } else {
       networkList.deleteItem('Ethernet');
     }

@@ -3500,7 +3500,7 @@ Press any key to continue exploring.
     Bluetooth
   </message>
   <message name="IDS_NETWORK_TYPE_CELLULAR" desc="The cellular network type.">
-    cellular
+    Cellular
   </message>
   <message name="IDS_NETWORK_TYPE_VPN" desc="The vpn network type.">
     VPN

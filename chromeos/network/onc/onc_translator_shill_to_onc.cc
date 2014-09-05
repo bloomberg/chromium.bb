@@ -248,6 +248,13 @@ void ShillToONCTranslator::TranslateIPsec() {
   CopyPropertiesAccordingToSignature();
   if (shill_dictionary_->HasKey(shill::kL2tpIpsecXauthUserProperty))
     TranslateAndAddNestedObject(::onc::ipsec::kXAUTH);
+  std::string client_cert_id;
+  shill_dictionary_->GetStringWithoutPathExpansion(
+      shill::kL2tpIpsecClientCertIdProperty, &client_cert_id);
+  std::string authentication_type =
+      client_cert_id.empty() ? ::onc::ipsec::kPSK : ::onc::ipsec::kCert;
+  onc_object_->SetStringWithoutPathExpansion(::onc::ipsec::kAuthenticationType,
+                                             authentication_type);
 }
 
 void ShillToONCTranslator::TranslateVPN() {

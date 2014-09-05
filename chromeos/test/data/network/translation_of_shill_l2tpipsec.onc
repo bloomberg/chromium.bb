@@ -5,11 +5,11 @@
     "Type": "L2TP-IPsec",
     "Host": "some.host.org",
     "IPsec": {
-      // These two fields are part of the ONC (and are required). However, they
-      // don't exist explicitly in the Shill dictionary. As there is no use-case
-      // yet, that requires to reconstruct these fields from a Shill dictionary,
-      // we don't require their translation.
-      // "AuthenticationType": "PSK",
+      "AuthenticationType": "PSK",
+      // This field is part of ONC (and is required). However, it does not
+      // exist explicitly in the Shill dictionary. As there is no use-case yet
+      // that requires reconstructing this field from a Shill dictionary, we
+      // don't translate it.
       // "IKEVersion": 1,
       "PSK": "some_preshared_key",
       "SaveCredentials": true,

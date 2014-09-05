@@ -48,11 +48,22 @@ StringResource kStringResources[] = {
     {"dataRoamingDisableToggleTooltip",
      IDS_OPTIONS_SETTINGS_TOGGLE_DATA_ROAMING_RESTRICTION},
 
-    // ONC network states.
-    {"OncStateNotConnected", IDS_CHROMEOS_NETWORK_STATE_NOT_CONNECTED},
-    {"OncStateConnecting", IDS_CHROMEOS_NETWORK_STATE_CONNECTING},
-    {"OncStateConnected", IDS_CHROMEOS_NETWORK_STATE_CONNECTED},
-    {"OncStateUnknown", IDS_CHROMEOS_NETWORK_STATE_UNKNOWN},
+    // ONC network states. Format is 'Onc' + key + value.
+    // Note: '.' must be replaced with '-', e.g. VPN.Type -> OncVPN-Type
+    {"OncConnectionStateConnected", IDS_CHROMEOS_NETWORK_STATE_CONNECTED},
+    {"OncConnectionStateConnecting", IDS_CHROMEOS_NETWORK_STATE_CONNECTING},
+    {"OncConnectionStateNotConnected",
+     IDS_CHROMEOS_NETWORK_STATE_NOT_CONNECTED},
+    {"OncConnectionStateUnknown", IDS_CHROMEOS_NETWORK_STATE_UNKNOWN},
+    {"OncTypeCellular", IDS_NETWORK_TYPE_CELLULAR},
+    {"OncTypeEthernet", IDS_NETWORK_TYPE_ETHERNET},
+    {"OncTypeWiFi", IDS_NETWORK_TYPE_WIFI},
+    {"OncTypeWimax", IDS_NETWORK_TYPE_WIMAX},
+    {"OncVPN-TypeL2TP-IPsecCert",
+     IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_USER_CERT},
+    {"OncVPN-TypeL2TP-IPsecPSK",
+     IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_PSK},
+    {"OncVPN-TypeOpenVPN", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_OPEN_VPN},
 
     // Internet details dialog.
     {"managedNetwork", IDS_OPTIONS_SETTINGS_MANAGED_NETWORK},
@@ -188,26 +199,6 @@ std::string RoamingStateString(const std::string& roaming_state) {
     id = IDS_CHROMEOS_NETWORK_ROAMING_STATE_ROAMING;
   else
     id = IDS_CHROMEOS_NETWORK_ROAMING_STATE_UNKNOWN;
-  return l10n_util::GetStringUTF8(id);
-}
-
-std::string ProviderTypeString(
-    const std::string& provider_type,
-    const base::DictionaryValue& provider_properties) {
-  int id;
-  if (provider_type == shill::kProviderL2tpIpsec) {
-    std::string client_cert_id;
-    provider_properties.GetStringWithoutPathExpansion(
-        shill::kL2tpIpsecClientCertIdProperty, &client_cert_id);
-    if (client_cert_id.empty())
-      id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_PSK;
-    else
-      id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_USER_CERT;
-  } else if (provider_type == shill::kProviderOpenVpn) {
-    id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_OPEN_VPN;
-  } else {
-    id = IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN;
-  }
   return l10n_util::GetStringUTF8(id);
 }
 

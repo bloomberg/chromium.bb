@@ -63,10 +63,6 @@ namespace options {
 
 namespace {
 
-// The key in a Managed Value dictionary for translated values.
-// TODO(stevenjb): Consider making this part of the ONC spec.
-const char kTranslatedKey[] = "Translated";
-
 // Keys for the network description dictionary passed to the web ui. Make sure
 // to keep the strings in sync with what the JavaScript side uses.
 const char kNetworkInfoKeyIconURL[] = "iconURL";
@@ -389,20 +385,6 @@ void SetManagedValueDictionary(const std::string& guid,
                               settings_dict);
 }
 
-// Creates a GetManagedProperties style dictionary with an Active value and
-// a Translated value, and adds it to |settings|.
-// Note(stevenjb): This is bridge code until we use GetManagedProperties to
-// retrieve Shill properties and include Translated values.
-void SetTranslatedDictionary(const char* settings_dict_key,
-                             const std::string& value,
-                             const std::string& translated_value,
-                             base::DictionaryValue* settings_dict) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  settings_dict->Set(settings_dict_key, dict);
-  dict->SetString(::onc::kAugmentationActiveSetting, value);
-  dict->SetString(kTranslatedKey, translated_value);
-}
-
 // Fills |dictionary| with the configuration details of |vpn|. |onc| is required
 // for augmenting the policy-managed information.
 void PopulateVPNDetails(const NetworkState* vpn,
@@ -416,8 +398,12 @@ void PopulateVPNDetails(const NetworkState* vpn,
     LOG(ERROR) << "No provider properties for VPN: " << vpn->path();
     return;
   }
-  base::DictionaryValue* vpn_dictionary = new base::DictionaryValue;
-  dictionary->Set(::onc::network_config::kVPN, vpn_dictionary);
+  base::DictionaryValue* vpn_dictionary;
+  if (!dictionary->GetDictionary(
+          ::onc::network_config::kVPN, &vpn_dictionary)) {
+    vpn_dictionary = new base::DictionaryValue;
+    dictionary->Set(::onc::network_config::kVPN, vpn_dictionary);
+  }
 
   std::string shill_provider_type;
   if (!shill_provider_properties->GetStringWithoutPathExpansion(
@@ -428,12 +414,7 @@ void PopulateVPNDetails(const NetworkState* vpn,
   std::string onc_provider_type;
   onc::TranslateStringToONC(
       onc::kVPNTypeTable, shill_provider_type, &onc_provider_type);
-  SetTranslatedDictionary(
-      ::onc::vpn::kType,
-      onc_provider_type,
-      internet_options_strings::ProviderTypeString(shill_provider_type,
-                                                   *shill_provider_properties),
-      vpn_dictionary);
+  vpn_dictionary->SetString(::onc::vpn::kType, onc_provider_type);
 
   std::string provider_type_key;
   std::string username;
