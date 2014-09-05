@@ -80,15 +80,18 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/user_agent.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/extension_set.h"
 #include "net/base/escape.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/metro_pin_tab_helper_win.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #endif
 
 #if defined(ENABLE_PRINTING)
@@ -132,6 +135,7 @@ bool GetBookmarkOverrideCommand(
     const extensions::Extension** extension,
     extensions::Command* command,
     extensions::CommandService::ExtensionCommandType* command_type) {
+#if defined(ENABLE_EXTENSIONS)
   DCHECK(extension);
   DCHECK(command);
   DCHECK(command_type);
@@ -160,6 +164,7 @@ bool GetBookmarkOverrideCommand(
       return true;
     }
   }
+#endif
 
   return false;
 }
@@ -466,6 +471,7 @@ void Home(Browser* browser, WindowOpenDisposition disposition) {
 
   GURL url = browser->profile()->GetHomePage();
 
+#if defined(ENABLE_EXTENSIONS)
   // Streamlined hosted apps should return to their launch page when the home
   // button is pressed.
   if (browser->is_app()) {
@@ -479,6 +485,7 @@ void Home(Browser* browser, WindowOpenDisposition disposition) {
 
     url = extensions::AppLaunchInfo::GetLaunchWebURL(extension);
   }
+#endif
 
   OpenURLParams params(
       url, Referrer(), disposition,
@@ -526,6 +533,7 @@ void OpenCurrentURL(Browser* browser) {
       TabStripModel::ADD_FORCE_INDEX | TabStripModel::ADD_INHERIT_OPENER;
   Navigate(&params);
 
+#if defined(ENABLE_EXTENSIONS)
   DCHECK(extensions::ExtensionSystem::Get(
       browser->profile())->extension_service());
   const extensions::Extension* extension =
@@ -536,6 +544,7 @@ void OpenCurrentURL(Browser* browser) {
         extension_misc::APP_LAUNCH_OMNIBOX_LOCATION,
         extension->GetType());
   }
+#endif
 }
 
 void Stop(Browser* browser) {

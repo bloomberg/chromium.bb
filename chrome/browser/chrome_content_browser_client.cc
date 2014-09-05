@@ -66,7 +66,6 @@
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
 #include "chrome/browser/signin/principals_message_filter.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
-#include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/speech/tts_message_filter.h"
 #include "chrome/browser/ssl/ssl_add_certificate.h"
@@ -119,14 +118,6 @@
 #include "content/public/common/show_desktop_notification_params.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/common/constants.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/extension_set.h"
-#include "extensions/common/manifest_handlers/shared_module_info.h"
-#include "extensions/common/permissions/permissions_data.h"
-#include "extensions/common/permissions/socket_permission.h"
-#include "extensions/common/switches.h"
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
@@ -223,6 +214,8 @@
 #include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
 #include "extensions/browser/guest_view/guest_view_constants.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
@@ -230,7 +223,14 @@
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/suggest_permission_util.h"
+#include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/common/manifest_handlers/shared_module_info.h"
+#include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/permissions/socket_permission.h"
+#include "extensions/common/switches.h"
 #endif
 
 #if defined(ENABLE_SPELLCHECK)
@@ -254,10 +254,6 @@ using content::ResourceType;
 using content::SiteInstance;
 using content::WebContents;
 using content::WebPreferences;
-using extensions::APIPermission;
-using extensions::Extension;
-using extensions::InfoMap;
-using extensions::Manifest;
 using message_center::NotifierId;
 
 #if defined(OS_POSIX)
@@ -265,7 +261,11 @@ using content::FileDescriptorInfo;
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
+using extensions::APIPermission;
 using extensions::ChromeContentBrowserClientExtensionsPart;
+using extensions::Extension;
+using extensions::InfoMap;
+using extensions::Manifest;
 #endif
 
 namespace {
@@ -1328,6 +1328,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       autofill::switches::kDisablePasswordGeneration,
       autofill::switches::kEnablePasswordGeneration,
       autofill::switches::kLocalHeuristicsOnlyForPasswordGeneration,
+#if defined(ENABLE_EXTENSIONS)
       extensions::switches::kAllowHTTPBackgroundPage,
       extensions::switches::kAllowLegacyExtensionManifests,
       extensions::switches::kEnableAppView,
@@ -1337,6 +1338,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       extensions::switches::kEnableScriptsRequireAction,
       extensions::switches::kExtensionsOnChromeURLs,
       extensions::switches::kWhitelistedExtensionID,
+#endif
       switches::kAppsCheckoutURL,
       switches::kAppsGalleryURL,
       switches::kCloudPrintURL,
@@ -1368,6 +1370,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                    arraysize(kSwitchNames));
   } else if (process_type == switches::kUtilityProcess) {
+#if defined(ENABLE_EXTENSIONS)
     static const char* const kSwitchNames[] = {
       extensions::switches::kAllowHTTPBackgroundPage,
       extensions::switches::kEnableExperimentalExtensionApis,
@@ -1377,6 +1380,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                    arraysize(kSwitchNames));
+#endif
   } else if (process_type == switches::kPluginProcess) {
 #if defined(OS_CHROMEOS)
     static const char* const kSwitchNames[] = {
