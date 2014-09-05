@@ -27,7 +27,7 @@ ActivityManagerImpl::ActivityManagerImpl() {
 
 ActivityManagerImpl::~ActivityManagerImpl() {
   while (!activities_.empty())
-    delete activities_.front();
+    Activity::Delete(activities_.front());
 
   CHECK_EQ(this, instance);
   instance = NULL;

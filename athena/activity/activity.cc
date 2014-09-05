@@ -8,8 +8,10 @@
 
 namespace athena {
 
-Activity::~Activity() {
-  ActivityManager::Get()->RemoveActivity(this);
+// static
+void Activity::Delete(Activity* activity) {
+  ActivityManager::Get()->RemoveActivity(activity);
+  delete activity;
 }
 
 }  // namespace athena

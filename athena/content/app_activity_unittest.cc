@@ -8,6 +8,7 @@
 #include "athena/content/app_activity_registry.h"
 #include "athena/content/public/app_registry.h"
 #include "athena/extensions/public/extensions_delegate.h"
+#include "athena/resource_manager/public/resource_manager.h"
 #include "athena/test/athena_test_base.h"
 #include "extensions/common/extension_set.h"
 #include "ui/aura/window.h"
@@ -154,8 +155,8 @@ class AppActivityTest : public AthenaTestBase {
     return activity;
   }
 
-  void CloseActivity(Activity* activity) {
-    delete activity;
+  void DeleteActivity(Activity* activity) {
+    Activity::Delete(activity);
     RunAllPendingInMessageLoop();
   }
 
@@ -169,6 +170,13 @@ class AppActivityTest : public AthenaTestBase {
         return i;
     }
     return -1;
+  }
+
+  // To avoid interference of the ResourceManager in these AppActivity
+  // framework tests, we disable the ResourceManager for some tests.
+  // Every use/interference of this function gets explained.
+  void DisableResourceManager() {
+    ResourceManager::Get()->Pause(true);
   }
 
  protected:
@@ -191,7 +199,7 @@ TEST_F(AppActivityTest, OneAppActivity) {
     EXPECT_EQ(1, app_activity->app_activity_registry()->NumberOfActivities());
     EXPECT_EQ(AppRegistry::Get()->GetAppActivityRegistry(kDummyApp1, NULL),
               app_activity->app_activity_registry());
-    CloseActivity(app_activity);
+    DeleteActivity(app_activity);
   }
   EXPECT_EQ(0, AppRegistry::Get()->NumberOfApplications());
   EXPECT_EQ(0, test_extensions_delegate()->unload_called());
@@ -209,8 +217,8 @@ TEST_F(AppActivityTest, TwoAppsWithOneActivityEach) {
     EXPECT_EQ(2, AppRegistry::Get()->NumberOfApplications());
     EXPECT_EQ(1, app_activity2->app_activity_registry()->NumberOfActivities());
     EXPECT_EQ(1, app_activity1->app_activity_registry()->NumberOfActivities());
-    CloseActivity(app_activity1);
-    CloseActivity(app_activity2);
+    DeleteActivity(app_activity1);
+    DeleteActivity(app_activity2);
   }
   EXPECT_EQ(0, AppRegistry::Get()->NumberOfApplications());
   EXPECT_EQ(0, test_extensions_delegate()->unload_called());
@@ -227,10 +235,10 @@ TEST_F(AppActivityTest, TwoAppActivities) {
     EXPECT_EQ(2, app_activity1->app_activity_registry()->NumberOfActivities());
     EXPECT_EQ(app_activity1->app_activity_registry(),
               app_activity2->app_activity_registry());
-    CloseActivity(app_activity1);
+    DeleteActivity(app_activity1);
     EXPECT_EQ(1, AppRegistry::Get()->NumberOfApplications());
     EXPECT_EQ(1, app_activity2->app_activity_registry()->NumberOfActivities());
-    CloseActivity(app_activity2);
+    DeleteActivity(app_activity2);
   }
   EXPECT_EQ(0, AppRegistry::Get()->NumberOfApplications());
   {
@@ -240,10 +248,10 @@ TEST_F(AppActivityTest, TwoAppActivities) {
     EXPECT_EQ(2, app_activity1->app_activity_registry()->NumberOfActivities());
     EXPECT_EQ(app_activity1->app_activity_registry(),
               app_activity2->app_activity_registry());
-    CloseActivity(app_activity2);
+    DeleteActivity(app_activity2);
     EXPECT_EQ(1, AppRegistry::Get()->NumberOfApplications());
     EXPECT_EQ(1, app_activity1->app_activity_registry()->NumberOfActivities());
-    CloseActivity(app_activity1);
+    DeleteActivity(app_activity1);
   }
   EXPECT_EQ(0, AppRegistry::Get()->NumberOfApplications());
   EXPECT_EQ(0, test_extensions_delegate()->unload_called());
@@ -252,6 +260,11 @@ TEST_F(AppActivityTest, TwoAppActivities) {
 
 // Test unload and the creation of the proxy, then "closing the activity".
 TEST_F(AppActivityTest, TestUnloadFollowedByClose) {
+  // We do not want the ResourceManager to interfere with this test. In this
+  // case it would (dependent on its current internal implementation)
+  // automatically re-load the unloaded activity if it is in an "active"
+  // position.
+  DisableResourceManager();
   EXPECT_EQ(0, AppRegistry::Get()->NumberOfApplications());
 
   TestAppActivity* app_activity = CreateAppActivity(kDummyApp1);
@@ -278,14 +291,14 @@ TEST_F(AppActivityTest, TestUnloadFollowedByClose) {
   ASSERT_EQ(app_activity_registry,
             AppRegistry::Get()->GetAppActivityRegistry(kDummyApp1, NULL));
   EXPECT_EQ(0, app_activity_registry->NumberOfActivities());
-  Activity* activity_proxy =
-      app_activity_registry->unloaded_activity_proxy_for_test();
+  Activity* activity_proxy = app_activity_registry->unloaded_activity_proxy();
   ASSERT_TRUE(activity_proxy);
   EXPECT_NE(app_activity, activity_proxy);
   EXPECT_EQ(Activity::ACTIVITY_UNLOADED, activity_proxy->GetCurrentState());
+  EXPECT_EQ(0, test_extensions_delegate()->restart_called());
 
   // Close the proxy object and make sure that nothing bad happens.
-  CloseActivity(activity_proxy);
+  DeleteActivity(activity_proxy);
 
   EXPECT_EQ(0, AppRegistry::Get()->NumberOfApplications());
   EXPECT_EQ(1, test_extensions_delegate()->unload_called());
@@ -312,17 +325,17 @@ TEST_F(AppActivityTest, TestUnloadProxyLocation) {
   app_activity2b->SetCurrentState(Activity::ACTIVITY_UNLOADED);
   app_activity2a->app_activity_registry()->Unload();
   EXPECT_EQ(0, app_activity_registry->NumberOfActivities());
-  Activity* activity_proxy =
-      app_activity_registry->unloaded_activity_proxy_for_test();
+  Activity* activity_proxy = app_activity_registry->unloaded_activity_proxy();
   RunAllPendingInMessageLoop();
 
   EXPECT_EQ(2, GetActivityPosition(app_activity1b));
   EXPECT_EQ(1, GetActivityPosition(activity_proxy));
   EXPECT_EQ(0, GetActivityPosition(app_activity1a));
+  EXPECT_EQ(0, test_extensions_delegate()->restart_called());
 
-  CloseActivity(activity_proxy);
-  CloseActivity(app_activity1b);
-  CloseActivity(app_activity1a);
+  DeleteActivity(activity_proxy);
+  DeleteActivity(app_activity1b);
+  DeleteActivity(app_activity1a);
 }
 
 // Test that an unload with multiple activities of the same app will only unload
@@ -361,8 +374,7 @@ TEST_F(AppActivityTest, TestMultipleActivityUnloadLock) {
   ASSERT_EQ(app_activity_registry,
             AppRegistry::Get()->GetAppActivityRegistry(kDummyApp1, NULL));
   EXPECT_EQ(0, app_activity_registry->NumberOfActivities());
-  Activity* activity_proxy =
-      app_activity_registry->unloaded_activity_proxy_for_test();
+  Activity* activity_proxy = app_activity_registry->unloaded_activity_proxy();
   ASSERT_TRUE(activity_proxy);
   EXPECT_NE(app_activity1, activity_proxy);
   EXPECT_NE(app_activity2, activity_proxy);
@@ -370,7 +382,7 @@ TEST_F(AppActivityTest, TestMultipleActivityUnloadLock) {
   EXPECT_EQ(Activity::ACTIVITY_UNLOADED, activity_proxy->GetCurrentState());
 
   // Close the proxy object and make sure that nothing bad happens.
-  CloseActivity(activity_proxy);
+  DeleteActivity(activity_proxy);
 
   EXPECT_EQ(0, AppRegistry::Get()->NumberOfApplications());
   EXPECT_EQ(1, test_extensions_delegate()->unload_called());
@@ -379,6 +391,11 @@ TEST_F(AppActivityTest, TestMultipleActivityUnloadLock) {
 
 // Test that activating the proxy will reload the application.
 TEST_F(AppActivityTest, TestUnloadWithReload) {
+  // We do not want the ResourceManager to interfere with this test. In this
+  // case it would (dependent on its current internal implementation)
+  // automatically re-load the unloaded activity if it is in an "active"
+  // position.
+  DisableResourceManager();
   EXPECT_EQ(0, AppRegistry::Get()->NumberOfApplications());
 
   TestAppActivity* app_activity = CreateAppActivity(kDummyApp1);
@@ -392,13 +409,15 @@ TEST_F(AppActivityTest, TestUnloadWithReload) {
 
   // Try to activate the activity again. This will force the application to
   // reload.
-  Activity* activity_proxy =
-      app_activity_registry->unloaded_activity_proxy_for_test();
+  Activity* activity_proxy = app_activity_registry->unloaded_activity_proxy();
   activity_proxy->SetCurrentState(Activity::ACTIVITY_VISIBLE);
   EXPECT_EQ(1, test_extensions_delegate()->restart_called());
 
   // However - the restart in this test framework does not really restart and
-  // all objects should be gone now.
+  // all objects should be still there..
+  EXPECT_EQ(1, AppRegistry::Get()->NumberOfApplications());
+  EXPECT_TRUE(app_activity_registry->unloaded_activity_proxy());
+  Activity::Delete(app_activity_registry->unloaded_activity_proxy());
   EXPECT_EQ(0, AppRegistry::Get()->NumberOfApplications());
 }
 

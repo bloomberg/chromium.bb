@@ -32,8 +32,27 @@ class ATHENA_EXPORT ResourceManager {
   virtual void SetMemoryPressureAndStopMonitoring(
       MemoryPressureObserver::MemoryPressure pressure) = 0;
 
+  // Suspend the resource manager temporarily if |pause| is set. This can be
+  // called before e.g. re-arranging the order of activities. Once called with
+  // |pause| == false any queued operations will be performed and the resource
+  // manager will continue its work.
+  virtual void Pause(bool pause) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ResourceManager);
+};
+
+// Use this scoped object to pause/restart the resource manager.
+class ScopedPauseResourceManager {
+ public:
+  ScopedPauseResourceManager() {
+    ResourceManager::Get()->Pause(true);
+  }
+  ~ScopedPauseResourceManager() {
+    ResourceManager::Get()->Pause(false);
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedPauseResourceManager);
 };
 
 }  // namespace athena

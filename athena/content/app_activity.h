@@ -28,7 +28,6 @@ class AppActivity : public Activity,
                     public content::WebContentsObserver {
  public:
   explicit AppActivity(const std::string& app_id);
-  virtual ~AppActivity();
 
   // Activity:
   virtual athena::ActivityViewModel* GetActivityViewModel() OVERRIDE;
@@ -48,18 +47,31 @@ class AppActivity : public Activity,
   virtual gfx::ImageSkia GetOverviewModeImage() OVERRIDE;
 
  protected:
-  // content::WebContentsObserver:
+  virtual ~AppActivity();
+
+ // content::WebContentsObserver:
   virtual void TitleWasSet(content::NavigationEntry* entry,
                            bool explicit_set) OVERRIDE;
   virtual void DidUpdateFaviconURL(
       const std::vector<content::FaviconURL>& candidates) OVERRIDE;
 
- protected:
   virtual content::WebContents* GetWebContents() = 0;
 
  private:
   // Register this activity with its application.
   void RegisterActivity();
+
+  // Make the content visible. This call should only be paired with
+  // MakeInvisible. Note: Upon start the content is visible.
+  // TODO(skuhne): If this can be combined with web_activity, move this into a
+  // separate class.
+  void MakeVisible();
+
+  // Make the content invisible. This call should only be paired with
+  // MakeVisible.
+  // TODO(skuhne): If this can be combined with web_activity, move this into a
+  // separate class.
+  void MakeInvisible();
 
   const std::string app_id_;
 

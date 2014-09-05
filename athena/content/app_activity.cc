@@ -22,30 +22,24 @@ AppActivity::AppActivity(const std::string& app_id)
       app_activity_registry_(NULL) {
 }
 
-AppActivity::~AppActivity() {
-  // If this activity is registered, we unregister it now.
-  if (app_activity_registry_)
-    app_activity_registry_->UnregisterAppActivity(this);
-}
-
 ActivityViewModel* AppActivity::GetActivityViewModel() {
   return this;
 }
 
 void AppActivity::SetCurrentState(Activity::ActivityState state) {
-  ActivityState current_state = state;
+  DCHECK_NE(state, current_state_);
+  ActivityState current_state = current_state_;
   // Remember the last requested state now so that a call to GetCurrentState()
   // returns the new state.
   current_state_ = state;
 
   switch (state) {
     case ACTIVITY_VISIBLE:
-      // Fall through (for the moment).
+      MakeVisible();
+      return;
     case ACTIVITY_INVISIBLE:
-      // By clearing the overview mode image we allow the content to be shown.
-      overview_mode_image_ = gfx::ImageSkia();
-      // Note: A reload from the unloaded state will be performed through the
-      // |AppActivityProxy| object and no further action isn't necessary here.
+      if (current_state == ACTIVITY_VISIBLE)
+        MakeInvisible();
       break;
     case ACTIVITY_BACKGROUND_LOW_PRIORITY:
       DCHECK(ACTIVITY_VISIBLE == current_state ||
@@ -68,25 +62,14 @@ void AppActivity::SetCurrentState(Activity::ActivityState state) {
 }
 
 Activity::ActivityState AppActivity::GetCurrentState() {
-  if (!web_view_) {
-    DCHECK_EQ(ACTIVITY_UNLOADED, current_state_);
-    return ACTIVITY_UNLOADED;
-  }
-  // TODO(skuhne): This should be controlled by an observer and should not
-  // reside here.
-  if (IsVisible() && current_state_ != ACTIVITY_VISIBLE)
-    SetCurrentState(ACTIVITY_VISIBLE);
-  // Note: If the activity is not visible it does not necessarily mean that it
-  // does not have GPU compositor resources (yet).
+  DCHECK(web_view_ || ACTIVITY_UNLOADED == current_state_);
   return current_state_;
 }
 
 bool AppActivity::IsVisible() {
   return web_view_ &&
-         web_view_->IsDrawn() &&
-         current_state_ != ACTIVITY_UNLOADED &&
-         GetWindow() &&
-         GetWindow()->IsVisible();
+         web_view_->visible() &&
+         current_state_ != ACTIVITY_UNLOADED;
 }
 
 Activity::ActivityMediaState AppActivity::GetMediaState() {
@@ -101,6 +84,18 @@ aura::Window* AppActivity::GetWindow() {
 }
 
 void AppActivity::Init() {
+  DCHECK(app_activity_registry_);
+  Activity* app_proxy = app_activity_registry_->unloaded_activity_proxy();
+  if (app_proxy) {
+    // TODO(skuhne): This should call the WindowListProvider to re-arrange.
+    // Note: At this time the |AppActivity| did not get registered to the
+    // |ResourceManager| - so we can move it around if needed.
+    aura::Window* proxy_window = app_proxy->GetWindow();
+    proxy_window->parent()->StackChildBelow(GetWindow(), proxy_window);
+    Activity::Delete(app_proxy);
+    // With the removal the object, the proxy should be deleted.
+    DCHECK(!app_activity_registry_->unloaded_activity_proxy());
+  }
 }
 
 SkColor AppActivity::GetRepresentativeColor() const {
@@ -122,9 +117,16 @@ views::View* AppActivity::GetContentsView() {
     content::WebContents* web_contents = GetWebContents();
     web_view_ = new views::WebView(web_contents->GetBrowserContext());
     web_view_->SetWebContents(web_contents);
-    SetCurrentState(ACTIVITY_INVISIBLE);
+    // Make sure the content gets properly shown.
+    if (current_state_ == ACTIVITY_VISIBLE) {
+      MakeVisible();
+    } else if (current_state_ == ACTIVITY_INVISIBLE) {
+      MakeInvisible();
+    } else {
+      // If not previously specified, we change the state now to invisible..
+      SetCurrentState(ACTIVITY_INVISIBLE);
+    }
     Observe(web_contents);
-    overview_mode_image_ = gfx::ImageSkia();
     RegisterActivity();
   }
   return web_view_;
@@ -136,6 +138,12 @@ void AppActivity::CreateOverviewModeImage() {
 
 gfx::ImageSkia AppActivity::GetOverviewModeImage() {
   return overview_mode_image_;
+}
+
+AppActivity::~AppActivity() {
+  // If this activity is registered, we unregister it now.
+  if (app_activity_registry_)
+    app_activity_registry_->UnregisterAppActivity(this);
 }
 
 void AppActivity::TitleWasSet(content::NavigationEntry* entry,
@@ -160,6 +168,40 @@ void AppActivity::RegisterActivity() {
   DCHECK(app_activity_registry_);
   // Register the activity.
   app_activity_registry_->RegisterAppActivity(this);
+}
+
+void AppActivity::MakeVisible() {
+  // TODO(skuhne): Once we know how to handle the Overview mode, this has to
+  // be moved into an ActivityContentController which is used by all activities.
+  // Make the content visible.
+  // TODO(skuhne): If this can be combined with web_activity, move this into a
+  // separate class.
+  web_view_->SetVisible(true);
+  web_view_->GetWebContents()->GetNativeView()->Show();
+
+  // Remove our proxy image.
+  // TODO(skuhne): Once we have figured out how to do overview mode that code
+  // needs to go here.
+  overview_mode_image_ = gfx::ImageSkia();
+}
+
+void AppActivity::MakeInvisible() {
+  // TODO(skuhne): Once we know how to handle the Overview mode, this has to
+  // be moved into an ActivityContentController which is used by all activities.
+  // TODO(skuhne): If this can be combined with web_activity, move this into a
+  // separate class.
+  DCHECK(web_view_->visible());
+  // Create our proxy image.
+  if (current_state_ == ACTIVITY_VISIBLE) {
+    // Create a proxy image of the current visible content.
+    // TODO(skuhne): Do this once we figure out how to do overview mode.
+    overview_mode_image_ = gfx::ImageSkia();
+  }
+  // Now we can hide this.
+  // Note: This might have to be done asynchronously after the readback took
+  // place.
+  web_view_->SetVisible(false);
+  web_view_->GetWebContents()->GetNativeView()->Hide();
 }
 
 }  // namespace athena

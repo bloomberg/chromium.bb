@@ -25,7 +25,10 @@ class ATHENA_EXPORT ActivityViewModel {
  public:
   virtual ~ActivityViewModel() {}
 
-  // Called after the view model is attached to the widget/window tree.
+  // Called after the view model is attached to the widget/window tree and
+  // before it gets registered to the ActivityManager and the ResourceManager.
+  // At this time the Activity can also be moved to a different place in the
+  // Activity history.
   virtual void Init() = 0;
 
   // Returns a color most representative of this activity.

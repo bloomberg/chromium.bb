@@ -16,9 +16,9 @@ typedef test::AthenaTestBase ActivityManagerTest;
 TEST_F(ActivityManagerTest, Basic) {
   ActivityManagerImpl* activity_manager =
       static_cast<ActivityManagerImpl*>(ActivityManager::Get());
-  scoped_ptr<Activity> activity1(
-      athena::ActivityFactory::Get()->CreateWebActivity(NULL, GURL()));
-  activity_manager->AddActivity(activity1.get());
+  Activity* activity1 = athena::ActivityFactory::Get()->CreateWebActivity(
+      NULL, GURL());
+  activity_manager->AddActivity(activity1);
   EXPECT_EQ(1, activity_manager->num_activities());
 
   Activity* activity2 =
@@ -26,7 +26,7 @@ TEST_F(ActivityManagerTest, Basic) {
   activity_manager->AddActivity(activity2);
   EXPECT_EQ(2, activity_manager->num_activities());
 
-  activity1.reset();
+  Activity::Delete(activity1);
   EXPECT_EQ(1, activity_manager->num_activities());
 
   // Deleting the activity's window should delete the activity itself.

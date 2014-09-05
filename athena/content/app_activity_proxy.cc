@@ -5,20 +5,23 @@
 #include "athena/content/app_activity_proxy.h"
 
 #include "athena/content/app_activity_registry.h"
+#include "ui/aura/window.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace athena {
 
-AppActivityProxy::AppActivityProxy(ActivityViewModel* view_model,
+AppActivityProxy::AppActivityProxy(Activity* replaced_activity,
                                    AppActivityRegistry* creator) :
     app_activity_registry_(creator),
-    title_(view_model->GetTitle()),
-    image_(view_model->GetOverviewModeImage()),
-    color_(view_model->GetRepresentativeColor()),
+    title_(replaced_activity->GetActivityViewModel()->GetTitle()),
+    image_(replaced_activity->GetActivityViewModel()->GetOverviewModeImage()),
+    color_(replaced_activity->GetActivityViewModel()->GetRepresentativeColor()),
+    replaced_activity_(replaced_activity),
     // TODO(skuhne): We probably need to do something better with the view
-    // (e.g. showing the image).
-    view_(new views::View()) {}
+    // (e.g. showing the passed image / layer).
+    view_(new views::View()) {
+}
 
 AppActivityProxy::~AppActivityProxy() {
   app_activity_registry_->ProxyDestroyed(this);
@@ -29,9 +32,8 @@ ActivityViewModel* AppActivityProxy::GetActivityViewModel() {
 }
 
 void AppActivityProxy::SetCurrentState(ActivityState state) {
-  // We ignore all calls which try to re-load the application at a lower than
-  // running invisible state.
-  if (state != ACTIVITY_VISIBLE && state != ACTIVITY_INVISIBLE)
+  // We only restart the application when we are switching to visible.
+  if (state != ACTIVITY_VISIBLE)
     return;
   app_activity_registry_->RestartApplication(this);
   // Note: This object is now destroyed.
@@ -55,6 +57,13 @@ aura::Window* AppActivityProxy::GetWindow() {
 }
 
 void AppActivityProxy::Init() {
+  DCHECK(replaced_activity_);
+  // TODO(skuhne): This should call the WindowListProvider to re-arrange.
+  // At this point we can move the Activity to its proper Activity location.
+  aura::Window* relative_window = replaced_activity_->GetWindow();
+  relative_window->parent()->StackChildBelow(GetWindow(), relative_window);
+  // We moved.
+  replaced_activity_ = NULL;
 }
 
 SkColor AppActivityProxy::GetRepresentativeColor() const {

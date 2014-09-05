@@ -9,6 +9,7 @@
 #include "athena/content/app_activity_proxy.h"
 #include "athena/content/public/app_registry.h"
 #include "athena/extensions/public/extensions_delegate.h"
+#include "athena/resource_manager/public/resource_manager.h"
 #include "ui/aura/window.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -30,13 +31,6 @@ AppActivityRegistry::~AppActivityRegistry() {
 }
 
 void AppActivityRegistry::RegisterAppActivity(AppActivity* app_activity) {
-  if (unloaded_activity_proxy_) {
-    // Since we add an application window, the activity isn't unloaded anymore.
-    ActivityManager::Get()->RemoveActivity(unloaded_activity_proxy_);
-    // With the removal the object should have been deleted and we should have
-    // been informed of the object's destruction.
-    DCHECK(!unloaded_activity_proxy_);
-  }
   // The same window should never be added twice.
   CHECK(std::find(activity_list_.begin(),
                   activity_list_.end(),
@@ -69,7 +63,6 @@ AppActivity* AppActivityRegistry::GetAppActivityAt(size_t index) {
 void AppActivityRegistry::Unload() {
   CHECK(!unloaded_activity_proxy_);
   DCHECK(!activity_list_.empty());
-
   // In order to allow an entire application to unload we require that all of
   // its activities are marked as unloaded.
   for (std::vector<AppActivity*>::iterator it = activity_list_.begin();
@@ -81,19 +74,13 @@ void AppActivityRegistry::Unload() {
   // Create an activity proxy which can be used to re-activate the app. Insert
   // the proxy then into the activity stream at the location of the (newest)
   // current activity.
-  unloaded_activity_proxy_ =
-      new AppActivityProxy(activity_list_[0]->GetActivityViewModel(), this);
+  unloaded_activity_proxy_ = new AppActivityProxy(GetMruActivity(), this);
   ActivityManager::Get()->AddActivity(unloaded_activity_proxy_);
-  // The new activity should be in the place of the most recently used app
-  // window. To get it there, we get the most recently used application window
-  // and place the proxy activities window in front or behind, so that when the
-  // activity disappears it takes its place.
-  MoveBeforeMruApplicationWindow(unloaded_activity_proxy_->GetWindow());
 
   // Unload the application. This operation will be asynchronous.
   if (!ExtensionsDelegate::Get(browser_context_)->UnloadApp(app_id_)) {
     while(!activity_list_.empty())
-      delete activity_list_.back();
+      Activity::Delete(activity_list_.back());
   }
 }
 
@@ -108,36 +95,29 @@ void AppActivityRegistry::ProxyDestroyed(AppActivityProxy* proxy) {
 
 void AppActivityRegistry::RestartApplication(AppActivityProxy* proxy) {
   DCHECK_EQ(unloaded_activity_proxy_, proxy);
-  // Restart the application.
+  // Restart the application. Note that the first created app window will make
+  // sure that the proxy gets deleted - after - the new activity got moved
+  // to the proxies activity location.
   ExtensionsDelegate::Get(browser_context_)->LaunchApp(app_id_);
-  // Delete the activity which will also remove the it from the ActivityManager.
-  delete unloaded_activity_proxy_;  // Will call ProxyDestroyed.
-  // After this call |this| might be gone if the app did not open a window yet.
 }
 
-void AppActivityRegistry::MoveBeforeMruApplicationWindow(aura::Window* window) {
+AppActivity* AppActivityRegistry::GetMruActivity() {
   DCHECK(activity_list_.size());
-  // TODO(skuhne): This needs to be changed to some kind of delegate which
-  // resides in the window manager.
+  // TODO(skuhne): This should be a query into the window manager.
   const aura::Window::Windows children =
-      activity_list_[0]->GetWindow()->parent()->children();;
+      activity_list_[0]->GetWindow()->parent()->children();
   // Find the first window in the container which is part of the application.
   for (aura::Window::Windows::const_iterator child_iterator = children.begin();
       child_iterator != children.end(); ++child_iterator) {
     for (std::vector<AppActivity*>::iterator app_iterator =
              activity_list_.begin();
          app_iterator != activity_list_.end(); ++app_iterator) {
-      if (*child_iterator == (*app_iterator)->GetWindow()) {
-        // Since "StackChildBelow" does not change the order if the window
-        // if the window is below - but not immediately behind - the target
-        // window, we re-stack both ways.
-        window->parent()->StackChildBelow(window, *child_iterator);
-        window->parent()->StackChildBelow(*child_iterator, window);
-        return;
-      }
+      if (*child_iterator == (*app_iterator)->GetWindow())
+        return *app_iterator;
     }
   }
   NOTREACHED() << "The application does not get tracked by the mru list";
+  return NULL;
 }
 
 }  // namespace athena

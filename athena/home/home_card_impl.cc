@@ -418,7 +418,10 @@ void HomeCardImpl::OnOverviewModeExit() {
   SetState(VISIBLE_MINIMIZED);
 }
 
-void HomeCardImpl::OnActivityOrderHasChanged() {
+void HomeCardImpl::OnSplitViewModeEnter() {
+}
+
+void HomeCardImpl::OnSplitViewModeExit() {
 }
 
 void HomeCardImpl::OnWindowActivated(aura::Window* gained_active,

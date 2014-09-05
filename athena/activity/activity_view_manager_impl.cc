@@ -29,7 +29,6 @@ views::Widget* CreateWidget(Activity* activity) {
   params.delegate = new ActivityWidgetDelegate(view_model);
   params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
   widget->Init(params);
-  activity->GetActivityViewModel()->Init();
   return widget;
 }
 
@@ -57,6 +56,10 @@ class ActivityViewManagerImpl : public ActivityViewManager,
     container->UpdateWindowTitle();
     container->Show();
     container->Activate();
+    // Call the Activity model's initializer. It might re-order the activity
+    // against others, which has to be done before before registering it to the
+    // system.
+    activity->GetActivityViewModel()->Init();
   }
 
   virtual void RemoveActivity(Activity* activity) OVERRIDE {
@@ -81,7 +84,7 @@ class ActivityViewManagerImpl : public ActivityViewManager,
          iter != activity_widgets_.end();
          ++iter) {
       if (iter->second == widget) {
-        delete iter->first;
+        Activity::Delete(iter->first);
         break;
       }
     }

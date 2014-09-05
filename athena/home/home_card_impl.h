@@ -85,7 +85,8 @@ class ATHENA_EXPORT HomeCardImpl
   // WindowManagerObserver:
   virtual void OnOverviewModeEnter() OVERRIDE;
   virtual void OnOverviewModeExit() OVERRIDE;
-  virtual void OnActivityOrderHasChanged() OVERRIDE;
+  virtual void OnSplitViewModeEnter() OVERRIDE;
+  virtual void OnSplitViewModeExit() OVERRIDE;
 
   // aura::client::ActivationChangeObserver:
   virtual void OnWindowActivated(aura::Window* gained_active,

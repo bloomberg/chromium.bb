@@ -30,10 +30,11 @@ class WebActivity : public Activity,
  public:
   WebActivity(content::BrowserContext* context, const GURL& gurl);
   WebActivity(AthenaWebView* web_view);
-  virtual ~WebActivity();
 
  protected:
-  // Activity:
+  virtual ~WebActivity();
+
+ // Activity:
   virtual athena::ActivityViewModel* GetActivityViewModel() OVERRIDE;
   virtual void SetCurrentState(ActivityState state) OVERRIDE;
   virtual ActivityState GetCurrentState() OVERRIDE;
@@ -58,6 +59,17 @@ class WebActivity : public Activity,
   virtual void DidChangeThemeColor(SkColor theme_color) OVERRIDE;
 
  private:
+  // Make the content visible. This call should only be paired with
+  // MakeInvisible. Note: Upon object creation the content is visible.
+  void MakeVisible();
+
+  // Make the content invisible. This call should only be paired with
+  // MakeVisible.
+  void MakeInvisible();
+
+  // Reload the content if required, and start observing it.
+  void ReloadAndObserve();
+
   content::BrowserContext* browser_context_;
   const GURL url_;
   AthenaWebView* web_view_;

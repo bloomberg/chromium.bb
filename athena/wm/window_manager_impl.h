@@ -61,6 +61,7 @@ class WindowManagerImpl : public WindowManager,
   // WindowManager:
   virtual void AddObserver(WindowManagerObserver* observer) OVERRIDE;
   virtual void RemoveObserver(WindowManagerObserver* observer) OVERRIDE;
+  virtual void ToggleSplitViewForTest() OVERRIDE;
 
   // WindowOverviewModeDelegate:
   virtual void OnSelectWindow(aura::Window* window) OVERRIDE;
@@ -70,7 +71,6 @@ class WindowManagerImpl : public WindowManager,
   // aura::WindowObserver:
   virtual void OnWindowAdded(aura::Window* new_window) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
-  virtual void OnWindowStackingChanged(aura::Window* window) OVERRIDE;
 
   // AcceleratorHandler:
   virtual bool IsCommandEnabled(int command_id) const OVERRIDE;

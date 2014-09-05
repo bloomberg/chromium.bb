@@ -21,10 +21,15 @@ class AppActivityRegistry;
 class AppActivityProxy : public Activity,
                          public ActivityViewModel {
  public:
-  AppActivityProxy(ActivityViewModel* view_model, AppActivityRegistry* creator);
+  // The |replaced_activity| is the activity which this proxy replaces. Note
+  // that after the Init() call got called, this object will become invalid.
+  // The |creator| should be informed when the object goes away.
+  AppActivityProxy(Activity* replaced_activity, AppActivityRegistry* creator);
+
+ protected:
   virtual ~AppActivityProxy();
 
-  // Activity overrides:
+ // Activity overrides:
   virtual ActivityViewModel* GetActivityViewModel() OVERRIDE;
   virtual void SetCurrentState(ActivityState state) OVERRIDE;
   virtual ActivityState GetCurrentState() OVERRIDE;
@@ -50,6 +55,11 @@ class AppActivityProxy : public Activity,
   const base::string16 title_;
   const gfx::ImageSkia image_;
   const SkColor color_;
+
+  // The activity which gets replaced. It is used to sort the activity against
+  // upon initialization. Once moved, this value gets reset since the object
+  // can go away at any time.
+  Activity* replaced_activity_;
 
   // The associated view.
   views::View* view_;

@@ -8,6 +8,7 @@
 #include "athena/resource_manager/memory_pressure_notifier.h"
 #include "athena/resource_manager/public/resource_manager.h"
 #include "athena/test/athena_test_base.h"
+#include "athena/wm/public/window_manager.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/view.h"
@@ -85,7 +86,7 @@ class ResourceManagerTest : public AthenaTestBase {
 
   virtual void TearDown() OVERRIDE {
     while (!activity_list_.empty())
-      CloseActivity(activity_list_[0]);
+      DeleteActivity(activity_list_[0]);
     AthenaTestBase::TearDown();
   }
 
@@ -97,8 +98,8 @@ class ResourceManagerTest : public AthenaTestBase {
     return activity;
   }
 
-  void CloseActivity(Activity* activity) {
-    delete activity;
+  void DeleteActivity(Activity* activity) {
+    Activity::Delete(activity);
     RunAllPendingInMessageLoop();
     std::vector<TestActivity*>::iterator it = std::find(activity_list_.begin(),
                                                         activity_list_.end(),
@@ -119,10 +120,10 @@ TEST_F(ResourceManagerTest, SimpleTest) {
 
 // Test that we release an activity when the memory pressure goes critical.
 TEST_F(ResourceManagerTest, OnCriticalWillUnloadOneActivity) {
-  // create a few dummy activities.
-  TestActivity* app_visible = CreateActivity("visible");
-  TestActivity* app_unloadable1 = CreateActivity("unloadable1");
+  // Create a few dummy activities in the reverse order as we need them.
   TestActivity* app_unloadable2 = CreateActivity("unloadable2");
+  TestActivity* app_unloadable1 = CreateActivity("unloadable1");
+  TestActivity* app_visible = CreateActivity("visible");
   app_visible->set_visible(true);
   app_unloadable1->set_visible(false);
   app_unloadable2->set_visible(false);
@@ -156,11 +157,11 @@ TEST_F(ResourceManagerTest, OnCriticalWillUnloadOneActivity) {
 // Test that media playing activities only get unloaded if there is no other
 // way.
 TEST_F(ResourceManagerTest, OnCriticalMediaHandling) {
-  // create a few dummy activities.
-  TestActivity* app_visible = CreateActivity("visible");
-  TestActivity* app_media_locked1 = CreateActivity("medialocked1");
-  TestActivity* app_unloadable = CreateActivity("unloadable2");
+  // Create a few dummy activities in the reverse order as we need them.
   TestActivity* app_media_locked2 = CreateActivity("medialocked2");
+  TestActivity* app_unloadable = CreateActivity("unloadable2");
+  TestActivity* app_media_locked1 = CreateActivity("medialocked1");
+  TestActivity* app_visible = CreateActivity("visible");
   app_visible->set_visible(true);
   app_unloadable->set_visible(false);
   app_media_locked1->set_visible(false);
@@ -201,6 +202,62 @@ TEST_F(ResourceManagerTest, OnCriticalMediaHandling) {
   DCHECK_EQ(Activity::ACTIVITY_UNLOADED, app_media_locked1->GetCurrentState());
   DCHECK_EQ(Activity::ACTIVITY_UNLOADED, app_unloadable->GetCurrentState());
   DCHECK_EQ(Activity::ACTIVITY_UNLOADED, app_media_locked2->GetCurrentState());
+}
+
+// Test the visibility of items.
+TEST_F(ResourceManagerTest, VisibilityChanges) {
+  // Create a few dummy activities in the reverse order as we need them.
+  TestActivity* app4 = CreateActivity("app4");
+  TestActivity* app3 = CreateActivity("app3");
+  TestActivity* app2 = CreateActivity("app2");
+  TestActivity* app1 = CreateActivity("app1");
+  app1->SetCurrentState(Activity::ACTIVITY_VISIBLE);
+  app2->SetCurrentState(Activity::ACTIVITY_VISIBLE);
+  app3->SetCurrentState(Activity::ACTIVITY_VISIBLE);
+  app4->SetCurrentState(Activity::ACTIVITY_VISIBLE);
+
+  // Applying low resource pressure should keep everything as is.
+  ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
+      MemoryPressureObserver::MEMORY_PRESSURE_LOW);
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app2->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app3->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app4->GetCurrentState());
+
+  // Applying moderate resource pressure we should see 3 visible activities.
+  // This is testing an internal algorithm constant, but for the time being
+  // this should suffice.
+  ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
+      MemoryPressureObserver::MEMORY_PRESSURE_MODERATE);
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app2->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app3->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app4->GetCurrentState());
+
+  // Applying higher pressure should get rid of everything unneeded.
+  ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
+      MemoryPressureObserver::MEMORY_PRESSURE_CRITICAL);
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app2->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_INVISIBLE, app3->GetCurrentState());
+  // Note: This might very well be unloaded with this memory pressure.
+  EXPECT_NE(Activity::ACTIVITY_VISIBLE, app4->GetCurrentState());
+
+  // Once the split view mode gets turned on, more windows should become
+  // visible.
+  WindowManager::GetInstance()->ToggleSplitViewForTest();
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app2->GetCurrentState());
+  EXPECT_NE(Activity::ACTIVITY_VISIBLE, app3->GetCurrentState());
+  EXPECT_NE(Activity::ACTIVITY_VISIBLE, app4->GetCurrentState());
+
+  // Going back to a relaxed memory pressure should reload the old activities.
+  ResourceManager::Get()->SetMemoryPressureAndStopMonitoring(
+      MemoryPressureObserver::MEMORY_PRESSURE_LOW);
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app1->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app2->GetCurrentState());
+  EXPECT_EQ(Activity::ACTIVITY_VISIBLE, app3->GetCurrentState());
+  EXPECT_NE(Activity::ACTIVITY_INVISIBLE, app4->GetCurrentState());
 }
 
 }  // namespace test

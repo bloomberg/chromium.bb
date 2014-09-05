@@ -28,6 +28,8 @@ class ATHENA_EXPORT WindowManager {
 
   virtual void AddObserver(WindowManagerObserver* observer) = 0;
   virtual void RemoveObserver(WindowManagerObserver* observer) = 0;
+
+  virtual void ToggleSplitViewForTest() = 0;
 };
 
 }  // namespace athena

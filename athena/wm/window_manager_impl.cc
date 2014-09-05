@@ -217,9 +217,15 @@ void WindowManagerImpl::RemoveObserver(WindowManagerObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void WindowManagerImpl::ToggleSplitViewForTest() {
+  ToggleSplitview();
+}
+
 void WindowManagerImpl::OnSelectWindow(aura::Window* window) {
-  if (split_view_controller_->IsSplitViewModeActive())
+  if (split_view_controller_->IsSplitViewModeActive()) {
     split_view_controller_->DeactivateSplitMode();
+    FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnSplitViewModeExit());
+  }
   wm::ActivateWindow(window);
   SetInOverview(false);
   // If |window| does not have the size of the work-area, then make sure it is
@@ -250,6 +256,7 @@ void WindowManagerImpl::OnSelectWindow(aura::Window* window) {
 void WindowManagerImpl::OnSplitViewMode(aura::Window* left,
                                         aura::Window* right) {
   SetInOverview(false);
+  FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnSplitViewModeEnter());
   split_view_controller_->ActivateSplitMode(left, right);
 }
 
@@ -263,15 +270,6 @@ void WindowManagerImpl::OnWindowAdded(aura::Window* new_window) {
 void WindowManagerImpl::OnWindowDestroying(aura::Window* window) {
   if (window == container_)
     container_.reset();
-}
-
-void WindowManagerImpl::OnWindowStackingChanged(aura::Window* window) {
-  // TODO(skuhne): Use |window_list_provider_->IsValidWindow(window)| instead.
-  if (window->type() == ui::wm::WINDOW_TYPE_NORMAL) {
-    FOR_EACH_OBSERVER(WindowManagerObserver,
-                      observers_,
-                      OnActivityOrderHasChanged());
-  }
 }
 
 bool WindowManagerImpl::IsCommandEnabled(int command_id) const {
@@ -298,9 +296,13 @@ void WindowManagerImpl::ToggleSplitview() {
 
   if (split_view_controller_->IsSplitViewModeActive()) {
     split_view_controller_->DeactivateSplitMode();
+    FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnSplitViewModeExit());
     // Relayout so that windows are maximzied.
     container_->layout_manager()->OnWindowResized();
   } else if (window_list_provider_->GetWindowList().size() > 1) {
+    FOR_EACH_OBSERVER(WindowManagerObserver,
+                      observers_,
+                      OnSplitViewModeEnter());
     split_view_controller_->ActivateSplitMode(NULL, NULL);
   }
 }

@@ -38,6 +38,8 @@ class ATHENA_EXPORT Activity {
     ACTIVITY_VISIBLE,
     // The activity does not have gpu compositing layers, will not be visible
     // and will be treated as a background priority task.
+    // By transitioning from VISIBLE to INVISIBLE, a screen shot of the current
+    // web content will be taken and replaces the "active content".
     ACTIVITY_INVISIBLE,
     // The activity should surrender additional resources. This has only an
     // effect when the activity is in a loaded state (Visible, Active, Hidden).
@@ -60,7 +62,8 @@ class ATHENA_EXPORT Activity {
     ACTIVITY_MEDIA_STATE_AUDIO_PLAYING  // Audible audio is playing in activity.
   };
 
-  virtual ~Activity();
+  // Delete an activity.
+  static void Delete(Activity* activity);
 
   // The Activity retains ownership of the returned view-model.
   virtual ActivityViewModel* GetActivityViewModel() = 0;
@@ -80,6 +83,9 @@ class ATHENA_EXPORT Activity {
   // Returns the window for the activity. This can be used to determine the
   // stacking order of this activity against others.
   virtual aura::Window* GetWindow() = 0;
+
+ protected:
+  virtual ~Activity() {}
 };
 
 }  // namespace athena

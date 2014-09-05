@@ -353,17 +353,20 @@ ActivityViewModel* WebActivity::GetActivityViewModel() {
 }
 
 void WebActivity::SetCurrentState(Activity::ActivityState state) {
+  DCHECK_NE(state, current_state_);
   switch (state) {
     case ACTIVITY_VISIBLE:
-      // Fall through (for the moment).
+      if (!web_view_)
+        break;
+      MakeVisible();
+      ReloadAndObserve();
+      break;
     case ACTIVITY_INVISIBLE:
-      // By clearing the overview mode image we allow the content to be shown.
-      overview_mode_image_ = gfx::ImageSkia();
-      if (web_view_->IsContentEvicted()) {
-        DCHECK_EQ(ACTIVITY_UNLOADED, current_state_);
-        web_view_->ReloadContent();
-      }
-      Observe(web_view_->GetWebContents());
+      if (!web_view_)
+        break;
+      if (current_state_ == ACTIVITY_VISIBLE)
+        MakeInvisible();
+      ReloadAndObserve();
       break;
     case ACTIVITY_BACKGROUND_LOW_PRIORITY:
       DCHECK(ACTIVITY_VISIBLE == current_state_ ||
@@ -386,26 +389,17 @@ void WebActivity::SetCurrentState(Activity::ActivityState state) {
 }
 
 Activity::ActivityState WebActivity::GetCurrentState() {
-  if (!web_view_ || web_view_->IsContentEvicted()) {
-    DCHECK_EQ(ACTIVITY_UNLOADED, current_state_);
-    return ACTIVITY_UNLOADED;
-  }
-  // TODO(skuhne): This should be controlled by an observer and should not
-  // reside here.
-  if (IsVisible() && current_state_ != ACTIVITY_VISIBLE)
-    SetCurrentState(ACTIVITY_VISIBLE);
-  // Note: If the activity is not visible it does not necessarily mean that it
-  // does not have GPU compositor resources (yet).
-
+  // If the content is evicted, the state has to be UNLOADED.
+  DCHECK(!web_view_ ||
+         !web_view_->IsContentEvicted() ||
+         current_state_ == ACTIVITY_UNLOADED);
   return current_state_;
 }
 
 bool WebActivity::IsVisible() {
   return web_view_ &&
-         web_view_->IsDrawn() &&
-         current_state_ != ACTIVITY_UNLOADED &&
-         GetWindow() &&
-         GetWindow()->IsVisible();
+         web_view_->visible() &&
+         current_state_ != ACTIVITY_UNLOADED;
 }
 
 Activity::ActivityMediaState WebActivity::GetMediaState() {
@@ -443,9 +437,17 @@ views::View* WebActivity::GetContentsView() {
   if (!web_view_) {
     web_view_ = new AthenaWebView(browser_context_);
     web_view_->LoadInitialURL(url_);
-    SetCurrentState(ACTIVITY_INVISIBLE);
-    // Reset the overview mode image.
-    overview_mode_image_ = gfx::ImageSkia();
+    // Make sure the content gets properly shown.
+    if (current_state_ == ACTIVITY_VISIBLE) {
+      MakeVisible();
+      ReloadAndObserve();
+    } else if (current_state_ == ACTIVITY_INVISIBLE) {
+      MakeInvisible();
+      ReloadAndObserve();
+    } else {
+      // If not previously specified, we change the state now to invisible..
+      SetCurrentState(ACTIVITY_INVISIBLE);
+    }
   }
   return web_view_;
 }
@@ -470,6 +472,47 @@ void WebActivity::DidUpdateFaviconURL(
 
 void WebActivity::DidChangeThemeColor(SkColor theme_color) {
   title_color_ = theme_color;
+}
+
+void WebActivity::MakeVisible() {
+  // TODO(skuhne): Once we know how to handle the Overview mode, this has to
+  // be moved into an ActivityContentController which is used by all activities.
+  // Make the content visible.
+  // TODO(skuhne): If this can be combined with app_activity, move this into a
+  // separate class.
+  web_view_->SetVisible(true);
+  web_view_->GetWebContents()->GetNativeView()->Show();
+  // If we have a proxy image, we can delete it now since the contet goes live.
+  // TODO(skuhne): Once we have figured out how to do overview mode that code
+  // needs to go here.
+  overview_mode_image_ = gfx::ImageSkia();
+}
+
+void WebActivity::MakeInvisible() {
+  // TODO(skuhne): Once we know how to handle the Overview mode, this has to
+  // be moved into an ActivityContentController which is used by all activities.
+  // TODO(skuhne): If this can be combined with app_activity, move this into a
+  // separate class.
+  DCHECK(web_view_->visible());
+  // Create our proxy image / layer.
+  if (current_state_ == ACTIVITY_VISIBLE) {
+    // Create a proxy image of the current visible content.
+    // TODO(skuhne): Do this once we figure out how to do overview mode.
+    overview_mode_image_ = gfx::ImageSkia();
+  }
+  // Now we can hide this.
+  // Note: This might have to be done asynchronously after the read back took
+  // place.
+  web_view_->GetWebContents()->GetNativeView()->Hide();
+  web_view_->SetVisible(false);
+}
+
+void WebActivity::ReloadAndObserve() {
+  if (web_view_->IsContentEvicted()) {
+    DCHECK_EQ(ACTIVITY_UNLOADED, current_state_);
+    web_view_->ReloadContent();
+  }
+  Observe(web_view_->GetWebContents());
 }
 
 }  // namespace athena
