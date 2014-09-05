@@ -37,11 +37,9 @@ bool HpackEncoder::EncodeHeaderSet(const std::map<string, string>& header_set,
       // a map.
       CookieToCrumbs(*it, &regular_headers);
     } else if (it->first[0] == kPseudoHeaderPrefix) {
-      pseudo_headers.push_back(make_pair(
-          StringPiece(it->first), StringPiece(it->second)));
+      DecomposeRepresentation(*it, &pseudo_headers);
     } else {
-      regular_headers.push_back(make_pair(
-          StringPiece(it->first), StringPiece(it->second)));
+      DecomposeRepresentation(*it, &regular_headers);
     }
   }
 
@@ -198,6 +196,19 @@ void HpackEncoder::CookieToCrumbs(const Representation& cookie,
   std::sort(out->begin() + prior_size, out->end());
   out->erase(std::unique(out->begin() + prior_size, out->end()),
              out->end());
+}
+
+// static
+void HpackEncoder::DecomposeRepresentation(const Representation& header_field,
+                                           Representations* out) {
+  size_t pos = 0;
+  size_t end = 0;
+  while (end != StringPiece::npos) {
+    end = header_field.second.find('\0', pos);
+    out->push_back(make_pair(header_field.first,
+                             header_field.second.substr(pos, end - pos)));
+    pos = end + 1;
+  }
 }
 
 }  // namespace net

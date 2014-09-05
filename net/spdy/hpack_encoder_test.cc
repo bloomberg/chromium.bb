@@ -70,6 +70,16 @@ class HpackEncoderPeer {
       out->push_back(tmp[i].second);
     }
   }
+  static void DecomposeRepresentation(StringPiece value,
+                                      std::vector<StringPiece>* out) {
+    Representations tmp;
+    HpackEncoder::DecomposeRepresentation(make_pair("foobar", value), &tmp);
+
+    out->clear();
+    for (size_t i = 0; i != tmp.size(); ++i) {
+      out->push_back(tmp[i].second);
+    }
+  }
 
  private:
   HpackEncoder* encoder_;
@@ -411,6 +421,45 @@ TEST_F(HpackEncoderTest, UpdateCharacterCounts) {
 
   EXPECT_EQ(expect, counts);
   EXPECT_EQ(9u, total_counts);
+}
+
+TEST_F(HpackEncoderTest, DecomposeRepresentation) {
+  test::HpackEncoderPeer peer(NULL);
+  std::vector<StringPiece> out;
+
+  peer.DecomposeRepresentation("", &out);
+  EXPECT_THAT(out, ElementsAre(""));
+
+  peer.DecomposeRepresentation("foobar", &out);
+  EXPECT_THAT(out, ElementsAre("foobar"));
+
+  peer.DecomposeRepresentation(StringPiece("foo\0bar", 7), &out);
+  EXPECT_THAT(out, ElementsAre("foo", "bar"));
+
+  peer.DecomposeRepresentation(StringPiece("\0foo\0bar", 8), &out);
+  EXPECT_THAT(out, ElementsAre("", "foo", "bar"));
+
+  peer.DecomposeRepresentation(StringPiece("foo\0bar\0", 8), &out);
+  EXPECT_THAT(out, ElementsAre("foo", "bar", ""));
+
+  peer.DecomposeRepresentation(StringPiece("\0foo\0bar\0", 9), &out);
+  EXPECT_THAT(out, ElementsAre("", "foo", "bar", ""));
+}
+
+// Test that encoded headers do not have \0-delimited multiple values, as this
+// became disallowed in HTTP/2 draft-14.
+TEST_F(HpackEncoderTest, CrumbleNullByteDelimitedValue) {
+  map<string, string> headers;
+  // A header field to be crumbled: "spam: foo\0bar".
+  headers["spam"] = string("foo\0bar", 7);
+
+  ExpectIndexedLiteral("spam", "foo");
+  expected_.AppendPrefix(kLiteralIncrementalIndexOpcode);
+  expected_.AppendUint32(62);
+  expected_.AppendPrefix(kStringLiteralIdentityEncoded);
+  expected_.AppendUint32(3);
+  expected_.AppendBytes("bar");
+  CompareWithExpectedEncoding(headers);
 }
 
 }  // namespace
