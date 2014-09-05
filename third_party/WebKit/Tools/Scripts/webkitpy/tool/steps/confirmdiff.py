@@ -71,8 +71,8 @@ class ConfirmDiff(AbstractStep):
         if not self._options.confirm:
             return
         pretty_diff_file = self._show_pretty_diff()
-        diff_correct = self._tool.user.confirm("Was that diff correct?")
         if pretty_diff_file:
+            diff_correct = self._tool.user.confirm("Was that diff correct?")
             pretty_diff_file.close()
-        if not diff_correct:
-            self._exit(1)
+            if not diff_correct:
+                self._exit(1)
