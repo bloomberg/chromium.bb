@@ -462,11 +462,50 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput", "Main"})
+    public void testKeyCodesWhileSwipingText() throws Throwable {
+        DOMUtils.focusNode(mContentViewCore, "textarea");
+        assertWaitForKeyboardStatus(true);
+
+        // The calls below are a reflection of what the stock Google Keyboard (Android 4.4) sends
+        // when the word is swiped on the soft keyboard.  Exercise care when altering to make sure
+        // that the test reflects reality.  If this test breaks, it's possible that code has
+        // changed and different calls need to be made instead.
+        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+
+        // "three"
+        expectUpdateStateCall(mConnection);
+        setComposingText(mConnection, "three", 1);
+        assertEquals(KeyEvent.KEYCODE_UNKNOWN, mImeAdapter.mLastSyntheticKeyCode);
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("three", mConnection.getTextBeforeCursor(99, 0));
+
+        // "word"
+        commitText(mConnection, "three", 1);
+        commitText(mConnection, " ", 1);
+        expectUpdateStateCall(mConnection);
+        setComposingText(mConnection, "word", 1);
+        assertEquals(KeyEvent.KEYCODE_UNKNOWN, mImeAdapter.mLastSyntheticKeyCode);
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("three word", mConnection.getTextBeforeCursor(99, 0));
+
+        // "test"
+        commitText(mConnection, "word", 1);
+        commitText(mConnection, " ", 1);
+        expectUpdateStateCall(mConnection);
+        setComposingText(mConnection, "test", 1);
+        assertEquals(KeyEvent.KEYCODE_UNKNOWN, mImeAdapter.mLastSyntheticKeyCode);
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("three word test", mConnection.getTextBeforeCursor(99, 0));
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
     public void testKeyCodesWhileTypingText() throws Throwable {
         DOMUtils.focusNode(mContentViewCore, "textarea");
         assertWaitForKeyboardStatus(true);
 
-        // The calls below are a reflection of what the Hacker's Keyboard sends  when the noted
+        // The calls below are a reflection of what the Hacker's Keyboard sends when the noted
         // key is touched on screen.  Exercise care when altering to make sure that the test
         // reflects reality.
         mConnection = (TestAdapterInputConnection) getAdapterInputConnection();

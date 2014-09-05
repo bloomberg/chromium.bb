@@ -934,7 +934,7 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   base::AutoReset<WebInputEvent::Type> handling_event_type_resetter(
       &handling_event_type_, input_event->type);
 #if defined(OS_ANDROID)
-  // On Android, when the delete key or forward delete key is pressed using IME,
+  // On Android, when a key is pressed or sent from the Keyboard using IME,
   // |AdapterInputConnection| generates input key events to make sure all JS
   // listeners that monitor KeyUp and KeyDown events receive the proper key
   // code. Since this input key event comes from IME, we need to set the
@@ -944,10 +944,9 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   if (WebInputEvent::isKeyboardEventType(input_event->type)) {
     const WebKeyboardEvent& key_event =
         *static_cast<const WebKeyboardEvent*>(input_event);
-    if (key_event.nativeKeyCode == AKEYCODE_FORWARD_DEL ||
-        key_event.nativeKeyCode == AKEYCODE_DEL) {
+    // Some keys are special and it's essential that no events get blocked.
+    if (key_event.nativeKeyCode != AKEYCODE_TAB)
       ime_event_guard_maybe.reset(new ImeEventGuard(this));
-    }
   }
 #endif
 
