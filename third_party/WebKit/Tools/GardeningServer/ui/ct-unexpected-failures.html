@@ -34,6 +34,10 @@ found in the LICENSE file.
         align-items: baseline;
         padding: 0 5px;
       }
+
+      .failure-group-header {
+        padding: 0 5px;
+      }
     </style>
     <div class="toolbar">
       <ct-revision-details id="revisionDetails" builderLatestRevisions="{{ failures.builderLatestRevisions }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-revision-details>
@@ -43,6 +47,9 @@ found in the LICENSE file.
     <ct-tree-status status="{{ treeStatuses['blink'] }}" state="{{ treeStatuses['blink'].status }}"></ct-tree-status>
     <ct-party-time failures="{{ failures.failures[tree].length == 0 }}"></ct-party-time>
     <ct-failure-stream category="default" groups="{{ failures.failures[tree] }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-failure-stream>
+    <span class="failure-group-header">Failures that have only happened once (on one bot):</span>
+    <ct-failure-stream category="failedOnce" groups="{{ failures.failures[tree] }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-failure-stream>
+    <span class="failure-group-header">Snoozed failures:</span>
     <ct-failure-stream category="snoozed" groups="{{ failures.failures[tree] }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-failure-stream>
   </template>
   <script>

@@ -44,13 +44,30 @@ CTFailureGroup.prototype.clearBug = function(bug) {
   });
 };
 
+CTFailureGroup.prototype._failedOnce = function() {
+  var totalFailures = 0;
+  for (var i = 0; i < this.data.dataToExamine().length; i++) {
+    var resultNodes = this.data.dataToExamine()[i].resultNodesByBuilder;
+    Object.keys(resultNodes, function(r) {
+      totalFailures += resultNodes[r].failingBuildCount;
+      if (totalFailures > 1)
+        return false;
+    }.bind(this));
+  }
+  return totalFailures == 1;
+}
+
 CTFailureGroup.prototype._computeProperties = function() {
   this.isSnoozed = Date.now() < this._annotation.snoozeTime;
   if (this.isSnoozed) {
     this.category = 'snoozed';
   } else {
+    if (this._failedOnce()) {
+      this.category = 'failedOnce';
+    } else {
+      this.category = 'default';
+    }
     // FIXME: crbug.com/400397 Split into: Whole step failure, Tree closer, Test failure, Flaky tests
-    this.category = 'default';
   }
 
   this.bug = this._annotation.bug;

@@ -35,6 +35,23 @@ describe('ct-failure-group', function() {
           [newFailureWithAnnotation({snoozeTime: Date.now() + 1000 * 1000})]));
       assert.equal(group.category, 'snoozed');
     });
+
+    it('should be "failedOnce" when there is only one failure', function() {
+      var failure = newFailureWithAnnotation();
+      failure.resultNodesByBuilder = {some_key: {failingBuildCount: 1}}
+      var group = new CTFailureGroup('', new CTSheriffFailureGroupData(
+          [failure]));
+      assert.equal(group.category, 'failedOnce');
+    });
+
+    it('should not be "failedOnce" when there is more than one failure', function() {
+      var failure = newFailureWithAnnotation();
+      failure.resultNodesByBuilder = {some_key: {failingBuildCount: 1},
+                                      other_key: {failingBuildCount: 1}}
+      var group = new CTFailureGroup('', new CTSheriffFailureGroupData(
+          [failure]));
+      assert.equal(group.category, 'default');
+    });
   });
 
   describe('snooze', function() {
