@@ -319,7 +319,8 @@ DriveMetadataSearchContentScanner.prototype.scan = function(
  * When filters are changed, a 'changed' event is fired.
  *
  * @param {MetadataCache} metadataCache Metadata cache service.
- * @param {boolean} showHidden If files starting with '.' are shown.
+ * @param {boolean} showHidden If files starting with '.' or ending with
+ *     '.crdownlaod' are shown.
  * @constructor
  * @extends {cr.EventTarget}
  */
@@ -371,10 +372,14 @@ FileFilter.prototype.removeFilter = function(name) {
  * @param {boolean} value If do not show hidden files.
  */
 FileFilter.prototype.setFilterHidden = function(value) {
+  var regexpCrdownloadExtension = /\.crdownload$/i;
   if (value) {
     this.addFilter(
         'hidden',
-        function(entry) { return entry.name.substr(0, 1) !== '.'; }
+        function(entry) {
+          return entry.name.substr(0, 1) !== '.' &&
+                 !regexpCrdownloadExtension.test(entry.name);
+        }
     );
   } else {
     this.removeFilter('hidden');

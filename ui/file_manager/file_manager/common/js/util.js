@@ -1344,6 +1344,8 @@ util.validateFileName = function(parentEntry, name, filterHiddenOn) {
     return Promise.reject(str('ERROR_WHITESPACE_NAME'));
   else if (/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i.test(name))
     return Promise.reject(str('ERROR_RESERVED_NAME'));
+  else if (filterHiddenOn && /\.crdownload$/i.test(name))
+    return Promise.reject(str('ERROR_RESERVED_NAME'));
   else if (filterHiddenOn && name[0] == '.')
     return Promise.reject(str('ERROR_HIDDEN_NAME'));
 
