@@ -43,6 +43,7 @@ public:
 
     // For CallbackPromiseAdapter.
     typedef WebServiceWorkerRegistration WebType;
+    static ServiceWorkerRegistration* from(ExecutionContext*, WebType* registration);
     static ServiceWorkerRegistration* take(ScriptPromiseResolver*, WebType* registration);
     static void dispose(WebType* registration);
 

@@ -48,11 +48,9 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebServiceWorker.h"
 #include "public/platform/WebServiceWorkerProvider.h"
+#include "public/platform/WebServiceWorkerRegistration.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
-
-using blink::WebServiceWorker;
-using blink::WebServiceWorkerProvider;
 
 namespace blink {
 
@@ -80,6 +78,7 @@ void ServiceWorkerContainer::trace(Visitor* visitor)
     visitor->trace(m_controller);
     visitor->trace(m_installing);
     visitor->trace(m_waiting);
+    visitor->trace(m_readyRegistration);
     visitor->trace(m_ready);
 }
 
@@ -195,32 +194,39 @@ static void deleteIfNoExistingOwner(WebServiceWorker* serviceWorker)
         delete serviceWorker;
 }
 
+static void deleteIfNoExistingOwner(WebServiceWorkerRegistration* registration)
+{
+    if (registration && !registration->proxy())
+        delete registration;
+}
+
+void ServiceWorkerContainer::setReadyRegistration(WebServiceWorkerRegistration* registration)
+{
+    if (!executionContext()) {
+        deleteIfNoExistingOwner(registration);
+        return;
+    }
+
+    ServiceWorkerRegistration* readyRegistration = ServiceWorkerRegistration::from(executionContext(), registration);
+    ASSERT(readyRegistration->active());
+
+    if (m_readyRegistration) {
+        ASSERT(m_readyRegistration == readyRegistration);
+        ASSERT(m_ready->state() == ReadyProperty::Resolved);
+        return;
+    }
+
+    m_readyRegistration = readyRegistration;
+    m_ready->resolve(readyRegistration);
+}
+
 void ServiceWorkerContainer::setActive(WebServiceWorker* serviceWorker)
 {
     if (!executionContext()) {
         deleteIfNoExistingOwner(serviceWorker);
         return;
     }
-    RefPtrWillBeRawPtr<ServiceWorker> previousReadyWorker = m_active;
     m_active = ServiceWorker::from(executionContext(), serviceWorker);
-    checkReadyChanged(previousReadyWorker.release());
-}
-
-void ServiceWorkerContainer::checkReadyChanged(PassRefPtrWillBeRawPtr<ServiceWorker> previousReadyWorker)
-{
-    ServiceWorker* currentReadyWorker = m_active.get();
-
-    if (previousReadyWorker == currentReadyWorker)
-        return;
-
-    if (m_ready->state() != ReadyProperty::Pending) {
-        // Already resolved Promises are now stale because the
-        // ready worker changed
-        m_ready = createReadyProperty();
-    }
-
-    if (currentReadyWorker)
-        m_ready->resolve(currentReadyWorker);
 }
 
 void ServiceWorkerContainer::setController(WebServiceWorker* serviceWorker)

@@ -36,6 +36,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "modules/serviceworkers/ServiceWorker.h"
+#include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebServiceWorkerProviderClient.h"
 #include "wtf/Forward.h"
@@ -46,9 +47,9 @@ namespace blink {
 
 class Dictionary;
 class ExecutionContext;
-class ServiceWorker;
 class WebServiceWorker;
 class WebServiceWorkerProvider;
+class WebServiceWorkerRegistration;
 
 class ServiceWorkerContainer FINAL
     : public GarbageCollectedFinalized<ServiceWorkerContainer>
@@ -79,20 +80,21 @@ public:
     virtual void setController(WebServiceWorker*) OVERRIDE;
     virtual void setInstalling(WebServiceWorker*) OVERRIDE;
     virtual void setWaiting(WebServiceWorker*) OVERRIDE;
+    virtual void setReadyRegistration(WebServiceWorkerRegistration*) OVERRIDE;
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) OVERRIDE;
 
 private:
     explicit ServiceWorkerContainer(ExecutionContext*);
 
-    typedef ScriptPromiseProperty<Member<ServiceWorkerContainer>, RefPtrWillBeMember<ServiceWorker>, RefPtrWillBeMember<ServiceWorker> > ReadyProperty;
+    typedef ScriptPromiseProperty<Member<ServiceWorkerContainer>, Member<ServiceWorkerRegistration>, Member<ServiceWorkerRegistration> > ReadyProperty;
     ReadyProperty* createReadyProperty();
-    void checkReadyChanged(PassRefPtrWillBeRawPtr<ServiceWorker> previousReadyWorker);
 
     WebServiceWorkerProvider* m_provider;
     RefPtrWillBeMember<ServiceWorker> m_active;
     RefPtrWillBeMember<ServiceWorker> m_controller;
     RefPtrWillBeMember<ServiceWorker> m_installing;
     RefPtrWillBeMember<ServiceWorker> m_waiting;
+    Member<ServiceWorkerRegistration> m_readyRegistration;
     Member<ReadyProperty> m_ready;
 };
 

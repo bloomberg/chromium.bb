@@ -76,11 +76,16 @@ void ServiceWorkerRegistration::setActive(WebServiceWorker* serviceWorker)
     m_active = ServiceWorker::from(executionContext(), serviceWorker);
 }
 
-ServiceWorkerRegistration* ServiceWorkerRegistration::take(ScriptPromiseResolver* resolver, WebType* registration)
+ServiceWorkerRegistration* ServiceWorkerRegistration::from(ExecutionContext* executionContext, WebType* registration)
 {
     if (!registration)
         return 0;
-    return getOrCreate(resolver->scriptState()->executionContext(), registration);
+    return getOrCreate(executionContext, registration);
+}
+
+ServiceWorkerRegistration* ServiceWorkerRegistration::take(ScriptPromiseResolver* resolver, WebType* registration)
+{
+    return from(resolver->scriptState()->executionContext(), registration);
 }
 
 void ServiceWorkerRegistration::dispose(WebType* registration)
