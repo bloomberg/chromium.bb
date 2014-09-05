@@ -29,8 +29,6 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Node.h"
 #include "core/frame/FrameView.h"
-#include "core/page/EventHandler.h"
-#include "core/page/Page.h"
 #include "core/page/TouchDisambiguation.h"
 #include "core/testing/URLTestHelpers.h"
 #include "platform/geometry/IntRect.h"
@@ -54,12 +52,6 @@ using namespace blink;
 
 namespace {
 
-GestureEventWithHitTestResults getTargetedEvent(WebViewImpl* webViewImpl, WebGestureEvent& touchEvent)
-{
-    PlatformGestureEventBuilder platformEvent(webViewImpl->mainFrameImpl()->frameView(), touchEvent);
-    return webViewImpl->page()->deprecatedLocalMainFrame()->eventHandler().targetGestureEvent(platformEvent, true);
-}
-
 TEST(LinkHighlightTest, verifyWebViewImplIntegration)
 {
     const std::string baseURL("http://www.test.com/");
@@ -80,31 +72,53 @@ TEST(LinkHighlightTest, verifyWebViewImplIntegration)
     touchEvent.x = 20;
     touchEvent.y = 20;
 
-    ASSERT_TRUE(webViewImpl->bestTapNode(getTargetedEvent(webViewImpl, touchEvent)));
+    {
+        PlatformGestureEventBuilder platformEvent(webViewImpl->mainFrameImpl()->frameView(), touchEvent);
+        Node* touchNode = webViewImpl->bestTapNode(platformEvent);
+        ASSERT_TRUE(touchNode);
+    }
 
     touchEvent.y = 40;
-    EXPECT_FALSE(webViewImpl->bestTapNode(getTargetedEvent(webViewImpl, touchEvent)));
+    {
+        PlatformGestureEventBuilder platformEvent(webViewImpl->mainFrameImpl()->frameView(), touchEvent);
+        EXPECT_FALSE(webViewImpl->bestTapNode(platformEvent));
+    }
 
     touchEvent.y = 20;
     // Shouldn't crash.
-    webViewImpl->enableTapHighlightAtPoint(getTargetedEvent(webViewImpl, touchEvent));
+
+    {
+        PlatformGestureEventBuilder platformEvent(webViewImpl->mainFrameImpl()->frameView(), touchEvent);
+        webViewImpl->enableTapHighlightAtPoint(platformEvent);
+    }
 
     EXPECT_TRUE(webViewImpl->linkHighlight(0));
     EXPECT_TRUE(webViewImpl->linkHighlight(0)->contentLayer());
     EXPECT_TRUE(webViewImpl->linkHighlight(0)->clipLayer());
 
     // Find a target inside a scrollable div
+
     touchEvent.y = 100;
-    webViewImpl->enableTapHighlightAtPoint(getTargetedEvent(webViewImpl, touchEvent));
+    {
+        PlatformGestureEventBuilder platformEvent(webViewImpl->mainFrameImpl()->frameView(), touchEvent);
+        webViewImpl->enableTapHighlightAtPoint(platformEvent);
+    }
+
     ASSERT_TRUE(webViewImpl->linkHighlight(0));
 
     // Don't highlight if no "hand cursor"
     touchEvent.y = 220; // An A-link with cross-hair cursor.
-    webViewImpl->enableTapHighlightAtPoint(getTargetedEvent(webViewImpl, touchEvent));
+    {
+        PlatformGestureEventBuilder platformEvent(webViewImpl->mainFrameImpl()->frameView(), touchEvent);
+        webViewImpl->enableTapHighlightAtPoint(platformEvent);
+    }
     ASSERT_EQ(0U, webViewImpl->numLinkHighlights());
 
     touchEvent.y = 260; // A text input box.
-    webViewImpl->enableTapHighlightAtPoint(getTargetedEvent(webViewImpl, touchEvent));
+    {
+        PlatformGestureEventBuilder platformEvent(webViewImpl->mainFrameImpl()->frameView(), touchEvent);
+        webViewImpl->enableTapHighlightAtPoint(platformEvent);
+    }
     ASSERT_EQ(0U, webViewImpl->numLinkHighlights());
 
     Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
@@ -144,11 +158,11 @@ TEST(LinkHighlightTest, resetDuringNodeRemoval)
     touchEvent.x = 20;
     touchEvent.y = 20;
 
-    GestureEventWithHitTestResults targetedEvent = getTargetedEvent(webViewImpl, touchEvent);
-    Node* touchNode = webViewImpl->bestTapNode(targetedEvent);
+    PlatformGestureEventBuilder platformEvent(webViewImpl->mainFrameImpl()->frameView(), touchEvent);
+    Node* touchNode = webViewImpl->bestTapNode(platformEvent);
     ASSERT_TRUE(touchNode);
 
-    webViewImpl->enableTapHighlightAtPoint(targetedEvent);
+    webViewImpl->enableTapHighlightAtPoint(platformEvent);
     ASSERT_TRUE(webViewImpl->linkHighlight(0));
 
     GraphicsLayer* highlightLayer = webViewImpl->linkHighlight(0)->currentGraphicsLayerForTesting();
