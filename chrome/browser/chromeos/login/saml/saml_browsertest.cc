@@ -90,12 +90,6 @@ const char kTestAuthSIDCookie1[] = "fake-auth-SID-cookie-1";
 const char kTestAuthSIDCookie2[] = "fake-auth-SID-cookie-2";
 const char kTestAuthLSIDCookie1[] = "fake-auth-LSID-cookie-1";
 const char kTestAuthLSIDCookie2[] = "fake-auth-LSID-cookie-2";
-const char kTestAuthCode[] = "fake-auth-code";
-const char kTestGaiaUberToken[] = "fake-uber-token";
-const char kTestAuthLoginAccessToken[] = "fake-access-token";
-const char kTestRefreshToken[] = "fake-refresh-token";
-const char kTestSessionSIDCookie[] = "fake-session-SID-cookie";
-const char kTestSessionLSIDCookie[] = "fake-session-LSID-cookie";
 
 const char kFirstSAMLUserEmail[] = "bob@example.com";
 const char kSecondSAMLUserEmail[] = "alice@example.com";
@@ -302,9 +296,9 @@ class SamlTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    SetMergeSessionParams(kFirstSAMLUserEmail,
-                          kTestAuthSIDCookie1,
-                          kTestAuthLSIDCookie1);
+    fake_gaia_.SetFakeMergeSessionParams(kFirstSAMLUserEmail,
+                                         kTestAuthSIDCookie1,
+                                         kTestAuthLSIDCookie1);
 
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&FakeGaia::HandleRequest, base::Unretained(&fake_gaia_)));
@@ -326,22 +320,6 @@ class SamlTest : public InProcessBrowserTest {
                                              base::Bind(&chrome::AttemptExit));
       content::RunMessageLoop();
     }
-  }
-
-  void SetMergeSessionParams(const std::string& email,
-                             const std::string& auth_sid_cookie,
-                             const std::string& auth_lsid_cookie) {
-    FakeGaia::MergeSessionParams params;
-    params.auth_sid_cookie = auth_sid_cookie;
-    params.auth_lsid_cookie = auth_lsid_cookie;
-    params.auth_code = kTestAuthCode;
-    params.refresh_token = kTestRefreshToken;
-    params.access_token = kTestAuthLoginAccessToken;
-    params.gaia_uber_token = kTestGaiaUberToken;
-    params.session_sid_cookie = kTestSessionSIDCookie;
-    params.session_lsid_cookie = kTestSessionLSIDCookie;
-    params.email = email;
-    fake_gaia_.SetMergeSessionParams(params);
   }
 
   WebUILoginDisplay* GetLoginDisplay() {
@@ -445,9 +423,9 @@ class SamlTest : public InProcessBrowserTest {
 
  protected:
   scoped_ptr<content::WindowedNotificationObserver> login_screen_load_observer_;
+  FakeGaia fake_gaia_;
 
  private:
-  FakeGaia fake_gaia_;
   FakeSamlIdp fake_saml_idp_;
   scoped_ptr<HTTPSForwarder> gaia_https_forwarder_;
   scoped_ptr<HTTPSForwarder> saml_https_forwarder_;
@@ -568,7 +546,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, UseAutenticatedUserEmailAddress) {
 
   // Authenticate as alice@example.com via SAML (the |Email| provided here is
   // irrelevant - the authenticated user's e-mail address that FakeGAIA
-  // reports was set via SetMergeSessionParams()).
+  // reports was set via |SetFakeMergeSessionParams|.
   SetSignFormField("Email", "fake_user");
   SetSignFormField("Password", "fake_password");
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
@@ -591,7 +569,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, FailToRetrieveAutenticatedUserEmailAddress) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
-  SetMergeSessionParams("", kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
+  fake_gaia_.SetFakeMergeSessionParams(
+      "", kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
   SetSignFormField("Email", "fake_user");
   SetSignFormField("Password", "fake_password");
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
@@ -791,7 +770,8 @@ void SAMLPolicyTest::LogInWithSAML(const std::string& user_id,
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   StartSamlAndWaitForIdpPageLoad(user_id);
 
-  SetMergeSessionParams(user_id, auth_sid_cookie, auth_lsid_cookie);
+  fake_gaia_.SetFakeMergeSessionParams(
+      user_id, auth_sid_cookie, auth_lsid_cookie);
   SetSignFormField("Email", "fake_user");
   SetSignFormField("Password", "fake_password");
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");

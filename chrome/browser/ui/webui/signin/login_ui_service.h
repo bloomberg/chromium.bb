@@ -47,6 +47,9 @@ class LoginUIService : public KeyedService {
     // sync starts.
     virtual void OnSyncConfirmationUIClosed(bool configure_sync_first) {}
 
+    // Called when a confirmation UI for untrusted signin is shown.
+    virtual void OnUntrustedLoginUIShown() {}
+
    protected:
     virtual ~Observer() {}
   };
@@ -73,6 +76,9 @@ class LoginUIService : public KeyedService {
 
   // Called when the sync settings confirmation UI is closed.
   void SyncConfirmationUIClosed(bool configure_sync_first);
+
+  // Called when a confirmation UI for untrusted signin is shown.
+  void UntrustedLoginUIShown();
 
   // Delegate to an existing login dialog if one exists.
   // If not, we make a new popup dialog window, and set it to

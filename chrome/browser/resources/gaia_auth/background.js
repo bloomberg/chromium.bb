@@ -31,6 +31,8 @@ function BackgroundBridgeManager() {
 }
 
 BackgroundBridgeManager.prototype = {
+  CONTINUE_URL_BASE: 'chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik' +
+                     '/success.html',
   // Maps a tab id to its associated BackgroundBridge.
   bridges_: {},
 
@@ -68,7 +70,7 @@ BackgroundBridgeManager.prototype = {
           if (this.bridges_[details.tabId])
             this.bridges_[details.tabId].onCompleted(details);
         }.bind(this),
-        {urls: ['*://*/*'], types: ['sub_frame']},
+        {urls: ['*://*/*', this.CONTINUE_URL_BASE + '*'], types: ['sub_frame']},
         ['responseHeaders']);
   },
 
@@ -108,9 +110,6 @@ BackgroundBridge.prototype = {
   tabId: null,
 
   isDesktopFlow_: false,
-
-  // Continue URL that is set from main auth script.
-  continueUrl_: null,
 
   // Whether the extension is loaded in a constrained window.
   // Set from main auth script.
@@ -193,7 +192,6 @@ BackgroundBridge.prototype = {
   onInitDesktopFlow_: function(msg) {
     this.isDesktopFlow_ = true;
     this.gaiaUrl_ = msg.gaiaUrl;
-    this.continueUrl_ = msg.continueUrl;
     this.isConstrainedWindow_ = msg.isConstrainedWindow;
   },
 
@@ -209,16 +207,15 @@ BackgroundBridge.prototype = {
     if (!this.isDesktopFlow_ || details.parentFrameId <= 0)
       return;
 
-    var msg = null;
-    if (this.continueUrl_ &&
-        details.url.lastIndexOf(this.continueUrl_, 0) == 0) {
+    if (details.url.lastIndexOf(backgroundBridgeManager.CONTINUE_URL_BASE, 0) ==
+        0) {
       var skipForNow = false;
       if (details.url.indexOf('ntp=1') >= 0)
         skipForNow = true;
 
       // TOOD(guohui): Show password confirmation UI.
       var passwords = this.onGetScrapedPasswords_();
-      msg = {
+      var msg = {
         'name': 'completeLogin',
         'email': this.email_,
         'password': passwords[0],
@@ -235,7 +232,7 @@ BackgroundBridge.prototype = {
             return;
         }
       }
-      msg = {
+      var msg = {
         'name': 'switchToFullTab',
         'url': details.url
       };

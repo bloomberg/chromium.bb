@@ -76,9 +76,7 @@ void UnloadGaiaAuthExtension(BrowserContext* context) {
         base::Time::Max(),
         base::Bind(&base::DoNothing));
   }
-
-  const char kGaiaAuthId[] = "mfffpogegjflfpflabcdkioaeobkgjik";
-  GetComponentLoader(context)->Remove(kGaiaAuthId);
+  GetComponentLoader(context)->Remove(extensions::kGaiaAuthExtensionId);
 }
 
 }  // namespace

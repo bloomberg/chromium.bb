@@ -95,6 +95,18 @@ void HttpListenSocket::Listen() {
   TCPListenSocket::Listen();
 }
 
+void HttpListenSocket::ListenOnIOThread() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+#if !defined(OS_POSIX)
+  // This method may be called after the IO thread is changed, thus we need to
+  // call |WatchSocket| again to make sure it listens on the current IO thread.
+  // Only needed for non POSIX platforms, since on POSIX platforms
+  // StreamListenSocket::Listen already calls WatchSocket inside the function.
+  WatchSocket(WAITING_ACCEPT);
+#endif
+  Listen();
+}
+
 HttpListenSocket::~HttpListenSocket() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
@@ -198,7 +210,7 @@ void EmbeddedTestServer::InitializeOnIOThread() {
 void EmbeddedTestServer::ListenOnIOThread() {
   DCHECK(io_thread_->message_loop_proxy()->BelongsToCurrentThread());
   DCHECK(Started());
-  listen_socket_->Listen();
+  listen_socket_->ListenOnIOThread();
 }
 
 void EmbeddedTestServer::ShutdownOnIOThread() {

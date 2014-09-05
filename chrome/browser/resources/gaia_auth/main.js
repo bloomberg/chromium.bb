@@ -428,6 +428,11 @@ Authenticator.prototype = {
         this.maybeCompleteSAMLLogin_();
       }
     } else if (msg.method == 'confirmLogin' && this.isInternalMessage_(e)) {
+      // In the desktop mode, Chrome needs to wait for extra info such as
+      // session index from the background JS.
+      if (this.desktopMode_)
+        return;
+
       if (this.attemptToken_ == msg.attemptToken)
         this.onConfirmLogin_();
       else

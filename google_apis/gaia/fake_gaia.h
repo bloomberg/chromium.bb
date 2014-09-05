@@ -79,6 +79,10 @@ class FakeGaia {
   FakeGaia();
   virtual ~FakeGaia();
 
+  void SetFakeMergeSessionParams(const std::string& email,
+                                 const std::string& auth_sid_cookie,
+                                 const std::string& auth_lsid_cookie);
+
   // Sets the initial value of tokens and cookies.
   void SetMergeSessionParams(const MergeSessionParams& params);
 
@@ -152,6 +156,8 @@ class FakeGaia {
                           net::test_server::BasicHttpResponse* http_response);
   void HandlePeopleGet(const net::test_server::HttpRequest& request,
                        net::test_server::BasicHttpResponse* http_response);
+  void HandleGetUserInfo(const net::test_server::HttpRequest& request,
+                         net::test_server::BasicHttpResponse* http_response);
 
   // Returns the access token associated with |auth_token| that matches the
   // given |client_id| and |scope_string|. If |scope_string| is empty, the first

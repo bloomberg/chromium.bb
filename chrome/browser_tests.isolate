@@ -51,6 +51,7 @@
         ],
         'isolate_dependency_untracked': [
           '../content/test/data/',
+          '../google_apis/test/',
           '../media/test/data/',
           '../net/data/',
           '../net/tools/testserver/',
@@ -148,7 +149,6 @@
         ],
         'isolate_dependency_untracked': [
           '../chromeos/test/data/',
-          '../google_apis/test/',
           '../ui/file_manager/file_manager/',
           '../ui/webui/resources/js/',
           '<(PRODUCT_DIR)/chromevox_test_data/',

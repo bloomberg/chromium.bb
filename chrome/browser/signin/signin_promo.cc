@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/profiles/profile.h"
@@ -159,8 +160,14 @@ void SetUserSkippedPromo(Profile* profile) {
 }
 
 GURL GetLandingURL(const char* option, int value) {
-  const std::string& locale = g_browser_process->GetApplicationLocale();
-  std::string url = base::StringPrintf(kSignInLandingUrlPrefix, locale.c_str());
+  std::string url;
+  if (switches::IsEnableWebBasedSignin()) {
+    const std::string& locale = g_browser_process->GetApplicationLocale();
+    url = base::StringPrintf(kSignInLandingUrlPrefix, locale.c_str());
+  } else {
+    url = base::StringPrintf(
+        "%s/success.html", extensions::kGaiaAuthExtensionOrigin);
+  }
   base::StringAppendF(&url, "?%s=%d", option, value);
   return GURL(url);
 }

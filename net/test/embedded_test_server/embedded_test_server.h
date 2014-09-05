@@ -38,6 +38,11 @@ class HttpListenSocket : public TCPListenSocket {
   virtual ~HttpListenSocket();
   virtual void Listen();
 
+  // Listen on the current IO thread. If the IO thread has changed since this
+  // object is constructed, call |ListenOnIOThread| to make sure it listens on
+  // the right thread. Otherwise must call |Listen| instead.
+  void ListenOnIOThread();
+
  private:
   friend class EmbeddedTestServer;
 

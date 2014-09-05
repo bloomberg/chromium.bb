@@ -2,15 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/signin/inline_login_ui.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/storage_partition.h"
@@ -19,12 +25,18 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "google_apis/gaia/fake_gaia.h"
+#include "google_apis/gaia/gaia_switches.h"
 #include "net/base/url_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::Invoke;
+using ::testing::InvokeWithoutArgs;
 
 namespace {
 
@@ -63,6 +75,11 @@ class FooWebUIProvider
  public:
   MOCK_METHOD2(NewWebUI, content::WebUIController*(content::WebUI* web_ui,
                                                    const GURL& url));
+};
+
+class MockLoginUIObserver : public LoginUIService::Observer {
+ public:
+  MOCK_METHOD0(OnUntrustedLoginUIShown, void());
 };
 
 const char kFooWebUIURL[] = "chrome://foo/";
@@ -147,8 +164,36 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
     } while (message != "\"ready\"");
   }
 
+ // Executes JavaScript code in the auth iframe hosted by gaia_auth extension.
+  void ExecuteJsInSigninFrame(const std::string& js) {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    ASSERT_TRUE(content::ExecuteScript(InlineLoginUI::GetAuthIframe(
+        web_contents, GURL(), "signin-frame"), js));
+  }
+
  private:
+  virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+    // EmbeddedTestServer spawns a thread to initialize socket.
+    // Stop IO thread in preparation for fork and exec.
+    embedded_test_server()->StopThread();
+
+    InProcessBrowserTest::SetUp();
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    const GURL& base_url = embedded_test_server()->base_url();
+    command_line->AppendSwitchASCII(::switches::kGaiaUrl, base_url.spec());
+    command_line->AppendSwitchASCII(::switches::kLsoUrl, base_url.spec());
+    command_line->AppendSwitchASCII(::switches::kGoogleApisUrl,
+                                    base_url.spec());
+  }
+
   virtual void SetUpOnMainThread() OVERRIDE {
+    embedded_test_server()->RestartThreadAndListen();
+
     content::WebUIControllerFactory::UnregisterFactoryForTesting(
         ChromeWebUIControllerFactory::GetInstance());
     test_factory_.reset(new TestChromeWebUIControllerFactory);
@@ -162,6 +207,7 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
     content::WebUIControllerFactory::UnregisterFactoryForTesting(
         test_factory_.get());
     test_factory_.reset();
+    EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
   }
 
   FooWebUIProvider foo_provider_;
@@ -197,7 +243,6 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest, NoWebUIInIframe) {
 // TODO(guohui): flaky on trybot crbug/364759.
 IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
     MAYBE_TopFrameNavigationDisallowed) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   // Loads into gaia iframe a web page that attempts to deframe on load.
   GURL deframe_url(embedded_test_server()->GetURL("/login/deframe.html"));
   GURL url(net::AppendOrReplaceQueryParameter(
@@ -239,3 +284,40 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
 
   EXPECT_EQ(GURL("about:blank"), contents->GetVisibleURL());
 }
+
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest,
+    ConfirmationRequiredForNonsecureSignin) {
+  FakeGaia fake_gaia;
+  fake_gaia.Initialize();
+
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&FakeGaia::HandleRequest,
+                 base::Unretained(&fake_gaia)));
+  fake_gaia.SetFakeMergeSessionParams(
+      "email", "fake-sid-cookie", "fake-lsid-cookie");
+
+  // Navigates to the Chrome signin page which loads the fake gaia auth page.
+  // Since the fake gaia auth page is served over HTTP, thus expects to see an
+  // untrusted signin confirmation dialog upon submitting credentials below.
+  ui_test_utils::NavigateToURL(
+      browser(), signin::GetPromoURL(signin::SOURCE_START_PAGE, false));
+  WaitUntilUIReady();
+
+  MockLoginUIObserver observer;
+  LoginUIServiceFactory::GetForProfile(browser()->profile())
+      ->AddObserver(&observer);
+  base::RunLoop run_loop;
+  EXPECT_CALL(observer, OnUntrustedLoginUIShown())
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+
+  std::string js =
+      "document.getElementById('Email').value = 'email';"
+      "document.getElementById('Passwd').value = 'password';"
+      "document.getElementById('signIn').click();";
+  ExecuteJsInSigninFrame(js);
+
+  run_loop.Run();
+  base::MessageLoop::current()->RunUntilIdle();
+}
+#endif // OS_CHROMEOS

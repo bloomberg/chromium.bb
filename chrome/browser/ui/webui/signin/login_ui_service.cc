@@ -56,6 +56,10 @@ void LoginUIService::SyncConfirmationUIClosed(bool configure_sync_first) {
       OnSyncConfirmationUIClosed(configure_sync_first));
 }
 
+void LoginUIService::UntrustedLoginUIShown() {
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnUntrustedLoginUIShown());
+}
+
 void LoginUIService::ShowLoginPopup() {
 #if defined(OS_CHROMEOS)
   if (chrome::IsRunningInForcedAppMode())

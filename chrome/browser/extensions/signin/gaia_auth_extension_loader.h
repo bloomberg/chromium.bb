@@ -14,6 +14,10 @@ class BrowserContext;
 
 namespace extensions {
 
+const char kGaiaAuthExtensionId[] = "mfffpogegjflfpflabcdkioaeobkgjik";
+const char kGaiaAuthExtensionOrigin[] =
+      "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik";
+
 // Manages and registers the gaia auth extension with the extension system.
 class GaiaAuthExtensionLoader : public BrowserContextKeyedAPI {
  public:
