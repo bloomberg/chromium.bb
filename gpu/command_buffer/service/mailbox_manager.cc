@@ -101,7 +101,9 @@ MailboxManager::TargetName::TargetName(unsigned target, const Mailbox& mailbox)
 
 bool MailboxManager::TargetNameLess(const MailboxManager::TargetName& lhs,
                                     const MailboxManager::TargetName& rhs) {
-  return memcmp(&lhs, &rhs, sizeof(lhs)) < 0;
+  if (lhs.target != rhs.target)
+    return lhs.target < rhs.target;
+  return lhs.mailbox < rhs.mailbox;
 }
 
 }  // namespace gles2
