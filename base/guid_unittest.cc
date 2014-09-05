@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_POSIX)
@@ -27,6 +28,8 @@ TEST(GUIDTest, GUIDCorrectlyFormatted) {
   for (int it = 0; it < kIterations; ++it) {
     std::string guid = base::GenerateGUID();
     EXPECT_TRUE(base::IsValidGUID(guid));
+    EXPECT_TRUE(base::IsValidGUID(base::StringToLowerASCII(guid)));
+    EXPECT_TRUE(base::IsValidGUID(StringToUpperASCII(guid)));
   }
 }
 

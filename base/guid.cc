@@ -4,6 +4,8 @@
 
 #include "base/guid.h"
 
+#include "base/strings/string_util.h"
+
 namespace base {
 
 bool IsValidGUID(const std::string& guid) {
@@ -11,14 +13,13 @@ bool IsValidGUID(const std::string& guid) {
   if (guid.length() != kGUIDLength)
     return false;
 
-  const std::string hexchars = "0123456789ABCDEF";
-  for (uint32 i = 0; i < guid.length(); ++i) {
+  for (size_t i = 0; i < guid.length(); ++i) {
     char current = guid[i];
     if (i == 8 || i == 13 || i == 18 || i == 23) {
       if (current != '-')
         return false;
     } else {
-      if (hexchars.find(current) == std::string::npos)
+      if (!IsHexDigit(current))
         return false;
     }
   }
