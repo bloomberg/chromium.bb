@@ -958,17 +958,10 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
     self.assertEqual('default', git.GetCurrentBranch(manifest))
     self.assertEqual('master', func(repo_root))
 
-    # TODO(ferringb): convert this over to assertRaises2
     def assertExcept(message, **kwargs):
       reconfig(**kwargs)
-      try:
-        func(repo_root)
-        assert "Testing for %s, an exception wasn't thrown." % (message,)
-      except OSError as e:
-        self.assertEqual(e.errno, errno.ENOENT)
-        self.assertTrue(message in str(e),
-                        msg="Couldn't find string %r in error message %r"
-                        % (message, str(e)))
+      self.assertRaises2(OSError, func, repo_root, ex_msg=message,
+                         check_attrs={'errno': errno.ENOENT})
 
     # No merge target means the configuration isn't usable, period.
     assertExcept("git tracking configuration for that branch is broken",

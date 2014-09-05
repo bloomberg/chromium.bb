@@ -640,7 +640,7 @@ class TestCase(unittest.TestCase):
   def assertRaises2(self, exception, functor, *args, **kwargs):
     """Like assertRaises, just with checking of the exception.
 
-    args:
+    Args:
       exception: The expected exception type to intecept.
       functor: The function to invoke.
       args: Positional args to pass to the function.
@@ -652,13 +652,15 @@ class TestCase(unittest.TestCase):
         the resultant exception.  Thus if you wanted to catch a ENOENT, you
         would do:
           assertRaises2(EnvironmentError, func, args,
-                        attrs={"errno":errno.ENOENT})
+                        check_attrs={'errno': errno.ENOENT})
+      ex_msg: A substring that should be in the stringified exception.
       msg: The error message to be displayed if the exception isn't raised.
         If not given, a suitable one is defaulted to.
       returns: The exception object.
     """
     exact_kls = kwargs.pop("exact_kls", None)
     check_attrs = kwargs.pop("check_attrs", {})
+    ex_msg = kwargs.pop("ex_msg", None)
     msg = kwargs.pop("msg", None)
     if msg is None:
       msg = ("%s(*%r, **%r) didn't throw an exception"
@@ -667,6 +669,8 @@ class TestCase(unittest.TestCase):
       functor(*args, **kwargs)
       raise AssertionError(msg)
     except exception as e:
+      if ex_msg:
+        self.assertIn(ex_msg, str(e))
       if exact_kls:
         self.assertEqual(e.__class__, exception)
       bad = []
