@@ -155,6 +155,17 @@ void InspectorResourceContentLoader::ensureResourcesContentLoaded(PassOwnPtrWill
 
 InspectorResourceContentLoader::~InspectorResourceContentLoader()
 {
+    ASSERT(m_resources.isEmpty());
+}
+
+void InspectorResourceContentLoader::trace(Visitor* visitor)
+{
+    visitor->trace(m_callbacks);
+    visitor->trace(m_page);
+}
+
+void InspectorResourceContentLoader::dispose()
+{
     stop();
 }
 

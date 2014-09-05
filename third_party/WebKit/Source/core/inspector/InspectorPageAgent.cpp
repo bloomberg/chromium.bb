@@ -488,7 +488,17 @@ void InspectorPageAgent::enable(ErrorString*)
     m_enabled = true;
     m_state->setBoolean(PageAgentState::pageAgentEnabled, true);
     m_instrumentingAgents->setInspectorPageAgent(this);
-    m_inspectorResourceContentLoader = adoptPtr(new InspectorResourceContentLoader(m_page));
+    if (m_inspectorResourceContentLoader)
+        m_inspectorResourceContentLoader->dispose();
+    m_inspectorResourceContentLoader = adoptPtrWillBeNoop(new InspectorResourceContentLoader(m_page));
+}
+
+void InspectorPageAgent::discardAgent()
+{
+    if (!m_inspectorResourceContentLoader)
+        return;
+    m_inspectorResourceContentLoader->dispose();
+    m_inspectorResourceContentLoader.clear();
 }
 
 void InspectorPageAgent::disable(ErrorString*)
@@ -498,7 +508,10 @@ void InspectorPageAgent::disable(ErrorString*)
     m_state->remove(PageAgentState::pageAgentScriptsToEvaluateOnLoad);
     m_overlay->hide();
     m_instrumentingAgents->setInspectorPageAgent(0);
-    m_inspectorResourceContentLoader.clear();
+    if (m_inspectorResourceContentLoader) {
+        m_inspectorResourceContentLoader->dispose();
+        m_inspectorResourceContentLoader.clear();
+    }
     m_deviceMetricsOverridden = false;
 
     setShowPaintRects(0, false);
@@ -1457,6 +1470,7 @@ void InspectorPageAgent::trace(Visitor* visitor)
 {
     visitor->trace(m_page);
     visitor->trace(m_injectedScriptManager);
+    visitor->trace(m_inspectorResourceContentLoader);
     InspectorBaseAgent::trace(visitor);
 }
 

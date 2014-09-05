@@ -150,6 +150,7 @@ public:
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
     virtual void clearFrontend() OVERRIDE;
     virtual void restore() OVERRIDE;
+    virtual void discardAgent() OVERRIDE;
 
     // Cross-agents API
     Page* page() { return m_page; }
@@ -219,7 +220,7 @@ private:
     double m_embedderFontScaleFactor;
     bool m_embedderPreferCompositingToLCDTextEnabled;
 
-    OwnPtr<InspectorResourceContentLoader> m_inspectorResourceContentLoader;
+    OwnPtrWillBeMember<InspectorResourceContentLoader> m_inspectorResourceContentLoader;
     HashMap<String, String> m_editedResourceContent;
 };
 
