@@ -65,7 +65,12 @@ html[dir='rtl'] select {
 }
 
 input[type='checkbox'] {
+<if expr="chromeos">
+  bottom: 1px;
+</if>
+< expr="not chromeos">
   bottom: 2px;
+</if>
   height: 13px;
   position: relative;
   vertical-align: middle;
