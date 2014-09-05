@@ -1269,6 +1269,7 @@ Bug(gardener) [ Debug Lion ] transitions/cancel-and-start-new.html [ Failure Pas
 Bug(gardener) [ Release MountainLion ] transitions/cancel-and-start-new.html [ Failure Pass ]
 Bug(gardener) [ Release Win7 ] transitions/cancel-and-start-new.html [ Failure Pass ]
 Bug(gardener) [ Debug Win7 ] transitions/cancel-and-start-new.html [ Failure Pass ]
+Bug(gardener) [ Release XP ] transitions/cancel-and-start-new.html [ Failure Pass ]
 Bug(gardener) [ Debug Linux ] transitions/change-duration-during-transition.html [ Failure Pass ]
 Bug(gardener) [ Debug Lion ] transitions/change-duration-during-transition.html [ Failure Pass ]
 webkit.org/b/90488 [ Debug Win7 ] virtual/implsidepainting/inspector/tracing/paint-command-log-nodes.html [ Failure Pass ]
