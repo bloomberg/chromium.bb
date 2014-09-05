@@ -109,19 +109,25 @@ class SDKTestStage(generic_stages.BuilderStage):
 
   def PerformStage(self):
     tarball_location = os.path.join(self._build_root, 'built-sdk.tar.xz')
-    new_chroot_cmd = ['cros_sdk', '--chroot', 'new-sdk-chroot']
+    new_chroot_args = ['--chroot', 'new-sdk-chroot']
+    if self._run.options.chrome_root:
+      new_chroot_args += ['--chrome_root', self._run.options.chrome_root]
+
     # Build a new SDK using the provided tarball.
-    cmd = new_chroot_cmd + ['--download', '--replace', '--nousepkg',
+    chroot_args = new_chroot_args + ['--download', '--replace', '--nousepkg',
         '--url', 'file://' + tarball_location]
-    cros_build_lib.RunCommand(cmd, cwd=self._build_root,
-                              extra_env=self._portage_extra_env)
+    cros_build_lib.RunCommand(
+        [], cwd=self._build_root, enter_chroot=True, chroot_args=chroot_args,
+        extra_env=self._portage_extra_env)
 
     for board in self._boards:
       cros_build_lib.PrintBuildbotStepText(board)
-      cmd = new_chroot_cmd + ['--', './setup_board',
-          '--board', board, '--skip_chroot_upgrade']
-      cros_build_lib.RunCommand(cmd, cwd=self._build_root)
-      cmd = new_chroot_cmd + ['--', './build_packages',
-          '--board', board, '--nousepkg', '--skip_chroot_upgrade']
-      cros_build_lib.RunCommand(cmd, cwd=self._build_root,
+      cmd = ['./setup_board', '--board', board, '--skip_chroot_upgrade']
+      cros_build_lib.RunCommand(
+          cmd, cwd=self._build_root, enter_chroot=True,
+          chroot_args=new_chroot_args, extra_env=self._portage_extra_env)
+      cmd = ['./build_packages', '--board', board, '--nousepkg',
+             '--skip_chroot_upgrade']
+      cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True,
+                                chroot_args=new_chroot_args,
                                 extra_env=self._portage_extra_env)
