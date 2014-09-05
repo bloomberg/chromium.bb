@@ -112,7 +112,7 @@ MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
     local_id = next_local_id_;
     next_local_id_++;
     local_id_to_endpoint_map_[local_id] =
-        new ChannelEndpoint(message_pipe, port);
+        new ChannelEndpoint(message_pipe.get(), port);
   }
 
   // This might fail if that port got an |OnPeerClose()| before attaching.

@@ -1578,7 +1578,7 @@ void ProxyConfigServiceLinux::Delegate::SetUpAndFetchInitialConfig(
   // If we are passed a NULL |io_task_runner| or |file_task_runner|, then we
   // don't set up proxy setting change notifications. This should not be the
   // usual case but is intended to/ simplify test setups.
-  if (!io_task_runner_.get() || !file_task_runner)
+  if (!io_task_runner_.get() || !file_task_runner.get())
     VLOG(1) << "Monitoring of proxy setting changes is disabled";
 
   // Fetch and cache the current proxy config. The config is left in
@@ -1620,7 +1620,7 @@ void ProxyConfigServiceLinux::Delegate::SetUpAndFetchInitialConfig(
     // that we won't lose any updates that may have happened after the initial
     // fetch and before setting up notifications. We'll detect the common case
     // of no changes in OnCheckProxyConfigSettings() (or sooner) and ignore it.
-    if (io_task_runner && file_task_runner) {
+    if (io_task_runner.get() && file_task_runner.get()) {
       scoped_refptr<base::SingleThreadTaskRunner> required_loop =
           setting_getter_->GetNotificationTaskRunner();
       if (!required_loop.get() || required_loop->BelongsToCurrentThread()) {
