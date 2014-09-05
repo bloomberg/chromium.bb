@@ -155,8 +155,7 @@ bool ImageFrameGenerator::decodeToYUV(void* planes[3], size_t rowBytes[3])
     m_data.data(&data, &allDataReceived);
 
     // FIXME: YUV decoding does not currently support progressive decoding.
-    if (!allDataReceived)
-        return false;
+    ASSERT(allDataReceived);
 
     OwnPtr<ImageDecoder> decoder = ImageDecoder::create(*data, ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied);
     if (!decoder)
@@ -303,7 +302,8 @@ bool ImageFrameGenerator::getYUVComponentSizes(SkISize componentSizes[3])
     m_data.data(&data, &allDataReceived);
 
     // FIXME: YUV decoding does not currently support progressive decoding.
-    ASSERT(allDataReceived);
+    if (!allDataReceived)
+        return false;
 
     OwnPtr<ImageDecoder> decoder = ImageDecoder::create(*data, ImageSource::AlphaPremultiplied, ImageSource::GammaAndColorProfileApplied);
     if (!decoder)
