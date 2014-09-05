@@ -243,7 +243,7 @@ void WebCursor::ImageFromCustomData(SkBitmap* image) const {
   if (custom_data_.empty())
     return;
 
-  if (!image->allocN32Pixels(custom_size_.width(), custom_size_.height()))
+  if (!image->tryAllocN32Pixels(custom_size_.width(), custom_size_.height()))
     return;
   memcpy(image->getPixels(), &custom_data_[0], custom_data_.size());
 }

@@ -110,7 +110,7 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(CGContextRef context,
     data = CGBitmapContextGetData(context);
     bitmap.setPixels(data);
   } else {
-    if (!bitmap.allocPixels())
+    if (!bitmap.tryAllocPixels())
       return NULL;
     data = bitmap.getPixels();
   }
@@ -271,7 +271,7 @@ bool PlatformBitmap::Allocate(int width, int height, bool is_opaque) {
   if (RasterDeviceTooBigToAllocate(width, height))
     return false;
     
-  if (!bitmap_.allocN32Pixels(width, height, is_opaque))
+  if (!bitmap_.tryAllocN32Pixels(width, height, is_opaque))
     return false;
 
   if (!is_opaque)

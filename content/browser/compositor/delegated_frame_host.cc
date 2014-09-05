@@ -575,10 +575,10 @@ void DelegatedFrameHost::PrepareTextureCopyOutputResult(
       base::Bind(callback, false, SkBitmap()));
 
   scoped_ptr<SkBitmap> bitmap(new SkBitmap);
-  if (!bitmap->allocPixels(SkImageInfo::Make(dst_size_in_pixel.width(),
-                                             dst_size_in_pixel.height(),
-                                             color_type,
-                                             kOpaque_SkAlphaType)))
+  if (!bitmap->tryAllocPixels(SkImageInfo::Make(dst_size_in_pixel.width(),
+                                                dst_size_in_pixel.height(),
+                                                color_type,
+                                                kOpaque_SkAlphaType)))
     return;
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
@@ -649,7 +649,7 @@ void DelegatedFrameHost::PrepareBitmapCopyOutputResult(
   DCHECK_EQ(scaled_bitmap.colorType(), kN32_SkColorType);
   // Paint |scaledBitmap| to alpha-only |grayscale_bitmap|.
   SkBitmap grayscale_bitmap;
-  bool success = grayscale_bitmap.allocPixels(
+  bool success = grayscale_bitmap.tryAllocPixels(
       SkImageInfo::MakeA8(scaled_bitmap.width(), scaled_bitmap.height()));
   if (!success) {
     callback.Run(false, SkBitmap());

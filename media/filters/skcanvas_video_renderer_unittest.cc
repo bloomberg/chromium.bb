@@ -24,7 +24,7 @@ void FillCanvas(SkCanvas* canvas, SkColor color) {
 // Helper for returning the color of a solid |canvas|.
 SkColor GetColorAt(SkCanvas* canvas, int x, int y) {
   SkBitmap bitmap;
-  if (!bitmap.allocN32Pixels(1, 1))
+  if (!bitmap.tryAllocN32Pixels(1, 1))
     return 0;
   if (!canvas->readPixels(&bitmap, x, y))
     return 0;

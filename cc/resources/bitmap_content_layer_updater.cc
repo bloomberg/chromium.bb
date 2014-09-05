@@ -64,10 +64,9 @@ void BitmapContentLayerUpdater::PrepareToUpdate(
     devtools_instrumentation::ScopedLayerTask paint_setup(
         devtools_instrumentation::kPaintSetup, layer_id_);
     canvas_size_ = content_rect.size();
-    bool alloc = bitmap_backing_.allocN32Pixels(
+    bitmap_backing_.allocN32Pixels(
         canvas_size_.width(), canvas_size_.height(), layer_is_opaque_);
     // TODO(danak): Remove when skia does the check for us: crbug.com/360384
-    CHECK(alloc);
     canvas_ = skia::AdoptRef(new SkCanvas(bitmap_backing_));
     DCHECK_EQ(content_rect.width(), canvas_->getBaseLayerSize().width());
     DCHECK_EQ(content_rect.height(), canvas_->getBaseLayerSize().height());

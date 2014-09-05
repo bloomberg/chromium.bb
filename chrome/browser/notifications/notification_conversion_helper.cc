@@ -168,7 +168,7 @@ bool NotificationConversionHelper::NotificationBitmapToGfxImage(
 
   SkBitmap bitmap;
   // Allocate the actual backing store with the sanitized dimensions.
-  if (!bitmap.allocN32Pixels(width, height))
+  if (!bitmap.tryAllocN32Pixels(width, height))
     return false;
 
   // Ensure that our bitmap and our data now refer to the same number of pixels.

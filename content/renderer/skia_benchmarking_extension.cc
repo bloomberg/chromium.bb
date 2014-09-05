@@ -158,7 +158,7 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
   gfx::Rect snapped_clip = gfx::ToEnclosingRect(clip);
 
   SkBitmap bitmap;
-  if (!bitmap.allocN32Pixels(snapped_clip.width(), snapped_clip.height()))
+  if (!bitmap.tryAllocN32Pixels(snapped_clip.width(), snapped_clip.height()))
     return;
   bitmap.eraseARGB(0, 0, 0, 0);
 

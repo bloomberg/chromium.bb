@@ -10,7 +10,7 @@ namespace skia {
 BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
                                                    bool is_opaque) {
   SkBitmap bitmap;
-  if (bitmap.allocN32Pixels(width, height, is_opaque)) {
+  if (bitmap.tryAllocN32Pixels(width, height, is_opaque)) {
     // Follow the logic in SkCanvas::createDevice(), initialize the bitmap if it
     // is not opaque.
     if (!is_opaque)
@@ -37,7 +37,7 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
       is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType));
   if (data)
     bitmap.setPixels(data);
-  else if (!bitmap.allocPixels())
+  else if (!bitmap.tryAllocPixels())
     return NULL;
 
   return new BitmapPlatformDevice(bitmap);
@@ -85,7 +85,7 @@ PlatformBitmap::~PlatformBitmap() {
 }
 
 bool PlatformBitmap::Allocate(int width, int height, bool is_opaque) {
-  if (!bitmap_.allocN32Pixels(width, height, is_opaque))
+  if (!bitmap_.tryAllocN32Pixels(width, height, is_opaque))
     return false;
 
   surface_ = bitmap_.getPixels();

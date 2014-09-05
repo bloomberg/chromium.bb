@@ -132,7 +132,7 @@ bool UnpickleImage(PickleIterator* it, gfx::ImageSkia* out) {
       return false;
 
     SkBitmap bitmap;
-    if (!bitmap.allocPixels(SkImageInfo::Make(
+    if (!bitmap.tryAllocPixels(SkImageInfo::Make(
         width, height, color_type, kPremul_SkAlphaType)))
       return false;
 

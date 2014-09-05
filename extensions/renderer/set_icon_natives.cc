@@ -69,7 +69,7 @@ bool SetIconNatives::ConvertImageDataToBitmapValue(
   }
 
   SkBitmap bitmap;
-  if (!bitmap.allocN32Pixels(width, height)) {
+  if (!bitmap.tryAllocN32Pixels(width, height)) {
     isolate->ThrowException(
         v8::Exception::Error(v8::String::NewFromUtf8(isolate, kNoMemory)));
     return false;

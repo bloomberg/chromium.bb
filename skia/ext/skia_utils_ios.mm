@@ -18,7 +18,7 @@ SkBitmap CGImageToSkBitmap(CGImageRef image, CGSize size, bool is_opaque) {
   if (!image)
     return bitmap;
 
-  if (!bitmap.allocN32Pixels(size.width, size.height, is_opaque))
+  if (!bitmap.tryAllocN32Pixels(size.width, size.height, is_opaque))
     return bitmap;
 
   void* data = bitmap.getPixels();

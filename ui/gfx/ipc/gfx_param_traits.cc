@@ -37,7 +37,7 @@ struct SkBitmap_Data {
   bool InitSkBitmapFromData(SkBitmap* bitmap,
                             const char* pixels,
                             size_t pixels_size) const {
-    if (!bitmap->allocPixels(
+    if (!bitmap->tryAllocPixels(
             SkImageInfo::Make(fWidth, fHeight, fColorType, fAlphaType)))
       return false;
     if (pixels_size != bitmap->getSize())

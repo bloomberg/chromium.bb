@@ -27,7 +27,7 @@ SkBitmap NSImageOrNSImageRepToSkBitmapWithColorSpace(
   DCHECK((image != 0) ^ (image_rep != 0));
 
   SkBitmap bitmap;
-  if (!bitmap.allocN32Pixels(size.width, size.height, is_opaque))
+  if (!bitmap.tryAllocN32Pixels(size.width, size.height, is_opaque))
     return bitmap;  // Return |bitmap| which should respond true to isNull().
 
 
@@ -430,7 +430,7 @@ CGContextRef SkiaBitLocker::cgContext() {
       return 0;
     bitmap_.lockPixels();
   } else {
-    bool result = bitmap_.allocN32Pixels(
+    bool result = bitmap_.tryAllocN32Pixels(
         clip_bounds.width(), clip_bounds.height());
     DCHECK(result);
     if (!result)

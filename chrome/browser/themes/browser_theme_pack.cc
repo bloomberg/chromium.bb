@@ -477,8 +477,7 @@ SkBitmap CreateLowQualityResizedBitmap(const SkBitmap& source_bitmap,
                      ui::GetScaleForScaleFactor(desired_scale_factor) /
                      ui::GetScaleForScaleFactor(source_scale_factor)));
   SkBitmap scaled_bitmap;
-  if (!scaled_bitmap.allocN32Pixels(scaled_size.width(), scaled_size.height()))
-    SK_CRASH();
+  scaled_bitmap.allocN32Pixels(scaled_size.width(), scaled_size.height());
   scaled_bitmap.eraseARGB(0, 0, 0, 0);
   SkCanvas canvas(scaled_bitmap);
   SkRect scaled_bounds = RectToSkRect(gfx::Rect(scaled_size));

@@ -1748,10 +1748,10 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
     return;
 
   scoped_ptr<SkBitmap> bitmap(new SkBitmap);
-  if (!bitmap->allocPixels(SkImageInfo::Make(dst_size_in_pixel.width(),
-                                             dst_size_in_pixel.height(),
-                                             color_type,
-                                             kOpaque_SkAlphaType)))
+  if (!bitmap->tryAllocPixels(SkImageInfo::Make(dst_size_in_pixel.width(),
+                                                dst_size_in_pixel.height(),
+                                                color_type,
+                                                kOpaque_SkAlphaType)))
     return;
 
   ImageTransportFactoryAndroid* factory =

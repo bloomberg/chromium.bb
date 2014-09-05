@@ -31,7 +31,7 @@ class TestTable : public TableRowNSImageCache::Table {
 
 SkBitmap MakeImage(int width, int height) {
   SkBitmap image;
-  EXPECT_TRUE(image.allocN32Pixels(width, height));
+  image.allocN32Pixels(width, height);
   image.eraseARGB(255, 255, 0, 0);
   return image;
 }

@@ -487,7 +487,7 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
     if (filter) {
       SkImageInfo info = SkImageInfo::MakeN32Premul(
           content_texture->size().width(), content_texture->size().height());
-      if (filter_bitmap.allocPixels(info)) {
+      if (filter_bitmap.tryAllocPixels(info)) {
         SkCanvas canvas(filter_bitmap);
         SkPaint paint;
         paint.setImageFilter(filter.get());
