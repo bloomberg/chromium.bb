@@ -320,6 +320,7 @@ public:
     virtual GraphicsLayer* layerForScrollCorner() const OVERRIDE;
 
 protected:
+    virtual void scrollContentsIfNeeded();
     virtual bool scrollContentsFastPath(const IntSize& scrollDelta) OVERRIDE;
     virtual void scrollContentsSlowPath(const IntRect& updateRect) OVERRIDE;
 
@@ -384,6 +385,7 @@ private:
     void didScrollTimerFired(Timer<FrameView>*);
 
     void updateLayersAndCompositingAfterScrollIfNeeded();
+    void updateFixedElementPaintInvalidationRectsAfterScroll();
     void updateCompositedSelectionBoundsIfNeeded();
 
     bool hasCustomScrollbars() const;

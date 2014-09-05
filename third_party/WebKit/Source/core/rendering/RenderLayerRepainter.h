@@ -58,6 +58,8 @@ class RenderLayerRepainter {
 public:
     RenderLayerRepainter(RenderLayerModelObject&);
 
+    LayoutRect paintInvalidationRectIncludingNonCompositingDescendants() const;
+
     void paintInvalidationIncludingNonCompositingDescendants();
 
     void computePaintInvalidationRectsIncludingNonCompositingDescendants();

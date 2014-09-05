@@ -271,7 +271,7 @@ protected:
     virtual void updateScrollCorner();
     virtual void invalidateScrollCornerRect(const IntRect&) OVERRIDE;
 
-    void scrollContentsIfNeeded();
+    virtual void scrollContentsIfNeeded();
     // Scroll the content by via the compositor.
     virtual bool scrollContentsFastPath(const IntSize& scrollDelta) { return true; }
     // Scroll the content by invalidating everything.
