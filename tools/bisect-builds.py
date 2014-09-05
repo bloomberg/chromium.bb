@@ -65,8 +65,10 @@ GITHASH_TO_SVN_URL = {
 
 # Search pattern to be matched in the JSON output from
 # CHROMIUM_GITHASH_TO_SVN_URL to get the chromium revision (svn revision).
-CHROMIUM_SEARCH_PATTERN = (
+CHROMIUM_SEARCH_PATTERN_OLD = (
     r'.*git-svn-id: svn://svn.chromium.org/chrome/trunk/src@(\d+) ')
+CHROMIUM_SEARCH_PATTERN = (
+    r'Cr-Commit-Position: refs/heads/master@{#(\d+)}')
 
 # Search pattern to be matched in the json output from
 # BLINK_GITHASH_TO_SVN_URL to get the blink revision (svn revision).
@@ -338,6 +340,12 @@ class PathContext(object):
       result = search_pattern.search(message[len(message)-1])
       if result:
         return result.group(1)
+      else:
+        if depot == 'chromium':
+          result = re.search(CHROMIUM_SEARCH_PATTERN_OLD,
+                             message[len(message)-1])
+          if result:
+            return result.group(1)
     print 'Failed to get svn revision number for %s' % git_sha1
     raise ValueError
 
