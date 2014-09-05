@@ -1334,5 +1334,3 @@ crbug.com/402801 [ XP Release ] http/tests/misc/location-replace-crossdomain.htm
 
 # Part of a larger issue referenced in the bug. This specific issue will be fixed shortly.
 crbug.com/408159 accessibility/is-ignored-change-sends-notification.html [ Timeout ]
-
-crbug.com/410491 fast/block/float/015.html [ NeedsRebaseline ]
