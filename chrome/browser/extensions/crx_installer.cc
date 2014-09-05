@@ -494,10 +494,10 @@ void CrxInstaller::CheckInstall() {
       } else if (imported_module &&
           !SharedModuleInfo::IsExportAllowedByWhitelist(imported_module,
                                                         extension()->id())) {
-        ReportFailureFromUIThread(
-            CrxInstallerError(l10n_util::GetStringFUTF16(
-                IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_WHITELISTED,
-                base::ASCIIToUTF16(i->extension_id))));
+        ReportFailureFromUIThread(CrxInstallerError(l10n_util::GetStringFUTF16(
+            IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_WHITELISTED,
+            base::UTF8ToUTF16(extension()->name()),
+            base::UTF8ToUTF16(imported_module->name()))));
         return;
       }
     }
