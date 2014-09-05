@@ -60,25 +60,3 @@ TEST(RefCountedUnitTest, ScopedRefPtrToSelf) {
   check->SelfDestruct();
   EXPECT_TRUE(ScopedRefPtrToSelf::was_destroyed());
 }
-
-TEST(RefCountedUnitTest, ScopedRefPtrBooleanOperations) {
-  scoped_refptr<SelfAssign> p1 = new SelfAssign;
-  scoped_refptr<SelfAssign> p2;
-
-  EXPECT_TRUE(p1);
-  EXPECT_FALSE(!p1);
-
-  EXPECT_TRUE(!p2);
-  EXPECT_FALSE(p2);
-
-  EXPECT_NE(p1, p2);
-
-  SelfAssign* raw_p = new SelfAssign;
-  p2 = raw_p;
-  EXPECT_NE(p1, p2);
-  EXPECT_EQ(raw_p, p2);
-
-  p2 = p1;
-  EXPECT_NE(raw_p, p2);
-  EXPECT_EQ(p1, p2);
-}

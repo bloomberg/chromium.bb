@@ -6,6 +6,7 @@
 #define BASE_MEMORY_REF_COUNTED_H_
 
 #include <cassert>
+#include <iosfwd>
 
 #include "base/atomic_ref_count.h"
 #include "base/base_export.h"
@@ -14,6 +15,11 @@
 #include "base/logging.h"
 #endif
 #include "base/threading/thread_collision_warner.h"
+#include "build/build_config.h"
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#define DISABLE_SCOPED_REFPTR_CONVERSION_OPERATOR
+#endif
 
 namespace base {
 
@@ -291,9 +297,11 @@ class scoped_refptr {
 
   T* get() const { return ptr_; }
 
+#if !defined(DISABLE_SCOPED_REFPTR_CONVERSION_OPERATOR)
   // Allow scoped_refptr<C> to be used in boolean expression
   // and comparison operations.
   operator T*() const { return ptr_; }
+#endif
 
   T& operator*() const {
     assert(ptr_ != NULL);
@@ -335,6 +343,23 @@ class scoped_refptr {
     swap(&r.ptr_);
   }
 
+#if defined(DISABLE_SCOPED_REFPTR_CONVERSION_OPERATOR)
+  template <typename U>
+  bool operator==(const scoped_refptr<U>& rhs) const {
+    return ptr_ == rhs.get();
+  }
+
+  template <typename U>
+  bool operator!=(const scoped_refptr<U>& rhs) const {
+    return !operator==(rhs);
+  }
+
+  template <typename U>
+  bool operator<(const scoped_refptr<U>& rhs) const {
+    return ptr_ < rhs.get();
+  }
+#endif
+
  protected:
   T* ptr_;
 };
@@ -345,5 +370,33 @@ template <typename T>
 scoped_refptr<T> make_scoped_refptr(T* t) {
   return scoped_refptr<T>(t);
 }
+
+#if defined(DISABLE_SCOPED_REFPTR_CONVERSION_OPERATOR)
+// Temporary operator overloads to facilitate the transition...
+template <typename T, typename U>
+bool operator==(const scoped_refptr<T>& lhs, const U* rhs) {
+  return lhs.get() == rhs;
+}
+
+template <typename T, typename U>
+bool operator==(const T* lhs, const scoped_refptr<U>& rhs) {
+  return lhs == rhs.get();
+}
+
+template <typename T, typename U>
+bool operator!=(const scoped_refptr<T>& lhs, const U* rhs) {
+  return !operator==(lhs, rhs);
+}
+
+template <typename T, typename U>
+bool operator!=(const T* lhs, const scoped_refptr<U>& rhs) {
+  return !operator==(lhs, rhs);
+}
+
+template <typename T>
+std::ostream& operator<<(std::ostream& out, const scoped_refptr<T>& p) {
+  return out << p.get();
+}
+#endif  // defined(DISABLE_SCOPED_REFPTR_CONVERSION_OPERATOR)
 
 #endif  // BASE_MEMORY_REF_COUNTED_H_
