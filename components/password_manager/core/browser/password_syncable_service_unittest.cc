@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_error.h"
@@ -75,7 +76,10 @@ MATCHER_P(PasswordIs, form, "") {
       expected_password.date_created() == actual_password.date_created() &&
       expected_password.blacklisted() == actual_password.blacklisted() &&
       expected_password.type() == actual_password.type() &&
-      expected_password.times_used() == actual_password.times_used())
+      expected_password.times_used() == actual_password.times_used() &&
+      expected_password.display_name() == actual_password.display_name() &&
+      expected_password.avatar_url() == actual_password.avatar_url() &&
+      expected_password.federation_url() == actual_password.federation_url())
     return true;
 
   *result_listener << "Password protobuf does not match; expected:\n"
@@ -112,6 +116,9 @@ SyncData CreateSyncData(const std::string& signon_realm) {
   password_specifics->set_signon_realm(signon_realm);
   password_specifics->set_type(autofill::PasswordForm::TYPE_GENERATED);
   password_specifics->set_times_used(3);
+  password_specifics->set_display_name("Mr. X");
+  password_specifics->set_avatar_url("https://accounts.google.com/Avatar");
+  password_specifics->set_federation_url("https://google.com/federation");
 
   std::string tag = MakePasswordSyncTag(*password_specifics);
   return syncer::SyncData::CreateLocalData(tag, tag, password_data);
@@ -260,6 +267,9 @@ TEST_F(PasswordSyncableServiceTest, AdditionOnlyInPasswordStore) {
   form.signon_realm = "abc";
   form.times_used = 2;
   form.type = autofill::PasswordForm::TYPE_GENERATED;
+  form.display_name = base::ASCIIToUTF16("Agent Smith");
+  form.avatar_url = GURL("https://fb.com/Avatar");
+  form.federation_url = GURL("https://fb.com/federation_url");
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(AppendForm(form));
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_))
@@ -279,7 +289,7 @@ TEST_F(PasswordSyncableServiceTest, AdditionOnlyInPasswordStore) {
 TEST_F(PasswordSyncableServiceTest, BothInSync) {
   autofill::PasswordForm form;
   form.signon_realm = "abc";
-  form.times_used = 3;
+  form.times_used = 5;
   form.type = autofill::PasswordForm::TYPE_GENERATED;
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(AppendForm(form));
@@ -290,7 +300,7 @@ TEST_F(PasswordSyncableServiceTest, BothInSync) {
 
   service()->MergeDataAndStartSyncing(
       syncer::PASSWORDS,
-      SyncDataList(1, CreateSyncData("abc")),
+      SyncDataList(1, SyncDataFromPassword(form)),
       processor_.PassAs<syncer::SyncChangeProcessor>(),
       scoped_ptr<syncer::SyncErrorFactory>());
 }
@@ -395,6 +405,9 @@ TEST_F(PasswordSyncableServiceTest, GetAllSyncData) {
   form1.action = GURL("http://foo.com");
   form1.times_used = 5;
   form1.type = autofill::PasswordForm::TYPE_GENERATED;
+  form1.display_name = base::ASCIIToUTF16("Agent Smith");
+  form1.avatar_url = GURL("https://fb.com/Avatar");
+  form1.federation_url = GURL("https://fb.com/federation_url");
   autofill::PasswordForm form2;
   form2.signon_realm = "xyz";
   form2.action = GURL("http://bar.com");

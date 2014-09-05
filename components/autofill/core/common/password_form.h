@@ -220,6 +220,7 @@ struct PasswordForm {
   GURL federation_url;
 
   // If true, Chrome will sign the user in automatically using the credentials.
+  // This field isn't synced deliberately.
   bool is_zero_click;
 
   // Returns true if this match was found using public suffix matching.

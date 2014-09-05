@@ -243,6 +243,9 @@ base::DictionaryValue* PasswordSpecificsDataToValue(
   SET_BOOL(blacklisted);
   SET_INT32(type);
   SET_INT32(times_used);
+  SET_STR(display_name);
+  SET_STR(avatar_url);
+  SET_STR(federation_url);
   return value;
 }
 
