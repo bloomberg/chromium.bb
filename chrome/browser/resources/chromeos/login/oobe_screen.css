@@ -143,8 +143,6 @@ html[dir=rtl] .step-extra-controls {
 #oobe.eula #back-button,
 #oobe.kiosk-enable #kiosk-cancel-button,
 #oobe.kiosk-enable #kiosk-enable-button,
-#oobe.reset #reset-button,
-#oobe.reset #reset-cancel-button,
 #oobe.signin #signin-button,
 #oobe.user-image #ok-button {
   display: block;

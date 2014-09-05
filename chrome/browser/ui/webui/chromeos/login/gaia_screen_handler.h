@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "net/base/net_errors.h"
 
@@ -61,6 +62,7 @@ class GaiaScreenHandler : public BaseScreenHandler {
   };
 
   GaiaScreenHandler(
+      CoreOobeActor* core_oobe_actor,
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
       policy::ConsumerManagementService* consumer_management);
   virtual ~GaiaScreenHandler();
@@ -173,6 +175,8 @@ class GaiaScreenHandler : public BaseScreenHandler {
 
   // Consumer management service for checking if enrollment is in progress.
   policy::ConsumerManagementService* consumer_management_;
+
+  CoreOobeActor* core_oobe_actor_;
 
   // Email to pre-populate with.
   std::string populated_email_;

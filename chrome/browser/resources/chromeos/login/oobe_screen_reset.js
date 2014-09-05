@@ -9,18 +9,24 @@
 login.createScreen('ResetScreen', 'reset', function() {
   return {
 
+    /* Possible UI states of the reset screen. */
+    RESET_SCREEN_UI_STATE: {
+      REVERT_PROMISE: 'ui-state-revert-promise',
+      RESTART_REQUIRED: 'ui-state-restart-required',
+      POWERWASH_PROPOSAL: 'ui-state-powerwash-proposal',
+      POWERWASH_CONFIRM: 'ui-state-powerwash-confirm',
+      ROLLBACK_CONFIRM: 'ui-state-rollback-confirm'
+    },
+
     EXTERNAL_API: [
+      'hideRollbackOption',
+      'showRollbackOption',
       'updateViewOnRollbackCall'
     ],
 
     /** @override */
     decorate: function() {
-      $('reset-powerwash-help-link-on-rollback').addEventListener(
-          'click', function(event) {
-        chrome.send('resetOnLearnMore');
-      });
-      $('powerwash-help-link').addEventListener(
-          'click', function(event) {
+      $('powerwash-help-link').addEventListener('click', function(event) {
         chrome.send('resetOnLearnMore');
       });
     },
@@ -39,18 +45,45 @@ login.createScreen('ResetScreen', 'reset', function() {
      */
     get buttons() {
       var buttons = [];
+      var restartButton = this.ownerDocument.createElement('button');
+      restartButton.id = 'reset-restart-button';
+      restartButton.textContent = loadTimeData.getString('resetButtonRestart');
+      restartButton.addEventListener('click', function(e) {
+        chrome.send('restartOnReset');
+        e.stopPropagation();
+      });
+      buttons.push(restartButton);
+
+      // Button that initiates actual powerwash or powerwash with rollback.
       var resetButton = this.ownerDocument.createElement('button');
       resetButton.id = 'reset-button';
-      resetButton.textContent = '';
+      resetButton.textContent = loadTimeData.getString('resetButtonReset');
       resetButton.addEventListener('click', function(e) {
-        if ($('reset').needRestart)
-          chrome.send('restartOnReset', [$('reset-rollback-checkbox').checked]);
-        else
-          chrome.send('powerwashOnReset',
-                      [$('reset-rollback-checkbox').checked]);
+        chrome.send('powerwashOnReset', [$('reset').rollbackChecked]);
         e.stopPropagation();
       });
       buttons.push(resetButton);
+
+      // Button that leads to confirmation dialog.
+      var toConfirmButton = this.ownerDocument.createElement('button');
+      toConfirmButton.id = 'reset-toconfirm-button';
+      toConfirmButton.textContent =
+          loadTimeData.getString('resetButtonPowerwash');
+      toConfirmButton.addEventListener('click', function(e) {
+        // change view to confirmational
+        var resetScreen = $('reset');
+        resetScreen.isConfirmational = true;
+        if (resetScreen.rollbackChecked && resetScreen.rollbackAvailable) {
+          resetScreen.setDialogView_(
+              resetScreen.RESET_SCREEN_UI_STATE.ROLLBACK_CONFIRM);
+        } else {
+          resetScreen.setDialogView_(
+              resetScreen.RESET_SCREEN_UI_STATE.POWERWASH_CONFIRM);
+        }
+        chrome.send('showConfirmationOnReset');
+        e.stopPropagation();
+      });
+      buttons.push(toConfirmButton);
 
       var cancelButton = this.ownerDocument.createElement('button');
       cancelButton.id = 'reset-cancel-button';
@@ -68,6 +101,14 @@ login.createScreen('ResetScreen', 'reset', function() {
      * Returns a control which should receive an initial focus.
      */
     get defaultControl() {
+      // choose
+      if (this.needRestart)
+        return $('reset-restart-button');
+      if (this.isConfirmational)
+        if (this.rollbackChecked)
+          return $('reset-button');
+      else
+        return $('reset-toconfirm-button');
       return $('reset-button');
     },
 
@@ -85,75 +126,64 @@ login.createScreen('ResetScreen', 'reset', function() {
     onBeforeShow: function(data) {
       if (data === undefined)
         return;
-      this.classList.remove('revert-promise');
-      if ('showRestartMsg' in data)
-        this.setRestartMsg_(data['showRestartMsg']);
-      if ('showRollbackOption' in data)
-        this.setRollbackAvailable_(data['showRollbackOption']);
-      if ('simpleConfirm' in data) {
-        this.isConfirmational = data['simpleConfirm'];
-        this.confirmRollback = false;
-      }
-      if ('rollbackConfirm' in data) {
-        this.isConfirmational = data['rollbackConfirm'];
-        this.confirmRollback = true;
-      }
 
-      if (this.isConfirmational) {
-        // Exec after reboot initiated by reset screen.
-        // Confirmational form of screen.
-        $('reset-button').textContent = loadTimeData.getString(
-            'resetButtonReset');
-        if (this.confirmRollback) {
-          $('reset-warning-msg').textContent = loadTimeData.getString(
-              'resetAndRollbackWarningTextConfirmational');
-          $('reset-warning-details').textContent = loadTimeData.getString(
-              'resetAndRollbackWarningDetailsConfirmational');
-        } else {
-          $('reset-warning-msg').textContent = loadTimeData.getString(
-              'resetWarningTextConfirmational');
-          $('reset-warning-details').textContent = loadTimeData.getString(
-              'resetWarningDetailsConfirmational');
-        }
+      this.rollbackChecked = false;
+      this.rollbackAvailable = false;
+      this.isConfirmational = false;
+
+      if ('rollbackAvailable' in data)
+        this.rollbackAvailable = data['rollbackAvailable'];
+
+      if ('restartRequired' in data && data['restartRequired']) {
+        this.restartRequired = true;
+        this.setDialogView_(this.RESET_SCREEN_UI_STATE.RESTART_REQUIRED);
       } else {
-        $('reset-warning-msg').textContent = loadTimeData.getString(
-            'resetWarningTextInitial');
-        $('reset-warning-details').textContent = loadTimeData.getString(
-            'resetWarningDetailsInitial');
-        if (this.needRestart) {
-          $('reset-button').textContent = loadTimeData.getString(
-              'resetButtonRelaunch');
-        } else {
-          $('reset-button').textContent = loadTimeData.getString(
-              'resetButtonPowerwash');
-        }
+        this.restartRequired = false;
+        this.setDialogView_(this.RESET_SCREEN_UI_STATE.POWERWASH_PROPOSAL);
       }
     },
 
     /**
-      * Sets restart necessity for the screen.
-      * @param {bool} need_restart. If restart required before reset.
+      * Sets css style for corresponding state of the screen.
+      * @param {string} state.
       * @private
       */
-    setRestartMsg_: function(need_restart) {
-      this.classList.toggle('norestart', !need_restart);
-      this.needRestart = need_restart;
-    },
-
-    /**
-      * Sets rollback availability for the screen.
-      * @param {bool} can_rollback. If Rollback is available on reset screen.
-      * @private
-      */
-    setRollbackAvailable_: function(show_rollback) {
-      this.classList.toggle('norollback', !show_rollback);
-      this.showRollback = show_rollback;
+    setDialogView_: function(state) {
+      this.classList.remove('revert-promise-view');
+      this.classList.remove('restart-required-view');
+      this.classList.remove('powerwash-proposal-view');
+      this.classList.remove('powerwash-confirm-view');
+      this.classList.remove('rollback-confirm-view');
+      if (state == this.RESET_SCREEN_UI_STATE.REVERT_PROMISE)
+        this.classList.add('revert-promise-view');
+      else if (state == this.RESET_SCREEN_UI_STATE.RESTART_REQUIRED)
+        this.classList.add('restart-required-view');
+      else if (state == this.RESET_SCREEN_UI_STATE.POWERWASH_PROPOSAL)
+        this.classList.add('powerwash-proposal-view');
+      else if (state == this.RESET_SCREEN_UI_STATE.POWERWASH_CONFIRM)
+        this.classList.add('powerwash-confirm-view');
+      else if (state == this.RESET_SCREEN_UI_STATE.ROLLBACK_CONFIRM)
+        this.classList.add('rollback-confirm-view');
+      else  // error
+        console.error('State ' + state + ' is not supported by setDialogView.');
     },
 
     updateViewOnRollbackCall: function() {
-      this.classList.add('revert-promise');
+      this.setDialogView_(this.RESET_SCREEN_UI_STATE.REVERT_PROMISE);
       announceAccessibleMessage(
           loadTimeData.getString('resetRevertSpinnerMessage'));
+    },
+
+    showRollbackOption: function() {
+      $('reset-toconfirm-button').textContent = loadTimeData.getString(
+          'resetButtonPowerwashAndRollback');
+      this.rollbackChecked = true;
+    },
+
+    hideRollbackOption: function() {
+      $('reset-toconfirm-button').textContent = loadTimeData.getString(
+          'resetButtonPowerwash');
+      this.rollbackChecked = false;
     }
   };
 });

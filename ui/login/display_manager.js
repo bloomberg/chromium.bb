@@ -46,6 +46,10 @@
 /** @const */ var ACCELERATOR_APP_LAUNCH_BAILOUT = 'app_launch_bailout';
 /** @const */ var ACCELERATOR_APP_LAUNCH_NETWORK_CONFIG =
     'app_launch_network_config';
+/** @const */ var ACCELERATOR_SHOW_ROLLBACK_ON_RESET =
+    'show_rollback_on_reset_screen';
+/** @const */ var ACCELERATOR_HIDE_ROLLBACK_ON_RESET =
+    'hide_rollback_on_reset_screen';
 
 /* Signin UI state constants. Used to control header bar UI. */
 /** @const */ var SIGNIN_UI_STATE = {
@@ -372,6 +376,12 @@ cr.define('cr.ui.login', function() {
       } else if (name == ACCELERATOR_APP_LAUNCH_NETWORK_CONFIG) {
         if (currentStepId == SCREEN_APP_LAUNCH_SPLASH)
           chrome.send('networkConfigRequest');
+      } else if (name == ACCELERATOR_SHOW_ROLLBACK_ON_RESET) {
+        if (currentStepId == SCREEN_OOBE_RESET)
+          chrome.send('showRollbackOnResetScreen');
+      } else if (name == ACCELERATOR_HIDE_ROLLBACK_ON_RESET) {
+        if (currentStepId == SCREEN_OOBE_RESET)
+          chrome.send('hideRollbackOnResetScreen');
       }
 
       if (!this.forceKeyboardFlow_)

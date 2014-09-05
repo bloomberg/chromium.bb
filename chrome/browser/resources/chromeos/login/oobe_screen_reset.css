@@ -3,21 +3,6 @@
  * found in the LICENSE file.
  */
 
-.norollback #rollback,
-.norestart #reset-warning-restart,
-.revert-promise #reset-info,
-.revert-promise #rollback,
-.revert-promise #reset-controls,
-#powerwash-help-link,
-#revert-promise {
-  display: none;
-}
-
-.norollback #powerwash-help-link,
-.revert-promise #revert-promise {
-  display: block;
-}
-
 #reset {
   display: flex;
   flex-flow: column;
@@ -42,7 +27,9 @@
   height: 112px;
 }
 
-#reset #reset-warning-msg {
+#reset #reset-warning-msg,
+#reset #powerwash-warning-msg,
+#reset #powerwash-and-rollback-warning-msg {
   color: #606060;
   font-size: 22px;
   padding: 5px 45px 30px;
@@ -69,3 +56,34 @@
   display: inline-block;
   padding: 25px 0;
 }
+
+.powerwash-proposal-specific,
+.powerwash-confirm-specific,
+.rollback-confirm-specific,
+.revert-promise-specific,
+.restart-required-specific {
+  display: none;
+}
+
+.powerwash-proposal-view .powerwash-proposal-specific,
+.powerwash-confirm-view .powerwash-confirm-specific,
+.rollback-confirm-view .rollback-confirm-specific,
+.restart-required-view .restart-required-specific,
+.revert-promise-view .revert-promise-specific {
+  display: block;
+}
+
+#reset-restart-button,
+#reset-button,
+#reset-toconfirm-button,
+.revert-promise-view #reset-controls {
+  display: none;
+}
+
+.restart-required-view #reset-restart-button,
+.powerwash-confirm-view #reset-button,
+.rollback-confirm-view #reset-button,
+.powerwash-proposal-view #reset-toconfirm-button {
+  display: inline-block;
+}
+

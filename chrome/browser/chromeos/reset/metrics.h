@@ -19,11 +19,14 @@ enum DialogViewType {
   // Invoked with shortcut. Confirming form for powerwash and rollback.
   DIALOG_SHORTCUT_CONFIRMING_POWERWASH_AND_ROLLBACK,
 
-  // Invoked with shortcut. Offering form, rollback checkbox unavailable.
+  // Invoked with shortcut. Offering form, rollback option set.
   DIALOG_SHORTCUT_OFFERING_ROLLBACK_UNAVAILABLE,
 
-  // Invoked with shortcut. Offering form, rollback checkbox available.
+  // Invoked with shortcut. Offering form, rollback option not set.
   DIALOG_SHORTCUT_OFFERING_ROLLBACK_AVAILABLE,
+
+  // Invoked with shortcut. Requesting restart form.
+  DIALOG_SHORTCUT_RESTART_REQUIRED,
 
   // Must be last enum element.
   DIALOG_VIEW_TYPE_SIZE

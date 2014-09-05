@@ -1,30 +1,44 @@
 <div class="step faded hidden no-logo" id="reset" role="group" hidden
      i18n-values="aria-label:resetScreenAccessibleTitle">
   <div class="step-contents">
-    <div id="reset-warning-msg"></div>
+    <div id="reset-warning-msg" i18n-content="resetWarningTitle"
+        class="revert-promise-specific restart-required-specific
+               powerwash-proposal-specific">
+    </div>
+    <div id="powerwash-warning-msg"
+        i18n-content="resetPowerwashWarningTitle"
+        class="powerwash-confirm-specific">
+    </div>
+    <div id="powerwash-and-rollback-warning-msg"
+        i18n-content="resetPowerwasAndRollbackhWarningTitle"
+        class="rollback-confirm-specific"></div>
     <img id="reset-warning-icon" src="chrome://theme/IDR_RESET_WARNING"
         i18n-values="alt:resetScreenIconTitle">
-    <div id="reset-info">
-      <div id="reset-warning-details" class="reset-text"></div>
-      <div id="reset-warning-data-details" class="reset-text"
+    <div id="reset-info"
+        class="reset-text powerwash-proposal-specific powerwash-confirm-specific
+               rollback-confirm-specific restart-required-specific">
+      <div id="powerwash-warning-details"
+          i18n-content="resetPowerwashWarningDetails"
+          class="powerwash-proposal-specific">
+      </div>
+      <div id="powerwash-confirmation-details"
+          i18n-content="resetPowerwashConfirmationDetails"
+          class="reset-text powerwash-confirm-specific">
+      </div>
+      <div id="powerwash-and-rollback-confirmation-details"
+          i18n-content="resetPowerwashRollbackConfirmationDetails"
+          class="reset-text rollback-confirm-specific"></div>
+      <div id="reset-warning-data-details"
+          class="reset-text powerwash-proposal-specific
+                 powerwash-confirm-specific rollback-confirm-specific"
           i18n-content="resetWarningDataDetails">
       </div>
-      <a id="powerwash-help-link" href="#" i18n-content="learnMore"></a>
       <div id="reset-warning-restart" i18n-content="resetRestartMessage"
-           class="reset-text">
+           class="reset-text restart-required-specific">
       </div>
+      <a id="powerwash-help-link" href="#" i18n-content="learnMore"></a>
     </div>
-    <div id="rollback" class="reset-text">
-      <div>
-        <input id="reset-rollback-checkbox" type="checkbox">
-        <label for="reset-rollback-checkbox" i18n-content="resetRollbackOption">
-        </label>
-        <a id="reset-powerwash-help-link-on-rollback" href="#"
-           i18n-content="learnMore">
-        </a>
-      </div>
-    </div>
-    <div id="revert-promise">
+    <div id="revert-promise" class="revert-promise-specific">
       <div id="reset-revert-promise-msg" i18n-content="resetRevertPromise">
       </div>
       <div id="reset-revert-spinner" class="throbber">

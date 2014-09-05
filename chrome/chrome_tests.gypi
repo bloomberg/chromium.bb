@@ -1317,7 +1317,7 @@
         'browser/net/nss_context_chromeos_browsertest.cc',
         'browser/net/predictor_browsertest.cc',
         'browser/net/proxy_browsertest.cc',
-	'browser/net/sdch_browsertest.cc',
+        'browser/net/sdch_browsertest.cc',
         'browser/net/websocket_browsertest.cc',
         'browser/notifications/login_state_notification_blocker_chromeos_browsertest.cc',
         'browser/notifications/message_center_notifications_browsertest.cc',

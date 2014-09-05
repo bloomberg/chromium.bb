@@ -264,7 +264,8 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
       g_browser_process->platform_part()->browser_policy_connector_chromeos()->
           GetConsumerManagementService();
   gaia_screen_handler_ =
-      new GaiaScreenHandler(network_state_informer_, consumer_management);
+      new GaiaScreenHandler(
+          core_handler_, network_state_informer_, consumer_management);
   AddScreenHandler(gaia_screen_handler_);
 
   signin_screen_handler_ = new SigninScreenHandler(network_state_informer_,

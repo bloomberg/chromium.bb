@@ -1960,10 +1960,6 @@ const char kTabStripStackedLayout[] = "tab-strip-stacked-layout";
 // Indicates that factory reset was requested from options page or reset screen.
 const char kFactoryResetRequested[] = "FactoryResetRequested";
 
-// Indicates that rollback was requested alongside with factory reset.
-// Makes sense only if kFactoryResetRequested is true.
-const char kRollbackRequested[] = "RollbackRequested";
-
 // Boolean recording whether we have showed a balloon that calls out the message
 // center for desktop notifications.
 const char kMessageCenterShowedFirstRunBalloon[] =

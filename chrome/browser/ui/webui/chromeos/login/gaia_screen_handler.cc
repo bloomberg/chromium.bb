@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -114,6 +116,7 @@ GaiaContext::GaiaContext()
       has_users(false) {}
 
 GaiaScreenHandler::GaiaScreenHandler(
+    CoreOobeActor* core_oobe_actor,
     const scoped_refptr<NetworkStateInformer>& network_state_informer,
     policy::ConsumerManagementService* consumer_management)
     : BaseScreenHandler(kJsScreenPath),
@@ -121,6 +124,7 @@ GaiaScreenHandler::GaiaScreenHandler(
       frame_error_(net::OK),
       network_state_informer_(network_state_informer),
       consumer_management_(consumer_management),
+      core_oobe_actor_(core_oobe_actor),
       dns_cleared_(false),
       dns_clear_task_running_(false),
       cookies_cleared_(false),
@@ -567,8 +571,13 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
     if (focus_stolen_)
       HandleGaiaUIReady();
   }
-
   signin_screen_handler_->UpdateState(ErrorScreenActor::ERROR_REASON_UPDATE);
+
+  PrefService* prefs = g_browser_process->local_state();
+  if (prefs->GetBoolean(prefs::kFactoryResetRequested)) {
+    if (core_oobe_actor_)
+      core_oobe_actor_->ShowDeviceResetScreen();
+  }
 }
 
 void GaiaScreenHandler::MaybePreloadAuthExtension() {

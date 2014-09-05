@@ -65,6 +65,8 @@ const char kAccelNameDeviceRequisitionRemora[] = "device_requisition_remora";
 const char kAccelNameDeviceRequisitionShark[] = "device_requisition_shark";
 const char kAccelNameAppLaunchBailout[] = "app_launch_bailout";
 const char kAccelNameAppLaunchNetworkConfig[] = "app_launch_network_config";
+const char kAccelNameShowRollbackOption[] = "show_rollback_on_reset_screen";
+const char kAccelNameHideRollbackOption[] = "hide_rollback_on_reset_screen";
 
 // A class to change arrow key traversal behavior when it's alive.
 class ScopedArrowKeyTraversal {
@@ -153,6 +155,14 @@ WebUILoginView::WebUILoginView()
   accel_map_[ui::Accelerator(ui::VKEY_N,
                              ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
       kAccelNameAppLaunchNetworkConfig;
+
+  ui::Accelerator show_rollback(ui::VKEY_MENU, ui::EF_ALT_DOWN);
+  show_rollback.set_type(ui::ET_KEY_PRESSED);
+  accel_map_[show_rollback] = kAccelNameShowRollbackOption;
+
+  ui::Accelerator hide_rollback(ui::VKEY_MENU, ui::EF_NONE);
+  hide_rollback.set_type(ui::ET_KEY_RELEASED);
+  accel_map_[hide_rollback] = kAccelNameHideRollbackOption;
 
   for (AccelMap::iterator i(accel_map_.begin()); i != accel_map_.end(); ++i)
     AddAccelerator(i->first);

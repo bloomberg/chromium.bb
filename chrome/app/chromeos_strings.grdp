@@ -2690,11 +2690,11 @@ Press any key to continue exploring.
   <message name="IDS_RESET_SCREEN_WARNING_MSG" desc="Warning text shown on reset screen above the exclamation icon.">
     Reset this <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device
   </message>
-  <message name="IDS_RESET_SCREEN_CONFIRMATION_WARNING_POWERWASH_MSG" desc="Warning text shown on confirmation-form of reset screen above the exclamation icon.">
+  <message name="IDS_RESET_SCREEN_WARNING_POWERWASH_MSG" desc="Warning text shown on confirmation-form of reset screen above the exclamation icon.">
     Powerwash your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device
   </message>
-  <message name="IDS_RESET_SCREEN_CONFIRMATION_WARNING_POWERWASH_AND_ROLLBACK_MSG" desc="Warning text shown on confirmation-form of reset screen above the exclamation icon.">
-    Powerwash your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device and revert to a previous update
+  <message name="IDS_RESET_SCREEN_WARNING_POWERWASH_AND_ROLLBACK_MSG" desc="Warning text shown on confirmation-form of reset screen above the exclamation icon.">
+    Powerwash your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device and return to the previous version
   </message>
   <message name="IDS_RESET_SCREEN_WARNING_DETAILS" desc="Warning text shown on reset screen below the exclamation icon.">
     Powerwash to reset your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device to be just like new.
@@ -2703,19 +2703,22 @@ Press any key to continue exploring.
     A Powerwash resets your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device to be just like new.
   </message>
   <message name="IDS_RESET_SCREEN_CONFIRMATION_WARNING_ROLLBACK_DETAILS" desc="Warning text shown on confirmation-form of reset screen below the exclamation icon.">
-    A Powerwash resets your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device to be just like new. Additionally, your device will revert to a previous update of <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>.
+    A Powerwash resets your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device to be just like new. Your device will also be returned to the previously installed version of <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>.
   </message>
   <message name="IDS_RESET_SCREEN_WARNING_DETAILS_DATA" desc="Additional warning text shown on reset screen below the main warning.">
     All user accounts and local data will be removed.
   </message>
   <message name="IDS_RESET_SCREEN_RESTART_MSG" desc="Text shown on reset screen below warning messages if device needs extra restart before powerwash.">
-    A restart is required before your device can be reset.
+    A restart is required to begin the Powerwash process. After restart you will be asked to confirm that you want to proceed.
   </message>
   <message name="IDS_RESET_SCREEN_ROLLBACK_OPTION" desc="Checkbox label for rollback option of powerwash process. Is shown on reset screen.">
-    Also revert to a previous <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> update.
+    Also return to the previously installed version of <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>.
   </message>
   <message name="IDS_RESET_SCREEN_POWERWASH" desc="Powerwash button text">
     Powerwash
+  </message>
+  <message name="IDS_RESET_SCREEN_POWERWASH_AND_REVERT" desc="Powerwash+rollback button text">
+    Powerwash and Revert
   </message>
   <message name="IDS_RESET_SCREEN_RESET" desc="Reset button text. Button launches powerwash.">
     Reset
@@ -2724,13 +2727,13 @@ Press any key to continue exploring.
     <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> will restart and reset momentarily.
   </message>
   <message name="IDS_RESET_SCREEN_PREPARING_REVERT_SPINNER_MESSAGE" desc="Spinner message shown on reset screen after user initiates powerwash with version revert while revert is prepared until reboot.">
-    Reverting to previous <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> update.
+    Reverting to the previously installed version of <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
   </message>
   <message name="IDS_RESET_SCREEN_REVERT_ERROR" desc="Error message shown when revert was initiated but unavailable to be performed." meaning="Device reset screen revert option context.">
     Oops, something went wrong.
   </message>
   <message name="IDS_RESET_SCREEN_REVERT_ERROR_EXPLANATION" desc="Error description shown when revert was initiated but unavailable to be performed.">
-    <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> is unable to revert to the previous version. Please try Powerwash instead.
+    <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> is unable to revert to the previously installed version. Please try again to Powerwash your device.
   </message>
   <message name="IDS_RESET_SCREEN_REVERT_ERROR_BUTTON" desc="Reset device dialog, error page, revert error while initiating it, button title.">
     OK
