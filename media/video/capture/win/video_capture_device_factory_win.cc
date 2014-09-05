@@ -91,7 +91,7 @@ static bool EnumerateVideoDevicesMediaFoundation(IMFActivate*** devices,
 }
 
 static void GetDeviceNamesDirectShow(
-    const CLSID class_id,
+    const CLSID& class_id,
     const Name::CaptureApiType capture_api_type,
     Names* device_names) {
   DCHECK(device_names);
@@ -110,20 +110,14 @@ static void GetDeviceNamesDirectShow(
   if (hr != S_OK)
     return;
 
-  // Name of a fake DirectShow filter that exist on computers with
-  // GTalk installed.
-  static const char kGoogleCameraAdapter[] = "google camera adapter";
-
   // Enumerate all video capture devices.
-  ScopedComPtr<IMoniker> moniker;
-  int index = 0;
-  while (enum_moniker->Next(1, moniker.Receive(), NULL) == S_OK) {
+  for (ScopedComPtr<IMoniker> moniker;
+       enum_moniker->Next(1, moniker.Receive(), NULL) == S_OK;
+       moniker.Release()) {
     ScopedComPtr<IPropertyBag> prop_bag;
     hr = moniker->BindToStorage(0, 0, IID_IPropertyBag, prop_bag.ReceiveVoid());
-    if (FAILED(hr)) {
-      moniker.Release();
-      return;
-    }
+    if (FAILED(hr))
+      continue;
 
     // Find the description or friendly name.
     ScopedVariant name;
@@ -131,31 +125,34 @@ static void GetDeviceNamesDirectShow(
     if (FAILED(hr))
       hr = prop_bag->Read(L"FriendlyName", name.Receive(), 0);
 
-    if (SUCCEEDED(hr) && name.type() == VT_BSTR) {
-      // Ignore all VFW drivers and the special Google Camera Adapter.
-      // Google Camera Adapter is not a real DirectShow camera device.
-      // VFW are very old Video for Windows drivers that can not be used.
-      const wchar_t* str_ptr = V_BSTR(&name);
-      const int name_length = arraysize(kGoogleCameraAdapter) - 1;
+    if (FAILED(hr) || name.type() != VT_BSTR)
+      continue;
 
-      if ((wcsstr(str_ptr, L"(VFW)") == NULL) &&
-          lstrlenW(str_ptr) < name_length ||
-          (!(LowerCaseEqualsASCII(str_ptr, str_ptr + name_length,
-                                  kGoogleCameraAdapter)))) {
-        std::string id;
-        std::string device_name(base::SysWideToUTF8(str_ptr));
-        name.Reset();
-        hr = prop_bag->Read(L"DevicePath", name.Receive(), 0);
-        if (FAILED(hr) || name.type() != VT_BSTR) {
-          id = device_name;
-        } else {
-          DCHECK_EQ(name.type(), VT_BSTR);
-          id = base::SysWideToUTF8(V_BSTR(&name));
-        }
-        device_names->push_back(Name(device_name, id, capture_api_type));
-      }
+    // Ignore all VFW drivers and the special Google Camera Adapter.
+    // Google Camera Adapter is not a real DirectShow camera device.
+    // VFW are very old Video for Windows drivers that can not be used.
+    const wchar_t* str_ptr = V_BSTR(&name);
+    // Name of a fake DirectShow filter that exist on computers with
+    // GTalk installed.
+    static const char kGoogleCameraAdapter[] = "google camera adapter";
+    if (wcsstr(str_ptr, L"(VFW)") != NULL ||
+        LowerCaseEqualsASCII(str_ptr,
+                             str_ptr + arraysize(kGoogleCameraAdapter) - 1,
+                             kGoogleCameraAdapter)) {
+      continue;
     }
-    moniker.Release();
+
+    const std::string device_name(base::SysWideToUTF8(str_ptr));
+    name.Reset();
+    hr = prop_bag->Read(L"DevicePath", name.Receive(), 0);
+    std::string id;
+    if (FAILED(hr) || name.type() != VT_BSTR) {
+      id = device_name;
+    } else {
+      DCHECK_EQ(name.type(), VT_BSTR);
+      id = base::SysWideToUTF8(V_BSTR(&name));
+    }
+    device_names->push_back(Name(device_name, id, capture_api_type));
   }
 }
 
