@@ -538,7 +538,6 @@ bool RenderStyle::diffNeedsFullLayoutAndPaintInvalidation(const RenderStyle& oth
         || noninherited_flags.overflowY != other.noninherited_flags.overflowY
         || noninherited_flags.clear != other.noninherited_flags.clear
         || noninherited_flags.unicodeBidi != other.noninherited_flags.unicodeBidi
-        || noninherited_flags.position != other.noninherited_flags.position
         || noninherited_flags.floating != other.noninherited_flags.floating
         || noninherited_flags.originalDisplay != other.noninherited_flags.originalDisplay)
         return true;
@@ -599,7 +598,8 @@ bool RenderStyle::diffNeedsFullLayout(const RenderStyle& other) const
             return true;
     }
 
-    if (noninherited_flags.verticalAlign != other.noninherited_flags.verticalAlign)
+    if (noninherited_flags.verticalAlign != other.noninherited_flags.verticalAlign
+        || noninherited_flags.position != other.noninherited_flags.position)
         return true;
 
     if (surround.get() != other.surround.get()) {
