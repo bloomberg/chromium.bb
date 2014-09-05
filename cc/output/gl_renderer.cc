@@ -36,10 +36,10 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
-#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/GrTexture.h"
+#include "third_party/skia/include/gpu/SkGpuDevice.h"
 #include "third_party/skia/include/gpu/SkGrTexturePixelRef.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -610,7 +610,7 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
   GLC(gl_, gl_->DrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 0));
 }
 
-static skia::RefPtr<SkImage> ApplyImageFilter(
+static SkBitmap ApplyImageFilter(
     scoped_ptr<GLRenderer::ScopedUseGrContext> use_gr_context,
     ResourceProvider* resource_provider,
     const gfx::Point& origin,
@@ -618,10 +618,10 @@ static skia::RefPtr<SkImage> ApplyImageFilter(
     SkImageFilter* filter,
     ScopedResource* source_texture_resource) {
   if (!filter)
-    return skia::RefPtr<SkImage>();
+    return SkBitmap();
 
   if (!use_gr_context)
-    return skia::RefPtr<SkImage>();
+    return SkBitmap();
 
   ResourceProvider::ScopedReadLockGL lock(resource_provider,
                                           source_texture_resource->id());
@@ -664,40 +664,36 @@ static skia::RefPtr<SkImage> ApplyImageFilter(
     TRACE_EVENT_INSTANT0("cc",
                          "ApplyImageFilter scratch texture allocation failed",
                          TRACE_EVENT_SCOPE_THREAD);
-    return skia::RefPtr<SkImage>();
+    return SkBitmap();
   }
 
-  // Create surface to draw into.
-  skia::RefPtr<SkSurface> surface = skia::AdoptRef(
-      SkSurface::NewRenderTargetDirect(backing_store->asRenderTarget()));
-  skia::RefPtr<SkCanvas> canvas = skia::SharePtr(surface->getCanvas());
+  // Create a device and canvas using that backing store.
+  skia::RefPtr<SkGpuDevice> device =
+      skia::AdoptRef(SkGpuDevice::Create(backing_store->asRenderTarget()));
+  DCHECK(device.get());
+  SkCanvas canvas(device.get());
 
   // Draw the source bitmap through the filter to the canvas.
   SkPaint paint;
   paint.setImageFilter(filter);
-  canvas->clear(SK_ColorTRANSPARENT);
+  canvas.clear(SK_ColorTRANSPARENT);
 
-  canvas->translate(SkIntToScalar(-origin.x()), SkIntToScalar(-origin.y()));
-  canvas->scale(scale.x(), scale.y());
-  canvas->drawSprite(source, 0, 0, &paint);
-
-  skia::RefPtr<SkImage> image = skia::AdoptRef(surface->newImageSnapshot());
-  if (!image || !image->getTexture()) {
-    return skia::RefPtr<SkImage>();
-  }
+  canvas.translate(SkIntToScalar(-origin.x()), SkIntToScalar(-origin.y()));
+  canvas.scale(scale.x(), scale.y());
+  canvas.drawSprite(source, 0, 0, &paint);
 
   // Flush the GrContext to ensure all buffered GL calls are drawn to the
   // backing store before we access and return it, and have cc begin using the
   // GL context again.
-  canvas->flush();
+  use_gr_context->context()->flush();
 
-  return image;
+  return device->accessBitmap(false);
 }
 
-static skia::RefPtr<SkImage> ApplyBlendModeWithBackdrop(
+static SkBitmap ApplyBlendModeWithBackdrop(
     scoped_ptr<GLRenderer::ScopedUseGrContext> use_gr_context,
     ResourceProvider* resource_provider,
-    skia::RefPtr<SkImage> source_bitmap_with_filters,
+    SkBitmap source_bitmap_with_filters,
     ScopedResource* source_texture_resource,
     ScopedResource* background_texture_resource,
     SkXfermode::Mode blend_mode) {
@@ -715,11 +711,11 @@ static skia::RefPtr<SkImage> ApplyBlendModeWithBackdrop(
 
   int source_texture_with_filters_id;
   scoped_ptr<ResourceProvider::ScopedReadLockGL> lock;
-  if (source_bitmap_with_filters) {
-    DCHECK_EQ(source_size.width(), source_bitmap_with_filters->width());
-    DCHECK_EQ(source_size.height(), source_bitmap_with_filters->height());
+  if (source_bitmap_with_filters.getTexture()) {
+    DCHECK_EQ(source_size.width(), source_bitmap_with_filters.width());
+    DCHECK_EQ(source_size.height(), source_bitmap_with_filters.height());
     GrTexture* texture =
-        reinterpret_cast<GrTexture*>(source_bitmap_with_filters->getTexture());
+        reinterpret_cast<GrTexture*>(source_bitmap_with_filters.getTexture());
     source_texture_with_filters_id = texture->getTextureHandle();
   } else {
     lock.reset(new ResourceProvider::ScopedReadLockGL(
@@ -789,30 +785,24 @@ static skia::RefPtr<SkImage> ApplyBlendModeWithBackdrop(
   }
 
   // Create a device and canvas using that backing store.
-  skia::RefPtr<SkSurface> surface = skia::AdoptRef(
-      SkSurface::NewRenderTargetDirect(backing_store->asRenderTarget()));
-  if (!surface)
-    return skia::RefPtr<SkImage>();
-  skia::RefPtr<SkCanvas> canvas = skia::SharePtr(surface->getCanvas());
+  skia::RefPtr<SkGpuDevice> device =
+      skia::AdoptRef(SkGpuDevice::Create(backing_store->asRenderTarget()));
+  DCHECK(device.get());
+  SkCanvas canvas(device.get());
 
   // Draw the source bitmap through the filter to the canvas.
-  canvas->clear(SK_ColorTRANSPARENT);
-  canvas->drawSprite(background, 0, 0);
+  canvas.clear(SK_ColorTRANSPARENT);
+  canvas.drawSprite(background, 0, 0);
   SkPaint paint;
   paint.setXfermodeMode(blend_mode);
-  canvas->drawSprite(source, 0, 0, &paint);
-
-  skia::RefPtr<SkImage> image = skia::AdoptRef(surface->newImageSnapshot());
-  if (!image || !image->getTexture()) {
-    return skia::RefPtr<SkImage>();
-  }
+  canvas.drawSprite(source, 0, 0, &paint);
 
   // Flush the GrContext to ensure all buffered GL calls are drawn to the
   // backing store before we access and return it, and have cc begin using the
   // GL context again.
-  canvas->flush();
+  use_gr_context->context()->flush();
 
-  return image;
+  return device->accessBitmap(false);
 }
 
 scoped_ptr<ScopedResource> GLRenderer::GetBackgroundWithFilters(
@@ -883,7 +873,7 @@ scoped_ptr<ScopedResource> GLRenderer::GetBackgroundWithFilters(
   skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
       quad->background_filters, device_background_texture->size());
 
-  skia::RefPtr<SkImage> filtered_device_background;
+  SkBitmap filtered_device_background;
   if (apply_background_filters) {
     filtered_device_background =
         ApplyImageFilter(ScopedUseGrContext::Create(this, frame),
@@ -893,12 +883,13 @@ scoped_ptr<ScopedResource> GLRenderer::GetBackgroundWithFilters(
                          filter.get(),
                          device_background_texture.get());
   }
-  *background_changed = (filtered_device_background != NULL);
+  *background_changed = (filtered_device_background.getTexture() != NULL);
 
   int filtered_device_background_texture_id = 0;
   scoped_ptr<ResourceProvider::ScopedReadLockGL> lock;
-  if (filtered_device_background) {
-    GrTexture* texture = filtered_device_background->getTexture();
+  if (filtered_device_background.getTexture()) {
+    GrTexture* texture =
+        reinterpret_cast<GrTexture*>(filtered_device_background.getTexture());
     filtered_device_background_texture_id = texture->getTextureHandle();
   } else {
     lock.reset(new ResourceProvider::ScopedReadLockGL(
@@ -997,7 +988,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
 
   // TODO(senorblanco): Cache this value so that we don't have to do it for both
   // the surface and its replica.  Apply filters to the contents texture.
-  skia::RefPtr<SkImage> filter_bitmap;
+  SkBitmap filter_bitmap;
   SkScalar color_matrix[20];
   bool use_color_matrix = false;
   if (!quad->filters.IsEmpty()) {
@@ -1085,8 +1076,9 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   // this draw instead of having a separate copy of the background texture.
 
   scoped_ptr<ResourceProvider::ScopedSamplerGL> contents_resource_lock;
-  if (filter_bitmap) {
-    GrTexture* texture = filter_bitmap->getTexture();
+  if (filter_bitmap.getTexture()) {
+    GrTexture* texture =
+        reinterpret_cast<GrTexture*>(filter_bitmap.getTexture());
     DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
     gl_->BindTexture(GL_TEXTURE_2D, texture->getTextureHandle());
   } else {
@@ -1341,7 +1333,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
 
   // Flush the compositor context before the filter bitmap goes out of
   // scope, so the draw gets processed before the filter texture gets deleted.
-  if (filter_bitmap)
+  if (filter_bitmap.getTexture())
     GLC(gl_, gl_->Flush());
 }
 
