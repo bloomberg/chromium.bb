@@ -213,7 +213,7 @@ class FilteringOption(Option):
     parser.AddParsedArg(self, opt, [str(v) for v in value])
 
 
-class ColoredFormatter(logging.Formatter):
+class ColoredFormatter(logging.Formatter, object):
   """A logging formatter that can color the messages."""
 
   _COLOR_MAPPING = {
