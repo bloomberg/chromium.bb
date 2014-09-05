@@ -123,33 +123,6 @@ const Extension* GetExtension(const AppLaunchParams& params) {
                                         ExtensionRegistry::TERMINATED);
 }
 
-// Get the launch URL for a given extension, with optional override/fallback.
-// |override_url|, if non-empty, will be preferred over the extension's
-// launch url.
-GURL UrlForExtension(const Extension* extension,
-                     const GURL& override_url) {
-  if (!extension)
-    return override_url;
-
-  GURL url;
-  if (!override_url.is_empty()) {
-    DCHECK(extension->web_extent().MatchesURL(override_url) ||
-           override_url.GetOrigin() == extension->url());
-    url = override_url;
-  } else {
-    url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
-  }
-
-  // For extensions lacking launch urls, determine a reasonable fallback.
-  if (!url.is_valid()) {
-    url = extensions::ManifestURL::GetOptionsPage(extension);
-    if (!url.is_valid())
-      url = GURL(chrome::kChromeUIExtensionsURL);
-  }
-
-  return url;
-}
-
 ui::WindowShowState DetermineWindowShowState(
     Profile* profile,
     extensions::LaunchContainer container,
@@ -466,4 +439,27 @@ bool CanLaunchViaEvent(const extensions::Extension* extension) {
       extensions::FeatureProvider::GetAPIFeatures();
   extensions::Feature* feature = feature_provider->GetFeature("app.runtime");
   return feature->IsAvailableToExtension(extension).is_available();
+}
+
+GURL UrlForExtension(const Extension* extension, const GURL& override_url) {
+  if (!extension)
+    return override_url;
+
+  GURL url;
+  if (!override_url.is_empty()) {
+    DCHECK(extension->web_extent().MatchesURL(override_url) ||
+           override_url.GetOrigin() == extension->url());
+    url = override_url;
+  } else {
+    url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
+  }
+
+  // For extensions lacking launch urls, determine a reasonable fallback.
+  if (!url.is_valid()) {
+    url = extensions::ManifestURL::GetOptionsPage(extension);
+    if (!url.is_valid())
+      url = GURL(chrome::kChromeUIExtensionsURL);
+  }
+
+  return url;
 }

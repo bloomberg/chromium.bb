@@ -16,8 +16,9 @@ ContentActivityFactory::~ContentActivityFactory() {}
 
 Activity* ContentActivityFactory::CreateWebActivity(
     content::BrowserContext* browser_context,
+    const base::string16& title,
     const GURL& url) {
-  return new WebActivity(browser_context, url);
+  return new WebActivity(browser_context, title, url);
 }
 
 ActivityFactory* CreateContentActivityFactory() {

@@ -45,7 +45,8 @@ class DummyItem : public app_list::AppListItem {
   // Overridden from app_list::AppListItem:
   virtual void Activate(int event_flags) OVERRIDE {
     ActivityManager::Get()->AddActivity(
-        ActivityFactory::Get()->CreateWebActivity(browser_context_, url_));
+        ActivityFactory::Get()->CreateWebActivity(
+            browser_context_, base::string16(), url_));
   }
 
   GURL url_;

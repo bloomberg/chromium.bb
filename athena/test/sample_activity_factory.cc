@@ -29,6 +29,7 @@ SampleActivityFactory::~SampleActivityFactory() {}
 
 Activity* SampleActivityFactory::CreateWebActivity(
     content::BrowserContext* browser_context,
+    const base::string16& title,
     const GURL& url) {
   return new SampleActivity(
       kDefaultColor, kDefaultContentColor, base::UTF8ToUTF16(url.spec()));

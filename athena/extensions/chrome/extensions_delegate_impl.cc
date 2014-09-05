@@ -4,8 +4,11 @@
 
 #include "athena/extensions/public/extensions_delegate.h"
 
+#include "athena/activity/public/activity_factory.h"
+#include "athena/activity/public/activity_manager.h"
 #include "athena/extensions/chrome/athena_apps_client.h"
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -71,12 +74,30 @@ class ChromeExtensionsDelegate : public ExtensionsDelegate {
     }
     params.container = extensions::LAUNCH_CONTAINER_WINDOW;
 
-    OpenApplication(params);
+    // V2 apps
+    if (CanLaunchViaEvent(extension)) {
+      OpenApplication(params);
+      return true;
+    }
+    LaunchV1App(params, extension);
     return true;
   }
+
   virtual bool UnloadApp(const std::string& app_id) OVERRIDE {
     // TODO(skuhne): Implement using extension service.
     return false;
+  }
+
+  void LaunchV1App(const AppLaunchParams& params,
+                   const extensions::Extension* extension) {
+    // TODO(oshima): Just activate if the app is already running.
+    const GURL url_input = params.override_url;
+
+    DCHECK(!url_input.is_empty() || extension);
+    GURL url = UrlForExtension(extension, url_input);
+    athena::ActivityManager::Get()->AddActivity(
+        athena::ActivityFactory::Get()->CreateWebActivity(
+            GetBrowserContext(), base::UTF8ToUTF16(extension->name()), url));
   }
 
   // ExtensionService for the browser context this is created for.

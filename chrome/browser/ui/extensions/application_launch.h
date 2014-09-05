@@ -100,4 +100,10 @@ content::WebContents* OpenAppShortcutWindow(Profile* profile,
 // chrome.app.runtime.onLaunched event.
 bool CanLaunchViaEvent(const extensions::Extension* extension);
 
+// Get the launch URL for a given extension, with optional override/fallback.
+// |override_url|, if non-empty, will be preferred over the extension's
+// launch url.
+GURL UrlForExtension(const extensions::Extension* extension,
+                     const GURL& override_url);
+
 #endif  // CHROME_BROWSER_UI_EXTENSIONS_APPLICATION_LAUNCH_H_

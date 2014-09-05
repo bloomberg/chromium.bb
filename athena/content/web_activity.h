@@ -7,6 +7,7 @@
 
 #include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_view_model.h"
+#include "base/strings/string16.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -28,7 +29,9 @@ class WebActivity : public Activity,
                     public ActivityViewModel,
                     public content::WebContentsObserver {
  public:
-  WebActivity(content::BrowserContext* context, const GURL& gurl);
+  WebActivity(content::BrowserContext* context,
+              const base::string16& title,
+              const GURL& gurl);
   WebActivity(AthenaWebView* web_view);
 
  protected:
@@ -71,6 +74,7 @@ class WebActivity : public Activity,
   void ReloadAndObserve();
 
   content::BrowserContext* browser_context_;
+  const base::string16 title_;
   const GURL url_;
   AthenaWebView* web_view_;
   SkColor title_color_;

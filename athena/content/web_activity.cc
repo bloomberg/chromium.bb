@@ -222,8 +222,8 @@ class AthenaWebView : public views::WebView {
       case NEW_POPUP:
       case NEW_WINDOW: {
         ActivityManager::Get()->AddActivity(
-            ActivityFactory::Get()->CreateWebActivity(browser_context(),
-                                                      params.url));
+            ActivityFactory::Get()->CreateWebActivity(
+                browser_context(), base::string16(), params.url));
         break;
       }
       default:
@@ -325,8 +325,10 @@ class AthenaWebView : public views::WebView {
 };
 
 WebActivity::WebActivity(content::BrowserContext* browser_context,
+                         const base::string16& title,
                          const GURL& url)
     : browser_context_(browser_context),
+      title_(title),
       url_(url),
       web_view_(NULL),
       title_color_(kDefaultTitleColor),
@@ -424,6 +426,9 @@ SkColor WebActivity::GetRepresentativeColor() const {
 }
 
 base::string16 WebActivity::GetTitle() const {
+  if (!title_.empty())
+    return title_;
+  // TODO(oshima): Use title set by the web contents.
   return web_view_ ? base::UTF8ToUTF16(
                          web_view_->GetWebContents()->GetVisibleURL().host())
                    : base::string16();

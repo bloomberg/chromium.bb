@@ -33,8 +33,10 @@ class ATHENA_EXPORT ActivityFactory {
 
   virtual ~ActivityFactory() {}
 
-  // Create an activity of a web page.
+  // Create an activity of a web page. If |title| is empty, the title will be
+  // obtained from the web contents.
   virtual Activity* CreateWebActivity(content::BrowserContext* browser_context,
+                                      const base::string16& title,
                                       const GURL& url) = 0;
 
   // Create an activity of an app with |app_window| for app shell environemnt.

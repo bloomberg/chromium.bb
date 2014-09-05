@@ -183,8 +183,8 @@ class UrlSearchResult : public app_list::SearchResult {
   // Overriddenn from app_list::SearchResult:
   virtual void Open(int event_flags) OVERRIDE {
     ActivityManager::Get()->AddActivity(
-        ActivityFactory::Get()->CreateWebActivity(browser_context_,
-                                                  match_.destination_url));
+        ActivityFactory::Get()->CreateWebActivity(
+            browser_context_, base::string16(), match_.destination_url));
   }
 
   void UpdateIcon() {

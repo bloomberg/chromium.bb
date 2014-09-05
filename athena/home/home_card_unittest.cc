@@ -97,7 +97,7 @@ TEST_F(HomeCardTest, AppSelection) {
 
   athena::ActivityManager::Get()->AddActivity(
       athena::ActivityFactory::Get()->CreateWebActivity(
-          NULL, GURL("http://www.google.com/")));
+          NULL, base::string16(), GURL("http://www.google.com/")));
   EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
 }
 

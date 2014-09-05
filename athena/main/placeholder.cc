@@ -18,8 +18,8 @@ void CreateTestPages(content::BrowserContext* browser_context) {
   };
   for (size_t i = 0; i < arraysize(kTestURLs); ++i) {
     athena::ActivityManager::Get()->AddActivity(
-        athena::ActivityFactory::Get()->CreateWebActivity(browser_context,
-                                                          GURL(kTestURLs[i])));
+        athena::ActivityFactory::Get()->CreateWebActivity(
+            browser_context, base::string16(), GURL(kTestURLs[i])));
   }
 }
 
