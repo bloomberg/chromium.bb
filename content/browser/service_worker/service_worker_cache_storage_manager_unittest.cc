@@ -316,21 +316,17 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, Chinese) {
 }
 
 TEST_F(ServiceWorkerCacheStorageManagerTest, EmptyKey) {
-  EXPECT_FALSE(CreateCache(origin1_, ""));
-  EXPECT_EQ(ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_EMPTY_KEY,
-            callback_error_);
-
-  EXPECT_FALSE(Get(origin1_, ""));
-  EXPECT_EQ(ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_EMPTY_KEY,
-            callback_error_);
-
-  EXPECT_FALSE(Has(origin1_, ""));
-  EXPECT_EQ(ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_EMPTY_KEY,
-            callback_error_);
-
-  EXPECT_FALSE(Delete(origin1_, ""));
-  EXPECT_EQ(ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_EMPTY_KEY,
-            callback_error_);
+  EXPECT_TRUE(CreateCache(origin1_, ""));
+  int cache_id = callback_cache_id_;
+  EXPECT_TRUE(Get(origin1_, ""));
+  EXPECT_EQ(cache_id, callback_cache_id_);
+  EXPECT_TRUE(Keys(origin1_));
+  EXPECT_EQ(1u, callback_strings_.size());
+  EXPECT_TRUE("" == callback_strings_[0]);
+  EXPECT_TRUE(Has(origin1_, ""));
+  EXPECT_TRUE(Delete(origin1_, ""));
+  EXPECT_TRUE(Keys(origin1_));
+  EXPECT_EQ(0u, callback_strings_.size());
 }
 
 TEST_F(ServiceWorkerCacheStorageManagerTest, DataPersists) {

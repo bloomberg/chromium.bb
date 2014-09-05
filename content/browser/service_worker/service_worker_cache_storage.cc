@@ -405,11 +405,6 @@ void ServiceWorkerCacheStorage::CreateCache(
     return;
   }
 
-  if (cache_name.empty()) {
-    callback.Run(kInvalidCacheID, CACHE_STORAGE_ERROR_EMPTY_KEY);
-    return;
-  }
-
   if (GetLoadedCache(cache_name)) {
     callback.Run(kInvalidCacheID, CACHE_STORAGE_ERROR_EXISTS);
     return;
@@ -433,11 +428,6 @@ void ServiceWorkerCacheStorage::GetCache(
                         weak_factory_.GetWeakPtr(),
                         cache_name,
                         callback));
-    return;
-  }
-
-  if (cache_name.empty()) {
-    callback.Run(kInvalidCacheID, CACHE_STORAGE_ERROR_EMPTY_KEY);
     return;
   }
 
@@ -471,11 +461,6 @@ void ServiceWorkerCacheStorage::HasCache(const std::string& cache_name,
     return;
   }
 
-  if (cache_name.empty()) {
-    callback.Run(false, CACHE_STORAGE_ERROR_EMPTY_KEY);
-    return;
-  }
-
   bool has_cache = GetLoadedCache(cache_name) != NULL;
 
   callback.Run(has_cache, CACHE_STORAGE_ERROR_NO_ERROR);
@@ -491,11 +476,6 @@ void ServiceWorkerCacheStorage::DeleteCache(
                         weak_factory_.GetWeakPtr(),
                         cache_name,
                         callback));
-    return;
-  }
-
-  if (cache_name.empty()) {
-    callback.Run(false, CACHE_STORAGE_ERROR_EMPTY_KEY);
     return;
   }
 
