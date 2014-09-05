@@ -76,10 +76,10 @@ void ServiceWorkerRegistration::setActive(WebServiceWorker* serviceWorker)
     m_active = ServiceWorker::from(executionContext(), serviceWorker);
 }
 
-PassRefPtrWillBeRawPtr<ServiceWorkerRegistration> ServiceWorkerRegistration::take(ScriptPromiseResolver* resolver, WebType* registration)
+ServiceWorkerRegistration* ServiceWorkerRegistration::take(ScriptPromiseResolver* resolver, WebType* registration)
 {
     if (!registration)
-        return nullptr;
+        return 0;
     return getOrCreate(resolver->scriptState()->executionContext(), registration);
 }
 
@@ -115,10 +115,10 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* scriptState)
     return promise;
 }
 
-PassRefPtrWillBeRawPtr<ServiceWorkerRegistration> ServiceWorkerRegistration::getOrCreate(ExecutionContext* executionContext, WebServiceWorkerRegistration* outerRegistration)
+ServiceWorkerRegistration* ServiceWorkerRegistration::getOrCreate(ExecutionContext* executionContext, WebServiceWorkerRegistration* outerRegistration)
 {
     if (!outerRegistration)
-        return nullptr;
+        return 0;
 
     WebServiceWorkerRegistrationProxy* proxy = outerRegistration->proxy();
     if (proxy) {
@@ -129,9 +129,9 @@ PassRefPtrWillBeRawPtr<ServiceWorkerRegistration> ServiceWorkerRegistration::get
         }
     }
 
-    RefPtrWillBeRawPtr<ServiceWorkerRegistration> registration = adoptRefWillBeNoop(new ServiceWorkerRegistration(executionContext, adoptPtr(outerRegistration)));
+    ServiceWorkerRegistration* registration = adoptRefCountedGarbageCollectedWillBeNoop(new ServiceWorkerRegistration(executionContext, adoptPtr(outerRegistration)));
     registration->suspendIfNeeded();
-    return registration.release();
+    return registration;
 }
 
 ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorkerRegistration> outerRegistration)

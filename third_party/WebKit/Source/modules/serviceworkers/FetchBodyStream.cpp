@@ -18,11 +18,11 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<FetchBodyStream> FetchBodyStream::create(ExecutionContext* context, PassRefPtr<BlobDataHandle> blobDataHandle)
+FetchBodyStream* FetchBodyStream::create(ExecutionContext* context, PassRefPtr<BlobDataHandle> blobDataHandle)
 {
-    RefPtrWillBeRawPtr<FetchBodyStream> fetchBodyStream(adoptRefWillBeNoop(new FetchBodyStream(context, blobDataHandle)));
+    FetchBodyStream* fetchBodyStream = new FetchBodyStream(context, blobDataHandle);
     fetchBodyStream->suspendIfNeeded();
-    return fetchBodyStream.release();
+    return fetchBodyStream;
 }
 
 ScriptPromise FetchBodyStream::readAsync(ScriptState* scriptState, ResponseType type)

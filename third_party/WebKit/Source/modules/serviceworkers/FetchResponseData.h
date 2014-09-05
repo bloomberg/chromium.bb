@@ -8,7 +8,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {
@@ -17,7 +16,7 @@ class BlobDataHandle;
 class FetchHeaderList;
 class WebServiceWorkerResponse;
 
-class FetchResponseData FINAL : public RefCountedWillBeGarbageCollectedFinalized<FetchResponseData> {
+class FetchResponseData FINAL : public GarbageCollectedFinalized<FetchResponseData> {
     WTF_MAKE_NONCOPYABLE(FetchResponseData);
 public:
     // "A response has an associated type which is one of basic, CORS, default,
@@ -27,12 +26,12 @@ public:
     // end-user abort, fatal, and timeout."
     enum TerminationReason { EndUserAbortTermination, FatalTermination, TimeoutTermination };
 
-    static PassRefPtrWillBeRawPtr<FetchResponseData> create();
-    static PassRefPtrWillBeRawPtr<FetchResponseData> createNetworkErrorResponse();
+    static FetchResponseData* create();
+    static FetchResponseData* createNetworkErrorResponse();
 
-    PassRefPtrWillBeRawPtr<FetchResponseData> createBasicFilteredResponse();
-    PassRefPtrWillBeRawPtr<FetchResponseData> createCORSFilteredResponse();
-    PassRefPtrWillBeRawPtr<FetchResponseData> createOpaqueFilteredResponse();
+    FetchResponseData* createBasicFilteredResponse();
+    FetchResponseData* createCORSFilteredResponse();
+    FetchResponseData* createOpaqueFilteredResponse();
 
     Type type() const { return m_type; }
     const KURL& url() const { return m_url; }
@@ -58,9 +57,9 @@ private:
     KURL m_url;
     unsigned short m_status;
     AtomicString m_statusMessage;
-    RefPtrWillBeMember<FetchHeaderList> m_headerList;
+    Member<FetchHeaderList> m_headerList;
     RefPtr<BlobDataHandle> m_blobDataHandle;
-    RefPtrWillBeMember<FetchResponseData> m_internalResponse;
+    Member<FetchResponseData> m_internalResponse;
 };
 
 } // namespace blink

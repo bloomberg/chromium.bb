@@ -58,10 +58,10 @@ public:
     virtual void stopFetch() OVERRIDE;
 
     // ServiceWorkerGlobalScope.idl
-    PassRefPtrWillBeRawPtr<ServiceWorkerClients> clients();
+    ServiceWorkerClients* clients();
     String scope(ExecutionContext*);
 
-    PassRefPtrWillBeRawPtr<CacheStorage> caches(ExecutionContext*);
+    CacheStorage* caches(ExecutionContext*);
 
     ScriptPromise fetch(ScriptState*, Request*);
     ScriptPromise fetch(ScriptState*, Request*, const Dictionary&);
@@ -86,9 +86,9 @@ private:
     virtual void importScripts(const Vector<String>& urls, ExceptionState&) OVERRIDE;
     virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) OVERRIDE;
 
-    RefPtrWillBeMember<ServiceWorkerClients> m_clients;
+    PersistentWillBeMember<ServiceWorkerClients> m_clients;
     OwnPtr<FetchManager> m_fetchManager;
-    RefPtrWillBeMember<CacheStorage> m_caches;
+    PersistentWillBeMember<CacheStorage> m_caches;
 };
 
 } // namespace blink

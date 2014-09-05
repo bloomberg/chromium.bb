@@ -11,7 +11,6 @@
 #include "public/platform/WebServiceWorkerCacheError.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
@@ -24,11 +23,11 @@ class Request;
 class ScriptState;
 class WebServiceWorkerCache;
 
-class Cache FINAL : public RefCountedWillBeGarbageCollected<Cache>, public ScriptWrappable {
+class Cache FINAL : public GarbageCollected<Cache>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(Cache);
 public:
-    static PassRefPtrWillBeRawPtr<Cache> fromWebServiceWorkerCache(WebServiceWorkerCache*);
+    static Cache* fromWebServiceWorkerCache(WebServiceWorkerCache*);
 
     // From Cache.idl:
     ScriptPromise match(ScriptState*, Request*, const Dictionary& queryParams);

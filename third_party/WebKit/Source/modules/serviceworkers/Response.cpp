@@ -16,9 +16,9 @@ namespace blink {
 
 namespace {
 
-PassRefPtrWillBeRawPtr<FetchResponseData> createFetchResponseDataFromWebResponse(const WebServiceWorkerResponse& webResponse)
+FetchResponseData* createFetchResponseDataFromWebResponse(const WebServiceWorkerResponse& webResponse)
 {
-    RefPtrWillBeRawPtr<FetchResponseData> response;
+    FetchResponseData* response = 0;
     if (200 <= webResponse.status() && webResponse.status() < 300)
         response = FetchResponseData::create();
     else
@@ -30,28 +30,26 @@ PassRefPtrWillBeRawPtr<FetchResponseData> createFetchResponseDataFromWebResponse
     return response;
 }
 
-PassRefPtrWillBeRawPtr<Headers> createHeadersFromWebResponse(const WebServiceWorkerResponse& webResponse)
+Headers* createHeadersFromWebResponse(const WebServiceWorkerResponse& webResponse)
 {
-    RefPtrWillBeRawPtr<Headers> headers = Headers::create();
+    Headers* headers = Headers::create();
     TrackExceptionState exceptionState;
     for (HashMap<String, String>::const_iterator i = webResponse.headers().begin(), end = webResponse.headers().end(); i != end; ++i) {
         headers->append(i->key, i->value, exceptionState);
         if (exceptionState.hadException())
-            return PassRefPtrWillBeRawPtr<Headers>();
+            return 0;
     }
     return headers;
 }
 
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Response);
-
-PassRefPtrWillBeRawPtr<Response> Response::create(Blob* body, const Dictionary& responseInit, ExceptionState& exceptionState)
+Response* Response::create(Blob* body, const Dictionary& responseInit, ExceptionState& exceptionState)
 {
     return create(body, ResponseInit(responseInit), exceptionState);
 }
 
-PassRefPtrWillBeRawPtr<Response> Response::create(const String& body, const Dictionary& responseInit, ExceptionState& exceptionState)
+Response* Response::create(const String& body, const Dictionary& responseInit, ExceptionState& exceptionState)
 {
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->appendText(body, false);
@@ -62,13 +60,13 @@ PassRefPtrWillBeRawPtr<Response> Response::create(const String& body, const Dict
     return create(blob.get(), ResponseInit(responseInit), exceptionState);
 }
 
-PassRefPtrWillBeRawPtr<Response> Response::create(Blob* body, const ResponseInit& responseInit, ExceptionState& exceptionState)
+Response* Response::create(Blob* body, const ResponseInit& responseInit, ExceptionState& exceptionState)
 {
     // "1. If |init|'s status member is not in the range 200 to 599, throw a
     // RangeError."
     if (responseInit.status < 200 || 599 < responseInit.status) {
         exceptionState.throwRangeError("Invalid status");
-        return nullptr;
+        return 0;
     }
 
     // FIXME: "2. If |init|'s statusText member does not match the Reason-Phrase
@@ -76,7 +74,7 @@ PassRefPtrWillBeRawPtr<Response> Response::create(Blob* body, const ResponseInit
 
     // "3. Let |r| be a new Response object, associated with a new response,
     // Headers object, and FetchBodyStream object."
-    RefPtrWillBeRawPtr<Response> r = adoptRefWillBeNoop(new Response());
+    Response* r = new Response();
 
     // "4. Set |r|'s response's status to |init|'s status member."
     r->m_response->setStatus(responseInit.status);
@@ -92,7 +90,7 @@ PassRefPtrWillBeRawPtr<Response> Response::create(Blob* body, const ResponseInit
         // any exceptions."
         r->m_headers->fillWith(responseInit.headers.get(), exceptionState);
         if (exceptionState.hadException())
-            return nullptr;
+            return 0;
     } else if (!responseInit.headersDictionary.isUndefinedOrNull()) {
         // "1. Empty |r|'s response's header list."
         r->m_response->headerList()->clearList();
@@ -100,7 +98,7 @@ PassRefPtrWillBeRawPtr<Response> Response::create(Blob* body, const ResponseInit
         // any exceptions."
         r->m_headers->fillWith(responseInit.headersDictionary, exceptionState);
         if (exceptionState.hadException())
-            return nullptr;
+            return 0;
     }
     // "7. If body is given, run these substeps:"
     if (body) {
@@ -118,17 +116,17 @@ PassRefPtrWillBeRawPtr<Response> Response::create(Blob* body, const ResponseInit
     //        extracting a MIME type from |r|'s response's header list."
 
     // "9. Return |r|."
-    return r.release();
+    return r;
 }
 
-PassRefPtrWillBeRawPtr<Response> Response::create(PassRefPtrWillBeRawPtr<FetchResponseData> response)
+Response* Response::create(FetchResponseData* response)
 {
-    return adoptRefWillBeNoop(new Response(response));
+    return new Response(response);
 }
 
-PassRefPtrWillBeRawPtr<Response> Response::create(const WebServiceWorkerResponse& webResponse)
+Response* Response::create(const WebServiceWorkerResponse& webResponse)
 {
-    return adoptRefWillBeNoop(new Response(webResponse));
+    return new Response(webResponse);
 }
 
 String Response::type() const
@@ -174,16 +172,16 @@ String Response::statusText() const
     return m_response->statusMessage();
 }
 
-PassRefPtrWillBeRawPtr<Headers> Response::headers() const
+Headers* Response::headers() const
 {
     // "The headers attribute's getter must return the associated Headers object."
     return m_headers;
 }
 
-PassRefPtrWillBeRawPtr<FetchBodyStream> Response::body(ExecutionContext* context)
+FetchBodyStream* Response::body(ExecutionContext* context)
 {
     if (!m_response->blobDataHandle())
-        return nullptr;
+        return 0;
     if (!m_fetchBodyStream)
         m_fetchBodyStream = FetchBodyStream::create(context, m_response->blobDataHandle());
     return m_fetchBodyStream;
@@ -202,7 +200,7 @@ Response::Response()
     ScriptWrappable::init(this);
 }
 
-Response::Response(PassRefPtrWillBeRawPtr<FetchResponseData> response)
+Response::Response(FetchResponseData* response)
     : m_response(response)
     , m_headers(Headers::create(m_response->headerList()))
 {

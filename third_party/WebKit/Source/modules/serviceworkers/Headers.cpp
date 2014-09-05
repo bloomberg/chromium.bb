@@ -17,52 +17,50 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<Headers> Headers::create()
+Headers* Headers::create()
 {
-    return adoptRefWillBeNoop(new Headers);
+    return new Headers;
 }
 
-PassRefPtrWillBeRawPtr<Headers> Headers::create(ExceptionState&)
+Headers* Headers::create(ExceptionState&)
 {
     return create();
 }
 
-PassRefPtrWillBeRawPtr<Headers> Headers::create(const Headers* init, ExceptionState& exceptionState)
+Headers* Headers::create(const Headers* init, ExceptionState& exceptionState)
 {
     // "The Headers(|init|) constructor, when invoked, must run these steps:"
     // "1. Let |headers| be a new Headers object."
-    RefPtrWillBeRawPtr<Headers> headers = create();
+    Headers* headers = create();
     // "2. If |init| is given, fill headers with |init|. Rethrow any exception."
     headers->fillWith(init, exceptionState);
     // "3. Return |headers|."
-    return headers.release();
+    return headers;
 }
 
-PassRefPtrWillBeRawPtr<Headers> Headers::create(const Dictionary& init, ExceptionState& exceptionState)
+Headers* Headers::create(const Dictionary& init, ExceptionState& exceptionState)
 {
     // "The Headers(|init|) constructor, when invoked, must run these steps:"
     // "1. Let |headers| be a new Headers object."
-    RefPtrWillBeRawPtr<Headers> headers = create();
+    Headers* headers = create();
     // "2. If |init| is given, fill headers with |init|. Rethrow any exception."
     headers->fillWith(init, exceptionState);
     // "3. Return |headers|."
-    return headers.release();
+    return headers;
 }
 
-PassRefPtrWillBeRawPtr<Headers> Headers::create(FetchHeaderList* headerList)
+Headers* Headers::create(FetchHeaderList* headerList)
 {
-    return adoptRefWillBeNoop(new Headers(headerList));
+    return new Headers(headerList);
 }
 
-PassRefPtrWillBeRawPtr<Headers> Headers::createCopy() const
+Headers* Headers::createCopy() const
 {
-    RefPtrWillBeRawPtr<FetchHeaderList> headerList = m_headerList->createCopy();
-    RefPtrWillBeRawPtr<Headers> headers = create(headerList.get());
+    FetchHeaderList* headerList = m_headerList->createCopy();
+    Headers* headers = create(headerList);
     headers->m_guard = m_guard;
-    return headers.release();
+    return headers;
 }
-
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Headers);
 
 unsigned long Headers::size() const
 {

@@ -71,12 +71,12 @@ template bool DictionaryHelper::get(const Dictionary&, const String& key, Member
 template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<SpeechRecognitionResultList>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<Gamepad>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<MediaStream>& value);
-template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtrWillBeMember<Headers>& value);
+template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<Headers>& value);
 
 template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Member<MIDIPort>& value);
 template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Member<SpeechRecognitionResultList>& value);
 template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Member<Gamepad>& value);
 template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Member<MediaStream>& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, RefPtrWillBeMember<Headers>& value);
+template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Member<Headers>& value);
 
 } // namespace blink

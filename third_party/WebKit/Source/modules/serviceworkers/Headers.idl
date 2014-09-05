@@ -10,7 +10,7 @@
     RuntimeEnabled=ServiceWorker,
     Exposed=ServiceWorker,
     RaisesException=Constructor,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface Headers {
     [RaisesException] void append(ByteString name, ByteString value);
     [ImplementedAs=remove, RaisesException] void delete(ByteString key);

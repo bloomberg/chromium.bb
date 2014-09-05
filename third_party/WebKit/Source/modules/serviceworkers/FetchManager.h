@@ -20,7 +20,7 @@ class FetchManager {
 public:
     FetchManager(ExecutionContext*);
     ~FetchManager();
-    ScriptPromise fetch(ScriptState*, PassRefPtrWillBeRawPtr<FetchRequestData>);
+    ScriptPromise fetch(ScriptState*, FetchRequestData*);
 
 private:
     class Loader;

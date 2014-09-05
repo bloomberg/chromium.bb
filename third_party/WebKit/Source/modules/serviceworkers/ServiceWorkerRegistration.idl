@@ -6,7 +6,7 @@
 [
     ActiveDOMObject,
     RuntimeEnabled=ServiceWorker,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface ServiceWorkerRegistration : EventTarget {
     [Unforgeable] readonly attribute ServiceWorker? installing;
     [Unforgeable] readonly attribute ServiceWorker? waiting;

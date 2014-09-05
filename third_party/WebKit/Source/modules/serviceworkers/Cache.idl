@@ -16,7 +16,7 @@
 // };
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
     Exposed=ServiceWorker,
     RuntimeEnabled=ServiceWorker,
 ] interface Cache {

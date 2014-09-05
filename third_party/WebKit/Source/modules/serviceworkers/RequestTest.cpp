@@ -35,7 +35,7 @@ TEST_F(ServiceWorkerRequestTest, FromString)
     TrackExceptionState exceptionState;
 
     KURL url(ParsedURLString, "http://www.example.com/");
-    RefPtrWillBeRawPtr<Request> request = Request::create(executionContext(), url, exceptionState);
+    Request* request = Request::create(executionContext(), url, exceptionState);
     ASSERT_FALSE(exceptionState.hadException());
     ASSERT(request);
     EXPECT_EQ(url, request->url());
@@ -46,10 +46,10 @@ TEST_F(ServiceWorkerRequestTest, FromRequest)
     TrackExceptionState exceptionState;
 
     KURL url(ParsedURLString, "http://www.example.com/");
-    RefPtrWillBeRawPtr<Request> request1 = Request::create(executionContext(), url, exceptionState);
+    Request* request1 = Request::create(executionContext(), url, exceptionState);
     ASSERT(request1);
 
-    RefPtrWillBeRawPtr<Request> request2 = Request::create(executionContext(), request1.get(), exceptionState);
+    Request* request2 = Request::create(executionContext(), request1, exceptionState);
     ASSERT_FALSE(exceptionState.hadException());
     ASSERT(request2);
     EXPECT_EQ(url, request2->url());
@@ -71,13 +71,13 @@ TEST_F(ServiceWorkerRequestTest, FromAndToWebRequest)
         webRequest.setHeader(WebString::fromUTF8(headers[i].key), WebString::fromUTF8(headers[i].value));
     webRequest.setReferrer(referrer, referrerPolicy);
 
-    RefPtrWillBeRawPtr<Request> request = Request::create(webRequest);
+    Request* request = Request::create(webRequest);
     ASSERT(request);
     EXPECT_EQ(url, request->url());
     EXPECT_EQ(method, request->method());
     EXPECT_EQ(referrer, request->referrer());
 
-    RefPtrWillBeRawPtr<Headers> requestHeaders = request->headers();
+    Headers* requestHeaders = request->headers();
 
     WTF::HashMap<String, String> headersMap;
     for (int i = 0; headers[i].key; ++i)

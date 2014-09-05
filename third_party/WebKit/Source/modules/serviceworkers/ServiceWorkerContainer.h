@@ -40,7 +40,6 @@
 #include "public/platform/WebServiceWorkerProviderClient.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -52,13 +51,13 @@ class WebServiceWorker;
 class WebServiceWorkerProvider;
 
 class ServiceWorkerContainer FINAL
-    : public RefCountedWillBeGarbageCollectedFinalized<ServiceWorkerContainer>
+    : public GarbageCollectedFinalized<ServiceWorkerContainer>
     , public ScriptWrappable
     , public ContextLifecycleObserver
     , public WebServiceWorkerProviderClient {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<ServiceWorkerContainer> create(ExecutionContext*);
+    static ServiceWorkerContainer* create(ExecutionContext*);
     ~ServiceWorkerContainer();
 
     void willBeDetachedFromFrame();
@@ -85,7 +84,7 @@ public:
 private:
     explicit ServiceWorkerContainer(ExecutionContext*);
 
-    typedef ScriptPromiseProperty<RawPtrWillBeMember<ServiceWorkerContainer>, RefPtrWillBeMember<ServiceWorker>, RefPtrWillBeMember<ServiceWorker> > ReadyProperty;
+    typedef ScriptPromiseProperty<Member<ServiceWorkerContainer>, RefPtrWillBeMember<ServiceWorker>, RefPtrWillBeMember<ServiceWorker> > ReadyProperty;
     ReadyProperty* createReadyProperty();
     void checkReadyChanged(PassRefPtrWillBeRawPtr<ServiceWorker> previousReadyWorker);
 
@@ -94,7 +93,7 @@ private:
     RefPtrWillBeMember<ServiceWorker> m_controller;
     RefPtrWillBeMember<ServiceWorker> m_installing;
     RefPtrWillBeMember<ServiceWorker> m_waiting;
-    PersistentWillBeMember<ReadyProperty> m_ready;
+    Member<ReadyProperty> m_ready;
 };
 
 } // namespace blink

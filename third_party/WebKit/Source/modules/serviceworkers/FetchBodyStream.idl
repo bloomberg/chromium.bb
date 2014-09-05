@@ -8,7 +8,7 @@
     Exposed=ServiceWorker,
     NoInterfaceObject,
     ActiveDOMObject,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface FetchBodyStream {
     [CallWith=ScriptState] Promise asArrayBuffer();
     [CallWith=ScriptState] Promise asBlob();

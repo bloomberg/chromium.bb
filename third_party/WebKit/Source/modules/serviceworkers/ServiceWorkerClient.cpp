@@ -13,9 +13,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<ServiceWorkerClient> ServiceWorkerClient::create(unsigned id)
+ServiceWorkerClient* ServiceWorkerClient::create(unsigned id)
 {
-    return adoptRefWillBeNoop(new ServiceWorkerClient(id));
+    return new ServiceWorkerClient(id);
 }
 
 ServiceWorkerClient::ServiceWorkerClient(unsigned id)
@@ -23,8 +23,6 @@ ServiceWorkerClient::ServiceWorkerClient(unsigned id)
 {
     ScriptWrappable::init(this);
 }
-
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ServiceWorkerClient);
 
 void ServiceWorkerClient::postMessage(ExecutionContext* context, PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)
 {

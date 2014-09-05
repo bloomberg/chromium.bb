@@ -52,7 +52,7 @@ public:
 
     virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult) OVERRIDE;
     virtual void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult) OVERRIDE;
-    virtual void didHandleFetchEvent(int fetchEventID, PassRefPtrWillBeRawPtr<Response>) OVERRIDE;
+    virtual void didHandleFetchEvent(int fetchEventID, Response*) OVERRIDE;
     virtual void didHandleSyncEvent(int syncEventID) OVERRIDE;
     virtual void postMessageToClient(int clientID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) OVERRIDE;
 

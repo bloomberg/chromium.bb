@@ -5,6 +5,9 @@
 #ifndef WebServiceWorkerRegistrationProxy_h
 #define WebServiceWorkerRegistrationProxy_h
 
+#if INSIDE_BLINK
+#include "platform/heap/Handle.h"
+#endif
 #include "public/platform/WebCommon.h"
 
 namespace blink {
@@ -35,6 +38,11 @@ public:
 #endif
 
 protected:
+#if INSIDE_BLINK
+    // This is a back pointer to |this| object.
+    // The ServiceWorkerRegistration inherits from this WebServiceWorkerRegistrationProxy.
+    GC_PLUGIN_IGNORE("crbug.com/410257")
+#endif
     ServiceWorkerRegistration* m_private;
 };
 

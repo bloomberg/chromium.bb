@@ -12,11 +12,10 @@
 
 namespace blink {
 
-class ServiceWorkerClient FINAL : public RefCountedWillBeGarbageCollected<ServiceWorkerClient>, public ScriptWrappable {
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ServiceWorkerClient);
+class ServiceWorkerClient FINAL : public GarbageCollected<ServiceWorkerClient>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<ServiceWorkerClient> create(unsigned id);
+    static ServiceWorkerClient* create(unsigned id);
 
     // ServiceWorkerClient.idl
     unsigned id() const { return m_id; }

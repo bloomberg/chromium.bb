@@ -35,7 +35,7 @@ public:
 
     unsigned short status;
     String statusText;
-    RefPtrWillBeMember<Headers> headers;
+    Member<Headers> headers;
     Dictionary headersDictionary;
 };
 

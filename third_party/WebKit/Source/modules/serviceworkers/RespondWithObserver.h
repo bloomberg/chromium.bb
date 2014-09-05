@@ -44,7 +44,7 @@ private:
 
     // Sends a response back to the client. The null response means to fallback
     // to native.
-    void sendResponse(PassRefPtrWillBeRawPtr<Response>);
+    void sendResponse(Response*);
 
     int m_eventID;
 

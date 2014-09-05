@@ -22,9 +22,9 @@ ScriptPromise rejectAsNotImplemented(ScriptState* scriptState)
 
 }
 
-PassRefPtrWillBeRawPtr<Cache> Cache::fromWebServiceWorkerCache(WebServiceWorkerCache* webCache)
+Cache* Cache::fromWebServiceWorkerCache(WebServiceWorkerCache* webCache)
 {
-    return adoptRefWillBeNoop(new Cache(webCache));
+    return new Cache(webCache);
 }
 
 // FIXME: Implement these methods.

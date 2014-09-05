@@ -8,6 +8,7 @@
 #include "modules/EventModules.h"
 #include "modules/serviceworkers/Request.h"
 #include "modules/serviceworkers/RespondWithObserver.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -23,9 +24,9 @@ class FetchEvent FINAL : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<FetchEvent> create();
-    static PassRefPtrWillBeRawPtr<FetchEvent> create(RespondWithObserver*, PassRefPtrWillBeRawPtr<Request>);
+    static PassRefPtrWillBeRawPtr<FetchEvent> create(RespondWithObserver*, Request*);
 
-    PassRefPtrWillBeRawPtr<Request> request() const;
+    Request* request() const;
     bool isReload() const;
 
     void respondWith(ScriptState*, const ScriptValue&, ExceptionState&);
@@ -38,11 +39,11 @@ public:
 
 protected:
     FetchEvent();
-    FetchEvent(RespondWithObserver*, PassRefPtrWillBeRawPtr<Request>);
+    FetchEvent(RespondWithObserver*, Request*);
 
 private:
     PersistentWillBeMember<RespondWithObserver> m_observer;
-    RefPtrWillBeMember<Request> m_request;
+    PersistentWillBeMember<Request> m_request;
     bool m_isReload;
 };
 

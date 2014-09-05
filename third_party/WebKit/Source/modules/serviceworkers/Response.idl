@@ -14,7 +14,7 @@ enum ResponseType { "basic", "cors", "default", "error", "opaque" };
     RuntimeEnabled=ServiceWorker,
     Exposed=ServiceWorker,
     RaisesException=Constructor,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface Response {
     // FIXME: Implement redirect().
     readonly attribute ResponseType type;

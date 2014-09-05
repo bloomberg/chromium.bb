@@ -104,9 +104,9 @@ private:
 
 }
 
-PassRefPtrWillBeRawPtr<CacheStorage> CacheStorage::create(WebServiceWorkerCacheStorage* webCacheStorage)
+CacheStorage* CacheStorage::create(WebServiceWorkerCacheStorage* webCacheStorage)
 {
-    return adoptRefWillBeNoop(new CacheStorage(webCacheStorage));
+    return new CacheStorage(webCacheStorage);
 }
 
 ScriptPromise CacheStorage::get(ScriptState* scriptState, const String& cacheName)

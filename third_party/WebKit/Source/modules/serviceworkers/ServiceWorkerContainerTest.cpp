@@ -181,7 +181,7 @@ protected:
         // the provider.
         provide(adoptPtr(new NotReachedWebServiceWorkerProvider()));
 
-        RefPtrWillBeRawPtr<ServiceWorkerContainer> container = ServiceWorkerContainer::create(executionContext());
+        ServiceWorkerContainer* container = ServiceWorkerContainer::create(executionContext());
         ScriptState::Scope scriptScope(scriptState());
         Dictionary options = Dictionary::createEmpty(isolate());
         EXPECT_TRUE(options.set("scope", scope));
@@ -195,7 +195,7 @@ protected:
     {
         provide(adoptPtr(new NotReachedWebServiceWorkerProvider()));
 
-        RefPtrWillBeRawPtr<ServiceWorkerContainer> container = ServiceWorkerContainer::create(executionContext());
+        ServiceWorkerContainer* container = ServiceWorkerContainer::create(executionContext());
         ScriptState::Scope scriptScope(scriptState());
         Dictionary options = Dictionary::createEmpty(isolate());
         EXPECT_TRUE(options.set("scope", scope));
@@ -321,7 +321,7 @@ TEST_F(ServiceWorkerContainerTest, RegisterUnregister_NonHttpsSecureOriginDelega
     StubWebServiceWorkerProvider stubProvider;
     provide(stubProvider.provider());
 
-    RefPtrWillBeRawPtr<ServiceWorkerContainer> container = ServiceWorkerContainer::create(executionContext());
+    ServiceWorkerContainer* container = ServiceWorkerContainer::create(executionContext());
 
     // register
     {

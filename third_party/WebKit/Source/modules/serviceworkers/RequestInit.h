@@ -22,7 +22,7 @@ public:
     explicit RequestInit(ExecutionContext*, const Dictionary&, ExceptionState&);
 
     String method;
-    RefPtrWillBeMember<Headers> headers;
+    Member<Headers> headers;
     Dictionary headersDictionary;
     RefPtr<BlobDataHandle> bodyBlobHandle;
     String mode;

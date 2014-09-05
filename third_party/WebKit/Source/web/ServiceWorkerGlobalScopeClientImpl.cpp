@@ -74,7 +74,7 @@ void ServiceWorkerGlobalScopeClientImpl::didHandleInstallEvent(int installEventI
     m_client.didHandleInstallEvent(installEventID, result);
 }
 
-void ServiceWorkerGlobalScopeClientImpl::didHandleFetchEvent(int fetchEventID, PassRefPtrWillBeRawPtr<Response> response)
+void ServiceWorkerGlobalScopeClientImpl::didHandleFetchEvent(int fetchEventID, Response* response)
 {
     if (!response) {
         m_client.didHandleFetchEvent(fetchEventID);

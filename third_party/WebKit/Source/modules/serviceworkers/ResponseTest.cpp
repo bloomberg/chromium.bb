@@ -17,10 +17,10 @@ TEST(ServiceWorkerResponseTest, FromFetchResponseData)
 {
     const KURL url(ParsedURLString, "http://www.response.com");
 
-    RefPtrWillBeRawPtr<FetchResponseData> fetchResponseData = FetchResponseData::create();
+    FetchResponseData* fetchResponseData = FetchResponseData::create();
     fetchResponseData->setURL(url);
 
-    RefPtrWillBeRawPtr<Response> response = Response::create(fetchResponseData);
+    Response* response = Response::create(fetchResponseData);
     ASSERT(response);
     EXPECT_EQ(url, response->url());
 }
@@ -39,13 +39,13 @@ TEST(ServiceWorkerResponseTest, FromWebServiceWorkerResponse)
     for (int i = 0; headers[i].key; ++i)
         webResponse.setHeader(WebString::fromUTF8(headers[i].key), WebString::fromUTF8(headers[i].value));
 
-    RefPtrWillBeRawPtr<Response> response = Response::create(webResponse);
+    Response* response = Response::create(webResponse);
     ASSERT(response);
     EXPECT_EQ(url, response->url());
     EXPECT_EQ(status, response->status());
     EXPECT_EQ(statusText, response->statusText());
 
-    RefPtrWillBeRawPtr<Headers> responseHeaders = response->headers();
+    Headers* responseHeaders = response->headers();
 
     WTF::HashMap<String, String> headersMap;
     for (int i = 0; headers[i].key; ++i)

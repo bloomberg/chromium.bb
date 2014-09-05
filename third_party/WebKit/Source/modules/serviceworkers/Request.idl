@@ -14,7 +14,7 @@ enum RequestCredentials { "omit", "same-origin", "include" };
     RuntimeEnabled=ServiceWorker,
     Exposed=ServiceWorker,
     RaisesException=Constructor,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface Request {
     readonly attribute ByteString method;
     readonly attribute ScalarValueString url;

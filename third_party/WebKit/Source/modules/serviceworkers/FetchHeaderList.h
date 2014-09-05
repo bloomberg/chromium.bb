@@ -8,7 +8,6 @@
 #include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 #include <utility>
@@ -18,11 +17,11 @@ namespace blink {
 class Header;
 
 // http://fetch.spec.whatwg.org/#terminology-headers
-class FetchHeaderList FINAL : public RefCountedWillBeGarbageCollectedFinalized<FetchHeaderList> {
+class FetchHeaderList FINAL : public GarbageCollectedFinalized<FetchHeaderList> {
 public:
     typedef std::pair<String, String> Header;
-    static PassRefPtrWillBeRawPtr<FetchHeaderList> create();
-    PassRefPtrWillBeRawPtr<FetchHeaderList> createCopy();
+    static FetchHeaderList* create();
+    FetchHeaderList* createCopy();
 
     ~FetchHeaderList();
     void append(const String&, const String&);

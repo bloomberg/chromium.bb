@@ -11,27 +11,27 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<FetchResponseData> FetchResponseData::create()
+FetchResponseData* FetchResponseData::create()
 {
     // "Unless stated otherwise, a response's url is null, status is 200, status
     // message is `OK`, header list is an empty header list, and body is null."
-    return adoptRefWillBeNoop(new FetchResponseData(DefaultType, 200, "OK"));
+    return new FetchResponseData(DefaultType, 200, "OK");
 }
 
-PassRefPtrWillBeRawPtr<FetchResponseData> FetchResponseData::createNetworkErrorResponse()
+FetchResponseData* FetchResponseData::createNetworkErrorResponse()
 {
     // "A network error is a response whose status is always 0, status message
     // is always the empty byte sequence, header list is aways an empty list,
     // and body is always null."
-    return adoptRefWillBeNoop(new FetchResponseData(ErrorType, 0, ""));
+    return new FetchResponseData(ErrorType, 0, "");
 }
 
-PassRefPtrWillBeRawPtr<FetchResponseData> FetchResponseData::createBasicFilteredResponse()
+FetchResponseData* FetchResponseData::createBasicFilteredResponse()
 {
     // "A basic filtered response is a filtered response whose type is |basic|,
     // header list excludes any headers in internal response's header list whose
     // name is `Set-Cookie` or `Set-Cookie2`."
-    RefPtrWillBeRawPtr<FetchResponseData> response = adoptRefWillBeNoop(new FetchResponseData(BasicType, m_status, m_statusMessage));
+    FetchResponseData* response = new FetchResponseData(BasicType, m_status, m_statusMessage);
     response->m_url = m_url;
     for (size_t i = 0; i < m_headerList->size(); ++i) {
         const FetchHeaderList::Header* header = m_headerList->list()[i].get();
@@ -41,10 +41,10 @@ PassRefPtrWillBeRawPtr<FetchResponseData> FetchResponseData::createBasicFiltered
     }
     response->m_blobDataHandle = m_blobDataHandle;
     response->m_internalResponse = this;
-    return response.release();
+    return response;
 }
 
-PassRefPtrWillBeRawPtr<FetchResponseData> FetchResponseData::createCORSFilteredResponse()
+FetchResponseData* FetchResponseData::createCORSFilteredResponse()
 {
     // "A CORS filtered response is a filtered response whose type is |CORS|,
     // header list excludes all headers in internal response's header list,
@@ -53,7 +53,7 @@ PassRefPtrWillBeRawPtr<FetchResponseData> FetchResponseData::createCORSFilteredR
     // `Pragma`, and except those whose name is one of the values resulting from
     // parsing `Access-Control-Expose-Headers` in internal response's header
     // list."
-    RefPtrWillBeRawPtr<FetchResponseData> response = adoptRefWillBeNoop(new FetchResponseData(CORSType, m_status, m_statusMessage));
+    FetchResponseData* response = new FetchResponseData(CORSType, m_status, m_statusMessage);
     response->m_url = m_url;
     HTTPHeaderSet accessControlExposeHeaderSet;
     String accessControlExposeHeaders;
@@ -67,17 +67,17 @@ PassRefPtrWillBeRawPtr<FetchResponseData> FetchResponseData::createCORSFilteredR
     }
     response->m_blobDataHandle = m_blobDataHandle;
     response->m_internalResponse = this;
-    return response.release();
+    return response;
 }
 
-PassRefPtrWillBeRawPtr<FetchResponseData> FetchResponseData::createOpaqueFilteredResponse()
+FetchResponseData* FetchResponseData::createOpaqueFilteredResponse()
 {
     // "An opaque filtered response is a filtered response whose type is
     // |opaque|, status is 0, status message is the empty byte sequence, header
     // list is an empty list, and body is null."
-    RefPtrWillBeRawPtr<FetchResponseData> response = adoptRefWillBeNoop(new FetchResponseData(OpaqueType, 0, ""));
+    FetchResponseData* response = new FetchResponseData(OpaqueType, 0, "");
     response->m_internalResponse = this;
-    return response.release();
+    return response;
 }
 
 void FetchResponseData::populateWebServiceWorkerResponse(WebServiceWorkerResponse& response)

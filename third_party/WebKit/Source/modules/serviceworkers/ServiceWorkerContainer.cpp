@@ -56,9 +56,9 @@ using blink::WebServiceWorkerProvider;
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<ServiceWorkerContainer> ServiceWorkerContainer::create(ExecutionContext* executionContext)
+ServiceWorkerContainer* ServiceWorkerContainer::create(ExecutionContext* executionContext)
 {
-    return adoptRefWillBeNoop(new ServiceWorkerContainer(executionContext));
+    return new ServiceWorkerContainer(executionContext);
 }
 
 ServiceWorkerContainer::~ServiceWorkerContainer()

@@ -23,12 +23,12 @@ class ScriptState;
 class WebServiceWorkerProvider;
 
 class ServiceWorkerRegistration FINAL
-    : public RefCountedWillBeGarbageCollectedFinalized<ServiceWorkerRegistration>
+    : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<ServiceWorkerRegistration>
     , public ActiveDOMObject
     , public EventTargetWithInlineData
     , public WebServiceWorkerRegistrationProxy {
     DEFINE_WRAPPERTYPEINFO();
-    REFCOUNTED_EVENT_TARGET(ServiceWorkerRegistration);
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<ServiceWorkerRegistration>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistration);
 public:
     // EventTarget overrides.
@@ -43,7 +43,7 @@ public:
 
     // For CallbackPromiseAdapter.
     typedef WebServiceWorkerRegistration WebType;
-    static PassRefPtrWillBeRawPtr<ServiceWorkerRegistration> take(ScriptPromiseResolver*, WebType* registration);
+    static ServiceWorkerRegistration* take(ScriptPromiseResolver*, WebType* registration);
     static void dispose(WebType* registration);
 
     PassRefPtrWillBeRawPtr<ServiceWorker> installing() { return m_installing.get(); }
@@ -59,7 +59,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    static PassRefPtrWillBeRawPtr<ServiceWorkerRegistration> getOrCreate(ExecutionContext*, WebServiceWorkerRegistration*);
+    static ServiceWorkerRegistration* getOrCreate(ExecutionContext*, WebServiceWorkerRegistration*);
     ServiceWorkerRegistration(ExecutionContext*, PassOwnPtr<WebServiceWorkerRegistration>);
 
     // ActiveDOMObject overrides.

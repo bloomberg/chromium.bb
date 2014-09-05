@@ -35,7 +35,7 @@ private:
     // DOMWindowProperty override.
     virtual void willDetachGlobalObjectFromFrame() OVERRIDE;
 
-    RefPtrWillBeMember<ServiceWorkerContainer> m_serviceWorker;
+    PersistentWillBeMember<ServiceWorkerContainer> m_serviceWorker;
 };
 
 } // namespace blink

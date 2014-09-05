@@ -22,10 +22,10 @@ namespace {
     class ClientArray {
     public:
         typedef blink::WebServiceWorkerClientsInfo WebType;
-        static WillBeHeapVector<RefPtrWillBeMember<ServiceWorkerClient> > take(ScriptPromiseResolver*, WebType* webClientsRaw)
+        static HeapVector<Member<ServiceWorkerClient> > take(ScriptPromiseResolver*, WebType* webClientsRaw)
         {
             OwnPtr<WebType> webClients = adoptPtr(webClientsRaw);
-            WillBeHeapVector<RefPtrWillBeMember<ServiceWorkerClient> > clients;
+            HeapVector<Member<ServiceWorkerClient> > clients;
             for (size_t i = 0; i < webClients->clientIDs.size(); ++i) {
                 clients.append(ServiceWorkerClient::create(webClients->clientIDs[i]));
             }
@@ -43,17 +43,15 @@ namespace {
 
 } // namespace
 
-PassRefPtrWillBeRawPtr<ServiceWorkerClients> ServiceWorkerClients::create()
+ServiceWorkerClients* ServiceWorkerClients::create()
 {
-    return adoptRefWillBeNoop(new ServiceWorkerClients());
+    return new ServiceWorkerClients();
 }
 
 ServiceWorkerClients::ServiceWorkerClients()
 {
     ScriptWrappable::init(this);
 }
-
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ServiceWorkerClients);
 
 ScriptPromise ServiceWorkerClients::getAll(ScriptState* scriptState, const Dictionary& options)
 {

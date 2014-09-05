@@ -13,7 +13,6 @@
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -21,7 +20,7 @@ namespace blink {
 class ScriptState;
 
 class FetchBodyStream FINAL
-    : public RefCountedWillBeGarbageCollectedFinalized<FetchBodyStream>
+    : public GarbageCollectedFinalized<FetchBodyStream>
     , public ScriptWrappable
     , public ActiveDOMObject
     , public FileReaderLoaderClient {
@@ -35,7 +34,7 @@ public:
         ResponseAsText
     };
 
-    static PassRefPtrWillBeRawPtr<FetchBodyStream> create(ExecutionContext*, PassRefPtr<BlobDataHandle>);
+    static FetchBodyStream* create(ExecutionContext*, PassRefPtr<BlobDataHandle>);
 
     ScriptPromise asArrayBuffer(ScriptState*);
     ScriptPromise asBlob(ScriptState*);

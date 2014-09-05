@@ -12,7 +12,6 @@
 #include "modules/serviceworkers/Headers.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -24,23 +23,22 @@ class ResourceRequest;
 struct ThreadableLoaderOptions;
 class WebServiceWorkerRequest;
 
-class Request FINAL : public RefCountedWillBeGarbageCollected<Request>, public ScriptWrappable {
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Request);
+class Request FINAL : public GarbageCollected<Request>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<Request> create(ExecutionContext*, const String&, ExceptionState&);
-    static PassRefPtrWillBeRawPtr<Request> create(ExecutionContext*, const String&, const Dictionary&, ExceptionState&);
-    static PassRefPtrWillBeRawPtr<Request> create(ExecutionContext*, Request*, ExceptionState&);
-    static PassRefPtrWillBeRawPtr<Request> create(ExecutionContext*, Request*, const Dictionary&, ExceptionState&);
-    static PassRefPtrWillBeRawPtr<Request> create(PassRefPtrWillBeRawPtr<FetchRequestData>);
-    static PassRefPtrWillBeRawPtr<Request> create(const WebServiceWorkerRequest&);
+    static Request* create(ExecutionContext*, const String&, ExceptionState&);
+    static Request* create(ExecutionContext*, const String&, const Dictionary&, ExceptionState&);
+    static Request* create(ExecutionContext*, Request*, ExceptionState&);
+    static Request* create(ExecutionContext*, Request*, const Dictionary&, ExceptionState&);
+    static Request* create(FetchRequestData*);
+    static Request* create(const WebServiceWorkerRequest&);
 
-    PassRefPtrWillBeRawPtr<FetchRequestData> request() { return m_request; }
+    FetchRequestData* request() { return m_request; }
 
     String method() const;
     String url() const;
-    PassRefPtrWillBeRawPtr<Headers> headers() const { return m_headers; }
-    PassRefPtrWillBeRawPtr<FetchBodyStream> body(ExecutionContext*);
+    Headers* headers() const { return m_headers; }
+    FetchBodyStream* body(ExecutionContext*);
     String referrer() const;
     String mode() const;
     String credentials() const;
@@ -52,12 +50,12 @@ public:
     void trace(Visitor*);
 
 private:
-    explicit Request(PassRefPtrWillBeRawPtr<FetchRequestData>);
+    explicit Request(FetchRequestData*);
     explicit Request(const WebServiceWorkerRequest&);
 
-    RefPtrWillBeMember<FetchRequestData> m_request;
-    RefPtrWillBeMember<Headers> m_headers;
-    RefPtrWillBeMember<FetchBodyStream> m_fetchBodyStream;
+    Member<FetchRequestData> m_request;
+    Member<Headers> m_headers;
+    Member<FetchBodyStream> m_fetchBodyStream;
 };
 
 } // namespace blink

@@ -10,7 +10,6 @@
 #include "platform/weborigin/Referrer.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
@@ -25,7 +24,7 @@ class SecurityOrigin;
 struct ThreadableLoaderOptions;
 class WebServiceWorkerRequest;
 
-class FetchRequestData FINAL : public RefCountedWillBeGarbageCollectedFinalized<FetchRequestData> {
+class FetchRequestData FINAL : public GarbageCollectedFinalized<FetchRequestData> {
     WTF_MAKE_NONCOPYABLE(FetchRequestData);
 public:
     enum Mode { SameOriginMode, NoCORSMode, CORSMode, CORSWithForcedPreflight };
@@ -61,10 +60,10 @@ public:
         blink::Referrer m_referrer;
     };
 
-    static PassRefPtrWillBeRawPtr<FetchRequestData> create(ExecutionContext*);
-    static PassRefPtrWillBeRawPtr<FetchRequestData> create(const blink::WebServiceWorkerRequest&);
-    PassRefPtrWillBeRawPtr<FetchRequestData> createRestrictedCopy(ExecutionContext*, PassRefPtr<SecurityOrigin>) const;
-    PassRefPtrWillBeRawPtr<FetchRequestData> createCopy() const;
+    static FetchRequestData* create(ExecutionContext*);
+    static FetchRequestData* create(const blink::WebServiceWorkerRequest&);
+    FetchRequestData* createRestrictedCopy(ExecutionContext*, PassRefPtr<SecurityOrigin>) const;
+    FetchRequestData* createCopy() const;
     ~FetchRequestData();
 
     void setMethod(AtomicString method) { m_method = method; }
@@ -90,11 +89,11 @@ public:
 private:
     FetchRequestData();
 
-    static PassRefPtrWillBeRawPtr<FetchRequestData> create();
+    static FetchRequestData* create();
 
     AtomicString m_method;
     KURL m_url;
-    RefPtrWillBeMember<FetchHeaderList> m_headerList;
+    Member<FetchHeaderList> m_headerList;
     RefPtr<BlobDataHandle> m_blobDataHandle;
     bool m_unsafeRequestFlag;
     // FIXME: Support m_skipServiceWorkerFlag;

@@ -6,7 +6,7 @@
 [
     Exposed=ServiceWorker,
     RuntimeEnabled=ServiceWorker,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface ServiceWorkerClients {
     [CallWith=ScriptState] Promise getAll(optional Dictionary options);
 };

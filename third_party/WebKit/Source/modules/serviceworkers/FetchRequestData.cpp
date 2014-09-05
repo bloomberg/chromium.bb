@@ -15,34 +15,34 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<FetchRequestData> FetchRequestData::create()
+FetchRequestData* FetchRequestData::create()
 {
-    return adoptRefWillBeNoop(new FetchRequestData());
+    return new FetchRequestData();
 }
 
-PassRefPtrWillBeRawPtr<FetchRequestData> FetchRequestData::create(ExecutionContext* context)
+FetchRequestData* FetchRequestData::create(ExecutionContext* context)
 {
-    RefPtrWillBeRawPtr<FetchRequestData> request = FetchRequestData::create();
+    FetchRequestData* request = FetchRequestData::create();
     if (context->isDocument())
         request->m_referrer.setClient(blink::Referrer(context->url().strippedForUseAsReferrer(), toDocument(context)->referrerPolicy()));
     else
         request->m_referrer.setClient(blink::Referrer(context->url().strippedForUseAsReferrer(), ReferrerPolicyDefault));
-    return request.release();
+    return request;
 }
 
-PassRefPtrWillBeRawPtr<FetchRequestData> FetchRequestData::create(const WebServiceWorkerRequest& webRequest)
+FetchRequestData* FetchRequestData::create(const WebServiceWorkerRequest& webRequest)
 {
-    RefPtrWillBeRawPtr<FetchRequestData> request = FetchRequestData::create();
+    FetchRequestData* request = FetchRequestData::create();
     request->m_url = webRequest.url();
     request->m_method = webRequest.method();
     for (HTTPHeaderMap::const_iterator it = webRequest.headers().begin(); it != webRequest.headers().end(); ++it)
         request->m_headerList->append(it->key, it->value);
     request->m_blobDataHandle = webRequest.blobDataHandle();
     request->m_referrer.setURL(webRequest.referrer());
-    return request.release();
+    return request;
 }
 
-PassRefPtrWillBeRawPtr<FetchRequestData> FetchRequestData::createRestrictedCopy(ExecutionContext* context, PassRefPtr<SecurityOrigin> origin) const
+FetchRequestData* FetchRequestData::createRestrictedCopy(ExecutionContext* context, PassRefPtr<SecurityOrigin> origin) const
 {
     // "To make a restricted copy of a request |request|, run these steps:
     // 1. Let |r| be a new request whose url is |request|'s url, method is
@@ -51,7 +51,7 @@ PassRefPtrWillBeRawPtr<FetchRequestData> FetchRequestData::createRestrictedCopy(
     // global object, origin is entry settings object's origin, referrer is
     // |client|, context is |connect|, mode is |request|'s mode, and credentials
     //  mode is |request|'s credentials mode."
-    RefPtrWillBeRawPtr<FetchRequestData> request = FetchRequestData::create();
+    FetchRequestData* request = FetchRequestData::create();
     request->m_url = m_url;
     request->m_method = m_method;
     request->m_headerList = m_headerList->createCopy();
@@ -65,12 +65,12 @@ PassRefPtrWillBeRawPtr<FetchRequestData> FetchRequestData::createRestrictedCopy(
     request->m_mode = m_mode;
     request->m_credentials = m_credentials;
     // "2. Return |r|."
-    return request.release();
+    return request;
 }
 
-PassRefPtrWillBeRawPtr<FetchRequestData> FetchRequestData::createCopy() const
+FetchRequestData* FetchRequestData::createCopy() const
 {
-    RefPtrWillBeRawPtr<FetchRequestData> request = FetchRequestData::create();
+    FetchRequestData* request = FetchRequestData::create();
     request->m_url = m_url;
     request->m_method = m_method;
     request->m_headerList = m_headerList->createCopy();
@@ -83,7 +83,7 @@ PassRefPtrWillBeRawPtr<FetchRequestData> FetchRequestData::createCopy() const
     request->m_mode = m_mode;
     request->m_credentials = m_credentials;
     request->m_responseTainting = m_responseTainting;
-    return request.release();
+    return request;
 }
 
 FetchRequestData::~FetchRequestData()

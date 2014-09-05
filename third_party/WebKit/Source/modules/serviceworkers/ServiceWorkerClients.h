@@ -18,11 +18,10 @@ class ScriptPromise;
 class ScriptState;
 class ServiceWorkerClient;
 
-class ServiceWorkerClients FINAL : public RefCountedWillBeGarbageCollected<ServiceWorkerClients>, public ScriptWrappable {
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ServiceWorkerClients);
+class ServiceWorkerClients FINAL : public GarbageCollected<ServiceWorkerClients>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<ServiceWorkerClients> create();
+    static ServiceWorkerClients* create();
 
     // ServiceWorkerClients.idl
     ScriptPromise getAll(ScriptState*, const Dictionary&);

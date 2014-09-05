@@ -11,17 +11,17 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<FetchHeaderList> FetchHeaderList::create()
+FetchHeaderList* FetchHeaderList::create()
 {
-    return adoptRefWillBeNoop(new FetchHeaderList());
+    return new FetchHeaderList();
 }
 
-PassRefPtrWillBeRawPtr<FetchHeaderList> FetchHeaderList::createCopy()
+FetchHeaderList* FetchHeaderList::createCopy()
 {
-    RefPtrWillBeRawPtr<FetchHeaderList> list(create());
+    FetchHeaderList* list = create();
     for (size_t i = 0; i < m_headerList.size(); ++i)
         list->append(m_headerList[i]->first, m_headerList[i]->second);
-    return list.release();
+    return list;
 }
 
 FetchHeaderList::FetchHeaderList()

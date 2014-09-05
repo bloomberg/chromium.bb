@@ -10,17 +10,16 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
 class WebServiceWorkerCacheStorage;
 
-class CacheStorage FINAL : public RefCountedWillBeGarbageCollected<CacheStorage>, public ScriptWrappable {
+class CacheStorage FINAL : public GarbageCollected<CacheStorage>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(CacheStorage);
 public:
-    static PassRefPtrWillBeRawPtr<CacheStorage> create(WebServiceWorkerCacheStorage*);
+    static CacheStorage* create(WebServiceWorkerCacheStorage*);
 
     ScriptPromise get(ScriptState*, const String& cacheName);
     ScriptPromise has(ScriptState*, const String& cacheName);
