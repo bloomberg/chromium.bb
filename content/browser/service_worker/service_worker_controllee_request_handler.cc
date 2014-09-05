@@ -55,15 +55,6 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
     return NULL;
   }
 
-  if (request->load_flags() & net::LOAD_BYPASS_CACHE) {
-    if (is_main_resource_load_) {
-      provider_host_->SetDocumentUrl(
-          net::SimplifyUrlForRequest(request->url()));
-    }
-    job_ = NULL;
-    return NULL;
-  }
-
   // This may get called multiple times for original and redirect requests:
   // A. original request case: job_ is null, no previous location info.
   // B. redirect or restarted request case:

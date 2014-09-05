@@ -22,7 +22,8 @@ RequestExtraData::RequestExtraData()
       should_replace_current_entry_(false),
       transferred_request_child_id_(-1),
       transferred_request_request_id_(-1),
-      service_worker_provider_id_(kInvalidServiceWorkerProviderId) {
+      service_worker_provider_id_(kInvalidServiceWorkerProviderId),
+      skip_service_worker_(false) {
 }
 
 RequestExtraData::~RequestExtraData() {

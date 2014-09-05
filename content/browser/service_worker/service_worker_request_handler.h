@@ -47,6 +47,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       storage::BlobStorageContext* blob_storage_context,
       int process_id,
       int provider_id,
+      bool skip_service_worker,
       ResourceType resource_type,
       scoped_refptr<ResourceRequestBody> body);
 

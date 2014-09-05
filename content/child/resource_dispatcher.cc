@@ -149,6 +149,7 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
       extra_data->transferred_request_request_id();
   request_.service_worker_provider_id =
       extra_data->service_worker_provider_id();
+  request_.skip_service_worker = extra_data->skip_service_worker();
   frame_origin_ = extra_data->frame_origin();
 }
 

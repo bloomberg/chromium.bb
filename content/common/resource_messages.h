@@ -185,6 +185,9 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
   // or kInvalidServiceWorkerProviderId.
   IPC_STRUCT_MEMBER(int, service_worker_provider_id)
 
+  // True if the request should not be handled by the ServiceWorker.
+  IPC_STRUCT_MEMBER(bool, skip_service_worker)
+
   // Optional resource request body (may be null).
   IPC_STRUCT_MEMBER(scoped_refptr<content::ResourceRequestBody>,
                     request_body)

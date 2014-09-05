@@ -14,6 +14,7 @@
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "webkit/browser/blob/blob_storage_context.h"
@@ -51,6 +52,7 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     storage::BlobStorageContext* blob_storage_context,
     int process_id,
     int provider_id,
+    bool skip_service_worker,
     ResourceType resource_type,
     scoped_refptr<ResourceRequestBody> body) {
   if (!request->url().SchemeIsHTTPOrHTTPS())
@@ -65,6 +67,12 @@ void ServiceWorkerRequestHandler::InitializeHandler(
       context_wrapper->context()->GetProviderHost(process_id, provider_id);
   if (!provider_host || !provider_host->IsContextAlive())
     return;
+
+  if (skip_service_worker) {
+    if (ServiceWorkerUtils::IsMainResourceType(resource_type))
+      provider_host->SetDocumentUrl(net::SimplifyUrlForRequest(request->url()));
+    return;
+  }
 
   scoped_ptr<ServiceWorkerRequestHandler> handler(
       provider_host->CreateRequestHandler(
