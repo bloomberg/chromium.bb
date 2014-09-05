@@ -67,16 +67,24 @@ bool ManifestFetchData::AddExtension(const std::string& id,
                                      const std::string& version,
                                      const PingData* ping_data,
                                      const std::string& update_url_data,
-                                     const std::string& install_source) {
+                                     const std::string& install_source,
+                                     bool force_update) {
   if (extension_ids_.find(id) != extension_ids_.end()) {
     NOTREACHED() << "Duplicate extension id " << id;
     return false;
   }
 
+  if (force_update)
+    forced_updates_.insert(id);
+
+  // If we want to force an update, we send 0.0.0.0 as the installed version
+  // number.
+  const std::string installed_version = force_update ? "0.0.0.0" : version;
+
   // Compute the string we'd append onto the full_url_, and see if it fits.
   std::vector<std::string> parts;
   parts.push_back("id=" + id);
-  parts.push_back("v=" + version);
+  parts.push_back("v=" + installed_version);
   if (!install_source.empty())
     parts.push_back("installsource=" + install_source);
   parts.push_back("uc");
@@ -161,6 +169,10 @@ bool ManifestFetchData::DidPing(const std::string& extension_id,
 void ManifestFetchData::Merge(const ManifestFetchData& other) {
   DCHECK(full_url() == other.full_url());
   request_ids_.insert(other.request_ids_.begin(), other.request_ids_.end());
+}
+
+bool ManifestFetchData::DidForceUpdate(const std::string& extension_id) const {
+  return forced_updates_.find(extension_id) != forced_updates_.end();
 }
 
 }  // namespace extensions

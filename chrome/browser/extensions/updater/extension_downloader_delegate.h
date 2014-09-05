@@ -111,6 +111,13 @@ class ExtensionDownloaderDelegate {
   // that extension is not installed.
   virtual bool GetExtensionExistingVersion(const std::string& id,
                                            std::string* version) = 0;
+
+  // Determines if a given extension should be forced to update and (if so)
+  // what the source of this forcing is (i.e. what string will be passed
+  // in |installsource| as part of the update query parameters). The default
+  // implementation always returns |false|.
+  virtual bool ShouldForceUpdate(const std::string& id,
+                                 std::string* source);
 };
 
 }  // namespace extensions

@@ -56,7 +56,8 @@ class ManifestFetchData {
                     const std::string& version,
                     const PingData* ping_data,
                     const std::string& update_url_data,
-                    const std::string& install_source);
+                    const std::string& install_source,
+                    bool force_update);
 
   const GURL& base_url() const { return base_url_; }
   const GURL& full_url() const { return full_url_; }
@@ -75,6 +76,9 @@ class ManifestFetchData {
   // fetch (in particular this adds all request ids associated with |other|
   // to this ManifestFetchData).
   void Merge(const ManifestFetchData& other);
+
+  // Returns |true| if a given extension was forced to update.
+  bool DidForceUpdate(const std::string& extension_id) const;
 
  private:
   // The set of extension id's for this ManifestFetchData.
@@ -95,6 +99,9 @@ class ManifestFetchData {
   // one fetch, so potentially multiple request ids can get associated with
   // one ManifestFetchData.
   std::set<int> request_ids_;
+
+  // The set of extension IDs for which this fetch forced a CRX update.
+  std::set<std::string> forced_updates_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestFetchData);
 };

@@ -210,10 +210,17 @@ bool ExtensionDownloader::AddExtension(const Extension& extension,
   if (!ManifestURL::UpdatesFromGallery(&extension))
     update_url_data = delegate_->GetUpdateUrlData(extension.id());
 
-  return AddExtensionData(extension.id(), *extension.version(),
+  std::string install_source;
+  bool force_update = delegate_->ShouldForceUpdate(extension.id(),
+                                                   &install_source);
+  return AddExtensionData(extension.id(),
+                          *extension.version(),
                           extension.GetType(),
                           ManifestURL::GetUpdateURL(&extension),
-                          update_url_data, request_id);
+                          update_url_data,
+                          request_id,
+                          force_update,
+                          install_source);
 }
 
 bool ExtensionDownloader::AddPendingExtension(const std::string& id,
@@ -230,7 +237,9 @@ bool ExtensionDownloader::AddPendingExtension(const std::string& id,
                           Manifest::TYPE_UNKNOWN,
                           update_url,
                           std::string(),
-                          request_id);
+                          request_id,
+                          false,
+                          std::string());
 }
 
 void ExtensionDownloader::StartAllPending(ExtensionCache* cache) {
@@ -273,7 +282,8 @@ void ExtensionDownloader::StartBlacklistUpdate(
                                 version,
                                 &ping_data,
                                 std::string(),
-                                kDefaultInstallSource);
+                                kDefaultInstallSource,
+                                false);
   StartUpdateCheck(blacklist_fetch.Pass());
 }
 
@@ -282,12 +292,15 @@ void ExtensionDownloader::SetWebstoreIdentityProvider(
   identity_provider_.swap(identity_provider);
 }
 
-bool ExtensionDownloader::AddExtensionData(const std::string& id,
-                                           const Version& version,
-                                           Manifest::Type extension_type,
-                                           const GURL& extension_update_url,
-                                           const std::string& update_url_data,
-                                           int request_id) {
+bool ExtensionDownloader::AddExtensionData(
+    const std::string& id,
+    const Version& version,
+    Manifest::Type extension_type,
+    const GURL& extension_update_url,
+    const std::string& update_url_data,
+    int request_id,
+    bool force_update,
+    const std::string& install_source_override) {
   GURL update_url(extension_update_url);
   // Skip extensions with non-empty invalid update URLs.
   if (!update_url.is_empty() && !update_url.is_valid()) {
@@ -353,6 +366,9 @@ bool ExtensionDownloader::AddExtensionData(const std::string& id,
 
     std::string install_source = i == 0 ?
         kDefaultInstallSource : kNotFromWebstoreInstallSource;
+    if (!install_source_override.empty()) {
+      install_source = install_source_override;
+    }
 
     ManifestFetchData::PingData ping_data;
     ManifestFetchData::PingData* optional_ping_data = NULL;
@@ -369,7 +385,8 @@ bool ExtensionDownloader::AddExtensionData(const std::string& id,
       ManifestFetchData* existing_fetch = existing_iter->second.back().get();
       if (existing_fetch->AddExtension(id, version.GetString(),
                                        optional_ping_data, update_url_data,
-                                       install_source)) {
+                                       install_source,
+                                       force_update)) {
         added = true;
       }
     }
@@ -383,7 +400,8 @@ bool ExtensionDownloader::AddExtensionData(const std::string& id,
       added = fetch->AddExtension(id, version.GetString(),
                                   optional_ping_data,
                                   update_url_data,
-                                  install_source);
+                                  install_source,
+                                  force_update);
       DCHECK(added);
     }
   }
@@ -639,12 +657,14 @@ void ExtensionDownloader::DetermineUpdates(
 
       VLOG(2) << id << " is at '" << version << "'";
 
-      Version existing_version(version);
-      Version update_version(update->version);
-
-      if (!update_version.IsValid() ||
-          update_version.CompareTo(existing_version) <= 0) {
-        continue;
+      // We should skip the version check if update was forced.
+      if (!fetch_data.DidForceUpdate(id)) {
+        Version existing_version(version);
+        Version update_version(update->version);
+        if (!update_version.IsValid() ||
+            update_version.CompareTo(existing_version) <= 0) {
+          continue;
+        }
       }
     }
 

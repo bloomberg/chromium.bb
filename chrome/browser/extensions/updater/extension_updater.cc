@@ -8,6 +8,8 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
@@ -22,6 +24,7 @@
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/omaha_query_params/omaha_query_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -40,6 +43,9 @@ using base::RandInt;
 using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
+using extensions::Extension;
+using extensions::ExtensionSet;
+using omaha_query_params::OmahaQueryParams;
 
 typedef extensions::ExtensionDownloaderDelegate::Error Error;
 typedef extensions::ExtensionDownloaderDelegate::PingResult PingResult;
@@ -59,6 +65,10 @@ const int kMaxUpdateFrequencySeconds = 60 * 60 * 24 * 7;  // 7 days
 // Require at least 5 seconds between consecutive non-succesful extension update
 // checks.
 const int kMinUpdateThrottleTime = 5;
+
+// The installsource query parameter to use when forcing updates due to NaCl
+// arch mismatch.
+const char kWrongMultiCrxInstallSource[] = "wrong_multi_crx";
 
 // When we've computed a days value, we want to make sure we don't send a
 // negative value (due to the system clock being set backwards, etc.), since -1
@@ -86,6 +96,73 @@ int CalculateActivePingDays(const Time& last_active_ping_day,
   if (last_active_ping_day.is_null())
     return extensions::ManifestFetchData::kNeverPinged;
   return SanitizeDays((Time::Now() - last_active_ping_day).InDays());
+}
+
+void RespondWithForcedUpdates(
+    const base::Callback<void(const std::set<std::string>&)>& callback,
+    scoped_ptr<std::set<std::string> > forced_updates) {
+  callback.Run(*forced_updates.get());
+}
+
+void DetermineForcedUpdatesOnBlockingPool(
+    scoped_ptr<std::vector<scoped_refptr<const Extension> > > extensions,
+    const base::Callback<void(const std::set<std::string>&)>& callback) {
+  scoped_ptr<std::set<std::string> > forced_updates(
+      new std::set<std::string>());
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  for (std::vector<scoped_refptr<const Extension> >::const_iterator iter =
+          extensions->begin();
+       iter != extensions->end();
+       ++iter) {
+    scoped_refptr<const Extension> extension = *iter;
+    base::FilePath platform_specific_path = extension->path().Append(
+        extensions::kPlatformSpecificFolder);
+    if (base::PathExists(platform_specific_path)) {
+      bool force = true;
+      base::FileEnumerator all_archs(platform_specific_path,
+                                     false,
+                                     base::FileEnumerator::DIRECTORIES);
+      base::FilePath arch;
+      while (!(arch = all_archs.Next()).empty()) {
+        std::string arch_name = arch.BaseName().AsUTF8Unsafe();
+        std::replace(arch_name.begin(), arch_name.end(), '_', '-');
+        if (arch_name == OmahaQueryParams::GetNaclArch())
+          force = false;
+      }
+
+      if (force)
+        forced_updates->insert(extension->id());
+   }
+  }
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&RespondWithForcedUpdates,
+                 callback,
+                 base::Passed(&forced_updates)));
+}
+
+void CollectExtensionsFromSet(
+    const ExtensionSet& extensions,
+    std::vector<scoped_refptr<const Extension> >* paths) {
+  std::copy(extensions.begin(), extensions.end(), std::back_inserter(*paths));
+}
+
+void DetermineForcedUpdates(
+    content::BrowserContext* browser_context,
+    const base::Callback<void(const std::set<std::string>&)>& callback) {
+  scoped_ptr<std::vector<scoped_refptr<const Extension> > > extensions(
+      new std::vector<scoped_refptr<const Extension> >());
+  const extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser_context);
+  scoped_ptr<ExtensionSet> installed_extensions =
+      registry->GenerateInstalledExtensionsSet();
+  CollectExtensionsFromSet(*installed_extensions.get(), extensions.get());
+  BrowserThread::PostBlockingPoolTask(
+      FROM_HERE,
+      base::Bind(&DetermineForcedUpdatesOnBlockingPool,
+                 base::Passed(&extensions),
+                 callback));
 }
 
 }  // namespace
@@ -335,6 +412,16 @@ void ExtensionUpdater::AddToDownloader(
 }
 
 void ExtensionUpdater::CheckNow(const CheckParams& params) {
+  DetermineForcedUpdates(
+      profile_,
+      base::Bind(&ExtensionUpdater::OnForcedUpdatesDetermined,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 params));
+}
+
+void ExtensionUpdater::OnForcedUpdatesDetermined(
+    const CheckParams& params,
+    const std::set<std::string>& forced_updates) {
   int request_id = next_request_id_++;
 
   VLOG(2) << "Starting update check " << request_id;
@@ -348,6 +435,8 @@ void ExtensionUpdater::CheckNow(const CheckParams& params) {
   request.install_immediately = params.install_immediately;
 
   EnsureDownloaderCreated();
+
+  forced_updates_ = forced_updates;
 
   // Add fetch records for extensions that should be fetched by an update URL.
   // These extensions are not yet installed. They come from group policy
@@ -534,6 +623,18 @@ bool ExtensionUpdater::GetExtensionExistingVersion(const std::string& id,
   else
     *version = extension->VersionString();
   return true;
+}
+
+bool ExtensionUpdater::ShouldForceUpdate(
+    const std::string& extension_id,
+    std::string* source) {
+  bool force = forced_updates_.find(extension_id) != forced_updates_.end();
+  // Currently the only reason to force is a NaCl arch mismatch with the
+  // installed extension contents.
+  if (force) {
+    *source = kWrongMultiCrxInstallSource;
+  }
+  return force;
 }
 
 void ExtensionUpdater::UpdatePingData(const std::string& id,
