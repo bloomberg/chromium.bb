@@ -24,9 +24,13 @@ def main(args):
     print >> sys.stderr, ('gn.py: Could not find checkout in any parent of '
                           'the current path.\nThis must be run inside a '
                           'checkout.')
-    sys.exit(1)
+    return 1
   gn_path = os.path.join(bin_path, 'gn' + gclient_utils.GetExeSuffix())
-  return subprocess.call([gn_path] + sys.argv[1:])
+  if not os.path.exists(gn_path):
+    print >> sys.stderr, 'gn.py: Could not find gn executable at: %s' % gn_path
+    return 2
+  else:
+    return subprocess.call([gn_path] + sys.argv[1:])
 
 
 if __name__ == '__main__':

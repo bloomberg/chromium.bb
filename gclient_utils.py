@@ -681,7 +681,10 @@ def GetBuildtoolsPath():
     if os.path.exists(os.path.join(top_dir, 'buildtools')):
       return os.path.join(top_dir, 'buildtools')
     return None
-  return os.path.join(gclient_root, 'src', 'buildtools')
+
+  # Some projects' top directory is not named 'src'.
+  source_dir_name = GetGClientPrimarySolutionName(gclient_root) or 'src'
+  return os.path.join(gclient_root, source_dir_name, 'buildtools')
 
 
 def GetBuildtoolsPlatformBinaryPath():
@@ -711,6 +714,17 @@ def GetExeSuffix():
   if sys.platform.startswith(('cygwin', 'win')):
     return '.exe'
   return ''
+
+
+def GetGClientPrimarySolutionName(gclient_root_dir_path):
+  """Returns the name of the primary solution in the .gclient file specified."""
+  gclient_config_file = os.path.join(gclient_root_dir_path, '.gclient')
+  env = {}
+  execfile(gclient_config_file, env)
+  solutions = env.get('solutions', [])
+  if solutions:
+    return solutions[0].get('name')
+  return None
 
 
 def GetGClientRootAndEntries(path=None):
