@@ -79,6 +79,7 @@ include_rules = [
   "+courgette",
   "+device/bluetooth",
   "+device/core",
+  "+device/hid",
   "+device/usb",
   "+device/media_transfer_protocol",
   "+extensions/browser",

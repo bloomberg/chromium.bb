@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
+#include "device/hid/hid_service.h"
 #include "device/usb/usb_service.h"
 
 namespace extensions {
@@ -16,6 +17,12 @@ ShellDeviceClient::~ShellDeviceClient() {}
 
 device::UsbService* ShellDeviceClient::GetUsbService() {
   return device::UsbService::GetInstance(
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::UI));
+}
+
+device::HidService* ShellDeviceClient::GetHidService() {
+  return device::HidService::GetInstance(
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::UI));
 }

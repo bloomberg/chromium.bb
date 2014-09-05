@@ -50,8 +50,6 @@
         'app/shell_main_delegate.h',
         'browser/api/shell/shell_api.cc',
         'browser/api/shell/shell_api.h',
-        'browser/api/shell_extensions_api_client.cc',
-        'browser/api/shell_extensions_api_client.h',
         'browser/default_shell_browser_main_delegate.cc',
         'browser/default_shell_browser_main_delegate.h',
         'browser/desktop_controller.cc',

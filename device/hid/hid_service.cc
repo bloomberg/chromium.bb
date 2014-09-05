@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_restrictions.h"
 
@@ -20,17 +21,46 @@
 
 namespace device {
 
-HidService* HidService::Create(
-    scoped_refptr<base::MessageLoopProxy> ui_message_loop) {
+namespace {
+
+HidService* g_service = NULL;
+
+class HidServiceDestroyer : public base::MessageLoop::DestructionObserver {
+ public:
+  explicit HidServiceDestroyer(HidService* hid_service)
+      : hid_service_(hid_service) {}
+  virtual ~HidServiceDestroyer() {}
+
+ private:
+  // base::MessageLoop::DestructionObserver implementation.
+  virtual void WillDestroyCurrentMessageLoop() OVERRIDE {
+    base::MessageLoop::current()->RemoveDestructionObserver(this);
+    delete hid_service_;
+    delete this;
+    g_service = NULL;
+  }
+
+  HidService* hid_service_;
+};
+
+}  // namespace
+
+HidService* HidService::GetInstance(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
+  if (g_service == NULL) {
 #if defined(OS_LINUX) && defined(USE_UDEV)
-  return new HidServiceLinux(ui_message_loop);
+    g_service = new HidServiceLinux(ui_task_runner);
 #elif defined(OS_MACOSX)
-  return new HidServiceMac();
+    g_service = new HidServiceMac();
 #elif defined(OS_WIN)
-  return new HidServiceWin();
-#else
-  return NULL;
+    g_service = new HidServiceWin();
 #endif
+    if (g_service != NULL) {
+      HidServiceDestroyer* destroyer = new HidServiceDestroyer(g_service);
+      base::MessageLoop::current()->AddDestructionObserver(destroyer);
+    }
+  }
+  return g_service;
 }
 
 HidService::~HidService() {

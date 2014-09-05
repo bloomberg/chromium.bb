@@ -21,7 +21,7 @@ class HidConnection;
 class HidServiceLinux : public HidService,
                         public DeviceMonitorLinux::Observer {
  public:
-  HidServiceLinux(scoped_refptr<base::MessageLoopProxy> ui_message_loop);
+  HidServiceLinux(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   virtual scoped_refptr<HidConnection> Connect(const HidDeviceId& device_id)
       OVERRIDE;
@@ -38,7 +38,7 @@ class HidServiceLinux : public HidService,
       scoped_ptr<HidDeviceInfo> device_info,
       bool success);
 
-  scoped_refptr<base::MessageLoopProxy> ui_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   base::WeakPtrFactory<HidServiceLinux> weak_factory_;
 

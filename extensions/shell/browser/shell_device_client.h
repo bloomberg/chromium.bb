@@ -21,6 +21,7 @@ class ShellDeviceClient : device::DeviceClient {
 
   // device::DeviceClient implementation
   virtual device::UsbService* GetUsbService() OVERRIDE;
+  virtual device::HidService* GetHidService() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellDeviceClient);

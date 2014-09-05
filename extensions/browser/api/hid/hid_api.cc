@@ -7,12 +7,12 @@
 #include <string>
 #include <vector>
 
+#include "device/core/device_client.h"
 #include "device/hid/hid_connection.h"
 #include "device/hid/hid_device_filter.h"
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_service.h"
 #include "extensions/browser/api/api_resource_manager.h"
-#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/common/api/hid.h"
 #include "net/base/io_buffer.h"
 
@@ -143,7 +143,7 @@ void HidConnectFunction::AsyncWorkStart() {
     return;
   }
 
-  HidService* hid_service = ExtensionsAPIClient::Get()->GetHidService();
+  HidService* hid_service = device::DeviceClient::Get()->GetHidService();
   DCHECK(hid_service);
   scoped_refptr<HidConnection> connection =
       hid_service->Connect(device_info.device_id);
