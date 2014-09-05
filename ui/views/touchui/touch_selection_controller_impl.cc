@@ -437,9 +437,6 @@ void TouchSelectionControllerImpl::SetDraggingHandle(
 
 void TouchSelectionControllerImpl::SelectionHandleDragged(
     const gfx::Point& drag_pos) {
-  // We do not want to show the context menu while dragging.
-  HideContextMenu();
-
   DCHECK(dragging_handle_);
   gfx::Point drag_pos_in_client = drag_pos;
   ConvertPointToClientView(dragging_handle_, &drag_pos_in_client);
@@ -521,7 +518,6 @@ void TouchSelectionControllerImpl::OnWidgetBoundsChanged(
     Widget* widget,
     const gfx::Rect& new_bounds) {
   DCHECK_EQ(client_widget_, widget);
-  HideContextMenu();
   SelectionChanged();
 }
 

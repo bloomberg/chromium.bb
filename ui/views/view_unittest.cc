@@ -1808,7 +1808,7 @@ class VisibleBoundsView : public View {
 
  private:
   // Overridden from View:
-  virtual bool NeedsNotificationWhenVisibleBoundsChange() const OVERRIDE {
+  virtual bool GetNeedsNotificationWhenVisibleBoundsChange() const OVERRIDE {
      return true;
   }
   virtual void OnVisibleBoundsChanged() OVERRIDE {

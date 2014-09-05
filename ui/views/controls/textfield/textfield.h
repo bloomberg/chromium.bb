@@ -225,6 +225,8 @@ class VIEWS_EXPORT Textfield : public View,
   virtual void OnDragDone() OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
+  virtual bool GetNeedsNotificationWhenVisibleBoundsChange() const OVERRIDE;
+  virtual void OnVisibleBoundsChanged() OVERRIDE;
   virtual void OnEnabledChanged() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;

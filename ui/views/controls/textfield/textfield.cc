@@ -923,6 +923,15 @@ void Textfield::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   OnCaretBoundsChanged();
 }
 
+bool Textfield::GetNeedsNotificationWhenVisibleBoundsChange() const {
+  return true;
+}
+
+void Textfield::OnVisibleBoundsChanged() {
+  if (touch_selection_controller_)
+    touch_selection_controller_->SelectionChanged();
+}
+
 void Textfield::OnEnabledChanged() {
   View::OnEnabledChanged();
   if (GetInputMethod())

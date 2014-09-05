@@ -1318,7 +1318,7 @@ void View::PreferredSizeChanged() {
     parent_->ChildPreferredSizeChanged(this);
 }
 
-bool View::NeedsNotificationWhenVisibleBoundsChange() const {
+bool View::GetNeedsNotificationWhenVisibleBoundsChange() const {
   return false;
 }
 
@@ -1927,7 +1927,7 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
     Layout();
   }
 
-  if (NeedsNotificationWhenVisibleBoundsChange())
+  if (GetNeedsNotificationWhenVisibleBoundsChange())
     OnVisibleBoundsChanged();
 
   // Notify interested Views that visible bounds within the root view may have
@@ -1942,7 +1942,7 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
 
 // static
 void View::RegisterChildrenForVisibleBoundsNotification(View* view) {
-  if (view->NeedsNotificationWhenVisibleBoundsChange())
+  if (view->GetNeedsNotificationWhenVisibleBoundsChange())
     view->RegisterForVisibleBoundsNotification();
   for (int i = 0; i < view->child_count(); ++i)
     RegisterChildrenForVisibleBoundsNotification(view->child_at(i));
@@ -1950,7 +1950,7 @@ void View::RegisterChildrenForVisibleBoundsNotification(View* view) {
 
 // static
 void View::UnregisterChildrenForVisibleBoundsNotification(View* view) {
-  if (view->NeedsNotificationWhenVisibleBoundsChange())
+  if (view->GetNeedsNotificationWhenVisibleBoundsChange())
     view->UnregisterForVisibleBoundsNotification();
   for (int i = 0; i < view->child_count(); ++i)
     UnregisterChildrenForVisibleBoundsNotification(view->child_at(i));

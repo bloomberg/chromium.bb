@@ -86,7 +86,7 @@ class VIEWS_EXPORT NativeViewHost : public View {
   virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
 
  protected:
-  virtual bool NeedsNotificationWhenVisibleBoundsChange() const OVERRIDE;
+  virtual bool GetNeedsNotificationWhenVisibleBoundsChange() const OVERRIDE;
   virtual void OnVisibleBoundsChanged() OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;

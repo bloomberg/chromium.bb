@@ -1027,7 +1027,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Override returning true when the view needs to be notified when its visible
   // bounds relative to the root view may have changed. Only used by
   // NativeViewHost.
-  virtual bool NeedsNotificationWhenVisibleBoundsChange() const;
+  virtual bool GetNeedsNotificationWhenVisibleBoundsChange() const;
 
   // Notification that this View's visible bounds relative to the root view may
   // have changed. The visible bounds are the region of the View not clipped by

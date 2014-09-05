@@ -32,7 +32,7 @@ class ContentsWebView
   void SetStatusBubble(StatusBubbleViews* status_bubble);
 
   // WebView overrides:
-  virtual bool NeedsNotificationWhenVisibleBoundsChange() const OVERRIDE;
+  virtual bool GetNeedsNotificationWhenVisibleBoundsChange() const OVERRIDE;
   virtual void OnVisibleBoundsChanged() OVERRIDE;
   virtual void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details)
       OVERRIDE;

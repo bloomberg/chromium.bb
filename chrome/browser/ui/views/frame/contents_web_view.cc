@@ -28,7 +28,7 @@ void ContentsWebView::SetStatusBubble(StatusBubbleViews* status_bubble) {
     status_bubble_->Reposition();
 }
 
-bool ContentsWebView::NeedsNotificationWhenVisibleBoundsChange() const {
+bool ContentsWebView::GetNeedsNotificationWhenVisibleBoundsChange() const {
   return true;
 }
 

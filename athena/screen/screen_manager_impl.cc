@@ -24,6 +24,7 @@
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/focus_controller.h"
+#include "ui/wm/core/window_util.h"
 
 namespace athena {
 namespace {
@@ -42,12 +43,10 @@ bool GrabsInput(aura::Window* container) {
 
 // Returns the container which contains |window|.
 aura::Window* GetContainer(aura::Window* window) {
-  // No containers for NULL or the root window itself.
-  if (!window || !window->parent())
-    return NULL;
-  if (window->parent()->IsRootWindow())
-    return window;
-  return GetContainer(window->parent());
+  aura::Window* container = window;
+  while (container && !container->GetProperty(kContainerParamsKey))
+    container = container->parent();
+  return container;
 }
 
 class AthenaFocusRules : public wm::BaseFocusRules {
@@ -94,6 +93,9 @@ class AthenaWindowTreeClient : public aura::client::WindowTreeClient {
   virtual aura::Window* GetDefaultParent(aura::Window* context,
                                          aura::Window* window,
                                          const gfx::Rect& bounds) OVERRIDE {
+    aura::Window* transient_parent = wm::GetTransientParent(window);
+    if (transient_parent)
+      return GetContainer(transient_parent);
     return container_;
   }
 

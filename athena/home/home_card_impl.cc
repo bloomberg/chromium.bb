@@ -120,11 +120,11 @@ class HomeCardLayoutManager : public aura::LayoutManager {
       home_card_ = NULL;
   }
   virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE {
-    Layout(false);
   }
   virtual void OnChildWindowVisibilityChanged(aura::Window* child,
                                               bool visible) OVERRIDE {
-    Layout(false);
+    if (home_card_ == child)
+      Layout(false);
   }
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE {
