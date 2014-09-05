@@ -48149,6 +48149,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Add new user from title bar menu"/>
   <int value="2" label="Add new user from settings dialog"/>
   <int value="3" label="Add new user from the User Manager"/>
+  <int value="4" label="Auto-created after deleting last user"/>
 </enum>
 
 <enum name="ProfileAndroidAccountManagementMenu" type="int">

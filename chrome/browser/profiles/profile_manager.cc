@@ -675,6 +675,9 @@ void ProfileManager::ScheduleProfileForDeletion(
                          new_profile_name,
                          new_avatar_url,
                          std::string());
+
+      ProfileMetrics::LogProfileAddNewUser(
+          ProfileMetrics::ADD_NEW_USER_LAST_DELETED);
     } else {
       // On the Mac, the browser process is not killed when all browser windows
       // are closed, so just in case we are deleting the active profile, and no
