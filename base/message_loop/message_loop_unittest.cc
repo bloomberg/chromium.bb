@@ -726,6 +726,7 @@ TEST(MessageLoopTest, WaitForIO) {
 
 TEST(MessageLoopTest, HighResolutionTimer) {
   MessageLoop loop;
+  Time::EnableHighResolutionTimer(true);
 
   const TimeDelta kFastTimer = TimeDelta::FromMilliseconds(5);
   const TimeDelta kSlowTimer = TimeDelta::FromMilliseconds(100);
@@ -744,6 +745,7 @@ TEST(MessageLoopTest, HighResolutionTimer) {
   EXPECT_FALSE(loop.HasHighResolutionTasks());
   loop.Run();
   EXPECT_FALSE(loop.HasHighResolutionTasks());
+  Time::EnableHighResolutionTimer(false);
 }
 
 #endif  // defined(OS_WIN)

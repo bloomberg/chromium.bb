@@ -92,7 +92,7 @@ const int kMinTimerIntervalLowResMs = 4;
 // Track if kMinTimerIntervalHighResMs or kMinTimerIntervalLowResMs is active.
 bool g_high_res_timer_enabled = false;
 // How many times the high resolution timer has been called.
-int g_high_res_timer_count = 0;
+uint32_t g_high_res_timer_count = 0;
 // The lock to control access to the above two variables.
 base::LazyInstance<base::Lock>::Leaky g_high_res_lock =
     LAZY_INSTANCE_INITIALIZER;
@@ -197,17 +197,20 @@ bool Time::ActivateHighResolutionTimer(bool activating) {
   // We only do work on the transition from zero to one or one to zero so we
   // can easily undo the effect (if necessary) when EnableHighResolutionTimer is
   // called.
+  const uint32_t max = std::numeric_limits<uint32_t>::max();
+
   base::AutoLock lock(g_high_res_lock.Get());
   UINT period = g_high_res_timer_enabled ? kMinTimerIntervalHighResMs
                                          : kMinTimerIntervalLowResMs;
-  int high_res_count =
-      activating ? ++g_high_res_timer_count : --g_high_res_timer_count;
-
   if (activating) {
-    if (high_res_count == 1)
+    DCHECK(g_high_res_timer_count != max);
+    ++g_high_res_timer_count;
+    if (g_high_res_timer_count == 1)
       timeBeginPeriod(period);
   } else {
-    if (high_res_count == 0)
+    DCHECK(g_high_res_timer_count != 0);
+    --g_high_res_timer_count;
+    if (g_high_res_timer_count == 0)
       timeEndPeriod(period);
   }
   return (period == kMinTimerIntervalHighResMs);

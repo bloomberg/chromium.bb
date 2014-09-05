@@ -616,8 +616,11 @@ bool MessageLoop::DoIdleWork() {
   // _if_ triggered by the timer happens with good resolution. If we don't
   // do this the default resolution is 15ms which might not be acceptable
   // for some tasks.
-  in_high_res_mode_ = pending_high_res_tasks_ > 0;
-  Time::ActivateHighResolutionTimer(in_high_res_mode_);
+  bool high_res = pending_high_res_tasks_ > 0;
+  if (high_res != in_high_res_mode_) {
+    in_high_res_mode_ = high_res;
+    Time::ActivateHighResolutionTimer(in_high_res_mode_);
+  }
 #endif
   return false;
 }
