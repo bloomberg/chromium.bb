@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/public/test/content_browser_test.h"
-#include "mojo/application_manager/application_manager.h"
+#include "mojo/public/c/system/core.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -13,8 +13,10 @@ class MojoTest : public ContentBrowserTest {
   MojoTest() {}
 
  protected:
-  bool HasCreatedInstance() {
-    return mojo::ApplicationManager::TestAPI::HasCreatedInstance();
+  bool IsMojoInitialized() {
+    // Check |MojoGetTimeTicksNow()| is accessible.
+    MojoGetTimeTicksNow();
+    return true;
   }
 
  private:
@@ -23,7 +25,7 @@ class MojoTest : public ContentBrowserTest {
 
 // Placeholder test to confirm we are initializing Mojo.
 IN_PROC_BROWSER_TEST_F(MojoTest, Init) {
-  EXPECT_TRUE(HasCreatedInstance());
+  EXPECT_TRUE(IsMojoInitialized());
 }
 
 }  // namespace content

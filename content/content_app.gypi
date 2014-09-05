@@ -67,7 +67,6 @@
         '../mojo/mojo_base.gyp:mojo_application_bindings',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
         '../mojo/mojo_base.gyp:mojo_system_impl',
-        '../mojo/mojo.gyp:mojo_application_manager',
      ],
     }],
   ],
