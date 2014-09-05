@@ -760,45 +760,37 @@
         </div>
       </div>
       <div class="option-name" id="accessibility-autoclick">
-        <div class="checkbox">
-          <span class="controlled-setting-with-label">
+        <div class="checkbox controlled-setting-with-label">
+          <label>
             <input id="accessibility-autoclick-check"
-                  pref="settings.a11y.autoclick" type="checkbox">
-            <span>
-              <div>
-                <div>
-                  <label for="accessibility-autoclick-check"
-                      i18n-content="accessibilityAutoclick">
-                  </label>
-                  <span class="controlled-setting-indicator"
-                      pref="settings.a11y.autoclick">
-                  </span>
-                </div>
-                <div>
-                  <label for="accessibility-autoclick-dropdown"
-                      i18n-content="accessibilityAutoclickDropdown">
-                  </label>
-                  <select id="accessibility-autoclick-dropdown" class="control"
-                    data-type="number"
-                    pref="settings.a11y.autoclick_delay_ms">
-                    <option value="200"
-                        i18n-content="autoclickDelayExtremelyShort"></option>
-                    <option value="400"
-                        i18n-content="autoclickDelayVeryShort"></option>
-                    <option value="600" i18n-content="autoclickDelayShort">
-                    </option>
-                    <option value="800" i18n-content="autoclickDelayLong">
-                    </option>
-                    <option value="1000"
-                        i18n-content="autoclickDelayVeryLong"></option>
-                  </select>
-                  <span class="controlled-setting-indicator"
-                      pref="settings.a11y.autoclick_delay_ms">
-                  </span>
-                </div>
-              </div>
-            </span>
-          </span>
+                pref="settings.a11y.autoclick" type="checkbox">
+            <span i18n-content="accessibilityAutoclick"></span>
+          </label>
+          <span class="controlled-setting-indicator"
+              pref="settings.a11y.autoclick"></span>
+        </div>
+        <div class="checkbox">
+          <!-- No whitespace between elements. -->
+          <input type="checkbox" class="spacer-checkbox"><span
+              id="accessibility-autoclick-label"
+              i18n-content="accessibilityAutoclickDropdown">
+          </span><select id="accessibility-autoclick-dropdown" class="control"
+              data-type="number"
+              aria-labelledby="accessibility-autoclick-label"
+              pref="settings.a11y.autoclick_delay_ms">
+            <option value="200"
+                i18n-content="autoclickDelayExtremelyShort"></option>
+            <option value="400"
+                i18n-content="autoclickDelayVeryShort"></option>
+            <option value="600" i18n-content="autoclickDelayShort">
+            </option>
+            <option value="800" i18n-content="autoclickDelayLong">
+            </option>
+            <option value="1000"
+                i18n-content="autoclickDelayVeryLong"></option>
+          </select>
+          <span class="controlled-setting-indicator"
+              pref="settings.a11y.autoclick_delay_ms"></span>
         </div>
       </div>
       <div class="option_name" id="accessibility_onscreen_keyboard">

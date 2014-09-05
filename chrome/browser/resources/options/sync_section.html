@@ -31,19 +31,17 @@
     </div>
 
 <if expr="chromeos">
-    <div class="checkbox" public-account-visibility="hidden">
-      <span class="controlled-setting-with-label">
-        <input id="enable-screen-lock" type="checkbox"
+    <div class="checkbox controlled-setting-with-label"
+        public-account-visibility="hidden">
+      <label>
+        <input type="checkbox"
             metric="Options_ScreenLock"
             pref="settings.enable_screen_lock">
-        <span>
-          <label for="enable-screen-lock" i18n-content="enableScreenlock">
-          </label>
-          <span class="controlled-setting-indicator"
-              pref="settings.enable_screen_lock">
-          </span>
-        </span>
-      </span>
+        <span i18n-content="enableScreenlock"></span>
+      </label>
+      <span class="controlled-setting-indicator"
+          i18n-values="textshared:screenLockShared"
+          pref="settings.enable_screen_lock"></span>
     </div>
   </div>
 </if>  <!-- chromeos -->

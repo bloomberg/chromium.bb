@@ -447,7 +447,8 @@ list:not([disabled]) > .network-group[selected] {
   -webkit-box-align: baseline;
 }
 
-#accessibility-autoclick label + select {
+#accessibility-autoclick-dropdown,
+#accessibility-autoclick-label {
   /* Same as .controlled-setting-with-label > input + span. */
   -webkit-margin-start: 0.6em;
 }
@@ -469,4 +470,10 @@ footer {
 #version-button {
   -webkit-margin-start: auto;
   color: #999;
+}
+
+/* An input that has no function except to take up the same amount of space as
+ * a checkbox. */
+.spacer-checkbox {
+  visibility: hidden;
 }

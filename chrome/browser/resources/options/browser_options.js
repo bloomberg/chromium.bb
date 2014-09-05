@@ -316,11 +316,6 @@ cr.define('options', function() {
           chrome.send('coreOptionsUserMetricsAction',
               ['Options_ManageAccounts']);
         };
-
-        document.querySelector(
-            '#enable-screen-lock + span > .controlled-setting-indicator').
-            setAttribute('textshared',
-                         loadTimeData.getString('screenLockShared'));
       } else {
         $('import-data').onclick = function(event) {
           ImportDataOverlay.show();

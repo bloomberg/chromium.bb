@@ -132,7 +132,8 @@ TEST_F('SettingsFormatWebUITest', 'RadioCheckboxStyleCheck', function() {
  * Each checkbox requires an id or pref property.
  */
 TEST_F('SettingsFormatWebUITest', 'CheckboxIdOrPrefCheck', function() {
-  var query = 'input[type=checkbox]:not([pref]):not([id])';
+  var query =
+      'input[type=checkbox]:not([pref]):not([id]):not(.spacer-checkbox)';
   var elements = document.querySelectorAll(query);
   for (var i = 0; i < elements.length; i++) {
     var element = elements[i];
