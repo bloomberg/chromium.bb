@@ -8,6 +8,7 @@
 // Test for resource open before PPAPI initialization.
 //
 
+#include <pthread.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -150,15 +151,16 @@ class TestInstance : public pp::Instance {
       return;
     }
 
+    pthread_t thread;
     // We test the manifest routines again after PPAPI has initialized to
     // ensure that they still work.
     //
     // irt_open_resource() isn't allowed to be called on the main thread once
     // pepper starts, so these tests must happen on a background thread.
-    pthread_create(&thread_, NULL, &RunTestsOnBackgroundThread, NULL);
+    //
+    // TODO(teravest): Check the return value here.
+    pthread_create(&thread, NULL, &RunTestsOnBackgroundThread, NULL);
   }
- private:
-  pthread_t thread_;
 };
 
 class TestModule : public pp::Module {
