@@ -50,7 +50,7 @@ public class ConnectorTest extends MojoTestCase {
         mErrorHandler = new CapturingErrorHandler();
         mConnector.setErrorHandler(mErrorHandler);
         mConnector.start();
-        mTestMessage = BindingsTestUtils.newRandomMessageWithHeader(DATA_LENGTH);
+        mTestMessage = BindingsTestUtils.newRandomMessage(DATA_LENGTH);
         assertNull(mErrorHandler.getLastMojoException());
         assertEquals(0, mReceiver.messages.size());
     }

@@ -111,7 +111,7 @@ public class RouterImpl implements Router {
     @Override
     public boolean acceptWithResponder(Message message, MessageReceiver responder) {
         // The message must have a header.
-        MessageWithHeader messageWithHeader = message.asMojoMessage();
+        ServiceMessage messageWithHeader = message.asServiceMessage();
         // Checking the message expects a response.
         assert messageWithHeader.getHeader().hasFlag(MessageHeader.MESSAGE_EXPECTS_RESPONSE_FLAG);
 
@@ -161,7 +161,7 @@ public class RouterImpl implements Router {
      * Receive a message from the connector. Returns |true| if the message has been handled.
      */
     private boolean handleIncomingMessage(Message message) {
-        MessageHeader header = message.asMojoMessage().getHeader();
+        MessageHeader header = message.asServiceMessage().getHeader();
         if (header.hasFlag(MessageHeader.MESSAGE_EXPECTS_RESPONSE_FLAG)) {
             if (mIncomingMessageReceiver != null) {
                 return mIncomingMessageReceiver.acceptWithResponder(message, this);

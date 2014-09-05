@@ -67,8 +67,8 @@ public class RouterTest extends MojoTestCase {
                 MessagePipeHandle.ReadFlags.NONE);
 
         assertEquals(MojoResult.OK, result.getMojoResult());
-        MessageHeader receivedHeader = new SimpleMessage(
-                receiveBuffer, new ArrayList<Handle>()).asMojoMessage().getHeader();
+        MessageHeader receivedHeader = new Message(
+                receiveBuffer, new ArrayList<Handle>()).asServiceMessage().getHeader();
 
         assertEquals(header.getType(), receivedHeader.getType());
         assertEquals(header.getFlags(), receivedHeader.getFlags());
@@ -85,7 +85,7 @@ public class RouterTest extends MojoTestCase {
         nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
 
         assertEquals(1, mReceiver.messages.size());
-        MessageWithHeader receivedResponseMessage = mReceiver.messages.get(0).asMojoMessage();
+        ServiceMessage receivedResponseMessage = mReceiver.messages.get(0).asServiceMessage();
         assertEquals(MessageHeader.MESSAGE_IS_RESPONSE_FLAG,
                 receivedResponseMessage.getHeader().getFlags());
         assertEquals(responseMessage.getData(), receivedResponseMessage.getData());

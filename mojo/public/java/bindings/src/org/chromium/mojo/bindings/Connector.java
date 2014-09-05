@@ -234,7 +234,7 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
         result = handle.readMessage(buffer, result.getHandlesCount(),
                 MessagePipeHandle.ReadFlags.NONE);
         if (receiver != null && result.getMojoResult() == MojoResult.OK) {
-            receiver.accept(new SimpleMessage(buffer, result.getHandles()));
+            receiver.accept(new Message(buffer, result.getHandles()));
         }
         return result.getMojoResult();
     }

@@ -109,11 +109,11 @@ public abstract class Struct {
      * @param core the |Core| implementation used to generate handles. Only used if the |Struct|
      *            being encoded contains interfaces, can be |null| otherwise.
      */
-    public MessageWithHeader serializeWithHeader(Core core, MessageHeader header) {
+    public ServiceMessage serializeWithHeader(Core core, MessageHeader header) {
         Encoder encoder = new Encoder(core, mEncodedBaseSize + header.getSize());
         header.encode(encoder);
         encode(encoder);
-        return new MessageWithHeader(encoder.getMessage(), header);
+        return new ServiceMessage(encoder.getMessage(), header);
     }
 
 }

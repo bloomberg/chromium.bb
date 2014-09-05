@@ -12,24 +12,58 @@ import java.util.List;
 
 /**
  * A raw message to be sent/received from a {@link MessagePipeHandle}. Note that this can contain
- * any data, not necessarily a Mojo message with a proper header. See also {@link MessageWithHeader}
- * and {@link SimpleMessage}.
+ * any data, not necessarily a Mojo message with a proper header. See also {@link ServiceMessage}.
  */
-public interface Message {
+public class Message {
 
     /**
-     * The data part of the message.
+     * The data of the message.
      */
-    public ByteBuffer getData();
+    private final ByteBuffer mBuffer;
 
     /**
-     * The handles part of the message.
+     * The handles of the message.
      */
-    public List<? extends Handle> getHandles();
+    private final List<? extends Handle> mHandle;
 
     /**
-     * Returns the message considered as a message with a header.
+     * This message interpreted as a message for a mojo service with an appropriate header.
      */
-    public MessageWithHeader asMojoMessage();
+    private ServiceMessage mWithHeader = null;
 
+    /**
+     * Constructor.
+     *
+     * @param buffer The buffer containing the bytes to send. This must be a direct buffer.
+     * @param handles The list of handles to send.
+     */
+    public Message(ByteBuffer buffer, List<? extends Handle> handles) {
+        assert buffer.isDirect();
+        mBuffer = buffer;
+        mHandle = handles;
+    }
+
+    /**
+     * The data of the message.
+     */
+    public ByteBuffer getData() {
+        return mBuffer;
+    }
+
+    /**
+     * The handles of the message.
+     */
+    public List<? extends Handle> getHandles() {
+        return mHandle;
+    }
+
+    /**
+     * Returns the message interpreted as a message for a mojo service.
+     */
+    public ServiceMessage asServiceMessage() {
+        if (mWithHeader == null) {
+            mWithHeader = new ServiceMessage(this);
+        }
+        return mWithHeader;
+    }
 }

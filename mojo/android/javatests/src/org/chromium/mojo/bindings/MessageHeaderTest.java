@@ -26,7 +26,7 @@ public class MessageHeaderTest extends TestCase {
         Point p = new Point();
         p.x = xValue;
         p.y = yValue;
-        MessageWithHeader message = p.serializeWithHeader(null, new MessageHeader(type));
+        ServiceMessage message = p.serializeWithHeader(null, new MessageHeader(type));
 
         MessageHeader header = message.getHeader();
         assertTrue(header.validateHeader(type, 0));
@@ -51,7 +51,7 @@ public class MessageHeaderTest extends TestCase {
         Point p = new Point();
         p.x = xValue;
         p.y = yValue;
-        MessageWithHeader message = p.serializeWithHeader(null,
+        ServiceMessage message = p.serializeWithHeader(null,
                 new MessageHeader(type, MessageHeader.MESSAGE_EXPECTS_RESPONSE_FLAG, 0));
         message.setRequestId(requestId);
 

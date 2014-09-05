@@ -102,7 +102,7 @@ public class ValidationTest extends MojoTestCase {
             for (int i = 0; i < test.inputData.getHandlesCount(); ++i) {
                 handles.add(new HandleMock());
             }
-            Message message = new SimpleMessage(test.inputData.getData(), handles);
+            Message message = new Message(test.inputData.getData(), handles);
             boolean passed = messageReceiver.accept(message);
             if (passed && !test.expectedResult.equals("PASS")) {
                 fail("Input: " + test.dataFile.getName() +
@@ -131,7 +131,7 @@ public class ValidationTest extends MojoTestCase {
         @Override
         public boolean accept(Message message) {
             try {
-                MessageHeader header = message.asMojoMessage().getHeader();
+                MessageHeader header = message.asServiceMessage().getHeader();
                 if (header.hasFlag(MessageHeader.MESSAGE_IS_RESPONSE_FLAG)) {
                     return mResponse.accept(message);
                 } else {

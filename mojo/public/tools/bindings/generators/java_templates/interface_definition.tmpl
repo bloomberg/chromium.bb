@@ -93,8 +93,8 @@ public static final {{manager_class(interface, client, True)}} MANAGER =
 {% if (interface|has_method_with_response and with_response) or
       (interface|has_method_without_response and not with_response) %}
 try {
-    org.chromium.mojo.bindings.MessageWithHeader messageWithHeader =
-            message.asMojoMessage();
+    org.chromium.mojo.bindings.ServiceMessage messageWithHeader =
+            message.asServiceMessage();
     org.chromium.mojo.bindings.MessageHeader header = messageWithHeader.getHeader();
     if (!header.validateHeader({{flags(with_response, True)}})) {
         return false;
@@ -234,8 +234,8 @@ class {{interface|name}}_Internal {
         @Override
         public boolean accept(org.chromium.mojo.bindings.Message message) {
             try {
-                org.chromium.mojo.bindings.MessageWithHeader messageWithHeader =
-                        message.asMojoMessage();
+                org.chromium.mojo.bindings.ServiceMessage messageWithHeader =
+                        message.asServiceMessage();
                 org.chromium.mojo.bindings.MessageHeader header = messageWithHeader.getHeader();
                 if (!header.validateHeader({{method|method_ordinal_name}},
                                            {{flags_for_method(method, False)}})) {
@@ -271,7 +271,7 @@ class {{interface|name}}_Internal {
 {%   for param in method.response_parameters %}
             response.{{param|name}} = {{param|name}};
 {%   endfor %}
-            org.chromium.mojo.bindings.MessageWithHeader message =
+            org.chromium.mojo.bindings.ServiceMessage message =
                     response.serializeWithHeader(
                             mCore,
                             new org.chromium.mojo.bindings.MessageHeader(

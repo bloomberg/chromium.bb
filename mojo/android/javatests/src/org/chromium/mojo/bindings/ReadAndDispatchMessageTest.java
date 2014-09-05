@@ -42,7 +42,7 @@ public class ReadAndDispatchMessageTest extends MojoTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         Core core = CoreImpl.getInstance();
-        mData = BindingsTestUtils.newRandomMessageWithHeader(DATA_SIZE).getData();
+        mData = BindingsTestUtils.newRandomMessage(DATA_SIZE).getData();
         mMessageReceiver = new RecordingMessageReceiver();
         mHandles = core.createMessagePipe(new MessagePipeHandle.CreateOptions());
         Pair<DataPipe.ProducerHandle, DataPipe.ConsumerHandle> datapipe = core.createDataPipe(null);

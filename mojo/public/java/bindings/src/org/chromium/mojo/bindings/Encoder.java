@@ -112,7 +112,7 @@ public class Encoder {
     public Message getMessage() {
         mEncoderState.byteBuffer.position(0);
         mEncoderState.byteBuffer.limit(mEncoderState.dataEnd);
-        return new SimpleMessage(mEncoderState.byteBuffer, mEncoderState.handles);
+        return new Message(mEncoderState.byteBuffer, mEncoderState.handles);
     }
 
     /**
