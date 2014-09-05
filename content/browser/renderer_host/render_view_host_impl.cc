@@ -11,14 +11,12 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
@@ -186,7 +184,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       instance_(static_cast<SiteInstanceImpl*>(instance)),
       waiting_for_drag_context_response_(false),
       enabled_bindings_(0),
-      page_id_(-1),
       main_frame_routing_id_(main_frame_routing_id),
       run_modal_reply_msg_(NULL),
       run_modal_opener_id_(MSG_ROUTING_NONE),
@@ -1090,13 +1087,6 @@ void RenderViewHostImpl::OnRenderProcessGone(int status, int exit_code) {
 }
 
 void RenderViewHostImpl::OnUpdateState(int32 page_id, const PageState& state) {
-  if (page_id_ != page_id) {
-    base::debug::SetCrashKeyValue(
-        "url1", GetMainFrame()->GetLastCommittedURL().possibly_invalid_spec());
-    base::debug::SetCrashKeyValue("id1", base::IntToString(page_id_));
-    base::debug::SetCrashKeyValue("id2", base::IntToString(page_id));
-    CHECK(false);
-  }
   // Without this check, the renderer can trick the browser into using
   // filenames it can't access in a future session restore.
   if (!CanAccessFilesOfPageState(state)) {
@@ -1104,18 +1094,12 @@ void RenderViewHostImpl::OnUpdateState(int32 page_id, const PageState& state) {
     return;
   }
 
-  delegate_->UpdateState(this, page_id_, state);
+  delegate_->UpdateState(this, page_id, state);
 }
 
 void RenderViewHostImpl::OnUpdateTargetURL(int32 page_id, const GURL& url) {
-  if (page_id_ != page_id) {
-    base::debug::SetCrashKeyValue("url1", url.possibly_invalid_spec());
-    base::debug::SetCrashKeyValue("id1", base::IntToString(page_id_));
-    base::debug::SetCrashKeyValue("id2", base::IntToString(page_id));
-    CHECK(false);
-  }
   if (IsRVHStateActive(rvh_state_))
-    delegate_->UpdateTargetURL(page_id_, url);
+    delegate_->UpdateTargetURL(page_id, url);
 
   // Send a notification back to the renderer that we are ready to
   // receive more target urls.

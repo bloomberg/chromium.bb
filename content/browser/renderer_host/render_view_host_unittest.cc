@@ -214,12 +214,12 @@ TEST_F(RenderViewHostTest, MessageWithBadHistoryItemFiles) {
   EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &file_path));
   file_path = file_path.AppendASCII("foo");
   EXPECT_EQ(0, process()->bad_msg_count());
-  test_rvh()->TestOnUpdateStateWithFile(-1, file_path);
+  test_rvh()->TestOnUpdateStateWithFile(process()->GetID(), file_path);
   EXPECT_EQ(1, process()->bad_msg_count());
 
   ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
       process()->GetID(), file_path);
-  test_rvh()->TestOnUpdateStateWithFile(-1, file_path);
+  test_rvh()->TestOnUpdateStateWithFile(process()->GetID(), file_path);
   EXPECT_EQ(1, process()->bad_msg_count());
 }
 
