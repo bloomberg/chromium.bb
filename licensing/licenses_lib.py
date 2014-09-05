@@ -272,8 +272,8 @@ class PackageInfo(object):
 
     # A bad package can either raise a TypeError exception or return None.
     if not cpv:
-      raise AssertionError("portage couldn't find %s, missing version number?" %
-                           fullnamerev)
+      raise AssertionError(
+          'portage couldn\'t find %s, missing version number?' % fullnamerev)
 
     #
     # These define the package uniquely.
@@ -375,7 +375,7 @@ class PackageInfo(object):
     pv_no_rev = '%s-%s' % (pv.package, pv.version_no_rev)
     for filename in (pv.pv, pv_no_rev, pv.package):
       file_path = os.path.join(license_path, filename)
-      logging.debug("Looking for override copyright attribution license in %s",
+      logging.debug('Looking for override copyright attribution license in %s',
                     file_path)
       if os.path.exists(file_path):
         # Turn
@@ -383,9 +383,9 @@ class PackageInfo(object):
         # into
         # chromiumos-overlay/../dev-util/bsdiff
         short_dir_path = os.path.join(*file_path.rsplit(os.path.sep, 5)[1:])
-        license_read = "Copyright Attribution License %s:\n\n" % short_dir_path
+        license_read = 'Copyright Attribution License %s:\n\n' % short_dir_path
         license_read += ReadUnknownEncodedFile(
-            file_path, "read copyright attribution license")
+            file_path, 'read copyright attribution license')
         break
 
     return license_read
@@ -433,8 +433,8 @@ class PackageInfo(object):
       # >>> Unpacking gc-7.2d.tar.gz to /build/x86-alex/tmp/po/[...]ps-7.2d/work
       # >>> Source unpacked in /build/x86-alex/tmp/portage/[...]ops-7.2d/work
       # So we only keep the last 2 lines, the others we don't care about.
-      output = [line for line in output if line[0:3] == ">>>" and
-                line != ">>> Unpacking source..."]
+      output = [line for line in output if line[0:3] == '>>>' and
+                line != '>>> Unpacking source...']
       for line in output:
         logging.info(line)
 
@@ -446,8 +446,9 @@ class PackageInfo(object):
       src_dir = os.path.join(tmpdir, 'portage', self.fullnamerev, 'work')
 
       if not os.path.exists(src_dir):
-        raise AssertionError("Unpack of %s didn't create %s. Version mismatch" %
-                             (self.fullnamerev, src_dir))
+        raise AssertionError(
+            'Unpack of %s didn\'t create %s. Version mismatch' %
+            (self.fullnamerev, src_dir))
 
     # You may wonder how deep should we go?
     # In case of packages with sub-packages, it could be deep.
@@ -465,14 +466,14 @@ class PackageInfo(object):
       # When we scan a source tree managed by git, this can contain license
       # files that are not part of the source. Exclude those.
       # (e.g. .git/refs/heads/licensing)
-      if ".git/" in name:
+      if '.git/' in name:
         continue
       basename = os.path.basename(name)
       # Looking for license.* brings up things like license.gpl, and we
       # never want a GPL license when looking for copyright attribution,
       # so we skip them here. We also skip regexes that can return
       # license.py (seen in some code).
-      if re.search(r".*GPL.*", basename) or re.search(r"\.py$", basename):
+      if re.search(r'.*GPL.*', basename) or re.search(r'\.py$', basename):
         continue
       for regex in LICENSE_NAMES_REGEX:
         if re.search(regex, basename, re.IGNORECASE):
@@ -502,8 +503,8 @@ being scraped currently).""",
       else:
         # We can get called for a license like as-is where it's preferable
         # to find a better one in the source, but not fatal if we didn't.
-        logging.info("Was not able to find a better license for %s "
-                     "in %s to replace the more generic one from ebuild",
+        logging.info('Was not able to find a better license for %s '
+                     'in %s to replace the more generic one from ebuild',
                      self.fullnamerev, src_dir)
 
     # Examples of multiple license matches:
@@ -522,10 +523,10 @@ being scraped currently).""",
       # Joy and pink ponies. Some license_files are encoded as latin1 while
       # others are utf-8 and of course you can't know but only guess.
       license_path = os.path.join(src_dir, license_file)
-      license_txt = ReadUnknownEncodedFile(license_path, "Adding License")
+      license_txt = ReadUnknownEncodedFile(license_path, 'Adding License')
 
       self.license_text_scanned += [
-          "Scanned Source License %s:\n\n%s" % (license_file, license_txt)]
+          'Scanned Source License %s:\n\n%s' % (license_file, license_txt)]
 
     # We used to clean up here, but there have been many instances where
     # looking at unpacked source to see where the licenses were, was useful
@@ -541,11 +542,11 @@ being scraped currently).""",
       True if a reason was found.
     """
     if self.category in SKIPPED_CATEGORIES:
-      logging.info("%s in SKIPPED_CATEGORIES, skip package", self.fullname)
+      logging.info('%s in SKIPPED_CATEGORIES, skip package', self.fullname)
       self.skip = True
 
     if self.fullname in SKIPPED_PACKAGES:
-      logging.info("%s in SKIPPED_PACKAGES, skip package", self.fullname)
+      logging.info('%s in SKIPPED_PACKAGES, skip package', self.fullname)
       self.skip = True
 
     # TODO(dgarrett): There are additional reasons that should be handled here.
@@ -576,10 +577,10 @@ being scraped currently).""",
                            'Is your tree clean? Try a rebuild?' %
                            self.fullnamerev)
 
-    logging.debug("%s -> %s", " ".join(args), path)
+    logging.debug('%s -> %s', ' '.join(args), path)
 
     if not os.access(path, os.F_OK):
-      raise AssertionError("Can't access %s", path)
+      raise AssertionError('Can\'t access %s', path)
 
     return path
 
@@ -643,11 +644,11 @@ being scraped currently).""",
     """
     if build_info_dir:
       # If the total size installed is zero, we installed no content to license.
-      if _BuildInfo(build_info_dir, "SIZE").strip() == '0':
+      if _BuildInfo(build_info_dir, 'SIZE').strip() == '0':
         self.skip = True
         return
-      self.homepages = _BuildInfo(build_info_dir, "HOMEPAGE").split()
-      ebuild_license_names = _BuildInfo(build_info_dir, "LICENSE").split()
+      self.homepages = _BuildInfo(build_info_dir, 'HOMEPAGE').split()
+      ebuild_license_names = _BuildInfo(build_info_dir, 'LICENSE').split()
     else:
       self.homepages, ebuild_license_names = self._ReadEbuildMetadata()
       self.skip = self.skip or not self._TestEbuildContents()
@@ -667,11 +668,11 @@ being scraped currently).""",
     # BSD/MIT) are hardcoded here:
     if self.fullname in PACKAGE_LICENSES:
       ebuild_license_names = PACKAGE_LICENSES[self.fullname]
-      logging.info("Static license mapping for %s: %s", self.fullnamerev,
-                   ",".join(ebuild_license_names))
+      logging.info('Static license mapping for %s: %s', self.fullnamerev,
+                   ','.join(ebuild_license_names))
     else:
-      logging.info("Read licenses for %s: %s", self.fullnamerev,
-                   ",".join(ebuild_license_names))
+      logging.info('Read licenses for %s: %s', self.fullnamerev,
+                   ','.join(ebuild_license_names))
 
     # Lots of packages in chromeos-base have their license set to BSD instead
     # of BSD-Google:
@@ -679,19 +680,19 @@ being scraped currently).""",
     for license_name in ebuild_license_names:
       # TODO: temp workaround for http;//crbug.com/348750 , remove when the bug
       # is fixed.
-      if (license_name == "BSD" and
-          self.fullnamerev.startswith("chromeos-base/")):
-        license_name = "BSD-Google"
+      if (license_name == 'BSD' and
+          self.fullnamerev.startswith('chromeos-base/')):
+        license_name = 'BSD-Google'
         logging.error(
-            "Fixed BSD->BSD-Google for %s because it's in chromeos-base. "
-            "Please fix the LICENSE field in the ebuild", self.fullnamerev)
+            'Fixed BSD->BSD-Google for %s because it\'s in chromeos-base. '
+            'Please fix the LICENSE field in the ebuild', self.fullnamerev)
       # TODO: temp workaround for http;//crbug.com/348749 , remove when the bug
       # is fixed.
-      if license_name == "Proprietary":
-        license_name = "Google-TOS"
+      if license_name == 'Proprietary':
+        license_name = 'Google-TOS'
         logging.error(
-            "Fixed Proprietary -> Google-TOS for %s. "
-            "Please fix the LICENSE field in the ebuild", self.fullnamerev)
+            'Fixed Proprietary -> Google-TOS for %s. '
+            'Please fix the LICENSE field in the ebuild', self.fullnamerev)
       new_license_names.append(license_name)
     ebuild_license_names = new_license_names
 
@@ -709,7 +710,7 @@ being scraped currently).""",
     # chose another license like GPL, we do that.
 
     if not self.skip and not ebuild_license_names:
-      logging.error("%s: no license found in ebuild. FIXME!", self.fullnamerev)
+      logging.error('%s: no license found in ebuild. FIXME!', self.fullnamerev)
       # In a bind, you could comment this out. I'm making the output fail to
       # get your attention since this error really should be fixed, but if you
       # comment out the next line, the script will try to find a license inside
@@ -719,8 +720,8 @@ being scraped currently).""",
     # This is not invalid, but the parser can't deal with it, so if it ever
     # happens, error out to tell the programmer to do something.
     # dev-python/pycairo-1.10.0-r4: LGPL-3 || ( LGPL-2.1 MPL-1.1 )
-    if "||" in ebuild_license_names[1:]:
-      logging.error("%s: Can't parse || in the middle of a license: %s",
+    if '||' in ebuild_license_names[1:]:
+      logging.error('%s: Can\'t parse || in the middle of a license: %s',
                     self.fullnamerev, ' '.join(ebuild_license_names))
       raise PackageLicenseError()
 
@@ -732,7 +733,7 @@ being scraped currently).""",
       # Here we have an OR case, and one license that we can use stock, so
       # we remember that in order to be able to skip license attributions if
       # any were in the OR.
-      if (ebuild_license_names[0] == "||" and
+      if (ebuild_license_names[0] == '||' and
           license_name not in COPYRIGHT_ATTRIBUTION_LICENSES):
         or_licenses_and_one_is_no_attribution = True
 
@@ -751,11 +752,11 @@ being scraped currently).""",
         # This ensures that if we have License: || (BSD3 BSD4), we will
         # look in the source.
         if or_licenses_and_one_is_no_attribution:
-          logging.info("%s: ignore license %s because ebuild LICENSES had %s",
+          logging.info('%s: ignore license %s because ebuild LICENSES had %s',
                        self.fullnamerev, license_name,
                        ' '.join(ebuild_license_names))
         else:
-          logging.info("%s: can't use %s, will scan source code for copyright",
+          logging.info('%s: can\'t use %s, will scan source code for copyright',
                        self.fullnamerev, license_name)
           need_copyright_attribution = True
           scan_source_for_licenses = True
@@ -769,7 +770,7 @@ being scraped currently).""",
           self.license_names.add('LGPL-2')
 
       if license_name in LOOK_IN_SOURCE_LICENSES:
-        logging.info("%s: Got %s, will try to find better license in source...",
+        logging.info('%s: Got %s, will try to find better license in source...',
                      self.fullnamerev, license_name)
         scan_source_for_licenses = True
 
@@ -787,7 +788,7 @@ being scraped currently).""",
 
     # This shouldn't run, but leaving as sanity check.
     if not self.license_names and not self.license_text_scanned:
-      raise AssertionError("Didn't find usable licenses for %s" %
+      raise AssertionError('Didn\'t find usable licenses for %s' %
                            self.fullnamerev)
 
   def SaveLicenseDump(self, save_file):
@@ -799,7 +800,7 @@ being scraped currently).""",
     Args:
       save_file: File to save the yaml contents into.
     """
-    logging.debug("Saving license to %s", save_file)
+    logging.debug('Saving license to %s', save_file)
     yaml_dump = self.__dict__.items()
     osutils.WriteFile(save_file, yaml.dump(yaml_dump), makedirs=True)
 
@@ -840,7 +841,7 @@ class Licensing(object):
 
   def _LoadLicenseDump(self, pkg):
     save_file = pkg.license_dump_path
-    logging.debug("Getting license from %s for %s", save_file, pkg.name)
+    logging.debug('Getting license from %s for %s', save_file, pkg.name)
     yaml_dump = yaml.load(osutils.ReadFile(save_file))
     for key, value in yaml_dump:
       pkg.__dict__[key] = value
@@ -867,7 +868,7 @@ class Licensing(object):
       pkg = self.packages[package_name]
       if pkg.skip:
         if self.gen_licenses:
-          logging.info("Package %s is in skip list", package_name)
+          logging.info('Package %s is in skip list', package_name)
         else:
           # If we do a licensing run expecting to get licensing objects from
           # an image build, virtual packages will be missing such objects
@@ -876,13 +877,13 @@ class Licensing(object):
           # /var/db/ directory, we don't want it to generate useless license
           # bits for virtual packages. As a result, ignore virtual packages
           # here.
-          if pkg.category == "virtual":
-            logging.debug("Ignoring %s virtual package", package_name)
+          if pkg.category == 'virtual':
+            logging.debug('Ignoring %s virtual package', package_name)
             continue
 
       # Other skipped packages get dumped with incomplete info and the skip flag
       if not os.path.exists(pkg.license_dump_path) and not self.gen_licenses:
-        logging.warning(">>> License for %s is missing, creating now <<<",
+        logging.warning('>>> License for %s is missing, creating now <<<',
                         package_name)
       if not os.path.exists(pkg.license_dump_path) or self.gen_licenses:
         if not pkg.skip:
@@ -897,15 +898,15 @@ class Licensing(object):
     # instead of reusing what we may have in memory.
     for package_name in self.packages:
       pkg = self.packages[package_name]
-      if pkg.category == "virtual":
+      if pkg.category == 'virtual':
         continue
 
       self._LoadLicenseDump(pkg)
-      logging.debug("loaded dump for %s", pkg.fullnamerev)
+      logging.debug('loaded dump for %s', pkg.fullnamerev)
       if pkg.skip:
-        logging.info("Package %s is in skip list", pkg.fullnamerev)
+        logging.info('Package %s is in skip list', pkg.fullnamerev)
       if pkg.licensing_failed:
-        logging.info("Package %s failed licensing", pkg.fullnamerev)
+        logging.info('Package %s failed licensing', pkg.fullnamerev)
         self.incomplete_packages += [pkg.fullnamerev]
 
   def AddExtraPkg(self, fullnamerev, homepages, license_names):
@@ -932,15 +933,15 @@ class Licensing(object):
     for directory in STOCK_LICENSE_DIRS:
       path = os.path.join(directory, license_name)
       if os.path.exists(path):
-        return "Gentoo Package Stock"
+        return 'Gentoo Package Stock'
 
     for directory in CUSTOM_LICENSE_DIRS:
       path = os.path.join(directory, license_name)
       if os.path.exists(path):
-        return "Custom"
+        return 'Custom'
 
     if license_name in SKIPPED_LICENSES:
-      return "Custom"
+      return 'Custom'
 
     raise AssertionError("""
 license %s could not be found in %s
@@ -972,9 +973,9 @@ after fixing the license.""" %
         break
 
     if license_path:
-      return ReadUnknownEncodedFile(license_path, "read license")
+      return ReadUnknownEncodedFile(license_path, 'read license')
     else:
-      raise AssertionError("license %s could not be found in %s"
+      raise AssertionError('license %s could not be found in %s'
                            % (license_name,
                               '\n'.join(STOCK_LICENSE_DIRS +
                                         CUSTOM_LICENSE_DIRS))
@@ -1020,7 +1021,7 @@ after fixing the license.""" %
                            pkg.fullnamerev)
 
     env = {
-        'name': "%s-%s" % (pkg.name, pkg.version),
+        'name': '%s-%s' % (pkg.name, pkg.version),
         'url': cgi.escape(pkg.homepages[0]) if pkg.homepages else '',
         'licenses_txt': cgi.escape('\n'.join(license_text)) or '',
         'licenses_ptr': '\n'.join(license_pointers) or '',
@@ -1055,11 +1056,11 @@ after fixing the license.""" %
     for sln in self.licenses.keys():
       if len(self.licenses[sln]) == 1:
         pkg_fullnamerev = self.licenses[sln][0]
-        logging.info("Collapsing shared license %s into single use license "
-                     "(only used by %s)", sln, pkg_fullnamerev)
+        logging.info('Collapsing shared license %s into single use license '
+                     '(only used by %s)', sln, pkg_fullnamerev)
         license_type = self.FindLicenseType(sln)
         license_txt = self.ReadSharedLicense(sln)
-        single_license = "%s License %s:\n\n%s" % (license_type, sln,
+        single_license = '%s License %s:\n\n%s' % (license_type, sln,
                                                    license_txt)
         pkg = self.packages[pkg_fullnamerev]
         pkg.license_text_scanned.append(single_license)
@@ -1069,10 +1070,10 @@ after fixing the license.""" %
     for pkg in sorted(self.packages.values(),
                       key=lambda x: (x.name.lower(), x.version, x.revision)):
       if pkg.skip:
-        logging.debug("Skipping package %s", pkg.fullnamerev)
+        logging.debug('Skipping package %s', pkg.fullnamerev)
         continue
       if pkg.licensing_failed:
-        logging.debug("Package %s failed licensing, skipping", pkg.fullnamerev)
+        logging.debug('Package %s failed licensing, skipping', pkg.fullnamerev)
         continue
       self._GeneratePackageLicenseText(pkg)
       sorted_license_txt += [self.package_text[pkg]]
@@ -1116,7 +1117,7 @@ def ListInstalledPackages(board, all_packages=False):
     # (many get built or used during the build, but do not get shipped).
     # Note that it also contains packages that are in the build as
     # defined by build_packages but not part of the image we ship.
-    args = ["equery-%s" % board, "list", "*"]
+    args = ['equery-%s' % board, 'list', '*']
     packages = cros_build_lib.RunCommand(args, print_cmd=debug,
                                          redirect_stdout=True
                                         ).output.splitlines()
@@ -1125,8 +1126,8 @@ def ListInstalledPackages(board, all_packages=False):
     # (many get built or used during the build, but do not get shipped).
     # Note that it also contains packages that are in the build as
     # defined by build_packages but not part of the image we ship.
-    args = ["emerge-%s" % board, "--with-bdeps=y", "--usepkgonly",
-            "--emptytree", "--pretend", "--color=n", "virtual/target-os"]
+    args = ['emerge-%s' % board, '--with-bdeps=y', '--usepkgonly',
+            '--emptytree', '--pretend', '--color=n', 'virtual/target-os']
     emerge = cros_build_lib.RunCommand(args, print_cmd=debug,
                                        redirect_stdout=True).output.splitlines()
     # Another option which we've decided not to use, is bdeps=n.  This outputs
@@ -1150,8 +1151,8 @@ def ListInstalledPackages(board, all_packages=False):
       if match:
         packages.append(match.group(1))
       elif match2:
-        raise AssertionError("Package incorrectly installed, try eclean-%s" %
-                             board, "\n%s" % match2.group(1))
+        raise AssertionError('Package incorrectly installed, try eclean-%s' %
+                             board, '\n%s' % match2.group(1))
 
   return packages
 
@@ -1197,15 +1198,15 @@ def ReadUnknownEncodedFile(file_path, logging_text=None):
     ValueError: returned if we get invalid XML.
   """
   try:
-    with codecs.open(file_path, encoding="utf-8") as c:
+    with codecs.open(file_path, encoding='utf-8') as c:
       file_txt = c.read()
       if logging_text:
-        logging.info("%s %s (UTF-8)", logging_text, file_path)
+        logging.info('%s %s (UTF-8)', logging_text, file_path)
   except UnicodeDecodeError:
-    with codecs.open(file_path, encoding="latin1") as c:
+    with codecs.open(file_path, encoding='latin1') as c:
       file_txt = c.read()
       if logging_text:
-        logging.info("%s %s (latin1)", logging_text, file_path)
+        logging.info('%s %s (latin1)', logging_text, file_path)
 
   file_txt, char_list = _HandleIllegalXMLChars(file_txt)
 
@@ -1216,13 +1217,28 @@ def ReadUnknownEncodedFile(file_path, logging_text=None):
   return file_txt
 
 
-
 def _BuildInfo(build_info_path, filename):
+  """Fetch contents of a file from portage build_info directory.
+
+  Portage maintains a build_info directory that exists both during the process
+  of emerging an ebuild, and (in a different location) after the ebuild has been
+  emerged.
+
+  Various useful data files exist there like:
+   'CATEGORY', 'PF', 'SIZE', 'HOMEPAGE', 'LICENSE'
+
+  Args:
+    build_info_path: Path to the build_info directory to read from.
+    filename: Name of the file to read.
+
+  Returns:
+    Contents of the file as a string, or "".
+  """
   filename = os.path.join(build_info_path, filename)
 
   # Buildinfo properties we read are in US-ASCII, not Unicode.
   try:
-    bi = open(filename).read().rstrip()
+    bi = osutils.ReadFile(filename).rstrip()
   # Some properties like HOMEPAGE may be absent.
   except IOError:
     bi = ""
@@ -1239,15 +1255,14 @@ def HookPackageProcess(pkg_build_path):
   """
   build_info_dir = os.path.join(pkg_build_path, 'build-info')
 
-  fullnamerev = "%s/%s" % (_BuildInfo(build_info_dir, "CATEGORY"),
-                               _BuildInfo(build_info_dir, "PF"))
-  logging.debug("Computed package name %s from %s",
-      fullnamerev, pkg_build_path)
+  fullnamerev = '%s/%s' % (_BuildInfo(build_info_dir, 'CATEGORY'),
+                           _BuildInfo(build_info_dir, 'PF'))
+  logging.debug('Computed package name %s from %s',
+                fullnamerev, pkg_build_path)
 
   pkg = PackageInfo(None, fullnamerev)
 
   src_dir = os.path.join(pkg_build_path, 'work')
   pkg.GetLicenses(build_info_dir, src_dir)
 
-  pkg.SaveLicenseDump(os.path.join(pkg_build_path, 'build-info',
-                      'license.yaml'))
+  pkg.SaveLicenseDump(os.path.join(build_info_dir, 'license.yaml'))
