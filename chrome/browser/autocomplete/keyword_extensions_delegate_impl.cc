@@ -57,7 +57,7 @@ bool KeywordExtensionsDelegateImpl::IsEnabledExtension(
       extension_service->GetExtensionById(extension_id, false);
   return extension &&
       (!profile_->IsOffTheRecord() ||
-       !extensions::util::IsIncognitoEnabled(extension_id, profile_));
+       extensions::util::IsIncognitoEnabled(extension_id, profile_));
 }
 
 bool KeywordExtensionsDelegateImpl::Start(
