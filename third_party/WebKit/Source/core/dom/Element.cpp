@@ -240,7 +240,9 @@ bool Element::rendererIsFocusable() const
         // We can't just use needsStyleRecalc() because if the node is in a
         // display:none tree it might say it needs style recalc but the whole
         // document is actually up to date.
-        ASSERT(!document().childNeedsStyleRecalc());
+        // In addition, style cannot be cleared out for non-active documents,
+        // so in that case the childNeedsStyleRecalc check is invalid.
+        ASSERT(!document().isActive() || !document().childNeedsStyleRecalc());
     }
 
     // FIXME: Even if we are not visible, we might have a child that is visible.
