@@ -928,6 +928,13 @@ void GpuProcessHost::SendOutstandingReplies() {
     create_command_buffer_requests_.pop();
     callback.Run(CREATE_COMMAND_BUFFER_FAILED_AND_CHANNEL_LOST);
   }
+
+  while (!create_gpu_memory_buffer_requests_.empty()) {
+    CreateGpuMemoryBufferCallback callback =
+        create_gpu_memory_buffer_requests_.front();
+    create_gpu_memory_buffer_requests_.pop();
+    callback.Run(gfx::GpuMemoryBufferHandle());
+  }
 }
 
 void GpuProcessHost::BlockLiveOffscreenContexts() {
