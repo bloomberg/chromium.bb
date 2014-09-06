@@ -11,6 +11,7 @@
 #include "native_client/tests/irt_ext/basic_calls.h"
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/untrusted/irt/irt.h"
+#include "native_client/src/untrusted/irt/irt_dev.h"
 #include "native_client/src/untrusted/irt/irt_extension.h"
 
 static struct nacl_irt_basic g_irt_basic;
@@ -75,6 +76,32 @@ static int my_sysconf(int name, int *value) {
   return ENOSYS;
 }
 
+static int my_getpid(int *pid) {
+  if (g_activated_env) {
+    *pid = g_activated_env->pid;
+    return 0;
+  }
+  return ENOSYS;
+}
+
+static int my_clock_getres(nacl_irt_clockid_t clock_id, struct timespec *res) {
+  if (g_activated_env && clock_id == ENV_CLOCK_ID) {
+    res->tv_sec = 1;
+    res->tv_nsec = 0;
+    return 0;
+  }
+  return ENOSYS;
+}
+
+static int my_clock_gettime(nacl_irt_clockid_t clock_id, struct timespec *tp) {
+  if (g_activated_env && clock_id == ENV_CLOCK_ID) {
+    tp->tv_sec = g_activated_env->current_time++;
+    tp->tv_nsec = 0;
+    return 0;
+  }
+  return ENOSYS;
+}
+
 void init_basic_calls_module(void) {
   size_t bytes = nacl_interface_query(NACL_IRT_BASIC_v0_1,
                                       &g_irt_basic, sizeof(g_irt_basic));
@@ -89,8 +116,26 @@ void init_basic_calls_module(void) {
     my_sysconf,
   };
 
-  nacl_interface_ext_supply(NACL_IRT_BASIC_v0_1, &basic_calls,
-                            sizeof(basic_calls));
+  bytes = nacl_interface_ext_supply(NACL_IRT_BASIC_v0_1, &basic_calls,
+                                    sizeof(basic_calls));
+  ASSERT_EQ(bytes, sizeof(basic_calls));
+
+  struct nacl_irt_dev_getpid getpid_calls = {
+    my_getpid,
+  };
+
+  bytes = nacl_interface_ext_supply(NACL_IRT_DEV_GETPID_v0_1, &getpid_calls,
+                                    sizeof(getpid_calls));
+  ASSERT_EQ(bytes, sizeof(getpid_calls));
+
+  struct nacl_irt_clock clock_calls = {
+    my_clock_getres,
+    my_clock_gettime,
+  };
+
+  bytes = nacl_interface_ext_supply(NACL_IRT_CLOCK_v0_1, &clock_calls,
+                                    sizeof(clock_calls));
+  ASSERT_EQ(bytes, sizeof(clock_calls));
 }
 
 void init_basic_calls_environment(struct basic_calls_environment *env) {

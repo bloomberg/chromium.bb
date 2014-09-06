@@ -18,16 +18,27 @@ struct nacl_irt_ext_struct {
 };
 
 static const struct nacl_irt_ext_struct nacl_irt_ext_structs[] = {
-  {
-    .interface_ident = NACL_IRT_FDIO_v0_1,
-    .table = &__libnacl_irt_fdio,
-    .tablesize = sizeof(__libnacl_irt_fdio),
-  },
+  /* Interfaces are listed as the same order in irt.h. */
   {
     .interface_ident = NACL_IRT_BASIC_v0_1,
     .table = &__libnacl_irt_basic,
     .tablesize = sizeof(__libnacl_irt_basic)
   }, {
+    .interface_ident = NACL_IRT_FDIO_v0_1,
+    .table = &__libnacl_irt_fdio,
+    .tablesize = sizeof(__libnacl_irt_fdio),
+  }, {
+    .interface_ident = NACL_IRT_MEMORY_v0_3,
+    .table = &__libnacl_irt_memory,
+    .tablesize = sizeof(struct nacl_irt_memory),
+  }, {
+    .interface_ident = NACL_IRT_CLOCK_v0_1,
+    .table = &__libnacl_irt_clock,
+    .tablesize = sizeof(__libnacl_irt_clock)
+  },
+
+  /* Interfaces are listed as the same order in irt_dev.h. */
+  {
     .interface_ident = NACL_IRT_DEV_FDIO_v0_3,
     .table = &__libnacl_irt_dev_fdio,
     .tablesize = sizeof(__libnacl_irt_dev_fdio),
@@ -36,9 +47,9 @@ static const struct nacl_irt_ext_struct nacl_irt_ext_structs[] = {
     .table = &__libnacl_irt_dev_filename,
     .tablesize = sizeof(__libnacl_irt_dev_filename),
   }, {
-    .interface_ident = NACL_IRT_MEMORY_v0_3,
-    .table = &__libnacl_irt_memory,
-    .tablesize = sizeof(struct nacl_irt_memory),
+    .interface_ident = NACL_IRT_DEV_GETPID_v0_1,
+    .table = &__libnacl_irt_dev_getpid,
+    .tablesize = sizeof(__libnacl_irt_dev_getpid)
   },
 };
 

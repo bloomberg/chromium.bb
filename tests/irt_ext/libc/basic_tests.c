@@ -146,12 +146,101 @@ static int do_sysconf_test(struct basic_calls_environment *basic_call_env) {
   return 0;
 }
 
+static int do_pid_test(struct basic_calls_environment *basic_call_env) {
+  if (basic_call_env->pid != 0) {
+    irt_ext_test_print("do_pid_test: env was not initialized.\n");
+    return 1;
+  }
+
+  pid_t old_pid = getpid();
+  if (old_pid != 0) {
+    irt_ext_test_print("do_pid_test: getpid returned unexpected result.\n"
+                       "  Expected value: 0. Retrieved value: %d.\n",
+                       (int) old_pid);
+    return 1;
+  }
+
+  basic_call_env->pid = 1;
+  pid_t new_pid = getpid();
+  if (new_pid != basic_call_env->pid) {
+    irt_ext_test_print("do_pid_test: getpid returned unexpected result.\n"
+                       "  Expected value: %d. Retrieved value: %d.\n",
+                       (int) basic_call_env->pid, (int) new_pid);
+    return 1;
+  }
+
+  return 0;
+}
+
+static int do_getres_test(struct basic_calls_environment *basic_call_env) {
+  struct timespec res;
+  if (0 == clock_getres(CLOCK_REALTIME, &res)) {
+    irt_ext_test_print("do_getres_test: clock_getres returned system clock with"
+                       " activated environment.\n");
+    return 1;
+  }
+
+  if (0 != clock_getres(ENV_CLOCK_ID, &res)) {
+    irt_ext_test_print("do_getres_test: clock_getres failed with environment"
+                       " clock: %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (res.tv_sec != 1 || res.tv_nsec != 0) {
+    irt_ext_test_print("do_getres_test: unexpected resolution.\n"
+                       "  Expected: 1:0. Retrieved: %d:%d.\n",
+                       (int) res.tv_sec, (int) res.tv_nsec);
+    return 1;
+  }
+
+  return 0;
+}
+
+static int do_gettime_test(struct basic_calls_environment *basic_call_env) {
+  struct timespec env_time;
+
+  basic_call_env->current_time = TEST_TIME_VALUE;
+  if (0 != clock_gettime(ENV_CLOCK_ID, &env_time)) {
+    irt_ext_test_print("do_gettime_test: clock_gettime failed with environment"
+                       " clock: %s.\n",
+                       strerror(errno));
+    return 1;
+  }
+
+  if (env_time.tv_sec != TEST_TIME_VALUE || env_time.tv_nsec != 0) {
+    irt_ext_test_print("do_gettime_test: unexpected time value.\n"
+                       "  Expected: %d:0. Retrieved: %d:%d.\n",
+                       TEST_TIME_VALUE,
+                       (int) env_time.tv_sec, (int) env_time.tv_nsec);
+    return 1;
+  }
+
+  if (basic_call_env->current_time <= env_time.tv_sec) {
+    irt_ext_test_print("do_gettime_test: current time less than sampled time.\n"
+                       "  Current time: %d. Sampled time: %d.\n",
+                       (int) basic_call_env->current_time,
+                       (int) env_time.tv_sec);
+    return 1;
+  }
+
+  return 0;
+}
+
 static const TYPE_basic_test g_basic_tests[] = {
+  /* Tests for nacl_irt_basic. */
   do_time_test,
   do_clock_test,
   do_nanosleep_test,
   do_sched_yield_test,
   do_sysconf_test,
+
+  /* Tests for nacl_irt_dev_getpid. */
+  do_pid_test,
+
+  /* Tests for nacl_irt_clock. */
+  do_getres_test,
+  do_gettime_test,
 };
 
 int run_basic_tests(void) {

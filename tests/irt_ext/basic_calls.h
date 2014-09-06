@@ -34,9 +34,13 @@
 /* Internal test exit code unit testing framework should exit with. */
 #define TEST_EXIT_CODE 50
 
+/* Custom clock ID which can be used to reference the environment clock. */
+#define ENV_CLOCK_ID 1234
+
 struct basic_calls_environment {
   bool exit_called;
   bool thread_yielded;
+  int pid;
   int exit_code;
   time_t current_time;
 };
