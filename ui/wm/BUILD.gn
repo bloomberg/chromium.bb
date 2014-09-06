@@ -87,9 +87,6 @@ component("wm") {
     "//ui/gfx/geometry",
     "//ui/resources",
   ]
-
-  # http://crbug.com/408650 Circular dependency between this target and Aura.
-  allow_circular_includes_from = [ "//ui/aura" ]
 }
 
 static_library("test_support") {

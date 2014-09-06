@@ -15,7 +15,7 @@ content_tests_gypi_values = exec_script(
 # GYP version //content/content_tests.gypi:test_support_content
 static_library("test_support") {
   deps = [
-    "//content/public/app:both",
+    "//content/public/app",
     "//content/public/browser",
     "//content/public/common",
     "//net:test_support",

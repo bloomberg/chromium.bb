@@ -58,14 +58,10 @@ source_set("test_support") {
   sources = [
     "browser/api/dns/mock_host_resolver_creator.cc",
     "browser/api/dns/mock_host_resolver_creator.h",
-    "browser/api/storage/settings_test_util.cc",
-    "browser/api/storage/settings_test_util.h",
     "browser/api_test_utils.cc",
     "browser/api_test_utils.h",
     "browser/extensions_test.cc",
     "browser/extensions_test.h",
-    "browser/mock_extension_system.cc",
-    "browser/mock_extension_system.h",
     "browser/test_extensions_browser_client.cc",
     "browser/test_extensions_browser_client.h",
     "browser/test_management_policy.cc",
@@ -149,10 +145,6 @@ repack("shell_and_test_pak") {
 }
 
 # TODO(GYP): Enable this link errors are fixed.
-# This gives a link error in web_modal that is very mysterious. The GYP build
-# doesn't seem to pull in web_content_modal_dialog_manager.o since the build
-# does not have a reference to CreateNativeWebModalManager but it still links.
-# The GN build fails with this symbol being undefined.
 if (false) {
 # TODO(tfarina): Many extension unit tests run as part of Chrome"s
 # unit_tests target. They should be moved here, which may require some
@@ -162,41 +154,8 @@ test("unittests") {
   output_name = "extensions_unittests"
 
   sources = [
-    "browser/admin_policy_unittest.cc",
-    "browser/api/api_resource_manager_unittest.cc",
-    "browser/api/declarative/deduping_factory_unittest.cc",
-    "browser/api/sockets_tcp/sockets_tcp_api_unittest.cc",
-    "browser/api/storage/settings_quota_unittest.cc",
-    "browser/api/storage/storage_api_unittest.cc",
-    "browser/api/storage/storage_frontend_unittest.cc",
-    "browser/computed_hashes_unittest.cc",
-    "browser/content_hash_tree_unittest.cc",
-    "browser/event_listener_map_unittest.cc",
-    "browser/event_router_unittest.cc",
-    "browser/api_unittest.cc",
-    "browser/api_unittest.h",
-    "browser/extension_pref_value_map_unittest.cc",
-    "browser/extension_registry_unittest.cc",
-    "browser/file_highlighter_unittest.cc",
-    "browser/file_reader_unittest.cc",
-    "browser/guest_view/guest_view_manager_unittest.cc",
-    "browser/image_loader_unittest.cc",
-    "browser/image_util_unittest.cc",
     "browser/info_map_unittest.cc",
-    "browser/lazy_background_task_queue_unittest.cc",
-    "browser/management_policy_unittest.cc",
     "browser/process_manager_unittest.cc",
-    "browser/process_map_unittest.cc",
-    "browser/quota_service_unittest.cc",
-    "browser/runtime_data_unittest.cc",
-    "browser/value_store/leveldb_value_store_unittest.cc",
-    "browser/value_store/testing_value_store_unittest.cc",
-    "browser/value_store/value_store_change_unittest.cc",
-    "browser/value_store/value_store_frontend_unittest.cc",
-    "browser/value_store/value_store_unittest.cc",
-    "browser/value_store/value_store_unittest.h",
-    "browser/verified_contents_unittest.cc",
-    "browser/warning_service_unittest.cc",
     "common/api/sockets/sockets_manifest_permission_unittest.cc",
     "common/csp_validator_unittest.cc",
     "common/event_filter_unittest.cc",
@@ -226,16 +185,14 @@ test("unittests") {
     "renderer/script_context_set_unittest.cc",
     "renderer/utils_unittest.cc",
     "test/extensions_unittests_main.cc",
-  ]
+ ]
 
   deps = [
     ":extensions_resources",
     ":shell_and_test_pak",
     ":test_support",
     "//base",
-    "//base:prefs_test_support",
     "//base/test:test_support",
-    "//components/keyed_service/content",
     "//content/test:test_support",
     "//device/serial",
     "//device/serial:test_util",
@@ -248,7 +205,6 @@ test("unittests") {
     "//mojo/system",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/leveldatabase",
   ]
 
   if (is_win) {

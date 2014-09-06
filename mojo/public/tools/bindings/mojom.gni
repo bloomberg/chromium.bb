@@ -12,10 +12,8 @@
 #       List of source .mojom files to compile.
 #
 #   deps (optional)
-#
 #   visibility (optional)
-#       Normal meaning. However, this must be a list (normal visibility
-#       allows a single string).
+#       Normal meaning.
 template("mojom") {
   assert(defined(invoker.sources),
          "\"sources\" must be defined for the $target_name template.")
@@ -77,18 +75,11 @@ template("mojom") {
     "{{source_gen_dir}}/{{source_name_part}}_mojom.py",
   ]
 
-  if (defined(invoker.visibility)) {
-    # Need to save this because the the target_name is overwritten inside the
-    # action to be that of the action itself. Only define this in the case the
-    # var is used to avoid unused var error.
-    target_visibility = ":$target_name"
-  }
+  target_visibility = ":$target_name"
 
   generator_target_name = target_name + "_generator"
   action_foreach(generator_target_name) {
-    if (defined(invoker.visibility)) {
-      visibility = [ target_visibility ] + invoker.visibility  # If you get an error here, make your visibility be a list.
-    }
+    visibility = target_visibility
     script = generator_script
     inputs = generator_sources
     sources = invoker.sources

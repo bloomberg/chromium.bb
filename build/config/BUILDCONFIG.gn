@@ -511,13 +511,11 @@ template("component") {
       set_sources_assignment_filter([])
 
       if (defined(invoker.all_dependent_configs)) { all_dependent_configs = invoker.all_dependent_configs }
-      if (defined(invoker.allow_circular_includes_from)) { allow_circular_includes_from = invoker.allow_circular_includes_from }
       if (defined(invoker.cflags)) { cflags = invoker.cflags }
       if (defined(invoker.cflags_c)) { cflags_c = invoker.cflags_c }
       if (defined(invoker.cflags_cc)) { cflags_cc = invoker.cflags_cc }
       if (defined(invoker.cflags_objc)) { cflags_objc = invoker.cflags_objc }
       if (defined(invoker.cflags_objcc)) { cflags_objcc = invoker.cflags_objcc }
-      if (defined(invoker.check_includes)) { check_includes = invoker.check_includes }
       if (defined(invoker.data)) { data = invoker.data }
       if (defined(invoker.datadeps)) { datadeps = invoker.datadeps }
       if (defined(invoker.defines)) { defines = invoker.defines }
@@ -532,7 +530,6 @@ template("component") {
       if (defined(invoker.output_name)) { output_name = invoker.output_name }
       if (defined(invoker.public)) { public = invoker.public }
       if (defined(invoker.sources)) { sources = invoker.sources }
-      if (defined(invoker.testonly)) { testonly = invoker.testonly }
       if (defined(invoker.visibility)) { visibility = invoker.visibility }
     }
   } else {
@@ -545,13 +542,11 @@ template("component") {
       set_sources_assignment_filter([])
 
       if (defined(invoker.all_dependent_configs)) { all_dependent_configs = invoker.all_dependent_configs }
-      if (defined(invoker.allow_circular_includes_from)) { allow_circular_includes_from = invoker.allow_circular_includes_from }
       if (defined(invoker.cflags)) { cflags = invoker.cflags }
       if (defined(invoker.cflags_c)) { cflags_c = invoker.cflags_c }
       if (defined(invoker.cflags_cc)) { cflags_cc = invoker.cflags_cc }
       if (defined(invoker.cflags_objc)) { cflags_objc = invoker.cflags_objc }
       if (defined(invoker.cflags_objcc)) { cflags_objcc = invoker.cflags_objcc }
-      if (defined(invoker.check_includes)) { check_includes = invoker.check_includes }
       if (defined(invoker.data)) { data = invoker.data }
       if (defined(invoker.datadeps)) { datadeps = invoker.datadeps }
       if (defined(invoker.defines)) { defines = invoker.defines }
@@ -566,7 +561,6 @@ template("component") {
       if (defined(invoker.output_name)) { output_name = invoker.output_name }
       if (defined(invoker.public)) { public = invoker.public }
       if (defined(invoker.sources)) { sources = invoker.sources }
-      if (defined(invoker.testonly)) { testonly = invoker.testonly }
       if (defined(invoker.visibility)) { visibility = invoker.visibility }
     }
   }
@@ -592,13 +586,11 @@ template("test") {
     set_sources_assignment_filter([])
 
     if (defined(invoker.all_dependent_configs)) { all_dependent_configs = invoker.all_dependent_configs }
-    if (defined(invoker.allow_circular_includes_from)) { allow_circular_includes_from = invoker.allow_circular_includes_from }
     if (defined(invoker.cflags)) { cflags = invoker.cflags }
     if (defined(invoker.cflags_c)) { cflags_c = invoker.cflags_c }
     if (defined(invoker.cflags_cc)) { cflags_cc = invoker.cflags_cc }
     if (defined(invoker.cflags_objc)) { cflags_objc = invoker.cflags_objc }
     if (defined(invoker.cflags_objcc)) { cflags_objcc = invoker.cflags_objcc }
-    if (defined(invoker.check_includes)) { check_includes = invoker.check_includes }
     if (defined(invoker.data)) { data = invoker.data }
     if (defined(invoker.datadeps)) { datadeps = invoker.datadeps }
     if (defined(invoker.defines)) { defines = invoker.defines }

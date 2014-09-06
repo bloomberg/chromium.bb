@@ -13,6 +13,7 @@ content_shared_components = [
   "//content/gpu",
   "//content/plugin",
   "//content/ppapi_plugin",
+  "//content/public/app",
   "//content/public/browser:sources",
   "//content/public/child",
   "//content/public/common",
@@ -26,7 +27,6 @@ if (is_component_build) {
   shared_library("content") {
     deps = content_shared_components + [
       "//content/app",
-      "//content/public/app",
     ]
     forward_dependent_configs_from = deps
   }

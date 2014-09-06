@@ -308,10 +308,6 @@ component("base") {
     ]
   } else {
     deps += [ "//ui/base/ime" ]
-
-    # http://crbug.com/408648 Circular includes from the ime sub-target to this
-    # one.
-    allow_circular_includes_from = [ "//ui/base/ime" ]
   }
 
   if (toolkit_views) {

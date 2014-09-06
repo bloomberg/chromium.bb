@@ -58,7 +58,7 @@ executable("chrome") {
       "//base/allocator",
       # Needed to use the master_preferences functions
       "//chrome/installer/util",
-      "//content/public/app:both",
+      "//content/app:both",
     ]
 
     # Needed for chrome_main.cc initialization of libraries.

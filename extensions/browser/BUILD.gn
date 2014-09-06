@@ -377,7 +377,6 @@ source_set("browser") {
       "//components/storage_monitor",
       "//crypto:platform",
       "//device/bluetooth",
-      "//device/core",
       "//device/hid",
       "//device/serial",
       "//device/usb",

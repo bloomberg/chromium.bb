@@ -258,7 +258,7 @@ template("grit") {
   # The config and the action below get this visibility son only the generated
   # source set can depend on them. The variable "target_name" will get
   # overwritten inside the inner classes so we need to compute it here.
-  target_visibility = [ ":$target_name" ]
+  target_visibility = ":$target_name"
 
   # The current grit setup makes an file in $output_dir/grit/foo.h that
   # the source code expects to include via "grit/foo.h". It would be nice to
@@ -301,20 +301,7 @@ template("grit") {
 
     args += grit_flags + assert_files_flags
 
-    if (defined(invoker.visibility)) {
-      # This needs to include both what the invoker specified (since they
-      # probably include generated headers from this target), as well as the
-      # generated source set (since there's no guarantee that the visibility
-      # specified by the invoker includes our target).
-      #
-      # Only define visibility at all if the invoker specified it. Otherwise,
-      # we want to keep the public "no visibility specified" default.
-      visibility = target_visibility
-
-      # This won't work if the invoker specifies a list of targets (an uncommon
-      # case). We may need to enhance the language to make this possible.
-      visibility += [ invoker.visibility ]
-    }
+    visibility = target_visibility
 
     deps = [ "//tools/grit:grit_sources" ]
     if (defined(invoker.deps)) {
