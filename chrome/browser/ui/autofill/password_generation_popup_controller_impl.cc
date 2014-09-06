@@ -156,7 +156,7 @@ void PasswordGenerationPopupControllerImpl::PasswordAccepted() {
 
 int PasswordGenerationPopupControllerImpl::GetMinimumWidth() {
   // Minimum width in pixels.
-  const int minimum_width = 360;
+  const int minimum_width = 350;
 
   // If the width of the field is longer than the minimum, use that instead.
   return std::max(minimum_width,

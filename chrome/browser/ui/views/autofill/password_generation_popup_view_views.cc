@@ -133,9 +133,10 @@ PasswordGenerationPopupViewViews::PasswordGenerationPopupViewViews(
   default_style.color = kExplanatoryTextColor;
   help_label_->SetDefaultStyle(default_style);
 
-  help_label_->AddStyleRange(
-      controller_->HelpTextLinkRange(),
-      views::StyledLabel::RangeStyleInfo::CreateForLink());
+  views::StyledLabel::RangeStyleInfo link_style =
+      views::StyledLabel::RangeStyleInfo::CreateForLink();
+  link_style.disable_line_wrapping = false;
+  help_label_->AddStyleRange(controller_->HelpTextLinkRange(), link_style);
 
   help_label_->set_background(
       views::Background::CreateSolidBackground(
