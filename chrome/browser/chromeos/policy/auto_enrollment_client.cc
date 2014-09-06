@@ -76,6 +76,7 @@ std::string ConvertRestoreMode(
       return kDeviceStateRestoreModeReEnrollmentEnforced;
   }
 
+  // Return is required to avoid compiler warning.
   NOTREACHED() << "Bad restore mode " << restore_mode;
   return std::string();
 }

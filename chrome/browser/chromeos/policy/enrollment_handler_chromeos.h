@@ -121,35 +121,34 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   };
 
   // Handles the response to a request for server-backed state keys.
-  void CheckStateKeys(const std::vector<std::string>& state_keys,
-                      bool first_boot);
+  void HandleStateKeysResult(const std::vector<std::string>& state_keys,
+                             bool first_boot);
 
   // Starts registration if the store is initialized.
-  void AttemptRegistration();
+  void StartRegistration();
 
-  // Handles the policy validation result, proceeding with installation-time
-  // attributes locking if successful.
-  void PolicyValidated(DeviceCloudPolicyValidator* validator);
+  // Handles the policy validation result, proceeding with device lock if
+  // successful.
+  void HandlePolicyValidationResult(DeviceCloudPolicyValidator* validator);
 
-  // Calls LockDevice() and proceeds to policy installation. If unsuccessful,
-  // reports the result. Actual installation or error report will be done in
-  // HandleLockDeviceResult().
+  // Calls InstallAttributes::LockDevice() for enterprise enrollment and
+  // DeviceSettingsService::SetManagementSettings() for consumer
+  // enrollment.
   void StartLockDevice();
 
   // Checks the status after SetManagementSettings() is done. Proceeds to
   // robot auth code storing if successful.
-  void OnSetManagementSettingsDone();
+  void HandleSetManagementSettingsDone();
 
-  // Helper for StartLockDevice(). It performs the actual action based on
-  // the result of LockDevice.
+  // Handle callback from InstallAttributes::LockDevice() and retry on failure.
   void HandleLockDeviceResult(
       EnterpriseInstallAttributes::LockResult lock_result);
 
-  // Stores robot auth token.
-  void StoreRobotAuth();
+  // Initiates storing of robot auth token.
+  void StartStoreRobotAuth();
 
   // Handles completion of the robot token store operation.
-  void HandleRobotAuthTokenStored(bool result);
+  void HandleStoreRobotAuthTokenResult(bool result);
 
   // Drops any ongoing actions.
   void Stop();

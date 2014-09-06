@@ -89,7 +89,7 @@ void EnrollmentHandlerChromeOS::StartEnrollment() {
   CHECK_EQ(STEP_PENDING, enrollment_step_);
   enrollment_step_ = STEP_STATE_KEYS;
   state_keys_broker_->RequestStateKeys(
-      base::Bind(&EnrollmentHandlerChromeOS::CheckStateKeys,
+      base::Bind(&EnrollmentHandlerChromeOS::HandleStateKeysResult,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -140,7 +140,7 @@ void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
   // from that username to validate the key below (http://crbug.com/343074).
   validator->ValidateInitialKey(GetPolicyVerificationKey(), domain);
   validator.release()->StartValidation(
-      base::Bind(&EnrollmentHandlerChromeOS::PolicyValidated,
+      base::Bind(&EnrollmentHandlerChromeOS::HandlePolicyValidationResult,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -162,7 +162,7 @@ void EnrollmentHandlerChromeOS::OnRegistrationStateChanged(
     client_->FetchPolicy();
   } else {
     LOG(FATAL) << "Registration state changed to " << client_->is_registered()
-               << " in step " << enrollment_step_;
+               << " in step " << enrollment_step_ << ".";
   }
 }
 
@@ -184,10 +184,10 @@ void EnrollmentHandlerChromeOS::OnStoreLoaded(CloudPolicyStore* store) {
   DCHECK_EQ(store_, store);
 
   if (enrollment_step_ == STEP_LOADING_STORE) {
-    // If the |store_| wasn't initialized when StartEnrollment() was
-    // called, then AttemptRegistration() bails silently.  This gets
-    // registration rolling again after the store finishes loading.
-    AttemptRegistration();
+    // If the |store_| wasn't initialized when StartEnrollment() was called,
+    // then StartRegistration() bails silently. This gets registration rolling
+    // again after the store finishes loading.
+    StartRegistration();
   } else if (enrollment_step_ == STEP_STORE_POLICY) {
     ReportResult(EnrollmentStatus::ForStatus(EnrollmentStatus::STATUS_SUCCESS));
   }
@@ -206,37 +206,40 @@ void EnrollmentHandlerChromeOS::OnStoreError(CloudPolicyStore* store) {
                                                store_->validation_status()));
 }
 
-void EnrollmentHandlerChromeOS::CheckStateKeys(
+void EnrollmentHandlerChromeOS::HandleStateKeysResult(
     const std::vector<std::string>& state_keys, bool /* first_boot */) {
   CHECK_EQ(STEP_STATE_KEYS, enrollment_step_);
 
   // Make sure state keys are available if forced re-enrollment is on.
   if (chromeos::AutoEnrollmentController::GetMode() ==
       chromeos::AutoEnrollmentController::MODE_FORCED_RE_ENROLLMENT) {
-    if (state_keys.empty()) {
+    client_->SetStateKeysToUpload(state_keys);
+    current_state_key_ = state_keys_broker_->current_state_key();
+    if (state_keys.empty() || current_state_key_.empty()) {
       ReportResult(
           EnrollmentStatus::ForStatus(EnrollmentStatus::STATUS_NO_STATE_KEYS));
       return;
     }
-    client_->SetStateKeysToUpload(state_keys);
-    current_state_key_ = state_keys_broker_->current_state_key();
   }
 
   enrollment_step_ = STEP_LOADING_STORE;
-  AttemptRegistration();
+  StartRegistration();
 }
 
-void EnrollmentHandlerChromeOS::AttemptRegistration() {
+void EnrollmentHandlerChromeOS::StartRegistration() {
   CHECK_EQ(STEP_LOADING_STORE, enrollment_step_);
   if (store_->is_initialized()) {
     enrollment_step_ = STEP_REGISTRATION;
     client_->Register(em::DeviceRegisterRequest::DEVICE,
                       auth_token_, client_id_, is_auto_enrollment_,
                       requisition_, current_state_key_);
+  } else {
+    // Do nothing. StartRegistration() will be called again from OnStoreLoaded()
+    // after the CloudPolicyStore has initialized.
   }
 }
 
-void EnrollmentHandlerChromeOS::PolicyValidated(
+void EnrollmentHandlerChromeOS::HandlePolicyValidationResult(
     DeviceCloudPolicyValidator* validator) {
   CHECK_EQ(STEP_VALIDATION, enrollment_step_);
   if (validator->success()) {
@@ -302,7 +305,7 @@ void EnrollmentHandlerChromeOS::OnRefreshTokenResponse(
     const std::string& access_token,
     int expires_in_seconds) {
   // We never use the code that should trigger this callback.
-  LOG(FATAL) << "Unexpected callback invoked";
+  LOG(FATAL) << "Unexpected callback invoked.";
 }
 
 // GaiaOAuthClient::Delegate OAuth2 error when fetching refresh token request.
@@ -335,7 +338,7 @@ void EnrollmentHandlerChromeOS::StartLockDevice() {
     enrollment_step_ = STEP_STORE_TOKEN_AND_ID;
     device_settings_service_->SetManagementSettings(
         management_mode_, request_token_, device_id_,
-        base::Bind(&EnrollmentHandlerChromeOS::OnSetManagementSettingsDone,
+        base::Bind(&EnrollmentHandlerChromeOS::HandleSetManagementSettingsDone,
                    weak_ptr_factory_.GetWeakPtr()));
   } else {
     install_attributes_->LockDevice(
@@ -345,7 +348,7 @@ void EnrollmentHandlerChromeOS::StartLockDevice() {
   }
 }
 
-void EnrollmentHandlerChromeOS::OnSetManagementSettingsDone() {
+void EnrollmentHandlerChromeOS::HandleSetManagementSettingsDone() {
   CHECK_EQ(STEP_STORE_TOKEN_AND_ID, enrollment_step_);
   if (device_settings_service_->status() !=
       chromeos::DeviceSettingsService::STORE_SUCCESS) {
@@ -354,7 +357,7 @@ void EnrollmentHandlerChromeOS::OnSetManagementSettingsDone() {
     return;
   }
 
-  StoreRobotAuth();
+  StartStoreRobotAuth();
 }
 
 void EnrollmentHandlerChromeOS::HandleLockDeviceResult(
@@ -362,8 +365,8 @@ void EnrollmentHandlerChromeOS::HandleLockDeviceResult(
   CHECK_EQ(STEP_LOCK_DEVICE, enrollment_step_);
   switch (lock_result) {
     case EnterpriseInstallAttributes::LOCK_SUCCESS:
-      StoreRobotAuth();
-      return;
+      StartStoreRobotAuth();
+      break;
     case EnterpriseInstallAttributes::LOCK_NOT_READY:
       // We wait up to |kLockRetryTimeoutMs| milliseconds and if it hasn't
       // succeeded by then show an error to the user and stop the enrollment.
@@ -381,34 +384,30 @@ void EnrollmentHandlerChromeOS::HandleLockDeviceResult(
         ReportResult(EnrollmentStatus::ForStatus(
             EnrollmentStatus::STATUS_LOCK_TIMEOUT));
       }
-      return;
+      break;
     case EnterpriseInstallAttributes::LOCK_BACKEND_ERROR:
       ReportResult(EnrollmentStatus::ForStatus(
           EnrollmentStatus::STATUS_LOCK_ERROR));
-      return;
+      break;
     case EnterpriseInstallAttributes::LOCK_WRONG_USER:
       LOG(ERROR) << "Enrollment cannot proceed because the InstallAttrs "
                  << "has been locked already!";
       ReportResult(EnrollmentStatus::ForStatus(
           EnrollmentStatus::STATUS_LOCK_WRONG_USER));
-      return;
+      break;
   }
-
-  NOTREACHED() << "Invalid lock result " << lock_result;
-  ReportResult(EnrollmentStatus::ForStatus(
-      EnrollmentStatus::STATUS_LOCK_ERROR));
 }
 
-void EnrollmentHandlerChromeOS::StoreRobotAuth() {
+void EnrollmentHandlerChromeOS::StartStoreRobotAuth() {
   // Get the token service so we can store our robot refresh token.
   enrollment_step_ = STEP_STORE_ROBOT_AUTH;
   chromeos::DeviceOAuth2TokenServiceFactory::Get()->SetAndSaveRefreshToken(
       refresh_token_,
-      base::Bind(&EnrollmentHandlerChromeOS::HandleRobotAuthTokenStored,
+      base::Bind(&EnrollmentHandlerChromeOS::HandleStoreRobotAuthTokenResult,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void EnrollmentHandlerChromeOS::HandleRobotAuthTokenStored(bool result) {
+void EnrollmentHandlerChromeOS::HandleStoreRobotAuthTokenResult(bool result) {
   CHECK_EQ(STEP_STORE_ROBOT_AUTH, enrollment_step_);
 
   if (!result) {
@@ -442,9 +441,9 @@ void EnrollmentHandlerChromeOS::ReportResult(EnrollmentStatus status) {
 
   if (status.status() != EnrollmentStatus::STATUS_SUCCESS) {
     LOG(WARNING) << "Enrollment failed: " << status.status()
-                 << " " << status.client_status()
-                 << " " << status.validation_status()
-                 << " " << status.store_status();
+                 << ", client: " << status.client_status()
+                 << ", validation: " << status.validation_status()
+                 << ", store: " << status.store_status();
   }
 
   if (!callback.is_null())

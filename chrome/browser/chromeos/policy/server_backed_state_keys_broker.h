@@ -24,9 +24,9 @@ class SessionManagerClient;
 
 namespace policy {
 
-// Brokers server-backed state keys for the device. Retrieves them from session
-// manager via DBus and refreshes them periodically. Consumers can register
-// callbacks to invoke when the state keys change.
+// Brokers server-backed FRE state keys for the device. Retrieves them from
+// session manager via DBus and refreshes them periodically. Consumers can
+// register callbacks to invoke when the state keys change.
 class ServerBackedStateKeysBroker {
  public:
   typedef scoped_ptr<base::CallbackList<void()>::Subscription> Subscription;
