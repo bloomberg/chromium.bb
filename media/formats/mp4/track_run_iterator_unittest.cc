@@ -108,6 +108,9 @@ class TrackRunIteratorTest : public testing::Test {
       case 'N':
         sample_depends_on = kSampleDependsOnNoOther;
         break;
+      case 'R':
+        sample_depends_on = kSampleDependsOnReserved;
+        break;
       default:
         CHECK(false) << "Invalid sample dependency character '"
                      << str[0] << "'";
@@ -367,6 +370,25 @@ TEST_F(TrackRunIteratorTest, FirstSampleFlagTest) {
 
   iter_->AdvanceRun();
   EXPECT_EQ("2 KR P P P P P P P P P", KeyframeAndRAPInfo(iter_.get()));
+}
+
+// Verify that parsing fails if a reserved value is in the sample flags.
+TEST_F(TrackRunIteratorTest, SampleInfoTest_ReservedInSampleFlags) {
+  iter_.reset(new TrackRunIterator(&moov_, log_cb_));
+  MovieFragment moof = CreateFragment();
+  // Change the "depends on" field on one of the samples to a
+  // reserved value.
+  moof.tracks[1].runs[0].sample_flags[0] = ToSampleFlags("RS");
+  ASSERT_FALSE(iter_->Init(moof));
+}
+
+// Verify that parsing fails if a reserved value is in the default sample flags.
+TEST_F(TrackRunIteratorTest, SampleInfoTest_ReservedInDefaultSampleFlags) {
+  iter_.reset(new TrackRunIterator(&moov_, log_cb_));
+  MovieFragment moof = CreateFragment();
+  // Set the default flag to contain a reserved "depends on" value.
+  moof.tracks[0].header.default_sample_flags = ToSampleFlags("RN");
+  ASSERT_FALSE(iter_->Init(moof));
 }
 
 TEST_F(TrackRunIteratorTest, ReorderingTest) {

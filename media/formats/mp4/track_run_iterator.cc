@@ -88,13 +88,14 @@ TrackRunIterator::TrackRunIterator(const Movie* moov,
 
 TrackRunIterator::~TrackRunIterator() {}
 
-static void PopulateSampleInfo(const TrackExtends& trex,
+static bool PopulateSampleInfo(const TrackExtends& trex,
                                const TrackFragmentHeader& tfhd,
                                const TrackFragmentRun& trun,
                                const int64 edit_list_offset,
                                const uint32 i,
                                SampleInfo* sample_info,
-                               const SampleDependsOn sdtp_sample_depends_on) {
+                               const SampleDependsOn sdtp_sample_depends_on,
+                               const LogCB& log_cb) {
   if (i < trun.sample_sizes.size()) {
     sample_info->size = trun.sample_sizes[i];
   } else if (tfhd.default_sample_size > 0) {
@@ -156,8 +157,10 @@ static void PopulateSampleInfo(const TrackExtends& trex,
       break;
 
     case kSampleDependsOnReserved:
-      CHECK(false);
+      MEDIA_LOG(log_cb) << "Reserved value used in sample dependency info.";
+      return false;
   }
+  return true;
 }
 
 // In well-structured encrypted media, each track run will be immediately
@@ -300,8 +303,13 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
 
       tri.samples.resize(trun.sample_count);
       for (size_t k = 0; k < trun.sample_count; k++) {
-        PopulateSampleInfo(*trex, traf.header, trun, edit_list_offset,
-                           k, &tri.samples[k], traf.sdtp.sample_depends_on(k));
+        if (!PopulateSampleInfo(*trex, traf.header, trun, edit_list_offset,
+                                k, &tri.samples[k],
+                                traf.sdtp.sample_depends_on(k),
+                                log_cb_)) {
+          return false;
+        }
+
         run_start_dts += tri.samples[k].duration;
 
         if (!is_sample_to_group_valid) {
