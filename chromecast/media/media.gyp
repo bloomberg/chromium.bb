@@ -22,6 +22,8 @@
         'cma/base/buffering_state.cc',
         'cma/base/buffering_state.h',
         'cma/base/cma_logging.h',
+        'cma/base/coded_frame_provider.cc',
+        'cma/base/coded_frame_provider.h',
         'cma/base/decoder_buffer_adapter.cc',
         'cma/base/decoder_buffer_adapter.h',
         'cma/base/decoder_buffer_base.cc',
@@ -46,10 +48,24 @@
       ],
     },
     {
+      'target_name': 'cma_filters',
+      'type': '<(component)',
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../media/media.gyp:media',
+        'cma_base',
+      ],
+      'sources': [
+        'cma/filters/demuxer_stream_adapter.cc',
+        'cma/filters/demuxer_stream_adapter.h',
+      ],
+    },
+    {
       'target_name': 'cast_media',
       'type': 'none',
       'dependencies': [
         'cma_base',
+        'cma_filters',
         'cma_ipc',
       ],
     },
@@ -69,6 +85,7 @@
         'cma/base/balanced_media_task_runner_unittest.cc',
         'cma/base/buffering_controller_unittest.cc',
         'cma/base/run_all_unittests.cc',
+        'cma/filters/demuxer_stream_adapter_unittest.cc',
         'cma/ipc/media_message_fifo_unittest.cc',
         'cma/ipc/media_message_unittest.cc',
       ],
