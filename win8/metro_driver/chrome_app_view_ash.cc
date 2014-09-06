@@ -1160,7 +1160,7 @@ HRESULT ChromeAppViewAsh::OnWheel(
     return hr;
   DCHECK(pointer.IsMouse());
   SendMouseButton(pointer.x(), pointer.y(), pointer.wheel_delta(),
-                  ui::ET_MOUSEWHEEL, ui::EF_NONE, ui::EF_NONE,
+                  ui::ET_MOUSEWHEEL, GetKeyboardEventFlags(), ui::EF_NONE,
                   pointer.is_horizontal_wheel());
   return S_OK;
 }
