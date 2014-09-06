@@ -3248,6 +3248,8 @@ weston_compositor_remove_output(struct weston_compositor *compositor,
 WL_EXPORT void
 weston_output_destroy(struct weston_output *output)
 {
+	struct wl_resource *resource;
+
 	output->destroying = 1;
 
 	weston_compositor_remove_output(output->compositor, output);
@@ -3260,6 +3262,10 @@ weston_output_destroy(struct weston_output *output)
 	pixman_region32_fini(&output->region);
 	pixman_region32_fini(&output->previous_damage);
 	output->compositor->output_id_pool &= ~(1 << output->id);
+
+	wl_resource_for_each(resource, &output->resource_list) {
+		wl_resource_set_destructor(resource, NULL);
+	}
 
 	wl_global_destroy(output->global);
 }
