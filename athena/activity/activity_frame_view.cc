@@ -72,15 +72,18 @@ void ActivityFrameView::ResetWindowControls() {
 }
 
 void ActivityFrameView::UpdateWindowIcon() {
+  if (!view_model_->UsesFrame())
+    return;
+
+  SkColor bgcolor = view_model_->GetRepresentativeColor();
+  set_background(views::Background::CreateSolidBackground(bgcolor));
+  title_->SetBackgroundColor(bgcolor);
+  SchedulePaint();
 }
 
 void ActivityFrameView::UpdateWindowTitle() {
   if (!view_model_->UsesFrame())
     return;
-
-  SkColor bgcolor = view_model_->GetRepresentativeColor();
-  title_->set_background(views::Background::CreateSolidBackground(bgcolor));
-  title_->SetBackgroundColor(bgcolor);
   title_->SetText(frame_->widget_delegate()->GetWindowTitle());
 }
 

@@ -74,8 +74,10 @@ class ActivityViewManagerImpl : public ActivityViewManager,
 
   virtual void UpdateActivity(Activity* activity) OVERRIDE {
     ActivityWidgetMap::iterator find = activity_widgets_.find(activity);
-    if (find != activity_widgets_.end())
+    if (find != activity_widgets_.end()) {
+      find->second->UpdateWindowIcon();
       find->second->UpdateWindowTitle();
+    }
   }
 
   // views::WidgetObserver:

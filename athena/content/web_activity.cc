@@ -477,6 +477,7 @@ void WebActivity::DidUpdateFaviconURL(
 
 void WebActivity::DidChangeThemeColor(SkColor theme_color) {
   title_color_ = theme_color;
+  ActivityManager::Get()->UpdateActivity(this);
 }
 
 void WebActivity::MakeVisible() {
