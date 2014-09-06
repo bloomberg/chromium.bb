@@ -705,6 +705,8 @@ void DesktopWindowTreeHostX11::SetFullscreen(bool fullscreen) {
   if (is_fullscreen_ == fullscreen)
     return;
   is_fullscreen_ = fullscreen;
+  if (is_fullscreen_)
+    delayed_resize_task_.Cancel();
 
   // Work around a bug where if we try to unfullscreen, metacity immediately
   // fullscreens us again. This is a little flickery and not necessary if
