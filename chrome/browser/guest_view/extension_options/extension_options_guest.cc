@@ -24,6 +24,7 @@
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/feature_switch.h"
@@ -153,6 +154,28 @@ bool ExtensionOptionsGuest::IsAutoSizeSupported() const {
 
 content::WebContents* ExtensionOptionsGuest::GetAssociatedWebContents() const {
   return web_contents();
+}
+
+content::WebContents* ExtensionOptionsGuest::OpenURLFromTab(
+    content::WebContents* source,
+    const content::OpenURLParams& params) {
+  Browser* browser =
+      chrome::FindBrowserWithWebContents(embedder_web_contents());
+
+  // Don't allow external URLs with the CURRENT_TAB disposition be opened in
+  // this guest view, change the disposition to NEW_FOREGROUND_TAB.
+  if ((!params.url.SchemeIs(extensions::kExtensionScheme) ||
+       params.url.host() != options_page_.host()) &&
+      params.disposition == CURRENT_TAB) {
+    return browser->OpenURL(
+        content::OpenURLParams(params.url,
+                               params.referrer,
+                               params.frame_tree_node_id,
+                               NEW_FOREGROUND_TAB,
+                               params.transition,
+                               params.is_renderer_initiated));
+  }
+  return browser->OpenURL(params);
 }
 
 void ExtensionOptionsGuest::CloseContents(content::WebContents* source) {

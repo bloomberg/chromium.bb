@@ -42,6 +42,9 @@ class ExtensionOptionsGuest
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
 
   // content::WebContentsDelegate implementation.
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE;
   virtual void CloseContents(content::WebContents* source) OVERRIDE;
   virtual bool HandleContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
