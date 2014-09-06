@@ -56,13 +56,13 @@ struct MailboxHolder;
 
 namespace media {
 class MediaLog;
+class WebMediaPlayerDelegate;
 }
 
 namespace content {
 class RendererCdmManager;
 class RendererMediaPlayerManager;
 class WebContentDecryptionModuleImpl;
-class WebMediaPlayerDelegate;
 
 // This class implements blink::WebMediaPlayer by keeping the android
 // media player in the browser process. It listens to all the status changes
@@ -81,7 +81,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   WebMediaPlayerAndroid(
       blink::WebFrame* frame,
       blink::WebMediaPlayerClient* client,
-      base::WeakPtr<WebMediaPlayerDelegate> delegate,
+      base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
       RendererMediaPlayerManager* player_manager,
       RendererCdmManager* cdm_manager,
       scoped_refptr<StreamTextureFactory> factory,
@@ -331,7 +331,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // TODO(qinmin): Currently android mediaplayer takes care of the screen
   // lock. So this is only used for media source. Will apply this to regular
   // media tag once http://crbug.com/247892 is fixed.
-  base::WeakPtr<WebMediaPlayerDelegate> delegate_;
+  base::WeakPtr<media::WebMediaPlayerDelegate> delegate_;
 
   // Save the list of buffered time ranges.
   blink::WebTimeRanges buffered_;

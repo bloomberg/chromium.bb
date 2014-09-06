@@ -1,0 +1,87 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+component("blink") {
+  output_name = "media_blink"
+
+  deps = [
+    "//base",
+    "//cc",
+    "//cc/blink",
+    "//media",
+    "//net",
+    "//third_party/WebKit/public:blink",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+  ]
+
+  defines = [ "MEDIA_IMPLEMENTATION" ]
+
+  sources = [
+    "active_loader.cc",
+    "active_loader.h",
+    "buffered_data_source.cc",
+    "buffered_data_source.h",
+    "buffered_data_source_host_impl.cc",
+    "buffered_data_source_host_impl.h",
+    "buffered_resource_loader.cc",
+    "buffered_resource_loader.h",
+    "encrypted_media_player_support.cc",
+    "encrypted_media_player_support.h",
+    "cache_util.cc",
+    "cache_util.h",
+    "texttrack_impl.cc",
+    "texttrack_impl.h",
+    "video_frame_compositor.cc",
+    "video_frame_compositor.h",
+    "webaudiosourceprovider_impl.cc",
+    "webaudiosourceprovider_impl.h",
+    "webinbandtexttrack_impl.cc",
+    "webinbandtexttrack_impl.h",
+    "webmediaplayer_delegate.h",
+    "webmediaplayer_impl.cc",
+    "webmediaplayer_impl.h",
+    "webmediaplayer_params.cc",
+    "webmediaplayer_params.h",
+    "webmediaplayer_util.cc",
+    "webmediaplayer_util.h",
+    "webmediasource_impl.cc",
+    "webmediasource_impl.h",
+    "websourcebuffer_impl.cc",
+    "websourcebuffer_impl.h",
+  ]
+}
+
+test("media_blink_unittests") {
+  deps = [
+    ":blink",
+    "//base",
+    "//base/test:test_support",
+    "//cc",
+    "//cc/blink",
+    "//media",
+    "//media/base:test_support",
+    "//net",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/WebKit/public:blink",
+    "//ui/gfx/geometry",
+    "//ui/gfx:test_support",
+    "//url",
+  ]
+
+  sources = [
+    "buffered_data_source_host_impl_unittest.cc",
+    "buffered_data_source_unittest.cc",
+    "buffered_resource_loader_unittest.cc",
+    "cache_util_unittest.cc",
+    "mock_webframeclient.h",
+    "mock_weburlloader.cc",
+    "mock_weburlloader.h",
+    "run_all_unittests.cc",
+    "test_response_generator.cc",
+    "test_response_generator.h",
+    "video_frame_compositor_unittest.cc",
+    "webaudiosourceprovider_impl_unittest.cc",
+  ]
+}

@@ -51,6 +51,7 @@ group("root") {
     "//ipc/mojo",
     "//jingle:notifier",
     "//media",
+    "//media/blink",
     "//media/cast",
     "//mojo",
     "//net",
@@ -194,6 +195,7 @@ group("root") {
       "//extensions/common",
       "//extensions/common/api",
       "//extensions/renderer",
+      "//media/blink",  # Blocked on blink
       "//pdf",  # Not compiled on Android in GYP yet, either.
       "//ppapi:ppapi_c",
       "//sandbox",

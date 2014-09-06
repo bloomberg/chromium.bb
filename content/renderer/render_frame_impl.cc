@@ -74,9 +74,7 @@
 #include "content/renderer/media/render_media_log.h"
 #include "content/renderer/media/user_media_client_impl.h"
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
-#include "content/renderer/media/webmediaplayer_impl.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
-#include "content/renderer/media/webmediaplayer_params.h"
 #include "content/renderer/notification_permission_dispatcher.h"
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
@@ -93,6 +91,8 @@
 #include "content/renderer/v8_value_converter_impl.h"
 #include "content/renderer/websharedworker_proxy.h"
 #include "media/base/audio_renderer_mixer_input.h"
+#include "media/blink/webmediaplayer_impl.h"
+#include "media/blink/webmediaplayer_params.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
 #include "net/base/data_url.h"
 #include "net/base/net_errors.h"
@@ -1602,7 +1602,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   return CreateAndroidWebMediaPlayer(url, client);
 #else
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  WebMediaPlayerParams params(
+  media::WebMediaPlayerParams params(
       base::Bind(&ContentRendererClient::DeferMediaLoad,
                  base::Unretained(GetContentClient()->renderer()),
                  static_cast<RenderFrame*>(this)),
@@ -1614,8 +1614,10 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       render_thread->GetMediaThreadTaskRunner(),
       render_thread->compositor_message_loop_proxy(),
       base::Bind(&EncryptedMediaPlayerSupportImpl::Create));
-  return new WebMediaPlayerImpl(frame, client, weak_factory_.GetWeakPtr(),
-                                params);
+  return new media::WebMediaPlayerImpl(frame,
+                                       client,
+                                       weak_factory_.GetWeakPtr(),
+                                       params);
 #endif  // defined(OS_ANDROID)
 }
 

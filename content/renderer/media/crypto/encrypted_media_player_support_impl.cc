@@ -16,6 +16,7 @@
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "content/renderer/pepper/pepper_webplugin_impl.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/blink/encrypted_media_player_support.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModule.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
@@ -123,8 +124,8 @@ static std::string GuessInitDataType(const unsigned char* init_data,
   return "video/mp4";
 }
 
-scoped_ptr<EncryptedMediaPlayerSupport> EncryptedMediaPlayerSupportImpl::Create(
-    blink::WebMediaPlayerClient* client) {
+scoped_ptr<media::EncryptedMediaPlayerSupport>
+EncryptedMediaPlayerSupportImpl::Create(blink::WebMediaPlayerClient* client) {
   return scoped_ptr<EncryptedMediaPlayerSupport>(
       new EncryptedMediaPlayerSupportImpl(client));
 }

@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "content/renderer/media/crypto/encrypted_media_player_support.h"
 #include "content/renderer/media/crypto/proxy_decryptor.h"
+#include "media/blink/encrypted_media_player_support.h"
 
 namespace blink {
 class WebMediaPlayerClient;
@@ -21,7 +21,7 @@ namespace content {
 class WebContentDecryptionModuleImpl;
 
 class EncryptedMediaPlayerSupportImpl
-    : public EncryptedMediaPlayerSupport,
+    : public media::EncryptedMediaPlayerSupport,
       public base::SupportsWeakPtr<EncryptedMediaPlayerSupportImpl> {
  public:
   static scoped_ptr<EncryptedMediaPlayerSupport> Create(

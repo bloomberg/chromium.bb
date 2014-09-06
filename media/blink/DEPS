@@ -1,0 +1,10 @@
+include_rules = [
+  "+cc/layers/video_frame_provider.h",
+  "+cc/layers/video_layer.h",
+  "+cc/blink/web_layer_impl.h",
+  "+media",
+  "+net/base",
+  "+net/http",
+  "+third_party/WebKit/public/platform",
+  "+third_party/WebKit/public/web",
+]

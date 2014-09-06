@@ -15,7 +15,8 @@ class MEDIA_EXPORT DataSource {
  public:
   typedef base::Callback<void(int64, int64)> StatusCallback;
   typedef base::Callback<void(int)> ReadCB;
-  static const int kReadError;
+
+  enum { kReadError = -1 };
 
   DataSource();
   virtual ~DataSource();

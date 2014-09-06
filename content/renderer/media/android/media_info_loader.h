@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/active_loader.h"
+#include "media/blink/active_loader.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -113,7 +113,7 @@ class CONTENT_EXPORT MediaInfoLoader : private blink::WebURLLoaderClient {
   scoped_ptr<blink::WebURLLoader> test_loader_;
 
   // Keeps track of an active WebURLLoader and associated state.
-  scoped_ptr<ActiveLoader> active_loader_;
+  scoped_ptr<media::ActiveLoader> active_loader_;
 
   bool loader_failed_;
   GURL url_;

@@ -11,12 +11,12 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/renderer/media/android/renderer_demuxer_android.h"
-#include "content/renderer/media/webmediaplayer_util.h"
-#include "content/renderer/media/webmediasource_impl.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_log.h"
+#include "media/blink/webmediaplayer_util.h"
+#include "media/blink/webmediasource_impl.h"
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/decrypting_demuxer_stream.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -189,7 +189,7 @@ void MediaSourceDelegate::InitializeDemuxer() {
 }
 
 blink::WebTimeRanges MediaSourceDelegate::Buffered() const {
-  return ConvertToWebTimeRanges(buffered_time_ranges_);
+  return media::ConvertToWebTimeRanges(buffered_time_ranges_);
 }
 
 size_t MediaSourceDelegate::DecodedFrameCount() const {
@@ -662,7 +662,7 @@ base::TimeDelta MediaSourceDelegate::GetDuration() const {
   if (duration == std::numeric_limits<double>::infinity())
     return media::kInfiniteDuration();
 
-  return ConvertSecondsToTimestamp(duration);
+  return media::ConvertSecondsToTimestamp(duration);
 }
 
 void MediaSourceDelegate::OnDemuxerOpened() {
@@ -670,7 +670,7 @@ void MediaSourceDelegate::OnDemuxerOpened() {
   if (media_source_opened_cb_.is_null())
     return;
 
-  media_source_opened_cb_.Run(new WebMediaSourceImpl(
+  media_source_opened_cb_.Run(new media::WebMediaSourceImpl(
       chunk_demuxer_.get(), base::Bind(&LogMediaSourceError, media_log_)));
 }
 

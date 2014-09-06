@@ -29,6 +29,7 @@ source_set("renderer") {
     "//gin",
     "//jingle:jingle_glue",
     "//media",
+    "//media/blink",
     "//mojo/bindings/js",
     "//mojo/environment:chromium",
     "//mojo/public/js/bindings",
@@ -71,7 +72,6 @@ source_set("renderer") {
     sources -= [
       "accessibility/renderer_accessibility_focus_only.cc",
       "media/audio_decoder.cc",
-      "media/webmediaplayer_impl.cc",
     ]
     sources += [
       "external_popup_menu.cc",

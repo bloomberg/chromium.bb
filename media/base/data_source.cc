@@ -8,9 +8,6 @@
 
 namespace media {
 
-// static
-const int DataSource::kReadError = -1;
-
 DataSource::DataSource() {}
 
 DataSource::~DataSource() {}

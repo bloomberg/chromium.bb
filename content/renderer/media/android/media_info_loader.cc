@@ -83,7 +83,7 @@ void MediaInfoLoader::Start(blink::WebFrame* frame) {
 
   // Start the resource loading.
   loader->loadAsynchronously(request, this);
-  active_loader_.reset(new ActiveLoader(loader.Pass()));
+  active_loader_.reset(new media::ActiveLoader(loader.Pass()));
 }
 
 /////////////////////////////////////////////////////////////////////////////

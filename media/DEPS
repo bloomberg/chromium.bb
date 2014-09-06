@@ -11,4 +11,5 @@ include_rules = [
   "+ui/gfx",
   "+ui/gl",
   "+ui/ozone",
+  "-media/blink",
 ]
