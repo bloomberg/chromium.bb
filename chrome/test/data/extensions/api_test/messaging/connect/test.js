@@ -28,18 +28,20 @@ chrome.test.getConfig(function(config) {
   chrome.test.runTests([
     function setupTestTab() {
       chrome.test.log("Creating tab...");
+      var newTab = null;
+      var doneListening = listenForever(chrome.tabs.onUpdated,
+        function(_, info, tab) {
+          if (newTab && tab.id == newTab.id && info.status == 'complete') {
+            chrome.test.log("Created tab: " + tab.url);
+            testTab = tab;
+            doneListening();
+          }
+        });
       chrome.tabs.create({
         url: "http://localhost:PORT/extensions/test_file.html"
                  .replace(/PORT/, config.testServer.port)
-      }, function(newTab) {
-        var doneListening = listenForever(chrome.tabs.onUpdated,
-          function(_, info, tab) {
-            if (tab.id == newTab.id && info.status == 'complete') {
-              chrome.test.log("Created tab: " + tab.url);
-              testTab = tab;
-              doneListening();
-            }
-          });
+      }, function(tab) {
+        newTab = tab;
       });
     },
 
