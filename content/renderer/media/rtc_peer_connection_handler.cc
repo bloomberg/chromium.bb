@@ -641,19 +641,20 @@ bool RTCPeerConnectionHandler::addICECandidate(
           base::UTF16ToUTF8(candidate.sdpMid()),
           candidate.sdpMLineIndex(),
           base::UTF16ToUTF8(candidate.candidate())));
-  if (!native_candidate) {
+  bool return_value = false;
+
+  if (native_candidate) {
+    return_value =
+        native_peer_connection_->AddIceCandidate(native_candidate.get());
+    LOG_IF(ERROR, !return_value) << "Error processing ICE candidate.";
+  } else {
     LOG(ERROR) << "Could not create native ICE candidate.";
-    return false;
   }
 
-  bool return_value =
-      native_peer_connection_->AddIceCandidate(native_candidate.get());
-  LOG_IF(ERROR, !return_value) << "Error processing ICE candidate.";
-
-  if (peer_connection_tracker_)
+  if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackAddIceCandidate(
-        this, candidate, PeerConnectionTracker::SOURCE_REMOTE);
-
+        this, candidate, PeerConnectionTracker::SOURCE_REMOTE, return_value);
+  }
   return return_value;
 }
 
@@ -961,7 +962,7 @@ void RTCPeerConnectionHandler::OnIceCandidate(
                            candidate->sdp_mline_index());
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackAddIceCandidate(
-        this, web_candidate, PeerConnectionTracker::SOURCE_LOCAL);
+        this, web_candidate, PeerConnectionTracker::SOURCE_LOCAL, true);
 
   client_->didGenerateICECandidate(web_candidate);
 }

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include "content/renderer/media/peer_connection_tracker.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/renderer/media/rtc_media_constraints.h"
@@ -390,12 +391,22 @@ void PeerConnectionTracker::TrackUpdateIce(
 void PeerConnectionTracker::TrackAddIceCandidate(
       RTCPeerConnectionHandler* pc_handler,
       const blink::WebRTCICECandidate& candidate,
-      Source source) {
-  string value = "mid: " + base::UTF16ToUTF8(candidate.sdpMid()) + ", " +
-                 "candidate: " + base::UTF16ToUTF8(candidate.candidate());
-  SendPeerConnectionUpdate(
-      pc_handler,
-      source == SOURCE_LOCAL ? "onIceCandidate" : "addIceCandidate", value);
+      Source source,
+      bool succeeded) {
+  string value =
+      "sdpMid: " + base::UTF16ToUTF8(candidate.sdpMid()) + ", " +
+      "sdpMLineIndex: " + base::IntToString(candidate.sdpMLineIndex()) + ", " +
+      "candidate: " + base::UTF16ToUTF8(candidate.candidate());
+
+  // OnIceCandidate always succeeds as it's a callback from the browser.
+  DCHECK(source != SOURCE_LOCAL || succeeded);
+
+  string event =
+      (source == SOURCE_LOCAL) ? "onIceCandidate"
+                               : (succeeded ? "addIceCandidate"
+                                            : "addIceCandidateFailed");
+
+  SendPeerConnectionUpdate(pc_handler, event, value);
 }
 
 void PeerConnectionTracker::TrackAddStream(

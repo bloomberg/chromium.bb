@@ -98,7 +98,9 @@ class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
   // Sends an update when an Ice candidate is added.
   virtual void TrackAddIceCandidate(
       RTCPeerConnectionHandler* pc_handler,
-      const blink::WebRTCICECandidate& candidate, Source source);
+      const blink::WebRTCICECandidate& candidate,
+      Source source,
+      bool succeeded);
 
   // Sends an update when a media stream is added.
   virtual void TrackAddStream(

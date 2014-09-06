@@ -145,10 +145,11 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
       void(RTCPeerConnectionHandler* pc_handler,
            const webrtc::PeerConnectionInterface::RTCConfiguration& config,
            const RTCMediaConstraints& options));
-  MOCK_METHOD3(TrackAddIceCandidate,
+  MOCK_METHOD4(TrackAddIceCandidate,
                void(RTCPeerConnectionHandler* pc_handler,
                     const blink::WebRTCICECandidate& candidate,
-                    Source source));
+                    Source source,
+                    bool succeeded));
   MOCK_METHOD3(TrackAddStream,
                void(RTCPeerConnectionHandler* pc_handler,
                     const blink::WebMediaStream& stream,
@@ -388,16 +389,17 @@ TEST_F(RTCPeerConnectionHandlerTest, updateICE) {
 
 TEST_F(RTCPeerConnectionHandlerTest, addICECandidate) {
   blink::WebRTCICECandidate candidate;
-  candidate.initialize(kDummySdp, "mid", 1);
+  candidate.initialize(kDummySdp, "sdpMid", 1);
 
   EXPECT_CALL(*mock_tracker_.get(),
               TrackAddIceCandidate(pc_handler_.get(),
                                    testing::Ref(candidate),
-                                   PeerConnectionTracker::SOURCE_REMOTE));
+                                   PeerConnectionTracker::SOURCE_REMOTE,
+                                   true));
   EXPECT_TRUE(pc_handler_->addICECandidate(candidate));
   EXPECT_EQ(kDummySdp, mock_peer_connection_->ice_sdp());
   EXPECT_EQ(1, mock_peer_connection_->sdp_mline_index());
-  EXPECT_EQ("mid", mock_peer_connection_->sdp_mid());
+  EXPECT_EQ("sdpMid", mock_peer_connection_->sdp_mid());
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, addAndRemoveStream) {
@@ -807,13 +809,13 @@ TEST_F(RTCPeerConnectionHandlerTest, OnIceCandidate) {
   testing::InSequence sequence;
   EXPECT_CALL(*mock_tracker_.get(),
               TrackAddIceCandidate(pc_handler_.get(), _,
-                                   PeerConnectionTracker::SOURCE_LOCAL));
+                                   PeerConnectionTracker::SOURCE_LOCAL, true));
   EXPECT_CALL(*mock_client_.get(), didGenerateICECandidate(_));
 
   scoped_ptr<webrtc::IceCandidateInterface> native_candidate(
-      mock_dependency_factory_->CreateIceCandidate("mid", 1, kDummySdp));
+      mock_dependency_factory_->CreateIceCandidate("sdpMid", 1, kDummySdp));
   pc_handler_->OnIceCandidate(native_candidate.get());
-  EXPECT_EQ("mid", mock_client_->candidate_mid());
+  EXPECT_EQ("sdpMid", mock_client_->candidate_mid());
   EXPECT_EQ(1, mock_client_->candidate_mlineindex());
   EXPECT_EQ(kDummySdp, mock_client_->candidate_sdp());
 }
