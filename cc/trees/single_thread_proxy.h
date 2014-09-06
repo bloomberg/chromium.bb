@@ -11,6 +11,7 @@
 #include "cc/animation/animation_events.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/scheduler/scheduler.h"
+#include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/proxy_timing_history.h"
@@ -102,7 +103,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   virtual void PostDelayedScrollbarFadeOnImplThread(
       const base::Closure& start_fade,
       base::TimeDelta delay) OVERRIDE {}
-  virtual void DidActivateSyncTree() OVERRIDE {}
+  virtual void DidActivateSyncTree() OVERRIDE;
   virtual void DidManageTiles() OVERRIDE;
   virtual void SetDebugState(const LayerTreeDebugState& debug_state) OVERRIDE {}
 
@@ -126,6 +127,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
                          LayerTreeHostImpl::FrameData* frame);
   void DoSwap();
   void DidCommitAndDrawFrame();
+  void CommitComplete();
 
   bool ShouldComposite() const;
   void UpdateBackgroundAnimateTicking();
@@ -143,6 +145,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   scoped_ptr<Scheduler> scheduler_on_impl_thread_;
   ProxyTimingHistory timing_history_;
 
+  scoped_ptr<BlockingTaskRunner::CapturePostTasks> commit_blocking_task_runner_;
   bool next_frame_is_newly_committed_frame_;
 
   bool inside_draw_;

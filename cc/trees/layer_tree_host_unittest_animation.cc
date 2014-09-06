@@ -397,7 +397,8 @@ class LayerTreeHostAnimationTestNoBackgroundTickingWithoutActiveTree
   virtual void BeginCommitOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     // At the start of every commit, block activations and make sure
     // we are backgrounded.
-    host_impl->BlockNotifyReadyToActivateForTesting(true);
+    if (host_impl->settings().impl_side_painting)
+      host_impl->BlockNotifyReadyToActivateForTesting(true);
     PostSetVisibleToMainThread(false);
   }
 
@@ -426,7 +427,8 @@ class LayerTreeHostAnimationTestNoBackgroundTickingWithoutActiveTree
   }
 
   virtual void UnblockActivations(LayerTreeHostImpl* host_impl) {
-    host_impl->BlockNotifyReadyToActivateForTesting(false);
+    if (host_impl->settings().impl_side_painting)
+      host_impl->BlockNotifyReadyToActivateForTesting(false);
   }
 
   virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
@@ -482,7 +484,7 @@ class LayerTreeHostAnimationTestNoBackgroundTickingWithoutActiveTree
   bool active_tree_was_animated_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
+SINGLE_AND_MULTI_THREAD_BLOCKNOTIFY_TEST_F(
     LayerTreeHostAnimationTestNoBackgroundTickingWithoutActiveTree);
 
 // Ensure that an animation's timing function is respected.
@@ -1169,7 +1171,8 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
   }
 
   virtual void BeginCommitOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    host_impl->BlockNotifyReadyToActivateForTesting(true);
+    if (host_impl->settings().impl_side_painting)
+      host_impl->BlockNotifyReadyToActivateForTesting(true);
   }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
@@ -1177,9 +1180,10 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
     // blocking activation. We want to verify that even with activation blocked,
     // the animation on the layer that's already in the active tree won't get a
     // head start.
-    if (!host_impl->settings().impl_side_painting ||
-        host_impl->pending_tree()->source_frame_number() != 2)
+    if (host_impl->settings().impl_side_painting &&
+        host_impl->pending_tree()->source_frame_number() != 2) {
       host_impl->BlockNotifyReadyToActivateForTesting(false);
+    }
   }
 
   virtual void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
@@ -1189,8 +1193,10 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
       return;
 
     frame_count_with_pending_tree_++;
-    if (frame_count_with_pending_tree_ == 2)
+    if (frame_count_with_pending_tree_ == 2 &&
+        host_impl->settings().impl_side_painting) {
       host_impl->BlockNotifyReadyToActivateForTesting(false);
+    }
   }
 
   virtual void UpdateAnimationState(LayerTreeHostImpl* host_impl,
@@ -1221,7 +1227,7 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
   int frame_count_with_pending_tree_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
+SINGLE_AND_MULTI_THREAD_BLOCKNOTIFY_TEST_F(
     LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers);
 
 class LayerTreeHostAnimationTestAddAnimationAfterAnimating

@@ -202,6 +202,9 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   }
 
   virtual void BlockNotifyReadyToActivateForTesting(bool block) OVERRIDE {
+    CHECK(settings().impl_side_painting);
+    CHECK(proxy()->ImplThreadTaskRunner())
+        << "Not supported for single-threaded mode.";
     block_notify_ready_to_activate_for_testing_ = block;
     if (!block && notify_ready_to_activate_was_blocked_) {
       NotifyReadyToActivate();
@@ -627,11 +630,7 @@ void LayerTreeTest::RunTest(bool threaded,
   // Spend less time waiting for BeginFrame because the output is
   // mocked out.
   settings_.refresh_rate = 200.0;
-  if (impl_side_painting) {
-    DCHECK(threaded)
-        << "Don't run single thread + impl side painting, it doesn't exist.";
-    settings_.impl_side_painting = true;
-  }
+  settings_.impl_side_painting = impl_side_painting;
   InitializeSettings(&settings_);
 
   main_task_runner_->PostTask(
