@@ -16,7 +16,7 @@
         '../mojo/mojo_base.gyp:mojo_system_impl',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../tools/usb_gadget.gyp:usb_gadget',
+        '../tools/usb_gadget/usb_gadget.gyp:usb_gadget',
         'bluetooth/bluetooth.gyp:device_bluetooth',
         'bluetooth/bluetooth.gyp:device_bluetooth_mocks',
         'nfc/nfc.gyp:device_nfc',
