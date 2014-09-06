@@ -151,7 +151,10 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   typedef std::map<int32, linked_ptr<DXVAPictureBuffer> > OutputBuffers;
 
   // Tells the client to dismiss the stale picture buffers passed in.
-  void DismissStaleBuffers(const OutputBuffers& picture_buffers);
+  void DismissStaleBuffers();
+
+  // Called after the client indicates we can recycle a stale picture buffer.
+  void DeferredDismissStaleBuffer(int32 picture_buffer_id);
 
   // To expose client callbacks from VideoDecodeAccelerator.
   media::VideoDecodeAccelerator::Client* client_;
@@ -195,6 +198,12 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // This map maintains the picture buffers passed the client for decoding.
   // The key is the picture buffer id.
   OutputBuffers output_picture_buffers_;
+
+  // After a resolution change there may be a few output buffers which have yet
+  // to be displayed so they cannot be dismissed immediately. We move them from
+  // |output_picture_buffers_| to this map so they may be dismissed once they
+  // become available.
+  OutputBuffers stale_output_picture_buffers_;
 
   // Set to true if we requested picture slots from the client.
   bool pictures_requested_;
