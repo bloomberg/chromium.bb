@@ -35,6 +35,7 @@ def _CommonChecks(input_api, output_api):
       path.join(cwd, 'PRESUBMIT.py'),
       path.join(cwd, 'test_presubmit.py'),
       path.join(cwd, 'web_dev_style', 'css_checker.py'),
+      path.join(cwd, 'web_dev_style', 'html_checker.py'),
       path.join(cwd, 'web_dev_style', 'js_checker.py'),
   )
   if any(f for f in affected_files if f in would_affect_tests):
@@ -47,7 +48,8 @@ def _CommonChecks(input_api, output_api):
 
   try:
     sys.path = [cwd] + old_path
-    from web_dev_style import resource_checker, css_checker, js_checker
+    from web_dev_style import (resource_checker, css_checker, html_checker,
+                               js_checker)
 
     search_dirs = (resources, webui)
     def _html_css_js_resource(p):
@@ -62,6 +64,8 @@ def _CommonChecks(input_api, output_api):
     results.extend(resource_checker.ResourceChecker(
         input_api, output_api, file_filter=is_resource).RunChecks())
     results.extend(css_checker.CSSChecker(
+        input_api, output_api, file_filter=is_resource).RunChecks())
+    results.extend(html_checker.HtmlChecker(
         input_api, output_api, file_filter=is_resource).RunChecks())
     results.extend(js_checker.JSChecker(
         input_api, output_api, file_filter=is_resource).RunChecks())
