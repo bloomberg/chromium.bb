@@ -455,15 +455,20 @@ class CssStyleGuideTest(SuperMoxTestBase):
     self.mox.StubOutWithMock(self.output_api, 'PresubmitPromptWarning',
                              use_mock_anything=True)
 
-    author_msg = ('Was the CSS checker useful? '
-                  'Send feedback or hate mail to dbeam@chromium.org.')
     self.output_api = self.mox.CreateMockAnything()
     self.mox.StubOutWithMock(self.output_api, 'PresubmitNotifyResult',
                              use_mock_anything=True)
-    self.output_api.PresubmitNotifyResult(author_msg).AndReturn(None)
+
+  def VerifyContentsIsValid(self, contents):
+    self.fake_file.NewContents().AndReturn(contents.splitlines())
+    self.mox.ReplayAll()
+    css_checker.CSSChecker(self.input_api, self.output_api).RunChecks()
 
   def VerifyContentsProducesOutput(self, contents, output):
     self.fake_file.NewContents().AndReturn(contents.splitlines())
+    author_msg = ('Was the CSS checker useful? '
+                  'Send feedback or hate mail to dbeam@chromium.org.')
+    self.output_api.PresubmitNotifyResult(author_msg).AndReturn(None)
     self.output_api.PresubmitPromptWarning(
         self.fake_file_name + ':\n' + output.strip()).AndReturn(None)
     self.mox.ReplayAll()
@@ -507,6 +512,24 @@ class CssStyleGuideTest(SuperMoxTestBase):
 
     z-index: 5;
     color: black;""")
+
+  def testCssStringWithAt(self):
+    self.VerifyContentsIsValid("""
+#logo {
+  background-image: url('images/google_logo.png@2x');
+}
+
+body.alternate-logo #logo {
+  -webkit-mask-image: url('images/google_logo.png@2x');
+  background: none;
+}
+
+.stuff1 {
+}
+
+.stuff2 {
+}
+      """)
 
   def testCssAlphaWithNonStandard(self):
     self.VerifyContentsProducesOutput("""

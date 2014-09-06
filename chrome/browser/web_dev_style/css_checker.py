@@ -33,9 +33,9 @@ class CSSChecker(object):
 
     def _remove_ats(s):
       at_reg = re.compile(r"""
-          @\w+.*?{    # @at-keyword selector junk {
-          (.*{.*?})+  # inner { curly } blocks, rules, and selector junk
-          .*?}        # stuff up to the first end curly }""",
+          @\w+[^'"]*?{  # @at-keyword selector junk {
+          (.*{.*?})+    # inner { curly } blocks, rules, and selector junk
+          .*?}          # stuff up to the first end curly }""",
           re.DOTALL | re.VERBOSE)
       return at_reg.sub('\\1', s)
 
