@@ -27,7 +27,8 @@ cr.define('options', function() {
       this.hidden = true;
     },
 
-    /* Handle changes to the associated pref by hiding any currently visible
+    /**
+     * Handle changes to the associated pref by hiding any currently visible
      * bubble.
      * @param {Event} event Pref change event.
      * @override

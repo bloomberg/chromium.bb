@@ -569,7 +569,7 @@ cr.define('options', function() {
 
   /**
    * Standardizes a user-entered text query by removing extra whitespace.
-   * @param {string} The user-entered text.
+   * @param {string} text The user-entered text.
    * @return {string} The trimmed query.
    */
   SearchPage.canonicalizeQuery = function(text) {

@@ -876,7 +876,8 @@ cr.define('options', function() {
 
     /**
      * Called after an animation transition has ended.
-     * @param {Event} The webkitTransitionEnd event. NOTE: May be synthetic.
+     * @param {Event} event The webkitTransitionEnd event. NOTE: May be
+     *     synthetic.
      * @private
      */
     onTransitionEnd_: function(event) {

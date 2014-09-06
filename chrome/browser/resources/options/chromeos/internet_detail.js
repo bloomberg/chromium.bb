@@ -29,11 +29,11 @@ cr.define('options.internet', function() {
     }
   }
 
-  /*
+  /**
    * Helper function to update the properties of the data object from the
    * properties in the update object.
-   * @param {object} data object to update.
-   * @param {object} object containing the updated properties.
+   * @param {Object} data Object to update.
+   * @param {Object} update Object containing the updated properties.
    */
   function updateDataObject(data, update) {
     for (var prop in update) {
@@ -381,7 +381,7 @@ cr.define('options.internet', function() {
 
     /**
      * Handler for when the name server selection changes.
-     * @param {Event} e The click event.
+     * @param {Event} event The click event.
      * @private
      */
     handleNameServerTypeChange_: function(event) {
@@ -393,8 +393,8 @@ cr.define('options.internet', function() {
      * Creates an indicator event for controlled properties using
      * the same dictionary format as CoreOptionsHandler::CreateValueForPref.
      * @param {string} name The name for the Event.
-     * @param {Object} propData Property dictionary with |value|, |controlledBy|
-     *  and |recommendedValue| properties set.
+     * @param {!{value: *, controlledBy: *, recommendedValue: *}} propData
+     *     Property dictionary,
      * @private
      */
     createControlledEvent_: function(name, propData) {

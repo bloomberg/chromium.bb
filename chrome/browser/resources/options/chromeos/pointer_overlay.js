@@ -8,7 +8,8 @@ cr.define('options', function() {
   /**
    * PointerOverlay class
    * Dialog that allows users to set pointer settings (touchpad/mouse).
-   * @extends {SettingsDialog}
+   * @constructor
+   * @extends {options.SettingsDialog}
    */
   function PointerOverlay() {
     // The title is updated dynamically in the setTitle method as pointer

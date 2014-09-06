@@ -60,7 +60,7 @@ cr.define('options', function() {
 
   /**
    * Sets the list of handlers shown by the view.
-   * @param {Array} Handlers to be shown in the view.
+   * @param {Array} handlers Handlers to be shown in the view.
    */
   HandlerOptions.setHandlers = function(handlers) {
     $('handlers-list').setHandlers(handlers);
@@ -68,7 +68,7 @@ cr.define('options', function() {
 
   /**
    * Sets the list of ignored handlers shown by the view.
-   * @param {Array} Handlers to be shown in the view.
+   * @param {Array} handlers Handlers to be shown in the view.
    */
   HandlerOptions.setIgnoredHandlers = function(handlers) {
     $('ignored-handlers-section').hidden = handlers.length == 0;

@@ -106,7 +106,7 @@ cr.define('options', function() {
     /**
      * Handles change events of the preference
      * 'session.startup_urls'.
-     * @param {event} preference changed event.
+     * @param {Event} event Preference changed event.
      * @private
      */
     handleStartupPageListChange_: function(event) {
@@ -139,7 +139,7 @@ cr.define('options', function() {
 
     /**
      * Updates the autocomplete suggestion list with the given entries.
-     * @param {Array} pages List of autocomplete suggestions.
+     * @param {Array} suggestions List of autocomplete suggestions.
      * @private
      */
     updateAutocompleteSuggestions_: function(suggestions) {

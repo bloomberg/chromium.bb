@@ -132,8 +132,6 @@ cr.define('options', function() {
 
   /**
    * Show the Import CA overlay.
-   * @param {string} certId The id of the certificate to be passed to the
-   * certificate manager model.
    * @param {string} certName The display name of the certificate.
    * checkbox.
    */

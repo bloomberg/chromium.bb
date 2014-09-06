@@ -113,7 +113,7 @@ cr.define('options', function() {
      * @param {!Event} e The event object.
      * @private
      */
-    handleSearchQueryChange_: function() {
+    handleSearchQueryChange_: function(e) {
       if (this.queryDelayTimerId_)
         window.clearTimeout(this.queryDelayTimerId_);
 

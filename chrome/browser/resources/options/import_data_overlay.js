@@ -153,7 +153,7 @@ cr.define('options', function() {
 
     /**
      * Update the supported browsers popup with given entries.
-     * @param {array} browsers List of supported browsers name.
+     * @param {Array} browsers List of supported browsers name.
      * @private
      */
     updateSupportedBrowsers_: function(browsers) {
@@ -220,7 +220,7 @@ cr.define('options', function() {
 
   /**
    * Update the supported browsers popup with given entries.
-   * @param {array} list of supported browsers name.
+   * @param {Array} browsers List of supported browsers name.
    */
   ImportDataOverlay.updateSupportedBrowsers = function(browsers) {
     ImportDataOverlay.getInstance().updateSupportedBrowsers_(browsers);

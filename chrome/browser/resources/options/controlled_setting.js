@@ -51,7 +51,8 @@ cr.define('options', function() {
       Preferences.clearPref(this.pref, !this.dialogPref);
     },
 
-    /* Handle changes to the associated pref by hiding any currently visible
+    /**
+     * Handle changes to the associated pref by hiding any currently visible
      * bubble and updating the controlledBy property.
      * @param {Event} event Pref change event.
      */

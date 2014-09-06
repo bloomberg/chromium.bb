@@ -84,13 +84,14 @@ cr.define('options', function() {
   LanguageOptions.prototype = {
     __proto__: Page.prototype,
 
-    /* For recording the prospective language (the next locale after relaunch).
+    /**
+     * For recording the prospective language (the next locale after relaunch).
      * @type {?string}
      * @private
      */
     prospectiveUiLanguageCode_: null,
 
-    /*
+    /**
      * Map from language code to spell check dictionary download status for that
      * language.
      * @type {Array}
@@ -912,7 +913,7 @@ cr.define('options', function() {
      * @param {Event} e Change event.
      * @private
      */
-    updateEnableSpellCheck_: function() {
+    updateEnableSpellCheck_: function(e) {
        var value = !$('enable-spell-check').checked;
        $('language-options-spell-check-language-button').disabled = value;
        if (!cr.IsMac)
@@ -1298,7 +1299,7 @@ cr.define('options', function() {
       }
     },
 
-    /*
+    /**
      * Converts the language code for Translation. There are some differences
      * between the language set for Translation and that for Accept-Language.
      * @param {string} languageCode The language code like 'fr'.

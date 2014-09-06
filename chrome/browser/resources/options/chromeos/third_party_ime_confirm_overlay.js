@@ -9,6 +9,7 @@ cr.define('options', function() {
   /**
    * HomePageOverlay class
    * Dialog that allows users to set the home page.
+   * @constructor
    * @extends {SettingsDialog}
    */
   function ThirdPartyImeConfirmOverlay() {

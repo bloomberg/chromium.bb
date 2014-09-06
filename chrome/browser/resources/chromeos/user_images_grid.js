@@ -536,12 +536,12 @@ cr.define('options', function() {
 
     /**
      * Adds new image to the user image grid.
-     * @param {string} src Image URL.
+     * @param {string} url Image URL.
      * @param {string=} opt_title Image tooltip.
-     * @param {function=} opt_clickHandler Image click handler.
+     * @param {Function=} opt_clickHandler Image click handler.
      * @param {number=} opt_position If given, inserts new image into
      *     that position (0-based) in image list.
-     * @param {function=} opt_decorateFn Function called with the list element
+     * @param {Function=} opt_decorateFn Function called with the list element
      *     as argument to do any final decoration.
      * @return {!Object} Image data inserted into the data model.
      */

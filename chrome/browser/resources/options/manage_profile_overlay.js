@@ -357,7 +357,8 @@ cr.define('options', function() {
      * user. If yes, the user is prompted to import the existing supervised
      * user, and the create button is disabled.
      * If the received list is empty, hides the "import" link.
-     * @param {Array.<Object>} The list of existing supervised users.
+     * @param {Array.<Object>} supervisedUsers The list of existing supervised
+     *     users.
      * @private
      */
     receiveExistingSupervisedUsers_: function(supervisedUsers) {

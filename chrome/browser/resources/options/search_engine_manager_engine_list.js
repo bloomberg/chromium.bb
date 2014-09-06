@@ -11,7 +11,7 @@ cr.define('options.search_engines', function() {
 
   /**
    * Creates a new search engine list item.
-   * @param {Object} searchEnigne The search engine this represents.
+   * @param {Object} searchEngine The search engine this represents.
    * @constructor
    * @extends {cr.ui.ListItem}
    */
@@ -235,7 +235,7 @@ cr.define('options.search_engines', function() {
      * @param {Event} e The cancel event.
      * @private
      */
-    onEditCancelled_: function() {
+    onEditCancelled_: function(e) {
       chrome.send('searchEngineEditCancelled');
 
       // The name field has been automatically set to match the display name,

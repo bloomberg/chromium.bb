@@ -1003,7 +1003,7 @@ cr.define('options.network', function() {
    * Replaces a network menu with a button for reenabling the type of network.
    * @param {string} name The type of network (WiFi, Cellular or Wimax).
    * @param {string} command The command for reenabling the network.
-   * @param {string} type of icon (WiFi or Cellular).
+   * @param {string} icon Type of icon (WiFi or Cellular).
    * @private
    */
   function addEnableNetworkButton_(name, command, icon) {
@@ -1053,7 +1053,7 @@ cr.define('options.network', function() {
      * Handle mouse events received by the bubble, preventing focus blurring as
      * that would close any currently open menu and preventing propagation to
      * any elements located behind the bubble.
-     * @param {Event} Mouse event.
+     * @param {Event} event Mouse event.
      */
     stopEvent: function(event) {
       event.preventDefault();

@@ -360,7 +360,7 @@ cr.define('options.contentSettings', function() {
      * @param {Event} e The cancel event.
      * @private
      */
-    onEditCancelled_: function() {
+    onEditCancelled_: function(e) {
       this.updateEditables();
       this.setPatternValid(true);
     },

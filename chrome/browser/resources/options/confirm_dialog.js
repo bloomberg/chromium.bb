@@ -22,7 +22,7 @@ cr.define('options', function() {
    *     confirmed the dialog before. This ensures that the user is presented
    *     with the dialog only once. If left |undefined| or |null|, the dialog
    *     will pop up every time the user attempts to set |pref| to |true|.
-   * @extends {SettingsDialog}
+   * @extends {options.SettingsDialog}
    */
   function ConfirmDialog(name, title, pageDivName, okButton, cancelButton, pref,
                          metric, confirmed_pref) {

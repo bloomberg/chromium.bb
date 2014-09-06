@@ -15,7 +15,7 @@ cr.define('options', function() {
    * committed to Chrome. If the user clicks Cancel or leaves the settings page,
    * the new value is discarded.
    * @constructor
-   * @extends {ConfirmDialog}
+   * @extends {options.ConfirmDialog}
    */
   function HotwordConfirmDialog() {
     ConfirmDialog.call(this,

@@ -142,9 +142,9 @@ cr.define('cr.ui', function() {
      * Handles the selected suggestion. Called when a suggestion is selected.
      * By default, sets the target input element's value to the 'url' field
      * of the selected suggestion.
-     * @param {Event} event The change event.
+     * @param {Object} selectedSuggestion
      */
-    handleSelectedSuggestion : function(selectedSuggestion) {
+    handleSelectedSuggestion: function(selectedSuggestion) {
       var input = this.targetInput_;
       if (!input)
         return;

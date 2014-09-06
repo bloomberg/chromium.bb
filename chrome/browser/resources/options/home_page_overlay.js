@@ -9,7 +9,8 @@ cr.define('options', function() {
   /**
    * HomePageOverlay class
    * Dialog that allows users to set the home page.
-   * @extends {SettingsDialog}
+   * @constructor
+   * @extends {options.SettingsDialog}
    */
   function HomePageOverlay() {
     SettingsDialog.call(this, 'homePageOverlay',
@@ -74,7 +75,7 @@ cr.define('options', function() {
      * enabled only if the homepage is not the NTP. The indicator is always
      * enabled but treats the input's value as read-only if the homepage is the
      * NTP.
-     * @param {Event} Pref change event.
+     * @param {Event} event Pref change event.
      */
     handleHomepageIsNTPPrefChange: function(event) {
       var urlField = $('homepage-url-field');
@@ -106,7 +107,7 @@ cr.define('options', function() {
 
     /**
      * Updates the autocomplete suggestion list with the given entries.
-     * @param {Array} pages List of autocomplete suggestions.
+     * @param {Array} suggestions List of autocomplete suggestions.
      * @private
      */
     updateAutocompleteSuggestions_: function(suggestions) {
