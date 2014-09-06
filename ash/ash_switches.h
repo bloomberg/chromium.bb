@@ -33,6 +33,7 @@ ASH_EXPORT extern const char kAshDisableTextFilteringInOverviewMode[];
 ASH_EXPORT extern const char kAshEnableSoftwareMirroring[];
 ASH_EXPORT extern const char kAshEnableSystemSounds[];
 ASH_EXPORT extern const char kAshEnableTouchViewTesting[];
+ASH_EXPORT extern const char kAshEnableTouchViewTouchFeedback[];
 ASH_EXPORT extern const char kAshEnableTrayDragging[];
 ASH_EXPORT extern const char kAshGuestWallpaperLarge[];
 ASH_EXPORT extern const char kAshGuestWallpaperSmall[];

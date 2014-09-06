@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -19,12 +20,16 @@
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm/window_state.h"
+#include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_tray.h"
@@ -89,6 +94,12 @@ class WebNotificationTrayTest : public test::AshTestBase {
  public:
   WebNotificationTrayTest() {}
   virtual ~WebNotificationTrayTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kAshEnableTouchViewTouchFeedback);
+    test::AshTestBase::SetUp();
+  }
 
   virtual void TearDown() OVERRIDE {
     GetMessageCenter()->RemoveAllNotifications(false);
@@ -466,5 +477,75 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndSystemTrayMultiDisplay) {
   EXPECT_GT(bottom, GetPopupWorkAreaBottom());
   EXPECT_EQ(bottom_second, GetPopupWorkAreaBottomForTray(GetSecondaryTray()));
 }
+
+// TODO(jonross): Replace manually creating TouchEvent with
+// EventGenerator.PressTouch/ReleaseTouch. Currently they set a width on the
+// touch event causing the gesture recognizer to target a different view.
+#if defined(OS_CHROMEOS)
+// Tests that there is visual feedback for touch presses.
+TEST_F(WebNotificationTrayTest, TouchFeedback) {
+  AddNotification("test_id");
+  RunAllPendingInMessageLoop();
+  WebNotificationTray* tray = GetTray();
+  EXPECT_TRUE(tray->visible());
+
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  const int touch_id = 0;
+  gfx::Point center_point = tray->GetBoundsInScreen().CenterPoint();
+
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, center_point, touch_id,
+                       generator.Now());
+  generator.Dispatch(&press);
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(tray->draw_background_as_active());
+
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, center_point, touch_id,
+      press.time_stamp() + base::TimeDelta::FromMilliseconds(50));
+  generator.Dispatch(&release);
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(tray->draw_background_as_active());
+  EXPECT_TRUE(tray->IsMessageCenterBubbleVisible());
+
+  generator.GestureTapAt(center_point);
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(tray->draw_background_as_active());
+  EXPECT_FALSE(tray->IsMessageCenterBubbleVisible());
+}
+
+// Tests that while touch presses trigger visual feedback, that subsequent non
+// tap gestures cancel the feedback without triggering the message center.
+TEST_F(WebNotificationTrayTest, TouchFeedbackCancellation) {
+  AddNotification("test_id");
+  RunAllPendingInMessageLoop();
+  WebNotificationTray* tray = GetTray();
+  EXPECT_TRUE(tray->visible());
+
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  const int touch_id = 0;
+  gfx::Rect bounds = tray->GetBoundsInScreen();
+  gfx::Point center_point = bounds.CenterPoint();
+
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, center_point, touch_id,
+                       generator.Now());
+  generator.Dispatch(&press);
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(tray->draw_background_as_active());
+
+  gfx::Point out_of_bounds(bounds.x() - 1, center_point.y());
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, out_of_bounds, touch_id,
+                      press.time_stamp()+base::TimeDelta::FromMilliseconds(50));
+  generator.Dispatch(&move);
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(tray->draw_background_as_active());
+
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, out_of_bounds, touch_id,
+      move.time_stamp()+base::TimeDelta::FromMilliseconds(50));
+  generator.Dispatch(&release);
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(tray->draw_background_as_active());
+  EXPECT_FALSE(tray->IsMessageCenterBubbleVisible());
+}
+
+#endif  // OS_CHROMEOS
 
 }  // namespace ash

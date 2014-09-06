@@ -17,6 +17,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/wm/window_animations.h"
+#include "base/command_line.h"
 #include "grit/ash_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/aura/window.h"
@@ -25,6 +26,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/events/event_constants.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
@@ -308,6 +310,7 @@ TrayBackgroundView::TrayBackgroundView(StatusAreaWidget* status_area_widget)
           kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha),
       hovered_(false),
       draw_background_as_active_(false),
+      touch_feedback_enabled_(false),
       widget_observer_(new TrayWidgetObserver(this)) {
   set_notify_enter_exit_on_child(true);
 
@@ -325,6 +328,11 @@ TrayBackgroundView::TrayBackgroundView(StatusAreaWidget* status_area_widget)
   SetFillsBoundsOpaquely(false);
   // Start the tray items not visible, because visibility changes are animated.
   views::View::SetVisible(false);
+
+  if (CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kAshEnableTouchViewTouchFeedback)) {
+    touch_feedback_enabled_ = true;
+  }
 }
 
 TrayBackgroundView::~TrayBackgroundView() {
@@ -424,6 +432,18 @@ gfx::Rect TrayBackgroundView::GetFocusBounds() {
   // sure clicking on the edges brings up the popup. However, the focus border
   // should be only around the container.
   return GetContentsBounds();
+}
+
+void TrayBackgroundView::OnGestureEvent(ui::GestureEvent* event) {
+  if (touch_feedback_enabled_) {
+    if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+      SetDrawBackgroundAsActive(true);
+    } else if (event->type() ==  ui::ET_GESTURE_SCROLL_BEGIN ||
+               event->type() ==  ui::ET_GESTURE_TAP_CANCEL) {
+      SetDrawBackgroundAsActive(false);
+    }
+  }
+  ActionableView::OnGestureEvent(event);
 }
 
 void TrayBackgroundView::UpdateBackground(int alpha) {
@@ -628,6 +648,8 @@ TrayBubbleView::AnchorAlignment TrayBackgroundView::GetAnchorAlignment() const {
 }
 
 void TrayBackgroundView::SetDrawBackgroundAsActive(bool visible) {
+  if (draw_background_as_active_ == visible)
+    return;
   draw_background_as_active_ = visible;
   if (!background_)
     return;

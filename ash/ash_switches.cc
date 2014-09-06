@@ -66,6 +66,10 @@ const char kAshEnableSoftwareMirroring[] = "ash-enable-software-mirroring";
 // flag is removed.
 const char kAshEnableTouchViewTesting[] = "ash-enable-touch-view-testing";
 
+// Enables additional visual feedback to touch input.
+const char kAshEnableTouchViewTouchFeedback[] =
+    "ash-enable-touch-view-touch-feedback";
+
 // When this flag is set, system sounds will be played whether the
 // ChromeVox is enabled or not.
 const char kAshEnableSystemSounds[] = "ash-enable-system-sounds";

@@ -44415,6 +44415,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1139226452" label="enable-nacl-debug"/>
   <int value="1142515376" label="enable-nacl"/>
   <int value="1150622273" label="enable-apps-file-associations"/>
+  <int value="1163255347" label="ash-enable-touch-view-touch-feedback"/>
   <int value="1196644408" label="performance-monitor-gathering"/>
   <int value="1205849612" label="enable-sync-synced-notifications"/>
   <int value="1210343926" label="enable-drop-sync-credential"/>

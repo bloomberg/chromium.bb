@@ -5912,6 +5912,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TESTING_DESCRIPTION" desc="Description for the flag to enable the TouchView testing mode.">
           Enable Ctrl+Alt+Shift+8 to toggle the TouchView maximizing mode.
         </message>
+        <message name="IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TOUCH_FEEDBACK_NAME" desc="Title for the flag to enable additional visual feedback for touch.">
+          Enable additional touch feedback on UI components.
+        </message>
+        <message name="IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TOUCH_FEEDBACK_DESCRIPTION" desc="Description for the flag to enable additional visual feedback for touch.">
+          Certain UI components will display visual feedback upon touch interactions.
+        </message>
         <message name="IDS_FLAGS_ASH_DISABLE_TEXT_FILTERING_IN_OVERVIEW_MODE_NAME" desc="Title for the flag to disable window filtering in overview mode by inputing text">
           Disable text filtering in Overview Mode.
         </message>
