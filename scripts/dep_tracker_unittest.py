@@ -6,7 +6,10 @@
 """Unit tests for dep_tracker.py."""
 
 import os
+import sys
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                '..', '..'))
 from chromite.lib import cros_test_lib
 from chromite.lib import unittest_lib
 from chromite.scripts import dep_tracker
