@@ -204,21 +204,69 @@ static bool typefacesMatchesFamily(const SkTypeface* tf, const AtomicString& fam
     return matchesRequestedFamily;
 }
 
+
+static bool typefacesHasVariantSuffix(const AtomicString& family,
+    AtomicString& adjustedName, FontWeight& variantWeight)
+{
+    struct FamilyVariantSuffix {
+        const wchar_t* suffix;
+        size_t length;
+        FontWeight weight;
+    };
+    // Mapping from suffix to weight from the DirectWrite documentation.
+    // http://msdn.microsoft.com/en-us/library/windows/desktop/dd368082(v=vs.85).aspx
+    const static FamilyVariantSuffix variantForSuffix[] = {
+        { L" thin", 5,  FontWeight100 },
+        { L" extralight", 11,  FontWeight200 },
+        { L" ultralight", 11,  FontWeight200 },
+        { L" light", 6,  FontWeight300 },
+        { L" medium", 7,  FontWeight500 },
+        { L" demibold", 9,  FontWeight600 },
+        { L" semibold", 9,  FontWeight600 },
+        { L" extrabold", 10,  FontWeight800 },
+        { L" ultrabold", 10,  FontWeight800 },
+        { L" black", 6,  FontWeight900 },
+        { L" heavy", 6,  FontWeight900 }
+    };
+    size_t numVariants = WTF_ARRAY_LENGTH(variantForSuffix);
+    bool caseSensitive = false;
+    for (size_t i = 0; i < numVariants; i++) {
+        const FamilyVariantSuffix& entry = variantForSuffix[i];
+        if (family.endsWith(entry.suffix, caseSensitive)) {
+            String familyName = family.string();
+            familyName.truncate(family.length() - entry.length);
+            adjustedName = AtomicString(familyName);
+            variantWeight = entry.weight;
+            return true;
+        }
+    }
+
+    return false;
+}
+
 FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const FontFaceCreationParams& creationParams, float fontSize)
 {
     ASSERT(creationParams.creationType() == CreateFontByFamily);
+
     CString name;
     RefPtr<SkTypeface> tf = createTypeface(fontDescription, creationParams, name);
-    if (!tf)
-        return 0;
-
     // Windows will always give us a valid pointer here, even if the face name
     // is non-existent. We have to double-check and see if the family name was
     // really used.
-    // FIXME: Do we need to use predefined fonts "guaranteed" to exist
-    // when we're running in layout-test mode?
-    if (!typefacesMatchesFamily(tf.get(), creationParams.family())) {
-        return 0;
+    if (!tf || !typefacesMatchesFamily(tf.get(), creationParams.family())) {
+        AtomicString adjustedName;
+        FontWeight variantWeight;
+        if (typefacesHasVariantSuffix(creationParams.family(), adjustedName,
+            variantWeight)) {
+            FontFaceCreationParams adjustedParams(adjustedName);
+            FontDescription adjustedFontDescription = fontDescription;
+            adjustedFontDescription.setWeight(variantWeight);
+            tf = createTypeface(adjustedFontDescription, adjustedParams, name);
+            if (!tf || !typefacesMatchesFamily(tf.get(), adjustedName))
+                return 0;
+        } else {
+            return 0;
+        }
     }
 
     FontPlatformData* result = new FontPlatformData(tf,

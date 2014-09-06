@@ -1049,6 +1049,11 @@ crbug.com/350853 fast/multicol/widows2.html [ Skip ]
 crbug.com/350853 fast/pagination/auto-height.html [ Skip ]
 crbug.com/350853 fast/pagination/auto-height-with-break.html [ Skip ]
 
+crbug.com/408260 fast/text/font-stretch.html [ NeedsRebaseline ]
+crbug.com/408260 fast/text/font-weight-variant.html [ NeedsRebaseline ]
+crbug.com/408260 virtual/antialiasedtext/fast/text/font-stretch.html [ NeedsRebaseline ]
+crbug.com/408260 virtual/antialiasedtext/fast/text/font-weight-variant.html [ NeedsRebaseline ]
+
 crbug.com/374569 [ Win ] http/tests/navigation/beacon-cross-origin.html [ Pass Failure Timeout ]
 crbug.com/374572 svg/filters/feImage-target-reappend-to-document.svg [ Pass Failure ]
 crbug.com/374572 svg/dynamic-updates/SVGImageElement-svgdom-preserveAspectRatio-prop.html [ Pass ImageOnlyFailure ]
