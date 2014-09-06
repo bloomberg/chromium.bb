@@ -20,14 +20,15 @@ def _RunPrebuilt(options):
     output_file = os.path.join(tempfile.mkdtemp(), options.profiler)
     raw_input('Press enter to start profiling...')
     print '>> Starting profiler', options.profiler
-    browser.StartProfiling(options.profiler, output_file)
+    browser.platform.profiling_controller.Start(
+        options.profiler, output_file)
     print 'Press enter or CTRL+C to stop'
     try:
       raw_input()
     except KeyboardInterrupt:
       pass
     finally:
-      browser.StopProfiling()
+      browser.platform.profiling_controller.Stop()
     print '<< Stopped profiler ', options.profiler
 
 
