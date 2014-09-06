@@ -118,7 +118,7 @@ class BrailleTest():
         if outputUniBrl:
             self.tables.insert(0, 'unicode.dis')
         self.input = input
-        self.expectedOutput = output
+        self.expected = output
         self.mode = mode if not mode else modes[mode]
         self.cursorPos = cursorPos
         self.expectedBrlCursorPos = brlCursorPos
@@ -147,33 +147,33 @@ class BrailleTest():
         if self.comment:
             report.append(template % ("comment:", "".join(self.comment)))
         report.append(template % ("input:", self.input))
-        if self.expectedOutput != received:
-            report.append(template % ("expected:", self.expectedOutput))
+        if self.expected != received:
+            report.append(template % ("expected:", self.expected))
         report.append(template % ("received:", received))
         if errorType == "Braille Cursor Difference":
-            cursorLocationIndicators = showCurPos(len(self.expectedOutput), brlCursorPos, pos2=self.expectedBrlCursorPos)
+            cursorLocationIndicators = showCurPos(len(self.expected), brlCursorPos, pos2=self.expectedBrlCursorPos)
             report.append(template % ("BRLCursorAt %d expected %d:" %(brlCursorPos, self.expectedBrlCursorPos), cursorLocationIndicators))
         report.append("--- end ---")
         return u("\n".join(report))
 
     def check_translate(self):
         if self.cursorPos is not None:
-            tBrl, temp1, temp2, tBrlCurPos = translate(self.tables, self.input, mode=self.mode, cursorPos=self.cursorPos)
+            brl, temp1, temp2, brlCursorPos = translate(self.tables, self.input, mode=self.mode, cursorPos=self.cursorPos)
         else:
-            tBrl, temp1, temp2, tBrlCurPos = translate(self.tables, self.input, mode=self.mode)
-        assert tBrl == self.expectedOutput, self.report_error("Braille Difference", tBrl)
+            brl, temp1, temp2, brlCursorPos = translate(self.tables, self.input, mode=self.mode)
+        assert brl == self.expected, self.report_error("Braille Difference", brl)
 
     def check_backtranslate(self):
-        backtranslate_output = backTranslateString(self.tables, self.input, None, mode=self.mode)
-        assert backtranslate_output == self.expectedOutput, self.report_error("Backtranslate", backtranslate_output)
+        text = backTranslateString(self.tables, self.input, None, mode=self.mode)
+        assert text == self.expected, self.report_error("Backtranslate", text)
 
     def check_cursor(self):
-        tBrl, temp1, temp2, tBrlCurPos = translate(self.tables, self.input, mode=self.mode, cursorPos=self.cursorPos)
-        assert tBrlCurPos == self.expectedBrlCursorPos, self.report_error("Braille Cursor Difference", tBrl, brlCursorPos=tBrlCurPos)
+        brl, temp1, temp2, brlCursorPos = translate(self.tables, self.input, mode=self.mode, cursorPos=self.cursorPos)
+        assert brlCursorPos == self.expectedBrlCursorPos, self.report_error("Braille Cursor Difference", brl, brlCursorPos=brlCursorPos)
 
     def check_hyphenate(self):
-        hyphenated_word = self.hyphenateword(self.tables, self.input, mode=self.mode)
-        assert hyphenated_word == self.expectedOutput, self.report_error("Hyphenation", hyphenated_word)
+        hyphenated = self.hyphenateword(self.tables, self.input, mode=self.mode)
+        assert hyphenated == self.expected, self.report_error("Hyphenation", hyphenated)
 
 def test_allCases():
     if 'HARNESS_DIR' in os.environ:
