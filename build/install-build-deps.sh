@@ -142,14 +142,16 @@ arm_list="libc6-dev-armhf-cross
           g++-arm-linux-gnueabihf"
 
 # Packages to build NaCl, its toolchains, and its ports.
-nacl_list="autoconf bison cmake g++-mingw-w64-i686 gawk lib32z1-dev
+naclports_list="ant autoconf bison cmake gawk intltool xutils-dev xsltproc"
+nacl_list="g++-mingw-w64-i686 lib32z1-dev
            libasound2:i386 libcap2:i386 libelf-dev:i386 libexif12:i386
            libfontconfig1:i386 libgconf-2-4:i386 libglib2.0-0:i386 libgpm2:i386
            libgtk2.0-0:i386 libncurses5:i386 lib32ncurses5-dev
-           libnss3:i386 libpango1.0-0:i386 xsltproc ant
+           libnss3:i386 libpango1.0-0:i386
            libssl0.9.8:i386 libtinfo-dev libtinfo-dev:i386 libtool
            libxcomposite1:i386 libxcursor1:i386 libxdamage1:i386 libxi6:i386
-           libxrandr2:i386 libxss1:i386 libxtst6:i386 texinfo xvfb"
+           libxrandr2:i386 libxss1:i386 libxtst6:i386 texinfo xvfb
+           ${naclports_list}"
 
 # Find the proper version of libgbm-dev. We can't just install libgbm-dev as
 # it depends on mesa, and only one version of mesa can exists on the system.
