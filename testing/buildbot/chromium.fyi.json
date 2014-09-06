@@ -273,5 +273,17 @@
       "url_unittests",
       "browser_tests"
     ]
+  },
+  "Site Isolation Linux": {
+    "gtest_tests": [
+      { "test": "content_unittests", "args": ["--site-per-process"] },
+      { "test": "content_browsertests", "args": ["--site-per-process"] }
+    ]
+  },
+  "Site Isolation Win": {
+    "gtest_tests": [
+      { "test": "content_unittests", "args": ["--site-per-process"] },
+      { "test": "content_browsertests", "args": ["--site-per-process"] }
+    ]
   }
 }
