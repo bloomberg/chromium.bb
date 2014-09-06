@@ -3026,23 +3026,17 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var bytesTotal = 0;
     var bytesDone = 0;
 
-    var onFileTransfersUpdated = function(statusList) {
-      for (var index = 0; index < statusList.length; index++) {
-        var status = statusList[index];
-        var escaped = encodeURI(status.fileUrl);
-        if (!(escaped in progressMap)) continue;
-        if (status.total == -1) continue;
-
-        var old = progressMap[escaped];
-        if (old == -1) {
-          // -1 means we don't know file size yet.
-          bytesTotal += status.total;
-          filesStarted++;
-          old = 0;
-        }
-        bytesDone += status.processed - old;
-        progressMap[escaped] = status.processed;
+    var onFileTransfersUpdated = function(status) {
+      var escaped = encodeURI(status.fileUrl);
+      var old = progressMap[escaped];
+      if (old == -1) {
+        // -1 means we don't know file size yet.
+        bytesTotal += status.total;
+        filesStarted++;
+        old = 0;
       }
+      bytesDone += status.processed - old;
+      progressMap[escaped] = status.processed;
 
       var percent = bytesTotal == 0 ? 0 : bytesDone / bytesTotal;
       // For files we don't have information about, assume the progress is zero.

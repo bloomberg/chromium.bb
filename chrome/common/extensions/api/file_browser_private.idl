@@ -808,7 +808,7 @@ interface Functions {
 interface Events {
   static void onMountCompleted(MountCompletedEvent event);
 
-  static void onFileTransfersUpdated(FileTransferStatus[] event);
+  static void onFileTransfersUpdated(FileTransferStatus event);
 
   static void onCopyProgress(long copyId, CopyProgressStatus status);
 

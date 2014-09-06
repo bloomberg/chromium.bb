@@ -84,25 +84,21 @@ DriveSyncHandler.prototype = {
  * @param {Array.<FileTransferStatus>} statusList List of drive status.
  * @private
  */
-DriveSyncHandler.prototype.onFileTransfersUpdated_ = function(statusList) {
-  var completed = false;
-  for (var i = 0; i < statusList.length; i++) {
-    var status = statusList[i];
-    switch (status.transferState) {
-      case 'added':
-      case 'in_progress':
-      case 'started':
-        this.updateItem_(status);
-        break;
-      case 'completed':
-      case 'failed':
-        if (status.num_total_jobs === 1)
-          this.removeItem_(status);
-        break;
-      default:
-        throw new Error(
-            'Invalid transfer state: ' + status.transferState + '.');
-    }
+DriveSyncHandler.prototype.onFileTransfersUpdated_ = function(status) {
+  switch (status.transferState) {
+    case 'added':
+    case 'in_progress':
+    case 'started':
+      this.updateItem_(status);
+      break;
+    case 'completed':
+    case 'failed':
+      if (status.num_total_jobs === 1)
+        this.removeItem_(status);
+      break;
+    default:
+      throw new Error(
+          'Invalid transfer state: ' + status.transferState + '.');
   }
 };
 

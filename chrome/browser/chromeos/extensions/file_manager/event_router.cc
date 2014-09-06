@@ -671,25 +671,18 @@ void EventRouter::SendDriveFileTransferEvent() {
   if (!drive_job_info_for_scheduled_event_)
     return;
 
-  // Convert the drive_job_info_for_scheduled_event_ to IDL type.
-  std::vector<linked_ptr<file_browser_private::FileTransferStatus> >
-      status_list;
-
-  linked_ptr<file_browser_private::FileTransferStatus> status(
-      new file_browser_private::FileTransferStatus());
+  file_browser_private::FileTransferStatus status;
   JobInfoToTransferStatus(profile_,
                           kFileManagerAppId,
                           drive_job_info_for_scheduled_event_->status,
                           drive_job_info_for_scheduled_event_->job_info,
-                          status.get());
-  status_list.push_back(status);
+                          &status);
 
   drive_job_info_for_scheduled_event_.reset();
 
-  BroadcastEvent(
-      profile_,
-      file_browser_private::OnFileTransfersUpdated::kEventName,
-      file_browser_private::OnFileTransfersUpdated::Create(status_list));
+  BroadcastEvent(profile_,
+                 file_browser_private::OnFileTransfersUpdated::kEventName,
+                 file_browser_private::OnFileTransfersUpdated::Create(status));
 }
 
 void EventRouter::OnDirectoryChanged(const base::FilePath& drive_path) {
