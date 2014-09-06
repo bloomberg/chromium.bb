@@ -25,11 +25,13 @@ namespace {
 
 HidService* g_service = NULL;
 
-class HidServiceDestroyer : public base::MessageLoop::DestructionObserver {
+}  // namespace
+
+class HidService::Destroyer : public base::MessageLoop::DestructionObserver {
  public:
-  explicit HidServiceDestroyer(HidService* hid_service)
+  explicit Destroyer(HidService* hid_service)
       : hid_service_(hid_service) {}
-  virtual ~HidServiceDestroyer() {}
+  virtual ~Destroyer() {}
 
  private:
   // base::MessageLoop::DestructionObserver implementation.
@@ -43,8 +45,6 @@ class HidServiceDestroyer : public base::MessageLoop::DestructionObserver {
   HidService* hid_service_;
 };
 
-}  // namespace
-
 HidService* HidService::GetInstance(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   if (g_service == NULL) {
@@ -56,7 +56,7 @@ HidService* HidService::GetInstance(
     g_service = new HidServiceWin();
 #endif
     if (g_service != NULL) {
-      HidServiceDestroyer* destroyer = new HidServiceDestroyer(g_service);
+      Destroyer* destroyer = new Destroyer(g_service);
       base::MessageLoop::current()->AddDestructionObserver(destroyer);
     }
   }

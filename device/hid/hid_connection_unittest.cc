@@ -73,8 +73,7 @@ class HidConnectionTest : public testing::Test {
     if (!UsbTestGadget::IsTestEnabled()) return;
 
     message_loop_.reset(new base::MessageLoopForIO());
-    service_.reset(HidService::GetInstance(
-        message_loop_->message_loop_proxy()));
+    service_ = HidService::GetInstance(message_loop_->message_loop_proxy());
     ASSERT_TRUE(service_);
 
     test_gadget_ = UsbTestGadget::Claim();
@@ -119,7 +118,7 @@ class HidConnectionTest : public testing::Test {
   }
 
   scoped_ptr<base::MessageLoopForIO> message_loop_;
-  scoped_ptr<HidService> service_;
+  HidService* service_;
   scoped_ptr<UsbTestGadget> test_gadget_;
   HidDeviceId device_id_;
 };
