@@ -93,6 +93,48 @@ embedder.test.assertFalse = function(condition) {
 
 // Tests begin.
 
+// This test verifies that a lengthy page with autosize enabled will report
+// the correct height in the sizechanged event.
+function testAutosizeHeight() {
+  var webview = document.createElement('webview');
+
+  webview.autosize = true;
+  webview.minwidth = 200;
+  webview.maxwidth = 210;
+  webview.minheight = 40;
+  webview.maxheight = 200;
+
+  var step = 1;
+  webview.addEventListener('sizechanged', function(e) {
+    switch (step) {
+      case 1:
+        embedder.test.assertEq(0, e.oldHeight);
+        embedder.test.assertEq(200, e.newHeight);
+        // Change the maxheight to verify that we see the change.
+        webview.maxheight = 50;
+        break;
+      case 2:
+        embedder.test.assertEq(200, e.oldHeight);
+        embedder.test.assertEq(50, e.newHeight);
+        embedder.test.succeed();
+        break;
+      default:
+        window.console.log('Unexpected sizechanged event, step = ' + step);
+        embedder.test.fail();
+        break;
+    }
+    ++step;
+  });
+
+  webview.src = 'data:text/html,' +
+                'a<br/>b<br/>c<br/>d<br/>e<br/>f<br/>' +
+                'a<br/>b<br/>c<br/>d<br/>e<br/>f<br/>' +
+                'a<br/>b<br/>c<br/>d<br/>e<br/>f<br/>' +
+                'a<br/>b<br/>c<br/>d<br/>e<br/>f<br/>' +
+                'a<br/>b<br/>c<br/>d<br/>e<br/>f<br/>';
+  document.body.appendChild(webview);
+}
+
 // This test verifies that if a browser plugin is in autosize mode before
 // navigation then the guest starts auto-sized.
 function testAutosizeBeforeNavigation() {
@@ -1732,6 +1774,7 @@ function testFindAPI_findupdate() {
 };
 
 embedder.test.testList = {
+  'testAutosizeHeight': testAutosizeHeight,
   'testAutosizeAfterNavigation': testAutosizeAfterNavigation,
   'testAutosizeBeforeNavigation': testAutosizeBeforeNavigation,
   'testAutosizeRemoveAttributes': testAutosizeRemoveAttributes,

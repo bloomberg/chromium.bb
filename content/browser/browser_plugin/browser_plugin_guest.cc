@@ -322,8 +322,9 @@ void BrowserPluginGuest::SwapCompositorFrame(
     return;
   }
 
-  gfx::Size view_size(frame->metadata.root_layer_size.width(),
-                      frame->metadata.root_layer_size.height());
+  cc::RenderPass* root_pass =
+      frame->delegated_frame_data->render_pass_list.back();
+  gfx::Size view_size(root_pass->output_rect.size());
   if (last_seen_view_size_ != view_size) {
     delegate_->GuestSizeChanged(last_seen_view_size_, view_size);
     last_seen_view_size_ = view_size;
