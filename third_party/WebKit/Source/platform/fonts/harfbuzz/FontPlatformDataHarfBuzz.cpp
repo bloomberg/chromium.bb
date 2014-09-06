@@ -46,6 +46,7 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
 #if OS(WIN)
     , m_paintTextFlags(0)
     , m_minSizeForAntiAlias(0)
+    , m_minSizeForSubpixel(0)
     , m_useSubpixelPositioning(false)
 #endif
 {
@@ -60,6 +61,7 @@ FontPlatformData::FontPlatformData()
 #if OS(WIN)
     , m_paintTextFlags(0)
     , m_minSizeForAntiAlias(0)
+    , m_minSizeForSubpixel(0)
     , m_useSubpixelPositioning(false)
 #endif
 {
@@ -74,6 +76,7 @@ FontPlatformData::FontPlatformData(float textSize, bool syntheticBold, bool synt
 #if OS(WIN)
     , m_paintTextFlags(0)
     , m_minSizeForAntiAlias(0)
+    , m_minSizeForSubpixel(0)
     , m_useSubpixelPositioning(false)
 #endif
 {
@@ -94,6 +97,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src)
 #if OS(WIN)
     , m_paintTextFlags(src.m_paintTextFlags)
     , m_minSizeForAntiAlias(src.m_minSizeForAntiAlias)
+    , m_minSizeForSubpixel(src.m_minSizeForSubpixel)
     , m_useSubpixelPositioning(src.m_useSubpixelPositioning)
 #endif
 {
@@ -112,6 +116,7 @@ FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family
 #if OS(WIN)
     , m_paintTextFlags(0)
     , m_minSizeForAntiAlias(0)
+    , m_minSizeForSubpixel(0)
     , m_useSubpixelPositioning(subpixelTextPosition)
 #endif
 {
@@ -132,6 +137,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
 #if OS(WIN)
     , m_paintTextFlags(src.m_paintTextFlags)
     , m_minSizeForAntiAlias(src.m_minSizeForAntiAlias)
+    , m_minSizeForSubpixel(src.m_minSizeForSubpixel)
     , m_useSubpixelPositioning(src.m_useSubpixelPositioning)
 #endif
 {
@@ -157,6 +163,7 @@ FontPlatformData& FontPlatformData::operator=(const FontPlatformData& src)
 #if OS(WIN)
     m_paintTextFlags = 0;
     m_minSizeForAntiAlias = src.m_minSizeForAntiAlias;
+    m_minSizeForSubpixel = src.m_minSizeForSubpixel;
     m_useSubpixelPositioning = src.m_useSubpixelPositioning;
 #endif
 

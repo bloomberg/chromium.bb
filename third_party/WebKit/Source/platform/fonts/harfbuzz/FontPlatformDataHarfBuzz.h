@@ -85,6 +85,8 @@ public:
 #if OS(WIN)
     void setMinSizeForAntiAlias(unsigned size) { m_minSizeForAntiAlias = size; }
     unsigned minSizeForAntiAlias() const { return m_minSizeForAntiAlias; }
+    void setMinSizeForSubpixel(float size) { m_minSizeForSubpixel = size; }
+    float minSizeForSubpixel() const { return m_minSizeForSubpixel; }
     void setHinting(SkPaint::Hinting style)
     {
         m_style.useAutoHint = 0;
@@ -135,6 +137,7 @@ private:
     int m_paintTextFlags;
     bool m_useSubpixelPositioning;
     unsigned m_minSizeForAntiAlias;
+    float m_minSizeForSubpixel;
 #endif
 };
 

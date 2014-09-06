@@ -248,6 +248,33 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
         }
     }
 
+    // List of fonts that look bad with subpixel text rendering at smaller font
+    // sizes. This includes all fonts in the Microsoft Core fonts for the Web
+    // collection.
+    const static wchar_t* noSubpixelForSmallSizeFont[] = {
+        L"andale mono",
+        L"arial",
+        L"comic sans",
+        L"courier new",
+        L"georgia",
+        L"impact",
+        L"lucida console",
+        L"tahoma",
+        L"times new roman",
+        L"trebuchet ms",
+        L"verdana",
+        L"webdings"
+    };
+    const static float minSizeForSubpixelForFont = 16.0f;
+    numFonts = WTF_ARRAY_LENGTH(noSubpixelForSmallSizeFont);
+    for (size_t i = 0; i < numFonts; i++) {
+        const wchar_t* family = noSubpixelForSmallSizeFont[i];
+        if (typefacesMatchesFamily(tf.get(), family)) {
+            result->setMinSizeForSubpixel(minSizeForSubpixelForFont);
+            break;
+        }
+    }
+
     return result;
 }
 

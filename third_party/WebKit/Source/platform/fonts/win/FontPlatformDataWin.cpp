@@ -69,7 +69,7 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context) cons
         // run without font smoothing we enable it for tests to ensure we get
         // good test coverage matching the more common smoothing enabled
         // behavior.
-        if (m_useSubpixelPositioning
+        if (m_useSubpixelPositioning && ts >= m_minSizeForSubpixel
             && ((textFlags & SkPaint::kAntiAlias_Flag) || LayoutTestSupport::isRunningLayoutTest()))
             flags |= SkPaint::kSubpixelText_Flag;
 
