@@ -367,8 +367,7 @@ void Preferences::Init(Profile* profile, const user_manager::User* user) {
 
   UserSessionManager* session_manager = UserSessionManager::GetInstance();
   DCHECK(session_manager);
-  ime_state_ = session_manager->GetDefaultIMEState(
-      ProfileHelper::Get()->GetProfileByUser(user_));
+  ime_state_ = session_manager->GetDefaultIMEState(profile);
   input_method_manager_->SetState(ime_state_);
 
   // Initialize preferences to currently saved state.
