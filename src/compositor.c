@@ -2249,7 +2249,7 @@ weston_surface_commit_state(struct weston_surface *surface,
 			      &state->damage);
 	pixman_region32_intersect_rect(&surface->damage, &surface->damage,
 				       0, 0, surface->width, surface->height);
-	pixman_region32_clear(&surface->pending.damage);
+	pixman_region32_clear(&state->damage);
 
 	/* wl_surface.set_opaque_region */
 	pixman_region32_init(&opaque);
