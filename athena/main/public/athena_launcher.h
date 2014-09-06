@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ATHENA_MAIN_ATHENA_LAUNCHER_H_
-#define ATHENA_MAIN_ATHENA_LAUNCHER_H_
+#ifndef ATHENA_MAIN_PUBLIC_ATHENA_LAUNCHER_H_
+#define ATHENA_MAIN_PUBLIC_ATHENA_LAUNCHER_H_
 
 #include "base/memory/ref_counted.h"
 
@@ -36,4 +36,4 @@ void ShutdownAthena();
 
 }  // namespace athena
 
-#endif  // ATHENA_MAIN_ATHENA_LAUNCHER_H_
+#endif  // ATHENA_MAIN_PUBLIC_ATHENA_LAUNCHER_H_

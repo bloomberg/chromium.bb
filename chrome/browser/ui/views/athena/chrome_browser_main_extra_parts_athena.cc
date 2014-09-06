@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/athena/chrome_browser_main_extra_parts_athena.h"
 
 #include "athena/extensions/public/extensions_delegate.h"
-#include "athena/main/athena_launcher.h"
+#include "athena/main/public/athena_launcher.h"
 #include "base/macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"

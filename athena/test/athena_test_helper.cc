@@ -6,7 +6,7 @@
 
 #include "athena/env/public/athena_env.h"
 #include "athena/extensions/public/extensions_delegate.h"
-#include "athena/main/athena_launcher.h"
+#include "athena/main/public/athena_launcher.h"
 #include "athena/test/sample_activity_factory.h"
 #include "athena/test/test_app_model_builder.h"
 #include "base/message_loop/message_loop.h"

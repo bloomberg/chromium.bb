@@ -5,7 +5,7 @@ include_rules = [
   "+athena/extensions/public",
   "+athena/home/public",
   "+athena/screen/public",
-  "+athena/main",
+  "+athena/main/public",
   "+athena/resource_manager/public",
   "+chromeos",
   "+third_party/skia/include",
