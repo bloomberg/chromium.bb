@@ -231,7 +231,6 @@ void Compositor::Draw() {
                                    base::TimeTicks(),
                                    cc::BeginFrameArgs::DefaultInterval());
     BeginMainFrame(args);
-    Layout();
     host_->Composite(args.frame_time);
   }
   if (swap_state_ == SWAP_NONE)
