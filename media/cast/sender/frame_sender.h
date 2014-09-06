@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/net/rtcp/rtcp.h"
+#include "media/cast/sender/congestion_control.h"
 
 namespace media {
 namespace cast {
@@ -22,12 +23,14 @@ namespace cast {
 class FrameSender {
  public:
   FrameSender(scoped_refptr<CastEnvironment> cast_environment,
+              bool is_audio,
               CastTransportSender* const transport_sender,
               base::TimeDelta rtcp_interval,
               int rtp_timebase,
               uint32 ssrc,
               double max_frame_rate,
-              base::TimeDelta playout_delay);
+              base::TimeDelta playout_delay,
+              CongestionControl* congestion_control);
   virtual ~FrameSender();
 
   // Calling this function is only valid if the receiver supports the
@@ -37,6 +40,10 @@ class FrameSender {
   base::TimeDelta GetTargetPlayoutDelay() const {
     return target_playout_delay_;
   }
+
+  // Called by the encoder with the next EncodeFrame to send.
+  void SendEncodedFrame(int requested_bitrate_before_encode,
+                        scoped_ptr<EncodedFrame> encoded_frame);
 
  protected:
   // Schedule and execute periodic sending of RTCP report.
@@ -78,6 +85,15 @@ class FrameSender {
   void ResendCheck();
   void ResendForKickstart();
 
+  // Protected for testability.
+  void OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback);
+
+  // Returns true if there are too many frames in flight, or if the media
+  // duration of the frames in flight would be too high by sending the next
+  // frame.  The latter metric is determined from the given |capture_time|
+  // for the next frame to be encoded and sent.
+  bool ShouldDropNextFrame(base::TimeTicks capture_time) const;
+
   // Record or retrieve a recent history of each frame's timestamps.
   // Warning: If a frame ID too far in the past is requested, the getters will
   // silently succeed but return incorrect values.  Be sure to respect
@@ -87,6 +103,9 @@ class FrameSender {
                                    RtpTimestamp rtp_timestamp);
   base::TimeTicks GetRecordedReferenceTime(uint32 frame_id) const;
   RtpTimestamp GetRecordedRtpTimestamp(uint32 frame_id) const;
+
+  // Called when we get an ACK for a frame.
+  virtual void OnAck(uint32 frame_id) = 0;
 
   const base::TimeDelta rtcp_interval_;
 
@@ -107,6 +126,9 @@ class FrameSender {
   // Maximum number of outstanding frames before the encoding and sending of
   // new frames shall halt.
   int max_unacked_frames_;
+
+  // The number of frames currently being processed in |video_encoder_|.
+  int frames_in_encoder_;
 
   // Counts how many RTCP reports are being "aggressively" sent (i.e., one per
   // frame) at the start of the session.  Once a threshold is reached, RTCP
@@ -137,9 +159,15 @@ class FrameSender {
   // STATUS_VIDEO_INITIALIZED.
   CastInitializationStatus cast_initialization_status_;
 
- private:
   // RTP timestamp increment representing one second.
   const int rtp_timebase_;
+
+  // This object controls how we change the bitrate to make sure the
+  // buffer doesn't overflow.
+  scoped_ptr<CongestionControl> congestion_control_;
+
+ private:
+  const bool is_audio_;
 
   // Ring buffers to keep track of recent frame timestamps (both in terms of
   // local reference time and RTP media time).  These should only be accessed

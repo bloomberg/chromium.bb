@@ -25,7 +25,7 @@ class CongestionControlTest : public ::testing::Test {
       : task_runner_(new test::FakeSingleThreadTaskRunner(&testing_clock_)) {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
-    congestion_control_.reset(new CongestionControl(
+    congestion_control_.reset(NewAdaptiveCongestionControl(
         &testing_clock_, kMaxBitrateConfigured, kMinBitrateConfigured, 10));
   }
 

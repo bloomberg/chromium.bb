@@ -57,36 +57,17 @@ class VideoSender : public FrameSender,
                            const base::TimeTicks& capture_time);
 
  protected:
-  // Protected for testability.
-  void OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback);
+  virtual void OnAck(uint32 frame_id) OVERRIDE;
 
  private:
-  // Returns true if there are too many frames in flight, or if the media
-  // duration of the frames in flight would be too high by sending the next
-  // frame.  The latter metric is determined from the given |capture_time|
-  // for the next frame to be encoded and sent.
-  bool ShouldDropNextFrame(base::TimeTicks capture_time) const;
-
-  // Called by the |video_encoder_| with the next EncodeFrame to send.
-  void SendEncodedVideoFrame(int requested_bitrate_before_encode,
-                             scoped_ptr<EncodedFrame> encoded_frame);
-  // If this value is non zero then a fixed value is used for bitrate.
-  // If external video encoder is used then bitrate will be fixed to
-  // (min_bitrate + max_bitrate) / 2.
-  const size_t fixed_bitrate_;
-
   // Encodes media::VideoFrame images into EncodedFrames.  Per configuration,
   // this will point to either the internal software-based encoder or a proxy to
   // a hardware-based encoder.
   scoped_ptr<VideoEncoder> video_encoder_;
 
-  // The number of frames currently being processed in |video_encoder_|.
-  int frames_in_encoder_;
-
-  // When we get close to the max number of un-acked frames, we set lower
-  // the bitrate drastically to ensure that we catch up. Without this we
-  // risk getting stuck in a catch-up state forever.
-  CongestionControl congestion_control_;
+  // Remember what we set the bitrate to before, no need to set it again if
+  // we get the same value.
+  uint32 last_bitrate_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<VideoSender> weak_factory_;
