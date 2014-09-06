@@ -16,9 +16,7 @@
 #include "extensions/common/api/hid.h"
 
 namespace net {
-
-class IOBufferWithSize;
-
+class IOBuffer;
 }  // namespace net
 
 namespace extensions {

@@ -37,9 +37,11 @@ UsbDeviceResource::UsbDeviceResource(const std::string& owner_extension_id,
 }
 
 UsbDeviceResource::~UsbDeviceResource() {
-  BrowserThread::PostTask(BrowserThread::FILE,
-                          FROM_HERE,
-                          base::Bind(&UsbDeviceHandle::Close, device_));
+  device_->Close();
+}
+
+bool UsbDeviceResource::IsPersistent() const {
+  return false;
 }
 
 }  // namespace extensions

@@ -32,4 +32,8 @@ HidConnectionResource::HidConnectionResource(
 
 HidConnectionResource::~HidConnectionResource() {}
 
+bool HidConnectionResource::IsPersistent() const {
+  return false;
+}
+
 }  // namespace extensions
