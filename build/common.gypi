@@ -5501,6 +5501,7 @@
                   '-Wno-unused-private-field',
                   '-Wno-unused-value',
                   '-Wno-unused-variable',
+                  '-Wno-unused-local-typedef',  # http://crbug.com/411648
                 ],
               },
             }],
