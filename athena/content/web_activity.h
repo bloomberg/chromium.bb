@@ -53,6 +53,8 @@ class WebActivity : public Activity,
   virtual views::View* GetContentsView() OVERRIDE;
   virtual void CreateOverviewModeImage() OVERRIDE;
   virtual gfx::ImageSkia GetOverviewModeImage() OVERRIDE;
+  virtual void PrepareContentsForOverview() OVERRIDE;
+  virtual void ResetContentsView() OVERRIDE;
 
   // content::WebContentsObserver:
   virtual void TitleWasSet(content::NavigationEntry* entry,

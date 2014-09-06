@@ -55,6 +55,8 @@ class TestActivity : public Activity,
   virtual views::View* GetContentsView() OVERRIDE { return view_; }
   virtual void CreateOverviewModeImage() OVERRIDE {}
   virtual gfx::ImageSkia GetOverviewModeImage() OVERRIDE { return image_; }
+  virtual void PrepareContentsForOverview() OVERRIDE {}
+  virtual void ResetContentsView() OVERRIDE {}
 
  private:
   // The presentation values.

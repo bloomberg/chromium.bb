@@ -90,4 +90,10 @@ gfx::ImageSkia AppActivityProxy::GetOverviewModeImage() {
   return image_;
 }
 
+void AppActivityProxy::PrepareContentsForOverview() {
+}
+
+void AppActivityProxy::ResetContentsView() {
+}
+
 }  // namespace athena

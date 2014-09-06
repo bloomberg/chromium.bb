@@ -1,6 +1,9 @@
 include_rules = [
-  "+athena/screen",
+  "+athena/screen/public", 
+  "+athena/wm/public",
+  "+third_party/skia/include",
   "+ui/aura",
   "+ui/base",
+  "+ui/gfx",
   "+ui/views",
 ]

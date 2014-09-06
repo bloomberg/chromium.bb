@@ -80,5 +80,11 @@ gfx::ImageSkia SampleActivity::GetOverviewModeImage() {
   return gfx::ImageSkia();
 }
 
+void SampleActivity::PrepareContentsForOverview() {
+}
+
+void SampleActivity::ResetContentsView() {
+}
+
 }  // namespace test
 }  // namespace athena

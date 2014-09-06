@@ -57,6 +57,12 @@ class ATHENA_EXPORT ActivityViewModel {
   // GetRepresentativeColor() should be used to clear the preview area.
   // Note: We intentionally do not use a layer / view for this.
   virtual gfx::ImageSkia GetOverviewModeImage() = 0;
+
+  // Prepares the contents view for overview.
+  virtual void PrepareContentsForOverview() = 0;
+
+  // Undoes any changes done by PrepareContentsForOverview().
+  virtual void ResetContentsView() = 0;
 };
 
 }  // namespace athena

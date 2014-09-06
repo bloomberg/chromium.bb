@@ -45,6 +45,8 @@ class AppActivityProxy : public Activity,
   virtual views::View* GetContentsView() OVERRIDE;
   virtual void CreateOverviewModeImage() OVERRIDE;
   virtual gfx::ImageSkia GetOverviewModeImage() OVERRIDE;
+  virtual void PrepareContentsForOverview() OVERRIDE;
+  virtual void ResetContentsView() OVERRIDE;
 
  private:
   // The creator of this object which needs to be informed if the object gets

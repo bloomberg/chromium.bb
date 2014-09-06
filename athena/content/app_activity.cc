@@ -140,6 +140,17 @@ gfx::ImageSkia AppActivity::GetOverviewModeImage() {
   return overview_mode_image_;
 }
 
+void AppActivity::PrepareContentsForOverview() {
+  // Turn on fast resizing to avoid re-laying out the web contents when
+  // entering / exiting overview mode.
+  web_view_->SetFastResize(true);
+}
+
+void AppActivity::ResetContentsView() {
+  web_view_->SetFastResize(false);
+  web_view_->Layout();
+}
+
 AppActivity::~AppActivity() {
   // If this activity is registered, we unregister it now.
   if (app_activity_registry_)

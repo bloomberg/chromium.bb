@@ -38,6 +38,8 @@ class SampleActivity : public Activity,
   virtual views::View* GetContentsView() OVERRIDE;
   virtual void CreateOverviewModeImage() OVERRIDE;
   virtual gfx::ImageSkia GetOverviewModeImage() OVERRIDE;
+  virtual void PrepareContentsForOverview() OVERRIDE;
+  virtual void ResetContentsView() OVERRIDE;
 
   SkColor color_;
   SkColor contents_color_;
