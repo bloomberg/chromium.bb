@@ -47,6 +47,7 @@ const char kPriority[] = "Priority";
 const char kProxySettings[] = "ProxySettings";
 const char kSearchDomains[] = "SearchDomains";
 const char kConnectionState[] = "ConnectionState";
+const char kRestrictedConnectivity[] = "RestrictedConnectivity";
 const char kConnectable[] = "Connectable";
 const char kErrorState[] = "ErrorState";
 const char kType[] = "Type";
@@ -79,6 +80,10 @@ const char kWireless[] = "Wireless";
 
 namespace cellular {
 const char kActivationState[] = "ActivationState";
+const char kActivated[] = "Activated";
+const char kActivating[] = "Activating";
+const char kNotActivated[] = "NotActivated";
+const char kPartiallyActivated[] = "PartiallyActivated";
 const char kActivationType[] = "ActivationType";
 const char kAllowRoaming[] = "AllowRoaming";
 const char kAPN[] = "APN";
@@ -103,6 +108,8 @@ const char kNetworkTechnology[] = "NetworkTechnology";
 const char kPRLVersion[] = "PRLVersion";
 const char kProviderRequiresRoaming[] = "ProviderRequiresRoaming";
 const char kRoamingState[] = "RoamingState";
+const char kHome[] = "Home";
+const char kRoaming[] = "Roaming";
 const char kSelectedNetwork[] = "SelectedNetwork";
 const char kServingOperator[] = "ServingOperator";
 const char kSIMLockStatus[] = "SIMLockStatus";

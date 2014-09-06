@@ -883,6 +883,37 @@ cr.define('options.internet', function() {
     }
   };
 
+  DetailsInternetPage.populateHeader = function(detailsPage, onc) {
+    $('network-details-title').textContent = onc.getTranslatedValue('Name');
+    var connectionState = onc.getActiveValue('ConnectionState');
+    var connectionStateString = onc.getTranslatedValue('ConnectionState');
+    detailsPage.connected = connectionState == 'Connected';
+    $('network-details-subtitle-status').textContent = connectionStateString;
+    var typeKey;
+    if (onc.type == 'Ethernet')
+      typeKey = 'ethernetTitle';
+    else if (onc.type == 'WiFi')
+      typeKey = 'wifiTitle';
+    else if (onc.type == 'Wimax')
+      typeKey = 'wimaxTitle';
+    else if (onc.type == 'Cellular')
+      typeKey = 'cellularTitle';
+    else if (onc.type == 'VPN')
+      typeKey = 'vpnTitle';
+    else
+      typeKey = null;
+    var typeLabel = $('network-details-subtitle-type');
+    var typeSeparator = $('network-details-subtitle-separator');
+    if (typeKey) {
+      typeLabel.textContent = loadTimeData.getString(typeKey);
+      typeLabel.hidden = false;
+      typeSeparator.hidden = false;
+    } else {
+      typeLabel.hidden = true;
+      typeSeparator.hidden = true;
+    }
+  };
+
   DetailsInternetPage.updateConnectionData = function(update) {
     var detailsPage = DetailsInternetPage.getInstance();
     if (!detailsPage.visible)
@@ -899,6 +930,8 @@ cr.define('options.internet', function() {
     updateDataObject(data, update);
     var onc = new OncData(data);
 
+    this.populateHeader(detailsPage, onc);
+
     var connectionState = onc.getActiveValue('ConnectionState');
     var connectionStateString = onc.getTranslatedValue('ConnectionState');
     detailsPage.deviceConnected = data.deviceConnected;
@@ -912,8 +945,8 @@ cr.define('options.internet', function() {
     } else if (onc.type == 'Wimax') {
       $('wimax-connection-state').textContent = connectionStateString;
     } else if (onc.type == 'Cellular') {
-      $('activation-state').textContent = data.activationState;
-
+      $('activation-state').textContent =
+          onc.getTranslatedValue('Cellular.ActivationState');
       $('buyplan-details').hidden = !data.showBuyButton;
       $('view-account-details').hidden = !data.showViewAccountButton;
 
@@ -939,40 +972,7 @@ cr.define('options.internet', function() {
     var onc = new OncData(data);
     data.type = onc.type;
 
-    // Populate header
-    $('network-details-title').textContent = onc.getTranslatedValue('Name');
-    var connectionState = onc.getActiveValue('ConnectionState');
-    var connectionStateString = onc.getTranslatedValue('ConnectionState');
-    detailsPage.connected = connectionState == 'Connected';
-    $('network-details-subtitle-status').textContent = connectionStateString;
-    var typeKey = null;
-    switch (onc.type) {
-      case 'Ethernet':
-        typeKey = 'ethernetTitle';
-        break;
-      case 'WiFi':
-        typeKey = 'wifiTitle';
-        break;
-      case 'Wimax':
-        typeKey = 'wimaxTitle';
-        break;
-      case 'Cellular':
-        typeKey = 'cellularTitle';
-        break;
-      case 'VPN':
-        typeKey = 'vpnTitle';
-        break;
-    }
-    var typeLabel = $('network-details-subtitle-type');
-    var typeSeparator = $('network-details-subtitle-separator');
-    if (typeKey) {
-      typeLabel.textContent = loadTimeData.getString(typeKey);
-      typeLabel.hidden = false;
-      typeSeparator.hidden = false;
-    } else {
-      typeLabel.hidden = true;
-      typeSeparator.hidden = true;
-    }
+    this.populateHeader(detailsPage, onc);
 
     // TODO(stevenjb): Find a more appropriate place to cache data.
     $('connection-state').data = data;
@@ -987,7 +987,8 @@ cr.define('options.internet', function() {
     $('web-proxy-auto-discovery').hidden = true;
 
     detailsPage.deviceConnected = data.deviceConnected;
-    detailsPage.connected = connectionState == 'Connected';
+    detailsPage.connected =
+        onc.getActiveValue('ConnectionState') == 'Connected';
 
     // Only show proxy for remembered networks.
     if (data.remembered) {
@@ -996,8 +997,12 @@ cr.define('options.internet', function() {
     } else {
       detailsPage.showProxy = false;
     }
-    $('connection-state').textContent = connectionStateString;
 
+    var connectionStateString = onc.getTranslatedValue('ConnectionState');
+    $('connection-state').textContent = connectionStateString;
+    var restricted = onc.getActiveValue('RestrictedConnectivity');
+    var restrictedString = loadTimeData.getString(
+        restricted ? 'restrictedYes' : 'restrictedNo');
     var ipAutoConfig = data.ipAutoConfig ? 'automatic' : 'user';
     $('ip-automatic-configuration-checkbox').checked = data.ipAutoConfig;
     var inetAddress = {autoConfig: ipAutoConfig};
@@ -1122,6 +1127,7 @@ cr.define('options.internet', function() {
       detailsPage.gsm = false;
       detailsPage.shared = data.shared;
       $('wifi-connection-state').textContent = connectionStateString;
+      $('wifi-restricted-connectivity').textContent = restrictedString;
       var ssid = onc.getActiveValue('WiFi.SSID');
       $('wifi-ssid').textContent = ssid ? ssid : networkName;
       setOrHideParent('wifi-bssid', onc.getActiveValue('WiFi.BSSID'));
@@ -1153,6 +1159,7 @@ cr.define('options.internet', function() {
       detailsPage.shared = data.shared;
       detailsPage.showPreferred = data.remembered;
       $('wimax-connection-state').textContent = connectionStateString;
+      $('wimax-restricted-connectivity').textContent = restrictedString;
       $('auto-connect-network-wimax').checked =
           onc.getActiveValue('AutoConnect');
       $('auto-connect-network-wimax').disabled = !data.remembered;
@@ -1177,9 +1184,11 @@ cr.define('options.internet', function() {
 
       $('network-technology').textContent =
           onc.getActiveValue('Cellular.NetworkTechnology');
-      $('activation-state').textContent = data.activationState;
-      $('roaming-state').textContent = data.roamingState;
-      $('restricted-pool').textContent = data.restrictedPool;
+      $('activation-state').textContent =
+          onc.getTranslatedValue('Cellular.ActivationState');
+      $('roaming-state').textContent =
+          onc.getTranslatedValue('Cellular.RoamingState');
+      $('cellular-restricted-connectivity').textContent = restrictedString;
       $('error-state').textContent = data.errorMessage;
       $('manufacturer').textContent =
           onc.getActiveValue('Cellular.Manufacturer');

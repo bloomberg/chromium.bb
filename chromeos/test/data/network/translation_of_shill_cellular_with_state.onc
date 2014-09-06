@@ -2,13 +2,14 @@
   "Type": "Cellular",
   "Name": "Test Network",
   "Cellular": {
-    "ActivationState": "activated",
+    "ActivationState": "Activated",
     "ActivationType": "OTASP",
     "AllowRoaming": true,
     "HomeProvider": {
       "country": "us",
       "name": "cellular_provider"
     },
+    "RoamingState": "Home",
     "ServingOperator": {
       "Code": "test-code",
       "Country": "test-country",

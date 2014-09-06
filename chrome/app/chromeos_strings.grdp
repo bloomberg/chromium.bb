@@ -1741,9 +1741,6 @@ Press any key to continue exploring.
   <message name="IDS_CHROMEOS_NETWORK_STATE_CONNECTING" desc="Displayed state for a network when connecting">
     Not Connected
   </message>
-  <message name="IDS_CHROMEOS_NETWORK_STATE_UNKNOWN" desc="Displayed state for a network when unknown">
-    Unknown
-  </message>
 
   <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLED" desc="Message displayed when a type of network connection is disabled">
     Disabled
@@ -3487,9 +3484,6 @@ Press any key to continue exploring.
   <message name="IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR" desc="Label for a cellular network device.">
     Mobile Data
   </message>
-  <message name="IDS_STATUSBAR_NETWORK_DEVICE_UNKNOWN" desc="Label for an unknown network device.">
-    Unknown
-  </message>
   <message name="IDS_NETWORK_TYPE_ETHERNET" desc="The ethernet network type.">
     Ethernet
   </message>
@@ -3854,9 +3848,6 @@ Battery full
   <message name="IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_PARTIALLY_ACTIVATED" desc="Description of state of partially activated cellular data plan state. Shown under details on chrome:stettings/internet page.">
     Partially activated
   </message>
-  <message name="IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_UNKNOWN" desc="Description of cellular data plan with unknown status. Shown under details on chrome:stettings/internet page.">
-    Unknown
-  </message>
 
   <!-- Cellular network roaming status description strings for ChromeOS -->
   <message name="IDS_CHROMEOS_NETWORK_ROAMING_STATE_HOME" desc="Description of cellular roaming status while connected to home network. Shown under details on chrome:stettings/internet page.">
@@ -3864,9 +3855,6 @@ Battery full
   </message>
   <message name="IDS_CHROMEOS_NETWORK_ROAMING_STATE_ROAMING" desc="Description of cellular roaming status while roaming. Shown under details on chrome:stettings/internet page.">
     Roaming
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ROAMING_STATE_UNKNOWN" desc="Description of unknown cellular roaming status. Shown under details on chrome:stettings/internet page.">
-    Unknown
   </message>
 
   <!-- Cellular network details -->

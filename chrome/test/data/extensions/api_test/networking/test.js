@@ -294,7 +294,7 @@ var availableTests = [
       "stub_cellular1_guid",
       callbackPass(function(result) {
         assertEq({ "Cellular": {
-                     "ActivationState": "not-activated",
+                     "ActivationState": "NotActivated",
                      "AllowRoaming": false,
                      "Carrier": "Cellular1_Carrier",
                      "HomeProvider": {
@@ -302,7 +302,7 @@ var availableTests = [
                        "name": "Cellular1_Provider"
                      },
                      "NetworkTechnology": "GSM",
-                     "RoamingState": "home"
+                     "RoamingState": "Home"
                    },
                    "ConnectionState": "NotConnected",
                    "GUID": "stub_cellular1_guid",

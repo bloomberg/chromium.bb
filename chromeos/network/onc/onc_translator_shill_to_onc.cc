@@ -315,6 +315,12 @@ void ShillToONCTranslator::TranslateWiFiWithState() {
 
 void ShillToONCTranslator::TranslateCellularWithState() {
   CopyPropertiesAccordingToSignature();
+  TranslateWithTableAndSet(shill::kActivationStateProperty,
+                           kActivationStateTable,
+                           ::onc::cellular::kActivationState);
+  TranslateWithTableAndSet(shill::kRoamingStateProperty,
+                           kRoamingStateTable,
+                           ::onc::cellular::kRoamingState);
   const base::DictionaryValue* dictionary = NULL;
   if (shill_dictionary_->GetDictionaryWithoutPathExpansion(
         shill::kServingOperatorProperty, &dictionary)) {
@@ -402,6 +408,11 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
     }
     onc_object_->SetStringWithoutPathExpansion(
         ::onc::network_config::kConnectionState, onc_state);
+    // Only set 'RestrictedConnectivity' if true.
+    if (state == shill::kStatePortal) {
+      onc_object_->SetBooleanWithoutPathExpansion(
+          ::onc::network_config::kRestrictedConnectivity, true);
+    }
   }
 
   // Use a human-readable aa:bb format for any hardware MAC address. Note:

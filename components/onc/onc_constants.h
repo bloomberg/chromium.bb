@@ -71,6 +71,7 @@ ONC_EXPORT extern const char kPriority[];
 ONC_EXPORT extern const char kProxySettings[];
 ONC_EXPORT extern const char kSearchDomains[];
 ONC_EXPORT extern const char kConnectionState[];
+ONC_EXPORT extern const char kRestrictedConnectivity[];
 ONC_EXPORT extern const char kConnectable[];
 ONC_EXPORT extern const char kErrorState[];
 ONC_EXPORT extern const char kType[];
@@ -96,6 +97,10 @@ ONC_EXPORT extern const char kWireless[];
 
 namespace cellular {
 ONC_EXPORT extern const char kActivationState[];
+ONC_EXPORT extern const char kActivated[];
+ONC_EXPORT extern const char kActivating[];
+ONC_EXPORT extern const char kNotActivated[];
+ONC_EXPORT extern const char kPartiallyActivated[];
 ONC_EXPORT extern const char kActivationType[];
 ONC_EXPORT extern const char kAllowRoaming[];
 ONC_EXPORT extern const char kAPN[];
@@ -120,6 +125,8 @@ ONC_EXPORT extern const char kNetworkTechnology[];
 ONC_EXPORT extern const char kPRLVersion[];
 ONC_EXPORT extern const char kProviderRequiresRoaming[];
 ONC_EXPORT extern const char kRoamingState[];
+ONC_EXPORT extern const char kHome[];
+ONC_EXPORT extern const char kRoaming[];
 ONC_EXPORT extern const char kSelectedNetwork[];
 ONC_EXPORT extern const char kServingOperator[];
 ONC_EXPORT extern const char kSIMLockStatus[];

@@ -125,7 +125,6 @@ const char kShowMorePlanInfoMessage[] = "showMorePlanInfo";
 
 // These are strings used to communicate with JavaScript.
 const char kTagActivate[] = "activate";
-const char kTagActivationState[] = "activationState";
 const char kTagAddConnection[] = "add";
 const char kTagCarrierSelectFlag[] = "showCarrierSelect";
 const char kTagCarrierUrl[] = "carrierUrl";
@@ -147,8 +146,6 @@ const char kTagRecommended[] = "recommended";
 const char kTagRecommendedValue[] = "recommendedValue";
 const char kTagRemembered[] = "remembered";
 const char kTagRememberedList[] = "rememberedList";
-const char kTagRestrictedPool[] = "restrictedPool";
-const char kTagRoamingState[] = "roamingState";
 const char kTagCarriers[] = "carriers";
 const char kTagCurrentCarrierIndex[] = "currentCarrierIndex";
 const char kTagShared[] = "shared";
@@ -471,16 +468,6 @@ void PopulateCellularDetails(const NetworkState* cellular,
   dictionary->SetBoolean(kTagCarrierSelectFlag,
                          CommandLine::ForCurrentProcess()->HasSwitch(
                              chromeos::switches::kEnableCarrierSwitching));
-  // Cellular network / connection settings.
-  dictionary->SetString(kTagActivationState,
-                        internet_options_strings::ActivationStateString(
-                            cellular->activation_state()));
-  dictionary->SetString(kTagRoamingState,
-                        internet_options_strings::RoamingStateString(
-                            cellular->roaming()));
-  dictionary->SetString(kTagRestrictedPool,
-                        internet_options_strings::RestrictedStateString(
-                            cellular->connection_state()));
 
   // These default to empty and are only set if device != NULL.
   std::string carrier_id;

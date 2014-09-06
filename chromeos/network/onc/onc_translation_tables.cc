@@ -152,9 +152,11 @@ const FieldTranslationEntry sim_lock_status_fields[] = {
 // For Device properties see kCellularDeviceTable.
 const FieldTranslationEntry cellular_fields[] = {
     { ::onc::cellular::kActivationType, shill::kActivationTypeProperty},
-    { ::onc::cellular::kActivationState, shill::kActivationStateProperty},
+    // This field is converted during translation, see onc_translator_*.
+    // { ::onc::cellular::kActivationState, shill::kActivationStateProperty},
     { ::onc::cellular::kNetworkTechnology, shill::kNetworkTechnologyProperty},
-    { ::onc::cellular::kRoamingState, shill::kRoamingStateProperty},
+    // This field is converted during translation, see onc_translator_*.
+    // { ::onc::cellular::kRoamingState, shill::kRoamingStateProperty},
     {NULL}};
 
 const FieldTranslationEntry network_fields[] = {
@@ -174,6 +176,8 @@ const FieldTranslationEntry network_fields[] = {
     // onc_translator_shill_to_onc.cc. They are only converted when going from
     // Shill->ONC, and ignored otherwise.
     // { ::onc::network_config::kConnectionState, shill::kStateProperty },
+    // { ::onc::network_config::kRestrictedConnectivity,
+    //   shill::kStateProperty },
     // { ::onc::network_config::kMacAddress, shill::kAddressProperty },
     {NULL}};
 
@@ -293,6 +297,19 @@ const StringTranslationEntry kEAP_TTLS_InnerTable[] = {
     { ::onc::eap::kMD5, shill::kEapPhase2AuthTTLSMD5},
     { ::onc::eap::kMSCHAPv2, shill::kEapPhase2AuthTTLSMSCHAPV2},
     { ::onc::eap::kPAP, shill::kEapPhase2AuthTTLSPAP},
+    {NULL}};
+
+const StringTranslationEntry kActivationStateTable[] = {
+    { ::onc::cellular::kActivated, shill::kActivationStateActivated},
+    { ::onc::cellular::kActivating, shill::kActivationStateActivating},
+    { ::onc::cellular::kNotActivated, shill::kActivationStateNotActivated},
+    { ::onc::cellular::kPartiallyActivated,
+      shill::kActivationStatePartiallyActivated},
+    {NULL}};
+
+const StringTranslationEntry kRoamingStateTable[] = {
+    { ::onc::cellular::kHome, shill::kRoamingStateHome},
+    { ::onc::cellular::kRoaming, shill::kRoamingStateRoaming},
     {NULL}};
 
 // This must contain only Shill Device properties and no Service properties.

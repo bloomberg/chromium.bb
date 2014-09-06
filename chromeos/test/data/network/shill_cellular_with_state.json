@@ -3,6 +3,7 @@
   "Name": "Test Network",
   "Cellular.ActivationState": "activated",
   "Cellular.ActivationType": "OTASP",
+  "Cellular.RoamingState": "home",
   "Cellular.ServingOperator": {
     "code": "test-code",
     "country": "test-country",
