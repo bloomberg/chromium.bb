@@ -22,15 +22,17 @@
 """Liblouis test harness:
 Please see the liblouis documentation for information of how to add a new harness or more tests for your braille table.
 
-@author: Mesar Hameed <mhameed@src.gnome.org>
+@author: Mesar Hameed <mesar.hameed@gmail.com>
 @author: Michael Whapples <mwhapples@aim.com>
 @author: Hammer Attila <hammera@pickup.hu>
 """
 
+import argparse
 import json
 import os
 import sys
 import traceback
+from collections import OrderedDict
 from glob import iglob
 from louis import translate, backTranslateString, hyphenate
 from louis import noContractions, compbrlAtCursor, dotsIO, comp8Dots, pass1Only, compbrlLeftCursor, otherTrans, ucBrl
@@ -41,6 +43,12 @@ try:
 except ImportError:
     sys.stderr.write("The harness tests require nose. Skipping...\n")
     sys.exit(0)
+
+### command line parser
+parser = argparse.ArgumentParser(description='runHarness')
+parser.add_argument('-c', '--compact_output', action='store_true', help='Display output in a compact form, suitable for grepping.')
+parser.add_argument('harnessFiles', nargs='*', help='test harness file.')
+args = parser.parse_args()
 
 ### Nosetest plugin for controlling the output format. ###
 
@@ -72,8 +80,7 @@ class Reporter(Plugin):
 
     def addFailure(self, test, err):
         exctype, value, tb = err
-        #errMsg = ''.join(traceback.format_exception(exctype, value, None))
-        self.res.append("%s\n" % value)
+        self.res.append(value.__str__())
 
     def finalize(self, result):
         failures=len(result.failures)
@@ -141,6 +148,22 @@ class BrailleTest():
             return "".join( list(map(lambda a,b: "-"+a if b=='1' else a, word, hyphen_mask)) )
 
     def report_error(self, errorType, received, brlCursorPos=0):
+        if args.compact_output:
+            # Using an ordered dict here so that json will serialize
+            # the structure in a predictable fassion.
+            od = OrderedDict()
+            od['file'] = self.__str__()
+            od['errorType'] = errorType
+            if self.comment:
+                od['comment'] = self.comment
+            od['input'] = self.input
+            if self.expected != received:
+                od['expected'] = self.expected
+            od['received'] = received
+            if errorType == "Braille Cursor Difference":
+                od["expected cursor at: %d" % self.expectedBrlCursorPos] = "found at: %d" % brlCursorPos
+            return u(json.dumps(od, ensure_ascii=False))
+
         template = "%-25s '%s'"
         report = []
         report.append("--- {errorType} Failure: {file} ---".format(errorType=errorType, file=self.__str__()))
@@ -153,7 +176,7 @@ class BrailleTest():
         if errorType == "Braille Cursor Difference":
             cursorLocationIndicators = showCurPos(len(self.expected), brlCursorPos, pos2=self.expectedBrlCursorPos)
             report.append(template % ("BRLCursorAt %d expected %d:" %(brlCursorPos, self.expectedBrlCursorPos), cursorLocationIndicators))
-        report.append("--- end ---")
+        report.append("--- end ---\n")
         return u("\n".join(report))
 
     def check_translate(self):
@@ -189,9 +212,9 @@ def test_allCases():
         os.environ['LOUIS_TABLEPATH'] = '../tables,../../tables'
 
     testfiles=[]
-    if len(sys.argv)>1:
+    if len(args.harnessFiles):
         # grab the test files from the arguments
-        for test_file in sys.argv[1:]:
+        for test_file in args.harnessFiles:
             testfiles.extend(iglob(os.path.join(harness_dir, test_file)))
     else:
         # Process all *_harness.txt files in the harness directory.
