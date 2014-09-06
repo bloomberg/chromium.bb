@@ -1,0 +1,39 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [0, 50],
+          "bounds": [800, 550],
+          "contentsOpaque": true,
+          "backgroundColor": "#ADD8E6",
+          "children": [
+            {
+              "bounds": [800, 550],
+              "children": [
+                {
+                  "position": [400, -10],
+                  "bounds": [24, 100],
+                  "contentsOpaque": true,
+                  "drawsContent": true,
+                  "backgroundColor": "#D3D3D3"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "bounds": [800, 60],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#008000"
+        }
+      ]
+    }
+  ]
+}
+

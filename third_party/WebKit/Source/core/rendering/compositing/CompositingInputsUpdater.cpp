@@ -35,6 +35,13 @@ static const RenderLayer* findParentLayerOnClippingContainerChain(const RenderLa
     while (current) {
         if (current->style()->position() == FixedPosition) {
             for (current = current->parent(); current && !current->canContainFixedPositionObjects(); current = current->parent()) {
+                // All types of clips apply to fixed-position descendants of other fixed-position elements.
+                // Note: it's unclear whether this is what the spec says. Firefox does not clip, but Chrome does.
+                if (current->style()->position() == FixedPosition && current->hasClipOrOverflowClip()) {
+                    ASSERT(current->hasLayer());
+                    return static_cast<const RenderLayerModelObject*>(current)->layer();
+                }
+
                 // CSS clip applies to fixed position elements even for ancestors that are not what the
                 // fixed element is positioned with respect to.
                 if (current->hasClip()) {
