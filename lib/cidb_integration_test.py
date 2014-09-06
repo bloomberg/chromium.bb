@@ -254,6 +254,20 @@ class DataSeries0Test(CIDBIntegrationTest):
     self.assertEqual(rejected_cl_count, 8)
     self.assertEqual(total_actions, 1877)
 
+    actions_for_change = db.GetActionsForChange(
+        metadata_lib.GerritChangeTuple(205535, False))
+
+    self.assertEqual(len(actions_for_change), 60)
+    last_action = actions_for_change[-1]
+    last_action.pop('timestamp')
+    last_action.pop('id')
+    self.assertEqual(last_action, {'action': 'submitted',
+                                   'build_config': 'master-paladin',
+                                   'build_id': 511L,
+                                   'change_number': 205535L,
+                                   'change_source': 'external',
+                                   'patch_number': 1L})
+
   def _start_and_finish_time_checks(self, db):
     """Sanity checks that correct data was recorded, and can be retrieved."""
     max_start_time = db._GetEngine().execute(

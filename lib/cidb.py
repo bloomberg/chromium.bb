@@ -673,6 +673,33 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                              ['id', 'build_config', 'start_time',
                               'finish_time', 'status'])
 
+  @minimum_schema(11)
+  def GetActionsForChange(self, change):
+    """Gets all the actions for the given change.
+
+    Note, this includes all patches of the given change.
+
+    Args:
+      change: A GerritChangeTuple or GerritPatchTuple specifing the
+              change.
+
+    Returns:
+      A list of actions, in timestamp order, each of which is a dict
+      with keys (id, build_id, action, build_config, change_number,
+                 patch_number, change_source, timestamp)
+    """
+    change_number = int(change.gerrit_number)
+    change_source = 'internal' if change.internal else 'external'
+    results = self._Execute(
+        'SELECT c.id, b.id, action, build_config, change_number, '
+        'patch_number, change_source, timestamp FROM '
+        'clActionTable c JOIN buildTable b ON build_id = b.id '
+        'WHERE change_number = %s AND change_source = "%s"' % (
+        change_number, change_source)).fetchall()
+    columns = ['id', 'build_id', 'action', 'build_config', 'change_number',
+               'patch_number', 'change_source', 'timestamp']
+    return [dict(zip(columns, values)) for values in results]
+
 
 class CIDBConnectionFactory(object):
   """Factory class used by builders to fetch the appropriate cidb connection"""
