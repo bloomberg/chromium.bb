@@ -2180,7 +2180,8 @@ function entryBoxClick(event) {
         return;
     }
   }
-  var checkbox = $(event.currentTarget.getAttribute('for'));
+  var checkbox = assertInstanceof($(event.currentTarget.getAttribute('for')),
+                                  HTMLInputElement);
   checkbox.checked = !checkbox.checked;
   handleCheckboxStateChange(checkbox, event.shiftKey);
   // We don't want to focus on the checkbox.
