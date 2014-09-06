@@ -562,9 +562,8 @@ RenderLayer* RenderObject::enclosingLayer() const
         if (current->hasLayer())
             return toRenderLayerModelObject(current)->layer();
     }
-    // FIXME: We should remove the one caller that triggers this case and make
-    // this function return a reference.
-    ASSERT(!m_parent && !isRenderView());
+    // FIXME: we should get rid of detached render subtrees, at which point this code should
+    // not be reached. crbug.com/411429
     return 0;
 }
 

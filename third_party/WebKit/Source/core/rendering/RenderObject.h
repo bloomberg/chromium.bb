@@ -841,7 +841,7 @@ public:
     // Return the RenderLayerModelObject in the container chain which is responsible for painting this object, or 0
     // if painting is root-relative. This is the container that should be passed to the 'forPaintInvalidation'
     // methods.
-    const RenderLayerModelObject* containerForPaintInvalidation() const;
+    virtual const RenderLayerModelObject* containerForPaintInvalidation() const;
     const RenderLayerModelObject* adjustCompositedContainerForSpecialAncestors(const RenderLayerModelObject* paintInvalidationContainer) const;
     bool isPaintInvalidationContainer() const;
 

@@ -120,6 +120,7 @@ public:
     LayoutUnit marginRight() const { return minimumValueForLength(style()->marginRight(), 0); }
 
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const OVERRIDE FINAL;
+    virtual const RenderLayerModelObject* containerForPaintInvalidation() const OVERRIDE;
 
     InlineTextBox* firstTextBox() const { return m_firstTextBox; }
     InlineTextBox* lastTextBox() const { return m_lastTextBox; }
@@ -161,6 +162,10 @@ protected:
     virtual InlineTextBox* createTextBox(); // Subclassed by SVG.
 
 private:
+    // RenderText objects don't know how to invalidate paint for themselves, since they don't know how to compute their bounds. Instead, they
+    // invalidate paint for the containing block or layer, as computed by this method.
+    const RenderLayerModelObject* containingObjectForPaintInvalidation() const;
+
     void computePreferredLogicalWidths(float leadWidth);
     void computePreferredLogicalWidths(float leadWidth, HashSet<const SimpleFontData*>& fallbackFonts, GlyphOverflow&);
 

@@ -1576,18 +1576,31 @@ LayoutRect RenderText::linesVisualOverflowBoundingBox() const
 
 LayoutRect RenderText::clippedOverflowRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
-    RenderObject* rendererToIssuePaintInvalidations = containingBlock();
+    const RenderObject* rendererToIssuePaintInvalidations = containingObjectForPaintInvalidation();
+    return rendererToIssuePaintInvalidations->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
+}
+
+const RenderLayerModelObject* RenderText::containingObjectForPaintInvalidation() const
+{
+    RenderLayerModelObject* rendererToIssuePaintInvalidations = containingBlock();
 
     // Do not cross self-painting layer boundaries.
-    RenderObject* enclosingLayerRenderer = enclosingLayer()->renderer();
-    if (enclosingLayerRenderer != rendererToIssuePaintInvalidations && !rendererToIssuePaintInvalidations->isDescendantOf(enclosingLayerRenderer))
-        rendererToIssuePaintInvalidations = enclosingLayerRenderer;
+    RenderLayer* layer = enclosingLayer();
+    if (layer) {
+        RenderLayerModelObject* enclosingLayerRenderer = layer->renderer();
+        if (enclosingLayerRenderer != rendererToIssuePaintInvalidations && !rendererToIssuePaintInvalidations->isDescendantOf(enclosingLayerRenderer))
+            rendererToIssuePaintInvalidations = enclosingLayerRenderer;
+    }
+    return rendererToIssuePaintInvalidations;
+}
 
-    // The renderer we chose to issue paint invalidations may be an ancestor of paintInvalidationContainer, but we need to do a paintInvalidationContainer-relative paint invalidation.
-    if (paintInvalidationContainer && paintInvalidationContainer != rendererToIssuePaintInvalidations && !rendererToIssuePaintInvalidations->isDescendantOf(paintInvalidationContainer))
-        return paintInvalidationContainer->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
-
-    return rendererToIssuePaintInvalidations->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
+const RenderLayerModelObject* RenderText::containerForPaintInvalidation() const
+{
+    const RenderObject* rendererToIssuePaintInvalidations = containingObjectForPaintInvalidation();
+    if (rendererToIssuePaintInvalidations)
+        return rendererToIssuePaintInvalidations->containerForPaintInvalidation();
+    // This can happen for detached render subtrees.
+    return 0;
 }
 
 LayoutRect RenderText::selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, bool clipToVisibleContent)

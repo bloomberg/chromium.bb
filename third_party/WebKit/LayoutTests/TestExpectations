@@ -1,3 +1,4 @@
+crbug.com/410541 fast/repaint/paint-invalidation-with-reparent-across-frame-boundaries.html [ NeedsRebaseline ]
 
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
