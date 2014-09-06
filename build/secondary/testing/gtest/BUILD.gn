@@ -54,7 +54,7 @@ config("gtest_config") {
 }
 
 config("gtest_direct_config") {
-  visibility = ":*"
+  visibility = [ ":*" ]
   defines = [ "UNIT_TEST" ]
 }
 

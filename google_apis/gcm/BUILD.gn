@@ -58,7 +58,7 @@ component("gcm") {
 }
 
 proto_library("proto") {
-  visibility = ":*"
+  visibility = [ ":*" ]
   sources = [
     "protocol/android_checkin.proto",
     "protocol/checkin.proto",

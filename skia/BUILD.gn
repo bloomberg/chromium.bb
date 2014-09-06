@@ -699,5 +699,5 @@ source_set("skia_opts") {
     "//base",
   ]
 
-  visibility = ":skia"
+  visibility = [ ":skia" ]
 }

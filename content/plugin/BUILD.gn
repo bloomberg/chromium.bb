@@ -7,7 +7,7 @@ import("//build/config/features.gni")
 # This is the NPAPI plugin process. It isn't used on Linux.
 if (enable_plugins && !is_linux) {
   source_set("plugin") {
-    visibility = "//content/*"
+    visibility = [ "//content/*" ]
     sources = [
       "plugin_channel.cc",
       "plugin_channel.h",

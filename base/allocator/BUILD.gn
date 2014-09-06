@@ -240,7 +240,7 @@ if (!is_android) {
 }  # !is_android
 
 source_set("allocator_extension_thunks") {
-  visibility = "//base/*"
+  visibility = [ "//base/*" ]
   sources = [
     "allocator_extension_thunks.cc",
     "allocator_extension_thunks.h",

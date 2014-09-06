@@ -73,7 +73,7 @@ static_library("search_engines") {
 }
 
 json_to_struct("prepopulated_engines") {
-  visibility = ":*"
+  visibility = [ ":*" ]
 
   source = "prepopulated_engines.json"
   schema_file = "prepopulated_engines_schema.json"

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 source_set("symbolize") {
-  visibility = "//base/*"
+  visibility = [ "//base/*" ]
   sources = [
     "config.h",
     "demangle.cc",

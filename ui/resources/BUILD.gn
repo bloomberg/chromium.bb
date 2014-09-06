@@ -15,7 +15,6 @@ group("resources") {
 }
 
 grit("ui_resources_grd") {
-  visibility = ":resources"
   source = "ui_resources.grd"
   outputs = [
     "grit/ui_resources.h",
@@ -27,7 +26,6 @@ grit("ui_resources_grd") {
 }
 
 grit("ui_unscaled_resources_grd") {
-  visibility = ":resources"
   source = "ui_unscaled_resources.grd"
   outputs = [
     "grit/ui_unscaled_resources.h",
@@ -36,7 +34,6 @@ grit("ui_unscaled_resources_grd") {
 }
 
 grit("webui_resources_grd") {
-  visibility = ":resources"
   source = "../webui/resources/webui_resources.grd"
   outputs = [
     "grit/webui_resources.h",
@@ -74,7 +71,7 @@ if (is_ios) {
 # GYP version: ui/resources/ui_resources.gyp:ui_test_pak
 repack("repack_ui_test_pak") {
   # Depend on ui_test_pak instead of this one.
-  visibility = ":ui_test_pak"
+  visibility = [ ":ui_test_pak" ]
 
   sources = [ 
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",

@@ -67,7 +67,7 @@ template("generated_extensions_api") {
 
   # Keep a copy of the target_name here since it will be trampled
   # in nested targets.
-  target_visibility = ":$target_name"
+  target_visibility = [ ":$target_name" ]
 
   generated_config_name = target_name + "_generated_config"
   config(generated_config_name) {

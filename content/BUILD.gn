@@ -49,7 +49,7 @@ grit("resources") {
 # This target exists to "hold" the content_export header so we can do proper
 # inclusion testing of it.
 source_set("export") {
-  visibility = "//content/*"
+  visibility = [ "//content/*" ]
   sources = [
     "content/common/content_export.h"
   ]

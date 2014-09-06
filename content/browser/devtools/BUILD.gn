@@ -37,7 +37,7 @@ grit("devtools_resources") {
 }
 
 action("gen_devtools_protocol_constants") {
-  visibility = ":devtools_protocol_constants"
+  visibility = [ ":devtools_protocol_constants" ]
 
   script = "//content/public/browser/devtools_protocol_constants_generator.py"
 
@@ -57,6 +57,6 @@ action("gen_devtools_protocol_constants") {
 }
 
 source_set("devtools_protocol_constants") {
-  visibility = ":resources"
+  visibility = [ ":resources" ]
   sources = get_target_outputs(":gen_devtools_protocol_constants")
 }

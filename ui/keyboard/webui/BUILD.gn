@@ -13,7 +13,7 @@ mojom("mojo_bindings") {
 
 # GYP version: part of ui/keyboard/keyboard.gyp:keyboard
 source_set("webui") {
-  visibility = "//ui/keyboard"
+  visibility = [ "//ui/keyboard" ]
 
   sources = [
     "../keyboard_export.h",

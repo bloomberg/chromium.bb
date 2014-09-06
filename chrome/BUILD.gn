@@ -319,7 +319,7 @@ group("packed_resources") {
 }
 
 repack("packed_extra_resources") {
-  visibility = ":*"
+  visibility = [ ":*" ]
   sources = [
     "$root_gen_dir/chrome/browser_resources.pak",
     "$root_gen_dir/chrome/app/theme/chrome_unscaled_resources.pak",

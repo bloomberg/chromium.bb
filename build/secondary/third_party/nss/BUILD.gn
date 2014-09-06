@@ -385,7 +385,7 @@ if (is_linux) {
   # TODO(rsleevi): http://crbug.com/128134 - Break the circular dependency
   # without requiring nssckbi to be built as a shared library.
   source_set("nssckbi") {
-    visibility = ":nss"  # This target is internal implementation detail.
+    visibility = [ ":nss" ]  # This target is internal implementation detail.
 
     sources = [
       "nss/lib/ckfw/builtins/anchor.c",

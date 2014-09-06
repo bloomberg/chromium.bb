@@ -150,7 +150,7 @@ template("chrome_repack_locales") {
     locale_targets += [ ":$current_name" ]
 
     _repack_one_locale(current_name) {
-      visibility = ":$group_target_name"
+      visibility = [ ":$group_target_name" ]
       locale = input_locale
 
       # Compute the output name. Mac uses a different location.

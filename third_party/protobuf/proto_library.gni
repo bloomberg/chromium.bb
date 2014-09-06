@@ -55,7 +55,7 @@ template("proto_library") {
   action_name = "${target_name}_gen"
   source_set_name = target_name
   action_foreach(action_name) {
-    visibility = ":$source_set_name"
+    visibility = [ ":$source_set_name" ]
 
     script = "//tools/protoc_wrapper/protoc_wrapper.py"
 

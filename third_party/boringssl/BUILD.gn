@@ -15,7 +15,7 @@ config("openssl_config") {
 
 # Config internal to this build file.
 config("openssl_internal_config") {
-  visibility = ":*"  # Only targets in this file can depend on this.
+  visibility = [ ":*" ]  # Only targets in this file can depend on this.
 }
 
 # The list of BoringSSL files is kept in boringssl.gypi.

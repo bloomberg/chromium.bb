@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 source_set("xdg_user_dirs") {
-  visibility = "//base/*"
+  visibility = [ "//base/*" ]
   sources = [
     "xdg_user_dir_lookup.cc",
     "xdg_user_dir_lookup.h",

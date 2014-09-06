@@ -8,6 +8,10 @@ config("cld_config") {
 }
 
 static_library("cld") {
+  # This target includes its own copy of "base" which confuses the header
+  # checker.
+  check_includes = false
+
   sources = [
     "encodings/compact_lang_det/cldutil.cc",
     "encodings/compact_lang_det/cldutil.h",

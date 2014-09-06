@@ -110,7 +110,8 @@ template("yasm_assemble") {
   source_set_name = target_name
 
   action_foreach(action_name) {
-    visibility = ":$source_set_name"  # Only the source set can depend on this.
+    # Only the source set can depend on this.
+    visibility = [ ":$source_set_name" ]
 
     script = "//third_party/yasm/run_yasm.py"
     sources = invoker.sources

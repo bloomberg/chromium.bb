@@ -244,7 +244,7 @@ if (is_linux) {
   # Windows.
   import("//chrome/version.gni")
   process_version("version") {
-    visibility = ":common"
+    visibility = [ ":common" ]
     source = "chrome_version_info_posix.h.version"
     output = "$target_gen_dir/chrome_version_info_posix.h"
   }

@@ -316,7 +316,7 @@ static_library("content_shell_lib") {
 }
 
 grit("content_shell_resources_grit") {
-  visibility = ":*"
+  visibility = [ ":*" ]
   source = "shell_resources.grd"
   outputs = [
     "grit/shell_resources.h",
@@ -336,14 +336,14 @@ copy("copy_shell_resources") {
 # Font copies.
 if (!is_mac) {
   copy("copy_ahem") {
-    visibility = ":*"
+    visibility = [ ":*" ]
     sources = [ "renderer/test_runner/resources/fonts/AHEM____.TTF" ]
     outputs = [ "$root_out_dir/AHEM____.TTF" ]
   }
 }
 if (use_x11) {
   copy("copy_x11_fonts") {
-    visibility = ":*"
+    visibility = [ ":*" ]
     sources = [
       "renderer/test_runner/resources/fonts/fonts.conf",
       "//third_party/gardiner_mod/GardinerModBug.ttf",
@@ -354,7 +354,7 @@ if (use_x11) {
 }
 if (is_android) {
   copy("copy_android_fonts") {
-    visibility = ":*"
+    visibility = [ ":*" ]
     sources = [
       "renderer/test_runner/resources/fonts/android_main_fonts.xml",
       "renderer/test_runner/resources/fonts/android_fallback_fonts.xml",

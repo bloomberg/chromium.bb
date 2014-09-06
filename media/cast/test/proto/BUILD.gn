@@ -18,7 +18,7 @@ source_set("proto") {
 }
 
 proto_library("cast_network_simulation_proto") {
-  visibility = ":proto"
+  visibility = [ ":proto" ]
   sources = [
     "network_simulation_model.proto",
   ]

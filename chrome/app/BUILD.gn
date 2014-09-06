@@ -72,7 +72,7 @@ grit("generated_resources") {
 # GYP version: chrome/chrome_resources.gyp:chrome_strings_map
 action("make_generated_resources_map") {
   # Targets should depend on generated_resources_map instead.
-  visibility = ":generated_resources_map"
+  visibility = [ ":generated_resources_map" ]
 
   script = "//chrome/browser/metrics/variations/generate_resources_map.py"
 

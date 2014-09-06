@@ -6,7 +6,7 @@ import("//third_party/protobuf/proto_library.gni")
 
 proto_library("cacheinvalidation_proto_cpp") {
   # Depend on cacheinvalidation instead.
-  visibility = "//third_party/cacheinvalidation/*"
+  visibility = [ "//third_party/cacheinvalidation/*" ]
 
   sources = [
     "client.proto",

@@ -12,7 +12,7 @@ tracing_gen_dir = "$root_gen_dir/content/browser/tracing"
 tracing_grd = "$tracing_gen_dir/tracing_resources.grd"
 
 action("generate_tracing_grd") {
-  visibility = ":*"
+  visibility = [ ":*" ]
   script = "generate_trace_viewer_grd.py"
 
   input_pages = [

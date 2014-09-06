@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 action("bake_in_configs") {
-  visibility = ":*"
+  visibility = [ ":*" ]
   script = "bake_in_configs.py"
 
   inputs = [

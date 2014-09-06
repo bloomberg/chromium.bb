@@ -20,6 +20,12 @@ source_set("ppapi_c") {
   sources = gypi_values.c_source_files
 }
 
+# Some targets need to depend on the PPAPI version only. This target exists so
+# they can include this header without header check warnings.
+source_set("ppapi_macros") {
+  sources = [ "c/pp_macros.h" ]
+}
+
 source_set("ppapi_cpp_objects") {
   sources = gypi_values.cpp_source_files
 

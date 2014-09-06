@@ -258,7 +258,7 @@ component("gl") {
 }
 
 action("generate_gl_bindings") {
-  visibility = ":*"  # Only targets in this file can see this.
+  visibility = [ ":*" ]  # Only targets in this file can see this.
 
   script = "generate_bindings.py"
 

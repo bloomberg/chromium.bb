@@ -17,7 +17,7 @@ config("autofill_browser_config") {
 
 # GYP version: components/autofill.gyp:autofill_regexes
 action("regexes") {
-  visibility = "//components/autofill/*"
+  visibility = [ "//components/autofill/*" ]
   script = "//build/escape_unicode.py"
 
   inputs = [
