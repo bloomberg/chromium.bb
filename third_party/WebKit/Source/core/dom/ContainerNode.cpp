@@ -1205,6 +1205,37 @@ void ContainerNode::setRestyleFlag(DynamicRestyleFlags mask)
     ensureRareData().setRestyleFlag(mask);
 }
 
+void ContainerNode::recalcChildStyle(StyleRecalcChange change)
+{
+    ASSERT(document().inStyleRecalc());
+    ASSERT(change >= UpdatePseudoElements || childNeedsStyleRecalc());
+    ASSERT(!needsStyleRecalc());
+
+    if (change < Force && hasRareData() && childNeedsStyleRecalc())
+        checkForChildrenAdjacentRuleChanges();
+
+    // This loop is deliberately backwards because we use insertBefore in the rendering tree, and want to avoid
+    // a potentially n^2 loop to find the insertion point while resolving style. Having us start from the last
+    // child and work our way back means in the common case, we'll find the insertion point in O(1) time.
+    // See crbug.com/288225
+    StyleResolver& styleResolver = document().ensureStyleResolver();
+    Text* lastTextNode = 0;
+    for (Node* child = lastChild(); child; child = child->previousSibling()) {
+        if (child->isTextNode()) {
+            toText(child)->recalcTextStyle(change, lastTextNode);
+            lastTextNode = toText(child);
+        } else if (child->isElementNode()) {
+            Element* element = toElement(child);
+            if (element->shouldCallRecalcStyle(change))
+                element->recalcStyle(change, lastTextNode);
+            else if (element->supportsStyleSharing())
+                styleResolver.addToStyleSharingList(*element);
+            if (element->renderer())
+                lastTextNode = 0;
+        }
+    }
+}
+
 void ContainerNode::checkForChildrenAdjacentRuleChanges()
 {
     bool hasDirectAdjacentRules = childrenAffectedByDirectAdjacentRules();

@@ -566,7 +566,6 @@ private:
     void setInlineStyleFromString(const AtomicString&);
 
     StyleRecalcChange recalcOwnStyle(StyleRecalcChange);
-    void recalcChildStyle(StyleRecalcChange);
 
     inline void checkForEmptyStyleChange();
 
