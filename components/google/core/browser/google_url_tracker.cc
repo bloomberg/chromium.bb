@@ -246,9 +246,17 @@ void GoogleURLTracker::StartFetchIfDesirable() {
                          net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher_->SetRequestContext(client_->GetRequestContext());
 
-  // Configure to max_retries at most kMaxRetries times for 5xx errors.
+  // Configure to retry at most kMaxRetries times for 5xx errors.
   static const int kMaxRetries = 5;
   fetcher_->SetMaxRetriesOn5xx(kMaxRetries);
+
+  // Also retry kMaxRetries times on network change errors. A network change can
+  // propagate through Chrome in various stages, so it's possible for this code
+  // to be reached via OnNetworkChanged(), and then have the fetch we kick off
+  // be canceled due to e.g. the DNS server changing at a later time. In general
+  // it's not possible to ensure that by the time we reach here any requests we
+  // start won't be canceled in this fashion, so retrying is the best we can do.
+  fetcher_->SetAutomaticallyRetryOnNetworkChanges(kMaxRetries);
 
   fetcher_->Start();
 }
