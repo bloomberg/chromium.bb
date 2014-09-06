@@ -9,12 +9,15 @@
 #include <sys/socket.h>
 #include <sys/utsname.h>
 
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
+
+#define CASES SANDBOX_BPF_DSL_CASES
 
 // Helper macro to assert that invoking system call |sys| directly via
 // Syscall::Call with arguments |...| returns |res|.
@@ -34,6 +37,10 @@ class Stubs {
   static int setgid(gid_t gid) { return Syscall::Call(__NR_setgid, gid); }
   static int setpgid(pid_t pid, pid_t pgid) {
     return Syscall::Call(__NR_setpgid, pid, pgid);
+  }
+
+  static int fcntl(int fd, int cmd, unsigned long arg = 0) {
+    return Syscall::Call(__NR_fcntl, fd, cmd, arg);
   }
 
   static int uname(struct utsname* buf) {
@@ -273,6 +280,42 @@ BPF_TEST_C(BPFDSL, ElseIfTest, ElseIfPolicy) {
 
   ASSERT_SYSCALL_RESULT(-EACCES, setuid, 0x0111);
   ASSERT_SYSCALL_RESULT(-EACCES, setuid, 0x0222);
+}
+
+class SwitchPolicy : public SandboxBPFDSLPolicy {
+ public:
+  SwitchPolicy() {}
+  virtual ~SwitchPolicy() {}
+  virtual ResultExpr EvaluateSyscall(int sysno) const OVERRIDE {
+    if (sysno == __NR_fcntl) {
+      const Arg<int> cmd(1);
+      const Arg<unsigned long> long_arg(2);
+      return Switch(cmd)
+          .CASES((F_GETFL, F_GETFD), Error(ENOENT))
+          .Case(F_SETFD, If(long_arg == O_CLOEXEC, Allow()).Else(Error(EINVAL)))
+          .Case(F_SETFL, Error(EPERM))
+          .Default(Error(EACCES));
+    }
+    return Allow();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SwitchPolicy);
+};
+
+BPF_TEST_C(BPFDSL, SwitchTest, SwitchPolicy) {
+  base::ScopedFD sock_fd(socket(AF_UNIX, SOCK_STREAM, 0));
+  BPF_ASSERT(sock_fd.is_valid());
+
+  ASSERT_SYSCALL_RESULT(-ENOENT, fcntl, sock_fd.get(), F_GETFD);
+  ASSERT_SYSCALL_RESULT(-ENOENT, fcntl, sock_fd.get(), F_GETFL);
+
+  ASSERT_SYSCALL_RESULT(0, fcntl, sock_fd.get(), F_SETFD, O_CLOEXEC);
+  ASSERT_SYSCALL_RESULT(-EINVAL, fcntl, sock_fd.get(), F_SETFD, 0);
+
+  ASSERT_SYSCALL_RESULT(-EPERM, fcntl, sock_fd.get(), F_SETFL, O_RDONLY);
+
+  ASSERT_SYSCALL_RESULT(-EACCES, fcntl, sock_fd.get(), F_DUPFD, 0);
 }
 
 }  // namespace

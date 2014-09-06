@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -59,10 +60,12 @@ class SandboxBPF;
 //
 // More generally, the DSL currently supports the following grammar:
 //
-//   result = Allow() | Error(errno) | Trap(trap_func, arg)
+//   result = Allow() | Error(errno) | Trap(trap_func, aux)
 //          | If(bool, result)[.ElseIf(bool, result)].Else(result)
-//   bool   = arg == val | (arg & mask) == val
-//          | !bool | bool && bool | bool || bool
+//          | Switch(arg)[.Case(val, result)].Default(result)
+//   bool   = BoolConst(boolean) | !bool | bool && bool | bool || bool
+//          | arg == val
+//   arg    = Arg<T>(num) | arg & mask
 //
 // The semantics of each function and operator are intended to be
 // intuitive, but are described in more detail below.
@@ -76,6 +79,8 @@ namespace bpf_dsl {
 
 // Forward declarations of classes; see below for proper documentation.
 class Elser;
+template <typename T>
+class Caser;
 namespace internal {
 class ResultExprImpl;
 class BoolExprImpl;
@@ -159,6 +164,9 @@ class SANDBOX_EXPORT Arg {
   DISALLOW_ASSIGN(Arg);
 };
 
+// Convert a bool value into a BoolExpr.
+SANDBOX_EXPORT BoolExpr BoolConst(bool value);
+
 // Various ways to combine boolean expressions into more complex expressions.
 // They follow standard boolean algebra laws.
 SANDBOX_EXPORT BoolExpr operator!(const BoolExpr& cond);
@@ -190,8 +198,61 @@ class SANDBOX_EXPORT Elser {
   Cons<Clause>::List clause_list_;
 
   friend Elser If(const BoolExpr&, const ResultExpr&);
+  template <typename T>
+  friend Caser<T> Switch(const Arg<T>&);
   DISALLOW_ASSIGN(Elser);
 };
+
+// Switch begins a switch expression dispatched according to the
+// specified argument value.
+template <typename T>
+SANDBOX_EXPORT Caser<T> Switch(const Arg<T>& arg);
+
+template <typename T>
+class SANDBOX_EXPORT Caser {
+ public:
+  Caser(const Caser<T>& caser) : arg_(caser.arg_), elser_(caser.elser_) {}
+  ~Caser() {}
+
+  // Case adds a single-value "case" clause to the switch.
+  Caser<T> Case(T value, ResultExpr result) const;
+
+  // Cases adds a multiple-value "case" clause to the switch.
+  // See also the SANDBOX_BPF_DSL_CASES macro below for a more idiomatic way
+  // of using this function.
+  Caser<T> Cases(const std::vector<T>& values, ResultExpr result) const;
+
+  // Terminate the switch with a "default" clause.
+  ResultExpr Default(ResultExpr result) const;
+
+ private:
+  Caser(const Arg<T>& arg, Elser elser) : arg_(arg), elser_(elser) {}
+
+  Arg<T> arg_;
+  Elser elser_;
+
+  template <typename U>
+  friend Caser<U> Switch(const Arg<U>&);
+  DISALLOW_ASSIGN(Caser);
+};
+
+// Recommended usage is to put
+//    #define CASES SANDBOX_BPF_DSL_CASES
+// near the top of the .cc file (e.g., nearby any "using" statements), then
+// use like:
+//    Switch(arg).CASES((3, 5, 7), result)...;
+#define SANDBOX_BPF_DSL_CASES(values, result) \
+  Cases(SANDBOX_BPF_DSL_CASES_HELPER values, result)
+
+// Helper macro to construct a std::vector from an initializer list.
+// TODO(mdempsky): Convert to use C++11 initializer lists instead.
+#define SANDBOX_BPF_DSL_CASES_HELPER(value, ...)                           \
+  ({                                                                       \
+    const __typeof__(value) bpf_dsl_cases_values[] = {value, __VA_ARGS__}; \
+    std::vector<__typeof__(value)>(                                        \
+        bpf_dsl_cases_values,                                              \
+        bpf_dsl_cases_values + arraysize(bpf_dsl_cases_values));           \
+  })
 
 // =====================================================================
 // Official API ends here.
@@ -259,6 +320,36 @@ Arg<T>::Arg(int num)
 template <typename T>
 BoolExpr Arg<T>::EqualTo(T val) const {
   return internal::ArgEq(num_, sizeof(T), mask_, static_cast<uint64_t>(val));
+}
+
+template <typename T>
+SANDBOX_EXPORT Caser<T> Switch(const Arg<T>& arg) {
+  return Caser<T>(arg, Elser(Cons<Elser::Clause>::List()));
+}
+
+template <typename T>
+Caser<T> Caser<T>::Case(T value, ResultExpr result) const {
+  return SANDBOX_BPF_DSL_CASES((value), result);
+}
+
+template <typename T>
+Caser<T> Caser<T>::Cases(const std::vector<T>& values,
+                         ResultExpr result) const {
+  // Theoretically we could evaluate arg_ just once and emit a more efficient
+  // dispatch table, but for now we simply translate into an equivalent
+  // If/ElseIf/Else chain.
+
+  typedef typename std::vector<T>::const_iterator Iter;
+  BoolExpr test = BoolConst(false);
+  for (Iter i = values.begin(), end = values.end(); i != end; ++i) {
+    test = test || (arg_ == *i);
+  }
+  return Caser<T>(arg_, elser_.ElseIf(test, result));
+}
+
+template <typename T>
+ResultExpr Caser<T>::Default(ResultExpr result) const {
+  return elser_.Else(result);
 }
 
 }  // namespace bpf_dsl

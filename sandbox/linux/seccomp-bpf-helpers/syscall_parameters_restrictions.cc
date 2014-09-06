@@ -79,6 +79,8 @@ inline bool IsArchitectureMips() {
 
 }  // namespace.
 
+#define CASES SANDBOX_BPF_DSL_CASES
+
 using sandbox::bpf_dsl::Allow;
 using sandbox::bpf_dsl::Arg;
 using sandbox::bpf_dsl::BoolExpr;
@@ -123,15 +125,16 @@ ResultExpr RestrictPrctl() {
   // Will need to add seccomp compositing in the future. PR_SET_PTRACER is
   // used by breakpad but not needed anymore.
   const Arg<int> option(0);
-  return If(option == PR_GET_NAME || option == PR_SET_NAME ||
-                option == PR_GET_DUMPABLE || option == PR_SET_DUMPABLE,
-            Allow()).Else(CrashSIGSYSPrctl());
+  return Switch(option)
+      .CASES((PR_GET_NAME, PR_SET_NAME, PR_GET_DUMPABLE, PR_SET_DUMPABLE),
+             Allow())
+      .Default(CrashSIGSYSPrctl());
 }
 
 ResultExpr RestrictIoctl() {
   const Arg<int> request(1);
-  return If(request == TCGETS || request == FIONREAD, Allow())
-      .Else(CrashSIGSYSIoctl());
+  return Switch(request).CASES((TCGETS, FIONREAD), Allow()).Default(
+      CrashSIGSYSIoctl());
 }
 
 ResultExpr RestrictMmapFlags() {
@@ -172,11 +175,19 @@ ResultExpr RestrictFcntlCommands() {
 
   unsigned long denied_mask = ~(O_ACCMODE | O_APPEND | O_NONBLOCK | O_SYNC |
                                 kOLargeFileFlag | O_CLOEXEC | O_NOATIME);
-  return If(cmd == F_GETFL || cmd == F_GETFD || cmd == F_SETFD ||
-                cmd == F_SETLK || cmd == F_SETLKW || cmd == F_GETLK ||
-                cmd == F_DUPFD || cmd == F_DUPFD_CLOEXEC ||
-                (cmd == F_SETFL && (long_arg & denied_mask) == 0),
-            Allow()).Else(CrashSIGSYS());
+  return Switch(cmd)
+      .CASES((F_GETFL,
+              F_GETFD,
+              F_SETFD,
+              F_SETLK,
+              F_SETLKW,
+              F_GETLK,
+              F_DUPFD,
+              F_DUPFD_CLOEXEC),
+             Allow())
+      .Case(F_SETFL,
+            If((long_arg & denied_mask) == 0, Allow()).Else(CrashSIGSYS()))
+      .Default(CrashSIGSYS());
 }
 
 #if defined(__i386__) || defined(__mips__)
@@ -186,11 +197,17 @@ ResultExpr RestrictSocketcallCommand() {
   // few protocols actually support socketpair(2). The scary call that we're
   // worried about, socket(2), remains blocked.
   const Arg<int> call(0);
-  return If(call == SYS_SOCKETPAIR || call == SYS_SHUTDOWN ||
-                call == SYS_RECV || call == SYS_SEND ||
-                call == SYS_RECVFROM || call == SYS_SENDTO ||
-                call == SYS_RECVMSG || call == SYS_SENDMSG,
-            Allow()).Else(Error(EPERM));
+  return Switch(call)
+      .CASES((SYS_SOCKETPAIR,
+              SYS_SHUTDOWN,
+              SYS_RECV,
+              SYS_SEND,
+              SYS_RECVFROM,
+              SYS_SENDTO,
+              SYS_RECVMSG,
+              SYS_SENDMSG),
+             Allow())
+      .Default(Error(EPERM));
 }
 #endif
 
@@ -212,18 +229,19 @@ ResultExpr RestrictKillTarget(pid_t target_pid, int sysno) {
 ResultExpr RestrictFutex() {
   const int kAllowedFutexFlags = FUTEX_PRIVATE_FLAG | FUTEX_CLOCK_REALTIME;
   const int kOperationMask = ~kAllowedFutexFlags;
-  const int kAllowedFutexOperations[] = {
-      FUTEX_WAIT,        FUTEX_WAKE,    FUTEX_FD,          FUTEX_REQUEUE,
-      FUTEX_CMP_REQUEUE, FUTEX_WAKE_OP, FUTEX_WAIT_BITSET, FUTEX_WAKE_BITSET};
 
   const Arg<int> op(1);
-
-  BoolExpr IsAllowedOp = (op & kOperationMask) == kAllowedFutexOperations[0];
-  for (size_t i = 1; i < arraysize(kAllowedFutexOperations); ++i) {
-    IsAllowedOp =
-        IsAllowedOp || ((op & kOperationMask) == kAllowedFutexOperations[i]);
-  }
-  return If(IsAllowedOp, Allow()).Else(CrashSIGSYSFutex());
+  return Switch(op & kOperationMask)
+      .CASES((FUTEX_WAIT,
+              FUTEX_WAKE,
+              FUTEX_FD,
+              FUTEX_REQUEUE,
+              FUTEX_CMP_REQUEUE,
+              FUTEX_WAKE_OP,
+              FUTEX_WAIT_BITSET,
+              FUTEX_WAKE_BITSET),
+             Allow())
+      .Default(CrashSIGSYSFutex());
 }
 
 }  // namespace sandbox.

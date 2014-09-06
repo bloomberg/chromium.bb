@@ -90,6 +90,24 @@ class IfThenResultExprImpl : public internal::ResultExprImpl {
   DISALLOW_COPY_AND_ASSIGN(IfThenResultExprImpl);
 };
 
+class ConstBoolExprImpl : public internal::BoolExprImpl {
+ public:
+  ConstBoolExprImpl(bool value) : value_(value) {}
+
+  virtual ErrorCode Compile(SandboxBPF* sb,
+                            ErrorCode true_ec,
+                            ErrorCode false_ec) const OVERRIDE {
+    return value_ ? true_ec : false_ec;
+  }
+
+ private:
+  virtual ~ConstBoolExprImpl() {}
+
+  bool value_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConstBoolExprImpl);
+};
+
 class PrimitiveBoolExprImpl : public internal::BoolExprImpl {
  public:
   PrimitiveBoolExprImpl(int argno,
@@ -212,6 +230,10 @@ ResultExpr Error(int err) {
 
 ResultExpr Trap(Trap::TrapFnc trap_func, void* aux) {
   return ResultExpr(new const TrapResultExprImpl(trap_func, aux));
+}
+
+BoolExpr BoolConst(bool value) {
+  return BoolExpr(new const ConstBoolExprImpl(value));
 }
 
 BoolExpr operator!(const BoolExpr& cond) {
