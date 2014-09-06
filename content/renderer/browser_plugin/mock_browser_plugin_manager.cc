@@ -23,8 +23,8 @@ MockBrowserPluginManager::~MockBrowserPluginManager() {
 BrowserPlugin* MockBrowserPluginManager::CreateBrowserPlugin(
     RenderViewImpl* render_view,
     blink::WebFrame* frame,
-    bool auto_navigate) {
-  last_plugin_ = new MockBrowserPlugin(render_view, frame, auto_navigate);
+    scoped_ptr<BrowserPluginDelegate> delegate) {
+  last_plugin_ = new MockBrowserPlugin(render_view, frame, delegate.Pass());
   return last_plugin_;
 }
 

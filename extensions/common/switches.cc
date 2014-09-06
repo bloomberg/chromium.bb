@@ -49,6 +49,10 @@ const char kEnableExperimentalExtensionApis[] =
 const char kEnableExtensionActionRedesign[] =
     "enable-extension-action-redesign";
 
+// Hack so that feature switch can work with about_flags. See
+// kEnableScriptsRequireAction.
+const char kEnableMimeHandlerView[] = "enable-mime-handler-view";
+
 // Enables extensions to hide bookmarks UI elements.
 const char kEnableOverrideBookmarksUI[] = "enable-override-bookmarks-ui";
 
@@ -77,6 +81,9 @@ const char kExtensionsOnChromeURLs[] = "extensions-on-chrome-urls";
 
 // Whether to force developer mode extensions highlighting.
 const char kForceDevModeHighlighting[] = "force-dev-mode-highlighting";
+
+// Whether or not mime handler view guests are enabled.
+const char kMimeHandlerView[] = "mime-handler-view";
 
 // Notify the user and require consent for extensions running scripts.
 // Appending --scripts-require-action=1 has the same effect as

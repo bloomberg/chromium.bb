@@ -7,6 +7,8 @@
     'chrome_renderer_sources': [
       'renderer/benchmarking_extension.cc',
       'renderer/benchmarking_extension.h',
+      'renderer/browser_plugin/chrome_browser_plugin_delegate.cc',
+      'renderer/browser_plugin/chrome_browser_plugin_delegate.h',
       'renderer/extensions/chrome_extension_helper.cc',
       'renderer/extensions/chrome_extension_helper.h',
       'renderer/extensions/chrome_extensions_dispatcher_delegate.cc',

@@ -25,6 +25,7 @@ struct WebPluginParams;
 namespace content {
 
 class BrowserPlugin;
+class BrowserPluginDelegate;
 class BrowserPluginManagerFactory;
 class RenderViewImpl;
 
@@ -52,7 +53,7 @@ class CONTENT_EXPORT BrowserPluginManager
   virtual BrowserPlugin* CreateBrowserPlugin(
       RenderViewImpl* render_view,
       blink::WebFrame* frame,
-      bool auto_navigate) = 0;
+      scoped_ptr<BrowserPluginDelegate> delegate) = 0;
 
   void Attach(int browser_plugin_instance_id);
 

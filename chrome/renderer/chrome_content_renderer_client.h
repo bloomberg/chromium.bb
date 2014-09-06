@@ -31,6 +31,7 @@ class SpellCheckProvider;
 struct ChromeViewHostMsg_GetPluginInfo_Output;
 
 namespace content {
+class BrowserPluginDelegate;
 struct WebPluginInfo;
 }
 
@@ -139,6 +140,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual bool IsPluginAllowedToUseDevChannelAPIs() OVERRIDE;
   virtual bool IsPluginAllowedToUseCompositorAPI(const GURL& url) OVERRIDE;
   virtual bool IsPluginAllowedToUseVideoDecodeAPI(const GURL& url) OVERRIDE;
+  virtual content::BrowserPluginDelegate* CreateBrowserPluginDelegate(
+      content::RenderFrame* render_frame,
+      const std::string& mime_type) OVERRIDE;
 
   // Takes ownership.
   void SetExtensionDispatcherForTest(

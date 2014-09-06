@@ -15,18 +15,6 @@ var sendMessage = function(data) {
   embedder.postMessage(JSON.stringify(data), '*');
 };
 
-var waitingForInput = false;
-
-var onInputFired = function() {
-  sendMessage(['response-waitForOnInput', onInputState.value]);
-  onInputState.fired = false;
-  if (inputElement1.value == 'InputTest456') {
-    // Prepare for next step, step 3.
-    inputElement1.value = '';
-  }
-  waitingForInput = false;
-};
-
 var onInputState = {fired: false, value: ''};
 // Waits for oninput event to fire on |inputElement1|.
 // Upon receiving the event, we ping back the embedder with the value of
@@ -35,9 +23,13 @@ var waitForOnInput = function() {
   var inputElement1 = document.querySelector('input');
   LOG('inputElement1: ' + inputElement1);
   if (onInputState.fired) {
-    onInputFired();
-  } else {
-    waitingForInput = true;
+    sendMessage(['response-waitForOnInput', onInputState.value]);
+
+    onInputState.fired = false;
+    if (inputElement1.value == 'InputTest456') {
+      // Prepare for next step, step 3.
+      inputElement1.value = '';
+    }
   }
 };
 
@@ -49,9 +41,6 @@ var waitForFocus = function() {
     LOG('inputElement1.oninput: ' + inputElement1.value);
     onInputState.fired = true;
     onInputState.value = inputElement1.value;
-    if (waitingForInput) {
-      onInputFired();
-    }
   };
   var inputElement1FocusListener = function() {
     LOG('inputElement1.focus');

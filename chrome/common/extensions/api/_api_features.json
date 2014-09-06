@@ -581,6 +581,12 @@
     "dependencies": ["permission:mdns"],
     "contexts": ["blessed_extension"]
   },
+  "mimeHandlerViewGuestInternal": {
+    "internal": true,
+    "contexts": "all",
+    "channel": "dev",
+    "matches": ["<all_urls>"]
+  },
   "musicManagerPrivate": {
     "dependencies": ["permission:musicManagerPrivate"],
     "contexts": ["blessed_extension"]

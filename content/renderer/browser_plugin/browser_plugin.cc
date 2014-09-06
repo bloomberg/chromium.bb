@@ -13,6 +13,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/renderer/browser_plugin_delegate.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/browser_plugin/browser_plugin_bindings.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
@@ -44,7 +45,7 @@ namespace content {
 
 BrowserPlugin::BrowserPlugin(RenderViewImpl* render_view,
                              blink::WebFrame* frame,
-                             bool auto_navigate)
+                             scoped_ptr<BrowserPluginDelegate> delegate)
     : attached_(false),
       attach_pending_(false),
       render_view_(render_view->AsWeakPtr()),
@@ -56,11 +57,15 @@ BrowserPlugin::BrowserPlugin(RenderViewImpl* render_view,
       content_window_routing_id_(MSG_ROUTING_NONE),
       plugin_focused_(false),
       visible_(true),
-      auto_navigate_(auto_navigate),
       mouse_locked_(false),
       browser_plugin_manager_(render_view->GetBrowserPluginManager()),
       browser_plugin_instance_id_(browser_plugin::kInstanceIDNone),
+      delegate_(delegate.Pass()),
       weak_ptr_factory_(this) {
+  browser_plugin_instance_id_ = browser_plugin_manager()->GetNextInstanceID();
+
+  if (delegate_)
+    delegate_->SetElementInstanceID(browser_plugin_instance_id_);
 }
 
 BrowserPlugin::~BrowserPlugin() {
@@ -375,7 +380,8 @@ bool BrowserPlugin::initialize(WebPluginContainer* container) {
 
   // This is a way to notify observers of our attributes that this plugin is
   // available in render tree.
-  browser_plugin_instance_id_ = browser_plugin_manager()->GetNextInstanceID();
+  // TODO(lazyboy): This should be done through the delegate instead. Perhaps
+  // by firing an event from there.
   UpdateDOMAttribute("internalinstanceid",
                      base::IntToString(browser_plugin_instance_id_));
 
@@ -656,17 +662,13 @@ void BrowserPlugin::didReceiveResponse(
 }
 
 void BrowserPlugin::didReceiveData(const char* data, int data_length) {
-  if (auto_navigate_) {
-    std::string value(data, data_length);
-    html_string_ += value;
-  }
+  if (delegate_)
+    delegate_->DidReceiveData(data, data_length);
 }
 
 void BrowserPlugin::didFinishLoading() {
-  if (auto_navigate_) {
-    // TODO(lazyboy): Make |auto_navigate_| stuff work.
-    UpdateDOMAttribute(content::browser_plugin::kAttributeSrc, html_string_);
-  }
+  if (delegate_)
+    delegate_->DidFinishLoading();
 }
 
 void BrowserPlugin::didFailLoading(const blink::WebURLError& error) {

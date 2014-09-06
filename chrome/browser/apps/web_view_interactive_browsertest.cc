@@ -1010,7 +1010,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus_FocusRestored) {
 
 // ui::TextInputClient is NULL for mac and android.
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus_InputMethod) {
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_Focus_InputMethod) {
   content::WebContents* embedder_web_contents = NULL;
   scoped_ptr<ExtensionTestMessageListener> done_listener(
       RunAppHelper("testInputMethod", "web_view/focus", NO_TEST_SERVER,
@@ -1062,10 +1062,6 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus_InputMethod) {
     ui::CompositionText composition;
     composition.text = base::UTF8ToUTF16("InputTest789");
     text_input_client->SetCompositionText(composition);
-    // Do a roundtrip to the renderer so that in-flight IPC from
-    // SetCompositionText() above gets routed before the next step.
-    // The test becomes flaky otherwise.
-    EXPECT_TRUE(content::ExecuteScript(embedder_web_contents, std::string()));
     EXPECT_TRUE(content::ExecuteScript(
                     embedder_web_contents,
                     "window.runCommand('testInputMethodRunNextStep', 3);"));

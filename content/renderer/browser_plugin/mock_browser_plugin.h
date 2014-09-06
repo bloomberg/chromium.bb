@@ -13,7 +13,7 @@ class MockBrowserPlugin : public BrowserPlugin {
  public:
   MockBrowserPlugin(RenderViewImpl* render_view,
                     blink::WebFrame* frame,
-                    bool auto_navigate);
+                    scoped_ptr<BrowserPluginDelegate> delegate);
 
   virtual ~MockBrowserPlugin();
 

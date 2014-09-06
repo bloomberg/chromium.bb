@@ -30,6 +30,7 @@
 #include "chrome/grit/locale_settings.h"
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/benchmarking_extension.h"
+#include "chrome/renderer/browser_plugin/chrome_browser_plugin_delegate.h"
 #include "chrome/renderer/chrome_render_frame_observer.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/chrome_render_view_observer.h"
@@ -1523,4 +1524,11 @@ bool ChromeContentRendererClient::IsPluginAllowedToUseVideoDecodeAPI(
 #else
   return false;
 #endif
+}
+
+content::BrowserPluginDelegate*
+ChromeContentRendererClient::CreateBrowserPluginDelegate(
+    content::RenderFrame* render_frame,
+    const std::string& mime_type) {
+  return new ChromeBrowserPluginDelegate(render_frame, mime_type);
 }

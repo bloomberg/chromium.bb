@@ -8,6 +8,7 @@
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "content/public/renderer/browser_plugin_delegate.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_test_sink.h"
 
@@ -23,7 +24,7 @@ class MockBrowserPluginManager : public BrowserPluginManager {
   virtual BrowserPlugin* CreateBrowserPlugin(
       RenderViewImpl* render_view,
       blink::WebFrame* frame,
-      bool auto_navigate) OVERRIDE;
+      scoped_ptr<BrowserPluginDelegate> delegate) OVERRIDE;
 
   // Provides access to the messages that have been received by this thread.
   IPC::TestSink& sink() { return sink_; }

@@ -50,6 +50,7 @@ struct WebURLError;
 }
 
 namespace content {
+class BrowserPluginDelegate;
 class DocumentState;
 class RenderFrame;
 class RenderView;
@@ -100,6 +101,11 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual blink::WebPlugin* CreatePluginReplacement(
       RenderFrame* render_frame,
       const base::FilePath& plugin_path);
+
+  // Creates a delegate for browser plugin.
+  virtual BrowserPluginDelegate* CreateBrowserPluginDelegate(
+      RenderFrame* render_frame,
+      const std::string& mime_type);
 
   // Returns true if the embedder has an error page to show for the given http
   // status code. If so |error_domain| should be set to according to WebURLError

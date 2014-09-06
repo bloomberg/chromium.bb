@@ -23,6 +23,7 @@ struct FrameMsg_BuffersSwapped_Params;
 
 namespace content {
 
+class BrowserPluginDelegate;
 class ChildFrameCompositingHelper;
 class BrowserPluginManager;
 class MockBrowserPlugin;
@@ -165,7 +166,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // BrowserPlugin.
   BrowserPlugin(RenderViewImpl* render_view,
                 blink::WebFrame* frame,
-                bool auto_navigate);
+                scoped_ptr<BrowserPluginDelegate> delegate);
 
   virtual ~BrowserPlugin();
 
@@ -224,9 +225,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // embedder RenderView's visibility.
   bool visible_;
 
-  const bool auto_navigate_;
-  std::string html_string_;
-
   WebCursor cursor_;
 
   gfx::Size last_view_size_;
@@ -247,6 +245,8 @@ class CONTENT_EXPORT BrowserPlugin :
   int browser_plugin_instance_id_;
 
   std::vector<EditCommand> edit_commands_;
+
+  scoped_ptr<BrowserPluginDelegate> delegate_;
 
   // Weak factory used in v8 |MakeWeak| callback, since the v8 callback might
   // get called after BrowserPlugin has been destroyed.

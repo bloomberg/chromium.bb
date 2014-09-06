@@ -512,6 +512,10 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_WatchPages,
 IPC_MESSAGE_CONTROL1(ExtensionMsg_TransferBlobs,
                      std::vector<std::string> /* blob_uuids */)
 
+// The ACK for ExtensionHostMsg_CreateMimeHandlerViewGuest.
+IPC_MESSAGE_CONTROL1(ExtensionMsg_CreateMimeHandlerViewGuestACK,
+                     int /* element_instance_id */)
+
 // Messages sent from the renderer to the browser.
 
 // A renderer sends this message when an extension process starts an API
@@ -733,3 +737,10 @@ IPC_MESSAGE_CONTROL4(ExtensionHostMsg_AttachGuest,
                      int /* element_instance_id */,
                      int /* guest_instance_id */,
                      base::DictionaryValue /* attach_params */)
+
+// Tells the browser to create a mime handler guest view for a plugin.
+IPC_MESSAGE_CONTROL4(ExtensionHostMsg_CreateMimeHandlerViewGuest,
+                     int /* render_frame_id */,
+                     std::string /* embedder_url */,
+                     std::string /* mime_type */,
+                     int /* element_instance_id */)

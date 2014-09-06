@@ -190,4 +190,10 @@ bool ContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {
   return false;
 }
 
+BrowserPluginDelegate* ContentRendererClient::CreateBrowserPluginDelegate(
+    RenderFrame* render_frame,
+    const std::string& mime_type) {
+  return NULL;
+}
+
 }  // namespace content

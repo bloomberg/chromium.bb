@@ -24,7 +24,7 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
   virtual BrowserPlugin* CreateBrowserPlugin(
       RenderViewImpl* render_view,
       blink::WebFrame* frame,
-      bool auto_navigate) OVERRIDE;
+      scoped_ptr<BrowserPluginDelegate> delegate) OVERRIDE;
 
   // IPC::Sender implementation.
   virtual bool Send(IPC::Message* msg) OVERRIDE;

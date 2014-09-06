@@ -43,6 +43,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
+#include "content/public/renderer/browser_plugin_delegate.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/context_menu_client.h"
 #include "content/public/renderer/document_state.h"
@@ -1551,7 +1552,7 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
 
   if (base::UTF16ToUTF8(params.mimeType) == kBrowserPluginMimeType) {
     return render_view_->GetBrowserPluginManager()->CreateBrowserPlugin(
-        render_view_.get(), frame, false);
+        render_view_.get(), frame, scoped_ptr<BrowserPluginDelegate>());
   }
 
 #if defined(ENABLE_PLUGINS)
@@ -1565,8 +1566,11 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
     return NULL;
 
   if (info.type == content::WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN) {
+    scoped_ptr<BrowserPluginDelegate> browser_plugin_delegate(
+        GetContentClient()->renderer()->CreateBrowserPluginDelegate(
+            this, base::UTF16ToUTF8(params.mimeType)));
     return render_view_->GetBrowserPluginManager()->CreateBrowserPlugin(
-        render_view_.get(), frame, true);
+        render_view_.get(), frame, browser_plugin_delegate.Pass());
   }
 
 

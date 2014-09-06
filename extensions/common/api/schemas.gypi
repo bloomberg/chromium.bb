@@ -26,6 +26,7 @@
       'extension_types.json',
       'guest_view_internal.json',
       'hid.idl',
+      'mime_handler_view_guest_internal.json',
       'power.idl',
       'runtime.json',
       'serial.idl',

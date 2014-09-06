@@ -7,6 +7,7 @@
 #include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/cursors/webcursor.h"
+#include "content/public/renderer/browser_plugin_delegate.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ui/gfx/point.h"
@@ -23,8 +24,8 @@ BrowserPluginManagerImpl::~BrowserPluginManagerImpl() {
 BrowserPlugin* BrowserPluginManagerImpl::CreateBrowserPlugin(
     RenderViewImpl* render_view,
     blink::WebFrame* frame,
-    bool auto_navigate) {
-  return new BrowserPlugin(render_view, frame, auto_navigate);
+    scoped_ptr<BrowserPluginDelegate> delegate) {
+  return new BrowserPlugin(render_view, frame, delegate.Pass());
 }
 
 bool BrowserPluginManagerImpl::Send(IPC::Message* msg) {
