@@ -26,20 +26,17 @@
       "drawsContent": true,
       "children": [
         {
-          "children": [
-            {
-              "position": [250, 250],
-              "bounds": [100, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#0000FF"
-            },
-            {
-              "position": [100, 100],
-              "bounds": [200, 200],
-              "drawsContent": true
-            }
-          ]
+          "position": [250, 250],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF"
+        },
+        {
+          "position": [100, 100],
+          "bounds": [200, 200],
+          "drawsContent": true,
+          "backgroundColor": "#000000"
         }
       ]
     }

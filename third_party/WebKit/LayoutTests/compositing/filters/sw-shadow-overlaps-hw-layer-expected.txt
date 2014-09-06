@@ -7,19 +7,16 @@
       "drawsContent": true,
       "children": [
         {
-          "children": [
-            {
-              "position": [105, 105],
-              "bounds": [100, 100],
-              "contentsOpaque": true,
-              "drawsContent": true,
-              "backgroundColor": "#000000"
-            },
-            {
-              "bounds": [125, 125],
-              "drawsContent": true
-            }
-          ]
+          "position": [105, 105],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#000000"
+        },
+        {
+          "bounds": [125, 125],
+          "drawsContent": true,
+          "backgroundColor": "#008000"
         }
       ]
     }
