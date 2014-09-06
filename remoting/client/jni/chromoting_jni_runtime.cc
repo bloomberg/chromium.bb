@@ -191,7 +191,8 @@ ChromotingJniRuntime::ChromotingJniRuntime() {
   display_task_runner_ = AutoThread::Create("native_disp",
                                             ui_task_runner_);
 
-  url_requester_ = new URLRequestContextGetter(network_task_runner_);
+  url_requester_ =
+      new URLRequestContextGetter(network_task_runner_, network_task_runner_);
 
   // Allows later decoding of video frames.
   media::InitializeCPUSpecificYUVConversions();

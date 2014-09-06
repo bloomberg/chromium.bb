@@ -86,6 +86,10 @@ int StartMe2MeNativeMessagingHost() {
   io_thread.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 
+  base::Thread file_thread("file_thread");
+  file_thread.StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+
   base::MessageLoopForUI message_loop;
   base::RunLoop run_loop;
 
@@ -174,9 +178,10 @@ int StartMe2MeNativeMessagingHost() {
 #error Not implemented.
 #endif
 
-  // OAuth client (for credential requests).
+  // OAuth client (for credential requests). IO thread is used for blocking
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter(
-      new URLRequestContextGetter(io_thread.message_loop_proxy()));
+      new URLRequestContextGetter(io_thread.task_runner(),
+                                  file_thread.task_runner()));
   scoped_ptr<OAuthClient> oauth_client(
       new OAuthClient(url_request_context_getter));
 
@@ -225,11 +230,11 @@ int StartMe2MeNativeMessagingHost() {
     return kInitializationFailed;
 
   pairing_registry = new PairingRegistry(
-      io_thread.message_loop_proxy(),
+      io_thread.task_runner(),
       delegate.PassAs<PairingRegistry::Delegate>());
 #else  // defined(OS_WIN)
   pairing_registry =
-      CreatePairingRegistry(io_thread.message_loop_proxy());
+      CreatePairingRegistry(io_thread.task_runner());
 #endif  // !defined(OS_WIN)
 
   // Set up the native messaging channel.

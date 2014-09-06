@@ -5,26 +5,25 @@
 #ifndef REMOTING_BASE_URL_REQUEST_CONTEXT_GETTER_H_
 #define REMOTING_BASE_URL_REQUEST_CONTEXT_GETTER_H_
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "net/proxy/proxy_config_service.h"
-#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_context_storage.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }  // namespace base
+
+namespace net {
+class ProxyConfigService;
+}  // namespace net
 
 namespace remoting {
 
 class URLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   URLRequestContextGetter(
-      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
 
   // Overridden from net::URLRequestContextGetter:
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;

@@ -20,10 +20,7 @@ class SingleThreadTaskRunner;
 
 namespace net {
 
-// TODO(sergeyu): This class needs to be exported because remoting code
-// creates it directly. Fix that and remove NET_EXPORT here.
-// crbug.com/125104
-class NET_EXPORT ProxyConfigServiceMac : public ProxyConfigService {
+class ProxyConfigServiceMac : public ProxyConfigService {
  public:
   // Constructs a ProxyConfigService that watches the Mac OS system settings.
   // This instance is expected to be operated and deleted on the same thread
