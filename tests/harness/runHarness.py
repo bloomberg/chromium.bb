@@ -140,62 +140,40 @@ class BrailleTest():
         else:
             return "".join( list(map(lambda a,b: "-"+a if b=='1' else a, word, hyphen_mask)) )
 
+    def report_error(self, errorType, received, brlCursorPos=0):
+        template = "%-25s '%s'"
+        report = []
+        report.append("--- {errorType} Failure: {file} ---".format(errorType=errorType, file=self.__str__()))
+        if self.comment:
+            report.append(template % ("comment:", "".join(self.comment)))
+        report.append(template % ("input:", self.input))
+        if self.expectedOutput != received:
+            report.append(template % ("expected:", self.expectedOutput))
+        report.append(template % ("received:", received))
+        if errorType == "Braille Cursor Difference":
+            cursorLocationIndicators = showCurPos(len(self.expectedOutput), brlCursorPos, pos2=self.expectedBrlCursorPos)
+            report.append(template % ("BRLCursorAt %d expected %d:" %(brlCursorPos, self.expectedBrlCursorPos), cursorLocationIndicators))
+        report.append("--- end ---")
+        return u("\n".join(report))
+
     def check_translate(self):
         if self.cursorPos is not None:
             tBrl, temp1, temp2, tBrlCurPos = translate(self.tables, self.input, mode=self.mode, cursorPos=self.cursorPos)
         else:
             tBrl, temp1, temp2, tBrlCurPos = translate(self.tables, self.input, mode=self.mode)
-        template = "%-25s '%s'"
-        tBrlCurPosStr = showCurPos(len(tBrl), tBrlCurPos)
-        report = [
-            "--- Braille Difference Failure: %s ---" % self.__str__(),
-            template % ("comment:", "".join(self.comment)),
-            template % ("input:", self.input),
-            template % ("expected brl:", self.expectedOutput),
-            template % ("actual brl:", tBrl),
-            "--- end ---",
-        ]
-        assert tBrl == self.expectedOutput, u("\n".join(report))
+        assert tBrl == self.expectedOutput, self.report_error("Braille Difference", tBrl)
 
     def check_backtranslate(self):
         backtranslate_output = backTranslateString(self.tables, self.input, None, mode=self.mode)
-        template = "%-25s '%s'"
-        report = [
-            "--- Backtranslate failure: %s ---" % self.__str__(),
-            template % ("comment:", "".join(self.comment)),
-            template % ("input:", self.input),
-            template % ("expected text:", self.expectedOutput),
-            template % ("actual backtranslated text:", backtranslate_output),
-            "--- end ---",
-        ]
-        assert backtranslate_output == self.expectedOutput, u("\n".join(report))
+        assert backtranslate_output == self.expectedOutput, self.report_error("Backtranslate", backtranslate_output)
 
     def check_cursor(self):
         tBrl, temp1, temp2, tBrlCurPos = translate(self.tables, self.input, mode=self.mode, cursorPos=self.cursorPos)
-        template = "%-25s '%s'"
-        etBrlCurPosStr = showCurPos(len(tBrl), tBrlCurPos, pos2=self.expectedBrlCursorPos)
-        report = [
-            "--- Braille Cursor Difference Failure: %s ---" %self.__str__(),
-            template % ("comment:", "".join(self.comment)),
-            template % ("input:", self.input),
-            template % ("received brl:", tBrl),
-            template % ("BRLCursorAt %d expected %d:" %(tBrlCurPos, self.expectedBrlCursorPos),
-                        etBrlCurPosStr),
-            "--- end ---"
-        ]
-        assert tBrlCurPos == self.expectedBrlCursorPos, u("\n".join(report))
+        assert tBrlCurPos == self.expectedBrlCursorPos, self.report_error("Braille Cursor Difference", tBrl, brlCursorPos=tBrlCurPos)
 
     def check_hyphenate(self):
         hyphenated_word = self.hyphenateword(self.tables, self.input, mode=self.mode)
-        template = "%-25s '%s'"
-        report = [
-            "--- Hyphenation failure: %s ---" % self.__str__(),
-            template % ("input:", self.input),
-            template % ("expected hyphenated word:", self.expectedOutput),
-            template % ("actual hyphenated word:", hyphenated_word),
-            "--- end ---",
-        ]
-        assert hyphenated_word == self.expectedOutput, u("\n".join(report))
+        assert hyphenated_word == self.expectedOutput, self.report_error("Hyphenation", hyphenated_word)
 
 def test_allCases():
     if 'HARNESS_DIR' in os.environ:
