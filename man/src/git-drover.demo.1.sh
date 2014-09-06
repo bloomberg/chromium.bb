@@ -1,22 +1,7 @@
 #!/usr/bin/env bash
-. demo_repo.sh
+. git-drover.demo.common.sh
 
-silent git push origin refs/remotes/origin/master:refs/branch-heads/9999
-silent git config --add remote.origin.fetch \
-  +refs/branch-heads/*:refs/remotes/branch-heads/*
-silent git fetch origin
-
-silent git checkout -b master origin/master
-add modified_file
-set_user some.committer
-c "This change needs to go to branch 9999"
-silent git tag pick_commit
-
-comment Before working with branches, you must \'gclient sync \
-  --with_branch_heads\' at least once to fetch the branches.
-
-set_user branch.maintainer
-tick 1000
+drover_c "This change needs to go to branch 9999"
 
 echo "# Make sure we have the most up-to-date branch sources."
 run git fetch
@@ -37,6 +22,6 @@ run git log -n 1 --pretty=fuller
 echo
 echo "# Looks good. Ship it!"
 pcommand git cl upload
-echo "# Get LGTM or TBR."
+echo "# Wait for LGTM or TBR it."
 run git cl land
 echo "# Or skip the LGTM/TBR and just 'git cl land --bypass-hooks'"

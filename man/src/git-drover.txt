@@ -19,11 +19,30 @@ sequence of commands to run.
 
 EXAMPLE
 -------
+
+PREREQUISITES
+~~~~~~~~~~~~~
+Before working with branches, you must
+ifdef::backend-xhtml11[]
+`gclient sync --with_branch_heads`
+endif::backend-xhtml11[]
+ifdef::backend-docbook[]
+'gclient sync --with_branch_heads'
+endif::backend-docbook[]
+at least once to fetch the branches.
+
+Merge Example
+^^^^^^^^^^^^^
 demo:1[]
+
+Revert Example
+^^^^^^^^^^^^^^
+demo:2[]
 
 SEE ALSO
 --------
 linkgit:git-cherry-pick[1]
+linkgit:git-revert[1]
 
 include::_footer.txt[]
 

@@ -770,12 +770,19 @@ sequence of commands to run.</p></div>
 <div class="sect1">
 <h2 id="_example">EXAMPLE</h2>
 <div class="sectionbody">
-<div class="paragraph"><p> Before working with branches, you must 'gclient sync --with_branch_heads' at least once to fetch the branches.</p></div><div class="listingblock"><div class="content"><pre><code># Make sure we have the most up-to-date branch sources.
+<div class="sect2">
+<h3 id="_prerequisites">PREREQUISITES</h3>
+<div class="paragraph"><p>Before working with branches, you must
+<code>gclient sync --with_branch_heads</code>
+at least once to fetch the branches.</p></div>
+<div class="sect3">
+<h4 id="_merge_example">Merge Example</h4>
+<div class="paragraph"><p></p></div><div class="listingblock"><div class="content"><pre><code># Make sure we have the most up-to-date branch sources.
 <span style="font-weight: bold; color: #ffffff">$ git fetch</span>
 
 # Here's the commit we want to 'drover'.
 <span style="font-weight: bold; color: #ffffff">$ git log -n 1 --pretty=fuller</span>
-commit 19b478428049b956b2dc389893c9ed7c05d1b175
+commit 1077c7acbc1f1881d5181f6b1eaf4d0c6cd92543
 Author:     some.committer &lt;some.committer@chromium.org&gt;
 AuthorDate: Thu Apr 10 08:54:46 2014 +0000
 Commit:     some.committer &lt;some.committer@chromium.org&gt;
@@ -789,8 +796,8 @@ Branch drover_9999 set up to track remote ref refs/branch-heads/9999.
 
 # Now do the 'drover'.
 # IMPORTANT!!! Do Not leave off the '-x' flag
-<span style="font-weight: bold; color: #ffffff">$ git cherry-pick -x 19b478428049b956b2dc389893c9ed7c05d1b175</span>
-[drover_9999 88e74e0] This change needs to go to branch 9999
+<span style="font-weight: bold; color: #ffffff">$ git cherry-pick -x 1077c7acbc1f1881d5181f6b1eaf4d0c6cd92543</span>
+[drover_9999 1d9c1a1] This change needs to go to branch 9999
  Author: some.committer &lt;some.committer@chromium.org&gt;
  Date: Thu Apr 10 08:54:46 2014 +0000
  1 file changed, 1 insertion(+)
@@ -799,7 +806,7 @@ Branch drover_9999 set up to track remote ref refs/branch-heads/9999.
 # That took the code authored by some.commiter and commited it to the
 # branch by branch.maintainer (us).
 <span style="font-weight: bold; color: #ffffff">$ git log -n 1 --pretty=fuller</span>
-commit 88e74e0f2540eba7bc7bd4d6adb4b0d7923c9488
+commit 1d9c1a1b768f2248c884495f4d47739c2ff249f7
 Author:     some.committer &lt;some.committer@chromium.org&gt;
 AuthorDate: Thu Apr 10 08:54:46 2014 +0000
 Commit:     branch.maintainer &lt;branch.maintainer@chromium.org&gt;
@@ -807,20 +814,58 @@ CommitDate: Thu Apr 10 09:11:36 2014 +0000
 
     This change needs to go to branch 9999
 
-    (cherry picked from commit 19b478428049b956b2dc389893c9ed7c05d1b175)
+    (cherry picked from commit 1077c7acbc1f1881d5181f6b1eaf4d0c6cd92543)
 
 # Looks good. Ship it!
 <span style="font-weight: bold; color: #ffffff">$ git cl upload</span>
-# Get LGTM or TBR.
+# Wait for LGTM or TBR it.
 <span style="font-weight: bold; color: #ffffff">$ git cl land</span>
 # Or skip the LGTM/TBR and just 'git cl land --bypass-hooks'
 </code></pre></div></div><p><div class="paragraph"></p></div>
+</div>
+<div class="sect3">
+<h4 id="_revert_example">Revert Example</h4>
+<div class="paragraph"><p></p></div><div class="listingblock"><div class="content"><pre><code># Make sure we have the most up-to-date branch sources.
+<span style="font-weight: bold; color: #ffffff">$ git fetch</span>
+
+# Checkout the branch with the change we want to revert.
+<span style="font-weight: bold; color: #ffffff">$ git checkout -b drover_9999 branch-heads/9999</span>
+Branch drover_9999 set up to track remote ref refs/branch-heads/9999.
+
+# Here's the commit we want to revert.
+<span style="font-weight: bold; color: #ffffff">$ git log -n 1</span>
+commit aca17ebfc070673e98afb6d36f6028eae6b0b8ca
+Author: some.committer &lt;some.committer@chromium.org&gt;
+Date:   Thu Apr 10 08:54:46 2014 +0000
+
+    This change is horribly broken.
+
+# Now do the revert.
+<span style="font-weight: bold; color: #ffffff">$ git revert aca17ebfc070673e98afb6d36f6028eae6b0b8ca</span>
+
+# That reverted the change and committed the revert.
+<span style="font-weight: bold; color: #ffffff">$ git log -n 1</span>
+commit d27f8f3fd56621c5e3a92cb5e64100e2bc2137a2
+Author: branch.maintainer &lt;branch.maintainer@chromium.org&gt;
+Date:   Thu Apr 10 09:11:36 2014 +0000
+
+    Revert "This change is horribly broken."
+
+    This reverts commit aca17ebfc070673e98afb6d36f6028eae6b0b8ca.
+
+# As with old drover, reverts are generally OK to commit without LGTM.
+<span style="font-weight: bold; color: #ffffff">$ git cl upload -r some.committer@chromium.org --send-mail</span>
+<span style="font-weight: bold; color: #ffffff">$ git cl land --bypass-hooks</span>
+</code></pre></div></div><p><div class="paragraph"></p></div>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_see_also">SEE ALSO</h2>
 <div class="sectionbody">
-<div class="paragraph"><p><a href="git-cherry-pick.html">git-cherry-pick(1)</a></p></div>
+<div class="paragraph"><p><a href="git-cherry-pick.html">git-cherry-pick(1)</a>
+<a href="git-revert.html">git-revert(1)</a></p></div>
 </div>
 </div>
 <div class="sect1">
@@ -835,7 +880,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-08-25 16:45:38 PDT
+Last updated 2014-09-05 16:32:10 PDT
 </div>
 </div>
 </body>
