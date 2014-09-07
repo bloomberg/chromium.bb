@@ -177,6 +177,81 @@ AC_CACHE_CHECK([for supported warning flags], libdrm_cv_warn_cflags, [
 	AC_MSG_CHECKING([which warning flags were supported])])
 WARN_CFLAGS="$libdrm_cv_warn_cflags"
 
+# Check for atomic intrinsics
+AC_CACHE_CHECK([for native atomic primitives], drm_cv_atomic_primitives, [
+	drm_cv_atomic_primitives="none"
+
+	AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+	int atomic_add(int i) { return __sync_fetch_and_add (&i, 1); }
+	int atomic_cmpxchg(int i, int j, int k) { return __sync_val_compare_and_swap (&i, j, k); }
+					  ]],[[]])], [drm_cv_atomic_primitives="Intel"],[])
+
+	if test "x$drm_cv_atomic_primitives" = "xnone"; then
+		AC_CHECK_HEADER([atomic_ops.h], drm_cv_atomic_primitives="libatomic-ops")
+	fi
+
+	# atomic functions defined in <atomic.h> & libc on Solaris
+	if test "x$drm_cv_atomic_primitives" = "xnone"; then
+		AC_CHECK_FUNC([atomic_cas_uint], drm_cv_atomic_primitives="Solaris")
+	fi
+])
+
+if test "x$drm_cv_atomic_primitives" = xIntel; then
+	AC_DEFINE(HAVE_LIBDRM_ATOMIC_PRIMITIVES, 1,
+		[Enable if your compiler supports the Intel __sync_* atomic primitives])
+fi
+if test "x$drm_cv_atomic_primitives" = "xlibatomic-ops"; then
+	AC_DEFINE(HAVE_LIB_ATOMIC_OPS, 1, [Enable if you have libatomic-ops-dev installed])
+fi
+
+if test "x$INTEL" != "xno" -o "x$RADEON" != "xno" -o "x$NOUVEAU" != "xno"; then
+	if test "x$drm_cv_atomic_primitives" = "xnone"; then
+		if test "x$INTEL" != "xauto"; then
+			if test "x$INTEL" != "xno"; then
+				AC_MSG_ERROR([libdrm_intel depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package, or, failing both of those, disable support for Intel GPUs by passing --disable-intel to ./configure])
+			fi
+		else
+			AC_MSG_WARN([Disabling libdrm_intel. It depends on atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package.])
+			INTEL=no
+		fi
+		if test "x$RADEON" != "xauto"; then
+			if test "x$RADEON" != "xno"; then
+				AC_MSG_ERROR([libdrm_radeon depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package, or, failing both of those, disable support for Radeon GPUs by passing --disable-radeon to ./configure])
+			fi
+		else
+			AC_MSG_WARN([Disabling libdrm_radeon. It depends on atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package.])
+			RADEON=no
+		fi
+		if test "x$NOUVEAU" != "xauto"; then
+			if test "x$NOUVEAU" != "xno"; then
+				AC_MSG_ERROR([libdrm_nouveau depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package, or, failing both of those, disable support for NVIDIA GPUs by passing --disable-nouveau to ./configure])
+			fi
+		else
+			AC_MSG_WARN([Disabling libdrm_nouveau. It depends on atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package.])
+			NOUVEAU=no
+		fi
+	else
+		if test "x$INTEL" != "xno"; then
+			case $host_cpu in
+				i?86|x86_64) INTEL=yes ;;
+				*) INTEL=no ;;
+			esac
+		fi
+		if test "x$RADEON" != "xno"; then
+			RADEON=yes
+		fi
+		if test "x$NOUVEAU" != "xno"; then
+			NOUVEAU=yes
+		fi
+	fi
+fi
+
+if test "x$INTEL" != "xno"; then
+	PKG_CHECK_MODULES(PCIACCESS, [pciaccess >= 0.10])
+fi
+AC_SUBST(PCIACCESS_CFLAGS)
+AC_SUBST(PCIACCESS_LIBS)
+
 if test "x$UDEV" = xyes; then
 	AC_DEFINE(UDEV, 1, [Have UDEV support])
 fi
@@ -193,6 +268,8 @@ if test "x$LIBKMS" = xauto ; then
 fi
 
 AM_CONDITIONAL(HAVE_LIBKMS, [test "x$LIBKMS" = xyes])
+
+AM_CONDITIONAL(HAVE_INTEL, [test "x$INTEL" = xyes])
 
 AM_CONDITIONAL(HAVE_VMWGFX, [test "x$VMWGFX" = xyes])
 if test "x$VMWGFX" = xyes; then
@@ -217,6 +294,11 @@ fi
 AM_CONDITIONAL(HAVE_FREEDRENO, [test "x$FREEDRENO" = xyes])
 if test "x$FREEDRENO" = xyes; then
 	AC_DEFINE(HAVE_FREEDRENO, 1, [Have freedreno support])
+fi
+
+AM_CONDITIONAL(HAVE_RADEON, [test "x$RADEON" = xyes])
+if test "x$RADEON" = xyes; then
+	AC_DEFINE(HAVE_RADEON, 1, [Have radeon support])
 fi
 
 AM_CONDITIONAL(HAVE_INSTALL_TESTS, [test "x$INSTALL_TESTS" = xyes])
@@ -270,94 +352,9 @@ else
 fi
 AM_CONDITIONAL([HAVE_MANPAGES_STYLESHEET], [test "x$HAVE_MANPAGES_STYLESHEET" = "xyes"])
 
-if test "x$INTEL" != "xno" -o "x$RADEON" != "xno" -o "x$NOUVEAU" != "xno" -o "x$OMAP" != "xno" -o "x$FREEDRENO" != "xno"; then
-    # Check for atomic intrinsics
-    AC_CACHE_CHECK([for native atomic primitives], drm_cv_atomic_primitives,
-    [
-	    drm_cv_atomic_primitives="none"
-
-	    AC_LINK_IFELSE([AC_LANG_PROGRAM([[
-    int atomic_add(int i) { return __sync_fetch_and_add (&i, 1); }
-    int atomic_cmpxchg(int i, int j, int k) { return __sync_val_compare_and_swap (&i, j, k); }
-                                            ]],[[]])],
-                           [drm_cv_atomic_primitives="Intel"],[])
-
-	    if test "x$drm_cv_atomic_primitives" = "xnone"; then
-		    AC_CHECK_HEADER([atomic_ops.h], drm_cv_atomic_primitives="libatomic-ops")
-	    fi
-
-	    # atomic functions defined in <atomic.h> & libc on Solaris
-	    if test "x$drm_cv_atomic_primitives" = "xnone"; then
-		    AC_CHECK_FUNC([atomic_cas_uint],
-				  drm_cv_atomic_primitives="Solaris")
-	    fi
-
-    ])
-    if test "x$drm_cv_atomic_primitives" = xIntel; then
-	    AC_DEFINE(HAVE_LIBDRM_ATOMIC_PRIMITIVES, 1,
-		      [Enable if your compiler supports the Intel __sync_* atomic primitives])
-    fi
-    if test "x$drm_cv_atomic_primitives" = "xlibatomic-ops"; then
-	    AC_DEFINE(HAVE_LIB_ATOMIC_OPS, 1, [Enable if you have libatomic-ops-dev installed])
-    fi
-
-    if test "x$drm_cv_atomic_primitives" = "xnone"; then
-           if test "x$INTEL" != "xauto"; then
-                   if test "x$INTEL" != "xno"; then
-                        AC_MSG_ERROR([libdrm_intel depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package, or, failing both of those, disable support for Intel GPUs by passing --disable-intel to ./configure])
-                   fi
-           else
-                   AC_MSG_WARN([Disabling libdrm_intel. It depends on atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package.])
-                   INTEL=no
-           fi
-           if test "x$RADEON" != "xauto"; then
-                   if test "x$RADEON" != "xno"; then
-                        AC_MSG_ERROR([libdrm_radeon depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package, or, failing both of those, disable support for Radeon support by passing --disable-radeon to ./configure])
-                   fi
-           else
-                   AC_MSG_WARN([Disabling libdrm_radeon. It depends on atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package.])
-                   RADEON=no
-           fi
-           if test "x$NOUVEAU" != "xauto"; then
-                   if test "x$NOUVEAU" != "xno"; then
-                        AC_MSG_ERROR([libdrm_nouveau depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package, or, failing both of those, disable support for NVIDIA GPUs by passing --disable-nouveau to ./configure])
-                   fi
-           else
-                   AC_MSG_WARN([Disabling libdrm_nouveau. It depends on atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package.])
-                   NOUVEAU=no
-           fi
-    else
-           if test "x$INTEL" != "xno"; then
-                   case $host_cpu in
-                           i?86|x86_64) INTEL=yes ;;
-                           *) INTEL=no ;;
-                   esac
-           fi
-           if test "x$RADEON" != "xno"; then
-                   RADEON=yes
-           fi
-           if test "x$NOUVEAU" != "xno"; then
-                   NOUVEAU=yes
-           fi
-    fi
-fi
-
-if test "x$INTEL" != "xno"; then
-	PKG_CHECK_MODULES(PCIACCESS, [pciaccess >= 0.10])
-fi
-AC_SUBST(PCIACCESS_CFLAGS)
-AC_SUBST(PCIACCESS_LIBS)
-
 PKG_CHECK_MODULES(VALGRIND, [valgrind], [have_valgrind=yes], [have_valgrind=no])
 if test "x$have_valgrind" = "xyes"; then
 	AC_DEFINE([HAVE_VALGRIND], 1, [Use valgrind intrinsics to suppress false warnings])
-fi
-
-AM_CONDITIONAL(HAVE_INTEL, [test "x$INTEL" != "xno"])
-AM_CONDITIONAL(HAVE_RADEON, [test "x$RADEON" != "xno"])
-AM_CONDITIONAL(HAVE_NOUVEAU, [test "x$NOUVEAU" != "xno"])
-if test "x$RADEON" = xyes; then
-	AC_DEFINE(HAVE_RADEON, 1, [Have radeon support])
 fi
 
 AC_ARG_WITH([kernel-source],
