@@ -412,6 +412,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_backgroundColorOverride(Color::transparent)
     , m_zoomFactorOverride(0)
     , m_userGestureObserved(false)
+    , m_topControlsContentOffset(0)
 {
     Page::PageClients pageClients;
     pageClients.chromeClient = &m_chromeClientImpl;
@@ -1659,6 +1660,12 @@ void WebViewImpl::performResize()
         if (Document* document = localFrameRootTemporary()->frame()->document())
             document->mediaQueryAffectingValueChanged();
     }
+}
+
+void WebViewImpl::setTopControlsContentOffset(float offset)
+{
+    m_topControlsContentOffset = offset;
+    m_layerTreeView->setTopControlsContentOffset(offset);
 }
 
 void WebViewImpl::resize(const WebSize& newSize)
@@ -4102,10 +4109,12 @@ void WebViewImpl::updateMainFrameScrollPosition(const IntPoint& scrollPosition, 
     frameView->setInProgrammaticScroll(oldProgrammaticScroll);
 }
 
-void WebViewImpl::applyScrollAndScale(const WebSize& scrollDelta, float pageScaleDelta)
+void WebViewImpl::applyViewportDeltas(const WebSize& scrollDelta, float pageScaleDelta, float topControlsDelta)
 {
     if (!mainFrameImpl() || !mainFrameImpl()->frameView())
         return;
+
+    setTopControlsContentOffset(m_topControlsContentOffset + topControlsDelta);
 
     if (pinchVirtualViewportEnabled()) {
         if (pageScaleDelta != 1) {

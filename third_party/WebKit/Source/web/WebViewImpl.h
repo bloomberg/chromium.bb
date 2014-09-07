@@ -109,7 +109,10 @@ public:
     virtual bool handleInputEvent(const WebInputEvent&) OVERRIDE;
     virtual void setCursorVisibilityState(bool isVisible) OVERRIDE;
     virtual bool hasTouchEventHandlersAt(const WebPoint&) OVERRIDE;
-    virtual void applyScrollAndScale(const WebSize&, float) OVERRIDE;
+    virtual void applyViewportDeltas(
+        const WebSize& scrollDelta,
+        float pageScaleDelta,
+        float topControlsDelta) OVERRIDE;
     virtual void mouseCaptureLost() OVERRIDE;
     virtual void setFocus(bool enable) OVERRIDE;
     virtual bool setComposition(
@@ -486,6 +489,8 @@ public:
     bool matchesHeuristicsForGpuRasterizationForTesting() const { return m_matchesHeuristicsForGpuRasterization; }
 
 private:
+    void setTopControlsContentOffset(float);
+
     // TODO(bokan): Remains for legacy pinch. Remove once it's gone. Made private to
     // prevent external usage
     virtual void setPageScaleFactor(float scaleFactor, const WebPoint& origin) OVERRIDE;
@@ -715,6 +720,7 @@ private:
     float m_zoomFactorOverride;
 
     bool m_userGestureObserved;
+    float m_topControlsContentOffset;
 };
 
 // We have no ways to check if the specified WebView is an instance of

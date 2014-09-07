@@ -2366,7 +2366,7 @@ void simulatePageScale(WebViewImpl* webViewImpl, float& scale)
 {
     IntSize scrollDelta = webViewImpl->fakePageScaleAnimationTargetPositionForTesting() - webViewImpl->mainFrameImpl()->frameView()->scrollPosition();
     float scaleDelta = webViewImpl->fakePageScaleAnimationPageScaleForTesting() / webViewImpl->pageScaleFactor();
-    webViewImpl->applyScrollAndScale(scrollDelta, scaleDelta);
+    webViewImpl->applyViewportDeltas(scrollDelta, scaleDelta, 0);
     scale = webViewImpl->pageScaleFactor();
 }
 
@@ -2478,14 +2478,14 @@ TEST_F(WebFrameTest, DivAutoZoomMultipleDivsTest)
     // If the user pinch zooms after double tap, a second double tap should zoom back to the div.
     simulateDoubleTap(webViewHelper.webViewImpl(), topPoint, scale);
     EXPECT_FLOAT_EQ(1, scale);
-    webViewHelper.webViewImpl()->applyScrollAndScale(WebSize(), 0.6f);
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebSize(), 0.6f, 0);
     simulateDoubleTap(webViewHelper.webViewImpl(), bottomPoint, scale);
     EXPECT_FLOAT_EQ(1, scale);
     simulateDoubleTap(webViewHelper.webViewImpl(), bottomPoint, scale);
     EXPECT_FLOAT_EQ(webViewHelper.webViewImpl()->minimumPageScaleFactor(), scale);
 
     // If we didn't yet get an auto-zoom update and a second double-tap arrives, should go back to minimum scale.
-    webViewHelper.webViewImpl()->applyScrollAndScale(WebSize(), 1.1f);
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebSize(), 1.1f, 0);
     webViewHelper.webViewImpl()->animateDoubleTapZoom(topPoint);
     EXPECT_TRUE(webViewHelper.webViewImpl()->fakeDoubleTapAnimationPendingForTesting());
     simulateDoubleTap(webViewHelper.webViewImpl(), bottomPoint, scale);
@@ -2525,7 +2525,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest)
     EXPECT_FLOAT_EQ(1, scale);
 
     // Zoom in to reset double_tap_zoom_in_effect flag.
-    webViewHelper.webViewImpl()->applyScrollAndScale(WebSize(), 1.1f);
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebSize(), 1.1f, 0);
     // 1 < minimumPageScale < doubleTapZoomAlreadyLegibleScale
     webViewHelper.webView()->setPageScaleFactorLimits(1.1f, 4);
     webViewHelper.webView()->layout();
@@ -2539,7 +2539,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest)
     EXPECT_FLOAT_EQ(doubleTapZoomAlreadyLegibleScale, scale);
 
     // Zoom in to reset double_tap_zoom_in_effect flag.
-    webViewHelper.webViewImpl()->applyScrollAndScale(WebSize(), 1.1f);
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebSize(), 1.1f, 0);
     // minimumPageScale < 1 < doubleTapZoomAlreadyLegibleScale
     webViewHelper.webView()->setPageScaleFactorLimits(0.95f, 4);
     webViewHelper.webView()->layout();
@@ -2589,7 +2589,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest)
     EXPECT_FLOAT_EQ(legibleScale, scale);
 
     // Zoom in to reset double_tap_zoom_in_effect flag.
-    webViewHelper.webViewImpl()->applyScrollAndScale(WebSize(), 1.1f);
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebSize(), 1.1f, 0);
     // 1 < accessibilityFontScaleFactor < minimumPageScale < doubleTapZoomAlreadyLegibleScale
     webViewHelper.webView()->setPageScaleFactorLimits(1.0f, 4);
     webViewHelper.webView()->layout();
@@ -2603,7 +2603,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest)
     EXPECT_FLOAT_EQ(doubleTapZoomAlreadyLegibleScale, scale);
 
     // Zoom in to reset double_tap_zoom_in_effect flag.
-    webViewHelper.webViewImpl()->applyScrollAndScale(WebSize(), 1.1f);
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebSize(), 1.1f, 0);
     // minimumPageScale < 1 < accessibilityFontScaleFactor < doubleTapZoomAlreadyLegibleScale
     webViewHelper.webView()->setPageScaleFactorLimits(0.95f, 4);
     webViewHelper.webView()->layout();
@@ -2617,7 +2617,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest)
     EXPECT_FLOAT_EQ(doubleTapZoomAlreadyLegibleScale, scale);
 
     // Zoom in to reset double_tap_zoom_in_effect flag.
-    webViewHelper.webViewImpl()->applyScrollAndScale(WebSize(), 1.1f);
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebSize(), 1.1f, 0);
     // minimumPageScale < 1 < doubleTapZoomAlreadyLegibleScale < accessibilityFontScaleFactor
     webViewHelper.webView()->setPageScaleFactorLimits(0.9f, 4);
     webViewHelper.webView()->layout();
@@ -5018,7 +5018,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage)
     EXPECT_FALSE(client.wasProgrammaticScroll());
 
     // Do a compositor scroll, verify that this is counted as a user scroll.
-    webViewHelper.webViewImpl()->applyScrollAndScale(WebSize(0, 1), 1.1f);
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebSize(0, 1), 1.1f, 0);
     EXPECT_TRUE(client.wasUserScroll());
     client.reset();
 
@@ -5026,18 +5026,18 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage)
     EXPECT_FALSE(client.wasProgrammaticScroll());
 
     // The page scale 1.0f and scroll.
-    webViewHelper.webViewImpl()->applyScrollAndScale(WebSize(0, 1), 1.0f);
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebSize(0, 1), 1.0f, 0);
     EXPECT_TRUE(client.wasUserScroll());
     client.reset();
 
     // No scroll event if there is no scroll delta.
-    webViewHelper.webViewImpl()->applyScrollAndScale(WebSize(), 1.0f);
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebSize(), 1.0f, 0);
     EXPECT_FALSE(client.wasUserScroll());
     EXPECT_FALSE(client.wasProgrammaticScroll());
     client.reset();
 
     // Non zero page scale and scroll.
-    webViewHelper.webViewImpl()->applyScrollAndScale(WebSize(9, 13), 0.6f);
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebSize(9, 13), 0.6f, 0);
     EXPECT_TRUE(client.wasUserScroll());
     client.reset();
 
@@ -5072,7 +5072,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollShortPage)
     EXPECT_FALSE(client.wasProgrammaticScroll());
 
     // Non zero page scale and scroll.
-    webViewHelper.webViewImpl()->applyScrollAndScale(WebSize(9, 13), 2.0f);
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebSize(9, 13), 2.0f, 0);
     EXPECT_FALSE(client.wasProgrammaticScroll());
     EXPECT_TRUE(client.wasUserScroll());
     client.reset();
