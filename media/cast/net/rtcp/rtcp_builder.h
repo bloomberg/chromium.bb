@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_NET_RTCP_RTCP_SENDER_H_
-#define MEDIA_CAST_NET_RTCP_RTCP_SENDER_H_
+#ifndef MEDIA_CAST_NET_RTCP_RTCP_BUILDER_H_
+#define MEDIA_CAST_NET_RTCP_RTCP_BUILDER_H_
 
 #include <deque>
 #include <list>
 #include <string>
 
+#include "base/big_endian.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/net/cast_transport_defines.h"
@@ -38,67 +39,49 @@ COMPILE_ASSERT(kSecondRedundancyOffset >
                    kReceiveLogMessageHistorySize,
                redundancy_offset_out_of_range);
 
-class PacedPacketSender;
 
-// TODO(hclam): This should be renamed to RtcpPacketBuilder. The function
-// of this class is to only to build a RTCP packet but not to send it.
-class RtcpSender {
+class RtcpBuilder {
  public:
-  RtcpSender(PacedPacketSender* outgoing_transport,
-             uint32 sending_ssrc);
-  ~RtcpSender();
+  explicit RtcpBuilder(uint32 sending_ssrc);
+  ~RtcpBuilder();
 
-  // TODO(hclam): This method should be to build a packet instead of
-  // sending it.
-  void SendRtcpFromRtpReceiver(
+  PacketRef BuildRtcpFromReceiver(
       const RtcpReportBlock* report_block,
       const RtcpReceiverReferenceTimeReport* rrtr,
       const RtcpCastMessage* cast_message,
       const ReceiverRtcpEventSubscriber::RtcpEventMultiMap* rtcp_events,
       base::TimeDelta target_delay);
 
-  // TODO(hclam): This method should be to build a packet instead of
-  // sending it.
-  void SendRtcpFromRtpSender(const RtcpSenderInfo& sender_info);
+  PacketRef BuildRtcpFromSender(const RtcpSenderInfo& sender_info);
 
  private:
-  void BuildRR(const RtcpReportBlock* report_block,
-               Packet* packet) const;
+  void AddRtcpHeader(RtcpPacketFields payload, int format_or_count);
+  void PatchLengthField();
+  void AddRR(const RtcpReportBlock* report_block);
+  void AddReportBlocks(const RtcpReportBlock& report_block);
+  void AddRrtr(const RtcpReceiverReferenceTimeReport* rrtr);
+  void AddCast(const RtcpCastMessage* cast_message,
+               base::TimeDelta target_delay);
+  void AddSR(const RtcpSenderInfo& sender_info);
+  void AddDlrrRb(const RtcpDlrrReportBlock& dlrr);
+  void AddReceiverLog(
+      const ReceiverRtcpEventSubscriber::RtcpEventMultiMap& rtcp_events);
 
-  void AddReportBlocks(const RtcpReportBlock& report_block,
-                       Packet* packet) const;
-
-  void BuildRrtr(const RtcpReceiverReferenceTimeReport* rrtr,
-                 Packet* packet) const;
-
-  void BuildCast(const RtcpCastMessage* cast_message,
-                 base::TimeDelta target_delay,
-                 Packet* packet) const;
-
-  void BuildSR(const RtcpSenderInfo& sender_info, Packet* packet) const;
-
-  void BuildDlrrRb(const RtcpDlrrReportBlock& dlrr, Packet* packet) const;
-
-  void BuildReceiverLog(
+  bool GetRtcpReceiverLogMessage(
       const ReceiverRtcpEventSubscriber::RtcpEventMultiMap& rtcp_events,
-      Packet* packet);
-
-  bool BuildRtcpReceiverLogMessage(
-      const ReceiverRtcpEventSubscriber::RtcpEventMultiMap& rtcp_events,
-      size_t start_size,
       RtcpReceiverLogMessage* receiver_log_message,
-      size_t* number_of_frames,
-      size_t* total_number_of_messages_to_send,
-      size_t* rtcp_log_size);
+      size_t* total_number_of_messages_to_send);
 
+  void Start();
+  PacketRef Finish();
+
+  base::BigEndianWriter writer_;
   const uint32 ssrc_;
-
- // Not owned by this class.
-  PacedPacketSender* const transport_;
-
+  char* ptr_of_length_;
+  PacketRef packet_;
   std::deque<RtcpReceiverLogMessage> rtcp_events_history_;
 
-  DISALLOW_COPY_AND_ASSIGN(RtcpSender);
+  DISALLOW_COPY_AND_ASSIGN(RtcpBuilder);
 };
 
 }  // namespace cast
