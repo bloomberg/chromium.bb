@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 
 namespace omnibox_api = extensions::api::omnibox;
@@ -51,10 +51,9 @@ void  KeywordExtensionsDelegateImpl::IncrementInputId() {
 
 bool KeywordExtensionsDelegateImpl::IsEnabledExtension(
     const std::string& extension_id) {
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
   const extensions::Extension* extension =
-      extension_service->GetExtensionById(extension_id, false);
+      extensions::ExtensionRegistry::Get(
+          profile_)->enabled_extensions().GetByID(extension_id);
   return extension &&
       (!profile_->IsOffTheRecord() ||
        extensions::util::IsIncognitoEnabled(extension_id, profile_));
