@@ -165,11 +165,6 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
     const net::ProxyConfig& data_reduction_proxy_config) {
   int64 content_length = request.received_response_content_length();
 
-  if (data_reduction_proxy_enabled.GetValue()) {
-  LOG(WARNING) << "managed pac: " << (!data_reduction_proxy_config.Equals(
-          request.context()->proxy_service()->config()) ? "true" : "false");
-  }
-
   if (data_reduction_proxy_enabled.GetValue() &&
       !data_reduction_proxy_config.Equals(
           request.context()->proxy_service()->config())) {
