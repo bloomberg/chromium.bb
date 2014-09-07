@@ -71,7 +71,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 // of the two tab edge bitmaps because these bitmaps have a few transparent
 // pixels on the side.  The selected tab width includes the close button width.
 + (CGFloat)minTabWidth { return 36; }
-+ (CGFloat)minSelectedTabWidth { return 52; }
++ (CGFloat)minActiveTabWidth { return 52; }
 + (CGFloat)maxTabWidth { return 214; }
 + (CGFloat)miniTabWidth { return 58; }
 + (CGFloat)appTabWidth { return 66; }
@@ -187,7 +187,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   TabView* tabView = [self tabView];
   [tabView setTitle:title];
 
-  if ([self mini] && ![self selected]) {
+  if ([self mini] && ![self active]) {
     [tabView startAlert];
   }
   [super setTitle:title];
@@ -273,7 +273,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 - (BOOL)shouldShowIcon {
   return chrome::ShouldTabShowFavicon(
-      [self iconCapacity], [self mini], [self selected], iconView_ != nil,
+      [self iconCapacity], [self mini], [self active], iconView_ != nil,
       !mediaIndicatorView_ ? TAB_MEDIA_STATE_NONE :
           [mediaIndicatorView_ animatingMediaState]);
 }
@@ -282,13 +282,13 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   if (!mediaIndicatorView_)
     return NO;
   return chrome::ShouldTabShowMediaIndicator(
-      [self iconCapacity], [self mini], [self selected], iconView_ != nil,
+      [self iconCapacity], [self mini], [self active], iconView_ != nil,
       [mediaIndicatorView_ animatingMediaState]);
 }
 
 - (BOOL)shouldShowCloseButton {
   return chrome::ShouldTabShowCloseButton(
-      [self iconCapacity], [self mini], [self selected]);
+      [self iconCapacity], [self mini], [self active]);
 }
 
 - (void)setIconImage:(NSImage*)image {

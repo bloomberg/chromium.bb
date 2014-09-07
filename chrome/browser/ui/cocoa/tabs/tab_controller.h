@@ -82,11 +82,11 @@ class MenuDelegate;
 @property(readonly, nonatomic) HoverCloseButton* closeButton;
 
 // Minimum and maximum allowable tab width. The minimum width does not show
-// the icon or the close button. The selected tab always has at least a close
+// the icon or the close button. The active tab always has at least a close
 // button so it has a different minimum width.
 + (CGFloat)minTabWidth;
 + (CGFloat)maxTabWidth;
-+ (CGFloat)minSelectedTabWidth;
++ (CGFloat)minActiveTabWidth;
 + (CGFloat)miniTabWidth;
 + (CGFloat)appTabWidth;
 

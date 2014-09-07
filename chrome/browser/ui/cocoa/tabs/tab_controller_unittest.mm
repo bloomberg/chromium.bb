@@ -368,24 +368,24 @@ TEST_F(TabControllerTest, ShouldShowIcon) {
   NSView* newIcon = [controller iconView];
   EXPECT_TRUE([newIcon isHidden]);
 
-  // Tab is at selected minimum width. Since it's selected, the close box
+  // Tab is at active minimum width. Since it's active, the close box
   // should be visible.
-  [controller setSelected:YES];
+  [controller setActive:YES];
   frame = [[controller view] frame];
-  frame.size.width = [TabController minSelectedTabWidth];
+  frame.size.width = [TabController minActiveTabWidth];
   [[controller view] setFrame:frame];
   EXPECT_FALSE([controller shouldShowIcon]);
   EXPECT_TRUE([newIcon isHidden]);
   EXPECT_TRUE([controller shouldShowCloseButton]);
 
   // Test expanding the tab to max width and ensure the icon and close box
-  // get put back, even when de-selected.
+  // get put back, even when de-activated.
   frame.size.width = [TabController maxTabWidth];
   [[controller view] setFrame:frame];
   EXPECT_TRUE([controller shouldShowIcon]);
   EXPECT_FALSE([newIcon isHidden]);
   EXPECT_TRUE([controller shouldShowCloseButton]);
-  [controller setSelected:NO];
+  [controller setActive:NO];
   EXPECT_TRUE([controller shouldShowIcon]);
   EXPECT_TRUE([controller shouldShowCloseButton]);
 
@@ -524,7 +524,7 @@ TEST_F(TabControllerTest, DISABLED_LayoutAndVisibilityOfSubviews) {
           tabFrame.size.width = minWidth = [TabController miniTabWidth];
         } else {
           tabFrame.size.width = [TabController maxTabWidth];
-          minWidth = isActiveTab ? [TabController minSelectedTabWidth] :
+          minWidth = isActiveTab ? [TabController minActiveTabWidth] :
               [TabController minTabWidth];
         }
         while (NSWidth(tabFrame) >= minWidth) {

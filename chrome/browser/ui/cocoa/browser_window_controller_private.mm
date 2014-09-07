@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
+#import "base/mac/sdk_forward_declarations.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/browser_process.h"
@@ -52,14 +53,6 @@ namespace {
 
 // Space between the incognito badge and the right edge of the window.
 const CGFloat kAvatarRightOffset = 4;
-
-// The amount by which to shrink the tab strip (on the right) when the
-// incognito badge is present.
-const CGFloat kAvatarTabStripShrink = 18;
-
-// Width of the full screen icon. Used to position the AvatarButton to the
-// left of the icon.
-const CGFloat kFullscreenIconWidth = 32;
 
 // Insets for the location bar, used when the full toolbar is hidden.
 // TODO(viettrungluu): We can argue about the "correct" insetting; I like the
@@ -349,6 +342,12 @@ willPositionSheet:(NSWindow*)sheet
   else
     [tabStripController_ removeWindowControls];
 
+  // fullScreenButton is non-nil when isInAnyFullscreenMode is NO, and OS
+  // version is in the range 10.7 <= version <= 10.9. Starting with 10.10, the
+  // zoom/maximize button acts as the fullscreen button.
+  NSButton* fullScreenButton =
+      [[self window] standardWindowButton:NSWindowFullScreenButton];
+
   // Lay out the icognito/avatar badge because calculating the indentation on
   // the right depends on it.
   NSView* avatarButton = [avatarButtonController_ view];
@@ -359,8 +358,8 @@ willPositionSheet:(NSWindow*)sheet
 
     if ([self shouldUseNewAvatarButton]) {
       // The fullscreen icon is displayed to the right of the avatar button.
-      if (![self isInAnyFullscreenMode])
-        badgeXOffset -= kFullscreenIconWidth;
+      if (![self isInAnyFullscreenMode] && fullScreenButton)
+        badgeXOffset -= width - NSMinX([fullScreenButton frame]);
       // Center the button vertically on the tabstrip.
       badgeYOffset = (tabStripHeight - buttonHeight) / 2;
     } else {
@@ -378,29 +377,20 @@ willPositionSheet:(NSWindow*)sheet
   }
 
   // Calculate the right indentation.  The default indentation built into the
-  // tabstrip leaves enough room for the fullscreen button or presentation mode
-  // toggle button on Lion.  On non-Lion systems, the right indent needs to be
+  // tabstrip leaves enough room for the fullscreen button on Lion (10.7) to
+  // Mavericks (10.9).  On 10.6 and >=10.10, the right indent needs to be
   // adjusted to make room for the new tab button when an avatar is present.
   CGFloat rightIndent = 0;
-  if (base::mac::IsOSLionOrLater() &&
-      [[self window] isKindOfClass:[FramedBrowserWindow class]]) {
-    FramedBrowserWindow* window =
-        static_cast<FramedBrowserWindow*>([self window]);
-    rightIndent += -[window fullScreenButtonOriginAdjustment].x;
+  if (![self isInAnyFullscreenMode] && fullScreenButton) {
+    rightIndent = width - NSMinX([fullScreenButton frame]);
 
     if ([self shouldUseNewAvatarButton]) {
-      // The new avatar is wider than the default indentation, so we need to
-      // account for its width.
-      rightIndent += NSWidth([avatarButton frame]) + kAvatarTabStripShrink;
-
-      // When the fullscreen icon is not displayed, return its width to the
-      // tabstrip.
-      if ([self isInAnyFullscreenMode])
-        rightIndent -= kFullscreenIconWidth;
+      // The new avatar button is to the left of the fullscreen button.
+      // (The old avatar button is to the right).
+      rightIndent += NSWidth([avatarButton frame]) + kAvatarRightOffset;
     }
   } else if ([self shouldShowAvatar]) {
-    rightIndent += kAvatarTabStripShrink +
-        NSWidth([avatarButton frame]) + kAvatarRightOffset;
+    rightIndent += NSWidth([avatarButton frame]) + kAvatarRightOffset;
   }
   [tabStripController_ setRightIndentForControls:rightIndent];
 
