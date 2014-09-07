@@ -6,11 +6,11 @@ layer at (0,0) size 785x1000
       RenderBlock {P} at (0,0) size 769x18
         RenderText {#text} at (0,0) size 137x17
           text run at (0,0) width 137: "This is a table with a "
-        RenderInline {CODE} at (0,0) size 118x15
-          RenderText {#text} at (136,3) size 118x15
-            text run at (136,3) width 118: "td align=center"
-        RenderText {#text} at (253,0) size 186x17
-          text run at (253,0) width 186: " that has a p, a table, and a p."
+        RenderInline {CODE} at (0,0) size 121x16
+          RenderText {#text} at (136,2) size 121x16
+            text run at (136,2) width 121: "td align=center"
+        RenderText {#text} at (256,0) size 186x17
+          text run at (256,0) width 186: " that has a p, a table, and a p."
       RenderTable {TABLE} at (0,34) size 230x138 [border: (1px outset #808080)]
         RenderTableSection {TBODY} at (1,1) size 228x136
           RenderTableRow {TR} at (0,2) size 228x132
@@ -30,12 +30,12 @@ layer at (0,0) size 785x1000
       RenderBlock {P} at (0,188) size 769x72
         RenderText {#text} at (0,0) size 186x17
           text run at (0,0) width 186: "This time the inner table has "
-        RenderInline {CODE} at (0,0) size 95x15
-          RenderText {#text} at (185,3) size 95x15
-            text run at (185,3) width 95: "width=\"100%\""
-        RenderText {#text} at (279,0) size 767x71
-          text run at (279,0) width 393: ", so you can see that the CSS spec isn't quite being followed. "
-          text run at (671,0) width 90: "The CSS spec"
+        RenderInline {CODE} at (0,0) size 97x16
+          RenderText {#text} at (185,2) size 97x16
+            text run at (185,2) width 97: "width=\"100%\""
+        RenderText {#text} at (281,0) size 767x71
+          text run at (281,0) width 393: ", so you can see that the CSS spec isn't quite being followed. "
+          text run at (673,0) width 91: "The CSS spec"
           text run at (0,18) width 767: "says that the align=center carries down as text-align and never acts to move blocks. You're not moving the block for the"
           text run at (0,36) width 413: "table (above), but you're not doing the text-align inside it either. "
           text run at (412,36) width 343: "In quirks mode you should do the former, in standard"
