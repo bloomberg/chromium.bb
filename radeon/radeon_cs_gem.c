@@ -37,7 +37,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
-#include <sys/mman.h>
 #include <sys/ioctl.h>
 #include "radeon_cs.h"
 #include "radeon_cs_int.h"

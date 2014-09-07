@@ -36,7 +36,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/mman.h>
 #include <errno.h>
 #include "libdrm.h"
 #include "xf86drm.h"
@@ -135,7 +134,7 @@ static struct radeon_bo *bo_unref(struct radeon_bo_int *boi)
         return (struct radeon_bo *)boi;
     }
     if (bo_gem->priv_ptr) {
-        munmap(bo_gem->priv_ptr, boi->size);
+        drm_munmap(bo_gem->priv_ptr, boi->size);
     }
 
     /* Zero out args to make valgrind happy */
@@ -179,7 +178,7 @@ static int bo_map(struct radeon_bo_int *boi, int write)
                 boi, boi->handle, r);
         return r;
     }
-    ptr = mmap(0, args.size, PROT_READ|PROT_WRITE, MAP_SHARED, boi->bom->fd, args.addr_ptr);
+    ptr = drm_mmap(0, args.size, PROT_READ|PROT_WRITE, MAP_SHARED, boi->bom->fd, args.addr_ptr);
     if (ptr == MAP_FAILED)
         return -errno;
     bo_gem->priv_ptr = ptr;
@@ -198,7 +197,7 @@ static int bo_unmap(struct radeon_bo_int *boi)
     if (--bo_gem->map_count > 0) {
         return 0;
     }
-    //munmap(bo->ptr, bo->size);
+    //drm_munmap(bo->ptr, bo->size);
     boi->ptr = NULL;
     return 0;
 }
