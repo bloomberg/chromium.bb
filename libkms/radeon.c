@@ -36,9 +36,9 @@
 #include <string.h>
 #include "internal.h"
 
-#include <sys/mman.h>
 #include <sys/ioctl.h>
 #include "xf86drm.h"
+#include "libdrm.h"
 
 #include "radeon_drm.h"
 
@@ -172,7 +172,7 @@ radeon_bo_map(struct kms_bo *_bo, void **out)
 	if (ret)
 		return -errno;
 
-	map = mmap(0, arg.size, PROT_READ | PROT_WRITE, MAP_SHARED,
+	map = drm_mmap(0, arg.size, PROT_READ | PROT_WRITE, MAP_SHARED,
 	           bo->base.kms->fd, arg.addr_ptr);
 	if (map == MAP_FAILED)
 		return -errno;
@@ -189,7 +189,7 @@ radeon_bo_unmap(struct kms_bo *_bo)
 {
 	struct radeon_bo *bo = (struct radeon_bo *)_bo;
 	if (--bo->map_count == 0) {
-		munmap(bo->base.ptr, bo->base.size);
+		drm_munmap(bo->base.ptr, bo->base.size);
 		bo->base.ptr = NULL;
 	}
 	return 0;
@@ -204,7 +204,7 @@ radeon_bo_destroy(struct kms_bo *_bo)
 
 	if (bo->base.ptr) {
 		/* XXX Sanity check map_count */
-		munmap(bo->base.ptr, bo->base.size);
+		drm_munmap(bo->base.ptr, bo->base.size);
 		bo->base.ptr = NULL;
 	}
 

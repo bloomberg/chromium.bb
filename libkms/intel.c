@@ -36,9 +36,9 @@
 #include <string.h>
 #include "internal.h"
 
-#include <sys/mman.h>
 #include <sys/ioctl.h>
 #include "xf86drm.h"
+#include "libdrm.h"
 
 #include "i915_drm.h"
 
@@ -173,7 +173,7 @@ intel_bo_map(struct kms_bo *_bo, void **out)
 	if (ret)
 		return ret;
 
-	map = mmap(0, bo->base.size, PROT_READ | PROT_WRITE, MAP_SHARED, bo->base.kms->fd, arg.offset);
+	map = drm_mmap(0, bo->base.size, PROT_READ | PROT_WRITE, MAP_SHARED, bo->base.kms->fd, arg.offset);
 	if (map == MAP_FAILED)
 		return -errno;
 
@@ -201,7 +201,7 @@ intel_bo_destroy(struct kms_bo *_bo)
 
 	if (bo->base.ptr) {
 		/* XXX Sanity check map_count */
-		munmap(bo->base.ptr, bo->base.size);
+		drm_munmap(bo->base.ptr, bo->base.size);
 		bo->base.ptr = NULL;
 	}
 
