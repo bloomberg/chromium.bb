@@ -867,8 +867,16 @@ crbug.com/327256 fast/workers/shared-worker-lifecycle.html [ Failure Pass ]
 
 crbug.com/366185 inspector/split-view.html [ Slow Crash ]
 
-crbug.com/361729 fast/multicol/pagination-h-horizontal-bt.html [ Pass Failure ]
-crbug.com/361729 fast/multicol/pagination-h-horizontal-tb.html [ Pass Failure ]
+# bug(noel) restore once the 10.6 debug rebaseline crbug.com/409708 is done
+# crbug.com/361729 fast/multicol/pagination-h-horizontal-bt.html [ Pass Failure ]
+# crbug.com/361729 fast/multicol/pagination-h-horizontal-tb.html [ Pass Failure ]
+
+# 10.6 debug failing after blink http://src.chromium.org/viewvc/blink?revision=181499&view=revision
+crbug.com/409708 [ Snowleopard Debug ] fast/multicol/pagination-h-horizontal-bt.html [ NeedsRebaseline ]
+crbug.com/409708 [ Snowleopard Debug ] fast/multicol/pagination-h-horizontal-tb.html [ NeedsRebaseline ]
+crbug.com/409708 [ Snowleopard Debug ] fast/multicol/pagination-v-horizontal-bt.html [ NeedsRebaseline ]
+crbug.com/409708 [ Snowleopard Debug ] fast/multicol/pagination-v-horizontal-tb.html [ NeedsRebaseline ]
+crbug.com/409708 [ Snowleopard Debug ] fast/multicol/client-rects.html [ NeedsRebaseline ]
 
 crbug.com/359877 virtual/regionbasedmulticol/fast/multicol/mixed-opacity-fixed-test.html [ ImageOnlyFailure ]
 crbug.com/359877 virtual/regionbasedmulticol/fast/multicol/mixed-opacity-test.html [ ImageOnlyFailure ]
