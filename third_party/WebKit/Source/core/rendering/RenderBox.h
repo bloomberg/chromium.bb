@@ -321,13 +321,12 @@ public:
         m_marginBox.setEnd(styleToUse->writingMode(), styleToUse->direction(), value);
     }
 
-    // The following five functions are used to implement collapsing margins.
+    // The following functions are used to implement collapsing margins.
     // All objects know their maximal positive and negative margins.  The
     // formula for computing a collapsed margin is |maxPosMargin| - |maxNegmargin|.
     // For a non-collapsing box, such as a leaf element, this formula will simply return
     // the margin of the element.  Blocks override the maxMarginBefore and maxMarginAfter
     // methods.
-    enum MarginSign { PositiveMargin, NegativeMargin };
     virtual bool isSelfCollapsingBlock() const { return false; }
     virtual LayoutUnit collapsedMarginBefore() const { return marginBefore(); }
     virtual LayoutUnit collapsedMarginAfter() const { return marginAfter(); }
