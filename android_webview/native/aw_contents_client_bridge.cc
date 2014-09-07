@@ -262,8 +262,10 @@ void AwContentsClientBridge::RunJavaScriptDialog(
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
+  if (obj.is_null()) {
+    callback.Run(false, base::string16());
     return;
+  }
 
   int callback_id = pending_js_dialog_callbacks_.Add(
       new content::JavaScriptDialogManager::DialogClosedCallback(callback));
@@ -310,8 +312,10 @@ void AwContentsClientBridge::RunBeforeUnloadDialog(
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
+  if (obj.is_null()) {
+    callback.Run(false, base::string16());
     return;
+  }
 
   int callback_id = pending_js_dialog_callbacks_.Add(
       new content::JavaScriptDialogManager::DialogClosedCallback(callback));

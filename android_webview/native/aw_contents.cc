@@ -297,6 +297,7 @@ void AwContents::Destroy(JNIEnv* env, jobject obj) {
   // the java peer. This is important for the popup window case, where we are
   // swapping AwContents out that share the same java AwContentsClientBridge.
   // See b/15074651.
+  AwContentsClientBridgeBase::Disassociate(web_contents_.get());
   contents_client_bridge_.reset();
 
   // We do not delete AwContents immediately. Some applications try to delete

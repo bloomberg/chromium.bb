@@ -25,6 +25,11 @@ void AwJavaScriptDialogManager::RunJavaScriptDialog(
     bool* did_suppress_message) {
   AwContentsClientBridgeBase* bridge =
       AwContentsClientBridgeBase::FromWebContents(web_contents);
+  if (!bridge) {
+    callback.Run(false, base::string16());
+    return;
+  }
+
   bridge->RunJavaScriptDialog(message_type,
                               origin_url,
                               message_text,
@@ -39,6 +44,11 @@ void AwJavaScriptDialogManager::RunBeforeUnloadDialog(
     const DialogClosedCallback& callback) {
   AwContentsClientBridgeBase* bridge =
       AwContentsClientBridgeBase::FromWebContents(web_contents);
+  if (!bridge) {
+    callback.Run(false, base::string16());
+    return;
+  }
+
   bridge->RunBeforeUnloadDialog(web_contents->GetURL(),
                                 message_text,
                                 callback);

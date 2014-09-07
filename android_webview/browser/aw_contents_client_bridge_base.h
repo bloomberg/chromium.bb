@@ -34,6 +34,7 @@ class AwContentsClientBridgeBase {
   // Adds the handler to the UserData registry.
   static void Associate(content::WebContents* web_contents,
                         AwContentsClientBridgeBase* handler);
+  static void Disassociate(content::WebContents* web_contents);
   static AwContentsClientBridgeBase* FromWebContents(
       content::WebContents* web_contents);
   static AwContentsClientBridgeBase* FromID(int render_process_id,
