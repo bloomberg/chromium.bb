@@ -51,18 +51,18 @@ layer at (0,0) size 800x454
         RenderInline (generated) at (0,0) size 33x36 [color=#00FFFF]
           RenderText {#text} at (0,0) size 33x36
             text run at (0,0) width 33: "\"T"
-        RenderText {#text} at (32,15) size 98x17
-          text run at (32,15) width 98: "est\": The first "
-        RenderInline {STRONG} at (0,0) size 109x17
-          RenderText {#text} at (129,15) size 109x17
-            text run at (129,15) width 109: "two characters"
-        RenderText {#text} at (237,15) size 447x17
-          text run at (237,15) width 120: " in this paragraph "
-          text run at (356,15) width 328: "(a double-quote mark and a capital 'T') should be "
+        RenderText {#text} at (32,15) size 99x17
+          text run at (32,15) width 99: "est\": The first "
+        RenderInline {STRONG} at (0,0) size 111x17
+          RenderText {#text} at (130,15) size 111x17
+            text run at (130,15) width 111: "two characters"
+        RenderText {#text} at (240,15) size 452x17
+          text run at (240,15) width 121: " in this paragraph "
+          text run at (360,15) width 332: "(a double-quote mark and a capital 'T') should be "
         RenderInline {STRONG} at (0,0) size 89x17
-          RenderText {#text} at (683,15) size 89x17
-            text run at (683,15) width 45: "200% "
-            text run at (727,15) width 45: "bigger"
+          RenderText {#text} at (691,15) size 89x17
+            text run at (691,15) width 45: "200% "
+            text run at (735,15) width 45: "bigger"
         RenderText {#text} at (0,37) size 223x17
           text run at (0,37) width 223: "than the rest of the paragraph, and "
         RenderInline {STRONG} at (0,0) size 34x17

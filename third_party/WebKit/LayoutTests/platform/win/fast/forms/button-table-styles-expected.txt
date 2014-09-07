@@ -7,137 +7,137 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 351x17
           text run at (0,0) width 351: "This tests that buttons don't honor table display styles. "
         RenderBR {BR} at (350,14) size 1x0
-      RenderButton {INPUT} at (0,18) size 93.81x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-        RenderBlock (anonymous) at (8,3) size 77.81x15
-          RenderText {#text} at (0,0) size 78x15
-            text run at (0,0) width 78: "display: table"
-      RenderButton {INPUT} at (0,39) size 93.81x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-        RenderBlock (anonymous) at (8,3) size 77.81x15
-          RenderText {#text} at (0,0) size 78x15
-            text run at (0,0) width 78: "display: table"
-      RenderBlock (anonymous) at (0,60) size 784x369
+      RenderButton {INPUT} at (0,18) size 93x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+        RenderBlock (anonymous) at (8,3) size 77x16
+          RenderText {#text} at (0,0) size 77x16
+            text run at (0,0) width 77: "display: table"
+      RenderButton {INPUT} at (0,40) size 93x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+        RenderBlock (anonymous) at (8,3) size 77x16
+          RenderText {#text} at (0,0) size 77x16
+            text run at (0,0) width 77: "display: table"
+      RenderBlock (anonymous) at (0,62) size 784x378
         RenderBR {BR} at (0,0) size 0x17
         RenderBR {BR} at (0,18) size 0x17
-        RenderButton {INPUT} at (0,36) size 129.38x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 113.38x15
-            RenderText {#text} at (0,0) size 114x15
-              text run at (0,0) width 114: "display: inline-table"
-        RenderText {#text} at (129,37) size 5x17
-          text run at (129,37) width 5: " "
-        RenderButton {INPUT} at (133.38,36) size 129.38x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 113.38x15
-            RenderText {#text} at (0,0) size 114x15
-              text run at (0,0) width 114: "display: inline-table"
-        RenderText {#text} at (262,37) size 5x17
-          text run at (262,37) width 5: " "
-        RenderBR {BR} at (266,51) size 1x0
-        RenderBR {BR} at (0,57) size 0x17
-        RenderButton {INPUT} at (0,75) size 158.27x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 142.27x15
-            RenderText {#text} at (0,0) size 143x15
-              text run at (0,0) width 143: "display: table-row-group"
-        RenderText {#text} at (158,76) size 5x17
-          text run at (158,76) width 5: " "
-        RenderButton {INPUT} at (162.27,75) size 158.27x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 142.27x15
-            RenderText {#text} at (0,0) size 143x15
-              text run at (0,0) width 143: "display: table-row-group"
-        RenderText {#text} at (320,76) size 5x17
-          text run at (320,76) width 5: " "
-        RenderBR {BR} at (324,90) size 1x0
-        RenderBR {BR} at (0,96) size 0x17
-        RenderButton {INPUT} at (0,114) size 178.30x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 162.30x15
-            RenderText {#text} at (0,0) size 163x15
-              text run at (0,0) width 163: "display: table-header-group"
-        RenderText {#text} at (178,115) size 5x17
-          text run at (178,115) width 5: " "
-        RenderButton {INPUT} at (182.30,114) size 178.30x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 162.30x15
-            RenderText {#text} at (0,0) size 163x15
-              text run at (0,0) width 163: "display: table-header-group"
-        RenderText {#text} at (360,115) size 5x17
-          text run at (360,115) width 5: " "
-        RenderBR {BR} at (364,129) size 1x0
-        RenderBR {BR} at (0,135) size 0x17
-        RenderButton {INPUT} at (0,153) size 170.88x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 154.88x15
-            RenderText {#text} at (0,0) size 155x15
-              text run at (0,0) width 155: "display: table-footer-group"
-        RenderText {#text} at (170,154) size 5x17
-          text run at (170,154) width 5: " "
-        RenderButton {INPUT} at (174.88,153) size 170.88x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 154.88x15
-            RenderText {#text} at (0,0) size 155x15
-              text run at (0,0) width 155: "display: table-footer-group"
-        RenderText {#text} at (345,154) size 5x17
-          text run at (345,154) width 5: " "
-        RenderBR {BR} at (349,168) size 1x0
-        RenderBR {BR} at (0,174) size 0x17
-        RenderButton {INPUT} at (0,192) size 119.73x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 103.73x15
-            RenderText {#text} at (0,0) size 104x15
-              text run at (0,0) width 104: "display: table-row"
-        RenderText {#text} at (119,193) size 5x17
-          text run at (119,193) width 5: " "
-        RenderButton {INPUT} at (123.73,192) size 119.73x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 103.73x15
-            RenderText {#text} at (0,0) size 104x15
-              text run at (0,0) width 104: "display: table-row"
-        RenderText {#text} at (243,193) size 5x17
-          text run at (243,193) width 5: " "
-        RenderBR {BR} at (247,207) size 1x0
-        RenderBR {BR} at (0,213) size 0x17
-        RenderButton {INPUT} at (0,231) size 179.75x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 163.75x15
-            RenderText {#text} at (0,0) size 164x15
-              text run at (0,0) width 164: "display: table-column-group"
-        RenderText {#text} at (179,232) size 5x17
-          text run at (179,232) width 5: " "
-        RenderButton {INPUT} at (183.75,231) size 179.75x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 163.75x15
-            RenderText {#text} at (0,0) size 164x15
-              text run at (0,0) width 164: "display: table-column-group"
-        RenderText {#text} at (363,232) size 5x17
-          text run at (363,232) width 5: " "
-        RenderBR {BR} at (367,246) size 1x0
-        RenderBR {BR} at (0,252) size 0x17
-        RenderButton {INPUT} at (0,270) size 141.22x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 125.22x15
-            RenderText {#text} at (0,0) size 126x15
-              text run at (0,0) width 126: "display: table-column"
-        RenderText {#text} at (141,271) size 5x17
-          text run at (141,271) width 5: " "
-        RenderButton {INPUT} at (145.22,270) size 141.22x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 125.22x15
-            RenderText {#text} at (0,0) size 126x15
-              text run at (0,0) width 126: "display: table-column"
-        RenderText {#text} at (286,271) size 5x17
-          text run at (286,271) width 5: " "
-        RenderBR {BR} at (290,285) size 1x0
-        RenderBR {BR} at (0,291) size 0x17
-        RenderButton {INPUT} at (0,309) size 118.25x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 102.25x15
-            RenderText {#text} at (0,0) size 103x15
-              text run at (0,0) width 103: "display: table-cell"
-        RenderText {#text} at (118,310) size 5x17
-          text run at (118,310) width 5: " "
-        RenderButton {INPUT} at (122.25,309) size 118.25x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 102.25x15
-            RenderText {#text} at (0,0) size 103x15
-              text run at (0,0) width 103: "display: table-cell"
-        RenderText {#text} at (240,310) size 5x17
-          text run at (240,310) width 5: " "
-        RenderBR {BR} at (244,324) size 1x0
-        RenderBR {BR} at (0,330) size 0x17
-        RenderButton {INPUT} at (0,348) size 141.23x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 125.23x15
-            RenderText {#text} at (0,0) size 126x15
-              text run at (0,0) width 126: "display: table-caption"
-        RenderText {#text} at (141,349) size 5x17
-          text run at (141,349) width 5: " "
-        RenderButton {INPUT} at (145.23,348) size 141.23x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 125.23x15
-            RenderText {#text} at (0,0) size 126x15
-              text run at (0,0) width 126: "display: table-caption"
+        RenderButton {INPUT} at (0,36) size 127x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 111x16
+            RenderText {#text} at (0,0) size 111x16
+              text run at (0,0) width 111: "display: inline-table"
+        RenderText {#text} at (127,38) size 4x17
+          text run at (127,38) width 4: " "
+        RenderButton {INPUT} at (131,36) size 127x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 111x16
+            RenderText {#text} at (0,0) size 111x16
+              text run at (0,0) width 111: "display: inline-table"
+        RenderText {#text} at (258,38) size 4x17
+          text run at (258,38) width 4: " "
+        RenderBR {BR} at (262,52) size 0x0
+        RenderBR {BR} at (0,58) size 0x17
+        RenderButton {INPUT} at (0,76) size 153x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 137x16
+            RenderText {#text} at (0,0) size 137x16
+              text run at (0,0) width 137: "display: table-row-group"
+        RenderText {#text} at (153,78) size 4x17
+          text run at (153,78) width 4: " "
+        RenderButton {INPUT} at (157,76) size 153x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 137x16
+            RenderText {#text} at (0,0) size 137x16
+              text run at (0,0) width 137: "display: table-row-group"
+        RenderText {#text} at (310,78) size 4x17
+          text run at (310,78) width 4: " "
+        RenderBR {BR} at (314,92) size 0x0
+        RenderBR {BR} at (0,98) size 0x17
+        RenderButton {INPUT} at (0,116) size 172x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 156x16
+            RenderText {#text} at (0,0) size 156x16
+              text run at (0,0) width 156: "display: table-header-group"
+        RenderText {#text} at (172,118) size 4x17
+          text run at (172,118) width 4: " "
+        RenderButton {INPUT} at (176,116) size 172x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 156x16
+            RenderText {#text} at (0,0) size 156x16
+              text run at (0,0) width 156: "display: table-header-group"
+        RenderText {#text} at (348,118) size 4x17
+          text run at (348,118) width 4: " "
+        RenderBR {BR} at (352,132) size 0x0
+        RenderBR {BR} at (0,138) size 0x17
+        RenderButton {INPUT} at (0,156) size 165x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 149x16
+            RenderText {#text} at (0,0) size 149x16
+              text run at (0,0) width 149: "display: table-footer-group"
+        RenderText {#text} at (165,158) size 4x17
+          text run at (165,158) width 4: " "
+        RenderButton {INPUT} at (169,156) size 165x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 149x16
+            RenderText {#text} at (0,0) size 149x16
+              text run at (0,0) width 149: "display: table-footer-group"
+        RenderText {#text} at (334,158) size 4x17
+          text run at (334,158) width 4: " "
+        RenderBR {BR} at (338,172) size 0x0
+        RenderBR {BR} at (0,178) size 0x17
+        RenderButton {INPUT} at (0,196) size 117x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 101x16
+            RenderText {#text} at (0,0) size 101x16
+              text run at (0,0) width 101: "display: table-row"
+        RenderText {#text} at (117,198) size 4x17
+          text run at (117,198) width 4: " "
+        RenderButton {INPUT} at (121,196) size 117x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 101x16
+            RenderText {#text} at (0,0) size 101x16
+              text run at (0,0) width 101: "display: table-row"
+        RenderText {#text} at (238,198) size 4x17
+          text run at (238,198) width 4: " "
+        RenderBR {BR} at (242,212) size 0x0
+        RenderBR {BR} at (0,218) size 0x17
+        RenderButton {INPUT} at (0,236) size 175x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 159x16
+            RenderText {#text} at (0,0) size 159x16
+              text run at (0,0) width 159: "display: table-column-group"
+        RenderText {#text} at (175,238) size 4x17
+          text run at (175,238) width 4: " "
+        RenderButton {INPUT} at (179,236) size 175x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 159x16
+            RenderText {#text} at (0,0) size 159x16
+              text run at (0,0) width 159: "display: table-column-group"
+        RenderText {#text} at (354,238) size 4x17
+          text run at (354,238) width 4: " "
+        RenderBR {BR} at (358,252) size 0x0
+        RenderBR {BR} at (0,258) size 0x17
+        RenderButton {INPUT} at (0,276) size 139x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 123x16
+            RenderText {#text} at (0,0) size 123x16
+              text run at (0,0) width 123: "display: table-column"
+        RenderText {#text} at (139,278) size 4x17
+          text run at (139,278) width 4: " "
+        RenderButton {INPUT} at (143,276) size 139x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 123x16
+            RenderText {#text} at (0,0) size 123x16
+              text run at (0,0) width 123: "display: table-column"
+        RenderText {#text} at (282,278) size 4x17
+          text run at (282,278) width 4: " "
+        RenderBR {BR} at (286,292) size 0x0
+        RenderBR {BR} at (0,298) size 0x17
+        RenderButton {INPUT} at (0,316) size 117x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 101x16
+            RenderText {#text} at (0,0) size 101x16
+              text run at (0,0) width 101: "display: table-cell"
+        RenderText {#text} at (117,318) size 4x17
+          text run at (117,318) width 4: " "
+        RenderButton {INPUT} at (121,316) size 117x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 101x16
+            RenderText {#text} at (0,0) size 101x16
+              text run at (0,0) width 101: "display: table-cell"
+        RenderText {#text} at (238,318) size 4x17
+          text run at (238,318) width 4: " "
+        RenderBR {BR} at (242,332) size 0x0
+        RenderBR {BR} at (0,338) size 0x17
+        RenderButton {INPUT} at (0,356) size 139x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 123x16
+            RenderText {#text} at (0,0) size 123x16
+              text run at (0,0) width 123: "display: table-caption"
+        RenderText {#text} at (139,358) size 4x17
+          text run at (139,358) width 4: " "
+        RenderButton {INPUT} at (143,356) size 139x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 123x16
+            RenderText {#text} at (0,0) size 123x16
+              text run at (0,0) width 123: "display: table-caption"
         RenderText {#text} at (0,0) size 0x0

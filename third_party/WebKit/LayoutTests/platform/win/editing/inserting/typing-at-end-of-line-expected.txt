@@ -24,6 +24,6 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,54) size 784x18
         RenderBR {BR} at (0,0) size 0x17
       RenderBlock {DIV} at (0,72) size 871x100
-        RenderText {#text} at (0,0) size 746x14
-          text run at (0,0) width 746: "and Anna, you can do your regular weekly report run, and I'll extract the key sections into this. Andrew and Mark, I'd like to include any new bits you have"
+        RenderText {#text} at (0,0) size 748x15
+          text run at (0,0) width 748: "and Anna, you can do your regular weekly report run, and I'll extract the key sections into this. Andrew and Mark, I'd like to include any new bits you have"
 caret: position 157 of child 0 {#text} of child 5 {DIV} of body

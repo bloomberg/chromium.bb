@@ -7,8 +7,8 @@ layer at (0,0) size 800x600
         text run at (0,0) width 681: "In the list box below, the text \"This text should appear\" should be shown as the first entry into the list box."
       RenderBR {BR} at (680,14) size 1x0
       RenderText {#text} at (0,0) size 0x0
-layer at (8,26) size 160x87 clip at (9,27) size 143x85
-  RenderListBox {SELECT} at (0,18) size 159.58x87 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 142.58x17
-      RenderText {#text} at (2,0) size 139x15
-        text run at (2,0) width 139: "This text should appear"
+layer at (8,26) size 156x87 clip at (9,27) size 139x85
+  RenderListBox {SELECT} at (0,18) size 156x87 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 139x17
+      RenderText {#text} at (2,0) size 135x16
+        text run at (2,0) width 135: "This text should appear"

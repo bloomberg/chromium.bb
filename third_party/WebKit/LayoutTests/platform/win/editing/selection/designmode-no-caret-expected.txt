@@ -10,8 +10,8 @@ layer at (0,0) size 800x600
           text run at (121,18) width 191: "We do this as a convenience. "
           text run at (311,18) width 425: "Right now, we only do this convenience when a document's frame"
           text run at (0,36) width 443: "becomes first responder or when a document's window becomes key."
-      RenderBlock {PRE} at (0,67) size 784x30
-        RenderText {#text} at (0,0) size 289x30
-          text run at (0,0) width 289: "Test Failed - there should be a caret"
-          text run at (288,0) width 1: " "
-          text run at (0,15) width 0: " "
+      RenderBlock {PRE} at (0,67) size 784x32
+        RenderText {#text} at (0,0) size 296x32
+          text run at (0,0) width 296: "Test Failed - there should be a caret"
+          text run at (296,0) width 0: " "
+          text run at (0,16) width 0: " "

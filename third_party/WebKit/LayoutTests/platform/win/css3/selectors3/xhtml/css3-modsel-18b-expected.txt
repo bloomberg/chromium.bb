@@ -34,9 +34,9 @@ layer at (0,0) size 800x292
                 RenderText {#text} at (1,1) size 61x17
                   text run at (1,1) width 61: "This text."
         RenderBlock {p} at (0,204) size 784x22
-          RenderInline {sub} at (0,0) size 51x15
-            RenderText {#text} at (0,6) size 51x15
-              text run at (0,6) width 51: "This text."
+          RenderInline {sub} at (0,0) size 49x15
+            RenderText {#text} at (0,6) size 49x15
+              text run at (0,6) width 49: "This text."
         RenderBlock {p} at (0,242) size 784x18
           RenderText {#text} at (0,0) size 585x17
             text run at (0,0) width 585: "...and anything else between the top of the first paragraph and the bottom of this paragraph."

@@ -1,24 +1,24 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x105
-  RenderBlock {HTML} at (0,0) size 800x105
-    RenderBody {BODY} at (8,8) size 784x89
+layer at (0,0) size 800x106
+  RenderBlock {HTML} at (0,0) size 800x106
+    RenderBody {BODY} at (8,8) size 784x90
       RenderBlock {DIV} at (0,0) size 784x18
         RenderInline {A} at (0,0) size 63x17 [color=#0000EE]
           RenderText {#text} at (0,0) size 63x17
             text run at (0,0) width 63: "Bug 6584"
         RenderText {#text} at (62,0) size 379x17
           text run at (62,0) width 379: " REGRESSION: button after unclosed button gives trouble"
-      RenderBlock {P} at (0,34) size 784x21
-        RenderButton {BUTTON} at (0,0) size 37.50x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 21.50x15
-            RenderText {#text} at (0,0) size 22x15
+      RenderBlock {P} at (0,34) size 784x22
+        RenderButton {BUTTON} at (0,0) size 38x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 22x16
+            RenderText {#text} at (0,0) size 22x16
               text run at (0,0) width 22: "test"
-        RenderButton {BUTTON} at (37.50,0) size 44.91x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 28.91x15
-            RenderText {#text} at (0,0) size 29x15
+        RenderButton {BUTTON} at (38,0) size 45x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 29x16
+            RenderText {#text} at (0,0) size 29x16
               text run at (0,0) width 29: "test2"
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,71) size 784x18
+      RenderBlock {DIV} at (0,72) size 784x18
         RenderText {#text} at (0,0) size 613x17
           text run at (0,0) width 613: "There should be two separate buttons instead of button \"test2\" being nested inside button \"test\"."

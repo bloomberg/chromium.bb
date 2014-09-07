@@ -21,12 +21,12 @@ layer at (0,0) size 800x600
             text run at (0,0) width 155: "It demonstrates a bug:"
         RenderText {#text} at (154,0) size 593x17
           text run at (154,0) width 593: " too much padding is left between the new line and the end of the paragraph containing 'foo'."
-      RenderBlock {DIV} at (0,104) size 784x58
-        RenderBlock {PRE} at (0,0) size 784x15
-          RenderText {#text} at (0,0) size 24x15
+      RenderBlock {DIV} at (0,104) size 784x61
+        RenderBlock {PRE} at (0,0) size 784x16
+          RenderText {#text} at (0,0) size 24x16
             text run at (0,0) width 24: "foo"
-        RenderBlock {PRE} at (0,28) size 784x30
-          RenderText {#text} at (0,0) size 24x30
+        RenderBlock {PRE} at (0,29) size 784x32
+          RenderText {#text} at (0,0) size 24x32
             text run at (0,0) width 0: " "
-            text run at (0,15) width 24: "bar"
+            text run at (0,16) width 24: "bar"
 caret: position 0 of child 0 {#text} of child 1 {PRE} of child 4 {DIV} of body

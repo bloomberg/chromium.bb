@@ -12,12 +12,12 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,0) size 784x18
         RenderText {#text} at (0,0) size 343x17
           text run at (0,0) width 343: "This tests text insertion before/after an input element."
-      RenderBlock {DIV} at (0,34) size 784x21
-        RenderText {#text} at (0,1) size 36x17
-          text run at (0,1) width 36: "Hello"
-        RenderTextControl {INPUT} at (35.55,0) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderText {#text} at (208,1) size 42x17
-          text run at (208,1) width 42: "World"
-layer at (46,45) size 169x15
-  RenderBlock {DIV} at (2,3) size 169x15
+      RenderBlock {DIV} at (0,34) size 784x22
+        RenderText {#text} at (0,2) size 36x17
+          text run at (0,2) width 36: "Hello"
+        RenderTextControl {INPUT} at (35.55,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (208,2) size 42x17
+          text run at (208,2) width 42: "World"
+layer at (46,45) size 169x16
+  RenderBlock {DIV} at (2,3) size 169x16
 caret: position 5 of child 2 {#text} of child 2 {DIV} of body

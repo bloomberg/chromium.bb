@@ -1,109 +1,109 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x194
-  RenderBlock {HTML} at (0,0) size 800x194
-    RenderBody {BODY} at (8,8) size 784x178
+layer at (0,0) size 800x204
+  RenderBlock {HTML} at (0,0) size 800x204
+    RenderBody {BODY} at (8,8) size 784x188
       RenderBlock {DIV} at (0,0) size 784x18
         RenderText {#text} at (0,0) size 610x17
           text run at (0,0) width 610: "When the caret is scrolled out, on starting typing it must be brought to the center of the control."
-      RenderBlock (anonymous) at (0,18) size 784x160
+      RenderBlock (anonymous) at (0,18) size 784x170
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
-layer at (8,26) size 101x156 clip at (9,27) size 84x154 scrollY 114 scrollHeight 484
-  RenderTextControl {TEXTAREA} at (0,0) size 101x156 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {DIV} at (3,3) size 80x480
-      RenderText {#text} at (0,0) size 16x15
+layer at (8,26) size 101x166 clip at (9,27) size 84x164 scrollY 121 scrollHeight 516
+  RenderTextControl {TEXTAREA} at (0,0) size 101x166 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {DIV} at (3,3) size 80x512
+      RenderText {#text} at (0,0) size 16x16
         text run at (0,0) width 16: "00"
-      RenderBR {BR} at (15,0) size 1x15
-      RenderText {#text} at (0,15) size 16x15
-        text run at (0,15) width 16: "01"
-      RenderBR {BR} at (15,15) size 1x15
-      RenderText {#text} at (0,30) size 16x15
-        text run at (0,30) width 16: "02"
-      RenderBR {BR} at (15,30) size 1x15
-      RenderText {#text} at (0,45) size 16x15
-        text run at (0,45) width 16: "03"
-      RenderBR {BR} at (15,45) size 1x15
-      RenderText {#text} at (0,60) size 16x15
-        text run at (0,60) width 16: "04"
-      RenderBR {BR} at (15,60) size 1x15
-      RenderText {#text} at (0,75) size 16x15
-        text run at (0,75) width 16: "05"
-      RenderBR {BR} at (15,75) size 1x15
-      RenderText {#text} at (0,90) size 16x15
-        text run at (0,90) width 16: "06"
-      RenderBR {BR} at (15,90) size 1x15
-      RenderText {#text} at (0,105) size 16x15
-        text run at (0,105) width 16: "07"
-      RenderBR {BR} at (15,105) size 1x15
-      RenderText {#text} at (0,120) size 16x15
-        text run at (0,120) width 16: "08"
-      RenderBR {BR} at (15,120) size 1x15
-      RenderText {#text} at (0,135) size 16x15
-        text run at (0,135) width 16: "09"
-      RenderBR {BR} at (15,135) size 1x15
-      RenderText {#text} at (0,150) size 16x15
-        text run at (0,150) width 16: "10"
-      RenderBR {BR} at (15,150) size 1x15
-      RenderText {#text} at (0,165) size 16x15
-        text run at (0,165) width 16: "11"
-      RenderBR {BR} at (15,165) size 1x15
-      RenderText {#text} at (0,180) size 24x15
-        text run at (0,180) width 24: ">12"
-      RenderBR {BR} at (23,180) size 1x15
-      RenderText {#text} at (0,195) size 16x15
-        text run at (0,195) width 16: "13"
-      RenderBR {BR} at (15,195) size 1x15
-      RenderText {#text} at (0,210) size 16x15
-        text run at (0,210) width 16: "14"
-      RenderBR {BR} at (15,210) size 1x15
-      RenderText {#text} at (0,225) size 16x15
-        text run at (0,225) width 16: "15"
-      RenderBR {BR} at (15,225) size 1x15
-      RenderText {#text} at (0,240) size 16x15
-        text run at (0,240) width 16: "16"
-      RenderBR {BR} at (15,240) size 1x15
-      RenderText {#text} at (0,255) size 16x15
-        text run at (0,255) width 16: "17"
-      RenderBR {BR} at (15,255) size 1x15
-      RenderText {#text} at (0,270) size 16x15
-        text run at (0,270) width 16: "18"
-      RenderBR {BR} at (15,270) size 1x15
-      RenderText {#text} at (0,285) size 16x15
-        text run at (0,285) width 16: "19"
-      RenderBR {BR} at (15,285) size 1x15
-      RenderText {#text} at (0,300) size 16x15
-        text run at (0,300) width 16: "20"
-      RenderBR {BR} at (15,300) size 1x15
-      RenderText {#text} at (0,315) size 16x15
-        text run at (0,315) width 16: "21"
-      RenderBR {BR} at (15,315) size 1x15
-      RenderText {#text} at (0,330) size 16x15
-        text run at (0,330) width 16: "22"
-      RenderBR {BR} at (15,330) size 1x15
-      RenderText {#text} at (0,345) size 16x15
-        text run at (0,345) width 16: "23"
-      RenderBR {BR} at (15,345) size 1x15
-      RenderText {#text} at (0,360) size 16x15
-        text run at (0,360) width 16: "24"
-      RenderBR {BR} at (15,360) size 1x15
-      RenderText {#text} at (0,375) size 16x15
-        text run at (0,375) width 16: "25"
-      RenderBR {BR} at (15,375) size 1x15
-      RenderText {#text} at (0,390) size 16x15
-        text run at (0,390) width 16: "26"
-      RenderBR {BR} at (15,390) size 1x15
-      RenderText {#text} at (0,405) size 16x15
-        text run at (0,405) width 16: "27"
-      RenderBR {BR} at (15,405) size 1x15
-      RenderText {#text} at (0,420) size 16x15
-        text run at (0,420) width 16: "28"
-      RenderBR {BR} at (15,420) size 1x15
-      RenderText {#text} at (0,435) size 16x15
-        text run at (0,435) width 16: "29"
-      RenderBR {BR} at (15,435) size 1x15
-      RenderText {#text} at (0,450) size 16x15
-        text run at (0,450) width 16: "30"
-      RenderBR {BR} at (15,450) size 1x15
-      RenderBR {BR} at (0,465) size 0x15
+      RenderBR {BR} at (16,0) size 0x16
+      RenderText {#text} at (0,16) size 16x16
+        text run at (0,16) width 16: "01"
+      RenderBR {BR} at (16,16) size 0x16
+      RenderText {#text} at (0,32) size 16x16
+        text run at (0,32) width 16: "02"
+      RenderBR {BR} at (16,32) size 0x16
+      RenderText {#text} at (0,48) size 16x16
+        text run at (0,48) width 16: "03"
+      RenderBR {BR} at (16,48) size 0x16
+      RenderText {#text} at (0,64) size 16x16
+        text run at (0,64) width 16: "04"
+      RenderBR {BR} at (16,64) size 0x16
+      RenderText {#text} at (0,80) size 16x16
+        text run at (0,80) width 16: "05"
+      RenderBR {BR} at (16,80) size 0x16
+      RenderText {#text} at (0,96) size 16x16
+        text run at (0,96) width 16: "06"
+      RenderBR {BR} at (16,96) size 0x16
+      RenderText {#text} at (0,112) size 16x16
+        text run at (0,112) width 16: "07"
+      RenderBR {BR} at (16,112) size 0x16
+      RenderText {#text} at (0,128) size 16x16
+        text run at (0,128) width 16: "08"
+      RenderBR {BR} at (16,128) size 0x16
+      RenderText {#text} at (0,144) size 16x16
+        text run at (0,144) width 16: "09"
+      RenderBR {BR} at (16,144) size 0x16
+      RenderText {#text} at (0,160) size 16x16
+        text run at (0,160) width 16: "10"
+      RenderBR {BR} at (16,160) size 0x16
+      RenderText {#text} at (0,176) size 16x16
+        text run at (0,176) width 16: "11"
+      RenderBR {BR} at (16,176) size 0x16
+      RenderText {#text} at (0,192) size 24x16
+        text run at (0,192) width 24: ">12"
+      RenderBR {BR} at (24,192) size 0x16
+      RenderText {#text} at (0,208) size 16x16
+        text run at (0,208) width 16: "13"
+      RenderBR {BR} at (16,208) size 0x16
+      RenderText {#text} at (0,224) size 16x16
+        text run at (0,224) width 16: "14"
+      RenderBR {BR} at (16,224) size 0x16
+      RenderText {#text} at (0,240) size 16x16
+        text run at (0,240) width 16: "15"
+      RenderBR {BR} at (16,240) size 0x16
+      RenderText {#text} at (0,256) size 16x16
+        text run at (0,256) width 16: "16"
+      RenderBR {BR} at (16,256) size 0x16
+      RenderText {#text} at (0,272) size 16x16
+        text run at (0,272) width 16: "17"
+      RenderBR {BR} at (16,272) size 0x16
+      RenderText {#text} at (0,288) size 16x16
+        text run at (0,288) width 16: "18"
+      RenderBR {BR} at (16,288) size 0x16
+      RenderText {#text} at (0,304) size 16x16
+        text run at (0,304) width 16: "19"
+      RenderBR {BR} at (16,304) size 0x16
+      RenderText {#text} at (0,320) size 16x16
+        text run at (0,320) width 16: "20"
+      RenderBR {BR} at (16,320) size 0x16
+      RenderText {#text} at (0,336) size 16x16
+        text run at (0,336) width 16: "21"
+      RenderBR {BR} at (16,336) size 0x16
+      RenderText {#text} at (0,352) size 16x16
+        text run at (0,352) width 16: "22"
+      RenderBR {BR} at (16,352) size 0x16
+      RenderText {#text} at (0,368) size 16x16
+        text run at (0,368) width 16: "23"
+      RenderBR {BR} at (16,368) size 0x16
+      RenderText {#text} at (0,384) size 16x16
+        text run at (0,384) width 16: "24"
+      RenderBR {BR} at (16,384) size 0x16
+      RenderText {#text} at (0,400) size 16x16
+        text run at (0,400) width 16: "25"
+      RenderBR {BR} at (16,400) size 0x16
+      RenderText {#text} at (0,416) size 16x16
+        text run at (0,416) width 16: "26"
+      RenderBR {BR} at (16,416) size 0x16
+      RenderText {#text} at (0,432) size 16x16
+        text run at (0,432) width 16: "27"
+      RenderBR {BR} at (16,432) size 0x16
+      RenderText {#text} at (0,448) size 16x16
+        text run at (0,448) width 16: "28"
+      RenderBR {BR} at (16,448) size 0x16
+      RenderText {#text} at (0,464) size 16x16
+        text run at (0,464) width 16: "29"
+      RenderBR {BR} at (16,464) size 0x16
+      RenderText {#text} at (0,480) size 16x16
+        text run at (0,480) width 16: "30"
+      RenderBR {BR} at (16,480) size 0x16
+      RenderBR {BR} at (0,496) size 0x16
 caret: position 1 of child 24 {#text} of child 0 {DIV} of {#document-fragment} of child 3 {TEXTAREA} of body

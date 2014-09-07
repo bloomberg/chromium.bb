@@ -1,12 +1,12 @@
-layer at (0,0) size 800x770
+layer at (0,0) size 800x820
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x770
-  RenderBlock {HTML} at (0,0) size 800x770
-    RenderBody {BODY} at (8,8) size 784x754
+layer at (0,0) size 800x820
+  RenderBlock {HTML} at (0,0) size 800x820
+    RenderBody {BODY} at (8,8) size 784x804
       RenderText {#text} at (0,0) size 0x0
       RenderText {#text} at (0,0) size 0x0
-layer at (8,8) size 339x754 clip at (9,9) size 337x752
-  RenderTextControl {TEXTAREA} at (0,0) size 339x754 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {DIV} at (3,3) size 335x15
-      RenderText {#text} at (0,0) size 88x15
+layer at (8,8) size 339x804 clip at (9,9) size 337x802
+  RenderTextControl {TEXTAREA} at (0,0) size 339x804 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {DIV} at (3,3) size 335x16
+      RenderText {#text} at (0,0) size 88x16
         text run at (0,0) width 88: "Sample text"

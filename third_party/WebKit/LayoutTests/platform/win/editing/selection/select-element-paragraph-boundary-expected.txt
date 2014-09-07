@@ -10,9 +10,9 @@ layer at (0,0) size 800x600
           text run at (0,0) width 333: "This tests paragraphBoundary selection navigation. "
           text run at (332,0) width 433: "The caret should be at the end of the paragraph below, just after the"
           text run at (0,18) width 69: "select box."
-      RenderBlock {DIV} at (0,52) size 784x19
-        RenderMenuList {SELECT} at (0,0) size 33x19 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          RenderBlock (anonymous) at (1,1) size 31x17
-            RenderText at (4,1) size 8x15
-              text run at (4,1) width 8: "1"
+      RenderBlock {DIV} at (0,52) size 784x20
+        RenderMenuList {SELECT} at (0,0) size 32x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          RenderBlock (anonymous) at (1,1) size 30x18
+            RenderText at (4,1) size 7x16
+              text run at (4,1) width 7: "1"
 caret: position 1 of child 0 {SELECT} of child 2 {DIV} of body

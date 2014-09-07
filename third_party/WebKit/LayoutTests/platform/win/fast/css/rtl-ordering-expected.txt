@@ -19,27 +19,27 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,70) size 784x18
         RenderText {#text} at (0,0) size 301x17
           text run at (0,0) width 301 LTR override: "The text on both buttons should like this: \x{5E8}\x{5D5}\x{5EA}\x{5E4}\x{5DB}"
-      RenderBlock (anonymous) at (0,104) size 784x42
-        RenderButton {BUTTON} at (0,0) size 48.08x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 32.08x15
-            RenderText {#text} at (0,0) size 33x15
-              text run at (0,0) width 33 LTR override: "\x{5E8}\x{5D5}\x{5EA}\x{5E4}\x{5DB}"
-        RenderText {#text} at (48,1) size 5x17
-          text run at (48,1) width 5 LTR override: " "
-        RenderBR {BR} at (52,15) size 1x0
-        RenderButton {INPUT} at (0,21) size 48.08x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 32.08x15
-            RenderText {#text} at (0,0) size 33x15
-              text run at (0,0) width 33 RTL: "\x{5DB}\x{5E4}\x{5EA}\x{5D5}\x{5E8}"
+      RenderBlock (anonymous) at (0,104) size 784x44
+        RenderButton {BUTTON} at (0,0) size 47x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 31x16
+            RenderText {#text} at (0,0) size 31x16
+              text run at (0,0) width 31 LTR override: "\x{5E8}\x{5D5}\x{5EA}\x{5E4}\x{5DB}"
+        RenderText {#text} at (47,2) size 4x17
+          text run at (47,2) width 4 LTR override: " "
+        RenderBR {BR} at (51,16) size 0x0
+        RenderButton {INPUT} at (0,22) size 47x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 31x16
+            RenderText {#text} at (0,0) size 31x16
+              text run at (0,0) width 31 RTL: "\x{5DB}\x{5E4}\x{5EA}\x{5D5}\x{5E8}"
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,154) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {P} at (0,172) size 784x18
+      RenderBlock {HR} at (0,156) size 784x2 [border: (1px inset #EEEEEE)]
+      RenderBlock {P} at (0,174) size 784x18
         RenderText {#text} at (0,0) size 255x17
           text run at (0,0) width 255 LTR override: "The following lines should be identical:"
-      RenderBlock {P} at (0,206) size 784x18
+      RenderBlock {P} at (0,208) size 784x18
         RenderText {#text} at (0,0) size 64x17
           text run at (0,0) width 16: "21"
           text run at (16,0) width 48 RTL: "\x{5D4}\x{5DE}\x{5D0}\x{5D4} \x{5D4}-"
-      RenderBlock {P} at (0,240) size 784x18
+      RenderBlock {P} at (0,242) size 784x18
         RenderText {#text} at (0,0) size 64x17
           text run at (0,0) width 64 LTR override: "21-\x{5D4} \x{5D4}\x{5D0}\x{5DE}\x{5D4}"

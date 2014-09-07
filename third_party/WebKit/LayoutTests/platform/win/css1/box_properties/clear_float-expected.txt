@@ -1,31 +1,31 @@
-layer at (0,0) size 800x775
+layer at (0,0) size 800x784
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x775
-  RenderBlock {HTML} at (0,0) size 800x774.88
-    RenderBody {BODY} at (8,8) size 784x758.88 [bgcolor=#CCCCCC]
+layer at (0,0) size 800x784
+  RenderBlock {HTML} at (0,0) size 800x783.88
+    RenderBody {BODY} at (8,8) size 784x767.88 [bgcolor=#CCCCCC]
       RenderBlock {P} at (0,0) size 784x18
         RenderText {#text} at (0,0) size 363x17
           text run at (0,0) width 363: "The style declarations which apply to the text below are:"
-      RenderBlock {PRE} at (0,31) size 784x135
-        RenderText {#text} at (0,0) size 601x135
-          text run at (0,0) width 383: "P { margin: 0; padding: 0; text-align:  justify;}"
-          text run at (382,0) width 1: " "
-          text run at (0,15) width 0: " "
-          text run at (0,30) width 375: "DIV.menu {float: left; clear: left; width: 11em;"
-          text run at (374,30) width 1: " "
-          text run at (0,45) width 453: "          margin: 0; margin-bottom: 10px; padding: 0.5em;}"
-          text run at (452,45) width 1: " "
-          text run at (0,60) width 422: "DIV.menu H1 {font-size: 1.2em; margin: 0; padding: 0;}"
-          text run at (421,60) width 1: " "
-          text run at (0,75) width 437: "DIV.menu UL {margin: 0.2em 0.3em 0.2em 1em; padding: 0;}"
-          text run at (436,75) width 1: " "
-          text run at (0,90) width 601: "DIV.article {padding: 0.5em; margin: 0; margin-left: 14em; margin-right: 2em;"
-          text run at (600,90) width 1: " "
-          text run at (0,105) width 469: "             color: black; background: yellow; clear: none;}"
-          text run at (468,105) width 1: " "
-          text run at (0,120) width 0: " "
-      RenderBlock {HR} at (0,179) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock (floating) {DIV} at (0,189) size 192x116.38 [color=#FFFFFF] [bgcolor=#008000]
+      RenderBlock {PRE} at (0,31) size 784x144
+        RenderText {#text} at (0,0) size 616x144
+          text run at (0,0) width 392: "P { margin: 0; padding: 0; text-align:  justify;}"
+          text run at (392,0) width 0: " "
+          text run at (0,16) width 0: " "
+          text run at (0,32) width 384: "DIV.menu {float: left; clear: left; width: 11em;"
+          text run at (384,32) width 0: " "
+          text run at (0,48) width 464: "          margin: 0; margin-bottom: 10px; padding: 0.5em;}"
+          text run at (464,48) width 0: " "
+          text run at (0,64) width 432: "DIV.menu H1 {font-size: 1.2em; margin: 0; padding: 0;}"
+          text run at (432,64) width 0: " "
+          text run at (0,80) width 448: "DIV.menu UL {margin: 0.2em 0.3em 0.2em 1em; padding: 0;}"
+          text run at (448,80) width 0: " "
+          text run at (0,96) width 616: "DIV.article {padding: 0.5em; margin: 0; margin-left: 14em; margin-right: 2em;"
+          text run at (616,96) width 0: " "
+          text run at (0,112) width 480: "             color: black; background: yellow; clear: none;}"
+          text run at (480,112) width 0: " "
+          text run at (0,128) width 0: " "
+      RenderBlock {HR} at (0,188) size 784x2 [border: (1px inset #EEEEEE)]
+      RenderBlock (floating) {DIV} at (0,198) size 192x116.38 [color=#FFFFFF] [bgcolor=#008000]
         RenderBlock {H1} at (8,8) size 176x22
           RenderText {#text} at (0,0) size 84x21
             text run at (0,0) width 84: "Top menu"
@@ -46,7 +46,7 @@ layer at (0,0) size 800x775
             RenderListMarker at (-17,0) size 7x17: bullet
             RenderText {#text} at (0,0) size 89x17
               text run at (0,0) width 89: "0.5em margin"
-      RenderBlock (floating) {DIV} at (0,315.38) size 192x116.38 [color=#FFFFFF] [bgcolor=#0000FF]
+      RenderBlock (floating) {DIV} at (0,324.38) size 192x116.38 [color=#FFFFFF] [bgcolor=#0000FF]
         RenderBlock {H1} at (8,8) size 176x22
           RenderText {#text} at (0,0) size 112x21
             text run at (0,0) width 112: "Bottom menu"
@@ -67,7 +67,7 @@ layer at (0,0) size 800x775
             RenderListMarker at (-17,0) size 7x17: bullet
             RenderText {#text} at (0,0) size 89x17
               text run at (0,0) width 89: "0.5em margin"
-      RenderBlock {DIV} at (224,189) size 528x221.88 [bgcolor=#FFFF00]
+      RenderBlock {DIV} at (224,198) size 528x221.88 [bgcolor=#FFFF00]
         RenderBlock {H1} at (8,29.44) size 512x37
           RenderText {#text} at (0,0) size 276x36
             text run at (0,0) width 276: "The 'clear' property"
@@ -83,7 +83,7 @@ layer at (0,0) size 800x775
           RenderText {#text} at (0,0) size 512x35
             text run at (0,0) width 512: "The top of the yellow rectangle (to which this paragraph belongs) should be"
             text run at (0,18) width 339: "vertically aligned with the top of the green rectangle."
-      RenderTable {TABLE} at (192,410.88) size 592x348 [border: (1px outset #808080)]
+      RenderTable {TABLE} at (192,419.88) size 592x348 [border: (1px outset #808080)]
         RenderTableSection {TBODY} at (1,1) size 590x346
           RenderTableRow {TR} at (0,0) size 590x26
             RenderTableCell {TD} at (0,0) size 590x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]

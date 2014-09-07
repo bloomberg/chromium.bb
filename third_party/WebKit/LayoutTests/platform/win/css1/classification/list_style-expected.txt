@@ -6,27 +6,27 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,0) size 784x18
         RenderText {#text} at (0,0) size 363x17
           text run at (0,0) width 363: "The style declarations which apply to the text below are:"
-      RenderBlock {PRE} at (0,34) size 784x30
-        RenderText {#text} at (0,0) size 484x30
-          text run at (0,0) width 297: ".one {list-style: upper-alpha inside;}"
-          text run at (296,0) width 1: " "
-          text run at (0,15) width 484: ".two {list-style: url(../resources/oransqr.gif) disc outside;}"
-          text run at (483,15) width 1: " "
-      RenderBlock {HR} at (0,77) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {UL} at (0,95) size 784x36
+      RenderBlock {PRE} at (0,34) size 784x32
+        RenderText {#text} at (0,0) size 496x32
+          text run at (0,0) width 304: ".one {list-style: upper-alpha inside;}"
+          text run at (304,0) width 0: " "
+          text run at (0,16) width 496: ".two {list-style: url(../resources/oransqr.gif) disc outside;}"
+          text run at (496,16) width 0: " "
+      RenderBlock {HR} at (0,79) size 784x2 [border: (1px inset #EEEEEE)]
+      RenderBlock {UL} at (0,97) size 784x36
         RenderListItem {LI} at (40,0) size 744x36
           RenderListMarker at (0,0) size 19.55x17: "A"
           RenderText {#text} at (19,0) size 695x35
             text run at (19,0) width 676: "The text in this item should not behave as expected; that is, it should line up with the capital-A on the left"
             text run at (0,18) width 345: "margin, leaving no blank space beneath the capital-A."
-      RenderBlock {UL} at (0,147) size 784x37
+      RenderBlock {UL} at (0,149) size 784x37
         RenderListItem {LI} at (40,0) size 744x37
           RenderListMarker at (-22,0) size 15x15
           RenderText {#text} at (0,1) size 727x35
             text run at (0,1) width 489: "The text in this item have an orange square for its bullet; failing that, a disc. "
             text run at (488,1) width 239: "Also, the bullet should be outside the"
             text run at (0,19) width 290: "text block, as the list has been set to 'outside'."
-      RenderTable {TABLE} at (0,200) size 784x141 [border: (1px outset #808080)]
+      RenderTable {TABLE} at (0,202) size 784x141 [border: (1px outset #808080)]
         RenderTableSection {TBODY} at (1,1) size 782x139
           RenderTableRow {TR} at (0,0) size 782x26
             RenderTableCell {TD} at (0,0) size 782x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]

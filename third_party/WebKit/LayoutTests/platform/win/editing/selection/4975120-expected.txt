@@ -9,17 +9,17 @@ layer at (0,0) size 800x600
           text run at (0,18) width 32: "key. "
           text run at (31,18) width 742: "To run manually, make another window active and then make this window active. Only the subframe should appear"
           text run at (0,36) width 43: "active."
-      RenderBlock (anonymous) at (0,70) size 784x175
-        RenderTextControl {INPUT} at (0,0) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderBR {BR} at (173,15) size 0x0
+      RenderBlock (anonymous) at (0,70) size 784x176
+        RenderTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderBR {BR} at (173,16) size 0x0
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
-layer at (10,81) size 169x15
-  RenderBlock {DIV} at (2,3) size 169x15
-    RenderText {#text} at (0,0) size 19x15
-      text run at (0,0) width 19: "foo"
-layer at (8,99) size 304x154
-  RenderPartObject {IFRAME} at (0,21) size 304x154 [border: (2px inset #EEEEEE)]
+layer at (10,81) size 169x16
+  RenderBlock {DIV} at (2,3) size 169x16
+    RenderText {#text} at (0,0) size 17x16
+      text run at (0,0) width 17: "foo"
+layer at (8,100) size 304x154
+  RenderPartObject {IFRAME} at (0,22) size 304x154 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x150
       RenderView at (0,0) size 300x150
     layer at (0,0) size 300x150

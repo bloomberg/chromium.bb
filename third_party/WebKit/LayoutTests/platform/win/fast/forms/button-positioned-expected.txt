@@ -3,13 +3,13 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-layer at (8,8) size 163x21
-  RenderButton {BUTTON} at (8,8) size 163.47x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-    RenderBlock (anonymous) at (8,3) size 147.47x15
-      RenderText {#text} at (0,0) size 148x15
-        text run at (0,0) width 148: "This button is positioned."
-layer at (8,8) size 188x21
-  RenderButton {INPUT} at (8,8) size 187.92x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-    RenderBlock (anonymous) at (8,3) size 171.92x15
-      RenderText {#text} at (0,0) size 172x15
-        text run at (0,0) width 172: "This button is also positioned"
+layer at (8,8) size 161x22
+  RenderButton {BUTTON} at (8,8) size 161x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+    RenderBlock (anonymous) at (8,3) size 145x16
+      RenderText {#text} at (0,0) size 145x16
+        text run at (0,0) width 145: "This button is positioned."
+layer at (8,8) size 185x22
+  RenderButton {INPUT} at (8,8) size 185x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+    RenderBlock (anonymous) at (8,3) size 169x16
+      RenderText {#text} at (0,0) size 169x16
+        text run at (0,0) width 169: "This button is also positioned"
