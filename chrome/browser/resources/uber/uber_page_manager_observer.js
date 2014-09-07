@@ -8,7 +8,7 @@ cr.define('uber', function() {
   /**
    * A PageManager observer that updates the uber page.
    * @constructor
-   * @implements {PageManager.Observer}
+   * @implements {cr.ui.pageManager.PageManager.Observer}
    */
   function PageManagerObserver() {}
 
@@ -17,7 +17,8 @@ cr.define('uber', function() {
 
     /**
      * Informs the uber page when a top-level overlay is opened or closed.
-     * @param {Page} page The page that is being shown or was hidden.
+     * @param {cr.ui.pageManager.Page} page The page that is being shown or was
+     *     hidden.
      * @override
      */
     onPageVisibilityChanged: function(page) {

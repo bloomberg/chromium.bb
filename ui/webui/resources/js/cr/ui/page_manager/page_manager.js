@@ -44,7 +44,7 @@ cr.define('cr.ui.pageManager', function() {
 
     /**
      * Observers will be notified when opening and closing overlays.
-     * @type {!Array.<!PageManager.Observer>}
+     * @type {!Array.<!cr.ui.pageManager.PageManager.Observer>}
      */
     observers_: [],
 
@@ -76,7 +76,7 @@ cr.define('cr.ui.pageManager', function() {
 
     /**
      * Registers new page.
-     * @param {cr.ui.page_manager.Page} page Page to register.
+     * @param {!cr.ui.pageManager.Page} page Page to register.
      */
     register: function(page) {
       this.registeredPages[page.name.toLowerCase()] = page;
@@ -85,8 +85,8 @@ cr.define('cr.ui.pageManager', function() {
 
     /**
      * Registers a new Overlay page.
-     * @param {cr.ui.page_manager.Page} overlay Overlay to register.
-     * @param {cr.ui.page_manager.Page} parentPage Associated parent page for
+     * @param {!cr.ui.pageManager.Page} overlay Overlay to register.
+     * @param {cr.ui.pageManager.Page} parentPage Associated parent page for
      *     this overlay.
      * @param {Array} associatedControls Array of control elements associated
      *     with this page.
@@ -381,7 +381,7 @@ cr.define('cr.ui.pageManager', function() {
 
     /**
      * Returns the currently visible bubble, or null if no bubble is visible.
-     * @return {AutoCloseBubble} The bubble currently being shown.
+     * @return {cr.ui.AutoCloseBubble} The bubble currently being shown.
      */
     getVisibleBubble: function() {
       var bubble = this.bubble_;
@@ -444,7 +444,8 @@ cr.define('cr.ui.pageManager', function() {
     },
 
     /**
-     * @param {PageManager.Observer} observer The observer to register.
+     * @param {!cr.ui.pageManager.PageManager.Observer} observer The observer to
+     *     register.
      */
     addObserver: function(observer) {
       this.observers_.push(observer);
@@ -583,7 +584,7 @@ cr.define('cr.ui.pageManager', function() {
      * to update the history.
      * @param {boolean} replace If true, handlers should replace the current
      *     history event rather than create new ones.
-     * @param {object=} opt_params A bag of optional params, including:
+     * @param {Object=} opt_params A bag of optional params, including:
      *     {boolean} ignoreHash Whether to include the hash or not.
      * @private
      */
@@ -623,8 +624,8 @@ cr.define('cr.ui.pageManager', function() {
 
     /**
      * Find an enclosing section for an element if it exists.
-     * @param {Element} element Element to search.
-     * @return {Element} The section element, or null.
+     * @param {Node} node Element to search.
+     * @return {Node} The section element, or null.
      * @private
      */
     findSectionForNode_: function(node) {

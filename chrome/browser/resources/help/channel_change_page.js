@@ -94,7 +94,7 @@ cr.define('help', function() {
 
     /**
      * Returns the list of all radio buttons responsible for channel selection.
-     * @return {Array.<HTMLInputElement>} Array of radio buttons
+     * @return {NodeList} Array of radio buttons
      * @private
      */
     getAllChannelOptions_: function() {
@@ -103,7 +103,7 @@ cr.define('help', function() {
 
     /**
      * Returns value of the selected option.
-     * @return {string} Selected channel name or null, if neither
+     * @return {?string} Selected channel name or null, if neither
      *     option is selected.
      * @private
      */

@@ -187,7 +187,7 @@ cr.define('help', function() {
     /**
      * Assigns |method| to the onclick property of |el| if |el| exists.
      * @param {HTMLElement} el The element on which to set the click handler.
-     * @param {function} method The click handler.
+     * @param {Function} method The click handler.
      * @private
      */
     maybeSetOnClick_: function(el, method) {

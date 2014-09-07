@@ -15,7 +15,7 @@ cr.define('cr.ui.pageManager', function() {
    * @param {string} name Page name.
    * @param {string} title Page title, used for history.
    * @param {string} pageDivName ID of the div corresponding to the page.
-   * @extends {EventTarget}
+   * @extends {cr.EventTarget}
    */
   function Page(name, title, pageDivName) {
     this.name = name;
@@ -35,7 +35,7 @@ cr.define('cr.ui.pageManager', function() {
 
     /**
      * The parent page of this page, or null for root pages.
-     * @type {Page}
+     * @type {cr.ui.pageManager.Page}
      */
     parentPage: null,
 
@@ -243,6 +243,7 @@ cr.define('cr.ui.pageManager', function() {
         pageDiv.page = this;
         // NOTE: This is a hacky way to force the container to layout which
         // will allow us to trigger the webkit transition.
+        /** @suppress {uselessCode} */
         container.scrollTop;
 
         this.pageDiv.removeAttribute('aria-hidden');

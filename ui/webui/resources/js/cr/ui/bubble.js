@@ -4,58 +4,66 @@
 
 // require: event_tracker.js
 
+// TODO(vitalyp): Inline the enums below into cr.ui definition function, remove
+// cr.exportPath() call and remove exportPath from exports in cr.js when this
+// issue will be fixed:
+// https://github.com/google/closure-compiler/issues/544
+cr.exportPath('cr.ui');
+
+/**
+ * The arrow location specifies how the arrow and bubble are positioned in
+ * relation to the anchor node.
+ * @enum {string}
+ */
+cr.ui.ArrowLocation = {
+  // The arrow is positioned at the top and the start of the bubble. In left
+  // to right mode this is the top left. The entire bubble is positioned below
+  // the anchor node.
+  TOP_START: 'top-start',
+  // The arrow is positioned at the top and the end of the bubble. In left to
+  // right mode this is the top right. The entire bubble is positioned below
+  // the anchor node.
+  TOP_END: 'top-end',
+  // The arrow is positioned at the bottom and the start of the bubble. In
+  // left to right mode this is the bottom left. The entire bubble is
+  // positioned above the anchor node.
+  BOTTOM_START: 'bottom-start',
+  // The arrow is positioned at the bottom and the end of the bubble. In
+  // left to right mode this is the bottom right. The entire bubble is
+  // positioned above the anchor node.
+  BOTTOM_END: 'bottom-end'
+};
+
+/**
+ * The bubble alignment specifies the position of the bubble in relation to
+ * the anchor node.
+ * @enum {string}
+ */
+cr.ui.BubbleAlignment = {
+  // The bubble is positioned just above or below the anchor node (as
+  // specified by the arrow location) so that the arrow points at the midpoint
+  // of the anchor.
+  ARROW_TO_MID_ANCHOR: 'arrow-to-mid-anchor',
+  // The bubble is positioned just above or below the anchor node (as
+  // specified by the arrow location) so that its reference edge lines up with
+  // the edge of the anchor.
+  BUBBLE_EDGE_TO_ANCHOR_EDGE: 'bubble-edge-anchor-edge',
+  // The bubble is positioned so that it is entirely within view and does not
+  // obstruct the anchor element, if possible. The specified arrow location is
+  // taken into account as the preferred alignment but may be overruled if
+  // there is insufficient space (see BubbleBase.reposition for the exact
+  // placement algorithm).
+  ENTIRELY_VISIBLE: 'entirely-visible'
+};
+
 cr.define('cr.ui', function() {
-
-  /**
-   * The arrow location specifies how the arrow and bubble are positioned in
-   * relation to the anchor node.
-   * @enum
-   */
-  var ArrowLocation = {
-    // The arrow is positioned at the top and the start of the bubble. In left
-    // to right mode this is the top left. The entire bubble is positioned below
-    // the anchor node.
-    TOP_START: 'top-start',
-    // The arrow is positioned at the top and the end of the bubble. In left to
-    // right mode this is the top right. The entire bubble is positioned below
-    // the anchor node.
-    TOP_END: 'top-end',
-    // The arrow is positioned at the bottom and the start of the bubble. In
-    // left to right mode this is the bottom left. The entire bubble is
-    // positioned above the anchor node.
-    BOTTOM_START: 'bottom-start',
-    // The arrow is positioned at the bottom and the end of the bubble. In
-    // left to right mode this is the bottom right. The entire bubble is
-    // positioned above the anchor node.
-    BOTTOM_END: 'bottom-end'
-  };
-
-  /**
-   * The bubble alignment specifies the position of the bubble in relation to
-   * the anchor node.
-   * @enum
-   */
-  var BubbleAlignment = {
-    // The bubble is positioned just above or below the anchor node (as
-    // specified by the arrow location) so that the arrow points at the midpoint
-    // of the anchor.
-    ARROW_TO_MID_ANCHOR: 'arrow-to-mid-anchor',
-    // The bubble is positioned just above or below the anchor node (as
-    // specified by the arrow location) so that its reference edge lines up with
-    // the edge of the anchor.
-    BUBBLE_EDGE_TO_ANCHOR_EDGE: 'bubble-edge-anchor-edge',
-    // The bubble is positioned so that it is entirely within view and does not
-    // obstruct the anchor element, if possible. The specified arrow location is
-    // taken into account as the preferred alignment but may be overruled if
-    // there is insufficient space (see BubbleBase.reposition for the exact
-    // placement algorithm).
-    ENTIRELY_VISIBLE: 'entirely-visible'
-  };
-
   /**
    * Abstract base class that provides common functionality for implementing
    * free-floating informational bubbles with a triangular arrow pointing at an
    * anchor node.
+   * @constructor
+   * @extends {HTMLDivElement}
+   * @implements {EventListener}
    */
   var BubbleBase = cr.ui.define('div');
 
@@ -80,6 +88,12 @@ cr.define('cr.ui', function() {
     __proto__: HTMLDivElement.prototype,
 
     /**
+     * @type {Node}
+     * @private
+     */
+    anchorNode_: null,
+
+    /**
      * Initialization function for the cr.ui framework.
      */
     decorate: function() {
@@ -89,7 +103,7 @@ cr.define('cr.ui', function() {
           '<div class="bubble-shadow"></div>' +
           '<div class="bubble-arrow"></div>';
       this.hidden = true;
-      this.bubbleAlignment = BubbleAlignment.ENTIRELY_VISIBLE;
+      this.bubbleAlignment = cr.ui.BubbleAlignment.ENTIRELY_VISIBLE;
     },
 
     /**
@@ -127,12 +141,12 @@ cr.define('cr.ui', function() {
       if (!this.hidden)
         return;
 
-      this.arrowAtRight_ = location == ArrowLocation.TOP_END ||
-                           location == ArrowLocation.BOTTOM_END;
+      this.arrowAtRight_ = location == cr.ui.ArrowLocation.TOP_END ||
+                           location == cr.ui.ArrowLocation.BOTTOM_END;
       if (document.documentElement.dir == 'rtl')
         this.arrowAtRight_ = !this.arrowAtRight_;
-      this.arrowAtTop_ = location == ArrowLocation.TOP_START ||
-                         location == ArrowLocation.TOP_END;
+      this.arrowAtTop_ = location == cr.ui.ArrowLocation.TOP_START ||
+                         location == cr.ui.ArrowLocation.TOP_END;
     },
 
     /**
@@ -155,12 +169,12 @@ cr.define('cr.ui', function() {
     reposition: function() {
       var documentWidth = document.documentElement.clientWidth;
       var documentHeight = document.documentElement.clientHeight;
-      var anchor = this.anchorNode_.getBoundingClientRect();
+      var anchor = this.anchorNode.getBoundingClientRect();
       var anchorMid = (anchor.left + anchor.right) / 2;
       var bubble = this.getBoundingClientRect();
       var arrow = this.querySelector('.bubble-arrow').getBoundingClientRect();
 
-      if (this.bubbleAlignment_ == BubbleAlignment.ENTIRELY_VISIBLE) {
+      if (this.bubbleAlignment_ == cr.ui.BubbleAlignment.ENTIRELY_VISIBLE) {
         // Work out horizontal placement. The bubble is initially positioned so
         // that the arrow tip points toward the midpoint of the anchor and is
         // BubbleBase.ARROW_OFFSET pixels from the reference edge and (as
@@ -211,7 +225,7 @@ cr.define('cr.ui', function() {
         }
       } else {
         if (this.bubbleAlignment_ ==
-            BubbleAlignment.BUBBLE_EDGE_TO_ANCHOR_EDGE) {
+            cr.ui.BubbleAlignment.BUBBLE_EDGE_TO_ANCHOR_EDGE) {
           var left = this.arrowAtRight_ ? anchor.right - bubble.width :
               anchor.left;
         } else {
@@ -240,7 +254,7 @@ cr.define('cr.ui', function() {
       this.hidden = false;
       this.reposition();
 
-      var doc = this.ownerDocument;
+      var doc = assert(this.ownerDocument);
       this.eventTracker_ = new EventTracker;
       this.eventTracker_.add(doc, 'keydown', this, true);
       this.eventTracker_.add(doc, 'mousedown', this, true);
@@ -329,14 +343,15 @@ cr.define('cr.ui', function() {
 
       this.handleCloseEvent = this.hide;
       this.deactivateToDismissDelay_ = 0;
-      this.bubbleAlignment = BubbleAlignment.ARROW_TO_MID_ANCHOR;
+      this.bubbleAlignment = cr.ui.BubbleAlignment.ARROW_TO_MID_ANCHOR;
     },
 
     /**
      * Handler for close events triggered when the close button is clicked. By
      * default, set to this.hide. Only available when the bubble is not being
      * shown.
-     * @param {function} handler The new handler, a function with no parameters.
+     * @param {function(): *} handler The new handler, a function with no
+     *     parameters.
      */
     set handleCloseEvent(handler) {
       if (!this.hidden)
@@ -401,6 +416,8 @@ cr.define('cr.ui', function() {
    * A bubble that closes automatically when the user clicks or moves the focus
    * outside the bubble and its target element, scrolls the underlying document
    * or resizes the window.
+   * @constructor
+   * @extends {cr.ui.BubbleBase}
    */
   var AutoCloseBubble = cr.ui.define('div');
 
@@ -469,22 +486,25 @@ cr.define('cr.ui', function() {
         // left-click on the bubble's target element (allowing the target to
         // handle the event and close the bubble itself).
         case 'mousedown':
-          if (event.button == 0 && this.anchorNode_.contains(event.target))
+          if (event.button == 0 &&
+              this.anchorNode.contains(assertInstanceof(event.target, Node))) {
             break;
+          }
         // Close the bubble when the underlying document is scrolled.
         case 'mousewheel':
         case 'scroll':
-          if (this.contains(event.target))
+          if (this.contains(assertInstanceof(event.target, Node)))
             break;
         // Close the bubble when the window is resized.
         case 'resize':
+          assert(event.target == window);
           this.hide();
           break;
         // Close the bubble when the focus moves to an element that is not the
         // bubble target and is not inside the bubble.
         case 'elementFocused':
-          if (!this.anchorNode_.contains(event.target) &&
-              !this.contains(event.target)) {
+          var target = assertInstanceof(event.target, Node);
+          if (!this.anchorNode_.contains(target) && !this.contains(target)) {
             this.hide();
           }
           break;
@@ -505,8 +525,6 @@ cr.define('cr.ui', function() {
 
 
   return {
-    ArrowLocation: ArrowLocation,
-    BubbleAlignment: BubbleAlignment,
     BubbleBase: BubbleBase,
     Bubble: Bubble,
     AutoCloseBubble: AutoCloseBubble

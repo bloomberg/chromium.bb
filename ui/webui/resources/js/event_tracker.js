@@ -42,7 +42,7 @@ EventTracker.prototype = {
    * Add an event listener - replacement for Node.addEventListener.
    * @param {!Node} node The DOM node to add a listener to.
    * @param {string} eventType The type of event to subscribe to.
-   * @param {Function} listener The listener to add.
+   * @param {EventListener|Function} listener The listener to add.
    * @param {boolean=} opt_capture Whether to invoke during the capture phase.
    */
   add: function(node, eventType, listener, opt_capture) {
