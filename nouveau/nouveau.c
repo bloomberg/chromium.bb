@@ -33,11 +33,11 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <errno.h>
-#include <sys/mman.h>
 #include <fcntl.h>
 
 #include <xf86drm.h>
 #include <xf86atomic.h>
+#include "libdrm.h"
 #include "libdrm_lists.h"
 #include "nouveau_drm.h"
 
@@ -381,7 +381,7 @@ nouveau_bo_del(struct nouveau_bo *bo)
 		drmIoctl(bo->device->fd, DRM_IOCTL_GEM_CLOSE, &req);
 	}
 	if (bo->map)
-		munmap(bo->map, bo->size);
+		drm_munmap(bo->map, bo->size);
 	free(nvbo);
 }
 
@@ -607,7 +607,7 @@ nouveau_bo_map(struct nouveau_bo *bo, uint32_t access,
 {
 	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
 	if (bo->map == NULL) {
-		bo->map = mmap(0, bo->size, PROT_READ | PROT_WRITE,
+		bo->map = drm_mmap(0, bo->size, PROT_READ | PROT_WRITE,
 			       MAP_SHARED, bo->device->fd, nvbo->map_handle);
 		if (bo->map == MAP_FAILED) {
 			bo->map = NULL;
