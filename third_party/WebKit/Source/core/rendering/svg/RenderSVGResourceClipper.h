@@ -76,7 +76,7 @@ public:
 private:
     bool tryPathOnlyClipping(GraphicsContext*, const AffineTransform&, const FloatRect&);
     void drawClipMaskContent(GraphicsContext*, const FloatRect& targetBoundingBox);
-    PassRefPtr<DisplayList> asDisplayList(GraphicsContext*, const AffineTransform&);
+    void createDisplayList(GraphicsContext*, const AffineTransform&);
     void calculateClipContentPaintInvalidationRect();
 
     RefPtr<DisplayList> m_clipContentDisplayList;

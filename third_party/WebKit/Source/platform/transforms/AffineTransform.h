@@ -177,8 +177,6 @@ private:
     Transform m_transform;
 };
 
-PLATFORM_EXPORT AffineTransform makeMapBetweenRects(const FloatRect& source, const FloatRect& dest);
-
 }
 
 #endif

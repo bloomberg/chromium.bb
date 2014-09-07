@@ -567,7 +567,6 @@
       'graphics/DecodingImageGenerator.h',
       'graphics/DeferredImageDecoder.cpp',
       'graphics/DeferredImageDecoder.h',
-      'graphics/DisplayList.cpp',
       'graphics/DisplayList.h',
       'graphics/DrawLooperBuilder.cpp',
       'graphics/DrawLooperBuilder.h',

@@ -72,6 +72,14 @@ static FloatRect getRendererRepaintRect(RenderObject* renderer)
         renderer->paintInvalidationRectInLocalCoordinates());
 }
 
+AffineTransform makeMapBetweenRects(const FloatRect& source, const FloatRect& dest)
+{
+    AffineTransform transform;
+    transform.translate(dest.x() - source.x(), dest.y() - source.y());
+    transform.scale(dest.width() / source.width(), dest.height() / source.height());
+    return transform;
+}
+
 FloatRect FEImage::determineAbsolutePaintRect(const FloatRect& originalRequestedRect)
 {
     RenderObject* renderer = referencedRenderer();
@@ -203,8 +211,9 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilterForRenderer(RenderObject* re
     if (!context)
         return adoptRef(SkBitmapSource::Create(SkBitmap()));
     AffineTransform contentTransformation;
+    FloatRect bounds(FloatPoint(), dstRect.size());
     context->save();
-    context->beginRecording(FloatRect(FloatPoint(), dstRect.size()));
+    context->beginRecording(bounds);
     context->concatCTM(transform);
     SVGRenderingContext::renderSubtree(context, renderer, contentTransformation);
     RefPtr<DisplayList> displayList = context->endRecording();

@@ -57,7 +57,7 @@ public:
 private:
     void calculateMaskContentPaintInvalidationRect();
     void drawMaskForRenderer(GraphicsContext*, const FloatRect& targetBoundingBox);
-    PassRefPtr<DisplayList> asDisplayList(GraphicsContext*, const AffineTransform&);
+    void createDisplayList(GraphicsContext*, const AffineTransform&);
 
     RefPtr<DisplayList> m_maskContentDisplayList;
     FloatRect m_maskContentBoundaries;

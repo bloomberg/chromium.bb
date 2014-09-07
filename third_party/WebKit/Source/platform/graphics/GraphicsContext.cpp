@@ -44,6 +44,7 @@
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -99,15 +100,17 @@ struct GraphicsContext::CanvasSaveState {
 };
 
 struct GraphicsContext::RecordingState {
-    RecordingState(SkCanvas* currentCanvas, const SkMatrix& currentMatrix, PassRefPtr<DisplayList> displayList)
-        : m_savedCanvas(currentCanvas)
-        , m_displayList(displayList)
-        , m_savedMatrix(currentMatrix)
-    {
-    }
+    RecordingState(SkPictureRecorder* recorder, SkCanvas* currentCanvas, const SkMatrix& currentMatrix, PassRefPtr<DisplayList> displayList)
+        : m_displayList(displayList)
+        , m_recorder(recorder)
+        , m_savedCanvas(currentCanvas)
+        , m_savedMatrix(currentMatrix) { }
 
-    SkCanvas* m_savedCanvas;
+    ~RecordingState() { }
+
     RefPtr<DisplayList> m_displayList;
+    SkPictureRecorder* m_recorder;
+    SkCanvas* m_savedCanvas;
     const SkMatrix m_savedMatrix;
 };
 
@@ -492,16 +495,20 @@ void GraphicsContext::endLayer()
 #endif
 }
 
-void GraphicsContext::beginRecording(const FloatRect& bounds)
+void GraphicsContext::beginRecording(const FloatRect& bounds, uint32_t recordFlags)
 {
-    RefPtr<DisplayList> displayList = adoptRef(new DisplayList(bounds));
+    RefPtr<DisplayList> displayList = DisplayList::create(bounds);
+
+    SkPictureRecorder* recorder = 0;
 
     SkCanvas* savedCanvas = m_canvas;
     SkMatrix savedMatrix = getTotalMatrix();
 
     if (!contextDisabled()) {
-        IntRect recordingRect = enclosingIntRect(bounds);
-        m_canvas = displayList->beginRecording(recordingRect.size());
+        FloatRect bounds = displayList->bounds();
+        IntSize recordingSize = enclosingIntRect(bounds).size();
+        recorder = new SkPictureRecorder;
+        m_canvas = recorder->beginRecording(recordingSize.width(), recordingSize.height(), 0, recordFlags);
 
         // We want the bounds offset mapped to (0, 0), such that the display list content
         // is fully contained within the SkPictureRecord's bounds.
@@ -512,7 +519,7 @@ void GraphicsContext::beginRecording(const FloatRect& bounds)
         }
     }
 
-    m_recordingStateStack.append(RecordingState(savedCanvas, savedMatrix, displayList));
+    m_recordingStateStack.append(RecordingState(recorder, savedCanvas, savedMatrix, displayList));
 }
 
 PassRefPtr<DisplayList> GraphicsContext::endRecording()
@@ -520,15 +527,14 @@ PassRefPtr<DisplayList> GraphicsContext::endRecording()
     ASSERT(!m_recordingStateStack.isEmpty());
 
     RecordingState recording = m_recordingStateStack.last();
-    if (!contextDisabled()) {
-        ASSERT(recording.m_displayList->isRecording());
-        recording.m_displayList->endRecording();
-    }
+    if (!contextDisabled())
+        recording.m_displayList->setPicture(recording.m_recorder->endRecording());
 
-    m_recordingStateStack.removeLast();
     m_canvas = recording.m_savedCanvas;
+    delete recording.m_recorder;
+    m_recordingStateStack.removeLast();
 
-    return recording.m_displayList.release();
+    return recording.m_displayList;
 }
 
 bool GraphicsContext::isRecording() const
@@ -539,21 +545,33 @@ bool GraphicsContext::isRecording() const
 void GraphicsContext::drawDisplayList(DisplayList* displayList)
 {
     ASSERT(displayList);
-    ASSERT(!displayList->isRecording());
 
     if (contextDisabled() || displayList->bounds().isEmpty())
         return;
 
+    bool performClip = !displayList->clip().isEmpty();
+    bool performTransform = !displayList->transform().isIdentity();
+    if (performClip || performTransform) {
+        save();
+        if (performTransform)
+            concat(displayList->transform());
+        if (performClip)
+            clipRect(displayList->clip());
+    }
+
     realizeCanvasSave();
 
-    const FloatRect& bounds = displayList->bounds();
-    if (bounds.x() || bounds.y()) {
+    const FloatPoint& location = displayList->bounds().location();
+    if (location.x() || location.y()) {
         SkMatrix m;
-        m.setTranslate(bounds.x(), bounds.y());
+        m.setTranslate(location.x(), location.y());
         m_canvas->drawPicture(displayList->picture(), &m, 0);
     } else {
         m_canvas->drawPicture(displayList->picture());
     }
+
+    if (performClip || performTransform)
+        restore();
 }
 
 void GraphicsContext::drawConvexPolygon(size_t numPoints, const FloatPoint* points, bool shouldAntialias)

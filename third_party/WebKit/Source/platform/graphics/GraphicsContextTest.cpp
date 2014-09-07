@@ -1154,45 +1154,36 @@ TEST(GraphicsContextTest, RecordingTotalMatrix)
     EXPECT_EQ(context.getCTM(), controlContext.getCTM());
 }
 
-TEST(GraphicsContextTest, DisplayList)
+TEST(GraphicsContextTest, RecordingCanvas)
 {
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(1, 1);
+    bitmap.eraseColor(0);
+    SkCanvas canvas(bitmap);
+    GraphicsContext context(&canvas);
+
     FloatRect rect(0, 0, 1, 1);
-    RefPtr<DisplayList> dl = adoptRef(new DisplayList(rect));
-
-    // picture() returns 0 initially
-    SkPicture* pic = dl->picture();
-    EXPECT_FALSE(pic);
-
-    // endRecording without a beginRecording does nothing
-    dl->endRecording();
-    pic = dl->picture();
-    EXPECT_FALSE(pic);
 
     // Two beginRecordings in a row generate two canvases.
     // Unfortunately the new one could be allocated in the same
     // spot as the old one so ref the first one to prolong its life.
-    IntSize size(1, 1);
-    SkCanvas* canvas1 = dl->beginRecording(size);
+    context.beginRecording(rect);
+    SkCanvas* canvas1 = context.canvas();
     EXPECT_TRUE(canvas1);
-    canvas1->ref();
-    SkCanvas* canvas2 = dl->beginRecording(size);
+    context.beginRecording(rect);
+    SkCanvas* canvas2 = context.canvas();
     EXPECT_TRUE(canvas2);
 
     EXPECT_NE(canvas1, canvas2);
     EXPECT_EQ(1, canvas1->getRefCnt());
-    canvas1->unref();
-
-    EXPECT_TRUE(dl->isRecording());
-
-    // picture() returns 0 during recording
-    pic = dl->picture();
-    EXPECT_FALSE(pic);
 
     // endRecording finally makes the picture accessible
-    dl->endRecording();
-    pic = dl->picture();
+    RefPtr<DisplayList> dl = context.endRecording();
+    SkPicture* pic = dl->picture();
     EXPECT_TRUE(pic);
     EXPECT_EQ(1, pic->getRefCnt());
+
+    context.endRecording();
 }
 
 } // namespace

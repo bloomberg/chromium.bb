@@ -122,12 +122,12 @@ void RenderSVGResourceMasker::drawMaskForRenderer(GraphicsContext* context, cons
     }
 
     if (!m_maskContentDisplayList)
-        m_maskContentDisplayList = asDisplayList(context, contentTransformation);
+        createDisplayList(context, contentTransformation);
     ASSERT(m_maskContentDisplayList);
     context->drawDisplayList(m_maskContentDisplayList.get());
 }
 
-PassRefPtr<DisplayList> RenderSVGResourceMasker::asDisplayList(GraphicsContext* context,
+void RenderSVGResourceMasker::createDisplayList(GraphicsContext* context,
     const AffineTransform& contentTransform)
 {
     ASSERT(context);
@@ -135,7 +135,8 @@ PassRefPtr<DisplayList> RenderSVGResourceMasker::asDisplayList(GraphicsContext* 
     // Using strokeBoundingBox (instead of paintInvalidationRectInLocalCoordinates) to avoid the intersection
     // with local clips/mask, which may yield incorrect results when mixing objectBoundingBox and
     // userSpaceOnUse units (http://crbug.com/294900).
-    context->beginRecording(strokeBoundingBox());
+    FloatRect bounds = strokeBoundingBox();
+    context->beginRecording(bounds);
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
         RenderObject* renderer = childElement->renderer();
         if (!renderer)
@@ -146,8 +147,7 @@ PassRefPtr<DisplayList> RenderSVGResourceMasker::asDisplayList(GraphicsContext* 
 
         SVGRenderingContext::renderSubtree(context, renderer, contentTransform);
     }
-
-    return context->endRecording();
+    m_maskContentDisplayList = context->endRecording();
 }
 
 void RenderSVGResourceMasker::calculateMaskContentPaintInvalidationRect()

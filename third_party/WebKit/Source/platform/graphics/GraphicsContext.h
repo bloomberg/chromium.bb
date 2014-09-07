@@ -310,10 +310,15 @@ public:
     void clip(const FloatRect& rect) { clipRect(rect); }
     void clipRoundedRect(const RoundedRect&, SkRegion::Op = SkRegion::kIntersect_Op);
     void clipOut(const IntRect& rect) { clipRect(rect, NotAntiAliased, SkRegion::kDifference_Op); }
+    void clipOut(const Path&);
     void clipOutRoundedRect(const RoundedRect&);
     void clipPath(const Path&, WindRule = RULE_EVENODD);
     void clipConvexPolygon(size_t numPoints, const FloatPoint*, bool antialias = true);
     void clipRect(const SkRect&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
+    // This clip function is used only by <canvas> code. It allows
+    // implementations to handle clipping on the canvas differently since
+    // the discipline is different.
+    void canvasClip(const Path&, WindRule = RULE_EVENODD);
 
     void drawText(const Font&, const TextRunPaintInfo&, const FloatPoint&);
     void drawEmphasisMarks(const Font&, const TextRunPaintInfo&, const AtomicString& mark, const FloatPoint&);
@@ -335,8 +340,9 @@ public:
     void endCull();
 
     // Instead of being dispatched to the active canvas, draw commands following beginRecording()
-    // are stored in a display list that can be replayed at a later time.
-    void beginRecording(const FloatRect& bounds);
+    // are stored in a display list that can be replayed at a later time. Pass in the bounding
+    // rectangle for the content in the list.
+    void beginRecording(const FloatRect&, uint32_t = 0);
     PassRefPtr<DisplayList> endRecording();
 
     bool hasShadow() const;
@@ -363,12 +369,6 @@ public:
     };
     typedef unsigned Edges;
     void drawInnerShadow(const RoundedRect&, const Color& shadowColor, const IntSize shadowOffset, int shadowBlur, int shadowSpread, Edges clippedEdges = NoEdge);
-
-    // This clip function is used only by <canvas> code. It allows
-    // implementations to handle clipping on the canvas differently since
-    // the discipline is different.
-    void canvasClip(const Path&, WindRule = RULE_EVENODD);
-    void clipOut(const Path&);
 
     // ---------- Transformation methods -----------------
     // Note that the getCTM method returns only the current transform from Blink's perspective,
@@ -447,7 +447,6 @@ private:
     float prepareFocusRingPaint(SkPaint&, const Color&, int width) const;
     void drawFocusRingPath(const SkPath&, const Color&, int width);
     void drawFocusRingRect(const SkRect&, const Color&, int width);
-
 
     // SkCanvas wrappers.
     void clipPath(const SkPath&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);

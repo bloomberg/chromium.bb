@@ -245,13 +245,13 @@ void RenderSVGResourceClipper::drawClipMaskContent(GraphicsContext* context, con
     }
 
     if (!m_clipContentDisplayList)
-        m_clipContentDisplayList = asDisplayList(context, contentTransformation);
+        createDisplayList(context, contentTransformation);
 
     ASSERT(m_clipContentDisplayList);
     context->drawDisplayList(m_clipContentDisplayList.get());
 }
 
-PassRefPtr<DisplayList> RenderSVGResourceClipper::asDisplayList(GraphicsContext* context,
+void RenderSVGResourceClipper::createDisplayList(GraphicsContext* context,
     const AffineTransform& contentTransformation)
 {
     ASSERT(context);
@@ -260,7 +260,8 @@ PassRefPtr<DisplayList> RenderSVGResourceClipper::asDisplayList(GraphicsContext*
     // Using strokeBoundingBox (instead of paintInvalidationRectInLocalCoordinates) to avoid the intersection
     // with local clips/mask, which may yield incorrect results when mixing objectBoundingBox and
     // userSpaceOnUse units (http://crbug.com/294900).
-    context->beginRecording(strokeBoundingBox());
+    FloatRect bounds = strokeBoundingBox();
+    context->beginRecording(bounds);
 
     // Switch to a paint behavior where all children of this <clipPath> will be rendered using special constraints:
     // - fill-opacity/stroke-opacity/opacity set to 1
@@ -304,7 +305,7 @@ PassRefPtr<DisplayList> RenderSVGResourceClipper::asDisplayList(GraphicsContext*
 
     frame()->view()->setPaintBehavior(oldBehavior);
 
-    return context->endRecording();
+    m_clipContentDisplayList = context->endRecording();
 }
 
 void RenderSVGResourceClipper::calculateClipContentPaintInvalidationRect()

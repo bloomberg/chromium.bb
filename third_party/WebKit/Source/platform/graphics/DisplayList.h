@@ -32,14 +32,12 @@
 #define DisplayList_h
 
 #include "platform/geometry/FloatRect.h"
-
+#include "platform/geometry/IntRect.h"
+#include "platform/geometry/LayoutPoint.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
-
-class SkCanvas;
-class SkPicture;
-class SkPictureRecorder;
 
 namespace blink {
 
@@ -49,25 +47,50 @@ class PLATFORM_EXPORT DisplayList FINAL : public WTF::RefCounted<DisplayList> {
     WTF_MAKE_FAST_ALLOCATED;
     WTF_MAKE_NONCOPYABLE(DisplayList);
 public:
-    DisplayList(const FloatRect&);
-    ~DisplayList();
+    static PassRefPtr<DisplayList> create(const FloatRect& bounds)
+    {
+        return adoptRef(new DisplayList(bounds));
+    }
 
-    const FloatRect& bounds() const;
+    virtual ~DisplayList() { }
+
+    const FloatRect& bounds() const { return m_bounds; }
 
     // This entry point will return 0 when the DisplayList is in the
     // midst of recording (i.e., between a beginRecording/endRecording pair)
     // and if no recording has ever been completed. Otherwise it will return
     // the picture created by the last endRecording call.
-    SkPicture* picture() const;
+    SkPicture* picture() const { return m_picture.get(); }
+    void setPicture(SkPicture* picture) { m_picture = adoptRef(picture); }
 
-    SkCanvas* beginRecording(const IntSize&, uint32_t recordFlags = 0);
-    bool isRecording() const { return m_recorder; }
-    void endRecording();
+    // FIXME: Need unit testing of these methods and their effect
+    const SkMatrix& transform() const { return m_transform; }
+    void setTransform(const SkMatrix& transform) { m_transform = transform; }
+    void setTransformFromPaintOffset(const LayoutPoint& paintOffset)
+    {
+        SkMatrix m;
+        m.setTranslate(paintOffset.x().toFloat(), paintOffset.y().toFloat());
+        setTransform(m);
+    }
+    void clearTransform() { m_transform.reset(); }
+
+    // FIXME: Need unit testing of these methods and their effect
+    const SkRect& clip() const { return m_clip; }
+    void setClip(const IntRect& rect) { m_clip = rect; }
+    void setClip(const FloatRect& rect) { m_clip = rect; }
+    void clearClip() { m_clip.setEmpty(); }
 
 private:
+    DisplayList(const FloatRect& bounds) : m_bounds(bounds)
+    {
+        clearTransform();
+        clearClip();
+    }
+
     FloatRect m_bounds;
+    SkMatrix m_transform;
+    SkRect m_clip; // TODO: Do we need to support other types of clips here?
     RefPtr<SkPicture> m_picture;
-    OwnPtr<SkPictureRecorder> m_recorder;
 };
 
 } // namespace blink
