@@ -1,4 +1,4 @@
-FAIL spanWidth == canvasWidth should be true. Was false.
+PASS spanWidth == canvasWidth is true
 PASS successfullyParsed is true
 
 TEST COMPLETE

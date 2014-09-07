@@ -7,8 +7,8 @@ layer at (0,0) size 800x600
         text run at (0,0) width 523: "This tests that the whole listbox control is hidden when visibility is set to hidden. "
       RenderBR {BR} at (522,14) size 1x0
       RenderText {#text} at (0,0) size 0x0
-hidden layer at (8,26) size 196x70 clip at (9,27) size 179x68
-  RenderListBox {SELECT} at (0,18) size 195.88x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 178.88x17
-      RenderText {#text} at (2,0) size 175x15
-        text run at (2,0) width 175: "This text should not be visible"
+hidden layer at (8,26) size 192x70 clip at (9,27) size 175x68
+  RenderListBox {SELECT} at (0,18) size 192x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 175x17
+      RenderText {#text} at (2,0) size 171x16
+        text run at (2,0) width 171: "This text should not be visible"

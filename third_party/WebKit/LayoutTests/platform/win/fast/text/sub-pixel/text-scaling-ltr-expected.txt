@@ -1,0 +1,68 @@
+FAIL Size of text does not scale smoothly, reported widths highlighted in red do not match reference row.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+Font Size Scaling (LTR, Latin)
+Size of the text should scale smoothly. Reported width should be within 0.01px of that of the highlighted reference row.
+Font SizeWidthNormalizedDiffContent
+10.00188.00225.6011.60Pack my box with five dozen liquor jugs.
+10.25188.00220.106.10Pack my box with five dozen liquor jugs.
+10.50194.00221.717.71Pack my box with five dozen liquor jugs.
+10.75194.00216.562.56Pack my box with five dozen liquor jugs.
+11.00194.00211.64-2.36Pack my box with five dozen liquor jugs.
+11.25194.00206.93-7.07Pack my box with five dozen liquor jugs.
+11.50214.00223.309.30Pack my box with five dozen liquor jugs.
+11.75214.00218.554.55Pack my box with five dozen liquor jugs.
+12.00214.00214.000.00Pack my box with five dozen liquor jugs.
+12.25214.00209.63-4.37Pack my box with five dozen liquor jugs.
+12.50232.00222.728.72Pack my box with five dozen liquor jugs.
+12.75232.00218.354.35Pack my box with five dozen liquor jugs.
+13.00232.00214.150.15Pack my box with five dozen liquor jugs.
+13.25232.00210.11-3.89Pack my box with five dozen liquor jugs.
+13.50248.00220.446.44Pack my box with five dozen liquor jugs.
+13.75248.00216.442.44Pack my box with five dozen liquor jugs.
+14.00248.00212.57-1.43Pack my box with five dozen liquor jugs.
+14.25248.00208.84-5.16Pack my box with five dozen liquor jugs.
+14.50258.00213.52-0.48Pack my box with five dozen liquor jugs.
+14.75258.00209.90-4.10Pack my box with five dozen liquor jugs.
+15.00258.00206.40-7.60Pack my box with five dozen liquor jugs.
+15.25258.00203.02-10.98Pack my box with five dozen liquor jugs.
+15.50272.00210.58-3.42Pack my box with five dozen liquor jugs.
+15.75272.00207.24-6.76Pack my box with five dozen liquor jugs.
+16.00283.69212.77-1.23Pack my box with five dozen liquor jugs.
+16.25288.12212.77-1.23Pack my box with five dozen liquor jugs.
+16.50292.55212.77-1.23Pack my box with five dozen liquor jugs.
+16.75296.99212.77-1.23Pack my box with five dozen liquor jugs.
+17.00301.42212.77-1.23Pack my box with five dozen liquor jugs.
+17.25305.85212.77-1.23Pack my box with five dozen liquor jugs.
+17.50310.28212.77-1.23Pack my box with five dozen liquor jugs.
+17.75314.72212.77-1.23Pack my box with five dozen liquor jugs.
+18.00319.15212.77-1.23Pack my box with five dozen liquor jugs.
+18.25323.58212.77-1.23Pack my box with five dozen liquor jugs.
+18.50328.01212.77-1.23Pack my box with five dozen liquor jugs.
+18.75332.45212.77-1.23Pack my box with five dozen liquor jugs.
+19.00336.88212.77-1.23Pack my box with five dozen liquor jugs.
+19.25341.31212.77-1.23Pack my box with five dozen liquor jugs.
+19.50345.74212.77-1.23Pack my box with five dozen liquor jugs.
+19.75350.18212.77-1.23Pack my box with five dozen liquor jugs.
+20.00354.61212.77-1.23Pack my box with five dozen liquor jugs.
+20.25359.04212.77-1.23Pack my box with five dozen liquor jugs.
+20.50363.47212.77-1.23Pack my box with five dozen liquor jugs.
+20.75367.91212.77-1.23Pack my box with five dozen liquor jugs.
+21.00372.34212.77-1.23Pack my box with five dozen liquor jugs.
+21.25376.77212.77-1.23Pack my box with five dozen liquor jugs.
+21.50381.21212.77-1.23Pack my box with five dozen liquor jugs.
+21.75385.64212.77-1.23Pack my box with five dozen liquor jugs.
+22.00390.07212.77-1.23Pack my box with five dozen liquor jugs.
+22.25394.50212.77-1.23Pack my box with five dozen liquor jugs.
+22.50398.94212.77-1.23Pack my box with five dozen liquor jugs.
+22.75403.37212.77-1.23Pack my box with five dozen liquor jugs.
+23.00407.80212.77-1.23Pack my box with five dozen liquor jugs.
+23.25412.23212.77-1.23Pack my box with five dozen liquor jugs.
+23.50416.67212.77-1.23Pack my box with five dozen liquor jugs.
+23.75421.10212.77-1.23Pack my box with five dozen liquor jugs.
+24.00425.53212.77-1.23Pack my box with five dozen liquor jugs.
+24.25429.96212.77-1.23Pack my box with five dozen liquor jugs.
+24.50434.40212.77-1.23Pack my box with five dozen liquor jugs.
+24.75438.83212.77-1.23Pack my box with five dozen liquor jugs.
+

@@ -33,10 +33,10 @@ Initial
 After step 1
 
 {
-  "bounds": [785, 1048],
+  "bounds": [785, 1075],
   "children": [
     {
-      "bounds": [785, 1048],
+      "bounds": [785, 1075],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
@@ -68,10 +68,10 @@ After step 1
 After step 2
 
 {
-  "bounds": [785, 1562],
+  "bounds": [785, 1622],
   "children": [
     {
-      "bounds": [785, 1562],
+      "bounds": [785, 1622],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
