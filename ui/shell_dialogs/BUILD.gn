@@ -66,9 +66,6 @@ component("shell_dialogs") {
   }
 }
 
-# TODO(GYP) enable shell_dialogs_unittests when media is converted.
-if (false) {
-
 test("shell_dialogs_unittests") {
   sources = [
     "select_file_dialog_win_unittest.cc",
@@ -82,5 +79,3 @@ test("shell_dialogs_unittests") {
     "//testing/gtest",
   ]
 }
-
-}  # if false

@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("app") {
+# Used internally to hold the sources shared between the various targets below.
+source_set("app_sources") {
   sources = [
     "android_library_loader_hooks.h",
     "content_main.h",
@@ -22,4 +23,46 @@ source_set("app") {
     "//content/public/renderer",
     "//content/public/utility",
   ]
+}
+
+# The structure of this is like the private content/app implementation.
+if (is_component_build) {
+
+  group("app") {
+    deps = [
+      ":app_sources",
+      "//content/app",
+    ]
+  }
+  group("browser") {
+    deps = [ "//content" ]
+  }
+  group("child") {
+    deps = [ "//content" ]
+  }
+  group("both") {
+    deps = [ "//content" ]
+  }
+
+} else {
+
+  group("browser") {
+    deps = [
+      ":app_sources",
+      "//content/app:browser"
+    ]
+  }
+  group("child") {
+    deps = [
+      ":app_sources",
+      "//content/app:child"
+    ]
+  }
+  group("both") {
+    deps = [
+      ":app_sources",
+      "//content/app:both"
+    ]
+  }
+
 }

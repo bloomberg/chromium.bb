@@ -875,6 +875,7 @@
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'browser/api/dns/mock_host_resolver_creator.cc',
         'browser/api/dns/mock_host_resolver_creator.h',
         'browser/api/storage/settings_test_util.cc',

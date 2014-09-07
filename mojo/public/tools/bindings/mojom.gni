@@ -12,8 +12,10 @@
 #       List of source .mojom files to compile.
 #
 #   deps (optional)
+#
 #   visibility (optional)
-#       Normal meaning.
+#       Normal meaning. However, this must be a list (normal visibility
+#       allows a single string).
 template("mojom") {
   assert(defined(invoker.sources),
          "\"sources\" must be defined for the $target_name template.")
