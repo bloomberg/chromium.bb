@@ -2726,6 +2726,7 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& 
     // the caret height will become minReadableCaretHeight (adjusted for dpi
     // and font scale factor).
     newScale = clampPageScaleFactorToLimits(legibleScale() * minReadableCaretHeight / caret.height);
+    newScale = std::max(newScale, pageScaleFactor());
     const float deltaScale = newScale / pageScaleFactor();
 
     // Convert the rects to absolute space in the new scale.
@@ -2764,6 +2765,7 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& 
         needAnimation = true;
     // If the caret is offscreen, then animate.
     IntRect sizeRect(0, 0, viewWidth, viewHeight);
+    sizeRect.scale(newScale / pageScaleFactor());
     if (!sizeRect.contains(caret))
         needAnimation = true;
     // If the box is partially offscreen and it's possible to bring it fully

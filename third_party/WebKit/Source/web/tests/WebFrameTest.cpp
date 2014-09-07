@@ -2744,6 +2744,62 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
     EXPECT_FALSE(needAnimation);
 }
 
+TEST_F(WebFrameTest, DivScrollIntoEditablePreservePageScaleTest)
+{
+    registerMockedHttpURLLoad("get_scale_for_zoom_into_editable_test.html");
+
+    const int viewportWidth = 450;
+    const int viewportHeight = 300;
+    const float minReadableCaretHeight = 18.0f;
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "get_scale_for_zoom_into_editable_test.html");
+    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
+    webViewHelper.webView()->setPageScaleFactorLimits(1, 4);
+    webViewHelper.webView()->layout();
+    webViewHelper.webView()->setDeviceScaleFactor(1.5f);
+    webViewHelper.webView()->settings()->setAutoZoomFocusedNodeToLegibleScale(true);
+    webViewHelper.webViewImpl()->enableFakePageScaleAnimationForTesting(true);
+
+    const WebRect editBoxWithText(200, 200, 250, 20);
+
+    webViewHelper.webView()->advanceFocus(false);
+    // Set the caret to the begining of the input box.
+    webViewHelper.webView()->mainFrame()->document().getElementById("EditBoxWithText").to<WebInputElement>().setSelectionRange(0, 0);
+    setScaleAndScrollAndLayout(webViewHelper.webView(), WebPoint(0, 0), 1);
+    WebRect rect, caret;
+    webViewHelper.webViewImpl()->selectionBounds(caret, rect);
+
+    // Set page scale twice larger then minimal readable scale
+    float newScale = minReadableCaretHeight / caret.height * 2.0;
+    setScaleAndScrollAndLayout(webViewHelper.webView(), WebPoint(0, 0), newScale);
+
+    float scale;
+    IntPoint scroll;
+    bool needAnimation;
+    webViewHelper.webViewImpl()->computeScaleAndScrollForFocusedNode(webViewHelper.webViewImpl()->focusedElement(), scale, scroll, needAnimation);
+    EXPECT_TRUE(needAnimation);
+    // Edit box and caret should be left alinged
+    int hScroll = editBoxWithText.x;
+    EXPECT_NEAR(hScroll, scroll.x(), 1);
+    int vScroll = editBoxWithText.y - (viewportHeight / scale - editBoxWithText.height) / 2;
+    EXPECT_NEAR(vScroll, scroll.y(), 1);
+    // Page scale have to be unchanged
+    EXPECT_EQ(newScale, scale);
+
+    // Set page scale and scroll such that edit box will be under the screen
+    newScale = 3.0;
+    hScroll = 200;
+    setScaleAndScrollAndLayout(webViewHelper.webView(), WebPoint(hScroll, 0), newScale);
+    webViewHelper.webViewImpl()->computeScaleAndScrollForFocusedNode(webViewHelper.webViewImpl()->focusedElement(), scale, scroll, needAnimation);
+    EXPECT_TRUE(needAnimation);
+    // Horizontal scroll have to be the same
+    EXPECT_NEAR(hScroll, scroll.x(), 1);
+    vScroll = editBoxWithText.y - (viewportHeight / scale - editBoxWithText.height) / 2;
+    EXPECT_NEAR(vScroll, scroll.y(), 1);
+    // Page scale have to be unchanged
+    EXPECT_EQ(newScale, scale);
+}
+
 class TestReloadDoesntRedirectWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     virtual WebNavigationPolicy decidePolicyForNavigation(const NavigationPolicyInfo& info) OVERRIDE
