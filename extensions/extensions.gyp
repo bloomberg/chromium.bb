@@ -985,6 +985,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+        'cast_channel_proto',
         'extensions_common',
         'extensions_renderer',
         'extensions_resources.gyp:extensions_resources',
@@ -999,6 +1000,9 @@
       'sources': [
         'browser/api/api_resource_manager_unittest.cc',
         'browser/api/bluetooth/bluetooth_event_router_unittest.cc',
+        'browser/api/cast_channel/cast_channel_api_unittest.cc',
+        'browser/api/cast_channel/cast_socket_unittest.cc',
+        'browser/api/cast_channel/logger_unittest.cc',
         'browser/api/declarative/deduping_factory_unittest.cc',
         'browser/api/sockets_tcp/sockets_tcp_api_unittest.cc',
         'browser/api/storage/settings_quota_unittest.cc',

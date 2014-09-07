@@ -533,9 +533,6 @@
         # http://crbug.com/348066. They are duplicated here because we haven't
         # extensions_unittests running in the bots yet. Until that happens,
         # they should be kept here.
-        '../extensions/browser/api/cast_channel/cast_channel_api_unittest.cc',
-        '../extensions/browser/api/cast_channel/cast_socket_unittest.cc',
-        '../extensions/browser/api/cast_channel/logger_unittest.cc',
         '../extensions/browser/api/power/power_api_unittest.cc',
         '../extensions/browser/app_window/app_window_geometry_cache_unittest.cc',
         '../extensions/browser/error_map_unittest.cc',
