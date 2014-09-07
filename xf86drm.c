@@ -48,7 +48,6 @@
 #include <sys/stat.h>
 #define stat_t struct stat
 #include <sys/ioctl.h>
-#include <sys/mman.h>
 #include <sys/time.h>
 #include <stdarg.h>
 
@@ -58,6 +57,7 @@
 #endif
 
 #include "xf86drm.h"
+#include "libdrm.h"
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
 #define DRM_MAJOR 145
@@ -1137,7 +1137,7 @@ int drmMap(int fd, drm_handle_t handle, drmSize size, drmAddressPtr address)
 
     size = (size + pagesize_mask) & ~pagesize_mask;
 
-    *address = mmap(0, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, handle);
+    *address = drm_mmap(0, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, handle);
     if (*address == MAP_FAILED)
 	return -errno;
     return 0;
@@ -1157,7 +1157,7 @@ int drmMap(int fd, drm_handle_t handle, drmSize size, drmAddressPtr address)
  */
 int drmUnmap(drmAddress address, drmSize size)
 {
-    return munmap(address, size);
+    return drm_munmap(address, size);
 }
 
 drmBufInfoPtr drmGetBufInfo(int fd)
@@ -1264,7 +1264,7 @@ int drmUnmapBufs(drmBufMapPtr bufs)
     int i;
 
     for (i = 0; i < bufs->count; i++) {
-	munmap(bufs->list[i].address, bufs->list[i].total);
+	drm_munmap(bufs->list[i].address, bufs->list[i].total);
     }
 
     drmFree(bufs->list);
