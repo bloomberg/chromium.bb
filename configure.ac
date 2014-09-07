@@ -270,6 +270,9 @@ fi
 AM_CONDITIONAL(HAVE_LIBKMS, [test "x$LIBKMS" = xyes])
 
 AM_CONDITIONAL(HAVE_INTEL, [test "x$INTEL" = xyes])
+if test "x$INTEL" = xyes; then
+	AC_DEFINE(HAVE_INTEL, 1, [Have intel support])
+fi
 
 AM_CONDITIONAL(HAVE_VMWGFX, [test "x$VMWGFX" = xyes])
 if test "x$VMWGFX" = xyes; then

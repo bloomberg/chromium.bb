@@ -15,12 +15,15 @@ libkms_la_LIBADD = ../libdrm.la
 libkms_la_SOURCES = \
 	internal.h \
 	linux.c \
-	intel.c \
 	dumb.c \
 	api.c
 
 if HAVE_VMWGFX
 libkms_la_SOURCES += vmwgfx.c
+endif
+
+if HAVE_INTEL
+libkms_la_SOURCES += intel.c
 endif
 
 if HAVE_NOUVEAU
