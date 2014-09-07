@@ -43,6 +43,8 @@ namespace blink {
 
     inline bool operator==(const RegisteredEventListener& a, const RegisteredEventListener& b)
     {
+        ASSERT(a.listener);
+        ASSERT(b.listener);
         return *a.listener == *b.listener && a.useCapture == b.useCapture;
     }
 

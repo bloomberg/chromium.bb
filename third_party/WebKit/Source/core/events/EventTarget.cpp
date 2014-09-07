@@ -107,6 +107,11 @@ bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtr<Eve
 
 bool EventTarget::removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
 {
+    // FIXME: listener null check should throw TypeError (and be done in
+    // generated bindings), but breaks legacy content. http://crbug.com/249598
+    if (!listener)
+        return false;
+
     EventTargetData* d = eventTargetData();
     if (!d)
         return false;
