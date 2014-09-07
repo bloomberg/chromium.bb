@@ -1,3 +1,5 @@
+include Makefile.sources
+
 AM_CFLAGS = \
 	$(WARN_CFLAGS) \
 	-I$(top_srcdir)/include/drm \
@@ -12,35 +14,31 @@ libkms_la_LIBADD = ../libdrm.la
 #libkms_la_LIBADD += $(LIBUDEV_LIBS)
 #endif
 
-libkms_la_SOURCES = \
-	internal.h \
-	linux.c \
-	dumb.c \
-	api.c
+libkms_la_SOURCES = $(LIBKMS_FILES)
 
 if HAVE_VMWGFX
-libkms_la_SOURCES += vmwgfx.c
+libkms_la_SOURCES += $(LIBKMS_VMWGFX_FILES)
 endif
 
 if HAVE_INTEL
-libkms_la_SOURCES += intel.c
+libkms_la_SOURCES += $(LIBKMS_INTEL_FILES)
 endif
 
 if HAVE_NOUVEAU
-libkms_la_SOURCES += nouveau.c
+libkms_la_SOURCES += $(LIBKMS_NOUVEAU_FILES)
 endif
 
 if HAVE_RADEON
-libkms_la_SOURCES += radeon.c
+libkms_la_SOURCES += $(LIBKMS_RADEON_FILES)
 endif
 
 if HAVE_EXYNOS
-libkms_la_SOURCES += exynos.c
+libkms_la_SOURCES += $(LIBKMS_EXYNOS_FILES)
 AM_CFLAGS += -I$(top_srcdir)/exynos
 endif
 
 libkmsincludedir = ${includedir}/libkms
-libkmsinclude_HEADERS = libkms.h
+libkmsinclude_HEADERS = $(LIBKMS_H_FILES)
 
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libkms.pc
