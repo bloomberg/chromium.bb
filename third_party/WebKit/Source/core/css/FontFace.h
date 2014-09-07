@@ -49,7 +49,6 @@ class CSSValueList;
 class Dictionary;
 class Document;
 class ExceptionState;
-class FontFaceReadyPromiseResolver;
 class StylePropertySet;
 class StyleRuleFontFace;
 

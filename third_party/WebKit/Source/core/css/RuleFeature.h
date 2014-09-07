@@ -32,11 +32,8 @@ namespace blink {
 
 class CSSSelectorList;
 class DescendantInvalidationSet;
-class Document;
-class Node;
 class QualifiedName;
 class RuleData;
-class ShadowRoot;
 class SpaceSplitString;
 class StyleRule;
 

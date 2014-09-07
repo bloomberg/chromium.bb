@@ -38,7 +38,6 @@ class MediaQueryExp;
 class MediaQueryResult;
 class MediaQuerySet;
 class MediaValues;
-class RenderStyle;
 
 typedef WillBeHeapVector<RefPtrWillBeMember<MediaQueryResult> > MediaQueryResultList;
 

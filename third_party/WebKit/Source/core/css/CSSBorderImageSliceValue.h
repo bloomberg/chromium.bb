@@ -32,8 +32,6 @@
 
 namespace blink {
 
-class Rect;
-
 class CSSBorderImageSliceValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSBorderImageSliceValue> create(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> slices, bool fill)

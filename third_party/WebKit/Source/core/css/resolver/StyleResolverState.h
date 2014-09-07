@@ -40,7 +40,6 @@ namespace blink {
 
 class CSSAnimationUpdate;
 class FontDescription;
-class StyleRule;
 
 class StyleResolverState {
     STACK_ALLOCATED();

@@ -32,13 +32,9 @@
 
 namespace blink {
 
-class CSSRule;
 class CSSStyleDeclaration;
-class Element;
 class ImmutableStylePropertySet;
-class KURL;
 class MutableStylePropertySet;
-class StylePropertyShorthand;
 class StyleSheetContents;
 
 class StylePropertySet : public RefCountedWillBeGarbageCollectedFinalized<StylePropertySet> {

@@ -33,7 +33,6 @@
 
 namespace blink {
 
-class CSSRule;
 class StyleRuleSupports;
 
 class CSSSupportsRule FINAL : public CSSGroupingRule {

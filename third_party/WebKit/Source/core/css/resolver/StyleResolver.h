@@ -44,11 +44,7 @@
 namespace blink {
 
 class AnimatableValue;
-class AnimationTimeline;
-class CSSAnimationUpdate;
-class CSSFontSelector;
 class CSSRuleList;
-class CSSSelector;
 class CSSStyleSheet;
 class CSSValue;
 class ContainerNode;
@@ -56,12 +52,8 @@ class Document;
 class Element;
 class ElementRuleCollector;
 class Interpolation;
-class KeyframeList;
-class KeyframeValue;
 class MediaQueryEvaluator;
-class MediaQueryResult;
 class RuleData;
-class Settings;
 class StyleKeyframe;
 class StylePropertySet;
 class StyleResolverStats;

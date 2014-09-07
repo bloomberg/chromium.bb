@@ -30,7 +30,6 @@
 namespace blink {
 
 class CSSRule;
-class CSSStyleRule;
 class CSSStyleSheet;
 class MutableStylePropertySet;
 class StylePropertySet;

@@ -35,6 +35,8 @@
 
 namespace blink {
 
+class ExceptionState;
+
 class SVGString : public SVGPropertyBase {
 public:
     // SVGString does not have a tear-off type.

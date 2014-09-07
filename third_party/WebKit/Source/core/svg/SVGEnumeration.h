@@ -35,6 +35,8 @@
 
 namespace blink {
 
+class ExceptionState;
+
 class SVGEnumerationBase : public SVGPropertyBase {
 public:
     typedef std::pair<unsigned short, String> StringEntry;

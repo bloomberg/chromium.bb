@@ -37,8 +37,6 @@
 namespace blink {
 
 class CSSValue;
-class Document;
-class RenderStyle;
 class StyleResolverState;
 
 class StyleBuilder {

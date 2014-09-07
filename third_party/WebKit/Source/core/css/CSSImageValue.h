@@ -29,7 +29,6 @@
 namespace blink {
 
 class Document;
-class Element;
 class KURL;
 class StyleFetchedImage;
 class StyleImage;

@@ -42,10 +42,7 @@
 namespace blink {
 
 class CSSParserValueList;
-class CSSValueList;
 class CalculationValue;
-class CalcExpressionNode;
-class Length;
 
 enum CalcOperator {
     CalcAdd = '+',

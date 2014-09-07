@@ -27,7 +27,6 @@
 
 namespace blink {
 
-class ElementResolveContext;
 class StyleRulePage;
 
 class PageRuleCollector {

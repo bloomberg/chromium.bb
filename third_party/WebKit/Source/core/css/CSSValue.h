@@ -33,7 +33,6 @@
 namespace blink {
 
 class ExceptionState;
-class StyleSheetContents;
 
 enum CSSTextFormattingFlags { QuoteCSSStringIfNeeded, AlwaysQuoteCSSString };
 

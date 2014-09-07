@@ -32,7 +32,6 @@
 
 namespace blink {
 
-class CSSProperty;
 class CSSRule;
 class CSSValue;
 class Element;

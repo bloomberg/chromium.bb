@@ -48,9 +48,7 @@ class CSSValueList;
 class CSSBasicShape;
 class CSSBasicShapeInset;
 class CSSGridLineNamesValue;
-class ImmutableStylePropertySet;
 class StylePropertyShorthand;
-class UseCounter;
 
 // Inputs: PropertyID, isImportant bool, CSSParserValueList.
 // Outputs: Vector of CSSProperties

@@ -37,13 +37,9 @@
 
 namespace blink {
 
-class CSSFontFace;
-class CSSFontFaceRule;
 class CSSFontSelectorClient;
-class CSSSegmentedFontFace;
 class Document;
 class FontDescription;
-class StyleRuleFontFace;
 
 class CSSFontSelector FINAL : public FontSelector {
 public:

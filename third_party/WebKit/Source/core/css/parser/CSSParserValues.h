@@ -30,7 +30,6 @@
 
 namespace blink {
 
-class CSSValue;
 class QualifiedName;
 
 struct CSSParserString {

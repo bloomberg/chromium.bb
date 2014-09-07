@@ -28,7 +28,6 @@
 namespace blink {
 
 class Element;
-class Node;
 class RenderStyle;
 class RuleFeatureSet;
 class RuleSet;

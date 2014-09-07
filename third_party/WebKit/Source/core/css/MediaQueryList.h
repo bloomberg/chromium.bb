@@ -30,10 +30,8 @@
 
 namespace blink {
 
-class Document;
 class ExecutionContext;
 class MediaQueryListListener;
-class MediaQueryEvaluator;
 class MediaQueryMatcher;
 class MediaQuerySet;
 

@@ -40,7 +40,6 @@
 
 namespace blink {
 
-class ExceptionState;
 class SVGElement;
 class SVGAnimationElement;
 

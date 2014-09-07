@@ -39,8 +39,6 @@
 
 namespace blink {
 
-class StyleRuleBase;
-
 struct SourceRange {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:

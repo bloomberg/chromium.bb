@@ -29,17 +29,13 @@
 
 namespace blink {
 
-class CSSCharsetRule;
 class CSSImportRule;
-class BisonCSSParser;
 class CSSRule;
 class CSSRuleList;
 class CSSStyleSheet;
-class CSSStyleSheetResource;
 class Document;
 class ExceptionState;
 class MediaQuerySet;
-class SecurityOrigin;
 class StyleSheetContents;
 
 enum StyleSheetUpdateType {

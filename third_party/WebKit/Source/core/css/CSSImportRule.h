@@ -27,9 +27,7 @@
 
 namespace blink {
 
-class CSSStyleSheetResource;
 class MediaList;
-class MediaQuerySet;
 class StyleRuleImport;
 
 class CSSImportRule FINAL : public CSSRule {

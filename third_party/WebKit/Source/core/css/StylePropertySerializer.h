@@ -29,6 +29,7 @@
 namespace blink {
 
 class StylePropertySet;
+class StylePropertyShorthand;
 
 class StylePropertySerializer {
 public:

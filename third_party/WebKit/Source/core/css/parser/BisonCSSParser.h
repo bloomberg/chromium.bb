@@ -47,14 +47,9 @@
 
 namespace blink {
 
-class AnimationParseContext;
-class CSSBorderImageSliceValue;
-class CSSPrimitiveValue;
 class CSSSelectorList;
 class CSSValue;
 class CSSValueList;
-class CSSBasicShape;
-class CSSBasicShapeInset;
 class Document;
 class Element;
 class ImmutableStylePropertySet;
@@ -63,12 +58,10 @@ class MediaQuerySet;
 class MutableStylePropertySet;
 class StyleColor;
 class StyleKeyframe;
-class StylePropertyShorthand;
 class StyleRuleBase;
 class StyleRuleKeyframes;
 class StyleKeyframe;
 class StyleSheetContents;
-class UseCounter;
 
 // FIXME: This class is shared with CSSTokenizer so should we rename it to CSSSourceLocation?
 struct CSSParserLocation {

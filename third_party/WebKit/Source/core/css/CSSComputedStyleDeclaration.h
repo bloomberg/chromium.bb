@@ -42,7 +42,6 @@ class RenderStyle;
 class ShadowData;
 class ShadowList;
 class StyleColor;
-class StylePropertySet;
 class StylePropertyShorthand;
 
 enum EUpdateLayout { DoNotUpdateLayout = false, UpdateLayout = true };

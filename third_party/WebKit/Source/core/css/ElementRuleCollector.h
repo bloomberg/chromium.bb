@@ -36,7 +36,6 @@ class CSSStyleSheet;
 class CSSRuleList;
 class RuleData;
 class RuleSet;
-class ScopedStyleResolver;
 class SelectorFilter;
 class StaticCSSRuleList;
 

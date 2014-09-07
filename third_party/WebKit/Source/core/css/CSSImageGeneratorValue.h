@@ -36,7 +36,6 @@ namespace blink {
 class ResourceFetcher;
 class Image;
 class RenderObject;
-class StyleResolver;
 
 struct SizeAndCount {
     SizeAndCount(IntSize newSize = IntSize(), int newCount = 0)

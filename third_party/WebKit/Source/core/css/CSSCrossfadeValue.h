@@ -38,7 +38,6 @@ namespace blink {
 class ImageResource;
 class CrossfadeSubimageObserverProxy;
 class RenderObject;
-class Document;
 
 class CSSCrossfadeValue : public CSSImageGeneratorValue {
     friend class CrossfadeSubimageObserverProxy;

@@ -33,7 +33,6 @@ namespace blink {
 class Document;
 class RenderSVGResourceContainer;
 class SubtreeLayoutScope;
-class SVGElement;
 #if ENABLE(SVG_FONTS)
 class SVGFontFaceElement;
 #endif
