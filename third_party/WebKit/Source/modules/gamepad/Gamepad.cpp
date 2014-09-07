@@ -30,7 +30,6 @@ namespace blink {
 
 Gamepad::Gamepad()
 {
-    ScriptWrappable::init(this);
 }
 
 Gamepad::~Gamepad()

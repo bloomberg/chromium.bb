@@ -35,7 +35,6 @@ using namespace HTMLNames;
 inline HTMLTableCaptionElement::HTMLTableCaptionElement(Document& document)
     : HTMLElement(captionTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLTableCaptionElement)

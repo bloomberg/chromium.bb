@@ -40,7 +40,6 @@ SVGViewSpec::SVGViewSpec(SVGSVGElement* contextElement)
     , m_transform(SVGAnimatedTransformList::create(contextElement, SVGNames::transformAttr, SVGTransformList::create()))
 {
     ASSERT(m_contextElement);
-    ScriptWrappable::init(this);
 
     viewBox()->setReadOnly();
     preserveAspectRatio()->setReadOnly();

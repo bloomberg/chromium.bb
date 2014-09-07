@@ -45,7 +45,6 @@ using namespace HTMLNames;
 HTMLKeygenElement::HTMLKeygenElement(Document& document, HTMLFormElement* form)
     : HTMLFormControlElementWithState(keygenTag, document, form)
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<HTMLKeygenElement> HTMLKeygenElement::create(Document& document, HTMLFormElement* form)

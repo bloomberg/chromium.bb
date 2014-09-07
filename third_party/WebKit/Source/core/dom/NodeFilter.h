@@ -87,15 +87,9 @@ public:
     void trace(Visitor*);
 
 private:
-    explicit NodeFilter(PassRefPtrWillBeRawPtr<NodeFilterCondition> condition) : m_condition(condition)
-    {
-        ScriptWrappable::init(this);
-    }
+    explicit NodeFilter(PassRefPtrWillBeRawPtr<NodeFilterCondition> condition) : m_condition(condition) { }
 
-    NodeFilter()
-    {
-        ScriptWrappable::init(this);
-    }
+    NodeFilter() { }
 
     RefPtrWillBeMember<NodeFilterCondition> m_condition;
 };

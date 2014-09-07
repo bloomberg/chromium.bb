@@ -49,7 +49,6 @@ namespace blink {
 Console::Console(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
-    ScriptWrappable::init(this);
 }
 
 Console::~Console()

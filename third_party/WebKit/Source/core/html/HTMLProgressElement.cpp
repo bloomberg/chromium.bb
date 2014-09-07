@@ -44,7 +44,6 @@ HTMLProgressElement::HTMLProgressElement(Document& document)
     : LabelableElement(progressTag, document)
     , m_value(nullptr)
 {
-    ScriptWrappable::init(this);
     UseCounter::count(document, UseCounter::ProgressElement);
 }
 

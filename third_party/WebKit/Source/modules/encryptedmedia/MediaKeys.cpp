@@ -192,7 +192,6 @@ MediaKeys::MediaKeys(ExecutionContext* context, const String& keySystem, PassOwn
     , m_cdm(cdm)
 {
     WTF_LOG(Media, "MediaKeys(%p)::MediaKeys", this);
-    ScriptWrappable::init(this);
 
     // Step 4.4 of MediaKeys::create():
     // 4.4.1 Set the keySystem attribute to keySystem.

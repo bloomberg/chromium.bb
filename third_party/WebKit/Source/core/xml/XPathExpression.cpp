@@ -44,7 +44,6 @@ DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(XPathExpression);
 
 XPathExpression::XPathExpression()
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<XPathExpression> XPathExpression::createExpression(const String& expression, PassRefPtrWillBeRawPtr<XPathNSResolver> resolver, ExceptionState& exceptionState)

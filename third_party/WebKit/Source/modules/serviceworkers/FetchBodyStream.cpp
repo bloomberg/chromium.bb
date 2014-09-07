@@ -114,7 +114,6 @@ FetchBodyStream::FetchBodyStream(ExecutionContext* context, PassRefPtr<BlobDataH
     , m_blobDataHandle(blobDataHandle)
     , m_hasRead(false)
 {
-    ScriptWrappable::init(this);
     if (!m_blobDataHandle) {
         m_blobDataHandle = BlobDataHandle::create(BlobData::create(), 0);
     }

@@ -89,10 +89,7 @@ private:
         , m_emHeightDescent(0)
         , m_hangingBaseline(0)
         , m_alphabeticBaseline(0)
-        , m_ideographicBaseline(0)
-    {
-        ScriptWrappable::init(this);
-    }
+        , m_ideographicBaseline(0) { }
 
     // x-direction
     float m_width;

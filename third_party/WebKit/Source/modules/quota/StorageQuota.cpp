@@ -72,7 +72,6 @@ WebStorageQuotaType stringToStorageQuotaType(const String& type)
 
 StorageQuota::StorageQuota()
 {
-    ScriptWrappable::init(this);
 }
 
 Vector<String> StorageQuota::supportedTypes() const

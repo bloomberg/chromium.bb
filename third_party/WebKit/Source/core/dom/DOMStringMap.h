@@ -88,10 +88,7 @@ public:
     virtual void trace(Visitor*) { }
 
 protected:
-    DOMStringMap()
-    {
-        ScriptWrappable::init(this);
-    }
+    DOMStringMap() { }
 };
 
 } // namespace blink

@@ -59,7 +59,6 @@ TextEncoder::TextEncoder(const WTF::TextEncoding& encoding)
     : m_encoding(encoding)
     , m_codec(newTextCodec(encoding))
 {
-    ScriptWrappable::init(this);
 }
 
 TextEncoder::~TextEncoder()

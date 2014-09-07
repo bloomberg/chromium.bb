@@ -39,14 +39,12 @@ DeviceMotionEvent::~DeviceMotionEvent()
 DeviceMotionEvent::DeviceMotionEvent()
     : m_deviceMotionData(DeviceMotionData::create())
 {
-    ScriptWrappable::init(this);
 }
 
 DeviceMotionEvent::DeviceMotionEvent(const AtomicString& eventType, DeviceMotionData* deviceMotionData)
     : Event(eventType, false, false) // Can't bubble, not cancelable
     , m_deviceMotionData(deviceMotionData)
 {
-    ScriptWrappable::init(this);
 }
 
 void DeviceMotionEvent::initDeviceMotionEvent(const AtomicString& type, bool bubbles, bool cancelable, DeviceMotionData* deviceMotionData)

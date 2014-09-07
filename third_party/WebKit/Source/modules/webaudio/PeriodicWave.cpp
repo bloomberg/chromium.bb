@@ -92,7 +92,6 @@ PeriodicWave::PeriodicWave(float sampleRate)
     , m_numberOfRanges(NumberOfRanges)
     , m_centsPerRange(CentsPerRange)
 {
-    ScriptWrappable::init(this);
     float nyquist = 0.5 * m_sampleRate;
     m_lowestFundamentalFrequency = nyquist / maxNumberOfPartials();
     m_rateScale = m_periodicWaveSize / m_sampleRate;

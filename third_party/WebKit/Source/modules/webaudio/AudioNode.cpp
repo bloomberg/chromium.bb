@@ -58,7 +58,6 @@ AudioNode::AudioNode(AudioContext* context, float sampleRate)
     , m_channelCountMode(Max)
     , m_channelInterpretation(AudioBus::Speakers)
 {
-    ScriptWrappable::init(this);
     m_context->registerLiveNode(*this);
 #if DEBUG_AUDIONODE_REFERENCES
     if (!s_isNodeCountInitialized) {

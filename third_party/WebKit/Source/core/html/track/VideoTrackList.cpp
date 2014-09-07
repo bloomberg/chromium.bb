@@ -22,7 +22,6 @@ VideoTrackList::~VideoTrackList()
 VideoTrackList::VideoTrackList(HTMLMediaElement& mediaElement)
     : TrackListBase<VideoTrack>(&mediaElement)
 {
-    ScriptWrappable::init(this);
 }
 
 const AtomicString& VideoTrackList::interfaceName() const

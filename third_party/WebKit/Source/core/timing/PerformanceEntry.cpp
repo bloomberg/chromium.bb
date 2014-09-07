@@ -39,7 +39,6 @@ PerformanceEntry::PerformanceEntry(const String& name, const String& entryType, 
     , m_startTime(startTime)
     , m_duration(finishTime - startTime)
 {
-    ScriptWrappable::init(this);
 }
 
 PerformanceEntry::~PerformanceEntry()

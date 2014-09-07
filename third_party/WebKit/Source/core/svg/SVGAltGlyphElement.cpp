@@ -39,7 +39,6 @@ inline SVGAltGlyphElement::SVGAltGlyphElement(Document& document)
     : SVGTextPositioningElement(SVGNames::altGlyphTag, document)
     , SVGURIReference(this)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(SVGAltGlyphElement)

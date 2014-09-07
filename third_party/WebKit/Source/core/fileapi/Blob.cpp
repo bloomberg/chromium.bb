@@ -75,7 +75,6 @@ Blob::Blob(PassRefPtr<BlobDataHandle> dataHandle)
     : m_blobDataHandle(dataHandle)
     , m_hasBeenClosed(false)
 {
-    ScriptWrappable::init(this);
 }
 
 Blob::~Blob()

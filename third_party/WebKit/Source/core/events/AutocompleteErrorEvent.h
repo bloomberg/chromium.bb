@@ -58,24 +58,15 @@ public:
     virtual void trace(Visitor* visitor) OVERRIDE { Event::trace(visitor); }
 
 private:
-    AutocompleteErrorEvent()
-    {
-        ScriptWrappable::init(this);
-    }
+    AutocompleteErrorEvent() { }
 
     AutocompleteErrorEvent(const String& reason)
         : Event(EventTypeNames::autocompleteerror, true, false)
-        , m_reason(reason)
-    {
-        ScriptWrappable::init(this);
-    }
+        , m_reason(reason) { }
 
     AutocompleteErrorEvent(const AtomicString& eventType, const AutocompleteErrorEventInit& initializer)
         : Event(eventType, initializer)
-        , m_reason(initializer.reason)
-    {
-        ScriptWrappable::init(this);
-    }
+        , m_reason(initializer.reason) { }
 
     String m_reason;
 };

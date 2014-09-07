@@ -32,7 +32,6 @@ namespace blink {
 DocumentFragment::DocumentFragment(Document* document, ConstructionType constructionType)
     : ContainerNode(document, constructionType)
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<DocumentFragment> DocumentFragment::create(Document& document)

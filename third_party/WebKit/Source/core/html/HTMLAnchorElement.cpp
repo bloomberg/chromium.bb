@@ -65,7 +65,6 @@ HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tagName, Document& doc
     , m_cachedVisitedLinkHash(0)
     , m_wasFocusedByMouse(false)
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<HTMLAnchorElement> HTMLAnchorElement::create(Document& document)

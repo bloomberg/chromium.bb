@@ -123,7 +123,6 @@ InspectorFrontendHost::InspectorFrontendHost(InspectorFrontendClient* client, Pa
     , m_frontendPage(frontendPage)
     , m_menuProvider(0)
 {
-    ScriptWrappable::init(this);
 }
 
 InspectorFrontendHost::~InspectorFrontendHost()

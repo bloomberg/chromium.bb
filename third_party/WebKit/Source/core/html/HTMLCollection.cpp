@@ -168,7 +168,6 @@ HTMLCollection::HTMLCollection(ContainerNode& ownerNode, CollectionType type, It
     , m_overridesItemAfter(itemAfterOverrideType == OverridesItemAfter)
     , m_shouldOnlyIncludeDirectChildren(shouldTypeOnlyIncludeDirectChildren(type))
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<HTMLCollection> HTMLCollection::create(ContainerNode& base, CollectionType type)

@@ -42,7 +42,6 @@ namespace blink {
 DirectoryEntry::DirectoryEntry(DOMFileSystemBase* fileSystem, const String& fullPath)
     : Entry(fileSystem, fullPath)
 {
-    ScriptWrappable::init(this);
 }
 
 DirectoryReader* DirectoryEntry::createReader()

@@ -52,8 +52,6 @@ inline SVGFECompositeElement::SVGFECompositeElement(Document& document)
     , m_in2(SVGAnimatedString::create(this, SVGNames::in2Attr, SVGString::create()))
     , m_svgOperator(SVGAnimatedEnumeration<CompositeOperationType>::create(this, SVGNames::operatorAttr, FECOMPOSITE_OPERATOR_OVER))
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_k1);
     addToPropertyMap(m_k2);
     addToPropertyMap(m_k3);
@@ -170,4 +168,4 @@ PassRefPtr<FilterEffect> SVGFECompositeElement::build(SVGFilterBuilder* filterBu
     return effect.release();
 }
 
-}
+} // namespace blink

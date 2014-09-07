@@ -37,7 +37,6 @@ TreeWalker::TreeWalker(PassRefPtrWillBeRawPtr<Node> rootNode, unsigned whatToSho
     : NodeIteratorBase(rootNode, whatToShow, filter)
     , m_current(root())
 {
-    ScriptWrappable::init(this);
 }
 
 void TreeWalker::setCurrentNode(PassRefPtrWillBeRawPtr<Node> node, ExceptionState& exceptionState)

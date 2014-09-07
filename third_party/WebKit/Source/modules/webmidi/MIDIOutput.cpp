@@ -183,7 +183,6 @@ MIDIOutput::MIDIOutput(MIDIAccess* access, unsigned portIndex, const String& id,
     : MIDIPort(access, id, manufacturer, name, MIDIPortTypeOutput, version)
     , m_portIndex(portIndex)
 {
-    ScriptWrappable::init(this);
 }
 
 MIDIOutput::~MIDIOutput()

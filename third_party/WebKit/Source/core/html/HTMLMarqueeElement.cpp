@@ -38,7 +38,6 @@ inline HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
     : HTMLElement(marqueeTag, document)
     , ActiveDOMObject(&document)
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<HTMLMarqueeElement> HTMLMarqueeElement::create(Document& document)

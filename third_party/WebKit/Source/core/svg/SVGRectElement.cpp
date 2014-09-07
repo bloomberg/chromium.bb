@@ -37,8 +37,6 @@ inline SVGRectElement::SVGRectElement(Document& document)
     , m_rx(SVGAnimatedLength::create(this, SVGNames::rxAttr, SVGLength::create(LengthModeWidth), ForbidNegativeLengths))
     , m_ry(SVGAnimatedLength::create(this, SVGNames::ryAttr, SVGLength::create(LengthModeHeight), ForbidNegativeLengths))
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_x);
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
@@ -115,4 +113,4 @@ RenderObject* SVGRectElement::createRenderer(RenderStyle*)
     return new RenderSVGRect(this);
 }
 
-}
+} // namespace blink

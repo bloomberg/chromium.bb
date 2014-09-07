@@ -54,7 +54,6 @@ inline HTMLTrackElement::HTMLTrackElement(Document& document)
     , m_loadTimer(this, &HTMLTrackElement::loadTimerFired)
 {
     WTF_LOG(Media, "HTMLTrackElement::HTMLTrackElement - %p", this);
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLTrackElement)

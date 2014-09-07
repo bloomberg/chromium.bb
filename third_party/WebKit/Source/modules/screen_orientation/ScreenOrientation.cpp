@@ -106,7 +106,6 @@ ScreenOrientation::ScreenOrientation(LocalFrame* frame)
     , m_type(WebScreenOrientationUndefined)
     , m_angle(0)
 {
-    ScriptWrappable::init(this);
 }
 
 ScreenOrientation::~ScreenOrientation()

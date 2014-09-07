@@ -70,7 +70,6 @@ inline EventSource::EventSource(ExecutionContext* context, const KURL& url, cons
     , m_requestInFlight(false)
     , m_reconnectDelay(defaultReconnectDelay)
 {
-    ScriptWrappable::init(this);
     DictionaryHelper::get(eventSourceInit, "withCredentials", m_withCredentials);
 }
 

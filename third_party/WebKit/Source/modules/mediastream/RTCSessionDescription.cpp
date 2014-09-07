@@ -70,7 +70,6 @@ RTCSessionDescription* RTCSessionDescription::create(WebRTCSessionDescription we
 RTCSessionDescription::RTCSessionDescription(WebRTCSessionDescription webSessionDescription)
     : m_webSessionDescription(webSessionDescription)
 {
-    ScriptWrappable::init(this);
 }
 
 String RTCSessionDescription::type()

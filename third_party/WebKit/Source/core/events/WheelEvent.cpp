@@ -46,7 +46,6 @@ WheelEvent::WheelEvent()
     , m_deltaZ(0)
     , m_deltaMode(DOM_DELTA_PIXEL)
 {
-    ScriptWrappable::init(this);
 }
 
 WheelEvent::WheelEvent(const AtomicString& type, const WheelEventInit& initializer)
@@ -57,7 +56,6 @@ WheelEvent::WheelEvent(const AtomicString& type, const WheelEventInit& initializ
     , m_deltaZ(initializer.deltaZ)
     , m_deltaMode(initializer.deltaMode)
 {
-    ScriptWrappable::init(this);
 }
 
 WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta, unsigned deltaMode,
@@ -72,7 +70,6 @@ WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
     , m_deltaZ(0)
     , m_deltaMode(deltaMode)
 {
-    ScriptWrappable::init(this);
 }
 
 const AtomicString& WheelEvent::interfaceName() const

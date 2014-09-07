@@ -21,20 +21,6 @@
 
 namespace blink {
 
-static void initializeScriptWrappableForInterface(TestInterface3* impl)
-{
-    impl->setTypeInfo(&V8TestInterface3::wrapperTypeInfo);
-}
-
-} // namespace blink
-
-void webCoreInitializeScriptWrappableForInterface(blink::TestInterface3* object)
-{
-    blink::initializeScriptWrappableForInterface(object);
-}
-
-namespace blink {
-
 const WrapperTypeInfo V8TestInterface3::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterface3::domTemplate, V8TestInterface3::refObject, V8TestInterface3::derefObject, V8TestInterface3::createPersistentHandle, 0, 0, V8TestInterface3::visitDOMWrapper, V8TestInterface3::installConditionallyEnabledMethods, V8TestInterface3::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Dependent, WrapperTypeInfo::RefCountedObject };
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterface3.h.

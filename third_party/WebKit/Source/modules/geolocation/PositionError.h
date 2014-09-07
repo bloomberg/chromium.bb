@@ -53,10 +53,7 @@ private:
     PositionError(ErrorCode code, const String& message)
         : m_code(code)
         , m_message(message)
-        , m_isFatal(false)
-    {
-        ScriptWrappable::init(this);
-    }
+        , m_isFatal(false) { }
 
     ErrorCode m_code;
     String m_message;

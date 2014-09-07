@@ -13,7 +13,6 @@ namespace blink {
 MIDIInputMap::MIDIInputMap(const HeapHashMap<String, Member<MIDIInput> >map)
     : MIDIPortMap<MIDIInput>(map)
 {
-    ScriptWrappable::init(this);
 }
 
 ScriptValue MIDIInputMap::getForBinding(ScriptState* scriptState, const String& id)

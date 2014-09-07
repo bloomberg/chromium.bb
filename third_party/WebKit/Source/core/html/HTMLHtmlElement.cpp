@@ -39,7 +39,6 @@ using namespace HTMLNames;
 inline HTMLHtmlElement::HTMLHtmlElement(Document& document)
     : HTMLElement(htmlTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLHtmlElement)

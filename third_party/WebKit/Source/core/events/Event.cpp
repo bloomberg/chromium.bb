@@ -53,7 +53,6 @@ Event::Event()
     , m_currentTarget(nullptr)
     , m_createTime(convertSecondsToDOMTimeStamp(currentTime()))
 {
-    ScriptWrappable::init(this);
 }
 
 Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg)
@@ -69,7 +68,6 @@ Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableAr
     , m_currentTarget(nullptr)
     , m_createTime(convertSecondsToDOMTimeStamp(currentTime()))
 {
-    ScriptWrappable::init(this);
 }
 
 Event::Event(const AtomicString& eventType, const EventInit& initializer)
@@ -85,7 +83,6 @@ Event::Event(const AtomicString& eventType, const EventInit& initializer)
     , m_currentTarget(nullptr)
     , m_createTime(convertSecondsToDOMTimeStamp(currentTime()))
 {
-    ScriptWrappable::init(this);
 }
 
 Event::~Event()

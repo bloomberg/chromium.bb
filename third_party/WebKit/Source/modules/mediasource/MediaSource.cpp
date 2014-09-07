@@ -104,7 +104,6 @@ MediaSource::MediaSource(ExecutionContext* context)
     , m_isAddedToRegistry(false)
 {
     WTF_LOG(Media, "MediaSource::MediaSource %p", this);
-    ScriptWrappable::init(this);
 }
 
 MediaSource::~MediaSource()

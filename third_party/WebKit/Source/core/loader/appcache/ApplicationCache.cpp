@@ -39,7 +39,6 @@ namespace blink {
 ApplicationCache::ApplicationCache(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
-    ScriptWrappable::init(this);
     ApplicationCacheHost* cacheHost = applicationCacheHost();
     if (cacheHost)
         cacheHost->setApplicationCache(this);

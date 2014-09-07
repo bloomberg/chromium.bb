@@ -34,7 +34,6 @@ using namespace HTMLNames;
 inline HTMLParamElement::HTMLParamElement(Document& document)
     : HTMLElement(paramTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLParamElement)

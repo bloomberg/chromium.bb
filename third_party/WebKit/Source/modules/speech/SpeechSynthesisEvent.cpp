@@ -40,7 +40,6 @@ PassRefPtrWillBeRawPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create(const 
 
 SpeechSynthesisEvent::SpeechSynthesisEvent()
 {
-    ScriptWrappable::init(this);
 }
 
 SpeechSynthesisEvent::SpeechSynthesisEvent(const AtomicString& type, unsigned long charIndex, float elapsedTime, const String& name)
@@ -49,7 +48,6 @@ SpeechSynthesisEvent::SpeechSynthesisEvent(const AtomicString& type, unsigned lo
     , m_elapsedTime(elapsedTime)
     , m_name(name)
 {
-    ScriptWrappable::init(this);
 }
 
 } // namespace blink

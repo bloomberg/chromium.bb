@@ -58,10 +58,7 @@ public:
 
 private:
     explicit Metadata(const FileMetadata& platformMetadata)
-        : m_platformMetadata(platformMetadata)
-    {
-        ScriptWrappable::init(this);
-    }
+        : m_platformMetadata(platformMetadata) { }
 
     FileMetadata m_platformMetadata;
 };

@@ -49,7 +49,6 @@ inline HTMLFrameSetElement::HTMLFrameSetElement(Document& document)
     , m_frameborderSet(false)
     , m_noresize(false)
 {
-    ScriptWrappable::init(this);
     setHasCustomStyleCallbacks();
 }
 

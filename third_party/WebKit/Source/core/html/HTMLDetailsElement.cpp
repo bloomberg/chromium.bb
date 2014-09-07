@@ -59,7 +59,6 @@ HTMLDetailsElement::HTMLDetailsElement(Document& document)
     : HTMLElement(detailsTag, document)
     , m_isOpen(false)
 {
-    ScriptWrappable::init(this);
     UseCounter::count(document, UseCounter::DetailsElement);
 }
 

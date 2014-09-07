@@ -29,7 +29,6 @@ namespace blink {
 inline SVGFESpotLightElement::SVGFESpotLightElement(Document& document)
     : SVGFELightElement(SVGNames::feSpotLightTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(SVGFESpotLightElement)

@@ -30,7 +30,6 @@ namespace blink {
 BeforeUnloadEvent::BeforeUnloadEvent()
     : Event(EventTypeNames::beforeunload, false, true)
 {
-    ScriptWrappable::init(this);
 }
 
 BeforeUnloadEvent::~BeforeUnloadEvent()

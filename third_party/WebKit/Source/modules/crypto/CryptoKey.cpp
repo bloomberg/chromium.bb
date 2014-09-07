@@ -134,7 +134,6 @@ CryptoKey::~CryptoKey()
 CryptoKey::CryptoKey(const WebCryptoKey& key)
     : m_key(key)
 {
-    ScriptWrappable::init(this);
 }
 
 String CryptoKey::type() const

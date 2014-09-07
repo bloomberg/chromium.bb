@@ -21,7 +21,6 @@ ServiceWorkerClient* ServiceWorkerClient::create(unsigned id)
 ServiceWorkerClient::ServiceWorkerClient(unsigned id)
     : m_id(id)
 {
-    ScriptWrappable::init(this);
 }
 
 void ServiceWorkerClient::postMessage(ExecutionContext* context, PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)

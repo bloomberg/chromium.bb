@@ -42,14 +42,12 @@ PassRefPtrWillBeRawPtr<OfflineAudioCompletionEvent> OfflineAudioCompletionEvent:
 
 OfflineAudioCompletionEvent::OfflineAudioCompletionEvent()
 {
-    ScriptWrappable::init(this);
 }
 
 OfflineAudioCompletionEvent::OfflineAudioCompletionEvent(AudioBuffer* renderedBuffer)
     : Event(EventTypeNames::complete, true, false)
     , m_renderedBuffer(renderedBuffer)
 {
-    ScriptWrappable::init(this);
 }
 
 OfflineAudioCompletionEvent::~OfflineAudioCompletionEvent()

@@ -87,8 +87,6 @@ public:
 //   errors.
 // - If you added an onfoo attribute, use DEFINE_ATTRIBUTE_EVENT_LISTENER(foo)
 //   in your class declaration.
-// - Call ScriptWrappable::init(this) in your constructor, unless you are already
-//   doing so.
 // - Override EventTarget::interfaceName() and executionContext(). The former
 //   will typically return EventTargetNames::YourClassName. The latter will
 //   return ActiveDOMObject::executionContext (if you are an ActiveDOMObject)

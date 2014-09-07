@@ -73,10 +73,7 @@ public:
     virtual void trace(Visitor*) { }
 
 protected:
-    CSSStyleDeclaration()
-    {
-        ScriptWrappable::init(this);
-    }
+    CSSStyleDeclaration() { }
 };
 
 } // namespace blink

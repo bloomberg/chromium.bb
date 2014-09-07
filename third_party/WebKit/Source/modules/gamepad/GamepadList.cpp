@@ -30,7 +30,6 @@ namespace blink {
 
 GamepadList::GamepadList()
 {
-    ScriptWrappable::init(this);
 }
 
 void GamepadList::set(unsigned index, Gamepad* gamepad)

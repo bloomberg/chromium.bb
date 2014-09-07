@@ -9,7 +9,6 @@ namespace blink {
 
 WebKitGamepad::WebKitGamepad()
 {
-    ScriptWrappable::init(this);
 }
 
 WebKitGamepad::~WebKitGamepad()

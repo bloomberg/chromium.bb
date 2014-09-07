@@ -65,10 +65,7 @@ private:
     Counter(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> identifier, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> separator)
         : m_identifier(identifier)
         , m_listStyle(listStyle)
-        , m_separator(separator)
-    {
-        ScriptWrappable::init(this);
-    }
+        , m_separator(separator) { }
 
     RefPtrWillBeMember<CSSPrimitiveValue> m_identifier; // string
     RefPtrWillBeMember<CSSPrimitiveValue> m_listStyle; // ident

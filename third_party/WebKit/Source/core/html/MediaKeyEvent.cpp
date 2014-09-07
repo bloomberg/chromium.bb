@@ -37,7 +37,6 @@ MediaKeyEventInit::MediaKeyEventInit()
 
 MediaKeyEvent::MediaKeyEvent()
 {
-    ScriptWrappable::init(this);
 }
 
 MediaKeyEvent::MediaKeyEvent(const AtomicString& type, const MediaKeyEventInit& initializer)
@@ -50,7 +49,6 @@ MediaKeyEvent::MediaKeyEvent(const AtomicString& type, const MediaKeyEventInit& 
     , m_errorCode(initializer.errorCode)
     , m_systemCode(initializer.systemCode)
 {
-    ScriptWrappable::init(this);
 }
 
 MediaKeyEvent::~MediaKeyEvent()

@@ -53,7 +53,6 @@ static const char permissionDeniedErrorMessage[] = "The user denied permission t
 IDBFactory::IDBFactory(IndexedDBClient* permissionClient)
     : m_permissionClient(permissionClient)
 {
-    ScriptWrappable::init(this);
 }
 
 void IDBFactory::trace(Visitor* visitor)

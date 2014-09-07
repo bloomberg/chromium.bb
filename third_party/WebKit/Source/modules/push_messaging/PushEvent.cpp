@@ -13,21 +13,18 @@ PushEventInit::PushEventInit()
 
 PushEvent::PushEvent()
 {
-    ScriptWrappable::init(this);
 }
 
 PushEvent::PushEvent(const AtomicString& type, const String& data)
     : Event(type, /*canBubble=*/false, /*cancelable=*/false)
     , m_data(data)
 {
-    ScriptWrappable::init(this);
 }
 
 PushEvent::PushEvent(const AtomicString& type, const PushEventInit& initializer)
     : Event(type, initializer)
     , m_data(initializer.data)
 {
-    ScriptWrappable::init(this);
 }
 
 PushEvent::~PushEvent()

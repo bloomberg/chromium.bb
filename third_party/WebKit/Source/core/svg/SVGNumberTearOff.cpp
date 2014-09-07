@@ -40,7 +40,6 @@ namespace blink {
 SVGNumberTearOff::SVGNumberTearOff(PassRefPtr<SVGNumber> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
     : SVGPropertyTearOff<SVGNumber>(target, contextElement, propertyIsAnimVal, attributeName)
 {
-    ScriptWrappable::init(this);
 }
 
 void SVGNumberTearOff::setValue(float f, ExceptionState& exceptionState)

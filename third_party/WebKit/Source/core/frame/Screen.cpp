@@ -43,7 +43,6 @@ namespace blink {
 Screen::Screen(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
-    ScriptWrappable::init(this);
 }
 
 unsigned Screen::height() const

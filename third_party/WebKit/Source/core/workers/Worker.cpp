@@ -47,7 +47,6 @@ inline Worker::Worker(ExecutionContext* context)
     : AbstractWorker(context)
     , m_contextProxy(0)
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<Worker> Worker::create(ExecutionContext* context, const String& url, ExceptionState& exceptionState)

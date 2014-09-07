@@ -65,7 +65,6 @@ PannerNode::PannerNode(AudioContext* context, float sampleRate)
     // The HRTF panner will return zeroes until the database is loaded.
     listener()->createAndLoadHRTFDatabaseLoader(context->sampleRate());
 
-    ScriptWrappable::init(this);
     addInput();
     addOutput(AudioNodeOutput::create(this, 2));
 

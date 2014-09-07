@@ -44,7 +44,6 @@ Storage::Storage(LocalFrame* frame, PassOwnPtrWillBeRawPtr<StorageArea> storageA
 {
     ASSERT(m_frame);
     ASSERT(m_storageArea);
-    ScriptWrappable::init(this);
 }
 
 Storage::~Storage()

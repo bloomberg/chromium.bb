@@ -53,7 +53,6 @@ HTMLOptionElement::HTMLOptionElement(Document& document)
     , m_isSelected(false)
 {
     setHasCustomStyleCallbacks();
-    ScriptWrappable::init(this);
 }
 
 HTMLOptionElement::~HTMLOptionElement()

@@ -26,11 +26,6 @@
 
 namespace blink {
 
-CSSRuleList::CSSRuleList()
-{
-    ScriptWrappable::init(this);
-}
-
 CSSRuleList::~CSSRuleList()
 {
 }

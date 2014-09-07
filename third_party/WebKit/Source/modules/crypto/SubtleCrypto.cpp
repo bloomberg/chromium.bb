@@ -191,7 +191,6 @@ static bool copyJwkDictionaryToJson(const Dictionary& dict, CString& jsonUtf8, C
 
 SubtleCrypto::SubtleCrypto()
 {
-    ScriptWrappable::init(this);
 }
 
 ScriptPromise SubtleCrypto::encrypt(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const ArrayPiece& data)

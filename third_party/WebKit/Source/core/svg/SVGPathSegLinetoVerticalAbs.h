@@ -36,10 +36,7 @@ public:
 
 private:
     SVGPathSegLinetoVerticalAbs(SVGPathElement* element, float y)
-        : SVGPathSegLinetoVertical(element, y)
-    {
-        ScriptWrappable::init(this);
-    }
+        : SVGPathSegLinetoVertical(element, y) { }
 
     virtual unsigned short pathSegType() const OVERRIDE { return PATHSEG_LINETO_VERTICAL_ABS; }
     virtual String pathSegTypeAsLetter() const OVERRIDE { return "V"; }

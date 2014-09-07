@@ -87,10 +87,8 @@ public:
     static const char versionErrorMessage[];
 
 private:
-    explicit SQLError(const SQLErrorData& data) : m_data(data)
-    {
-        ScriptWrappable::init(this);
-    }
+    explicit SQLError(const SQLErrorData& data)
+        : m_data(data) { }
 
     const SQLErrorData m_data;
 };

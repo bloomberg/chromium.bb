@@ -97,7 +97,6 @@ inline HTMLDialogElement::HTMLDialogElement(Document& document)
     , m_centeredPosition(0)
     , m_returnValue("")
 {
-    ScriptWrappable::init(this);
     UseCounter::count(document, UseCounter::DialogElement);
 }
 

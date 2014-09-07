@@ -36,10 +36,7 @@ public:
 
 private:
     SVGPathSegMovetoAbs(SVGPathElement* element, float x, float y)
-        : SVGPathSegSingleCoordinate(element, x, y)
-    {
-        ScriptWrappable::init(this);
-    }
+        : SVGPathSegSingleCoordinate(element, x, y) { }
 
     virtual unsigned short pathSegType() const OVERRIDE { return PATHSEG_MOVETO_ABS; }
     virtual String pathSegTypeAsLetter() const OVERRIDE { return "M"; }

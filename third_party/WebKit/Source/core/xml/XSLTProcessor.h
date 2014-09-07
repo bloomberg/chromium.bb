@@ -80,10 +80,7 @@ public:
     void trace(Visitor*);
 
 private:
-    XSLTProcessor()
-    {
-        ScriptWrappable::init(this);
-    }
+    XSLTProcessor() { }
 
     RefPtrWillBeMember<XSLStyleSheet> m_stylesheet;
     RefPtrWillBeMember<Node> m_stylesheetRootNode;

@@ -77,7 +77,6 @@ RTCDataChannel::RTCDataChannel(ExecutionContext* context, RTCPeerConnection* con
     , m_scheduledEventTimer(this, &RTCDataChannel::scheduledEventTimerFired)
     , m_connection(connection)
 {
-    ScriptWrappable::init(this);
     m_handler->setClient(this);
 }
 

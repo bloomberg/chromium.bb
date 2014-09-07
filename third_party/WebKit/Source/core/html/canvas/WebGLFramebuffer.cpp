@@ -278,7 +278,6 @@ WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContextBase* ctx)
     : WebGLContextObject(ctx)
     , m_hasEverBeenBound(false)
 {
-    ScriptWrappable::init(this);
     setObject(ctx->webContext()->createFramebuffer());
 }
 

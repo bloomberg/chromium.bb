@@ -75,7 +75,6 @@ NodeIterator::NodeIterator(PassRefPtrWillBeRawPtr<Node> rootNode, unsigned whatT
     : NodeIteratorBase(rootNode, whatToShow, filter)
     , m_referenceNode(root(), true)
 {
-    ScriptWrappable::init(this);
     root()->document().attachNodeIterator(this);
 }
 

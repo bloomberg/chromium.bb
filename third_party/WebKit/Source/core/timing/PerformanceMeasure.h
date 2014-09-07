@@ -49,10 +49,8 @@ public:
     }
 
 private:
-    PerformanceMeasure(const String& name, double startTime, double endTime) : PerformanceEntry(name, "measure", startTime, endTime)
-    {
-        ScriptWrappable::init(this);
-    }
+    PerformanceMeasure(const String& name, double startTime, double endTime)
+        : PerformanceEntry(name, "measure", startTime, endTime) { }
     virtual ~PerformanceMeasure() { }
 };
 

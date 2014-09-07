@@ -54,7 +54,6 @@ using namespace HTMLNames;
 inline HTMLMetaElement::HTMLMetaElement(Document& document)
     : HTMLElement(metaTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLMetaElement)

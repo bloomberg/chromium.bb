@@ -44,7 +44,6 @@ HTMLFormControlsCollection::HTMLFormControlsCollection(ContainerNode& ownerNode)
     , m_cachedElementOffsetInArray(0)
 {
     ASSERT(isHTMLFormElement(ownerNode) || isHTMLFieldSetElement(ownerNode));
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> HTMLFormControlsCollection::create(ContainerNode& ownerNode, CollectionType type)

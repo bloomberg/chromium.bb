@@ -37,8 +37,6 @@ inline SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth), ForbidNegativeLengths))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight), ForbidNegativeLengths))
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_x);
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
@@ -147,4 +145,4 @@ bool SVGForeignObjectElement::selfHasRelativeLengths() const
         || m_height->currentValue()->isRelative();
 }
 
-}
+} // namespace blink

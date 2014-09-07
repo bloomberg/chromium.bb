@@ -42,7 +42,6 @@ using namespace HTMLNames;
 inline HTMLTableRowElement::HTMLTableRowElement(Document& document)
     : HTMLTablePartElement(trTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLTableRowElement)

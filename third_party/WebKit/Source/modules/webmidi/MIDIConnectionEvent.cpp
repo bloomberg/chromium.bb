@@ -35,21 +35,18 @@ namespace blink {
 
 MIDIConnectionEvent::MIDIConnectionEvent()
 {
-    ScriptWrappable::init(this);
 }
 
 MIDIConnectionEvent::MIDIConnectionEvent(const AtomicString& type, MIDIPort* port)
     : Event(type, false, false)
     , m_port(port)
 {
-    ScriptWrappable::init(this);
 }
 
 MIDIConnectionEvent::MIDIConnectionEvent(const AtomicString& type, const MIDIConnectionEventInit& initializer)
     : Event(type, initializer)
     , m_port(initializer.port)
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<MIDIConnectionEvent> MIDIConnectionEvent::create()

@@ -72,7 +72,6 @@ IDBRequest::IDBRequest(ScriptState* scriptState, IDBAny* source, IDBTransaction*
     , m_preventPropagation(false)
     , m_resultDirty(true)
 {
-    ScriptWrappable::init(this);
 }
 
 IDBRequest::~IDBRequest()

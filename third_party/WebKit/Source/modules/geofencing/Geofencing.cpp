@@ -13,7 +13,6 @@ namespace blink {
 
 Geofencing::Geofencing()
 {
-    ScriptWrappable::init(this);
 }
 
 ScriptPromise Geofencing::registerRegion(ScriptState* scriptState, GeofencingRegion* region)

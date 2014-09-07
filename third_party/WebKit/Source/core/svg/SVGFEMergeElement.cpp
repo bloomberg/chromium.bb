@@ -33,7 +33,6 @@ namespace blink {
 inline SVGFEMergeElement::SVGFEMergeElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feMergeTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(SVGFEMergeElement)

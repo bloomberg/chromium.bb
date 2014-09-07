@@ -69,10 +69,7 @@ private:
         , m_layerType(layerName)
         , m_associatedNodeOffsetX(nodeOffsetX)
         , m_associatedNodeOffsetY(nodeOffsetY)
-        , m_rect(rect)
-    {
-        ScriptWrappable::init(this);
-    }
+        , m_rect(rect) { }
 
     RefPtrWillBeMember<Node> m_layerAssociatedNode;
     String m_layerType;

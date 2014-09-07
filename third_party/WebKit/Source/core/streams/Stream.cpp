@@ -42,8 +42,6 @@ Stream::Stream(ExecutionContext* context, const String& mediaType)
     , m_mediaType(mediaType)
     , m_isNeutered(false)
 {
-    ScriptWrappable::init(this);
-
     // Create a new internal URL for a stream and register it with the provided
     // media type.
     m_internalURL = BlobURL::createInternalStreamURL();

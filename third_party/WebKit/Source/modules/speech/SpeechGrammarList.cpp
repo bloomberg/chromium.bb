@@ -58,7 +58,6 @@ void SpeechGrammarList::addFromString(const String& string, double weight)
 
 SpeechGrammarList::SpeechGrammarList()
 {
-    ScriptWrappable::init(this);
 }
 
 void SpeechGrammarList::trace(Visitor* visitor)

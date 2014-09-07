@@ -40,7 +40,6 @@ inline HTMLIFrameElement::HTMLIFrameElement(Document& document)
     : HTMLFrameElementBase(iframeTag, document)
     , m_didLoadNonEmptyDocument(false)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLIFrameElement)

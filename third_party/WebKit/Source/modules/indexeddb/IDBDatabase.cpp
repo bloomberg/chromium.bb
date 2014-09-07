@@ -82,7 +82,6 @@ IDBDatabase::IDBDatabase(ExecutionContext* context, PassOwnPtr<WebIDBDatabase> b
     , m_contextStopped(false)
     , m_databaseCallbacks(callbacks)
 {
-    ScriptWrappable::init(this);
     m_databaseCallbacks->connect(this);
 }
 

@@ -91,7 +91,6 @@ DataTransferItem::DataTransferItem(PassRefPtrWillBeRawPtr<DataTransfer> dataTran
     : m_dataTransfer(dataTransfer)
     , m_item(item)
 {
-    ScriptWrappable::init(this);
 }
 
 void DataTransferItem::trace(Visitor* visitor)

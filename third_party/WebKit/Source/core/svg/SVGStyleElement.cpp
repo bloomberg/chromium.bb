@@ -33,7 +33,6 @@ inline SVGStyleElement::SVGStyleElement(Document& document, bool createdByParser
     , StyleElement(&document, createdByParser)
     , m_svgLoadEventTimer(this, &SVGElement::svgLoadEventTimerFired)
 {
-    ScriptWrappable::init(this);
 }
 
 SVGStyleElement::~SVGStyleElement()

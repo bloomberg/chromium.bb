@@ -46,7 +46,6 @@ namespace blink {
 Entry::Entry(DOMFileSystemBase* fileSystem, const String& fullPath)
     : EntryBase(fileSystem, fullPath)
 {
-    ScriptWrappable::init(this);
 }
 
 void Entry::getMetadata(PassOwnPtrWillBeRawPtr<MetadataCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback)

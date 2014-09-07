@@ -68,7 +68,6 @@ void SVGPreserveAspectRatioTearOff::setMeetOrSlice(unsigned short meetOrSlice, E
 SVGPreserveAspectRatioTearOff::SVGPreserveAspectRatioTearOff(PassRefPtr<SVGPreserveAspectRatio> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
     : SVGPropertyTearOff<SVGPreserveAspectRatio>(target, contextElement, propertyIsAnimVal, attributeName)
 {
-    ScriptWrappable::init(this);
 }
 
 }

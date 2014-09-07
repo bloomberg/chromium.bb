@@ -36,10 +36,7 @@ public:
     void trace(Visitor*) { }
 
 private:
-    InternalRuntimeFlags()
-    {
-        ScriptWrappable::init(this);
-    }
+    InternalRuntimeFlags() { }
 };
 
 } // namespace blink

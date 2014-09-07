@@ -39,8 +39,6 @@ inline SVGFontElement::SVGFontElement(Document& document)
     , m_missingGlyph(0)
     , m_isGlyphCacheValid(false)
 {
-    ScriptWrappable::init(this);
-
     UseCounter::count(document, UseCounter::SVGFontElement);
 }
 
@@ -251,6 +249,6 @@ Glyph SVGFontElement::missingGlyph()
     return m_missingGlyph;
 }
 
-}
+} // namespace blink
 
 #endif // ENABLE(SVG_FONTS)

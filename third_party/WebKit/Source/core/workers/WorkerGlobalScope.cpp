@@ -92,7 +92,6 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_terminationObserver(0)
     , m_messageStorage(ConsoleMessageStorage::createForWorker(this))
 {
-    ScriptWrappable::init(this);
     setClient(this);
     setSecurityOrigin(SecurityOrigin::create(url));
     m_workerClients->reattachThread();

@@ -43,7 +43,6 @@ inline HTMLFieldSetElement::HTMLFieldSetElement(Document& document, HTMLFormElem
     : HTMLFormControlElement(fieldsetTag, document, form)
     , m_documentVersion(0)
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<HTMLFieldSetElement> HTMLFieldSetElement::create(Document& document, HTMLFormElement* form)

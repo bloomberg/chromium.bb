@@ -34,8 +34,6 @@ inline SVGCursorElement::SVGCursorElement(Document& document)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_x);
     addToPropertyMap(m_y);
 }
@@ -130,4 +128,4 @@ void SVGCursorElement::trace(Visitor* visitor)
     SVGElement::trace(visitor);
 }
 
-}
+} // namespace blink

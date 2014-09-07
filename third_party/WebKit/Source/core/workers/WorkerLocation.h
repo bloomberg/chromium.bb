@@ -56,10 +56,8 @@ public:
     void trace(Visitor*) { }
 
 private:
-    explicit WorkerLocation(const KURL& url) : m_url(url)
-    {
-        ScriptWrappable::init(this);
-    }
+    explicit WorkerLocation(const KURL& url)
+        : m_url(url) { }
 
     KURL m_url;
 };

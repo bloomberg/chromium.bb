@@ -30,7 +30,6 @@ inline SVGFEMergeNodeElement::SVGFEMergeNodeElement(Document& document)
     : SVGElement(SVGNames::feMergeNodeTag, document)
     , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
 {
-    ScriptWrappable::init(this);
     addToPropertyMap(m_in1);
 }
 

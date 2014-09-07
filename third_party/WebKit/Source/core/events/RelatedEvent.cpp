@@ -32,21 +32,18 @@ PassRefPtrWillBeRawPtr<RelatedEvent> RelatedEvent::create(const AtomicString& ty
 
 RelatedEvent::RelatedEvent()
 {
-    ScriptWrappable::init(this);
 }
 
 RelatedEvent::RelatedEvent(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget)
     : Event(type, canBubble, cancelable)
     , m_relatedTarget(relatedTarget)
 {
-    ScriptWrappable::init(this);
 }
 
 RelatedEvent::RelatedEvent(const AtomicString& eventType, const RelatedEventInit& initializer)
     : Event(eventType, initializer)
     , m_relatedTarget(initializer.relatedTarget)
 {
-    ScriptWrappable::init(this);
 }
 
 void RelatedEvent::trace(Visitor* visitor)

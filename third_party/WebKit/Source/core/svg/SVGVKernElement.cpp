@@ -29,7 +29,6 @@ namespace blink {
 inline SVGVKernElement::SVGVKernElement(Document& document)
     : SVGElement(SVGNames::vkernTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(SVGVKernElement)

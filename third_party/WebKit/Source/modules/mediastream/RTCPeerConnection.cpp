@@ -234,7 +234,6 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context, RTCConfiguration
     , m_stopped(false)
     , m_closed(false)
 {
-    ScriptWrappable::init(this);
     Document* document = toDocument(executionContext());
 
     // If we fail, set |m_closed| and |m_stopped| to true, to avoid hitting the assert in the destructor.

@@ -141,7 +141,6 @@ FileError::FileError(ErrorCode code)
     : DOMError(DOMException::getErrorName(errorCodeToExceptionCode(code)), errorCodeToMessage(code))
     , m_code(code)
 {
-    ScriptWrappable::init(this);
 }
 
 } // namespace blink

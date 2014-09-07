@@ -100,7 +100,6 @@ SourceBuffer::SourceBuffer(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSou
 {
     ASSERT(m_webSourceBuffer);
     ASSERT(m_source);
-    ScriptWrappable::init(this);
 }
 
 SourceBuffer::~SourceBuffer()

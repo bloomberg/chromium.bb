@@ -36,10 +36,7 @@ public:
 
 private:
     SVGPathSegCurvetoCubicAbs(SVGPathElement* element, float x, float y, float x1, float y1, float x2, float y2)
-        : SVGPathSegCurvetoCubic(element, x, y, x1, y1, x2, y2)
-    {
-        ScriptWrappable::init(this);
-    }
+        : SVGPathSegCurvetoCubic(element, x, y, x1, y1, x2, y2) { }
 
     virtual unsigned short pathSegType() const OVERRIDE { return PATHSEG_CURVETO_CUBIC_ABS; }
     virtual String pathSegTypeAsLetter() const OVERRIDE { return "C"; }

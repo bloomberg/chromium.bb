@@ -37,7 +37,6 @@ namespace blink {
 SVGAnimateElement::SVGAnimateElement(const QualifiedName& tagName, Document& document)
     : SVGAnimationElement(tagName, document)
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<SVGAnimateElement> SVGAnimateElement::create(Document& document)

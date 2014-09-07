@@ -39,7 +39,6 @@ SourceInfo* SourceInfo::create(const WebSourceInfo& webSourceInfo)
 SourceInfo::SourceInfo(const WebSourceInfo& webSourceInfo)
     : m_webSourceInfo(webSourceInfo)
 {
-    ScriptWrappable::init(this);
 }
 
 String SourceInfo::id() const

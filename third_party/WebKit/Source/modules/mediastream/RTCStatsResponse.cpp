@@ -34,7 +34,6 @@ RTCStatsResponse* RTCStatsResponse::create()
 
 RTCStatsResponse::RTCStatsResponse()
 {
-    ScriptWrappable::init(this);
 }
 
 RTCStatsReport* RTCStatsResponse::namedItem(const AtomicString& name)

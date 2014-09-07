@@ -37,7 +37,6 @@ WebKitAnimationEventInit::WebKitAnimationEventInit()
 WebKitAnimationEvent::WebKitAnimationEvent()
     : m_elapsedTime(0.0)
 {
-    ScriptWrappable::init(this);
 }
 
 WebKitAnimationEvent::WebKitAnimationEvent(const AtomicString& type, const WebKitAnimationEventInit& initializer)
@@ -45,7 +44,6 @@ WebKitAnimationEvent::WebKitAnimationEvent(const AtomicString& type, const WebKi
     , m_animationName(initializer.animationName)
     , m_elapsedTime(initializer.elapsedTime)
 {
-    ScriptWrappable::init(this);
 }
 
 WebKitAnimationEvent::WebKitAnimationEvent(const AtomicString& type, const String& animationName, double elapsedTime)
@@ -53,7 +51,6 @@ WebKitAnimationEvent::WebKitAnimationEvent(const AtomicString& type, const Strin
     , m_animationName(animationName)
     , m_elapsedTime(elapsedTime)
 {
-    ScriptWrappable::init(this);
 }
 
 WebKitAnimationEvent::~WebKitAnimationEvent()

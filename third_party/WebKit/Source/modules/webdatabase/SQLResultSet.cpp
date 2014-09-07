@@ -42,7 +42,6 @@ SQLResultSet::SQLResultSet()
     , m_insertIdSet(false)
     , m_isValid(false)
 {
-    ScriptWrappable::init(this);
 }
 
 void SQLResultSet::trace(Visitor* visitor)

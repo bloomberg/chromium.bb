@@ -27,7 +27,6 @@ namespace blink {
 inline SVGMissingGlyphElement::SVGMissingGlyphElement(Document& document)
     : SVGElement(SVGNames::missing_glyphTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(SVGMissingGlyphElement)

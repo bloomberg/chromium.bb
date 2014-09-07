@@ -53,10 +53,7 @@ public:
     void trace(Visitor*) { }
 
 private:
-    MediaError(Code code) : m_code(code)
-    {
-        ScriptWrappable::init(this);
-    }
+    MediaError(Code code) : m_code(code) { }
 
     Code m_code;
 };

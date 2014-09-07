@@ -35,7 +35,6 @@ using namespace HTMLNames;
 HTMLSpanElement::HTMLSpanElement(Document& document)
     : HTMLElement(spanTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLSpanElement)

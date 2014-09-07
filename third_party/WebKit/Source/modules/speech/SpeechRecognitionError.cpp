@@ -76,7 +76,6 @@ SpeechRecognitionError::SpeechRecognitionError(const String& error, const String
     , m_error(error)
     , m_message(message)
 {
-    ScriptWrappable::init(this);
 }
 
 SpeechRecognitionError::SpeechRecognitionError(const AtomicString& eventName, const SpeechRecognitionErrorInit& initializer)
@@ -84,7 +83,6 @@ SpeechRecognitionError::SpeechRecognitionError(const AtomicString& eventName, co
     , m_error(initializer.error)
     , m_message(initializer.message)
 {
-    ScriptWrappable::init(this);
 }
 
 const AtomicString& SpeechRecognitionError::interfaceName() const

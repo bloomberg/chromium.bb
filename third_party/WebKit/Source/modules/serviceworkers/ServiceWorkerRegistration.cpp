@@ -147,7 +147,6 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* execution
     , m_stopped(false)
 {
     ASSERT(m_outerRegistration);
-    ScriptWrappable::init(this);
 
     if (!executionContext)
         return;

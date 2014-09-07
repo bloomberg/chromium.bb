@@ -30,7 +30,6 @@ namespace blink {
 inline SVGTSpanElement::SVGTSpanElement(Document& document)
     : SVGTextPositioningElement(SVGNames::tspanTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(SVGTSpanElement)

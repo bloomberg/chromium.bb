@@ -37,10 +37,7 @@ class AudioSourceNode : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     AudioSourceNode(AudioContext* context, float sampleRate)
-        : AudioNode(context, sampleRate)
-    {
-        ScriptWrappable::init(this);
-    }
+        : AudioNode(context, sampleRate) { }
 protected:
     virtual double tailTime() const OVERRIDE FINAL { return 0; }
     virtual double latencyTime() const OVERRIDE FINAL { return 0; }

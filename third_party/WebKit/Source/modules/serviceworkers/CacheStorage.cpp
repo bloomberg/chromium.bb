@@ -177,7 +177,6 @@ ScriptPromise CacheStorage::keys(ScriptState* scriptState)
 CacheStorage::CacheStorage(WebServiceWorkerCacheStorage* webCacheStorage)
     : m_webCacheStorage(webCacheStorage)
 {
-    ScriptWrappable::init(this);
 }
 
 } // namespace blink

@@ -43,7 +43,6 @@ namespace blink {
 
 FileReaderSync::FileReaderSync()
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtr<ArrayBuffer> FileReaderSync::readAsArrayBuffer(ExecutionContext* executionContext, Blob* blob, ExceptionState& exceptionState)

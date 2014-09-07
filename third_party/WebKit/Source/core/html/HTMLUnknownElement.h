@@ -46,10 +46,7 @@ public:
 
 private:
     HTMLUnknownElement(const QualifiedName& tagName, Document& document)
-        : HTMLElement(tagName, document)
-    {
-        ScriptWrappable::init(this);
-    }
+        : HTMLElement(tagName, document) { }
 };
 
 inline bool isHTMLUnknownElement(const HTMLElement& element)

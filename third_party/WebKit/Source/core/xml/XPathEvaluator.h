@@ -57,10 +57,7 @@ public:
     void trace(Visitor*) { }
 
 private:
-    XPathEvaluator()
-    {
-        ScriptWrappable::init(this);
-    }
+    XPathEvaluator() { }
 };
 
 } // namespace blink

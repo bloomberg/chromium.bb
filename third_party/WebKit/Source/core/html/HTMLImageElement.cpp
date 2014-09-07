@@ -86,7 +86,6 @@ HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form, bo
     , m_intrinsicSizingViewportDependant(false)
     , m_effectiveSizeViewportDependant(false)
 {
-    ScriptWrappable::init(this);
     if (form && form->inDocument()) {
 #if ENABLE(OILPAN)
         m_form = form;

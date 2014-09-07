@@ -41,7 +41,6 @@ using namespace HTMLNames;
 inline HTMLTableSectionElement::HTMLTableSectionElement(const QualifiedName& tagName, Document& document)
     : HTMLTablePartElement(tagName, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableSectionElement)

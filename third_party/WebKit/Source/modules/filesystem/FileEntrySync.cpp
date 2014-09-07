@@ -40,7 +40,6 @@ namespace blink {
 FileEntrySync::FileEntrySync(DOMFileSystemBase* fileSystem, const String& fullPath)
     : EntrySync(fileSystem, fullPath)
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<File> FileEntrySync::file(ExceptionState& exceptionState)

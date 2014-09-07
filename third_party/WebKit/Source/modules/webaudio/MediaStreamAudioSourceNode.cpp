@@ -47,7 +47,6 @@ MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(AudioContext* context, Me
     , m_audioSourceProvider(audioSourceProvider)
     , m_sourceNumberOfChannels(0)
 {
-    ScriptWrappable::init(this);
     // Default to stereo. This could change depending on the format of the
     // MediaStream's audio track.
     addOutput(AudioNodeOutput::create(this, 2));

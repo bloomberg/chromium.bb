@@ -47,7 +47,6 @@ inline HTMLStyleElement::HTMLStyleElement(Document& document, bool createdByPars
     , m_firedLoad(false)
     , m_loadedSheet(false)
 {
-    ScriptWrappable::init(this);
 }
 
 HTMLStyleElement::~HTMLStyleElement()

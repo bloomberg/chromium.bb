@@ -58,7 +58,6 @@ DatabaseSync::DatabaseSync(DatabaseContext* databaseContext,
     : DatabaseBackendSync(databaseContext, name, expectedVersion, displayName, estimatedSize)
     , DatabaseBase(databaseContext->executionContext())
 {
-    ScriptWrappable::init(this);
     setFrontend(this);
 }
 

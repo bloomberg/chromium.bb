@@ -41,7 +41,6 @@ SourceBufferList::SourceBufferList(ExecutionContext* context, GenericEventQueue*
     : m_executionContext(context)
     , m_asyncEventQueue(asyncEventQueue)
 {
-    ScriptWrappable::init(this);
 }
 
 SourceBufferList::~SourceBufferList()

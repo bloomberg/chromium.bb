@@ -35,7 +35,6 @@ HTMLOptionsCollection::HTMLOptionsCollection(ContainerNode& select)
     : HTMLCollection(select, SelectOptions, DoesNotOverrideItemAfter)
 {
     ASSERT(isHTMLSelectElement(select));
-    ScriptWrappable::init(this);
 }
 
 void HTMLOptionsCollection::supportedPropertyNames(Vector<String>& names)

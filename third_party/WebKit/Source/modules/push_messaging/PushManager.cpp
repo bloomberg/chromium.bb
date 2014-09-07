@@ -26,7 +26,6 @@ namespace blink {
 
 PushManager::PushManager()
 {
-    ScriptWrappable::init(this);
 }
 
 ScriptPromise PushManager::registerPushMessaging(ScriptState* scriptState, const String& senderId)

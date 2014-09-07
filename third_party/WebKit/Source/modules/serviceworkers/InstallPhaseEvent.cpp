@@ -57,14 +57,12 @@ void InstallPhaseEvent::waitUntil(ScriptState* scriptState, const ScriptValue& v
 
 InstallPhaseEvent::InstallPhaseEvent()
 {
-    ScriptWrappable::init(this);
 }
 
 InstallPhaseEvent::InstallPhaseEvent(const AtomicString& type, const EventInit& initializer, WaitUntilObserver* observer)
     : Event(type, initializer)
     , m_observer(observer)
 {
-    ScriptWrappable::init(this);
 }
 
 const AtomicString& InstallPhaseEvent::interfaceName() const

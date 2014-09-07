@@ -67,27 +67,17 @@ public:
     void trace(Visitor*) { }
 
 private:
-    Path2D() : CanvasPathMethods()
-    {
-        ScriptWrappable::init(this);
-    }
+    Path2D() : CanvasPathMethods() { }
 
     Path2D(const Path& path)
-        : CanvasPathMethods(path)
-    {
-        ScriptWrappable::init(this);
-    }
+        : CanvasPathMethods(path) { }
 
     Path2D(Path2D* path)
-        : CanvasPathMethods(path->path())
-    {
-        ScriptWrappable::init(this);
-    }
+        : CanvasPathMethods(path->path()) { }
 
     Path2D(const String& pathData)
         : CanvasPathMethods()
     {
-        ScriptWrappable::init(this);
         buildPathFromString(pathData, m_path);
     }
 };

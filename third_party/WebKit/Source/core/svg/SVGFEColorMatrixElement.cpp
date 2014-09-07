@@ -46,8 +46,6 @@ inline SVGFEColorMatrixElement::SVGFEColorMatrixElement(Document& document)
     , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
     , m_type(SVGAnimatedEnumeration<ColorMatrixType>::create(this, SVGNames::typeAttr, FECOLORMATRIX_TYPE_MATRIX))
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_values);
     addToPropertyMap(m_in1);
     addToPropertyMap(m_type);

@@ -35,8 +35,6 @@ inline SVGEllipseElement::SVGEllipseElement(Document& document)
     , m_rx(SVGAnimatedLength::create(this, SVGNames::rxAttr, SVGLength::create(LengthModeWidth), ForbidNegativeLengths))
     , m_ry(SVGAnimatedLength::create(this, SVGNames::ryAttr, SVGLength::create(LengthModeHeight), ForbidNegativeLengths))
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_cx);
     addToPropertyMap(m_cy);
     addToPropertyMap(m_rx);
@@ -105,4 +103,4 @@ RenderObject* SVGEllipseElement::createRenderer(RenderStyle*)
     return new RenderSVGEllipse(this);
 }
 
-}
+} // namespace blink

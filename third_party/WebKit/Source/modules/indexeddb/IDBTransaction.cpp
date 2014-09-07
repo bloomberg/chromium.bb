@@ -71,7 +71,6 @@ IDBTransaction::IDBTransaction(ExecutionContext* context, int64_t id, const Vect
     , m_contextStopped(false)
     , m_previousMetadata(previousMetadata)
 {
-    ScriptWrappable::init(this);
     if (mode == WebIDBTransactionModeVersionChange) {
         // Not active until the callback.
         m_state = Inactive;

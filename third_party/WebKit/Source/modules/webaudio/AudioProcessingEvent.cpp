@@ -42,7 +42,6 @@ PassRefPtrWillBeRawPtr<AudioProcessingEvent> AudioProcessingEvent::create(AudioB
 
 AudioProcessingEvent::AudioProcessingEvent()
 {
-    ScriptWrappable::init(this);
 }
 
 AudioProcessingEvent::AudioProcessingEvent(AudioBuffer* inputBuffer, AudioBuffer* outputBuffer, double playbackTime)
@@ -51,7 +50,6 @@ AudioProcessingEvent::AudioProcessingEvent(AudioBuffer* inputBuffer, AudioBuffer
     , m_outputBuffer(outputBuffer)
     , m_playbackTime(playbackTime)
 {
-    ScriptWrappable::init(this);
 }
 
 AudioProcessingEvent::~AudioProcessingEvent()

@@ -50,7 +50,6 @@ VideoPlaybackQuality::VideoPlaybackQuality(
     , m_droppedVideoFrames(droppedVideoFrames)
     , m_corruptedVideoFrames(corruptedVideoFrames)
 {
-    ScriptWrappable::init(this);
     if (document.domWindow())
         m_creationTime = document.domWindow()->performance().now();
 }

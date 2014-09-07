@@ -41,7 +41,6 @@ using namespace HTMLNames;
 HTMLMeterElement::HTMLMeterElement(Document& document)
     : LabelableElement(meterTag, document)
 {
-    ScriptWrappable::init(this);
     UseCounter::count(document, UseCounter::MeterElement);
 }
 

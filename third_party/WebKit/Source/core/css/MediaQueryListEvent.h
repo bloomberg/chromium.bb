@@ -53,34 +53,22 @@ public:
 
 private:
     MediaQueryListEvent()
-        : m_matches(false)
-    {
-        ScriptWrappable::init(this);
-    }
+        : m_matches(false) { }
 
     MediaQueryListEvent(const String& media, bool matches)
         : Event(EventTypeNames::change, false, false)
         , m_media(media)
-        , m_matches(matches)
-    {
-        ScriptWrappable::init(this);
-    }
+        , m_matches(matches) { }
 
     explicit MediaQueryListEvent(PassRefPtrWillBeRawPtr<MediaQueryList> list)
         : Event(EventTypeNames::change, false, false)
         , m_mediaQueryList(list)
-        , m_matches(false)
-    {
-        ScriptWrappable::init(this);
-    }
+        , m_matches(false) { }
 
     MediaQueryListEvent(const AtomicString& eventType, const MediaQueryListEventInit& initializer)
         : Event(eventType, initializer)
         , m_media(initializer.media)
-        , m_matches(initializer.matches)
-    {
-        ScriptWrappable::init(this);
-    }
+        , m_matches(initializer.matches) { }
 
     // We have m_media/m_matches for JS-created events; we use m_mediaQueryList
     // for events that blink generates.

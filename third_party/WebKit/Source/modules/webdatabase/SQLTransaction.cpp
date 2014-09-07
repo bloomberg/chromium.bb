@@ -66,7 +66,6 @@ SQLTransaction::SQLTransaction(Database* db, PassOwnPtrWillBeRawPtr<SQLTransacti
     , m_readOnly(readOnly)
 {
     ASSERT(m_database);
-    ScriptWrappable::init(this);
 }
 
 void SQLTransaction::trace(Visitor* visitor)

@@ -62,7 +62,6 @@ SharedWorkerGlobalScope::SharedWorkerGlobalScope(const String& name, const KURL&
     : WorkerGlobalScope(url, userAgent, thread, monotonicallyIncreasingTime(), workerClients)
     , m_name(name)
 {
-    ScriptWrappable::init(this);
 }
 
 SharedWorkerGlobalScope::~SharedWorkerGlobalScope()

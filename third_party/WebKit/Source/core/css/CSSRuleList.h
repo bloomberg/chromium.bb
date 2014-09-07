@@ -53,7 +53,7 @@ public:
     virtual void trace(Visitor*) { }
 
 protected:
-    CSSRuleList();
+    CSSRuleList() { }
 };
 
 class StaticCSSRuleList FINAL : public CSSRuleList {

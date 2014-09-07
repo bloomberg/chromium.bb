@@ -117,8 +117,6 @@ AudioContext::AudioContext(Document* document)
     , m_graphOwnerThread(UndefinedThreadIdentifier)
     , m_isOfflineContext(false)
 {
-    ScriptWrappable::init(this);
-
     m_destinationNode = DefaultAudioDestinationNode::create(this);
 
     initialize();
@@ -140,8 +138,6 @@ AudioContext::AudioContext(Document* document, unsigned numberOfChannels, size_t
     , m_graphOwnerThread(UndefinedThreadIdentifier)
     , m_isOfflineContext(true)
 {
-    ScriptWrappable::init(this);
-
     // Create a new destination for offline rendering.
     m_renderTarget = AudioBuffer::create(numberOfChannels, numberOfFrames, sampleRate);
     if (m_renderTarget.get())

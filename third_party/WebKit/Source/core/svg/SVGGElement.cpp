@@ -32,7 +32,6 @@ namespace blink {
 inline SVGGElement::SVGGElement(Document& document, ConstructionType constructionType)
     : SVGGraphicsElement(SVGNames::gTag, document, constructionType)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(SVGGElement)

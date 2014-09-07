@@ -45,7 +45,6 @@ SpeechRecognitionResult* SpeechRecognitionResultList::item(unsigned long index)
 SpeechRecognitionResultList::SpeechRecognitionResultList(const HeapVector<Member<SpeechRecognitionResult> >& results)
     : m_results(results)
 {
-    ScriptWrappable::init(this);
 }
 
 void SpeechRecognitionResultList::trace(Visitor* visitor)

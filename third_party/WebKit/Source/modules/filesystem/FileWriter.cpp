@@ -65,7 +65,6 @@ FileWriter::FileWriter(ExecutionContext* context)
     , m_lastProgressNotificationTimeMS(0)
     , m_asyncOperationId(0)
 {
-    ScriptWrappable::init(this);
 }
 
 FileWriter::~FileWriter()

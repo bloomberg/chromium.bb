@@ -42,8 +42,6 @@ inline SVGFilterElement::SVGFilterElement(Document& document)
     , m_primitiveUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(this, SVGNames::primitiveUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE))
     , m_filterRes(SVGAnimatedIntegerOptionalInteger::create(this, SVGNames::filterResAttr))
 {
-    ScriptWrappable::init(this);
-
     // Spec: If the x/y attribute is not specified, the effect is as if a value of "-10%" were specified.
     // Spec: If the width/height attribute is not specified, the effect is as if a value of "120%" were specified.
     m_x->setDefaultValueAsString("-10%");
@@ -163,4 +161,4 @@ void SVGFilterElement::removeClient(Node* client)
     m_clientsToAdd.remove(client);
 }
 
-}
+} // namespace blink

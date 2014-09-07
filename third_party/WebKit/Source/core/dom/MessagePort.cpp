@@ -55,7 +55,6 @@ MessagePort::MessagePort(ExecutionContext& executionContext)
     , m_closed(false)
     , m_weakFactory(this)
 {
-    ScriptWrappable::init(this);
 }
 
 MessagePort::~MessagePort()

@@ -38,7 +38,6 @@ namespace blink {
 inline SVGDiscardElement::SVGDiscardElement(Document& document)
     : SVGSMILElement(SVGNames::discardTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(SVGDiscardElement)

@@ -40,7 +40,6 @@ PassRefPtrWillBeRawPtr<HTMLAllCollection> HTMLAllCollection::create(ContainerNod
 HTMLAllCollection::HTMLAllCollection(ContainerNode& node)
     : HTMLCollection(node, DocAll, DoesNotOverrideItemAfter)
 {
-    ScriptWrappable::init(this);
 }
 
 HTMLAllCollection::~HTMLAllCollection()

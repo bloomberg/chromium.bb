@@ -52,7 +52,6 @@ inline HTMLObjectElement::HTMLObjectElement(Document& document, HTMLFormElement*
     : HTMLPlugInElement(objectTag, document, createdByParser, ShouldNotPreferPlugInsForImages)
     , m_useFallbackContent(false)
 {
-    ScriptWrappable::init(this);
     associateByParser(form);
 }
 

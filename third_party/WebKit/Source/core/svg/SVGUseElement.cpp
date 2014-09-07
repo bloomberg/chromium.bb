@@ -56,7 +56,6 @@ inline SVGUseElement::SVGUseElement(Document& document)
     , m_svgLoadEventTimer(this, &SVGElement::svgLoadEventTimerFired)
 {
     ASSERT(hasCustomStyleCallbacks());
-    ScriptWrappable::init(this);
 
     addToPropertyMap(m_x);
     addToPropertyMap(m_y);

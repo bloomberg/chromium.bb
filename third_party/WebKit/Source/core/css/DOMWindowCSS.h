@@ -49,10 +49,7 @@ public:
     void trace(Visitor*) { }
 
 private:
-    DOMWindowCSS()
-    {
-        ScriptWrappable::init(this);
-    }
+    DOMWindowCSS() { }
 };
 
 } // namespace blink

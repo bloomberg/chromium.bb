@@ -38,10 +38,7 @@ class StyleSheet;
 class StyleSheet : public RefCountedWillBeGarbageCollectedFinalized<StyleSheet>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    StyleSheet()
-    {
-        ScriptWrappable::init(this);
-    }
+    StyleSheet() { }
     virtual ~StyleSheet();
 
     virtual bool disabled() const = 0;

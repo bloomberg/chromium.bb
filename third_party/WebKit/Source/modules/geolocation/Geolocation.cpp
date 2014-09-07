@@ -87,7 +87,6 @@ Geolocation::Geolocation(ExecutionContext* context)
     : ActiveDOMObject(context)
     , m_geolocationPermission(PermissionUnknown)
 {
-    ScriptWrappable::init(this);
 }
 
 Geolocation::~Geolocation()

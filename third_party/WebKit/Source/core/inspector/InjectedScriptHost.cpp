@@ -52,7 +52,6 @@ InjectedScriptHost::InjectedScriptHost()
     : m_instrumentingAgents(nullptr)
     , m_scriptDebugServer(0)
 {
-    ScriptWrappable::init(this);
     m_defaultInspectableObject = adoptPtr(new InspectableObject());
 }
 

@@ -512,7 +512,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_styleRecalcElementCounter(0)
 {
     setClient(this);
-    ScriptWrappable::init(this);
 
     if (m_frame) {
         ASSERT(m_frame->page());

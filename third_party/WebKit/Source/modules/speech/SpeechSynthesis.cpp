@@ -44,7 +44,6 @@ SpeechSynthesis::SpeechSynthesis(ExecutionContext* context)
     , m_platformSpeechSynthesizer(PlatformSpeechSynthesizer::create(this))
     , m_isPaused(false)
 {
-    ScriptWrappable::init(this);
 }
 
 void SpeechSynthesis::setPlatformSynthesizer(PlatformSpeechSynthesizer* synthesizer)

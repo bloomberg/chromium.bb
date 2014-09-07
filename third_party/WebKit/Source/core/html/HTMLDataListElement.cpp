@@ -43,7 +43,6 @@ namespace blink {
 inline HTMLDataListElement::HTMLDataListElement(Document& document)
     : HTMLElement(HTMLNames::datalistTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<HTMLDataListElement> HTMLDataListElement::create(Document& document)

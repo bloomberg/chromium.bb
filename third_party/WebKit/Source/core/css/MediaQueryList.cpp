@@ -42,7 +42,6 @@ MediaQueryList::MediaQueryList(ExecutionContext* context, PassRefPtrWillBeRawPtr
     , m_matchesDirty(true)
     , m_matches(false)
 {
-    ScriptWrappable::init(this);
     m_matcher->addMediaQueryList(this);
     updateMatches();
 }

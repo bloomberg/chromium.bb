@@ -43,7 +43,6 @@ namespace blink {
 WorkerConsole::WorkerConsole(WorkerGlobalScope* scope)
     : m_scope(scope)
 {
-    ScriptWrappable::init(this);
 }
 
 WorkerConsole::~WorkerConsole()

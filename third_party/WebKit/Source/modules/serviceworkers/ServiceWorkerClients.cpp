@@ -50,7 +50,6 @@ ServiceWorkerClients* ServiceWorkerClients::create()
 
 ServiceWorkerClients::ServiceWorkerClients()
 {
-    ScriptWrappable::init(this);
 }
 
 ScriptPromise ServiceWorkerClients::getAll(ScriptState* scriptState, const Dictionary& options)

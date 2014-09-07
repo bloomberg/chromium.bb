@@ -48,10 +48,7 @@ public:
 
 private:
     SVGPointListTearOff(PassRefPtr<SVGPointList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
-        : SVGListPropertyTearOffHelper<SVGPointListTearOff, SVGPointList>(target, contextElement, propertyIsAnimVal, attributeName)
-    {
-        ScriptWrappable::init(this);
-    }
+        : SVGListPropertyTearOffHelper<SVGPointListTearOff, SVGPointList>(target, contextElement, propertyIsAnimVal, attributeName) { }
 };
 
 } // namespace blink

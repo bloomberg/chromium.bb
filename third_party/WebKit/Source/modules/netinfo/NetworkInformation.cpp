@@ -146,7 +146,6 @@ NetworkInformation::NetworkInformation(ExecutionContext* context)
     , m_observing(false)
     , m_contextStopped(false)
 {
-    ScriptWrappable::init(this);
 }
 
 } // namespace blink

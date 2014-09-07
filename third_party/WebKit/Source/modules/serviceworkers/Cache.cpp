@@ -115,7 +115,6 @@ PassRefPtrWillBeRawPtr<DOMException> Cache::domExceptionForCacheError(WebService
 
 Cache::Cache(WebServiceWorkerCache* webCache) : m_webCache(webCache)
 {
-    ScriptWrappable::init(this);
 }
 
 } // namespace blink

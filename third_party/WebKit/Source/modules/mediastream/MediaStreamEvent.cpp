@@ -49,21 +49,18 @@ PassRefPtrWillBeRawPtr<MediaStreamEvent> MediaStreamEvent::create(const AtomicSt
 
 MediaStreamEvent::MediaStreamEvent()
 {
-    ScriptWrappable::init(this);
 }
 
 MediaStreamEvent::MediaStreamEvent(const AtomicString& type, bool canBubble, bool cancelable, MediaStream* stream)
     : Event(type, canBubble, cancelable)
     , m_stream(stream)
 {
-    ScriptWrappable::init(this);
 }
 
 MediaStreamEvent::MediaStreamEvent(const AtomicString& type, const MediaStreamEventInit& initializer)
     : Event(type, initializer)
     , m_stream(initializer.stream)
 {
-    ScriptWrappable::init(this);
 }
 
 MediaStreamEvent::~MediaStreamEvent()

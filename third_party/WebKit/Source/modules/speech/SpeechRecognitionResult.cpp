@@ -46,7 +46,6 @@ SpeechRecognitionResult::SpeechRecognitionResult(const HeapVector<Member<SpeechR
     : m_final(final)
     , m_alternatives(alternatives)
 {
-    ScriptWrappable::init(this);
 }
 
 void SpeechRecognitionResult::trace(Visitor* visitor)

@@ -79,7 +79,6 @@ HTMLFormElement::HTMLFormElement(Document& document)
     , m_wasDemoted(false)
     , m_pendingAutocompleteEventsQueue(GenericEventQueue::create(this))
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<HTMLFormElement> HTMLFormElement::create(Document& document)

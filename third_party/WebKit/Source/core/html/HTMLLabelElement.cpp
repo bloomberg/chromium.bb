@@ -40,7 +40,6 @@ using namespace HTMLNames;
 inline HTMLLabelElement::HTMLLabelElement(Document& document)
     : HTMLElement(labelTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLLabelElement)

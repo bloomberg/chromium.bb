@@ -47,7 +47,6 @@ SQLTransactionSync::SQLTransactionSync(DatabaseSync* db, PassOwnPtrWillBeRawPtr<
     : SQLTransactionBackendSync(db, callback, readOnly)
 {
     ASSERT(m_database->executionContext()->isContextThread());
-    ScriptWrappable::init(this);
     db->observeTransaction(*this);
 }
 

@@ -60,10 +60,7 @@ public:
     void trace(Visitor*) { }
 
 private:
-    DOMStringList()
-    {
-        ScriptWrappable::init(this);
-    }
+    DOMStringList() { }
 
     Vector<String> m_strings;
 };

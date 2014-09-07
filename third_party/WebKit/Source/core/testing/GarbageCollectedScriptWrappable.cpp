@@ -10,7 +10,6 @@ namespace blink {
 GarbageCollectedScriptWrappable::GarbageCollectedScriptWrappable(const String& string)
     : m_string(string)
 {
-    ScriptWrappable::init(this);
 }
 
 GarbageCollectedScriptWrappable::~GarbageCollectedScriptWrappable()

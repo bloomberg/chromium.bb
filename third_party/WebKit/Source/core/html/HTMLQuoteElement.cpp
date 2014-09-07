@@ -34,7 +34,6 @@ inline HTMLQuoteElement::HTMLQuoteElement(const QualifiedName& tagName, Document
     : HTMLElement(tagName, document)
 {
     ASSERT(hasTagName(qTag) || hasTagName(blockquoteTag));
-    ScriptWrappable::init(this);
 }
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLQuoteElement)

@@ -197,7 +197,6 @@ Response::Response()
     , m_headers(Headers::create(m_response->headerList()))
 {
     m_headers->setGuard(Headers::ResponseGuard);
-    ScriptWrappable::init(this);
 }
 
 Response::Response(FetchResponseData* response)
@@ -205,7 +204,6 @@ Response::Response(FetchResponseData* response)
     , m_headers(Headers::create(m_response->headerList()))
 {
     m_headers->setGuard(Headers::ResponseGuard);
-    ScriptWrappable::init(this);
 }
 
 // FIXME: Handle response body data.
@@ -214,7 +212,6 @@ Response::Response(const WebServiceWorkerResponse& webResponse)
     , m_headers(createHeadersFromWebResponse(webResponse))
 {
     m_headers->setGuard(Headers::ResponseGuard);
-    ScriptWrappable::init(this);
 }
 
 void Response::trace(Visitor* visitor)

@@ -34,8 +34,6 @@ inline SVGFEGaussianBlurElement::SVGFEGaussianBlurElement(Document& document)
     , m_stdDeviation(SVGAnimatedNumberOptionalNumber::create(this, SVGNames::stdDeviationAttr, 0, 0))
     , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_stdDeviation);
     addToPropertyMap(m_in1);
 }
@@ -96,4 +94,4 @@ PassRefPtr<FilterEffect> SVGFEGaussianBlurElement::build(SVGFilterBuilder* filte
     return effect.release();
 }
 
-}
+} // namespace blink

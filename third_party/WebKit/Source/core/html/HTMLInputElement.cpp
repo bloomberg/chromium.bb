@@ -129,7 +129,6 @@ HTMLInputElement::HTMLInputElement(Document& document, HTMLFormElement* form, bo
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     setHasCustomStyleCallbacks();
 #endif
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<HTMLInputElement> HTMLInputElement::create(Document& document, HTMLFormElement* form, bool createdByParser)

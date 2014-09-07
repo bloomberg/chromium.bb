@@ -29,7 +29,6 @@ namespace blink {
 inline SVGFontFaceNameElement::SVGFontFaceNameElement(Document& document)
     : SVGElement(SVGNames::font_face_nameTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(SVGFontFaceNameElement)

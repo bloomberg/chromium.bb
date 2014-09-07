@@ -49,10 +49,8 @@ public:
     }
 
 private:
-    PerformanceMark(const String& name, double startTime) : PerformanceEntry(name, "mark", startTime, startTime)
-    {
-        ScriptWrappable::init(this);
-    }
+    PerformanceMark(const String& name, double startTime)
+        : PerformanceEntry(name, "mark", startTime, startTime) { }
 
     virtual ~PerformanceMark() { }
 };

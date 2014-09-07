@@ -143,7 +143,6 @@ Element::Element(const QualifiedName& tagName, Document* document, ConstructionT
     : ContainerNode(document, type)
     , m_tagName(tagName)
 {
-    ScriptWrappable::init(this);
 }
 
 Element::~Element()

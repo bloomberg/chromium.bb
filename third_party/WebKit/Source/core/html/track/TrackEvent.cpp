@@ -36,14 +36,12 @@ TrackEventInit::TrackEventInit()
 
 TrackEvent::TrackEvent()
 {
-    ScriptWrappable::init(this);
 }
 
 TrackEvent::TrackEvent(const AtomicString& type, const TrackEventInit& initializer)
     : Event(type, initializer)
     , m_track(initializer.track)
 {
-    ScriptWrappable::init(this);
 }
 
 TrackEvent::~TrackEvent()

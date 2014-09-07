@@ -45,7 +45,6 @@ using namespace HTMLNames;
 inline HTMLBodyElement::HTMLBodyElement(Document& document)
     : HTMLElement(bodyTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLBodyElement)

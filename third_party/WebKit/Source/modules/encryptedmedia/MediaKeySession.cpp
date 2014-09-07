@@ -320,7 +320,6 @@ MediaKeySession::MediaKeySession(ExecutionContext* context, MediaKeys* keys, Pas
     , m_actionTimer(this, &MediaKeySession::actionTimerFired)
 {
     WTF_LOG(Media, "MediaKeySession(%p)::MediaKeySession", this);
-    ScriptWrappable::init(this);
     m_session->setClientInterface(this);
 
     // Resume MediaKeys::createSession() at step 7.6.

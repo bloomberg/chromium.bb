@@ -33,7 +33,6 @@ inline SVGAnimateTransformElement::SVGAnimateTransformElement(Document& document
     : SVGAnimateElement(SVGNames::animateTransformTag, document)
     , m_type(SVG_TRANSFORM_UNKNOWN)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(SVGAnimateTransformElement)

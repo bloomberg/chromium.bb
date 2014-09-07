@@ -60,7 +60,6 @@ inline HTMLTableElement::HTMLTableElement(Document& document)
     , m_rulesAttr(UnsetRules)
     , m_padding(1)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLTableElement)

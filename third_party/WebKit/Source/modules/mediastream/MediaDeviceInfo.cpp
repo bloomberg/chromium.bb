@@ -39,7 +39,6 @@ MediaDeviceInfo* MediaDeviceInfo::create(const WebMediaDeviceInfo& webMediaDevic
 MediaDeviceInfo::MediaDeviceInfo(const WebMediaDeviceInfo& webMediaDeviceInfo)
     : m_webMediaDeviceInfo(webMediaDeviceInfo)
 {
-    ScriptWrappable::init(this);
 }
 
 String MediaDeviceInfo::deviceId() const

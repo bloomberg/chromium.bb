@@ -54,7 +54,6 @@ Touch::Touch(LocalFrame* frame, EventTarget* target, unsigned identifier, const 
     , m_rotationAngle(rotationAngle)
     , m_force(force)
 {
-    ScriptWrappable::init(this);
     float scaleFactor = frame ? frame->pageZoomFactor() : 1.0f;
     m_absoluteLocation = roundedLayoutPoint(pagePos.scaledBy(scaleFactor));
 }
@@ -70,7 +69,6 @@ Touch::Touch(EventTarget* target, unsigned identifier, const FloatPoint& clientP
     , m_force(force)
     , m_absoluteLocation(absoluteLocation)
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<Touch> Touch::cloneWithNewTarget(EventTarget* eventTarget) const

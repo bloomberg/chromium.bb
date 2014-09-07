@@ -31,7 +31,6 @@ CircularRegion::CircularRegion(const CircularRegionInit& init)
     , m_longitude(init.longitude)
     , m_radius(init.radius)
 {
-    ScriptWrappable::init(this);
 }
 
 } // namespace blink

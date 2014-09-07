@@ -65,7 +65,6 @@ SVGElement::SVGElement(const QualifiedName& tagName, Document& document, Constru
     , m_SVGRareData(nullptr)
     , m_className(SVGAnimatedString::create(this, HTMLNames::classAttr, SVGString::create()))
 {
-    ScriptWrappable::init(this);
     addToPropertyMap(m_className);
     setHasCustomStyleCallbacks();
 }

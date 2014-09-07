@@ -39,7 +39,6 @@ using namespace HTMLNames;
 inline HTMLMapElement::HTMLMapElement(Document& document)
     : HTMLElement(mapTag, document)
 {
-    ScriptWrappable::init(this);
     UseCounter::count(document, UseCounter::MapElement);
 }
 

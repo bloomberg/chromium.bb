@@ -41,14 +41,12 @@ SVGMatrixTearOff::SVGMatrixTearOff(const AffineTransform& staticValue)
     : m_staticValue(staticValue)
     , m_contextTransform(0)
 {
-    ScriptWrappable::init(this);
 }
 
 SVGMatrixTearOff::SVGMatrixTearOff(SVGTransformTearOff* transform)
     : m_contextTransform(transform)
 {
     ASSERT(transform);
-    ScriptWrappable::init(this);
 }
 
 SVGMatrixTearOff::~SVGMatrixTearOff()

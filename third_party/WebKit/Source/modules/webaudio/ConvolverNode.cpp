@@ -51,7 +51,6 @@ ConvolverNode::ConvolverNode(AudioContext* context, float sampleRate)
     : AudioNode(context, sampleRate)
     , m_normalize(true)
 {
-    ScriptWrappable::init(this);
     addInput();
     addOutput(AudioNodeOutput::create(this, 2));
 

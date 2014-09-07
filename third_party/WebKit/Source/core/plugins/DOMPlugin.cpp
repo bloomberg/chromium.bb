@@ -29,7 +29,6 @@ DOMPlugin::DOMPlugin(PluginData* pluginData, LocalFrame* frame, unsigned index)
     , m_pluginData(pluginData)
     , m_index(index)
 {
-    ScriptWrappable::init(this);
 }
 
 DOMPlugin::~DOMPlugin()

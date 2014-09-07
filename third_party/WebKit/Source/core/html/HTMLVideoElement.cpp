@@ -52,7 +52,6 @@ using namespace HTMLNames;
 inline HTMLVideoElement::HTMLVideoElement(Document& document)
     : HTMLMediaElement(videoTag, document)
 {
-    ScriptWrappable::init(this);
     if (document.settings())
         m_defaultPosterURL = AtomicString(document.settings()->defaultVideoPosterURL());
 }

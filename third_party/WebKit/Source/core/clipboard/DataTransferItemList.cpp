@@ -102,7 +102,6 @@ DataTransferItemList::DataTransferItemList(PassRefPtrWillBeRawPtr<DataTransfer> 
     : m_dataTransfer(dataTransfer)
     , m_dataObject(dataObject)
 {
-    ScriptWrappable::init(this);
 }
 
 void DataTransferItemList::trace(Visitor* visitor)

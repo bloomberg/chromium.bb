@@ -41,7 +41,6 @@ PassRefPtrWillBeRawPtr<StorageEvent> StorageEvent::create()
 
 StorageEvent::StorageEvent()
 {
-    ScriptWrappable::init(this);
 }
 
 StorageEvent::~StorageEvent()
@@ -66,7 +65,6 @@ StorageEvent::StorageEvent(const AtomicString& type, const String& key, const St
     , m_url(url)
     , m_storageArea(storageArea)
 {
-    ScriptWrappable::init(this);
 }
 
 StorageEvent::StorageEvent(const AtomicString& type, const StorageEventInit& initializer)
@@ -77,7 +75,6 @@ StorageEvent::StorageEvent(const AtomicString& type, const StorageEventInit& ini
     , m_url(initializer.url)
     , m_storageArea(initializer.storageArea)
 {
-    ScriptWrappable::init(this);
 }
 
 void StorageEvent::initStorageEvent(const AtomicString& type, bool canBubble, bool cancelable, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea)

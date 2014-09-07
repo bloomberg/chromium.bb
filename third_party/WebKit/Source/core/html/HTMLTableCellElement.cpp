@@ -50,7 +50,6 @@ using namespace HTMLNames;
 inline HTMLTableCellElement::HTMLTableCellElement(const QualifiedName& tagName, Document& document)
     : HTMLTablePartElement(tagName, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableCellElement)

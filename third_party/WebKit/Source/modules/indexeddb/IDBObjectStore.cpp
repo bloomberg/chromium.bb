@@ -61,7 +61,6 @@ IDBObjectStore::IDBObjectStore(const IDBObjectStoreMetadata& metadata, IDBTransa
     , m_deleted(false)
 {
     ASSERT(m_transaction);
-    ScriptWrappable::init(this);
 }
 
 void IDBObjectStore::trace(Visitor* visitor)

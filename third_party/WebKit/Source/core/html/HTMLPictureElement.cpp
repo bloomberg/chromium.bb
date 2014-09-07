@@ -18,7 +18,6 @@ using namespace HTMLNames;
 inline HTMLPictureElement::HTMLPictureElement(Document& document)
     : HTMLElement(pictureTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLPictureElement)

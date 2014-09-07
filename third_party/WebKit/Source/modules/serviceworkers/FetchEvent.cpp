@@ -49,7 +49,6 @@ void FetchEvent::setIsReload(bool isReload)
 FetchEvent::FetchEvent()
     : m_isReload(false)
 {
-    ScriptWrappable::init(this);
 }
 
 FetchEvent::FetchEvent(RespondWithObserver* observer, Request* request)
@@ -58,7 +57,6 @@ FetchEvent::FetchEvent(RespondWithObserver* observer, Request* request)
     , m_request(request)
     , m_isReload(false)
 {
-    ScriptWrappable::init(this);
 }
 
 void FetchEvent::trace(Visitor* visitor)

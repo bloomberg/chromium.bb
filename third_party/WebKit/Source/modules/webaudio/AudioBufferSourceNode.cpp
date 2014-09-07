@@ -63,7 +63,6 @@ AudioBufferSourceNode::AudioBufferSourceNode(AudioContext* context, float sample
     , m_grainOffset(0.0)
     , m_grainDuration(DefaultGrainDuration)
 {
-    ScriptWrappable::init(this);
     setNodeType(NodeTypeAudioBufferSource);
 
     m_playbackRate = AudioParam::create(context, 1.0);

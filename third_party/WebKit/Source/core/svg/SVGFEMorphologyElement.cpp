@@ -44,8 +44,6 @@ inline SVGFEMorphologyElement::SVGFEMorphologyElement(Document& document)
     , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
     , m_svgOperator(SVGAnimatedEnumeration<MorphologyOperatorType>::create(this, SVGNames::operatorAttr, FEMORPHOLOGY_OPERATOR_ERODE))
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_radius);
     addToPropertyMap(m_in1);
     addToPropertyMap(m_svgOperator);

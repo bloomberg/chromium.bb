@@ -42,7 +42,6 @@ inline HTMLScriptElement::HTMLScriptElement(Document& document, bool wasInserted
     : HTMLElement(scriptTag, document)
     , m_loader(ScriptLoader::create(this, wasInsertedByParser, alreadyStarted))
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<HTMLScriptElement> HTMLScriptElement::create(Document& document, bool wasInsertedByParser, bool alreadyStarted)

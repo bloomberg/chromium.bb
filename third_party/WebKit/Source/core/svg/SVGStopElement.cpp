@@ -31,8 +31,6 @@ inline SVGStopElement::SVGStopElement(Document& document)
     : SVGElement(SVGNames::stopTag, document)
     , m_offset(SVGAnimatedNumber::create(this, SVGNames::offsetAttr, SVGNumberAcceptPercentage::create()))
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_offset);
 }
 
@@ -106,4 +104,4 @@ Color SVGStopElement::stopColorIncludingOpacity() const
     return svgStyle.stopColor().combineWithAlpha(svgStyle.stopOpacity());
 }
 
-}
+} // namespace blink

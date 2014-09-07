@@ -88,7 +88,6 @@ EntrySync* EntrySync::getParent() const
 EntrySync::EntrySync(DOMFileSystemBase* fileSystem, const String& fullPath)
     : EntryBase(fileSystem, fullPath)
 {
-    ScriptWrappable::init(this);
 }
 
 void EntrySync::trace(Visitor* visitor)

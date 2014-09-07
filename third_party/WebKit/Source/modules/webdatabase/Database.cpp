@@ -71,7 +71,6 @@ Database::Database(DatabaseContext* databaseContext,
     , DatabaseBase(databaseContext->executionContext())
     , m_databaseContext(DatabaseBackend::databaseContext())
 {
-    ScriptWrappable::init(this);
     m_databaseThreadSecurityOrigin = m_contextThreadSecurityOrigin->isolatedCopy();
     setFrontend(this);
 

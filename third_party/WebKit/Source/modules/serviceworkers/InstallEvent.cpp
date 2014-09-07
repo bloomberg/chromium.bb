@@ -70,13 +70,11 @@ const AtomicString& InstallEvent::interfaceName() const
 
 InstallEvent::InstallEvent()
 {
-    ScriptWrappable::init(this);
 }
 
 InstallEvent::InstallEvent(const AtomicString& type, const EventInit& initializer, WaitUntilObserver* observer)
     : InstallPhaseEvent(type, initializer, observer)
 {
-    ScriptWrappable::init(this);
 }
 
 void InstallEvent::trace(Visitor* visitor)

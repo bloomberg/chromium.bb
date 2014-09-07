@@ -36,7 +36,6 @@ using namespace HTMLNames;
 inline HTMLHRElement::HTMLHRElement(Document& document)
     : HTMLElement(hrTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLHRElement)

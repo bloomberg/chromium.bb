@@ -22,7 +22,6 @@ FederatedCredential* FederatedCredential::create(const String& id, const String&
 FederatedCredential::FederatedCredential(const String& id, const String& name, const KURL& avatar, const KURL& federation)
     : Credential(PlatformFederatedCredential::create(id, name, avatar, federation))
 {
-    ScriptWrappable::init(this);
 }
 
 const KURL& FederatedCredential::federation() const

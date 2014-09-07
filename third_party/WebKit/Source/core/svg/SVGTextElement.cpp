@@ -30,7 +30,6 @@ namespace blink {
 inline SVGTextElement::SVGTextElement(Document& doc)
     : SVGTextPositioningElement(SVGNames::textTag, doc)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(SVGTextElement)

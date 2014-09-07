@@ -145,7 +145,6 @@ InternalSettings::InternalSettings(Page& page)
     , m_page(&page)
     , m_backup(&page.settings())
 {
-    ScriptWrappable::init(this);
 }
 
 void InternalSettings::resetToConsistentState()

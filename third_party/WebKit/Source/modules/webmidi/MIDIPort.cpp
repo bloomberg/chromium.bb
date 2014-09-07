@@ -45,7 +45,6 @@ MIDIPort::MIDIPort(MIDIAccess* access, const String& id, const String& manufactu
 {
     ASSERT(access);
     ASSERT(type == MIDIPortTypeInput || type == MIDIPortTypeOutput);
-    ScriptWrappable::init(this);
 }
 
 String MIDIPort::type() const

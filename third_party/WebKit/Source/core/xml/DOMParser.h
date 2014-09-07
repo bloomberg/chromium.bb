@@ -43,10 +43,7 @@ public:
     void trace(Visitor*) { }
 
 private:
-    DOMParser()
-    {
-        ScriptWrappable::init(this);
-    }
+    DOMParser() { }
 };
 
 } // namespace blink

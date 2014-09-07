@@ -62,10 +62,8 @@ public:
     bool valid() const;
 
 private:
-    explicit ValidityState(FormAssociatedElement* control) : m_control(control)
-    {
-        ScriptWrappable::init(this);
-    }
+    explicit ValidityState(FormAssociatedElement* control)
+        : m_control(control) { }
 
     RawPtrWillBeMember<FormAssociatedElement> m_control;
 };

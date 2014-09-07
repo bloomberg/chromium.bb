@@ -36,10 +36,7 @@ public:
 
 private:
     SVGPathSegLinetoHorizontalRel(SVGPathElement* element, float x)
-        : SVGPathSegLinetoHorizontal(element, x)
-    {
-        ScriptWrappable::init(this);
-    }
+        : SVGPathSegLinetoHorizontal(element, x) { }
 
     virtual unsigned short pathSegType() const OVERRIDE { return PATHSEG_LINETO_HORIZONTAL_REL; }
     virtual String pathSegTypeAsLetter() const OVERRIDE { return "h"; }

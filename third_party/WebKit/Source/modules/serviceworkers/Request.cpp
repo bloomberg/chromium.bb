@@ -217,7 +217,6 @@ Request::Request(FetchRequestData* request)
     , m_headers(Headers::create(m_request->headerList()))
 {
     m_headers->setGuard(Headers::RequestGuard);
-    ScriptWrappable::init(this);
 }
 
 Request* Request::create(const WebServiceWorkerRequest& webRequest)
@@ -230,7 +229,6 @@ Request::Request(const WebServiceWorkerRequest& webRequest)
     , m_headers(Headers::create(m_request->headerList()))
 {
     m_headers->setGuard(Headers::RequestGuard);
-    ScriptWrappable::init(this);
 }
 
 String Request::method() const

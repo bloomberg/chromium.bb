@@ -51,7 +51,6 @@ MessageChannel::MessageChannel(ExecutionContext* context)
     : m_port1(MessagePort::create(*context))
     , m_port2(MessagePort::create(*context))
 {
-    ScriptWrappable::init(this);
     createChannel(m_port1.get(), m_port2.get());
 }
 

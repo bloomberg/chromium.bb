@@ -38,7 +38,6 @@ XMLHttpRequestUpload::XMLHttpRequestUpload(XMLHttpRequest* xmlHttpRequest)
     , m_lastBytesSent(0)
     , m_lastTotalBytesToBeSent(0)
 {
-    ScriptWrappable::init(this);
 }
 
 const AtomicString& XMLHttpRequestUpload::interfaceName() const

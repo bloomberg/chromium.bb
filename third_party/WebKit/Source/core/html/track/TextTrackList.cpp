@@ -40,7 +40,6 @@ TextTrackList::TextTrackList(HTMLMediaElement* owner)
     : m_owner(owner)
     , m_asyncEventQueue(GenericEventQueue::create(this))
 {
-    ScriptWrappable::init(this);
 }
 
 TextTrackList::~TextTrackList()

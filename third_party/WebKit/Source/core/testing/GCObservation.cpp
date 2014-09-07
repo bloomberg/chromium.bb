@@ -49,7 +49,6 @@ GCObservation::GCObservation(v8::Handle<v8::Value> observedValue)
     : m_observed(v8::Isolate::GetCurrent(), observedValue)
     , m_collected(false)
 {
-    ScriptWrappable::init(this);
     m_observed.setWeak(this, setWeakCallbackForGCObservation);
 }
 

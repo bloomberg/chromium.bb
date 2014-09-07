@@ -33,7 +33,6 @@ namespace blink {
 inline SVGGlyphElement::SVGGlyphElement(Document& document)
     : SVGElement(SVGNames::glyphTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(SVGGlyphElement)

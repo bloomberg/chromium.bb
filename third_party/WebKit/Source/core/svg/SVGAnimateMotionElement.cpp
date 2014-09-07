@@ -45,7 +45,6 @@ inline SVGAnimateMotionElement::SVGAnimateMotionElement(Document& document)
     , m_hasToPointAtEndOfDuration(false)
 {
     setCalcMode(CalcModePaced);
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(SVGAnimateMotionElement)

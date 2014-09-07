@@ -37,7 +37,6 @@ using namespace SVGNames;
 inline SVGFontFaceSrcElement::SVGFontFaceSrcElement(Document& document)
     : SVGElement(font_face_srcTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(SVGFontFaceSrcElement)

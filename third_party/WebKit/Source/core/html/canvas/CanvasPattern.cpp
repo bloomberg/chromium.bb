@@ -55,7 +55,6 @@ CanvasPattern::CanvasPattern(PassRefPtr<Image> image, Pattern::RepeatMode repeat
     : m_pattern(Pattern::createBitmapPattern(image, repeat))
     , m_originClean(originClean)
 {
-    ScriptWrappable::init(this);
 }
 
 }

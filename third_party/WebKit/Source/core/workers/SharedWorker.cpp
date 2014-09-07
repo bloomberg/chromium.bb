@@ -52,7 +52,6 @@ inline SharedWorker::SharedWorker(ExecutionContext* context)
     : AbstractWorker(context)
     , m_isBeingConnected(false)
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<SharedWorker> SharedWorker::create(ExecutionContext* context, const String& url, const String& name, ExceptionState& exceptionState)

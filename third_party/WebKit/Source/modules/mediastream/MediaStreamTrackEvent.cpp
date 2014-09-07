@@ -42,14 +42,12 @@ PassRefPtrWillBeRawPtr<MediaStreamTrackEvent> MediaStreamTrackEvent::create(cons
 
 MediaStreamTrackEvent::MediaStreamTrackEvent()
 {
-    ScriptWrappable::init(this);
 }
 
 MediaStreamTrackEvent::MediaStreamTrackEvent(const AtomicString& type, bool canBubble, bool cancelable, MediaStreamTrack* track)
     : Event(type, canBubble, cancelable)
     , m_track(track)
 {
-    ScriptWrappable::init(this);
 }
 
 MediaStreamTrackEvent::~MediaStreamTrackEvent()

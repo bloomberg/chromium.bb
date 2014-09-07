@@ -53,7 +53,6 @@ IDBOpenDBRequest::IDBOpenDBRequest(ScriptState* scriptState, IDBDatabaseCallback
     , m_version(version)
 {
     ASSERT(!resultAsAny());
-    ScriptWrappable::init(this);
 }
 
 IDBOpenDBRequest::~IDBOpenDBRequest()

@@ -31,7 +31,6 @@ namespace blink {
 
 FileList::FileList()
 {
-    ScriptWrappable::init(this);
 }
 
 File* FileList::item(unsigned index) const

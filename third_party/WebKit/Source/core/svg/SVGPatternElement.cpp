@@ -44,8 +44,6 @@ inline SVGPatternElement::SVGPatternElement(Document& document)
     , m_patternUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(this, SVGNames::patternUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX))
     , m_patternContentUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(this, SVGNames::patternContentUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE))
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_x);
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
@@ -217,4 +215,4 @@ bool SVGPatternElement::selfHasRelativeLengths() const
         || m_height->currentValue()->isRelative();
 }
 
-}
+} // namespace blink

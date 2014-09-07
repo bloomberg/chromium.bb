@@ -29,7 +29,6 @@ namespace blink {
 inline Comment::Comment(Document& document, const String& text)
     : CharacterData(document, text, CreateOther)
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<Comment> Comment::create(Document& document, const String& text)

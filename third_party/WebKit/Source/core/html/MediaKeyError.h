@@ -57,10 +57,8 @@ public:
     void trace(Visitor*) { }
 
 private:
-    MediaKeyError(Code code, unsigned long systemCode) : m_code(code), m_systemCode(systemCode)
-    {
-        ScriptWrappable::init(this);
-    }
+    MediaKeyError(Code code, unsigned long systemCode)
+        : m_code(code), m_systemCode(systemCode) { }
 
     Code m_code;
     unsigned long m_systemCode;

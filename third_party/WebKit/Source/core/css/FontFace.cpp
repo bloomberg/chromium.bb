@@ -128,15 +128,12 @@ PassRefPtrWillBeRawPtr<FontFace> FontFace::create(Document* document, const Styl
 FontFace::FontFace()
     : m_status(Unloaded)
 {
-    ScriptWrappable::init(this);
 }
 
 FontFace::FontFace(ExecutionContext* context, const AtomicString& family, const Dictionary& descriptors)
     : m_family(family)
     , m_status(Unloaded)
 {
-    ScriptWrappable::init(this);
-
     Document* document = toDocument(context);
     String value;
     if (DictionaryHelper::get(descriptors, "style", value))

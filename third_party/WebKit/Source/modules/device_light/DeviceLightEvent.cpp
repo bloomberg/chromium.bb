@@ -14,21 +14,18 @@ DeviceLightEvent::~DeviceLightEvent()
 DeviceLightEvent::DeviceLightEvent()
     : m_value(std::numeric_limits<double>::infinity())
 {
-    ScriptWrappable::init(this);
 }
 
 DeviceLightEvent::DeviceLightEvent(const AtomicString& eventType, double value)
     : Event(eventType, true, false) // The DeviceLightEvent bubbles but is not cancelable.
     , m_value(value)
 {
-    ScriptWrappable::init(this);
 }
 
 DeviceLightEvent::DeviceLightEvent(const AtomicString& eventType, const DeviceLightEventInit& initializer)
     : Event(eventType, initializer)
     , m_value(initializer.value)
 {
-    ScriptWrappable::init(this);
 }
 
 const AtomicString& DeviceLightEvent::interfaceName() const

@@ -41,7 +41,6 @@ namespace blink {
 SVGPointTearOff::SVGPointTearOff(PassRefPtr<SVGPoint> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
     : SVGPropertyTearOff<SVGPoint>(target, contextElement, propertyIsAnimVal, attributeName)
 {
-    ScriptWrappable::init(this);
 }
 
 void SVGPointTearOff::setX(float f, ExceptionState& exceptionState)

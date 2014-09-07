@@ -40,7 +40,6 @@ namespace blink {
 PerformanceNavigation::PerformanceNavigation(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
-    ScriptWrappable::init(this);
 }
 
 unsigned short PerformanceNavigation::type() const

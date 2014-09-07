@@ -40,7 +40,6 @@ IDBCursorWithValue* IDBCursorWithValue::create(PassOwnPtr<WebIDBCursor> backend,
 IDBCursorWithValue::IDBCursorWithValue(PassOwnPtr<WebIDBCursor> backend, WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
     : IDBCursor(backend, direction, request, source, transaction)
 {
-    ScriptWrappable::init(this);
 }
 
 IDBCursorWithValue::~IDBCursorWithValue()

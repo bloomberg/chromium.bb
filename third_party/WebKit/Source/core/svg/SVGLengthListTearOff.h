@@ -50,7 +50,6 @@ private:
     SVGLengthListTearOff(PassRefPtr<SVGLengthList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
         : SVGListPropertyTearOffHelper<SVGLengthListTearOff, SVGLengthList>(target, contextElement, propertyIsAnimVal, attributeName)
     {
-        ScriptWrappable::init(this);
     }
 };
 

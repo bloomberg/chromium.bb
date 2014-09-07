@@ -270,7 +270,6 @@ ServiceWorkerContainer::ServiceWorkerContainer(ExecutionContext* executionContex
     : ContextLifecycleObserver(executionContext)
     , m_provider(0)
 {
-    ScriptWrappable::init(this);
 
     if (!executionContext)
         return;

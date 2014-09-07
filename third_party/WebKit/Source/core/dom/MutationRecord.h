@@ -52,10 +52,7 @@ public:
     static PassRefPtrWillBeRawPtr<MutationRecord> createCharacterData(PassRefPtrWillBeRawPtr<Node> target, const String& oldValue);
     static PassRefPtrWillBeRawPtr<MutationRecord> createWithNullOldValue(PassRefPtrWillBeRawPtr<MutationRecord>);
 
-    MutationRecord()
-    {
-        ScriptWrappable::init(this);
-    }
+    MutationRecord() { }
 
     virtual ~MutationRecord();
 

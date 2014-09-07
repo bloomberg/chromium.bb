@@ -13,7 +13,6 @@ AudioTrack::AudioTrack(const String& id, const AtomicString& kind, const AtomicS
     : TrackBase(TrackBase::AudioTrack, label, language, id)
     , m_enabled(enabled)
 {
-    ScriptWrappable::init(this);
     setKind(kind);
 }
 

@@ -297,14 +297,12 @@ Headers::Headers()
     : m_headerList(FetchHeaderList::create())
     , m_guard(NoneGuard)
 {
-    ScriptWrappable::init(this);
 }
 
 Headers::Headers(FetchHeaderList* headerList)
     : m_headerList(headerList)
     , m_guard(NoneGuard)
 {
-    ScriptWrappable::init(this);
 }
 
 void Headers::forEachInternal(PassOwnPtrWillBeRawPtr<HeadersForEachCallback> callback, const ScriptValue* thisArg)

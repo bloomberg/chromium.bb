@@ -149,7 +149,6 @@ AudioBuffer::AudioBuffer(unsigned numberOfChannels, size_t numberOfFrames, float
     : m_sampleRate(sampleRate)
     , m_length(numberOfFrames)
 {
-    ScriptWrappable::init(this);
     m_channels.reserveCapacity(numberOfChannels);
 
     for (unsigned i = 0; i < numberOfChannels; ++i) {
@@ -169,7 +168,6 @@ AudioBuffer::AudioBuffer(AudioBus* bus)
     : m_sampleRate(bus->sampleRate())
     , m_length(bus->length())
 {
-    ScriptWrappable::init(this);
     // Copy audio data from the bus to the Float32Arrays we manage.
     unsigned numberOfChannels = bus->numberOfChannels();
     m_channels.reserveCapacity(numberOfChannels);

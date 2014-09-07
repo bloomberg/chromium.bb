@@ -36,7 +36,6 @@ using namespace HTMLNames;
 HTMLAudioElement::HTMLAudioElement(Document& document)
     : HTMLMediaElement(audioTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<HTMLAudioElement> HTMLAudioElement::create(Document& document)

@@ -39,7 +39,6 @@ GainNode::GainNode(AudioContext* context, float sampleRate)
     , m_lastGain(1.0)
     , m_sampleAccurateGainValues(AudioNode::ProcessingSizeInFrames) // FIXME: can probably share temp buffer in context
 {
-    ScriptWrappable::init(this);
     m_gain = AudioParam::create(context, 1.0);
 
     addInput();

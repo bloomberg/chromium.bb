@@ -132,8 +132,6 @@ size_t quantizeMemorySize(size_t size)
 
 MemoryInfo::MemoryInfo()
 {
-    ScriptWrappable::init(this);
-
     if (RuntimeEnabledFeatures::preciseMemoryInfoEnabled()) {
         ScriptGCEvent::getHeapSize(m_info);
     } else {

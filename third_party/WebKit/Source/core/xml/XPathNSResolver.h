@@ -43,10 +43,7 @@ public:
     virtual void trace(Visitor*) { }
 
 protected:
-    XPathNSResolver()
-    {
-        ScriptWrappable::init(this);
-    }
+    XPathNSResolver() { }
 };
 
 } // namespace blink

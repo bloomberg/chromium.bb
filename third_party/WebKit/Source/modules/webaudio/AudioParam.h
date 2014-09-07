@@ -101,10 +101,7 @@ private:
         : AudioSummingJunction(context)
         , m_value(defaultValue)
         , m_defaultValue(defaultValue)
-        , m_smoothedValue(defaultValue)
-    {
-        ScriptWrappable::init(this);
-    }
+        , m_smoothedValue(defaultValue) { }
 
     // sampleAccurate corresponds to a-rate (audio rate) vs. k-rate in the Web Audio specification.
     void calculateFinalValues(float* values, unsigned numberOfValues, bool sampleAccurate);

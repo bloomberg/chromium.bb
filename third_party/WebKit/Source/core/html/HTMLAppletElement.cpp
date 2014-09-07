@@ -46,8 +46,6 @@ using namespace HTMLNames;
 HTMLAppletElement::HTMLAppletElement(Document& document, bool createdByParser)
     : HTMLPlugInElement(appletTag, document, createdByParser, ShouldNotPreferPlugInsForImages)
 {
-    ScriptWrappable::init(this);
-
     m_serviceType = "application/x-java-applet";
 }
 

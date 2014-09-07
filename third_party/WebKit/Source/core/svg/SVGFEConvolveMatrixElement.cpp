@@ -55,8 +55,6 @@ inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(Document& document
     , m_targetX(SVGAnimatedInteger::create(this, SVGNames::targetXAttr, SVGInteger::create()))
     , m_targetY(SVGAnimatedInteger::create(this, SVGNames::targetYAttr, SVGInteger::create()))
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_preserveAlpha);
     addToPropertyMap(m_divisor);
     addToPropertyMap(m_bias);

@@ -64,7 +64,6 @@ RTCIceCandidate* RTCIceCandidate::create(WebRTCICECandidate webCandidate)
 RTCIceCandidate::RTCIceCandidate(WebRTCICECandidate webCandidate)
     : m_webCandidate(webCandidate)
 {
-    ScriptWrappable::init(this);
 }
 
 String RTCIceCandidate::candidate() const

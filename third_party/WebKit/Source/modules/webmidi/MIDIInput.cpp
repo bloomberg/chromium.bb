@@ -46,7 +46,6 @@ MIDIInput* MIDIInput::create(MIDIAccess* access, const String& id, const String&
 MIDIInput::MIDIInput(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, const String& version)
     : MIDIPort(access, id, manufacturer, name, MIDIPortTypeInput, version)
 {
-    ScriptWrappable::init(this);
 }
 
 void MIDIInput::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)

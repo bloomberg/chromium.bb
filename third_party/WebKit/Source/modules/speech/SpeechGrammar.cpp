@@ -50,14 +50,12 @@ void SpeechGrammar::setSrc(ExecutionContext* executionContext, const String& src
 SpeechGrammar::SpeechGrammar()
     : m_weight(1.0)
 {
-    ScriptWrappable::init(this);
 }
 
 SpeechGrammar::SpeechGrammar(const KURL& src, double weight)
     : m_src(src)
     , m_weight(weight)
 {
-    ScriptWrappable::init(this);
 }
 
 } // namespace blink

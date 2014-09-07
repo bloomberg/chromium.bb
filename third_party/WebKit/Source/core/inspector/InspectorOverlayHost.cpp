@@ -35,7 +35,6 @@ namespace blink {
 InspectorOverlayHost::InspectorOverlayHost()
     : m_listener(nullptr)
 {
-    ScriptWrappable::init(this);
 }
 
 InspectorOverlayHost::~InspectorOverlayHost()

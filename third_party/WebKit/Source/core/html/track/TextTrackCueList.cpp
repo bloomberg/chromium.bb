@@ -31,7 +31,6 @@ namespace blink {
 
 TextTrackCueList::TextTrackCueList()
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(TextTrackCueList);

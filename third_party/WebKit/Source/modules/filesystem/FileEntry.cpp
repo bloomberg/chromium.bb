@@ -42,7 +42,6 @@ namespace blink {
 FileEntry::FileEntry(DOMFileSystemBase* fileSystem, const String& fullPath)
     : Entry(fileSystem, fullPath)
 {
-    ScriptWrappable::init(this);
 }
 
 void FileEntry::createWriter(PassOwnPtrWillBeRawPtr<FileWriterCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback)

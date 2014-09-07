@@ -256,7 +256,6 @@ ServiceWorker::ServiceWorker(ExecutionContext* executionContext, PassOwnPtr<WebS
     , m_outerWorker(worker)
     , m_proxyState(Initial)
 {
-    ScriptWrappable::init(this);
     ASSERT(m_outerWorker);
     m_outerWorker->setProxy(this);
 }

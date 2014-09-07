@@ -44,7 +44,6 @@ inline HTMLOptGroupElement::HTMLOptGroupElement(Document& document)
     : HTMLElement(optgroupTag, document)
 {
     setHasCustomStyleCallbacks();
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<HTMLOptGroupElement> HTMLOptGroupElement::create(Document& document)

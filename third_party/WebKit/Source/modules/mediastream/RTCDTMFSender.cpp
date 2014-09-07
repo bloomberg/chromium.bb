@@ -66,7 +66,6 @@ RTCDTMFSender::RTCDTMFSender(ExecutionContext* context, MediaStreamTrack* track,
     , m_stopped(false)
     , m_scheduledEventTimer(this, &RTCDTMFSender::scheduledEventTimerFired)
 {
-    ScriptWrappable::init(this);
     m_handler->setClient(this);
 }
 

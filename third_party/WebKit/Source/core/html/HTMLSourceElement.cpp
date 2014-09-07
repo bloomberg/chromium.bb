@@ -71,7 +71,6 @@ inline HTMLSourceElement::HTMLSourceElement(Document& document)
     , m_listener(adoptRefWillBeNoop(new Listener(this)))
 {
     WTF_LOG(Media, "HTMLSourceElement::HTMLSourceElement - %p", this);
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLSourceElement)

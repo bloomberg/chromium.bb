@@ -11,7 +11,6 @@ namespace blink {
 
 DictionaryTest::DictionaryTest()
 {
-    ScriptWrappable::init(this);
 }
 
 DictionaryTest::~DictionaryTest()

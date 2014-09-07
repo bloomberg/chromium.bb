@@ -49,7 +49,6 @@ namespace blink {
 DeprecatedStorageQuota::DeprecatedStorageQuota(Type type)
     : m_type(type)
 {
-    ScriptWrappable::init(this);
 }
 
 void DeprecatedStorageQuota::queryUsageAndQuota(ExecutionContext* executionContext, PassOwnPtrWillBeRawPtr<StorageUsageCallback> successCallback, PassOwnPtrWillBeRawPtr<StorageErrorCallback> errorCallback)

@@ -36,10 +36,7 @@ public:
 
 private:
     SVGPathSegLinetoVerticalRel(SVGPathElement* element, float y)
-        : SVGPathSegLinetoVertical(element, y)
-    {
-        ScriptWrappable::init(this);
-    }
+        : SVGPathSegLinetoVertical(element, y) { }
 
     virtual unsigned short pathSegType() const OVERRIDE { return PATHSEG_LINETO_VERTICAL_REL; }
     virtual String pathSegTypeAsLetter() const OVERRIDE { return "v"; }

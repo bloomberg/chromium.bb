@@ -29,8 +29,6 @@ inline SVGViewElement::SVGViewElement(Document& document)
     , SVGFitToViewBox(this)
     , m_viewTarget(SVGStaticStringList::create(this, SVGNames::viewTargetAttr))
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_viewTarget);
 }
 
@@ -67,4 +65,4 @@ void SVGViewElement::parseAttribute(const QualifiedName& name, const AtomicStrin
     reportAttributeParsingError(parseError, name, value);
 }
 
-}
+} // namespace blink

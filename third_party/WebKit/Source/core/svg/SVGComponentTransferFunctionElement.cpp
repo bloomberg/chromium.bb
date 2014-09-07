@@ -52,8 +52,6 @@ SVGComponentTransferFunctionElement::SVGComponentTransferFunctionElement(const Q
     , m_offset(SVGAnimatedNumber::create(this, SVGNames::offsetAttr, SVGNumber::create()))
     , m_type(SVGAnimatedEnumeration<ComponentTransferType>::create(this, SVGNames::typeAttr, FECOMPONENTTRANSFER_TYPE_IDENTITY))
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_tableValues);
     addToPropertyMap(m_slope);
     addToPropertyMap(m_intercept);
@@ -108,4 +106,4 @@ ComponentTransferFunction SVGComponentTransferFunctionElement::transferFunction(
     return func;
 }
 
-}
+} // namespace blink

@@ -55,7 +55,6 @@ private:
         : m_name(name), m_message(message), m_constraintName(constraintName)
     {
         ASSERT(!name.isEmpty());
-        ScriptWrappable::init(this);
     }
 
     String m_name;

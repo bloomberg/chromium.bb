@@ -41,7 +41,6 @@ using namespace HTMLNames;
 inline HTMLFontElement::HTMLFontElement(Document& document)
     : HTMLElement(fontTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLFontElement)

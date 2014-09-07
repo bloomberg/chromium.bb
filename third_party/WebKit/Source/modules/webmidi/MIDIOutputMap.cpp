@@ -13,7 +13,6 @@ namespace blink {
 MIDIOutputMap::MIDIOutputMap(HeapHashMap<String, Member<MIDIOutput> > map)
     : MIDIPortMap<MIDIOutput>(map)
 {
-    ScriptWrappable::init(this);
 }
 
 ScriptValue MIDIOutputMap::getForBinding(ScriptState* scriptState, const String& id)

@@ -58,7 +58,6 @@ PerformanceResourceTiming::PerformanceResourceTiming(const ResourceTimingInfo& i
     , m_allowRedirectDetails(allowRedirectDetails)
     , m_requestingDocument(requestingDocument)
 {
-    ScriptWrappable::init(this);
 }
 
 PerformanceResourceTiming::~PerformanceResourceTiming()

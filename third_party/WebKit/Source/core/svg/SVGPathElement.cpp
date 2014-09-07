@@ -54,8 +54,6 @@ inline SVGPathElement::SVGPathElement(Document& document)
     , m_pathLength(SVGAnimatedNumber::create(this, SVGNames::pathLengthAttr, SVGNumber::create()))
     , m_pathSegList(SVGAnimatedPath::create(this, SVGNames::dAttr))
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_pathLength);
     addToPropertyMap(m_pathSegList);
 }
@@ -287,4 +285,4 @@ FloatRect SVGPathElement::getBBox()
     return renderer->path().boundingRect();
 }
 
-}
+} // namespace blink

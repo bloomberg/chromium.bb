@@ -19,7 +19,6 @@ AudioTrackList::~AudioTrackList()
 AudioTrackList::AudioTrackList(HTMLMediaElement& mediaElement)
     : TrackListBase<AudioTrack>(&mediaElement)
 {
-    ScriptWrappable::init(this);
 }
 
 bool AudioTrackList::hasEnabledTrack() const

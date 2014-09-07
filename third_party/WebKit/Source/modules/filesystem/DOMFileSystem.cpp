@@ -89,7 +89,6 @@ DOMFileSystem::DOMFileSystem(ExecutionContext* context, const String& name, File
     , ActiveDOMObject(context)
     , m_numberOfPendingCallbacks(0)
 {
-    ScriptWrappable::init(this);
 }
 
 DirectoryEntry* DOMFileSystem::root()

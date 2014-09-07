@@ -38,7 +38,6 @@ using namespace HTMLNames;
 inline HTMLLegendElement::HTMLLegendElement(Document& document)
     : HTMLElement(legendTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLLegendElement)

@@ -31,7 +31,6 @@ Credential::Credential(PlatformCredential* credential)
 Credential::Credential(const String& id, const String& name, const KURL& avatar)
     : m_platformCredential(PlatformCredential::create(id, name, avatar))
 {
-    ScriptWrappable::init(this);
 }
 
 KURL Credential::parseStringAsURL(const String& url, ExceptionState& exceptionState)

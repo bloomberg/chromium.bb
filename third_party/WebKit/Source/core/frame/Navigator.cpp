@@ -54,7 +54,6 @@ namespace blink {
 Navigator::Navigator(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
-    ScriptWrappable::init(this);
 }
 
 Navigator::~Navigator()

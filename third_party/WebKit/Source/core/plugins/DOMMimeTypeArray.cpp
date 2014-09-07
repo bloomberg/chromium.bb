@@ -31,7 +31,6 @@ namespace blink {
 DOMMimeTypeArray::DOMMimeTypeArray(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
-    ScriptWrappable::init(this);
 }
 
 DOMMimeTypeArray::~DOMMimeTypeArray()

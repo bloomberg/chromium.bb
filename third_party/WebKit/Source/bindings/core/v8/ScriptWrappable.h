@@ -36,13 +36,6 @@
 #include "platform/heap/Handle.h"
 #include <v8.h>
 
-// Helper to call webCoreInitializeScriptWrappableForInterface in the global namespace.
-template <class C> inline void initializeScriptWrappableHelper(C* object)
-{
-    void webCoreInitializeScriptWrappableForInterface(C*);
-    webCoreInitializeScriptWrappableForInterface(object);
-}
-
 namespace blink {
 
 /**
@@ -107,46 +100,17 @@ public:
  * ScriptWrappable wraps a V8 object and its WrapperTypeInfo.
  *
  * ScriptWrappable acts much like a v8::Persistent<> in that it keeps a
- * V8 object alive. Under the hood, however, it keeps either a TypeInfo
- * object or an actual v8 persistent (or is empty).
- *
- * The physical state space of ScriptWrappable is:
- * - uintptr_t m_wrapperOrTypeInfo;
- *   - if 0: the ScriptWrappable is uninitialized/empty.
- *   - if even: a pointer to blink::TypeInfo
- *   - if odd: a pointer to v8::Persistent<v8::Object> + 1.
- *
- * In other words, one integer represents one of two object pointers,
- * depending on its least signficiant bit, plus an uninitialized state.
- * This class is meant to mask the logistics behind this.
- *
- * typeInfo() and newLocalWrapper will return appropriate values (possibly
- * 0/empty) in all physical states.
+ * V8 object alive.
  *
  *  The state transitions are:
- *  - new: an empty and invalid ScriptWrappable.
- *  - init (to be called by all subclasses in their constructor):
- *        needs to call setTypeInfo
- *  - setTypeInfo: install a WrapperTypeInfo
+ *  - new: an empty ScriptWrappable.
  *  - setWrapper: install a v8::Persistent (or empty)
  *  - disposeWrapper (via setWeakCallback, triggered by V8 garbage collecter):
- *        remove v8::Persistent and install a TypeInfo of the previous value.
+ *        remove v8::Persistent and become empty.
  */
 class ScriptWrappable : public ScriptWrappableBase {
 public:
-    ScriptWrappable() : m_wrapperOrTypeInfo(0) { }
-
-    // Wrappables need to be initialized with their most derrived type for which
-    // bindings exist, in much the same way that certain other types need to be
-    // adopted and so forth. The overloaded initializeScriptWrappableForInterface()
-    // functions are implemented by the generated V8 bindings code. Declaring the
-    // extern function in the template avoids making a centralized header of all
-    // the bindings in the universe. C++11's extern template feature may provide
-    // a cleaner solution someday.
-    template <class C> static void init(C* object)
-    {
-        initializeScriptWrappableHelper(object);
-    }
+    ScriptWrappable() : m_wrapper(0) { }
 
     // Returns the WrapperTypeInfo of the instance.
     //
@@ -160,13 +124,13 @@ public:
     {
         ASSERT(!containsWrapper());
         if (!*wrapper) {
-            m_wrapperOrTypeInfo = 0;
+            m_wrapper = 0;
             return;
         }
         v8::Persistent<v8::Object> persistent(isolate, wrapper);
         wrapperTypeInfo->configureWrapper(&persistent);
         persistent.SetWeak(this, &setWeakCallback);
-        m_wrapperOrTypeInfo = reinterpret_cast<uintptr_t>(persistent.ClearAndLeak()) | 1;
+        m_wrapper = persistent.ClearAndLeak();
         ASSERT(containsWrapper());
     }
 
@@ -175,26 +139,6 @@ public:
         v8::Persistent<v8::Object> persistent;
         getPersistent(&persistent);
         return v8::Local<v8::Object>::New(isolate, persistent);
-    }
-
-    const WrapperTypeInfo* typeInfo()
-    {
-        if (containsTypeInfo())
-            return reinterpret_cast<const WrapperTypeInfo*>(m_wrapperOrTypeInfo);
-
-        if (containsWrapper()) {
-            v8::Persistent<v8::Object> persistent;
-            getPersistent(&persistent);
-            return toWrapperTypeInfo(persistent);
-        }
-
-        return 0;
-    }
-
-    void setTypeInfo(const WrapperTypeInfo* typeInfo)
-    {
-        m_wrapperOrTypeInfo = reinterpret_cast<uintptr_t>(typeInfo);
-        ASSERT(containsTypeInfo());
     }
 
     bool isEqualTo(const v8::Local<v8::Object>& other) const
@@ -231,7 +175,7 @@ public:
         ASSERT(containsWrapper());
         ASSERT(groupRoot && groupRoot->containsWrapper());
 
-        v8::UniqueId groupId(groupRoot->m_wrapperOrTypeInfo);
+        v8::UniqueId groupId(reinterpret_cast<intptr_t>(groupRoot->m_wrapper));
         v8::Persistent<v8::Object> wrapper;
         getPersistent(&wrapper);
         wrapper.MarkPartiallyDependent();
@@ -264,15 +208,14 @@ public:
     {
         ASSERT(object);
         ASSERT(objectAsT);
-        v8::Object* value = object->getRawValue();
+        v8::Object* value = object->m_wrapper;
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(value == 0
             || value->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toScriptWrappableBase(objectAsT));
     }
 
     using ScriptWrappableBase::assertWrapperSanity;
 
-    inline bool containsWrapper() const { return (m_wrapperOrTypeInfo & 1); }
-    inline bool containsTypeInfo() const { return m_wrapperOrTypeInfo && !(m_wrapperOrTypeInfo & 1); }
+    bool containsWrapper() const { return m_wrapper; }
 
 #if !ENABLE(OILPAN)
 protected:
@@ -281,8 +224,7 @@ protected:
         // We must not get deleted as long as we contain a wrapper. If this happens, we screwed up ref
         // counting somewhere. Crash here instead of crashing during a later gc cycle.
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(!containsWrapper());
-        ASSERT(m_wrapperOrTypeInfo); // Assert initialization via init() even if not subsequently wrapped.
-        m_wrapperOrTypeInfo = 0; // Break UAF attempts to wrap.
+        m_wrapper = 0; // Break UAF attempts to wrap.
     }
 #endif
     // With Oilpan we don't need a ScriptWrappable destructor.
@@ -294,7 +236,7 @@ protected:
     // Assuming that Oilpan's GC is correct (If we cannot assume this, a lot of more things are
     // already broken), we must not hit the RELEASE_ASSERT.
     //
-    // - 'm_wrapperOrTypeInfo = 0' is not needed because Oilpan's GC zeroes out memory when
+    // - 'm_wrapper = 0' is not needed because Oilpan's GC zeroes out memory when
     // the memory is collected and added to a free list.
 
 private:
@@ -306,16 +248,10 @@ private:
         // that we can inject the wrapped value. This only works because
         // we previously 'stole' the object pointer from a Persistent in
         // the setWrapper() method.
-        *reinterpret_cast<v8::Object**>(persistent) = getRawValue();
+        *reinterpret_cast<v8::Object**>(persistent) = m_wrapper;
     }
 
-    inline v8::Object* getRawValue() const
-    {
-        v8::Object* object = containsWrapper() ? reinterpret_cast<v8::Object*>(m_wrapperOrTypeInfo & ~1) : 0;
-        return object;
-    }
-
-    inline void disposeWrapper(v8::Local<v8::Object> wrapper)
+    void disposeWrapper(v8::Local<v8::Object> wrapper)
     {
         ASSERT(containsWrapper());
 
@@ -324,13 +260,8 @@ private:
 
         ASSERT(wrapper == persistent);
         persistent.Reset();
-        setTypeInfo(toWrapperTypeInfo(wrapper));
+        m_wrapper = 0;
     }
-
-    // If zero, then this contains nothing, otherwise:
-    //   If the bottom bit it set, then this contains a pointer to a wrapper object in the remainging bits.
-    //   If the bottom bit is clear, then this contains a pointer to the wrapper type info in the remaining bits.
-    uintptr_t m_wrapperOrTypeInfo;
 
     static void setWeakCallback(const v8::WeakCallbackData<v8::Object, ScriptWrappable>& data)
     {
@@ -344,6 +275,8 @@ private:
         // make Node destructions incremental.
         releaseObject(data.GetValue());
     }
+
+    v8::Object* m_wrapper;
 };
 
 // Defines 'wrapperTypeInfo' virtual method which returns the WrapperTypeInfo of

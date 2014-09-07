@@ -368,7 +368,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     ASSERT(RuntimeEnabledFeatures::mediaEnabled());
 
     WTF_LOG(Media, "HTMLMediaElement::HTMLMediaElement");
-    ScriptWrappable::init(this);
 
     if (document.settings() && document.settings()->mediaPlaybackRequiresUserGesture())
         m_userGestureRequiredForPlay = true;

@@ -31,7 +31,6 @@ namespace blink {
 inline SVGFEFloodElement::SVGFEFloodElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feFloodTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(SVGFEFloodElement)

@@ -44,7 +44,6 @@ inline HTMLButtonElement::HTMLButtonElement(Document& document, HTMLFormElement*
     , m_type(SUBMIT)
     , m_isActivatedSubmit(false)
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<HTMLButtonElement> HTMLButtonElement::create(Document& document, HTMLFormElement* form)

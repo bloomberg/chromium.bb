@@ -24,7 +24,6 @@ PushRegistration::PushRegistration(const String& pushEndpoint, const String& pus
     : m_pushEndpoint(pushEndpoint)
     , m_pushRegistrationId(pushRegistrationId)
 {
-    ScriptWrappable::init(this);
 }
 
 PushRegistration::~PushRegistration()

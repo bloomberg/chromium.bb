@@ -114,10 +114,7 @@ public:
     void trace(Visitor*);
 
 private:
-    TimeRanges()
-    {
-        ScriptWrappable::init(this);
-    }
+    TimeRanges() { }
 
     TimeRanges(double start, double end);
 

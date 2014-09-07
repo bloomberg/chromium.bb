@@ -38,9 +38,7 @@ namespace blink {
 
 struct MIDIMessageEventInit : public EventInit {
     MIDIMessageEventInit()
-        : receivedTime(0.0)
-    {
-    };
+        : receivedTime(0.0) { }
 
     double receivedTime;
     RefPtr<Uint8Array> data;
@@ -73,26 +71,17 @@ public:
 
 private:
     MIDIMessageEvent()
-        : m_receivedTime(0)
-    {
-        ScriptWrappable::init(this);
-    }
+        : m_receivedTime(0) { }
 
     MIDIMessageEvent(double receivedTime, PassRefPtr<Uint8Array> data)
         : Event(EventTypeNames::midimessage, true, false)
         , m_receivedTime(receivedTime)
-        , m_data(data)
-    {
-        ScriptWrappable::init(this);
-    }
+        , m_data(data) { }
 
     MIDIMessageEvent(const AtomicString& type, const MIDIMessageEventInit& initializer)
         : Event(type, initializer)
         , m_receivedTime(initializer.receivedTime)
-        , m_data(initializer.data)
-    {
-        ScriptWrappable::init(this);
-    }
+        , m_data(initializer.data) { }
 
     double m_receivedTime;
     RefPtr<Uint8Array> m_data;

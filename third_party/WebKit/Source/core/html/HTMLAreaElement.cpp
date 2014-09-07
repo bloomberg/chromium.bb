@@ -41,7 +41,6 @@ inline HTMLAreaElement::HTMLAreaElement(Document& document)
     , m_lastSize(-1, -1)
     , m_shape(Unknown)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLAreaElement)

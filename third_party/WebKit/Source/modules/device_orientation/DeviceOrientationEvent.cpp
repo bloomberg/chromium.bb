@@ -37,14 +37,12 @@ DeviceOrientationEvent::~DeviceOrientationEvent()
 DeviceOrientationEvent::DeviceOrientationEvent()
     : m_orientation(DeviceOrientationData::create())
 {
-    ScriptWrappable::init(this);
 }
 
 DeviceOrientationEvent::DeviceOrientationEvent(const AtomicString& eventType, DeviceOrientationData* orientation)
     : Event(eventType, false, false) // Can't bubble, not cancelable
     , m_orientation(orientation)
 {
-    ScriptWrappable::init(this);
 }
 
 void DeviceOrientationEvent::initDeviceOrientationEvent(const AtomicString& type, bool bubbles, bool cancelable, DeviceOrientationData* orientation)

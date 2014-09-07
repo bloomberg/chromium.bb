@@ -38,8 +38,6 @@ inline SVGFESpecularLightingElement::SVGFESpecularLightingElement(Document& docu
     , m_kernelUnitLength(SVGAnimatedNumberOptionalNumber::create(this, SVGNames::surfaceScaleAttr))
     , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_specularConstant);
     addToPropertyMap(m_specularExponent);
     addToPropertyMap(m_surfaceScale);
@@ -186,4 +184,4 @@ PassRefPtr<FilterEffect> SVGFESpecularLightingElement::build(SVGFilterBuilder* f
     return effect.release();
 }
 
-}
+} // namespace blink

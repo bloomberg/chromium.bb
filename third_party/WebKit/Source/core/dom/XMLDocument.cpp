@@ -31,7 +31,6 @@ namespace blink {
 XMLDocument::XMLDocument(const DocumentInit& initializer, DocumentClassFlags documentClasses)
     : Document(initializer, documentClasses)
 {
-    ScriptWrappable::init(this);
 }
 
 } // namespace blink

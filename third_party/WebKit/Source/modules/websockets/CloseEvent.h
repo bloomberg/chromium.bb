@@ -38,9 +38,7 @@ namespace blink {
 struct CloseEventInit : public EventInit {
     CloseEventInit()
         : wasClean(false)
-        , code(0)
-    {
-    }
+        , code(0) { }
 
     bool wasClean;
     unsigned short code;
@@ -78,28 +76,19 @@ private:
     CloseEvent()
         : Event(EventTypeNames::close, false, false)
         , m_wasClean(false)
-        , m_code(0)
-    {
-        ScriptWrappable::init(this);
-    }
+        , m_code(0) { }
 
     CloseEvent(bool wasClean, int code, const String& reason)
         : Event(EventTypeNames::close, false, false)
         , m_wasClean(wasClean)
         , m_code(code)
-        , m_reason(reason)
-    {
-        ScriptWrappable::init(this);
-    }
+        , m_reason(reason) { }
 
     CloseEvent(const AtomicString& type, const CloseEventInit& initializer)
         : Event(type, initializer)
         , m_wasClean(initializer.wasClean)
         , m_code(initializer.code)
-        , m_reason(initializer.reason)
-    {
-        ScriptWrappable::init(this);
-    }
+        , m_reason(initializer.reason) { }
 
     bool m_wasClean;
     unsigned short m_code;

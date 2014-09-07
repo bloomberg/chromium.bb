@@ -55,8 +55,6 @@ inline SVGFETurbulenceElement::SVGFETurbulenceElement(Document& document)
     , m_type(SVGAnimatedEnumeration<TurbulenceType>::create(this, SVGNames::typeAttr, FETURBULENCE_TYPE_TURBULENCE))
     , m_numOctaves(SVGAnimatedInteger::create(this, SVGNames::numOctavesAttr, SVGInteger::create(1)))
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_baseFrequency);
     addToPropertyMap(m_seed);
     addToPropertyMap(m_stitchTiles);
@@ -133,4 +131,4 @@ PassRefPtr<FilterEffect> SVGFETurbulenceElement::build(SVGFilterBuilder*, Filter
     return FETurbulence::create(filter, m_type->currentValue()->enumValue(), baseFrequencyX()->currentValue()->value(), baseFrequencyY()->currentValue()->value(), m_numOctaves->currentValue()->value(), m_seed->currentValue()->value(), m_stitchTiles->currentValue()->enumValue() == SVG_STITCHTYPE_STITCH);
 }
 
-}
+} // namespace blink

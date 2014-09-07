@@ -470,7 +470,6 @@ DataTransfer::DataTransfer(DataTransferType type, DataTransferAccessPolicy polic
     , m_transferType(type)
     , m_dataObject(dataObject)
 {
-    ScriptWrappable::init(this);
 }
 
 void DataTransfer::setDragImage(ImageResource* image, Node* node, const IntPoint& loc)

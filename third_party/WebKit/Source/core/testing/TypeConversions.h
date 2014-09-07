@@ -70,10 +70,7 @@ public:
     void trace(Visitor*) { }
 
 private:
-    TypeConversions()
-    {
-        ScriptWrappable::init(this);
-    }
+    TypeConversions() { }
 
     long m_long;
     unsigned long m_unsignedLong;

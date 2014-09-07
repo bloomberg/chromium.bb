@@ -12,30 +12,6 @@
 #include "{{filename}}"
 {% endfor %}
 
-{% if is_script_wrappable %}
-namespace blink {
-
-static void initializeScriptWrappableForInterface({{cpp_class}}* impl)
-{
-    impl->setTypeInfo(&{{v8_class}}::wrapperTypeInfo);
-}
-
-} // namespace blink
-
-{#
-In ScriptWrappable::init, the use of a local function declaration has an
-issue on Windows: the local declaration does not pick up the surrounding
-namespace. Therefore, we provide this function in the global namespace.
-More info on the MSVC bug here (Bug 664619):
-The namespace of local function declarations in C++ by Uray M. János
-http://connect.microsoft.com/VisualStudio/feedback/details/664619/the-namespace-of-local-function-declarations-in-c
-#}
-void webCoreInitializeScriptWrappableForInterface(blink::{{cpp_class}}* object)
-{
-    blink::initializeScriptWrappableForInterface(object);
-}
-
-{% endif %}
 namespace blink {
 {% set to_active_dom_object = '%s::toActiveDOMObject' % v8_class
                               if is_active_dom_object else '0' %}

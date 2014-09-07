@@ -36,7 +36,6 @@ using namespace HTMLNames;
 inline HTMLLIElement::HTMLLIElement(Document& document)
     : HTMLElement(liTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLLIElement)

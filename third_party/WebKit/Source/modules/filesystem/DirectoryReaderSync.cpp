@@ -95,7 +95,6 @@ DirectoryReaderSync::DirectoryReaderSync(DOMFileSystemBase* fileSystem, const St
     , m_callbacksId(0)
     , m_errorCode(FileError::OK)
 {
-    ScriptWrappable::init(this);
 }
 
 DirectoryReaderSync::~DirectoryReaderSync()

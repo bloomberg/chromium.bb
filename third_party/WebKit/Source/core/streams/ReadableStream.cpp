@@ -26,7 +26,6 @@ ReadableStream::ReadableStream(ExecutionContext* executionContext, UnderlyingSou
     , m_wait(new WaitPromise(executionContext, this, WaitPromise::Ready))
     , m_closed(new ClosedPromise(executionContext, this, ClosedPromise::Closed))
 {
-    ScriptWrappable::init(this);
 }
 
 ReadableStream::~ReadableStream()

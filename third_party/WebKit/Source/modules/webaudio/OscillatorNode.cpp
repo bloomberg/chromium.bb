@@ -54,7 +54,6 @@ OscillatorNode::OscillatorNode(AudioContext* context, float sampleRate)
     , m_phaseIncrements(AudioNode::ProcessingSizeInFrames)
     , m_detuneValues(AudioNode::ProcessingSizeInFrames)
 {
-    ScriptWrappable::init(this);
     setNodeType(NodeTypeOscillator);
 
     // Use musical pitch standard A440 as a default.

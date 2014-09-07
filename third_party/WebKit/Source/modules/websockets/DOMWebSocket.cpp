@@ -235,7 +235,6 @@ DOMWebSocket::DOMWebSocket(ExecutionContext* context)
     , m_eventQueue(EventQueue::create(this))
     , m_bufferedAmountConsumeTimer(this, &DOMWebSocket::reflectBufferedAmountConsumption)
 {
-    ScriptWrappable::init(this);
 }
 
 DOMWebSocket::~DOMWebSocket()

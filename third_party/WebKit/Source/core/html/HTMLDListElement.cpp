@@ -32,7 +32,6 @@ using namespace HTMLNames;
 inline HTMLDListElement::HTMLDListElement(Document& document)
     : HTMLElement(dlTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLDListElement)

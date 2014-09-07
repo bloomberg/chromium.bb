@@ -42,7 +42,6 @@ inline HTMLOutputElement::HTMLOutputElement(Document& document, HTMLFormElement*
     , m_defaultValue("")
     , m_tokens(DOMSettableTokenList::create())
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<HTMLOutputElement> HTMLOutputElement::create(Document& document, HTMLFormElement* form)

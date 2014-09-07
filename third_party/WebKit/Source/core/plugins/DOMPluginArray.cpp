@@ -31,7 +31,6 @@ namespace blink {
 DOMPluginArray::DOMPluginArray(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
-    ScriptWrappable::init(this);
 }
 
 DOMPluginArray::~DOMPluginArray()

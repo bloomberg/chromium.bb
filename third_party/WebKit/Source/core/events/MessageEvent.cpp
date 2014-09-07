@@ -46,7 +46,6 @@ MessageEventInit::MessageEventInit()
 MessageEvent::MessageEvent()
     : m_dataType(DataTypeScriptValue)
 {
-    ScriptWrappable::init(this);
 }
 
 MessageEvent::MessageEvent(const AtomicString& type, const MessageEventInit& initializer)
@@ -57,7 +56,6 @@ MessageEvent::MessageEvent(const AtomicString& type, const MessageEventInit& ini
     , m_source(isValidSource(initializer.source.get()) ? initializer.source : nullptr)
     , m_ports(adoptPtrWillBeNoop(new MessagePortArray(initializer.ports)))
 {
-    ScriptWrappable::init(this);
     ASSERT(isValidSource(m_source.get()));
 }
 
@@ -69,7 +67,6 @@ MessageEvent::MessageEvent(const String& origin, const String& lastEventId, Pass
     , m_source(source)
     , m_ports(ports)
 {
-    ScriptWrappable::init(this);
     ASSERT(isValidSource(m_source.get()));
 }
 
@@ -82,7 +79,6 @@ MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String&
     , m_source(source)
     , m_ports(ports)
 {
-    ScriptWrappable::init(this);
     if (m_dataAsSerializedScriptValue)
         m_dataAsSerializedScriptValue->registerMemoryAllocatedWithCurrentScriptContext();
     ASSERT(isValidSource(m_source.get()));
@@ -97,7 +93,6 @@ MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String&
     , m_source(source)
     , m_channels(channels)
 {
-    ScriptWrappable::init(this);
     if (m_dataAsSerializedScriptValue)
         m_dataAsSerializedScriptValue->registerMemoryAllocatedWithCurrentScriptContext();
     ASSERT(isValidSource(m_source.get()));
@@ -109,7 +104,6 @@ MessageEvent::MessageEvent(const String& data, const String& origin)
     , m_dataAsString(data)
     , m_origin(origin)
 {
-    ScriptWrappable::init(this);
 }
 
 MessageEvent::MessageEvent(PassRefPtrWillBeRawPtr<Blob> data, const String& origin)
@@ -118,7 +112,6 @@ MessageEvent::MessageEvent(PassRefPtrWillBeRawPtr<Blob> data, const String& orig
     , m_dataAsBlob(data)
     , m_origin(origin)
 {
-    ScriptWrappable::init(this);
 }
 
 MessageEvent::MessageEvent(PassRefPtr<ArrayBuffer> data, const String& origin)
@@ -127,7 +120,6 @@ MessageEvent::MessageEvent(PassRefPtr<ArrayBuffer> data, const String& origin)
     , m_dataAsArrayBuffer(data)
     , m_origin(origin)
 {
-    ScriptWrappable::init(this);
 }
 
 MessageEvent::~MessageEvent()

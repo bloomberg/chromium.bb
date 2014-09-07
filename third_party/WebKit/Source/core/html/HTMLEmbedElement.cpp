@@ -43,7 +43,6 @@ using namespace HTMLNames;
 inline HTMLEmbedElement::HTMLEmbedElement(Document& document, bool createdByParser)
     : HTMLPlugInElement(embedTag, document, createdByParser, ShouldPreferPlugInsForImages)
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<HTMLEmbedElement> HTMLEmbedElement::create(Document& document, bool createdByParser)

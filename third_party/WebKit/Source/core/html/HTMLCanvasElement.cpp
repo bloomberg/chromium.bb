@@ -86,7 +86,6 @@ inline HTMLCanvasElement::HTMLCanvasElement(Document& document)
     , m_didFailToCreateImageBuffer(false)
     , m_didClearImageBuffer(false)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLCanvasElement)

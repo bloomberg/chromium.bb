@@ -40,7 +40,6 @@ namespace blink {
 
 WorkerPerformance::WorkerPerformance()
 {
-    ScriptWrappable::init(this);
 }
 
 double WorkerPerformance::now(ExecutionContext* context) const

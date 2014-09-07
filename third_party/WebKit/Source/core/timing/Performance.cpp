@@ -51,7 +51,6 @@ Performance::Performance(LocalFrame* frame)
     , m_referenceTime(frame && frame->host() ? frame->document()->loader()->timing()->referenceMonotonicTime() : 0.0)
     , m_userTiming(nullptr)
 {
-    ScriptWrappable::init(this);
 }
 
 Performance::~Performance()

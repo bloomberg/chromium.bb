@@ -13,7 +13,6 @@ namespace blink {
 
 PrivateScriptTest::PrivateScriptTest(LocalFrame* frame)
 {
-    ScriptWrappable::init(this);
     v8::Handle<v8::Value> classObject = PrivateScriptRunner::installClassIfNeeded(frame, "PrivateScriptTest");
     RELEASE_ASSERT(!classObject.IsEmpty());
 }

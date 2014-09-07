@@ -49,10 +49,7 @@ public:
     virtual void trace(Visitor*) { }
 
 protected:
-    NodeList()
-    {
-        ScriptWrappable::init(this);
-    }
+    NodeList() { }
 };
 
 } // namespace blink

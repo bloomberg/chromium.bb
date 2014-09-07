@@ -34,7 +34,6 @@ DocumentType::DocumentType(Document* document, const String& name, const String&
     , m_publicId(publicId)
     , m_systemId(systemId)
 {
-    ScriptWrappable::init(this);
 }
 
 KURL DocumentType::baseURI() const

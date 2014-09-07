@@ -30,7 +30,6 @@ namespace blink {
 inline SVGHKernElement::SVGHKernElement(Document& document)
     : SVGElement(SVGNames::hkernTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(SVGHKernElement)

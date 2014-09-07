@@ -36,7 +36,6 @@ SpeechSynthesisVoice* SpeechSynthesisVoice::create(PlatformSpeechSynthesisVoice*
 SpeechSynthesisVoice::SpeechSynthesisVoice(PlatformSpeechSynthesisVoice* voice)
     : m_platformVoice(voice)
 {
-    ScriptWrappable::init(this);
 }
 
 void SpeechSynthesisVoice::trace(Visitor* visitor)

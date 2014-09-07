@@ -38,7 +38,6 @@ inline SVGFEImageElement::SVGFEImageElement(Document& document)
     , SVGURIReference(this)
     , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
 {
-    ScriptWrappable::init(this);
     addToPropertyMap(m_preserveAspectRatio);
 }
 

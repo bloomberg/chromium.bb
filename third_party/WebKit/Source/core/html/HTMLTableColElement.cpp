@@ -38,7 +38,6 @@ inline HTMLTableColElement::HTMLTableColElement(const QualifiedName& tagName, Do
     : HTMLTablePartElement(tagName, document)
     , m_span(1)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableColElement)

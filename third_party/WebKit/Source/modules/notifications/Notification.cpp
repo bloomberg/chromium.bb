@@ -76,7 +76,6 @@ Notification::Notification(const String& title, ExecutionContext* context, Notif
     , m_asyncRunner(this, &Notification::show)
 {
     ASSERT(m_client);
-    ScriptWrappable::init(this);
 
     m_asyncRunner.runAsync();
 }

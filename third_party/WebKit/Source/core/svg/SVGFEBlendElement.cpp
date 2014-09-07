@@ -94,7 +94,6 @@ inline SVGFEBlendElement::SVGFEBlendElement(Document& document)
     , m_in2(SVGAnimatedString::create(this, SVGNames::in2Attr, SVGString::create()))
     , m_mode(SVGAnimatedEnumeration<Mode>::create(this, SVGNames::modeAttr, SVGFEBlendElement::ModeNormal))
 {
-    ScriptWrappable::init(this);
     addToPropertyMap(m_in1);
     addToPropertyMap(m_in2);
     addToPropertyMap(m_mode);

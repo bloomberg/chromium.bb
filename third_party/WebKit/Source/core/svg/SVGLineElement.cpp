@@ -34,8 +34,6 @@ inline SVGLineElement::SVGLineElement(Document& document)
     , m_x2(SVGAnimatedLength::create(this, SVGNames::x2Attr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
     , m_y2(SVGAnimatedLength::create(this, SVGNames::y2Attr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_x1);
     addToPropertyMap(m_y1);
     addToPropertyMap(m_x2);
@@ -99,4 +97,4 @@ bool SVGLineElement::selfHasRelativeLengths() const
         || m_y2->currentValue()->isRelative();
 }
 
-}
+} // namespace blink

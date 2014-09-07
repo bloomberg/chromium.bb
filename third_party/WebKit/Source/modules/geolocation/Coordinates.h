@@ -62,10 +62,7 @@ private:
         , m_canProvideAltitude(providesAltitude)
         , m_canProvideAltitudeAccuracy(providesAltitudeAccuracy)
         , m_canProvideHeading(providesHeading)
-        , m_canProvideSpeed(providesSpeed)
-    {
-        ScriptWrappable::init(this);
-    }
+        , m_canProvideSpeed(providesSpeed) { }
 
     double m_latitude;
     double m_longitude;

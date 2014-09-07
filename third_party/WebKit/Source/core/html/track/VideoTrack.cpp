@@ -13,7 +13,6 @@ VideoTrack::VideoTrack(const String& id, const AtomicString& kind, const AtomicS
     : TrackBase(TrackBase::VideoTrack, label, language, id)
     , m_selected(selected)
 {
-    ScriptWrappable::init(this);
     setKind(kind);
 }
 

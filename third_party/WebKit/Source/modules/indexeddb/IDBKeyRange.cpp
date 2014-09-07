@@ -57,7 +57,6 @@ IDBKeyRange::IDBKeyRange(IDBKey* lower, IDBKey* upper, LowerBoundType lowerType,
     , m_lowerType(lowerType)
     , m_upperType(upperType)
 {
-    ScriptWrappable::init(this);
 }
 
 void IDBKeyRange::trace(Visitor* visitor)

@@ -51,7 +51,6 @@ static unsigned long long toIntegerMilliseconds(double seconds)
 PerformanceTiming::PerformanceTiming(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
-    ScriptWrappable::init(this);
 }
 
 unsigned long long PerformanceTiming::navigationStart() const

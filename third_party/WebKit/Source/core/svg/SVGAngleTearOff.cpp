@@ -40,7 +40,6 @@ namespace blink {
 SVGAngleTearOff::SVGAngleTearOff(PassRefPtr<SVGAngle> targetProperty, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
     : SVGPropertyTearOff<SVGAngle>(targetProperty, contextElement, propertyIsAnimVal, attributeName)
 {
-    ScriptWrappable::init(this);
 }
 
 SVGAngleTearOff::~SVGAngleTearOff()

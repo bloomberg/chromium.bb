@@ -44,10 +44,7 @@ public:
     void trace(Visitor*) { }
 
 private:
-    XMLSerializer()
-    {
-        ScriptWrappable::init(this);
-    }
+    XMLSerializer() { }
 };
 
 } // namespace blink

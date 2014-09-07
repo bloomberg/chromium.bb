@@ -55,7 +55,6 @@ private:
         , m_timestamp(timestamp)
     {
         ASSERT(m_coordinates);
-        ScriptWrappable::init(this);
     }
 
     Member<Coordinates> m_coordinates;

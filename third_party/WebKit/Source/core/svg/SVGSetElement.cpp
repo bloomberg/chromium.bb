@@ -29,7 +29,6 @@ inline SVGSetElement::SVGSetElement(Document& document)
     : SVGAnimateElement(SVGNames::setTag, document)
 {
     setAnimationMode(ToAnimation);
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(SVGSetElement)

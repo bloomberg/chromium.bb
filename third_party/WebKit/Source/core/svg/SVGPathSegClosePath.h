@@ -35,10 +35,7 @@ public:
 
 private:
     SVGPathSegClosePath(SVGPathElement* element)
-        : SVGPathSegWithContext(element)
-    {
-        ScriptWrappable::init(this);
-    }
+        : SVGPathSegWithContext(element) { }
 
     virtual unsigned short pathSegType() const OVERRIDE { return PATHSEG_CLOSEPATH; }
     virtual String pathSegTypeAsLetter() const OVERRIDE { return "Z"; }

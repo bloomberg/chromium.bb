@@ -61,7 +61,6 @@ TextEvent::TextEvent()
     , m_shouldSmartReplace(false)
     , m_shouldMatchStyle(false)
 {
-    ScriptWrappable::init(this);
 }
 
 TextEvent::TextEvent(PassRefPtrWillBeRawPtr<AbstractView> view, const String& data, TextEventInputType inputType)
@@ -72,7 +71,6 @@ TextEvent::TextEvent(PassRefPtrWillBeRawPtr<AbstractView> view, const String& da
     , m_shouldSmartReplace(false)
     , m_shouldMatchStyle(false)
 {
-    ScriptWrappable::init(this);
 }
 
 TextEvent::TextEvent(PassRefPtrWillBeRawPtr<AbstractView> view, const String& data, PassRefPtrWillBeRawPtr<DocumentFragment> pastingFragment,
@@ -84,7 +82,6 @@ TextEvent::TextEvent(PassRefPtrWillBeRawPtr<AbstractView> view, const String& da
     , m_shouldSmartReplace(shouldSmartReplace)
     , m_shouldMatchStyle(shouldMatchStyle)
 {
-    ScriptWrappable::init(this);
 }
 
 TextEvent::~TextEvent()

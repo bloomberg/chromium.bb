@@ -36,8 +36,6 @@ inline SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(Document& docume
     , m_kernelUnitLength(SVGAnimatedNumberOptionalNumber::create(this, SVGNames::kernelUnitLengthAttr))
     , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_diffuseConstant);
     addToPropertyMap(m_surfaceScale);
     addToPropertyMap(m_kernelUnitLength);
@@ -179,4 +177,4 @@ PassRefPtr<FilterEffect> SVGFEDiffuseLightingElement::build(SVGFilterBuilder* fi
     return effect.release();
 }
 
-}
+} // namespace blink

@@ -75,7 +75,6 @@ private:
     {
         // Only supports NamedNodeMaps with Element associated.
         ASSERT(m_element);
-        ScriptWrappable::init(this);
     }
 
     RawPtrWillBeMember<Element> m_element;

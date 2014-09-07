@@ -52,10 +52,7 @@ public:
     unsigned length() const;
 
 private:
-    SQLResultSetRowList()
-    {
-        ScriptWrappable::init(this);
-    }
+    SQLResultSetRowList() { }
 
     Vector<String> m_columns;
     Vector<SQLValue> m_result;

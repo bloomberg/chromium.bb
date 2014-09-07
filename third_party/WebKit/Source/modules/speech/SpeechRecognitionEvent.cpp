@@ -68,7 +68,6 @@ const AtomicString& SpeechRecognitionEvent::interfaceName() const
 SpeechRecognitionEvent::SpeechRecognitionEvent()
     : m_resultIndex(0)
 {
-    ScriptWrappable::init(this);
 }
 
 SpeechRecognitionEvent::SpeechRecognitionEvent(const AtomicString& eventName, const SpeechRecognitionEventInit& initializer)
@@ -76,7 +75,6 @@ SpeechRecognitionEvent::SpeechRecognitionEvent(const AtomicString& eventName, co
     , m_resultIndex(initializer.resultIndex)
     , m_results(initializer.results)
 {
-    ScriptWrappable::init(this);
 }
 
 SpeechRecognitionEvent::SpeechRecognitionEvent(const AtomicString& eventName, unsigned long resultIndex, SpeechRecognitionResultList* results)
@@ -84,7 +82,6 @@ SpeechRecognitionEvent::SpeechRecognitionEvent(const AtomicString& eventName, un
     , m_resultIndex(resultIndex)
     , m_results(results)
 {
-    ScriptWrappable::init(this);
 }
 
 SpeechRecognitionEvent::~SpeechRecognitionEvent()

@@ -102,7 +102,6 @@ File::File(const String& path, ContentTypeLookupPolicy policy, UserVisibility us
     , m_snapshotSize(-1)
     , m_snapshotModificationTime(invalidFileTime())
 {
-    ScriptWrappable::init(this);
 }
 
 File::File(const String& path, const String& name, ContentTypeLookupPolicy policy, UserVisibility userVisibility)
@@ -114,7 +113,6 @@ File::File(const String& path, const String& name, ContentTypeLookupPolicy polic
     , m_snapshotSize(-1)
     , m_snapshotModificationTime(invalidFileTime())
 {
-    ScriptWrappable::init(this);
 }
 
 File::File(const String& path, const String& name, const String& relativePath, UserVisibility userVisibility, bool hasSnaphotData, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle> blobDataHandle)
@@ -127,7 +125,6 @@ File::File(const String& path, const String& name, const String& relativePath, U
     , m_snapshotModificationTime(hasSnaphotData ? lastModified : invalidFileTime())
     , m_relativePath(relativePath)
 {
-    ScriptWrappable::init(this);
 }
 
 File::File(const String& name, double modificationTime, PassRefPtr<BlobDataHandle> blobDataHandle)
@@ -138,7 +135,6 @@ File::File(const String& name, double modificationTime, PassRefPtr<BlobDataHandl
     , m_snapshotSize(Blob::size())
     , m_snapshotModificationTime(modificationTime)
 {
-    ScriptWrappable::init(this);
 }
 
 File::File(const String& name, const FileMetadata& metadata)
@@ -150,7 +146,6 @@ File::File(const String& name, const FileMetadata& metadata)
     , m_snapshotSize(metadata.length)
     , m_snapshotModificationTime(metadata.modificationTime)
 {
-    ScriptWrappable::init(this);
 }
 
 File::File(const KURL& fileSystemURL, const FileMetadata& metadata)
@@ -162,7 +157,6 @@ File::File(const KURL& fileSystemURL, const FileMetadata& metadata)
     , m_snapshotSize(metadata.length)
     , m_snapshotModificationTime(metadata.modificationTime)
 {
-    ScriptWrappable::init(this);
 }
 
 double File::lastModifiedMS() const

@@ -31,7 +31,6 @@ inline SVGSymbolElement::SVGSymbolElement(Document& document)
     : SVGElement(SVGNames::symbolTag, document)
     , SVGFitToViewBox(this)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(SVGSymbolElement)

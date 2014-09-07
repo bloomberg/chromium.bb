@@ -38,7 +38,6 @@ SpeechRecognitionAlternative::SpeechRecognitionAlternative(const String& transcr
     : m_transcript(transcript)
     , m_confidence(confidence)
 {
-    ScriptWrappable::init(this);
 }
 
 } // namespace blink

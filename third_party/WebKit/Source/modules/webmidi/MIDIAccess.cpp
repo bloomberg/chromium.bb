@@ -53,7 +53,6 @@ MIDIAccess::MIDIAccess(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, con
     , m_accessor(accessor)
     , m_sysexEnabled(sysexEnabled)
 {
-    ScriptWrappable::init(this);
     m_accessor->setClient(this);
     for (size_t i = 0; i < ports.size(); ++i) {
         const MIDIAccessInitializer::PortDescriptor& port = ports[i];

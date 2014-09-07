@@ -87,7 +87,6 @@ DirectoryReader::DirectoryReader(DOMFileSystemBase* fileSystem, const String& fu
     : DirectoryReaderBase(fileSystem, fullPath)
     , m_isReading(false)
 {
-    ScriptWrappable::init(this);
 }
 
 DirectoryReader::~DirectoryReader()

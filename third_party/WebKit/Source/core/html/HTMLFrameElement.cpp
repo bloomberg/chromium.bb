@@ -38,7 +38,6 @@ inline HTMLFrameElement::HTMLFrameElement(Document& document)
     , m_frameBorder(true)
     , m_frameBorderSet(false)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLFrameElement)

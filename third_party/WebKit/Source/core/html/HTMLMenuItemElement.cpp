@@ -12,7 +12,6 @@ namespace blink {
 inline HTMLMenuItemElement::HTMLMenuItemElement(Document& document)
     : HTMLElement(HTMLNames::menuitemTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(HTMLMenuItemElement)

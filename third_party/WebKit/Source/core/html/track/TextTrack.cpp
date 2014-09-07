@@ -106,7 +106,6 @@ TextTrack::TextTrack(const AtomicString& kind, const AtomicString& label, const 
     , m_renderedTrackIndex(invalidTrackIndex)
     , m_hasBeenConfigured(false)
 {
-    ScriptWrappable::init(this);
     setKind(kind);
 }
 

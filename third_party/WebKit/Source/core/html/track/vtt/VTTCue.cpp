@@ -223,7 +223,6 @@ VTTCue::VTTCue(Document& document, double startTime, double endTime, const Strin
     , m_displayTreeShouldChange(true)
     , m_notifyRegion(true)
 {
-    ScriptWrappable::init(this);
     UseCounter::count(document, UseCounter::VTTCue);
 }
 

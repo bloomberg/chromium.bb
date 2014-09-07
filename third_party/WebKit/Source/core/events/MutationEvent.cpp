@@ -28,7 +28,6 @@ namespace blink {
 MutationEvent::MutationEvent()
     : m_attrChange(0)
 {
-    ScriptWrappable::init(this);
 }
 
 MutationEvent::MutationEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<Node> relatedNode,
@@ -41,7 +40,6 @@ MutationEvent::MutationEvent(const AtomicString& type, bool canBubble, bool canc
     , m_attrName(attrName)
     , m_attrChange(attrChange)
 {
-    ScriptWrappable::init(this);
 }
 
 MutationEvent::~MutationEvent()

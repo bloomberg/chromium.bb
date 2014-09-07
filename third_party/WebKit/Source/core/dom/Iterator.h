@@ -16,7 +16,7 @@ class ExceptionState;
 class Iterator : public GarbageCollectedFinalized<Iterator>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    Iterator() { ScriptWrappable::init(this); }
+    Iterator() { }
     virtual ~Iterator() { }
 
     virtual ScriptValue next(ScriptState*, ExceptionState&) = 0;
@@ -28,5 +28,4 @@ public:
 
 } // namespace blink
 
-#endif
-
+#endif // Iterator_h

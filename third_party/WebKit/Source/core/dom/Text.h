@@ -62,10 +62,7 @@ public:
 
 protected:
     Text(TreeScope& treeScope, const String& data, ConstructionType type)
-        : CharacterData(treeScope, data, type)
-    {
-        ScriptWrappable::init(this);
-    }
+        : CharacterData(treeScope, data, type) { }
 
 private:
     virtual String nodeName() const OVERRIDE;

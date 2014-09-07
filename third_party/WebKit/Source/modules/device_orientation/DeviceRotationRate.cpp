@@ -31,7 +31,6 @@ namespace blink {
 DeviceRotationRate::DeviceRotationRate(DeviceMotionData::RotationRate* rotationRate)
     : m_rotationRate(rotationRate)
 {
-    ScriptWrappable::init(this);
 }
 
 void DeviceRotationRate::trace(Visitor* visitor)

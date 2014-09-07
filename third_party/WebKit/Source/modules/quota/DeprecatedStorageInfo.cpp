@@ -43,7 +43,6 @@ namespace blink {
 
 DeprecatedStorageInfo::DeprecatedStorageInfo()
 {
-    ScriptWrappable::init(this);
 }
 
 void DeprecatedStorageInfo::queryUsageAndQuota(ExecutionContext* executionContext, int storageType, PassOwnPtrWillBeRawPtr<StorageUsageCallback> successCallback, PassOwnPtrWillBeRawPtr<StorageErrorCallback> errorCallback)

@@ -83,7 +83,6 @@ CredentialsContainer* CredentialsContainer::create()
 
 CredentialsContainer::CredentialsContainer()
 {
-    ScriptWrappable::init(this);
 }
 
 static bool canAccessCredentialManagerAPI(ScriptState* scriptState, PassRefPtr<ScriptPromiseResolver> resolver)

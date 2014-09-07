@@ -41,7 +41,6 @@ namespace blink {
 DynamicsCompressorNode::DynamicsCompressorNode(AudioContext* context, float sampleRate)
     : AudioNode(context, sampleRate)
 {
-    ScriptWrappable::init(this);
     addInput();
     addOutput(AudioNodeOutput::create(this, defaultNumberOfOutputChannels));
 

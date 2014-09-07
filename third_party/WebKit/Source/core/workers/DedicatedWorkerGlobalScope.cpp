@@ -51,7 +51,6 @@ PassRefPtrWillBeRawPtr<DedicatedWorkerGlobalScope> DedicatedWorkerGlobalScope::c
 DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(const KURL& url, const String& userAgent, DedicatedWorkerThread* thread, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
     : WorkerGlobalScope(url, userAgent, thread, timeOrigin, workerClients)
 {
-    ScriptWrappable::init(this);
 }
 
 DedicatedWorkerGlobalScope::~DedicatedWorkerGlobalScope()

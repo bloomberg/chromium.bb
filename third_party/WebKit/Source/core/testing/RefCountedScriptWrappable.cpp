@@ -10,7 +10,6 @@ namespace blink {
 RefCountedScriptWrappable::RefCountedScriptWrappable(const String& string)
     : m_string(string)
 {
-    ScriptWrappable::init(this);
 }
 
 RefCountedScriptWrappable::~RefCountedScriptWrappable()

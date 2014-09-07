@@ -38,7 +38,6 @@ inline SVGScriptElement::SVGScriptElement(Document& document, bool wasInsertedBy
     , m_svgLoadEventTimer(this, &SVGElement::svgLoadEventTimerFired)
     , m_loader(ScriptLoader::create(this, wasInsertedByParser, alreadyStarted))
 {
-    ScriptWrappable::init(this);
 }
 
 SVGScriptElement::~SVGScriptElement()

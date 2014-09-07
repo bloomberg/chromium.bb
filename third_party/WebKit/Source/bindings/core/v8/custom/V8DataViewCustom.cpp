@@ -26,8 +26,6 @@
 #include "config.h"
 #include "bindings/core/v8/custom/V8DataViewCustom.h"
 
-#include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/custom/V8ArrayBufferViewCustom.h"
 #include "bindings/core/v8/custom/V8TypedArrayCustom.h"
 #include "core/html/canvas/DataView.h"
 
@@ -35,21 +33,4 @@ namespace blink {
 
 const WrapperTypeInfo& DataView::s_wrapperTypeInfo = V8TypedArray<DataView>::wrapperTypeInfo;
 
-static void initializeScriptWrappableForInterface(DataView* object)
-{
-    if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-        ScriptWrappable::fromObject(object)->setTypeInfo(&V8DataView::wrapperTypeInfo);
-    else
-        ASSERT_NOT_REACHED();
-}
-
 } // namespace blink
-
-// In ScriptWrappable::init, the use of a local function declaration has an issue on Windows:
-// the local declaration does not pick up the surrounding namespace. Therefore, we provide this function
-// in the global namespace.
-// (More info on the MSVC bug here: http://connect.microsoft.com/VisualStudio/feedback/details/664619/the-namespace-of-local-function-declarations-in-c)
-void webCoreInitializeScriptWrappableForInterface(blink::DataView* object)
-{
-    blink::initializeScriptWrappableForInterface(object);
-}

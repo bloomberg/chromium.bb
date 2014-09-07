@@ -59,7 +59,6 @@ inline SVGAElement::SVGAElement(Document& document)
     , m_svgTarget(SVGAnimatedString::create(this, SVGNames::targetAttr, SVGString::create()))
     , m_wasFocusedByMouse(false)
 {
-    ScriptWrappable::init(this);
     addToPropertyMap(m_svgTarget);
 }
 

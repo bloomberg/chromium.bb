@@ -31,7 +31,6 @@ SVGZoomEvent::SVGZoomEvent()
     : m_newScale(0.0f)
     , m_previousScale(0.0f)
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtr<SVGRectTearOff> SVGZoomEvent::zoomRectScreen() const

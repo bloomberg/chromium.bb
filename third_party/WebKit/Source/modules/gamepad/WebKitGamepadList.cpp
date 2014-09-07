@@ -9,7 +9,6 @@ namespace blink {
 
 WebKitGamepadList::WebKitGamepadList()
 {
-    ScriptWrappable::init(this);
 }
 
 void WebKitGamepadList::set(unsigned index, WebKitGamepad* gamepad)

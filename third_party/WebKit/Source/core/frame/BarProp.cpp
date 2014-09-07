@@ -39,7 +39,6 @@ BarProp::BarProp(LocalFrame* frame, Type type)
     : DOMWindowProperty(frame)
     , m_type(type)
 {
-    ScriptWrappable::init(this);
 }
 
 bool BarProp::visible() const

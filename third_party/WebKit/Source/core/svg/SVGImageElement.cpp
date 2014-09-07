@@ -42,8 +42,6 @@ inline SVGImageElement::SVGImageElement(Document& document)
     , m_imageLoader(SVGImageLoader::create(this))
     , m_needsLoaderURIUpdate(true)
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_x);
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
@@ -212,4 +210,4 @@ void SVGImageElement::didMoveToNewDocument(Document& oldDocument)
     SVGGraphicsElement::didMoveToNewDocument(oldDocument);
 }
 
-}
+} // namespace blink

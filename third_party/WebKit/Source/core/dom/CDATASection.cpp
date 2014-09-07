@@ -29,7 +29,6 @@ namespace blink {
 inline CDATASection::CDATASection(Document& document, const String& data)
     : Text(document, data, CreateText)
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<CDATASection> CDATASection::create(Document& document, const String& data)

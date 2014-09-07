@@ -47,7 +47,6 @@ AudioListener::AudioListener()
     , m_dopplerFactor(1)
     , m_speedOfSound(343.3)
 {
-    ScriptWrappable::init(this);
 }
 
 AudioListener::~AudioListener()

@@ -29,7 +29,6 @@ namespace blink {
 inline SVGTitleElement::SVGTitleElement(Document& document)
     : SVGElement(SVGNames::titleTag, document)
 {
-    ScriptWrappable::init(this);
 }
 
 DEFINE_NODE_FACTORY(SVGTitleElement)

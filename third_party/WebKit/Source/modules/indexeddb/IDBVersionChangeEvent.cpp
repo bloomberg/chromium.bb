@@ -38,7 +38,6 @@ IDBVersionChangeEventInit::IDBVersionChangeEventInit()
 IDBVersionChangeEvent::IDBVersionChangeEvent()
     : m_dataLoss(WebIDBDataLossNone)
 {
-    ScriptWrappable::init(this);
 }
 
 IDBVersionChangeEvent::IDBVersionChangeEvent(const AtomicString& eventType, unsigned long long oldVersion, const Nullable<unsigned long long>& newVersion, WebIDBDataLoss dataLoss, const String& dataLossMessage)
@@ -48,7 +47,6 @@ IDBVersionChangeEvent::IDBVersionChangeEvent(const AtomicString& eventType, unsi
     , m_dataLoss(dataLoss)
     , m_dataLossMessage(dataLossMessage)
 {
-    ScriptWrappable::init(this);
 }
 
 IDBVersionChangeEvent::IDBVersionChangeEvent(const AtomicString& eventType, const IDBVersionChangeEventInit& initializer)
@@ -61,7 +59,6 @@ IDBVersionChangeEvent::IDBVersionChangeEvent(const AtomicString& eventType, cons
         m_dataLoss = WebIDBDataLossNone;
     else if (initializer.dataLoss == "total")
         m_dataLoss = WebIDBDataLossTotal;
-    ScriptWrappable::init(this);
 }
 
 unsigned long long IDBVersionChangeEvent::newVersion(bool& isNull) const

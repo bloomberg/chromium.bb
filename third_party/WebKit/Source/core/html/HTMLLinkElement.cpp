@@ -140,7 +140,6 @@ inline HTMLLinkElement::HTMLLinkElement(Document& document, bool createdByParser
     , m_createdByParser(createdByParser)
     , m_isInShadowTree(false)
 {
-    ScriptWrappable::init(this);
 }
 
 PassRefPtrWillBeRawPtr<HTMLLinkElement> HTMLLinkElement::create(Document& document, bool createdByParser)

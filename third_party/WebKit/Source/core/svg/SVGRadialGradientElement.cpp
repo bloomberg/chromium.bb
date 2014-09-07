@@ -40,8 +40,6 @@ inline SVGRadialGradientElement::SVGRadialGradientElement(Document& document)
     , m_fy(SVGAnimatedLength::create(this, SVGNames::fyAttr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
     , m_fr(SVGAnimatedLength::create(this, SVGNames::frAttr, SVGLength::create(LengthModeOther), ForbidNegativeLengths))
 {
-    ScriptWrappable::init(this);
-
     // Spec: If the cx/cy/r attribute is not specified, the effect is as if a value of "50%" were specified.
     m_cx->setDefaultValueAsString("50%");
     m_cy->setDefaultValueAsString("50%");
@@ -213,4 +211,4 @@ bool SVGRadialGradientElement::selfHasRelativeLengths() const
         || m_fr->currentValue()->isRelative();
 }
 
-}
+} // namespace blink

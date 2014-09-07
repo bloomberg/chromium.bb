@@ -47,8 +47,6 @@ inline SVGFEDisplacementMapElement::SVGFEDisplacementMapElement(Document& docume
     , m_xChannelSelector(SVGAnimatedEnumeration<ChannelSelectorType>::create(this, SVGNames::xChannelSelectorAttr, CHANNEL_A))
     , m_yChannelSelector(SVGAnimatedEnumeration<ChannelSelectorType>::create(this, SVGNames::yChannelSelectorAttr, CHANNEL_A))
 {
-    ScriptWrappable::init(this);
-
     addToPropertyMap(m_scale);
     addToPropertyMap(m_in1);
     addToPropertyMap(m_in2);
@@ -148,4 +146,4 @@ PassRefPtr<FilterEffect> SVGFEDisplacementMapElement::build(SVGFilterBuilder* fi
     return effect.release();
 }
 
-}
+} // namespace blink

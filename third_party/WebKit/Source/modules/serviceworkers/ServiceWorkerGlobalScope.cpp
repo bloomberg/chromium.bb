@@ -66,7 +66,6 @@ ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(const KURL& url, const String
     : WorkerGlobalScope(url, userAgent, thread, timeOrigin, workerClients)
     , m_fetchManager(adoptPtr(new FetchManager(this)))
 {
-    ScriptWrappable::init(this);
 }
 
 ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope()

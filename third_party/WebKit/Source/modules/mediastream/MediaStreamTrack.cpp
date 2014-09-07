@@ -53,7 +53,6 @@ MediaStreamTrack::MediaStreamTrack(ExecutionContext* context, MediaStreamCompone
     , m_stopped(false)
     , m_component(component)
 {
-    ScriptWrappable::init(this);
     m_component->source()->addObserver(this);
 }
 
