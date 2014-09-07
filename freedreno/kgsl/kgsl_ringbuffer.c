@@ -60,7 +60,7 @@ static void kgsl_rb_bo_del(struct kgsl_rb_bo *bo)
 	};
 	int ret;
 
-	munmap(bo->hostptr, bo->size);
+	drm_munmap(bo->hostptr, bo->size);
 
 	ret = ioctl(bo->pipe->fd, IOCTL_KGSL_SHAREDMEM_FREE, &req);
 	if (ret) {
@@ -93,7 +93,7 @@ static struct kgsl_rb_bo * kgsl_rb_bo_new(struct kgsl_pipe *pipe, uint32_t size)
 	bo->pipe = pipe;
 	bo->gpuaddr = req.gpuaddr;
 	bo->size = size;
-	bo->hostptr = mmap(NULL, size, PROT_WRITE|PROT_READ,
+	bo->hostptr = drm_mmap(NULL, size, PROT_WRITE|PROT_READ,
 				MAP_SHARED, pipe->fd, req.gpuaddr);
 
 	return bo;

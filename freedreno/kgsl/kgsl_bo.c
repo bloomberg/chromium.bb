@@ -186,7 +186,7 @@ fd_bo_from_fbdev(struct fd_pipe *pipe, int fbfd, uint32_t size)
 	 * thinks the buffer hasn't be allocate and fails
 	 */
 	if (bo) {
-		void *fbmem = mmap(NULL, size, PROT_READ | PROT_WRITE,
+		void *fbmem = drm_mmap(NULL, size, PROT_READ | PROT_WRITE,
 				MAP_SHARED, fbfd, 0);
 		struct kgsl_map_user_mem req = {
 				.memtype = KGSL_USER_MEM_TYPE_ADDR,

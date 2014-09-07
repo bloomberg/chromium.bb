@@ -312,7 +312,7 @@ out:
 static void bo_del(struct fd_bo *bo)
 {
 	if (bo->map)
-		munmap(bo->map, bo->size);
+		drm_munmap(bo->map, bo->size);
 
 	/* TODO probably bo's in bucket list get removed from
 	 * handle table??
@@ -394,7 +394,7 @@ drm_public void * fd_bo_map(struct fd_bo *bo)
 			return NULL;
 		}
 
-		bo->map = mmap(0, bo->size, PROT_READ | PROT_WRITE, MAP_SHARED,
+		bo->map = drm_mmap(0, bo->size, PROT_READ | PROT_WRITE, MAP_SHARED,
 				bo->dev->fd, offset);
 		if (bo->map == MAP_FAILED) {
 			ERROR_MSG("mmap failed: %s", strerror(errno));
