@@ -538,7 +538,6 @@
         '../extensions/browser/error_map_unittest.cc',
         '../extensions/browser/extension_error_test_util.cc',
         '../extensions/browser/extension_error_test_util.h',
-        '../extensions/browser/extension_icon_image_unittest.cc',
         '../extensions/common/extension_l10n_util_unittest.cc',
         '../extensions/common/features/base_feature_provider_unittest.cc',
         '../extensions/common/features/complex_feature_unittest.cc',

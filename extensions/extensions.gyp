@@ -1014,6 +1014,7 @@
         'browser/event_router_unittest.cc',
         'browser/api_unittest.cc',
         'browser/api_unittest.h',
+        'browser/extension_icon_image_unittest.cc',
         'browser/extension_pref_value_map_unittest.cc',
         'browser/extension_registry_unittest.cc',
         'browser/file_highlighter_unittest.cc',
