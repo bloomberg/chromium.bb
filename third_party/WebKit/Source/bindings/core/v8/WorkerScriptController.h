@@ -43,51 +43,49 @@ namespace blink {
 class ErrorEvent;
 class ExceptionState;
 class ScriptSourceCode;
-class ScriptValue;
 class WorkerGlobalScope;
-class WorkerGlobalScopeExecutionState;
 
 class WorkerScriptController {
 public:
     explicit WorkerScriptController(WorkerGlobalScope&);
     ~WorkerScriptController();
 
-    WorkerGlobalScope& workerGlobalScope() { return m_workerGlobalScope; }
-
-    bool initializeContextIfNeeded();
-
+    bool isExecutionForbidden() const;
+    bool isExecutionTerminating() const;
     void evaluate(const ScriptSourceCode&, RefPtrWillBeRawPtr<ErrorEvent>* = 0);
 
-    void rethrowExceptionFromImportedScript(PassRefPtrWillBeRawPtr<ErrorEvent>, ExceptionState&);
-
-    // Async request to terminate a future JS execution. Eventually causes termination
-    // exception raised during JS execution, if the worker thread happens to run JS.
-    // After JS execution was terminated in this way, the Worker thread has to use
-    // forbidExecution()/isExecutionForbidden() to guard against reentry into JS.
-    // Can be called from any thread.
-    void scheduleExecutionTermination();
-    bool isExecutionTerminating() const;
-
-    // Called on Worker thread when JS exits with termination exception caused by forbidExecution() request,
-    // or by Worker thread termination code to prevent future entry into JS.
+    // Prevents future JavaScript execution. See
+    // scheduleExecutionTermination, isExecutionForbidden.
     void forbidExecution();
-    bool isExecutionForbidden() const;
 
+    // Used by WorkerThread:
+    bool initializeContextIfNeeded();
+    // Async request to terminate future JavaScript execution on the
+    // worker thread. JavaScript evaluation exits with a
+    // non-continuable exception and WorkerScriptController calls
+    // forbidExecution to prevent further JavaScript execution. Use
+    // forbidExecution()/isExecutionForbidden() to guard against
+    // reentry into JavaScript.
+    void scheduleExecutionTermination();
+
+    // Used by WorkerGlobalScope:
+    void rethrowExceptionFromImportedScript(PassRefPtrWillBeRawPtr<ErrorEvent>, ExceptionState&);
     void disableEval(const String&);
-
-    v8::Isolate* isolate() const { return m_isolate; }
-    DOMWrapperWorld& world() const { return *m_world; }
-    ScriptState* scriptState() { return m_scriptState.get(); }
-    v8::Local<v8::Context> context() { return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>(); }
-    bool isContextInitialized() { return m_scriptState && !!m_scriptState->perContextData(); }
-
     // Send a notification about current thread is going to be idle.
     // Returns true if the embedder should stop calling idleNotification
     // until real work has been done.
     bool idleNotification() { return m_isolate->IdleNotification(1000); }
 
+    // Used by Inspector agents:
+    ScriptState* scriptState() { return m_scriptState.get(); }
+
+    // Used by V8 bindings:
+    v8::Local<v8::Context> context() { return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>(); }
+
 private:
     class WorkerGlobalScopeExecutionState;
+
+    bool isContextInitialized() { return m_scriptState && !!m_scriptState->perContextData(); }
 
     // Evaluate a script file in the current execution environment.
     ScriptValue evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition);
