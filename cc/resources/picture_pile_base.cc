@@ -48,7 +48,8 @@ PicturePileBase::PicturePileBase()
       show_debug_picture_borders_(false),
       clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
       has_any_recordings_(false),
-      has_text_(false) {
+      has_text_(false),
+      is_mask_(false) {
   tiling_.SetMaxTextureSize(gfx::Size(kBasePictureSize, kBasePictureSize));
   tile_grid_info_.fTileInterval.setEmpty();
   tile_grid_info_.fMargin.setEmpty();
@@ -69,7 +70,8 @@ PicturePileBase::PicturePileBase(const PicturePileBase* other)
       show_debug_picture_borders_(other->show_debug_picture_borders_),
       clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
       has_any_recordings_(other->has_any_recordings_),
-      has_text_(other->has_text_) {
+      has_text_(other->has_text_),
+      is_mask_(other->is_mask_) {
 }
 
 PicturePileBase::~PicturePileBase() {

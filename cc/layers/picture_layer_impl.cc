@@ -62,7 +62,6 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
     : LayerImpl(tree_impl, id),
       twin_layer_(NULL),
       pile_(PicturePileImpl::Create()),
-      is_mask_(false),
       ideal_page_scale_(0.f),
       ideal_device_scale_(0.f),
       ideal_source_scale_(0.f),
@@ -114,7 +113,6 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->twin_layer_ = NULL;
   twin_layer_ = NULL;
 
-  layer_impl->SetIsMask(is_mask_);
   layer_impl->pile_ = pile_;
 
   // Tilings would be expensive to push, so we swap.
@@ -590,7 +588,7 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
   // memory savings that we can get. Note that we don't handle solid color
   // masks, so we shouldn't bother analyzing those.
   // Bugs: crbug.com/397198, crbug.com/396908
-  if (!is_mask_)
+  if (!pile_->is_mask())
     flags = Tile::USE_PICTURE_ANALYSIS;
 
   return layer_tree_impl()->tile_manager()->CreateTile(
@@ -649,15 +647,17 @@ int PictureLayerImpl::GetSkewportExtrapolationLimitInContentPixels() const {
 
 gfx::Size PictureLayerImpl::CalculateTileSize(
     const gfx::Size& content_bounds) const {
-  if (is_mask_) {
-    int max_size = layer_tree_impl()->MaxTextureSize();
-    return gfx::Size(
-        std::min(max_size, content_bounds.width()),
-        std::min(max_size, content_bounds.height()));
-  }
-
   int max_texture_size =
       layer_tree_impl()->resource_provider()->max_texture_size();
+
+  if (pile_->is_mask()) {
+    // Masks are not tiled, so if we can't cover the whole mask with one tile,
+    // don't make any tiles at all. Returning an empty size signals this.
+    if (content_bounds.width() > max_texture_size ||
+        content_bounds.height() > max_texture_size)
+      return gfx::Size();
+    return content_bounds;
+  }
 
   gfx::Size default_tile_size = layer_tree_impl()->settings().default_tile_size;
   if (layer_tree_impl()->use_gpu_rasterization()) {
@@ -760,14 +760,6 @@ void PictureLayerImpl::SyncTiling(
   }
 }
 
-void PictureLayerImpl::SetIsMask(bool is_mask) {
-  if (is_mask_ == is_mask)
-    return;
-  is_mask_ = is_mask;
-  if (tilings_)
-    tilings_->RemoveAllTiles();
-}
-
 ResourceProvider::ResourceId PictureLayerImpl::ContentsResourceId() const {
   gfx::Rect content_rect(content_bounds());
   float scale = MaximumTilingContentsScale();
@@ -779,8 +771,9 @@ ResourceProvider::ResourceId PictureLayerImpl::ContentsResourceId() const {
     return 0;
 
   // Masks only supported if they fit on exactly one tile.
-  if (iter.geometry_rect() != content_rect)
-    return 0;
+  DCHECK(iter.geometry_rect() == content_rect)
+      << "iter rect " << iter.geometry_rect().ToString() << " content rect "
+      << content_rect.ToString();
 
   const ManagedTileState::TileVersion& tile_version =
       iter->GetTileVersionForDrawing();
@@ -1196,13 +1189,14 @@ void PictureLayerImpl::RecalculateRasterScales() {
     }
   }
 
-  // If this layer would only create one tile at this content scale,
+  // If this layer would create zero or one tiles at this content scale,
   // don't create a low res tiling.
   gfx::Size content_bounds =
       gfx::ToCeiledSize(gfx::ScaleSize(bounds(), raster_contents_scale_));
   gfx::Size tile_size = CalculateTileSize(content_bounds);
-  if (tile_size.width() >= content_bounds.width() &&
-      tile_size.height() >= content_bounds.height()) {
+  bool tile_covers_bounds = tile_size.width() >= content_bounds.width() &&
+                            tile_size.height() >= content_bounds.height();
+  if (tile_size.IsEmpty() || tile_covers_bounds) {
     low_res_raster_contents_scale_ = raster_contents_scale_;
     return;
   }

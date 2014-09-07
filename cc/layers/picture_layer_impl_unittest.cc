@@ -109,8 +109,6 @@ class PictureLayerImplTest : public testing::Test {
     SetupPendingTree(active_pile);
     ActivateTree();
     SetupPendingTree(pending_pile);
-    host_impl_.pending_tree()->SetPageScaleFactorAndLimits(1.f, 0.25f, 100.f);
-    host_impl_.active_tree()->SetPageScaleFactorAndLimits(1.f, 0.25f, 100.f);
   }
 
   void CreateHighLowResAndSetAllTilesVisible() {
@@ -134,6 +132,7 @@ class PictureLayerImplTest : public testing::Test {
 
   void SetupPendingTree(scoped_refptr<PicturePileImpl> pile) {
     host_impl_.CreatePendingTree();
+    host_impl_.pending_tree()->SetPageScaleFactorAndLimits(1.f, 0.25f, 100.f);
     LayerTreeImpl* pending_tree = host_impl_.pending_tree();
     // Clear recycled tree.
     pending_tree->DetachLayerTree();
@@ -1044,6 +1043,12 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
     EXPECT_EQ(x, active_layer_->expression);  \
   } while (false)
 
+#define EXPECT_BOTH_NE(expression, x)         \
+  do {                                        \
+    EXPECT_NE(x, pending_layer_->expression); \
+    EXPECT_NE(x, active_layer_->expression);  \
+  } while (false)
+
 TEST_F(PictureLayerImplTest, DontAddLowResDuringAnimation) {
   // Make sure this layer covers multiple tiles, since otherwise low
   // res won't get created because it is too small.
@@ -1155,8 +1160,8 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
   ResetTilingsAndRasterScales();
 
   // Mask layers dont create low res since they always fit on one tile.
-  pending_layer_->SetIsMask(true);
-  active_layer_->SetIsMask(true);
+  pending_layer_->pile()->set_is_mask(true);
+  active_layer_->pile()->set_is_mask(true);
   SetContentsScaleOnBothLayers(contents_scale,
                                device_scale,
                                page_scale,
@@ -1164,6 +1169,53 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
                                animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), contents_scale);
   EXPECT_BOTH_EQ(num_tilings(), 1u);
+}
+
+TEST_F(PictureLayerImplTest, HugeMasksDontGetTiles) {
+  gfx::Size tile_size(100, 100);
+
+  scoped_refptr<FakePicturePileImpl> valid_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, gfx::Size(1000, 1000));
+  valid_pile->set_is_mask(true);
+  SetupPendingTree(valid_pile);
+
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  EXPECT_EQ(1.f, pending_layer_->HighResTiling()->contents_scale());
+  EXPECT_EQ(1u, pending_layer_->num_tilings());
+
+  pending_layer_->HighResTiling()->CreateAllTilesForTesting();
+  host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(
+      pending_layer_->HighResTiling()->AllTilesForTesting());
+
+  ActivateTree();
+
+  // Mask layers have a tiling with a single tile in it.
+  EXPECT_EQ(1u, active_layer_->HighResTiling()->AllTilesForTesting().size());
+  // The mask resource exists.
+  EXPECT_NE(0u, active_layer_->ContentsResourceId());
+
+  // Resize larger than the max texture size.
+  int max_texture_size = host_impl_.GetRendererCapabilities().max_texture_size;
+  scoped_refptr<FakePicturePileImpl> huge_pile =
+      FakePicturePileImpl::CreateFilledPile(
+          tile_size, gfx::Size(max_texture_size + 1, 10));
+  huge_pile->set_is_mask(true);
+  SetupPendingTree(huge_pile);
+
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  EXPECT_EQ(1.f, pending_layer_->HighResTiling()->contents_scale());
+  EXPECT_EQ(1u, pending_layer_->num_tilings());
+
+  pending_layer_->HighResTiling()->CreateAllTilesForTesting();
+  host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(
+      pending_layer_->HighResTiling()->AllTilesForTesting());
+
+  ActivateTree();
+
+  // Mask layers have a tiling, but there should be no tiles in it.
+  EXPECT_EQ(0u, active_layer_->HighResTiling()->AllTilesForTesting().size());
+  // The mask resource is empty.
+  EXPECT_EQ(0u, active_layer_->ContentsResourceId());
 }
 
 TEST_F(PictureLayerImplTest, ReleaseResources) {
@@ -3397,10 +3449,10 @@ TEST_F(PictureLayerImplTest, UpdateTilesForMasksWithNoVisibleContent) {
 
   scoped_refptr<FakePicturePileImpl> pending_pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, bounds);
+  pending_pile->set_is_mask(true);
   scoped_ptr<FakePictureLayerImpl> mask = FakePictureLayerImpl::CreateWithPile(
       host_impl_.pending_tree(), 3, pending_pile);
 
-  mask->SetIsMask(true);
   mask->SetBounds(bounds);
   mask->SetContentBounds(bounds);
   mask->SetDrawsContent(true);

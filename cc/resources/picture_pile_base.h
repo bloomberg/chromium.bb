@@ -51,6 +51,9 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   // If this pile has ever contained any recordings with text.
   bool has_text() const { return has_text_; }
 
+  void set_is_mask(bool is_mask) { is_mask_ = is_mask; }
+  bool is_mask() const { return is_mask_; }
+
   static void ComputeTileGridInfo(const gfx::Size& tile_grid_size,
                                   SkTileGridFactory::TileGridInfo* info);
 
@@ -119,6 +122,7 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   // positive.
   bool has_any_recordings_;
   bool has_text_;
+  bool is_mask_;
 
  private:
   void SetBufferPixels(int buffer_pixels);

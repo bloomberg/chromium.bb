@@ -21,7 +21,6 @@ PictureLayer::PictureLayer(ContentLayerClient* client)
     : client_(client),
       pile_(make_scoped_refptr(new PicturePile())),
       instrumentation_object_tracker_(id()),
-      is_mask_(false),
       update_source_frame_number_(-1),
       can_use_lcd_text_last_frame_(can_use_lcd_text()) {
 }
@@ -49,8 +48,6 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
     // If update called, then pile size must match bounds pushed to impl layer.
     DCHECK_EQ(layer_impl->bounds().ToString(), pile_->tiling_size().ToString());
   }
-
-  layer_impl->SetIsMask(is_mask_);
 
   // Unlike other properties, invalidation must always be set on layer_impl.
   // See PictureLayerImpl::PushPropertiesTo for more details.
@@ -149,7 +146,7 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
 }
 
 void PictureLayer::SetIsMask(bool is_mask) {
-  is_mask_ = is_mask;
+  pile_->set_is_mask(is_mask);
 }
 
 Picture::RecordingMode PictureLayer::RecordingMode() const {

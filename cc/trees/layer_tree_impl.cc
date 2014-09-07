@@ -468,7 +468,7 @@ bool LayerTreeImpl::UpdateDrawProperties() {
         device_scale_factor(),
         total_page_scale_factor(),
         page_scale_layer,
-        MaxTextureSize(),
+        resource_provider()->max_texture_size(),
         settings().can_use_lcd_text,
         can_render_to_separate_surface,
         settings().layer_transforms_should_scale_layer_contents,
@@ -722,10 +722,6 @@ LayerImpl* LayerTreeImpl::FindRecycleTreeLayerById(int id) {
   if (!tree)
     return NULL;
   return tree->LayerById(id);
-}
-
-int LayerTreeImpl::MaxTextureSize() const {
-  return layer_tree_host_impl_->GetRendererCapabilities().max_texture_size;
 }
 
 bool LayerTreeImpl::PinchGestureActive() const {

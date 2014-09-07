@@ -135,8 +135,7 @@ class CC_EXPORT PictureLayerImpl
   // PushPropertiesTo active tree => pending tree.
   void SyncTiling(const PictureLayerTiling* tiling);
 
-  // Mask-related functions
-  void SetIsMask(bool is_mask);
+  // Mask-related functions.
   virtual ResourceProvider::ResourceId ContentsResourceId() const OVERRIDE;
 
   virtual size_t GPUMemoryUsageInBytes() const OVERRIDE;
@@ -204,8 +203,6 @@ class CC_EXPORT PictureLayerImpl
   scoped_ptr<PictureLayerTilingSet> tilings_;
   scoped_refptr<PicturePileImpl> pile_;
   Region invalidation_;
-
-  bool is_mask_;
 
   float ideal_page_scale_;
   float ideal_device_scale_;

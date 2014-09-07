@@ -91,6 +91,10 @@ PictureLayerTiling::PictureLayerTiling(float contents_scale,
   gfx::Size content_bounds =
       gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds, contents_scale));
   gfx::Size tile_size = client_->CalculateTileSize(content_bounds);
+  if (tile_size.IsEmpty()) {
+    layer_bounds_ = gfx::Size();
+    content_bounds = gfx::Size();
+  }
 
   DCHECK(!gfx::ToFlooredSize(
       gfx::ScaleSize(layer_bounds, contents_scale)).IsEmpty()) <<
@@ -168,14 +172,20 @@ void PictureLayerTiling::UpdateTilesToCurrentPile(
     const gfx::Size& new_layer_bounds) {
   DCHECK(!new_layer_bounds.IsEmpty());
 
-  gfx::Size old_layer_bounds = layer_bounds_;
-  layer_bounds_ = new_layer_bounds;
-
-  gfx::Size content_bounds =
-      gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds_, contents_scale_));
   gfx::Size tile_size = tiling_data_.max_texture_size();
 
-  if (layer_bounds_ != old_layer_bounds) {
+  if (new_layer_bounds != layer_bounds_) {
+    gfx::Size content_bounds =
+        gfx::ToCeiledSize(gfx::ScaleSize(new_layer_bounds, contents_scale_));
+
+    tile_size = client_->CalculateTileSize(content_bounds);
+    if (tile_size.IsEmpty()) {
+      layer_bounds_ = gfx::Size();
+      content_bounds = gfx::Size();
+    } else {
+      layer_bounds_ = new_layer_bounds;
+    }
+
     // The SetLiveTilesRect() method would drop tiles outside the new bounds,
     // but may do so incorrectly if resizing the tiling causes the number of
     // tiles in the tiling_data_ to change.
@@ -229,8 +239,6 @@ void PictureLayerTiling::UpdateTilesToCurrentPile(
       for (int i = before_left; i <= before_right; ++i)
         CreateTile(i, after_bottom, twin_tiling);
     }
-
-    tile_size = client_->CalculateTileSize(content_bounds);
   }
 
   if (tile_size != tiling_data_.max_texture_size()) {
