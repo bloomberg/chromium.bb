@@ -145,12 +145,16 @@ void InspectorFrontendHost::disconnectClient()
 
 void InspectorFrontendHost::setZoomFactor(float zoom)
 {
+    if (!m_frontendPage)
+        return;
     if (LocalFrame* frame = m_frontendPage->deprecatedLocalMainFrame())
         frame->setPageAndTextZoomFactors(zoom, 1);
 }
 
 float InspectorFrontendHost::zoomFactor()
 {
+    if (!m_frontendPage)
+        return 1;
     if (LocalFrame* frame = m_frontendPage->deprecatedLocalMainFrame())
         return frame->pageZoomFactor();
     return 1;
@@ -158,6 +162,8 @@ float InspectorFrontendHost::zoomFactor()
 
 void InspectorFrontendHost::setInjectedScriptForOrigin(const String& origin, const String& script)
 {
+    if (!m_frontendPage)
+        return;
     m_frontendPage->inspectorController().setInjectedScriptForOrigin(origin, script);
 }
 
