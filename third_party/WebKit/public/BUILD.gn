@@ -4,8 +4,6 @@
 
 import("//tools/grit/grit_rule.gni")
 
-if (!is_android) {
-
 # GYP version: WebKit/public/blink.gyp:blink
 group("blink") {
   deps = [
@@ -49,8 +47,6 @@ group("all_blink") {
     "//third_party/WebKit/Source/wtf:wtf_unittests",
   ]
 }
-
-}  # !is_android
 
 config("blink_headers_config") {
   include_dirs = [ ".." ]
