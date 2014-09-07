@@ -2,10 +2,10 @@ layer at (0,0) size 480x360
   RenderView at (0,0) size 480x360
 layer at (0,0) size 480x360
   RenderSVGRoot {svg} at (0,0) size 480x360
-    RenderSVGContainer {g} at (90,9) size 348x281
-      RenderSVGText {text} at (170,9) size 140x14 contains 1 chunk(s)
-        RenderSVGInlineText {#text} at (0,0) size 139x14
-          chunk 1 (middle anchor) text run 1 at (170.63,20.00) startOffset 0 endOffset 27 width 138.74: "Filters: feSpecularLighting"
+    RenderSVGContainer {g} at (90,8) size 348x282
+      RenderSVGText {text} at (168,8) size 144x15 contains 1 chunk(s)
+        RenderSVGInlineText {#text} at (0,0) size 143x15
+          chunk 1 (middle anchor) text run 1 at (168.50,20.00) startOffset 0 endOffset 27 width 143.00: "Filters: feSpecularLighting"
       RenderSVGHiddenContainer {defs} at (0,0) size 0x0
         RenderSVGResourceFilter {filter} [id="surfaceScaleA"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
           [feSpecularLighting surfaceScale="1.00" specualConstant="1.00" specularExponent="1.00"]

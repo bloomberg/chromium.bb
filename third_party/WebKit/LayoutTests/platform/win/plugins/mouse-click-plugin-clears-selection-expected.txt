@@ -3,14 +3,14 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock (anonymous) at (0,0) size 784x121
+      RenderBlock (anonymous) at (0,0) size 784x122
         RenderBR {BR} at (100,100) size 0x0
-        RenderTextControl {INPUT} at (0,100) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderTextControl {INPUT} at (0,100) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,121) size 784x0
+      RenderBlock {DIV} at (0,122) size 784x0
 layer at (8,8) size 100x100
   RenderEmbeddedObject {EMBED} at (0,0) size 100x100
-layer at (10,111) size 169x15
-  RenderBlock {DIV} at (2,3) size 169x15
-    RenderText {#text} at (0,0) size 29x15
-      text run at (0,0) width 29: "hello"
+layer at (10,111) size 169x16
+  RenderBlock {DIV} at (2,3) size 169x16
+    RenderText {#text} at (0,0) size 27x16
+      text run at (0,0) width 27: "hello"

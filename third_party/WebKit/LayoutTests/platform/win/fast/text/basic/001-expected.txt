@@ -6,9 +6,9 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,0) size 784x37
         RenderText {#text} at (0,0) size 404x37
           text run at (0,0) width 404: "This is fixed pitch. "
-        RenderInline {FONT} at (0,0) size 49x11
-          RenderText {#text} at (403,18) size 49x11
-            text run at (403,18) width 49: "This is not."
+        RenderInline {FONT} at (0,0) size 52x13
+          RenderText {#text} at (403,17) size 52x13
+            text run at (403,17) width 52: "This is not."
       RenderBlock (anonymous) at (0,37) size 784x30
         RenderTable {TABLE} at (0,0) size 124x30 [border: (2px outset #808080)]
           RenderTableSection {TBODY} at (2,2) size 120x26
@@ -17,8 +17,8 @@ layer at (0,0) size 800x600
                 RenderText {#text} at (2,2) size 112x17
                   text run at (2,2) width 112: "This is also not."
       RenderBlock (anonymous) at (0,67) size 784x37
-        RenderInline {FONT} at (0,0) size 42x11
-          RenderText {#text} at (0,18) size 42x11
-            text run at (0,18) width 42: "More text"
-        RenderText {#text} at (41,0) size 155x37
-          text run at (41,0) width 155: " Ending."
+        RenderInline {FONT} at (0,0) size 44x13
+          RenderText {#text} at (0,17) size 44x13
+            text run at (0,17) width 44: "More text"
+        RenderText {#text} at (44,0) size 154x37
+          text run at (44,0) width 154: " Ending."

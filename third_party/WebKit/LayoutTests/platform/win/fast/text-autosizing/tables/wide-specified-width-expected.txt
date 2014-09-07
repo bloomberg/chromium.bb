@@ -4,28 +4,28 @@ layer at (0,0) size 800x199
   RenderBlock {HTML} at (0,0) size 800x199
     RenderBody {BODY} at (0,0) size 800x198
       RenderBlock {DIV} at (0,0) size 600x36
-        RenderText {#text} at (0,0) size 241x14
-          text run at (0,0) width 241: "Table autosizing tests - wide-specified-width.html"
-        RenderBR {BR} at (240,0) size 1x14
-        RenderText {#text} at (0,15) size 469x14
-          text run at (0,15) width 469: "This test passes if the cell with lots of text is autosized and none of the other 5 cells are autosized."
+        RenderText {#text} at (0,0) size 242x15
+          text run at (0,0) width 242: "Table autosizing tests - wide-specified-width.html"
+        RenderBR {BR} at (242,0) size 0x15
+        RenderText {#text} at (0,16) size 472x15
+          text run at (0,16) width 472: "This test passes if the cell with lots of text is autosized and none of the other 5 cells are autosized."
       RenderTable {TABLE} at (1,37) size 500x161 [border: none]
         RenderTableSection {TBODY} at (0,0) size 499x160
           RenderTableRow {TR} at (0,0) size 499x25
-            RenderTableCell {TD} at (0,3) size 27x18 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 24x14
-                text run at (2,2) width 24: "hello"
-            RenderTableCell {TD} at (27,0) size 445x25 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=1 rs=1 cs=1]
+            RenderTableCell {TD} at (0,3) size 26x19 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 23x15
+                text run at (2,2) width 23: "hello"
+            RenderTableCell {TD} at (26,0) size 447x25 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 38x21
                 text run at (2,2) width 38: "hello"
-            RenderTableCell {TD} at (472,3) size 27x18 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 24x14
-                text run at (2,2) width 24: "hello"
+            RenderTableCell {TD} at (473,3) size 26x19 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 23x15
+                text run at (2,2) width 23: "hello"
           RenderTableRow {TR} at (0,25) size 499x135
-            RenderTableCell {TD} at (0,83) size 27x18 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 24x14
-                text run at (2,2) width 24: "hello"
-            RenderTableCell {TD} at (27,25) size 445x135 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
+            RenderTableCell {TD} at (0,83) size 26x19 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 23x15
+                text run at (2,2) width 23: "hello"
+            RenderTableCell {TD} at (26,25) size 447x135 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
               RenderText {#text} at (2,2) size 418x131
                 text run at (2,2) width 418: "hello hello hello hello hello hello hello hello hello hello"
                 text run at (2,24) width 418: "hello hello hello hello hello hello hello hello hello hello"
@@ -33,6 +33,6 @@ layer at (0,0) size 800x199
                 text run at (2,68) width 418: "hello hello hello hello hello hello hello hello hello hello"
                 text run at (2,90) width 418: "hello hello hello hello hello hello hello hello hello hello"
                 text run at (2,112) width 80: "hello hello"
-            RenderTableCell {TD} at (472,83) size 27x18 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=2 rs=1 cs=1]
-              RenderText {#text} at (2,2) size 24x14
-                text run at (2,2) width 24: "hello"
+            RenderTableCell {TD} at (473,83) size 26x19 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 23x15
+                text run at (2,2) width 23: "hello"

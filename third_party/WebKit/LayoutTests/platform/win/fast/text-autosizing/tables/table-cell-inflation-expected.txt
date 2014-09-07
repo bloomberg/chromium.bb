@@ -4,11 +4,11 @@ layer at (0,0) size 800x240
   RenderBlock {HTML} at (0,0) size 800x240
     RenderBody {BODY} at (0,0) size 500x239
       RenderBlock {DIV} at (0,0) size 600x36
-        RenderText {#text} at (0,0) size 229x14
-          text run at (0,0) width 229: "Table autosizing tests - table-cell-inflation.html"
-        RenderBR {BR} at (228,0) size 1x14
-        RenderText {#text} at (0,15) size 363x14
-          text run at (0,15) width 363: "This test passes if there are no numbers overflowing outside this green box."
+        RenderText {#text} at (0,0) size 227x15
+          text run at (0,0) width 227: "Table autosizing tests - table-cell-inflation.html"
+        RenderBR {BR} at (227,0) size 0x15
+        RenderText {#text} at (0,16) size 361x15
+          text run at (0,16) width 361: "This test passes if there are no numbers overflowing outside this green box."
       RenderTable {TABLE} at (1,37) size 722x202 [border: none]
         RenderTableSection {TBODY} at (0,0) size 721x201
           RenderTableRow {TR} at (0,0) size 721x201

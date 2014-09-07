@@ -1,18 +1,18 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x267
-  RenderBlock {HTML} at (0,0) size 800x267
-    RenderBody {BODY} at (0,0) size 800x266
+layer at (0,0) size 800x268
+  RenderBlock {HTML} at (0,0) size 800x268
+    RenderBody {BODY} at (0,0) size 800x267
       RenderBlock {DIV} at (0,0) size 600x36
-        RenderText {#text} at (0,0) size 247x14
-          text run at (0,0) width 247: "Table autosizing tests - nested-table-wrapping.html"
-        RenderBR {BR} at (246,0) size 1x14
-        RenderText {#text} at (0,15) size 390x14
-          text run at (0,15) width 390: "This test passes if \"the table cell should tightly wrap this text\" is tightly wrapped."
-      RenderTable {TABLE} at (1,37) size 798x229 [border: none]
-        RenderTableSection {TBODY} at (0,0) size 797x228
-          RenderTableRow {TR} at (0,0) size 797x228
-            RenderTableCell {TD} at (0,0) size 797x228 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+        RenderText {#text} at (0,0) size 248x15
+          text run at (0,0) width 248: "Table autosizing tests - nested-table-wrapping.html"
+        RenderBR {BR} at (248,0) size 0x15
+        RenderText {#text} at (0,16) size 396x15
+          text run at (0,16) width 396: "This test passes if \"the table cell should tightly wrap this text\" is tightly wrapped."
+      RenderTable {TABLE} at (1,37) size 798x230 [border: none]
+        RenderTableSection {TBODY} at (0,0) size 797x229
+          RenderTableRow {TR} at (0,0) size 797x229
+            RenderTableCell {TD} at (0,0) size 797x229 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
               RenderBlock (anonymous) at (2,2) size 794x204
                 RenderText {#text} at (0,0) size 786x203
                   text run at (0,0) width 786: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
@@ -21,9 +21,9 @@ layer at (0,0) size 800x267
                   text run at (0,102) width 786: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
                   text run at (0,136) width 786: "Autosize Autosize Autosize Autosize Autosize Autosize Autosize"
                   text run at (0,170) width 446: "Autosize Autosize Autosize Autosize"
-              RenderTable {TABLE} at (3,207) size 203x19 [border: none]
-                RenderTableSection {TBODY} at (0,0) size 202x18
-                  RenderTableRow {TR} at (0,0) size 202x18
-                    RenderTableCell {TD} at (0,0) size 202x18 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
-                      RenderText {#text} at (2,2) size 199x14
-                        text run at (2,2) width 199: "the table cell should tightly wrap this text"
+              RenderTable {TABLE} at (3,207) size 204x20 [border: none]
+                RenderTableSection {TBODY} at (0,0) size 203x19
+                  RenderTableRow {TR} at (0,0) size 203x19
+                    RenderTableCell {TD} at (0,0) size 203x19 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+                      RenderText {#text} at (2,2) size 200x15
+                        text run at (2,2) width 200: "the table cell should tightly wrap this text"

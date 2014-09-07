@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,52) size 784x18
         RenderText {#text} at (0,0) size 388x17
           text run at (0,0) width 388: "\x{201C}onelongwrodwithnobreaks\x{201D} should not break in the middle."
-      RenderBlock {DIV} at (0,86) size 200x24 [bgcolor=#FFFF00]
-        RenderText {#text} at (0,0) size 169x24
-          text run at (0,0) width 169: "lllllllllllllllllllllllllllllllllllllllllllllllllllllll"
-          text run at (0,12) width 118: "onelongwrodwithnobreaks"
+      RenderBlock {DIV} at (0,86) size 200x28 [bgcolor=#FFFF00]
+        RenderText {#text} at (0,0) size 165x28
+          text run at (0,0) width 165: "lllllllllllllllllllllllllllllllllllllllllllllllllllllll"
+          text run at (0,14) width 120: "onelongwrodwithnobreaks"

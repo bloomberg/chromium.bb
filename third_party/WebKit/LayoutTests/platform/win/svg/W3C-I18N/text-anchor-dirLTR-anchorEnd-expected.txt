@@ -13,10 +13,10 @@ layer at (0,0) size 800x600
         RenderSVGInlineText {#text} at (0,0) size 115x12
           chunk 1 (end anchor) text run 1 at (115.82,235.00) startOffset 0 endOffset 38 width 114.18 RTL: "\x{62C}\x{639}\x{644} \x{634}\x{628}\x{643}\x{629} \x{627}\x{644}\x{648}\x{64A}\x{628} \x{627}\x{644}\x{639}\x{627}\x{644}\x{645}\x{64A}\x{651}\x{629} \x{639}\x{627}\x{644}\x{645}\x{64A}\x{651}\x{629} \x{62D}\x{642}\x{64B}\x{651}\x{627}"
       RenderSVGImage {image} at (280,183) size 214x44
-    RenderSVGContainer {g} at (16,557) size 73x12
-      RenderSVGText {text} at (10,334) size 44x8 contains 1 chunk(s)
-        RenderSVGInlineText {#text} at (0,0) size 44x7
-          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 43.03: "$Revision: 1.4 $"
+    RenderSVGContainer {g} at (16,556) size 77x14
+      RenderSVGText {text} at (10,334) size 46x8 contains 1 chunk(s)
+        RenderSVGInlineText {#text} at (0,0) size 46x8
+          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 45.60: "$Revision: 1.4 $"
     RenderSVGRect {rect} at (0,0) size 800x600 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
     RenderSVGContainer {g} at (0,0) size 800x38
       RenderSVGRect {rect} at (0,0) size 800x36 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FF0000]}] [x=1.00] [y=1.00] [width=478.00] [height=20.00]
