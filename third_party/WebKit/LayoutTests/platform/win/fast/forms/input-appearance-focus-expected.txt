@@ -6,13 +6,13 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,0) size 784x18
         RenderText {#text} at (0,0) size 772x17
           text run at (0,0) width 772: "This test uses the new text field to test focus() and blur() and to make sure that onFocus and onBlur events fire correctly."
-      RenderBlock {P} at (0,34) size 784x21
-        RenderTextControl {INPUT} at (0,0) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderText {#text} at (173,1) size 4x17
-          text run at (173,1) width 4: " "
-        RenderTextControl {INPUT} at (177,0) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderBlock {P} at (0,34) size 784x22
+        RenderTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (173,2) size 4x17
+          text run at (173,2) width 4: " "
+        RenderTextControl {INPUT} at (177,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,71) size 784x72
+      RenderBlock {DIV} at (0,72) size 784x72
         RenderBR {BR} at (0,0) size 0x17
         RenderText {#text} at (0,18) size 328x17
           text run at (0,18) width 328: "Test Passed. Text field 1's onFocus event has fired."
@@ -22,13 +22,13 @@ layer at (0,0) size 800x600
         RenderBR {BR} at (317,50) size 1x0
         RenderText {#text} at (0,54) size 328x17
           text run at (0,54) width 328: "Test Passed. Text field 2's onFocus event has fired."
-      RenderBlock {P} at (0,159) size 784x0
-layer at (10,45) size 169x15
-  RenderBlock {DIV} at (2,3) size 169x15
-    RenderText {#text} at (0,0) size 92x15
-      text run at (0,0) width 92: "My Text Field 1"
-layer at (187,45) size 169x15
-  RenderBlock {DIV} at (2,3) size 169x15
-    RenderText {#text} at (0,0) size 92x15
-      text run at (0,0) width 92: "My Text Field 2"
+      RenderBlock {P} at (0,160) size 784x0
+layer at (10,45) size 169x16
+  RenderBlock {DIV} at (2,3) size 169x16
+    RenderText {#text} at (0,0) size 90x16
+      text run at (0,0) width 90: "My Text Field 1"
+layer at (187,45) size 169x16
+  RenderBlock {DIV} at (2,3) size 169x16
+    RenderText {#text} at (0,0) size 90x16
+      text run at (0,0) width 90: "My Text Field 2"
 caret: position 0 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 3 {INPUT} of child 1 {P} of body

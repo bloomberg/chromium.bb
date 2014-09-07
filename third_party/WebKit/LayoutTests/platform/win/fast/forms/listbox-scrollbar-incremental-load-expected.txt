@@ -24,26 +24,26 @@ layer at (0,0) size 800x600
           text run at (154,18) width 89: "to reflect this."
       RenderBlock (anonymous) at (0,104) size 784x70
         RenderText {#text} at (0,0) size 0x0
-layer at (8,112) size 59x70 clip at (9,113) size 42x68 scrollY 51 scrollHeight 119
-  RenderListBox {SELECT} at (0,0) size 58.80x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 41.80x17
-      RenderText {#text} at (2,0) size 26x15
-        text run at (2,0) width 26: "One"
-    RenderBlock {OPTION} at (1,18) size 41.80x17
-      RenderText {#text} at (2,0) size 26x15
-        text run at (2,0) width 26: "Two"
-    RenderBlock {OPTION} at (1,35) size 41.80x17
-      RenderText {#text} at (2,0) size 35x15
-        text run at (2,0) width 35: "Three"
-    RenderBlock {OPTION} at (1,52) size 41.80x17
-      RenderText {#text} at (2,0) size 28x15
-        text run at (2,0) width 28: "Four"
-    RenderBlock {OPTION} at (1,69) size 41.80x17
-      RenderText {#text} at (2,0) size 26x15
-        text run at (2,0) width 26: "Five"
-    RenderBlock {OPTION} at (1,86) size 41.80x17
-      RenderText {#text} at (2,0) size 19x15
+layer at (8,112) size 56x70 clip at (9,113) size 39x68 scrollY 51 scrollHeight 119
+  RenderListBox {SELECT} at (0,0) size 56x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 39x17
+      RenderText {#text} at (2,0) size 24x16
+        text run at (2,0) width 24: "One"
+    RenderBlock {OPTION} at (1,18) size 39x17
+      RenderText {#text} at (2,0) size 23x16
+        text run at (2,0) width 23: "Two"
+    RenderBlock {OPTION} at (1,35) size 39x17
+      RenderText {#text} at (2,0) size 32x16
+        text run at (2,0) width 32: "Three"
+    RenderBlock {OPTION} at (1,52) size 39x17
+      RenderText {#text} at (2,0) size 26x16
+        text run at (2,0) width 26: "Four"
+    RenderBlock {OPTION} at (1,69) size 39x17
+      RenderText {#text} at (2,0) size 23x16
+        text run at (2,0) width 23: "Five"
+    RenderBlock {OPTION} at (1,86) size 39x17
+      RenderText {#text} at (2,0) size 19x16
         text run at (2,0) width 19: "Six"
-    RenderBlock {OPTION} at (1,103) size 41.80x17 [color=#FFFFFF] [bgcolor=#999999]
-      RenderText {#text} at (2,0) size 38x15
-        text run at (2,0) width 38: "Seven"
+    RenderBlock {OPTION} at (1,103) size 39x17 [color=#FFFFFF] [bgcolor=#999999]
+      RenderText {#text} at (2,0) size 35x16
+        text run at (2,0) width 35: "Seven"

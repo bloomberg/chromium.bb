@@ -7,132 +7,132 @@ layer at (0,0) size 800x197
         RenderText {#text} at (0,0) size 608x17
           text run at (0,0) width 608: "The select list box should not display items (options and optgroups) with style \"display: none\"."
       RenderBlock (anonymous) at (0,34) size 784x139
-        RenderText {#text} at (58,121) size 5x17
-          text run at (58,121) width 5: " "
-        RenderText {#text} at (129,121) size 5x17
-          text run at (129,121) width 5: " "
-        RenderText {#text} at (200,121) size 5x17
-          text run at (200,121) width 5: " "
-        RenderText {#text} at (263,121) size 5x17
-          text run at (263,121) width 5: " "
-        RenderText {#text} at (326,121) size 5x17
-          text run at (326,121) width 5: " "
+        RenderText {#text} at (56,121) size 4x17
+          text run at (56,121) width 4: " "
+        RenderText {#text} at (125,121) size 4x17
+          text run at (125,121) width 4: " "
+        RenderText {#text} at (194,121) size 4x17
+          text run at (194,121) width 4: " "
+        RenderText {#text} at (254,121) size 4x17
+          text run at (254,121) width 4: " "
+        RenderText {#text} at (314,121) size 4x17
+          text run at (314,121) width 4: " "
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
-layer at (8,67) size 59x121 clip at (9,68) size 42x119
-  RenderListBox {SELECT} at (0,17) size 58.80x121 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 41.80x17
-      RenderText {#text} at (2,0) size 26x15
-        text run at (2,0) width 26: "One"
-    RenderBlock {OPTION} at (1,18) size 41.80x17
-      RenderText {#text} at (2,0) size 26x15
-        text run at (2,0) width 26: "Two"
-    RenderBlock {OPTION} at (1,35) size 41.80x17
-      RenderText {#text} at (2,0) size 35x15
-        text run at (2,0) width 35: "Three"
-    RenderBlock {OPTION} at (1,52) size 41.80x17
-      RenderText {#text} at (2,0) size 26x15
-        text run at (2,0) width 26: "Five"
-    RenderBlock {OPTION} at (1,69) size 41.80x17
-      RenderText {#text} at (2,0) size 19x15
+layer at (8,67) size 56x121 clip at (9,68) size 39x119
+  RenderListBox {SELECT} at (0,17) size 56x121 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 39x17
+      RenderText {#text} at (2,0) size 24x16
+        text run at (2,0) width 24: "One"
+    RenderBlock {OPTION} at (1,18) size 39x17
+      RenderText {#text} at (2,0) size 23x16
+        text run at (2,0) width 23: "Two"
+    RenderBlock {OPTION} at (1,35) size 39x17
+      RenderText {#text} at (2,0) size 32x16
+        text run at (2,0) width 32: "Three"
+    RenderBlock {OPTION} at (1,52) size 39x17
+      RenderText {#text} at (2,0) size 23x16
+        text run at (2,0) width 23: "Five"
+    RenderBlock {OPTION} at (1,69) size 39x17
+      RenderText {#text} at (2,0) size 19x16
         text run at (2,0) width 19: "Six"
-    RenderBlock {OPTION} at (1,86) size 41.80x17
-      RenderText {#text} at (2,0) size 38x15
-        text run at (2,0) width 38: "Seven"
-layer at (71,67) size 67x121 clip at (72,68) size 50x119
-  RenderListBox {SELECT} at (62.80,17) size 66.95x121 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 49.95x17
-      RenderText {#text} at (2,0) size 26x15
-        text run at (2,0) width 26: "One"
-    RenderBlock {OPTION} at (1,18) size 49.95x17
-      RenderText {#text} at (2,0) size 26x15
-        text run at (2,0) width 26: "Two"
-    RenderBlock {OPTION} at (1,35) size 49.95x17
-      RenderText {#text} at (2,0) size 35x15
-        text run at (2,0) width 35: "Three"
-    RenderBlock {OPTGROUP} at (1,52) size 49.95x34
-      RenderBlock {DIV} at (0,0) size 49.95x17
-        RenderText {#text} at (2,0) size 46x15
-          text run at (2,0) width 46: "***45***"
-      RenderBlock {OPTION} at (0,17) size 49.95x17
-        RenderText {#text} at (2,0) size 40x15
-          text run at (2,0) width 40: "    Five"
-    RenderBlock {OPTION} at (1,86) size 49.95x17
-      RenderText {#text} at (2,0) size 38x15
-        text run at (2,0) width 38: "Seven"
-layer at (142,67) size 67x121 clip at (143,68) size 50x119
-  RenderListBox {SELECT} at (133.75,17) size 66.95x121 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 49.95x17
-      RenderText {#text} at (2,0) size 26x15
-        text run at (2,0) width 26: "One"
-    RenderBlock {OPTION} at (1,18) size 49.95x17
-      RenderText {#text} at (2,0) size 26x15
-        text run at (2,0) width 26: "Two"
-    RenderBlock {OPTGROUP} at (1,35) size 49.95x34
-      RenderBlock {DIV} at (0,0) size 49.95x17
-        RenderText {#text} at (2,0) size 46x15
-          text run at (2,0) width 46: "***45***"
-      RenderBlock {OPTION} at (0,17) size 49.95x17
-        RenderText {#text} at (2,0) size 43x15
-          text run at (2,0) width 43: "    Four"
-    RenderBlock {OPTION} at (1,69) size 49.95x17
-      RenderText {#text} at (2,0) size 19x15
+    RenderBlock {OPTION} at (1,86) size 39x17
+      RenderText {#text} at (2,0) size 35x16
+        text run at (2,0) width 35: "Seven"
+layer at (68,67) size 65x121 clip at (69,68) size 48x119
+  RenderListBox {SELECT} at (60,17) size 65x121 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 48x17
+      RenderText {#text} at (2,0) size 24x16
+        text run at (2,0) width 24: "One"
+    RenderBlock {OPTION} at (1,18) size 48x17
+      RenderText {#text} at (2,0) size 23x16
+        text run at (2,0) width 23: "Two"
+    RenderBlock {OPTION} at (1,35) size 48x17
+      RenderText {#text} at (2,0) size 32x16
+        text run at (2,0) width 32: "Three"
+    RenderBlock {OPTGROUP} at (1,52) size 48x34
+      RenderBlock {DIV} at (0,0) size 48x17
+        RenderText {#text} at (2,0) size 44x16
+          text run at (2,0) width 44: "***45***"
+      RenderBlock {OPTION} at (0,17) size 48x17
+        RenderText {#text} at (2,0) size 39x16
+          text run at (2,0) width 39: "    Five"
+    RenderBlock {OPTION} at (1,86) size 48x17
+      RenderText {#text} at (2,0) size 35x16
+        text run at (2,0) width 35: "Seven"
+layer at (137,67) size 65x121 clip at (138,68) size 48x119
+  RenderListBox {SELECT} at (129,17) size 65x121 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 48x17
+      RenderText {#text} at (2,0) size 24x16
+        text run at (2,0) width 24: "One"
+    RenderBlock {OPTION} at (1,18) size 48x17
+      RenderText {#text} at (2,0) size 23x16
+        text run at (2,0) width 23: "Two"
+    RenderBlock {OPTGROUP} at (1,35) size 48x34
+      RenderBlock {DIV} at (0,0) size 48x17
+        RenderText {#text} at (2,0) size 44x16
+          text run at (2,0) width 44: "***45***"
+      RenderBlock {OPTION} at (0,17) size 48x17
+        RenderText {#text} at (2,0) size 42x16
+          text run at (2,0) width 42: "    Four"
+    RenderBlock {OPTION} at (1,69) size 48x17
+      RenderText {#text} at (2,0) size 19x16
         text run at (2,0) width 19: "Six"
-    RenderBlock {OPTION} at (1,86) size 49.95x17
-      RenderText {#text} at (2,0) size 38x15
-        text run at (2,0) width 38: "Seven"
-layer at (213,50) size 59x138 clip at (214,51) size 42x136
-  RenderListBox {SELECT} at (204.70,0) size 58.80x138 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 41.80x17
-      RenderText {#text} at (2,0) size 26x15
-        text run at (2,0) width 26: "One"
-    RenderBlock {OPTION} at (1,18) size 41.80x17
-      RenderText {#text} at (2,0) size 26x15
-        text run at (2,0) width 26: "Two"
-    RenderBlock {OPTION} at (1,35) size 41.80x17
-      RenderText {#text} at (2,0) size 35x15
-        text run at (2,0) width 35: "Three"
-    RenderBlock {OPTION} at (1,52) size 41.80x17
-      RenderText {#text} at (2,0) size 38x15
-        text run at (2,0) width 38: "Seven"
-layer at (276,50) size 58x138 clip at (277,51) size 41x136
-  RenderListBox {SELECT} at (267.50,0) size 58.80x138 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 41.80x17
-      RenderText {#text} at (2,0) size 26x15
-        text run at (2,0) width 26: "One"
-    RenderBlock {OPTION} at (1,18) size 41.80x17
-      RenderText {#text} at (2,0) size 26x15
-        text run at (2,0) width 26: "Two"
-    RenderBlock {OPTION} at (1,35) size 41.80x17
-      RenderText {#text} at (2,0) size 35x15
-        text run at (2,0) width 35: "Three"
-    RenderBlock {OPTION} at (1,52) size 41.80x17
-      RenderText {#text} at (2,0) size 38x15
-        text run at (2,0) width 38: "Seven"
-layer at (338,50) size 64x138 clip at (339,51) size 47x136
-  RenderListBox {SELECT} at (330.30,0) size 64x138 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 47x17
-      RenderText {#text} at (2,0) size 26x15
-        text run at (2,0) width 26: "One"
-    RenderBlock {OPTION} at (1,18) size 47x17
-      RenderText {#text} at (2,0) size 26x15
-        text run at (2,0) width 26: "Two"
-    RenderBlock {OPTION} at (1,35) size 47x17
-      RenderText {#text} at (2,0) size 35x15
-        text run at (2,0) width 35: "Three"
-    RenderBlock {OPTGROUP} at (1,52) size 47x68
-      RenderBlock {DIV} at (0,0) size 47x17
-        RenderText {#text} at (2,0) size 43x15
-          text run at (2,0) width 43: "**456**"
-      RenderBlock {OPTION} at (0,17) size 47x17
-        RenderText {#text} at (2,0) size 43x15
-          text run at (2,0) width 43: "    Four"
-      RenderBlock {OPTION} at (0,34) size 47x17
-        RenderText {#text} at (2,0) size 40x15
-          text run at (2,0) width 40: "    Five"
-      RenderBlock {OPTION} at (0,51) size 47x17
-        RenderText {#text} at (2,0) size 34x15
-          text run at (2,0) width 34: "    Six"
-    RenderBlock {OPTION} at (1,120) size 47x17
-      RenderText {#text} at (2,0) size 38x15
-        text run at (2,0) width 38: "Seven"
+    RenderBlock {OPTION} at (1,86) size 48x17
+      RenderText {#text} at (2,0) size 35x16
+        text run at (2,0) width 35: "Seven"
+layer at (206,50) size 56x138 clip at (207,51) size 39x136
+  RenderListBox {SELECT} at (198,0) size 56x138 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 39x17
+      RenderText {#text} at (2,0) size 24x16
+        text run at (2,0) width 24: "One"
+    RenderBlock {OPTION} at (1,18) size 39x17
+      RenderText {#text} at (2,0) size 23x16
+        text run at (2,0) width 23: "Two"
+    RenderBlock {OPTION} at (1,35) size 39x17
+      RenderText {#text} at (2,0) size 32x16
+        text run at (2,0) width 32: "Three"
+    RenderBlock {OPTION} at (1,52) size 39x17
+      RenderText {#text} at (2,0) size 35x16
+        text run at (2,0) width 35: "Seven"
+layer at (266,50) size 56x138 clip at (267,51) size 39x136
+  RenderListBox {SELECT} at (258,0) size 56x138 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 39x17
+      RenderText {#text} at (2,0) size 24x16
+        text run at (2,0) width 24: "One"
+    RenderBlock {OPTION} at (1,18) size 39x17
+      RenderText {#text} at (2,0) size 23x16
+        text run at (2,0) width 23: "Two"
+    RenderBlock {OPTION} at (1,35) size 39x17
+      RenderText {#text} at (2,0) size 32x16
+        text run at (2,0) width 32: "Three"
+    RenderBlock {OPTION} at (1,52) size 39x17
+      RenderText {#text} at (2,0) size 35x16
+        text run at (2,0) width 35: "Seven"
+layer at (326,50) size 63x138 clip at (327,51) size 46x136
+  RenderListBox {SELECT} at (318,0) size 63x138 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 46x17
+      RenderText {#text} at (2,0) size 24x16
+        text run at (2,0) width 24: "One"
+    RenderBlock {OPTION} at (1,18) size 46x17
+      RenderText {#text} at (2,0) size 23x16
+        text run at (2,0) width 23: "Two"
+    RenderBlock {OPTION} at (1,35) size 46x17
+      RenderText {#text} at (2,0) size 32x16
+        text run at (2,0) width 32: "Three"
+    RenderBlock {OPTGROUP} at (1,52) size 46x68
+      RenderBlock {DIV} at (0,0) size 46x17
+        RenderText {#text} at (2,0) size 41x16
+          text run at (2,0) width 41: "**456**"
+      RenderBlock {OPTION} at (0,17) size 46x17
+        RenderText {#text} at (2,0) size 42x16
+          text run at (2,0) width 42: "    Four"
+      RenderBlock {OPTION} at (0,34) size 46x17
+        RenderText {#text} at (2,0) size 39x16
+          text run at (2,0) width 39: "    Five"
+      RenderBlock {OPTION} at (0,51) size 46x17
+        RenderText {#text} at (2,0) size 35x16
+          text run at (2,0) width 35: "    Six"
+    RenderBlock {OPTION} at (1,120) size 46x17
+      RenderText {#text} at (2,0) size 35x16
+        text run at (2,0) width 35: "Seven"

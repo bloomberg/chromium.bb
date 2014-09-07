@@ -3,27 +3,27 @@ layer at (0,0) size 785x623
 layer at (0,0) size 785x623
   RenderBlock {HTML} at (0,0) size 785x623
     RenderBody {BODY} at (8,8) size 769x607
-      RenderText {#text} at (47,61) size 5x17
-        text run at (47,61) width 5: " "
-      RenderText {#text} at (99,61) size 5x17
-        text run at (99,61) width 5: " "
+      RenderText {#text} at (46,61) size 4x17
+        text run at (46,61) width 4: " "
+      RenderText {#text} at (97,61) size 4x17
+        text run at (97,61) width 4: " "
       RenderText {#text} at (0,0) size 0x0
-      RenderText {#text} at (152,61) size 5x17
-        text run at (152,61) width 5: " "
-      RenderText {#text} at (221,61) size 5x17
-        text run at (221,61) width 5: " "
-      RenderBR {BR} at (225,61) size 1x17
-      RenderText {#text} at (51,144) size 5x17
-        text run at (51,144) width 5: " "
-      RenderText {#text} at (103,144) size 5x17
-        text run at (103,144) width 5: " "
-      RenderBR {BR} at (107,144) size 1x17
-      RenderText {#text} at (47,223) size 5x17
-        text run at (47,223) width 5: " "
-      RenderBR {BR} at (51,223) size 1x17
-      RenderText {#text} at (47,302) size 5x17
-        text run at (47,302) width 5: " "
-      RenderBR {BR} at (51,302) size 1x17
+      RenderText {#text} at (148,61) size 4x17
+        text run at (148,61) width 4: " "
+      RenderText {#text} at (218,61) size 4x17
+        text run at (218,61) width 4: " "
+      RenderBR {BR} at (222,61) size 0x17
+      RenderText {#text} at (50,144) size 4x17
+        text run at (50,144) width 4: " "
+      RenderText {#text} at (100,144) size 4x17
+        text run at (100,144) width 4: " "
+      RenderBR {BR} at (104,144) size 0x17
+      RenderText {#text} at (46,223) size 4x17
+        text run at (46,223) width 4: " "
+      RenderBR {BR} at (50,223) size 0x17
+      RenderText {#text} at (46,302) size 4x17
+        text run at (46,302) width 4: " "
+      RenderBR {BR} at (50,302) size 0x17
       RenderText {#text} at (51,432) size 5x17
         text run at (51,432) width 5: " "
       RenderText {#text} at (112,432) size 5x17
@@ -36,60 +36,60 @@ layer at (0,0) size 785x623
       RenderText {#text} at (146,589) size 5x17
         text run at (146,589) width 5: " "
       RenderBR {BR} at (150,589) size 1x17
-layer at (12,12) size 40x70 clip at (13,13) size 23x68
-  RenderListBox {SELECT} at (4,4) size 39.53x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 22.53x17
-      RenderText {#text} at (2,0) size 19x15
-        text run at (2,0) width 19: "foo"
-layer at (64,12) size 40x70 clip at (65,13) size 23x68
-  RenderListBox {SELECT} at (55.53,4) size 40.28x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 23.28x17 [color=#FFFFCC] [bgcolor=#0000FF]
-      RenderText {#text} at (2,0) size 19x15
-        text run at (2,0) width 19: "foo"
-    RenderBlock {OPTION} at (1,18) size 23.28x17
-      RenderText {#text} at (2,0) size 20x15
-        text run at (2,0) width 20: "bar"
-layer at (116,12) size 40x70 clip at (117,13) size 23x68
-  RenderListBox {SELECT} at (107.81,4) size 40.28x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 23.28x17 [color=#FFFFFF] [bgcolor=#999999]
-      RenderText {#text} at (2,0) size 19x15
-        text run at (2,0) width 19: "foo"
-    RenderBlock {OPTION} at (1,18) size 23.28x17 [color=#808080] [bgcolor=#999999]
-      RenderText {#text} at (2,0) size 20x15
-        text run at (2,0) width 20: "bar"
-layer at (168,12) size 57x70 clip at (169,13) size 40x68
-  RenderListBox {SELECT} at (160.09,4) size 57.31x70 [color=#808080] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 40.31x17 [bgcolor=#999999]
-      RenderText {#text} at (2,0) size 19x15
-        text run at (2,0) width 19: "foo"
-    RenderBlock {OPTION} at (1,18) size 40.31x17
-      RenderText {#text} at (2,0) size 20x15
-        text run at (2,0) width 20: "bar"
-    RenderBlock {OPTGROUP} at (1,35) size 40.31x34
-      RenderBlock {DIV} at (0,0) size 40.31x17
-      RenderBlock {OPTION} at (0,17) size 40.31x17 [bgcolor=#999999]
-        RenderText {#text} at (2,0) size 37x15
+layer at (12,12) size 38x70 clip at (13,13) size 21x68
+  RenderListBox {SELECT} at (4,4) size 38x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 21x17
+      RenderText {#text} at (2,0) size 17x16
+        text run at (2,0) width 17: "foo"
+layer at (62,12) size 39x70 clip at (63,13) size 22x68
+  RenderListBox {SELECT} at (54,4) size 39x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 22x17 [color=#FFFFCC] [bgcolor=#0000FF]
+      RenderText {#text} at (2,0) size 17x16
+        text run at (2,0) width 17: "foo"
+    RenderBlock {OPTION} at (1,18) size 22x17
+      RenderText {#text} at (2,0) size 18x16
+        text run at (2,0) width 18: "bar"
+layer at (113,12) size 39x70 clip at (114,13) size 22x68
+  RenderListBox {SELECT} at (105,4) size 39x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 22x17 [color=#FFFFFF] [bgcolor=#999999]
+      RenderText {#text} at (2,0) size 17x16
+        text run at (2,0) width 17: "foo"
+    RenderBlock {OPTION} at (1,18) size 22x17 [color=#808080] [bgcolor=#999999]
+      RenderText {#text} at (2,0) size 18x16
+        text run at (2,0) width 18: "bar"
+layer at (164,12) size 58x70 clip at (165,13) size 41x68
+  RenderListBox {SELECT} at (156,4) size 58x70 [color=#808080] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 41x17 [bgcolor=#999999]
+      RenderText {#text} at (2,0) size 17x16
+        text run at (2,0) width 17: "foo"
+    RenderBlock {OPTION} at (1,18) size 41x17
+      RenderText {#text} at (2,0) size 18x16
+        text run at (2,0) width 18: "bar"
+    RenderBlock {OPTGROUP} at (1,35) size 41x34
+      RenderBlock {DIV} at (0,0) size 41x17
+      RenderBlock {OPTION} at (0,17) size 41x17 [bgcolor=#999999]
+        RenderText {#text} at (2,0) size 37x16
           text run at (2,0) width 37: "    baz"
-layer at (12,91) size 44x74 clip at (15,94) size 23x68
-  RenderListBox {SELECT} at (4,83) size 43.53x74 [bgcolor=#FFFFFF] [border: (3px solid #00FF00)]
-    RenderBlock {OPTION} at (3,3) size 22.53x17
-      RenderText {#text} at (2,0) size 19x15
-        text run at (2,0) width 19: "foo"
-layer at (68,95) size 39x70 clip at (69,96) size 22x68
-  RenderListBox {SELECT} at (59.53,87) size 39.53x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 22.53x17
-      RenderText {#text} at (2,0) size 19x15
-        text run at (2,0) width 19: "foo"
-layer at (12,174) size 40x70 clip at (13,175) size 23x68
-  RenderListBox {SELECT} at (4,166) size 39.53x70 [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 22.53x17
-      RenderText {#text} at (2,0) size 19x15
-        text run at (2,0) width 19: "foo"
-layer at (12,253) size 40x70 clip at (13,254) size 23x68
-  RenderListBox {SELECT} at (4,245) size 39.53x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 22.53x17
-      RenderText {#text} at (2,0) size 19x15
-        text run at (2,0) width 19: "foo"
+layer at (12,91) size 42x74 clip at (15,94) size 21x68
+  RenderListBox {SELECT} at (4,83) size 42x74 [bgcolor=#FFFFFF] [border: (3px solid #00FF00)]
+    RenderBlock {OPTION} at (3,3) size 21x17
+      RenderText {#text} at (2,0) size 17x16
+        text run at (2,0) width 17: "foo"
+layer at (66,95) size 38x70 clip at (67,96) size 21x68
+  RenderListBox {SELECT} at (58,87) size 38x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 21x17
+      RenderText {#text} at (2,0) size 17x16
+        text run at (2,0) width 17: "foo"
+layer at (12,174) size 38x70 clip at (13,175) size 21x68
+  RenderListBox {SELECT} at (4,166) size 38x70 [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 21x17
+      RenderText {#text} at (2,0) size 17x16
+        text run at (2,0) width 17: "foo"
+layer at (12,253) size 38x70 clip at (13,254) size 21x68
+  RenderListBox {SELECT} at (4,245) size 38x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 21x17
+      RenderText {#text} at (2,0) size 17x16
+        text run at (2,0) width 17: "foo"
 layer at (12,370) size 43x83 clip at (13,371) size 26x81 scrollHeight 80
   RenderListBox {SELECT} at (4,362.25) size 43.25x82.75 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {OPTION} at (1,1) size 26.25x20.19

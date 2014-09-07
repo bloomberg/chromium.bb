@@ -8,16 +8,16 @@ layer at (0,0) size 800x600
           text run at (0,0) width 233: "This is a initial test for simple ruby. "
         RenderBR {BR} at (232,14) size 1x0
         RenderBR {BR} at (0,18) size 0x17
-      RenderBlock {P} at (0,52) size 784x28
-        RenderText {#text} at (0,10) size 164x17
-          text run at (0,10) width 164: "Ruby is often used in the "
+      RenderBlock {P} at (0,52) size 784x30
+        RenderText {#text} at (0,12) size 164x17
+          text run at (0,12) width 164: "Ruby is often used in the "
         RenderRuby (inline) {RUBY} at (0,0) size 120x17
-          RenderRubyRun (anonymous) at (163.53,10) size 118.61x18
-            RenderRubyText {RT} at (0,-10) size 118.61x10
-              RenderText {#text} at (43,0) size 33x10
-                text run at (43,0) width 33: "Nihongo"
+          RenderRubyRun (anonymous) at (163.53,12) size 118.61x18
+            RenderRubyText {RT} at (0,-12) size 118.61x12
+              RenderText {#text} at (41,0) size 36x12
+                text run at (41,0) width 36: "Nihongo"
             RenderRubyBase (anonymous) at (0,0) size 118.61x18
               RenderText {#text} at (0,0) size 119x17
                 text run at (0,0) width 119: "Japanese language"
-        RenderText {#text} at (282,10) size 5x17
-          text run at (282,10) width 5: "."
+        RenderText {#text} at (282,12) size 5x17
+          text run at (282,12) width 5: "."

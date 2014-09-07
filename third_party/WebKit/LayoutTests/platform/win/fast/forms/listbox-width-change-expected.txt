@@ -7,8 +7,8 @@ layer at (0,0) size 800x600
         text run at (0,0) width 665: "This tests that when a list box's options get updated, the list box will recalculate its width, and relayout. "
       RenderBR {BR} at (0,0) size 0x0
       RenderText {#text} at (0,0) size 0x0
-layer at (8,26) size 210x70 clip at (9,27) size 193x68
-  RenderListBox {SELECT} at (0,18) size 209.94x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 192.94x17
-      RenderText {#text} at (2,0) size 189x15
-        text run at (2,0) width 189: "This text should fit in the list box"
+layer at (8,26) size 209x70 clip at (9,27) size 192x68
+  RenderListBox {SELECT} at (0,18) size 209x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 192x17
+      RenderText {#text} at (2,0) size 188x16
+        text run at (2,0) width 188: "This text should fit in the list box"

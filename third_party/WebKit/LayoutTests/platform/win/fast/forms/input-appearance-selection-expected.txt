@@ -6,10 +6,10 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,0) size 784x18
         RenderText {#text} at (0,0) size 344x17
           text run at (0,0) width 344: "This tests the selection methods on the new text field."
-      RenderBlock {P} at (0,34) size 784x21
-        RenderTextControl {INPUT} at (0,0) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderBlock {P} at (0,34) size 784x22
+        RenderTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,71) size 784x486
+      RenderBlock {DIV} at (0,72) size 784x486
         RenderBR {BR} at (0,0) size 0x17
         RenderText {#text} at (0,18) size 201x17
           text run at (0,18) width 201: "Test 1: setSelectionRange(0, 0)"
@@ -73,10 +73,10 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,468) size 48x17
           text run at (0,468) width 48: "Passed."
         RenderBR {BR} at (47,482) size 1x0
-      RenderBlock {P} at (0,573) size 784x0
-layer at (10,45) size 169x15
-  RenderBlock {DIV} at (2,3) size 169x15
-    RenderText {#text} at (0,0) size 155x15
-      text run at (0,0) width 155: "123456789 ABCDEFGHIJ"
+      RenderBlock {P} at (0,574) size 784x0
+layer at (10,45) size 169x16
+  RenderBlock {DIV} at (2,3) size 169x16
+    RenderText {#text} at (0,0) size 148x16
+      text run at (0,0) width 148: "123456789 ABCDEFGHIJ"
 selection start: position 3 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 1 {INPUT} of child 1 {P} of body
 selection end:   position 12 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 1 {INPUT} of child 1 {P} of body

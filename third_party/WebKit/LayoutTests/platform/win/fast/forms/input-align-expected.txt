@@ -6,42 +6,42 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,0) size 784x18
         RenderText {#text} at (0,0) size 576x17
           text run at (0,0) width 576: "The following 5 inputs should be all be rendered exactly the same, aligned to the left side."
-      RenderBlock (anonymous) at (0,34) size 784x84
-        RenderTextControl {INPUT} at (0,0) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderText {#text} at (173,1) size 4x17
-          text run at (173,1) width 4: " "
+      RenderBlock (anonymous) at (0,34) size 784x88
+        RenderTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (173,2) size 4x17
+          text run at (173,2) width 4: " "
         RenderBR {BR} at (0,0) size 0x0
-        RenderTextControl {INPUT} at (0,21) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderText {#text} at (173,22) size 4x17
-          text run at (173,22) width 4: " "
+        RenderTextControl {INPUT} at (0,22) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (173,24) size 4x17
+          text run at (173,24) width 4: " "
         RenderBR {BR} at (0,0) size 0x0
-        RenderTextControl {INPUT} at (0,42) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderText {#text} at (173,43) size 4x17
-          text run at (173,43) width 4: " "
+        RenderTextControl {INPUT} at (0,44) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (173,46) size 4x17
+          text run at (173,46) width 4: " "
         RenderBR {BR} at (0,0) size 0x0
-        RenderTextControl {INPUT} at (0,63) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderText {#text} at (173,64) size 4x17
-          text run at (173,64) width 4: " "
+        RenderTextControl {INPUT} at (0,66) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (173,68) size 4x17
+          text run at (173,68) width 4: " "
         RenderBR {BR} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,118) size 784x21
-        RenderTextControl {INPUT} at (0,0) size 173x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-layer at (10,45) size 169x15
-  RenderBlock {DIV} at (2,3) size 169x15
-    RenderText {#text} at (0,0) size 109x15
-      text run at (0,0) width 109: "The quick brown..."
-layer at (10,66) size 169x15
-  RenderBlock {DIV} at (2,3) size 169x15
-    RenderText {#text} at (0,0) size 109x15
-      text run at (0,0) width 109: "The quick brown..."
-layer at (10,87) size 169x15
-  RenderBlock {DIV} at (2,3) size 169x15
-    RenderText {#text} at (0,0) size 109x15
-      text run at (0,0) width 109: "The quick brown..."
-layer at (10,108) size 169x15
-  RenderBlock {DIV} at (2,3) size 169x15
-    RenderText {#text} at (0,0) size 109x15
-      text run at (0,0) width 109: "The quick brown..."
-layer at (10,129) size 169x15
-  RenderBlock {DIV} at (2,3) size 169x15
-    RenderText {#text} at (0,0) size 109x15
-      text run at (0,0) width 109: "The quick brown..."
+      RenderBlock {DIV} at (0,122) size 784x22
+        RenderTextControl {INPUT} at (0,0) size 173x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+layer at (10,45) size 169x16
+  RenderBlock {DIV} at (2,3) size 169x16
+    RenderText {#text} at (0,0) size 106x16
+      text run at (0,0) width 106: "The quick brown..."
+layer at (10,67) size 169x16
+  RenderBlock {DIV} at (2,3) size 169x16
+    RenderText {#text} at (0,0) size 106x16
+      text run at (0,0) width 106: "The quick brown..."
+layer at (10,89) size 169x16
+  RenderBlock {DIV} at (2,3) size 169x16
+    RenderText {#text} at (0,0) size 106x16
+      text run at (0,0) width 106: "The quick brown..."
+layer at (10,111) size 169x16
+  RenderBlock {DIV} at (2,3) size 169x16
+    RenderText {#text} at (0,0) size 106x16
+      text run at (0,0) width 106: "The quick brown..."
+layer at (10,133) size 169x16
+  RenderBlock {DIV} at (2,3) size 169x16
+    RenderText {#text} at (0,0) size 106x16
+      text run at (0,0) width 106: "The quick brown..."

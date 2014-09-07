@@ -18,26 +18,26 @@ layer at (0,0) size 800x600
             RenderBlock {CENTER} at (40,18) size 664x18
               RenderText {#text} at (316,0) size 32x17
                 text run at (316,0) width 32: "Four"
-      RenderBlock {PRE} at (0,120) size 784x334
-        RenderText {#text} at (0,0) size 63x15
-          text run at (0,0) width 63: "Pre text"
-          text run at (62,0) width 1: " "
-        RenderText {#text} at (300,304) size 300x30
+      RenderBlock {PRE} at (0,120) size 784x336
+        RenderText {#text} at (0,0) size 64x16
+          text run at (0,0) width 64: "Pre text"
+          text run at (64,0) width 0: " "
+        RenderText {#text} at (300,304) size 300x32
           text run at (300,304) width 0: " "
-          text run at (0,319) width 102: "Also pre text"
-          text run at (101,319) width 1: " "
-      RenderBlock (anonymous) at (0,467) size 784x18
+          text run at (0,320) width 104: "Also pre text"
+          text run at (104,320) width 0: " "
+      RenderBlock (anonymous) at (0,469) size 784x18
         RenderInline {NOBR} at (0,0) size 139x17 [bgcolor=#CCCCCC]
           RenderText {#text} at (0,0) size 139x17
             text run at (0,0) width 139: "This text won't break."
-      RenderBlock (anonymous) at (0,498) size 784x15
-        RenderBlock {PRE} at (0,0) size 784x15
-          RenderText {#text} at (0,0) size 203x15
-            text run at (0,0) width 203: "This will be preformatted."
-      RenderBlock (anonymous) at (0,526) size 784x18
+      RenderBlock (anonymous) at (0,500) size 784x16
+        RenderBlock {PRE} at (0,0) size 784x16
+          RenderText {#text} at (0,0) size 208x16
+            text run at (0,0) width 208: "This will be preformatted."
+      RenderBlock (anonymous) at (0,529) size 784x18
         RenderInline {NOBR} at (0,0) size 236x17 [bgcolor=#CCCCCC]
           RenderText {#text} at (0,0) size 236x17
             text run at (0,0) width 236: "Now we're back to nonbreaking text."
         RenderText {#text} at (0,0) size 0x0
-layer at (8,143) size 300x300
-  RenderEmbeddedObject {OBJECT} at (0,15) size 300x300 [bgcolor=#008000]
+layer at (8,144) size 300x300
+  RenderEmbeddedObject {OBJECT} at (0,16) size 300x300 [bgcolor=#008000]

@@ -10,11 +10,11 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,36) size 784x262
         RenderBR {BR} at (0,0) size 0x17
         RenderText {#text} at (0,0) size 0x0
-layer at (8,62) size 547x244 clip at (9,63) size 545x242
-  RenderTextControl {TEXTAREA} at (0,18) size 547x244 [color=#333333] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {DIV} at (3,3) size 543x36
-      RenderText {#text} at (0,0) size 540x24
-        text run at (0,0) width 540: "1234567890abcdefghijABCDEFGHIJ1234567890abcdefghijABCDEFGHIJ12345X7890abcdefghijABCDEFGXIJ"
-        text run at (0,12) width 180: "1234567890abcdefghijABCDEFGHIJ"
-      RenderBR {BR} at (179,22) size 1x0
+layer at (8,62) size 635x244 clip at (9,63) size 633x242
+  RenderTextControl {TEXTAREA} at (0,18) size 635x244 [color=#333333] [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {DIV} at (3,3) size 631x36
+      RenderText {#text} at (0,0) size 626x24
+        text run at (0,0) width 626: "1234567890abcdefghijABCDEFGHIJ1234567890abcdefghijABCDEFGHIJ12345X7890abcdefghijABCDEFGXIJ123456"
+        text run at (0,12) width 153: "7890abcdefghijABCDEFGHIJ"
+      RenderBR {BR} at (153,22) size 0x0
       RenderBR {BR} at (0,24) size 0x12

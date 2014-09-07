@@ -22,23 +22,23 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,86) size 784x104
         RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
-layer at (8,94) size 56x104 clip at (9,95) size 39x102
-  RenderListBox {SELECT} at (0,0) size 55.83x104 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 38.83x17
-      RenderText {#text} at (2,0) size 26x15
-        text run at (2,0) width 26: "One"
-    RenderBlock {OPTION} at (1,18) size 38.83x17
-      RenderText {#text} at (2,0) size 26x15
-        text run at (2,0) width 26: "Two"
-    RenderBlock {OPTION} at (1,35) size 38.83x17
-      RenderText {#text} at (2,0) size 35x15
-        text run at (2,0) width 35: "Three"
-    RenderBlock {OPTION} at (1,52) size 38.83x17
-      RenderText {#text} at (2,0) size 28x15
-        text run at (2,0) width 28: "Four"
-    RenderBlock {OPTION} at (1,69) size 38.83x17
-      RenderText {#text} at (2,0) size 26x15
-        text run at (2,0) width 26: "Five"
-    RenderBlock {OPTION} at (1,86) size 38.83x17
-      RenderText {#text} at (2,0) size 19x15
+layer at (8,94) size 53x104 clip at (9,95) size 36x102
+  RenderListBox {SELECT} at (0,0) size 53x104 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 36x17
+      RenderText {#text} at (2,0) size 24x16
+        text run at (2,0) width 24: "One"
+    RenderBlock {OPTION} at (1,18) size 36x17
+      RenderText {#text} at (2,0) size 23x16
+        text run at (2,0) width 23: "Two"
+    RenderBlock {OPTION} at (1,35) size 36x17
+      RenderText {#text} at (2,0) size 32x16
+        text run at (2,0) width 32: "Three"
+    RenderBlock {OPTION} at (1,52) size 36x17
+      RenderText {#text} at (2,0) size 26x16
+        text run at (2,0) width 26: "Four"
+    RenderBlock {OPTION} at (1,69) size 36x17
+      RenderText {#text} at (2,0) size 23x16
+        text run at (2,0) width 23: "Five"
+    RenderBlock {OPTION} at (1,86) size 36x17
+      RenderText {#text} at (2,0) size 19x16
         text run at (2,0) width 19: "Six"

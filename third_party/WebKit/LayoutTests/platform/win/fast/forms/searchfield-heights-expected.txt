@@ -12,32 +12,32 @@ layer at (0,0) size 800x600
           RenderBlock {DIV} at (14,0) size 50x6
       RenderText {#text} at (79,112) size 4x17
         text run at (79,112) width 4: " "
-      RenderTextControl {INPUT} at (83,101) size 198x40 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderFlexibleBox {DIV} at (3,3) size 192x34
+      RenderTextControl {INPUT} at (83,101) size 179x40 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderFlexibleBox {DIV} at (3,3) size 173x34
           RenderBlock {DIV} at (2,9.50) size 15x15
-          RenderBlock {DIV} at (20,8.50) size 158x17
-      RenderText {#text} at (281,112) size 4x17
-        text run at (281,112) width 4: " "
-      RenderTextControl {INPUT} at (285,18) size 344x200 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          RenderBlock {DIV} at (20,8.50) size 139x17
+      RenderText {#text} at (262,112) size 4x17
+        text run at (262,112) width 4: " "
+      RenderTextControl {INPUT} at (266,18) size 344x200 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderFlexibleBox {DIV} at (3,3) size 338x194
           RenderBlock {DIV} at (2,83.50) size 27x27
           RenderBlock {DIV} at (32,81.50) size 283x31
       RenderText {#text} at (0,0) size 0x0
 layer at (25,129) size 50x6
   RenderBlock {DIV} at (0,0) size 50x6
-    RenderText {#text} at (0,0) size 12x6
-      text run at (0,0) width 12: "mini"
-layer at (114,121) size 158x17
-  RenderBlock {DIV} at (0,0) size 158x17
-    RenderText {#text} at (0,0) size 36x17
-      text run at (0,0) width 36: "small"
-layer at (328,111) size 283x31
+    RenderText {#text} at (0,0) size 10x6
+      text run at (0,0) width 10: "mini"
+layer at (114,121) size 139x17
+  RenderBlock {DIV} at (0,0) size 139x17
+    RenderText {#text} at (0,0) size 35x17
+      text run at (0,0) width 35: "small"
+layer at (309,111) size 283x31
   RenderBlock {DIV} at (0,0) size 283x31
     RenderText {#text} at (0,0) size 85x30
       text run at (0,0) width 85: "regular"
 layer at (76,130) size 5x5 transparent
   RenderBlock {DIV} at (65,0.50) size 5x5
-layer at (273,124) size 10x10 transparent
-  RenderBlock {DIV} at (179,12) size 10x10
-layer at (612,117) size 19x19 transparent
+layer at (254,124) size 10x10 transparent
+  RenderBlock {DIV} at (160,12) size 10x10
+layer at (593,117) size 19x19 transparent
   RenderBlock {DIV} at (316,87.50) size 19x19

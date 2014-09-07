@@ -6,60 +6,60 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,0) size 784x18
         RenderText {#text} at (0,0) size 229x17
           text run at (0,0) width 229: "These textfields should not overlap."
-      RenderTable {TABLE} at (0,18) size 784x25
-        RenderTableSection {TBODY} at (0,0) size 784x25
-          RenderTableRow {TR} at (0,1) size 784x23
-            RenderTableCell {TD} at (1,1) size 8x23 [r=0 c=0 rs=1 cs=1]
-              RenderTextControl {INPUT} at (1,1) size 6x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-                RenderFlexibleBox {DIV} at (3,3) size 0x15
-                  RenderBlock {DIV} at (0,2) size 1x11
-                  RenderBlock {DIV} at (1,0) size 0x15
-            RenderTableCell {TD} at (10,1) size 8x23 [r=0 c=1 rs=1 cs=1]
-              RenderTextControl {INPUT} at (1,1) size 6x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-                RenderFlexibleBox {DIV} at (3,3) size 0x15
-                  RenderBlock {DIV} at (0,2) size 1x11
-                  RenderBlock {DIV} at (1,0) size 0x15
-            RenderTableCell {TD} at (19,1) size 8x23 [r=0 c=2 rs=1 cs=1]
-              RenderTextControl {INPUT} at (1,1) size 6x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-                RenderFlexibleBox {DIV} at (3,3) size 0x15
-                  RenderBlock {DIV} at (0,2) size 1x11
-                  RenderBlock {DIV} at (1,0) size 0x15
-            RenderTableCell {TD} at (28,2) size 755x20 [r=0 c=3 rs=1 cs=1]
+      RenderTable {TABLE} at (0,18) size 784x26
+        RenderTableSection {TBODY} at (0,0) size 784x26
+          RenderTableRow {TR} at (0,1) size 784x24
+            RenderTableCell {TD} at (1,1) size 8x24 [r=0 c=0 rs=1 cs=1]
+              RenderTextControl {INPUT} at (1,1) size 6x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                RenderFlexibleBox {DIV} at (3,3) size 0x16
+                  RenderBlock {DIV} at (0,2.50) size 1x11
+                  RenderBlock {DIV} at (1,0) size 0x16
+            RenderTableCell {TD} at (10,1) size 8x24 [r=0 c=1 rs=1 cs=1]
+              RenderTextControl {INPUT} at (1,1) size 6x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                RenderFlexibleBox {DIV} at (3,3) size 0x16
+                  RenderBlock {DIV} at (0,2.50) size 1x11
+                  RenderBlock {DIV} at (1,0) size 0x16
+            RenderTableCell {TD} at (19,1) size 8x24 [r=0 c=2 rs=1 cs=1]
+              RenderTextControl {INPUT} at (1,1) size 6x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                RenderFlexibleBox {DIV} at (3,3) size 0x16
+                  RenderBlock {DIV} at (0,2.50) size 1x11
+                  RenderBlock {DIV} at (1,0) size 0x16
+            RenderTableCell {TD} at (28,3) size 755x20 [r=0 c=3 rs=1 cs=1]
               RenderText {#text} at (1,1) size 4x17
                 text run at (1,1) width 4: " "
-      RenderBlock (anonymous) at (0,43) size 784x36
+      RenderBlock (anonymous) at (0,44) size 784x36
         RenderBR {BR} at (0,0) size 0x17
         RenderBR {BR} at (0,18) size 0x17
-      RenderTable {TABLE} at (0,79) size 784x25
-        RenderTableSection {TBODY} at (0,0) size 784x25
-          RenderTableRow {TR} at (0,1) size 784x23
-            RenderTableCell {TD} at (1,1) size 8x23 [r=0 c=0 rs=1 cs=1]
-              RenderTextControl {INPUT} at (1,1) size 6x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-                RenderFlexibleBox {DIV} at (3,3) size 0x15
-                  RenderBlock {DIV} at (2,1) size 13x13
-                  RenderBlock {DIV} at (18,0) size 0x15
-            RenderTableCell {TD} at (10,1) size 8x23 [r=0 c=1 rs=1 cs=1]
-              RenderTextControl {INPUT} at (1,1) size 6x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-                RenderFlexibleBox {DIV} at (3,3) size 0x15
-                  RenderBlock {DIV} at (2,1) size 13x13
-                  RenderBlock {DIV} at (18,0) size 0x15
-            RenderTableCell {TD} at (19,1) size 8x23 [r=0 c=2 rs=1 cs=1]
-              RenderTextControl {INPUT} at (1,1) size 6x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-                RenderFlexibleBox {DIV} at (3,3) size 0x15
-                  RenderBlock {DIV} at (2,1) size 13x13
-                  RenderBlock {DIV} at (18,0) size 0x15
-            RenderTableCell {TD} at (28,2) size 755x20 [r=0 c=3 rs=1 cs=1]
+      RenderTable {TABLE} at (0,80) size 784x26
+        RenderTableSection {TBODY} at (0,0) size 784x26
+          RenderTableRow {TR} at (0,1) size 784x24
+            RenderTableCell {TD} at (1,1) size 8x24 [r=0 c=0 rs=1 cs=1]
+              RenderTextControl {INPUT} at (1,1) size 6x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                RenderFlexibleBox {DIV} at (3,3) size 0x16
+                  RenderBlock {DIV} at (2,1.50) size 13x13
+                  RenderBlock {DIV} at (18,0) size 0x16
+            RenderTableCell {TD} at (10,1) size 8x24 [r=0 c=1 rs=1 cs=1]
+              RenderTextControl {INPUT} at (1,1) size 6x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                RenderFlexibleBox {DIV} at (3,3) size 0x16
+                  RenderBlock {DIV} at (2,1.50) size 13x13
+                  RenderBlock {DIV} at (18,0) size 0x16
+            RenderTableCell {TD} at (19,1) size 8x24 [r=0 c=2 rs=1 cs=1]
+              RenderTextControl {INPUT} at (1,1) size 6x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                RenderFlexibleBox {DIV} at (3,3) size 0x16
+                  RenderBlock {DIV} at (2,1.50) size 13x13
+                  RenderBlock {DIV} at (18,0) size 0x16
+            RenderTableCell {TD} at (28,3) size 755x20 [r=0 c=3 rs=1 cs=1]
               RenderText {#text} at (1,1) size 4x17
                 text run at (1,1) width 4: " "
-layer at (15,34) size 9x9 transparent
-  RenderBlock {DIV} at (2,3) size 9x9
-layer at (24,34) size 9x9 transparent
-  RenderBlock {DIV} at (2,3) size 9x9
-layer at (33,34) size 9x9 transparent
-  RenderBlock {DIV} at (2,3) size 9x9
-layer at (32,95) size 9x9 transparent
-  RenderBlock {DIV} at (19,3) size 9x9
-layer at (41,95) size 9x9 transparent
-  RenderBlock {DIV} at (19,3) size 9x9
-layer at (50,95) size 9x9 transparent
-  RenderBlock {DIV} at (19,3) size 9x9
+layer at (15,35) size 9x9 transparent
+  RenderBlock {DIV} at (2,3.50) size 9x9
+layer at (24,35) size 9x9 transparent
+  RenderBlock {DIV} at (2,3.50) size 9x9
+layer at (33,35) size 9x9 transparent
+  RenderBlock {DIV} at (2,3.50) size 9x9
+layer at (32,97) size 9x9 transparent
+  RenderBlock {DIV} at (19,3.50) size 9x9
+layer at (41,97) size 9x9 transparent
+  RenderBlock {DIV} at (19,3.50) size 9x9
+layer at (50,97) size 9x9 transparent
+  RenderBlock {DIV} at (19,3.50) size 9x9

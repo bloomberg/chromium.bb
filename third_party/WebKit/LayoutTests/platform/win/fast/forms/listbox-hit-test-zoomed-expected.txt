@@ -1,4 +1,4 @@
-layer at (0,0) size 1086x600
+layer at (0,0) size 1160x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
@@ -17,11 +17,11 @@ layer at (0,0) size 800x600
             text run at (0,44) width 101: "Test 2 Failed"
           RenderBR {BR} at (100,61) size 1x0
         RenderBlock {PRE} at (0,81.59) size 780.81x36
-          RenderText {#text} at (0,0) size 1077x18
-            text run at (0,0) width 1077: "     Expected: false,false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false"
+          RenderText {#text} at (0,0) size 1150x18
+            text run at (0,0) width 1150: "     Expected: false,false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false"
           RenderBR {BR} at (0,0) size 0x0
-          RenderText {#text} at (0,18) size 1058x18
-            text run at (0,18) width 1058: "     Actual: false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false,false"
+          RenderText {#text} at (0,18) size 1130x18
+            text run at (0,18) width 1130: "     Actual: false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false,false"
 layer at (10,10) size 142x162 clip at (22,22) size 102x138 scrollY 8 scrollHeight 370
   RenderListBox {SELECT} at (0,0) size 141.63x162 [bgcolor=#FFFFFF] [border: (12px solid #000000)]
     RenderBlock {OPTION} at (24,24) size 78.63x20.38

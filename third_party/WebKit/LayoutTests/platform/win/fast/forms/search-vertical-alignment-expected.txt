@@ -14,56 +14,56 @@ layer at (0,0) size 800x600
         RenderTextControl {INPUT} at (0,0) size 175x45 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (3,3) size 169x39
             RenderBlock {DIV} at (2,13) size 13x13
-            RenderBlock {DIV} at (18,12) size 138x15
+            RenderBlock {DIV} at (18,11.50) size 138x16
         RenderText {#text} at (175,13) size 4x17
           text run at (175,13) width 4: " "
         RenderTextControl {INPUT} at (179,0) size 173x45 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,113) size 784x18
-        RenderTextControl {INPUT} at (0,2) size 175x16 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          RenderFlexibleBox {DIV} at (3,0.50) size 169x15
-            RenderBlock {DIV} at (2,1) size 13x13
-            RenderBlock {DIV} at (18,0) size 138x15
+        RenderTextControl {INPUT} at (0,1) size 175x16 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+          RenderFlexibleBox {DIV} at (3,0) size 169x16
+            RenderBlock {DIV} at (2,1.50) size 13x13
+            RenderBlock {DIV} at (18,0) size 138x16
         RenderText {#text} at (175,0) size 4x17
           text run at (175,0) width 4: " "
-        RenderTextControl {INPUT} at (179,2) size 173x16 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderTextControl {INPUT} at (179,1) size 173x16 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {P} at (0,147) size 784x19
+      RenderBlock {P} at (0,147) size 784x20
         RenderTextControl {INPUT} at (0,0) size 175x12 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (3,0) size 169x12
             RenderBlock {DIV} at (2,0) size 13x13
             RenderBlock {DIV} at (18,3) size 138x6
-        RenderText {#text} at (175,1) size 4x17
-          text run at (175,1) width 4: " "
+        RenderText {#text} at (175,2) size 4x17
+          text run at (175,2) width 4: " "
         RenderTextControl {INPUT} at (179,0) size 173x12 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         RenderText {#text} at (0,0) size 0x0
-layer at (29,75) size 138x15
-  RenderBlock {DIV} at (0,0) size 138x15
-    RenderText {#text} at (0,0) size 26x15
-      text run at (0,0) width 26: "Text"
-layer at (189,75) size 169x15
-  RenderBlock {DIV} at (2,15) size 169x15
-    RenderText {#text} at (0,0) size 26x15
-      text run at (0,0) width 26: "Text"
-layer at (29,124) size 138x15
-  RenderBlock {DIV} at (0,0) size 138x15
-    RenderText {#text} at (0,0) size 26x15
-      text run at (0,0) width 26: "Text"
-layer at (189,124) size 169x15
-  RenderBlock {DIV} at (2,0.50) size 169x15
-    RenderText {#text} at (0,0) size 26x15
-      text run at (0,0) width 26: "Text"
-layer at (29,158) size 138x6 scrollHeight 15
+layer at (29,75) size 138x16
+  RenderBlock {DIV} at (0,0) size 138x16
+    RenderText {#text} at (0,0) size 25x16
+      text run at (0,0) width 25: "Text"
+layer at (189,75) size 169x16
+  RenderBlock {DIV} at (2,14.50) size 169x16
+    RenderText {#text} at (0,0) size 25x16
+      text run at (0,0) width 25: "Text"
+layer at (29,122) size 138x16
+  RenderBlock {DIV} at (0,0) size 138x16
+    RenderText {#text} at (0,0) size 25x16
+      text run at (0,0) width 25: "Text"
+layer at (189,122) size 169x16
+  RenderBlock {DIV} at (2,0) size 169x16
+    RenderText {#text} at (0,0) size 25x16
+      text run at (0,0) width 25: "Text"
+layer at (29,158) size 138x6 scrollHeight 16
   RenderBlock {DIV} at (0,0) size 138x6
-    RenderText {#text} at (0,0) size 26x15
-      text run at (0,0) width 26: "Text"
-layer at (189,158) size 169x6 scrollHeight 15
+    RenderText {#text} at (0,0) size 25x16
+      text run at (0,0) width 25: "Text"
+layer at (189,158) size 169x6 scrollHeight 16
   RenderBlock {DIV} at (2,3) size 169x6
-    RenderText {#text} at (0,0) size 26x15
-      text run at (0,0) width 26: "Text"
+    RenderText {#text} at (0,0) size 25x16
+      text run at (0,0) width 25: "Text"
 layer at (168,78) size 9x9 transparent
   RenderBlock {DIV} at (157,15) size 9x9
-layer at (168,127) size 9x9 transparent
-  RenderBlock {DIV} at (157,3) size 9x9
+layer at (168,126) size 9x9 transparent
+  RenderBlock {DIV} at (157,3.50) size 9x9
 layer at (168,157) size 9x9 transparent
   RenderBlock {DIV} at (157,1.50) size 9x9
