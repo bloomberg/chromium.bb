@@ -95,11 +95,6 @@
                   '/usr/local/include',
                 ],
               }],
-              ['OS=="android"', {
-                'include_dirs': [
-                  '<(android_src)/external/jpeg',
-                ],
-              }],
             ],
           },
           'link_settings': {

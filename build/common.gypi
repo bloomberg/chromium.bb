@@ -880,12 +880,6 @@
           'use_libjpeg_turbo%': 0,
         }],
 
-        ['OS=="android"', {
-          # When building as part of the Android system, use system libraries
-          # where possible to reduce ROM size.
-          'use_system_libjpeg%': '<(android_webview_build)',
-        }],
-
         # Do not enable the Settings App on ChromeOS.
         ['enable_app_list==1 and chromeos==0', {
           'enable_settings_app%': 1,
