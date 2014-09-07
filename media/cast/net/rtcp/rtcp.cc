@@ -8,9 +8,8 @@
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/net/cast_transport_defines.h"
-#include "media/cast/net/pacing/paced_sender.h"
-#include "media/cast/net/rtcp/rtcp_builder.h"
 #include "media/cast/net/rtcp/rtcp_defines.h"
+#include "media/cast/net/rtcp/rtcp_sender.h"
 #include "media/cast/net/rtcp/rtcp_utility.h"
 
 using base::TimeDelta;
@@ -65,8 +64,7 @@ Rtcp::Rtcp(const RtcpCastMessageCallback& cast_callback,
       rtt_callback_(rtt_callback),
       log_callback_(log_callback),
       clock_(clock),
-      rtcp_builder_(local_ssrc),
-      packet_sender_(packet_sender),
+      rtcp_sender_(new RtcpSender(packet_sender, local_ssrc)),
       local_ssrc_(local_ssrc),
       remote_ssrc_(remote_ssrc),
       last_report_truncated_ntp_(0),
@@ -230,14 +228,12 @@ void Rtcp::SendRtcpFromRtpReceiver(
       report_block.delay_since_last_sr = 0;
     }
   }
-  packet_sender_->SendRtcpPacket(
-      local_ssrc_,
-      rtcp_builder_.BuildRtcpFromReceiver(
-          rtp_receiver_statistics ? &report_block : NULL,
-          &rrtr,
-          cast_message,
-          rtcp_events,
-          target_delay));
+  rtcp_sender_->SendRtcpFromRtpReceiver(
+      rtp_receiver_statistics ? &report_block : NULL,
+      &rrtr,
+      cast_message,
+      rtcp_events,
+      target_delay);
 }
 
 void Rtcp::SendRtcpFromRtpSender(base::TimeTicks current_time,
@@ -258,9 +254,7 @@ void Rtcp::SendRtcpFromRtpSender(base::TimeTicks current_time,
   sender_info.send_packet_count = send_packet_count;
   sender_info.send_octet_count = send_octet_count;
 
-  packet_sender_->SendRtcpPacket(
-      local_ssrc_,
-      rtcp_builder_.BuildRtcpFromSender(sender_info));
+  rtcp_sender_->SendRtcpFromRtpSender(sender_info);
 }
 
 void Rtcp::OnReceivedNtp(uint32 ntp_seconds, uint32 ntp_fraction) {
