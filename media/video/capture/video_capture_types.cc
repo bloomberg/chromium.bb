@@ -31,14 +31,12 @@ bool VideoCaptureFormat::IsValid() const {
          (pixel_format < PIXEL_FORMAT_MAX);
 }
 
-#if !defined(NDEBUG)
 std::string VideoCaptureFormat::ToString() const {
   return base::StringPrintf("resolution: %s, fps: %f, pixel format: %s",
                             frame_size.ToString().c_str(),
                             frame_rate,
                             PixelFormatToString(pixel_format).c_str());
 }
-#endif
 
 std::string VideoCaptureFormat::PixelFormatToString(VideoPixelFormat format) {
   switch (format) {
