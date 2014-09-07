@@ -15,6 +15,7 @@ group("strings") {
 
 grit("ui_strings") {
   source = "ui_strings.grd"
+  use_qualified_include = true
   outputs = [
     "grit/ui_strings.h",
     "ui_strings_am.pak",
@@ -76,6 +77,7 @@ grit("ui_strings") {
 
 grit("app_locale_settings") {
   source = "app_locale_settings.grd"
+  use_qualified_include = true
   outputs = [
     "grit/app_locale_settings.h",
     "app_locale_settings_am.pak",

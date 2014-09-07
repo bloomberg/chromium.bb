@@ -12,8 +12,8 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "grit/webui_resources.h"
 #include "net/base/filename_util.h"
+#include "ui/resources/grit/webui_resources.h"
 
 namespace content {
 

@@ -11,7 +11,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
-#include "grit/webui_resources.h"
+#include "ui/resources/grit/webui_resources.h"
 
 class WebUIResourceBrowserTest : public InProcessBrowserTest {
  public:

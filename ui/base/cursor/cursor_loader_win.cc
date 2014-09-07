@@ -6,8 +6,8 @@
 
 #include "base/lazy_instance.h"
 #include "base/strings/string16.h"
-#include "grit/ui_unscaled_resources.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/resources/grit/ui_unscaled_resources.h"
 
 namespace ui {
 

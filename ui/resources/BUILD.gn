@@ -27,6 +27,7 @@ grit("ui_resources_grd") {
 
 grit("ui_unscaled_resources_grd") {
   source = "ui_unscaled_resources.grd"
+  use_qualified_include = true
   outputs = [
     "grit/ui_unscaled_resources.h",
     "ui_unscaled_resources.rc",
@@ -91,4 +92,3 @@ repack("repack_ui_test_pak") {
     deps += [ ":copy_ui_resources_100_percent" ]
   }
 }
-

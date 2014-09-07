@@ -15,10 +15,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/i18n.h"
 #include "base/win/windows_version.h"
-#include "grit/app_locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/win/dpi.h"
+#include "ui/strings/grit/app_locale_settings.h"
 
 namespace {
 

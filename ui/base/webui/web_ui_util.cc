@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_number_conversions.h"
-#include "grit/app_locale_settings.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -20,6 +19,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/strings/grit/app_locale_settings.h"
 #include "url/gurl.h"
 
 #if defined(OS_WIN)

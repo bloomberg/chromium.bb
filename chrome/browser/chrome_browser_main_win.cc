@@ -48,7 +48,6 @@
 #include "chrome/installer/util/shell_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/main_function_params.h"
-#include "grit/app_locale_settings.h"
 #include "installer_util_strings/installer_util_strings.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -57,6 +56,7 @@
 #include "ui/base/win/message_box_win.h"
 #include "ui/gfx/platform_font_win.h"
 #include "ui/gfx/switches.h"
+#include "ui/strings/grit/app_locale_settings.h"
 
 namespace {
 

@@ -11,9 +11,9 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "grit/webui_resources.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/resources/grit/webui_resources.h"
 
 namespace {
 

@@ -20,7 +20,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
-#include "grit/app_locale_settings.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -35,6 +34,7 @@
 #include "ui/gfx/safe_integer_conversions.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
+#include "ui/strings/grit/app_locale_settings.h"
 
 #if defined(OS_ANDROID)
 #include "ui/base/resource/resource_bundle_android.h"

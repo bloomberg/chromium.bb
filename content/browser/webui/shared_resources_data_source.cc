@@ -10,8 +10,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
-#include "grit/webui_resources_map.h"
 #include "net/base/mime_util.h"
+#include "ui/resources/grit/webui_resources_map.h"
 
 namespace {
 
