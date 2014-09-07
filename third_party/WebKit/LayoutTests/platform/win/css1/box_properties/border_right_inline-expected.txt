@@ -1,40 +1,40 @@
-layer at (0,0) size 785x1082
+layer at (0,0) size 785x1089
   RenderView at (0,0) size 785x600
-layer at (0,0) size 785x1082
-  RenderBlock {HTML} at (0,0) size 785x1082
-    RenderBody {BODY} at (8,8) size 769x1066 [bgcolor=#CCCCCC]
+layer at (0,0) size 785x1089
+  RenderBlock {HTML} at (0,0) size 785x1089
+    RenderBody {BODY} at (8,8) size 769x1073 [bgcolor=#CCCCCC]
       RenderBlock {P} at (0,0) size 749x18
         RenderText {#text} at (0,0) size 363x17
           text run at (0,0) width 363: "The style declarations which apply to the text below are:"
-      RenderBlock {PRE} at (0,34) size 769x105
-        RenderText {#text} at (0,0) size 344x105
-          text run at (0,0) width 180: "P {margin-right: 20px;}"
-          text run at (179,0) width 1: " "
-          text run at (0,15) width 313: ".one {border-right: purple double 10px;}"
-          text run at (312,15) width 1: " "
-          text run at (0,30) width 305: ".two {border-right: purple thin solid;}"
-          text run at (304,30) width 1: " "
-          text run at (0,45) width 336: ".threea {border-right: black medium solid;}"
-          text run at (335,45) width 1: " "
-          text run at (0,60) width 344: ".threeb {border-right: purple medium solid;}"
-          text run at (343,60) width 1: " "
-          text run at (0,75) width 328: ".threec {border-right: blue medium solid;}"
-          text run at (327,75) width 1: " "
-          text run at (0,90) width 274: "TD {border-right: green 2px solid;}"
-          text run at (273,90) width 1: " "
-      RenderBlock {HR} at (0,152) size 769x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {P} at (0,170) size 749x36
+      RenderBlock {PRE} at (0,34) size 769x112
+        RenderText {#text} at (0,0) size 352x112
+          text run at (0,0) width 184: "P {margin-right: 20px;}"
+          text run at (184,0) width 0: " "
+          text run at (0,16) width 320: ".one {border-right: purple double 10px;}"
+          text run at (320,16) width 0: " "
+          text run at (0,32) width 312: ".two {border-right: purple thin solid;}"
+          text run at (312,32) width 0: " "
+          text run at (0,48) width 344: ".threea {border-right: black medium solid;}"
+          text run at (344,48) width 0: " "
+          text run at (0,64) width 352: ".threeb {border-right: purple medium solid;}"
+          text run at (352,64) width 0: " "
+          text run at (0,80) width 336: ".threec {border-right: blue medium solid;}"
+          text run at (336,80) width 0: " "
+          text run at (0,96) width 280: "TD {border-right: green 2px solid;}"
+          text run at (280,96) width 0: " "
+      RenderBlock {HR} at (0,159) size 769x2 [border: (1px inset #EEEEEE)]
+      RenderBlock {P} at (0,177) size 749x36
         RenderText {#text} at (0,0) size 732x35
           text run at (0,0) width 658: "Note that all table cells on this page should have a two-pixel solid green border along their right sides. "
           text run at (657,0) width 75: "This border"
           text run at (0,18) width 373: "applies only to the cells, not the rows which contain them."
-      RenderBlock {P} at (0,222) size 749x18 [border: none (10px double #800080) none]
+      RenderBlock {P} at (0,229) size 749x18 [border: none (10px double #800080) none]
         RenderText {#text} at (0,0) size 431x17
           text run at (0,0) width 431: "This paragraph should have a purple, double, 10-pixel right border."
-      RenderBlock {P} at (0,256) size 749x18 [border: none (1px solid #800080) none]
+      RenderBlock {P} at (0,263) size 749x18 [border: none (1px solid #800080) none]
         RenderText {#text} at (0,0) size 347x17
           text run at (0,0) width 347: "This paragraph should have a thin purple right border."
-      RenderTable {TABLE} at (0,290) size 769x107 [border: (1px outset #808080)]
+      RenderTable {TABLE} at (0,297) size 769x107 [border: (1px outset #808080)]
         RenderTableSection {TBODY} at (1,1) size 767x105
           RenderTableRow {TR} at (0,5) size 767x40
             RenderTableCell {TD} at (5,5) size 757x40 [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
@@ -56,7 +56,7 @@ layer at (0,0) size 785x1082
                     RenderTableCell {TD} at (2,2) size 161x22 [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                       RenderText {#text} at (2,2) size 156x17
                         text run at (2,2) width 156: "Nested single-cell table!"
-      RenderBlock {UL} at (0,413) size 769x162
+      RenderBlock {UL} at (0,420) size 769x162
         RenderListItem {LI} at (40,0) size 729x72 [border: none (3px solid #000000) none]
           RenderBlock (anonymous) at (0,0) size 726x18
             RenderListMarker at (-17,0) size 7x17: bullet
@@ -87,7 +87,7 @@ layer at (0,0) size 785x1082
             text run at (0,36) width 550: "within the list item.\"), even though the nested list does not have any border styles set. "
             text run at (549,36) width 173: "The borders should line up"
             text run at (0,54) width 634: "together at the right edge of the document's body, as each list element has a default width of 100%."
-      RenderTable {TABLE} at (0,591) size 769x475 [border: (1px outset #808080)]
+      RenderTable {TABLE} at (0,598) size 769x475 [border: (1px outset #808080)]
         RenderTableSection {TBODY} at (1,1) size 767x473
           RenderTableRow {TR} at (0,0) size 767x26
             RenderTableCell {TD} at (0,0) size 767x26 [bgcolor=#C0C0C0] [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]

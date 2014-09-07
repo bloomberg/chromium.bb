@@ -11,8 +11,8 @@ layer at (0,0) size 785x652
           text run at (0,0) width 352: "This button should have the default submit button title:"
       RenderBlock (anonymous) at (0,74.72) size 769x21
         RenderButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 64x15
-            RenderText {#text} at (11,0) size 42x15
+          RenderBlock (anonymous) at (8,3) size 64x16
+            RenderText {#text} at (11,0) size 42x16
               text run at (11,0) width 42: "Submit"
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,111.72) size 769x18
@@ -20,17 +20,17 @@ layer at (0,0) size 785x652
           text run at (0,0) width 300: "This button should should have the title \"Foo\":"
       RenderBlock (anonymous) at (0,145.72) size 769x21
         RenderButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 64x15
-            RenderText {#text} at (20,0) size 24x15
-              text run at (20,0) width 24: "Foo"
+          RenderBlock (anonymous) at (8,3) size 64x16
+            RenderText {#text} at (21,0) size 22x16
+              text run at (21,0) width 22: "Foo"
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,182.72) size 769x18
         RenderText {#text} at (0,0) size 316x17
           text run at (0,0) width 316: "This button should have a single space in its title:"
       RenderBlock (anonymous) at (0,216.72) size 769x21
         RenderButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 64x15
-            RenderText {#text} at (30,0) size 4x15
+          RenderBlock (anonymous) at (8,3) size 64x16
+            RenderText {#text} at (30,0) size 4x16
               text run at (30,0) width 4: " "
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,253.72) size 769x18
@@ -47,26 +47,26 @@ layer at (0,0) size 785x652
           text run at (0,0) width 339: "This button should have the default reset button title:"
       RenderBlock (anonymous) at (0,402.16) size 769x21
         RenderButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 64x15
-            RenderText {#text} at (14,0) size 36x15
-              text run at (14,0) width 36: "Reset"
+          RenderBlock (anonymous) at (8,3) size 64x16
+            RenderText {#text} at (15,0) size 34x16
+              text run at (15,0) width 34: "Reset"
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,439.16) size 769x18
         RenderText {#text} at (0,0) size 300x17
           text run at (0,0) width 300: "This button should should have the title \"Foo\":"
       RenderBlock (anonymous) at (0,473.16) size 769x21
         RenderButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 64x15
-            RenderText {#text} at (20,0) size 24x15
-              text run at (20,0) width 24: "Foo"
+          RenderBlock (anonymous) at (8,3) size 64x16
+            RenderText {#text} at (21,0) size 22x16
+              text run at (21,0) width 22: "Foo"
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,510.16) size 769x18
         RenderText {#text} at (0,0) size 316x17
           text run at (0,0) width 316: "This button should have a single space in its title:"
       RenderBlock (anonymous) at (0,544.16) size 769x21
         RenderButton {INPUT} at (0,0) size 80x21 [bgcolor=#008000] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 64x15
-            RenderText {#text} at (30,0) size 4x15
+          RenderBlock (anonymous) at (8,3) size 64x16
+            RenderText {#text} at (30,0) size 4x16
               text run at (30,0) width 4: " "
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (0,581.16) size 769x18

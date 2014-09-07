@@ -1,34 +1,34 @@
-layer at (0,0) size 785x995
+layer at (0,0) size 785x999
   RenderView at (0,0) size 785x600
-layer at (0,0) size 785x995
-  RenderBlock {HTML} at (0,0) size 785x995
-    RenderBody {BODY} at (8,8) size 769x979 [bgcolor=#CCCCCC]
+layer at (0,0) size 785x999
+  RenderBlock {HTML} at (0,0) size 785x999
+    RenderBody {BODY} at (8,8) size 769x983 [bgcolor=#CCCCCC]
       RenderBlock {P} at (0,0) size 769x18
         RenderText {#text} at (0,0) size 363x17
           text run at (0,0) width 363: "The style declarations which apply to the text below are:"
-      RenderBlock {PRE} at (0,34) size 769x60
-        RenderText {#text} at (0,0) size 336x60
-          text run at (0,0) width 320: ".one {border-bottom: purple double 10px;}"
-          text run at (319,0) width 1: " "
-          text run at (0,15) width 313: ".two {border-bottom: purple thin solid;}"
-          text run at (312,15) width 1: " "
-          text run at (0,30) width 336: ".three {border-bottom: black medium solid;}"
-          text run at (335,30) width 1: " "
-          text run at (0,45) width 281: "TD {border-bottom: green 2px solid;}"
-          text run at (280,45) width 1: " "
-      RenderBlock {HR} at (0,107) size 769x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {P} at (0,125) size 769x36
+      RenderBlock {PRE} at (0,34) size 769x64
+        RenderText {#text} at (0,0) size 344x64
+          text run at (0,0) width 328: ".one {border-bottom: purple double 10px;}"
+          text run at (328,0) width 0: " "
+          text run at (0,16) width 320: ".two {border-bottom: purple thin solid;}"
+          text run at (320,16) width 0: " "
+          text run at (0,32) width 344: ".three {border-bottom: black medium solid;}"
+          text run at (344,32) width 0: " "
+          text run at (0,48) width 288: "TD {border-bottom: green 2px solid;}"
+          text run at (288,48) width 0: " "
+      RenderBlock {HR} at (0,111) size 769x2 [border: (1px inset #EEEEEE)]
+      RenderBlock {P} at (0,129) size 769x36
         RenderText {#text} at (0,0) size 747x35
           text run at (0,0) width 673: "Note that all table cells on this page should have a two-pixel solid green border along their bottom sides. "
           text run at (672,0) width 75: "This border"
           text run at (0,18) width 373: "applies only to the cells, not the rows which contain them."
-      RenderBlock {P} at (0,177) size 769x28 [border: none (10px double #800080) none]
+      RenderBlock {P} at (0,181) size 769x28 [border: none (10px double #800080) none]
         RenderText {#text} at (0,0) size 446x17
           text run at (0,0) width 446: "This paragraph should have a purple, double, 10-pixel bottom border."
-      RenderBlock {P} at (0,221) size 769x19 [border: none (1px solid #800080) none]
+      RenderBlock {P} at (0,225) size 769x19 [border: none (1px solid #800080) none]
         RenderText {#text} at (0,0) size 362x17
           text run at (0,0) width 362: "This paragraph should have a thin purple bottom border."
-      RenderTable {TABLE} at (0,256) size 769x110 [border: (1px outset #808080)]
+      RenderTable {TABLE} at (0,260) size 769x110 [border: (1px outset #808080)]
         RenderTableSection {TBODY} at (1,1) size 767x108
           RenderTableRow {TR} at (0,5) size 767x41
             RenderTableCell {TD} at (5,5) size 757x41 [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
@@ -50,7 +50,7 @@ layer at (0,0) size 785x995
                     RenderTableCell {TD} at (2,2) size 160x23 [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                       RenderText {#text} at (2,2) size 156x17
                         text run at (2,2) width 156: "Nested single-cell table!"
-      RenderBlock {UL} at (0,382) size 769x135
+      RenderBlock {UL} at (0,386) size 769x135
         RenderListItem {LI} at (40,0) size 729x75 [border: none (3px solid #000000) none]
           RenderBlock (anonymous) at (0,0) size 729x18
             RenderListMarker at (-17,0) size 7x17: bullet
@@ -83,7 +83,7 @@ layer at (0,0) size 785x995
               text run at (134,18) width 51: "beneath"
           RenderText {#text} at (184,18) size 401x17
             text run at (184,18) width 401: " the nested list (below the line \"...nested within the list item.\")."
-      RenderTable {TABLE} at (0,533) size 769x446 [border: (1px outset #808080)]
+      RenderTable {TABLE} at (0,537) size 769x446 [border: (1px outset #808080)]
         RenderTableSection {TBODY} at (1,1) size 767x444
           RenderTableRow {TR} at (0,0) size 767x27
             RenderTableCell {TD} at (0,0) size 767x27 [bgcolor=#C0C0C0] [border: (1px inset #808080) (2px solid #008000) (1px inset #808080)] [r=0 c=0 rs=1 cs=2]

@@ -1,8 +1,8 @@
-layer at (0,0) size 785x781
+layer at (0,0) size 785x812
   RenderView at (0,0) size 785x600
-layer at (0,0) size 785x781
-  RenderBlock {HTML} at (0,0) size 785x781
-    RenderBody {BODY} at (8,8) size 769x760
+layer at (0,0) size 785x812
+  RenderBlock {HTML} at (0,0) size 785x812
+    RenderBody {BODY} at (8,8) size 769x791
       RenderBlock {P} at (0,0) size 769x36
         RenderText {#text} at (0,0) size 55x17
           text run at (0,0) width 55: "Test for "
@@ -20,95 +20,95 @@ layer at (0,0) size 785x781
       RenderBlock {P} at (0,70) size 769x18
         RenderText {#text} at (0,0) size 36x17
           text run at (0,0) width 36: "Here "
-        RenderInline {CODE} at (0,0) size 24x15
-          RenderText {#text} at (35,3) size 24x15
-            text run at (35,3) width 24: "bar"
-        RenderText {#text} at (58,0) size 145x17
-          text run at (58,0) width 145: " should be right under "
-        RenderInline {CODE} at (0,0) size 25x15
-          RenderText {#text} at (202,3) size 25x15
-            text run at (202,3) width 25: "foo"
-        RenderText {#text} at (226,0) size 5x17
-          text run at (226,0) width 5: ":"
-      RenderBlock {PRE} at (0,104) size 38.47x30 [bgcolor=#C0C0C0]
-        RenderText {#text} at (0,0) size 39x30
+        RenderInline {CODE} at (0,0) size 25x16
+          RenderText {#text} at (35,2) size 25x16
+            text run at (35,2) width 25: "bar"
+        RenderText {#text} at (59,0) size 145x17
+          text run at (59,0) width 145: " should be right under "
+        RenderInline {CODE} at (0,0) size 25x16
+          RenderText {#text} at (203,2) size 25x16
+            text run at (203,2) width 25: "foo"
+        RenderText {#text} at (227,0) size 5x17
+          text run at (227,0) width 5: ":"
+      RenderBlock {PRE} at (0,104) size 35x32 [bgcolor=#C0C0C0]
+        RenderText {#text} at (0,0) size 35x32
           text run at (0,0) width 24: "foo"
-          text run at (23,0) width 16: "      "
-          text run at (0,15) width 24: "bar"
-      RenderBlock {P} at (0,150) size 769x18
+          text run at (24,0) width 11: "      "
+          text run at (0,16) width 24: "bar"
+      RenderBlock {P} at (0,152) size 769x18
         RenderText {#text} at (0,0) size 36x17
           text run at (0,0) width 36: "Here "
-        RenderInline {CODE} at (0,0) size 24x15
-          RenderText {#text} at (35,3) size 24x15
-            text run at (35,3) width 24: "bar"
-        RenderText {#text} at (58,0) size 331x17
-          text run at (58,0) width 331: " should be on the right hand side of the second line:"
-      RenderBlock {PRE} at (0,184) size 38.47x45 [bgcolor=#C0C0C0]
-        RenderText {#text} at (0,0) size 24x15
+        RenderInline {CODE} at (0,0) size 25x16
+          RenderText {#text} at (35,2) size 25x16
+            text run at (35,2) width 25: "bar"
+        RenderText {#text} at (59,0) size 331x17
+          text run at (59,0) width 331: " should be on the right hand side of the second line:"
+      RenderBlock {PRE} at (0,186) size 35x48 [bgcolor=#C0C0C0]
+        RenderText {#text} at (0,0) size 24x16
           text run at (0,0) width 24: "foo"
-        RenderBR {BR} at (23,11) size 1x0
-        RenderText {#text} at (0,15) size 24x30
-          text run at (0,15) width 24: "   "
-          text run at (0,30) width 24: "bar"
-      RenderBlock {PRE} at (0,242) size 38.47x45 [bgcolor=#C0C0C0]
-        RenderText {#text} at (0,0) size 55x15
+        RenderBR {BR} at (24,12) size 0x0
+        RenderText {#text} at (0,16) size 24x32
+          text run at (0,16) width 24: "   "
+          text run at (0,32) width 24: "bar"
+      RenderBlock {PRE} at (0,247) size 35x48 [bgcolor=#C0C0C0]
+        RenderText {#text} at (0,0) size 56x16
           text run at (0,0) width 32: "foo "
-          text run at (31,0) width 24: "   "
-        RenderBR {BR} at (54,11) size 1x0
-        RenderText {#text} at (0,15) size 24x30
-          text run at (0,15) width 24: "   "
-          text run at (0,30) width 24: "bar"
-      RenderBlock {PRE} at (0,300) size 38.47x45 [bgcolor=#C0C0C0]
-        RenderText {#text} at (0,0) size 24x45
+          text run at (32,0) width 24: "   "
+        RenderBR {BR} at (56,12) size 0x0
+        RenderText {#text} at (0,16) size 24x32
+          text run at (0,16) width 24: "   "
+          text run at (0,32) width 24: "bar"
+      RenderBlock {PRE} at (0,308) size 35x48 [bgcolor=#C0C0C0]
+        RenderText {#text} at (0,0) size 24x48
           text run at (0,0) width 24: "foo"
-          text run at (23,0) width 1: " "
-          text run at (0,15) width 24: "   "
-          text run at (0,30) width 24: "bar"
-      RenderBlock {PRE} at (0,358) size 38.47x45 [bgcolor=#C0C0C0]
-        RenderText {#text} at (0,0) size 32x45
+          text run at (24,0) width 0: " "
+          text run at (0,16) width 24: "   "
+          text run at (0,32) width 24: "bar"
+      RenderBlock {PRE} at (0,369) size 35x48 [bgcolor=#C0C0C0]
+        RenderText {#text} at (0,0) size 32x48
           text run at (0,0) width 32: "foo "
-          text run at (31,0) width 1: " "
-          text run at (0,15) width 24: "   "
-          text run at (0,30) width 24: "bar"
-      RenderBlock {PRE} at (0,416) size 38.47x45 [bgcolor=#C0C0C0]
-        RenderText {#text} at (0,0) size 47x45
+          text run at (32,0) width 0: " "
+          text run at (0,16) width 24: "   "
+          text run at (0,32) width 24: "bar"
+      RenderBlock {PRE} at (0,430) size 35x48 [bgcolor=#C0C0C0]
+        RenderText {#text} at (0,0) size 48x48
           text run at (0,0) width 32: "foo "
-          text run at (31,0) width 16: "  "
-          text run at (0,15) width 24: "   "
-          text run at (0,30) width 24: "bar"
-      RenderBlock {PRE} at (0,474) size 38.47x45 [bgcolor=#C0C0C0]
-        RenderText {#text} at (0,0) size 55x45
+          text run at (32,0) width 16: "  "
+          text run at (0,16) width 24: "   "
+          text run at (0,32) width 24: "bar"
+      RenderBlock {PRE} at (0,491) size 35x48 [bgcolor=#C0C0C0]
+        RenderText {#text} at (0,0) size 56x48
           text run at (0,0) width 32: "foo "
-          text run at (31,0) width 24: "   "
-          text run at (0,15) width 24: "   "
-          text run at (0,30) width 24: "bar"
-      RenderBlock {PRE} at (0,532) size 38.47x45 [bgcolor=#C0C0C0]
-        RenderText {#text} at (0,0) size 63x45
+          text run at (32,0) width 24: "   "
+          text run at (0,16) width 24: "   "
+          text run at (0,32) width 24: "bar"
+      RenderBlock {PRE} at (0,552) size 35x48 [bgcolor=#C0C0C0]
+        RenderText {#text} at (0,0) size 64x48
           text run at (0,0) width 32: "foo "
-          text run at (31,0) width 32: "    "
-          text run at (0,15) width 24: "   "
-          text run at (0,30) width 24: "bar"
-      RenderBlock {P} at (0,593) size 769x18
+          text run at (32,0) width 32: "    "
+          text run at (0,16) width 24: "   "
+          text run at (0,32) width 24: "bar"
+      RenderBlock {P} at (0,616) size 769x18
         RenderText {#text} at (0,0) size 36x17
           text run at (0,0) width 36: "Here "
-        RenderInline {CODE} at (0,0) size 24x15
-          RenderText {#text} at (35,3) size 24x15
-            text run at (35,3) width 24: "bar"
-        RenderText {#text} at (58,0) size 317x17
-          text run at (58,0) width 317: " should be on the right hand side of the third line:"
-      RenderBlock {PRE} at (0,627) size 38.47x60 [bgcolor=#C0C0C0]
-        RenderText {#text} at (0,0) size 24x15
+        RenderInline {CODE} at (0,0) size 25x16
+          RenderText {#text} at (35,2) size 25x16
+            text run at (35,2) width 25: "bar"
+        RenderText {#text} at (59,0) size 317x17
+          text run at (59,0) width 317: " should be on the right hand side of the third line:"
+      RenderBlock {PRE} at (0,650) size 35x64 [bgcolor=#C0C0C0]
+        RenderText {#text} at (0,0) size 24x16
           text run at (0,0) width 24: "foo"
-        RenderBR {BR} at (23,11) size 1x0
-        RenderText {#text} at (0,15) size 24x45
-          text run at (0,15) width 0: " "
-          text run at (0,30) width 24: "   "
-          text run at (0,45) width 24: "bar"
-      RenderBlock {PRE} at (0,700) size 38.47x60 [bgcolor=#C0C0C0]
-        RenderText {#text} at (0,0) size 32x60
+        RenderBR {BR} at (24,12) size 0x0
+        RenderText {#text} at (0,16) size 24x48
+          text run at (0,16) width 0: " "
+          text run at (0,32) width 24: "   "
+          text run at (0,48) width 24: "bar"
+      RenderBlock {PRE} at (0,727) size 35x64 [bgcolor=#C0C0C0]
+        RenderText {#text} at (0,0) size 32x64
           text run at (0,0) width 24: "foo"
-          text run at (23,0) width 9: " "
-          text run at (0,15) width 24: "baz"
-          text run at (23,15) width 1: " "
-          text run at (0,30) width 24: "   "
-          text run at (0,45) width 24: "bar"
+          text run at (24,0) width 8: " "
+          text run at (0,16) width 24: "baz"
+          text run at (24,16) width 0: " "
+          text run at (0,32) width 24: "   "
+          text run at (0,48) width 24: "bar"
