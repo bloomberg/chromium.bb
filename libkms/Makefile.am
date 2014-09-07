@@ -43,4 +43,4 @@ libkmsinclude_HEADERS = $(LIBKMS_H_FILES)
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libkms.pc
 
-EXTRA_DIST = libkms.pc.in
+EXTRA_DIST = Android.mk

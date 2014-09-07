@@ -21,3 +21,5 @@ libdrm_freedrenocommoninclude_HEADERS = $(LIBDRM_FREEDRENO_H_FILES)
 
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm_freedreno.pc
+
+EXTRA_DIST = Android.mk

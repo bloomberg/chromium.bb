@@ -25,3 +25,5 @@ if HAVE_CAIRO
 AM_CFLAGS += $(CAIRO_CFLAGS)
 modetest_LDADD += $(CAIRO_LIBS)
 endif
+
+EXTRA_DIST = Android.mk

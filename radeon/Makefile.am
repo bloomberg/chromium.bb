@@ -45,4 +45,4 @@ libdrm_radeoninclude_HEADERS = $(LIBDRM_RADEON_H_FILES)
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm_radeon.pc
 
-EXTRA_DIST = libdrm_radeon.pc.in
+EXTRA_DIST = Android.mk

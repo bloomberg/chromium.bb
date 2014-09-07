@@ -68,7 +68,8 @@ EXTRA_DIST = \
 	$(BATCHES:.batch=.batch.sh) \
 	$(BATCHES:.batch=.batch-ref.txt) \
 	$(BATCHES:.batch=.batch-ref.txt) \
-	tests/test-batch.sh
+	tests/test-batch.sh \
+	Android.mk
 
 test_decode_LDADD = libdrm_intel.la ../libdrm.la
 
