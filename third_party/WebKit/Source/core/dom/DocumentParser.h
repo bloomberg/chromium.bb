@@ -31,6 +31,7 @@
 namespace blink {
 
 class Document;
+class DocumentParserClient;
 class SegmentedString;
 class ScriptableDocumentParser;
 class TextResourceDecoder;
@@ -103,6 +104,9 @@ public:
     virtual void suspendScheduledTasks();
     virtual void resumeScheduledTasks();
 
+    void addClient(DocumentParserClient*);
+    void removeClient(DocumentParserClient*);
+
 protected:
     explicit DocumentParser(Document*);
 
@@ -121,6 +125,8 @@ private:
     // Every DocumentParser needs a pointer back to the document.
     // m_document will be 0 after the parser is stopped.
     RawPtrWillBeMember<Document> m_document;
+
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<DocumentParserClient> > m_clients;
 };
 
 } // namespace blink

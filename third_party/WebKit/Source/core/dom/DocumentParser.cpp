@@ -27,6 +27,7 @@
 #include "core/dom/DocumentParser.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/DocumentParserClient.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "wtf/Assertions.h"
 
@@ -53,6 +54,9 @@ DocumentParser::~DocumentParser()
 void DocumentParser::trace(Visitor* visitor)
 {
     visitor->trace(m_document);
+#if ENABLE(OILPAN)
+    visitor->trace(m_clients);
+#endif
 }
 
 void DocumentParser::setDecoder(PassOwnPtr<TextResourceDecoder>)
@@ -74,6 +78,18 @@ void DocumentParser::prepareToStopParsing()
 void DocumentParser::stopParsing()
 {
     m_state = StoppedState;
+
+    // Clients may be removed while in the loop. Make a snapshot for iteration.
+    WillBeHeapVector<RawPtrWillBeMember<DocumentParserClient> > clientsSnapshot;
+    copyToVector(m_clients, clientsSnapshot);
+
+    for (WillBeHeapVector<RawPtrWillBeMember<DocumentParserClient> >::const_iterator it = clientsSnapshot.begin(), itEnd = clientsSnapshot.end(); it != itEnd; ++it) {
+        DocumentParserClient* client = *it;
+        if (!m_clients.contains(client))
+            continue;
+
+        client->notifyParserStopped();
+    }
 }
 
 void DocumentParser::detach()
@@ -88,6 +104,16 @@ void DocumentParser::suspendScheduledTasks()
 
 void DocumentParser::resumeScheduledTasks()
 {
+}
+
+void DocumentParser::addClient(DocumentParserClient* client)
+{
+    m_clients.add(client);
+}
+
+void DocumentParser::removeClient(DocumentParserClient* client)
+{
+    m_clients.remove(client);
 }
 
 };

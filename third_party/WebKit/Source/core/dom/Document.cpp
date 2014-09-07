@@ -4690,9 +4690,6 @@ void Document::finishedParsing()
 
     // Parser should have picked up all preloads by now
     m_fetcher->clearPreloads();
-
-    if (HTMLImportLoader* import = importLoader())
-        import->didFinishParsing();
 }
 
 void Document::elementDataCacheClearTimerFired(Timer<Document>*)

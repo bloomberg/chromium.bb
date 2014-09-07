@@ -31,6 +31,7 @@
 #ifndef HTMLImportLoader_h
 #define HTMLImportLoader_h
 
+#include "core/dom/DocumentParserClient.h"
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceOwner.h"
 #include "platform/heap/Handle.h"
@@ -53,7 +54,7 @@ class HTMLImportsController;
 // HTMLImportLoader is owned by HTMLImportsController.
 //
 //
-class HTMLImportLoader FINAL : public NoBaseWillBeGarbageCollectedFinalized<HTMLImportLoader>, public ResourceOwner<RawResource> {
+class HTMLImportLoader FINAL : public NoBaseWillBeGarbageCollectedFinalized<HTMLImportLoader>, public ResourceOwner<RawResource>, public DocumentParserClient {
 public:
     enum State {
         StateLoading,
@@ -88,9 +89,6 @@ public:
 #endif
     void startLoading(const ResourcePtr<RawResource>&);
 
-    // Tells the loader that the parser is done with this import.
-    // Called by Document::finishedParsing, after DOMContentLoaded was dispatched.
-    void didFinishParsing();
     // Tells the loader that all of the import's stylesheets finished
     // loading.
     // Called by Document::didRemoveAllPendingStylesheet.
@@ -107,6 +105,11 @@ private:
     virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE;
     virtual void dataReceived(Resource*, const char* data, int length) OVERRIDE;
     virtual void notifyFinished(Resource*) OVERRIDE;
+
+    // DocumentParserClient
+
+    // Called after document parse is complete after DOMContentLoaded was dispatched.
+    virtual void notifyParserStopped();
 
     State startWritingAndParsing(const ResourceResponse&);
     State finishWriting();

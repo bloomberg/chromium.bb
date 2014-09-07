@@ -32,6 +32,7 @@
 #include "core/html/imports/HTMLImportLoader.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/DocumentParser.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/custom/CustomElementSyncMicrotaskQueue.h"
 #include "core/html/HTMLDocument.h"
@@ -116,6 +117,10 @@ HTMLImportLoader::State HTMLImportLoader::startWritingAndParsing(const ResourceR
     m_document = HTMLDocument::create(init);
     m_writer = DocumentWriter::create(m_document.get(), response.mimeType(), "UTF-8");
 
+    DocumentParser* parser = m_document->parser();
+    ASSERT(parser);
+    parser->addClient(this);
+
     return StateLoading;
 }
 
@@ -151,11 +156,15 @@ void HTMLImportLoader::setState(State state)
         didFinishLoading();
 }
 
-void HTMLImportLoader::didFinishParsing()
+void HTMLImportLoader::notifyParserStopped()
 {
     setState(finishParsing());
     if (!hasPendingResources())
         setState(finishLoading());
+
+    DocumentParser* parser = m_document->parser();
+    ASSERT(parser);
+    parser->removeClient(this);
 }
 
 void HTMLImportLoader::didRemoveAllPendingStylesheet()
