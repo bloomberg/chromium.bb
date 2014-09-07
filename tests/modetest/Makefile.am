@@ -1,3 +1,5 @@
+include Makefile.sources
+
 AM_CFLAGS = $(filter-out -Wpointer-arith, $(WARN_CFLAGS))
 
 AM_CFLAGS += \
@@ -13,10 +15,7 @@ noinst_PROGRAMS = \
 	modetest
 endif
 
-modetest_SOURCES = \
-	buffers.c buffers.h \
-	cursor.c cursor.h \
-	modetest.c
+modetest_SOURCES = $(MODETEST_FILES)
 
 modetest_LDADD = \
 	$(top_builddir)/libdrm.la \
