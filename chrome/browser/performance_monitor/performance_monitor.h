@@ -173,10 +173,12 @@ class PerformanceMonitor : public content::NotificationObserver {
   void GatherMetricsMapOnUIThread();
   void GatherMetricsMapOnIOThread(int current_update_sequence);
 
+#if defined(ENABLE_EXTENSIONS)
   // Generate an appropriate ExtensionEvent for an extension-related occurrance
   // and insert it in the database.
   void AddExtensionEvent(EventType type,
                          const extensions::Extension* extension);
+#endif
 
   // Generate an appropriate RendererFailure for a renderer crash and insert it
   // in the database.

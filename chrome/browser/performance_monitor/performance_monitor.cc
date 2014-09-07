@@ -19,7 +19,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/performance_monitor/constants.h"
 #include "chrome/browser/performance_monitor/performance_monitor_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,7 +27,6 @@
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
@@ -40,12 +38,20 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/common/extension.h"
 #include "net/url_request/url_request.h"
 
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "extensions/common/extension.h"
+#endif
+
 using content::BrowserThread;
+
+#if defined(ENABLE_EXTENSIONS)
 using extensions::Extension;
 using extensions::UnloadedExtensionInfo;
+#endif
 
 namespace performance_monitor {
 
@@ -400,7 +406,6 @@ void PerformanceMonitor::GatherMetricsMapOnUIThread() {
 void PerformanceMonitor::MarkProcessAsAlive(const base::ProcessHandle& handle,
                                         int process_type,
                                         int current_update_sequence) {
-
   if (handle == 0) {
     // Process may not be valid yet.
     return;
@@ -560,6 +565,7 @@ void PerformanceMonitor::Observe(int type,
   DCHECK(database_logging_enabled_);
 
   switch (type) {
+#if defined(ENABLE_EXTENSIONS)
     case extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED: {
       AddExtensionEvent(
           EVENT_EXTENSION_INSTALL,
@@ -602,6 +608,7 @@ void PerformanceMonitor::Observe(int type,
                         content::Details<Extension>(details).ptr());
       break;
     }
+#endif  // defined(ENABLE_EXTENSIONS)
     case content::NOTIFICATION_RENDER_WIDGET_HOST_HANG: {
       std::string url;
       content::RenderWidgetHost* widget =
@@ -659,8 +666,9 @@ void PerformanceMonitor::Observe(int type,
   }
 }
 
+#if defined(ENABLE_EXTENSIONS)
 void PerformanceMonitor::AddExtensionEvent(EventType type,
-                                              const Extension* extension) {
+                                           const Extension* extension) {
   DCHECK(type == EVENT_EXTENSION_INSTALL ||
          type == EVENT_EXTENSION_UNINSTALL ||
          type == EVENT_EXTENSION_UPDATE ||
@@ -675,6 +683,7 @@ void PerformanceMonitor::AddExtensionEvent(EventType type,
                                       extension->VersionString(),
                                       extension->description()));
 }
+#endif  // defined(ENABLE_EXTENSIONS)
 
 void PerformanceMonitor::AddRendererClosedEvent(
     content::RenderProcessHost* host,

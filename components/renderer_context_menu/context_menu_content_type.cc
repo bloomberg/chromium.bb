@@ -7,14 +7,20 @@
 #include "base/bind.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "third_party/WebKit/public/web/WebContextMenuData.h"
+
+#if defined(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
-#include "third_party/WebKit/public/web/WebContextMenuData.h"
+#endif
 
 using blink::WebContextMenuData;
 using content::WebContents;
+
+#if defined(ENABLE_EXTENSIONS)
 using extensions::Extension;
+#endif
 
 namespace {
 
@@ -42,6 +48,7 @@ ContextMenuContentType::ContextMenuContentType(
 ContextMenuContentType::~ContextMenuContentType() {
 }
 
+#if defined(ENABLE_EXTENSIONS)
 const Extension* ContextMenuContentType::GetExtension() const {
   extensions::ExtensionSystem* system = extensions::ExtensionSystem::Get(
       source_web_contents_->GetBrowserContext());
@@ -52,6 +59,7 @@ const Extension* ContextMenuContentType::GetExtension() const {
   return system->process_manager()->GetExtensionForRenderViewHost(
       source_web_contents_->GetRenderViewHost());
 }
+#endif
 
 bool ContextMenuContentType::SupportsGroup(int group) {
   const bool has_selection = !params_.selection_text.empty();
@@ -109,7 +117,6 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
     }
 
     case ITEM_GROUP_FRAME: {
-
       bool page_group_supported = SupportsGroupInternal(ITEM_GROUP_PAGE);
       return page_group_supported && !params_.frame_url.is_empty() &&
           !IsInternalResourcesURL(params_.page_url);

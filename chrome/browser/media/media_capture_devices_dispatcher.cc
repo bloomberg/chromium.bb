@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/media/desktop_streams_registry.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/media/media_stream_device_permissions.h"
@@ -42,9 +41,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/media_stream_request.h"
-#include "extensions/browser/app_window/app_window.h"
-#include "extensions/browser/app_window/app_window_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -67,6 +63,10 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
+#include "extensions/browser/extension_system.h"
 #endif
 
 using content::BrowserThread;
@@ -673,7 +673,6 @@ void MediaCaptureDevicesDispatcher::
         const content::MediaStreamRequest& request,
         const content::MediaResponseCallback& callback,
         const extensions::Extension* extension) {
-
   // TODO(vrk): This code is largely duplicated in
   // MediaStreamDevicesController::Accept(). Move this code into a shared method
   // between the two classes.

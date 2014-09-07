@@ -72,7 +72,6 @@
 #include "chrome/browser/ui/startup/autolaunch_prompt.h"
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
-#include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
@@ -113,6 +112,7 @@
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
+#include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 #include "extensions/browser/extension_prefs.h"
 #endif
 

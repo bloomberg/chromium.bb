@@ -25,7 +25,6 @@
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -36,11 +35,15 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
-#include "extensions/browser/extension_prefs.h"
-#include "extensions/common/constants.h"
 #include "net/base/net_errors.h"
 #include "net/base/static_cookie_policy.h"
 #include "url/gurl.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/extension_service.h"
+#include "extensions/browser/extension_prefs.h"
+#include "extensions/common/constants.h"
+#endif
 
 using base::UserMetricsAction;
 using content::BrowserThread;
@@ -674,6 +677,7 @@ bool HostContentSettingsMap::ShouldAllowAllContent(
       primary_url.SchemeIsSecure()) {
     return true;
   }
+#if defined(ENABLE_EXTENSIONS)
   if (primary_url.SchemeIs(extensions::kExtensionScheme)) {
     switch (content_type) {
       case CONTENT_SETTINGS_TYPE_PLUGINS:
@@ -687,6 +691,7 @@ bool HostContentSettingsMap::ShouldAllowAllContent(
         return true;
     }
   }
+#endif
   return primary_url.SchemeIs(content::kChromeDevToolsScheme) ||
          primary_url.SchemeIs(content::kChromeUIScheme);
 }

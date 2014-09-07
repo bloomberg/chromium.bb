@@ -55,14 +55,19 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/common/extension_set.h"
-#include "extensions/common/manifest.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/extension_service.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/common/extension_set.h"
+#include "extensions/common/manifest.h"
+#endif
 
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -70,10 +75,8 @@
 #endif
 
 #if !defined(OS_IOS)
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "extensions/browser/extension_system.h"
 #endif  // !defined (OS_IOS)
 
 #if defined(OS_WIN)
@@ -84,7 +87,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/profiles/profiles_state.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -219,7 +221,7 @@ size_t GetEnabledAppCount(Profile* profile) {
 
 #endif  // ENABLE_EXTENSIONS
 
-} // namespace
+}  // namespace
 
 ProfileManager::ProfileManager(const base::FilePath& user_data_dir)
     : user_data_dir_(user_data_dir),

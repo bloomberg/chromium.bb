@@ -122,12 +122,6 @@ TEST_F(CookieSettingsTest, CookiesThirdPartyBlockedExplicitAllow) {
       kAllowedSite, kExtensionURL));
   EXPECT_TRUE(cookie_settings_->IsSettingCookieAllowed(
       kAllowedSite, kExtensionURL));
-
-  // Extensions should always be allowed to use cookies.
-  EXPECT_TRUE(cookie_settings_->IsReadingCookieAllowed(
-      kAllowedSite, kExtensionURL));
-  EXPECT_TRUE(cookie_settings_->IsSettingCookieAllowed(
-      kAllowedSite, kExtensionURL));
 }
 
 TEST_F(CookieSettingsTest, CookiesThirdPartyBlockedAllSitesAllowed) {
@@ -266,9 +260,16 @@ TEST_F(CookieSettingsTest, ExtensionsRegularSettings) {
 TEST_F(CookieSettingsTest, ExtensionsOwnCookies) {
   cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
 
+#if defined(ENABLE_EXTENSIONS)
   // Extensions can always use cookies (and site data) in their own origin.
   EXPECT_TRUE(cookie_settings_->IsReadingCookieAllowed(
       kExtensionURL, kExtensionURL));
+#else
+  // Except if extensions are disabled. Then the extension-specific checks do
+  // not exist and the default setting is to block.
+  EXPECT_FALSE(cookie_settings_->IsReadingCookieAllowed(
+      kExtensionURL, kExtensionURL));
+#endif
 }
 
 TEST_F(CookieSettingsTest, ExtensionsThirdParty) {

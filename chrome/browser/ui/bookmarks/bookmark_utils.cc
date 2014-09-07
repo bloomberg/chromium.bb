@@ -27,10 +27,13 @@
 #include "components/search/search.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/common/extension_set.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension_set.h"
+#endif
 
 namespace chrome {
 
@@ -154,6 +157,7 @@ void GetURLsForOpenTabs(Browser* browser,
 // Indicates how the bookmark shortcut has been changed by extensions associated
 // with |profile|, if at all.
 BookmarkShortcutDisposition GetBookmarkShortcutDisposition(Profile* profile) {
+#if defined(ENABLE_EXTENSIONS)
   extensions::CommandService* command_service =
       extensions::CommandService::Get(profile);
 
@@ -183,6 +187,7 @@ BookmarkShortcutDisposition GetBookmarkShortcutDisposition(Profile* profile) {
 
   if (removed)
     return BOOKMARK_SHORTCUT_DISPOSITION_REMOVED;
+#endif
   return BOOKMARK_SHORTCUT_DISPOSITION_UNCHANGED;
 }
 
@@ -348,6 +353,7 @@ bool ShouldRemoveBookmarkThisPageUI(Profile* profile) {
 }
 
 bool ShouldRemoveBookmarkOpenPagesUI(Profile* profile) {
+#if defined(ENABLE_EXTENSIONS)
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile);
   if (!registry)
@@ -362,6 +368,7 @@ bool ShouldRemoveBookmarkOpenPagesUI(Profile* profile) {
     if (extensions::CommandService::RemovesBookmarkOpenPagesShortcut(i->get()))
       return true;
   }
+#endif
 
   return false;
 }
