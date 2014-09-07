@@ -1330,6 +1330,8 @@ crbug.com/409534 virtual/gpu/compositedscrolling/overflow/do-not-crash-use-after
 
 crbug.com/401902  [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-lose-restore-googol-size.html [ Pass Failure ]
 
+Bug(jchaffraix) [ Mac ] fast/layers/scroll-descendant-with-cached-cliprects.html [ NeedsRebaseline ]
+
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/cursor-continue-validity.html [ Pass Slow ]
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/mozilla/indexes.html [ Pass Slow ]
 
