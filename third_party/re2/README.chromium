@@ -27,5 +27,7 @@ Local Modifications (to be applied in this order):
   for this (https://code.google.com/p/re2/issues/detail?id=77) which is rendered
   ineffective by patches/remove-valgrind-code.patch
   (patches/re2-msan.patch)
-- Remove comparisons of this with NULL (patches/this-null.patch), sent upstream
-  at https://codereview.appspot.com/107100043/
+- Remove comparisons of this with NULL (patches/this-null.patch), merges
+  upstream b92ce81f1e25
+- Let COMPILE_ASSERT use static_assert if available, merges upstream
+  2225f94df8ec
