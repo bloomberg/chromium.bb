@@ -55,7 +55,8 @@ SUBDIRS := \
 	freedreno \
 	intel \
 	nouveau \
-	radeon
+	radeon \
+	libkms
 
 mkfiles := $(patsubst %,$(LIBDRM_TOP)/%/Android.mk,$(SUBDIRS))
 include $(mkfiles)
