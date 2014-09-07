@@ -15,16 +15,7 @@ body {
   text-align: -webkit-center;
 }
 
-#ntp-contents.classical {
-  margin-top: 157px;
-}
-
-#ntp-contents.md {
-  margin-top: 157px;
-}
-
 .non-google-page #ntp-contents {
-  margin-top: 0;
   position: absolute;
   top: calc(50% - 155px);
   width: 100%;
@@ -50,6 +41,7 @@ body.fakebox-disable #fakebox > input {
   background-size: 269px 95px;
   height: 95px;
   margin-bottom: 24px;
+  margin-top: 157px;
   width: 269px;
 }
 
@@ -119,7 +111,7 @@ body[dir=rtl] #fakebox > input {
   margin-top: 1px;
   overflow: hidden;
   position: absolute;
-  text-align: left;
+  text-align: initial;
   text-overflow: ellipsis;
   vertical-align: middle;
   visibility: inherit;

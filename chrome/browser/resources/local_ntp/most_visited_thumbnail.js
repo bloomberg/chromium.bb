@@ -45,6 +45,10 @@ window.addEventListener('DOMContentLoaded', function() {
         var link = createMostVisitedLink(
             params, data.url, data.title, undefined, data.direction,
             data.provider);
+        // Use blocker to prevent context menu from showing image-related items.
+        var blocker = document.createElement('span');
+        blocker.className = 'blocker';
+        link.appendChild(blocker);
         link.appendChild(image);
         displayLink(link);
       };

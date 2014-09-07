@@ -9,6 +9,7 @@ body {
 
 a {
   height: 100%;
+  position: relative;
   width: 100%;
 }
 
@@ -25,6 +26,13 @@ div {
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 90%;
+}
+
+span.blocker {
+  display: inline-block;
+  height: 100%;
+  position: absolute;
+  width: 100%;
 }
 
 img {
