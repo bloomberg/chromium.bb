@@ -80,8 +80,8 @@ endif
 
 
 copy-headers :
-	cp -r $(kernel_source)/usr/include/drm $(top_srcdir)/include
+	cp -r $(kernel_source)/include/uapi/drm/*.h $(top_srcdir)/include/drm/
 
 commit-headers : copy-headers
-	git add include
+	git add include/drm/*.h
 	git commit -am "Copy headers from kernel $$(GIT_DIR=$(kernel_source)/.git git describe)"
