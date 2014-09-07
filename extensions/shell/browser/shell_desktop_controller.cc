@@ -189,10 +189,15 @@ ShellAppWindow* ShellDesktopController::CreateAppWindow(
 
   // Attach the web contents view to our window hierarchy.
   aura::Window* content = app_window_->GetNativeWindow();
-  root_window->AddChild(content);
+  AddAppWindow(content);
   content->Show();
 
   return app_window_.get();
+}
+
+void ShellDesktopController::AddAppWindow(aura::Window* window) {
+  aura::Window* root_window = GetHost()->window();
+  root_window->AddChild(window);
 }
 
 void ShellDesktopController::CloseAppWindows() {

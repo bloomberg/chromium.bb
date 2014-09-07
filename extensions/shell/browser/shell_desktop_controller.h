@@ -70,6 +70,7 @@ class ShellDesktopController : public DesktopController,
   virtual aura::WindowTreeHost* GetHost() OVERRIDE;
   virtual ShellAppWindow* CreateAppWindow(content::BrowserContext* context,
                                           const Extension* extension) OVERRIDE;
+  virtual void AddAppWindow(aura::Window* window) OVERRIDE;
   virtual void CloseAppWindows() OVERRIDE;
 
   // aura::client::WindowTreeClient overrides:

@@ -6,6 +6,7 @@
 #define EXTENSIONS_SHELL_BROWSER_DESKTOP_CONTROLLER_H_
 
 namespace aura {
+class Window;
 class WindowTreeHost;
 }
 
@@ -39,6 +40,9 @@ class DesktopController {
   // destroyed.
   virtual ShellAppWindow* CreateAppWindow(content::BrowserContext* context,
                                           const Extension* extension) = 0;
+
+  // Attaches the window to our window hierarchy.
+  virtual void AddAppWindow(aura::Window* window) = 0;
 
   // Closes and destroys the app windows.
   virtual void CloseAppWindows() = 0;

@@ -28,6 +28,7 @@ class NetLog;
 namespace extensions {
 
 class DesktopController;
+class ShellAppsClient;
 class ShellBrowserContext;
 class ShellBrowserMainDelegate;
 class ShellDeviceClient;
@@ -73,6 +74,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   scoped_ptr<DesktopController> desktop_controller_;
   scoped_ptr<ShellBrowserContext> browser_context_;
   scoped_ptr<ShellDeviceClient> device_client_;
+  scoped_ptr<ShellAppsClient> apps_client_;
   scoped_ptr<ShellExtensionsClient> extensions_client_;
   scoped_ptr<ShellExtensionsBrowserClient> extensions_browser_client_;
   scoped_ptr<net::NetLog> net_log_;

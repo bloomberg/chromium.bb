@@ -64,6 +64,11 @@ class AthenaDesktopController : public extensions::DesktopController {
     return app_window;
   }
 
+  // Adds the window to the desktop.
+  virtual void AddAppWindow(aura::Window* window) OVERRIDE {
+    NOTIMPLEMENTED();
+  }
+
   // Closes and destroys the app windows.
   virtual void CloseAppWindows() OVERRIDE {}
 

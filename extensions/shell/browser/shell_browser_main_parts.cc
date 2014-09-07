@@ -14,6 +14,7 @@
 #include "content/shell/browser/shell_net_log.h"
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/shell/browser/shell_apps_client.h"
 #include "extensions/shell/browser/shell_browser_context.h"
 #include "extensions/shell/browser/shell_browser_main_delegate.h"
 #include "extensions/shell/browser/shell_desktop_controller.h"
@@ -116,6 +117,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   net_log_.reset(new content::ShellNetLog("app_shell"));
 
   device_client_.reset(new ShellDeviceClient);
+
+  apps_client_.reset(new ShellAppsClient());
+  extensions::AppsClient::Set(apps_client_.get());
 
   extensions_client_.reset(new ShellExtensionsClient());
   ExtensionsClient::Set(extensions_client_.get());
