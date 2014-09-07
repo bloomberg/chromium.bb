@@ -26,10 +26,8 @@ include $(CLEAR_VARS)
 
 LIBDRM_TOP := $(LOCAL_PATH)
 
-# Import variables LIBDRM_FILES, LIBDRM_H_FILES
+# Import variables LIBDRM_{,H_,INCLUDE_H_,INCLUDE_VMWGFX_H_}FILES
 include $(LOCAL_PATH)/Makefile.sources
-# Import variables LIBDRM_INCLUDE_H_FILES, LIBDRM_INCLUDE_VMWGFX_H_FILES
-include $(LOCAL_PATH)/include/drm/Makefile.sources
 
 LOCAL_MODULE := libdrm
 LOCAL_MODULE_TAGS := optional
@@ -47,8 +45,8 @@ LOCAL_CFLAGS := \
 
 LOCAL_COPY_HEADERS := \
 	$(LIBDRM_H_FILES) \
-	$(addprefix include/drm/,$(LIBDRM_INCLUDE_H_FILES)) \
-	$(addprefix include/drm/,$(LIBDRM_INCLUDE_VMWGFX_H_FILES))
+	$(LIBDRM_INCLUDE_H_FILES) \
+	$(LIBDRM_INCLUDE_VMWGFX_H_FILES)
 
 LOCAL_COPY_HEADERS_TO := libdrm
 include $(BUILD_SHARED_LIBRARY)

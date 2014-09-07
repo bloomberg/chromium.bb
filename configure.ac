@@ -410,8 +410,6 @@ AC_CONFIG_FILES([
 	tests/radeon/Makefile
 	tests/vbltest/Makefile
 	tests/exynos/Makefile
-	include/Makefile
-	include/drm/Makefile
 	man/Makefile
 	libdrm.pc])
 AC_OUTPUT

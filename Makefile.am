@@ -53,7 +53,7 @@ if HAVE_FREEDRENO
 FREEDRENO_SUBDIR = freedreno
 endif
 
-SUBDIRS = . $(LIBKMS_SUBDIR) $(INTEL_SUBDIR) $(NOUVEAU_SUBDIR) $(RADEON_SUBDIR) $(OMAP_SUBDIR) $(EXYNOS_SUBDIR) $(FREEDRENO_SUBDIR) tests include man
+SUBDIRS = . $(LIBKMS_SUBDIR) $(INTEL_SUBDIR) $(NOUVEAU_SUBDIR) $(RADEON_SUBDIR) $(OMAP_SUBDIR) $(EXYNOS_SUBDIR) $(FREEDRENO_SUBDIR) tests man
 
 libdrm_la_LTLIBRARIES = libdrm.la
 libdrm_ladir = $(libdir)
@@ -70,6 +70,14 @@ libdrmincludedir = ${includedir}
 libdrminclude_HEADERS = $(LIBDRM_H_FILES)
 
 EXTRA_DIST = libdrm.pc.in include/drm/*
+
+klibdrmincludedir = ${includedir}/libdrm
+klibdrminclude_HEADERS = $(LIBDRM_INCLUDE_H_FILES)
+
+if HAVE_VMWGFX
+klibdrminclude_HEADERS += $(LIBDRM_INCLUDE_VMWGFX_H_FILES)
+endif
+
 
 copy-headers :
 	cp -r $(kernel_source)/usr/include/drm $(top_srcdir)/include
