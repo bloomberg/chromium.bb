@@ -16,9 +16,9 @@ layer at (0,0) size 800x600
         RenderBR {BR} at (285,14) size 1x0
         RenderMenuList {SELECT} at (0,18) size 100x19 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           RenderBlock (anonymous) at (1,1) size 98x17
-            RenderText at (28,1) size 66x15
-              text run at (28,1) width 45 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
-              text run at (72,1) width 22: "abc"
+            RenderText at (29,1) size 65x15
+              text run at (29,1) width 44 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
+              text run at (73,1) width 21: "abc"
         RenderBR {BR} at (100,32) size 0x0
       RenderBlock {DIV} at (0,107) size 100x18
         RenderText {#text} at (0,0) size 69x17
@@ -31,9 +31,9 @@ layer at (0,0) size 800x600
         RenderBR {BR} at (117,32) size 1x0
         RenderMenuList {SELECT} at (0,36) size 200x19 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           RenderBlock (anonymous) at (1,1) size 198x17
-            RenderText at (4,1) size 66x15
-              text run at (4,1) width 22: "abc"
-              text run at (25,1) width 45 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
+            RenderText at (4,1) size 65x15
+              text run at (4,1) width 21: "abc"
+              text run at (25,1) width 44 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
         RenderBR {BR} at (200,50) size 0x0
       RenderBlock {DIV} at (0,180) size 200x18
         RenderText {#text} at (0,0) size 69x17
@@ -46,9 +46,9 @@ layer at (0,0) size 800x600
         RenderBR {BR} at (71,32) size 1x0
         RenderMenuList {SELECT} at (0,36) size 100x19 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           RenderBlock (anonymous) at (1,1) size 98x17
-            RenderText at (4,1) size 66x15
-              text run at (4,1) width 22: "abc"
-              text run at (25,1) width 45 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
+            RenderText at (4,1) size 65x15
+              text run at (4,1) width 21: "abc"
+              text run at (25,1) width 44 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
         RenderBR {BR} at (100,50) size 0x0
       RenderBlock {DIV} at (0,253) size 100x18
         RenderText {#text} at (0,0) size 69x17

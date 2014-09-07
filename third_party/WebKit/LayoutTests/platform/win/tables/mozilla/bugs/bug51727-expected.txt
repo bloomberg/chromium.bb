@@ -1,20 +1,20 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x84
-  RenderBlock {HTML} at (0,0) size 800x84
-    RenderBody {BODY} at (8,8) size 784x68
-      RenderBlock {FORM} at (0,0) size 784x42
-        RenderButton {INPUT} at (0,0) size 169.34x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 153.34x15
-            RenderText {#text} at (0,0) size 154x15
-              text run at (0,0) width 154: "(1) Fill cell with long string"
-        RenderBR {BR} at (169,1) size 1x17
-        RenderButton {INPUT} at (0,21) size 173.78x21 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-          RenderBlock (anonymous) at (8,3) size 157.78x15
-            RenderText {#text} at (0,0) size 158x15
-              text run at (0,0) width 158: "(2) Fill cell with short string"
-        RenderBR {BR} at (173,22) size 1x17
-      RenderTable {TABLE} at (0,42) size 83x26
+layer at (0,0) size 800x86
+  RenderBlock {HTML} at (0,0) size 800x86
+    RenderBody {BODY} at (8,8) size 784x70
+      RenderBlock {FORM} at (0,0) size 784x44
+        RenderButton {INPUT} at (0,0) size 167x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 151x16
+            RenderText {#text} at (0,0) size 151x16
+              text run at (0,0) width 151: "(1) Fill cell with long string"
+        RenderBR {BR} at (167,2) size 0x17
+        RenderButton {INPUT} at (0,22) size 172x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+          RenderBlock (anonymous) at (8,3) size 156x16
+            RenderText {#text} at (0,0) size 156x16
+              text run at (0,0) width 156: "(2) Fill cell with short string"
+        RenderBR {BR} at (172,24) size 0x17
+      RenderTable {TABLE} at (0,44) size 83x26
         RenderTableSection {TBODY} at (0,0) size 83x26
           RenderTableRow {TR} at (0,2) size 83x22
             RenderTableCell {TD} at (2,2) size 79x22 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]

@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x199
-  RenderBlock {HTML} at (0,0) size 800x199
-    RenderBody {BODY} at (8,8) size 784x178
+layer at (0,0) size 800x204
+  RenderBlock {HTML} at (0,0) size 800x204
+    RenderBody {BODY} at (8,8) size 784x183
       RenderBlock {DIV} at (0,0) size 784x18
         RenderText {#text} at (0,0) size 520x17
           text run at (0,0) width 520: "This tests proper handling of unicode-bidi: plaintext. You should not see any red."
@@ -22,19 +22,19 @@ layer at (0,0) size 800x199
           text run at (690,54) width 7 RTL: "!"
           text run at (696,54) width 51: "WebKit"
           text run at (746,54) width 38 RTL: "\x{5E9}\x{5DC}\x{5D5}\x{5DD}, "
-      RenderBlock {PRE} at (0,103) size 784x75
-        RenderText {#text} at (0,0) size 784x75
+      RenderBlock {PRE} at (0,103) size 784x80
+        RenderText {#text} at (0,0) size 784x80
           text run at (0,0) width 8: "a"
-          text run at (7,0) width 1: " "
-          text run at (0,15) width 8: "("
-          text run at (7,15) width 1: " "
-          text run at (682,30) width 1 RTL: " "
-          text run at (682,30) width 9 RTL: "!"
-          text run at (690,30) width 48: "WebKit"
-          text run at (737,30) width 47 RTL: "\x{5E9}\x{5DC}\x{5D5}\x{5DD}, "
-          text run at (0,45) width 55: "hello, "
-          text run at (54,45) width 25 RTL: "\x{5DC}\x{5D5}\x{5D9}"
-          text run at (78,45) width 8: "!"
-          text run at (85,45) width 1: " "
-          text run at (0,60) width 8: ")"
-          text run at (7,60) width 1: " "
+          text run at (8,0) width 0: " "
+          text run at (0,16) width 8: "("
+          text run at (8,16) width 0: " "
+          text run at (680,32) width 0 RTL: " "
+          text run at (680,32) width 8 RTL: "!"
+          text run at (688,32) width 48: "WebKit"
+          text run at (736,32) width 48 RTL: "\x{5E9}\x{5DC}\x{5D5}\x{5DD}, "
+          text run at (0,48) width 56: "hello, "
+          text run at (56,48) width 24 RTL: "\x{5DC}\x{5D5}\x{5D9}"
+          text run at (80,48) width 8: "!"
+          text run at (88,48) width 0: " "
+          text run at (0,64) width 8: ")"
+          text run at (8,64) width 0: " "

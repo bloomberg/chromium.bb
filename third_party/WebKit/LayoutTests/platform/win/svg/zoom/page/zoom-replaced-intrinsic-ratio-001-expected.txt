@@ -1,30 +1,30 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x474
-  RenderBlock {HTML} at (0,0) size 800x473.86
-    RenderBody {BODY} at (4.63,4.63) size 140.88x460.98 [border: (1px dashed #C0C0C0)]
+layer at (0,0) size 800x472
+  RenderBlock {HTML} at (0,0) size 800x471.86
+    RenderBody {BODY} at (4.63,4.63) size 140.88x458.98 [border: (1px dashed #C0C0C0)]
       RenderBlock {P} at (1,10.25) size 138.88x27
-        RenderText {#text} at (0,-1) size 135x28
-          text run at (0,-1) width 129: "The following six blue boxes must"
-          text run at (0,8) width 135: "be of the same width. There must be"
-          text run at (0,17) width 26: "no red."
+        RenderText {#text} at (0,-2) size 133x30
+          text run at (0,-2) width 130: "The following six blue boxes must"
+          text run at (0,7) width 133: "be of the same width. There must be"
+          text run at (0,16) width 26: "no red."
       RenderBlock {P} at (10.25,46.50) size 120.38x27.25 [bgcolor=#008000] [border: (9px solid #0000FF)]
-        RenderText {#text} at (9,8) size 3x10
-          text run at (9,8) width 3: " "
+        RenderText {#text} at (9,7) size 2x12
+          text run at (9,7) width 2: " "
       RenderBlock {P} at (1,129.30) size 138.88x9.25
-        RenderText {#text} at (0,-1) size 14x10
-          text run at (0,-1) width 14: "      "
+        RenderText {#text} at (0,-2) size 12x12
+          text run at (0,-2) width 12: "      "
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {P} at (1,194.09) size 138.88x9.25
-      RenderTable at (1,258.89) size 138x45
-        RenderTableSection (anonymous) at (0,0) size 138x45
-          RenderTableRow (anonymous) at (0,0) size 138x45
-            RenderTableCell {P} at (0,0) size 138x45 [r=0 c=0 rs=1 cs=1]
-      RenderTable {TABLE} at (1,359.44) size 138x45
-        RenderTableSection {TBODY} at (0,0) size 138x45
-          RenderTableRow {TR} at (0,0) size 138x45
-            RenderTableCell {TD} at (0,0) size 138x45 [r=0 c=0 rs=1 cs=1]
-      RenderBlock (floating) {P} at (1,459.98) size 138.88x9.25
+      RenderTable at (1,258.89) size 138x44
+        RenderTableSection (anonymous) at (0,0) size 138x44
+          RenderTableRow (anonymous) at (0,0) size 138x44
+            RenderTableCell {P} at (0,0) size 138x44 [r=0 c=0 rs=1 cs=1]
+      RenderTable {TABLE} at (1,358.44) size 138x44
+        RenderTableSection {TBODY} at (0,0) size 138x44
+          RenderTableRow {TR} at (0,0) size 138x44
+            RenderTableCell {TD} at (0,0) size 138x44 [r=0 c=0 rs=1 cs=1]
+      RenderBlock (floating) {P} at (1,457.98) size 138.88x9.25
 layer at (15,134) size 121x44
   RenderEmbeddedObject {OBJECT} at (9.25,-0.25) size 120.38x44 [bgcolor=#FF0000] [border: (9px solid #0000FF)]
     layer at (0,0) size 102x26
@@ -49,7 +49,7 @@ layer at (15,264) size 120x43
       RenderSVGRoot {svg} at (0,0) size 101x25
         RenderSVGRect {rect} at (0,0) size 101x25 [stroke={[type=SOLID] [color=#008000] [stroke width=12.00]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=1000.00] [height=250.00]
         RenderSVGPath {path} at (15,5) size 70x15 [fill={[type=SOLID] [color=#008000]}] [data="M 500 50 L 150 200 L 850 200 Z"]
-layer at (15,364) size 120x43
+layer at (15,363) size 120x43
   RenderEmbeddedObject {OBJECT} at (9.25,0) size 119.50x43 [bgcolor=#FF0000] [border: (9px solid #0000FF)]
     layer at (0,0) size 102x25
       RenderView at (0,0) size 102x25
@@ -57,7 +57,7 @@ layer at (15,364) size 120x43
       RenderSVGRoot {svg} at (0,0) size 101x25
         RenderSVGRect {rect} at (0,0) size 101x25 [stroke={[type=SOLID] [color=#008000] [stroke width=12.00]}] [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=0.00] [width=1000.00] [height=250.00]
         RenderSVGPath {path} at (15,5) size 70x15 [fill={[type=SOLID] [color=#008000]}] [data="M 500 50 L 150 200 L 850 200 Z"]
-layer at (15,465) size 121x44
+layer at (15,463) size 121x44
   RenderEmbeddedObject {OBJECT} at (9.25,0) size 120.38x44 [bgcolor=#FF0000] [border: (9px solid #0000FF)]
     layer at (0,0) size 102x26
       RenderView at (0,0) size 102x26

@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
         RenderTableSection {TBODY} at (0,0) size 315x45
           RenderTableRow {TR} at (0,2) size 315x41
             RenderTableCell {TD} at (2,2) size 311x41 [bgcolor=#CCDDFF] [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
-              RenderTextControl {INPUT} at (3,17) size 175x21 [bgcolor=#CCAAFF] [border: (2px inset #EEEEEE)]
+              RenderTextControl {INPUT} at (3,16) size 175x22 [bgcolor=#CCAAFF] [border: (2px inset #EEEEEE)]
               RenderImage {IMG} at (181,4) size 126x26 [bgcolor=#C0C0C0] [border: (1px solid #000000)]
-layer at (16,48) size 169x15
-  RenderBlock {DIV} at (3,3) size 169x15
+layer at (16,47) size 169x16
+  RenderBlock {DIV} at (3,3) size 169x16

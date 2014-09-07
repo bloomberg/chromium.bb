@@ -1,13 +1,13 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x374
-  RenderBlock {HTML} at (0,0) size 800x374.09
-    RenderBody {BODY} at (5.55,5.55) size 788.91x363
-      RenderText {#text} at (349,339) size 3x12
-        text run at (349,339) width 3: " "
-      RenderBR {BR} at (351,339) size 1x12
-      RenderText {#text} at (0,351) size 224x12
-        text run at (0,351) width 224: "The image of Tux should fill the entire red square."
+layer at (0,0) size 800x377
+  RenderBlock {HTML} at (0,0) size 800x377.09
+    RenderBody {BODY} at (5.55,5.55) size 788.91x366
+      RenderText {#text} at (349,338) size 4x14
+        text run at (349,338) width 4: " "
+      RenderBR {BR} at (352,338) size 1x14
+      RenderText {#text} at (0,352) size 231x14
+        text run at (0,352) width 231: "The image of Tux should fill the entire red square."
       RenderText {#text} at (0,0) size 0x0
       RenderText {#text} at (0,0) size 0x0
       RenderText {#text} at (0,0) size 0x0

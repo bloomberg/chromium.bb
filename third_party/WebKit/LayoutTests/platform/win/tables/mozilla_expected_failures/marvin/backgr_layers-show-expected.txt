@@ -1,129 +1,129 @@
-layer at (0,0) size 800x1742
+layer at (0,0) size 800x1778
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x1742
-  RenderBlock {HTML} at (0,0) size 800x1742.19
-    RenderBody {BODY} at (8,17.41) size 784x1716.78 [color=#00FF00] [bgcolor=#333333]
+layer at (0,0) size 800x1778
+  RenderBlock {HTML} at (0,0) size 800x1778.19
+    RenderBody {BODY} at (8,17.41) size 784x1752.78 [color=#00FF00] [bgcolor=#333333]
       RenderBlock {H1} at (0,0) size 784x30
         RenderText {#text} at (0,0) size 515x30
           text run at (0,0) width 515: "CSS2 Table Backgrounds Test Suite"
       RenderBlock {H2} at (0,47.41) size 784x22
         RenderText {#text} at (0,0) size 293x22
           text run at (0,0) width 293: "Part C: Background Layers"
-      RenderBlock {H3} at (0,85.58) size 784x18
-        RenderText {#text} at (0,0) size 156x18
-          text run at (0,0) width 156: "empty-cells: show"
-      RenderBlock {P} at (0,118.78) size 784x15
-        RenderText {#text} at (0,0) size 328x15
-          text run at (0,0) width 328: "Both tables should have a blue background."
-      RenderBlock {P} at (0,146.78) size 784x15
-        RenderText {#text} at (0,0) size 484x15
-          text run at (0,0) width 484: "In table cell C (third cell in the first row), which is empty:"
-      RenderBlock {UL} at (0,174.78) size 784x120
-        RenderListItem {LI} at (40,0) size 744x30
-          RenderListMarker at (-15,0) size 6x15: bullet
-          RenderText {#text} at (0,0) size 742x30
-            text run at (0,0) width 742: "Four sets of horizontal double violet stripes surrounded by aqua should run just inside the top"
-            text run at (0,15) width 94: "border edge."
-        RenderListItem {LI} at (40,30) size 744x30
-          RenderListMarker at (-15,0) size 6x15: bullet
-          RenderText {#text} at (0,0) size 742x30
-            text run at (0,0) width 742: "One set of aqua-backed double violet stripes should run just inside the left, right, and bottom"
-            text run at (0,15) width 102: "border edges."
-        RenderListItem {LI} at (40,60) size 744x30
-          RenderListMarker at (-15,0) size 6x15: bullet
-          RenderText {#text} at (0,0) size 726x30
-            text run at (0,0) width 726: "The third set along the top should turn down at the right edge and go under the fourth set to"
-            text run at (0,15) width 188: "form the right-edge set."
-        RenderListItem {LI} at (40,90) size 744x15
-          RenderListMarker at (-15,0) size 6x15: bullet
-          RenderText {#text} at (0,0) size 547x15
-            text run at (0,0) width 547: "The fourth set should turn down at the left edge to form the left set."
-        RenderListItem {LI} at (40,105) size 744x15
-          RenderListMarker at (-15,0) size 6x15: bullet
-          RenderText {#text} at (0,0) size 406x15
-            text run at (0,0) width 406: "The bottom stripe should be straight and cut across "
-          RenderInline {EM} at (0,0) size 32x15
-            RenderText {#text} at (405,0) size 32x15
-              text run at (405,0) width 32: "over"
-          RenderText {#text} at (436,0) size 118x15
-            text run at (436,0) width 118: " the side sets."
-      RenderBlock {P} at (0,307.78) size 784x15
-        RenderText {#text} at (0,0) size 367x15
-          text run at (0,0) width 367: "In table cell A, (first cell in the first row):"
-      RenderBlock {UL} at (0,335.78) size 784x75
-        RenderListItem {LI} at (40,0) size 744x30
-          RenderListMarker at (-15,0) size 6x15: bullet
-          RenderText {#text} at (0,0) size 695x30
-            text run at (0,0) width 695: "Three sets of horizontal aqua-backed double violet stripes should run just inside the top"
-            text run at (0,15) width 94: "border edge."
-        RenderListItem {LI} at (40,30) size 744x15
-          RenderListMarker at (-15,0) size 6x15: bullet
-          RenderText {#text} at (0,0) size 250x15
-            text run at (0,0) width 250: "The first set should run across."
-        RenderListItem {LI} at (40,45) size 744x30
-          RenderListMarker at (-15,0) size 6x15: bullet
-          RenderText {#text} at (0,0) size 734x30
-            text run at (0,0) width 734: "The second set should turn down at the left edge, going over the third set to form another set"
-            text run at (0,15) width 336: "that runs just inside the left border edge."
-      RenderBlock {P} at (0,423.78) size 784x15
-        RenderText {#text} at (0,0) size 359x15
-          text run at (0,0) width 359: "In table cell D, (last cell in the first row):"
-      RenderBlock {UL} at (0,451.78) size 784x60
-        RenderListItem {LI} at (40,0) size 744x30
-          RenderListMarker at (-15,0) size 6x15: bullet
-          RenderText {#text} at (0,0) size 726x30
-            text run at (0,0) width 726: "Two sets of horizontal aqua-backed double violet strips should run just inside the top border"
-            text run at (0,15) width 40: "edge."
-        RenderListItem {LI} at (40,30) size 744x30
-          RenderListMarker at (-15,0) size 6x15: bullet
-          RenderText {#text} at (0,0) size 734x30
-            text run at (0,0) width 734: "The first set should turn down at the right edge, going under the second horizontal set to run"
-            text run at (0,15) width 352: "vertically just inside the right border edge."
-      RenderBlock {P} at (0,524.78) size 784x15
-        RenderText {#text} at (0,0) size 375x15
-          text run at (0,0) width 375: "In table cell G, (third cell in the second row):"
-      RenderBlock {UL} at (0,552.78) size 784x90
-        RenderListItem {LI} at (40,0) size 744x30
-          RenderListMarker at (-15,0) size 6x15: bullet
-          RenderText {#text} at (0,0) size 734x30
-            text run at (0,0) width 734: "Two sets of horizontal aqua-backed double violet stripes should run just inside the top border"
-            text run at (0,15) width 40: "edge."
-        RenderListItem {LI} at (40,30) size 744x30
-          RenderListMarker at (-15,0) size 6x15: bullet
-          RenderText {#text} at (0,0) size 718x30
-            text run at (0,0) width 718: "A set of vertical stripes should run down just inside the left border edge, going under both"
-            text run at (0,15) width 149: "horizontal stripes."
-        RenderListItem {LI} at (40,60) size 744x30
-          RenderListMarker at (-15,0) size 6x15: bullet
-          RenderText {#text} at (0,0) size 726x30
-            text run at (0,0) width 726: "Another set of vertical stripes should run down just inside the right border edge, also going"
-            text run at (0,15) width 235: "under both horizontal stripes."
-      RenderBlock {DL} at (0,655.78) size 784x90
-        RenderBlock {DT} at (0,0) size 784x15
-          RenderText {#text} at (0,0) size 32x15
+      RenderBlock {H3} at (0,85.58) size 784x17
+        RenderText {#text} at (0,0) size 153x17
+          text run at (0,0) width 153: "empty-cells: show"
+      RenderBlock {P} at (0,117.78) size 784x16
+        RenderText {#text} at (0,0) size 336x16
+          text run at (0,0) width 336: "Both tables should have a blue background."
+      RenderBlock {P} at (0,146.78) size 784x16
+        RenderText {#text} at (0,0) size 496x16
+          text run at (0,0) width 496: "In table cell C (third cell in the first row), which is empty:"
+      RenderBlock {UL} at (0,175.78) size 784x129
+        RenderListItem {LI} at (40,0) size 744x32
+          RenderListMarker at (-16,0) size 6x16: bullet
+          RenderText {#text} at (0,0) size 728x32
+            text run at (0,0) width 728: "Four sets of horizontal double violet stripes surrounded by aqua should run just inside the"
+            text run at (0,16) width 128: "top border edge."
+        RenderListItem {LI} at (40,32) size 744x32
+          RenderListMarker at (-16,0) size 6x16: bullet
+          RenderText {#text} at (0,0) size 704x32
+            text run at (0,0) width 704: "One set of aqua-backed double violet stripes should run just inside the left, right, and"
+            text run at (0,16) width 160: "bottom border edges."
+        RenderListItem {LI} at (40,64) size 744x32
+          RenderListMarker at (-16,0) size 6x16: bullet
+          RenderText {#text} at (0,0) size 744x32
+            text run at (0,0) width 744: "The third set along the top should turn down at the right edge and go under the fourth set to"
+            text run at (0,16) width 192: "form the right-edge set."
+        RenderListItem {LI} at (40,96) size 744x16
+          RenderListMarker at (-16,0) size 6x16: bullet
+          RenderText {#text} at (0,0) size 560x16
+            text run at (0,0) width 560: "The fourth set should turn down at the left edge to form the left set."
+        RenderListItem {LI} at (40,112) size 744x17
+          RenderListMarker at (-16,1) size 6x16: bullet
+          RenderText {#text} at (0,1) size 416x16
+            text run at (0,1) width 416: "The bottom stripe should be straight and cut across "
+          RenderInline {EM} at (0,0) size 32x17
+            RenderText {#text} at (416,0) size 32x17
+              text run at (416,0) width 32: "over"
+          RenderText {#text} at (448,1) size 120x16
+            text run at (448,1) width 120: " the side sets."
+      RenderBlock {P} at (0,317.78) size 784x16
+        RenderText {#text} at (0,0) size 376x16
+          text run at (0,0) width 376: "In table cell A, (first cell in the first row):"
+      RenderBlock {UL} at (0,346.78) size 784x80
+        RenderListItem {LI} at (40,0) size 744x32
+          RenderListMarker at (-16,0) size 6x16: bullet
+          RenderText {#text} at (0,0) size 712x32
+            text run at (0,0) width 712: "Three sets of horizontal aqua-backed double violet stripes should run just inside the top"
+            text run at (0,16) width 96: "border edge."
+        RenderListItem {LI} at (40,32) size 744x16
+          RenderListMarker at (-16,0) size 6x16: bullet
+          RenderText {#text} at (0,0) size 256x16
+            text run at (0,0) width 256: "The first set should run across."
+        RenderListItem {LI} at (40,48) size 744x32
+          RenderListMarker at (-16,0) size 6x16: bullet
+          RenderText {#text} at (0,0) size 720x32
+            text run at (0,0) width 720: "The second set should turn down at the left edge, going over the third set to form another"
+            text run at (0,16) width 376: "set that runs just inside the left border edge."
+      RenderBlock {P} at (0,439.78) size 784x16
+        RenderText {#text} at (0,0) size 368x16
+          text run at (0,0) width 368: "In table cell D, (last cell in the first row):"
+      RenderBlock {UL} at (0,468.78) size 784x64
+        RenderListItem {LI} at (40,0) size 744x32
+          RenderListMarker at (-16,0) size 6x16: bullet
+          RenderText {#text} at (0,0) size 744x32
+            text run at (0,0) width 744: "Two sets of horizontal aqua-backed double violet strips should run just inside the top border"
+            text run at (0,16) width 40: "edge."
+        RenderListItem {LI} at (40,32) size 744x32
+          RenderListMarker at (-16,0) size 6x16: bullet
+          RenderText {#text} at (0,0) size 720x32
+            text run at (0,0) width 720: "The first set should turn down at the right edge, going under the second horizontal set to"
+            text run at (0,16) width 392: "run vertically just inside the right border edge."
+      RenderBlock {P} at (0,545.78) size 784x16
+        RenderText {#text} at (0,0) size 384x16
+          text run at (0,0) width 384: "In table cell G, (third cell in the second row):"
+      RenderBlock {UL} at (0,574.78) size 784x96
+        RenderListItem {LI} at (40,0) size 744x32
+          RenderListMarker at (-16,0) size 6x16: bullet
+          RenderText {#text} at (0,0) size 696x32
+            text run at (0,0) width 696: "Two sets of horizontal aqua-backed double violet stripes should run just inside the top"
+            text run at (0,16) width 96: "border edge."
+        RenderListItem {LI} at (40,32) size 744x32
+          RenderListMarker at (-16,0) size 6x16: bullet
+          RenderText {#text} at (0,0) size 736x32
+            text run at (0,0) width 736: "A set of vertical stripes should run down just inside the left border edge, going under both"
+            text run at (0,16) width 152: "horizontal stripes."
+        RenderListItem {LI} at (40,64) size 744x32
+          RenderListMarker at (-16,0) size 6x16: bullet
+          RenderText {#text} at (0,0) size 744x32
+            text run at (0,0) width 744: "Another set of vertical stripes should run down just inside the right border edge, also going"
+            text run at (0,16) width 240: "under both horizontal stripes."
+      RenderBlock {DL} at (0,683.78) size 784x96
+        RenderBlock {DT} at (0,0) size 784x16
+          RenderText {#text} at (0,0) size 32x16
             text run at (0,0) width 32: "next"
-        RenderBlock {DD} at (40,15) size 744x15
-          RenderInline {A} at (0,0) size 281x15 [color=#FFFF00]
-            RenderText {#text} at (0,0) size 281x15
-              text run at (0,0) width 281: "Background Layers: empty-cells: show"
+        RenderBlock {DD} at (40,16) size 744x16
+          RenderInline {A} at (0,0) size 288x16 [color=#FFFF00]
+            RenderText {#text} at (0,0) size 288x16
+              text run at (0,0) width 288: "Background Layers: empty-cells: show"
           RenderText {#text} at (0,0) size 0x0
-        RenderBlock {DT} at (0,30) size 784x15
-          RenderText {#text} at (0,0) size 63x15
-            text run at (0,0) width 63: "previous"
-        RenderBlock {DD} at (40,45) size 744x15
-          RenderInline {A} at (0,0) size 367x15 [color=#FFFF00]
-            RenderText {#text} at (0,0) size 367x15
-              text run at (0,0) width 367: "Background Position: Background on 'table-cell'"
+        RenderBlock {DT} at (0,32) size 784x16
+          RenderText {#text} at (0,0) size 64x16
+            text run at (0,0) width 64: "previous"
+        RenderBlock {DD} at (40,48) size 744x16
+          RenderInline {A} at (0,0) size 376x16 [color=#FFFF00]
+            RenderText {#text} at (0,0) size 376x16
+              text run at (0,0) width 376: "Background Position: Background on 'table-cell'"
           RenderText {#text} at (0,0) size 0x0
-        RenderBlock {DT} at (0,60) size 784x15
-          RenderText {#text} at (0,0) size 63x15
-            text run at (0,0) width 63: "contents"
-        RenderBlock {DD} at (40,75) size 744x15
-          RenderInline {A} at (0,0) size 133x15 [color=#FFFF00]
-            RenderText {#text} at (0,0) size 133x15
-              text run at (0,0) width 133: "Table of Contents"
+        RenderBlock {DT} at (0,64) size 784x16
+          RenderText {#text} at (0,0) size 64x16
+            text run at (0,0) width 64: "contents"
+        RenderBlock {DD} at (40,80) size 744x16
+          RenderInline {A} at (0,0) size 136x16 [color=#FFFF00]
+            RenderText {#text} at (0,0) size 136x16
+              text run at (0,0) width 136: "Table of Contents"
           RenderText {#text} at (0,0) size 0x0
-      RenderTable {TABLE} at (0,758.78) size 618x471 [color=#FFFFFF] [bgcolor=#0000FF] [border: (1px dotted #FFFFFF)]
+      RenderTable {TABLE} at (0,792.78) size 618x471 [color=#FFFFFF] [bgcolor=#0000FF] [border: (1px dotted #FFFFFF)]
         RenderBlock {CAPTION} at (0,0) size 618x27
           RenderText {#text} at (142,0) size 334x27
             text run at (142,0) width 334: "With 'border-collapse: separate'"
@@ -180,7 +180,7 @@ layer at (0,0) size 800x1742
             RenderTableCell {TD} at (496,141) size 113x31 [border: (1px dotted #FFFFFF)] [r=1 c=3 rs=1 cs=1]
               RenderText {#text} at (2,2) size 49x27
                 text run at (2,2) width 49: "TD L"
-      RenderTable {TABLE} at (0,1229.78) size 578x437 [color=#FFFFFF] [bgcolor=#0000FF] [border: (6px dotted #FFFFFF)]
+      RenderTable {TABLE} at (0,1263.78) size 578x437 [color=#FFFFFF] [bgcolor=#0000FF] [border: (6px dotted #FFFFFF)]
         RenderBlock {CAPTION} at (0,0) size 578x27
           RenderText {#text} at (124,0) size 330x27
             text run at (124,0) width 330: "With 'border-collapse: collapse'"
@@ -237,10 +237,10 @@ layer at (0,0) size 800x1742
             RenderTableCell {TD} at (465,133) size 112x30 [border: (1px dotted #FFFFFF)] [r=1 c=3 rs=1 cs=1]
               RenderText {#text} at (2,2) size 49x27
                 text run at (2,2) width 49: "TD L"
-      RenderBlock {DIV} at (0,1666.78) size 784x35
-        RenderInline {A} at (0,0) size 88x15 [color=#FFFF00]
+      RenderBlock {DIV} at (0,1700.78) size 784x35
+        RenderInline {A} at (0,0) size 88x16 [color=#FFFF00]
           RenderImage {IMG} at (0,0) size 88x31
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {ADDRESS} at (0,1701.78) size 784x15
-        RenderText {#text} at (0,0) size 687x15
-          text run at (0,0) width 687: "CSS2 Table Backgrounds Test Suite designed and written by fantasai <fantasai@escape.com>"
+      RenderBlock {ADDRESS} at (0,1735.78) size 784x17
+        RenderText {#text} at (0,0) size 704x17
+          text run at (0,0) width 704: "CSS2 Table Backgrounds Test Suite designed and written by fantasai <fantasai@escape.com>"

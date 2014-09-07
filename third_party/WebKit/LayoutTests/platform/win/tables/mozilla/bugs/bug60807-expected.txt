@@ -32,21 +32,21 @@ layer at (0,0) size 800x600
         RenderTableSection {TBODY} at (1,1) size 598x23
           RenderTableRow {TR} at (0,0) size 598x20
             RenderTableCell {TD} at (0,1) size 132x18 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              RenderInline {FONT} at (0,0) size 92x15
-                RenderText {#text} at (1,1) size 92x15
-                  text run at (1,1) width 92: "American Starlex"
+              RenderInline {FONT} at (0,0) size 89x15
+                RenderText {#text} at (1,1) size 89x15
+                  text run at (1,1) width 89: "American Starlex"
             RenderTableCell {TD} at (132,8) size 5x3 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
               RenderImage {IMG} at (1,1) size 1x1
             RenderTableCell {TD} at (137,1) size 304x18 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
-              RenderInline {FONT} at (0,0) size 243x15
-                RenderText {#text} at (1,1) size 243x15
-                  text run at (1,1) width 243: "Digital_Cameras DC200 New|In stock; Kodak"
+              RenderInline {FONT} at (0,0) size 239x15
+                RenderText {#text} at (1,1) size 239x15
+                  text run at (1,1) width 239: "Digital_Cameras DC200 New|In stock; Kodak"
             RenderTableCell {TD} at (441,8) size 5x3 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
               RenderImage {IMG} at (1,1) size 1x1
             RenderTableCell {TD} at (446,1) size 78x18 [border: (1px inset #808080)] [r=0 c=4 rs=1 cs=1]
-              RenderInline {FONT} at (0,0) size 43x15
-                RenderText {#text} at (34,1) size 43x15
-                  text run at (34,1) width 43: "$270.00"
+              RenderInline {FONT} at (0,0) size 39x15
+                RenderText {#text} at (38,1) size 39x15
+                  text run at (38,1) width 39: "$270.00"
             RenderTableCell {TD} at (524,8) size 5x3 [border: (1px inset #808080)] [r=0 c=5 rs=1 cs=1]
               RenderImage {IMG} at (1,1) size 1x1
             RenderTableCell {TD} at (529,0) size 69x20 [border: (1px inset #808080)] [r=0 c=6 rs=1 cs=1]

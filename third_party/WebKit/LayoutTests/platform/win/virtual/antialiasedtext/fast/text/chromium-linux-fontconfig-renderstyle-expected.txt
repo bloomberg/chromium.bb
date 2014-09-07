@@ -6,17 +6,17 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,0) size 784x36
         RenderText {#text} at (0,0) size 230x17
           text run at (0,0) width 230: "This test requires Chromium Linux "
-        RenderInline {TT} at (0,0) size 79x15
-          RenderText {#text} at (229,3) size 79x15
-            text run at (229,3) width 79: "test_shell"
-        RenderText {#text} at (307,0) size 22x17
-          text run at (307,0) width 22: " in "
-        RenderInline {TT} at (0,0) size 102x15
-          RenderText {#text} at (328,3) size 102x15
-            text run at (328,3) width 102: "--layout-test"
-        RenderText {#text} at (429,0) size 768x35
-          text run at (429,0) width 326: " mode, as that forces some rendering settings used "
-          text run at (754,0) width 14: "in"
+        RenderInline {TT} at (0,0) size 81x16
+          RenderText {#text} at (229,2) size 81x16
+            text run at (229,2) width 81: "test_shell"
+        RenderText {#text} at (309,0) size 22x17
+          text run at (309,0) width 22: " in "
+        RenderInline {TT} at (0,0) size 105x16
+          RenderText {#text} at (330,2) size 105x16
+            text run at (330,2) width 105: "--layout-test"
+        RenderText {#text} at (434,0) size 772x35
+          text run at (434,0) width 326: " mode, as that forces some rendering settings used "
+          text run at (759,0) width 13: "in"
           text run at (0,18) width 123: "the following tests."
       RenderBlock {OL} at (0,52) size 784x446
         RenderListItem {LI} at (40,0) size 744x52
@@ -58,49 +58,49 @@ layer at (0,0) size 800x600
               text run at (0,0) width 406: "The following text should show a difference caused by forcing "
               text run at (405,0) width 242: "autohinting. Note: the effect is subtle."
           RenderBlock {P} at (0,34) size 744x18
-            RenderInline {SPAN} at (0,0) size 41x11
-              RenderText {#text} at (0,5) size 41x11
-                text run at (0,5) width 41: "autohinted"
-            RenderText {#text} at (40,0) size 5x17
-              text run at (40,0) width 5: " "
+            RenderInline {SPAN} at (0,0) size 42x11
+              RenderText {#text} at (0,5) size 42x11
+                text run at (0,5) width 42: "autohinted"
+            RenderText {#text} at (42,0) size 4x17
+              text run at (42,0) width 4: " "
             RenderInline {I} at (0,0) size 14x17
-              RenderText {#text} at (44,0) size 14x17
-                text run at (44,0) width 14: "vs"
-            RenderText {#text} at (57,0) size 5x17
-              text run at (57,0) width 5: " "
-            RenderInline {SPAN} at (0,0) size 57x11
-              RenderText {#text} at (61,5) size 57x11
-                text run at (61,5) width 57: "not-autohinted"
+              RenderText {#text} at (46,0) size 14x17
+                text run at (46,0) width 14: "vs"
+            RenderText {#text} at (59,0) size 5x17
+              text run at (59,0) width 5: " "
+            RenderInline {SPAN} at (0,0) size 59x11
+              RenderText {#text} at (63,5) size 59x11
+                text run at (63,5) width 59: "not-autohinted"
         RenderListItem {LI} at (40,308) size 744x70
           RenderBlock {P} at (0,0) size 744x36
             RenderListMarker at (-20,0) size 16x17: "5"
             RenderText {#text} at (0,0) size 557x17
               text run at (0,0) width 557: "The following text should be the same. It verifies that, given the contradictory settings "
-            RenderInline {TT} at (0,0) size 63x15
-              RenderText {#text} at (556,3) size 63x15
-                text run at (556,3) width 63: "hintfull"
-            RenderText {#text} at (618,0) size 32x17
-              text run at (618,0) width 32: " and "
-            RenderInline {TT} at (0,0) size 64x15
-              RenderText {#text} at (649,3) size 64x15
-                text run at (649,3) width 64: "autohint"
-            RenderText {#text} at (712,0) size 740x35
-              text run at (712,0) width 28: ", the"
+            RenderInline {TT} at (0,0) size 65x16
+              RenderText {#text} at (556,2) size 65x16
+                text run at (556,2) width 65: "hintfull"
+            RenderText {#text} at (620,0) size 32x17
+              text run at (620,0) width 32: " and "
+            RenderInline {TT} at (0,0) size 65x16
+              RenderText {#text} at (651,2) size 65x16
+                text run at (651,2) width 65: "autohint"
+            RenderText {#text} at (715,0) size 743x35
+              text run at (715,0) width 28: ", the"
               text run at (0,18) width 96: "latter wins out:"
           RenderBlock {P} at (0,52) size 744x18
-            RenderInline {SPAN} at (0,0) size 41x11
-              RenderText {#text} at (0,5) size 41x11
-                text run at (0,5) width 41: "autohinted"
-            RenderText {#text} at (40,0) size 5x17
-              text run at (40,0) width 5: " "
+            RenderInline {SPAN} at (0,0) size 42x11
+              RenderText {#text} at (0,5) size 42x11
+                text run at (0,5) width 42: "autohinted"
+            RenderText {#text} at (42,0) size 4x17
+              text run at (42,0) width 4: " "
             RenderInline {I} at (0,0) size 14x17
-              RenderText {#text} at (44,0) size 14x17
-                text run at (44,0) width 14: "vs"
-            RenderText {#text} at (57,0) size 5x17
-              text run at (57,0) width 5: " "
-            RenderInline {SPAN} at (0,0) size 81x11
-              RenderText {#text} at (61,5) size 81x11
-                text run at (61,5) width 81: "hopefully autohinted"
+              RenderText {#text} at (46,0) size 14x17
+                text run at (46,0) width 14: "vs"
+            RenderText {#text} at (59,0) size 5x17
+              text run at (59,0) width 5: " "
+            RenderInline {SPAN} at (0,0) size 83x11
+              RenderText {#text} at (63,5) size 83x11
+                text run at (63,5) width 83: "hopefully autohinted"
         RenderListItem {LI} at (40,394) size 744x52
           RenderBlock {P} at (0,0) size 744x18
             RenderListMarker at (-20,0) size 16x17: "6"

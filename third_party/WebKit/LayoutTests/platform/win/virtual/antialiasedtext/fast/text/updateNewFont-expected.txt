@@ -4,8 +4,8 @@ layer at (0,0) size 800x126
   RenderBlock {HTML} at (0,0) size 800x126
     RenderBody {BODY} at (8,8) size 784x110
       RenderText {#text} at (0,0) size 0x0
-layer at (8,7) size 36x112 clip at (9,8) size 19x110 scrollHeight 109
-  RenderListBox {SELECT} at (0,-0.69) size 36.05x111.69 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    RenderBlock {OPTION} at (1,1) size 19.05x12.19
+layer at (8,7) size 37x112 clip at (9,8) size 20x110 scrollHeight 109
+  RenderListBox {SELECT} at (0,-0.69) size 37x111.69 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 20x12.19
       RenderText {#text} at (2,0) size 16x10
         text run at (2,0) width 16: "test"

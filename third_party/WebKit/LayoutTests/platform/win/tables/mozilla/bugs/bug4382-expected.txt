@@ -7,29 +7,29 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 270x17
           text run at (0,0) width 270: "The select should not contain blank items "
         RenderBR {BR} at (269,14) size 1x0
-      RenderBlock {FORM} at (0,18) size 784x21
+      RenderBlock {FORM} at (0,18) size 784x22
         RenderInline {B} at (0,0) size 48x17
-          RenderText {#text} at (0,1) size 48x17
-            text run at (0,1) width 48: "Search"
-        RenderText {#text} at (47,1) size 5x17
-          text run at (47,1) width 5: " "
-        RenderTextControl {INPUT} at (51.09,0) size 159x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-        RenderText {#text} at (210,1) size 5x17
-          text run at (210,1) width 5: " "
-        RenderMenuList {SELECT} at (214.09,1) size 76x19 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          RenderBlock (anonymous) at (1,1) size 74x17
-            RenderText at (4,1) size 37x15
+          RenderText {#text} at (0,2) size 48x17
+            text run at (0,2) width 48: "Search"
+        RenderText {#text} at (47,2) size 5x17
+          text run at (47,2) width 5: " "
+        RenderTextControl {INPUT} at (51.09,0) size 159x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        RenderText {#text} at (210,2) size 5x17
+          text run at (210,2) width 5: " "
+        RenderMenuList {SELECT} at (214.09,1) size 73x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          RenderBlock (anonymous) at (1,1) size 71x18
+            RenderText at (4,1) size 37x16
               text run at (4,1) width 37: "Excite"
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock (anonymous) at (0,55) size 784x36
+      RenderBlock (anonymous) at (0,56) size 784x36
         RenderBR {BR} at (0,0) size 0x17
         RenderText {#text} at (0,18) size 270x17
           text run at (0,18) width 270: "The select should not contain blank items "
         RenderBR {BR} at (269,32) size 1x0
-      RenderBlock {FORM} at (0,91) size 784x19
-        RenderMenuList {SELECT} at (0,0) size 237x19 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          RenderBlock (anonymous) at (1,1) size 235x17
-            RenderText at (4,1) size 63x15
-              text run at (4,1) width 63: "Quick Link"
-layer at (61,29) size 155x15
-  RenderBlock {DIV} at (2,3) size 155x15
+      RenderBlock {FORM} at (0,92) size 784x20
+        RenderMenuList {SELECT} at (0,0) size 253x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          RenderBlock (anonymous) at (1,1) size 251x18
+            RenderText at (4,1) size 62x16
+              text run at (4,1) width 62: "Quick Link"
+layer at (61,29) size 155x16
+  RenderBlock {DIV} at (2,3) size 155x16
