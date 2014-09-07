@@ -48,7 +48,6 @@
 #include <assert.h>
 #include <pthread.h>
 #include <sys/ioctl.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <stdbool.h>
@@ -1051,11 +1050,11 @@ drm_intel_gem_bo_free(drm_intel_bo *bo)
 	DRMLISTDEL(&bo_gem->vma_list);
 	if (bo_gem->mem_virtual) {
 		VG(VALGRIND_FREELIKE_BLOCK(bo_gem->mem_virtual, 0));
-		munmap(bo_gem->mem_virtual, bo_gem->bo.size);
+		drm_munmap(bo_gem->mem_virtual, bo_gem->bo.size);
 		bufmgr_gem->vma_count--;
 	}
 	if (bo_gem->gtt_virtual) {
-		munmap(bo_gem->gtt_virtual, bo_gem->bo.size);
+		drm_munmap(bo_gem->gtt_virtual, bo_gem->bo.size);
 		bufmgr_gem->vma_count--;
 	}
 
@@ -1140,12 +1139,12 @@ static void drm_intel_gem_bo_purge_vma_cache(drm_intel_bufmgr_gem *bufmgr_gem)
 		DRMLISTDELINIT(&bo_gem->vma_list);
 
 		if (bo_gem->mem_virtual) {
-			munmap(bo_gem->mem_virtual, bo_gem->bo.size);
+			drm_munmap(bo_gem->mem_virtual, bo_gem->bo.size);
 			bo_gem->mem_virtual = NULL;
 			bufmgr_gem->vma_count--;
 		}
 		if (bo_gem->gtt_virtual) {
-			munmap(bo_gem->gtt_virtual, bo_gem->bo.size);
+			drm_munmap(bo_gem->gtt_virtual, bo_gem->bo.size);
 			bo_gem->gtt_virtual = NULL;
 			bufmgr_gem->vma_count--;
 		}
@@ -1381,9 +1380,9 @@ map_gtt(drm_intel_bo *bo)
 		}
 
 		/* and mmap it */
-		bo_gem->gtt_virtual = mmap(0, bo->size, PROT_READ | PROT_WRITE,
-					   MAP_SHARED, bufmgr_gem->fd,
-					   mmap_arg.offset);
+		bo_gem->gtt_virtual = drm_mmap(0, bo->size, PROT_READ | PROT_WRITE,
+					       MAP_SHARED, bufmgr_gem->fd,
+					       mmap_arg.offset);
 		if (bo_gem->gtt_virtual == MAP_FAILED) {
 			bo_gem->gtt_virtual = NULL;
 			ret = -errno;
