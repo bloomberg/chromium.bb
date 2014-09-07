@@ -90,7 +90,6 @@ public:
     bool hasAncestorClippingLayer() const { return m_ancestorClippingLayer; }
     GraphicsLayer* ancestorClippingLayer() const { return m_ancestorClippingLayer.get(); }
 
-    bool hasContentsLayer() const { return m_foregroundLayer; }
     GraphicsLayer* foregroundLayer() const { return m_foregroundLayer.get(); }
 
     GraphicsLayer* backgroundLayer() const { return m_backgroundLayer.get(); }
@@ -272,8 +271,6 @@ private:
     void updateIsRootForIsolatedGroup();
     // Return the opacity value that this layer should use for compositing.
     float compositingOpacity(float rendererOpacity) const;
-
-    bool isMainFrameRenderViewLayer() const;
 
     bool paintsChildren() const;
 
