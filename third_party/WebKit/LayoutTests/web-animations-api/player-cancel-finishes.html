@@ -17,13 +17,13 @@ function log(message) {
     results.innerHTML += message + '<br>';
 }
 
-function validateFinishEvent(player, event) {
+function validateFinishEvent(player, event, currentTime) {
     if (event.target === player) {
         log('PASS: ' + player.name + ' is target');
     } else {
         log('FAIL: expected target named ' + player.name + ', actual target is ' + event.target);
     }
-    if (event.currentTime === player.currentTime) {
+    if ((currentTime !== undefined && event.currentTime == currentTime) || event.currentTime === player.currentTime) {
         log('PASS: event currentTime equals player currentTime');
     } else {
         log('FAIL: event currentTime ' + event.currentTime + ' does not equal player currentTime ' + player.currentTime);
@@ -44,7 +44,7 @@ function onFinishTop(event) {
 }
 
 function onFinishMiddle(event) {
-    validateFinishEvent(playerMiddle, event);
+    validateFinishEvent(playerMiddle, event, 0);
     playerBottom.currentTime = 0;
 }
 

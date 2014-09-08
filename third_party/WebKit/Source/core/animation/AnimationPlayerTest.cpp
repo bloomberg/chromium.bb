@@ -754,10 +754,14 @@ TEST_F(AnimationAnimationPlayerTest, TimeToNextEffectWhenCancelledBeforeStart)
     EXPECT_EQ(0, player->timeToEffectChange());
     player->setCurrentTimeInternal(-8);
     player->setPlaybackRate(2);
+    EXPECT_EQ(AnimationPlayer::Pending, player->playStateInternal());
     player->cancel();
+    EXPECT_EQ(AnimationPlayer::Idle, player->playStateInternal());
     player->update(TimingUpdateOnDemand);
+    // This frame will fire the finish event event though no start time has been
+    // received from the compositor yet, as cancel() nukes start times.
     simulateFrame(0);
-    EXPECT_EQ(4, player->timeToEffectChange());
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), player->timeToEffectChange());
 }
 
 TEST_F(AnimationAnimationPlayerTest, TimeToNextEffectWhenCancelledBeforeStartReverse)
@@ -765,10 +769,26 @@ TEST_F(AnimationAnimationPlayerTest, TimeToNextEffectWhenCancelledBeforeStartRev
     EXPECT_EQ(0, player->timeToEffectChange());
     player->setCurrentTimeInternal(9);
     player->setPlaybackRate(-3);
+    EXPECT_EQ(AnimationPlayer::Pending, player->playStateInternal());
+    player->cancel();
+    EXPECT_EQ(AnimationPlayer::Idle, player->playStateInternal());
+    player->update(TimingUpdateOnDemand);
+    // This frame will fire the finish event event though no start time has been
+    // received from the compositor yet, as cancel() nukes start times.
+    simulateFrame(0);
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), player->timeToEffectChange());
+}
+
+TEST_F(AnimationAnimationPlayerTest, TimeToNextEffectSimpleCancelledBeforeStart)
+{
+    EXPECT_EQ(0, player->timeToEffectChange());
+    EXPECT_EQ(AnimationPlayer::Running, player->playStateInternal());
     player->cancel();
     player->update(TimingUpdateOnDemand);
+    // This frame will fire the finish event event though no start time has been
+    // received from the compositor yet, as cancel() nukes start times.
     simulateFrame(0);
-    EXPECT_EQ(3, player->timeToEffectChange());
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), player->timeToEffectChange());
 }
 
 TEST_F(AnimationAnimationPlayerTest, AttachedAnimationPlayers)
@@ -792,6 +812,83 @@ TEST_F(AnimationAnimationPlayerTest, HasLowerPriority)
     RefPtrWillBeRawPtr<AnimationPlayer> player1 = timeline->createAnimationPlayer(0);
     RefPtrWillBeRawPtr<AnimationPlayer> player2 = timeline->createAnimationPlayer(0);
     EXPECT_TRUE(AnimationPlayer::hasLowerPriority(player1.get(), player2.get()));
+}
+
+TEST_F(AnimationAnimationPlayerTest, PlayAfterCancel)
+{
+    player->cancel();
+    EXPECT_EQ(AnimationPlayer::Idle, player->playStateInternal());
+    EXPECT_TRUE(std::isnan(player->currentTime()));
+    EXPECT_TRUE(std::isnan(player->startTime()));
+    player->play();
+    EXPECT_EQ(AnimationPlayer::Pending, player->playStateInternal());
+    EXPECT_EQ(0, player->currentTime());
+    EXPECT_TRUE(std::isnan(player->startTime()));
+    simulateFrame(10);
+    EXPECT_EQ(AnimationPlayer::Running, player->playStateInternal());
+    EXPECT_EQ(0, player->currentTime());
+    EXPECT_EQ(10 * 1000, player->startTime());
+}
+
+TEST_F(AnimationAnimationPlayerTest, PlayBackwardsAfterCancel)
+{
+    player->setPlaybackRate(-1);
+    player->setCurrentTime(15 * 1000);
+    simulateFrame(0);
+    player->cancel();
+    EXPECT_EQ(AnimationPlayer::Idle, player->playStateInternal());
+    EXPECT_TRUE(std::isnan(player->currentTime()));
+    EXPECT_TRUE(std::isnan(player->startTime()));
+    player->play();
+    EXPECT_EQ(AnimationPlayer::Pending, player->playStateInternal());
+    EXPECT_EQ(30 * 1000, player->currentTime());
+    EXPECT_TRUE(std::isnan(player->startTime()));
+    simulateFrame(10);
+    EXPECT_EQ(AnimationPlayer::Running, player->playStateInternal());
+    EXPECT_EQ(30 * 1000, player->currentTime());
+    EXPECT_EQ(40 * 1000, player->startTime());
+}
+
+// FIXME: crbug.com/410229, when fixed, will reuqire the expected results of
+// this test to change (currentTime -> 30 * 1000).
+TEST_F(AnimationAnimationPlayerTest, ReverseAfterCancel)
+{
+    player->cancel();
+    EXPECT_EQ(AnimationPlayer::Idle, player->playStateInternal());
+    EXPECT_TRUE(std::isnan(player->currentTime()));
+    EXPECT_TRUE(std::isnan(player->startTime()));
+    player->reverse();
+    EXPECT_EQ(AnimationPlayer::Pending, player->playStateInternal());
+    EXPECT_TRUE(std::isnan(player->currentTime()));
+    EXPECT_TRUE(std::isnan(player->startTime()));
+    simulateFrame(10);
+    EXPECT_EQ(AnimationPlayer::Finished, player->playStateInternal());
+    EXPECT_EQ(0 * 1000, player->currentTime());
+    EXPECT_EQ(10 * 1000, player->startTime());
+}
+
+TEST_F(AnimationAnimationPlayerTest, FinishAfterCancel)
+{
+    player->cancel();
+    EXPECT_EQ(AnimationPlayer::Idle, player->playStateInternal());
+    EXPECT_TRUE(std::isnan(player->currentTime()));
+    EXPECT_TRUE(std::isnan(player->startTime()));
+    player->finish(exceptionState);
+    EXPECT_EQ(AnimationPlayer::Finished, player->playStateInternal());
+    EXPECT_EQ(30 * 1000, player->currentTime());
+    EXPECT_EQ(0, player->startTime());
+}
+
+TEST_F(AnimationAnimationPlayerTest, PauseAfterCancel)
+{
+    player->cancel();
+    EXPECT_EQ(AnimationPlayer::Idle, player->playStateInternal());
+    EXPECT_TRUE(std::isnan(player->currentTime()));
+    EXPECT_TRUE(std::isnan(player->startTime()));
+    player->pause();
+    EXPECT_EQ(AnimationPlayer::Idle, player->playStateInternal());
+    EXPECT_TRUE(std::isnan(player->currentTime()));
+    EXPECT_TRUE(std::isnan(player->startTime()));
 }
 
 }

@@ -52,6 +52,7 @@ static unsigned nextSequenceNumber()
 PassRefPtrWillBeRawPtr<AnimationPlayer> AnimationPlayer::create(ExecutionContext* executionContext, AnimationTimeline& timeline, AnimationNode* content)
 {
     RefPtrWillBeRawPtr<AnimationPlayer> player = adoptRefWillBeNoop(new AnimationPlayer(executionContext, timeline, content));
+    player->uncancel();
     timeline.document()->compositorPendingAnimations().add(player.get());
     player->suspendIfNeeded();
     return player.release();
@@ -69,14 +70,17 @@ AnimationPlayer::AnimationPlayer(ExecutionContext* executionContext, AnimationTi
     , m_held(true)
     , m_isPausedForTesting(false)
     , m_outdated(true)
-    , m_finished(false)
+    , m_finished(true)
     , m_compositorState(nullptr)
     , m_compositorPending(true)
     , m_currentTimePending(false)
+    , m_idle(true)
 {
     if (m_content) {
-        if (m_content->player())
+        if (m_content->player()) {
             m_content->player()->cancel();
+            m_content->player()->setSource(0);
+        }
         m_content->attach(this);
     }
 }
@@ -150,7 +154,7 @@ double AnimationPlayer::startTime() const
 
 double AnimationPlayer::currentTime()
 {
-    if (m_currentTimePending)
+    if (m_currentTimePending || m_idle)
         return std::numeric_limits<double>::quiet_NaN();
     return currentTimeInternal() * 1000;
 }
@@ -358,8 +362,10 @@ void AnimationPlayer::setSource(AnimationNode* newSource)
     m_content = newSource;
     if (newSource) {
         // FIXME: This logic needs to be updated once groups are implemented
-        if (newSource->player())
+        if (newSource->player()) {
             newSource->player()->cancel();
+            newSource->player()->setSource(0);
+        }
         newSource->attach(this);
         setOutdated();
     }
@@ -387,10 +393,10 @@ String AnimationPlayer::playState()
 
 AnimationPlayer::AnimationPlayState AnimationPlayer::playStateInternal()
 {
-    // FIXME(shanestephens): Add clause for in-idle-state here.
+    if (m_idle)
+        return Idle;
     if (m_currentTimePending || (isNull(m_startTime) && !m_paused && m_playbackRate != 0))
         return Pending;
-    // FIXME(shanestephens): Add idle handling here.
     if (m_paused)
         return Paused;
     if (finished())
@@ -433,6 +439,7 @@ void AnimationPlayer::play()
         m_startTime = nullValue();
 
     setCompositorPending();
+    uncancel();
     unpauseInternal();
     if (!m_content)
         return;
@@ -449,6 +456,9 @@ void AnimationPlayer::reverse()
     if (!m_playbackRate) {
         return;
     }
+
+    uncancel();
+
     if (m_content) {
         if (m_playbackRate > 0 && currentTimeInternal() > sourceEnd()) {
             setCurrentTimeInternal(sourceEnd(), TimingUpdateOnDemand);
@@ -474,6 +484,10 @@ void AnimationPlayer::finish(ExceptionState& exceptionState)
     if (playing()) {
         setCompositorPending();
     }
+
+    uncancel();
+    m_startTime = 0;
+
     if (m_playbackRate < 0) {
         setCurrentTimeInternal(0, TimingUpdateOnDemand);
     } else {
@@ -596,15 +610,16 @@ bool AnimationPlayer::update(TimingUpdateReason reason)
     m_outdated = false;
 
     if (m_content) {
-        double inheritedTime = isNull(m_timeline->currentTimeInternal()) ? nullValue() : currentTimeInternal();
+        double inheritedTime = m_idle || isNull(m_timeline->currentTimeInternal()) ? nullValue() : currentTimeInternal();
         m_content->updateInheritedTime(inheritedTime, reason);
     }
 
-    if (finished() && !m_finished) {
-        if (reason == TimingUpdateForAnimationFrame && hasStartTime()) {
+    if ((m_idle || finished()) && !m_finished) {
+        if (reason == TimingUpdateForAnimationFrame && (m_idle || hasStartTime())) {
             const AtomicString& eventType = EventTypeNames::finish;
             if (executionContext() && hasEventListeners(eventType)) {
-                m_pendingFinishedEvent = AnimationPlayerEvent::create(eventType, currentTime(), timeline()->currentTime());
+                double eventCurrentTime = currentTimeInternal() * 1000;
+                m_pendingFinishedEvent = AnimationPlayerEvent::create(eventType, eventCurrentTime, timeline()->currentTime());
                 m_pendingFinishedEvent->setTarget(this);
                 m_pendingFinishedEvent->setCurrentTarget(this);
                 m_timeline->document()->enqueueAnimationFrameEvent(m_pendingFinishedEvent);
@@ -613,7 +628,7 @@ bool AnimationPlayer::update(TimingUpdateReason reason)
         }
     }
     ASSERT(!m_outdated);
-    return !m_finished || !finished();
+    return !m_finished;
 }
 
 double AnimationPlayer::timeToEffectChange()
@@ -630,7 +645,11 @@ double AnimationPlayer::timeToEffectChange()
 
 void AnimationPlayer::cancel()
 {
-    setSource(0);
+    m_holdTime = currentTimeInternal();
+    m_held = true;
+    m_idle = true;
+    m_startTime = nullValue();
+    setCompositorPending();
 }
 
 #if !ENABLE(OILPAN)

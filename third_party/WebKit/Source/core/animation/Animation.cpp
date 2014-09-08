@@ -193,6 +193,8 @@ double Animation::calculateTimeToEffectChange(bool forwards, double localTime, d
     const double end = start + activeDurationInternal();
 
     switch (phase()) {
+    case PhaseNone:
+        return std::numeric_limits<double>::infinity();
     case PhaseBefore:
         ASSERT(start >= localTime);
         return forwards

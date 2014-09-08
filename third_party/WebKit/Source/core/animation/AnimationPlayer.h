@@ -85,8 +85,8 @@ public:
     void play();
     void reverse();
     void finish(ExceptionState&);
-    bool finished() { return limited(currentTimeInternal()); }
-    bool playing() { return !(finished() || m_paused || m_isPausedForTesting); }
+    bool finished() { return !m_idle && limited(currentTimeInternal()); }
+    bool playing() { return !(finished() || m_paused || m_isPausedForTesting || m_idle); }
     // FIXME: Resolve whether finished() should just return the flag, and
     // remove this method.
     bool finishedInternal() const { return m_finished; }
@@ -210,12 +210,23 @@ private:
         CompositorAction pendingAction;
     };
 
+    void uncancel()
+    {
+        if (m_idle) {
+            m_idle = false;
+            m_finished = false;
+            m_held = true;
+            m_holdTime = 0;
+        }
+    }
+
     // This mirrors the known compositor state. It is created when a compositor
     // animation is started. Updated once the start time is known and each time
     // modifications are pushed to the compositor.
     OwnPtr<CompositorState> m_compositorState;
     bool m_compositorPending;
     bool m_currentTimePending;
+    bool m_idle;
 };
 
 } // namespace blink
