@@ -6,6 +6,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
+namespace bookmarks {
+
 class MockBookmarkModelObserver : public BookmarkModelObserver {
  public:
   MockBookmarkModelObserver();
@@ -40,3 +42,5 @@ class MockBookmarkModelObserver : public BookmarkModelObserver {
   MOCK_METHOD2(BookmarkAllUserNodesRemoved, void(BookmarkModel*,
                                                  const std::set<GURL>&));
 };
+
+}  // namespace bookmarks

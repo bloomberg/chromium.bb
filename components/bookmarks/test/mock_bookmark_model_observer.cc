@@ -4,6 +4,10 @@
 
 #include "components/bookmarks/test/mock_bookmark_model_observer.h"
 
+namespace bookmarks {
+
 MockBookmarkModelObserver::MockBookmarkModelObserver() {}
 
 MockBookmarkModelObserver::~MockBookmarkModelObserver() {}
+
+}  // namespace bookmarks

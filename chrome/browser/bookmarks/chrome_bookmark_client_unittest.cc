@@ -130,7 +130,7 @@ class ChromeBookmarkClientTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   TestingPrefServiceSyncable* prefs_;
-  MockBookmarkModelObserver observer_;
+  bookmarks::MockBookmarkModelObserver observer_;
   ChromeBookmarkClient* client_;
   BookmarkModel* model_;
 
