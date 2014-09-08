@@ -554,6 +554,50 @@ void UpdateFileTypes(NSMutableDictionary* plist,
 
 }  // namespace
 
+@interface CrCreateAppShortcutCheckboxObserver : NSObject {
+ @private
+  NSButton* checkbox_;
+  NSButton* continueButton_;
+}
+
+- (id)initWithCheckbox:(NSButton*)checkbox
+        continueButton:(NSButton*)continueButton;
+- (void)startObserving;
+- (void)stopObserving;
+@end
+
+@implementation CrCreateAppShortcutCheckboxObserver
+
+- (id)initWithCheckbox:(NSButton*)checkbox
+        continueButton:(NSButton*)continueButton {
+  if ((self = [super init])) {
+    checkbox_ = checkbox;
+    continueButton_ = continueButton;
+  }
+  return self;
+}
+
+- (void)startObserving {
+  [checkbox_ addObserver:self
+              forKeyPath:@"cell.state"
+                 options:0
+                 context:nil];
+}
+
+- (void)stopObserving {
+  [checkbox_ removeObserver:self
+                 forKeyPath:@"cell.state"];
+}
+
+- (void)observeValueForKeyPath:(NSString*)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary*)change
+                       context:(void*)context {
+  [continueButton_ setEnabled:([checkbox_ state] == NSOnState)];
+}
+
+@end
+
 namespace web_app {
 
 WebAppShortcutCreator::WebAppShortcutCreator(
@@ -985,6 +1029,13 @@ void CreateAppShortcutInfoLoaded(
       setTitle:l10n_util::GetNSString(IDS_CREATE_SHORTCUTS_APP_FOLDER_CHKBOX)];
   [application_folder_checkbox setState:NSOnState];
   [application_folder_checkbox sizeToFit];
+
+  base::scoped_nsobject<CrCreateAppShortcutCheckboxObserver> checkbox_observer(
+      [[CrCreateAppShortcutCheckboxObserver alloc]
+          initWithCheckbox:application_folder_checkbox
+            continueButton:continue_button]);
+  [checkbox_observer startObserving];
+
   [alert setAccessoryView:application_folder_checkbox];
 
   const int kIconPreviewSizePixels = 128;
@@ -1006,6 +1057,8 @@ void CreateAppShortcutInfoLoaded(
     CreateShortcuts(
         SHORTCUT_CREATION_BY_USER, ShortcutLocations(), profile, app);
   }
+
+  [checkbox_observer stopObserving];
 
   if (!close_callback.is_null())
     close_callback.Run(dialog_accepted);
