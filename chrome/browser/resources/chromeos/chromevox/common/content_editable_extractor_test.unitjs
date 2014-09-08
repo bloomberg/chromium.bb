@@ -21,6 +21,22 @@ CvoxContentEditableExtractorUnitTest.prototype = {
   ]
 };
 
+/**
+ * Helper function to set the selection
+ * @param {Node} startNode The base/start node of the range.
+ * @param {number} startOffset The 0-based character index of the start.
+ * @param {Node} endNode The extent/end node of the range.
+ * @param {number} endOffset The 0-based character index of the end.
+ */
+function setSelection(startNode, startOffset, endNode, endOffset) {
+  var r = document.createRange();
+  r.setStart(startNode, startOffset);
+  r.setEnd(endNode, endOffset);
+  var sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(r);
+}
+
 TEST_F('CvoxContentEditableExtractorUnitTest', 'EmptyElement', function() {
   this.loadDoc(function() {/*!
     <div>

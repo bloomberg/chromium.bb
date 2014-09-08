@@ -127,6 +127,7 @@
         'common/braille_text_handler_test.unitjs',
         'common/braille_util_test.unitjs',
         'common/command_store_test.unitjs',
+        'common/content_editable_extractor_test.unitjs',
         'common/cursor_selection_test.unitjs',
         'common/dom_util_test.unitjs',
         'common/editable_text_area_shadow_test.unitjs',
