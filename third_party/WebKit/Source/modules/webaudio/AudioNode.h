@@ -183,6 +183,8 @@ public:
     virtual const AtomicString& interfaceName() const OVERRIDE FINAL;
     virtual ExecutionContext* executionContext() const OVERRIDE FINAL;
 
+    void updateChannelCountMode();
+
     virtual void trace(Visitor*) OVERRIDE;
 
 protected:
@@ -219,6 +221,9 @@ private:
 #endif
     static unsigned s_instanceCount;
 
+    // The new channel count mode that will be used to set the actual mode in the pre or post
+    // rendering phase.
+    ChannelCountMode m_newChannelCountMode;
 protected:
     unsigned m_channelCount;
     ChannelCountMode m_channelCountMode;

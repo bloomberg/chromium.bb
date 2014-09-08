@@ -54,6 +54,7 @@ AudioNode::AudioNode(AudioContext* context, float sampleRate)
     , m_lastNonSilentTime(-1)
     , m_connectionRefCount(0)
     , m_isDisabled(false)
+    , m_newChannelCountMode(Max)
     , m_channelCount(2)
     , m_channelCountMode(Max)
     , m_channelInterpretation(AudioBus::Speakers)
@@ -92,6 +93,7 @@ void AudioNode::dispose()
     ASSERT(isMainThread());
     ASSERT(context()->isGraphOwner());
 
+    context()->removeChangedChannelCountMode(this);
     context()->removeAutomaticPullNode(this);
     context()->disposeOutputs(*this);
     for (unsigned i = 0; i < m_outputs.size(); ++i)
@@ -308,17 +310,17 @@ void AudioNode::setChannelCountMode(const String& mode, ExceptionState& exceptio
     ChannelCountMode oldMode = m_channelCountMode;
 
     if (mode == "max") {
-        m_channelCountMode = Max;
+        m_newChannelCountMode = Max;
     } else if (mode == "clamped-max") {
-        m_channelCountMode = ClampedMax;
+        m_newChannelCountMode = ClampedMax;
     } else if (mode == "explicit") {
-        m_channelCountMode = Explicit;
+        m_newChannelCountMode = Explicit;
     } else {
         ASSERT_NOT_REACHED();
     }
 
-    if (m_channelCountMode != oldMode)
-        updateChannelsForInputs();
+    if (m_newChannelCountMode != oldMode)
+        context()->addChangedChannelCountMode(this);
 }
 
 String AudioNode::channelInterpretation()
@@ -548,6 +550,12 @@ void AudioNode::trace(Visitor* visitor)
     visitor->trace(m_inputs);
     visitor->trace(m_outputs);
     EventTargetWithInlineData::trace(visitor);
+}
+
+void AudioNode::updateChannelCountMode()
+{
+    m_channelCountMode = m_newChannelCountMode;
+    updateChannelsForInputs();
 }
 
 } // namespace blink

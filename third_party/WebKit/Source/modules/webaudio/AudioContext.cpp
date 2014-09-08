@@ -673,6 +673,9 @@ void AudioContext::handlePreRenderTasks()
     // It's OK if the tryLock() fails, we'll just take slightly longer to pick up the changes.
     bool mustReleaseLock;
     if (tryLock(mustReleaseLock)) {
+        // Update the channel count mode.
+        updateChangedChannelCountMode();
+
         // Fixup the state of any dirty AudioSummingJunctions and AudioNodeOutputs.
         handleDirtyAudioSummingJunctions();
         handleDirtyAudioNodeOutputs();
@@ -693,6 +696,9 @@ void AudioContext::handlePostRenderTasks()
     // from the render graph (in which case they'll render silence).
     bool mustReleaseLock;
     if (tryLock(mustReleaseLock)) {
+        // Update the channel count mode.
+        updateChangedChannelCountMode();
+
         // Take care of AudioNode tasks where the tryLock() failed previously.
         handleDeferredAudioNodeTasks();
 
@@ -888,6 +894,30 @@ void AudioContext::trace(Visitor* visitor)
     visitor->trace(m_liveNodes);
     visitor->trace(m_liveAudioSummingJunctions);
     EventTargetWithInlineData::trace(visitor);
+}
+
+void AudioContext::addChangedChannelCountMode(AudioNode* node)
+{
+    ASSERT(isGraphOwner());
+    ASSERT(isMainThread());
+    m_deferredCountModeChange.add(node);
+}
+
+void AudioContext::removeChangedChannelCountMode(AudioNode* node)
+{
+    ASSERT(isGraphOwner());
+
+    m_deferredCountModeChange.remove(node);
+}
+
+void AudioContext::updateChangedChannelCountMode()
+{
+    ASSERT(isGraphOwner());
+
+    for (HashSet<AudioNode*>::iterator k = m_deferredCountModeChange.begin(); k != m_deferredCountModeChange.end(); ++k)
+        (*k)->updateChannelCountMode();
+
+    m_deferredCountModeChange.clear();
 }
 
 } // namespace blink
