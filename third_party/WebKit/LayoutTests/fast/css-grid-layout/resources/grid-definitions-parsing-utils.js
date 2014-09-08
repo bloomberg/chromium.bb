@@ -61,3 +61,11 @@ function checkGridAutoFlowSetJSValue(newValue, expectedStyleValue, expectedCompu
     shouldBe("window.getComputedStyle(element, '').getPropertyValue('grid-auto-flow')", "'" + expectedComputedStyleValue + "'");
     document.body.removeChild(element);
 }
+
+function testGridAutoDefinitionsValues(element, computedRowValue, computedColumnValue)
+{
+    window.element = element;
+    var elementID = element.id || "element";
+    shouldBeEqualToString("window.getComputedStyle(" + elementID + ", '').getPropertyValue('grid-auto-rows')", computedRowValue);
+    shouldBeEqualToString("window.getComputedStyle(" + elementID + ", '').getPropertyValue('grid-auto-columns')", computedColumnValue);
+}
