@@ -53,6 +53,7 @@ public:
         , m_savedContext(0)
         , m_filter(0)
         , m_clipper(0)
+        , m_clipperState(RenderSVGResourceClipper::ClipperNotApplied)
         , m_masker(0)
     {
     }
@@ -64,6 +65,7 @@ public:
         , m_savedContext(0)
         , m_filter(0)
         , m_clipper(0)
+        , m_clipperState(RenderSVGResourceClipper::ClipperNotApplied)
         , m_masker(0)
     {
         prepareToRenderSVGContent(object, paintinfo, needsGraphicsContextSave);
@@ -111,7 +113,7 @@ private:
     IntRect m_savedPaintRect;
     RenderSVGResourceFilter* m_filter;
     RenderSVGResourceClipper* m_clipper;
-    ClipperContext m_clipperContext;
+    RenderSVGResourceClipper::ClipperState m_clipperState;
     RenderSVGResourceMasker* m_masker;
 };
 

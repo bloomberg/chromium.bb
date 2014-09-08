@@ -70,7 +70,7 @@ SVGRenderingContext::~SVGRenderingContext()
 
         if (m_clipper) {
             ASSERT(SVGResourcesCache::cachedResourcesForRenderObject(m_object)->clipper() == m_clipper);
-            m_clipper->postApplyStatefulResource(m_object, m_paintInfo->context, m_clipperContext);
+            m_clipper->postApplyStatefulResource(m_object, m_paintInfo->context, m_clipperState);
         }
 
         if (m_masker) {
@@ -163,7 +163,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
 
     RenderSVGResourceClipper* clipper = resources->clipper();
     if (!clipPathOperation && clipper) {
-        if (!clipper->applyStatefulResource(m_object, m_paintInfo->context, m_clipperContext))
+        if (!clipper->applyStatefulResource(m_object, m_paintInfo->context, m_clipperState))
             return;
         m_clipper = clipper;
         m_renderingFlags |= PostApplyResources;

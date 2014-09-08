@@ -1720,7 +1720,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     GraphicsContextStateSaver clipStateSaver(*context, false);
     RenderStyle* style = renderer()->style();
     RenderSVGResourceClipper* resourceClipper = 0;
-    ClipperContext clipperContext;
+    RenderSVGResourceClipper::ClipperState clipperState = RenderSVGResourceClipper::ClipperNotApplied;
 
     // Clip-path, like border radius, must not be applied to the contents of a composited-scrolling container.
     // It must, however, still be applied to the mask layer, so that the compositor can properly mask the
@@ -1755,7 +1755,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
 
                 resourceClipper = toRenderSVGResourceClipper(toRenderSVGResourceContainer(element->renderer()));
                 if (!resourceClipper->applyClippingToContext(renderer(), rootRelativeBounds,
-                    paintingInfo.paintDirtyRect, context, clipperContext)) {
+                    paintingInfo.paintDirtyRect, context, clipperState)) {
                     // No need to post-apply the clipper if this failed.
                     resourceClipper = 0;
                 }
@@ -1908,7 +1908,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     }
 
     if (resourceClipper)
-        resourceClipper->postApplyStatefulResource(renderer(), context, clipperContext);
+        resourceClipper->postApplyStatefulResource(renderer(), context, clipperState);
 }
 
 void RenderLayer::paintLayerByApplyingTransform(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags, const LayoutPoint& translationOffset)

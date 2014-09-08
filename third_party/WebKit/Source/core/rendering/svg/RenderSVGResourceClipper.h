@@ -27,21 +27,14 @@ namespace blink {
 
 class DisplayList;
 
-struct ClipperContext {
-    WTF_MAKE_FAST_ALLOCATED;
-public:
-    enum ClipperState { NotAppliedState, AppliedPathState, AppliedMaskState };
-
-    ClipperContext()
-        : state(NotAppliedState)
-    {
-    }
-
-    ClipperState state;
-};
-
 class RenderSVGResourceClipper FINAL : public RenderSVGResourceContainer {
 public:
+    enum ClipperState {
+        ClipperNotApplied,
+        ClipperAppliedPath,
+        ClipperAppliedMask
+    };
+
     explicit RenderSVGResourceClipper(SVGClipPathElement*);
     virtual ~RenderSVGResourceClipper();
 
@@ -56,13 +49,13 @@ public:
     // FIXME: Filters are also stateful resources that could benefit from having their state managed
     //        on the caller stack instead of the current hashmap. We should look at refactoring these
     //        into a general interface that can be shared.
-    bool applyStatefulResource(RenderObject*, GraphicsContext*&, ClipperContext&);
-    void postApplyStatefulResource(RenderObject*, GraphicsContext*&, ClipperContext&);
+    bool applyStatefulResource(RenderObject*, GraphicsContext*&, ClipperState&);
+    void postApplyStatefulResource(RenderObject*, GraphicsContext*&, ClipperState&);
 
     // clipPath can be clipped too, but don't have a boundingBox or paintInvalidationRect. So we can't call
     // applyResource directly and use the rects from the object, since they are empty for RenderSVGResources
     // FIXME: We made applyClippingToContext public because we cannot call applyResource on HTML elements (it asserts on RenderObject::objectBoundingBox)
-    bool applyClippingToContext(RenderObject*, const FloatRect&, const FloatRect&, GraphicsContext*, ClipperContext&);
+    bool applyClippingToContext(RenderObject*, const FloatRect&, const FloatRect&, GraphicsContext*, ClipperState&);
 
     FloatRect resourceBoundingBox(const RenderObject*);
 

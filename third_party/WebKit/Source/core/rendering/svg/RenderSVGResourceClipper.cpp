@@ -73,14 +73,14 @@ bool RenderSVGResourceClipper::applyResource(RenderObject*, RenderStyle*, Graphi
     return false;
 }
 
-bool RenderSVGResourceClipper::applyStatefulResource(RenderObject* object, GraphicsContext*& context, ClipperContext& clipperContext)
+bool RenderSVGResourceClipper::applyStatefulResource(RenderObject* object, GraphicsContext*& context, ClipperState& clipperState)
 {
     ASSERT(object);
     ASSERT(context);
 
     clearInvalidationMask();
 
-    return applyClippingToContext(object, object->objectBoundingBox(), object->paintInvalidationRectInLocalCoordinates(), context, clipperContext);
+    return applyClippingToContext(object, object->objectBoundingBox(), object->paintInvalidationRectInLocalCoordinates(), context, clipperState);
 }
 
 bool RenderSVGResourceClipper::tryPathOnlyClipping(GraphicsContext* context,
@@ -147,11 +147,11 @@ bool RenderSVGResourceClipper::tryPathOnlyClipping(GraphicsContext* context,
 }
 
 bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, const FloatRect& targetBoundingBox,
-    const FloatRect& paintInvalidationRect, GraphicsContext* context, ClipperContext& clipperContext)
+    const FloatRect& paintInvalidationRect, GraphicsContext* context, ClipperState& clipperState)
 {
     ASSERT(target);
     ASSERT(context);
-    ASSERT(clipperContext.state == ClipperContext::NotAppliedState);
+    ASSERT(clipperState == ClipperNotApplied);
     ASSERT_WITH_SECURITY_IMPLICATION(!needsLayout());
 
     if (paintInvalidationRect.isEmpty() || m_inClipExpansion)
@@ -170,12 +170,12 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, cons
 
     // First, try to apply the clip as a clipPath.
     if (tryPathOnlyClipping(context, animatedLocalTransform, targetBoundingBox)) {
-        clipperContext.state = ClipperContext::AppliedPathState;
+        clipperState = ClipperAppliedPath;
         return true;
     }
 
     // Fall back to masking.
-    clipperContext.state = ClipperContext::AppliedMaskState;
+    clipperState = ClipperAppliedMask;
 
     // Mask layer start
     context->beginTransparencyLayer(1, &paintInvalidationRect);
@@ -186,8 +186,8 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, cons
         // clipPath can also be clipped by another clipPath.
         SVGResources* resources = SVGResourcesCache::cachedResourcesForRenderObject(this);
         RenderSVGResourceClipper* clipPathClipper = resources ? resources->clipper() : 0;
-        ClipperContext clipPathClipperContext;
-        if (clipPathClipper && !clipPathClipper->applyClippingToContext(this, targetBoundingBox, paintInvalidationRect, context, clipPathClipperContext)) {
+        ClipperState clipPathClipperState = ClipperNotApplied;
+        if (clipPathClipper && !clipPathClipper->applyClippingToContext(this, targetBoundingBox, paintInvalidationRect, context, clipPathClipperState)) {
             // FIXME: Awkward state micro-management. Ideally, GraphicsContextStateSaver should
             //   a) pop saveLayers also
             //   b) pop multiple states if needed (similarly to SkCanvas::restoreToCount())
@@ -200,7 +200,7 @@ bool RenderSVGResourceClipper::applyClippingToContext(RenderObject* target, cons
         drawClipMaskContent(context, targetBoundingBox);
 
         if (clipPathClipper)
-            clipPathClipper->postApplyStatefulResource(this, context, clipPathClipperContext);
+            clipPathClipper->postApplyStatefulResource(this, context, clipPathClipperState);
     }
 
     // Masked content layer start.
@@ -215,13 +215,13 @@ void RenderSVGResourceClipper::postApplyResource(RenderObject*, GraphicsContext*
     ASSERT_NOT_REACHED();
 }
 
-void RenderSVGResourceClipper::postApplyStatefulResource(RenderObject*, GraphicsContext*& context, ClipperContext& clipperContext)
+void RenderSVGResourceClipper::postApplyStatefulResource(RenderObject*, GraphicsContext*& context, ClipperState& clipperState)
 {
-    switch (clipperContext.state) {
-    case ClipperContext::AppliedPathState:
+    switch (clipperState) {
+    case ClipperAppliedPath:
         // Path-only clipping, no layers to restore.
         break;
-    case ClipperContext::AppliedMaskState:
+    case ClipperAppliedMask:
         // Transfer content layer -> mask layer (SrcIn)
         context->endLayer();
         // Transfer mask layer -> bg layer (SrcOver)
