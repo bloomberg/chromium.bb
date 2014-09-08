@@ -1159,6 +1159,8 @@ crbug.com/30536 [ Win ] http/tests/xmlhttprequest/origin-exact-matching/29.html 
 crbug.com/30536 [ Win ] http/tests/xmlhttprequest/origin-exact-matching/30.html [ Failure ]
 crbug.com/30536 [ Win ] http/tests/xmlhttprequest/origin-exact-matching/36.html [ Failure ]
 
+crbug.com/411779 [ Win7 ] http/tests/serviceworker/fetch.html [ Slow ]
+
 # switching to apache-win32 flakiness that needs triaging.
 crbug.com/30536 [ Win ] http/tests/htmlimports/import-cors-credentials.html [ Timeout Pass ]
 crbug.com/30536 [ Win ] http/tests/htmlimports/redirect-cross-origin.html [ Timeout Pass ]
