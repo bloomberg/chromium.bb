@@ -201,8 +201,6 @@
       'browser/extensions/api/declarative_webrequest/webrequest_condition.h',
       'browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.cc',
       'browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.h',
-      'browser/extensions/api/declarative_webrequest/webrequest_constants.cc',
-      'browser/extensions/api/declarative_webrequest/webrequest_constants.h',
       'browser/extensions/api/declarative_webrequest/webrequest_rules_registry.cc',
       'browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h',
       'browser/extensions/api/desktop_capture/desktop_capture_api.cc',

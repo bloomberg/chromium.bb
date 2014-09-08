@@ -11,8 +11,8 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "components/url_matcher/url_matcher_factory.h"
+#include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "net/url_request/url_request.h"
 
 using url_matcher::URLMatcherConditionFactory;

@@ -11,7 +11,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/declarative/rules_cache_delegate.h"
 #include "chrome/browser/extensions/api/declarative_content/content_rules_registry.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,6 +18,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
+#include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
