@@ -180,9 +180,6 @@ class AppWindow : public content::NotificationObserver,
     // configured to be always on top. Defaults to false.
     bool always_on_top;
 
-    // If true, the window will be visible on all workspaces. Defaults to false.
-    bool visible_on_all_workspaces;
-
     // The API enables developers to specify content or window bounds. This
     // function combines them into a single, constrained window size.
     gfx::Rect GetInitialWindowBounds(const gfx::Insets& frame_insets) const;

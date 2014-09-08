@@ -161,7 +161,6 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
   virtual void SetContentSizeConstraints(const gfx::Size& min_size,
                                          const gfx::Size& max_size) OVERRIDE;
   virtual bool CanHaveAlphaEnabled() const OVERRIDE;
-  virtual void SetVisibleOnAllWorkspaces(bool always_visible) OVERRIDE;
 
   // web_modal::WebContentsModalDialogHost implementation.
   virtual gfx::NativeView GetHostView() const OVERRIDE;

@@ -56,8 +56,6 @@ const char kAlphaEnabledMissingPermission[] =
     "The alphaEnabled option requires app.window.alpha permission.";
 const char kAlphaEnabledNeedsFrameNone[] =
     "The alphaEnabled option can only be used with \"frame: 'none'\".";
-const char kVisibleOnAllWorkspacesWrongChannel[] =
-    "The visibleOnAllWorkspaces option requires dev channel or newer.";
 }  // namespace app_window_constants
 
 const char kNoneFrameOption[] = "none";
@@ -260,15 +258,6 @@ bool AppWindowCreateFunction::RunAsync() {
 
     if (options->focused.get())
       create_params.focused = *options->focused.get();
-
-    if (options->visible_on_all_workspaces.get()) {
-      if (AppsClient::Get()->IsCurrentChannelOlderThanDev()) {
-        error_ = app_window_constants::kVisibleOnAllWorkspacesWrongChannel;
-        return false;
-      }
-      create_params.visible_on_all_workspaces =
-          *options->visible_on_all_workspaces.get();
-    }
 
     if (options->type != app_window::WINDOW_TYPE_PANEL) {
       switch (options->state) {

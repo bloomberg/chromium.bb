@@ -263,10 +263,6 @@ namespace app.window {
 
     // If true, the window will be focused when created. Defaults to true.
     boolean? focused;
-
-    // If true, the window will be visible on all workspaces.
-    // This is only available on dev channel.
-    boolean? visibleOnAllWorkspaces;
   };
 
   // Called in the creating window (parent) before the load event is called in
@@ -373,11 +369,6 @@ namespace app.window {
     // TODO(jackhou): Document this properly before going to stable.
     [nodoc] static boolean alphaEnabled();
 
-    // For platforms that support multiple workspaces, is this window visible on
-    // all of them?
-    // This is only available on dev channel.
-    static void setVisibleOnAllWorkspaces(boolean alwaysVisible);
-
     // The JavaScript 'window' object for the created child.
     [instanceOf=Window] object contentWindow;
 
@@ -435,10 +426,6 @@ namespace app.window {
     // Gets an $(ref:AppWindow) with the given id. If no window with the given id
     // exists null is returned. This method is new in Chrome 33.
     [nocompile] static AppWindow get(DOMString id);
-
-    // Does the current platform support windows being visible on all
-    // workspaces?
-    [nocompile] static boolean canSetVisibleOnAllWorkspaces();
   };
 
   interface Events {

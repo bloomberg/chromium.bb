@@ -401,8 +401,4 @@ bool NativeAppWindowViews::CanHaveAlphaEnabled() const {
   return widget_->IsTranslucentWindowOpacitySupported();
 }
 
-void NativeAppWindowViews::SetVisibleOnAllWorkspaces(bool always_visible) {
-  widget_->SetVisibleOnAllWorkspaces(always_visible);
-}
-
 }  // namespace apps

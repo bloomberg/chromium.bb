@@ -197,18 +197,6 @@ class AppCurrentWindowInternalSetAlwaysOnTopFunction
   virtual bool RunWithWindow(AppWindow* window) OVERRIDE;
 };
 
-class AppCurrentWindowInternalSetVisibleOnAllWorkspacesFunction
-    : public AppCurrentWindowInternalExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION(
-      "app.currentWindowInternal.setVisibleOnAllWorkspaces",
-      APP_CURRENTWINDOWINTERNAL_SETVISIBLEONALLWORKSPACES)
-
- protected:
-  virtual ~AppCurrentWindowInternalSetVisibleOnAllWorkspacesFunction() {}
-  virtual bool RunWithWindow(AppWindow* window) OVERRIDE;
-};
-
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_APP_CURRENT_WINDOW_INTERNAL_APP_CURRENT_WINDOW_INTERNAL_API_H_
