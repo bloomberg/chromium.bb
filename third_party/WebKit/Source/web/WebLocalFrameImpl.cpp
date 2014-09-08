@@ -96,6 +96,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/editing/htmlediting.h"
 #include "core/editing/markup.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/frame/Console.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/FrameHost.h"
@@ -874,9 +875,16 @@ void WebLocalFrameImpl::sendPings(const WebNode& linkNode, const WebURL& destina
 
 bool WebLocalFrameImpl::isLoading() const
 {
-    if (!frame())
+    if (!frame() || !frame()->document())
         return false;
-    return frame()->loader().isLoading();
+    return frame()->loader().stateMachine()->isDisplayingInitialEmptyDocument() || !frame()->document()->loadEventFinished();
+}
+
+bool WebLocalFrameImpl::isResourceLoadInProgress() const
+{
+    if (!frame() || !frame()->document())
+        return false;
+    return frame()->document()->fetcher()->requestCount();
 }
 
 void WebLocalFrameImpl::stopLoading()

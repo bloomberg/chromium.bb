@@ -902,13 +902,6 @@ void FrameLoader::notifyIfInitialDocumentAccessed()
     }
 }
 
-bool FrameLoader::isLoading() const
-{
-    if (m_provisionalDocumentLoader)
-        return true;
-    return m_documentLoader && m_documentLoader->isLoading();
-}
-
 void FrameLoader::commitProvisionalLoad()
 {
     ASSERT(client()->hasWebView());

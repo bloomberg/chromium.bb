@@ -37,6 +37,14 @@ public:
     virtual void navigateToSandboxedMarkup(const WebData& markup) = 0;
 
     virtual void sendPings(const WebNode& linkNode, const WebURL& destinationURL) = 0;
+
+
+    // Navigation State -------------------------------------------------------
+
+    // Returns true if any resource load is currently in progress. Exposed
+    // primarily for use in layout tests. You probably want isLoading()
+    // instead.
+    virtual bool isResourceLoadInProgress() const = 0;
 };
 
 } // namespace blink

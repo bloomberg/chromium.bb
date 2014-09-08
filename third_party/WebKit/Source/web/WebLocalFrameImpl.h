@@ -141,6 +141,7 @@ public:
         bool replace) OVERRIDE;
     virtual void sendPings(const WebNode& linkNode, const WebURL& destinationURL) OVERRIDE;
     virtual bool isLoading() const OVERRIDE;
+    virtual bool isResourceLoadInProgress() const OVERRIDE;
     virtual void stopLoading() OVERRIDE;
     virtual WebDataSource* provisionalDataSource() const OVERRIDE;
     virtual WebDataSource* dataSource() const OVERRIDE;

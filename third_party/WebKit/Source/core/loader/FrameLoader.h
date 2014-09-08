@@ -114,8 +114,6 @@ public:
     // waiting to notify would allow a URL spoof.
     void notifyIfInitialDocumentAccessed();
 
-    bool isLoading() const;
-
     DocumentLoader* documentLoader() const { return m_documentLoader.get(); }
     DocumentLoader* policyDocumentLoader() const { return m_policyDocumentLoader.get(); }
     DocumentLoader* provisionalDocumentLoader() const { return m_provisionalDocumentLoader.get(); }
