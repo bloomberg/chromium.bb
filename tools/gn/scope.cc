@@ -307,8 +307,11 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
 
     if (!options.clobber_existing) {
       const Template* existing_template = dest->GetTemplate(i->first);
-      if (existing_template) {
-        // Rule present in both the source and the dest.
+      // Since templates are refcounted, we can check if it's the same one by
+      // comparing pointers.
+      if (existing_template && i->second != existing_template) {
+        // Rule present in both the source and the dest, and they're not the
+        // same one.
         std::string desc_string(desc_for_err);
         *err = Err(node_for_err, "Template collision.",
             "This " + desc_string + " contains a template \"" +

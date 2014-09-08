@@ -340,6 +340,8 @@ Value FunctionCallNode::Execute(Scope* scope, Err* err) const {
 }
 
 LocationRange FunctionCallNode::GetRange() const {
+  if (function_.type() == Token::INVALID)
+    return LocationRange();  // This will be null in some tests.
   if (block_)
     return function_.range().Union(block_->GetRange());
   return function_.range().Union(args_->GetRange());

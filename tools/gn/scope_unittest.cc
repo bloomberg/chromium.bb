@@ -6,6 +6,7 @@
 #include "tools/gn/input_file.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/scope.h"
+#include "tools/gn/template.h"
 #include "tools/gn/test_with_scope.h"
 
 namespace {
@@ -34,10 +35,19 @@ TEST(Scope, NonRecursiveMergeTo) {
   LiteralNode assignment;
   assignment.set_value(assignment_token);
 
+  // Add some values to the scope.
   Value old_value(&assignment, "hello");
   setup.scope()->SetValue("v", old_value, &assignment);
   base::StringPiece private_var_name("_private");
   setup.scope()->SetValue(private_var_name, old_value, &assignment);
+
+  // Add some templates to the scope.
+  FunctionCallNode templ_definition;
+  scoped_refptr<Template> templ(new Template(setup.scope(), &templ_definition));
+  setup.scope()->AddTemplate("templ", templ.get());
+  scoped_refptr<Template> private_templ(
+      new Template(setup.scope(), &templ_definition));
+  setup.scope()->AddTemplate("_templ", private_templ.get());
 
   // Detect collisions of values' values.
   {
@@ -49,6 +59,20 @@ TEST(Scope, NonRecursiveMergeTo) {
     EXPECT_FALSE(setup.scope()->NonRecursiveMergeTo(
         &new_scope, Scope::MergeOptions(),
         &assignment, "error", &err));
+    EXPECT_TRUE(err.has_error());
+  }
+
+  // Template name collisions.
+  {
+    Scope new_scope(setup.settings());
+
+    scoped_refptr<Template> new_templ(
+        new Template(&new_scope, &templ_definition));
+    new_scope.AddTemplate("templ", new_templ.get());
+
+    Err err;
+    EXPECT_FALSE(setup.scope()->NonRecursiveMergeTo(
+        &new_scope, Scope::MergeOptions(), &assignment, "error", &err));
     EXPECT_TRUE(err.has_error());
   }
 
@@ -70,6 +94,26 @@ TEST(Scope, NonRecursiveMergeTo) {
     EXPECT_TRUE(old_value == *found_value);
   }
 
+  // Clobber flag for templates.
+  {
+    Scope new_scope(setup.settings());
+
+    scoped_refptr<Template> new_templ(
+        new Template(&new_scope, &templ_definition));
+    new_scope.AddTemplate("templ", new_templ.get());
+    Scope::MergeOptions options;
+    options.clobber_existing = true;
+
+    Err err;
+    EXPECT_TRUE(setup.scope()->NonRecursiveMergeTo(
+        &new_scope, options, &assignment, "error", &err));
+    EXPECT_FALSE(err.has_error());
+
+    const Template* found_value = new_scope.GetTemplate("templ");
+    ASSERT_TRUE(found_value);
+    EXPECT_TRUE(templ.get() == found_value);
+  }
+
   // Don't flag values that technically collide but have the same value.
   {
     Scope new_scope(setup.settings());
@@ -77,14 +121,26 @@ TEST(Scope, NonRecursiveMergeTo) {
     new_scope.SetValue("v", new_value, &assignment);
 
     Err err;
-    Scope::MergeOptions options;
-    options.clobber_existing = true;
     EXPECT_TRUE(setup.scope()->NonRecursiveMergeTo(
-        &new_scope, options, &assignment, "error", &err));
+        &new_scope, Scope::MergeOptions(), &assignment, "error", &err));
     EXPECT_FALSE(err.has_error());
   }
 
-  // Copy private values.
+  // Templates that technically collide but are the same.
+  {
+    Scope new_scope(setup.settings());
+
+    scoped_refptr<Template> new_templ(
+        new Template(&new_scope, &templ_definition));
+    new_scope.AddTemplate("templ", templ.get());
+
+    Err err;
+    EXPECT_TRUE(setup.scope()->NonRecursiveMergeTo(
+        &new_scope, Scope::MergeOptions(), &assignment, "error", &err));
+    EXPECT_FALSE(err.has_error());
+  }
+
+  // Copy private values and templates.
   {
     Scope new_scope(setup.settings());
 
@@ -93,9 +149,10 @@ TEST(Scope, NonRecursiveMergeTo) {
         &new_scope, Scope::MergeOptions(), &assignment, "error", &err));
     EXPECT_FALSE(err.has_error());
     EXPECT_TRUE(new_scope.GetValue(private_var_name));
+    EXPECT_TRUE(new_scope.GetTemplate("_templ"));
   }
 
-  // Skip private values.
+  // Skip private values and templates.
   {
     Scope new_scope(setup.settings());
 
@@ -106,6 +163,7 @@ TEST(Scope, NonRecursiveMergeTo) {
         &new_scope, options, &assignment, "error", &err));
     EXPECT_FALSE(err.has_error());
     EXPECT_FALSE(new_scope.GetValue(private_var_name));
+    EXPECT_FALSE(new_scope.GetTemplate("_templ"));
   }
 
   // Don't mark used.
