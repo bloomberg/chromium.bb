@@ -21,6 +21,8 @@ class WebSocketHandleImpl : public blink::WebSocketHandle {
   explicit WebSocketHandleImpl(NetworkService* network_service);
 
  private:
+  friend class WebSocketClientImpl;
+
   virtual ~WebSocketHandleImpl();
 
   // blink::WebSocketHandle methods:
@@ -35,6 +37,9 @@ class WebSocketHandleImpl : public blink::WebSocketHandle {
   virtual void flowControl(int64_t quota) OVERRIDE;
   virtual void close(unsigned short code,
                      const blink::WebString& reason) OVERRIDE;
+
+  // Called when the socket is closed.
+  void Disconnect();
 
   WebSocketPtr web_socket_;
   scoped_ptr<WebSocketClientImpl> client_;

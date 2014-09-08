@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "mojo/services/html_viewer/blink_basic_type_converters.h"
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
 #include "third_party/WebKit/public/platform/WebSerializedOrigin.h"
 #include "third_party/WebKit/public/platform/WebSocketHandleClient.h"
@@ -21,29 +22,6 @@ using blink::WebURL;
 using blink::WebVector;
 
 namespace mojo {
-
-template<>
-struct TypeConverter<String, WebString> {
-  static String Convert(const WebString& str) {
-    return String(str.utf8());
-  }
-};
-template<>
-struct TypeConverter<WebString, String> {
-  static WebString Convert(const String& str) {
-    return WebString::fromUTF8(str.get());
-  }
-};
-
-template<typename T, typename U>
-struct TypeConverter<Array<T>, WebVector<U> > {
-  static Array<T> Convert(const WebVector<U>& vector) {
-    Array<T> array(vector.size());
-    for (size_t i = 0; i < vector.size(); ++i)
-      array[i] = TypeConverter<T, U>::Convert(vector[i]);
-    return array.Pass();
-  }
-};
 
 template<>
 struct TypeConverter<WebSocket::MessageType, WebSocketHandle::MessageType> {
@@ -93,11 +71,17 @@ class WebSocketClientImpl : public InterfaceImpl<WebSocketClient> {
       bool fail,
       const String& selected_subprotocol,
       const String& extensions) OVERRIDE {
-    client_->didConnect(handle_,
-                        fail,
-                        selected_subprotocol.To<WebString>(),
-                        extensions.To<WebString>());
+    blink::WebSocketHandleClient* client = client_;
+    WebSocketHandleImpl* handle = handle_;
+    if (fail)
+      handle->Disconnect();  // deletes |this|
+    client->didConnect(handle,
+                       fail,
+                       selected_subprotocol.To<WebString>(),
+                       extensions.To<WebString>());
+    // |handle| can be deleted here.
   }
+
   virtual void DidReceiveData(bool fin,
                               WebSocket::MessageType type,
                               ScopedDataPipeConsumerHandle data_pipe) OVERRIDE {
@@ -112,11 +96,30 @@ class WebSocketClientImpl : public InterfaceImpl<WebSocketClient> {
                             ConvertTo<WebSocketHandle::MessageType>(type),
                             data_ptr,
                             data.size());
+    // |handle| can be deleted here.
   }
 
   virtual void DidReceiveFlowControl(int64_t quota) OVERRIDE {
     client_->didReceiveFlowControl(handle_, quota);
-    // |handle_| can be deleted here.
+    // |handle| can be deleted here.
+  }
+
+  virtual void DidFail(const String& message) OVERRIDE {
+    blink::WebSocketHandleClient* client = client_;
+    WebSocketHandleImpl* handle = handle_;
+    handle->Disconnect();  // deletes |this|
+    client->didFail(handle, message.To<WebString>());
+    // |handle| can be deleted here.
+  }
+
+  virtual void DidClose(bool was_clean,
+                        uint16_t code,
+                        const String& reason) OVERRIDE {
+    blink::WebSocketHandleClient* client = client_;
+    WebSocketHandleImpl* handle = handle_;
+    handle->Disconnect();  // deletes |this|
+    client->didClose(handle, was_clean, code, reason.To<WebString>());
+    // |handle| can be deleted here.
   }
 
   WebSocketHandleImpl* handle_;
@@ -186,8 +189,12 @@ void WebSocketHandleImpl::flowControl(int64_t quota) {
 }
 
 void WebSocketHandleImpl::close(unsigned short code, const WebString& reason) {
-  did_close_ = true;
   web_socket_->Close(code, reason.utf8());
+}
+
+void WebSocketHandleImpl::Disconnect() {
+  did_close_ = true;
+  client_.reset();
 }
 
 }  // namespace mojo

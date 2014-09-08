@@ -98,6 +98,8 @@ ChannelState WebSocketEventHandler::OnAddChannelResponse(
     const std::string& selected_protocol,
     const std::string& extensions) {
   client_->DidConnect(fail, selected_protocol, extensions);
+  if (fail)
+    return WebSocketEventInterface::CHANNEL_DELETED;
   return WebSocketEventInterface::CHANNEL_ALIVE;
 }
 
@@ -132,13 +134,15 @@ ChannelState WebSocketEventHandler::OnFlowControl(int64 quota) {
 }
 
 ChannelState WebSocketEventHandler::OnDropChannel(bool was_clean,
-                                          uint16 code,
-                                          const std::string& reason) {
-  return WebSocketEventInterface::CHANNEL_ALIVE;
+                                                  uint16 code,
+                                                  const std::string& reason) {
+  client_->DidClose(was_clean, code, reason);
+  return WebSocketEventInterface::CHANNEL_DELETED;
 }
 
 ChannelState WebSocketEventHandler::OnFailChannel(const std::string& message) {
-  return WebSocketEventInterface::CHANNEL_ALIVE;
+  client_->DidFail(message);
+  return WebSocketEventInterface::CHANNEL_DELETED;
 }
 
 ChannelState WebSocketEventHandler::OnStartOpeningHandshake(
@@ -156,8 +160,8 @@ ChannelState WebSocketEventHandler::OnSSLCertificateError(
     const GURL& url,
     const net::SSLInfo& ssl_info,
     bool fatal) {
-  // The above method is always asynchronous.
-  return WebSocketEventInterface::CHANNEL_ALIVE;
+  client_->DidFail("SSL Error");
+  return WebSocketEventInterface::CHANNEL_DELETED;
 }
 
 }  // namespace mojo
@@ -199,10 +203,9 @@ void WebSocketImpl::FlowControl(int64_t quota) {
   channel_->SendFlowControl(quota);
 }
 
-void WebSocketImpl::Close(int16_t code, const String& reason) {
+void WebSocketImpl::Close(uint16_t code, const String& reason) {
   DCHECK(channel_);
   channel_->StartClosingHandshake(code, reason);
 }
-
 
 }  // namespace mojo

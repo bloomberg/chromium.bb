@@ -37,7 +37,7 @@ class WebSocketImpl : public InterfaceImpl<WebSocket> {
                     WebSocket::MessageType type,
                     ScopedDataPipeConsumerHandle data) OVERRIDE;
   virtual void FlowControl(int64_t quota) OVERRIDE;
-  virtual void Close(int16_t code, const String& reason) OVERRIDE;
+  virtual void Close(uint16_t code, const String& reason) OVERRIDE;
 
   // The channel we use to send events to the network.
   scoped_ptr<net::WebSocketChannel> channel_;

@@ -28,6 +28,8 @@
         'third_party/WebKit'
       ],
       'sources': [
+        'services/html_viewer/blink_basic_type_converters.cc',
+        'services/html_viewer/blink_basic_type_converters.h',
         'services/html_viewer/blink_input_events_type_converters.cc',
         'services/html_viewer/blink_input_events_type_converters.h',
         'services/html_viewer/blink_platform_impl.cc',

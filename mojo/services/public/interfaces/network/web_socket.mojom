@@ -12,13 +12,13 @@ interface WebSocket {
     TEXT,
     BINARY
   };
-  const int16 kAbnormalCloseCode = 1006;  // stolen from websocket_bridge
+  const uint16 kAbnormalCloseCode = 1006;  // stolen from websocket_bridge
 
   Connect(
       string url, string[] protocols, string origin, WebSocketClient client);
   Send(bool fin, MessageType type, handle<data_pipe_consumer> data);
   FlowControl(int64 quota);
-  Close(int16 code, string reason);
+  Close(uint16 code, string reason);
 };
 
 interface WebSocketClient {
@@ -26,21 +26,14 @@ interface WebSocketClient {
   DidReceiveData(
       bool fin, WebSocket.MessageType type, handle<data_pipe_consumer> data);
   DidReceiveFlowControl(int64 quota);
+  DidFail(string message);
+  DidClose(bool was_clean, uint16 code, string reason);
 
-  // TODO(mpcomplete): add these methods from blink:
-  // void didStartOpeningHandshake(WebSocketHandle*, const
-  //    WebSocketHandshakeRequestInfo&) = 0;
-  //
-  // void didFinishOpeningHandshake(WebSocketHandle*, const
-  //    WebSocketHandshakeResponseInfo&) = 0;
-  //
-  // void didFail(WebSocketHandle* /* handle */, const WebString&
-  //    message) = 0;
-  //
-  // void didClose(WebSocketHandle* /* handle */, bool wasClean,
-  //    unsigned short code, const WebString& reason) = 0;
-  //
-  // void didStartClosingHandshake(WebSocketHandle*) = 0;
+  // Blink has 3 extra methods that we don't implement, because they are used
+  // for the inspector:
+  // didStartOpeningHandshake
+  // didFinishOpeningHandshake
+  // didStartClosingHandshake
 };
 
 }
