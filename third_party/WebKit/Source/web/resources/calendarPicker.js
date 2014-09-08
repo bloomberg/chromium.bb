@@ -3519,6 +3519,7 @@ CalendarTableView.prototype.updateCells = function() {
     var currentMonth = this.calendarPicker.currentMonth();
     var firstDayInCurrentMonth = currentMonth.firstDay().valueOf();
     var lastDayInCurrentMonth = currentMonth.lastDay().valueOf();
+    var activeDayCell = null;
     for (var dayString in this._dayCells) {
         var dayCell = this._dayCells[dayString];
         var day = dayCell.day;
@@ -3527,7 +3528,7 @@ CalendarTableView.prototype.updateCells = function() {
         var isHighlighted = day >= firstDayInHighlight && day <= lastDayInHighlight;
         dayCell.setHighlighted(isHighlighted);
         if (isHighlighted && firstDayInHighlight == lastDayInHighlight)
-            this.element.setAttribute("aria-activedescendant", dayCell.element.id);
+            activeDayCell = dayCell;
         dayCell.setIsInCurrentMonth(day >= firstDayInCurrentMonth && day <= lastDayInCurrentMonth);
         dayCell.setDisabled(!this.calendarPicker.isValidDay(day));
     }
@@ -3539,6 +3540,13 @@ CalendarTableView.prototype.updateCells = function() {
             weekNumberCell.setHighlighted(highlight && highlight.equals(week));
             weekNumberCell.setDisabled(!this.calendarPicker.isValid(week));
         }
+    }
+    if (activeDayCell) {
+        // Ensure a renderer because an element with no renderer doesn't post
+        // activedescendant events. This shouldn't run in the above |for| loop
+        // to avoid CSS transition.
+        activeDayCell.element.offsetLeft;
+        this.element.setAttribute("aria-activedescendant", activeDayCell.element.id);
     }
 };
 

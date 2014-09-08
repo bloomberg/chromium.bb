@@ -16,9 +16,11 @@ window.accessibilityController.setNotificationListener(function(axnode, type) {
         debug('Focused: ' + accessibilityController.focusedElement.description);
     } else if (type == 'ActiveDescendantChanged') {
         testPassed('Received ActiveDescendantChanged');
-        finishJSTest();
+        if (++activeDescendantCounter >= 2)
+            finishJSTest();
     }
 });
+var activeDescendantCounter = 0;
 var date1 = document.getElementById('date1');
 openPicker(date1, test1);
 
