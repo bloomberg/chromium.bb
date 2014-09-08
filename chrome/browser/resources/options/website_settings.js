@@ -39,7 +39,7 @@ cr.define('options', function() {
       $('website-settings-overlay-confirm').onclick =
           PageManager.closeOverlay.bind(PageManager);
 
-      $('resourceType').onchange = function() {
+      $('resourceType').onchange = function(event) {
         var target = event.target;
         assert(target.tagName == 'SELECT');
         if (target.value == 'storage')
