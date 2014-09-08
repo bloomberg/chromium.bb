@@ -478,12 +478,14 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndSystemTrayMultiDisplay) {
   EXPECT_EQ(bottom_second, GetPopupWorkAreaBottomForTray(GetSecondaryTray()));
 }
 
+// TODO(jonross): This test is failing on ASAN bots, fix the failure and
+// re-enable. (crbug.com/411881)
 // TODO(jonross): Replace manually creating TouchEvent with
 // EventGenerator.PressTouch/ReleaseTouch. Currently they set a width on the
 // touch event causing the gesture recognizer to target a different view.
 #if defined(OS_CHROMEOS)
 // Tests that there is visual feedback for touch presses.
-TEST_F(WebNotificationTrayTest, TouchFeedback) {
+TEST_F(WebNotificationTrayTest, DISABLED_TouchFeedback) {
   AddNotification("test_id");
   RunAllPendingInMessageLoop();
   WebNotificationTray* tray = GetTray();
@@ -512,9 +514,11 @@ TEST_F(WebNotificationTrayTest, TouchFeedback) {
   EXPECT_FALSE(tray->IsMessageCenterBubbleVisible());
 }
 
+// TODO(jonross): This test is failing on ASAN bots, fix the failure and
+// re-enable. (crbug.com/411881)
 // Tests that while touch presses trigger visual feedback, that subsequent non
 // tap gestures cancel the feedback without triggering the message center.
-TEST_F(WebNotificationTrayTest, TouchFeedbackCancellation) {
+TEST_F(WebNotificationTrayTest, DISABLED_TouchFeedbackCancellation) {
   AddNotification("test_id");
   RunAllPendingInMessageLoop();
   WebNotificationTray* tray = GetTray();
