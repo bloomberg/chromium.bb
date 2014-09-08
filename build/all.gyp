@@ -1126,6 +1126,7 @@
               'dependencies': [
                 '../base/base.gyp:base_unittests',
                 '../chrome/chrome.gyp:browser_tests',
+		'../chrome/chrome.gyp:sync_integration_tests', 
                 '../chrome/chrome.gyp:crash_service',
                 '../chrome/chrome.gyp:gcapi_dll',
                 '../chrome/chrome.gyp:pack_policy_templates',

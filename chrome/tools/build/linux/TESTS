@@ -1,2 +1,3 @@
 interactive_ui_tests
 browser_tests
+sync_integration_tests
