@@ -1,6 +1,6 @@
 {
   "exclusions": [
-    "build/.*gyp[i]?",
+    ".*gyp[i]?",
     "build/android/pylib",
     "build/compiler_version.py",
     "build/get_landmines.py",
