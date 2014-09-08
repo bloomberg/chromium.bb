@@ -459,6 +459,10 @@ void ManageProfileHandler::RequestHasProfileShortcuts(
   if (profile_index == std::string::npos)
     return;
 
+  // Don't show the add/remove desktop shortcut button in the single user case.
+  if (cache.GetNumberOfProfiles() <= 1)
+    return;
+
   const base::FilePath profile_path =
       cache.GetPathOfProfileAtIndex(profile_index);
   ProfileShortcutManager* shortcut_manager =
