@@ -187,61 +187,6 @@ div.splitter {
   z-index: 500;  /* Must be below the contextmenu (600). */
 }
 
-#navigation-list {
-  display: flex;
-  flex: auto;
-  flex-direction: column;
-}
-
-#navigation-list > * {
-  height: 40px;
-  padding: 0 5px;
-}
-
-#navigation-list > .spacer {
-  flex: none;
-}
-
-#navigation-list > .accepts,
-#navigation-list > [lead][selected],
-#navigation-list > [lead],
-#navigation-list > [selected],
-#navigation-list > [anchor] {
-  background-color: rgb(225, 225, 225);
-}
-
-#navigation-list:focus > .accepts,
-#navigation-list:focus > [lead][selected],
-#navigation-list:focus > [lead],
-#navigation-list:focus > [selected],
-#navigation-list:focus > [anchor] {
-  background-color: rgb(66, 129, 244);
-  color: white;
-}
-
-#navigation-list li.root-item {
-  align-items: center;
-  display: flex;
-  flex: none;
-  line-height: 22px;  /* To accommodate for icons. */
-  padding-left: 11px;
-}
-
-#navigation-list li.root-item > .root-label {
-  flex: auto;
-  margin: 0 2px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-#navigation-list .volume-icon {
-  background-repeat: no-repeat;
-  flex: none;
-  height: 24px;
-  width: 24px;
-}
-
 #middlebar-header {
   -webkit-border-end: 1px solid rgba(20, 20, 22, 0.1);
   -webkit-box-sizing: border-box;
@@ -315,15 +260,8 @@ div.splitter {
 #directory-tree .tree-row[lead][selected],
 #directory-tree .tree-row[lead],
 #directory-tree .tree-row[selected],
-#directory-tree .tree-row[anchor] {
-  background-color: rgb(204, 204, 204);
-}
-
-#directory-tree .tree-item.accepts > .tree-row,
-#directory-tree .tree-row[lead][selected],
-#directory-tree .tree-row[lead],
-#directory-tree .tree-row[selected],
-#directory-tree .tree-row[anchor] {
+#directory-tree .tree-row[anchor],
+#directory-tree .tree-row:active {
   background-color: rgb(225, 225, 225);
 }
 
@@ -838,7 +776,9 @@ body[type='full-page'] .detail-name .detail-icon {
 }
 
 #list-container list > li[selected],
+#list-container list > li:active,
 #list-container grid > li[selected],
+#list-container grid > li:active,
 #default-actions-list > li[selected] {
   background-color: rgb(225, 225, 225);
 }
@@ -870,7 +810,6 @@ body[type='full-page'] .detail-name .detail-icon {
 }
 
 #directory-tree .tree-item.accepts > .tree-row,
-#navigation-list > .accepts,
 #list-container list > li.accepts,
 #list-container grid > li.accepts {
   -webkit-animation: acceptsBlink 200ms linear 1s 3;

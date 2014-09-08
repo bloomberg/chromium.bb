@@ -237,7 +237,7 @@ menu.chrome-menu > menuitem[disabled] {
 }
 
 menu.chrome-menu > menuitem:not([disabled])[selected],
-menu.chrome-menu > menuitem:not([disabled])[selected]:active {
+menu.chrome-menu > menuitem:not([disabled]):active {
   background-color: rgb(66, 129, 244);
   color: white;
 }
