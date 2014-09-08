@@ -988,7 +988,19 @@
             'base/keyboard_event_counter.h',
           ],
         }],
-      ],
+      ],  # conditions
+      'target_conditions': [
+        ['OS == "ios" and _toolset != "host"', {
+          'sources/': [
+            # Pull in specific Mac files for iOS (which have been filtered out
+            # by file name rules).
+            ['include', '^base/mac/avfoundation_glue\\.h$'],
+            ['include', '^base/mac/avfoundation_glue\\.mm$'],
+            ['include', '^base/mac/coremedia_glue\\.h$'],
+            ['include', '^base/mac/coremedia_glue\\.mm$'],
+          ],
+        }],
+      ],  # target_conditions
     },
     {
       # GN version: //media/mojo/interfaces

@@ -340,6 +340,12 @@ component("media") {
     ]
   }
 
+  if (is_ios) {
+    deps += [
+      "//media/base/mac",
+    ]
+  }
+
   if (is_win) {
     libs += [
       "mf.lib",
