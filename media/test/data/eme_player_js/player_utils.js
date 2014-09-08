@@ -59,14 +59,10 @@ PlayerUtils.registerEMEEventListeners = function(player) {
     try {
       var session = message.target.mediaKeys.createSession(
           message.contentType, message.initData);
-      if (PROMISES_SUPPORTED) {
-        session.then(addMediaKeySessionListeners)
-            .catch (function(error) {
-              Utils.failTest(error, KEY_ERROR);
-            });
-      } else {
-        addMediaKeySessionListeners(session);
-      }
+      session.then(addMediaKeySessionListeners)
+          .catch(function(error) {
+            Utils.failTest(error, KEY_ERROR);
+          });
     } catch (e) {
       Utils.failTest(e);
     }
@@ -74,15 +70,11 @@ PlayerUtils.registerEMEEventListeners = function(player) {
   this.registerDefaultEventListeners(player);
   try {
     Utils.timeLog('Setting video media keys: ' + player.testConfig.keySystem);
-    if (PROMISES_SUPPORTED) {
-      MediaKeys.create(player.testConfig.keySystem).then(function(mediaKeys) {
-        player.video.setMediaKeys(mediaKeys);
-      }).catch(function(error) {
-        Utils.failTest(error, NOTSUPPORTEDERROR);
-      });
-    } else {
-      player.video.setMediaKeys(new MediaKeys(player.testConfig.keySystem));
-    }
+    MediaKeys.create(player.testConfig.keySystem).then(function(mediaKeys) {
+      player.video.setMediaKeys(mediaKeys);
+    }).catch(function(error) {
+      Utils.failTest(error, NOTSUPPORTEDERROR);
+    });
   } catch (e) {
     Utils.failTest(e);
   }

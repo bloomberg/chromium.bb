@@ -23,14 +23,9 @@ WidevinePlayer.prototype.onMessage = function(message) {
   function onSuccess(response) {
     var key = new Uint8Array(response);
     Utils.timeLog('Update media key session with license response.', key);
-    if (PROMISES_SUPPORTED) {
-      mediaKeySession.update(key).catch(function(error) {
-        Utils.failTest(error, KEY_ERROR);
-      });
-    } else {
-      mediaKeySession.update(key);
-    }
-
+    mediaKeySession.update(key).catch(function(error) {
+      Utils.failTest(error, KEY_ERROR);
+    });
   }
   Utils.sendRequest('POST',
                     'arraybuffer',

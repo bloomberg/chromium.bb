@@ -23,11 +23,7 @@ ClearKeyPlayer.prototype.onMessage = function(message) {
       Utils.getInitDataFromMessage(message, this.testConfig.mediaType, true);
   var key = Utils.getDefaultKey(this.testConfig.forceInvalidResponse);
   var jwkSet = Utils.createJWKData(initData, key);
-  if (PROMISES_SUPPORTED) {
-    message.target.update(jwkSet).catch(function(error) {
-      Utils.failTest(error, KEY_ERROR);
-    });
-  } else {
-    message.target.update(jwkSet);
-  }
+  message.target.update(jwkSet).catch(function(error) {
+    Utils.failTest(error, KEY_ERROR);
+  });
 };

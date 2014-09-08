@@ -56,13 +56,10 @@ EME_VERSIONS_OPTIONS[EME_UNPREFIXED_VERSION] = EME_UNPREFIXED_VERSION;
 EME_VERSIONS_OPTIONS[EME_PREFIXED_VERSION] = EME_PREFIXED_VERSION;
 
 var EME_DISABLED_OPTIONS = [];
-var PROMISES_SUPPORTED = false;
 if (!document.createElement('video').webkitAddKey)
   EME_DISABLED_OPTIONS.push(EME_PREFIXED_VERSION);
 if (!document.createElement('video').setMediaKeys)
   EME_DISABLED_OPTIONS.push(EME_UNPREFIXED_VERSION);
-else
-  PROMISES_SUPPORTED = MediaKeys.create != undefined;
 
 // Global document elements ID's.
 var VIDEO_ELEMENT_ID = 'video';
