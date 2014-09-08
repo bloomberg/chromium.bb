@@ -18,9 +18,8 @@ PaintInvalidationState::PaintInvalidationState(const RenderView& renderView)
     , m_cachedOffsetsEnabled(true)
     , m_forceCheckForPaintInvalidation(false)
     , m_paintInvalidationContainer(*renderView.containerForPaintInvalidation())
-    , m_renderer(renderView)
 {
-    bool establishesPaintInvalidationContainer = &m_renderer == &m_paintInvalidationContainer;
+    bool establishesPaintInvalidationContainer = renderView == m_paintInvalidationContainer;
     if (!establishesPaintInvalidationContainer) {
         if (!renderView.supportsPaintInvalidationStateCachedOffsets()) {
             m_cachedOffsetsEnabled = false;
@@ -39,11 +38,10 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& nex
     , m_cachedOffsetsEnabled(true)
     , m_forceCheckForPaintInvalidation(next.m_forceCheckForPaintInvalidation)
     , m_paintInvalidationContainer(paintInvalidationContainer)
-    , m_renderer(renderer)
 {
     // FIXME: SVG could probably benefit from a stack-based optimization like html does. crbug.com/391054
-    bool establishesPaintInvalidationContainer = &m_renderer == &m_paintInvalidationContainer;
-    bool fixed = m_renderer.style()->position() == FixedPosition;
+    bool establishesPaintInvalidationContainer = renderer == m_paintInvalidationContainer;
+    bool fixed = renderer.style()->position() == FixedPosition;
 
     if (establishesPaintInvalidationContainer) {
         // When we hit a new paint invalidation container, we don't need to
@@ -55,21 +53,21 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& nex
             m_cachedOffsetsEnabled = false;
         } else {
             if (fixed) {
-                FloatPoint fixedOffset = m_renderer.localToContainerPoint(FloatPoint(), &m_paintInvalidationContainer, TraverseDocumentBoundaries);
+                FloatPoint fixedOffset = renderer.localToContainerPoint(FloatPoint(), &m_paintInvalidationContainer, TraverseDocumentBoundaries);
                 m_paintOffset = LayoutSize(fixedOffset.x(), fixedOffset.y());
             } else {
-                LayoutSize offset = m_renderer.isBox() && !m_renderer.isTableRow() ? toRenderBox(renderer).locationOffset() : LayoutSize();
+                LayoutSize offset = renderer.isBox() && !renderer.isTableRow() ? toRenderBox(renderer).locationOffset() : LayoutSize();
                 m_paintOffset = next.m_paintOffset + offset;
             }
 
-            if (m_renderer.isOutOfFlowPositioned() && !fixed) {
-                if (RenderObject* container = m_renderer.container()) {
+            if (renderer.isOutOfFlowPositioned() && !fixed) {
+                if (RenderObject* container = renderer.container()) {
                     if (container->style()->hasInFlowPosition() && container->isRenderInline())
                         m_paintOffset += toRenderInline(container)->offsetForInFlowPositionedInline(toRenderBox(renderer));
                 }
             }
 
-            if (m_renderer.style()->hasInFlowPosition() && renderer.hasLayer())
+            if (renderer.style()->hasInFlowPosition() && renderer.hasLayer())
                 m_paintOffset += renderer.layer()->offsetForInFlowPosition();
         }
 

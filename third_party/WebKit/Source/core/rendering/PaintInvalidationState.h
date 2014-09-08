@@ -34,7 +34,6 @@ public:
     void setForceCheckForPaintInvalidation() { m_forceCheckForPaintInvalidation = true; }
 
     const RenderLayerModelObject& paintInvalidationContainer() const { return m_paintInvalidationContainer; }
-    const RenderObject& renderer() const { return m_renderer; }
 
     bool canMapToContainer(const RenderLayerModelObject* container) const
     {
@@ -55,8 +54,6 @@ private:
     LayoutSize m_paintOffset;
 
     const RenderLayerModelObject& m_paintInvalidationContainer;
-
-    const RenderObject& m_renderer;
 };
 
 } // namespace blink
