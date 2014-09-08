@@ -515,8 +515,6 @@ bool RenderWidgetCompositor::SendMessageToMicroBenchmark(
 
 void RenderWidgetCompositor::Initialize(cc::LayerTreeSettings settings) {
   scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy;
-  scoped_refptr<base::SingleThreadTaskRunner>
-      main_thread_compositor_task_runner(base::MessageLoopProxy::current());
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   cc::SharedBitmapManager* shared_bitmap_manager = NULL;
   // render_thread may be NULL in tests.
@@ -524,23 +522,21 @@ void RenderWidgetCompositor::Initialize(cc::LayerTreeSettings settings) {
     compositor_message_loop_proxy =
         render_thread->compositor_message_loop_proxy();
     shared_bitmap_manager = render_thread->shared_bitmap_manager();
-    main_thread_compositor_task_runner =
-        render_thread->main_thread_compositor_task_runner();
   }
   if (compositor_message_loop_proxy.get()) {
-    layer_tree_host_ =
-        cc::LayerTreeHost::CreateThreaded(this,
-                                          shared_bitmap_manager,
-                                          settings,
-                                          main_thread_compositor_task_runner,
-                                          compositor_message_loop_proxy);
+    layer_tree_host_ = cc::LayerTreeHost::CreateThreaded(
+        this,
+        shared_bitmap_manager,
+        settings,
+        base::MessageLoopProxy::current(),
+        compositor_message_loop_proxy);
   } else {
     layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(
         this,
         this,
         shared_bitmap_manager,
         settings,
-        main_thread_compositor_task_runner);
+        base::MessageLoopProxy::current());
   }
   DCHECK(layer_tree_host_);
 }

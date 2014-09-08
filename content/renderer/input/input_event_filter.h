@@ -18,7 +18,6 @@
 
 namespace base {
 class MessageLoopProxy;
-class SingleThreadTaskRunner;
 }
 
 namespace IPC {
@@ -39,10 +38,8 @@ namespace content {
 class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
                                         public IPC::MessageFilter {
  public:
-  InputEventFilter(
-      IPC::Listener* main_listener,
-      const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
-      const scoped_refptr<base::MessageLoopProxy>& target_loop);
+  InputEventFilter(IPC::Listener* main_listener,
+                   const scoped_refptr<base::MessageLoopProxy>& target_loop);
 
   // The |handler| is invoked on the thread associated with |target_loop| to
   // handle input events matching the filtered routes.
@@ -76,7 +73,7 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   void SendMessage(scoped_ptr<IPC::Message> message);
   void SendMessageOnIOThread(scoped_ptr<IPC::Message> message);
 
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  scoped_refptr<base::MessageLoopProxy> main_loop_;
   IPC::Listener* main_listener_;
 
   // The sender_ only gets invoked on the thread corresponding to io_loop_.

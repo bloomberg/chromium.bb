@@ -43,7 +43,6 @@ class WebMediaStreamCenterClient;
 
 namespace base {
 class MessageLoopProxy;
-class SingleThreadTaskRunner;
 class Thread;
 }
 
@@ -197,11 +196,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   RendererWebKitPlatformSupportImpl* webkit_platform_support() const {
     DCHECK(webkit_platform_support_);
     return webkit_platform_support_.get();
-  }
-
-  scoped_refptr<base::SingleThreadTaskRunner>
-  main_thread_compositor_task_runner() const {
-    return main_thread_compositor_task_runner_;
   }
 
   IPC::ForwardingMessageFilter* compositor_output_surface_filter() const {
@@ -574,10 +568,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   base::ThreadChecker allocate_gpu_memory_buffer_thread_checker_;
 
   scoped_ptr<MemoryObserver> memory_observer_;
-
-  scoped_refptr<base::SingleThreadTaskRunner>
-      main_thread_compositor_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_input_task_runner_;
 
   // Compositor settings
   bool is_gpu_rasterization_enabled_;
