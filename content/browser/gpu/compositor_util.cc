@@ -173,7 +173,7 @@ bool IsPinchVirtualViewportEnabled() {
   if (command_line.HasSwitch(cc::switches::kEnablePinchVirtualViewport))
     return true;
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
   return true;
 #else
   return false;
