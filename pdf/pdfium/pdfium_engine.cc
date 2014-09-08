@@ -598,7 +598,9 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
 }
 
 PDFiumEngine::~PDFiumEngine() {
-  STLDeleteElements(&pages_);
+  for (size_t i = 0; i < pages_.size(); ++i)
+    pages_[i]->Unload();
+
   if (doc_) {
     if (form_) {
       FORM_DoDocumentAAction(form_, FPDFDOC_AACTION_WC);
@@ -609,6 +611,8 @@ PDFiumEngine::~PDFiumEngine() {
 
   if (fpdf_availability_)
     FPDFAvail_Destroy(fpdf_availability_);
+
+  STLDeleteElements(&pages_);
 }
 
 int PDFiumEngine::GetBlock(void* param, unsigned long position,

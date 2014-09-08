@@ -49,7 +49,6 @@ PDFiumPage::PDFiumPage(PDFiumEngine* engine,
 }
 
 PDFiumPage::~PDFiumPage() {
-  Unload();
 }
 
 void PDFiumPage::Unload() {
