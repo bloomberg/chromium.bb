@@ -39,12 +39,8 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
   virtual void Close() OVERRIDE;
 
   bool Init();
-  bool PrepareForeignSocketHandle(base::ProcessHandle process_handle,
-#if defined(OS_WIN)
-                                  base::SyncSocket::Handle* foreign_handle);
-#else
-                                  base::FileDescriptor* foreign_handle);
-#endif
+  bool PrepareForeignSocket(base::ProcessHandle process_handle,
+                            base::SyncSocket::TransitDescriptor* descriptor);
 
  private:
   // Blocks until data is ready for reading or a timeout expires.  Returns false

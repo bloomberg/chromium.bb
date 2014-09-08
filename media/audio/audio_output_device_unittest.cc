@@ -54,25 +54,6 @@ class MockAudioOutputIPC : public AudioOutputIPC {
   MOCK_METHOD1(SetVolume, void(double volume));
 };
 
-// Creates a copy of a SyncSocket handle that we can give to AudioOutputDevice.
-// On Windows this means duplicating the pipe handle so that AudioOutputDevice
-// can call CloseHandle() (since ownership has been transferred), but on other
-// platforms, we just copy the same socket handle since AudioOutputDevice on
-// those platforms won't actually own the socket (FileDescriptor.auto_close is
-// false).
-bool DuplicateSocketHandle(SyncSocket::Handle socket_handle,
-                           SyncSocket::Handle* copy) {
-#if defined(OS_WIN)
-  HANDLE process = GetCurrentProcess();
-  ::DuplicateHandle(process, socket_handle, process, copy,
-                    0, FALSE, DUPLICATE_SAME_ACCESS);
-  return *copy != NULL;
-#else
-  *copy = socket_handle;
-  return *copy != -1;
-#endif
-}
-
 ACTION_P2(SendPendingBytes, socket, pending_bytes) {
   socket->Send(&pending_bytes, sizeof(pending_bytes));
 }
@@ -120,7 +101,7 @@ class AudioOutputDeviceTest
 
 int AudioOutputDeviceTest::CalculateMemorySize() {
   // Calculate output memory size.
- return AudioBus::CalculateMemorySize(default_audio_parameters_);
+  return AudioBus::CalculateMemorySize(default_audio_parameters_);
 }
 
 AudioOutputDeviceTest::AudioOutputDeviceTest() {
@@ -163,15 +144,16 @@ void AudioOutputDeviceTest::CreateStream() {
   // Create duplicates of the handles we pass to AudioOutputDevice since
   // ownership will be transferred and AudioOutputDevice is responsible for
   // freeing.
-  SyncSocket::Handle audio_device_socket = SyncSocket::kInvalidHandle;
-  ASSERT_TRUE(DuplicateSocketHandle(renderer_socket_.handle(),
-                                    &audio_device_socket));
+  SyncSocket::TransitDescriptor audio_device_socket_descriptor;
+  ASSERT_TRUE(renderer_socket_.PrepareTransitDescriptor(
+      base::GetCurrentProcessHandle(), &audio_device_socket_descriptor));
   base::SharedMemoryHandle duplicated_memory_handle;
   ASSERT_TRUE(shared_memory_.ShareToProcess(base::GetCurrentProcessHandle(),
                                             &duplicated_memory_handle));
 
-  audio_device_->OnStreamCreated(duplicated_memory_handle, audio_device_socket,
-                                 kMemorySize);
+  audio_device_->OnStreamCreated(
+      duplicated_memory_handle,
+      SyncSocket::UnwrapHandle(audio_device_socket_descriptor), kMemorySize);
   io_loop_.RunUntilIdle();
 }
 

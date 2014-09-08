@@ -96,6 +96,19 @@ bool SyncSocket::CreatePair(SyncSocket* socket_a, SyncSocket* socket_b) {
   return true;
 }
 
+// static
+SyncSocket::Handle SyncSocket::UnwrapHandle(
+    const TransitDescriptor& descriptor) {
+  return descriptor.fd;
+}
+
+bool SyncSocket::PrepareTransitDescriptor(ProcessHandle peer_process_handle,
+                                          TransitDescriptor* descriptor) {
+  descriptor->fd = handle();
+  descriptor->auto_close = false;
+  return descriptor->fd != kInvalidHandle;
+}
+
 bool SyncSocket::Close() {
   const bool retval = CloseHandle(handle_);
   handle_ = kInvalidHandle;

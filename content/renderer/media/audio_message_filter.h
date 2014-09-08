@@ -76,11 +76,7 @@ class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
 
   // Received when browser process has created an audio output stream.
   void OnStreamCreated(int stream_id, base::SharedMemoryHandle handle,
-#if defined(OS_WIN)
-                       base::SyncSocket::Handle socket_handle,
-#else
-                       base::FileDescriptor socket_descriptor,
-#endif
+                       base::SyncSocket::TransitDescriptor socket_descriptor,
                        uint32 length);
 
   // Received when internal state of browser process' audio output device has

@@ -31,7 +31,7 @@ void LogMessage(int stream_id, const std::string& msg, bool add_prefix) {
   DVLOG(1) << oss.str();
 }
 
-}
+}  // namespace
 
 namespace content {
 
@@ -178,16 +178,11 @@ void AudioInputRendererHost::DoCompleteCreation(
   AudioInputSyncWriter* writer =
       static_cast<AudioInputSyncWriter*>(entry->writer.get());
 
-#if defined(OS_WIN)
-  base::SyncSocket::Handle foreign_socket_handle;
-#else
-  base::FileDescriptor foreign_socket_handle;
-#endif
+  base::SyncSocket::TransitDescriptor socket_transit_descriptor;
 
   // If we failed to prepare the sync socket for the renderer then we fail
   // the construction of audio input stream.
-  if (!writer->PrepareForeignSocketHandle(PeerHandle(),
-                                          &foreign_socket_handle)) {
+  if (!writer->PrepareForeignSocket(PeerHandle(), &socket_transit_descriptor)) {
     DeleteEntryOnError(entry, SYNC_SOCKET_ERROR);
     return;
   }
@@ -196,8 +191,8 @@ void AudioInputRendererHost::DoCompleteCreation(
              "DoCompleteCreation: IPC channel and stream are now open",
              true);
 
-  Send(new AudioInputMsg_NotifyStreamCreated(entry->stream_id,
-      foreign_memory_handle, foreign_socket_handle,
+  Send(new AudioInputMsg_NotifyStreamCreated(
+      entry->stream_id, foreign_memory_handle, socket_transit_descriptor,
       entry->shared_memory.requested_size(),
       entry->shared_memory_segment_count));
 }

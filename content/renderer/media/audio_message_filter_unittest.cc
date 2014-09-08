@@ -86,17 +86,11 @@ TEST(AudioMessageFilterTest, Basic) {
   EXPECT_EQ(&delegate, filter->delegates_.Lookup(kStreamId));
 
   // AudioMsg_NotifyStreamCreated
-#if defined(OS_WIN)
-  base::SyncSocket::Handle socket_handle;
-#else
-  base::FileDescriptor socket_handle;
-#endif
+  base::SyncSocket::TransitDescriptor socket_descriptor;
   const uint32 kLength = 1024;
   EXPECT_FALSE(delegate.created_received());
-  filter->OnMessageReceived(
-      AudioMsg_NotifyStreamCreated(
-          kStreamId, base::SharedMemory::NULLHandle(),
-          socket_handle, kLength));
+  filter->OnMessageReceived(AudioMsg_NotifyStreamCreated(
+      kStreamId, base::SharedMemory::NULLHandle(), socket_descriptor, kLength));
   EXPECT_TRUE(delegate.created_received());
   EXPECT_FALSE(base::SharedMemory::IsHandleValid(delegate.handle()));
   EXPECT_EQ(kLength, delegate.length());

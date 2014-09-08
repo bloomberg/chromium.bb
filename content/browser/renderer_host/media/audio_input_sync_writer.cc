@@ -107,27 +107,11 @@ bool AudioInputSyncWriter::Init() {
                                                 foreign_socket_.get());
 }
 
-#if defined(OS_WIN)
-
-bool AudioInputSyncWriter::PrepareForeignSocketHandle(
+bool AudioInputSyncWriter::PrepareForeignSocket(
     base::ProcessHandle process_handle,
-    base::SyncSocket::Handle* foreign_handle) {
-  ::DuplicateHandle(GetCurrentProcess(), foreign_socket_->handle(),
-                    process_handle, foreign_handle,
-                    0, FALSE, DUPLICATE_SAME_ACCESS);
-  return (*foreign_handle != 0);
+    base::SyncSocket::TransitDescriptor* descriptor) {
+  return foreign_socket_->PrepareTransitDescriptor(process_handle, descriptor);
 }
 
-#else
-
-bool AudioInputSyncWriter::PrepareForeignSocketHandle(
-    base::ProcessHandle process_handle,
-    base::FileDescriptor* foreign_handle) {
-  foreign_handle->fd = foreign_socket_->handle();
-  foreign_handle->auto_close = false;
-  return (foreign_handle->fd != -1);
-}
-
-#endif
 
 }  // namespace content

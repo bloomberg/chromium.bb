@@ -168,11 +168,7 @@ void AudioMessageFilter::OnChannelClosing() {
 void AudioMessageFilter::OnStreamCreated(
     int stream_id,
     base::SharedMemoryHandle handle,
-#if defined(OS_WIN)
-    base::SyncSocket::Handle socket_handle,
-#else
-    base::FileDescriptor socket_descriptor,
-#endif
+    base::SyncSocket::TransitDescriptor socket_descriptor,
     uint32 length) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
 
@@ -180,9 +176,8 @@ void AudioMessageFilter::OnStreamCreated(
       "AMF::OnStreamCreated. stream_id=%d",
       stream_id));
 
-#if !defined(OS_WIN)
-  base::SyncSocket::Handle socket_handle = socket_descriptor.fd;
-#endif
+  base::SyncSocket::Handle socket_handle =
+      base::SyncSocket::UnwrapHandle(socket_descriptor);
 
   media::AudioOutputIPCDelegate* delegate = delegates_.Lookup(stream_id);
   if (!delegate) {

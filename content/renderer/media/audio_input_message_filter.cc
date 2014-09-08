@@ -23,7 +23,7 @@ void LogMessage(int stream_id, const std::string& msg) {
   DVLOG(1) << oss.str();
 }
 
-}
+}  // namespace
 
 namespace content {
 
@@ -126,19 +126,14 @@ void AudioInputMessageFilter::OnChannelClosing() {
 void AudioInputMessageFilter::OnStreamCreated(
     int stream_id,
     base::SharedMemoryHandle handle,
-#if defined(OS_WIN)
-    base::SyncSocket::Handle socket_handle,
-#else
-    base::FileDescriptor socket_descriptor,
-#endif
+    base::SyncSocket::TransitDescriptor socket_descriptor,
     uint32 length,
     uint32 total_segments) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   LogMessage(stream_id, "OnStreamCreated");
 
-#if !defined(OS_WIN)
-  base::SyncSocket::Handle socket_handle = socket_descriptor.fd;
-#endif
+  base::SyncSocket::Handle socket_handle =
+      base::SyncSocket::UnwrapHandle(socket_descriptor);
   media::AudioInputIPCDelegate* delegate = delegates_.Lookup(stream_id);
   if (!delegate) {
     DLOG(WARNING) << "Got audio stream event for a non-existent or removed"

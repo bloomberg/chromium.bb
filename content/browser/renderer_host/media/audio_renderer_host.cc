@@ -238,24 +238,17 @@ void AudioRendererHost::DoCompleteCreation(int stream_id) {
 
   AudioSyncReader* reader = static_cast<AudioSyncReader*>(entry->reader());
 
-#if defined(OS_WIN)
-  base::SyncSocket::Handle foreign_socket_handle;
-#else
-  base::FileDescriptor foreign_socket_handle;
-#endif
+  base::SyncSocket::TransitDescriptor socket_descriptor;
 
   // If we failed to prepare the sync socket for the renderer then we fail
   // the construction of audio stream.
-  if (!reader->PrepareForeignSocketHandle(PeerHandle(),
-                                          &foreign_socket_handle)) {
+  if (!reader->PrepareForeignSocket(PeerHandle(), &socket_descriptor)) {
     ReportErrorAndClose(entry->stream_id());
     return;
   }
 
   Send(new AudioMsg_NotifyStreamCreated(
-      entry->stream_id(),
-      foreign_memory_handle,
-      foreign_socket_handle,
+      entry->stream_id(), foreign_memory_handle, socket_descriptor,
       entry->shared_memory()->requested_size()));
 }
 

@@ -207,6 +207,23 @@ bool SyncSocket::CreatePair(SyncSocket* socket_a, SyncSocket* socket_b) {
   return CreatePairImpl(&socket_a->handle_, &socket_b->handle_, false);
 }
 
+// static
+SyncSocket::Handle SyncSocket::UnwrapHandle(
+    const TransitDescriptor& descriptor) {
+  return descriptor;
+}
+
+bool SyncSocket::PrepareTransitDescriptor(ProcessHandle peer_process_handle,
+                                          TransitDescriptor* descriptor) {
+  DCHECK(descriptor);
+  if (!::DuplicateHandle(GetCurrentProcess(), handle(), peer_process_handle,
+                         descriptor, 0, FALSE, DUPLICATE_SAME_ACCESS)) {
+    DPLOG(ERROR) << "Cannot duplicate socket handle for peer process.";
+    return false;
+  }
+  return true;
+}
+
 bool SyncSocket::Close() {
   if (handle_ == kInvalidHandle)
     return true;

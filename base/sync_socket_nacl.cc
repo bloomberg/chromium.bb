@@ -27,6 +27,24 @@ bool SyncSocket::CreatePair(SyncSocket* socket_a, SyncSocket* socket_b) {
   return false;
 }
 
+// static
+SyncSocket::Handle SyncSocket::UnwrapHandle(
+    const SyncSocket::TransitDescriptor& descriptor) {
+  // TODO(xians): Still unclear how NaCl uses SyncSocket.
+  // See http://crbug.com/409656
+  NOTIMPLEMENTED();
+  return SyncSocket::kInvalidHandle;
+}
+
+bool SyncSocket::PrepareTransitDescriptor(
+    ProcessHandle peer_process_handle,
+    SyncSocket::TransitDescriptor* descriptor) {
+  // TODO(xians): Still unclear how NaCl uses SyncSocket.
+  // See http://crbug.com/409656
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool SyncSocket::Close() {
   if (handle_ != kInvalidHandle) {
     if (close(handle_) < 0)

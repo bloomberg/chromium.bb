@@ -39,38 +39,23 @@ IPC_STRUCT_END()
 // buffer it shares with the browser process. It is also given a SyncSocket that
 // it uses to communicate with the browser process about the state of the
 // buffered audio data.
-#if defined(OS_WIN)
-IPC_MESSAGE_CONTROL4(AudioMsg_NotifyStreamCreated,
-                     int /* stream id */,
-                     base::SharedMemoryHandle /* handle */,
-                     base::SyncSocket::Handle /* socket handle */,
-                     uint32 /* length */)
-#else
-IPC_MESSAGE_CONTROL4(AudioMsg_NotifyStreamCreated,
-                     int /* stream id */,
-                     base::SharedMemoryHandle /* handle */,
-                     base::FileDescriptor /* socket handle */,
-                     uint32 /* length */)
-#endif
+IPC_MESSAGE_CONTROL4(
+   AudioMsg_NotifyStreamCreated,
+   int /* stream id */,
+   base::SharedMemoryHandle /* handle */,
+   base::SyncSocket::TransitDescriptor /* socket descriptor */,
+   uint32 /* length */)
 
 // Tell the renderer process that an audio input stream has been created.
 // The renderer process would be given a SyncSocket that it should read
 // from from then on. It is also given number of segments in shared memory.
-#if defined(OS_WIN)
-IPC_MESSAGE_CONTROL5(AudioInputMsg_NotifyStreamCreated,
-                     int /* stream id */,
-                     base::SharedMemoryHandle /* handle */,
-                     base::SyncSocket::Handle /* socket handle */,
-                     uint32 /* length */,
-                     uint32 /* segment count */)
-#else
-IPC_MESSAGE_CONTROL5(AudioInputMsg_NotifyStreamCreated,
-                     int /* stream id */,
-                     base::SharedMemoryHandle /* handle */,
-                     base::FileDescriptor /* socket handle */,
-                     uint32 /* length */,
-                     uint32 /* segment count */)
-#endif
+IPC_MESSAGE_CONTROL5(
+   AudioInputMsg_NotifyStreamCreated,
+   int /* stream id */,
+   base::SharedMemoryHandle /* handle */,
+   base::SyncSocket::TransitDescriptor /* socket descriptor */,
+   uint32 /* length */,
+   uint32 /* segment count */)
 
 // Notification message sent from AudioRendererHost to renderer after an output
 // device change has occurred.

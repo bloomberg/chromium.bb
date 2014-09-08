@@ -17,8 +17,13 @@
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
+#include "base/process/process_handle.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
+
+#if defined(OS_POSIX)
+#include "base/file_descriptor_posix.h"
+#endif
 
 namespace base {
 
@@ -26,8 +31,10 @@ class BASE_EXPORT SyncSocket {
  public:
 #if defined(OS_WIN)
   typedef HANDLE Handle;
+  typedef Handle TransitDescriptor;
 #else
   typedef int Handle;
+  typedef FileDescriptor TransitDescriptor;
 #endif
   static const Handle kInvalidHandle;
 
@@ -41,6 +48,15 @@ class BASE_EXPORT SyncSocket {
   // |socket_a| and |socket_b| must not hold a valid handle.  Upon successful
   // return, the sockets will both be valid and connected.
   static bool CreatePair(SyncSocket* socket_a, SyncSocket* socket_b);
+
+  // Returns |Handle| wrapped in a |TransitDescriptor|.
+  static Handle UnwrapHandle(const TransitDescriptor& descriptor);
+
+  // Prepares a |TransitDescriptor| which wraps |Handle| used for transit.
+  // This is used to prepare the underlying shared resource before passing back
+  // the handle to be used by the peer process.
+  bool PrepareTransitDescriptor(ProcessHandle peer_process_handle,
+                                TransitDescriptor* descriptor);
 
   // Closes the SyncSocket.  Returns true on success, false on failure.
   virtual bool Close();
