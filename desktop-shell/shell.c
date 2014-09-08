@@ -3541,6 +3541,32 @@ get_primary_view(void *shell, struct shell_surface *shsurf)
 	return shsurf->view;
 }
 
+static struct weston_output *
+get_focused_output(struct weston_compositor *compositor)
+{
+	struct weston_seat *seat;
+	struct weston_output *output = NULL;
+
+	wl_list_for_each(seat, &compositor->seat_list, link) {
+		/* Priority has touch focus, then pointer and
+		 * then keyboard focus. We should probably have
+		 * three for loops and check frist for touch,
+		 * then for pointer, etc. but unless somebody has some
+		 * objections, I think this is sufficient. */
+		if (seat->touch && seat->touch->focus)
+			output = seat->touch->focus->output;
+		else if (seat->pointer && seat->pointer->focus)
+			output = seat->pointer->focus->output;
+		else if (seat->keyboard && seat->keyboard->focus)
+			output = seat->keyboard->focus->output;
+
+		if (output)
+			break;
+	}
+
+	return output;
+}
+
 static void
 shell_get_shell_surface(struct wl_client *client,
 			struct wl_resource *resource,
@@ -3696,9 +3722,17 @@ xdg_surface_set_maximized(struct wl_client *client,
 			  struct wl_resource *resource)
 {
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+	struct weston_output *output;
 
 	shsurf->state_requested = true;
 	shsurf->requested_state.maximized = true;
+
+	if (!weston_surface_is_mapped(shsurf->surface))
+		output = get_focused_output(shsurf->surface->compositor);
+	else
+		output = shsurf->surface->output;
+
+	shell_surface_set_output(shsurf, output);
  	send_configure_for_surface(shsurf);
 }
 
@@ -3711,32 +3745,6 @@ xdg_surface_unset_maximized(struct wl_client *client,
 	shsurf->state_requested = true;
 	shsurf->requested_state.maximized = false;
 	send_configure_for_surface(shsurf);
-}
-
-static struct weston_output *
-get_focused_output(struct weston_compositor *compositor)
-{
-	struct weston_seat *seat;
-	struct weston_output *output = NULL;
-
-	wl_list_for_each(seat, &compositor->seat_list, link) {
-		/* Priority has touch focus, then pointer and
-		 * then keyboard focus. We should probably have
-		 * three for loops and check frist for touch,
-		 * then for pointer, etc. but unless somebody has some
-		 * objections, I think this is sufficient. */
-		if (seat->touch && seat->touch->focus)
-			output = seat->touch->focus->output;
-		else if (seat->pointer && seat->pointer->focus)
-			output = seat->pointer->focus->output;
-		else if (seat->keyboard && seat->keyboard->focus)
-			output = seat->keyboard->focus->output;
-
-		if (output)
-			break;
-	}
-
-	return output;
 }
 
 static void
