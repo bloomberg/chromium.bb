@@ -150,13 +150,9 @@ public class LocationProviderFactory {
             // bounce notifications to the Geolocation thread as they arrive in the mainLooper.
             try {
                 Criteria criteria = new Criteria();
+                if (isGpsEnabled) criteria.setAccuracy(Criteria.ACCURACY_FINE);
                 mLocationManager.requestLocationUpdates(0, 0, criteria, this,
                         ThreadUtils.getUiThreadLooper());
-                if (isGpsEnabled) {
-                    criteria.setAccuracy(Criteria.ACCURACY_FINE);
-                    mLocationManager.requestLocationUpdates(0, 0, criteria, this,
-                            ThreadUtils.getUiThreadLooper());
-                }
             } catch (SecurityException e) {
                 Log.e(TAG, "Caught security exception registering for location updates from " +
                     "system. This should only happen in DumpRenderTree.");
