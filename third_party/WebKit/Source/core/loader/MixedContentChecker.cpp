@@ -32,12 +32,14 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/Platform.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -75,6 +77,10 @@ bool MixedContentChecker::canDisplayInsecureContentInternal(SecurityOrigin* secu
     if (top != m_frame && !toLocalFrame(top)->loader().mixedContentChecker()->canDisplayInsecureContent(toLocalFrame(top)->document()->securityOrigin(), url))
         return false;
 
+    // Just count these for the moment, don't block them.
+    if (Platform::current()->isReservedIPAddress(url) && !Platform::current()->isReservedIPAddress(KURL(ParsedURLString, securityOrigin->toString())))
+        UseCounter::count(m_frame->document(), UseCounter::MixedContentPrivateIPInPublicWebsitePassive);
+
     // Then check the current frame:
     if (!isMixedContent(securityOrigin, url))
         return true;
@@ -101,6 +107,10 @@ bool MixedContentChecker::canRunInsecureContentInternal(SecurityOrigin* security
     Frame* top = m_frame->tree().top();
     if (top != m_frame && !toLocalFrame(top)->loader().mixedContentChecker()->canRunInsecureContent(toLocalFrame(top)->document()->securityOrigin(), url))
         return false;
+
+    // Just count these for the moment, don't block them.
+    if (Platform::current()->isReservedIPAddress(url) && !Platform::current()->isReservedIPAddress(KURL(ParsedURLString, securityOrigin->toString())))
+        UseCounter::count(m_frame->document(), UseCounter::MixedContentPrivateIPInPublicWebsiteActive);
 
     // Then check the current frame:
     if (!isMixedContent(securityOrigin, url))
