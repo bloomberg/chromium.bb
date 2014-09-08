@@ -6949,7 +6949,8 @@ bool IsECDSACipherSuite(uint16_t cipher_suite) {
 
 // Test that ECDSA is disabled on Windows XP, where ECDSA certificates cannot be
 // verified.
-TEST_F(HTTPSRequestTest, DisableECDSAOnXP) {
+// Test seems flaky, see http://crbug.com/411827.
+TEST_F(HTTPSRequestTest, DISABLED_DisableECDSAOnXP) {
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     LOG(INFO) << "Skipping test on this version.";
     return;
