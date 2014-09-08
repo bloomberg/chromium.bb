@@ -948,6 +948,9 @@ Press any key to continue exploring.
   <message name="IDS_VIDEO_PLAYER_PLAY_ON" desc="Message is shown above the list of cast devices. The user will select one of them to play the current video on selected device.">
     Play on
   </message>
+  <message name="IDS_VIDEO_PLAYER_VIDEO_FILE_UNSUPPORTED_FOR_CAST" desc="Error message which is shown when the video which an user tried to play is not supported by the current cast device.">
+    Sorry, this video is not supported by your cast device.
+  </message>
 
 <!-- Imageburn Strings -->
   <message name="IDS_CHECKING_FOR_UPDATES" desc="Notification for checking for update">

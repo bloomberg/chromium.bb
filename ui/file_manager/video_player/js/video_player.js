@@ -22,6 +22,8 @@ function FullWindowVideoControls(
   this.playerContainer_ = playerContainer;
   this.decodeErrorOccured = false;
 
+  this.casting = false;
+
   this.updateStyle();
   window.addEventListener('resize', this.updateStyle.wrap(this));
   document.addEventListener('keydown', function(e) {
@@ -107,7 +109,10 @@ FullWindowVideoControls.prototype.showErrorMessage = function(message) {
 FullWindowVideoControls.prototype.onPlaybackError_ = function(error) {
   if (error.target && error.target.error &&
       error.target.error.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED) {
-    this.showErrorMessage('GALLERY_VIDEO_ERROR');
+    if (this.casting)
+      this.showErrorMessage('VIDEO_PLAYER_VIDEO_FILE_UNSUPPORTED_FOR_CAST');
+    else
+      this.showErrorMessage('GALLERY_VIDEO_ERROR');
     this.decodeErrorOccured = false;
   } else {
     this.showErrorMessage('GALLERY_VIDEO_DECODING_ERROR');
@@ -301,6 +306,7 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
     document.querySelector('#error').removeAttribute('visible');
     this.controls.inactivityWatcher.disabled = true;
     this.controls.decodeErrorOccured = false;
+    this.controls.casting = !!this.currentCast_;
 
     videoPlayerElement.setAttribute('loading', true);
 
