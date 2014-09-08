@@ -4,10 +4,13 @@
 
 #include "net/spdy/hpack_constants.h"
 
+#include <vector>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "net/spdy/hpack_huffman_table.h"
+#include "net/spdy/hpack_static_table.h"
 
 namespace net {
 
@@ -31,6 +34,25 @@ struct SharedHpackHuffmanTable {
   }
 
   scoped_ptr<const HpackHuffmanTable> table;
+};
+
+// SharedHpackStaticTable is a Singleton wrapping a HpackStaticTable
+// instance initialized with |kHpackStaticTable|.
+struct SharedHpackStaticTable {
+ public:
+  SharedHpackStaticTable() {
+    std::vector<HpackStaticEntry> static_table = HpackStaticTableVector();
+    scoped_ptr<HpackStaticTable> mutable_table(new HpackStaticTable());
+    mutable_table->Initialize(&static_table[0], static_table.size());
+    CHECK(mutable_table->IsInitialized());
+    table.reset(mutable_table.release());
+  }
+
+  static SharedHpackStaticTable* GetInstance() {
+    return Singleton<SharedHpackStaticTable>::get();
+  }
+
+  scoped_ptr<const HpackStaticTable> table;
 };
 
 }  // namespace
@@ -309,8 +331,88 @@ std::vector<HpackHuffmanSymbol> HpackHuffmanCode() {
       kHpackHuffmanCode + arraysize(kHpackHuffmanCode));
 }
 
+// The "constructor" for a HpackStaticEntry that computes the lengths at
+// compile time.
+#define STATIC_ENTRY(name, value) \
+  { name, arraysize(name) - 1, value, arraysize(value) - 1 }
+
+std::vector<HpackStaticEntry> HpackStaticTableVector() {
+  static const HpackStaticEntry kHpackStaticTable[] = {
+    STATIC_ENTRY(":authority", ""),                    // 1
+    STATIC_ENTRY(":method", "GET"),                    // 2
+    STATIC_ENTRY(":method", "POST"),                   // 3
+    STATIC_ENTRY(":path", "/"),                        // 4
+    STATIC_ENTRY(":path", "/index.html"),              // 5
+    STATIC_ENTRY(":scheme", "http"),                   // 6
+    STATIC_ENTRY(":scheme", "https"),                  // 7
+    STATIC_ENTRY(":status", "200"),                    // 8
+    STATIC_ENTRY(":status", "204"),                    // 9
+    STATIC_ENTRY(":status", "206"),                    // 10
+    STATIC_ENTRY(":status", "304"),                    // 11
+    STATIC_ENTRY(":status", "400"),                    // 12
+    STATIC_ENTRY(":status", "404"),                    // 13
+    STATIC_ENTRY(":status", "500"),                    // 14
+    STATIC_ENTRY("accept-charset", ""),                // 15
+    STATIC_ENTRY("accept-encoding", "gzip, deflate"),  // 16
+    STATIC_ENTRY("accept-language", ""),               // 17
+    STATIC_ENTRY("accept-ranges", ""),                 // 18
+    STATIC_ENTRY("accept", ""),                        // 19
+    STATIC_ENTRY("access-control-allow-origin", ""),   // 20
+    STATIC_ENTRY("age", ""),                           // 21
+    STATIC_ENTRY("allow", ""),                         // 22
+    STATIC_ENTRY("authorization", ""),                 // 23
+    STATIC_ENTRY("cache-control", ""),                 // 24
+    STATIC_ENTRY("content-disposition", ""),           // 25
+    STATIC_ENTRY("content-encoding", ""),              // 26
+    STATIC_ENTRY("content-language", ""),              // 27
+    STATIC_ENTRY("content-length", ""),                // 28
+    STATIC_ENTRY("content-location", ""),              // 29
+    STATIC_ENTRY("content-range", ""),                 // 30
+    STATIC_ENTRY("content-type", ""),                  // 31
+    STATIC_ENTRY("cookie", ""),                        // 32
+    STATIC_ENTRY("date", ""),                          // 33
+    STATIC_ENTRY("etag", ""),                          // 34
+    STATIC_ENTRY("expect", ""),                        // 35
+    STATIC_ENTRY("expires", ""),                       // 36
+    STATIC_ENTRY("from", ""),                          // 37
+    STATIC_ENTRY("host", ""),                          // 38
+    STATIC_ENTRY("if-match", ""),                      // 39
+    STATIC_ENTRY("if-modified-since", ""),             // 40
+    STATIC_ENTRY("if-none-match", ""),                 // 41
+    STATIC_ENTRY("if-range", ""),                      // 42
+    STATIC_ENTRY("if-unmodified-since", ""),           // 43
+    STATIC_ENTRY("last-modified", ""),                 // 44
+    STATIC_ENTRY("link", ""),                          // 45
+    STATIC_ENTRY("location", ""),                      // 46
+    STATIC_ENTRY("max-forwards", ""),                  // 47
+    STATIC_ENTRY("proxy-authenticate", ""),            // 48
+    STATIC_ENTRY("proxy-authorization", ""),           // 49
+    STATIC_ENTRY("range", ""),                         // 50
+    STATIC_ENTRY("referer", ""),                       // 51
+    STATIC_ENTRY("refresh", ""),                       // 52
+    STATIC_ENTRY("retry-after", ""),                   // 53
+    STATIC_ENTRY("server", ""),                        // 54
+    STATIC_ENTRY("set-cookie", ""),                    // 55
+    STATIC_ENTRY("strict-transport-security", ""),     // 56
+    STATIC_ENTRY("transfer-encoding", ""),             // 57
+    STATIC_ENTRY("user-agent", ""),                    // 58
+    STATIC_ENTRY("vary", ""),                          // 59
+    STATIC_ENTRY("via", ""),                           // 60
+    STATIC_ENTRY("www-authenticate", ""),              // 61
+  };
+  return std::vector<HpackStaticEntry>(
+      kHpackStaticTable,
+      kHpackStaticTable + arraysize(kHpackStaticTable));
+}
+
+#undef STATIC_ENTRY
+
 const HpackHuffmanTable& ObtainHpackHuffmanTable() {
   return *SharedHpackHuffmanTable::GetInstance()->table;
+}
+
+const HpackStaticTable& ObtainHpackStaticTable() {
+  return *SharedHpackStaticTable::GetInstance()->table;
 }
 
 }  // namespace net

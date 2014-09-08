@@ -46,7 +46,8 @@ bool HpackEncoder::EncodeHeaderSet(const std::map<string, string>& header_set,
   // Encode pseudo-headers.
   for (Representations::const_iterator it = pseudo_headers.begin();
        it != pseudo_headers.end(); ++it) {
-    HpackEntry* entry = header_table_.GetByNameAndValue(it->first, it->second);
+    const HpackEntry* entry =
+        header_table_.GetByNameAndValue(it->first, it->second);
     if (entry != NULL) {
       EmitIndex(entry);
     } else {
@@ -69,7 +70,8 @@ bool HpackEncoder::EncodeHeaderSet(const std::map<string, string>& header_set,
   Representations literal_headers;
   for (Representations::const_iterator it = regular_headers.begin();
        it != regular_headers.end(); ++it) {
-    HpackEntry* entry = header_table_.GetByNameAndValue(it->first, it->second);
+    const HpackEntry* entry =
+        header_table_.GetByNameAndValue(it->first, it->second);
     if (entry != NULL) {
       EmitIndex(entry);
     } else {
@@ -103,7 +105,7 @@ bool HpackEncoder::EncodeHeaderSetWithoutCompression(
   return true;
 }
 
-void HpackEncoder::EmitIndex(HpackEntry* entry) {
+void HpackEncoder::EmitIndex(const HpackEntry* entry) {
   output_stream_.AppendPrefix(kIndexedOpcode);
   output_stream_.AppendUint32(header_table_.IndexOf(entry));
 }

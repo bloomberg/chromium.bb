@@ -67,7 +67,7 @@ class NET_EXPORT_PRIVATE HpackEncoder {
   typedef std::vector<Representation> Representations;
 
   // Emits a static/dynamic indexed representation (Section 7.1).
-  void EmitIndex(HpackEntry* entry);
+  void EmitIndex(const HpackEntry* entry);
 
   // Emits a literal representation (Section 7.2).
   void EmitIndexedLiteral(const Representation& representation);

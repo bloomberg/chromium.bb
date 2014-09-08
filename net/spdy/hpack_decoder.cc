@@ -139,7 +139,7 @@ bool HpackDecoder::DecodeNextIndexedHeader(HpackInputStream* input_stream) {
   if (!input_stream->DecodeNextUint32(&index))
     return false;
 
-  HpackEntry* entry = header_table_.GetByIndex(index);
+  const HpackEntry* entry = header_table_.GetByIndex(index);
   if (entry == NULL)
     return false;
 

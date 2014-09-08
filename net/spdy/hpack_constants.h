@@ -29,7 +29,17 @@ struct HpackHuffmanSymbol {
   uint16 id;
 };
 
+// An entry in the static table. Must be a POD in order to avoid static
+// initializers, i.e. no user-defined constructors or destructors.
+struct HpackStaticEntry {
+  const char* const name;
+  const size_t name_len;
+  const char* const value;
+  const size_t value_len;
+};
+
 class HpackHuffmanTable;
+class HpackStaticTable;
 
 const uint32 kDefaultHeaderTableSizeSetting = 4096;
 
@@ -65,13 +75,21 @@ const HpackPrefix kLiteralNeverIndexOpcode = { 0x1, 4 };
 // table size with a 5-bit prefix.
 const HpackPrefix kHeaderTableSizeUpdateOpcode = { 0x1, 3 };
 
-// Returns symbol code table from "Appendix C. Huffman Codes".
+// Returns symbol code table from "Appendix C. Huffman Code".
 NET_EXPORT_PRIVATE std::vector<HpackHuffmanSymbol> HpackHuffmanCode();
+
+// Returns static table from "Appendix B. Static Table Definition".
+NET_EXPORT_PRIVATE std::vector<HpackStaticEntry> HpackStaticTableVector();
 
 // Returns a HpackHuffmanTable instance initialized with |kHpackHuffmanCode|.
 // The instance is read-only, has static lifetime, and is safe to share amoung
 // threads. This function is thread-safe.
 NET_EXPORT_PRIVATE const HpackHuffmanTable& ObtainHpackHuffmanTable();
+
+// Returns a HpackStaticTable instance initialized with |kHpackStaticTable|.
+// The instance is read-only, has static lifetime, and is safe to share amoung
+// threads. This function is thread-safe.
+NET_EXPORT_PRIVATE const HpackStaticTable& ObtainHpackStaticTable();
 
 // Pseudo-headers start with a colon.  (HTTP2 8.1.2.1., HPACK 3.1.)
 const char kPseudoHeaderPrefix = ':';

@@ -98,10 +98,10 @@ class HpackEncoderTest : public ::testing::Test {
 
   HpackEncoderTest()
       : encoder_(ObtainHpackHuffmanTable()),
-        peer_(&encoder_) {}
+        peer_(&encoder_),
+        static_(peer_.table()->GetByIndex(1)) {}
 
   virtual void SetUp() {
-    static_ = peer_.table()->GetByIndex(1);
     // Populate dynamic entries into the table fixture. For simplicity each
     // entry has name.size() + value.size() == 10.
     key_1_ = peer_.table()->TryAddEntry("key1", "value1");
@@ -120,7 +120,7 @@ class HpackEncoderTest : public ::testing::Test {
     expected_.AppendPrefix(kIndexedOpcode);
     expected_.AppendUint32(index);
   }
-  void ExpectIndexedLiteral(HpackEntry* key_entry, StringPiece value) {
+  void ExpectIndexedLiteral(const HpackEntry* key_entry, StringPiece value) {
     expected_.AppendPrefix(kLiteralIncrementalIndexOpcode);
     expected_.AppendUint32(IndexOf(key_entry));
     expected_.AppendPrefix(kStringLiteralIdentityEncoded);
@@ -156,15 +156,18 @@ class HpackEncoderTest : public ::testing::Test {
   size_t IndexOf(HpackEntry* entry) {
     return peer_.table()->IndexOf(entry);
   }
+  size_t IndexOf(const HpackEntry* entry) {
+    return peer_.table()->IndexOf(entry);
+  }
 
   HpackEncoder encoder_;
   test::HpackEncoderPeer peer_;
 
-  HpackEntry* static_;
-  HpackEntry* key_1_;
-  HpackEntry* key_2_;
-  HpackEntry* cookie_a_;
-  HpackEntry* cookie_c_;
+  const HpackEntry* static_;
+  const HpackEntry* key_1_;
+  const HpackEntry* key_2_;
+  const HpackEntry* cookie_a_;
+  const HpackEntry* cookie_c_;
 
   HpackOutputStream expected_;
 };
