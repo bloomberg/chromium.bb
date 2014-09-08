@@ -15,7 +15,7 @@ from mojo_python_tests_runner import MojoPythonTestRunner
 class PythonBindingsTestRunner(MojoPythonTestRunner):
 
   def add_custom_commandline_options(self, parser):
-    parser.add_argument('--build_dir', action='store',
+    parser.add_argument('--build-dir', action='store',
                         help='path to the build output directory')
 
   def apply_customization(self, args):
@@ -26,7 +26,6 @@ class PythonBindingsTestRunner(MojoPythonTestRunner):
       python_gen_dir = os.path.join(
           args.build_dir,
           'gen', 'mojo', 'public', 'interfaces', 'bindings', 'tests')
-      print python_gen_dir
       if python_gen_dir not in sys.path:
         sys.path.append(python_gen_dir)
 
