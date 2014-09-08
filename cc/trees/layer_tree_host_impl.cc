@@ -1943,10 +1943,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
   DCHECK(settings_.impl_side_painting);
   DCHECK(output_surface_);
   DCHECK(resource_provider_);
-  base::SingleThreadTaskRunner* task_runner =
-      proxy_->HasImplThread() ? proxy_->ImplThreadTaskRunner()
-                              : proxy_->MainThreadTaskRunner();
-  DCHECK(task_runner);
+  DCHECK(proxy_->ImplThreadTaskRunner());
 
   ContextProvider* context_provider = output_surface_->context_provider();
   transfer_buffer_memory_limit_ =
@@ -1958,8 +1955,10 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
                              GL_TEXTURE_2D,
                              resource_provider_->best_texture_format());
 
-    raster_worker_pool_ = GpuRasterWorkerPool::Create(
-        task_runner, context_provider, resource_provider_.get());
+    raster_worker_pool_ =
+        GpuRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
+                                    context_provider,
+                                    resource_provider_.get());
   } else if (UseOneCopyTextureUpload() && context_provider) {
     // We need to create a staging resource pool when using copy rasterizer.
     staging_resource_pool_ =
@@ -1972,7 +1971,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
                              resource_provider_->best_texture_format());
 
     raster_worker_pool_ = ImageCopyRasterWorkerPool::Create(
-        task_runner,
+        proxy_->ImplThreadTaskRunner(),
         RasterWorkerPool::GetTaskGraphRunner(),
         context_provider,
         resource_provider_.get(),
@@ -1984,7 +1983,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
         resource_provider_->memory_efficient_texture_format());
 
     raster_worker_pool_ = PixelBufferRasterWorkerPool::Create(
-        task_runner,
+        proxy_->ImplThreadTaskRunner(),
         RasterWorkerPool::GetTaskGraphRunner(),
         context_provider,
         resource_provider_.get(),
@@ -1996,16 +1995,17 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
                              resource_provider_->best_texture_format());
 
     raster_worker_pool_ =
-        ImageRasterWorkerPool::Create(task_runner,
+        ImageRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
                                       RasterWorkerPool::GetTaskGraphRunner(),
                                       resource_provider_.get());
   }
 
-  tile_manager_ = TileManager::Create(this,
-                                      task_runner,
-                                      resource_pool_.get(),
-                                      raster_worker_pool_->AsRasterizer(),
-                                      rendering_stats_instrumentation_);
+  tile_manager_ =
+      TileManager::Create(this,
+                          proxy_->ImplThreadTaskRunner(),
+                          resource_pool_.get(),
+                          raster_worker_pool_->AsRasterizer(),
+                          rendering_stats_instrumentation_);
 
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
   need_to_update_visible_tiles_before_draw_ = false;

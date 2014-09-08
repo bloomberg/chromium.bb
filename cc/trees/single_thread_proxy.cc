@@ -12,6 +12,7 @@
 #include "cc/quads/draw_quad.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/resource_update_controller.h"
+#include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -46,6 +47,10 @@ SingleThreadProxy::SingleThreadProxy(
   TRACE_EVENT0("cc", "SingleThreadProxy::SingleThreadProxy");
   DCHECK(Proxy::IsMainThread());
   DCHECK(layer_tree_host);
+
+  // Impl-side painting not supported without threaded compositing.
+  CHECK(!layer_tree_host->settings().impl_side_painting)
+      << "Threaded compositing must be enabled to use impl-side painting.";
 }
 
 void SingleThreadProxy::Start() {
@@ -187,8 +192,8 @@ void SingleThreadProxy::DoCommit(const BeginFrameArgs& begin_frame_args) {
     // This CapturePostTasks should be destroyed before CommitComplete() is
     // called since that goes out to the embedder, and we want the embedder
     // to receive its callbacks before that.
-    commit_blocking_task_runner_.reset(new BlockingTaskRunner::CapturePostTasks(
-        blocking_main_thread_task_runner()));
+    BlockingTaskRunner::CapturePostTasks blocked(
+        blocking_main_thread_task_runner());
 
     layer_tree_host_impl_->BeginCommit();
 
@@ -230,27 +235,6 @@ void SingleThreadProxy::DoCommit(const BeginFrameArgs& begin_frame_args) {
         stats_instrumentation->main_thread_rendering_stats());
     stats_instrumentation->AccumulateAndClearMainThreadStats();
   }
-
-  if (layer_tree_host_->settings().impl_side_painting) {
-    // TODO(enne): just commit directly to the active tree.
-    //
-    // Synchronously activate during commit to satisfy any potential
-    // SetNextCommitWaitsForActivation calls.  Unfortunately, the tree
-    // might not be ready to draw, so DidActivateSyncTree must set
-    // the flag to force the tree to not draw until textures are ready.
-    NotifyReadyToActivate();
-  } else {
-    CommitComplete();
-  }
-}
-
-void SingleThreadProxy::CommitComplete() {
-  DCHECK(!layer_tree_host_impl_->pending_tree())
-      << "Activation is expected to have synchronously occurred by now.";
-  DCHECK(commit_blocking_task_runner_);
-
-  DebugScopedSetMainThread main(this);
-  commit_blocking_task_runner_.reset();
   layer_tree_host_->CommitComplete();
   layer_tree_host_->DidBeginMainFrame();
   timing_history_.DidCommit();
@@ -276,7 +260,7 @@ void SingleThreadProxy::SetNeedsRedraw(const gfx::Rect& damage_rect) {
 }
 
 void SingleThreadProxy::SetNextCommitWaitsForActivation() {
-  // Activation always forced in commit, so nothing to do.
+  // There is no activation here other than commit. So do nothing.
   DCHECK(Proxy::IsMainThread());
 }
 
@@ -345,10 +329,8 @@ void SingleThreadProxy::OnCanDrawStateChanged(bool can_draw) {
 }
 
 void SingleThreadProxy::NotifyReadyToActivate() {
-  TRACE_EVENT0("cc", "SingleThreadProxy::NotifyReadyToActivate");
-  DebugScopedSetImplThread impl(this);
-  if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->NotifyReadyToActivate();
+  // Impl-side painting only.
+  NOTREACHED();
 }
 
 void SingleThreadProxy::SetNeedsRedrawOnImplThread() {
@@ -362,9 +344,8 @@ void SingleThreadProxy::SetNeedsAnimateOnImplThread() {
 }
 
 void SingleThreadProxy::SetNeedsManageTilesOnImplThread() {
-  TRACE_EVENT0("cc", "SingleThreadProxy::SetNeedsManageTilesOnImplThread");
-  if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->SetNeedsManageTiles();
+  // Impl-side painting only.
+  NOTREACHED();
 }
 
 void SingleThreadProxy::SetNeedsRedrawRectOnImplThread(
@@ -374,9 +355,8 @@ void SingleThreadProxy::SetNeedsRedrawRectOnImplThread(
 }
 
 void SingleThreadProxy::DidInitializeVisibleTileOnImplThread() {
-  TRACE_EVENT0("cc", "SingleThreadProxy::DidInitializeVisibleTileOnImplThread");
-  if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->SetNeedsRedraw();
+  // Impl-side painting only.
+  NOTREACHED();
 }
 
 void SingleThreadProxy::SetNeedsCommitOnImplThread() {
@@ -413,39 +393,15 @@ bool SingleThreadProxy::ReduceContentsTextureMemoryOnImplThread(
 
 bool SingleThreadProxy::IsInsideDraw() { return inside_draw_; }
 
-void SingleThreadProxy::DidActivateSyncTree() {
-  // Non-impl-side painting finishes commit in DoCommit.  Impl-side painting
-  // defers until here to simulate SetNextCommitWaitsForActivation.
-  if (layer_tree_host_impl_->settings().impl_side_painting) {
-    // This is required because NotifyReadyToActivate gets called when
-    // the pending tree is not actually ready in the SingleThreadProxy.
-    layer_tree_host_impl_->active_tree()->SetRequiresHighResToDraw();
-
-    // Since activation could cause tasks to run, post CommitComplete
-    // separately so that it runs after these tasks.  This is the loose
-    // equivalent of blocking commit until activation and also running
-    // all tasks posted during commit/activation before CommitComplete.
-    MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&SingleThreadProxy::CommitComplete,
-                   weak_factory_.GetWeakPtr()));
-  }
-
-  UpdateBackgroundAnimateTicking();
-  timing_history_.DidActivateSyncTree();
-}
-
-void SingleThreadProxy::DidManageTiles() {
-  DCHECK(layer_tree_host_impl_->settings().impl_side_painting);
-  DCHECK(Proxy::IsImplThread());
-  if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->DidManageTiles();
-}
-
 void SingleThreadProxy::UpdateRendererCapabilitiesOnImplThread() {
   DCHECK(IsImplThread());
   renderer_capabilities_for_main_thread_ =
       layer_tree_host_impl_->GetRendererCapabilities().MainThreadCapabilities();
+}
+
+void SingleThreadProxy::DidManageTiles() {
+  // Impl-side painting only.
+  NOTREACHED();
 }
 
 void SingleThreadProxy::DidLoseOutputSurfaceOnImplThread() {
@@ -489,9 +445,6 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   BeginFrameArgs begin_frame_args = BeginFrameArgs::Create(
       frame_begin_time, base::TimeTicks(), BeginFrameArgs::DefaultInterval());
   DoCommit(begin_frame_args);
-
-  DCHECK(!layer_tree_host_impl_->settings().impl_side_painting)
-      << "Impl-side painting and synchronous compositing are not supported.";
 
   LayerTreeHostImpl::FrameData frame;
   DoComposite(frame_begin_time, &frame);
@@ -694,13 +647,11 @@ void SingleThreadProxy::ScheduledActionAnimate() {
 }
 
 void SingleThreadProxy::ScheduledActionUpdateVisibleTiles() {
-  DebugScopedSetImplThread impl(this);
-  layer_tree_host_impl_->UpdateVisibleTiles();
+  // Impl-side painting only.
+  NOTREACHED();
 }
 
 void SingleThreadProxy::ScheduledActionActivateSyncTree() {
-  DebugScopedSetImplThread impl(this);
-  layer_tree_host_impl_->ActivateSyncTree();
 }
 
 void SingleThreadProxy::ScheduledActionBeginOutputSurfaceCreation() {
@@ -721,10 +672,8 @@ void SingleThreadProxy::ScheduledActionBeginOutputSurfaceCreation() {
 }
 
 void SingleThreadProxy::ScheduledActionManageTiles() {
-  TRACE_EVENT0("cc", "SingleThreadProxy::ScheduledActionManageTiles");
-  DCHECK(layer_tree_host_impl_->settings().impl_side_painting);
-  DebugScopedSetImplThread impl(this);
-  layer_tree_host_impl_->ManageTiles();
+  // Impl-side painting only.
+  NOTREACHED();
 }
 
 void SingleThreadProxy::DidAnticipatedDrawTimeChange(base::TimeTicks time) {

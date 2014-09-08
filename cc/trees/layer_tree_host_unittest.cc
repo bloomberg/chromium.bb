@@ -529,8 +529,7 @@ class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
   scoped_refptr<ContentLayer> root_layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_BLOCKNOTIFY_TEST_F(
-    LayerTreeHostTestSetNextCommitForcesRedraw);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNextCommitForcesRedraw);
 
 // Tests that if a layer is not drawn because of some reason in the parent then
 // its damage is preserved until the next time it is drawn.
@@ -738,8 +737,7 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
 
   virtual void BeginCommitOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     EXPECT_EQ(frame_count_with_pending_tree_, 0);
-    if (impl->settings().impl_side_painting)
-      impl->BlockNotifyReadyToActivateForTesting(true);
+    impl->BlockNotifyReadyToActivateForTesting(true);
   }
 
   virtual void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
@@ -750,8 +748,7 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
     if (frame_count_with_pending_tree_ == 1) {
       EXPECT_EQ(first_frame_time_.ToInternalValue(), 0);
       first_frame_time_ = impl->CurrentBeginFrameArgs().frame_time;
-    } else if (frame_count_with_pending_tree_ == 2 &&
-               impl->settings().impl_side_painting) {
+    } else if (frame_count_with_pending_tree_ == 2) {
       impl->BlockNotifyReadyToActivateForTesting(false);
     }
   }
@@ -780,7 +777,7 @@ class LayerTreeHostTestFrameTimeUpdatesAfterActivationFails
   base::TimeTicks first_frame_time_;
 };
 
-SINGLE_AND_MULTI_THREAD_BLOCKNOTIFY_TEST_F(
+SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostTestFrameTimeUpdatesAfterActivationFails);
 
 // This test verifies that LayerTreeHostImpl's current frame time gets
@@ -2406,18 +2403,12 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
   LayerTreeHostTestChangeLayerPropertiesInPaintContents() : num_commits_(0) {}
 
   virtual void SetupTree() OVERRIDE {
-    if (layer_tree_host()->settings().impl_side_painting) {
-      scoped_refptr<PictureLayer> root_layer = PictureLayer::Create(&client_);
-      layer_tree_host()->SetRootLayer(root_layer);
-    } else {
-      scoped_refptr<ContentLayer> root_layer = ContentLayer::Create(&client_);
-      layer_tree_host()->SetRootLayer(root_layer);
-    }
-    Layer* root_layer = layer_tree_host()->root_layer();
+    scoped_refptr<ContentLayer> root_layer = ContentLayer::Create(&client_);
     root_layer->SetIsDrawable(true);
     root_layer->SetBounds(gfx::Size(1, 1));
 
-    client_.set_layer(root_layer);
+    layer_tree_host()->SetRootLayer(root_layer);
+    client_.set_layer(root_layer.get());
 
     LayerTreeHostTest::SetupTree();
   }
@@ -2425,7 +2416,7 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
   virtual void AfterTest() OVERRIDE {}
 
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     num_commits_++;
     if (num_commits_ == 1) {
       LayerImpl* root_layer = host_impl->active_tree()->root_layer();
@@ -2442,8 +2433,7 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
   int num_commits_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostTestChangeLayerPropertiesInPaintContents);
+SINGLE_THREAD_TEST_F(LayerTreeHostTestChangeLayerPropertiesInPaintContents);
 
 class MockIOSurfaceWebGraphicsContext3D : public TestWebGraphicsContext3D {
  public:
