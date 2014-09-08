@@ -1273,17 +1273,7 @@ void BrowserCommandController::UpdatePrintingState() {
 #if !defined(DISABLE_BASIC_PRINTING)
   command_updater_.UpdateCommandEnabled(IDC_BASIC_PRINT,
                                         CanBasicPrint(browser_));
-#elif defined(OS_WIN)
-  HMODULE metro_module = base::win::GetMetroModule();
-  if (metro_module != NULL) {
-    typedef void (*MetroEnablePrinting)(BOOL);
-    MetroEnablePrinting metro_enable_printing =
-        reinterpret_cast<MetroEnablePrinting>(
-            ::GetProcAddress(metro_module, "MetroEnablePrinting"));
-    if (metro_enable_printing)
-      metro_enable_printing(print_enabled);
-  }
-#endif  // !OS_WIN
+#endif  // !DISABLE_BASIC_PRINTING
 }
 
 void BrowserCommandController::UpdateSaveAsState() {
