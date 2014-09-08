@@ -6,14 +6,16 @@
         ], 
         "key_mobile_sites_007.wpr": [
             "http://ftw.usatoday.com/2014/05/spelling-bee-rules-shenanigans", 
-            "http://www.latimes.com", 
-            "http://m.espn.go.com/nhl/rankings"
+            "http://www.latimes.com"
         ], 
         "key_mobile_sites_001.wpr": [
             "http://mobile-news.sandbox.google.com/news/p#2"
         ], 
         "key_mobile_sites_003.wpr": [
             "https://facebook.com/barackobama"
+        ], 
+        "key_mobile_sites_008.wpr": [
+            "http://m.espn.go.com/nhl/rankings"
         ], 
         "key_mobile_sites_004.wpr": [
             "http://groupcloned.com/test/list-images-variable/index.html"
