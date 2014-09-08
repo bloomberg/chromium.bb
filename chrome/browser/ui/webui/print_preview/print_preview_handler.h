@@ -79,9 +79,11 @@ class PrintPreviewHandler
   // Called when print preview failed.
   void OnPrintPreviewFailed();
 
+#if !defined(DISABLE_BASIC_PRINTING)
   // Called when the user press ctrl+shift+p to display the native system
   // dialog.
   void ShowSystemDialog();
+#endif  // !DISABLE_BASIC_PRINTING
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
   // PrivetLocalPrinterLister::Delegate implementation.
@@ -149,9 +151,11 @@ class PrintPreviewHandler
   // Gets the printer capabilities. First element of |args| is the printer name.
   void HandleGetPrinterCapabilities(const base::ListValue* args);
 
+#if !defined(DISABLE_BASIC_PRINTING)
   // Asks the initiator renderer to show the native print system dialog. |args|
   // is unused.
   void HandleShowSystemDialog(const base::ListValue* args);
+#endif  // !DISABLE_BASIC_PRINTING
 
   // Callback for the signin dialog to call once signin is complete.
   void OnSigninComplete();

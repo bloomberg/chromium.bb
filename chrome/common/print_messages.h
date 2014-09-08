@@ -318,9 +318,14 @@ IPC_MESSAGE_ROUTED0(PrintMsg_PrintNodeUnderContextMenu)
 IPC_MESSAGE_ROUTED1(PrintMsg_PrintForPrintPreview,
                     base::DictionaryValue /* settings */)
 
+#if !defined(DISABLE_BASIC_PRINTING)
 // Tells the render view to switch the CSS to print media type, renders every
 // requested pages and switch back the CSS to display media type.
 IPC_MESSAGE_ROUTED0(PrintMsg_PrintPages)
+
+// Like PrintMsg_PrintPages, but using the print preview document's frame/node.
+IPC_MESSAGE_ROUTED0(PrintMsg_PrintForSystemDialog)
+#endif  // !DISABLE_BASIC_PRINTING
 
 // Tells the render view that printing is done so it can clean up.
 IPC_MESSAGE_ROUTED1(PrintMsg_PrintingDone,
@@ -335,9 +340,6 @@ IPC_MESSAGE_ROUTED1(PrintMsg_SetScriptedPrintingBlocked,
 // called multiple times as the user updates settings.
 IPC_MESSAGE_ROUTED1(PrintMsg_PrintPreview,
                     base::DictionaryValue /* settings */)
-
-// Like PrintMsg_PrintPages, but using the print preview document's frame/node.
-IPC_MESSAGE_ROUTED0(PrintMsg_PrintForSystemDialog)
 
 // Messages sent from the renderer to the browser.
 

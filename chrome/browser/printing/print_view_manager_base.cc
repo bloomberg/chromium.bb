@@ -75,9 +75,11 @@ PrintViewManagerBase::~PrintViewManagerBase() {
   DisconnectFromCurrentPrintJob();
 }
 
+#if !defined(DISABLE_BASIC_PRINTING)
 bool PrintViewManagerBase::PrintNow() {
   return PrintNowInternal(new PrintMsg_PrintPages(routing_id()));
 }
+#endif  // !DISABLE_BASIC_PRINTING
 
 void PrintViewManagerBase::UpdateScriptedPrintingBlocked() {
   Send(new PrintMsg_SetScriptedPrintingBlocked(

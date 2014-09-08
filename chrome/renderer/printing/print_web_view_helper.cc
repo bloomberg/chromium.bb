@@ -834,8 +834,10 @@ void PrintWebViewHelper::PrintPage(blink::WebLocalFrame* frame,
 bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintWebViewHelper, message)
+#if !defined(DISABLE_BASIC_PRINTING)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintPages, OnPrintPages)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintForSystemDialog, OnPrintForSystemDialog)
+#endif  // !DISABLE_BASIC_PRINTING
     IPC_MESSAGE_HANDLER(PrintMsg_InitiatePrintPreview, OnInitiatePrintPreview)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintPreview, OnPrintPreview)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintForPrintPreview, OnPrintForPrintPreview)
@@ -932,6 +934,7 @@ bool PrintWebViewHelper::GetPrintFrame(blink::WebLocalFrame** frame) {
   return true;
 }
 
+#if !defined(DISABLE_BASIC_PRINTING)
 void PrintWebViewHelper::OnPrintPages() {
   blink::WebLocalFrame* frame;
   if (GetPrintFrame(&frame))
@@ -944,9 +947,9 @@ void PrintWebViewHelper::OnPrintForSystemDialog() {
     NOTREACHED();
     return;
   }
-
   Print(frame, print_preview_context_.source_node());
 }
+#endif  // !DISABLE_BASIC_PRINTING
 
 void PrintWebViewHelper::GetPageSizeAndContentAreaFromPageLayout(
     const PageSizeMargins& page_layout_in_points,
@@ -1223,6 +1226,7 @@ void PrintWebViewHelper::PrintNode(const blink::WebNode& node) {
   print_node_in_progress_ = false;
 }
 
+#if !defined(DISABLE_BASIC_PRINTING)
 void PrintWebViewHelper::Print(blink::WebLocalFrame* frame,
                                const blink::WebNode& node) {
   // If still not finished with earlier print request simply ignore.
@@ -1256,6 +1260,7 @@ void PrintWebViewHelper::Print(blink::WebLocalFrame* frame,
     DidFinishPrinting(FAIL_PRINT);
   }
 }
+#endif  // !DISABLE_BASIC_PRINTING
 
 void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
   switch (result) {

@@ -881,21 +881,21 @@ bool CanPrint(Browser* browser) {
       GetContentRestrictions(browser) & CONTENT_RESTRICTION_PRINT);
 }
 
-#if !defined(OS_WIN)
-void AdvancedPrint(Browser* browser) {
+#if !defined(DISABLE_BASIC_PRINTING)
+void BasicPrint(Browser* browser) {
 #if defined(ENABLE_FULL_PRINTING)
   printing::PrintViewManager* print_view_manager =
       printing::PrintViewManager::FromWebContents(
           browser->tab_strip_model()->GetActiveWebContents());
-  print_view_manager->AdvancedPrintNow();
+  print_view_manager->BasicPrint();
 #endif
 }
 
-bool CanAdvancedPrint(Browser* browser) {
+bool CanBasicPrint(Browser* browser) {
   return browser->profile()->GetPrefs()->GetBoolean(prefs::kPrintingEnabled) &&
       (PrintPreviewShowing(browser) || CanPrint(browser));
 }
-#endif  // !OS_WIN
+#endif  // !DISABLE_BASIC_PRINTING
 
 void EmailPageLocation(Browser* browser) {
   content::RecordAction(UserMetricsAction("EmailPageLocation"));

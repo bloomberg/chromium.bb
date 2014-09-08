@@ -68,7 +68,9 @@ const struct AcceleratorMapping {
   {IDC_FOCUS_LOCATION, NSCommandKeyMask, ui::VKEY_L},
   {IDC_CLOSE_WINDOW, NSCommandKeyMask, ui::VKEY_W},
   {IDC_EMAIL_PAGE_LOCATION, NSCommandKeyMask | NSShiftKeyMask, ui::VKEY_I},
-  {IDC_ADVANCED_PRINT, NSCommandKeyMask | NSAlternateKeyMask, ui::VKEY_P},
+#if !defined(DISABLE_BASIC_PRINTING)
+  {IDC_BASIC_PRINT, NSCommandKeyMask | NSAlternateKeyMask, ui::VKEY_P},
+#endif  // !DISABLE_BASIC_PRINTING
   {IDC_CONTENT_CONTEXT_UNDO, NSCommandKeyMask, ui::VKEY_Z},
   {IDC_CONTENT_CONTEXT_REDO, NSCommandKeyMask | NSShiftKeyMask, ui::VKEY_Z},
   {IDC_CONTENT_CONTEXT_CUT, NSCommandKeyMask, ui::VKEY_X},

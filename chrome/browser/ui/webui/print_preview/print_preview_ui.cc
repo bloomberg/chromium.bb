@@ -48,11 +48,11 @@ namespace {
 
 #if defined(OS_MACOSX)
 // U+0028 U+21E7 U+2318 U+0050 U+0029 in UTF8
-const char kAdvancedPrintShortcut[] = "\x28\xE2\x8c\xA5\xE2\x8C\x98\x50\x29";
+const char kBasicPrintShortcut[] = "\x28\xE2\x8c\xA5\xE2\x8C\x98\x50\x29";
 #elif defined(OS_WIN) || defined(OS_CHROMEOS)
-const char kAdvancedPrintShortcut[] = "(Ctrl+Shift+P)";
+const char kBasicPrintShortcut[] = "(Ctrl+Shift+P)";
 #else
-const char kAdvancedPrintShortcut[] = "(Shift+Ctrl+P)";
+const char kBasicPrintShortcut[] = "(Shift+Ctrl+P)";
 #endif
 
 // Thread-safe wrapper around a std::map to keep track of mappings from
@@ -211,7 +211,7 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
                              IDS_PRINT_PREVIEW_PAGE_LABEL_SINGULAR);
   source->AddLocalizedString("printPreviewPageLabelPlural",
                              IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL);
-  const base::string16 shortcut_text(base::UTF8ToUTF16(kAdvancedPrintShortcut));
+  const base::string16 shortcut_text(base::UTF8ToUTF16(kBasicPrintShortcut));
 #if defined(OS_CHROMEOS)
   source->AddString(
       "systemDialogOption",
@@ -484,9 +484,11 @@ void PrintPreviewUI::OnPrintPreviewRequest(int request_id) {
   g_print_preview_request_id_map.Get().Set(id_, request_id);
 }
 
+#if !defined(DISABLE_BASIC_PRINTING)
 void PrintPreviewUI::OnShowSystemDialog() {
   web_ui()->CallJavascriptFunction("onSystemDialogLinkClicked");
 }
+#endif  // !DISABLE_BASIC_PRINTING
 
 void PrintPreviewUI::OnDidGetPreviewPageCount(
     const PrintHostMsg_DidGetPreviewPageCount_Params& params) {

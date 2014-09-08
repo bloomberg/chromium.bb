@@ -2853,6 +2853,9 @@
       ['enable_printing==1', {
         'defines': ['ENABLE_FULL_PRINTING=1', 'ENABLE_PRINTING=1'],
       }],
+      ['enable_printing==1 and OS=="win"', {
+        'defines': ['DISABLE_BASIC_PRINTING=1'],
+      }],
       ['enable_printing==2', {
         'defines': ['ENABLE_PRINTING=1'],
       }],

@@ -33,6 +33,9 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // pick those up in the WM_APPCOMMAND message.
 IDR_MAINFRAME ACCELERATORS
 BEGIN
+#if !defined(DISABLE_BASIC_PRINTING)
+    "P",            IDC_BASIC_PRINT,            VIRTKEY, CONTROL, SHIFT
+#endif  // !DISABLE_BASIC_PRINTING
     VK_LEFT,        IDC_BACK,                   VIRTKEY, ALT
     VK_BACK,        IDC_BACK,                   VIRTKEY
     "D",            IDC_BOOKMARK_PAGE,          VIRTKEY, CONTROL
