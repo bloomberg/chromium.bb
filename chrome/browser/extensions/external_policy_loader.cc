@@ -4,33 +4,23 @@
 
 #include "chrome/browser/extensions/external_policy_loader.h"
 
-#include "base/bind.h"
-#include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
-#include "extensions/browser/pref_names.h"
 
 namespace extensions {
 
-ExternalPolicyLoader::ExternalPolicyLoader(Profile* profile)
-    : profile_(profile) {
-  pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(pref_names::kInstallForceList,
-                             base::Bind(&ExternalPolicyLoader::StartLoading,
-                                        base::Unretained(this)));
-  pref_change_registrar_.Add(pref_names::kAllowedTypes,
-                             base::Bind(&ExternalPolicyLoader::StartLoading,
-                                        base::Unretained(this)));
-  notification_registrar_.Add(this,
-                              chrome::NOTIFICATION_PROFILE_DESTROYED,
-                              content::Source<Profile>(profile_));
+ExternalPolicyLoader::ExternalPolicyLoader(ExtensionManagement *settings)
+    : settings_(settings) {
+  settings_->AddObserver(this);
+}
+
+ExternalPolicyLoader::~ExternalPolicyLoader() {
+  settings_->RemoveObserver(this);
+}
+
+void ExternalPolicyLoader::OnExtensionManagementSettingsChanged() {
+  StartLoading();
 }
 
 // static
@@ -42,24 +32,8 @@ void ExternalPolicyLoader::AddExtension(base::DictionaryValue* dict,
                   update_url);
 }
 
-void ExternalPolicyLoader::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (profile_ == NULL) return;
-  DCHECK(type == chrome::NOTIFICATION_PROFILE_DESTROYED) <<
-      "Unexpected notification type.";
-  if (content::Source<Profile>(source).ptr() == profile_) {
-    notification_registrar_.RemoveAll();
-    pref_change_registrar_.RemoveAll();
-    profile_ = NULL;
-  }
-}
-
 void ExternalPolicyLoader::StartLoading() {
-  const base::DictionaryValue* forcelist =
-      profile_->GetPrefs()->GetDictionary(pref_names::kInstallForceList);
-  prefs_.reset(forcelist ? forcelist->DeepCopy() : NULL);
+  prefs_ = settings_->GetForceInstallList();
   LoadFinished();
 }
 

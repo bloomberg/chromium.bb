@@ -5,13 +5,14 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
-#include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
-#include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/extensions/updater/extension_downloader.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +20,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_map.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
@@ -28,15 +32,41 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
-#include "extensions/browser/pref_names.h"
 #include "net/url_request/url_fetcher.h"
+#include "policy/policy_constants.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 using extensions::Extension;
 using extensions::ExtensionRegistry;
 using extensions::Manifest;
+using policy::PolicyMap;
+using testing::Return;
+using testing::_;
+
+namespace {
+
+std::string BuildForceInstallPolicyValue(const char* extension_id,
+                                         const char* update_url) {
+  return base::StringPrintf("%s;%s", extension_id, update_url);
+}
+
+}  // namespace
 
 class ExtensionManagementTest : public ExtensionBrowserTest {
+ public:
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
+        .WillRepeatedly(Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
+  }
+
  protected:
+  void UpdateProviderPolicy(const PolicyMap& policy) {
+    policy_provider_.UpdateChromePolicy(policy);
+    base::RunLoop().RunUntilIdle();
+  }
+
   // Helper method that returns whether the extension is at the given version.
   // This calls version(), which must be defined in the extension's bg page,
   // as well as asking the extension itself.
@@ -71,6 +101,9 @@ class ExtensionManagementTest : public ExtensionBrowserTest {
       return false;
     return true;
   }
+
+ private:
+  policy::MockConfigurationPolicyProvider policy_provider_;
 };
 
 #if defined(OS_LINUX)
@@ -508,19 +541,22 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   const size_t size_before = registry->enabled_extensions().size();
   ASSERT_TRUE(registry->disabled_extensions().is_empty());
 
-  PrefService* prefs = browser()->profile()->GetPrefs();
-  const base::DictionaryValue* forcelist =
-      prefs->GetDictionary(extensions::pref_names::kInstallForceList);
-  ASSERT_TRUE(forcelist->empty()) << kForceInstallNotEmptyHelp;
+  ASSERT_TRUE(extensions::ExtensionManagementFactory::GetForBrowserContext(
+                  browser()->profile())
+                  ->GetForceInstallList()
+                  ->empty())
+      << kForceInstallNotEmptyHelp;
 
-  {
-    // Set the policy as a user preference and fire notification observers.
-    DictionaryPrefUpdate pref_update(prefs,
-                                     extensions::pref_names::kInstallForceList);
-    base::DictionaryValue* forcelist = pref_update.Get();
-    extensions::ExternalPolicyLoader::AddExtension(
-        forcelist, kExtensionId, "http://localhost/autoupdate/manifest");
-  }
+  base::ListValue forcelist;
+  forcelist.AppendString(BuildForceInstallPolicyValue(
+      kExtensionId, "http://localhost/autoupdate/manifest"));
+  PolicyMap policies;
+  policies.Set(policy::key::kExtensionInstallForcelist,
+               policy::POLICY_LEVEL_MANDATORY,
+               policy::POLICY_SCOPE_USER,
+               forcelist.DeepCopy(),
+               NULL);
+  UpdateProviderPolicy(policies);
 
   // Check if the extension got installed.
   ASSERT_TRUE(WaitForExtensionInstall());
@@ -547,7 +583,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   EXPECT_EQ(0u, registry->disabled_extensions().size());
 
   // Check that emptying the list triggers uninstall.
-  prefs->ClearPref(extensions::pref_names::kInstallForceList);
+  policies.Erase(policy::key::kExtensionInstallForcelist);
+  UpdateProviderPolicy(policies);
   EXPECT_EQ(size_before + 1, registry->enabled_extensions().size());
   EXPECT_FALSE(service->GetExtensionById(kExtensionId, true));
 }
@@ -582,10 +619,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
                                      basedir.AppendASCII("v2.crx"));
 
   // Check that the policy is initially empty.
-  PrefService* prefs = browser()->profile()->GetPrefs();
-  const base::DictionaryValue* forcelist =
-      prefs->GetDictionary(extensions::pref_names::kInstallForceList);
-  ASSERT_TRUE(forcelist->empty()) << kForceInstallNotEmptyHelp;
+  ASSERT_TRUE(extensions::ExtensionManagementFactory::GetForBrowserContext(
+                  browser()->profile())
+                  ->GetForceInstallList()
+                  ->empty())
+      << kForceInstallNotEmptyHelp;
 
   // User install of the extension.
   ASSERT_TRUE(InstallExtension(basedir.AppendASCII("v2.crx"), 1));
@@ -596,13 +634,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   EXPECT_TRUE(service->IsExtensionEnabled(kExtensionId));
 
   // Setup the force install policy. It should override the location.
-  {
-    DictionaryPrefUpdate pref_update(prefs,
-                                     extensions::pref_names::kInstallForceList);
-    extensions::ExternalPolicyLoader::AddExtension(
-        pref_update.Get(), kExtensionId,
-        "http://localhost/autoupdate/manifest");
-  }
+  base::ListValue forcelist;
+  forcelist.AppendString(BuildForceInstallPolicyValue(
+      kExtensionId, "http://localhost/autoupdate/manifest"));
+  PolicyMap policies;
+  policies.Set(policy::key::kExtensionInstallForcelist,
+               policy::POLICY_LEVEL_MANDATORY,
+               policy::POLICY_SCOPE_USER,
+               forcelist.DeepCopy(),
+               NULL);
+  UpdateProviderPolicy(policies);
+
   ASSERT_TRUE(WaitForExtensionInstall());
   ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
   extension = service->GetExtensionById(kExtensionId, false);
@@ -614,7 +656,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   // TODO(joaodasilva): it would be nicer if the extension was kept instead,
   // and reverted location to INTERNAL or whatever it was before the policy
   // was applied.
-  prefs->ClearPref(extensions::pref_names::kInstallForceList);
+  policies.Erase(policy::key::kExtensionInstallForcelist);
+  UpdateProviderPolicy(policies);
   ASSERT_EQ(size_before, registry->enabled_extensions().size());
   extension = service->GetExtensionById(kExtensionId, true);
   EXPECT_FALSE(extension);
@@ -636,13 +679,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
 
   // Install the policy again. It should overwrite the extension's location,
   // and force enable it too.
-  {
-    DictionaryPrefUpdate pref_update(prefs,
-                                     extensions::pref_names::kInstallForceList);
-    base::DictionaryValue* forcelist = pref_update.Get();
-    extensions::ExternalPolicyLoader::AddExtension(
-        forcelist, kExtensionId, "http://localhost/autoupdate/manifest");
-  }
+  policies.Set(policy::key::kExtensionInstallForcelist,
+               policy::POLICY_LEVEL_MANDATORY,
+               policy::POLICY_SCOPE_USER,
+               forcelist.DeepCopy(),
+               NULL);
+  UpdateProviderPolicy(policies);
+
   ASSERT_TRUE(WaitForExtensionInstall());
   ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
   extension = service->GetExtensionById(kExtensionId, false);

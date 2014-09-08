@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/common/pref_names.h"
@@ -54,7 +55,8 @@ class MockExternalPolicyProviderVisitor
         pref_names::kInstallForceList, policy_forcelist.DeepCopy());
     provider_.reset(new ExternalProviderImpl(
         this,
-        new ExternalPolicyLoader(profile_.get()),
+        new ExternalPolicyLoader(
+            ExtensionManagementFactory::GetForBrowserContext(profile_.get())),
         profile_.get(),
         Manifest::INVALID_LOCATION,
         Manifest::EXTERNAL_POLICY_DOWNLOAD,

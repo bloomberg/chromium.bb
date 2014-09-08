@@ -8,12 +8,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/prefs/pref_change_registrar.h"
+#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/external_loader.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-
-class Profile;
 
 namespace base {
 class DictionaryValue;
@@ -21,19 +17,15 @@ class DictionaryValue;
 
 namespace extensions {
 
-// A specialization of the ExternalProvider that uses
-// pref_names::kInstallForceList to look up which external extensions are
-// registered.
-class ExternalPolicyLoader
-    : public ExternalLoader,
-      public content::NotificationObserver {
+// A specialization of the ExternalProvider that uses extension management
+// policies to look up which external extensions are registered.
+class ExternalPolicyLoader : public ExternalLoader,
+                             public ExtensionManagement::Observer {
  public:
-  explicit ExternalPolicyLoader(Profile* profile);
+  explicit ExternalPolicyLoader(ExtensionManagement* settings);
 
-  // content::NotificationObserver implementation
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // ExtensionManagement::Observer implementation
+  virtual void OnExtensionManagementSettingsChanged() OVERRIDE;
 
   // Adds an extension to be updated to the pref dictionary.
   static void AddExtension(base::DictionaryValue* dict,
@@ -46,12 +38,9 @@ class ExternalPolicyLoader
  private:
   friend class base::RefCountedThreadSafe<ExternalLoader>;
 
-  virtual ~ExternalPolicyLoader() {}
+  virtual ~ExternalPolicyLoader();
 
-  PrefChangeRegistrar pref_change_registrar_;
-  content::NotificationRegistrar notification_registrar_;
-
-  Profile* profile_;
+  ExtensionManagement* settings_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPolicyLoader);
 };

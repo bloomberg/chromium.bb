@@ -18,6 +18,7 @@
 #include "base/version.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/external_component_loader.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
@@ -387,10 +388,12 @@ void ExternalProviderImpl::CreateExternalProviders(
       NOTREACHED();
     }
   } else {
-    external_loader = new ExternalPolicyLoader(profile);
+    external_loader = new ExternalPolicyLoader(
+        ExtensionManagementFactory::GetForBrowserContext(profile));
   }
 #else
-  external_loader = new ExternalPolicyLoader(profile);
+  external_loader = new ExternalPolicyLoader(
+      ExtensionManagementFactory::GetForBrowserContext(profile));
 #endif
 
   // Policies are mandatory so they can't be skipped with command line flag.

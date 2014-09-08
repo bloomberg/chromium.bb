@@ -110,6 +110,13 @@ class ExtensionManagement : public KeyedService {
   // from the command line, or when loaded as an unpacked extension).
   bool BlacklistedByDefault();
 
+  // Returns the force install list, in format specified by
+  // ExternalPolicyLoader::AddExtension().
+  scoped_ptr<base::DictionaryValue> GetForceInstallList() const;
+
+  // Returns if an extension with id |id| is allowed to install or not.
+  bool IsInstallationAllowed(const ExtensionId& id) const;
+
   // Helper function to read |settings_by_id_| with |id| as key. Returns a
   // constant reference to default settings if |id| does not exist.
   const IndividualSettings& ReadById(const ExtensionId& id) const;
