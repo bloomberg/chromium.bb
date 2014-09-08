@@ -33,6 +33,7 @@ component("sql") {
 }
 
 source_set("test_support") {
+  testonly = true
   sources = [
     "test/error_callback_support.cc",
     "test/error_callback_support.h",

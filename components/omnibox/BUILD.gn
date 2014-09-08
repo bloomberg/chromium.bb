@@ -67,6 +67,7 @@ static_library("test_support") {
 }
 
 source_set("unit_tests") {
+  testonly = true
   sources = [
     "answers_cache_unittest.cc",
     "autocomplete_input_unittest.cc",

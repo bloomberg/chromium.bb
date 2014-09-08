@@ -92,6 +92,7 @@ static_library("browser") {
 }
 
 static_library("test_support") {
+  testonly = true
   sources = [
     "mock_password_store.cc",
     "mock_password_store.h",

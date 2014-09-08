@@ -81,6 +81,7 @@ executable("gin_shell") {
 }
 
 source_set("gin_test") {
+  testonly = true
   sources = [
     "test/file.cc",
     "test/file.h",

@@ -32,6 +32,7 @@ source_set("enhanced_bookmarks") {
 }
 
 source_set("test_support") {
+  testonly = true
   sources = [
     "test_image_store.cc",
     "test_image_store.h",

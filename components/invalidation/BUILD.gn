@@ -93,6 +93,7 @@ static_library("invalidation") {
 }
 
 static_library("test_support") {
+  testonly = true
   sources = [
     "fake_invalidation_handler.cc",
     "fake_invalidation_handler.h",

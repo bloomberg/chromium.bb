@@ -72,6 +72,7 @@ static_library("core") {
 
 # GYP version: components/dom_distiller.gypi:dom_distiller_test_support
 static_library("test_support") {
+  testonly = true
   sources = [
     "dom_distiller_test_util.cc",
     "dom_distiller_test_util.h",
@@ -91,6 +92,7 @@ static_library("test_support") {
 }
 
 source_set("unit_tests") {
+  testonly = true
   sources = [
     "article_entry_unittest.cc",
     "distilled_content_store_unittest.cc",

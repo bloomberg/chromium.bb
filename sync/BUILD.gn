@@ -416,6 +416,7 @@ source_set("sync_core") {
 
 # GYP version: sync/sync_tests.gypi:test_support_sync_core
 static_library("test_support_sync_core") {
+  testonly = true
   sources = [
     "internal_api/public/base/model_type_test_util.cc",
     "internal_api/public/base/model_type_test_util.h",
@@ -491,6 +492,7 @@ static_library("test_support_sync_core") {
 
 # GYP version: sync/sync_tests.gypi:test_support_sync_internal_api
 static_library("test_support_sync_internal_api") {
+  testonly = true
   sources = [
     "internal_api/public/test/fake_sync_manager.h",
     "internal_api/public/test/null_sync_context_proxy.h",
@@ -527,6 +529,7 @@ static_library("test_support_sync_internal_api") {
 
 # GYP version: sync/sync_tests.gypi:test_support_sync_api
 static_library("test_support_sync_api") {
+  testonly = true
   sources = [
     "api/fake_syncable_service.cc",
     "api/fake_syncable_service.h",
@@ -669,6 +672,7 @@ test("sync_unit_tests") {
 
 # GYP version: sync/sync_tests.gypi:test_support_sync_fake_server
 static_library("test_support_sync_fake_server") {
+  testonly = true
   sources = [
     "test/fake_server/bookmark_entity.cc",
     "test/fake_server/bookmark_entity.h",

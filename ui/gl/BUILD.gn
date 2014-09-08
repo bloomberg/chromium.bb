@@ -316,6 +316,7 @@ config("gl_unittest_utils_config") {
 }
 
 source_set("gl_unittest_utils") {
+  testonly = true
   sources = [
     "gl_mock.h",
     "gl_mock.cc",

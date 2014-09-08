@@ -61,6 +61,7 @@ source_set("browser") {
 }
 
 source_set("unit_tests") {
+  testonly = true
   sources = [
     "bookmark_codec_unittest.cc",
     "bookmark_expanded_state_tracker_unittest.cc",

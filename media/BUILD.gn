@@ -619,6 +619,7 @@ test("media_perftests") {
 }
 
 source_set("test_support") {
+  testonly = true
   sources = [
     "filters/clockless_video_frame_scheduler.cc",
     "filters/clockless_video_frame_scheduler.h",

@@ -9,7 +9,8 @@ if (is_android) {
 }
 
 source_set("test_support") {
-  testonly = true
+  # TODO http://crbug.com/412064 enable this flag all the time.
+  testonly = !is_component_build
   sources = [
     "expectations/expectation.cc",
     "expectations/expectation.h",

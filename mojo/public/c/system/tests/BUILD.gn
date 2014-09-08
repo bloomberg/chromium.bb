@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("tests") {
+  testonly = true
   visibility = [ "//mojo/public/cpp/system/tests:mojo_public_system_unittests" ]
 
   deps = [

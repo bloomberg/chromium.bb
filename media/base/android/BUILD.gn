@@ -52,6 +52,7 @@ source_set("android") {
 }
 
 source_set("unittests") {
+  testonly = true
   sources = [
     "media_codec_bridge_unittest.cc",
     "media_drm_bridge_unittest.cc",

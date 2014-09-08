@@ -73,6 +73,7 @@ static_library("browser") {
 }
 
 static_library("test_support") {
+  testonly = true
   sources = [
     "fake_auth_status_provider.cc",
     "fake_auth_status_provider.h",

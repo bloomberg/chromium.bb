@@ -21,6 +21,7 @@ component("captive_portal") {
 }
 
 static_library("test_support") {
+  testonly = true
   sources = [
     "captive_portal_testing_utils.cc",
     "captive_portal_testing_utils.h",
@@ -35,6 +36,7 @@ static_library("test_support") {
 }
 
 source_set("unit_tests") {
+  testonly = true
   sources = [
     "captive_portal_detector_unittest.cc",
   ]

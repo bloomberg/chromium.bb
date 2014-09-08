@@ -55,6 +55,7 @@ static_library("common") {
 }
 
 source_set("unit_tests") {
+  testonly = true
   sources = [
     "form_data_unittest.cc",
     "form_field_data_unittest.cc",

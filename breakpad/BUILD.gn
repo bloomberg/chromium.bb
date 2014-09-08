@@ -480,7 +480,7 @@ if (is_linux) {
     ]
   }
 
-  executable("breakpad_unittests") {
+  test("breakpad_unittests") {
     sources = [
       "linux/breakpad_googletest_includes.h",
       "src/client/linux/handler/exception_handler_unittest.cc",
@@ -542,6 +542,7 @@ if (is_linux) {
   }
 
   executable("linux_dumper_unittest_helper") {
+    testonly = true
     sources = [
       "src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc",
     ]
@@ -560,6 +561,7 @@ if (is_linux) {
 
 
   executable("generate_test_dump") {
+    testonly = true
     sources = [
       "linux/generate-test-dump.cc",
     ]

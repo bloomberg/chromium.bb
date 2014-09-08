@@ -1035,6 +1035,7 @@ source_set("prefs_test_support") {
 }
 
 source_set("message_loop_tests") {
+  testonly = true
   sources = [
     "message_loop/message_loop_test.cc",
     "message_loop/message_loop_test.h",

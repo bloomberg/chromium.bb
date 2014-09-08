@@ -178,6 +178,7 @@ grit("strings") {
 }
 
 static_library("mocks") {
+  testonly = true
   sources = [
     "test/mock_bluetooth_adapter.cc",
     "test/mock_bluetooth_adapter.h",

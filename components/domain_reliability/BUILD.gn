@@ -62,6 +62,7 @@ component("domain_reliability") {
 }
 
 source_set("unit_tests") {
+  testonly = true
   sources = [
     "config_unittest.cc",
     "context_unittest.cc",

@@ -236,6 +236,7 @@ source_set("audio") {
 }
 
 source_set("test_support") {
+  testonly = true
   sources = [
     "clockless_audio_sink.cc",
     "clockless_audio_sink.h",
@@ -251,6 +252,7 @@ source_set("test_support") {
 }
 
 source_set("unittests") {
+  testonly = true
   sources = [
     "audio_input_controller_unittest.cc",
     "audio_input_unittest.cc",

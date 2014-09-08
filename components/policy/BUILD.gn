@@ -138,6 +138,7 @@ if (enable_configuration_policy) {
   }
 
   static_library("policy_component_test_support") {
+    testonly = true
     sources = [
       "core/browser/configuration_policy_pref_store_test.cc",
       "core/browser/configuration_policy_pref_store_test.h",

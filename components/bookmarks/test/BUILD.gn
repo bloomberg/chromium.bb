@@ -5,6 +5,7 @@
 import ("//build/config/ui.gni")
 
 source_set("test") {
+  testonly = true
   sources = [
     "bookmark_test_helpers.cc",
     "bookmark_test_helpers.h",

@@ -78,6 +78,7 @@ proto_library("risk_proto") {
 }
 
 static_library("test_support") {
+  testonly = true
   sources = [
     "wallet/mock_wallet_client.cc",
     "wallet/mock_wallet_client.h",
@@ -91,6 +92,7 @@ static_library("test_support") {
 }
 
 source_set("unit_tests") {
+  testonly = true
   sources = [
     "content_autofill_driver_unittest.cc",
     "request_autocomplete_manager_unittest.cc",

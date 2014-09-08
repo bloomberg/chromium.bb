@@ -90,6 +90,7 @@ if (enable_webrtc || !is_android) {
 
   # GYP version: jingle/jingle.gyp:notifier_test_util
   static_library("notifier_test_util") {
+    testonly = true
     sources = [
       "notifier/base/fake_base_task.cc",
       "notifier/base/fake_base_task.h",

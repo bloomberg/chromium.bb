@@ -52,6 +52,7 @@ source_set("component_updater") {
 }
 
 static_library("test_support") {
+  testonly = true
   sources = [
     "test/test_configurator.cc",
     "test/test_configurator.h",
@@ -69,6 +70,7 @@ static_library("test_support") {
 }
 
 source_set("unit_tests") {
+  testonly = true
   sources = [
     "test/component_patcher_unittest.cc",
     "test/component_updater_ping_manager_unittest.cc",

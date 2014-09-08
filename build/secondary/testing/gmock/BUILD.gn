@@ -8,6 +8,8 @@ config("gmock_config") {
 }
 
 static_library("gmock") {
+  # TODO http://crbug.com/412064 enable this flag all the time.
+  testonly = !is_component_build
   sources = [
     # Sources based on files in r173 of gmock.
     "include/gmock/gmock-actions.h",
@@ -40,6 +42,8 @@ static_library("gmock") {
 }
 
 static_library("gmock_main") {
+  # TODO http://crbug.com/412064 enable this flag all the time.
+  testonly = !is_component_build
   sources = [ "src/gmock_main.cc" ]
   deps = [ ":gmock" ]
 }

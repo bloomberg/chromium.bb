@@ -35,6 +35,7 @@ group("sandbox") {
 }
 
 source_set("sandbox_linux_test_utils") {
+  testonly = true
   sources = [
     "tests/sandbox_test_runner.cc",
     "tests/sandbox_test_runner.h",

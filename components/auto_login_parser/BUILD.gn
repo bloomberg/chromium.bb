@@ -15,6 +15,7 @@ source_set("auto_login_parser") {
 }
 
 source_set("unit_tests") {
+  testonly = true
   sources = [
     "auto_login_parser_unittest.cc",
   ]

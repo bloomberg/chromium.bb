@@ -552,6 +552,7 @@ component("base") {
 }
 
 source_set("test_support") {
+  testonly = true
   sources = [
     "test/ui_controls.h",
     "test/ui_controls_aura.cc",

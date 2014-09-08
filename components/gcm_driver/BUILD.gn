@@ -66,6 +66,7 @@ static_library("gcm_driver") {
 }
 
 static_library("test_support") {
+  testonly = true
   sources = [
     "fake_gcm_app_handler.cc",
     "fake_gcm_app_handler.h",

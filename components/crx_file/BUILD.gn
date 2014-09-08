@@ -17,6 +17,7 @@ source_set("crx_file") {
 }
 
 source_set("unit_tests") {
+  testonly = true
   sources = [
     "id_util_unittest.cc",
   ]

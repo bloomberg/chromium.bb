@@ -61,6 +61,7 @@ static_library("sync_driver") {
 }
 
 static_library("test_support") {
+  testonly = true
   sources = [
     "change_processor_mock.cc",
     "change_processor_mock.h",

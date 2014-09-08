@@ -18,6 +18,7 @@ static_library("renderer") {
 }
 
 source_set("browser_tests") {
+  testonly = true
   sources = [
     "credential_manager_client_browsertest.cc"
   ]

@@ -224,6 +224,7 @@ source_set("base") {
 }
 
 source_set("test_support") {
+  testonly = true
   sources = [
     "fake_audio_render_callback.cc",
     "fake_audio_render_callback.h",
@@ -248,6 +249,7 @@ source_set("test_support") {
 }
 
 source_set("unittests") {
+  testonly = true
   sources = [
     "audio_block_fifo_unittest.cc",
     "audio_buffer_converter_unittest.cc",
@@ -324,6 +326,7 @@ source_set("unittests") {
 }
 
 source_set("perftests") {
+  testonly = true
   sources = [
     "audio_bus_perftest.cc",
     "audio_converter_perftest.cc",
