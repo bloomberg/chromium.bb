@@ -710,7 +710,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     if (browser_->profile()->IsGuestSession())
       profiles::CloseGuestProfileWindows();
     else
-      chrome::ShowUserManager(browser_->profile()->GetPath());
+      chrome::ShowUserManager(base::FilePath());
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_OPEN_USER_MANAGER);
   } else if (sender == go_incognito_button_) {
     DCHECK(ShouldShowGoIncognito());
@@ -758,7 +758,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == add_person_button_) {
     ProfileMetrics::LogProfileNewAvatarMenuNotYou(
         ProfileMetrics::PROFILE_AVATAR_MENU_NOT_YOU_ADD_PERSON);
-    chrome::ShowUserManager(browser_->profile()->GetPath());
+    chrome::ShowUserManager(base::FilePath());
   } else if (sender == disconnect_button_) {
     ProfileMetrics::LogProfileNewAvatarMenuNotYou(
         ProfileMetrics::PROFILE_AVATAR_MENU_NOT_YOU_DISCONNECT);

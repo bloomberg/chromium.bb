@@ -895,7 +895,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (IBAction)showUserManager:(id)sender {
-  chrome::ShowUserManager(browser_->profile()->GetPath());
+  chrome::ShowUserManager(base::FilePath());
   [self postActionPerformed:
       ProfileMetrics::PROFILE_DESKTOP_MENU_OPEN_USER_MANAGER];
 }
