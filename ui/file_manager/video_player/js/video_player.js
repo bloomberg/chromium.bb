@@ -269,6 +269,9 @@ VideoPlayer.prototype.prepare = function(videos) {
  * Unloads the player.
  */
 function unload() {
+  // Releases keep awake just in case (should be released on unloading video).
+  chrome.power.releaseKeepAwake();
+
   if (!player.controls || !player.controls.getMedia())
     return;
 
@@ -386,6 +389,14 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
           }.wrap(this, this.currentPos_);
 
           this.videoElement_.addEventListener('loadedmetadata', handler);
+
+          this.videoElement_.addEventListener('play', function() {
+            chrome.power.requestKeepAwake('display');
+          }.wrap());
+          this.videoElement_.addEventListener('pause', function() {
+            chrome.power.releaseKeepAwake();
+          }.wrap());
+
           this.videoElement_.load();
           callback();
         }.bind(this)).
@@ -415,6 +426,8 @@ VideoPlayer.prototype.playFirstVideo = function() {
  */
 VideoPlayer.prototype.unloadVideo = function(opt_keepSession) {
   this.loadQueue_.run(function(callback) {
+    chrome.power.releaseKeepAwake();
+
     if (this.videoElement_) {
       // If the element has dispose method, call it (CastVideoElement has it).
       if (this.videoElement_.dispose)

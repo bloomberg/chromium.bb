@@ -23,6 +23,7 @@
     "fileBrowserPrivate",
     "fullscreen",
     "mediaPlayerPrivate",
+    "power",
     "storage",
     "chrome://resources/",
     "chrome://theme/"
