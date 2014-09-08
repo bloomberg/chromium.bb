@@ -450,6 +450,9 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // for each one is expensive.
   void NotifyMultipleBytesRead();
 
+  // Called on the IO thread to start/stop updating byte counts.
+  void SetUpdatingByteCount(bool is_updating);
+
   // Returns the network usage (in byte per second) that should be displayed for
   // the passed |resource|.  -1 means the information is not available for that
   // resource.
@@ -532,6 +535,10 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
 
   // Whether we are currently in the process of updating.
   UpdateState update_state_;
+
+  // Whether the IO thread is currently in the process of updating; accessed
+  // only on the IO thread.
+  bool is_updating_byte_count_;
 
   // A salt lick for the goats.
   uint64 goat_salt_;

@@ -241,6 +241,7 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
       update_requests_(0),
       listen_requests_(0),
       update_state_(IDLE),
+      is_updating_byte_count_(false),
       goat_salt_(base::RandUint64()) {
   AddResourceProvider(
       new task_manager::BrowserProcessResourceProvider(task_manager));
@@ -1055,6 +1056,10 @@ void TaskManagerModel::StartUpdating() {
     FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
                       OnReadyPeriodicalUpdate());
   }
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&TaskManagerModel::SetUpdatingByteCount, this, true));
 }
 
 void TaskManagerModel::StopUpdating() {
@@ -1070,6 +1075,10 @@ void TaskManagerModel::StopUpdating() {
 
   // Notify resource providers that we are done updating.
   StopListening();
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&TaskManagerModel::SetUpdatingByteCount, this, false));
 }
 
 void TaskManagerModel::StartListening() {
@@ -1244,6 +1253,8 @@ void TaskManagerModel::NotifyV8HeapStats(base::ProcessId renderer_id,
 void TaskManagerModel::NotifyBytesRead(const net::URLRequest& request,
                                        int byte_count) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!is_updating_byte_count_)
+    return;
 
   // Only net::URLRequestJob instances created by the ResourceDispatcherHost
   // have an associated ResourceRequestInfo and a render frame associated.
@@ -1391,6 +1402,11 @@ void TaskManagerModel::NotifyMultipleBytesRead() {
       BrowserThread::UI, FROM_HERE,
       base::Bind(&TaskManagerModel::MultipleBytesRead, this,
                  base::Owned(bytes_read_buffer)));
+}
+
+void TaskManagerModel::SetUpdatingByteCount(bool is_updating) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  is_updating_byte_count_ = is_updating;
 }
 
 int64 TaskManagerModel::GetNetworkUsage(Resource* resource) const {
