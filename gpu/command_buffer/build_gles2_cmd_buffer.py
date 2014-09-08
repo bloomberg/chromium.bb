@@ -2934,13 +2934,18 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     file.Write("  %s(%s);\n" %
                (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
 
+  def WriteServiceHandlerFunctionHeader(self, func, file):
+    """Writes function header for service implementation handlers."""
+    file.Write("""error::Error GLES2DecoderImpl::Handle%(name)s(
+        uint32_t immediate_data_size, const void* cmd_data) {
+      const gles2::cmds::%(name)s& c =
+          *static_cast<const gles2::cmds::%(name)s*>(cmd_data);
+      (void)c;
+      """ % {'name': func.name})
+
   def WriteServiceImplementation(self, func, file):
     """Writes the service implementation for a command."""
-    file.Write(
-        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
-    file.Write(
-        "    uint32_t immediate_data_size, const gles2::cmds::%s& c) {\n" %
-        func.name)
+    self.WriteServiceHandlerFunctionHeader(func, file)
     self.WriteHandlerExtensionCheck(func, file)
     self.WriteHandlerDeferReadWrite(func, file);
     if len(func.GetOriginalArgs()) > 0:
@@ -2958,11 +2963,7 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
 
   def WriteImmediateServiceImplementation(self, func, file):
     """Writes the service implementation for an immediate version of command."""
-    file.Write(
-        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
-    file.Write(
-        "    uint32_t immediate_data_size, const gles2::cmds::%s& c) {\n" %
-        func.name)
+    self.WriteServiceHandlerFunctionHeader(func, file)
     self.WriteHandlerExtensionCheck(func, file)
     self.WriteHandlerDeferReadWrite(func, file);
     last_arg = func.GetLastOriginalArg()
@@ -2979,11 +2980,7 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
 
   def WriteBucketServiceImplementation(self, func, file):
     """Writes the service implementation for a bucket version of command."""
-    file.Write(
-        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
-    file.Write(
-        "    uint32_t immediate_data_size, const gles2::cmds::%s& c) {\n" %
-        func.name)
+    self.WriteServiceHandlerFunctionHeader(func, file)
     self.WriteHandlerExtensionCheck(func, file)
     self.WriteHandlerDeferReadWrite(func, file);
     last_arg = func.GetLastOriginalArg()
@@ -3723,11 +3720,7 @@ class TodoHandler(CustomHandler):
 
   def WriteServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write(
-        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
-    file.Write(
-        "    uint32_t immediate_data_size, const gles2::cmds::%s& c) {\n" %
-        func.name)
+    self.WriteServiceHandlerFunctionHeader(func, file)
     file.Write("  // TODO: for now this is a no-op\n")
     file.Write(
         "  LOCAL_SET_GL_ERROR("
@@ -4739,11 +4732,7 @@ class GETnHandler(TypeHandler):
 
   def WriteServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write(
-        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
-    file.Write(
-        "    uint32_t immediate_data_size, const gles2::cmds::%s& c) {\n" %
-        func.name)
+    self.WriteServiceHandlerFunctionHeader(func, file)
     last_arg = func.GetLastOriginalArg()
 
     all_but_last_args = func.GetOriginalArgs()[:-1]
@@ -5749,8 +5738,8 @@ class GLcharNHandler(CustomHandler):
 
   def WriteServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write("""error::Error GLES2DecoderImpl::Handle%(name)s(
-  uint32_t immediate_data_size, const gles2::cmds::%(name)s& c) {
+    self.WriteServiceHandlerFunctionHeader(func, file)
+    file.Write("""
   GLuint bucket_id = static_cast<GLuint>(c.%(bucket_id)s);
   Bucket* bucket = GetBucket(bucket_id);
   if (!bucket || bucket->size() == 0) {
@@ -5833,11 +5822,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
 
   def WriteServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
-    file.Write(
-        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
-    file.Write(
-        "    uint32_t immediate_data_size, const gles2::cmds::%s& c) {\n" %
-        func.name)
+    self.WriteServiceHandlerFunctionHeader(func, file)
     args = func.GetOriginalArgs()
     for arg in args:
       arg.WriteGetCode(file)
