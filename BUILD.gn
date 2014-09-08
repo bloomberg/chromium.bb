@@ -166,6 +166,7 @@ group("root") {
 
   if (is_android) {
     deps += [
+      "//content/shell/android:content_shell_apk",
       "//ui/android:ui_java",
       "//third_party/guava:guava_javalib",
       "//third_party/android_tools:android_gcm_java",

@@ -155,6 +155,20 @@ def ZipResources(resource_dirs, zip_path):
       outzip.write(path, archive_path)
 
 
+def CombineZips(zip_files, output_path):
+  # When packaging resources, if the top-level directories in the zip file are
+  # of the form 0, 1, ..., then each subdirectory will be passed to aapt as a
+  # resources directory. While some resources just clobber others (image files,
+  # etc), other resources (particularly .xml files) need to be more
+  # intelligently merged. That merging is left up to aapt.
+  with zipfile.ZipFile(output_path, 'w') as outzip:
+    for i, z in enumerate(zip_files):
+      with zipfile.ZipFile(z, 'r') as inzip:
+        for name in inzip.namelist():
+          new_name = '%d/%s' % (i, name)
+          outzip.writestr(new_name, inzip.read(name))
+
+
 def main():
   args = build_utils.ExpandFileArgs(sys.argv[1:])
 
@@ -248,8 +262,8 @@ def main():
     ZipResources(zip_resource_dirs, options.resource_zip_out)
 
     if options.all_resources_zip_out:
-      ZipResources(
-          zip_resource_dirs + dep_subdirs, options.all_resources_zip_out)
+      CombineZips([options.resource_zip_out] + dep_zips,
+                  options.all_resources_zip_out)
 
     if options.R_dir:
       build_utils.DeleteDirectory(options.R_dir)

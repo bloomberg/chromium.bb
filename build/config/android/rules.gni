@@ -118,17 +118,16 @@ template("generate_jar_jni") {
   base_output_dir = "${root_gen_dir}/${target_name}/${jni_package}"
   jni_output_dir = "${base_output_dir}/jni"
 
-  jni_generator_include =
-      rebase_path("//base/android/jni_generator/jni_generator_helper.h",
-          root_build_dir)
+  jni_generator_include = "//base/android/jni_generator/jni_generator_helper.h"
 
   # TODO(cjhopman): make jni_generator.py support generating jni for multiple
   # .class files from a .jar.
   jni_actions = []
   foreach(class, invoker.classes) {
-    classname_list = process_file_template(
+    _classname_list = []
+    _classname_list = process_file_template(
         [class], "{{source_name_part}}")
-    classname = classname_list[0]
+    classname = _classname_list[0]
     jni_target_name = "${target_name}__jni_${classname}"
     jni_actions += [ ":$jni_target_name" ]
     action(jni_target_name) {
@@ -150,7 +149,7 @@ template("generate_jar_jni") {
         "--optimize_generation=1",
         "--ptr_type=long",
         "--output_dir", rebase_path(jni_output_dir, root_build_dir),
-        "--includes", rebase_path(jni_generator_include, "//"),
+        "--includes", rebase_path(jni_generator_include, root_build_dir),
       ]
     }
   }
@@ -293,6 +292,7 @@ template("java_cpp_template") {
 #   }
 template("android_resources") {
   assert(defined(invoker.resource_dirs))
+  assert(defined(invoker.android_manifest) || defined(invoker.custom_package))
 
   base_path = "$target_gen_dir/$target_name"
   zip_path = base_path + ".resources.zip"
@@ -474,8 +474,12 @@ template("android_library") {
       proguard_config = invoker.proguard_config
     }
 
+    jar_excluded_patterns = [
+      "*/R.class", "*/R##*.class",
+      "*/Manifest.class", "*/Manifest##*.class",
+    ]
     if (defined(invoker.jar_excluded_patterns)) {
-      jar_excluded_patterns = invoker.jar_excluded_patterns
+      jar_excluded_patterns += invoker.jar_excluded_patterns
     }
 
     if (defined(invoker.srcjar_deps)) {
@@ -600,6 +604,7 @@ template("android_java_prebuilt") {
 #     ]
 #   }
 template("android_apk") {
+  assert(defined(invoker.final_apk_path) || defined(invoker.apk_name))
   gen_dir = "$target_gen_dir/$target_name"
   base_path = "$gen_dir/$target_name"
   build_config = "$base_path.build_config"
@@ -609,17 +614,17 @@ template("android_apk") {
   jar_path = "$base_path.jar"
   final_dex_path = "$gen_dir/classes.dex"
   _template_name = target_name
+  _final_apk_path = ""
+  if (defined(invoker.final_apk_path)) {
+    _final_apk_path = invoker.final_apk_path
+  } else if (defined(invoker.apk_name)) {
+    _final_apk_path = "$root_build_dir/apks/" + invoker.apk_name + ".apk"
+  }
 
-  _native_lib_version_name = ""
-
-  _use_chromium_linker = false
-  _enable_chromium_linker_tests = false
-  _load_library_from_apk = false
-
-  _native_libs_dir = base_path + "/libs"
   _native_libs = []
   if (defined(invoker.native_libs)) {
     _native_libs = invoker.native_libs
+    _native_libs_dir = base_path + "/libs"
   }
 
   _keystore_path = android_default_keystore_path
@@ -639,7 +644,7 @@ template("android_apk") {
 
   _rebased_build_config = rebase_path(build_config, root_build_dir)
 
-  write_build_config("${target_name}__build_config") {
+  write_build_config("${_template_name}__build_config") {
     type = "android_apk"
     srcjar = resource_srcjar_path
     dex_path = final_dex_path
@@ -657,8 +662,8 @@ template("android_apk") {
 
   final_deps = []
 
-  final_deps += [":${target_name}__process_resources"]
-  process_resources("${target_name}__process_resources") {
+  final_deps += [":${_template_name}__process_resources"]
+  process_resources("${_template_name}__process_resources") {
     android_manifest = invoker.android_manifest
 
     resource_dirs = ["//build/android/ant/empty/res"]
@@ -668,36 +673,42 @@ template("android_apk") {
     generate_constant_ids = true
   }
 
-  java_cpp_template("${target_name}__native_libraries_java") {
-    package_name = "org/chromium/base/library_loader"
-    sources = [
-      "//base/android/java/templates/NativeLibraries.template",
-    ]
-    inputs = [
-      build_config,
-    ]
+  if (_native_libs != []) {
+    _use_chromium_linker = false
+    _enable_chromium_linker_tests = false
+    _load_library_from_apk = false
+    _native_lib_version_name = ""
 
-    defines = [
-      "NATIVE_LIBRARIES_LIST=" +
-        "@FileArg($_rebased_build_config:native:java_libraries_list)",
-      "NATIVE_LIBRARIES_VERSION_NUMBER=\"$_native_lib_version_name\"",
-    ]
-    if (_use_chromium_linker) {
-      defines += ["ENABLED_CHROMIUM_LINKER"]
+
+    java_cpp_template("${_template_name}__native_libraries_java") {
+      package_name = "org/chromium/base/library_loader"
+      sources = [
+        "//base/android/java/templates/NativeLibraries.template",
+      ]
+      inputs = [
+        build_config,
+      ]
+
+      defines = [
+        "NATIVE_LIBRARIES_LIST=" +
+          "@FileArg($_rebased_build_config:native:java_libraries_list)",
+        "NATIVE_LIBRARIES_VERSION_NUMBER=\"$_native_lib_version_name\"",
+      ]
+      if (_use_chromium_linker) {
+        defines += ["ENABLED_CHROMIUM_LINKER"]
+      }
+      if (_load_library_from_apk) {
+        defines += ["ENABLE_CHROMIUM_LINKER_LIBRARY_IN_ZIP_FILE"]
+      }
+      if (_enable_chromium_linker_tests) {
+        defines += ["ENABLE_CHROMIUM_LINKER_TESTS"]
+      }
     }
-    if (_load_library_from_apk) {
-      defines += ["ENABLE_CHROMIUM_LINKER_LIBRARY_IN_ZIP_FILE"]
-    }
-    if (_enable_chromium_linker_tests) {
-      defines += ["ENABLE_CHROMIUM_LINKER_TESTS"]
-    }
+    _srcjar_deps += [ ":${_template_name}__native_libraries_java" ]
   }
-  _srcjar_deps += [ ":${target_name}__native_libraries_java" ]
 
-  rebased_build_config = rebase_path(build_config, root_build_dir)
-
-  final_deps += [":${target_name}__java"]
-  android_java_library("${target_name}__java") {
+  final_deps += [":${_template_name}__java"]
+  android_java_library("${_template_name}__java") {
     android_manifest = invoker.android_manifest
     if (defined(invoker.java_files)) {
       java_files = invoker.java_files
@@ -708,22 +719,24 @@ template("android_apk") {
     dex_path = base_path + ".dex.jar"
   }
 
-  final_deps += [":${target_name}__final_dex"]
-  dex("${target_name}__final_dex") {
+  final_deps += [":${_template_name}__final_dex"]
+  dex("${_template_name}__final_dex") {
     sources = [jar_path]
     inputs = [build_config]
     output = final_dex_path
-    dex_arg_key = "${rebased_build_config}:apk_dex:dependency_dex_files"
+    dex_arg_key = "${_rebased_build_config}:apk_dex:dependency_dex_files"
     args = ["--inputs=@FileArg($dex_arg_key)"]
   }
 
   if (_native_libs != []) {
-    copy_ex("${target_name}__prepare_native") {
+    copy_ex("${_template_name}__prepare_native") {
       clear_dir = true
-      inputs = [build_config]
+      inputs = [
+        build_config
+      ]
       dest = "$_native_libs_dir/$android_app_abi"
       args = [
-        "--files=@FileArg(${rebased_build_config}:native:libraries)",
+        "--files=@FileArg(${_rebased_build_config}:native:libraries)",
       ]
       if (is_debug) {
         rebased_gdbserver = rebase_path(android_gdbserver, root_build_dir)
@@ -734,12 +747,16 @@ template("android_apk") {
     }
   }
 
-  final_deps += [":${target_name}__create"]
-  create_apk("${target_name}__create") {
-    apk_path = invoker.final_apk_path
+  final_deps += [":${_template_name}__create"]
+  create_apk("${_template_name}__create") {
+    apk_path = _final_apk_path
     android_manifest = invoker.android_manifest
     resources_zip = all_resources_zip_path
     dex_path = final_dex_path
+
+    if (defined(invoker.asset_location)) {
+      asset_location = invoker.asset_location
+    }
 
     keystore_name = _keystore_name
     keystore_path = _keystore_path
@@ -794,8 +811,8 @@ template("unittest_apk") {
   }
 
   android_apk(target_name) {
-    apk_name = test_suite_name
-    final_apk_path = "$root_build_dir/${apk_name}_apk/${apk_name}-debug.apk"
+    _apk_name = test_suite_name
+    final_apk_path = "$root_build_dir/${_apk_name}_apk/${_apk_name}-debug.apk"
     java_files = [
       "//testing/android/java/src/org/chromium/native_test/ChromeNativeTestActivity.java"
     ]

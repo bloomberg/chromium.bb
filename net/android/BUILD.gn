@@ -1,0 +1,94 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/config.gni")
+import("//build/config/android/rules.gni")
+
+android_library("net_java") {
+  DEPRECATED_java_in_dir = "java/src"
+  deps = [
+    "//base:base_java",
+  ]
+
+  srcjar_deps = [
+    ":cert_verify_status_android_java",
+    ":certificate_mime_types_java",
+    ":net_errors_java",
+    ":private_key_types_java",
+    ":remote_android_keystore_aidl",
+  ]
+}
+
+android_aidl("remote_android_keystore_aidl") {
+  interface_file = "java/src/org/chromium/net/IRemoteAndroidKeyStoreInterface.aidl"
+  sources = [
+    "java/src/org/chromium/net/IRemoteAndroidKeyStore.aidl",
+    "java/src/org/chromium/net/IRemoteAndroidKeyStoreCallbacks.aidl",
+  ]
+}
+
+android_library("net_java_test_support") {
+  DEPRECATED_java_in_dir = "../test/android/javatests/src"
+}
+
+android_library("net_javatests") {
+  DEPRECATED_java_in_dir = "javatests/src"
+  deps = [
+    "//base:base_java",
+    "//base:base_java_test_support",
+    ":net_java",
+  ]
+}
+
+java_cpp_template("net_errors_java") {
+  package_name = "org/chromium/net"
+  sources = [
+    "java/NetError.template",
+  ]
+  inputs = [
+    "../base/net_error_list.h"
+  ]
+}
+
+java_cpp_template("certificate_mime_types_java") {
+  package_name = "org/chromium/net"
+  sources = [
+    "java/CertificateMimeType.template",
+  ]
+  inputs = [
+    "../base/mime_util_certificate_type_list.h"
+  ]
+}
+
+java_cpp_template("cert_verify_status_android_java") {
+  package_name = "org/chromium/net"
+  sources = [
+    "java/CertVerifyStatusAndroid.template",
+  ]
+  inputs = [
+    "cert_verify_status_android_list.h"
+  ]
+}
+
+java_cpp_template("private_key_types_java") {
+  package_name = "org/chromium/net"
+  sources = [
+    "java/PrivateKeyType.template",
+  ]
+  inputs = [
+    "private_key_type_list.h"
+  ]
+}
+
+# TODO(GYP)
+if (false) {
+  unittest_apk("net_unittests_apk") {
+    deps = [
+      ":net_java",
+      ":net_javatests",
+      "//net:net_unittests",
+    ]
+    unittests_dep = "//net:net_unittests"
+  }
+}

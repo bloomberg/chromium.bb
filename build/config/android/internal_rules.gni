@@ -522,7 +522,11 @@ template("android_java_library") {
   } else {
     _java_files_build_rel = exec_script(
         "//build/android/gyp/find.py",
-        ["--pattern", "*.java", rebase_path(invoker.DEPRECATED_java_in_dir, root_build_dir)],
+        [
+          "--pattern",
+          "*.java",
+          rebase_path(invoker.DEPRECATED_java_in_dir, root_build_dir)
+        ],
         "list lines"
         )
     _java_files = rebase_path(_java_files_build_rel, ".", root_build_dir)

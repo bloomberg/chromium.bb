@@ -44,7 +44,7 @@ def main(args):
   if options.depfile:
     build_utils.WriteDepfile(
         options.depfile,
-        options.files + build_utils.GetPythonDependencies())
+        files + build_utils.GetPythonDependencies())
 
   if options.stamp:
     build_utils.Touch(options.stamp)

@@ -191,7 +191,7 @@ def CheckZipPath(name):
     raise Exception('Absolute zip path: %s' % name)
 
 
-def ExtractAll(zip_path, path=None, no_clobber=True):
+def ExtractAll(zip_path, path=None, no_clobber=True, pattern=None):
   if path is None:
     path = os.getcwd()
   elif not os.path.exists(path):
@@ -201,6 +201,9 @@ def ExtractAll(zip_path, path=None, no_clobber=True):
     for name in z.namelist():
       if name.endswith('/'):
         continue
+      if pattern is not None:
+        if not fnmatch.fnmatch(name, pattern):
+          continue
       CheckZipPath(name)
       if no_clobber:
         output_path = os.path.join(path, name)

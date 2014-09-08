@@ -1,3 +1,7 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 
@@ -9,3 +13,199 @@ android_aidl("common_aidl") {
     "java/src/org/chromium/content/common/IChildProcessService.aidl",
   ]
 }
+
+android_resources("content_java_resources") {
+  deps = [
+    ":content_strings_grd",
+    "//ui/android:ui_java_resources",
+  ]
+  custom_package = "org.chromium.content"
+  resource_dirs = [ "java/res" ]
+}
+
+android_library("content_java") {
+  deps = [
+    ":content_java_resources",
+    "//base:base_java",
+    "//media:media_java",
+    "//net/android:net_java",
+    "//ui/android:ui_java",
+    "//third_party/guava:guava_javalib",
+    "//third_party/jsr-305:jsr_305_javalib",
+
+#"//content:content_common",
+  ]
+
+  srcjar_deps = [
+    ":common_aidl",
+    ":content_gamepad_mapping_java",
+    ":gesture_event_type_java",
+    ":page_transition_types_java",
+    ":popup_item_type_java",
+    ":result_codes_java",
+    ":selection_event_type_java",
+    ":speech_recognition_error_java",
+    ":top_controls_state_java",
+    ":screen_orientation_values_java",
+  ]
+
+  DEPRECATED_java_in_dir = "java/src"
+  if (!is_android_webview_build) {
+    deps += [
+      "//third_party/eyesfree:eyesfree_java",
+      "//third_party/guava:guava_javalib",
+    ]
+  }
+}
+
+java_strings_grd("content_strings_grd") {
+  grd_file = "java/strings/android_content_strings.grd"
+  outputs = [
+    "values-am/android_content_strings.xml",
+    "values-ar/android_content_strings.xml",
+    "values-bg/android_content_strings.xml",
+    "values-ca/android_content_strings.xml",
+    "values-cs/android_content_strings.xml",
+    "values-da/android_content_strings.xml",
+    "values-de/android_content_strings.xml",
+    "values-el/android_content_strings.xml",
+    "values/android_content_strings.xml",
+    "values-en-rGB/android_content_strings.xml",
+    "values-es/android_content_strings.xml",
+    "values-es-rUS/android_content_strings.xml",
+    "values-fa/android_content_strings.xml",
+    "values-fi/android_content_strings.xml",
+    "values-tl/android_content_strings.xml",
+    "values-fr/android_content_strings.xml",
+    "values-hi/android_content_strings.xml",
+    "values-hr/android_content_strings.xml",
+    "values-hu/android_content_strings.xml",
+    "values-in/android_content_strings.xml",
+    "values-it/android_content_strings.xml",
+    "values-iw/android_content_strings.xml",
+    "values-ja/android_content_strings.xml",
+    "values-ko/android_content_strings.xml",
+    "values-lt/android_content_strings.xml",
+    "values-lv/android_content_strings.xml",
+    "values-nl/android_content_strings.xml",
+    "values-nb/android_content_strings.xml",
+    "values-pl/android_content_strings.xml",
+    "values-pt-rBR/android_content_strings.xml",
+    "values-pt-rPT/android_content_strings.xml",
+    "values-ro/android_content_strings.xml",
+    "values-ru/android_content_strings.xml",
+    "values-sk/android_content_strings.xml",
+    "values-sl/android_content_strings.xml",
+    "values-sr/android_content_strings.xml",
+    "values-sv/android_content_strings.xml",
+    "values-sw/android_content_strings.xml",
+    "values-th/android_content_strings.xml",
+    "values-tr/android_content_strings.xml",
+    "values-uk/android_content_strings.xml",
+    "values-vi/android_content_strings.xml",
+    "values-zh-rCN/android_content_strings.xml",
+    "values-zh-rTW/android_content_strings.xml",
+  ]
+}
+
+java_cpp_template("gesture_event_type_java") {
+  sources = [
+    "java/src/org/chromium/content/browser/GestureEventType.template",
+  ]
+  package_name = "org/chromium/content/browser"
+  inputs = [
+    "//content/browser/android/gesture_event_type_list.h"
+  ]
+}
+
+java_cpp_template("page_transition_types_java") {
+  sources = [
+    "java/src/org/chromium/content_public/browser/PageTransitionTypes.template",
+  ]
+  package_name = "org/chromium/content/browser"
+  inputs = [
+    "//content/public/common/page_transition_types_list.h"
+  ]
+}
+
+java_cpp_template("popup_item_type_java") {
+  sources = [
+    "java/src/org/chromium/content/browser/input/PopupItemType.template",
+  ]
+  package_name = "org/chromium/content/browser/input"
+  inputs = [
+    "//content/browser/android/popup_item_type_list.h"
+  ]
+}
+
+java_cpp_template("result_codes_java") {
+  sources = [
+    "java/src/org/chromium/content/common/ResultCodes.template",
+  ]
+  package_name = "org/chromium/content/common"
+  inputs = [
+    "//content/public/common/result_codes_list.h"
+  ]
+}
+
+java_cpp_template("selection_event_type_java") {
+  sources = [
+    "java/src/org/chromium/content/browser/input/SelectionEventType.template",
+  ]
+  package_name = "org/chromium/content/browser/input"
+  inputs = [
+    "//content/browser/renderer_host/input/selection_event_type_list.h"
+  ]
+}
+
+java_cpp_template("speech_recognition_error_java") {
+  sources = [
+    "java/src/org/chromium/content/browser/SpeechRecognitionError.template",
+  ]
+  package_name = "org/chromium/content/browser"
+  inputs = [
+    "//content/public/common/speech_recognition_error_list.h"
+  ]
+}
+
+java_cpp_template("top_controls_state_java") {
+  sources = [
+    "java/src/org/chromium/content/common/TopControlsState.template",
+  ]
+  package_name = "org/chromium/content/common"
+  inputs = [
+    "//content/public/common/top_controls_state_list.h"
+  ]
+}
+
+java_cpp_template("screen_orientation_values_java") {
+  sources = [
+    "java/src/org/chromium/content/common/ScreenOrientationValues.template",
+  ]
+  package_name = "org/chromium/content/common"
+  inputs = [
+    "//content/public/common/screen_orientation_values_list.h"
+  ]
+}
+
+java_cpp_template("content_gamepad_mapping_java") {
+  sources = [
+    "java/src/org/chromium/content/browser/input/CanonicalAxisIndex.template",
+    "java/src/org/chromium/content/browser/input/CanonicalButtonIndex.template",
+  ]
+  package_name = "org/chromium/content/common"
+  inputs = [
+    "//content/browser/gamepad/canonical_axis_index_list.h",
+    "//content/browser/gamepad/canonical_button_index_list.h",
+  ]
+}
+
+generate_jar_jni("content_jni_headers") {
+  jni_package = "content"
+  classes = [
+    "android/view/MotionEvent.class",
+    "java/util/HashSet.class",
+  ]
+}
+
+# TODO(GYP): content_icudata

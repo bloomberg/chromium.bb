@@ -1372,43 +1372,7 @@ if (is_android) {
       "//third_party/jsr-305:jsr_305_javalib"
     ]
 
-    java_files = [
-      "android/java/src/org/chromium/base/BaseChromiumApplication.java",
-      "android/java/src/org/chromium/base/JavaHandlerThread.java",
-      "android/java/src/org/chromium/base/PathService.java",
-      "android/java/src/org/chromium/base/CollectionUtil.java",
-      "android/java/src/org/chromium/base/PathUtils.java",
-      "android/java/src/org/chromium/base/library_loader/ProcessInitException.java",
-      "android/java/src/org/chromium/base/library_loader/LoaderErrors.java",
-      "android/java/src/org/chromium/base/library_loader/LibraryLoader.java",
-      "android/java/src/org/chromium/base/library_loader/Linker.java",
-      "android/java/src/org/chromium/base/library_loader/LibraryLoaderHelper.java",
-      "android/java/src/org/chromium/base/ThreadUtils.java",
-      "android/java/src/org/chromium/base/CpuFeatures.java",
-      "android/java/src/org/chromium/base/CalledByNative.java",
-      "android/java/src/org/chromium/base/PowerMonitor.java",
-      "android/java/src/org/chromium/base/CommandLine.java",
-      "android/java/src/org/chromium/base/SystemMessageHandler.java",
-      "android/java/src/org/chromium/base/ContentUriUtils.java",
-      "android/java/src/org/chromium/base/WindowCallbackWrapper.java",
-      "android/java/src/org/chromium/base/ImportantFileWriterAndroid.java",
-      "android/java/src/org/chromium/base/BaseSwitches.java",
-      "android/java/src/org/chromium/base/SysUtils.java",
-      "android/java/src/org/chromium/base/PowerStatusReceiver.java",
-      "android/java/src/org/chromium/base/ObserverList.java",
-      "android/java/src/org/chromium/base/PerfTraceEvent.java",
-      "android/java/src/org/chromium/base/BuildInfo.java",
-      "android/java/src/org/chromium/base/TraceEvent.java",
-      "android/java/src/org/chromium/base/AccessedByNative.java",
-      "android/java/src/org/chromium/base/JNINamespace.java",
-      "android/java/src/org/chromium/base/CalledByNativeUnchecked.java",
-      "android/java/src/org/chromium/base/MemoryPressureListener.java",
-      "android/java/src/org/chromium/base/NativeClassQualifiedName.java",
-      "android/java/src/org/chromium/base/ActivityState.java",
-      "android/java/src/org/chromium/base/ApplicationStatus.java",
-      "android/java/src/org/chromium/base/ApiCompatibilityUtils.java",
-      "android/java/src/org/chromium/base/VisibleForTesting.java",
-    ]
+    DEPRECATED_java_in_dir = "android/java/src"
 
     # A new version of NativeLibraries.java (with the actual correct values)
     # will be created when creating an apk.
@@ -1416,6 +1380,13 @@ if (is_android) {
       "*/NativeLibraries.class",
       "*/NativeLibraries##*.class",
     ]
+  }
+
+  android_library("base_java_test_support") {
+    deps = [
+      ":base_java",
+    ]
+    DEPRECATED_java_in_dir = "test/android/javatests/src"
   }
 
   java_cpp_template("base_java_application_state") {

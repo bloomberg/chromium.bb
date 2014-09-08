@@ -4,8 +4,8 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
+import("//tools/grit/grit_rule.gni")
 if (is_android) {
   import("//build/config/android/config.gni")
 }
@@ -261,8 +261,8 @@ static_library("content_shell_lib") {
   }
 
   if (is_android) {
-    #deps += [ 'content_shell_jni_headers' ]  TODO(GYP)
-    #deps -= [ 'copy_test_netscape_plugin' ]  TODO(GYP)
+    deps += [ ":content_shell_jni_headers" ]
+    #deps -= [ "copy_test_netscape_plugin" ]  TODO(GYP)
   }
 
   if (is_posix && !is_mac && (!is_android || !is_android_webview_build)) {

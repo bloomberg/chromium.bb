@@ -1,0 +1,98 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/config.gni")
+import("//build/config/android/rules.gni")
+
+generate_jni("content_shell_jni_headers") {
+  jni_package = "content/shell"
+  sources = [
+    "browsertests_apk/src/org/chromium/content_browsertests_apk/ContentBrowserTestsActivity.java",
+    "java/src/org/chromium/content_shell/ShellLayoutTestUtils.java",
+    "java/src/org/chromium/content_shell/ShellManager.java",
+    "java/src/org/chromium/content_shell/Shell.java",
+  ]
+}
+
+shared_library("libcontent_shell_content_view") {
+  # TODO(GYP,cjhopman): enable these when content_shell builds
+  deps = [
+    ":content_shell_jni_headers",
+#"//content/shell:content_shell",
+#"//content/shell:content_shell_pak",
+    "//skia",
+    "//media/base/android",
+  ]
+  sources = [
+#"shell_library_loader.cc",
+#"shell_library_loader.h",
+  ]
+  if (is_android_webview_build) {
+    ldflags = [
+      "-lgabi++",
+    ]
+  }
+}
+
+android_resources("content_shell_java_resources") {
+  resource_dirs = [ "java/res" ]
+  custom_package = "org.chromium.content_shell"
+}
+
+android_library("content_shell_java") {
+  deps = [
+    "//base:base_java",
+    "//content/public/android:content_java",
+    "//media:media_java",
+    "//net/android:net_java",
+    "//ui/android:ui_java",
+    ":content_shell_java_resources",
+  ]
+  DEPRECATED_java_in_dir = "java/src"
+}
+
+android_resources("content_shell_apk_resources") {
+  resource_dirs = [ "shell_apk/res" ]
+  deps = [
+    ":content_shell_java_resources"
+  ]
+  android_manifest = "shell_apk/AndroidManifest.xml"
+}
+
+android_apk("content_shell_apk") {
+  datadeps = [
+    # "//tools/android/forwarder",
+  ]
+  deps = [
+    ":content_shell_apk_resources",
+    ":content_shell_java",
+    ":libcontent_shell_content_view",
+    "//base:base_java",
+    "//content/public/android:content_java",
+    "//content/public/android:content_java_resources",
+    "//media:media_java",
+    "//net/android:net_java",
+    #"//third_party/mesa:osmesa_in_lib_dir",
+    "//ui/android:ui_java",
+  ]
+  apk_name = "ContentShell"
+  android_manifest = "shell_apk/AndroidManifest.xml"
+  DEPRECATED_java_in_dir = "shell_apk/src"
+  native_libs = [
+    "$root_build_dir/lib.stripped/libcontent_shell_content_view.so"
+  ]
+  asset_location = "$root_build_dir/content_shell/assets"
+
+  # TODO(GYP)
+  #'additional_input_paths': ['<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'],
+  #'extra_native_libs': ['<(SHARED_LIB_DIR)/libosmesa.so'],
+
+  if (false && icu_use_data_file_flag) {
+    # TODO(GYP)
+  }
+
+  if (is_android_webview_build) {
+    # TODO(GYP)
+  }
+}

@@ -88,6 +88,27 @@ def MoveImagesToNonMdpiFolders(res_root):
       shutil.move(src_file, dst_file)
 
 
+def PackageArgsForExtractedZip(d):
+  """Returns the aapt args for an extracted resources zip.
+
+  A resources zip either contains the resources for a single target or for
+  multiple targets. If it is multiple targets merged into one, the actual
+  resource directories will be contained in the subdirectories 0, 1, 2, ...
+  """
+  res_dirs = []
+  subdirs = [os.path.join(d, s) for s in os.listdir(d)]
+  subdirs = sorted([s for s in subdirs if os.path.isdir(s)])
+  if subdirs and os.path.basename(subdirs[0]) == '0':
+    res_dirs = subdirs
+  else:
+    res_dirs = [d]
+  package_command = []
+  for d in res_dirs:
+    MoveImagesToNonMdpiFolders(d)
+    package_command += ['-S', d]
+  return package_command
+
+
 def main():
   options = ParseArgs()
   android_jar = os.path.join(options.android_sdk, 'android.jar')
@@ -120,8 +141,7 @@ def main():
       if os.path.exists(subdir):
         raise Exception('Resource zip name conflict: ' + os.path.basename(z))
       build_utils.ExtractAll(z, path=subdir)
-      MoveImagesToNonMdpiFolders(subdir)
-      package_command += ['-S', subdir]
+      package_command += PackageArgsForExtractedZip(subdir)
 
     if 'Debug' in options.configuration_name:
       package_command += ['--debug-mode']

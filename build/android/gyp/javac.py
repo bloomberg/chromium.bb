@@ -172,7 +172,7 @@ def main(argv):
       java_dir = os.path.join(temp_dir, 'java')
       os.makedirs(java_dir)
       for srcjar in java_srcjars:
-        build_utils.ExtractAll(srcjar, path=java_dir)
+        build_utils.ExtractAll(srcjar, path=java_dir, pattern='*.java')
       java_files += build_utils.FindInDirectory(java_dir, '*.java')
 
     if options.javac_includes:
