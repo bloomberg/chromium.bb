@@ -24,7 +24,6 @@
 #define XSLImportRule_h
 
 #include "core/fetch/ResourcePtr.h"
-#include "core/fetch/StyleSheetResourceClient.h"
 #include "core/xml/XSLStyleSheet.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/PassOwnPtr.h"
@@ -33,7 +32,7 @@ namespace blink {
 
 class XSLStyleSheetResource;
 
-class XSLImportRule FINAL : public NoBaseWillBeGarbageCollectedFinalized<XSLImportRule>, private StyleSheetResourceClient {
+class XSLImportRule FINAL : public NoBaseWillBeGarbageCollectedFinalized<XSLImportRule> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static PassOwnPtrWillBeRawPtr<XSLImportRule> create(XSLStyleSheet* parentSheet, const String& href)
@@ -57,12 +56,11 @@ public:
 private:
     XSLImportRule(XSLStyleSheet* parentSheet, const String& href);
 
-    virtual void setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet) OVERRIDE;
+    void setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet);
 
     RawPtrWillBeMember<XSLStyleSheet> m_parentStyleSheet;
     String m_strHref;
     RefPtrWillBeMember<XSLStyleSheet> m_styleSheet;
-    ResourcePtr<XSLStyleSheetResource> m_resource;
     bool m_loading;
 };
 

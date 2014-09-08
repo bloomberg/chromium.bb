@@ -218,11 +218,13 @@ static void freeXsltParamArray(const char** params)
     fastFree(params);
 }
 
-static xsltStylesheetPtr xsltStylesheetPointer(RefPtrWillBeMember<XSLStyleSheet>& cachedStylesheet, Node* stylesheetRootNode)
+static xsltStylesheetPtr xsltStylesheetPointer(Document* document, RefPtrWillBeMember<XSLStyleSheet>& cachedStylesheet, Node* stylesheetRootNode)
 {
     if (!cachedStylesheet && stylesheetRootNode) {
+        // When using importStylesheet, we will use the given document as the imported stylesheet's owner.
         cachedStylesheet = XSLStyleSheet::createForXSLTProcessor(
-            stylesheetRootNode->parentNode() ? stylesheetRootNode->parentNode() : stylesheetRootNode,
+            stylesheetRootNode->parentNode() ? &stylesheetRootNode->parentNode()->document() : document,
+            stylesheetRootNode,
             stylesheetRootNode->document().url().string(),
             stylesheetRootNode->document().url()); // FIXME: Should we use baseURL here?
 
@@ -278,7 +280,7 @@ bool XSLTProcessor::transformToString(Node* sourceNode, String& mimeType, String
     RefPtrWillBeRawPtr<Document> ownerDocument(sourceNode->document());
 
     setXSLTLoadCallBack(docLoaderFunc, this, ownerDocument->fetcher());
-    xsltStylesheetPtr sheet = xsltStylesheetPointer(m_stylesheet, m_stylesheetRootNode.get());
+    xsltStylesheetPtr sheet = xsltStylesheetPointer(m_document.get(), m_stylesheet, m_stylesheetRootNode.get());
     if (!sheet) {
         setXSLTLoadCallBack(0, 0, 0);
         m_stylesheet = nullptr;

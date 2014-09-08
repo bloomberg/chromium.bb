@@ -56,10 +56,10 @@ public:
     // Taking an arbitrary node is unsafe, because owner node pointer can become
     // stale. XSLTProcessor ensures that the stylesheet doesn't outlive its
     // parent, in part by not exposing it to JavaScript.
-    static PassRefPtrWillBeRawPtr<XSLStyleSheet> createForXSLTProcessor(Node* parentNode, const String& originalURL, const KURL& finalURL)
+    static PassRefPtrWillBeRawPtr<XSLStyleSheet> createForXSLTProcessor(Document* document, Node* stylesheetRootNode, const String& originalURL, const KURL& finalURL)
     {
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        return adoptRefWillBeNoop(new XSLStyleSheet(parentNode, originalURL, finalURL, false));
+        return adoptRefWillBeNoop(new XSLStyleSheet(document, stylesheetRootNode, originalURL, finalURL, false));
     }
 
     virtual ~XSLStyleSheet();
@@ -103,6 +103,7 @@ public:
 
 private:
     XSLStyleSheet(Node* parentNode, const String& originalURL, const KURL& finalURL, bool embedded);
+    XSLStyleSheet(Document* ownerDocument, Node* styleSheetRootNode, const String& originalURL, const KURL& finalURL, bool embedded);
     XSLStyleSheet(XSLImportRule* parentImport, const String& originalURL, const KURL& finalURL);
 
     RawPtrWillBeMember<Node> m_ownerNode;
@@ -120,6 +121,7 @@ private:
     bool m_compilationFailed;
 
     RawPtrWillBeMember<XSLStyleSheet> m_parentStyleSheet;
+    RefPtrWillBeMember<Document> m_ownerDocument;
 };
 
 DEFINE_TYPE_CASTS(XSLStyleSheet, StyleSheet, sheet, !sheet->isCSSStyleSheet(), !sheet.isCSSStyleSheet());

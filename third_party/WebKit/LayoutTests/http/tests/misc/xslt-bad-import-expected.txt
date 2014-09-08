@@ -1,1 +1,13 @@
+CONSOLE ERROR: line 1: Space required after the Public Identifier
+
+CONSOLE ERROR: line 1: SystemLiteral " or ' expected
+
+CONSOLE ERROR: line 1: SYSTEM or PUBLIC, the URI is missing
+
+CONSOLE ERROR: line 9: Opening and ending tag mismatch: hr line 7 and body
+
+CONSOLE ERROR: line 9: Opening and ending tag mismatch: body line 4 and html
+
+CONSOLE ERROR: line 10: Premature end of data in tag html line 2
+
 This test passes if it does not crash.

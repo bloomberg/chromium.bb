@@ -27,13 +27,14 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/XSLStyleSheetResource.h"
+#include "platform/SharedBuffer.h"
+#include "wtf/text/TextEncoding.h"
 
 namespace blink {
 
 XSLImportRule::XSLImportRule(XSLStyleSheet* parent, const String& href)
     : m_parentStyleSheet(parent)
     , m_strHref(href)
-    , m_resource(0)
     , m_loading(false)
 {
 }
@@ -44,9 +45,6 @@ XSLImportRule::~XSLImportRule()
     if (m_styleSheet)
         m_styleSheet->setParentStyleSheet(0);
 #endif
-
-    if (m_resource)
-        m_resource->removeClient(this);
 }
 
 void XSLImportRule::setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet)
@@ -99,19 +97,16 @@ void XSLImportRule::loadSheet()
             return;
     }
 
-    FetchRequest request(ResourceRequest(fetcher->document()->completeURL(absHref)), FetchInitiatorTypeNames::xml);
-    m_resource = fetcher->fetchXSLStyleSheet(request);
+    ResourceLoaderOptions fetchOptions(ResourceFetcher::defaultResourceOptions());
+    FetchRequest request(ResourceRequest(fetcher->document()->completeURL(absHref)), FetchInitiatorTypeNames::xml, fetchOptions);
+    request.setOriginRestriction(FetchRequest::RestrictToSameOrigin);
+    ResourcePtr<Resource> resource = fetcher->fetchSynchronously(request);
+    if (!resource)
+        return;
 
-    if (m_resource) {
-        m_resource->addClient(this);
-
-        // If the imported sheet is in the cache, then setXSLStyleSheet gets
-        // called, and the sheet even gets parsed (via parseString). In this
-        // case we have loaded (even if our subresources haven't), so if we have
-        // a stylesheet after checking the cache, then we've clearly loaded.
-        if (!m_styleSheet)
-            m_loading = true;
-    }
+    ASSERT(!m_styleSheet);
+    if (SharedBuffer* data = resource->resourceBuffer())
+        setXSLStyleSheet(absHref, parentSheet->baseURL(), UTF8Encoding().decode(data->data(), data->size()));
 }
 
 void XSLImportRule::trace(Visitor* visitor)
