@@ -68,18 +68,21 @@ FileSelection.prototype.createTasks = function(callback) {
     return;
   }
 
-  this.fileManager_.metadataCache_.get(this.entries, 'drive', function(props) {
-    var present = props.filter(function(p) { return p && p.availableOffline });
-    this.allDriveFilesPresent = present.length == props.length;
+  this.fileManager_.metadataCache_.get(
+      this.entries, 'external', function(props) {
+        var present = props.filter(function(p) {
+          return p && p.availableOffline
+        });
+        this.allDriveFilesPresent = present.length == props.length;
 
-    // Collect all of the mime types and push that info into the selection.
-    this.mimeTypes = props.map(function(value) {
-      return (value && value.contentMimeType) || '';
-    });
+        // Collect all of the mime types and push that info into the selection.
+        this.mimeTypes = props.map(function(value) {
+          return (value && value.contentMimeType) || '';
+        });
 
-    this.tasks.init(this.entries, this.mimeTypes);
-    callback();
-  }.bind(this));
+        this.tasks.init(this.entries, this.mimeTypes);
+        callback();
+      }.bind(this));
 };
 
 /**

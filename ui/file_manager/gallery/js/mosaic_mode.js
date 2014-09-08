@@ -1783,10 +1783,10 @@ Mosaic.Tile.prototype.init = function() {
   if (metadata.media && metadata.media.width) {
     width = metadata.media.width;
     height = metadata.media.height;
-  } else if (metadata.drive && metadata.drive.imageWidth &&
-             metadata.drive.imageHeight) {
-    width = metadata.drive.imageWidth;
-    height = metadata.drive.imageHeight;
+  } else if (metadata.external && metadata.external.imageWidth &&
+             metadata.external.imageHeight) {
+    width = metadata.external.imageWidth;
+    height = metadata.external.imageHeight;
   } else {
     // No dimensions in metadata, then use the generic dimensions.
     width = Mosaic.Tile.GENERIC_ICON_SIZE;

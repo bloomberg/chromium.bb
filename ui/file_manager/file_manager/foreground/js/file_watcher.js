@@ -23,7 +23,7 @@ function FileWatcher(metadataCache) {
 
   this.filesystemMetadataObserverId_ = null;
   this.thumbnailMetadataObserverId_ = null;
-  this.driveMetadataObserverId_ = null;
+  this.externalMetadataObserverId_ = null;
 }
 
 /**
@@ -82,16 +82,16 @@ FileWatcher.prototype.onThumbnailMetadataChanged_ = function(
 };
 
 /**
- * Called when drive metadata in the watched directory has been changed.
+ * Called when external metadata in the watched directory has been changed.
  *
  * @param {Array.<Entry>} entries Array of entries.
  * @param {Object.<string, Object>} properties Map from entry URLs to metadata
  *     properties.
  * @private
  */
-FileWatcher.prototype.onDriveMetadataChanged_ = function(
+FileWatcher.prototype.onExternalMetadataChanged_ = function(
     entries, properties) {
-  this.dispatchMetadataEvent_('drive', entries, properties);
+  this.dispatchMetadataEvent_('external', entries, properties);
 };
 
 /**
@@ -165,7 +165,7 @@ FileWatcher.prototype.resetWatchedEntry_ = function(onSuccess, onError) {
           }.bind(this));
       this.metadataCache_.removeObserver(this.filesystemMetadataObserverId_);
       this.metadataCache_.removeObserver(this.thumbnailMetadataObserverId_);
-      this.metadataCache_.removeObserver(this.driveMetadataObserverId_);
+      this.metadataCache_.removeObserver(this.externalMetadataObserverId_);
     } else {
       onSuccess();
       callback();
@@ -208,11 +208,11 @@ FileWatcher.prototype.changeWatchedEntry_ = function(
         MetadataCache.CHILDREN,
         'thumbnail',
         this.onThumbnailMetadataChanged_.bind(this));
-      this.driveMetadataObserverId_ = this.metadataCache_.addObserver(
+      this.externalMetadataObserverId_ = this.metadataCache_.addObserver(
         entry,
         MetadataCache.CHILDREN,
-        'drive',
-        this.onDriveMetadataChanged_.bind(this));
+        'external',
+        this.onExternalMetadataChanged_.bind(this));
     }.bind(this));
   }.bind(this);
 

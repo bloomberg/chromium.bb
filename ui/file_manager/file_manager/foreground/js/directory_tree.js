@@ -340,7 +340,7 @@ DirectoryItem.prototype.updateSharedStatusIcon = function() {
   var icon = this.querySelector('.icon');
   this.parentTree_.metadataCache.getLatest(
       [this.dirEntry_],
-      'drive',
+      'external',
       function(metadata) {
         icon.classList.toggle('shared', metadata[0] && metadata[0].shared);
       });

@@ -12,22 +12,22 @@
  * {
  *   filesystem: size, modificationTime
  *   internal: presence
- *   drive: pinned, present, hosted, availableOffline
+ *   external: pinned, present, hosted, availableOffline
  *
- *   Following are not fetched for non-present drive files.
+ *   Following are not fetched for non-present external files.
  *   media: artist, album, title, width, height, imageTransform, etc.
  *   thumbnail: url, transform
  *
  *   Following are always fetched from content, and so force the downloading
- *   of remote drive files. One should use this for required content metadata,
+ *   of external files. One should use this for required content metadata,
  *   i.e. image orientation.
  *   fetchedMedia: width, height, etc.
  * }
  *
  * Typical usages:
  * {
- *   cache.get([entry1, entry2], 'drive|filesystem', function(metadata) {
- *     if (metadata[0].drive.pinned && metadata[1].filesystem.size === 0)
+ *   cache.get([entry1, entry2], 'external|filesystem', function(metadata) {
+ *     if (metadata[0].external.pinned && metadata[1].filesystem.size === 0)
  *       alert("Pinned and empty!");
  *   });
  *
@@ -118,10 +118,10 @@ MetadataCache.EVICTION_THRESHOLD_MARGIN = 500;
  * @return {MetadataCache!} The cache with all providers.
  */
 MetadataCache.createFull = function(volumeManager) {
-  // DriveProvider should be prior to FileSystemProvider, because it covers
-  // FileSystemProvider for files in Drive.
+  // ExternalProvider should be prior to FileSystemProvider, because it covers
+  // FileSystemProvider for files on the external backend, eg. Drive.
   return new MetadataCache([
-    new DriveProvider(volumeManager),
+    new ExternalProvider(volumeManager),
     new FilesystemProvider(),
     new ContentProvider()
   ]);
@@ -758,14 +758,14 @@ FilesystemProvider.prototype.fetch = function(
 };
 
 /**
- * Provider of drive metadata.
+ * Provider of metadata for entries on the external file system backend.
  * This provider returns the following objects:
- *     drive: { pinned, hosted, present, customIconUrl, etc. }
+ *     external: { pinned, hosted, present, customIconUrl, etc. }
  *     thumbnail: { url, transform }
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @constructor
  */
-function DriveProvider(volumeManager) {
+function ExternalProvider(volumeManager) {
   MetadataProvider.call(this);
 
   /**
@@ -782,7 +782,7 @@ function DriveProvider(volumeManager) {
   this.callApiBound_ = this.callApi_.bind(this);
 }
 
-DriveProvider.prototype = {
+ExternalProvider.prototype = {
   __proto__: MetadataProvider.prototype
 };
 
@@ -790,8 +790,9 @@ DriveProvider.prototype = {
  * @param {Entry} entry The entry.
  * @return {boolean} Whether this provider supports the entry.
  */
-DriveProvider.prototype.supportsEntry = function(entry) {
+ExternalProvider.prototype.supportsEntry = function(entry) {
   var locationInfo = this.volumeManager_.getLocationInfo(entry);
+  // TODO(mtomasz): Add support for provided file systems.
   return locationInfo && locationInfo.isDriveBased;
 };
 
@@ -799,15 +800,15 @@ DriveProvider.prototype.supportsEntry = function(entry) {
  * @param {string} type The metadata type.
  * @return {boolean} Whether this provider provides this metadata.
  */
-DriveProvider.prototype.providesType = function(type) {
-  return type === 'drive' || type === 'thumbnail' ||
+ExternalProvider.prototype.providesType = function(type) {
+  return type === 'external' || type === 'thumbnail' ||
       type === 'media' || type === 'filesystem';
 };
 
 /**
  * @return {string} Unique provider id.
  */
-DriveProvider.prototype.getId = function() { return 'drive'; };
+ExternalProvider.prototype.getId = function() { return 'external'; };
 
 /**
  * Fetches the metadata.
@@ -816,7 +817,7 @@ DriveProvider.prototype.getId = function() { return 'drive'; };
  * @param {function(Object)} callback Callback expects a map from metadata type
  *     to metadata value. This callback is called asynchronously.
  */
-DriveProvider.prototype.fetch = function(entry, type, callback) {
+ExternalProvider.prototype.fetch = function(entry, type, callback) {
   this.entries_.push(entry);
   this.callbacks_.push(callback);
   if (!this.scheduled_) {
@@ -829,7 +830,7 @@ DriveProvider.prototype.fetch = function(entry, type, callback) {
  * Schedules the API call.
  * @private
  */
-DriveProvider.prototype.callApi_ = function() {
+ExternalProvider.prototype.callApi_ = function() {
   this.scheduled_ = false;
 
   var entries = this.entries_;
@@ -857,9 +858,9 @@ DriveProvider.prototype.callApi_ = function() {
  * @return {Object} Metadata in internal format.
  * @private
  */
-DriveProvider.prototype.convert_ = function(data, entry) {
+ExternalProvider.prototype.convert_ = function(data, entry) {
   var result = {};
-  result.drive = {
+  result.external = {
     present: data.isPresent,
     pinned: data.isPinned,
     hosted: data.isHosted,

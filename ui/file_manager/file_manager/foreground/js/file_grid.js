@@ -153,7 +153,7 @@ FileGrid.decorateThumbnailBox = function(
   if (entry.isDirectory) {
     box.setAttribute('generic-thumbnail', 'folder');
     if (locationInfo && locationInfo.isDriveBased) {
-      metadataCache.getOne(entry, 'drive', function(metadata) {
+      metadataCache.getOne(entry, 'external', function(metadata) {
         if (metadata.shared)
           box.classList.add('shared');
       });
@@ -163,15 +163,7 @@ FileGrid.decorateThumbnailBox = function(
     return;
   }
 
-  var metadataTypes = 'thumbnail|filesystem';
-
-  if (locationInfo && locationInfo.isDriveBased) {
-    metadataTypes += '|drive';
-  } else {
-    // TODO(dgozman): If we ask for 'media' for a Drive file we fall into an
-    // infinite loop.
-    metadataTypes += '|media';
-  }
+  var metadataTypes = 'thumbnail|filesystem|external|media';
 
   // Drive provides high quality thumbnails via USE_EMBEDDED, however local
   // images usually provide very tiny thumbnails, therefore USE_EMBEDDE can't

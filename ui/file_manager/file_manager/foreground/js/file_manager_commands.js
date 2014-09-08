@@ -141,7 +141,7 @@ CommandUtil.getPinTargetEntries = function() {
     hasDirectory = hasDirectory || entry.isDirectory;
     if (!entry || hasDirectory)
       return false;
-    var metadata = fileManager.metadataCache_.getCached(entry, 'drive');
+    var metadata = fileManager.metadataCache_.getCached(entry, 'external');
     if (!metadata || metadata.hosted)
       return false;
     entry.pinned = metadata.pinned;
@@ -714,14 +714,14 @@ CommandHandler.COMMANDS_['toggle-pinned'] = {
           fileManager.metadataCache_.getOne(
               currentEntry, 'filesystem', steps.showError);
         }
-        fileManager.metadataCache_.clear(currentEntry, 'drive');
+        fileManager.metadataCache_.clear(currentEntry, 'external');
         fileManager.metadataCache_.getOne(
-            currentEntry, 'drive', steps.updateUI.bind(this));
+            currentEntry, 'external', steps.updateUI.bind(this));
       },
 
       // Update the user interface according to the cache state.
       updateUI: function(drive /* not used */) {
-        fileManager.updateMetadataInUI_('drive', [currentEntry]);
+        fileManager.updateMetadataInUI_('external', [currentEntry]);
         if (!error)
           steps.start();
       },

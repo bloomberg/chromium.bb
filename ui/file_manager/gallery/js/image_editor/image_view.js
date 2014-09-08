@@ -284,9 +284,9 @@ ImageView.prototype.load =
   } else {
     var cachedScreen = item.screenImage;
     var imageWidth = metadata.media && metadata.media.width ||
-                     metadata.drive && metadata.drive.imageWidth;
+                     metadata.external && metadata.external.imageWidth;
     var imageHeight = metadata.media && metadata.media.height ||
-                      metadata.drive && metadata.drive.imageHeight;
+                      metadata.external && metadata.external.imageHeight;
     if (cachedScreen) {
       // We have a cached screen-scale canvas, use it instead of a thumbnail.
       displayThumbnail(ImageView.LOAD_TYPE_CACHED_SCREEN, cachedScreen);
@@ -319,12 +319,12 @@ ImageView.prototype.load =
         width = metadata.media.width;
         height = metadata.media.height;
       }
-      // If metadata.drive.present is true, the image data is loaded directly
+      // If metadata.external.present is true, the image data is loaded directly
       // from local cache, whose size may be out of sync with the drive
       // metadata.
-      if (metadata.drive && !metadata.drive.present) {
-        width = metadata.drive.imageWidth;
-        height = metadata.drive.imageHeight;
+      if (metadata.external && !metadata.external.present) {
+        width = metadata.external.imageWidth;
+        height = metadata.external.imageHeight;
       }
       self.replace(
           canvas,
@@ -381,7 +381,7 @@ ImageView.prototype.load =
         loadType, ImageView.LOAD_TYPE_TOTAL);
 
     if (loadType === ImageView.LOAD_TYPE_ERROR &&
-        !navigator.onLine && !metadata.drive.present) {
+        !navigator.onLine && !metadata.external.present) {
       loadType = ImageView.LOAD_TYPE_OFFLINE;
     }
     if (loadCallback) loadCallback(loadType, animationDuration, opt_error);

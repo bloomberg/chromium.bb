@@ -954,7 +954,7 @@ FileTransferController.prototype = {
 
     if (this.isOnDrive) {
       this.allDriveFilesAvailable = false;
-      this.metadataCache_.get(entries, 'drive', function(props) {
+      this.metadataCache_.get(entries, 'external', function(props) {
         // We consider directories not available offline for the purposes of
         // file transfer since we cannot afford to recursive traversal.
         this.allDriveFilesAvailable =

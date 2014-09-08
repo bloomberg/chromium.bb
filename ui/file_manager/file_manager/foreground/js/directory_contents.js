@@ -865,7 +865,7 @@ DirectoryContents.prototype.onNewEntries_ = function(refresh, entries) {
  */
 DirectoryContents.prototype.prefetchMetadata =
     function(entries, refresh, callback) {
-  var TYPES = 'filesystem|drive';
+  var TYPES = 'filesystem|external';
   if (refresh)
     this.context_.metadataCache.getLatest(entries, TYPES, callback);
   else

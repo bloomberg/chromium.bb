@@ -8,19 +8,25 @@
  * Object representing an image item (a photo).
  *
  * @param {FileEntry} entry Image entry.
- * @param {function():Promise} fethcedMediaProvider Function to provide the
- *     fetchedMedia metadata.
+ * @param {EntryLocation} locationInfo Entry location information.
+ * @param {Object} metadata Metadata for the entry.
+ * @param {MetadataCache} metadataCache Metadata cache instance.
  * @param {boolean} original Whether the entry is original or edited.
- * @param {boolean} readonly Whether the entry is located at readonly directory
- *     or not.
  * @constructor
  */
-Gallery.Item = function(entry, metadata, metadataCache, original, readonly) {
+Gallery.Item = function(
+    entry, locationInfo, metadata, metadataCache, original) {
   /**
    * @type {FileEntry}
    * @private
    */
   this.entry_ = entry;
+
+  /**
+   * @type {EntryLocation}
+   * @private
+   */
+  this.locationInfo_ = locationInfo;
 
   /**
    * @type {Object}
@@ -61,12 +67,6 @@ Gallery.Item = function(entry, metadata, metadataCache, original, readonly) {
    * @type {boolean}
    * @private
    */
-  this.isReadOnly_ = readonly;
-
-  /**
-   * @type {boolean}
-   * @private
-   */
   this.original_ = original;
 
   Object.seal(this);
@@ -76,6 +76,13 @@ Gallery.Item = function(entry, metadata, metadataCache, original, readonly) {
  * @return {FileEntry} Image entry.
  */
 Gallery.Item.prototype.getEntry = function() { return this.entry_; };
+
+/**
+ * @return {EntryLocation} Entry location information.
+ */
+Gallery.Item.prototype.getLocationInfo = function() {
+  return this.locationInfo_;
+};
 
 /**
  * @return {Object} Metadata.
@@ -124,21 +131,6 @@ Gallery.Item.prototype.getFileName = function() {
 Gallery.Item.prototype.isOriginal = function() { return this.original_; };
 
 /**
- * @return {boolean} Whther the item is located at a readonly directory.
- */
-Gallery.Item.prototype.isReadOnly = function() {
-   return this.isReadOnly_;
-};
-
-/**
- * Obtains the item is on the drive volume or not.
- * @return {boolean} True if the item is on the drive volume.
- */
-Gallery.Item.prototype.isOnDrive = function() {
-  return !!this.metadata_.drive;
-};
-
-/**
  * Obtains the last accessed date.
  * @return {number} Last accessed date.
  */
@@ -152,7 +144,6 @@ Gallery.Item.prototype.getLastAccessedDate = function() {
 Gallery.Item.prototype.touch = function() {
   this.lastAccessed_ = Date.now();
 };
-
 
 // TODO: Localize?
 /**
@@ -233,39 +224,42 @@ Gallery.Item.prototype.createCopyName_ = function(dirEntry, callback) {
 };
 
 /**
- * Writes the new item content to the file.
+ * Writes the new item content to either the existing or a new file.
  *
- * @param {DirectoryEntry} fallbackDir If the entry is readonly, the edited
- *     image is saved to the directory.
- * @param {boolean} overwrite True if overwrite, false if copy.
+ * @param {VolumeManager} volumeManager Volume manager instance.
+ * @param {string} fallbackDir Fallback directory in case the current directory
+ *     is read only.
  * @param {HTMLCanvasElement} canvas Source canvas.
  * @param {ImageEncoder.MetadataEncoder} metadataEncoder MetadataEncoder.
  * @param {function(boolean)=} opt_callback Callback accepting true for success.
  */
 Gallery.Item.prototype.saveToFile = function(
-    fallbackDir, overwrite, canvas, metadataEncoder, opt_callback) {
+    volumeManager, fallbackDir, overwrite, canvas, metadataEncoder,
+    opt_callback) {
   ImageUtil.metrics.startInterval(ImageUtil.getMetricName('SaveTime'));
 
   var name = this.getFileName();
 
-  var onSuccess = function(entry) {
+  var onSuccess = function(entry, locationInfo) {
     ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 1, 2);
     ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('SaveTime'));
+
     this.entry_ = entry;
-    this.isReadOnly_ = false;
+    this.locationInfo_ = locationInfo;
+
     this.metadataCache_.clear([this.entry_], 'fetchedMedia');
     if (opt_callback)
       opt_callback(true);
   }.bind(this);
 
-  function onError(error) {
+  var onError = function(error) {
     console.error('Error saving from gallery', name, error);
     ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 0, 2);
     if (opt_callback)
       opt_callback(false);
   }
 
-  function doSave(newFile, fileEntry) {
+  var doSave = function(newFile, fileEntry) {
     fileEntry.createWriter(function(fileWriter) {
       function writeContent() {
         fileWriter.onwriteend = onSuccess.bind(null, fileEntry);
@@ -286,19 +280,27 @@ Gallery.Item.prototype.saveToFile = function(
     }, onError);
   }
 
-  function getFile(dir, newFile) {
+  var getFile = function(dir, newFile) {
     dir.getFile(name, {create: newFile, exclusive: newFile},
-        doSave.bind(null, newFile), onError);
-  }
+        function(fileEntry) {
+          var locationInfo = volumeManager.getLocationInfo(fileEntry);
+          // If the volume is gone, then abort the saving operation.
+          if (!locationInfo) {
+            onError('NotFound');
+            return;
+          }
+          doSave(newFile, fileEntry, locationInfo);
+        }.bind(this), onError);
+  }.bind(this);
 
-  function checkExistence(dir) {
+  var checkExistence = function(dir) {
     dir.getFile(name, {create: false, exclusive: false},
         getFile.bind(null, dir, false /* existing file */),
         getFile.bind(null, dir, true /* create new file */));
   }
 
   var saveToDir = function(dir) {
-    if (overwrite && !this.isReadOnly_) {
+    if (overwrite && !this.locationInfo_.isReadOnly) {
       checkExistence(dir);
     } else {
       this.createCopyName_(dir, function(copyName) {
@@ -309,7 +311,7 @@ Gallery.Item.prototype.saveToFile = function(
     }
   }.bind(this);
 
-  if (this.isReadOnly_) {
+  if (this.locationInfo_.isReadOnly) {
     saveToDir(fallbackDir);
   } else {
     this.entry_.getParent(saveToDir, onError);

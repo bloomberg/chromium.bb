@@ -20,9 +20,8 @@
  *     function.
  * @constructor
  */
-function SlideMode(container, content, toolbar, prompt,
-                   dataModel, selectionModel, context,
-                   toggleMode, displayStringFunction) {
+function SlideMode(container, content, toolbar, prompt, dataModel,
+    selectionModel, context, volumeManager, toggleMode, displayStringFunction) {
   this.container_ = container;
   this.document_ = container.ownerDocument;
   this.content = content;
@@ -31,6 +30,7 @@ function SlideMode(container, content, toolbar, prompt,
   this.dataModel_ = dataModel;
   this.selectionModel_ = selectionModel;
   this.context_ = context;
+  this.volumeManager_ = volumeManager;
   this.metadataCache_ = context.metadataCache;
   this.toggleMode_ = toggleMode;
   this.displayStringFunction_ = displayStringFunction;
@@ -966,6 +966,7 @@ SlideMode.prototype.saveCurrentImage_ = function(item, callback) {
   this.showSpinner_(true);
 
   var savedPromise = this.dataModel_.saveItem(
+      this.volumeManager_,
       item,
       this.imageView_.getCanvas(),
       this.shouldOverwriteOriginal_());

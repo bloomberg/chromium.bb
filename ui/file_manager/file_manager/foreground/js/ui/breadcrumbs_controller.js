@@ -61,7 +61,7 @@ BreadcrumbsController.prototype.show = function(entry) {
     if (entryLocationInfo.isRootEntry &&
         entryLocationInfo.rootType ===
             VolumeManagerCommon.RootType.DRIVE_OTHER) {
-      this.metadataCache_.getOne(previousEntry, 'drive', function(result) {
+      this.metadataCache_.getOne(previousEntry, 'external', function(result) {
         if (result && result.sharedWithMe) {
           // Adds the shared-with-me entry instead.
           var driveVolumeInfo = entryLocationInfo.volumeInfo;

@@ -1219,18 +1219,19 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       var locationInfo = this.volumeManager_.getLocationInfo(entry);
       if (!locationInfo)
         return;
-      this.metadataCache_.getOne(entry, 'thumbnail|drive', function(metadata) {
-        var thumbnailLoader_ = new ThumbnailLoader(
-            entry,
-            ThumbnailLoader.LoaderType.CANVAS,
-            metadata,
-            undefined,  // Media type.
-            locationInfo.isDriveBased ?
-                ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
-                ThumbnailLoader.UseEmbedded.NO_EMBEDDED,
-            10);  // Very low priority.
-        thumbnailLoader_.loadDetachedImage(function(success) {});
-      });
+      this.metadataCache_.getOne(entry, 'thumbnail|external',
+          function(metadata) {
+            var thumbnailLoader_ = new ThumbnailLoader(
+                entry,
+                ThumbnailLoader.LoaderType.CANVAS,
+                metadata,
+                undefined,  // Media type.
+                locationInfo.isDriveBased ?
+                    ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
+                    ThumbnailLoader.UseEmbedded.NO_EMBEDDED,
+                10);  // Very low priority.
+            thumbnailLoader_.loadDetachedImage(function(success) {});
+          });
     }.bind(this);
 
     for (var i = 0; i < entries.length; i++) {
@@ -1611,10 +1612,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var getEntries = (isFakeEntry ? [] : [directoryEntry]).concat(entries);
     if (!isFakeEntry)
       this.metadataCache_.clearRecursively(directoryEntry, '*');
-    this.metadataCache_.get(getEntries, 'filesystem', null);
-
-    if (this.isOnDrive())
-      this.metadataCache_.get(getEntries, 'drive', null);
+    this.metadataCache_.get(getEntries, 'filesystem|external', null);
 
     var visibleItems = this.currentList_.items;
     var visibleEntries = [];
@@ -2035,7 +2033,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return;
     }
 
-    this.metadataCache_.getOne(entry, 'drive', function(prop) {
+    this.metadataCache_.getOne(entry, 'external', function(prop) {
       if (!prop || !prop.contentMimeType) {
         onFailure();
         return;
@@ -3098,7 +3096,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     // TODO(mtomasz): Use Entry instead of URLs, if possible.
     util.URLsToEntries(selection.urls, function(entries) {
-      this.metadataCache_.get(entries, 'drive', onProperties);
+      this.metadataCache_.get(entries, 'external', onProperties);
     }.bind(this));
   };
 
@@ -3472,7 +3470,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var self = this;
 
     // To open a file, first get the mime type.
-    this.metadataCache_.get(entries, 'drive', function(props) {
+    this.metadataCache_.get(entries, 'external', function(props) {
       var mimeType = props[0].contentMimeType || '';
       var mimeTypes = [mimeType];
       var openIt = function() {

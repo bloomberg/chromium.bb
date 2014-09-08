@@ -65,14 +65,17 @@ GalleryDataModel.prototype = {
 /**
  * Saves new image.
  *
+ * @param {VolumeManager} volumeManager Volume manager instance.
  * @param {Gallery.Item} item Original gallery item.
  * @param {Canvas} canvas Canvas containing new image.
  * @param {boolean} overwrite Whether to overwrite the image to the item or not.
  * @return {Promise} Promise to be fulfilled with when the operation completes.
  */
-GalleryDataModel.prototype.saveItem = function(item, canvas, overwrite) {
+GalleryDataModel.prototype.saveItem = function(
+    volumeManager, item, canvas, overwrite) {
   var oldEntry = item.getEntry();
   var oldMetadata = item.getMetadata();
+  var oldLocationInfo = item.getLocationInfo();
   var metadataEncoder = ImageEncoder.encodeMetadata(
       item.getMetadata(), canvas, 1 /* quality */);
   var newMetadata = ContentProvider.ConvertContentMetadata(
@@ -80,11 +83,12 @@ GalleryDataModel.prototype.saveItem = function(item, canvas, overwrite) {
       MetadataCache.cloneMetadata(item.getMetadata()));
   if (newMetadata.filesystem)
     newMetadata.filesystem.modificationTime = new Date();
-  if (newMetadata.drive)
-    newMetadata.drive.present = true;
+  if (newMetadata.external)
+    newMetadata.external.present = true;
 
   return new Promise(function(fulfill, reject) {
     item.saveToFile(
+        volumeManager,
         this.fallbackSaveDirectory,
         overwrite,
         canvas,
@@ -117,10 +121,10 @@ GalleryDataModel.prototype.saveItem = function(item, canvas, overwrite) {
             // Add another item for the old entry.
             var anotherItem = new Gallery.Item(
                 oldEntry,
+                oldLocationInfo,
                 oldMetadata,
                 this.metadataCache_,
-                item.isOriginal(),
-                item.isReadOnly());
+                item.isOriginal());
             // The item must be added behind the existing item so that it does
             // not change the index of the existing item.
             // TODO(hirono): Update the item index of the selection model
@@ -207,7 +211,8 @@ function Gallery(volumeManager) {
   this.metadataCacheObserverId_ = null;
   this.onExternallyUnmountedBound_ = this.onExternallyUnmounted_.bind(this);
 
-  this.dataModel_ = new GalleryDataModel(this.context_.metadataCache);
+  this.dataModel_ = new GalleryDataModel(
+      this.context_.metadataCache);
   var downloadVolumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
       VolumeManagerCommon.VolumeType.DOWNLOADS);
   downloadVolumeInfo.resolveDisplayRoot().then(function(entry) {
@@ -254,7 +259,7 @@ Gallery.MOSAIC_BACKGROUND_INIT_DELAY = 1000;
  * @const
  * @type {string}
  */
-Gallery.METADATA_TYPE = 'thumbnail|filesystem|media|drive';
+Gallery.METADATA_TYPE = 'thumbnail|filesystem|media|external';
 
 /**
  * Initializes listeners.
@@ -381,6 +386,7 @@ Gallery.prototype.initDom_ = function() {
                                   this.dataModel_,
                                   this.selectionModel_,
                                   this.context_,
+                                  this.volumeManager_,
                                   this.toggleMode_.bind(this),
                                   str);
 
@@ -489,15 +495,18 @@ Gallery.prototype.load = function(entries, selectedEntries) {
         return Promise.reject('Failed to load metadata.');
 
       // Add items to the model.
-      var items = chunk.map(function(chunkItem, index) {
-        var volumeInfo = self.volumeManager_.getVolumeInfo(chunkItem.entry);
+      var items = [];
+      chunk.forEach(function(chunkItem, index) {
+        var locationInfo = self.volumeManager_.getLocationInfo(chunkItem.entry);
+        if (!locationInfo)  // Skip the item, since gone.
+          return;
         var clonedMetadata = MetadataCache.cloneMetadata(metadataList[index]);
-        return new Gallery.Item(
+        items.push(new Gallery.Item(
             chunkItem.entry,
+            locationInfo,
             clonedMetadata,
             self.metadataCache_,
-            /* original */ true,
-            /* readonly */ !!(volumeInfo && volumeInfo.isReadOnly));
+            /* original */ true));
       });
       self.dataModel_.push.apply(self.dataModel_, items);
 
@@ -850,10 +859,10 @@ Gallery.prototype.updateSelectionAndState_ = function() {
     // Update the title and the display name.
     if (numSelectedItems === 1) {
       document.title = this.selectedEntry_.name;
-      this.filenameEdit_.disabled = selectedItem.isReadOnly();
+      this.filenameEdit_.disabled = selectedItem.getLocationInfo().isReadOnly;
       this.filenameEdit_.value =
           ImageUtil.getDisplayNameFromName(this.selectedEntry_.name);
-      this.shareButton_.hidden = !selectedItem.isOnDrive();
+      this.shareButton_.hidden = !selectedItem.getLocationInfo().isDriveBased;
     } else {
       if (this.context_.curDirEntry) {
         // If the Gallery was opened on search results the search query will not

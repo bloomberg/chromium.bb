@@ -230,7 +230,7 @@ AudioPlayer.prototype.select_ = function(newTrack) {
  * @private
  */
 AudioPlayer.prototype.fetchMetadata_ = function(entry, callback) {
-  this.metadataCache_.getOne(entry, 'thumbnail|media|drive',
+  this.metadataCache_.getOne(entry, 'thumbnail|media|external',
       function(generation, metadata) {
         // Do nothing if another load happened since the metadata request.
         if (this.playlistGeneration_ == generation)
@@ -250,7 +250,7 @@ AudioPlayer.prototype.onError_ = function() {
   this.fetchMetadata_(
       this.entries_[track],
       function(metadata) {
-        var error = (!navigator.onLine && !metadata.drive.present) ?
+        var error = (!navigator.onLine && !metadata.external.present) ?
             this.offlineString_ : this.errorString_;
         this.displayMetadata_(track, metadata, error);
         this.scheduleAutoAdvance_();

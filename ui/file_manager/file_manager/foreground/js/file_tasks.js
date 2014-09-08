@@ -469,7 +469,7 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
       VolumeManagerCommon.DriveConnectionType.OFFLINE;
 
   if (fm.isOnDrive() && isDriveOffline) {
-    fm.metadataCache_.get(entries, 'drive', function(props) {
+    fm.metadataCache_.get(entries, 'external', function(props) {
       if (areAll(props, 'availableOffline')) {
         callback();
         return;
@@ -495,7 +495,7 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
       VolumeManagerCommon.DriveConnectionType.METERED;
 
   if (fm.isOnDrive() && isOnMetered) {
-    fm.metadataCache_.get(entries, 'drive', function(driveProps) {
+    fm.metadataCache_.get(entries, 'external', function(driveProps) {
       if (areAll(driveProps, 'availableWhenMetered')) {
         callback();
         return;

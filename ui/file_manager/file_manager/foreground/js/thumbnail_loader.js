@@ -36,27 +36,28 @@ function ThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
 
   this.fallbackUrl_ = null;
   this.thumbnailUrl_ = null;
-  if (opt_metadata.drive && opt_metadata.drive.customIconUrl)
-    this.fallbackUrl_ = opt_metadata.drive.customIconUrl;
+  if (opt_metadata.external && opt_metadata.external.customIconUrl)
+    this.fallbackUrl_ = opt_metadata.external.customIconUrl;
 
-  // Fetch the rotation from the Drive metadata (if available).
-  var driveTransform;
-  if (opt_metadata.drive && opt_metadata.drive.imageRotation !== undefined) {
-    driveTransform = {
+  // Fetch the rotation from the external properties (if available).
+  var externalTransform;
+  if (opt_metadata.external &&
+      opt_metadata.external.imageRotation !== undefined) {
+    externalTransform = {
       scaleX: 1,
       scaleY: 1,
-      rotate90: opt_metadata.drive.imageRotation / 90
+      rotate90: opt_metadata.external.imageRotation / 90
     };
   }
 
   if (opt_metadata.thumbnail && opt_metadata.thumbnail.url &&
       opt_useEmbedded === ThumbnailLoader.UseEmbedded.USE_EMBEDDED) {
     this.thumbnailUrl_ = opt_metadata.thumbnail.url;
-    this.transform_ = driveTransform !== undefined ? driveTransform :
+    this.transform_ = externalTransform !== undefined ? externalTransform :
         opt_metadata.thumbnail.transform;
   } else if (FileType.isImage(entry)) {
     this.thumbnailUrl_ = entry.toURL();
-    this.transform_ = driveTransform !== undefined ? driveTransform :
+    this.transform_ = externalTransform !== undefined ? externalTransform :
         opt_metadata.media && opt_metadata.media.imageTransform;
   } else if (this.fallbackUrl_) {
     // Use fallback as the primary thumbnail.
