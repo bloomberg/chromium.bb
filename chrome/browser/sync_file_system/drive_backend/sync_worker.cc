@@ -234,8 +234,8 @@ void SyncWorker::PromoteDemotedChanges(const base::Closure& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   MetadataDatabase* metadata_db = GetMetadataDatabase();
-  if (metadata_db && metadata_db->HasLowPriorityDirtyTracker()) {
-    metadata_db->PromoteLowerPriorityTrackersToNormal();
+  if (metadata_db && metadata_db->HasDemotedDirtyTracker()) {
+    metadata_db->PromoteDemotedTrackers();
     FOR_EACH_OBSERVER(
         Observer,
         observers_,

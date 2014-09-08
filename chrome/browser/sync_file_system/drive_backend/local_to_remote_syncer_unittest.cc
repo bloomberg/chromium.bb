@@ -209,7 +209,7 @@ class LocalToRemoteSyncerTest : public testing::Test {
       status = RunRemoteToLocalSyncer();
     } while (status == SYNC_STATUS_OK ||
              status == SYNC_STATUS_RETRY ||
-             GetMetadataDatabase()->PromoteLowerPriorityTrackersToNormal());
+             GetMetadataDatabase()->PromoteDemotedTrackers());
     EXPECT_EQ(SYNC_STATUS_NO_CHANGE_TO_SYNC, status);
     return status;
   }

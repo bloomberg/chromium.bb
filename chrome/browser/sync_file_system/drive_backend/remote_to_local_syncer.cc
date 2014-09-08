@@ -122,11 +122,10 @@ void RemoteToLocalSyncer::RunExclusive(scoped_ptr<SyncTaskToken> token) {
   }
 
   dirty_tracker_ = make_scoped_ptr(new FileTracker);
-  if (metadata_database()->GetNormalPriorityDirtyTracker(
-          dirty_tracker_.get())) {
+  if (metadata_database()->GetDirtyTracker(dirty_tracker_.get())) {
     token->RecordLog(base::StringPrintf(
         "Start: tracker_id=%" PRId64, dirty_tracker_->tracker_id()));
-    metadata_database()->LowerTrackerPriority(dirty_tracker_->tracker_id());
+    metadata_database()->DemoteTracker(dirty_tracker_->tracker_id());
     ResolveRemoteChange(token.Pass());
     return;
   }

@@ -1271,13 +1271,13 @@ MetadataDatabase::ActivationStatus MetadataDatabase::TryActivateTracker(
   return ACTIVATION_PENDING;
 }
 
-void MetadataDatabase::LowerTrackerPriority(int64 tracker_id) {
+void MetadataDatabase::DemoteTracker(int64 tracker_id) {
   DCHECK(worker_sequence_checker_.CalledOnValidSequencedThread());
   index_->DemoteDirtyTracker(tracker_id);
   WriteToDatabase(base::Bind(&EmptyStatusCallback));
 }
 
-bool MetadataDatabase::PromoteLowerPriorityTrackersToNormal() {
+bool MetadataDatabase::PromoteDemotedTrackers() {
   DCHECK(worker_sequence_checker_.CalledOnValidSequencedThread());
   bool promoted = index_->PromoteDemotedDirtyTrackers();
   WriteToDatabase(base::Bind(&EmptyStatusCallback));
@@ -1290,7 +1290,7 @@ void MetadataDatabase::PromoteDemotedTracker(int64 tracker_id) {
   WriteToDatabase(base::Bind(&EmptyStatusCallback));
 }
 
-bool MetadataDatabase::GetNormalPriorityDirtyTracker(
+bool MetadataDatabase::GetDirtyTracker(
     FileTracker* tracker_out) const {
   DCHECK(worker_sequence_checker_.CalledOnValidSequencedThread());
 
@@ -1307,7 +1307,7 @@ bool MetadataDatabase::GetNormalPriorityDirtyTracker(
   return true;
 }
 
-bool MetadataDatabase::HasLowPriorityDirtyTracker() const {
+bool MetadataDatabase::HasDemotedDirtyTracker() const {
   DCHECK(worker_sequence_checker_.CalledOnValidSequencedThread());
   return index_->HasDemotedDirtyTracker();
 }

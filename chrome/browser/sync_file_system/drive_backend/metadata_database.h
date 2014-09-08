@@ -323,17 +323,16 @@ class MetadataDatabase {
                                       const SyncStatusCallback& callback);
 
   // Changes the priority of the tracker to low.
-  void LowerTrackerPriority(int64 tracker_id);
-  bool PromoteLowerPriorityTrackersToNormal();
-
+  void DemoteTracker(int64 tracker_id);
+  bool PromoteDemotedTrackers();
   void PromoteDemotedTracker(int64 tracker_id);
 
   // Returns true if there is a normal priority dirty tracker.
   // Assigns the dirty tracker if exists and |tracker| is non-NULL.
-  bool GetNormalPriorityDirtyTracker(FileTracker* tracker) const;
+  bool GetDirtyTracker(FileTracker* tracker) const;
 
   // Returns true if there is a low priority dirty tracker.
-  bool HasLowPriorityDirtyTracker() const;
+  bool HasDemotedDirtyTracker() const;
 
   bool HasDirtyTracker() const;
   size_t CountDirtyTracker() const;
