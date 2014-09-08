@@ -1,0 +1,4 @@
+AXWebArea
+    AXGroup
+        AXTextField AXValue='Editable text'
+        AXTextField AXValue='Uneditable text'

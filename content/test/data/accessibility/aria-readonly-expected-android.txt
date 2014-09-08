@@ -1,0 +1,4 @@
+android.webkit.WebView focusable focused scrollable
+    android.view.View
+        android.widget.EditText clickable editable_text focusable name='Editable text' input_type=1
+        android.widget.EditText clickable editable_text focusable name='Uneditable text' input_type=1
