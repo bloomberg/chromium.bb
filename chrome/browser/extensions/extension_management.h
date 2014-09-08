@@ -180,6 +180,8 @@ class ExtensionManagementFactory : public BrowserContextKeyedServiceFactory {
   // BrowserContextKeyedServiceExtensionManagementFactory:
   virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionManagementFactory);
 };

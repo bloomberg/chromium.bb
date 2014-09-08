@@ -10,6 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/crx_file/id_util.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -248,6 +249,11 @@ KeyedService* ExtensionManagementFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new ExtensionManagement(
       Profile::FromBrowserContext(context)->GetPrefs());
+}
+
+content::BrowserContext* ExtensionManagementFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 }  // namespace extensions
