@@ -229,12 +229,10 @@ ResultExpr RestrictKillTarget(pid_t target_pid, int sysno) {
 ResultExpr RestrictFutex() {
   const int kAllowedFutexFlags = FUTEX_PRIVATE_FLAG | FUTEX_CLOCK_REALTIME;
   const int kOperationMask = ~kAllowedFutexFlags;
-
   const Arg<int> op(1);
   return Switch(op & kOperationMask)
       .CASES((FUTEX_WAIT,
               FUTEX_WAKE,
-              FUTEX_FD,
               FUTEX_REQUEUE,
               FUTEX_CMP_REQUEUE,
               FUTEX_WAKE_OP,

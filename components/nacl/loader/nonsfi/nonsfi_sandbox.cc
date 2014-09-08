@@ -6,12 +6,14 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <linux/futex.h>
 #include <linux/net.h>
+#include <sys/mman.h>
 #include <sys/prctl.h>
 #include <sys/ptrace.h>
-#include <sys/mman.h>
 #include <sys/socket.h>
 #include <sys/syscall.h>
+#include <sys/time.h>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -28,11 +30,15 @@
 #define MAP_STACK 0x20000
 #endif
 
+#define CASES SANDBOX_BPF_DSL_CASES
+
 using sandbox::CrashSIGSYS;
 using sandbox::CrashSIGSYSClone;
+using sandbox::CrashSIGSYSFutex;
 using sandbox::CrashSIGSYSPrctl;
 using sandbox::bpf_dsl::Allow;
 using sandbox::bpf_dsl::Arg;
+using sandbox::bpf_dsl::BoolExpr;
 using sandbox::bpf_dsl::Error;
 using sandbox::bpf_dsl::If;
 using sandbox::bpf_dsl::ResultExpr;
@@ -93,6 +99,23 @@ ResultExpr RestrictClone() {
                       CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS |
                       CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID),
             Allow()).Else(CrashSIGSYSClone());
+}
+
+ResultExpr RestrictFutexOperation() {
+  // TODO(hamaji): Allow only FUTEX_PRIVATE_FLAG futexes.
+  const int kAllowedFutexFlags = FUTEX_PRIVATE_FLAG | FUTEX_CLOCK_REALTIME;
+  const int kOperationMask = ~kAllowedFutexFlags;
+  const Arg<int> op(1);
+  return Switch(op & kOperationMask)
+      .CASES((FUTEX_WAIT,
+              FUTEX_WAKE,
+              FUTEX_REQUEUE,
+              FUTEX_CMP_REQUEUE,
+              FUTEX_WAKE_OP,
+              FUTEX_WAIT_BITSET,
+              FUTEX_WAKE_BITSET),
+             Allow())
+      .Default(CrashSIGSYSFutex());
 }
 
 ResultExpr RestrictPrctl() {
@@ -214,8 +237,6 @@ ResultExpr NaClNonSfiBPFSandboxPolicy::EvaluateSyscall(int sysno) const {
 #elif defined(__x86_64__)
     case __NR_fstat:
 #endif
-    // TODO(hamaji): Allow only FUTEX_PRIVATE_FLAG.
-    case __NR_futex:
     // TODO(hamaji): Remove the need of gettid. Currently, this is
     // called from PlatformThread::CurrentId().
     case __NR_gettid:
@@ -255,6 +276,9 @@ ResultExpr NaClNonSfiBPFSandboxPolicy::EvaluateSyscall(int sysno) const {
     case __NR_fcntl64:
 #endif
       return RestrictFcntlCommands();
+
+    case __NR_futex:
+      return RestrictFutexOperation();
 
 #if defined(__x86_64__)
     case __NR_mmap:

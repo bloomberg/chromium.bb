@@ -10,6 +10,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <linux/futex.h>
 #include <pthread.h>
 #include <sched.h>
 #include <signal.h>
@@ -32,6 +33,7 @@
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/sys_info.h"
+#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
@@ -304,6 +306,38 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   fcntl(0, F_DUPFD_CLOEXEC);
+}
+
+BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
+                 FutexWithRequeuePriorityInheritence,
+                 DEATH_MESSAGE(sandbox::GetFutexErrorMessageContentForTests()),
+                 nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
+  syscall(__NR_futex, NULL, FUTEX_CMP_REQUEUE_PI, 0, NULL, NULL, 0);
+  _exit(1);
+}
+
+BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
+                 FutexWithRequeuePriorityInheritencePrivate,
+                 DEATH_MESSAGE(sandbox::GetFutexErrorMessageContentForTests()),
+                 nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
+  syscall(__NR_futex, NULL, FUTEX_CMP_REQUEUE_PI_PRIVATE, 0, NULL, NULL, 0);
+  _exit(1);
+}
+
+BPF_TEST_C(NaClNonSfiSandboxTest,
+           StartingAndJoiningThreadWorks,
+           nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
+  base::Thread thread("sandbox_tests");
+  BPF_ASSERT(thread.Start());
+  // |thread|'s destructor will join the thread.
+}
+
+BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
+                 FutexWithUnlockPIPrivate,
+                 DEATH_MESSAGE(sandbox::GetFutexErrorMessageContentForTests()),
+                 nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
+  syscall(__NR_futex, NULL, FUTEX_UNLOCK_PI_PRIVATE, 0, NULL, NULL, 0);
+  _exit(1);
 }
 
 void* DoAllowedAnonymousMmap() {
