@@ -1761,34 +1761,6 @@ def CMDdownload(parser, args):
   return 0
 
 
-@subcommand.usage('<file1..fileN> or - to read from stdin')
-def CMDhashtable(parser, args):
-  """Archives data to a hashtable on the file system.
-
-  If a directory is specified, a .isolated file is created the whole directory
-  is uploaded. Then this .isolated file can be included in another one to run
-  commands.
-
-  The commands output each file that was processed with its content hash. For
-  directories, the .isolated generated for the directory is listed as the
-  directory entry itself.
-  """
-  add_outdir_options(parser)
-  parser.add_option(
-      '--blacklist',
-      action='append', default=list(DEFAULT_BLACKLIST),
-      help='List of regexp to use as blacklist filter when uploading '
-           'directories')
-  options, files = parser.parse_args(args)
-  process_outdir_options(parser, options, os.getcwd())
-  try:
-    # Do not compress files when archiving to the file system.
-    archive(options.outdir, 'default', files, options.blacklist)
-  except Error as e:
-    parser.error(e.args[0])
-  return 0
-
-
 def add_isolate_server_options(parser, add_indir):
   """Adds --isolate-server and --namespace options to parser.
 
@@ -1848,31 +1820,6 @@ def process_isolate_server_options(parser, options):
       os.path.normpath(os.path.join(os.getcwd(), options.indir)))
   if not os.path.isdir(options.indir):
     parser.error('Path given to --indir must exist.')
-
-
-def add_outdir_options(parser):
-  """Adds --outdir, which is orthogonal to --isolate-server.
-
-  Note: On upload, separate commands are used between 'archive' and 'hashtable'.
-  On 'download', the same command can download from either an isolate server or
-  a file system.
-  """
-  parser.add_option(
-      '-o', '--outdir', metavar='DIR',
-      help='Directory used to recreate the tree.')
-
-
-def process_outdir_options(parser, options, cwd):
-  if not options.outdir:
-    parser.error('--outdir is required.')
-  if file_path.is_url(options.outdir):
-    parser.error('Can\'t use an URL for --outdir.')
-  options.outdir = unicode(options.outdir).replace('/', os.path.sep)
-  # outdir doesn't need native path case since tracing is never done from there.
-  options.outdir = os.path.abspath(
-      os.path.normpath(os.path.join(cwd, options.outdir)))
-  # In theory, we'd create the directory outdir right away. Defer doing it in
-  # case there's errors in the command line.
 
 
 class OptionParserIsolateServer(tools.OptionParserWithLogging):

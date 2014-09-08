@@ -13,13 +13,12 @@ See more information at
 """
 # Run ./isolate.py --help for more detailed information.
 
-__version__ = '0.3.2'
+__version__ = '0.4'
 
 import datetime
 import logging
 import optparse
 import os
-import posixpath
 import re
 import subprocess
 import sys
@@ -29,7 +28,6 @@ import isolate_format
 import isolated_format
 import isolateserver
 import run_isolated
-import trace_inputs
 
 from third_party import colorama
 from third_party.depot_tools import fix_encoding
@@ -147,185 +145,6 @@ def normalize_path_variables(cwd, path_variables, relative_base_dir):
 def isolatedfile_to_state(filename):
   """For a '.isolate' file, returns the path to the saved '.state' file."""
   return filename + '.state'
-
-
-def classify_files(root_dir, tracked, untracked):
-  """Converts the list of files into a .isolate 'variables' dictionary.
-
-  Arguments:
-  - tracked: list of files names to generate a dictionary out of that should
-             probably be tracked.
-  - untracked: list of files names that must not be tracked.
-  """
-  new_tracked = []
-  new_untracked = list(untracked)
-
-  def should_be_tracked(filepath):
-    """Returns True if it is a file without whitespace in a non-optional
-    directory that has no symlink in its path.
-    """
-    if filepath.endswith('/'):
-      return False
-    if ' ' in filepath:
-      return False
-    # Look if any element in the path is a symlink.
-    split = filepath.split('/')
-    for i in range(len(split)):
-      if os.path.islink(os.path.join(root_dir, '/'.join(split[:i+1]))):
-        return False
-    return True
-
-  for filepath in sorted(tracked):
-    if should_be_tracked(filepath):
-      new_tracked.append(filepath)
-    else:
-      # Anything else.
-      new_untracked.append(filepath)
-
-  variables = {}
-  if new_tracked:
-    variables[isolate_format.KEY_TRACKED] = sorted(new_tracked)
-  if new_untracked:
-    variables[isolate_format.KEY_UNTRACKED] = sorted(new_untracked)
-  return variables
-
-
-def chromium_fix(f, variables):
-  """Fixes an isolate dependency with Chromium-specific fixes."""
-  # Blacklist logs and other unimportant files.
-  # - 'First Run' is not created by the compile but by the test itself.
-  # - Skip log in PRODUCT_DIR. Note that these are applied on '/' style path
-  #   separator at this point.
-  if (re.match(r'^\<\(PRODUCT_DIR\)\/[^\/]+\.log$', f) or
-      f == '<(PRODUCT_DIR)/First Run'):
-    logging.debug('Ignoring %s', f)
-    return None
-
-  EXECUTABLE = re.compile(
-      r'^(\<\(PRODUCT_DIR\)\/[^\/\.]+)' +
-      re.escape(variables.get('EXECUTABLE_SUFFIX', '')) +
-      r'$')
-  match = EXECUTABLE.match(f)
-  if match:
-    return match.group(1) + '<(EXECUTABLE_SUFFIX)'
-
-  if sys.platform == 'darwin':
-    # On OSX, the name of the output is dependent on gyp define, it can be
-    # 'Google Chrome.app' or 'Chromium.app', same for 'XXX
-    # Framework.framework'. Furthermore, they are versioned with a gyp
-    # variable.  To lower the complexity of the .isolate file, remove all the
-    # individual entries that show up under any of the 4 entries and replace
-    # them with the directory itself. Overall, this results in a bit more
-    # files than strictly necessary.
-    OSX_BUNDLES = (
-      '<(PRODUCT_DIR)/Chromium Framework.framework/',
-      '<(PRODUCT_DIR)/Chromium.app/',
-      '<(PRODUCT_DIR)/Google Chrome Framework.framework/',
-      '<(PRODUCT_DIR)/Google Chrome.app/',
-    )
-    for prefix in OSX_BUNDLES:
-      if f.startswith(prefix):
-        # Note this result in duplicate values, so the a set() must be used to
-        # remove duplicates.
-        return prefix
-  return f
-
-
-def generate_simplified(
-    tracked, untracked, touched, root_dir, path_variables, extra_variables,
-    relative_cwd, trace_blacklist):
-  """Generates a clean and complete .isolate 'variables' dictionary.
-
-  Cleans up and extracts only files from within root_dir then processes
-  variables and relative_cwd.
-  """
-  root_dir = os.path.realpath(root_dir)
-  logging.info(
-      'generate_simplified(%d files, %s, %s, %s, %s)' %
-      (len(tracked) + len(untracked) + len(touched),
-        root_dir, path_variables, extra_variables, relative_cwd))
-
-  # Preparation work.
-  relative_cwd = file_path.cleanup_path(relative_cwd)
-  assert not os.path.isabs(relative_cwd), relative_cwd
-
-  # Normalizes to posix path. .isolate files are using posix paths on all OSes
-  # for coherency.
-  path_variables = dict(
-      (k, v.replace(os.path.sep, '/')) for k, v in path_variables.iteritems())
-  # Contains normalized path_variables plus extra_variables.
-  total_variables = path_variables.copy()
-  total_variables.update(extra_variables)
-
-  # Actual work: Process the files.
-  # TODO(maruel): if all the files in a directory are in part tracked and in
-  # part untracked, the directory will not be extracted. Tracked files should be
-  # 'promoted' to be untracked as needed.
-  tracked = trace_inputs.extract_directories(
-      root_dir, tracked, trace_blacklist)
-  untracked = trace_inputs.extract_directories(
-      root_dir, untracked, trace_blacklist)
-  # touched is not compressed, otherwise it would result in files to be archived
-  # that we don't need.
-
-  root_dir_posix = root_dir.replace(os.path.sep, '/')
-  def fix(f):
-    """Bases the file on the most restrictive variable."""
-    # Important, GYP stores the files with / and not \.
-    f = f.replace(os.path.sep, '/')
-    logging.debug('fix(%s)' % f)
-    # If it's not already a variable.
-    if not f.startswith('<'):
-      # relative_cwd is usually the directory containing the gyp file. It may be
-      # empty if the whole directory containing the gyp file is needed.
-      # Use absolute paths in case cwd_dir is outside of root_dir.
-      # Convert the whole thing to / since it's isolate's speak.
-      f = file_path.posix_relpath(
-          posixpath.join(root_dir_posix, f),
-          posixpath.join(root_dir_posix, relative_cwd)) or './'
-
-      # Use the longest value first.
-      for key, value in sorted(
-          path_variables.iteritems(), key=lambda x: -len(x[1])):
-        if f.startswith(value):
-          f = '<(%s)%s' % (key, f[len(value):])
-          logging.debug('Converted to %s' % f)
-          break
-    return f
-
-  def fix_all(items):
-    """Reduces the items to convert variables, removes unneeded items, apply
-    chromium-specific fixes and only return unique items.
-    """
-    variables_converted = (fix(f.path) for f in items)
-    chromium_fixed = (
-        chromium_fix(f, total_variables) for f in variables_converted)
-    return set(f for f in chromium_fixed if f)
-
-  tracked = fix_all(tracked)
-  untracked = fix_all(untracked)
-  touched = fix_all(touched)
-  out = classify_files(root_dir, tracked, untracked)
-  if touched:
-    out[isolate_format.KEY_TOUCHED] = sorted(touched)
-  return out
-
-
-def generate_isolate(
-    tracked, untracked, touched, root_dir, path_variables, config_variables,
-    extra_variables, relative_cwd, trace_blacklist):
-  """Generates a clean and complete .isolate file."""
-  dependencies = generate_simplified(
-      tracked, untracked, touched, root_dir, path_variables, extra_variables,
-      relative_cwd, trace_blacklist)
-  config_variable_names, config_values = zip(
-      *sorted(config_variables.iteritems()))
-  out = isolate_format.Configs(None, config_variable_names)
-  out.set_config(
-      config_values,
-      isolate_format.ConfigSettings(
-          dependencies, os.path.abspath(relative_cwd)))
-  return out.make_isolate_file()
 
 
 def chromium_save_isolated(isolated, data, path_variables, algo):
@@ -885,67 +704,6 @@ def load_complete_state(options, cwd, subdir, skip_update):
   return complete_state
 
 
-def read_trace_as_isolate_dict(complete_state, trace_blacklist):
-  """Reads a trace and returns the .isolate dictionary.
-
-  Returns exceptions during the log parsing so it can be re-raised.
-  """
-  api = trace_inputs.get_api()
-  logfile = complete_state.isolated_filepath + '.log'
-  if not os.path.isfile(logfile):
-    raise ExecutionError(
-        'No log file \'%s\' to read, did you forget to \'trace\'?' % logfile)
-  try:
-    data = api.parse_log(logfile, trace_blacklist, None)
-    exceptions = [i['exception'] for i in data if 'exception' in i]
-    results = (i['results'] for i in data if 'results' in i)
-    results_stripped = (i.strip_root(complete_state.root_dir) for i in results)
-    files = set(sum((result.existent for result in results_stripped), []))
-    tracked, touched = isolate_format.split_touched(files)
-    value = generate_isolate(
-        tracked,
-        [],
-        touched,
-        complete_state.root_dir,
-        complete_state.saved_state.path_variables,
-        complete_state.saved_state.config_variables,
-        complete_state.saved_state.extra_variables,
-        complete_state.saved_state.relative_cwd,
-        trace_blacklist)
-    return value, exceptions
-  except trace_inputs.TracingFailure, e:
-    raise ExecutionError(
-        'Reading traces failed for: %s\n%s' %
-          (' '.join(complete_state.saved_state.command), str(e)))
-
-
-def merge(complete_state, trace_blacklist):
-  """Reads a trace and merges it back into the source .isolate file."""
-  value, exceptions = read_trace_as_isolate_dict(
-      complete_state, trace_blacklist)
-
-  # Now take that data and union it into the original .isolate file.
-  with open(complete_state.saved_state.isolate_filepath, 'r') as f:
-    prev_content = f.read()
-  isolate_dir = os.path.dirname(complete_state.saved_state.isolate_filepath)
-  prev_config = isolate_format.load_isolate_as_config(
-      isolate_dir,
-      isolate_format.eval_content(prev_content),
-      isolate_format.extract_comment(prev_content))
-  new_config = isolate_format.load_isolate_as_config(isolate_dir, value, '')
-  config = prev_config.union(new_config)
-  data = config.make_isolate_file()
-  print('Updating %s' % complete_state.saved_state.isolate_file)
-  with open(complete_state.saved_state.isolate_filepath, 'wb') as f:
-    isolate_format.print_all(config.file_comment, data, f)
-  if exceptions:
-    # It got an exception, raise the first one.
-    raise \
-        exceptions[0][0], \
-        exceptions[0][1], \
-        exceptions[0][2]
-
-
 def create_isolate_tree(outdir, root_dir, files, relative_cwd, read_only):
   """Creates a isolated tree usable for test execution.
 
@@ -1067,92 +825,6 @@ def CMDcheck(parser, args):
   return 0
 
 
-def CMDhashtable(parser, args):
-  """Creates a .isolated file and stores the contains in a directory.
-
-  All the files listed in the .isolated file are put in the directory with their
-  sha-1 as their file name. When using an NFS/CIFS server, the files can then be
-  shared accross slaves without an isolate server.
-  """
-  add_subdir_option(parser)
-  isolateserver.add_outdir_options(parser)
-  add_skip_refresh_option(parser)
-  options, args = parser.parse_args(args)
-  if args:
-    parser.error('Unsupported argument: %s' % args)
-  cwd = os.getcwd()
-  isolateserver.process_outdir_options(parser, options, cwd)
-
-  success = False
-  try:
-    complete_state, infiles, isolated_hash = prepare_for_archival(options, cwd)
-    logging.info('Creating content addressed object store with %d item',
-                  len(infiles))
-    if not os.path.isdir(options.outdir):
-      os.makedirs(options.outdir)
-
-    # TODO(maruel): Make the files read-only?
-    recreate_tree(
-        outdir=options.outdir,
-        indir=complete_state.root_dir,
-        infiles=infiles,
-        action=run_isolated.HARDLINK_WITH_FALLBACK,
-        as_hash=True)
-    success = True
-    print('%s  %s' % (isolated_hash[0], os.path.basename(options.isolated)))
-  finally:
-    # If the command failed, delete the .isolated file if it exists. This is
-    # important so no stale swarm job is executed.
-    if not success and os.path.isfile(options.isolated):
-      os.remove(options.isolated)
-  return int(not success)
-
-
-def CMDmerge(parser, args):
-  """Reads and merges the data from the trace back into the original .isolate.
-  """
-  parser.require_isolated = False
-  add_trace_option(parser)
-  options, args = parser.parse_args(args)
-  if args:
-    parser.error('Unsupported argument: %s' % args)
-
-  complete_state = load_complete_state(options, os.getcwd(), None, False)
-  blacklist = tools.gen_blacklist(options.trace_blacklist)
-  merge(complete_state, blacklist)
-  return 0
-
-
-def CMDread(parser, args):
-  """Reads the trace file generated with command 'trace'."""
-  parser.require_isolated = False
-  add_trace_option(parser)
-  add_skip_refresh_option(parser)
-  parser.add_option(
-      '-m', '--merge', action='store_true',
-      help='merge the results back in the .isolate file instead of printing')
-  options, args = parser.parse_args(args)
-  if args:
-    parser.error('Unsupported argument: %s' % args)
-
-  complete_state = load_complete_state(
-      options, os.getcwd(), None, options.skip_refresh)
-  blacklist = tools.gen_blacklist(options.trace_blacklist)
-  value, exceptions = read_trace_as_isolate_dict(complete_state, blacklist)
-  if options.merge:
-    merge(complete_state, blacklist)
-  else:
-    isolate_format.pretty_print(value, sys.stdout)
-
-  if exceptions:
-    # It got an exception, raise the first one.
-    raise \
-        exceptions[0][0], \
-        exceptions[0][1], \
-        exceptions[0][2]
-  return 0
-
-
 def CMDremap(parser, args):
   """Creates a directory with all the dependencies mapped into it.
 
@@ -1160,13 +832,13 @@ def CMDremap(parser, args):
   run.
   """
   parser.require_isolated = False
-  isolateserver.add_outdir_options(parser)
+  add_outdir_options(parser)
   add_skip_refresh_option(parser)
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
   cwd = os.getcwd()
-  isolateserver.process_outdir_options(parser, options, cwd)
+  process_outdir_options(parser, options, cwd)
   complete_state = load_complete_state(options, cwd, None, options.skip_refresh)
 
   if not os.path.isdir(options.outdir):
@@ -1254,69 +926,6 @@ def CMDrun(parser, args):
   return result
 
 
-@subcommand.usage('-- [extra arguments]')
-def CMDtrace(parser, args):
-  """Traces the target using trace_inputs.py.
-
-  It runs the executable without remapping it, and traces all the files it and
-  its child processes access. Then the 'merge' command can be used to generate
-  an updated .isolate file out of it or the 'read' command to print it out to
-  stdout.
-
-  Argument processing stops at -- and these arguments are appended to the
-  command line of the target to run. For example, use:
-    isolate.py trace --isolated foo.isolated -- --gtest_filter=Foo.Bar
-  """
-  add_trace_option(parser)
-  parser.add_option(
-      '-m', '--merge', action='store_true',
-      help='After tracing, merge the results back in the .isolate file')
-  add_skip_refresh_option(parser)
-  options, args = parser.parse_args(args)
-
-  complete_state = load_complete_state(
-      options, os.getcwd(), None, options.skip_refresh)
-  cmd = complete_state.saved_state.command + args
-  if not cmd:
-    raise ExecutionError('No command to run.')
-  cmd = tools.fix_python_path(cmd)
-  cwd = os.path.normpath(os.path.join(
-      unicode(complete_state.root_dir),
-      complete_state.saved_state.relative_cwd))
-  cmd[0] = os.path.normpath(os.path.join(cwd, cmd[0]))
-  if not os.path.isfile(cmd[0]):
-    raise ExecutionError(
-        'Tracing failed for: %s\nIt doesn\'t exit' % ' '.join(cmd))
-  logging.info('Running %s, cwd=%s' % (cmd, cwd))
-  api = trace_inputs.get_api()
-  logfile = complete_state.isolated_filepath + '.log'
-  api.clean_trace(logfile)
-  out = None
-  try:
-    with api.get_tracer(logfile) as tracer:
-      result, out = tracer.trace(
-          cmd,
-          cwd,
-          'default',
-          True)
-  except trace_inputs.TracingFailure, e:
-    raise ExecutionError('Tracing failed for: %s\n%s' % (' '.join(cmd), str(e)))
-
-  if result:
-    logging.error(
-        'Tracer exited with %d, which means the tests probably failed so the '
-        'trace is probably incomplete.', result)
-    logging.info(out)
-
-  complete_state.save_files()
-
-  if options.merge:
-    blacklist = tools.gen_blacklist(options.trace_blacklist)
-    merge(complete_state, blacklist)
-
-  return result
-
-
 def _process_variable_arg(option, opt, _value, parser):
   """Called by OptionParser to process a --<foo>-variable argument."""
   if not parser.rargs:
@@ -1397,21 +1006,36 @@ def add_subdir_option(parser):
            '.isolate file. Anything else is keyed on the root directory.')
 
 
-def add_trace_option(parser):
-  """Adds --trace-blacklist to the parser."""
-  parser.add_option(
-      '--trace-blacklist',
-      action='append', default=list(isolateserver.DEFAULT_BLACKLIST),
-      help='List of regexp to use as blacklist filter for files to consider '
-           'important, not to be confused with --blacklist which blacklists '
-           'test case.')
-
-
 def add_skip_refresh_option(parser):
   parser.add_option(
       '--skip-refresh', action='store_true',
       help='Skip reading .isolate file and do not refresh the hash of '
            'dependencies')
+
+
+def add_outdir_options(parser):
+  """Adds --outdir, which is orthogonal to --isolate-server.
+
+  Note: On upload, separate commands are used between 'archive' and 'hashtable'.
+  On 'download', the same command can download from either an isolate server or
+  a file system.
+  """
+  parser.add_option(
+      '-o', '--outdir', metavar='DIR',
+      help='Directory used to recreate the tree.')
+
+
+def process_outdir_options(parser, options, cwd):
+  if not options.outdir:
+    parser.error('--outdir is required.')
+  if file_path.is_url(options.outdir):
+    parser.error('Can\'t use an URL for --outdir.')
+  options.outdir = unicode(options.outdir).replace('/', os.path.sep)
+  # outdir doesn't need native path case since tracing is never done from there.
+  options.outdir = os.path.abspath(
+      os.path.normpath(os.path.join(cwd, options.outdir)))
+  # In theory, we'd create the directory outdir right away. Defer doing it in
+  # case there's errors in the command line.
 
 
 def parse_isolated_option(parser, options, cwd, require_isolated):

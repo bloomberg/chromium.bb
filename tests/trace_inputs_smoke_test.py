@@ -4,6 +4,7 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
+import functools
 import json
 import logging
 import os
@@ -18,7 +19,6 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
 import trace_inputs
-import trace_test_util
 from utils import file_path
 from utils import threading_utils
 
@@ -32,6 +32,16 @@ VERBOSE = False
 MODE_R = trace_inputs.Results.File.READ if sys.platform != 'win32' else None
 MODE_W = trace_inputs.Results.File.WRITE if sys.platform != 'win32' else None
 MODE_T = trace_inputs.Results.File.TOUCHED
+
+
+def check_can_trace(fn):
+  """Function decorator that skips test that need to be able trace."""
+  @functools.wraps(fn)
+  def hook(self, *args, **kwargs):
+    if not trace_inputs.can_trace():
+      self.fail('Please rerun this test with admin privileges.')
+    return fn(self, *args, **kwargs)
+  return hook
 
 
 class CalledProcessError(subprocess.CalledProcessError):
@@ -144,7 +154,7 @@ class TraceInputs(TraceInputsBase):
       cwd = ROOT_DIR
     return self._execute('trace', self.get_child_command(from_data), cwd=cwd)
 
-  @trace_test_util.check_can_trace
+  @check_can_trace
   def test_trace(self):
     expected = '\n'.join((
       'Total: 7',
@@ -174,7 +184,7 @@ class TraceInputs(TraceInputsBase):
     self.assertEqual(expected, actual)
     self.assertEqual(trace_expected, trace_actual)
 
-  @trace_test_util.check_can_trace
+  @check_can_trace
   def test_trace_json(self):
     expected = {
       u'root': {
@@ -429,7 +439,7 @@ class TraceInputsImport(TraceInputsBase):
       },
     }
 
-  @trace_test_util.check_can_trace
+  @check_can_trace
   def test_trace_wrong_path(self):
     # Deliberately start the trace from the wrong path. Starts it from the
     # directory 'tests' so 'tests/tests/trace_inputs/child1.py' is not
@@ -440,7 +450,7 @@ class TraceInputsImport(TraceInputsBase):
     self.assertTrue(actual['root'].pop('pid'))
     self.assertEqual(expected, actual)
 
-  @trace_test_util.check_can_trace
+  @check_can_trace
   def test_trace(self):
     expected = self._gen_dict_full_gyp()
     results = self._execute_trace(self.get_child_command(True))
@@ -464,7 +474,7 @@ class TraceInputsImport(TraceInputsBase):
         blacklist)
     self.assertEqual(files, [f.path for f in simplified])
 
-  @trace_test_util.check_can_trace
+  @check_can_trace
   def test_trace_multiple(self):
     # Starts parallel threads and trace parallel child processes simultaneously.
     # Some are started from 'tests' directory, others from this script's
@@ -586,7 +596,7 @@ class TraceInputsImport(TraceInputsBase):
           unicode(ROOT_DIR), results.files, blacklist)
       self.assertEqual(files, [f.path for f in simplified])
 
-  @trace_test_util.check_can_trace
+  @check_can_trace
   def test_trace_quoted(self):
     results = self._execute_trace([sys.executable, '-c', 'print("hi")'])
     expected = {
@@ -606,7 +616,7 @@ class TraceInputsImport(TraceInputsBase):
     self.assertTrue(actual['root'].pop('pid'))
     self.assertEqual(expected, actual)
 
-  @trace_test_util.check_can_trace
+  @check_can_trace
   def _touch_expected(self, command):
     # Looks for file that were touched but not opened, using different apis.
     results = self._execute_trace(
@@ -652,7 +662,7 @@ class TraceInputsImport(TraceInputsBase):
   def test_trace_touch_only_stat(self):
     self._touch_expected('stat')
 
-  @trace_test_util.check_can_trace
+  @check_can_trace
   def test_trace_tricky_filename(self):
     # TODO(maruel):  On Windows, it's using the current code page so some
     # characters can't be represented. As a nice North American, hard code the
