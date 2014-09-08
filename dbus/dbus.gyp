@@ -111,6 +111,7 @@
         'string_util_unittest.cc',
         'test_service.cc',
         'test_service.h',
+        'util_unittest.cc',
         'values_util_unittest.cc',
       ],
       'include_dirs': [
