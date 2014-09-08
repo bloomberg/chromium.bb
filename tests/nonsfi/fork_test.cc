@@ -17,7 +17,7 @@ void ClosePipe(int fds[2]) {
   ASSERT_EQ(rc, 0);
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   int fds[2];
   int rc = pipe(fds);
   ASSERT_EQ(rc, 0);

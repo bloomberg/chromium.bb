@@ -21,7 +21,7 @@ static void return_from_signal_handler(int signo) {
 
 int main(int argc, char *argv[]) {
   sighandler_t prev_handler = signal(SIGSEGV, SIG_IGN);
-  ASSERT_EQ(prev_handler, NULL);
+  ASSERT_EQ(prev_handler, SIG_DFL);
 
   prev_handler = signal(SIGSEGV, return_from_signal_handler);
   ASSERT_EQ(prev_handler, SIG_IGN);

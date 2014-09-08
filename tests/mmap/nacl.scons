@@ -17,7 +17,7 @@ mmap_test_nexe = env.ComponentProgram('mmap_test',
 node = env.CommandSelLdrTestNacl(
     'mmap_test.out',
     mmap_test_nexe,
-    args=[env.File('test-file'), env.MakeTempDir(prefix='tmp_mmap_test')],
+    args=[env.File('test_file'), env.MakeTempDir(prefix='tmp_mmap_test')],
     # '-a' enables file access for opening the test file.
     # '-e' enables exception handling for testing unreadable pages.
     sel_ldr_flags=['-a', '-e'] + extra_flags)
