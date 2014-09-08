@@ -163,6 +163,9 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   void UpdateClearPluginLSOData();
   void UpdatePepperFlashSettingsEnabled();
 
+  // Checks that the current profile is not supervised. Used as a pref filter.
+  bool IsUserUnsupervised(const base::Value* to_value);
+
   OptionsPageUIHandlerHost* handlers_host_;
   // This registrar keeps track of user prefs.
   PrefChangeRegistrar registrar_;

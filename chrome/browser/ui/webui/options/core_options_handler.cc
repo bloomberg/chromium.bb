@@ -92,6 +92,12 @@ void CoreOptionsHandler::InitializeHandler() {
 
   pref_change_filters_[prefs::kMetricsReportingEnabled] =
       base::Bind(&AllowMetricsReportingChange);
+  pref_change_filters_[prefs::kBrowserGuestModeEnabled] =
+      base::Bind(&CoreOptionsHandler::IsUserUnsupervised,
+                 base::Unretained(this));
+  pref_change_filters_[prefs::kBrowserAddPersonEnabled] =
+      base::Bind(&CoreOptionsHandler::IsUserUnsupervised,
+                 base::Unretained(this));
 }
 
 void CoreOptionsHandler::InitializePage() {
@@ -655,6 +661,10 @@ void CoreOptionsHandler::UpdatePepperFlashSettingsEnabled() {
           plugin_status_pref_setter_.IsPepperFlashSettingsEnabled());
   web_ui()->CallJavascriptFunction(
       "OptionsPage.setPepperFlashSettingsEnabled", enabled);
+}
+
+bool CoreOptionsHandler::IsUserUnsupervised(const base::Value* to_value) {
+  return !Profile::FromWebUI(web_ui())->IsSupervised();
 }
 
 }  // namespace options

@@ -176,6 +176,20 @@
       <div id="profiles-single-message" class="settings-row"
           i18n-content="profilesSingleUser">
       </div>
+<if expr="not chromeos">
+      <div id="profiles-enable-guest" class="checkbox">
+        <label>
+          <input pref="profile.browser_guest_enabled" type="checkbox">
+          <span i18n-content="profileBrowserGuestEnable"></span>
+        </label>
+      </div>
+      <div id="profiles-enable-add-person" class="checkbox">
+        <label>
+          <input pref="profile.add_person_enabled" type="checkbox">
+          <span i18n-content="profileAddPersonEnable"></span>
+        </label>
+      </div>
+</if>
       <div id="profiles-buttons">
         <button id="profiles-create" i18n-content="profilesCreate"></button>
 <if expr="enable_settings_app">

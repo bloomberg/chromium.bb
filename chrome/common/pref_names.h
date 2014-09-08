@@ -819,6 +819,7 @@ extern const char kPartnerBookmarkMappings[];
 
 extern const char kQuickCheckEnabled[];
 extern const char kBrowserGuestModeEnabled[];
+extern const char kBrowserAddPersonEnabled[];
 
 }  // namespace prefs
 

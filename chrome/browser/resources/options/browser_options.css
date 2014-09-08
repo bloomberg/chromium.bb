@@ -463,6 +463,12 @@ div[guestmode=true] :-webkit-any(
   display: none;
 }
 
+div[supervisedMode=true] :-webkit-any(
+    #profiles-enable-guest,
+    #profiles-enable-add-person) {
+  display: none;
+}
+
 footer {
   display: flex;
 }

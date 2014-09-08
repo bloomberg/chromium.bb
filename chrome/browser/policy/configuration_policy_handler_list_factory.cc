@@ -483,6 +483,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kBrowserGuestModeEnabled,
     prefs::kBrowserGuestModeEnabled,
     base::Value::TYPE_BOOLEAN },
+  { key::kBrowserAddPersonEnabled,
+    prefs::kBrowserAddPersonEnabled,
+    base::Value::TYPE_BOOLEAN },
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
 };
 

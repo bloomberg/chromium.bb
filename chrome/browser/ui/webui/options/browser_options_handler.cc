@@ -292,6 +292,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "privacyClearDataButton", IDS_OPTIONS_PRIVACY_CLEAR_DATA_BUTTON },
     { "privacyContentSettingsButton",
       IDS_OPTIONS_PRIVACY_CONTENT_SETTINGS_BUTTON },
+    { "profileAddPersonEnable", IDS_PROFILE_ADD_PERSON_ENABLE },
+    { "profileBrowserGuestEnable", IDS_PROFILE_BROWSER_GUEST_ENABLE },
     { "profilesCreate", using_new_profiles_ui ?
           IDS_NEW_PROFILES_CREATE_BUTTON_LABEL :
           IDS_PROFILES_CREATE_BUTTON_LABEL },

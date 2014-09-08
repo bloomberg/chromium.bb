@@ -32,17 +32,19 @@ cr.define('cr.ui', function() {
 
   /**
    * Shows the given screen.
-   * @param {Object} screen Screen params dict, e.g. {id: screenId, data: data}
+   * @param {bool} showGuest Whether the 'Browse as Guest' button is displayed.
+   * @param {bool} showAddPerson Whether the 'Add Person' button is displayed.
    */
-  Oobe.showUserManagerScreen = function(showGuest) {
+  Oobe.showUserManagerScreen = function(showGuest, showAddPerson) {
     Oobe.getInstance().showScreen({id: 'account-picker',
                                    data: {disableAddUser: false}});
     // The ChromeOS account-picker will hide the AddUser button if a user is
     // logged in and the screen is "locked", so we must re-enabled it
     $('add-user-header-bar-item').hidden = false;
 
-    // Hide the Guest Mode option if the user is not permitted to select it.
+    // Hide control options if the user does not have the right permissions.
     $('guest-user-button').hidden = !showGuest;
+    $('add-user-button').hidden = !showAddPerson;
     $('login-header-bar').hidden = false;
 
     // Disable the context menu, as the Print/Inspect element items don't

@@ -11572,6 +11572,12 @@ Chrome ran out of memory.
       <message name="IDS_PROFILES_DEFAULT_NAME" desc="The name to display for a profile when the user is not signed in.">
         Default
       </message>
+      <message name="IDS_PROFILE_ADD_PERSON_ENABLE" desc="The text for the settings checkbox that indicates whether new profiles can be added from the user manager.">
+        Enable user creation from the profile manager
+      </message>
+      <message name="IDS_PROFILE_BROWSER_GUEST_ENABLE" desc="The text for the settings checkbox that indicates whether guest mode is available for this browser.">
+        Enable Guest browsing
+      </message>
       <message name="IDS_SYNC_CUSTOMIZE_LINK_LABEL" desc="The text to display on the link to customize the sync settings.">
         Advanced
       </message>

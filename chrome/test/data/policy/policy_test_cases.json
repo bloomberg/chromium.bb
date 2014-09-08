@@ -1661,6 +1661,16 @@
     ]
   },
 
+  "BrowserAddPersonEnabled": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "BrowserAddPersonEnabled": true },
+    "pref_mappings": [
+      { "pref": "profile.add_person_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {

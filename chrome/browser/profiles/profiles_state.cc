@@ -41,9 +41,14 @@ base::FilePath GetDefaultProfileDir(const base::FilePath& user_data_dir) {
 }
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
+  // Preferences about global profile information.
   registry->RegisterStringPref(prefs::kProfileLastUsed, std::string());
   registry->RegisterIntegerPref(prefs::kProfilesNumCreated, 1);
   registry->RegisterListPref(prefs::kProfilesLastActive);
+
+  // Preferences about the user manager.
+  registry->RegisterBooleanPref(prefs::kBrowserGuestModeEnabled, true);
+  registry->RegisterBooleanPref(prefs::kBrowserAddPersonEnabled, true);
 }
 
 base::string16 GetAvatarNameForProfile(const base::FilePath& profile_path) {

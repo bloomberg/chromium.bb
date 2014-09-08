@@ -148,6 +148,12 @@ bool IsGuestModeEnabled() {
   return service->GetBoolean(prefs::kBrowserGuestModeEnabled);
 }
 
+bool IsAddPersonEnabled() {
+  PrefService* service = g_browser_process->local_state();
+  DCHECK(service);
+  return service->GetBoolean(prefs::kBrowserAddPersonEnabled);
+}
+
 }  // namespace
 
 // ProfileUpdateObserver ------------------------------------------------------
@@ -289,7 +295,8 @@ void UserManagerScreenHandler::Unlock(const std::string& user_email) {
 void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
   SendUserList();
   web_ui()->CallJavascriptFunction("cr.ui.Oobe.showUserManagerScreen",
-      base::FundamentalValue(IsGuestModeEnabled()));
+      base::FundamentalValue(IsGuestModeEnabled()),
+      base::FundamentalValue(IsAddPersonEnabled()));
   desktop_type_ = chrome::GetHostDesktopTypeForNativeView(
       web_ui()->GetWebContents()->GetNativeView());
 
@@ -297,9 +304,15 @@ void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
 }
 
 void UserManagerScreenHandler::HandleAddUser(const base::ListValue* args) {
-  profiles::CreateAndSwitchToNewProfile(desktop_type_,
-                                        base::Bind(&OnSwitchToProfileComplete),
-                                        ProfileMetrics::ADD_NEW_USER_MANAGER);
+  if (!IsAddPersonEnabled()) {
+    // The 'Add User' UI should not be showing.
+    NOTREACHED();
+    return;
+  }
+  profiles::CreateAndSwitchToNewProfile(
+      desktop_type_,
+      base::Bind(&OnSwitchToProfileComplete),
+      ProfileMetrics::ADD_NEW_USER_MANAGER);
 }
 
 void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
