@@ -62,10 +62,13 @@ base::string16 FileVersionInfoMac::legal_copyright() {
 base::string16 FileVersionInfoMac::product_version() {
   // On OS X, CFBundleVersion is used by LaunchServices, and must follow
   // specific formatting rules, so the four-part Chrome version is in
-  // CFBundleShortVersionString. On iOS, however, CFBundleVersion can be the
-  // full version, but CFBundleShortVersionString has a policy-enfoced limit
-  // of three version components.
+  // CFBundleShortVersionString. On iOS, both have a policy-enfoced limit
+  // of three version components, so the full version is stored in a custom
+  // key (CrBundleVersion) falling back to CFBundleVersion if not present.
 #if defined(OS_IOS)
+  base::string16 version(GetString16Value(CFSTR("CrBundleVersion")));
+  if (version.length() > 0)
+    return version;
   return GetString16Value(CFSTR("CFBundleVersion"));
 #else
   return GetString16Value(CFSTR("CFBundleShortVersionString"));
