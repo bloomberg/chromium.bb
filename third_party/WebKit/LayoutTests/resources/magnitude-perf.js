@@ -136,9 +136,72 @@ Magnitude._logRunTimes = function()
     Magnitude._debug('times: ' + Magnitude._times.join(','));
 };
 
+Magnitude._for = function(n, body, callback)
+{
+    var i = 0;
+    var results = [];
+
+    function iteration(result) {
+        results.push(result);
+        if (++i === n)
+            callback(results);
+        else
+            body(i, iteration);
+    }
+
+    if (Magnitude._async) {
+        body(i, iteration);
+    } else {
+        for (; i < n; ++i) {
+            body(i, function(result) {
+                results.push(result);
+            });
+        }
+        callback(results);
+    }
+};
+
+Magnitude._while = function(condition, body, callback)
+{
+    function iteration() {
+        if (condition())
+            body(iteration);
+        else
+            callback();
+    }
+
+    if (Magnitude._async) {
+        iteration();
+    } else {
+        while (condition()) {
+            body(function() {});
+        }
+        callback();
+    }
+};
+
 // Main
 Magnitude.run = function(setup, test, expected)
 {
+    function runTest(magnitude, callback) {
+        test(magnitude);
+        callback();
+    }
+    Magnitude._run(setup, runTest, expected, false);
+};
+
+Magnitude.runAsync = function(setup, test, expected)
+{
+    if (window.testRunner)
+        testRunner.waitUntilDone();
+    window.addEventListener('load', function() {
+        Magnitude._run(setup, test, expected, true);
+    }, false);
+};
+
+Magnitude._run = function(setup, test, expected, async)
+{
+    Magnitude._async = async;
     Magnitude._debugLog = '\nDEBUG LOG:\n';
     Magnitude._debug('Expected complexity: ' + expected);
 
@@ -150,12 +213,16 @@ Magnitude.run = function(setup, test, expected)
         Magnitude._magnitudes.push(Math.pow(2, i));
     }
 
-    var numSuccesses = 0;
-    for (var trialNumber = 0; trialNumber < Magnitude.numTrials; trialNumber++) {
+    Magnitude._numSuccesses = 0;
+    function runTrial(trialNumber, nextTrial)
+    {
+        Magnitude._trialNumber = trialNumber;
         Magnitude._debug('\nTrial #' + trialNumber);
-        Magnitude._times = [];
-        for (var i = 0; i < Magnitude.numPoints; i++)
-            Magnitude._times.push(Magnitude._runTime(setup, test, Magnitude._magnitudes[i]));
+        Magnitude._for(Magnitude.numPoints, Magnitude._runTime.bind(null, setup, test), completeTrial.bind(null, nextTrial));
+    }
+    function completeTrial(nextTrial, times)
+    {
+        Magnitude._times = times;
         Magnitude._logRunTimes();
         switch (expected) {
             case Magnitude.CONSTANT:
@@ -172,26 +239,36 @@ Magnitude.run = function(setup, test, expected)
                 passed = false;
                 break;
         }
-        Magnitude._debug('Trial #' + trialNumber + ': ' +
+        Magnitude._debug('Trial #' + Magnitude._trialNumber + ': ' +
             (passed ? 'SUCCESS' : 'FAILURE'));
         if (passed)
-          numSuccesses++;
+          Magnitude._numSuccesses++;
+        nextTrial();
     }
+    Magnitude._for(Magnitude.numTrials, runTrial, Magnitude._finish);
+};
+
+Magnitude._finish = function()
+{
     var neededToPass = Magnitude.numTrials * Magnitude.successThreshold;
-    Magnitude._debug('Successes: ' + numSuccesses + ', need ' +
+    Magnitude._debug('Successes: ' + Magnitude._numSuccesses + ', need ' +
         neededToPass + ' (' + (100 * Magnitude.successThreshold) + '%) ' +
         'to pass');
-    var passedOverall = (numSuccesses >= neededToPass);
+    var passedOverall = (Magnitude._numSuccesses >= neededToPass);
     Magnitude._log(passedOverall ? 'PASS' : 'FAIL');
 
     // By default don't log detailed information to layout test results,
     // in order to keep expected results consistent from run to run.
     if (!window.testRunner || !passedOverall)
         Magnitude._log(Magnitude._debugLog);
+
+    if (Magnitude._async && window.testRunner)
+        testRunner.notifyDone();
 };
 
-Magnitude._runTime = function(setup, test, magnitude)
+Magnitude._runTime = function(setup, test, pointIndex, callback)
 {
+    var magnitude = Magnitude._magnitudes[pointIndex];
     setup(magnitude);
 
     var debugStr = 'run for magnitude ' + magnitude;
@@ -214,16 +291,27 @@ Magnitude._runTime = function(setup, test, magnitude)
     var runOk = false;
     var attempt = 0;
     var maxAttempts = 5;
-    while (!runOk) {
+    var millisecondsPerIteration;
+    var totalTimeMilliseconds;
+    var iterations;
+
+    function iteration(nextIteration)
+    {
         var start = nowFunction();
-        var iterations = 0;
-        var totalTimeMilliseconds = 0;
-        while (totalTimeMilliseconds < Magnitude.millisecondsPerRun) {
-             test(magnitude);
+        iterations = 0;
+        totalTimeMilliseconds = 0;
+        function completeRun(nextRun)
+        {
              iterations++;
              totalTimeMilliseconds = nowFunction() - start;
+             nextRun();
         }
-        var millisecondsPerIteration = totalTimeMilliseconds / iterations;
+        Magnitude._while(function() { return totalTimeMilliseconds < Magnitude.millisecondsPerRun; }, function(nextRun) { test(magnitude, completeRun.bind(null, nextRun)); }, completeIteration.bind(null, nextIteration));
+    }
+
+    function completeIteration(nextIteration)
+    {
+        millisecondsPerIteration = totalTimeMilliseconds / iterations;
         Magnitude._debug(iterations + ' iterations in ' +
             totalTimeMilliseconds + ' milliseconds, ' +
             'average ' + millisecondsPerIteration +
@@ -252,9 +340,9 @@ Magnitude._runTime = function(setup, test, magnitude)
                 runOk = true;
             }
         }
+        nextIteration();
     }
-
-    return millisecondsPerIteration;
+    Magnitude._while(function() { return !runOk; }, iteration, function() { callback(millisecondsPerIteration); });
 };
 
 // Auxiliary computations
