@@ -106,7 +106,7 @@ void GpuMemoryManager::UpdateAvailableGpuMemory() {
 #else
   // Ignore what the system said and give all clients the same maximum
   // allocation on desktop platforms.
-  client_hard_limit_bytes_ = 256 * 1024 * 1024;
+  client_hard_limit_bytes_ = 512 * 1024 * 1024;
 #endif
 }
 
