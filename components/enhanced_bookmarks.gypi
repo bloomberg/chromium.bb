@@ -30,6 +30,8 @@
         'enhanced_bookmarks/image_store_util.cc',
         'enhanced_bookmarks/image_store_util.h',
         'enhanced_bookmarks/image_store_util_ios.mm',
+        'enhanced_bookmarks/item_position.cc',
+        'enhanced_bookmarks/item_position.h',
         'enhanced_bookmarks/metadata_accessor.cc',
         'enhanced_bookmarks/metadata_accessor.h',
         'enhanced_bookmarks/persistent_image_store.cc',
