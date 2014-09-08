@@ -86,7 +86,7 @@
         'net/pacing/mock_paced_packet_sender.cc',
         'net/pacing/mock_paced_packet_sender.h',
         'net/pacing/paced_sender_unittest.cc',
-        'net/rtcp/rtcp_sender_unittest.cc',
+        'net/rtcp/rtcp_builder_unittest.cc',
         'net/rtcp/rtcp_unittest.cc',
         'net/rtcp/rtcp_utility_unittest.cc',
         'net/rtcp/receiver_rtcp_event_subscriber_unittest.cc',

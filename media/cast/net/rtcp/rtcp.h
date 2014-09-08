@@ -23,6 +23,7 @@
 #include "media/cast/net/cast_transport_defines.h"
 #include "media/cast/net/cast_transport_sender.h"
 #include "media/cast/net/rtcp/receiver_rtcp_event_subscriber.h"
+#include "media/cast/net/rtcp/rtcp_builder.h"
 #include "media/cast/net/rtcp/rtcp_defines.h"
 
 namespace media {
@@ -31,7 +32,7 @@ namespace cast {
 class LocalRtcpReceiverFeedback;
 class PacedPacketSender;
 class RtcpReceiver;
-class RtcpSender;
+class RtcpBuilder;
 
 typedef std::pair<uint32, base::TimeTicks> RtcpSendTimePair;
 typedef std::map<uint32, base::TimeTicks> RtcpSendTimeMap;
@@ -138,7 +139,8 @@ class Rtcp {
   const RtcpRttCallback rtt_callback_;
   const RtcpLogMessageCallback log_callback_;
   base::TickClock* const clock_;  // Not owned by this class.
-  const scoped_ptr<RtcpSender> rtcp_sender_;
+  RtcpBuilder rtcp_builder_;
+  PacedPacketSender* packet_sender_;  // Not owned.
   const uint32 local_ssrc_;
   const uint32 remote_ssrc_;
 
