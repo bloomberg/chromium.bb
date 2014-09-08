@@ -817,6 +817,15 @@ void ProfileManager::Observe(
 #if defined(OS_CHROMEOS)
   if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
     logged_in_ = true;
+    // Find out what the current user is and update it. This has only to be done
+    // when the profile was already loaded, since otherwise this will be set by
+    // the profile loading process.
+    user_manager::UserManager* manager = user_manager::UserManager::Get();
+    const user_manager::User* user = manager->GetActiveUser();
+    if (user && user->is_profile_created()) {
+      UpdateLastUser(
+          chromeos::ProfileHelper::Get()->GetProfileByUser(user));
+    }
 
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
     if (!command_line.HasSwitch(switches::kTestType)) {
@@ -1217,6 +1226,22 @@ ProfileManager::ProfileInfo::~ProfileInfo() {
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
+void ProfileManager::UpdateLastUser(Profile* last_active) {
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
+  // Only keep track of profiles that we are managing; tests may create others.
+  if (profiles_info_.find(last_active->GetPath()) != profiles_info_.end()) {
+    local_state->SetString(prefs::kProfileLastUsed,
+                           last_active->GetPath().BaseName().MaybeAsASCII());
+
+    ProfileInfoCache& cache = GetProfileInfoCache();
+    size_t profile_index =
+        cache.GetIndexOfProfileWithPath(last_active->GetPath());
+    if (profile_index != std::string::npos)
+      cache.SetProfileActiveTimeAtIndex(profile_index);
+  }
+}
+
 ProfileManager::BrowserListObserver::BrowserListObserver(
     ProfileManager* manager)
     : profile_manager_(manager) {
@@ -1265,20 +1290,7 @@ void ProfileManager::BrowserListObserver::OnBrowserSetLastActive(
   if (last_active->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles))
     return;
 
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
-  // Only keep track of profiles that we are managing; tests may create others.
-  if (profile_manager_->profiles_info_.find(
-      last_active->GetPath()) != profile_manager_->profiles_info_.end()) {
-    local_state->SetString(prefs::kProfileLastUsed,
-                           last_active->GetPath().BaseName().MaybeAsASCII());
-
-    ProfileInfoCache& cache = profile_manager_->GetProfileInfoCache();
-    size_t profile_index =
-        cache.GetIndexOfProfileWithPath(last_active->GetPath());
-    if (profile_index != std::string::npos)
-      cache.SetProfileActiveTimeAtIndex(profile_index);
-  }
+  profile_manager_->UpdateLastUser(last_active);
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 

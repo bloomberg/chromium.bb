@@ -278,6 +278,9 @@ class ProfileManager : public base::NonThreadSafe,
                     Profile::CreateStatus status);
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // Updates the last active user of the current session.
+  void UpdateLastUser(Profile* last_active);
+
   class BrowserListObserver : public chrome::BrowserListObserver {
    public:
     explicit BrowserListObserver(ProfileManager* manager);
