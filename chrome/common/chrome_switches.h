@@ -174,6 +174,7 @@ extern const char kEnableSpellingFeedbackFieldTrial[];
 extern const char kEnableSSLConnectJobWaiting[];
 extern const char kEnableStreamlinedHostedApps[];
 extern const char kEnableSuggestionsService[];
+extern const char kEnableSupervisedUserBlacklist[];
 extern const char kEnableSyncArticles[];
 extern const char kEnableSyncSyncedNotifications[];
 extern const char kEnableThumbnailRetargeting[];

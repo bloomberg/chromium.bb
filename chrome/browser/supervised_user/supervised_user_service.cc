@@ -715,7 +715,10 @@ void SupervisedUserService::SetActive(bool active) {
     UpdateSiteLists();
     UpdateManualHosts();
     UpdateManualURLs();
-    if (delegate_) {
+    bool use_blacklist =
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableSupervisedUserBlacklist);
+    if (delegate_ && use_blacklist) {
       base::FilePath blacklist_path = delegate_->GetBlacklistPath();
       if (!blacklist_path.empty())
         LoadBlacklist(blacklist_path);

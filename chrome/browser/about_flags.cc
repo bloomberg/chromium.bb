@@ -1170,6 +1170,13 @@ const Experiment kExperiments[] = {
                               switches::kDisableSuggestionsService)
   },
   {
+    "enable-supervised-user-blacklist",
+    IDS_FLAGS_ENABLE_SUPERVISED_USER_BLACKLIST_NAME,
+    IDS_FLAGS_ENABLE_SUPERVISED_USER_BLACKLIST_DESCRIPTION,
+    kOsAndroid | kOsMac | kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableSupervisedUserBlacklist)
+  },
+  {
     "enable-sync-synced-notifications",
     IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_NAME,
     IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_DESCRIPTION,

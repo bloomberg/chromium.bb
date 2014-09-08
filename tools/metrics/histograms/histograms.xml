@@ -44295,6 +44295,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1399419572" label="enable-app-list"/>
   <int value="-1392562498" label="disable-origin-chip"/>
   <int value="-1375111024" label="enable-fixed-position-compositing"/>
+  <int value="-1358669137" label="enable-supervised-user-blacklist"/>
   <int value="-1349872906"
       label="disallow-autofill-sync-credential-for-reauth"/>
   <int value="-1341092934" label="enable-accelerated-overflow-scroll"/>

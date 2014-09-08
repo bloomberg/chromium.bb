@@ -604,6 +604,10 @@ const char kEnableStreamlinedHostedApps[]   = "enable-streamlined-hosted-apps";
 // Enables the suggestions service.
 const char kEnableSuggestionsService[]      = "enable-suggestions-service";
 
+// Enables the supervised user host blacklist.
+const char kEnableSupervisedUserBlacklist[] =
+    "enable-supervised-user-blacklist";
+
 // Enables synced notifications.
 const char kEnableSyncSyncedNotifications[] =
     "enable-sync-synced-notifications";
