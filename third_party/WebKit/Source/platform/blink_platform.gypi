@@ -930,6 +930,7 @@
       'image-decoders/ImageDecoderTest.cpp',
       'mac/ScrollElasticityControllerTest.mm',
       'network/HTTPParsersTest.cpp',
+      'network/ResourceRequestTest.cpp',
       'scheduler/SchedulerTest.cpp',
       'testing/ArenaTestHelpers.h',
       'testing/TreeTestHelpers.cpp',

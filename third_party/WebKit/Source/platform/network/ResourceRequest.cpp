@@ -50,6 +50,7 @@ PassOwnPtr<ResourceRequest> ResourceRequest::adopt(PassOwnPtr<CrossThreadResourc
     request->setReportUploadProgress(data->m_reportUploadProgress);
     request->setHasUserGesture(data->m_hasUserGesture);
     request->setDownloadToFile(data->m_downloadToFile);
+    request->setSkipServiceWorker(data->m_skipServiceWorker);
     request->setRequestorID(data->m_requestorID);
     request->setRequestorProcessID(data->m_requestorProcessID);
     request->setAppCacheHostID(data->m_appCacheHostID);
@@ -77,6 +78,7 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
     data->m_reportUploadProgress = m_reportUploadProgress;
     data->m_hasUserGesture = m_hasUserGesture;
     data->m_downloadToFile = m_downloadToFile;
+    data->m_skipServiceWorker = m_skipServiceWorker;
     data->m_requestorID = m_requestorID;
     data->m_requestorProcessID = m_requestorProcessID;
     data->m_appCacheHostID = m_appCacheHostID;

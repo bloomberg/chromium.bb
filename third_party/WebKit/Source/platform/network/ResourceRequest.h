@@ -255,6 +255,7 @@ public:
     bool m_reportUploadProgress;
     bool m_hasUserGesture;
     bool m_downloadToFile;
+    bool m_skipServiceWorker;
     ResourceLoadPriority m_priority;
     int m_intraPriorityValue;
     int m_requestorID;
