@@ -5,6 +5,8 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_SERVICE_IMPL_H_
 #define SYNC_INTERNAL_API_PUBLIC_ATTACHMENTS_ATTACHMENT_SERVICE_IMPL_H_
 
+#include <deque>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -43,13 +45,14 @@ class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
   static scoped_ptr<syncer::AttachmentService> CreateForTest();
 
   // AttachmentService implementation.
-  virtual void GetOrDownloadAttachments(const AttachmentIdList& attachment_ids,
-                                        const GetOrDownloadCallback& callback)
-      OVERRIDE;
+  virtual AttachmentStore* GetStore() OVERRIDE;
+  virtual void GetOrDownloadAttachments(
+      const AttachmentIdList& attachment_ids,
+      const GetOrDownloadCallback& callback) OVERRIDE;
   virtual void DropAttachments(const AttachmentIdList& attachment_ids,
                                const DropCallback& callback) OVERRIDE;
-  virtual void StoreAttachments(const AttachmentList& attachments,
-                                const StoreCallback& callback) OVERRIDE;
+  virtual void UploadAttachments(
+      const AttachmentIdSet& attachment_ids) OVERRIDE;
 
  private:
   class GetOrDownloadState;
@@ -60,14 +63,17 @@ class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
                 scoped_ptr<AttachmentIdList> unavailable_attachment_ids);
   void DropDone(const DropCallback& callback,
                 const AttachmentStore::Result& result);
-  void WriteDone(const StoreCallback& callback,
-                 const AttachmentStore::Result& result);
   void UploadDone(const AttachmentUploader::UploadResult& result,
                   const AttachmentId& attachment_id);
   void DownloadDone(const scoped_refptr<GetOrDownloadState>& state,
                     const AttachmentId& attachment_id,
                     const AttachmentDownloader::DownloadResult& result,
                     scoped_ptr<Attachment> attachment);
+  void ProcessQueuedUploads();
+  void ReadDoneNowUpload(
+      const AttachmentStore::Result& result,
+      scoped_ptr<AttachmentMap> attachments,
+      scoped_ptr<AttachmentIdList> unavailable_attachment_ids);
 
   const scoped_ptr<AttachmentStore> attachment_store_;
 
@@ -79,6 +85,13 @@ class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
 
   // May be null.
   Delegate* delegate_;
+
+  // Queue of attachment ids to be uploaded.  Every entry in this queue should
+  // also exist in ids_in_queue_.
+  std::deque<AttachmentId> queue_;
+
+  // Ids of attachments currently being uploaded or queued for upload.
+  AttachmentIdSet ids_in_queue_;
 
   // Must be last data member.
   base::WeakPtrFactory<AttachmentServiceImpl> weak_ptr_factory_;

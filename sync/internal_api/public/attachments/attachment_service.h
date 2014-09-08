@@ -14,6 +14,7 @@
 
 namespace syncer {
 
+class AttachmentStore;
 class SyncData;
 
 // AttachmentService is responsible for managing a model type's attachments.
@@ -44,16 +45,6 @@ class SYNC_EXPORT AttachmentService {
 
   typedef base::Callback<void(const DropResult&)> DropCallback;
 
-  // The result of a StoreAttachments operation.
-  enum StoreResult {
-    STORE_SUCCESS,            // No error, all attachments stored (at least
-                              // locally).
-    STORE_UNSPECIFIED_ERROR,  // An unspecified error occurred. Some or all
-                              // attachments may not have been stored.
-  };
-
-  typedef base::Callback<void(const StoreResult&)> StoreCallback;
-
   // An interface that embedder code implements to be notified about different
   // events that originate from AttachmentService.
   // This interface will be called from the same thread AttachmentService was
@@ -70,6 +61,11 @@ class SYNC_EXPORT AttachmentService {
   AttachmentService();
   virtual ~AttachmentService();
 
+  // Return a pointer to the AttachmentStore owned by this object.
+  //
+  // May return NULL.
+  virtual AttachmentStore* GetStore() = 0;
+
   // See SyncData::GetOrDownloadAttachments.
   virtual void GetOrDownloadAttachments(
       const AttachmentIdList& attachment_ids,
@@ -79,12 +75,18 @@ class SYNC_EXPORT AttachmentService {
   virtual void DropAttachments(const AttachmentIdList& attachment_ids,
                                const DropCallback& callback) = 0;
 
-  // Store |attachments| on device and (eventually) upload them to the server.
+  // Schedules the attachments identified by |attachment_ids| to be uploaded to
+  // the server.
   //
-  // Invokes |callback| once the attachments have been written to device
-  // storage.
-  virtual void StoreAttachments(const AttachmentList& attachments,
-                                const StoreCallback& callback) = 0;
+  // Assumes the attachments are already in the attachment store.
+  //
+  // A request to upload attachments is persistent in that uploads will be
+  // automatically retried if transient errors occur.
+  //
+  // A request to upload attachments does not persist across restarts of Chrome.
+  //
+  // Invokes OnAttachmentUploaded on the Delegate (if provided).
+  virtual void UploadAttachments(const AttachmentIdSet& attachment_ids) = 0;
 };
 
 }  // namespace syncer
