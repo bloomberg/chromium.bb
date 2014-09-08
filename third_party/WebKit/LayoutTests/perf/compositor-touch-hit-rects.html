@@ -15,8 +15,6 @@
 </style>
 </head>
 <body>
-<pre id='log'>
-</pre>
 <div id='test'>
 </div>
 <script src="../resources/magnitude-perf.js"></script>
@@ -24,7 +22,7 @@
 
 function log(msg)
 {
-  document.getElementById('log').innerText += msg + '\n';
+  Magnitude._log(msg);
 }
 
 var testNode;
@@ -83,8 +81,13 @@ Magnitude.description('Tests that compositor touch hit rect calculation is ' +
 // Wait for first layout.
 document.body.getBoundingClientRect();
 
-// Verify that compositor touch hit testing is properly enabled.
-if (window.internals) {
+function main()
+{
+    // Verify that compositor touch hit testing is properly enabled.
+    if (!window.internals) {
+        log("WARNING - missing windows.internals, can't verify hit testing is enabled.");
+        return;
+    }
     var testNode = document.getElementById('test');
     r = testNode.getBoundingClientRect();
     
@@ -96,23 +99,23 @@ if (window.internals) {
     }
     if (!rects.length) {
       log("FAIL - no hit test rects found, is ScrollingCoordinator::touchHitTestingEnabled false?");
+      return;
     }
     testNode.removeEventListener('touchstart', touchHandler);
-} else {
-    log("WARNING - missing windows.internals, can't verify hit testing is enabled.");
+
+
+    Magnitude.trim = 1;
+    Magnitude.tolerance = 0.80;
+
+    Magnitude.initialExponent = 7;
+    Magnitude.numPoints = 5;
+    Magnitude.run(setupFunction1, test, Magnitude.LINEAR);
+
+    Magnitude.initialExponent = 4;
+    Magnitude.numPoints = 5;
+    Magnitude.run(setupFunction2, test, Magnitude.LINEAR);
 }
-
-
-Magnitude.trim = 1;
-Magnitude.tolerance = 0.80;
-
-Magnitude.initialExponent = 7;
-Magnitude.numPoints = 5;
-Magnitude.run(setupFunction1, test, Magnitude.LINEAR);
-
-Magnitude.initialExponent = 4;
-Magnitude.numPoints = 5;
-Magnitude.run(setupFunction2, test, Magnitude.LINEAR);
+main();
 
 </script>
 </body>
