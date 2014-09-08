@@ -211,6 +211,7 @@ class QuicStreamFactory::Job {
   CompletionCallback callback_;
   AddressList address_list_;
   base::TimeTicks disk_cache_load_start_time_;
+  base::TimeTicks dns_resolution_start_time_;
   base::WeakPtrFactory<Job> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
@@ -315,6 +316,7 @@ int QuicStreamFactory::Job::DoResolveHost() {
   }
 
   io_state_ = STATE_RESOLVE_HOST_COMPLETE;
+  dns_resolution_start_time_ = base::TimeTicks::Now();
   return host_resolver_.Resolve(
       HostResolver::RequestInfo(server_id_.host_port_pair()),
       DEFAULT_PRIORITY,
@@ -325,6 +327,8 @@ int QuicStreamFactory::Job::DoResolveHost() {
 }
 
 int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
+  UMA_HISTOGRAM_TIMES("Net.QuicSession.HostResolutionTime",
+                      base::TimeTicks::Now() - dns_resolution_start_time_);
   if (rv != OK)
     return rv;
 

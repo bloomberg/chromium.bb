@@ -16562,6 +16562,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.HostResolutionTime" units="milliseconds">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    Time spent resolving the DNS name of the server for a QUIC connection.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.IncorrectConnectionIDsReceived">
   <owner>rch@chromium.org</owner>
   <summary>
