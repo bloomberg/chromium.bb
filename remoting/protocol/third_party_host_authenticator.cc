@@ -12,7 +12,7 @@
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/token_validator.h"
 #include "remoting/protocol/v2_authenticator.h"
-#include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
+#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 namespace remoting {
 namespace protocol {

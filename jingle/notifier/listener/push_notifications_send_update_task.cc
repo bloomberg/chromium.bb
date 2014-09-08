@@ -11,11 +11,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "jingle/notifier/listener/notification_constants.h"
 #include "jingle/notifier/listener/xml_element_util.h"
-#include "talk/xmllite/qname.h"
-#include "talk/xmllite/xmlelement.h"
 #include "talk/xmpp/constants.h"
 #include "talk/xmpp/jid.h"
 #include "talk/xmpp/xmppclient.h"
+#include "third_party/webrtc/libjingle/xmllite/qname.h"
+#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 namespace notifier {
 

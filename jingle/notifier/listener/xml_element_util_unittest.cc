@@ -8,10 +8,10 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "talk/xmllite/qname.h"
-#include "talk/xmllite/xmlelement.h"
-#include "talk/xmllite/xmlprinter.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/webrtc/libjingle/xmllite/qname.h"
+#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
+#include "third_party/webrtc/libjingle/xmllite/xmlprinter.h"
 
 namespace buzz {
 class XmlElement;

@@ -6,6 +6,7 @@
   'variables': {
     'libjingle_source': "source",
     'webrtc_base': "../webrtc/base",
+    'webrtc_xmllite': "../webrtc/libjingle/xmllite",
   },
   'includes': [
     '../../native_client/build/untrusted.gypi',
@@ -230,6 +231,20 @@
         '<(webrtc_base)/winping.h',
         '<(webrtc_base)/worker.cc',
         '<(webrtc_base)/worker.h',
+        '<(webrtc_xmllite)/qname.cc',
+        '<(webrtc_xmllite)/qname.h',
+        '<(webrtc_xmllite)/xmlbuilder.cc',
+        '<(webrtc_xmllite)/xmlbuilder.h',
+        '<(webrtc_xmllite)/xmlconstants.cc',
+        '<(webrtc_xmllite)/xmlconstants.h',
+        '<(webrtc_xmllite)/xmlelement.cc',
+        '<(webrtc_xmllite)/xmlelement.h',
+        '<(webrtc_xmllite)/xmlnsstack.cc',
+        '<(webrtc_xmllite)/xmlnsstack.h',
+        '<(webrtc_xmllite)/xmlparser.cc',
+        '<(webrtc_xmllite)/xmlparser.h',
+        '<(webrtc_xmllite)/xmlprinter.cc',
+        '<(webrtc_xmllite)/xmlprinter.h',
       ],
       'sources!': [
         # Compiled as part of libjingle_p2p_constants_nacl.
@@ -294,6 +309,7 @@
       },
       'include_dirs': [
         './<(libjingle_source)',
+        '../'
       ],
       'sources': [
         '<(libjingle_source)/talk/p2p/base/constants.cc',

@@ -10,7 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "third_party/libjingle/source/talk/p2p/base/candidate.h"
-#include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
+#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 
 namespace remoting {

@@ -14,7 +14,7 @@
 #include "components/autofill/core/browser/autofill_server_field_info.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
-#include "third_party/libjingle/source/talk/xmllite/xmlparser.h"
+#include "third_party/webrtc/libjingle/xmllite/xmlparser.h"
 
 namespace autofill {
 

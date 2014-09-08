@@ -8,6 +8,7 @@ include_rules = [
   "+sql",
   "+third_party/fips181",
   "+third_party/libjingle",
+  "+third_party/webrtc/libjingle",
   "+third_party/libaddressinput", # For address i18n.
   "+third_party/libphonenumber",  # For phone number i18n.
 ]

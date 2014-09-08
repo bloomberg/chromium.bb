@@ -8,7 +8,7 @@
 #include "remoting/signaling/server_log_entry.h"
 #include "remoting/signaling/server_log_entry_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
+#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 using buzz::XmlAttr;
 using buzz::XmlElement;

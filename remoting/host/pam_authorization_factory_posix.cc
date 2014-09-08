@@ -12,7 +12,7 @@
 #include "remoting/base/logging.h"
 #include "remoting/host/username.h"
 #include "remoting/protocol/channel_authenticator.h"
-#include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
+#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 namespace remoting {
 

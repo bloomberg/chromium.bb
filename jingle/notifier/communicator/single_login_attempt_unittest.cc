@@ -14,10 +14,10 @@
 #include "jingle/notifier/communicator/login_settings.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/url_request/url_request_test_util.h"
-#include "talk/xmllite/xmlelement.h"
 #include "talk/xmpp/constants.h"
 #include "talk/xmpp/xmppengine.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 namespace buzz {
 class XmppTaskParentInterface;

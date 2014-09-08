@@ -8,10 +8,10 @@
 #include <string>
 
 #include "base/strings/string_number_conversions.h"
-#include "talk/xmllite/qname.h"
-#include "talk/xmllite/xmlconstants.h"
-#include "talk/xmllite/xmlelement.h"
-#include "talk/xmllite/xmlprinter.h"
+#include "third_party/webrtc/libjingle/xmllite/qname.h"
+#include "third_party/webrtc/libjingle/xmllite/xmlconstants.h"
+#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
+#include "third_party/webrtc/libjingle/xmllite/xmlprinter.h"
 
 namespace notifier {
 

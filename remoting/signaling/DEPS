@@ -3,4 +3,5 @@ include_rules = [
   "+jingle",
   "+third_party/libjingle",
   "+third_party/webrtc/base",
+  "+third_party/webrtc/libjingle",
 ]

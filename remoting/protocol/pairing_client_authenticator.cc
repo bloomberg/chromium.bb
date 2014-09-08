@@ -11,7 +11,7 @@
 #include "remoting/protocol/authentication_method.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/v2_authenticator.h"
-#include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
+#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 namespace remoting {
 namespace protocol {

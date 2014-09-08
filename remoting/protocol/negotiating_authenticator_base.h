@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/authentication_method.h"
 #include "remoting/protocol/authenticator.h"
-#include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
+#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 namespace remoting {
 namespace protocol {

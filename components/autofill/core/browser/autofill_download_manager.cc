@@ -17,7 +17,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
-#include "third_party/libjingle/source/talk/xmllite/xmlparser.h"
+#include "third_party/webrtc/libjingle/xmllite/xmlparser.h"
 #include "url/gurl.h"
 
 namespace autofill {

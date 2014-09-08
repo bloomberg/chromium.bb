@@ -13,8 +13,8 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "remoting/signaling/signal_strategy.h"
-#include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 #include "third_party/libjingle/source/talk/xmpp/constants.h"
+#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 namespace remoting {
 

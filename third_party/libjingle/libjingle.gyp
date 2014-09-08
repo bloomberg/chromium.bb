@@ -277,6 +277,7 @@
       ],
       'dependencies': [
         '<(DEPTH)/third_party/webrtc/base/base.gyp:webrtc_base',
+        '<(DEPTH)/third_party/webrtc/libjingle/xmllite/xmllite.gyp:rtc_xmllite',
         'libjingle_p2p_constants',
         '<@(libjingle_additional_deps)',
       ],

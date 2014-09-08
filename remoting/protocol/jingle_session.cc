@@ -21,7 +21,7 @@
 #include "remoting/protocol/session_config.h"
 #include "remoting/signaling/iq_sender.h"
 #include "third_party/libjingle/source/talk/p2p/base/candidate.h"
-#include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
+#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 using buzz::XmlElement;
 

@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "components/autofill/core/browser/autofill_server_field_info.h"
-#include "third_party/libjingle/source/talk/xmllite/qname.h"
+#include "third_party/webrtc/libjingle/xmllite/qname.h"
 
 namespace autofill {
 

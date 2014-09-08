@@ -7,7 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "remoting/protocol/authenticator.h"
-#include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
+#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 namespace remoting {
 namespace protocol {

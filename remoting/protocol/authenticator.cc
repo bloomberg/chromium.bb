@@ -5,7 +5,7 @@
 #include "remoting/protocol/authenticator.h"
 
 #include "remoting/base/constants.h"
-#include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
+#include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 namespace remoting {
 namespace protocol {
