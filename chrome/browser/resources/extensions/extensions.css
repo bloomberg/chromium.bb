@@ -187,6 +187,11 @@ html[dir=rtl] #footer-section {
   min-height: 48px;
 }
 
+.extension-list-item a {
+  -webkit-margin-start: 0.5em;
+  display: inline-block;
+}
+
 html[dir='rtl'] .extension-list-item {
   background-position: right;
 }
@@ -215,12 +220,23 @@ html[dir='rtl'] .extension-list-item {
   white-space: normal;
 }
 
+.action-links {
+  -webkit-margin-after: 0.5em;
+}
+
+.action-links :-webkit-any(a, .link-button) {
+  -webkit-margin-end: 1em;
+  -webkit-margin-start: 0;
+}
+
 .extension-details {
   -webkit-box-flex: 1;
+  -webkit-padding-end: 7px;
   -webkit-padding-start: 55px;
 }
 
 .extension-description,
+.extension-version,
 .extension-list-item-wrapper.inactive-extension .extension-details,
 .location-text,
 .blacklist-text,
@@ -261,11 +277,6 @@ html[dir='rtl'] .extension-list-item {
 .terminated-reload-link {
   -webkit-margin-end: 2.5em;
   padding-top: 7px;
-}
-
-.extension-list-item a {
-  -webkit-margin-start: 0.5em;
-  display: inline-block;
 }
 
 .install-warnings a {
@@ -374,10 +385,6 @@ html[dir='rtl'] #extension-settings .trash {
   background-repeat: auto;
   border-radius: 3px;
   padding: 5px 0 5px 5px;
-}
-
-.may-not-modify .optional-controls .optional-controls-disableable {
-  display: none;
 }
 
 /* Supervised users */

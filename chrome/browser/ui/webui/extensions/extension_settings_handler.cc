@@ -269,7 +269,7 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetBoolean("is_hosted_app", extension->is_hosted_app());
   extension_data->SetBoolean("is_platform_app", extension->is_platform_app());
   extension_data->SetBoolean("homepageProvided",
-      ManifestURL::GetHomepageURL(extension).is_valid());
+      ManifestURL::SpecifiedHomepageURL(extension));
 
   // Add dependent extensions.
   base::ListValue* dependents_list = new base::ListValue;

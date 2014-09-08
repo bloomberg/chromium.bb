@@ -4795,10 +4795,10 @@ Make sure you do not expose any sensitive information.
           Allow access to file URLs
         </message>
         <message name="IDS_EXTENSIONS_VISIT_WEBSITE" desc="The link for visiting the extension's homepage.">
-          Visit website
+          Developer website
         </message>
         <message name="IDS_EXTENSIONS_VISIT_WEBSTORE" desc="The link for visiting the extension's gallery page.">
-          View in Web Store
+          Details
         </message>
         <message name="IDS_EXTENSIONS_RELOAD_TERMINATED" desc="The link for reloading extensions.">
           Reload

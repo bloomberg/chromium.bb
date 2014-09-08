@@ -66,6 +66,11 @@ const GURL ManifestURL::GetHomepageURL(const Extension* extension) {
 }
 
 // static
+bool ManifestURL::SpecifiedHomepageURL(const Extension* extension) {
+  return GetManifestURL(extension, keys::kHomepageURL).is_valid();
+}
+
+// static
 const GURL& ManifestURL::GetUpdateURL(const Extension* extension) {
   return GetManifestURL(extension, keys::kUpdateURL);
 }

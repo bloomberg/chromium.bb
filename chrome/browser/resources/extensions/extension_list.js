@@ -200,8 +200,9 @@ cr.define('options', function() {
       var blacklistText = node.querySelector('.blacklist-text');
       blacklistText.textContent = extension.blacklistText;
 
-      var description = node.querySelector('.extension-description span');
+      var description = document.createElement('span');
       description.textContent = extension.description;
+      node.querySelector('.extension-description').appendChild(description);
 
       // The 'Show Browser Action' button.
       if (extension.enable_show_button) {

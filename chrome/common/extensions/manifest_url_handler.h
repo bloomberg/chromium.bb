@@ -30,6 +30,10 @@ struct ManifestURL : public Extension::ManifestData {
   // this returns a blank GURL.
   static const GURL GetHomepageURL(const Extension* extension);
 
+  // Returns true if the extension specified a valid home page url in the
+  // manifest.
+  static bool SpecifiedHomepageURL(const Extension* extension);
+
   // Returns the Update URL for this extension.
   static const GURL& GetUpdateURL(const Extension* extension);
 

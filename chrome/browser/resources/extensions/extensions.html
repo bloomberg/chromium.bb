@@ -133,14 +133,19 @@
           <span class="extension-title"></span>
           <span class="extension-version"></span>
         </div>
-        <p class="extension-description">
-          <span></span>
-          <a class="permissions-link"
-              i18n-content="extensionSettingsPermissions"
-              href="#">
-          </a>
+        <p class="extension-description"></p>
+        <div class="action-links">
+          <button class="permissions-link link-button"
+                  i18n-content="extensionSettingsPermissions"></button>
+          <button class="options-link link-button"
+                  i18n-content="extensionSettingsOptions" hidden></button>
           <a class="site-link" target="_parent" hidden></a>
-        </p>
+          <button class="launch-link link-button"
+                  i18n-content="extensionSettingsLaunch" hidden></button>
+          <button class="reload-link link-button"
+                  i18n-content="extensionSettingsReloadUnpacked" hidden>
+          </button>
+        </div>
         <div class="permanent-warnings">
           <div class="extension-warnings" hidden>
             <span i18n-content="extensionSettingsWarningsTitle"></span>
@@ -212,19 +217,12 @@
               <span i18n-content="extensionSettingsAllowOnAllUrls"></span>
             </label>
           </div>
-          <span class="optional-controls-disableable">
-            <label class="file-access-control" hidden>
+          <div class="checkbox file-access-control" hidden>
+            <label>
               <input type="checkbox">
               <span i18n-content="extensionSettingsAllowFileAccess"></span>
             </label>
-            <a class="reload-link"
-                i18n-content="extensionSettingsReloadUnpacked"
-                href="#" hidden></a>
-            <a class="launch-link" i18n-content="extensionSettingsLaunch"
-                href="#" hidden></a>
-          </span>
-          <a class="options-link" i18n-content="extensionSettingsOptions"
-              href="#" hidden></a>
+          </div>
         </div>
         <div class="butter-bar"
             i18n-values=".innerHTML:extensionSettingsIncognitoWarning" hidden>
