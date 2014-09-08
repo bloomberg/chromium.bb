@@ -32,9 +32,7 @@ from third_party import colorama
 from third_party.colorama import Fore, Style
 
 from git_common import current_branch, upstream, tags, get_branches_info
-from git_common import get_git_version, MIN_UPSTREAM_TRACK_GIT_VERSION
-
-import git_cl
+from git_common import get_git_version, MIN_UPSTREAM_TRACK_GIT_VERSION, hash_one
 
 DEFAULT_SEPARATOR = ' ' * 4
 
@@ -141,11 +139,16 @@ class BranchMapper(object):
       self.__parent_map[parent].append(branch)
 
     self.__current_branch = current_branch()
-    self.__current_hash = self.__branches_info[self.__current_branch].hash
+    self.__current_hash = hash_one('HEAD', short=True)
     self.__tag_set = tags()
 
-    for root in sorted(roots):
-      self.__append_branch(root)
+    if roots:
+      for root in sorted(roots):
+        self.__append_branch(root)
+    else:
+      no_branches = OutputLine()
+      no_branches.append('No User Branches')
+      self.output.append(no_branches)
 
   def __is_invalid_parent(self, parent):
     return not parent or parent in self.__gone_branches
@@ -155,12 +158,12 @@ class BranchMapper(object):
       color = Fore.RED
     elif self.__is_invalid_parent(branch) or branch in self.__tag_set:
       color = Fore.MAGENTA
-    elif branch_hash == self.__current_hash:
+    elif self.__current_hash.startswith(branch_hash):
       color = Fore.CYAN
     else:
       color = Fore.GREEN
 
-    if branch_hash == self.__current_hash:
+    if self.__current_hash.startswith(branch_hash):
       color += Style.BRIGHT
     else:
       color += Style.NORMAL
@@ -171,7 +174,10 @@ class BranchMapper(object):
     """Recurses through the tree structure and appends an OutputLine to the
     OutputManager for each branch."""
     branch_info = self.__branches_info[branch]
-    branch_hash = branch_info.hash if branch_info else None
+    if branch_info:
+      branch_hash = branch_info.hash
+    else:
+      branch_hash = hash_one(branch, short=True)
 
     line = OutputLine()
 
@@ -225,6 +231,7 @@ class BranchMapper(object):
 
     # The Rietveld issue associated with the branch.
     if self.verbosity >= 2:
+      import git_cl  # avoid heavy import cost unless we need it
       none_text = '' if self.__is_invalid_parent(branch) else 'None'
       url = git_cl.Changelist(branchref=branch).GetIssueURL()
       line.append(url or none_text, color=Fore.BLUE if url else Fore.WHITE)
