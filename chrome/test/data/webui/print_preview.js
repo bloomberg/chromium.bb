@@ -775,8 +775,9 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettingsBothStandardDefaultColor',
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkSectionVisible($('color-settings'), true);
-  expectTrue($('color-settings').querySelector('.color-option').checked);
-  expectFalse($('color-settings').querySelector('.bw-option').checked);
+  expectEquals(
+      'color',
+      $('color-settings').querySelector('.color-settings-select').value);
 });
 
 // Test that the color settings, two options, both standard, defaults to
@@ -797,8 +798,8 @@ TEST_F('PrintPreviewWebUITest',
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkSectionVisible($('color-settings'), true);
-  expectFalse($('color-settings').querySelector('.color-option').checked);
-  expectTrue($('color-settings').querySelector('.bw-option').checked);
+  expectEquals(
+      'bw', $('color-settings').querySelector('.color-settings-select').value);
 });
 
 // Test that the color settings, two options, both custom, defaults to color.
@@ -818,8 +819,9 @@ TEST_F('PrintPreviewWebUITest',
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkSectionVisible($('color-settings'), true);
-  expectTrue($('color-settings').querySelector('.color-option').checked);
-  expectFalse($('color-settings').querySelector('.bw-option').checked);
+  expectEquals(
+      'color',
+      $('color-settings').querySelector('.color-settings-select').value);
 });
 
 // Test to verify that duplex settings are set according to the printer

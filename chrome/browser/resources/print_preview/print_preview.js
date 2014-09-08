@@ -1028,13 +1028,13 @@ cr.define('print_preview', function() {
      * @private
      */
     setLayoutSettingsForTest_: function(portrait) {
-      var element = document.querySelector(portrait ?
-          '.layout-settings-portrait-radio' :
-          '.layout-settings-landscape-radio');
-      if (element.checked)
+      var combobox = document.querySelector('.layout-settings-select');
+      if (combobox.value == 'portrait') {
         this.nativeLayer_.previewReadyForTest();
-      else
-        element.click();
+      } else {
+        combobox.value = 'landscape';
+        this.layoutSettings_.onSelectChange_();
+      }
     },
 
     /**

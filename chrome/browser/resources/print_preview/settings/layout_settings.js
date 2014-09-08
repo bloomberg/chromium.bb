@@ -24,16 +24,6 @@ cr.define('print_preview', function() {
     this.landscapeTicketItem_ = landscapeTicketItem;
   };
 
-  /**
-   * CSS classes used by the layout settings.
-   * @enum {string}
-   * @private
-   */
-  LayoutSettings.Classes_ = {
-    LANDSCAPE_RADIO: 'layout-settings-landscape-radio',
-    PORTRAIT_RADIO: 'layout-settings-portrait-radio'
-  };
-
   LayoutSettings.prototype = {
     __proto__: print_preview.SettingsSection.prototype,
 
@@ -49,21 +39,14 @@ cr.define('print_preview', function() {
 
     /** @override */
     set isEnabled(isEnabled) {
-      this.landscapeRadioButton_.disabled = !isEnabled;
-      this.portraitRadioButton_.disabled = !isEnabled;
+      this.select_.disabled = !isEnabled;
     },
 
     /** @override */
     enterDocument: function() {
       print_preview.SettingsSection.prototype.enterDocument.call(this);
       this.tracker.add(
-          this.portraitRadioButton_,
-          'click',
-          this.onLayoutButtonClick_.bind(this));
-      this.tracker.add(
-          this.landscapeRadioButton_,
-          'click',
-          this.onLayoutButtonClick_.bind(this));
+          this.select_, 'change', this.onSelectChange_.bind(this));
       this.tracker.add(
           this.landscapeTicketItem_,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
@@ -71,30 +54,23 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @return {HTMLInputElement} The portrait orientation radio button.
+     * Called when the select element is changed. Updates the print ticket
+     * layout selection.
      * @private
      */
-    get portraitRadioButton_() {
-      return this.getElement().getElementsByClassName(
-          LayoutSettings.Classes_.PORTRAIT_RADIO)[0];
+    onSelectChange_: function() {
+      var select = this.select_;
+      var isLandscape =
+          select.options[select.selectedIndex].value == 'landscape';
+      this.landscapeTicketItem_.updateValue(isLandscape);
     },
 
     /**
-     * @return {HTMLInputElement} The landscape orientation radio button.
+     * @return {HTMLSelectElement} Select element containing the layout options.
      * @private
      */
-    get landscapeRadioButton_() {
-      return this.getElement().getElementsByClassName(
-          LayoutSettings.Classes_.LANDSCAPE_RADIO)[0];
-    },
-
-    /**
-     * Called when one of the radio buttons is clicked. Updates the print ticket
-     * store.
-     * @private
-     */
-    onLayoutButtonClick_: function() {
-      this.landscapeTicketItem_.updateValue(this.landscapeRadioButton_.checked);
+    get select_() {
+      return this.getChildElement('.layout-settings-select');
     },
 
     /**
@@ -104,9 +80,15 @@ cr.define('print_preview', function() {
      */
     onLandscapeTicketItemChange_: function() {
       if (this.isAvailable()) {
-        var isLandscapeEnabled = this.landscapeTicketItem_.getValue();
-        this.portraitRadioButton_.checked = !isLandscapeEnabled;
-        this.landscapeRadioButton_.checked = isLandscapeEnabled;
+        var select = this.select_;
+        var valueToSelect =
+            this.landscapeTicketItem_.getValue() ? 'landscape' : 'portrait';
+        for (var i = 0; i < select.options.length; i++) {
+          if (select.options[i].value == valueToSelect) {
+            select.selectedIndex = i;
+            break;
+          }
+        }
       }
       this.updateUiStateInternal();
     }

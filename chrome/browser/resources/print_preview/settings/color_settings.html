@@ -4,13 +4,9 @@
      hidden>
   <h1 i18n-content="optionColor"></h1>
   <div class="right-column">
-    <div class="radio"><label>
-      <input class="color-option" type="radio" name="color">
-      <span i18n-content="optionColor"></span>
-    </label></div>
-    <div class="radio"><label>
-      <input class="bw-option" type="radio" name="color" checked>
-      <span i18n-content="optionBw"></span>
-    </label></div>
+    <select class="color-settings-select">
+      <option i18n-content="optionBw" value="bw" selected></option>
+      <option i18n-content="optionColor" value="color"></option>
+    </select>
   </div>
 </div>
