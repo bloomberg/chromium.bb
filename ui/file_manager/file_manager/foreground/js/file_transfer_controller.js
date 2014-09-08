@@ -262,6 +262,8 @@ FileTransferController.prototype = {
     // Check all file entries and keeps only those need sharing operation.
     var processFileEntries = function(entries) {
       return new Promise(function(callback) {
+        // TODO(mtomasz): Move conversion from entry to url to custom bindings.
+        // crbug.com/345527.
         var urls = util.entriesToURLs(entries);
         chrome.fileBrowserPrivate.getEntryProperties(urls, callback);
       }).

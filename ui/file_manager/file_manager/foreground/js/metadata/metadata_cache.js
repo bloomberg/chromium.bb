@@ -839,7 +839,8 @@ ExternalProvider.prototype.callApi_ = function() {
   this.callbacks_ = [];
   var self = this;
 
-  // TODO(mtomasz): Make getEntryProperties accept Entry instead of URL.
+  // TODO(mtomasz): Move conversion from entry to url to custom bindings.
+  // crbug.com/345527.
   var entryURLs = util.entriesToURLs(entries);
   chrome.fileBrowserPrivate.getEntryProperties(
       entryURLs,

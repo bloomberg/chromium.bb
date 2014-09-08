@@ -90,6 +90,7 @@ FileTasks.prototype.init = function(entries, opt_mimeTypes) {
   this.mimeTypes_ = opt_mimeTypes || [];
 
   // TODO(mtomasz): Move conversion from entry to url to custom bindings.
+  // crbug.com/345527.
   var urls = util.entriesToURLs(entries);
   if (urls.length > 0)
     chrome.fileBrowserPrivate.getFileTasks(urls, this.onTasks_.bind(this));
@@ -397,7 +398,8 @@ FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
   }.bind(this);
 
   this.checkAvailability_(function() {
-    // TODO(mtomasz): Pass entries instead.
+    // TODO(mtomasz): Move conversion from entry to url to custom bindings.
+    // crbug.com/345527.
     var urls = util.entriesToURLs(entries);
     var taskId = chrome.runtime.id + '|file|view-in-browser';
     chrome.fileBrowserPrivate.executeTask(taskId, urls, onViewFiles);
@@ -431,7 +433,8 @@ FileTasks.prototype.executeInternal_ = function(taskId, entries) {
       var taskParts = taskId.split('|');
       this.executeInternalTask_(taskParts[2], entries);
     } else {
-      // TODO(mtomasz): Pass entries instead.
+      // TODO(mtomasz): Move conversion from entry to url to custom bindings.
+      // crbug.com/345527.
       var urls = util.entriesToURLs(entries);
       chrome.fileBrowserPrivate.executeTask(taskId, urls, function(result) {
         if (result !== 'message_sent')
@@ -539,7 +542,8 @@ FileTasks.prototype.executeInternalTask_ = function(id, entries) {
       // in the directory.
       entries = fm.getAllEntriesInCurrentDirectory().filter(FileType.isAudio);
     }
-    // TODO(mtomasz): Pass entries instead.
+    // TODO(mtomasz): Move conversion from entry to url to custom bindings.
+    // crbug.com/345527.
     var urls = util.entriesToURLs(entries);
     var position = urls.indexOf(selectedEntry.toURL());
     chrome.fileBrowserPrivate.getProfiles(function(profiles,
@@ -581,7 +585,8 @@ FileTasks.prototype.mountArchivesInternal_ = function(entries) {
   var tracker = fm.directoryModel.createDirectoryChangeTracker();
   tracker.start();
 
-  // TODO(mtomasz): Pass Entries instead of URLs.
+  // TODO(mtomasz): Move conversion from entry to url to custom bindings.
+  // crbug.com/345527.
   var urls = util.entriesToURLs(entries);
   fm.resolveSelectResults_(urls, function(resolvedURLs) {
     for (var index = 0; index < resolvedURLs.length; ++index) {

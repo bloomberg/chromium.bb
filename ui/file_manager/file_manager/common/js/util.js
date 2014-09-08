@@ -1088,9 +1088,6 @@ util.getCurrentLocaleOrDefault = function() {
  * @return {Array.<string>} Output array of URLs.
  */
 util.entriesToURLs = function(entries) {
-  // TODO(mtomasz): Make all callers use entries instead of URLs, and then
-  // remove this utility function.
-  console.warn('Converting entries to URLs is deprecated.');
   return entries.map(function(entry) {
      return entry.toURL();
   });

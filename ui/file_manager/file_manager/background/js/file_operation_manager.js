@@ -341,8 +341,8 @@ fileOperationUtil.copyTo = function(
  */
 fileOperationUtil.zipSelection = function(
     sources, parent, newName, successCallback, errorCallback) {
-  // TODO(mtomasz): Pass Entries instead of URLs. Entries can be converted to
-  // URLs in custom bindings.
+  // TODO(mtomasz): Move conversion from entry to url to custom bindings.
+  // crbug.com/345527.
   chrome.fileBrowserPrivate.zipSelection(
       parent.toURL(),
       util.entriesToURLs(sources),

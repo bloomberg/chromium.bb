@@ -1772,6 +1772,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.onDefaultTaskDone_ = function(task) {
     // TODO(dgozman): move this method closer to tasks.
     var selection = this.getSelection();
+    // TODO(mtomasz): Move conversion from entry to url to custom bindings.
+    // crbug.com/345527.
     chrome.fileBrowserPrivate.setDefaultTask(
         task.taskId,
         util.entriesToURLs(selection.entries),
