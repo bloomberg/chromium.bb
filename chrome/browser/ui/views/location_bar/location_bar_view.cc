@@ -981,13 +981,8 @@ void LocationBarView::Update(const WebContents* contents) {
       GetToolbarModel()->input_in_progress() ? NULL : GetWebContents();
   open_pdf_in_reader_view_->Update(web_contents_for_sub_views);
 
-  if (star_view_) {
-    star_view_->SetVisible(
-        browser_defaults::bookmarks_enabled && !is_popup_mode_ &&
-        !GetToolbarModel()->input_in_progress() &&
-        edit_bookmarks_enabled_.GetValue() &&
-        !IsBookmarkStarHiddenByExtension());
-  }
+  if (star_view_)
+    UpdateBookmarkStarVisibility();
 
   if (contents)
     omnibox_view_->OnTabChanged(contents);
@@ -1298,6 +1293,16 @@ void LocationBarView::UpdatePageActions() {
 
 void LocationBarView::InvalidatePageActions() {
   DeletePageActionViews();
+}
+
+void LocationBarView::UpdateBookmarkStarVisibility() {
+  if (star_view_) {
+    star_view_->SetVisible(
+        browser_defaults::bookmarks_enabled && !is_popup_mode_ &&
+        !GetToolbarModel()->input_in_progress() &&
+        edit_bookmarks_enabled_.GetValue() &&
+        !IsBookmarkStarHiddenByExtension());
+  }
 }
 
 bool LocationBarView::ShowPageActionPopup(

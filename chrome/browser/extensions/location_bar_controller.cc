@@ -7,6 +7,11 @@
 #include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/location_bar/location_bar.h"
+#include "chrome/common/extensions/manifest_handlers/ui_overrides_handler.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/feature_switch.h"
@@ -73,6 +78,25 @@ void LocationBarController::OnExtensionLoaded(
   if (action_manager_->GetPageAction(*extension)) {
     ExtensionActionAPI::Get(browser_context)->
         NotifyPageActionsChanged(web_contents_);
+  }
+
+  // We might also need to update the location bar if the extension can remove
+  // the bookmark star.
+  if (UIOverrides::RemovesBookmarkButton(extension)) {
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+    // In a perfect world, this can never be NULL. Unfortunately, since a
+    // LocationBarController is attached to most WebContents, we can't make that
+    // guarantee.
+    if (!browser)
+      return;
+    // window() can be NULL if this is called before CreateBrowserWindow()
+    // completes, and there won't be a location bar if the window has no toolbar
+    // (e.g., and app window).
+    LocationBar* location_bar =
+        browser->window() ? browser->window()->GetLocationBar() : NULL;
+    if (!location_bar)
+      return;
+    location_bar->UpdateBookmarkStarVisibility();
   }
 }
 

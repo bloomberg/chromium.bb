@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -17,7 +18,9 @@
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/value_builder.h"
 
 namespace {
 
@@ -39,13 +42,29 @@ const char kManifestSource[] =
 
 class LocationBarBrowserTest : public ExtensionBrowserTest {
  public:
+  LocationBarBrowserTest() {}
   virtual ~LocationBarBrowserTest() {}
 
  protected:
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
+
   // Load an extension with a PageAction that sends a message when clicked.
   const extensions::Extension* LoadPageActionExtension(
       extensions::TestExtensionDir* dir);
+
+ private:
+  scoped_ptr<extensions::FeatureSwitch::ScopedOverride> enable_override_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocationBarBrowserTest);
 };
+
+void LocationBarBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
+  // In order to let a vanilla extension override the bookmark star, we have to
+  // enable the switch.
+  enable_override_.reset(new extensions::FeatureSwitch::ScopedOverride(
+      extensions::FeatureSwitch::enable_override_bookmarks_ui(), true));
+  ExtensionBrowserTest::SetUpCommandLine(command_line);
+}
 
 const extensions::Extension* LocationBarBrowserTest::LoadPageActionExtension(
     extensions::TestExtensionDir* dir) {
@@ -116,11 +135,46 @@ IN_PROC_BROWSER_TEST_F(LocationBarBrowserTest, MAYBE_PageActionUITest) {
   EXPECT_TRUE(clicked_listener.WaitUntilSatisfied());
 }
 
+// Test that installing an extension that overrides the bookmark star
+// successfully hides the star.
+IN_PROC_BROWSER_TEST_F(LocationBarBrowserTest,
+                       ExtensionCanOverrideBookmarkStar) {
+  LocationBarTesting* location_bar =
+      browser()->window()->GetLocationBar()->GetLocationBarForTesting();
+  // By default, we should show the star.
+  EXPECT_TRUE(location_bar->GetBookmarkStarVisibility());
+
+  // Create and install an extension that overrides the bookmark star.
+  extensions::DictionaryBuilder chrome_ui_overrides;
+  chrome_ui_overrides.Set(
+      "bookmarks_ui",
+      extensions::DictionaryBuilder().SetBoolean("remove_button", true));
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ExtensionBuilder().
+          SetManifest(extensions::DictionaryBuilder().
+                          Set("name", "overrides star").
+                          Set("manifest_version", 2).
+                          Set("version", "0.1").
+                          Set("description", "override the star").
+                          Set("chrome_ui_overrides",
+                              chrome_ui_overrides.Pass())).Build();
+  extension_service()->AddExtension(extension.get());
+
+  // The star should now be hidden.
+  EXPECT_FALSE(location_bar->GetBookmarkStarVisibility());
+}
+
 class LocationBarBrowserTestWithRedesign : public LocationBarBrowserTest {
+ public:
+  LocationBarBrowserTestWithRedesign() {}
+  virtual ~LocationBarBrowserTestWithRedesign() {}
+
  private:
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 
   scoped_ptr<extensions::FeatureSwitch::ScopedOverride> enable_redesign_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocationBarBrowserTestWithRedesign);
 };
 
 void LocationBarBrowserTestWithRedesign::SetUpCommandLine(

@@ -224,6 +224,10 @@ void LocationBarViewMac::InvalidatePageActions() {
   Layout();
 }
 
+void LocationBarViewMac::UpdateBookmarkStarVisibility() {
+  star_decoration_->SetVisible(IsStarEnabled());
+}
+
 bool LocationBarViewMac::ShowPageActionPopup(
     const extensions::Extension* extension, bool grant_active_tab) {
   for (ScopedVector<PageActionDecoration>::iterator iter =
@@ -313,7 +317,7 @@ bool LocationBarViewMac::GetBookmarkStarVisibility() {
 
 void LocationBarViewMac::SetEditable(bool editable) {
   [field_ setEditable:editable ? YES : NO];
-  UpdateStarDecorationVisibility();
+  UpdateBookmarkStarVisibility();
   UpdateZoomDecoration();
   UpdatePageActions();
   Layout();
@@ -328,7 +332,7 @@ void LocationBarViewMac::SetStarred(bool starred) {
     return;
 
   star_decoration_->SetStarred(starred);
-  UpdateStarDecorationVisibility();
+  UpdateBookmarkStarVisibility();
   OnDecorationsChanged();
 }
 
@@ -528,7 +532,7 @@ NSPoint LocationBarViewMac::GetPageActionBubblePoint(
 
 void LocationBarViewMac::Update(const WebContents* contents) {
   UpdateManagePasswordsIconAndBubble();
-  UpdateStarDecorationVisibility();
+  UpdateBookmarkStarVisibility();
   UpdateTranslateDecoration();
   UpdateZoomDecoration();
   RefreshPageActionDecorations();
@@ -658,7 +662,7 @@ void LocationBarViewMac::DeletePageActionDecorations() {
 }
 
 void LocationBarViewMac::OnEditBookmarksEnabledChanged() {
-  UpdateStarDecorationVisibility();
+  UpdateBookmarkStarVisibility();
   OnChanged();
 }
 
@@ -754,10 +758,6 @@ bool LocationBarViewMac::UpdateZoomDecoration() {
 
   return zoom_decoration_->UpdateIfNecessary(
       ZoomController::FromWebContents(web_contents));
-}
-
-void LocationBarViewMac::UpdateStarDecorationVisibility() {
-  star_decoration_->SetVisible(IsStarEnabled());
 }
 
 bool LocationBarViewMac::UpdateMicSearchDecorationVisibility() {

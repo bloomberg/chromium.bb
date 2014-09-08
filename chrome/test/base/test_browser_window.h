@@ -179,6 +179,7 @@ class TestBrowserWindow : public BrowserWindow {
     virtual void UpdateManagePasswordsIconAndBubble() OVERRIDE {}
     virtual void UpdatePageActions() OVERRIDE {}
     virtual void InvalidatePageActions() OVERRIDE {}
+    virtual void UpdateBookmarkStarVisibility() OVERRIDE {}
     virtual bool ShowPageActionPopup(const extensions::Extension* extension,
                                      bool grant_active_tab) OVERRIDE;
     virtual void UpdateOpenPDFInReaderPrompt() OVERRIDE {}
