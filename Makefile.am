@@ -159,11 +159,14 @@ src_libbreakpad_a_SOURCES = \
 	src/google_breakpad/processor/call_stack.h \
 	src/google_breakpad/processor/code_module.h \
 	src/google_breakpad/processor/code_modules.h \
+	src/google_breakpad/processor/dump_context.h \
+	src/google_breakpad/processor/dump_object.h \
 	src/google_breakpad/processor/exploitability.h \
 	src/google_breakpad/processor/fast_source_line_resolver.h \
 	src/google_breakpad/processor/memory_region.h \
 	src/google_breakpad/processor/minidump.h \
 	src/google_breakpad/processor/minidump_processor.h \
+	src/google_breakpad/processor/process_result.h \
 	src/google_breakpad/processor/process_state.h \
 	src/google_breakpad/processor/source_line_resolver_base.h \
 	src/google_breakpad/processor/source_line_resolver_interface.h \
@@ -189,6 +192,8 @@ src_libbreakpad_a_SOURCES = \
 	src/processor/contained_range_map.h \
 	src/processor/disassembler_x86.h \
 	src/processor/disassembler_x86.cc \
+	src/processor/dump_context.cc \
+	src/processor/dump_object.cc \
 	src/processor/exploitability.cc \
 	src/processor/exploitability_linux.h \
 	src/processor/exploitability_linux.cc \
@@ -412,6 +417,8 @@ src_client_linux_linux_client_unittest_shlib_SOURCES = \
 	src/testing/gtest/src/gtest_main.cc \
 	src/testing/src/gmock-all.cc \
 	src/processor/basic_code_modules.cc \
+	src/processor/dump_context.cc \
+	src/processor/dump_object.cc \
 	src/processor/logging.cc \
 	src/processor/minidump.cc \
 	src/processor/pathname_stripper.cc
@@ -676,6 +683,8 @@ src_processor_exploitability_unittest_LDADD = \
 	src/processor/basic_source_line_resolver.o \
 	src/processor/call_stack.o \
 	src/processor/cfi_frame_info.o \
+	src/processor/dump_context.o \
+	src/processor/dump_object.o \
 	src/processor/logging.o \
 	src/processor/minidump.o \
 	src/processor/pathname_stripper.o \
@@ -766,6 +775,8 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/call_stack.o \
 	src/processor/cfi_frame_info.o \
 	src/processor/disassembler_x86.o \
+	src/processor/dump_context.o \
+	src/processor/dump_object.o \
 	src/processor/exploitability.o \
 	src/processor/exploitability_linux.o \
 	src/processor/exploitability_win.o \
@@ -806,6 +817,8 @@ src_processor_minidump_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing
 src_processor_minidump_unittest_LDADD = \
 	src/processor/basic_code_modules.o \
+	src/processor/dump_context.o \
+	src/processor/dump_object.o \
 	src/processor/logging.o \
 	src/processor/minidump.o \
 	src/processor/pathname_stripper.o \
@@ -1056,6 +1069,8 @@ src_processor_minidump_dump_SOURCES = \
 	src/processor/minidump_dump.cc
 src_processor_minidump_dump_LDADD = \
 	src/processor/basic_code_modules.o \
+	src/processor/dump_context.o \
+	src/processor/dump_object.o \
 	src/processor/logging.o \
 	src/processor/minidump.o \
 	src/processor/pathname_stripper.o
@@ -1069,6 +1084,8 @@ src_processor_minidump_stackwalk_LDADD = \
 	src/processor/call_stack.o \
 	src/processor/cfi_frame_info.o \
 	src/processor/disassembler_x86.o \
+	src/processor/dump_context.o \
+	src/processor/dump_object.o \
 	src/processor/exploitability.o \
 	src/processor/exploitability_linux.o \
 	src/processor/exploitability_win.o \

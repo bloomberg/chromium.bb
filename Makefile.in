@@ -328,11 +328,14 @@ am__src_libbreakpad_a_SOURCES_DIST =  \
 	src/google_breakpad/processor/call_stack.h \
 	src/google_breakpad/processor/code_module.h \
 	src/google_breakpad/processor/code_modules.h \
+	src/google_breakpad/processor/dump_context.h \
+	src/google_breakpad/processor/dump_object.h \
 	src/google_breakpad/processor/exploitability.h \
 	src/google_breakpad/processor/fast_source_line_resolver.h \
 	src/google_breakpad/processor/memory_region.h \
 	src/google_breakpad/processor/minidump.h \
 	src/google_breakpad/processor/minidump_processor.h \
+	src/google_breakpad/processor/process_result.h \
 	src/google_breakpad/processor/process_state.h \
 	src/google_breakpad/processor/source_line_resolver_base.h \
 	src/google_breakpad/processor/source_line_resolver_interface.h \
@@ -355,6 +358,7 @@ am__src_libbreakpad_a_SOURCES_DIST =  \
 	src/processor/contained_range_map.h \
 	src/processor/disassembler_x86.h \
 	src/processor/disassembler_x86.cc \
+	src/processor/dump_context.cc src/processor/dump_object.cc \
 	src/processor/exploitability.cc \
 	src/processor/exploitability_linux.h \
 	src/processor/exploitability_linux.cc \
@@ -420,6 +424,8 @@ am__src_libbreakpad_a_SOURCES_DIST =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_context.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_object.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_linux.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.$(OBJEXT) \
@@ -556,8 +562,10 @@ am__src_client_linux_linux_client_unittest_shlib_SOURCES_DIST =  \
 	src/testing/gtest/src/gtest-all.cc \
 	src/testing/gtest/src/gtest_main.cc \
 	src/testing/src/gmock-all.cc \
-	src/processor/basic_code_modules.cc src/processor/logging.cc \
-	src/processor/minidump.cc src/processor/pathname_stripper.cc \
+	src/processor/basic_code_modules.cc \
+	src/processor/dump_context.cc src/processor/dump_object.cc \
+	src/processor/logging.cc src/processor/minidump.cc \
+	src/processor/pathname_stripper.cc \
 	src/common/android/breakpad_getcontext.S \
 	src/common/android/breakpad_getcontext_unittest.cc
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__objects_2 = src/common/android/src_client_linux_linux_client_unittest_shlib-breakpad_getcontext.$(OBJEXT) \
@@ -581,6 +589,8 @@ am__src_client_linux_linux_client_unittest_shlib_SOURCES_DIST =  \
 @LINUX_HOST_TRUE@	src/testing/gtest/src/src_client_linux_linux_client_unittest_shlib-gtest_main.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/testing/src/src_client_linux_linux_client_unittest_shlib-gmock-all.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/processor/src_client_linux_linux_client_unittest_shlib-basic_code_modules.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/processor/src_client_linux_linux_client_unittest_shlib-dump_context.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/processor/src_client_linux_linux_client_unittest_shlib-dump_object.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/processor/src_client_linux_linux_client_unittest_shlib-logging.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/processor/src_client_linux_linux_client_unittest_shlib-minidump.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/processor/src_client_linux_linux_client_unittest_shlib-pathname_stripper.$(OBJEXT) \
@@ -810,6 +820,8 @@ src_processor_exploitability_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_context.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_object.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
@@ -871,6 +883,8 @@ src_processor_minidump_dump_OBJECTS =  \
 	$(am_src_processor_minidump_dump_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_dump_DEPENDENCIES =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_context.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_object.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
@@ -889,6 +903,8 @@ src_processor_minidump_processor_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_context.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_object.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_linux.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
@@ -926,6 +942,8 @@ src_processor_minidump_stackwalk_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_context.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_object.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_linux.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
@@ -967,6 +985,8 @@ src_processor_minidump_unittest_OBJECTS =  \
 	$(am_src_processor_minidump_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_unittest_DEPENDENCIES =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_context.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_object.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
@@ -1832,11 +1852,14 @@ lib_LIBRARIES = $(am__append_5) $(am__append_8)
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/call_stack.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/code_module.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/code_modules.h \
+@DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/dump_context.h \
+@DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/dump_object.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/exploitability.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/fast_source_line_resolver.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/memory_region.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/minidump.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/minidump_processor.h \
+@DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/process_result.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/process_state.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/source_line_resolver_base.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/source_line_resolver_interface.h \
@@ -1862,6 +1885,8 @@ lib_LIBRARIES = $(am__append_5) $(am__append_8)
 @DISABLE_PROCESSOR_FALSE@	src/processor/contained_range_map.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.cc \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_context.cc \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_object.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_linux.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_linux.cc \
@@ -2000,6 +2025,8 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @LINUX_HOST_TRUE@	src/testing/gtest/src/gtest_main.cc \
 @LINUX_HOST_TRUE@	src/testing/src/gmock-all.cc \
 @LINUX_HOST_TRUE@	src/processor/basic_code_modules.cc \
+@LINUX_HOST_TRUE@	src/processor/dump_context.cc \
+@LINUX_HOST_TRUE@	src/processor/dump_object.cc \
 @LINUX_HOST_TRUE@	src/processor/logging.cc \
 @LINUX_HOST_TRUE@	src/processor/minidump.cc \
 @LINUX_HOST_TRUE@	src/processor/pathname_stripper.cc \
@@ -2258,6 +2285,8 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_context.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_object.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
@@ -2356,6 +2385,8 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_context.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_object.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_linux.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
@@ -2398,6 +2429,8 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_unittest_LDADD = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_context.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_object.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
@@ -2672,6 +2705,8 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_dump_LDADD = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_context.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_object.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
@@ -2686,6 +2721,8 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_context.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/dump_object.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_linux.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
@@ -3069,6 +3106,10 @@ src/processor/cfi_frame_info.$(OBJEXT): src/processor/$(am__dirstamp) \
 src/processor/disassembler_x86.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/dump_context.$(OBJEXT): src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/dump_object.$(OBJEXT): src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/exploitability.$(OBJEXT): src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/exploitability_linux.$(OBJEXT):  \
@@ -3333,6 +3374,12 @@ src/testing/src/src_client_linux_linux_client_unittest_shlib-gmock-all.$(OBJEXT)
 	src/testing/src/$(am__dirstamp) \
 	src/testing/src/$(DEPDIR)/$(am__dirstamp)
 src/processor/src_client_linux_linux_client_unittest_shlib-basic_code_modules.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/src_client_linux_linux_client_unittest_shlib-dump_context.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/src_client_linux_linux_client_unittest_shlib-dump_object.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/src_client_linux_linux_client_unittest_shlib-logging.$(OBJEXT):  \
@@ -4161,6 +4208,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/cfi_frame_info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/contained_range_map_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/disassembler_x86.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/dump_context.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/dump_object.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/exploitability.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/exploitability_linux.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/exploitability_win.Po@am__quote@
@@ -4180,6 +4229,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/simple_symbol_supplier.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/source_line_resolver_base.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-basic_code_modules.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-dump_context.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-dump_object.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-logging.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-minidump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-pathname_stripper.Po@am__quote@
@@ -4630,6 +4681,34 @@ src/processor/src_client_linux_linux_client_unittest_shlib-basic_code_modules.ob
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/processor/basic_code_modules.cc' object='src/processor/src_client_linux_linux_client_unittest_shlib-basic_code_modules.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_client_linux_linux_client_unittest_shlib-basic_code_modules.obj `if test -f 'src/processor/basic_code_modules.cc'; then $(CYGPATH_W) 'src/processor/basic_code_modules.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/basic_code_modules.cc'; fi`
+
+src/processor/src_client_linux_linux_client_unittest_shlib-dump_context.o: src/processor/dump_context.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_client_linux_linux_client_unittest_shlib-dump_context.o -MD -MP -MF src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-dump_context.Tpo -c -o src/processor/src_client_linux_linux_client_unittest_shlib-dump_context.o `test -f 'src/processor/dump_context.cc' || echo '$(srcdir)/'`src/processor/dump_context.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-dump_context.Tpo src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-dump_context.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/processor/dump_context.cc' object='src/processor/src_client_linux_linux_client_unittest_shlib-dump_context.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_client_linux_linux_client_unittest_shlib-dump_context.o `test -f 'src/processor/dump_context.cc' || echo '$(srcdir)/'`src/processor/dump_context.cc
+
+src/processor/src_client_linux_linux_client_unittest_shlib-dump_context.obj: src/processor/dump_context.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_client_linux_linux_client_unittest_shlib-dump_context.obj -MD -MP -MF src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-dump_context.Tpo -c -o src/processor/src_client_linux_linux_client_unittest_shlib-dump_context.obj `if test -f 'src/processor/dump_context.cc'; then $(CYGPATH_W) 'src/processor/dump_context.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/dump_context.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-dump_context.Tpo src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-dump_context.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/processor/dump_context.cc' object='src/processor/src_client_linux_linux_client_unittest_shlib-dump_context.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_client_linux_linux_client_unittest_shlib-dump_context.obj `if test -f 'src/processor/dump_context.cc'; then $(CYGPATH_W) 'src/processor/dump_context.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/dump_context.cc'; fi`
+
+src/processor/src_client_linux_linux_client_unittest_shlib-dump_object.o: src/processor/dump_object.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_client_linux_linux_client_unittest_shlib-dump_object.o -MD -MP -MF src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-dump_object.Tpo -c -o src/processor/src_client_linux_linux_client_unittest_shlib-dump_object.o `test -f 'src/processor/dump_object.cc' || echo '$(srcdir)/'`src/processor/dump_object.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-dump_object.Tpo src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-dump_object.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/processor/dump_object.cc' object='src/processor/src_client_linux_linux_client_unittest_shlib-dump_object.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_client_linux_linux_client_unittest_shlib-dump_object.o `test -f 'src/processor/dump_object.cc' || echo '$(srcdir)/'`src/processor/dump_object.cc
+
+src/processor/src_client_linux_linux_client_unittest_shlib-dump_object.obj: src/processor/dump_object.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_client_linux_linux_client_unittest_shlib-dump_object.obj -MD -MP -MF src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-dump_object.Tpo -c -o src/processor/src_client_linux_linux_client_unittest_shlib-dump_object.obj `if test -f 'src/processor/dump_object.cc'; then $(CYGPATH_W) 'src/processor/dump_object.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/dump_object.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-dump_object.Tpo src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-dump_object.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/processor/dump_object.cc' object='src/processor/src_client_linux_linux_client_unittest_shlib-dump_object.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_client_linux_linux_client_unittest_shlib-dump_object.obj `if test -f 'src/processor/dump_object.cc'; then $(CYGPATH_W) 'src/processor/dump_object.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/dump_object.cc'; fi`
 
 src/processor/src_client_linux_linux_client_unittest_shlib-logging.o: src/processor/logging.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_shlib_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/processor/src_client_linux_linux_client_unittest_shlib-logging.o -MD -MP -MF src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-logging.Tpo -c -o src/processor/src_client_linux_linux_client_unittest_shlib-logging.o `test -f 'src/processor/logging.cc' || echo '$(srcdir)/'`src/processor/logging.cc

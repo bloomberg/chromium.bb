@@ -89,9 +89,10 @@
 #include <vector>
 
 #include "common/using_std_string.h"
-#include "google_breakpad/common/minidump_format.h"
 #include "google_breakpad/processor/code_module.h"
 #include "google_breakpad/processor/code_modules.h"
+#include "google_breakpad/processor/dump_context.h"
+#include "google_breakpad/processor/dump_object.h"
 #include "google_breakpad/processor/memory_region.h"
 
 
@@ -108,11 +109,9 @@ template<typename AddressType, typename EntryType> class RangeMap;
 
 // MinidumpObject is the base of all Minidump* objects except for Minidump
 // itself.
-class MinidumpObject {
+class MinidumpObject : public DumpObject {
  public:
   virtual ~MinidumpObject() {}
-
-  bool valid() const { return valid_; }
 
  protected:
   explicit MinidumpObject(Minidump* minidump);
@@ -124,21 +123,14 @@ class MinidumpObject {
   // for access to data about the minidump file itself, such as whether
   // it should be byte-swapped.
   Minidump* minidump_;
-
-  // MinidumpObjects are not valid when created.  When a subclass populates
-  // its own fields, it can set valid_ to true.  Accessors and mutators may
-  // wish to consider or alter the valid_ state as they interact with
-  // objects.
-  bool      valid_;
 };
 
 
 // This class exists primarily to provide a virtual destructor in a base
 // class common to all objects that might be stored in
-// Minidump::mStreamObjects.  Some object types (MinidumpContext) will
-// never be stored in Minidump::mStreamObjects, but are represented as
-// streams and adhere to the same interface, and may be derived from
-// this class.
+// Minidump::mStreamObjects.  Some object types will never be stored in
+// Minidump::mStreamObjects, but are represented as streams and adhere to the
+// same interface, and may be derived from this class.
 class MinidumpStream : public MinidumpObject {
  public:
   virtual ~MinidumpStream() {}
@@ -168,55 +160,12 @@ class MinidumpStream : public MinidumpObject {
 // context for the exception handler (which performs minidump generation),
 // and not the context that caused the exception (which is probably what the
 // user wants).
-class MinidumpContext : public MinidumpStream {
+class MinidumpContext : public DumpContext {
  public:
   virtual ~MinidumpContext();
 
-  // Returns an MD_CONTEXT_* value such as MD_CONTEXT_X86 or MD_CONTEXT_PPC
-  // identifying the CPU type that the context was collected from.  The
-  // returned value will identify the CPU only, and will have any other
-  // MD_CONTEXT_* bits masked out.  Returns 0 on failure.
-  uint32_t GetContextCPU() const;
-
-  // A convenience method to get the instruction pointer out of the
-  // MDRawContext, since it varies per-CPU architecture.
-  bool GetInstructionPointer(uint64_t* ip) const;
-
-  // Returns raw CPU-specific context data for the named CPU type.  If the
-  // context data does not match the CPU type or does not exist, returns
-  // NULL.
-  const MDRawContextAMD64* GetContextAMD64() const;
-  const MDRawContextARM*   GetContextARM() const;
-  const MDRawContextARM64* GetContextARM64() const;
-  const MDRawContextMIPS*  GetContextMIPS() const;
-  const MDRawContextPPC*   GetContextPPC() const;
-  const MDRawContextPPC64* GetContextPPC64() const;
-  const MDRawContextSPARC* GetContextSPARC() const;
-  const MDRawContextX86*   GetContextX86() const;
-
-  // Print a human-readable representation of the object to stdout.
-  void Print();
-
  protected:
   explicit MinidumpContext(Minidump* minidump);
-
-  // The CPU-specific context structure.
-  union {
-    MDRawContextBase*  base;
-    MDRawContextX86*   x86;
-    MDRawContextPPC*   ppc;
-    MDRawContextPPC64* ppc64;
-    MDRawContextAMD64* amd64;
-    // on Solaris SPARC, sparc is defined as a numeric constant,
-    // so variables can NOT be named as sparc
-    MDRawContextSPARC* ctx_sparc;
-    MDRawContextARM*   arm;
-    MDRawContextARM64* arm64;
-    MDRawContextMIPS*  ctx_mips;
-  } context_;
-
-  // Store this separately because of the weirdo AMD64 context
-  uint32_t context_flags_;
 
  private:
   friend class MinidumpThread;
@@ -224,15 +173,20 @@ class MinidumpContext : public MinidumpStream {
 
   bool Read(uint32_t expected_size);
 
-  // Free the CPU-specific context structure.
-  void FreeContext();
-
   // If the minidump contains a SYSTEM_INFO_STREAM, makes sure that the
   // system info stream gives an appropriate CPU type matching the context
   // CPU type in context_cpu_type.  Returns false if the CPU type does not
   // match.  Returns true if the CPU type matches or if the minidump does
   // not contain a system info stream.
   bool CheckAgainstSystemInfo(uint32_t context_cpu_type);
+
+  // Refers to the Minidump object that is the ultimate parent of this
+  // Some MinidumpObjects are owned by other MinidumpObjects, but at the
+  // root of the ownership tree is always a Minidump.  The Minidump object
+  // is kept here for access to its seeking and reading facilities, and
+  // for access to data about the minidump file itself, such as whether
+  // it should be byte-swapped.
+  Minidump* minidump_;
 };
 
 
@@ -273,7 +227,7 @@ class MinidumpMemoryRegion : public MinidumpObject,
   bool GetMemoryAtAddress(uint64_t address, uint64_t* value) const;
 
   // Print a human-readable representation of the object to stdout.
-  void Print();
+  void Print() const;
 
  protected:
   explicit MinidumpMemoryRegion(Minidump* minidump);
@@ -634,10 +588,10 @@ class MinidumpMemoryList : public MinidumpStream {
 
 // MinidumpException wraps MDRawExceptionStream, which contains information
 // about the exception that caused the minidump to be generated, if the
-// minidump was generated in an exception handler called as a result of
-// an exception.  It also provides access to a MinidumpContext object,
-// which contains the CPU context for the exception thread at the time
-// the exception occurred.
+// minidump was generated in an exception handler called as a result of an
+// exception.  It also provides access to a MinidumpContext object, which
+// contains the CPU context for the exception thread at the time the exception
+// occurred.
 class MinidumpException : public MinidumpStream {
  public:
   virtual ~MinidumpException();

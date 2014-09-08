@@ -103,7 +103,7 @@ class ProcessState {
   string assertion() const { return assertion_; }
   int requesting_thread() const { return requesting_thread_; }
   const vector<CallStack*>* threads() const { return &threads_; }
-  const vector<MinidumpMemoryRegion*>* thread_memory_regions() const {
+  const vector<MemoryRegion*>* thread_memory_regions() const {
     return &thread_memory_regions_;
   }
   const SystemInfo* system_info() const { return &system_info_; }
@@ -157,7 +157,7 @@ class ProcessState {
   // Stacks for each thread (except possibly the exception handler
   // thread) at the time of the crash.
   vector<CallStack*> threads_;
-  vector<MinidumpMemoryRegion*> thread_memory_regions_;
+  vector<MemoryRegion*> thread_memory_regions_;
 
   // OS and CPU information.
   SystemInfo system_info_;

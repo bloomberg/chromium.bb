@@ -299,8 +299,8 @@ class TestMinidumpContext : public MinidumpContext {
   explicit TestMinidumpContext(const MDRawContextX86& context) :
       MinidumpContext(NULL) {
     valid_ = true;
-    context_.x86 = new MDRawContextX86(context);
-    context_flags_ = MD_CONTEXT_X86;
+    SetContextX86(new MDRawContextX86(context));
+    SetContextFlags(MD_CONTEXT_X86);
   }
 };
 
