@@ -127,10 +127,6 @@ GURL GetAuthenticateInstrumentUrl(size_t user_index) {
       .Resolve("authenticateInstrument?s7e=cvn");
 }
 
-GURL GetSendStatusUrl(size_t user_index) {
-  return GetBaseAutocheckoutUrl(user_index).Resolve("reportStatus");
-}
-
 GURL GetSaveToWalletNoEscrowUrl(size_t user_index) {
   return GetBaseAutocheckoutUrl(user_index).Resolve("saveToWallet");
 }

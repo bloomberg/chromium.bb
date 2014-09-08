@@ -20,7 +20,6 @@ GURL GetManageInstrumentsUrl(size_t user_index);
 GURL GetManageAddressesUrl(size_t user_index);
 GURL GetAcceptLegalDocumentsUrl(size_t user_index);
 GURL GetAuthenticateInstrumentUrl(size_t user_index);
-GURL GetSendStatusUrl(size_t user_index);
 GURL GetSaveToWalletNoEscrowUrl(size_t user_index);
 GURL GetSaveToWalletUrl(size_t user_index);
 GURL GetPassiveAuthUrl(size_t user_index);
