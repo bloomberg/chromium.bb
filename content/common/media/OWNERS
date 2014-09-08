@@ -18,6 +18,7 @@ per-file *_messages*.h=kenrb@chromium.org
 per-file *_messages*.h=nasko@chromium.org
 per-file *_messages*.h=palmer@chromium.org
 per-file *_messages*.h=tsepez@chromium.org
+per-file *_messages*.h=wfh@chromium.org
 
 per-file *_param_traits.*=set noparent
 per-file *_param_traits.*=dcheng@chromium.org
@@ -28,3 +29,4 @@ per-file *_param_traits.*=kenrb@chromium.org
 per-file *_param_traits.*=nasko@chromium.org
 per-file *_param_traits.*=palmer@chromium.org
 per-file *_param_traits.*=tsepez@chromium.org
+per-file *_param_traits.*=wfh@chromium.org

@@ -21,6 +21,7 @@ per-file *_messages*.h=kenrb@chromium.org
 per-file *_messages*.h=nasko@chromium.org
 per-file *_messages*.h=palmer@chromium.org
 per-file *_messages*.h=tsepez@chromium.org
+per-file *_messages*.h=wfh@chromium.org
 
 # Spellcheck files. Not using spellcheck* since it covers IPC messages too.
 per-file spellcheck_common.*=groby@chromium.org

@@ -9,3 +9,4 @@ per-file chrome_content_utility_ipc_whitelist.cc=kenrb@chromium.org
 per-file chrome_content_utility_ipc_whitelist.cc=nasko@chromium.org
 per-file chrome_content_utility_ipc_whitelist.cc=palmer@chromium.org
 per-file chrome_content_utility_ipc_whitelist.cc=tsepez@chromium.org
+per-file chrome_content_utility_ipc_whitelist.cc=wfh@chromium.org

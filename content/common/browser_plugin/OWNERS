@@ -11,3 +11,4 @@ per-file *_messages*.h=kenrb@chromium.org
 per-file *_messages*.h=nasko@chromium.org
 per-file *_messages*.h=palmer@chromium.org
 per-file *_messages*.h=tsepez@chromium.org
+per-file *_messages*.h=wfh@chromium.org
