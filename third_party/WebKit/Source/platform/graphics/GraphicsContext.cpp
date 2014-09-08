@@ -1901,7 +1901,7 @@ void GraphicsContext::draw1xMarker(SkBitmap* bitmap, int index)
     }
 }
 
-const SkPMColor GraphicsContext::lineColors(int index)
+SkPMColor GraphicsContext::lineColors(int index)
 {
     static const SkPMColor colors[] = {
         SkPreMultiplyARGB(0xFF, 0xFF, 0x00, 0x00), // Opaque red.
@@ -1911,7 +1911,7 @@ const SkPMColor GraphicsContext::lineColors(int index)
     return colors[index];
 }
 
-const SkPMColor GraphicsContext::antiColors1(int index)
+SkPMColor GraphicsContext::antiColors1(int index)
 {
     static const SkPMColor colors[] = {
         SkPreMultiplyARGB(0xB0, 0xFF, 0x00, 0x00), // Semitransparent red.
@@ -1921,7 +1921,7 @@ const SkPMColor GraphicsContext::antiColors1(int index)
     return colors[index];
 }
 
-const SkPMColor GraphicsContext::antiColors2(int index)
+SkPMColor GraphicsContext::antiColors2(int index)
 {
     static const SkPMColor colors[] = {
         SkPreMultiplyARGB(0x60, 0xFF, 0x00, 0x00), // More transparent red

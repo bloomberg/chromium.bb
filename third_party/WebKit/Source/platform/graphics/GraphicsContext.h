@@ -436,9 +436,9 @@ private:
 #else
     static inline int focusRingOutset(int offset) { return 0; }
     static inline int focusRingWidth(int width) { return 1; }
-    static const SkPMColor lineColors(int);
-    static const SkPMColor antiColors1(int);
-    static const SkPMColor antiColors2(int);
+    static SkPMColor lineColors(int);
+    static SkPMColor antiColors1(int);
+    static SkPMColor antiColors2(int);
     static void draw1xMarker(SkBitmap*, int);
     static void draw2xMarker(SkBitmap*, int);
 #endif
