@@ -16,20 +16,8 @@ env.Append(CPPPATH=['${TARGET_ROOT}/gen'])
 #  env.FilterOut(CCFLAGS=['-pedantic'])
 #  env.FilterOut(CCFLAGS=['-Wall'])
 
-if env.Bit('windows'):
-  syscall_impl = 'win/nacl_syscall_impl.c'
-else:
-  syscall_impl = 'posix/nacl_syscall_impl.c'
 
-
-# TODO GENERATED CODE
 GENERATED='${TARGET_ROOT}/gen/native_client/src/trusted/service_runtime'
-env.Command(target=env.File(GENERATED + '/nacl_syscall_handlers.c'),
-            source=[syscall_impl, 'nacl_syscall_handlers_gen.py'],
-            action=[Action('${PYTHON} ${SOURCES[1]} ${SYSCALL_GEN_FLAGS}'
-                           ' -i ${SOURCE} -o ${TARGET}'),
-                    ],
-            )
 
 
 # ----------------------------------------------------------
@@ -57,8 +45,8 @@ ldr_inputs = [
     'nacl_signal_common.c',
     'nacl_stack_safety.c',
     'nacl_syscall_common.c',
-    GENERATED + '/nacl_syscall_handlers.c',
     'nacl_syscall_hook.c',
+    'nacl_syscall_list.c',
     'nacl_text.c',
     'nacl_valgrind_hooks.c',
     'name_service/default_name_service.c',
@@ -274,9 +262,15 @@ if env.Bit('mac'):
     raise Exception("Unsupported target")
 
 if env.Bit('windows'):
-  ldr_inputs += ['win/vm_hole.c']
+  ldr_inputs += [
+      'win/nacl_syscall_impl.c',
+      'win/vm_hole.c',
+      ]
 else:
-  ldr_inputs += ['generic/vm_hole.c']
+  ldr_inputs += [
+      'generic/vm_hole.c',
+      'posix/nacl_syscall_impl.c',
+      ]
 
 
 syscall_gen_flags = '-a ${TARGET_ARCHITECTURE} -s ${TARGET_SUBARCH}'

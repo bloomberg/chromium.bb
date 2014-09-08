@@ -4,21 +4,6 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'conditions': [
-      ['os_posix==1', {
-        'syscall_handler': [
-          'posix/nacl_syscall_impl.c'
-        ],
-      }],
-      ['OS=="win"', {
-        'syscall_handler': [
-          'win/nacl_syscall_impl.c'
-        ],
-        'msvs_cygwin_shell': 0,
-      }],
-    ],
-  },
   'includes': [
     '../../../build/common.gypi',
   ],
@@ -51,6 +36,7 @@
           'nacl_stack_safety.c',
           'nacl_syscall_common.c',
           'nacl_syscall_hook.c',
+          'nacl_syscall_list.c',
           'nacl_text.c',
           'nacl_valgrind_hooks.c',
           'name_service/default_name_service.c',
@@ -83,33 +69,6 @@
           # For generated header files from the x86-64 validator,
           # e.g. nacl_disallows.h.
           '<(SHARED_INTERMEDIATE_DIR)',
-        ],
-        'sources!': [
-           '<(syscall_handler)',
-        ],
-        'actions': [
-          {
-            'action_name': 'nacl_syscall_handler',
-            'inputs': [
-              'nacl_syscall_handlers_gen.py',
-              '<(syscall_handler)',
-            ],
-            'action':
-              # TODO(gregoryd): find out how to generate a file
-              # in such a location that can be found in both
-              # NaCl and Chrome builds.
-              ['python', 'nacl_syscall_handlers_gen.py',
-               '-i', '<@(syscall_handler)',
-               '-o', '<@(_outputs)'],
-
-            'msvs_cygwin_shell': 0,
-            'msvs_quote_cmd': 0,
-            'outputs': [
-              '<(INTERMEDIATE_DIR)/nacl_syscall_handlers.c',
-            ],
-            'process_outputs_as_sources': 1,
-            'message': 'Creating nacl_syscall_handlers.c',
-          },
         ],
         'conditions': [
             ['OS=="mac"', {
@@ -223,12 +182,14 @@
             ['<(os_posix)==1', {
               'sources': [
                 'posix/nacl_signal_stack.c',
+                'posix/nacl_syscall_impl.c',
                 'posix/sel_addrspace_posix.c',
                ],
             }],
             ['OS=="win"', {
               'sources': [
                 'win/nacl_signal_stack.c',
+                'win/nacl_syscall_impl.c',
                 'win/sel_addrspace_win.c',
                 'win/thread_suspension.c',
                 'win/vm_hole.c',

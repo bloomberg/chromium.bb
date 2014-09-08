@@ -4,22 +4,6 @@
 
 #  Generated from GYP
 
-if (is_posix) {
-  syscall_handler_in = "posix/nacl_syscall_impl.c"
-} else {
-  syscall_handler_in = "win/nacl_syscall_impl.c"
-}
-syscall_handler_out = "$target_gen_dir/nacl_syscall_handler.c"
-
-
-action("generate_nacl_syscall_handler") {
-  script = "nacl_syscall_handlers_gen.py"
-  sources = [ syscall_handler_in ]
-  outputs = [ syscall_handler_out ]
-  args = [ "-i", rebase_path(syscall_handler_in),
-           "-o", rebase_path(syscall_handler_out)]
-}
-
 static_library("sel_main") {
   sources = [
     "sel_main.c",
@@ -46,7 +30,6 @@ static_library("nacl_error_code") {
 
 static_library("sel") {
   sources = [
-    syscall_handler_out,
     "dyn_array.c",
     "elf_util.c",
     "load_file.c",
@@ -69,6 +52,7 @@ static_library("sel") {
     "nacl_stack_safety.c",
     "nacl_syscall_common.c",
     "nacl_syscall_hook.c",
+    "nacl_syscall_list.c",
     "nacl_text.c",
     "nacl_valgrind_hooks.c",
     "name_service/default_name_service.c",
@@ -192,6 +176,7 @@ static_library("sel") {
   if (is_posix) {
     sources += [
       "posix/nacl_signal_stack.c",
+      "posix/nacl_syscall_impl.c",
       "posix/sel_addrspace_posix.c",
     ]
   }
@@ -199,6 +184,7 @@ static_library("sel") {
   if (is_win) {
     sources += [
       "win/nacl_signal_stack.c",
+      "win/nacl_syscall_impl.c",
       "win/sel_addrspace_win.c",
       "win/thread_suspension.c",
       "win/vm_hole.c",
@@ -209,7 +195,7 @@ static_library("sel") {
     ]
   }
 
-  deps = [ ":generate_nacl_syscall_handler" ]
+  deps = []
   if (cpu_arch == "arm") {
     deps += [
       "//native_client/src/trusted/validator_arm:ncvalidate_arm_v2"
