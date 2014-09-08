@@ -2775,6 +2775,29 @@ def CMDformat(parser, args):
   return 0
 
 
+def CMDlol(parser, args):
+  # This command is intentionally undocumented.
+  print("""             / / 
+          (\/_//`) 
+           /   '/ 
+          0  0   \ 
+         /        \ 
+        /    __/   \ 
+       /,  _/ \     \_ 
+       `-./ )  |     ~^~^~^~^~^~^~^~\~. 
+           (   /                     \_} 
+              |               /      | 
+              ;     |         \      / 
+               \/ ,/           \    | 
+               / /~~|~|~~~~~~|~|\   | 
+              / /   | |      | | `\ \ 
+             / /    | |      | |   \ \ 
+            / (     | |      | |    \ \ 
+     jgs   /,_)    /__)     /__)   /,_/ 
+     '''''"""""'''""""""'''""""""''"""""''''' """)
+  return 0
+
+
 class OptionParser(optparse.OptionParser):
   """Creates the option parse and add --verbose support."""
   def __init__(self, *args, **kwargs):

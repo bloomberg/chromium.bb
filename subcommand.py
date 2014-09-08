@@ -192,7 +192,7 @@ class CommandDispatcher(object):
         rest = textwrap.dedent('\n'.join(lines[1:]))
         parser.description = '\n'.join((lines[0], rest))
       else:
-        parser.description = lines[0]
+        parser.description = lines[0] if lines else ''
       if parser.description:
         parser.description += '\n'
       parser.epilog = getattr(command, 'epilog', None)
