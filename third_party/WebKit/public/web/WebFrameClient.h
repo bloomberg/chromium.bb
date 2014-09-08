@@ -566,6 +566,11 @@ public:
     // Notifies embedder about an accessibility event.
     virtual void postAccessibilityEvent(const WebAXObject&, WebAXEvent) { }
 
+    // ServiceWorker -------------------------------------------------------
+
+    // Whether the frame is controlled by the ServiceWorker
+    virtual bool isControlledByServiceWorker() { return false; }
+
 protected:
     virtual ~WebFrameClient() { }
 };

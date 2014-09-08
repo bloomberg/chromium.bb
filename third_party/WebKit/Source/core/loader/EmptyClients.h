@@ -244,6 +244,7 @@ public:
     virtual void didRequestAutocomplete(HTMLFormElement*) OVERRIDE;
 
     virtual PassOwnPtr<blink::WebServiceWorkerProvider> createServiceWorkerProvider() OVERRIDE;
+    virtual bool isControlledByServiceWorker() OVERRIDE { return false; }
     virtual PassOwnPtr<blink::WebApplicationCacheHost> createApplicationCacheHost(blink::WebApplicationCacheHostClient*) OVERRIDE;
 };
 

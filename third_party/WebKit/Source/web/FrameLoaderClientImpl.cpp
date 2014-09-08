@@ -809,6 +809,11 @@ PassOwnPtr<WebServiceWorkerProvider> FrameLoaderClientImpl::createServiceWorkerP
     return adoptPtr(m_webFrame->client()->createServiceWorkerProvider(m_webFrame));
 }
 
+bool FrameLoaderClientImpl::isControlledByServiceWorker()
+{
+    return m_webFrame->client() && m_webFrame->client()->isControlledByServiceWorker();
+}
+
 SharedWorkerRepositoryClient* FrameLoaderClientImpl::sharedWorkerRepositoryClient()
 {
     return m_webFrame->sharedWorkerRepositoryClient();
