@@ -64,6 +64,7 @@ void ShellHandler::OnGetSaveFileName(
   ui::win::OpenFileName open_file_name(params.owner, params.flags);
   open_file_name.SetInitialSelection(params.initial_directory,
                                      params.suggested_filename);
+  open_file_name.SetFilters(params.filters);
   open_file_name.GetOPENFILENAME()->nFilterIndex =
       params.one_based_filter_index;
   open_file_name.GetOPENFILENAME()->lpstrDefExt =
