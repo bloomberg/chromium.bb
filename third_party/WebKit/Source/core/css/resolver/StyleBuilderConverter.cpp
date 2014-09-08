@@ -518,6 +518,14 @@ PassRefPtr<SVGLengthList> StyleBuilderConverter::convertStrokeDasharray(StyleRes
     return array.release();
 }
 
+StyleColor StyleBuilderConverter::convertStyleColor(StyleResolverState& state, CSSValue* value, bool forVisitedLink)
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue->getValueID() == CSSValueCurrentcolor)
+        return StyleColor::currentColor();
+    return state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, Color(), forVisitedLink);
+}
+
 Color StyleBuilderConverter::convertSVGColor(StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);

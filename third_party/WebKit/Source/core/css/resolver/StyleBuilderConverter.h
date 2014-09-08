@@ -70,6 +70,7 @@ public:
     static float convertSpacing(StyleResolverState&, CSSValue*);
     template <CSSValueID IdForNone> static AtomicString convertString(StyleResolverState&, CSSValue*);
     static PassRefPtr<SVGLengthList> convertStrokeDasharray(StyleResolverState&, CSSValue*);
+    static StyleColor convertStyleColor(StyleResolverState&, CSSValue*, bool forVisitedLink = false);
     static Color convertSVGColor(StyleResolverState&, CSSValue*);
     static PassRefPtr<SVGLength> convertSVGLength(StyleResolverState&, CSSValue*);
     static float convertTextStrokeWidth(StyleResolverState&, CSSValue*);

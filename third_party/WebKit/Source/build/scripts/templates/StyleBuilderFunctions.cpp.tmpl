@@ -305,9 +305,9 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
 {{declare_value_function(property_id)}}
 {
     if (state.applyPropertyToRegularStyle())
-        {{set_value(property)}}(StyleBuilderConverter::convertColor(state, value));
+        {{set_value(property)}}(StyleBuilderConverter::convertStyleColor(state, value));
     if (state.applyPropertyToVisitedLinkStyle())
-        state.style()->{{visited_link_setter}}(StyleBuilderConverter::convertColor(state, value, true));
+        state.style()->{{visited_link_setter}}(StyleBuilderConverter::convertStyleColor(state, value, true));
 }
 {% endmacro %}
 {{apply_color('CSSPropertyBackgroundColor', initial_color='RenderStyle::initialBackgroundColor') }}

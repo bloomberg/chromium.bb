@@ -225,7 +225,6 @@ protected:
                 && pseudoBits == other.pseudoBits
                 && unicodeBidi == other.unicodeBidi
                 && explicitInheritance == other.explicitInheritance
-                && currentColor == other.currentColor
                 && unique == other.unique
                 && emptyState == other.emptyState
                 && firstChildState == other.firstChildState
@@ -259,7 +258,6 @@ protected:
         unsigned styleType : 6; // PseudoId
         unsigned pseudoBits : 8;
         unsigned explicitInheritance : 1; // Explicitly inherits a non-inherited property
-        unsigned currentColor : 1; // At least one color has the value 'currentColor'
         unsigned unique : 1; // Style can not be shared.
 
         unsigned emptyState : 1;
@@ -273,7 +271,7 @@ protected:
 
         unsigned isLink : 1;
         // If you add more style bits here, you will also need to update RenderStyle::copyNonInheritedFrom()
-        // 63 bits
+        // 62 bits
     } noninherited_flags;
 
 // !END SYNC!
@@ -315,7 +313,6 @@ protected:
         noninherited_flags.styleType = NOPSEUDO;
         noninherited_flags.pseudoBits = 0;
         noninherited_flags.explicitInheritance = false;
-        noninherited_flags.currentColor = false;
         noninherited_flags.unique = false;
         noninherited_flags.emptyState = false;
         noninherited_flags.firstChildState = false;
@@ -1536,9 +1533,6 @@ public:
 
     void setHasExplicitlyInheritedProperties() { noninherited_flags.explicitInheritance = true; }
     bool hasExplicitlyInheritedProperties() const { return noninherited_flags.explicitInheritance; }
-
-    void setHasCurrentColor() { noninherited_flags.currentColor = true; }
-    bool hasCurrentColor() const { return noninherited_flags.currentColor; }
 
     bool hasBoxDecorations() const { return hasBorder() || hasBorderRadius() || hasOutline() || hasAppearance() || boxShadow() || hasFilter(); }
 

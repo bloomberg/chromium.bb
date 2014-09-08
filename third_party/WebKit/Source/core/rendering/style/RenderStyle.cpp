@@ -233,7 +233,6 @@ void RenderStyle::copyNonInheritedFrom(const RenderStyle* other)
     noninherited_flags.pageBreakAfter = other->noninherited_flags.pageBreakAfter;
     noninherited_flags.pageBreakInside = other->noninherited_flags.pageBreakInside;
     noninherited_flags.explicitInheritance = other->noninherited_flags.explicitInheritance;
-    noninherited_flags.currentColor = other->noninherited_flags.currentColor;
     noninherited_flags.hasViewportUnits = other->noninherited_flags.hasViewportUnits;
     if (m_svgStyle != other->m_svgStyle)
         m_svgStyle.access()->copyNonInheritedFrom(other->m_svgStyle.get());
