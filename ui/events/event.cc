@@ -7,7 +7,6 @@
 #if defined(USE_X11)
 #include <X11/extensions/XInput2.h>
 #include <X11/Xlib.h>
-#include <X11/keysym.h>
 #endif
 
 #include <cmath>
@@ -626,11 +625,6 @@ KeyEvent::KeyEvent(const base::NativeEvent& native_event)
 #if defined(USE_X11)
   NormalizeFlags();
 #endif
-#if defined(OS_WIN)
-  // Only Windows has native character events.
-  if (is_char_)
-    character_ = native_event.wParam;
-#endif
 }
 
 KeyEvent::KeyEvent(EventType type,
@@ -640,7 +634,7 @@ KeyEvent::KeyEvent(EventType type,
       key_code_(key_code),
       is_char_(false),
       platform_keycode_(0),
-      character_() {
+      character_(GetCharacterFromKeyCode(key_code, flags)) {
 }
 
 KeyEvent::KeyEvent(EventType type,
@@ -652,7 +646,7 @@ KeyEvent::KeyEvent(EventType type,
       code_(code),
       is_char_(false),
       platform_keycode_(0),
-      character_(0) {
+      character_(GetCharacterFromKeyCode(key_code, flags)) {
 }
 
 KeyEvent::KeyEvent(base::char16 character, KeyboardCode key_code, int flags)
@@ -697,21 +691,15 @@ void KeyEvent::SetExtendedKeyEventData(scoped_ptr<ExtendedKeyEventData> data) {
 }
 
 base::char16 KeyEvent::GetCharacter() const {
-  if (is_char_ || character_)
+  if (character_)
     return character_;
 
-  // TODO(kpschoedel): streamline these cases after settling Ozone
-  // positional coding.
 #if defined(OS_WIN)
-  // Native Windows character events always have is_char_ == true,
-  // so this is a synthetic or native keystroke event.
-  character_ = GetCharacterFromKeyCode(key_code_, flags());
-  return character_;
+  return (native_event().message == WM_CHAR) ? key_code_ :
+      GetCharacterFromKeyCode(key_code_, flags());
 #elif defined(USE_X11)
-  if (!native_event()) {
-    character_ = GetCharacterFromKeyCode(key_code_, flags());
-    return character_;
-  }
+  if (!native_event())
+    return GetCharacterFromKeyCode(key_code_, flags());
 
   DCHECK(native_event()->type == KeyPress ||
          native_event()->type == KeyRelease ||
@@ -734,20 +722,6 @@ base::char16 KeyEvent::GetCharacter() const {
 
   return GetCharacterFromKeyCode(key_code_, flags());
 #endif
-}
-
-base::char16 KeyEvent::GetText() const {
-  if ((flags() & EF_CONTROL_DOWN) != 0) {
-    return GetControlCharacterForKeycode(key_code_,
-                                         (flags() & EF_SHIFT_DOWN) != 0);
-  }
-  return GetUnmodifiedText();
-}
-
-base::char16 KeyEvent::GetUnmodifiedText() const {
-  if (!is_char_ && (key_code_ == VKEY_RETURN))
-    return '\r';
-  return GetCharacter();
 }
 
 bool KeyEvent::IsUnicodeKeyCode() const {
@@ -821,83 +795,6 @@ void KeyEvent::SetTranslated(bool translated) {
     default:
       NOTREACHED();
   }
-}
-
-bool KeyEvent::IsRightSideKey() const {
-  switch (key_code_) {
-    case VKEY_CONTROL:
-    case VKEY_SHIFT:
-    case VKEY_MENU:
-    case VKEY_LWIN:
-#if defined(USE_X11)
-      // Under X11, setting code_ requires platform-dependent information, and
-      // currently assumes that X keycodes are based on Linux evdev keycodes.
-      // In certain test environments this is not the case, and code_ is not
-      // set accurately, so we need a different mechanism. Fortunately X11 key
-      // mapping preserves the left-right distinction, so testing keysyms works
-      // if the value is available (as it is for all X11 native-based events).
-      if (platform_keycode_) {
-        return (platform_keycode_ == XK_Shift_R) ||
-               (platform_keycode_ == XK_Control_R) ||
-               (platform_keycode_ == XK_Alt_R) ||
-               (platform_keycode_ == XK_Meta_R) ||
-               (platform_keycode_ == XK_Super_R) ||
-               (platform_keycode_ == XK_Hyper_R);
-      }
-      // Fall through to the generic code if we have no platform_keycode_.
-      // Under X11, this must be a synthetic event, so we can require that
-      // code_ be set correctly.
-#endif
-      return ((code_.size() > 5) &&
-              (code_.compare(code_.size() - 5, 5, "Right", 5)) == 0);
-    default:
-      return false;
-  }
-}
-
-KeyboardCode KeyEvent::GetLocatedWindowsKeyboardCode() const {
-  switch (key_code_) {
-    case VKEY_SHIFT:
-      return IsRightSideKey() ? VKEY_RSHIFT : VKEY_LSHIFT;
-    case VKEY_CONTROL:
-      return IsRightSideKey() ? VKEY_RCONTROL : VKEY_LCONTROL;
-    case VKEY_MENU:
-      return IsRightSideKey() ? VKEY_RMENU : VKEY_LMENU;
-    case VKEY_LWIN:
-      return IsRightSideKey() ? VKEY_RWIN : VKEY_LWIN;
-    // TODO(kpschoedel): EF_NUMPAD_KEY is present only on X11. Currently this
-    // function is only called on X11. Likely the tests here will be replaced
-    // with a DOM-based code enumeration test in the course of Ozone
-    // platform-indpendent key event work.
-    case VKEY_0:
-      return (flags() & EF_NUMPAD_KEY) ? VKEY_NUMPAD0 : VKEY_0;
-    case VKEY_1:
-      return (flags() & EF_NUMPAD_KEY) ? VKEY_NUMPAD1 : VKEY_1;
-    case VKEY_2:
-      return (flags() & EF_NUMPAD_KEY) ? VKEY_NUMPAD2 : VKEY_2;
-    case VKEY_3:
-      return (flags() & EF_NUMPAD_KEY) ? VKEY_NUMPAD3 : VKEY_3;
-    case VKEY_4:
-      return (flags() & EF_NUMPAD_KEY) ? VKEY_NUMPAD4 : VKEY_4;
-    case VKEY_5:
-      return (flags() & EF_NUMPAD_KEY) ? VKEY_NUMPAD5 : VKEY_5;
-    case VKEY_6:
-      return (flags() & EF_NUMPAD_KEY) ? VKEY_NUMPAD6 : VKEY_6;
-    case VKEY_7:
-      return (flags() & EF_NUMPAD_KEY) ? VKEY_NUMPAD7 : VKEY_7;
-    case VKEY_8:
-      return (flags() & EF_NUMPAD_KEY) ? VKEY_NUMPAD8 : VKEY_8;
-    case VKEY_9:
-      return (flags() & EF_NUMPAD_KEY) ? VKEY_NUMPAD9 : VKEY_9;
-    default:
-      return key_code_;
-  }
-}
-
-uint16 KeyEvent::GetConflatedWindowsKeyCode() const {
-  if (is_char_)
-    return character_;
-  return key_code_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

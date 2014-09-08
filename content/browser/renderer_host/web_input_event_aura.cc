@@ -24,16 +24,20 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
     const base::NativeEvent& native_event);
 blink::WebGestureEvent MakeWebGestureEventFromNativeEvent(
     const base::NativeEvent& native_event);
-#endif
-#if defined(USE_X11) || defined(USE_OZONE)
+#elif defined(USE_X11)
+blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
+    ui::KeyEvent* event);
+#elif defined(USE_OZONE)
 blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     ui::KeyEvent* event) {
+  const base::NativeEvent& native_event = event->native_event();
+  ui::EventType type = ui::EventTypeFromNative(native_event);
   blink::WebKeyboardEvent webkit_event;
 
   webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
   webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
 
-  switch (event->type()) {
+  switch (type) {
     case ui::ET_KEY_PRESSED:
       webkit_event.type = event->is_char() ? blink::WebInputEvent::Char :
           blink::WebInputEvent::RawKeyDown;
@@ -48,16 +52,31 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
   if (webkit_event.modifiers & blink::WebInputEvent::AltKey)
     webkit_event.isSystemKey = true;
 
-  webkit_event.windowsKeyCode = event->GetLocatedWindowsKeyboardCode();
-  webkit_event.nativeKeyCode = event->platform_keycode();
-  webkit_event.unmodifiedText[0] = event->GetUnmodifiedText();
-  webkit_event.text[0] = event->GetText();
+  wchar_t character = ui::KeyboardCodeFromNative(native_event);
+  webkit_event.windowsKeyCode = character;
+  webkit_event.nativeKeyCode = character;
+
+  if (webkit_event.windowsKeyCode == ui::VKEY_RETURN)
+    webkit_event.unmodifiedText[0] = '\r';
+  else
+    webkit_event.unmodifiedText[0] = ui::GetCharacterFromKeyCode(
+        ui::KeyboardCodeFromNative(native_event),
+        ui::EventFlagsFromNative(native_event));
+
+  if (webkit_event.modifiers & blink::WebInputEvent::ControlKey) {
+    webkit_event.text[0] = ui::GetControlCharacterForKeycode(
+        webkit_event.windowsKeyCode,
+        webkit_event.modifiers & blink::WebInputEvent::ShiftKey);
+  } else {
+    webkit_event.text[0] = webkit_event.unmodifiedText[0];
+  }
 
   webkit_event.setKeyIdentifierFromWindowsKeyCode();
 
   return webkit_event;
 }
-
+#endif
+#if defined(USE_X11) || defined(USE_OZONE)
 blink::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
     ui::ScrollEvent* event) {
   blink::WebMouseWheelEvent webkit_event;
@@ -221,6 +240,9 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEvent(ui::ScrollEvent* event) {
 }
 
 blink::WebKeyboardEvent MakeWebKeyboardEvent(ui::KeyEvent* event) {
+  if (!event->HasNativeEvent())
+    return blink::WebKeyboardEvent();
+
   // Windows can figure out whether or not to construct a RawKeyDown or a Char
   // WebInputEvent based on the type of message carried in
   // event->native_event(). X11 is not so fortunate, there is no separate
@@ -228,9 +250,6 @@ blink::WebKeyboardEvent MakeWebKeyboardEvent(ui::KeyEvent* event) {
   // is_char() == true. We need to pass the ui::KeyEvent to the X11 function
   // to detect this case so the right event type can be constructed.
 #if defined(OS_WIN)
-  if (!event->HasNativeEvent())
-    return blink::WebKeyboardEvent();
-
   // Key events require no translation by the aura system.
   return MakeWebKeyboardEventFromNativeEvent(event->native_event());
 #else

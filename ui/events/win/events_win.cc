@@ -264,6 +264,18 @@ bool IsCharFromNative(const base::NativeEvent& native_event) {
   return native_event.message == WM_CHAR;
 }
 
+uint32 WindowsKeycodeFromNative(const base::NativeEvent& native_event) {
+  return static_cast<uint32>(native_event.wParam);
+}
+
+uint16 TextFromNative(const base::NativeEvent& native_event) {
+  return static_cast<uint32>(native_event.wParam);
+}
+
+uint16 UnmodifiedTextFromNative(const base::NativeEvent& native_event) {
+  return static_cast<uint32>(native_event.wParam);
+}
+
 int GetChangedMouseButtonFlagsFromNative(
     const base::NativeEvent& native_event) {
   switch (GetNativeMouseKey(native_event)) {
