@@ -302,7 +302,7 @@ ResourcePtr<ImageResource> ResourceFetcher::fetchImage(FetchRequest& request)
     if (LocalFrame* f = frame()) {
         if (f->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal) {
             KURL requestURL = request.resourceRequest().url();
-            if (requestURL.isValid() && canRequest(Resource::Image, request.resourceRequest(), requestURL, request.options(), request.forPreload(), request.originRestriction()))
+            if (requestURL.isValid() && canRequest(Resource::Image, requestURL, request.options(), request.forPreload(), request.originRestriction()))
                 PingLoader::loadImage(f, requestURL);
             return 0;
         }
@@ -431,7 +431,7 @@ void ResourceFetcher::preCacheSubstituteDataForMainResource(const FetchRequest& 
     memoryCache()->add(resource.get());
 }
 
-bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url, LocalFrame* frame, MixedContentBlockingTreatment treatment) const
+bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url, MixedContentBlockingTreatment treatment) const
 {
     if (treatment == TreatAsDefaultForType) {
         switch (type) {
@@ -468,33 +468,32 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url,
             break;
         }
     }
-
-    // No frame, no mixed content.
-    if (!frame)
-        return true;
-
     if (treatment == TreatAsActiveContent) {
-        if (!frame->loader().mixedContentChecker()->canRunInsecureContent(frame->document()->securityOrigin(), url))
-            return false;
+        if (LocalFrame* f = frame()) {
+            if (!f->loader().mixedContentChecker()->canRunInsecureContent(m_document->securityOrigin(), url))
+                return false;
+        }
     } else if (treatment == TreatAsPassiveContent) {
-        if (!frame->loader().mixedContentChecker()->canDisplayInsecureContent(frame->document()->securityOrigin(), url))
-            return false;
-        if (MixedContentChecker::isMixedContent(frame->document()->securityOrigin(), url) || MixedContentChecker::isMixedContent(toLocalFrame(frame->tree().top())->document()->securityOrigin(), url)) {
-            switch (type) {
-            case Resource::Raw:
-                UseCounter::count(frame->document(), UseCounter::MixedContentRaw);
-                break;
+        if (LocalFrame* f = frame()) {
+            if (!f->loader().mixedContentChecker()->canDisplayInsecureContent(m_document->securityOrigin(), url))
+                return false;
+            if (MixedContentChecker::isMixedContent(f->document()->securityOrigin(), url) || MixedContentChecker::isMixedContent(toLocalFrame(frame()->tree().top())->document()->securityOrigin(), url)) {
+                switch (type) {
+                case Resource::Raw:
+                    UseCounter::count(f->document(), UseCounter::MixedContentRaw);
+                    break;
 
-            case Resource::Image:
-                UseCounter::count(frame->document(), UseCounter::MixedContentImage);
-                break;
+                case Resource::Image:
+                    UseCounter::count(f->document(), UseCounter::MixedContentImage);
+                    break;
 
-            case Resource::Media:
-                UseCounter::count(frame->document(), UseCounter::MixedContentMedia);
-                break;
+                case Resource::Media:
+                    UseCounter::count(f->document(), UseCounter::MixedContentMedia);
+                    break;
 
-            default:
-                ASSERT_NOT_REACHED();
+                default:
+                    ASSERT_NOT_REACHED();
+                }
             }
         }
     } else {
@@ -503,7 +502,7 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url,
     return true;
 }
 
-bool ResourceFetcher::canRequest(Resource::Type type, const ResourceRequest& resourceRequest, const KURL& url, const ResourceLoaderOptions& options, bool forPreload, FetchRequest::OriginRestriction originRestriction) const
+bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const ResourceLoaderOptions& options, bool forPreload, FetchRequest::OriginRestriction originRestriction) const
 {
     SecurityOrigin* securityOrigin = options.securityOrigin.get();
     if (!securityOrigin && document())
@@ -624,20 +623,8 @@ bool ResourceFetcher::canRequest(Resource::Type type, const ResourceRequest& res
     // folks block insecure content with a CSP policy, they don't get a warning.
     // They'll still get a warning in the console about CSP blocking the load.
 
-    // If we're loading the main resource of a subframe, ensure that we treat the resource as active
-    // content for the purposes of mixed content checks, and that we check against the parent of the
-    // active frame, rather than the frame itself.
-    LocalFrame* effectiveFrame = frame();
-    MixedContentBlockingTreatment effectiveTreatment = options.mixedContentBlockingTreatment;
-    if (resourceRequest.frameType() == WebURLRequest::FrameTypeNested) {
-        effectiveTreatment = TreatAsActiveContent;
-        // FIXME: Deal with RemoteFrames.
-        if (frame()->tree().parent()->isLocalFrame())
-            effectiveFrame = toLocalFrame(frame()->tree().parent());
-    }
-
     // FIXME: Should we consider forPreload here?
-    if (!checkInsecureContent(type, url, effectiveFrame, effectiveTreatment))
+    if (!checkInsecureContent(type, url, options.mixedContentBlockingTreatment))
         return false;
 
     return true;
@@ -646,7 +633,7 @@ bool ResourceFetcher::canRequest(Resource::Type type, const ResourceRequest& res
 bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sourceOrigin, const KURL& url) const
 {
     // Redirects can change the response URL different from one of request.
-    if (!canRequest(resource->type(), resource->resourceRequest(), url, resource->options(), resource->isUnusedPreload(), FetchRequest::UseDefaultOriginRestrictionForType))
+    if (!canRequest(resource->type(), url, resource->options(), resource->isUnusedPreload(), FetchRequest::UseDefaultOriginRestrictionForType))
         return false;
 
     if (!sourceOrigin && document())
@@ -726,7 +713,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     if (!url.isValid())
         return 0;
 
-    if (!canRequest(type, request.resourceRequest(), url, request.options(), request.forPreload(), request.originRestriction()))
+    if (!canRequest(type, url, request.options(), request.forPreload(), request.originRestriction()))
         return 0;
 
     if (LocalFrame* f = frame())
@@ -1349,7 +1336,7 @@ void ResourceFetcher::didReceiveResponse(const Resource* resource, const Resourc
 {
     // If the response is fetched via ServiceWorker, the original URL of the response could be different from the URL of the request.
     if (response.wasFetchedViaServiceWorker()) {
-        if (!canRequest(resource->type(), resource->resourceRequest(), response.url(), resource->options(), false, FetchRequest::UseDefaultOriginRestrictionForType)) {
+        if (!canRequest(resource->type(), response.url(), resource->options(), false, FetchRequest::UseDefaultOriginRestrictionForType)) {
             resource->loader()->cancel();
             context().dispatchDidFail(m_documentLoader, resource->identifier(), ResourceError(errorDomainBlinkInternal, 0, response.url().string(), "Unsafe attempt to load URL " + response.url().elidedString() + " fetched by a ServiceWorker."));
             return;
@@ -1440,7 +1427,7 @@ bool ResourceFetcher::isLoadedBy(ResourceLoaderHost* possibleOwner) const
 
 bool ResourceFetcher::canAccessRedirect(Resource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse, ResourceLoaderOptions& options)
 {
-    if (!canRequest(resource->type(), request, request.url(), options, resource->isUnusedPreload(), FetchRequest::UseDefaultOriginRestrictionForType))
+    if (!canRequest(resource->type(), request.url(), options, resource->isUnusedPreload(), FetchRequest::UseDefaultOriginRestrictionForType))
         return false;
     if (options.corsEnabled == IsCORSEnabled) {
         SecurityOrigin* sourceOrigin = options.securityOrigin.get();
