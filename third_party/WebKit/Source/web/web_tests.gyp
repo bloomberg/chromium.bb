@@ -145,6 +145,8 @@
                 'variables': {
                     'test_suite_name': 'webkit_unit_tests',
                     'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)webkit_unit_tests<(SHARED_LIB_SUFFIX)',
+                    'additional_input_paths': ['<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'],
+                    'asset_location': '<(PRODUCT_DIR)/content_shell/assets',
                 },
                 'includes': [ '../../../../build/apk_test.gypi' ],
             }],
