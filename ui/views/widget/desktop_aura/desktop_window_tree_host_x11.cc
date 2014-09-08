@@ -138,6 +138,7 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       is_fullscreen_(false),
       is_always_on_top_(false),
       use_native_frame_(false),
+      should_maximize_after_map_(false),
       use_argb_visual_(false),
       drag_drop_client_(NULL),
       native_widget_delegate_(native_widget_delegate),
@@ -366,9 +367,6 @@ void DesktopWindowTreeHostX11::ShowWindowWithState(
 
   if (show_state == ui::SHOW_STATE_NORMAL ||
       show_state == ui::SHOW_STATE_MAXIMIZED) {
-    // Note: XFCE ignores a maximize hint given before mapping the window.
-    if (show_state == ui::SHOW_STATE_MAXIMIZED)
-      Maximize();
     Activate();
   }
 
@@ -541,6 +539,10 @@ void DesktopWindowTreeHostX11::Maximize() {
       SetBounds(adjusted_bounds);
   }
 
+  // Some WMs do not respect maximization hints on unmapped windows, so we
+  // save this one for later too.
+  should_maximize_after_map_ = !window_mapped_;
+
   // When we are in the process of requesting to maximize a window, we can
   // accurately keep track of our restored bounds instead of relying on the
   // heuristics that are in the PropertyNotify and ConfigureNotify handlers.
@@ -559,6 +561,7 @@ void DesktopWindowTreeHostX11::Minimize() {
 }
 
 void DesktopWindowTreeHostX11::Restore() {
+  should_maximize_after_map_ = false;
   SetWMSpecState(false,
                  atom_cache_.GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"),
                  atom_cache_.GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"));
@@ -1585,6 +1588,13 @@ void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
   if (ui::X11EventSource::GetInstance())
     ui::X11EventSource::GetInstance()->BlockUntilWindowMapped(xwindow_);
   window_mapped_ = true;
+
+  // Some WMs only respect maximize hints after the window has been mapped.
+  // Check whether we need to re-do a maximization.
+  if (should_maximize_after_map_) {
+    Maximize();
+    should_maximize_after_map_ = false;
+  }
 }
 
 void DesktopWindowTreeHostX11::SetWindowTransparency() {

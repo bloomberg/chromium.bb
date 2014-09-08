@@ -286,6 +286,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // True if the window has title-bar / borders provided by the window manager.
   bool use_native_frame_;
 
+  // True if a Maximize() call should be done after mapping the window.
+  bool should_maximize_after_map_;
+
   // Whether we used an ARGB visual for our window.
   bool use_argb_visual_;
 
