@@ -55,6 +55,7 @@ def GetAuthCode():
   print 'Navigating to %s' % auth_url
   webbrowser.open(auth_url)
   httpd.handle_request()
+  httpd.server_close()
   return httpd.code
 
 def GetOauthToken(code, client_secret):
@@ -90,7 +91,7 @@ def SendPostCommand(command, client_secret, header_additions = {}, body=None):
   headers = GetPopulatedHeader(client_secret)
   headers = dict(headers.items() + header_additions.items())
   conn = httplib.HTTPSConnection(API_ENDPOINT_DOMAIN)
-  conn.request('PUT', command, body, headers)
+  conn.request('POST', command, body, headers)
   return conn.getresponse()
 
 def GetUploadStatus(client_secret):
