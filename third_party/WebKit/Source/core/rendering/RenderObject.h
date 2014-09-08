@@ -866,9 +866,6 @@ public:
     // Invalidate the paint of a specific subrectangle within a given object. The rect |r| is in the object's coordinate space.
     void invalidatePaintRectangle(const LayoutRect&) const;
 
-    InvalidationReason invalidatePaintIfNeeded(const RenderLayerModelObject& paintInvalidationContainer,
-        const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationContainer, const PaintInvalidationState&);
-
     // Walk the tree after layout issuing paint invalidations for renderers that have changed or moved, updating bounds that have changed, and clearing paint invalidation state.
     virtual void invalidateTreeIfNeeded(const PaintInvalidationState&);
 
@@ -1144,6 +1141,9 @@ protected:
             || onlyNeededPositionedMovementLayout() || neededLayoutBecauseOfChildren() || mayNeedPaintInvalidation();
     }
 #endif
+
+    void invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState&);
+    virtual InvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject& paintInvalidationContainer);
 
 private:
     // Invalidate the paint of the entire object. This is only used when a renderer is to be removed.

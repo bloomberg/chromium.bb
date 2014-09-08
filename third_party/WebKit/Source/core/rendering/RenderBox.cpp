@@ -1516,13 +1516,6 @@ bool RenderBox::paintInvalidationLayerRectsForImage(WrappedImagePtr image, const
 
 InvalidationReason RenderBox::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const RenderLayerModelObject& newPaintInvalidationContainer)
 {
-    const LayoutRect oldPaintInvalidationRect = previousPaintInvalidationRect();
-    const LayoutPoint oldPositionFromPaintInvalidationContainer = previousPositionFromPaintInvalidationContainer();
-    setPreviousPaintInvalidationRect(boundsRectForPaintInvalidation(&newPaintInvalidationContainer, &paintInvalidationState));
-    setPreviousPositionFromPaintInvalidationContainer(RenderLayer::positionFromPaintInvalidationContainer(this, &newPaintInvalidationContainer, &paintInvalidationState));
-
-    InvalidationReason reason = InvalidationNone;
-
     // If we are set to do a full paint invalidation that means the RenderView will be
     // issue paint invalidations. We can then skip issuing of paint invalidations for the child
     // renderers as they'll be covered by the RenderView.
@@ -1533,8 +1526,11 @@ InvalidationReason RenderBox::invalidatePaintIfNeeded(const PaintInvalidationSta
                 && layer()->isSelfPaintingLayer())) {
             setShouldDoFullPaintInvalidation(true, MarkOnlyThis);
         }
+    }
 
-        reason = RenderObject::invalidatePaintIfNeeded(newPaintInvalidationContainer, oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer, paintInvalidationState);
+    InvalidationReason reason = RenderBoxModelObject::invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
+
+    if (!view()->doingFullPaintInvalidation()) {
         if (reason == InvalidationNone || reason == InvalidationIncremental)
             invalidatePaintForOverflowIfNeeded();
 

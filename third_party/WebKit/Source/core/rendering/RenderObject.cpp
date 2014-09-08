@@ -1591,13 +1591,20 @@ const char* RenderObject::invalidationReasonToString(InvalidationReason reason) 
 
 void RenderObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
+    ASSERT(!needsLayout());
+
     // If we didn't need paint invalidation then our children don't need as well.
     // Skip walking down the tree as everything should be fine below us.
     if (!shouldCheckForPaintInvalidation(paintInvalidationState))
         return;
 
+    invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationState.paintInvalidationContainer());
     clearPaintInvalidationState(paintInvalidationState);
+    invalidatePaintOfSubtreesIfNeeded(paintInvalidationState);
+}
 
+void RenderObject::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& paintInvalidationState)
+{
     for (RenderObject* child = slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->isOutOfFlowPositioned())
             child->invalidateTreeIfNeeded(paintInvalidationState);
@@ -1612,19 +1619,24 @@ static PassRefPtr<TraceEvent::ConvertableToTraceFormat> jsonObjectForOldAndNewRe
     return value;
 }
 
-InvalidationReason RenderObject::invalidatePaintIfNeeded(const RenderLayerModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutPoint& oldLocation, const PaintInvalidationState& paintInvalidationState)
+InvalidationReason RenderObject::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const RenderLayerModelObject& paintInvalidationContainer)
 {
     RenderView* v = view();
     if (v->document().printing())
         return InvalidationNone; // Don't invalidate paints if we're printing.
 
-    const LayoutRect& newBounds = previousPaintInvalidationRect();
-    const LayoutPoint& newLocation = previousPositionFromPaintInvalidationContainer();
+    const LayoutRect oldBounds = previousPaintInvalidationRect();
+    const LayoutPoint oldLocation = previousPositionFromPaintInvalidationContainer();
+    const LayoutRect newBounds = boundsRectForPaintInvalidation(&paintInvalidationContainer, &paintInvalidationState);
+    const LayoutPoint newLocation = RenderLayer::positionFromPaintInvalidationContainer(this, &paintInvalidationContainer, &paintInvalidationState);
+    setPreviousPaintInvalidationRect(newBounds);
+    setPreviousPositionFromPaintInvalidationContainer(newLocation);
 
-    // FIXME: PaintInvalidationState should not be required here, but the call to flipForWritingMode
-    // in mapRectToPaintInvalidationBacking will give us the wrong results with it disabled.
-    // crbug.com/393762
-    ASSERT(newBounds == boundsRectForPaintInvalidation(&paintInvalidationContainer, &paintInvalidationState));
+    // If we are set to do a full paint invalidation that means the RenderView will issue
+    // paint invalidations. We can then skip issuing of paint invalidations for the child
+    // renderers as they'll be covered by the RenderView.
+    if (view()->doingFullPaintInvalidation())
+        return InvalidationNone;
 
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::invalidatePaintIfNeeded()",
         "object", this->debugName().ascii(),

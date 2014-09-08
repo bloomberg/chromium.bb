@@ -67,8 +67,6 @@ public:
 
     virtual bool isSVG() const OVERRIDE FINAL { return true; }
 
-    virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) OVERRIDE;
-
 protected:
     virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const OVERRIDE FINAL;
     virtual void willBeDestroyed() OVERRIDE;
@@ -81,7 +79,7 @@ private:
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE FINAL;
     virtual void absoluteFocusRingQuads(Vector<FloatQuad>&) OVERRIDE FINAL;
 
-    void invalidatePaintIfNeeded(const PaintInvalidationState&);
+    InvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject& paintInvalidationContainer) OVERRIDE FINAL;
 };
 
 }

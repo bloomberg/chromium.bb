@@ -125,37 +125,11 @@ void RenderSVGModelObject::absoluteFocusRingQuads(Vector<FloatQuad>& quads)
     quads.append(localToAbsoluteQuad(FloatQuad(paintInvalidationRectInLocalCoordinates())));
 }
 
-void RenderSVGModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
-{
-    // Note: This is a reduced version of RenderBox::invalidateTreeIfNeeded().
-    // FIXME: Should share code with RenderBox::invalidateTreeIfNeeded().
-    ASSERT(!needsLayout());
-
-    if (!shouldCheckForPaintInvalidation(paintInvalidationState))
-        return;
-
-    invalidatePaintIfNeeded(paintInvalidationState);
-
-    RenderObject::invalidateTreeIfNeeded(paintInvalidationState);
-}
-
-void RenderSVGModelObject::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
+InvalidationReason RenderSVGModelObject::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const RenderLayerModelObject& paintInvalidationContainer)
 {
     ForceHorriblySlowRectMapping slowRectMapping(&paintInvalidationState);
 
-    const LayoutRect oldPaintInvalidationRect = previousPaintInvalidationRect();
-    const LayoutPoint oldPositionFromPaintInvalidationContainer = previousPositionFromPaintInvalidationContainer();
-    ASSERT(paintInvalidationState.paintInvalidationContainer() == containerForPaintInvalidation());
-    setPreviousPaintInvalidationRect(boundsRectForPaintInvalidation(&paintInvalidationState.paintInvalidationContainer(), &paintInvalidationState));
-    setPreviousPositionFromPaintInvalidationContainer(RenderLayer::positionFromPaintInvalidationContainer(this, &paintInvalidationState.paintInvalidationContainer(), &paintInvalidationState));
-
-    // If we are set to do a full paint invalidation that means the RenderView will be
-    // issue paint invalidations. We can then skip issuing of paint invalidations for the child
-    // renderers as they'll be covered by the RenderView.
-    if (view()->doingFullPaintInvalidation())
-        return;
-
-    RenderObject::invalidatePaintIfNeeded(paintInvalidationState.paintInvalidationContainer(), oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer, paintInvalidationState);
+    return RenderObject::invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationContainer);
 }
 
 } // namespace blink
