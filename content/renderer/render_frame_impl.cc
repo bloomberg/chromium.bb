@@ -2236,6 +2236,8 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     }
   }
 
+  Send(new FrameHostMsg_DidAssignPageId(routing_id_, render_view_->page_id_));
+
   FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers_,
                     DidCommitProvisionalLoad(frame, is_new_navigation));
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_,

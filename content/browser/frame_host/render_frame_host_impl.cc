@@ -346,7 +346,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFailLoadWithError,
                         OnDidFailLoadWithError)
     IPC_MESSAGE_HANDLER_GENERIC(FrameHostMsg_DidCommitProvisionalLoad,
-                                OnNavigate(msg))
+                                OnDidCommitProvisionalLoad(msg))
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DocumentOnLoadCompleted,
                         OnDocumentOnLoadCompleted)
@@ -362,6 +362,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidAccessInitialDocument,
                         OnDidAccessInitialDocument)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidDisownOpener, OnDidDisownOpener)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidAssignPageId, OnDidAssignPageId)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateTitle, OnUpdateTitle)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateEncoding, OnUpdateEncoding)
     IPC_MESSAGE_HANDLER(FrameHostMsg_BeginNavigation,
@@ -588,7 +589,7 @@ void RenderFrameHostImpl::OnDidRedirectProvisionalLoad(
 // level frame.  If the user explicitly requests a subframe navigation, we will
 // get a new page_id because we need to create a new navigation entry for that
 // action.
-void RenderFrameHostImpl::OnNavigate(const IPC::Message& msg) {
+void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   // Read the parameters out of the IPC message directly to avoid making another
   // copy when we filter the URLs.
   PickleIterator iter(msg);
@@ -596,7 +597,7 @@ void RenderFrameHostImpl::OnNavigate(const IPC::Message& msg) {
   if (!IPC::ParamTraits<FrameHostMsg_DidCommitProvisionalLoad_Params>::
       Read(&msg, &iter, &validated_params))
     return;
-  TRACE_EVENT1("navigation", "RenderFrameHostImpl::OnNavigate",
+  TRACE_EVENT1("navigation", "RenderFrameHostImpl::OnDidCommitProvisionalLoad",
                "url", validated_params.url.possibly_invalid_spec());
 
   // If we're waiting for a cross-site beforeunload ack from this renderer and
@@ -745,13 +746,13 @@ void RenderFrameHostImpl::OnBeforeUnloadACK(
   render_view_host_->decrement_in_flight_event_count();
   render_view_host_->StopHangMonitorTimeout();
   // If this renderer navigated while the beforeunload request was in flight, we
-  // may have cleared this state in OnNavigate, in which case we can ignore
-  // this message.
+  // may have cleared this state in OnDidCommitProvisionalLoad, in which case we
+  // can ignore this message.
   // However renderer might also be swapped out but we still want to proceed
   // with navigation, otherwise it would block future navigations. This can
   // happen when pending cross-site navigation is canceled by a second one just
-  // before OnNavigate while current RVH is waiting for commit but second
-  // navigation is started from the beginning.
+  // before OnDidCommitProvisionalLoad while current RVH is waiting for commit
+  // but second navigation is started from the beginning.
   if (!render_view_host_->is_waiting_for_beforeunload_ack_) {
     return;
   }
@@ -926,6 +927,12 @@ void RenderFrameHostImpl::OnDidDisownOpener() {
   // This message is only sent for top-level frames. TODO(avi): when frame tree
   // mirroring works correctly, add a check here to enforce it.
   delegate_->DidDisownOpener(this);
+}
+
+void RenderFrameHostImpl::OnDidAssignPageId(int32 page_id) {
+  // Update the RVH's current page ID so that future IPCs from the renderer
+  // correspond to the new page.
+  render_view_host_->page_id_ = page_id;
 }
 
 void RenderFrameHostImpl::OnUpdateTitle(

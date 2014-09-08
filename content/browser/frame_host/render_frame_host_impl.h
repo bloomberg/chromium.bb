@@ -323,7 +323,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDidRedirectProvisionalLoad(int32 page_id,
                                     const GURL& source_url,
                                     const GURL& target_url);
-  void OnNavigate(const IPC::Message& msg);
+  void OnDidCommitProvisionalLoad(const IPC::Message& msg);
   void OnBeforeUnloadACK(
       bool proceed,
       const base::TimeTicks& renderer_before_unload_start_time,
@@ -351,6 +351,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                           size_t end_offset);
   void OnDidAccessInitialDocument();
   void OnDidDisownOpener();
+  void OnDidAssignPageId(int32 page_id);
   void OnUpdateTitle(int32 page_id,
                      const base::string16& title,
                      blink::WebTextDirection title_direction);

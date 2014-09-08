@@ -580,6 +580,10 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_DidAccessInitialDocument)
 // the window. Sent for top-level frames.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidDisownOpener)
 
+// Notifies the browser that a page id was assigned.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DidAssignPageId,
+                    int32 /* page_id */)
+
 // Changes the title for the page in the UI when the page is navigated or the
 // title changes. Sent for top-level frames.
 IPC_MESSAGE_ROUTED3(FrameHostMsg_UpdateTitle,

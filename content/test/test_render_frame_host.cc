@@ -111,7 +111,7 @@ void TestRenderFrameHost::SendNavigateWithFile(
 void TestRenderFrameHost::SendNavigateWithParams(
     FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
   FrameHostMsg_DidCommitProvisionalLoad msg(GetRoutingID(), *params);
-  OnNavigate(msg);
+  OnDidCommitProvisionalLoad(msg);
 }
 
 void TestRenderFrameHost::SendNavigateWithRedirects(
@@ -163,7 +163,7 @@ void TestRenderFrameHost::SendNavigateWithParameters(
       file_path_for_history_item);
 
   FrameHostMsg_DidCommitProvisionalLoad msg(GetRoutingID(), params);
-  OnNavigate(msg);
+  OnDidCommitProvisionalLoad(msg);
 }
 
 void TestRenderFrameHost::SendBeginNavigationWithURL(const GURL& url) {
