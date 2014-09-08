@@ -1,167 +1,143 @@
 /*
- * Copyright (c) 2006, 2007, 2008, Google Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2010 Apple Inc.
+ * Copyright (C) 2006 Michael Emmel mike.emmel@gmail.com
+ * Copyright (C) 2007 Holger Hans Peter Freyther
+ * Copyright (C) 2007 Pioneer Research Center USA, Inc.
+ * Copyright (C) 2010, 2011 Brent Fulgham <bfulgham@webkit.org>
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Library General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Library General Public License for more details.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * You should have received a copy of the GNU Library General Public License
+ * along with this library; see the file COPYING.LIB.  If not, write to
+ * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+ * Boston, MA 02110-1301, USA.
+ *
  */
+
+// FIXME: This is temporary until mac switch to using FontPlatformDataHarfBuzz.h and we merge it with this file.
+#if !OS(MACOSX)
+#include "platform/fonts/harfbuzz/FontPlatformDataHarfBuzz.h"
+
+#else
 
 #ifndef FontPlatformData_h
 #define FontPlatformData_h
 
-#include "SkPaint.h"
 #include "platform/PlatformExport.h"
-#include "platform/SharedBuffer.h"
-#include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontOrientation.h"
-#include "platform/fonts/FontRenderStyle.h"
-#include "platform/fonts/opentype/OpenTypeVerticalData.h"
-#include "wtf/Forward.h"
-#include "wtf/HashTableDeletedValueType.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/StringImpl.h"
+#include "platform/fonts/FontWidthVariant.h"
 
-#if OS(MACOSX)
 OBJC_CLASS NSFont;
 
 typedef struct CGFont* CGFontRef;
 typedef const struct __CTFont* CTFontRef;
 
-#include "platform/fonts/mac/MemoryActivatedFont.h"
 #include <CoreFoundation/CFBase.h>
 #include <objc/objc-auto.h>
 
-inline CTFontRef toCTFontRef(NSFont *nsFont) { return reinterpret_cast<CTFontRef>(nsFont); }
-#endif // OS(MACOSX)
+#include "wtf/Forward.h"
+#include "wtf/HashTableDeletedValueType.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RetainPtr.h"
+#include "wtf/text/StringImpl.h"
 
-class SkTypeface;
-typedef uint32_t SkFontID;
+#include "platform/fonts/mac/MemoryActivatedFont.h"
+#include "third_party/skia/include/core/SkTypeface.h"
+
+typedef struct CGFont* CGFontRef;
+typedef const struct __CTFont* CTFontRef;
+typedef UInt32 FMFont;
+typedef FMFont ATSUFontID;
+typedef UInt32 ATSFontRef;
 
 namespace blink {
 
-class GraphicsContext;
 class HarfBuzzFace;
+
+inline CTFontRef toCTFontRef(NSFont *nsFont) { return reinterpret_cast<CTFontRef>(nsFont); }
 
 class PLATFORM_EXPORT FontPlatformData {
 public:
-    // Used for deleted values in the font cache's hash tables. The hash table
-    // will create us with this structure, and it will compare other values
-    // to this "Deleted" one. It expects the Deleted one to be differentiable
-    // from the 0 one (created with the empty constructor), so we can't just
-    // set everything to 0.
     FontPlatformData(WTF::HashTableDeletedValueType);
     FontPlatformData();
     FontPlatformData(const FontPlatformData&);
-#if OS(MACOSX)
-    FontPlatformData(float size, bool syntheticBold, bool syntheticItalic, FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
-    FontPlatformData(NSFont*, float size, bool syntheticBold = false, bool syntheticItalic = false,
+    FontPlatformData(float size, bool syntheticBold, bool syntheticOblique, FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
+    FontPlatformData(NSFont*, float size, bool syntheticBold = false, bool syntheticOblique = false,
                      FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
     FontPlatformData(CGFontRef, float size, bool syntheticBold, bool syntheticOblique, FontOrientation, FontWidthVariant);
-#else
-    FontPlatformData(float textSize, bool syntheticBold, bool syntheticItalic);
-    FontPlatformData(PassRefPtr<SkTypeface>, const char* name, float textSize, bool syntheticBold, bool syntheticItalic, FontOrientation = Horizontal, bool subpixelTextPosition = defaultUseSubpixelPositioning());
-    FontPlatformData(const FontPlatformData& src, float textSize);
-#endif
+
     ~FontPlatformData();
 
-#if OS(MACOSX)
     NSFont* font() const { return m_font; }
     void setFont(NSFont*);
 
     CGFontRef cgFont() const { return m_cgFont.get(); }
     CTFontRef ctFont() const;
+    SkTypeface* typeface() const;
 
     bool roundsGlyphAdvances() const;
     bool allowsLigatures() const;
 
+    String fontFamilyName() const;
+    bool isFixedPitch() const;
+    float size() const { return m_size; }
+    void setSize(float size) { m_size = size; }
+    bool syntheticBold() const { return m_syntheticBold; }
+    bool syntheticOblique() const { return m_syntheticOblique; }
     bool isColorBitmapFont() const { return m_isColorBitmapFont; }
     bool isCompositeFontReference() const { return m_isCompositeFontReference; }
 
-    FontWidthVariant widthVariant() const { return m_widthVariant; }
-#endif
-
-    String fontFamilyName() const;
-    float size() const { return m_textSize; }
-    bool isFixedPitch() const;
-    bool syntheticBold() const { return m_syntheticBold; }
-    bool syntheticItalic() const { return m_syntheticItalic; }
-
-    SkTypeface* typeface() const;
-    HarfBuzzFace* harfBuzzFace() const;
-    SkFontID uniqueID() const;
-    unsigned hash() const;
-
     FontOrientation orientation() const { return m_orientation; }
-    void setOrientation(FontOrientation orientation) { m_orientation = orientation; }
-    void setSyntheticBold(bool syntheticBold) { m_syntheticBold = syntheticBold; }
-    void setSyntheticItalic(bool syntheticItalic) { m_syntheticItalic = syntheticItalic; }
-    bool operator==(const FontPlatformData&) const;
-    const FontPlatformData& operator=(const FontPlatformData&);
-    bool isHashTableDeletedValue() const { return m_isHashTableDeletedValue; }
-#if OS(WIN)
-    void setMinSizeForAntiAlias(unsigned size) { m_minSizeForAntiAlias = size; }
-    unsigned minSizeForAntiAlias() const { return m_minSizeForAntiAlias; }
-    void setHinting(SkPaint::Hinting style)
-    {
-        m_style.useAutoHint = 0;
-        m_style.hintStyle = style;
-    }
-#endif
-    bool fontContainsCharacter(UChar32 character);
+    FontWidthVariant widthVariant() const { return m_widthVariant; }
 
-#if ENABLE(OPENTYPE_VERTICAL)
-    PassRefPtr<OpenTypeVerticalData> verticalData() const;
-    PassRefPtr<SharedBuffer> openTypeTable(uint32_t table) const;
-#endif
+    void setOrientation(FontOrientation orientation) { m_orientation = orientation; }
+
+    HarfBuzzFace* harfBuzzFace();
+
+    unsigned hash() const
+    {
+        ASSERT(m_font || !m_cgFont);
+        uintptr_t hashCodes[3] = { (uintptr_t)m_font, m_widthVariant, static_cast<uintptr_t>(m_orientation << 2 | m_syntheticBold << 1 | m_syntheticOblique) };
+        return StringHasher::hashMemory<sizeof(hashCodes)>(hashCodes);
+    }
+
+    const FontPlatformData& operator=(const FontPlatformData&);
+
+    bool operator==(const FontPlatformData& other) const
+    {
+        return platformIsEqual(other)
+            && m_size == other.m_size
+            && m_syntheticBold == other.m_syntheticBold
+            && m_syntheticOblique == other.m_syntheticOblique
+            && m_isColorBitmapFont == other.m_isColorBitmapFont
+            && m_isCompositeFontReference == other.m_isCompositeFontReference
+            && m_orientation == other.m_orientation
+            && m_widthVariant == other.m_widthVariant;
+    }
+
+    bool isHashTableDeletedValue() const
+    {
+        return m_font == hashTableDeletedFontValue();
+    }
 
 #ifndef NDEBUG
     String description() const;
 #endif
 
-#if !OS(MACOSX)
-    // The returned styles are all actual styles without FontRenderStyle::NoPreference.
-    const FontRenderStyle& fontRenderStyle() const { return m_style; }
-    void setupPaint(SkPaint*, GraphicsContext* = 0) const;
-#endif
-
-#if OS(WIN)
-    int paintTextFlags() const { return m_paintTextFlags; }
-#else
-    static void setHinting(SkPaint::Hinting);
-    static void setAutoHint(bool);
-    static void setUseBitmaps(bool);
-    static void setAntiAlias(bool);
-    static void setSubpixelRendering(bool);
-#endif
-
 private:
-#if !OS(MACOSX)
-    bool static defaultUseSubpixelPositioning();
-    void querySystemForRenderStyle(bool useSkiaSubpixelPositioning);
-#else
+    bool platformIsEqual(const FontPlatformData&) const;
+    void platformDataInit(const FontPlatformData&);
+    const FontPlatformData& platformDataAssign(const FontPlatformData&);
+#if OS(MACOSX)
     // Load various data about the font specified by |nsFont| with the size fontSize into the following output paramters:
     // Note: Callers should always take into account that for the Chromium port, |outNSFont| isn't necessarily the same
     // font as |nsFont|. This because the sandbox may block loading of the original font.
@@ -169,46 +145,31 @@ private:
     // The caller is responsible for calling CFRelease() on this parameter when done with it.
     // * cgFont - CGFontRef representing the input font at the specified point size.
     void loadFont(NSFont*, float fontSize, NSFont*& outNSFont, CGFontRef&);
-
-    bool platformIsEqual(const FontPlatformData&) const;
-    void platformDataInit(const FontPlatformData&);
-    const FontPlatformData& platformDataAssign(const FontPlatformData&);
-#endif
-
-    mutable RefPtr<SkTypeface> m_typeface;
-#if !OS(WIN)
-    CString m_family;
+    static NSFont* hashTableDeletedFontValue() { return reinterpret_cast<NSFont *>(-1); }
 #endif
 
 public:
-    float m_textSize;
     bool m_syntheticBold;
-    bool m_syntheticItalic;
+    bool m_syntheticOblique;
     FontOrientation m_orientation;
-#if OS(MACOSX)
-    bool m_isColorBitmapFont;
-    bool m_isCompositeFontReference;
+    float m_size;
     FontWidthVariant m_widthVariant;
-#endif
+
 private:
-#if OS(MACOSX)
     NSFont* m_font;
     RetainPtr<CGFontRef> m_cgFont;
     mutable RetainPtr<CTFontRef> m_CTFont;
-    RefPtr<MemoryActivatedFont> m_inMemoryFont;
-#else
-    FontRenderStyle m_style;
-#endif
 
-    mutable RefPtr<HarfBuzzFace> m_harfBuzzFace;
-    bool m_isHashTableDeletedValue;
-#if OS(WIN)
-    int m_paintTextFlags;
-    bool m_useSubpixelPositioning;
-    unsigned m_minSizeForAntiAlias;
-#endif
+    RefPtr<MemoryActivatedFont> m_inMemoryFont;
+    RefPtr<HarfBuzzFace> m_harfBuzzFace;
+    mutable RefPtr<SkTypeface> m_typeface;
+
+    bool m_isColorBitmapFont;
+    bool m_isCompositeFontReference;
 };
 
 } // namespace blink
 
-#endif // ifdef FontPlatformData_h
+#endif // FontPlatformData_h
+
+#endif

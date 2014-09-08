@@ -189,7 +189,7 @@ static BOOL betterChoice(NSFontTraitMask desiredTraits, int desiredWeight,
     int actualWeight = [fontManager weightOfFont:font];
 
     bool syntheticBold = desiredWeight >= 7 && actualWeight < 7;
-    bool syntheticItalic = (desiredTraits & NSFontItalicTrait) && !(actualTraits & NSFontItalicTrait);
+    bool syntheticOblique = (desiredTraits & NSFontItalicTrait) && !(actualTraits & NSFontItalicTrait);
 
     // There are some malformed fonts that will be correctly returned by -fontWithFamily:traits:weight:size: as a match for a particular trait,
     // though -[NSFontManager traitsOfFont:] incorrectly claims the font does not have the specified trait. This could result in applying 
@@ -201,7 +201,7 @@ static BOOL betterChoice(NSFontTraitMask desiredTraits, int desiredWeight,
     if (syntheticBold)
         nonSyntheticTraits &= ~NSBoldFontMask;
 
-    if (syntheticItalic)
+    if (syntheticOblique)
         nonSyntheticTraits &= ~NSItalicFontMask;
 
     if (nonSyntheticTraits != desiredTraits) {

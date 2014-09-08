@@ -37,8 +37,8 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFaceCreationParams.h"
-#include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/SimpleFontData.h"
+#include "platform/fonts/harfbuzz/FontPlatformDataHarfbuzz.h"
 #include "platform/fonts/win/FontFallbackWin.h"
 
 namespace blink {
