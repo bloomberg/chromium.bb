@@ -45,11 +45,6 @@ class WebServiceWorkerProviderClient {
 public:
     virtual ~WebServiceWorkerProviderClient() { }
 
-    // FIXME: Remove these unnecessary interfaces (http://crbug.com/404982).
-    virtual void setInstalling(WebServiceWorker*) = 0;
-    virtual void setWaiting(WebServiceWorker*) = 0;
-    virtual void setActive(WebServiceWorker*) = 0;
-
     virtual void setController(WebServiceWorker*) = 0;
     virtual void setReadyRegistration(WebServiceWorkerRegistration*) = 0;
 

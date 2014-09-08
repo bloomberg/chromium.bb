@@ -65,10 +65,7 @@ public:
 
     void trace(Visitor*);
 
-    PassRefPtrWillBeRawPtr<ServiceWorker> active() { return m_active.get(); }
     PassRefPtrWillBeRawPtr<ServiceWorker> controller() { return m_controller.get(); }
-    PassRefPtrWillBeRawPtr<ServiceWorker> installing() { return m_installing.get(); }
-    PassRefPtrWillBeRawPtr<ServiceWorker> waiting() { return m_waiting.get(); }
     ScriptPromise ready(ScriptState*);
     WebServiceWorkerProvider* provider() { return m_provider; }
 
@@ -76,10 +73,7 @@ public:
     ScriptPromise unregisterServiceWorker(ScriptState*, const String& scope);
 
     // WebServiceWorkerProviderClient overrides.
-    virtual void setActive(WebServiceWorker*) OVERRIDE;
     virtual void setController(WebServiceWorker*) OVERRIDE;
-    virtual void setInstalling(WebServiceWorker*) OVERRIDE;
-    virtual void setWaiting(WebServiceWorker*) OVERRIDE;
     virtual void setReadyRegistration(WebServiceWorkerRegistration*) OVERRIDE;
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) OVERRIDE;
 
@@ -90,10 +84,7 @@ private:
     ReadyProperty* createReadyProperty();
 
     WebServiceWorkerProvider* m_provider;
-    RefPtrWillBeMember<ServiceWorker> m_active;
     RefPtrWillBeMember<ServiceWorker> m_controller;
-    RefPtrWillBeMember<ServiceWorker> m_installing;
-    RefPtrWillBeMember<ServiceWorker> m_waiting;
     Member<ServiceWorkerRegistration> m_readyRegistration;
     Member<ReadyProperty> m_ready;
 };

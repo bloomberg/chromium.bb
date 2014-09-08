@@ -52,10 +52,7 @@ PASS oldChildWindow.navigator.onLine is newChildWindow.navigator.onLine
 PASS oldChildWindow.navigator.platform is newChildWindow.navigator.platform
 PASS oldChildWindow.navigator.product is newChildWindow.navigator.product
 PASS oldChildWindow.navigator.productSub is newChildWindow.navigator.productSub
-PASS oldChildWindow.navigator.serviceWorker.active is newChildWindow.navigator.serviceWorker.active
 PASS oldChildWindow.navigator.serviceWorker.controller is newChildWindow.navigator.serviceWorker.controller
-PASS oldChildWindow.navigator.serviceWorker.installing is newChildWindow.navigator.serviceWorker.installing
-PASS oldChildWindow.navigator.serviceWorker.waiting is newChildWindow.navigator.serviceWorker.waiting
 PASS oldChildWindow.navigator.userAgent is newChildWindow.navigator.userAgent
 PASS oldChildWindow.navigator.vendor is newChildWindow.navigator.vendor
 PASS oldChildWindow.navigator.vendorSub is newChildWindow.navigator.vendorSub

@@ -33,11 +33,7 @@
     RuntimeEnabled=ServiceWorker,
     GarbageCollected
 ] interface ServiceWorkerContainer {
-    [Unforgeable] readonly attribute ServiceWorker? installing;
-    [Unforgeable] readonly attribute ServiceWorker? waiting;
-    [Unforgeable] readonly attribute ServiceWorker? active;
     [Unforgeable] readonly attribute ServiceWorker? controller;
-
     [CallWith=ScriptState] readonly attribute Promise ready;
 
     [CallWith=ScriptState, ImplementedAs=registerServiceWorker] Promise register(ScalarValueString url, optional Dictionary options);

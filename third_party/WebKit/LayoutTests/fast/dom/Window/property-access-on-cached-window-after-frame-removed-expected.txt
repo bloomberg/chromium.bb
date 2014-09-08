@@ -51,10 +51,7 @@ PASS childWindow.navigator.onLine is window.navigator.onLine
 PASS childWindow.navigator.platform is window.navigator.platform
 PASS childWindow.navigator.product is window.navigator.product
 PASS childWindow.navigator.productSub is window.navigator.productSub
-PASS childWindow.navigator.serviceWorker.active is null
 PASS childWindow.navigator.serviceWorker.controller is null
-PASS childWindow.navigator.serviceWorker.installing is null
-PASS childWindow.navigator.serviceWorker.waiting is null
 PASS childWindow.navigator.userAgent is ''
 PASS childWindow.navigator.vendor is window.navigator.vendor
 PASS childWindow.navigator.vendorSub is ''

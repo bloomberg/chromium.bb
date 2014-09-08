@@ -74,10 +74,7 @@ void ServiceWorkerContainer::willBeDetachedFromFrame()
 
 void ServiceWorkerContainer::trace(Visitor* visitor)
 {
-    visitor->trace(m_active);
     visitor->trace(m_controller);
-    visitor->trace(m_installing);
-    visitor->trace(m_waiting);
     visitor->trace(m_readyRegistration);
     visitor->trace(m_ready);
 }
@@ -200,6 +197,15 @@ static void deleteIfNoExistingOwner(WebServiceWorkerRegistration* registration)
         delete registration;
 }
 
+void ServiceWorkerContainer::setController(WebServiceWorker* serviceWorker)
+{
+    if (!executionContext()) {
+        deleteIfNoExistingOwner(serviceWorker);
+        return;
+    }
+    m_controller = ServiceWorker::from(executionContext(), serviceWorker);
+}
+
 void ServiceWorkerContainer::setReadyRegistration(WebServiceWorkerRegistration* registration)
 {
     if (!executionContext()) {
@@ -218,42 +224,6 @@ void ServiceWorkerContainer::setReadyRegistration(WebServiceWorkerRegistration* 
 
     m_readyRegistration = readyRegistration;
     m_ready->resolve(readyRegistration);
-}
-
-void ServiceWorkerContainer::setActive(WebServiceWorker* serviceWorker)
-{
-    if (!executionContext()) {
-        deleteIfNoExistingOwner(serviceWorker);
-        return;
-    }
-    m_active = ServiceWorker::from(executionContext(), serviceWorker);
-}
-
-void ServiceWorkerContainer::setController(WebServiceWorker* serviceWorker)
-{
-    if (!executionContext()) {
-        deleteIfNoExistingOwner(serviceWorker);
-        return;
-    }
-    m_controller = ServiceWorker::from(executionContext(), serviceWorker);
-}
-
-void ServiceWorkerContainer::setInstalling(WebServiceWorker* serviceWorker)
-{
-    if (!executionContext()) {
-        deleteIfNoExistingOwner(serviceWorker);
-        return;
-    }
-    m_installing = ServiceWorker::from(executionContext(), serviceWorker);
-}
-
-void ServiceWorkerContainer::setWaiting(WebServiceWorker* serviceWorker)
-{
-    if (!executionContext()) {
-        deleteIfNoExistingOwner(serviceWorker);
-        return;
-    }
-    m_waiting = ServiceWorker::from(executionContext(), serviceWorker);
 }
 
 void ServiceWorkerContainer::dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray& webChannels)
