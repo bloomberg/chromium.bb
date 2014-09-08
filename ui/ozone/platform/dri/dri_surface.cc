@@ -64,7 +64,7 @@ void DriSurface::ResizeCanvas(const gfx::Size& viewport_size) {
 
 void DriSurface::PresentCanvas(const gfx::Rect& damage) {
   DCHECK(base::MessageLoopForUI::IsCurrent());
-  DCHECK(buffers_[front_buffer_ ^ 1]);
+  DCHECK(buffers_[front_buffer_ ^ 1].get());
 
   HardwareDisplayController* controller = window_delegate_->GetController();
   if (!controller)

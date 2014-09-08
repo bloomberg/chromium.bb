@@ -175,7 +175,7 @@ bool ScreenManager::ModesetDisplayController(
   scoped_refptr<ScanoutBuffer> buffer =
       buffer_generator_->Create(gfx::Size(mode.hdisplay, mode.vdisplay));
 
-  if (!buffer) {
+  if (!buffer.get()) {
     LOG(ERROR) << "Failed to create scanout buffer";
     return false;
   }

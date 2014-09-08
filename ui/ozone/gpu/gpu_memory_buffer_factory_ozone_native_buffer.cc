@@ -74,7 +74,7 @@ bool GpuMemoryBufferFactoryOzoneNativeBuffer::CreateGpuMemoryBuffer(
   scoped_refptr<NativePixmap> pixmap =
       SurfaceFactoryOzone::GetInstance()->CreateNativePixmap(
           size, GetOzoneFormatFor(internalformat));
-  if (!pixmap) {
+  if (!pixmap.get()) {
     LOG(ERROR) << "Failed to create pixmap " << size.width() << "x"
                << size.height() << " format " << internalformat << ", usage "
                << usage;

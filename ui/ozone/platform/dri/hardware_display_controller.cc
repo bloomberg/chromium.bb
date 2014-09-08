@@ -96,7 +96,7 @@ HardwareDisplayController::~HardwareDisplayController() {
 bool HardwareDisplayController::Modeset(const OverlayPlane& primary,
                                         drmModeModeInfo mode) {
   TRACE_EVENT0("dri", "HDC::Modeset");
-  DCHECK(primary.buffer);
+  DCHECK(primary.buffer.get());
   pending_page_flips_ = 0;
   bool status = true;
   for (size_t i = 0; i < crtc_states_.size(); ++i) {
@@ -117,7 +117,7 @@ bool HardwareDisplayController::Enable() {
   TRACE_EVENT0("dri", "HDC::Enable");
   DCHECK(!current_planes_.empty());
   OverlayPlane primary = GetPrimaryPlane(current_planes_);
-  DCHECK(primary.buffer);
+  DCHECK(primary.buffer.get());
   pending_page_flips_ = 0;
   bool status = true;
   for (size_t i = 0; i < crtc_states_.size(); ++i)
@@ -286,7 +286,7 @@ bool HardwareDisplayController::SchedulePageFlipOnCrtc(
     const OverlayPlaneList& overlays,
     CrtcState* state) {
   const OverlayPlane& primary = GetPrimaryPlane(overlays);
-  DCHECK(primary.buffer);
+  DCHECK(primary.buffer.get());
 
   if (primary.buffer->GetSize() != gfx::Size(mode_.hdisplay, mode_.vdisplay)) {
     LOG(WARNING) << "Trying to pageflip a buffer with the wrong size. Expected "

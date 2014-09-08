@@ -31,7 +31,7 @@ void DriCursor::SetCursor(gfx::AcceleratedWidget widget,
     return;
 
   cursor_ = cursor;
-  if (cursor_)
+  if (cursor_.get())
     hardware_->SetHardwareCursor(
         cursor_window_, cursor_->bitmap(), bitmap_location());
   else
@@ -50,7 +50,7 @@ void DriCursor::MoveCursorTo(gfx::AcceleratedWidget widget,
   cursor_location_.SetToMax(gfx::PointF(0, 0));
   cursor_location_.SetToMin(gfx::PointF(size.width(), size.height()));
 
-  if (cursor_)
+  if (cursor_.get())
     hardware_->MoveHardwareCursor(cursor_window_, bitmap_location());
 }
 
@@ -63,7 +63,7 @@ gfx::AcceleratedWidget DriCursor::GetCursorWindow() {
 }
 
 bool DriCursor::IsCursorVisible() {
-  return cursor_;
+  return cursor_.get();
 }
 
 gfx::PointF DriCursor::location() {

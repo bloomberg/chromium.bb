@@ -198,7 +198,7 @@ void EventFactoryEvdev::OnDeviceEvent(const DeviceEvent& event) {
 }
 
 void EventFactoryEvdev::OnDispatcherListChanged() {
-  if (!ui_task_runner_) {
+  if (!ui_task_runner_.get()) {
     ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     // Scan & monitor devices.
     device_manager_->AddObserver(this);
