@@ -111,8 +111,8 @@ long int sysconf(int name) {
   return -1;
 }
 
-void *mmap(void *start, size_t length, int prot, int flags,
-           int fd, off_t offset) {
+static void *mmap_internal(void *start, size_t length, int prot, int flags,
+                           int fd, off_t offset) {
 #if defined(__i386__) || defined(__arm__)
   static const int kPageBits = 12;
   if (offset & ((1 << kPageBits) - 1)) {
@@ -130,14 +130,38 @@ void *mmap(void *start, size_t length, int prot, int flags,
 #endif
 }
 
+void *mmap(void *start, size_t length, int prot, int flags,
+           int fd, off_t offset) {
+  /*
+   * On Chrome OS and on Chrome's seccomp sandbox, mmap() with PROT_EXEC is
+   * prohibited. So, instead, mmap() the memory without PROT_EXEC first, and
+   * then give it the PROT_EXEC by mprotect.
+   */
+  void *result =
+      mmap_internal(start, length, (prot & ~PROT_EXEC), flags, fd, offset);
+  if (result != MAP_FAILED && (prot & PROT_EXEC) != 0) {
+    if (mprotect(result, length, prot) < 0) {
+      /*
+       * If mprotect failed, we cannot do much else other than abort(), because
+       * we cannot undo the mmap() (specifically, when MAP_FIXED is set).
+       */
+      static const char msg[] =
+          "mprotect() in mmap() to set PROT_EXEC failed.";
+      write(2, msg, sizeof(msg) - 1);
+      abort();
+    }
+  }
+  return result;
+}
+
 int munmap(void *start, size_t length) {
   return errno_value_call(
-      linux_syscall2(__NR_munmap, (uintptr_t ) start, length));
+      linux_syscall2(__NR_munmap, (uintptr_t) start, length));
 }
 
 int mprotect(void *start, size_t length, int prot) {
   return errno_value_call(
-      linux_syscall3(__NR_mprotect, (uintptr_t ) start, length, prot));
+      linux_syscall3(__NR_mprotect, (uintptr_t) start, length, prot));
 }
 
 int read(int fd, void *buf, size_t count) {
