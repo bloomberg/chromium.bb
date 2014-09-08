@@ -77,9 +77,9 @@ public:
     // If filesystem files live in the remote filesystem, the port might pass the valid metadata (whose length field is non-negative) and cache in the File object.
     //
     // Otherwise calling size(), lastModifiedTime() and slice() will synchronously query the file metadata.
-    static PassRefPtrWillBeRawPtr<File> createForFileSystemFile(const String& name, const FileMetadata& metadata)
+    static PassRefPtrWillBeRawPtr<File> createForFileSystemFile(const String& name, const FileMetadata& metadata, UserVisibility userVisibility)
     {
-        return adoptRefWillBeNoop(new File(name, metadata));
+        return adoptRefWillBeNoop(new File(name, metadata, userVisibility));
     }
 
     static PassRefPtrWillBeRawPtr<File> createForFileSystemFile(const KURL& url, const FileMetadata& metadata)
@@ -140,7 +140,7 @@ private:
     File(const String& path, const String& name, ContentTypeLookupPolicy, UserVisibility);
     File(const String& path, const String& name, const String& relativePath, UserVisibility, bool hasSnaphotData, uint64_t size, double lastModified, PassRefPtr<BlobDataHandle>);
     File(const String& name, double modificationTime, PassRefPtr<BlobDataHandle>);
-    File(const String& name, const FileMetadata&);
+    File(const String& name, const FileMetadata&, UserVisibility);
     File(const KURL& fileSystemURL, const FileMetadata&);
 
     void invalidateSnapshotMetadata() { m_snapshotSize = -1; }

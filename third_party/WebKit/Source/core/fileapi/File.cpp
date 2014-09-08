@@ -137,10 +137,10 @@ File::File(const String& name, double modificationTime, PassRefPtr<BlobDataHandl
 {
 }
 
-File::File(const String& name, const FileMetadata& metadata)
+File::File(const String& name, const FileMetadata& metadata, UserVisibility userVisibility)
     : Blob(BlobDataHandle::create(createBlobDataForFileWithMetadata(name, metadata), metadata.length))
     , m_hasBackingFile(true)
-    , m_userVisibility(File::IsNotUserVisible)
+    , m_userVisibility(userVisibility)
     , m_path(metadata.platformPath)
     , m_name(name)
     , m_snapshotSize(metadata.length)

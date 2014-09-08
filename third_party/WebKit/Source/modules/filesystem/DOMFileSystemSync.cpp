@@ -124,20 +124,7 @@ public:
         // *after* we've coined a File with a new handle that has the correct type set on it. This allows the
         // blob storage system to track when a temp file can and can't be safely deleted.
 
-        // For regular filesystem types (temporary or persistent), we should not cache file metadata as it could change File semantics.
-        // For other filesystem types (which could be platform-specific ones), there's a chance that the files are on remote filesystem.
-        // If the port has returned metadata just pass it to File constructor (so we may cache the metadata).
-        // FIXME: We should use the snapshot metadata for all files.
-        // https://www.w3.org/Bugs/Public/show_bug.cgi?id=17746
-        if (m_type == FileSystemTypeTemporary || m_type == FileSystemTypePersistent) {
-            m_result->m_file = File::createForFileSystemFile(metadata.platformPath, m_name);
-        } else if (!metadata.platformPath.isEmpty()) {
-            // If the platformPath in the returned metadata is given, we create a File object for the path.
-            m_result->m_file = File::createForFileSystemFile(m_name, metadata).get();
-        } else {
-            // Otherwise create a File from the FileSystem URL.
-            m_result->m_file = File::createForFileSystemFile(m_url, metadata).get();
-        }
+        m_result->m_file = DOMFileSystemBase::createFile(metadata, m_url, m_type, m_name);
     }
 
     virtual bool shouldBlockUntilCompletion() const OVERRIDE

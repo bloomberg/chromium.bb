@@ -32,6 +32,7 @@
 #include "modules/filesystem/DOMFileSystemBase.h"
 
 #include "core/dom/ExecutionContext.h"
+#include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
 #include "core/html/VoidCallback.h"
 #include "modules/filesystem/DOMFilePath.h"
@@ -186,6 +187,25 @@ bool DOMFileSystemBase::pathPrefixToFileSystemType(const String& pathPrefix, Fil
     }
 
     return false;
+}
+
+PassRefPtrWillBeRawPtr<File> DOMFileSystemBase::createFile(const FileMetadata& metadata, const KURL& fileSystemURL, FileSystemType type, const String name)
+{
+    // For regular filesystem types (temporary or persistent), we should not cache file metadata as it could change File semantics.
+    // For other filesystem types (which could be platform-specific ones), there's a chance that the files are on remote filesystem.
+    // If the port has returned metadata just pass it to File constructor (so we may cache the metadata).
+    // FIXME: We should use the snapshot metadata for all files.
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=17746
+    if (type == FileSystemTypeTemporary || type == FileSystemTypePersistent)
+        return File::createForFileSystemFile(metadata.platformPath, name);
+
+    if (!metadata.platformPath.isEmpty()) {
+        // If the platformPath in the returned metadata is given, we create a File object for the path.
+        File::UserVisibility userVisibility = (type == FileSystemTypeExternal) ? File::IsUserVisible : File::IsNotUserVisible;
+        return File::createForFileSystemFile(name, metadata, userVisibility);
+    }
+
+    return File::createForFileSystemFile(fileSystemURL, metadata);
 }
 
 void DOMFileSystemBase::getMetadata(const EntryBase* entry, PassOwnPtrWillBeRawPtr<MetadataCallback> successCallback, PassOwnPtrWillBeRawPtr<ErrorCallback> errorCallback, SynchronousType synchronousType)
