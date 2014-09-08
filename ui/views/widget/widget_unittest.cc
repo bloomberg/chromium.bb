@@ -39,6 +39,19 @@
 namespace views {
 namespace test {
 
+namespace {
+
+// TODO(tdanderson): This utility function is used in different unittest
+//                   files. Move to a common location to avoid
+//                   repeated code.
+gfx::Point ConvertPointFromWidgetToView(View* view, const gfx::Point& p) {
+  gfx::Point tmp(p);
+  View::ConvertPointToTarget(view->GetWidget()->GetRootView(), view, &tmp);
+  return tmp;
+}
+
+}  // namespace
+
 // A view that keeps track of the events it receives, optionally consuming them.
 class EventCountView : public View {
  public:
@@ -2345,6 +2358,97 @@ TEST_F(WidgetTest, ScrollGestureEventDispatch) {
   EXPECT_EQ(0, v4->GetEventCount(ui::ET_GESTURE_END));
   EXPECT_EQ(NULL, GetGestureHandler(root_view));
   EXPECT_TRUE(end.handled());
+
+  widget->Close();
+}
+
+// A class used in WidgetTest.GestureEventLocationWhileBubbling to verify
+// that when a gesture event bubbles up a View hierarchy, the location
+// of a gesture event seen by each View is in the local coordinate space
+// of that View.
+class GestureLocationView : public EventCountView {
+ public:
+  GestureLocationView() {}
+  virtual ~GestureLocationView() {}
+
+  void set_expected_location(gfx::Point expected_location) {
+    expected_location_ = expected_location;
+  }
+
+  // EventCountView:
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    EventCountView::OnGestureEvent(event);
+
+    // Verify that the location of |event| is in the local coordinate
+    // space of |this|.
+    EXPECT_EQ(expected_location_, event->location());
+  }
+
+ private:
+  // The expected location of a gesture event dispatched to |this|.
+  gfx::Point expected_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(GestureLocationView);
+};
+
+// Verifies that the location of a gesture event is always in the local
+// coordinate space of the View receiving the event while bubbling.
+TEST_F(WidgetTest, GestureEventLocationWhileBubbling) {
+  Widget* widget = CreateTopLevelNativeWidget();
+  widget->SetBounds(gfx::Rect(0, 0, 300, 300));
+
+  // Define a hierarchy of three views (coordinates shown below are in the
+  // coordinate space of the root view, but the coordinates used for
+  // SetBounds() are in their parent coordinate space).
+  // v1 (50, 50, 150, 150)
+  //   v2 (100, 70, 50, 80)
+  //     v3 (120, 100, 10, 10)
+  GestureLocationView* v1 = new GestureLocationView();
+  v1->SetBounds(50, 50, 150, 150);
+  GestureLocationView* v2 = new GestureLocationView();
+  v2->SetBounds(50, 20, 50, 80);
+  GestureLocationView* v3 = new GestureLocationView();
+  v3->SetBounds(20, 30, 10, 10);
+  internal::RootView* root_view =
+      static_cast<internal::RootView*>(widget->GetRootView());
+  root_view->AddChildView(v1);
+  v1->AddChildView(v2);
+  v2->AddChildView(v3);
+
+  widget->Show();
+
+  // Define a GESTURE_TAP event located at (125, 105) in root view coordinates.
+  // This event is contained within all of |v1|, |v2|, and |v3|.
+  gfx::Point location_in_root(125, 105);
+  GestureEventForTest tap(
+      ui::ET_GESTURE_TAP, location_in_root.x(), location_in_root.y());
+
+  // Calculate the location of the event in the local coordinate spaces
+  // of each of the views.
+  gfx::Point location_in_v1(ConvertPointFromWidgetToView(v1, location_in_root));
+  EXPECT_EQ(gfx::Point(75, 55), location_in_v1);
+  gfx::Point location_in_v2(ConvertPointFromWidgetToView(v2, location_in_root));
+  EXPECT_EQ(gfx::Point(25, 35), location_in_v2);
+  gfx::Point location_in_v3(ConvertPointFromWidgetToView(v3, location_in_root));
+  EXPECT_EQ(gfx::Point(5, 5), location_in_v3);
+
+  // Dispatch the event. When each view receives the event, its location should
+  // be in the local coordinate space of that view (see the check made by
+  // GestureLocationView). After dispatch is complete the event's location
+  // should be in the root coordinate space.
+  v1->set_expected_location(location_in_v1);
+  v2->set_expected_location(location_in_v2);
+  v3->set_expected_location(location_in_v3);
+  widget->OnGestureEvent(&tap);
+  EXPECT_EQ(location_in_root, tap.location());
+
+  // Verify that each view did in fact see the event.
+  EventCountView* view1 = v1;
+  EventCountView* view2 = v2;
+  EventCountView* view3 = v3;
+  EXPECT_EQ(1, view1->GetEventCount(ui::ET_GESTURE_TAP));
+  EXPECT_EQ(1, view2->GetEventCount(ui::ET_GESTURE_TAP));
+  EXPECT_EQ(1, view3->GetEventCount(ui::ET_GESTURE_TAP));
 
   widget->Close();
 }

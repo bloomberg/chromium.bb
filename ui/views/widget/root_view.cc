@@ -647,19 +647,19 @@ View::DragInfo* RootView::GetDragInfo() {
 
 void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
   bool gesture_handler_set_before_dispatch = !!gesture_handler_;
-  View* target =
-      static_cast<View*>(targeter()->FindTargetForEvent(this, event));
+  scoped_ptr<ui::Event> event_copy = ui::Event::Clone(*event);
+  View* target = static_cast<View*>(
+      targeter()->FindTargetForEvent(this, event_copy.get()));
   while (target && target != this) {
     // Create and dispatch a copy of |event|.
-    ui::GestureEvent event_copy(*event, static_cast<View*>(this), target);
     ui::EventDispatchDetails dispatch_details =
-        DispatchEvent(target, &event_copy);
+        DispatchEvent(target, event_copy.get());
     if (dispatch_details.dispatcher_destroyed)
       return;
 
-    if (event_copy.stopped_propagation())
+    if (event_copy->stopped_propagation())
       event->StopPropagation();
-    else if (event_copy.handled())
+    else if (event_copy->handled())
       event->SetHandled();
 
     // If the event was handled by the previous dispatch or if the target
@@ -669,7 +669,8 @@ void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
 
     // The event was not handled by |target|, so continue processing by
     // re-targeting the event.
-    target = static_cast<View*>(targeter()->FindNextBestTarget(target, event));
+    target = static_cast<View*>(
+        targeter()->FindNextBestTarget(target, event_copy.get()));
   }
 
   // |event| was not handled, so if |gesture_handler_| was not set by the

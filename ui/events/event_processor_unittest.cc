@@ -170,7 +170,9 @@ TEST_F(EventProcessorTest, Bounds) {
 
 // ReDispatchEventHandler is used to receive mouse events and forward them
 // to a specified EventProcessor. Verifies that the event has the correct
-// target and phase both before and after the nested event processing.
+// target and phase both before and after the nested event processing. Also
+// verifies that the location of the event remains the same after it has
+// been processed by the second EventProcessor.
 class ReDispatchEventHandler : public TestEventHandler {
  public:
   ReDispatchEventHandler(EventProcessor* processor, EventTarget* target)
@@ -184,14 +186,16 @@ class ReDispatchEventHandler : public TestEventHandler {
     EXPECT_EQ(expected_target_, event->target());
     EXPECT_EQ(EP_TARGET, event->phase());
 
+    gfx::Point location(event->location());
     EventDispatchDetails details = processor_->OnEventFromSource(event);
     EXPECT_FALSE(details.dispatcher_destroyed);
     EXPECT_FALSE(details.target_destroyed);
 
-    // The nested event-processing should not have mutated the target or
-    // phase of |event|.
+    // The nested event-processing should not have mutated the target,
+    // phase, or location of |event|.
     EXPECT_EQ(expected_target_, event->target());
     EXPECT_EQ(EP_TARGET, event->phase());
+    EXPECT_EQ(location, event->location());
   }
 
  private:

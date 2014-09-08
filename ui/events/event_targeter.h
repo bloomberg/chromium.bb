@@ -20,7 +20,11 @@ class EVENTS_EXPORT EventTargeter {
   virtual ~EventTargeter();
 
   // Returns the target |event| should be dispatched to. If there is no such
-  // target, this should return NULL.
+  // target, return NULL. If |event| is a located event, the location of |event|
+  // is in the coordinate space of |root|. Furthermore, the targeter can mutate
+  // the event (e.g., by changing the location of the event to be in the
+  // returned target's coordinate space) so that it can be dispatched to the
+  // target without any further modification.
   virtual EventTarget* FindTargetForEvent(EventTarget* root,
                                           Event* event);
 
@@ -28,7 +32,9 @@ class EVENTS_EXPORT EventTargeter {
   // etc. of |event| are in |root|'s coordinate system. When finding the target
   // for the event, the targeter can mutate the |event| (e.g. change the
   // coordinate to be in the returned target's coordinate system) so that it can
-  // be dispatched to the target without any farther modification.
+  // be dispatched to the target without any further modification.
+  // TODO(tdanderson|sadrul): This should not be in the public API of
+  //                          EventTargeter.
   virtual EventTarget* FindTargetForLocatedEvent(EventTarget* root,
                                                  LocatedEvent* event);
 
@@ -43,6 +49,7 @@ class EVENTS_EXPORT EventTargeter {
                                                const LocatedEvent& event);
 
   // Returns the next best target for |event| as compared to |previous_target|.
+  // |event| is in the local coordinate space of |previous_target|.
   // Also mutates |event| so that it can be dispatched to the returned target
   // (e.g., by changing |event|'s location to be in the returned target's
   // coordinate space).

@@ -39,8 +39,12 @@ ui::EventTarget* ViewTargeter::FindTargetForEvent(ui::EventTarget* root,
                                     *static_cast<ui::ScrollEvent*>(event));
   }
 
-  if (event->IsGestureEvent())
-    return FindTargetForGestureEvent(view, *(event->AsGestureEvent()));
+  if (event->IsGestureEvent()) {
+    ui::GestureEvent* gesture = event->AsGestureEvent();
+    View* gesture_target = FindTargetForGestureEvent(view, *gesture);
+    root->ConvertEventToTarget(gesture_target, gesture);
+    return gesture_target;
+  }
 
   NOTREACHED() << "ViewTargeter does not yet support this event type.";
   return NULL;
@@ -53,8 +57,11 @@ ui::EventTarget* ViewTargeter::FindNextBestTarget(
     return NULL;
 
   if (event->IsGestureEvent()) {
-    return FindNextBestTargetForGestureEvent(previous_target,
-                                             *(event->AsGestureEvent()));
+    ui::GestureEvent* gesture = event->AsGestureEvent();
+    ui::EventTarget* next_target =
+        FindNextBestTargetForGestureEvent(previous_target, *gesture);
+    previous_target->ConvertEventToTarget(next_target, gesture);
+    return next_target;
   }
 
   return previous_target->GetParentTarget();

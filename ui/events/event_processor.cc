@@ -14,27 +14,27 @@ EventDispatchDetails EventProcessor::OnEventFromSource(Event* event) {
   CHECK(root);
   EventTargeter* targeter = root->GetEventTargeter();
   CHECK(targeter);
-
   PrepareEventForDispatch(event);
-  EventTarget* target = targeter->FindTargetForEvent(root, event);
 
-  // If the event is in the process of being dispatched or has already been
+  // If |event| is in the process of being dispatched or has already been
   // dispatched, then dispatch a copy of the event instead.
+  bool dispatch_original_event = event->phase() == EP_PREDISPATCH;
+  Event* event_to_dispatch = event;
   scoped_ptr<Event> event_copy;
-  if (event->phase() != EP_PREDISPATCH)
+  if (!dispatch_original_event) {
     event_copy = Event::Clone(*event);
+    event_to_dispatch = event_copy.get();
+  }
 
+  EventTarget* target = targeter->FindTargetForEvent(root, event_to_dispatch);
   while (target) {
-    EventDispatchDetails details;
-    if (event_copy) {
-      details = DispatchEvent(target, event_copy.get());
+    EventDispatchDetails details = DispatchEvent(target, event_to_dispatch);
 
-      if (event_copy->stopped_propagation())
+    if (!dispatch_original_event) {
+      if (event_to_dispatch->stopped_propagation())
         event->StopPropagation();
-      else if (event_copy->handled())
+      else if (event_to_dispatch->handled())
         event->SetHandled();
-    } else {
-      details = DispatchEvent(target, event);
     }
 
     if (details.dispatcher_destroyed ||
@@ -43,7 +43,7 @@ EventDispatchDetails EventProcessor::OnEventFromSource(Event* event) {
       return details;
     }
 
-    target = targeter->FindNextBestTarget(target, event);
+    target = targeter->FindNextBestTarget(target, event_to_dispatch);
   }
 
   return EventDispatchDetails();
