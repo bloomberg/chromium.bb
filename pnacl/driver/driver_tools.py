@@ -757,16 +757,17 @@ def DriverMain(module, argv):
   return module.main(argv)
 
 
+def MaybeStripNonSFISuffix(s):
+  """Removes _NONSFI suffix if possible, otherwise |s| as is."""
+  return s[:-len('_NONSFI')] if s.endswith('_NONSFI') else s
+
+
 def SetArch(arch):
   arch = FixArch(arch)
   env.set('ARCH', arch)
-
-  nonsfi_nacl = False
-  if arch.endswith('_NONSFI'):
-    arch = arch[:-len('_NONSFI')]
-    nonsfi_nacl = True
-  env.set('BASE_ARCH', arch)
-  env.setbool('NONSFI_NACL', nonsfi_nacl)
+  base_arch = MaybeStripNonSFISuffix(arch)
+  env.set('BASE_ARCH', base_arch)
+  env.setbool('NONSFI_NACL', arch != base_arch)
 
 
 def GetArch(required = False):
@@ -779,9 +780,11 @@ def GetArch(required = False):
 
   return arch
 
-# Read an ELF file to determine the machine type. If ARCH is already set,
-# make sure the file has the same architecture. If ARCH is not set,
-# set the ARCH to the file's architecture.
+# Read an ELF file or an archive file to determine the machine type. If ARCH is
+# already set, make sure the file has the same architecture. If ARCH is not
+# set, set the ARCH to the file's architecture.
+# Note that the SFI and NONSFI shares the same file format, so they will be
+# treated as same.
 #
 # Returns True if the file matches ARCH.
 #
@@ -801,11 +804,14 @@ def ArchMerge(filename, must_match):
     Log.Fatal('%s: Unexpected file type in ArchMerge', filename)
 
   existing_arch = GetArch()
-
   if not existing_arch:
     SetArch(new_arch)
     return True
-  elif new_arch != existing_arch:
+
+  # The _NONSFI binary format is as same as the SFI's.
+  existing_arch = MaybeStripNonSFISuffix(existing_arch)
+
+  if new_arch != existing_arch:
     if must_match:
       msg = "%s: Incompatible object file (%s != %s)"
       logfunc = Log.Fatal
@@ -814,8 +820,9 @@ def ArchMerge(filename, must_match):
       logfunc = Log.Warning
     logfunc(msg, filename, new_arch, existing_arch)
     return False
-  else: # existing_arch and new_arch == existing_arch
-    return True
+
+  # existing_arch and new_arch == existing_arch
+  return True
 
 def CheckTranslatorPrerequisites():
   """ Assert that the scons artifacts for running the sandboxed translator
