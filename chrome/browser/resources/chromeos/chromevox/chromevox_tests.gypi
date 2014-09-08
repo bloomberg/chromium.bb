@@ -40,9 +40,10 @@
       'rules': [
         {
           # A JavaScript test that runs in an environment similar to a webui
-          # browser test.
+          # browser test.  This is meant for unit tests that test individual
+          # components without depending on the ChromeVox extension.
           'rule_name': 'js2webui',
-          'extension': 'js',
+          'extension': 'unitjs',
           'msvs_external_rule': 1,
           'inputs': [
             '<(gypv8sh)',
@@ -68,7 +69,7 @@
             '<(js2gtest)',
             'webui',
             '<(RULE_INPUT_PATH)',
-            'chrome/browser/resources/chromeos/chromevox/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).js',
+            'chrome/browser/resources/chromeos/chromevox/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).unitjs',
             '<@(_outputs)',
           ],
         },
@@ -122,20 +123,20 @@
         '<(DEPTH)/chrome/browser/extensions/browsertest_util.cc',
         '<(DEPTH)/chrome/browser/extensions/browsertest_util.h',
 
-        'common/aria_util_test.js',
-        'common/braille_text_handler_test.js',
-        'common/braille_util_test.js',
-        'common/command_store_test.js',
-        'common/cursor_selection_test.js',
-        'common/dom_util_test.js',
-        'common/editable_text_area_shadow_test.js',
-        'common/editable_text_test.js',
-        'common/find_util_test.js',
-        'common/key_sequence_test.js',
-        'common/math_semantic_tree_test.js',
-        'common/page_selection_test.js',
-        'common/selection_util_test.js',
-        'common/spannable_test.js',
+        'common/aria_util_test.unitjs',
+        'common/braille_text_handler_test.unitjs',
+        'common/braille_util_test.unitjs',
+        'common/command_store_test.unitjs',
+        'common/cursor_selection_test.unitjs',
+        'common/dom_util_test.unitjs',
+        'common/editable_text_area_shadow_test.unitjs',
+        'common/editable_text_test.unitjs',
+        'common/find_util_test.unitjs',
+        'common/key_sequence_test.unitjs',
+        'common/math_semantic_tree_test.unitjs',
+        'common/page_selection_test.unitjs',
+        'common/selection_util_test.unitjs',
+        'common/spannable_test.unitjs',
       ],
       'conditions': [
         ['use_chromevox_next==1', {
