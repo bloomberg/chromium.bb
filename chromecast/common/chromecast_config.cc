@@ -81,8 +81,9 @@ bool ChromecastConfig::Load(PrefRegistrySimple* registry) {
   PersistentPrefStore::PrefReadError prefs_read_error =
       PersistentPrefStore::PREF_READ_ERROR_NONE;
   base::PrefServiceFactory prefServiceFactory;
-  prefServiceFactory.SetUserPrefsFile(config_path_,
-      JsonPrefStore::GetTaskRunnerForFile(config_path_, worker_pool_));
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      JsonPrefStore::GetTaskRunnerForFile(config_path_, worker_pool_.get());
+  prefServiceFactory.SetUserPrefsFile(config_path_, task_runner.get());
   prefServiceFactory.set_async(false);
   prefServiceFactory.set_read_error_callback(
       base::Bind(&UserPrefsLoadError, &prefs_read_error));

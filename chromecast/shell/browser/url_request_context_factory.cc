@@ -150,7 +150,8 @@ net::URLRequestContextGetter* URLRequestContextFactory::CreateMainGetter(
     content::BrowserContext* browser_context,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
-  DCHECK(!main_getter_) << "Main URLRequestContextGetter already initialized";
+  DCHECK(!main_getter_.get())
+      << "Main URLRequestContextGetter already initialized";
   main_getter_ = new MainURLRequestContextGetter(this,
                                                  browser_context,
                                                  protocol_handlers,
@@ -159,19 +160,19 @@ net::URLRequestContextGetter* URLRequestContextFactory::CreateMainGetter(
 }
 
 net::URLRequestContextGetter* URLRequestContextFactory::GetMainGetter() {
-  CHECK(main_getter_);
+  CHECK(main_getter_.get());
   return main_getter_.get();
 }
 
 net::URLRequestContextGetter* URLRequestContextFactory::GetSystemGetter() {
-  if (!system_getter_) {
+  if (!system_getter_.get()) {
     system_getter_ = new URLRequestContextGetter(this, false);
   }
   return system_getter_.get();
 }
 
 net::URLRequestContextGetter* URLRequestContextFactory::GetMediaGetter() {
-  if (!media_getter_) {
+  if (!media_getter_.get()) {
     media_getter_ = new URLRequestContextGetter(this, true);
   }
   return media_getter_.get();
@@ -203,8 +204,8 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
   proxy_service_.reset(net::ProxyService::CreateUsingSystemProxyResolver(
       net::ProxyService::CreateSystemProxyConfigService(
           content::BrowserThread::GetMessageLoopProxyForThread(
-              content::BrowserThread::IO).get(),
-          content::BrowserThread::UnsafeGetMessageLoopForThread(
+              content::BrowserThread::IO),
+          content::BrowserThread::GetMessageLoopProxyForThread(
               content::BrowserThread::FILE)),
       0,
       NULL));
@@ -312,7 +313,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
 
 net::URLRequestContext* URLRequestContextFactory::CreateMediaRequestContext() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  DCHECK(main_getter_)
+  DCHECK(main_getter_.get())
       << "Getting MediaRequestContext before MainRequestContext";
   net::URLRequestContext* main_context = main_getter_->GetURLRequestContext();
 
