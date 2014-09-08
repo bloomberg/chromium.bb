@@ -141,6 +141,13 @@ public class SigninManager {
                 ChromeSigninController.get(mContext).getSignedInUser() == null;
     }
 
+    /**
+     * Returns true if signin is disabled by policy.
+     */
+    public boolean isSigninDisabledByPolicy() {
+        return !mSigninAllowedByPolicy;
+    }
+
     public void addSignInAllowedObserver(SignInAllowedObserver observer) {
         mSignInAllowedObservers.addObserver(observer);
     }
