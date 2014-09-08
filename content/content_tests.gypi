@@ -601,6 +601,7 @@
         'browser/service_worker/service_worker_job_unittest.cc',
         'browser/service_worker/service_worker_provider_host_unittest.cc',
         'browser/service_worker/service_worker_registration_unittest.cc',
+        'browser/service_worker/service_worker_request_handler_unittest.cc',
         'browser/service_worker/service_worker_storage_unittest.cc',
         'browser/service_worker/service_worker_url_request_job_unittest.cc',
         'browser/service_worker/service_worker_utils_unittest.cc',

@@ -164,6 +164,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
   friend class ServiceWorkerResourceStorageTest;
   friend class ServiceWorkerControlleeRequestHandlerTest;
   friend class ServiceWorkerContextRequestHandlerTest;
+  friend class ServiceWorkerRequestHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageTest,
                            DeleteRegistration_NoLiveVersion);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageTest,
