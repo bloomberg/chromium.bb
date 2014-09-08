@@ -60,8 +60,8 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
 {
     switch (prop) {
     case CSSPropertyBackgroundColor:
-        return a.backgroundColor().resolve(a.color()) == b.backgroundColor().resolve(b.color())
-            && a.visitedLinkBackgroundColor().resolve(a.color()) == b.visitedLinkBackgroundColor().resolve(b.color());
+        return a.backgroundColor() == b.backgroundColor()
+            && a.visitedLinkBackgroundColor() == b.visitedLinkBackgroundColor();
     case CSSPropertyBackgroundImage:
         return fillLayersEqual<CSSPropertyBackgroundImage>(a.backgroundLayers(), b.backgroundLayers());
     case CSSPropertyBackgroundPositionX:
@@ -73,8 +73,8 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
     case CSSPropertyBaselineShift:
         return dataEquivalent(a.baselineShiftValue(), b.baselineShiftValue());
     case CSSPropertyBorderBottomColor:
-        return a.borderBottomColor().resolve(a.color()) == b.borderBottomColor().resolve(b.color())
-            && a.visitedLinkBorderBottomColor().resolve(a.color()) == b.visitedLinkBorderBottomColor().resolve(b.color());
+        return a.borderBottomColor() == b.borderBottomColor()
+            && a.visitedLinkBorderBottomColor() == b.visitedLinkBorderBottomColor();
     case CSSPropertyBorderBottomLeftRadius:
         return a.borderBottomLeftRadius() == b.borderBottomLeftRadius();
     case CSSPropertyBorderBottomRightRadius:
@@ -90,18 +90,18 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
     case CSSPropertyBorderImageWidth:
         return a.borderImageWidth() == b.borderImageWidth();
     case CSSPropertyBorderLeftColor:
-        return a.borderLeftColor().resolve(a.color()) == b.borderLeftColor().resolve(b.color())
-            && a.visitedLinkBorderLeftColor().resolve(a.color()) == b.visitedLinkBorderLeftColor().resolve(b.color());
+        return a.borderLeftColor() == b.borderLeftColor()
+            && a.visitedLinkBorderLeftColor() == b.visitedLinkBorderLeftColor();
     case CSSPropertyBorderLeftWidth:
         return a.borderLeftWidth() == b.borderLeftWidth();
     case CSSPropertyBorderRightColor:
-        return a.borderRightColor().resolve(a.color()) == b.borderRightColor().resolve(b.color())
-            && a.visitedLinkBorderRightColor().resolve(a.color()) == b.visitedLinkBorderRightColor().resolve(b.color());
+        return a.borderRightColor() == b.borderRightColor()
+            && a.visitedLinkBorderRightColor() == b.visitedLinkBorderRightColor();
     case CSSPropertyBorderRightWidth:
         return a.borderRightWidth() == b.borderRightWidth();
     case CSSPropertyBorderTopColor:
-        return a.borderTopColor().resolve(a.color()) == b.borderTopColor().resolve(b.color())
-            && a.visitedLinkBorderTopColor().resolve(a.color()) == b.visitedLinkBorderTopColor().resolve(b.color());
+        return a.borderTopColor() == b.borderTopColor()
+            && a.visitedLinkBorderTopColor() == b.visitedLinkBorderTopColor();
     case CSSPropertyBorderTopLeftRadius:
         return a.borderTopLeftRadius() == b.borderTopLeftRadius();
     case CSSPropertyBorderTopRightRadius:
@@ -181,8 +181,8 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
     case CSSPropertyOrphans:
         return a.orphans() == b.orphans();
     case CSSPropertyOutlineColor:
-        return a.outlineColor().resolve(a.color()) == b.outlineColor().resolve(b.color())
-            && a.visitedLinkOutlineColor().resolve(a.color()) == b.visitedLinkOutlineColor().resolve(b.color());
+        return a.outlineColor() == b.outlineColor()
+            && a.visitedLinkOutlineColor() == b.visitedLinkOutlineColor();
     case CSSPropertyOutlineOffset:
         return a.outlineOffset() == b.outlineOffset();
     case CSSPropertyOutlineWidth:
@@ -226,8 +226,8 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
     case CSSPropertyStrokeWidth:
         return dataEquivalent(a.strokeWidth(), b.strokeWidth());
     case CSSPropertyTextDecorationColor:
-        return a.textDecorationColor().resolve(a.color()) == b.textDecorationColor().resolve(b.color())
-            && a.visitedLinkTextDecorationColor().resolve(a.color()) == b.visitedLinkTextDecorationColor().resolve(b.color());
+        return a.textDecorationColor() == b.textDecorationColor()
+            && a.visitedLinkTextDecorationColor() == b.visitedLinkTextDecorationColor();
     case CSSPropertyTextIndent:
         return a.textIndent() == b.textIndent();
     case CSSPropertyTextShadow:
@@ -254,8 +254,8 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
     case CSSPropertyWebkitColumnGap:
         return a.columnGap() == b.columnGap();
     case CSSPropertyWebkitColumnRuleColor:
-        return a.columnRuleColor().resolve(a.color()) == b.columnRuleColor().resolve(b.color())
-            && a.visitedLinkColumnRuleColor().resolve(a.color()) == b.visitedLinkColumnRuleColor().resolve(b.color());
+        return a.columnRuleColor() == b.columnRuleColor()
+            && a.visitedLinkColumnRuleColor() == b.visitedLinkColumnRuleColor();
     case CSSPropertyWebkitColumnRuleWidth:
         return a.columnRuleWidth() == b.columnRuleWidth();
     case CSSPropertyWebkitColumnWidth:
@@ -283,8 +283,8 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
     case CSSPropertyPerspectiveOrigin:
         return a.perspectiveOriginX() == b.perspectiveOriginX() && a.perspectiveOriginY() == b.perspectiveOriginY();
     case CSSPropertyWebkitTextStrokeColor:
-        return a.textStrokeColor().resolve(a.color()) == b.textStrokeColor().resolve(b.color())
-            && a.visitedLinkTextStrokeColor().resolve(a.color()) == b.visitedLinkTextStrokeColor().resolve(b.color());
+        return a.textStrokeColor() == b.textStrokeColor()
+            && a.visitedLinkTextStrokeColor() == b.visitedLinkTextStrokeColor();
     case CSSPropertyTransform:
         return a.transform() == b.transform();
     case CSSPropertyTransformOrigin:
