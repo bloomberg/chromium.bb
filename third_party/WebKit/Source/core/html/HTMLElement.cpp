@@ -30,7 +30,6 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
-#include "core/V8HTMLElementWrapperFactory.h" // FIXME: should be bindings/core/v8
 #include "core/XMLNames.h"
 #include "core/css/CSSMarkup.h"
 #include "core/css/CSSValuePool.h"

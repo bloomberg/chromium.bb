@@ -28,7 +28,6 @@
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
-#include "core/V8SVGElementWrapperFactory.h" // FIXME: should be bindings/core/v8
 #include "core/XLinkNames.h"
 #include "core/XMLNames.h"
 #include "core/css/CSSCursorImageValue.h"

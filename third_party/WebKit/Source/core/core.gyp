@@ -228,7 +228,6 @@
         '<(blink_core_output_dir)/MathMLNames.cpp',
         '<(blink_core_output_dir)/SVGNames.cpp',
         '<(blink_core_output_dir)/UserAgentStyleSheetsData.cpp',
-        '<(blink_core_output_dir)/V8HTMLElementWrapperFactory.cpp',
         '<(blink_core_output_dir)/XLinkNames.cpp',
         '<(blink_core_output_dir)/XMLNSNames.cpp',
         '<(blink_core_output_dir)/XMLNames.cpp',
@@ -270,7 +269,6 @@
 
         # Additional .cpp files for SVG.
         '<(blink_core_output_dir)/SVGElementFactory.cpp',
-        '<(blink_core_output_dir)/V8SVGElementWrapperFactory.cpp',
 
         # Generated from make_style_shorthands.py
         '<(blink_core_output_dir)/StylePropertyShorthand.cpp',

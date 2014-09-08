@@ -37,12 +37,12 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Document.h"
+#include "bindings/core/v8/V8HTMLElement.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8PerContextData.h"
+#include "bindings/core/v8/V8SVGElement.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
-#include "core/V8HTMLElementWrapperFactory.h" // FIXME: should be bindings/core/v8
-#include "core/V8SVGElementWrapperFactory.h" // FIXME: should be bindings/core/v8
 #include "core/dom/Document.h"
 #include "core/dom/custom/CustomElementDefinition.h"
 #include "core/dom/custom/CustomElementDescriptor.h"
@@ -57,7 +57,6 @@ static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>&);
 CustomElementConstructorBuilder::CustomElementConstructorBuilder(ScriptState* scriptState, const Dictionary* options)
     : m_scriptState(scriptState)
     , m_options(options)
-    , m_wrapperType(0)
 {
     ASSERT(m_scriptState->context() == m_scriptState->isolate()->GetCurrentContext());
 }
@@ -139,17 +138,9 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
         localName = type;
     }
 
-    if (!extendsProvidedAndNonNull)
-        m_wrapperType = &V8HTMLElement::wrapperTypeInfo;
-    else if (namespaceURI == HTMLNames::xhtmlNamespaceURI)
-        m_wrapperType = findWrapperTypeForHTMLTagName(localName);
-    else
-        m_wrapperType = findWrapperTypeForSVGTagName(localName);
-
     ASSERT(!tryCatch.HasCaught());
-    ASSERT(m_wrapperType);
     tagName = QualifiedName(nullAtom, localName, namespaceURI);
-    return m_wrapperType;
+    return true;
 }
 
 PassRefPtr<CustomElementLifecycleCallbacks> CustomElementConstructorBuilder::createCallbacks()
@@ -248,7 +239,7 @@ bool CustomElementConstructorBuilder::didRegisterDefinition(CustomElementDefinit
 {
     ASSERT(!m_constructor.IsEmpty());
 
-    return m_callbacks->setBinding(definition, CustomElementBinding::create(m_scriptState->isolate(), m_prototype, m_wrapperType));
+    return m_callbacks->setBinding(definition, CustomElementBinding::create(m_scriptState->isolate(), m_prototype));
 }
 
 ScriptValue CustomElementConstructorBuilder::bindingsReturnValue() const

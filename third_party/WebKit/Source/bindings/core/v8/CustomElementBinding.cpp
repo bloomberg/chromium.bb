@@ -33,18 +33,16 @@
 
 namespace blink {
 
-PassOwnPtr<CustomElementBinding> CustomElementBinding::create(v8::Isolate* isolate, v8::Handle<v8::Object> prototype, const WrapperTypeInfo* wrapperType)
+PassOwnPtr<CustomElementBinding> CustomElementBinding::create(v8::Isolate* isolate, v8::Handle<v8::Object> prototype)
 {
-    return adoptPtr(new CustomElementBinding(isolate, prototype, wrapperType));
+    return adoptPtr(new CustomElementBinding(isolate, prototype));
 }
 
-CustomElementBinding::CustomElementBinding(v8::Isolate* isolate, v8::Handle<v8::Object> prototype, const WrapperTypeInfo* wrapperType)
+CustomElementBinding::CustomElementBinding(v8::Isolate* isolate, v8::Handle<v8::Object> prototype)
     : m_isolate(isolate)
     , m_prototype(isolate, prototype)
-    , m_wrapperType(wrapperType)
 {
     ASSERT(!m_prototype.isEmpty());
-    ASSERT(m_wrapperType);
 }
 
 } // namespace blink

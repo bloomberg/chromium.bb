@@ -84,11 +84,10 @@ private:
     RefPtr<ScriptState> m_scriptState;
     const Dictionary* m_options;
     v8::Handle<v8::Object> m_prototype;
-    const WrapperTypeInfo* m_wrapperType;
     v8::Handle<v8::Function> m_constructor;
     RefPtr<V8CustomElementLifecycleCallbacks> m_callbacks;
 };
 
-}
+} // namespace blink
 
 #endif // CustomElementConstructorBuilder_h

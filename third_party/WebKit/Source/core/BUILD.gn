@@ -370,7 +370,6 @@ source_set("core_generated") {
     "$blink_core_output_dir/MathMLNames.cpp",
     "$blink_core_output_dir/SVGNames.cpp",
     "$blink_core_output_dir/UserAgentStyleSheetsData.cpp",
-    "$blink_core_output_dir/V8HTMLElementWrapperFactory.cpp",
     "$blink_core_output_dir/XLinkNames.cpp",
     "$blink_core_output_dir/XMLNSNames.cpp",
     "$blink_core_output_dir/XMLNames.cpp",
@@ -412,7 +411,6 @@ source_set("core_generated") {
 
     # Additional .cpp files for SVG.
     "$blink_core_output_dir/SVGElementFactory.cpp",
-    "$blink_core_output_dir/V8SVGElementWrapperFactory.cpp",
 
     # Generated from make_style_shorthands.py
     "$blink_core_output_dir/StylePropertyShorthand.cpp",
@@ -691,8 +689,6 @@ process_in_files("make_core_generated_html_element_factory") {
     "$blink_core_output_dir/HTMLElementFactory.h",
     "$blink_core_output_dir/HTMLNames.cpp",
     "$blink_core_output_dir/HTMLNames.h",
-    "$blink_core_output_dir/V8HTMLElementWrapperFactory.cpp",
-    "$blink_core_output_dir/V8HTMLElementWrapperFactory.h",
   ]
 }
 
@@ -723,8 +719,6 @@ process_in_files("make_core_generated_svg_names") {
     "$blink_core_output_dir/SVGElementFactory.h",
     "$blink_core_output_dir/SVGNames.cpp",
     "$blink_core_output_dir/SVGNames.h",
-    "$blink_core_output_dir/V8SVGElementWrapperFactory.cpp",
-    "$blink_core_output_dir/V8SVGElementWrapperFactory.h",
   ]
 }
 

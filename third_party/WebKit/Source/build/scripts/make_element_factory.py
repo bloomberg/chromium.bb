@@ -63,8 +63,6 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
         self._outputs.update({
             (self.namespace + 'ElementFactory.h'): self.generate_factory_header,
             (self.namespace + 'ElementFactory.cpp'): self.generate_factory_implementation,
-            ('V8' + self.namespace + 'ElementWrapperFactory.h'): self.generate_wrapper_factory_header,
-            ('V8' + self.namespace + 'ElementWrapperFactory.cpp'): self.generate_wrapper_factory_implementation,
         })
 
         fallback_interface = self.tags_in_file.parameters['fallbackInterfaceName'].strip('"')
@@ -92,14 +90,6 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
 
     @template_expander.use_jinja('ElementFactory.cpp.tmpl', filters=filters)
     def generate_factory_implementation(self):
-        return self._template_context
-
-    @template_expander.use_jinja('ElementWrapperFactory.h.tmpl', filters=filters)
-    def generate_wrapper_factory_header(self):
-        return self._template_context
-
-    @template_expander.use_jinja('ElementWrapperFactory.cpp.tmpl', filters=filters)
-    def generate_wrapper_factory_implementation(self):
         return self._template_context
 
     def _interface(self, tag):

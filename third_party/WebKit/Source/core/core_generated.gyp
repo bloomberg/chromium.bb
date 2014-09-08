@@ -407,8 +407,6 @@
             '<(blink_core_output_dir)/HTMLElementFactory.h',
             '<(blink_core_output_dir)/HTMLNames.cpp',
             '<(blink_core_output_dir)/HTMLNames.h',
-            '<(blink_core_output_dir)/V8HTMLElementWrapperFactory.cpp',
-            '<(blink_core_output_dir)/V8HTMLElementWrapperFactory.h',
           ],
           'action': [
             'python',
@@ -448,8 +446,6 @@
             '<(blink_core_output_dir)/SVGElementFactory.h',
             '<(blink_core_output_dir)/SVGNames.cpp',
             '<(blink_core_output_dir)/SVGNames.h',
-            '<(blink_core_output_dir)/V8SVGElementWrapperFactory.cpp',
-            '<(blink_core_output_dir)/V8SVGElementWrapperFactory.h',
           ],
           'action': [
             'python',
