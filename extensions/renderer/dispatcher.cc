@@ -220,31 +220,23 @@ bool Dispatcher::IsExtensionActive(const std::string& extension_id) const {
   return is_active;
 }
 
-std::string Dispatcher::GetExtensionID(const WebFrame* frame, int world_id) {
+const Extension* Dispatcher::GetExtensionFromFrameAndWorld(
+    const WebFrame* frame,
+    int world_id,
+    bool use_effective_url) {
+  std::string extension_id;
   if (world_id != 0) {
     // Isolated worlds (content script).
-    return ScriptInjection::GetExtensionIdForIsolatedWorld(world_id);
+    extension_id = ScriptInjection::GetExtensionIdForIsolatedWorld(world_id);
+  } else if (!frame->document().securityOrigin().isUnique()) {
+    // TODO(kalman): Delete the above check.
+
+    // Extension pages (chrome-extension:// URLs).
+    GURL frame_url = ScriptContext::GetDataSourceURLForFrame(frame);
+    frame_url = ScriptContext::GetEffectiveDocumentURL(
+        frame, frame_url, use_effective_url);
+    extension_id = extensions_.GetExtensionOrAppIDByURL(frame_url);
   }
-
-  // TODO(kalman): Delete this check.
-  if (frame->document().securityOrigin().isUnique())
-    return std::string();
-
-  // Extension pages (chrome-extension:// URLs).
-  GURL frame_url = ScriptContext::GetDataSourceURLForFrame(frame);
-  return extensions_.GetExtensionOrAppIDByURL(frame_url);
-}
-
-void Dispatcher::DidCreateScriptContext(
-    WebFrame* frame,
-    const v8::Handle<v8::Context>& v8_context,
-    int extension_group,
-    int world_id) {
-#if !defined(ENABLE_EXTENSIONS)
-  return;
-#endif
-
-  std::string extension_id = GetExtensionID(frame, world_id);
 
   const Extension* extension = extensions_.GetByID(extension_id);
   if (!extension && !extension_id.empty()) {
@@ -257,19 +249,43 @@ void Dispatcher::DidCreateScriptContext(
       RenderThread::Get()->RecordAction(
           UserMetricsAction("ExtensionNotFound_ED"));
     }
-
-    extension_id = "";
   }
+  return extension;
+}
 
+void Dispatcher::DidCreateScriptContext(
+    WebFrame* frame,
+    const v8::Handle<v8::Context>& v8_context,
+    int extension_group,
+    int world_id) {
+#if !defined(ENABLE_EXTENSIONS)
+  return;
+#endif
+
+  const Extension* extension =
+      GetExtensionFromFrameAndWorld(frame, world_id, false);
+  const Extension* effective_extension =
+      GetExtensionFromFrameAndWorld(frame, world_id, true);
+
+  GURL frame_url = ScriptContext::GetDataSourceURLForFrame(frame);
   Feature::Context context_type =
       ClassifyJavaScriptContext(extension,
                                 extension_group,
-                                ScriptContext::GetDataSourceURLForFrame(frame),
+                                frame_url,
                                 frame->document().securityOrigin());
+  Feature::Context effective_context_type = ClassifyJavaScriptContext(
+      effective_extension,
+      extension_group,
+      ScriptContext::GetEffectiveDocumentURL(frame, frame_url, true),
+      frame->document().securityOrigin());
 
   ScriptContext* context =
-      delegate_->CreateScriptContext(v8_context, frame, extension, context_type)
-          .release();
+      delegate_->CreateScriptContext(v8_context,
+                                     frame,
+                                     extension,
+                                     context_type,
+                                     effective_extension,
+                                     effective_context_type).release();
   script_context_set_.Add(context);
 
   // Initialize origin permissions for content scripts, which can't be

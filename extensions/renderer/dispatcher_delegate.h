@@ -36,7 +36,9 @@ class DispatcherDelegate {
       const v8::Handle<v8::Context>& v8_context,
       blink::WebFrame* frame,
       const Extension* extension,
-      Feature::Context context_type) = 0;
+      Feature::Context context_type,
+      const Extension* effective_extension,
+      Feature::Context effective_context_type) = 0;
 
   // Initializes origin permissions for a newly created extension context.
   virtual void InitOriginPermissions(const Extension* extension,

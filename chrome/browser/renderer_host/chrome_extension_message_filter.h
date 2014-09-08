@@ -47,9 +47,6 @@ class ChromeExtensionMessageFilter : public content::BrowserMessageFilter,
 
   virtual ~ChromeExtensionMessageFilter();
 
-  void OnCanTriggerClipboardRead(const GURL& origin, bool* allowed);
-  void OnCanTriggerClipboardWrite(const GURL& origin, bool* allowed);
-
   // TODO(jamescook): Move these functions into the extensions module. Ideally
   // this would be in extensions::ExtensionMessageFilter but that will require
   // resolving the MessageService and ActivityLog dependencies on src/chrome.

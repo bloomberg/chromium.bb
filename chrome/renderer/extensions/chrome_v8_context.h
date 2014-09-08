@@ -34,7 +34,9 @@ class ChromeV8Context : public ScriptContext {
   ChromeV8Context(const v8::Handle<v8::Context>& context,
                   blink::WebFrame* frame,
                   const Extension* extension,
-                  Feature::Context context_type);
+                  Feature::Context context_type,
+                  const Extension* effective_extension,
+                  Feature::Context effective_context_type);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeV8Context);

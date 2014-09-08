@@ -19,9 +19,15 @@ scoped_ptr<ScriptContext> DefaultDispatcherDelegate::CreateScriptContext(
     const v8::Handle<v8::Context>& v8_context,
     blink::WebFrame* frame,
     const Extension* extension,
-    Feature::Context context_type) {
-  return make_scoped_ptr(
-      new ScriptContext(v8_context, frame, extension, context_type));
+    Feature::Context context_type,
+    const Extension* effective_extension,
+    Feature::Context effective_context_type) {
+  return make_scoped_ptr(new ScriptContext(v8_context,
+                                           frame,
+                                           extension,
+                                           context_type,
+                                           effective_extension,
+                                           effective_context_type));
 }
 
 }  // namespace extensions

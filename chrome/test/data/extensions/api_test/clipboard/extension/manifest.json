@@ -6,5 +6,11 @@
   "background": {
     "page": "test.html"
   },
-  "permissions": ["clipboardRead"]
+  "permissions": ["clipboardRead", "clipboardWrite", "http://localhost/*"],
+  "content_scripts": [
+    {
+      "matches": ["http://*/*test_file_with_body.html"],
+      "js": ["content_script.js"]
+    }
+  ]
 }

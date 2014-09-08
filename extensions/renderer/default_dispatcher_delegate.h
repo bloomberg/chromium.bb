@@ -19,7 +19,9 @@ class DefaultDispatcherDelegate : public DispatcherDelegate {
       const v8::Handle<v8::Context>& v8_context,
       blink::WebFrame* frame,
       const Extension* extension,
-      Feature::Context context_type) OVERRIDE;
+      Feature::Context context_type,
+      const Extension* effective_extension,
+      Feature::Context effective_context_type) OVERRIDE;
 };
 
 }  // namespace extensions

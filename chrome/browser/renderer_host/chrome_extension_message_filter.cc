@@ -23,13 +23,11 @@
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/api/messaging/message.h"
-#include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/message_bundle.h"
 
 using content::BrowserThread;
-using extensions::APIPermission;
 
 namespace {
 
@@ -88,10 +86,6 @@ bool ChromeExtensionMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeExtensionMessageFilter, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CanTriggerClipboardRead,
-                        OnCanTriggerClipboardRead)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CanTriggerClipboardWrite,
-                        OnCanTriggerClipboardWrite)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToExtension,
                         OnOpenChannelToExtension)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToTab, OnOpenChannelToTab)
@@ -131,21 +125,6 @@ void ChromeExtensionMessageFilter::OnDestruct() const {
   } else {
     BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
   }
-}
-
-void ChromeExtensionMessageFilter::OnCanTriggerClipboardRead(
-    const GURL& origin, bool* allowed) {
-  *allowed = extension_info_map_->SecurityOriginHasAPIPermission(
-      origin, render_process_id_, APIPermission::kClipboardRead);
-}
-
-void ChromeExtensionMessageFilter::OnCanTriggerClipboardWrite(
-    const GURL& origin, bool* allowed) {
-  // Since all extensions could historically write to the clipboard, preserve it
-  // for compatibility.
-  *allowed = (origin.SchemeIs(extensions::kExtensionScheme) ||
-      extension_info_map_->SecurityOriginHasAPIPermission(
-          origin, render_process_id_, APIPermission::kClipboardWrite));
 }
 
 void ChromeExtensionMessageFilter::OnOpenChannelToExtension(

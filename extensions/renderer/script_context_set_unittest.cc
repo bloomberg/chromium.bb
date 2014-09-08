@@ -32,6 +32,8 @@ TEST(ScriptContextSet, Lifecycle) {
       new ScriptContext(context_holder.context(),
                         frame,
                         extension,
+                        Feature::BLESSED_EXTENSION_CONTEXT,
+                        extension,
                         Feature::BLESSED_EXTENSION_CONTEXT);
 
   context_set.Add(context);

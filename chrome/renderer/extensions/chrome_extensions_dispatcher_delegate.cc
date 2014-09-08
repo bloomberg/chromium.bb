@@ -63,9 +63,16 @@ ChromeExtensionsDispatcherDelegate::CreateScriptContext(
     const v8::Handle<v8::Context>& v8_context,
     blink::WebFrame* frame,
     const extensions::Extension* extension,
-    extensions::Feature::Context context_type) {
-  return scoped_ptr<extensions::ScriptContext>(new extensions::ChromeV8Context(
-      v8_context, frame, extension, context_type));
+    extensions::Feature::Context context_type,
+    const extensions::Extension* effective_extension,
+    extensions::Feature::Context effective_context_type) {
+  return scoped_ptr<extensions::ScriptContext>(
+      new extensions::ChromeV8Context(v8_context,
+                                      frame,
+                                      extension,
+                                      context_type,
+                                      effective_extension,
+                                      effective_context_type));
 }
 
 void ChromeExtensionsDispatcherDelegate::InitOriginPermissions(

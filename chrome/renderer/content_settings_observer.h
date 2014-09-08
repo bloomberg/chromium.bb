@@ -111,7 +111,6 @@ class ContentSettingsObserver
   // Otherwise returns NULL.
   const extensions::Extension* GetExtension(
       const blink::WebSecurityOrigin& origin) const;
-
 #endif
 
   // Helpers.

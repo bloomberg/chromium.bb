@@ -90,11 +90,13 @@ class Dispatcher : public content::RenderProcessObserver,
 
   bool IsExtensionActive(const std::string& extension_id) const;
 
-  // Finds the extension ID for the JavaScript context associated with the
+  // Finds the extension for the JavaScript context associated with the
   // specified |frame| and isolated world. If |world_id| is zero, finds the
   // extension ID associated with the main world's JavaScript context. If the
   // JavaScript context isn't from an extension, returns empty string.
-  std::string GetExtensionID(const blink::WebFrame* frame, int world_id);
+  const Extension* GetExtensionFromFrameAndWorld(const blink::WebFrame* frame,
+                                                 int world_id,
+                                                 bool use_effective_url);
 
   void DidCreateScriptContext(blink::WebFrame* frame,
                               const v8::Handle<v8::Context>& context,

@@ -71,14 +71,6 @@ IPC_MESSAGE_ROUTED4(ExtensionMsg_InlineWebstoreInstallResponse,
 
 // Messages sent from the renderer to the browser.
 
-// Sent by the renderer to check if a URL has permission to trigger a clipboard
-// read/write operation from the DOM.
-IPC_SYNC_MESSAGE_CONTROL1_1(ChromeViewHostMsg_CanTriggerClipboardRead,
-                            GURL /* origin */,
-                            bool /* allowed */)
-IPC_SYNC_MESSAGE_CONTROL1_1(ChromeViewHostMsg_CanTriggerClipboardWrite,
-                            GURL /* origin */,
-                            bool /* allowed */)
 
 // Sent by the renderer to implement chrome.webstore.install().
 IPC_MESSAGE_ROUTED5(ExtensionHostMsg_InlineWebstoreInstall,
