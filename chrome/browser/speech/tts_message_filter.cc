@@ -15,9 +15,14 @@ TtsMessageFilter::TtsMessageFilter(int render_process_id,
                                    content::BrowserContext* browser_context)
     : BrowserMessageFilter(TtsMsgStart),
       render_process_id_(render_process_id),
-      browser_context_(browser_context) {
+      browser_context_(browser_context),
+      weak_ptr_factory_(this) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TtsController::GetInstance()->AddVoicesChangedDelegate(this);
+
+  // Balanced in OnChannelClosingInUIThread() to keep the ref-count be non-zero
+  // until all WeakPtr's are invalidated.
+  AddRef();
 }
 
 void TtsMessageFilter::OverrideThreadForMessage(
@@ -91,7 +96,7 @@ void TtsMessageFilter::OnSpeak(const TtsUtteranceRequest& request) {
   params.volume = request.volume;
   utterance->set_continuous_parameters(params);
 
-  utterance->set_event_delegate(this->AsWeakPtr());
+  utterance->set_event_delegate(weak_ptr_factory_.GetWeakPtr());
 
   TtsController::GetInstance()->SpeakOrEnqueue(utterance.release());
 }
@@ -159,9 +164,13 @@ void TtsMessageFilter::OnVoicesChanged() {
 void TtsMessageFilter::OnChannelClosingInUIThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TtsController::GetInstance()->RemoveVoicesChangedDelegate(this);
+
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  Release();  // Balanced in TtsMessageFilter().
 }
 
 TtsMessageFilter::~TtsMessageFilter() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!weak_ptr_factory_.HasWeakPtrs());
   TtsController::GetInstance()->RemoveVoicesChangedDelegate(this);
 }

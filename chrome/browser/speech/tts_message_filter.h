@@ -17,8 +17,7 @@ class BrowserContext;
 class TtsMessageFilter
     : public content::BrowserMessageFilter,
       public UtteranceEventDelegate,
-      public VoicesChangedDelegate,
-      public base::SupportsWeakPtr<TtsMessageFilter> {
+      public VoicesChangedDelegate {
  public:
   explicit TtsMessageFilter(int render_process_id,
       content::BrowserContext* browser_context);
@@ -56,6 +55,8 @@ class TtsMessageFilter
 
   int render_process_id_;
   content::BrowserContext* browser_context_;
+
+  base::WeakPtrFactory<TtsMessageFilter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsMessageFilter);
 };
