@@ -42,6 +42,10 @@ class CdmWrapper {
 
   virtual ~CdmWrapper() {};
 
+  // TODO(jrummell): Remove return value when CDM4/5 are removed.
+  virtual bool SetServerCertificate(uint32_t promise_id,
+                                    const uint8_t* server_certificate_data,
+                                    uint32_t server_certificate_data_size) = 0;
   virtual void CreateSession(uint32_t promise_id,
                              const char* init_data_type,
                              uint32_t init_data_type_size,
@@ -175,6 +179,15 @@ class CdmWrapperImpl : public CdmWrapper {
            std::equal(data, data + header.length(), header.begin());
   }
 
+  virtual bool SetServerCertificate(
+      uint32_t promise_id,
+      const uint8_t* server_certificate_data,
+      uint32_t server_certificate_data_size) OVERRIDE {
+    cdm_->SetServerCertificate(
+        promise_id, server_certificate_data, server_certificate_data_size);
+    return true;
+  }
+
   virtual void CreateSession(uint32_t promise_id,
                              const char* init_data_type,
                              uint32_t init_data_type_size,
@@ -221,13 +234,6 @@ class CdmWrapperImpl : public CdmWrapper {
                         response_size);
   }
 
-  virtual bool GetUsableKeyIds(uint32_t promise_id,
-                               const char* web_session_id,
-                               uint32_t web_session_id_size) OVERRIDE {
-    cdm_->GetUsableKeyIds(promise_id, web_session_id, web_session_id_size);
-    return true;
-  }
-
   virtual bool CloseSession(uint32_t promise_id,
                             const char* web_session_id,
                             uint32_t web_session_id_size) OVERRIDE {
@@ -239,6 +245,13 @@ class CdmWrapperImpl : public CdmWrapper {
                              const char* web_session_id,
                              uint32_t web_session_id_size) OVERRIDE {
     cdm_->RemoveSession(promise_id, web_session_id, web_session_id_size);
+  }
+
+  virtual bool GetUsableKeyIds(uint32_t promise_id,
+                               const char* web_session_id,
+                               uint32_t web_session_id_size) OVERRIDE {
+    cdm_->GetUsableKeyIds(promise_id, web_session_id, web_session_id_size);
+    return true;
   }
 
   virtual void TimerExpired(void* context) OVERRIDE {
@@ -404,6 +417,14 @@ class CdmWrapperImpl : public CdmWrapper {
 // create the mapping (and delete it on release). Finally, for create, we need
 // to translate |init_data_type| to a MIME type.
 // TODO(jrummell): Remove these once Host_4 interface is removed.
+
+template <>
+bool CdmWrapperImpl<cdm::ContentDecryptionModule_4>::SetServerCertificate(
+    uint32_t promise_id,
+    const uint8_t* server_certificate_data,
+    uint32_t server_certificate_data_size) {
+  return false;
+}
 
 template <>
 void CdmWrapperImpl<cdm::ContentDecryptionModule_4>::CreateSession(

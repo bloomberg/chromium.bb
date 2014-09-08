@@ -757,6 +757,10 @@ IPC_MESSAGE_ROUTED3(
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPPContentDecryptor_Initialize,
                     PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* key_system, String */)
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_SetServerCertificate,
+                    PP_Instance /* instance */,
+                    uint32_t /* promise_id */,
+                    std::vector<uint8_t> /* certificate */)
 IPC_MESSAGE_ROUTED5(PpapiMsg_PPPContentDecryptor_CreateSession,
                     PP_Instance /* instance */,
                     uint32_t /* promise_id */,
@@ -772,10 +776,18 @@ IPC_MESSAGE_ROUTED4(PpapiMsg_PPPContentDecryptor_UpdateSession,
                     uint32_t /* promise_id */,
                     ppapi::proxy::SerializedVar /* web_session_id, String */,
                     ppapi::proxy::SerializedVar /* response, ArrayBuffer */)
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_ReleaseSession,
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_CloseSession,
                     PP_Instance /* instance */,
                     uint32_t /* promise_id */,
-                    ppapi::proxy::SerializedVar /* web_session_id, String */)
+                    std::string /* web_session_id */)
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_RemoveSession,
+                    PP_Instance /* instance */,
+                    uint32_t /* promise_id */,
+                    std::string /* web_session_id */)
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_GetUsableKeyIds,
+                    PP_Instance /* instance */,
+                    uint32_t /* promise_id */,
+                    std::string /* web_session_id */)
 IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_Decrypt,
                     PP_Instance /* instance */,
                     ppapi::proxy::PPPDecryptor_Buffer /* buffer */,
@@ -1092,6 +1104,10 @@ IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_PromiseResolvedWithSession,
                     PP_Instance /* instance */,
                     uint32_t /* promise_id */,
                     ppapi::proxy::SerializedVar /* web_session_id, String */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_PromiseResolvedWithKeyIds,
+                    PP_Instance /* instance */,
+                    uint32_t /* promise_id */,
+                    std::vector<std::vector<uint8_t> > /* key_ids */)
 IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBInstance_PromiseRejected,
                     PP_Instance /* instance */,
                     uint32_t /* promise_id */,
@@ -1103,6 +1119,14 @@ IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_SessionMessage,
                     ppapi::proxy::SerializedVar /* web_session_id, String */,
                     ppapi::proxy::SerializedVar /* message, ArrayBuffer */,
                     ppapi::proxy::SerializedVar /* destination_url, String */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_SessionKeysChange,
+                    PP_Instance /* instance */,
+                    std::string /* web_session_id */,
+                    PP_Bool /* has_additional_usable_key */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_SessionExpirationChange,
+                    PP_Instance /* instance */,
+                    std::string /* web_session_id */,
+                    PP_Time /* new_expiry_time */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_SessionReady,
                     PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* web_session_id, String */)

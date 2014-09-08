@@ -20,6 +20,7 @@
 #include "media/base/decryptor.h"
 #include "media/base/media_keys.h"
 #include "media/base/sample_format.h"
+#include "ppapi/c/pp_time.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/ppp_content_decryptor_private.h"
 #include "ui/gfx/size.h"
@@ -55,6 +56,9 @@ class ContentDecryptorDelegate {
   void InstanceCrashed();
 
   // Provides access to PPP_ContentDecryptor_Private.
+  void SetServerCertificate(const uint8_t* certificate,
+                            uint32_t certificate_length,
+                            scoped_ptr<media::SimpleCdmPromise> promise);
   void CreateSession(const std::string& init_data_type,
                      const uint8* init_data,
                      int init_data_length,
@@ -66,8 +70,12 @@ class ContentDecryptorDelegate {
                      const uint8* response,
                      int response_length,
                      scoped_ptr<media::SimpleCdmPromise> promise);
-  void ReleaseSession(const std::string& web_session_id,
-                      scoped_ptr<media::SimpleCdmPromise> promise);
+  void CloseSession(const std::string& web_session_id,
+                    scoped_ptr<media::SimpleCdmPromise> promise);
+  void RemoveSession(const std::string& web_session_id,
+                     scoped_ptr<media::SimpleCdmPromise> promise);
+  void GetUsableKeyIds(const std::string& web_session_id,
+                       scoped_ptr<media::KeyIdsPromise> promise);
   bool Decrypt(media::Decryptor::StreamType stream_type,
                const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
                const media::Decryptor::DecryptCB& decrypt_cb);
@@ -93,6 +101,7 @@ class ContentDecryptorDelegate {
   // PPB_ContentDecryptor_Private dispatching methods.
   void OnPromiseResolved(uint32 promise_id);
   void OnPromiseResolvedWithSession(uint32 promise_id, PP_Var web_session_id);
+  void OnPromiseResolvedWithKeyIds(uint32 promise_id, PP_Var key_ids_array);
   void OnPromiseRejected(uint32 promise_id,
                          PP_CdmExceptionCode exception_code,
                          uint32 system_code,
@@ -100,6 +109,10 @@ class ContentDecryptorDelegate {
   void OnSessionMessage(PP_Var web_session_id,
                         PP_Var message,
                         PP_Var destination_url);
+  void OnSessionKeysChange(PP_Var web_session_id,
+                           PP_Bool has_additional_usable_key);
+  void OnSessionExpirationChange(PP_Var web_session_id,
+                                 PP_Time new_expiry_time);
   void OnSessionReady(PP_Var web_session_id);
   void OnSessionClosed(PP_Var web_session_id);
   void OnSessionError(PP_Var web_session_id,

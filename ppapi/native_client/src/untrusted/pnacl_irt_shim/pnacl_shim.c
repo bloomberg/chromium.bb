@@ -2721,6 +2721,11 @@ static void Pnacl_M36_PPB_ContentDecryptor_Private_PromiseResolvedWithSession(PP
   iface->PromiseResolvedWithSession(instance, promise_id, *web_session_id);
 }
 
+static void Pnacl_M36_PPB_ContentDecryptor_Private_PromiseResolvedWithKeyIds(PP_Instance instance, uint32_t promise_id, struct PP_Var* key_ids_array) {
+  const struct PPB_ContentDecryptor_Private_0_12 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_12.real_iface;
+  iface->PromiseResolvedWithKeyIds(instance, promise_id, *key_ids_array);
+}
+
 static void Pnacl_M36_PPB_ContentDecryptor_Private_PromiseRejected(PP_Instance instance, uint32_t promise_id, PP_CdmExceptionCode exception_code, uint32_t system_code, struct PP_Var* error_description) {
   const struct PPB_ContentDecryptor_Private_0_12 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_12.real_iface;
   iface->PromiseRejected(instance, promise_id, exception_code, system_code, *error_description);
@@ -2729,6 +2734,16 @@ static void Pnacl_M36_PPB_ContentDecryptor_Private_PromiseRejected(PP_Instance i
 static void Pnacl_M36_PPB_ContentDecryptor_Private_SessionMessage(PP_Instance instance, struct PP_Var* web_session_id, struct PP_Var* message, struct PP_Var* destination_url) {
   const struct PPB_ContentDecryptor_Private_0_12 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_12.real_iface;
   iface->SessionMessage(instance, *web_session_id, *message, *destination_url);
+}
+
+static void Pnacl_M36_PPB_ContentDecryptor_Private_SessionKeysChange(PP_Instance instance, struct PP_Var* web_session_id, PP_Bool has_additional_usable_key) {
+  const struct PPB_ContentDecryptor_Private_0_12 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_12.real_iface;
+  iface->SessionKeysChange(instance, *web_session_id, has_additional_usable_key);
+}
+
+static void Pnacl_M36_PPB_ContentDecryptor_Private_SessionExpirationChange(PP_Instance instance, struct PP_Var* web_session_id, PP_Time new_expiry_time) {
+  const struct PPB_ContentDecryptor_Private_0_12 *iface = Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_12.real_iface;
+  iface->SessionExpirationChange(instance, *web_session_id, new_expiry_time);
 }
 
 static void Pnacl_M36_PPB_ContentDecryptor_Private_SessionReady(PP_Instance instance, struct PP_Var* web_session_id) {
@@ -4368,6 +4383,13 @@ static void Pnacl_M36_PPP_ContentDecryptor_Private_Initialize(PP_Instance instan
   temp_fp(instance, &key_system);
 }
 
+static void Pnacl_M36_PPP_ContentDecryptor_Private_SetServerCertificate(PP_Instance instance, uint32_t promise_id, struct PP_Var server_certificate) {
+  const struct PPP_ContentDecryptor_Private_0_12 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_12.real_iface;
+  void (*temp_fp)(PP_Instance instance, uint32_t promise_id, struct PP_Var* server_certificate) =
+    ((void (*)(PP_Instance instance, uint32_t promise_id, struct PP_Var* server_certificate))iface->SetServerCertificate);
+  temp_fp(instance, promise_id, &server_certificate);
+}
+
 static void Pnacl_M36_PPP_ContentDecryptor_Private_CreateSession(PP_Instance instance, uint32_t promise_id, struct PP_Var init_data_type, struct PP_Var init_data, PP_SessionType session_type) {
   const struct PPP_ContentDecryptor_Private_0_12 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_12.real_iface;
   void (*temp_fp)(PP_Instance instance, uint32_t promise_id, struct PP_Var* init_data_type, struct PP_Var* init_data, PP_SessionType session_type) =
@@ -4389,10 +4411,24 @@ static void Pnacl_M36_PPP_ContentDecryptor_Private_UpdateSession(PP_Instance ins
   temp_fp(instance, promise_id, &web_session_id, &response);
 }
 
-static void Pnacl_M36_PPP_ContentDecryptor_Private_ReleaseSession(PP_Instance instance, uint32_t promise_id, struct PP_Var web_session_id) {
+static void Pnacl_M36_PPP_ContentDecryptor_Private_CloseSession(PP_Instance instance, uint32_t promise_id, struct PP_Var web_session_id) {
   const struct PPP_ContentDecryptor_Private_0_12 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_12.real_iface;
   void (*temp_fp)(PP_Instance instance, uint32_t promise_id, struct PP_Var* web_session_id) =
-    ((void (*)(PP_Instance instance, uint32_t promise_id, struct PP_Var* web_session_id))iface->ReleaseSession);
+    ((void (*)(PP_Instance instance, uint32_t promise_id, struct PP_Var* web_session_id))iface->CloseSession);
+  temp_fp(instance, promise_id, &web_session_id);
+}
+
+static void Pnacl_M36_PPP_ContentDecryptor_Private_RemoveSession(PP_Instance instance, uint32_t promise_id, struct PP_Var web_session_id) {
+  const struct PPP_ContentDecryptor_Private_0_12 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_12.real_iface;
+  void (*temp_fp)(PP_Instance instance, uint32_t promise_id, struct PP_Var* web_session_id) =
+    ((void (*)(PP_Instance instance, uint32_t promise_id, struct PP_Var* web_session_id))iface->RemoveSession);
+  temp_fp(instance, promise_id, &web_session_id);
+}
+
+static void Pnacl_M36_PPP_ContentDecryptor_Private_GetUsableKeyIds(PP_Instance instance, uint32_t promise_id, struct PP_Var web_session_id) {
+  const struct PPP_ContentDecryptor_Private_0_12 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_12.real_iface;
+  void (*temp_fp)(PP_Instance instance, uint32_t promise_id, struct PP_Var* web_session_id) =
+    ((void (*)(PP_Instance instance, uint32_t promise_id, struct PP_Var* web_session_id))iface->GetUsableKeyIds);
   temp_fp(instance, promise_id, &web_session_id);
 }
 
@@ -5192,8 +5228,11 @@ static const struct PPP_Selection_Dev_0_3 Pnacl_Wrappers_PPP_Selection_Dev_0_3 =
 static const struct PPB_ContentDecryptor_Private_0_12 Pnacl_Wrappers_PPB_ContentDecryptor_Private_0_12 = {
     .PromiseResolved = (void (*)(PP_Instance instance, uint32_t promise_id))&Pnacl_M36_PPB_ContentDecryptor_Private_PromiseResolved,
     .PromiseResolvedWithSession = (void (*)(PP_Instance instance, uint32_t promise_id, struct PP_Var web_session_id))&Pnacl_M36_PPB_ContentDecryptor_Private_PromiseResolvedWithSession,
+    .PromiseResolvedWithKeyIds = (void (*)(PP_Instance instance, uint32_t promise_id, struct PP_Var key_ids_array))&Pnacl_M36_PPB_ContentDecryptor_Private_PromiseResolvedWithKeyIds,
     .PromiseRejected = (void (*)(PP_Instance instance, uint32_t promise_id, PP_CdmExceptionCode exception_code, uint32_t system_code, struct PP_Var error_description))&Pnacl_M36_PPB_ContentDecryptor_Private_PromiseRejected,
     .SessionMessage = (void (*)(PP_Instance instance, struct PP_Var web_session_id, struct PP_Var message, struct PP_Var destination_url))&Pnacl_M36_PPB_ContentDecryptor_Private_SessionMessage,
+    .SessionKeysChange = (void (*)(PP_Instance instance, struct PP_Var web_session_id, PP_Bool has_additional_usable_key))&Pnacl_M36_PPB_ContentDecryptor_Private_SessionKeysChange,
+    .SessionExpirationChange = (void (*)(PP_Instance instance, struct PP_Var web_session_id, PP_Time new_expiry_time))&Pnacl_M36_PPB_ContentDecryptor_Private_SessionExpirationChange,
     .SessionReady = (void (*)(PP_Instance instance, struct PP_Var web_session_id))&Pnacl_M36_PPB_ContentDecryptor_Private_SessionReady,
     .SessionClosed = (void (*)(PP_Instance instance, struct PP_Var web_session_id))&Pnacl_M36_PPB_ContentDecryptor_Private_SessionClosed,
     .SessionError = (void (*)(PP_Instance instance, struct PP_Var web_session_id, PP_CdmExceptionCode exception_code, uint32_t system_code, struct PP_Var error_description))&Pnacl_M36_PPB_ContentDecryptor_Private_SessionError,
@@ -5624,10 +5663,13 @@ static const struct PPB_X509Certificate_Private_0_1 Pnacl_Wrappers_PPB_X509Certi
 
 static const struct PPP_ContentDecryptor_Private_0_12 Pnacl_Wrappers_PPP_ContentDecryptor_Private_0_12 = {
     .Initialize = &Pnacl_M36_PPP_ContentDecryptor_Private_Initialize,
+    .SetServerCertificate = &Pnacl_M36_PPP_ContentDecryptor_Private_SetServerCertificate,
     .CreateSession = &Pnacl_M36_PPP_ContentDecryptor_Private_CreateSession,
     .LoadSession = &Pnacl_M36_PPP_ContentDecryptor_Private_LoadSession,
     .UpdateSession = &Pnacl_M36_PPP_ContentDecryptor_Private_UpdateSession,
-    .ReleaseSession = &Pnacl_M36_PPP_ContentDecryptor_Private_ReleaseSession,
+    .CloseSession = &Pnacl_M36_PPP_ContentDecryptor_Private_CloseSession,
+    .RemoveSession = &Pnacl_M36_PPP_ContentDecryptor_Private_RemoveSession,
+    .GetUsableKeyIds = &Pnacl_M36_PPP_ContentDecryptor_Private_GetUsableKeyIds,
     .Decrypt = &Pnacl_M36_PPP_ContentDecryptor_Private_Decrypt,
     .InitializeAudioDecoder = &Pnacl_M36_PPP_ContentDecryptor_Private_InitializeAudioDecoder,
     .InitializeVideoDecoder = &Pnacl_M36_PPP_ContentDecryptor_Private_InitializeVideoDecoder,

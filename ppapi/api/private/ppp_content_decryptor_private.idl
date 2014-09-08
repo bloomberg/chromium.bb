@@ -31,6 +31,21 @@ interface PPP_ContentDecryptor_Private {
       [in] PP_Var key_system);
 
   /**
+   * Provides a server certificate to be used to encrypt messages to the
+   * license server.
+   *
+   * @param[in] promise_id A reference for the promise that gets resolved or
+   * rejected depending upon the success or failure of setting the certificate.
+   *
+   * @param[in] server_certificate A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_ARRAYBUFFER</code> containing the certificate to be used.
+   */
+  void SetServerCertificate(
+      [in] PP_Instance instance,
+      [in] uint32_t promise_id,
+      [in] PP_Var server_certificate);
+
+  /**
    * Creates a session. <code>init_data_type</code> contains the MIME type of
    * <code>init_data</code>. <code>init_data</code> is a data buffer
    * containing data for use in generating the request.
@@ -108,17 +123,51 @@ interface PPP_ContentDecryptor_Private {
       [in] PP_Var response);
 
   /**
-   * Release the specified session and related resources.
+   * Close the specified session and related resources.
    *
    * @param[in] promise_id A reference for the promise that gets resolved or
-   * rejected depending upon the success or failure of releasing the session.
+   * rejected depending upon the success or failure of closing the session.
    *
    * @param[in] web_session_id A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the web session ID of the session
-   * to be released.
+   * to be closed.
    *
    */
-  void ReleaseSession(
+  void CloseSession(
+      [in] PP_Instance instance,
+      [in] uint32_t promise_id,
+      [in] PP_Var web_session_id);
+
+  /**
+   * Remove stored data associated with this session.
+   *
+   * @param[in] promise_id A reference for the promise that gets resolved or
+   * rejected depending upon the success or failure of removing the session
+   * data.
+   *
+   * @param[in] web_session_id A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the web session ID of the session
+   * to be removed.
+   *
+   */
+  void RemoveSession(
+      [in] PP_Instance instance,
+      [in] uint32_t promise_id,
+      [in] PP_Var web_session_id);
+
+  /**
+   * Get the key IDs for keys in the session that the CDM knows are currently
+   * usable to decrypt media data.
+   *
+   * @param[in] promise_id A reference for the promise that gets resolved or
+   * rejected depending upon the success or failure of obtaining the key IDs.
+   *
+   * @param[in] web_session_id A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the web session ID of the session
+   * to be queried.
+   *
+   */
+  void GetUsableKeyIds(
       [in] PP_Instance instance,
       [in] uint32_t promise_id,
       [in] PP_Var web_session_id);

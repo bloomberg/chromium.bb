@@ -52,6 +52,9 @@ class CdmAdapter : public pp::Instance,
   // Note: Results of calls to these methods must be reported through the
   // PPB_ContentDecryptor_Private interface.
   virtual void Initialize(const std::string& key_system) OVERRIDE;
+  virtual void SetServerCertificate(
+      uint32_t promise_id,
+      pp::VarArrayBuffer server_certificate) OVERRIDE;
   virtual void CreateSession(uint32_t promise_id,
                              const std::string& init_data_type,
                              pp::VarArrayBuffer init_data,
@@ -61,15 +64,12 @@ class CdmAdapter : public pp::Instance,
   virtual void UpdateSession(uint32_t promise_id,
                              const std::string& web_session_id,
                              pp::VarArrayBuffer response) OVERRIDE;
-  // TODO(jrummell): Pass this function through Pepper and add OVERRIDE.
   virtual void CloseSession(uint32_t promise_id,
                             const std::string& web_session_id);
-  // TODO(jrummell): Rename to RemoveSession().
-  virtual void ReleaseSession(uint32_t promise_id,
-                              const std::string& web_session_id) OVERRIDE;
-  // TODO(jrummell): Pass this function through Pepper and add OVERRIDE.
+  virtual void RemoveSession(uint32_t promise_id,
+                             const std::string& web_session_id) OVERRIDE;
   virtual void GetUsableKeyIds(uint32_t promise_id,
-                               const std::string& web_session_id);
+                               const std::string& web_session_id) OVERRIDE;
   virtual void Decrypt(
       pp::Buffer_Dev encrypted_buffer,
       const PP_EncryptedBlockInfo& encrypted_block_info) OVERRIDE;

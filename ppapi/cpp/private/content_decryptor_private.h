@@ -6,6 +6,7 @@
 #define PPAPI_CPP_PRIVATE_CONTENT_DECRYPTOR_PRIVATE_H_
 
 #include <string>
+#include <vector>
 
 #include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
@@ -34,6 +35,8 @@ class ContentDecryptor_Private {
   // strings. The change would allow the CDM wrapper to reuse vars when
   // replying to the browser.
   virtual void Initialize(const std::string& key_system) = 0;
+  virtual void SetServerCertificate(uint32_t promise_id,
+                                    pp::VarArrayBuffer server_certificate) = 0;
   virtual void CreateSession(uint32_t promise_id,
                              const std::string& init_data_type,
                              pp::VarArrayBuffer init_data,
@@ -43,8 +46,12 @@ class ContentDecryptor_Private {
   virtual void UpdateSession(uint32_t promise_id,
                              const std::string& web_session_id,
                              pp::VarArrayBuffer response) = 0;
-  virtual void ReleaseSession(uint32_t promise_id,
-                              const std::string& web_session_id) = 0;
+  virtual void CloseSession(uint32_t promise_id,
+                            const std::string& web_session_id) = 0;
+  virtual void RemoveSession(uint32_t promise_id,
+                             const std::string& web_session_id) = 0;
+  virtual void GetUsableKeyIds(uint32_t promise_id,
+                               const std::string& web_session_id) = 0;
   virtual void Decrypt(pp::Buffer_Dev encrypted_buffer,
                        const PP_EncryptedBlockInfo& encrypted_block_info) = 0;
   virtual void InitializeAudioDecoder(
@@ -68,6 +75,9 @@ class ContentDecryptor_Private {
   void PromiseResolved(uint32_t promise_id);
   void PromiseResolvedWithSession(uint32_t promise_id,
                                   const std::string& web_session_id);
+  void PromiseResolvedWithKeyIds(
+      uint32_t promise_id,
+      const std::vector<std::vector<uint8_t> >& key_ids);
   void PromiseRejected(uint32_t promise_id,
                        PP_CdmExceptionCode exception_code,
                        uint32_t system_code,
@@ -75,6 +85,10 @@ class ContentDecryptor_Private {
   void SessionMessage(const std::string& web_session_id,
                       pp::VarArrayBuffer message,
                       const std::string& destination_url);
+  void SessionKeysChange(const std::string& web_session_id,
+                         bool has_additional_usable_key);
+  void SessionExpirationChange(const std::string& web_session_id,
+                               PP_Time new_expiry_time);
   void SessionReady(const std::string& web_session_id);
   void SessionClosed(const std::string& web_session_id);
   void SessionError(const std::string& web_session_id,

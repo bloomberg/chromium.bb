@@ -2485,6 +2485,13 @@ void PepperPluginInstanceImpl::PromiseResolvedWithSession(
                                                             web_session_id_var);
 }
 
+void PepperPluginInstanceImpl::PromiseResolvedWithKeyIds(PP_Instance instance,
+                                                         uint32 promise_id,
+                                                         PP_Var key_ids_var) {
+  content_decryptor_delegate_->OnPromiseResolvedWithKeyIds(promise_id,
+                                                           key_ids_var);
+}
+
 void PepperPluginInstanceImpl::PromiseRejected(
     PP_Instance instance,
     uint32 promise_id,
@@ -2501,6 +2508,22 @@ void PepperPluginInstanceImpl::SessionMessage(PP_Instance instance,
                                               PP_Var destination_url_var) {
   content_decryptor_delegate_->OnSessionMessage(
       web_session_id_var, message_var, destination_url_var);
+}
+
+void PepperPluginInstanceImpl::SessionKeysChange(
+    PP_Instance instance,
+    PP_Var web_session_id_var,
+    PP_Bool has_additional_usable_key) {
+  content_decryptor_delegate_->OnSessionKeysChange(web_session_id_var,
+                                                   has_additional_usable_key);
+}
+
+void PepperPluginInstanceImpl::SessionExpirationChange(
+    PP_Instance instance,
+    PP_Var web_session_id_var,
+    PP_Time new_expiry_time) {
+  content_decryptor_delegate_->OnSessionExpirationChange(web_session_id_var,
+                                                         new_expiry_time);
 }
 
 void PepperPluginInstanceImpl::SessionReady(PP_Instance instance,

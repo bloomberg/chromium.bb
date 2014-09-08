@@ -6,6 +6,7 @@
 #define PPAPI_PROXY_PPB_INSTANCE_PROXY_H_
 
 #include <string>
+#include <vector>
 
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
@@ -130,6 +131,9 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual void PromiseResolvedWithSession(PP_Instance instance,
                                           uint32 promise_id,
                                           PP_Var web_session_id_var) OVERRIDE;
+  virtual void PromiseResolvedWithKeyIds(PP_Instance instance,
+                                         uint32 promise_id,
+                                         PP_Var key_ids_var) OVERRIDE;
   virtual void PromiseRejected(PP_Instance instance,
                                uint32 promise_id,
                                PP_CdmExceptionCode exception_code,
@@ -139,6 +143,12 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                               PP_Var web_session_id_var,
                               PP_Var message_var,
                               PP_Var destination_url_var) OVERRIDE;
+  virtual void SessionKeysChange(PP_Instance instance,
+                                 PP_Var web_session_id_var,
+                                 PP_Bool has_additional_usable_key) OVERRIDE;
+  virtual void SessionExpirationChange(PP_Instance instance,
+                                       PP_Var web_session_id_var,
+                                       PP_Time new_expiry_time) OVERRIDE;
   virtual void SessionReady(PP_Instance instance,
                             PP_Var web_session_id_var) OVERRIDE;
   virtual void SessionClosed(PP_Instance instance,
@@ -254,6 +264,10 @@ class PPB_Instance_Proxy : public InterfaceProxy,
       PP_Instance instance,
       uint32_t promise_id,
       SerializedVarReceiveInput web_session_id);
+  virtual void OnHostMsgPromiseResolvedWithKeyIds(
+      PP_Instance instance,
+      uint32 promise_id,
+      const std::vector<std::vector<uint8_t> >& key_ids);
   virtual void OnHostMsgPromiseRejected(
       PP_Instance instance,
       uint32_t promise_id,
@@ -265,6 +279,13 @@ class PPB_Instance_Proxy : public InterfaceProxy,
       SerializedVarReceiveInput web_session_id,
       SerializedVarReceiveInput message,
       SerializedVarReceiveInput destination_url);
+  virtual void OnHostMsgSessionKeysChange(PP_Instance instance,
+                                          const std::string& web_session_id,
+                                          PP_Bool has_additional_usable_key);
+  virtual void OnHostMsgSessionExpirationChange(
+      PP_Instance instance,
+      const std::string& web_session_id,
+      PP_Time new_expiry_time);
   virtual void OnHostMsgSessionReady(PP_Instance instance,
                                      SerializedVarReceiveInput web_session_id);
   virtual void OnHostMsgSessionClosed(PP_Instance instance,

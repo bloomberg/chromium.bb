@@ -11,6 +11,7 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_size.h"
+#include "ppapi/c/pp_time.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_console.h"
 #include "ppapi/c/ppb_gamepad.h"
@@ -159,6 +160,9 @@ class PPB_Instance_API {
   virtual void PromiseResolvedWithSession(PP_Instance instance,
                                           uint32 promise_id,
                                           PP_Var web_session_id_var) = 0;
+  virtual void PromiseResolvedWithKeyIds(PP_Instance instance,
+                                         uint32 promise_id,
+                                         PP_Var key_ids_var) = 0;
   virtual void PromiseRejected(PP_Instance instance,
                                uint32 promise_id,
                                PP_CdmExceptionCode exception_code,
@@ -168,6 +172,12 @@ class PPB_Instance_API {
                               PP_Var web_session_id_var,
                               PP_Var message_var,
                               PP_Var destination_url_var) = 0;
+  virtual void SessionKeysChange(PP_Instance instance,
+                                 PP_Var web_session_id_var,
+                                 PP_Bool has_additional_usable_key) = 0;
+  virtual void SessionExpirationChange(PP_Instance instance,
+                                       PP_Var web_session_id_var,
+                                       PP_Time new_expiry_time) = 0;
   virtual void SessionReady(PP_Instance instance,
                             PP_Var web_session_id_var) = 0;
   virtual void SessionClosed(PP_Instance instance,

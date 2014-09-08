@@ -33,7 +33,7 @@ interface PPB_ContentDecryptor_Private {
       [in] uint32_t promise_id);
 
   /**
-   * A promise has been resolved by the CDM.
+   * A promise that resulted in a new session has been resolved by the CDM.
    *
    * @param[in] promise_id Identifies the promise that the CDM resolved.
    *
@@ -44,6 +44,20 @@ interface PPB_ContentDecryptor_Private {
       [in] PP_Instance instance,
       [in] uint32_t promise_id,
       [in] PP_Var web_session_id);
+
+  /**
+   * A promise that returns a set of key IDs has been resolved by the CDM.
+   *
+   * @param[in] promise_id Identifies the promise that the CDM resolved.
+   *
+   * @param[in] key_ids A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_ARRAY</code> containing elements of type
+   * <code>PP_VARTYPE_ARRAYBUFFER</code> that are the session's usable key IDs.
+   */
+  void PromiseResolvedWithKeyIds(
+      [in] PP_Instance instance,
+      [in] uint32_t promise_id,
+      [in] PP_Var key_ids_array);
 
   /**
    * A promise has been rejected by the CDM due to an error.
@@ -80,8 +94,8 @@ interface PPB_ContentDecryptor_Private {
    * required to prepare for decryption.
    *
    * @param[in] web_session_id A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the session's ID attribute for
-   * which the message is intended.
+   * <code>PP_VARTYPE_STRING</code> containing the ID of a session for
+   * which this message is intended.
    *
    * @param[in] message A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAY_BUFFER</code> that contains the message.
@@ -95,6 +109,37 @@ interface PPB_ContentDecryptor_Private {
       [in] PP_Var web_session_id,
       [in] PP_Var message,
       [in] PP_Var destination_url);
+
+  /**
+   * The keys for a session have changed.
+   *
+   * @param[in] web_session_id A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the ID of the session that has
+   * a change in keys.
+   *
+   * @param[in] has_additional_usable_key A <code>PP_Bool</code> indicating if
+   * a new usable key has been added.
+   */
+  void SessionKeysChange(
+      [in] PP_Instance instance,
+      [in] PP_Var web_session_id,
+      [in] PP_Bool has_additional_usable_key);
+
+  /**
+   * The expiration time for a session has changed.
+   *
+   * @param[in] web_session_id A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the ID of the session that has
+   * a new expiration time.
+   *
+   * @param[in] new_expiry_time A <code>PP_Time</code> indicating the new
+   * expiry time of the session. The value is defined as the number of seconds
+   * since the Epoch (00:00:00 UTC, January 1, 1970).
+   */
+  void SessionExpirationChange(
+      [in] PP_Instance instance,
+      [in] PP_Var web_session_id,
+      [in] PP_Time new_expiry_time);
 
   /**
    * The session is now ready to decrypt the media stream.

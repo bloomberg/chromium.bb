@@ -221,7 +221,7 @@ void PpapiDecryptor::ReleaseSession(
     return;
   }
 
-  CdmDelegate()->ReleaseSession(web_session_id, promise.Pass());
+  CdmDelegate()->CloseSession(web_session_id, promise.Pass());
 }
 
 media::Decryptor* PpapiDecryptor::GetDecryptor() {

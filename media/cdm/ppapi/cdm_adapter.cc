@@ -4,6 +4,7 @@
 
 #include "media/cdm/ppapi/cdm_adapter.h"
 
+#include "media/base/limits.h"
 #include "media/cdm/ppapi/cdm_file_io_impl.h"
 #include "media/cdm/ppapi/cdm_helpers.h"
 #include "media/cdm/ppapi/cdm_logging.h"
@@ -323,6 +324,38 @@ void CdmAdapter::Initialize(const std::string& key_system) {
   key_system_ = key_system;
 }
 
+void CdmAdapter::SetServerCertificate(uint32_t promise_id,
+                                      pp::VarArrayBuffer server_certificate) {
+  const uint8_t* server_certificate_ptr =
+      static_cast<const uint8_t*>(server_certificate.Map());
+  const uint32_t server_certificate_size = server_certificate.ByteLength();
+
+  if (!server_certificate_ptr ||
+      server_certificate_size < media::limits::kMinCertificateLength ||
+      server_certificate_size > media::limits::kMinCertificateLength) {
+    RejectPromise(
+        promise_id, cdm::kInvalidAccessError, 0, "Incorrect certificate.");
+    return;
+  }
+
+  // Initialize() doesn't report an error, so SetServerCertificate() can be
+  // called even if Initialize() failed.
+  // TODO(jrummell): Remove this code when prefixed EME gets removed.
+  if (!cdm_) {
+    RejectPromise(promise_id,
+                  cdm::kInvalidStateError,
+                  0,
+                  "CDM has not been initialized.");
+    return;
+  }
+
+  if (!cdm_->SetServerCertificate(
+          promise_id, server_certificate_ptr, server_certificate_size)) {
+    // CDM_4 and CDM_5 don't support this method, so reject the promise.
+    RejectPromise(promise_id, cdm::kNotSupportedError, 0, "Not implemented.");
+  }
+}
+
 void CdmAdapter::CreateSession(uint32_t promise_id,
                                const std::string& init_data_type,
                                pp::VarArrayBuffer init_data,
@@ -392,8 +425,8 @@ void CdmAdapter::CloseSession(uint32_t promise_id,
   }
 }
 
-void CdmAdapter::ReleaseSession(uint32_t promise_id,
-                                const std::string& web_session_id) {
+void CdmAdapter::RemoveSession(uint32_t promise_id,
+                               const std::string& web_session_id) {
   cdm_->RemoveSession(
       promise_id, web_session_id.data(), web_session_id.length());
 }
@@ -816,8 +849,7 @@ void CdmAdapter::SendPromiseResolvedWithUsableKeyIdsInternal(
     uint32_t promise_id,
     std::vector<std::vector<uint8> > key_ids) {
   PP_DCHECK(result == PP_OK);
-  // TODO(jrummell): Implement this event in subsequent CL.
-  // (http://crbug.com/358271).
+  pp::ContentDecryptor_Private::PromiseResolvedWithKeyIds(promise_id, key_ids);
 }
 
 void CdmAdapter::SendPromiseRejectedInternal(int32_t result,
@@ -875,16 +907,16 @@ void CdmAdapter::SendSessionUsableKeysChangeInternal(
     const std::string& web_session_id,
     bool has_additional_usable_key) {
   PP_DCHECK(result == PP_OK);
-  // TODO(jrummell): Implement this event in subsequent CL.
-  // (http://crbug.com/358271).
+  pp::ContentDecryptor_Private::SessionKeysChange(web_session_id,
+                                                  has_additional_usable_key);
 }
 
 void CdmAdapter::SendExpirationChangeInternal(int32_t result,
                                               const std::string& web_session_id,
                                               cdm::Time new_expiry_time) {
   PP_DCHECK(result == PP_OK);
-  // TODO(jrummell): Implement this event in subsequent CL.
-  // (http://crbug.com/358271).
+  pp::ContentDecryptor_Private::SessionExpirationChange(web_session_id,
+                                                        new_expiry_time);
 }
 
 void CdmAdapter::DeliverBlock(int32_t result,

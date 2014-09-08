@@ -42,6 +42,16 @@ enum {
 
   // This limit is used by ParamTraits<VideoCaptureParams>.
   kMaxFramesPerSecond = 1000,
+
+  // Maximum lengths for various EME API parameters. These are checks to
+  // prevent unnecessarily large parameters from being passed around, and the
+  // lengths are somewhat arbitrary as the EME spec doesn't specify any limits.
+  kMinCertificateLength = 128,
+  kMaxCertificateLength = 16 * 1024,
+  kMaxWebSessionIdLength = 512,
+  kMinKeyIdLength = 1,
+  kMaxKeyIdLength = 512,
+  kMaxKeyIds = 128,
 };
 
 }  // namespace limits

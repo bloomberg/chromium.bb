@@ -17,9 +17,11 @@
 #include "media/base/data_buffer.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
+#include "media/base/limits.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
+#include "ppapi/shared_impl/array_var.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
@@ -29,10 +31,12 @@
 
 using media::CdmPromise;
 using media::Decryptor;
+using media::KeyIdsPromise;
 using media::MediaKeys;
 using media::NewSessionCdmPromise;
 using media::SimpleCdmPromise;
 using ppapi::ArrayBufferVar;
+using ppapi::ArrayVar;
 using ppapi::PpapiGlobals;
 using ppapi::ScopedPPResource;
 using ppapi::StringVar;
@@ -330,6 +334,26 @@ void ContentDecryptorDelegate::InstanceCrashed() {
   SatisfyAllPendingCallbacksOnError();
 }
 
+void ContentDecryptorDelegate::SetServerCertificate(
+    const uint8_t* certificate,
+    uint32_t certificate_length,
+    scoped_ptr<media::SimpleCdmPromise> promise) {
+  if (!certificate ||
+      certificate_length < media::limits::kMinCertificateLength ||
+      certificate_length > media::limits::kMaxCertificateLength) {
+    promise->reject(
+        media::MediaKeys::INVALID_ACCESS_ERROR, 0, "Incorrect certificate.");
+    return;
+  }
+
+  uint32_t promise_id = SavePromise(promise.PassAs<CdmPromise>());
+  PP_Var certificate_array =
+      PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
+          certificate_length, certificate);
+  plugin_decryption_interface_->SetServerCertificate(
+      pp_instance_, promise_id, certificate_array);
+}
+
 void ContentDecryptorDelegate::CreateSession(
     const std::string& init_data_type,
     const uint8* init_data,
@@ -372,11 +396,45 @@ void ContentDecryptorDelegate::UpdateSession(
       response_array);
 }
 
-void ContentDecryptorDelegate::ReleaseSession(
+void ContentDecryptorDelegate::CloseSession(
     const std::string& web_session_id,
     scoped_ptr<SimpleCdmPromise> promise) {
+  if (web_session_id.length() > media::limits::kMaxWebSessionIdLength) {
+    promise->reject(
+        media::MediaKeys::INVALID_ACCESS_ERROR, 0, "Incorrect session.");
+    return;
+  }
+
   uint32_t promise_id = SavePromise(promise.PassAs<CdmPromise>());
-  plugin_decryption_interface_->ReleaseSession(
+  plugin_decryption_interface_->CloseSession(
+      pp_instance_, promise_id, StringVar::StringToPPVar(web_session_id));
+}
+
+void ContentDecryptorDelegate::RemoveSession(
+    const std::string& web_session_id,
+    scoped_ptr<SimpleCdmPromise> promise) {
+  if (web_session_id.length() > media::limits::kMaxWebSessionIdLength) {
+    promise->reject(
+        media::MediaKeys::INVALID_ACCESS_ERROR, 0, "Incorrect session.");
+    return;
+  }
+
+  uint32_t promise_id = SavePromise(promise.PassAs<CdmPromise>());
+  plugin_decryption_interface_->RemoveSession(
+      pp_instance_, promise_id, StringVar::StringToPPVar(web_session_id));
+}
+
+void ContentDecryptorDelegate::GetUsableKeyIds(
+    const std::string& web_session_id,
+    scoped_ptr<media::KeyIdsPromise> promise) {
+  if (web_session_id.length() > media::limits::kMaxWebSessionIdLength) {
+    promise->reject(
+        media::MediaKeys::INVALID_ACCESS_ERROR, 0, "Incorrect session.");
+    return;
+  }
+
+  uint32_t promise_id = SavePromise(promise.PassAs<CdmPromise>());
+  plugin_decryption_interface_->GetUsableKeyIds(
       pp_instance_, promise_id, StringVar::StringToPPVar(web_session_id));
 }
 
@@ -667,6 +725,43 @@ void ContentDecryptorDelegate::OnPromiseResolvedWithSession(
   session_promise->resolve(web_session_id_string->value());
 }
 
+void ContentDecryptorDelegate::OnPromiseResolvedWithKeyIds(
+    uint32 promise_id,
+    PP_Var key_ids_array) {
+  scoped_ptr<CdmPromise> promise = TakePromise(promise_id);
+
+  ArrayVar* key_ids = ArrayVar::FromPPVar(key_ids_array);
+  DCHECK(key_ids && key_ids->GetLength() <= media::limits::kMaxKeyIds);
+  media::KeyIdsVector key_ids_vector;
+  if (key_ids && key_ids->GetLength() <= media::limits::kMaxKeyIds) {
+    for (size_t i = 0; i < key_ids->GetLength(); ++i) {
+      ArrayBufferVar* array_buffer = ArrayBufferVar::FromPPVar(key_ids->Get(i));
+
+      if (!array_buffer ||
+          array_buffer->ByteLength() < media::limits::kMinKeyIdLength ||
+          array_buffer->ByteLength() > media::limits::kMaxKeyIdLength) {
+        NOTREACHED();
+        continue;
+      }
+
+      std::vector<uint8> key_id;
+      const uint8* data = static_cast<const uint8*>(array_buffer->Map());
+      key_id.assign(data, data + array_buffer->ByteLength());
+      key_ids_vector.push_back(key_id);
+    }
+  }
+
+  if (!promise ||
+      promise->GetResolveParameterType() !=
+          media::CdmPromise::KEY_IDS_VECTOR_TYPE) {
+    NOTREACHED();
+    return;
+  }
+
+  KeyIdsPromise* key_ids_promise(static_cast<KeyIdsPromise*>(promise.get()));
+  key_ids_promise->resolve(key_ids_vector);
+}
+
 void ContentDecryptorDelegate::OnPromiseRejected(
     uint32 promise_id,
     PP_CdmExceptionCode exception_code,
@@ -676,6 +771,7 @@ void ContentDecryptorDelegate::OnPromiseRejected(
   DCHECK(error_description_string);
 
   scoped_ptr<CdmPromise> promise = TakePromise(promise_id);
+  DCHECK(promise);
   if (promise) {
     promise->reject(PpExceptionTypeToMediaException(exception_code),
                     system_code,
@@ -711,6 +807,18 @@ void ContentDecryptorDelegate::OnSessionMessage(PP_Var web_session_id,
 
   session_message_cb_.Run(
       web_session_id_string->value(), message_vector, verified_gurl);
+}
+
+void ContentDecryptorDelegate::OnSessionKeysChange(
+    PP_Var web_session_id,
+    PP_Bool has_additional_usable_key) {
+  // TODO(jrummell): Pass this event on.
+}
+
+void ContentDecryptorDelegate::OnSessionExpirationChange(
+    PP_Var web_session_id,
+    PP_Time new_expiry_time) {
+  // TODO(jrummell): Pass this event on.
 }
 
 void ContentDecryptorDelegate::OnSessionReady(PP_Var web_session_id) {

@@ -6,6 +6,7 @@
 #define PPAPI_PROXY_PPP_CONTENT_DECRYPTOR_PRIVATE_PROXY_H_
 
 #include <string>
+#include <vector>
 
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/private/ppp_content_decryptor_private.h"
@@ -32,6 +33,9 @@ class PPP_ContentDecryptor_Private_Proxy : public InterfaceProxy {
   // Message handlers.
   void OnMsgInitialize(PP_Instance instance,
                        SerializedVarReceiveInput key_system);
+  void OnMsgSetServerCertificate(PP_Instance instance,
+                                 uint32_t promise_id,
+                                 std::vector<uint8_t> server_certificate);
   void OnMsgCreateSession(PP_Instance instance,
                           uint32_t promise_id,
                           SerializedVarReceiveInput init_data_type,
@@ -44,9 +48,15 @@ class PPP_ContentDecryptor_Private_Proxy : public InterfaceProxy {
                           uint32_t promise_id,
                           SerializedVarReceiveInput web_session_id,
                           SerializedVarReceiveInput response);
-  void OnMsgReleaseSession(PP_Instance instance,
-                           uint32_t promise_id,
-                           SerializedVarReceiveInput web_session_id);
+  void OnMsgCloseSession(PP_Instance instance,
+                         uint32_t promise_id,
+                         const std::string& web_session_id);
+  void OnMsgRemoveSession(PP_Instance instance,
+                          uint32_t promise_id,
+                          const std::string& web_session_id);
+  void OnMsgGetUsableKeyIds(PP_Instance instance,
+                            uint32_t promise_id,
+                            const std::string& web_session_id);
   void OnMsgDecrypt(PP_Instance instance,
                     const PPPDecryptor_Buffer& encrypted_buffer,
                     const std::string& serialized_encrypted_block_info);
