@@ -78,6 +78,7 @@ component("compositor") {
 }
 
 source_set("test_support") {
+  testonly = true
   sources = [
     "test/context_factories_for_test.cc",
     "test/context_factories_for_test.h",

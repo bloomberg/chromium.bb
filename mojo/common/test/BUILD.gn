@@ -4,6 +4,7 @@
 
 # GYP version: mojo/mojo_base.gyp:mojo_run_all_unittests
 source_set("run_all_unittests") {
+  testonly = true
   deps = [
     ":test_support_impl",
     "//base",
@@ -18,6 +19,7 @@ source_set("run_all_unittests") {
 
 # GYP version: mojo/mojo_base.gyp:mojo_test_support_impl
 source_set("test_support_impl") {
+  testonly = true
   deps = [
     "//base",
   ]
@@ -30,6 +32,7 @@ source_set("test_support_impl") {
 
 # GYP version: mojo/mojo_base.gyp:mojo_common_test_support
 source_set("test_support") {
+  testonly = true
   deps = [
     "//base",
     "//base/test:test_support",

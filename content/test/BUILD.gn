@@ -14,6 +14,7 @@ content_tests_gypi_values = exec_script(
 
 # GYP version //content/content_tests.gypi:test_support_content
 static_library("test_support") {
+  testonly = true
   deps = [
     "//content/public/app:both",
     "//content/public/browser",
@@ -139,6 +140,7 @@ if (!is_ios) {
 
   # GYP version //content/content_tests.gypi:layouttest_support_content
   static_library("layouttest_support") {
+    testonly = true
     sources = rebase_path(content_tests_gypi_values.layouttest_support_content_sources,
                           ".", "//content")
 

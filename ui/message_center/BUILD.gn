@@ -147,6 +147,7 @@ component("message_center") {
 }
 
 static_library("test_support") {
+  testonly = true
   sources = [
     "fake_message_center.h",
     "fake_message_center.cc",

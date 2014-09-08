@@ -786,6 +786,7 @@ component("ppapi_host") {
 }
 
 static_library("ppapi_unittest_shared") {
+  testonly = true
   sources = [
     "proxy/ppapi_proxy_test.cc",
     "proxy/ppapi_proxy_test.h",

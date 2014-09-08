@@ -67,6 +67,7 @@ proto_library("proto") {
 }
 
 static_library("test_support") {
+  testonly = true
   sources = [
     "base/fake_encryptor.cc",
     "base/fake_encryptor.h",
@@ -89,6 +90,7 @@ static_library("test_support") {
 
 # A standalone MCS (mobile connection server) client.
 executable("mcs_probe") {
+  testonly = true
   sources = [
     "tools/mcs_probe.cc",
   ]

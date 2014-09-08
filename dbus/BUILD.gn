@@ -55,6 +55,7 @@ proto_library("test_proto") {
 # This target contains mocks that can be used to write unit tests without
 # issuing actual D-Bus calls.
 source_set("test_support") {
+  testonly = true
   sources = [
     "mock_bus.cc",
     "mock_bus.h",
@@ -111,6 +112,7 @@ test("dbus_unittests") {
 }
 
 executable("dbus_test_server") {
+  testonly = true
   sources = [
     "test_server.cc",
     "test_service.cc",

@@ -364,6 +364,7 @@ component("gfx") {
 # Looking for gfx_geometry? It's //ui/gfx/geometry:geometry
 
 source_set("test_support") {
+  testonly = true
   sources = [
     "test/fontconfig_util_linux.cc",
     "test/fontconfig_util_linux.h",

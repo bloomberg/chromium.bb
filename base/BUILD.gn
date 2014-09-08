@@ -1014,6 +1014,7 @@ source_set("prefs") {
 }
 
 source_set("prefs_test_support") {
+  testonly = true
   sources = [
     "prefs/mock_pref_change_callback.cc",
     "prefs/mock_pref_change_callback.h",

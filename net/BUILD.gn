@@ -594,6 +594,7 @@ static_library("http_server") {
 }
 
 executable("dump_cache") {
+  testonly = true
   sources = [
     "tools/dump_cache/cache_dumper.cc",
     "tools/dump_cache/cache_dumper.h",
@@ -618,6 +619,7 @@ executable("dump_cache") {
 }
 
 source_set("test_support") {
+  testonly = true
   sources = [
     "base/capturing_net_log.cc",
     "base/capturing_net_log.h",
@@ -798,6 +800,7 @@ if (use_v8_in_net) {
 
 if (!is_ios && !is_android) {
   executable("crash_cache") {
+    testonly = true
     sources = [ "tools/crash_cache/crash_cache.cc" ]
     configs += [ ":net_win_size_truncation" ]
     deps = [
@@ -808,6 +811,7 @@ if (!is_ios && !is_android) {
   }
 
   executable("crl_set_dump") {
+    testonly = true
     sources = [ "tools/crl_set_dump/crl_set_dump.cc" ]
     configs += [ ":net_win_size_truncation" ]
     deps = [
@@ -817,6 +821,7 @@ if (!is_ios && !is_android) {
   }
 
   executable("dns_fuzz_stub") {
+    testonly = true
     sources = [ "tools/dns_fuzz_stub/dns_fuzz_stub.cc" ]
     configs += [ ":net_win_size_truncation" ]
     deps = [
@@ -826,6 +831,7 @@ if (!is_ios && !is_android) {
   }
 
   executable("gdig") {
+    testonly = true
     sources = [
       "tools/gdig/file_net_log.cc",
       "tools/gdig/gdig.cc",
@@ -837,6 +843,7 @@ if (!is_ios && !is_android) {
   }
 
   executable("get_server_time") {
+    testonly = true
     sources = [ "tools/get_server_time/get_server_time.cc" ]
     configs += [ ":net_win_size_truncation" ]
     deps = [
@@ -849,6 +856,7 @@ if (!is_ios && !is_android) {
 
   if (use_v8_in_net) {
     executable("net_watcher") {
+      testonly = true
       sources = [ "tools/net_watcher/net_watcher.cc" ]
       deps = [
         ":net",
@@ -867,6 +875,7 @@ if (!is_ios && !is_android) {
   }
 
   executable("run_testserver") {
+    testonly = true
     sources = [ "tools/testserver/run_testserver.cc" ]
     deps = [
       ":net",  # TODO(brettw) bug 363749: this shouldn't be necessary. It's not
@@ -879,6 +888,7 @@ if (!is_ios && !is_android) {
   }
 
   executable("stress_cache") {
+    testonly = true
     sources = [ "disk_cache/blockfile/stress_cache.cc" ]
     configs += [ ":net_win_size_truncation" ]
     deps = [
@@ -912,6 +922,7 @@ if (is_linux) {
   }
 
   static_library("flip_in_mem_edsm_server_base") {
+    testonly = true
     sources = [
       "tools/dump_cache/url_to_filename_encoder.cc",
       "tools/dump_cache/url_to_filename_encoder.h",
@@ -955,6 +966,7 @@ if (is_linux) {
   }
 
   executable("flip_in_mem_edsm_server_unittests") {
+    testonly = true
     sources = [
       "tools/flip_server/flip_test_utils.cc",
       "tools/flip_server/flip_test_utils.h",
@@ -974,6 +986,7 @@ if (is_linux) {
   }
 
   executable("flip_in_mem_edsm_server") {
+    testonly = true
     sources = [ "tools/flip_server/flip_in_mem_edsm_server.cc" ]
     deps = [
       ":flip_in_mem_edsm_server_base",
@@ -1062,6 +1075,7 @@ if (is_android) {
 
 if (is_android || is_linux) {
   executable("disk_cache_memory_test") {
+    testonly = true
     sources = [ "tools/disk_cache_memory_test/disk_cache_memory_test.cc" ]
     deps = [
       ":net",

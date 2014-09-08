@@ -169,6 +169,7 @@ source_set("google_apis") {
 }
 
 source_set("test_support") {
+  testonly = true
   sources = [
     "gaia/fake_gaia.cc",
     "gaia/fake_gaia.h",

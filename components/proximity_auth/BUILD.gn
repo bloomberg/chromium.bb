@@ -15,6 +15,7 @@ static_library("proximity_auth") {
 }
 
 source_set("unit_tests") {
+  testonly = true
   sources = [
     "proximity_auth_system_unittest.cc",
   ]

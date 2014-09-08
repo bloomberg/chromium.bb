@@ -76,6 +76,7 @@ source_set("rlz_lib") {
 }
 
 source_set("test_support") {
+  testonly = true
   sources = [
     "test/rlz_test_helpers.cc",
     "test/rlz_test_helpers.h",

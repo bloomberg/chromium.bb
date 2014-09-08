@@ -20,6 +20,7 @@ declare_args() {
 }
 
 static_library("content_shell_lib") {
+  testonly = true
   sources = [
     "android/shell_jni_registrar.cc",
     "android/shell_jni_registrar.h",
@@ -428,6 +429,7 @@ repack("pak") {
 }
 
 executable("content_shell") {
+  testonly = true
   # TODO(GYP) mac resource bundle stuff for this target.
   # TODO(GYP) Windows content shell settings:
   #  - Manifest.

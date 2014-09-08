@@ -709,6 +709,7 @@ static_library("test_support_sync_fake_server") {
 
 # GYP version: sync/sync_tests.gypi:test_support_sync_testserver
 static_library("test_support_sync_testserver") {
+  testonly = true
   sources = [
     "test/local_sync_test_server.cc",
     "test/local_sync_test_server.h",
@@ -730,6 +731,7 @@ static_library("test_support_sync_testserver") {
 
 # GYP version: sync/sync_tests.gypi:test_support_accounts_client
 static_library("test_support_accounts_client") {
+  testonly = true
   sources = [
     "test/accounts_client/test_accounts_client.cc",
     "test/accounts_client/test_accounts_client.h",
@@ -759,6 +761,7 @@ test("sync_endtoend_tests") {
 if (!is_ios) {
   # GYP version: sync/sync_tests.gypi:run_sync_testserver
   executable("run_sync_testserver") {
+    testonly = true
     sources = [ "tools/testserver/run_sync_testserver.cc" ]
 
     deps = [

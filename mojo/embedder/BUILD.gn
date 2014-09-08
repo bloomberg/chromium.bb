@@ -53,6 +53,7 @@ source_set("embedder") {
 
 source_set("embedder_unittests") {
   visibility = [ "//mojo/system:mojo_system_unittests" ]
+  testonly = true
 
   deps = [
     "//base",

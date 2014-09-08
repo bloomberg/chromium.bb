@@ -104,6 +104,7 @@ component("views") {
 }
 
 static_library("test_support") {
+  testonly = true
   sources = gypi_values.views_test_support_sources
 
   deps = [

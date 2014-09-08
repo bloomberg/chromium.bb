@@ -108,6 +108,7 @@ if (enable_webrtc || !is_android) {
   # GYP version: jingle/jingle.gyp:jingle_unittests
   # TODO(GYP): Convert to executable when its dependencies are linkable.
   source_set("jingle_unittests") {
+    testonly = true
     sources = [
       "glue/channel_socket_adapter_unittest.cc",
       "glue/chrome_async_socket_unittest.cc",

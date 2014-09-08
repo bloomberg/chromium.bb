@@ -495,6 +495,7 @@ component("cc") {
 }
 
 source_set("test_support") {
+  testonly = true
   sources = [
     "test/animation_test_common.cc",
     "test/animation_test_common.h",

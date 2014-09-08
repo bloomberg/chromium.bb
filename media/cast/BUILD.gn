@@ -169,6 +169,7 @@ source_set("receiver") {
 }
 
 source_set("test_support") {
+  testonly = true
   sources = [
 # TODO(hclam): FFmpeg.
 #    "test/fake_media_source.cc",
@@ -283,6 +284,7 @@ test("cast_unittests") {
 }
 
 executable("generate_barcode_video") {
+  testonly = true
   sources = [
     "test/utility/generate_barcode_video.cc",
   ]
@@ -295,6 +297,7 @@ executable("generate_barcode_video") {
 }
 
 executable("generate_timecode_audio") {
+  testonly = true
   sources = [
     "test/utility/generate_timecode_audio.cc",
   ]
@@ -307,6 +310,7 @@ executable("generate_timecode_audio") {
 }
 
 executable("udp_proxy") {
+  testonly = true
   sources = [
     "test/utility/udp_proxy_main.cc",
   ]

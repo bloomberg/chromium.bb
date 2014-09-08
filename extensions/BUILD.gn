@@ -55,6 +55,7 @@ grit("extensions_renderer_resources") {
 }
 
 source_set("test_support") {
+  testonly = true
   sources = [
     "browser/api/dns/mock_host_resolver_creator.cc",
     "browser/api/dns/mock_host_resolver_creator.h",

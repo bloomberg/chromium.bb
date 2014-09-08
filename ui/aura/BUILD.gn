@@ -142,6 +142,7 @@ component("aura") {
 }
 
 source_set("test_support") {
+  testonly = true
   sources = [
     "test/aura_test_base.cc",
     "test/aura_test_base.h",
@@ -209,6 +210,8 @@ source_set("test_support") {
 
 executable("demo") {
   output_name = "aura_demo"
+  testonly = true
+
   sources = [
     "demo/demo_main.cc",
   ]
@@ -238,6 +241,8 @@ executable("demo") {
 
 executable("bench") {
   output_name = "aura_bench"
+  testonly = true
+
   sources = [
     "bench/bench_main.cc",
   ]
