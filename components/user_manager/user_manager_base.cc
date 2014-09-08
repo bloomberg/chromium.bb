@@ -427,8 +427,10 @@ void UserManagerBase::SaveUserDisplayEmail(const std::string& user_id,
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   User* user = FindUserAndModify(user_id);
-  if (!user)
+  if (!user) {
+    LOG(ERROR) << "User not found: " << user_id;
     return;  // Ignore if there is no such user.
+  }
 
   user->set_display_email(display_email);
 

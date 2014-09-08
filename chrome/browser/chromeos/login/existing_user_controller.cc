@@ -860,18 +860,18 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
   login_performer_->set_delegate(NULL);
   ignore_result(login_performer_.release());
 
+  // Will call OnProfilePrepared() in the end.
+  LoginUtils::Get()->PrepareProfile(user_context,
+                                    has_auth_cookies,
+                                    false,          // Start session for user.
+                                    this);
+
   // Update user's displayed email.
   if (!display_email_.empty()) {
     user_manager::UserManager::Get()->SaveUserDisplayEmail(
         user_context.GetUserID(), display_email_);
     display_email_.clear();
   }
-
-  // Will call OnProfilePrepared() in the end.
-  LoginUtils::Get()->PrepareProfile(user_context,
-                                    has_auth_cookies,
-                                    false,          // Start session for user.
-                                    this);
 }
 
 void ExistingUserController::OnProfilePrepared(Profile* profile) {
