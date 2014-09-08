@@ -17,6 +17,8 @@ cr.define('options.internet', function() {
   var PageManager = cr.ui.pageManager.PageManager;
   /** @const */ var IPAddressField = options.internet.IPAddressField;
 
+  /** @const */ var GoogleNameServersString = '8.8.4.4,8.8.8.8';
+
   /**
    * Helper function to set hidden attribute for elements matching a selector.
    * @param {string} selector CSS selector for extracting a list of elements.
@@ -77,6 +79,34 @@ cr.define('options.internet', function() {
   function sendCheckedIfEnabled(path, message, checkbox) {
     if (!checkbox.hidden && !checkbox.disabled)
       chrome.send(message, [path, checkbox.checked ? 'true' : 'false']);
+  }
+
+  /**
+   * Returns the netmask as a string for a given prefix length.
+   * @param {string} prefixLength The ONC routing prefix length.
+   * @return {string} The corresponding netmask.
+   */
+  function PrefixLengthToNetmask(prefixLength) {
+    // Return the empty string for invalid inputs.
+    if (prefixLength < 0 || prefixLength > 32)
+      return '';
+    var netmask = '';
+    for (var i = 0; i < 4; ++i) {
+      var remainder = 8;
+      if (prefixLength >= 8) {
+        prefixLength -= 8;
+      } else {
+        remainder = prefixLength;
+        prefixLength = 0;
+      }
+      if (i > 0)
+        netmask += '.';
+      var value = 0;
+      if (remainder != 0)
+        value = ((2 << (remainder - 1)) - 1) << (8 - remainder);
+      netmask += value.toString();
+    }
+    return netmask;
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -329,7 +359,7 @@ cr.define('options.internet', function() {
       // page is fixed. http://crbug.com/242865
       if (loadTimeData.data_) {
         $('google-dns-label').innerHTML =
-          loadTimeData.getString('googleNameServers');
+            loadTimeData.getString('googleNameServers');
       }
     },
 
@@ -805,8 +835,7 @@ cr.define('options.internet', function() {
       }
     }
 
-    userNameServers = userNameServers.join(',');
-
+    userNameServers = userNameServers.sort();
     chrome.send('setIPConfig',
                 [servicePath,
                  Boolean($('ip-automatic-configuration-checkbox').checked),
@@ -814,7 +843,7 @@ cr.define('options.internet', function() {
                  $('ip-netmask').model.value || '',
                  $('ip-gateway').model.value || '',
                  nameServerType,
-                 userNameServers]);
+                 userNameServers.join(',')]);
     PageManager.closeOverlay();
   };
 
@@ -1003,93 +1032,143 @@ cr.define('options.internet', function() {
     var restricted = onc.getActiveValue('RestrictedConnectivity');
     var restrictedString = loadTimeData.getString(
         restricted ? 'restrictedYes' : 'restrictedNo');
-    var ipAutoConfig = data.ipAutoConfig ? 'automatic' : 'user';
-    $('ip-automatic-configuration-checkbox').checked = data.ipAutoConfig;
-    var inetAddress = {autoConfig: ipAutoConfig};
-    var inetNetmask = {autoConfig: ipAutoConfig};
-    var inetGateway = {autoConfig: ipAutoConfig};
 
-    if (data.ipconfig.value) {
-      inetAddress.automatic = data.ipconfig.value.address;
-      inetAddress.value = data.ipconfig.value.address;
-      inetNetmask.automatic = data.ipconfig.value.netmask;
-      inetNetmask.value = data.ipconfig.value.netmask;
-      inetGateway.automatic = data.ipconfig.value.gateway;
-      inetGateway.value = data.ipconfig.value.gateway;
-      if (data.ipconfig.value.webProxyAutoDiscoveryUrl) {
-        $('web-proxy-auto-discovery').hidden = false;
-        $('web-proxy-auto-discovery-url').value =
-            data.ipconfig.value.webProxyAutoDiscoveryUrl;
+    var inetAddress = {};
+    var inetNetmask = {};
+    var inetGateway = {};
+
+    var inetNameServersString;
+
+    if ('IPConfigs' in data) {
+      var ipconfigList = onc.getActiveValue('IPConfigs');
+      for (var i = 0; i < ipconfigList.length; ++i) {
+        var ipconfig = ipconfigList[i];
+        var type = ipconfig['Type'];
+        if (type != 'IPv4') {
+          // TODO(stevenjb): Handle IPv6 properties.
+          continue;
+        }
+        var address = ipconfig['IPAddress'];
+        inetAddress.automatic = address;
+        inetAddress.value = address;
+        var netmask = PrefixLengthToNetmask(ipconfig['RoutingPrefix']);
+        inetNetmask.automatic = netmask;
+        inetNetmask.value = netmask;
+        var gateway = ipconfig['Gateway'];
+        inetGateway.automatic = gateway;
+        inetGateway.value = gateway;
+        if ('WebProxyAutoDiscoveryUrl' in ipconfig) {
+          $('web-proxy-auto-discovery').hidden = false;
+          $('web-proxy-auto-discovery-url').value =
+              ipconfig['WebProxyAutoDiscoveryUrl'];
+        }
+        if ('NameServers' in ipconfig) {
+          var inetNameServers = ipconfig['NameServers'];
+          inetNameServers = inetNameServers.sort();
+          inetNameServersString = inetNameServers.join(',');
+        }
+        break;  // Use the first IPv4 entry.
       }
     }
 
     // Override the "automatic" values with the real saved DHCP values,
     // if they are set.
-    if (data.savedIP.address) {
-      inetAddress.automatic = data.savedIP.address;
-      inetAddress.value = data.savedIP.address;
-    }
-    if (data.savedIP.netmask) {
-      inetNetmask.automatic = data.savedIP.netmask;
-      inetNetmask.value = data.savedIP.netmask;
-    }
-    if (data.savedIP.gateway) {
-      inetGateway.automatic = data.savedIP.gateway;
-      inetGateway.value = data.savedIP.gateway;
+    var savedNameServersString;
+    if ('SavedIPConfig' in data) {
+      var savedIpAddress = onc.getActiveValue('SavedIPConfig.IPAddress');
+      if (savedIpAddress != undefined) {
+        inetAddress.automatic = savedIpAddress;
+        inetAddress.value = savedIpAddress;
+      }
+      var savedPrefix = onc.getActiveValue('SavedIPConfig.RoutingPrefix');
+      if (savedPrefix != undefined) {
+        var savedNetmask = PrefixLengthToNetmask(savedPrefix);
+        inetNetmask.automatic = savedNetmask;
+        inetNetmask.value = savedNetmask;
+      }
+      var savedGateway = onc.getActiveValue('SavedIPConfig.Gateway');
+      if (savedGateway != undefined) {
+        inetGateway.automatic = savedGateway;
+        inetGateway.value = savedGateway;
+      }
+      var savedNameServers = onc.getActiveValue('SavedIPConfig.NameServers');
+      if (savedNameServers) {
+        savedNameServers = savedNameServers.sort();
+        savedNameServersString = savedNameServers.join(',');
+      }
     }
 
-    if (ipAutoConfig == 'user') {
-      if (data.staticIP.value.address) {
-        inetAddress.value = data.staticIP.value.address;
-        inetAddress.user = data.staticIP.value.address;
+    var ipAutoConfig = 'automatic';
+
+    var staticNameServersString;
+    if ('StaticIPConfig' in data) {
+      var staticIpAddress = onc.getActiveValue('StaticIPConfig.IPAddress');
+      if (staticIpAddress != undefined) {
+        ipAutoConfig = 'user';
+        inetAddress.user = staticIpAddress;
+        inetAddress.value = staticIpAddress;
       }
-      if (data.staticIP.value.netmask) {
-        inetNetmask.value = data.staticIP.value.netmask;
-        inetNetmask.user = data.staticIP.value.netmask;
+      var staticPrefix = onc.getActiveValue('StaticIPConfig.RoutingPrefix');
+      if (staticPrefix != undefined) {
+        var staticNetmask = PrefixLengthToNetmask(staticPrefix);
+        inetNetmask.user = staticNetmask;
+        inetNetmask.value = staticNetmask;
       }
-      if (data.staticIP.value.gateway) {
-        inetGateway.value = data.staticIP.value.gateway;
-        inetGateway.user = data.staticIP.value.gateway;
+      var staticGateway = onc.getActiveValue('StaticIPConfig.Gateway');
+      if (staticGateway != undefined) {
+        inetGateway.user = staticGateway;
+        inetGateway.value = staticGateway;
+      }
+      var staticNameServers = onc.getActiveValue('StaticIPConfig.NameServers');
+      if (staticNameServers) {
+        staticNameServers = staticNameServers.sort();
+        staticNameServersString = staticNameServers.join(',');
       }
     }
+
+    $('ip-automatic-configuration-checkbox').checked =
+        ipAutoConfig == 'automatic';
+
+    inetAddress.autoConfig = ipAutoConfig;
+    inetNetmask.autoConfig = ipAutoConfig;
+    inetGateway.autoConfig = ipAutoConfig;
 
     var configureAddressField = function(field, model) {
       IPAddressField.decorate(field);
       field.model = model;
       field.editable = model.autoConfig == 'user';
     };
-
     configureAddressField($('ip-address'), inetAddress);
     configureAddressField($('ip-netmask'), inetNetmask);
     configureAddressField($('ip-gateway'), inetGateway);
 
-    var inetNameServers = '';
-    if (data.ipconfig.value && data.ipconfig.value.nameServers) {
-      inetNameServers = data.ipconfig.value.nameServers;
-      $('automatic-dns-display').textContent = inetNameServers;
+    // Set Nameserver fields.
+    var nameServerType = 'automatic';
+    if (staticNameServersString &&
+        staticNameServersString == inetNameServersString) {
+      nameServerType = 'user';
     }
+    if (inetNameServersString == GoogleNameServersString)
+      nameServerType = 'google';
 
-    if (data.savedIP && data.savedIP.nameServers)
-      $('automatic-dns-display').textContent = data.savedIP.nameServers;
-
-    if (data.nameServersGoogle)
-      $('google-dns-display').textContent = data.nameServersGoogle;
+    $('automatic-dns-display').textContent = inetNameServersString;
+    $('google-dns-display').textContent = GoogleNameServersString;
 
     var nameServersUser = [];
-    if (data.staticIP.value.nameServers)
-      nameServersUser = data.staticIP.value.nameServers.split(',');
+    if (staticNameServers)
+      nameServersUser = staticNameServers;
 
     var nameServerModels = [];
     for (var i = 0; i < 4; ++i)
       nameServerModels.push({value: nameServersUser[i] || ''});
 
-    $(data.nameServerType + '-dns-radio').checked = true;
+    $(nameServerType + '-dns-radio').checked = true;
     configureAddressField($('ipconfig-dns1'), nameServerModels[0]);
     configureAddressField($('ipconfig-dns2'), nameServerModels[1]);
     configureAddressField($('ipconfig-dns3'), nameServerModels[2]);
     configureAddressField($('ipconfig-dns4'), nameServerModels[3]);
 
-    DetailsInternetPage.updateNameServerDisplay(data.nameServerType);
+    DetailsInternetPage.updateNameServerDisplay(nameServerType);
 
     var macAddress = onc.getActiveValue('MacAddress');
     if (macAddress) {
@@ -1237,8 +1316,15 @@ cr.define('options.internet', function() {
         var otherOption = apnSelector[0];
         data.selectedApn = -1;
         data.userApnIndex = -1;
-        var activeApn = onc.getActiveValue('Cellular.APN');
-        var lastGoodApn = onc.getActiveValue('Cellular.LastGoodAPN');
+        var activeApn = onc.getActiveValue('Cellular.APN.AccessPointName');
+        var activeUsername = onc.getActiveValue('Cellular.APN.Username');
+        var activePassword = onc.getActiveValue('Cellular.APN.Password');
+        var lastGoodApn =
+            onc.getActiveValue('Cellular.LastGoodAPN.AccessPointName');
+        var lastGoodUsername =
+            onc.getActiveValue('Cellular.LastGoodAPN.Username');
+        var lastGoodPassword =
+            onc.getActiveValue('Cellular.LastGoodAPN.Password');
         var apnList = onc.getActiveValue('Cellular.APNList');
         for (var i = 0; i < apnList.length; i++) {
           var apnDict = apnList[i];
@@ -1251,24 +1337,21 @@ cr.define('options.internet', function() {
           option.value = i;
           // If this matches the active Apn, or LastGoodApn, set it as the
           // selected Apn.
-          if ((activeApn != undefined &&
-               activeApn['AccessPointName'] == accessPointName &&
-               activeApn['Username'] == apnDict['Username'] &&
-               activeApn['Password'] == apnDict['Password']) ||
-              ((activeApn == undefined || !activeApn['AccessPointName']) &&
-                lastGoodApn != undefined &&
-                lastGoodApn['AccessPointName'] == accessPointName &&
-                lastGoodApn['Username'] == apnDict['Username'] &&
-                lastGoodApn['Password'] == apnDict['Password'])) {
+          if ((activeApn == accessPointName &&
+               activeUsername == apnDict['Username'] &&
+               activePassword == apnDict['Password']) ||
+              (!activeApn &&
+               lastGoodApn == accessPointName &&
+               lastGoodUsername == apnDict['Username'] &&
+               lastGoodPassword == apnDict['Password'])) {
             data.selectedApn = i;
           }
           // Insert new option before "other" option.
           apnSelector.add(option, otherOption);
         }
-        if (data.selectedApn == -1 &&
-            activeApn != undefined && activeApn['AccessPointName']) {
+        if (data.selectedApn == -1 && activeApn) {
           var option = document.createElement('option');
-          option.textContent = activeApn['AccessPointName'];
+          option.textContent = activeApn;
           option.value = -1;
           apnSelector.add(option, otherOption);
           data.selectedApn = apnSelector.length - 2;

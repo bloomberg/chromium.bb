@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
 #include "chrome/browser/ui/webui/options/chromeos/internet_options_handler_strings.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/login/login_state.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
@@ -69,24 +70,9 @@ const char kNetworkInfoKeyIconURL[] = "iconURL";
 const char kNetworkInfoKeyServicePath[] = "servicePath";
 const char kNetworkInfoKeyPolicyManaged[] = "policyManaged";
 
-// These are keys for getting IP information from the web ui.
-const char kIpConfigAddress[] = "address";
-const char kIpConfigPrefixLength[] = "prefixLength";
-const char kIpConfigNetmask[] = "netmask";
-const char kIpConfigGateway[] = "gateway";
-const char kIpConfigNameServers[] = "nameServers";
-const char kIpConfigAutoConfig[] = "ipAutoConfig";
-const char kIpConfigWebProxyAutoDiscoveryUrl[] = "webProxyAutoDiscoveryUrl";
-
 // These are types of name server selections from the web ui.
 const char kNameServerTypeAutomatic[] = "automatic";
 const char kNameServerTypeGoogle[] = "google";
-const char kNameServerTypeUser[] = "user";
-
-// These are dictionary names used to send data to the web ui.
-const char kDictionaryIpConfig[] = "ipconfig";
-const char kDictionaryStaticIp[] = "staticIP";
-const char kDictionarySavedIp[] = "savedIP";
 
 // Google public name servers (DNS).
 const char kGoogleNameServers[] = "8.8.4.4,8.8.8.8";
@@ -133,17 +119,11 @@ const char kTagCellularEnabled[] = "cellularEnabled";
 const char kTagCellularSupportsScan[] = "cellularSupportsScan";
 const char kTagConfigure[] = "configure";
 const char kTagConnect[] = "connect";
-const char kTagControlledBy[] = "controlledBy";
 const char kTagDeviceConnected[] = "deviceConnected";
 const char kTagDisconnect[] = "disconnect";
 const char kTagErrorMessage[] = "errorMessage";
 const char kTagForget[] = "forget";
-const char kTagNameServersGoogle[] = "nameServersGoogle";
-const char kTagNameServerType[] = "nameServerType";
 const char kTagOptions[] = "options";
-const char kTagPolicy[] = "policy";
-const char kTagRecommended[] = "recommended";
-const char kTagRecommendedValue[] = "recommendedValue";
 const char kTagRemembered[] = "remembered";
 const char kTagRememberedList[] = "rememberedList";
 const char kTagCarriers[] = "carriers";
@@ -152,7 +132,6 @@ const char kTagShared[] = "shared";
 const char kTagShowActivateButton[] = "showActivateButton";
 const char kTagShowViewAccountButton[] = "showViewAccountButton";
 const char kTagTrue[] = "true";
-const char kTagValue[] = "value";
 const char kTagVpnList[] = "vpnList";
 const char kTagWifiAvailable[] = "wifiAvailable";
 const char kTagWifiEnabled[] = "wifiEnabled";
@@ -213,230 +192,6 @@ base::DictionaryValue* BuildNetworkDictionary(
   network_info->SetString(kNetworkInfoKeyServicePath, network->path());
 
   return network_info.release();
-}
-
-// Pulls IP information out of a shill service properties dictionary. If
-// |static_ip| is true, then it fetches "StaticIP.*" properties. If not, then it
-// fetches "SavedIP.*" properties. Caller must take ownership of returned
-// dictionary.  If non-NULL, |ip_parameters_set| returns a count of the number
-// of IP routing parameters that get set.
-base::DictionaryValue* BuildIPInfoDictionary(
-    const base::DictionaryValue& shill_properties,
-    bool static_ip,
-    int* routing_parameters_set) {
-  std::string address_key;
-  std::string prefix_len_key;
-  std::string gateway_key;
-  std::string name_servers_key;
-  if (static_ip) {
-    address_key = shill::kStaticIPAddressProperty;
-    prefix_len_key = shill::kStaticIPPrefixlenProperty;
-    gateway_key = shill::kStaticIPGatewayProperty;
-    name_servers_key = shill::kStaticIPNameServersProperty;
-  } else {
-    address_key = shill::kSavedIPAddressProperty;
-    prefix_len_key = shill::kSavedIPPrefixlenProperty;
-    gateway_key = shill::kSavedIPGatewayProperty;
-    name_servers_key = shill::kSavedIPNameServersProperty;
-  }
-
-  scoped_ptr<base::DictionaryValue> ip_info_dict(new base::DictionaryValue);
-  std::string address;
-  int routing_parameters = 0;
-  if (shill_properties.GetStringWithoutPathExpansion(address_key, &address)) {
-    ip_info_dict->SetString(kIpConfigAddress, address);
-    VLOG(2) << "Found " << address_key << ": " << address;
-    routing_parameters++;
-  }
-  int prefix_len = -1;
-  if (shill_properties.GetIntegerWithoutPathExpansion(
-      prefix_len_key, &prefix_len)) {
-    ip_info_dict->SetInteger(kIpConfigPrefixLength, prefix_len);
-    std::string netmask = network_util::PrefixLengthToNetmask(prefix_len);
-    ip_info_dict->SetString(kIpConfigNetmask, netmask);
-    VLOG(2) << "Found " << prefix_len_key << ": "
-            <<  prefix_len << " (" << netmask << ")";
-    routing_parameters++;
-  }
-  std::string gateway;
-  if (shill_properties.GetStringWithoutPathExpansion(gateway_key, &gateway)) {
-    ip_info_dict->SetString(kIpConfigGateway, gateway);
-    VLOG(2) << "Found " << gateway_key << ": " << gateway;
-    routing_parameters++;
-  }
-  if (routing_parameters_set)
-    *routing_parameters_set = routing_parameters;
-
-  std::string name_servers;
-  if (shill_properties.GetStringWithoutPathExpansion(
-      name_servers_key, &name_servers)) {
-    ip_info_dict->SetString(kIpConfigNameServers, name_servers);
-    VLOG(2) << "Found " << name_servers_key << ": " << name_servers;
-  }
-
-  return ip_info_dict.release();
-}
-
-// Decorate pref value as CoreOptionsHandler::CreateValueForPref() does and
-// store it under |key| in |settings|. Takes ownership of |value|.
-void SetValueDictionary(const char* key,
-                        base::Value* value,
-                        const NetworkPropertyUIData& ui_data,
-                        base::DictionaryValue* settings) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  // DictionaryValue::Set() takes ownership of |value|.
-  dict->Set(kTagValue, value);
-  settings->Set(key, dict);
-
-  const base::Value* recommended_value = ui_data.default_value();
-  if (ui_data.IsManaged())
-    dict->SetString(kTagControlledBy, kTagPolicy);
-  else if (recommended_value && recommended_value->Equals(value))
-    dict->SetString(kTagControlledBy, kTagRecommended);
-
-  if (recommended_value)
-    dict->Set(kTagRecommendedValue, recommended_value->DeepCopy());
-}
-
-const char* GetOncPolicyString(::onc::ONCSource onc_source) {
-  if (onc_source == ::onc::ONC_SOURCE_DEVICE_POLICY)
-    return ::onc::kAugmentationDevicePolicy;
-  return ::onc::kAugmentationUserPolicy;
-}
-
-const char* GetOncEditableString(::onc::ONCSource onc_source) {
-  if (onc_source == ::onc::ONC_SOURCE_DEVICE_POLICY)
-    return ::onc::kAugmentationDeviceEditable;
-  return ::onc::kAugmentationUserEditable;
-}
-
-const char* GetOncSettingString(::onc::ONCSource onc_source) {
-  if (onc_source == ::onc::ONC_SOURCE_DEVICE_POLICY)
-    return ::onc::kAugmentationSharedSetting;
-  return ::onc::kAugmentationUserSetting;
-}
-
-// Creates a GetManagedProperties style dictionary and adds it to |settings|.
-// |default_value| represents either the recommended value if |recommended|
-// is true, or the enforced value if |recommended| is false. |settings_dict_key|
-// is expected to be an ONC key with no '.' in it.
-// Note(stevenjb): This is bridge code until we use GetManagedProperties to
-// retrieve Shill properties.
-void SetManagedValueDictionaryEx(const char* settings_dict_key,
-                                 const base::Value& value,
-                                 ::onc::ONCSource onc_source,
-                                 bool recommended,
-                                 const base::Value* default_value,
-                                 base::DictionaryValue* settings_dict) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  settings_dict->SetWithoutPathExpansion(settings_dict_key, dict);
-
-  dict->Set(::onc::kAugmentationActiveSetting, value.DeepCopy());
-
-  if (onc_source == ::onc::ONC_SOURCE_NONE)
-    return;
-
-  if (recommended) {
-    // If an ONC property is 'Recommended' it can be edited by the user.
-    std::string editable = GetOncEditableString(onc_source);
-    dict->Set(editable, new base::FundamentalValue(true));
-  }
-  if (default_value) {
-    std::string policy_source = GetOncPolicyString(onc_source);
-    dict->Set(policy_source, default_value->DeepCopy());
-    if (recommended && !value.Equals(default_value)) {
-      std::string setting_source = GetOncSettingString(onc_source);
-      dict->Set(setting_source, value.DeepCopy());
-      dict->SetString(::onc::kAugmentationEffectiveSetting, setting_source);
-    } else {
-      dict->SetString(::onc::kAugmentationEffectiveSetting, policy_source);
-    }
-  }
-}
-
-// Wrapper for SetManagedValueDictionaryEx that does the policy lookup.
-// Note: We have to pass |onc_key| separately from |settings_dict_key| since
-// we might be populating a sub-dictionary in which case |onc_key| will be the
-// complete path (e.g. 'VPN.Host') and |settings_dict_key| is the dictionary key
-// (e.g. 'Host').
-void SetManagedValueDictionary(const std::string& guid,
-                               const char* settings_dict_key,
-                               const base::Value& value,
-                               const std::string& onc_key,
-                               base::DictionaryValue* settings_dict) {
-  ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_NONE;
-  const base::DictionaryValue* onc =
-      onc::FindPolicyForActiveUser(guid, &onc_source);
-  DCHECK_EQ(onc == NULL, onc_source == ::onc::ONC_SOURCE_NONE);
-  const base::Value* default_value = NULL;
-  bool recommended = false;
-  if (onc) {
-    onc->Get(onc_key, &default_value);
-    recommended = onc::IsRecommendedValue(onc, onc_key);
-  }
-  SetManagedValueDictionaryEx(settings_dict_key,
-                              value,
-                              onc_source,
-                              recommended,
-                              default_value,
-                              settings_dict);
-}
-
-// Fills |dictionary| with the configuration details of |vpn|. |onc| is required
-// for augmenting the policy-managed information.
-void PopulateVPNDetails(const NetworkState* vpn,
-                        const base::DictionaryValue& shill_properties,
-                        base::DictionaryValue* dictionary) {
-  // Name and Remembered are set in PopulateConnectionDetails().
-  // Provider properties are stored in the "Provider" dictionary.
-  const base::DictionaryValue* shill_provider_properties = NULL;
-  if (!shill_properties.GetDictionaryWithoutPathExpansion(
-          shill::kProviderProperty, &shill_provider_properties)) {
-    LOG(ERROR) << "No provider properties for VPN: " << vpn->path();
-    return;
-  }
-  base::DictionaryValue* vpn_dictionary;
-  if (!dictionary->GetDictionary(
-          ::onc::network_config::kVPN, &vpn_dictionary)) {
-    vpn_dictionary = new base::DictionaryValue;
-    dictionary->Set(::onc::network_config::kVPN, vpn_dictionary);
-  }
-
-  std::string shill_provider_type;
-  if (!shill_provider_properties->GetStringWithoutPathExpansion(
-          shill::kTypeProperty, &shill_provider_type)) {
-    LOG(ERROR) << "Shill VPN has no Provider.Type: " << vpn->path();
-    return;
-  }
-  std::string onc_provider_type;
-  onc::TranslateStringToONC(
-      onc::kVPNTypeTable, shill_provider_type, &onc_provider_type);
-  vpn_dictionary->SetString(::onc::vpn::kType, onc_provider_type);
-
-  std::string provider_type_key;
-  std::string username;
-  if (shill_provider_type == shill::kProviderOpenVpn) {
-    provider_type_key = ::onc::vpn::kOpenVPN;
-    shill_provider_properties->GetStringWithoutPathExpansion(
-        shill::kOpenVPNUserProperty, &username);
-  } else {
-    provider_type_key = ::onc::vpn::kL2TP;
-    shill_provider_properties->GetStringWithoutPathExpansion(
-        shill::kL2tpIpsecUserProperty, &username);
-  }
-  base::DictionaryValue* provider_type_dictionary = new base::DictionaryValue;
-  vpn_dictionary->Set(provider_type_key, provider_type_dictionary);
-  provider_type_dictionary->SetString(::onc::vpn::kUsername, username);
-
-  std::string provider_host;
-  shill_provider_properties->GetStringWithoutPathExpansion(
-      shill::kHostProperty, &provider_host);
-  SetManagedValueDictionary(
-      vpn->guid(),
-      ::onc::vpn::kHost,
-      base::StringValue(provider_host),
-      ::onc::network_config::VpnProperty(::onc::vpn::kHost),
-      vpn_dictionary);
 }
 
 // Given a list of supported carrier's by the device, return the index of
@@ -551,30 +306,8 @@ void PopulateCellularDetails(const NetworkState* cellular,
 
 scoped_ptr<base::DictionaryValue> PopulateConnectionDetails(
     const NetworkState* network,
-    const base::DictionaryValue& shill_properties) {
-  // TODO(stevenjb): Once we eliminate all references to Shill properties,
-  // we can switch to using managed_network_configuration_handler which
-  // includes Device properties for Cellular (and skip the call to
-  // onc::TranslateShillServiceToONCPart). For now we copy them over here.
-  scoped_ptr<base::DictionaryValue> shill_properties_with_device(
-      shill_properties.DeepCopy());
-  const DeviceState* device =
-      NetworkHandler::Get()->network_state_handler()->GetDeviceState(
-          network->device_path());
-  if (device) {
-    shill_properties_with_device->SetWithoutPathExpansion(
-        shill::kDeviceProperty, device->properties().DeepCopy());
-    // Get the hardware MAC address from the DeviceState.
-    // (Note: this is done in ManagedNetworkConfigurationHandler but not
-    //  in NetworkConfigurationHandler).
-    if (!device->mac_address().empty()) {
-      shill_properties_with_device->SetStringWithoutPathExpansion(
-          shill::kAddressProperty, device->mac_address());
-    }
-  }
-  scoped_ptr<base::DictionaryValue> dictionary =
-      onc::TranslateShillServiceToONCPart(
-          *shill_properties_with_device, &onc::kNetworkWithStateSignature);
+    const base::DictionaryValue& onc_properties) {
+  scoped_ptr<base::DictionaryValue> dictionary(onc_properties.DeepCopy());
 
   dictionary->SetString(kNetworkInfoKeyServicePath, network->path());
   dictionary->SetString(
@@ -594,8 +327,6 @@ scoped_ptr<base::DictionaryValue> PopulateConnectionDetails(
 
   if (type == shill::kTypeCellular)
     PopulateCellularDetails(network, dictionary.get());
-  else if (type == shill::kTypeVPN)
-    PopulateVPNDetails(network, shill_properties, dictionary.get());
 
   return dictionary.Pass();
 }
@@ -978,21 +709,24 @@ void InternetOptionsHandler::RefreshNetworkData() {
 
 void InternetOptionsHandler::UpdateConnectionData(
     const std::string& service_path) {
-  NetworkHandler::Get()->network_configuration_handler()->GetProperties(
-      service_path,
-      base::Bind(&InternetOptionsHandler::UpdateConnectionDataCallback,
-                 weak_factory_.GetWeakPtr()),
-      base::Bind(&ShillError, "UpdateConnectionData"));
+  NetworkHandler::Get()
+      ->managed_network_configuration_handler()
+      ->GetManagedProperties(
+          LoginState::Get()->primary_user_hash(),
+          service_path,
+          base::Bind(&InternetOptionsHandler::UpdateConnectionDataCallback,
+                     weak_factory_.GetWeakPtr()),
+          base::Bind(&ShillError, "UpdateConnectionData"));
 }
 
 void InternetOptionsHandler::UpdateConnectionDataCallback(
     const std::string& service_path,
-    const base::DictionaryValue& shill_properties) {
+    const base::DictionaryValue& onc_properties) {
   const NetworkState* network = GetNetworkState(service_path);
   if (!network)
     return;
   scoped_ptr<base::DictionaryValue> dictionary =
-      PopulateConnectionDetails(network, shill_properties);
+      PopulateConnectionDetails(network, onc_properties);
   web_ui()->CallJavascriptFunction(kUpdateConnectionDataFunction, *dictionary);
 }
 
@@ -1192,7 +926,7 @@ void InternetOptionsHandler::SetIPConfigProperties(
 
 void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
     const std::string& service_path,
-    const base::DictionaryValue& shill_properties) {
+    const base::DictionaryValue& onc_properties) {
   const NetworkState* network = GetNetworkState(service_path);
   if (!network) {
     LOG(ERROR) << "Network properties not found: " << service_path;
@@ -1202,68 +936,8 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
   details_path_ = service_path;
 
   scoped_ptr<base::DictionaryValue> dictionary =
-      PopulateConnectionDetails(network, shill_properties);
+      PopulateConnectionDetails(network, onc_properties);
 
-  ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_NONE;
-  const base::DictionaryValue* onc =
-      onc::FindPolicyForActiveUser(network->guid(), &onc_source);
-  const NetworkPropertyUIData property_ui_data(onc_source);
-
-  // IP config
-  scoped_ptr<base::DictionaryValue> ipconfig_dhcp(new base::DictionaryValue);
-  ipconfig_dhcp->SetString(kIpConfigAddress, network->ip_address());
-  ipconfig_dhcp->SetString(kIpConfigNetmask, network->GetNetmask());
-  ipconfig_dhcp->SetString(kIpConfigGateway, network->gateway());
-  std::string ipconfig_name_servers = network->GetDnsServersAsString();
-  ipconfig_dhcp->SetString(kIpConfigNameServers, ipconfig_name_servers);
-  ipconfig_dhcp->SetString(kIpConfigWebProxyAutoDiscoveryUrl,
-                           network->web_proxy_auto_discovery_url().spec());
-  SetValueDictionary(kDictionaryIpConfig,
-                     ipconfig_dhcp.release(),
-                     property_ui_data,
-                     dictionary.get());
-
-  std::string name_server_type = kNameServerTypeAutomatic;
-  int automatic_ip_config = 0;
-  scoped_ptr<base::DictionaryValue> static_ip_dict(
-      BuildIPInfoDictionary(shill_properties, true, &automatic_ip_config));
-  dictionary->SetBoolean(kIpConfigAutoConfig, automatic_ip_config == 0);
-  DCHECK(automatic_ip_config == 3 || automatic_ip_config == 0)
-      << "UI doesn't support automatic specification of individual "
-      << "static IP parameters.";
-  scoped_ptr<base::DictionaryValue> saved_ip_dict(
-      BuildIPInfoDictionary(shill_properties, false, NULL));
-  dictionary->Set(kDictionarySavedIp, saved_ip_dict.release());
-
-  // Determine what kind of name server setting we have by comparing the
-  // StaticIP and Google values with the ipconfig values.
-  std::string static_ip_nameservers;
-  static_ip_dict->GetString(kIpConfigNameServers, &static_ip_nameservers);
-  if (!static_ip_nameservers.empty() &&
-      static_ip_nameservers == ipconfig_name_servers) {
-    name_server_type = kNameServerTypeUser;
-  }
-  if (ipconfig_name_servers == kGoogleNameServers) {
-    name_server_type = kNameServerTypeGoogle;
-  }
-  SetValueDictionary(kDictionaryStaticIp,
-                     static_ip_dict.release(),
-                     property_ui_data,
-                     dictionary.get());
-
-  dictionary->SetString(kTagNameServerType, name_server_type);
-  dictionary->SetString(kTagNameServersGoogle, kGoogleNameServers);
-
-  int priority = 0;
-  shill_properties.GetIntegerWithoutPathExpansion(
-      shill::kPriorityProperty, &priority);
-  SetManagedValueDictionary(network->guid(),
-                            ::onc::network_config::kPriority,
-                            base::FundamentalValue(priority),
-                            ::onc::network_config::kPriority,
-                            dictionary.get());
-
-  std::string onc_path_to_auto_connect;
   if (network->Matches(NetworkTypePattern::WiFi())) {
     content::RecordAction(
         base::UserMetricsAction("Options_NetworkShowDetailsWifi"));
@@ -1271,8 +945,6 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
       content::RecordAction(
           base::UserMetricsAction("Options_NetworkShowDetailsWifiConnected"));
     }
-    onc_path_to_auto_connect =
-        ::onc::network_config::WifiProperty(::onc::wifi::kAutoConnect);
   } else if (network->Matches(NetworkTypePattern::VPN())) {
     content::RecordAction(
         base::UserMetricsAction("Options_NetworkShowDetailsVPN"));
@@ -1280,8 +952,6 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
       content::RecordAction(
           base::UserMetricsAction("Options_NetworkShowDetailsVPNConnected"));
     }
-    onc_path_to_auto_connect = ::onc::network_config::VpnProperty(
-        ::onc::vpn::kAutoConnect);
   } else if (network->Matches(NetworkTypePattern::Cellular())) {
     content::RecordAction(
         base::UserMetricsAction("Options_NetworkShowDetailsCellular"));
@@ -1289,47 +959,6 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
       content::RecordAction(base::UserMetricsAction(
           "Options_NetworkShowDetailsCellularConnected"));
     }
-  }
-
-  if (!onc_path_to_auto_connect.empty()) {
-    bool auto_connect = false;
-    shill_properties.GetBooleanWithoutPathExpansion(
-        shill::kAutoConnectProperty, &auto_connect);
-
-    base::FundamentalValue auto_connect_value(auto_connect);
-    ::onc::ONCSource auto_connect_onc_source = onc_source;
-
-    DCHECK_EQ(onc == NULL, onc_source == ::onc::ONC_SOURCE_NONE);
-    bool auto_connect_recommended =
-        auto_connect_onc_source != ::onc::ONC_SOURCE_NONE &&
-        onc::IsRecommendedValue(onc, onc_path_to_auto_connect);
-    // If a policy exists, |auto_connect_default_value| will contain either a
-    // recommended value (if |auto_connect_recommended| is true) or an enforced
-    // value (if |auto_connect_recommended| is false).
-    const base::Value* auto_connect_default_value = NULL;
-    if (onc)
-      onc->Get(onc_path_to_auto_connect, &auto_connect_default_value);
-
-    // Autoconnect can be controlled by the GlobalNetworkConfiguration of the
-    // ONC policy.
-    if (auto_connect_onc_source == ::onc::ONC_SOURCE_NONE &&
-        onc::PolicyAllowsOnlyPolicyNetworksToAutoconnect(
-            network->IsPrivate())) {
-      auto_connect_recommended = false;
-      auto_connect_onc_source = network->IsPrivate()
-                                    ? ::onc::ONC_SOURCE_USER_POLICY
-                                    : ::onc::ONC_SOURCE_DEVICE_POLICY;
-      if (auto_connect) {
-        LOG(WARNING) << "Policy prevents autoconnect, but value is True.";
-        auto_connect_value = base::FundamentalValue(false);
-      }
-    }
-    SetManagedValueDictionaryEx(shill::kAutoConnectProperty,
-                                auto_connect_value,
-                                auto_connect_onc_source,
-                                auto_connect_recommended,
-                                auto_connect_default_value,
-                                dictionary.get());
   }
 
   // Show details dialog
@@ -1376,11 +1005,15 @@ void InternetOptionsHandler::NetworkCommandCallback(
             base::Bind(&base::DoNothing),
             base::Bind(&ShillError, "NetworkCommand: " + command));
   } else if (command == kTagOptions) {
-    NetworkHandler::Get()->network_configuration_handler()->GetProperties(
-        service_path,
-        base::Bind(&InternetOptionsHandler::PopulateDictionaryDetailsCallback,
-                   weak_factory_.GetWeakPtr()),
-        base::Bind(&ShillError, "NetworkCommand: " + command));
+    NetworkHandler::Get()
+        ->managed_network_configuration_handler()
+        ->GetManagedProperties(
+            LoginState::Get()->primary_user_hash(),
+            service_path,
+            base::Bind(
+                &InternetOptionsHandler::PopulateDictionaryDetailsCallback,
+                weak_factory_.GetWeakPtr()),
+            base::Bind(&ShillError, "NetworkCommand: " + command));
   } else if (command == kTagConnect) {
     const NetworkState* network = GetNetworkState(service_path);
     if (network && network->type() == shill::kTypeWifi)
