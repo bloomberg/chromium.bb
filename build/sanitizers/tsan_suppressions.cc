@@ -184,9 +184,6 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/329460
 "race:extensions::InfoMap::AddExtension\n"
 
-// http://crbug.com/330528
-"race:v8::internal::MarkCompactCollector::SweepInParallel\n"
-
 // http://crbug.com/333244
 "race:content::"
     "VideoCaptureImplTest::MockVideoCaptureImpl::~MockVideoCaptureImpl\n"
