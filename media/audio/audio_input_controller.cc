@@ -45,7 +45,7 @@ const int kTimerInitialIntervalSeconds = 5;
 const int kPowerMeasurementTimeConstantMilliseconds = 10;
 
 // Time in seconds between two successive measurements of audio power levels.
-const int kPowerMonitorLogIntervalSeconds = 5;
+const int kPowerMonitorLogIntervalSeconds = 15;
 #endif
 }
 
