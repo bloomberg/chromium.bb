@@ -22,8 +22,8 @@
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 
 using content::WebContents;
-using extensions::api::tabs::InjectDetails;
 using extensions::api::web_view_internal::SetPermission::Params;
+using extensions::core_api::extension_types::InjectDetails;
 namespace helpers = extensions::context_menus_api_helpers;
 namespace webview = extensions::api::web_view_internal;
 

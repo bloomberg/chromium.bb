@@ -74,7 +74,6 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/message_bundle.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -104,7 +103,7 @@ namespace windows = api::windows;
 namespace keys = tabs_constants;
 namespace tabs = api::tabs;
 
-using api::tabs::InjectDetails;
+using core_api::extension_types::InjectDetails;
 
 template class CaptureWebContentsFunction<ChromeAsyncExtensionFunction>;
 

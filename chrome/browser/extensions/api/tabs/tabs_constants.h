@@ -93,9 +93,6 @@ extern const char kInvalidWindowTypeError[];
 extern const char kInvalidWindowStateError[];
 extern const char kScreenshotsDisabled[];
 
-extern const char kNoCodeOrFileToExecuteError[];
-extern const char kMoreThanOneValuesError[];
-extern const char kLoadFileError[];
 extern const char kCannotDetermineLanguageOfUnloadedTab[];
 
 };  // namespace tabs_constants

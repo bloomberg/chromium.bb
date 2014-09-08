@@ -89,6 +89,8 @@ source_set("browser") {
       "api/dns/dns_api.h",
       "api/dns/host_resolver_wrapper.cc",
       "api/dns/host_resolver_wrapper.h",
+      "api/execute_code_function.cc",
+      "api/execute_code_function.h",
       "api/extensions_api_client.cc",
       "api/extensions_api_client.h",
       "api/hid/hid_api.cc",

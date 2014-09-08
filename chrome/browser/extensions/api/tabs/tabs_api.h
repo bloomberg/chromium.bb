@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/extensions/api/execute_code_function.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
@@ -17,6 +16,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/api/capture_web_contents_function.h"
+#include "extensions/browser/api/execute_code_function.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/user_script.h"
 #include "url/gurl.h"

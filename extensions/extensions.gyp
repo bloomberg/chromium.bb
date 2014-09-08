@@ -355,6 +355,8 @@
         'browser/api/dns/dns_api.h',
         'browser/api/dns/host_resolver_wrapper.cc',
         'browser/api/dns/host_resolver_wrapper.h',
+        'browser/api/execute_code_function.cc',
+        'browser/api/execute_code_function.h',
         'browser/api/extensions_api_client.cc',
         'browser/api/extensions_api_client.h',
         'browser/api/hid/hid_api.cc',

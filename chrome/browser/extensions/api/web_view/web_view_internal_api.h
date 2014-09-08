@@ -5,9 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_WEB_VIEW_WEB_VIEW_INTERNAL_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_WEB_VIEW_WEB_VIEW_INTERNAL_API_H_
 
-#include "chrome/browser/extensions/api/execute_code_function.h"
-#include "chrome/browser/guest_view/web_view/web_view_find_helper.h"
 #include "extensions/browser/api/capture_web_contents_function.h"
+#include "extensions/browser/api/execute_code_function.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 

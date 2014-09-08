@@ -232,8 +232,6 @@
       'browser/extensions/api/easy_unlock_private/easy_unlock_private_bluetooth_util_chromeos.cc',
       'browser/extensions/api/easy_unlock_private/easy_unlock_private_crypto_delegate.h',
       'browser/extensions/api/easy_unlock_private/easy_unlock_private_crypto_delegate_chromeos.cc',
-      'browser/extensions/api/execute_code_function.cc',
-      'browser/extensions/api/execute_code_function.h',
       'browser/extensions/api/experience_sampling_private/experience_sampling.cc',
       'browser/extensions/api/experience_sampling_private/experience_sampling.h',
       'browser/extensions/api/experience_sampling_private/experience_sampling_private_api.cc',

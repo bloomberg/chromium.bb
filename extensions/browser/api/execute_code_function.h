@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_EXECUTE_CODE_FUNCTION_H_
-#define CHROME_BROWSER_EXTENSIONS_API_EXECUTE_CODE_FUNCTION_H_
+#ifndef EXTENSIONS_BROWSER_API_EXECUTE_CODE_FUNCTION_H_
+#define EXTENSIONS_BROWSER_API_EXECUTE_CODE_FUNCTION_H_
 
-#include "chrome/common/extensions/api/tabs.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/script_executor.h"
+#include "extensions/common/api/extension_types.h"
 
 namespace extensions {
 
@@ -37,7 +37,7 @@ class ExecuteCodeFunction : public AsyncExtensionFunction {
                                      const base::ListValue& result);
 
   // The injection details.
-  scoped_ptr<api::tabs::InjectDetails> details_;
+  scoped_ptr<core_api::extension_types::InjectDetails> details_;
 
  private:
   // Called when contents from the file whose path is specified in JSON
@@ -46,12 +46,11 @@ class ExecuteCodeFunction : public AsyncExtensionFunction {
 
   // Runs on FILE thread. Loads message bundles for the extension and
   // localizes the CSS data. Calls back DidLoadAndLocalizeFile on the UI thread.
-  void GetFileURLAndLocalizeCSS(
-      ScriptExecutor::ScriptType script_type,
-      const std::string& data,
-      const std::string& extension_id,
-      const base::FilePath& extension_path,
-      const std::string& extension_default_locale);
+  void GetFileURLAndLocalizeCSS(ScriptExecutor::ScriptType script_type,
+                                const std::string& data,
+                                const std::string& extension_id,
+                                const base::FilePath& extension_path,
+                                const std::string& extension_default_locale);
 
   // Called when contents from the loaded file have been localized.
   void DidLoadAndLocalizeFile(bool success, const std::string& data);
@@ -70,5 +69,4 @@ class ExecuteCodeFunction : public AsyncExtensionFunction {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_EXECUTE_CODE_FUNCTION_H_
-
+#endif  // EXTENSIONS_BROWSER_API_EXECUTE_CODE_FUNCTION_H_

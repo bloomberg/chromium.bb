@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef EXTENSIONS_BROWSER_API_CAPTURE_WEB_CONTENTS_FUNCTION_IMPL_H_
+#define EXTENSIONS_BROWSER_API_CAPTURE_WEB_CONTENTS_FUNCTION_IMPL_H_
+
 #include "extensions/browser/api/capture_web_contents_function.h"
 
 #include "base/base64.h"
@@ -140,3 +143,4 @@ bool CaptureWebContentsFunction<T>::ValidationFailure(
 
 }  // namespace extensions
 
+#endif  // EXTENSIONS_BROWSER_API_CAPTURE_WEB_CONTENTS_FUNCTION_IMPL_H_
