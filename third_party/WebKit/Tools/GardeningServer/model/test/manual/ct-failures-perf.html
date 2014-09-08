@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../bower_components/platform/platform.js"></script>
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../ct-commit-log-mock.html">
+<link rel="import" href="../../ct-failures.html">
+</head>
+<body>
+<label><input type="checkbox" id="collect" checked> Collect timing</label> (this checkbox takes a long time to register clicks.)
+<p>Times in ms:
+<ul>
+  <template id="report" repeat="{{results}}">
+    <li>{{time}}</li>
+  </template>
+</ul>
+<script>
+(function() {
+'use strict';
+
+var model = {results: []};
+document.querySelector('#report').model = model;
+
+var analyzer = new CTFailures(CTCommitLogMock());
+var big_alerts = net.json('big-alerts.json');
+net.json = function(url) {
+  if (url === 'http://sheriff-o-matic.appspot.com/alerts') {
+    return big_alerts.then(function(alerts) {
+      return Object.clone(alerts, /*deep=*/true);
+    });
+  } else if (url === 'http://trooper-o-matic.appspot.com/alerts') {
+    return Promise.resolve({});
+  } else {
+    return Promise.reject(new Error('Unexpected URL: ' + url));
+  }
+};
+
+function requestAnimationFramePromise() {
+  return new Promise(function(resolve, reject) {
+    requestAnimationFrame(resolve);
+  });
+}
+
+function waitForCollecting() {
+  var checkbox = document.querySelector('#collect');
+  if (checkbox.checked) {
+    return Promise.resolve();
+  } else {
+    return new Promise(function(resolve, reject) {
+      function resumeCollecting(e) {
+        if (checkbox.checked) {
+          checkbox.removeEventListener(resumeCollecting);
+          resolve();
+        }
+      }
+      checkbox.addEventListener('change', resumeCollecting);
+    });
+  }
+}
+
+// A Promise version of "while(true) iteration()".
+function forever(iteration) {
+  function loop() {
+    iteration().then(loop, function(e) { console.error(e, e.stack); });
+  }
+  loop();
+}
+
+big_alerts.then(function() {
+  forever(function() {
+    var start = window.performance.now();
+    return analyzer.update().then(function() {
+       var end = window.performance.now();
+       model.results.push({time: end - start});
+       // Let the browser paint the result, and stop timing when the tab is hidden
+       // or the checkbox is unchecked.
+       return waitForCollecting().then(requestAnimationFramePromise);
+    })
+  });
+});
+
+})();
+</script>
+</body>
+</html>
