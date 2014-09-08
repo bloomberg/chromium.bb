@@ -60,11 +60,24 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
   }
 
   void SendKeyPress(ui::KeyboardCode key) {
-    gfx::NativeWindow root_window =
-        ash::Shell::GetInstance()->GetPrimaryRootWindow();
-    ASSERT_TRUE(
-        ui_test_utils::SendKeyPressToWindowSync(
-            root_window, key, false, false, false, false));
+    ASSERT_NO_FATAL_FAILURE(
+        ASSERT_TRUE(
+            ui_test_utils::SendKeyPressToWindowSync(
+                NULL, key, false, false, false, false)));
+  }
+
+  void SendKeyPressWithControl(ui::KeyboardCode key) {
+    ASSERT_NO_FATAL_FAILURE(
+        ASSERT_TRUE(
+            ui_test_utils::SendKeyPressToWindowSync(
+                NULL, key, true, false, false, false)));
+  }
+
+  void SendKeyPressWithSearchAndShift(ui::KeyboardCode key) {
+    ASSERT_NO_FATAL_FAILURE(
+        ASSERT_TRUE(
+            ui_test_utils::SendKeyPressToWindowSync(
+                NULL, key, false, true, false, true)));
   }
 
   void RunJavaScriptInChromeVoxBackgroundPage(const std::string& script) {
@@ -236,6 +249,111 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TypeInOmnibox) {
 
   SendKeyPress(ui::VKEY_BACK);
   EXPECT_EQ("z", monitor.GetNextUtterance());
+}
+
+// http://crbug.com/410534
+#if defined(USE_OZONE)
+#define MAYBE_ChromeVoxShiftSearch DISABLED_ChromeVoxShiftSearch
+#else
+#define MAYBE_ChromeVoxShiftSearch ChromeVoxShiftSearch
+#endif
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, MAYBE_ChromeVoxShiftSearch) {
+  EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+
+  SpeechMonitor monitor;
+  AccessibilityManager::Get()->EnableSpokenFeedback(
+      true, ash::A11Y_NOTIFICATION_NONE);
+  EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL("data:text/html;charset=utf-8,<button autofocus>Click me</button>"));
+  while (true) {
+    std::string utterance = monitor.GetNextUtterance();
+    if (utterance == "Click me")
+      break;
+  }
+  EXPECT_EQ("Button", monitor.GetNextUtterance());
+
+  // Press Search+Shift+/ to enter ChromeVox's "find in page".
+  SendKeyPressWithSearchAndShift(ui::VKEY_OEM_2);
+  EXPECT_EQ("Find in page.", monitor.GetNextUtterance());
+  EXPECT_EQ("Enter a search query.", monitor.GetNextUtterance());
+}
+
+// http://crbug.com/410534
+#if defined(USE_OZONE)
+#define MAYBE_ChromeVoxPrefixKey DISABLED_ChromeVoxPrefixKey
+#else
+#define MAYBE_ChromeVoxPrefixKey ChromeVoxPrefixKey
+#endif
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, MAYBE_ChromeVoxPrefixKey) {
+  EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+
+  SpeechMonitor monitor;
+  AccessibilityManager::Get()->EnableSpokenFeedback(
+      true, ash::A11Y_NOTIFICATION_NONE);
+  EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL("data:text/html;charset=utf-8,<button autofocus>Click me</button>"));
+  while (true) {
+    std::string utterance = monitor.GetNextUtterance();
+    if (utterance == "Click me")
+      break;
+  }
+  EXPECT_EQ("Button", monitor.GetNextUtterance());
+
+  // Press the prefix key Ctrl+';' followed by '/'
+  // to enter ChromeVox's "find in page".
+  SendKeyPressWithControl(ui::VKEY_OEM_1);
+  SendKeyPress(ui::VKEY_OEM_2);
+  EXPECT_EQ("Find in page.", monitor.GetNextUtterance());
+  EXPECT_EQ("Enter a search query.", monitor.GetNextUtterance());
+}
+
+// http://crbug.com/410534
+#if defined(USE_OZONE)
+#define MAYBE_ChromeVoxNavigateAndSelect DISABLED_ChromeVoxNavigateAndSelect
+#else
+#define MAYBE_ChromeVoxNavigateAndSelect ChromeVoxNavigateAndSelect
+#endif
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, MAYBE_ChromeVoxNavigateAndSelect) {
+  EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+
+  SpeechMonitor monitor;
+  AccessibilityManager::Get()->EnableSpokenFeedback(
+      true, ash::A11Y_NOTIFICATION_NONE);
+  EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL("data:text/html;charset=utf-8,"
+           "<h1>Title</h1>"
+           "<button autofocus>Click me</button>"));
+  while (true) {
+    std::string utterance = monitor.GetNextUtterance();
+    if (utterance == "Click me")
+      break;
+  }
+  EXPECT_EQ("Button", monitor.GetNextUtterance());
+
+  // Press Search+Shift+Up to navigate to the previous item.
+  SendKeyPressWithSearchAndShift(ui::VKEY_UP);
+  EXPECT_EQ("Title", monitor.GetNextUtterance());
+  EXPECT_EQ("Heading 1", monitor.GetNextUtterance());
+
+  // Press Search+Shift+S to select the text.
+  SendKeyPressWithSearchAndShift(ui::VKEY_S);
+  EXPECT_EQ("Start selection", monitor.GetNextUtterance());
+  EXPECT_EQ("Title", monitor.GetNextUtterance());
+  EXPECT_EQ(", selected", monitor.GetNextUtterance());
+
+  // Press again to end the selection.
+  SendKeyPressWithSearchAndShift(ui::VKEY_S);
+  EXPECT_EQ("End selection", monitor.GetNextUtterance());
+  EXPECT_EQ("Title", monitor.GetNextUtterance());
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TouchExploreStatusTray) {
