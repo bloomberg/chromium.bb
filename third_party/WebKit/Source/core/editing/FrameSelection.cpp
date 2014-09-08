@@ -296,7 +296,6 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
 
     notifyAccessibilityForSelectionChange();
     notifyCompositorForSelectionChange();
-    notifyEventHandlerForSelectionChange();
     m_frame->domWindow()->enqueueDocumentEvent(Event::create(EventTypeNames::selectionchange));
 }
 
@@ -1450,11 +1449,6 @@ void FrameSelection::notifyCompositorForSelectionChange()
         return;
 
     scheduleVisualUpdate();
-}
-
-void FrameSelection::notifyEventHandlerForSelectionChange()
-{
-    m_frame->eventHandler().notifySelectionChanged();
 }
 
 void FrameSelection::focusedOrActiveStateChanged()

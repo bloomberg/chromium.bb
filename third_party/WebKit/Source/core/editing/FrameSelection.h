@@ -246,7 +246,6 @@ private:
 
     void notifyAccessibilityForSelectionChange();
     void notifyCompositorForSelectionChange();
-    void notifyEventHandlerForSelectionChange();
 
     void focusedOrActiveStateChanged();
 
