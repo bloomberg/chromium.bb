@@ -41,9 +41,9 @@ namespace syncer {
 
 SyncRollbackManagerBase::SyncRollbackManagerBase()
     : report_unrecoverable_error_function_(NULL),
-      weak_ptr_factory_(this),
       dummy_handler_(new DummyEntryptionHandler),
-      initialized_(false) {
+      initialized_(false),
+      weak_ptr_factory_(this) {
 }
 
 SyncRollbackManagerBase::~SyncRollbackManagerBase() {

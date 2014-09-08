@@ -133,11 +133,11 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManagerBase :
   scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler_;
   ReportUnrecoverableErrorFunction report_unrecoverable_error_function_;
 
-  base::WeakPtrFactory<SyncRollbackManagerBase> weak_ptr_factory_;
-
   scoped_ptr<SyncEncryptionHandler> dummy_handler_;
 
   bool initialized_;
+
+  base::WeakPtrFactory<SyncRollbackManagerBase> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncRollbackManagerBase);
 };
