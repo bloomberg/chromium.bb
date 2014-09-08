@@ -892,6 +892,15 @@ void BasicPrint(Browser* browser) {
 }
 
 bool CanBasicPrint(Browser* browser) {
+  // If printing is not disabled via pref or policy, it is always possible to
+  // advanced print when the print preview is visible.  The exception to this
+  // is under Win8 ash, since showing the advanced print dialog will open it
+  // modally on the Desktop and hang the browser.
+#if defined(OS_WIN)
+  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
+    return false;
+#endif
+
   return browser->profile()->GetPrefs()->GetBoolean(prefs::kPrintingEnabled) &&
       (PrintPreviewShowing(browser) || CanPrint(browser));
 }
