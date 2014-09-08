@@ -26,11 +26,18 @@ cr.define('options', function() {
     __proto__: Page.prototype,
 
     /**
-     * The saved origins list.
+     * The saved allowed origins list.
      * @type {OriginList}
      * @private
      */
-    originList_: null,
+    allowedList_: null,
+
+    /**
+     * The saved blocked origins list.
+     * @type {OriginList}
+     * @private
+     */
+    blockedList_: null,
 
     /** @override */
     initializePage: function() {
@@ -68,19 +75,24 @@ cr.define('options', function() {
      * @private
      */
     createOriginsList_: function() {
-      this.originList_ = this.pageDiv.querySelector('.origin-list');
-      options.OriginList.decorate(this.originList_);
-      this.originList_.autoExpands = true;
+      this.allowedList_ = $('allowed-origin-list');
+      options.OriginList.decorate(this.allowedList_);
+      this.allowedList_.autoExpands = true;
+
+      this.blockedList_ = $('blocked-origin-list');
+      options.OriginList.decorate(this.blockedList_);
+      this.blockedList_.autoExpands = true;
     },
 
     /**
-     * Populate the origin list with all of the origins with a given permission
+     * Populate an origin list with all of the origins with a given permission
      * or that are using a given resource.
+     * @param {OriginList} originList A list to populate.
      * @param {!Object} originDict A dictionary of origins to their usage, which
            will be used to sort the origins.
      * @private
      */
-    populateOrigins_: function(originDict) {
+    populateOriginsHelper_: function(originList, originDict) {
       var origins = Object.keys(originDict).map(function(origin) {
         // |usage| means the time of last usage in seconds since epoch
         // (Jan 1, 1970) for permissions and means the amount of local storage
@@ -95,7 +107,33 @@ cr.define('options', function() {
       origins.sort(function(first, second) {
         return second.usage - first.usage;
       });
-      this.originList_.dataModel = new ArrayDataModel(origins);
+      originList.dataModel = new ArrayDataModel(origins);
+    },
+
+
+    /**
+     * Populate the origin lists with all of the origins with a given permission
+     * or that are using a given resource, potentially split by if allowed or
+     * denied. If no blocked dictionary is provided, only the allowed list is
+     * shown.
+     * @param {!Object} allowedDict A dictionary of origins to their usage,
+           which will be used to sort the origins in the main/allowed list.
+     * @param {!Object} blockedDict An optional dictionary of origins to their
+           usage, which will be used to sort the origins in the blocked list.
+     * @private
+     */
+    populateOrigins: function(allowedDict, blockedDict) {
+      this.populateOriginsHelper_(this.allowedList_, allowedDict);
+      if (blockedDict) {
+        this.populateOriginsHelper_(this.blockedList_, blockedDict);
+        this.blockedList_.hidden = false;
+        $('blocked-origin-list-title').hidden = false;
+        this.allowedList_.classList.remove('nonsplit-origin-list');
+      } else {
+        this.blockedList_.hidden = true;
+        $('blocked-origin-list-title').hidden = true;
+        this.allowedList_.classList.add('nonsplit-origin-list');
+      }
     },
 
     /**
@@ -122,8 +160,9 @@ cr.define('options', function() {
     },
   };
 
-  WebsiteSettingsManager.populateOrigins = function(originDict) {
-    WebsiteSettingsManager.getInstance().populateOrigins_(originDict);
+  WebsiteSettingsManager.populateOrigins = function(allowedDict, blockedDict) {
+    WebsiteSettingsManager.getInstance().populateOrigins(allowedDict,
+        blockedDict);
   };
 
   WebsiteSettingsManager.showEditPage = function(url) {

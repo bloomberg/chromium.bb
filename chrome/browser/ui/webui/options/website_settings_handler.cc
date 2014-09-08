@@ -91,6 +91,7 @@ void WebsiteSettingsHandler::GetLocalizedValues(
       {"websitesImagesDescription", IDS_WEBSITE_SETTINGS_IMAGES_DESCRIPTION},
       {"websitesButtonClear", IDS_WEBSITE_SETTINGS_STORAGE_CLEAR_BUTTON},
       {"websitesButtonStop", IDS_WEBSITE_SETTINGS_BATTERY_STOP_BUTTON},
+      {"websitesBlockedListTitle", IDS_WEBSITE_SETTINGS_BLOCKED_LIST_TITLE},
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -259,7 +260,8 @@ void WebsiteSettingsHandler::UpdateOrigins() {
 
   settings->GetSettingsForOneType(last_setting, std::string(), &all_settings);
 
-  base::DictionaryValue origins;
+  base::DictionaryValue allowed_origins;
+  base::DictionaryValue blocked_origins;
   for (ContentSettingsForOneType::const_iterator it = all_settings.begin();
        it != all_settings.end();
        ++it) {
@@ -313,11 +315,15 @@ void WebsiteSettingsHandler::UpdateOrigins() {
     origin_entry->SetStringWithoutPathExpansion("readableName",
                                                 GetReadableName(origin_url));
 
-    origins.SetWithoutPathExpansion(origin, origin_entry);
+    if (it->setting == CONTENT_SETTING_BLOCK)
+      blocked_origins.SetWithoutPathExpansion(origin, origin_entry);
+    else
+      allowed_origins.SetWithoutPathExpansion(origin, origin_entry);
   }
 
   web_ui()->CallJavascriptFunction("WebsiteSettingsManager.populateOrigins",
-                                   origins);
+                                   allowed_origins,
+                                   blocked_origins);
 }
 
 void WebsiteSettingsHandler::HandleGetOriginInfo(const base::ListValue* args) {

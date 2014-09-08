@@ -7992,6 +7992,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_WEBSITE_SETTINGS_BATTERY_PERCENT" desc="The percent from 0 to 100 of battery consumption from a given origin or app on the Website Settings dialog.">
         <ph name="VALUE">$1<ex>100</ex></ph>%
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_BLOCKED_LIST_TITLE" desc="Label above the list of blocked origins for a given permission on the Website Settings dialog.">
+        Blocked
+      </message>
 
       <!-- Automatic updates -->
       <if expr="is_macosx">
