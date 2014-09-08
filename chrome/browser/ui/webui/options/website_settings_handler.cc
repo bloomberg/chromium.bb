@@ -38,10 +38,15 @@ const int kHttpsPort = 443;
 const char kPreferencesSource[] = "preference";
 const char kStorage[] = "storage";
 const ContentSettingsType kValidTypes[] = {
+    CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+    CONTENT_SETTINGS_TYPE_COOKIES,
     CONTENT_SETTINGS_TYPE_GEOLOCATION,
+    CONTENT_SETTINGS_TYPE_IMAGES,
+    CONTENT_SETTINGS_TYPE_JAVASCRIPT,
     CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
     CONTENT_SETTINGS_TYPE_MEDIASTREAM,
-    CONTENT_SETTINGS_TYPE_COOKIES};
+    CONTENT_SETTINGS_TYPE_PLUGINS,
+    CONTENT_SETTINGS_TYPE_POPUPS};
 const size_t kValidTypesLength = arraysize(kValidTypes);
 
 }  // namespace
@@ -65,7 +70,7 @@ void WebsiteSettingsHandler::GetLocalizedValues(
       {"websitesSettingsEditPage", IDS_WEBSITE_SETTINGS_EDIT_TITLE},
       {"websitesManage", IDS_WEBSITE_SETTINGS_MANAGE},
       {"websitesSearch", IDS_WEBSITE_SETTINGS_SEARCH_ORIGINS},
-      {"websitesLabelGeolocation", IDS_WEBSITE_SETTINGS_TYPE_LOCATION},
+      {"websitesLabelLocation", IDS_WEBSITE_SETTINGS_TYPE_LOCATION},
       {"websitesLabelMediaStream", IDS_WEBSITE_SETTINGS_TYPE_MEDIASTREAM},
       {"websitesLabelNotifications", IDS_WEBSITE_SETTINGS_TYPE_NOTIFICATIONS},
       {"websitesLabelStorage", IDS_WEBSITE_SETTINGS_TYPE_STORAGE},
@@ -73,10 +78,17 @@ void WebsiteSettingsHandler::GetLocalizedValues(
       {"websitesCookiesDescription", IDS_WEBSITE_SETTINGS_COOKIES_DESCRIPTION},
       {"websitesLocationDescription",
        IDS_WEBSITE_SETTINGS_LOCATION_DESCRIPTION},
-      {"websitesMediastreamDescription",
+      {"websitesMediaStreamDescription",
        IDS_WEBSITE_SETTINGS_MEDIASTREAM_DESCRIPTION},
       {"websitesNotificationsDescription",
        IDS_WEBSITE_SETTINGS_NOTIFICATIONS_DESCRIPTION},
+      {"websitesDownloadsDescription",
+       IDS_WEBSITE_SETTINGS_DOWNLOAD_DESCRIPTION},
+      {"websitesPluginsDescription", IDS_WEBSITE_SETTINGS_PLUGINS_DESCRIPTION},
+      {"websitesPopupsDescription", IDS_WEBSITE_SETTINGS_POPUPS_DESCRIPTION},
+      {"websitesJavascriptDescription",
+       IDS_WEBSITE_SETTINGS_JAVASCRIPT_DESCRIPTION},
+      {"websitesImagesDescription", IDS_WEBSITE_SETTINGS_IMAGES_DESCRIPTION},
       {"websitesButtonClear", IDS_WEBSITE_SETTINGS_STORAGE_CLEAR_BUTTON},
       {"websitesButtonStop", IDS_WEBSITE_SETTINGS_BATTERY_STOP_BUTTON},
   };
@@ -347,17 +359,9 @@ void WebsiteSettingsHandler::HandleSetOriginPermission(
   ContentSettingsPattern primary_pattern;
   ContentSettingsPattern secondary_pattern;
   switch (settings_type) {
-    case CONTENT_SETTINGS_TYPE_COOKIES:
-      primary_pattern = ContentSettingsPattern::FromURLNoWildcard(last_site_);
-      secondary_pattern = ContentSettingsPattern::FromURLNoWildcard(last_site_);
-      break;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
       primary_pattern = ContentSettingsPattern::FromURLNoWildcard(last_site_);
       secondary_pattern = ContentSettingsPattern::Wildcard();
-      break;
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      primary_pattern = ContentSettingsPattern::FromURLNoWildcard(last_site_);
-      secondary_pattern = ContentSettingsPattern::FromURLNoWildcard(last_site_);
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
       primary_pattern = ContentSettingsPattern::FromURLNoWildcard(last_site_);
@@ -373,9 +377,19 @@ void WebsiteSettingsHandler::HandleSetOriginPermission(
                              std::string(),
                              setting);
       return;
+    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
+    case CONTENT_SETTINGS_TYPE_COOKIES:
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+    case CONTENT_SETTINGS_TYPE_IMAGES:
+    case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
+    case CONTENT_SETTINGS_TYPE_PLUGINS:
+    case CONTENT_SETTINGS_TYPE_POPUPS:
+      primary_pattern = ContentSettingsPattern::FromURLNoWildcard(last_site_);
+      secondary_pattern = ContentSettingsPattern::FromURLNoWildcard(last_site_);
+      break;
     default:
       NOTREACHED() << "Content settings type not yet supported.";
-      break;
+      return;
   }
 
   content_settings::SettingInfo info;

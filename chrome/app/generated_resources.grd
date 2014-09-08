@@ -7941,6 +7941,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_WEBSITE_SETTINGS_COOKIES_DESCRIPTION" desc="Label for granting cookies permission on the Website Settings single site view dialog.">
         Stores data
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_DOWNLOAD_DESCRIPTION" desc="Label for granting multiple automatic downloads permission on the Website Settings single site view dialog.">
+        Automatic downloads
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_JAVASCRIPT_DESCRIPTION" desc="Label for granting scripts permission on the Website Settings single site view dialog.">
+        Runs scripts
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_IMAGES_DESCRIPTION" desc="Label for granting images permission on the Website Settings single site view dialog.">
+        Displays images
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_LOCATION_DESCRIPTION" desc="Label for granting geolocation permission on the Website Settings single site view dialog.">
         Knows device location
       </message>
@@ -7952,6 +7961,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_WEBSITE_SETTINGS_NOTIFICATIONS_DESCRIPTION" desc="Label for granting notifications permission on the Website Settings single site view dialog.">
         Shows notifications
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_PLUGINS_DESCRIPTION" desc="Label for granting plugins permission on the Website Settings single site view dialog.">
+        Uses plugins
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_POPUPS_DESCRIPTION" desc="Label for granting popup permission on the Website Settings single site view dialog.">
+        Displays popups
       </message>
       <message name="IDS_WEBSITE_SETTINGS_SEARCH_ORIGINS" desc="Placeholder text shown in the search box in the Website Settings dialog.">
         Search sites
