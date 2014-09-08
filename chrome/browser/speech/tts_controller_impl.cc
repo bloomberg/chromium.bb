@@ -138,6 +138,7 @@ void TtsControllerImpl::SpeakOrEnqueue(Utterance* utterance) {
   if (paused_ && !utterance->can_enqueue()) {
     Stop();
     paused_ = true;
+    delete utterance;
     return;
   }
 
