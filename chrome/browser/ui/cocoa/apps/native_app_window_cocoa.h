@@ -148,6 +148,7 @@ class NativeAppWindowCocoa : public extensions::NativeAppWindow,
   virtual gfx::Size GetContentMaximumSize() const OVERRIDE;
   virtual void SetContentSizeConstraints(const gfx::Size& min_size,
                                          const gfx::Size& max_size) OVERRIDE;
+  virtual void SetVisibleOnAllWorkspaces(bool always_visible) OVERRIDE;
 
   // WebContentsObserver implementation.
   virtual void RenderViewCreated(content::RenderViewHost* rvh) OVERRIDE;

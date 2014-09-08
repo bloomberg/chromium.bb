@@ -1352,6 +1352,21 @@ function testFrameColors() {
   ]);
 }
 
+function testVisibleOnAllWorkspaces() {
+  chrome.test.runTests([
+    function setAndUnsetVisibleOnAllWorkspaces() {
+      chrome.app.window.create('test.html', {
+        visibleOnAllWorkspaces: true
+      }, callbackPass(function(win) {
+        win.setVisibleOnAllWorkspaces(false);
+        win.setVisibleOnAllWorkspaces(true);
+        chrome.test.sendMessage(
+            'WaitForRoundTrip', callbackPass(function(reply) {}));
+      }));
+    },
+  ]);
+}
+
 chrome.app.runtime.onLaunched.addListener(function() {
   chrome.test.sendMessage('Launched', function(reply) {
     window[reply]();

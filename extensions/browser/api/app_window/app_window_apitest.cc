@@ -160,4 +160,12 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       WindowsApiVisibleOnAllWorkspacesInStable) {
+  extensions::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_STABLE);
+  EXPECT_TRUE(RunPlatformAppTest(
+      "platform_apps/windows_api_visible_on_all_workspaces/in_stable"))
+      << message_;
+}
+
 }  // namespace extensions

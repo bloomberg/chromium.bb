@@ -75,6 +75,9 @@
     "extension_types": ["platform_app"],
     "noparent": true
   },
+  "app.window.canSetVisibleOnAllWorkspaces": {
+    "channel": "dev"
+  },
   "app.currentWindowInternal": {
     "noparent": true,
     "internal": true,

@@ -238,6 +238,10 @@ void ShellNativeAppWindow::SetContentSizeConstraints(
   NOTIMPLEMENTED();
 }
 
+void ShellNativeAppWindow::SetVisibleOnAllWorkspaces(bool always_visible) {
+  NOTIMPLEMENTED();
+}
+
 bool ShellNativeAppWindow::CanHaveAlphaEnabled() const {
   NOTIMPLEMENTED();
   return false;

@@ -257,3 +257,9 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestFrameColorsInStable) {
   ASSERT_TRUE(RunAppWindowAPITest("testFrameColors")) << message_;
 }
 #endif
+
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestVisibleOnAllWorkspaces) {
+  ASSERT_TRUE(
+      RunAppWindowAPITestAndWaitForRoundTrip("testVisibleOnAllWorkspaces"))
+      << message_;
+}

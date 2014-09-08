@@ -215,6 +215,8 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
   if (create_params.alpha_enabled)
     init_params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   init_params.keep_on_top = create_params.always_on_top;
+  init_params.visible_on_all_workspaces =
+      create_params.visible_on_all_workspaces;
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Set up a custom WM_CLASS for app windows. This allows task switchers in
