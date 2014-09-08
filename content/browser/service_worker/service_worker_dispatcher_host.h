@@ -47,6 +47,12 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   // be destroyed.
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
+  // Returns the existing registration handle whose reference count is
+  // incremented or newly created one if it doesn't exist.
+  ServiceWorkerRegistrationHandle* GetOrCreateRegistrationHandle(
+      int provider_id,
+      ServiceWorkerRegistration* registration);
+
   void RegisterServiceWorkerHandle(scoped_ptr<ServiceWorkerHandle> handle);
   void RegisterServiceWorkerRegistrationHandle(
       scoped_ptr<ServiceWorkerRegistrationHandle> handle);

@@ -169,6 +169,25 @@ bool ServiceWorkerDispatcherHost::Send(IPC::Message* message) {
   return true;
 }
 
+ServiceWorkerRegistrationHandle*
+ServiceWorkerDispatcherHost::GetOrCreateRegistrationHandle(
+    int provider_id,
+    ServiceWorkerRegistration* registration) {
+  ServiceWorkerRegistrationHandle* handle =
+      FindRegistrationHandle(provider_id, registration->id());
+  if (handle) {
+    handle->IncrementRefCount();
+    return handle;
+  }
+
+  scoped_ptr<ServiceWorkerRegistrationHandle> new_handle(
+      new ServiceWorkerRegistrationHandle(
+          GetContext()->AsWeakPtr(), this, provider_id, registration));
+  handle = new_handle.get();
+  RegisterServiceWorkerRegistrationHandle(new_handle.Pass());
+  return handle;
+}
+
 void ServiceWorkerDispatcherHost::RegisterServiceWorkerHandle(
     scoped_ptr<ServiceWorkerHandle> handle) {
   int handle_id = handle->handle_id();
@@ -391,19 +410,7 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
   DCHECK(registration);
 
   ServiceWorkerRegistrationHandle* handle =
-      FindRegistrationHandle(provider_id, registration_id);
-  ServiceWorkerRegistrationObjectInfo info;
-  if (handle) {
-    handle->IncrementRefCount();
-    info = handle->GetObjectInfo();
-  } else {
-    scoped_ptr<ServiceWorkerRegistrationHandle> new_handle(
-        new ServiceWorkerRegistrationHandle(
-            GetContext()->AsWeakPtr(), this, provider_id, registration));
-    info = new_handle->GetObjectInfo();
-    handle = new_handle.get();
-    RegisterServiceWorkerRegistrationHandle(new_handle.Pass());
-  }
+      GetOrCreateRegistrationHandle(provider_id, registration);
 
   ServiceWorkerVersionAttributes attrs;
   attrs.installing = handle->CreateServiceWorkerHandleAndPass(
@@ -414,7 +421,7 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
       registration->active_version());
 
   Send(new ServiceWorkerMsg_ServiceWorkerRegistered(
-      thread_id, request_id, info, attrs));
+      thread_id, request_id, handle->GetObjectInfo(), attrs));
   TRACE_EVENT_ASYNC_END2("ServiceWorker",
                          "ServiceWorkerDispatcherHost::RegisterServiceWorker",
                          request_id,
