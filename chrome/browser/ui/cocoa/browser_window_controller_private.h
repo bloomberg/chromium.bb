@@ -159,6 +159,11 @@
 // omnibox from sliding.
 - (void)adjustUIForExitingFullscreenAndStopOmniboxSliding;
 
+// Exposed for testing.
+// Creates a PresentationModeController with the given style.
+- (PresentationModeController*)newPresentationModeControllerWithStyle:
+    (fullscreen_mac::SlidingStyle)style;
+
 // Toggles the AppKit Fullscreen API. By default, doing so enters Canonical
 // Fullscreen.
 - (void)enterAppKitFullscreen;

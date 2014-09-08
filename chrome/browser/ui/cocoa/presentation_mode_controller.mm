@@ -20,15 +20,6 @@ NSString* const kWillEnterFullscreenNotification =
 NSString* const kWillLeaveFullscreenNotification =
     @"WillLeaveFullscreenNotification";
 
-@interface PresentationModeController ()
-// Sets a new current floating bar shown fraction.  NOTE: This function has side
-// effects, such as modifying the system fullscreen mode (menu bar shown state).
-- (void)changeToolbarFraction:(CGFloat)fraction;
-
-// Callback for menu bar animations.
-- (void)setMenuBarRevealProgress:(CGFloat)progress;
-@end
-
 namespace {
 
 // The activation zone for the main menu is 4 pixels high; if we make it any

@@ -295,9 +295,6 @@ willPositionSheet:(NSWindow*)sheet
     return 0;
 
   CGFloat totalHeight = 0;
-  if (presentationModeController_)
-    totalHeight = [presentationModeController_ floatingBarVerticalOffset];
-
   if ([self hasTabStrip])
     totalHeight += NSHeight([[self tabStripView] frame]);
 
@@ -720,8 +717,7 @@ willPositionSheet:(NSWindow*)sheet
 - (void)adjustUIForSlidingFullscreenStyle:(fullscreen_mac::SlidingStyle)style {
   if (!presentationModeController_) {
     presentationModeController_.reset(
-        [[PresentationModeController alloc] initWithBrowserController:self
-                                                                style:style]);
+        [self newPresentationModeControllerWithStyle:style]);
     [self configurePresentationModeController];
   } else {
     presentationModeController_.get().slidingStyle = style;
@@ -738,6 +734,12 @@ willPositionSheet:(NSWindow*)sheet
   // Force the bookmark bar z-order to update.
   [[bookmarkBarController_ view] removeFromSuperview];
   [self layoutSubviews];
+}
+
+- (PresentationModeController*)newPresentationModeControllerWithStyle:
+    (fullscreen_mac::SlidingStyle)style {
+  return [[PresentationModeController alloc] initWithBrowserController:self
+                                                                 style:style];
 }
 
 - (void)enterImmersiveFullscreen {

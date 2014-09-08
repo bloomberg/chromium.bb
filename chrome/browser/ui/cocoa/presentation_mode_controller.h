@@ -143,6 +143,20 @@ enum SlidingStyle {
 
 @end
 
+// Private methods exposed for testing.
+@interface PresentationModeController (ExposedForTesting)
+// Adjusts the AppKit Fullscreen options of the application.
+- (void)setSystemFullscreenModeTo:(base::mac::FullScreenMode)mode;
+
+// Callback for menu bar animations.
+- (void)setMenuBarRevealProgress:(CGFloat)progress;
+
+// Updates the local state that reflects the fraction of the toolbar area that
+// is showing. This function has the side effect of changing the AppKit
+// Fullscreen option for whether the menu bar is shown.
+- (void)changeToolbarFraction:(CGFloat)fraction;
+@end
+
 // Notification posted when we're about to enter or leave fullscreen.
 extern NSString* const kWillEnterFullscreenNotification;
 extern NSString* const kWillLeaveFullscreenNotification;
