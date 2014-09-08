@@ -109,14 +109,12 @@ PassRefPtrWillBeRawPtr<Range> SurroundingText::rangeFromContentOffsets(unsigned 
     ASSERT(!iterator.atEnd());
     iterator.advance(startOffsetInContent);
 
-    ASSERT(iterator.range());
-    Position start = iterator.range()->startPosition();
+    Position start = iterator.startPosition();
 
     ASSERT(!iterator.atEnd());
     iterator.advance(endOffsetInContent - startOffsetInContent);
 
-    ASSERT(iterator.range());
-    Position end = iterator.range()->startPosition();
+    Position end = iterator.startPosition();
 
     ASSERT(start.document());
     return Range::create(*start.document(), start, end);

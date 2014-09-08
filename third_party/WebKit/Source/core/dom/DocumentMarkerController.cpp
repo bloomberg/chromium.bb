@@ -154,10 +154,9 @@ void DocumentMarkerController::removeMarkers(Range* range, DocumentMarker::Marke
             return;
         ASSERT(!m_markers.isEmpty());
 
-        RefPtrWillBeRawPtr<Range> textPiece = markedText.range();
-        int startOffset = textPiece->startOffset();
-        int endOffset = textPiece->endOffset();
-        removeMarkers(textPiece->startContainer(), startOffset, endOffset - startOffset, markerTypes, shouldRemovePartiallyOverlappingMarker);
+        int startOffset = markedText.startOffset();
+        int endOffset = markedText.endOffset();
+        removeMarkers(markedText.startContainer(), startOffset, endOffset - startOffset, markerTypes, shouldRemovePartiallyOverlappingMarker);
     }
 }
 

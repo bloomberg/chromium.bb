@@ -251,7 +251,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
             // Stop looking at start of next misspelled word
             CharacterIterator chars(grammarSearchRange.get());
             chars.advance(misspellingOffset);
-            grammarSearchRange->setEnd(chars.range()->startContainer(), chars.range()->startOffset(), IGNORE_EXCEPTION);
+            grammarSearchRange->setEnd(chars.startContainer(), chars.startOffset(), IGNORE_EXCEPTION);
         }
 
         if (isGrammarCheckingEnabled())
@@ -282,7 +282,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
                 // Stop looking at start of next misspelled word
                 CharacterIterator chars(grammarSearchRange.get());
                 chars.advance(misspellingOffset);
-                grammarSearchRange->setEnd(chars.range()->startContainer(), chars.range()->startOffset(), IGNORE_EXCEPTION);
+                grammarSearchRange->setEnd(chars.startContainer(), chars.startOffset(), IGNORE_EXCEPTION);
             }
 
             if (isGrammarCheckingEnabled())

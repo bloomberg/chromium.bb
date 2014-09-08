@@ -85,11 +85,8 @@ PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeFor(const ContainerNode
 
     // FIXME: the atEnd() check shouldn't be necessary, workaround for <http://bugs.webkit.org/show_bug.cgi?id=6289>.
     if (!start() && !length() && it.atEnd()) {
-        textRunRange = it.range();
-
-        resultRange->setStart(textRunRange->startContainer(), 0, ASSERT_NO_EXCEPTION);
-        resultRange->setEnd(textRunRange->startContainer(), 0, ASSERT_NO_EXCEPTION);
-
+        resultRange->setStart(it.startContainer(), 0, ASSERT_NO_EXCEPTION);
+        resultRange->setEnd(it.startContainer(), 0, ASSERT_NO_EXCEPTION);
         return resultRange.release();
     }
 

@@ -110,6 +110,12 @@ public:
     PassRefPtrWillBeRawPtr<Range> range() const;
     Node* node() const;
 
+    int startOffset() const;
+    int endOffset() const;
+    Node* startContainer() const;
+    Position startPosition() const;
+    Position endPosition() const;
+
     // Computes the length of the given range using a text iterator. The default
     // iteration behavior is to always emit object replacement characters for
     // replaced elements. When |forSelectionPreservation| is set to true, it
@@ -129,7 +135,8 @@ private:
 
     void initialize(const Position& start, const Position& end);
 
-    int startOffset() const { return m_positionStartOffset; }
+    void flushPositionOffsets() const;
+    int positionStartOffset() const { return m_positionStartOffset; }
     const String& string() const { return m_text; }
     void exitNode();
     bool shouldRepresentNodeOffsetZero();
@@ -246,6 +253,10 @@ public:
 
     PassRefPtrWillBeRawPtr<Range> range() const;
 
+    Node* startContainer() const;
+    int endOffset() const;
+    Position startPosition() const;
+
 private:
     void exitNode();
     bool handleTextNode();
@@ -324,6 +335,11 @@ public:
     int characterOffset() const { return m_offset; }
     PassRefPtrWillBeRawPtr<Range> range() const;
 
+    Node* startContainer() const;
+    int startOffset() const;
+    Position startPosition() const;
+    Position endPosition() const;
+
 private:
     void initialize();
 
@@ -344,6 +360,8 @@ public:
     bool atEnd() const { return m_textIterator.atEnd(); }
 
     PassRefPtrWillBeRawPtr<Range> range() const;
+
+    Position endPosition() const;
 
 private:
     int m_offset;
@@ -372,7 +390,6 @@ private:
     Vector<UChar> m_buffer;
     // Did we have to look ahead in the textIterator to confirm the current chunk?
     bool m_didLookAhead;
-    RefPtrWillBeMember<Range> m_range;
     TextIterator m_textIterator;
 };
 

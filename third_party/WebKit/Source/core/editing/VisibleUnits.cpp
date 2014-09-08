@@ -514,9 +514,9 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
     }
 
     if (!next)
-        return VisiblePosition(it.atEnd() ? it.range()->startPosition() : pos, DOWNSTREAM);
+        return VisiblePosition(it.atEnd() ? it.startPosition() : pos, DOWNSTREAM);
 
-    Node* node = it.range()->startContainer();
+    Node* node = it.startContainer();
     if ((node->isTextNode() && static_cast<int>(next) <= node->maxCharacterOffset()) || (node->renderer() && node->renderer()->isBR() && !next))
         // The next variable contains a usable index into a text node
         return VisiblePosition(createLegacyEditingPosition(node, next), DOWNSTREAM);
@@ -525,7 +525,7 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
     BackwardsCharacterIterator charIt(searchRange.get());
     charIt.advance(string.size() - suffixLength - next);
     // FIXME: charIt can get out of shadow host.
-    return VisiblePosition(charIt.range()->endPosition(), DOWNSTREAM);
+    return VisiblePosition(charIt.endPosition(), DOWNSTREAM);
 }
 
 static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunction searchFunction)
@@ -590,20 +590,19 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
     }
 
     if (it.atEnd() && next == string.size()) {
-        pos = it.range()->startPosition();
+        pos = it.startPosition();
     } else if (next != invalidOffset && next != prefixLength) {
         // Use the character iterator to translate the next value into a DOM position.
         CharacterIterator charIt(searchRange.get(), TextIteratorEmitsCharactersBetweenAllVisiblePositions);
         charIt.advance(next - prefixLength - 1);
-        RefPtrWillBeRawPtr<Range> characterRange = charIt.range();
-        pos = characterRange->endPosition();
+        pos = charIt.endPosition();
 
         if (charIt.characterAt(0) == '\n') {
             // FIXME: workaround for collapsed range (where only start position is correct) emitted for some emitted newlines (see rdar://5192593)
             VisiblePosition visPos = VisiblePosition(pos);
-            if (visPos == VisiblePosition(characterRange->startPosition())) {
+            if (visPos == VisiblePosition(charIt.startPosition())) {
                 charIt.advance(1);
-                pos = charIt.range()->startPosition();
+                pos = charIt.startPosition();
             }
         }
     }

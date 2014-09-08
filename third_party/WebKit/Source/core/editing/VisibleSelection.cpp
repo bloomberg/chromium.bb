@@ -313,7 +313,7 @@ void VisibleSelection::appendTrailingWhitespace()
         UChar c = charIt.characterAt(0);
         if ((!isSpaceOrNewline(c) && c != noBreakSpace) || c == '\n')
             break;
-        m_end = charIt.range()->endPosition();
+        m_end = charIt.endPosition();
         changed = true;
     }
     if (changed)
