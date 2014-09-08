@@ -82,8 +82,8 @@ test("5e1      ", "50px");
 
 debug("");
 debug("Test behavior on overflow");
-test("2E+500", "baseline");
-test("-2E+500", "baseline");
+test("2E+500", "0px");
+test("-2E+500", "0px");
 
 debug("");
 debug("Invalid values");

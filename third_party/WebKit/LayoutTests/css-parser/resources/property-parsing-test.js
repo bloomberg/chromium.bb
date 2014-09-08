@@ -12,7 +12,10 @@ function convert_to_dashes(property) {
     });
 }
 
-function assert_valid_value(property, value) {
+function assert_valid_value(property, value, serializedValue) {
+    if (arguments.length != 3)
+        serializedValue = value;
+
     test(function(){
         assert_true(CSS.supports(convert_to_dashes(property), value));
     }, "CSS.supports('" + property + "', '" + value + "') should return true");
@@ -27,6 +30,7 @@ function assert_valid_value(property, value) {
         var div = document.createElement('div');
         div.style[property] = value;
         var readValue = div.style[property];
+        assert_equals(readValue, serializedValue);
         div.style[property] = readValue;
         assert_equals(div.style[property], readValue);
     }, "Serialization should round-trip after setting e.style['" + property + "'] = '" + value + "'");

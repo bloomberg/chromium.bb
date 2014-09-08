@@ -145,18 +145,6 @@ static bool genericParseNumber(const CharType*& ptr, const CharType* end, FloatT
     return true;
 }
 
-template <typename CharType>
-bool parseSVGNumber(CharType* begin, size_t length, double& number)
-{
-    const CharType* ptr = begin;
-    const CharType* end = ptr + length;
-    return genericParseNumber(ptr, end, number, AllowLeadingAndTrailingWhitespace);
-}
-
-// Explicitly instantiate the two flavors of parseSVGNumber() to satisfy external callers
-template bool parseSVGNumber(LChar* begin, size_t length, double&);
-template bool parseSVGNumber(UChar* begin, size_t length, double&);
-
 bool parseNumber(const LChar*& ptr, const LChar* end, float& number, WhitespaceMode mode)
 {
     return genericParseNumber(ptr, end, number, mode);

@@ -78,11 +78,6 @@ inline bool isCSSViewportParsingEnabledForMode(CSSParserMode mode)
     return mode == CSSViewportRuleMode;
 }
 
-inline bool isSVGNumberParsingEnabledForMode(CSSParserMode mode)
-{
-    return mode == SVGAttributeMode;
-}
-
 inline bool isUseCounterEnabledForMode(CSSParserMode mode)
 {
     // We don't count the UA style sheet in our statistics.

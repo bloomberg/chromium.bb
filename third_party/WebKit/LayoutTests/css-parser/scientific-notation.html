@@ -1,0 +1,64 @@
+<!doctype html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/property-parsing-test.js"></script>
+<script>
+assert_valid_value("opacity", "2e2", "200");
+assert_valid_value("opacity", "2E2", "200");
+assert_valid_value("opacity", "2e+2", "200");
+assert_valid_value("opacity", "2E+2", "200");
+assert_valid_value("opacity", "2e-2", "0.02");
+assert_valid_value("opacity", "2E-2", "0.02");
+assert_valid_value("opacity", "2e200", "2e+200");
+assert_valid_value("opacity", "2E200", "2e+200");
+assert_valid_value("opacity", "2e+200", "2e+200");
+assert_valid_value("opacity", "2E+200", "2e+200");
+assert_valid_value("opacity", "2e-200", "2e-200");
+assert_valid_value("opacity", "2E-200", "2e-200");
+assert_valid_value("opacity", "1e0", "1");
+assert_valid_value("opacity", "1e+0", "1");
+assert_valid_value("opacity", "1e-0", "1");
+assert_valid_value("opacity", "1e10", "10000000000");
+assert_valid_value("opacity", "1e+10", "10000000000");
+assert_valid_value("opacity", "1e-10", "1e-10");
+assert_valid_value("width", "2e2px", "200px");
+assert_valid_value("width", "2E2px", "200px");
+assert_valid_value("width", "2e+2px", "200px");
+assert_valid_value("width", "2E+2px", "200px");
+assert_valid_value("width", "2e-2px", "0.02px");
+assert_valid_value("width", "2E-2px", "0.02px");
+assert_valid_value("width", "2e200px", "2e+200px");
+assert_valid_value("width", "2E200px", "2e+200px");
+assert_valid_value("width", "2e+200px", "2e+200px");
+assert_valid_value("width", "2E+200px", "2e+200px");
+assert_valid_value("width", "2e-200px", "2e-200px");
+assert_valid_value("width", "2E-200px", "2e-200px");
+assert_valid_value("width", "1e0px", "1px");
+assert_valid_value("width", "1e+0px", "1px");
+assert_valid_value("width", "1e-0px", "1px");
+assert_valid_value("width", "1e10px", "10000000000px");
+assert_valid_value("width", "1e+10px", "10000000000px");
+assert_valid_value("width", "1e-10px", "1e-10px");
+assert_valid_value("width", "1e0em", "1em");
+assert_valid_value("width", "1e+0em", "1em");
+assert_valid_value("width", "1e-0em", "1em");
+assert_valid_value("width", "1e10em", "10000000000em");
+assert_valid_value("width", "1e+10em", "10000000000em");
+assert_valid_value("width", "1e-10em", "1e-10em");
+assert_valid_value("width", "1e0%", "1%");
+assert_valid_value("width", "1e+0%", "1%");
+assert_valid_value("width", "1e-0%", "1%");
+assert_valid_value("width", "1e10%", "10000000000%");
+assert_valid_value("width", "1e+10%", "10000000000%");
+assert_valid_value("width", "1e-10%", "1e-10%");
+// Large exponents (not representable). This is not necessarily the correct value.
+assert_valid_value("opacity", "1e600", "0");
+assert_valid_value("opacity", "1e-600", "0");
+assert_valid_value("width", "1e600px", "0px");
+assert_valid_value("width", "1e-600px", "0px");
+
+assert_invalid_value("width", "1e1.0px");
+assert_invalid_value("width", "1e10.0px");
+assert_invalid_value("width", "1e1.0em");
+assert_invalid_value("width", "1e10.0em");
+</script>

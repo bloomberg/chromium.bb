@@ -41,8 +41,6 @@ enum WhitespaceMode {
     AllowLeadingAndTrailingWhitespace = AllowLeadingWhitespace | AllowTrailingWhitespace
 };
 
-template <typename CharType>
-bool parseSVGNumber(CharType* ptr, size_t length, double& number);
 bool parseNumber(const LChar*& ptr, const LChar* end, float& number, WhitespaceMode = AllowLeadingAndTrailingWhitespace);
 bool parseNumber(const UChar*& ptr, const UChar* end, float& number, WhitespaceMode = AllowLeadingAndTrailingWhitespace);
 bool parseNumberOptionalNumber(const String& s, float& h, float& v);
