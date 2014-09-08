@@ -96,7 +96,7 @@ bool MixedContentChecker::canRunInsecureContentInternal(SecurityOrigin* security
         // FIXME: We need a way to access the top-level frame's MixedContentChecker when that frame
         // is in a different process from the current frame. Until that is done, we always allow
         // loads in remote frames.
-        return false;
+        return true;
     }
     Frame* top = m_frame->tree().top();
     if (top != m_frame && !toLocalFrame(top)->loader().mixedContentChecker()->canRunInsecureContent(toLocalFrame(top)->document()->securityOrigin(), url))
