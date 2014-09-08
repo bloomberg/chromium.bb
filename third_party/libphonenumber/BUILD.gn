@@ -44,6 +44,11 @@ static_library("libphonenumber_without_metadata") {
     "src/phonenumbers/utf/unilib.cc",
   ]
 
+  # TODO(scottmg): Temporary until https://codereview.appspot.com/134650043/
+  # lands and rolls. http://crbug.com/335824
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
   direct_dependent_configs = [ ":libphonenumber_config" ]
 
   deps = [

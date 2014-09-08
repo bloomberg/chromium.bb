@@ -210,6 +210,9 @@ config("debug") {
 }
 
 config("release") {
+  defines = [
+    "NDEBUG",
+  ]
 }
 
 # Default libraries ------------------------------------------------------------
