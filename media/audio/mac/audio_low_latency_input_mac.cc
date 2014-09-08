@@ -165,23 +165,6 @@ bool AUAudioInputStream::Open() {
     return false;
   }
 
-  // Register the input procedure for the AUHAL.
-  // This procedure will be called when the AUHAL has received new data
-  // from the input device.
-  AURenderCallbackStruct callback;
-  callback.inputProc = InputProc;
-  callback.inputProcRefCon = this;
-  result = AudioUnitSetProperty(audio_unit_,
-                                kAudioOutputUnitProperty_SetInputCallback,
-                                kAudioUnitScope_Global,
-                                0,
-                                &callback,
-                                sizeof(callback));
-  if (result) {
-    HandleError(result);
-    return false;
-  }
-
   // Set up the the desired (output) format.
   // For obtaining input from a device, the device format is always expressed
   // on the output scope of the AUHAL's Element 1.
@@ -227,6 +210,23 @@ bool AUAudioInputStream::Open() {
       HandleError(result);
       return false;
     }
+  }
+
+  // Register the input procedure for the AUHAL.
+  // This procedure will be called when the AUHAL has received new data
+  // from the input device.
+  AURenderCallbackStruct callback;
+  callback.inputProc = InputProc;
+  callback.inputProcRefCon = this;
+  result = AudioUnitSetProperty(audio_unit_,
+                                kAudioOutputUnitProperty_SetInputCallback,
+                                kAudioUnitScope_Global,
+                                0,
+                                &callback,
+                                sizeof(callback));
+  if (result) {
+    HandleError(result);
+    return false;
   }
 
   // Finally, initialize the audio unit and ensure that it is ready to render.
@@ -299,10 +299,14 @@ void AUAudioInputStream::Close() {
   }
   if (audio_unit_) {
     // Deallocate the audio unit’s resources.
-    AudioUnitUninitialize(audio_unit_);
+    OSStatus result = AudioUnitUninitialize(audio_unit_);
+    OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
+        << "AudioUnitUninitialize() failed.";
 
-    // Terminates our connection to the AUHAL component.
-    CloseComponent(audio_unit_);
+    result = AudioComponentInstanceDispose(audio_unit_);
+    OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
+        << "AudioComponentInstanceDispose() failed.";
+
     audio_unit_ = 0;
   }
 
