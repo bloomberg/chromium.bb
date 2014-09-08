@@ -440,7 +440,8 @@ void ProfileImplIOData::InitializeInternal(
   data_reduction_proxy_usage_stats_.reset(
       new data_reduction_proxy::DataReductionProxyUsageStats(
           data_reduction_proxy_params_.get(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)));
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)
+              .get()));
   data_reduction_proxy_usage_stats_->set_unavailable_callback(
       data_reduction_proxy_unavailable_callback_);
 
