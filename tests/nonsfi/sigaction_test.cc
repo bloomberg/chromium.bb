@@ -31,9 +31,9 @@ int main(int argc, char *argv[]) {
   sa.sa_sigaction = return_from_signal_handler;
   sa.sa_flags = LINUX_SA_SIGINFO;
   sigemptyset(&sa.sa_mask);
-  sigaddset(&sa.sa_mask, SIGSEGV);
+  sigaddset(&sa.sa_mask, LINUX_SIGSEGV);
 
-  int rc = linux_sigaction(SIGSEGV, &sa, NULL);
+  int rc = linux_sigaction(LINUX_SIGSEGV, &sa, NULL);
   ASSERT_EQ(rc, 0);
 
   rc = setjmp(g_jmp_buf);

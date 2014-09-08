@@ -679,6 +679,7 @@ nonsfi_test_whitelist = set([
     'run_printf_test',
     'run_pwrite_test',
     'run_sigaction_test',
+    'run_signal_sigbus_test',
     'run_signal_test',
     'run_socket_test',
     'run_stack_alignment_test',

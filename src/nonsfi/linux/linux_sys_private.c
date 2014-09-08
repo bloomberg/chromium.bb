@@ -498,7 +498,40 @@ int linux_sigaction(int signum, const struct linux_sigaction *act,
                      (uintptr_t) act, (uintptr_t) oldact, kSigsetSize));
 }
 
+/*
+ * Obtain Linux signal number from portable signal number.
+ */
+static int nacl_signum_to_linux_signum(int signum) {
+  /* SIGSTKFLT is not defined in newlib, hence no mapping. */
+#define HANDLE_SIGNUM(SIGNUM) case SIGNUM: return LINUX_##SIGNUM;
+  switch(signum) {
+    HANDLE_SIGNUM(SIGHUP);
+    HANDLE_SIGNUM(SIGINT);
+    HANDLE_SIGNUM(SIGQUIT);
+    HANDLE_SIGNUM(SIGILL);
+    HANDLE_SIGNUM(SIGTRAP);
+    HANDLE_SIGNUM(SIGABRT);
+    HANDLE_SIGNUM(SIGBUS);
+    HANDLE_SIGNUM(SIGFPE);
+    HANDLE_SIGNUM(SIGKILL);
+    HANDLE_SIGNUM(SIGUSR1);
+    HANDLE_SIGNUM(SIGSEGV);
+    HANDLE_SIGNUM(SIGUSR2);
+    HANDLE_SIGNUM(SIGPIPE);
+    HANDLE_SIGNUM(SIGALRM);
+    HANDLE_SIGNUM(SIGTERM);
+    HANDLE_SIGNUM(SIGSYS);
+  }
+#undef HANDLE_SIGNUM
+  errno = EINVAL;
+  return -1;
+}
+
 sighandler_t signal(int signum, sighandler_t handler) {
+  int linux_signum = nacl_signum_to_linux_signum(signum);
+  if (linux_signum == -1)
+    return SIG_ERR;
+
   struct linux_sigaction sa;
   memset(&sa, 0, sizeof(sa));
   /*
@@ -508,9 +541,9 @@ sighandler_t signal(int signum, sighandler_t handler) {
   sa.sa_sigaction = (void (*)(int, linux_siginfo_t *, void *)) handler;
   sa.sa_flags = LINUX_SA_RESTART;
   sigemptyset(&sa.sa_mask);
-  sigaddset(&sa.sa_mask, signum);
+  sigaddset(&sa.sa_mask, linux_signum);
   struct linux_sigaction osa;
-  int result = linux_sigaction(signum, &sa, &osa);
+  int result = linux_sigaction(linux_signum, &sa, &osa);
   if (result != 0)
     return SIG_ERR;
   return (sighandler_t) osa.sa_sigaction;
