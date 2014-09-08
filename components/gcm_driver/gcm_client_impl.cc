@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/default_clock.h"
+#include "components/gcm_driver/gcm_backoff_policy.h"
 #include "google_apis/gcm/base/encryptor.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
@@ -31,38 +32,6 @@
 namespace gcm {
 
 namespace {
-
-// Backoff policy. Shared across reconnection logic and checkin/(un)registration
-// retries.
-// Note: In order to ensure a minimum of 20 seconds between server errors (for
-// server reasons), we have a 30s +- 10s (33%) jitter initial backoff.
-// TODO(zea): consider sharing/synchronizing the scheduling of backoff retries
-// themselves.
-const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
-  // Number of initial errors (in sequence) to ignore before applying
-  // exponential back-off rules.
-  0,
-
-  // Initial delay for exponential back-off in ms.
-  30 * 1000,  // 30 seconds.
-
-  // Factor by which the waiting time will be multiplied.
-  2,
-
-  // Fuzzing percentage. ex: 10% will spread requests randomly
-  // between 90%-100% of the calculated time.
-  0.33,  // 33%.
-
-  // Maximum amount of time we are willing to delay our request in ms.
-  10 * 60 * 1000, // 10 minutes.
-
-  // Time to keep an entry from being discarded even when it
-  // has no significant state, -1 to never discard.
-  -1,
-
-  // Don't use initial delay unless the last request was an error.
-  false,
-};
 
 // Indicates a message type of the received message.
 enum MessageType {
@@ -372,7 +341,7 @@ void GCMClientImpl::InitializeMCSClient(
   endpoints.push_back(gservices_settings_.GetMCSFallbackEndpoint());
   connection_factory_ = internals_builder_->BuildConnectionFactory(
       endpoints,
-      kDefaultBackoffPolicy,
+      GetGCMBackoffPolicy(),
       network_session_,
       url_request_context_getter_->GetURLRequestContext()
           ->http_transaction_factory()
@@ -498,7 +467,7 @@ void GCMClientImpl::StartCheckin() {
   checkin_request_.reset(
       new CheckinRequest(gservices_settings_.GetCheckinURL(),
                          request_info,
-                         kDefaultBackoffPolicy,
+                         GetGCMBackoffPolicy(),
                          base::Bind(&GCMClientImpl::OnCheckinCompleted,
                                     weak_ptr_factory_.GetWeakPtr()),
                          url_request_context_getter_.get(),
@@ -645,7 +614,7 @@ void GCMClientImpl::Register(const std::string& app_id,
   RegistrationRequest* registration_request =
       new RegistrationRequest(gservices_settings_.GetRegistrationURL(),
                               request_info,
-                              kDefaultBackoffPolicy,
+                              GetGCMBackoffPolicy(),
                               base::Bind(&GCMClientImpl::OnRegisterCompleted,
                                          weak_ptr_factory_.GetWeakPtr(),
                                          app_id,
@@ -720,7 +689,7 @@ void GCMClientImpl::Unregister(const std::string& app_id) {
   UnregistrationRequest* unregistration_request = new UnregistrationRequest(
       gservices_settings_.GetRegistrationURL(),
       request_info,
-      kDefaultBackoffPolicy,
+      GetGCMBackoffPolicy(),
       base::Bind(&GCMClientImpl::OnUnregisterCompleted,
                  weak_ptr_factory_.GetWeakPtr(),
                  app_id),

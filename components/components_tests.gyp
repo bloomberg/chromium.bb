@@ -121,6 +121,7 @@
             'feedback/feedback_data_unittest.cc',
             'feedback/feedback_uploader_unittest.cc',
             'gcm_driver/gcm_account_mapper_unittest.cc',
+            'gcm_driver/gcm_channel_status_request_unittest.cc',
             'gcm_driver/gcm_client_impl_unittest.cc',
             'gcm_driver/gcm_driver_desktop_unittest.cc',
             'gcm_driver/gcm_stats_recorder_impl_unittest.cc',
@@ -580,6 +581,7 @@
             ['OS == "android"', {
               'sources!': [
                 'gcm_driver/gcm_account_mapper_unittest.cc',
+                'gcm_driver/gcm_channel_status_request_unittest.cc',
                 'gcm_driver/gcm_client_impl_unittest.cc',
                 'gcm_driver/gcm_driver_desktop_unittest.cc',
                 'feedback/feedback_common_unittest.cc',

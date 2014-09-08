@@ -12,6 +12,10 @@ static_library("gcm_driver") {
     "gcm_activity.h",
     "gcm_app_handler.cc",
     "gcm_app_handler.h",
+    "gcm_backoff_policy.cc",
+    "gcm_backoff_policy.h",
+    "gcm_channel_status_request.cc",
+    "gcm_channel_status_request.h",
     "gcm_client.cc",
     "gcm_client.h",
     "gcm_client_factory.cc",
@@ -34,6 +38,7 @@ static_library("gcm_driver") {
 
   deps = [
     "//base",
+    "//components/gcm_driver/proto",
     "//components/os_crypt",
     "//google_apis/gcm",
     "//net",
@@ -41,6 +46,8 @@ static_library("gcm_driver") {
 
   if (is_android) {
     sources -= [
+      "gcm_channel_status_request.cc",
+      "gcm_channel_status_request.h",
       "gcm_client_factory.cc",
       "gcm_client_factory.h",
       "gcm_client_impl.cc",
@@ -50,7 +57,10 @@ static_library("gcm_driver") {
       "gcm_stats_recorder_impl.cc",
       "gcm_stats_recorder_impl.h",
     ]
-    deps -= [ "//google_apis/gcm" ]
+    deps -= [
+      "//components/gcm_driver/proto",
+      "//google_apis/gcm",
+    ]
     deps += [ ":jni_headers" ]
   }
 }

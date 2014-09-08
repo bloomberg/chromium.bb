@@ -29,6 +29,10 @@
         'gcm_driver/gcm_activity.h',
         'gcm_driver/gcm_app_handler.cc',
         'gcm_driver/gcm_app_handler.h',
+        'gcm_driver/gcm_backoff_policy.cc',
+        'gcm_driver/gcm_backoff_policy.h',
+        'gcm_driver/gcm_channel_status_request.cc',
+        'gcm_driver/gcm_channel_status_request.h',
         'gcm_driver/gcm_client.cc',
         'gcm_driver/gcm_client.h',
         'gcm_driver/gcm_client_factory.cc',
@@ -45,9 +49,15 @@
         'gcm_driver/gcm_driver_desktop.h',
         'gcm_driver/gcm_stats_recorder_impl.cc',
         'gcm_driver/gcm_stats_recorder_impl.h',
+        'gcm_driver/proto/gcm_channel_status.proto',
         'gcm_driver/system_encryptor.cc',
         'gcm_driver/system_encryptor.h',
       ],
+      'variables': {
+        'proto_in_dir': 'gcm_driver/proto',
+        'proto_out_dir': 'components/gcm_driver/proto',
+      },
+      'includes': [ '../build/protoc.gypi' ],
       'conditions': [
         ['OS == "android"', {
           'dependencies': [
@@ -59,6 +69,8 @@
           'sources!': [
             'gcm_driver/gcm_account_mapper.cc',
             'gcm_driver/gcm_account_mapper.h',
+            'gcm_driver/gcm_channel_status_request.cc',
+            'gcm_driver/gcm_channel_status_request.h',
             'gcm_driver/gcm_client_factory.cc',
             'gcm_driver/gcm_client_factory.h',
             'gcm_driver/gcm_client_impl.cc',
@@ -67,6 +79,7 @@
             'gcm_driver/gcm_driver_desktop.h',
             'gcm_driver/gcm_stats_recorder_impl.cc',
             'gcm_driver/gcm_stats_recorder_impl.h',
+            'gcm_driver/proto/gcm_channel_status.proto',
           ],
         }],
       ],

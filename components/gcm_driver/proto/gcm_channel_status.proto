@@ -1,0 +1,34 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package gcm_proto;
+
+// Flags for enabling the GCM feature.
+message GcmChannelFlags {
+  optional bool enabled = 1;
+}
+
+// This request allows an unauthenticated client to check the status of the
+// experiments which do not require user authentication.  The status of an
+// experiment for a specific client can be determined based on the user agent
+// string and/or the client id sent in the HTTPS POST request.
+message ExperimentStatusRequest {
+  // Enumerates the experiments for which the status should be returned.  An
+  // experiment name must be the same as one of the field names specified in
+  // ExperimentsSpecifics.  See sync/protocol/experiments_specifics.proto.
+  repeated string experiment_name = 1;
+}
+
+// Response to an experiment status request.
+message ExperimentStatusResponse {
+  // Minimal time to wait before issuing another request.
+  optional int32 poll_interval_seconds = 1 [default = 3600];
+
+  // This flag is returned if and only if the client asks for gcm_channel.
+  optional GcmChannelFlags gcm_channel = 2;
+}
