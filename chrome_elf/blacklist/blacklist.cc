@@ -36,7 +36,6 @@ const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {
                                         // See crbug.com/379218.
   L"activedetect64.dll",                // Lenovo One Key Theater.
   L"bitguard.dll",                      // Unknown (suspected malware).
-  L"cespy.dll",                         // CovenantEyes.
   L"chrmxtn.dll",                       // Unknown (keystroke logger).
   L"cplushook.dll",                     // Unknown (suspected malware).
   L"datamngr.dll",                      // Unknown (suspected adware).
