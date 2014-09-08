@@ -29,24 +29,6 @@ namespace content {
 
 namespace {
 
-// Supported hardware sample rates for output sides.
-#if defined(OS_WIN) || defined(OS_MACOSX)
-// AudioHardwareConfig::GetOutputSampleRate() asks the audio layer for its
-// current sample rate (set by the user) on Windows and Mac OS X.  The listed
-// rates below adds restrictions and Initialize() will fail if the user selects
-// any rate outside these ranges.
-const int kValidOutputRates[] = {96000, 48000, 44100, 32000, 16000};
-#elif defined(OS_LINUX) || defined(OS_OPENBSD)
-const int kValidOutputRates[] = {48000, 44100};
-#elif defined(OS_ANDROID)
-// TODO(leozwang): We want to use native sampling rate on Android to achieve
-// low latency, currently 16000 is used to work around audio problem on some
-// Android devices.
-const int kValidOutputRates[] = {48000, 44100, 16000};
-#else
-const int kValidOutputRates[] = {44100};
-#endif
-
 // This is a simple wrapper class that's handed out to users of a shared
 // WebRtcAudioRenderer instance.  This class maintains the per-user 'playing'
 // and 'started' states to avoid problems related to incorrect usage which
@@ -252,16 +234,6 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   } else {
     UMA_HISTOGRAM_COUNTS("WebRTC.AudioOutputSampleRateUnexpected",
                          sample_rate);
-  }
-
-  // Verify that the reported output hardware sample rate is supported
-  // on the current platform.
-  if (std::find(&kValidOutputRates[0],
-                &kValidOutputRates[0] + arraysize(kValidOutputRates),
-                sample_rate) ==
-                    &kValidOutputRates[arraysize(kValidOutputRates)]) {
-    DLOG(ERROR) << sample_rate << " is not a supported output rate.";
-    return false;
   }
 
   // Set up audio parameters for the source, i.e., the WebRTC client.

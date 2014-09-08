@@ -23,22 +23,6 @@ namespace content {
 
 namespace {
 
-// Supported hardware sample rates for input and output sides.
-#if defined(OS_WIN) || defined(OS_MACOSX)
-// media::GetAudioInputHardwareSampleRate() asks the audio layer
-// for its current sample rate (set by the user) on Windows and Mac OS X.
-// The listed rates below adds restrictions and WebRtcAudioDeviceImpl::Init()
-// will fail if the user selects any rate outside these ranges.
-const int kValidInputRates[] =
-    {192000, 96000, 48000, 44100, 32000, 16000, 8000};
-#elif defined(OS_LINUX) || defined(OS_OPENBSD)
-const int kValidInputRates[] = {48000, 44100};
-#elif defined(OS_ANDROID)
-const int kValidInputRates[] = {48000, 44100};
-#else
-const int kValidInputRates[] = {44100};
-#endif
-
 // Time constant for AudioPowerMonitor.  See AudioPowerMonitor ctor comments
 // for semantics.  This value was arbitrarily chosen, but seems to work well.
 const int kPowerMonitorTimeConstantMs = 10;
@@ -194,17 +178,6 @@ bool WebRtcAudioCapturer::Initialize() {
   } else {
     UMA_HISTOGRAM_COUNTS("WebRTC.AudioInputSampleRateUnexpected",
                          device_info_.device.input.sample_rate);
-  }
-
-  // Verify that the reported input hardware sample rate is supported
-  // on the current platform.
-  if (std::find(&kValidInputRates[0],
-                &kValidInputRates[0] + arraysize(kValidInputRates),
-                device_info_.device.input.sample_rate) ==
-          &kValidInputRates[arraysize(kValidInputRates)]) {
-    DLOG(ERROR) << device_info_.device.input.sample_rate
-                << " is not a supported input rate.";
-    return false;
   }
 
   // Create and configure the default audio capturing source.
