@@ -192,12 +192,12 @@ class BackgroundTask : public SyncTask {
   }
 
   virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) OVERRIDE {
-    scoped_ptr<BlockingFactor> blocking_factor(new BlockingFactor);
-    blocking_factor->app_id = app_id_;
-    blocking_factor->paths.push_back(path_);
+    scoped_ptr<TaskBlocker> task_blocker(new TaskBlocker);
+    task_blocker->app_id = app_id_;
+    task_blocker->paths.push_back(path_);
 
-    SyncTaskManager::UpdateBlockingFactor(
-        token.Pass(), blocking_factor.Pass(),
+    SyncTaskManager::UpdateTaskBlocker(
+        token.Pass(), task_blocker.Pass(),
         base::Bind(&BackgroundTask::RunAsBackgroundTask,
                    weak_ptr_factory_.GetWeakPtr()));
   }
@@ -265,14 +265,14 @@ class BlockerUpdateTestHelper : public SyncTask {
 
     log_->push_back(name_ + ": updating to " + updating_to);
 
-    scoped_ptr<BlockingFactor> blocking_factor(new BlockingFactor);
-    blocking_factor->app_id = app_id_;
-    blocking_factor->paths.push_back(
+    scoped_ptr<TaskBlocker> task_blocker(new TaskBlocker);
+    task_blocker->app_id = app_id_;
+    task_blocker->paths.push_back(
         base::FilePath(storage::VirtualPath::GetNormalizedFilePath(
             base::FilePath::FromUTF8Unsafe(updating_to))));
 
-    SyncTaskManager::UpdateBlockingFactor(
-        token.Pass(), blocking_factor.Pass(),
+    SyncTaskManager::UpdateTaskBlocker(
+        token.Pass(), task_blocker.Pass(),
         base::Bind(&BlockerUpdateTestHelper::UpdateBlockerSoon,
                    weak_ptr_factory_.GetWeakPtr(),
                    updating_to));
@@ -599,7 +599,7 @@ TEST(SyncTaskManagerTest, BackgroundTask_Throttled) {
   EXPECT_EQ(2, stats.max_parallel_task);
 }
 
-TEST(SyncTaskManagerTest, UpdateBlockingFactor) {
+TEST(SyncTaskManagerTest, UpdateTaskBlocker) {
   base::MessageLoop message_loop;
   SyncTaskManager task_manager(base::WeakPtr<SyncTaskManager::Client>(),
                                10 /* maximum_background_task */,

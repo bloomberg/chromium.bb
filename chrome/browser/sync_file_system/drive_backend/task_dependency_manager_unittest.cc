@@ -21,7 +21,7 @@ base::FilePath MakePath(const base::FilePath::StringType& path) {
 bool InsertPath(TaskDependencyManager* manager,
                 const std::string& app_id,
                 const base::FilePath::StringType& path) {
-  BlockingFactor blocker;
+  TaskBlocker blocker;
   blocker.app_id = app_id;
   blocker.paths.push_back(MakePath(path));
   return manager->Insert(&blocker);
@@ -30,20 +30,20 @@ bool InsertPath(TaskDependencyManager* manager,
 void ErasePath(TaskDependencyManager* manager,
                const std::string& app_id,
                const base::FilePath::StringType& path) {
-  BlockingFactor blocker;
+  TaskBlocker blocker;
   blocker.app_id = app_id;
   blocker.paths.push_back(MakePath(path));
   return manager->Erase(&blocker);
 }
 
 bool InsertExclusiveTask(TaskDependencyManager* manager) {
-  BlockingFactor blocker;
+  TaskBlocker blocker;
   blocker.exclusive = true;
   return manager->Insert(&blocker);
 }
 
 void EraseExclusiveTask(TaskDependencyManager* manager) {
-  BlockingFactor blocker;
+  TaskBlocker blocker;
   blocker.exclusive = true;
   manager->Erase(&blocker);
 }
@@ -52,7 +52,7 @@ void EraseExclusiveTask(TaskDependencyManager* manager) {
 
 TEST(TaskDependencyManagerTest, BasicTest) {
   TaskDependencyManager manager;
-  BlockingFactor blocker;
+  TaskBlocker blocker;
   blocker.app_id = "app_id";
   blocker.paths.push_back(MakePath(FPL("/folder/file")));
   blocker.file_ids.push_back("file_id");

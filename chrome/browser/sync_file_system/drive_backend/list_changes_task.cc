@@ -40,9 +40,9 @@ void ListChangesTask::RunPreflight(scoped_ptr<SyncTaskToken> token) {
     return;
   }
 
-  SyncTaskManager::UpdateBlockingFactor(
+  SyncTaskManager::UpdateTaskBlocker(
       token.Pass(),
-      scoped_ptr<BlockingFactor>(new BlockingFactor),
+      scoped_ptr<TaskBlocker>(new TaskBlocker),
       base::Bind(&ListChangesTask::StartListing,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -97,11 +97,11 @@ void ListChangesTask::DidListChanges(
     return;
   }
 
-  scoped_ptr<BlockingFactor> blocking_factor(new BlockingFactor);
-  blocking_factor->exclusive = true;
-  SyncTaskManager::UpdateBlockingFactor(
+  scoped_ptr<TaskBlocker> task_blocker(new TaskBlocker);
+  task_blocker->exclusive = true;
+  SyncTaskManager::UpdateTaskBlocker(
       token.Pass(),
-      blocking_factor.Pass(),
+      task_blocker.Pass(),
       base::Bind(&ListChangesTask::CheckInChangeList,
                  weak_ptr_factory_.GetWeakPtr(),
                  change_list->largest_change_id()));

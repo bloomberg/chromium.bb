@@ -151,9 +151,9 @@ void SyncTaskManager::NotifyTaskDone(scoped_ptr<SyncTaskToken> token,
 }
 
 // static
-void SyncTaskManager::UpdateBlockingFactor(
+void SyncTaskManager::UpdateTaskBlocker(
     scoped_ptr<SyncTaskToken> current_task_token,
-    scoped_ptr<BlockingFactor> blocking_factor,
+    scoped_ptr<TaskBlocker> task_blocker,
     const Continuation& continuation) {
   DCHECK(current_task_token);
 
@@ -175,11 +175,11 @@ void SyncTaskManager::UpdateBlockingFactor(
   else
     background_task_token = current_task_token.Pass();
 
-  manager->UpdateBlockingFactorBody(foreground_task_token.Pass(),
-                                    background_task_token.Pass(),
-                                    task_log.Pass(),
-                                    blocking_factor.Pass(),
-                                    continuation);
+  manager->UpdateTaskBlockerBody(foreground_task_token.Pass(),
+                                 background_task_token.Pass(),
+                                 task_log.Pass(),
+                                 task_blocker.Pass(),
+                                 continuation);
 }
 
 bool SyncTaskManager::IsRunningTask(int64 token_id) const {
@@ -208,9 +208,9 @@ void SyncTaskManager::NotifyTaskDoneBody(scoped_ptr<SyncTaskToken> token,
            << " (" << SyncStatusCodeToString(status) << ")"
            << " " << token->location().ToString();
 
-  if (token->blocking_factor()) {
-    dependency_manager_.Erase(token->blocking_factor());
-    token->clear_blocking_factor();
+  if (token->task_blocker()) {
+    dependency_manager_.Erase(token->task_blocker());
+    token->clear_task_blocker();
   }
 
   if (client_) {
@@ -251,11 +251,11 @@ void SyncTaskManager::NotifyTaskDoneBody(scoped_ptr<SyncTaskToken> token,
                  AsWeakPtr(), base::Passed(&token)));
 }
 
-void SyncTaskManager::UpdateBlockingFactorBody(
+void SyncTaskManager::UpdateTaskBlockerBody(
     scoped_ptr<SyncTaskToken> foreground_task_token,
     scoped_ptr<SyncTaskToken> background_task_token,
     scoped_ptr<TaskLogger::TaskLog> task_log,
-    scoped_ptr<BlockingFactor> blocking_factor,
+    scoped_ptr<TaskBlocker> task_blocker,
     const Continuation& continuation) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
@@ -268,11 +268,11 @@ void SyncTaskManager::UpdateBlockingFactorBody(
     return;
   }
 
-  // Clear existing |blocking_factor| from |dependency_manager_| before
+  // Clear existing |task_blocker| from |dependency_manager_| before
   // getting |foreground_task_token|, so that we can avoid dead lock.
-  if (background_task_token && background_task_token->blocking_factor()) {
-    dependency_manager_.Erase(background_task_token->blocking_factor());
-    background_task_token->clear_blocking_factor();
+  if (background_task_token && background_task_token->task_blocker()) {
+    dependency_manager_.Erase(background_task_token->task_blocker());
+    background_task_token->clear_task_blocker();
   }
 
   // Try to get |foreground_task_token|.  If it's not available, wait for
@@ -283,12 +283,12 @@ void SyncTaskManager::UpdateBlockingFactorBody(
                                      SyncStatusCallback());
     if (!foreground_task_token) {
       PushPendingTask(
-          base::Bind(&SyncTaskManager::UpdateBlockingFactorBody,
+          base::Bind(&SyncTaskManager::UpdateTaskBlockerBody,
                      AsWeakPtr(),
                      base::Passed(&foreground_task_token),
                      base::Passed(&background_task_token),
                      base::Passed(&task_log),
-                     base::Passed(&blocking_factor),
+                     base::Passed(&task_blocker),
                      continuation),
           PRIORITY_HIGH);
       MaybeStartNextForegroundTask(scoped_ptr<SyncTaskToken>());
@@ -303,24 +303,24 @@ void SyncTaskManager::UpdateBlockingFactorBody(
       !background_task_token &&
       running_background_tasks_.size() >= maximum_background_task_;
   if (task_number_limit_exceeded ||
-      !dependency_manager_.Insert(blocking_factor.get())) {
+      !dependency_manager_.Insert(task_blocker.get())) {
     DCHECK(!running_background_tasks_.empty());
     DCHECK(pending_backgrounding_task_.is_null());
 
-    // Wait for NotifyTaskDone to release a |blocking_factor|.
+    // Wait for NotifyTaskDone to release a |task_blocker|.
     pending_backgrounding_task_ =
-        base::Bind(&SyncTaskManager::UpdateBlockingFactorBody,
+        base::Bind(&SyncTaskManager::UpdateTaskBlockerBody,
                    AsWeakPtr(),
                    base::Passed(&foreground_task_token),
                    base::Passed(&background_task_token),
                    base::Passed(&task_log),
-                   base::Passed(&blocking_factor),
+                   base::Passed(&task_blocker),
                    continuation);
     return;
   }
 
   if (background_task_token) {
-    background_task_token->set_blocking_factor(blocking_factor.Pass());
+    background_task_token->set_task_blocker(task_blocker.Pass());
   } else {
     tracked_objects::Location from_here = foreground_task_token->location();
     SyncStatusCallback callback = foreground_task_token->callback();
@@ -330,7 +330,7 @@ void SyncTaskManager::UpdateBlockingFactorBody(
         SyncTaskToken::CreateForBackgroundTask(AsWeakPtr(),
                                                task_runner_.get(),
                                                task_token_seq_++,
-                                               blocking_factor.Pass());
+                                               task_blocker.Pass());
     background_task_token->UpdateTask(from_here, callback);
     running_background_tasks_.set(background_task_token->token_id(),
                                   running_foreground_task_.Pass());

@@ -17,15 +17,15 @@
 namespace sync_file_system {
 namespace drive_backend {
 
-struct BlockingFactor {
+struct TaskBlocker {
   bool exclusive;
   std::string app_id;
   std::vector<base::FilePath> paths;
   std::vector<std::string> file_ids;
   std::vector<int64> tracker_ids;
 
-  BlockingFactor();
-  ~BlockingFactor();
+  TaskBlocker();
+  ~TaskBlocker();
 };
 
 // This class manages dependency of the background tasks.
@@ -34,17 +34,17 @@ class TaskDependencyManager {
   TaskDependencyManager();
   ~TaskDependencyManager();
 
-  // Inserts |blocking_factor| to the collection and returns true if it
+  // Inserts |task_blocker| to the collection and returns true if it
   // completes successfully.  Returns false and doesn't modify the collection
-  // if |blocking_factor| conflicts other |blocking_factor| that is inserted
+  // if |task_blocker| conflicts other |task_blocker| that is inserted
   // before.
-  // Two |blocking_factor| are handled as conflict if:
+  // Two |task_blocker| are handled as conflict if:
   //  - They have common |file_id| or |tracker_id|.
   //  - Or, they have the same |app_id| and have a |path| that one of its parent
-  //    belongs to the |blocking_factor|.
-  bool Insert(const BlockingFactor* blocking_factor);
+  //    belongs to the |task_blocker|.
+  bool Insert(const TaskBlocker* task_blocker);
 
-  void Erase(const BlockingFactor* blocking_factor);
+  void Erase(const TaskBlocker* task_blocker);
 
  private:
   friend class TaskDependencyManagerTest;

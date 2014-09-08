@@ -24,7 +24,7 @@ scoped_ptr<SyncTaskToken> SyncTaskToken::CreateForTesting(
       base::WeakPtr<SyncTaskManager>(),
       base::ThreadTaskRunnerHandle::Get(),
       kTestingTaskTokenID,
-      scoped_ptr<BlockingFactor>(),
+      scoped_ptr<TaskBlocker>(),
       callback));
 }
 
@@ -36,7 +36,7 @@ scoped_ptr<SyncTaskToken> SyncTaskToken::CreateForForegroundTask(
       manager,
       task_runner,
       kForegroundTaskTokenID,
-      scoped_ptr<BlockingFactor>(),
+      scoped_ptr<TaskBlocker>(),
       SyncStatusCallback()));
 }
 
@@ -45,12 +45,12 @@ scoped_ptr<SyncTaskToken> SyncTaskToken::CreateForBackgroundTask(
     const base::WeakPtr<SyncTaskManager>& manager,
     base::SequencedTaskRunner* task_runner,
     int64 token_id,
-    scoped_ptr<BlockingFactor> blocking_factor) {
+    scoped_ptr<TaskBlocker> task_blocker) {
   return make_scoped_ptr(new SyncTaskToken(
       manager,
       task_runner,
       token_id,
-      blocking_factor.Pass(),
+      task_blocker.Pass(),
       SyncStatusCallback()));
 }
 
@@ -78,7 +78,7 @@ SyncTaskToken::~SyncTaskToken() {
         make_scoped_ptr(new SyncTaskToken(manager_,
                                           task_runner_.get(),
                                           token_id_,
-                                          blocking_factor_.Pass(),
+                                          task_blocker_.Pass(),
                                           SyncStatusCallback())),
         SYNC_STATUS_OK);
   }
@@ -90,17 +90,17 @@ SyncStatusCallback SyncTaskToken::WrapToCallback(
   return base::Bind(&SyncTaskManager::NotifyTaskDone, base::Passed(&token));
 }
 
-void SyncTaskToken::set_blocking_factor(
-    scoped_ptr<BlockingFactor> blocking_factor) {
-  blocking_factor_ = blocking_factor.Pass();
+void SyncTaskToken::set_task_blocker(
+    scoped_ptr<TaskBlocker> task_blocker) {
+  task_blocker_ = task_blocker.Pass();
 }
 
-const BlockingFactor* SyncTaskToken::blocking_factor() const {
-  return blocking_factor_.get();
+const TaskBlocker* SyncTaskToken::task_blocker() const {
+  return task_blocker_.get();
 }
 
-void SyncTaskToken::clear_blocking_factor() {
-  blocking_factor_.reset();
+void SyncTaskToken::clear_task_blocker() {
+  task_blocker_.reset();
 }
 
 void SyncTaskToken::InitializeTaskLog(const std::string& task_description) {
@@ -142,13 +142,13 @@ SyncTaskToken::SyncTaskToken(
     const base::WeakPtr<SyncTaskManager>& manager,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     int64 token_id,
-    scoped_ptr<BlockingFactor> blocking_factor,
+    scoped_ptr<TaskBlocker> task_blocker,
     const SyncStatusCallback& callback)
     : manager_(manager),
       task_runner_(task_runner),
       token_id_(token_id),
       callback_(callback),
-      blocking_factor_(blocking_factor.Pass()) {
+      task_blocker_(task_blocker.Pass()) {
 }
 
 }  // namespace drive_backend

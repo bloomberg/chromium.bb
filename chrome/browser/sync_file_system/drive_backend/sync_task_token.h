@@ -16,7 +16,7 @@ namespace sync_file_system {
 namespace drive_backend {
 
 class SyncTaskManager;
-struct BlockingFactor;
+struct TaskBlocker;
 
 // Represents a running sequence of SyncTasks.  Owned by a callback chain that
 // should run exclusively, and held by SyncTaskManager when no task is running.
@@ -35,7 +35,7 @@ class SyncTaskToken {
       const base::WeakPtr<SyncTaskManager>& manager,
       base::SequencedTaskRunner* task_runner,
       int64 token_id,
-      scoped_ptr<BlockingFactor> blocking_factor);
+      scoped_ptr<TaskBlocker> task_blocker);
 
   void UpdateTask(const tracked_objects::Location& location,
                   const SyncStatusCallback& callback);
@@ -50,9 +50,9 @@ class SyncTaskToken {
   const SyncStatusCallback& callback() const { return callback_; }
   void clear_callback() { callback_.Reset(); }
 
-  void set_blocking_factor(scoped_ptr<BlockingFactor> blocking_factor);
-  const BlockingFactor* blocking_factor() const;
-  void clear_blocking_factor();
+  void set_task_blocker(scoped_ptr<TaskBlocker> task_blocker);
+  const TaskBlocker* task_blocker() const;
+  void clear_task_blocker();
 
   int64 token_id() const { return token_id_; }
 
@@ -68,7 +68,7 @@ class SyncTaskToken {
   SyncTaskToken(const base::WeakPtr<SyncTaskManager>& manager,
                 const scoped_refptr<base::SequencedTaskRunner>& task_runner,
                 int64 token_id,
-                scoped_ptr<BlockingFactor> blocking_factor,
+                scoped_ptr<TaskBlocker> task_blocker,
                 const SyncStatusCallback& callback);
 
   base::WeakPtr<SyncTaskManager> manager_;
@@ -78,7 +78,7 @@ class SyncTaskToken {
   SyncStatusCallback callback_;
 
   scoped_ptr<TaskLogger::TaskLog> task_log_;
-  scoped_ptr<BlockingFactor> blocking_factor_;
+  scoped_ptr<TaskBlocker> task_blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncTaskToken);
 };

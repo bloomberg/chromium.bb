@@ -31,12 +31,12 @@ namespace drive_backend {
 
 class SyncTask;
 class SyncTaskToken;
-struct BlockingFactor;
+struct TaskBlocker;
 
 // This class manages asynchronous tasks for Sync FileSystem.  Each task must be
 // either a Task or a SyncTask.
 // The instance runs single task as the foreground task, and multiple tasks as
-// background tasks.  Running background task has a BlockingFactor that
+// background tasks.  Running background task has a TaskBlocker that
 // describes which task can run in parallel.  When a task start running as a
 // background task, SyncTaskManager checks if any running background task
 // doesn't block the new background task, and queues it up if it can't run.
@@ -102,20 +102,20 @@ class SyncTaskManager : public base::SupportsWeakPtr<SyncTaskManager> {
   static void NotifyTaskDone(scoped_ptr<SyncTaskToken> token,
                              SyncStatusCode status);
 
-  // Updates |blocking_factor| associated to the current task by specified
-  // |blocking_factor| and turns the current task to a background task if
+  // Updates |task_blocker| associated to the current task by specified
+  // |task_blocker| and turns the current task to a background task if
   // the current task is running as a foreground task.
-  // If specified |blocking_factor| is blocked by any other blocking factor
+  // If specified |task_blocker| is blocked by any other blocking factor
   // associated to an existing background task, this function waits for the
   // existing background task to finish.
   // Upon the task is ready to run as a background task, calls |continuation|
   // with new SyncTaskToken.
-  // Note that this function once releases previous |blocking_factor| before
-  // applying new |blocking_factor|.  So, any other task may be run before
+  // Note that this function once releases previous |task_blocker| before
+  // applying new |task_blocker|.  So, any other task may be run before
   // invocation of |continuation|.
-  static void UpdateBlockingFactor(scoped_ptr<SyncTaskToken> current_task_token,
-                                   scoped_ptr<BlockingFactor> blocking_factor,
-                                   const Continuation& continuation);
+  static void UpdateTaskBlocker(scoped_ptr<SyncTaskToken> current_task_token,
+                                scoped_ptr<TaskBlocker> task_blocker,
+                                const Continuation& continuation);
 
   bool IsRunningTask(int64 task_token_id) const;
 
@@ -141,12 +141,12 @@ class SyncTaskManager : public base::SupportsWeakPtr<SyncTaskManager> {
   void NotifyTaskDoneBody(scoped_ptr<SyncTaskToken> token,
                           SyncStatusCode status);
 
-  // Non-static version of UpdateBlockingFactor.
-  void UpdateBlockingFactorBody(scoped_ptr<SyncTaskToken> foreground_task_token,
-                                scoped_ptr<SyncTaskToken> background_task_token,
-                                scoped_ptr<TaskLogger::TaskLog> task_log,
-                                scoped_ptr<BlockingFactor> blocking_factor,
-                                const Continuation& continuation);
+  // Non-static version of UpdateTaskBlocker.
+  void UpdateTaskBlockerBody(scoped_ptr<SyncTaskToken> foreground_task_token,
+                             scoped_ptr<SyncTaskToken> background_task_token,
+                             scoped_ptr<TaskLogger::TaskLog> task_log,
+                             scoped_ptr<TaskBlocker> task_blocker,
+                             const Continuation& continuation);
 
   // This should be called when an async task needs to get a task token.
   scoped_ptr<SyncTaskToken> GetToken(const tracked_objects::Location& from_here,
@@ -155,7 +155,7 @@ class SyncTaskManager : public base::SupportsWeakPtr<SyncTaskManager> {
   scoped_ptr<SyncTaskToken> GetTokenForBackgroundTask(
       const tracked_objects::Location& from_here,
       const SyncStatusCallback& callback,
-      scoped_ptr<BlockingFactor> blocking_factor);
+      scoped_ptr<TaskBlocker> task_blocker);
 
   void PushPendingTask(const base::Closure& closure, Priority priority);
 

@@ -249,7 +249,7 @@ void LocalToRemoteSyncer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
 
 void LocalToRemoteSyncer::MoveToBackground(const Continuation& continuation,
                                            scoped_ptr<SyncTaskToken> token) {
-  scoped_ptr<BlockingFactor> blocker(new BlockingFactor);
+  scoped_ptr<TaskBlocker> blocker(new TaskBlocker);
   blocker->app_id = url_.origin().host();
   blocker->paths.push_back(target_path_);
 
@@ -268,7 +268,7 @@ void LocalToRemoteSyncer::MoveToBackground(const Continuation& continuation,
 
   // Run current task as a background task with |blocker|.
   // After the invocation of ContinueAsBackgroundTask
-  SyncTaskManager::UpdateBlockingFactor(
+  SyncTaskManager::UpdateTaskBlocker(
       token.Pass(), blocker.Pass(),
       base::Bind(&LocalToRemoteSyncer::ContinueAsBackgroundTask,
                  weak_ptr_factory_.GetWeakPtr(),

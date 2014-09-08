@@ -59,8 +59,8 @@ bool InsertPaths(std::vector<base::FilePath> paths_to_insert,
 
 }  // namespace
 
-BlockingFactor::BlockingFactor() : exclusive(false) {}
-BlockingFactor::~BlockingFactor() {}
+TaskBlocker::TaskBlocker() : exclusive(false) {}
+TaskBlocker::~TaskBlocker() {}
 
 TaskDependencyManager::TaskDependencyManager()
     : running_task_count_(0),
@@ -72,16 +72,16 @@ TaskDependencyManager::~TaskDependencyManager() {
   DCHECK(tracker_ids_.empty());
 }
 
-bool TaskDependencyManager::Insert(const BlockingFactor* blocking_factor) {
+bool TaskDependencyManager::Insert(const TaskBlocker* task_blocker) {
   if (running_exclusive_task_)
     return false;
 
-  if (!blocking_factor) {
+  if (!task_blocker) {
     ++running_task_count_;
     return true;
   }
 
-  if (blocking_factor->exclusive) {
+  if (task_blocker->exclusive) {
     if (running_task_count_ ||
         !tracker_ids_.empty() ||
         !file_ids_.empty() ||
@@ -92,17 +92,17 @@ bool TaskDependencyManager::Insert(const BlockingFactor* blocking_factor) {
     return true;
   }
 
-  if (!InsertAllOrNone(blocking_factor->tracker_ids, &tracker_ids_))
+  if (!InsertAllOrNone(task_blocker->tracker_ids, &tracker_ids_))
     goto fail_on_tracker_id_insertion;
 
-  if (!InsertAllOrNone(blocking_factor->file_ids, &file_ids_))
+  if (!InsertAllOrNone(task_blocker->file_ids, &file_ids_))
     goto fail_on_file_id_insertion;
 
-  if (!blocking_factor->app_id.empty() &&
-      !InsertPaths(blocking_factor->paths,
-                   &paths_by_app_id_[blocking_factor->app_id])) {
-    if (paths_by_app_id_[blocking_factor->app_id].empty())
-      paths_by_app_id_.erase(blocking_factor->app_id);
+  if (!task_blocker->app_id.empty() &&
+      !InsertPaths(task_blocker->paths,
+                   &paths_by_app_id_[task_blocker->app_id])) {
+    if (paths_by_app_id_[task_blocker->app_id].empty())
+      paths_by_app_id_.erase(task_blocker->app_id);
     goto fail_on_path_insertion;
   }
 
@@ -110,21 +110,21 @@ bool TaskDependencyManager::Insert(const BlockingFactor* blocking_factor) {
   return true;
 
  fail_on_path_insertion:
-  EraseContainer(blocking_factor->file_ids, &file_ids_);
+  EraseContainer(task_blocker->file_ids, &file_ids_);
  fail_on_file_id_insertion:
-  EraseContainer(blocking_factor->tracker_ids, &tracker_ids_);
+  EraseContainer(task_blocker->tracker_ids, &tracker_ids_);
  fail_on_tracker_id_insertion:
 
   return false;
 }
 
-void TaskDependencyManager::Erase(const BlockingFactor* blocking_factor) {
+void TaskDependencyManager::Erase(const TaskBlocker* task_blocker) {
   --running_task_count_;
   DCHECK_LE(0, running_task_count_);
-  if (!blocking_factor)
+  if (!task_blocker)
     return;
 
-  if (blocking_factor->exclusive) {
+  if (task_blocker->exclusive) {
     DCHECK(running_exclusive_task_);
     DCHECK(paths_by_app_id_.empty());
     DCHECK(file_ids_.empty());
@@ -135,15 +135,15 @@ void TaskDependencyManager::Erase(const BlockingFactor* blocking_factor) {
     return;
   }
 
-  if (!blocking_factor->app_id.empty()) {
-    EraseContainer(blocking_factor->paths,
-                   &paths_by_app_id_[blocking_factor->app_id]);
-    if (paths_by_app_id_[blocking_factor->app_id].empty())
-      paths_by_app_id_.erase(blocking_factor->app_id);
+  if (!task_blocker->app_id.empty()) {
+    EraseContainer(task_blocker->paths,
+                   &paths_by_app_id_[task_blocker->app_id]);
+    if (paths_by_app_id_[task_blocker->app_id].empty())
+      paths_by_app_id_.erase(task_blocker->app_id);
   }
 
-  EraseContainer(blocking_factor->file_ids, &file_ids_);
-  EraseContainer(blocking_factor->tracker_ids, &tracker_ids_);
+  EraseContainer(task_blocker->file_ids, &file_ids_);
+  EraseContainer(task_blocker->tracker_ids, &tracker_ids_);
 }
 
 }  // namespace drive_backend

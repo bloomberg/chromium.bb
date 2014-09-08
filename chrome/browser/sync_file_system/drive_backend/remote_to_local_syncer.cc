@@ -106,10 +106,10 @@ RemoteToLocalSyncer::~RemoteToLocalSyncer() {
 void RemoteToLocalSyncer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
   token->InitializeTaskLog("Remote -> Local");
 
-  scoped_ptr<BlockingFactor> blocking_factor(new BlockingFactor);
-  blocking_factor->exclusive = true;
-  SyncTaskManager::UpdateBlockingFactor(
-      token.Pass(), blocking_factor.Pass(),
+  scoped_ptr<TaskBlocker> task_blocker(new TaskBlocker);
+  task_blocker->exclusive = true;
+  SyncTaskManager::UpdateTaskBlocker(
+      token.Pass(), task_blocker.Pass(),
       base::Bind(&RemoteToLocalSyncer::RunExclusive,
                  weak_ptr_factory_.GetWeakPtr()));
 }

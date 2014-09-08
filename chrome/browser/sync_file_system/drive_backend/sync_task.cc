@@ -26,11 +26,11 @@ ExclusiveTask::ExclusiveTask() : weak_ptr_factory_(this) {}
 ExclusiveTask::~ExclusiveTask() {}
 
 void ExclusiveTask::RunPreflight(scoped_ptr<SyncTaskToken> token) {
-  scoped_ptr<BlockingFactor> blocking_factor(new BlockingFactor);
-  blocking_factor->exclusive = true;
+  scoped_ptr<TaskBlocker> task_blocker(new TaskBlocker);
+  task_blocker->exclusive = true;
 
-  SyncTaskManager::UpdateBlockingFactor(
-      token.Pass(), blocking_factor.Pass(),
+  SyncTaskManager::UpdateTaskBlocker(
+      token.Pass(), task_blocker.Pass(),
       base::Bind(&CallRunExclusive, weak_ptr_factory_.GetWeakPtr()));
 }
 
