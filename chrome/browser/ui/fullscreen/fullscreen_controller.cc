@@ -208,9 +208,6 @@ void FullscreenController::SetMetroSnapMode(bool enable) {
 
 #if defined(OS_MACOSX)
 void FullscreenController::ToggleBrowserFullscreenWithChrome() {
-  // This method cannot be called if simplified fullscreen is enabled.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  DCHECK(!command_line->HasSwitch(switches::kEnableSimplifiedFullscreen));
   ToggleFullscreenModeInternal(BROWSER_WITH_CHROME);
 }
 #endif

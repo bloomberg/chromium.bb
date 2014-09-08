@@ -423,12 +423,10 @@ class Command;
 // invoked causes all fullscreen modes to exit.
 //
 // ----------------------------------------------------------------------------
-// There are 3 "styles" of omnibox sliding.
+// There are 2 "styles" of omnibox sliding.
 // + OMNIBOX_TABS_PRESENT: Both the omnibox and the tabstrip are present.
 // Moving the cursor to the top causes the menubar to appear, and everything
 // else to slide down.
-// + OMNIBOX_PRESENT: The tabstrip is hidden. Moving the cursor to the top
-// shows the tabstrip and menubar, sliding everything else down.
 // + OMNIBOX_TABS_HIDDEN: Both tabstrip and omnibox are hidden. Moving cursor
 // to top shows tabstrip, omnibox, and menu bar.
 //
@@ -462,11 +460,6 @@ class Command;
 //
 // + HTML5 fullscreen. <-- Currently uses AppKitFullscreen API. This should
 // eventually migrate to the Immersive Fullscreen API.
-//
-// TODO(erikchen): Remove this.
-// + Simplified fullscreen. Hidden by default. Some users have manually
-// enabled it.
-//  - OMNIBOX_PRESENT. Can be with either fullscreen API.
 
 // Methods having to do with fullscreen and presentation mode.
 @interface BrowserWindowController(Fullscreen)
@@ -502,7 +495,7 @@ class Command;
 - (void)enterPresentationModeForURL:(const GURL&)url
                          bubbleType:(FullscreenExitBubbleType)bubbleType;
 
-// Tries to enter presentation mode. Falls back to simplified fullscreen.
+// Tries to use AppKit Fullscreen, falls back to Immersive Fullscreen.
 - (void)enterHTML5FullscreenForURL:(const GURL&)url
                         bubbleType:(FullscreenExitBubbleType)bubbleType;
 

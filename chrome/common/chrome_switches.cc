@@ -1282,9 +1282,6 @@ const char kDisableSystemFullscreenForTesting[] =
 // window in OSX Yosemite.
 const char kEnableFullSizeContentView[]     = "enable-full-size-content-view";
 
-// Enables a simplified fullscreen UI on Mac.
-const char kEnableSimplifiedFullscreen[]    = "enable-simplified-fullscreen";
-
 // A process type (switches::kProcessType) that relaunches the browser. See
 // chrome/browser/mac/relauncher.h.
 const char kRelauncherProcess[]             = "relauncher";

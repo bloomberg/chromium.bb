@@ -364,7 +364,6 @@ extern const char kMigrateDataDirForSxS[];
 extern const char kAppsKeepChromeAliveInTests[];
 extern const char kDisableSystemFullscreenForTesting[];
 extern const char kEnableFullSizeContentView[];
-extern const char kEnableSimplifiedFullscreen[];
 extern const char kRelauncherProcess[];
 #endif
 

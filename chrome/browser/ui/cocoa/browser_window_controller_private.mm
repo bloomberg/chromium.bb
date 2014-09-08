@@ -195,18 +195,6 @@ willPositionSheet:(NSWindow*)sheet
     switch (presentationModeController_.get().slidingStyle) {
       case fullscreen_mac::OMNIBOX_TABS_PRESENT:
         break;
-      case fullscreen_mac::OMNIBOX_PRESENT: {
-        // At rest: omnibox showing. yOffset should be tabstrip height
-        // When cursor is at top: everything shows. yOffset should be -menubar
-        // height.
-        CGFloat tabStripHeight = 0;
-        if ([self hasTabStrip])
-          tabStripHeight = NSHeight([[self tabStripView] frame]);
-        yOffset +=
-            std::floor((1 - presentationModeController_.get().toolbarFraction) *
-                       tabStripHeight);
-        break;
-      }
       case fullscreen_mac::OMNIBOX_TABS_HIDDEN:
         // In presentation mode, |yOffset| accounts for the sliding position of
         // the floating bar and the extra offset needed to dodge the menu bar.
@@ -257,9 +245,7 @@ willPositionSheet:(NSWindow*)sheet
   if ([self isInFullscreenWithOmniboxSliding]) {
     switch (presentationModeController_.get().slidingStyle) {
       case fullscreen_mac::OMNIBOX_TABS_PRESENT:
-      case fullscreen_mac::OMNIBOX_PRESENT:
-        // Do nothing in Canonical Fullscreen and Simplified Fullscreen. All
-        // content slides.
+        // Do nothing in Canonical Fullscreen. All content slides.
         break;
       case fullscreen_mac::OMNIBOX_TABS_HIDDEN:
         // If in presentation mode, reset |maxY| to top of screen, so that the
@@ -766,14 +752,7 @@ willPositionSheet:(NSWindow*)sheet
                           regularWindow:[self window]
                        fullscreenWindow:fullscreenWindow_.get()];
 
-  // When simplified fullscreen is enabled, do not enter presentation mode.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  fullscreen_mac::SlidingStyle style;
-  if (command_line->HasSwitch(switches::kEnableSimplifiedFullscreen)) {
-    style = fullscreen_mac::OMNIBOX_PRESENT;
-  } else {
-    style = fullscreen_mac::OMNIBOX_TABS_HIDDEN;
-  }
+  fullscreen_mac::SlidingStyle style = fullscreen_mac::OMNIBOX_TABS_HIDDEN;
   [self adjustUIForSlidingFullscreenStyle:style];
 
   // AppKit is helpful and prevents NSWindows from having the same height as
@@ -813,13 +792,6 @@ willPositionSheet:(NSWindow*)sheet
     didFadeOut = YES;
     CGDisplayFade(token, kFadeDurationSeconds / 2, kCGDisplayBlendNormal,
         kCGDisplayBlendSolidColor, 0.0, 0.0, 0.0, /*synchronous=*/true);
-  }
-
-  // When simplified fullscreen is enabled, the menubar status is managed
-  // directly by BWC.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableSimplifiedFullscreen)) {
-    // TODO(rohitrao): Add code to manage the menubar here.
   }
 
   [self windowWillExitFullScreen:nil];
@@ -918,14 +890,9 @@ willPositionSheet:(NSWindow*)sheet
        browser_->fullscreen_controller()->IsWindowFullscreenForTabOrPending();
   enteringAppKitFullscreen_ = YES;
 
-  fullscreen_mac::SlidingStyle style;
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableSimplifiedFullscreen))
-    style = fullscreen_mac::OMNIBOX_PRESENT;
-  else if (mode)
-    style = fullscreen_mac::OMNIBOX_TABS_HIDDEN;
-  else
-    style = fullscreen_mac::OMNIBOX_TABS_PRESENT;
+  fullscreen_mac::SlidingStyle style =
+      mode ? fullscreen_mac::OMNIBOX_TABS_HIDDEN
+           : fullscreen_mac::OMNIBOX_TABS_PRESENT;
 
   [self adjustUIForSlidingFullscreenStyle:style];
 }

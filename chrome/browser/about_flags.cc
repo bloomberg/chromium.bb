@@ -1366,15 +1366,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableCloudPrintXps)
   },
 #endif
-#if defined(OS_MACOSX)
-  {
-    "enable-simplified-fullscreen",
-    IDS_FLAGS_ENABLE_SIMPLIFIED_FULLSCREEN_NAME,
-    IDS_FLAGS_ENABLE_SIMPLIFIED_FULLSCREEN_DESCRIPTION,
-    kOsMac,
-    SINGLE_VALUE_TYPE(switches::kEnableSimplifiedFullscreen)
-  },
-#endif
 #if defined(USE_AURA)
   {
     "tab-capture-upscale-quality",

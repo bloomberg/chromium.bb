@@ -2097,9 +2097,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
 - (void)enterHTML5FullscreenForURL:(const GURL&)url
                         bubbleType:(FullscreenExitBubbleType)bubbleType {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableSimplifiedFullscreen) ||
-      !chrome::mac::SupportsSystemFullscreen()) {
+  if (!chrome::mac::SupportsSystemFullscreen()) {
     [self enterImmersiveFullscreen];
     if (!url.is_empty())
       [self updateFullscreenExitBubbleURL:url bubbleType:bubbleType];

@@ -606,29 +606,15 @@ void BrowserWindowCocoa::Paste() {
 }
 
 void BrowserWindowCocoa::EnterFullscreenWithChrome() {
-  // This method cannot be called if simplified fullscreen is enabled.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  DCHECK(!command_line->HasSwitch(switches::kEnableSimplifiedFullscreen));
-
   CHECK(chrome::mac::SupportsSystemFullscreen());
   [controller_ enterFullscreenWithChrome];
 }
 
 bool BrowserWindowCocoa::IsFullscreenWithChrome() {
-  // The WithChrome mode does not exist when simplified fullscreen is enabled.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableSimplifiedFullscreen))
-    return false;
   return IsFullscreen() && ![controller_ inPresentationMode];
 }
 
 bool BrowserWindowCocoa::IsFullscreenWithoutChrome() {
-  // Presentation mode does not exist if simplified fullscreen is enabled.  The
-  // WithoutChrome mode simply maps to whether or not the window is fullscreen.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableSimplifiedFullscreen))
-    return IsFullscreen();
-
   return IsFullscreen() && [controller_ inPresentationMode];
 }
 
