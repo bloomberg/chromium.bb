@@ -424,7 +424,8 @@ class Mirror(object):
     # The files are named <git number>.zip
     gen_number = subprocess.check_output(
         [self.git_exe, 'number', 'master'], cwd=self.mirror_path).strip()
-    self.RunGit(['gc'])  # Run Garbage Collect to compress packfile.
+    # Run Garbage Collect to compress packfile.
+    self.RunGit(['gc', '--prune=all'])
     # Creating a temp file and then deleting it ensures we can use this name.
     _, tmp_zipfile = tempfile.mkstemp(suffix='.zip')
     os.remove(tmp_zipfile)
