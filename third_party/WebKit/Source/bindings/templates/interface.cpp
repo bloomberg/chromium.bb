@@ -1246,13 +1246,13 @@ void {{v8_class}}::derefObject(ScriptWrappableBase* internalPointer)
 {% endif %}
 }
 
-WrapperPersistentNode* {{v8_class}}::createPersistentHandle(ScriptWrappableBase* internalPointer)
+PersistentNode* {{v8_class}}::createPersistentHandle(ScriptWrappableBase* internalPointer)
 {
 {% if gc_type == 'GarbageCollectedObject' %}
-    return new WrapperPersistent<{{cpp_class}}>(internalPointer->toImpl<{{cpp_class}}>());
+    return new Persistent<{{cpp_class}}>(internalPointer->toImpl<{{cpp_class}}>());
 {% elif gc_type == 'WillBeGarbageCollectedObject' %}
 #if ENABLE(OILPAN)
-    return new WrapperPersistent<{{cpp_class}}>(internalPointer->toImpl<{{cpp_class}}>());
+    return new Persistent<{{cpp_class}}>(internalPointer->toImpl<{{cpp_class}}>());
 #else
     ASSERT_NOT_REACHED();
     return 0;

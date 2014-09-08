@@ -180,9 +180,9 @@ void V8TestInterfaceGarbageCollected::derefObject(ScriptWrappableBase* internalP
 {
 }
 
-WrapperPersistentNode* V8TestInterfaceGarbageCollected::createPersistentHandle(ScriptWrappableBase* internalPointer)
+PersistentNode* V8TestInterfaceGarbageCollected::createPersistentHandle(ScriptWrappableBase* internalPointer)
 {
-    return new WrapperPersistent<TestInterfaceGarbageCollected>(internalPointer->toImpl<TestInterfaceGarbageCollected>());
+    return new Persistent<TestInterfaceGarbageCollected>(internalPointer->toImpl<TestInterfaceGarbageCollected>());
 }
 
 template<>

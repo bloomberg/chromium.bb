@@ -56,7 +56,7 @@ public:
     static TypedArray* toImplWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
-    static WrapperPersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer);
+    static PersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer);
     static const WrapperTypeInfo wrapperTypeInfo;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount;
 
@@ -210,7 +210,7 @@ void V8TypedArray<TypedArray>::derefObject(ScriptWrappableBase* internalPointer)
 }
 
 template <typename TypedArray>
-WrapperPersistentNode* V8TypedArray<TypedArray>::createPersistentHandle(ScriptWrappableBase* internalPointer)
+PersistentNode* V8TypedArray<TypedArray>::createPersistentHandle(ScriptWrappableBase* internalPointer)
 {
     ASSERT_NOT_REACHED();
     return 0;

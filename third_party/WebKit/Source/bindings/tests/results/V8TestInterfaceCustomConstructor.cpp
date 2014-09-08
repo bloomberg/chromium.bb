@@ -100,7 +100,7 @@ void V8TestInterfaceCustomConstructor::derefObject(ScriptWrappableBase* internal
     internalPointer->toImpl<TestInterfaceCustomConstructor>()->deref();
 }
 
-WrapperPersistentNode* V8TestInterfaceCustomConstructor::createPersistentHandle(ScriptWrappableBase* internalPointer)
+PersistentNode* V8TestInterfaceCustomConstructor::createPersistentHandle(ScriptWrappableBase* internalPointer)
 {
     ASSERT_NOT_REACHED();
     return 0;

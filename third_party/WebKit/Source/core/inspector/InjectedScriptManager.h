@@ -49,17 +49,8 @@ class InjectedScriptManager : public NoBaseWillBeGarbageCollectedFinalized<Injec
 public:
     struct CallbackData {
         ScopedPersistent<v8::Object> handle;
-#if ENABLE(OILPAN)
-        WrapperPersistent<InjectedScriptHost>* hostPtr;
-#else
-        RefPtr<InjectedScriptHost> host;
-#endif
+        RefPtrWillBePersistent<InjectedScriptHost> host;
         InjectedScriptManager* injectedScriptManager;
-
-#if ENABLE(OILPAN)
-        CallbackData() : hostPtr(0) { }
-        ~CallbackData();
-#endif
     };
 
     static PassOwnPtrWillBeRawPtr<InjectedScriptManager> createForPage();

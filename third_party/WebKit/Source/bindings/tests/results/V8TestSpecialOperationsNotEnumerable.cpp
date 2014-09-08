@@ -121,7 +121,7 @@ void V8TestSpecialOperationsNotEnumerable::derefObject(ScriptWrappableBase* inte
     internalPointer->toImpl<TestSpecialOperationsNotEnumerable>()->deref();
 }
 
-WrapperPersistentNode* V8TestSpecialOperationsNotEnumerable::createPersistentHandle(ScriptWrappableBase* internalPointer)
+PersistentNode* V8TestSpecialOperationsNotEnumerable::createPersistentHandle(ScriptWrappableBase* internalPointer)
 {
     ASSERT_NOT_REACHED();
     return 0;

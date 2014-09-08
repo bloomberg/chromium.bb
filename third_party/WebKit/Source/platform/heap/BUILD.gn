@@ -7,7 +7,6 @@ visibility = "//third_party/WebKit/Source/*"
 source_set("heap") {
   sources = [
     "AddressSanitizer.h",
-    "Handle.cpp",
     "Handle.h",
     "Heap.cpp",
     "Heap.h",

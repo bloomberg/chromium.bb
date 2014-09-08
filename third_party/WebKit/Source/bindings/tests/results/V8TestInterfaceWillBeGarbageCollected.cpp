@@ -231,10 +231,10 @@ void V8TestInterfaceWillBeGarbageCollected::derefObject(ScriptWrappableBase* int
 #endif
 }
 
-WrapperPersistentNode* V8TestInterfaceWillBeGarbageCollected::createPersistentHandle(ScriptWrappableBase* internalPointer)
+PersistentNode* V8TestInterfaceWillBeGarbageCollected::createPersistentHandle(ScriptWrappableBase* internalPointer)
 {
 #if ENABLE(OILPAN)
-    return new WrapperPersistent<TestInterfaceWillBeGarbageCollected>(internalPointer->toImpl<TestInterfaceWillBeGarbageCollected>());
+    return new Persistent<TestInterfaceWillBeGarbageCollected>(internalPointer->toImpl<TestInterfaceWillBeGarbageCollected>());
 #else
     ASSERT_NOT_REACHED();
     return 0;

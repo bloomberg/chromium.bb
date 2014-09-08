@@ -81,7 +81,7 @@ void V8TestInterfaceEmpty::derefObject(ScriptWrappableBase* internalPointer)
     internalPointer->toImpl<TestInterfaceEmpty>()->deref();
 }
 
-WrapperPersistentNode* V8TestInterfaceEmpty::createPersistentHandle(ScriptWrappableBase* internalPointer)
+PersistentNode* V8TestInterfaceEmpty::createPersistentHandle(ScriptWrappableBase* internalPointer)
 {
     ASSERT_NOT_REACHED();
     return 0;
