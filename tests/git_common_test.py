@@ -372,7 +372,7 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
     self.assertTrue(all(
         isinstance(x, int) for x in self.repo.run(self.gc.get_git_version)))
 
-  def testGetAllTrackingInfo(self):
+  def testGetBranchesInfo(self):
     self.repo.git('commit', '--allow-empty', '-am', 'foooooo')
     self.repo.git('checkout', '-tb', 'happybranch', 'master')
     self.repo.git('commit', '--allow-empty', '-am', 'foooooo')
@@ -382,10 +382,10 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
     self.repo.git('checkout', '-tb', 'parent_gone', 'to_delete')
     self.repo.git('branch', '-D', 'to_delete')
 
-    actual = self.repo.run(self.gc.get_all_tracking_info)
     supports_track = (
         self.repo.run(self.gc.get_git_version)
         >= self.gc.MIN_UPSTREAM_TRACK_GIT_VERSION)
+    actual = self.repo.run(self.gc.get_branches_info, supports_track)
 
     expected = {
         'happybranch': (

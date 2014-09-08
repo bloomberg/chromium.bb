@@ -31,7 +31,7 @@ import sys
 from third_party import colorama
 from third_party.colorama import Fore, Style
 
-from git_common import current_branch, upstream, tags, get_all_tracking_info
+from git_common import current_branch, upstream, tags, get_branches_info
 from git_common import get_git_version, MIN_UPSTREAM_TRACK_GIT_VERSION
 
 import git_cl
@@ -103,42 +103,48 @@ class BranchMapper(object):
   """A class which constructs output representing the tree's branch structure.
 
   Attributes:
-    __tracking_info: a map of branches to their TrackingInfo objects which
+    __branches_info: a map of branches to their BranchesInfo objects which
       consist of the branch hash, upstream and ahead/behind status.
     __gone_branches: a set of upstreams which are not fetchable by git"""
 
   def __init__(self):
     self.verbosity = 0
     self.output = OutputManager()
-    self.__tracking_info = get_all_tracking_info()
     self.__gone_branches = set()
-    self.__roots = set()
+    self.__branches_info = None
+    self.__parent_map = collections.defaultdict(list)
+    self.__current_branch = None
+    self.__current_hash = None
+    self.__tag_set = None
+
+  def start(self):
+    self.__branches_info = get_branches_info(
+        include_tracking_status=self.verbosity >= 1)
+    roots = set()
 
     # A map of parents to a list of their children.
-    self.parent_map = collections.defaultdict(list)
-    for branch, branch_info in self.__tracking_info.iteritems():
+    for branch, branch_info in self.__branches_info.iteritems():
       if not branch_info:
         continue
 
       parent = branch_info.upstream
-      if parent and not self.__tracking_info[parent]:
+      if parent and not self.__branches_info[parent]:
         branch_upstream = upstream(branch)
         # If git can't find the upstream, mark the upstream as gone.
         if branch_upstream:
           parent = branch_upstream
         else:
           self.__gone_branches.add(parent)
-        # A parent that isn't in the tracking info is a root.
-        self.__roots.add(parent)
+        # A parent that isn't in the branches info is a root.
+        roots.add(parent)
 
-      self.parent_map[parent].append(branch)
+      self.__parent_map[parent].append(branch)
 
     self.__current_branch = current_branch()
-    self.__current_hash = self.__tracking_info[self.__current_branch].hash
+    self.__current_hash = self.__branches_info[self.__current_branch].hash
     self.__tag_set = tags()
 
-  def start(self):
-    for root in sorted(self.__roots):
+    for root in sorted(roots):
       self.__append_branch(root)
 
   def __is_invalid_parent(self, parent):
@@ -164,7 +170,7 @@ class BranchMapper(object):
   def __append_branch(self, branch, depth=0):
     """Recurses through the tree structure and appends an OutputLine to the
     OutputManager for each branch."""
-    branch_info = self.__tracking_info[branch]
+    branch_info = self.__branches_info[branch]
     branch_hash = branch_info.hash if branch_info else None
 
     line = OutputLine()
@@ -225,7 +231,7 @@ class BranchMapper(object):
 
     self.output.append(line)
 
-    for child in sorted(self.parent_map.pop(branch, ())):
+    for child in sorted(self.__parent_map.pop(branch, ())):
       self.__append_branch(child, depth=depth + 1)
 
 

@@ -733,18 +733,19 @@ def get_git_version():
   return tuple(int(x) for x in version.split('.'))
 
 
-def get_all_tracking_info():
+def get_branches_info(include_tracking_status):
   format_string = (
       '--format=%(refname:short):%(objectname:short):%(upstream:short):')
 
   # This is not covered by the depot_tools CQ which only has git version 1.8.
-  if get_git_version() >= MIN_UPSTREAM_TRACK_GIT_VERSION:  # pragma: no cover
+  if (include_tracking_status and
+      get_git_version() >= MIN_UPSTREAM_TRACK_GIT_VERSION):  # pragma: no cover
     format_string += '%(upstream:track)'
 
   info_map = {}
   data = run('for-each-ref', format_string, 'refs/heads')
-  TrackingInfo = collections.namedtuple(
-      'TrackingInfo', 'hash upstream ahead behind')
+  BranchesInfo = collections.namedtuple(
+      'BranchesInfo', 'hash upstream ahead behind')
   for line in data.splitlines():
     (branch, branch_hash, upstream_branch, tracking_status) = line.split(':')
 
@@ -754,7 +755,7 @@ def get_all_tracking_info():
     behind_match = re.search(r'behind (\d+)', tracking_status)
     behind = int(behind_match.group(1)) if behind_match else None
 
-    info_map[branch] = TrackingInfo(
+    info_map[branch] = BranchesInfo(
         hash=branch_hash, upstream=upstream_branch, ahead=ahead, behind=behind)
 
   # Set None for upstreams which are not branches (e.g empty upstream, remotes
