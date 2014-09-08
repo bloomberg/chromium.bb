@@ -238,14 +238,13 @@ bool ExtensionKeybindingRegistry::ExecuteCommands(
   if (targets == event_targets_.end() || targets->second.empty())
     return false;
 
-  if (!extension_id.empty() &&
-      !extensions::EventRouter::Get(browser_context_)
-           ->ExtensionHasEventListener(extension_id, kOnCommandEventName))
-    return false;
-
   bool executed = false;
   for (TargetList::const_iterator it = targets->second.begin();
        it != targets->second.end(); it++) {
+    if (!extensions::EventRouter::Get(browser_context_)
+        ->ExtensionHasEventListener(it->first, kOnCommandEventName))
+      continue;
+
     if (extension_id.empty() || it->first == extension_id) {
       CommandExecuted(it->first, it->second);
       executed = true;
