@@ -89,7 +89,7 @@ public:
     void paintOutline(PaintInfo&, const LayoutPoint&);
 
     using RenderBoxModelObject::continuation;
-    virtual void setContinuation(RenderBoxModelObject*) OVERRIDE FINAL;
+    using RenderBoxModelObject::setContinuation;
 
     bool alwaysCreateLineBoxes() const { return alwaysCreateLineBoxesForRenderInline(); }
     void setAlwaysCreateLineBoxes(bool alwaysCreateLineBoxes = true) { setAlwaysCreateLineBoxesForRenderInline(alwaysCreateLineBoxes); }

@@ -162,10 +162,11 @@ static void updateStyleOfAnonymousBlockContinuations(RenderObject* block, const 
         if (!toRenderBlock(block)->isAnonymousBlockContinuation())
             continue;
 
+        RefPtr<RenderStyle> newBlockStyle;
+
         if (!block->style()->isOutlineEquivalent(newStyle)) {
-            RefPtr<RenderStyle> blockStyle = RenderStyle::clone(block->style());
-            blockStyle->setOutlineFromStyle(*newStyle);
-            block->setStyle(blockStyle);
+            newBlockStyle = RenderStyle::clone(block->style());
+            newBlockStyle->setOutlineFromStyle(*newStyle);
         }
 
         if (block->style()->position() != newStyle->position()) {
@@ -174,12 +175,13 @@ static void updateStyleOfAnonymousBlockContinuations(RenderObject* block, const 
             if (oldStyle->hasInFlowPosition()
                 && inFlowPositionedInlineAncestor(toRenderBlock(block)->inlineElementContinuation()))
                 continue;
-            // FIXME: We should share blockStyle with the outline case, but it fails layout tests
-            // for dynamic position change of inlines containing block continuations. crbug.com/405222.
-            RefPtr<RenderStyle> blockStyle = RenderStyle::createAnonymousStyleWithDisplay(block->style(), BLOCK);
-            blockStyle->setPosition(newStyle->position());
-            block->setStyle(blockStyle);
+            if (!newBlockStyle)
+                newBlockStyle = RenderStyle::clone(block->style());
+            newBlockStyle->setPosition(newStyle->position());
         }
+
+        if (newBlockStyle)
+            block->setStyle(newBlockStyle);
     }
 }
 
@@ -202,8 +204,8 @@ void RenderInline::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
         currCont->setContinuation(nextCont);
     }
 
-    // If an inline's in-flow positioning has changed then any descendant blocks will need to change their in-flow positioning accordingly.
-    // Do this by updating the position of the descendant blocks' containing anonymous blocks - there may be more than one.
+    // If an inline's outline or in-flow positioning has changed then any descendant blocks will need to change their styles accordingly.
+    // Do this by updating the styles of the descendant blocks' containing anonymous blocks - there may be more than one.
     if (continuation && oldStyle
         && (!newStyle->isOutlineEquivalent(oldStyle)
             || (newStyle->position() != oldStyle->position() && (newStyle->hasInFlowPosition() || oldStyle->hasInFlowPosition())))) {
@@ -221,18 +223,6 @@ void RenderInline::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
         }
         setAlwaysCreateLineBoxes(alwaysCreateLineBoxesNew);
     }
-}
-
-void RenderInline::setContinuation(RenderBoxModelObject* continuation)
-{
-    RenderBoxModelObject::setContinuation(continuation);
-    if (continuation && continuation->isAnonymousBlock() && !continuation->style()->isOutlineEquivalent(style())) {
-        // Push outline style to the block continuation.
-        RefPtr<RenderStyle> blockStyle = RenderStyle::clone(continuation->style());
-        blockStyle->setOutlineFromStyle(*style());
-        continuation->setStyle(blockStyle);
-    }
-    // FIXME: What if continuation is added when the inline has relative position? crbug.com/405222.
 }
 
 void RenderInline::updateAlwaysCreateLineBoxes(bool fullLayout)
@@ -348,6 +338,10 @@ void RenderInline::addChildIgnoringContinuation(RenderObject* newChild, RenderOb
         // Giving the block a layer like this allows it to collect the x/y offsets from inline parents later.
         if (RenderObject* positionedAncestor = inFlowPositionedInlineAncestor(this))
             newStyle->setPosition(positionedAncestor->style()->position());
+
+        // Push outline style to the block continuation.
+        if (!newStyle->isOutlineEquivalent(style()))
+            newStyle->setOutlineFromStyle(*style());
 
         RenderBlockFlow* newBox = RenderBlockFlow::createAnonymous(&document());
         newBox->setStyle(newStyle.release());

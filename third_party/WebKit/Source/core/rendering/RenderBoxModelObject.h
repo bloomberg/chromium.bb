@@ -254,7 +254,7 @@ protected:
     InterpolationQuality chooseInterpolationQuality(GraphicsContext*, Image*, const void*, const LayoutSize&);
 
     RenderBoxModelObject* continuation() const;
-    virtual void setContinuation(RenderBoxModelObject*);
+    void setContinuation(RenderBoxModelObject*);
 
     LayoutRect localCaretRectForEmptyElement(LayoutUnit width, LayoutUnit textIndentOffset);
 
