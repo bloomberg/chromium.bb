@@ -37,6 +37,12 @@ public:
         return true;
     }
 
+    virtual blink::PlatformThreadId threadId() const OVERRIDE
+    {
+        ASSERT_NOT_REACHED();
+        return 0;
+    }
+
     virtual void enterRunLoop() OVERRIDE
     {
         ASSERT_NOT_REACHED();

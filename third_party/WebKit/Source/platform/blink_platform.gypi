@@ -141,6 +141,7 @@
       'URLPatternMatcher.h',
       'UUID.cpp',
       'UUID.h',
+      'WebThread.cpp',
       'Widget.cpp',
       'Widget.h',
       'WindowsKeyboardCodes.h',

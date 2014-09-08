@@ -26,8 +26,12 @@
 #define WebThread_h
 
 #include "WebCommon.h"
+#include <stdint.h>
 
 namespace blink {
+
+// Always an integer value.
+typedef uintptr_t PlatformThreadId;
 
 // Provides an interface to an embedder-defined thread implementation.
 //
@@ -55,6 +59,7 @@ public:
     virtual void postDelayedTask(Task*, long long delayMs) = 0;
 
     virtual bool isCurrentThread() const = 0;
+    virtual PlatformThreadId threadId() const { return 0; }
 
     virtual void addTaskObserver(TaskObserver*) { }
     virtual void removeTaskObserver(TaskObserver*) { }

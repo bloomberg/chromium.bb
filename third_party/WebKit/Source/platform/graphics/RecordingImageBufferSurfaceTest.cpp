@@ -242,6 +242,11 @@ private:
         virtual void postDelayedTask(Task*, long long delayMs) OVERRIDE { ASSERT_NOT_REACHED(); };
 
         virtual bool isCurrentThread() const OVERRIDE { return true; }
+        virtual PlatformThreadId threadId() const OVERRIDE
+        {
+            ASSERT_NOT_REACHED();
+            return 0;
+        }
 
         virtual void addTaskObserver(TaskObserver* taskObserver) OVERRIDE
         {
