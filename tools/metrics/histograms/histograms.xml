@@ -36669,6 +36669,33 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebCore.Scripts.Deferred.TimeBetweenLoadedAndCompiled"
+    units="milliseconds">
+  <owner>marja@chromium.org</owner>
+  <summary>
+    Time between the events &quot;script is loaded&quot; and &quot;script is
+    compiled&quot; for deferred scripts.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.Scripts.ParsingBlocking.AlreadyLoaded"
+    enum="BooleanLoaded">
+  <owner>marja@chromium.org</owner>
+  <summary>
+    Whether a parsing blocking script was already preloaded from the net or the
+    cache by the time it was needed.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.Scripts.ParsingBlocking.TimeBetweenLoadedAndCompiled"
+    units="milliseconds">
+  <owner>marja@chromium.org</owner>
+  <summary>
+    Time between the events &quot;script is loaded&quot; and &quot;script is
+    compiled&quot; for parsing blocking scripts.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.V8DOMWindowShell.createContext.IsolatedWorld"
     units="milliseconds">
   <obsolete>
@@ -38290,6 +38317,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanHttps" type="int">
   <int value="0" label="HTTP"/>
   <int value="1" label="HTTPS"/>
+</enum>
+
+<enum name="BooleanLoaded" type="int">
+  <int value="0" label="Not loaded"/>
+  <int value="1" label="Loaded"/>
 </enum>
 
 <enum name="BooleanMatched" type="int">
