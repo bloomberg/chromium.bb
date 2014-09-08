@@ -86,6 +86,7 @@ static const char columnNumber[] = "columnNumber";
 static const char condition[] = "condition";
 static const char isAnti[] = "isAnti";
 static const char skipStackPattern[] = "skipStackPattern";
+static const char skipContentScripts[] = "skipContentScripts";
 static const char skipAllPauses[] = "skipAllPauses";
 static const char skipAllPausesExpiresOnReload[] = "skipAllPausesExpiresOnReload";
 
@@ -125,6 +126,7 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
     , m_listener(nullptr)
     , m_skippedStepInCount(0)
     , m_skipAllPauses(false)
+    , m_skipContentScripts(false)
     , m_asyncCallStackTracker(adoptPtrWillBeNoop(new AsyncCallStackTracker()))
 {
 }
@@ -160,6 +162,7 @@ void InspectorDebuggerAgent::disable()
     m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, JSONObject::create());
     m_state->setLong(DebuggerAgentState::pauseOnExceptionsState, ScriptDebugServer::DontPauseOnExceptions);
     m_state->setString(DebuggerAgentState::skipStackPattern, "");
+    m_state->setBoolean(DebuggerAgentState::skipContentScripts, false);
     m_state->setLong(DebuggerAgentState::asyncCallStackDepth, 0);
     m_instrumentingAgents->setInspectorDebuggerAgent(0);
 
@@ -219,6 +222,7 @@ void InspectorDebuggerAgent::restore()
         String error;
         setPauseOnExceptionsImpl(&error, pauseState);
         m_cachedSkipStackRegExp = compileSkipCallFramePattern(m_state->getString(DebuggerAgentState::skipStackPattern));
+        m_skipContentScripts = m_state->getBoolean(DebuggerAgentState::skipContentScripts);
         m_skipAllPauses = m_state->getBoolean(DebuggerAgentState::skipAllPauses);
         if (m_skipAllPauses && m_state->getBoolean(DebuggerAgentState::skipAllPausesExpiresOnReload)) {
             m_skipAllPauses = false;
@@ -476,25 +480,20 @@ void InspectorDebuggerAgent::getBacktrace(ErrorString* errorString, RefPtr<Array
     asyncStackTrace = currentAsyncStackTrace();
 }
 
-PassRefPtrWillBeRawPtr<JavaScriptCallFrame> InspectorDebuggerAgent::topCallFrameSkipUnknownSources()
+PassRefPtrWillBeRawPtr<JavaScriptCallFrame> InspectorDebuggerAgent::topCallFrameSkipUnknownSources(String* scriptURL, bool* isBlackboxed)
 {
     for (int index = 0; ; ++index) {
         RefPtrWillBeRawPtr<JavaScriptCallFrame> frame = scriptDebugServer().callFrameNoScopes(index);
         if (!frame)
             return nullptr;
-        String scriptIdString = String::number(frame->sourceID());
-        if (m_scripts.contains(scriptIdString))
-            return frame.release();
+        ScriptsMap::iterator it = m_scripts.find(String::number(frame->sourceID()));
+        if (it == m_scripts.end())
+            continue;
+        *scriptURL = scriptSourceURL(it->value);
+        *isBlackboxed = (m_skipContentScripts && it->value.isContentScript)
+            || (m_cachedSkipStackRegExp && !scriptURL->isEmpty() && m_cachedSkipStackRegExp->match(*scriptURL) != -1);
+        return frame.release();
     }
-}
-
-String InspectorDebuggerAgent::scriptURL(JavaScriptCallFrame* frame)
-{
-    String scriptIdString = String::number(frame->sourceID());
-    ScriptsMap::iterator it = m_scripts.find(scriptIdString);
-    if (it == m_scripts.end())
-        return String();
-    return scriptSourceURL(it->value);
 }
 
 ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipExceptionPause()
@@ -502,14 +501,14 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipExceptio
     if (m_steppingFromFramework)
         return ScriptDebugListener::NoSkip;
 
-    // FIXME: Fast return: if (!m_cachedSkipStackRegExp && !has_any_anti_breakpoint) return ScriptDebugListener::NoSkip;
+    // FIXME: Fast return: if (!m_skipContentScripts && !m_cachedSkipStackRegExp && !has_any_anti_breakpoint) return ScriptDebugListener::NoSkip;
 
-    RefPtrWillBeRawPtr<JavaScriptCallFrame> topFrame = topCallFrameSkipUnknownSources();
+    String topFrameScriptUrl;
+    bool isBlackboxed = false;
+    RefPtrWillBeRawPtr<JavaScriptCallFrame> topFrame = topCallFrameSkipUnknownSources(&topFrameScriptUrl, &isBlackboxed);
     if (!topFrame)
         return ScriptDebugListener::NoSkip;
-
-    String topFrameScriptUrl = scriptURL(topFrame.get());
-    if (m_cachedSkipStackRegExp && !topFrameScriptUrl.isEmpty() && m_cachedSkipStackRegExp->match(topFrameScriptUrl) != -1)
+    if (isBlackboxed)
         return ScriptDebugListener::Continue;
 
     // Match against breakpoints.
@@ -554,12 +553,16 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipExceptio
 
 ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipStepPause()
 {
-    if (!m_cachedSkipStackRegExp || m_steppingFromFramework)
+    if (m_steppingFromFramework)
+        return ScriptDebugListener::NoSkip;
+    // Fast return.
+    if (!m_skipContentScripts && !m_cachedSkipStackRegExp)
         return ScriptDebugListener::NoSkip;
 
-    RefPtrWillBeRawPtr<JavaScriptCallFrame> topFrame = topCallFrameSkipUnknownSources();
-    String scriptUrl = scriptURL(topFrame.get());
-    if (scriptUrl.isEmpty() || m_cachedSkipStackRegExp->match(scriptUrl) == -1)
+    String scriptUrl;
+    bool isBlackboxed = false;
+    RefPtrWillBeRawPtr<JavaScriptCallFrame> topFrame = topCallFrameSkipUnknownSources(&scriptUrl, &isBlackboxed);
+    if (!topFrame || !isBlackboxed)
         return ScriptDebugListener::NoSkip;
 
     if (m_skippedStepInCount == 0) {
@@ -586,15 +589,13 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipStepPaus
 
 bool InspectorDebuggerAgent::isTopCallFrameInFramework()
 {
-    if (!m_cachedSkipStackRegExp)
+    if (!m_skipContentScripts && !m_cachedSkipStackRegExp)
         return false;
 
-    RefPtrWillBeRawPtr<JavaScriptCallFrame> topFrame = topCallFrameSkipUnknownSources();
-    if (!topFrame)
-        return false;
-
-    String scriptUrl = scriptURL(topFrame.get());
-    return !scriptUrl.isEmpty() && m_cachedSkipStackRegExp->match(scriptUrl) != -1;
+    String scriptUrl;
+    bool isBlackboxed = false;
+    RefPtrWillBeRawPtr<JavaScriptCallFrame> topFrame = topCallFrameSkipUnknownSources(&scriptUrl, &isBlackboxed);
+    return topFrame && isBlackboxed;
 }
 
 PassRefPtr<TypeBuilder::Debugger::Location> InspectorDebuggerAgent::resolveBreakpoint(const String& breakpointId, const String& scriptId, const ScriptBreakpoint& breakpoint, BreakpointSource source)
@@ -1142,7 +1143,7 @@ void InspectorDebuggerAgent::setVariableValue(ErrorString* errorString, int scop
     injectedScript.setVariableValue(errorString, m_currentCallStack, callFrameId, functionObjectId, scopeNumber, variableName, newValueString);
 }
 
-void InspectorDebuggerAgent::skipStackFrames(ErrorString* errorString, const String* pattern)
+void InspectorDebuggerAgent::skipStackFrames(ErrorString* errorString, const String* pattern, const bool* skipContentScripts)
 {
     OwnPtr<ScriptRegexp> compiled;
     String patternValue = pattern ? *pattern : "";
@@ -1155,6 +1156,8 @@ void InspectorDebuggerAgent::skipStackFrames(ErrorString* errorString, const Str
     }
     m_state->setString(DebuggerAgentState::skipStackPattern, patternValue);
     m_cachedSkipStackRegExp = compiled.release();
+    m_skipContentScripts = asBool(skipContentScripts);
+    m_state->setBoolean(DebuggerAgentState::skipContentScripts, m_skipContentScripts);
 }
 
 void InspectorDebuggerAgent::setAsyncCallStackDepth(ErrorString*, int depth)

@@ -144,7 +144,7 @@ public:
     virtual void runScript(ErrorString*, const TypeBuilder::Debugger::ScriptId&, const int* executionContextId, const String* objectGroup, const bool* doNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) OVERRIDE;
     virtual void setOverlayMessage(ErrorString*, const String*) OVERRIDE;
     virtual void setVariableValue(ErrorString*, int in_scopeNumber, const String& in_variableName, const RefPtr<JSONObject>& in_newValue, const String* in_callFrame, const String* in_functionObjectId) OVERRIDE FINAL;
-    virtual void skipStackFrames(ErrorString*, const String* pattern) OVERRIDE FINAL;
+    virtual void skipStackFrames(ErrorString*, const String* pattern, const bool* skipContentScripts) OVERRIDE FINAL;
     virtual void setAsyncCallStackDepth(ErrorString*, int depth) OVERRIDE FINAL;
 
     void schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
@@ -240,8 +240,7 @@ private:
 
     String sourceMapURLForScript(const Script&, CompileResult);
 
-    PassRefPtrWillBeRawPtr<JavaScriptCallFrame> topCallFrameSkipUnknownSources();
-    String scriptURL(JavaScriptCallFrame*);
+    PassRefPtrWillBeRawPtr<JavaScriptCallFrame> topCallFrameSkipUnknownSources(String* scriptURL, bool* isBlackboxed);
     AsyncCallStackTracker& asyncCallStackTracker() { return *m_asyncCallStackTracker; };
 
     typedef HashMap<String, Script> ScriptsMap;
@@ -267,6 +266,7 @@ private:
     int m_skippedStepInCount;
     int m_minFrameCountForSkip;
     bool m_skipAllPauses;
+    bool m_skipContentScripts;
     OwnPtr<ScriptRegexp> m_cachedSkipStackRegExp;
     OwnPtrWillBeMember<AsyncCallStackTracker> m_asyncCallStackTracker;
     PromiseTracker m_promiseTracker;
