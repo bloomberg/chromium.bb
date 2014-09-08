@@ -147,6 +147,8 @@ PPAPIT*.U*3
 # Q*
 QU*
 # R*
+# RangeHistoryWebUITest.*
+Ran*
 Red*
 Ref*
 Reg*
