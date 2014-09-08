@@ -162,6 +162,7 @@ void XSLTProcessor::trace(Visitor* visitor)
 {
     visitor->trace(m_stylesheet);
     visitor->trace(m_stylesheetRootNode);
+    visitor->trace(m_document);
 }
 
 } // namespace blink
