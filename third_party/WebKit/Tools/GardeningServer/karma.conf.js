@@ -19,7 +19,7 @@ module.exports = function(config) {
         globals: ['net', 'scrolled', 'oCursor', 'availableWidth', 'topNotUsableSize',
             'xLabelWidth', 'nblab', 'bottomNotUsableHeightWithoutXLabels',
             'bottomNotUsableHeightWithXLabels', 'availableHeight', 'clrx', 'clrwidth',
-            'clry', 'clrheight']
+            'clry', 'clrheight', 'fmtYLabel', 'lgtxt', 'lgtxt2']
       },
       captureConsole: true
     },
