@@ -74,6 +74,14 @@ public class HandleMock implements UntypedHandle, MessagePipeHandle,
     }
 
     /**
+     * @see Handle#releaseNativeHandle()
+     */
+    @Override
+    public int releaseNativeHandle() {
+        return 0;
+    }
+
+    /**
      * @see ConsumerHandle#discardData(int, DataPipe.ReadFlags)
      */
     @Override

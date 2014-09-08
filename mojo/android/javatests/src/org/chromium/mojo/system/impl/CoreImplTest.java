@@ -817,4 +817,22 @@ public class CoreImplTest extends MojoTestCase {
         checkSharing(newHandleClone, handleClone);
     }
 
+    /**
+     * esting handle conversion to native and back.
+     */
+    @SmallTest
+    public void testHandleConversion() {
+        Core core = CoreImpl.getInstance();
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
+        addHandlePairToClose(handles);
+
+        MessagePipeHandle converted =
+                core.acquireNativeHandle(handles.first.releaseNativeHandle()).toMessagePipeHandle();
+        addHandleToClose(converted);
+
+        assertFalse(handles.first.isValid());
+
+        checkSendingMessage(converted, handles.second);
+        checkSendingMessage(handles.second, converted);
+    }
 }

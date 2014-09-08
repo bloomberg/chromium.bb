@@ -180,6 +180,14 @@ public interface Core {
             long numBytes);
 
     /**
+     * Acquires a handle from the native side. The handle will be owned by the returned object and
+     * must not be closed outside of it.
+     *
+     * @return a new {@link UntypedHandle} representing the native handle.
+     */
+    public UntypedHandle acquireNativeHandle(int handle);
+
+    /**
      * Returns a default implementation of {@link AsyncWaiter}.
      */
     public AsyncWaiter getDefaultAsyncWaiter();

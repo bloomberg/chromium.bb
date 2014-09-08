@@ -50,4 +50,10 @@ public interface Handle extends Closeable {
      */
     public Handle pass();
 
+    /**
+     * Releases the native handle backed by this {@link Handle}. The caller owns the handle and must
+     * close it.
+     */
+    public int releaseNativeHandle();
+
 }

@@ -94,6 +94,16 @@ abstract class HandleBase implements Handle {
     }
 
     /**
+     * @see Handle#releaseNativeHandle()
+     */
+    @Override
+    public int releaseNativeHandle() {
+        int result = mMojoHandle;
+        mMojoHandle = CoreImpl.INVALID_HANDLE;
+        return result;
+    }
+
+    /**
      * Getter for the native scoped handle.
      *
      * @return the native scoped handle.

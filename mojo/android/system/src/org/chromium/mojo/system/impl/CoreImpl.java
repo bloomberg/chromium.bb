@@ -171,6 +171,14 @@ public class CoreImpl implements Core, AsyncWaiter {
     }
 
     /**
+     * @see org.chromium.mojo.system.Core#acquireNativeHandle(int)
+     */
+    @Override
+    public UntypedHandle acquireNativeHandle(int handle) {
+        return new UntypedHandleImpl(this, handle);
+    }
+
+    /**
      * @see Core#getDefaultAsyncWaiter()
      */
     @Override
