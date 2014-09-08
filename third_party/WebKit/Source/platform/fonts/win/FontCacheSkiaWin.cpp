@@ -48,8 +48,6 @@ HashMap<String, RefPtr<SkTypeface> >* FontCache::s_sideloadedFonts = 0;
 // static
 void FontCache::addSideloadedFontForTesting(SkTypeface* typeface)
 {
-    if (!typeface)
-        return;
     if (!s_sideloadedFonts)
         s_sideloadedFonts = new HashMap<String, RefPtr<SkTypeface> >;
     SkString name;
