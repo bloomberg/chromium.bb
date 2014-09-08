@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_cache_listener.h"
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/service_worker/service_worker_cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -77,6 +78,8 @@ bool ServiceWorkerCacheListener::OnMessageReceived(
 void ServiceWorkerCacheListener::OnCacheStorageGet(
     int request_id,
     const base::string16& cache_name) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerCacheListener::OnCacheStorageGet");
   context_->cache_manager()->GetCache(
       version_->scope().GetOrigin(),
       base::UTF16ToUTF8(cache_name),
@@ -88,6 +91,8 @@ void ServiceWorkerCacheListener::OnCacheStorageGet(
 void ServiceWorkerCacheListener::OnCacheStorageHas(
     int request_id,
     const base::string16& cache_name) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerCacheListener::OnCacheStorageHas");
   context_->cache_manager()->HasCache(
       version_->scope().GetOrigin(),
       base::UTF16ToUTF8(cache_name),
@@ -99,6 +104,8 @@ void ServiceWorkerCacheListener::OnCacheStorageHas(
 void ServiceWorkerCacheListener::OnCacheStorageCreate(
     int request_id,
     const base::string16& cache_name) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerCacheListener::OnCacheStorageCreate");
   context_->cache_manager()->CreateCache(
       version_->scope().GetOrigin(),
       base::UTF16ToUTF8(cache_name),
@@ -110,6 +117,8 @@ void ServiceWorkerCacheListener::OnCacheStorageCreate(
 void ServiceWorkerCacheListener::OnCacheStorageDelete(
     int request_id,
     const base::string16& cache_name) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerCacheListener::OnCacheStorageDelete");
   context_->cache_manager()->DeleteCache(
       version_->scope().GetOrigin(),
       base::UTF16ToUTF8(cache_name),
@@ -119,6 +128,8 @@ void ServiceWorkerCacheListener::OnCacheStorageDelete(
 }
 
 void ServiceWorkerCacheListener::OnCacheStorageKeys(int request_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerCacheListener::OnCacheStorageKeys");
   context_->cache_manager()->EnumerateCaches(
       version_->scope().GetOrigin(),
       base::Bind(&ServiceWorkerCacheListener::OnCacheStorageKeysCallback,

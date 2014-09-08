@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 
+#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/pickle.h"
@@ -99,6 +100,14 @@ EmbeddedWorkerContextClient::EmbeddedWorkerContextClient(
       sender_(ChildThread::current()->thread_safe_sender()),
       main_thread_proxy_(base::MessageLoopProxy::current()),
       weak_factory_(this) {
+  TRACE_EVENT_ASYNC_BEGIN0("ServiceWorker",
+                           "EmbeddedWorkerContextClient::StartingWorkerContext",
+                           this);
+  TRACE_EVENT_ASYNC_STEP_INTO0(
+      "ServiceWorker",
+      "EmbeddedWorkerContextClient::StartingWorkerContext",
+      this,
+      "PrepareWorker");
 }
 
 EmbeddedWorkerContextClient::~EmbeddedWorkerContextClient() {
@@ -176,6 +185,11 @@ void EmbeddedWorkerContextClient::workerContextStarted(
       FROM_HERE,
       base::Bind(&EmbeddedWorkerContextClient::SendWorkerStarted,
                  weak_factory_.GetWeakPtr()));
+  TRACE_EVENT_ASYNC_STEP_INTO0(
+      "ServiceWorker",
+      "EmbeddedWorkerContextClient::StartingWorkerContext",
+      this,
+      "ExecuteScript");
 }
 
 void EmbeddedWorkerContextClient::willDestroyWorkerContext() {
@@ -330,6 +344,9 @@ void EmbeddedWorkerContextClient::OnMessageToWorker(
 
 void EmbeddedWorkerContextClient::SendWorkerStarted() {
   DCHECK(worker_task_runner_->RunsTasksOnCurrentThread());
+  TRACE_EVENT_ASYNC_END0("ServiceWorker",
+                         "EmbeddedWorkerContextClient::StartingWorkerContext",
+                         this);
   Send(new EmbeddedWorkerHostMsg_WorkerStarted(embedded_worker_id_));
 }
 

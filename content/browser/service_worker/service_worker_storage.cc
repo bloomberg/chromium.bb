@@ -7,7 +7,9 @@
 #include <string>
 
 #include "base/bind_helpers.h"
+#include "base/debug/trace_event.h"
 #include "base/files/file_util.h"
+#include "base/hash.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -250,6 +252,11 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
     const GURL& document_url,
     const FindRegistrationCallback& callback) {
   DCHECK(!document_url.has_ref());
+  TRACE_EVENT_ASYNC_BEGIN1(
+      "ServiceWorker",
+      "ServiceWorkerStorage::FindRegistrationForDocument",
+      base::Hash(document_url.spec()),
+      "URL", document_url.spec());
   if (!LazyInitialize(base::Bind(
           &ServiceWorkerStorage::FindRegistrationForDocument,
           weak_factory_.GetWeakPtr(), document_url, callback))) {
@@ -767,6 +774,11 @@ void ServiceWorkerStorage::DidFindRegistrationForDocument(
     ServiceWorkerDatabase::Status status) {
   if (status == ServiceWorkerDatabase::STATUS_OK) {
     ReturnFoundRegistration(callback, data, resources);
+    TRACE_EVENT_ASYNC_END1(
+        "ServiceWorker",
+        "ServiceWorkerStorage::FindRegistrationForDocument",
+        base::Hash(document_url.spec()),
+        "Status", "OK");
     return;
   }
 
@@ -777,12 +789,22 @@ void ServiceWorkerStorage::DidFindRegistrationForDocument(
     callback.Run(installing_registration.get() ? SERVICE_WORKER_OK
                                                : SERVICE_WORKER_ERROR_NOT_FOUND,
                  installing_registration);
+    TRACE_EVENT_ASYNC_END1(
+        "ServiceWorker",
+        "ServiceWorkerStorage::FindRegistrationForDocument",
+        base::Hash(document_url.spec()),
+        "Status", status);
     return;
   }
 
   ScheduleDeleteAndStartOver();
   callback.Run(DatabaseStatusToStatusCode(status),
                scoped_refptr<ServiceWorkerRegistration>());
+  TRACE_EVENT_ASYNC_END1(
+      "ServiceWorker",
+      "ServiceWorkerStorage::FindRegistrationForDocument",
+      base::Hash(document_url.spec()),
+      "Status", status);
 }
 
 void ServiceWorkerStorage::DidFindRegistrationForPattern(

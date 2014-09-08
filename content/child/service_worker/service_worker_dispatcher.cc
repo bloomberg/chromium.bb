@@ -4,6 +4,7 @@
 
 #include "content/child/service_worker/service_worker_dispatcher.h"
 
+#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
@@ -97,6 +98,11 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
   }
 
   int request_id = pending_registration_callbacks_.Add(callbacks);
+  TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker",
+                           "ServiceWorkerDispatcher::RegisterServiceWorker",
+                           request_id,
+                           "Pettern", pattern.spec(),
+                           "Script URL", script_url.spec());
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_RegisterServiceWorker(
       CurrentWorkerId(), request_id, provider_id, pattern, script_url));
 }
@@ -117,6 +123,10 @@ void ServiceWorkerDispatcher::UnregisterServiceWorker(
   }
 
   int request_id = pending_unregistration_callbacks_.Add(callbacks);
+  TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
+                           "ServiceWorkerDispatcher::UnregisterServiceWorker",
+                           request_id,
+                           "Pettern", pattern.spec());
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_UnregisterServiceWorker(
       CurrentWorkerId(), request_id, provider_id, pattern));
 }
@@ -244,6 +254,10 @@ void ServiceWorkerDispatcher::OnRegistered(
     int request_id,
     const ServiceWorkerRegistrationObjectInfo& info,
     const ServiceWorkerVersionAttributes& attrs) {
+  TRACE_EVENT_ASYNC_STEP_INTO0("ServiceWorker",
+                               "ServiceWorkerDispatcher::RegisterServiceWorker",
+                               request_id,
+                               "OnRegistered");
   WebServiceWorkerRegistrationCallbacks* callbacks =
       pending_registration_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
@@ -258,6 +272,9 @@ void ServiceWorkerDispatcher::OnRegistered(
 
   callbacks->onSuccess(registration);
   pending_registration_callbacks_.Remove(request_id);
+  TRACE_EVENT_ASYNC_END0("ServiceWorker",
+                         "ServiceWorkerDispatcher::RegisterServiceWorker",
+                         request_id);
 }
 
 void ServiceWorkerDispatcher::OnUnregistered(
@@ -265,12 +282,20 @@ void ServiceWorkerDispatcher::OnUnregistered(
     int request_id) {
   WebServiceWorkerUnregistrationCallbacks* callbacks =
       pending_unregistration_callbacks_.Lookup(request_id);
+  TRACE_EVENT_ASYNC_STEP_INTO0(
+      "ServiceWorker",
+      "ServiceWorkerDispatcher::UnregisterServiceWorker",
+      request_id,
+      "OnUnregistered");
   DCHECK(callbacks);
   if (!callbacks)
     return;
   bool is_success = true;
   callbacks->onSuccess(&is_success);
   pending_unregistration_callbacks_.Remove(request_id);
+  TRACE_EVENT_ASYNC_END0("ServiceWorker",
+                         "ServiceWorkerDispatcher::UnregisterServiceWorker",
+                         request_id);
 }
 
 void ServiceWorkerDispatcher::OnRegistrationError(
@@ -278,6 +303,10 @@ void ServiceWorkerDispatcher::OnRegistrationError(
     int request_id,
     WebServiceWorkerError::ErrorType error_type,
     const base::string16& message) {
+  TRACE_EVENT_ASYNC_STEP_INTO0("ServiceWorker",
+                               "ServiceWorkerDispatcher::RegisterServiceWorker",
+                               request_id,
+                               "OnRegistrationError");
   WebServiceWorkerRegistrationCallbacks* callbacks =
       pending_registration_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
@@ -288,6 +317,9 @@ void ServiceWorkerDispatcher::OnRegistrationError(
       new WebServiceWorkerError(error_type, message));
   callbacks->onError(error.release());
   pending_registration_callbacks_.Remove(request_id);
+  TRACE_EVENT_ASYNC_END0("ServiceWorker",
+                         "ServiceWorkerDispatcher::RegisterServiceWorker",
+                         request_id);
 }
 
 void ServiceWorkerDispatcher::OnUnregistrationError(
@@ -295,6 +327,11 @@ void ServiceWorkerDispatcher::OnUnregistrationError(
     int request_id,
     WebServiceWorkerError::ErrorType error_type,
     const base::string16& message) {
+  TRACE_EVENT_ASYNC_STEP_INTO0(
+      "ServiceWorker",
+      "ServiceWorkerDispatcher::UnregisterServiceWorker",
+      request_id,
+      "OnUnregistrationError");
   WebServiceWorkerUnregistrationCallbacks* callbacks =
       pending_unregistration_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
@@ -305,12 +342,19 @@ void ServiceWorkerDispatcher::OnUnregistrationError(
       new WebServiceWorkerError(error_type, message));
   callbacks->onError(error.release());
   pending_unregistration_callbacks_.Remove(request_id);
+  TRACE_EVENT_ASYNC_END0("ServiceWorker",
+                         "ServiceWorkerDispatcher::UnregisterServiceWorker",
+                         request_id);
 }
 
 void ServiceWorkerDispatcher::OnServiceWorkerStateChanged(
     int thread_id,
     int handle_id,
     blink::WebServiceWorkerState state) {
+  TRACE_EVENT2("ServiceWorker",
+               "ServiceWorkerDispatcher::OnServiceWorkerStateChanged",
+               "Thread ID", thread_id,
+               "State", state);
   WorkerObjectMap::iterator worker = service_workers_.find(handle_id);
   if (worker != service_workers_.end())
     worker->second->OnStateChanged(state);
@@ -326,6 +370,9 @@ void ServiceWorkerDispatcher::OnSetVersionAttributes(
     int registration_handle_id,
     int changed_mask,
     const ServiceWorkerVersionAttributes& attributes) {
+  TRACE_EVENT1("ServiceWorker",
+               "ServiceWorkerDispatcher::OnSetVersionAttributes",
+               "Thread ID", thread_id);
   ChangedVersionAttributesMask mask(changed_mask);
   if (mask.installing_changed()) {
     SetInstallingServiceWorker(provider_id,
@@ -347,6 +394,8 @@ void ServiceWorkerDispatcher::OnSetVersionAttributes(
 void ServiceWorkerDispatcher::OnUpdateFound(
     int thread_id,
     const ServiceWorkerRegistrationObjectInfo& info) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcher::OnUpdateFound");
   RegistrationObjectMap::iterator found = registrations_.find(info.handle_id);
   if (found != registrations_.end())
     found->second->OnUpdateFound();
@@ -440,6 +489,10 @@ void ServiceWorkerDispatcher::OnSetControllerServiceWorker(
     int thread_id,
     int provider_id,
     const ServiceWorkerObjectInfo& info) {
+  TRACE_EVENT2("ServiceWorker",
+               "ServiceWorkerDispatcher::OnSetControllerServiceWorker",
+               "Thread ID", thread_id,
+               "Provider ID", provider_id);
   ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
   if (provider != provider_contexts_.end()) {
     provider->second->OnSetControllerServiceWorker(provider_id, info);
@@ -462,6 +515,9 @@ void ServiceWorkerDispatcher::OnPostMessage(
   // Make sure we're on the main document thread. (That must be the only
   // thread we get this message)
   DCHECK(ChildThread::current());
+  TRACE_EVENT1("ServiceWorker",
+               "ServiceWorkerDispatcher::OnPostMessage",
+               "Thread ID", thread_id);
 
   ScriptClientMap::iterator found = script_clients_.find(provider_id);
   if (found == script_clients_.end()) {

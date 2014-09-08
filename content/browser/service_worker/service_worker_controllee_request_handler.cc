@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
 
+#include "base/debug/trace_event.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
@@ -106,6 +107,11 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
     const GURL& url) {
   DCHECK(job_.get());
   DCHECK(context_);
+  TRACE_EVENT_ASYNC_BEGIN1(
+      "ServiceWorker",
+      "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
+      job_.get(),
+      "URL", url.spec());
   // The corresponding provider_host may already have associated a registration
   // in redirect case, unassociate it now.
   provider_host_->UnassociateRegistration();
@@ -125,6 +131,11 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
   DCHECK(job_.get());
   if (status != SERVICE_WORKER_OK) {
     job_->FallbackToNetwork();
+    TRACE_EVENT_ASYNC_END1(
+        "ServiceWorker",
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
+        job_.get(),
+        "Status", status);
     return;
   }
   DCHECK(registration.get());
@@ -149,17 +160,37 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
                    weak_factory_.GetWeakPtr(),
                    registration,
                    active_version));
+    TRACE_EVENT_ASYNC_END2(
+        "ServiceWorker",
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
+        job_.get(),
+        "Status", status,
+        "Info", "Wait until finished SW activation");
     return;
   }
 
   if (!active_version.get() ||
       active_version->status() != ServiceWorkerVersion::ACTIVATED) {
     job_->FallbackToNetwork();
+    TRACE_EVENT_ASYNC_END2(
+        "ServiceWorker",
+        "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
+        job_.get(),
+        "Status", status,
+        "Info",
+        "ServiceWorkerVersion is not available, so falling back to network");
     return;
   }
 
   provider_host_->AssociateRegistration(registration.get());
   job_->ForwardToServiceWorker();
+  TRACE_EVENT_ASYNC_END2(
+      "ServiceWorker",
+      "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",
+      job_.get(),
+      "Status", status,
+      "Info",
+      "Forwarded to the ServiceWorker");
 }
 
 void ServiceWorkerControlleeRequestHandler::OnVersionStatusChanged(

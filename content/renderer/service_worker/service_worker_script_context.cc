@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webmessageportchannel_impl.h"
@@ -128,11 +129,15 @@ int ServiceWorkerScriptContext::GetRoutingID() const {
 }
 
 void ServiceWorkerScriptContext::OnActivateEvent(int request_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerScriptContext::OnActivateEvent");
   proxy_->dispatchActivateEvent(request_id);
 }
 
 void ServiceWorkerScriptContext::OnInstallEvent(int request_id,
                                                 int active_version_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerScriptContext::OnInstallEvent");
   proxy_->dispatchInstallEvent(request_id);
 }
 
@@ -140,6 +145,8 @@ void ServiceWorkerScriptContext::OnFetchEvent(
     int request_id,
     const ServiceWorkerFetchRequest& request) {
   blink::WebServiceWorkerRequest webRequest;
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerScriptContext::OnFetchEvent");
   webRequest.setURL(blink::WebURL(request.url));
   webRequest.setMethod(blink::WebString::fromUTF8(request.method));
   for (std::map<std::string, std::string>::const_iterator it =
@@ -160,11 +167,15 @@ void ServiceWorkerScriptContext::OnFetchEvent(
 }
 
 void ServiceWorkerScriptContext::OnSyncEvent(int request_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerScriptContext::OnSyncEvent");
   proxy_->dispatchSyncEvent(request_id);
 }
 
 void ServiceWorkerScriptContext::OnPushEvent(int request_id,
                                              const std::string& data) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerScriptContext::OnPushEvent");
   proxy_->dispatchPushEvent(request_id, blink::WebString::fromUTF8(data));
   Send(new ServiceWorkerHostMsg_PushEventFinished(
       GetRoutingID(), request_id));
@@ -174,6 +185,8 @@ void ServiceWorkerScriptContext::OnPostMessage(
     const base::string16& message,
     const std::vector<int>& sent_message_port_ids,
     const std::vector<int>& new_routing_ids) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerScriptContext::OnPostEvent");
   std::vector<WebMessagePortChannelImpl*> ports;
   if (!sent_message_port_ids.empty()) {
     base::MessageLoopProxy* loop_proxy = embedded_context_->main_thread_proxy();
@@ -189,6 +202,8 @@ void ServiceWorkerScriptContext::OnPostMessage(
 
 void ServiceWorkerScriptContext::OnDidGetClientDocuments(
     int request_id, const std::vector<int>& client_ids) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerScriptContext::OnDidGetClientDocuments");
   blink::WebServiceWorkerClientsCallbacks* callbacks =
       pending_clients_callbacks_.Lookup(request_id);
   if (!callbacks) {

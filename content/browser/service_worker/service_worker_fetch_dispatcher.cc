@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "content/browser/service_worker/service_worker_version.h"
 
 namespace content {
@@ -57,6 +58,10 @@ void ServiceWorkerFetchDispatcher::DidFailActivation() {
 }
 
 void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
+  TRACE_EVENT_ASYNC_BEGIN0(
+      "ServiceWorker",
+      "ServiceWorkerFetchDispatcher::DispatchFetchEvent",
+      request_.get());
   version_->DispatchFetchEvent(
       *request_.get(),
       base::Bind(&ServiceWorkerFetchDispatcher::DidPrepare,
@@ -75,6 +80,10 @@ void ServiceWorkerFetchDispatcher::DidFinish(
     ServiceWorkerStatusCode status,
     ServiceWorkerFetchEventResult fetch_result,
     const ServiceWorkerResponse& response) {
+  TRACE_EVENT_ASYNC_END0(
+      "ServiceWorker",
+      "ServiceWorkerFetchDispatcher::DispatchFetchEvent",
+      request_.get());
   DCHECK(!fetch_callback_.is_null());
   FetchCallback fetch_callback = fetch_callback_;
   fetch_callback.Run(status, fetch_result, response);

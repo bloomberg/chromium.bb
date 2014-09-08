@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/message_port_message_filter.h"
@@ -89,6 +90,8 @@ void ServiceWorkerDispatcherHost::Init(
 }
 
 void ServiceWorkerDispatcherHost::OnFilterAdded(IPC::Sender* sender) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnFilterAdded");
   BrowserMessageFilter::OnFilterAdded(sender);
   channel_ready_ = true;
   std::vector<IPC::Message*> messages;
@@ -184,6 +187,8 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     int provider_id,
     const GURL& pattern,
     const GURL& script_url) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnRegisterServiceWorker");
   if (!GetContext()) {
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
         thread_id,
@@ -213,6 +218,11 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     BadMessageReceived();
     return;
   }
+  TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker",
+                           "ServiceWorkerDispatcherHost::RegisterServiceWorker",
+                           request_id,
+                           "Pattern", pattern.spec(),
+                           "Script URL", script_url.spec());
   GetContext()->RegisterServiceWorker(
       pattern,
       script_url,
@@ -230,6 +240,8 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
     int request_id,
     int provider_id,
     const GURL& pattern) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnUnregisterServiceWorker");
   if (!GetContext()) {
     Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
         thread_id,
@@ -259,6 +271,11 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
     return;
   }
 
+  TRACE_EVENT_ASYNC_BEGIN1(
+      "ServiceWorker",
+      "ServiceWorkerDispatcherHost::UnregisterServiceWorker",
+      request_id,
+      "Pattern", pattern.spec());
   GetContext()->UnregisterServiceWorker(
       pattern,
       base::Bind(&ServiceWorkerDispatcherHost::UnregistrationComplete,
@@ -271,6 +288,8 @@ void ServiceWorkerDispatcherHost::OnPostMessageToWorker(
     int handle_id,
     const base::string16& message,
     const std::vector<int>& sent_message_port_ids) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnPostMessageToWorker");
   if (!GetContext())
     return;
 
@@ -291,6 +310,8 @@ void ServiceWorkerDispatcherHost::OnPostMessageToWorker(
 }
 
 void ServiceWorkerDispatcherHost::OnProviderCreated(int provider_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnProviderCreated");
   if (!GetContext())
     return;
   if (GetContext()->GetProviderHost(render_process_id_, provider_id)) {
@@ -304,6 +325,8 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(int provider_id) {
 }
 
 void ServiceWorkerDispatcherHost::OnProviderDestroyed(int provider_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnProviderDestroyed");
   if (!GetContext())
     return;
   if (!GetContext()->GetProviderHost(render_process_id_, provider_id)) {
@@ -315,6 +338,8 @@ void ServiceWorkerDispatcherHost::OnProviderDestroyed(int provider_id) {
 
 void ServiceWorkerDispatcherHost::OnSetHostedVersionId(
     int provider_id, int64 version_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnSetHostedVersionId");
   if (!GetContext())
     return;
   ServiceWorkerProviderHost* provider_host =
@@ -390,10 +415,17 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
 
   Send(new ServiceWorkerMsg_ServiceWorkerRegistered(
       thread_id, request_id, info, attrs));
+  TRACE_EVENT_ASYNC_END2("ServiceWorker",
+                         "ServiceWorkerDispatcherHost::RegisterServiceWorker",
+                         request_id,
+                         "Registration ID", registration_id,
+                         "Version ID", version_id);
 }
 
 void ServiceWorkerDispatcherHost::OnWorkerReadyForInspection(
     int embedded_worker_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnWorkerReadyForInspection");
   if (!GetContext())
     return;
   EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
@@ -405,6 +437,8 @@ void ServiceWorkerDispatcherHost::OnWorkerReadyForInspection(
 void ServiceWorkerDispatcherHost::OnWorkerScriptLoaded(
     int embedded_worker_id,
     int thread_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnWorkerScriptLoaded");
   if (!GetContext())
     return;
   EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
@@ -416,6 +450,8 @@ void ServiceWorkerDispatcherHost::OnWorkerScriptLoaded(
 
 void ServiceWorkerDispatcherHost::OnWorkerScriptLoadFailed(
     int embedded_worker_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnWorkerScriptLoadFailed");
   if (!GetContext())
     return;
   EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
@@ -425,6 +461,8 @@ void ServiceWorkerDispatcherHost::OnWorkerScriptLoadFailed(
 }
 
 void ServiceWorkerDispatcherHost::OnWorkerStarted(int embedded_worker_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnWorkerStarted");
   if (!GetContext())
     return;
   EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
@@ -434,6 +472,8 @@ void ServiceWorkerDispatcherHost::OnWorkerStarted(int embedded_worker_id) {
 }
 
 void ServiceWorkerDispatcherHost::OnWorkerStopped(int embedded_worker_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnWorkerStopped");
   if (!GetContext())
     return;
   EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
@@ -444,6 +484,8 @@ void ServiceWorkerDispatcherHost::OnWorkerStopped(int embedded_worker_id) {
 
 void ServiceWorkerDispatcherHost::OnPausedAfterDownload(
     int embedded_worker_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnPausedAfterDownload");
   if (!GetContext())
     return;
   GetContext()->embedded_worker_registry()->OnPausedAfterDownload(
@@ -456,6 +498,8 @@ void ServiceWorkerDispatcherHost::OnReportException(
     int line_number,
     int column_number,
     const GURL& source_url) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnReportException");
   if (!GetContext())
     return;
   EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
@@ -471,6 +515,8 @@ void ServiceWorkerDispatcherHost::OnReportException(
 void ServiceWorkerDispatcherHost::OnReportConsoleMessage(
     int embedded_worker_id,
     const EmbeddedWorkerHostMsg_ReportConsoleMessage_Params& params) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnReportConsoleMessage");
   if (!GetContext())
     return;
   EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
@@ -486,6 +532,8 @@ void ServiceWorkerDispatcherHost::OnReportConsoleMessage(
 
 void ServiceWorkerDispatcherHost::OnIncrementServiceWorkerRefCount(
     int handle_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnIncrementServiceWorkerRefCount");
   ServiceWorkerHandle* handle = handles_.Lookup(handle_id);
   if (!handle) {
     BadMessageReceived();
@@ -496,6 +544,8 @@ void ServiceWorkerDispatcherHost::OnIncrementServiceWorkerRefCount(
 
 void ServiceWorkerDispatcherHost::OnDecrementServiceWorkerRefCount(
     int handle_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnDecrementServiceWorkerRefCount");
   ServiceWorkerHandle* handle = handles_.Lookup(handle_id);
   if (!handle) {
     BadMessageReceived();
@@ -508,6 +558,8 @@ void ServiceWorkerDispatcherHost::OnDecrementServiceWorkerRefCount(
 
 void ServiceWorkerDispatcherHost::OnIncrementRegistrationRefCount(
     int registration_handle_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnIncrementRegistrationRefCount");
   ServiceWorkerRegistrationHandle* handle =
       registration_handles_.Lookup(registration_handle_id);
   if (!handle) {
@@ -519,6 +571,8 @@ void ServiceWorkerDispatcherHost::OnIncrementRegistrationRefCount(
 
 void ServiceWorkerDispatcherHost::OnDecrementRegistrationRefCount(
     int registration_handle_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnDecrementRegistrationRefCount");
   ServiceWorkerRegistrationHandle* handle =
       registration_handles_.Lookup(registration_handle_id);
   if (!handle) {
@@ -540,6 +594,11 @@ void ServiceWorkerDispatcherHost::UnregistrationComplete(
   }
 
   Send(new ServiceWorkerMsg_ServiceWorkerUnregistered(thread_id, request_id));
+  TRACE_EVENT_ASYNC_END1(
+      "ServiceWorker",
+      "ServiceWorkerDispatcherHost::UnregisterServiceWorker",
+      request_id,
+      "Status", status);
 }
 
 void ServiceWorkerDispatcherHost::SendRegistrationError(

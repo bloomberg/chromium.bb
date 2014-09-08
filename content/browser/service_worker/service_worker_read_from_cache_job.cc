@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/debug/trace_event.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
@@ -36,6 +37,10 @@ ServiceWorkerReadFromCacheJob::~ServiceWorkerReadFromCacheJob() {
 }
 
 void ServiceWorkerReadFromCacheJob::Start() {
+  TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
+                           "ServiceWorkerReadFromCacheJob::ReadInfo",
+                           this,
+                           "URL", request_->url().spec());
   if (!context_) {
     NotifyStartError(net::URLRequestStatus(
         net::URLRequestStatus::FAILED, net::ERR_FAILED));
@@ -119,6 +124,10 @@ bool ServiceWorkerReadFromCacheJob::ReadRawData(
   DCHECK_NE(buf_size, 0);
   DCHECK(bytes_read);
   DCHECK(!reader_->IsReadPending());
+  TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
+                           "ServiceWorkerReadFromCacheJob::ReadRawData",
+                           this,
+                           "URL", request_->url().spec());
   reader_->ReadData(
       buf, buf_size, base::Bind(&ServiceWorkerReadFromCacheJob::OnReadComplete,
                                 weak_factory_.GetWeakPtr()));
@@ -149,6 +158,10 @@ void ServiceWorkerReadFromCacheJob::OnReadInfoComplete(int result) {
   if (is_range_request())
     SetupRangeResponse(http_info_io_buffer_->response_data_size);
   http_info_io_buffer_ = NULL;
+  TRACE_EVENT_ASYNC_END1("ServiceWorker",
+                         "ServiceWorkerReadFromCacheJob::ReadInfo",
+                         this,
+                         "Result", result);
   NotifyHeadersComplete();
 }
 
@@ -189,6 +202,10 @@ void ServiceWorkerReadFromCacheJob::OnReadComplete(int result) {
   }
   ServiceWorkerMetrics::CountReadResponseResult(check_result);
   NotifyReadComplete(result);
+  TRACE_EVENT_ASYNC_END1("ServiceWorker",
+                         "ServiceWorkerReadFromCacheJob::ReadRawData",
+                         this,
+                         "Result", result);
 }
 
 }  // namespace content

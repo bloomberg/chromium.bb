@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "base/debug/trace_event.h"
 #include "content/browser/devtools/embedded_worker_devtools_manager.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -136,6 +137,11 @@ void EmbeddedWorkerInstance::Start(int64 service_worker_version_id,
   status_ = STARTING;
   scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params(
       new EmbeddedWorkerMsg_StartWorker_Params());
+  TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker",
+                           "EmbeddedWorkerInstance::ProcessAllocate",
+                           params.get(),
+                           "Scope", scope.spec(),
+                           "Script URL", script_url.spec());
   params->embedded_worker_id = embedded_worker_id_;
   params->service_worker_version_id = service_worker_version_id;
   params->scope = scope;
@@ -248,6 +254,10 @@ void EmbeddedWorkerInstance::ProcessAllocated(
   const int64 service_worker_version_id = params->service_worker_version_id;
   process_id_ = process_id;
   GURL script_url(params->script_url);
+  TRACE_EVENT_ASYNC_END1("ServiceWorker",
+                         "EmbeddedWorkerInstance::ProcessAllocate",
+                         params.get(),
+                         "Status", status);
   RegisterToWorkerDevToolsManager(
       process_id,
       context_.get(),

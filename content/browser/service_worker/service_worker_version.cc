@@ -572,6 +572,8 @@ void ServiceWorkerVersion::DispatchActivateEventAfterStartWorker(
 void ServiceWorkerVersion::OnGetClientDocuments(int request_id) {
   std::vector<int> client_ids;
   ControlleeByIDMap::iterator it(&controllee_by_id_);
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerVersion::OnGetClientDocuments");
   while (!it.IsAtEnd()) {
     client_ids.push_back(it.GetCurrentKey());
     it.Advance();
@@ -588,6 +590,8 @@ void ServiceWorkerVersion::OnActivateEventFinished(
     blink::WebServiceWorkerEventResult result) {
   DCHECK(ACTIVATING == status() ||
          REDUNDANT == status()) << status();
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerVersion::OnActivateEventFinished");
 
   StatusCallback* callback = activate_callbacks_.Lookup(request_id);
   if (!callback) {
@@ -609,6 +613,8 @@ void ServiceWorkerVersion::OnInstallEventFinished(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
   DCHECK_EQ(INSTALLING, status()) << status();
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerVersion::OnInstallEventFinished");
 
   StatusCallback* callback = install_callbacks_.Lookup(request_id);
   if (!callback) {
@@ -628,6 +634,9 @@ void ServiceWorkerVersion::OnFetchEventFinished(
     int request_id,
     ServiceWorkerFetchEventResult result,
     const ServiceWorkerResponse& response) {
+  TRACE_EVENT1("ServiceWorker",
+               "ServiceWorkerVersion::OnFetchEventFinished",
+               "Request id", request_id);
   FetchCallback* callback = fetch_callbacks_.Lookup(request_id);
   if (!callback) {
     NOTREACHED() << "Got unexpected message: " << request_id;
@@ -641,6 +650,9 @@ void ServiceWorkerVersion::OnFetchEventFinished(
 
 void ServiceWorkerVersion::OnSyncEventFinished(
     int request_id) {
+  TRACE_EVENT1("ServiceWorker",
+               "ServiceWorkerVersion::OnSyncEventFinished",
+               "Request id", request_id);
   StatusCallback* callback = sync_callbacks_.Lookup(request_id);
   if (!callback) {
     NOTREACHED() << "Got unexpected message: " << request_id;
@@ -654,6 +666,9 @@ void ServiceWorkerVersion::OnSyncEventFinished(
 
 void ServiceWorkerVersion::OnPushEventFinished(
     int request_id) {
+  TRACE_EVENT1("ServiceWorker",
+               "ServiceWorkerVersion::OnPushEventFinished",
+               "Request id", request_id);
   StatusCallback* callback = push_callbacks_.Lookup(request_id);
   if (!callback) {
     NOTREACHED() << "Got unexpected message: " << request_id;
@@ -669,6 +684,9 @@ void ServiceWorkerVersion::OnPostMessageToDocument(
     int client_id,
     const base::string16& message,
     const std::vector<int>& sent_message_port_ids) {
+  TRACE_EVENT1("ServiceWorker",
+               "ServiceWorkerVersion::OnPostMessageToDocument",
+               "Client id", client_id);
   ServiceWorkerProviderHost* provider_host =
       controllee_by_id_.Lookup(client_id);
   if (!provider_host) {
