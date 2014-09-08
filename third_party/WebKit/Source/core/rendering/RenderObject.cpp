@@ -1217,10 +1217,13 @@ void RenderObject::drawSolidBoxSide(GraphicsContext* graphicsContext, int x1, in
 
 void RenderObject::paintFocusRing(PaintInfo& paintInfo, const LayoutPoint& paintOffset, RenderStyle* style)
 {
-    Vector<IntRect> focusRingRects;
+    Vector<LayoutRect> focusRingRects;
     addFocusRingRects(focusRingRects, paintOffset, paintInfo.paintContainer());
     ASSERT(style->outlineStyleIsAuto());
-    paintInfo.context->drawFocusRing(focusRingRects, style->outlineWidth(), style->outlineOffset(), resolveColor(style, CSSPropertyOutlineColor));
+    Vector<IntRect> focusRingIntRects;
+    for (size_t i = 0; i < focusRingRects.size(); ++i)
+        focusRingIntRects.append(pixelSnappedIntRect(focusRingRects[i]));
+    paintInfo.context->drawFocusRing(focusRingIntRects, style->outlineWidth(), style->outlineOffset(), resolveColor(style, CSSPropertyOutlineColor));
 }
 
 void RenderObject::paintOutline(PaintInfo& paintInfo, const LayoutRect& paintRect)
@@ -1291,7 +1294,7 @@ void RenderObject::paintOutline(PaintInfo& paintInfo, const LayoutRect& paintRec
         graphicsContext->endLayer();
 }
 
-void RenderObject::addChildFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const
+void RenderObject::addChildFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const
 {
     for (RenderObject* current = slowFirstChild(); current; current = current->nextSibling()) {
         if (current->isText() || current->isListMarker())
@@ -1300,21 +1303,16 @@ void RenderObject::addChildFocusRingRects(Vector<IntRect>& rects, const LayoutPo
         if (current->isBox()) {
             RenderBox* box = toRenderBox(current);
             if (box->hasLayer()) {
-                Vector<IntRect> layerFocusRingRects;
+                Vector<LayoutRect> layerFocusRingRects;
                 box->addFocusRingRects(layerFocusRingRects, LayoutPoint(), box);
                 for (size_t i = 0; i < layerFocusRingRects.size(); ++i) {
-                    FloatQuad quadInBox = box->localToContainerQuad(FloatRect(layerFocusRingRects[i]), paintContainer);
-                    FloatRect rect = quadInBox.boundingBox();
-                    // Floor the location instead of using pixelSnappedIntRect to match the !hasLayer() path.
-                    // FIXME: roundedIntSize matches pixelSnappedIntRect in other places of addFocusRingRects
-                    // because we always floor the offset.
-                    // This assumption is fragile and should be replaced by better solution.
-                    rects.append(IntRect(flooredIntPoint(rect.location()), roundedIntSize(rect.size())));
+                    FloatQuad quadInBox = box->localToContainerQuad(FloatQuad(layerFocusRingRects[i]), paintContainer);
+                    LayoutRect rect = LayoutRect(quadInBox.boundingBox());
+                    if (!rect.isEmpty())
+                        rects.append(rect);
                 }
             } else {
-                FloatPoint pos(additionalOffset);
-                pos.move(box->locationOffset());
-                box->addFocusRingRects(rects, flooredIntPoint(pos), paintContainer);
+                box->addFocusRingRects(rects, additionalOffset + box->locationOffset(), paintContainer);
             }
         } else {
             current->addFocusRingRects(rects, additionalOffset, paintContainer);
@@ -1365,7 +1363,7 @@ IntRect RenderObject::absoluteBoundingBoxRectIgnoringTransforms() const
 
 void RenderObject::absoluteFocusRingQuads(Vector<FloatQuad>& quads)
 {
-    Vector<IntRect> rects;
+    Vector<LayoutRect> rects;
     const RenderLayerModelObject* container = containerForPaintInvalidation();
     addFocusRingRects(rects, LayoutPoint(localToContainerPoint(FloatPoint(), container)), container);
     size_t count = rects.size();

@@ -1369,40 +1369,6 @@ void RenderInline::imageChanged(WrappedImagePtr, const IntRect*)
 
 namespace {
 
-class AbsoluteRectsIgnoringEmptyRectsGeneratorContext : public AbsoluteRectsGeneratorContext {
-public:
-    AbsoluteRectsIgnoringEmptyRectsGeneratorContext(Vector<IntRect>& rects, const LayoutPoint& accumulatedOffset)
-        : AbsoluteRectsGeneratorContext(rects, accumulatedOffset) { }
-
-    void operator()(const FloatRect& rect)
-    {
-        if (!rect.isEmpty())
-            AbsoluteRectsGeneratorContext::operator()(rect);
-    }
-};
-
-} // unnamed namespace
-
-void RenderInline::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const
-{
-    AbsoluteRectsIgnoringEmptyRectsGeneratorContext context(rects, additionalOffset);
-    generateLineBoxRects(context);
-
-    addChildFocusRingRects(rects, additionalOffset, paintContainer);
-
-    if (continuation()) {
-        // If the continuation doesn't paint into the same container, let its paint invalidation container handle it.
-        if (paintContainer != continuation()->containerForPaintInvalidation())
-            return;
-        if (continuation()->isInline())
-            continuation()->addFocusRingRects(rects, flooredLayoutPoint(additionalOffset + continuation()->containingBlock()->location() - containingBlock()->location()), paintContainer);
-        else
-            continuation()->addFocusRingRects(rects, flooredLayoutPoint(additionalOffset + toRenderBox(continuation())->location() - containingBlock()->location()), paintContainer);
-    }
-}
-
-namespace {
-
 class AbsoluteLayoutRectsGeneratorContext {
 public:
     AbsoluteLayoutRectsGeneratorContext(Vector<LayoutRect>& rects, const LayoutPoint& accumulatedOffset)
@@ -1420,6 +1386,36 @@ private:
     const LayoutPoint& m_accumulatedOffset;
 };
 
+class AbsoluteLayoutRectsIgnoringEmptyRectsGeneratorContext : public AbsoluteLayoutRectsGeneratorContext {
+public:
+    AbsoluteLayoutRectsIgnoringEmptyRectsGeneratorContext(Vector<LayoutRect>& rects, const LayoutPoint& accumulatedOffset)
+        : AbsoluteLayoutRectsGeneratorContext(rects, accumulatedOffset) { }
+
+    void operator()(const FloatRect& rect)
+    {
+        if (!rect.isEmpty())
+            AbsoluteLayoutRectsGeneratorContext::operator()(rect);
+    }
+};
+
+} // unnamed namespace
+
+void RenderInline::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const
+{
+    AbsoluteLayoutRectsIgnoringEmptyRectsGeneratorContext context(rects, additionalOffset);
+    generateLineBoxRects(context);
+
+    addChildFocusRingRects(rects, additionalOffset, paintContainer);
+
+    if (continuation()) {
+        // If the continuation doesn't paint into the same container, let its paint invalidation container handle it.
+        if (paintContainer != continuation()->containerForPaintInvalidation())
+            return;
+        if (continuation()->isInline())
+            continuation()->addFocusRingRects(rects, additionalOffset + (continuation()->containingBlock()->location() - containingBlock()->location()), paintContainer);
+        else
+            continuation()->addFocusRingRects(rects, additionalOffset + (toRenderBox(continuation())->location() - containingBlock()->location()), paintContainer);
+    }
 }
 
 void RenderInline::computeSelfHitTestRects(Vector<LayoutRect>& rects, const LayoutPoint& layerOffset) const

@@ -573,10 +573,10 @@ FloatQuad RenderBox::absoluteContentQuad() const
     return localToAbsoluteQuad(FloatRect(rect));
 }
 
-void RenderBox::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject*) const
+void RenderBox::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject*) const
 {
     if (!size().isEmpty())
-        rects.append(pixelSnappedIntRect(additionalOffset, size()));
+        rects.append(LayoutRect(additionalOffset, size()));
 }
 
 bool RenderBox::canResize() const
@@ -4194,15 +4194,15 @@ LayoutBoxExtent RenderBox::computeVisualEffectOverflowExtent() const
     if (style()->hasOutline()) {
         if (style()->outlineStyleIsAuto()) {
             // The result focus ring rects are in coordinates of this object's border box.
-            Vector<IntRect> focusRingRects;
+            Vector<LayoutRect> focusRingRects;
             addFocusRingRects(focusRingRects, LayoutPoint(), this);
-            IntRect rect = unionRect(focusRingRects);
+            LayoutRect rect = unionRect(focusRingRects);
 
             int outlineSize = GraphicsContext::focusRingOutsetExtent(style()->outlineOffset(), style()->outlineWidth());
-            top = std::max<LayoutUnit>(top, -rect.y() + outlineSize);
-            right = std::max<LayoutUnit>(right, rect.maxX() - width() + outlineSize);
-            bottom = std::max<LayoutUnit>(bottom, rect.maxY() - height() + outlineSize);
-            left = std::max<LayoutUnit>(left, -rect.x() + outlineSize);
+            top = std::max(top, -rect.y() + outlineSize);
+            right = std::max(right, rect.maxX() - width() + outlineSize);
+            bottom = std::max(bottom, rect.maxY() - height() + outlineSize);
+            left = std::max(left, -rect.x() + outlineSize);
         } else {
             LayoutUnit outlineSize = style()->outlineSize();
             top = std::max(top, outlineSize);
