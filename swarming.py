@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.4.14'
+__version__ = '0.4.15'
 
 import getpass
 import hashlib
@@ -1005,20 +1005,35 @@ def CMDquery(parser, args):
     parser.error('Use only one of --keep-dead and --dead-only')
 
   auth.ensure_logged_in(options.swarming)
-  data = net.url_read_json(options.swarming + '/swarming/api/v1/bots')
-  if data is None:
-    print >> sys.stderr, 'Failed to access %s' % options.swarming
-    return 1
-  for machine in natsort.natsorted(data['machines'], key=lambda x: x['id']):
+
+  bots = []
+  cursor = None
+  limit = 250
+  # Iterate via cursors.
+  base_url = options.swarming + '/swarming/api/v1/client/bots?limit=%d' % limit
+  while True:
+    url = base_url
+    if cursor:
+      url += '&cursor=%s' % cursor
+    data = net.url_read_json(url)
+    if data is None:
+      print >> sys.stderr, 'Failed to access %s' % options.swarming
+      return 1
+    bots.extend(data['bots'])
+    cursor = data['cursor']
+    if not cursor:
+      break
+
+  for bot in natsort.natsorted(bots, key=lambda x: x['id']):
     if options.dead_only:
-      if not machine['is_dead']:
+      if not bot['is_dead']:
         continue
-    elif not options.keep_dead and machine['is_dead']:
+    elif not options.keep_dead and bot['is_dead']:
       continue
 
     # If the user requested to filter on dimensions, ensure the bot has all the
     # dimensions requested.
-    dimensions = machine['dimensions']
+    dimensions = bot['dimensions']
     for key, value in options.dimensions:
       if key not in dimensions:
         break
@@ -1032,9 +1047,11 @@ def CMDquery(parser, args):
         if value != dimensions[key]:
           break
     else:
-      print machine['id']
+      print bot['id']
       if not options.bare:
         print '  %s' % json.dumps(dimensions, sort_keys=True)
+        if bot['task']:
+          print '  task: %s' % bot['task']
   return 0
 
 
