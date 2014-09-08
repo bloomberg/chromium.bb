@@ -1,1 +1,8 @@
 *.pyc
+clang_format/script/
+linux*/gn
+linux*/clang-format
+mac/gn
+mac/clang-format
+win/gn.exe
+win/clang-format.exe
