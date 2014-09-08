@@ -597,7 +597,8 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PointerLock) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PointerLockFocus) {
+// flaky http://crbug.com/412086
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_PointerLockFocus) {
   SetupTest("web_view/pointer_lock_focus",
             "/extensions/platform_apps/web_view/pointer_lock_focus/guest.html");
 
