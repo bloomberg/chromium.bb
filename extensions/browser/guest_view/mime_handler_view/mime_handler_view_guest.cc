@@ -55,9 +55,9 @@ void MimeHandlerViewGuest::CreateWebContents(
     const base::DictionaryValue& create_params,
     const WebContentsCreatedCallback& callback) {
   std::string orig_mime_type;
-  DCHECK(
-      create_params.GetString(mime_handler_view::kMimeType, &orig_mime_type) &&
-      !orig_mime_type.empty());
+  bool success =
+      create_params.GetString(mime_handler_view::kMimeType, &orig_mime_type);
+  DCHECK(success && !orig_mime_type.empty());
   std::string guest_site_str;
   // Note that we put a prefix "mime-" before the mime type so that this
   // can never collide with an extension ID.
@@ -85,8 +85,8 @@ void MimeHandlerViewGuest::CreateWebContents(
 
 void MimeHandlerViewGuest::DidAttachToEmbedder() {
   std::string src;
-  DCHECK(attach_params()->GetString(mime_handler_view::kSrc, &src) &&
-         !src.empty());
+  bool success = attach_params()->GetString(mime_handler_view::kSrc, &src);
+  DCHECK(success && !src.empty());
   web_contents()->GetController().LoadURL(
       GURL(src),
       content::Referrer(),
