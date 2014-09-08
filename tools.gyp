@@ -244,8 +244,6 @@
       ]
     },
   ],
-  # The crt_init_* targets only need to be built for non-pnacl newlib-based
-  # toolchains (and for the IRT if the IRT is built with such a toolchain).
   'conditions': [
     ['target_arch=="ia32" or target_arch=="x64"', {
       'targets' : [
@@ -313,7 +311,7 @@
             'windows_asm_rule': 0,
             'build_glibc': 0,
             'build_newlib': 1,
-            'build_irt': 0,
+            'build_irt': 1,
             'enable_x86_64': 0,
             'extra_args': [
               '--compile',
@@ -337,7 +335,7 @@
             'windows_asm_rule': 0,
             'build_glibc': 0,
             'build_newlib': 1,
-            'build_irt': 0,
+            'build_irt': 1,
             'enable_x86_64': 0,
             'extra_args': [
               '--compile',
