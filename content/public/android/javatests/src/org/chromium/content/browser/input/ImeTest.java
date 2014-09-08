@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentViewCore;
@@ -195,8 +196,11 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForSelectActionBarStatus(true);
     }
 
+    /*
     @SmallTest
     @Feature({"TextInput"})
+    */
+    @DisabledTest
     public void testSelectActionBarClearedOnTappingInput() throws Exception {
         commitText(mConnection, "Sample Text", 1);
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
