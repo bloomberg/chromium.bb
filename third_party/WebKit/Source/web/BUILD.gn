@@ -9,7 +9,7 @@ import("//third_party/WebKit/Source/core/core.gni")
 import("//third_party/WebKit/Source/modules/modules.gni")
 import("//third_party/WebKit/Source/platform/platform.gni")
 
-visibility = "//third_party/WebKit/*"
+visibility = [ "//third_party/WebKit/*" ]
 web_gypi = exec_script(
     "//build/gypi_to_gn.py",
     [ rebase_path("web.gypi") ],

@@ -6,7 +6,7 @@ import("//third_party/WebKit/Source/bindings/bindings.gni")
 import("//third_party/WebKit/Source/bindings/scripts/scripts.gni")
 import("//third_party/WebKit/Source/bindings/templates/templates.gni")
 
-visibility = "//third_party/WebKit/*"
+visibility = [ "//third_party/WebKit/*" ]
 
 # This separate pre-caching step is required to use lex/parse table
 # caching in PLY, since PLY itself does not check if the cache is

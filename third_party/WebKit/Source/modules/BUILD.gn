@@ -9,11 +9,12 @@ import("//third_party/WebKit/Source/build/make_file_arrays.gni")
 import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 import("//third_party/WebKit/Source/modules/modules.gni")
 
-visibility = "//third_party/WebKit/Source/*"
+visibility = [ "//third_party/WebKit/Source/*" ]
 
 # GYP version: WebKit/Source/modules/modules.gyp:modules
 source_set("modules") {
-  visibility = "//third_party/WebKit/*"
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ "//third_party/WebKit/*" ]
 
   sources = rebase_path(modules_files, ".", "//")
   sources += bindings_modules_v8_files

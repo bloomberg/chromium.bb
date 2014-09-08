@@ -8,7 +8,7 @@ import("//third_party/WebKit/Source/bindings/core/v8/generated.gni")
 import("//third_party/WebKit/Source/bindings/scripts/scripts.gni")
 import("//third_party/WebKit/Source/core/core.gni")
 
-visibility = "//third_party/WebKit/Source/*"
+visibility = [ "//third_party/WebKit/Source/*" ]
 
 # bindings_core_v8_generated in core/v8/generated.gyp
 group("bindings_core_v8_generated") {

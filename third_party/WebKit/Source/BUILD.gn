@@ -7,7 +7,7 @@ if (is_clang) {
   import("//build/config/clang/clang.gni")
 }
 
-visibility = "//third_party/WebKit/*"
+visibility = [ "//third_party/WebKit/*" ]
 
 # features ---------------------------------------------------------------------
 

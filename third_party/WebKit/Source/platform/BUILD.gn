@@ -9,7 +9,7 @@ import("//third_party/WebKit/Source/platform/platform.gni")
 import("//third_party/WebKit/Source/platform/platform_generated.gni")
 
 # Most targets in this file are private actions so use that as the default.
-visibility = ":*"
+visibility = [ ":*" ]
 
 heap_gypi = exec_script(
     "//build/gypi_to_gn.py",
@@ -27,7 +27,8 @@ blink_platform_neon_files = [
 
 # blink_common in blink_platform.gyp
 component("blink_common") {
-  visibility = "//third_party/WebKit/*"
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ "//third_party/WebKit/*" ]
   sources = [
     "exported/WebCString.cpp",
     "exported/WebString.cpp",
@@ -149,7 +150,8 @@ action("color_data") {
 # This isn't strictly necessary since we can just add the deps to "platform",
 # but it helps to have the targets match the GYP build.
 group("make_platform_generated") {
-  visibility = "//third_party/WebKit/Source/*"
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ "//third_party/WebKit/Source/*" ]
   deps = [
     ":blink_common",
     ":color_data",
@@ -161,7 +163,8 @@ group("make_platform_generated") {
 # TODO(brettw) Objective C Renaming postbuild steps on Mac.
 # blink_platform target in blink_platform.gyp
 component("platform") {
-  visibility = "//third_party/WebKit/*"
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ "//third_party/WebKit/*" ]
   output_name = "blink_platform"
 
   sources = platform_files
@@ -333,7 +336,8 @@ component("platform") {
 }
 
 test("heap_unittests") {
-  visibility = "//third_party/WebKit/*"
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ "//third_party/WebKit/*" ]
   output_name = "blink_heap_unittests"
 
   sources = rebase_path(heap_gypi.platform_heap_test_files, ".", "heap")
@@ -357,7 +361,8 @@ test("heap_unittests") {
 }
 
 test("platform_unittests") {
-  visibility = "//third_party/WebKit/*"
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ "//third_party/WebKit/*" ]
   output_name = "blink_platform_unittests"
 
   sources = platform_test_files

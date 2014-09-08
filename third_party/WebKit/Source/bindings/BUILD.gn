@@ -7,7 +7,7 @@ import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 import("//third_party/WebKit/Source/core/core.gni")
 import("//third_party/WebKit/Source/modules/modules.gni")
 
-visibility = "//third_party/WebKit/*"
+visibility = [ "//third_party/WebKit/*" ]
 
 # Main interface IDL files (excluding dependencies and testing)
 # are included as properties on global objects, and in aggregate bindings.

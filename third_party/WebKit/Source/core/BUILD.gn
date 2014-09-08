@@ -13,7 +13,7 @@ import("//third_party/WebKit/Source/core/core.gni")
 import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 import("//third_party/WebKit/Source/platform/platform_generated.gni")
 
-visibility = "//third_party/WebKit/Source/*"
+visibility = [ "//third_party/WebKit/Source/*" ]
 
 rel_blink_core_gen_dir = rebase_path(blink_core_output_dir, root_build_dir)
 
@@ -122,7 +122,8 @@ source_set("prerequisites") {
 #
 # GYP version: WebKit/Source/core/core.gyp:webcore
 source_set("core") {
-  visibility = "//third_party/WebKit/*"
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ "//third_party/WebKit/*" ]
 
   exported_deps = [
     ":core_generated",
@@ -930,7 +931,8 @@ make_token_matcher("make_core_generated_make_token_matcher_for_viewport") {
 # You can use Blink-in-JS in your local experiment, but don't ship it.
 # crbug.com/341031
 action("make_core_generated_private_script") {
-  visibility = ":make_core_generated"
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ ":make_core_generated" ]
   script = "../build/scripts/make_private_script_source.py"
 
   inputs = [
@@ -949,7 +951,8 @@ action("make_core_generated_private_script") {
 }
 
 action("make_core_generated_private_script_for_testing") {
-  visibility = ":make_core_generated"
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ ":make_core_generated" ]
   script = "../build/scripts/make_private_script_source.py"
 
   inputs = [
@@ -968,7 +971,8 @@ action("make_core_generated_private_script_for_testing") {
 
 # "HTMLEntityTable" in make_core_generated from GYP.
 action("make_core_generated_html_entity_table") {
-  visibility = ":make_core_generated"
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ ":make_core_generated" ]
   script = "html/parser/create-html-entity-table"
 
   inputs = [
@@ -986,7 +990,8 @@ action("make_core_generated_html_entity_table") {
 
 # "MediaQueryTokenizerCodepoints" in make_core_generated from GYP.
 action("make_core_generated_media_query_tokenizer_codepoints") {
-  visibility = ":make_core_generated"
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ ":make_core_generated" ]
   script = "../build/scripts/make_mediaquery_tokenizer_codepoints.py"
 
   outputs = [
@@ -1002,7 +1007,8 @@ action("make_core_generated_media_query_tokenizer_codepoints") {
 
 # "UserAgentStyleSheets" in make_core_generated from GYP.
 action("make_core_generated_user_agent_style_sheets") {
-  visibility = ":make_core_generated"
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ ":make_core_generated" ]
   script = "../build/scripts/make-file-arrays.py"
 
   inputs = [
@@ -1043,7 +1049,8 @@ action("make_core_generated_user_agent_style_sheets") {
 
 # "HTMLElementLookupTrie" in make_core_generated from GYP.
 action("make_core_generated_html_element_lookup_trie") {
-  visibility = ":make_core_generated"
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ ":make_core_generated" ]
   script = "../build/scripts/make_element_lookup_trie.py"
 
   input_file = "html/HTMLTagNames.in"

@@ -8,7 +8,7 @@ import("//third_party/WebKit/Source/bindings/modules/modules.gni")
 import("//third_party/WebKit/Source/bindings/scripts/scripts.gni")
 import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 
-visibility = "//third_party/WebKit/*"
+visibility = [ "//third_party/WebKit/*" ]
 
 # GYP version: Source/bindings/modules/generated.gyp:bindings_modules_generated
 group("bindings_modules_generated") {

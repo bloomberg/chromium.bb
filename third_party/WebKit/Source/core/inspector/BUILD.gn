@@ -5,7 +5,7 @@
 import("//third_party/WebKit/Source/bindings/bindings.gni")
 import("//third_party/WebKit/Source/core/core.gni")
 
-visibility = "//third_party/WebKit/Source/*"
+visibility = [ "//third_party/WebKit/Source/*" ]
 
 protocol_file = "../../devtools/protocol.json"
 

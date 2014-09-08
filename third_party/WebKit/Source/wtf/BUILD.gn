@@ -8,7 +8,7 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
                           "scope",
                           [ "wtf.gypi" ])
 
-visibility = "//third_party/WebKit/*"
+visibility = [ "//third_party/WebKit/*" ]
 
 config("wtf_config") {
   if (is_win) {
