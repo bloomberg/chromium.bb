@@ -616,7 +616,11 @@ v8::Handle<v8::Object> wrapper = wrap(impl.get(), info.Holder(), info.GetIsolate
                                        if constructor.is_named_constructor else
                                        '') %}
 v8::Handle<v8::Object> wrapper = info.Holder();
+{% if is_script_wrappable %}
+impl->associateWithWrapper(&{{constructor_class}}::wrapperTypeInfo, wrapper, info.GetIsolate());
+{% else %}
 V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl.release(), &{{constructor_class}}::wrapperTypeInfo, wrapper, info.GetIsolate());
+{% endif %}
 {% endif %}
 v8SetReturnValue(info, wrapper);
 {% endmacro %}

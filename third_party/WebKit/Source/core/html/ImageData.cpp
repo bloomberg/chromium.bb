@@ -128,6 +128,17 @@ PassRefPtrWillBeRawPtr<ImageData> ImageData::create(Uint8ClampedArray* data, uns
 v8::Handle<v8::Object> ImageData::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     v8::Handle<v8::Object> wrapper = ScriptWrappable::wrap(creationContext, isolate);
+    return associateWithWrapperInternal(wrapper, creationContext, isolate);
+}
+
+v8::Handle<v8::Object> ImageData::associateWithWrapper(const WrapperTypeInfo* wrapperType, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
+{
+    ScriptWrappable::associateWithWrapper(wrapperType, wrapper, isolate);
+    return associateWithWrapperInternal(wrapper, wrapper, isolate);
+}
+
+v8::Handle<v8::Object> ImageData::associateWithWrapperInternal(v8::Handle<v8::Object> wrapper, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
     if (!wrapper.IsEmpty()) {
         // Create a V8 Uint8ClampedArray object.
         v8::Handle<v8::Value> pixelArray = toV8(data(), creationContext, isolate);

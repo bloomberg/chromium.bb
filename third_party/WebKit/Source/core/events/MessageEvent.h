@@ -116,6 +116,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
     virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) OVERRIDE;
+    virtual v8::Handle<v8::Object> associateWithWrapper(const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper, v8::Isolate*) OVERRIDE;
 
 private:
     MessageEvent();
@@ -127,6 +128,8 @@ private:
     MessageEvent(const String& data, const String& origin);
     MessageEvent(PassRefPtrWillBeRawPtr<Blob> data, const String& origin);
     MessageEvent(PassRefPtr<ArrayBuffer> data, const String& origin);
+
+    v8::Handle<v8::Object> associateWithWrapperInternal(v8::Handle<v8::Object> wrapper, v8::Isolate*);
 
     DataType m_dataType;
     RefPtr<SerializedScriptValue> m_dataAsSerializedScriptValue;

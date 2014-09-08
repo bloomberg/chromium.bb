@@ -35,6 +35,11 @@ v8::Handle<v8::Object> ScriptWrappable::wrap(v8::Handle<v8::Object> creationCont
         return wrapper;
 
     wrapperType->installConditionallyEnabledProperties(wrapper, isolate);
+    return associateWithWrapper(wrapperType, wrapper, isolate);
+}
+
+v8::Handle<v8::Object> ScriptWrappable::associateWithWrapper(const WrapperTypeInfo* wrapperType, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
+{
     wrapperType->refObject(toScriptWrappableBase());
     V8DOMWrapper::associateObjectWithWrapperNonTemplate(this, wrapperType, wrapper, isolate);
     return wrapper;
