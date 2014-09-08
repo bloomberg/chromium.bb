@@ -1652,22 +1652,30 @@ void AppsGridView::MaybeStartPageFlipTimer(const gfx::Point& drag_point) {
     StopPageFlipTimer();
   int new_page_flip_target = -1;
 
-  if (page_switcher_view_ &&
-      page_switcher_view_->bounds().Contains(drag_point)) {
-    gfx::Point page_switcher_point(drag_point);
-    views::View::ConvertPointToTarget(this, page_switcher_view_,
-                                      &page_switcher_point);
-    new_page_flip_target =
-        page_switcher_view_->GetPageForPoint(page_switcher_point);
-  }
+  // Drag zones are at the edges of the scroll axis.
+  if (pagination_controller_->scroll_axis() ==
+      PaginationController::SCROLL_AXIS_VERTICAL) {
+    if (drag_point.y() < kPageFlipZoneSize)
+      new_page_flip_target = pagination_model_.selected_page() - 1;
+    else if (drag_point.y() > height() - kPageFlipZoneSize)
+      new_page_flip_target = pagination_model_.selected_page() + 1;
+  } else {
+    if (page_switcher_view_->bounds().Contains(drag_point)) {
+      gfx::Point page_switcher_point(drag_point);
+      views::View::ConvertPointToTarget(
+          this, page_switcher_view_, &page_switcher_point);
+      new_page_flip_target =
+          page_switcher_view_->GetPageForPoint(page_switcher_point);
+    }
 
-  // TODO(xiyuan): Fix this for RTL.
-  if (new_page_flip_target == -1 && drag_point.x() < kPageFlipZoneSize)
-    new_page_flip_target = pagination_model_.selected_page() - 1;
+    // TODO(xiyuan): Fix this for RTL.
+    if (new_page_flip_target == -1 && drag_point.x() < kPageFlipZoneSize)
+      new_page_flip_target = pagination_model_.selected_page() - 1;
 
-  if (new_page_flip_target == -1 &&
-      drag_point.x() > width() - kPageFlipZoneSize) {
-    new_page_flip_target = pagination_model_.selected_page() + 1;
+    if (new_page_flip_target == -1 &&
+        drag_point.x() > width() - kPageFlipZoneSize) {
+      new_page_flip_target = pagination_model_.selected_page() + 1;
+    }
   }
 
   if (new_page_flip_target == page_flip_target_)
