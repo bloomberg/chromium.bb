@@ -1665,8 +1665,10 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 	pointer->hotspot_x = x;
 	pointer->hotspot_y = y;
 
-	if (surface->buffer_ref.buffer)
+	if (surface->buffer_ref.buffer) {
 		pointer_cursor_surface_configure(surface, 0, 0);
+		weston_view_schedule_repaint(pointer->sprite);
+	}
 }
 
 static void

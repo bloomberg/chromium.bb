@@ -31,6 +31,9 @@
 #include <cairo.h>
 #include <math.h>
 #include <assert.h>
+#include <sys/timerfd.h>
+#include <sys/epoll.h>
+#include <unistd.h>
 
 #include <linux/input.h>
 #include <wayland-client.h>
@@ -54,6 +57,10 @@ struct clickdot {
 	} line;
 
 	int reset;
+
+	struct input *cursor_timeout_input;
+	int cursor_timeout_fd;
+	struct task cursor_timeout_task;
 };
 
 static void
@@ -211,6 +218,19 @@ button_handler(struct widget *widget,
 	widget_schedule_redraw(widget);
 }
 
+static void
+cursor_timeout_reset(struct clickdot *clickdot)
+{
+	const long cursor_timeout = 500;
+	struct itimerspec its;
+
+	its.it_interval.tv_sec = 0;
+	its.it_interval.tv_nsec = 0;
+	its.it_value.tv_sec = cursor_timeout / 1000;
+	its.it_value.tv_nsec = (cursor_timeout % 1000) * 1000 * 1000;
+	timerfd_settime(clickdot->cursor_timeout_fd, 0, &its, NULL);
+}
+
 static int
 motion_handler(struct widget *widget,
 	       struct input *input, uint32_t time,
@@ -222,7 +242,10 @@ motion_handler(struct widget *widget,
 
 	window_schedule_redraw(clickdot->window);
 
-	return CURSOR_LEFT_PTR;
+	cursor_timeout_reset(clickdot);
+	clickdot->cursor_timeout_input = input;
+
+	return CURSOR_BLANK;
 }
 
 static void
@@ -242,6 +265,21 @@ leave_handler(struct widget *widget,
 	struct clickdot *clickdot = data;
 
 	clickdot->reset = 1;
+}
+
+static void
+cursor_timeout_func(struct task *task, uint32_t events)
+{
+	struct clickdot *clickdot =
+		container_of(task, struct clickdot, cursor_timeout_task);
+	uint64_t exp;
+
+	if (read(clickdot->cursor_timeout_fd, &exp, sizeof (uint64_t)) !=
+	    sizeof(uint64_t))
+		abort();
+
+	input_set_pointer_image(clickdot->cursor_timeout_input,
+				CURSOR_LEFT_PTR);
 }
 
 static struct clickdot *
@@ -276,12 +314,22 @@ clickdot_create(struct display *display)
 	clickdot->line.old_y = -1;
 	clickdot->reset = 0;
 
+	clickdot->cursor_timeout_fd =
+		timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC);
+	clickdot->cursor_timeout_task.run = cursor_timeout_func;
+	display_watch_fd(window_get_display(clickdot->window),
+			 clickdot->cursor_timeout_fd,
+			 EPOLLIN, &clickdot->cursor_timeout_task);
+
 	return clickdot;
 }
 
 static void
 clickdot_destroy(struct clickdot *clickdot)
 {
+	display_unwatch_fd(window_get_display(clickdot->window),
+			   clickdot->cursor_timeout_fd);
+	close(clickdot->cursor_timeout_fd);
 	if (clickdot->buffer)
 		cairo_surface_destroy(clickdot->buffer);
 	widget_destroy(clickdot->widget);
