@@ -484,11 +484,9 @@ void PrintPreviewUI::OnPrintPreviewRequest(int request_id) {
   g_print_preview_request_id_map.Get().Set(id_, request_id);
 }
 
-#if !defined(OS_WIN)
 void PrintPreviewUI::OnShowSystemDialog() {
   web_ui()->CallJavascriptFunction("onSystemDialogLinkClicked");
 }
-#endif  // !OS_WIN
 
 void PrintPreviewUI::OnDidGetPreviewPageCount(
     const PrintHostMsg_DidGetPreviewPageCount_Params& params) {

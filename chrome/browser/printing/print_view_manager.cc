@@ -46,8 +46,10 @@ PrintViewManager::~PrintViewManager() {
   DCHECK_EQ(NOT_PREVIEWING, print_preview_state_);
 }
 
-#if !defined(OS_WIN)
 bool PrintViewManager::PrintForSystemDialogNow() {
+#if defined(OS_WIN)
+  NOTREACHED();
+#endif
   return PrintNowInternal(new PrintMsg_PrintForSystemDialog(routing_id()));
 }
 
@@ -69,7 +71,7 @@ bool PrintViewManager::AdvancedPrintNow() {
     return PrintNow();
   }
 }
-#endif  // !OS_WIN
+
 bool PrintViewManager::PrintPreviewNow(bool selection_only) {
   // Users can send print commands all they want and it is beyond
   // PrintViewManager's control. Just ignore the extra commands.

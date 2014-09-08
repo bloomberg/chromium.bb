@@ -22,7 +22,6 @@ class PrintViewManager : public PrintViewManagerBase,
  public:
   virtual ~PrintViewManager();
 
-#if !defined(OS_WIN)
   // Same as PrintNow(), but for the case where a user prints with the system
   // dialog from print preview.
   bool PrintForSystemDialogNow();
@@ -31,7 +30,6 @@ class PrintViewManager : public PrintViewManagerBase,
   // show the native system dialog. This can happen from both initiator and
   // preview dialog.
   bool AdvancedPrintNow();
-#endif  // !OS_WIN
 
   // Initiate print preview of the current document by first notifying the
   // renderer. Since this happens asynchronous, the print preview dialog

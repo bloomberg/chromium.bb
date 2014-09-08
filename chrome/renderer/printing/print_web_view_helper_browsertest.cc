@@ -188,13 +188,10 @@ class PrintWebViewHelperTestBase : public ChromeRenderViewTest {
     }
 #endif  // defined(OS_CHROMEOS)
   }
-
-#if !defined(OS_WIN)
   void OnPrintPages() {
     PrintWebViewHelper::Get(view_)->OnPrintPages();
     ProcessPendingMessages();
   }
-#endif  // !OS_WIN
 
   void VerifyPreviewRequest(bool requested) {
     const IPC::Message* print_msg =
@@ -236,7 +233,6 @@ class PrintWebViewHelperTest : public PrintWebViewHelperTestBase {
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelperTest);
 };
 
-#if !defined(OS_WIN)
 // Tests that printing pages work and sending and receiving messages through
 // that channel all works.
 TEST_F(PrintWebViewHelperTest, OnPrintPages) {
@@ -246,9 +242,8 @@ TEST_F(PrintWebViewHelperTest, OnPrintPages) {
   VerifyPageCount(1);
   VerifyPagesPrinted(true);
 }
-#endif  // !OS_WIN
 
-#if defined(OS_MACOSX) && !defined(OS_WIN)
+#if defined(OS_MACOSX)
 // TODO(estade): I don't think this test is worth porting to Linux. We will have
 // to rip out and replace most of the IPC code if we ever plan to improve
 // printing, and the comment below by sverrir suggests that it doesn't do much
@@ -289,7 +284,7 @@ TEST_F(PrintWebViewHelperTest, PrintWithIframe) {
   EXPECT_NE(0, image1.size().width());
   EXPECT_NE(0, image1.size().height());
 }
-#endif  // OS_MACOSX && !OS_WIN
+#endif  // OS_MACOSX
 
 // Tests if we can print a page and verify its results.
 // This test prints HTML pages into a pseudo printer and check their outputs,
@@ -335,7 +330,7 @@ const TestPageData kTestPages[] = {
 // hooking up Cairo to read a pdf stream, or accessing the cairo surface in the
 // metafile directly.
 // Same for printing via PDF on Windows.
-#if defined(OS_MACOSX) && !defined(OS_WIN)
+#if defined(OS_MACOSX)
 TEST_F(PrintWebViewHelperTest, PrintLayoutTest) {
   bool baseline = false;
 
@@ -388,7 +383,7 @@ TEST_F(PrintWebViewHelperTest, PrintLayoutTest) {
     }
   }
 }
-#endif  // OS_MACOSX && !OS_WIN
+#endif  // OS_MACOSX
 
 // These print preview tests do not work on Chrome OS yet.
 #if !defined(OS_CHROMEOS)
