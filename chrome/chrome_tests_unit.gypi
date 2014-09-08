@@ -534,7 +534,6 @@
         # extensions_unittests running in the bots yet. Until that happens,
         # they should be kept here.
         '../extensions/browser/api/power/power_api_unittest.cc',
-        '../extensions/browser/app_window/app_window_geometry_cache_unittest.cc',
         '../extensions/common/extension_l10n_util_unittest.cc',
         '../extensions/common/features/base_feature_provider_unittest.cc',
         '../extensions/common/features/complex_feature_unittest.cc',

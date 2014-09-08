@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_SHELL_BROWSER_SHELL_APP_SORTING_H_
-#define EXTENSIONS_SHELL_BROWSER_SHELL_APP_SORTING_H_
+#ifndef EXTENSIONS_BROWSER_NULL_APP_SORTING_H_
+#define EXTENSIONS_BROWSER_NULL_APP_SORTING_H_
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "extensions/browser/app_sorting.h"
 
 namespace extensions {
 
-// A stub AppSorting. Since app_shell only runs a single app we don't need to
-// sort them.
-class ShellAppSorting : public AppSorting {
+// An AppSorting that doesn't provide any ordering.
+class NullAppSorting : public AppSorting {
  public:
-  ShellAppSorting();
-  virtual ~ShellAppSorting();
+  NullAppSorting();
+  virtual ~NullAppSorting();
 
   // AppSorting overrides:
   virtual void SetExtensionScopedPrefs(ExtensionScopedPrefs* prefs) OVERRIDE;
@@ -55,9 +55,9 @@ class ShellAppSorting : public AppSorting {
                                    bool visible) OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ShellAppSorting);
+  DISALLOW_COPY_AND_ASSIGN(NullAppSorting);
 };
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_SHELL_BROWSER_SHELL_APP_SORTING_H_
+#endif  // EXTENSIONS_BROWSER_NULL_APP_SORTING_H_

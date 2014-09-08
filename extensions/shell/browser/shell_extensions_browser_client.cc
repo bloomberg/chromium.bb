@@ -16,8 +16,8 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/null_app_sorting.h"
 #include "extensions/shell/browser/api/generated_api_registration.h"
-#include "extensions/shell/browser/shell_app_sorting.h"
 #include "extensions/shell/browser/shell_extension_host_delegate.h"
 #include "extensions/shell/browser/shell_extension_system_factory.h"
 #include "extensions/shell/browser/shell_runtime_api_delegate.h"
@@ -161,7 +161,7 @@ void ShellExtensionsBrowserClient::PermitExternalProtocolHandler() {
 }
 
 scoped_ptr<AppSorting> ShellExtensionsBrowserClient::CreateAppSorting() {
-  return scoped_ptr<AppSorting>(new ShellAppSorting);
+  return scoped_ptr<AppSorting>(new NullAppSorting);
 }
 
 bool ShellExtensionsBrowserClient::IsRunningInForcedAppMode() {

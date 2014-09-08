@@ -58,8 +58,6 @@
         'browser/media_capture_util.h',
         'browser/shell_app_delegate.cc',
         'browser/shell_app_delegate.h',
-        'browser/shell_app_sorting.cc',
-        'browser/shell_app_sorting.h',
         'browser/shell_app_window.cc',
         'browser/shell_app_window.h',
         'browser/shell_app_window_controller.h',
