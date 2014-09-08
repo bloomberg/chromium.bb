@@ -1574,7 +1574,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   // The available links depend on the type of profile that is active.
   if (item.signed_in) {
-    rect.size.height = kBlueButtonHeight / 2;
     // Signed in profiles with no authentication errors do not have a clickable
     // email link.
     NSButton* link = nil;
@@ -1610,8 +1609,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         [link setEnabled:NO];
       }
     }
-    // -linkButtonWithTitle sizeToFit's the link, so re-stretch it so that it
-    // can be centered correctly in the view.
+    // -linkButtonWithTitle sizeToFit's the link. We can use the height, but
+    // need to re-stretch the width so that the link can be centered correctly
+    // in the view.
+    rect.size.height = [link frame].size.height;
     [link setAlignment:NSCenterTextAlignment];
     [link setFrame:rect];
     [container addSubview:link];
