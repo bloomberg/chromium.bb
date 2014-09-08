@@ -35,18 +35,26 @@
 
 namespace blink {
 
+unsigned FontPlatformData::hash() const
+{
+    ASSERT(m_font || !m_cgFont);
+    uintptr_t hashCodes[3] = { (uintptr_t)m_font, m_widthVariant, static_cast<uintptr_t>(m_isHashTableDeletedValue << 3 | m_orientation << 2 | m_syntheticBold << 1 | m_syntheticItalic) };
+    return StringHasher::hashMemory<sizeof(hashCodes)>(hashCodes);
+}
+
 // These CoreText Text Spacing feature selectors are not defined in CoreText.
 enum TextSpacingCTFeatureSelector { TextSpacingProportional, TextSpacingFullWidth, TextSpacingHalfWidth, TextSpacingThirdWidth, TextSpacingQuarterWidth };
 
-FontPlatformData::FontPlatformData(NSFont *nsFont, float size, bool syntheticBold, bool syntheticOblique, FontOrientation orientation, FontWidthVariant widthVariant)
-    : m_syntheticBold(syntheticBold)
-    , m_syntheticOblique(syntheticOblique)
+FontPlatformData::FontPlatformData(NSFont *nsFont, float size, bool syntheticBold, bool syntheticItalic, FontOrientation orientation, FontWidthVariant widthVariant)
+    : m_textSize(size)
+    , m_syntheticBold(syntheticBold)
+    , m_syntheticItalic(syntheticItalic)
     , m_orientation(orientation)
-    , m_size(size)
-    , m_widthVariant(widthVariant)
-    , m_font(nsFont)
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)
+    , m_widthVariant(widthVariant)
+    , m_font(nsFont)
+    , m_isHashTableDeletedValue(false)
 {
     ASSERT_ARG(nsFont, nsFont);
 
@@ -129,11 +137,11 @@ void FontPlatformData::setFont(NSFont *font)
     if (m_font)
         CFRelease(m_font);
     m_font = font;
-    m_size = [font pointSize];
+    m_textSize = [font pointSize];
 
     CGFontRef cgFont = 0;
     NSFont* loadedFont = 0;
-    loadFont(m_font, m_size, loadedFont, cgFont);
+    loadFont(m_font, m_textSize, loadedFont, cgFont);
 
 #if OS(MACOSX)
     // If loadFont replaced m_font with a fallback font, then release the
@@ -247,7 +255,7 @@ CTFontRef FontPlatformData::ctFont() const
         return m_CTFont.get();
 
     if (m_inMemoryFont) {
-        m_CTFont.adoptCF(CTFontCreateWithGraphicsFont(m_inMemoryFont->cgFont(), m_size, 0, cascadeToLastResortFontDescriptor()));
+        m_CTFont.adoptCF(CTFontCreateWithGraphicsFont(m_inMemoryFont->cgFont(), m_textSize, 0, cascadeToLastResortFontDescriptor()));
         return m_CTFont.get();
     }
 
@@ -260,9 +268,9 @@ CTFontRef FontPlatformData::ctFont() const
             fontDescriptor = cascadeToLastResortAndDisableSwashesFontDescriptor();
         else
             fontDescriptor = cascadeToLastResortFontDescriptor();
-        m_CTFont.adoptCF(CTFontCreateCopyWithAttributes(m_CTFont.get(), m_size, 0, fontDescriptor));
+        m_CTFont.adoptCF(CTFontCreateCopyWithAttributes(m_CTFont.get(), m_textSize, 0, fontDescriptor));
     } else
-        m_CTFont.adoptCF(CTFontCreateWithGraphicsFont(m_cgFont.get(), m_size, 0, cascadeToLastResortFontDescriptor()));
+        m_CTFont.adoptCF(CTFontCreateWithGraphicsFont(m_cgFont.get(), m_textSize, 0, cascadeToLastResortFontDescriptor()));
 
     if (m_widthVariant != RegularWidth) {
         int featureTypeValue = kTextSpacingType;
@@ -271,7 +279,7 @@ CTFontRef FontPlatformData::ctFont() const
         RetainPtr<CFNumberRef> featureType(AdoptCF, CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &featureTypeValue));
         RetainPtr<CFNumberRef> featureSelector(AdoptCF, CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &featureSelectorValue));
         RetainPtr<CTFontDescriptorRef> newDescriptor(AdoptCF, CTFontDescriptorCreateCopyWithFeature(sourceDescriptor.get(), featureType.get(), featureSelector.get()));
-        RetainPtr<CTFontRef> newFont(AdoptCF, CTFontCreateWithFontDescriptor(newDescriptor.get(), m_size, 0));
+        RetainPtr<CTFontRef> newFont(AdoptCF, CTFontCreateWithFontDescriptor(newDescriptor.get(), m_textSize, 0));
 
         if (newFont)
             m_CTFont = newFont;
@@ -280,7 +288,7 @@ CTFontRef FontPlatformData::ctFont() const
     return m_CTFont.get();
 }
 
-SkTypeface* FontPlatformData::typeface() const{
+SkTypeface* FontPlatformData::typeface() const {
     if (m_typeface)
         return m_typeface.get();
 
@@ -303,8 +311,9 @@ static bool isAATFont(CTFontRef ctFont)
     }
     return false;
 }
+#endif
 
-HarfBuzzFace* FontPlatformData::harfBuzzFace()
+HarfBuzzFace* FontPlatformData::harfBuzzFace() const
 {
     CTFontRef font = ctFont();
     // HarfBuzz can't handle AAT font
@@ -317,14 +326,13 @@ HarfBuzzFace* FontPlatformData::harfBuzzFace()
     }
     return m_harfBuzzFace.get();
 }
-#endif
 
 #ifndef NDEBUG
 String FontPlatformData::description() const
 {
     RetainPtr<CFStringRef> cgFontDescription(AdoptCF, CFCopyDescription(cgFont()));
-    return String(cgFontDescription.get()) + " " + String::number(m_size)
-            + (m_syntheticBold ? " synthetic bold" : "") + (m_syntheticOblique ? " synthetic oblique" : "") + (m_orientation ? " vertical orientation" : "");
+    return String(cgFontDescription.get()) + " " + String::number(m_textSize)
+            + (m_syntheticBold ? " synthetic bold" : "") + (m_syntheticItalic ? " synthetic oblique" : "") + (m_orientation ? " vertical orientation" : "");
 }
 #endif
 
